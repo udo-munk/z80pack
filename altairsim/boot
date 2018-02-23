@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ -f disks/drivea.dsk ]; then
+	./altairsim -x bootromt.hex $*
+else
+	echo "no boot disk in drive a:"
+fi

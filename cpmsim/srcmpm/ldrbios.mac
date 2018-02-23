@@ -1,0 +1,177 @@
+;	MP/M 2 LDRBIOS for Z80-Simulator
+;
+;	Copyright (C) 1989-2007 by Udo Munk
+;
+	ORG	1700H
+;
+;	I/O ports
+;
+CONSTA	EQU	0		;console status port
+CONDAT	EQU	1		;console data port
+FDCD	EQU	10		;fdc-port: # of drive
+FDCT	EQU	11		;fdc-port: # of track
+FDCS	EQU	12		;fdc-port: # of sector
+FDCOP	EQU	13		;fdc-port: command
+FDCST	EQU	14		;fdc-port: status
+DMAL	EQU	15		;dma-port: dma address low
+DMAH	EQU	16		;dma-port: dma address high
+;
+;	jump vector for individual subroutines
+;
+	JP	BOOT		;perform cold start initialization
+	JP	WBOOT		;perform warm start initialization
+	JP	CONST		;check for console input char ready
+	JP	CONIN		;read console character in
+	JP	CONOUT		;write console character out
+	JP	LIST		;write list character out
+	JP	AUXOUT		;write auxiliary output char
+	JP	AUXIN		;read auxiliary input char
+	JP	HOME		;move head to track 0 on selcted disk
+	JP	SELDSK		;select disk drive
+	JP	SETTRK		;set track number
+	JP	SETSEC		;set sector number
+	JP	SETDMA		;set dma address
+	JP	READ		;read specified sector
+	JP	WRITE		;write specified sector
+	JP	LISTST		;return list status
+	JP	SECTRAN		;translate logical to physical sector
+;
+;	fixed data tables for a	IBM-compatible 8" SD disk
+;
+;	disk parameter header
+;
+DPH:	DEFW	TRANS,0000H
+	DEFW	0000H,0000H
+	DEFW	DIRBF,DPBLK
+	DEFW	CHK00,ALL00
+;
+;	sector translate vector for the IBM 8" SD disk
+;
+TRANS:	DEFB	1,7,13,19	;sectors 1,2,3,4
+	DEFB	25,5,11,17	;sectors 5,6,7,8
+	DEFB	23,3,9,15	;sectors 9,10,11,12
+	DEFB	21,2,8,14	;sectors 13,14,15,16
+	DEFB	20,26,6,12	;sectors 17,18,19,20
+	DEFB	18,24,4,10	;sectors 21,22,23,24
+	DEFB	16,22		;sectors 25,26
+;
+;	disk parameter block for the IBM 8" SD disk
+;
+DPBLK:	DEFW	26		;sectors per track
+	DEFB	3		;block shift factor
+	DEFB	7		;block mask
+	DEFB	0		;extent mask
+	DEFW	242		;disk size-1
+	DEFW	63		;directory max
+	DEFB	192		;alloc 0
+	DEFB	0		;alloc 1
+	DEFW	16		;check size
+	DEFW	2		;track offset
+;
+;	signon message
+;
+SIGNON:	DEFB	13,10
+	DEFM	'LDRBIOS V1.1 for Z80SIM, '
+	DEFM	'Copyright 1989-2007 by Udo Munk'
+	DEFB	13,10,0
+;
+;	end of fixed tables
+;
+;	individual subroutines to perform each function
+;
+BOOT:	LD	HL,SIGNON	;print message
+BOOTL:  LD	A,(HL)
+	OR	A
+	JP	Z,WBOOT
+	OUT	(CONDAT),A
+	INC	HL
+	JP	BOOTL
+;
+;	those are not implemented in loader bios
+;
+WBOOT:
+CONST:
+CONIN:
+LIST:
+AUXOUT:
+AUXIN:
+WRITE:
+LISTST:
+	RET
+;
+;	console character output from register c
+;
+CONOUT: LD	A,C		;get to accumulator
+	OUT	(CONDAT),A	;send character to console
+	RET
+;
+;
+;	i/o drivers for the disk follow
+;
+;	move to the track 00 position of current drive
+;	translate this call into a settrk call with parameter 00
+;
+HOME:	LD	C,0		;select track 0
+	JP	SETTRK		;we will move to 00 on first read/write
+;
+;	select disk given by register C
+;
+SELDSK:	PUSH	BC
+	CALL	BOOT		;signon message
+	POP	BC
+	LD	HL,0000H	;error return code
+	LD	A,C
+	OR	A		;we boot from drive 0 only
+	RET	NZ		;return error
+;	disk number is in the proper range
+;	return proper disk parameter header address
+	OUT	(FDCD),A	;selekt disk drive
+	LD	HL,DPH
+	RET
+;
+;	set track given by register c
+;
+SETTRK: LD	A,C
+	OUT	(FDCT),A
+	RET
+;
+;	set sector given by register c
+;
+SETSEC: LD	A,C
+	OUT	(FDCS),A
+	RET
+;
+;	translate the sector given by BC using the
+;	translate table given by DE
+;
+SECTRAN:
+	EX	DE,HL		;hl=.trans
+	ADD	HL,BC		;hl=.trans(sector)
+	LD	L,(HL)		;l = trans(sector)
+	LD	H,0		;hl= trans(sector)
+	RET			;with value in hl
+;
+;	set dma address given by registers b and c
+;
+SETDMA: LD	A,C		;low order address
+	OUT	(DMAL),A
+	LD	A,B		;high order address
+	OUT	(DMAH),A	;in dma
+	RET
+;
+;	perform read operation
+;
+READ:	XOR	A		;read command -> a
+	OUT	(FDCOP),A	;start i/o operation
+	IN	A,(FDCST)	;status of i/o operation -> a
+	RET
+;
+BEGDAT	EQU	$
+DIRBF:	DEFS	128		;scratch directory area
+ALL00:	DEFS	31		;allocation vector
+CHK00:	DEFS	16		;check vector
+;
+ENDDAT	EQU	$		;end
+DATSIZ	EQU	$-BEGDAT	;size of data area
+;
+	END			;of bios

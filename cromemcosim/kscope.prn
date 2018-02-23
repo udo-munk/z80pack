@@ -1,0 +1,128 @@
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      12:47  04/11/2015
++                                                                                      PAGE 1
+      
+
+
+                   ;
+                   ; CROMEMCO DAZZLER KALEIDOSCOPE
+                   ; WRITTEN BY LI-CHEN WANG
+                   ;
+                    
+   0000                    ORG  0
+                    
+   0000   310001           LXI  SP,0100H
+   0003   3E81             MVI  A,081H
+   0005   D30E             OUT  14
+   0007   3E30             MVI  A,030H
+   0009   D30F             OUT  15
+   000B   78               MOV  A,B
+   000C   0F               RRC
+   000D   0F               RRC
+   000E   A2               ANA  D
+   000F   81               ADD  C
+   0010   4F               MOV  C,A
+   0011   0F               RRC
+   0012   0F               RRC
+   0013   A2               ANA  D
+   0014   6F               MOV  L,A
+   0015   78               MOV  A,B
+   0016   95               SUB  L
+   0017   47               MOV  B,A
+   0018   C5               PUSH B
+   0019   D5               PUSH D
+   001A   E5               PUSH H
+   001B   110000           LXI  D,0
+   001E   7C               MOV  A,H
+   001F   E61F             ANI  01FH
+   0021   1F               RAR
+   0022   DA2B00           JC   002BH
+   0025   5F               MOV  E,A
+   0026   07               RLC
+   0027   07               RLC
+   0028   07               RLC
+   0029   07               RLC
+   002A   57               MOV  D,A
+   002B   2608             MVI  H,08H
+   002D   CD5D00           CALL 005DH
+   0030   78               MOV  A,B
+   0031   2F               CMA
+   0032   47               MOV  B,A
+   0033   2606             MVI  H,06H
+   0035   CD5D00           CALL 005DH
+   0038   79               MOV  A,C
+   0039   2F               CMA
+   003A   4F               MOV  C,A
+   003B   2602             MVI  H,02H
+   003D   CD5D00           CALL 005DH
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      12:47  04/11/2015
++                                                                                      PAGE 2
+      
+
+
+   0040   78               MOV  A,B
+   0041   2F               CMA
+   0042   47               MOV  B,A
+   0043   2604             MVI  H,04H
+   0045   CD5D00           CALL 005DH
+   0048   E1               POP  H
+   0049   D1               POP  D
+   004A   C1               POP  B
+   004B   1D               DCR  E
+   004C   C20B00           JNZ  000BH
+   004F   04               INR  B
+   0050   0C               INR  C
+   0051   1E3F             MVI  E,03FH
+   0053   25               DCR  H
+   0054   C20B00           JNZ  0000BH
+   0057   14               INR  D
+   0058   261F             MVI  H,01FH
+   005A   C30B00           JMP  000BH
+   005D   79               MOV  A,C
+   005E   E6F8             ANI  0F8H
+   0060   17               RAL
+   0061   6F               MOV  L,A
+   0062   7C               MOV  A,H
+   0063   CE00             ACI  00H
+   0065   67               MOV  H,A
+   0066   78               MOV  A,B
+   0067   E6F8             ANI  0F8H
+   0069   1F               RAR
+   006A   1F               RAR
+   006B   1F               RAR
+   006C   1F               RAR
+   006D   F5               PUSH PSW
+   006E   85               ADD  L
+   006F   6F               MOV  L,A
+   0070   F1               POP  PSW
+   0071   7E               MOV  A,M
+   0072   DA7A00           JC   007AH
+   0075   E6F0             ANI  0F0H
+   0077   83               ADD  E
+   0078   77               MOV  M,A
+   0079   C9               RET
+   007A   E60F             ANI  0FH
+   007C   82               ADD  D
+   007D   77               MOV  M,A
+   007E   C9               RET
+                    
+                           END
+ NO PROGRAM ERRORS
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      12:47  04/11/2015
++                                                                                      PAGE 3
+      
+
+
+                        SYMBOL TABLE
+
+  * 01
+
+  A      0007      B      0000      C      0001      D      0002      
+  E      0003      H      0004      L      0005      M      0006      
+  PSW    0006      SP     0006      
+

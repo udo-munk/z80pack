@@ -1,0 +1,11 @@
+# example for network server configuration
+#
+# console:	# of the console port, 1-4
+# telnet flag:	1 = telnet option negotiation on, 0 = off
+# TCP/IP port:	every console needs a different one, suggested 4000-4003
+#
+# Console	telnet flag	TCP/IP port
+1		1		4000
+2		1		4001
+3		0		4002
+4		0		4003

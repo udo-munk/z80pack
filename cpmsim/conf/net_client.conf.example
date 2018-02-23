@@ -1,0 +1,5 @@
+# example for network client configuration
+#
+# Console	host			TCP/IP port
+#1		www.unix4fun.org	4052
+1		localhost		4002

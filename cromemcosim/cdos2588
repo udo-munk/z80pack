@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rm -f disks/drivea.dsk
+ln disks/library/cdos258_8.dsk disks/drivea.dsk
+
+./cromemcosim -x rdos0312.hex $*

@@ -1,0 +1,113 @@
+# system wide location for machines configuration files
+CONF=/usr/local/share/cpmsim/conf
+
+# system wide location for disk images
+DISKS=/usr/local/share/cpmsim/disks
+
+CC = gcc
+
+# Development
+#CFLAGS = -O3 -m64 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\"
+
+# Production
+CFLAGS = -O3 -m64 -c -Wall -Wextra -U_FORTIFY_SOURCE -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\"
+
+LFLAGS = -m64 -lsocket -lnsl
+
+OBJ =   sim0.o \
+	sim1.o \
+	sim1a.o \
+	sim2.o \
+	sim3.o \
+	sim4.o \
+	sim5.o \
+	sim6.o \
+	sim7.o \
+	simctl.o \
+	simint.o \
+	memory.o \
+	iosim.o \
+	simfun.o \
+	simglb.o \
+	unix_terminal.o \
+	config.o
+
+all: /tmp/.z80pack/cpmsim.auxin /tmp/.z80pack/cpmsim.auxout ../cpmsim
+	@echo
+	@echo "Done."
+	@echo
+
+/tmp/.z80pack/cpmsim.auxin:
+	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
+	test -f /tmp/.z80pack/cpmsim.auxin || /usr/sbin/mknod /tmp/.z80pack/cpmsim.auxin p
+
+/tmp/.z80pack/cpmsim.auxout:
+	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
+	test -f /tmp/.z80pack/cpmsim.auxout || /usr/sbin/mknod /tmp/.z80pack/cpmsim.auxout p
+
+../cpmsim : $(OBJ)
+	$(CC) $(OBJ) $(LFLAGS) -o ../cpmsim
+
+sim0.c:
+	./lnsrc
+
+sim0.o : sim0.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim0.c
+
+sim1.o : sim1.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim1.c
+
+sim1a.o : sim1a.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim1a.c
+
+sim2.o : sim2.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim2.c
+
+sim3.o : sim3.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim3.c
+
+sim4.o : sim4.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim4.c
+
+sim5.o : sim5.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim5.c
+
+sim6.o : sim6.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim6.c
+
+sim7.o : sim7.c sim.h simglb.h config.h memory.h
+	$(CC) $(CFLAGS) sim7.c
+
+simctl.o : simctl.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) simctl.c
+
+simint.o : simint.c sim.h simglb.h
+	$(CC) $(CFLAGS) simint.c
+
+memory.o : memory.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) memory.c
+
+iosim.o : iosim.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) iosim.c
+
+simfun.o : simfun.c sim.h
+	$(CC) $(CFLAGS) simfun.c
+
+simglb.o : simglb.c sim.h
+	$(CC) $(CFLAGS) simglb.c
+
+unix_terminal.o : ../../iodevices/unix_terminal.c
+	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
+
+config.o : config.c
+	$(CC) $(CFLAGS) config.c
+
+clean:
+	rm -f *.o
+	./ulnsrc
+
+allclean:
+	make -f Makefile.solaris clean
+	rm -f ../cpmsim
+	rm -f ../auxiliaryin.txt ../auxiliaryout.txt ../printer.txt
+	rm -f ../disks/drive*.dsk

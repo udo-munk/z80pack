@@ -1,0 +1,40 @@
+For more downloads of operation manuals and other or updated software
+please check:
+
+        http://www.autometer.de/unix4fun/z80pack/ftp/cromemco/
+
+-------------
+
+Version 2 & 3 of RDOS use the upper 4 programmed input switches
+for boot options as follows:
+
+Switch 4: off - detect terminal baud rate, have to hit return
+          on  - fixed baudrate, no need to hit return a few times
+
+Switch 5: off - boot from floppy disk devices
+          on  - boot from harddisk devices
+
+Switches 6 & 7 select the device number, both off = device 0 (A:),
+switch 7 on = device 1 (B:), and so on.
+
+The autoboot feature of RDOS is set by a dip switch on the FDC cards.
+We don't have that, so I routed it to programmed input switch 0.
+Off = autoboot, On = get into RDOS. This also works with RDOS 1.
+
+-------------
+
+The cpmtools definition for the 5.25" SSSD format used by Cromemco is:
+
+diskdef cro5sd
+  seclen 128
+  tracks 40
+  sectrk 18
+  blocksize 1024
+  maxdir 64
+  skew 5
+  boottrk 3
+  os 2.2
+end
+
+If you label disks with CDOS stat/l and use anything different than
+64 directory entries, the definition needs to be changed appropriate.

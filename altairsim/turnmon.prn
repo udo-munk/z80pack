@@ -1,0 +1,235 @@
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      23:30  09/11/2008
++                                                                                      PAGE 1
+      
+
+
+                   ; **************************************************************
+                   ;
+                   ; MITS ALTAIR 8800 ROM MONITOR
+                   ;
+                   ; **************************************************************
+                   ;
+                   ; BASED ON THE ORIGINAL ALTAIR TURNKEY SYSTEM MONITOR
+                   ;
+                   ; MODIFIED BY:  SCOTT LABOMBARD
+                   ;               8/9/02
+                   ;
+                   ; MODIFIED TO ASSEMBLE WITH INTEL 8080 CROSS ASSEMBLER
+                   ;               UDO MUNK
+                   ;               10/11/08
+                   ;
+                   ; **************************************************************
+                    
+   FC00            STACK   EQU     0FC00H          ;MUST BE VALID RAM, NOT ROM!
+   0010            CONSTAT EQU     020Q            ;IO STATUS PORT
+   0011            CONDATA EQU     021Q            ;IO DATA PORT
+                    
+   FD00                    ORG     0FD00H          ;ROM BASED CODE
+                    
+   FD00   3E03     MON:    MVI     A,3             ;RESET 2SIO BOARD
+   FD02   D310             OUT     CONSTAT
+   FD04   3E11             MVI     A,021Q          ;INITIALIZE 2SIO BOARD
+   FD06   D310             OUT     CONSTAT
+   FD08   3100FC   ENTER:  LXI     SP,STACK        ;INITIALIZE STACK POINTER
+   FD0B   CD96FD           CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+   FD0E   CD96FD           CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+   FD11   3E2E             MVI     A,'.'           ;MONITOR PROMPT
+   FD13   CDF2FD           CALL    OUTCHK          ;PRINT CHAR TO CONSOLE
+   FD16   CDE8FD           CALL    INCH            ;GET CHAR FROM CONSOLE
+   FD19   FE4D             CPI     'M'
+   FD1B   CA2CFD           JZ      MEM             ;DO MEMORY EXAMINE/ALTER
+   FD1E   FE44             CPI     'D'
+   FD20   CA54FD           JZ      DMP             ;DO MEMORY DUMP
+   FD23   FE4A             CPI     'J'
+   FD25   C208FD           JNZ     ENTER
+                    
+                   ; **************************************************************
+                   ; GET JUMP ADDRESS, LOAD TO PC, AND GO
+                   ; **************************************************************
+   FD28   CDA0FD           CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+   FD2B   E9               PCHL
+                    
+                   ; **************************************************************
+                   ; MEMORY FUNCTION - DISPLAY AND/OR ALTER MEMORY
+                   ; **************************************************************
+   FD2C   CDA0FD   MEM:    CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+   FD2F   C333FD           JMP     CONT1
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      23:30  09/11/2008
++                                                                                      PAGE 2
+      
+
+
+   FD32   23       CONT:   INX     H               ;POINT TO NEXT ADDRESS
+   FD33   CD96FD   CONT1:  CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+   FD36   54               MOV     D,H             ;SAVE ADDR TO DE
+   FD37   5D               MOV     E,L
+   FD38   CDC6FD           CALL    PRT6            ;CVT TO ASCII + PRINT
+   FD3B   1A               LDAX    D               ;LOAD DATA FROM CURRENT MEM LOC
+   FD3C   67               MOV     H,A
+   FD3D   CDCCFD           CALL    PRT3            ;CVT TO ASCII + PRINT
+   FD40   CDA5FD           CALL    OCTL3           ;GET 3 OCTAL DIGITS IN HL
+   FD43   EB               XCHG                    ;EXCHANGE HL AND DE
+   FD44   DA32FD           JC      CONT
+   FD47   77               MOV     M,A             ;STORE USER SPECIFIED BYTE
+   FD48   BE               CMP     M               ;VALIDATE DATA BYTE IN MEMORY
+   FD49   CA32FD           JZ      CONT            ;IF BYTE OKAY, KEEP GOING
+   FD4C   3E3F     ERR:    MVI     A,'?'           ;WE HAVE A PROBLEM
+   FD4E   CDF2FD           CALL    OUTCHK          ;PRINT ERROR CHAR TO CONSOLE
+   FD51   C308FD           JMP     ENTER
+                    
+                   ; **************************************************************
+                   ; DUMP FUNCTION - DISPLAY DATA BETWEEN TWO SPECIFIED MEM LOCS
+                   ; **************************************************************
+   FD54   CDA0FD   DMP:    CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+   FD57   EB               XCHG                    ;SAVE START ADDR TO DE
+   FD58   D4E3FD           CNC     SPACE
+   FD5B   CDA0FD           CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+   FD5E   E5               PUSH    H               ;SAVE END ADDR
+   FD5F   62       DCONT:  MOV     H,D             ;MOV ADDR IN DE TO HL FOR PRINT
+   FD60   6B               MOV     L,E
+   FD61   CD96FD           CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+   FD64   CDC6FD           CALL    PRT6            ;CVT TO ASCII + PRINT
+   FD67   CDE3FD           CALL    SPACE
+   FD6A   011000           LXI     B,020Q          ;PRINT 16 MEM LOCATIONS PER LINE
+   FD6D   1A       DO20:   LDAX    D               ;LOAD DATA FROM CURRENT MEM LOC
+   FD6E   67               MOV     H,A
+   FD6F   C5               PUSH    B               ;SAVE PRINT LOCATION COUNTER
+   FD70   3E08             MVI     A,010Q          ;IS HALF THE LINE PRINTED?
+   FD72   B9               CMP     C
+   FD73   C27EFD           JNZ     NXTMEM
+   FD76   3E2D             MVI     A,'-'           ;MAKES EACH LINE EASIER TO READ
+   FD78   CDF2FD           CALL    OUTCHK
+   FD7B   CDE3FD           CALL    SPACE
+   FD7E   CDCCFD   NXTMEM: CALL    PRT3            ;CVT TO ASCII + PRINT MEM DATA
+   FD81   C1               POP     B               ;RESTORE PRINT LOCATION COUNTER
+   FD82   E1               POP     H               ;RESTORE END ADDR
+   FD83   7C               MOV     A,H             ;COMPARE CURRENT ADDR WITH END
+   FD84   BA               CMP     D
+   FD85   C28DFD           JNZ     DAGN
+   FD88   7D               MOV     A,L
+   FD89   BB               CMP     E
+   FD8A   CA08FD           JZ      ENTER           ;PROCESSED LAST ADDRESS SO DONE
+   FD8D   E5       DAGN:   PUSH    H               ;SAVE END ADDR TO USE AGAIN
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      23:30  09/11/2008
++                                                                                      PAGE 3
+      
+
+
+   FD8E   13               INX     D               ;NEXT MEMORY LOCATION TO PRINT
+   FD8F   0D               DCR     C               ;CURRENT PRINT LOCATION COUNTER
+   FD90   C26DFD           JNZ     DO20            ;16 LOCATIONS PRINTED YET?
+   FD93   C35FFD           JMP     DCONT           ;NEXT LINE IF 16 LOCATIONS DONE
+                    
+                   ; **************************************************************
+                   ; PRINT CARRIAGE RETURN AND LINE FEED
+                   ; **************************************************************
+   FD96   3E0D     CRLF:   MVI     A,015Q
+   FD98   CDF2FD           CALL    OUTCHK          ;PRINT CHAR TO CONSOLE
+   FD9B   3E0A             MVI     A,012Q
+   FD9D   C3F2FD           JMP     OUTCHK          ;PRINT CHAR TO CONSOLE
+                    
+                   ; **************************************************************
+                   ; BUILD 3/6 OCTAL DIGITS IN HL
+                   ; **************************************************************
+   FDA0   0606     OCTL6:  MVI     B,6             ;SET DIGIT COUNTER
+   FDA2   C3A7FD           JMP     OCTL
+   FDA5   0603     OCTL3:  MVI     B,3             ;SET DIGIT COUNTER
+   FDA7   210000   OCTL:   LXI     H,0             ;CLEAR ALL 16 BITS OF HL REG
+   FDAA   CDE8FD   AGN:    CALL    INCH            ;GET CHAR FROM CONSOLE
+   FDAD   4F               MOV     C,A
+   FDAE   FE20             CPI     ' '             ;CHECK FOR SPACE CHAR
+   FDB0   37               STC
+   FDB1   C8               RZ                      ;SPACE CHAR ENTERED SO QUIT
+   FDB2   E6B8             ANI     270Q            ;CHECK FOR VALID OCTAL DIGIT
+   FDB4   EE30             XRI     060Q
+   FDB6   C24CFD           JNZ     ERR             ;NOT OCTAL SO LEAVE
+   FDB9   79               MOV     A,C             ;CONVERT ASCII TO BINARY
+   FDBA   E607             ANI     007Q            ;STRIP ASCII
+   FDBC   29               DAD     H               ;SHIFT HL LEFT 3 BITS
+   FDBD   29               DAD     H
+   FDBE   29               DAD     H
+   FDBF   85               ADD     L
+   FDC0   6F               MOV     L,A             ;PUT OCTAL IN H
+   FDC1   05               DCR     B               ;MORE DIGITS?
+   FDC2   C2AAFD           JNZ     AGN
+   FDC5   C9               RET
+                    
+                   ; **************************************************************
+                   ; PRINT 3 OR 6 OCTAL DIGITS FROM H OR HL
+                   ; **************************************************************
+   FDC6   0606     PRT6:   MVI     B,6             ;SET DIGIT COUNTER
+   FDC8   AF               XRA     A
+   FDC9   C3D6FD           JMP     NEXT1
+   FDCC   0603     PRT3:   MVI     B,3             ;SET DIGIT COUNTER
+   FDCE   AF               XRA     A
+   FDCF   C3D3FD           JMP     NXT3
+   FDD2   29       NEXT3:  DAD     H               ;SHIFT 1 BIT
+   FDD3   17       NXT3:   RAL
+   FDD4   29               DAD     H               ;SHIFT 1 BIT
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      23:30  09/11/2008
++                                                                                      PAGE 4
+      
+
+
+   FDD5   17               RAL
+   FDD6   29       NEXT1:  DAD     H               ;SHIFT 1 BIT
+   FDD7   17               RAL
+   FDD8   E607             ANI     7               ;STRIP OFF OCTAL
+   FDDA   F630             ORI     060Q            ;CONVERT TO ASCII
+   FDDC   CDF2FD           CALL    OUTCHK          ;PRINT CHAR TO CONSOLE
+   FDDF   05               DCR     B
+   FDE0   C2D2FD           JNZ     NEXT3
+   FDE3   3E20     SPACE:  MVI     A,' '           ;ASCII SPACE CHARACTER
+   FDE5   C3F2FD           JMP     OUTCHK          ;PRINT CHAR TO CONSOLE
+                    
+                   ; **************************************************************
+                   ; INPUT AND ECHO CHARACTER
+                   ; **************************************************************
+   FDE8   DB10     INCH:   IN      CONSTAT
+   FDEA   0F               RRC
+   FDEB   D2E8FD           JNC     INCH            ;CHECK READ STATUS
+   FDEE   DB11             IN      CONDATA         ;READ CHARACTER
+   FDF0   E67F             ANI     177Q            ;STRIP PARITY BIT
+   FDF2   F5       OUTCHK: PUSH    PSW             ;SAVE CHARACTER
+   FDF3   81               ADD     C               ;ADD IN CHECKSUM
+   FDF4   4F               MOV     C,A             ;RESTORE CHECKSUM
+   FDF5   DB10     LOOP:   IN      CONSTAT
+   FDF7   0F               RRC
+   FDF8   0F               RRC
+   FDF9   D2F5FD           JNC     LOOP            ;GET READ STATUS
+   FDFC   F1               POP     PSW
+   FDFD   D311             OUT     CONDATA         ;PRINT USER TYPED CHARACTER
+   FDFF   C9               RET
+                    
+                           END
+ NO PROGRAM ERRORS
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      23:30  09/11/2008
++                                                                                      PAGE 5
+      
+
+
+                        SYMBOL TABLE
+
+  * 01
+
+  A      0007      AGN    FDAA      B      0000      C      0001      
+  CONDA  0011      CONST  0010      CONT   FD32      CONT1  FD33      
+  CRLF   FD96      D      0002      DAGN   FD8D      DCONT  FD5F      
+  DMP    FD54      DO20   FD6D      E      0003      ENTER  FD08      
+  ERR    FD4C      H      0004      INCH   FDE8      L      0005      
+  LOOP   FDF5      M      0006      MEM    FD2C      MON    FD00 *    
+  NEXT1  FDD6      NEXT3  FDD2      NXT3   FDD3      NXTME  FD7E      
+  OCTL   FDA7      OCTL3  FDA5      OCTL6  FDA0      OUTCH  FDF2      
+  PRT3   FDCC      PRT6   FDC6      PSW    0006      SP     0006      
+  SPACE  FDE3      STACK  FC00      
+

@@ -1,0 +1,2092 @@
+;
+;  Disassembly of Cromemco's RDOS 2.52 ROM for the 16FDC Disk Controller
+;      it normally resides at C000H to CFFFH
+;
+        ORG     0C000H
+;
+CR	EQU	0DH
+SPACE	EQU	20H
+BS	EQU	08H
+ESC	EQU	1BH
+squote	equ	27h
+msbon	EQU	80H
+;
+start:	DI
+	JR	cldst
+;
+C003:	JP	C030
+	JP	C504
+	JP	C037
+	JP	C03B
+	JP	CB9E
+	JP	CD37
+	JP	C4D4
+	JP	CD52
+	JP	C5AB
+	JP	seturt	; set up UART
+	JP	inchr	; input
+	JP	ckinst	; inp. status
+	JP	CBEA
+	JP	pt7ba	; output
+	JP	crlf
+;
+C030:	LD	(77H),A
+	LD	A,B
+	JP	C387
+;
+C037:	LD	(75H),A
+	RET
+;
+C03B:	LD	(76H),A
+	RET
+;
+cldst:	XOR	A	;inhibit 5501 interrupts
+	OUT	(3),A
+	LD	B,A
+	EXX
+	CPL		;turn off PerSci and voice
+	OUT	(4),A	;    coil options
+	LD	A,0D0H
+	OUT	(30H),A	;force interrupt on FDC
+	LD	HL,2EH
+	LD	SP,HL
+clp1:	DEC	H
+	JR	NZ,clp1
+clp2:	LD	(HL),H
+	INC	L
+	JR	NZ,clp2
+	INC	H
+	LD	(62H),HL
+	LD	(64H),HL
+	CALL	seturt
+	IN	A,(34H)	; sw 3 set for autoboot?
+	AND	40H
+	JP	NZ,gomon ; no
+getsw:	IN	A,(04H)	;read sense switches
+	CPL		;on = 1
+	AND	3	;bits 7 & 8 (unused??)
+boot:	LD	(77H),A
+	CALL	ptfol
+        DEFB    'Preparing to boot, ESC to abort'
+        DEFB    CR+msbon
+	CALL	setsel
+	LD	D,A
+	OUT	(34H),A
+	LD	B,64H
+esclp:	CALL	ckesc	; look for escape
+	LD	HL,64H
+	CALL	dela1
+	DJNZ	esclp
+	LD	(75H),A
+	LD	(7DH),A
+	LD	(78H),A
+	INC	A
+	LD	(76H),A
+	CALL	C1F7
+	LD	(7EH),A
+	LD	HL,80H
+	LD	(7BH),HL
+	LD	(79H),HL
+	LD	A,'B'
+	LD	(70H),A
+	LD	B,2
+C0C8:	PUSH	BC
+	CALL	CD37
+	CALL	NC,CDCB
+	CALL	NC,CD52
+	POP	BC
+	JR	NC,C0E8
+	CALL	ckesc	; look for escape
+	DJNZ	C0C8
+	CALL	ptfol
+	DEFB    CR,'Unable ','t'+msbon
+	JR	C115
+;
+C0E8:	LD	A,(80H)
+	CP	40H
+	JR	Z,C0F3
+	CP	0E5H
+	JR	NZ,C0FA
+C0F3:	CALL	ptfol
+        DEFB    CR,'N'+msbon
+    	JR      C115
+;
+C0FA:	CALL	ckesc	; look for escape
+	CALL	setsel
+	LD	D,A
+	LD	A,(77H)
+	EX	AF,AF'
+	CALL	ptfol
+	DEFB    CR,'Standby',CR+msbon
+	SCF
+	JP	80H
+;
+C115:	CALL	ptfol
+	DEFB    'o boot',CR+msbon
+	LD	A,(71H)
+	OR	A
+	CALL	NZ,C359
+	JR	C131
+;
+ckesc:	CALL	ckinst
+	CALL	NZ,inchr
+	CP	esc
+	RET	NZ
+C131:	LD	A,0D0H	;force FDC interrupt
+	OUT	(30H),A
+	LD	A,7CH	;select side 1
+	OUT	(4),A
+gomon:	CALL	ptfol
+	DEFB    CR,'Cromemco RDOS 02.52',CR+msbon
+C151:	XOR     A
+	LD	(6CH),A
+inlp:	LD	A,(7EH)
+	LD	B,A
+	CALL	C1E2
+	LD	SP,2EH
+	CALL	ptfol
+        DEFB    ';'+msbon
+	CALL	C7A3
+	CALL	loctok
+	AND	A
+	JR	Z,C151
+	CALL	C2C1
+	JR	Z,inlp
+	LD	A,B
+	CP	17H
+	JR	NC,inper
+	ADD	A,A
+	LD	HL,table
+	CALL	C186
+	LD	A,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,A
+	CALL	C1C7   ; go there
+	JR	inlp
+;
+C186:	ADD	A,L
+	LD	L,A
+	RET	NC
+	INC	H
+	RET
+;
+table:  DEFW	CCFD	; Align
+	DEFW	C1C8	; Boot
+	DEFW	inper	; ?
+	DEFW	C72B	; Display
+	DEFW	C62A	; Examine
+	DEFW	inper	; ?
+	DEFW	C1C4	; Go
+	DEFW	inper	; ?
+	DEFW	C245	; Init
+	DEFW	inper	; ?
+	DEFW	inper	; ?
+	DEFW	C439	; Logged disks
+	DEFW	C645	; Move
+	DEFW	inper	; ?
+	DEFW	C636	; Output
+	DEFW	inper	; ?
+	DEFW	C6C2	; Query
+	DEFW	C516	; Read disk
+	DEFW	C67A	; Set
+	DEFW	C941	; Test
+	DEFW	inper	; ?
+	DEFW	C652	; Verify
+	DEFW	C51A	; Write disk
+;
+C1B9:	XOR	A
+	LD	(6CH),A
+inper:	CALL	ptfol
+	DEFB    '?',CR+msbon
+	JR	inlp
+;
+C1C4:	CALL	C853
+C1C7:	JP	(HL)
+;
+C1C8:	CALL	loctok
+	OR	A
+	JP	Z,getsw
+	CP	'E'
+	JP	NC,C42A
+	SUB	'A'
+	JP	C,C42A
+	PUSH	AF
+	INC	DE
+	CALL	fndeol
+	POP	AF
+	JP	boot
+;
+C1E2:	LD	A,(6CH)
+	OR	A
+	RET	Z
+	CALL	pt7ba
+	BIT	3,B
+	RET	NZ
+	BIT	7,B
+	LD	A,';'
+	CALL	NZ,pt7ba
+	JP	pt7ba
+;
+C1F7:	LD	A,D
+	OUT	(34H),A
+	LD	A,0DFH
+	OUT	(4),A
+	LD	A,0D4H
+	OUT	(30H),A
+C202:	IN	A,(34H)
+	RRCA
+	JR	NC,C202
+	IN	A,(30H)
+	LD	BC,200H
+	CALL	C23B
+C20F:	LD	A,0D4H
+	OUT	(30H),A
+C213:	CALL	C234
+	JR	Z,C1F7
+	IN	A,(34H)
+	RRCA
+	JR	NC,C213
+	IN	A,(30H)
+	DJNZ	C20F
+	XOR	A
+	OUT	(3),A
+	LD	A,C
+	CP	'Z'
+	JR	NC,C22C
+	ADD	A,A
+	ADD	A,A
+	ADD	A,A
+C22C:	CP	0B7H
+	LD	A,80H
+	RET	NC
+	LD	A,4
+	RET
+;
+C234:	IN	A,(3)
+	CP	0C7H
+	RET	NZ
+	INC	C
+	RET	Z
+C23B:	LD	A,1
+	OUT	(3),A
+	LD	A,0FAH
+	OUT	(5),A
+	JR	C234
+;
+C245:	CALL	fndeol
+	CALL	crlf
+seturt:	IN	A,(4)	; aux. disk status
+	AND	8
+	JR	Z,C2AE	; baud rate preset
+C251:	LD	A,0AH
+	OUT	(2),A	; UART command register
+	LD	HL,7D0H
+	CALL	dela1
+	LD	A,8
+	OUT	(2),A
+	LD	D,64H
+C261:	DEC	D
+	JR	Z,C251
+C264:	LD	HL,0C2B9H
+	LD	C,0
+	LD	A,19H
+	LD	B,9
+C26D:	OUT	(2),A
+	OUTI
+	JR	Z,C261
+	CALL	C298
+	CALL	C298
+	JR	C,C264
+	CP	0DH
+	LD	A,9
+	JR	NZ,C26D
+C281:	LD	A,0DH
+	OUT	(1),A
+	LD	HL,0FA0H
+	CALL	dela1
+	CALL	ckinst
+	CALL	NZ,inchr
+	CP	0DH
+	JR	Z,C281
+	JP	crlf
+;
+C298:	PUSH	DE
+	LD	DE,8CA0H
+C29C:	CALL	ckinst
+	JR	Z,C2A6
+	CALL	inchr
+	JR	C2AC
+;
+C2A6:	DEC	DE
+	LD	A,D
+	OR	E
+	JR	NZ,C29C
+	SCF
+C2AC:	POP	DE
+	RET
+;
+C2AE:	LD	A,9
+	OUT	(2),A
+	LD	A,84H
+	OUT	(0),A
+	JP	crlf
+;
+C2B9:	DEFB	90H,0C0H,0A0H,90H
+	DEFB	88H,84H,82H,1
+;
+C2C1:	SUB	'A'
+	JP	C,inper
+	LD	B,A
+	INC	DE
+	LD	A,(DE)
+	CP	';'
+	RET	NZ
+	LD	A,B
+	CP	4
+	JP	NC,C42A
+	ADD	A,'A'
+	LD	(6CH),A
+	CALL	C3F6
+	INC	DE
+	LD	A,(DE)
+	CP	';'
+	LD	B,0CH
+	JR	NZ,C2ED
+	INC	DE
+	LD	A,(DE)
+	CP	';'
+	LD	B,4
+	JR	NZ,C2ED
+	LD	B,80H
+	INC	DE
+C2ED:	PUSH	BC
+	CALL	C3B7
+	POP	BC
+	LD	(HL),B
+	JR	NC,C2FB
+	LD	A,(6DH)
+	OR	B
+	LD	(HL),A
+	SCF
+C2FB:	PUSH	AF
+	CALL	C384
+	LD	(78H),A
+	LD	(7DH),A
+	INC	A
+	LD	(76H),A
+	CALL	C604
+	LD	A,'H'
+	LD	(70H),A
+	CALL	CD37
+	PUSH	AF
+	CALL	C61E
+	POP	AF
+	JP	C,C40D
+	POP	AF
+	JP	C,C3B5
+C320:	CALL	C604
+	LD	HL,100H
+	LD	(7BH),HL
+	CALL	CDCB
+	CALL	CD52
+	PUSH	AF
+	CALL	C61E
+	POP	AF
+	JR	NC,C363
+	LD	A,(71H)
+	OR	A
+	JP	P,C345
+	LD	HL,64H
+	CALL	dela1
+	JR	C320
+;
+C345:	CALL	ptfol
+	DEFB    'Can',squote
+	DEFB	't read Label',CR+msbon
+C359:	LD	E,1
+	CALL	C5F2
+	CALL	C413
+	XOR	A
+	RET
+;
+C363:	LD	BC,10H
+	LD	DE,17AH
+	CALL	C3EE
+	LD	C,1
+	CALL	C3EE
+	LD	A,(178H)
+	CP	'C'
+	JR	NZ,C37A
+	SET	1,B
+C37A:	LD	A,(7EH)
+	AND	0CCH
+	OR	B
+	LD	HL,(6AH)
+	LD	(HL),A
+C384:	CALL	C3F6
+C387:	LD	(7EH),A
+	BIT	0,A
+	LD	DE,100AH
+	LD	HL,200H
+	JR	NZ,C3A1
+	BIT	1,A
+	LD	DE,805H
+	JR	NZ,C3A1
+C39B:	LD	DE,1A12H
+	LD	HL,80H
+C3A1:	LD	(79H),HL
+	BIT	7,A
+	LD	A,'L'
+	LD	B,D
+	JR	Z,C3AE
+	LD	A,squote
+	LD	B,E
+C3AE:	LD	(6FH),A
+	LD	A,B
+	LD	(6EH),A
+C3B5:	XOR	A
+	RET
+;
+C3B7:	CALL	loctok
+	OR	A
+	RET	Z
+	LD	BC,10H
+	CALL	C3DE
+	LD	C,1
+	CALL	C3DE
+	CALL	loctok
+	CP	'C'
+	JR	NZ,C3D4
+	SET	1,B
+	INC	DE
+	CALL	loctok
+C3D4:	OR	A
+	JP	NZ,C1B9
+	LD	A,B
+	LD	(6DH),A
+	SCF
+	RET
+;
+C3DE:	CALL	loctok
+	INC	DE
+	CP	'S'
+	RET	Z
+	CP	'D'
+	JP	NZ,C1B9
+C3EA:	LD	A,B
+	OR	C
+	LD	B,A
+	RET
+;
+C3EE:	LD	A,(DE)
+	INC	DE
+	INC	DE
+	CP	'D'
+	RET	NZ
+	JR	C3EA
+;
+C3F6:	LD	A,(6CH)
+	SUB	'A'
+	LD	(77H),A
+	LD	HL,66H
+	CALL	C186
+	LD	(6AH),HL
+	LD	A,(HL)
+	OR	A
+	RET
+;
+C40A:	CALL	C5F2
+C40D:	CALL	C413
+	JP	inlp
+;
+C413:	CALL	ptfol
+	DEFB    ' Err','-'+msbon
+	LD	A,(70H)
+	CALL	pt7ba
+	LD	A,(71H)
+	CALL	pspa
+	JP	crlf
+;
+C42A:	CALL	ptfol
+	DEFB    'A-D only',CR+msbon
+	JP	inlp
+;
+C439:	CALL	fndeol
+	LD	A,(77H)
+	PUSH	AF
+	LD	A,(6CH)
+	PUSH	AF
+	LD	A,'A'
+C446:	PUSH	AF
+	LD	(6CH),A
+	CALL	C3F6
+	LD	HL,(6AH)
+	LD	B,(HL)
+	CALL	NZ,C463
+	POP	AF
+	INC	A
+	CP	'E'
+	JR	C,C446
+	POP	AF
+	LD	(6CH),A
+	POP	AF
+	LD	(77H),A
+	RET
+;
+C463:	CALL	ptfol
+	DEFB	' ',SPACE+msbon
+	CALL	C1E2
+	CALL	ptfol
+	DEFB	';',SPACE+msbon
+	BIT	3,B
+	CALL	NZ,ptspc
+	BIT	7,B
+	CALL	Z,ptspc
+	BIT	4,B
+	CALL	C498
+	CALL	ptspc
+	BIT	0,B
+	CALL	C498
+	BIT	1,B
+	JR	Z,C495
+	CALL	ptfol
+	DEFB	' Cromi','x'+msbon
+C495:	JP	crlf
+;
+C498:	LD	A,'D'
+	JR	NZ,C49E
+	LD	A,'S'
+C49E:	JP	pt7ba
+C4A1:	LD	B,A
+	LD	A,(6CH)
+	OR	A
+	JP	Z,inper
+	LD	A,B
+	CP	'S'
+	JR	Z,C4DA
+	CALL	C8B0
+C4B1:	JP	C,inper
+	PUSH	HL
+	CALL	C4E1
+	LD	A,'S'
+	LD	(70H),A
+	POP	HL
+	XOR	A
+	OR	H
+	JP	NZ,inper
+	LD	A,(6FH)
+	CP	L
+	JR	C,C4B1
+	LD	A,L
+	LD	(75H),A
+	CALL	C4D4
+	RET	NC
+	JP	C40D
+;
+C4D4:	CALL	C5F8
+	JP	CDCB
+;
+C4DA:	INC	DE
+	CALL	C4E1
+	JP	CDCB
+;
+C4E1:	LD	A,(75H)
+	LD	(7DH),A
+	CALL	C8AD
+	RET	C
+	XOR	A
+	OR	H
+C4ED:	JP	NZ,inper
+	LD	A,L
+	OR	A
+	JR	NZ,C4F8
+	LD	(78H),A
+	RET
+;
+C4F8:	DEC	A
+	JR	NZ,C4ED
+	CALL	C3F6
+	BIT	4,A
+	JR	Z,C508
+	LD	A,1
+C504:	LD	(78H),A
+	RET
+;
+C508:	CALL	ptfol
+	DEFB	'S.Sided',CR+msbon
+	JP	inlp
+;
+C516:	LD	B,'R'
+	JR	C51C
+;
+C51A:	LD	B,'W'
+C51C:	LD	A,(DE)
+	CP	'D'
+	JP	NZ,inper
+	LD	A,B
+	LD	(70H),A
+	CALL	C5BB
+	PUSH	HL
+	POP	IY
+	LD	H,B
+	LD	L,C
+C52E:	PUSH	DE
+	PUSH	HL
+	LD	A,E
+	LD	(76H),A
+	LD	(7BH),IY
+	CALL	C4D4
+	LD	A,(70H)
+	CP	'W'
+	SCF
+	CCF
+	CALL	Z,C5AB
+	JR	C,C54F
+	LD	A,(70H)
+	CP	'R'
+	CALL	Z,CD52
+C54F:	POP	HL
+	POP	DE
+	JP	C,C40A
+	LD	BC,(79H)
+	ADD	IY,BC
+	INC	BC
+	SBC	HL,BC
+	INC	HL
+	JP	C,C5F2
+	INC	E
+	LD	A,(6EH)
+	CP	E
+	JR	NC,C52E
+	LD	A,(75H)
+	LD	(7DH),A
+	INC	A
+	LD	B,A
+	LD	A,(6FH)
+	CP	B
+	JR	C,C57E
+	LD	A,B
+	LD	(75H),A
+	LD	E,1
+	JR	C52E
+;
+C57E:	DEC	E
+	CALL	C5F2
+	CALL	ptfol
+	DEFB	'Next memory:',SPACE+msbon
+	PUSH	IY
+	POP	HL
+	CALL	hxphl
+	CALL	ptfol
+	DEFB	CR,'End of Disk',CR+msbon
+	JP	inlp
+;
+C5AB:	LD	HL,7EH
+	LD	B,(HL)
+	PUSH	BC
+	SET	1,(HL)
+	CALL	CD5F
+	POP	BC
+	LD	A,B
+	LD	(7EH),A
+	RET
+;
+C5BB:	LD	A,(6CH)
+	OR	A
+	JP	Z,inper
+	INC	DE
+	CALL	C82F
+	XOR	A
+	OR	D
+C5C8:	JP	NZ,inper
+	OR	E
+	JP	Z,inper
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	CALL	C5F8
+	POP	HL
+	POP	DE
+	POP	BC
+	LD	A,(6EH)
+	CP	E
+	JR	C,C5C8
+C5DE:	IN	A,(31H)
+	LD	D,A
+	EX	DE,HL
+	CALL	ptspc
+	CALL	hxphl
+	EX	DE,HL
+	CALL	ptspc
+	LD	A,(78H)
+	JP	ptchr
+;
+C5F2:	CALL	C5DE
+	JP	crlf
+;
+C5F8:	LD	A,(75H)
+	OR	A
+	JR	NZ,C61E
+	LD	A,(78H)
+	OR	A
+	JR	NZ,C61E
+C604:	LD	A,(7EH)
+	BIT	5,A
+	RET	NZ
+	BIT	1,A
+	JR	NZ,C611
+	BIT	0,A
+	RET	Z
+C611:	LD	(7FH),A
+	SET	5,A
+	RES	0,A
+	LD	(7EH),A
+	JP	C39B
+;
+C61E:	LD	A,(7EH)
+	BIT	5,A
+	RET	Z
+	LD	A,(7FH)
+	JP	C387
+;
+C62A:	CALL	C853
+	LD	C,L
+	IN	A,(C)
+	CALL	hxpa
+	JP	crlf
+;
+C636:	CALL	C8AD
+	PUSH	HL
+	CALL	rmcom
+	CALL	C853
+	POP	DE
+	LD	C,L
+	OUT	(C),E
+	RET
+;
+C645:	CALL	C82F
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	LDIR
+	POP	HL
+	POP	DE
+	POP	BC
+	JR	C655
+;
+C652:	CALL	C82F
+C655:	LD	A,(DE)
+	CP	(HL)
+	JR	Z,C672
+	CALL	hxphl
+	LD	A,(HL)
+	CALL	pspa
+	CALL	ptspc
+	LD	A,(DE)
+	CALL	pspa
+	CALL	ptspc
+	EX	DE,HL
+	CALL	hxphl
+	EX	DE,HL
+	CALL	crlf
+C672:	INC	DE
+	INC	HL
+	DEC	BC
+	LD	A,B
+	OR	C
+	JR	NZ,C655
+	RET
+;
+C67A:	CALL	loctok
+	CP	'M'
+	JP	NZ,C4A1
+	INC	DE
+	LD	HL,(64H)
+	CALL	C85B
+C689:	CALL	hxphl
+	LD	A,(HL)
+	CALL	pspa
+	CALL	ptspc
+	CALL	C7A3
+	CALL	loctok
+	CP	'.'
+	RET	Z
+	CP	'-'
+	JR	NZ,C6A3
+	DEC	HL
+	JR	C6BD
+;
+C6A3:	CALL	C6F1
+	JR	NC,C6AF
+	CALL	ptfol
+	DEFB	'?',CR+msbon
+	JR	C689
+;
+C6AF:	XOR	A
+	ADD	A,B
+	JR	NZ,C6B6
+	INC	HL
+	JR	C6BD
+;
+C6B6:	LD	C,B
+	LD	B,0
+	EX	DE,HL
+	LDIR
+	EX	DE,HL
+C6BD:	LD	(64H),HL
+	JR	C689
+;
+C6C2:	CALL	C865
+	PUSH	BC
+	CALL	C6F1
+	POP	DE
+	JP	C,inper
+	XOR	A
+	ADD	A,B
+	JP	Z,inper
+C6D2:	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	LD	DE,2EH
+C6D8:	LD	A,(DE)
+	CP	(HL)
+	JR	NZ,C6E0
+	INC	DE
+	INC	HL
+	DJNZ	C6D8
+C6E0:	POP	HL
+	PUSH	HL
+	LD	B,10H
+	CALL	Z,C760
+	POP	HL
+	POP	DE
+	POP	BC
+	INC	HL
+	DEC	DE
+	LD	A,D
+	OR	E
+	JR	NZ,C6D2
+	RET
+;
+C6F1:	PUSH	HL
+	LD	B,0
+	LD	HL,2EH
+C6F7:	CALL	loctok
+	OR	A
+	JR	Z,C726
+	CP	','
+	INC	DE
+	JR	Z,C6F7
+	LD	C,A
+	CP	squote
+	JR	Z,C719
+	CP	'"'
+	JR	Z,C719
+	DEC	DE
+	PUSH	HL
+	CALL	C8AD
+	LD	A,L
+	POP	HL
+	JR	C,C726
+	LD	(HL),A
+	INC	HL
+	INC	B
+	JR	C6F7
+C719:	LD	A,(DE)
+	INC	DE
+	OR	A
+	JR	Z,C726
+	CP	C
+	JR	Z,C6F7
+	LD	(HL),A
+	INC	HL
+	INC	B
+	JR	C719
+;
+C726:	LD	DE,2EH
+	POP	HL
+	RET
+;
+C72B:	CALL	loctok
+	CP	'M'
+	JR	NZ,C733
+	INC	DE
+C733:	LD	BC,80H
+	LD	HL,(62H)
+	CALL	C84E
+C73C:	LD	E,10H
+	XOR	A
+	OR	B
+	JR	NZ,C74C
+	LD	A,0FH
+	CP	C
+	JR	C,C74C
+	XOR	A
+	OR	C
+	JR	Z,C74C
+	LD	E,C
+C74C:	PUSH	BC
+	LD	B,E
+	CALL	C760
+	LD	(62H),HL
+	POP	BC
+	LD	A,C
+	SUB	E
+	LD	C,A
+	JR	NC,C75B
+	DEC	B
+C75B:	LD	A,B
+	OR	C
+	JR	NZ,C73C
+	RET
+;
+C760:	CALL	hxphl
+	PUSH	BC
+	PUSH	HL
+	PUSH	DE
+	LD	C,0
+	LD	E,4
+C76A:	LD	A,3
+	AND	C
+	CALL	Z,C7A0
+	CALL	C7A0
+	LD	A,(HL)
+	CALL	hxpa
+	INC	E
+	INC	E
+	INC	HL
+	INC	C
+	DJNZ	C76A
+C77D:	CALL	C7A0
+	LD	A,':'
+	CP	E
+	JR	NZ,C77D
+	POP	DE
+	POP	HL
+	POP	BC
+C788:	LD	A,(HL)
+	INC	HL
+	CALL	C792
+	DJNZ	C788
+	JP	crlf
+;
+C792:	AND	7FH
+	CP	7FH
+	JR	Z,C79C
+	CP	' '
+	JR	NC,pt7ba
+C79C:	LD	A,'.'
+	JR	pt7ba
+C7A0:	INC	E
+	JR	ptspc
+C7A3:	LD	A,'1'
+	LD	DE,2EH
+	LD	(DE),A
+	PUSH	DE
+	CALL	CBEA
+	EX	(SP),HL
+	INC	HL
+	LD	B,(HL)
+	INC	B
+	INC	HL
+	PUSH	HL
+C7B3:	DEC	B
+	JR	Z,C7CD
+	LD	A,(HL)
+	CALL	lc2uc
+	LD	(HL),A
+	INC	HL
+	CP	'"'
+	JR	Z,C7C4
+	CP	squote
+	JR	NZ,C7B3
+C7C4:	DEC	B
+	JR	Z,C7CD
+	CP	(HL)
+	INC	HL
+	JR	NZ,C7C4
+	JR	C7B3
+;
+C7CD:	LD	(HL),0
+	POP	DE
+	POP	HL
+	RET
+;
+lc2uc:	CP	'a'	;switch low. case to u.c.
+	RET	C
+	CP	'z'+1
+	RET	NC
+	SUB	' '
+	RET
+;
+pspa:	PUSH	AF	;print space, c(A)
+	CALL	ptspc
+	POP	AF
+	JR	hxpa
+;
+hxphl:	LD	A,H	;hex print c(HL)
+	CALL	hxpa
+	LD	A,L
+hxpa:	PUSH	AF	;hex print c(A)
+	RRA
+	RRA
+	RRA
+	RRA
+	CALL	ptchr
+	POP	AF
+ptchr:	AND	0FH
+	CP	0AH
+	JR	C,ptnum
+	ADD	A,7
+ptnum:	ADD	A,'0'
+	JR	pt7ba
+
+ptspc:	LD	A,' '
+pt7ba:	PUSH	AF	; print 7-bit char.
+	AND	7FH
+	CALL	CC99
+	POP	AF
+	RET
+;
+ptfol:	EX	(SP),HL	; print string
+ptchl:	LD	A,(HL)
+	INC	HL
+	OR	A
+	JR	Z,endpts
+	CALL	pt7ba
+	JP	P,ptchl
+endpts:	EX	(SP),HL
+	RET
+;
+loctok:	LD	A,(DE)	; locate next non-blank (DE)
+	CP	' '
+	RET	NZ
+	INC	DE
+	JR	loctok
+;
+rmcom:	CALL	loctok	; remove comma & spaces (DE)
+	CP	','
+	RET	NZ
+	INC	DE
+	CALL	loctok
+	XOR	A
+	RET
+;
+fndeol:	CALL	loctok
+	OR	A
+	RET	Z
+	JP	inper
+;
+C82F:	LD	HL,80H
+	LD	B,H
+	LD	C,L
+	CALL	C868
+	PUSH	HL
+	PUSH	BC
+	CALL	rmcom
+	CALL	C8AD
+	JP	C,inper
+	CALL	fndeol
+	EX	DE,HL
+	POP	BC
+	POP	HL
+	RET
+;
+	CALL	C865
+	JR	fndeol
+;
+C84E:	CALL	C868
+	JR	fndeol
+;
+C853:	CALL	C8AD
+	JP	C,inper
+	JR	fndeol
+;
+C85B:	PUSH	HL
+	CALL	C8AD
+	JR	C,C862
+	EX	(SP),HL
+C862:	POP	HL
+	JR	fndeol
+;
+C865:	SCF
+	JR	C869
+C868:	OR	A
+C869:	EX	AF,AF'
+	PUSH	BC
+	PUSH	HL
+	CALL	C8AD
+	JR	NC,C879
+	EX	AF,AF'
+	JP	C,inper
+	EX	AF,AF'
+	POP	HL
+	JR	C87A
+;
+C879:	POP	AF
+C87A:	CALL	C887
+	JR	NC,C885
+	EX	AF,AF'
+	POP	BC
+	RET	NC
+	JP	inper
+;
+C885:	POP	AF
+	RET
+;
+C887:	CALL	rmcom
+	LD	A,(DE)
+	CP	'S'
+	JR	NZ,C890
+	INC	DE
+C890:	PUSH	HL
+	PUSH	AF
+	CALL	C8AD
+	JR	C,C8A6
+	LD	B,H
+	LD	C,L
+	POP	AF
+	POP	HL
+	JR	Z,C8A4
+	LD	A,C
+	SUB	L
+	LD	C,A
+	LD	A,B
+	SBC	A,H
+	LD	B,A
+	INC	BC
+C8A4:	OR	A
+	RET
+;
+C8A6:	POP	AF
+	POP	HL
+	JP	Z,inper
+	SCF
+	RET
+;
+C8AD:	CALL	loctok
+C8B0:	CALL	C8E0
+	RET	C
+	PUSH	DE
+C8B5:	INC	DE
+	CALL	C8E0
+	JR	NC,C8B5
+	POP	DE
+	CP	'.'
+	JR	Z,C8C5
+	CALL	C8CA
+	AND	A
+	RET
+;
+C8C5:	CALL	C8F4
+	AND	A
+	RET
+;
+C8CA:	LD	HL,0
+C8CD:	CALL	C8E0
+	JR	C,C8DB
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	A,L
+	LD	L,A
+	INC	DE
+	JR	C8CD
+C8DB:	CP	'H'
+	RET	NZ
+	INC	DE
+	RET
+;
+C8E0:	LD	A,(DE)
+	CP	'0'
+	RET	C
+	CP	':'
+	JR	C,C8F1
+	CP	'A'
+	RET	C
+	CP	'G'
+	CCF
+	RET	C
+	SUB	7
+C8F1:	SUB	'0'
+	RET
+;
+C8F4:	LD	HL,0
+C8F7:	CALL	C910
+	INC	DE
+	JR	C,C90A
+	PUSH	BC
+	ADD	HL,HL
+	LD	B,H
+	LD	C,L
+	ADD	HL,HL
+	ADD	HL,HL
+	ADD	HL,BC
+	POP	BC
+	CALL	C186
+	JR	C8F7
+;
+C90A:	CP	'.'
+	RET	Z
+	JP	inper
+C910:	LD	A,(DE)
+	CP	'0'
+	RET	C
+	CP	':'
+	CCF
+	RET	C
+	SUB	'0'
+	RET
+;
+C91B:	LD	BC,18H
+	LD	DE,100H
+	LD	HL,0C929H
+	LDIR
+	JP	0100H
+;
+C929:	LD	BC,1000H
+	LD	DE,1000H
+	LD	HL,start
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	LDIR
+	LD	A,1
+	OUT	(40H),A
+	POP	DE
+	POP	HL
+	POP	BC
+	LDIR
+	RET
+;
+C941:	CALL	loctok	; "T"est
+	CP	'Z'
+	PUSH	AF
+	JR	NZ,C94A
+	INC	DE
+C94A:	CALL	fndeol
+	POP	AF
+	CALL	NZ,C91B
+	CALL	ptfol
+	DEFB	CR,'Memory',':'+msbon
+	LD	BC,1000H
+C95F:	CALL	ptspc
+	LD	A,C
+	CALL	ptchr
+	INC	C
+	DJNZ	C95F
+	CALL	crlf
+	LD	B,7
+C96E:	CALL	ptspc
+	DJNZ	C96E
+	LD	H,B
+	LD	L,B
+C975:	CALL	ptspc
+	PUSH	HL
+	LD	DE,1000H
+C97C:	LD	A,H
+	CP	0C9H
+	JR	NZ,C98A
+	LD	A,L
+	CP	8DH
+	JR	C,C98A
+	CP	9CH
+	JR	C,C99C
+C98A:	LD	B,(HL)
+	LD	A,'U'
+	LD	(HL),A
+	CP	(HL)
+	JR	NZ,C996
+	CPL
+	LD	(HL),A
+	CP	(HL)
+	JR	Z,C99B
+C996:	LD	(HL),B
+	LD	A,'X'
+	JR	C9A4
+;
+C99B:	LD	(HL),B
+C99C:	INC	HL
+	DEC	DE
+	LD	A,D
+	OR	E
+	JR	NZ,C97C
+	LD	A,'^'
+C9A4:	CALL	pt7ba
+	POP	HL
+	LD	A,10H
+	ADD	A,H
+	LD	H,A
+	JR	NZ,C975
+	CALL	ptfol
+	DEFB	CR,'Specify disk (eg, A; or A;; or A;;;)',SPACE+msbon
+	CALL	C7A3
+	CALL	loctok
+	OR	A
+	JP	Z,crlf
+	CALL	C2C1
+	JP	NZ,C1B9
+	CALL	ptfol
+	DEFB	'Seek tests:',CR+msbon
+	LD	B,15H
+	LD	HL,sektab
+seklp:	IN	A,(31H)
+	LD	(7DH),A
+	LD	A,(HL)
+	PUSH	BC
+	PUSH	HL
+	CP	0FFH
+	JR	NZ,CA35
+	CALL	ptfol
+	DEFB	SPACE,'Restore',':'+msbon
+	CALL	C604
+	CALL	CD37
+	EX	AF,AF'
+	CALL	C61E
+	EX	AF,AF'
+	JR	CA4C
+;
+; seek test targets
+;
+sektab:	DEFB	1,2,3,4,5,0feh
+	DEFB	6,7,8,9,0,0feh
+	DEFB	27h,0,15h,0,1,0feh
+	DEFB	0ffh,0feh
+	DEFB	27h
+;
+CA35:	CP	0FEH
+	JR	NZ,CA3F
+	CALL	crlf
+	OR	A
+	JR	CA51
+;
+CA3F:	LD	(75H),A
+	CALL	pspa
+	CALL	ptfol
+	DEFB	':'+msbon
+	CALL	C4D4
+CA4C:	PUSH	AF
+	CALL	ckcry
+	POP	AF
+CA51:	POP	HL
+	POP	BC
+	JP	C,crlf
+	INC	HL
+	DJNZ	seklp
+	CALL	ptfol
+	DEFB	CR,'Read/Write tests',CR+msbon
+	CALL	CB94
+	CALL	CBB0
+	JP	C,crlf
+	CALL	ptfol
+	DEFB	'Write test MAY DESTROY data'
+	DEFB	CR,'ESC=abort RETURN=proceed',SPACE+msbon
+	CALL	C7A3
+	LD	HL,900H
+	CALL	setpat
+	LD	BC,200H
+CABB:	LD	(HL),L
+	INC	HL
+	DEC	BC
+	LD	A,B
+	OR	C
+	JR	NZ,CABB
+	CALL	CBC1
+	JR	NC,CB35
+CAC7:	CALL	ptfol
+	DEFB	'Test failed!',CR
+	DEFB    'Disk data a','t'+msbon
+	LD	E,1
+	CALL	C5DE
+	CALL	ptfol
+	DEFB	' may have been destroyed'
+	DEFB	CR,'Original is located at 0D00','s'+msbon
+	LD	HL,(79H)
+	CALL	hxphl
+	CALL	ptfol
+	DEFB	' in memory',CR+msbon
+	RET
+;
+CB35:	LD	HL,0B00H
+	CALL	setpat
+	CALL	CBB0
+	JR	C,CAC7
+	CALL	ptfol
+	DEFB	'Pattern compare',SPACE+msbon
+	LD	BC,(79H)
+	LD	DE,900H
+	LD	HL,0B00H
+CB5D:	LD	A,(DE)
+	CP	(HL)
+	JR	NZ,CB6A
+	INC	DE
+	INC	HL
+	DEC	BC
+	LD	A,B
+	OR	C
+	JR	NZ,CB5D
+	JR	CB6B
+;
+CB6A:	SCF
+CB6B:	CALL	CBD1
+	CALL	CB94
+	CALL	CBC1
+	JP	C,CAC7
+	JP	crlf
+;
+ckcry:	JR	C,ng
+	CALL	ptfol
+	DEFB	'O','K'+msbon
+	RET
+;
+ng:	CALL	ptfol
+	DEFB	'error',SPACE+msbon
+	LD	A,(71H)
+	CALL	hxpa
+	JP	crlf
+;
+CB94:	CALL	ptfol
+	DEFB	'Dat','a'+msbon
+	LD	HL,0D00H
+CB9E:	LD	(7BH),HL
+	RET
+;
+setpat:	LD	(7BH),HL
+	CALL	ptfol
+	DEFB	'Patter','n'+msbon
+	RET
+;
+CBB0:	CALL	CBDA
+	CALL	ptfol
+	DEFB	' read',SPACE+msbon
+	CALL	CD52
+	JR	CBD1
+;
+CBC1:	CALL	CBDA
+	CALL	ptfol
+	DEFB	' write',SPACE+msbon
+	CALL	C5AB
+CBD1:	PUSH	AF
+	CALL	ckcry
+	CALL	crlf
+	POP	AF
+	RET
+;
+CBDA:	LD	A,squote
+	LD	(75H),A
+	LD	(7DH),A
+	LD	A,1
+	LD	(76H),A
+	JP	CDCB
+CBEA:	PUSH	BC
+	PUSH	HL
+CBEC:	LD	B,0
+	LD	HL,2
+	ADD	HL,DE
+CBF2:	CALL	CC64
+	CP	10H
+	CALL	Z,CCBB
+	JR	Z,CBF2
+	CP	esc
+	JP	Z,CC8E
+	CP	8
+	JR	Z,CC09
+	CP	7FH
+	JR	NZ,CC1A
+CC09:	XOR	A
+	OR	B
+	JR	Z,CBF2
+	DEC	HL
+	DEC	B
+	CALL	CC4B
+	LD	A,(HL)
+	CP	' '
+	CALL	C,CC4B
+	JR	CBF2
+;
+CC1A:	CP	0DH
+	CALL	Z,CC45
+	JR	Z,CC3C
+	CP	15H
+	JR	NZ,CC2D
+	CALL	CC45
+	CALL	crlf
+	JR	CBEC
+CC2D:	LD	C,A
+	LD	A,(DE)
+	DEC	A
+	CP	B
+	JR	Z,CBF2
+	LD	A,C
+	CALL	CC45
+	LD	(HL),A
+	INC	HL
+	INC	B
+	JR	CBF2
+CC3C:	LD	(HL),0
+	LD	A,B
+	INC	DE
+	LD	(DE),A
+	DEC	DE
+	POP	HL
+	POP	BC
+	RET
+;
+CC45:	PUSH	AF
+	CALL	CC52
+	POP	AF
+	RET
+;
+CC4B:	CALL	ptfol
+	DEFB	BS,' ',BS+msbon
+	RET
+;
+CC52:	CP	' '
+	JR	NC,CC99
+	CP	0DH
+	JR	Z,CC99
+	PUSH	AF
+	CALL	ptfol
+	DEFB	'^'+msbon
+	POP	AF
+	ADD	A,'@'
+	JR	CC99
+;
+CC64:	CALL	CD23
+	CALL	ckinst
+	JR	Z,CC64
+inchr:	CALL	ckinst
+	JR	Z,inchr
+	IN	A,(1)
+	AND	7FH
+	RET
+;
+ckinst:	IN	A,(0)
+	AND	'@'
+	RET
+;
+CC7B:	CALL	ckinst
+	RET	Z
+	CALL	inchr
+	CP	13H
+	CALL	Z,inchr
+	CP	0DH
+	JR	Z,CC8E
+	CP	ESC
+	RET	NZ
+CC8E:	LD	SP,2EH
+	CALL	crlf
+	JP	inlp
+;
+crlf:	LD	A,0DH
+CC99:	PUSH	AF
+	EXX
+	BIT	7,B
+	EXX
+	CALL	NZ,CCCB
+	CALL	CD23
+CCA4:	IN	A,(0)	;check cons. status
+	AND	80H
+	JR	Z,CCA4
+	POP	AF
+	OUT	(1),A	;print to cons.
+	CP	0DH
+	RET	NZ
+	LD	A,0AH
+	CALL	CC99
+	CALL	CC7B
+	CP	10H
+	RET	NZ
+CCBB:	PUSH	AF
+	EXX
+	LD	A,80H
+	XOR	B
+	LD	B,A
+	BIT	7,B
+	EXX
+	CALL	NZ,CCC9
+	POP	AF
+	RET
+;
+CCC9:	LD	A,11H
+CCCB:	PUSH	AF
+	PUSH	HL
+	LD	HL,8
+	CALL	dela1
+	POP	HL
+	POP	AF
+	PUSH	AF
+	CP	11H
+	JR	Z,CCED
+CCDA:	CALL	CC7B
+	CP	10H
+	JR	NZ,CCE6
+	CALL	CCBB
+	POP	AF
+	RET
+;
+CCE6:	IN	A,(54H)
+	CPL
+	AND	' '
+	JR	Z,CCDA
+CCED:	POP	AF
+	SET	7,A
+	OUT	(54H),A
+	RES	7,A
+	OUT	(54H),A
+	SET	7,A
+	OUT	(54H),A
+	RES	7,A
+	RET
+;
+CCFD:	CALL	loctok
+	CP	'O'
+	JP	NZ,inper
+	INC	DE
+	LD	A,(DE)
+	CP	'N'
+	JR	Z,CD19
+	CP	'F'
+	JP	NZ,inper
+	EXX
+	RES	5,B
+	EXX
+	LD	A,0FFH
+	OUT	(4),A
+	RET
+;
+CD19:	EXX
+	SET	5,B
+	EXX
+	LD	A,1
+	LD	(72H),A
+	RET
+;
+CD23:	EXX
+	BIT	5,B
+	EXX
+	RET	Z
+	PUSH	BC
+	CALL	setsel
+	POP	BC
+	OUT	(34H),A
+	CALL	CFD6
+	XOR	0A0H
+	OUT	(4),A
+	RET
+;
+CD37:	LD	D,2
+CD39:	PUSH	DE
+	CALL	CD70
+	POP	DE
+	RET	NC
+	PUSH	DE
+	LD	A,0AH
+	LD	(75H),A
+	CALL	CDCB
+	CALL	CD70
+	POP	DE
+	RET	NC
+	DEC	D
+	JR	NZ,CD39
+	JR	CD6A
+;
+CD52:	LD	D,0AH
+CD54:	PUSH	DE
+	CALL	CE58
+	POP	DE
+	RET	NC
+	DEC	D
+	JR	NZ,CD54
+	JR	CD6A
+;
+CD5F:	LD	D,4
+CD61:	PUSH	DE
+	CALL	CE9F
+	POP	DE
+	RET	NC
+	DEC	D
+	JR	NZ,CD61
+CD6A:	LD	A,(71H)
+	LD	C,A
+	SCF
+	RET
+;
+CD70:	SUB	A	; restore for
+	LD	(75H),A	; seek tests
+	LD	(78H),A
+	CALL	CF55
+	OUT	(34H),A
+	CALL	CE25
+	JR	C,CD8F
+	OUT	(30H),A
+CD83:	IN	A,(34H)
+	BIT	2,A	; motor timeout
+	JR	NZ,CDC4
+	RRA		; EOJ?
+	JR	NC,CD83	; no
+	JP	CE3E	; yes
+;
+CD8F:	LD	A,0C4H	; read address
+	OUT	(30H),A
+	CALL	CFD6	; side select
+	AND	'W'
+	OUT	(4),A
+	CALL	dela	; delay??
+CD9D:	IN	A,(4)
+	AND	'@'	; seek in progress?
+	JR	NZ,CDB9
+	CALL	CFCF
+CDA6:	IN	A,(34H)
+	BIT	2,A
+	JR	NZ,CDC4
+	RRA
+	JR	NC,CDA6
+	LD	A,0D0H	; force interrupt
+	OUT	(30H),A
+	SUB	A
+	OUT	(31H),A	; track reg.
+	JP	CE50
+;
+CDB9:	IN	A,(34H)
+	BIT	2,A
+	JR	NZ,CDC4
+	RRA
+	JR	NC,CD9D
+	JR	CD8F
+;
+CDC4:	LD	A,80H
+	LD	(71H),A
+	SCF
+	RET
+;
+CDCB:	SUB	A	; seek?
+	CALL	CF55
+	OUT	(34H),A
+	LD	A,(75H)
+	OUT	(33H),A
+	LD	C,A
+	LD	A,(76H)
+	OUT	(32H),A
+	LD	A,(7DH)
+	OUT	(31H),A
+	SUB	C
+	JP	Z,CFCF
+	CALL	CE25
+	JR	C,CDF9
+	OR	10H
+	OUT	(30H),A
+CDEE:	IN	A,(34H)
+	BIT	2,A
+	JR	NZ,CDC4
+	RRA
+	JR	NC,CDEE
+	JR	CE3E
+;
+CDF9:	CALL	CFD6	;side???
+	AND	'O'	;4fh?
+	OUT	(4),A
+	LD	A,18H	;FDC seek command
+	OUT	(30H),A
+CE04:	IN	A,(34H)
+	BIT	2,A	;motor timeout?
+	JR	NZ,CDC4
+	RRA
+	JR	NC,CE04
+	IN	A,(30H)	;read disk status
+	LD	L,'2'
+CE11:	IN	A,(4)	;read aux disk status
+	AND	40h	;seek in progress? PerSci only
+	JR	NZ,CE11
+	DEC	L
+	JR	NZ,CE11
+CE1A:	IN	A,(4)
+	AND	40h
+	JR	NZ,CE1A
+	CALL	CFCF
+	JR	CE50
+;
+CE25:	LD	A,(7EH)
+	BIT	2,A
+	JR	NZ,CE36
+	BIT	3,A
+	LD	A,0EH
+	JR	Z,CE34
+	LD	A,0CH
+CE34:	AND	A
+	RET
+;
+CE36:	BIT	3,A
+	LD	A,0FH
+	JR	Z,CE34
+	SCF
+	RET
+;
+CE3E:	CALL	CFCF
+	LD	HL,64H
+	CALL	dela1
+	IN	A,(30H)
+	LD	(71H),A
+	AND	98H
+	SCF
+	RET	NZ
+CE50:	LD	A,(75H)
+	LD	(7DH),A
+	AND	A
+	RET
+;
+CE58:	CALL	CE8F	; READ
+	OUT	(30H),A
+CE5D:	IN	A,(34H)	; disk flags
+	RRA
+	JR	C,CE78	; finished
+	INI
+	INC	B
+	IN	A,(34H)	; disk flags
+	RRA
+	JR	C,CE78	; finished
+	INI
+	JP	NZ,CE5D
+CE6F:	IN	A,(34H)	; disk flags
+	BIT	1,A
+	JR	NZ,CE85	; autowait timed out
+	RRA
+	JR	NC,CE6F
+CE78:	CALL	CFCF
+	IN	A,(30H)	; disk status
+	LD	(71H),A
+	AND	9CH	; errors
+	RET	Z
+	JR	CE8D
+;
+CE85:	CALL	CFCF	; chg. side if (78)#0
+	LD	A,80H
+	LD	(71H),A
+CE8D:	SCF
+	RET
+;
+CE8F:	CALL	CF40
+	LD	D,A
+	DI
+	CALL	CFC6
+	ADD	A,88H
+	LD	E,A
+	LD	A,D
+	OUT	(34H),A	; disk control
+	LD	A,E
+	RET
+;
+CE9F:	CALL	dela	; WRITE
+	CALL	CF40
+	LD	D,A
+	DI
+	CALL	CFC6
+	ADD	A,0A8H
+	LD	E,A
+	LD	A,D
+	OUT	(34H),A
+	LD	A,E
+	OUT	(30H),A
+CEB3:	IN	A,(34H)
+	RRA
+	JR	C,CECA
+	OUTI
+	INC	B
+	IN	A,(34H)
+	RRA
+	JR	C,CECA
+	OUTI
+	JP	NZ,CEB3
+CEC5:	IN	A,(34H)
+	RRA
+	JR	NC,CEC5
+CECA:	CALL	CFCF
+	CALL	dela
+	IN	A,(30H)
+	LD	(71H),A
+	AND	0FCH
+	SCF
+	RET	NZ
+	AND	A
+	LD	A,(7EH)
+	BIT	1,A
+	RET	Z
+	CALL	CF00
+	JR	C,CEEF
+CEE5:	IN	A,(34H)
+	RRA
+	JR	C,CEEE
+	IN	A,(33H)
+	JR	CEE5
+CEEE:	INC	E
+CEEF:	CALL	CFCF
+	IN	A,(30H)
+	LD	(71H),A
+	AND	9CH
+	SCF
+	RET	NZ
+	LD	A,E
+	AND	A
+	RET	Z
+	SCF
+	RET
+;
+CF00:	CALL	CE8F
+	LD	BC,(79H)
+	SRL	B
+	RR	C
+	SRL	B
+	RR	C
+	LD	B,C
+	LD	E,0
+	OUT	(30H),A
+CF14:	IN	A,(34H)
+	RRA
+	RET	C
+	IN	A,(33H)
+	XOR	(HL)
+	RET	NZ
+	INC	HL
+	IN	A,(34H)
+	RRA
+	RET	C
+	IN	A,(33H)
+	XOR	(HL)
+	RET	NZ
+	INC	HL
+	IN	A,(34H)
+	RRA
+	RET	C
+	IN	A,(33H)
+	XOR	(HL)
+	RET	NZ
+	INC	HL
+	IN	A,(34H)
+	RRA
+	RET	C
+	IN	A,(33H)
+	XOR	(HL)
+	RET	NZ
+	INC	HL
+	DJNZ	CF14
+CF3A:	IN	A,(34H)
+	RRA
+	JR	NC,CF3A
+	RET
+;
+CF40:	IN	A,(33H)
+	LD	A,80H
+	CALL	CF55
+	LD	HL,(79H)
+	RR	H
+	RR	L
+	LD	B,L
+	LD	C,'3'
+	LD	HL,(7BH)
+	RET
+;
+CF55:	LD	C,A
+	IN	A,(34H)
+	AND	4	; motor timeout
+	JR	Z,CF60	; motor on
+	SUB	A	; motor off
+	LD	(72H),A
+CF60:	CALL	setsel
+	OUT	(34H),A
+	PUSH	AF
+	PUSH	HL
+	CALL	CFD6
+	AND	5FH
+	OUT	(4),A
+	LD	A,(72H)
+	AND	A
+	JR	Z,CF95
+	LD	HL,190H
+	LD	A,(73H)
+	CP	B
+	JR	NZ,CF98
+	LD	A,(74H)
+	LD	H,A
+	LD	A,(78H)
+	LD	(74H),A
+	CP	H
+	JR	NZ,CF90
+	IN	A,(34H)
+	AND	' '
+	JR	NZ,CF9B
+CF90:	CALL	dela
+	JR	CF9B
+;
+CF95:	LD	HL,4E20H
+CF98:	CALL	dela1
+CF9B:	POP	HL
+	LD	A,B
+	LD	(73H),A
+	LD	A,1
+	LD	(72H),A
+	POP	AF
+	OR	C
+	RET
+;
+setsel:	LD	A,(77H)
+	LD	B,A
+	INC	B
+	SUB	A
+	SCF
+rotlp:	RLA
+	DJNZ	rotlp
+	LD	B,A
+	LD	A,(7EH)
+	BIT	2,A
+	JR	Z,notmx
+	SET	4,B	;set 'maxi'
+notmx:	BIT	0,A
+	JR	Z,notdd
+	SET	6,B	;set 'double density'
+notdd:	LD	A,B
+	OR	20H	;set 'motor on'
+	RET
+;
+CFC6:	IN	A,(34H)
+	CPL
+	AND	' '
+	RET	Z
+	LD	A,4
+	RET
+;
+CFCF:	CALL	CFD6
+	OUT	(4),A	; aux. disk cmd.
+	XOR	A
+	RET
+;
+CFD6:	PUSH	BC
+	LD	B,7FH	; no action
+	LD	A,(78H)
+	AND	A
+	JR	Z,CFE1
+	LD	B,7DH	; opposite side
+CFE1:	LD	A,B
+	POP	BC
+	RET
+;
+dela:	LD	HL,8
+	LD	A,(7EH)
+	BIT	2,A
+	JR	NZ,dela1
+	LD	HL,0CH
+dela1:	PUSH	BC
+dela2:	DEC	HL
+	LD	B,1CH
+dela3:	DJNZ	dela3
+	NOP
+	NOP
+	LD	A,L
+	OR	H
+	JR	NZ,dela2
+	POP	BC
+	RET
+;
+	DEFB	0FFH
+	END

@@ -1,0 +1,1193 @@
+Z80-Assembler		Release 1.6				Page 1
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ; COPYRIGHT (C) 1977, CROMEMCO, INC.
+                       2      2 ;
+                       3      3 ; RETYPED FROM MANUAL AND MODIFIED TO ASSEMBLE WITH Z80ASM 1.6
+                       4      4 ; DECEMBER 2014, UDO MUNK
+                       5      5 ;
+                       6      6 	ORG	0C000H	;START OF PROM
+                       7      7 ;
+                       8      8 ;
+007c                   9      9 STACK:	EQU	7CH	;MUST LEAVE ROOM FOR
+                      10     10 ;			;4 BYTES OF TEMP STORAGE
+                      11     11 ;			;ABOVE THE STACK
+                      12     12 ;			;(STACK)   = DISK FLAGS
+                      13     13 ;			;(STACK+1) = DISK LETTER (A-D)
+                      14     14 ;			;(STACK+2) - (STACK+3): ROOM FOR
+                      15     15 ;			;UP TO 2 SEMI-COLONS AS PART OF
+                      16     16 ;			;THE DISK PROMPT.
+                      17     17 ;
+                      18     18 ;
+0004                  19     19 NDRIVES:  EQU	4	;MAX. NO. OF DISK DRIVES
+                      20     20 ;
+                      21     21 ; BIT ASSIGNMENT FOR THE DISK FLAGS
+                      22     22 ;
+0007                  23     23 FASTSEEK: EQU	7
+0005                  24     24 DISKMODE: EQU	5
+0004                  25     25 MAXI:	  EQU	4
+                      26     26 ;THE DISK NUMBER (0-3) OCCUPIES BITS 0 & 1
+                      27     27 ;
+                      28     28 ;
+0030                  29     29 DSTAT:	EQU	30H	;DISK STATUS PORT
+0030                  30     30 DCOMMND:EQU	30H	;DISK COMMAND PORT
+0032                  31     31 DSEC:	EQU	32H	;DISK SECTOR PORT
+0033                  32     32 DDATA:	EQU	33H	;DISK DATA PORT
+0034                  33     33 DFLAGS:	EQU	34H     ;DISK FLAGS PORT
+0034                  34     34 DCONTR:	EQU	34H	;DISK CONTROL PORT
+0031                  35     35 DTRACK:	EQU	31H	;DISK TRACK PORT
+                      36     36 ;
+0003                  37     37 IMASK:	EQU	3	;INTERRUPT MASK PORT
+0000                  38     38 BAUD:	EQU	0	;BAUD RATE PORT
+0004                  39     39 PARLEL:	EQU	4	;PARALLEL PORT
+0040                  40     40 BOOTSW:	EQU	40H	;BOOT SWITCH
+0010                  41     41 MAXIM:	EQU	10H	;MASK FOR MAXI DISK
+0020                  42     42 HDLDM:	EQU	20H	;HEAD LOAD MASK
+                      43     43 ;
+                      44     44 ;
+0000                  45     45 STAT:	EQU	0	;STATUS PORT
+0001                  46     46 DATA:	EQU	1	;DATA PORT
+0002                  47     47 COMMND:	EQU	2	;COMMAND PORT
+0040                  48     48 DAV:	EQU	40H	;DATA-AVAILABLE MASK
+0080                  49     49 TBE:	EQU	80H	;XMITTER-BUF-EMPTY MSK
+                      50     50 ;
+0000                  51     51 CASE:	EQU	0
+                      52     52 ;
+000d                  53     53 CR:	EQU	0DH
+000a                  54     54 LF:	EQU	0AH
+001b                  55     55 ESC:	EQU	1BH
+007d                  56     56 ALT:	EQU	7DH
+                      57     57 ;
+                      58     58 ;
+                      59     59 ;++++++++++++++++++++++++++++++++++++++++++++++++++++
+                      60     60 ;
+Z80-Assembler		Release 1.6				Page 2
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c000  21 7c 00        61     61 START:	LD	HL,STACK
+c003  f9              62     62 	LD	SP,HL
+c004  eb              63     63 	EX	DE,HL		;DE -> TEMP STORATE
+c005  f3              64     64 	DI
+c006  cd ee c0        65     65 	CALL	INITBAUD	;INIT. THE SERIAL PORT
+c009  97              66     66 	SUB	A
+c00a  d3 03           67     67 	OUT	(IMASK),A	;MASK OUT 4FDC INTERUPTS
+c00c  db 34           68     68 	IN	A,(DFLAGS)	;READ DISK FLAGS
+c00e  e6 40           69     69 	AND	BOOTSW		;LOOK AT BOOT SWITCH
+c010  28 06           70     70 	JR	Z,BOOTDK
+c012  c3 0b c1        71     71 	JP	MONITR
+                      72     72 ;
+                      73     73 ;
+                      74     74 ; MONITOR COMMAND
+                      75     75 ; QUIT THE MONITOR & BOOT CDOS IN
+                      76     76 ;
+                      77     77 BOOTMC:
+c015  cd 29 c2        78     78 	CALL	SKSGCR		;REQUIRE A CR
+                      79     79 ;
+                      80     80 ;
+                      81     81 ; BOOT DISK
+                      82     82 ;
+                      83     83 BOOTDK:
+c018  3e d0           84     84 	LD	A,0D0H		;TERMINATE THE HOMING
+c01a  d3 30           85     85 	OUT	(DCOMMND),A	;OF THE DISK HEAD
+c01c  db 30           86     86 BOT200:	IN	A,(DSTAT)
+c01e  1f              87     87 	RRA
+c01f  38 fb           88     88 	JR	C,BOT200
+c021  f3              89     89 	DI
+c022  3e 10           90     90 	LD	A,1 < MAXI	;MAXI FLAG
+                      91     91 BOT300:
+c024  21 80 00        92     92 	LD	HL,0080H	;INIT. BUFFER PNTR
+c027  f9              93     93 	LD	SP,HL		;& STACK PNTR
+c028  f5              94     94 	PUSH	AF		;SAVE MINI/MAXI FLAG
+c029  44              95     95 	LD	B,H		;0 [DISK A)
+c02a  cd 3f c0        96     96 	CALL	DHOME		;HOME DISK
+c02d  20 0b           97     97 	JR	NZ,BOT500	;DISK ERROR
+c02f  f1              98     98 	POP	AF		;GET MINI/MAXI FLAG
+c030  f5              99     99 	PUSH	AF
+c031  44             100    100 	LD	B,H		;0 [DISK A]
+c032  1e 01          101    101 	LD	E,1		;SECTOR 1
+c034  cd 8c c0       102    102 	CALL	DREAD		;READ THE SECTOR
+c037  ca 80 00       103    103 	JP	Z,80H		;OK, GO EXECUTE
+c03a  f1             104    104 BOT500:	POP	AF		;GET MINI/MAXI FLAG
+c03b  ee 10          105    105 	XOR	1 < MAXI	;TOGGLE IT
+c03d  18 e5          106    106 	JR	BOT300
+                     107    107 ;
+                     108    108 ;
+                     109    109 ;HOME DISK DRIVE
+                     110    110 ;
+                     111    111 ;INPUT - B CONTAINS DISK NUMBER (0,1,2,3)
+                     112    112 ;	 A BIT 4 CONTAINS 1 IF MAXI
+                     113    113 ;
+                     114    114 ;OUTPUT - B CONTAINS STATUS
+                     115    115 ;	  ZERO FLAG RESET IF ERROR
+                     116    116 ;
+                     117    117 ;REGISTERS A,F,B,C ARE CHANGED
+                     118    118 ;
+                     119    119 ;
+c03f  cd cb c0       120    120 DHOME:	CALL	SELECT		;SELECT DISK
+Z80-Assembler		Release 1.6				Page 3
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c042  d3 34          121    121 	OUT	(DCONTR),A	;OUTPUT SELECT BYTE
+c044  16 98          122    122 	LD	D,98H		;ERROR MASK
+c046  e6 10          123    123 	AND	MAXIM		;MAXI DISK?
+c048  3e 7f          124    124 	LD	A,7FH		;TURN OFF HIGH SPEED SEEK
+c04a  d3 04          125    125 	OUT	(PARLEL),A
+c04c  3e 0f          126    126 	LD	A,0FH		;LOAD MINI RESTORE COMMAND
+c04e  28 1a          127    127 	JR	Z,EXECUTE	;NO, ITS A MINI
+c050  3e 0d          128    128 	LD	A,0DH		;MAXI RESTORE COMMAND
+c052  18 16          129    129 	JR	EXECUTE		;EXEC COMMAND & WAIT TIL DONE
+                     130    130 ;
+                     131    131 ;
+                     132    132 ;
+                     133    133 ;SEEK TO DESIRED TRACK
+                     134    134 ;
+                     135    135 ;TRACK REGISTER MUST HAVE BEEN PREVIOUSLY LOADED
+                     136    136 ;(MAY BE DONE BY INITIALLY DOING A HOME)
+                     137    137 ;
+                     138    138 ;INPUT - B CONTAINS DISK DRIVE (0,1,2,3)
+                     139    139 ;	 D CONTAINS TRACK
+                     140    140 ;	 A BIT 7 = 1 FOR FAST SEEK
+                     141    141 ;	 A BIT 4 = 1 FOR MAXI
+                     142    142 ;
+                     143    143 ;OUTPUT - B CONTAINS STATUS
+                     144    144 ;	  ZERO FLAG RESET IF ERROR
+                     145    145 ;
+                     146    146 ;REGISTERS A,F,B,C,D ARE CHANGED
+                     147    147 ;
+c054  f5             148    148 DSEEK:	PUSH	AF		;SAVE DISK FLAGS
+c055  cd cb c0       149    149 	CALL	SELECT		;SELECT DISK
+c058  d3 34          150    150 	OUT	(DCONTR),A	;OUTPUT CONTROL BYTE
+c05a  ed 51          151    151 	OUT	(C),D		;OUTPUT DESIRED TRACK
+c05c  16 98          152    152 	LD	D,98H		;ERROR MASK
+c05e  f1             153    153 	POP	AF		;GET FLAGS
+c05f  17             154    154 	RLA			;FAST SEEK?
+c060  38 14          155    155 	JR	C,DSK500
+c062  e6 20          156    156 	AND	MAXIM < 1	;MASK FOR MINI/MAXI
+c064  3e 1f          157    157 	LD	A,01FH		;LOAD SEEK COMMAND FOR MINI
+c066  28 02          158    158 	JR	Z,EXECUTE	;MINI DISK
+c068  3e 1d          159    159 	LD	A,1DH		;LOAD COMMAND FOR MAXI
+                     160    160 ;
+                     161    161 ;
+                     162    162 EXECUTE:
+c06a  d3 30          163    163 	OUT	(DCOMMND),A	;OUTPUT COMMAND
+                     164    164 ;
+                     165    165 EXCCHK:
+c06c  db 34          166    166 	IN	A,(DFLAGS)	;WAIT FOR COMPLETION
+c06e  1f             167    167 	RRA
+c06f  30 fb          168    168 	JR	NC,EXCCHK	;[UNTIL INTREQ]
+                     169    169 EREXIT:
+c071  db 30          170    170 	IN	A,(DSTAT)	;DISK STATUS
+c073  47             171    171 	LD	B,A		;SAVE STATUS
+c074  a2             172    172 	AND	D		;MASK FOR ERRORS
+c075  c9             173    173 	RET
+                     174    174 ;
+                     175    175 ;
+c076  3e 6f          176    176 DSK500:	LD	A,6FH		;TURN ON FAST SEEK
+c078  d3 04          177    177 	OUT	(PARLEL),A
+c07a  3e 18          178    178 	LD	A,18H		;SEEK COMMAND
+c07c  cd 6a c0       179    179 	CALL	EXECUTE
+c07f  db 04          180    180 DSK540:	IN	A,(PARLEL)	;FAST SEEK DONE?
+Z80-Assembler		Release 1.6				Page 4
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c081  e6 40          181    181 	AND	40H
+c083  20 fa          182    182 	JR	NZ,DSK540
+c085  3e 7f          183    183 	LD	A,7FH		;TURN OFF FAST SEEK
+c087  d3 04          184    184 	OUT	(PARLEL),A
+c089  97             185    185 	SUB	A		;NO ERROR CHECKING, SAY OK
+c08a  47             186    186 	LD	B,A
+c08b  c9             187    187 	RET
+                     188    188 ;
+                     189    189 ;
+                     190    190 ;READ 1 SECTOR FROM DISK
+                     191    191 ;
+                     192    192 ;INPUT - B CONTAINS DISK DRIVE (0,1,2,3)
+                     193    193 ;	 E CONTAINS SECTOR
+                     194    194 ;	 A BIT 4 = 1 FOR MAXI
+                     195    195 ;	 HL CONTAINS BUFFER ADDRESS
+                     196    196 ;
+                     197    197 ;OUTPUT - B CONTAINS STATUS
+                     198    198 ;	  Z FLAG IS SET IF NO ERRORS
+                     199    199 ;	  HL PTS PAST BUFFER
+                     200    200 ;
+                     201    201 ;REGISTERS A,F,B,C,D,E,H,L ARE CHANGED
+                     202    202 ;
+                     203    203 ;
+c08c  cd b6 c0       204    204 DREAD:	CALL	SETUP		;SET UP FOR READ
+c08f  c6 88          205    205 	ADD	A,88H		;ADD READ COMMAND TO
+                     206    206 				;HEAD LOAD FLAG
+c091  16 9c          207    207 	LD	D,9CH		;ERROR MASK
+                     208    208 ;
+c093  d3 30          209    209 	OUT	(DCOMMND),A	;OUTPUT READ COMMAND
+c095  db 34          210    210 DRD250:	IN	A,(DFLAGS)	;WAIT FOR REQUEST
+c097  1f             211    211 	RRA			;CHECK FOR INTREQ
+c098  38 d7          212    212 	JR	C,EREXIT	;END OF SECTOR OR ERROR
+c09a  ed a2          213    213 	INI			;READ A BYTE
+c09c  c2 95 c0       214    214 	JP	NZ,DRD250	;NOT DONE YET
+c09f  18 cb          215    215 	JR	EXCCHK		;WAIT FOR INTREQ
+                     216    216 ;
+                     217    217 ;
+                     218    218 ;WRITE A SECTOR TO THE DISK
+                     219    219 ;
+                     220    220 ;INPUT - B CONTAINS DISK DRIVE (0,1,2,3)
+                     221    221 ;	 E CONTAINS SECTOR
+                     222    222 ;	 A BIT 4 = 1 FOR MAXI
+                     223    223 ;	 HL CONTAINS BUFFER ADDRESS
+                     224    224 ;
+                     225    225 ;OUTPUT - B CONTAINS STATUS
+                     226    226 ;	  Z FLAG IS SET IF NO ERRORS
+                     227    227 ;	  HL PTS PAST BUFFER
+                     228    228 ;
+                     229    229 ;REGISTERS A,F,B,C,D,E,H,L ARE CHANGED
+                     230    230 ;
+                     231    231 ;
+c0a1  cd b6 c0       232    232 DWRITE:	CALL	SETUP		;SET UP FOR WRITE
+c0a4  c6 a8          233    233 	ADD	A,0A8H		;ADD WRITE COMMAND TO
+                     234    234 				;HEAD LOAD FLAG
+c0a6  16 fc          235    235 	LD	D,0FCH		;ERROR MASK
+c0a8  d3 30          236    236 	OUT	(DCOMMND),A	;OUTPUT WRITE COMMAND
+c0aa  db 34          237    237 DWR250:	IN	A,(DFLAGS)	;WAIT FOR REQUEST
+c0ac  1f             238    238 	RRA			;CHECK FOR INTREQ
+c0ad  38 c2          239    239 	JR	C,EREXIT	;END OF SECTOR OR ERROR
+c0af  ed a3          240    240 	OUTI			;READ A BYTE
+Z80-Assembler		Release 1.6				Page 5
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c0b1  c2 aa c0       241    241 	JP	NZ,DWR250	;NOT DONE YET
+c0b4  18 b6          242    242 	JR	EXCCHK		;WAIT FOR INTREQ
+                     243    243 ;
+                     244    244 ;
+                     245    245 ;SET UP FOR READ OR WRITE
+                     246    246 ;
+                     247    247 ;INPUT - B CONTAINS DISK DRIVE (0,1,2,3)
+                     248    248 ;	 E CONTAINS SECTOR
+                     249    249 ;	 A BIT 4 CONTAINS 1 IF MAXI
+                     250    250 ;
+                     251    251 ;OUTPUT - D CONTAINS SELECT BYTE
+                     252    252 ;	  A CONTAINS HEAD LOAD FLAG
+                     253    253 ;	  B CONTAINS 128 (# OF BYTES)
+                     254    254 ;	  C CONTAINS DATA PORT
+                     255    255 
+                     256    256 ;REGISTERS A,F,B,C,D ARE CHANGED
+                     257    257 ;
+                     258    258 ;
+                     259    259 SETUP:
+c0b6  cd cb c0       260    260 	CALL	SELECT		;GET SELECT BYTE
+c0b9  f6 80          261    261 	OR	80H		;TURN ON AUTO WAIT
+c0bb  57             262    262 	LD	D,A		;SAVE CONTROL BYTE
+c0bc  7b             263    263 	LD	A,E		;SECTOR #
+c0bd  d3 32          264    264 	OUT	(DSEC),A
+                     265    265 ;
+                     266    266 ;CHECK WHETHER DISK HEAD LOADED
+                     267    267 ;
+c0bf  db 34          268    268 	IN	A,(DFLAGS)		;READ FLAGS
+c0c1  e6 20          269    269 	AND	HDLDM			;HEAD LOADED?
+c0c3  7a             270    270 	LD	A,D			;CONTROL BYTE
+c0c4  d3 34          271    271 	OUT	(DCONTR),A		;[THIS MUST BE DONE AFTER
+                     272    272 ;					;THE INPUT FROM DFLAGS
+                     273    273 ;					;BECAUSE OF AUTO WAIT]
+c0c6  3e 04          274    274 	LD	A,4			;HEAD NOT LOADED
+c0c8  c8             275    275 	RET	Z
+c0c9  97             276    276 	SUB	A			;HEAD LOADED
+c0ca  c9             277    277 	RET
+                     278    278 ;
+                     279    279 ;
+                     280    280 ;SELECT DISK DRIVE
+                     281    281 ;
+                     282    282 ;INPUT - B CONTAINS DISK DRIVE (0,1,2,3)
+                     283    283 ;	 A BIT 4 CONTAINS 1 IF MAXI
+                     284    284 ;
+                     285    285 ;OUTPUT - A CONTAINS SELECT BYTE
+                     286    286 ;	  B CONTAINS 128
+                     287    287 ;	  C CONTAINS DATA PORT #
+                     288    288 ;
+                     289    289 ;REGISTERS A,F,B,C ARE CHANGED
+                     290    290 ;
+                     291    291 ;
+c0cb  e6 10          292    292 SELECT:	AND	MAXIM		;GET MAXI FLAG ONLY
+c0cd  4f             293    293 	LD	C,A		;SAVE FLAG
+c0ce  04             294    294 	INC	B		;CALCULATE DISK SELECT
+c0cf  97             295    295 	SUB	A
+c0d0  37             296    296 	SCF
+c0d1  17             297    297 SEL300: RLA
+c0d2  10 fd          298    298 	DJNZ	SEL300
+c0d4  b1             299    299 	OR	C		;MAXI FLAG
+c0d5  f6 20          300    300 	OR	20H		;MOTOR ON
+Z80-Assembler		Release 1.6				Page 6
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c0d7  01 33 80       301    301 	LD	BC,8000H+DDATA
+c0da  c9             302    302 	RET
+                     303    303 ;
+                     304    304 ;
+                     305    305 ;
+                     306    306 ;CHECK INPUT & RETURN WITH DATA IF READY
+                     307    307 ;
+c0db  db 00          308    308 CHKIN:	IN	A,(STAT)
+c0dd  e6 40          309    309 	AND	DAV
+c0df  c8             310    310 	RET	Z
+c0e0  db 01          311    311 	IN	A,(DATA)
+c0e2  c9             312    312 	RET
+                     313    313 ;
+                     314    314 ;
+                     315    315 ; GET CHARACTER FROM INPUT.
+                     316    316 ;
+c0e3  cd db c0       317    317 GBYTE:	CALL	CHKIN
+c0e6  28 fb          318    318 	JR	Z,GBYTE
+c0e8  e6 7f          319    319 	AND	7FH	
+c0ea  c9             320    320 	RET
+                     321    321 ;
+                     322    322 ;
+                     323    323 ; COMMAND
+                     324    324 ; CHANGE BAUD RATE OF THE SERIAL PORT
+                     325    325 ;
+                     326    326 INITBR:
+c0eb  cd 29 c2       327    327 	CALL	SKSGCR		;REQUIRE CR
+                     328    328 ;				;[CONTINUE BELOW]
+                     329    329 ;
+                     330    330 ;
+                     331    331 ; INITIALIZE BAUD RATE OF THE CURRENT DEVICE.
+                     332    332 ;
+                     333    333 ; PUSH CARRIAGE-RETURN TO SELECT THE PROPER BAUD
+                     334    334 ; RATE FOR THE CURRENT TERMINAL.  (THE MAXIMUM
+                     335    335 ; NUMBER OF CARRIAGE-RETURNS REQUIRED IS FOUR.)
+                     336    336 ;
+                     337    337 ; ANY OF THE FOLLOWING BAUD RATES CAN BE SELECTED:
+                     338    338 ; 19200, 9600, 4800, 2400, 1200, 300, 150, 110.
+                     339    339 ;
+c0ee  21 ca c3       340    340 INITBAUD: LD	HL,BAUDRS
+c0f1  0e 00          341    341 	LD	C,BAUD
+c0f3  3e 19          342    342 	LD	A,19H		;OCTUPLE THE CLOCK
+c0f5  d3 02          343    343 IT1:	OUT	(COMMND),A	;& RESET CURRENT DEVICE
+c0f7  ed a3          344    344 	OUTI
+c0f9  cd e3 c0       345    345 	CALL	GBYTE
+c0fc  cd e3 c0       346    346 	CALL	GBYTE
+c0ff  fe 0d          347    347 	CP	CR
+c101  3e 09          348    348 	LD	A,9		;SLOW THE CLOCK
+c103  20 f0          349    349 	JR	NZ,IT1
+c105  c9             350    350 	RET
+                     351    351 ;
+                     352    352 ;
+                     353    353 ; COMMAND
+                     354    354 ; CHANGE LOCATION OF THE SYSTEM STACK
+                     355    355 ;
+                     356    356 KICKSTK:
+c106  cd 85 c2       357    357 	CALL	L1NCR
+c109  18 13          358    358 	JR	LOADIX		;IX STORES INITIAL SP VALUE
+                     359    359 ;
+                     360    360 ;
+Z80-Assembler		Release 1.6				Page 7
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     361    361 ;----------------------------------------------------------
+                     362    362 ; MONITOR ENTRY POINT
+                     363    363 ;----------------------------------------------------------
+                     364    364 ;
+                     365    365 ; ENTER THE MONITOR WITH THE STK PNTR LOADED & WITH
+                     366    366 ; DE -> THE DISK FLAGS.  [THIS IS ALSO
+                     367    367 ; THE TOP OF THE STACK.]
+                     368    368 ;
+                     369    369 MONITR:
+c10b  cd f7 c2       370    370 	CALL	PMSGFOLLOWING
+c10e  0d 0d 43 52    371    371 	DEFB	CR,CR,'CROMEMCO RDOS',('1'+80H)
+c112  4f 4d 45 4d    371    372
+c116  43 4f 20 52    371    373
+c11a  44 4f 53 b1    371    374
+                     372    375 ;
+                     373    376 LOADIX:
+c11e  97             374    377 	SUB	A
+c11f  12             375    378 	LD	(DE),A		;CLEAR DISK MODE
+c120  d5             376    379 	PUSH	DE
+c121  dd e1          377    380 	POP	IX		;IX STORES INITIAL SP VALUE
+                     378    381 ;
+                     379    382 CLEANSTACK:
+c123  dd f9          380    383 	LD	SP,IX		;RE-INITIALIZE SP
+                     381    384 ;
+                     382    385 ;
+                     383    386 ; GET COMMAND.
+                     384    387 ; RETURNS VALUE IN HL & JUMPS TO THAT ADDR.
+                     385    388 ;
+c125  cd a9 c1       386    389 	CALL	CRLF
+c128  21 28 c1       387    390 CMND:	LD	HL,CMND		;SET-UP RETURN
+c12b  dd e5          388    391 	PUSH	IX
+c12d  e3             389    392 	EX	(SP),HL		;RETN ADDR ON STK
+c12e  4e             390    393 	LD	C,(HL)		;HL -> DISK FLAGS
+c12f  cb 69          391    394 	BIT	DISKMODE,C
+c131  23             392    395 	INC	HL		; -> DISK LETTER
+c132  c4 ec c2       393    396 	CALL	NZ,PMSG		;DISK MODE PROMPT
+c135  cd f7 c2       394    397 	CALL	PMSGFOLLOWING
+c138  bb             395    398 	DEFB	(';'+80H)	;THE REGULAR PROMPT
+                     396    399 ;
+c139  cd ba c2       397    400 	CALL	SKSGO		;GET THE COMMAND
+c13c  20 05          398    401 	JR	NZ,CM6
+c13e  dd 36 00 00    399    402 	LD	(IX+0),0	;CR. RESET DISK MODE.
+c142  c9             400    403 	RET
+                     401    404 ;
+c143  d6 41          402    405 CM6:	SUB	'A'+CASE	; < 'A'?
+c145  38 6e          403    406 	JR	C,ERROR
+c147  fe 17          404    407 	CP	('W'-'A')+1	; > 'W'?
+c149  30 6a          405    408 	JR	NC,ERROR
+c14b  5f             406    409 	LD	E,A
+c14c  16 00          407    410 	LD	D,0
+                     408    411 ;
+c14e  cd ba c2       409    412 	CALL	SKSGO		;NEXT COMMAND CHARACTER
+c151  fe 3b          410    413 	CP	';'
+c153  28 0d          411    414 	JR	Z,DISKSELECT
+c155  eb             412    415 	EX	DE,HL
+c156  29             413    416 	ADD	HL,HL		;TIMES 2
+c157  11 d2 c3       414    417 	LD	DE,CMNDTBL
+c15a  19             415    418 	ADD	HL,DE		; + TBL ADDR
+c15b  5e             416    419 	LD	E,(HL)
+c15c  23             417    420 	INC	HL
+Z80-Assembler		Release 1.6				Page 8
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c15d  56             418    421 	LD	D,(HL)
+c15e  eb             419    422 	EX	DE,HL
+c15f  fe 4d          420    423 	CP	'M'+CASE	;(USED IN SUBST & DISPL)
+c161  e9             421    424 	JP	(HL)
+                     422    425 ;
+                     423    426 ;
+                     424    427 ; DISK SELECT
+                     425    428 ; ENTER WITH E CONTAINING THE DISK NUMBER
+                     426    429 ;
+                     427    430 DISKSELECT:
+c162  7b             428    431 	LD	A,E		;DISK NUMBER
+c163  fe 04          429    432 	CP	NDRIVES		;A THROUGH D ONLY
+c165  30 4e          430    433 	JR	NC,ERROR
+c167  43             431    434 	LD	B,E		;SAVE DISK #
+c168  dd e5          432    435 	PUSH	IX
+c16a  e1             433    436 	POP	HL		; -> DISK FLAGS
+c16b  f6 b0          434    437 	OR	(1 < DISKMODE)+(1 < MAXI)+(1 < FASTSEEK)
+c16d  77             435    438 	LD	(HL),A		;DISK # & FLAGS
+c16e  54             436    439 	LD	D,H
+c16f  5d             437    440 	LD	E,L
+c170  13             438    441 	INC	DE		; -> DISK LETTER
+c171  78             439    442 	LD	A,B
+c172  c6 41          440    443 	ADD	A,'A'
+c174  12             441    444 	LD	(DE),A		;DISK LETTER
+c175  cd 19 c2       442    445 	CALL	GCHR
+c178  fe 3b          443    446 	CP	';'
+c17a  20 10          444    447 	JR	NZ,DS2
+c17c  cb be          445    448 	RES	FASTSEEK,(HL)	;NOT FAST SEEK
+c17e  13             446    449 	INC	DE
+c17f  12             447    450 	LD	(DE),A		;PART OF DISKMODE PROMPT
+c180  cd 19 c2       448    451 	CALL	GCHR
+c183  fe 3b          449    452 	CP	';'
+c185  20 05          450    453 	JR	NZ,DS2
+c187  cb a6          451    454 	RES	MAXI,(HL)	;MINI FLOPPY
+c189  13             452    455 	INC	DE
+c18a  12             453    456 	LD	(DE),A
+c18b  97             454    457 	SUB	A
+                     455    458 ;
+c18c  cd 29 c2       456    459 DS2:	CALL	SKSGCR		;ALSO EXCGS DE & HL
+c18f  cb fe          457    460 	SET	7,(HL)		;MARK END-OF-MSG
+                     458    461 ;
+c191  1a             459    462 	LD	A,(DE)		;DISK FLAGS
+c192  cd 3f c0       460    463 	CALL	DHOME
+c195  3e 48          461    464 	LD	A,'H'		;IN CASE OF HOME ERROR
+                     462    465 ;
+                     463    466 DERRCK:
+c197  c8             464    467 	RET	Z		;IF NO ERROR, DONE
+                     465    468 ;
+                     466    469 PERRMSG:
+c198  cd f7 c2       467    470 	CALL	PMSGFOLLOWING
+c19b  20 45 52 52    468    471 	DEFB	' ERR',(' '+80H)
+c19f  a0             468    472
+c1a0  cd f1 c1       469    473 	CALL	PCHR		;ERROR LETTER
+c1a3  78             470    474 	LD	A,B		;ERROR NUMBER
+                     471    475 ;
+                     472    476 ;
+                     473    477 ; PRINT THE 2 HEX DIGITS IN THE A-REGISTER
+                     474    478 ; AND CLEAN STACK.
+                     475    479 ;
+                     476    480 P2HXCLEAN:
+Z80-Assembler		Release 1.6				Page 9
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c1a4  cd d4 c2       477    481 	CALL	P2HEX
+c1a7  18 10          478    482 	JR	CLEANV
+                     479    483 ;
+                     480    484 ;
+                     481    485 ; PRINT CRLF
+                     482    486 ;
+                     483    487 CRLF:
+c1a9  3e 0d          484    488 	LD	A,CR
+c1ab  18 44          485    489 	JR	PCHR
+                     486    490 ;
+                     487    491 ;
+                     488    492 ; COMMAND
+                     489    493 ; EXAMINE INPUT PORT
+                     490    494 ;
+                     491    495 EXMINPUT:
+c1ad  cd 85 c2       492    496 	CALL	L1NCR
+c1b0  4b             493    497 	LD	C,E		;PORT #
+c1b1  ed 78          494    498 	IN	A,(C)
+c1b3  18 ef          495    499 	JR	P2HXCLEAN	;PRINT THE VALUE, CRLF
+                     496    500 ;
+                     497    501 ;
+                     498    502 ; ERROR & ESCAPE. RETURN TO CMND WITH SP
+                     499    503 ; RE-INITIALIZED.
+                     500    504 ;
+                     501    505 ERROR:
+c1b5  cd f7 c2       502    506 	CALL	PMSGFOLLOWING
+c1b8  bf             503    507 	DEFB	('?'+80H)
+                     504    508 ESCAPE:
+                     505    509 CLEANV:
+c1b9  c3 23 c1       506    510 	JP	CLEANSTACK
+                     507    511 ;
+                     508    512 ;
+                     509    513 ; GET NEXT SECTOR FOR THE READ & WRITE DISK
+                     510    514 ; ROUTINES.  PRESERVES HL AND, BEFOR RETURNING,
+                     511    515 ; POPS DE AND BC FROM THE STACK.
+                     512    516 ;
+                     513    517 NEXTSC:
+c1bc  d9             514    518 	EXX
+c1bd  e1             515    519 	POP	HL		;RETURN ADDR
+c1be  d9             516    520 	EXX
+c1bf  d1             517    521 	POP	DE
+c1c0  28 05          518    522 	JR	Z,NS2		;SKIP IF NO ERROR
+c1c2  15             519    523 	DEC	D		;TRY AGAIN?
+c1c3  28 d3          520    524 	JR	Z,PERRMSG
+c1c5  18 0a          521    525 	JR	NS4		;YES. USE OLD MEM PNTR
+                     522    526 ;
+c1c7  01 7f ff       523    527 NS2:	LD	BC,-81H		;NO ERROR
+c1ca  fd 09          524    528 	ADD	IY,BC		;BUMP THE INCREMENT
+c1cc  fd 23          525    529 	INC	IY
+c1ce  e3             526    530 	EX	(SP),HL		;USE LATEST MEM PNTR
+c1cf  16 0a          527    531 	LD	D,10		;RELOAD RETRIAL COUNTER
+                     528    532 ;
+c1d1  e1             529    533 NS4:	POP	HL		;MEM PNTR
+c1d2  c1             530    534 	POP	BC
+c1d3  79             531    535 	LD	A,C		;RELOAD DISK FLAGS
+c1d4  d9             532    536 	EXX
+c1d5  e5             533    537 	PUSH	HL		;RETURN ADDR
+c1d6  d9             534    538 	EXX
+c1d7  c0             535    539 	RET	NZ		;IF ERROR, DONE
+                     536    540 ;
+Z80-Assembler		Release 1.6				Page 10
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c1d8  d4 a2 c3       537    541 	CALL	NC,PTRKSC	;IF NEGATIVE, DONE:
+c1db  30 dc          538    542 	JR	NC,CLEANV	;PRINT TRK, SEC, CLEAN STK.
+                     539    543 ;
+c1dd  1c             540    544 	INC	E		;BUMP SECTOR #
+c1de  cd ae c3       541    545 	CALL	CHKSECNO
+c1e1  d0             542    546 	RET	NC		;DONE IF # OK
+c1e2  db 31          543    547 	IN	A,(DTRACK)	;GET TRACK #
+c1e4  3c             544    548 	INC	A		;BUMP IT
+c1e5  5f             545    549 	LD	E,A
+c1e6  c5             546    550 	PUSH	BC
+c1e7  cd 29 c3       547    551 	CALL	SEEKNXT		;SEEK NEXT TRACK
+c1ea  c1             548    552 	POP	BC
+c1eb  79             549    553 	LD	A,C		;DISK FLAGS
+c1ec  1e 01          550    554 	LD	E,1		;SECTOR 1
+c1ee  c9             551    555 	RET
+                     552    556 ;
+                     553    557 ;
+                     554    558 ; PRINT SPACE. ALTERS A.
+                     555    559 ;
+c1ef  3e 20          556    560 SPACE:	LD	A,' '		;(CONTINUE BELOW)
+                     557    561 ;
+                     558    562 ;
+                     559    563 ; PRINT THE CHARACTER IN THE A-REGISTER.
+                     560    564 ; (CHKS INPUT FOR ESC.) PRESERVES ALL REGS.
+                     561    565 ;
+c1f1  f5             562    566 PCHR:	PUSH	AF		;SAVE THE CHAR
+c1f2  e6 7f          563    567 PC1:	AND	7FH
+c1f4  fe 1b          564    568 	CP	ESC
+c1f6  28 c1          565    569 	JR	Z,ESCAPE
+c1f8  fe 7d          566    570 	CP	ALT		;ALT MODE?
+c1fa  28 bd          567    571 	JR	Z,ESCAPE
+c1fc  cd db c0       568    572 	CALL	CHKIN	
+c1ff  20 f1          569    573 	JR	NZ,PC1
+                     570    574 ;
+c201  db 00          571    575 PC2:	IN	A,(STAT)
+c203  e6 80          572    576 	AND	TBE
+c205  28 fa          573    577 	JR	Z,PC2
+c207  f1             574    578 	POP	AF
+c208  f5             575    579 	PUSH	AF
+c209  e6 7f          576    580 	AND	7FH
+c20b  d3 01          577    581 	OUT	(DATA),A
+c20d  fe 0d          578    582 	CP	CR
+c20f  20 06          579    583 	JR	NZ,PC3
+c211  cd f7 c2       580    584 	CALL	PMSGFOLLOWING
+c214  0a 00 80       581    585 	DEFB	LF,0,80H
+c217  f1             582    586 PC3:	POP	AF
+c218  c9             583    587 	RET
+                     584    588 ;
+                     585    589 ;
+                     586    590 ; GET CHARACTER.  RETURNS IT IN A.
+                     587    591 ; ALTERS F.
+                     588    592 ;
+c219  cd e3 c0       589    593 GCHR:	CALL	GBYTE
+c21c  cd f1 c1       590    594 	CALL	PCHR
+c21f  fe 61          591    595 	CP	61H		;CONVERT LOWER CASE
+c221  d8             592    596 	RET	C		;TO UPPER.
+c222  d6 20          593    597 	SUB	20H
+c224  c9             594    598 	RET
+                     595    599 ;
+                     596    600 ;
+Z80-Assembler		Release 1.6				Page 11
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     597    601 ; LOADS HL WITH SOURCE ADDR, BC & DE
+                     598    602 ; WITH THE INCREMENT.  ENDS WITH A CRLF.
+                     599    603 ;
+c225  97             600    604 L2NCR0:	SUB	A
+                     601    605 ;
+c226  cd 64 c2       602    606 L2NCR:	CALL	LD2N
+                     603    607 ;
+                     604    608 ; SKIP INITIAL SPACES.
+                     605    609 ; IF DELIMITER NOT A CR, ERROR
+                     606    610 ;
+c229  cd bb c2       607    611 SKSGCR:	CALL	SKSG		;WRITE FOR NON-SPACE
+c22c  20 87          608    612 	JR	NZ,ERROR	;IF NOT CR, ERROR
+c22e  eb             609    613 	EX	DE,HL
+c22f  c9             610    614 	RET
+                     611    615 ;
+                     612    616 ;
+                     613    617 ; PRINT THE NUMBER IN HL, FOLLOWED BY A COLON.
+                     614    618 ; PRESERVES ALL REGISTERS EXCEPT A.
+                     615    619 ;
+c230  cd a9 c1       616    620 PCADDR:	CALL	CRLF
+                     617    621 ;
+c233  cd cf c2       618    622 PADDR:	CALL	PNHL
+c236  3e 3a          619    623 	LD	A,':'
+c238  18 b7          620    624 	JR	PCHR
+                     621    625 ;
+                     622    626 ;
+                     623    627 ; COMMAND
+                     624    628 ;
+c23a  cd 82 c2       625    629 VERIF:	CALL	L3NCR		;GET 3 OPERANDS
+                     626    630 ;
+                     627    631 ; COMPARES TWO AREAS OF MEMORY.  ENTER WITH
+                     628    632 ; SOURCE IN HL, DESTINATION IN DE & COUNT
+                     629    633 ; IN BC.  ALTERS ALL REGISTERS.
+                     630    634 ;
+                     631    635 VRFY:
+c23d  1a             632    636 	LD	A,(DE)
+c23e  ed a1          633    637 	CPI			;COMPARE TO SOURCE
+c240  2b             634    638 	DEC	HL
+c241  c4 cf c2       635    639 	CALL	NZ,PNHL		;PRINT SOURCE ADDR
+c244  c4 c6 c2       636    640 	CALL	NZ,PSNM		; & CONTENTS
+c247  eb             637    641 	EX	DE,HL
+c248  c4 c6 c2       638    642 	CALL	NZ,PSNM		; & DEST CONTENTS
+c24b  c4 cc c2       639    643 	CALL	NZ,PSNHL	; & DEST ADDR
+c24e  c4 a9 c1       640    644 	CALL	NZ,CRLF
+c251  eb             641    645 	EX	DE,HL
+c252  23             642    646 	INC	HL
+c253  13             643    647 	INC	DE
+c254  e0             644    648 	RET	PO		; IF BC=0, DONE.
+c255  18 e6          645    649 	JR	VRFY
+                     646    650 ;
+                     647    651 ;	COMMAND
+                     648    652 ;
+                     649    653 MOVE:
+c257  cd 82 c2       650    654 	CALL	L3NCR		;OPERANDS
+c25a  e5             651    655 	PUSH	HL
+c25b  d5             652    656 	PUSH	DE
+c25c  c5             653    657 	PUSH	BC
+c25d  ed b0          654    658 	LDIR
+c25f  c1             655    659 	POP	BC
+c260  d1             656    660 	POP	DE
+Z80-Assembler		Release 1.6				Page 12
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c261  e1             657    661 	POP	HL
+c262  18 d9          658    662 	JR	VRFY
+                     659    663 ;
+                     660    664 ;
+                     661    665 ;
+                     662    666 ; LOAD TWO NUMBERS.  LOADS DE WITH THE BEGINNING
+                     663    667 ; ADDR, N1. LOADS BC & HL WITH THE INCREMENT
+                     664    668 ; N2-N1+1 (OR WITH N2 IF THE OPR IS 'S').
+                     665    669 ; RETURNS WITH LAST DELIMITER IN A.
+                     666    670 ;
+                     667    671 ;
+c264  cd 8b c2       668    672 LD2N:	CALL	GNHL		;N1 TO HL, DELIM TO A
+c267  eb             669    673 	EX	DE,HL		;SAVE N1 IN DE
+c268  cd bb c2       670    674 	CALL	SKSG		;GET NEXT NON-SPACE
+c26b  fe 53          671    675 	CP	'S'+CASE	;SWATH?
+c26d  20 05          672    676 	JR	NZ,L2N1
+                     673    677 ;
+c26f  cd 8a c2       674    678 	CALL	GNHLO		;YES. INCREMENT TO HL.
+c272  18 07          675    679 	JR	L2N2
+                     676    680 ;
+c274  cd 8b c2       677    681 L2N1:	CALL	GNHL		;INCREMENT
+c277  b7             678    682 	OR	A		;CLEAR CY
+c278  ed 52          679    683 	SBC	HL,DE		;N2-N1
+c27a  23             680    684 	INC	HL		;INCLUDE END POINT
+c27b  44             681    685 L2N2:	LD	B,H
+c27c  4d             682    686 	LD	C,L		;BC GET THE INCRM
+c27d  e5             683    687 	PUSH	HL
+c27e  fd e1          684    688 	POP	IY		;& SO DOES IY.
+c280  c9             685    689 	RET
+                     686    690 ;
+                     687    691 ;
+                     688    692 ; LOAD 3 OPERANDS. HL GETS THE SOURCE, BC
+                     689    693 ; THE INCREMENT, AND DE THE 3RD OPERAND.
+                     690    694 ;
+c281  97             691    695 L3NCR0:	SUB	A
+                     692    696 ;
+c282  cd 64 c2       693    697 L3NCR:	CALL	LD2N
+                     694    698 ;  (CONTINUE BELOW)
+                     695    699 ;
+                     696    700 ;
+                     697    701 ; ENTER WITH SPACE OR THE FIRST DIGIT
+                     698    702 ; OF A NUMBER IN A.  LOADS HL WITH
+                     699    703 ; A NEW NUMBER & THEN EXCHANGES
+                     700    704 ; DE & HL. FINISHES WITH A CRLF.
+                     701    705 ;
+c285  cd 8b c2       702    706 L1NCR:	CALL	GNHL		;SKIP SPACES, LOAD HL
+c288  18 9f          703    707 	JR	SKSGCR		;WAIT FOR A CR
+                     704    708 ;
+                     705    709 ;
+                     706    710 ; CLEARS HL. IF ENTERED WITH HEX CHAR IN A,
+                     707    711 ; SHITS IT INTO HL. O/W, IGNORES LEADING
+                     708    712 ; SPACES. FIRST CHAR MUST BE HEX. CONTINUES
+                     709    713 ; SHIFT UNTIL A NON-HEX CHAR RECEIVED & THEN
+                     710    714 ; RETURNS WITH THE LATTER IN A.
+                     711    715 ; PRESERVES B,C,D,E.
+                     712    716 ;
+                     713    717 ;
+c28a  97             714    718 GNHLO:	SUB	A
+                     715    719 ;
+c28b  c5             716    720 GNHL:	PUSH	BC		;SAVE
+Z80-Assembler		Release 1.6				Page 13
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c28c  21 00 00       717    721 	LD	HL,0		;CLEAR BUFFER
+                     718    722 ; STRIP LEADING SPACES & GET CHAR
+c28f  cd bb c2       719    723 	CALL	SKSG
+                     720    724 ; FIRST CHAR MUST BE HEX
+c292  cd a3 c2       721    725 	CALL	HEXSH		;IF HEX, SHIFT INTO HL
+c295  da b5 c1       722    726 	JP	C,ERROR		;O/W, ERROR
+c298  cd 19 c2       723    727 GN1:	CALL	GCHR
+c29b  cd a3 c2       724    728 	CALL	HEXSH		;IF HEX SHIFT INTO HL
+c29e  78             725    729 	LD	A,B		;RESTORE CHAR
+c29f  30 f7          726    730 	JR	NC,GN1		;IF HEX, CONTINUE
+c2a1  c1             727    731 	POP	BC		;IF NON-HEX,DONE
+c2a2  c9             728    732 	RET
+                     729    733 ;
+                     730    734 ;
+                     731    735 ; IF A CONTAINS HEX CHAR, SHIFTS BINARY EQUIVALENT
+                     732    736 ; INTO HL.  IF NOT HEX, RET WITH CY SET. SAVES
+                     733    737 ; ORIGINAL CHAR IN B
+                     734    738 ;
+c2a3  47             735    739 HEXSH:	LD	B,A
+c2a4  d6 30          736    740 	SUB	'0'		; < '0'?
+c2a6  d8             737    741 	RET	C
+c2a7  c6 e9          738    742 	ADD	A,'0'-('G'+CASE)
+c2a9  d8             739    743 	RET	C
+c2aa  d6 fa          740    744 	SUB	'A'-'G'
+c2ac  30 03          741    745 	JR	NC,HX1		;OK IF >= 'A'
+c2ae  c6 07          742    746 	ADD	A,('A'+CASE)-('9'+1)
+c2b0  d8             743    747 	RET	C
+c2b1  c6 0a          744    748 HX1:	ADD	A,('9'+1)-'0'
+                     745    749 ; THE A-REG NOW CONTAINS THE HEX DIGIT IN BINARY.
+                     746    750 ; (THE HIGH-ORDER NIBBLE OF A IS 0.)
+c2b3  29             747    751 HXSH4:	ADD	HL,HL		;SHIFT 4 BITS INTO HL
+c2b4  29             748    752 	ADD	HL,HL
+c2b5  29             749    753 	ADD	HL,HL
+c2b6  29             750    754 	ADD	HL,HL
+c2b7  b5             751    755 	OR	L
+c2b8  6f             752    756 	LD	L,A
+c2b9  c9             753    757 	RET
+                     754    758 ;
+                     755    759 ;
+                     756    760 ; RETURNS WITH A NON-SPACE IN THE A-REG.
+                     757    761 ; IF ENTERED WITH A-REG CONTAINING A NULL
+                     758    762 ; OR A SPACE, GETS NEW CHARS UNTIL FIRST
+                     759    763 ; NON-SPACE OCCURS. ALTERS AF.
+                     760    764 ;
+c2ba  97             761    765 SKSGO:	SUB	A
+                     762    766 ;
+c2bb  b7             763    767 SKSG:	OR	A		;DOES A CONTAIN NULL?
+c2bc  cc 19 c2       764    768 SK1:	CALL	Z,GCHR
+c2bf  fe 20          765    769 	CP	20H		;SPACE?
+c2c1  28 f9          766    770 	JR	Z,SK1
+c2c3  fe 0d          767    771 	CP	CR
+c2c5  c9             768    772 	RET
+                     769    773 ;
+                     770    774 ;
+                     771    775 ;
+                     772    776 ; PRINT SPACE FOLLOWED BY THE NUMBER POINTED
+                     773    777 ; TO BY HL. ALTERS A ONLY.
+                     774    778 ;
+c2c6  cd ef c1       775    779 PSNM:	CALL	SPACE
+                     776    780 ; (CONTINUE BELOW)
+Z80-Assembler		Release 1.6				Page 14
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     777    781 ;
+                     778    782 ; PRINTS THE NUMBER POINTED TO BY HL.
+                     779    783 ; PRESERVES ALL REGISTERS BUT A.
+                     780    784 ;
+c2c9  7e             781    785 PNM:	LD	A,(HL)
+c2ca  18 08          782    786 	JR	P2HEX
+                     783    787 ;
+                     784    788 ;
+                     785    789 ;
+                     786    790 ; PRINT THE NUMBER IN HL.
+                     787    791 ; PRESERVES ALL BUT A.
+                     788    792 ;
+c2cc  cd ef c1       789    793 PSNHL:	CALL	SPACE
+                     790    794 ;
+c2cf  7c             791    795 PNHL:	LD	A,H
+c2d0  cd d4 c2       792    796    	CALL	P2HEX
+c2d3  7d             793    797 	LD	A,L
+                     794    798 ;				;(CONTINUE BELOW)
+                     795    799 ;
+                     796    800 ; PRINT THE NUMBER IN THE A-REGISTER
+                     797    801 ; PRESERVES ALL REGISTERS.
+                     798    802 ;
+c2d4  cd d8 c2       799    803 P2HEX:	CALL	P1HEX
+c2d7  1f             800    804 	RRA
+c2d8  1f             801    805 P1HEX:	RRA
+c2d9  1f             802    806 	RRA
+c2da  1f             803    807 	RRA
+c2db  1f             804    808 	RRA
+c2dc  f5             805    809 	PUSH	AF
+c2dd  e6 0f          806    810 	AND	0FH		;MASK
+c2df  fe 0a          807    811         CP      10              ; <= 9?
+c2e1  38 02          808    812 	JR	C,PH1
+c2e3  c6 07          809    813 	ADD	A,7		;A THRU F
+c2e5  c6 30          810    814 PH1:	ADD	A,30H		;ASCII BIAS
+c2e7  cd f1 c1       811    815 	CALL	PCHR		;PRINT IT
+c2ea  f1             812    816 	POP	AF
+c2eb  c9             813    817 	RET
+                     814    818 ;
+                     815    819 ;
+                     816    820 ; PRINT MESSAGE. ENTER WITH ADDR OF MSG
+                     817    821 ; IN HL.  THE MESSAGE IS TERMINATED
+                     818    822 ; AFTER PRINTING A CHARACTER WHOSE
+                     819    823 ; PARITY BIT WAS SET.
+                     820    824 ; PRESERVES FLAGS, INCREMENTS HL.
+                     821    825 ;
+                     822    826 ;
+                     823    827 ;
+c2ec  f5             824    828 PMSG:	PUSH	AF		;SAVE
+c2ed  7e             825    829 PS1:	LD	A,(HL)
+c2ee  23             826    830 	INC	HL
+c2ef  cd f1 c1       827    831 	CALL	PCHR
+c2f2  17             828    832 	RLA			;LAST CHARACTER?
+c2f3  30 f8          829    833 	JR	NC,PS1		;IF NOT, LOOP
+c2f5  f1             830    834 	POP	AF
+c2f6  c9             831    835 	RET
+                     832    836 ;
+                     833    837 ;
+                     834    838 ; PRINTS THE MESSAGE FOLLOWING THE CALL
+                     835    839 ; TO THIS ROUTINE.
+                     836    840 ; PRESERVES ALL REGISTERS
+Z80-Assembler		Release 1.6				Page 15
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     837    841 ;
+                     838    842 PMSGFOLLOWING:
+c2f7  e3             839    843 	EX	(SP),HL
+c2f8  cd ec c2       840    844 	CALL	PMSG
+c2fb  e3             841    845 	EX	(SP),HL
+c2fc  c9             842    846 	RET
+                     843    847 ;
+                     844    848 ;
+                     845    849 ; COMMAND
+                     846    850 ;
+                     847    851 ; GO <ADDR>
+                     848    852 ; EXECUTION BEGINS AT ADDR.
+                     849    853 ;
+                     850    854 GO:
+c2fd  e1             851    855 	POP	HL		;CLEAN STACK
+c2fe  cd 85 c2       852    856 	CALL	L1NCR		;GET ADDR
+c301  eb             853    857 	EX	DE,HL
+c302  e9             854    858 	JP	(HL)
+                     855    859 ;
+                     856    860 ;
+                     857    861 ; COMMAND.  DISPLAY MEMORY.
+                     858    862 ;
+                     859    863 ; DM <STARTING ADDR> <ENDING ADDR OR SWATH>
+                     860    864 ;
+                     861    865 DSPM:
+c303  20 36          862    866 	JR	NZ,ERRORV	;IF NOT 'M', ERROR
+c305  cd 25 c2       863    867 	CALL	L2NCR0		;GET OPERANDS
+c308  16 10          864    868 DSPM1:	LD	D,16		;BYTE COUNT
+c30a  cd 30 c2       865    869 	CALL	PCADDR		;ADDRESS
+c30d  cd c6 c2       866    870 DM2:	CALL	PSNM		;MEM CONTENTS
+c310  ed a1          867    871 	CPI			;INC HL & DEC BC
+c312  e2 a9 c1       868    872 	JP	PO,CRLF
+c315  15             869    873 	DEC	D
+c316  28 f0          870    874 	JR	Z,DSPM1
+c318  7a             871    875 	LD	A,D
+c319  e6 03          872    876 	AND	3
+c31b  cc ef c1       873    877 	CALL	Z,SPACE
+c31e  18 ed          874    878 	JR	DM2
+                     875    879 ;
+                     876    880 ;
+                     877    881 SHANDLER:
+c320  28 1c          878    882 	JR	Z,SUBSM		;IF 'M', SUBSM
+                     879    883 ;
+                     880    884 ;
+                     881    885 ; DISK SEEK
+                     882    886 ;
+                     883    887 SEEKR:
+c322  cb 69          884    888 	BIT	DISKMODE,C
+c324  28 15          885    889 	JR	Z,ERRORV
+c326  cd 85 c2       886    890 	CALL	L1NCR		;E = TRACK #
+                     887    891 SEEKNXT:
+c329  3e 4c          888    892 	LD	A,76		;MAX TRACK #, MAXI DISK
+c32b  16 27          889    893 	LD	D,39		;MAX TRACK #, MINI DISK
+c32d  cd b2 c3       890    894 	CALL	CHKNO		;CHECK #
+c330  38 09          891    895 	JR	C,ERRORV
+c332  53             892    896 	LD	D,E		;TRACK #
+c333  cd 54 c0       893    897 	CALL	DSEEK
+c336  3e 53          894    898 	LD	A,'S'		;IN CASE OF SEEK ERROR
+                     895    899 ;
+c338  c3 97 c1       896    900 DERCKV:	JP	DERRCK		;DISK ERROR CHECK
+Z80-Assembler		Release 1.6				Page 16
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     897    901 ;
+                     898    902 ;
+c33b  c3 b5 c1       899    903 ERRORV:	JP	ERROR
+                     900    904 ;
+                     901    905 ;
+                     902    906 ; COMMAND.  SUBSTITUTE MEMORY LOCATION.
+                     903    907 ;
+                     904    908 ; SM <ADDR>
+                     905    909 ;
+                     906    910 SUBSM:
+c33e  97             907    911 	SUB	A
+c33f  cd 85 c2       908    912 	CALL	L1NCR
+c342  eb             909    913 	EX	DE,HL		;HL GETS ADDR
+c343  cc 30 c2       910    914 SM1:	CALL	Z,PCADDR
+c346  cc ef c1       911    915 	CALL	Z,SPACE
+                     912    916 ; PRINT CURRENT VALUE, REQUEST NEW VALUE &
+                     913    917 ; PRINT IT IF GIVEN
+c349  cd c9 c2       914    918 	CALL	PNM		;PRINT (HL)
+c34c  cd f7 c2       915    919 	CALL	PMSGFOLLOWING
+c34f  ae             916    920 	DEFB	('.'+80H)	;THE PROMPT
+c350  cd 19 c2       917    921 	CALL	GCHR
+c353  fe 2f          918    922 	CP	'.'+1		;IF <= '.',
+c355  dc f1 c1       919    923 	CALL	C,PCHR		;NO SUBSTITUTION.
+c358  38 06          920    924 	JR	C,SM2
+c35a  eb             921    925 	EX	DE,HL
+c35b  cd 8b c2       922    926 	CALL	GNHL		;GET NEW VALUE
+c35e  eb             923    927 	EX	DE,HL
+c35f  73             924    928 	LD	(HL),E
+c360  fe 0d          925    929 SM2:	CP	CR
+c362  c4 ef c1       926    930 	CALL	NZ,SPACE
+                     927    931 ;
+c365  c8             928    932 	RET	Z		;IF CR, DONE.
+c366  23             929    933 	INC	HL
+c367  3e 07          930    934 	LD	A,7		;PRINT ADDRESS IF IT
+c369  a5             931    935 	AND	L		;ITS A MULTIPLE OF 8
+c36a  18 d7          932    936 	JR	SM1
+                     933    937 ;
+                     934    938 ;
+                     935    939 RHANDLER:
+c36c  fe 44          936    940 	CP	'D'+CASE
+c36e  20 cb          937    941 	JR	NZ,ERRORV
+                     938    942 ;
+                     939    943 ; READ DISK
+                     940    944 ;
+                     941    945 READDR:
+c370  cd 94 c3       942    946 	CALL	SECSETUP
+c373  c5             943    947 RD2:	PUSH	BC
+c374  e5             944    948 	PUSH	HL
+c375  d5             945    949 	PUSH	DE
+c376  cd 8c c0       946    950 	CALL	DREAD
+c379  3e 52          947    951 	LD	A,'R'		;IN CASE OF READ ERROR
+c37b  cd bc c1       948    952 	CALL	NEXTSC		;NEXT SECTOR [POPS STK.]
+c37e  18 f3          949    953 	JR	RD2
+                     950    954 ;
+                     951    955 ;
+                     952    956 WHANDLER:
+c380  fe 44          953    957 	CP	'D'+CASE
+c382  20 b7          954    958 	JR	NZ,ERRORV
+                     955    959 ;
+                     956    960 ; WRITE DISK
+Z80-Assembler		Release 1.6				Page 17
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     957    961 ;
+                     958    962 WRITDR:
+c384  cd 94 c3       959    963 	CALL	SECSETUP
+c387  c5             960    964 WD2:	PUSH	BC
+c388  e5             961    965 	PUSH	HL
+c389  d5             962    966 	PUSH	DE
+c38a  cd a1 c0       963    967 	CALL	DWRITE
+c38d  3e 57          964    968 	LD	A,'W'		;IN CASE OF WRITE ERROR
+c38f  cd bc c1       965    969 	CALL	NEXTSC		;[POPS STACK]
+c392  18 f3          966    970 	JR	WD2
+                     967    971 ;
+                     968    972 ;
+                     969    973 ; GET MEMORY ADDRESS, SECTOR # AND CHECK IT,
+                     970    974 ; AND LOAD B & C
+                     971    975 ;
+                     972    976 SECSETUP:
+c394  cb 69          973    977 	BIT	DISKMODE,C
+c396  28 a3          974    978 	JR	Z,ERRORV
+c398  c5             975    979 	PUSH	BC
+c399  cd 81 c2       976    980 	CALL	L3NCR0		;BUFFER ADDRS & SEC #
+c39c  c1             977    981 	POP	BC
+c39d  cd ae c3       978    982 	CALL	CHKSECNO
+c3a0  38 99          979    983 	JR	C,ERRORV
+                     980    984 ;
+                     981    985 ;
+                     982    986 ; PRINT TRACK & SECTOR #'S
+                     983    987 ;
+                     984    988 PTRKSC:
+c3a2  db 31          985    989 	IN	A,(DTRACK)
+c3a4  57             986    990 	LD	D,A
+c3a5  eb             987    991 	EX	DE,HL
+c3a6  cd cc c2       988    992 	CALL	PSNHL		;PRINT TRK & SEC
+c3a9  eb             989    993 	EX	DE,HL
+c3aa  79             990    994 	LD	A,C		;DISK FLAGS
+c3ab  16 0a          991    995 	LD	D,10		;# OF RETRIALS
+c3ad  c9             992    996 	RET
+                     993    997 ;
+                     994    998 ;
+                     995    999 CHKSECNO:
+c3ae  3e 1a          996   1000 	LD	A,26		;MAX SEC #, MAXI DISK
+c3b0  16 12          997   1001 	LD	D,18		;MAX SEC #, MINI DISK
+                     998   1002 ;
+                     999   1003 ;
+                    1000   1004 CHKNO:
+c3b2  cb 61         1001   1005 	BIT	MAXI,C
+c3b4  20 01         1002   1006 	JR	NZ,CN2
+c3b6  7a            1003   1007 	LD	A,D
+c3b7  bb            1004   1008 CN2:	CP	E
+c3b8  d8            1005   1009 	RET	C
+c3b9  79            1006   1010 	LD	A,C
+c3ba  e6 03         1007   1011 	AND	NDRIVES-1
+c3bc  47            1008   1012 	LD	B,A		;DISK #
+c3bd  79            1009   1013 	LD	A,C		;DISK FLAGS
+c3be  c9            1010   1014 	RET
+                    1011   1015 ;
+                    1012   1016 ;
+                    1013   1017 ; COMMAND
+                    1014   1018 ; OUT <DATA-BYTE> <PORT NUMBER>
+                    1015   1019 ;
+c3bf  cd 8b c2      1016   1020 OUTP:	CALL	GNHL
+Z80-Assembler		Release 1.6				Page 18
+Source file: rdos1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+c3c2  eb            1017   1021 	EX	DE,HL		;E GETS DATA
+c3c3  cd 85 c2      1018   1022 	CALL	L1NCR		;GET PORT NUMBER
+                    1019   1023 ;
+c3c6  4b            1020   1024 	LD	C,E		; TO C
+c3c7  ed 69         1021   1025 	OUT	(C),L
+c3c9  c9            1022   1026 	RET
+                    1023   1027 ;
+                    1024   1028 ;
+                    1025   1029 ; BAUD RATES:
+                    1026   1030 ; 19200, 9600, 4800, 2400, 1200, 300, 150, 110.
+                    1027   1031 ;
+c3ca  90 c0 a0 90   1028   1032 BAUDRS:	DEFB	90H,0C0H,0A0H,90H,88H,84H,82H,1
+c3ce  88 84 82 01   1028   1033
+                    1029   1034 ;
+                    1030   1035 ;
+                    1031   1036 CMNDTBL:
+c3d2  b5 c1         1032   1037 	DEFW	ERROR		;A
+c3d4  15 c0         1033   1038 	DEFW	BOOTMC		;BOOT CDOS
+c3d6  b5 c1         1034   1039 	DEFW	ERROR		;C
+c3d8  03 c3         1035   1040 	DEFW	DSPM		;DISPLAY MEMORY
+c3da  ad c1         1036   1041 	DEFW	EXMINPUT	;EXAMINE INPUT PORT
+c3dc  b5 c1         1037   1042 	DEFW	ERROR		;F
+c3de  fd c2         1038   1043 	DEFW	GO		;GO [TRANSFER OF CONTROL]
+c3e0  b5 c1         1039   1044 	DEFW	ERROR		;H
+c3e2  eb c0         1040   1045 	DEFW	INITBR		;INITIALIZE BAUD RATE
+c3e4  b5 c1         1041   1046 	DEFW	ERROR		;J
+c3e6  06 c1         1042   1047 	DEFW	KICKSTK		;KICK SYSTEM STACK
+c3e8  b5 c1         1043   1048 	DEFW	ERROR		;L
+c3ea  57 c2         1044   1049 	DEFW	MOVE		;MOVE A BLOCK OF MEMORY
+c3ec  b5 c1         1045   1050 	DEFW	ERROR		;N
+c3ee  bf c3         1046   1051 	DEFW	OUTP		;OUTPUT
+c3f0  b5 c1         1047   1052 	DEFW	ERROR		;P
+c3f2  b5 c1         1048   1053 	DEFW	ERROR		;Q
+c3f4  6c c3         1049   1054 	DEFW	RHANDLER	;READ DISK
+c3f6  20 c3         1050   1055 	DEFW	SHANDLER	;SUBSTITUTE MEM; SEEK TRACK
+c3f8  b5 c1         1051   1056 	DEFW	ERROR		;T
+c3fa  b5 c1         1052   1057 	DEFW	ERROR		;U
+c3fc  3a c2         1053   1058 	DEFW	VERIF		;VERIFY BLOCKS OF MEMORY
+c3fe  80 c3         1054   1059 	DEFW	WHANDLER	;WRITE DISK
+                    1055   1060 ;
+                    1056   1061 ;
+c3ff                1057   1062 LASTBYTE: EQU	$-1
+                    1058   1063 ;
+c400                1059   1064 	END
+Z80-Assembler		Release 1.6				Page 19
+Source file: rdos1.asm
+Title:       Symboltable
+
+ALT      007d	BAUD     0000	BAUDRS   c3ca	BOOTDK   c018	
+BOOTMC   c015	BOOTSW   0040	BOT200   c01c	BOT300   c024	
+BOT500   c03a	CASE     0000	CHKIN    c0db	CHKNO    c3b2	
+CHKSECNO c3ae	CLEANSTA c123	CLEANV   c1b9	CM6      c143	
+CMND     c128	CMNDTBL  c3d2	CN2      c3b7	COMMND   0002	
+CR       000d	CRLF     c1a9	DATA     0001	DAV      0040	
+DCOMMND  0030	DCONTR   0034	DDATA    0033	DERCKV   c338	
+DERRCK   c197	DFLAGS   0034	DHOME    c03f	DISKMODE 0005	
+DISKSELE c162	DM2      c30d	DRD250   c095	DREAD    c08c	
+DS2      c18c	DSEC     0032	DSEEK    c054	DSK500   c076	
+DSK540   c07f	DSPM     c303	DSPM1    c308	DSTAT    0030	
+DTRACK   0031	DWR250   c0aa	DWRITE   c0a1	EREXIT   c071	
+ERROR    c1b5	ERRORV   c33b	ESC      001b	ESCAPE   c1b9	
+EXCCHK   c06c	EXECUTE  c06a	EXMINPUT c1ad	FASTSEEK 0007	
+GBYTE    c0e3	GCHR     c219	GN1      c298	GNHL     c28b	
+GNHLO    c28a	GO       c2fd	HDLDM    0020	HEXSH    c2a3	
+HX1      c2b1	HXSH4    c2b3	IMASK    0003	INITBAUD c0ee	
+INITBR   c0eb	IT1      c0f5	KICKSTK  c106	L1NCR    c285	
+L2N1     c274	L2N2     c27b	L2NCR    c226	L2NCR0   c225	
+L3NCR    c282	L3NCR0   c281	LASTBYTE c3ff	LD2N     c264	
+LF       000a	LOADIX   c11e	MAXI     0004	MAXIM    0010	
+MONITR   c10b	MOVE     c257	NDRIVES  0004	NEXTSC   c1bc	
+NS2      c1c7	NS4      c1d1	OUTP     c3bf	P1HEX    c2d8	
+P2HEX    c2d4	P2HXCLEA c1a4	PADDR    c233	PARLEL   0004	
+PC1      c1f2	PC2      c201	PC3      c217	PCADDR   c230	
+PCHR     c1f1	PERRMSG  c198	PH1      c2e5	PMSG     c2ec	
+PMSGFOLL c2f7	PNHL     c2cf	PNM      c2c9	PS1      c2ed	
+PSNHL    c2cc	PSNM     c2c6	PTRKSC   c3a2	RD2      c373	
+READDR   c370	RHANDLER c36c	SECSETUP c394	SEEKNXT  c329	
+SEEKR    c322	SEL300   c0d1	SELECT   c0cb	SETUP    c0b6	
+SHANDLER c320	SK1      c2bc	SKSG     c2bb	SKSGCR   c229	
+SKSGO    c2ba	SM1      c343	SM2      c360	SPACE    c1ef	
+STACK    007c	START    c000	STAT     0000	SUBSM    c33e	
+TBE      0080	VERIF    c23a	VRFY     c23d	WD2      c387	
+WHANDLER c380	WRITDR   c384	

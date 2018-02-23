@@ -1,0 +1,643 @@
+;	CP/M 3 BIOS for Z80-Simulator
+;
+;	Copyright (C) 1989-2015 by Udo Munk
+;
+	.Z80
+;
+;	bdos functions
+;
+WARM	EQU	0
+BDOS	EQU	5
+PRINT	EQU	9
+OPEN	EQU	15
+READS	EQU	20
+DMA	EQU	26
+MULTI	EQU	44
+;
+TPA	EQU	0100H		;address of TPA
+CPPSECS	EQU	26		;number of sectors to load for ccp
+;
+;	i/o ports
+;
+CONSTA	EQU	0		;console status port
+CONDAT	EQU	1		;console data port
+PRTSTA	EQU	2		;printer status port
+PRTDAT	EQU	3		;printer data port
+AUXSTA	EQU	4		;auxilary status port
+AUXDAT	EQU	5		;auxilary data port
+FDCD	EQU	10		;fdc-port: # of drive
+FDCT	EQU	11		;fdc-port: # of track
+FDCS	EQU	12		;fdc-port: # of sector (low)
+FDCOP	EQU	13		;fdc-port: command
+FDCST	EQU	14		;fdc-port: status
+DMAL	EQU	15		;dma-port: dma address low
+DMAH	EQU	16		;dma-port: dma address high
+FDCSH	EQU	17		;fdc-port: # of sector high
+MMUINI	EQU	20		;initialize mmu
+MMUSEL	EQU	21		;bank select mmu
+CLKCMD	EQU	25		;clock command
+CLKDAT	EQU	26		;clock data
+;
+;	clock commands
+;
+GETSEC	EQU	0		;get seconds
+GETMIN	EQU	1		;get minutes
+GETHOU	EQU	2		;get hours
+GETDAL	EQU	3		;get days low
+GETDAH	EQU	4		;get days high
+;
+;	character device mode byte fields
+;
+mb$input	EQU	00000001B		;device may do input
+mb$output	EQU	00000010B		;device may do output
+mb$in$out	EQU	mb$input+mb$output	;device may do both
+baud$none	EQU	0
+;
+;	external references in scb
+;
+	EXTRN	@civec, @covec, @aovec, @aivec, @lovec, @bnkbf
+	EXTRN	@crdma, @crdsk, @fx, @resel, @vinfo, @usrcd
+	EXTRN	@ermde, @date, @hour, @min, @sec, @mxtpa
+;
+	CSEG
+;
+;	cp/m 3 jump vector for individual subroutines
+;
+	JP	BOOT		;perform cold start initialization
+WBOOTE:	JP	WBOOT		;perform warm start initialization
+	JP	CONST		;check for console input char ready
+	JP	CONIN		;read console character in
+	JP	CONOUT		;write console character out
+	JP	LIST		;write list character out
+	JP	AUXOUT		;write auxiliary output char
+	JP	AUXIN		;read auxiliary input char
+	JP	HOME		;move head to track 0 on selcted disk
+	JP	SELDSK		;select disk drive
+	JP	SETTRK		;set track number
+	JP	SETSEC		;set sector number
+	JP	SETDMA		;set dma address
+	JP	READ		;read specified sector
+	JP	WRITE		;write specified sector
+	JP	LISTST		;return list status
+	JP	SECTRAN		;translate logical to physical sector
+	JP	CONOST		;return output status of console
+	JP	AUXIST		;return input status of aux. port
+	JP	AUXOST		;return output status of aux. port
+	JP	DEVTBL		;return address of character i/o table
+	JP	DEVINI		;initialize character i/o devices
+	JP	DRVTBL		;return address of disk drive table
+	JP	MULTIO		;set number of sectors to read/write
+	JP	FLUSH		;flush deblocking buffers
+	JP	MOVE		;memory to memory move
+	JP	TIME		;time set/get signal
+	JP	SELMEM		;select bank of memory
+	JP	SETBNK		;specify bank for dma operation
+	JP	XMOVE		;set bank for memory dma transfer
+	JP	0		;reserved for system implementor
+	JP	0		;reserved for future use
+	JP	0		;reserved for future use
+;
+;	drive table
+;
+DRIVES:	DW	DPH0
+	DW	DPH1
+	DW	DPH2
+	DW	DPH3
+	DW	0
+	DW	0
+	DW	0
+	DW	0
+	DW	DPH8
+	DW	DPH9
+	DW	0
+	DW	0
+	DW	0
+	DW	0
+	DW	0
+	DW	DPH15
+;
+;	fixed data tables for IBM-compatible 8" SD disks
+;
+;	disk parameter header
+;
+DPH0:	DEFW	TRANS			;sector translation table
+	DB	0,0,0,0,0,0,0,0,0	;bdos scratch area
+	DB	0			;media flag
+	DEFW	DPB0			;disk parameter block
+	DEFW	0FFFEH			;checksum vector
+	DEFW	0FFFEH			;allocation vector
+	DEFW	0FFFEH			;directory buffer control block
+	DEFW	0FFFFH			;dtabcb not used
+	DEFW	0FFFEH			;hashing
+	DEFB	0			;hash bank
+DPH1:	DEFW	TRANS			;sector translation table
+	DB	0,0,0,0,0,0,0,0,0	;bdos scratch area
+	DB	0			;media flag
+	DEFW	DPB0			;disk parameter block
+	DEFW	0FFFEH			;checksum vector
+	DEFW	0FFFEH			;allocation vector
+	DEFW	0FFFEH			;directory buffer control block
+	DEFW	0FFFFH			;dtabcb not used
+	DEFW	0FFFEH			;hashing
+	DEFB	0			;hash bank
+DPH2:	DEFW	TRANS			;sector translation table
+	DB	0,0,0,0,0,0,0,0,0	;bdos scratch area
+	DB	0			;media flag
+	DEFW	DPB0			;disk parameter block
+	DEFW	0FFFEH			;checksum vector
+	DEFW	0FFFEH			;allocation vector
+	DEFW	0FFFEH			;directory buffer control block
+	DEFW	0FFFFH			;dtabcb not used
+	DEFW	0FFFEH			;hashing
+	DEFB	0			;hash bank
+DPH3:	DEFW	TRANS			;sector translation table
+	DB	0,0,0,0,0,0,0,0,0	;bdos scratch area
+	DB	0			;media flag
+	DEFW	DPB0			;disk parameter block
+	DEFW	0FFFEH			;checksum vector
+	DEFW	0FFFEH			;allocation vector
+	DEFW	0FFFEH			;directory buffer control block
+	DEFW	0FFFFH			;dtabcb not used
+	DEFW	0FFFEH			;hashing
+	DEFB	0			;hash bank
+;
+;	sector translate vector for the IBM 8" SD disk
+;
+TRANS:	DEFB	1,7,13,19	;sectors 1,2,3,4
+	DEFB	25,5,11,17	;sectors 5,6,7,8
+	DEFB	23,3,9,15	;sectors 9,10,11,12
+	DEFB	21,2,8,14	;sectors 13,14,15,16
+	DEFB	20,26,6,12	;sectors 17,18,19,20
+	DEFB	18,24,4,10	;sectors 21,22,23,24
+	DEFB	16,22		;sectors 25,26
+;
+;	disk parameter block for the IBM 8" SD disk
+;
+DPB0:	DEFW	26		;sectors per track
+	DEFB	3		;block shift factor
+	DEFB	7		;block mask
+	DEFB	0		;extent mask
+	DEFW	242		;disk size-1
+	DEFW	63		;directory max
+	DEFB	192		;alloc 0
+	DEFB	0		;alloc 1
+	DEFW	16		;check size
+	DEFW	2		;track offset
+	DEFB	0,0		;physical sector size and shift
+;
+;	fixed data tables for 4mb harddisks
+;
+;	disk parameter header
+;
+DPH8:	DEFW	0			;sector translation table
+	DB	0,0,0,0,0,0,0,0,0	;bdos scratch area
+	DB	0			;media flag
+	DEFW	DPB1			;disk parameter block
+	DEFW	0FFFEH			;checksum vector
+	DEFW	0FFFEH			;allocation vector
+	DEFW	0FFFEH			;directory buffer control block
+	DEFW	0FFFFH			;dtabcb not used
+	DEFW	0FFFEH			;hashing
+	DEFB	0			;hash bank
+DPH9:	DEFW	0			;sector translation table
+	DB	0,0,0,0,0,0,0,0,0	;bdos scratch area
+	DB	0			;media flag
+	DEFW	DPB1			;disk parameter block
+	DEFW	0FFFEH			;checksum vector
+	DEFW	0FFFEH			;allocation vector
+	DEFW	0FFFEH			;directory buffer control block
+	DEFW	0FFFFH			;dtabcb not used
+	DEFW	0FFFEH			;hashing
+	DEFB	0			;hash bank
+;
+;	disk parameter block for 4mb harddisk
+;
+DPB1:	DEFW    128		;sectors per track
+	DEFB    4		;block shift factor
+	DEFB    15		;block mask
+	DEFB    0		;extent mask
+	DEFW    2039		;disk size-1
+	DEFW    1023		;directory max
+	DEFB    255		;alloc 0
+	DEFB    255		;alloc 1
+	DEFW    256		;check size
+	DEFW    0		;track offset
+	DEFB	0,0		;physical sector size and shift
+;
+;	fixed data tables for 512mb harddisk
+;
+;	disk parameter header
+;
+DPH15:	DEFW	0			;sector translation table
+	DB	0,0,0,0,0,0,0,0,0	;bdos scratch area
+	DB	0			;media flag
+	DEFW	DPB2			;disk parameter block
+	DEFW	0FFFEH			;checksum vector
+	DEFW	0FFFEH			;allocation vector
+	DEFW	0FFFEH			;directory buffer control block
+	DEFW	0FFFFH			;dtabcb not used
+	DEFW	0FFFEH			;hashing
+	DEFB	0			;hash bank
+;
+;	disk parameter block for 512mb harddisk
+;
+DPB2:	DEFW    16384		;sectors per track
+	DEFB    7		;block shift factor
+	DEFB    127		;block mask
+	DEFB    0		;extent mask
+	DEFW    7FFFH		;disk size-1
+	DEFW    8191		;directory max
+	DEFB    255		;alloc 0
+	DEFB    255		;alloc 1
+	DEFW    2048		;check size
+	DEFW    0		;track offset
+	DEFB	0,0		;physical sector size and shift
+;
+;	character device table
+;
+CHRTBL:	DEFB	'CRT   '
+	DEFB	mb$in$out
+	DEFB	baud$none
+	DEFB	'LPT   '
+	DEFB	mb$output
+	DEFB	baud$none
+	DEFB	'PTP   '
+	DEFB	mb$output
+	DEFB	baud$none
+	DEFB	'PTR   '
+	DEFB	mb$input
+	DEFB	baud$none
+	DEFB	0
+;
+;	fcb for loading ccp
+;
+CCPFCB:	DEFB	1,'CCP     COM',0,0,0,0
+	DEFB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CCPREC:	DEFB	0,0,0
+;
+;	bios error messages
+;
+CCPIOE:	DEFB	13,10,'BIOS ERROR: reading CCP.COM',13,10,'$'
+LOADE:	DEFB	13,10,'BIOS ERROR: reading systrack',13,10,'$'
+;
+BANK:	DEFB	0		;bank to select for dma
+;
+;	small stack
+;
+	DS	16
+STACK:
+;
+	DSEG
+;
+;	signon message
+;
+SIGNON:	DEFB	13,10
+	DEFM	'BANKED BIOS3 V1.6-HD, '
+	DEFM	'Copyright 1989-2015 by Udo Munk'
+	DEFB	13,10
+	DEFB	0
+;
+;	end of fixed tables
+;
+;	individual subroutines to perform each function
+;
+BOOT:	LD	SP,STACK
+	LD	HL,SIGNON	;print message
+BOOT1:	LD	A,(HL)
+	OR	A
+	JP	Z,BOOT2
+	LD	C,A
+	CALL	CONOUT
+	INC	HL
+	JP	BOOT1
+;
+BOOT2:	LD	HL,8000H
+	LD	(@civec),HL	;CONSOLE:=CON for input
+	LD	(@covec),HL	;CONSOLE:=CON for output
+	LD	HL,4000H
+	LD	(@lovec),HL	;LST:=LPT
+	LD	HL,2000H
+	LD	(@aovec),HL	;AUXOUT:=PTP
+	LD	HL,1000H
+	LD	(@aivec),HL	;AUXIN:=PTR
+;
+	LD	A,3		;initialize 3 memory banks
+	OUT	(MMUINI),A
+;
+	LD	B,1		;indicate cold boot
+	JP	WBOOT1
+;
+	CSEG
+;
+WBOOT:	LD	B,0		;indicate warm boot
+WBOOT1:	LD	SP,STACK
+;
+;	initialize low memory jumps in bank 1
+;
+	LD	A,1		;select bank 1
+	CALL	SELMEM
+;
+	LD	A,0C3H		;jmp instruction
+	LD	(WARM),A
+	LD	HL,WBOOTE	;warm boot enty point
+	LD	(WARM+1),HL
+	LD	(BDOS),A
+	LD	HL,(@mxtpa)	;bdos entry point
+	LD	(BDOS+1),HL
+;
+;	load ccp into tpa
+;
+LDCCP:	XOR	A		;initialize fcb
+	LD	(CCPFCB+15),A
+	LD	HL,0
+	LD	(CCPREC),HL
+	LD	DE,CCPFCB	;open file ccp.com
+	LD	C,OPEN
+	CALL	BDOS
+	INC	A
+	JP	Z,LDCCPS	;if file not found load from system track
+	LD	DE,TPA		;setup dma to tpa
+	LD	C,DMA
+	CALL	BDOS
+	LD	DE,128		;read up to 16KB
+	LD	C,MULTI
+	CALL	BDOS
+	LD	DE,CCPFCB	;read the ccp into memory
+	LD	C,READS
+	CALL	BDOS
+	LD	DE,CCPIOE
+	INC	A
+	JP	NZ,TPA		;start ccp
+	LD	C,PRINT		;print error message
+	CALL	BDOS
+	DI
+	HALT			;and halt the machine
+LDCCPS:	LD	A,1		;select bank for dma transfer
+	CALL	SETBNK
+	LD	C,0		;select disk 0
+	CALL	SELDSK
+	LD	C,1		;select track 1
+	CALL	SETTRK
+	LD	B,CPPSECS	;b counts # of sectors to load
+	LD	D,1		;d has the next sector to read
+	LD	HL,TPA		;load address
+LDCCPS1:	
+	PUSH	BC		;save sector count
+	PUSH	DE		;save next sector to read
+	PUSH	HL		;save dma address
+	LD	C,D		;select sector
+	LD	B,0
+	CALL	SETSEC
+	POP	BC		;recall dma address to b,c
+	PUSH	BC		;replace on stack for later recall
+	CALL	SETDMA		;set dma address from b,c
+	CALL	READ		;read next sector
+	OR	A		;any errors?
+	JP	Z,LDCCPS2	;no, continue
+	LD	DE,LOADE	;print error messages
+	LD	C,PRINT
+	CALL	BDOS
+	DI
+	HALT			;and halt the machine
+LDCCPS2:
+	POP	HL		;recall dma address
+	LD	DE,128		;dma=dma+128
+	ADD	HL,DE
+	POP	DE		;recall sector address
+	POP	BC		;recall number of sectors to read
+	DEC	B		;sectors=sectors-1
+	JP	Z,LDCCPS3	;transfer to cpp if all have been loaded
+	INC	D
+	JP	LDCCPS1		;for another sector
+LDCCPS3:
+	LD	A,1		;select bank 1
+	CALL	SELMEM
+	JP	TPA		;and go to ccp
+;
+;	character i/o drivers
+;
+DEVTBL:	LD	HL,CHRTBL
+	RET
+;
+;	character device initialization
+;
+DEVINI:	RET
+;
+;	console in status, return 0ffh if character ready, 00h if not
+;
+CONST:	IN	A,(CONSTA)
+	RET
+;
+;	console character input from register a
+;
+CONIN:	IN	A,(CONDAT)
+	RET
+;
+;	console out status, return 0ffh if ready, 00h if not
+CONOST:	LD	A,0FFH		;console out always ready
+	RET
+;
+;	console character output from register c
+;
+CONOUT: LD	A,C		;get to accumulator
+	OUT	(CONDAT),A	;send character to console
+	RET
+;
+;	list out status, return 0ffh if ready, 00h if not
+;
+LISTST:	LD	A,0FFH		;list out always ready
+	RET
+;
+;	list character output from register C
+;
+LIST:	LD	A,C
+	OUT	(PRTDAT),A
+	RET
+;
+;	auxilary input status, 0ffh if ready, 00h if not
+;
+AUXIST:	IN	A,(AUXSTA)
+	OR	A
+	JP	Z,AUXIST1
+	XOR	A		;not reday
+	RET
+AUXIST1:
+	DEC	A		;ready
+	RET
+;
+;	auxilary output status, 0ffh if ready, 00h if not
+;
+AUXOST:	LD	A,0FFH		;always ready
+	RET
+;
+;	auxilary input
+;
+AUXIN:	IN	A,(AUXDAT)
+	RET
+;
+;	auxilary output from register c
+;
+AUXOUT:	LD	A,C
+	OUT	(AUXDAT),A
+	RET
+;
+;
+;	i/o drivers for the disks
+;
+DRVTBL:	LD	HL,DRIVES
+	RET
+;
+	DSEG
+;
+;	move to the track 00 position of current drive
+;	translate this call into a settrk call with parameter 00
+;
+HOME:	LD	C,0		;select track 0
+	JP	SETTRK		;we will move to 00 on first read/write
+;
+	CSEG
+;
+;	select disk given by register C
+;
+SELDSK:
+	LD	L,C
+	LD	H,0
+	ADD	HL,HL		;drive index in hl
+	LD	DE,DRIVES
+	ADD	HL,DE		;get pointer to dph
+	LD	A,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,A
+	LD	A,C
+	OUT	(FDCD),A	;selekt disk drive
+	RET
+;
+;	set track given by register c
+;
+SETTRK: LD	A,C
+	OUT	(FDCT),A
+	RET
+;
+;	set sector given by register bc
+;
+SETSEC: LD	A,C
+	OUT	(FDCS),A
+	LD	A,B
+	OUT	(FDCSH),A
+	RET
+;
+	DSEG
+;
+;	translate the sector given by bc using the
+;	translate table given by de
+;
+SECTRAN:
+	LD	A,D		;do we have a translation table?
+	OR	E
+	JP	NZ,SECT1	;yes, translate
+	LD	L,C		;no, return untranslated
+	LD	H,B		;in HL
+	INC	L		;sector no. start with 1
+	RET	NZ
+	INC	H
+	RET
+SECT1:	EX	DE,HL		;hl=.trans
+	ADD	HL,BC		;hl=.trans(sector)
+	LD	L,(HL)		;l = trans(sector)
+	LD	H,0		;hl= trans(sector)
+	RET			;with value in HL
+;
+	CSEG
+;
+;	set dma address given by registers b and c
+;
+SETDMA: LD	A,C		;low order address
+	OUT	(DMAL),A
+	LD	A,B		;high order address
+	OUT	(DMAH),A
+	RET
+;
+;	perform read operation
+;
+READ:	LD	A,(BANK)	;switch to saved bank
+	OUT	(MMUSEL),A
+	XOR	A		;read command -> A
+	JP	WAITIO		;to perform the actual i/o
+;
+;	perform write operation
+;
+WRITE:	LD	A,(BANK)	;switch to saved bank
+	OUT	(MMUSEL),A
+	LD	A,1		;write command -> A
+;
+;	enter here from read and write to perform the actual i/o
+;	operation. return 00h in register a if the operation completes
+;	properly, and 01h if an error occurs during the read or write
+;
+WAITIO:	OUT	(FDCOP),A	;start i/o operation
+	XOR	A		;reselect bank 0
+	OUT	(MMUSEL),A
+	IN	A,(FDCST)	;status of i/o operation -> A
+	RET
+;
+;	nothing to do
+;
+MULTIO: XOR	A
+	RET
+;
+;	nothing to do
+;
+FLUSH:	XOR	A
+	RET
+;
+;	memory move
+;
+MOVE:	EX	DE,HL
+	LDIR
+	EX	DE,HL
+	RET
+;
+;	select memory bank
+SELMEM: OUT	(MMUSEL),A
+	RET
+;
+;	specify memory bank for dma operation
+SETBNK: LD	(BANK),A
+	RET
+;
+;	xmove not implemented yet
+;
+XMOVE: RET
+;
+;	get/set time
+;
+TIME:
+	LD	A,C
+	CP	0FFH
+	RET	Z		;we cannot set the UNIX time from here
+	LD	A,GETSEC	;get seconds
+	OUT	(CLKCMD),A
+	IN	A,(CLKDAT)
+	LD	(@sec),A
+	LD	A,GETMIN	;get minutes
+	OUT	(CLKCMD),A
+	IN	A,(CLKDAT)
+	LD	(@min),A
+	LD	A,GETHOU	;get hours
+	OUT	(CLKCMD),A
+	IN	A,(CLKDAT)
+	LD	(@hour),A
+	LD	A,GETDAL	;get day
+	OUT	(CLKCMD),A
+	IN	A,(CLKDAT)
+	LD	(@date),A
+	LD	A,GETDAH
+	OUT	(CLKCMD),A
+	IN	A,(CLKDAT)
+	LD	(@date+1),A
+	RET
+;
+ENDDAT	EQU	$		;end
+;
+	END			;of BIOS

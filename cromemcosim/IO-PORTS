@@ -1,0 +1,48 @@
+			I/O PORT ASSIGNMENT TABLE
+
+Port No.	I/O	Product		Function
+-------------------------------------------------------------------
+  00		in	TU-ART, 4FDC	Uart status (Multi-User User 1)
+  00		out	TU-ART, 4FDC	Uart baud rate
+  01		in/out	TU-ART, 4FDC	Console data
+  02		out	TU-ART, 4FDC	Uart command register
+  03		in	TU-ART, 4FDC	Interrupt address
+  03		out	TU-ART, 4FDC	Interrupt mask
+  04		in/out	TU-ART, 4FDC	Parallel 8 bit I/O
+  05		out	TU-ART, 4FDC	Interval timer register 1
+  06		out	TU-ART, 4FDC	Interval timer register 2
+  07		out	TU-ART, 4FDC	Interval timer register 3
+  08		out	TU-ART, 4FDC	Interval timer register 4
+  09		out	TU-ART, 4FDC	Interval timer register 5
+  0E		in	DAZZLER		Frame and line info
+  0E		out	DAZZLER		On/off and memory area
+  0F		out	DAZZLER		Resolution, B&W or Color, etc.
+  18		in	D+7A		Parallel input (Joystick Pushbuttons)
+  18		out	D+7A		Parallel output
+  19		in/out	D+7A		Joystick 1, X-AXIS input, Speaker output
+  1A		in/out	D+7A		Joystick 1, Y-AXIS input, Analog output
+  1B		in/out	D+7A		Joystick 2, X-AXIS input, Speaker output
+  1C		in/out	D+7A		Joystick 2, Y-AXIS input, Analog output
+  1D		in/out	D+7A		Analog I/O
+  1E		in/out	D+7A		Analog I/O
+  1F		in/out	D+7A		Analog I/O
+  20		in	TU-ART		Multi-User 2
+  30		in	4FDC		Disk status
+  31		in/out	4FDC		Interrupt mask
+  32		in/out	4FDC		Disk sector
+  33		in/out	4FDC		Disk data
+  34		in	4FDC		Disk flags
+  34		out	4FDC		Disk control
+  40		out	4KZ,16KZ..	Bank select
+  50		in	TU-ART		Multi-User 3
+  5X		in/out	TU-ART		Recommend second I/O (same as 00-09)
+  54		out	TU-ART		CDOS Line Printer (optional)
+  54		in/out	PRI		CDOS Dot Matrix Line Printer
+  5A		in/out	PRI		CDOS Daisy-wheel printer Handshake/Data
+  5B		out	PRI		CDOS Daisy-wheel printer Data
+  5C		out	PRI		CDOS Daisy-wheel printer Control
+  60		in	TU-ART		Multi-User 4
+  70		in	TU-ART		Multi-User 5
+  80		in	TU-ART		Multi-User 6
+  90		in	TU-ART		Multi-User 7
+  FF		in/out	Z1		Sense switches/Front pannel lights

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rm -f disks/drivea.dsk
+ln disks/library/cpm14.dsk disks/drivea.dsk
+
+./cpmsim $*

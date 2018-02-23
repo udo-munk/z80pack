@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rm -f disks/drivea.dsk
+ln disks/library/imsai-cpm13.dsk disks/drivea.dsk
+
+./imsaisim -x bootrom.hex $*

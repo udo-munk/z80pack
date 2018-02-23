@@ -1,0 +1,1072 @@
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 1
+      
+
+
+                   ; HAND DISASSEMBLY OF THE DAZZLEMATION MEMORY IMAGE PROVIDED IN THE
+                   ; ORIGINAL 14 PAGE DAZZLEMATION MANUAL.
+                   ;
+                   ; THIS CODE WAS ORIGINALLY CONCEIVED AND COMPOSED BY:
+                   ;
+                   ; --------------------------------------------------------------------
+                   ; -----------------------STEVE DOMPIER--------------------------------
+                   ; --------------------------------------------------------------------
+                   ;
+                   ; THIS DISASSEMBLY, ANALYSIS AND DOCUMATION OF THE MEMORY IMAGE WAS
+                   ; PRODUCED BY BILL SUDBRINK IN APRIL 2016.
+                   ;
+                   ; WHEN ASSEMBLED WITH THE CP/M 2.2 ASSEMBLER PROGRAM, THIS FILE WILL
+                   ; PRODUCE THE MEMORY IMAGE PRINTED IN THE MANUAL.
+                   ;
+                   ; MINOR MODIFICATIONS TO ASSEMBLE WITH INTEL MACRO 80
+                   ; UDO MUNK MAY 2016
+                    
+                   ; PORT TO READ THE FRONT PANEL SWITCHES
+   00FF            SWITPORT        EQU     0FFH
+                    
+                   ; THESE VALUES ARE ORIGINAL AND WORK WITH THE CONSOLE PORT ON A CROMEMCO
+                   ; FDC SERIES FLOPPY CONTROLLER:
+                   ; PORT TO READ AND WRITE BYTES TO AND FROM THE CONSOLE SERIAL PORT
+   0001            DATAPORT        EQU     01H
+                   ; PORT TO CHECK THE STATUS OF THE CONSOLE SERIAL PORT
+   0000            STATPORT        EQU     00H
+   0040            STATRXOK        EQU     40H
+   0080            STATTXOK        EQU     80H
+                    
+                   ; THESE VALUES WORK WITH A MITS 2-SIO SERIAL CARD CONFIGURED FOR MITS
+                   ; PROM MONITOR
+                   ; DATAPORT      EQU     11H
+                   ; STATPORT      EQU     10H
+                   ; STATRXOK      EQU     01H
+                   ; STATTXOK      EQU     02H
+                    
+                    
+                   ; THE ORIGINAL CONSOLE DEVICE WAS APPARENTLY INTENDED TO BE A TELETYPE
+                   ; WITH AN EVEN PARITY KEYBOARD.  IN THAT CASE, CRTL-Z COMES IN AS:
+   009A            CTRLZ   EQU     9AH
+                   ; IF YOU WANT THE ORIGINAL IMAGE, USE THE ABOVE.  IF YOU WANT CONTROL Z
+                   ; TO WORK, USE:
+                   ; CTRLZ EQU     1AH
+                    
+                    
+   0000                    ORG     0
+                    
+   0000   C30002           JMP     START
+                    
+                   ; DATA
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 2
+      
+
+
+                    
+   0003            COORDS:                         ; CURSOR X,Y COORDINATES
+   0003   1F               DB      1FH             ; INITIALIZED TO (0X1F, 0X1F) AND SET AGAIN IN S
+   0004   1F               DB      1FH             ;   THE CURSOR AT THE MIDDLE OF THE SCREEN
+   0005            CUSORDAT:                       ; TWO BYTE DATA INITIALIZED TO 0X00AA AND SET AG
+   0005   00               DB      00H             ; THIS BYTE APPARENTLY UNUSED
+   0006            CURONSCR:                       ; ROTATED TO INDICATE CURSOR STATUS.
+   0006   AA               DB      0AAH            ; WHEN LOW BIT IS SET, CURSOR IS ON SCREEN.  BIN
+   0007            COLOR:
+   0007   05               DB      05H             ; COLOR VALUE TO PAINT, COMBINED WITH INTENSITY
+   0008            INTENS:
+   0008   08               DB      08H             ; INTENSITY CONTROL BYTE, COMBINED WITH COLOR
+   0009            YCURMOT:
+   0009   00               DB      00H             ; Y CURSOR MOTION
+   000A            XCURMOT:
+   000A   00               DB      00H             ; X CURSOR MOTION
+   000B            CFLSHFLG:
+   000B   00               DB      00H             ; STOP CURSOR FLASH FLAG... NON-SERO IF CURSOR N
+   000C            CUROFFFLG:
+   000C   00               DB      00H             ; CURSOR OFF FLAG (NON-ZERO IF CURSOR IS OFF)
+   000D            RUNFLG:
+   000D   00               DB      00H             ; ANIMATION RUN FLAG... ONE - RUN, ANYTHING ELSE
+   000E            CMDBUFP:                        ; COMMAND BUFFER POINTER
+   000E   00               DB      00H             ; POINTER TO 0X1800.  COMMAND CHARACTERS STORED
+   000F   18               DB      18H             ; INCREMENTED AS CHARACTERS ARE STORED.
+                    
+                   ; FUNCTIONS
+                    
+                   ; JUMPED TO BY DOT AND COMMA FUNCTIONS
+   0010            XSETMOTION:
+   0010   2E00             MVI     L,00H           ; NO Y
+   0012   67               MOV     H,A             ; ONLY X
+   0013   C31900           JMP     STORMOTNMOV     ; JUMP TO STORE MOTION AND MOVE THE CURSOR
+                    
+                   ; JUMPED TO BY M AND N FUNCTIONS
+   0016            YSETMOTION:
+   0016   2600             MVI     H,00H           ; NO X
+   0018   6F               MOV     L,A             ; ONLY Y
+                    
+                   ; STORE THE NEW MOTION AND MOVE THE CURSOR
+   0019            STORMOTNMOV:
+   0019   220900           SHLD    YCURMOT         ; STORE CURSOR MOTION
+   001C            MOVNOSTORE:                     ; JUMP HERE FROM SEMI-COLON FUNCTION
+   001C   2A0300           LHLD    COORDS          ; CURSOR COORDINATES IN HL
+   001F   44               MOV     B,H             ; MOVE TO BC
+   0020   4D               MOV     C,L
+   0021   C3D201           JMP     ADJCUR
+                    
+                   ; SEEMS DEAD
+   0024   00000000         DB      00H, 00H, 00H, 00H
+                    
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 3
+      
+
+
+                   ; POINT HL TO 0X0001 (CALLED VIA RST 5)
+   0028   210100           LXI     H,0001H
+   002B   C9               RET
+                    
+                   ; SEEMS DEAD
+   002C   00000000         DB      00H, 00H, 00H, 00H
+                    
+                   ; SET RUN FLAG (CALLED VIA RST 6)
+   0030   3E01             MVI     A,01H
+   0032   320D00           STA     RUNFLG
+   0035   C3E401           JMP     SWTDLY
+                    
+                   ; GO INTO TIGHT LOOP (CALLED VIA RST 7) SEEMS DEAD
+   0038            TGHTLOOP:
+   0038   C33800           JMP     TGHTLOOP
+                    
+                   ; SEEMS DEAD
+   003B   00000000         DB      00H, 00H, 00H, 00H, 00H
+   003F   00      
+                    
+                   ; TOGGLE CURSOR WHILE PRESERVE HL... SEEMS TO BE DEAD (NEVER CALLED)
+   0040   E5               PUSH    H
+   0041   CD8000           CALL    TGLCURSOR
+   0044   E1               POP     H
+   0045   C9               RET
+                    
+                   ; SEEMS DEAD
+   0046   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   004A   00000000
+   004E   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   0052   00000000
+   0056   0000             DB      00H, 00H
+                    
+   0058            PROCESS:
+   0058   C3C100           JMP     RUNCHECK
+   005B            NOTRUNNING:
+   005B   FE00             CPI     00H             ; WE JUMP BACK HERE IF THE RUN FLAG (RUNFLG) IS
+                                                   ; REGISTER A CONTAINS CURSOR OFF FLAG (CUROFFFLG
+   005D   C26300           JNZ     SKIPCUR         ; SKIP CURSOR CALL IF CURSOR OFF FLAG IS NON-ZER
+   0060   CD8000           CALL    TGLCURSOR
+   0063            SKIPCUR:
+   0063   1100C8           LXI     D,0C800H        ; DE USED AS LOOP COUNT.  LOOP UNTIL WRAP TO ZER
+   0066            NOFLSHLOOP:
+   0066   DB00             IN      STATPORT        ; CHECK DATA PORT STATUS
+   0068   E640             ANI     STATRXOK        ; IS A BYTE AVAILABLE?
+   006A   C28001           JNZ     GETKEY          ; JUMP IF BYTE AVAILABLE
+   006D   3A0B00           LDA     CFLSHFLG        ; TEST CURSOR FLASH FLAG
+   0070   FE00             CPI     00H             ; FOR ZERO
+   0072   C26600           JNZ     NOFLSHLOOP      ; TIGHT LOOP IF NOT FLASHING (NOFLSHLOOP)
+   0075   13               INX     D               ; INCREMENT COUNTER
+   0076   7A               MOV     A,D             ; SEE IF WE WRAPPED
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 4
+      
+
+
+   0077   FE00             CPI     00H
+   0079   C26600           JNZ     NOFLSHLOOP      ; LOOP BACK TO TEST FOR BYTE AVAILABLE
+   007C   C35800           JMP     PROCESS         ; LOOP BACK TO START WHICH FLASHES CURSOR
+                    
+                   ; SEEMS DEAD
+   007F   00               DB      00H
+                    
+                   ; TOGGLE CURSOR ROUTINE... PUT A 'T' AROUND THE CURSOR POSITION...
+                   ; USES XOR SO EVERY OTHER CALL "TURNS OFF" THE CURSOR
+   0080            TGLCURSOR:
+   0080   2A0300           LHLD    COORDS          ; CURSOR X,Y INTO HL
+   0083   7D               MOV     A,L             ; Y IN A
+   0084   D602             SUI     02H             ; DECREMENT BY 2
+   0086   00               NOP
+   0087   00               NOP
+   0088   00               NOP
+   0089   4F               MOV     C,A             ; MOVE TO C
+   008A   44               MOV     B,H             ; X TO B ... BC CURSOR X,Y WITH Y ADJUSTED BY TW
+   008B   CDB800           CALL    XORPIXVAL
+   008E   79               MOV     A,C
+   008F   C604             ADI     04H             ; ADJUST Y AGAIN - LINE 383
+   0091   00               NOP
+   0092   00               NOP
+   0093   00               NOP
+   0094   4F               MOV     C,A
+   0095   CDB800           CALL    XORPIXVAL
+   0098   2A0300           LHLD    COORDS          ; GET ORIGINAL CURSOR AGAIN
+   009B   7C               MOV     A,H
+   009C   D602             SUI     02H             ; ADJUST X
+   009E   00               NOP
+   009F   00               NOP
+   00A0   00               NOP
+   00A1   47               MOV     B,A
+   00A2   4D               MOV     C,L             ; RELOAD Y
+   00A3   CDB800           CALL    XORPIXVAL
+   00A6   78               MOV     A,B
+   00A7   C604             ADI     04H             ; ADJUST X AGAIN
+   00A9   00               NOP
+   00AA   00               NOP
+   00AB   00               NOP
+   00AC   47               MOV     B,A
+   00AD   CDB800           CALL    XORPIXVAL
+   00B0   3A0600           LDA     CURONSCR        ; ROTATE CURSOR STATUS BYTE
+   00B3   0F               RRC
+   00B4   320600           STA     CURONSCR
+   00B7   C9               RET
+                    
+                   ; XOR A PIXEL WITH 0X0F
+   00B8            XORPIXVAL:
+   00B8   CDE800           CALL    GETPVAL
+   00BB   EE0F             XRI     0FH             ; XOR IT WITH 0X0F TO MAKE IT FLASH
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 5
+      
+
+
+   00BD   CD3801           CALL    SETPIXVAL
+   00C0   C9               RET
+                    
+                   ; TEST RUN FLAG AND RETURN CURSOR FLAG IN A IF NOT RUNNING
+   00C1            RUNCHECK:
+   00C1   3A0D00           LDA     RUNFLG          ; GET THE RUN FLAG
+   00C4   FE01             CPI     01H             ; TEST AGAINST ONE
+   00C6   CAB503           JZ      RUNNING         ; IF ONE, WE'RE RUNNING
+   00C9   3A0C00           LDA     CUROFFFLG       ; GET THE CURSOR FLAG
+   00CC   C35B00           JMP     NOTRUNNING
+                    
+                   ; SEEMS DEAD
+   00CF   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   00D3   00000000
+   00D7   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   00DB   00000000
+   00DF   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   00E3   00000000
+   00E7   00               DB      00H
+                    
+                   ; GET PIXEL VALUE AT X,Y INTO A, COORDINATES COME IN IN BC
+   00E8            GETPVAL:
+   00E8   CD0001           CALL    GETPADDR        ; CONVERT PIXEL COORDINATE IN BC TO HL POINTER I
+                                                   ; CARRY BIT INDICATES WHICH FOUR BITS OF BYTE TO
+   00EB   7E               MOV     A,M             ; GET BOTH PIXELS
+   00EC   DAF200           JC      GETHIGH         ; IF CARRY, GET THE HIGH BITS
+   00EF   E60F             ANI     0FH             ; MASK OFF HIGH BITS
+   00F1   C9               RET
+   00F2            GETHIGH:
+   00F2   E6F0             ANI     0F0H            ; MASK OFF LOW BITS
+   00F4   07               RLC                     ; ROTATE THE HIGH BITS LOW
+   00F5   07               RLC
+   00F6   07               RLC
+   00F7   07               RLC
+   00F8   C9               RET
+                    
+                   ; SEVEN BYTES OF 0X01 SEEMS DEAD
+   00F9   01010101         DB      01H, 01H, 01H, 01H, 01H, 01H, 01H
+   00FD   010101  
+                    
+                   ; CONVERT X,Y COORDINATES IN BC TO HL POINTER INTO DAZZLER BUFFER AT 0X1000
+                   ; CARRY BIT INDICATES WHICH HALF-BYTE TO USE
+                   ; DOES NOT CHANGE B OR C
+   0100            GETPADDR:
+   0100   210010           LXI     H,1000H         ; HL POINT TO START OF BUFFER
+   0103   78               MOV     A,B             ; GET X
+   0104   17               RAL
+   0105   17               RAL
+   0106   17               RAL
+   0107   D20E01           JNC     SKP200          ; SEE IF X IS 20 OR GREATER
+   010A   110002           LXI     D,0200H         ; IF IT IS...
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 6
+      
+
+
+   010D   19               DAD     D               ; INCREMENT HL BY 0X0200
+   010E            SKP200:
+   010E   79               MOV     A,C             ; GET Y
+   010F   17               RAL
+   0110   17               RAL
+   0111   17               RAL
+   0112   D21901           JNC     SKP400          ; SEE IF Y IS 20 OR GREATER
+   0115   110004           LXI     D,0400H         ; IF IT IS...
+   0118   19               DAD     D               ; INCREMENT HL BY 0X0400
+   0119            SKP400:
+   0119   79               MOV     A,C             ; GET Y AGAIN
+   011A   E61F             ANI     1FH             ; CLEAR OUT HIGH THREE BITS
+   011C   07               RLC
+   011D   07               RLC
+   011E   07               RLC                     ; LOW THREE BITS ARE NOW ZERO
+   011F   17               RAL                     ; ALL FOUR LOW BITS ARE NOW ZERO
+   0120   5F               MOV     E,A             ; STORE Y IN E
+   0121   3E00             MVI     A,00H           ; PRESERVED CARRY BIT SO THAT ...
+   0123   17               RAL                     ; A IS NOW ONE
+   0124   57               MOV     D,A             ; DE IS NOW 0X01?0 WITH ? BEING THE FOUR BITS PR
+   0125   19               DAD     D               ; ADD IT TO HL - CARRY SHOULD ALWAYS BE CLEAR
+   0126   78               MOV     A,B             ; GET X AGAIN
+   0127   1F               RAR                     ; DIVIDE BY TWO WITH EVEN/ODD BIT IN CARRY (HIGH
+   0128   F5               PUSH    PSW
+   0129   00               NOP
+   012A   E60F             ANI     0FH             ; LOW FOUR BITS OF X/2
+   012C   5F               MOV     E,A
+   012D   1600             MVI     D,00H
+   012F   19               DAD     D               ; I'M SURE THIS MUST WORK, BUT I NEED TO SIT DOW
+   0130   F1               POP     PSW
+   0131   C9               RET
+                    
+                   ; SEEMS DEAD
+   0132   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H
+   0136   0000    
+                    
+                   ; SETPIXVAL ... PIXEL VALUE IN A AND COORDINATES IN BC
+   0138            SETPIXVAL:
+   0138   E60F             ANI     0FH             ; EVERYBODY DOES THIS... BUT JUST TO BE SURE, I
+   013A   F5               PUSH    PSW             ; PUSHES A AND FLAGS
+   013B   CD0001           CALL    GETPADDR
+   013E   D1               POP     D               ; POPS D AND E (PRESUMABLY A IS NOW IN D)
+   013F   DA4801           JC      SPTOP4          ; IF CARRY, SET THE TOP FOUR BITS
+                   ; PIXEL VALUE IN LOW FOUR BITS...
+   0142   7E               MOV     A,M             ; GET CURRENT VALUE (TWO PIXELS)
+   0143   E6F0             ANI     0F0H            ; CLEAR OLD VALUE
+   0145   82               ADD     D               ; ADD NEW VALUE
+   0146   77               MOV     M,A             ; SET NEW VALUE
+   0147   C9               RET
+                   ; PIXEL VALUE IN TOP FOUR BITS...
+   0148            SPTOP4:
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 7
+      
+
+
+   0148   7A               MOV     A,D             ; SHIFT NEW VALUE WHERE WE NEED IT
+   0149   07               RLC
+   014A   07               RLC
+   014B   07               RLC
+   014C   07               RLC
+   014D   57               MOV     D,A
+   014E   7E               MOV     A,M             ; GET CURRENT VALUE (TWO PIXELS)
+   014F   E60F             ANI     0FH             ; CLEAR OLD VALUE - LINE 575 OK
+   0151   82               ADD     D               ; ADD NEW VALUE
+   0152   77               MOV     M,A             ; SET NEW VALUE
+   0153   C9               RET
+                    
+                   ; SEEMS DEAD
+   0154   00000000         DB      00H, 00H, 00H, 00H
+                    
+                   ; L FUNCTION CONTINUED
+   0158            LOWINT:
+   0158   3E00             MVI     A,00H           ; CLEAR INTENSITY
+   015A   320800           STA     INTENS
+   015D   C3C001           JMP     DOCURRENT
+                    
+                   ; H FUNCTION CONTINUED
+   0160            HIGHINT:
+   0160   3E08             MVI     A,08H           ; SET INTENSITY
+   0162   320800           STA     INTENS
+   0165   C3C001           JMP     DOCURRENT
+                    
+                   ; SEEMS DEAD
+   0168   210010           LXI     H,1000H
+   016B   AF               XRA     A
+   016C   77               MOV     M,A
+   016D   23               INX     H
+   016E   7C               MOV     A,H
+   016F   FE18             CPI     18H
+   0171   C2               DB      0C2H
+                    
+                   ; COLOR KEY DECODE TABLE, REFERENCED BELOW
+   0172            CLRKEYTBL:
+   0172   7F               DB      7FH             ; <DEL>, <RUBOUT> - BLACK
+   0173   52               DB      52H             ; R               - RED
+   0174   47               DB      47H             ; G               - GREEN
+   0175   59               DB      59H             ; Y               - YELLOW (RED AND GREEN)
+   0176   42               DB      42H             ; B               - BLUE
+   0177   50               DB      50H             ; P               - PURPLE (RED AND BLUE)
+   0178   43               DB      43H             ; C               - CYAN (GREEN AND BLUE)
+   0179   57               DB      57H             ; W               - WHITE (RED, GREEN AND BLUE)
+   017A   FF               DB      0FFH            ; END OF TABLE
+                    
+                   ; SEEMS DEAD
+   017B   00000000         DB      00H, 00H, 00H, 00H, 00H
+   017F   00      
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 8
+      
+
+
+                    
+                   ; CALLED IF RX DATA IS AVAILABLE ON THE CONSOLE PORT
+   0180            GETKEY:
+   0180   3A0600           LDA     CURONSCR
+   0183   0F               RRC
+   0184   DC8000           CC      TGLCURSOR       ; IF THE CURSOR IS ON SCREEN, CLEAR IT
+   0187   CDD103           CALL    GETPORTBYTE     ; GET THE KEYSTROKE AND STORE IT IF NOT "SPECIAL
+                    
+                   ; THE RECORDING RUNNER JUMPS IN HERE WITH A RECORDED CHARACTER
+   018A            PROCCHAR:
+   018A   78               MOV     A,B             ; INCOMING KEYSTROKE IN B, MOVE IT TO A
+   018B   FE20             CPI     20H             ; CHECK FOR SPACE CHARACTER
+   018D   CAC001           JZ      DOCURRENT       ; IF SPACE KEY, REPEAT LAST ACTION
+   0190   217201           LXI     H,CLRKEYTBL     ; SEE IF THE INCOMING CHARACTER IS A COLOR KEY
+   0193   00               NOP
+   0194   11FFFF           LXI     D,0FFFFH
+   0197            PCLOOP1:
+   0197   1C               INR     E               ; FIRST TIME, E TO 0X00
+   0198   78               MOV     A,B             ; GET KEYSTROKE INTO A
+   0199   00               NOP
+   019A   00               NOP
+   019B   00               NOP
+   019C   BE               CMP     M               ; CHECK IF IT IS IN THE COLOR TABLE
+   019D   CAAA01           JZ      KEYCOLOR        ; IF IT IS IN THE TABLE, DECODE THE COLOR
+   01A0   7E               MOV     A,M
+   01A1   FEFF             CPI     0FFH            ; CHECK FOR END OF TABLE
+   01A3   CA4002           JZ      FUNCCHAR        ; IF END OF TABLE, DID NOT FIND THE KEY, CHECK F
+   01A6   23               INX     H               ; NOT END OF TABLE, CHECK NEXT
+   01A7   C39701           JMP     PCLOOP1
+                    
+                   ; KEYSTROKE INTERPRETED AS COLOR
+   01AA            KEYCOLOR:
+   01AA   7B               MOV     A,E             ; GET TABLE INDEX IN A
+   01AB   00               NOP                     ; NO OPS FOR TIMING MAYBE?
+   01AC   00               NOP
+   01AD   00               NOP
+   01AE   00               NOP
+   01AF   00               NOP
+   01B0   320700           STA     COLOR           ; STORE TABLE INDEX IN COLOR
+   01B3   00               NOP                     ; MORE NOP TIMING?
+   01B4   00               NOP
+   01B5   00               NOP
+   01B6   00               NOP
+   01B7   00               NOP
+   01B8   00               NOP
+   01B9   00               NOP
+   01BA   00               NOP
+   01BB   00               NOP
+   01BC   00               NOP
+   01BD   00               NOP
+   01BE   00               NOP
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 9
+      
+
+
+   01BF   00               NOP
+                   ; DROP INTO DOCURRENT, BELOW
+                    
+                   ; CALLED AFTER <H KEY>, <L KEY> AND </ KEY> PROCESSING
+                   ; OR IF KEYSTROKE DETECTED AVAILABLE ON PORT
+                   ; SET THE CURRENT COLOR AT THE CURRENT CURSOR COORDINATES AND FALL
+                   ; THROUGH TO MOVE THE CURSOR COORDINATES USING THE CURRENT MOTION
+                   ; XY (LOTSA CURRENT)
+   01C0            DOCURRENT:
+   01C0   2A0300           LHLD    COORDS          ; CURSOR X,Y IN HL
+   01C3   44               MOV     B,H             ; CURSOR X,Y IN BC
+   01C4   4D               MOV     C,L
+   01C5   00               NOP
+   01C6   2A0700           LHLD    COLOR           ; COLOR AND INTENSITY IN HL
+   01C9   7C               MOV     A,H             ; COMBINE
+   01CA   85               ADD     L
+   01CB   00               NOP                     ; MORE TIMING?
+   01CC   00               NOP
+   01CD   00               NOP
+   01CE   00               NOP
+   01CF   CD3801           CALL    SETPIXVAL
+                   ; DROP INTO ADJCUR, BELOW
+                    
+                   ; MOTION FUNCTIONS (N, M, DOT AND COMMA) JUMP HERE
+                   ; ADJUST THE CURSOR POSITION CURRENTLY IN BC WITH THE CURRENT MOTION VALUES AND
+   01D2            ADJCUR:
+   01D2   2A0900           LHLD    YCURMOT         ; LOAD THE CURRENT X AND Y MOTION VALUES
+   01D5   7C               MOV     A,H             ; ADJUST CURSOR COORDINATES
+   01D6   80               ADD     B
+   01D7   67               MOV     H,A
+   01D8   7D               MOV     A,L
+   01D9   81               ADD     C
+   01DA   6F               MOV     L,A
+   01DB   220300           SHLD    COORDS          ; STORE NEW CURSOR POSITION
+   01DE   CDC302           CALL    CHKCURPOS       ; CHECK FOR COORDINATES OUT OF BOUNDS, WRAP THEM
+   01E1   C35800           JMP     PROCESS         ; GO BACK FOR ANOTHER RX BYTE OR COMMAND BUFFER
+                    
+                   ; JUMPED TO BY RST 6 (SET RUN FLAG)
+                   ; DELAYS VIA SENSE SWITCHES
+   01E4            SWTDLY:
+   01E4   110000           LXI     D,0000H
+   01E7   DBFF             IN      SWITPORT        ; GET SENSE SWITCHES
+   01E9   57               MOV     D,A             ; THE MORE SWITCHES, THE SHORTER THE DELAY (OR D
+   01EA            DLYLOOP1:
+   01EA   13               INX     D
+   01EB   7A               MOV     A,D
+   01EC   FEFF             CPI     0FFH            ; TEST FOR END OF DELAY
+   01EE   C8               RZ                      ; RETURN IF END OF DELAY (RETURNING FROM RST 6)
+   01EF   C3EA01           JMP     DLYLOOP1
+                    
+                   ; LOOKS LIKE ANOTHER KEYSTROKE DECODE TABLE, BUT SEEMS DEAD
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 10
+      
+
+
+   01F2   7F               DB      7FH
+   01F3   52               DB      52H
+   01F4   47               DB      47H
+   01F5   59               DB      59H
+   01F6   42               DB      42H
+   01F7   50               DB      50H
+   01F8   43               DB      43H
+   01F9   57               DB      57H
+   01FA   2E               DB      2EH
+   01FB   2C               DB      2CH
+   01FC   4D               DB      4DH
+   01FD   4E               DB      4EH
+   01FE   2F               DB      2FH
+   01FF   1B               DB      1BH
+                    
+                   ; INITIALIZE THINGS AND THEN JUMP TO KEYSTROKE PROCESSING
+   0200            START:
+   0200   31FF0F           LXI     SP,0FFFH        ; STACK DOWN FROM 0X0FFF
+   0203   3E88             MVI     A,88H           ; DAZZLER SETUP, ON, START ADDRESS 0X1000
+   0205   D30E             OUT     0EH
+   0207   3E30             MVI     A,30H           ; DAZZLER SETUP, FORMAT 2K COLOR (64X64)
+   0209   D30F             OUT     0FH
+   020B   211F1F           LXI     H,1F1FH         ; SET CURSOR TO MIDDLE OF THE SCREEN (0X1F,0X1F)
+   020E   220300           SHLD    COORDS
+   0211   2100AA           LXI     H,0AA00H        ; SET BLINK CONTROL
+   0214   220500           SHLD    CUSORDAT
+   0217   210018           LXI     H,1800H         ; INITIALIZE COMMAND BUFFER POINTER TO 0X1800
+   021A   220E00           SHLD    CMDBUFP
+   021D   210900           LXI     H,YCURMOT       ; ZERO BYTES FROM YCURMOT TO CUROFFFLG
+   0220            STCLRLOOP:
+   0220   AF               XRA     A               ; ZERO A
+   0221   77               MOV     M,A             ; PUT A ZERO AT HL
+   0222   23               INX     H               ; INCREMENT HL
+   0223   7D               MOV     A,L             ; TEST L FOR...
+   0224   FE0D             CPI     0DH             ; 0X0D (RUNFLG) ... DOESN'T ACTUALLY CLEAR RUNFL
+   0226   C22002           JNZ     STCLRLOOP
+   0229   CD3002           CALL    CLEARBUF
+   022C   C35800           JMP     PROCESS         ; START LOOKING FOR KEYSTROKES
+   022F   00               NOP
+                    
+                   ; CLEAR THE BUFFER STARTING AT 0X1000... MAY CLEAR ALL THE WAY UP
+                   ; TO 0X1FFF OR MAY BE HACKED TO STOP AT 0X17FF
+   0230            CLEARBUF:
+   0230   210010           LXI     H,1000H
+   0233            CLRBLOOP:
+   0233   AF               XRA     A               ; ZERO OUT A
+   0234   77               MOV     M,A             ; MOVE ZERO TO  HL 
+   0235   23               INX     H               ; INCREMENT HL
+   0236   7C               MOV     A,H             ; COMPARE HIGH ADDRESS...
+   0237            CLRBCMP:                        ; NOTE: THIS LABEL IS USED TO HACK END POINT BY
+   0237   FE20             CPI     20H             ; COMPARE HIGH ADDRESS TO 0X20 (OR MAY BE HACKED
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 11
+      
+
+
+   0239   C23302           JNZ     CLRBLOOP
+   023C   C9               RET
+                    
+                   ; SEEMS DEAD
+   023D   000000           DB      00H, 00H, 00H
+                    
+                   ; INTERPRET CHARACTER IN B, NOT COLOR KEY, LOOK FOR FUNCTION CHARACTERS
+   0240            FUNCCHAR:
+   0240   216802           LXI     H,JUMPMTCHTBL   ; POINT TO CHARACTER MATCH TABLE
+   0243   118015           LXI     D,1580H         ; DE SET TO 0X1580 D IS THE TABLE LENGTH
+                                                   ; E IS ADDRESS TABLE LOW ADDRESS BYTE
+   0246            CHKNXT:
+   0246   78               MOV     A,B             ; GET CHARACTER
+   0247   BE               CMP     M               ; COMPARE TO TABLE
+   0248   CA5402           JZ      TBLMATCH        ; GOT A MATCH? YES? JUMP TO TBLMATCH
+   024B   23               INX     H               ; NO? TRY THE NEXT ONE
+   024C   15               DCR     D               ; KEEP TRACK OF THE COUNT
+   024D   CA5800           JZ      PROCESS         ; OUT OF TABLE ENTRIES? JUMP BACK TO GET ANOTHER
+   0250   1C               INR     E               ; INCREMENT ADDRESS TABLE LOW ADDRESS BYTE
+   0251   C34602           JMP     CHKNXT          ; CHECK NEXT ENTRY
+                    
+   0254            TBLMATCH:
+   0254   6B               MOV     L,E             ; GET LOW BYTE OF FUNCTION ADDRESS
+   0255   6E               MOV     L,M
+   0256   24               INR     H               ; FUNCTION ADDRESS HIGH BYTE IS ALWAYS 0X03
+   0257   E9               PCHL                    ; JUMP TO FUNCTION
+                    
+                   ; SEEMS DEAD
+   0258   00               NOP
+   0259   2A0300           LHLD    COORDS
+   025C   44               MOV     B,H
+   025D   4D               MOV     C,L
+   025E   C3D201           JMP     ADJCUR
+                    
+                   ; SEEMS DEAD
+   0261   C30001           JMP     GETPADDR
+   0264   00               NOP
+   0265   00               NOP
+   0266   00               NOP
+   0267   00               NOP
+                    
+                   ; START OF JUMP TABLE COMPARE TARGETS. 0X15 IN LENGTH (21 DECIMAL)
+   0268            JUMPMTCHTBL:
+   0268   2E               DB      2EH             ; DOT, PERIOD
+   0269   2C               DB      2CH             ; COMMA
+   026A   4D               DB      4DH             ; M
+   026B   4E               DB      4EH             ; N
+   026C   2F               DB      2FH             ; /
+   026D   11               DB      11H             ; <DC1><CTRL-Q>
+   026E   3B               DB      3BH             ; <SEMI-COLON>
+   026F   3E               DB      3EH             ; <GREATER THAN>
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 12
+      
+
+
+   0270   3C               DB      3CH             ; <LESS THAN>
+   0271   5D               DB      5DH             ; <RIGHT SQUARE BRACKET>
+   0272   5E               DB      5EH             ; <CARET>
+   0273   4C               DB      4CH             ; L
+   0274   48               DB      48H             ; H
+   0275   03               DB      03H             ; <ETX><CTRL-C>
+   0276   02               DB      02H             ; <STX><CTRL-B>
+   0277   10               DB      10H             ; <DLE><CTRL-P>
+   0278   40               DB      40H             ; <AT SIGN>
+   0279   1B               DB      1BH             ; <ESCAPE>
+   027A   12               DB      12H             ; <DC2><CTRL-R>
+   027B   13               DB      13H             ; <DC3><CTRL-S>
+   027C   00               DB      00H             ; <NUL> ?? TEST AGAINST NULL ??
+                   ; LEFT OVER/UNUSED
+   027D   000000           DB      00H, 00H, 00H
+                    
+                   ; LOW BYTES FOR TARGET FUNCTION ADDRESSES
+   0280            FUNCLADDR: ; LABEL IS NEVER DIRECTLY ADDRESSED, ACCESSED BY MATH ABOVE
+   0280   00               DB      00H             ; DOT FUNCTION AT 0X0300
+   0281   05               DB      05H             ; COMMA FUNCTION AT 0X0305
+   0282   0A               DB      0AH             ; M FUNCTION AT 0X030A
+   0283   0F               DB      0FH             ; N FUNCTION AT 0X030F
+   0284   14               DB      14H             ; / FUNCTION AT 0X0314
+   0285   1D               DB      1DH             ; <DC1><CTRL-Q> FUNCTION AT 0X031D
+   0286   ED               DB      0EDH            ; <SEMI-COLON> FUNCTION AT 0X03ED
+   0287   23               DB      23H             ; <GREATER THAN> FUNCTION AT 0X0323
+   0288   2B               DB      2BH             ; <LESS THAN> FUNCTION AT 0X032B
+   0289   33               DB      33H             ; <RIGHT SQUARE BRACKET> FUNCTION AT 0X0333
+   028A   3B               DB      3BH             ; <CARET> FUNCTION AT 0X033B
+   028B   43               DB      43H             ; L FUNCTION AT 0X0343
+   028C   46               DB      46H             ; H FUNCTION AT 0X0346
+   028D   50               DB      50H             ; <ETX><CTRL-C> FUNCTION AT 0X0350
+   028E   5A               DB      5AH             ; <STX><CTRL-B> FUNCTION AT 0X035A
+   028F   C0               DB      0C0H            ; <DLE><CTRL-P> FUNCTION AT 0X03C0
+   0290   8B               DB      8BH             ; <AT SIGN> FUNCTION AT 0X038B
+   0291   98               DB      98H             ; <ESCAPE> FUNCTION AT 0X0398
+   0292            RUNTBLENT:                      ; THIS BYTE IS MODIFIED BY CODE BELOW
+   0292   AF               DB      0AFH            ; <DC2><CTRL-R> FUNCTION AT 0X03AF
+   0293   A8               DB      0A8H            ; <DC3><CTRL-S> FUNCTION AT 0X03A8
+   0294   A5               DB      0A5H            ; <NUL> FUNCTION AT 0X03A5
+                   ; LEFT OVER/UNUSED... SEEMS DEAD
+   0295   00000000         DB      00H, 00H, 00H, 00H, 07H, 00H, 00H, 00H
+   0299   07000000
+   029D   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   02A1   00000000
+   02A5   00000070         DB      00H, 00H, 00H, 70H, 01H, 50H, 00H, 50H
+   02A9   01500050
+   02AD   00300108         DB      00H, 30H, 01H, 08H, 00H, 90H, 00H, 00H
+   02B1   00900000
+   02B5   09000030         DB      09H, 00H, 00H, 30H, 05H, 00H, 05H, 00H
+   02B9   05000500
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 13
+      
+
+
+   02BD   05300100         DB      05H, 30H, 01H, 00H, 00H, 60H
+   02C1   0060    
+                    
+                   ; CHECK THE CURSOR POSITION FOR WRAPPING
+                   ; CALLED FROM ADJCUR
+   02C3            CHKCURPOS:
+   02C3   2A0300           LHLD    COORDS          ; LOAD CURSOR X,Y INTO HL
+   02C6            RECHECK:                        ; JUMPS HERE TO RECHECK AFTER A TOP/BOTTOM WRAP
+   02C6   7C               MOV     A,H             ; GET X
+   02C7   E6C0             ANI     0C0H            ; SEE IF X WRAPPED (RANGE IS 0 TO 63... 0X00 TO
+   02C9   CADC02           JZ      CHKY            ; NO WRAP? THEN JUMP TO CHECK Y
+   02CC   17               RAL                     ; SEE IF WE WRAPPED LEFT OR RIGHT
+   02CD   D2D602           JNC     WRPRIGHT        ; DID WE WRAP LEFT? NO? THEN JUMP TO WRAP RIGHT
+   02D0   263F             MVI     H,3FH           ; WE WRAPPED OFF OF THE LEFT SO GO TO RIGHT (63
+   02D2   2D               DCR     L               ; DECREASE Y (GO UP A LINE)
+   02D3   C3DC02           JMP     CHKY
+   02D6            WRPRIGHT:                       ; WE SRAPPED OFF OF THE RIGHT SIDE SO...
+   02D6   2600             MVI     H,00H           ; MOVE TO LEFT SIDE, X=0
+   02D8   2C               INR     L               ; DOWN A LINE, INCREASE Y
+   02D9   00               NOP
+   02DA   00               NOP
+   02DB   00               NOP
+   02DC            CHKY:                           ; X IS CORRECT WHEN WE GET HERE, CHECK Y NOW
+   02DC   7D               MOV     A,L             ; GET Y
+   02DD   E6C0             ANI     0C0H            ; SEE IF Y WRAPPED (RANGE IS 0 TO 63... 0X00 TO
+   02DF   CAF202           JZ      CHKDONE         ; NO WRAP? STORE IT AND DONE
+   02E2   17               RAL                     ; SEE IF WE WRAPPED TOP OR BOTTOM
+   02E3   D2EC02           JNC     WRPBTM          ; DID WE WRAP TOP? NO? THEN JUMP TO BOTTOM WRAP
+   02E6   2E3F             MVI     L,3FH           ; WE WRAPPED OFF OF THE TOP, SO GO TO THE BOTTOM
+   02E8   25               DCR     H               ; AND MOVE ONE LEFT
+   02E9   C3C602           JMP     RECHECK
+   02EC            WRPBTM:
+   02EC   2E00             MVI     L,00H           ; WE WRAPPED OFF OF THE BOTTOM, SO GO TO THE TOP
+   02EE   24               INR     H               ; AND MOVE ONE RIGHT
+   02EF   C3C602           JMP     RECHECK
+   02F2            CHKDONE:
+   02F2   220300           SHLD    COORDS          ; COORDINATES OK, STORE THEM AND...
+   02F5   C9               RET                     ; RETURN
+                    
+                   ; SEEMS DEAD
+   02F6   C602             ADI     02H
+   02F8   2E3F             MVI     L,3FH
+   02FA   25               DCR     H
+   02FB   C3C602           JMP     RECHECK
+   02FE   00               NOP
+   02FF   00               NOP
+                    
+                   ; FUNCTION TABLE TARGETS
+                   ; NOTE THAT THE ADDRESSES THAT THESE FUNCTIONS END UP AT MUST MATCH THE
+                   ; JUMP TABLE ABOVE.  GOTTA FIGURE OUT HOW TO FILL THAT TABLE FROM LABELS...
+                    
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 14
+      
+
+
+                   ; DOT FUNCTION
+   0300   3E01             MVI     A,01H
+   0302   C31000           JMP     XSETMOTION
+                    
+                   ; COMMA FUNCTION
+   0305   3EFF             MVI     A,0FFH
+   0307   C31000           JMP     XSETMOTION
+                    
+                   ; M FUNCTION
+   030A   3E01             MVI     A,01H
+   030C   C31600           JMP     YSETMOTION
+                    
+                   ; N FUNCTION
+   030F   3EFF             MVI     A,0FFH
+   0311   C31600           JMP     YSETMOTION
+                    
+                   ; / FUNCTION (CLEARS CURSOR MOTION)
+   0314   210000           LXI     H,0000H
+   0317   220900           SHLD    YCURMOT         ; ZERO OUT X AND Y MOTION
+   031A   C3C001           JMP     DOCURRENT
+                    
+                   ; <DC1><CTRL-Q> FUNCTION
+   031D   C30000           JMP     0000H           ; RESTART THE WHOLE THING
+                    
+                   ; SEEMS DEAD
+   0320   000000           DB      00H, 00H, 00H
+                    
+                   ; THE "STORE" FUNCTIONS, WHEN COMBINED WITH ANOTHER MOTION
+                   ; KEY, RESULT IN DIAGONAL MOTION.
+                    
+                   ; <GREATER THAN> FUNCTION (STORE RIGHT)
+   0323   3E01             MVI     A,01H
+   0325   320A00           STA     XCURMOT
+   0328   C35800           JMP     PROCESS
+                    
+                   ; <LESS THAN> FUNCTION (STORE LEFT)
+   032B   3EFF             MVI     A,0FFH
+   032D   320A00           STA     XCURMOT
+   0330   C35800           JMP     PROCESS
+                    
+                   ; <RIGHT SQUARE BRACKET> (<SHIFT-M ON TTY) FUNCTION (STORE DOWN)
+   0333   3E01             MVI     A,01H
+   0335   320900           STA     YCURMOT
+   0338   C35800           JMP     PROCESS
+                    
+                   ; <CARET> (<SHIFT-N> ON TTY) FUNCTION (STORE UP)
+   033B   3EFF             MVI     A,0FFH
+   033D   320900           STA     YCURMOT
+   0340   C35800           JMP     PROCESS
+                    
+                   ; L FUNCTION (LOW INTENSITY)
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 15
+      
+
+
+   0343   C35801           JMP     LOWINT
+                    
+                   ; H FUNCTION (HIGH INTENSITY)
+   0346   C36001           JMP     HIGHINT
+                    
+                   ; SEEMS DEAD
+   0349   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H
+   034D   000000  
+                    
+                   ; <ETX><CTRL-C> FUNCTION (TOGGLE HIDE CURSOR)
+   0350   3A0C00           LDA     CUROFFFLG
+   0353   2F               CMA
+   0354   320C00           STA     CUROFFFLG
+   0357   C35800           JMP     PROCESS
+                    
+                   ; <STX><CTRL-B> FUNCTION (TOGGLE CURSOR FLASHING)
+   035A   3A0B00           LDA     CFLSHFLG
+   035D   2F               CMA
+   035E   320B00           STA     CFLSHFLG
+   0361   C35800           JMP     PROCESS
+                    
+                   ; OUTPUT 0X20 CHARACTERS STORED AT 0X0001 (ZERO OR NUL BYTES)
+                   ; USED BY <AT SIGN><SHIFT-P> (PUNCH ANIMATION)
+   0364            NULOUT:
+   0364   1620             MVI     D,20H
+   0366   EF               RST     5               ; SETS HL TO 0X0001
+   0367            NOLOOP:
+   0367   CD8003           CALL    CHAROUT
+   036A   15               DCR     D
+   036B   C26703           JNZ     NOLOOP
+   036E   00               NOP
+   036F   C9               RET
+                    
+                   ; CONTINUATION OF <AT SIGN>
+   0370            BUFOUT:
+   0370   210018           LXI     H,1800H         ; OUTPUT CHARACTERS STORED AT 0X1800 UNTIL...
+   0373            BOLOOP1:
+   0373   00               NOP
+   0374   CD8003           CALL    CHAROUT
+   0377   FE13             CPI     13H
+   0379   CA9103           JZ      OUTDONE         ; YOU HIT 0X13, THE STOP CHARACTER <CTRL-S>
+   037C   23               INX     H
+   037D   C37303           JMP     BOLOOP1
+                    
+                   ; OUTPUT ONE CHARACTER POINTED TO BY HL WHEN THE PORT IS READY
+                   ; CHARACTER IS LEFT IN A, HL NOT MODIFIED
+                   ; USED BY <AT SIGN>
+   0380            CHAROUT:
+   0380   DB00             IN      STATPORT        ; PORT STATUS
+   0382   E680             ANI     STATTXOK        ; READY BIT
+   0384   CA8003           JZ      CHAROUT         ; LOOP UNTIL PORT IS READY
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 16
+      
+
+
+   0387   7E               MOV     A,M             ; GET THE CHARACTER
+   0388   D301             OUT     01H
+   038A   C9               RET
+                    
+                   ; <AT SIGN> (OR <SHIFT-P> ON A TELETYPE) FUNCTION ENTRY POINT (PUNCH ANIMATION)
+   038B   CD6403           CALL    NULOUT
+   038E   C37003           JMP     BUFOUT
+                    
+                   ; FINISH UP OF <AT SIGN>
+   0391            OUTDONE:
+   0391   CD6403           CALL    NULOUT
+   0394   C35800           JMP     PROCESS
+   0397   00               NOP
+                    
+                   ; <ESCAPE> FUNCTION (CLEAR THE SCREEN ONLY)
+                   ; NOTE: THIS HACKS THE END TEST IN THE CLEARBUF FUNCTION TO MAKE IT STOP BEFORE
+   0398   3E18             MVI     A,18H           ; STOP AT HIGH ADDRESS 0X18 INSTEAD OF 0X20
+   039A   323802           STA     CLRBCMP+1
+   039D   CD3002           CALL    CLEARBUF
+   03A0   3E20             MVI     A,20H           ; RESTORE TO 0X20
+   03A2   323802           STA     CLRBCMP+1
+                   ; <ESCAPE> DROPS INTO <NUL> (OR <NUL> JUMPS INTO <ESCAPE>)
+                   ; <NUL> FUNCTION
+   03A5   C35800           JMP     PROCESS
+                    
+                   ; <DC3><CTRL-S> FUNCTION (STOP ANIMATION)
+   03A8   AF               XRA     A               ; CLEAR RUN FLAG
+   03A9   320D00           STA     RUNFLG
+   03AC   C33204           JMP     JTBLUNHACK
+                    
+                   ; <DC2><CTRL-R> FUNCTION (START ANIMATION)
+   03AF   21FF17           LXI     H,17FFH         ; ONE BEFORE THE COMMAND BUFFER START
+   03B2   220E00           SHLD    CMDBUFP
+                    
+                   ; IF RUN FLAG (0X000D) IS ONE, WE COME HERE
+   03B5            RUNNING:
+   03B5   F7               RST     6               ; CALL SET RUN FLAG AND DELAY VIA SENSE SWITCHES
+   03B6   00               NOP
+   03B7   00               NOP
+   03B8   C30604           JMP     MORERUN
+                    
+   03BB            RUN2:
+   03BB   23               INX     H               ; INCREMENT COMMAND POINTER IN HL
+   03BC   46               MOV     B,M             ; PUT RECORDED CHARACTER IN B
+   03BD   C30004           JMP     INSRT1
+                    
+                   ; <DLE><CTRL-P> FUNCTION (OUTPUT EVERYTHING STARTING AT ZERO  --LOOK OUT-- GET R
+   03C0   210000           LXI     H,0000H
+   03C3            CPWAIT:
+   03C3   DB00             IN      STATPORT        ; PORT STATUS
+   03C5   E680             ANI     STATTXOK        ; READY BIT
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 17
+      
+
+
+   03C7   CAC303           JZ      CPWAIT
+   03CA   7E               MOV     A,M
+   03CB   D301             OUT     01H
+   03CD   23               INX     H
+   03CE   C3C303           JMP     CPWAIT
+                    
+                   ; GET A CHARACTER
+   03D1            GETPORTBYTE:
+   03D1   21F003           LXI     H,GPBTABLE      ; DATA AREA BELOW...
+   03D4   DB01             IN      DATAPORT        ; GET THE CHARACTER
+   03D6   E67F             ANI     7FH             ; CLEAR THE HIGH BIT
+   03D8   47               MOV     B,A             ; MOVE IT TO B
+   03D9            GPBLOOP:
+   03D9   23               INX     H               ; INCREMENT THE DATA POINTER
+   03DA   78               MOV     A,B
+   03DB   BE               CMP     M
+   03DC   C8               RZ                      ; IF IT IS A CHARACTER IN OUR TABLE, RETURN RIGH
+   03DD   7E               MOV     A,M             ; GET THE TABLE VALUE SO WE CAN... - LINE 1229 O
+   03DE   FEFF             CPI     0FFH            ; CHECK FOR THE END OF THE TABLE
+   03E0   C2D903           JNZ     GPBLOOP         ; NOT THE END? LOOP BACK AND CHECK THE NEXT VALU
+   03E3   78               MOV     A,B             ; IF WE'RE HERE, IT'S NOT IN THE TABLE...
+   03E4   2A0E00           LHLD    CMDBUFP         ; STORE IT TO THE COMMAND BUFFER POINTER
+   03E7   77               MOV     M,A
+   03E8   23               INX     H               ; INCREMENT THE POINTER
+   03E9   220E00           SHLD    CMDBUFP         ; STORE THE INCREMENTED POINTER (CMDBUFP)
+   03EC   C9               RET
+                    
+                   ; <SEMI-COLON> FUNCTION (JUST MOVE IN THE SAME DIRECTION, NO PIXEL CHANGE)
+   03ED   C31C00           JMP     MOVNOSTORE
+                    
+                   ; COMPARE TABLE (DON'T STORE THESE BYTES)
+   03F0            GPBTABLE:
+   03F0   03               DB      03H
+   03F1   02               DB      02H
+   03F2   10               DB      10H
+   03F3   40               DB      40H
+   03F4   11               DB      11H
+   03F5   00               DB      00H
+   03F6   FF               DB      0FFH            ; END OF TABLE MARKER (SEE ABOVE)
+                    
+                   ; SEEMS DEAD
+   03F7   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   03FB   00000000
+   03FF   00               DB      00H
+                    
+   0400            INSRT1:
+   0400   220E00           SHLD    CMDBUFP         ; STORE HL TO CMDBUFP
+   0403   C38A01           JMP     PROCCHAR
+                    
+   0406            MORERUN:
+   0406   2A0E00           LHLD    CMDBUFP         ; COMMAND BUFFER POINTER IN HL (CMDBUFP)
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 18
+      
+
+
+   0409   DB01             IN      DATAPORT        ; JUST GET A CHARACTER, REGARDLESS OF PORT STATU
+   040B   FE11             CPI     11H             ; SEE IF WE GOT A <DC1><CTRL-Q>
+   040D   C21804           JNZ     CHKCZ           ; NO? CHECK FOR NEXT SPECIAL CHARACTER
+   0410   3E00             MVI     A,00H           ; CLEAR THE RUN FLAG
+   0412   320D00           STA     RUNFLG
+   0415   C30000           JMP     0000H           ; RESET EVERYTHING AND START OVER
+   0418            CHKCZ:
+   0418   FE9A             CPI     CTRLZ           ; SEE IF WE GOT A 0X1A <CTRL-Z>?
+                                                   ; WRITTEN ASSUMING AN EVEN PARITY TTY SO HIGH BI
+   041A   C22504           JNZ     CHK18           ; NO, JUMP TO CHECK18
+   041D   3E00             MVI     A,00H           ; CLEAR THE RUN FLAG
+   041F   320D00           STA     RUNFLG
+   0422   C35800           JMP     PROCESS         ; JUMP BACK TO KEYSTROKE LOOP
+   0425            CHK18:
+   0425   FE18             CPI     18H             ; SEE IF WE GOT A <CAN> (CANCEL) <CTRL-X>
+   0427   C2BB03           JNZ     RUN2            ; NO? KEEP GOING
+                   ; MAKE <CTRL-R> ACTION FUNCTION SAME AS <CTRL-S>
+   042A            JTBLHACK:
+   042A   3EA8             MVI     A,0A8H          ; CHANGE RUN FUNCTION TO STOP FUNCTION
+   042C   329202           STA     RUNTBLENT       ; MODIFY JUMP TABLE FOR <CTRL-R>
+   042F   C3BB03           JMP     RUN2
+                    
+                   ; RESTORE <CTRL-R> ACTION FUNCTION
+   0432            JTBLUNHACK:
+   0432   3EAF             MVI     A,0AFH          ; CHANGE RUN FUNCTION BACK TO RUN FUNCTION
+   0434   329202           STA     RUNTBLENT       ; MODIFY JUMP TABLE FOR <CTRL-R>
+   0437   C35800           JMP     PROCESS         ; GO BACK TO KEYSTROKE LOOP
+                    
+                   ; SEEMS DEAD
+   043A   07070707         DB      07H, 07H, 07H, 07H, 07H, 07H
+   043E   0707    
+   0440   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   0444   00000000
+   0448   00000000         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+   044C   00000000
+   0450   00000000         DB      00H, 00H, 00H, 00H, 00H
+   0454   00      
+   0455   0D0D0D0D         DB      0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH
+   0459   0D0D0D0D
+   045D   0D0D0D0D         DB      0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH
+   0461   0D0D0D0D
+                    
+                           END
+ NO PROGRAM ERRORS
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      03:24  04/05/2016
++                                                                                      PAGE 19
+      
+
+
+                        SYMBOL TABLE
+
+  * 01
+
+  A      0007      ADJCU  01D2      B      0000      BOLOO  0373      
+  BUFOU  0370      C      0001      CFLSH  000B      CHARO  0380      
+  CHK18  0425      CHKCU  02C3      CHKCZ  0418      CHKDO  02F2      
+  CHKNX  0246      CHKY   02DC      CLEAR  0230      CLRBC  0237      
+  CLRBL  0233      CLRKE  0172      CMDBU  000E      COLOR  0007      
+  COORD  0003      CPWAI  03C3      CTRLZ  009A      CUROF  000C      
+  CURON  0006      CUSOR  0005      D      0002      DATAP  0001      
+  DLYLO  01EA      DOCUR  01C0      E      0003      FUNCC  0240      
+  FUNCL  0280 *    GETHI  00F2      GETKE  0180      GETPA  0100      
+  GETPO  03D1      GETPV  00E8      GPBLO  03D9      GPBTA  03F0      
+  H      0004      HIGHI  0160      INSRT  0400      INTEN  0008      
+  JTBLH  042A *    JTBLU  0432      JUMPM  0268      KEYCO  01AA      
+  L      0005      LOWIN  0158      M      0006      MORER  0406      
+  MOVNO  001C      NOFLS  0066      NOLOO  0367      NOTRU  005B      
+  NULOU  0364      OUTDO  0391      PCLOO  0197      PROCC  018A      
+  PROCE  0058      PSW    0006      RECHE  02C6      RUN2   03BB      
+  RUNCH  00C1      RUNFL  000D      RUNNI  03B5      RUNTB  0292      
+  SETPI  0138      SKIPC  0063      SKP20  010E      SKP40  0119      
+  SP     0006      SPTOP  0148      START  0200      STATP  0000      
+  STATR  0040      STATT  0080      STCLR  0220      STORM  0019      
+  SWITP  00FF      SWTDL  01E4      TBLMA  0254      TGHTL  0038      
+  TGLCU  0080      WRPBT  02EC      WRPRI  02D6      XCURM  000A      
+  XORPI  00B8      XSETM  0010      YCURM  0009      YSETM  0016      
+  

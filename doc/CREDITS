@@ -1,0 +1,23 @@
+John Kichury <jjk439@gmail.com>:
+
+for the frontpanel library. John not only provides this great software as
+Open Source, he also was very helpful in my attempts to use his library
+and patiently answered all my questions.
+
+
+Stefano Bodrato <stefano_bodrato@hotmail.com>:
+
+for the Windows port of the frontpanel library.
+
+
+Mark Garlanger <http://heathkit.garlanger.com/>:
+
+for the implementation of the Z80 DAA instruction, which passes
+regression tests, and for help with a flag correct implementation
+of the Z80 ADC/SBC instructions, that also passes regression tests.
+
+
+Didier Derny <didier.derny@gmail.com>:
+
+for a node based expression parser for z80asm, that implements
+operator precedence.
