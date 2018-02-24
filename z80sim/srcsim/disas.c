@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1989-2017 by Udo Munk
  * Parts Copyright (C) 2008 by Justin Clancy
- * 8080 disassembler Copyright (C) 1018 by Christophe Staiesse
+ * 8080 disassembler Copyright (C) 2018 by Christophe Staiesse
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
