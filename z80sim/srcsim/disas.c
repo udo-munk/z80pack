@@ -538,7 +538,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "CZ\t"		},	/* 0xcc */
 	{ nnout,  "CALL\t"		},	/* 0xcd */
 	{ nout,   "ACI\t"		},	/* 0xce */
-	{ opout,  "RST\t8"		},	/* 0xcf */
+	{ opout,  "RST\t1"		},	/* 0xcf */
 	{ opout,  "RNC"			},	/* 0xd0 */
 	{ opout,  "POP\tD"		},	/* 0xd1 */
 	{ nnout,  "JNC\t"		},	/* 0xd2 */
@@ -546,7 +546,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "CNC\t"		},	/* 0xd4 */
 	{ opout,  "PUSH\tD"		},	/* 0xd5 */
 	{ nout,   "SUI\t"		},	/* 0xd6 */
-	{ opout,  "RST\t10"		},	/* 0xd7 */
+	{ opout,  "RST\t2"		},	/* 0xd7 */
 	{ opout,  "RC"			},	/* 0xd8 */
 	{ opout,  "RET"			},	/* 0xd9 */ /* undocumented */
 	{ nnout,  "JC\t"		},	/* 0xda */
@@ -554,7 +554,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "CC\t"		},	/* 0xdc */
 	{ nnout,  "CALL\t"		},	/* 0xdd */ /* undocumented */
 	{ nout,   "SBI\t"		},	/* 0xde */
-	{ opout,  "RST\t18"		},	/* 0xdf */
+	{ opout,  "RST\t3"		},	/* 0xdf */
 	{ opout,  "RPO"			},	/* 0xe0 */
 	{ opout,  "POP\tH"		},	/* 0xe1 */
 	{ nnout,  "JPO\t"		},	/* 0xe2 */
@@ -562,7 +562,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "CPO\t"		},	/* 0xe4 */
 	{ opout,  "PUSH\tH"		},	/* 0xe5 */
 	{ nout,   "ANI\t"		},	/* 0xe6 */
-	{ opout,  "RST\t20"		},	/* 0xe7 */
+	{ opout,  "RST\t4"		},	/* 0xe7 */
 	{ opout,  "RPE"			},	/* 0xe8 */
 	{ opout,  "PCHL"		},	/* 0xe9 */
 	{ nnout,  "JPE\t"		},	/* 0xea */
@@ -570,7 +570,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "CPE\t"		},	/* 0xec */
 	{ nnout,  "CALL\t"		},	/* 0xed */ /* undocumented */
 	{ nout,   "XRI\t"		},	/* 0xee */
-	{ opout,  "RST\t28"		},	/* 0xef */
+	{ opout,  "RST\t5"		},	/* 0xef */
 	{ opout,  "RP"			},	/* 0xf0 */
 	{ opout,  "POP\tPSW"		},	/* 0xf1 */
 	{ nnout,  "JP\t"		},	/* 0xf2 */
@@ -578,7 +578,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "CP\t"		},	/* 0xf4 */
 	{ opout,  "PUSH\tPSW"		},	/* 0xf5 */
 	{ nout,   "ORI\t"		},	/* 0xf6 */
-	{ opout,  "RST\t30"		},	/* 0xf7 */
+	{ opout,  "RST\t6"		},	/* 0xf7 */
 	{ opout,  "RM"			},	/* 0xf8 */
 	{ opout,  "SPHL"		},	/* 0xf9 */
 	{ nnout,  "JM\t"		},	/* 0xfa */
@@ -586,7 +586,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "CM\t"		},	/* 0xfc */
 	{ nnout,  "CALL\t"		},	/* 0xfd */ /* undocumented */
 	{ nout,   "CPI\t"		},	/* 0xfe */
-	{ opout,  "RST\t38"		}	/* 0xff */
+	{ opout,  "RST\t7"		}	/* 0xff */
 };
 
 static int addr;
