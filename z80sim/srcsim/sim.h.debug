@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * This is the configuration I'm using for software testing and debugging
  *
@@ -83,8 +83,8 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2017 by Udo Munk"
-#define RELEASE	"1.36"
+#define COPYR	"Copyright (C) 1987-2018 by Udo Munk"
+#define RELEASE	"1.37"
 
 #define LENCMD		80		/* length of command buffers etc */
 

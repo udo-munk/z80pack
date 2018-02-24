@@ -63,7 +63,7 @@ simulator convert it to Intel hex format with bin2hex. This
 can be converted back to a binary file under CP/M with the LOAD
 command.
 
-Copy the the both shell scripts cpmr.sh and cpmw.sh to ~/bin
+Copy the both shell scripts cpmr.sh and cpmw.sh to ~/bin
 or /usr/local/bin. Edit the line with: 
 	diskdir=~/z80pack-x.y/cpmsim/disks
 to the path where you have extracted the z80pack distribution.

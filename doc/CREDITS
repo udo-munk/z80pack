@@ -21,3 +21,8 @@ Didier Derny <didier.derny@gmail.com>:
 
 for a node based expression parser for z80asm, that implements
 operator precedence.
+
+
+Christophe Staïesse <chastai@skynet.be>
+
+for the Intel 8080 disassembler.
