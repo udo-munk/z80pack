@@ -67,7 +67,7 @@
 #include "memory.h"
 
 extern void cpu_z80(void), cpu_8080(void);
-extern void disass(int, unsigned char **, int);
+extern void disass(int, unsigned char **, int, unsigned char *);
 extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
@@ -210,7 +210,7 @@ static void do_step(void)
 	print_head();
 	print_reg();
 	p = mem_base() + PC;
-	disass(cpu, &p, PC);
+	disass(cpu, &p, PC, mem_base());
 }
 
 /*
@@ -373,9 +373,7 @@ static void do_list(char *s)
 		wrk_ram = mem_base() + exatoi(s);
 	for (i = 0; i <	10; i++) {
 		printf("%04x - ", (unsigned int)(wrk_ram - mem_base()));
-		disass(cpu, &wrk_ram, wrk_ram - mem_base());
-		if (wrk_ram > mem_base() + 65535)
-			wrk_ram = mem_base();
+		disass(cpu, &wrk_ram, wrk_ram - mem_base(), mem_base());
 	}
 }
 

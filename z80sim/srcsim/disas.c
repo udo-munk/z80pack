@@ -648,23 +648,46 @@ void get_opcodes(unsigned char **p, int len)
  *	The second argument is the (Z80) address of the
  *	op-code to disassemble. It is used to calculate the
  *	destination address of relative jumps.
+ *
+ *	At most four bytes will be read from the buffer.
+ *
+ *	To handle memory wrap around from high memory to low
+ *	memory addresses, set base to a non-null pointer
+ *	designating the base of a 64K memory block. *p should
+ *	point into this block.
  */
-void disass(int cpu, unsigned char **p, int adr)
+void disass(int cpu, unsigned char **p, int adr, unsigned char *base)
 {
 	register int len;
+	unsigned char buf[4];
+	size_t ofs;
+	int i;
 
 	addr = adr;
+
+	if (base != NULL) {
+		ofs = *p - base;
+		for (i = 0; i < 4; i++)
+			buf[i] = base[(ofs + i) & 0xffff];
+		*p = buf;
+	}
+
 	if (cpu == Z80)
 		len = (*optabz80[**p].fun) (optabz80[**p].text, p);
 	else
 		len = (*optabi8080[**p].fun) (optabi8080[**p].text, p);
+
 #ifndef WANT_GUI
 	printf(Disass_Str);
 #endif
 #ifdef WANT_GUI
         get_opcodes(p, len);
 #endif
-	*p += len;
+
+	if (base != NULL)
+		*p = base + ((ofs + len) & 0xffff);
+	else
+		*p += len;
 }
 
 /*
@@ -702,7 +725,7 @@ static int iout(char *s, unsigned char **p)
  */
 static int rout(char *s, char **p)
 {
-	sprintf(Disass_Str, "%s%04X\n", s, addr + *(*p + 1) + 2);
+	sprintf(Disass_Str, "%s%04X\n", s, (addr + *(*p + 1) + 2) & 0xffff);
 	return(2);
 }
 
