@@ -80,6 +80,15 @@ static int op_ldi(void), op_ldir(void), op_ldd(void), op_lddr(void);
 static int op_cpi(void), op_cpir(void), op_cpdop(void), op_cpdr(void);
 static int op_oprld(void), op_oprrd(void);
 
+#ifdef Z80_UNDOC
+static int op_undoc_im0(void), op_undoc_im1(void), op_undoc_im2(void);
+static int op_undoc_neg(void), op_undoc_nop(void), op_undoc_retn(void);
+static int op_undoc_outc0(void), op_undoc_infic(void);
+#	define UNDOC(f) f
+#else
+#	define UNDOC(f) trap_ed
+#endif
+
 int op_ed_handel(void)
 {
 	register int t;
@@ -161,58 +170,58 @@ int op_ed_handel(void)
 		op_outcc,			/* 0x49 */
 		op_adchb,			/* 0x4a */
 		op_ldbcinn,			/* 0x4b */
-		trap_ed,			/* 0x4c */
+		UNDOC(op_undoc_neg),		/* 0x4c */
 		op_reti,			/* 0x4d */
-		trap_ed,			/* 0x4e */
+		UNDOC(op_undoc_im0),		/* 0x4e */
 		op_ldra,			/* 0x4f */
 		op_indic,			/* 0x50 */
 		op_outcd,			/* 0x51 */
 		op_sbchd,			/* 0x52 */
 		op_ldinde,			/* 0x53 */
-		trap_ed,			/* 0x54 */
-		trap_ed,			/* 0x55 */
+		UNDOC(op_undoc_neg),		/* 0x54 */
+		UNDOC(op_undoc_retn),		/* 0x55 */
 		op_im1,				/* 0x56 */
 		op_ldai,			/* 0x57 */
 		op_ineic,			/* 0x58 */
 		op_outce,			/* 0x59 */
 		op_adchd,			/* 0x5a */
 		op_lddeinn,			/* 0x5b */
-		trap_ed,			/* 0x5c */
-		trap_ed,			/* 0x5d */
+		UNDOC(op_undoc_neg),		/* 0x5c */
+		UNDOC(op_undoc_retn),		/* 0x5d */
 		op_im2,				/* 0x5e */
 		op_ldar,			/* 0x5f */
 		op_inhic,			/* 0x60 */
 		op_outch,			/* 0x61 */
 		op_sbchh,			/* 0x62 */
 		op_ldinhl,			/* 0x63 */
-		trap_ed,			/* 0x64 */
-		trap_ed,			/* 0x65 */
-		trap_ed,			/* 0x66 */
+		UNDOC(op_undoc_neg),		/* 0x64 */
+		UNDOC(op_undoc_retn),		/* 0x65 */
+		UNDOC(op_undoc_im0),		/* 0x66 */
 		op_oprrd,			/* 0x67 */
 		op_inlic,			/* 0x68 */
 		op_outcl,			/* 0x69 */
 		op_adchh,			/* 0x6a */
 		op_ldhlinn,			/* 0x6b */
-		trap_ed,			/* 0x6c */
-		trap_ed,			/* 0x6d */
-		trap_ed,			/* 0x6e */
+		UNDOC(op_undoc_neg),		/* 0x6c */
+		UNDOC(op_undoc_retn),		/* 0x6d */
+		UNDOC(op_im0),			/* 0x6e */
 		op_oprld,			/* 0x6f */
-		trap_ed,			/* 0x70 */
-		trap_ed,			/* 0x71 */
+		UNDOC(op_undoc_infic),		/* 0x70 */
+		UNDOC(op_undoc_outc0),		/* 0x71 */
 		op_sbchs,			/* 0x72 */
 		op_ldinsp,			/* 0x73 */
-		trap_ed,			/* 0x74 */
-		trap_ed,			/* 0x75 */
-		trap_ed,			/* 0x76 */
-		trap_ed,			/* 0x77 */
+		UNDOC(op_undoc_neg),		/* 0x74 */
+		UNDOC(op_undoc_retn),		/* 0x75 */
+		UNDOC(op_undoc_im1),		/* 0x76 */
+		UNDOC(op_undoc_nop),		/* 0x77 */
 		op_inaic,			/* 0x78 */
 		op_outca,			/* 0x79 */
 		op_adchs,			/* 0x7a */
 		op_ldspinn,			/* 0x7b */
-		trap_ed,			/* 0x7c */
-		trap_ed,			/* 0x7d */
-		trap_ed,			/* 0x7e */
-		trap_ed,			/* 0x7f */
+		UNDOC(op_undoc_neg),		/* 0x7c */
+		UNDOC(op_undoc_retn),		/* 0x7d */
+		UNDOC(op_undoc_im2),		/* 0x7e */
+		UNDOC(op_undoc_nop),		/* 0x7f */
 		trap_ed,			/* 0x80 */
 		trap_ed,			/* 0x81 */
 		trap_ed,			/* 0x82 */
@@ -1257,3 +1266,56 @@ static int op_oprrd(void)	/* RRD (HL) */
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(18);
 }
+
+/*
+ *	Undocumented opcodes
+ */
+
+#ifdef Z80_UNDOC
+
+#define TRAP if (u_flag) return trap_ed()
+
+#define UNDOCFUNC(op) \
+static int op_undoc_##op() \
+{ \
+	TRAP; \
+	return op_##op(); \
+}
+
+UNDOCFUNC(im0)
+UNDOCFUNC(im1)
+UNDOCFUNC(im2)
+UNDOCFUNC(neg)
+UNDOCFUNC(retn)
+
+static int op_undoc_nop()
+{
+	TRAP;
+	return(8);
+}
+
+static int op_undoc_infic(void)		/* IN F,(C) */
+{
+	BYTE io_in(BYTE, BYTE);
+
+	TRAP;
+
+	(void) io_in(C, B);
+	F &= ~(N_FLAG | H_FLAG);
+	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	return(12);
+}
+
+static int op_undoc_outc0(void)		/* OUT (C),0 */
+{
+	BYTE io_out(BYTE, BYTE, BYTE);
+
+	TRAP;
+
+	io_out(C, B, 0);
+	return(12);
+}
+
+#endif
