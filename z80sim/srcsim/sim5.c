@@ -78,6 +78,14 @@ static int op_ldydd(void), op_ldyde(void);
 static int op_ldydh(void), op_ldydl(void), op_ldydn(void);
 extern int op_fdcb_handel(void);
 
+#ifdef Z80_UNDOC
+#	define UNDOC_GEN_FD
+#	include "undoc_ddfd.h"
+#	define UNDOC(f) f
+#else
+#	define UNDOC(f) trap_fd
+#endif
+
 int op_fd_handel(void)
 {
 	register int t;
@@ -119,17 +127,17 @@ int op_fd_handel(void)
 		op_ldiynn,			/* 0x21 */
 		op_ldiny,			/* 0x22 */
 		op_inciy,			/* 0x23 */
-		trap_fd,			/* 0x24 */
-		trap_fd,			/* 0x25 */
-		trap_fd,			/* 0x26 */
+		UNDOC(op_undoc_inciyh),		/* 0x24 */
+		UNDOC(op_undoc_deciyh),		/* 0x25 */
+		UNDOC(op_undoc_ldiyhn),		/* 0x26 */
 		trap_fd,			/* 0x27 */
 		trap_fd,			/* 0x28 */
 		op_addyy,			/* 0x29 */
 		op_ldiyinn,			/* 0x2a */
 		op_deciy,			/* 0x2b */
-		trap_fd,			/* 0x2c */
-		trap_fd,			/* 0x2d */
-		trap_fd,			/* 0x2e */
+		UNDOC(op_undoc_inciyl),		/* 0x2c */
+		UNDOC(op_undoc_deciyl),		/* 0x2d */
+		UNDOC(op_undoc_ldiyln),		/* 0x2e */
 		trap_fd,			/* 0x2f */
 		trap_fd,			/* 0x30 */
 		trap_fd,			/* 0x31 */
@@ -151,50 +159,50 @@ int op_fd_handel(void)
 		trap_fd,			/* 0x41 */
 		trap_fd,			/* 0x42 */
 		trap_fd,			/* 0x43 */
-		trap_fd,			/* 0x44 */
-		trap_fd,			/* 0x45 */
+		UNDOC(op_undoc_ldbiyh),		/* 0x44 */
+		UNDOC(op_undoc_ldbiyl),		/* 0x45 */
 		op_ldbyd,			/* 0x46 */
 		trap_fd,			/* 0x47 */
 		trap_fd,			/* 0x48 */
 		trap_fd,			/* 0x49 */
 		trap_fd,			/* 0x4a */
 		trap_fd,			/* 0x4b */
-		trap_fd,			/* 0x4c */
-		trap_fd,			/* 0x4d */
+		UNDOC(op_undoc_ldciyh),		/* 0x4c */
+		UNDOC(op_undoc_ldciyl),		/* 0x4d */
 		op_ldcyd,			/* 0x4e */
 		trap_fd,			/* 0x4f */
 		trap_fd,			/* 0x50 */
 		trap_fd,			/* 0x51 */
 		trap_fd,			/* 0x52 */
 		trap_fd,			/* 0x53 */
-		trap_fd,			/* 0x54 */
-		trap_fd,			/* 0x55 */
+		UNDOC(op_undoc_lddiyh),		/* 0x54 */
+		UNDOC(op_undoc_lddiyl),		/* 0x55 */
 		op_lddyd,			/* 0x56 */
 		trap_fd,			/* 0x57 */
 		trap_fd,			/* 0x58 */
 		trap_fd,			/* 0x59 */
 		trap_fd,			/* 0x5a */
 		trap_fd,			/* 0x5b */
-		trap_fd,			/* 0x5c */
-		trap_fd,			/* 0x5d */
+		UNDOC(op_undoc_ldeiyh),		/* 0x5c */
+		UNDOC(op_undoc_ldeiyl),		/* 0x5d */
 		op_ldeyd,			/* 0x5e */
 		trap_fd,			/* 0x5f */
-		trap_fd,			/* 0x60 */
-		trap_fd,			/* 0x61 */
-		trap_fd,			/* 0x62 */
-		trap_fd,			/* 0x63 */
-		trap_fd,			/* 0x64 */
-		trap_fd,			/* 0x65 */
+		UNDOC(op_undoc_ldiyhb),		/* 0x60 */
+		UNDOC(op_undoc_ldiyhc),		/* 0x61 */
+		UNDOC(op_undoc_ldiyhd),		/* 0x62 */
+		UNDOC(op_undoc_ldiyhe),		/* 0x63 */
+		UNDOC(op_undoc_ldiyhiyh),	/* 0x64 */
+		UNDOC(op_undoc_ldiyhiyl),	/* 0x65 */
 		op_ldhyd,			/* 0x66 */
-		trap_fd,			/* 0x67 */
-		trap_fd,			/* 0x68 */
-		trap_fd,			/* 0x69 */
-		trap_fd,			/* 0x6a */
-		trap_fd,			/* 0x6b */
-		trap_fd,			/* 0x6c */
-		trap_fd,			/* 0x6d */
+		UNDOC(op_undoc_ldiyha),		/* 0x67 */
+		UNDOC(op_undoc_ldiylb),		/* 0x68 */
+		UNDOC(op_undoc_ldiylc),		/* 0x69 */
+		UNDOC(op_undoc_ldiyld),		/* 0x6a */
+		UNDOC(op_undoc_ldiyle),		/* 0x6b */
+		UNDOC(op_undoc_ldiyliyh),	/* 0x6c */
+		UNDOC(op_undoc_ldiyliyl),	/* 0x6d */
 		op_ldlyd,			/* 0x6e */
-		trap_fd,			/* 0x6f */
+		UNDOC(op_undoc_ldiyla),		/* 0x6f */
 		op_ldydb,			/* 0x70 */
 		op_ldydc,			/* 0x71 */
 		op_ldydd,			/* 0x72 */
@@ -207,72 +215,72 @@ int op_fd_handel(void)
 		trap_fd,			/* 0x79 */
 		trap_fd,			/* 0x7a */
 		trap_fd,			/* 0x7b */
-		trap_fd,			/* 0x7c */
-		trap_fd,			/* 0x7d */
+		UNDOC(op_undoc_ldaiyh),		/* 0x7c */
+		UNDOC(op_undoc_ldaiyl),		/* 0x7d */
 		op_ldayd,			/* 0x7e */
 		trap_fd,			/* 0x7f */
 		trap_fd,			/* 0x80 */
 		trap_fd,			/* 0x81 */
 		trap_fd,			/* 0x82 */
 		trap_fd,			/* 0x83 */
-		trap_fd,			/* 0x84 */
-		trap_fd,			/* 0x85 */
+		UNDOC(op_undoc_adaiyh),		/* 0x84 */
+		UNDOC(op_undoc_adaiyl),		/* 0x85 */
 		op_adayd,			/* 0x86 */
 		trap_fd,			/* 0x87 */
 		trap_fd,			/* 0x88 */
 		trap_fd,			/* 0x89 */
 		trap_fd,			/* 0x8a */
 		trap_fd,			/* 0x8b */
-		trap_fd,			/* 0x8c */
-		trap_fd,			/* 0x8d */
+		UNDOC(op_undoc_acaiyh),		/* 0x8c */
+		UNDOC(op_undoc_acaiyl),		/* 0x8d */
 		op_acayd,			/* 0x8e */
 		trap_fd,			/* 0x8f */
 		trap_fd,			/* 0x90 */
 		trap_fd,			/* 0x91 */
 		trap_fd,			/* 0x92 */
 		trap_fd,			/* 0x93 */
-		trap_fd,			/* 0x94 */
-		trap_fd,			/* 0x95 */
+		UNDOC(op_undoc_suaiyh),		/* 0x94 */
+		UNDOC(op_undoc_suaiyl),		/* 0x95 */
 		op_suayd,			/* 0x96 */
 		trap_fd,			/* 0x97 */
 		trap_fd,			/* 0x98 */
 		trap_fd,			/* 0x99 */
 		trap_fd,			/* 0x9a */
 		trap_fd,			/* 0x9b */
-		trap_fd,			/* 0x9c */
-		trap_fd,			/* 0x9d */
+		UNDOC(op_undoc_scaiyh),		/* 0x9c */
+		UNDOC(op_undoc_scaiyl),		/* 0x9d */
 		op_scayd,			/* 0x9e */
 		trap_fd,			/* 0x9f */
 		trap_fd,			/* 0xa0 */
 		trap_fd,			/* 0xa1 */
 		trap_fd,			/* 0xa2 */
 		trap_fd,			/* 0xa3 */
-		trap_fd,			/* 0xa4 */
-		trap_fd,			/* 0xa5 */
+		UNDOC(op_undoc_andiyh),		/* 0xa4 */
+		UNDOC(op_undoc_andiyl),		/* 0xa5 */
 		op_andyd,			/* 0xa6 */
 		trap_fd,			/* 0xa7 */
 		trap_fd,			/* 0xa8 */
 		trap_fd,			/* 0xa9 */
 		trap_fd,			/* 0xaa */
 		trap_fd,			/* 0xab */
-		trap_fd,			/* 0xac */
-		trap_fd,			/* 0xad */
+		UNDOC(op_undoc_xoriyh),		/* 0xac */
+		UNDOC(op_undoc_xoriyl),		/* 0xad */
 		op_xoryd,			/* 0xae */
 		trap_fd,			/* 0xaf */
 		trap_fd,			/* 0xb0 */
 		trap_fd,			/* 0xb1 */
 		trap_fd,			/* 0xb2 */
 		trap_fd,			/* 0xb3 */
-		trap_fd,			/* 0xb4 */
-		trap_fd,			/* 0xb5 */
+		UNDOC(op_undoc_oraiyh),		/* 0xb4 */
+		UNDOC(op_undoc_oraiyl),		/* 0xb5 */
 		op_oryd,			/* 0xb6 */
 		trap_fd,			/* 0xb7 */
 		trap_fd,			/* 0xb8 */
 		trap_fd,			/* 0xb9 */
 		trap_fd,			/* 0xba */
 		trap_fd,			/* 0xbb */
-		trap_fd,			/* 0xbc */
-		trap_fd,			/* 0xbd */
+		UNDOC(op_undoc_cpiyh),		/* 0xbc */
+		UNDOC(op_undoc_cpiyl),		/* 0xbd */
 		op_cpyd,			/* 0xbe */
 		trap_fd,			/* 0xbf */
 		trap_fd,			/* 0xc0 */

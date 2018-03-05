@@ -77,18 +77,11 @@ static int op_ldxdh(void), op_ldxdl(void), op_ldxdn(void);
 extern int op_ddcb_handel(void);
 
 #ifdef Z80_UNDOC
-static int op_undoc_ldcixh(void);
-static int op_undoc_lddixl(void);
-static int op_undoc_ldixlc(void), op_undoc_ldixld(void);
-static int op_undoc_ldixha(void), op_undoc_ldixla(void);
-static int op_undoc_ldixhc(void);
-static int op_undoc_ldaixl(void), op_undoc_ldaixh(void);
-static int op_undoc_cpixl(void);
-static int op_undoc_acaixl(void), op_undoc_acaixh(void);
-static int op_undoc_scaixl(void), op_undoc_scaixh(void);
-static int op_undoc_oraixl(void), op_undoc_oraixh(void);
-static int op_undoc_andixl(void), op_undoc_andixh(void);
-static int op_undoc_incixl(void), op_undoc_incixh(void);
+#	define UNDOC_GEN_DD
+#	include "undoc_ddfd.h"
+#	define UNDOC(f) f
+#else
+#	define UNDOC(f) trap_dd
 #endif
 
 long op_dd_handel(void)
@@ -132,25 +125,17 @@ long op_dd_handel(void)
 		op_ldixnn,			/* 0x21 */
 		op_ldinx,			/* 0x22 */
 		op_incix,			/* 0x23 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x24 */
-#else
-		op_undoc_incixh,
-#endif
-		trap_dd,			/* 0x25 */
-		trap_dd,			/* 0x26 */
+		UNDOC(op_undoc_incixh),		/* 0x24 */
+		UNDOC(op_undoc_decixh),		/* 0x25 */
+		UNDOC(op_undoc_ldixhn),		/* 0x26 */
 		trap_dd,			/* 0x27 */
 		trap_dd,			/* 0x28 */
 		op_addxx,			/* 0x29 */
 		op_ldixinn,			/* 0x2a */
 		op_decix,			/* 0x2b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x2c */
-#else
-		op_undoc_incixl,
-#endif
-		trap_dd,			/* 0x2d */
-		trap_dd,			/* 0x2e */
+		UNDOC(op_undoc_incixl),		/* 0x2c */
+		UNDOC(op_undoc_decixl),		/* 0x2d */
+		UNDOC(op_undoc_ldixln),		/* 0x2e */
 		trap_dd,			/* 0x2f */
 		trap_dd,			/* 0x30 */
 		trap_dd,			/* 0x31 */
@@ -172,78 +157,50 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x41 */
 		trap_dd,			/* 0x42 */
 		trap_dd,			/* 0x43 */
-		trap_dd,			/* 0x44 */
-		trap_dd,			/* 0x45 */
+		UNDOC(op_undoc_ldbixh),		/* 0x44 */
+		UNDOC(op_undoc_ldbixl),		/* 0x45 */
 		op_ldbxd,			/* 0x46 */
 		trap_dd,			/* 0x47 */
 		trap_dd,			/* 0x48 */
 		trap_dd,			/* 0x49 */
 		trap_dd,			/* 0x4a */
 		trap_dd,			/* 0x4b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x4c */
-#else
-		op_undoc_ldcixh,
-#endif
-		trap_dd,			/* 0x4d */
+		UNDOC(op_undoc_ldcixh),		/* 0x4c */
+		UNDOC(op_undoc_ldcixl),		/* 0x4d */
 		op_ldcxd,			/* 0x4e */
 		trap_dd,			/* 0x4f */
 		trap_dd,			/* 0x50 */
 		trap_dd,			/* 0x51 */
 		trap_dd,			/* 0x52 */
 		trap_dd,			/* 0x53 */
-		trap_dd,			/* 0x54 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x55 */
-#else
-		op_undoc_lddixl,
-#endif
+		UNDOC(op_undoc_lddixh),		/* 0x54 */
+		UNDOC(op_undoc_lddixl),		/* 0x55 */
 		op_lddxd,			/* 0x56 */
 		trap_dd,			/* 0x57 */
 		trap_dd,			/* 0x58 */
 		trap_dd,			/* 0x59 */
 		trap_dd,			/* 0x5a */
 		trap_dd,			/* 0x5b */
-		trap_dd,			/* 0x5c */
-		trap_dd,			/* 0x5d */
+		UNDOC(op_undoc_ldeixh),		/* 0x5c */
+		UNDOC(op_undoc_ldeixl),		/* 0x5d */
 		op_ldexd,			/* 0x5e */
 		trap_dd,			/* 0x5f */
-		trap_dd,			/* 0x60 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x61 */
-#else
-		op_undoc_ldixhc,
-#endif
-		trap_dd,			/* 0x62 */
-		trap_dd,			/* 0x63 */
-		trap_dd,			/* 0x64 */
-		trap_dd,			/* 0x65 */
+		UNDOC(op_undoc_ldixhb),		/* 0x60 */
+		UNDOC(op_undoc_ldixhc),		/* 0x61 */
+		UNDOC(op_undoc_ldixhd),		/* 0x62 */
+		UNDOC(op_undoc_ldixhe),		/* 0x63 */
+		UNDOC(op_undoc_ldixhixh),	/* 0x64 */
+		UNDOC(op_undoc_ldixhixl),	/* 0x65 */
 		op_ldhxd,			/* 0x66 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x67 */
-#else
-		op_undoc_ldixha,
-#endif
-		trap_dd,			/* 0x68 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x69 */
-#else
-		op_undoc_ldixlc,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x6a */
-#else
-		op_undoc_ldixld,
-#endif
-		trap_dd,			/* 0x6b */
-		trap_dd,			/* 0x6c */
-		trap_dd,			/* 0x6d */
+		UNDOC(op_undoc_ldixha),		/* 0x67 */
+		UNDOC(op_undoc_ldixlb),		/* 0x68 */
+		UNDOC(op_undoc_ldixlc),		/* 0x69 */
+		UNDOC(op_undoc_ldixld),		/* 0x6a */
+		UNDOC(op_undoc_ldixle),		/* 0x6b */
+		UNDOC(op_undoc_ldixlixh),	/* 0x6c */
+		UNDOC(op_undoc_ldixlixl),	/* 0x6d */
 		op_ldlxd,			/* 0x6e */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x6f */
-#else
-		op_undoc_ldixla,
-#endif
+		UNDOC(op_undoc_ldixla),		/* 0x6f */
 		op_ldxdb,			/* 0x70 */
 		op_ldxdc,			/* 0x71 */
 		op_ldxdd,			/* 0x72 */
@@ -256,116 +213,72 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x79 */
 		trap_dd,			/* 0x7a */
 		trap_dd,			/* 0x7b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x7c */
-#else
-		op_undoc_ldaixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x7d */
-#else
-		op_undoc_ldaixl,
-#endif
+		UNDOC(op_undoc_ldaixh),		/* 0x7c */
+		UNDOC(op_undoc_ldaixl),		/* 0x7d */
 		op_ldaxd,			/* 0x7e */
 		trap_dd,			/* 0x7f */
 		trap_dd,			/* 0x80 */
 		trap_dd,			/* 0x81 */
 		trap_dd,			/* 0x82 */
 		trap_dd,			/* 0x83 */
-		trap_dd,			/* 0x84 */
-		trap_dd,			/* 0x85 */
+		UNDOC(op_undoc_adaixh),		/* 0x84 */
+		UNDOC(op_undoc_adaixl),		/* 0x85 */
 		op_adaxd,			/* 0x86 */
 		trap_dd,			/* 0x87 */
 		trap_dd,			/* 0x88 */
 		trap_dd,			/* 0x89 */
 		trap_dd,			/* 0x8a */
 		trap_dd,			/* 0x8b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x8c */
-#else
-		op_undoc_acaixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x8d */
-#else
-		op_undoc_acaixl,
-#endif
+		UNDOC(op_undoc_acaixh),		/* 0x8c */
+		UNDOC(op_undoc_acaixl),		/* 0x8d */
 		op_acaxd,			/* 0x8e */
 		trap_dd,			/* 0x8f */
 		trap_dd,			/* 0x90 */
 		trap_dd,			/* 0x91 */
 		trap_dd,			/* 0x92 */
 		trap_dd,			/* 0x93 */
-		trap_dd,			/* 0x94 */
-		trap_dd,			/* 0x95 */
+		UNDOC(op_undoc_suaixh),		/* 0x94 */
+		UNDOC(op_undoc_suaixl),		/* 0x95 */
 		op_suaxd,			/* 0x96 */
 		trap_dd,			/* 0x97 */
 		trap_dd,			/* 0x98 */
 		trap_dd,			/* 0x99 */
 		trap_dd,			/* 0x9a */
 		trap_dd,			/* 0x9b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x9c */
-#else
-		op_undoc_scaixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x9d */
-#else
-		op_undoc_scaixl,
-#endif
+		UNDOC(op_undoc_scaixh),		/* 0x9c */
+		UNDOC(op_undoc_scaixl),		/* 0x9d */
 		op_scaxd,			/* 0x9e */
 		trap_dd,			/* 0x9f */
 		trap_dd,			/* 0xa0 */
 		trap_dd,			/* 0xa1 */
 		trap_dd,			/* 0xa2 */
 		trap_dd,			/* 0xa3 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xa4 */
-#else
-		op_undoc_andixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xa5 */
-#else
-		op_undoc_andixl,
-#endif
+		UNDOC(op_undoc_andixh),		/* 0xa4 */
+		UNDOC(op_undoc_andixl),		/* 0xa5 */
 		op_andxd,			/* 0xa6 */
 		trap_dd,			/* 0xa7 */
 		trap_dd,			/* 0xa8 */
 		trap_dd,			/* 0xa9 */
 		trap_dd,			/* 0xaa */
 		trap_dd,			/* 0xab */
-		trap_dd,			/* 0xac */
-		trap_dd,			/* 0xad */
+		UNDOC(op_undoc_xorixh),		/* 0xac */
+		UNDOC(op_undoc_xorixl),		/* 0xad */
 		op_xorxd,			/* 0xae */
 		trap_dd,			/* 0xaf */
 		trap_dd,			/* 0xb0 */
 		trap_dd,			/* 0xb1 */
 		trap_dd,			/* 0xb2 */
 		trap_dd,			/* 0xb3 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xb4 */
-#else
-		op_undoc_oraixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xb5 */
-#else
-		op_undoc_oraixl,
-#endif
+		UNDOC(op_undoc_oraixh),		/* 0xb4 */
+		UNDOC(op_undoc_oraixl),		/* 0xb5 */
 		op_orxd,			/* 0xb6 */
 		trap_dd,			/* 0xb7 */
 		trap_dd,			/* 0xb8 */
 		trap_dd,			/* 0xb9 */
 		trap_dd,			/* 0xba */
 		trap_dd,			/* 0xbb */
-		trap_dd,			/* 0xbc */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xbd */
-#else
-		op_undoc_cpixl,
-#endif
+		UNDOC(op_undoc_cpixh),		/* 0xbc */
+		UNDOC(op_undoc_cpixl),		/* 0xbd */
 		op_cpxd,			/* 0xbe */
 		trap_dd,			/* 0xbf */
 		trap_dd,			/* 0xc0 */
@@ -855,246 +768,3 @@ static int op_ldxdn(void)		/* LD (IX+d),n */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
-
-static int op_undoc_ldaixl(void)	/* LD A,IXL */
-{
-	if (u_flag)
-		trap_dd();
-
-	A = IX & 0xff;
-	return(8);
-}
-
-static int op_undoc_ldaixh(void)	/* LD A,IXH */
-{
-	if (u_flag)
-		trap_dd();
-
-	A = IX >> 8;
-	return(8);
-}
-
-static int op_undoc_ldcixh(void)	/* LD C,IXH */
-{
-	if (u_flag)
-		trap_dd();
-
-	C = IX >> 8;
-	return(8);
-}
-
-static int op_undoc_lddixl(void)	/* LD D,IXL */
-{
-	if (u_flag)
-		trap_dd();
-
-	D = IX & 0xff;
-	return(8);
-}
-
-static int op_undoc_ldixha(void)	/* LD IXH,A */
-{
-	if (u_flag)
-		trap_dd();
-
-	IX = (IX & 0x00ff) | (A << 8);
-	return(8);
-}
-
-static int op_undoc_ldixhc(void)	/* LD IXH,C */
-{
-	if (u_flag)
-		trap_dd();
-
-	IX = (IX & 0x00ff) | (C << 8);
-	return(8);
-}
-
-static int op_undoc_ldixla(void)	/* LD IXL,A */
-{
-	if (u_flag)
-		trap_dd();
-
-	IX = (IX & 0xff00) | A;
-	return(8);
-}
-
-static int op_undoc_ldixlc(void)	/* LD IXL,C */
-{
-	if (u_flag)
-		trap_dd();
-
-	IX = (IX & 0xff00) | C;
-	return(8);
-}
-
-static int op_undoc_ldixld(void)	/* LD IXL,D */
-{
-	if (u_flag)
-		trap_dd();
-
-	IX = (IX & 0xff00) | D;
-	return(8);
-}
-
-static int op_undoc_cpixl(void)		/* CP IXL */
-{
-	register int i;
-	register BYTE P;
-
-	if (u_flag)
-		trap_dd();
-
-	P = IX & 0xff;
-	((P & 0xf) > (A	& 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) P;
-	(i < -128 || i > 127) ?	(F |= P_FLAG) : (F &= ~P_FLAG);
-	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F |= N_FLAG;
-	return(8);
-}
-
-static int op_undoc_acaixl(void)	/* ADC A,IXL */
-{
-	register int i, carry;
-	register BYTE P;
-
-	carry = (F & C_FLAG) ? 1 : 0;
-	P = IX & 0xff;
-	((A & 0xf) + (P	& 0xf) + carry > 0xf) ?	(F |= H_FLAG) : (F &= ~H_FLAG);
-	(A + P + carry > 255) ?	(F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) P + carry;
-	(i < -128 || i > 127) ?	(F |= P_FLAG) : (F &= ~P_FLAG);
-	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F &= ~N_FLAG;
-	return(8);
-}
-
-static int op_undoc_acaixh(void)	/* ADC A,IXH */
-{
-	register int i, carry;
-	register BYTE P;
-
-	carry = (F & C_FLAG) ? 1 : 0;
-	P = IX >> 8;
-	((A & 0xf) + (P	& 0xf) + carry > 0xf) ?	(F |= H_FLAG) : (F &= ~H_FLAG);
-	(A + P + carry > 255) ?	(F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) P + carry;
-	(i < -128 || i > 127) ?	(F |= P_FLAG) : (F &= ~P_FLAG);
-	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F &= ~N_FLAG;
-	return(8);
-}
-
-static int op_undoc_scaixl(void)	/* SBC A,IXL */
-{
-	register int i, carry;
-	register BYTE P;
-
-	carry = (F & C_FLAG) ? 1 : 0;
-	P = IX & 0xff;
-	((P & 0xf) + carry > (A	& 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) P - carry;
-	(i < -128 || i > 127) ?	(F |= P_FLAG) : (F &= ~P_FLAG);
-	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F |= N_FLAG;
-	return(8);
-}
-
-static int op_undoc_scaixh(void)	/* SBC A,IXH */
-{
-	register int i, carry;
-	register BYTE P;
-
-	carry = (F & C_FLAG) ? 1 : 0;
-	P = IX >> 8;
-	((P & 0xf) + carry > (A	& 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) P - carry;
-	(i < -128 || i > 127) ?	(F |= P_FLAG) : (F &= ~P_FLAG);
-	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F |= N_FLAG;
-	return(8);
-}
-
-static int op_undoc_oraixl(void)	/* OR IXL */
-{
-	A |= IX & 0xff;
-	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-	return(8);
-}
-
-static int op_undoc_oraixh(void)	/* OR IXH */
-{
-	A |= IX >> 8;
-	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-	return(8);
-}
-
-static int op_undoc_andixl(void)	/* AND IXL */
-{
-	A &= IX & 0xff;
-	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F |= H_FLAG;
-	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	F &= ~(N_FLAG | C_FLAG);
-	return(8);
-}
-
-static int op_undoc_andixh(void)	/* AND IXH */
-{
-	A &= IX >> 8;
-	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F |= H_FLAG;
-	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	F &= ~(N_FLAG | C_FLAG);
-	return(8);
-}
-
-static int op_undoc_incixl(void)	/* INC IXL */
-{
-	register BYTE P;
-
-	P = IX & 0xff;
-	P++;
-	IX = (IX & 0xff00) | P;
-	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F &= ~N_FLAG;
-	return(8);
-}
-
-static int op_undoc_incixh(void)	/* INC IXH */
-{
-	register BYTE P;
-
-	P = IX >> 8;
-	P++;
-	IX = (IX & 0x00ff) | (P << 8);
-	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	F &= ~N_FLAG;
-	return(8);
-}
-
-#endif
