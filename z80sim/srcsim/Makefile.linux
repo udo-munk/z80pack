@@ -6,6 +6,9 @@ CC = gcc
 # Production
 CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE
 
+# Debugging
+#CFLAGS = -O -g -c -Wall -Wextra -U_FORTIFY_SOURCE
+
 LFLAGS =
 
 OBJ =	sim0.o \
