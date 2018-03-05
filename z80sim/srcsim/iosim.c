@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * This modul of the simulator contains a simple terminal I/O
  * simulation as an example.
@@ -91,14 +91,14 @@ static void (*port_out[256]) (BYTE) = {
 /*
  *	This function is to initiate the I/O devices.
  *	It will be called from the CPU simulation before
- *	any operation with the Z80 is possible.
+ *	any operation with the CPU is possible.
  *
  *	In this sample I/O simulation we initialise all
  *	unused port with an error trap handler, so that
  *	simulation stops at I/O on the unused ports.
  *
- *	See the I/O simulation of CP/M for a more complex
- *	example.
+ *	See the I/O simulation of of the other systems
+ *	for more complex examples.
  */
 void init_io(void)
 {

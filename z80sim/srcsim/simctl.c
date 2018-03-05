@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * This modul contains the user interface, a full qualified ICE,
  * for the Z80-CPU simulation.
@@ -48,7 +48,7 @@
  */
 
 /*
- *	This module is an ICE type user interface to debug Z80 programs
+ *	This module is an ICE type user interface to debug Z80/8080 programs
  *	on a host system.
  */
 

@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1987-2018 by Udo Munk
  *
- * With this configuration the simulated Z80 runs with the
+ * With this configuration the simulated CPU runs with the
  * highest possible speed
  *
  * History:

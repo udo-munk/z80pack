@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 				i_flag = 1;
 				break;
 
-			case 'm':	/* initialise Z80 memory */
+			case 'm':	/* initialise memory */
 				if (*(s+1) != '\0') {
 					m_flag = exatoi(s+1);
 					s += strlen(s+1);
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 				tmax = f_flag * 10000;
 				break;
 
-			case 'x':	/* get filename with Z80 executable */
+			case 'x':	/* get filename with executable */
 				x_flag = 1;
 				s++;
 				if (*s == '\0') {
