@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -40,6 +40,8 @@
  * 12-JAN-17 Release 1.32 improved configurations, front panel, added IMSAI VIO
  * 07-FEB-17 Release 1.33 bugfixes, improvements, better front panels
  * 16-MAR-17 Release 1.34 improvements, added ProcTec VDM-1
+ * 03-AUG-17 Release 1.35 added UNIX sockets, bugfixes, improvements
+ * 21-DEC-17 Release 1.36 bugfixes and improvements
  */
 
 #include <unistd.h>

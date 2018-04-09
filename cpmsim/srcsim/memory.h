@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * This module implements banked memory management for cpmsim
  *
@@ -25,6 +25,7 @@
  * History:
  * 22-NOV-16 stuff moved to here for further improvements
  * 03-FEB-17 added ROM initialisation
+ * 09-APR-18 modified MMU write protect port as used by Alan Cox for FUZIX
  */
 
 #define MAXSEG 16		/* max. number of memory banks */
@@ -40,8 +41,12 @@ extern int selbnk, maxbnk, segsize, wp_common;
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	if ((addr >= segsize) && (wp_common != 0))
+	if ((addr >= segsize) && (wp_common != 0)) {
+		wp_common |= 0x80;
+		if (wp_common & 0x40)
+			int_nmi = 1;
 		return;
+	}
 
 	if (selbnk == 0) {
 		*(memory[0] + addr) = data;
@@ -69,8 +74,10 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
-	if ((addr >= segsize) && (wp_common != 0))
+	if ((addr >= segsize) && (wp_common != 0)) {
+		wp_common |= 0x80;
 		return;
+	}
 
 	if (selbnk == 0) {
 		*(memory[0] + addr) = data;

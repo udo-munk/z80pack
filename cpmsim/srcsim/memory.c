@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * This module implements banked memory management for cpmsim
  *
@@ -25,6 +25,7 @@
  * History:
  * 21-DEC-16 moved banked memory implementation to here
  * 03-FEB-17 added ROM initialisation
+ * 09-APR-18 modified MMU write protect port as used by Alan Cox for FUZIX
  */
 
 #include <stdlib.h>
