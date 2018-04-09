@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -445,6 +445,7 @@ void cpu_z80(void)
 			memwrt(--SP, PC);
 			PC = 0x66;
 			int_nmi = 0;
+			t += 11;
 		}
 
 		if (int_int) {		/* maskable interrupt */
@@ -507,9 +508,15 @@ void cpu_z80(void)
 					PC = 0x38;
 					break;
 				default:
+					/* Is this right - you can put anything
+					   on the bus.. */
+					/* Anything else than a CALL won't work
+					   and everyone sticked with the RSTs,
+					   but should probably error trap */
 					PC = 0x38;
 					break;
 				}
+				t += 13;
 				break;
 			case 1:		/* IM 1 */
 				memwrt(--SP, PC >> 8);
@@ -519,6 +526,7 @@ void cpu_z80(void)
 					goto leave;
 #endif
 				PC = 0x38;
+				t += 13;
 				break;
 			case 2:		/* IM 2 */
 				memwrt(--SP, PC >> 8);
@@ -530,6 +538,7 @@ void cpu_z80(void)
 				p = (I << 8) + (int_data & 0xff);
 				PC = memrdr(p++);
 				PC += memrdr(p) << 8;
+				t += 19;
 				break;
 			}
 			int_int = 0;
