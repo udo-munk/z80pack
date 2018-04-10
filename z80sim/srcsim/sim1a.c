@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -502,6 +502,7 @@ void cpu_8080(void)
 				PC = 0x38;
 				break;
 			}
+			t += 11;
 			int_int = 0;
 			int_data = -1;
 #ifdef FRONTPANEL
