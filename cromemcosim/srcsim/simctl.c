@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from a Cromemco Z-1 front panel
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * History:
  * 15-DEC-14 first version
@@ -250,6 +250,9 @@ void report_error(void)
 		break;
 	case USERINT:
 		printf("\r\nUser Interrupt at %04x\r\n", PC);
+		break;
+	case INTERROR:
+		printf("Unsupported bus data during INT: %02x\r\n", int_data);
 		break;
 	case POWEROFF:
 		printf("\r\nSystem powered off, bye.\r\n");

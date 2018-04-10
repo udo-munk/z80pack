@@ -122,6 +122,7 @@
 #define OPTRAP2		7		/* illegal 2 byte op-code trap */
 #define OPTRAP4		8		/* illegal 4 byte op-code trap */
 #define USERINT		9		/* user interrupt */
+#define INTERROR	10		/* unsupported bus data on interrupt */
 #define POWEROFF	255		/* CPU off, no error */
 
 typedef unsigned short WORD;		/* 16 bit unsigned */

@@ -498,9 +498,13 @@ void cpu_8080(void)
 			case 0xff: /* RST 38H */
 				PC = 0x38;
 				break;
-			default:
+			case -1: /* no data = 0xff on S100 bus */
 				PC = 0x38;
 				break;
+			default: /* unsupported bus data */
+				cpu_error = INTERROR;
+				cpu_state = STOPPED;
+				continue;
 			}
 			t += 11;
 			int_int = 0;

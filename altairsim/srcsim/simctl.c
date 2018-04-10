@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from an Altair 8800 front panel
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2018 by Udo Munk
  *
  * History:
  * 20-OCT-08 first version finished
@@ -249,6 +249,9 @@ void report_error(void)
 		break;
 	case USERINT:
 		printf("\r\nUser Interrupt at %04x\r\n", PC);
+		break;
+	case INTERROR:
+		printf("Unsupported bus data during INT: %02x\r\n", int_data);
 		break;
 	case POWEROFF:
 		printf("\r\nSystem powered off, bye.\r\n");

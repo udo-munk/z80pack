@@ -507,14 +507,10 @@ void cpu_z80(void)
 				case 0xff: /* RST 38H */
 					PC = 0x38;
 					break;
-				default:
-					/* Is this right - you can put anything
-					   on the bus.. */
-					/* Anything else than a CALL won't work
-					   and everyone sticked with the RSTs,
-					   but should probably error trap */
-					PC = 0x38;
-					break;
+				default: /* unsupported bus data */
+					cpu_error = INTERROR;
+					cpu_state = STOPPED;
+					continue;
 				}
 				t += 13;
 				break;

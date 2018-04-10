@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2018 by Udo Munk
  *
  * Configuration for an Altair 8800 system
  *
@@ -50,12 +50,12 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2017 by Udo Munk"
-#define RELEASE	"1.36"
+#define COPYR	"Copyright (C) 1987-2018 by Udo Munk"
+#define RELEASE	"1.37"
 
 #define USR_COM	"Altair 8800 Simulation"
-#define USR_REL	"1.17"
-#define USR_CPR	"Copyright (C) 2008-2017 by Udo Munk"
+#define USR_REL	"1.18"
+#define USR_CPR	"Copyright (C) 2008-2018 by Udo Munk"
 
 #define LENCMD		80		/* length of command buffers etc */
 
@@ -94,6 +94,7 @@
 #define OPTRAP2		7		/* illegal 2 byte op-code trap */
 #define OPTRAP4		8		/* illegal 4 byte op-code trap */
 #define USERINT		9		/* user interrupt */
+#define INTERROR	10		/* unsupported bus data on interrupt */
 #define POWEROFF	255		/* CPU off, no error */
 
 typedef unsigned short WORD;		/* 16 bit unsigned */
