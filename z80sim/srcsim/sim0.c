@@ -224,7 +224,7 @@ usage:
 				puts("\t-f = CPU clock frequency freq in MHz");
 				puts("\t-x = load and execute filename");
 #ifdef HAS_DISKS
-				puts("\t-d = use disks images at diskpath");
+				puts("\t-d = use disk images at diskpath");
 				puts("\t     default path for disk images:");
 				puts("\t     ./disks");
 				printf("\t     %s\n", DISKSDIR);
@@ -261,10 +261,27 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 #else
 	putchar('\n');
 #endif
+
 	if (f_flag > 0)
-		printf("CPU speed is %d MHz\n", f_flag);
+		printf("CPU speed is %d MHz", f_flag);
 	else
-		printf("CPU speed is unlimited\n");
+		printf("CPU speed is unlimited");
+
+	if (cpu == Z80) {
+#ifndef Z80_UNDOC
+		printf(", CPU doesn't execute undocumented instructions\n");
+#else
+		if (u_flag)
+			printf(", CPU doesn't execute undocumented instructions\n");
+		else
+			printf(", CPU executes undocumented instructions\n");
+#endif
+	} else {
+		if (u_flag)
+			printf(", CPU doesn't execute undocumented instructions\n");
+		else
+			printf(", CPU executes undocumented instructions\n");
+	}
 
 	fflush(stdout);
 
