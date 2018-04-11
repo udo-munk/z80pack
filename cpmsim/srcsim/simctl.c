@@ -135,7 +135,7 @@ void mon(void)
 		printf("\nUser Interrupt at %04x\n", PC);
 		break;
 	case INTERROR:
-		printf("Unsupported bus data during INT: %02x\n", int_data);
+		printf("\nUnsupported bus data during INT: %02x\n", int_data);
 		break;
 	case POWEROFF:
 		break;

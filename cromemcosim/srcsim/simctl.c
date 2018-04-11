@@ -252,7 +252,8 @@ void report_error(void)
 		printf("\r\nUser Interrupt at %04x\r\n", PC);
 		break;
 	case INTERROR:
-		printf("Unsupported bus data during INT: %02x\r\n", int_data);
+		printf("\r\nUnsupported bus data during INT: %02x\r\n",
+		       int_data);
 		break;
 	case POWEROFF:
 		printf("\r\nSystem powered off, bye.\r\n");
