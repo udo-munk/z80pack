@@ -16,6 +16,7 @@
  * 01-DEC-16 implemented memrdr to separate memory from CPU
  * 06-DEC-16 implemented status display and stepping for all machine cycles
  * 12-JAN-17 improved configuration and front panel LED timing, VIO emulation
+ * 10-APR-18 trap CPU on unsupported bus data during interrupt
  */
 
 /*

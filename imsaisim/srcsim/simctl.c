@@ -21,6 +21,7 @@
  * 26-JAN-17 bugfix for DATA LED's not always showing correct bus data
  * 13-MAR-17 can't examine/deposit if CPU running HALT instruction
  * 29-JUN-17 system reset overworked
+ * 10-APR-18 trap CPU on unsupported bus data during interrupt
  */
 
 #include <X11/Xlib.h>

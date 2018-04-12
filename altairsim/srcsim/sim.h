@@ -19,6 +19,7 @@
  * 12-JAN-17 improved configuration and front panel LED timing
  * 26-FEB-17 added Processor Technology VDM-1 to the machine
  * 27-MAR-17 added SIO's connected to UNIX domain sockets
+ * 10-APR-18 trap CPU on unsupported bus data during interrupt
  */
 
 /*
