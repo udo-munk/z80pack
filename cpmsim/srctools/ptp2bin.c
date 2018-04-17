@@ -14,7 +14,8 @@
 #include <libgen.h>
 #include <fcntl.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	register int n;
 	int fdin, fdout;
 	int flag = 0;

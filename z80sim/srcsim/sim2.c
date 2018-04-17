@@ -57,6 +57,12 @@
 #endif
 #include "memory.h"
 
+#ifdef Z80_UNDOC
+	#define UNDOC(f) f
+#else
+	#define UNDOC(f) trap_cb
+#endif
+
 static int trap_cb(void);
 static int op_srla(void), op_srlb(void), op_srlc(void);
 static int op_srld(void), op_srle(void);
@@ -187,25 +193,14 @@ int op_cb_handel(void)
 		op_sral,			/* 0x2d */
 		op_srahl,			/* 0x2e */
 		op_sraa,			/* 0x2f */
-#ifndef Z80_UNDOC
-		trap_cb,			/* 0x30 */
-		trap_cb,			/* 0x31 */
-		trap_cb,			/* 0x32 */
-		trap_cb,			/* 0x33 */
-		trap_cb,			/* 0x34 */
-		trap_cb,			/* 0x35 */
-		trap_cb,			/* 0x36 */
-		trap_cb,			/* 0x37 */
-#else
-		op_undoc_sllb,
-		op_undoc_sllc,
-		op_undoc_slld,
-		op_undoc_slle,
-		op_undoc_sllh,
-		op_undoc_slll,
-		op_undoc_sllhl,
-		op_undoc_slla,
-#endif
+		UNDOC(op_undoc_sllb),		/* 0x30 */
+		UNDOC(op_undoc_sllc),		/* 0x31 */
+		UNDOC(op_undoc_slld),		/* 0x32 */
+		UNDOC(op_undoc_slle),		/* 0x33 */
+		UNDOC(op_undoc_sllh),		/* 0x34 */
+		UNDOC(op_undoc_slll),		/* 0x35 */
+		UNDOC(op_undoc_sllhl),		/* 0x36 */
+		UNDOC(op_undoc_slla),		/* 0x37 */
 		op_srlb,			/* 0x38 */
 		op_srlc,			/* 0x39 */
 		op_srld,			/* 0x3a */

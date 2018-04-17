@@ -65,12 +65,9 @@ extern BYTE	cpu_state, bus_request;
 extern int	int_data;
 
 extern int	s_flag, l_flag, m_flag, x_flag, break_flag, i_flag, f_flag,
+		u_flag,
 		cpu_error, int_nmi, int_int, int_mode, parity[], sb_next,
 		int_protection;
-
-#ifdef Z80_UNDOC
-extern int	u_flag;
-#endif
 
 extern int	tmax;
 extern int	busy_loop_cnt[];

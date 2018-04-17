@@ -57,6 +57,12 @@
 #endif
 #include "memory.h"
 
+#ifdef Z80_UNDOC
+	#define UNDOC(f) f
+#else
+	#define UNDOC(f) trap_dd
+#endif
+
 static int trap_dd(void);
 static int op_popix(void), op_pusix(void);
 static int op_jpix(void);
@@ -132,11 +138,7 @@ long op_dd_handel(void)
 		op_ldixnn,			/* 0x21 */
 		op_ldinx,			/* 0x22 */
 		op_incix,			/* 0x23 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x24 */
-#else
-		op_undoc_incixh,
-#endif
+		UNDOC(op_undoc_incixh),		/* 0x24 */
 		trap_dd,			/* 0x25 */
 		trap_dd,			/* 0x26 */
 		trap_dd,			/* 0x27 */
@@ -144,11 +146,7 @@ long op_dd_handel(void)
 		op_addxx,			/* 0x29 */
 		op_ldixinn,			/* 0x2a */
 		op_decix,			/* 0x2b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x2c */
-#else
-		op_undoc_incixl,
-#endif
+		UNDOC(op_undoc_incixl),		/* 0x2c */
 		trap_dd,			/* 0x2d */
 		trap_dd,			/* 0x2e */
 		trap_dd,			/* 0x2f */
@@ -180,11 +178,7 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x49 */
 		trap_dd,			/* 0x4a */
 		trap_dd,			/* 0x4b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x4c */
-#else
-		op_undoc_ldcixh,
-#endif
+		UNDOC(op_undoc_ldcixh),		/* 0x4c */
 		trap_dd,			/* 0x4d */
 		op_ldcxd,			/* 0x4e */
 		trap_dd,			/* 0x4f */
@@ -193,11 +187,7 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x52 */
 		trap_dd,			/* 0x53 */
 		trap_dd,			/* 0x54 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x55 */
-#else
-		op_undoc_lddixl,
-#endif
+		UNDOC(op_undoc_lddixl),		/* 0x55 */
 		op_lddxd,			/* 0x56 */
 		trap_dd,			/* 0x57 */
 		trap_dd,			/* 0x58 */
@@ -209,41 +199,21 @@ long op_dd_handel(void)
 		op_ldexd,			/* 0x5e */
 		trap_dd,			/* 0x5f */
 		trap_dd,			/* 0x60 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x61 */
-#else
-		op_undoc_ldixhc,
-#endif
+		UNDOC(op_undoc_ldixhc),		/* 0x61 */
 		trap_dd,			/* 0x62 */
 		trap_dd,			/* 0x63 */
 		trap_dd,			/* 0x64 */
 		trap_dd,			/* 0x65 */
 		op_ldhxd,			/* 0x66 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x67 */
-#else
-		op_undoc_ldixha,
-#endif
+		UNDOC(op_undoc_ldixha),		/* 0x67 */
 		trap_dd,			/* 0x68 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x69 */
-#else
-		op_undoc_ldixlc,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x6a */
-#else
-		op_undoc_ldixld,
-#endif
+		UNDOC(op_undoc_ldixlc),		/* 0x69 */
+		UNDOC(op_undoc_ldixld),		/* 0x6a */
 		trap_dd,			/* 0x6b */
 		trap_dd,			/* 0x6c */
 		trap_dd,			/* 0x6d */
 		op_ldlxd,			/* 0x6e */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x6f */
-#else
-		op_undoc_ldixla,
-#endif
+		UNDOC(op_undoc_ldixla),		/* 0x6f */
 		op_ldxdb,			/* 0x70 */
 		op_ldxdc,			/* 0x71 */
 		op_ldxdd,			/* 0x72 */
@@ -256,16 +226,8 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x79 */
 		trap_dd,			/* 0x7a */
 		trap_dd,			/* 0x7b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x7c */
-#else
-		op_undoc_ldaixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x7d */
-#else
-		op_undoc_ldaixl,
-#endif
+		UNDOC(op_undoc_ldaixh),		/* 0x7c */
+		UNDOC(op_undoc_ldaixl),		/* 0x7d */
 		op_ldaxd,			/* 0x7e */
 		trap_dd,			/* 0x7f */
 		trap_dd,			/* 0x80 */
@@ -280,16 +242,8 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x89 */
 		trap_dd,			/* 0x8a */
 		trap_dd,			/* 0x8b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x8c */
-#else
-		op_undoc_acaixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x8d */
-#else
-		op_undoc_acaixl,
-#endif
+		UNDOC(op_undoc_acaixh),		/* 0x8c */
+		UNDOC(op_undoc_acaixl),		/* 0x8d */
 		op_acaxd,			/* 0x8e */
 		trap_dd,			/* 0x8f */
 		trap_dd,			/* 0x90 */
@@ -304,32 +258,16 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x99 */
 		trap_dd,			/* 0x9a */
 		trap_dd,			/* 0x9b */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x9c */
-#else
-		op_undoc_scaixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0x9d */
-#else
-		op_undoc_scaixl,
-#endif
+		UNDOC(op_undoc_scaixh),		/* 0x9c */
+		UNDOC(op_undoc_scaixl),		/* 0x9d */
 		op_scaxd,			/* 0x9e */
 		trap_dd,			/* 0x9f */
 		trap_dd,			/* 0xa0 */
 		trap_dd,			/* 0xa1 */
 		trap_dd,			/* 0xa2 */
 		trap_dd,			/* 0xa3 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xa4 */
-#else
-		op_undoc_andixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xa5 */
-#else
-		op_undoc_andixl,
-#endif
+		UNDOC(op_undoc_andixh),		/* 0xa4 */
+		UNDOC(op_undoc_andixl),		/* 0xa5 */
 		op_andxd,			/* 0xa6 */
 		trap_dd,			/* 0xa7 */
 		trap_dd,			/* 0xa8 */
@@ -344,16 +282,8 @@ long op_dd_handel(void)
 		trap_dd,			/* 0xb1 */
 		trap_dd,			/* 0xb2 */
 		trap_dd,			/* 0xb3 */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xb4 */
-#else
-		op_undoc_oraixh,
-#endif
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xb5 */
-#else
-		op_undoc_oraixl,
-#endif
+		UNDOC(op_undoc_oraixh),		/* 0xb4 */
+		UNDOC(op_undoc_oraixl),		/* 0xb5 */
 		op_orxd,			/* 0xb6 */
 		trap_dd,			/* 0xb7 */
 		trap_dd,			/* 0xb8 */
@@ -361,11 +291,7 @@ long op_dd_handel(void)
 		trap_dd,			/* 0xba */
 		trap_dd,			/* 0xbb */
 		trap_dd,			/* 0xbc */
-#ifndef Z80_UNDOC
-		trap_dd,			/* 0xbd */
-#else
-		op_undoc_cpixl,
-#endif
+		UNDOC(op_undoc_cpixl),		/* 0xbd */
 		op_cpxd,			/* 0xbe */
 		trap_dd,			/* 0xbf */
 		trap_dd,			/* 0xc0 */
