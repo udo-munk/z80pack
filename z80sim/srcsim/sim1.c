@@ -507,6 +507,9 @@ void cpu_z80(void)
 				case 0xff: /* RST 38H */
 					PC = 0x38;
 					break;
+				case -1: /* no data = 0xff on S100 bus */
+					PC = 0x38;
+					break;
 				default: /* unsupported bus data */
 					cpu_error = INTERROR;
 					cpu_state = STOPPED;
