@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2017 by Udo Munk
+ * Copyright (C) 2017-2018 by Udo Munk
  *
  * Emulation of an IMSAI VIO S100 board
  *
@@ -13,6 +13,7 @@
  * 12-JAN-17 all resolutions in all video modes tested and working
  * 04-FEB-17 added function to terminate thread and close window
  * 21-FEB-17 added scanlines to monitor
+ * 20-APR-18 avoid thread deadlock on Windows/Cygwin
  */
 
 #include <X11/X.h>
@@ -53,6 +54,7 @@ static KeySym key;
 static char text[10];
 
 /* VIO stuff */
+static int state;			/* state on/off for refresh thread */
 static int mode;			/* Video mode written to command port */
 static int vmode, res, inv;		/* video mode, resolution & inverse */
 int imsai_kbd_status, imsai_kbd_data;	/* keyboard status & data */
@@ -109,6 +111,14 @@ static void open_display(void)
 /* shutdown VIO thread and window */
 void imsai_vio_off(void)
 {
+	struct timespec timer;	/* sleep timer */
+
+	state = 0;		/* tell refresh thread to stop */
+	timer.tv_sec = 0;	/* and wait a bit */
+	timer.tv_nsec = 50000000L;
+	nanosleep(&timer, NULL);
+
+	/* works if X11 with posix threads implemented correct, but ... */
 	if (thread != 0) {
 		pthread_cancel(thread);
 		pthread_join(thread, NULL);
@@ -343,7 +353,7 @@ static void *update_display(void *arg)
 	arg = arg;	/* to avoid compiler warning */
 	gettimeofday(&t1, NULL);
 
-	while (1) {	/* do forever or until canceled */
+	while (state) {
 
 		/* lock display, don't cancel thread while locked */
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -378,7 +388,6 @@ static void *update_display(void *arg)
 		gettimeofday(&t1, NULL);
 	}
 
-	/* just in case it ever gets here */
 	pthread_exit(NULL);
 }
 
@@ -386,6 +395,8 @@ static void *update_display(void *arg)
 void imsai_vio_init(void)
 {
 	open_display();
+
+	state = 1;
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
 		printf("can't create VIO thread\r\n");
