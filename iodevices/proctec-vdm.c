@@ -3,13 +3,14 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2017 by Udo Munk
+ * Copyright (C) 2017-2018 by Udo Munk
  *
  * Emulation of a Processor Technology VDM-1 S100 board
  *
  * History:
  * 28-FEB-17 first version, all software tested with working
  * 21-JUN-17 don't use dma_read(), switches Tarbell ROM off
+ * 20-APR-18 avoid thread deadlock on Windows/Cygwin
  */
 
 #include <X11/X.h>
@@ -49,7 +50,8 @@ static KeySym key;
 static char text[10];
 
 /* VDM stuff */
-static int mode;
+static int state;			/* state on/off for refresh thread */
+static int mode;			/* video mode from I/O port */
 int proctec_kbd_status = 1;		/* keyboard status */
 int proctec_kbd_data = -1;		/* keyboard data */
 static int first;			/* first displayed screen position */
@@ -109,6 +111,14 @@ static void open_display(void)
 /* shutdown VDM thread and window */
 void proctec_vdm_off(void)
 {
+	struct timespec timer;	/* sleep timer */
+
+	state = 0;		/* tell refresh thread to stop */
+	timer.tv_sec = 0;	/* and wait a bit */
+	timer.tv_nsec = 50000000L;
+	nanosleep(&timer, NULL);
+
+	/* works if X11 with posix threads implemented correct, but ... */
 	if (thread != 0) {
 		pthread_cancel(thread);
 		pthread_join(thread, NULL);
@@ -207,7 +217,7 @@ static void *update_display(void *arg)
 	arg = arg;	/* to avoid compiler warning */
 	gettimeofday(&t1, NULL);
 
-	while (1) {	/* do forever or until canceled */
+	while (state) {
 
 		/* lock display, don't cancel thread while locked */
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -242,7 +252,6 @@ static void *update_display(void *arg)
 		gettimeofday(&t1, NULL);
 	}
 
-	/* just in case it ever gets here */
 	pthread_exit(NULL);
 }
 
@@ -250,6 +259,8 @@ static void *update_display(void *arg)
 static void vdm_init(void)
 {
 	open_display();
+
+	state = 1;
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
 		printf("can't create VIO thread\r\n");
