@@ -356,7 +356,7 @@ void step_clicked(int state, int val)
 }
 
 /*
- * Singe step through the machine cycles after first M1
+ * Single step through the machine cycles after first M1
  */
 void wait_step(void)
 {
@@ -388,7 +388,7 @@ void wait_step(void)
 }
 
 /*
- * Singe step through interrupt machine cycles
+ * Single step through interrupt machine cycles
  */
 void wait_int_step(void)
 {
