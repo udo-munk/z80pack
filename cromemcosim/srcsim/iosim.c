@@ -652,6 +652,17 @@ void exit_io(void)
 	static struct itimerval tim;
 	static struct sigaction newact;
 
+	/* stop 10ms interrupt timer */
+	newact.sa_handler = SIG_IGN;
+	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+	tim.it_value.tv_sec = 0;
+	tim.it_value.tv_usec = 0;
+	tim.it_interval.tv_sec = 0;
+	tim.it_interval.tv_usec = 0;
+	setitimer(ITIMER_REAL, &tim, NULL);
+
 	/* close line printer files */
 	if (lpt1 != 0)
 		close(lpt1);
@@ -663,17 +674,6 @@ void exit_io(void)
 		if (ncons[i].ssc)
 			close(ncons[i].ssc);
 	}
-
-	/* stop 10ms interrupt timer */
-	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
-	tim.it_value.tv_sec = 0;
-	tim.it_value.tv_usec = 0;
-	tim.it_interval.tv_sec = 0;
-	tim.it_interval.tv_usec = 0;
-	setitimer(ITIMER_REAL, &tim, NULL);
 
 	/* shutdown DAZZLER */
 	cromemco_dazzler_off();
