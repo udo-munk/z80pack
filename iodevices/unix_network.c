@@ -3,15 +3,14 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2015-2017 by Udo Munk
+ * Copyright (C) 2015-2018 by Udo Munk
  *
  * This module contains functions to implement networking connections.
- * The TCP/IP sockets need to support asynchron I/O, the UNIX domain
- * sockets are used with polling.
  *
  * History:
  * 26-MAR-15 first version finished
  * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
+ * 22-APR-18 implemented TCP socket polling
  */
 
 #include <unistd.h>
@@ -76,7 +75,9 @@ void init_tcp_server_socket(struct net_connectors *p)
 {
 	struct sockaddr_in sin;
 	int on = 1;
+#ifdef TCPASYNC
 	int n;
+#endif
 
 	/* if the TCP/IP port is not configured we're done here */
 	if (p->port == 0)
@@ -88,18 +89,22 @@ void init_tcp_server_socket(struct net_connectors *p)
 		exit(1);
 	}
 
-	/* configure socket for async I/O */
+	/* set socket options */
 	if (setsockopt(p->ss, SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
 		perror("setsockopt SO_REUSEADDR on server socket");
 		exit(1);
 	}
+
+#ifdef TCPASYNC
+	/* configure socket for async I/O */
 	fcntl(p->ss, F_SETOWN, getpid());
 	n = fcntl(p->ss, F_GETFL, 0);
 	if (fcntl(p->ss, F_SETFL, n | FASYNC) == -1) {
 		perror("fcntl FASYNC on server socket");
 		exit(1);
 	}
+#endif
 
 	/* bind socket and listen on it */
 	memset((void *) &sin, 0, sizeof(sin));
@@ -120,6 +125,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 
 /*
  * SIGIO interrupt handler for TCP/IP server sockets
+ * if SIGIO not working (Cygwin e.g.) call from appropriate I/O thread
  */
 void sigio_tcp_server_socket(int sig)
 {

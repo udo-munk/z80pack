@@ -19,6 +19,7 @@
  * 06-DEC-16 implemented status display and stepping for all machine cycles
  * 12-JAN-17 improved configuration and front panel LED timing
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
+ * 22-APR-18 implemented TCP socket polling
  */
 
 /*
@@ -38,8 +39,16 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 
 #define NUMNSOC 2	/* number of TCP/IP sockets, 2 per TU-ART */
+#define TCPASYNC	/* use async I/O if possible */
 #define SERVERPORT 4010	/* first TCP/IP server port used */
 #define NUMUSOC 0	/* number of UNIX sockets */
+
+/*
+ * SIGIO on BSD sockets not working with Cygwin
+ */
+#ifdef __CYGWIN__
+#undef TCPASYNC
+#endif
 
 /*
  *	Default CPU

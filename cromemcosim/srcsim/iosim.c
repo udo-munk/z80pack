@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for a Cromemco Z-1 system
@@ -21,6 +21,7 @@
  * 06-DEC-16 implemented status display and stepping for all machine cycles
  * 22-DEC-16 moved MMU out to the new memory interface module
  * 15-AUG-17 modified index pulse handling
+ * 22-APR-18 implemented TCP socket polling
  */
 
 #include <pthread.h>
@@ -602,10 +603,13 @@ void init_io(void)
 	static struct sigaction newact;
 
 	/* initialise TCP/IP networking */
+#ifdef TCPASYNC
 	newact.sa_handler = sigio_tcp_server_socket;
 	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 	newact.sa_flags = 0;
 	sigaction(SIGIO, &newact, NULL);
+#endif
+
 	for (i = 0; i < NUMNSOC; i++) {
 		ncons[i].port = SERVERPORT + i;
 		ncons[i].telnet = 1;
@@ -626,6 +630,8 @@ void init_io(void)
 
 	/* start 10ms interrupt timer, delayed! */
 	newact.sa_handler = interrupt;
+	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
 	tim.it_value.tv_sec = 5;
 	tim.it_value.tv_usec = 0;
@@ -1141,6 +1147,11 @@ void interrupt(int sig)
 	/* set RTC interrupt flag every 510ms */
 	if ((counter % 51) == 0)
 		rtc = 1;
+
+#ifndef TCPASYNC
+	/* poll TCP sockets if SIGIO not working */
+	sigio_tcp_server_socket(0);
+#endif
 
 	/* check for RDA */
 	p[0].fd = fileno(stdin);
