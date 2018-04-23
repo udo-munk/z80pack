@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of a Tarbell SD 1011D S100 board
  *
@@ -18,6 +18,7 @@
  * 13-MAY-2016 find disk images at -d <path>, ./disks and DISKDIR
  * 22-JUL-2016 added support for read only disks
  * 13-JUN-2017 added bootstrap ROM and reset function
+ * 23-APR-2018 cleanup
  */
 
 extern BYTE tarbell_stat_in(void), tarbell_track_in(void);

@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -27,6 +27,7 @@
  * 26-JUL-2017 fixed buggy index pulse implementation
  * 15-AUG-2017 and more fixes for index pulse
  * 22-AUG-2017 provide write protect and track 0 bits for all commands
+ * 23-APR-2018 cleanup
  */
 
 #include <unistd.h>
@@ -196,7 +197,6 @@ void config_disk(int fd)
 		break;
 
 	default:
-		//printf("disk image %s has unknow format\r\n", disks[disk].fn);
 		disks[disk].disk_t = UNKNOWN;
 		break;
 	}
@@ -853,7 +853,6 @@ void cromemco_fdc_cmd_out(BYTE data)
 	fdc_flags &= ~1;
 
 	if ((data & 0xf0) == 0) {		/* restore (seek track 0) */
-		//printf("16fdc: restore\r\n");
 		headloaded = (data & 8) ? 1 : 0;
 		fdc_track = 0;
 		fdc_flags |= 1;			/* set EOJ */
@@ -862,7 +861,6 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xf0) == 0x10) {	/* seek */
-		//printf("16fdc: seek\r\n");
 		headloaded = (data & 8) ? 1 : 0;
 		fdc_flags |= 1;			/* set EOJ */
 		if (fdc_track <= disks[disk].tracks)
@@ -873,10 +871,8 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x20) {	/* step */
-		//printf("16fdc: step\r\n");
 		headloaded = (data & 8) ? 1 : 0;
-		//if (data & 0x10)
-			fdc_track += step_dir;
+		fdc_track += step_dir;
 		fdc_flags |= 1;			/* set EOJ */
 		if (fdc_track <= disks[disk].tracks)
 			fdc_stat = (fdc_track == 0) ? 4 : 0;
@@ -886,10 +882,8 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x40) {	/* step in */
-		//printf("16fdc: step in\r\n");
 		headloaded = (data & 8) ? 1 : 0;
-		//if (data & 0x10)
-			fdc_track++;
+		fdc_track++;
 		fdc_flags |= 1;			/* set EOJ */
 		step_dir = 1;
 		if (fdc_track <= disks[disk].tracks)
@@ -900,10 +894,8 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x60) {	/* step out */
-		//printf("16fdc: step out\r\n");
 		headloaded = (data & 8) ? 1 : 0;
-		//if (data & 0x10)
-			fdc_track--;
+		fdc_track--;
 		fdc_flags |= 1;			/* set EOJ */
 		step_dir = -1;
 		if (fdc_track <= disks[disk].tracks)
@@ -914,7 +906,6 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xf0) == 0xd0) {	/* force interrupt */
-		//printf("16fdc: interrupt\r\n");
 		state = FDC_IDLE;		/* abort any command */
 		fdc_stat = 0;
 		fdc_flags &= ~128;		/* clear DRQ */
@@ -922,7 +913,6 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_flags |= 1;		/* set EOJ */
 
 	} else if ((data & 0xe0) == 0x80) {	/* read sector(s) */
-		//printf("16fdc: read sector\r\n");
 		mflag = (data & 16) ? 1 : 0;
 		state = FDC_READ;
 		dcnt = 0;
@@ -930,14 +920,12 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_flags |= 128;		/* set DRQ */
 
 	} else if ((data & 0xf0) == 0xa0) {	/* write single sector */
-		//prinft("16fdc: write sector\r\n");
 		state = FDC_WRITE;
 		dcnt = 0;
 		fdc_stat = 3;			/* set DRQ & busy */
 		fdc_flags |= 128;		/* set DRQ */
 
 	} else if (data == 0xc4) {		/* read address */
-		//printf("16fdc: read address\r\n");
 		state = FDC_READADR;
 		dcnt = 0;
 		fdc_stat = 3;			/* set DRQ & busy */

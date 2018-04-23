@@ -162,7 +162,7 @@ void mon(void)
 		fp_clock++;
 		fp_sampleData();
 
-		/* wait a bit, system is idling */
+		/* wait a bit, system is ideling */
 		timer.tv_sec = 0;
 		timer.tv_nsec = 10000000L;
 		nanosleep(&timer, NULL);

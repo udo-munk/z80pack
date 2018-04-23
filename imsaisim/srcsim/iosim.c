@@ -756,7 +756,6 @@ static void hwctl_out(BYTE data)
 	}
 
         if (data & 1) {
-		//printf("\r\n*** ENABLE TIMER ***\r\n");
 		newact.sa_handler = int_timer;
 		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 		newact.sa_flags = 0;
@@ -767,7 +766,6 @@ static void hwctl_out(BYTE data)
 		tim.it_interval.tv_usec = 10000;
 		setitimer(ITIMER_REAL, &tim, NULL);
 	} else {
-		//printf("\r\n*** DISABLE TIMER ***\r\n");
 		newact.sa_handler = SIG_IGN;
 		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 		newact.sa_flags = 0;

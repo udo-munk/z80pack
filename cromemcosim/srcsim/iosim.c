@@ -626,7 +626,6 @@ void init_io(void)
 		printf("can't create timing thread\n");
 		exit(1);
 	}
-	//pthread_setschedprio(thread, sched_get_priority_max(SCHED_RR));
 
 	/* start 10ms interrupt timer, delayed! */
 	newact.sa_handler = interrupt;
@@ -849,7 +848,7 @@ void *timing(void *arg)
 	struct timeval t1, t2, tdiff;
 
 	arg = arg;	/* to avoid compiler warning */
-	//printf("timing thread started\r\n");
+
 	gettimeofday(&t1, NULL);
 
 	while (1) {	/* 1 msec per loop iteration */

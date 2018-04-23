@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -27,6 +27,7 @@
  * 26-JUL-2017 fixed buggy index pulse implementation
  * 15-AUG-2017 and more fixes for index pulse
  * 22-AUG-2017 provide write protect and track 0 bits for all commands
+ * 23-APR-2018 cleanup
  */
 
 /*

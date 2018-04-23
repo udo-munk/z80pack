@@ -1167,7 +1167,6 @@ static BYTE cons_in(void)
 		timer.tv_nsec = 1000000L;
 		nanosleep(&timer, NULL);
 		busy_loop_cnt[0] = 0;
-		//putchar('~'); fflush(stdout);
 	}
 
 	p[0].fd = fileno(stdin);

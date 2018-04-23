@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of a Tarbell SD 1011D S100 board
  *
@@ -18,6 +18,7 @@
  * 13-MAY-2016 find disk images at -d <path>, ./disks and DISKDIR
  * 22-JUL-2016 added support for read only disks
  * 13-JUN-2017 added bootstrap ROM and reset function
+ * 23-APR-2018 cleanup
  */
 
 #include <unistd.h>
@@ -106,14 +107,12 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 4;			/* positioned to track 0 */
 
 	} else if ((data & 0xf0) == 0x10) {	/* seek */
-		//printf("tarbell: seek to track %d\r\n", fdc_track);
 		if (fdc_track <= TRK)
 			fdc_stat = 0;
 		else
 			fdc_stat = 0x10;	/* seek error */
 
 	} else if ((data & 0xe0) == 0x40) {	/* step in */
-		//printf("tarbell: step in\r\n");
 		if (data & 0x10)
 			fdc_track++;
 		if (fdc_track <= TRK)
@@ -122,7 +121,6 @@ void tarbell_cmd_out(BYTE data)
 			fdc_stat = 0x10;	/* seek error */
 
 	} else if ((data & 0xe0) == 0x50) {	/* step out */
-		//printf("tarbell: step out\r\n");
 		if (data & 0x10)
 			fdc_track--;
 		if (fdc_track <= TRK)
@@ -163,7 +161,6 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else if ((data & 0xf0) == 0xd0) {	/* force interrupt */
-		//printf("tarbell: interrupt\r\n");
 		state = FDC_IDLE;		/* abort any command */
 		fdc_stat = 0;
 
@@ -218,9 +215,6 @@ BYTE tarbell_data_in(void)
 		/* first byte? */
 		if (dcnt == 0) {
 
-			//printf("tarbell read: t = %d, s = %d\r\n",
-			//       fdc_track, fdc_sec);
-
 			/* check track/sector */
 			if ((fdc_track >= TRK) || (fdc_sec > SPT)) {
 				state = FDC_IDLE;	/* abort command */
@@ -232,7 +226,6 @@ BYTE tarbell_data_in(void)
 			if ((disk < 0) || (disk > 3)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
-				//printf("tarbell read: disk = %d\r\n", disk);
 				return((BYTE) 0);
 			}
 
@@ -243,8 +236,6 @@ BYTE tarbell_data_in(void)
 			if ((fd = open(fn, O_RDONLY)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
-				//printf("tarbell read: open error disk %d\r\n",
-				//       disk);
 				return((BYTE) 0);
 			}
 
@@ -253,7 +244,6 @@ BYTE tarbell_data_in(void)
 			if (lseek(fd, pos, SEEK_SET) == -1L) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x10;	/* record not found */
-				//printf("tarbell read: seek error\r\n");
 				close(fd);
 				return((BYTE) 0);
 			}
@@ -262,7 +252,6 @@ BYTE tarbell_data_in(void)
 			if (read(fd, &buf[0], SEC_SZ) != SEC_SZ) {
 				state = FDC_IDLE;	/* abort read command */
 				fdc_stat = 0x10;	/* record not found */
-				//printf("tarbell read: read error\r\n");
 				close(fd);
 				return((BYTE) 0);
 			}
@@ -332,7 +321,6 @@ void tarbell_data_out(BYTE data)
 			if ((disk < 0) || (disk > 3)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
-				//printf("tarbell write: disk = %d\r\n", disk);
 				return;
 			}
 
@@ -348,7 +336,6 @@ void tarbell_data_out(BYTE data)
 					fdc_stat = 0x80; /* not ready */
 				}
 				state = FDC_IDLE;	/* abort command */
-				//printf("tarbell write: open error disk %d\r\n", disk);
 				return;
 			}
 
@@ -357,7 +344,6 @@ void tarbell_data_out(BYTE data)
 			if (lseek(fd, pos, SEEK_SET) == -1L) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x10;	/* record not found */
-				//printf("tarbell write: seek error\r\n");
 				close(fd);
 				return;
 			}
