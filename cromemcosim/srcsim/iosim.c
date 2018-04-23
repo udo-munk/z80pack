@@ -832,7 +832,7 @@ static void mmu_out(BYTE data)
 		break;
 	default:
 		printf("Not supported bank select = %02x\r\n", data);
-		cpu_error = IOHALT;
+		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
 	}
