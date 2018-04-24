@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * This module contains a complex I/O-simulation for running
  * CP/M, MP/M, UCSD p-System...
@@ -51,6 +51,7 @@
  * 21-DEC-2016 moved MMU out to the new memory interface module
  * 20-MAR-2017 renamed pipes for auxin/auxout
  * 29-JUN-2017 system reset overworked
+ * 24-APR-2018 cleanup
  */
 
 /*
@@ -1105,7 +1106,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
 	return(io_data);
 }
 
@@ -1124,7 +1124,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	busy_loop_cnt[0] = 0;
 
 	(*port_out[addrl]) (data);
-	//printf("output %02x to port %02x\r\n", io_data, io_port)";
 }
 
 /*

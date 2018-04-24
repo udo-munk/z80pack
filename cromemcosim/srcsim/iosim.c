@@ -22,6 +22,7 @@
  * 22-DEC-16 moved MMU out to the new memory interface module
  * 15-AUG-17 modified index pulse handling
  * 22-APR-18 implemented TCP socket polling
+ * 24-APR-18 cleanup
  */
 
 #include <pthread.h>
@@ -53,7 +54,7 @@ static BYTE fp_in(void), mmu_in(void);
 static void fp_out(BYTE), mmu_out(BYTE);
 
 /*
- *	Forward declarations for support function
+ *	Forward declarations for support functions
  */
 static void *timing(void *);
 static void interrupt(int);
@@ -689,7 +690,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_WO | CPU_INP;
 
@@ -714,7 +714,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
-	//printf("output %02x to port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_OUT;
 
@@ -733,7 +732,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
  */
 static BYTE io_trap_in(void)
 {
-	//printf("I/O trap in port %02x\r\n", io_port);
 	if (i_flag) {
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
@@ -750,8 +748,6 @@ static BYTE io_trap_in(void)
 static void io_trap_out(BYTE data)
 {
 	data = data; /* to avoid compiler warning */
-
-	//printf("I/O trap out port %02x\r\n", io_port);
 
 	if (i_flag) {
 		cpu_error = IOTRAPOUT;
@@ -863,35 +859,30 @@ void *timing(void *arg)
 			uart0a_timer1 -= 15;
 			if (uart0a_timer1 <= 0) {
 				uart0a_timer1 = -1; /* interrupt pending */
-				//printf("UART 0a timer1 went off\r\n");
 			}
 		}
 		if (uart0a_timer2 > 0) {
 			uart0a_timer2 -= 15;
 			if (uart0a_timer2 <= 0) {
 				uart0a_timer2 = -1; /* interrupt pending */
-				//printf("UART 0a timer2 went off\r\n");
 			}
 		}
 		if (uart0a_timer3 > 0) {
 			uart0a_timer3 -= 15;
 			if (uart0a_timer3 <= 0) {
 				uart0a_timer3 = -1; /* interrupt pending */
-				//printf("UART 0a timer3 went off\r\n");
 			}
 		}
 		if (uart0a_timer4 > 0) {
 			uart0a_timer4 -= 15;
 			if (uart0a_timer4 <= 0) {
 				uart0a_timer4 = -1; /* interrupt pending */
-				//printf("UART 0a timer4 went off\r\n");
 			}
 		}
 		if (uart0a_timer5 > 0) {
 			uart0a_timer5 -= 15;
 			if (uart0a_timer5 <= 0) {
 				uart0a_timer5 = -1; /* interrupt pending */
-				//printf("UART 0a timer5 went off\r\n");
 			}
 		}
 
@@ -908,7 +899,6 @@ void *timing(void *arg)
 			int_data = 0xc7;
 			int_int = 1;
 			uart0a_timer1 = 0;
-			//printf("UART 0a timer 1 interrupt\r\n");
 			goto next;
 		}
 
@@ -919,7 +909,6 @@ void *timing(void *arg)
 			int_data = 0xcf;
 			int_int = 1;
 			uart0a_timer2 = 0;
-			//printf("UART 0a timer 2 interrupt\r\n");
 			goto next;
 		}
 
@@ -929,7 +918,6 @@ void *timing(void *arg)
 			uart0a_int_pending = 1;
 			int_data = 0xd7;
 			int_int = 1;
-			//printf("UART 0a EOJ interrupt\r\n");
 			goto next;
 		}
 
@@ -940,7 +928,6 @@ void *timing(void *arg)
 			int_data = 0xdf;
 			int_int = 1;
 			uart0a_timer3 = 0;
-			//printf("UART 0a timer 3 interrupt\r\n");
 			goto next;
 		}
 
@@ -950,7 +937,6 @@ void *timing(void *arg)
 			uart0a_int_pending = 1;
 			int_data = 0xe7;
 			int_int = 1;
-			//printf("UART 0a RDA interrupt\r\n");
 			goto next;
 		}
 
@@ -962,7 +948,6 @@ void *timing(void *arg)
 				uart0a_int_pending = 1;
 				int_data = 0xef;
 				int_int = 1;
-				//printf("UART 0a TBE interrupt\r\n");
 				goto next;
 			}
 		}
@@ -974,7 +959,6 @@ void *timing(void *arg)
 			int_data = 0xf7;
 			int_int = 1;
 			uart0a_timer4 = 0;
-			//printf("UART 0a timer 4 interrupt\r\n");
 			goto next;
 		}
 
@@ -985,7 +969,6 @@ void *timing(void *arg)
 			int_data = 0xff;
 			int_int = 1;
 			uart0a_timer5 = 0;
-			//printf("UART 0a timer 5 interrupt\r\n");
 			goto next;
 		}
 
@@ -997,7 +980,6 @@ void *timing(void *arg)
 				uart0a_int_pending = 1;
 				int_data = 0xff;
 				int_int = 1;
-				//printf("UART 0a RTC interrupt\r\n");
 				goto next;
 			}
 		}
@@ -1025,7 +1007,6 @@ void *timing(void *arg)
 			uart1a_int_pending = 1;
 			int_data = 0x28;
 			int_int = 1;
-			//printf("UART 1a RDA interrupt\r\n");
 			goto next;
 		}
 
@@ -1037,7 +1018,6 @@ void *timing(void *arg)
 				uart1a_int_pending = 1;
 				int_data = 0x2a;
 				int_int = 1;
-				//printf("UART 1a TBE interrupt\r\n");
 				goto next;
 			}
 		}
@@ -1065,7 +1045,6 @@ void *timing(void *arg)
 			uart1b_int_pending = 1;
 			int_data = 0x38;
 			int_int = 1;
-			//printf("UART 1b RDA interrupt\r\n");
 			goto next;
 		}
 
@@ -1077,7 +1056,6 @@ void *timing(void *arg)
 				uart1b_int_pending = 1;
 				int_data = 0x3a;
 				int_int = 1;
-				//printf("UART 1b TBE interrupt\r\n");
 				goto next;
 			}
 		}

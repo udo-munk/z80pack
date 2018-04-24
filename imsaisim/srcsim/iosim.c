@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2018 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an IMSAI 8080 system
@@ -17,6 +17,7 @@
  * 09-MAY-15 added Cromemco DAZZLER to the machine
  * 06-DEC-16 implemented status display and stepping for all machine cycles
  * 11-JAN-17 implemented X11 keyboard input for VIO
+ * 24-APR-18 cleanup
  */
 
 #include <unistd.h>
@@ -614,7 +615,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_WO | CPU_INP;
 
@@ -639,7 +639,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
-	//printf("output %02x to port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_OUT;
 

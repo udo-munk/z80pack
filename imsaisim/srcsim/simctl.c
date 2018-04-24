@@ -216,10 +216,12 @@ void report_error(void)
 		       PC - 1);
 		break;
 	case IOTRAPIN:
-		printf("\r\nI/O input Trap at %04x, port %02x\r\n", PC, io_port);
+		printf("\r\nI/O input Trap at %04x, port %02x\r\n",
+		       PC, io_port);
 		break;
 	case IOTRAPOUT:
-		printf("\r\nI/O output Trap at %04x, port %02x\r\n", PC, io_port);
+		printf("\r\nI/O output Trap at %04x, port %02x\r\n",
+		       PC, io_port);
 		break;
 	case IOHALT:
 		printf("\nSystem halted, bye.\n");
