@@ -987,7 +987,8 @@ static void net_server_config(void)
 			while((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_port[i - 1] = atoi(s);
-			printf("console %d listening on port %d, telnet = %s\n",			       i, ss_port[i - 1],
+			printf("console %d listening on port %d, telnet = %s\n",
+			       i, ss_port[i - 1],
 			       ((ss_telnet[i - 1] > 0) ? "on" : "off"));
 		}
 		fclose(fp);
