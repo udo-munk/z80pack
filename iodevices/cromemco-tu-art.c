@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2015 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of a Cromemco TU-ART S100 board
  *
@@ -16,6 +16,7 @@
  * 10-MAR-15 lpt's implemented for CP/M, CDOS and Cromix
  * 23-MAR-15 drop only null's
  * 26-MAR-15 tty's implemented for CDOS and Cromix
+ * 25-APR-18 cleanup
  */
 
 #include <unistd.h>
@@ -122,7 +123,7 @@ again:
  * D5	Test
  * D4	High Baud
  * D3	INTA Enable
- * D3	RST7 Select
+ * D2	RST7 Select
  * D1	Break
  * D0	Reset
  */
@@ -169,7 +170,6 @@ BYTE cromemco_tuart_0a_interrupt_in(void)
  */
 void cromemco_tuart_0a_interrupt_out(BYTE data)
 {
-	//printf("tu-art 0a interrupt mask: %02x\r\n", data);
 	uart0a_int_mask = data;
 }
 
@@ -191,31 +191,26 @@ void cromemco_tuart_0a_parallel_out(BYTE data)
 
 void cromemco_tuart_0a_timer1_out(BYTE data)
 {
-	//printf("tu-art 0a timer 1: %d\r\n", data);
 	uart0a_timer1 = data;
 }
 
 void cromemco_tuart_0a_timer2_out(BYTE data)
 {
-	//printf("tu-art 0a timer 2: %d\r\n", data);
 	uart0a_timer2 = data;
 }
 
 void cromemco_tuart_0a_timer3_out(BYTE data)
 {
-	//printf("tu-art 0a timer 3: %d\r\n", data);
 	uart0a_timer3 = data;
 }
 
 void cromemco_tuart_0a_timer4_out(BYTE data)
 {
-	//printf("tu-art 0a timer 4: %d\r\n", data);
 	uart0a_timer4 = data;
 }
 
 void cromemco_tuart_0a_timer5_out(BYTE data)
 {
-	//printf("tu-art 0a timer 5: %d\r\n", data);
 	uart0a_timer5 = data;
 }
 
@@ -324,7 +319,6 @@ BYTE cromemco_tuart_1a_interrupt_in(void)
 
 void cromemco_tuart_1a_interrupt_out(BYTE data)
 {
-	//printf("tu-art 1a interrupt mask: %02x\r\n", data);
 	uart1a_int_mask = data;
 }
 
@@ -339,8 +333,6 @@ BYTE cromemco_tuart_1a_parallel_in(void)
 void cromemco_tuart_1a_parallel_out(BYTE data)
 {
 	extern int lpt2;
-
-	//printf("tu-art 1a printer data: %02x\r\n", data);
 
 	if (lpt2 == 0)
 		lpt2 = creat("lpt2.txt", 0664);
@@ -470,7 +462,6 @@ BYTE cromemco_tuart_1b_interrupt_in(void)
 
 void cromemco_tuart_1b_interrupt_out(BYTE data)
 {
-	//printf("tu-art 1b interrupt mask: %02x\r\n", data);
 	uart1b_int_mask = data;
 }
 
@@ -485,8 +476,6 @@ BYTE cromemco_tuart_1b_parallel_in(void)
 void cromemco_tuart_1b_parallel_out(BYTE data)
 {
 	extern int lpt1;
-
-	//printf("tu-art 1b printer data: %02x\r\n", data);
 
 	if (lpt1 == 0)
 		lpt1 = creat("lpt1.txt", 0664);
