@@ -130,7 +130,8 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 {
 	addrh = addrh;	/* to avoid compiler warning */
 	io_port = addrl;
-	return((*port_in[addrl]) ());
+	io_data = (*port_in[addrl]) ();
+	return(io_data);
 }
 
 /*
@@ -142,6 +143,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
 	addrh = addrh;	/* to avoid compiler warning */
 	io_port = addrl;
+	io_data = data;
 	(*port_out[addrl]) (data);
 }
 
