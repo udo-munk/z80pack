@@ -863,6 +863,7 @@ static void do_clock(void)
 	BYTE save[3];
 	static struct sigaction newact;
 	static struct itimerval tim;
+	char *s;
 
 	save[0]	= *(mem_base() + 0x0000); /* save memory locations */
 	save[1]	= *(mem_base() + 0x0001); /* 0000H - 0002H */
@@ -886,9 +887,11 @@ static void do_clock(void)
 	switch(cpu) {			/* start CPU */
 	case Z80:
 		cpu_z80();
+		s = "JP";
 		break;
 	case I8080:
 		cpu_8080();
+		s = "JMP";
 		break;
 	}
 	newact.sa_handler = SIG_DFL;	/* reset timer interrupt handler */
@@ -896,9 +899,10 @@ static void do_clock(void)
 	*(mem_base() + 0x0000) = save[0]; /* restore memory locations */
 	*(mem_base() + 0x0001) = save[1]; /* 0000H - 0002H */
 	*(mem_base() + 0x0002) = save[2];
-	if (cpu_error == NONE)
+	if (cpu_error == NONE) {
+		printf("CPU executed %ld %s instructions in 3 seconds\n", R, s);
 		printf("clock frequency = %5.2f Mhz\n", ((float) R) / 300000.0);
-	else
+	} else
 		puts("Interrupted by user");
 }
 
