@@ -604,35 +604,29 @@ char Opcode_Str[64];
 
 /* Set up machine code hex in Opcode_Str for GUI disassembly */
 
-void get_opcodes(unsigned char **p, int len)
+static void get_opcodes(unsigned char **p, int len)
 {
-  switch (len)
-  {
-    case 1:
-      sprintf(Opcode_Str, "%02X         ",
-                (**p & 0xff));
-      break;
-
-    case 2:
-      sprintf(Opcode_Str, "%02X %02X      ",
-                (**p & 0xff), *(*p + 1) & 0xff);
-      break;
-
-    case 3:
-      sprintf(Opcode_Str, "%02X %02X %02X   ",
-                (**p & 0xff), *(*p + 1) & 0xff,
-                *(*p + 2) & 0xff);
-      break;
-
-    case 4:
-      sprintf(Opcode_Str, "%02X %02X %02X %02X",
-                (**p & 0xff), *(*p + 1) & 0xff,
-                *(*p + 2) & 0xff, *(*p + 3) & 0xff);
-      break;
-
-    default:
-      sprintf(Opcode_Str, "xx OW OW xx");
-  }
+	switch (len) {
+	case 1:
+		sprintf(Opcode_Str, "%02X         ", (**p & 0xff));
+		break;
+	case 2:
+		sprintf(Opcode_Str, "%02X %02X      ",
+			(**p & 0xff), *(*p + 1) & 0xff);
+		break;
+	case 3:
+		sprintf(Opcode_Str, "%02X %02X %02X   ",
+			(**p & 0xff), *(*p + 1) & 0xff,
+			*(*p + 2) & 0xff);
+		break;
+	case 4:
+		sprintf(Opcode_Str, "%02X %02X %02X %02X",
+			(**p & 0xff), *(*p + 1) & 0xff,
+			*(*p + 2) & 0xff, *(*p + 3) & 0xff);
+		break;
+	default:
+		sprintf(Opcode_Str, "xx OW OW xx");
+	}
 }
 #endif
 
