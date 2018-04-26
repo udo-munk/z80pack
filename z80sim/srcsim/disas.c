@@ -1,7 +1,7 @@
 /*
  * Z80 and 8080 disassembler for Z80-CPU simulator
  *
- * Copyright (C) 1989-2017 by Udo Munk
+ * Copyright (C) 1989-2018 by Udo Munk
  * Parts Copyright (C) 2008 by Justin Clancy
  * 8080 disassembler Copyright (C) 2018 by Christophe Staiesse
  *
@@ -339,7 +339,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "DCR\tB"		},	/* 0x05 */
 	{ nout,   "MVI\tB,"		},	/* 0x06 */
 	{ opout,  "RLC"			},	/* 0x07 */
-	{ opout,  "NOP"			},	/* 0x08 */ /* undocumented */
+	{ opout,  "NOP*"		},	/* 0x08 */ /* undocumented */
 	{ opout,  "DAD\tB"		},	/* 0x09 */
 	{ opout,  "LDAX\tB"		},	/* 0x0a */
 	{ opout,  "DCX\tB"		},	/* 0x0b */
@@ -347,7 +347,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "DCR\tC"		},	/* 0x0d */
 	{ nout,   "MVI\tC,"		},	/* 0x0e */
 	{ opout,  "RRC"			},	/* 0x0f */
-	{ opout,  "NOP"			},	/* 0x10 */ /* undocumented */
+	{ opout,  "NOP*"		},	/* 0x10 */ /* undocumented */
 	{ nnout,  "LXI\tD,"		},	/* 0x11 */
 	{ opout,  "STAX\tD"		},	/* 0x12 */
 	{ opout,  "INX\tD"		},	/* 0x13 */
@@ -355,7 +355,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "DCR\tD"		},	/* 0x15 */
 	{ nout,   "MVI\tD,"		},	/* 0x16 */
 	{ opout,  "RAL"			},	/* 0x17 */
-	{ opout,  "NOP"			},	/* 0x18 */ /* undocumented */
+	{ opout,  "NOP*"		},	/* 0x18 */ /* undocumented */
 	{ opout,  "DAD\tD"		},	/* 0x19 */
 	{ opout,  "LDAX\tD"		},	/* 0x1a */
 	{ opout,  "DCX\tD"		},	/* 0x1b */
@@ -363,7 +363,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "DCR\tE"		},	/* 0x1d */
 	{ nout,   "MVI\tE,"		},	/* 0x1e */
 	{ opout,  "RAR"			},	/* 0x1f */
-	{ opout,  "NOP"			},	/* 0x20 */ /* undocumented */
+	{ opout,  "NOP*"		},	/* 0x20 */ /* undocumented */
 	{ nnout,  "LXI\tH,"		},	/* 0x21 */
 	{ nnout,  "SHLD\t"		},	/* 0x22 */
 	{ opout,  "INX\tH"		},	/* 0x23 */
@@ -371,7 +371,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "DCR\tH"		},	/* 0x25 */
 	{ nout,   "MVI\tH,"		},	/* 0x26 */
 	{ opout,  "DAA"			},	/* 0x27 */
-	{ opout,  "NOP"			},	/* 0x28 */ /* undocumented */
+	{ opout,  "NOP*"		},	/* 0x28 */ /* undocumented */
 	{ opout,  "DAD\tH"		},	/* 0x29 */
 	{ nnout,  "LHLD\t"		},	/* 0x2a */
 	{ opout,  "DCX\tH"		},	/* 0x2b */
@@ -379,7 +379,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "DCR\tL"		},	/* 0x2d */
 	{ nout,   "MVI\tL,"		},	/* 0x2e */
 	{ opout,  "CMA"			},	/* 0x2f */
-	{ opout,  "NOP"			},	/* 0x30 */ /* undocumented */
+	{ opout,  "NOP*"		},	/* 0x30 */ /* undocumented */
 	{ nnout,  "LXI\tSP,"		},	/* 0x31 */
 	{ nnout,  "STA\t"		},	/* 0x32 */
 	{ opout,  "INX\tSP"		},	/* 0x33 */
@@ -387,7 +387,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "DCR\tM"		},	/* 0x35 */
 	{ nout,   "MVI\tM,"		},	/* 0x36 */
 	{ opout,  "STC"			},	/* 0x37 */
-	{ opout,  "NOP"			},	/* 0x38 */ /* undocumented */
+	{ opout,  "NOP*"		},	/* 0x38 */ /* undocumented */
 	{ opout,  "DAD\tSP"		},	/* 0x39 */
 	{ nnout,  "LDA\t"		},	/* 0x3a */
 	{ opout,  "DCX\tSP"		},	/* 0x3b */
@@ -534,7 +534,7 @@ static struct opt optabi8080[256] = {
 	{ opout,  "RZ"			},	/* 0xc8 */
 	{ opout,  "RET"			},	/* 0xc9 */
 	{ nnout,  "JZ\t"		},	/* 0xca */
-	{ nnout,  "JMP\t"		},	/* 0xcb */ /* undocumented */
+	{ nnout,  "JMP*\t"		},	/* 0xcb */ /* undocumented */
 	{ nnout,  "CZ\t"		},	/* 0xcc */
 	{ nnout,  "CALL\t"		},	/* 0xcd */
 	{ nout,   "ACI\t"		},	/* 0xce */
@@ -548,11 +548,11 @@ static struct opt optabi8080[256] = {
 	{ nout,   "SUI\t"		},	/* 0xd6 */
 	{ opout,  "RST\t2"		},	/* 0xd7 */
 	{ opout,  "RC"			},	/* 0xd8 */
-	{ opout,  "RET"			},	/* 0xd9 */ /* undocumented */
+	{ opout,  "RET*"		},	/* 0xd9 */ /* undocumented */
 	{ nnout,  "JC\t"		},	/* 0xda */
 	{ nout,   "IN\t"		},	/* 0xdb */
 	{ nnout,  "CC\t"		},	/* 0xdc */
-	{ nnout,  "CALL\t"		},	/* 0xdd */ /* undocumented */
+	{ nnout,  "CALL*\t"		},	/* 0xdd */ /* undocumented */
 	{ nout,   "SBI\t"		},	/* 0xde */
 	{ opout,  "RST\t3"		},	/* 0xdf */
 	{ opout,  "RPO"			},	/* 0xe0 */
@@ -568,7 +568,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "JPE\t"		},	/* 0xea */
 	{ opout,  "XCHG"		},	/* 0xeb */
 	{ nnout,  "CPE\t"		},	/* 0xec */
-	{ nnout,  "CALL\t"		},	/* 0xed */ /* undocumented */
+	{ nnout,  "CALL*\t"		},	/* 0xed */ /* undocumented */
 	{ nout,   "XRI\t"		},	/* 0xee */
 	{ opout,  "RST\t5"		},	/* 0xef */
 	{ opout,  "RP"			},	/* 0xf0 */
@@ -584,7 +584,7 @@ static struct opt optabi8080[256] = {
 	{ nnout,  "JM\t"		},	/* 0xfa */
 	{ opout,  "EI"			},	/* 0xfb */
 	{ nnout,  "CM\t"		},	/* 0xfc */
-	{ nnout,  "CALL\t"		},	/* 0xfd */ /* undocumented */
+	{ nnout,  "CALL*\t"		},	/* 0xfd */ /* undocumented */
 	{ nout,   "CPI\t"		},	/* 0xfe */
 	{ opout,  "RST\t7"		}	/* 0xff */
 };
@@ -791,6 +791,11 @@ static int cbop(char *s, unsigned char **p)
 	}
 	if (b2 >= 0x28 && b2 <= 0x2f) {
 		sprintf(Disass_Str, "SRA\t%s\n",
+			reg[b2 & 7]);
+		return(2);
+	}
+	if (b2 >= 0x30 && b2 <= 0x37) {
+		sprintf(Disass_Str, "SLL*\t%s\n",
 			reg[b2 & 7]);
 		return(2);
 	}
