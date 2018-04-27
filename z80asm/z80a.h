@@ -34,7 +34,7 @@
 #define OUTBIN		1	/* format of object: binary */
 #define OUTMOS		2	/*		     Mostek binary */
 #define OUTHEX		3	/*		     Intel hex */
-#define OUTDEF		OUTMOS	/* default object format */
+#define OUTDEF		OUTHEX	/* default object format */
 #define COMMENT		';'	/* inline comment character */
 #define LINCOM		'*'	/* comment line if in column 1 */
 #define LABSEP		':'	/* label separator */

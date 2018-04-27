@@ -22,6 +22,9 @@ Format of the output file:
 	-fm -> binary file with Mostek header
 	-fh -> Intel hex
 
+The default is Intel hex now, in earlier versions it was Mostek binary,
+but this format is not used much anymore.
+
 Option l:
 Without this option no list file will be generated. With -l a list
 file with the name of the source file but extension ".lis" will be
@@ -37,8 +40,8 @@ Option e:
 Set maximal symbol lenght to <num>, the default is 8.
 
 Option x:
-Don't output data in pass 2 into object file for DEFS. This only works
-if unallocated data isn't followed by any code or initialised data!
+Don't output data in pass 2 into a binary object file for DEFS. This only
+works if unallocated data isn't followed by any code or initialised data!
 Useful for CP/M BIOS's, where unallocated data doesn't need to be
 part of the system image, if the complete image won't fit on the system
 tracks.
@@ -61,6 +64,17 @@ Definition of symbols and allocation of memory:
 <symbol> DEFW   <exp,exp..>     - write words (16 bits) in memory
 <symbol> DEFM   <'string'>      - write character string in memory
 <symbol> DEFS   <expression>    - reserve space in memory
+
+
+External symbol declarations:
+
+PUBLIC <symbol>		- make symbol public
+EXTRN  <symbol>		- symbol is defined external
+
+The pseudo operations for external symbols are accepted, but won't
+do anything. Source modules can be concatenated or included, the
+symbols will be resolved, but the PUBLIC/EXTERN declarations can
+be left unaltered in the source modules.
 
 
 Conditional assembly:
@@ -88,7 +102,7 @@ INCLUDE <filename>      - include another source file
 PRINT   <'string'>      - print string to stdout in pass one
 
 
-Operator Precedence for the node based parser from Didier Derny:
+Operator precedence for the node based parser from Didier Derny:
 
 unary + - ~
 * / %
@@ -100,6 +114,6 @@ unary + - ~
 ( )
 
 
-Operator Precedence for my (old) recursive parser:
+Operator precedence for my (old) recursive parser:
 
-()
+( )
