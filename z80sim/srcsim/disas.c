@@ -788,7 +788,7 @@ static int cbop(char *s, unsigned char **p)
 			reg[b2 & 7]);
 		return(2);
 	}
-	if (b2 >= 0x30 && b2 <= 0x37) {
+	if (b2 >= 0x30 && b2 <= 0x37) {		/* undocumented */
 		sprintf(Disass_Str, "SLL*\t%s\n",
 			reg[b2 & 7]);
 		return(2);
