@@ -31,7 +31,7 @@ mkdskimg:
 	output: in directory disks files drivea.dsk, driveb.dsk,
 		drivec.dsk, drived.dsk, drivei.dsk, drivej.dsk
 		and drivep.dsk
-		If directory disks doesn't exit the image files
+		If directory disks doesn't exists the image files
 		are created in the current working directory.
 
 bin2hex:
