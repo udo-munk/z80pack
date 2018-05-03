@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2018 by Udo Munk
  *
  * Partial emulation of an Altair 88-2SIO S100 board
  *
@@ -18,6 +18,7 @@
  * 24-FEB-17 improved tty reopen
  * 22-MAR-17 connected SIO 2 to UNIX domain socket
  * 23-OCT-17 improved UNIX domain socket connections
+ * 03-MAY-18 improved accuracy
  */
 
 #include <unistd.h>
@@ -101,9 +102,9 @@ again:
 	}
 
 	/* process read data */
-	last = data;
 	if (sio1_upper_case)
 		data = toupper(data);
+	last = data;
 	return(data);
 }
 
@@ -209,14 +210,16 @@ BYTE altair_sio2_data_in(void)
 		return(last);
 
 	if (read(ucons[1].ssc, &data, 1) != 1) {
+		/* EOF, close socket and return last */
 		close(ucons[1].ssc);
 		ucons[1].ssc = 0;
 		return(last);
 	}
 
-	last = data;
+	/* process read data */
 	if (sio2_upper_case)
 		data = toupper(data);
+	last = data;
 	return(data);
 }
 

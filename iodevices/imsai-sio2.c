@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2018 by Udo Munk
  *
  * Emulation of an IMSAI SIO-2 S100 board
  *
@@ -14,6 +14,7 @@
  * 09-OCT-14 modified to support SIO 2
  * 23-MAR-15 drop only null's
  * 22-AUG-17 reopen tty at EOF from input redirection
+ * 03-MAY-18 improved accuracy
  */
 
 #include <unistd.h>
@@ -77,6 +78,7 @@ BYTE imsai_sio1_data_in(void)
 	struct pollfd p[1];
 
 again:
+	/* if no input waiting return last */
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
 	p[0].revents = 0;
@@ -85,15 +87,16 @@ again:
 		return(last);
 
 	if (read(fileno(stdin), &data, 1) == 0) {
+		/* try to reopen tty, input redirection exhausted */
 		freopen("/dev/tty", "r", stdin);
 		set_unix_terminal();
 		goto again;
 	}
 
-	last = data;
+	/* process read data */
 	if (sio1_upper_case)
 		data = toupper(data);
-
+	last = data;
 	return(data);
 }
 

@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2018 by Udo Munk
  *
  * Emulation of an IMSAI SIO-2 S100 board
  *
@@ -14,6 +14,7 @@
  * 09-OCT-14 modified to support SIO 2
  * 23-MAR-15 drop only null's
  * 22-AUG-17 reopen tty at EOF from input redirection
+ * 03-MAY-18 improved accuracy
  */
 
 extern BYTE imsai_sio1_status_in(void);

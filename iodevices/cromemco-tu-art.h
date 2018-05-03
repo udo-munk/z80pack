@@ -17,6 +17,7 @@
  * 23-MAR-15 drop only null's
  * 26-MAR-15 tty's implemented for CDOS and Cromix
  * 25-APR-18 cleanup
+ * 03-MAY-18 improved accuracy
  */
 
 extern BYTE cromemco_tuart_0a_status_in(void);

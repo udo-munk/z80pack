@@ -17,6 +17,7 @@
  * 23-MAR-15 drop only null's
  * 26-MAR-15 tty's implemented for CDOS and Cromix
  * 25-APR-18 cleanup
+ * 03-MAY-18 improved accuracy
  */
 
 #include <unistd.h>
@@ -27,6 +28,7 @@
 #include <sys/poll.h>
 #include "sim.h"
 #include "simglb.h"
+#include "unix_terminal.h"
 #include "unix_network.h"
 
 /************************/
@@ -81,20 +83,29 @@ void cromemco_tuart_0a_baud_out(BYTE data)
 BYTE cromemco_tuart_0a_data_in(void)
 {
 	BYTE data;
+	static BYTE last;
 	struct pollfd p[1];
 
 	uart0a_rda = 0;
 
+again:
+	/* if no input waiting return last */
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
 	p[0].revents = 0;
-
 	poll(p, 1, 0);
-
 	if (!(p[0].revents & POLLIN))
-		return(0);
+		return(last);
 
-	read(fileno(stdin), &data, 1);
+	if (read(fileno(stdin), &data, 1) == 0) {
+		/* try to reopen tty, input redirection exhausted */
+		freopen("/dev/tty", "r", stdin);
+		set_unix_terminal();
+		goto again;
+	}
+
+	/* process read data */
+	last = data;
 	return(data);
 }
 
@@ -247,27 +258,29 @@ void cromemco_tuart_1a_baud_out(BYTE data)
 BYTE cromemco_tuart_1a_data_in(void)
 {
 	BYTE data, dummy;
+	static BYTE last;
 	struct pollfd p[1];
 
 	uart1a_rda = 0;
 
+	/* if not connected return last */
 	if (ncons[0].ssc == 0)
-		return(0);
+		return(last);
 
+	/* if no input waiting return last */
 	p[0].fd = ncons[0].ssc;
 	p[0].events = POLLIN;
 	p[0].revents = 0;
-
 	poll(p, 1, 0);
-
 	if (!(p[0].revents & POLLIN))
-		return(0);
+		return(last);
 
 	if (read(ncons[0].ssc, &data, 1) != 1) {
 		if ((errno == EAGAIN) || (errno == EINTR)) {
+			/* EOF, close socket and return last */
 			close(ncons[0].ssc);
 			ncons[0].ssc = 0;
-			return(0);
+			return(last);
 		} else {
 			perror("read tu-art 1a data");
 			cpu_error = IOERROR;
@@ -276,9 +289,11 @@ BYTE cromemco_tuart_1a_data_in(void)
 		}
 	}
 
+	/* process read data */
+	/* telnet client sends \r\n or \r\0, drop second character */
 	if (ncons[0].telnet && (data == '\r'))
 		read(ncons[0].ssc, &dummy, 1);
-
+	last = data;
 	return(data);
 }
 
@@ -390,27 +405,29 @@ void cromemco_tuart_1b_baud_out(BYTE data)
 BYTE cromemco_tuart_1b_data_in(void)
 {
 	BYTE data, dummy;
+	static BYTE last;
 	struct pollfd p[1];
 
 	uart1b_rda = 0;
 
+	/* if not connected return last */
 	if (ncons[1].ssc == 0)
-		return(0);
+		return(last);
 
+	/* if no input waiting return last */
 	p[0].fd = ncons[1].ssc;
 	p[0].events = POLLIN;
 	p[0].revents = 0;
-
 	poll(p, 1, 0);
-
 	if (!(p[0].revents & POLLIN))
-		return(0);
+		return(last);
 
 	if (read(ncons[1].ssc, &data, 1) != 1) {
 		if ((errno == EAGAIN) || (errno == EINTR)) {
+			/* EOF, close socket and return last */
 			close(ncons[1].ssc);
 			ncons[1].ssc = 0;
-			return(0);
+			return(last);
 		} else {
 			perror("read tu-art 1b data");
 			cpu_error = IOERROR;
@@ -419,9 +436,11 @@ BYTE cromemco_tuart_1b_data_in(void)
 		}
 	}
 
+	/* process read data */
+	/* telnet client sends \r\n or \r\0, drop second character */
 	if (ncons[1].telnet && (data == '\r'))
 		read(ncons[1].ssc, &dummy, 1);
-
+	last = data;
 	return(data);
 }
 

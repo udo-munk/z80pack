@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2016-2017 by Udo Munk
+ * Copyright (C) 2016-2018 by Udo Munk
  *
  * Partial emulation of an Altair 88-SIO Rev. 0/1 for terminal I/O,
  * and 88-SIO Rev. 1 for tape I/O
@@ -15,6 +15,7 @@
  * 24-MAR-17 added configuration
  * 27-MAR-17 added SIO 3 for tape connected to UNIX domain socket
  * 23-OCT-17 improved UNIX domain socket connections
+ * 03-MAY-18 improved accuracy
  */
 
 #include <unistd.h>
@@ -86,6 +87,9 @@ void altair_sio0_status_out(BYTE data)
 
 /*
  * read data register
+ *
+ * can be configured to translate to upper case, most of the old software
+ * written for tty's won't accept lower case characters
  */
 BYTE altair_sio0_data_in(void)
 {
@@ -110,14 +114,17 @@ again:
 	}
 
 	/* process read data */
-	last = data;
 	if (sio0_upper_case)
 		data = toupper(data);
+	last = data;
 	return(data);
 }
 
 /*
  * write data register
+ *
+ * can be configured to strip parity bit because some old software won't.
+ * also can drop nulls usually send after CR/LF for teletypes.
  */
 void altair_sio0_data_out(BYTE data)
 {
@@ -214,11 +221,13 @@ BYTE altair_sio3_data_in(void)
 		return(last);
 
 	if (read(ucons[0].ssc, &data, 1) != 1) {
+		/* EOF, close socket and return last */
 		close(ucons[0].ssc);
 		ucons[0].ssc = 0;
 		return(last);
 	}
 
+	/* process read data */
 	last = data;
 	return(data);
 }
