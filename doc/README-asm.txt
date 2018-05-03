@@ -72,9 +72,10 @@ PUBLIC <symbol>		- make symbol public
 EXTRN  <symbol>		- symbol is defined external
 
 The pseudo operations for external symbols are accepted, but won't
-do anything. Source modules can be concatenated or included, the
+do anything. Source modules can be concatenated or included, so the
 symbols will be resolved, but the PUBLIC/EXTERN declarations can
-be left unaltered in the source modules.
+be left unaltered in the source modules, because the assembler
+ignores them.
 
 
 Conditional assembly:
