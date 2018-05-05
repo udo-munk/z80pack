@@ -109,7 +109,6 @@ again:
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
 		freopen("/dev/tty", "r", stdin);
-		set_unix_terminal();
 		goto again;
 	}
 
