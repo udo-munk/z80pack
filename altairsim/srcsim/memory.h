@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2017 by Udo Munk
+ * Copyright (C) 2016-2018 by Udo Munk
  *
  * This module implements memory management for an Altair 8800 system
  *
@@ -10,6 +10,7 @@
  * 02-FEB-2017 initialise ROM with 0xff
  * 13-JUN-2017 added Tarbell bootstrap ROM
  * 16-AUG-2017 overworked memrdr()
+ * 07-MAY-2018 added memory configuratione needed by apple monitor
  */
 
 extern void init_memory(void), init_rom(void);
