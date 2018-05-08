@@ -32,6 +32,7 @@ void init_memory(void)
 {
 	register int i;
 
+	/* use memory configuration from system.conf */
 #ifndef MONITORMEM
 	/* initialise memory page table, no memory available */
 	for (i = 0; i < 256; i++)
@@ -44,12 +45,14 @@ void init_memory(void)
 	/* then set rom_size pages in upper memory to ROM */
 	for (i = 256 - rom_size; i < 256; i++)
 		p_tab[i] = MEM_RO;
+
+	/* memory configuration needed by TDL Apple */
 #else
-	/* 0000H - EFFFH RAM */
+	/* 0000 - EFFF RAM */
 	for (i = 0; i < 240; i++)
 		p_tab[i] = MEM_RW;
 
-	/* F000H - F7FF ROM */
+	/* F000 - F7FF ROM */
 	for (i = 240; i < 248; i++)
 		p_tab[i] = MEM_RO;
 
@@ -66,6 +69,14 @@ void init_rom(void)
 {
 	register int i;
 
+	/* use memory configuration from system.conf */
+#ifndef MONITORMEM
 	for (i = (256 - rom_size) << 8; i <= 0xffff; i++)
 		memory[i] = 0xff;
+
+	/* TDL Apple ROM */
+#else
+	for (i = 0xf000; i < 0xf800; i++)
+		memory[i] = 0xff;
+#endif
 }

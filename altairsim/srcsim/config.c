@@ -235,9 +235,9 @@ void config(void)
 	}
 
 #ifdef MONITORMEM
-	puts("0000H - efffH RAM");
-	puts("f000H - f7ffH ROM");
-	puts("f800H - ffffH RAM");
+	puts("RAM 0000H - efffH");
+	puts("ROM f000H - f7ffH");
+	puts("RAM f800H - ffffH");
 #endif
 
 	printf("\n");
