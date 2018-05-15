@@ -1,6 +1,6 @@
 /*
  *	Z80 - Assembler
- *	Copyright (C) 1987-2017 by Udo Munk
+ *	Copyright (C) 1987-2018 by Udo Munk
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -12,6 +12,7 @@
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
  *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	15-MAY-2018 mark unreferenced symbols in listing
  */
 
 /*
@@ -96,9 +97,12 @@ struct sym *get_sym(char *sym_name)
 {
 	register struct sym *np;
 
-	for (np = symtab[hash(sym_name)]; np != NULL; np = np->sym_next)
-		if (strcmp(sym_name, np->sym_name) == 0)
+	for (np = symtab[hash(sym_name)]; np != NULL; np = np->sym_next) {
+		if (strcmp(sym_name, np->sym_name) == 0) {
+			np->sym_refcnt++;
 			return(np);
+		}
+	}
 	return(NULL);
 }
 
@@ -130,6 +134,7 @@ int put_sym(char *sym_name, int sym_val)
 		hashval = hash(sym_name);
 		np->sym_next = symtab[hashval];
 		symtab[hashval] = np;
+		np->sym_refcnt = 0;
 	}
 	np->sym_val = sym_val;
 	return(0);

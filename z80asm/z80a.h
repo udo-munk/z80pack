@@ -1,6 +1,6 @@
 /*
  *	Z80 - Assembler
- *	Copyright (C) 1987-2017 by Udo Munk
+ *	Copyright (C) 1987-2018 by Udo Munk
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -12,6 +12,7 @@
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
  *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	15-MAY-2018 mark unreferenced symbols in listing
  */
 
 /*
@@ -25,8 +26,8 @@
 /*
  *	various constants
  */
-#define REL		"1.8"
-#define COPYR		"Copyright (C) 1987-2017 by Udo Munk"
+#define REL		"1.9"
+#define COPYR		"Copyright (C) 1987-2018 by Udo Munk"
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */
 #define OBJEXTHEX	".hex"	/* filename extension hex */
@@ -74,6 +75,7 @@ struct ope {
 struct sym {
 	char *sym_name;		/* symbol name */
 	int  sym_val;		/* symbol value */
+	int  sym_refcnt;	/* symbol reference counter */
 	struct sym *sym_next;	/* next entry */
 };
 
