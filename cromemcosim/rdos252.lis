@@ -1,4 +1,4 @@
-Z80-Assembler		Release 1.6				Page 1
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 1
 Source file: rdos252.asm
 Title:       
 
@@ -63,7 +63,7 @@ c054  20 fc           57     57 	JR	NZ,clp2
 c056  24              58     58 	INC	H
 c057  22 62 00        59     59 	LD	(62H),HL
 c05a  22 64 00        60     60 	LD	(64H),HL
-Z80-Assembler		Release 1.6				Page 2
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 2
 Source file: rdos252.asm
 Title:       
 
@@ -128,7 +128,7 @@ c0f0  fe e5          108    117 	CP	0E5H
 c0f2  20 08          109    118 	JR	NZ,C0FA
 c0f4  cd 0b c8       110    119 C0F3:	CALL	ptfol
 c0f7  0d 4e 80       111    120         DEFB    CR,'N'+msbon
-Z80-Assembler		Release 1.6				Page 3
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 3
 Source file: rdos252.asm
 Title:       
 
@@ -193,7 +193,7 @@ c17d  cd 89 c1       160    177 	CALL	C186
 c180  7e             161    178 	LD	A,(HL)
 c181  23             162    179 	INC	HL
 c182  66             163    180 	LD	H,(HL)
-Z80-Assembler		Release 1.6				Page 4
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 4
 Source file: rdos252.asm
 Title:       
 
@@ -258,7 +258,7 @@ c1e5  3a 6c 00       220    237 C1E2:	LD	A,(6CH)
 c1e8  b7             221    238 	OR	A
 c1e9  c8             222    239 	RET	Z
 c1ea  cd 03 c8       223    240 	CALL	pt7ba
-Z80-Assembler		Release 1.6				Page 5
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 5
 Source file: rdos252.asm
 Title:       
 
@@ -323,7 +323,7 @@ c250  e6 08          280    297 	AND	8
 c252  28 5d          281    298 	JR	Z,C2AE	; baud rate preset
 c254  3e 0a          282    299 C251:	LD	A,0AH
 c256  d3 02          283    300 	OUT	(2),A	; UART command register
-Z80-Assembler		Release 1.6				Page 6
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 6
 Source file: rdos252.asm
 Title:       
 
@@ -388,7 +388,7 @@ c2c9  47             340    357 	LD	B,A
 c2ca  13             341    358 	INC	DE
 c2cb  1a             342    359 	LD	A,(DE)
 c2cc  fe 3b          343    360 	CP	';'
-Z80-Assembler		Release 1.6				Page 7
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 7
 Source file: rdos252.asm
 Title:       
 
@@ -453,7 +453,7 @@ c340  21 64 00       400    417 	LD	HL,64H
 c343  cd ff cf       401    418 	CALL	dela1
 c346  18 db          402    419 	JR	C320
                      403    420 ;
-Z80-Assembler		Release 1.6				Page 8
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 8
 Source file: rdos252.asm
 Title:       
 
@@ -518,7 +518,7 @@ c3c7  cd e1 c3       457    477 	CALL	C3DE
 c3ca  cd 19 c8       458    478 	CALL	loctok
 c3cd  fe 43          459    479 	CP	'C'
 c3cf  20 06          460    480 	JR	NZ,C3D4
-Z80-Assembler		Release 1.6				Page 9
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 9
 Source file: rdos252.asm
 Title:       
 
@@ -583,7 +583,7 @@ c43a  c3 57 c1       513    536 	JP	inlp
 c43d  cd 2c c8       515    538 C439:	CALL	fndeol
 c440  3a 77 00       516    539 	LD	A,(77H)
 c443  f5             517    540 	PUSH	AF
-Z80-Assembler		Release 1.6				Page 10
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 10
 Source file: rdos252.asm
 Title:       
 
@@ -648,7 +648,7 @@ c4bf  32 70 00       573    597 	LD	(70H),A
 c4c2  e1             574    598 	POP	HL
 c4c3  af             575    599 	XOR	A
 c4c4  b4             576    600 	OR	H
-Z80-Assembler		Release 1.6				Page 11
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 11
 Source file: rdos252.asm
 Title:       
 
@@ -713,7 +713,7 @@ c531  60             632    657 	LD	H,B
 c532  69             633    658 	LD	L,C
 c533  d5             634    659 C52E:	PUSH	DE
 c534  e5             635    660 	PUSH	HL
-Z80-Assembler		Release 1.6				Page 12
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 12
 Source file: rdos252.asm
 Title:       
 
@@ -778,7 +778,7 @@ c5b3  46             686    717 	LD	B,(HL)
 c5b4  c5             687    718 	PUSH	BC
 c5b5  cb ce          688    719 	SET	1,(HL)
 c5b7  cd 6d cd       689    720 	CALL	CD5F
-Z80-Assembler		Release 1.6				Page 13
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 13
 Source file: rdos252.asm
 Title:       
 
@@ -843,7 +843,7 @@ c620  c3 9e c3       745    776 	JP	C39B
 c623  3a 7e 00       747    778 C61E:	LD	A,(7EH)
 c626  cb 6f          748    779 	BIT	5,A
 c628  c8             749    780 	RET	Z
-Z80-Assembler		Release 1.6				Page 14
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 14
 Source file: rdos252.asm
 Title:       
 
@@ -908,7 +908,7 @@ c68b  cd 60 c8       806    837 	CALL	C85B
 c68e  cd e7 c7       807    838 C689:	CALL	hxphl
 c691  7e             808    839 	LD	A,(HL)
 c692  cd e0 c7       809    840 	CALL	pspa
-Z80-Assembler		Release 1.6				Page 15
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 15
 Source file: rdos252.asm
 Title:       
 
@@ -973,7 +973,7 @@ c6f0  1b             866    897 	DEC	DE
 c6f1  7a             867    898 	LD	A,D
 c6f2  b3             868    899 	OR	E
 c6f3  20 e2          869    900 	JR	NZ,C6D2
-Z80-Assembler		Release 1.6				Page 16
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 16
 Source file: rdos252.asm
 Title:       
 
@@ -1038,7 +1038,7 @@ c74d  b1             926    957 	OR	C
 c74e  28 01          927    958 	JR	Z,C74C
 c750  59             928    959 	LD	E,C
 c751  c5             929    960 C74C:	PUSH	BC
-Z80-Assembler		Release 1.6				Page 17
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 17
 Source file: rdos252.asm
 Title:       
 
@@ -1103,7 +1103,7 @@ c7ae  d5             986   1017 	PUSH	DE
 c7af  cd f7 cb       987   1018 	CALL	CBEA
 c7b2  e3             988   1019 	EX	(SP),HL
 c7b3  23             989   1020 	INC	HL
-Z80-Assembler		Release 1.6				Page 18
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 18
 Source file: rdos252.asm
 Title:       
 
@@ -1168,7 +1168,7 @@ c803  f5            1046   1077 pt7ba:	PUSH	AF	; print 7-bit char.
 c804  e6 7f         1047   1078 	AND	7FH
 c806  cd a7 cc      1048   1079 	CALL	CC99
 c809  f1            1049   1080 	POP	AF
-Z80-Assembler		Release 1.6				Page 19
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 19
 Source file: rdos252.asm
 Title:       
 
@@ -1233,7 +1233,7 @@ c860  e5            1106   1137 C85B:	PUSH	HL
 c861  cd b2 c8      1107   1138 	CALL	C8AD
 c864  38 01         1108   1139 	JR	C,C862
 c866  e3            1109   1140 	EX	(SP),HL
-Z80-Assembler		Release 1.6				Page 20
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 20
 Source file: rdos252.asm
 Title:       
 
@@ -1298,7 +1298,7 @@ c8b1  c9            1166   1197 	RET
                     1167   1198 ;
 c8b2  cd 19 c8      1168   1199 C8AD:	CALL	loctok
 c8b5  cd e5 c8      1169   1200 C8B0:	CALL	C8E0
-Z80-Assembler		Release 1.6				Page 21
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 21
 Source file: rdos252.asm
 Title:       
 
@@ -1363,7 +1363,7 @@ c908  09            1226   1257 	ADD	HL,BC
 c909  c1            1227   1258 	POP	BC
 c90a  cd 89 c1      1228   1259 	CALL	C186
 c90d  18 ed         1229   1260 	JR	C8F7
-Z80-Assembler		Release 1.6				Page 22
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 22
 Source file: rdos252.asm
 Title:       
 
@@ -1428,7 +1428,7 @@ c979  60            1284   1317 	LD	H,B
 c97a  68            1285   1318 	LD	L,B
 c97b  cd 01 c8      1286   1319 C975:	CALL	ptspc
 c97e  e5            1287   1320 	PUSH	HL
-Z80-Assembler		Release 1.6				Page 23
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 23
 Source file: rdos252.asm
 Title:       
 
@@ -1493,7 +1493,7 @@ c9fc  06 15         1333   1377 	LD	B,15H
 c9fe  21 27 ca      1334   1378 	LD	HL,sektab
 ca01  db 31         1335   1379 seklp:	IN	A,(31H)
 ca03  32 7d 00      1336   1380 	LD	(7DH),A
-Z80-Assembler		Release 1.6				Page 24
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 24
 Source file: rdos252.asm
 Title:       
 
@@ -1558,7 +1558,7 @@ ca82  57 72 69 74   1384   1437 	DEFB	'Write test MAY DESTROY data'
 ca86  65 20 74 65   1384   1438
 ca8a  73 74 20 4d   1384   1439
 ca8e  41 59 20 44   1384   1440
-Z80-Assembler		Release 1.6				Page 25
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 25
 Source file: rdos252.asm
 Title:       
 
@@ -1623,7 +1623,7 @@ cb3f  21 00 0b      1412   1497 CB35:	LD	HL,0B00H
 cb42  cd ae cb      1413   1498 	CALL	setpat
 cb45  cd bd cb      1414   1499 	CALL	CBB0
 cb48  38 85         1415   1500 	JR	C,CAC7
-Z80-Assembler		Release 1.6				Page 26
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 26
 Source file: rdos252.asm
 Title:       
 
@@ -1688,7 +1688,7 @@ cbcc  18 10         1465   1557 	JR	CBD1
                     1466   1558 ;
 cbce  cd e7 cb      1467   1559 CBC1:	CALL	CBDA
 cbd1  cd 0b c8      1468   1560 	CALL	ptfol
-Z80-Assembler		Release 1.6				Page 27
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 27
 Source file: rdos252.asm
 Title:       
 
@@ -1753,7 +1753,7 @@ cc44  77            1524   1617 	LD	(HL),A
 cc45  23            1525   1618 	INC	HL
 cc46  04            1526   1619 	INC	B
 cc47  18 b6         1527   1620 	JR	CBF2
-Z80-Assembler		Release 1.6				Page 28
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 28
 Source file: rdos252.asm
 Title:       
 
@@ -1818,7 +1818,7 @@ cca7  f5            1584   1677 CC99:	PUSH	AF
 cca8  d9            1585   1678 	EXX
 cca9  cb 78         1586   1679 	BIT	7,B
 ccab  d9            1587   1680 	EXX
-Z80-Assembler		Release 1.6				Page 29
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 29
 Source file: rdos252.asm
 Title:       
 
@@ -1883,7 +1883,7 @@ cd0b  cd 19 c8      1644   1737 CCFD:	CALL	loctok
 cd0e  fe 4f         1645   1738 	CP	'O'
 cd10  c2 c0 c1      1646   1739 	JP	NZ,inper
 cd13  13            1647   1740 	INC	DE
-Z80-Assembler		Release 1.6				Page 30
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 30
 Source file: rdos252.asm
 Title:       
 
@@ -1948,7 +1948,7 @@ cd6b  18 0b         1703   1796 	JR	CD6A
 cd6d  16 04         1705   1798 CD5F:	LD	D,4
 cd6f  d5            1706   1799 CD61:	PUSH	DE
 cd70  cd ad ce      1707   1800 	CALL	CE9F
-Z80-Assembler		Release 1.6				Page 31
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 31
 Source file: rdos252.asm
 Title:       
 
@@ -2013,7 +2013,7 @@ cdd8  c9            1763   1856 	RET
 cdd9  97            1765   1858 CDCB:	SUB	A	; seek?
 cdda  cd 63 cf      1766   1859 	CALL	CF55
 cddd  d3 34         1767   1860 	OUT	(34H),A
-Z80-Assembler		Release 1.6				Page 32
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 32
 Source file: rdos252.asm
 Title:       
 
@@ -2078,7 +2078,7 @@ ce4a  37            1824   1917 	SCF
 ce4b  c9            1825   1918 	RET
                     1826   1919 ;
 ce4c  cd dd cf      1827   1920 CE3E:	CALL	CFCF
-Z80-Assembler		Release 1.6				Page 33
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 33
 Source file: rdos252.asm
 Title:       
 
@@ -2143,7 +2143,7 @@ ceb4  f3            1884   1977 	DI
 ceb5  cd d4 cf      1885   1978 	CALL	CFC6
 ceb8  c6 a8         1886   1979 	ADD	A,0A8H
 ceba  5f            1887   1980 	LD	E,A
-Z80-Assembler		Release 1.6				Page 34
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 34
 Source file: rdos252.asm
 Title:       
 
@@ -2208,7 +2208,7 @@ cf20  d3 30         1944   2037 	OUT	(30H),A
 cf22  db 34         1945   2038 CF14:	IN	A,(34H)
 cf24  1f            1946   2039 	RRA
 cf25  d8            1947   2040 	RET	C
-Z80-Assembler		Release 1.6				Page 35
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 35
 Source file: rdos252.asm
 Title:       
 
@@ -2273,7 +2273,7 @@ cf7f  a7            2004   2097 	AND	A
 cf80  28 21         2005   2098 	JR	Z,CF95
 cf82  21 90 01      2006   2099 	LD	HL,190H
 cf85  3a 73 00      2007   2100 	LD	A,(73H)
-Z80-Assembler		Release 1.6				Page 36
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 36
 Source file: rdos252.asm
 Title:       
 
@@ -2338,7 +2338,7 @@ cfe4  c5            2064   2157 CFD6:	PUSH	BC
 cfe5  06 7f         2065   2158 	LD	B,7FH	; no action
 cfe7  3a 78 00      2066   2159 	LD	A,(78H)
 cfea  a7            2067   2160 	AND	A
-Z80-Assembler		Release 1.6				Page 37
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 37
 Source file: rdos252.asm
 Title:       
 
@@ -2368,89 +2368,89 @@ d00c  c9            2089   2182 	RET
                     2090   2183 ;
 d00d  ff            2091   2184 	DEFB	0FFH
 d00e                2092   2185 	END
-Z80-Assembler		Release 1.6				Page 38
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 38
 Source file: rdos252.asm
 Title:       Symboltable
 
-BOOT     c06c	BS       0008	C003     c003	C030     c030	
-C037     c037	C03B     c03b	C0C8     c0c8	C0E8     c0e9	
-C0F3     c0f4	C0FA     c0fc	C115     c117	C131     c133	
-C151     c153	C186     c189	C1B9     c1bc	C1C4     c1c7	
-C1C7     c1ca	C1C8     c1cb	C1E2     c1e5	C1F7     c1fa	
-C202     c205	C20F     c212	C213     c216	C22C     c22f	
-C234     c237	C23B     c23e	C245     c248	C251     c254	
-C261     c264	C264     c267	C26D     c270	C281     c284	
-C298     c29b	C29C     c29f	C2A6     c2a9	C2AC     c2af	
-C2AE     c2b1	C2B9     c2bc	C2C1     c2c4	C2ED     c2f0	
-C2FB     c2fe	C320     c323	C345     c348	C359     c35c	
-C363     c366	C37A     c37d	C384     c387	C387     c38a	
-C39B     c39e	C3A1     c3a4	C3AE     c3b1	C3B5     c3b8	
-C3B7     c3ba	C3D4     c3d7	C3DE     c3e1	C3EA     c3ed	
-C3EE     c3f1	C3F6     c3f9	C40A     c40d	C40D     c410	
-C413     c416	C42A     c42e	C439     c43d	C446     c44a	
-C463     c467	C495     c49a	C498     c49d	C49E     c4a3	
-C4A1     c4a6	C4B1     c4b6	C4D4     c4d9	C4DA     c4df	
-C4E1     c4e6	C4ED     c4f2	C4F8     c4fd	C504     c509	
-C508     c50d	C516     c51b	C51A     c51f	C51C     c521	
-C52E     c533	C54F     c554	C57E     c583	C5AB     c5b0	
-C5BB     c5c0	C5C8     c5cd	C5DE     c5e3	C5F2     c5f7	
-C5F8     c5fd	C604     c609	C611     c616	C61E     c623	
-C62A     c62f	C636     c63b	C645     c64a	C652     c657	
-C655     c65a	C672     c677	C67A     c67f	C689     c68e	
-C6A3     c6a8	C6AF     c6b4	C6B6     c6bb	C6BD     c6c2	
-C6C2     c6c7	C6D2     c6d7	C6D8     c6dd	C6E0     c6e5	
-C6F1     c6f6	C6F7     c6fc	C719     c71e	C726     c72b	
-C72B     c730	C733     c738	C73C     c741	C74C     c751	
-C75B     c760	C760     c765	C76A     c76f	C77D     c782	
-C788     c78d	C792     c797	C79C     c7a1	C7A0     c7a5	
-C7A3     c7a8	C7B3     c7b8	C7C4     c7c9	C7CD     c7d2	
-C82F     c834	C84E     c853	C853     c858	C85B     c860	
-C862     c867	C865     c86a	C868     c86d	C869     c86e	
-C879     c87e	C87A     c87f	C885     c88a	C887     c88c	
-C890     c895	C8A4     c8a9	C8A6     c8ab	C8AD     c8b2	
-C8B0     c8b5	C8B5     c8ba	C8C5     c8ca	C8CA     c8cf	
-C8CD     c8d2	C8DB     c8e0	C8E0     c8e5	C8F1     c8f6	
-C8F4     c8f9	C8F7     c8fc	C90A     c90f	C910     c915	
-C91B     c920	C929     c92e	C941     c946	C94A     c94f	
-C95F     c965	C96E     c974	C975     c97b	C97C     c982	
-C98A     c990	C996     c99c	C99B     c9a1	C99C     c9a2	
-C9A4     c9aa	CA35     ca3c	CA3F     ca46	CA4C     ca54	
-CA51     ca59	CABB     cac3	CAC7     cacf	CB35     cb3f	
-CB5D     cb67	CB6A     cb74	CB6B     cb75	CB94     cb9f	
-CB9E     cbaa	CBB0     cbbd	CBC1     cbce	CBD1     cbde	
-CBDA     cbe7	CBEA     cbf7	CBEC     cbf9	CBF2     cbff	
-CC09     cc16	CC1A     cc27	CC2D     cc3a	CC3C     cc49	
-CC45     cc52	CC4B     cc58	CC52     cc5f	CC64     cc72	
-CC7B     cc89	CC8E     cc9c	CC99     cca7	CCA4     ccb2	
-CCBB     ccc9	CCC9     ccd7	CCCB     ccd9	CCDA     cce8	
-CCE6     ccf4	CCED     ccfb	CCFD     cd0b	CD19     cd27	
-CD23     cd31	CD37     cd45	CD39     cd47	CD52     cd60	
-CD54     cd62	CD5F     cd6d	CD61     cd6f	CD6A     cd78	
-CD70     cd7e	CD83     cd91	CD8F     cd9d	CD9D     cdab	
-CDA6     cdb4	CDB9     cdc7	CDC4     cdd2	CDCB     cdd9	
-CDEE     cdfc	CDF9     ce07	CE04     ce12	CE11     ce1f	
-CE1A     ce28	CE25     ce33	CE34     ce42	CE36     ce44	
-CE3E     ce4c	CE50     ce5e	CE58     ce66	CE5D     ce6b	
-CE6F     ce7d	CE78     ce86	CE85     ce93	CE8D     ce9b	
-CE8F     ce9d	CE9F     cead	CEB3     cec1	CEC5     ced3	
-CECA     ced8	CEE5     cef3	CEEE     cefc	CEEF     cefd	
-Z80-Assembler		Release 1.6				Page 39
+BOOT     c06c 	BS       0008 	C003     c003*	C030     c030 	
+C037     c037 	C03B     c03b 	C0C8     c0c8 	C0E8     c0e9 	
+C0F3     c0f4 	C0FA     c0fc 	C115     c117 	C131     c133 	
+C151     c153 	C186     c189 	C1B9     c1bc 	C1C4     c1c7 	
+C1C7     c1ca 	C1C8     c1cb 	C1E2     c1e5 	C1F7     c1fa 	
+C202     c205 	C20F     c212 	C213     c216 	C22C     c22f 	
+C234     c237 	C23B     c23e 	C245     c248 	C251     c254 	
+C261     c264 	C264     c267 	C26D     c270 	C281     c284 	
+C298     c29b 	C29C     c29f 	C2A6     c2a9 	C2AC     c2af 	
+C2AE     c2b1 	C2B9     c2bc*	C2C1     c2c4 	C2ED     c2f0 	
+C2FB     c2fe 	C320     c323 	C345     c348 	C359     c35c 	
+C363     c366 	C37A     c37d 	C384     c387 	C387     c38a 	
+C39B     c39e 	C3A1     c3a4 	C3AE     c3b1 	C3B5     c3b8 	
+C3B7     c3ba 	C3D4     c3d7 	C3DE     c3e1 	C3EA     c3ed 	
+C3EE     c3f1 	C3F6     c3f9 	C40A     c40d 	C40D     c410 	
+C413     c416 	C42A     c42e 	C439     c43d 	C446     c44a 	
+C463     c467 	C495     c49a 	C498     c49d 	C49E     c4a3 	
+C4A1     c4a6 	C4B1     c4b6 	C4D4     c4d9 	C4DA     c4df 	
+C4E1     c4e6 	C4ED     c4f2 	C4F8     c4fd 	C504     c509 	
+C508     c50d 	C516     c51b 	C51A     c51f 	C51C     c521 	
+C52E     c533 	C54F     c554 	C57E     c583 	C5AB     c5b0 	
+C5BB     c5c0 	C5C8     c5cd 	C5DE     c5e3 	C5F2     c5f7 	
+C5F8     c5fd 	C604     c609 	C611     c616 	C61E     c623 	
+C62A     c62f 	C636     c63b 	C645     c64a 	C652     c657 	
+C655     c65a 	C672     c677 	C67A     c67f 	C689     c68e 	
+C6A3     c6a8 	C6AF     c6b4 	C6B6     c6bb 	C6BD     c6c2 	
+C6C2     c6c7 	C6D2     c6d7 	C6D8     c6dd 	C6E0     c6e5 	
+C6F1     c6f6 	C6F7     c6fc 	C719     c71e 	C726     c72b 	
+C72B     c730 	C733     c738 	C73C     c741 	C74C     c751 	
+C75B     c760 	C760     c765 	C76A     c76f 	C77D     c782 	
+C788     c78d 	C792     c797 	C79C     c7a1 	C7A0     c7a5 	
+C7A3     c7a8 	C7B3     c7b8 	C7C4     c7c9 	C7CD     c7d2 	
+C82F     c834 	C84E     c853 	C853     c858 	C85B     c860 	
+C862     c867 	C865     c86a 	C868     c86d 	C869     c86e 	
+C879     c87e 	C87A     c87f 	C885     c88a 	C887     c88c 	
+C890     c895 	C8A4     c8a9 	C8A6     c8ab 	C8AD     c8b2 	
+C8B0     c8b5 	C8B5     c8ba 	C8C5     c8ca 	C8CA     c8cf 	
+C8CD     c8d2 	C8DB     c8e0 	C8E0     c8e5 	C8F1     c8f6 	
+C8F4     c8f9 	C8F7     c8fc 	C90A     c90f 	C910     c915 	
+C91B     c920 	C929     c92e*	C941     c946 	C94A     c94f 	
+C95F     c965 	C96E     c974 	C975     c97b 	C97C     c982 	
+C98A     c990 	C996     c99c 	C99B     c9a1 	C99C     c9a2 	
+C9A4     c9aa 	CA35     ca3c 	CA3F     ca46 	CA4C     ca54 	
+CA51     ca59 	CABB     cac3 	CAC7     cacf 	CB35     cb3f 	
+CB5D     cb67 	CB6A     cb74 	CB6B     cb75 	CB94     cb9f 	
+CB9E     cbaa 	CBB0     cbbd 	CBC1     cbce 	CBD1     cbde 	
+CBDA     cbe7 	CBEA     cbf7 	CBEC     cbf9 	CBF2     cbff 	
+CC09     cc16 	CC1A     cc27 	CC2D     cc3a 	CC3C     cc49 	
+CC45     cc52 	CC4B     cc58 	CC52     cc5f 	CC64     cc72 	
+CC7B     cc89 	CC8E     cc9c 	CC99     cca7 	CCA4     ccb2 	
+CCBB     ccc9 	CCC9     ccd7 	CCCB     ccd9 	CCDA     cce8 	
+CCE6     ccf4 	CCED     ccfb 	CCFD     cd0b 	CD19     cd27 	
+CD23     cd31 	CD37     cd45 	CD39     cd47 	CD52     cd60 	
+CD54     cd62 	CD5F     cd6d 	CD61     cd6f 	CD6A     cd78 	
+CD70     cd7e 	CD83     cd91 	CD8F     cd9d 	CD9D     cdab 	
+CDA6     cdb4 	CDB9     cdc7 	CDC4     cdd2 	CDCB     cdd9 	
+CDEE     cdfc 	CDF9     ce07 	CE04     ce12 	CE11     ce1f 	
+CE1A     ce28 	CE25     ce33 	CE34     ce42 	CE36     ce44 	
+CE3E     ce4c 	CE50     ce5e 	CE58     ce66 	CE5D     ce6b 	
+CE6F     ce7d 	CE78     ce86 	CE85     ce93 	CE8D     ce9b 	
+CE8F     ce9d 	CE9F     cead 	CEB3     cec1 	CEC5     ced3 	
+CECA     ced8 	CEE5     cef3 	CEEE     cefc 	CEEF     cefd 	
+Z80-Assembler	Release 1.9	Wed May 16 20:11:05 2018	Page 39
 Source file: rdos252.asm
 Title:       Symboltable
 
-CF00     cf0e	CF14     cf22	CF3A     cf48	CF40     cf4e	
-CF55     cf63	CF60     cf6e	CF90     cf9e	CF95     cfa3	
-CF98     cfa6	CF9B     cfa9	CFC6     cfd4	CFCF     cfdd	
-CFD6     cfe4	CFE1     cfef	CKCRY    cb84	CKESC    c12a	
-CKINST   cc84	CLDST    c03f	CLP1     c04f	CLP2     c052	
-CR       000d	CRLF     cca5	DELA     cff2	DELA1    cfff	
-DELA2    d000	DELA3    d003	ENDPTS   c817	ESC      001b	
-ESCLP    c09a	FNDEOL   c82c	GETSW    c067	GOMON    c13b	
-HXPA     c7ec	HXPHL    c7e7	INCHR    cc7a	INLP     c157	
-INPER    c1c0	LC2UC    c7d7	LOCTOK   c819	MSBON    0080	
-NG       cb8d	NOTDD    cfd0	NOTMX    cfca	PSPA     c7e0	
-PT7BA    c803	PTCHL    c80c	PTCHR    c7f5	PTFOL    c80b	
-PTNUM    c7fd	PTSPC    c801	RMCOM    c820	ROTLP    cfbd	
-SEKLP    ca01	SEKTAB   ca27	SETPAT   cbae	SETSEL   cfb6	
-SETURT   c24e	SPACE    0020	SQUOTE   0027	START    c000	
-TABLE    c18e	
+CF00     cf0e 	CF14     cf22 	CF3A     cf48 	CF40     cf4e 	
+CF55     cf63 	CF60     cf6e 	CF90     cf9e 	CF95     cfa3 	
+CF98     cfa6 	CF9B     cfa9 	CFC6     cfd4 	CFCF     cfdd 	
+CFD6     cfe4 	CFE1     cfef 	CKCRY    cb84 	CKESC    c12a 	
+CKINST   cc84 	CLDST    c03f 	CLP1     c04f 	CLP2     c052 	
+CR       000d 	CRLF     cca5 	DELA     cff2 	DELA1    cfff 	
+DELA2    d000 	DELA3    d003 	ENDPTS   c817 	ESC      001b 	
+ESCLP    c09a 	FNDEOL   c82c 	GETSW    c067 	GOMON    c13b 	
+HXPA     c7ec 	HXPHL    c7e7 	INCHR    cc7a 	INLP     c157 	
+INPER    c1c0 	LC2UC    c7d7 	LOCTOK   c819 	MSBON    0080 	
+NG       cb8d 	NOTDD    cfd0 	NOTMX    cfca 	PSPA     c7e0 	
+PT7BA    c803 	PTCHL    c80c 	PTCHR    c7f5 	PTFOL    c80b 	
+PTNUM    c7fd 	PTSPC    c801 	RMCOM    c820 	ROTLP    cfbd 	
+SEKLP    ca01 	SEKTAB   ca27 	SETPAT   cbae 	SETSEL   cfb6 	
+SETURT   c24e 	SPACE    0020 	SQUOTE   0027 	START    c000 	
+TABLE    c18e 	
