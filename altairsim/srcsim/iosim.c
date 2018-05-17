@@ -24,6 +24,7 @@
  * 22-MAR-17 connected SIO 2 to UNIX domain socket
  * 27-MAR-17 connected SIO 3 to UNIX domain socket
  * 24-APR-18 cleanup
+ * 17-MAY-18 improved hardware control
  */
 
 #include <unistd.h>
@@ -62,6 +63,7 @@ static BYTE io_no_card_in(void);
 
 static int printer;		/* fd for file "printer.txt" */
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
+BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every
@@ -196,7 +198,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 125 */
 	io_trap_in,		/* port 126 */
 	io_trap_in,		/* port 127 */
-	hwctl_in,		/* port 128 */ /* virtual hardware control */
+	io_trap_in,		/* port 128 */
 	io_trap_in,		/* port 129 */
 	io_trap_in,		/* port 130 */
 	io_trap_in,		/* port 131 */
@@ -228,7 +230,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 157 */
 	io_trap_in,		/* port 158 */
 	io_trap_in,		/* port 159 */
-	io_trap_in,		/* port 160 */
+	hwctl_in,		/* port 160 */	/* virtual hardware control */
 	io_trap_in,		/* port 161 */
 	io_trap_in,		/* port 162 */
 	io_trap_in,		/* port 163 */
@@ -459,7 +461,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 125 */
 	io_trap_out,		/* port 126 */
 	io_trap_out,		/* port 127 */
-	hwctl_out,		/* port 128 */	/* virtual hardware control */
+	io_trap_out,		/* port 128 */
 	io_trap_out,		/* port 129 */
 	io_trap_out,		/* port 130 */
 	io_trap_out,		/* port 131 */
@@ -491,7 +493,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 157 */
 	io_trap_out,		/* port 158 */
 	io_trap_out,		/* port 159 */
-	io_trap_out,		/* port 160 */
+	hwctl_out,		/* port 160 */	/* virtual hardware control */
 	io_trap_out,		/* port 161 */
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
@@ -753,13 +755,16 @@ static void int_timer(int sig)
 
 /*
  *	Input from virtual hardware control port
+ *	returns lock status of the port
  */
 static BYTE hwctl_in(void)
 {
-	return((BYTE) 0);
+	return(hwctl_lock);
 }
 
 /*
+ *	Port is locked until magic number 0xaa is received
+ *
  *	Virtual hardware control output.
  *	Doesn't exist in the real machine, used to shutdown
  *	and for RST 38H interrupts every 10ms.
@@ -773,7 +778,19 @@ static void hwctl_out(BYTE data)
 	static struct itimerval tim;
 	static struct sigaction newact;
 
-	if (data & 128) {
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+	
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
 		cpu_state = STOPPED;
 	}

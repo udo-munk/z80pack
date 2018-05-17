@@ -24,6 +24,7 @@
  * 13-MAR-17 can't examine/deposit if CPU running HALT instruction
  * 29-JUN-17 system reset overworked
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
+ * 17-MAY-18 improved hardware control
  */
 
 #include <X11/Xlib.h>
@@ -414,6 +415,7 @@ void wait_int_step(void)
 void reset_clicked(int state, int val)
 {
 	val = val;	/* to avoid compiler warning */
+	extern BYTE hwctl_lock;
 
 	if (!power)
 		return;
@@ -430,6 +432,7 @@ void reset_clicked(int state, int val)
 			/* reset I/O devices */
 			cromemco_dazzler_off();
 			tarbell_reset();
+			hwctl_lock = 0xff;
 
 			/* reset CPU */
 			reset = 0;

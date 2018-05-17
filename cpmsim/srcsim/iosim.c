@@ -52,6 +52,7 @@
  * 20-MAR-2017 renamed pipes for auxin/auxout
  * 29-JUN-2017 system reset overworked
  * 24-APR-2018 cleanup
+ * 17-MAY-2018 improved hardware control
  */
 
 /*
@@ -89,7 +90,6 @@
  *	26 - clock data
  *	27 - 10ms timer causing maskable interrupt
  *	28 - x * 10ms delay circuit for busy waiting loops
- *	29 - hardware control
  *	30 - CPU speed low
  *	31 - CPU speed high
  *
@@ -104,6 +104,8 @@
  *
  *	50 - client socket #1 status
  *	51 - client socket #1 data
+ *
+ *	160 - hardware control
  */
 
 #include <unistd.h>
@@ -160,8 +162,9 @@ static int driven;		/* fd for file "driven.dsk" */
 static int driveo;		/* fd for file "driveo.dsk" */
 static int drivep;		/* fd for file "drivep.dsk" */
 static int printer;		/* fd for file "printer.txt" */
-static int speed;		/* to reset CPU speed */
 static char fn[4096];		/* path/filename for disk images */
+static int speed;		/* to reset CPU speed */
+static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 
 #ifdef PIPES
 static int auxin;		/* fd for pipe "auxin" */
@@ -315,7 +318,7 @@ static BYTE (*port_in[256]) (void) = {
 	clkd_in,		/* port 26 */
 	time_in,		/* port 27 */
 	delay_in,		/* port 28 */
-	hwctl_in,		/* port 29 */
+	io_trap_in,		/* port 29 */
 	speedl_in,		/* port 30 */
 	speedh_in,		/* port 31 */
 	io_trap_in,		/* port 32 */
@@ -446,7 +449,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port	157 */
 	io_trap_in,		/* port	158 */
 	io_trap_in,		/* port	159 */
-	io_trap_in,		/* port	160 */
+	hwctl_in,		/* port	160 */
 	io_trap_in,		/* port	161 */
 	io_trap_in,		/* port	162 */
 	io_trap_in,		/* port	163 */
@@ -578,7 +581,7 @@ static void (*port_out[256]) (BYTE) = {
 	clkd_out,		/* port 26 */
 	time_out,		/* port 27 */
 	delay_out,		/* port 28 */
-	hwctl_out,		/* port 29 */
+	io_trap_out,		/* port 29 */
 	speedl_out,		/* port 30 */
 	speedh_out,		/* port 31 */
 	io_trap_out,		/* port 32 */
@@ -709,7 +712,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port	157 */
 	io_trap_out,		/* port	158 */
 	io_trap_out,		/* port	159 */
-	io_trap_out,		/* port	160 */
+	hwctl_out,		/* port	160 */
 	io_trap_out,		/* port	161 */
 	io_trap_out,		/* port	162 */
 	io_trap_out,		/* port	163 */
@@ -1087,6 +1090,9 @@ void reset_system(void)
 	}
 	selbnk = 0;
 	segsize = SEGSIZ;
+
+	/* lock hardware control port */
+	hwctl_lock = 0xff;
 
 	/* reset CPU */
 	reset_cpu();
@@ -2586,19 +2592,33 @@ static BYTE delay_in(void)
 }
 
 /*
- *	I/O handler for write hardware control:
- *	bit 0 = 1	reset CPU, MMU and reboot
+ *	Port is locked until magic number 0xaa is received!
+ *
+ *	I/O handler for write hardware control after unlocking:
+ *	bit 6 = 1	reset CPU, MMU and reboot
  *	bit 7 = 1	halt emulation via I/O
  */
 static void hwctl_out(BYTE data)
 {
-	if (data & 128) {
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+	
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
 		cpu_state = STOPPED;
 		return;
 	}
 
-	if (data & 1) {
+	if (data & 64) {	/* reset system */
 		reset_system();
 		return;
 	}
@@ -2606,11 +2626,11 @@ static void hwctl_out(BYTE data)
 
 /*
  *	I/O handler for read hardware control
- *	returns 0
+ *	returns lock status of the port
  */
 static BYTE hwctl_in(void)
 {
-	return((BYTE) 0);
+	return(hwctl_lock);
 }
 
 /*
