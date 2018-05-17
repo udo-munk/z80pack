@@ -763,7 +763,7 @@ static BYTE hwctl_in(void)
 }
 
 /*
- *	Port is locked until magic number 0xaa is received
+ *	Port is locked until magic number 0xaa is received!
  *
  *	Virtual hardware control output.
  *	Doesn't exist in the real machine, used to shutdown
