@@ -23,6 +23,7 @@
  * 15-AUG-17 modified index pulse handling
  * 22-APR-18 implemented TCP socket polling
  * 24-APR-18 cleanup
+ * 17-MAY-18 implemented hardware control
  */
 
 #include <pthread.h>
@@ -52,6 +53,8 @@ static BYTE io_trap_in(void);
 static void io_trap_out(BYTE);
 static BYTE fp_in(void), mmu_in(void);
 static void fp_out(BYTE), mmu_out(BYTE);
+static BYTE hwctl_in(void);
+static void hwctl_out(BYTE);
 
 /*
  *	Forward declarations for support functions
@@ -61,6 +64,8 @@ static void interrupt(int);
 
 static int rtc;			/* flag for 512ms RTC interrupt */
        int lpt1, lpt2;		/* fds for lpt printer files */
+
+BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /* network connections for serial ports on the TU-ART's */
 struct net_connectors ncons[NUMNSOC];
@@ -230,7 +235,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,			/* port 157 */
 	io_trap_in,			/* port 158 */
 	io_trap_in,			/* port 159 */
-	io_trap_in,			/* port 160 */
+	hwctl_in,			/* port 160 */
 	io_trap_in,			/* port 161 */
 	io_trap_in,			/* port 162 */
 	io_trap_in,			/* port 163 */
@@ -493,7 +498,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,			/* port 157 */
 	io_trap_out,			/* port 158 */
 	io_trap_out,			/* port 159 */
-	io_trap_out,			/* port 160 */
+	hwctl_out,			/* port 160 */
 	io_trap_out,			/* port 161 */
 	io_trap_out,			/* port 162 */
 	io_trap_out,			/* port 163 */
@@ -769,6 +774,43 @@ static BYTE fp_in(void)
 static void fp_out(BYTE data)
 {
 	fp_led_output = data;
+}
+
+/*
+ *	Input from virtual hardware control port
+ *	returns lock status of the port
+ */
+static BYTE hwctl_in(void)
+{
+	return(hwctl_lock);
+}
+
+/*
+ *	Port is locked until magic number 0xaa is received!
+ *
+ *	Virtual hardware control output.
+ *	Doesn't exist in the real machine, used to shutdown
+ *
+ *	bit 7 = 1       halt emulation via I/O
+ */
+static void hwctl_out(BYTE data)
+{
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+	
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
+		cpu_error = IOHALT;
+		cpu_state = STOPPED;
+	}
 }
 
 /*

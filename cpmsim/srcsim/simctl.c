@@ -143,6 +143,8 @@ void mon(void)
 		printf("\nUnknown error %d\n", cpu_error);
 		break;
 	}
+
+	putchar('\n');
 }
 
 /*
