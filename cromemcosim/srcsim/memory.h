@@ -47,15 +47,17 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
+	register BYTE data = *(memory[selbnk] + addr);
+
 	cpu_bus |= CPU_WO | CPU_MEMR;
 
 	fp_clock++;
 	fp_led_address = addr;
-	fp_led_data = *(memory[selbnk] + addr);
+	fp_led_data = data;
 	fp_sampleData();
 	wait_step();
 
-	return(*(memory[selbnk] + addr));
+	return(data);
 }
 
 /*
