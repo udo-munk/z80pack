@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of an IMSAI FIF S100 board
  *
@@ -24,6 +24,7 @@
  * 07-DEC-2016 added bus request for the DMA
  * 19-DEC-2016 use the new memory interface for DMA access
  * 22-JUN-2017 added reset function
+ * 19-MAY-2018 improved reset
  */
 
 #include <unistd.h>
@@ -68,6 +69,7 @@ static char *disks[4] = {
 };
 
 static char fn[4096];		/* path/filename for disk image */
+static int fdstate = 0;		/* state of the fd */
 
 /*
  * find and set path for disk images
@@ -96,7 +98,6 @@ BYTE imsai_fif_in(void)
 
 void imsai_fif_out(BYTE data)
 {
-	static int fdstate = 0;		/* state of the fd */
 	static int fdaddr[16];		/* address of disk descriptors */
 	static int descno;		/* descriptor # */
 
@@ -344,8 +345,9 @@ done:
 }
 
 /*
- * Reset FDC, placeholder for now, consult manual
+ * Reset FDC
  */
 void imsai_fif_reset(void)
 {
+	fdstate = 0;
 }

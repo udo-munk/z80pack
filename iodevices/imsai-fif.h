@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of an IMSAI FIF S100 board
  *
@@ -20,6 +20,7 @@
  * 07-DEC-2016 added bus request for the DMA
  * 19-DEC-2016 use the new memory interface for DMA access
  * 22-JUN-2017 added reset function
+ * 19-MAY-2018 improved reset
  */
 
 extern BYTE imsai_fif_in(void);
