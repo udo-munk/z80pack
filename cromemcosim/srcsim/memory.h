@@ -1,13 +1,14 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2017 by Udo Munk
+ * Copyright (C) 2016-2018 by Udo Munk
  *
  * This module implements memory management for a Cromemco Z-1 system
  *
  * History:
  * 22-NOV-16 stuff moved to here and implemented as inline functions
  * 03-FEB-17 added ROM initialisation
+ * 18-MAY-18 optimization
  */
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */
