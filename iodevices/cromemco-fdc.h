@@ -28,6 +28,7 @@
  * 15-AUG-2017 and more fixes for index pulse
  * 22-AUG-2017 provide write protect and track 0 bits for all commands
  * 23-APR-2018 cleanup
+ * 20-MAY-2018 improved reset
  */
 
 /*
