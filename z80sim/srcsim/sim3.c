@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -785,8 +785,10 @@ static int op_ldxdn(void)		/* LD (IX+d),n */
 
 static int op_undoc_ldaixl(void)	/* LD A,IXL */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	A = IX & 0xff;
 	return(8);
@@ -794,8 +796,10 @@ static int op_undoc_ldaixl(void)	/* LD A,IXL */
 
 static int op_undoc_ldaixh(void)	/* LD A,IXH */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	A = IX >> 8;
 	return(8);
@@ -803,8 +807,10 @@ static int op_undoc_ldaixh(void)	/* LD A,IXH */
 
 static int op_undoc_ldcixh(void)	/* LD C,IXH */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	C = IX >> 8;
 	return(8);
@@ -812,8 +818,10 @@ static int op_undoc_ldcixh(void)	/* LD C,IXH */
 
 static int op_undoc_lddixl(void)	/* LD D,IXL */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	D = IX & 0xff;
 	return(8);
@@ -821,8 +829,10 @@ static int op_undoc_lddixl(void)	/* LD D,IXL */
 
 static int op_undoc_ldixha(void)	/* LD IXH,A */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	IX = (IX & 0x00ff) | (A << 8);
 	return(8);
@@ -830,8 +840,10 @@ static int op_undoc_ldixha(void)	/* LD IXH,A */
 
 static int op_undoc_ldixhc(void)	/* LD IXH,C */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	IX = (IX & 0x00ff) | (C << 8);
 	return(8);
@@ -839,8 +851,10 @@ static int op_undoc_ldixhc(void)	/* LD IXH,C */
 
 static int op_undoc_ldixla(void)	/* LD IXL,A */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	IX = (IX & 0xff00) | A;
 	return(8);
@@ -848,8 +862,10 @@ static int op_undoc_ldixla(void)	/* LD IXL,A */
 
 static int op_undoc_ldixlc(void)	/* LD IXL,C */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	IX = (IX & 0xff00) | C;
 	return(8);
@@ -857,8 +873,10 @@ static int op_undoc_ldixlc(void)	/* LD IXL,C */
 
 static int op_undoc_ldixld(void)	/* LD IXL,D */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	IX = (IX & 0xff00) | D;
 	return(8);
@@ -869,8 +887,10 @@ static int op_undoc_cpixl(void)		/* CP IXL */
 	register int i;
 	register BYTE P;
 
-	if (u_flag)
+	if (u_flag) {
 		trap_dd();
+		return(0);
+	}
 
 	P = IX & 0xff;
 	((P & 0xf) > (A	& 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -887,6 +907,11 @@ static int op_undoc_acaixl(void)	/* ADC A,IXL */
 {
 	register int i, carry;
 	register BYTE P;
+
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX & 0xff;
@@ -905,6 +930,11 @@ static int op_undoc_acaixh(void)	/* ADC A,IXH */
 	register int i, carry;
 	register BYTE P;
 
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX >> 8;
 	((A & 0xf) + (P	& 0xf) + carry > 0xf) ?	(F |= H_FLAG) : (F &= ~H_FLAG);
@@ -921,6 +951,11 @@ static int op_undoc_scaixl(void)	/* SBC A,IXL */
 {
 	register int i, carry;
 	register BYTE P;
+
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX & 0xff;
@@ -939,6 +974,11 @@ static int op_undoc_scaixh(void)	/* SBC A,IXH */
 	register int i, carry;
 	register BYTE P;
 
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX >> 8;
 	((P & 0xf) + carry > (A	& 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -953,6 +993,11 @@ static int op_undoc_scaixh(void)	/* SBC A,IXH */
 
 static int op_undoc_oraixl(void)	/* OR IXL */
 {
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
 	A |= IX & 0xff;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -963,6 +1008,11 @@ static int op_undoc_oraixl(void)	/* OR IXL */
 
 static int op_undoc_oraixh(void)	/* OR IXH */
 {
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
 	A |= IX >> 8;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -973,6 +1023,11 @@ static int op_undoc_oraixh(void)	/* OR IXH */
 
 static int op_undoc_andixl(void)	/* AND IXL */
 {
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
 	A &= IX & 0xff;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -984,6 +1039,11 @@ static int op_undoc_andixl(void)	/* AND IXL */
 
 static int op_undoc_andixh(void)	/* AND IXH */
 {
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
 	A &= IX >> 8;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -996,6 +1056,11 @@ static int op_undoc_andixh(void)	/* AND IXH */
 static int op_undoc_incixl(void)	/* INC IXL */
 {
 	register BYTE P;
+
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
 
 	P = IX & 0xff;
 	P++;
@@ -1011,6 +1076,11 @@ static int op_undoc_incixl(void)	/* INC IXL */
 static int op_undoc_incixh(void)	/* INC IXH */
 {
 	register BYTE P;
+
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
 
 	P = IX >> 8;
 	P++;

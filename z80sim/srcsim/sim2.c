@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -2587,8 +2587,10 @@ static int op_tb7hl(void)		/* BIT 7,(HL) */
 
 static int op_undoc_slla(void)		/* SLL A */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	(A & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A << 1 | 1;
@@ -2601,8 +2603,10 @@ static int op_undoc_slla(void)		/* SLL A */
 
 static int op_undoc_sllb(void)		/* SLL B */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	(B & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	B = B << 1 | 1;
@@ -2615,8 +2619,10 @@ static int op_undoc_sllb(void)		/* SLL B */
 
 static int op_undoc_sllc(void)		/* SLL C */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	(C & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	C = C << 1 | 1;
@@ -2629,8 +2635,10 @@ static int op_undoc_sllc(void)		/* SLL C */
 
 static int op_undoc_slld(void)		/* SLL D */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	(D & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	D = D << 1 | 1;
@@ -2643,8 +2651,10 @@ static int op_undoc_slld(void)		/* SLL D */
 
 static int op_undoc_slle(void)		/* SLL E */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	(E & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	E = E << 1 | 1;
@@ -2657,8 +2667,10 @@ static int op_undoc_slle(void)		/* SLL E */
 
 static int op_undoc_sllh(void)		/* SLL H */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	(H & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	H = H << 1 | 1;
@@ -2671,8 +2683,10 @@ static int op_undoc_sllh(void)		/* SLL H */
 
 static int op_undoc_slll(void)		/* SLL L */
 {
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	(L & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	L = L << 1 | 1;
@@ -2688,8 +2702,10 @@ static int op_undoc_sllhl(void)		/* SLL (HL) */
 	register BYTE P;
 	WORD addr;
 
-	if (u_flag)
+	if (u_flag) {
 		trap_cb();
+		return(0);
+	}
 
 	addr = (H << 8) + L;
 	P = memrdr(addr);
