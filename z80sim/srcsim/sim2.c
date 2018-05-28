@@ -420,7 +420,7 @@ int op_cb_handel(void)
 }
 
 /*
- *	This function traps all illegal opcodes following the
+ *	This function traps undocumented opcodes following the
  *	initial 0xcb of a multi byte opcode.
  */
 static int trap_cb(void)

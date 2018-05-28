@@ -377,7 +377,7 @@ long op_dd_handel(void)
 }
 
 /*
- *	This function traps all illegal opcodes following the
+ *	This function traps undocumented opcodes following the
  *	initial 0xdd of a multi byte opcode.
  */
 static int trap_dd(void)

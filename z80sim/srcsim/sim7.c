@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -338,7 +338,7 @@ int op_fdcb_handel(void)
 }
 
 /*
- *	This function traps all illegal opcodes following the
+ *	This function traps undocumented opcodes following the
  *	initial 0xfd 0xcb of a 4 byte opcode.
  */
 static int trap_fdcb(void)
