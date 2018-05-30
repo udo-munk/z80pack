@@ -57,6 +57,12 @@
 #endif
 #include "memory.h"
 
+#ifdef Z80_UNDOC
+	#define UNDOC(f) f
+#else
+	#define UNDOC(f) trap_dd
+#endif
+
 static int trap_fd(void);
 static int op_popiy(void), op_pusiy(void);
 static int op_jpiy(void);
@@ -77,6 +83,10 @@ static int op_ldyda(void), op_ldydb(void), op_ldydc(void);
 static int op_ldydd(void), op_ldyde(void);
 static int op_ldydh(void), op_ldydl(void), op_ldydn(void);
 extern int op_fdcb_handel(void);
+
+#ifdef Z80_UNDOC
+static int op_undoc_ldiyhn(void), op_undoc_ldiyln(void);
+#endif
 
 int op_fd_handel(void)
 {
@@ -121,7 +131,7 @@ int op_fd_handel(void)
 		op_inciy,			/* 0x23 */
 		trap_fd,			/* 0x24 */
 		trap_fd,			/* 0x25 */
-		trap_fd,			/* 0x26 */
+		UNDOC(op_undoc_ldiyhn),		/* 0x26 */
 		trap_fd,			/* 0x27 */
 		trap_fd,			/* 0x28 */
 		op_addyy,			/* 0x29 */
@@ -129,7 +139,7 @@ int op_fd_handel(void)
 		op_deciy,			/* 0x2b */
 		trap_fd,			/* 0x2c */
 		trap_fd,			/* 0x2d */
-		trap_fd,			/* 0x2e */
+		UNDOC(op_undoc_ldiyln),		/* 0x2e */
 		trap_fd,			/* 0x2f */
 		trap_fd,			/* 0x30 */
 		trap_fd,			/* 0x31 */
@@ -755,3 +765,35 @@ static int op_ldydn(void)		/* LD (IY+d),n */
 	memwrt(IY + d, memrdr(PC++));
 	return(19);
 }
+
+/**********************************************************************/
+/**********************************************************************/
+/*********       UNDOCUMENTED Z80 INSTRUCTIONS, BEWARE!      **********/
+/**********************************************************************/
+/**********************************************************************/
+
+#ifdef Z80_UNDOC
+
+static int op_undoc_ldiyhn(void)	/* LD IYH,n */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0x00ff) | (memrdr(PC++) << 8);
+	return(11);
+}
+
+static int op_undoc_ldiyln(void)	/* LD IYL,n */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0xff00) | memrdr(PC++);
+	return(11);
+}
+
+#endif

@@ -83,6 +83,7 @@ static int op_ldxdh(void), op_ldxdl(void), op_ldxdn(void);
 extern int op_ddcb_handel(void);
 
 #ifdef Z80_UNDOC
+static int op_undoc_ldixhn(void), op_undoc_ldixln(void);
 static int op_undoc_ldcixh(void);
 static int op_undoc_lddixl(void);
 static int op_undoc_ldixlc(void), op_undoc_ldixld(void);
@@ -140,7 +141,7 @@ long op_dd_handel(void)
 		op_incix,			/* 0x23 */
 		UNDOC(op_undoc_incixh),		/* 0x24 */
 		trap_dd,			/* 0x25 */
-		trap_dd,			/* 0x26 */
+		UNDOC(op_undoc_ldixhn),		/* 0x26 */
 		trap_dd,			/* 0x27 */
 		trap_dd,			/* 0x28 */
 		op_addxx,			/* 0x29 */
@@ -148,7 +149,7 @@ long op_dd_handel(void)
 		op_decix,			/* 0x2b */
 		UNDOC(op_undoc_incixl),		/* 0x2c */
 		trap_dd,			/* 0x2d */
-		trap_dd,			/* 0x2e */
+		UNDOC(op_undoc_ldixln),		/* 0x2e */
 		trap_dd,			/* 0x2f */
 		trap_dd,			/* 0x30 */
 		trap_dd,			/* 0x31 */
@@ -782,6 +783,28 @@ static int op_ldxdn(void)		/* LD (IX+d),n */
 /**********************************************************************/
 
 #ifdef Z80_UNDOC
+
+static int op_undoc_ldixhn(void)	/* LD IXH,n */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (memrdr(PC++) << 8);
+	return(11);
+}
+
+static int op_undoc_ldixln(void)	/* LD IXL,n */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0xff00) | memrdr(PC++);
+	return(11);
+}
 
 static int op_undoc_ldaixl(void)	/* LD A,IXL */
 {
