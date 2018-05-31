@@ -86,6 +86,8 @@ extern int op_fdcb_handel(void);
 
 #ifdef Z80_UNDOC
 static int op_undoc_ldiyhn(void), op_undoc_ldiyln(void);
+static int op_undoc_inciyl(void), op_undoc_inciyh(void);
+static int op_undoc_deciyl(void), op_undoc_deciyh(void);
 #endif
 
 int op_fd_handel(void)
@@ -129,16 +131,16 @@ int op_fd_handel(void)
 		op_ldiynn,			/* 0x21 */
 		op_ldiny,			/* 0x22 */
 		op_inciy,			/* 0x23 */
-		trap_fd,			/* 0x24 */
-		trap_fd,			/* 0x25 */
+		UNDOC(op_undoc_inciyh),		/* 0x24 */
+		UNDOC(op_undoc_deciyh),		/* 0x25 */
 		UNDOC(op_undoc_ldiyhn),		/* 0x26 */
 		trap_fd,			/* 0x27 */
 		trap_fd,			/* 0x28 */
 		op_addyy,			/* 0x29 */
 		op_ldiyinn,			/* 0x2a */
 		op_deciy,			/* 0x2b */
-		trap_fd,			/* 0x2c */
-		trap_fd,			/* 0x2d */
+		UNDOC(op_undoc_inciyl),		/* 0x2c */
+		UNDOC(op_undoc_deciyl),		/* 0x2d */
 		UNDOC(op_undoc_ldiyln),		/* 0x2e */
 		trap_fd,			/* 0x2f */
 		trap_fd,			/* 0x30 */
@@ -794,6 +796,86 @@ static int op_undoc_ldiyln(void)	/* LD IYL,n */
 
 	IY = (IY & 0xff00) | memrdr(PC++);
 	return(11);
+}
+
+static int op_undoc_inciyl(void)	/* INC IYL */
+{
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY & 0xff;
+	P++;
+	IY = (IY & 0xff00) | P;
+	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F &= ~N_FLAG;
+	return(8);
+}
+
+static int op_undoc_inciyh(void)	/* INC IYH */
+{
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY >> 8;
+	P++;
+	IY = (IY & 0x00ff) | (P << 8);
+	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F &= ~N_FLAG;
+	return(8);
+}
+
+static int op_undoc_deciyl(void)	/* DEC IYL */
+{
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY & 0xff;
+	P--;
+	IY = (IY & 0xff00) | P;
+	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P == 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
+}
+
+static int op_undoc_deciyh(void)	/* DEC IYH */
+{
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY >> 8;
+	P--;
+	IY = (IY & 0x00ff) | (P << 8);
+	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P == 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
 }
 
 #endif
