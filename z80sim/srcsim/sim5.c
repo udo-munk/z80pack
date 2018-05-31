@@ -60,7 +60,7 @@
 #ifdef Z80_UNDOC
 	#define UNDOC(f) f
 #else
-	#define UNDOC(f) trap_dd
+	#define UNDOC(f) trap_fd
 #endif
 
 static int trap_fd(void);
