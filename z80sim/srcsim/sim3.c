@@ -83,13 +83,19 @@ static int op_ldxdh(void), op_ldxdl(void), op_ldxdn(void);
 extern int op_ddcb_handel(void);
 
 #ifdef Z80_UNDOC
-static int op_undoc_ldixhn(void), op_undoc_ldixln(void);
-static int op_undoc_ldcixh(void);
-static int op_undoc_lddixl(void);
-static int op_undoc_ldixlc(void), op_undoc_ldixld(void);
-static int op_undoc_ldixha(void), op_undoc_ldixla(void);
-static int op_undoc_ldixhc(void);
 static int op_undoc_ldaixl(void), op_undoc_ldaixh(void);
+static int op_undoc_ldbixl(void), op_undoc_ldbixh(void);
+static int op_undoc_ldcixl(void), op_undoc_ldcixh(void);
+static int op_undoc_lddixl(void), op_undoc_lddixh(void);
+static int op_undoc_ldeixl(void), op_undoc_ldeixh(void);
+static int op_undoc_ldixha(void), op_undoc_ldixla(void);
+static int op_undoc_ldixhb(void), op_undoc_ldixlb(void);
+static int op_undoc_ldixhc(void), op_undoc_ldixlc(void);
+static int op_undoc_ldixhd(void), op_undoc_ldixld(void);
+static int op_undoc_ldixhe(void), op_undoc_ldixle(void);
+static int op_undoc_ldixhixh(void), op_undoc_ldixlixh(void);
+static int op_undoc_ldixhixl(void), op_undoc_ldixlixl(void);
+static int op_undoc_ldixhn(void), op_undoc_ldixln(void);
 static int op_undoc_cpixl(void);
 static int op_undoc_acaixl(void), op_undoc_acaixh(void);
 static int op_undoc_scaixl(void), op_undoc_scaixh(void);
@@ -172,8 +178,8 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x41 */
 		trap_dd,			/* 0x42 */
 		trap_dd,			/* 0x43 */
-		trap_dd,			/* 0x44 */
-		trap_dd,			/* 0x45 */
+		UNDOC(op_undoc_ldbixh),		/* 0x44 */
+		UNDOC(op_undoc_ldbixl),		/* 0x45 */
 		op_ldbxd,			/* 0x46 */
 		trap_dd,			/* 0x47 */
 		trap_dd,			/* 0x48 */
@@ -181,14 +187,14 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x4a */
 		trap_dd,			/* 0x4b */
 		UNDOC(op_undoc_ldcixh),		/* 0x4c */
-		trap_dd,			/* 0x4d */
+		UNDOC(op_undoc_ldcixl),		/* 0x4d */
 		op_ldcxd,			/* 0x4e */
 		trap_dd,			/* 0x4f */
 		trap_dd,			/* 0x50 */
 		trap_dd,			/* 0x51 */
 		trap_dd,			/* 0x52 */
 		trap_dd,			/* 0x53 */
-		trap_dd,			/* 0x54 */
+		UNDOC(op_undoc_lddixh),		/* 0x54 */
 		UNDOC(op_undoc_lddixl),		/* 0x55 */
 		op_lddxd,			/* 0x56 */
 		trap_dd,			/* 0x57 */
@@ -196,24 +202,24 @@ long op_dd_handel(void)
 		trap_dd,			/* 0x59 */
 		trap_dd,			/* 0x5a */
 		trap_dd,			/* 0x5b */
-		trap_dd,			/* 0x5c */
-		trap_dd,			/* 0x5d */
+		UNDOC(op_undoc_ldeixh),		/* 0x5c */
+		UNDOC(op_undoc_ldeixl),		/* 0x5d */
 		op_ldexd,			/* 0x5e */
 		trap_dd,			/* 0x5f */
-		trap_dd,			/* 0x60 */
+		UNDOC(op_undoc_ldixhb),		/* 0x60 */
 		UNDOC(op_undoc_ldixhc),		/* 0x61 */
-		trap_dd,			/* 0x62 */
-		trap_dd,			/* 0x63 */
-		trap_dd,			/* 0x64 */
-		trap_dd,			/* 0x65 */
+		UNDOC(op_undoc_ldixhd),		/* 0x62 */
+		UNDOC(op_undoc_ldixhe),		/* 0x63 */
+		UNDOC(op_undoc_ldixhixh),	/* 0x64 */
+		UNDOC(op_undoc_ldixhixl),	/* 0x65 */
 		op_ldhxd,			/* 0x66 */
 		UNDOC(op_undoc_ldixha),		/* 0x67 */
-		trap_dd,			/* 0x68 */
+		UNDOC(op_undoc_ldixlb),		/* 0x68 */
 		UNDOC(op_undoc_ldixlc),		/* 0x69 */
 		UNDOC(op_undoc_ldixld),		/* 0x6a */
-		trap_dd,			/* 0x6b */
-		trap_dd,			/* 0x6c */
-		trap_dd,			/* 0x6d */
+		UNDOC(op_undoc_ldixle),		/* 0x6b */
+		UNDOC(op_undoc_ldixlixh),	/* 0x6c */
+		UNDOC(op_undoc_ldixlixl),	/* 0x6d */
 		op_ldlxd,			/* 0x6e */
 		UNDOC(op_undoc_ldixla),		/* 0x6f */
 		op_ldxdb,			/* 0x70 */
@@ -785,28 +791,6 @@ static int op_ldxdn(void)		/* LD (IX+d),n */
 
 #ifdef Z80_UNDOC
 
-static int op_undoc_ldixhn(void)	/* LD IXH,n */
-{
-	if (u_flag) {
-		trap_dd();
-		return(0);
-	}
-
-	IX = (IX & 0x00ff) | (memrdr(PC++) << 8);
-	return(11);
-}
-
-static int op_undoc_ldixln(void)	/* LD IXL,n */
-{
-	if (u_flag) {
-		trap_dd();
-		return(0);
-	}
-
-	IX = (IX & 0xff00) | memrdr(PC++);
-	return(11);
-}
-
 static int op_undoc_ldaixl(void)	/* LD A,IXL */
 {
 	if (u_flag) {
@@ -826,6 +810,39 @@ static int op_undoc_ldaixh(void)	/* LD A,IXH */
 	}
 
 	A = IX >> 8;
+	return(8);
+}
+
+static int op_undoc_ldbixl(void)	/* LD B,IXL */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	B = IX & 0xff;
+	return(8);
+}
+
+static int op_undoc_ldbixh(void)	/* LD B,IXH */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	B = IX >> 8;
+	return(8);
+}
+
+static int op_undoc_ldcixl(void)	/* LD C,IXL */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	C = IX & 0xff;
 	return(8);
 }
 
@@ -851,25 +868,36 @@ static int op_undoc_lddixl(void)	/* LD D,IXL */
 	return(8);
 }
 
-static int op_undoc_ldixha(void)	/* LD IXH,A */
+static int op_undoc_lddixh(void)	/* LD D,IXH */
 {
 	if (u_flag) {
 		trap_dd();
 		return(0);
 	}
 
-	IX = (IX & 0x00ff) | (A << 8);
+	D = IX >> 8;
 	return(8);
 }
 
-static int op_undoc_ldixhc(void)	/* LD IXH,C */
+static int op_undoc_ldeixl(void)	/* LD E,IXL */
 {
 	if (u_flag) {
 		trap_dd();
 		return(0);
 	}
 
-	IX = (IX & 0x00ff) | (C << 8);
+	E = IX & 0xff;
+	return(8);
+}
+
+static int op_undoc_ldeixh(void)	/* LD E,IXH */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	E = IX >> 8;
 	return(8);
 }
 
@@ -884,6 +912,39 @@ static int op_undoc_ldixla(void)	/* LD IXL,A */
 	return(8);
 }
 
+static int op_undoc_ldixha(void)	/* LD IXH,A */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (A << 8);
+	return(8);
+}
+
+static int op_undoc_ldixlb(void)	/* LD IXL,B */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0xff00) | B;
+	return(8);
+}
+
+static int op_undoc_ldixhb(void)	/* LD IXH,B */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (B << 8);
+	return(8);
+}
+
 static int op_undoc_ldixlc(void)	/* LD IXL,C */
 {
 	if (u_flag) {
@@ -892,6 +953,17 @@ static int op_undoc_ldixlc(void)	/* LD IXL,C */
 	}
 
 	IX = (IX & 0xff00) | C;
+	return(8);
+}
+
+static int op_undoc_ldixhc(void)	/* LD IXH,C */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (C << 8);
 	return(8);
 }
 
@@ -904,6 +976,103 @@ static int op_undoc_ldixld(void)	/* LD IXL,D */
 
 	IX = (IX & 0xff00) | D;
 	return(8);
+}
+
+static int op_undoc_ldixhd(void)	/* LD IXH,D */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (D << 8);
+	return(8);
+}
+
+static int op_undoc_ldixle(void)	/* LD IXL,E */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0xff00) | E;
+	return(8);
+}
+
+static int op_undoc_ldixhe(void)	/* LD IXH,E */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (E << 8);
+	return(8);
+}
+
+static int op_undoc_ldixlixh(void)	/* LD IXL,IXH */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0xff00) | (IX >> 8);
+	return(8);
+}
+
+static int op_undoc_ldixhixh(void)	/* LD IXH,IXH */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	return(8);
+}
+
+static int op_undoc_ldixlixl(void)	/* LD IXL,IXL */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	return(8);
+}
+
+static int op_undoc_ldixhixl(void)	/* LD IXH,IXL */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (IX << 8);
+	return(8);
+}
+
+static int op_undoc_ldixhn(void)	/* LD IXH,n */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0x00ff) | (memrdr(PC++) << 8);
+	return(11);
+}
+
+static int op_undoc_ldixln(void)	/* LD IXL,n */
+{
+	if (u_flag) {
+		trap_dd();
+		return(0);
+	}
+
+	IX = (IX & 0xff00) | memrdr(PC++);
+	return(11);
 }
 
 static int op_undoc_cpixl(void)		/* CP IXL */

@@ -85,6 +85,18 @@ static int op_ldydh(void), op_ldydl(void), op_ldydn(void);
 extern int op_fdcb_handel(void);
 
 #ifdef Z80_UNDOC
+static int op_undoc_ldaiyl(void), op_undoc_ldaiyh(void);
+static int op_undoc_ldbiyl(void), op_undoc_ldbiyh(void);
+static int op_undoc_ldciyl(void), op_undoc_ldciyh(void);
+static int op_undoc_lddiyl(void), op_undoc_lddiyh(void);
+static int op_undoc_ldeiyl(void), op_undoc_ldeiyh(void);
+static int op_undoc_ldiyha(void), op_undoc_ldiyla(void);
+static int op_undoc_ldiyhb(void), op_undoc_ldiylb(void);
+static int op_undoc_ldiyhc(void), op_undoc_ldiylc(void);;
+static int op_undoc_ldiyhd(void), op_undoc_ldiyld(void);
+static int op_undoc_ldiyhe(void), op_undoc_ldiyle(void);
+static int op_undoc_ldiyhiyh(void), op_undoc_ldiyliyh(void);
+static int op_undoc_ldiyhiyl(void), op_undoc_ldiyliyl(void);
 static int op_undoc_ldiyhn(void), op_undoc_ldiyln(void);
 static int op_undoc_inciyl(void), op_undoc_inciyh(void);
 static int op_undoc_deciyl(void), op_undoc_deciyh(void);
@@ -163,50 +175,50 @@ int op_fd_handel(void)
 		trap_fd,			/* 0x41 */
 		trap_fd,			/* 0x42 */
 		trap_fd,			/* 0x43 */
-		trap_fd,			/* 0x44 */
-		trap_fd,			/* 0x45 */
+		UNDOC(op_undoc_ldbiyh),		/* 0x44 */
+		UNDOC(op_undoc_ldbiyl),		/* 0x45 */
 		op_ldbyd,			/* 0x46 */
 		trap_fd,			/* 0x47 */
 		trap_fd,			/* 0x48 */
 		trap_fd,			/* 0x49 */
 		trap_fd,			/* 0x4a */
 		trap_fd,			/* 0x4b */
-		trap_fd,			/* 0x4c */
-		trap_fd,			/* 0x4d */
+		UNDOC(op_undoc_ldciyh),		/* 0x4c */
+		UNDOC(op_undoc_ldciyl),		/* 0x4d */
 		op_ldcyd,			/* 0x4e */
 		trap_fd,			/* 0x4f */
 		trap_fd,			/* 0x50 */
 		trap_fd,			/* 0x51 */
 		trap_fd,			/* 0x52 */
 		trap_fd,			/* 0x53 */
-		trap_fd,			/* 0x54 */
-		trap_fd,			/* 0x55 */
+		UNDOC(op_undoc_lddiyh),		/* 0x54 */
+		UNDOC(op_undoc_lddiyl),		/* 0x55 */
 		op_lddyd,			/* 0x56 */
 		trap_fd,			/* 0x57 */
 		trap_fd,			/* 0x58 */
 		trap_fd,			/* 0x59 */
 		trap_fd,			/* 0x5a */
 		trap_fd,			/* 0x5b */
-		trap_fd,			/* 0x5c */
-		trap_fd,			/* 0x5d */
+		UNDOC(op_undoc_ldeiyh),		/* 0x5c */
+		UNDOC(op_undoc_ldeiyl),		/* 0x5d */
 		op_ldeyd,			/* 0x5e */
 		trap_fd,			/* 0x5f */
-		trap_fd,			/* 0x60 */
-		trap_fd,			/* 0x61 */
-		trap_fd,			/* 0x62 */
-		trap_fd,			/* 0x63 */
-		trap_fd,			/* 0x64 */
-		trap_fd,			/* 0x65 */
+		UNDOC(op_undoc_ldiyhb),		/* 0x60 */
+		UNDOC(op_undoc_ldiyhc),		/* 0x61 */
+		UNDOC(op_undoc_ldiyhd),		/* 0x62 */
+		UNDOC(op_undoc_ldiyhe),		/* 0x63 */
+		UNDOC(op_undoc_ldiyhiyh),	/* 0x64 */
+		UNDOC(op_undoc_ldiyhiyl),	/* 0x65 */
 		op_ldhyd,			/* 0x66 */
-		trap_fd,			/* 0x67 */
-		trap_fd,			/* 0x68 */
-		trap_fd,			/* 0x69 */
-		trap_fd,			/* 0x6a */
-		trap_fd,			/* 0x6b */
-		trap_fd,			/* 0x6c */
-		trap_fd,			/* 0x6d */
+		UNDOC(op_undoc_ldiyha),		/* 0x67 */
+		UNDOC(op_undoc_ldiylb),		/* 0x68 */
+		UNDOC(op_undoc_ldiylc),		/* 0x69 */
+		UNDOC(op_undoc_ldiyld),		/* 0x6a */
+		UNDOC(op_undoc_ldiyle),		/* 0x6b */
+		UNDOC(op_undoc_ldiyliyh),	/* 0x6c */
+		UNDOC(op_undoc_ldiyliyl),	/* 0x6d */
 		op_ldlyd,			/* 0x6e */
-		trap_fd,			/* 0x6f */
+		UNDOC(op_undoc_ldiyla),		/* 0x6f */
 		op_ldydb,			/* 0x70 */
 		op_ldydc,			/* 0x71 */
 		op_ldydd,			/* 0x72 */
@@ -219,8 +231,8 @@ int op_fd_handel(void)
 		trap_fd,			/* 0x79 */
 		trap_fd,			/* 0x7a */
 		trap_fd,			/* 0x7b */
-		trap_fd,			/* 0x7c */
-		trap_fd,			/* 0x7d */
+		UNDOC(op_undoc_ldaiyh),		/* 0x7c */
+		UNDOC(op_undoc_ldaiyl),		/* 0x7d */
 		op_ldayd,			/* 0x7e */
 		trap_fd,			/* 0x7f */
 		trap_fd,			/* 0x80 */
@@ -775,6 +787,268 @@ static int op_ldydn(void)		/* LD (IY+d),n */
 /**********************************************************************/
 
 #ifdef Z80_UNDOC
+
+static int op_undoc_ldaiyl(void)	/* LD A,IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A = IY & 0xff;
+	return(8);
+}
+
+static int op_undoc_ldaiyh(void)	/* LD A,IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A = IY >> 8;
+	return(8);
+}
+
+static int op_undoc_ldbiyl(void)	/* LD B,IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	B = IY & 0xff;
+	return(8);
+}
+
+static int op_undoc_ldbiyh(void)	/* LD B,IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	B = IY >> 8;
+	return(8);
+}
+
+static int op_undoc_ldciyl(void)	/* LD C,IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	C = IY & 0xff;
+	return(8);
+}
+
+static int op_undoc_ldciyh(void)	/* LD C,IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	C = IY >> 8;
+	return(8);
+}
+
+static int op_undoc_lddiyl(void)	/* LD D,IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	D = IY & 0xff;
+	return(8);
+}
+
+static int op_undoc_lddiyh(void)	/* LD D,IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	D = IY >> 8;
+	return(8);
+}
+
+static int op_undoc_ldeiyl(void)	/* LD E,IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	E = IY & 0xff;
+	return(8);
+}
+
+static int op_undoc_ldeiyh(void)	/* LD E,IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	E = IY >> 8;
+	return(8);
+}
+
+static int op_undoc_ldiyla(void)	/* LD IYL,A */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0xff00) | A;
+	return(8);
+}
+
+static int op_undoc_ldiyha(void)	/* LD IYH,A */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0x00ff) | (A << 8);
+	return(8);
+}
+
+static int op_undoc_ldiylb(void)	/* LD IYL,B */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0xff00) | B;
+	return(8);
+}
+
+static int op_undoc_ldiyhb(void)	/* LD IYH,B */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0x00ff) | (B << 8);
+	return(8);
+}
+
+static int op_undoc_ldiylc(void)	/* LD IYL,C */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0xff00) | C;
+	return(8);
+}
+
+static int op_undoc_ldiyhc(void)	/* LD IYH,C */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0x00ff) | (C << 8);
+	return(8);
+}
+
+static int op_undoc_ldiyld(void)	/* LD IYL,D */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0xff00) | D;
+	return(8);
+}
+
+static int op_undoc_ldiyhd(void)	/* LD IYH,D */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0x00ff) | (D << 8);
+	return(8);
+}
+
+static int op_undoc_ldiyle(void)	/* LD IYL,E */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0xff00) | E;
+	return(8);
+}
+
+static int op_undoc_ldiyhe(void)	/* LD IYH,E */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0x00ff) | (E << 8);
+	return(8);
+}
+
+static int op_undoc_ldiyliyh(void)	/* LD IYL,IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0xff00) | (IY >> 8);
+	return(8);
+}
+
+static int op_undoc_ldiyhiyh(void)	/* LD IYH,IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	return(8);
+}
+
+static int op_undoc_ldiyliyl(void)	/* LD IYL,IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	return(8);
+}
+
+static int op_undoc_ldiyhiyl(void)	/* LD IYH,IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	IY = (IY & 0x00ff) | (IY << 8);
+	return(8);
+}
 
 static int op_undoc_ldiyhn(void)	/* LD IYH,n */
 {
