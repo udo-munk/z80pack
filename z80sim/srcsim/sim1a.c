@@ -520,14 +520,6 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 
-#ifdef FRONTPANEL
-		/* update frontpanel */
-		fp_clock++;
-		fp_led_address = PC;
-		fp_led_data = dma_read(PC);
-		fp_sampleData();
-#endif
-
 		int_protection = 0;
 		states = (*op_sim[memrdr(PC++)]) (); /* execute next opcode */
 		t += states;
