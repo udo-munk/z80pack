@@ -71,8 +71,9 @@
 #define BUFSIZE	256		/* buffer size for file I/O */
 
 static void init_cpu(void);
-int load_core(void);
 static void save_core(void);
+int load_core(void);
+int load_file(char *);
 static int load_mos(int, char *), load_hex(char *), checksum(char *);
 extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
@@ -317,9 +318,13 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	init_rom();		/* initialise ROM's */
 
-	if (l_flag)		/* load core */
+	if (l_flag)	{			/* load core */
 		if (load_core())
 			return(1);
+	} else if (x_flag) { 	/* OR load memory from file */
+		if (load_file(xfn))
+			return(1);
+	}
 
 	int_on();		/* initialize UNIX interrupts */
 	init_io();		/* initialize I/O devices */
