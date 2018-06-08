@@ -36,6 +36,7 @@
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
+#include "memory.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -587,6 +588,10 @@ static void (*port_out[256]) (BYTE) = {
  */
 void init_io(void)
 {
+	/* initialise IMSAI VIO if firmware is loaded */
+	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3))
+		imsai_vio_init();
+
 }
 
 /*
@@ -604,6 +609,17 @@ void exit_io(void)
 
 	/* shutdown VIO */
 	imsai_vio_off();
+}
+
+/*
+ *	This function is to reset the I/O devices. It is
+ *	called from the CPU simulation when an External Clear is performed.
+ */
+void reset_io(void)
+{
+	cromemco_dazzler_off();
+	imsai_fif_reset();
+	hwctl_lock = 0xff;
 }
 
 /*

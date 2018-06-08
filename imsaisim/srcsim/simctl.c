@@ -30,18 +30,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <termios.h>
 #include <signal.h>
-#include <fcntl.h>
 #include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-#include "../../iodevices/imsai-fif.h"
-#include "../../iodevices/cromemco-dazzler.h"
-#include "../../iodevices/imsai-vio.h"
 #include "../../iodevices/unix_terminal.h"
 
 extern int load_file(char *);
@@ -71,10 +66,6 @@ void mon(void)
 {
 	static struct timespec timer;
 	static struct sigaction newact;
-
-	/* load memory from file */
-	if (load())
-		exit(1);
 
 	/* initialise front panel */
 	XInitThreads();
@@ -116,10 +107,6 @@ void mon(void)
 
 	/* initialise terminal */
 	set_unix_terminal();
-
-	/* initialise IMSAI VIO if firmware is loaded */
-	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3))
-		imsai_vio_init();
 
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
@@ -186,22 +173,6 @@ void mon(void)
 	sleep(1);
 
 	fp_quit();
-}
-
-/*
- *	Load code into memory from file, if provided
- */
-int load(void)
-{
-	if (l_flag) {
-		return(load_core());
-	}
-
-	if (x_flag) {
-		return(load_file(xfn));
-	}
-
-	return(0);
 }
 
 /*
@@ -402,18 +373,22 @@ void wait_int_step(void)
 	}
 }
 
+extern void reset_io(void);
 /*
  *	Callback for RESET switch
  */
 void reset_clicked(int state, int val)
 {
 	val = val;	/* to avoid compiler warning */
-	extern BYTE hwctl_lock;
 
 	if (!power)
 		return;
 
 	switch (state) {
+	case FP_SW_DOWN: // On the IMSAI8080 an External Clear also performs a Reset
+		/* reset I/O devices */
+		reset_io();
+		// break; Not required as an External Clear also performs a Reset
 	case FP_SW_UP:
 		reset = 1;
 		cpu_state |= RESET;
@@ -423,11 +398,6 @@ void reset_clicked(int state, int val)
 		break;
 	case FP_SW_CENTER:
 		if (reset) {
-			/* reset I/O devices */
-			cromemco_dazzler_off();
-			imsai_fif_reset();
-			hwctl_lock = 0xff;
-
 			/* reset CPU */
 			reset = 0;
 			reset_cpu();
@@ -438,9 +408,6 @@ void reset_clicked(int state, int val)
 			fp_led_data = dma_read(0);
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		}
-		break;
-	case FP_SW_DOWN:
-		cromemco_dazzler_off();
 		break;
 	default:
 		break;
