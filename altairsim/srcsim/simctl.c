@@ -41,13 +41,10 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-#include "../../iodevices/tarbell_fdc.h"
-#include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/unix_terminal.h"
 
-extern int load_file(char *);
-extern int load_core(void);
-extern void cpu_z80(void), cpu_8080(void), reset_cpu(void);
+extern void cpu_z80(void), cpu_8080(void);
+extern void reset_cpu(void), reset_io(void);
 
 static BYTE fp_led_wait;
 static int cpu_switch;
@@ -55,7 +52,6 @@ static int reset;
 static BYTE power_switch = 1;
 static int power;
 
-static int load(void);
 static void run_cpu(void), step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
@@ -75,10 +71,6 @@ void mon(void)
 {
 	static struct timespec timer;
 	static struct sigaction newact;
-
-	/*load memory from file */
-	if (load())
-		exit(1);
 
 	/* initialise frontpanel */
 	XInitThreads();
@@ -193,22 +185,6 @@ void mon(void)
 	sleep(1);
 
 	fp_quit();
-}
-
-/*
- *	Load code into memory from file, if provided
- */
-int load(void)
-{
-	if (l_flag) {
-		return(load_core());
-	}
-
-	if (x_flag) {
-		return(load_file(xfn));
-	}
-
-	return(0);
 }
 
 /*
@@ -415,13 +391,17 @@ void wait_int_step(void)
 void reset_clicked(int state, int val)
 {
 	val = val;	/* to avoid compiler warning */
-	extern BYTE hwctl_lock;
 
 	if (!power)
 		return;
 
 	switch (state) {
+	case FP_SW_DOWN:
+		/* reset I/O devices */
+		reset_io();
+		// break; fall through, External Clear also performs a Reset
 	case FP_SW_UP:
+		/* reset CPU */
 		reset = 1;
 		cpu_state |= RESET;
 		IFF = 0;
@@ -429,11 +409,6 @@ void reset_clicked(int state, int val)
 		break;
 	case FP_SW_CENTER:
 		if (reset) {
-			/* reset I/O devices */
-			cromemco_dazzler_off();
-			tarbell_reset();
-			hwctl_lock = 0xff;
-
 			/* reset CPU */
 			reset = 0;
 			reset_cpu();
@@ -448,9 +423,6 @@ void reset_clicked(int state, int val)
 				mem_wp = 0;
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		}
-		break;
-	case FP_SW_DOWN:
-		cromemco_dazzler_off();
 		break;
 	default:
 		break;

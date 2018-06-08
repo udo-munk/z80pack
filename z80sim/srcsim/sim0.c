@@ -318,7 +318,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	init_rom();		/* initialise ROM's */
 
-	if (l_flag)	{			/* load core */
+	if (l_flag)	{	/* load core */
 		if (load_core())
 			return(1);
 	} else if (x_flag) { 	/* OR load memory from file */

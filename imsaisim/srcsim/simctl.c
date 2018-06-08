@@ -39,16 +39,14 @@
 #include "memory.h"
 #include "../../iodevices/unix_terminal.h"
 
-extern int load_file(char *);
-extern int load_core(void);
-extern void cpu_z80(void), cpu_8080(void), reset_cpu(void);
+extern void cpu_z80(void), cpu_8080(void);
+extern void reset_cpu(void), reset_io(void);
 
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;
 static int power;
 
-static int load(void);
 static void run_cpu(void), step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
@@ -373,7 +371,6 @@ void wait_int_step(void)
 	}
 }
 
-extern void reset_io(void);
 /*
  *	Callback for RESET switch
  */
@@ -385,11 +382,12 @@ void reset_clicked(int state, int val)
 		return;
 
 	switch (state) {
-	case FP_SW_DOWN: // On the IMSAI8080 an External Clear also performs a Reset
+	case FP_SW_DOWN:
 		/* reset I/O devices */
 		reset_io();
-		// break; Not required as an External Clear also performs a Reset
+		// break; fall through, External Clear also performs a Reset
 	case FP_SW_UP:
+		/* reset CPU */
 		reset = 1;
 		cpu_state |= RESET;
 		m1_step = 0;

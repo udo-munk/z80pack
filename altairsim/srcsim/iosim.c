@@ -629,6 +629,17 @@ void exit_io(void)
 }
 
 /*
+ *	This function is to reset the I/O devices. It is
+ *	called from the CPU simulation when an External Clear is performed.
+ */
+void reset_io(void)
+{
+	cromemco_dazzler_off();
+	tarbell_reset();
+	hwctl_lock = 0xff;
+}
+
+/*
  *	This is the main handler for all IN op-codes,
  *	called by the simulator. It calls the input
  *	function for port addr.
