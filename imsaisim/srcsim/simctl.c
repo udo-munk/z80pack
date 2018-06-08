@@ -56,9 +56,8 @@ static void quit_callback(void);
 
 /*
  *	This function initialises the front panel and terminal.
- *	Boot code gets loaded if provided and then the machine
- *	waits to be operated from the front panel, until power
- *	switched OFF again.
+ *	Then the machine waits to be operated from the front panel,
+ *	until power switched OFF again.
  */
 void mon(void)
 {
