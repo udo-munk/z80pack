@@ -36,13 +36,10 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-#include "../../iodevices/cromemco-fdc.h"
-#include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/unix_terminal.h"
 
-extern int load_file(char *);
-extern int load_core(void);
-extern void cpu_z80(void), cpu_8080(void), reset_cpu(void);
+extern void cpu_z80(void), cpu_8080(void);
+extern void reset_cpu(void), reset_io(void);
 
 static BYTE fp_led_wait;
 static BYTE fp_led_speed;
@@ -50,7 +47,6 @@ static int cpu_switch;
 static int reset;
 static int power;
 
-static int load(void);
 static void run_cpu(void), step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
@@ -60,18 +56,14 @@ static void quit_callback(void);
 
 /*
  *	This function initialises the front panel and terminal.
- *	Boot code gets loaded if provided and then the machine
- *	waits to be operated from the front panel, until power
- *	switched OFF again.
+ *	Then the machine waits to be operated from the front panel,
+ *	until power switched OFF again.
  */
 void mon(void)
 {
 	static struct timespec timer;
 	static struct sigaction newact;
-
-	/* load memory from file */
-	if (load())
-		exit(1);
+	extern BYTE fdc_flags;
 
 	/* initialise front panel */
 	XInitThreads();
@@ -195,22 +187,6 @@ void mon(void)
 
 	/* shutdown frontpanel */
 	fp_quit();
-}
-
-/*
- *	Load code into memory from file, if provided
- */
-int load(void)
-{
-	if (l_flag) {
-		return(load_core());
-	}
-
-	if (x_flag) {
-		return(load_file(xfn));
-	}
-
-	return(0);
 }
 
 /*
@@ -415,7 +391,6 @@ void wait_int_step(void)
 void reset_clicked(int state, int val)
 {
 	val = val; /* to avoid compiler warning */
-	extern BYTE hwctl_lock;
 
 	if (!power)
 		return;
@@ -430,11 +405,6 @@ void reset_clicked(int state, int val)
 		break;
 	case FP_SW_CENTER:
 		if (reset) {
-			/* reset I/O devices */
-			cromemco_dazzler_off();
-			cromemco_fdc_reset();
-			hwctl_lock = 0xff;
-
 			/* reset CPU */
 			reset = 0;
 			reset_cpu();
@@ -447,7 +417,7 @@ void reset_clicked(int state, int val)
 		}
 		break;
 	case FP_SW_DOWN:
-		cromemco_dazzler_off();
+		reset_io(); // should probably reset CPU too, but not now
 		break;
 	default:
 		break;
