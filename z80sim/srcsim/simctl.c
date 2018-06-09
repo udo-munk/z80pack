@@ -110,10 +110,9 @@ void mon(void)
 
 	tcgetattr(0, &old_term);
 
-	if (x_flag) {
-		if (load_file(xfn) == 0)
-			do_go("");
-	}
+	if (x_flag)
+		do_go("");
+
 	while (eoj) {
 		next:
 		printf(">>> ");

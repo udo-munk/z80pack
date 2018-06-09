@@ -19,6 +19,7 @@
  * 11-JAN-17 implemented X11 keyboard input for VIO
  * 24-APR-18 cleanup
  * 17-MAY-18 improved hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
  */
 
 #include <unistd.h>

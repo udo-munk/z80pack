@@ -20,6 +20,7 @@
  * 29-JUN-17 system reset overworked
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 17-MAY-18 implemented hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
  */
 
 #include <X11/Xlib.h>

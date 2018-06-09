@@ -24,6 +24,7 @@
  * 22-APR-18 implemented TCP socket polling
  * 24-APR-18 cleanup
  * 17-MAY-18 implemented hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
  */
 
 #include <pthread.h>

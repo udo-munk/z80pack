@@ -25,6 +25,7 @@
  * 27-MAR-17 connected SIO 3 to UNIX domain socket
  * 24-APR-18 cleanup
  * 17-MAY-18 improved hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
  */
 
 #include <unistd.h>
