@@ -53,6 +53,7 @@
  * 29-JUN-2017 system reset overworked
  * 24-APR-2018 cleanup
  * 17-MAY-2018 improved hardware control
+ * 10-JUN-2018 modified boot code for early loading of files
  */
 
 /*
@@ -133,7 +134,7 @@
 #define MAX_BUSY_COUNT 10	/* max counter to detect I/O busy waiting
 				   on the console status port */
 
-extern int boot(void);
+extern int boot(int);
 extern void reset_cpu(void);
 
 static BYTE drive;		/* current drive A..P (0..15) */
@@ -1099,7 +1100,7 @@ void reset_system(void)
 	wrk_ram	= mem_base();
 
 	/* reboot */
-	boot();
+	boot(1);
 }
 
 /*

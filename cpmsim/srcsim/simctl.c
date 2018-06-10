@@ -56,10 +56,8 @@
 #include "memory.h"
 #include "../../iodevices/unix_terminal.h"
 
-int boot(void);
+int boot(int);
 
-extern int load_file(char *);
-extern int load_core(void);
 extern void cpu_z80(void), cpu_8080(void);
 extern struct dskdef disks[];
 
@@ -72,7 +70,7 @@ struct termios old_term, new_term;
 void mon(void)
 {
 	/* load boot code into memory */
-	if (boot())
+	if (boot(0))
 		exit(1);
 
 	/* empty buffer for teletype */
@@ -148,10 +146,10 @@ void mon(void)
 }
 
 /*
- *	Load boot code from a saved core image, a boot file or from
+ *	boot from a saved core image, a boot file or from
  *	first sector of disk drive A:
  */
-int boot(void)
+int boot(int level)
 {
 	register int fd;
 	struct stat sbuf;
@@ -160,13 +158,15 @@ int boot(void)
 
 	puts("\r\nBooting...\r\n");
 
-	if (l_flag) {
-		return(load_core());
+	/* on first boot we can run from core or file */
+	if (level == 0) {
+		if (l_flag)
+			return(0);
+		if (x_flag)
+			return(0);
 	}
 
-	if (x_flag) {
-		return(load_file(xfn));
-	}
+	/* else load boot code from disk */
 
 	/* if option -d is used disks are there */
 	if (diskdir != NULL) {
