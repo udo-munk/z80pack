@@ -26,6 +26,7 @@
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 17-MAY-18 improved hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 11-JUN-18 fixed reset so that cold and warm start works
  */
 
 #include <X11/Xlib.h>
@@ -396,12 +397,8 @@ void reset_clicked(int state, int val)
 		return;
 
 	switch (state) {
-	case FP_SW_DOWN:
-		/* reset I/O devices */
-		reset_io();
-		// break; fall through, External Clear also performs a Reset
 	case FP_SW_UP:
-		/* reset CPU */
+		/* reset CPU only */
 		reset = 1;
 		cpu_state |= RESET;
 		IFF = 0;
@@ -423,6 +420,14 @@ void reset_clicked(int state, int val)
 				mem_wp = 0;
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		}
+		break;
+	case FP_SW_DOWN:
+		/* reset CPU and I/O devices */
+		reset = 1;
+		cpu_state |= RESET;
+		IFF = 0;
+		m1_step = 0;
+		reset_io();
 		break;
 	default:
 		break;
