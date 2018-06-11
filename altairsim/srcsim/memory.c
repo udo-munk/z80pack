@@ -11,6 +11,7 @@
  * 13-JUN-2017 added Tarbell bootstrap ROM
  * 16-AUG-2017 overworked memrdr()
  * 07-MAY-2018 added memory configuratione needed by apple monitor
+ * 11-JUN-2018 fixed bug in Tarbell ROM mapping
  */
 
 #include "sim.h"

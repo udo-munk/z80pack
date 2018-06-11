@@ -144,7 +144,8 @@ void mon(void)
 
 		switch (cpu_switch) {
 		case 1:
-			if (!reset) run_cpu();
+			if (!reset)
+				run_cpu();
 			break;
 		case 2:
 			step_cpu();
