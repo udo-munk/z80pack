@@ -11,6 +11,7 @@
  * 13-JUN-2017 added Tarbell bootstrap ROM
  * 16-AUG-2017 overworked memrdr()
  * 07-MAY-2018 added memory configuratione needed by apple monitor
+ * 11-JUN-2018 fixed bug in Tarbell ROM mapping
  */
 
 extern void init_memory(void), init_rom(void);
@@ -56,6 +57,7 @@ static inline BYTE memrdr(WORD addr)
 				data = memory[addr];
 			else
 				data = 0xff;
+			tarbell_rom_active = 0;
 		}
 	} else {
 		if (p_tab[addr >> 8] != MEM_NONE)
