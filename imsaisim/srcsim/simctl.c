@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
-#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -62,8 +61,6 @@ static void quit_callback(void);
  */
 void mon(void)
 {
-	static struct timespec timer;
-
 	/* initialise front panel */
 	XInitThreads();
 
@@ -134,9 +131,7 @@ void mon(void)
 		fp_clock++;
 		fp_sampleData();
 
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(10);
 	}
 
 	/* all LED's off and update front panel */
@@ -305,8 +300,6 @@ void step_clicked(int state, int val)
  */
 void wait_step(void)
 {
-	static struct timespec timer;
-
 	if (cpu_state != SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
@@ -323,9 +316,8 @@ void wait_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		fp_clock++;
 		fp_sampleData();
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+
+		SLEEP_MS(10);
 	}
 
 	cpu_bus &= ~CPU_M1;
@@ -337,8 +329,6 @@ void wait_step(void)
  */
 void wait_int_step(void)
 {
-	static struct timespec timer;
-
 	if (cpu_state != SINGLE_STEP)
 		return;
 
@@ -347,9 +337,8 @@ void wait_int_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		fp_clock++;
 		fp_sampleData();
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+
+		SLEEP_MS(10);
 	}
 }
 
