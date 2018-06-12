@@ -34,7 +34,9 @@
 #include "simglb.h"
 #include "../../iodevices/imsai-sio2.h"
 #include "../../iodevices/imsai-fif.h"
+#ifdef HAS_DAZZLER
 #include "../../iodevices/cromemco-dazzler.h"
+#endif //HAS_DAZZLER
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
 #include "../../iodevices/unix_terminal.h"
@@ -76,7 +78,11 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 11 */
 	io_trap_in,		/* port 12 */
 	io_trap_in,		/* port 13 */
+#ifdef HAS_DAZZLER
 	cromemco_dazzler_flags_in, /* port 14 */
+#else
+	io_trap_in,		/* port 14 */
+#endif //HAS_DAZZLER
 	io_trap_in,		/* port 15 */
 	io_trap_in,		/* port 16 */
 	io_trap_in,		/* port 17 */
@@ -339,8 +345,13 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 11 */
 	io_trap_out,		/* port 12 */
 	io_trap_out,		/* port 13 */
+#ifdef HAS_DAZZLER
 	cromemco_dazzler_ctl_out,	/* port 14 */
 	cromemco_dazzler_format_out,	/* port 15 */
+#else
+	io_trap_out,		/* port 14 */
+	io_trap_out,		/* port 15 */
+#endif //HAS_DAZZLER
 	io_trap_out,		/* port 16 */
 	io_trap_out,		/* port 17 */
 	io_no_card_out,		/* port 18 */ /* serial port   */
@@ -619,8 +630,10 @@ void exit_io(void)
 	if (printer != 0)
 		close(printer);
 
+#ifdef HAS_DAZZLER
 	/* shutdown DAZZLER */
 	cromemco_dazzler_off();
+#endif //HAS_DAZZLER
 
 	/* shutdown VIO */
 	imsai_vio_off();
@@ -638,7 +651,9 @@ void exit_io(void)
  */
 void reset_io(void)
 {
+#ifdef HAS_DAZZLER
 	cromemco_dazzler_off();
+#endif //HAS_DAZZLER
 	imsai_fif_reset();
 	hwctl_lock = 0xff;
 }
