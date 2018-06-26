@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -62,12 +63,9 @@ static void quit_callback(void);
  */
 void mon(void)
 {
-<<<<<<< HEAD
-=======
 	static struct timespec timer;
 	static struct sigaction newact;
 
->>>>>>> parent of 2ceb88a... Updated: refactored more h/w control from simctl.c to iosim.c
 	/* initialise front panel */
 	XInitThreads();
 
