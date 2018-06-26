@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <termios.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <time.h>
 #include "sim.h"
@@ -64,7 +63,6 @@ static void quit_callback(void);
 void mon(void)
 {
 	static struct timespec timer;
-	static struct sigaction newact;
 	extern BYTE fdc_flags;
 
 	/* initialise front panel */
@@ -162,12 +160,6 @@ void mon(void)
 		timer.tv_nsec = 10000000L;
 		nanosleep(&timer, NULL);
 	}
-
-	/* timer interrupts off */
-	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
 
 	/* reset terminal */
 	reset_unix_terminal();

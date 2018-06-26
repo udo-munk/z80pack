@@ -32,8 +32,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
-#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -63,8 +61,6 @@ static void quit_callback(void);
  */
 void mon(void)
 {
-	static struct sigaction newact;
-
 	/* initialise front panel */
 	XInitThreads();
 
@@ -144,12 +140,6 @@ void mon(void)
 
 		SLEEP_MS(10);
 	}
-
-	/* timer interrupts off */
-	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
 
 	/* reset terminal */
 	reset_unix_terminal();
