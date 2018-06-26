@@ -655,19 +655,6 @@ void init_io(void)
 void exit_io(void)
 {
 	register int i;
-	static struct itimerval tim;
-	static struct sigaction newact;
-
-	/* stop 10ms interrupt timer */
-	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
-	tim.it_value.tv_sec = 0;
-	tim.it_value.tv_usec = 0;
-	tim.it_interval.tv_sec = 0;
-	tim.it_interval.tv_usec = 0;
-	setitimer(ITIMER_REAL, &tim, NULL);
 
 	/* close line printer files */
 	if (lpt1 != 0)
