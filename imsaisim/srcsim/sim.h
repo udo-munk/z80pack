@@ -32,6 +32,7 @@
 #define FRONTPANEL	/* emulate a machines frontpanel */
 #define BUS_8080	/* emulate 8080 bus status for front panel */
 
+#define UNIX_TERMINAL	/* configure UNIX terminals for raw I/O */
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_DAZZLER	/* has simulated I/O for Cromemeco Dazzler */

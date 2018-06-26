@@ -37,7 +37,9 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#ifdef UNIX_TERMINAL
 #include "../../iodevices/unix_terminal.h"
+#endif
 
 extern void cpu_z80(void), cpu_8080(void);
 extern void reset_cpu(void), reset_io(void);
@@ -95,12 +97,14 @@ void mon(void)
 	fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
 	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 
+#ifdef UNIX_TERMINAL
 	/* give threads a bit time and then empty buffer */
 	sleep(1);
 	fflush(stdout);
 
 	/* initialise terminal */
 	set_unix_terminal();
+#endif
 
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
@@ -141,9 +145,11 @@ void mon(void)
 		SLEEP_MS(10);
 	}
 
+#ifdef UNIX_TERMINAL
 	/* reset terminal */
 	reset_unix_terminal();
 	putchar('\n');
+#endif
 
 	/* all LED's off and update front panel */
 	cpu_bus = 0;
@@ -182,7 +188,7 @@ void report_error(void)
 		       PC, io_port);
 		break;
 	case IOHALT:
-		printf("\nSystem halted, bye.\n");
+		printf("\r\nSystem halted, bye.\r\n");
 		break;
 	case IOERROR:
 		printf("\r\nFatal I/O Error at %04x\r\n", PC);
