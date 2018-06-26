@@ -34,7 +34,7 @@
 
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
-#define HAS_DAZZLER /* has simulated I/O for Cromemeco Dazzler */
+#define HAS_DAZZLER	/* has simulated I/O for Cromemeco Dazzler */
 
 /*
  *	Default CPU

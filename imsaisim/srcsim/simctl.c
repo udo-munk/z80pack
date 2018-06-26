@@ -63,7 +63,6 @@ static void quit_callback(void);
  */
 void mon(void)
 {
-	static struct timespec timer;
 	static struct sigaction newact;
 
 	/* initialise front panel */

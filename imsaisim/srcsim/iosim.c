@@ -603,7 +603,6 @@ void init_io(void)
 	/* initialise IMSAI VIO if firmware is loaded */
 	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3))
 		imsai_vio_init();
-
 }
 
 /*
