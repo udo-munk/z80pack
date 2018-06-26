@@ -38,6 +38,7 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "../../iodevices/unix_terminal.h"
 
 extern void cpu_z80(void), cpu_8080(void);
 extern void reset_cpu(void), reset_io(void);
@@ -61,6 +62,12 @@ static void quit_callback(void);
  */
 void mon(void)
 {
+<<<<<<< HEAD
+=======
+	static struct timespec timer;
+	static struct sigaction newact;
+
+>>>>>>> parent of 2ceb88a... Updated: refactored more h/w control from simctl.c to iosim.c
 	/* initialise front panel */
 	XInitThreads();
 
@@ -94,6 +101,13 @@ void mon(void)
 	fp_addSwitchCallback("SW_EXAMINE", examine_clicked, 0);
 	fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
 	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
+
+	/* give threads a bit time and then empty buffer */
+	sleep(1);
+	fflush(stdout);
+
+	/* initialise terminal */
+	set_unix_terminal();
 
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
@@ -134,6 +148,16 @@ void mon(void)
 		SLEEP_MS(10);
 	}
 
+	/* timer interrupts off */
+	newact.sa_handler = SIG_IGN;
+	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+
+	/* reset terminal */
+	reset_unix_terminal();
+	putchar('\n');
+
 	/* all LED's off and update front panel */
 	cpu_bus = 0;
 	bus_request = 0;
@@ -171,7 +195,7 @@ void report_error(void)
 		       PC, io_port);
 		break;
 	case IOHALT:
-		printf("\r\nSystem halted, bye.\r\n");
+		printf("\nSystem halted, bye.\n");
 		break;
 	case IOERROR:
 		printf("\r\nFatal I/O Error at %04x\r\n", PC);
