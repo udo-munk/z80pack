@@ -50,8 +50,10 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #include <termios.h>
+#include <time.h>
 #include "sim.h"
 
 /*
@@ -88,4 +90,22 @@ int getkey(void)
 	c = getchar();
 	tcsetattr(0, TCSADRAIN, &old_term);
 	return(c);
+}
+
+/*
+ *	Sleep for time milliseconds, 999 max
+ */
+void sleep_ms(int time)
+{
+	static struct timespec timer, rem;
+
+	timer.tv_sec = 0;
+	timer.tv_nsec = 1000000L * time;
+
+again:
+	if (nanosleep(&timer, &rem) == -1) {
+		/* interrupted, resume with the remaining time */
+		memcpy(&timer, &rem, sizeof(struct timespec));
+		goto again;
+	}
 }

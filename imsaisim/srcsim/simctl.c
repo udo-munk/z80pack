@@ -99,7 +99,7 @@ void mon(void)
 
 #ifdef UNIX_TERMINAL
 	/* give threads a bit time and then empty buffer */
-	sleep(1);
+	SLEEP_MS(999);
 	fflush(stdout);
 
 	/* initialise terminal */
@@ -162,8 +162,9 @@ void mon(void)
 	fp_sampleData();
 
 	/* wait a bit before termination */
-	sleep(1);
+	SLEEP_MS(999);
 
+	/* stop frontpanel */
 	fp_quit();
 }
 

@@ -124,13 +124,5 @@ struct softbreak {			/* structure of a breakpoint */
 #define isxdigit(c) ((c<='f'&&c>='a')||(c<='F'&&c>='A')||(c<='9'&&c>='0'))
 #endif
 
-#include <time.h>
-static inline void sleep_ms(int time) {
-	static struct timespec timer;
-
-	timer.tv_sec = 0;
-	timer.tv_nsec = 1000000L * time;
-	nanosleep(&timer, NULL);
-}
-
+extern void sleep_ms(int);
 #define SLEEP_MS(t)	sleep_ms(t)
