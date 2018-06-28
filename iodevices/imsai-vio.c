@@ -22,7 +22,6 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
@@ -111,12 +110,8 @@ static void open_display(void)
 /* shutdown VIO thread and window */
 void imsai_vio_off(void)
 {
-	struct timespec timer;	/* sleep timer */
-
 	state = 0;		/* tell refresh thread to stop */
-	timer.tv_sec = 0;	/* and wait a bit */
-	timer.tv_nsec = 50000000L;
-	nanosleep(&timer, NULL);
+	SLEEP_MS(50);		/* and wait a bit */
 
 	/* works if X11 with posix threads implemented correct, but ... */
 	if (thread != 0) {
@@ -347,8 +342,10 @@ static void refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	struct timespec timer;	/* sleep timer */
-	struct timeval t1, t2, tdiff;
+	extern int time_diff(struct timeval *, struct timeval *);
+
+	struct timeval t1, t2;
+	int tdiff;
 
 	arg = arg;	/* to avoid compiler warning */
 	gettimeofday(&t1, NULL);
@@ -369,21 +366,11 @@ static void *update_display(void *arg)
 		XUnlockDisplay(display);
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
-		/* compute time used for processing */
-		gettimeofday(&t2, NULL);
-		tdiff.tv_sec = t2.tv_sec - t1.tv_sec;
-		tdiff.tv_usec = t2.tv_usec - t1.tv_usec;
-		if (tdiff.tv_usec < 0) {
-			--tdiff.tv_sec;
-			tdiff.tv_usec += 1000000;
-		}
-
 		/* sleep rest to 33ms so that we get 30 fps */
-		if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < 33000)) {
-			timer.tv_sec = 0;
-			timer.tv_nsec = (long) ((33000 - tdiff.tv_usec) * 1000);
-			nanosleep(&timer, NULL);
-		}
+		gettimeofday(&t2, NULL);
+		tdiff = time_diff(&t1, &t2);
+		if (tdiff < 33000)
+			SLEEP_MS(33 - (tdiff / 1000));
 
 		gettimeofday(&t1, NULL);
 	}

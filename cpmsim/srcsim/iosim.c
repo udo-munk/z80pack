@@ -116,7 +116,6 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <time.h>
 #include <netdb.h>
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -1167,12 +1166,9 @@ static void io_trap_out(BYTE data)
 static BYTE cons_in(void)
 {
 	struct pollfd p[1];
-	struct timespec timer;
 
 	if (++busy_loop_cnt[0] >= MAX_BUSY_COUNT) {
-		timer.tv_sec = 0;
-		timer.tv_nsec = 1000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(1);
 		busy_loop_cnt[0] = 0;
 	}
 
@@ -2572,11 +2568,7 @@ static BYTE time_in(void)
  */
 static void delay_out(BYTE data)
 {
-	struct timespec timer;
-
-	timer.tv_sec = 0;
-	timer.tv_nsec = (long) (10000000L * data);
-	nanosleep(&timer, NULL);
+	SLEEP_MS(data * 10);
 
 #ifdef CNETDEBUG
 	printf(". ");

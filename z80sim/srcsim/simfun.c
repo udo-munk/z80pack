@@ -118,3 +118,22 @@ again:
 		}
 	}
 }
+
+/*
+ *	Compute difference between two timeval in microseconds
+ */
+int time_diff(struct timeval *t1, struct timeval *t2)
+{
+	long sec, usec;
+
+	sec = (long) t2->tv_sec - (long) t1->tv_sec;
+	usec = (long) t2->tv_usec - (long) t1->tv_usec;
+	if (usec < 0L) {
+		sec--;
+		usec += 1000000L;
+	}
+	if (sec != 0L)
+		return(0);
+	else
+		return((int) usec);
+}

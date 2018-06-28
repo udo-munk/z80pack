@@ -36,7 +36,6 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <time.h>
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
@@ -881,8 +880,10 @@ static void mmu_out(BYTE data)
  */
 void *timing(void *arg)
 {
-	struct timespec timer;	/* sleep timer */
-	struct timeval t1, t2, tdiff;
+	extern int time_diff(struct timeval *, struct timeval *);
+
+	struct timeval t1, t2;
+	int tdiff;
 
 	arg = arg;	/* to avoid compiler warning */
 
@@ -1106,21 +1107,12 @@ void *timing(void *arg)
 		uart1b_int = 0xff;
 
 next:
-		/* compute time used for processing */
+		/* sleep for 1 millisecond if processing didn't
+		   consume to much time */
 		gettimeofday(&t2, NULL);
-		tdiff.tv_sec = t2.tv_sec - t1.tv_sec;
-		tdiff.tv_usec = t2.tv_usec - t1.tv_usec;
-		if (tdiff.tv_usec < 0) {
-			--tdiff.tv_sec;
-			tdiff.tv_usec += 1000000;
-		}
-	
-		/* sleep for the difference to 1 msec */
-		if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < 1000)) {
-			timer.tv_sec = 0;
-			timer.tv_nsec = (long) ((1000 - tdiff.tv_usec) * 1000);
-			nanosleep(&timer, NULL);
-		}
+		tdiff = time_diff(&t1, &t2);
+		if (tdiff < 500)
+			SLEEP_MS(1);
 
 		/* reset disk index pulse */
 		if (index_pulse > 2)
