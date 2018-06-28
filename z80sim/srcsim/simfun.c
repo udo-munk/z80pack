@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -54,7 +54,9 @@
 #include <ctype.h>
 #include <termios.h>
 #include <time.h>
+#include <errno.h>
 #include "sim.h"
+#include "simglb.h"
 
 /*
  *	atoi for hexadecimal numbers
@@ -104,8 +106,15 @@ void sleep_ms(int time)
 
 again:
 	if (nanosleep(&timer, &rem) == -1) {
-		/* interrupted, resume with the remaining time */
-		memcpy(&timer, &rem, sizeof(struct timespec));
-		goto again;
+		if (errno == EINTR) {
+			/* interrupted, resume with the remaining time */
+			memcpy(&timer, &rem, sizeof(struct timespec));
+			goto again;
+		} else {
+			/* some error */
+			perror("sleep_ms()");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+		}
 	}
 }

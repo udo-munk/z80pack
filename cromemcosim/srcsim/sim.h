@@ -136,3 +136,6 @@ struct softbreak {			/* structure of a breakpoint */
 #ifndef isxdigit
 #define isxdigit(c) ((c<='f'&&c>='a')||(c<='F'&&c>='A')||(c<='9'&&c>='0'))
 #endif
+
+extern void sleep_ms(int);
+#define SLEEP_MS(t)	sleep_ms(t)

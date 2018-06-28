@@ -168,3 +168,6 @@ struct dskdef {
 	unsigned int tracks;		/* number of tracks */
 	unsigned int sectors;		/* number of sectors */
 };
+
+extern void sleep_ms(int);
+#define SLEEP_MS(t)	sleep_ms(t)

@@ -36,7 +36,6 @@
 #include <string.h>
 #include <termios.h>
 #include <fcntl.h>
-#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -69,8 +68,6 @@ static void quit_callback(void);
  */
 void mon(void)
 {
-	static struct timespec timer;
-
 	/* initialise frontpanel */
 	XInitThreads();
 
@@ -109,7 +106,7 @@ void mon(void)
         fp_addSwitchCallback("SW_INT", int_clicked, 0);
 
 	/* give threads a bit time and then empty buffer */
-	sleep(1);
+	SLEEP_MS(999);
 	fflush(stdout);
 
 	/* initialise terminal */
@@ -157,9 +154,7 @@ void mon(void)
 		fp_clock++;
 		fp_sampleData();
 
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(10);
 	}
 
 	/* reset terminal */
@@ -176,8 +171,9 @@ void mon(void)
 	fp_sampleData();
 
 	/* wait a bit before termination */
-	sleep(1);
+	SLEEP_MS(999);
 
+	/* shutdown frontpanel */
 	fp_quit();
 }
 
@@ -331,8 +327,6 @@ void step_clicked(int state, int val)
  */
 void wait_step(void)
 {
-	static struct timespec timer;
-
 	if (cpu_state != SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
@@ -349,9 +343,7 @@ void wait_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		fp_clock++;
 		fp_sampleData();
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(10);
 	}
 
 	cpu_bus &= ~CPU_M1;
@@ -363,8 +355,6 @@ void wait_step(void)
  */
 void wait_int_step(void)
 {
-	static struct timespec timer;
-
 	if (cpu_state != SINGLE_STEP)
 		return;
 
@@ -373,9 +363,7 @@ void wait_int_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		fp_clock++;
 		fp_sampleData();
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(10);
 	}
 }
 
