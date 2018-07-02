@@ -150,9 +150,9 @@ void config(void)
 					slf = 2;
 			} else if (!strcmp(t1, "ram")) {
 				ram_size = atoi(t2);
-				if (ram_size > 54) {
-					printf("Maximal possible RAM size is 54KB\n");
-					ram_size = 54;
+				if (ram_size > MAX_RAM) {
+					printf("Maximal possible RAM size is %dKB\n", MAX_RAM);
+					ram_size = MAX_RAM;
 				}
 				printf("RAM size is %d KB\n", ram_size);
 			} else {

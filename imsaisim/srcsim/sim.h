@@ -37,6 +37,8 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_DAZZLER	/* has simulated I/O for Cromemeco Dazzler */
 
+#define MAX_RAM		54	/* Maximum RAM size */
+
 /*
  *	Default CPU
  */
