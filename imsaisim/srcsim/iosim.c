@@ -39,7 +39,6 @@
 #endif //HAS_DAZZLER
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
-#include "../../iodevices/unix_terminal.h"
 #include "memory.h"
 
 /*
@@ -604,14 +603,6 @@ void init_io(void)
 	/* initialise IMSAI VIO if firmware is loaded */
 	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3))
 		imsai_vio_init();
-
-	/* give threads a bit time and then empty buffer */
-	sleep(1);
-	fflush(stdout);
-
-	/* initialise terminal */
-	set_unix_terminal();
-
 }
 
 /*
@@ -620,12 +611,6 @@ void init_io(void)
  */
 void exit_io(void)
 {
-	static struct sigaction newact;
-
-	/* reset terminal */
-	reset_unix_terminal();
-	putchar('\n');
-
 	/* close line printer file */
 	if (printer != 0)
 		close(printer);
@@ -637,12 +622,6 @@ void exit_io(void)
 
 	/* shutdown VIO */
 	imsai_vio_off();
-
-	/* timer interrupts off */
-	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
 }
 
 /*

@@ -27,7 +27,6 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <signal.h>
 #include <sys/time.h>
 #include "sim.h"
@@ -196,13 +195,8 @@ static void open_display(void)
 /* switch DAZZLER off from front panel */
 void cromemco_dazzler_off(void)
 {
-	struct timespec timer;	/* sleep timer */
-
 	state = 0;
-
-	timer.tv_sec = 0;
-	timer.tv_nsec = 50000000L;
-	nanosleep(&timer, NULL);
+	SLEEP_MS(50);
 
 	if (thread != 0) {
 		pthread_cancel(thread);
@@ -589,8 +583,10 @@ static void draw_lowres(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	struct timespec timer;	/* sleep timer */
-	struct timeval t1, t2, tdiff;
+	extern int time_diff(struct timeval *, struct timeval *);
+
+	struct timeval t1, t2;
+	int tdiff;
 
 	arg = arg;	/* to avoid compiler warning */
 	gettimeofday(&t1, NULL);
@@ -617,26 +613,14 @@ static void *update_display(void *arg)
 
 		/* frame done, set frame flag for 4ms */
 		flags = 0;
-		timer.tv_sec = 0;
-		timer.tv_nsec = 4000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(4);
 		flags = 64;
 
-		/* compute time used for processing */
-		gettimeofday(&t2, NULL);
-		tdiff.tv_sec = t2.tv_sec - t1.tv_sec;
-		tdiff.tv_usec = t2.tv_usec - t1.tv_usec;
-		if (tdiff.tv_usec < 0) {
-			--tdiff.tv_sec;
-			tdiff.tv_usec += 1000000;
-		}
-
 		/* sleep rest to 33ms so that we get 30 fps */
-		if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < 33000)) {
-			timer.tv_sec = 0;
-			timer.tv_nsec = (long) ((33000 - tdiff.tv_usec) * 1000);
-			nanosleep(&timer, NULL);
-		}
+		gettimeofday(&t2, NULL);
+		tdiff = time_diff(&t1, &t2);
+		if (tdiff < 33000)
+			SLEEP_MS(33 - (tdiff / 1000));
 
 		gettimeofday(&t1, NULL);
 	}
@@ -647,8 +631,6 @@ static void *update_display(void *arg)
 
 void cromemco_dazzler_ctl_out(BYTE data)
 {
-	struct timespec timer;	/* sleep timer */
-
 	/* get DMA address for display memory */
 	dma_addr = (data & 0x7f) << 9;
 
@@ -668,9 +650,7 @@ void cromemco_dazzler_ctl_out(BYTE data)
 	} else {
 		if (state == 1) {
 			state = 0;
-			timer.tv_sec = 0;
-			timer.tv_nsec = 50000000L;
-			nanosleep(&timer, NULL);
+			SLEEP_MS(50);
 			XLockDisplay(display);
 			XClearWindow(display, window);
 			XSync(display, True);

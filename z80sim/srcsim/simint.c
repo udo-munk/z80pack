@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -85,9 +85,11 @@ void int_off(void)
 {
 	static struct sigaction newact;
 
-	newact.sa_handler = SIG_DFL;
 	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 	newact.sa_flags = 0;
+	newact.sa_handler = SIG_IGN;
+	sigaction(SIGALRM, &newact, NULL);
+	newact.sa_handler = SIG_DFL;
 	sigaction(SIGINT, &newact, NULL);
 	sigaction(SIGQUIT, &newact, NULL);
 	sigaction(SIGTERM, &newact, NULL);

@@ -46,7 +46,6 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <time.h>
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
@@ -143,6 +142,8 @@ static int op_undoc_ret(void), op_undoc_call(void);
  */
 void cpu_8080(void)
 {
+	extern int time_diff(struct timeval *, struct timeval *);
+
 	static int (*op_sim[256]) (void) = {
 		op_nop,				/* 0x00 */
 		op_lxibnn,			/* 0x01 */
@@ -404,8 +405,8 @@ void cpu_8080(void)
 
 	register int t = 0;
 	register int states;
-	struct timespec timer;
-	struct timeval t1, t2, tdiff;
+	struct timeval t1, t2;
+	int tdiff;
 
 	gettimeofday(&t1, NULL);
 
@@ -527,20 +528,9 @@ leave:
 		if (f_flag) {			/* adjust CPU speed */
 			if (t >= tmax) {
 				gettimeofday(&t2, NULL);
-                                tdiff.tv_sec = t2.tv_sec - t1.tv_sec;
-                                tdiff.tv_usec = t2.tv_usec - t1.tv_usec;
-                                if (tdiff.tv_usec < 0) {
-                                        --tdiff.tv_sec;
-                                        tdiff.tv_usec += 1000000;
-                                }
-				if ((tdiff.tv_sec == 0) &&
-				    (tdiff.tv_usec < 10000)) {
-					timer.tv_sec = 0;
-					timer.tv_nsec = (long) ((10000
-								- tdiff.tv_usec)
-								* 1000);
-					nanosleep(&timer, NULL);
-				}
+				tdiff = time_diff(&t1, &t2);
+				if (tdiff < 10000)
+					SLEEP_MS(10 - (tdiff / 1000));
 				t = 0;
 				gettimeofday(&t1, NULL);
 			}
@@ -593,8 +583,6 @@ static int op_undoc_nop(void)		/* Undocumented NOP */
 
 static int op_hlt(void)			/* HLT */
 {
-	struct timespec timer;
-
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
@@ -607,9 +595,7 @@ static int op_hlt(void)			/* HLT */
 	} else {
 	/* else wait for INT or user interrupt */
 		while ((int_int == 0) && (cpu_state == CONTIN_RUN)) {
-			timer.tv_sec = 0;
-			timer.tv_nsec = 1000000L;
-			nanosleep(&timer, NULL);
+			SLEEP_MS(1);
 			R += 9999;
 		}
 	}
@@ -630,9 +616,7 @@ static int op_hlt(void)			/* HLT */
 		while (!(cpu_state & RESET)) {
 			fp_clock++;
 			fp_sampleData();
-			timer.tv_sec = 0;
-			timer.tv_nsec = 1000000L;
-			nanosleep(&timer, NULL);
+			SLEEP_MS(1);
 			R += 9999;
 			if (cpu_error != NONE)
 				break;
@@ -642,9 +626,7 @@ static int op_hlt(void)			/* HLT */
 		while ((int_int == 0) && !(cpu_state & RESET)) {
 			fp_clock++;
 			fp_sampleData();
-			timer.tv_sec = 0;
-			timer.tv_nsec = 1000000L;
-			nanosleep(&timer, NULL);
+			SLEEP_MS(1);
 			R += 9999;
 			if (cpu_error != NONE)
 				break;

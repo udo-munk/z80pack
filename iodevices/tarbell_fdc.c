@@ -19,6 +19,7 @@
  * 22-JUL-2016 added support for read only disks
  * 13-JUN-2017 added bootstrap ROM and reset function
  * 23-APR-2018 cleanup
+ * 01-JUL-2018 check disk images for the correct size
  */
 
 #include <unistd.h>
@@ -208,6 +209,7 @@ void tarbell_sec_out(BYTE data)
 BYTE tarbell_data_in(void)
 {
 	long pos;		/* seek position */
+	struct stat s;
 
 	switch (state) {
 	case FDC_READ:		/* read data from disk sector */
@@ -236,6 +238,15 @@ BYTE tarbell_data_in(void)
 			if ((fd = open(fn, O_RDONLY)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
+				return((BYTE) 0);
+			}
+
+			/* check for correct image size */
+			fstat(fd, &s);
+			if (s.st_size != 256256) {
+				state = FDC_IDLE;	/* abort command */
+				fdc_stat = 0x80;	/* not ready */
+				close(fd);
 				return((BYTE) 0);
 			}
 
@@ -305,6 +316,7 @@ void tarbell_data_out(BYTE data)
 	static int wrtstat;		/* state while formatting track */
 	static int bcnt;		/* byte counter for sector data */
 	static int secs;		/* # of sectors written so far */
+	struct stat s;
 
 	switch (state) {
 	case FDC_WRITE:			/* write data to disk sector */
@@ -336,6 +348,15 @@ void tarbell_data_out(BYTE data)
 					fdc_stat = 0x80; /* not ready */
 				}
 				state = FDC_IDLE;	/* abort command */
+				return;
+			}
+
+			/* check for correct image size */
+			fstat(fd, &s);
+			if (s.st_size != 256256) {
+				state = FDC_IDLE;	/* abort command */
+				fdc_stat = 0x80;	/* not ready */
+				close(fd);
 				return;
 			}
 

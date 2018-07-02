@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -50,9 +50,13 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #include <termios.h>
+#include <time.h>
+#include <errno.h>
 #include "sim.h"
+#include "simglb.h"
 
 /*
  *	atoi for hexadecimal numbers
@@ -88,4 +92,48 @@ int getkey(void)
 	c = getchar();
 	tcsetattr(0, TCSADRAIN, &old_term);
 	return(c);
+}
+
+/*
+ *	Sleep for time milliseconds, 999 max
+ */
+void sleep_ms(int time)
+{
+	static struct timespec timer, rem;
+
+	timer.tv_sec = 0;
+	timer.tv_nsec = 1000000L * time;
+
+again:
+	if (nanosleep(&timer, &rem) == -1) {
+		if (errno == EINTR) {
+			/* interrupted, resume with the remaining time */
+			memcpy(&timer, &rem, sizeof(struct timespec));
+			goto again;
+		} else {
+			/* some error */
+			perror("sleep_ms()");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+		}
+	}
+}
+
+/*
+ *	Compute difference between two timeval in microseconds
+ */
+int time_diff(struct timeval *t1, struct timeval *t2)
+{
+	long sec, usec;
+
+	sec = (long) t2->tv_sec - (long) t1->tv_sec;
+	usec = (long) t2->tv_usec - (long) t1->tv_usec;
+	if (usec < 0L) {
+		sec--;
+		usec += 1000000L;
+	}
+	if (sec != 0L)
+		return(0);
+	else
+		return((int) usec);
 }

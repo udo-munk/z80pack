@@ -32,12 +32,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#ifdef UNIX_TERMINAL
+#include "../../iodevices/unix_terminal.h"
+#endif
 
 extern void cpu_z80(void), cpu_8080(void);
 extern void reset_cpu(void), reset_io(void);
@@ -95,6 +97,15 @@ void mon(void)
 	fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
 	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 
+#ifdef UNIX_TERMINAL
+	/* give threads a bit time and then empty buffer */
+	SLEEP_MS(999);
+	fflush(stdout);
+
+	/* initialise terminal */
+	set_unix_terminal();
+#endif
+
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
 		if (reset) {
@@ -134,6 +145,12 @@ void mon(void)
 		SLEEP_MS(10);
 	}
 
+#ifdef UNIX_TERMINAL
+	/* reset terminal */
+	reset_unix_terminal();
+	putchar('\n');
+#endif
+
 	/* all LED's off and update front panel */
 	cpu_bus = 0;
 	bus_request = 0;
@@ -145,8 +162,9 @@ void mon(void)
 	fp_sampleData();
 
 	/* wait a bit before termination */
-	sleep(1);
+	SLEEP_MS(999);
 
+	/* stop frontpanel */
 	fp_quit();
 }
 
@@ -463,12 +481,14 @@ void power_clicked(int state, int val)
 		fp_led_data = dma_read(PC);
 		fp_led_wait = 1;
 		fp_led_output = 0;
+#ifdef UNIX_TERMINAL
 		if (isatty(1))
 			system("tput clear");
 		else {
 			puts("\r\n\r\n\r\n");
 			fflush(stdout);
 		}
+#endif
 		break;
 	case FP_SW_DOWN:
 		if (!power)
