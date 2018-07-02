@@ -22,6 +22,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/poll.h>
+#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "unix_terminal.h"
@@ -29,10 +30,17 @@
 int sio1_upper_case;
 int sio1_strip_parity;
 int sio1_drop_nulls;
+int sio1_baud_rate = 115200;
 
 int sio2_upper_case;
 int sio2_strip_parity;
 int sio2_drop_nulls;
+
+struct timeval t1, t2, tdiff;
+
+#define BAUDTIME 10000000
+
+static BYTE status = 0;
 
 /*
  * read status register
@@ -42,8 +50,12 @@ int sio2_drop_nulls;
  */
 BYTE imsai_sio1_status_in(void)
 {
-	BYTE status = 0;
 	struct pollfd p[1];
+
+	gettimeofday(&t2, NULL);
+	timersub(&t2, &t1, &tdiff);
+
+	if((tdiff.tv_sec == 0) && (tdiff.tv_usec < BAUDTIME/sio1_baud_rate)) return(status);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN | POLLOUT;
@@ -53,6 +65,8 @@ BYTE imsai_sio1_status_in(void)
 		status |= 2;
 	if (p[0].revents & POLLOUT)
 		status |= 1;
+
+	gettimeofday(&t1, NULL);
 
 	return(status);
 }
@@ -93,6 +107,9 @@ again:
 		goto again;
 	}
 
+	gettimeofday(&t1, NULL);
+	status &= 0b11111101;
+
 	/* process read data */
 	if (sio1_upper_case)
 		data = toupper(data);
@@ -125,4 +142,6 @@ again:
 			cpu_state = STOPPED;
 		}
 	}
+	gettimeofday(&t1, NULL);
+	status &= 0b11111110;
 }
