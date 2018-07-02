@@ -89,6 +89,7 @@
 #define COPYR	"Copyright (C) 1987-2018 by Udo Munk"
 #define RELEASE	"1.37-dev"
 
+#define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
 
 #define S_FLAG		128		/* bit definitions of CPU flags */

@@ -145,7 +145,7 @@ int u_flag;			/* flag for -u option */
 /*
  *	Variables for configuration and disk images
  */
-char xfn[MAX_LFN];			/* buffer for filename (option -x) */
+char xfn[MAX_LFN];		/* buffer for filename (option -x) */
 char *diskdir = NULL;		/* path for disk images (option -d) */
 char diskd[MAX_LFN];		/* disk image directory in use */
 char confdir[MAX_LFN];		/* path for configuration files */
