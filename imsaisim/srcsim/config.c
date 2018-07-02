@@ -54,7 +54,7 @@ void config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2;
-	char fn[4095];
+	char fn[MAX_LFN - 1];
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/system.conf");
@@ -150,9 +150,9 @@ void config(void)
 					slf = 2;
 			} else if (!strcmp(t1, "ram")) {
 				ram_size = atoi(t2);
-				if (ram_size > 54) {
-					printf("Maximal possible RAM size is 54KB\n");
-					ram_size = 54;
+				if (ram_size > MAX_RAM) {
+					printf("Maximal possible RAM size is %dKB\n", MAX_RAM);
+					ram_size = MAX_RAM;
 				}
 				printf("RAM size is %d KB\n", ram_size);
 			} else {

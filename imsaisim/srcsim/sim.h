@@ -37,6 +37,8 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_DAZZLER	/* has simulated I/O for Cromemeco Dazzler */
 
+#define MAX_RAM		54	/* Maximum RAM size */
+
 /*
  *	Default CPU
  */
@@ -54,6 +56,7 @@
 #define USR_REL	"1.18"
 #define USR_CPR	"Copyright (C) 2008-2018 by Udo Munk"
 
+#define MAX_LFN		4096	/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
 
 #define S_FLAG		128		/* bit definitions of CPU flags */
