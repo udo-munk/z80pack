@@ -73,7 +73,7 @@ static int secsz = SEC_SZSD;	/* current used sector size */
 static int state;		/* internal fdc state */
 static int dcnt;		/* data counter read/write */
 static int mflag;		/* multiple sectors flag */
-static char fn[4096];		/* path/filename for disk image */
+static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk i/o */
 static BYTE buf[SEC_SZDD];	/* buffer for one sector */
        int index_pulse = 0;	/* disk index pulse */

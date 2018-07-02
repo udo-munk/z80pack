@@ -47,7 +47,7 @@ static BYTE fdc_track;		/* track register */
 static BYTE fdc_sec;		/* sector register */
 static int disk;		/* current disk # */
 static int state;		/* fdc state */
-static char fn[4096];		/* path/filename for disk image */
+static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static int dcnt;		/* data counter read/write */
 static BYTE buf[SEC_SZ];	/* buffer for one sector */

@@ -153,7 +153,7 @@ int boot(int level)
 {
 	register int fd;
 	struct stat sbuf;
-	static char fn[4096];
+	static char fn[MAX_LFN];
 	static char err[256];
 
 	puts("\r\nBooting...\r\n");

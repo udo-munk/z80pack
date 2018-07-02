@@ -162,7 +162,7 @@ static int driven;		/* fd for file "driven.dsk" */
 static int driveo;		/* fd for file "driveo.dsk" */
 static int drivep;		/* fd for file "drivep.dsk" */
 static int printer;		/* fd for file "printer.txt" */
-static char fn[4096];		/* path/filename for disk images */
+static char fn[MAX_LFN];	/* path/filename for disk images */
 static int speed;		/* to reset CPU speed */
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 
@@ -964,7 +964,7 @@ static void net_server_config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s;
-	char fn[4096];
+	char fn[MAX_LFN];
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/net_server.conf");
@@ -1006,7 +1006,7 @@ static void net_client_config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *d;
-	char fn[4096];
+	char fn[MAX_LFN];
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/net_client.conf");
