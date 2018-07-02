@@ -478,7 +478,7 @@ int load_core(void)
  */
 int load_file(char *s)
 {
-	char fn[LENCMD];
+	char fn[MAX_LFN];
 	BYTE fileb[5];
 	register char *pfn = fn;
 	int fd;

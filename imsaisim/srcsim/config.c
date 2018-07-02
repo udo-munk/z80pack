@@ -54,7 +54,7 @@ void config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2;
-	char fn[4095];
+	char fn[MAX_LFN - 1];
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/system.conf");

@@ -68,7 +68,7 @@ static char *disks[4] = {
 	"drived.dsk"
 };
 
-static char fn[4096];		/* path/filename for disk image */
+static char fn[MAX_LFN];		/* path/filename for disk image */
 static int fdstate = 0;		/* state of the fd */
 
 /*

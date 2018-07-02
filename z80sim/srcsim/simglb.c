@@ -145,10 +145,10 @@ int u_flag;			/* flag for -u option */
 /*
  *	Variables for configuration and disk images
  */
-char xfn[4096];			/* buffer for filename (option -x) */
+char xfn[MAX_LFN];			/* buffer for filename (option -x) */
 char *diskdir = NULL;		/* path for disk images (option -d) */
-char diskd[4096];		/* disk image directory in use */
-char confdir[4096];		/* path for configuration files */
+char diskd[MAX_LFN];		/* disk image directory in use */
+char confdir[MAX_LFN];		/* path for configuration files */
 
 /*
  *	Precompiled table to get parity as fast as possible
