@@ -20,6 +20,7 @@
  * 24-MAR-17 added configuration for SIO 0
  * 14-JUN-17 added config for Tarbell boot ROM
  * 07-MAY-18 added memory configuratione needed by apple monitor
+ * 03-JUL-18 added baud rate to terminal 2SIO
  */
 
 #include <stdlib.h>
@@ -48,6 +49,7 @@ extern int sio0_revision;	/* SIO 0 Rev 0 or Rev 1 */
 extern int sio1_upper_case;	/* SIO 1 translate input to upper case */
 extern int sio1_strip_parity;	/* SIO 1 strip parity from output */
 extern int sio1_drop_nulls;	/* SIO 1 drop nulls after CR/LF */
+extern int sio1_baud_rate;	/* SIO 1 baud rate */
 
 extern int sio2_upper_case;	/* SIO 2 translate input to upper case */
 extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
@@ -193,6 +195,8 @@ void config(void)
 					printf("system.conf: illegal value for %s: %s\n", t1, t2);
 					break;
 				}
+			} else if (!strcmp(t1, "sio1_baud_rate")) {
+				sio1_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {

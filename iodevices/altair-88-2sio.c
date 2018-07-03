@@ -19,6 +19,7 @@
  * 22-MAR-17 connected SIO 2 to UNIX domain socket
  * 23-OCT-17 improved UNIX domain socket connections
  * 03-MAY-18 improved accuracy
+ * 03-JUL-18 added baud rate to terminal 2SIO
  */
 
 #include <unistd.h>
@@ -34,13 +35,19 @@
 #include "unix_terminal.h"
 #include "unix_network.h"
 
+#define BAUDTIME 10000000
+
 int sio1_upper_case;
 int sio1_strip_parity;
 int sio1_drop_nulls;
+int sio1_baud_rate = 115200;
 
 int sio2_upper_case;
 int sio2_strip_parity;
 int sio2_drop_nulls;
+
+static struct timeval t1, t2;
+static BYTE status;
 
 /*
  * read status register
@@ -50,8 +57,16 @@ int sio2_drop_nulls;
  */
 BYTE altair_sio1_status_in(void)
 {
-	BYTE status = 0;
+	extern int time_diff(struct timeval *, struct timeval *);
+
 	struct pollfd p[1];
+	int tdiff;
+
+	gettimeofday(&t2, NULL);
+	tdiff = time_diff(&t1, &t2);
+	if (sio1_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
+			return(status);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN | POLLOUT;
@@ -61,6 +76,8 @@ BYTE altair_sio1_status_in(void)
 		status |= 1;
 	if (p[0].revents & POLLOUT)
 		status |= 2;
+
+	gettimeofday(&t1, NULL);
 
 	return(status);
 }
@@ -101,6 +118,9 @@ again:
 		goto again;
 	}
 
+	gettimeofday(&t1, NULL);
+	status &= 0b11111110;
+
 	/* process read data */
 	if (sio1_upper_case)
 		data = toupper(data);
@@ -133,6 +153,9 @@ again:
 			cpu_state = STOPPED;
 		}
 	}
+
+	gettimeofday(&t1, NULL);
+	status &= 0b11111101;
 }
 
 /*

@@ -23,6 +23,7 @@
  * 24-MAR-17 added configuration for SIO 0
  * 14-JUN-17 added config for Tarbell boot ROM
  * 07-MAY-18 added memory configuratione needed by apple monitor
+ * 03-JUL-18 added baud rate to terminal 2SIO
  */
 
 extern void config(void);
