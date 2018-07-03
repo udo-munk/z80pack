@@ -16,6 +16,7 @@
  * 27-MAR-17 added SIO 3 for tape connected to UNIX domain socket
  * 23-OCT-17 improved UNIX domain socket connections
  * 03-MAY-18 improved accuracy
+ * 04-JUL-18 added baud rate to terminal SIO
  */
 
 extern BYTE altair_sio0_status_in(void);
