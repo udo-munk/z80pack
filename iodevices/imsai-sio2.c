@@ -15,6 +15,7 @@
  * 23-MAR-15 drop only null's
  * 22-AUG-17 reopen tty at EOF from input redirection
  * 03-MAY-18 improved accuracy
+ * 03-JUL-18 implemented baud rate for terminal SIO
  */
 
 #include <unistd.h>
@@ -27,6 +28,8 @@
 #include "simglb.h"
 #include "unix_terminal.h"
 
+#define BAUDTIME 10000000
+
 int sio1_upper_case;
 int sio1_strip_parity;
 int sio1_drop_nulls;
@@ -36,11 +39,8 @@ int sio2_upper_case;
 int sio2_strip_parity;
 int sio2_drop_nulls;
 
-struct timeval t1, t2, tdiff;
-
-#define BAUDTIME 10000000
-
-static BYTE status = 0;
+static struct timeval t1, t2, tdiff;
+static BYTE status;
 
 /*
  * read status register
@@ -54,8 +54,8 @@ BYTE imsai_sio1_status_in(void)
 
 	gettimeofday(&t2, NULL);
 	timersub(&t2, &t1, &tdiff);
-
-	if((tdiff.tv_sec == 0) && (tdiff.tv_usec < BAUDTIME/sio1_baud_rate)) return(status);
+	if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < BAUDTIME/sio1_baud_rate))
+		return(status);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN | POLLOUT;
