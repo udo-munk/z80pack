@@ -677,7 +677,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	fp_clock += 6;
 	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = 0xff;
+	fp_led_data = io_data; // Always show the OUT byte on the data LEDs
 	fp_sampleData();
 	wait_step();
 }
