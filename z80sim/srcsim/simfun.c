@@ -122,7 +122,7 @@ again:
 /*
  *	Compute difference between two timeval in microseconds
  *
- *	Note: yes there are timesub() and friends, but not
+ *	Note: yes there are timersub() and friends, but not
  *	defined in POSIX.1 and implemented wrong on some
  *	systems. Some systems define tv_usec as unsigned int,
  *	here we assume that a long is longer than unsigned.
