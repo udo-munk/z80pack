@@ -39,7 +39,7 @@ int sio2_upper_case;
 int sio2_strip_parity;
 int sio2_drop_nulls;
 
-static struct timeval t1, t2, tdiff;
+static struct timeval t1, t2;
 static BYTE status;
 
 /*
@@ -50,12 +50,16 @@ static BYTE status;
  */
 BYTE imsai_sio1_status_in(void)
 {
+	extern int time_diff(struct timeval *, struct timeval *);
+
 	struct pollfd p[1];
+	int tdiff;
 
 	gettimeofday(&t2, NULL);
-	timersub(&t2, &t1, &tdiff);
-	if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < BAUDTIME/sio1_baud_rate))
-		return(status);
+	tdiff = time_diff(&t1, &t2);
+	if (sio1_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
+			return(status);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN | POLLOUT;

@@ -1116,7 +1116,7 @@ next:
 		   consume to much time */
 		gettimeofday(&t2, NULL);
 		tdiff = time_diff(&t1, &t2);
-		if (tdiff < 500)
+		if ((tdiff > 0) && (tdiff < 500))
 			SLEEP_MS(1);
 
 		/* reset disk index pulse */

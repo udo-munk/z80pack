@@ -619,7 +619,7 @@ static void *update_display(void *arg)
 		/* sleep rest to 33ms so that we get 30 fps */
 		gettimeofday(&t2, NULL);
 		tdiff = time_diff(&t1, &t2);
-		if (tdiff < 33000)
+		if ((tdiff > 0) && (tdiff < 33000))
 			SLEEP_MS(33 - (tdiff / 1000));
 
 		gettimeofday(&t1, NULL);
