@@ -15,6 +15,7 @@
  * 23-MAR-15 drop only null's
  * 22-AUG-17 reopen tty at EOF from input redirection
  * 03-MAY-18 improved accuracy
+ * 03-JUL-18 implemented baud rate for terminal SIO
  */
 
 extern BYTE imsai_sio1_status_in(void);
