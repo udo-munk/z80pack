@@ -657,6 +657,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_sampleData();
 	wait_step();
 
+	/* when INP on port 0FFh - get last set value of Programmed Input toggles */
+	if(io_port == 0xFF) io_data = (*port_in[io_port]) ();
+
 	return(io_data);
 }
 
