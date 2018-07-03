@@ -332,6 +332,11 @@ void wait_step(void)
 	cpu_switch = 3;
 
 	while ((cpu_switch == 3) && !reset) {
+		/* when INP on port 0FFh - feed Programmed Input toggles to Data Bus LEDs */
+		if((cpu_bus == (CPU_WO | CPU_INP)) && (fp_led_address == 0xFFFF)) {
+			fp_led_data = address_switch >> 8;
+		}
+
 		fp_clock++;
 		fp_sampleData();
 

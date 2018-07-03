@@ -31,7 +31,7 @@ static inline void memwrt(WORD addr, BYTE data)
 
 	fp_clock++;
 	fp_led_address = addr;
-	fp_led_data = 0xff;
+	fp_led_data = data; // Always show the data byte on the data LEDs
 	fp_sampleData();
 	wait_step();
 

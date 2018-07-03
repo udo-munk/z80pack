@@ -657,6 +657,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_sampleData();
 	wait_step();
 
+	/* when INP on port 0FFh - get last set value of Programmed Input toggles */
+	if(io_port == 0xFF) io_data = (*port_in[io_port]) ();
+
 	return(io_data);
 }
 
@@ -677,7 +680,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	fp_clock += 6;
 	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = 0xff;
+	fp_led_data = io_data; // Always show the OUT byte on the data LEDs
 	fp_sampleData();
 	wait_step();
 }
