@@ -608,7 +608,7 @@ static int load_hex(char *fn)
 			data += (*s <= '9') ? (*s - '0') :
 					      (*s - 'A' + 10);
 			s++;
-			*(mem_base() + addr + i) = data;
+			*loadaddr(addr+i) = data;
 		}
 	}
 
@@ -618,7 +618,6 @@ static int load_hex(char *fn)
 	printf("START : %04xH\n", saddr);
 	printf("END   : %04xH\n", eaddr);
 	printf("LOADED: %04xH (%d)\n\n", count, count);
-	PC = saddr;
 	wrk_ram = mem_base() + saddr;
 
 	return(0);

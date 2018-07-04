@@ -405,6 +405,7 @@ void reset_clicked(int state, int val)
 		IFF = 0;
 		fp_led_output = 0;
 		reset_io();
+		init_memory();
 		break;
 	default:
 		break;
