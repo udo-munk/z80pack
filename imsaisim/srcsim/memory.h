@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2017 by Udo Munk
+ * Copyright (C) 2016-2018 by Udo Munk
  *
  * This module implements memory management for an IMSAI 8080 system
  *
@@ -9,6 +9,7 @@
  * 22-NOV-2016 stuff moved to here and implemented as inline functions
  * 30-DEC-2016 implemented 1 KB page table and setup for that
  * 26-JAN-2017 initialise ROM with 0xff
+ * 04-JUL-2018 optimization
  */
 
 extern void init_memory(void), init_rom(void);
@@ -54,10 +55,7 @@ static inline BYTE memrdr(WORD addr)
 	fp_sampleData();
 	wait_step();
 
-	if (p_tab[addr >> 10] != MEM_NONE)
-		return(memory[addr]);
-	else
-		return(0xff);
+	return(fp_led_data);
 }
 
 /*
