@@ -114,6 +114,8 @@ void init_memory(void)
 }
 
 void reset_memory(void) {
+	
+#ifdef HAS_BANKED_ROM
 	if(r_flag) {
 		groupsel = _GROUPINIT;
 	} else {
@@ -121,6 +123,7 @@ void reset_memory(void) {
 	}
 	groupswap();
 	cyclecount = 0;
+#endif
 }
 
 /*
