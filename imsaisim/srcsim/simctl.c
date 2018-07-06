@@ -106,6 +106,11 @@ void mon(void)
 	set_unix_terminal();
 #endif
 
+#ifdef HAS_BANKED_ROM
+	if(r_flag)
+		PC = 0x0000;
+#endif
+
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
 		if (reset) {
@@ -405,6 +410,7 @@ void reset_clicked(int state, int val)
 		IFF = 0;
 		fp_led_output = 0;
 		reset_io();
+		reset_memory();
 		break;
 	default:
 		break;

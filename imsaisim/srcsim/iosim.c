@@ -310,7 +310,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 240 */
 	io_trap_in,		/* port 241 */
 	io_trap_in,		/* port 242 */
-	io_no_card_in,		/* port 243 */ /* software memory control */
+	ctrl_port_in,	/* port 243 */ /* software memory control */
 	io_trap_in,		/* port 244 */
 	io_trap_in,		/* port 245 */
 	lpt_in,			/* port 246 */ /* IMSAI PTR-300 line printer */
@@ -578,7 +578,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 240 */
 	io_trap_out,		/* port 241 */
 	io_trap_out,		/* port 242 */
-	io_no_card_out,		/* port 243 */ /* software memory control */
+	ctrl_port_out,		/* port 243 */ /* software memory control */
 	io_trap_out,		/* port 244 */
 	io_trap_out,		/* port 245 */
 	lpt_out,		/* port 246 */ /* IMSAI PTR-300 line printer */

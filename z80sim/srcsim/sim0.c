@@ -166,6 +166,7 @@ int main(int argc, char *argv[])
 
 #ifdef BOOTROM
 			case 'r':	/* load default boot ROM */
+				r_flag = 1;
 				x_flag = 1;
 				strcpy(xfn, BOOTROM);
 				break;
@@ -608,7 +609,7 @@ static int load_hex(char *fn)
 			data += (*s <= '9') ? (*s - '0') :
 					      (*s - 'A' + 10);
 			s++;
-			*(mem_base() + addr + i) = data;
+			MEMORY_WRITE(addr+i) = data;
 		}
 	}
 
