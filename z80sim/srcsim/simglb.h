@@ -97,3 +97,5 @@ extern BYTE 	fp_led_data;
 extern WORD 	address_switch;
 extern BYTE 	fp_led_output;
 #endif
+
+#define MEMORY_WRITE(addr) *(mem_base() + (addr))
