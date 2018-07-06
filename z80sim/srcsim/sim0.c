@@ -166,6 +166,7 @@ int main(int argc, char *argv[])
 
 #ifdef BOOTROM
 			case 'r':	/* load default boot ROM */
+				r_flag = 1;
 				x_flag = 1;
 				strcpy(xfn, BOOTROM);
 				break;

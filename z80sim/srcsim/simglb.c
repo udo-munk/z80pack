@@ -141,6 +141,7 @@ int x_flag;			/* flag for -x option */
 int i_flag;			/* flag for -i option */
 int f_flag;			/* flag for -f option */
 int u_flag;			/* flag for -u option */
+int r_flag;			/* flag for -r option */
 
 /*
  *	Variables for configuration and disk images
