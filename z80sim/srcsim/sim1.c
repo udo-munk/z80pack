@@ -562,8 +562,14 @@ leave:
 			if (t >= tmax) {
 				gettimeofday(&t2, NULL);
 				tdiff = time_diff(&t1, &t2);
+#ifndef __CYGWIN__
 				if ((tdiff > 0) && (tdiff < 10000))
 					SLEEP_MS(10 - (tdiff / 1000));
+#else
+				/* timer resolution seems to be 20ms,
+				   sleeps < 10 won't work at all */
+				SLEEP_MS(10);
+#endif
 				t = 0;
 				gettimeofday(&t1, NULL);
 			}
