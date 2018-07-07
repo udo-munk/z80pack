@@ -14,7 +14,6 @@
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
 extern void wait_step(void), wait_int_step(void);
-extern void imsai_vio_ctrl(BYTE);
 extern BYTE memory[];
 extern int p_tab[];
 
@@ -62,9 +61,6 @@ static inline void memwrt(WORD addr, BYTE data)
 	fp_led_data = data;
 	fp_sampleData();
 	wait_step();
-
-	if (addr == 0xf7ff)
-		imsai_vio_ctrl(data);
 }
 
 static inline BYTE memrdr(WORD addr)
