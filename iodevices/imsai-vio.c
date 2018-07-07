@@ -54,7 +54,7 @@ static char text[10];
 
 /* VIO stuff */
 static int state;			/* state on/off for refresh thread */
-static int mode;			/* Video mode written to command port */
+static int mode, modebuf;	/* Video mode written to command port memory & double buffer*/
 static int vmode, res, inv;		/* video mode, resolution & inverse */
 int imsai_kbd_status, imsai_kbd_data;	/* keyboard status & data */
 
@@ -271,24 +271,29 @@ static void refresh(void)
 	sx = XOFF;
 	sy = YOFF;
 
-	vmode = (mode >> 2) & 3;
-	res = mode & 3;
-	inv = (mode & 16) ? 1 : 0;
+	mode = dma_read(0xf7ff);
+	if(mode != modebuf) {
+		modebuf = mode;
 
-	if (res & 1) {
-		cols = 40;
-		xscale = 2;
-	} else {
-		cols = 80;
-		xscale = 1;
-	}
+		vmode = (mode >> 2) & 3;
+		res = mode & 3;
+		inv = (mode & 16) ? 1 : 0;
 
-	if (res & 2) {
-		rows = 12;
-		yscale = 2;
-	} else {
-		rows = 24;
-		yscale = 1;
+		if (res & 1) {
+			cols = 40;
+			xscale = 2;
+		} else {
+			cols = 80;
+			xscale = 1;
+		}
+
+		if (res & 2) {
+			rows = 12;
+			yscale = 2;
+		} else {
+			rows = 24;
+			yscale = 1;
+		}
 	}
 
 	switch (vmode) {
@@ -384,15 +389,11 @@ void imsai_vio_init(void)
 	open_display();
 
 	state = 1;
+	modebuf = -1;
+	dma_write(0xf7ff, 0x00);
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
 		printf("can't create VIO thread\r\n");
 		exit(1);
 	}
-}
-
-/* take over command word from memory mapped port */
-void imsai_vio_ctrl(BYTE data)
-{
-	mode = data;
 }
