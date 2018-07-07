@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2016-2018 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * This module implements memory management for an IMSAI 8080 system
  *
@@ -10,6 +11,7 @@
  * 30-DEC-2016 implemented 1 KB page table and setup for that
  * 26-JAN-2017 initialise ROM with 0xff
  * 04-JUL-2018 optimization
+ * 07-JUL-2018 implemended banked ROM/RAM
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);

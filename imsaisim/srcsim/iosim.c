@@ -310,7 +310,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 240 */
 	io_trap_in,		/* port 241 */
 	io_trap_in,		/* port 242 */
-	ctrl_port_in,	/* port 243 */ /* software memory control */
+	ctrl_port_in,		/* port 243 */ /* software memory control */
 	io_trap_in,		/* port 244 */
 	io_trap_in,		/* port 245 */
 	lpt_in,			/* port 246 */ /* IMSAI PTR-300 line printer */
@@ -618,7 +618,7 @@ void exit_io(void)
 #ifdef HAS_DAZZLER
 	/* shutdown DAZZLER */
 	cromemco_dazzler_off();
-#endif //HAS_DAZZLER
+#endif
 
 	/* shutdown VIO */
 	imsai_vio_off();
@@ -632,7 +632,7 @@ void reset_io(void)
 {
 #ifdef HAS_DAZZLER
 	cromemco_dazzler_off();
-#endif //HAS_DAZZLER
+#endif
 	imsai_fif_reset();
 	hwctl_lock = 0xff;
 }

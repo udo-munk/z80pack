@@ -14,6 +14,7 @@
  * 04-FEB-17 added function to terminate thread and close window
  * 21-FEB-17 added scanlines to monitor
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
+ * 07-JUL-18 optimization
  */
 
 #include <X11/X.h>
@@ -54,7 +55,8 @@ static char text[10];
 
 /* VIO stuff */
 static int state;			/* state on/off for refresh thread */
-static int mode, modebuf;	/* Video mode written to command port memory & double buffer*/
+static int mode;		/* video mode written to command port memory */
+static int modebuf;			/* and double buffer for it */
 static int vmode, res, inv;		/* video mode, resolution & inverse */
 int imsai_kbd_status, imsai_kbd_data;	/* keyboard status & data */
 
@@ -272,7 +274,7 @@ static void refresh(void)
 	sy = YOFF;
 
 	mode = dma_read(0xf7ff);
-	if(mode != modebuf) {
+	if (mode != modebuf) {
 		modebuf = mode;
 
 		vmode = (mode >> 2) & 3;

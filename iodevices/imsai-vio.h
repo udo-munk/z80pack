@@ -14,6 +14,7 @@
  * 04-FEB-17 added function to terminate thread and close window
  * 21-FEB-17 added scanlines to monitor
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
+ * 07-JUL-18 optimization
  */
 
 extern void imsai_vio_init(void), imsai_vio_off(void);

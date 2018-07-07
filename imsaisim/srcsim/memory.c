@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2016-2018 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * This module implements the memory for an IMSAI 8080 system
  *
@@ -10,6 +11,7 @@
  * 30-DEC-2016 implemented 1 KB page table and setup for that
  * 26-JAN-2017 initialise ROM with 0xff
  * 04-JUL-2018 optimization
+ * 07-JUL-2018 implemended banked ROM/RAM
  */
 
 #include "stdio.h"
@@ -39,7 +41,7 @@ void groupswap() {
 	printf("\r\nMPU-B Banked ROM/RAM group select %02X\r\n", groupsel);
 #endif
 
-	if(groupsel & _GROUP0) {
+	if (groupsel & _GROUP0) {
 		rdrvec[0] = &memory[0x0000];
 		rdrvec[1] = &memory[0x0400];
 	} else {
@@ -47,7 +49,7 @@ void groupswap() {
 		rdrvec[1] = &mpubrom[0x0400];
 	}
 
-	if(groupsel & _GROUP1) {
+	if (groupsel & _GROUP1) {
 		rdrvec[52] = &memory[52<<10];
 		// rdrvec[53] = &memory[53<<10];
 		wrtvec[52] = &memory[52<<10];
@@ -56,10 +58,11 @@ void groupswap() {
 		rdrvec[54] = &memory[54<<10];
 		rdrvec[55] = &memory[55<<10];
 
-		p_tab[52] = (ram_size > 52)?MEM_RW:MEM_NONE; // Only RW if ram_size allows
-		// p_tab[53] = (ram_size > 53)?MEM_RW:MEM_NONE; // Only RW if ram_size allows
-		p_tab[54] = (ram_size > 54)?MEM_RW:MEM_NONE; // Only RW if ram_size allows
-		p_tab[55] = (ram_size > 55)?MEM_RW:MEM_NONE; // Only RW if ram_size allows
+		/* only RW if ram_size allows */
+		p_tab[52] = (ram_size > 52) ? MEM_RW : MEM_NONE;
+		// p_tab[53] = (ram_size > 53) ? MEM_RW : MEM_NONE;
+		p_tab[54] = (ram_size > 54) ? MEM_RW : MEM_NONE;
+		p_tab[55] = (ram_size > 55) ? MEM_RW : MEM_NONE;
 	} else {
 		rdrvec[52] = &mpubram[0x0000];
 		// rdrvec[53] = &mpubram[0x0400];
@@ -69,10 +72,12 @@ void groupswap() {
 		rdrvec[54] = &mpubrom[0x0000];
 		rdrvec[55] = &mpubrom[0x0400];
 
-		p_tab[52] = MEM_RW; // Must be RW while RAM is switched in
-		// p_tab[53] = MEM_RW; // Must be RW while RAM is switched in
-		p_tab[54] = (ram_size > 54)?MEM_RW:MEM_RO; // Only RW if ram_size allows
-		p_tab[55] = (ram_size > 55)?MEM_RW:MEM_RO; // Only RW if ram_size allows
+		/* must be RW while RAM is switched in */
+		p_tab[52] = MEM_RW;
+		// p_tab[53] = MEM_RW;
+		/* only RW if ram_size allows */
+		p_tab[54] = (ram_size > 54) ? MEM_RW : MEM_RO;
+		p_tab[55] = (ram_size > 55) ? MEM_RW : MEM_RO;
 	}
 }
 
@@ -142,20 +147,20 @@ void init_rom(void)
 	}
 }
 
-void ctrl_port_out(BYTE data) {
-
+void ctrl_port_out(BYTE data)
+{
 #ifdef HAS_BANKED_ROM
-	if(r_flag) {
-	groupsel = data;
-	cyclecount = 3;
+	if (r_flag) {
+		groupsel = data;
+		cyclecount = 3;
 	}
 #else
 	data = data;
 #endif
 }
 
-BYTE ctrl_port_in(void) {
-
+BYTE ctrl_port_in(void)
+{
 #ifdef HAS_BANKED_ROM
 	if(r_flag) {
 		groupsel = _GROUP0 | _GROUP1;
