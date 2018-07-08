@@ -601,8 +601,13 @@ static void (*port_out[256]) (BYTE) = {
 void init_io(void)
 {
 	/* initialise IMSAI VIO if firmware is loaded */
-	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3))
+	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3)) {
 		imsai_vio_init();
+	} else {
+		/* if no VIO firmware loaded convert the ROM to RAM */
+		p_tab[62] = MEM_RW;
+		p_tab[63] = MEM_RW;
+	}
 }
 
 /*
