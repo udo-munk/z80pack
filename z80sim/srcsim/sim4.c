@@ -58,6 +58,12 @@
 #endif
 #include "memory.h"
 
+#ifdef Z80_UNDOC
+	#define UNDOC(f) f
+#else
+	#define UNDOC(f) trap_ed
+#endif
+
 static int trap_ed(void);
 static int op_im0(void), op_im1(void), op_im2(void);
 static int op_reti(void), op_retn(void);
@@ -79,6 +85,10 @@ static int op_sbchb(void), op_sbchd(void), op_sbchh(void), op_sbchs(void);
 static int op_ldi(void), op_ldir(void), op_ldd(void), op_lddr(void);
 static int op_cpi(void), op_cpir(void), op_cpdop(void), op_cpdr(void);
 static int op_oprld(void), op_oprrd(void);
+
+#ifdef Z80_UNDOC
+static int op_undoc_out_null(void), op_undoc_in_flags(void);
+#endif
 
 int op_ed_handel(void)
 {
@@ -197,8 +207,8 @@ int op_ed_handel(void)
 		trap_ed,			/* 0x6d */
 		trap_ed,			/* 0x6e */
 		op_oprld,			/* 0x6f */
-		trap_ed,			/* 0x70 */
-		trap_ed,			/* 0x71 */
+		UNDOC(op_undoc_out_null),	/* 0x70 */
+		UNDOC(op_undoc_in_flags),	/* 0x71 */
 		op_sbchs,			/* 0x72 */
 		op_ldinsp,			/* 0x73 */
 		trap_ed,			/* 0x74 */
@@ -1257,3 +1267,49 @@ static int op_oprrd(void)	/* RRD (HL) */
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(18);
 }
+
+/**********************************************************************/
+/**********************************************************************/
+/*********       UNDOCUMENTED Z80 INSTRUCTIONS, BEWARE!      **********/
+/**********************************************************************/
+/**********************************************************************/
+
+#ifdef Z80_UNDOC
+
+int op_undoc_out_null(void)	/* OUT (n),0 */
+{
+	BYTE io_out(BYTE, BYTE, BYTE);
+	BYTE addr;
+
+	if (u_flag) {
+		trap_ed();
+		return(0);
+	}
+
+	addr = memrdr(PC++);
+	io_out(addr, 0, 0); /* NMOS, CMOS outputs 0xff */
+	return(15);
+}
+
+int op_undoc_in_flags(void)
+{
+	BYTE io_in(BYTE, BYTE);
+	BYTE addr, tmp;
+
+	if (u_flag) {
+		trap_ed();
+		return(0);
+	}
+
+	addr = memrdr(PC++);
+	tmp = io_in(addr, A); /* probably A on bus, but uncertain */
+
+	/* pretty sure about these flags, the others unknown */
+	(tmp) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(tmp & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(parity[tmp]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+
+	return(15);
+}
+
+#endif
