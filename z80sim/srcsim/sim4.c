@@ -1291,7 +1291,7 @@ int op_undoc_out_null(void)	/* OUT (n),0 */
 	return(15);
 }
 
-int op_undoc_in_flags(void)
+int op_undoc_in_flags(void)	/* IN F,(n) */
 {
 	BYTE io_in(BYTE, BYTE);
 	BYTE addr, tmp;
