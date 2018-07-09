@@ -58,11 +58,10 @@ void groupswap() {
 		rdrvec[54] = &memory[54<<10];
 		rdrvec[55] = &memory[55<<10];
 
-		/* only RW if ram_size allows */
-		p_tab[52] = (ram_size > 52) ? MEM_RW : MEM_NONE;
-		// p_tab[53] = (ram_size > 53) ? MEM_RW : MEM_NONE;
-		p_tab[54] = (ram_size > 54) ? MEM_RW : MEM_NONE;
-		p_tab[55] = (ram_size > 55) ? MEM_RW : MEM_NONE;
+		MEM_RELEASE(52);
+		// MEM_RELEASE(53);
+		MEM_RELEASE(54);
+		MEM_RELEASE(55);
 	} else {
 		rdrvec[52] = &mpubram[0x0000];
 		// rdrvec[53] = &mpubram[0x0400];
@@ -72,12 +71,10 @@ void groupswap() {
 		rdrvec[54] = &mpubrom[0x0000];
 		rdrvec[55] = &mpubrom[0x0400];
 
-		/* must be RW while RAM is switched in */
-		p_tab[52] = MEM_RW;
-		// p_tab[53] = MEM_RW;
-		/* only RW if ram_size allows */
-		p_tab[54] = (ram_size > 54) ? MEM_RW : MEM_RO;
-		p_tab[55] = (ram_size > 55) ? MEM_RW : MEM_RO;
+		MEM_RESERVE_RAM(52);
+		// MEM_RESERVE_RAM(53);
+		MEM_ROM_BANK_ON(54);
+		MEM_ROM_BANK_ON(55);
 	}
 }
 
@@ -94,7 +91,7 @@ void init_memory(void)
 
 	/* then set the first ram_size pages to RAM */
 	for (i = 0; i < ram_size; i++)
-		p_tab[i] = MEM_RW;
+		MEM_RESERVE_RAM(i);
 
 #ifdef HAS_BANKED_ROM
 	if(r_flag) {
@@ -106,17 +103,17 @@ void init_memory(void)
 	groupswap();
 	cyclecount = 0;
 #else
-	p_tab[54] = MEM_RO; 
-	p_tab[55] = MEM_RO;
+	MEM_RESERVE_ROM(54);
+	MEM_RESERVE_ROM(55);
 #endif
 
 	/* set F000 - F800 to RAM, this is display memory for the VIO */
-	p_tab[60] = MEM_RW;
-	p_tab[61] = MEM_RW;
+	MEM_RESERVE_RAM(60);
+	MEM_RESERVE_RAM(61);
 
 	/* set F800 - FFFF to ROM, this is the VIO firmware ROM */
-	p_tab[62] = MEM_RO;
-	p_tab[63] = MEM_RO;
+	MEM_RESERVE_ROM(62);
+	MEM_RESERVE_ROM(63);
 }
 
 void reset_memory(void) {

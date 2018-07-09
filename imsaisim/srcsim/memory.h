@@ -18,6 +18,7 @@ extern void init_memory(void), reset_memory(void), init_rom(void);
 extern void wait_step(void), wait_int_step(void);
 extern BYTE memory[];
 extern int p_tab[];
+extern int ram_size;
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
@@ -47,6 +48,11 @@ extern void groupswap();
 #define _GROUPINIT	0x00	// Power-on default
 #define _GROUP0 	0x40	// 2K ROM @ 0000-07FF
 #define _GROUP1 	0x80	// 2K ROM @ D800-DFFF, 256 byte RAM @ DOOO-DOFF (actually 1K RAM @ DOOO-D3FF)
+
+#define MEM_RELEASE(page) 		p_tab[(page)] = (ram_size > (page))?MEM_RW:MEM_NONE	// return page to RAM pool
+#define MEM_ROM_BANK_ON(page)	p_tab[(page)] = (ram_size > (page))?MEM_RW:MEM_RO	// reserve page as banked ROM
+#define MEM_RESERVE_RAM(page)	p_tab[(page)] = MEM_RW								// reserve page as RAM
+#define MEM_RESERVE_ROM(page)	p_tab[(page)] = MEM_RO								// reserve page as ROM
 
 /*
  * memory access for the CPU cores
