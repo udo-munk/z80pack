@@ -68,8 +68,6 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	register BYTE data = _MEMMAPPED(addr);
-	if(cyclecount && --cyclecount == 0) 
-		groupswap();
 
 	cpu_bus |= CPU_WO | CPU_MEMR;
 
@@ -81,6 +79,9 @@ static inline BYTE memrdr(WORD addr)
 		fp_led_data = 0xff;
 	fp_sampleData();
 	wait_step();
+
+	if(cyclecount && --cyclecount == 0) 
+		groupswap();
 
 	return(fp_led_data);
 }
