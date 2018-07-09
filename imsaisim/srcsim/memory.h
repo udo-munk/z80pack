@@ -42,17 +42,22 @@ extern void groupswap();
 #else
 #define _MEMWRTTHRU(addr) 	_MEMDIRECT(addr)
 #define _MEMMAPPED(addr) 	_MEMDIRECT(addr)
-#endif //HAS_BANKED_ROM
+#endif
 #define _MEMDIRECT(addr) 	memory[(addr)]
 
-#define _GROUPINIT	0x00	// Power-on default
-#define _GROUP0 	0x40	// 2K ROM @ 0000-07FF
-#define _GROUP1 	0x80	// 2K ROM @ D800-DFFF, 256 byte RAM @ DOOO-DOFF (actually 1K RAM @ DOOO-D3FF)
+#define _GROUPINIT	0x00	/* Power-on default */
+#define _GROUP0 	0x40	/* 2K ROM @ 0000-07FF */
+#define _GROUP1 	0x80	/* 2K ROM @ D800-DFFF, 256 byte RAM @ DOOO-DOFF
+				   (actually 1K RAM @ DOOO-D3FF) */
 
-#define MEM_RELEASE(page) 		p_tab[(page)] = (ram_size > (page))?MEM_RW:MEM_NONE	// return page to RAM pool
-#define MEM_ROM_BANK_ON(page)	p_tab[(page)] = (ram_size > (page))?MEM_RW:MEM_RO	// reserve page as banked ROM
-#define MEM_RESERVE_RAM(page)	p_tab[(page)] = MEM_RW								// reserve page as RAM
-#define MEM_RESERVE_ROM(page)	p_tab[(page)] = MEM_RO								// reserve page as ROM
+/* return page to RAM pool */
+#define MEM_RELEASE(page) 	p_tab[(page)] = (ram_size > (page)) ? MEM_RW : MEM_NONE
+/* reserve page as banked ROM */
+#define MEM_ROM_BANK_ON(page)	p_tab[(page)] = (ram_size > (page)) ? MEM_RW : MEM_RO
+/* reserve page as RAM */
+#define MEM_RESERVE_RAM(page)	p_tab[(page)] = MEM_RW
+/* reserve page as ROM */
+#define MEM_RESERVE_ROM(page)	p_tab[(page)] = MEM_RO
 
 /*
  * memory access for the CPU cores
