@@ -604,9 +604,11 @@ void init_io(void)
 	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3)) {
 		imsai_vio_init();
 	} else {
-		/* if no VIO firmware loaded convert the ROM to RAM */
-		p_tab[62] = MEM_RW;
-		p_tab[63] = MEM_RW;
+		/* if no VIO firmware loaded release the ROM and RAM */
+		MEM_RELEASE(60);
+		MEM_RELEASE(61);
+		MEM_RELEASE(62);
+		MEM_RELEASE(63);
 	}
 }
 
