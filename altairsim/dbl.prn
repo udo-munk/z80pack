@@ -1,0 +1,506 @@
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 1
+      
+
+
+                   ;***************************************************************
+                   ;*                                                             *
+                   ;* ALTAIR DISK BOOT LOADER                                     *
+                   ;* VERSION 4.1                                                 *
+                   ;*                                                             *
+                   ;* DISASSEMBLED BY MARTIN EBERHARD, 4 MARCH 2012               *
+                   ;* FROM AN EPROM WITH A PRINTED LABEL THAT SAID 'DBL 4.1'.     *
+                   ;* THIS EPROM WAS FOUND SOCKETED IN A MITS TURNKEY BOARD.      *
+                   ;*                                                             *
+                   ;* BECAUSE OF THE SLOW EPROM ACCESS TIME, THIS EPROM-BASED     *
+                   ;* PROGRAM FIRST COPIES ITSELF INTO RAM AT ADDRESS 2C00H       *
+                   ;* (RUNLOC), AND THEN EXECUTES THERE.                          *
+                   ;*                                                             *
+                   ;* ONCE IN RAM, THIS PROGRAM READS FROM THE DISK STARTING AT   *
+                   ;* TRACK 00, SECTOR 00. SECTOR DATA (WHICH INCLUDES THE ACTUAL *
+                   ;* DATA PAYLOAD, AS WELL AS HEADER AND TRAILER BYTES) IS FIRST *
+                   ;* LOADED INTO A RAM BUFFER IN MEMORY JUST AFTER THIS PROGRAM. *
+                   ;* THE DATA PAYLOAD THEN GETS MOVED INTO MEMORY STARTING AT    *
+                   ;* ADDRESS 0000H (DMAADR), CHECKING THE CHECKSUM ALONG THE WAY.*
+                   ;*                                                             *
+                   ;* EACH SECTOR HAS A 16-BIT VALUE IN ITS HEADER THAT IS THE    *
+                   ;* BYTE COUNT FOR THE FILE TO LOAD - THIS MANY BYTES ARE READ  *
+                   ;* FROM THE DISK. WHEN DONE (ASSUMING NO ERRORS), THIS PROGRAM *
+                   ;* JUMPS TO 0000 (DMAADR), TO EXECUTE THE LOADED CODE.         *
+                   ;*                                                             *
+                   ;* SECTORS ARE INTERLEAVED 2:1 ON THE DISK, THE EVEN SECTORS   *
+                   ;* ARE READ FIRST, AND THEN THE ODD SECTORS.                   *
+                   ;*                                                             *
+                   ;* WHEN DATA IS MOVED FROM THE RAM BUFFER TO ITS FINAL MEMORY  *
+                   ;* LOCATION, IT IS READ BACK TO VERIFY CORRECT WRITE. ANY      *
+                   ;* FAILURE WILL RESULT IN AN ABORT WITH A 'M' ERROR.           *
+                   ;*                                                             *
+                   ;* ANY READ ERRORS (EITHER A CHECKSUM ERROR OR AN INCORRECT    *
+                   ;* SYNC BYTE) WILL CAUSE A RETRY OF THE SECTOR READ. AFTER     *
+                   ;* 10H RETRIES, THIS PROGRAM WILL ABORT WITH A 'C' ERROR.      *
+                   ;*                                                             *
+                   ;* IF THE PROGRAM ABORTS BECAUSE OF AN ERROR, IT WILL ALSO     *
+                   ;* TURN THE FRONT PANEL 'INTE' LED ON.                         *
+                   ;*                                                             *
+                   ;*   DISK SECTOR FORMAT               BUFFER ADDRESS           *
+                   ;*     1 BYTE:   ?                       2CEBH                 *
+                   ;*     2 BYTES: 16-BIT FILE-SIZE         2CECH                 *
+                   ;*   128 BYTES: DATA PAYLOAD             2CEEH                 *
+                   ;*     1 BYTE:  SYNC (FFH)               2D6EH                 *
+                   ;*     1 BYTE:  CHECKSUM                 2D6FH                 *
+                   ;*     1 BYTE:  ?                        2D70H                 *
+                   ;*                                                             *
+                   ;* MODIFIED TO ASSEMBLE WITH INTEL 8080 CROSS ASSEMBLER        *
+                   ;* JULY 2018, UDO MUNK                                         *
+                   ;***************************************************************
+                    
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 2
+      
+
+
+   0000            DMAADR  EQU     0000H           ;JUMPS HERE ONCE LOAD IS DONE
+   2C00            RUNLOC  EQU     2C00H           ;RELOCATE LOADER HERE
+                    
+   0010            RETRIES EQU     10H             ;MAX NUMBER OF RETRIES
+                    
+   00FF            SENSE   EQU     0FFH            ;FRONT PANEL SENSE SWITCHES
+                    
+                   ; 2SIO REGISTERS
+                    
+   0010            S2C0    EQU     10H     ;ACIA 0 CONTROL OUTPUT PORT
+   0010            S2S0    EQU     10H     ;ACIA 0 STATUS INPUT PORT
+   0011            S2T0    EQU     11H     ;ACIA 0 TX DATA REGISTER
+   0011            S2R0    EQU     11H     ;ACIA 0 RX DATA REGISTER
+   0012            S2C1    EQU     12H     ;ACIA 1 CONTROL OUTPUT PORT
+   0012            S2S1    EQU     12H     ;ACIA 1 STATUS INPUT PORT
+   0013            S2T1    EQU     13H     ;ACIA 1 TX DATA REGISTER
+   0013            S2R1    EQU     13H     ;ACIA 1 RX DATA REGISTER
+                    
+                   ; 2SIO EQUATES
+                    
+   0003            SIO2RST EQU     00000011B       ;MASTER RESET
+                    
+                   ; SIO REGISTERS
+                    
+   0000            SIOCTRL EQU     0               ;CONTROL PORT
+   0000            SIOSTAT EQU     0               ;STATUS
+   0001            SIOTXD  EQU     1               ;TRANSMIT DATA
+   0001            SIORXD  EQU     1               ;RECEUVE DATA
+                    
+                   ; PIO REGISTERS
+                    
+   0004            PIOCTRL EQU     4               ;CONTROL PORT
+   0004            PIOSTAT EQU     4               ;STATUS
+   0005            PIOTXD  EQU     5               ;TRANSMIT DATA
+   0005            PIORXD  EQU     5               ;RECEUVE DATA
+                    
+                   ; 4PIO REGISTERS
+                    
+   0020            P4CA0   EQU     20H             ;PORT 0 SECTION A CTRL/STATUS
+   0021            P4DA0   EQU     21H             ;PORT 0 SECTION A DATA
+   0022            P4CB0   EQU     22H             ;PORT 0 SECTION B CTRL/STATUS
+   0023            P4DB0   EQU     23H             ;PORT 0 SECTION B DATA
+                    
+                   ; DISK CONTROLLER INPUT EQUATES
+                    
+   0008            DSTAT   EQU     08H             ;DISK STATUS REGISTER
+   0002            MOVEOK  EQU             02H     ;HEAD MOVEMENT ALLOWED
+   0008            ENABLD  EQU             08H     ;0 MEANS CONTROLLER IS ENABLED
+   0040            TRACK0  EQU             40H     ;TRACK 0 DETECT
+                    
+   0009            DSECTR  EQU     09H             ;DISK SECTOR NUMBER
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 3
+      
+
+
+   0001            SECTRU  EQU             01H     ;SECTOR VALUE IS TRUE
+                    
+   000A            DDATA   EQU     0AH             ;READ DATA HERE
+                    
+                   ;DISK CONTROLLER OUTPUT EQUATES
+   0008            DSLCT   EQU     08H             ;SELECT DISK NO.
+   0080            DISABL  EQU             80H     ;DSLCT VALUE TO DISABLE ALL
+                    
+   0009            DCTRL   EQU     09H             ;DISK CONTROL REG
+   0001            STEPIN  EQU             01H     ;STEP IN
+   0002            STEPOT  EQU             02H     ;STEP OUT
+   0004            HDLOAD  EQU             04H     ;HEAD LOAD
+   0008            HDUNLD  EQU             08H     ;HEAD UNLOAD
+   0010            INTEN   EQU             10H     ;INTERRUPT ENABLE
+   0020            INTDE   EQU             20H     ;INTERRUPT DISABLE
+   0040            HCS     EQU             40H     ;HEAD CURRENT SWITCH
+   0080            WRITEN  EQU             80H     ;WRITE ENABLE
+                    
+                    
+                   ;***************************************************************
+                   ; CODE MOVER: MOVES LOADER INTO LOW MEMORY
+                   ;***************************************************************
+                    
+   FF00                    ORG     0FF00H
+                    
+   FF00   2113FF           LXI     H,RCODE         ;SOURCE
+   FF03   11002C           LXI     D,RUNLOC        ;DESTINATION
+   FF06   0EEB             MVI     C,EOP-RCODE     ;BYTE COUNT
+                    
+   FF08   7E       MLUP:   MOV     A,M             ;GET SOURCE BYTE
+   FF09   12               STAX    D               ;PUT IT IN PLACE
+   FF0A   23               INX     H               ;BUMP POINTERS
+   FF0B   13               INX     D
+   FF0C   0D               DCR     C               ;DONE YET?
+   FF0D   C208FF           JNZ     MLUP            ;NO: KEEP MOVING
+   FF10   C3002C           JMP     RUNLOC          ;YES: GO EXECUTE IT
+                    
+                   ;***************************************************************
+                   ; THE FOLLOWING LOADER CODE GETS RELOCATED TO 'RUNLOC' BY THE
+                   ; ABOVE MOVER. ALL ADDRESSES ARE ADJUSTED FOR WHERE THIS CODE
+                   ; WILL ACTUALY RUN.
+                   ;***************************************************************
+                    
+   FF13   F3       RCODE:  DI                      ;FRONT PANEL INTE LED OFF
+                                                   ;BECAUSE NO ERROR YET.
+                    
+                   ;CALCULATE CODE ADDRESS OFFSET FOR RELOCATED CODE
+                    
+   D313            OFFSET  EQU     RCODE-RUNLOC    ;SUBTRACT FROM ALL ADDRESSES
+                    
+                   ;---------------------------------------------------------------
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 4
+      
+
+
+                   ; INITIALIZATION
+                   ;---------------------------------------------------------------
+                   ;INITIALIZE 4PIO
+                    
+   FF14   AF               XRA     A               ;ACCESS DDR REGISTER, ETC.
+   FF15   D322             OUT     P4CB0
+                    
+   FF17   2F               CMA                     ;SET PORT B AS INPUT
+   FF18   D323             OUT     P4DB0
+                    
+   FF1A   3E2C             MVI     A,2CH           ;READY BIT ON E PULSE, ETC.
+   FF1C   D322             OUT     P4CB0
+                    
+                   ;INITIALIZE THE 2SIO. READ TEH SENSE SWITCHES TO DETERMINE THE
+                   ;NUMBER OF STOP BITS. IF SWITCH A12 IS UP, IT'S ONE STOP BIT.
+                   ;OTHERWISE. IT'S 2 STOP BITS. ALWAYS SET UP FOR 8-BIT DATA AND
+                   ;NO PARITY.
+                    
+   FF1E   3E03             MVI     A,SIO2RST       ;RESET COMMAND
+   FF20   D310             OUT     S2C0
+   FF22   DBFF             IN      SENSE           ;READ SENSE SWITCHES
+   FF24   E610             ANI     10H             ;GET STOP BIT SELECT FOR 2SIO
+   FF26   0F               RRC                     ;MAKE IT ACIA WORD SELECT 0
+   FF27   0F               RRC
+   FF28   C610             ADI     10H             ;WORD SELECT 2 FOR 8 BIT DATA
+   FF2A   D310             OUT     10H             ;8 BITS, 1-2 STOPS, NO PARITY
+                    
+                   ;SET UP THE STACK IN MEMORY AFTER THIS PROGRAM AND AFTER
+                   ;THE DISK DATA BUFFER
+                    
+   FF2C   31792D           LXI     SP,STACK        ;SET UP STACK
+                    
+                   ;WAIT FOR CONTROLLER TO BE ENABLED (INCLUDING DOOR SHUT)
+                    
+   FF2F   AF       WAITEN: XRA     A               ;SELECT DRIVE 0
+   FF30   D308             OUT     DSLCT
+                    
+   FF32   DB08             IN      DSTAT
+   FF34   E608             ANI     ENABLD          ;THIS BIT 0 WHEN ENABLED
+   FF36   C21C2C           JNZ     WAITEN-OFFSET   ;KEEP WAITING
+                    
+                   ;LOAD THE HEAD
+                    
+   FF39   3E04             MVI     A,HDLOAD
+   FF3B   D309             OUT     DCTRL
+   FF3D   C3382C           JMP     CHK00-OFFSET    ;ALREADY AT TRACK 00?
+                    
+                   ; STEP OUT ONE TRACK AT A TIME TO SEEK TRACK 00
+                    
+   FF40   DB08     SEEK00: IN      DSTAT           ;WAIT FOR HEAD MOVEMENT ALLOWED
+   FF42   E602             ANI     MOVEOK
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 5
+      
+
+
+   FF44   C22D2C           JNZ     SEEK00-OFFSET   ;KEEP WAITING
+                    
+   FF47   3E02             MVI     A,STEPOT        ;STEP OUT A TRACK
+   FF49   D309             OUT     DCTRL
+                    
+   FF4B   DB08     CHK00:  IN      DSTAT           ;ARE WE AT TRACK 0 ALREADY?
+   FF4D   E640             ANI     TRACK0
+   FF4F   C22D2C           JNZ     SEEK00-OFFSET   ;NO: KEEP STEPPING
+                    
+                    
+   FF52   110000           LXI     D,DMAADR        ;PUT DISK DATA STARTING HERE
+                    
+                   ;---------------------------------------------------------------
+                   ; READ DISK DATA UNTIL WE'VE READ AS MEANY BYTES AS INDICATED
+                   ; AS THE FILE SIZE IN THE SECTOR HEADERS, AND PUT IT AT (DE)
+                   ;---------------------------------------------------------------
+   FF55   0600     NXTRAC: MVI     B,0             ;INITIAL SECTOR NUMBER
+                    
+   FF57   3E10     NXTSEC: MVI     A,RETRIES       ;INITIALIZE RETRY COUNTER
+                    
+                   ;READ ONE SECTOR INTO THE BUFFER
+                   ; ON ENTRY:
+                   ;    A = RETRIES
+                   ;    B = SECTOR NUMBER
+                   ;   DE = MEMORY ADDRESS FOR SECTOR DATA
+                    
+   FF59   F5       RDSECT: PUSH    PSW             ;SAVE RETRY COUNTER
+   FF5A   D5               PUSH    D               ;SAVE DEST ADDRESS FOR RETRY
+   FF5B   C5               PUSH    B               ;SAVE B=SECTOR NUMBER
+   FF5C   D5               PUSH    D               ;SAVE DEST ADDRESS FOR MOVE
+   FF5D   118680           LXI     D,8086H         ;E=BYTES PER SECTOR, D=JUNK
+   FF60   21EB2C           LXI     H,BUFFER        ;HL POINTS TO DISK BUFFER
+                    
+                   ; WAIT UNTIL THE RIGHT SECTOR
+                    
+   FF63   DB09     WSECT:  IN      DSECTR          ;READ SECTOR STATUS
+   FF65   1F               RAR                     ;TEST BIT 0 = SECTRU
+   FF66   DA502C           JC      WSECT-OFFSET    ;SPIN UNTIL SECTOR IS READY
+                    
+   FF69   E61F             ANI     1FH             ;GET THE SECTOR NUMBER
+   FF6B   B8               CMP     B               ;IS IT THE ONE WE WANT?
+   FF6C   C2502C           JNZ     WSECT-OFFSET    ;NO: WAIT FOR OUR SECTOR
+                    
+                   ;---------------------------------------------------------------
+                   ; LOOP TO READ 128 + 6  BYTES FROM THE DISK AND PUT INTO THE RAM
+                   ; BUFFER. THIS READING IS DONE 2 BYTES AT A TIME FOR SPEED
+                   ;---------------------------------------------------------------
+   FF6F   DB08     DWAIT:  IN      DSTAT           ;DATA READY?
+   FF71   B7               ORA     A               ;MSB CLEARED WHEN READY
+   FF72   FA5C2C           JM      DWAIT-OFFSET
+                    
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 6
+      
+
+
+   FF75   DB0A             IN      DDATA           ;GET A BYTE OF DISK DATA
+   FF77   77               MOV     M,A             ;PUT IT IN MEMORY
+   FF78   23               INX     H               ;BUMP MEMORY POINTER
+   FF79   1D               DCR     E               ;BUMP & TEST BYTE COUNT
+   FF7A   CA722C           JZ      SECDON-OFFSET   ;QUIT IF BYTE COUNT = 0
+                    
+   FF7D   1D               DCR     E               ;BUMP & TEST BYTE COUNT AGAIN
+   FF7E   DB0A             IN      DDATA           ;GET ANOTHER BYTE OF DATA
+   FF80   77               MOV     M,A             ;PUT IT IN MEMORY
+   FF81   23               INX     H               ;BUMP MEMORY POINTER
+   FF82   C25C2C           JNZ     DWAIT-OFFSET    ;AGAIN, UNLESS BYTE COUNT = 0
+   FF85            SECDON:
+                    
+                   ;---------------------------------------------------------------
+                   ; MOVE THE DATA TO ITS FINAL LOCATION, AND CHECK THE CHECKSUM AS
+                   ; WE MOVE THE DATA. ALSO VERIFY THE MEMORY WRITE.
+                   ;---------------------------------------------------------------
+   FF85   E1               POP     H                       ;RECOVER DEST ADDRESS
+   FF86   11EE2C           LXI     D,BUFFER+3              ;START OF DATA PAYLOAD
+   FF89   018000           LXI     B,0080H                 ;B=INITIAL CHECKSUM,
+                                                           ;C=DATA BYTES/SECTOR
+                    
+   FF8C   1A       MOVLUP: LDAX    D               ;GET A BYTE FROM THE BUFFER
+   FF8D   77               MOV     M,A             ;WRITE IT TO RAM
+   FF8E   BE               CMP     M               ;SUCCESSFUL WRITE TO RAM?
+   FF8F   C2CB2C           JNZ     MEMERR-OFFSET   ;NO: GIVE UP
+                    
+   FF92   80               ADD     B               ;COMPUTE CHECKSUM
+   FF93   47               MOV     B,A
+                    
+   FF94   13               INX     D               ;BUMP SOURCE POINTER
+   FF95   23               INX     H               ;BUMP DESTINATION POINTER
+   FF96   0D               DCR     C               ;NEXT BYTE
+   FF97   C2792C           JNZ     MOVLUP-OFFSET   ;KEEP GOING THROUGH 128 BYTES
+                    
+                    
+   FF9A   1A               LDAX    D               ;THE NEXT BYTE MUST BE FF
+   FF9B   FEFF             CPI     0FFH
+   FF9D   C2902C           JNZ     RDDONE-OFFSET   ;OTHERWISE IT'S A BAD READ
+                    
+   FFA0   13               INX     D               ;THE NEXT BYTE IS THE CHECKSUM
+   FFA1   1A               LDAX    D
+   FFA2   B8               CMP     B               ;MATCH THE COMPUTED CHECKSUM?
+                    
+   FFA3   C1       RDDONE: POP     B               ;RESTORE SECTOR NUMBER
+   FFA4   EB               XCHG                    ;PUT MEMORY ADDRESS INTO DE
+                                                   ;AND BUFFER POINTER INTO HL
+   FFA5   C2C22C           JNZ     BADSEC-OFFSET   ;CHECKSUM ERROR OR MISSING FF?
+                    
+   FFA8   F1               POP     PSW             ;CHUCK OLD SECTOR NUMBER
+   FFA9   F1               POP     PSW             ;CHUCK OLD RAM ADDRESS
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 7
+      
+
+
+   FFAA   2AEC2C           LHLD    BUFFER+1        ;GET FILE BYTE COUNT FROM HEADER
+   FFAD   CDE52C           CALL    CMP16-OFFSET    ;COMPARE TO NEXT RAM ADDRESS
+   FFB0   D2BB2C           JNC     DONE-OFFSET     ;DONE IF ADDRESS > FILE SIZE
+                    
+                   ;---------------------------------------------------------------
+                   ; SET UP FOR NEXT SECTOR
+                   ; THE DISK HAS A 2:1 SECTOR INTERLEAVE -
+                   ; FIRST READ ALL THE EVEN SECTORS, THEN READ ALL THE ODD SECTORS
+                   ;---------------------------------------------------------------
+   FFB3   04               INR     B               ;BUMP SECTOR NUMBER BY 2
+   FFB4   04               INR     B
+   FFB5   78               MOV     A,B             ;LAST EVEN OR ODD SECTOR ALREADY?
+   FFB6   FE20             CPI     20H
+   FFB8   DA442C           JC      NXTSEC-OFFSET   ;NO: KEEP READING
+                    
+   FFBB   0601             MVI     B,1             ;START READING THE ODD SECTORS
+   FFBD   CA442C           JZ      NXTSEC-OFFSET   ;UNLESS WE FINISHED THEM TOO
+                    
+                   ; SEEK THE NEXT TRACK
+                    
+   FFC0   DB08     WAITHD: IN      DSTAT           ;WAIT UNTIL WE CAN MOVE THE HEAD
+   FFC2   E602             ANI     MOVEOK
+   FFC4   C2AD2C           JNZ     WAITHD-OFFSET
+                    
+   FFC7   3E01             MVI     A,STEPIN        ;SEND STEP-IN CMD TO CONTROLLER
+   FFC9   D309             OUT     DCTRL
+   FFCB   C3422C           JMP     NXTRAC-OFFSET   ;BEGINNING OF THE NEXT TRACK
+                    
+                    
+   FFCE   3E80     DONE:   MVI     A,DISABL        ;DISABLE DISKS
+   FFD0   D308             OUT     DSLCT
+   FFD2   C30000           JMP     DMAADR          ;GO EXECUTE WHAT WE LOADED
+                    
+                   ;---------------------------------------------------------------
+                   ; SECTOR ERROR:
+                   ; RESTORE TO BEGINNING OF SECTOR AND SEE IF WE CAN RETRY
+                   ;---------------------------------------------------------------
+   FFD5   D1       BADSEC: POP     D               ;RESTORE MEMORY ADDRESS
+   FFD6   F1               POP     PSW             ;GET RETRY COUNTER
+   FFD7   3D               DCR     A               ;BUMP RETRY COUNTER
+   FFD8   C2462C           JNZ     RDSECT-OFFSET   ;NOT ZERO: TRY AGAIN
+                    
+                   ; FALL INTO SECERR
+                    
+                   ;---------------------------------------------------------------
+                   ;ERROR ABORT ROUTINE: WRITE ERROR INFO TO MEMORY AT 0, HANG
+                   ;FOREVER, WRITING A ONE-CHARACTER ERROR CODE TO ALL OUTPUT PORTS
+                   ; ENTRY AT SECERR PRINTS 'C', SAVES BUFFER POINTER AT 0001H
+                   ;   THE BUFFER POINTER WILL BE 2D6EH IF IT WAS A SYNCHRONIZATION
+                   ;   ERROR, AND IT WILL BE 2D6FH IF IT WAS A CHECKSUM ERROR
+                   ; ENTRY AT MEMERR PRINTS 'M', SAVES OFFENDING ADDRESS AT 0001H
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 8
+      
+
+
+                   ; THE FRONT PANEL INTE LED GETS TURNED ON TO INDICATE AN ERROR.
+                   ;---------------------------------------------------------------
+   FFDB   3E43     SECERR: MVI     A,'C'           ;ERROR CODE
+                    
+   FFDD   01               DB      01              ;USE "LXI B" TO SKIP 2 BYTES
+                    
+   FFDE   3E4D     MEMERR: MVI     A,'M'           ;MEMORY ERROR
+                    
+   FFE0   FB               EI                      ;TURN FORNT PANEL INTE LED ON
+                    
+   FFE1   320000           STA     DMAADR          ;SAVE ERROR CODE AT 0000
+   FFE4   220100           SHLD    DMAADR+1        ;SAVE OFFENDING ADDRESS AT 0001
+                    
+   FFE7   47               MOV     B,A             ;SAVE EROR CODE FOR A MOMENT
+   FFE8   3E80             MVI     A,DISABL        ;DESELECT ALL DISKS
+   FFEA   D308             OUT     DSLCT
+   FFEC   78               MOV     A,B             ;RECOVER ERROR CODE
+                    
+                   ;HANG FOREVER, WRITING ERROR CODE (IN A) TO EVERY KNOWN PORT
+                    
+   FFED   D301     ERHANG: OUT     SIOTXD          ;WRITE ERROR CODE TO SIO
+   FFEF   D311             OUT     S2T0            ;WRITE ERROR CODE TO 2SIO
+   FFF1   D305             OUT     PIOTXD          ;WRITE ERROR CODE TO PIO
+   FFF3   D323             OUT     P4DB0           ;WRITE ERROR CODE TO 4PIO
+   FFF5   C3DA2C           JMP     ERHANG-OFFSET   ;HANG FOREVER
+                    
+                   ;---------------------------------------------------------------
+                   ; SUBROUTINE TO COMPARE DE    HL
+                   ; C SET IF HL>DE
+                   ;---------------------------------------------------------------
+   FFF8   7A       CMP16:  MOV     A,D             ;LOW BYTES EQUAL?
+   FFF9   BC               CMP     H
+   FFFA   C0               RNZ                     ;NO: RET WITH C CORRECT
+   FFFB   7B               MOV     A,E             ;HIGH BYTES EQUAL?
+   FFFC   BD               CMP     L
+   FFFD   C9               RET                     ;RETURN WITH RESULT IN C
+                    
+   FFFE            EOP:                            ;END OF PROGRAM CODE
+   FFFE   0000             DW      00H             ;FILLS THE EPROM OUT WITH 0
+                    
+                   ;---------------------------------------------------------------
+                   ;DISK BUFFER IN RAM AFTER RELOCATED LOADER
+                   ;---------------------------------------------------------------
+   2CEB                    ORG     2CEBH
+   2CEB            BUFFER: DS      132
+                    
+                   ;---------------------------------------------------------------
+                   ; AND FINALLY THE STACK, WHICH GROWS DOWNWARD
+                   ;---------------------------------------------------------------
+   2D6F                    DS      10              ;SPACE FOR STACK
+   2D79            STACK   EQU     $
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 9
+      
+
+
+                    
+                           END
+ NO PROGRAM ERRORS
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      20:17  06/10/2018
++                                                                                      PAGE 10
+      
+
+
+                        SYMBOL TABLE
+
+  * 01
+
+  A      0007      B      0000      BADSE  FFD5      BUFFE  2CEB      
+  C      0001      CHK00  FF4B      CMP16  FFF8      D      0002      
+  DCTRL  0009      DDATA  000A      DISAB  0080      DMAAD  0000      
+  DONE   FFCE      DSECT  0009      DSLCT  0008      DSTAT  0008      
+  DWAIT  FF6F      E      0003      ENABL  0008      EOP    FFFE      
+  ERHAN  FFED      H      0004      HCS    0040 *    HDLOA  0004      
+  HDUNL  0008 *    INTDE  0020 *    INTEN  0010 *    L      0005      
+  M      0006      MEMER  FFDE      MLUP   FF08      MOVEO  0002      
+  MOVLU  FF8C      NXTRA  FF55      NXTSE  FF57      OFFSE  D313      
+  P4CA0  0020 *    P4CB0  0022      P4DA0  0021 *    P4DB0  0023      
+  PIOCT  0004 *    PIORX  0005 *    PIOST  0004 *    PIOTX  0005      
+  PSW    0006      RCODE  FF13      RDDON  FFA3      RDSEC  FF59      
+  RETRI  0010      RUNLO  2C00      S2C0   0010      S2C1   0012 *    
+  S2R0   0011 *    S2R1   0013 *    S2S0   0010 *    S2S1   0012 *    
+  S2T0   0011      S2T1   0013 *    SECDO  FF85      SECER  FFDB *    
+  SECTR  0001 *    SEEK0  FF40      SENSE  00FF      SIO2R  0003      
+  SIOCT  0000 *    SIORX  0001 *    SIOST  0000 *    SIOTX  0001      
+  SP     0006      STACK  2D79      STEPI  0001      STEPO  0002      
+  TRACK  0040      WAITE  FF2F      WAITH  FFC0      WRITE  0080 *    
+  WSECT  FF63      
+
