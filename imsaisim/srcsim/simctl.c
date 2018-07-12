@@ -71,7 +71,7 @@ void mon(void)
 	XInitThreads();
 
 	if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
-		puts("frontpanel error");
+		LOGE(TAG, "frontpanel error");
 		exit(1);
 	}
 
@@ -501,10 +501,8 @@ void power_clicked(int state, int val)
 #ifdef UNIX_TERMINAL
 		if (isatty(1))
 			system("tput clear");
-		else {
+		else
 			puts("\r\n\r\n\r\n");
-			fflush(stdout);
-		}
 #endif
 		break;
 	case FP_SW_DOWN:
