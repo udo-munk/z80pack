@@ -83,7 +83,7 @@ sim6.o : sim6.c sim.h simglb.h config.h memory.h
 sim7.o : sim7.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim7.c
 
-simctl.o : simctl.c sim.h simglb.h config.h memory.h
+simctl.o : simctl.c sim.h simglb.h config.h memory.h log.h
 	$(CC) $(CFLAGS) simctl.c
 
 simint.o : simint.c sim.h simglb.h
@@ -104,7 +104,7 @@ simglb.o : simglb.c sim.h
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
 
-config.o : config.c sim.h simglb.h
+config.o : config.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) config.c
 
 imsai-sio2.o: ../../iodevices/imsai-sio2.c

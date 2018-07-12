@@ -21,6 +21,7 @@
  * 21-FEB-17 VIO monitor scanlines configurable
  * 23-FEB-17 added configuration options for VDM
  * 24-MAR-17 added configuration for SIO 0
+ * 18-JUL-18 use logging
  */
 
 #include <stdlib.h>
@@ -28,8 +29,11 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
+
+static const char *TAG = "config";
 
 int ram_size;
 int fp_size = 800;
@@ -75,7 +79,7 @@ void config(void)
 					sio1_upper_case = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_upper_case")) {
@@ -87,7 +91,7 @@ void config(void)
 					sio2_upper_case = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_strip_parity")) {
@@ -99,7 +103,7 @@ void config(void)
 					sio1_strip_parity = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_strip_parity")) {
@@ -111,7 +115,7 @@ void config(void)
 					sio2_strip_parity = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_drop_nulls")) {
@@ -123,7 +127,7 @@ void config(void)
 					sio1_drop_nulls = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_drop_nulls")) {
@@ -135,7 +139,7 @@ void config(void)
 					sio2_drop_nulls = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_baud_rate")) {
@@ -154,16 +158,13 @@ void config(void)
 			} else if (!strcmp(t1, "ram")) {
 				ram_size = atoi(t2);
 				if (ram_size > MAX_RAM) {
-					printf("Maximal possible RAM size is %dKB\n", MAX_RAM);
+					LOGW(TAG, "Maximal possible RAM size is %dKB\n", MAX_RAM);
 					ram_size = MAX_RAM;
 				}
-				printf("RAM size is %d KB\n", ram_size);
+				LOG(TAG, "RAM size is %d KB\n", ram_size);
 			} else {
-				printf("system.conf unknown command: %s\n", s);
+				LOGW(TAG, "system.conf unknown command: %s\n", s);
 			}
 		}
 	}
-
-	printf("\n");
-
 }

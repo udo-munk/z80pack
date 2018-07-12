@@ -12,6 +12,7 @@
  * 26-JAN-2017 initialise ROM with 0xff
  * 04-JUL-2018 optimization
  * 07-JUL-2018 implemended banked ROM/RAM
+ * 12-JUL-2018 use logging
  */
 
 #include "stdio.h"
@@ -98,7 +99,7 @@ void init_memory(void)
 #ifdef HAS_BANKED_ROM
 	if(r_flag) {
 		groupsel = _GROUPINIT;
-		LOGI(TAG, "MPU-B Banked ROM/RAM enabled");
+		LOG(TAG, "MPU-B Banked ROM/RAM enabled\n");
 	} else {
 		groupsel = _GROUP0 | _GROUP1;
 	}
@@ -116,6 +117,8 @@ void init_memory(void)
 	/* set F800 - FFFF to ROM, this is the VIO firmware ROM */
 	MEM_RESERVE_ROM(62);
 	MEM_RESERVE_ROM(63);
+
+	LOG(TAG, "\n");
 }
 
 void reset_memory(void) {

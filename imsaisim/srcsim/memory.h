@@ -12,6 +12,7 @@
  * 26-JAN-2017 initialise ROM with 0xff
  * 04-JUL-2018 optimization
  * 07-JUL-2018 implemended banked ROM/RAM
+ * 12-JUL-2018 use logging
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
