@@ -20,6 +20,7 @@
  * 24-APR-18 cleanup
  * 17-MAY-18 improved hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 12-JUL-18 use logging
  */
 
 #include <unistd.h>
@@ -40,6 +41,7 @@
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "log.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -54,6 +56,8 @@ static BYTE lpt_in(void);
 static void lpt_out(BYTE);
 static BYTE io_pport_in(void);
 static BYTE imsai_kbd_data_in(void), imsai_kbd_status_in(void);
+
+static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
 BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
@@ -850,7 +854,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write printer");
+				LOGE(TAG, "can't write to printer");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
