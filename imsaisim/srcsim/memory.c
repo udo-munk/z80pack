@@ -20,6 +20,10 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+// #define LOG_LOCAL_LEVEL LOG_DEBUG
+#include "log.h"
+
+static const char *TAG = "memory";
 
 /* 64KB non banked memory */
 BYTE memory[64<<10];
@@ -37,9 +41,7 @@ static BYTE groupsel;
 int p_tab[64];		/* 64 pages a 1 KB */
 
 void groupswap() {
-#ifdef DEBUG
-	printf("\r\nMPU-B Banked ROM/RAM group select %02X\r\n", groupsel);
-#endif
+	LOGD(TAG, "MPU-B Banked ROM/RAM group select %02X", groupsel);
 
 	if (groupsel & _GROUP0) {
 		rdrvec[0] = &memory[0x0000];
@@ -96,7 +98,7 @@ void init_memory(void)
 #ifdef HAS_BANKED_ROM
 	if(r_flag) {
 		groupsel = _GROUPINIT;
-		printf("MPU-B Banked ROM/RAM enabled: group select %02X\n", groupsel);
+		LOGI(TAG, "MPU-B Banked ROM/RAM enabled");
 	} else {
 		groupsel = _GROUP0 | _GROUP1;
 	}
