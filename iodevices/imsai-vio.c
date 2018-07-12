@@ -15,6 +15,7 @@
  * 21-FEB-17 added scanlines to monitor
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
  * 07-JUL-18 optimization
+ * 12-JUL-18 use logging
  */
 
 #include <X11/X.h>
@@ -28,10 +29,13 @@
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "log.h"
 #include "imsai-vio-charset.h"
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
+
+static const char *TAG = "VIO";
 
 /* X11 stuff */
        int slf = 1;			/* scanlines factor, default no lines */
@@ -395,7 +399,7 @@ void imsai_vio_init(void)
 	dma_write(0xf7ff, 0x00);
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
-		printf("can't create VIO thread\r\n");
+		LOGE(TAG, "can't create thread\r\n");
 		exit(1);
 	}
 }

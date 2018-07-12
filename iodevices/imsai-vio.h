@@ -15,6 +15,7 @@
  * 21-FEB-17 added scanlines to monitor
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
  * 07-JUL-18 optimization
+ * 12-JUL-18 use logging
  */
 
 extern void imsai_vio_init(void), imsai_vio_off(void);

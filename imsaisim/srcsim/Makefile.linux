@@ -113,7 +113,7 @@ imsai-fif.o: ../../iodevices/imsai-fif.c
 cromemco-dazzler.o: ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
 
-imsai-vio.o : ../../iodevices/imsai-vio.c
+imsai-vio.o : ../../iodevices/imsai-vio.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-vio.c
 
 clean:
