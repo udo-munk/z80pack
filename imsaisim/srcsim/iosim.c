@@ -614,6 +614,8 @@ void init_io(void)
 		MEM_RELEASE(62);
 		MEM_RELEASE(63);
 	}
+
+	imsai_fif_reset();
 }
 
 /*
