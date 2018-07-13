@@ -16,6 +16,7 @@
  * 22-AUG-17 reopen tty at EOF from input redirection
  * 03-MAY-18 improved accuracy
  * 03-JUL-18 implemented baud rate for terminal SIO
+ * 13-JUL-18 use logging
  */
 
 #include <unistd.h>
@@ -27,8 +28,11 @@
 #include "sim.h"
 #include "simglb.h"
 #include "unix_terminal.h"
+#include "log.h"
 
 #define BAUDTIME 10000000
+
+static const char *TAG = "SIO";
 
 int sio1_upper_case;
 int sio1_strip_parity;
@@ -141,7 +145,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write imsai sio2 data");
+			LOGE(TAG, "can't write data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}

@@ -107,7 +107,7 @@ unix_terminal.o : ../../iodevices/unix_terminal.c
 config.o : config.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) config.c
 
-imsai-sio2.o: ../../iodevices/imsai-sio2.c
+imsai-sio2.o: ../../iodevices/imsai-sio2.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-sio2.c
 
 imsai-fif.o: ../../iodevices/imsai-fif.c
