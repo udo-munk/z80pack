@@ -206,7 +206,7 @@ void disk_io(int addr)
 	LOGD(TAG, "sector: %02x\r", *(mem_base() + addr + DD_SECTOR));
 	LOGD(TAG, "DMA low: %02x\r", *(mem_base() + addr + DD_DMAL));
 	LOGD(TAG, "DMA high: %02x\r", *(mem_base() + addr + DD_DMAH));
-	LOG(TAG, "\r\n");
+	LOGD(TAG, "\r\n");
 
 	unit = dma_read(addr + DD_UNIT) & 0xf;
 	cmd = dma_read(addr + DD_UNIT) >> 4;
