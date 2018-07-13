@@ -25,7 +25,7 @@
  * 19-DEC-2016 use the new memory interface for DMA access
  * 22-JUN-2017 added reset function
  * 19-MAY-2018 improved reset
- * 13-JUL-2018 use logging
+ * 13-JUL-2018 use logging & integrate disk manager
  */
 
 #include <unistd.h>
@@ -63,6 +63,9 @@
 
 static const char *TAG = "FIF";
 
+#ifdef HAS_DISKMANAGER
+extern char *disks[];
+#else
 /* these are our disk drives */
 static char *disks[4] = {
 	"drivea.dsk",
@@ -70,6 +73,7 @@ static char *disks[4] = {
 	"drivec.dsk",
 	"drived.dsk"
 };
+#endif
 
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fdstate = 0;		/* state of the fd */
@@ -77,7 +81,7 @@ static int fdstate = 0;		/* state of the fd */
 /*
  * find and set path for disk images
  */
-void dsk_path(void) {
+char *dsk_path(void) {
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -91,7 +95,9 @@ void dsk_path(void) {
 		} else {
 			strcpy(fn, DISKSDIR);
 		}
+		strncpy(diskd, fn, MAX_LFN);
 	}
+	return diskd;
 }
 
 BYTE imsai_fif_in(void)
@@ -206,7 +212,7 @@ void disk_io(int addr)
 	LOGD(TAG, "sector: %02x\r", *(mem_base() + addr + DD_SECTOR));
 	LOGD(TAG, "DMA low: %02x\r", *(mem_base() + addr + DD_DMAL));
 	LOGD(TAG, "DMA high: %02x\r", *(mem_base() + addr + DD_DMAH));
-	LOG(TAG, "\r\n");
+	LOGD(TAG, "\r\n");
 
 	unit = dma_read(addr + DD_UNIT) & 0xf;
 	cmd = dma_read(addr + DD_UNIT) >> 4;
@@ -236,6 +242,12 @@ void disk_io(int addr)
 		 /* IMDOS sends unit 3 intermediate for drive C: & D: */
 		 /* and the IMDOS format program sends unit 0 */
 		dma_write(addr + DD_RESULT, 2);
+		return;
+	}
+
+	/* handle case when disk is ejected */
+	if(disks[disk] == NULL) {
+		dma_write(addr + DD_RESULT, 3);
 		return;
 	}
 
@@ -351,4 +363,9 @@ done:
 void imsai_fif_reset(void)
 {
 	fdstate = 0;
+
+#ifdef HAS_DISKMANAGER
+	extern void readDiskmap(char *);
+	readDiskmap(dsk_path());
+#endif
 }

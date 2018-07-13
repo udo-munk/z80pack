@@ -38,6 +38,7 @@
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* emulate IMSAI MPU-B banked ROM & RAM */
+#define HAS_DISKMANAGER	/* uses file based disk map for disks[] */
 
 #define MAX_RAM	64	/* Maximum RAM size */
 
