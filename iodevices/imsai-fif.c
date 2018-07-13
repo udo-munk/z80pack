@@ -25,6 +25,7 @@
  * 19-DEC-2016 use the new memory interface for DMA access
  * 22-JUN-2017 added reset function
  * 19-MAY-2018 improved reset
+ * 13-JUL-2018 use logging
  */
 
 #include <unistd.h>
@@ -37,6 +38,8 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+// #define LOG_LOCAL_LEVEL LOG_DEBUG
+#include "log.h"
 
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
@@ -58,7 +61,7 @@
 #define SPT		26
 #define TRK		77
 
-//#define DEBUG		/* so we can see what the FIF is asked to do */
+static const char *TAG = "FIF";
 
 /* these are our disk drives */
 static char *disks[4] = {
@@ -135,7 +138,7 @@ void imsai_fif_out(BYTE data)
 			break;	/* no mechanical drives, so nothing to do */
 
 		default:
-			printf("FIF: unknown cmd %02x\r\n", data);
+			LOGW(TAG, "unknown cmd %02x\r", data);
 			return;
 		}
 		break;
@@ -151,7 +154,7 @@ void imsai_fif_out(BYTE data)
 		break;
 
 	default:
-		printf("FIF: internal state error\r\n");
+		LOGE(TAG, "internal state error\r");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		break;
@@ -195,17 +198,15 @@ void disk_io(int addr)
 	static int disk;		/* internal disk no */
 	static char blksec[SEC_SZ];
 
-#ifdef DEBUG
-	printf("FIF disk descriptor at %04x\r\n", addr);
-	printf("FIF unit: %02x\r\n", *(mem_base() + addr + DD_UNIT));
-	printf("FIF result: %02x\r\n", *(mem_base() + addr + DD_RESULT));
-	printf("FIF nn: %02x\r\n", *(mem_base() + addr + DD_NN));
-	printf("FIF track: %02x\r\n", *(mem_base() + addr + DD_TRACK));
-	printf("FIF sector: %02x\r\n", *(mem_base() + addr + DD_SECTOR));
-	printf("FIF DMA low: %02x\r\n", *(mem_base() + addr + DD_DMAL));
-	printf("FIF DMA high: %02x\r\n", *(mem_base() + addr + DD_DMAH));
-	printf("\r\n");
-#endif
+	LOGD(TAG, "disk descriptor at %04x\r", addr);
+	LOGD(TAG, "unit: %02x\r", *(mem_base() + addr + DD_UNIT));
+	LOGD(TAG, "result: %02x\r", *(mem_base() + addr + DD_RESULT));
+	LOGD(TAG, "nn: %02x\r", *(mem_base() + addr + DD_NN));
+	LOGD(TAG, "track: %02x\r", *(mem_base() + addr + DD_TRACK));
+	LOGD(TAG, "sector: %02x\r", *(mem_base() + addr + DD_SECTOR));
+	LOGD(TAG, "DMA low: %02x\r", *(mem_base() + addr + DD_DMAL));
+	LOGD(TAG, "DMA high: %02x\r", *(mem_base() + addr + DD_DMAH));
+	LOG(TAG, "\r\n");
 
 	unit = dma_read(addr + DD_UNIT) & 0xf;
 	cmd = dma_read(addr + DD_UNIT) >> 4;

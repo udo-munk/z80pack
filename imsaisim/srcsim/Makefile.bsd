@@ -107,7 +107,7 @@ config.o : config.c sim.h simglb.h log.h
 imsai-sio2.o: ../../iodevices/imsai-sio2.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-sio2.c
 
-imsai-fif.o: ../../iodevices/imsai-fif.c
+imsai-fif.o: ../../iodevices/imsai-fif.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-fif.c
 
 cromemco-dazzler.o: ../../iodevices/cromemco-dazzler.c

@@ -399,7 +399,7 @@ void imsai_vio_init(void)
 	dma_write(0xf7ff, 0x00);
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
-		LOGE(TAG, "can't create thread\r\n");
+		LOGE(TAG, "can't create thread");
 		exit(1);
 	}
 }
