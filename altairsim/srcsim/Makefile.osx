@@ -42,6 +42,7 @@ OBJ =   sim0.o \
 	altair-88-sio.o \
 	altair-88-2sio.o \
 	tarbell_fdc.o \
+	altair-88-dcdd.o \
 	cromemco-dazzler.o \
 	proctec-vdm.o
 
@@ -106,7 +107,7 @@ simglb.o : simglb.c sim.h
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
 
-unix_network.o : ../../iodevices/unix_network.c
+unix_network.o : ../../iodevices/unix_network.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/unix_network.c
 
 config.o : config.c sim.h simglb.h
@@ -120,6 +121,9 @@ altair-88-2sio.o: ../../iodevices/altair-88-2sio.c
 
 tarbell_fdc.o: ../../iodevices/tarbell_fdc.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/tarbell_fdc.c
+
+altair-88-dcdd.o: ../../iodevices/altair-88-dcdd.c
+	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-dcdd.c
 
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c

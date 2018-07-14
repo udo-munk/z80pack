@@ -106,7 +106,7 @@ simglb.o : simglb.c sim.h
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
 
-unix_network.o : ../../iodevices/unix_network.c
+unix_network.o : ../../iodevices/unix_network.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/unix_network.c
 
 config.o : config.c sim.h simglb.h

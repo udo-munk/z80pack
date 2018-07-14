@@ -11,6 +11,7 @@
  * 26-MAR-15 first version finished
  * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
  * 22-APR-18 implemented TCP socket polling
+ * 14-JUL-18 use logging
  */
 
 #define TELNET_TIMEOUT 800	/* telnet negotiation timeout in milliseconds */

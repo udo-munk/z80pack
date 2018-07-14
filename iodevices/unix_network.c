@@ -11,6 +11,7 @@
  * 26-MAR-15 first version finished
  * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
  * 22-APR-18 implemented TCP socket polling
+ * 14-JUL-18 use logging
  */
 
 #include <unistd.h>
@@ -28,8 +29,11 @@
 #include <netinet/tcp.h>
 #include "unix_network.h"
 #include "sim.h"
+#include "log.h"
 
 void telnet_negotiation(int);
+
+static const char *TAG = "net";
 
 /*
  * initialise a server UNIX domain socket
@@ -55,15 +59,15 @@ void init_unix_server_socket(struct unix_connectors *p, char *fn)
 	sun.sun_family = AF_UNIX;
 	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path) - 1);
 	if ((p->ss = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		perror("create server socket");
+		LOGE(TAG, "can't create server socket");
 		exit(1);
 	}
 	if (bind(p->ss, (struct sockaddr *)&sun, sizeof(sun)) == -1) {
-		perror("bind server socket");
+		LOGE(TAG, "can't bind server socket");
 		exit(1);
 	}
 	if (listen(p->ss, 0) == -1) {
-		perror("listen on server socket");
+		LOGE(TAG, "can't listen on server socket");
 		exit(1);
 	}
 }
@@ -85,14 +89,14 @@ void init_tcp_server_socket(struct net_connectors *p)
 
 	/* create TCP/IP socket */
 	if ((p->ss = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("create server socket");
+		LOGE(TAG, "can't create server socket");
 		exit(1);
 	}
 
 	/* set socket options */
 	if (setsockopt(p->ss, SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
-		perror("setsockopt SO_REUSEADDR on server socket");
+		LOGE(TAG, "csn't setsockopt SO_REUSEADDR on server socket");
 		exit(1);
 	}
 
@@ -101,7 +105,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 	fcntl(p->ss, F_SETOWN, getpid());
 	n = fcntl(p->ss, F_GETFL, 0);
 	if (fcntl(p->ss, F_SETFL, n | FASYNC) == -1) {
-		perror("fcntl FASYNC on server socket");
+		LOGE(TAG, "can't fcntl FASYNC on server socket");
 		exit(1);
 	}
 #endif
@@ -112,15 +116,15 @@ void init_tcp_server_socket(struct net_connectors *p)
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(p->port);
 	if (bind(p->ss, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-		perror("bind server socket");
+		LOGE(TAG, "can't bind server socket");
 		exit(1);
 	}
 	if (listen(p->ss, 0) == -1) {
-		perror("listen on server socket");
+		LOGE(TAG, "can't listen on server socket");
 		exit(1);
 	}
 
-	printf("telnet console listening on port %d\n", p->port);
+	LOG(TAG, "telnet console listening on port %d\n", p->port);
 }
 
 /*
@@ -161,13 +165,13 @@ void sigio_tcp_server_socket(int sig)
 			if ((ncons[i].ssc = accept(ncons[i].ss,
 						     (struct sockaddr *) &fsin,
 						     &alen)) == -1) {
-				perror("accept on server socket");
+				LOGW(TAG, "can't accept on server socket");
 				ncons[i].ssc = 0;
 			}
 
 			if (setsockopt(ncons[i].ssc, IPPROTO_TCP, TCP_NODELAY,
 			    (void *) &on, sizeof(on)) == -1) {
-				perror("setsockopt TCP_NODELAY on server socket");
+				LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 			}
 
 			if (ncons[i].telnet) {

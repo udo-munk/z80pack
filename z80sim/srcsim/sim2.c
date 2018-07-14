@@ -2585,7 +2585,7 @@ static int op_tb7hl(void)		/* BIT 7,(HL) */
 
 /*
  * While the instructions is not documented in the Z80
- * documentation, it is in the Z280 one, inclding an
+ * documentation, it is in the Z280 one, including an
  * example to tell Z80 and Z280 apart.
  */
 static int op_undoc_slla(void)		/* SLL A */
