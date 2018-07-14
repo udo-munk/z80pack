@@ -67,6 +67,11 @@ static void quit_callback(void);
  */
 void mon(void)
 {
+#ifdef HAS_NETSERVER
+	extern int start_net_services (void);
+	start_net_services();
+#endif
+
 	/* initialise front panel */
 	XInitThreads();
 

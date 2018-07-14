@@ -16,6 +16,7 @@
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
  * 07-JUL-18 optimization
  * 12-JUL-18 use logging
+ * 14-JUL-18 integrate webfrontend
  */
 
 #include <X11/X.h>
@@ -29,6 +30,7 @@
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "../../webfrontend/netsrv.h"
 #include "log.h"
 #include "imsai-vio-charset.h"
 
@@ -257,7 +259,7 @@ static inline void event_handler(void)
 		return;
 
 	/* if there is a keyboard event get it and convert with keymap */
-	if (XEventsQueued(display, QueuedAlready) > 0) {
+	if (display != NULL && XEventsQueued(display, QueuedAlready) > 0) {
 		XNextEvent(display, &event);
 		if ((event.type == KeyPress) &&
 		    XLookupString(&event.xkey, text, 1, &key, 0) == 1) {
@@ -265,6 +267,13 @@ static inline void event_handler(void)
 			imsai_kbd_status = 2;
 		}
 	}
+#ifdef HAS_NETSERVER
+	int res = net_device_get(DEV_VIO);
+	if (res >= 0) {
+		imsai_kbd_data =  res;
+		imsai_kbd_status = 2;
+	}
+#endif
 }
 
 /* refresh the display buffer dependend on video mode */
@@ -350,6 +359,96 @@ static void refresh(void)
 	}
 }
 
+#ifdef HAS_NETSERVER
+static uint8_t dblbuf[2048];
+
+static struct {
+	uint16_t addr;
+	union {
+		uint16_t len;
+		uint16_t mode;
+	};
+	uint8_t buf[2048];
+} msg;
+
+static void ws_refresh(void) {
+	static int cols, rows;
+
+	UNUSED(vmode);
+	UNUSED(inv);
+
+	mode = dma_read(0xf7ff);
+	if (mode != modebuf) {
+		modebuf = mode;
+		memset(dblbuf, 0, 2048);
+
+		res = mode & 3;
+
+		if (res & 1) {
+			cols = 40;
+		} else {
+			cols = 80;
+		}
+
+		if (res & 2) {
+			rows = 12;
+		} else {
+			rows = 24;
+		}
+
+		msg.mode = mode;
+		msg.addr = 0xf7ff;
+		net_device_send(DEV_VIO, (char *) &msg, 4);
+		LOGD(__func__, "MODE change");
+	}
+
+	event_handler();
+
+	int len = rows*cols;
+	int addr;
+	int i, n, x;
+	bool cont;
+	uint8_t val;
+
+	for (i=0; i<len;i++) {
+		addr = i;
+		n=0;
+		cont = true;
+		while (cont && (i<len)) {
+			val=dma_read(0xf000 + i);
+			while ((val != dblbuf[i]) && (i<len)) {
+				dblbuf[i++] = val;
+				msg.buf[n++] = val;
+				cont = false;
+				val=dma_read(0xf000 + i);
+			}
+			if (cont) break;
+			x=0;
+#define LOOKAHEAD 4
+			/* look-ahead up to 4 bytes for next change */
+			while ((x<LOOKAHEAD) && !cont && (i<len)) {
+				val=dma_read(0xf000 + i++);
+				msg.buf[n++] = val;
+				val=dma_read(0xf000 + i);
+				if ((i<len) && (val != dblbuf[i])) {
+					cont = true;
+				}
+				x++;
+			}
+			if (!cont) {
+				n -= x;
+			}
+		}
+		if (n) {
+			msg.addr = 0xf000 + addr;
+			msg.len = n;
+			net_device_send(DEV_VIO, (char *) &msg, msg.len + 4);
+			LOGD(__func__, "BUF update FROM %04X TO %04X", msg.addr, msg.addr + msg.len);
+		}
+	}
+}
+#endif
+
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
@@ -363,6 +462,7 @@ static void *update_display(void *arg)
 
 	while (state) {
 
+#ifndef HAS_NETSERVER
 		/* lock display, don't cancel thread while locked */
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		XLockDisplay(display);
@@ -376,7 +476,11 @@ static void *update_display(void *arg)
 		/* unlock display, thread can be canceled again */
 		XUnlockDisplay(display);
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+#else
+		UNUSED(refresh);
+		ws_refresh();
 
+#endif
 		/* sleep rest to 33ms so that we get 30 fps */
 		gettimeofday(&t2, NULL);
 		tdiff = time_diff(&t1, &t2);
@@ -392,7 +496,11 @@ static void *update_display(void *arg)
 /* create the X11 window and start display refresh thread */
 void imsai_vio_init(void)
 {
+#ifndef HAS_NETSERVER
 	open_display();
+#else
+	UNUSED(open_display);
+#endif
 
 	state = 1;
 	modebuf = -1;

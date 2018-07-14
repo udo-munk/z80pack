@@ -21,6 +21,7 @@
  * 17-MAY-18 improved hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
  * 12-JUL-18 use logging
+ * 14-JUL-18 integrate webfrontend
  */
 
 #include <unistd.h>
@@ -41,6 +42,7 @@
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "../../webfrontend/netsrv.h"
 #include "log.h"
 
 /*
@@ -861,6 +863,10 @@ again:
 				cpu_state = STOPPED;
 			}
 		}
+
+#ifdef HAS_NETSERVER
+		net_device_send(DEV_LPT, (char *) &data, 1);
+#endif
 	}
 }
 
