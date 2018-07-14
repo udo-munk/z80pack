@@ -17,6 +17,7 @@
  * 03-MAY-18 improved accuracy
  * 03-JUL-18 implemented baud rate for terminal SIO
  * 13-JUL-18 use logging
+ * 14-JUL-18 integrate webfrontend
  */
 
 #include <unistd.h>
@@ -28,6 +29,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "unix_terminal.h"
+#include "../../webfrontend/netsrv.h"
 #include "log.h"
 
 #define BAUDTIME 10000000
@@ -65,6 +67,15 @@ BYTE imsai_sio1_status_in(void)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
 			return(status);
 
+#ifdef HAS_NETSERVER
+	if(net_device_alive(DEV_SIO1)) {
+		if (net_device_poll(DEV_SIO1)) {
+			status |= 2;
+		}
+		status |= 1;
+	} else 
+#endif
+	{
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN | POLLOUT;
 	p[0].revents = 0;
@@ -73,6 +84,7 @@ BYTE imsai_sio1_status_in(void)
 		status |= 2;
 	if (p[0].revents & POLLOUT)
 		status |= 1;
+	}
 
 	gettimeofday(&t1, NULL);
 
@@ -99,20 +111,32 @@ BYTE imsai_sio1_data_in(void)
 	static BYTE last;
 	struct pollfd p[1];
 
+#ifdef HAS_NETSERVER
+	if(net_device_alive(DEV_SIO1)) {
+		int res = net_device_get(DEV_SIO1);
+		if (res < 0) {
+			puts("SIO1: NOTHING WAITING\r"); // should not get here
+			return(last);
+		}
+		data = res;
+	} else 
+#endif
+	{
 again:
-	/* if no input waiting return last */
-	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
+		/* if no input waiting return last */
+		p[0].fd = fileno(stdin);
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (!(p[0].revents & POLLIN))
+			return(last);
 
-	if (read(fileno(stdin), &data, 1) == 0) {
-		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
-		set_unix_terminal();
-		goto again;
+		if (read(fileno(stdin), &data, 1) == 0) {
+			/* try to reopen tty, input redirection exhausted */
+			freopen("/dev/tty", "r", stdin);
+			set_unix_terminal();
+			goto again;
+		}
 	}
 
 	gettimeofday(&t1, NULL);
@@ -140,16 +164,24 @@ void imsai_sio1_data_out(BYTE data)
 		if (data == 0)
 			return;
 
+#ifdef HAS_NETSERVER
+	if(net_device_alive(DEV_SIO1)) {
+		net_device_send(DEV_SIO1, (char *) &data, 1);
+	} else 
+#endif
+	{
 again:
-	if (write(fileno(stdout), (char *) &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			LOGE(TAG, "can't write data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+		if (write(fileno(stdout), (char *) &data, 1) != 1) {
+			if (errno == EINTR) {
+				goto again;
+			} else {
+				LOGE(TAG, "can't write data");
+				cpu_error = IOERROR;
+				cpu_state = STOPPED;
+			}
 		}
 	}
+
 	gettimeofday(&t1, NULL);
 	status &= 0b11111110;
 }
