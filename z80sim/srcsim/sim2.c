@@ -2585,12 +2585,19 @@ static int op_tb7hl(void)		/* BIT 7,(HL) */
 
 #ifdef Z80_UNDOC
 
+/*
+ * While the instructions is not documented in the Z80
+ * documentation, it is in the Z280 one, inclding an
+ * example to tell Z80 and Z280 apart. So we never trap.
+ */
 static int op_undoc_slla(void)		/* SLL A */
 {
+#if 0
 	if (u_flag) {
 		trap_cb();
 		return(0);
 	}
+#endif
 
 	(A & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A << 1 | 1;
