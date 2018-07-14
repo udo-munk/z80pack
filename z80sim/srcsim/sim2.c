@@ -200,7 +200,7 @@ int op_cb_handel(void)
 		UNDOC(op_undoc_sllh),		/* 0x34 */
 		UNDOC(op_undoc_slll),		/* 0x35 */
 		UNDOC(op_undoc_sllhl),		/* 0x36 */
-		UNDOC(op_undoc_slla),		/* 0x37 */
+		op_undoc_slla,			/* 0x37 */
 		op_srlb,			/* 0x38 */
 		op_srlc,			/* 0x39 */
 		op_srld,			/* 0x3a */
@@ -2583,22 +2583,13 @@ static int op_tb7hl(void)		/* BIT 7,(HL) */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
-
 /*
  * While the instructions is not documented in the Z80
  * documentation, it is in the Z280 one, inclding an
- * example to tell Z80 and Z280 apart. So we never trap.
+ * example to tell Z80 and Z280 apart.
  */
 static int op_undoc_slla(void)		/* SLL A */
 {
-#if 0
-	if (u_flag) {
-		trap_cb();
-		return(0);
-	}
-#endif
-
 	(A & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
@@ -2607,6 +2598,8 @@ static int op_undoc_slla(void)		/* SLL A */
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(8);
 }
+
+#ifdef Z80_UNDOC
 
 static int op_undoc_sllb(void)		/* SLL B */
 {
