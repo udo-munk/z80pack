@@ -40,7 +40,7 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* emulate IMSAI MPU-B banked ROM & RAM */
 #define HAS_DISKMANAGER	/* uses file based disk map for disks[] */
-// #define HAS_NETSERVER	/* uses civet webserver to present a web based frontend */
+#define HAS_NETSERVER	/* uses civet webserver to present a web based frontend */
 
 #define MAX_RAM	64	/* Maximum RAM size */
 

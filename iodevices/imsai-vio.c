@@ -30,7 +30,7 @@
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-#include "../../webfrontend/netsrv.h"
+#include "netsrv.h"
 #include "log.h"
 #include "imsai-vio-charset.h"
 

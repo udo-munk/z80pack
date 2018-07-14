@@ -50,9 +50,10 @@
 #include "log.h"
 #include "sim.h"
 #ifdef HAS_NETSERVER
-#include "../../webfrontend/civetweb.h"
-#include "../../webfrontend/netsrv.h"
+#include "civetweb.h"
+#include "netsrv.h"
 #endif
+
 
 #ifdef HAS_DISKMANAGER
 #ifndef UNUSED
