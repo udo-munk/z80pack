@@ -124,7 +124,7 @@ tarbell_fdc.o: ../../iodevices/tarbell_fdc.c log.h
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
 
-proctec-vdm.o : ../../iodevices/proctec-vdm.c
+proctec-vdm.o : ../../iodevices/proctec-vdm.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/proctec-vdm.c
 
 clean:

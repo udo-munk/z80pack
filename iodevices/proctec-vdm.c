@@ -11,6 +11,7 @@
  * 28-FEB-17 first version, all software tested with working
  * 21-JUN-17 don't use dma_read(), switches Tarbell ROM off
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
+ * 15-JUL-18 use logging
  */
 
 #include <X11/X.h>
@@ -24,10 +25,13 @@
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "log.h"
 #include "proctec-vdm-charset.h"
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
+
+static const char *TAG = "VDM";
 
 /* X11 stuff */
        int slf = 1;			/* scanlines factor, default no lines */
@@ -250,7 +254,7 @@ static void vdm_init(void)
 	state = 1;
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
-		printf("can't create VIO thread\r\n");
+		LOGE(TAG, "can't create thread\r\n");
 		exit(1);
 	}
 }
