@@ -9,19 +9,22 @@ ROM=/usr/local/share/imsaisim/bootrom.hex
 
 CC = gcc
 
+WEB = ../../webfrontend
+
+INCL = -I$(WEB)/civetweb/include -I$(WEB)
+
 # Development
 #CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" $(INCL)
 
 # Debug
 #CFLAGS = -O -g -c -Wno-self-assign -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib -L/opt/X11/lib \
 	-lfrontpanel -ljpeg -lGL -lGLU -lX11 \
-
-#	-L../../webfrontend -lcivetweb
+	-L../../webfrontend/civetweb -lcivetweb
 	
 OBJ =   sim0.o \
 	sim1.o \
@@ -96,7 +99,7 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h simglb.h config.h memory.h log.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h ../../webfrontend/netsrv.h log.h
+iosim.o : iosim.c sim.h simglb.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h
@@ -111,7 +114,7 @@ unix_terminal.o : ../../iodevices/unix_terminal.c
 config.o : config.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) config.c
 
-imsai-sio2.o: ../../iodevices/imsai-sio2.c sim.h ../../webfrontend/netsrv.h log.h
+imsai-sio2.o: ../../iodevices/imsai-sio2.c sim.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-sio2.c
 
 imsai-fif.o: ../../iodevices/imsai-fif.c sim.h log.h
@@ -123,10 +126,10 @@ diskmanager.o: ../../iodevices/diskmanager.c sim.h log.h
 cromemco-dazzler.o: ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
 
-imsai-vio.o : ../../iodevices/imsai-vio.c sim.h ../../webfrontend/netsrv.h log.h
+imsai-vio.o : ../../iodevices/imsai-vio.c sim.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-vio.c
 
-netsrv.o : ../../webfrontend/netsrv.c sim.h simglb.h memory.h ../../webfrontend/netsrv.h log.h
+netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
 
 clean:

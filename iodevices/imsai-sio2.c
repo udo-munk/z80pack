@@ -29,7 +29,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "unix_terminal.h"
-#include "../../webfrontend/netsrv.h"
+#include "netsrv.h"
 #include "log.h"
 
 #define BAUDTIME 10000000

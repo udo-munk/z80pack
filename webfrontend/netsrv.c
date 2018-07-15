@@ -8,7 +8,7 @@
  */
 
 /**
- * This web server module provides... 
+ * This web server module provides...
  */
 
 #include <unistd.h>
