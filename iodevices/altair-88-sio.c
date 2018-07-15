@@ -17,6 +17,7 @@
  * 23-OCT-17 improved UNIX domain socket connections
  * 03-MAY-18 improved accuracy
  * 04-JUL-18 added baud rate to terminal SIO
+ * 15-JUL-18 use logging
  */
 
 #include <unistd.h>
@@ -30,10 +31,13 @@
 #include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "unix_terminal.h"
 #include "unix_network.h"
 
 #define BAUDTIME 10000000
+
+static const char *TAG = "SIO";
 
 int sio0_upper_case;
 int sio0_strip_parity;
@@ -164,7 +168,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write altair sio0 data");
+			LOGE(TAG, "can't write sio0 data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -200,7 +204,7 @@ BYTE altair_sio3_status_in(void)
 		if (p[0].revents) {
 			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
 			    NULL)) == -1) {
-				perror("accept server socket");
+				LOGW(TAG, "can't accept server socket");
 				ucons[0].ssc = 0;
 			}
 		}

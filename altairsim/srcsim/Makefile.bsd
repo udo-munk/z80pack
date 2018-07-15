@@ -109,10 +109,10 @@ unix_network.o : ../../iodevices/unix_network.c log.h
 config.o : config.c sim.h simglb.h
 	$(CC) $(CFLAGS) config.c
 
-altair-88-sio.o: ../../iodevices/altair-88-sio.c
+altair-88-sio.o: ../../iodevices/altair-88-sio.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-sio.c
 
-altair-88-2sio.o: ../../iodevices/altair-88-2sio.c
+altair-88-2sio.o: ../../iodevices/altair-88-2sio.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-2sio.c
 
 tarbell_fdc.o: ../../iodevices/tarbell_fdc.c log.h

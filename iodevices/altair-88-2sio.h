@@ -20,6 +20,7 @@
  * 23-OCT-17 improved UNIX domain socket connections
  * 03-MAY-18 improved accuracy
  * 03-JUL-18 added baud rate to terminal 2SIO
+ * 15-JUL-18 use logging
  */
 
 extern BYTE altair_sio1_status_in(void);
