@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2015-2017 by Udo Munk
+ * Copyright (C) 2015-2018 by Udo Munk
  *
  * Emulation of a Cromemco DAZZLER S100 board
  *
@@ -19,6 +19,7 @@
  * 06-DEC-16 added bus request for the DMA
  * 16-DEC-16 use DMA function for memory access
  * 26-JAN-17 optimization
+ * 15-JUL-18 use logging
  */
 
 void cromemco_dazzler_ctl_out(BYTE);
