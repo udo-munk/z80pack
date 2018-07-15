@@ -103,7 +103,7 @@ unix_network.o : ../../iodevices/unix_network.c log.h
 config.o : config.c sim.h simglb.h
 	$(CC) $(CFLAGS) config.c
 
-cromemco-tu-art.o : ../../iodevices/cromemco-tu-art.c
+cromemco-tu-art.o : ../../iodevices/cromemco-tu-art.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-tu-art.c
 
 cromemco-fdc.o : ../../iodevices/cromemco-fdc.c log.h

@@ -18,6 +18,7 @@
  * 26-MAR-15 tty's implemented for CDOS and Cromix
  * 25-APR-18 cleanup
  * 03-MAY-18 improved accuracy
+ * 15-JUL-18 use logging
  */
 
 #include <unistd.h>
@@ -28,8 +29,11 @@
 #include <sys/poll.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "unix_terminal.h"
 #include "unix_network.h"
+
+static const char *TAG = "TU-ART";
 
 /************************/
 /*	Device 0A	*/
@@ -121,7 +125,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write tu-art 0a data");
+			LOGE(TAG, "can't write tu-art 0a data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -282,7 +286,7 @@ BYTE cromemco_tuart_1a_data_in(void)
 			ncons[0].ssc = 0;
 			return(last);
 		} else {
-			perror("read tu-art 1a data");
+			LOGE(TAG, "can't read tu-art 1a data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return(0);
@@ -311,7 +315,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write tu-art 1a data");
+			LOGE(TAG, "can't write tu-art 1a data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -365,7 +369,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write lpt2.txt");
+				LOGE(TAG, "can't write lpt2.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
@@ -429,7 +433,7 @@ BYTE cromemco_tuart_1b_data_in(void)
 			ncons[1].ssc = 0;
 			return(last);
 		} else {
-			perror("read tu-art 1b data");
+			LOGE(TAG, "can't read tu-art 1b data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return(0);
@@ -458,7 +462,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write tu-art 1b data");
+			LOGE(TAG, "can't write tu-art 1b data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -512,7 +516,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write lpt1.txt");
+				LOGE(TAG, "can't write lpt1.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
