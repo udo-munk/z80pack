@@ -57,6 +57,9 @@
 #include <errno.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
+
+static const char *TAG = "func";
 
 /*
  *	atoi for hexadecimal numbers
@@ -112,7 +115,7 @@ again:
 			goto again;
 		} else {
 			/* some error */
-			perror("sleep_ms()");
+			LOGE(TAG, "sleep_ms()");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}

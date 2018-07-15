@@ -13,3 +13,4 @@ ln ../../z80sim/srcsim/simfun.c simfun.c
 ln ../../z80sim/srcsim/simint.c simint.c
 ln ../../z80sim/srcsim/simglb.c simglb.c
 ln ../../z80sim/srcsim/simglb.h simglb.h
+ln ../../z80sim/srcsim/log.h log.h
