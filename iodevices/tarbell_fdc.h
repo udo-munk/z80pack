@@ -20,6 +20,7 @@
  * 13-JUN-2017 added bootstrap ROM and reset function
  * 23-APR-2018 cleanup
  * 01-JUL-2018 check disk images for the correct size
+ * 15-JUL-2018 use logging
  */
 
 extern BYTE tarbell_stat_in(void), tarbell_track_in(void);

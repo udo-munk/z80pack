@@ -20,6 +20,7 @@
  * 13-JUN-2017 added bootstrap ROM and reset function
  * 23-APR-2018 cleanup
  * 01-JUL-2018 check disk images for the correct size
+ * 15-JUL-2018 use logging
  */
 
 #include <unistd.h>
@@ -29,6 +30,7 @@
 #include <fcntl.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 
 /* internal state of the fdc */
 #define FDC_IDLE	0	/* idle state */
@@ -41,6 +43,8 @@
 #define SEC_SZ		128
 #define SPT		26
 #define TRK		77
+
+static const char *TAG = "Tarbell";
 
 static BYTE fdc_stat;		/* status register */
 static BYTE fdc_track;		/* track register */
@@ -135,7 +139,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else if ((data & 0xf0) == 0x90) {	/* read multiple sector */
-		printf("tarbell: read multiple sector not implemented\r\n");
+		LOGW(TAG, "read multiple sectors not implemented\r\n");
 		fdc_stat = 0x10;		/* record not found */
 
 	} else if ((data & 0xf0) == 0xa0) {	/* write single sector */
@@ -144,7 +148,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else if ((data & 0xf0) == 0xb0) {	/* write multiple sector */
-		printf("tarbell: write multiple sector not implemented\r\n");
+		LOGW(TAG, "write multiple sectors not implemented\r\n");
 		fdc_stat = 0x10;		/* record not found */
 
 	} else if (data == 0xc4) {		/* read address */
@@ -153,7 +157,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else if ((data & 0xf0) == 0xe0) {	/* read track */
-		printf("tarbell: read track not implemented\r\n");
+		LOGW(TAG, "read track not implemented\r\n");
 		fdc_stat = 0x10;		/* record not found */
 
 	} else if ((data & 0xf0) == 0xf0) {	/* write track */
@@ -166,7 +170,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else {
-		printf("tarbell: unknown command, %02x\r\n", data);
+		LOGW(TAG, "unknown command, %02x\r\n", data);
 		fdc_stat = 8;			/* CRC error */
 	}
 }

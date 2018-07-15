@@ -131,7 +131,7 @@ void altair_dsk_select_out(BYTE data)
 		state = FDC_ENABLED;
 		disk = data & 0x0f;
 		if (pthread_create(&thread, NULL, timing, (void *) NULL)) {
-			LOGE(TAG "can't create timing thread");
+			LOGE(TAG, "can't create timing thread");
 			exit(1);
 		}
 	}
