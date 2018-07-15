@@ -26,6 +26,7 @@
  * 24-APR-18 cleanup
  * 17-MAY-18 improved hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 15-JUL-18 use logging
  */
 
 #include <unistd.h>
@@ -38,6 +39,7 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "../../iodevices/unix_network.h"
 #include "../../iodevices/altair-88-sio.h"
 #include "../../iodevices/altair-88-2sio.h"
@@ -62,6 +64,8 @@ static void io_no_card_out(BYTE);
 #if 0	/* currently not used */
 static BYTE io_no_card_in(void);
 #endif
+
+static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
@@ -851,7 +855,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write printer");
+				LOGE(TAG, "can't write to printer");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}

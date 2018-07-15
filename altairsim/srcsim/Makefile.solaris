@@ -87,7 +87,7 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h
+iosim.o : iosim.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h log.h
