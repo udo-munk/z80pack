@@ -29,6 +29,7 @@
 #include <netinet/tcp.h>
 #include "unix_network.h"
 #include "sim.h"
+// #define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
 
 void telnet_negotiation(int);
@@ -209,7 +210,7 @@ void telnet_negotiation(int fd)
 
 		/* else read the option */
 		read(fd, &c, 3);
-		//printf("telnet: %d %d %d\r\n", c[0], c[1], c[2]);
+		LOGD(TAG, "telnet: %d %d %d\r\n", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
 		if (c[1] == 251)	/* and reject other options */
