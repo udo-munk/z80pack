@@ -42,6 +42,7 @@
 #include "../../iodevices/altair-88-sio.h"
 #include "../../iodevices/altair-88-2sio.h"
 #include "../../iodevices/tarbell_fdc.h"
+#include "../../iodevices/altair-88-dcdd.h"
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/proctec-vdm.h"
 #include "../../frontpanel/frontpanel.h"
@@ -79,9 +80,9 @@ static BYTE (*port_in[256]) (void) = {
 	kbd_data_in,		/* port 5 */ /* data VDM keyboard */
 	altair_sio3_status_in,	/* port 6 */ /* SIO 3 connected to socket */
 	altair_sio3_data_in,	/* port 7 */ /*  "  */
-	io_trap_in,		/* port 8 */
-	io_trap_in,		/* port 9 */
-	io_trap_in,		/* port 10 */
+	altair_dsk_status_in,	/* port 8 */ /* MITS 88-DCDD status */
+	altair_dsk_sec_in,	/* port 9 */ /* MITS 88-DCDD sector position */
+	altair_dsk_data_in,	/* port 10 *//* MITS 88-DCDD read data */
 	io_trap_in,		/* port 11 */
 	io_trap_in,		/* port 12 */
 	io_trap_in,		/* port 13 */
@@ -342,9 +343,9 @@ static void (*port_out[256]) (BYTE) = {
 	io_no_card_out,		/* port 5 */ /* data VDM keyboard */
 	altair_sio3_status_out,	/* port 6 */ /* SIO 3 connected to socket */
 	altair_sio3_data_out,	/* port 7 */ /*  "  */
-	io_trap_out,		/* port 8 */
-	io_trap_out,		/* port 9 */
-	io_trap_out,		/* port 10 */
+	altair_dsk_select_out,	/* port 8 */ /* MITS 88-DCDD disk select */
+	altair_dsk_control_out,	/* port 9 */ /* MITS 88-DCDD control disk */
+	altair_dsk_data_out,	/* port 10 *//* MITS 88-DCDD write data */
 	io_trap_out,		/* port 11 */
 	io_trap_out,		/* port 12 */
 	io_trap_out,		/* port 13 */

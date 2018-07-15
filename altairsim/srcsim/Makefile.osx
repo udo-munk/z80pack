@@ -122,7 +122,7 @@ altair-88-2sio.o: ../../iodevices/altair-88-2sio.c
 tarbell_fdc.o: ../../iodevices/tarbell_fdc.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/tarbell_fdc.c
 
-altair-88-dcdd.o: ../../iodevices/altair-88-dcdd.c
+altair-88-dcdd.o: ../../iodevices/altair-88-dcdd.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-dcdd.c
 
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
