@@ -68,7 +68,7 @@ BYTE imsai_sio1_status_in(void)
 			return(status);
 
 #ifdef HAS_NETSERVER
-	if(net_device_alive(DEV_SIO1)) {
+	if (net_device_alive(DEV_SIO1)) {
 		if (net_device_poll(DEV_SIO1)) {
 			status |= 2;
 		}
@@ -76,14 +76,14 @@ BYTE imsai_sio1_status_in(void)
 	} else 
 #endif
 	{
-	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN | POLLOUT;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (p[0].revents & POLLIN)
-		status |= 2;
-	if (p[0].revents & POLLOUT)
-		status |= 1;
+		p[0].fd = fileno(stdin);
+		p[0].events = POLLIN | POLLOUT;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (p[0].revents & POLLIN)
+			status |= 2;
+		if (p[0].revents & POLLOUT)
+			status |= 1;
 	}
 
 	gettimeofday(&t1, NULL);
@@ -112,10 +112,10 @@ BYTE imsai_sio1_data_in(void)
 	struct pollfd p[1];
 
 #ifdef HAS_NETSERVER
-	if(net_device_alive(DEV_SIO1)) {
+	if (net_device_alive(DEV_SIO1)) {
 		int res = net_device_get(DEV_SIO1);
 		if (res < 0) {
-			puts("SIO1: NOTHING WAITING\r"); // should not get here
+			LOGW(TAG, "NOTHING WAITING\r"); // should not get here
 			return(last);
 		}
 		data = res;
@@ -165,7 +165,7 @@ void imsai_sio1_data_out(BYTE data)
 			return;
 
 #ifdef HAS_NETSERVER
-	if(net_device_alive(DEV_SIO1)) {
+	if (net_device_alive(DEV_SIO1)) {
 		net_device_send(DEV_SIO1, (char *) &data, 1);
 	} else 
 #endif
