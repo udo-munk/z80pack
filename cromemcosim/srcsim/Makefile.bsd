@@ -110,7 +110,7 @@ config.o : config.c sim.h simglb.h
 cromemco-tu-art.o : ../../iodevices/cromemco-tu-art.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-tu-art.c
 
-cromemco-fdc.o : ../../iodevices/cromemco-fdc.c
+cromemco-fdc.o : ../../iodevices/cromemco-fdc.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-fdc.c
 
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c

@@ -29,6 +29,7 @@
  * 22-AUG-2017 provide write protect and track 0 bits for all commands
  * 23-APR-2018 cleanup
  * 20-MAY-2018 improved reset
+ * 15-JUL-2018 use logging
  */
 
 /*

@@ -29,6 +29,7 @@
  * 22-AUG-2017 provide write protect and track 0 bits for all commands
  * 23-APR-2018 cleanup
  * 20-MAY-2018 improved reset
+ * 15-JUL-2018 use logging
  */
 
 #include <unistd.h>
@@ -39,6 +40,7 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "cromemco-fdc.h"
 
 /* internal state of the fdc */
@@ -56,6 +58,8 @@
 #define TRK5		40	/* # of tracks 5.25" */
 #define SPT5SD		18	/* # of sectors per track 5.25" SD */
 #define SPT5DD		10	/* # of sectors per track 5.25" DD */
+
+static const char *TAG = "16FDC";
 
 //     BYTE fdc_flags = 16|64;	/* FDC flag register, no autoboot */
        BYTE fdc_flags = 16;	/* FDC flag register, autoboot */
@@ -934,7 +938,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_flags |= 129; /* RDOS 2&3 seem to need EOJ already, why */
 
 	} else if ((data & 0xf0) == 0xe0) {	/* read track */
-		printf("16fdc: read track not implemented\r\n");
+		LOGW(TAG, "read track not implemented\r\n");
 		fdc_stat = 16;			/* not found */
 		fdc_flags |= 1;			/* set EOJ */
 
@@ -945,7 +949,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_flags |= 128;		/* set DRQ */
 
 	} else {
-		printf("16fdc: unknown command %02x\r\n", data);
+		LOGW(TAG, "unknown command %02x\r\n", data);
 		fdc_stat = 16|8;		/* not found & CRC error */
 		fdc_flags |= 1;			/* set EOJ */
 	}
