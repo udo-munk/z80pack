@@ -9,14 +9,18 @@ ROM=/usr/local/share/imsaisim/bootrom.hex
 
 CC = gcc
 
+WEB = ../../webfrontend
+INCL = -I$(WEB)/civetweb/include -I$(WEB)
+
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" ${INCL}
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" ${INCL}
 
 LFLAGS = -L../../frontpanel -lfrontpanel -ljpeg -lGL -lGLU \
-	 -lXext -lXmu -lXt -lX11 -lm -lpthread
+	 -lXext -lXmu -lXt -lX11 -lm -lpthread \
+	 -L../../webfrontend/civetweb -lcivetweb
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -37,8 +41,10 @@ OBJ =   sim0.o \
 	config.o \
 	imsai-sio2.o \
 	imsai-fif.o \
+	diskmanager.o \
 	cromemco-dazzler.o \
-	imsai-vio.o
+	imsai-vio.o \
+	netsrv.o
 
 FP =	../../frontpanel/libfrontpanel.so
 
@@ -110,11 +116,17 @@ imsai-sio2.o: ../../iodevices/imsai-sio2.c log.h
 imsai-fif.o: ../../iodevices/imsai-fif.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-fif.c
 
+diskmanager.o: ../../iodevices/diskmanager.c sim.h log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/diskmanager.c
+
 cromemco-dazzler.o: ../../iodevices/cromemco-dazzler.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
 
 imsai-vio.o : ../../iodevices/imsai-vio.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-vio.c
+
+netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
+	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
 
 clean:
 	rm -f *.o

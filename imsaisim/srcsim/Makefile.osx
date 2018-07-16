@@ -10,21 +10,20 @@ ROM=/usr/local/share/imsaisim/bootrom.hex
 CC = gcc
 
 WEB = ../../webfrontend
-
 INCL = -I$(WEB)/civetweb/include -I$(WEB)
 
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" ${INCL}
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" $(INCL)
+CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" ${INCL}
 
 # Debug
-#CFLAGS = -O -g -c -Wno-self-assign -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+#CFLAGS = -O -g -c -Wno-self-assign -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" ${INCL}
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib -L/opt/X11/lib \
-	-lfrontpanel -ljpeg -lGL -lGLU -lX11 \
-	-L../../webfrontend/civetweb -lcivetweb
+	 -lfrontpanel -ljpeg -lGL -lGLU -lX11 \
+	 -L../../webfrontend/civetweb -lcivetweb
 	
 OBJ =   sim0.o \
 	sim1.o \
