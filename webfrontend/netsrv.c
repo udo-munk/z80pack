@@ -28,7 +28,7 @@
 
 #ifdef HAS_NETSERVER
 
-#define DOCUMENT_ROOT "../netsrv/www/imsai"
+#define DOCUMENT_ROOT "../webfrontend/www/imsai"
 #define PORT "8080"
 
 #define MAX_WS_CLIENTS (5)
