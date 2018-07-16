@@ -42,7 +42,9 @@
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#ifdef HAS_NETSERVER
 #include "netsrv.h"
+#endif
 #include "log.h"
 
 /*

@@ -30,7 +30,9 @@
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#ifdef HAS_NETSERVER
 #include "netsrv.h"
+#endif
 #include "log.h"
 #include "imsai-vio-charset.h"
 

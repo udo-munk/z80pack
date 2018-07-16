@@ -29,7 +29,9 @@
 #include "sim.h"
 #include "simglb.h"
 #include "unix_terminal.h"
+#ifdef HAS_NETSERVER
 #include "netsrv.h"
+#endif
 #include "log.h"
 
 #define BAUDTIME 10000000
