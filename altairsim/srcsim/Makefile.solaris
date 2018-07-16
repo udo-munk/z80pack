@@ -35,6 +35,7 @@ OBJ =   sim0.o \
 	altair-88-sio.o \
 	altair-88-2sio.o \
 	tarbell_fdc.o \
+	altair-88-dcdd.o \
 	cromemco-dazzler.o \
 	proctec-vdm.o
 
@@ -113,6 +114,9 @@ altair-88-2sio.o: ../../iodevices/altair-88-2sio.c log.h
 
 tarbell_fdc.o: ../../iodevices/tarbell_fdc.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/tarbell_fdc.c
+
+altair-88-dcdd.o: ../../iodevices/altair-88-dcdd.c log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-dcdd.c
 
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
