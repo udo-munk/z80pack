@@ -193,11 +193,12 @@ ifeq ($(TARGET_OS),LINUX)
   CAN_INSTALL = 1
 endif
 
-ifeq ($(TARGET_OS),WIN32)
-  MKDIR = mkdir
-  RMF = del /q
-  RMRF = rmdir /s /q
-endif
+# CYGGIN defines WIN32 but has no del command because using bash
+# ifeq ($(TARGET_OS),WIN32)
+#   MKDIR = mkdir
+#   RMF = del /q
+#   RMRF = rmdir /s /q
+# endif
 
 ifdef WITH_LUAJIT_SHARED
   LIBS += -lluajit-5.1
