@@ -78,6 +78,7 @@ void mon(void)
 
 	/* initialise terminal */
 	set_unix_terminal();
+	atexit(reset_unix_terminal);
 
 	/* start CPU emulation */
 	cpu_state = CONTIN_RUN;

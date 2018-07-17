@@ -110,6 +110,7 @@ void mon(void)
 
 	/* initialise terminal */
 	set_unix_terminal();
+	atexit(reset_unix_terminal);
 
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {

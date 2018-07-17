@@ -114,6 +114,7 @@ void mon(void)
 
 	/* initialise terminal */
 	set_unix_terminal();
+	atexit(reset_unix_terminal);
 #endif
 
 #ifdef HAS_BANKED_ROM
