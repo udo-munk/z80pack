@@ -22,6 +22,7 @@
  * 07-MAY-18 added memory configuratione needed by apple monitor
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 04-JUL-18 added baud rate to terminal SIO
+ * 17-JUL-18 use logging
  */
 
 #include <stdlib.h>
@@ -29,8 +30,11 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
+
+static const char *TAG = "config";
 
 int ram_size;
 int rom_size;
@@ -86,7 +90,7 @@ void config(void)
 					sio0_upper_case = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_upper_case")) {
@@ -98,7 +102,7 @@ void config(void)
 					sio1_upper_case = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_upper_case")) {
@@ -110,7 +114,7 @@ void config(void)
 					sio2_upper_case = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_strip_parity")) {
@@ -122,7 +126,7 @@ void config(void)
 					sio0_strip_parity = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_strip_parity")) {
@@ -134,7 +138,7 @@ void config(void)
 					sio1_strip_parity = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_strip_parity")) {
@@ -146,7 +150,7 @@ void config(void)
 					sio2_strip_parity = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_drop_nulls")) {
@@ -158,7 +162,7 @@ void config(void)
 					sio0_drop_nulls = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_drop_nulls")) {
@@ -170,7 +174,7 @@ void config(void)
 					sio1_drop_nulls = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_drop_nulls")) {
@@ -182,7 +186,7 @@ void config(void)
 					sio2_drop_nulls = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_revision")) {
@@ -194,7 +198,7 @@ void config(void)
 					sio0_revision = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_baud_rate")) {
@@ -215,13 +219,13 @@ void config(void)
 #ifndef MONITORMEM
 			} else if (!strcmp(t1, "ram")) {
 				ram_size = atoi(t2);
-				printf("RAM size %4d pages, 0000H - %04xH\n",
-				       ram_size, (ram_size << 8) - 1);
+				LOG(TAG, "RAM size %4d pages, 0000H - %04xH\r\n",
+				    ram_size, (ram_size << 8) - 1);
 			} else if (!strcmp(t1, "rom")) {
 				rom_size = atoi(t2);
 				rom_start = (256 - rom_size) << 8;
-				printf("ROM size %4d pages, %04xH - ffffH\n",
-				       rom_size, rom_start);
+				LOG(TAG, "ROM size %4d pages, %04xH - ffffH\r\n",
+				    rom_size, rom_start);
 #else
 			} else if (!strcmp(t1, "ram")) {
 				;
@@ -230,24 +234,23 @@ void config(void)
 #endif
 			} else if (!strcmp(t1, "boot")) {
 				boot_switch = exatoi(t2);
-				printf("Boot switch address at %04xH\n", boot_switch);
+				LOG(TAG, "Boot switch address at %04xH\r\n", boot_switch);
 			} else if (!strcmp(t1, "tarbell_rom_enabled")) {
 				tarbell_rom_enabled = atoi(t2);
-				printf("Tarbell bootstrap ROM %s\n",
-				       (tarbell_rom_enabled) ?
-				       "enabled" : "disabled");
+				LOG(TAG, "Tarbell bootstrap ROM %s\r\n",
+				    (tarbell_rom_enabled) ?
+				    "enabled" : "disabled");
 			} else {
-				printf("system.conf unknown command: %s\n", s);
+				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
 		}
 	}
 
 #ifdef MONITORMEM
-	puts("RAM 0000H - efffH");
-	puts("ROM f000H - f7ffH");
-	puts("RAM f800H - ffffH");
+	LOG(TAG, "RAM 0000H - efffH\r\n");
+	LOG(TAG, "ROM f000H - f7ffH\r\n");
+	LOG(TAG, "RAM f800H - ffffH\r\n");
 #endif
 
-	printf("\n");
-
+	LOG(TAG, "\r\n");
 }
