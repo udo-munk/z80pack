@@ -60,7 +60,7 @@
 #include <string.h>
 #include <termios.h>
 #include <signal.h>
-#include "sim.h"
+#include <sim.h>
 #include "simglb.h"
 
 static void user_int(int), quit_int(int), term_int(int);

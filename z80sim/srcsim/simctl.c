@@ -58,7 +58,7 @@
 #include <string.h>
 #include <termios.h>
 #include <fcntl.h>
-#include <memory.h>
+#include <string.h>
 #include <ctype.h>
 #include <signal.h>
 #include <sys/time.h>

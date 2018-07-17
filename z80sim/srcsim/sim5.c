@@ -49,13 +49,13 @@
  *	starting with 0xfd
  */
 
-#include "sim.h"
+#include <sim.h>
 #include "simglb.h"
-#include "config.h"
+#include <config.h>
 #ifdef FRONTPANEL
 #include "../../frontpanel/frontpanel.h"
 #endif
-#include "memory.h"
+#include <memory.h>
 
 #ifdef Z80_UNDOC
 	#define UNDOC(f) f
