@@ -79,7 +79,7 @@ void config(void)
 					sio1_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_upper_case")) {
@@ -91,7 +91,7 @@ void config(void)
 					sio2_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_strip_parity")) {
@@ -103,7 +103,7 @@ void config(void)
 					sio1_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_strip_parity")) {
@@ -115,7 +115,7 @@ void config(void)
 					sio2_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_drop_nulls")) {
@@ -127,7 +127,7 @@ void config(void)
 					sio1_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_drop_nulls")) {
@@ -139,7 +139,7 @@ void config(void)
 					sio2_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_baud_rate")) {
@@ -158,12 +158,12 @@ void config(void)
 			} else if (!strcmp(t1, "ram")) {
 				ram_size = atoi(t2);
 				if (ram_size > MAX_RAM) {
-					LOGW(TAG, "Maximal possible RAM size is %dKB\n", MAX_RAM);
+					LOGW(TAG, "Maximal possible RAM size is %dKB", MAX_RAM);
 					ram_size = MAX_RAM;
 				}
-				LOG(TAG, "RAM size is %d KB\n", ram_size);
+				LOG(TAG, "RAM size is %d KB\r\n", ram_size);
 			} else {
-				LOGW(TAG, "system.conf unknown command: %s\n", s);
+				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
 		}
 	}

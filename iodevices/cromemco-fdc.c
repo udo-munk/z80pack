@@ -938,7 +938,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_flags |= 129; /* RDOS 2&3 seem to need EOJ already, why */
 
 	} else if ((data & 0xf0) == 0xe0) {	/* read track */
-		LOGW(TAG, "read track not implemented\r\n");
+		LOGW(TAG, "read track not implemented");
 		fdc_stat = 16;			/* not found */
 		fdc_flags |= 1;			/* set EOJ */
 
@@ -949,7 +949,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_flags |= 128;		/* set DRQ */
 
 	} else {
-		LOGW(TAG, "unknown command %02x\r\n", data);
+		LOGW(TAG, "unknown command %02x", data);
 		fdc_stat = 16|8;		/* not found & CRC error */
 		fdc_flags |= 1;			/* set EOJ */
 	}

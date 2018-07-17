@@ -254,7 +254,7 @@ static void vdm_init(void)
 	state = 1;
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
-		LOGE(TAG, "can't create thread\r\n");
+		LOGE(TAG, "can't create thread");
 		exit(1);
 	}
 }

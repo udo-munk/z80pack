@@ -117,7 +117,7 @@ BYTE imsai_sio1_data_in(void)
 	if (net_device_alive(DEV_SIO1)) {
 		int res = net_device_get(DEV_SIO1);
 		if (res < 0) {
-			LOGW(TAG, "NOTHING WAITING\r"); // should not get here
+			LOGW(TAG, "NOTHING WAITING"); // should not get here
 			return(last);
 		}
 		data = res;

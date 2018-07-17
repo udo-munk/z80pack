@@ -144,7 +144,7 @@ void imsai_fif_out(BYTE data)
 			break;	/* no mechanical drives, so nothing to do */
 
 		default:
-			LOGW(TAG, "unknown cmd %02x\r", data);
+			LOGW(TAG, "unknown cmd %02x", data);
 			return;
 		}
 		break;
@@ -160,7 +160,7 @@ void imsai_fif_out(BYTE data)
 		break;
 
 	default:
-		LOGE(TAG, "internal state error\r");
+		LOGE(TAG, "internal state error");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		break;
@@ -204,15 +204,15 @@ void disk_io(int addr)
 	static int disk;		/* internal disk no */
 	static char blksec[SEC_SZ];
 
-	LOGD(TAG, "disk descriptor at %04x\r", addr);
-	LOGD(TAG, "unit: %02x\r", *(mem_base() + addr + DD_UNIT));
-	LOGD(TAG, "result: %02x\r", *(mem_base() + addr + DD_RESULT));
-	LOGD(TAG, "nn: %02x\r", *(mem_base() + addr + DD_NN));
-	LOGD(TAG, "track: %02x\r", *(mem_base() + addr + DD_TRACK));
-	LOGD(TAG, "sector: %02x\r", *(mem_base() + addr + DD_SECTOR));
-	LOGD(TAG, "DMA low: %02x\r", *(mem_base() + addr + DD_DMAL));
-	LOGD(TAG, "DMA high: %02x\r", *(mem_base() + addr + DD_DMAH));
-	LOGD(TAG, "\r\n");
+	LOGD(TAG, "disk descriptor at %04x", addr);
+	LOGD(TAG, "unit: %02x", *(mem_base() + addr + DD_UNIT));
+	LOGD(TAG, "result: %02x", *(mem_base() + addr + DD_RESULT));
+	LOGD(TAG, "nn: %02x", *(mem_base() + addr + DD_NN));
+	LOGD(TAG, "track: %02x", *(mem_base() + addr + DD_TRACK));
+	LOGD(TAG, "sector: %02x", *(mem_base() + addr + DD_SECTOR));
+	LOGD(TAG, "DMA low: %02x", *(mem_base() + addr + DD_DMAL));
+	LOGD(TAG, "DMA high: %02x", *(mem_base() + addr + DD_DMAH));
+	LOGD(TAG, "");
 
 	unit = dma_read(addr + DD_UNIT) & 0xf;
 	cmd = dma_read(addr + DD_UNIT) >> 4;

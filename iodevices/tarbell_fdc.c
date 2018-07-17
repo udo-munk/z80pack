@@ -139,7 +139,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else if ((data & 0xf0) == 0x90) {	/* read multiple sector */
-		LOGW(TAG, "read multiple sectors not implemented\r\n");
+		LOGW(TAG, "read multiple sectors not implemented");
 		fdc_stat = 0x10;		/* record not found */
 
 	} else if ((data & 0xf0) == 0xa0) {	/* write single sector */
@@ -148,7 +148,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else if ((data & 0xf0) == 0xb0) {	/* write multiple sector */
-		LOGW(TAG, "write multiple sectors not implemented\r\n");
+		LOGW(TAG, "write multiple sectors not implemented");
 		fdc_stat = 0x10;		/* record not found */
 
 	} else if (data == 0xc4) {		/* read address */
@@ -157,7 +157,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else if ((data & 0xf0) == 0xe0) {	/* read track */
-		LOGW(TAG, "read track not implemented\r\n");
+		LOGW(TAG, "read track not implemented");
 		fdc_stat = 0x10;		/* record not found */
 
 	} else if ((data & 0xf0) == 0xf0) {	/* write track */
@@ -170,7 +170,7 @@ void tarbell_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else {
-		LOGW(TAG, "unknown command, %02x\r\n", data);
+		LOGW(TAG, "unknown command, %02x", data);
 		fdc_stat = 8;			/* CRC error */
 	}
 }

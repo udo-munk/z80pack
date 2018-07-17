@@ -647,7 +647,7 @@ void cromemco_dazzler_ctl_out(BYTE data)
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, update_display,
 			    (void *) NULL)) {
-				LOGE(TAG, "can't create thread\r\n");
+				LOGE(TAG, "can't create thread");
 				exit(1);
 			}
 		}

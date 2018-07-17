@@ -75,6 +75,7 @@ void mon(void)
 	/* initialise front panel */
 	XInitThreads();
 
+	putchar('\n');
 	if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
 		LOGE(TAG, "frontpanel error");
 		exit(1);
@@ -162,7 +163,6 @@ void mon(void)
 #ifdef UNIX_TERMINAL
 	/* reset terminal */
 	reset_unix_terminal();
-	putchar('\n');
 #endif
 
 	/* all LED's off and update front panel */
@@ -187,8 +187,6 @@ void mon(void)
  */
 void report_error(void)
 {
-	LOG(TAG, "\r\n");
-
 	switch (cpu_error) {
 	case NONE:
 		break;
@@ -197,29 +195,29 @@ void report_error(void)
 		    PC - 1);
 		break;
 	case IOTRAPIN:
-		LOGE(TAG, "I/O input Trap at %04x, port %02x\r\n",
+		LOGE(TAG, "I/O input Trap at %04x, port %02x",
 		     PC, io_port);
 		break;
 	case IOTRAPOUT:
-		LOGE(TAG, "I/O output Trap at %04x, port %02x\r\n",
+		LOGE(TAG, "I/O output Trap at %04x, port %02x",
 		     PC, io_port);
 		break;
 	case IOHALT:
 		LOG(TAG, "System halted, bye.\r\n");
 		break;
 	case IOERROR:
-		LOGE(TAG, "Fatal I/O Error at %04x\r\n", PC);
+		LOGE(TAG, "Fatal I/O Error at %04x", PC);
 		break;
 	case OPTRAP1:
-		LOGE(TAG, "Op-code trap at %04x %02x\r\n",
+		LOGE(TAG, "Op-code trap at %04x %02x",
 		     PC - 1 , *(mem_base() + PC - 1));
 		break;
 	case OPTRAP2:
-		LOGE(TAG, "Op-code trap at %04x %02x %02x\r\n",
+		LOGE(TAG, "Op-code trap at %04x %02x %02x",
 		     PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
 		break;
 	case OPTRAP4:
-		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x\r\n",
+		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
 		       PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
 		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
 		break;
@@ -227,14 +225,14 @@ void report_error(void)
 		LOG(TAG, "User Interrupt at %04x\r\n", PC);
 		break;
 	case INTERROR:
-		LOGW(TAG, "Unsupported bus data during INT: %02x\r\n",
+		LOGW(TAG, "Unsupported bus data during INT: %02x",
 		     int_data);
 		break;
 	case POWEROFF:
 		LOG(TAG, "System powered off, bye.\r\n");
 		break;
 	default:
-		LOGW(TAG, "Unknown error %d\r\n", cpu_error);
+		LOGW(TAG, "Unknown error %d", cpu_error);
 		break;
 	}
 }

@@ -97,7 +97,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 	/* set socket options */
 	if (setsockopt(p->ss, SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
-		LOGE(TAG, "csn't setsockopt SO_REUSEADDR on server socket");
+		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
 		exit(1);
 	}
 
@@ -125,7 +125,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 		exit(1);
 	}
 
-	LOG(TAG, "telnet console listening on port %d\n", p->port);
+	LOG(TAG, "telnet console listening on port %d\r\n", p->port);
 }
 
 /*
@@ -210,7 +210,7 @@ void telnet_negotiation(int fd)
 
 		/* else read the option */
 		read(fd, &c, 3);
-		LOGD(TAG, "telnet: %d %d %d\r\n", c[0], c[1], c[2]);
+		LOGD(TAG, "telnet: %d %d %d", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
 		if (c[1] == 251)	/* and reject other options */
