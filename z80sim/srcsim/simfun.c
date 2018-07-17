@@ -56,7 +56,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <sim.h>
+#include "sim.h"
 #include "simglb.h"
 #include "log.h"
 

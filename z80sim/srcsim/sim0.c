@@ -59,14 +59,14 @@
 #include <libgen.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <string.h>
+#include <memory.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sim.h>
+#include "sim.h"
 #include "simglb.h"
-#include <config.h>
+#include "config.h"
 #include "../../frontpanel/frontpanel.h"
-#include <memory.h>
+#include "memory.h"
 
 #define BUFSIZE	256		/* buffer size for file I/O */
 

@@ -49,13 +49,13 @@
  *	starting with 0xfd 0xcb
  */
 
-#include <sim.h>
+#include "sim.h"
 #include "simglb.h"
-#include <config.h>
+#include "config.h"
 #ifdef FRONTPANEL
 #include "../../frontpanel/frontpanel.h"
 #endif
-#include <memory.h>
+#include "memory.h"
 
 static int trap_fdcb(void);
 static int op_tb0iyd(int), op_tb1iyd(int), op_tb2iyd(int), op_tb3iyd(int);

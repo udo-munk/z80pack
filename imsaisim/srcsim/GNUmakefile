@@ -2,13 +2,13 @@
 ### START MACHINE DEPENDANT VARIABLES 
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
-MACHINE = z80
+MACHINE = imsai
 # machine specific system source files
-SRC_MACHINE = config.c disas.c iosim.c memory.c simctl.c 
+SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = 
+SRC_IO = cromemco-dazzler.c diskmanager.c imsai-fif.c imsai-sio2.c imsai-vio.c unix_terminal.c netsrv.c
 #machine specifc libraries 
-SRC_LIBS =
+SRC_LIBS = -lcivetweb -lfrontpanel
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
@@ -24,25 +24,25 @@ INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
 LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
 # DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
-# DIR_ROOT = .
+DIR_ROOT = .
 # system wide location for machines configuration files
-# CONF = $(DIR_ROOT)/conf
+CONF = $(DIR_ROOT)/conf
 # system wide location for disk images
-# DISKS = $(DIR_ROOT)/disks
+DISKS = $(DIR_ROOT)/disks
 # default boot ROM
-# ROM = $(DIR_ROOT)/bootrom.hex
+ROM = $(DIR_ROOT)/bootrom.hex
 ###
 ### END MACHINE DEPENDANT VARIABLES 
 ###
 
-SIM = $(MACHINE)sim
+SIM = ../$(MACHINE)sim
 EXEC = $(SIM)
 
-# DIR_CORE = ../../z80sim/srcsim
-# DIR_IO = ../../iodevices
-# DIR_FP = ../../frontpanel
-# DIR_NET = ../../webfrontend 
-# DIR_CIV = $(DIR_NET:=/civetweb)
+DIR_CORE = ../../z80sim/srcsim
+DIR_IO = ../../iodevices
+DIR_FP = ../../frontpanel
+DIR_NET = ../../webfrontend 
+DIR_CIV = $(DIR_NET:=/civetweb)
 
 VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_FP) $(DIR_NET) $(DIR_CIV)
 CC = gcc
@@ -76,8 +76,8 @@ endif
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCL = -I. #-I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) -I$(DIR_NET) -I$(DIR_CIV:=/include) $(PLAT_INCL)
-# DEFS = -DCONFDIR=\"$(CONF)\" -DDISKSDIR=\"$(DISKS)\" -DBOOTROM=\"$(ROM)\"
+INCL = -iquote . -I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) -I$(DIR_NET) -I$(DIR_CIV:=/include) $(PLAT_INCL)
+DEFS = -DCONFDIR=\"$(CONF)\" -DDISKSDIR=\"$(DISKS)\" -DBOOTROM=\"$(ROM)\"
 
 # Production - the default
 CFLAGS = -O3 -c -Wall -Wextra $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCL)
@@ -93,8 +93,8 @@ CFLAGS = -O -g -c $(PLAT_CFLAGS) $(DEFS) $(INCL)
 endif
 
 LFLAGS = $(PLAT_LFLAGS) \
-#	-ljpeg -lGL -lGLU -lX11 \
-#	-L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS)
+	-ljpeg -lGL -lGLU -lX11 \
+	-L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS)
 
 # core system source files for the CPU simulation - only change if the core changes
 SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
@@ -134,7 +134,8 @@ _rm_deps:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f core
+	rm -f ../disks/drive*.dsk
+	rm -f ../printer.txt
 
 #test : ; @echo $(DIR_ROOT)
 

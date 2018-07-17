@@ -49,7 +49,7 @@
  */
 
 #include <stddef.h>
-#include <sim.h>
+#include "sim.h"
 
 #define MAXCHAN 5	/* max number of channels for I/O busy detect */
 

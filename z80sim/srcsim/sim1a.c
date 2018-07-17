@@ -47,13 +47,13 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/time.h>
-#include <sim.h>
+#include "sim.h"
 #include "simglb.h"
-#include <config.h>
+#include "config.h"
 #ifdef FRONTPANEL
 #include "../../frontpanel/frontpanel.h"
 #endif
-#include <memory.h>
+#include "memory.h"
 
 #ifdef WANT_GUI
 void check_gui_break(void);

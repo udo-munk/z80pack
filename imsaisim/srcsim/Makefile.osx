@@ -10,7 +10,7 @@ ROM=/usr/local/share/imsaisim/bootrom.hex
 CC = gcc
 
 WEB = ../../webfrontend
-INCL = -I. -I$(WEB)/civetweb/include -I$(WEB)
+INCL = -iquote . -I$(WEB)/civetweb/include -I$(WEB)
 
 # Development
 #CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" ${INCL}
