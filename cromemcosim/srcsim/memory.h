@@ -9,6 +9,7 @@
  * 22-NOV-16 stuff moved to here and implemented as inline functions
  * 03-FEB-17 added ROM initialisation
  * 18-MAY-18 optimization
+ * 18-JUL-18 use logging
  */
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */

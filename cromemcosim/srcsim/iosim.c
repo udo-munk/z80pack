@@ -25,6 +25,7 @@
  * 24-APR-18 cleanup
  * 17-MAY-18 implemented hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 18-JUL-18 use logging
  */
 
 #include <pthread.h>
@@ -45,6 +46,8 @@
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+// #define LOG_LOCAL_LEVEL LOG_DEBUG
+#include "log.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -61,6 +64,8 @@ static void hwctl_out(BYTE);
  */
 static void *timing(void *);
 static void interrupt(int);
+
+static const char *TAG = "IO";
 
 static int rtc;			/* flag for 512ms RTC interrupt */
        int lpt1, lpt2;		/* fds for lpt printer files */
@@ -629,7 +634,7 @@ void init_io(void)
 
 	/* create the thread for timer and interrupt handling */
 	if (pthread_create(&thread, NULL, timing, (void *) NULL)) {
-		printf("can't create timing thread\n");
+		LOGE(TAG, "can't create timing thread");
 		exit(1);
 	}
 
@@ -644,7 +649,7 @@ void init_io(void)
 	tim.it_interval.tv_usec = 10000;
 	setitimer(ITIMER_REAL, &tim, NULL);
 
-	printf("\n");
+	LOG(TAG, "\r\n");
 }
 
 /*
@@ -831,7 +836,7 @@ static void mmu_out(BYTE data)
 {
 	int sel;
 
-	//printf("mmu select bank %02x\r\n", data);
+	LOGD(TAG, "mmu select bank %02x", data);
 	bankio = data;
 
 	/* set banks */
@@ -871,7 +876,7 @@ static void mmu_out(BYTE data)
 		common = 1;
 		break;
 	default:
-		printf("Not supported bank select = %02x\r\n", data);
+		LOGE(TAG, "Not supported bank select = %02x", data);
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;

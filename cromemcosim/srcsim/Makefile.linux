@@ -83,16 +83,16 @@ sim6.o : sim6.c sim.h simglb.h config.h memory.h
 sim7.o : sim7.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim7.c
 
-simctl.o : simctl.c sim.h simglb.h config.h memory.h
+simctl.o : simctl.c sim.h simglb.h config.h memory.h log.h
 	$(CC) $(CFLAGS) simctl.c
 
 simint.o : simint.c sim.h simglb.h
 	$(CC) $(CFLAGS) simint.c
 
-memory.o : memory.c sim.h simglb.h memory.h
+memory.o : memory.c sim.h simglb.h memory.h log.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h
+iosim.o : iosim.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h log.h
@@ -107,7 +107,7 @@ unix_terminal.o : ../../iodevices/unix_terminal.c
 unix_network.o : ../../iodevices/unix_network.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/unix_network.c
 
-config.o : config.c sim.h simglb.h
+config.o : config.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) config.c
 
 cromemco-tu-art.o : ../../iodevices/cromemco-tu-art.c log.h

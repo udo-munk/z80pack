@@ -22,6 +22,7 @@
  * 17-MAY-18 implemented hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
  * 11-JUN-18 fixed reset so that cold and warm start works
+ * 18-JUL-18 use logging
  */
 
 #include <X11/Xlib.h>
@@ -37,9 +38,12 @@
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
 #include "../../iodevices/unix_terminal.h"
+#include "log.h"
 
 extern void cpu_z80(void), cpu_8080(void);
 extern void reset_cpu(void), reset_io(void);
+
+static const char *TAG = "system";
 
 static BYTE fp_led_wait;
 static BYTE fp_led_speed;
@@ -67,7 +71,7 @@ void mon(void)
 	XInitThreads();
 
 	if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
-		puts("frontpanel error");
+		LOGE(TAG, "frontpanel error");
 		exit(1);
 	}
 
@@ -189,46 +193,46 @@ void report_error(void)
 	case NONE:
 		break;
 	case OPHALT:
-		printf("\r\nINT disabled and HALT Op-Code reached at %04x\r\n",
-		       PC - 1);
+		LOG(TAG, "INT disabled and HALT Op-Code reached at %04x\r\n",
+		    PC - 1);
 		break;
 	case IOTRAPIN:
-		printf("\r\nI/O input Trap at %04x, port %02x\r\n", PC, io_port);
+		LOGE(TAG, "I/O input Trap at %04x, port %02x", PC, io_port);
 		break;
 	case IOTRAPOUT:
-		printf("\r\nI/O output Trap at %04x, port %02x\r\n", PC, io_port);
+		LOGE(TAG, "I/O output Trap at %04x, port %02x", PC, io_port);
 		break;
 	case IOHALT:
-		printf("\nSystem halted, bye.\n");
+		LOG(TAG, "System halted, bye.\r\n");
 		break;
 	case IOERROR:
-		printf("\r\nFatal I/O Error at %04x\r\n", PC);
+		LOGE(TAG, "Fatal I/O Error at %04x", PC);
 		break;
 	case OPTRAP1:
-		printf("\r\nOp-code trap at %04x %02x\r\n", PC - 1,
-		       *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
+		     *(mem_base() + PC - 1));
 		break;
 	case OPTRAP2:
-		printf("\r\nOp-code trap at %04x %02x %02x\r\n",
-		       PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x",
+		     PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
 		break;
 	case OPTRAP4:
-		printf("\r\nOp-code trap at %04x %02x %02x %02x %02x\r\n",
-		       PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
+		     PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
+		     *(mem_base() + PC - 2), *(mem_base() + PC - 1));
 		break;
 	case USERINT:
-		printf("\r\nUser Interrupt at %04x\r\n", PC);
+		LOG(TAG, "User Interrupt at %04x\r\n", PC);
 		break;
 	case INTERROR:
-		printf("\r\nUnsupported bus data during INT: %02x\r\n",
-		       int_data);
+		LOGW(TAG, "Unsupported bus data during INT: %02x",
+		     int_data);
 		break;
 	case POWEROFF:
-		printf("\r\nSystem powered off, bye.\r\n");
+		LOG(TAG, "System powered off, bye.\r\n");
 		break;
 	default:
-		printf("\r\nUnknown error %d\r\n", cpu_error);
+		LOGW(TAG, "Unknown error %d", cpu_error);
 		break;
 	}
 }
@@ -496,10 +500,8 @@ void power_clicked(int state, int val)
 		fp_led_output = 0;
 		if (isatty(1))
 			system("tput clear");
-		else {
+		else
 			puts("\r\n\r\n\r\n");
-			fflush(stdout);
-		}
 		break;
 	case FP_SW_DOWN:
 		if (!power)
