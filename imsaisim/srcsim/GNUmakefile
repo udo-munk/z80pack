@@ -38,7 +38,7 @@ ROM = $(DIR_ROOT)/bootrom.hex
 SIM = ../$(MACHINE)sim
 EXEC = $(SIM)
 
-DIR_CORE = ../../z80sim/srcsim
+DIR_CORE = ../../z80core
 DIR_IO = ../../iodevices
 DIR_FP = ../../frontpanel
 DIR_NET = ../../webfrontend 
@@ -51,7 +51,7 @@ CC = gcc
 ### START O/S PLATFORM DEPENDANT VARIABLES
 ###
 # These are currently only tested for OSX and need to be tested for other platforms
-include ../../z80sim/srcsim/Makefile.in-os
+include ../../z80core/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)
 CC = cc
