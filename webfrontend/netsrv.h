@@ -21,7 +21,8 @@ enum net_device {
 	DEV_SIO1,
 	DEV_LPT,
 	DEV_VIO,
-	DEV_CPA
+	DEV_CPA,
+	DEV_DZLR
 };
 
 typedef enum net_device net_device_t;

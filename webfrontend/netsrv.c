@@ -31,7 +31,7 @@
 #define DOCUMENT_ROOT "../webfrontend/www/imsai"
 #define PORT "8080"
 
-#define MAX_WS_CLIENTS (5)
+#define MAX_WS_CLIENTS (6)
 static const char *TAG = "netsrv";
 
 static int queue[MAX_WS_CLIENTS];
@@ -44,7 +44,8 @@ char *dev_name[] = {
 	"SIO1",
 	"LPT",
 	"VIO",
-	"CPA"
+	"CPA",
+	"DZLR"
 };
 
 int last_error = 0; //TODO: replace
@@ -338,6 +339,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 			case DEV_SIO1:
 			case DEV_VIO:
 			case DEV_LPT:
+			case DEV_DZLR:
 				res = msgget(IPC_PRIVATE, 0644 | IPC_CREAT); //TODO: check flags
 				if (res > 0) {
 					queue[(net_device_t)device] = res;
@@ -545,6 +547,13 @@ int start_net_services (void) {
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) DEV_VIO);
+	
+	mg_set_websocket_handler(ctx, "/dazzler",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         (void *) DEV_DZLR);
 	
 	mg_set_websocket_handler(ctx, "/cpa",
 	                         WebSocketConnectHandler,
