@@ -56,28 +56,28 @@ sim0.c:
 sim0.o : sim0.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim0.c
 
-sim1.o : sim1.c sim.h simglb.h memory.h memory.h
+sim1.o : sim1.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim1.c
 
-sim1a.o : sim1a.c sim.h simglb.h memory.h memory.h
+sim1a.o : sim1a.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim1a.c
 
-sim2.o : sim2.c sim.h simglb.h memory.h memory.h
+sim2.o : sim2.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim2.c
 
-sim3.o : sim3.c sim.h simglb.h memory.h memory.h
+sim3.o : sim3.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim3.c
 
-sim4.o : sim4.c sim.h simglb.h memory.h memory.h
+sim4.o : sim4.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim4.c
 
-sim5.o : sim5.c sim.h simglb.h memory.h memory.h
+sim5.o : sim5.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim5.c
 
-sim6.o : sim6.c sim.h simglb.h memory.h memory.h
+sim6.o : sim6.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim6.c
 
-sim7.o : sim7.c sim.h simglb.h memory.h memory.h
+sim7.o : sim7.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim7.c
 
 simctl.o : simctl.c sim.h simglb.h config.h memory.h log.h
