@@ -35,6 +35,10 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+// #define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
 
 static const char *TAG = "DAZZLER";
@@ -93,6 +97,10 @@ static BYTE format;
 /* UNIX stuff */
 static pthread_t thread;
 
+#ifdef HAS_NETSERVER
+static void ws_clear(void);
+static BYTE formatBuf = 0;
+#endif
 
 /* create the X11 window for DAZZLER display */
 static void open_display(void)
@@ -216,6 +224,10 @@ void cromemco_dazzler_off(void)
 		XCloseDisplay(display);
 		display = NULL;
 	}
+
+#ifdef HAS_NETSERVER
+	ws_clear();
+#endif
 
 	bus_request = 0;
 }
@@ -584,6 +596,80 @@ static void draw_lowres(void)
 	}
 }
 
+#ifdef HAS_NETSERVER
+static uint8_t dblbuf[2048];
+
+static struct {
+	uint16_t format;
+	uint16_t addr;
+	uint16_t len;
+	uint8_t buf[2048];
+} msg;
+
+void ws_clear(void) {
+
+	memset(dblbuf, 0, 2048);
+
+	msg.format = 0;
+	msg.addr = 0xFFFF;
+	msg.len = 0;
+	net_device_send(DEV_DZLR, (char *) &msg, msg.len + 6);
+	LOGD(TAG, "Clear the screen.");
+}
+
+static void ws_refresh(void) {
+
+	int len = (format & 32)?2048:512;
+	int addr;
+	int i, n, x, la_count;
+	bool cont;
+	uint8_t val;
+
+	for (i=0; i<len; i++) {
+		addr = i;
+		n=0;
+		la_count=0;
+		cont = true;
+		while (cont && (i<len)) {
+			val=dma_read(dma_addr + i);
+			while ((val != dblbuf[i]) && (i<len)) {
+				dblbuf[i++] = val;
+				msg.buf[n++] = val;
+				cont = false;
+				val=dma_read(dma_addr + i);
+			}
+			if (cont) break;
+			x=0;
+#define LOOKAHEAD 6
+			/* look-ahead up to n bytes for next change */
+			while ((x<LOOKAHEAD) && !cont && (i<len)) {
+				val=dma_read(dma_addr + i++);
+				msg.buf[n++] = val;
+				la_count++;
+				val=dma_read(dma_addr + i);
+				if ((i<len) && (val != dblbuf[i])) {
+					cont = true;
+				}
+				x++;
+			}
+			if (!cont) {
+				n -= x;
+				la_count -= x;
+			}
+		}
+		if (n || (format != formatBuf)) {
+			formatBuf = format;
+			msg.format = format;
+			msg.addr = addr;
+			msg.len = n;
+			net_device_send(DEV_DZLR, (char *) &msg, msg.len + 6);
+			LOGD(TAG, "BUF update 0x%04X-0x%04X len: %d format: 0x%02X l/a: %d", 
+				msg.addr, msg.addr + msg.len, msg.len, msg.format, la_count);
+		}
+	}
+}
+#endif
+
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
@@ -601,6 +687,7 @@ static void *update_display(void *arg)
 		if (state == 1) {	/* draw frame if on */
 			if (cpu_state == CONTIN_RUN)
 				bus_request = 1;
+#ifndef HAS_NETSERVER
 			XLockDisplay(display);
 			XSetForeground(display, gc, colors[0].pixel);
 			XFillRectangle(display, pixmap, gc, 0, 0, size, size);
@@ -612,6 +699,19 @@ static void *update_display(void *arg)
 				  size, size, 0, 0);
 			XSync(display, True);
 			XUnlockDisplay(display);
+#else 
+			UNUSED(draw_hires);
+			UNUSED(draw_lowres);
+			if (net_device_alive(DEV_DZLR)) {
+				ws_refresh();
+			} else {
+				if (msg.format) { 
+					memset(dblbuf, 0, 2048);
+					msg.format = 0;
+				}
+			}
+
+#endif
 			bus_request = 0;
 		}
 
@@ -640,10 +740,17 @@ void cromemco_dazzler_ctl_out(BYTE data)
 
 	/* switch DAZZLER on/off */
 	if (data & 128) {
+#ifndef HAS_NETSERVER
 		state = 1;
 		if (display == NULL) {
 			open_display();
 		}
+#else
+		UNUSED(open_display);
+		if (state == 0) 
+			ws_clear();
+		state = 1;
+#endif
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, update_display,
 			    (void *) NULL)) {
@@ -655,10 +762,14 @@ void cromemco_dazzler_ctl_out(BYTE data)
 		if (state == 1) {
 			state = 0;
 			SLEEP_MS(50);
+#ifndef HAS_NETSERVER
 			XLockDisplay(display);
 			XClearWindow(display, window);
 			XSync(display, True);
 			XUnlockDisplay(display);
+#else
+			ws_clear();
+#endif
 			bus_request = 0;
 		}
 	}
