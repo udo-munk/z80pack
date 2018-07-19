@@ -103,7 +103,7 @@ int getkey(void)
  */
 void sleep_ms(int time)
 {
-	static struct timespec timer, rem;
+	struct timespec timer, rem;
 
 	timer.tv_sec = 0;
 	timer.tv_nsec = 1000000L * time;
