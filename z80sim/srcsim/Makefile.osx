@@ -1,13 +1,13 @@
 CC = gcc
 
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -iquote .
+#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -iquote .
+CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE
 
 # Debugging
-#CFLAGS = -O -g -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -iquote .
+#CFLAGS = -O -g -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE
 
 LFLAGS =
 

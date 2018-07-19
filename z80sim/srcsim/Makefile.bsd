@@ -29,6 +29,9 @@ OBJ =	sim0.o \
 z80sim : $(OBJ)
 	$(CC) $(OBJ) $(LFLAGS) -o z80sim
 
+sim0.c:
+	./lnsrc
+
 sim0.o : sim0.c	sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim0.c
 
@@ -82,6 +85,7 @@ config.o: config.c
 
 clean:
 	rm -f *.o core z80sim
+	./ulnsrc
 
 allclean:
 	make -f Makefile.bsd clean
