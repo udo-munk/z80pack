@@ -92,9 +92,9 @@ ifneq ($(DEBUG),)
 CFLAGS = -O -g -c $(PLAT_CFLAGS) $(DEFS) $(INCL)
 endif
 
-LFLAGS = $(PLAT_LFLAGS) \
-	-ljpeg -lGL -lGLU -lX11 \
-	-L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS)
+LFLAGS = -L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS) \
+        -ljpeg -lGL -lGLU -lX11 \
+        $(PLAT_LFLAGS)
 
 # core system source files for the CPU simulation - only change if the core changes
 SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
