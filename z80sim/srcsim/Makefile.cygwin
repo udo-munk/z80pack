@@ -26,8 +26,8 @@ OBJ =	sim0.o \
 	simglb.o \
 	config.o
 
-z80sim : $(OBJ)
-	$(CC) $(OBJ) $(LFLAGS) -o z80sim
+../z80sim : $(OBJ)
+	$(CC) $(OBJ) $(LFLAGS) -o ../z80sim
 
 sim0.c:
 	./lnsrc
@@ -84,11 +84,11 @@ config.o : config.c
 	$(CC) $(CFLAGS) config.c
 
 clean:
-	rm -f *.o core z80sim
+	rm -f *.o core ../z80sim
 	./ulnsrc
 
 allclean:
 	make -f Makefile.cygwin clean
 
-install: z80sim
-	cp z80sim ${HOME}/bin
+install: ../z80sim
+	cp ../z80sim ${HOME}/bin

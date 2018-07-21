@@ -35,7 +35,7 @@ LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 ### END MACHINE DEPENDANT VARIABLES 
 ###
 
-SIM = $(MACHINE)sim
+SIM = ../$(MACHINE)sim
 EXEC = $(SIM)
 
 DIR_CORE = ../../z80core
