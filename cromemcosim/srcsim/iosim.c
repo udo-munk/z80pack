@@ -890,14 +890,7 @@ static void mmu_out(BYTE data)
  */
 void *timing(void *arg)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
-
-	struct timeval t1, t2;
-	int tdiff;
-
 	arg = arg;	/* to avoid compiler warning */
-
-	gettimeofday(&t1, NULL);
 
 	while (1) {	/* 1 msec per loop iteration */
 
@@ -1117,18 +1110,12 @@ void *timing(void *arg)
 		uart1b_int = 0xff;
 
 next:
-		/* sleep for 1 millisecond if processing didn't
-		   consume to much time */
-		gettimeofday(&t2, NULL);
-		tdiff = time_diff(&t1, &t2);
-		if ((tdiff > 0) && (tdiff < 500))
-			SLEEP_MS(1);
+		/* sleep for 1 millisecond */
+		SLEEP_MS(1);
 
 		/* reset disk index pulse */
 		if (index_pulse > 2)
 			index_pulse = 0;
-
-		gettimeofday(&t1, NULL);
 	}
 
 	/* never reached, this thread is running endless */

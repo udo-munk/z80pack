@@ -16,7 +16,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "log.h"
@@ -89,13 +88,7 @@ static void dsk_path(void) {
  */
 static void *timing(void *arg)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
-
-	struct timeval t1, t2;
-	int tdiff;
-
 	arg = arg;	/* to avoid compiler warning */
-	gettimeofday(&t1, NULL);
 
 	while (1) {	/* 1 msec per loop iteration */
 		/* advance sector position */
@@ -105,13 +98,8 @@ static void *timing(void *arg)
 				sec = 0;
 		}
 
-		/* sleep for 1 millisecond if processing didn't
-		   consume too much time */
-		gettimeofday(&t2, NULL);
-		tdiff = time_diff(&t1, &t2);
-		if ((tdiff > 0) && (tdiff < 500))
-			SLEEP_MS(1);
-		gettimeofday(&t1, NULL);
+		/* sleep for 1 millisecond */
+		SLEEP_MS(1);
 	}
 
 	pthread_exit(NULL);
