@@ -87,7 +87,7 @@ config.o : config.c
 	$(CC) $(CFLAGS) config.c
 
 clean:
-	rm -f *.o core ../z80sim
+	rm -f *.o ../z80sim
 	./ulnsrc
 
 allclean:

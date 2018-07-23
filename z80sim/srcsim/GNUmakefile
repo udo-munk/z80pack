@@ -25,12 +25,6 @@ LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
 # DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
 # DIR_ROOT = .
-# system wide location for machines configuration files
-# CONF = $(DIR_ROOT)/conf
-# system wide location for disk images
-# DISKS = $(DIR_ROOT)/disks
-# default boot ROM
-# ROM = $(DIR_ROOT)/bootrom.hex
 ###
 ### END MACHINE DEPENDANT VARIABLES 
 ###
@@ -39,12 +33,8 @@ SIM = ../$(MACHINE)sim
 EXEC = $(SIM)
 
 DIR_CORE = ../../z80core
-# DIR_IO = ../../iodevices
-# DIR_FP = ../../frontpanel
-# DIR_NET = ../../webfrontend 
-# DIR_CIV = $(DIR_NET:=/civetweb)
 
-VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_FP) $(DIR_NET) $(DIR_CIV)
+VPATH = $(DIR_CORE)
 CC = gcc
 
 ###
@@ -55,29 +45,28 @@ include ../../z80core/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)
 CC = cc
-PLAT_INCL = -I/usr/local/include 
-PLAT_LFLAGS = -L/usr/local/lib -lthr
+PLAT_INCL =
+PLAT_LFLAGS =
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
-PLAT_LFLAGS = -lXext -lm -lpthread
+PLAT_LFLAGS =
 .LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
-PLAT_LFLAGS = -lXext -lXmu -lXt -lm -lpthread
+PLAT_LFLAGS =
 endif 
 ifeq ($(TARGET_OS),OSX)
-PLAT_INCL = -I/opt/X11/include 
+PLAT_INCL =
 PLAT_CFLAGS = -Wno-self-assign
-PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib 
+PLAT_LFLAGS =
 .LIBPATTERNS += lib%.dylib
 endif
 ###
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCL = -iquote . -I$(DIR_CORE) # -I$(DIR_IO) -I$(DIR_FP) -I$(DIR_NET) -I$(DIR_CIV:=/include) $(PLAT_INCL)
-# DEFS = -DCONFDIR=\"$(CONF)\" -DDISKSDIR=\"$(DISKS)\" -DBOOTROM=\"$(ROM)\"
+INCL = -iquote . -I$(DIR_CORE)
 
 # Production - the default
 CFLAGS = -O3 -c -Wall -Wextra $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCL)
@@ -92,9 +81,7 @@ ifneq ($(DEBUG),)
 CFLAGS = -O -g -c $(PLAT_CFLAGS) $(DEFS) $(INCL)
 endif
 
-LFLAGS = $(PLAT_LFLAGS) \
-#	-ljpeg -lGL -lGLU -lX11 \
-#	-L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS)
+LFLAGS = $(PLAT_LFLAGS)
 
 # core system source files for the CPU simulation - only change if the core changes
 SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
@@ -134,7 +121,6 @@ _rm_deps:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f core
 
 #test : ; @echo $(DIR_ROOT)
 
