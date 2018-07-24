@@ -23,8 +23,7 @@ HTMLDIR = $(DOCDIR)
 INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
 LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
-# DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
-DIR_ROOT = .
+DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
 # system wide location for machines configuration files
 CONF = $(DIR_ROOT)/conf
 # system wide location for disk images
@@ -50,7 +49,6 @@ CC = gcc
 ###
 ### START O/S PLATFORM DEPENDANT VARIABLES
 ###
-# These are currently only tested for OSX and need to be tested for other platforms
 include ../../z80core/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)

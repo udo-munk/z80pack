@@ -24,7 +24,6 @@ INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
 LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
 # DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
-# DIR_ROOT = .
 ###
 ### END MACHINE DEPENDANT VARIABLES 
 ###
@@ -40,7 +39,6 @@ CC = gcc
 ###
 ### START O/S PLATFORM DEPENDANT VARIABLES
 ###
-# These are currently only tested for OSX and need to be tested for other platforms
 include ../../z80core/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)
