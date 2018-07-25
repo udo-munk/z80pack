@@ -4,6 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
  *
@@ -17,6 +18,7 @@
  * 03-MAY-18 improved accuracy
  * 03-JUL-18 implemented baud rate for terminal SIO
  * 13-JUL-18 use logging
+ * 14-JUL-18 integrate webfrontend
  */
 
 extern BYTE imsai_sio1_status_in(void);

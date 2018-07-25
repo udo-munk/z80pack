@@ -4,6 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2015-2018 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * Emulation of a Cromemco DAZZLER S100 board
  *
@@ -20,6 +21,7 @@
  * 16-DEC-16 use DMA function for memory access
  * 26-JAN-17 optimization
  * 15-JUL-18 use logging
+ * 19-JUL-18 integrate webfrontend
  */
 
 #include <X11/X.h>
@@ -606,8 +608,8 @@ static struct {
 	uint8_t buf[2048];
 } msg;
 
-void ws_clear(void) {
-
+void ws_clear(void)
+{
 	memset(dblbuf, 0, 2048);
 
 	msg.format = 0;
@@ -617,37 +619,39 @@ void ws_clear(void) {
 	LOGD(TAG, "Clear the screen.");
 }
 
-static void ws_refresh(void) {
+static void ws_refresh(void)
+{
 
-	int len = (format & 32)?2048:512;
+	int len = (format & 32) ? 2048 : 512;
 	int addr;
 	int i, n, x, la_count;
 	bool cont;
 	uint8_t val;
 
-	for (i=0; i<len; i++) {
+	for (i = 0; i < len; i++) {
 		addr = i;
-		n=0;
-		la_count=0;
+		n = 0;
+		la_count = 0;
 		cont = true;
-		while (cont && (i<len)) {
-			val=dma_read(dma_addr + i);
-			while ((val != dblbuf[i]) && (i<len)) {
+		while (cont && (i < len)) {
+			val = dma_read(dma_addr + i);
+			while ((val != dblbuf[i]) && (i < len)) {
 				dblbuf[i++] = val;
 				msg.buf[n++] = val;
 				cont = false;
-				val=dma_read(dma_addr + i);
+				val = dma_read(dma_addr + i);
 			}
-			if (cont) break;
-			x=0;
+			if (cont)
+				break;
+			x = 0;
 #define LOOKAHEAD 6
 			/* look-ahead up to n bytes for next change */
-			while ((x<LOOKAHEAD) && !cont && (i<len)) {
-				val=dma_read(dma_addr + i++);
+			while ((x < LOOKAHEAD) && !cont && (i < len)) {
+				val = dma_read(dma_addr + i++);
 				msg.buf[n++] = val;
 				la_count++;
-				val=dma_read(dma_addr + i);
-				if ((i<len) && (val != dblbuf[i])) {
+				val = dma_read(dma_addr + i);
+				if ((i < len) && (val != dblbuf[i])) {
 					cont = true;
 				}
 				x++;
@@ -664,7 +668,7 @@ static void ws_refresh(void) {
 			msg.len = n;
 			net_device_send(DEV_DZLR, (char *) &msg, msg.len + 6);
 			LOGD(TAG, "BUF update 0x%04X-0x%04X len: %d format: 0x%02X l/a: %d", 
-				msg.addr, msg.addr + msg.len, msg.len, msg.format, la_count);
+			     msg.addr, msg.addr + msg.len, msg.len, msg.format, la_count);
 		}
 	}
 }
@@ -710,7 +714,6 @@ static void *update_display(void *arg)
 					msg.format = 0;
 				}
 			}
-
 #endif
 			bus_request = 0;
 		}

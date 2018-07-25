@@ -4,6 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
  *

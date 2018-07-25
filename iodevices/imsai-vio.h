@@ -4,6 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2017-2018 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * Emulation of an IMSAI VIO S100 board
  *
@@ -16,6 +17,7 @@
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
  * 07-JUL-18 optimization
  * 12-JUL-18 use logging
+ * 14-JUL-18 integrate webfrontend
  */
 
 extern void imsai_vio_init(void), imsai_vio_off(void);

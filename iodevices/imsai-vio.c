@@ -4,6 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2017-2018 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * Emulation of an IMSAI VIO S100 board
  *
@@ -373,7 +374,8 @@ static struct {
 	uint8_t buf[2048];
 } msg;
 
-static void ws_refresh(void) {
+static void ws_refresh(void)
+{
 	static int cols, rows;
 
 	UNUSED(vmode);
@@ -406,33 +408,34 @@ static void ws_refresh(void) {
 
 	event_handler();
 
-	int len = rows*cols;
+	int len = rows * cols;
 	int addr;
 	int i, n, x;
 	bool cont;
 	uint8_t val;
 
-	for (i=0; i<len;i++) {
+	for (i = 0; i < len;i++) {
 		addr = i;
-		n=0;
+		n = 0;
 		cont = true;
-		while (cont && (i<len)) {
-			val=dma_read(0xf000 + i);
-			while ((val != dblbuf[i]) && (i<len)) {
+		while (cont && (i < len)) {
+			val = dma_read(0xf000 + i);
+			while ((val != dblbuf[i]) && (i < len)) {
 				dblbuf[i++] = val;
 				msg.buf[n++] = val;
 				cont = false;
-				val=dma_read(0xf000 + i);
+				val = dma_read(0xf000 + i);
 			}
-			if (cont) break;
-			x=0;
+			if (cont)
+				break;
+			x = 0;
 #define LOOKAHEAD 4
 			/* look-ahead up to 4 bytes for next change */
-			while ((x<LOOKAHEAD) && !cont && (i<len)) {
-				val=dma_read(0xf000 + i++);
+			while ((x < LOOKAHEAD) && !cont && (i < len)) {
+				val = dma_read(0xf000 + i++);
 				msg.buf[n++] = val;
-				val=dma_read(0xf000 + i);
-				if ((i<len) && (val != dblbuf[i])) {
+				val = dma_read(0xf000 + i);
+				if ((i < len) && (val != dblbuf[i])) {
 					cont = true;
 				}
 				x++;
@@ -463,7 +466,6 @@ static void *update_display(void *arg)
 	gettimeofday(&t1, NULL);
 
 	while (state) {
-
 #ifndef HAS_NETSERVER
 		/* lock display, don't cancel thread while locked */
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -481,8 +483,8 @@ static void *update_display(void *arg)
 #else
 		UNUSED(refresh);
 		ws_refresh();
-
 #endif
+
 		/* sleep rest to 33ms so that we get 30 fps */
 		gettimeofday(&t2, NULL);
 		tdiff = time_diff(&t1, &t2);
