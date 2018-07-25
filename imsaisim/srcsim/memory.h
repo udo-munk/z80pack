@@ -38,8 +38,8 @@ extern void groupswap();
 #ifdef HAS_BANKED_ROM
 #undef MEMORY_WRITE
 #define MEMORY_WRITE(addr)	_MEMMAPPED(addr)
-#define _MEMWRTTHRU(addr) 	*(wrtvec[(addr)>>10] + ((addr)&0x03ff))
-#define _MEMMAPPED(addr) 	*(rdrvec[(addr)>>10] + ((addr)&0x03ff))
+#define _MEMWRTTHRU(addr) 	*(wrtvec[(addr) >> 10] + ((addr) & 0x03ff))
+#define _MEMMAPPED(addr) 	*(rdrvec[(addr) >> 10] + ((addr) & 0x03ff))
 #else
 #define _MEMWRTTHRU(addr) 	_MEMDIRECT(addr)
 #define _MEMMAPPED(addr) 	_MEMDIRECT(addr)
@@ -79,14 +79,12 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
-	register BYTE data = _MEMMAPPED(addr);
-
 	cpu_bus |= CPU_WO | CPU_MEMR;
 
 	fp_clock++;
 	fp_led_address = addr;
 	if (p_tab[addr >> 10] != MEM_NONE)
-		fp_led_data = data;
+		fp_led_data = _MEMMAPPED(addr);
 	else
 		fp_led_data = 0xff;
 	fp_sampleData();
