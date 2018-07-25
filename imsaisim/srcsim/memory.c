@@ -27,10 +27,10 @@
 static const char *TAG = "memory";
 
 /* 64KB non banked memory */
-BYTE memory[64<<10];
+BYTE memory[64 << 10];
 /* 2KB banked ROM & RAM for MPU-B */
-BYTE mpubrom[2<<10];
-BYTE mpubram[2<<10];
+BYTE mpubrom[2 << 10];
+BYTE mpubram[2 << 10];
 
 /* Memory access read and write vector tables */
 BYTE *rdrvec[64];
@@ -41,7 +41,8 @@ static BYTE groupsel;
 /* page table with memory configuration/state */
 int p_tab[64];		/* 64 pages a 1 KB */
 
-void groupswap() {
+void groupswap()
+{
 	LOGD(TAG, "MPU-B Banked ROM/RAM group select %02X", groupsel);
 
 	if (groupsel & _GROUP0) {
@@ -53,13 +54,13 @@ void groupswap() {
 	}
 
 	if (groupsel & _GROUP1) {
-		rdrvec[52] = &memory[52<<10];
-		// rdrvec[53] = &memory[53<<10];
-		wrtvec[52] = &memory[52<<10];
-		// wrtvec[53] = &memory[53<<10];
+		rdrvec[52] = &memory[52 << 10];
+		// rdrvec[53] = &memory[53 << 10];
+		wrtvec[52] = &memory[52 << 10];
+		// wrtvec[53] = &memory[53 << 10];
 
-		rdrvec[54] = &memory[54<<10];
-		rdrvec[55] = &memory[55<<10];
+		rdrvec[54] = &memory[54 << 10];
+		rdrvec[55] = &memory[55 << 10];
 
 		MEM_RELEASE(52);
 		// MEM_RELEASE(53);
@@ -88,8 +89,8 @@ void init_memory(void)
 	/* initialise memory page table, no memory available */
 	for (i = 0; i < 64; i++) {
 		p_tab[i] = MEM_NONE;
-		wrtvec[i] = &memory[i<<10];
-		rdrvec[i] = &memory[i<<10];		
+		wrtvec[i] = &memory[i << 10];
+		rdrvec[i] = &memory[i << 10];		
 	}
 
 	/* then set the first ram_size pages to RAM */
@@ -97,7 +98,7 @@ void init_memory(void)
 		MEM_RESERVE_RAM(i);
 
 #ifdef HAS_BANKED_ROM
-	if(r_flag) {
+	if (r_flag) {
 		groupsel = _GROUPINIT;
 		LOG(TAG, "MPU-B Banked ROM/RAM enabled\r\n");
 	} else {
@@ -121,10 +122,10 @@ void init_memory(void)
 	LOG(TAG, "\r\n");
 }
 
-void reset_memory(void) {
-	
+void reset_memory(void)
+{
 #ifdef HAS_BANKED_ROM
-	if(r_flag) {
+	if (r_flag) {
 		groupsel = _GROUPINIT;
 	} else {
 		groupsel = _GROUP0 | _GROUP1;
@@ -141,7 +142,7 @@ void init_rom(void)
 {
 	register unsigned int i;
 
-	if(r_flag) {
+	if (r_flag) {
 		for (i = 0xd800; i <= 0xdfff; i++)
 			_MEMMAPPED(i) = 0xff;
 		for (i = 0xf800; i <= 0xffff; i++)
@@ -164,10 +165,10 @@ void ctrl_port_out(BYTE data)
 BYTE ctrl_port_in(void)
 {
 #ifdef HAS_BANKED_ROM
-	if(r_flag) {
+	if (r_flag) {
 		groupsel = _GROUP0 | _GROUP1;
 		cyclecount = 3;
 	}
 #endif
-	return (BYTE) 0xff;
+	return((BYTE) 0xff);
 }
