@@ -70,7 +70,7 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256]) (void) = {
+BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 0 */
 	io_trap_in,		/* port 1 */
 	imsai_sio1_data_in,	/* port 2 */ /* SIO 1 connected to console */
@@ -661,7 +661,7 @@ void reset_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern void wait_step(void);
+	int val;
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
@@ -672,11 +672,10 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
-	wait_step();
+	val = wait_step();
 
-	/* when INP on port 0FFh - get last set value of
-	   Programmed Input toggles */
-	if (io_port == 0xff)
+	/* when single stepped INP get last set value of port */
+	if (val)
 		io_data = (*port_in[io_port]) ();
 
 	return(io_data);
@@ -689,8 +688,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void wait_step(void);
-
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
