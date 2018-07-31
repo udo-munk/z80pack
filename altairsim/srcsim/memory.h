@@ -15,7 +15,8 @@
  */
 
 extern void init_memory(void), init_rom(void);
-extern void  wait_step(void), wait_int_step(void);
+extern int wait_step(void);
+extern void wait_int_step(void);
 extern BYTE memory[], mem_wp;
 extern int p_tab[];
 extern BYTE tarbell_rom[];

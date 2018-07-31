@@ -48,6 +48,7 @@
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/proctec-vdm.h"
 #include "../../frontpanel/frontpanel.h"
+#include "memory.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -75,7 +76,7 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256]) (void) = {
+BYTE (*port_in[256]) (void) = {
 	altair_sio0_status_in,	/* port 0 */ /* SIO 0 connected to console */
 	altair_sio0_data_in,	/* port 1 */ /*  "  */
 	lpt_status_in,		/* port 2 */ /* printer status */
@@ -652,7 +653,7 @@ void reset_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern void wait_step(void);
+	int val;
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
@@ -663,7 +664,11 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
-	wait_step();
+	val = wait_step();
+
+	/* when single stepped INP get last set value of port */
+	if (val)
+		io_data = (*port_in[io_port]) ();
 
 	return(io_data);
 }
@@ -675,8 +680,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void wait_step(void);
-
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
