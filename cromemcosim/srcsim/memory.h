@@ -15,7 +15,8 @@
 #define MAXSEG 7		/* max. number of 64KB memory banks */
 
 extern void init_memory(void), init_rom(void);
-extern void wait_step(void), wait_int_step(void);
+extern int wait_step(void);
+extern void wait_int_step(void);
 
 extern BYTE *memory[MAXSEG];
 extern int selbnk, common, bankio;

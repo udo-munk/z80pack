@@ -330,35 +330,37 @@ void step_clicked(int state, int val)
 /*
  * Single step through the machine cycles after M1
  */
-void wait_step(void)
+int wait_step(void)
 {
+	extern BYTE (*port_in[256]) (void);
+	int ret = 0;
+
 	if (cpu_state != SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
-		return;
+		return(ret);
 	}
 
 	if ((cpu_bus & CPU_M1) && !m1_step) {
 		cpu_bus &= ~CPU_M1;
-		return;
+		return(ret);
 	}
 
 	cpu_switch = 3;
 
 	while ((cpu_switch == 3) && !reset) {
-		/* when INP on port 0FFh - feed Programmed Input
-		   toggles to Data Bus LEDs */
-		if ((cpu_bus == (CPU_WO | CPU_INP)) &&
-		   (fp_led_address == 0xffff)) {
-			fp_led_data = address_switch >> 8;
-		}
+		/* when INP update data bus LEDs */
+		if (cpu_bus == (CPU_WO | CPU_INP))
+			fp_led_data = (*port_in[fp_led_address & 0xff]) ();
 		fp_clock++;
 		fp_sampleData();
 		SLEEP_MS(10);
+		ret = 1;
 	}
 
 	cpu_bus &= ~CPU_M1;
 	m1_step = 0;
+	return(ret);
 }
 
 /*
