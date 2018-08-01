@@ -1,0 +1,18 @@
+;
+; TEST PROGRAM FOR THE 88-DCDD FLOPPY DISK CONTROLLER
+; SINGLE STEP TO WATCH ROTATING DISK ON DATA BUS LEDS
+;
+        ORG 100H
+
+        MVI  A,0        ;ENABLE CONTROLLER, SELECT DISK 0
+        OUT  8
+
+        MVI  A,4        ;LOAD HEAD
+        OUT  9
+
+        IN   9          ;LOOK AT SECTOR POSITION
+        IN   8          ;LOOK AT STATUS
+
+        HLT
+
+        END
