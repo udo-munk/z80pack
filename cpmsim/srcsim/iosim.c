@@ -129,6 +129,8 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
+// #define LOG_LOCAL_LEVEL LOG_DEBUG
+#include "log.h"
 
 #define BUFSIZE 256		/* max line length of command buffer */
 #define MAX_BUSY_COUNT 10	/* max counter to detect I/O busy waiting
@@ -136,6 +138,8 @@
 
 extern int boot(int);
 extern void reset_cpu(void);
+
+static const char *TAG = "IO";
 
 static BYTE drive;		/* current drive A..P (0..15) */
 static BYTE track;		/* current track (0..255) */
@@ -869,7 +873,7 @@ void init_io(void)
 	pid_rec = fork();
 	switch (pid_rec) {
 	case -1:
-		puts("can't fork");
+		LOGE(TAG, "can't fork");
 		exit(1);
 	case 0:
 		/* . might not be in path, so check that first */
@@ -881,16 +885,16 @@ void init_io(void)
 			execlp("receive", "receive", "auxiliaryout.txt",
 				(char *) NULL);
 		/* if not cry and die */
-		puts("can't exec receive process, compile/install the tools dude");
+		LOGE(TAG, "can't exec receive process, compile/install the tools dude");
 		kill(0, SIGQUIT);
 		exit(1);
 	}
 	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NDELAY)) == -1) {
-		perror("pipe auxin");
+		LOGE(TAG, "can't open pipe auxin");
 		exit(1);
 	}
 	if ((auxout = open("/tmp/.z80pack/cpmsim.auxout", O_WRONLY)) == -1) {
-		perror("pipe auxout");
+		LOGE(TAG, "can't open pipe auxout");
 		exit(1);
 	}
 #endif
@@ -926,19 +930,19 @@ static void init_server_socket(int n)
 	if (ss_port[n] == 0)
 		return;
 	if ((ss[n] = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("create server socket");
+		LOGE(TAG, "can't create server socket");
 		exit(1);
 	}
 	if (setsockopt(ss[n], SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
-		perror("setsockopt SO_REUSEADDR on server socket");
+		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
 		exit(1);
 	}
 #ifdef TCPASYNC
 	fcntl(ss[n], F_SETOWN, getpid());
 	i = fcntl(ss[n], F_GETFL, 0);
 	if (fcntl(ss[n], F_SETFL, i | FASYNC) == -1) {
-		perror("fcntl FASYNC on server socket");
+		LOGE(TAG, "can't fcntl FASYNC on server socket");
 		exit(1);
 	}
 #endif
@@ -947,11 +951,11 @@ static void init_server_socket(int n)
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(ss_port[n]);
 	if (bind(ss[n], (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-		perror("bind server socket");
+		LOGE(TAG, "can't bind server socket");
 		exit(1);
 	}
 	if (listen(ss[n], 0) == -1) {
-		perror("listen on server socket");
+		LOGE(TAG, "can't listen on server socket");
 		exit(1);
 	}
 }
@@ -971,14 +975,14 @@ static void net_server_config(void)
 	strcat(&fn[0], "/net_server.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		printf("Server network configuration:\n");
+		LOG(TAG, "Server network configuration:\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
 				continue;
 			i = atoi(s);
 			if ((i < 1) || (i > 4)) {
-				printf("console %d not supported\n", i);
+				LOGW(TAG, "console %d not supported", i);
 				continue;
 			}
 			while((*s != ' ') && (*s != '\t'))
@@ -991,9 +995,9 @@ static void net_server_config(void)
 			while((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_port[i - 1] = atoi(s);
-			printf("console %d listening on port %d, telnet = %s\n",
-			       i, ss_port[i - 1],
-			       ((ss_telnet[i - 1] > 0) ? "on" : "off"));
+			LOG(TAG, "console %d listening on port %d, telnet = %s\n",
+			    i, ss_port[i - 1],
+			    ((ss_telnet[i - 1] > 0) ? "on" : "off"));
 		}
 		fclose(fp);
 	}
@@ -1013,7 +1017,7 @@ static void net_client_config(void)
 	strcat(&fn[0], "/net_client.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		printf("Client network configuration:\n");
+		LOG(TAG, "Client network configuration:\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
@@ -1029,8 +1033,8 @@ static void net_client_config(void)
 			while((*s == ' ') || (*s == '\t'))
 				s++;
 			cs_port = atoi(s);
-			printf("Connecting to %s at port %d\n", cs_host,
-			       cs_port);
+			LOG(TAG, "Connecting to %s at port %d\n", cs_host,
+			    cs_port);
 		}
 		fclose(fp);
 	}
@@ -1221,13 +1225,13 @@ static BYTE cons1_in(void)
 
 		if ((ssc[0] = accept(ss[0], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[0] = 0;
 		}
 
 		if (setsockopt(ssc[0], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[0])
@@ -1293,13 +1297,13 @@ static BYTE cons2_in(void)
 
 		if ((ssc[1] = accept(ss[1], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG "can't accept server socket");
 			ssc[1] = 0;
 		}
 
 		if (setsockopt(ssc[1], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[1])
@@ -1365,13 +1369,13 @@ static BYTE cons3_in(void)
 
 		if ((ssc[2] = accept(ss[2], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[2] = 0;
 		}
 
 		if (setsockopt(ssc[2], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[2])
@@ -1437,13 +1441,13 @@ static BYTE cons4_in(void)
 
 		if ((ssc[3] = accept(ss[3], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[3] = 0;
 		}
 
 		if (setsockopt(ssc[3], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[3])
@@ -1488,7 +1492,7 @@ static BYTE nets1_in(void)
 	if ((cs == 0) && (cs_port != 0)) {
 		host = gethostbyname(&cs_host[0]);
 		if ((cs = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-			perror("create client socket");
+			LOGE(TAG, "can't create client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1498,14 +1502,14 @@ static BYTE nets1_in(void)
 		sin.sin_family = AF_INET;
 		sin.sin_port = htons(cs_port);
 		if (connect(cs, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-			perror("connect client socket");
+			LOGE(TAG, "can't connect client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
 		}
 		if (setsockopt(cs, IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on client socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on client socket");
 		}
 	}
 
@@ -1609,7 +1613,7 @@ static BYTE cond1_in(void)
 			ssc[0] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 1");
+			LOGE(TAG, "can't read console 1");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1645,7 +1649,7 @@ static BYTE cond2_in(void)
 			ssc[1] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 2");
+			LOGE(TAG, "can't read console 2");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1681,7 +1685,7 @@ static BYTE cond3_in(void)
 			ssc[2] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 3");
+			LOGE(TAG, "can't read console 3");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1717,7 +1721,7 @@ static BYTE cond4_in(void)
 			ssc[3] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 4");
+			LOGE(TAG, "can't read console 4");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1747,7 +1751,7 @@ static BYTE netd1_in(void)
 
 #ifdef NETWORKING
 	if (read(cs, &c, 1) != 1) {
-		perror("read client socket");
+		LOGE(TAG, "can't read client socket");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return((BYTE) 0);
@@ -1776,7 +1780,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 0");
+			LOGE(TAG, "can't write console 0");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1802,7 +1806,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 1");
+			LOGE(TAG, "can't write console 1");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1829,7 +1833,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 2");
+			LOGE(TAG, "can't write console 2");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1856,7 +1860,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 3");
+			LOGE(TAG, "can't write console 3");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1883,7 +1887,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 4");
+			LOGE(TAG, "can't write console 4");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1910,7 +1914,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write client socket");
+			LOGE(TAG, "can't write client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1960,7 +1964,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write printer");
+				LOGE(TAG, "can't write printer");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
@@ -2012,7 +2016,7 @@ static BYTE auxd_in(void)
 #else
 	if (aux_in == 0) {
 		if ((aux_in = open("auxiliaryin.txt", O_RDONLY)) == -1){
-			perror("open auxiliaryin.txt");
+			LOGE(TAG, "can't open auxiliaryin.txt");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -2057,7 +2061,7 @@ static void auxd_out(BYTE data)
 
 	if (aux_out == 0) {
 		if ((aux_out = creat("auxiliaryout.txt", 0644)) == -1) {
-			perror("open auxiliaryout.txt");
+			LOGE(TAG, "can't open auxiliaryout.txt");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return;
@@ -2299,8 +2303,8 @@ static void mmui_out(BYTE data)
 		return;
 
 	if (data > MAXSEG) {
-		printf("Try to init %d banks, available %d banks\r\n",
-		       data, MAXSEG);
+		LOGE(TAG, "Try to init %d banks, available %d banks",
+		     data, MAXSEG);
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
@@ -2308,7 +2312,7 @@ static void mmui_out(BYTE data)
 
 	for (i = 1; i < data; i++) {
 		if ((memory[i] = malloc(segsize)) == NULL) {
-			printf("can't allocate memory for bank %d\r\n", i);
+			LOGE(TAG, "can't allocate memory for bank %d", i);
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return;
@@ -2334,7 +2338,7 @@ static BYTE mmus_in(void)
 static void mmus_out(BYTE data)
 {
 	if (data > maxbnk - 1) {
-		printf("%04x: try to select unallocated bank %d\r\n", PC, data);
+		LOGE(TAG, "%04x: try to select unallocated bank %d", PC, data);
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
@@ -2359,7 +2363,7 @@ static BYTE mmuc_in(void)
 static void mmuc_out(BYTE data)
 {
 	if (memory[1] != NULL) {
-		printf("Not possible to resize already allocated segments\r\n");
+		LOGE(TAG, "Not possible to resize already allocated segments");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
@@ -2709,13 +2713,13 @@ static void int_io(int sig)
 
 			if ((ssc[i] = accept(ss[i], (struct sockaddr *) &fsin,
 			    &alen)) == -1) {
-				perror("accept on server socket");
+				LOGW(TAG, "can't accept on server socket");
 				ssc[i] = 0;
 			}
 
 			if (setsockopt(ssc[i], IPPROTO_TCP, TCP_NODELAY,
 			    (void *) &on, sizeof(on)) == -1) {
-				perror("setsockopt TCP_NODELAY on server socket");
+				LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 			}
 
 			if (ss_telnet[i])
@@ -2754,7 +2758,7 @@ void telnet_negotiation(int fd)
 
 		/* else read the option */
 		read(fd, &c, 3);
-		//printf("telnet: %d %d %d\r\n", c[0], c[1], c[2]);
+		LOGD(TAG, "telnet: %d %d %d\r\n", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
 		if (c[1] == 251)	/* and reject other options */

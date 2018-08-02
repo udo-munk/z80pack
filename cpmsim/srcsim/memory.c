@@ -33,6 +33,9 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
+#include "log.h"
+
+static const char *TAG = "memory";
 
 BYTE *memory[MAXSEG];		/* MMU with pointers to the banks */
 int selbnk;			/* current selected bank */
@@ -44,7 +47,7 @@ void init_memory(void)
 {
 	/* allocate the first 64KB bank, so that we have some memory */
 	if ((memory[0] = malloc(65536)) == NULL) {
-		printf("can't allocate memory for bank 0\r\n");
+		LOGE(TAG, "can't allocate memory for bank 0");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;

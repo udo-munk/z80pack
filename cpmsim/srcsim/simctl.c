@@ -55,11 +55,14 @@
 #include "simglb.h"
 #include "memory.h"
 #include "../../iodevices/unix_terminal.h"
+#include "log.h"
 
 int boot(int);
 
 extern void cpu_z80(void), cpu_8080(void);
 extern struct dskdef disks[];
+
+static const char *TAG = "system";
 
 struct termios old_term, new_term;
 
@@ -100,50 +103,48 @@ void mon(void)
 	case NONE:
 		break;
 	case OPHALT:
-		printf("\nINT disabled and HALT Op-Code reached at %04x\n",
-		       PC - 1);
+		LOG(TAG, "INT disabled and HALT Op-Code reached at %04x\r\n",
+		    PC - 1);
 		break;
 	case IOTRAPIN:
-		printf("\nI/O input Trap at %04x, port %02x\n",
-			PC, io_port);
+		LOGE(TAG, "I/O input Trap at %04x, port %02x",
+		     PC, io_port);
 		break;
 	case IOTRAPOUT:
-		printf("\nI/O output Trap at %04x, port %02x\n",
-			PC, io_port);
+		LOGE(TAG, "I/O output Trap at %04x, port %02x",
+		     PC, io_port);
 		break;
 	case IOHALT:
-		printf("\nSystem halted, bye.\n");
+		LOG(TAG, "System halted, bye.\r\n");
 		break;
 	case IOERROR:
-		printf("\nFatal I/O Error at %04x\n", PC);
+		LOGE(TAG, "Fatal I/O Error at %04x", PC);
 		break;
 	case OPTRAP1:
-		printf("\nOp-code trap at %04x %02x\n", PC - 1,
-		       *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
+		     *(mem_base() + PC - 1));
 		break;
 	case OPTRAP2:
-		printf("\nOp-code trap at %04x %02x %02x\n",
-		       PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x",
+		     PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
 		break;
 	case OPTRAP4:
-		printf("\nOp-code trap at %04x %02x %02x %02x %02x\n",
-		       PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
+		     PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
+		     *(mem_base() + PC - 2), *(mem_base() + PC - 1));
 		break;
 	case USERINT:
-		printf("\nUser Interrupt at %04x\n", PC);
+		LOG(TAG, "User Interrupt at %04x\r\n", PC);
 		break;
 	case INTERROR:
-		printf("\nUnsupported bus data during INT: %02x\n", int_data);
+		LOGW(TAG, "Unsupported bus data during INT: %02x", int_data);
 		break;
 	case POWEROFF:
 		break;
 	default:
-		printf("\nUnknown error %d\n", cpu_error);
+		LOGW(TAG, "Unknown error %d", cpu_error);
 		break;
 	}
-
-	putchar('\n');
 }
 
 /*
@@ -157,7 +158,7 @@ int boot(int level)
 	static char fn[MAX_LFN];
 	static char err[256];
 
-	puts("\r\nBooting...\r\n");
+	LOG(TAG, "\r\nBooting...\r\n\r\n");
 
 	/* on first boot we can run from core or file */
 	if (level == 0) {
@@ -189,14 +190,12 @@ int boot(int level)
 	strcat(err, fn);
 
 	if ((fd = open(fn, O_RDONLY)) == -1) {
-		perror(err);
-		puts("\r\n");
+		LOGE(TAG, "can't open %s", err);
 		close(fd);
 		return(1);
 	}
 	if (read(fd, mem_base(), 128) != 128) {
-		perror(err);
-		puts("\r\n");
+		LOGE(TAG, "can't read %s", err);
 		close(fd);
 		return(1);
 	}
