@@ -1297,7 +1297,7 @@ static BYTE cons2_in(void)
 
 		if ((ssc[1] = accept(ss[1], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			LOGW(TAG "can't accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[1] = 0;
 		}
 
