@@ -18,11 +18,22 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
+#define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
 
 /* internal state of the fdc */
 #define FDC_DISABLED	0	/* FDC and disk are disabled */
 #define FDC_ENABLED	1	/* FDC and disk are enabled */
+
+/* fdc status bits */
+#define ENWD	1
+#define MOVEHD	2
+#define STATHD	4
+#define INTE	32
+#define TRACK0	64
+#define NRDA	128
+
+#define HEADLOADED ((status & STATHD) == 0)
 
 /* disk format */
 #define SEC_SZ		137
@@ -34,12 +45,15 @@ static const char *TAG = "88DCDD";
 static int track;		/* current track */
 static int sec;			/* current sector position */
 static int disk;		/* current disk # */
-static int headloaded;		/* disk head loaded */
+static BYTE status = 0xff;	/* controller status */
+static int headloaded;		/* head loaded flag */
 static int state;		/* fdc state */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 
 static int cnt_sec;		/* counter for sector position */
+static int cnt_head;		/* counter for loading head */
+static int cnt_step;		/* counter for stepping track */
 
 static pthread_t thread;	/* thread for timing */
 
@@ -90,13 +104,27 @@ static void *timing(void *arg)
 {
 	arg = arg;	/* to avoid compiler warning */
 
-	while (1) {	/* 1 msec per loop iteration */
+	/* 1 msec per loop iteration */
+	while (1) {
 		/* advance sector position */
 		if (++cnt_sec >= 5) {	/* 5ms for each sector */
 			cnt_sec = 0;
 			if (++sec >= SPT)
 				sec = 0;
 		}
+
+		/* count down head load timer */
+		if (cnt_head > 0) {
+			if (--cnt_head == 0) {
+				status &= ~STATHD;
+				LOGD(TAG, "head loaded");
+			}
+		}
+
+		/* count down stepping timer */
+		if (cnt_step > 0)
+			if (--cnt_step == 0)
+				status &= ~MOVEHD;
 
 		/* sleep for 1 millisecond */
 		SLEEP_MS(1);
@@ -112,14 +140,16 @@ void altair_dsk_select_out(BYTE data)
 {
 	if (data & 0x80) {
 		state = FDC_DISABLED;
+		status = 0xff;
 		if (thread != 0) {
-			state = FDC_DISABLED;
 			pthread_cancel(thread);
 			pthread_join(thread, NULL);
 			thread = 0;
 		}
+		LOGD(TAG, "disabled");
 	} else {
 		state = FDC_ENABLED;
+		status = 0b10100101;
 		disk = data & 0x0f;
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, timing,
@@ -128,18 +158,36 @@ void altair_dsk_select_out(BYTE data)
 				exit(1);
 			}
 		}
+		LOGD(TAG, "enabled");
 	}
 }
 
+/*
+ * Status:
+ *
+ * D0 Enter new write data
+ * D1 Move head
+ * D2 Head Status
+ * D3 not used, = 0
+ * D4 not used, = 0
+ * D5 CPU INTE
+ * D6 Track 0
+ * D7 New read data available
+ */
 BYTE altair_dsk_status_in(void)
 {
-	return(0xff);
+	if (IFF & 1)
+		status &= ~INTE;
+	else
+		status |= INTE;
+
+	return(status);
 }
 
 /*
  * Controls disk operations when disk drive and controller enabled:
  *
- * D0 Step in		- steps disk head to higher numbered track
+ * D0 Step in		- steps disk head in to higher numbered track
  * D1 Step out		- steps disk head out to lower numbered track
  * D2 Head load		- loads head, enables sector position status
  * D3 Head unload	- removes head
@@ -150,10 +198,54 @@ BYTE altair_dsk_status_in(void)
  */
 void altair_dsk_control_out(BYTE data)
 {
-	if (data & 4)
-		headloaded = 1;
-	if (data & 8)
-		headloaded = 0;
+	if (state == FDC_ENABLED) {
+		/* step in */
+		if (data & 1) {
+			LOGD(TAG, "step in from track %d", track);
+			if (track < TRK) {
+				track++;
+				status |= MOVEHD;
+				cnt_step = 10;
+				if (headloaded) {
+					status |= STATHD;
+					cnt_head = 40;
+				}
+			}
+		}
+
+		/* step out */
+		if (data & 2) {
+			LOGD(TAG, "step out from track %d", track);
+			if (track > 0) {
+				track--;
+				if (track == 0)
+					status &= ~TRACK0;
+				status |= MOVEHD;
+				cnt_step = 10;
+				if (headloaded) {
+					status |= STATHD;
+					cnt_head = 40;
+				}
+			}
+		}
+
+		/* load head */
+		if (data & 4) {
+			headloaded = 1;
+			cnt_head = 40;
+			status |= MOVEHD;
+			cnt_step = 40;
+			LOGD(TAG, "load head in %d ms", cnt_head);
+		}
+
+		/* unload head */
+		if (data & 8) {
+			headloaded = 0;
+			cnt_head = 0;
+			status |= STATHD;
+			LOGD(TAG, "unload head");
+		}
+	}
 }
 
 /*
@@ -163,7 +255,7 @@ BYTE altair_dsk_sec_in(void)
 {
 	BYTE data;
 
-	if ((state != FDC_ENABLED) || (headloaded == 0))
+	if ((state != FDC_ENABLED) || !HEADLOADED)
 		return(0xff);
 	else {
 		if (cnt_sec == 0)	/* at begin of setor */
