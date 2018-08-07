@@ -568,7 +568,7 @@ leave:
 #else
 				/* timer resolution seems to be 20ms,
 				   sleeps < 10 won't work at all */
-				tdiff++; /* avaoid compiler warning */
+				tdiff++; /* avoid compiler warning */
 				SLEEP_MS(10);
 #endif
 				t = 0;
