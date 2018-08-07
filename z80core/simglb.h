@@ -69,7 +69,7 @@ extern int	s_flag, l_flag, m_flag, x_flag, break_flag, i_flag, f_flag,
 		cpu_error, int_nmi, int_int, int_mode, parity[], sb_next,
 		int_protection;
 
-extern int	tmax;
+extern int	tmax, cpu_needed;
 extern int	busy_loop_cnt[];
 
 extern char	xfn[];

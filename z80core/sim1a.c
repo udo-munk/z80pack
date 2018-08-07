@@ -526,7 +526,7 @@ leave:
 		t += states;
 
 		if (f_flag) {			/* adjust CPU speed */
-			if (t >= tmax) {
+			if (t >= tmax && !cpu_needed) {
 				gettimeofday(&t2, NULL);
 				tdiff = time_diff(&t1, &t2);
 #ifndef __CYGWIN__
@@ -535,6 +535,7 @@ leave:
 #else
 				/* timer resolution seems to be 20ms,
 				   sleeps < 10 won't work at all */
+				tdiff++; /* avaoid compiler warning */
 				SLEEP_MS(10);
 #endif
 				t = 0;

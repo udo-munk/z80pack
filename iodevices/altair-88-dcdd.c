@@ -26,14 +26,12 @@
 #define FDC_ENABLED	1	/* FDC and disk are enabled */
 
 /* fdc status bits */
-#define ENWD	1
-#define MOVEHD	2
-#define STATHD	4
-#define INTE	32
-#define TRACK0	64
-#define NRDA	128
-
-#define HEADLOADED ((status & STATHD) == 0)
+#define ENWD	1		/* enter new write data */
+#define MOVEHD	2		/* indicates head movement allowed */
+#define STATHD	4		/* indicated when head properly loaded */
+#define INTE	32		/* CPU INTE */
+#define TRACK0	64		/* track 0 detected */
+#define NRDA	128		/* new read data available */
 
 /* disk format */
 #define SEC_SZ		137
@@ -109,6 +107,7 @@ static void *timing(void *arg)
 		/* advance sector position */
 		if (++cnt_sec >= 5) {	/* 5ms for each sector */
 			cnt_sec = 0;
+			cpu_needed = 0; /* sector done, release CPU */
 			if (++sec >= SPT)
 				sec = 0;
 		}
@@ -158,21 +157,22 @@ void altair_dsk_select_out(BYTE data)
 				exit(1);
 			}
 		}
-		LOGD(TAG, "enabled");
+		LOGD(TAG, "enabled, disk = %d", disk);
 	}
 }
 
 /*
- * Status:
+ * Status when drive and controller enabled.
+ * True condition = 0, False = 1
  *
- * D0 Enter new write data
- * D1 Move head
- * D2 Head Status
- * D3 not used, = 0
+ * D0 enter new write data
+ * D1 indicates head movement allowed
+ * D2 indicates when head is properly loaded
+ * D3 not used, = 0 (software uses this to figure if enabled!)
  * D4 not used, = 0
  * D5 CPU INTE
- * D6 Track 0
- * D7 New read data available
+ * D6 track 0 detected
+ * D7 new read data available
  */
 BYTE altair_dsk_status_in(void)
 {
@@ -206,6 +206,7 @@ void altair_dsk_control_out(BYTE data)
 				track++;
 				status |= MOVEHD;
 				cnt_step = 10;
+				/* head needs to settle again */
 				if (headloaded) {
 					status |= STATHD;
 					cnt_head = 40;
@@ -222,6 +223,7 @@ void altair_dsk_control_out(BYTE data)
 					status &= ~TRACK0;
 				status |= MOVEHD;
 				cnt_step = 10;
+				/* head needs to settle again */
 				if (headloaded) {
 					status |= STATHD;
 					cnt_head = 40;
@@ -255,13 +257,16 @@ BYTE altair_dsk_sec_in(void)
 {
 	BYTE data;
 
-	if ((state != FDC_ENABLED) || !HEADLOADED)
+	if ((state != FDC_ENABLED) || (status & STATHD)) {
+		status |= NRDA;
 		return(0xff);
-	else {
-		if (cnt_sec == 0)	/* at begin of setor */
+	} else {
+		if (cnt_sec == 0) {	/* at begin of setor */
 			data = 0;	/* sector true */
-		else
+			status &= ~NRDA; /* new read data available */
+		 } else {
 			data = 1;	/* sector false */
+		}
 		data += sec << 1;
 	}
 
@@ -270,9 +275,14 @@ BYTE altair_dsk_sec_in(void)
 
 void altair_dsk_data_out(BYTE data)
 {
+	/* we need the CPU for real time */
+	cpu_needed = 1;
 }
 
 BYTE altair_dsk_data_in(void)
 {
+	/* we need the CPU for real time */
+	cpu_needed = 1;
+
 	return(0xff);
 }

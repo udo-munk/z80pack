@@ -93,6 +93,7 @@ int int_data = -1;		/* data from interrupting device on data bus */
 int int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
 int tmax;			/* max t-states to execute in 10ms */
+int cpu_needed;			/* don't adjust CPU freq if needed */
 
 /*
  *	Variables for history memory
