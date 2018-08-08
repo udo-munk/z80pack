@@ -19,7 +19,7 @@
 #include <fcntl.h>
 #include "sim.h"
 #include "simglb.h"
-#define LOG_LOCAL_LEVEL LOG_DEBUG
+//#define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
 
 /* internal state of the fdc */
@@ -130,6 +130,7 @@ static void dsk_disable(void)
 {
 	state = FDC_DISABLED;
 	status = 0xff;
+	headloaded = 0;
 	if (thread != 0) {
 		pthread_cancel(thread);
 		pthread_join(thread, NULL);
@@ -225,10 +226,17 @@ void altair_dsk_select_out(BYTE data)
 BYTE altair_dsk_status_in(void)
 {
 	if (state == FDC_ENABLED) {
+		/* set CPU INTE */
 		if (IFF & 1)
 			status &= ~INTE;
 		else
 			status |= INTE;
+
+		/* set track 0 */
+		if (track == 0)
+			status &= ~TRACK0;
+		else
+			status |= TRACK0;
 	}
 
 	return(status);
@@ -252,7 +260,7 @@ void altair_dsk_control_out(BYTE data)
 		/* step in */
 		if (data & 1) {
 			LOGD(TAG, "step in from track %d", track);
-			if (track < TRK) {
+			if (track < (TRK - 1)) {
 				track++;
 				status |= MOVEHD;
 				cnt_step = 10;
@@ -269,8 +277,6 @@ void altair_dsk_control_out(BYTE data)
 			LOGD(TAG, "step out from track %d", track);
 			if (track > 0) {
 				track--;
-				if (track == 0)
-					status &= ~TRACK0;
 				status |= MOVEHD;
 				cnt_step = 10;
 				/* head needs to settle again */
@@ -312,10 +318,10 @@ BYTE altair_dsk_sec_in(void)
 		return(0xff);
 	} else {
 		if (sec != rwsec) {
+			rwsec = sec;
 			sectrue = 0;	/* start of new sector */
 			status &= ~NRDA; /* new read data available */
 			dcnt = 0;
-			rwsec = sec;
 		} else {
 			sectrue = 1;
 		}
@@ -336,6 +342,7 @@ void altair_dsk_data_out(BYTE data)
  */
 BYTE altair_dsk_data_in(void)
 {
+	BYTE data;
 	long pos;
 
 	/* first byte? */
@@ -355,12 +362,13 @@ BYTE altair_dsk_data_in(void)
 		}
 	}
 
-	/* last byte? */
-	if (dcnt == SEC_SZ) {
-		status |= NRDA;	/* no more data to read */
+	/* no more data? */
+	if (dcnt == SEC_SZ)
 		return(0xff);
-	}
 
 	/* return byte from buffer and increment counter */
-	return(buf[dcnt++]);
+	data = buf[dcnt++];
+	if (dcnt == SEC_SZ)
+		status |= NRDA;	/* no more data to read */
+	return(data);
 }
