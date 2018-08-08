@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include "sim.h"
 #include "simglb.h"
 #define LOG_LOCAL_LEVEL LOG_DEBUG
@@ -27,8 +28,8 @@
 
 /* fdc status bits */
 #define ENWD	1		/* enter new write data */
-#define MOVEHD	2		/* indicates head movement allowed */
-#define STATHD	4		/* indicated when head properly loaded */
+#define MOVEHD	2		/* indicates when head movement allowed */
+#define STATHD	4		/* indicates when head properly loaded */
 #define INTE	32		/* CPU INTE */
 #define TRACK0	64		/* track 0 detected */
 #define NRDA	128		/* new read data available */
@@ -42,12 +43,15 @@ static const char *TAG = "88DCDD";
 
 static int track;		/* current track */
 static int sec;			/* current sector position */
+static int rwsec;		/* sector read/written */
 static int disk;		/* current disk # */
 static BYTE status = 0xff;	/* controller status */
 static int headloaded;		/* head loaded flag */
 static int state;		/* fdc state */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
+static int dcnt;		/* data counter read/write */
+static BYTE buf[SEC_SZ];	/* buffer for one sector */
 
 static int cnt_sec;		/* counter for sector position */
 static int cnt_head;		/* counter for loading head */
@@ -78,7 +82,8 @@ static char *disks[16] = {
 /*
  * find and set path for disk images
  */
-static void dsk_path(void) {
+static void dsk_path(void)
+{
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -96,6 +101,44 @@ static void dsk_path(void) {
 }
 
 /*
+ * check disk image
+ */
+static int dsk_check(void)
+{
+	struct stat s;
+
+	/* try to open disk image */
+	dsk_path();
+	strcat(fn, "/");
+	strcat(fn, disks[disk]);
+	if ((fd = open(fn, O_RDONLY)) == -1)
+		return(0);
+
+	/* check for correct image size */
+	fstat(fd, &s);
+	close(fd);
+	if (s.st_size != 337568)
+		return(0);
+	else
+		return(1);
+}
+
+/*
+ * disable disk system
+ */
+static void dsk_disable(void)
+{
+	state = FDC_DISABLED;
+	status = 0xff;
+	if (thread != 0) {
+		pthread_cancel(thread);
+		pthread_join(thread, NULL);
+		thread = 0;
+	}
+	LOGD(TAG, "disabled");
+}
+
+/*
  * thread for timing
  */
 static void *timing(void *arg)
@@ -105,11 +148,11 @@ static void *timing(void *arg)
 	/* 1 msec per loop iteration */
 	while (1) {
 		/* advance sector position */
-		if (++cnt_sec >= 5) {	/* 5ms for each sector */
+		if (++cnt_sec > 5) {	/* 5ms for each sector */
 			cnt_sec = 0;
-			cpu_needed = 0; /* sector done, release CPU */
-			if (++sec >= SPT)
+			if (++sec >= SPT) {
 				sec = 0;
+			}
 		}
 
 		/* count down head load timer */
@@ -121,9 +164,11 @@ static void *timing(void *arg)
 		}
 
 		/* count down stepping timer */
-		if (cnt_step > 0)
-			if (--cnt_step == 0)
+		if (cnt_step > 0) {
+			if (--cnt_step == 0) {
 				status &= ~MOVEHD;
+			}
+		}
 
 		/* sleep for 1 millisecond */
 		SLEEP_MS(1);
@@ -137,19 +182,22 @@ static void *timing(void *arg)
  */
 void altair_dsk_select_out(BYTE data)
 {
+	/* disable? */
 	if (data & 0x80) {
-		state = FDC_DISABLED;
-		status = 0xff;
-		if (thread != 0) {
-			pthread_cancel(thread);
-			pthread_join(thread, NULL);
-			thread = 0;
-		}
-		LOGD(TAG, "disabled");
+		dsk_disable();
+	/* no, enable */
 	} else {
+		/* get disk no. */
+		disk = data & 0x0f;
+		/* check disk in drive */
+		if (dsk_check() == 0) {
+			/* no (valid) disk in drive, disable */
+			dsk_disable();
+			return;
+		}
+		/* enable */
 		state = FDC_ENABLED;
 		status = 0b10100101;
-		disk = data & 0x0f;
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, timing,
 			    (void *) NULL)) {
@@ -162,11 +210,11 @@ void altair_dsk_select_out(BYTE data)
 }
 
 /*
- * Status when drive and controller enabled.
+ * Status when drive and controller enabled
  * True condition = 0, False = 1
  *
  * D0 enter new write data
- * D1 indicates head movement allowed
+ * D1 indicates when head movement allowed
  * D2 indicates when head is properly loaded
  * D3 not used, = 0 (software uses this to figure if enabled!)
  * D4 not used, = 0
@@ -176,10 +224,12 @@ void altair_dsk_select_out(BYTE data)
  */
 BYTE altair_dsk_status_in(void)
 {
-	if (IFF & 1)
-		status &= ~INTE;
-	else
-		status |= INTE;
+	if (state == FDC_ENABLED) {
+		if (IFF & 1)
+			status &= ~INTE;
+		else
+			status |= INTE;
+	}
 
 	return(status);
 }
@@ -237,7 +287,7 @@ void altair_dsk_control_out(BYTE data)
 			cnt_head = 40;
 			status |= MOVEHD;
 			cnt_step = 40;
-			LOGD(TAG, "load head in %d ms", cnt_head);
+			LOGD(TAG, "load head");
 		}
 
 		/* unload head */
@@ -251,38 +301,66 @@ void altair_dsk_control_out(BYTE data)
 }
 
 /*
- * sector position
+ * FDC sector position
  */
 BYTE altair_dsk_sec_in(void)
 {
-	BYTE data;
+	BYTE sectrue;
 
 	if ((state != FDC_ENABLED) || (status & STATHD)) {
 		status |= NRDA;
 		return(0xff);
 	} else {
-		if (cnt_sec == 0) {	/* at begin of setor */
-			data = 0;	/* sector true */
+		if (sec != rwsec) {
+			sectrue = 0;	/* start of new sector */
 			status &= ~NRDA; /* new read data available */
-		 } else {
-			data = 1;	/* sector false */
+			dcnt = 0;
+			rwsec = sec;
+		} else {
+			sectrue = 1;
 		}
-		data += sec << 1;
 	}
 
-	return(data);
+	return(sectrue + (rwsec << 1));
 }
 
+/*
+ * FDC data output port
+ */
 void altair_dsk_data_out(BYTE data)
 {
-	/* we need the CPU for real time */
-	cpu_needed = 1;
 }
 
+/*
+ * FDC data input port
+ */
 BYTE altair_dsk_data_in(void)
 {
-	/* we need the CPU for real time */
-	cpu_needed = 1;
+	long pos;
 
-	return(0xff);
+	/* first byte? */
+	if (dcnt == 0) {
+		/* check disk */
+		if (dsk_check() == 0) {
+			dsk_disable();
+			memset(&buf[0], 0xff, SEC_SZ);
+		} else {
+			/* read sector */
+			fd = open(fn, O_RDONLY);
+			pos = (track * SPT + rwsec) * SEC_SZ;
+			lseek(fd, pos, SEEK_SET);
+			read(fd, &buf[0], SEC_SZ);
+			close(fd);
+			LOGD(TAG, "read sector %d track %d", rwsec, track);
+		}
+	}
+
+	/* last byte? */
+	if (dcnt == SEC_SZ) {
+		status |= NRDA;	/* no more data to read */
+		return(0xff);
+	}
+
+	/* return byte from buffer and increment counter */
+	return(buf[dcnt++]);
 }
