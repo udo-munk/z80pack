@@ -46,9 +46,10 @@ static int sec;			/* current sector position */
 static int rwsec;		/* sector read/written */
 static int disk;		/* current disk # */
 static BYTE status = 0xff;	/* controller status */
+static pthread_mutex_t mustatus = PTHREAD_MUTEX_INITIALIZER;
 static int headloaded;		/* head loaded flag */
-static int state;		/* fdc state */
 static int writing;		/* write circuit enabled */
+static int state;		/* fdc state */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static int dcnt;		/* data counter read/write */
@@ -130,9 +131,13 @@ static int dsk_check(void)
 static void dsk_disable(void)
 {
 	state = FDC_DISABLED;
+	pthread_mutex_lock(&mustatus);
 	status = 0xff;
+	pthread_mutex_unlock(&mustatus);
 	headloaded = 0;
 	writing = 0;
+	cnt_head = 0;
+	cnt_step = 0;
 	if (thread != 0) {
 		pthread_cancel(thread);
 		pthread_join(thread, NULL);
@@ -161,7 +166,9 @@ static void *timing(void *arg)
 		/* count down head load timer */
 		if (cnt_head > 0) {
 			if (--cnt_head == 0) {
+				pthread_mutex_lock(&mustatus);
 				status &= ~STATHD;
+				pthread_mutex_unlock(&mustatus);
 				LOGD(TAG, "head loaded");
 			}
 		}
@@ -169,7 +176,9 @@ static void *timing(void *arg)
 		/* count down stepping timer */
 		if (cnt_step > 0) {
 			if (--cnt_step == 0) {
+				pthread_mutex_lock(&mustatus);
 				status &= ~MOVEHD;
+				pthread_mutex_unlock(&mustatus);
 			}
 		}
 
@@ -200,7 +209,13 @@ void altair_dsk_select_out(BYTE data)
 		}
 		/* enable */
 		state = FDC_ENABLED;
+		pthread_mutex_lock(&mustatus);
 		status = 0b10100101;
+		pthread_mutex_unlock(&mustatus);
+		writing = 0;
+		headloaded = 0;
+		cnt_head = 0;
+		cnt_step = 0;
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, timing,
 			    (void *) NULL)) {
@@ -229,16 +244,26 @@ BYTE altair_dsk_status_in(void)
 {
 	if (state == FDC_ENABLED) {
 		/* set CPU INTE */
-		if (IFF & 1)
+		if (IFF & 1) {
+			pthread_mutex_lock(&mustatus);
 			status &= ~INTE;
-		else
+			pthread_mutex_unlock(&mustatus);
+		} else {
+			pthread_mutex_lock(&mustatus);
 			status |= INTE;
+			pthread_mutex_unlock(&mustatus);
+		}
 
 		/* set track 0 */
-		if (track[disk] == 0)
+		if (track[disk] == 0) {
+			pthread_mutex_lock(&mustatus);
 			status &= ~TRACK0;
-		else
+			pthread_mutex_unlock(&mustatus);
+		} else {
+			pthread_mutex_lock(&mustatus);
 			status |= TRACK0;
+			pthread_mutex_unlock(&mustatus);
+		}
 	}
 
 	return(status);
@@ -264,11 +289,15 @@ void altair_dsk_control_out(BYTE data)
 			LOGD(TAG, "step in from track %d", track[disk]);
 			if (track[disk] < (TRK - 1)) {
 				track[disk]++;
+				pthread_mutex_lock(&mustatus);
 				status |= MOVEHD;
+				pthread_mutex_unlock(&mustatus);
 				cnt_step = 10;
 				/* head needs to settle again */
 				if (headloaded) {
+					pthread_mutex_lock(&mustatus);
 					status |= STATHD;
+					pthread_mutex_unlock(&mustatus);
 					cnt_head = 40;
 				}
 			}
@@ -279,11 +308,15 @@ void altair_dsk_control_out(BYTE data)
 			LOGD(TAG, "step out from track %d", track[disk]);
 			if (track[disk] > 0) {
 				track[disk]--;
+				pthread_mutex_lock(&mustatus);
 				status |= MOVEHD;
+				pthread_mutex_unlock(&mustatus);
 				cnt_step = 10;
 				/* head needs to settle again */
 				if (headloaded) {
+					pthread_mutex_lock(&mustatus);
 					status |= STATHD;
+					pthread_mutex_unlock(&mustatus);
 					cnt_head = 40;
 				}
 			}
@@ -293,7 +326,9 @@ void altair_dsk_control_out(BYTE data)
 		if (data & 4) {
 			headloaded = 1;
 			cnt_head = 40;
+			pthread_mutex_lock(&mustatus);
 			status |= MOVEHD;
+			pthread_mutex_unlock(&mustatus);
 			cnt_step = 40;
 			LOGD(TAG, "load head");
 		}
@@ -302,7 +337,9 @@ void altair_dsk_control_out(BYTE data)
 		if (data & 8) {
 			headloaded = 0;
 			cnt_head = 0;
+			pthread_mutex_lock(&mustatus);
 			status |= STATHD;
+			pthread_mutex_unlock(&mustatus);
 			LOGD(TAG, "unload head");
 		}
 
@@ -310,7 +347,9 @@ void altair_dsk_control_out(BYTE data)
 		if ((data & 128) && (writing == 0)) {
 			writing = 1;
 			dcnt = 0;
+			pthread_mutex_lock(&mustatus);
 			status &= ~ENWD;
+			pthread_mutex_unlock(&mustatus);
 			LOGD(TAG, "write enabled");
 		}
 	}
@@ -324,15 +363,19 @@ BYTE altair_dsk_sec_in(void)
 	BYTE sectrue;
 
 	if ((state != FDC_ENABLED) || (status & STATHD)) {
+		pthread_mutex_lock(&mustatus);
 		status |= NRDA;
 		status |= ENWD;
+		pthread_mutex_unlock(&mustatus);
 		return(0xff);
 	} else {
 		if (sec != rwsec) {
 			rwsec = sec;
 			sectrue = 0;	/* start of new sector */
+			pthread_mutex_lock(&mustatus);
 			status &= ~NRDA; /* new read data available */
-			status |= ENWD;
+			status |= ENWD;	/* not ready for writing */
+			pthread_mutex_unlock(&mustatus);
 			dcnt = 0;
 		} else {
 			sectrue = 1;
@@ -405,7 +448,10 @@ BYTE altair_dsk_data_in(void)
 
 	/* return byte from buffer and increment counter */
 	data = buf[dcnt++];
-	if (dcnt == SEC_SZ)
+	if (dcnt == SEC_SZ) {
+		pthread_mutex_lock(&mustatus);
 		status |= NRDA;	/* no more data to read */
+		pthread_mutex_unlock(&mustatus);
+	}
 	return(data);
 }
