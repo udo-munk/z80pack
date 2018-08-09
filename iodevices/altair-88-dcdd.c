@@ -41,13 +41,14 @@
 
 static const char *TAG = "88DCDD";
 
-static int track;		/* current track */
+static int track[16];		/* current track of the disks */
 static int sec;			/* current sector position */
 static int rwsec;		/* sector read/written */
 static int disk;		/* current disk # */
 static BYTE status = 0xff;	/* controller status */
 static int headloaded;		/* head loaded flag */
 static int state;		/* fdc state */
+static int writing;		/* write circuit enabled */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static int dcnt;		/* data counter read/write */
@@ -131,6 +132,7 @@ static void dsk_disable(void)
 	state = FDC_DISABLED;
 	status = 0xff;
 	headloaded = 0;
+	writing = 0;
 	if (thread != 0) {
 		pthread_cancel(thread);
 		pthread_join(thread, NULL);
@@ -233,7 +235,7 @@ BYTE altair_dsk_status_in(void)
 			status |= INTE;
 
 		/* set track 0 */
-		if (track == 0)
+		if (track[disk] == 0)
 			status &= ~TRACK0;
 		else
 			status |= TRACK0;
@@ -259,9 +261,9 @@ void altair_dsk_control_out(BYTE data)
 	if (state == FDC_ENABLED) {
 		/* step in */
 		if (data & 1) {
-			LOGD(TAG, "step in from track %d", track);
-			if (track < (TRK - 1)) {
-				track++;
+			LOGD(TAG, "step in from track %d", track[disk]);
+			if (track[disk] < (TRK - 1)) {
+				track[disk]++;
 				status |= MOVEHD;
 				cnt_step = 10;
 				/* head needs to settle again */
@@ -274,9 +276,9 @@ void altair_dsk_control_out(BYTE data)
 
 		/* step out */
 		if (data & 2) {
-			LOGD(TAG, "step out from track %d", track);
-			if (track > 0) {
-				track--;
+			LOGD(TAG, "step out from track %d", track[disk]);
+			if (track[disk] > 0) {
+				track[disk]--;
 				status |= MOVEHD;
 				cnt_step = 10;
 				/* head needs to settle again */
@@ -303,6 +305,14 @@ void altair_dsk_control_out(BYTE data)
 			status |= STATHD;
 			LOGD(TAG, "unload head");
 		}
+
+		/* write enable */
+		if ((data & 128) && (writing == 0)) {
+			writing = 1;
+			dcnt = 0;
+			status &= ~ENWD;
+			LOGD(TAG, "write enabled");
+		}
 	}
 }
 
@@ -315,12 +325,14 @@ BYTE altair_dsk_sec_in(void)
 
 	if ((state != FDC_ENABLED) || (status & STATHD)) {
 		status |= NRDA;
+		status |= ENWD;
 		return(0xff);
 	} else {
 		if (sec != rwsec) {
 			rwsec = sec;
 			sectrue = 0;	/* start of new sector */
 			status &= ~NRDA; /* new read data available */
+			status |= ENWD;
 			dcnt = 0;
 		} else {
 			sectrue = 1;
@@ -335,6 +347,31 @@ BYTE altair_dsk_sec_in(void)
  */
 void altair_dsk_data_out(BYTE data)
 {
+	long pos;
+
+	/* don't write past buffer */
+	if (dcnt >= SEC_SZ)
+		return;
+
+	/* put data into buffer and increment counter */
+	buf[dcnt++] = data;
+
+	/* last byte written? */
+	if (dcnt == SEC_SZ) {
+		writing = 0;
+		/* check disk */
+		if (dsk_check() == 0) {
+			dsk_disable();
+			return;
+		}
+		/* write sector */
+		fd = open(fn, O_RDWR);
+		pos = (track[disk] * SPT + rwsec) * SEC_SZ;
+		lseek(fd, pos, SEEK_SET);
+		write(fd, &buf[0], SEC_SZ);
+		close(fd);
+		LOGD(TAG, "write sector %d track %d", rwsec, track[disk]);
+	}
 }
 
 /*
@@ -354,11 +391,11 @@ BYTE altair_dsk_data_in(void)
 		} else {
 			/* read sector */
 			fd = open(fn, O_RDONLY);
-			pos = (track * SPT + rwsec) * SEC_SZ;
+			pos = (track[disk] * SPT + rwsec) * SEC_SZ;
 			lseek(fd, pos, SEEK_SET);
 			read(fd, &buf[0], SEC_SZ);
 			close(fd);
-			LOGD(TAG, "read sector %d track %d", rwsec, track);
+			LOGD(TAG, "read sector %d track %d", rwsec, track[disk]);
 		}
 	}
 
