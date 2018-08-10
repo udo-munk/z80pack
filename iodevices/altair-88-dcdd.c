@@ -8,6 +8,7 @@
  * Emulation of the MITS Altair S100 floppy disk controller
  *
  * History:
+ * 10-AUG-2018 first version, runs CP/M 1.4 & 2.2 & disk BASIC
  */
 
 #include <pthread.h>
@@ -454,4 +455,17 @@ BYTE altair_dsk_data_in(void)
 		pthread_mutex_unlock(&mustatus);
 	}
 	return(data);
+}
+
+/*
+ * Reset FDC
+ */
+void altair_dsk_reset(void)
+{
+	state = FDC_DISABLED;
+	pthread_mutex_lock(&mustatus);
+	status = 0xff;
+	pthread_mutex_unlock(&mustatus);
+	headloaded = writing = dcnt = 0;
+	cnt_head = cnt_step = 0;
 }

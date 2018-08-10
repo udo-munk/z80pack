@@ -643,6 +643,7 @@ void reset_io(void)
 {
 	cromemco_dazzler_off();
 	tarbell_reset();
+	altair_dsk_reset();
 	hwctl_lock = 0xff;
 }
 
