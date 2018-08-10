@@ -23,6 +23,14 @@
 //#define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
 
+/*
+ * Time in millisecods for the disk mechanics. Can be tuned
+ * to speed up drive, minimum possible value is 1.
+ */
+#define TIMESTEP	10	/* time to step one track */
+#define TIMELOAD	40	/* time until head settled after load/step */
+#define TIMESEC		5	/* time for sector under head at 360 RPM */
+
 /* internal state of the fdc */
 #define FDC_DISABLED	0	/* FDC and disk are disabled */
 #define FDC_ENABLED	1	/* FDC and disk are enabled */
@@ -156,8 +164,8 @@ static void *timing(void *arg)
 
 	/* 1 msec per loop iteration */
 	while (1) {
-		/* advance sector position */
-		if (++cnt_sec > 5) {	/* 5ms for each sector */
+		/* advance sector position, 5ms at 360 RPM */
+		if (++cnt_sec > TIMESEC) {
 			cnt_sec = 0;
 			if (++sec >= SPT) {
 				sec = 0;
@@ -293,13 +301,13 @@ void altair_dsk_control_out(BYTE data)
 				pthread_mutex_lock(&mustatus);
 				status |= MOVEHD;
 				pthread_mutex_unlock(&mustatus);
-				cnt_step = 10;
+				cnt_step = TIMESTEP;
 				/* head needs to settle again */
 				if (headloaded) {
 					pthread_mutex_lock(&mustatus);
 					status |= STATHD;
 					pthread_mutex_unlock(&mustatus);
-					cnt_head = 40;
+					cnt_head = TIMELOAD;
 				}
 			}
 		}
@@ -312,13 +320,13 @@ void altair_dsk_control_out(BYTE data)
 				pthread_mutex_lock(&mustatus);
 				status |= MOVEHD;
 				pthread_mutex_unlock(&mustatus);
-				cnt_step = 10;
+				cnt_step = TIMESTEP;
 				/* head needs to settle again */
 				if (headloaded) {
 					pthread_mutex_lock(&mustatus);
 					status |= STATHD;
 					pthread_mutex_unlock(&mustatus);
-					cnt_head = 40;
+					cnt_head = TIMELOAD;
 				}
 			}
 		}
@@ -326,11 +334,11 @@ void altair_dsk_control_out(BYTE data)
 		/* load head */
 		if (data & 4) {
 			headloaded = 1;
-			cnt_head = 40;
+			cnt_head = TIMELOAD;
 			pthread_mutex_lock(&mustatus);
 			status |= MOVEHD;
 			pthread_mutex_unlock(&mustatus);
-			cnt_step = 40;
+			cnt_step = TIMELOAD;
 			LOGD(TAG, "load head");
 		}
 

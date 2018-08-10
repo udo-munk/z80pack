@@ -27,6 +27,7 @@
  * 17-MAY-18 improved hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
  * 15-JUL-18 use logging
+ * 10-AUG-18 added MITS 88-DCDD floppy disk controller
  */
 
 #include <unistd.h>
