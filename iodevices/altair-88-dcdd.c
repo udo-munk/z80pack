@@ -24,7 +24,7 @@
 #include "log.h"
 
 /*
- * Time in millisecods for the disk mechanics. Can be tuned
+ * Time in milliseconds for the disk mechanics. Can be tuned
  * to speed up drive, minimum possible value is 1.
  */
 #define TIMESTEP	10	/* time to step one track */
