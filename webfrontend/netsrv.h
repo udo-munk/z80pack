@@ -22,14 +22,15 @@ enum net_device {
 	DEV_LPT,
 	DEV_VIO,
 	DEV_CPA,
-	DEV_DZLR
+	DEV_DZLR,
+	DEV_88ACC
 };
 
 typedef enum net_device net_device_t;
 
 struct msgbuf {
 	long	mtype;
-	char	mtext[64];
+	char	mtext[128];
 };
 
 typedef struct msgbuf msgbuf_t;
@@ -44,6 +45,7 @@ typedef struct ws_client ws_client_t;
 extern int net_device_alive(net_device_t);
 extern void net_device_send(net_device_t, char*, int);
 extern int net_device_get(net_device_t);
+extern int net_device_get_data(net_device_t, char *, int);
 extern int net_device_poll(net_device_t);
 
 /*
