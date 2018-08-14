@@ -31,7 +31,7 @@
 #define DOCUMENT_ROOT "../webfrontend/www/imsai"
 #define PORT "8080"
 
-#define MAX_WS_CLIENTS (6)
+#define MAX_WS_CLIENTS (7)
 static const char *TAG = "netsrv";
 
 static int queue[MAX_WS_CLIENTS];
@@ -45,7 +45,8 @@ char *dev_name[] = {
 	"LPT",
 	"VIO",
 	"CPA",
-	"DZLR"
+	"DZLR",
+	"ACC"
 };
 
 int last_error = 0; //TODO: replace
@@ -96,6 +97,21 @@ int net_device_get(net_device_t device) {
 		if (res == 2) {
 			return msg.mtext[0];
 		}
+	}
+
+	return -1;
+}
+
+int net_device_get_data(net_device_t device, char *dst, int len) {
+	ssize_t res;
+	msgbuf_t msg;
+
+	if (queue[device]) {
+		res = msgrcv(queue[device], &msg, len, 1L, MSG_NOERROR);
+		// if (device == DEV_88ACC)
+		// 	LOGI(TAG, "GET: device[%d] res[%ld] msg[tyep: %ld]\r\n", device, res, msg.mtype);
+		memcpy((void *)dst, (void *)msg.mtext, res);
+		return res;
 	}
 
 	return -1;
@@ -340,6 +356,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 			case DEV_VIO:
 			case DEV_LPT:
 			case DEV_DZLR:
+			case DEV_88ACC:
 				res = msgget(IPC_PRIVATE, 0644 | IPC_CREAT); //TODO: check flags
 				if (res > 0) {
 					queue[(net_device_t)device] = res;
@@ -416,7 +433,22 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 	fprintf(stdout, "\r\n");
 #endif
 
-    if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_TEXT)
+    if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_BINARY) {
+
+        switch ((net_device_t)device) {
+		case DEV_88ACC:
+			// LOGI(TAG, "rec: %d, %d", (int)len, (BYTE)*data);
+            msg.mtype = 1L;
+            memcpy(msg.mtext, data, len);
+			if (msgsnd(queue[(net_device_t)device], &msg, len, 0)) {
+                perror("msgsnd()");
+            };
+			break;
+		default:
+			break;
+		};
+	}
+    if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_TEXT) {
 
         switch ((net_device_t)device) {
         case DEV_SIO1:
@@ -434,6 +466,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
             break;
         default:
             break;
+		};
     }
 
 	return 1;
@@ -561,6 +594,13 @@ int start_net_services (void) {
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) DEV_CPA);
+
+	mg_set_websocket_handler(ctx, "/acc",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         (void *) DEV_88ACC);
 
 #ifdef DEBUG
 	/* List all listening ports */

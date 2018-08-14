@@ -39,6 +39,9 @@
 #ifdef HAS_DAZZLER
 #include "../../iodevices/cromemco-dazzler.h"
 #endif //HAS_DAZZLER
+#ifdef HAS_CYCLOPS
+#include "../../iodevices/cromemco-88ccc.h"
+#endif //HAS_CYCLOPS
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
@@ -91,7 +94,11 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 14 */
 #endif //HAS_DAZZLER
 	io_trap_in,		/* port 15 */
+#ifdef HAS_CYCLOPS
+	cromemco_88ccc_ctrl_a_in, /* p16 */
+#else
 	io_trap_in,		/* port 16 */
+#endif
 	io_trap_in,		/* port 17 */
 	io_no_card_in,		/* port 18 */ /* serial port   */
 	io_no_card_in,		/* port 19 */ /*       "       */
@@ -359,9 +366,15 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 14 */
 	io_trap_out,		/* port 15 */
 #endif //HAS_DAZZLER
+#ifdef HAS_CYCLOPS
+	cromemco_88ccc_ctrl_a_out, /* p16 */
+	cromemco_88ccc_ctrl_b_out, /* p17 */
+	cromemco_88ccc_ctrl_c_out, /* p18 */
+#else
 	io_trap_out,		/* port 16 */
 	io_trap_out,		/* port 17 */
 	io_no_card_out,		/* port 18 */ /* serial port   */
+#endif
 	io_no_card_out,		/* port 19 */ /*       "       */
 	io_no_card_out,		/* port 20 */ /* parallel port */
 	io_no_card_out,		/* port 21 */ /*       "       */
