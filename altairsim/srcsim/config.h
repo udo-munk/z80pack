@@ -25,10 +25,10 @@
  * 07-MAY-18 added memory configuratione needed by apple monitor
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 17-JUL-18 use logging
+ * 21-AUG-18 improved memory configuration
  */
 
 extern void config(void);
 
-extern int ram_size, rom_size;
-extern int rom_start, boot_switch;
+extern int boot_switch;
 extern int fp_size;

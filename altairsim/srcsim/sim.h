@@ -21,6 +21,7 @@
  * 27-MAR-17 added SIO's connected to UNIX domain sockets
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 07-MAY-18 added memory configuratione needed by apple monitor
+ * 21-AUG-18 improved memory configuration
  */
 
 /*
@@ -41,8 +42,6 @@
 
 #define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
 #define NUMUSOC 2	/* number of UNIX sockets for SIO connections */
-
-/*#define MONITORMEM*/	/* special memory configuration for apple monitor */
 
 /*
  *	Default CPU

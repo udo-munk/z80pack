@@ -23,6 +23,7 @@
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 04-JUL-18 added baud rate to terminal SIO
  * 17-JUL-18 use logging
+ * 21-AUG-18 improved memory configuration
  */
 
 #include <stdlib.h>
@@ -31,18 +32,20 @@
 #include "sim.h"
 #include "simglb.h"
 #include "log.h"
+#include "../../frontpanel/frontpanel.h"
+#include "memory.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
+extern int exatoi(char *);
+
 static const char *TAG = "config";
 
-int ram_size;
-int rom_size;
-int rom_start;
-int boot_switch;
-int fp_size = 800;
+struct memmap memconf[MAXSEG];	/* memory map */
+static int num_segs;
 
-extern int exatoi(char *);
+int boot_switch;		/* boot address for switch */
+int fp_size = 800;		/* frontpanel size */
 
 extern int tarbell_rom_enabled;	/* Tarbell bootstrap ROM enable/disable */
 
@@ -67,10 +70,14 @@ extern int slf;                 /* VDM scanlines factor */
 
 void config(void)
 {
+	int i, v1, v2;
 	FILE *fp;
+	char *s, *t1, *t2, *t3;
 	char buf[BUFSIZE];
-	char *s, *t1, *t2;
 	char fn[4095];
+
+	for (i = 0; i < MAXSEG; i++)
+		memconf[i].type = -1;
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/system.conf");
@@ -80,7 +87,7 @@ void config(void)
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
 			t1 = strtok(s, " \t");
-			t2 = strtok(NULL, " \t");
+			t2 = strtok(NULL, " \t,");
 			if (!strcmp(t1, "sio0_upper_case")) {
 				switch (*t2) {
 				case '0':
@@ -216,25 +223,53 @@ void config(void)
 			} else if (!strcmp(t1, "vdm_scanlines")) {
 				if (*t2 != '0')
 					slf = 2;
-#ifndef MONITORMEM
 			} else if (!strcmp(t1, "ram")) {
-				ram_size = atoi(t2);
-				LOG(TAG, "RAM size %4d pages, 0000H - %04xH\r\n",
-				    ram_size, (ram_size << 8) - 1);
+				if (num_segs >= MAXSEG) {
+					LOGW(TAG, "too many rom/ram statements");
+					goto next;
+				}
+				t3 = strtok(NULL, " \t,");
+				v1 = atoi(t2);
+				if (v1 < 0 || v1 > 255) {
+					LOGW(TAG, "illegal ram start address %d", v1);
+					goto next;
+				}
+				v2 = atoi(t3);
+				if (v2 < 1 || v1 + v2 > 256) {
+					LOGW(TAG, "illegal ram size %d", v2);
+					goto next;
+				}
+				memconf[num_segs].type = MEM_RW;
+				memconf[num_segs].spage = v1;
+				memconf[num_segs].size = v2;
+				LOG(TAG, "RAM %04XH - %04XH\r\n",
+				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
+				num_segs++;
 			} else if (!strcmp(t1, "rom")) {
-				rom_size = atoi(t2);
-				rom_start = (256 - rom_size) << 8;
-				LOG(TAG, "ROM size %4d pages, %04xH - ffffH\r\n",
-				    rom_size, rom_start);
-#else
-			} else if (!strcmp(t1, "ram")) {
-				;
-			} else if (!strcmp(t1, "rom")) {
-				;
-#endif
+				if (num_segs >= MAXSEG) {
+					LOGW(TAG, "too many rom/ram statements");
+					goto next;
+				}
+				t3 = strtok(NULL, " \t,");
+				v1 = atoi(t2);
+				if (v1 < 0 || v1 > 255) {
+					LOGW(TAG, "illegal rom start address %d", v1);
+					goto next;
+				}
+				v2 = atoi(t3);
+				if (v2 < 1 || v1 + v2 > 256) {
+					LOGW(TAG, "illegal rom size %d", v2);
+					goto next;
+				}
+				memconf[num_segs].type = MEM_RO;
+				memconf[num_segs].spage = v1;
+				memconf[num_segs].size = v2;
+				LOG(TAG, "ROM %04XH - %04XH\r\n",
+				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
+				num_segs++;
 			} else if (!strcmp(t1, "boot")) {
 				boot_switch = exatoi(t2);
-				LOG(TAG, "Boot switch address at %04xH\r\n", boot_switch);
+				LOG(TAG, "Boot switch address at %04XH\r\n", boot_switch);
 			} else if (!strcmp(t1, "tarbell_rom_enabled")) {
 				tarbell_rom_enabled = atoi(t2);
 				LOG(TAG, "Tarbell bootstrap ROM %s\r\n",
@@ -243,14 +278,12 @@ void config(void)
 			} else {
 				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
+
+			next:
+			;
+
 		}
 	}
-
-#ifdef MONITORMEM
-	LOG(TAG, "RAM 0000H - efffH\r\n");
-	LOG(TAG, "ROM f000H - f7ffH\r\n");
-	LOG(TAG, "RAM f800H - ffffH\r\n");
-#endif
 
 	LOG(TAG, "\r\n");
 }

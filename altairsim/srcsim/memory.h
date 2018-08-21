@@ -12,6 +12,7 @@
  * 16-AUG-2017 overworked memrdr()
  * 07-MAY-2018 added memory configuratione needed by apple monitor
  * 11-JUN-2018 fixed bug in Tarbell ROM mapping
+ * 21-AUG-2018 improved memory configuration
  */
 
 extern void init_memory(void), init_rom(void);
@@ -26,6 +27,19 @@ extern int tarbell_rom_enabled, tarbell_rom_active;
 #define MEM_RO		1	/* memory is read-only */
 #define MEM_WPROT	2	/* memory is write protected */
 #define MEM_NONE	3	/* no memory available */
+
+/*
+ * configuration for MAXSEG memory segments
+ */
+#define MAXSEG	6
+
+struct memmap {
+	int type;	/* type of memory pages */
+	BYTE spage;	/* start page of segment */
+	BYTE size;	/* size of segment in pages */
+};
+
+extern struct memmap memconf[MAXSEG];
 
 /*
  * memory access for the CPU cores

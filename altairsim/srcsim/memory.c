@@ -12,8 +12,10 @@
  * 16-AUG-2017 overworked memrdr()
  * 07-MAY-2018 added memory configuratione needed by apple monitor
  * 11-JUN-2018 fixed bug in Tarbell ROM mapping
+ * 21-AUG-2018 improved memory configuration
  */
 
+#include <string.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -31,36 +33,20 @@ BYTE mem_wp;
 
 void init_memory(void)
 {
-	register int i;
+	register int i, j;
 
-	/* use memory configuration from system.conf */
-#ifndef MONITORMEM
 	/* initialise memory page table, no memory available */
 	for (i = 0; i < 256; i++)
 		p_tab[i] = MEM_NONE;
 
-	/* then set the first ram_size pages to RAM */
-	for (i = 0; i < ram_size; i++)
-		p_tab[i] = MEM_RW;
-
-	/* then set rom_size pages in upper memory to ROM */
-	for (i = 256 - rom_size; i < 256; i++)
-		p_tab[i] = MEM_RO;
-
-	/* memory configuration needed by TDL Apple */
-#else
-	/* 0000 - EFFF RAM */
-	for (i = 0; i < 240; i++)
-		p_tab[i] = MEM_RW;
-
-	/* F000 - F7FF ROM */
-	for (i = 240; i < 248; i++)
-		p_tab[i] = MEM_RO;
-
-	/* F800 - FFFF RAM */
-	for (i = 248; i < 256; i++)
-		p_tab[i] = MEM_RW;
-#endif
+	/* set memory configuration from system.conf */
+	for (i = 0; i < MAXSEG; i++) {
+		if (memconf[i].type != -1) {
+			for (j = memconf[i].spage;
+			     j < memconf[i].spage + memconf[i].size; j++)
+				p_tab[j] = memconf[i].type;
+		}
+	}
 }
 
 /*
@@ -70,14 +56,9 @@ void init_rom(void)
 {
 	register int i;
 
-	/* use memory configuration from system.conf */
-#ifndef MONITORMEM
-	for (i = (256 - rom_size) << 8; i <= 0xffff; i++)
-		memory[i] = 0xff;
-
-	/* TDL Apple ROM */
-#else
-	for (i = 0xf000; i < 0xf800; i++)
-		memory[i] = 0xff;
-#endif
+	for (i = 0; i < 256; i++) {
+		if (p_tab[i] == MEM_RO) {
+			memset(&memory[i << 8], 0xff, 256);
+		}
+	}
 }

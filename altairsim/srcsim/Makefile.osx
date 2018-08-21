@@ -110,7 +110,7 @@ unix_terminal.o : ../../iodevices/unix_terminal.c
 unix_network.o : ../../iodevices/unix_network.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/unix_network.c
 
-config.o : config.c sim.h simglb.h log.h
+config.o : config.c sim.h simglb.h log.h memory.h
 	$(CC) $(CFLAGS) config.c
 
 altair-88-sio.o: ../../iodevices/altair-88-sio.c log.h
