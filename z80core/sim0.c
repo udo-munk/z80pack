@@ -618,7 +618,7 @@ static int load_hex(char *fn)
 	printf("Loader statistics for file %s:\n", fn);
 	printf("START : %04XH\n", saddr);
 	printf("END   : %04XH\n", eaddr);
-	printf("LOADED: %04XH (%d)\n\n", count, count);
+	printf("LOADED: %04XH (%d)\n\n", count & 0xffff, count & 0xffff);
 	PC = saddr;
 	wrk_ram = mem_base() + saddr;
 
