@@ -537,10 +537,10 @@ static int load_mos(int fd, char *fn)
 	}
 	close(fd);
 	printf("Loader statistics for file %s:\n", fn);
-	printf("START : %04x\n", (unsigned int)(wrk_ram - mem_base()));
-	printf("END   : %04x\n", (unsigned int)(wrk_ram - mem_base()
+	printf("START : %04X\n", (unsigned int)(wrk_ram - mem_base()));
+	printf("END   : %04X\n", (unsigned int)(wrk_ram - mem_base()
 				 + readn - 1));
-	printf("LOADED: %04x\n\n", readn);
+	printf("LOADED: %04X\n\n", readn);
 	PC = wrk_ram - mem_base();
 	return(rc);
 }
@@ -616,9 +616,9 @@ static int load_hex(char *fn)
 	fclose(fd);
 	count = eaddr - saddr + 1;
 	printf("Loader statistics for file %s:\n", fn);
-	printf("START : %04xH\n", saddr);
-	printf("END   : %04xH\n", eaddr);
-	printf("LOADED: %04xH (%d)\n\n", count, count);
+	printf("START : %04XH\n", saddr);
+	printf("END   : %04XH\n", eaddr);
+	printf("LOADED: %04XH (%d)\n\n", count, count);
 	PC = saddr;
 	wrk_ram = mem_base() + saddr;
 
