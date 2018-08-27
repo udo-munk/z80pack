@@ -43,6 +43,8 @@
 // #define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
 
+#ifdef HAS_DAZZLER
+
 static const char *TAG = "DAZZLER";
 
 /* X11 stuff */
@@ -790,3 +792,5 @@ void cromemco_dazzler_format_out(BYTE data)
 {
 	format = data;
 }
+
+#endif // HAS_DAZZLER

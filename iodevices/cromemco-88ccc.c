@@ -9,6 +9,8 @@
  * 14-AUG-18    1.0     Initial Release
  */
 
+#ifdef HAS_CYCLOPS
+
 #define HAS_NETSERVER
 
 #include <pthread.h>
@@ -164,3 +166,4 @@ BYTE cromemco_88ccc_ctrl_a_in(void)
 	return(flags | (state << 7));
 }
 
+#endif // HAS_CYCLOPS
