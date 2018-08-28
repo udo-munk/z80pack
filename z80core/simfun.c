@@ -116,7 +116,7 @@ again:
 			goto again;
 		} else {
 			/* some error */
-			LOGE(TAG, "sleep_ms()");
+			LOGE(TAG, "sleep_ms(%d)", time);
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
