@@ -9,10 +9,6 @@
  * 14-AUG-18    1.0     Initial Release
  */
 
-#ifdef HAS_CYCLOPS
-
-#define HAS_NETSERVER
-
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,6 +24,8 @@
 #endif
 // #define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
+
+#ifdef HAS_CYCLOPS
 
 static const char *TAG = "88CCC";
 
