@@ -35,14 +35,14 @@
 
 #define UNIX_TERMINAL	/* uses a UNIX terminal emulation */
 #define HAS_DAZZLER	/* has simulated I/O for Cromemeco Dazzler */
-#define HAS_CYCLOPS	/* has simulated I/O for Cromemeco 88 CCC/ACC Cyclops Camera */
+//#define HAS_CYCLOPS	/* has simulated I/O for Cromemeco 88 CCC/ACC Cyclops Camera */
 
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* emulate IMSAI MPU-B banked ROM & RAM */
 
-#define HAS_DISKMANAGER	/* uses file based disk map for disks[] */
-#define HAS_NETSERVER	/* uses civet webserver to present a web based frontend */
+//#define HAS_DISKMANAGER	/* uses file based disk map for disks[] */
+//#define HAS_NETSERVER	/* uses civet webserver to present a web based frontend */
 
 #define MAX_RAM	64	/* Maximum RAM size */
 

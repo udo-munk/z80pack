@@ -43,6 +43,7 @@ OBJ =   sim0.o \
 	imsai-fif.o \
 	diskmanager.o \
 	cromemco-dazzler.o \
+	cromemco-dazzler.o \
 	imsai-vio.o \
 	netsrv.o
 
@@ -118,6 +119,9 @@ imsai-fif.o: ../../iodevices/imsai-fif.c log.h
 
 diskmanager.o: ../../iodevices/diskmanager.c sim.h log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/diskmanager.c
+
+cromemco-dazzler.o: ../../iodevices/cromemco-dazzler.c log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
 
 cromemco-dazzler.o: ../../iodevices/cromemco-dazzler.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
