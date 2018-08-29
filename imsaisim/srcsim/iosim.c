@@ -95,7 +95,7 @@ BYTE (*port_in[256]) (void) = {
 #endif //HAS_DAZZLER
 	io_trap_in,		/* port 15 */
 #ifdef HAS_CYCLOPS
-	cromemco_88ccc_ctrl_a_in, /* p16 */
+	cromemco_88ccc_ctrl_a_in, /* port 16 */
 #else
 	io_trap_in,		/* port 16 */
 #endif
@@ -367,9 +367,9 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 15 */
 #endif //HAS_DAZZLER
 #ifdef HAS_CYCLOPS
-	cromemco_88ccc_ctrl_a_out, /* p16 */
-	cromemco_88ccc_ctrl_b_out, /* p17 */
-	cromemco_88ccc_ctrl_c_out, /* p18 */
+	cromemco_88ccc_ctrl_a_out, /* port 16 */
+	cromemco_88ccc_ctrl_b_out, /* port 17 */
+	cromemco_88ccc_ctrl_c_out, /* port 18 */
 #else
 	io_trap_out,		/* port 16 */
 	io_trap_out,		/* port 17 */
@@ -625,11 +625,13 @@ void init_io(void)
 	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3)) {
 		imsai_vio_init();
 	} else {
-		/* if no VIO firmware loaded release the ROM and RAM */
-		MEM_RELEASE(60);
-		MEM_RELEASE(61);
-		MEM_RELEASE(62);
-		MEM_RELEASE(63);
+		/* if no firmware loaded release the ROM and RAM */
+		if (*(mem_base() + 0xf800) == 0xff) {
+			MEM_RELEASE(60);
+			MEM_RELEASE(61);
+			MEM_RELEASE(62);
+			MEM_RELEASE(63);
+		}
 	}
 
 	imsai_fif_reset();
