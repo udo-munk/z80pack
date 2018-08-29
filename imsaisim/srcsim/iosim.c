@@ -625,10 +625,11 @@ void init_io(void)
 	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3)) {
 		imsai_vio_init();
 	} else {
-		/* if no firmware loaded release the ROM and RAM */
+		/* release the RAM */
+		MEM_RELEASE(60);
+		MEM_RELEASE(61);
+		/* if no firmware loaded release the ROM */
 		if (*(mem_base() + 0xf800) == 0xff) {
-			MEM_RELEASE(60);
-			MEM_RELEASE(61);
 			MEM_RELEASE(62);
 			MEM_RELEASE(63);
 		}
