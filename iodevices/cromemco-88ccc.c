@@ -57,7 +57,7 @@ static void *store_image(void *arg)
 	BYTE msgB;
 
 	UNUSED(arg);	/* to avoid compiler warning */
-	memset(&msg, sizeof(msg), 0);
+	memset(&msg, 0, sizeof(msg));
 	gettimeofday(&t1, NULL);
 
 	while (state) {	/* do until total frame is recieved */
