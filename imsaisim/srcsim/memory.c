@@ -142,12 +142,10 @@ void init_rom(void)
 {
 	register unsigned int i;
 
-	if (r_flag) {
-		for (i = 0xd800; i <= 0xdfff; i++)
-			_MEMMAPPED(i) = 0xff;
-		for (i = 0xf800; i <= 0xffff; i++)
-			_MEMMAPPED(i) = 0xff;
-	}
+	for (i = 0xd800; i <= 0xdfff; i++)
+		_MEMMAPPED(i) = 0xff;
+	for (i = 0xf800; i <= 0xffff; i++)
+		_MEMMAPPED(i) = 0xff;
 }
 
 void ctrl_port_out(BYTE data)
