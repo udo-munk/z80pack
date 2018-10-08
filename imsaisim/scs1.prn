@@ -1,19 +1,13 @@
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
++                                                      19:26  09/08/2018
 +                                                                                      PAGE 1
-      IMSAI SCS-1 R  . 2 06 O  . 1976
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                           TITLE           'IMSAI SCS-1 REV. 2 06 OCT. 1976'
+                   ;
                    ;       PAGE    62
-1
- 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 2
-      IMSAI SCS-1 R  . 2 06 O  . 1976
-
-
-                           TITLE           'IMSAI SCS-1 R  . 2 06 O  . 1976'
                    ;
                    ; MODIFIED TO ASSEMBLE WITH INTEL 8080 CROSS ASSEMBLER
                    ; OCTOBER 2008, UDO MUNK
@@ -62,15 +56,15 @@
    0061   77       INIT3:  MOV     M,A
    0062   23               INX     H
    0063   05               DCR     B
-   0064   C26100           JNZ     INIT3
-                   ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 3
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 2
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0064   C26100           JNZ     INIT3
+                   ;
                    ; THIS IS THE STARTING POINT OF THE SELF CONTAINED
                    ; SYSTEM ONCE THE SYSTEM HAS BEEN INITIALIZED.  COMMANDS
                    ; ARE READ FROM THE USER, EXECUTED, AND CONTROL RETURNS
@@ -120,15 +114,15 @@
    00A8   3E1A             MVI     A,IBUF+83 AND 00FFH
    00AA   CDE100           CALL    CLER            ;CLEAR REMAINING BUFFER
    00AD   21C610           LXI     H,IBUF-1
-   00B0   73               MOV     M,E             ;SAVE CHARACTER COUNT
-   00B1   C9               RET
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 4
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 3
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   00B0   73               MOV     M,E             ;SAVE CHARACTER COUNT
+   00B1   C9               RET
    00B2   FE7F     DEL:    CPI     127             ;CHECK FOR DELETE CHARACTER
    00B4   C2C700           JNZ     CHAR
    00B7   3EC7             MVI     A,IBUF AND 00FFH
@@ -178,15 +172,15 @@
    00F8   E602             ANI     TTYDA
    00FA   CAF600           JZ      IN8
    00FD   DB02             IN      TTI             ;READ DATA
-   00FF   E67F             ANI     127             ;STRIP OFF PARITY
-   0101   47               MOV     B,A
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 5
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 4
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   00FF   E67F             ANI     127             ;STRIP OFF PARITY
+   0101   47               MOV     B,A
    0102   C9               RET
                     
                    ;
@@ -236,15 +230,15 @@
                    ;
                    ; THIS ROUTINE CHECKS TO SEE IF A BASE CHARACTER STRING
                    ; IS EQUAL TO ANY OF THE STRINGS CONTAINED IN A TABLE
-                   ; POINTED TO BY D,E.   HE TABLE CONSISTS OF ANY NUMBER
-                   ; OF CHARS, WITH 2 BYTES CONTAINING VALUES ASSOCIATED
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 6
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 5
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ; POINTED TO BY D,E.   HE TABLE CONSISTS OF ANY NUMBER
+                   ; OF CHARS, WITH 2 BYTES CONTAINING VALUES ASSOCIATED
                    ; WITH IT.  REG B CONTAINS THE # OF STRINGS TO COMPARE.
                    ; THIS ROUTINE CAN BE USED TO SEARCH THROUGH A COMMAND
                    ; OR SYMBOL TABLE.  ON RETURN, IF THE ZERO FLAG IS SET,
@@ -294,15 +288,15 @@
                    ; THEN USED BY OTHER SCANNING ROUTINES
                    ;
    0166   AF       ZBUF:   XRA     A               ;GET A ZERO
-   0167   118A10           LXI     D,ABUF+12       ;BUFFER ADDRESS
-   016A   060C             MVI     B,12            ;BUFFER LENGTH
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 7
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 6
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0167   118A10           LXI     D,ABUF+12       ;BUFFER ADDRESS
+   016A   060C             MVI     B,12            ;BUFFER LENGTH
    016C   1B       ZBU1:   DCX     D               ;DECREMENT ADDRESS
    016D   12               STAX    D               ;ZERO BUFFER
    016E   05               DCR     B
@@ -352,15 +346,15 @@
    01AF   12               STAX    D               ;STORE FILE NAME
    01B0   13               INX     D
    01B1   C3A401           JMP     VAL2
-   01B4   3E20     VAL3:   MVI     A,' '           ;GET AN ASCII SPACE
-   01B6   0D       VAL4:   DCR     C
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 8
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 7
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   01B4   3E20     VAL3:   MVI     A,' '           ;GET AN ASCII SPACE
+   01B6   0D       VAL4:   DCR     C
    01B7   FABF01           JM      DONE
    01BA   12               STAX    D               ;FILL IN WITH SPACES
    01BB   13               INX     D
@@ -410,15 +404,15 @@
    0207   54               MOV     D,H             ;SAVE CURRENT VALUE
    0208   5D               MOV     E,L             ;SAVE CURRENT VALUE
    0209   29               DAD     H               ;TIMES TWO
-   020A   29               DAD     H               ;TIMES TWO
-   020B   19               DAD     D               ;ADD IN ORIGINAL VALUE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 9
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 8
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   020A   29               DAD     H               ;TIMES TWO
+   020B   19               DAD     D               ;ADD IN ORIGINAL VALUE
    020C   29               DAD     H               ;TIMES TWO
    020D   D630             SUI     48              ;ASCII BIAS
    020F   FE0A             CPI     10              ;CHECK FOR LEGAL VALUE
@@ -468,15 +462,15 @@
    0240   46       CHOT:   MOV     B,M
    0241   CD0301           CALL    OUT8
    0244   23               INX     H
-   0245   46               MOV     B,M
-   0246   CD0301           CALL    OUT8
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 10
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 9
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0245   46               MOV     B,M
+   0246   CD0301           CALL    OUT8
    0249   C9               RET
                    ;
                    ; THIS ROUTINE DOES THE SAME AS ABOVE BUT OUTPUTS A
@@ -526,15 +520,15 @@
                    ;
    027A   46       SCRN:   MOV     B,M             ;FETCH CHARACTER
    027B   3E0D             MVI     A,13            ;CARRIAGE RETURN
-   027D   B8               CMP     B               ;CHARACTER = CR?
-   027E   C8               RZ
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 11
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 10
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   027D   B8               CMP     B               ;CHARACTER = CR?
+   027E   C8               RZ
    027F   CD0301           CALL    OUT8
    0282   23               INX     H
    0283   C37A02           JMP     SCRN
@@ -584,15 +578,15 @@
    02B7   90               SUB     B               ;CHECK DIGIT
    02B8   D2B602           JNC     BID1+2
    02BB   80               ADD     B               ;RESTORE VALUE
-   02BC   23               INX     H
-   02BD   C9               RET
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 12
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 11
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   02BC   23               INX     H
+   02BD   C9               RET
                    ;
                    ; LEGAL COMMAND TABLE
                    ;
@@ -642,15 +636,15 @@
    031C   C20E03           JNZ     DUM1
    031F   C30B03           JMP     DUMS
                    ;
-                   ; THIS ROUTINE WILL MOVE 256 BYTES FROM 1ST ADDRESS
-                   ; GIVEN IN COMMAND TO 2ND ADDRESS IN COMMAND.
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 13
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 12
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ; THIS ROUTINE WILL MOVE 256 BYTES FROM 1ST ADDRESS
+                   ; GIVEN IN COMMAND TO 2ND ADDRESS IN COMMAND.
                    ;
    0322   CD0003   PAGEMOV:CALL    VCHK            ;CHECK FOR PARAMETER
    0325   3A8210           LDA     ABUF+4          ;FETCH 2ND PARAMETER
@@ -700,15 +694,15 @@
    036F   CA8B03           JZ      SWAPS
    0372   217004           LXI     H,EMES2         ;NO-NO CAN?T DO
    0375   C36004           JMP     MESS            ;IT - DELETE FIRST
-                   ; MOVE FILE NAME TO BLOCK POINTED TO BY FREAD
-   0378   2A7B10   ROOM:   LHLD    FREAD
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 14
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 13
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ; MOVE FILE NAME TO BLOCK POINTED TO BY FREAD
+   0378   2A7B10   ROOM:   LHLD    FREAD
    037B   EB               XCHG
    037C   217610           LXI     H,FBUF          ;FILE NAME POINTER IN H,L
    037F   D5               PUSH    D
@@ -758,15 +752,15 @@
    03C8   79               MOV     A,C
    03C9   327D10   FINE:   STA     FOCNT           ;SAVE COUNT
    03CC   E5               PUSH    H
-   03CD   110500           LXI     D,NMLEN
-   03D0   19               DAD     D
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 15
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 14
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   03CD   110500           LXI     D,NMLEN
+   03D0   19               DAD     D
    03D1   7E               MOV     A,M
    03D2   B7               ORA     A
    03D3   C2E303           JNZ     FOOD
@@ -816,15 +810,15 @@
    0417   C9               RET
                    ;
                    ; SEARCH THE FILE DIRECTORY FOR THE FILE
-                   ; WHOSE NAME IS IN FBUF.
-                   ; RETURN IF FOUND, ZERO IF OFF, H,L POINT TO
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 16
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 15
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ; WHOSE NAME IS IN FBUF.
+                   ; RETURN IF FOUND, ZERO IF OFF, H,L POINT TO
                    ; ENTRY WHILE SEARCHING, ON ENTRY FOUND WITH ADDR
                    ; ZERO, SET FEF TO >0 AND FREAD TO THE ADDR OF ENTRY
                    ;
@@ -874,15 +868,15 @@
                    ;
    045A   CD0E01   WHAT:   CALL    CRLF            ;OUT CRLF
    045D   216604   WHA1:   LXI     H,EMES          ;MESSAGE ADDRESS
-   0460   CD7A02   MESS:   CALL    SCRN
-   0463   C36700           JMP     EOR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 17
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 16
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0460   CD7A02   MESS:   CALL    SCRN
+   0463   C36700           JMP     EOR
                    ;
    0466   57484154 EMES:   DB      'WHAT'
    046A   0D               DB      13
@@ -932,15 +926,15 @@
                    ; THIS ROUTINE IS USED TO ENTER LINES INTO THE FILE
                    ; AREA.  THE LINE NUMBER IS FIRST CHECKED TO SEE IF IT IS
                    ; A VALID NUMBER (0000-9999).  NEXT IT IS CHECKED TO SEE
-                   ; IF IT IS GREATER THAN THE MAXIMUM CURRENT LINE NUMBER.
-                   ; IF IT IS, THE NEXT LINE IS INSERTED AT THE END OF THE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 18
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 17
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ; IF IT IS GREATER THAN THE MAXIMUM CURRENT LINE NUMBER.
+                   ; IF IT IS, THE NEXT LINE IS INSERTED AT THE END OF THE
                    ; CURRENT FILE AND THE MAXIMUM LINE NUMBER IS UPDATED AS
                    ; WELL AS THE END OF FILE POSITION.  LINE NUMBERS THAT
                    ; ALREADY EXIST ARE INSERTED INTO THE FILE AREA AT THE
@@ -990,15 +984,15 @@
    050D   0D               DCR     C
    050E   CA1805           JZ      LESS            ;NEW LN NOT = OLD LN
    0511   90               SUB     B               ;COUNT DIFFERENCE
-   0512   CA3B05           JZ      ZERO            ;LINE LENGTHS EQUAL
-   0515   DA2B05           JC      MORE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 19
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 18
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0512   CA3B05           JZ      ZERO            ;LINE LENGTHS EQUAL
+   0515   DA2B05           JC      MORE
                    ; GET HERE IF # OF CHARS IN OLD LINE > # OF CHARS IN
                    ; NEW LINE OR NEW LINE # WAS NOT EQUAL TO SOLD OLD
                    ; LINE #
@@ -1048,15 +1042,15 @@
    0567   CDA205           CALL    COM0            ;COMPARE LINE NUMBERS
    056A   D8               RC
    056B   C8               RZ
-   056C   7E       FI2:    MOV     A,M
-   056D   CD7B05           CALL    ADR             ;NEXT LINE ADDRESS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 20
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 19
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   056C   7E       FI2:    MOV     A,M
+   056D   CD7B05           CALL    ADR             ;NEXT LINE ADDRESS
    0570   C35A05           JMP     FI1
                    ;
                    ; WHEN SEARCHING THROUGH THE FILE AREA, THIS ROUTINE
@@ -1106,15 +1100,15 @@
    058F   C38905           JMP     RMOV
                    ;
                    ; THIS ROUTINE IS USED TO LOAD FOUR CHARACTERS FROM
-                   ; MEMORY INTO REGISTERS
-                   ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 21
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 20
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ; MEMORY INTO REGISTERS
+                   ;
                     
    0592   46       LODM:   MOV     B,M             ;FETCH CHARACTER
    0593   23               INX     H
@@ -1164,15 +1158,15 @@
    05B5   0E04     COM1:   MVI     C,4             ;STRING LENGTH
    05B7   1A               LDAX    D               ;TCH CHARACTER
    05B8   D601             SUI     1
-   05BA   C3A805           JMP     CO1+1
-                   ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 22
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 21
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   05BA   C3A805           JMP     CO1+1
+                   ;
                    ; THIS ROUTINE WILL TAKE ASCII CHARACTERS AND ADD ANY
                    ; NECESSARY ASCII ZEROES SO THE RESULT IS A 4 CHARACTER
                    ; ASCII VALUE
@@ -1222,15 +1216,15 @@
    0605   2A7210           LHLD    DELP            ;LOAD DELETE POSITION
    0608   DA4906           JC      NOVR
                    ; GET HERE IF DELETION INVOLVES END OF FILE
-   060B   222B10           SHLD    EOFP            ;CHANGE E-O-F POSITION
-   060E   3601             MVI     M,1             ;SET E-O-F INDICATOR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 23
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 22
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   060B   222B10           SHLD    EOFP            ;CHANGE E-O-F POSITION
+   060E   3601             MVI     M,1             ;SET E-O-F INDICATOR
    0610   EB               XCHG
    0611   2A2910           LHLD    BOFP
    0614   EB               XCHG
@@ -1280,15 +1274,15 @@
                    ; STARTING HERE IS THE SELF ASSEMBLER PROGRAM
                    ; THIS PROGRAM ASSEMBLES PROGRAMS WHICH ARE
                    ; IN THE FILE AREA
-                   ;
-   065E   CD0003   ASSM:   CALL    VCHK            ;CHECK FOR PARAMETERS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 24
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 23
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ;
+   065E   CD0003   ASSM:   CALL    VCHK            ;CHECK FOR PARAMETERS
    0661   3A8210           LDA     ABUF+4          ;GET 2ND PARAMETER
    0664   B7               ORA     A               ;CHECK FOR PRARMETERS
    0665   C26E06           JNZ     ASM4
@@ -1338,15 +1332,15 @@
                    ;
    06C5   3A8E10   AOUT:   LDA     AERR            ;FETCH ERROR SWITCH
    06C8   B7               ORA     A               ;SET FLAGS
-   06C9   C2D206           JNZ     AOU1            ;OUTPUT ALL LINES
-   06CC   3AB210   AOU2:   LDA     OBUF            ;FETCH ERROR INDICATOR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 25
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 24
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   06C9   C2D206           JNZ     AOU1            ;OUTPUT ALL LINES
+   06CC   3AB210   AOU2:   LDA     OBUF            ;FETCH ERROR INDICATOR
    06CF   FE20             CPI     ' '             ;CHECK FOR AN ERROR
    06D1   C8               RZ                      ;RETURN IF NO ERROR
    06D2   21B210   AOU1:   LXI     H,OBUF          ;OUTPUT BUFFER ADDRESS
@@ -1396,15 +1390,15 @@
    071E   CD6601   OPC:    CALL    ZBUF            ;ZERO WORKING BUFFER
    0721   CD0D09           CALL    SBLK            ;SCAN TO OPCODE
    0724   DA060B           JC      OERR            ;FOUND CARRIAGE RETURN
-   0727   CD750B           CALL    ALPS            ;PLACE OPCODE IN BUFFER
-   072A   FE20             CPI     ' '             ;CHECK FOR BLANK AFTER OPCODE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 26
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 25
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0727   CD750B           CALL    ALPS            ;PLACE OPCODE IN BUFFER
+   072A   FE20             CPI     ' '             ;CHECK FOR BLANK AFTER OPCODE
    072C   DA650A           JC      OPCD            ;CR AFTER OPCODE
    072F   C2060B           JNZ     OERR            ;ERROR IF NO BLANK
    0732   C3650A           JMP     OPCD            ;CHECK OPCODE
@@ -1454,15 +1448,15 @@
    077D   CA9F0C           JZ      ERRM            ;MISSING LABEL
    0780   EB       EQUS:   XCHG
    0781   2A9010           LHLD    TABA            ;SYMBOL TABLE ADDRESS
-   0784   72               MOV     M,D             ;STORE LABEL VALUE
-   0785   23               INX     H
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 27
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 26
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0784   72               MOV     M,D             ;STORE LABEL VALUE
+   0785   23               INX     H
    0786   73               MOV     M,E
    0787   C9               RET
                    ; DO DS PSEUDO-OP
@@ -1512,15 +1506,15 @@
                    ; DO DW OPCODE
    07DB   CDE108   ACO2:   CALL    TYS6            ;GET VALUE
    07DE   C35A07           JMP     ACO1
-                   ; DO DS PSEUDO-OP
-   07E1   CD940B   RES2:   CALL    ASBL            ;GET OPERAND
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 28
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 27
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ; DO DS PSEUDO-OP
+   07E1   CD940B   RES2:   CALL    ASBL            ;GET OPERAND
    07E4   44               MOV     B,H
    07E5   4D               MOV     C,L
    07E6   2A8C10           LHLD    BBUF+2          ;FETCH STORAGE COUNTER
@@ -1570,15 +1564,15 @@
    0828   19               DAD     D               ;MODIFY
    0829   228C10           SHLD    BBUF+2          ;SAVE
    082C   C9               RET
-                   ;
-                   ; PROCESS 1 BYTE INSTRUCTIONS WITHOUT OPERANDS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 29
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 28
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ;
+                   ; PROCESS 1 BYTE INSTRUCTIONS WITHOUT OPERANDS
                    ;
    082D   CDEE08   TYP1:   CALL    ASTO            ;STORE VALUE IN MEMORY
    0830   C9               RET
@@ -1628,15 +1622,15 @@
    0877   7D               MOV     A,L
    0878   CA5508           JZ      TY31            ;RST INSTRUCTION
    087B   FA5808           JM      TY32            ;ACCUMULATOR INSTRUCTION
-   087E   C35508           JMP     TY31            ;INR, DCR
-                   ; PROCESS MOV INSTRUCTION
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 30
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 29
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   087E   C35508           JMP     TY31            ;INR, DCR
+                   ; PROCESS MOV INSTRUCTION
    0881   29       TY41:   DAD     H               ;MULTIPLY OPERAND BY 8
    0882   29               DAD     H
    0883   29               DAD     H
@@ -1686,15 +1680,15 @@
    08C9   C28A0C           JNZ     ERRS            ;SYNTAX ERROR IF NO COMMA
    08CC   7B               MOV     A,E
    08CD   C9               RET
-                   ;
-                   ; PROCESS 3 BYTE INSTRUCTIONS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 31
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 30
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ;
+                   ; PROCESS 3 BYTE INSTRUCTIONS
                    ; LXI INSTRUCTION IS A SPECIAL CASE
                    ;
    08CE   FE01     TYP6:   CPI     1               ;CHECK FOR LXI INSTRUCTION
@@ -1744,15 +1738,15 @@
                    ;
    090D   2A9610   SBLK:   LHLD    PNTR            ;FETCH ADDRESS
    0910   7E       SBL1:   MOV     A,M             ;FETCH CHARACTER
-   0911   FE20             CPI     ' '             ;CHECK FOR BLANK
-   0913   C0               RNZ                     ;RETURN IF NON-BLANK
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 32
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 31
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0911   FE20             CPI     ' '             ;CHECK FOR BLANK
+   0913   C0               RNZ                     ;RETURN IF NON-BLANK
    0914   23       SBL2:   INX     H               ;INCREMENT
    0915   229610           SHLD    PNTR            ;SAVE POINTER
    0918   C31009           JMP     SBL1
@@ -1802,15 +1796,15 @@
    0956   524152           DB      'RAR'
    0959   1F               DB      31
    095A   524554           DB      'RET'
-   095D   C9               DB      201
-   095E   434D41           DB      'CMA'
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 33
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 32
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   095D   C9               DB      201
+   095E   434D41           DB      'CMA'
    0961   2F               DB      47
    0962   535443           DB      'STC'
    0965   37               DB      55
@@ -1860,15 +1854,15 @@
    09B8   04               DB      4
    09B9   444352           DB      'DCR'
    09BC   05               DB      5
-   09BD   4D4F56           DB      'MOV'
-   09C0   40               DB      64
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 34
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 33
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   09BD   4D4F56           DB      'MOV'
+   09C0   40               DB      64
    09C1   414444           DB      'ADD'
    09C4   80               DB      128
    09C5   414443           DB      'ADC'
@@ -1918,15 +1912,15 @@
    0A18   43414C4C         DB      'CALL'
    0A1C   CD               DB      205
    0A1D   4C5849           DB      'LXI'
-   0A20   00               DB      0
-   0A21   01               DB      1
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 35
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 34
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0A20   00               DB      0
+   0A21   01               DB      1
    0A22   4C4441           DB      'LDA'
    0A25   00               DB      0
    0A26   3A               DB      58
@@ -1976,15 +1970,15 @@
    0A5F   C3500A           JMP     COPC            ;CONTINUE SEARCH
    0A62   3C       COP1:   INR     A               ;CLEAR ZERO FLAG
    0A63   13               INX     D               ;INCREMENT ADDRESS
-   0A64   C9               RET
-                   ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 36
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 35
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0A64   C9               RET
+                   ;
                    ; THIS ROUTINE CHECKS THE LEGAL OPCODES IN BOTH PASS 1
                    ; AND PASS 2.  IN PASS 1 THE PROGRAM COUNTER IS INCRE-
                    ; MENTED BY THE CORRECT NUMBER OF BYTES.  AN ADDRESS IS
@@ -2034,15 +2028,15 @@
    0AC0   0603             MVI     B,3             ;3 CHARACTER OPCODES
    0AC2   3A7E10           LDA     ABUF            ;FETCH FIRST CHARACTER
    0AC5   4F               MOV     C,A             ;SAVE CHARACTER
-   0AC6   FE52             CPI     'R'             ;CONDITIONAL RETURN
-   0AC8   7A               MOV     A,D
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 37
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 36
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0AC6   FE52             CPI     'R'             ;CONDITIONAL RETURN
+   0AC8   7A               MOV     A,D
    0AC9   CA810A           JZ      OP1
    0ACC   79               MOV     A,C
    0ACD   14               INR     D               ;FORM CONDITIONAL JUMP
@@ -2092,15 +2086,15 @@
    0B13   C2060B           JNZ     OERR
    0B16   3A9410           LDA     PASI            ;FETCH PASS INDICATOR
    0B19   B7               ORA     A
-   0B1A   CA4407           JZ      PSU1
-   0B1D   C3C807           JMP     PSU2
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 38
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 37
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0B1A   CA4407           JZ      PSU1
+   0B1D   C3C807           JMP     PSU2
                    ;
                    ; THIS ROUTINE IS USED TO PROCESS LABELS.
                    ; IT CHECKS TO SEE IF A LABEL IS IN THE SYMBOL TABLE
@@ -2150,15 +2144,15 @@
                    ;
    0B60   41       RTAB:   DB      'A'
    0B61   07               DB      7
-   0B62   42               DB      'B'
-   0B63   00               DB      0
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 39
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 38
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0B62   42               DB      'B'
+   0B63   00               DB      0
    0B64   43               DB      'C'
    0B65   01               DB      1
    0B66   44               DB      'D'
@@ -2208,15 +2202,15 @@
    0B94   CD0D09   ASBL:   CALL    SBLK            ;GET 1ST ARGUMENT
    0B97   210000   ASCN:   LXI     H,0             ;GET A ZERO
    0B9A   229A10           SHLD    OPRD            ;INITIALIZE OPERAND
-   0B9D   24               INR     H
-   0B9E   229B10           SHLD    OPRI-1          ;INITIALIZE OPERAND INDICATOR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 40
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 39
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0B9D   24               INR     H
+   0B9E   229B10           SHLD    OPRI-1          ;INITIALIZE OPERAND INDICATOR
    0BA1   2A9610   NXT1:   LHLD    PNTR            ;FETCH SCAN POINTER
    0BA4   2B               DCX     H
    0BA5   CD6601           CALL    ZBUF            ;CLEAR BUFFER
@@ -2266,15 +2260,15 @@
    0C05   23               INX     H               ;INCREMENT POINTER
    0C06   229610           SHLD    PNTR            ;SAVE
    0C09   7E               MOV     A,M             ;FETCH NEXT CHAR
-   0C0A   FE27             CPI     27H             ;CHECK FOR 2 QUOTES IN A ROW
-   0C0C   C2290C           JNZ     AVAL+1          ;TERMINAL QUOTE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 41
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 40
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0C0A   FE27             CPI     27H             ;CHECK FOR 2 QUOTES IN A ROW
+   0C0C   C2290C           JNZ     AVAL+1          ;TERMINAL QUOTE
    0C0F   0D       SSTR:   DCR     C               ;CHECK COUNT
    0C10   CAA80C           JZ      ERAR            ;TOO MANY CHARACTERS
    0C13   53               MOV     D,E
@@ -2324,15 +2318,15 @@
                    ; DECIMAL.  ON RETURN, CARRY SET INDICATES AN ERROR.
                    ;
    0C63   CD750B   NUMS:   CALL    ALPS            ;GET NUMERIC
-   0C66   1B               DCX     D
-   0C67   1A               LDAX    D               ;GET LAST CHARACTER
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 42
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 41
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0C66   1B               DCX     D
+   0C67   1A               LDAX    D               ;GET LAST CHARACTER
    0C68   017E10           LXI     B,ABUF          ;SET BUFFER ADDRESS
    0C6B   FE48             CPI     'H'             ;IS IT HEXADECIMAL?
    0C6D   CA7B0C           JZ      NUM2
@@ -2382,15 +2376,15 @@
                    ;
    0CA8   3E41     ERAR:   MVI     A,'A'           ;GET INDICATOR
    0CAA   C38C0C           JMP     ERRS+2
-                   ;
-                   ; PROCESS OPCODE ERROR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 43
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 42
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+                   ;
+                   ; PROCESS OPCODE ERROR
                    ; STORE 3 BYTES OF ZERO IN OBJECT CODE TO PROVIDE
                    ; FOR A PATCH
                    ;
@@ -2440,15 +2434,15 @@
    0CF0   2A8A10           LHLD    BBUF            ;GET ADDRESS
    0CF3   EB               XCHG                    ;IN D,E
    0CF4   7A               MOV     A,D             ;CHECK FOR ADDR > 11D
-   0CF5   B7               ORA     A
-   0CF6   C2FF0C           JNZ     B3
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 44
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 43
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0CF5   B7               ORA     A
+   0CF6   C2FF0C           JNZ     B3
    0CF9   7B               MOV     A,E
    0CFA   FE0B             CPI     11
    0CFC   DA5A04               JC  WHAT            ;OOPS, TOO LOW
@@ -2498,15 +2492,15 @@
    0D37   E1               POP     H               ;GET THEM INTO H,L
    0D38   220010           SHLD    HOLD            ;NOW STORE THEM FOR USER
    0D3B   210000           LXI     H,0
-   0D3E   39               DAD     SP              ;GET STACK POINTER
-   0D3F   310810           LXI     SP,HOLD+8       ;SET STACK POINTER AGAIN
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 45
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 44
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0D3E   39               DAD     SP              ;GET STACK POINTER
+   0D3F   310810           LXI     SP,HOLD+8       ;SET STACK POINTER AGAIN
    0D42   E5               PUSH    H               ;SAVE OLD SP
    0D43   D5               PUSH    D               ;SAVE D,E
    0D44   C5               PUSH    B               ;SAVE B,C
@@ -2556,15 +2550,15 @@
    0D92   B7               ORA     A
    0D93   CA9C0D           JZ      P1              ;JUMP IF NO ARG
    0D96   2A8A10           LHLD    BBUF            ;ELSE GET ARG
-   0D99   220A10           SHLD    HOLD+10         ;PLUG IT INTO PC SLOT
-   0D9C   310010   P1:     LXI     SP,HOLD         ;SET SP TO POINT AT REG?S
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 46
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 45
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   0D99   220A10           SHLD    HOLD+10         ;PLUG IT INTO PC SLOT
+   0D9C   310010   P1:     LXI     SP,HOLD         ;SET SP TO POINT AT REG?S
    0D9F   F1               POP     PSW             ;RESTORE PSW
    0DA0   C1               POP     B               ;RESTORE B,C
    0DA1   D1               POP     D               ;RESTORE D,E
@@ -2614,15 +2608,15 @@
    1094            PASI:   DS      1
    1095            NCHR:   DS      1
    1096            PNTR:   DS      2
-   1098            NOLA:   DS      1
-   1099            SIGN:   DS      1
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 47
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 46
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
+   1098            NOLA:   DS      1
+   1099            SIGN:   DS      1
    109A            OPRD:   DS      2
    109C            OPRI:   DS      1
    109D            TEMP:   DS      1
@@ -2640,9 +2634,9 @@
  NO PROGRAM ERRORS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 48
-      IMSAI SCS-1 R  . 2 06 O  . 1976
++                                                      19:26  09/08/2018
++                                                                                      PAGE 47
+      IMSAI SCS-1 REV. 2 06 OCT. 1976
 
 
                         SYMBOL TABLE
@@ -2698,8 +2692,8 @@
   MPNT   08BF      NBR    0008      NCHR   1095      NCOM   000B      
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      23:16  09/03/2008
-+                                                                                      PAGE 49
++                                                      19:26  09/08/2018
++                                                                                      PAGE 48
                               SYMBOL TABLE
 
 
