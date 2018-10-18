@@ -16,6 +16,7 @@
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
+extern void groupswap(void);
 extern int wait_step(void);
 extern void wait_int_step(void);
 extern BYTE memory[];
@@ -34,7 +35,6 @@ extern BYTE *rdrvec[];
 extern BYTE *wrtvec[];
 
 extern int cyclecount;
-extern void groupswap();
 
 #ifdef HAS_BANKED_ROM
 #undef MEMORY_WRITE

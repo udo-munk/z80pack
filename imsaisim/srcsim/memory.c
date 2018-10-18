@@ -41,7 +41,7 @@ static BYTE groupsel;
 /* page table with memory configuration/state */
 int p_tab[64];		/* 64 pages a 1 KB */
 
-void groupswap()
+void groupswap(void)
 {
 	LOGD(TAG, "MPU-B Banked ROM/RAM group select %02X", groupsel);
 
