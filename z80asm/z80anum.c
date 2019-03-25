@@ -18,7 +18,7 @@
 #define T_NODE  0
 #define T_VALUE 1
 
-// character classes
+/* character classes */
 #define C_BIN  0x0001
 #define C_HEX  0x0002
 #define C_OCT  0x0004
@@ -27,7 +27,7 @@
 #define C_SPC  0x0020
 #define C_SYM  0x0040
 
-// parser fsm states
+/* parser fsm states */
 #define S_OPE  0
 #define S_HEX  1
 #define S_OCT  2
@@ -40,9 +40,9 @@
 #define SS_CONT   1
 #define SS_POST   2 
 
-// standard operators: '(', ')', '*', '/', '%', '+', '-', '|', '&', '^', '~'
-// other    operators: left shift '<', right shift '>', current position '$'
-// other    tokens:    end of parsing 'X', numerical value 'N'
+/* standard operators: '(', ')', '*', '/', '%', '+', '-', '|', '&', '^', '~' */
+/* other    operators: left shift '<', right shift '>', current position '$' */
+/* other    tokens:    end of parsing 'X', numerical value 'N' */
 
 typedef struct node {
   int   op:8;
@@ -64,12 +64,12 @@ static void parser_init(char *);
 static int  parse();
 static int  asctoi(char *);
 static int  expr_factor();
-//static int  expr_term();
+/*static int  expr_term();*/
 static int  expr_simple();
-//static int  expr_shift();
-//static int  expr_and();
-//static int  expr_xor();
-//static int  expr_or();
+/*static int  expr_shift();*/
+/*static int  expr_and();*/
+/*static int  expr_xor();*/
+/*static int  expr_or();*/
 static int  expr();
 static int  evaluate(int);
        void dump_nodes();
@@ -123,8 +123,8 @@ static int mknode(int op, int flag, int p1, int p2) {
   return -1;
 }
 
-// these 2 functions simulates the retieval 
-// of a symbol or of the current position
+/* these 2 functions simulates the retieval */
+/* of a symbol or of the current position */
 int getdot() {
   return pc;
 }
@@ -224,13 +224,13 @@ static int parse() {
 
     case S_HEX:
       switch(sstate) {
-      	case SS_START:  // initial condition
+      	case SS_START:  /* initial condition */
       	  if (!isdigit(code))
 	     goto again;  
 	  sstate = SS_CONT;   
-	  // no break fall into next case
+	  /* no break fall into next case */
 	  	  
-      	case SS_CONT:   // building the value from digits
+      	case SS_CONT:   /* building the value from digits */
 	  if ((type & C_HEX) == C_HEX) {
       	    if (code == '$')  
       	       continue;
@@ -245,7 +245,7 @@ static int parse() {
 	    }
       	  break;
       		
-      	case SS_POST:  // post processing, parsing position adjustment
+      	case SS_POST:  /* post processing, parsing position adjustment */
       	  if ((type & C_OPE) == C_OPE) {
 	     parsed_pos--;  	
 	     return 'N';
@@ -258,11 +258,11 @@ static int parse() {
       
     case S_OCT:
       switch(sstate) {
-        case SS_START:  // initial condition
+        case SS_START:  /* initial condition */
       	  if (!isdigit(code))
 	     goto again;  
 	  sstate = SS_CONT;   
-	  // no break fall into next case
+	  /* no break fall into next case */
 
         case SS_CONT:
 	  if ((type & C_OCT) == C_OCT) {
@@ -292,11 +292,11 @@ static int parse() {
 
     case S_BIN:
       switch(sstate) {
-        case SS_START:  // initial condition
+        case SS_START:  /* initial condition */
       	  if (!isdigit(code))
 	     goto again;  
 	  sstate = SS_CONT;   
-	  // no break fall into next case
+	  /* no break fall into next case */
 
         case SS_CONT:
 	  if ((type & C_BIN) == C_BIN) {
@@ -326,11 +326,11 @@ static int parse() {
       
     case S_DEC:
       switch(sstate) {
-        case SS_START:  // initial condition
+        case SS_START:  /* initial condition */
       	  if (!isdigit(code))
 	     goto again;  
 	  sstate = SS_CONT;   
-	  // no break fall into next case
+	  /* no break fall into next case */
 
         case SS_CONT:
 	  if ((type & C_DEC) == C_DEC) {
@@ -349,7 +349,7 @@ static int parse() {
          break;
 
         case SS_POST:
-          // do nothing 
+          /* do nothing */
           break;
       }
       goto again;
@@ -536,7 +536,7 @@ static int expr_shift() {
       tok = parse();
       n2 = expr_simple();
       n1 = mknode(t, T_NODE, n1, n2);
-      return n1; // not associative	
+      return n1; /* not associative */
       continue;
 
     default: 
@@ -622,7 +622,7 @@ static int expr() {
 static int evaluate(int node) {
   int n1, n2;
 
-  n1 = n2 = 0; // to make the compiler happy
+  n1 = n2 = 0; /* to make the compiler happy */
   if (nodes[node].flag == 0) {
     if (nodes[node].left)
       n1 = evaluate(nodes[node].left);
@@ -679,12 +679,12 @@ int eval(char *str) {
   parser_init(str);
   tok = parse();  
   entry = expr();
-//  printf("entry=%d\n", entry);
-//  dump_nodes();
+/*  printf("entry=%d\n", entry); */
+/*  dump_nodes(); */
   return evaluate(entry);
 }
 
-// from z80anum-orig.c
+/* from z80anum-orig.c */
 
 /*
  *	check value for range -256 < value < 256
