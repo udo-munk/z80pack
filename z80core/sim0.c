@@ -296,8 +296,6 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	} else {
 		strcpy(&confdir[0], CONFDIR);
 	}
-
-	//printf("config = %s\n", &confdir[0]);
 #endif
 
 	/* seed random generator */

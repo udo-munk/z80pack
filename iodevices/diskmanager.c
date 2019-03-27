@@ -315,14 +315,14 @@ int LibraryHandler(HttpdConnection_t *conn, void *unused) {
  
             if (findDiskImage(file_start)) {
                 LOGW(TAG, "DELETE image: %s, currently inserted in disks", file_start);   
-                httpdStartResponse(conn, 404);  //http error code 'Not Found'
+                httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 return 1;                  
             }
 
             if (unlink(path) < 0) {
                 LOGW(TAG, "DELETE image: %s, unlink failed [%d]", path, errno);   
-                httpdStartResponse(conn, 410);  //http error code 'Gone'
+                httpdStartResponse(conn, 410);  /* http error code 'Gone' */
                 httpdEndHeaders(conn);   
             } else {
                 LOGI(TAG, "DELETE image: %s, deleted.", path);
@@ -333,7 +333,7 @@ int LibraryHandler(HttpdConnection_t *conn, void *unused) {
         }
         break;
     default:
-        httpdStartResponse(conn, 405);  //http error code 'Method Not Allowed'
+        httpdStartResponse(conn, 405);  /* http error code 'Method Not Allowed' */
         httpdEndHeaders(conn);
         break;
     }
@@ -392,17 +392,17 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
                 break;
             case DRIVE_NOT_EMPTY :
                 LOGW(TAG, "PUT /disks NOT EMPTY");   
-                httpdStartResponse(conn, 404);  //http error code 'Not Found'
+                httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn); 
                 break;
             case IMAGE_ALREADY_INSERTED :
                 LOGW(TAG, "PUT image: %s, already inserted in disks", image);   
-                httpdStartResponse(conn, 404);  //http error code 'Not Found'
+                httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 break;
             default:
                 LOGW(TAG, "PUT image: %s, failed to insert disk: %d, error: %d", image, disk, result)
-                httpdStartResponse(conn, 404);  //http error code 'Not Found'
+                httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 break;
         }
@@ -420,18 +420,18 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
                 break;
             case DRIVE_EMPTY :
                 LOGW(TAG, "DELETE /disks ALREADY EMPTY");
-                httpdStartResponse(conn, 404);  //http error code 'Not Found'
+                httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);    
                 break;
             default:
                 LOGW(TAG, "DELETE /disks failed to eject disk: %d, error: %d", disk, result)
-                httpdStartResponse(conn, 404);  //http error code 'Not Found'
+                httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 break;
         }
         break;
     default:
-        httpdStartResponse(conn, 405);  //http error code 'Method Not Allowed'
+        httpdStartResponse(conn, 405);  /* http error code 'Method Not Allowed' */
         httpdEndHeaders(conn);
 	}
 

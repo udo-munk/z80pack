@@ -29,7 +29,7 @@
 #include <netinet/tcp.h>
 #include "unix_network.h"
 #include "sim.h"
-// #define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 void telnet_negotiation(int);

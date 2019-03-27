@@ -40,7 +40,7 @@
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
-// #define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 #ifdef HAS_DAZZLER
@@ -793,4 +793,4 @@ void cromemco_dazzler_format_out(BYTE data)
 	format = data;
 }
 
-#endif // HAS_DAZZLER
+#endif /* HAS_DAZZLER */

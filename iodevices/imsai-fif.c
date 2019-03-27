@@ -38,7 +38,7 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-// #define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 /* offsets in disk descriptor */

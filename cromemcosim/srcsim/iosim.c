@@ -46,7 +46,7 @@
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-// #define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 /*

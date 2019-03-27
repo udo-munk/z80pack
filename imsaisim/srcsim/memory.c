@@ -21,7 +21,7 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-// #define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 static const char *TAG = "memory";
@@ -55,28 +55,28 @@ void groupswap(void)
 
 	if (groupsel & _GROUP1) {
 		rdrvec[52] = &memory[52 << 10];
-		// rdrvec[53] = &memory[53 << 10];
+		/* rdrvec[53] = &memory[53 << 10]; */
 		wrtvec[52] = &memory[52 << 10];
-		// wrtvec[53] = &memory[53 << 10];
+		/* wrtvec[53] = &memory[53 << 10]; */
 
 		rdrvec[54] = &memory[54 << 10];
 		rdrvec[55] = &memory[55 << 10];
 
 		MEM_RELEASE(52);
-		// MEM_RELEASE(53);
+		/* MEM_RELEASE(53); */
 		MEM_RELEASE(54);
 		MEM_RELEASE(55);
 	} else {
 		rdrvec[52] = &mpubram[0x0000];
-		// rdrvec[53] = &mpubram[0x0400];
+		/* rdrvec[53] = &mpubram[0x0400]; */
 		wrtvec[52] = &mpubram[0x0000];
-		// wrtvec[53] = &mpubram[0x0400];
+		/* wrtvec[53] = &mpubram[0x0400]; */
 
 		rdrvec[54] = &mpubrom[0x0000];
 		rdrvec[55] = &mpubrom[0x0400];
 
 		MEM_RESERVE_RAM(52);
-		// MEM_RESERVE_RAM(53);
+		/* MEM_RESERVE_RAM(53); */
 		MEM_ROM_BANK_ON(54);
 		MEM_ROM_BANK_ON(55);
 	}

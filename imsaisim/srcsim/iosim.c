@@ -38,10 +38,10 @@
 #include "../../iodevices/imsai-fif.h"
 #ifdef HAS_DAZZLER
 #include "../../iodevices/cromemco-dazzler.h"
-#endif //HAS_DAZZLER
+#endif /* HAS_DAZZLER */
 #ifdef HAS_CYCLOPS
 #include "../../iodevices/cromemco-88ccc.h"
-#endif //HAS_CYCLOPS
+#endif /* HAS_CYCLOPS */
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
@@ -92,7 +92,7 @@ BYTE (*port_in[256]) (void) = {
 	cromemco_dazzler_flags_in, /* port 14 */
 #else
 	io_trap_in,		/* port 14 */
-#endif //HAS_DAZZLER
+#endif /* HAS_DAZZLER */
 	io_trap_in,		/* port 15 */
 #ifdef HAS_CYCLOPS
 	cromemco_88ccc_ctrl_a_in, /* port 16 */
@@ -365,7 +365,7 @@ static void (*port_out[256]) (BYTE) = {
 #else
 	io_trap_out,		/* port 14 */
 	io_trap_out,		/* port 15 */
-#endif //HAS_DAZZLER
+#endif /* HAS_DAZZLER */
 #ifdef HAS_CYCLOPS
 	cromemco_88ccc_ctrl_a_out, /* port 16 */
 	cromemco_88ccc_ctrl_b_out, /* port 17 */

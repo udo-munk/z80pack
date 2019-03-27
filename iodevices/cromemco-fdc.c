@@ -61,7 +61,7 @@
 
 static const char *TAG = "16FDC";
 
-//     BYTE fdc_flags = 16|64;	/* FDC flag register, no autoboot */
+/*     BYTE fdc_flags = 16|64;*//* FDC flag register, no autoboot */
        BYTE fdc_flags = 16;	/* FDC flag register, autoboot */
 static BYTE fdc_cmd;		/* FDC command last send */
 static BYTE fdc_stat;		/* FDC status register */
@@ -934,7 +934,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 		state = FDC_READADR;
 		dcnt = 0;
 		fdc_stat = 3;			/* set DRQ & busy */
-		//fdc_flags |= 128;		/* set DRQ */
+		/*fdc_flags |= 128;*/		/* set DRQ */
 		fdc_flags |= 129; /* RDOS 2&3 seem to need EOJ already, why */
 
 	} else if ((data & 0xf0) == 0xe0) {	/* read track */

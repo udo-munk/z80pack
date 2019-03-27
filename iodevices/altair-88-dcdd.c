@@ -20,7 +20,7 @@
 #include <fcntl.h>
 #include "sim.h"
 #include "simglb.h"
-//#define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 /*

@@ -129,7 +129,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
-// #define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 #define BUFSIZE 256		/* max line length of command buffer */

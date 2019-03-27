@@ -31,7 +31,7 @@ typedef enum {
     LOG_VERBOSE     /* Bigger chunks of debugging information, or frequent messages which can potentially flood the output. */
 } log_level_t;
 
-// inline vararg functions don't compile with gcc <= 7.3
+/* inline vararg functions don't compile with gcc <= 7.3 */
 #ifdef __GNUC__
 static void _log_write(log_level_t level, const char* tag, const char* format, ...) __attribute__ ((format (printf, 3, 4)));
 #else
@@ -68,14 +68,14 @@ static inline uint32_t _log_timestamp(void) {
 #define LOG_COLOR_I       LOG_COLOR(LOG_COLOR_GREEN)
 #define LOG_COLOR_D       LOG_COLOR(LOG_COLOR_CYAN)
 #define LOG_COLOR_V
-#else //CONFIG_LOG_COLORS
+#else /* CONFIG_LOG_COLORS*/
 #define LOG_COLOR_E
 #define LOG_COLOR_W
 #define LOG_COLOR_I
 #define LOG_COLOR_D
 #define LOG_COLOR_V
 #define LOG_RESET_COLOR
-#endif //CONFIG_LOG_COLORS
+#endif /* CONFIG_LOG_COLORS */
 
 #define _LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%d) %s: " format LOG_RESET_COLOR "\r\n"
 

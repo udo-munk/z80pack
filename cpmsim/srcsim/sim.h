@@ -72,7 +72,7 @@
  * but SIGIO on BSD sockets is not
  */
 #ifdef __CYGWIN__
-//#undef PIPES		/* forking and pipes was not working correct */
+/*#undef PIPES*/	/* forking and pipes was not working correct */
 #undef TCPASYNC		/* SIGIO on BSD sockets not working */
 #endif
 

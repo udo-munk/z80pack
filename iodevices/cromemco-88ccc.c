@@ -22,7 +22,7 @@
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
-// #define LOG_LOCAL_LEVEL LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 #ifdef HAS_CYCLOPS
@@ -86,18 +86,18 @@ static void *store_image(void *arg)
 					for (j = 0; j < FIELDSIZE; j++) {
 						dma_write(dma_addr + (i * FIELDSIZE) + j, buffer[j]);
 					}
-					// memcpy(mem_base() + dma_addr + (i * FIELDSIZE), buffer, len);
+					/* memcpy(mem_base() + dma_addr + (i * FIELDSIZE), buffer, len); */
 				}
 			}
 		} else {
-			// No 88ACC camera attached
+			/* No 88ACC camera attached */
 			LOGW(TAG, "No Cromemeco Cyclops 88ACC attached.");
 		}
 
 		/* frame done, calculate total frame time */
 		j = msg.fields * (msg.interval +1) * 2;
 
-		// SLEEP_MS(j);
+		/* SLEEP_MS(j); */
 
 		/* sleep rest of total frame time */
 		gettimeofday(&t2, NULL);
@@ -165,4 +165,4 @@ BYTE cromemco_88ccc_ctrl_a_in(void)
 	return(flags | (state << 7));
 }
 
-#endif // HAS_CYCLOPS
+#endif /* HAS_CYCLOPS */
