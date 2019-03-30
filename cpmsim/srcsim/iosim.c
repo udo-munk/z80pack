@@ -1,10 +1,10 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * This module contains a complex I/O-simulation for running
- * CP/M, MP/M, UCSD p-System...
+ * CP/M, MP/M, UCSD p-System, Fuzix ...
  *
  * Please note this doesn't emulate any hardware which
  * ever existed, we've got all virtual circuits in here!
@@ -54,6 +54,7 @@
  * 24-APR-2018 cleanup
  * 17-MAY-2018 improved hardware control
  * 10-JUN-2018 modified boot code for early loading of files
+ * 30-MAR-2019 added two more 4MB HD's
  */
 
 /*
@@ -215,8 +216,8 @@ struct dskdef disks[16] = {
 	{ "driveh.dsk", &driveh, -1, -1 },
 	{ "drivei.dsk", &drivei, 255, 128 },
 	{ "drivej.dsk", &drivej, 255, 128 },
-	{ "drivek.dsk", &drivek, -1, -1 },
-	{ "drivel.dsk", &drivel, -1, -1 },
+	{ "drivek.dsk", &drivek, 255, 128 },
+	{ "drivel.dsk", &drivel, 255, 128 },
 	{ "drivem.dsk", &drivem, -1, -1 },
 	{ "driven.dsk", &driven, -1, -1 },
 	{ "driveo.dsk", &driveo, -1, -1 },
