@@ -50,7 +50,7 @@ void init_unix_server_socket(struct unix_connectors *p, char *fn)
 	if (stat(path, &sbuf) != 0)
 		mkdir(path, 0777);   /* no, create it */
 
-	/* create socket path and unlike file */
+	/* create socket path and unlink file */
 	strcpy(socket_path, path);
 	strcat(socket_path, fn);
 	unlink(socket_path);
