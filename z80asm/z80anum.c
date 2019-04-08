@@ -154,7 +154,7 @@ static void parser_init(char *str) {
     free(parsed_line);
   parsed_line = strdup(str);
   if (!initialized) {
-    memset(&charclass, '\0', sizeof(charclass));
+    memset(&charclass[0], '\0', sizeof(charclass));
     for (i='a'; i<='z'; i++)
       charclass[i] = charclass[i] | C_SYM;
     for (i='A'; i<='Z'; i++)
