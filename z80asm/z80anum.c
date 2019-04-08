@@ -4,8 +4,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef sun
+#ifdef _POSIX_C_SOURCE
 #include <strings.h>
+#include <string.h>
 #else
 #include <string.h>
 #endif
