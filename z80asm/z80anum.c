@@ -143,6 +143,42 @@ int getsymvalue(char *str) {
   return 0;
 }
 
+/*
+ * strdup() and strcasecmp() is defined by POSIX only and not by any ANSI C
+ * standard. So we need a substitute if compiling in non POSIX environment.
+ */
+#ifndef _POSIX_C_SOURCE
+char *strdup(const char *s)
+{
+	size_t len = strlen(s) + 1;
+	char *p = malloc(len);
+	return p ? memcpy(p, s, len) : NULL;
+}
+
+int strcasecmp(unsigned char *s1, unsigned char *s2)
+{
+    register int c, d;
+
+    for (;;) {
+	switch(c = *s1++ - (d = *s2++)) {
+	case 0:
+		if(!d)
+			break;
+		continue;
+	case ('A' - 'a'):
+		if((d < 'a') || (d > 'z'))
+			break;
+		continue;
+	case ('a' - 'A'):
+		if((d < 'A') || (d > 'Z'))
+			break;
+		continue;
+	}
+	return(c);
+    }
+}
+#endif
+
 static void parser_init(char *str) {
   static int initialized = 0;
   int i;

@@ -21,8 +21,10 @@
  */
 
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
+#ifdef _POSIX_C_SOURCE
+#include <unistd.h>
+#endif
 #include <string.h>
 #include <ctype.h>
 #include "z80a.h"
