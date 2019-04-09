@@ -1,6 +1,8 @@
 #CC = cc
+#CC = acc
 CC = gcc
 
+#CFLAGS = -c -O
 CFLAGS = -c -O3 -Wall
 
 LFLAGS =
@@ -45,4 +47,5 @@ clean:
 	rm -f core *.o z80asm
 
 install: z80asm
-	cp z80asm ${HOME}/bin
+	strip z80asm
+	cp z80asm "${HOME}/bin"
