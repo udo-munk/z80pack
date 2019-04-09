@@ -1,7 +1,7 @@
 #CC = cc
 CC = gcc
 
-CFLAGS = -c -O3 -Wall -D_POSIX_C_SOURCE
+CFLAGS = -c -O3 -Wall
 
 LFLAGS =
 

@@ -4,13 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef _POSIX_C_SOURCE
-#include <strings.h>
 #include <string.h>
-#else
-#include <string.h>
-#endif
-#include <assert.h>
 #include <ctype.h>
 
 #include "z80a.h"
