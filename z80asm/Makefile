@@ -1,11 +1,21 @@
+#
+# by default compile on POSIX compatible systems
+# the altenative options are provided for old ANSI C89 systems
+#
+CC = gcc
 #CC = cc
 #CC = acc
-CC = gcc
 
+CFLAGS = -c -O3 -Wall -D_POSIX_C_SOURCE=200809L
 #CFLAGS = -c -O
-CFLAGS = -c -O3 -Wall
 
 LFLAGS =
+
+#
+# installation directory
+#
+DESTDIR = "${HOME}/bin"
+#DESTDIR = /usr/local/bin
 
 OBJ =   z80amain.o \
 	z80atab.o \
@@ -48,4 +58,4 @@ clean:
 
 install: z80asm
 	strip z80asm
-	cp z80asm "${HOME}/bin"
+	cp z80asm ${DESTDIR}

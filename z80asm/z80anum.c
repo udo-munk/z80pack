@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _POSIX_C_SOURCE
+#include <strings.h>
+#endif
 #include <ctype.h>
 
 #include "z80a.h"
