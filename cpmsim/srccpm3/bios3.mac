@@ -244,7 +244,7 @@ DPH15:	DEFW	0			;sector translation table
 DPB2:	DEFW    16384		;sectors per track
 	DEFB    7		;block shift factor
 	DEFB    127		;block mask
-	DEFB    0		;extent mask
+	DEFB    7		;extent mask
 	DEFW    7FFFH		;disk size-1
 	DEFW    8191		;directory max
 	DEFB    255		;alloc 0
