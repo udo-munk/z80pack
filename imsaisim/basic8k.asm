@@ -3,8 +3,11 @@
 ;       - CREATED FROM IMSAI 8K BASIC VERSION 1.4 MANUAL
 ;
 ;    07-FEB-14 UM
-;	- FIXED TYPOS, MATCHES MANUAL NOW
+;       - FIXED TYPOS, MATCHES MANUAL NOW
 ;
+;    19-JUN-19 UM
+;       - FIXED CHARACTER LITERALS NOT WORKING WITH MACRO-80
+;       - FIXED COMMENTS
 ;---------------------------------------------------------
 ; BASIC30.ASM   1.4     05/19/77        JRB     8K BASIC
 ; BASICS2.ASM   1.401   05/11/77        DK      8K BASIC
@@ -74,6 +77,11 @@
         TBASE   EQU     0100H   ;PROGRAM LOAD UNDER CPM
         CSTAT   EQU     3       ;OFFSET OF CONSOLE STATUS
                                 ;...QUERY IN BIOS TABLE
+;
+; ASCII EQUATES, CHARACTER LITERALS NOT WORKING WITH MACRO-80
+;
+        UPARR   EQU     05EH
+        BACKSL  EQU     05CH
 ;
 ; BASIC EQUATES
 ;
@@ -203,7 +211,7 @@ INIT2:  MOV     A,M     ;GET A BYTE FROM MEMORY
         ENDIF
 ;
 INIT3:  SPHL            ;SET STACK POINTER TO END OF MEMORY
-        LXI     B,-256 ;ALLOW 256 BYTES FOR STACK
+        LXI     B,-256  ;ALLOW 256 BYTES FOR STACK
         DAD     B       ;ADD TO ADDRESS
         SHLD    DATAB   ;SAVE ADDR OF START OF DATA
 ;
@@ -755,7 +763,7 @@ PRINC:  CALL EOL        ;SAVE EOL POSITION
         LDA     PRSW    ;GET SWITCH
         MOV     B,A     ;SAVE ,; SWITCH
         LDA     OUTSW   ;GET CONTROL-O SWITCH
-        ORA     A       ;TEST IF ^O IN EFFECT
+        ORA     A       ;TEST IF CONTROL-O IN EFFECT
         ORA     B       ;AND IF STATEMENT ENDED IN , OR ;
         CZ      CRLF    ;CRLF IF NEITHER
         JMP     RUN     ;CONTINUE NEXT STATEMENT
@@ -1639,7 +1647,7 @@ CHA2:   MOV     A,D     ;GET HI NAME
 CHA3:   STAX    D       ;PUT TO STRING
         INX     D       ;POINT NEXT STR LOC.
         PUSH    B       ;SAVE CTRS
-        PUSH    D       ;AND AD^DR
+        PUSH    D       ;AND ADDR
         RST     5       ;LOAD NEXT
         RST     4       ;POINT NEXT
         DB      -8 AND 0FFH
@@ -2965,7 +2973,8 @@ LOOKO:  RST     1       ;SKIP BLANKS
         CPI     '/'     ;TEST IF DIVIDE
         MVI     B,45H   ;CODE
         JZ      OP1     ;BRIF IS
-        CPI     '^'     ;TEST IF EXPON
+;       CPI     '^'     ;TEST IF EXPON
+        CPI     UPARR   ;*UM* FIX FOR MACRO-80
         MVI     B,81H   ;CODE
         JZ      OP1     ;BRIF IS
         CPI     ')'     ;TEST IF CLOSE PAREN
@@ -3161,7 +3170,7 @@ EV5:    CPI     5       ;TEST IF OPEN PAREN
         LHLD    ADDR3   ;RESTORE STMT POINTER
         LDA     DIMSW   ;GET SUBSR SWITCH
         ORA     A       ;TEST IT
-        JZ      LOOKO   ;BRIF NOT IN SUBS^CRIPT
+        JZ      LOOKO   ;BRIF NOT IN SUBSCRIPT
         LDA     PARCT   ;GET OPEN PAREN COUNT
         ORA     A       ;TEST
         JNZ     LOOKO   ;BRIF NOT ZERO
@@ -4329,7 +4338,7 @@ PAUZ:   CALL    TESTO   ;SEND RUBOUT
         RET             ;RETURN
 NOTCR:  CPI     15H     ;TEST IF CONTROL-U
         JNZ     NOTCO   ;BRIF NOT
-        CALL    PRCNT   ;GO PRINT ^U
+        CALL    PRCNT   ;GO PRINT CONTROL-U
         CALL    CRLF    ;GET CR/LF
         JMP     REIN    ;GO RE-ENTER
 NOTCO:  CPI     7FH     ;TEST IF RUBOUT
@@ -4341,11 +4350,13 @@ NOTCO:  CPI     7FH     ;TEST IF RUBOUT
         MOV     A,M     ;LOAD PREV CHAR
         ORA     A       ;TEST IF BEGIN
         JZ      ECHO    ;BRIF IS
-        MVI     A,'\'   ;BACK SLASH
+;       MVI     A,'\'   ;BACK SLASH
+        MVI     A,BACKSL;*UM* FIX FOR MACRO-80
         CALL    TESTO   ;WRITE IT
         MOV     A,M     ;FETCH CHARACTER TO BE DISCARDED
         CALL    TESTO   ;WRITE IT
-        MVI     A,'\'   ;BACK SLASH
+;       MVI     A,'\'   ;BACK SLASH
+        MVI     A,BACKSL;*UM* FIX FOR MACRO-80
         CALL    TESTO   ;WRITE IT
         JMP     TREAD   ;GET REPLACEMENT CHARACTER
 NOTBS   EQU     $
@@ -4500,7 +4511,7 @@ GETCH:  PUSH    B       ;SAVE REGS - CPM CAN CLOBBER
         ENDIF
         CPI     3       ;TEST IF CONTROL C
         JNZ     TSTC1   ;BRIF NOT
-        CALL    PRCNT   ;GO PRINT ^C
+        CALL    PRCNT   ;GO PRINT CONTROL-C
         LDA     EDSW    ;GET MODE SW
         ORA     A       ;TEST IT
         JNZ     KEY     ;**;BRIF COMMAND MODE
@@ -4510,7 +4521,7 @@ GETCH:  PUSH    B       ;SAVE REGS - CPM CAN CLOBBER
         JMP     KEY     ;GOTO READY
 TSTC1:  CPI     0FH     ;TEST IF CONTROL O
         RNZ             ;RETURN IF NOT
-        CALL    PRCNT   ;GO PRINT ^O
+        CALL    PRCNT   ;GO PRINT CONTROL-O
         LDA     OUTSW   ;GET OUTPUT SWTICH
         XRI     1       ;TOGGLE
         STA     OUTSW   ;PUT SW
@@ -4522,7 +4533,8 @@ PRCNT   EQU     $
 ; PRINTS ^ AND CHAR
 ;
         PUSH    PSW     ;SAVE CHAR
-        MVI     A,'^'   ;GET UP ARROW
+;       MVI     A,'^'   ;GET UP ARROW
+        MVI     A,UPARR ;*UM* FIX FOR MACRO-80
         CALL    TESTO   ;WRITE IT
         POP     PSW     ;GET CHAR
         ADI     64      ;TRNSLATE
@@ -5562,7 +5574,7 @@ WATCH:  PUSH B          ;SAVE REGS - CPM STATUS CALL CAN CLOBBER
         POP B
         IN      CASC    ;READ STATUS PORT
         ANI     CFLAG   ;TEST
-        JZ      WATCH   ;LOOP TILL RE^AADY
+        JZ      WATCH   ;LOOP TILL READY
         RET
 ;
 ;
@@ -5642,7 +5654,7 @@ RECI:   CALL    CASI    ;GET TYPE
         LXI     H,0     ;INITIAL CHECKSUM
 RECI1:  CALL    CASI    ;INPUT BYTE
         STAX    D       ;STORE IT
-	INX	D
+        INX     D
         CALL    CKSUM   ;UPDATE CKSUM, PUT ADDR IN LIGHTS
         DCR     B       ;LOOP ON COUNT
         JNZ     RECI1
