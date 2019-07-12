@@ -103,8 +103,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 16 */
 #endif
 	io_trap_in,		/* port 17 */
-	io_no_card_in,		/* port 18 */ /* SIO 2 connected to socket */
-	io_no_card_in,		/* port 19 */ /*       "       */
+	imsai_sio2_data_in,	/* port 18 */ /* SIO 2 connected to socket */
+	imsai_sio2_status_in,	/* port 19 */ /*       "       */
 	io_pport_in,		/* port 20 */ /* parallel port */
 	io_pport_in,		/* port 21 */ /*       "       */
 	io_trap_in,		/* port 22 */
@@ -376,9 +376,9 @@ static void (*port_out[256]) (BYTE) = {
 #else
 	io_trap_out,		/* port 16 */
 	io_trap_out,		/* port 17 */
-	io_no_card_out,		/* port 18 */ /* SIO 2 connected to socket */
+	imsai_sio2_data_out,	/* port 18 */ /* SIO 2 connected to socket */
 #endif
-	io_no_card_out,		/* port 19 */ /*       "       */
+	imsai_sio2_status_out,	/* port 19 */ /*       "       */
 	io_no_card_out,		/* port 20 */ /* parallel port */
 	io_no_card_out,		/* port 21 */ /*       "       */
 	io_trap_out,		/* port 22 */

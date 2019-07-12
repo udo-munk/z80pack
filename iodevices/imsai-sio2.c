@@ -19,6 +19,7 @@
  * 03-JUL-18 implemented baud rate for terminal SIO
  * 13-JUL-18 use logging
  * 14-JUL-18 integrate webfrontend
+ * 12-JUL-19 implemented second SIO
  */
 
 #include <unistd.h>
@@ -27,9 +28,11 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
 #include "unix_terminal.h"
+#include "unix_network.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -191,4 +194,151 @@ again:
 
 	gettimeofday(&sio1_t1, NULL);
 	sio1_stat &= 0b11111110;
+}
+
+/*
+ * read status register
+ *
+ * bit 0 = 1, transmitter ready to write character to tty
+ * bit 1 = 1, character available for input from tty
+ */
+BYTE imsai_sio2_status_in(void)
+{
+	extern int time_diff(struct timeval *, struct timeval *);
+
+	struct pollfd p[1];
+	int tdiff;
+
+	gettimeofday(&sio2_t2, NULL);
+	tdiff = time_diff(&sio2_t1, &sio2_t2);
+	if (sio2_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2_baud_rate))
+			return(sio2_stat);
+
+	/* if socket not connected check for a new connection */
+	if (ucons[0].ssc == 0) {
+		p[0].fd = ucons[0].ss;
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		/* accept a new connection */
+		if (p[0].revents) {
+			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
+			     NULL)) == -1) {
+				LOGW(TAG, "can't accept server socket");
+				ucons[0].ssc = 0;
+			}
+		}
+	}
+
+	/* if socket is connected check for I/O */
+	if (ucons[0].ssc != 0) {
+		p[0].fd = ucons[0].ssc;
+		p[0].events = POLLIN | POLLOUT;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (p[0].revents & POLLIN)
+			sio2_stat |= 2;
+		if (p[0].revents & POLLOUT)
+			sio2_stat |= 1;
+	}
+
+	gettimeofday(&sio2_t1, NULL);
+
+	return(sio2_stat);
+}
+
+/*
+ * write status register
+ */
+void imsai_sio2_status_out(BYTE data)
+{
+	data = data; /* to avoid compiler warning */
+}
+
+/*
+ * read data register
+ *
+ * can be configured to translate to upper case, most of the old software
+ * written for tty's won't accept lower case characters
+ */
+BYTE imsai_sio2_data_in(void)
+{
+	BYTE data;
+	static BYTE last;
+	struct pollfd p[1];
+
+	/* if not connected return last */
+	if (ucons[0].ssc == 0)
+		return(last);
+
+	/* if no input waiting return last */
+	p[0].fd = ucons[0].ssc;
+	p[0].events = POLLIN;
+	p[0].revents = 0;
+	poll(p, 1, 0);
+	if (!(p[0].revents & POLLIN))
+		return(last);
+
+	if (read(ucons[0].ssc, &data, 1) != 1) {
+		/* EOF, close socket and return last */
+		close(ucons[0].ssc);
+		ucons[0].ssc = 0;
+		return(last);
+	}
+
+	gettimeofday(&sio2_t1, NULL);
+	sio2_stat &= 0b11111101;
+
+	/* process read data */
+	if (sio2_upper_case)
+		data = toupper(data);
+	last = data;
+	return(data);
+}
+
+/*
+ * write data register
+ *
+ * can be configured to strip parity bit because some old software won't.
+ * also can drop nulls usually send after CR/LF for teletypes.
+ */
+void imsai_sio2_data_out(BYTE data)
+{
+	struct pollfd p[1];
+
+	/* return if socket not connected */
+	if (ucons[0].ssc == 0)
+		return;
+
+	/* if output not possible close socket and return */
+	p[0].fd = ucons[0].ssc;
+	p[0].events = POLLOUT;
+	p[0].revents = 0;
+	poll(p, 1, 0);
+	if (!(p[0].revents & POLLOUT)) {
+		close(ucons[0].ssc);
+		ucons[0].ssc = 0;
+		return;
+	}
+
+	if (sio2_strip_parity)
+		data &= 0x7f;
+
+	if (sio2_drop_nulls)
+		if (data == 0)
+			return;
+
+again:
+	if (write(ucons[0].ssc, &data, 1) != 1) {
+		if (errno == EINTR) {
+			goto again;
+		} else {
+			close(ucons[0].ssc);
+			ucons[0].ssc = 0;
+		}
+	}
+
+	gettimeofday(&sio2_t1, NULL);
+	sio2_stat &= 0b11111110;
 }
