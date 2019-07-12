@@ -22,6 +22,7 @@
  * 23-FEB-17 added configuration options for VDM
  * 24-MAR-17 added configuration for SIO 0
  * 18-JUL-18 use logging
+ * 12-JUL-19 implemented second SIO
  */
 
 #include <stdlib.h>
