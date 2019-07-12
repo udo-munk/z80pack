@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  * Copyright (C) 2018 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
@@ -44,12 +44,16 @@ int sio1_strip_parity;
 int sio1_drop_nulls;
 int sio1_baud_rate = 115200;
 
+static struct timeval sio1_t1, sio1_t2;
+static BYTE sio1_stat;
+
 int sio2_upper_case;
 int sio2_strip_parity;
 int sio2_drop_nulls;
+int sio2_baud_rate = 115200;
 
-static struct timeval t1, t2;
-static BYTE status;
+static struct timeval sio2_t1, sio2_t2;
+static BYTE sio2_stat;
 
 /*
  * read status register
@@ -64,18 +68,18 @@ BYTE imsai_sio1_status_in(void)
 	struct pollfd p[1];
 	int tdiff;
 
-	gettimeofday(&t2, NULL);
-	tdiff = time_diff(&t1, &t2);
+	gettimeofday(&sio1_t2, NULL);
+	tdiff = time_diff(&sio1_t1, &sio1_t2);
 	if (sio1_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
-			return(status);
+			return(sio1_stat);
 
 #ifdef HAS_NETSERVER
 	if (net_device_alive(DEV_SIO1)) {
 		if (net_device_poll(DEV_SIO1)) {
-			status |= 2;
+			sio1_stat |= 2;
 		}
-		status |= 1;
+		sio1_stat |= 1;
 	} else 
 #endif
 	{
@@ -84,14 +88,14 @@ BYTE imsai_sio1_status_in(void)
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN)
-			status |= 2;
+			sio1_stat |= 2;
 		if (p[0].revents & POLLOUT)
-			status |= 1;
+			sio1_stat |= 1;
 	}
 
-	gettimeofday(&t1, NULL);
+	gettimeofday(&sio1_t1, NULL);
 
-	return(status);
+	return(sio1_stat);
 }
 
 /*
@@ -142,8 +146,8 @@ again:
 		}
 	}
 
-	gettimeofday(&t1, NULL);
-	status &= 0b11111101;
+	gettimeofday(&sio1_t1, NULL);
+	sio1_stat &= 0b11111101;
 
 	/* process read data */
 	if (sio1_upper_case)
@@ -185,6 +189,6 @@ again:
 		}
 	}
 
-	gettimeofday(&t1, NULL);
-	status &= 0b11111110;
+	gettimeofday(&sio1_t1, NULL);
+	sio1_stat &= 0b11111110;
 }

@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -48,6 +48,7 @@ extern int sio1_baud_rate;	/* SIO 1 simulated baud rate */
 extern int sio2_upper_case;	/* SIO 2 translate input to upper case */
 extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
 extern int sio2_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
+extern int sio2_baud_rate;	/* SIO 2 simulated baud rate */
 
 extern char bg_color[];		/* VIO background color */
 extern char fg_color[];		/* VIO foreground color */
@@ -144,6 +145,8 @@ void config(void)
 				}
 			} else if (!strcmp(t1, "sio1_baud_rate")) {
 				sio1_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio2_baud_rate")) {
+				sio2_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {
