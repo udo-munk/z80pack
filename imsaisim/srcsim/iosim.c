@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an IMSAI 8080 system
@@ -22,6 +22,7 @@
  * 08-JUN-18 moved hardware initialisation and reset to iosim
  * 12-JUL-18 use logging
  * 14-JUL-18 integrate webfrontend
+ * 12-JUL-19 implemented second SIO
  */
 
 #include <unistd.h>
@@ -34,6 +35,7 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "../../iodevices/unix_network.h"
 #include "../../iodevices/imsai-sio2.h"
 #include "../../iodevices/imsai-fif.h"
 #ifdef HAS_DAZZLER
@@ -67,6 +69,7 @@ static BYTE imsai_kbd_data_in(void), imsai_kbd_status_in(void);
 static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
+struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
 BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
@@ -78,8 +81,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 1 */
 	imsai_sio1_data_in,	/* port 2 */ /* SIO 1 connected to console */
 	imsai_sio1_status_in,	/* port 3 */
-	imsai_kbd_data_in,	/* port 4 */ /* SIO 2 not connected */
-	imsai_kbd_status_in,	/* port 5 */ /* needed for VIO keyboard input */
+	imsai_kbd_data_in,	/* port 4 */ /* keyboard for VIO */
+	imsai_kbd_status_in,	/* port 5 */
 	io_trap_in,		/* port 6 */
 	io_trap_in,		/* port 7 */
 	io_no_card_in,		/* port 8 */ /* SIO Control for 1 and 2 */
@@ -100,7 +103,7 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 16 */
 #endif
 	io_trap_in,		/* port 17 */
-	io_no_card_in,		/* port 18 */ /* serial port   */
+	io_no_card_in,		/* port 18 */ /* SIO 2 connected to socket */
 	io_no_card_in,		/* port 19 */ /*       "       */
 	io_pport_in,		/* port 20 */ /* parallel port */
 	io_pport_in,		/* port 21 */ /*       "       */
@@ -349,7 +352,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 1 */
 	imsai_sio1_data_out,	/* port 2 */ /* SIO 1 connected to console */
 	imsai_sio1_status_out,	/* port 3 */
-	io_no_card_out,		/* port 4 */ /* SIO 2 not connected */
+	io_no_card_out,		/* port 4 */
 	io_no_card_out,		/* port 5 */
 	io_trap_out,		/* port 6 */
 	io_trap_out,		/* port 7 */
@@ -373,7 +376,7 @@ static void (*port_out[256]) (BYTE) = {
 #else
 	io_trap_out,		/* port 16 */
 	io_trap_out,		/* port 17 */
-	io_no_card_out,		/* port 18 */ /* serial port   */
+	io_no_card_out,		/* port 18 */ /* SIO 2 connected to socket */
 #endif
 	io_no_card_out,		/* port 19 */ /*       "       */
 	io_no_card_out,		/* port 20 */ /* parallel port */
@@ -636,6 +639,9 @@ void init_io(void)
 	}
 
 	imsai_fif_reset();
+
+	/* create local socket for SIIO */
+	init_unix_server_socket(&ucons[0], "imsaisim.sio2");
 }
 
 /*
@@ -644,9 +650,17 @@ void init_io(void)
  */
 void exit_io(void)
 {
+	register int i;
+
 	/* close line printer file */
 	if (printer != 0)
 		close(printer);
+
+	/* close network connections */
+	for (i = 0; i < NUMUSOC; i++) {
+		if (ucons[i].ssc)
+			close(ucons[i].ssc);
+	}
 
 #ifdef HAS_DAZZLER
 	/* shutdown DAZZLER */

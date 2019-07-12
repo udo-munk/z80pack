@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * Configuration for an IMSAI 8080 system
  *
@@ -18,6 +18,7 @@
  * 12-JAN-17 improved configuration and front panel LED timing, VIO emulation
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 14-JUL-18 integrate webfrontend
+ * 12-JUL-19 implemented second SIO
  */
 
 /*
@@ -46,6 +47,9 @@
 
 #define MAX_RAM	64	/* Maximum RAM size */
 
+#define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
+#define NUMUSOC 1	/* number of UNIX sockets for SIO connections */
+
 /*
  *	Default CPU
  */
@@ -56,12 +60,12 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2018 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
 #define RELEASE	"1.37-dev"
 
 #define USR_COM	"IMSAI 8080 Simulation"
 #define USR_REL	"1.18"
-#define USR_CPR	"Copyright (C) 2008-2018 by Udo Munk"
+#define USR_CPR	"Copyright (C) 2008-2019 by Udo Munk"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
