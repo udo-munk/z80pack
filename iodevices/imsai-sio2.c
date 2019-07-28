@@ -20,6 +20,7 @@
  * 13-JUL-18 use logging
  * 14-JUL-18 integrate webfrontend
  * 12-JUL-19 implemented second SIO
+ * 27-JUL-19 more correct emulation
  */
 
 #include <unistd.h>
@@ -57,6 +58,21 @@ int sio2_baud_rate = 115200;
 
 static struct timeval sio2_t1, sio2_t2;
 static BYTE sio2_stat;
+
+/*
+ * the IMSAI SIO-2 occupies 16 I/O ports, from which only
+ * 5 have a function. the following two functions are used
+ * for the ports without function.
+ */
+BYTE imsai_sio_nofun_in(void)
+{
+	return((BYTE) 0);
+}
+
+void imsai_sio_nofun_out(BYTE data)
+{
+	data = data; /* to avoid compiler warning */
+}
 
 /*
  * read status register

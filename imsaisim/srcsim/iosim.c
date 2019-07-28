@@ -23,6 +23,7 @@
  * 12-JUL-18 use logging
  * 14-JUL-18 integrate webfrontend
  * 12-JUL-19 implemented second SIO
+ * 27-JUL-19 more correct emulation of IMSAI SIO-2
  */
 
 #include <unistd.h>
@@ -77,26 +78,26 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	input I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256]) (void) = {
-	io_trap_in,		/* port 0 */
-	io_trap_in,		/* port 1 */
-	imsai_sio1_data_in,	/* port 2 */ /* SIO 1 connected to console */
+	imsai_sio_nofun_in,	/* IMSAI SIO-2 */
+	imsai_sio_nofun_in,	/* port 1 */
+	imsai_sio1_data_in,	/* port 2 */ /* Channel A, console */
 	imsai_sio1_status_in,	/* port 3 */
-	imsai_kbd_data_in,	/* port 4 */ /* keyboard for VIO */
+	imsai_kbd_data_in,	/* port 4 */ /* Channel B, keyboard for VIO */
 	imsai_kbd_status_in,	/* port 5 */
-	io_trap_in,		/* port 6 */
-	io_trap_in,		/* port 7 */
-	io_no_card_in,		/* port 8 */ /* SIO Control for 1 and 2 */
-	io_trap_in,		/* port 9 */
-	io_trap_in,		/* port 10 */
-	io_trap_in,		/* port 11 */
-	io_trap_in,		/* port 12 */
-	io_trap_in,		/* port 13 */
+	imsai_sio_nofun_in,	/* port 6 */
+	imsai_sio_nofun_in,	/* port 7 */
+	imsai_sio_nofun_in,	/* port 8 */ /* SIO Control for A and B */
+	imsai_sio_nofun_in,	/* port 9 */
+	imsai_sio_nofun_in,	/* port 10 */
+	imsai_sio_nofun_in,	/* port 11 */
+	imsai_sio_nofun_in,	/* port 12 */
+	imsai_sio_nofun_in,	/* port 13 */
 #ifdef HAS_DAZZLER
 	cromemco_dazzler_flags_in, /* port 14 */
 #else
-	io_trap_in,		/* port 14 */
+	imsai_sio_nofun_in,	/* port 14 */
 #endif /* HAS_DAZZLER */
-	io_trap_in,		/* port 15 */
+	imsai_sio_nofun_in,	/* port 15 */
 #ifdef HAS_CYCLOPS
 	cromemco_88ccc_ctrl_a_in, /* port 16 */
 #else
@@ -348,26 +349,26 @@ BYTE (*port_in[256]) (void) = {
  *	output I/O port (0 - 255), to do the required I/O.
  */
 static void (*port_out[256]) (BYTE) = {
-	io_trap_out,		/* port 0 */
-	io_trap_out,		/* port 1 */
-	imsai_sio1_data_out,	/* port 2 */ /* SIO 1 connected to console */
+	imsai_sio_nofun_out,	/* IMSAI SIO-2 */
+	imsai_sio_nofun_out,	/* port 1 */
+	imsai_sio1_data_out,	/* port 2 */ /* Channel A, console */
 	imsai_sio1_status_out,	/* port 3 */
-	io_no_card_out,		/* port 4 */
-	io_no_card_out,		/* port 5 */
-	io_trap_out,		/* port 6 */
-	io_trap_out,		/* port 7 */
-	io_no_card_out,		/* port 8 */ /* SIO Control for 1 and 2 */
-	io_trap_out,		/* port 9 */
-	io_trap_out,		/* port 10 */
-	io_trap_out,		/* port 11 */
-	io_trap_out,		/* port 12 */
-	io_trap_out,		/* port 13 */
+	imsai_sio_nofun_out,	/* port 4 */ /* Channel B, keyboard */
+	imsai_sio_nofun_out,	/* port 5 */
+	imsai_sio_nofun_out,	/* port 6 */
+	imsai_sio_nofun_out,	/* port 7 */
+	imsai_sio_nofun_out,	/* port 8 */ /* SIO Control for A and B */
+	imsai_sio_nofun_out,	/* port 9 */
+	imsai_sio_nofun_out,	/* port 10 */
+	imsai_sio_nofun_out,	/* port 11 */
+	imsai_sio_nofun_out,	/* port 12 */
+	imsai_sio_nofun_out,	/* port 13 */
 #ifdef HAS_DAZZLER
 	cromemco_dazzler_ctl_out,	/* port 14 */
 	cromemco_dazzler_format_out,	/* port 15 */
 #else
-	io_trap_out,		/* port 14 */
-	io_trap_out,		/* port 15 */
+	imsai_sio_nofun_out,	/* port 14 */
+	imsai_sio_nofun_out,	/* port 15 */
 #endif /* HAS_DAZZLER */
 #ifdef HAS_CYCLOPS
 	cromemco_88ccc_ctrl_a_out, /* port 16 */
@@ -640,7 +641,7 @@ void init_io(void)
 
 	imsai_fif_reset();
 
-	/* create local socket for SIIO */
+	/* create local socket for SIO */
 	init_unix_server_socket(&ucons[0], "imsaisim.sio2");
 }
 

@@ -20,7 +20,11 @@
  * 13-JUL-18 use logging
  * 14-JUL-18 integrate webfrontend
  * 12-JUL-19 implemented second SIO
+ * 27-JUL-19 more correct emulation
  */
+
+extern BYTE imsai_sio_nofun_in(void);
+extern void imsai_sio_nofun_out(BYTE);
 
 extern BYTE imsai_sio1_status_in(void), imsai_sio2_status_in(void);
 extern void imsai_sio1_status_out(BYTE), imsai_sio2_status_out(BYTE);
