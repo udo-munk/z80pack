@@ -104,8 +104,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 16 */
 #endif
 	io_trap_in,		/* port 17 */
-	imsai_sio2_data_in,	/* port 18 */ /* SIO 2 connected to socket */
-	imsai_sio2_status_in,	/* port 19 */ /*       "       */
+	io_trap_in,		/* port 18 */
+	io_trap_in,		/* port 19 */
 	io_pport_in,		/* port 20 */ /* parallel port */
 	io_pport_in,		/* port 21 */ /*       "       */
 	io_trap_in,		/* port 22 */
@@ -118,22 +118,22 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 29 */
 	io_trap_in,		/* port 30 */
 	io_trap_in,		/* port 31 */
-	io_trap_in,		/* port 32 */
-	io_trap_in,		/* port 33 */
-	io_trap_in,		/* port 34 */
-	io_trap_in,		/* port 35 */
-	io_trap_in,		/* port 36 */
-	io_trap_in,		/* port 37 */
-	io_trap_in,		/* port 38 */
-	io_trap_in,		/* port 39 */
-	io_trap_in,		/* port 40 */
-	io_trap_in,		/* port 41 */
-	io_trap_in,		/* port 42 */
-	io_trap_in,		/* port 43 */
-	io_trap_in,		/* port 44 */
-	io_trap_in,		/* port 45 */
-	io_trap_in,		/* port 46 */
-	io_trap_in,		/* port 47 */
+	imsai_sio_nofun_in,	/* port 32 */ /* IMSAI SIO-2 */
+	imsai_sio_nofun_in,	/* port 33 */
+	imsai_sio2_data_in,	/* port 34 */ /* Channel A, UNIX socket */
+	imsai_sio2_status_in,	/* port 35 */
+	imsai_sio_nofun_in,	/* port 36 */ /* Channel B, not connected */
+	imsai_sio_nofun_in,	/* port 37 */
+	imsai_sio_nofun_in,	/* port 38 */
+	imsai_sio_nofun_in,	/* port 39 */ /* SIO Control for A and B */
+	imsai_sio_nofun_in,	/* port 40 */
+	imsai_sio_nofun_in,	/* port 41 */
+	imsai_sio_nofun_in,	/* port 42 */
+	imsai_sio_nofun_in,	/* port 43 */
+	imsai_sio_nofun_in,	/* port 44 */
+	imsai_sio_nofun_in,	/* port 45 */
+	imsai_sio_nofun_in,	/* port 46 */
+	imsai_sio_nofun_in,	/* port 47 */
 	io_trap_in,		/* port 48 */
 	io_trap_in,		/* port 49 */
 	io_trap_in,		/* port 50 */
@@ -377,9 +377,9 @@ static void (*port_out[256]) (BYTE) = {
 #else
 	io_trap_out,		/* port 16 */
 	io_trap_out,		/* port 17 */
-	imsai_sio2_data_out,	/* port 18 */ /* SIO 2 connected to socket */
+	io_trap_out,		/* port 18 */
 #endif
-	imsai_sio2_status_out,	/* port 19 */ /*       "       */
+	io_trap_out,		/* port 19 */
 	io_no_card_out,		/* port 20 */ /* parallel port */
 	io_no_card_out,		/* port 21 */ /*       "       */
 	io_trap_out,		/* port 22 */
@@ -392,22 +392,22 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 29 */
 	io_trap_out,		/* port 30 */
 	io_trap_out,		/* port 31 */
-	io_trap_out,		/* port 32 */
-	io_trap_out,		/* port 33 */
-	io_trap_out,		/* port 34 */
-	io_trap_out,		/* port 35 */
-	io_trap_out,		/* port 36 */
-	io_trap_out,		/* port 37 */
-	io_trap_out,		/* port 38 */
-	io_trap_out,		/* port 39 */
-	io_trap_out,		/* port 40 */
-	io_trap_out,		/* port 41 */
-	io_trap_out,		/* port 42 */
-	io_trap_out,		/* port 43 */
-	io_trap_out,		/* port 44 */
-	io_trap_out,		/* port 45 */
-	io_trap_out,		/* port 46 */
-	io_trap_out,		/* port 47 */
+	imsai_sio_nofun_out,	/* port 32 */ /* IMSAI SIO-2 */
+	imsai_sio_nofun_out,	/* port 33 */
+	imsai_sio2_data_out,	/* port 34 */ /* Channel A, UNIX socket */
+	imsai_sio2_status_out,	/* port 35 */
+	imsai_sio_nofun_out,	/* port 36 */ /* Channel B, not connected */
+	imsai_sio_nofun_out,	/* port 37 */
+	imsai_sio_nofun_out,	/* port 38 */
+	imsai_sio_nofun_out,	/* port 39 */
+	imsai_sio_nofun_out,	/* port 40 */
+	imsai_sio_nofun_out,	/* port 41 */ /* SIO Control for A and B */
+	imsai_sio_nofun_out,	/* port 42 */
+	imsai_sio_nofun_out,	/* port 43 */
+	imsai_sio_nofun_out,	/* port 44 */
+	imsai_sio_nofun_out,	/* port 45 */
+	imsai_sio_nofun_out,	/* port 46 */
+	imsai_sio_nofun_out,	/* port 47 */
 	io_trap_out,		/* port 48 */
 	io_trap_out,		/* port 49 */
 	io_trap_out,		/* port 50 */
