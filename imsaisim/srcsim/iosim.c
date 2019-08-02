@@ -125,8 +125,8 @@ BYTE (*port_in[256]) (void) = {
 	imsai_sio_nofun_in,	/* port 36 */ /* Channel B, not connected */
 	imsai_sio_nofun_in,	/* port 37 */
 	imsai_sio_nofun_in,	/* port 38 */
-	imsai_sio_nofun_in,	/* port 39 */ /* SIO Control for A and B */
-	imsai_sio_nofun_in,	/* port 40 */
+	imsai_sio_nofun_in,	/* port 39 */
+	imsai_sio_nofun_in,	/* port 40 */ /* SIO Control for A and B */
 	imsai_sio_nofun_in,	/* port 41 */
 	imsai_sio_nofun_in,	/* port 42 */
 	imsai_sio_nofun_in,	/* port 43 */
@@ -400,8 +400,8 @@ static void (*port_out[256]) (BYTE) = {
 	imsai_sio_nofun_out,	/* port 37 */
 	imsai_sio_nofun_out,	/* port 38 */
 	imsai_sio_nofun_out,	/* port 39 */
-	imsai_sio_nofun_out,	/* port 40 */
-	imsai_sio_nofun_out,	/* port 41 */ /* SIO Control for A and B */
+	imsai_sio_nofun_out,	/* port 40 */ /* SIO Control for A and B */
+	imsai_sio_nofun_out,	/* port 41 */
 	imsai_sio_nofun_out,	/* port 42 */
 	imsai_sio_nofun_out,	/* port 43 */
 	imsai_sio_nofun_out,	/* port 44 */
