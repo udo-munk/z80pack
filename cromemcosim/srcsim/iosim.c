@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for a Cromemco Z-1 system
@@ -26,6 +26,7 @@
  * 17-MAY-18 implemented hardware control
  * 08-JUN-18 moved hardware initialisation and reset to iosim
  * 18-JUL-18 use logging
+ * 08-SEP-19 bug fixes provided by Alan Cox
  */
 
 #include <pthread.h>
@@ -895,6 +896,10 @@ void *timing(void *arg)
 		if (index_pulse)
 			index_pulse++;
 
+		/* the tty transmit clear happens irrespective of anything */
+		if (uart0a_tbe == 0)
+			uart0a_tbe = 2;
+
 		/* count down the timers */
 		/* 64 usec steps, so 15*64 usec per loop iteration */
 		if (uart0a_timer1 > 0) {
@@ -983,7 +988,9 @@ void *timing(void *arg)
 		}
 
 		/* UART 0A transmit buffer empty */
-		if (uart0a_tbe == 0) {
+		/* We use 2 to mean has gone empty->full but an IRQ is
+		   pending */
+		if (uart0a_tbe == 2) {
 			uart0a_tbe = 1;
 			if (uart0a_int_mask & 32) {
 				uart0a_int = 0xef;
