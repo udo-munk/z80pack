@@ -216,7 +216,7 @@ void config_disk(int fd)
 		disks[disk].disk_s = TWO;
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8DD;
-		disks[disk].sec0 = SPT8SD;
+		disks[disk].sec0 = SPT8DD;
 		disks[disk].disk_d0 = DOUBLE;
  		break;
 
