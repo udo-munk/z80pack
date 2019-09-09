@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -30,6 +30,7 @@
  * 23-APR-2018 cleanup
  * 20-MAY-2018 improved reset
  * 15-JUL-2018 use logging
+ * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
  */
 
 /*
@@ -50,6 +51,7 @@ typedef struct {
 	int sectors;			/* # sectors on tracks > 0 side 0 */
 	int sec0;			/* # sectors on track 0, side 0 */
 	enum Disk_mode disk_m;		/* R/W or R/O mode */
+	enum Disk_density disk_d0;	/* Density of track 0 */
 } Diskdef;
 
 extern BYTE fdc_flags;

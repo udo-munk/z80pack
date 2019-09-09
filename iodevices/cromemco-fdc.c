@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -30,6 +30,7 @@
  * 23-APR-2018 cleanup
  * 20-MAY-2018 improved reset
  * 15-JUL-2018 use logging
+ * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
  */
 
 #include <unistd.h>
@@ -88,10 +89,10 @@ static int headloaded;		/* head loaded flag */
 
 /* these are our disk drives, 8" SS SD initially */
 static Diskdef disks[4] = {
-	{ "drivea.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE },
-	{ "driveb.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE },
-	{ "drivec.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE },
-	{ "drived.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE }
+	{ "drivea.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SPT8SD },
+	{ "driveb.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SPT8SD },
+	{ "drivec.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SPT8SD },
+	{ "drived.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SPT8SD }
 };
 
 /*
@@ -136,6 +137,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5SD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 184320:		/* 5.25" DS SD */
@@ -145,6 +147,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5SD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 201984:		/* 5.25" SS DD */
@@ -154,6 +157,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5DD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 406784:		/* 5.25" DS DD */
@@ -163,6 +167,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5DD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 256256:		/* 8" SS SD */
@@ -172,6 +177,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8SD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 512512:		/* 8" DS SD */
@@ -181,6 +187,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8SD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 625920:		/* 8" SS DD */
@@ -190,6 +197,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8DD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 1256704:		/* 8" DS DD */
@@ -199,9 +207,21 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8DD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
+	case 1261568:		/* 8" DS DD no SD track */
+		disks[disk].disk_t = LARGE;
+		disks[disk].disk_d = DOUBLE;
+		disks[disk].disk_s = TWO;
+		disks[disk].tracks = TRK8;
+		disks[disk].sectors = SPT8DD;
+		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = DOUBLE;
+ 		break;
+
 	default:
+		LOGW(TAG, "disk image %s has unknown format", disks[disk].fn);
 		disks[disk].disk_t = UNKNOWN;
 		break;
 	}
@@ -223,12 +243,17 @@ long get_pos(void)
 
 	    /* double density */
 	    } else {
-		if (fdc_track == 0) {
-		  pos = (fdc_sec - 1) * SEC_SZSD;
+	    	if (disks[disk].disk_d0 == SINGLE) {
+			if (fdc_track == 0) {
+			  pos = (fdc_sec - 1) * SEC_SZSD;
+			  } else {
+			  pos = (disks[disk].sec0 * SEC_SZSD) +
+				((fdc_track - 1) * disks[disk].sectors * SEC_SZDD) +
+				((fdc_sec - 1) * SEC_SZDD);
+			}
 		} else {
-		  pos = (disks[disk].sec0 * SEC_SZSD) +
-			((fdc_track - 1) * disks[disk].sectors * SEC_SZDD) +
-			((fdc_sec - 1) * SEC_SZDD);
+			pos = (fdc_track * disks[disk].sectors * SEC_SZDD) + 
+				(fdc_sec - 1) * SEC_SZDD;
 		}
 	    }
 
@@ -247,13 +272,19 @@ long get_pos(void)
 
 	    /* double density */
 	    } else {
-		if ((fdc_track == 0) && (side == 0)) {
-		    pos = (fdc_sec - 1) * SEC_SZSD;
-		    goto done;
-		}
-		if ((fdc_track == 0) && (side == 1)) {
-		    pos = disks[disk].sec0 * SEC_SZSD + (fdc_sec - 1) * SEC_SZDD;
-		    goto done;
+	    	if (disks[disk].disk_d0 == SINGLE) {
+			if ((fdc_track == 0) && (side == 0)) {
+			    pos = (fdc_sec - 1) * SEC_SZSD;
+			    goto done;
+			}
+			if ((fdc_track == 0) && (side == 1)) {
+			    pos = disks[disk].sec0 * SEC_SZSD + (fdc_sec - 1) * SEC_SZDD;
+			    goto done;
+			}
+			pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors * SEC_SZDD;
+			pos += (fdc_track - 1) * 2 * disks[disk].sectors * SEC_SZDD;
+		} else {
+			pos = fdc_track * 2 * disks[disk].sectors * SEC_SZDD;
 		}
 		pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors * SEC_SZDD;
 		pos += (fdc_track - 1) * 2 * disks[disk].sectors * SEC_SZDD;
