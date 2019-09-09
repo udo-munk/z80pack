@@ -3,13 +3,9 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of an IMSAI FIF S100 board
- *
- * This emulation was reverse engineered from running IMDOS on the machine,
- * and from reading the CP/M 1.3 BIOS and boot sources from IMSAI.
- * I do not have the manual for this board, so there still might be bugs.
  *
  * History:
  * 18-JAN-2014 first working version finished
@@ -56,10 +52,12 @@
 #define FMT_TRACK	3
 #define VERIFY_DATA	4
 
-/* 8" standard disks */
+/* sector size */
 #define SEC_SZ		128
-#define SPT		26
-#define TRK		77
+
+/* 8" standard disks */
+#define SPT8		26
+#define TRK8		77
 
 static const char *TAG = "FIF";
 
@@ -171,6 +169,7 @@ void imsai_fif_out(BYTE data)
  *	Here we do the disk I/O.
  *
  *	The status byte in the disk descriptor is set as follows:
+ *
  *	1 - OK
  *	2 - illegal drive
  *	3 - no disk in drive
@@ -181,15 +180,11 @@ void imsai_fif_out(BYTE data)
  *	8 - write error
  *	15 - invalid command
  *
- *	These error codes will abort disk I/O, but this are not the ones
- *	the real controller would set. Without FIF manual the real error
- *	codes are not known yet.
- *	In the original IMSAI BIOS the upper 4 bits of the error code
- *	are described as "error class" and used as error code for CP/M.
- *	One error code is explicitely tested, so it is known:
- *		0A1H - drive not ready
- *	The IMSAI BIOS waits forever until the drive door is closed, for
- *	now I leave the used code as is, so that the IO is aborted.
+ *	All error codes will abort disk I/O, but these are not the ones
+ *	the real controller will set.
+ *	For example the real controller will set 0A1H for drive not
+ *	ready and the IMSAI BIOS waits forever, until a disk is inserted
+ *	and the drive door closed.
  */
 void disk_io(int addr)
 {
@@ -201,6 +196,8 @@ void disk_io(int addr)
 	static int track;		/* disk track */
 	static int sector;		/* disk sector */
 	static int dma_addr;		/* DMA address */
+	static int spt;			/* sectors per track */
+	static int maxtrk;		/* max tracks of disk */
 	static int disk;		/* internal disk no */
 	static char blksec[SEC_SZ];
 
@@ -223,18 +220,26 @@ void disk_io(int addr)
 	/* convert IMSAI unit bits to internal disk no */
 	switch (unit) {
 	case 1:	/* IMDOS drive A: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 0;
 		break;
 
 	case 2:	/* IMDOS drive B: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 1;
 		break;
 
 	case 4: /* IMDOS drive C: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 2;
 		break;
 
 	case 8: /* IMDOS drive D: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 3;
 		break;
 
@@ -272,15 +277,15 @@ void disk_io(int addr)
 	/* we have a disk, try wanted disk operation */
 	switch(cmd) {
 	case WRITE_SEC:
-		if (track >= TRK) {
+		if (track >= maxtrk) {
 			dma_write(addr + DD_RESULT, 4);
 			goto done;
 		}
-		if (sector > SPT) {
+		if (sector > spt) {
 			dma_write(addr + DD_RESULT, 5);
 			goto done;
 		}
-		pos = (track * SPT + sector - 1) * SEC_SZ;
+		pos = (track * spt + sector - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
 			dma_write(addr + DD_RESULT, 6);
 			goto done;
@@ -297,15 +302,15 @@ void disk_io(int addr)
 		break;
 
 	case READ_SEC:
-		if (track >= TRK) {
+		if (track >= maxtrk) {
 			dma_write(addr + DD_RESULT, 4);
 			goto done;
 		}
-		if (sector > SPT) {
+		if (sector > spt) {
 			dma_write(addr + DD_RESULT, 5);
 			goto done;
 		}
-		pos = (track * SPT + sector - 1) * SEC_SZ;
+		pos = (track * spt + sector - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
 			dma_write(addr + DD_RESULT, 6);
 			goto done;
@@ -323,17 +328,17 @@ void disk_io(int addr)
 
 	case FMT_TRACK:
 		memset(&blksec, 0xe5, SEC_SZ);
-		if (track >= TRK) {
+		if (track >= maxtrk) {
 			dma_write(addr + DD_RESULT, 4);
 			goto done;
 		}
-		pos = track * SPT * SEC_SZ;
+		pos = track * spt * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
 			dma_write(addr + DD_RESULT, 6);
 			goto done;
 		}
 		bus_request = 1;
-		for (i = 0; i < SPT; i++) {
+		for (i = 0; i < spt; i++) {
 			if (write(fd, &blksec, SEC_SZ) != SEC_SZ) {
 				dma_write(addr + DD_RESULT, 8);
 				goto done;

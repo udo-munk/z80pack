@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of an IMSAI FIF S100 board
  *
