@@ -75,19 +75,26 @@ static const char *TAG = "FIF";
 extern char *disks[];
 #else
 /* these are our disk drives */
+#ifdef LARGEDISK
 static char *disks[9] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",
 	"drived.dsk",
-#ifdef LARGEDISK
 	NULL,
 	NULL,
 	NULL,
 	NULL,
 	"drivei.dsk"
-#endif
 };
+#else
+static char *disks[4] = {
+	"drivea.dsk",
+	"driveb.dsk",
+	"drivec.dsk",
+	"drived.dsK"
+};
+#endif
 #endif
 
 static char fn[MAX_LFN];	/* path/filename for disk image */
@@ -216,6 +223,7 @@ void disk_io(int addr)
 	static int spt;			/* sectors per track */
 	static int maxtrk;		/* max tracks of disk */
 	static int disk;		/* internal disk no */
+	static struct stat s;
 	static char blksec[SEC_SZ];
 
 	LOGD(TAG, "disk descriptor at %04x", addr);
@@ -281,14 +289,25 @@ void disk_io(int addr)
 		return;
 	}
 
-	/* try to open disk image for the wanted operation */
+	/* try to open disk image */
 	dsk_path();
 	strcat(fn, "/");
 	strcat(fn, disks[disk]);
 	if (cmd == FMT_TRACK) {
-		if (track == 0)
-			unlink(fn);
-		fd = open(fn, O_RDWR|O_CREAT, 0644);
+		/* can only format floppy disks */
+		if (disk <= 3) {
+			if (track == 0)
+				unlink(fn);
+			fd = open(fn, O_RDWR|O_CREAT, 0644);
+		} else {
+			dma_write(addr + DD_RESULT, 3);
+			return;
+		}
+		if (fd == -1) {
+			dma_write(addr + DD_RESULT, 3);
+			return;
+		}
+		goto do_format;
 	} else if (cmd == READ_SEC) {
 		fd = open(fn, O_RDONLY);
 	} else {
@@ -299,7 +318,18 @@ void disk_io(int addr)
 		return;
 	}
 
-	/* we have a disk, try wanted disk operation */
+	/* check for correct disk size if not formatting a new disk */
+	fstat(fd, &s);
+	if (((disk <= 3) && (s.st_size != 256256)) ||
+	   ((disk == 8) && (s.st_size != 4177920))) {
+		dma_write(addr + DD_RESULT, 3);
+		close(fd);
+		return;
+	}
+
+do_format:
+
+	/* try wanted disk operation */
 	switch(cmd) {
 	case WRITE_SEC:
 		if (track >= maxtrk) {
