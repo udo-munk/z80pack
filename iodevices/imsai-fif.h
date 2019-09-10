@@ -21,7 +21,8 @@
  * 19-DEC-2016 use the new memory interface for DMA access
  * 22-JUN-2017 added reset function
  * 19-MAY-2018 improved reset
- * 13-JUL-2018 use logging
+ * 13-JUL-2018 use logging & integrate disk manager
+ * 10-SEP-2019 added support for a z80pack 4 MB harddisk
  */
 
 extern BYTE imsai_fif_in(void);

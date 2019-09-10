@@ -22,6 +22,7 @@
  * 22-JUN-2017 added reset function
  * 19-MAY-2018 improved reset
  * 13-JUL-2018 use logging & integrate disk manager
+ * 10-SEP-2019 added support for a z80pack 4 MB harddisk
  */
 
 #include <unistd.h>
@@ -36,6 +37,9 @@
 #include "memory.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+
+/* support a z80pack 4 MB drive */
+#define LARGEDISK
 
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
@@ -59,17 +63,30 @@
 #define SPT8		26
 #define TRK8		77
 
+#ifdef LARGEDISK
+/* z80pack 4 MB drive */
+#define SPTHD		128
+#define TRKHD		255
+#endif
+
 static const char *TAG = "FIF";
 
 #ifdef HAS_DISKMANAGER
 extern char *disks[];
 #else
 /* these are our disk drives */
-static char *disks[4] = {
+static char *disks[9] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",
-	"drived.dsk"
+	"drived.dsk",
+#ifdef LARGEDISK
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	"drivei.dsk"
+#endif
 };
 #endif
 
@@ -242,6 +259,14 @@ void disk_io(int addr)
 		maxtrk = TRK8;
 		disk = 3;
 		break;
+
+#ifdef LARGEDISK
+	case 15: /* z80pack 4 MB drive */
+		spt = SPTHD;
+		maxtrk = TRKHD;
+		disk = 8;
+		break;
+#endif
 
 	default: /* set error code for all other drives */
 		 /* IMDOS sends unit 3 intermediate for drive C: & D: */
