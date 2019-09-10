@@ -239,21 +239,23 @@ long get_pos(void)
 
 	    /* single density */
 	    if (disks[disk].disk_d == SINGLE) {
-	      pos = (fdc_track * disks[disk].sectors + fdc_sec - 1) * SEC_SZSD;
+		pos = (fdc_track * disks[disk].sectors + fdc_sec - 1) *
+		      SEC_SZSD;
 
 	    /* double density */
 	    } else {
 	    	if (disks[disk].disk_d0 == SINGLE) {
-			if (fdc_track == 0) {
-			  pos = (fdc_sec - 1) * SEC_SZSD;
-			  } else {
-			  pos = (disks[disk].sec0 * SEC_SZSD) +
-				((fdc_track - 1) * disks[disk].sectors * SEC_SZDD) +
-				((fdc_sec - 1) * SEC_SZDD);
-			}
+		    if (fdc_track == 0) {
+			pos = (fdc_sec - 1) * SEC_SZSD;
+		    } else {
+			pos = (disks[disk].sec0 * SEC_SZSD) +
+			      ((fdc_track - 1) * disks[disk].sectors
+			      * SEC_SZDD) +
+			      ((fdc_sec - 1) * SEC_SZDD);
+		    }
 		} else {
-			pos = (fdc_track * disks[disk].sectors * SEC_SZDD) + 
-				(fdc_sec - 1) * SEC_SZDD;
+		    pos = (fdc_track * disks[disk].sectors * SEC_SZDD) + 
+		 	  (fdc_sec - 1) * SEC_SZDD;
 		}
 	    }
 
@@ -278,15 +280,19 @@ long get_pos(void)
 			    goto done;
 			}
 			if ((fdc_track == 0) && (side == 1)) {
-			    pos = disks[disk].sec0 * SEC_SZSD + (fdc_sec - 1) * SEC_SZDD;
+			    pos = disks[disk].sec0 * SEC_SZSD +
+				  (fdc_sec - 1) * SEC_SZDD;
 			    goto done;
 			}
-			pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors * SEC_SZDD;
-			pos += (fdc_track - 1) * 2 * disks[disk].sectors * SEC_SZDD;
+			pos = disks[disk].sec0 * SEC_SZSD +
+			      disks[disk].sectors * SEC_SZDD;
+			pos += (fdc_track - 1) * 2 * disks[disk].sectors
+			       * SEC_SZDD;
 		} else {
 			pos = fdc_track * 2 * disks[disk].sectors * SEC_SZDD;
 		}
-		pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors * SEC_SZDD;
+		pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors
+		      * SEC_SZDD;
 		pos += (fdc_track - 1) * 2 * disks[disk].sectors * SEC_SZDD;
 		if (side == 1)
 			pos += disks[disk].sectors * SEC_SZDD;
