@@ -92,7 +92,7 @@ static char *disks[4] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",
-	"drived.dsK"
+	"drived.dsk"
 };
 #endif
 #endif
