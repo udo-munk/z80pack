@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -131,6 +131,20 @@ static int op_rst0(void), op_rst1(void), op_rst2(void), op_rst3(void);
 static int op_rst4(void), op_rst5(void), op_rst6(void), op_rst7(void);
 static int op_undoc_nop(void), op_undoc_jmp(void);
 static int op_undoc_ret(void), op_undoc_call(void);
+
+/*
+ * Function to update address bus LED's during execution of
+ * instructions using the 16bit incrementer/decrementer
+ * logic, as dicovered by Mike Douglas.
+ */
+#ifdef FRONTPANEL
+static void inline adr_leds(WORD data)
+{
+	fp_led_address = data;
+	fp_clock++;
+	fp_sampleData();
+}
+#endif
 
 /*
  *	This function builds the 8080 central processing unit.
@@ -1216,6 +1230,9 @@ static int op_lxispnn(void)		/* LXI SP,nn */
 
 static int op_sphl(void)		/* SPHL */
 {
+#ifdef FRONTPANEL
+	adr_leds(H << 8 | L);
+#endif
 	SP = (H << 8) + L;
 	return(5);
 }
@@ -1244,6 +1261,9 @@ static int op_shldnn(void)		/* SHLD nn */
 
 static int op_inxb(void)		/* INX B */
 {
+#ifdef FRONTPANEL
+	adr_leds(B << 8 | C);
+#endif
 	C++;
 	if (!C)
 		B++;
@@ -1252,6 +1272,9 @@ static int op_inxb(void)		/* INX B */
 
 static int op_inxd(void)		/* INX D */
 {
+#ifdef FRONTPANEL
+	adr_leds(D << 8 | E);
+#endif
 	E++;
 	if (!E)
 		D++;
@@ -1260,6 +1283,9 @@ static int op_inxd(void)		/* INX D */
 
 static int op_inxh(void)		/* INX H */
 {
+#ifdef FRONTPANEL
+	adr_leds(H << 8 | L);
+#endif
 	L++;
 	if (!L)
 		H++;
@@ -1268,12 +1294,18 @@ static int op_inxh(void)		/* INX H */
 
 static int op_inxsp(void)		/* INX SP */
 {
+#ifdef FRONTPANEL
+	adr_leds(SP);
+#endif
 	SP++;
 	return(5);
 }
 
 static int op_dcxb(void)		/* DCX B */
 {
+#ifdef FRONTPANEL
+	adr_leds(B << 8 | C);
+#endif
 	C--;
 	if (C == 0xff)
 		B--;
@@ -1282,6 +1314,9 @@ static int op_dcxb(void)		/* DCX B */
 
 static int op_dcxd(void)		/* DCX D */
 {
+#ifdef FRONTPANEL
+	adr_leds(D << 8 | E);
+#endif
 	E--;
 	if (E == 0xff)
 		D--;
@@ -1290,6 +1325,9 @@ static int op_dcxd(void)		/* DCX D */
 
 static int op_dcxh(void)		/* DCX H */
 {
+#ifdef FRONTPANEL
+	adr_leds(H << 8 | L);
+#endif
 	L--;
 	if (L == 0xff)
 		H--;
@@ -1298,6 +1336,9 @@ static int op_dcxh(void)		/* DCX H */
 
 static int op_dcxsp(void)		/* DCX SP */
 {
+#ifdef FRONTPANEL
+	adr_leds(SP);
+#endif
 	SP--;
 	return(5);
 }
