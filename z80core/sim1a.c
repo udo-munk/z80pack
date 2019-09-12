@@ -138,7 +138,7 @@ static int op_undoc_ret(void), op_undoc_call(void);
  * logic, as dicovered by Mike Douglas.
  */
 #ifdef FRONTPANEL
-static void inline adr_leds(WORD data)
+static inline void adr_leds(WORD data)
 {
 	fp_led_address = data;
 	fp_clock++;
