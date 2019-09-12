@@ -26,3 +26,15 @@ operator precedence.
 Christophe Staïesse <chastai@skynet.be>
 
 for the Intel 8080 disassembler.
+
+
+Alan Cox
+
+for building FUZIX on the machines and various bug fixes,
+improvements and helpful feedback,
+
+
+David McNaughton <dave@mackeneight.net>
+
+For building the IMSAI 8080esp replica kit and numerous
+additions and improvements.
