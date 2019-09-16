@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -86,7 +86,7 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2018 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
 #define RELEASE	"1.37-dev"
 
 #define MAX_LFN		4096		/* maximum long file name length */

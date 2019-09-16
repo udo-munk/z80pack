@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -104,19 +104,20 @@ int getkey(void)
 void sleep_ms(int time)
 {
 	struct timespec timer, rem;
+	int err;
 
 	timer.tv_sec = 0;
 	timer.tv_nsec = 1000000L * time;
 
 again:
 	if (nanosleep(&timer, &rem) == -1) {
-		if (errno == EINTR) {
+		if ((err = errno) == EINTR) {
 			/* interrupted, resume with the remaining time */
 			memcpy(&timer, &rem, sizeof(struct timespec));
 			goto again;
 		} else {
 			/* some error */
-			LOGE(TAG, "sleep_ms(%d)", time);
+			LOGE(TAG, "sleep_ms(%d) %s", time, strerror(err));
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}

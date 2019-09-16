@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * Configuration for an Altair 8800 system
  *
@@ -54,12 +54,12 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2018 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
 #define RELEASE	"1.37-dev"
 
 #define USR_COM	"Altair 8800 Simulation"
 #define USR_REL	"1.18"
-#define USR_CPR	"Copyright (C) 2008-2018 by Udo Munk"
+#define USR_CPR	"Copyright (C) 2008-2019 by Udo Munk"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
