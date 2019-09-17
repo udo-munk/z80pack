@@ -258,6 +258,8 @@ BYTE imsai_sio2a_status_in(void)
 			sio2a_stat |= 2;
 		if (p[0].revents & POLLOUT)
 			sio2a_stat |= 1;
+	} else {
+		sio2a_stat = 0;
 	}
 
 	gettimeofday(&sio2a_t1, NULL);
