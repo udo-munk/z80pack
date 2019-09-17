@@ -23,6 +23,7 @@
  * 24-MAR-17 added configuration for SIO 0
  * 18-JUL-18 use logging
  * 12-JUL-19 implemented second SIO
+ * 17-SEP-19 more consistent SIO naming
  */
 
 extern void config(void);

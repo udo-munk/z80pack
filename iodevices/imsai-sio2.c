@@ -21,6 +21,7 @@
  * 14-JUL-18 integrate webfrontend
  * 12-JUL-19 implemented second SIO
  * 27-JUL-19 more correct emulation
+ * 17-SEP-19 more consistent SIO naming
  */
 
 #include <unistd.h>
@@ -43,21 +44,21 @@
 
 static const char *TAG = "SIO";
 
-int sio1_upper_case;
-int sio1_strip_parity;
-int sio1_drop_nulls;
-int sio1_baud_rate = 115200;
+int sio1a_upper_case;
+int sio1a_strip_parity;
+int sio1a_drop_nulls;
+int sio1a_baud_rate = 115200;
 
-static struct timeval sio1_t1, sio1_t2;
-static BYTE sio1_stat;
+static struct timeval sio1a_t1, sio1a_t2;
+static BYTE sio1a_stat;
 
-int sio2_upper_case;
-int sio2_strip_parity;
-int sio2_drop_nulls;
-int sio2_baud_rate = 115200;
+int sio2a_upper_case;
+int sio2a_strip_parity;
+int sio2a_drop_nulls;
+int sio2a_baud_rate = 115200;
 
-static struct timeval sio2_t1, sio2_t2;
-static BYTE sio2_stat;
+static struct timeval sio2a_t1, sio2a_t2;
+static BYTE sio2a_stat;
 
 /*
  * the IMSAI SIO-2 occupies 16 I/O ports, from which only
@@ -80,25 +81,25 @@ void imsai_sio_nofun_out(BYTE data)
  * bit 0 = 1, transmitter ready to write character to tty
  * bit 1 = 1, character available for input from tty
  */
-BYTE imsai_sio1_status_in(void)
+BYTE imsai_sio1a_status_in(void)
 {
 	extern int time_diff(struct timeval *, struct timeval *);
 
 	struct pollfd p[1];
 	int tdiff;
 
-	gettimeofday(&sio1_t2, NULL);
-	tdiff = time_diff(&sio1_t1, &sio1_t2);
-	if (sio1_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
-			return(sio1_stat);
+	gettimeofday(&sio1a_t2, NULL);
+	tdiff = time_diff(&sio1a_t1, &sio1a_t2);
+	if (sio1a_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1a_baud_rate))
+			return(sio1a_stat);
 
 #ifdef HAS_NETSERVER
 	if (net_device_alive(DEV_SIO1)) {
 		if (net_device_poll(DEV_SIO1)) {
-			sio1_stat |= 2;
+			sio1a_stat |= 2;
 		}
-		sio1_stat |= 1;
+		sio1a_stat |= 1;
 	} else 
 #endif
 	{
@@ -107,20 +108,20 @@ BYTE imsai_sio1_status_in(void)
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN)
-			sio1_stat |= 2;
+			sio1a_stat |= 2;
 		if (p[0].revents & POLLOUT)
-			sio1_stat |= 1;
+			sio1a_stat |= 1;
 	}
 
-	gettimeofday(&sio1_t1, NULL);
+	gettimeofday(&sio1a_t1, NULL);
 
-	return(sio1_stat);
+	return(sio1a_stat);
 }
 
 /*
  * write status register
  */
-void imsai_sio1_status_out(BYTE data)
+void imsai_sio1a_status_out(BYTE data)
 {
 	data = data; /* to avoid compiler warning */
 }
@@ -131,7 +132,7 @@ void imsai_sio1_status_out(BYTE data)
  * can be configured to translate to upper case, most of the old software
  * written for tty's won't accept lower case characters
  */
-BYTE imsai_sio1_data_in(void)
+BYTE imsai_sio1a_data_in(void)
 {
 	BYTE data;
 	static BYTE last;
@@ -165,11 +166,11 @@ again:
 		}
 	}
 
-	gettimeofday(&sio1_t1, NULL);
-	sio1_stat &= 0b11111101;
+	gettimeofday(&sio1a_t1, NULL);
+	sio1a_stat &= 0b11111101;
 
 	/* process read data */
-	if (sio1_upper_case)
+	if (sio1a_upper_case)
 		data = toupper(data);
 	last = data;
 	return(data);
@@ -181,12 +182,12 @@ again:
  * can be configured to strip parity bit because some old software won't.
  * also can drop nulls usually send after CR/LF for teletypes.
  */
-void imsai_sio1_data_out(BYTE data)
+void imsai_sio1a_data_out(BYTE data)
 {
-	if (sio1_strip_parity)
+	if (sio1a_strip_parity)
 		data &= 0x7f;
 
-	if (sio1_drop_nulls)
+	if (sio1a_drop_nulls)
 		if (data == 0)
 			return;
 
@@ -208,8 +209,8 @@ again:
 		}
 	}
 
-	gettimeofday(&sio1_t1, NULL);
-	sio1_stat &= 0b11111110;
+	gettimeofday(&sio1a_t1, NULL);
+	sio1a_stat &= 0b11111110;
 }
 
 /*
@@ -218,18 +219,18 @@ again:
  * bit 0 = 1, transmitter ready to write character to tty
  * bit 1 = 1, character available for input from tty
  */
-BYTE imsai_sio2_status_in(void)
+BYTE imsai_sio2a_status_in(void)
 {
 	extern int time_diff(struct timeval *, struct timeval *);
 
 	struct pollfd p[1];
 	int tdiff;
 
-	gettimeofday(&sio2_t2, NULL);
-	tdiff = time_diff(&sio2_t1, &sio2_t2);
-	if (sio2_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2_baud_rate))
-			return(sio2_stat);
+	gettimeofday(&sio2a_t2, NULL);
+	tdiff = time_diff(&sio2a_t1, &sio2a_t2);
+	if (sio2a_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2a_baud_rate))
+			return(sio2a_stat);
 
 	/* if socket not connected check for a new connection */
 	if (ucons[0].ssc == 0) {
@@ -254,20 +255,20 @@ BYTE imsai_sio2_status_in(void)
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN)
-			sio2_stat |= 2;
+			sio2a_stat |= 2;
 		if (p[0].revents & POLLOUT)
-			sio2_stat |= 1;
+			sio2a_stat |= 1;
 	}
 
-	gettimeofday(&sio2_t1, NULL);
+	gettimeofday(&sio2a_t1, NULL);
 
-	return(sio2_stat);
+	return(sio2a_stat);
 }
 
 /*
  * write status register
  */
-void imsai_sio2_status_out(BYTE data)
+void imsai_sio2a_status_out(BYTE data)
 {
 	data = data; /* to avoid compiler warning */
 }
@@ -278,7 +279,7 @@ void imsai_sio2_status_out(BYTE data)
  * can be configured to translate to upper case, most of the old software
  * written for tty's won't accept lower case characters
  */
-BYTE imsai_sio2_data_in(void)
+BYTE imsai_sio2a_data_in(void)
 {
 	BYTE data;
 	static BYTE last;
@@ -303,11 +304,11 @@ BYTE imsai_sio2_data_in(void)
 		return(last);
 	}
 
-	gettimeofday(&sio2_t1, NULL);
-	sio2_stat &= 0b11111101;
+	gettimeofday(&sio2a_t1, NULL);
+	sio2a_stat &= 0b11111101;
 
 	/* process read data */
-	if (sio2_upper_case)
+	if (sio2a_upper_case)
 		data = toupper(data);
 	last = data;
 	return(data);
@@ -319,7 +320,7 @@ BYTE imsai_sio2_data_in(void)
  * can be configured to strip parity bit because some old software won't.
  * also can drop nulls usually send after CR/LF for teletypes.
  */
-void imsai_sio2_data_out(BYTE data)
+void imsai_sio2a_data_out(BYTE data)
 {
 	struct pollfd p[1];
 
@@ -338,10 +339,10 @@ void imsai_sio2_data_out(BYTE data)
 		return;
 	}
 
-	if (sio2_strip_parity)
+	if (sio2a_strip_parity)
 		data &= 0x7f;
 
-	if (sio2_drop_nulls)
+	if (sio2a_drop_nulls)
 		if (data == 0)
 			return;
 
@@ -355,6 +356,6 @@ again:
 		}
 	}
 
-	gettimeofday(&sio2_t1, NULL);
-	sio2_stat &= 0b11111110;
+	gettimeofday(&sio2a_t1, NULL);
+	sio2a_stat &= 0b11111110;
 }

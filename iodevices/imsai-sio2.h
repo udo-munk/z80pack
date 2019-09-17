@@ -21,12 +21,13 @@
  * 14-JUL-18 integrate webfrontend
  * 12-JUL-19 implemented second SIO
  * 27-JUL-19 more correct emulation
+ * 17-SEP-19 more consistent SIO naming
  */
 
 extern BYTE imsai_sio_nofun_in(void);
 extern void imsai_sio_nofun_out(BYTE);
 
-extern BYTE imsai_sio1_status_in(void), imsai_sio2_status_in(void);
-extern void imsai_sio1_status_out(BYTE), imsai_sio2_status_out(BYTE);
-extern BYTE imsai_sio1_data_in(void), imsai_sio2_data_in(void);
-extern void imsai_sio1_data_out(BYTE), imsai_sio2_data_out(BYTE);
+extern BYTE imsai_sio1a_status_in(void), imsai_sio2a_status_in(void);
+extern void imsai_sio1a_status_out(BYTE), imsai_sio2a_status_out(BYTE);
+extern BYTE imsai_sio1a_data_in(void), imsai_sio2a_data_in(void);
+extern void imsai_sio1a_data_out(BYTE), imsai_sio2a_data_out(BYTE);

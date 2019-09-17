@@ -23,6 +23,7 @@
  * 24-MAR-17 added configuration for SIO 0
  * 18-JUL-18 use logging
  * 12-JUL-19 implemented second SIO
+ * 17-SEP-19 more consistent SIO naming
  */
 
 #include <stdlib.h>
@@ -41,15 +42,15 @@ int fp_size = 800;
 
 extern int exatoi(char *);
 
-extern int sio1_upper_case;	/* SIO 1 translate input to upper case */
-extern int sio1_strip_parity;	/* SIO 1 strip parity from output */
-extern int sio1_drop_nulls;	/* SIO 1 drop nulls after CR/LF */
-extern int sio1_baud_rate;	/* SIO 1 simulated baud rate */
+extern int sio1a_upper_case;	/* SIO 1 translate input to upper case */
+extern int sio1a_strip_parity;	/* SIO 1 strip parity from output */
+extern int sio1a_drop_nulls;	/* SIO 1 drop nulls after CR/LF */
+extern int sio1a_baud_rate;	/* SIO 1 simulated baud rate */
 
-extern int sio2_upper_case;	/* SIO 2 translate input to upper case */
-extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
-extern int sio2_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
-extern int sio2_baud_rate;	/* SIO 2 simulated baud rate */
+extern int sio2a_upper_case;	/* SIO 2 translate input to upper case */
+extern int sio2a_strip_parity;	/* SIO 2 strip parity from output */
+extern int sio2a_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
+extern int sio2a_baud_rate;	/* SIO 2 simulated baud rate */
 
 extern char bg_color[];		/* VIO background color */
 extern char fg_color[];		/* VIO foreground color */
@@ -72,82 +73,82 @@ void config(void)
 				continue;
 			t1 = strtok(s, " \t");
 			t2 = strtok(NULL, " \t");
-			if (!strcmp(t1, "sio1_upper_case")) {
+			if (!strcmp(t1, "sio1a_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio1_upper_case = 0;
+					sio1a_upper_case = 0;
 					break;
 				case '1':
-					sio1_upper_case = 1;
+					sio1a_upper_case = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio2_upper_case")) {
+			} else if (!strcmp(t1, "sio2a_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio2_upper_case = 0;
+					sio2a_upper_case = 0;
 					break;
 				case '1':
-					sio2_upper_case = 1;
+					sio2a_upper_case = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio1_strip_parity")) {
+			} else if (!strcmp(t1, "sio1a_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio1_strip_parity = 0;
+					sio1a_strip_parity = 0;
 					break;
 				case '1':
-					sio1_strip_parity = 1;
+					sio1a_strip_parity = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio2_strip_parity")) {
+			} else if (!strcmp(t1, "sio2a_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio2_strip_parity = 0;
+					sio2a_strip_parity = 0;
 					break;
 				case '1':
-					sio2_strip_parity = 1;
+					sio2a_strip_parity = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio1_drop_nulls")) {
+			} else if (!strcmp(t1, "sio1a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio1_drop_nulls = 0;
+					sio1a_drop_nulls = 0;
 					break;
 				case '1':
-					sio1_drop_nulls = 1;
+					sio1a_drop_nulls = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio2_drop_nulls")) {
+			} else if (!strcmp(t1, "sio2a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio2_drop_nulls = 0;
+					sio2a_drop_nulls = 0;
 					break;
 				case '1':
-					sio2_drop_nulls = 1;
+					sio2a_drop_nulls = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio1_baud_rate")) {
-				sio1_baud_rate = atoi(t2);
-			} else if (!strcmp(t1, "sio2_baud_rate")) {
-				sio2_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio1a_baud_rate")) {
+				sio1a_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio2a_baud_rate")) {
+				sio2a_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {

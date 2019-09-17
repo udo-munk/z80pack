@@ -24,6 +24,7 @@
  * 14-JUL-18 integrate webfrontend
  * 12-JUL-19 implemented second SIO
  * 27-JUL-19 more correct emulation of IMSAI SIO-2
+ * 17-SEP-19 more consistent SIO naming
  */
 
 #include <unistd.h>
@@ -80,8 +81,8 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 BYTE (*port_in[256]) (void) = {
 	imsai_sio_nofun_in,	/* IMSAI SIO-2 */
 	imsai_sio_nofun_in,	/* port 1 */
-	imsai_sio1_data_in,	/* port 2 */ /* Channel A, console */
-	imsai_sio1_status_in,	/* port 3 */
+	imsai_sio1a_data_in,	/* port 2 */ /* Channel A, console */
+	imsai_sio1a_status_in,	/* port 3 */
 	imsai_kbd_data_in,	/* port 4 */ /* Channel B, keyboard for VIO */
 	imsai_kbd_status_in,	/* port 5 */
 	imsai_sio_nofun_in,	/* port 6 */
@@ -120,8 +121,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 31 */
 	imsai_sio_nofun_in,	/* port 32 */ /* IMSAI SIO-2 */
 	imsai_sio_nofun_in,	/* port 33 */
-	imsai_sio2_data_in,	/* port 34 */ /* Channel A, UNIX socket */
-	imsai_sio2_status_in,	/* port 35 */
+	imsai_sio2a_data_in,	/* port 34 */ /* Channel A, UNIX socket */
+	imsai_sio2a_status_in,	/* port 35 */
 	imsai_sio_nofun_in,	/* port 36 */ /* Channel B, not connected */
 	imsai_sio_nofun_in,	/* port 37 */
 	imsai_sio_nofun_in,	/* port 38 */
@@ -351,8 +352,8 @@ BYTE (*port_in[256]) (void) = {
 static void (*port_out[256]) (BYTE) = {
 	imsai_sio_nofun_out,	/* IMSAI SIO-2 */
 	imsai_sio_nofun_out,	/* port 1 */
-	imsai_sio1_data_out,	/* port 2 */ /* Channel A, console */
-	imsai_sio1_status_out,	/* port 3 */
+	imsai_sio1a_data_out,	/* port 2 */ /* Channel A, console */
+	imsai_sio1a_status_out,	/* port 3 */
 	imsai_sio_nofun_out,	/* port 4 */ /* Channel B, keyboard */
 	imsai_sio_nofun_out,	/* port 5 */
 	imsai_sio_nofun_out,	/* port 6 */
@@ -394,8 +395,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 31 */
 	imsai_sio_nofun_out,	/* port 32 */ /* IMSAI SIO-2 */
 	imsai_sio_nofun_out,	/* port 33 */
-	imsai_sio2_data_out,	/* port 34 */ /* Channel A, UNIX socket */
-	imsai_sio2_status_out,	/* port 35 */
+	imsai_sio2a_data_out,	/* port 34 */ /* Channel A, UNIX socket */
+	imsai_sio2a_status_out,	/* port 35 */
 	imsai_sio_nofun_out,	/* port 36 */ /* Channel B, not connected */
 	imsai_sio_nofun_out,	/* port 37 */
 	imsai_sio_nofun_out,	/* port 38 */
@@ -642,7 +643,7 @@ void init_io(void)
 	imsai_fif_reset();
 
 	/* create local socket for SIO */
-	init_unix_server_socket(&ucons[0], "imsaisim.sio2");
+	init_unix_server_socket(&ucons[0], "imsaisim.sio2a");
 }
 
 /*
