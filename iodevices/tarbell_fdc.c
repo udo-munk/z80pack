@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of a Tarbell SD 1011D S100 board
  *
@@ -21,6 +21,7 @@
  * 23-APR-2018 cleanup
  * 01-JUL-2018 check disk images for the correct size
  * 15-JUL-2018 use logging
+ * 23-SEP-2019 bug fixes and improvements by Mike Douglas
  */
 
 #include <unistd.h>
@@ -55,6 +56,7 @@ static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static int dcnt;		/* data counter read/write */
 static BYTE buf[SEC_SZ];	/* buffer for one sector */
+static int stepdir;		/* stepping direction */
 
 /* these are our disk drives */
 static char *disks[4] = {
@@ -109,29 +111,46 @@ void tarbell_cmd_out(BYTE data)
 {
 	if ((data & 0xf0) == 0) {		/* restore (seek track 0) */
 		fdc_track = 0;			/*          ^ ^ */
-		fdc_stat = 4;			/* positioned to track 0 */
+		fdc_stat = 0x04;		/* assert track 0 flag */
 
 	} else if ((data & 0xf0) == 0x10) {	/* seek */
-		if (fdc_track <= TRK)
+		if (fdc_track < TRK)
 			fdc_stat = 0;
 		else
-			fdc_stat = 0x10;	/* seek error */
+			fdc_stat = 0x10;	/* seek error (assume V set) */
+		if (fdc_track == 0)		/* check to set track 0 flag */
+			fdc_stat |= 0x04;
+
+	} else if ((data & 0xe0) == 0x20) {	/* step last direction */
+		fdc_track += stepdir;
+		if (fdc_track < TRK)
+			fdc_stat = 0;
+		else
+			fdc_stat = 0x10;	/* seek error (assume V set */
+		if (fdc_track == 0)		/* check to set track 0 flag */
+			fdc_stat |= 0x04;
 
 	} else if ((data & 0xe0) == 0x40) {	/* step in */
+		stepdir = 1;
 		if (data & 0x10)
 			fdc_track++;
-		if (fdc_track <= TRK)
+		if (fdc_track < TRK)
 			fdc_stat = 0;
 		else
-			fdc_stat = 0x10;	/* seek error */
+			fdc_stat = 0x10;	/* seek error (assume V set) */
+		if (fdc_track == 0)		/* check to set track 0 flag */
+			fdc_stat |= 0x04;
 
-	} else if ((data & 0xe0) == 0x50) {	/* step out */
+	} else if ((data & 0xe0) == 0x60) {	/* step out */
+		stepdir = -1;
 		if (data & 0x10)
 			fdc_track--;
-		if (fdc_track <= TRK)
+		if (fdc_track < TRK)
 			fdc_stat = 0;
 		else
-			fdc_stat = 0x10;	/* seek error */
+			fdc_stat = 0x10;	/* seek error (assume V set) */
+		if (fdc_track == 0)		/* check to set track 0 flag */
+			fdc_stat |= 0x04;
 
 	} else if ((data & 0xf0) == 0x80) {	/* read single sector */
 		state = FDC_READ;
@@ -383,7 +402,7 @@ void tarbell_data_out(BYTE data)
 			if (write(fd, &buf[0], SEC_SZ) == SEC_SZ)
 				fdc_stat = 0;
 			else
-				fdc_stat = 0x10;	/* record not found */
+				fdc_stat = 0x20;	/* write fault */
 			close(fd);
 		}
 		break;
@@ -433,7 +452,7 @@ void tarbell_data_out(BYTE data)
 				if (write(fd, buf, bcnt) == bcnt)
 					fdc_stat = 0;
 				else
-					fdc_stat = 0x10; /* record not found */
+					fdc_stat = 0x20; /* write fault */
 				wrtstat = 1;
 			}
 		}
