@@ -31,6 +31,7 @@
  * 20-MAY-2018 improved reset
  * 15-JUL-2018 use logging
  * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
+ * 24-SEP-2019 restore and seek also affect step direction
  */
 
 /*

@@ -22,6 +22,7 @@
  * 01-JUL-2018 check disk images for the correct size
  * 15-JUL-2018 use logging
  * 23-SEP-2019 bug fixes and improvements by Mike Douglas
+ * 24-SEP-2019 restore and seek also affect step direction
  */
 
 extern BYTE tarbell_stat_in(void), tarbell_track_in(void);

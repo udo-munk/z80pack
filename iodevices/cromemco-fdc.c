@@ -31,6 +31,7 @@
  * 20-MAY-2018 improved reset
  * 15-JUL-2018 use logging
  * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
+ * 24-SEP-2019 restore and seek also affect step direction
  */
 
 #include <unistd.h>
@@ -602,7 +603,7 @@ void cromemco_fdc_data_out(BYTE data)
 			if (write(fd, &buf[0], secsz) == secsz)
 				fdc_stat = 0;
 			else
-				fdc_stat = 0x10;	/* sector not found */
+				fdc_stat = 0x20;	/* write fault */
 			close(fd);
 		}
 		break;
@@ -696,7 +697,7 @@ void cromemco_fdc_data_out(BYTE data)
 				if (write(fd, buf, bcnt) == bcnt)
 					fdc_stat = 0;
 				else
-					fdc_stat = 0x10; /* sector not found */
+					fdc_stat = 0x20; /* write fault */
 				wrtstat = 1;
 			}
 		}
@@ -714,6 +715,8 @@ void cromemco_fdc_data_out(BYTE data)
 		break;
 
 	default:			/* track # for seek */
+		if (fdc_track != data)
+			step_dir = (data < fdc_track) ? -1 : 1;
 		fdc_track = data;
 		break;
 	}
@@ -896,6 +899,8 @@ void cromemco_fdc_cmd_out(BYTE data)
 
 	if ((data & 0xf0) == 0) {		/* restore (seek track 0) */
 		headloaded = (data & 8) ? 1 : 0;
+		if (fdc_track != 0)
+			step_dir = -1;
 		fdc_track = 0;
 		fdc_flags |= 1;			/* set EOJ */
 		fdc_stat = 4;			/* positioned to track 0 */

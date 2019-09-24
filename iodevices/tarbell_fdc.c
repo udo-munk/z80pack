@@ -22,6 +22,7 @@
  * 01-JUL-2018 check disk images for the correct size
  * 15-JUL-2018 use logging
  * 23-SEP-2019 bug fixes and improvements by Mike Douglas
+ * 24-SEP-2019 restore and seek also affect step direction
  */
 
 #include <unistd.h>
@@ -56,7 +57,7 @@ static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static int dcnt;		/* data counter read/write */
 static BYTE buf[SEC_SZ];	/* buffer for one sector */
-static int stepdir;		/* stepping direction */
+static int stepdir = -1;	/* stepping direction */
 
 /* these are our disk drives */
 static char *disks[4] = {
@@ -110,7 +111,9 @@ BYTE tarbell_stat_in(void)
 void tarbell_cmd_out(BYTE data)
 {
 	if ((data & 0xf0) == 0) {		/* restore (seek track 0) */
-		fdc_track = 0;			/*          ^ ^ */
+		if (fdc_track != 0)
+			stepdir = -1;
+		fdc_track = 0;
 		fdc_stat = 0x04;		/* assert track 0 flag */
 
 	} else if ((data & 0xf0) == 0x10) {	/* seek */
@@ -464,6 +467,8 @@ void tarbell_data_out(BYTE data)
 		break;
 
 	default:			/* track # for seek */
+		if (fdc_track != data)
+			stepdir = (data < fdc_track) ? -1 : 1;
 		fdc_track = data;
 		break;
 	}
