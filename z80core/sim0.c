@@ -65,7 +65,9 @@
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
+#ifdef FRONTPANEL
 #include "../../frontpanel/frontpanel.h"
+#endif
 #include "memory.h"
 
 #define BUFSIZE	256		/* buffer size for file I/O */
