@@ -10,6 +10,7 @@
  * 15-SEP-19 (Mike Douglas) Created from simctl.c in the z80sim
  *		source directory. Added unix_terminal code to emulate 
  * 		console I/O for the Mostek AID-80F and SYS-80FT computers
+ * 27-SEP-19 (Udo Munk) fix double loading of ROM
  */
 
 /*
@@ -78,10 +79,9 @@ void mon(void)
 	tcgetattr(0, &old_term);
 
 	fdc_reset();
-	if (x_flag) {
-		if (load_file(xfn) == 0)
-			do_go("");
-	}
+	if (x_flag)
+		do_go("");
+
 	while (eoj) {
 		next:
 		printf(">>> ");
