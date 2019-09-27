@@ -1,0 +1,49 @@
+
+# Drive assignment order does not matter. Path names must not contains spaces.
+# Relative path names are relative to the directory containing the emulator
+
+
+drive0 = disks/MOS-80/System_Disk_301_1.dsk
+drive1 = disks/MOS-80/MOS-80_COPY.dsk
+drive2 = disks/MOS-80/MOS-80.dsk
+drive3 = disks/CPM/WordStar_Install.dsk
+
+bootrom = roms/MostekROM.bin
+
+# MOS-80 System Disks
+
+# MOS-80/MOS-80.dsk
+# MOS-80/MOS-80_COPY.dsk
+# MOS-80/System_Disk_301_1.dsk
+# MOS-80/System_Disk_301_2.dsk
+# MOS-80/TLake_Disk.dsk
+
+
+# CP/M System Disks
+
+# CPM/CPM2.2_COPY.dsk
+# CPM/CPM2.2_DRI_Original.dsk
+# CPM/CPM2.2_SYS80F.dsk
+# CPM/CPM22v11-56K-SSSD.DSK
+
+
+# Program disks for CP/M or MOS-80
+
+# CPM/BASCOM-80.dsk
+# CPM/PROMMER.dsk
+# CPM/BASIC_Games.dsk
+# CPM/WordStar_Hazeltine.dsk
+# CPM/WordStar_Install.dsk
+# CPM/WordStar_VT52.dsk
+
+
+# FLP-80 DOS Disks
+
+# FLP-80/BASIC-GAMES.dsk
+# FLP-80/BASIC-INTERPRETER.dsk
+# FLP-80/CPM-LINK.dsk
+# FLP-80/FLP-80DOS_ENATECHNIK.dsk
+# FLP-80/FLP-80DOS_MOSTK.dsk
+# FLP-80/OLYMPIA-WERKE-SE11.dsk
+# FLP-80/WORD.dsk
+
