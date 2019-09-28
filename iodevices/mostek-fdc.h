@@ -9,7 +9,8 @@
  *		(a WD1771 based FDC)
  *
  * History:
- * 15-SEP-19 (Mike Douglas) created from tarbell_fdc.h
+ * 15-SEP-2019 (Mike Douglas) created from tarbell_fdc.h
+ * 28-SEP-2019 (Udo Munk) use logging
  */
 
 extern BYTE fdcBoard_stat_in(void), fdcBoard_ctl_in(void);

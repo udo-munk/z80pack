@@ -10,6 +10,7 @@
  *
  * History:
  * 16-SEP-2019 (Mike Douglas) created from tarbell-fdc.c
+ * 28-SEP-2019 (Udo Munk) use logging
  */
 
 #include <unistd.h>
@@ -19,6 +20,7 @@
 #include <fcntl.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 
 /* internal state of the fdc */
 
@@ -64,6 +66,8 @@
 #define	cUPDATE_TRACK	0x10	/* STEP updates track register */
 
 /*  Static variable definitions  */
+
+static const char *TAG = "FLP-80";
 
 static BYTE fdc_stat;		/* status register */
 static BYTE fdc_track;		/* track register */
@@ -207,7 +211,7 @@ void fdc1771_cmd_out(BYTE data)
 		board_stat = sINPUT_READY;	/* show ready to read data */
 
 	} else if ((data & 0xf0) == 0x90) {	/* read multiple sector */
-		printf("Mostek FLP-80: read multiple sector not implemented\r\n");
+		LOGW(TAG, "read multiple sector not implemented");
 		fdc_stat = sRECORD_NOT_FOUND;
 
 	} else if ((data & 0xf0) == 0xa0) {	/* write single sector */
@@ -217,7 +221,7 @@ void fdc1771_cmd_out(BYTE data)
 		board_stat = sOUTPUT_READY;	/* show ready to accept data */
 
 	} else if ((data & 0xf0) == 0xb0) {	/* write multiple sector */
-		printf("Mostek FLP-80: write multiple sector not implemented\r\n");
+		LOGW(TAG, "write multiple sector not implemented");
 		fdc_stat = sRECORD_NOT_FOUND;
 
 	} else if (data == 0xc4) {		/* read address */
@@ -227,7 +231,7 @@ void fdc1771_cmd_out(BYTE data)
 		board_stat = sINPUT_READY;	/* show ready to read data */
 
 	} else if ((data & 0xf0) == 0xe0) {	/* read track */
-		printf("Mostek FLP-80: read track not implemented\r\n");
+		LOGW(TAG, "read track not implemented");
 		fdc_stat = sRECORD_NOT_FOUND;
 
 	} else if ((data & 0xf0) == 0xf0) {	/* write track */
@@ -241,7 +245,7 @@ void fdc1771_cmd_out(BYTE data)
 		fdc_stat = 0;
 
 	} else {
-		printf("Mostek FLP-80: unknown command, %02x\r\n", data);
+		LOGW(TAG, "unknown command, %02x", data);
 		fdc_stat = sCRC_ERROR;
 	}
 }
