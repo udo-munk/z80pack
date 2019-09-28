@@ -8,6 +8,7 @@
  *
  * History:
  * 15-SEP-19 (Mike Douglas) created from iosim.c for the Altair
+ * 28-SEP-19 (Udo Munk) use logging
  */
 
 #include <unistd.h>
@@ -22,6 +23,10 @@
 #include "simglb.h"
 #include "../../iodevices/mostek-cpu.h"
 #include "../../iodevices/mostek-fdc.h"
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
+
+static const char *TAG = "I/O";
 
 /*
  *	Forward declarations for I/O functions
@@ -584,7 +589,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	addrh = addrh;		/* to avoid compiler warning */
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
+	LOGD(TAG, "input %02x from port %0sx", io_data, io_port);
 	return(io_data);
 }
 
