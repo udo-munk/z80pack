@@ -8,6 +8,7 @@
  *
  * History:
  * 24-SEP-19 (Mike Douglas) created for Mostek AID-80F and SYS-80FT
+ * 27-SEP-19 include newline \n as config.txt delimiter
  */
 
 #include <stdlib.h>
@@ -30,8 +31,8 @@ void config(void)
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
-			t1 = strtok(s, "= \t\r");
-			t2 = strtok(NULL, "= \t\r");
+			t1 = strtok(s, "= \t\r\n");
+			t2 = strtok(NULL, "= \t\r\n");
 
 			if (0 == strcmp(t1,"bootrom")) {
 				printf("\nBoot ROM: %s\n",t2);
