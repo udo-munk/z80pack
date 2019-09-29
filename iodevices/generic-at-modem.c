@@ -24,7 +24,7 @@
 
 #include "log.h"
 
-#define AT_BUF_LEN 81
+#define AT_BUF_LEN 41
 
 static const char* TAG = "at-modem";
 
@@ -117,10 +117,11 @@ char at_prev[AT_BUF_LEN] = "";
 char at_err[AT_BUF_LEN] = "";
 
 char *at_out = at_buf;
-enum at_states { cmd, A_recv, AT_recv, AS_recv, dat, intr};
+enum at_states { cmd, A_recv, AT_recv, AS_recv, dat, intr, help };
 typedef enum at_states at_state_t;
 
 at_state_t at_state = cmd;
+int help_line = 0;
 
 #define CR			"\r"
 #define LF			"\n"
@@ -131,6 +132,20 @@ at_state_t at_state = cmd;
 #define AT_NO_ANSWER	"NO ANSWER" CRLF
 #define AT_NO_CARRIER	"NO CARRIER" CRLF
 #define AT_NO_DIALTONE	"NO DIALTONE" CRLF
+
+#define MAX_HELP_LINE 10
+char *at_help[MAX_HELP_LINE] = {
+			LF "AT COMMANDS:" CRLF,
+			"AT  - 'AT' Test" CRLF,
+			"AT? - Help" CRLF,
+			"A/  - (immediate) Repeat last" CRLF,
+			"ATZ - Reset modem" CRLF,
+			"ATDhostname:port - Dial hostname, port optional (default:23)" CRLF,
+			"ATH - Hangup" CRLF,
+			"+++ - Return to command mode" CRLF,
+			"ATO - Return to data mode" CRLF,
+			"ATH - Hangup" CRLF
+};
 
 void at_cat_c(char c) {
     if (strlen(at_cmd) >= AT_BUF_LEN - 1) {
@@ -165,7 +180,6 @@ void at_cat_s(char *s) {
 }
 
 int process_at_cmd(void) {
-
 	char *at_ptr = at_cmd;
     char *arg_ptr;
 	strcpy(at_prev, at_cmd);
@@ -186,18 +200,11 @@ int process_at_cmd(void) {
 		case '\r': // AT<CR>
 			break;
 		case '?': // AT?
-			at_cat_s(LF "AT COMMANDS:" CRLF);
-			at_cat_s("AT  - 'AT' Test" CRLF);
-			at_cat_s("AT? - Help" CRLF);
-			at_cat_s("A/  - (immediate) Repeat last" CRLF);
-			at_cat_s("ATZ - Reset modem" CRLF);
-			at_cat_s("ATDhostname:port - Dial hostname, port optional (default:23)" CRLF);
-			at_cat_s("ATH - Hangup" CRLF);
-			at_cat_s("+++ - Return to command mode" CRLF);
-			at_cat_s("ATO - Return to data mode" CRLF);
-			at_cat_s("ATH - Hangup" CR);
+            help_line = 0;
+            at_state = help;
 			break;
 		case 'Z': // ATZ
+            // at_prev[0] = 0;
 			// at_cat_s(LF "RESET" CR);
 			// AT_END_CMD;
 			// break;
@@ -285,7 +292,15 @@ int modem_device_poll(int i) {
 
     i = i;
 
-    if (at_state == intr) {
+    if (at_state == help) {
+        if (strlen(at_buf) == 0) {
+            strcpy(at_buf, at_help[help_line++]);
+            if (help_line == MAX_HELP_LINE) {
+                at_state = cmd;
+            }
+        }
+        return (strlen(at_out) > 0);
+    } else if (at_state == intr) {
         // LOGI("+++", "Ind [%s](%d)", at_buf, strlen(at_buf));
         if (strlen(at_buf) == 3) {
         	gettimeofday(&at_t2, NULL);
