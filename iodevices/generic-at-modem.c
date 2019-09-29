@@ -25,14 +25,21 @@
 #include "log.h"
 
 #define AT_BUF_LEN 41
+#define AUTOANSWER 1
 
 static const char* TAG = "at-modem";
 
 static int sfd = 0;
+static int answer_sfd = 0;
+static int newsockfd = 0;
+
+static int *active_sfd = &sfd;
 
 //TODO: pick some informed buffer lengths
 static char addr[AT_BUF_LEN];
 static char port_num[10];
+
+int time_diff_sec(struct timeval *, struct timeval *);
 
 int open_socket(void) {
 
@@ -92,6 +99,7 @@ int open_socket(void) {
         } 
 
         LOGI(TAG, "Socket connected");
+        active_sfd = &sfd;
         return 0;
     }
 
@@ -100,13 +108,104 @@ int open_socket(void) {
 
 void close_socket(void) {
 
-    if (shutdown(sfd, SHUT_RDWR) == 0) {
+    if (shutdown(*active_sfd, SHUT_RDWR) == 0) {
         LOGI(TAG, "Socket shutdown");
-        if (close(sfd) == 0) {
-            LOGI(TAG, "Socket closed");
-            sfd = 0;
-        }
     }
+    if (close(*active_sfd) == 0) {
+        LOGI(TAG, "Socket closed");
+        *active_sfd = 0;
+    }
+}
+
+/****************************************************************************************************************************/
+
+int answer_init(void) {
+
+    struct sockaddr_in serv_addr;
+    int enable = 1;
+
+    if ((answer_sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        LOGE(TAG, "Failed to create Answer socket");
+        return 1;
+    };
+    if (setsockopt(answer_sfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0) {
+        LOGE(TAG, "Failed to setsockopt Answer socket");
+        return 1;
+    };
+
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(8023);
+    if (bind(answer_sfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+        LOGE(TAG, "ERROR on binding %d %s", errno, strerror(errno));
+        return 1;
+    }
+    listen(answer_sfd,1);
+    inet_ntop(AF_INET, &serv_addr.sin_addr, addr, 100);
+    LOGI(TAG, "Listening on %s:%d", addr, ntohs(serv_addr.sin_port));
+    return 0;
+}
+
+int answer(void) {
+
+    struct sockaddr_in cli_addr;
+    socklen_t clilen;
+
+    clilen = sizeof(cli_addr);
+    newsockfd = accept(answer_sfd, (struct sockaddr *) &cli_addr, &clilen);
+    if (newsockfd < 0) {
+        LOGE(TAG, "ERROR on accept");
+        return 1;
+    }
+
+    inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
+    LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
+    active_sfd = &newsockfd;
+    // write(newsockfd, "Hello\r\n", 7);
+    return 0;
+}
+
+int answer_check_ring(void) {
+
+	struct pollfd p[1];
+    static int ringing = 0;
+    static int rings = 0;
+    static struct timeval ring_t1, ring_t2;
+    int tdiff;
+    
+    if (answer_sfd) {
+
+        if (ringing) {
+            gettimeofday(&ring_t2, NULL);
+            tdiff = time_diff_sec(&ring_t1, &ring_t2);
+            if (tdiff < 3) {
+                return 0;
+            } else {
+                ringing = 0;
+            }
+        }
+
+        p[0].fd = answer_sfd;
+        p[0].events = POLLIN;
+        p[0].revents = 0;
+        poll(p, 1, 0);
+
+        if (p[0].revents == POLLIN) {
+
+#ifndef AUTOANSWER
+            if (!ringing) {
+                gettimeofday(&ring_t1, NULL);
+                ringing = 1;
+                rings ++;
+                LOGI(TAG, "Ringing %d", rings);
+            }
+#endif
+
+            return 1;
+        }
+    } 
+    return 0;
 }
 
 /****************************************************************************************************************************/
@@ -132,8 +231,9 @@ int help_line = 0;
 #define AT_NO_ANSWER	"NO ANSWER" CRLF
 #define AT_NO_CARRIER	"NO CARRIER" CRLF
 #define AT_NO_DIALTONE	"NO DIALTONE" CRLF
+#define AT_RING	        "RING" CRLF
 
-#define MAX_HELP_LINE 10
+#define MAX_HELP_LINE 11
 char *at_help[MAX_HELP_LINE] = {
 			LF "AT COMMANDS:" CRLF,
 			"AT  - 'AT' Test" CRLF,
@@ -141,10 +241,12 @@ char *at_help[MAX_HELP_LINE] = {
 			"A/  - (immediate) Repeat last" CRLF,
 			"ATZ - Reset modem" CRLF,
 			"ATDhostname:port - Dial hostname, port optional (default:23)" CRLF,
-			"ATH - Hangup" CRLF,
 			"+++ - Return to command mode" CRLF,
 			"ATO - Return to data mode" CRLF,
-			"ATH - Hangup" CRLF
+			"ATH - Hangup" CRLF,
+			"ATL - Listen for incoming calls" CRLF,
+			"ATA - Answer" CRLF
+
 };
 
 void at_cat_c(char c) {
@@ -210,13 +312,18 @@ int process_at_cmd(void) {
 			// break;
             // Intentional fall-through to ATH for now ie. ATZ = ATH
 		case 'H': // ATH
-            if (sfd) {
+            if (*active_sfd) {
                 close_socket();
 			    at_cat_s(LF "HANGUP" CR);
             }
 			break;
 		case 'D': // ATD
             //TODO: check and repond if Wi-Fi STA up : ie. NO DIAL TONE
+
+            if (*active_sfd) {
+                strcpy(at_err, LF "ALREADY IN CALL" CRLF);
+			    return 1;
+            }
 
             strcpy(at_err, at_ptr);
             arg_ptr = strtok(at_err, ":\r");
@@ -246,13 +353,22 @@ int process_at_cmd(void) {
 			break;
 		case 'O': // ATO
 			AT_END_CMD;
-            if (sfd == 0) {
+            if (*active_sfd == 0) {
                 strcpy(at_err, LF AT_NO_CARRIER CRLF);
                 return 1;
             }
             at_state = dat;
 			// at_cat_s(LF "CONNECT" CR);
 			break;
+        case 'L': // ATL - listen
+            AT_END_CMD;
+            answer_init();
+            break;
+        case 'A': // ATA - answer
+            answer();
+            AT_END_CMD;
+            at_state = dat;
+            break;
 		default:
 			strcpy(at_err, LF AT_ERROR CRLF);
 			return 1;
@@ -315,12 +431,22 @@ int modem_device_poll(int i) {
         }
         return 0;
     } else if (at_state == dat) {
-        p[0].fd = sfd;
+        p[0].fd = *active_sfd;
         p[0].events = POLLIN | POLLOUT;
         p[0].revents = 0;
         poll(p, 1, 0);
         return (p[0].revents & POLLIN);
     } else {
+        if (answer_check_ring()) {
+#ifndef AUTOANSWER
+            at_cat_s(CRLF AT_RING);
+#else
+            if (!answer()) {
+                at_state = dat;
+            } 
+#endif
+        }
+
         return (strlen(at_out) > 0);
     }
 }
@@ -334,14 +460,14 @@ int modem_device_get(int i) {
 
     if (at_state == dat) {
 
-        p[0].fd = sfd;
+        p[0].fd = *active_sfd;
         p[0].events = POLLIN;
         p[0].revents = 0;
         poll(p, 1, 0);
         if (!(p[0].revents & POLLIN))
             return -1;
 
-        if (read(sfd, &data, 1) == 0) {
+        if (read(*active_sfd, &data, 1) == 0) {
             //TODO: this will occur if the socket is disconnected
             LOGI(TAG, "Socket disconnected");
             at_buf[0] = 0;
@@ -385,7 +511,7 @@ void modem_device_send(int i, char data) {
         	    gettimeofday(&at_t1, NULL);
                 return;
             } else {
-                write(sfd, at_buf, strlen(at_buf));
+                write(*active_sfd, at_buf, strlen(at_buf));
                 at_state = dat;
             }
             // NO break;
@@ -402,7 +528,7 @@ void modem_device_send(int i, char data) {
                 at_state = intr;
                 return;
             }
-            write(sfd, (char *) &data, 1);
+            write(*active_sfd, (char *) &data, 1);
             break;
 	/***
 	 * AT command mode
