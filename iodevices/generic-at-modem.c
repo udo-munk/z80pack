@@ -26,7 +26,8 @@
 
 #include "log.h"
 
-#define AT_BUF_LEN 41
+#define AT_BUF_LEN      41
+#define LISTENER_PORT   8023
 
 static const char* TAG = "at-modem";
 
@@ -36,7 +37,6 @@ static int newsockfd = 0;
 
 static int *active_sfd = &sfd;
 
-/* TODO: pick some informed buffer lengths */
 static char addr[AT_BUF_LEN];
 static char port_num[10];
 
@@ -58,7 +58,7 @@ int open_socket(void) {
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
-   s = getaddrinfo(addr, port_num, &hints, &result);
+    s = getaddrinfo(addr, port_num, &hints, &result);
     if (s != 0) {
         LOGE(TAG, "getaddrinfo: %s\n", "failed");
         return 1;
@@ -125,8 +125,14 @@ int answer_init(void) {
     struct sockaddr_in serv_addr;
     int enable = 1;
 
+    if (answer_sfd) {
+        LOGE(TAG, "Already listening");
+        return 1;
+    }
+
     if ((answer_sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         LOGE(TAG, "Failed to create Answer socket");
+        answer_sfd = 0;
         return 1;
     };
     if (setsockopt(answer_sfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) < 0) {
@@ -134,10 +140,10 @@ int answer_init(void) {
         return 1;
     };
 
-    bzero((char *) &serv_addr, sizeof(serv_addr));
+    memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(8023);
+    serv_addr.sin_port = htons(LISTENER_PORT);
     if (bind(answer_sfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         LOGE(TAG, "ERROR on binding %d %s", errno, strerror(errno));
         return 1;
@@ -252,7 +258,7 @@ void at_cat_c(char c) {
         return;
     }
 
-	if (c == '\b') {
+	if (c == '\b') { /*TODO: use s_reg[SREG_BS] */
 		if(strlen(at_cmd) > 2) {
 			at_buf[strlen(at_buf) + 3] = 0;
 			at_buf[strlen(at_buf) + 2] = c;
@@ -311,23 +317,28 @@ int process_at_cmd(void) {
   while (*at_ptr != 0) {
 	switch (*at_ptr++) {
         /*TODO: add a command to check connection status */
-		case '\r': /* AT<CR> */
+		case '\r': /* AT<CR> */ /*TODO: use s_reg[SREG_CR] */
 			break;
 		case '$': /* AT$ */
             help_line = 0;
             at_state = help;
 			break;
 		case 'Z': /* ATZ */
-            bzero(at_prev, sizeof(at_prev));
+            memset(at_prev, 0, sizeof(at_prev));
             for (tmp_reg = 0; tmp_reg < MAX_REG_NUM; tmp_reg++) {
                 s_reg[tmp_reg] = s_reg_defaults[tmp_reg];
             }
-            /***
-			* at_cat_s(LF "RESET" CR);
-			* AT_END_CMD;
-			* break;
-            * Intentional fall-through to ATH to close any open socket
-            */
+            if (*active_sfd) {
+                close_socket();
+            }
+            if (answer_sfd) {
+                active_sfd = &answer_sfd;
+                close_socket();
+                active_sfd = &sfd;
+
+            }
+			AT_END_CMD;
+            break;
 		case 'H': /* ATH */
             if (*active_sfd) {
                 s_reg[SREG_RINGS] = 0;
@@ -410,7 +421,10 @@ int process_at_cmd(void) {
         case '&': /* AT&A - enable answer - listen */
             if (*at_ptr == 'A') {
                 AT_END_CMD;
-                answer_init();
+                if (answer_init()) {
+                    strcpy(at_err, LF AT_ERROR CRLF);
+                    return 1;
+                };
             } else {
                 strcpy(at_err, LF AT_ERROR CRLF);
                 return 1;
