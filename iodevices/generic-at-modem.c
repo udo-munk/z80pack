@@ -7,9 +7,11 @@
  * 
  * History:
  * 12-SEP-19    1.0     Initial Release
+ * 29-SEP-19    1.1     Added Answer modes and registers
  */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -25,7 +27,6 @@
 #include "log.h"
 
 #define AT_BUF_LEN 41
-#define AUTOANSWER 1
 
 static const char* TAG = "at-modem";
 
@@ -35,7 +36,7 @@ static int newsockfd = 0;
 
 static int *active_sfd = &sfd;
 
-//TODO: pick some informed buffer lengths
+/* TODO: pick some informed buffer lengths */
 static char addr[AT_BUF_LEN];
 static char port_num[10];
 
@@ -162,7 +163,6 @@ int answer(void) {
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
     LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
     active_sfd = &newsockfd;
-    // write(newsockfd, "Hello\r\n", 7);
     return 0;
 }
 
@@ -170,7 +170,6 @@ int answer_check_ring(void) {
 
 	struct pollfd p[1];
     static int ringing = 0;
-    static int rings = 0;
     static struct timeval ring_t1, ring_t2;
     int tdiff;
     
@@ -193,15 +192,11 @@ int answer_check_ring(void) {
 
         if (p[0].revents == POLLIN) {
 
-#ifndef AUTOANSWER
             if (!ringing) {
                 gettimeofday(&ring_t1, NULL);
                 ringing = 1;
-                rings ++;
-                LOGI(TAG, "Ringing %d", rings);
+                LOGI(TAG, "Ringing");
             }
-#endif
-
             return 1;
         }
     } 
@@ -233,20 +228,22 @@ int help_line = 0;
 #define AT_NO_DIALTONE	"NO DIALTONE" CRLF
 #define AT_RING	        "RING" CRLF
 
-#define MAX_HELP_LINE 11
+#define MAX_HELP_LINE 14
 char *at_help[MAX_HELP_LINE] = {
 			LF "AT COMMANDS:" CRLF,
 			"AT  - 'AT' Test" CRLF,
-			"AT? - Help" CRLF,
+			"AT$ - Help" CRLF,
 			"A/  - (immediate) Repeat last" CRLF,
 			"ATZ - Reset modem" CRLF,
 			"ATDhostname:port - Dial hostname, port optional (default:23)" CRLF,
 			"+++ - Return to command mode" CRLF,
 			"ATO - Return to data mode" CRLF,
 			"ATH - Hangup" CRLF,
-			"ATL - Listen for incoming calls" CRLF,
-			"ATA - Answer" CRLF
-
+			"AT&A - Enable Answer mode - listen for incoming calls" CRLF,
+			"ATA - Answer" CRLF,
+			"ATSn - Select register n" CRLF,
+			"AT? - Query current register" CRLF,
+			"AT=r - Set current register to r" CRLF
 };
 
 void at_cat_c(char c) {
@@ -281,7 +278,22 @@ void at_cat_s(char *s) {
 	strcat(at_buf, s);
 }
 
+#define SREG_AA     0
+#define SREG_RINGS  1
+#define SREG_ESCAPE 2
+#define SREG_CR     3
+#define SREG_LF     4
+#define SREG_BS     5
+#define MAX_REG_NUM 13
+
+#define SREG_DEFAULTS { 0, 0, 43, 13, 10, 8 }
+
+static unsigned int s_reg[MAX_REG_NUM] = SREG_DEFAULTS;
+static unsigned int s_reg_defaults[MAX_REG_NUM] = SREG_DEFAULTS;
+static int reg = 0;
+
 int process_at_cmd(void) {
+    int tmp_reg;
 	char *at_ptr = at_cmd;
     char *arg_ptr;
 	strcpy(at_prev, at_cmd);
@@ -298,27 +310,33 @@ int process_at_cmd(void) {
 
   while (*at_ptr != 0) {
 	switch (*at_ptr++) {
-        //TODO: add a command to check connection status
-		case '\r': // AT<CR>
+        /*TODO: add a command to check connection status */
+		case '\r': /* AT<CR> */
 			break;
-		case '?': // AT?
+		case '$': /* AT$ */
             help_line = 0;
             at_state = help;
 			break;
-		case 'Z': // ATZ
-            // at_prev[0] = 0;
-			// at_cat_s(LF "RESET" CR);
-			// AT_END_CMD;
-			// break;
-            // Intentional fall-through to ATH for now ie. ATZ = ATH
-		case 'H': // ATH
+		case 'Z': /* ATZ */
+            bzero(at_prev, sizeof(at_prev));
+            for (tmp_reg = 0; tmp_reg < MAX_REG_NUM; tmp_reg++) {
+                s_reg[tmp_reg] = s_reg_defaults[tmp_reg];
+            }
+            /***
+			* at_cat_s(LF "RESET" CR);
+			* AT_END_CMD;
+			* break;
+            * Intentional fall-through to ATH to close any open socket
+            */
+		case 'H': /* ATH */
             if (*active_sfd) {
+                s_reg[SREG_RINGS] = 0;
                 close_socket();
 			    at_cat_s(LF "HANGUP" CR);
             }
 			break;
-		case 'D': // ATD
-            //TODO: check and repond if Wi-Fi STA up : ie. NO DIAL TONE
+		case 'D': /* ATDaddr[:port=23] */
+            /*TODO: check and repond if Wi-Fi STA up : ie. NO DIAL TONE */
 
             if (*active_sfd) {
                 strcpy(at_err, LF "ALREADY IN CALL" CRLF);
@@ -351,20 +369,54 @@ int process_at_cmd(void) {
             at_state = dat;
 			at_cat_s(LF "CONNECT" CR);
 			break;
-		case 'O': // ATO
+		case 'S': /* ATSn */
+            tmp_reg = strtod(at_ptr, &arg_ptr);
+
+            if (tmp_reg < 0 || tmp_reg > (MAX_REG_NUM - 1) || arg_ptr == at_ptr) {
+                strcpy(at_err, LF AT_ERROR CRLF);
+                return 1;
+            }
+
+            reg = tmp_reg;
+            LOGI(TAG, "AT Register set to %d", reg);
+            at_ptr = arg_ptr;
+			break;
+		case '?': /* AT? */
+            at_ptr++;
+            LOGI(TAG, "ATS%d? is %d", reg, s_reg[reg]);
+            sprintf(at_err, LF "%d" CRLF, s_reg[reg]);
+            at_cat_s(at_err);
+			break;
+		case '=': /* AT=r */
+            tmp_reg = strtod(at_ptr, &arg_ptr);
+
+            if (tmp_reg < 0 || tmp_reg > 255 || arg_ptr == at_ptr) {
+                strcpy(at_err, LF AT_ERROR CRLF);
+                return 1;
+            }
+
+            LOGI(TAG, "ATS%d = %d", reg, tmp_reg);
+            at_ptr = arg_ptr;
+            s_reg[reg] = tmp_reg;
+			break;
+		case 'O': /* ATO */
 			AT_END_CMD;
             if (*active_sfd == 0) {
                 strcpy(at_err, LF AT_NO_CARRIER CRLF);
                 return 1;
             }
             at_state = dat;
-			// at_cat_s(LF "CONNECT" CR);
 			break;
-        case 'L': // ATL - listen
-            AT_END_CMD;
-            answer_init();
+        case '&': /* AT&A - enable answer - listen */
+            if (*at_ptr == 'A') {
+                AT_END_CMD;
+                answer_init();
+            } else {
+                strcpy(at_err, LF AT_ERROR CRLF);
+                return 1;
+            }
             break;
-        case 'A': // ATA - answer
+        case 'A': /* ATA - answer */
             answer();
             AT_END_CMD;
             at_state = dat;
@@ -417,11 +469,9 @@ int modem_device_poll(int i) {
         }
         return (strlen(at_out) > 0);
     } else if (at_state == intr) {
-        // LOGI("+++", "Ind [%s](%d)", at_buf, strlen(at_buf));
         if (strlen(at_buf) == 3) {
         	gettimeofday(&at_t2, NULL);
             tdiff = time_diff_sec(&at_t1, &at_t2);
-            // LOGI("+++", "TDIFF %d", tdiff);
             if (tdiff > 0) {
                 at_state = cmd;
                 LOGI(TAG, "+++ Returning to CMD mode");
@@ -438,13 +488,14 @@ int modem_device_poll(int i) {
         return (p[0].revents & POLLIN);
     } else {
         if (answer_check_ring()) {
-#ifndef AUTOANSWER
-            at_cat_s(CRLF AT_RING);
-#else
-            if (!answer()) {
-                at_state = dat;
-            } 
-#endif
+            s_reg[SREG_RINGS]++;
+            if ((s_reg[SREG_AA] > 0) && (s_reg[SREG_RINGS] > s_reg[SREG_AA])) {
+                if (!answer()) {
+                    at_state = dat;
+                } 
+            } else {
+                at_cat_s(CRLF AT_RING);
+            }
         }
 
         return (strlen(at_out) > 0);
@@ -468,7 +519,7 @@ int modem_device_get(int i) {
             return -1;
 
         if (read(*active_sfd, &data, 1) == 0) {
-            //TODO: this will occur if the socket is disconnected
+            /* this will occur if the socket is disconnected */
             LOGI(TAG, "Socket disconnected");
             at_buf[0] = 0;
             at_cat_s(CRLF AT_NO_CARRIER);
@@ -496,7 +547,6 @@ int modem_device_get(int i) {
 }
 
 void modem_device_send(int i, char data) {
-	// LOGW(TAG, "SIO2: [%d][%c]", data, data);
 
     i = i;
 
@@ -514,12 +564,13 @@ void modem_device_send(int i, char data) {
                 write(*active_sfd, at_buf, strlen(at_buf));
                 at_state = dat;
             }
-            // NO break;
-            // Intentional fallthrough here.
+            /***
+             * NO break;
+             * Intentional fallthrough here.
+             */
         case dat:
         	gettimeofday(&at_t2, NULL);
             tdiff = time_diff_sec(&at_t1, &at_t2);
-            // if (data == '+') LOGI("+", "Time since last char %d", tdiff);
 
             if (data == '+' && (tdiff > 0)) {
                 at_buf[0] = data;
