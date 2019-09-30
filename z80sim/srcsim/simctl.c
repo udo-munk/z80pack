@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * This modul contains the user interface, a full qualified ICE,
  * for the Z80-CPU simulation.
@@ -121,7 +121,7 @@ void mon(void)
 			putchar('\n');
 			goto next;
 		}
-		switch (*cmd) {
+		switch (tolower(*cmd)) {
 		case '\n':
 			do_step();
 			break;
