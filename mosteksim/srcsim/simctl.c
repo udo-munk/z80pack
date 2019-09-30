@@ -11,6 +11,7 @@
  *		source directory. Added unix_terminal code to emulate 
  * 		console I/O for the Mostek AID-80F and SYS-80FT computers
  * 27-SEP-19 (Udo Munk) fix double loading of ROM
+ * 30-SEP-19 (Mike Douglas) accept also upper case
  */
 
 /*
@@ -90,7 +91,7 @@ void mon(void)
 			putchar('\n');
 			goto next;
 		}
-		switch (*cmd) {
+		switch (tolower(*cmd)) {
 		case '\n':
 			do_step();
 			break;
