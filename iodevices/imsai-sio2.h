@@ -4,7 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2008-2019 by Udo Munk
- * Copyright (C) 2018 David McNaughton
+ * Copyright (C) 2018-2019 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
  *
@@ -22,6 +22,7 @@
  * 12-JUL-19 implemented second SIO
  * 27-JUL-19 more correct emulation
  * 17-SEP-19 more consistent SIO naming
+ * 23-SEP-19 added AT-modem
  */
 
 extern BYTE imsai_sio_nofun_in(void);
@@ -31,3 +32,9 @@ extern BYTE imsai_sio1a_status_in(void), imsai_sio2a_status_in(void);
 extern void imsai_sio1a_status_out(BYTE), imsai_sio2a_status_out(BYTE);
 extern BYTE imsai_sio1a_data_in(void), imsai_sio2a_data_in(void);
 extern void imsai_sio1a_data_out(BYTE), imsai_sio2a_data_out(BYTE);
+#ifdef HAS_MODEM
+extern BYTE imsai_sio2b_status_in(void);
+extern void imsai_sio2b_status_out(BYTE);
+extern BYTE imsai_sio2b_data_in(void);
+extern void imsai_sio2b_data_out(BYTE);
+#endif

@@ -4,7 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2008-2019 by Udo Munk
- * Copyright (C) 2018 David McNaughton
+ * Copyright (C) 2018-2019 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
  *
@@ -22,6 +22,7 @@
  * 12-JUL-19 implemented second SIO
  * 27-JUL-19 more correct emulation
  * 17-SEP-19 more consistent SIO naming
+ * 23-SEP-19 added AT-modem
  */
 
 #include <unistd.h>
@@ -361,3 +362,72 @@ again:
 	gettimeofday(&sio2a_t1, NULL);
 	sio2a_stat &= 0b11111110;
 }
+
+#ifdef HAS_MODEM
+#include "generic-at-modem.h"
+static BYTE sio2b_stat;
+
+/*
+ * read status register
+ *
+ * bit 0 = 1, transmitter ready to write character to device
+ * bit 1 = 1, character available for input from device
+ */
+BYTE imsai_sio2b_status_in(void)
+{
+	// ESP_LOGI(TAG, "SIO2B STAT IN");
+	if (modem_device_alive(DEV_SIO2B)) {
+		if (modem_device_poll(DEV_SIO2B)) {
+			sio2b_stat |= 2;
+		}
+		sio2b_stat |= 1;
+	}
+
+	return(sio2b_stat);
+}
+
+/*
+ * write status register
+ */
+void imsai_sio2b_status_out(BYTE data)
+{
+	data = data; /* to avoid compiler warning */
+}
+
+/*
+ * read data register
+ */
+BYTE imsai_sio2b_data_in(void)
+{
+	BYTE data = 0;
+	static BYTE last;
+
+	if (modem_device_alive(DEV_SIO2B)) {
+		int res = modem_device_get(DEV_SIO2B);
+		if (res < 0) {
+			LOGW(__func__, "NOTHING WAITING"); // should not get here
+			return(last);
+		}
+		data = res;
+	} 
+
+	sio2b_stat &= 0b11111101;
+
+	last = data;
+	return(data);
+}
+
+/*
+ * write data register
+ */
+void imsai_sio2b_data_out(BYTE data)
+{
+	if (modem_device_alive(DEV_SIO2B)) {
+		modem_device_send(DEV_SIO2B, (char) data);
+	} else 
+
+	sio2b_stat &= 0b11111110;
+}
+
+
+#endif
