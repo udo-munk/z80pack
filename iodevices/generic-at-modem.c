@@ -94,7 +94,7 @@ int open_socket(void) {
             return 1;
         };
 
-        if (connect(sfd, rp->ai_addr, rp->ai_addr->sa_len) < 0) { 
+        if (connect(sfd, rp->ai_addr, sizeof(rp->ai_addr)) < 0) { 
             LOGE(TAG, "Failed to connect to socket: %d", errno);
             return 1;
         } 
