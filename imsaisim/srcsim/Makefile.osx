@@ -141,7 +141,7 @@ netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
 
 generic-at-modem.o : ../../iodevices/generic-at-modem.c log.h
-	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
+	$(CC) $(CFLAGS) -I./ ../../iodevices/generic-at-modem.c
 
 clean:
 	rm -f *.o
