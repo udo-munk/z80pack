@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2018 by Udo Munk
+ * Copyright (C) 2016-2019 by Udo Munk
  *
  * This module implements memory management for a Cromemco Z-1 system
  *
@@ -10,6 +10,7 @@
  * 03-FEB-17 added ROM initialisation
  * 18-MAY-18 optimization
  * 18-JUL-18 use logging
+ * 01-OCT-19 optimization
  */
 
 #include <stdlib.h>
