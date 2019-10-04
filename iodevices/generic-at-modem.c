@@ -23,6 +23,7 @@
 #include <sys/time.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <netinet/tcp.h>
 
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
@@ -162,12 +163,17 @@ int answer(void) {
 
     struct sockaddr_in cli_addr;
     socklen_t clilen;
+    int on = 1;
 
     clilen = sizeof(cli_addr);
     newsockfd = accept(answer_sfd, (struct sockaddr *) &cli_addr, &clilen);
     if (newsockfd < 0) {
         LOGE(TAG, "ERROR on accept");
         return 1;
+    }
+    if (setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on,
+	sizeof(on)) == -1) {
+	    LOGE(TAG, "can't set sockopt TCP_NODELAY");
     }
 
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
