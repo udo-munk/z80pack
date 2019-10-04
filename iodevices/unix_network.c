@@ -172,7 +172,7 @@ void sigio_tcp_server_socket(int sig)
 
 			if (setsockopt(ncons[i].ssc, IPPROTO_TCP, TCP_NODELAY,
 			    (void *) &on, sizeof(on)) == -1) {
-				LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
+				LOGW(TAG, "can't set sockopt TCP_NODELAY on server socket");
 			}
 
 			if (ncons[i].telnet) {
