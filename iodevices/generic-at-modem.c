@@ -24,6 +24,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 #define AT_BUF_LEN      41
@@ -87,7 +88,7 @@ int open_socket(void) {
         }
 
         inet_ntop(rp->ai_family, addrptr, addr, 100);
-        LOGI(TAG, "Address: %s:%d", addr, ntohs(port));
+        LOGD(TAG, "Address: %s:%d", addr, ntohs(port));
 
         if ((sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) < 0) {
             LOGE(TAG, "Failed to create socket");
@@ -95,11 +96,11 @@ int open_socket(void) {
         };
 
         if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) { 
-            LOGE(TAG, "Failed to connect to socket: %d", errno);
+            LOGD(TAG, "Failed to connect to socket: %d", errno);
             return 1;
         } 
 
-        LOGI(TAG, "Socket connected");
+        LOGD(TAG, "Socket connected");
         active_sfd = &sfd;
         return 0;
     }
@@ -110,10 +111,10 @@ int open_socket(void) {
 void close_socket(void) {
 
     if (shutdown(*active_sfd, SHUT_RDWR) == 0) {
-        LOGI(TAG, "Socket shutdown");
+        LOGD(TAG, "Socket shutdown");
     }
     if (close(*active_sfd) == 0) {
-        LOGI(TAG, "Socket closed");
+        LOGD(TAG, "Socket closed");
         *active_sfd = 0;
     }
 }
@@ -150,7 +151,7 @@ int answer_init(void) {
     }
     listen(answer_sfd,1);
     inet_ntop(AF_INET, &serv_addr.sin_addr, addr, 100);
-    LOGI(TAG, "Listening on %s:%d", addr, ntohs(serv_addr.sin_port));
+    LOGD(TAG, "Listening on %s:%d", addr, ntohs(serv_addr.sin_port));
     return 0;
 }
 
@@ -167,7 +168,7 @@ int answer(void) {
     }
 
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
-    LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
+    LOGD(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
     active_sfd = &newsockfd;
     return 0;
 }
@@ -201,7 +202,7 @@ int answer_check_ring(void) {
             if (!ringing) {
                 gettimeofday(&ring_t1, NULL);
                 ringing = 1;
-                LOGI(TAG, "Ringing");
+                LOGD(TAG, "Ringing");
             }
             return 1;
         }
@@ -363,14 +364,14 @@ int process_at_cmd(void) {
             }
 
             strncpy(addr, arg_ptr, AT_BUF_LEN - 1);
-            LOGI(TAG, "Addr: [%s]", addr);
+            LOGD(TAG, "Addr: [%s]", addr);
             arg_ptr =  strtok(NULL, "\r");
             if (arg_ptr != NULL) {
                 strncpy(port_num, arg_ptr, 10);
             } else {
                 strcpy(port_num, "23");
             }
-            LOGI(TAG, "Port: [%s]", port_num);
+            LOGD(TAG, "Port: [%s]", port_num);
 
             if (open_socket()) {
                 strcpy(at_err, LF AT_NO_ANSWER CRLF);
@@ -389,12 +390,12 @@ int process_at_cmd(void) {
             }
 
             reg = tmp_reg;
-            LOGI(TAG, "AT Register set to %d", reg);
+            LOGD(TAG, "AT Register set to %d", reg);
             at_ptr = arg_ptr;
 			break;
 		case '?': /* AT? */
             at_ptr++;
-            LOGI(TAG, "ATS%d? is %d", reg, s_reg[reg]);
+            LOGD(TAG, "ATS%d? is %d", reg, s_reg[reg]);
             sprintf(at_err, LF "%d" CRLF, s_reg[reg]);
             at_cat_s(at_err);
 			break;
@@ -406,7 +407,7 @@ int process_at_cmd(void) {
                 return 1;
             }
 
-            LOGI(TAG, "ATS%d = %d", reg, tmp_reg);
+            LOGD(TAG, "ATS%d = %d", reg, tmp_reg);
             at_ptr = arg_ptr;
             s_reg[reg] = tmp_reg;
 			break;
@@ -488,7 +489,7 @@ int modem_device_poll(int i) {
             tdiff = time_diff_sec(&at_t1, &at_t2);
             if (tdiff > 0) {
                 at_state = cmd;
-                LOGI(TAG, "+++ Returning to CMD mode");
+                LOGD(TAG, "+++ Returning to CMD mode");
                 at_cat_s(CRLF AT_OK);
                 return (strlen(at_buf) > 0);
             }
@@ -534,7 +535,7 @@ int modem_device_get(int i) {
 
         if (read(*active_sfd, &data, 1) == 0) {
             /* this will occur if the socket is disconnected */
-            LOGI(TAG, "Socket disconnected");
+            LOGD(TAG, "Socket disconnected");
             at_buf[0] = 0;
             at_cat_s(CRLF AT_NO_CARRIER);
             at_cmd[0] = 0;
