@@ -29,6 +29,9 @@
 
 #define AT_BUF_LEN      41
 #define LISTENER_PORT   8023
+#define TELNET_TIMEOUT	800
+
+extern void telnet_negotiation(int);
 
 static const char* TAG = "at-modem";
 
@@ -170,6 +173,7 @@ int answer(void) {
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
     LOGD(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
     active_sfd = &newsockfd;
+    telnet_negotiation(newsockfd);
     return 0;
 }
 
