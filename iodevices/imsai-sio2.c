@@ -143,7 +143,6 @@ BYTE imsai_sio1a_data_in(void)
 	if (net_device_alive(DEV_SIO1)) {
 		int res = net_device_get(DEV_SIO1);
 		if (res < 0) {
-			LOGW(TAG, "NOTHING WAITING"); /* should not get here */
 			return(last);
 		}
 		data = res;
@@ -405,7 +404,6 @@ BYTE imsai_sio2b_data_in(void)
 	if (modem_device_alive(DEV_SIO2B)) {
 		int res = modem_device_get(DEV_SIO2B);
 		if (res < 0) {
-			LOGW(__func__, "NOTHING WAITING"); // should not get here
 			return(last);
 		}
 		data = res;
