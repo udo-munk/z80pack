@@ -61,7 +61,7 @@ int open_socket(void) {
 
     s = getaddrinfo(addr, port_num, &hints, &result);
     if (s != 0) {
-        LOGE(TAG, "getaddrinfo: %s\n", "failed");
+        LOGD(TAG, "getaddrinfo: %s\n", "failed");
         return 1;
     }
 
