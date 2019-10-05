@@ -402,6 +402,7 @@ BYTE imsai_sio2b_data_in(void)
 	BYTE data = 0;
 	static BYTE last;
 
+again:
 	if (modem_device_alive(DEV_SIO2B)) {
 		int res = modem_device_get(DEV_SIO2B);
 		if (res < 0) {
@@ -413,8 +414,11 @@ BYTE imsai_sio2b_data_in(void)
 	sio2b_stat &= 0b11111101;
 
 	last = data;
-	if (data == 0xff)
+	/* handle telnet IOC */
+	if (data == 0xff) {
 		modem_telnet_options();
+		goto again;
+	}
 	return(data);
 }
 
@@ -430,6 +434,9 @@ void imsai_sio2b_data_out(BYTE data)
 	sio2b_stat &= 0b11111110;
 }
 
+/*
+ * remote telnet server wants to negotiate options
+ */
 void modem_telnet_options(void)
 {
 	BYTE c1 = 0, c2 = 0;
