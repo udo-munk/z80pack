@@ -61,6 +61,8 @@ int sio2a_baud_rate = 115200;
 static struct timeval sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat;
 
+extern void telnet_options(void);
+
 /*
  * the IMSAI SIO-2 occupies 16 I/O ports, from which only
  * 5 have a function. the following two functions are used
@@ -374,7 +376,6 @@ static BYTE sio2b_stat;
  */
 BYTE imsai_sio2b_status_in(void)
 {
-	// ESP_LOGI(TAG, "SIO2B STAT IN");
 	if (modem_device_alive(DEV_SIO2B)) {
 		if (modem_device_poll(DEV_SIO2B)) {
 			sio2b_stat |= 2;
@@ -412,6 +413,8 @@ BYTE imsai_sio2b_data_in(void)
 	sio2b_stat &= 0b11111101;
 
 	last = data;
+	if (data == 0xff)
+		telnet_options();
 	return(data);
 }
 
@@ -426,6 +429,5 @@ void imsai_sio2b_data_out(BYTE data)
 
 	sio2b_stat &= 0b11111110;
 }
-
 
 #endif

@@ -220,3 +220,8 @@ void telnet_negotiation(int fd)
 		write(fd, &c, 3);
 	}
 }
+
+void telnet_options(void)
+{
+	LOGI(TAG, "telnet options");
+}
