@@ -56,6 +56,7 @@ int open_socket(void) {
     uint16_t port = 0;
     struct sockaddr_in *sktv4 = NULL;
     struct sockaddr_in6 *sktv6 = NULL;
+    int on = 1;
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;    /* Allow only IPv4 not IPv6 */
@@ -103,6 +104,11 @@ int open_socket(void) {
             LOGD(TAG, "Failed to connect to socket: %d", errno);
             return 1;
         } 
+	if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on,
+	    sizeof(on)) == -1) {
+	    LOGE(TAG, "can't set sockopt TCP_NODELAY");
+	    return 1;
+	}
 
         LOGD(TAG, "Socket connected");
         active_sfd = &sfd;
@@ -174,6 +180,7 @@ int answer(void) {
     if (setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on,
 	sizeof(on)) == -1) {
 	    LOGE(TAG, "can't set sockopt TCP_NODELAY");
+	return 1;
     }
 
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
