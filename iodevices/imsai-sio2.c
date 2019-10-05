@@ -432,7 +432,16 @@ void imsai_sio2b_data_out(BYTE data)
 
 void modem_telnet_options(void)
 {
-	LOGI(TAG, "telnet options");
+	BYTE c1 = 0, c2 = 0;
+
+	/* get the telnet option */
+	if (modem_device_alive(DEV_SIO2B)) {
+		c1 = modem_device_get(DEV_SIO2B);
+		c2 = modem_device_get(DEV_SIO2B);
+	}
+
+	/* lets see what they want from us */
+	LOGI(TAG, "telnet option: %d, %d", c1, c2);
 }
 
 #endif
