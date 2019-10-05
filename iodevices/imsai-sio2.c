@@ -449,6 +449,23 @@ void modem_telnet_options(void)
 
 	/* lets see what they want from us */
 	LOGI(TAG, "telnet option: %d, %d", c1, c2);
+
+	switch (c1) {
+	case 251:	/* handle WILL options */
+		break;	/* we don't care what the host will do */
+	case 253:	/* handle DO options */
+		switch (c2) {
+		case 24:	/* terminal type informations */
+			modem_device_send(DEV_SIO2B, 255); /* IOC */
+			modem_device_send(DEV_SIO2B, 252); /* WONT */
+			modem_device_send(DEV_SIO2B, 24); /* terminal type */
+			break;
+		default:
+			break;
+		}
+	default:
+		break;
+	}
 }
 
 #endif
