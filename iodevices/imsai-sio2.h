@@ -23,6 +23,7 @@
  * 27-JUL-19 more correct emulation
  * 17-SEP-19 more consistent SIO naming
  * 23-SEP-19 added AT-modem
+ * 06-OCT-19 started to implement telnet protocol for modem device
  */
 
 extern BYTE imsai_sio_nofun_in(void);

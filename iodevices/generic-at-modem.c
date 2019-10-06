@@ -8,6 +8,7 @@
  * History:
  * 12-SEP-19    1.0     Initial Release
  * 29-SEP-19    1.1     Added Answer modes and registers
+ * 06-OCT-19	1.2	Implemented telnet protocol
  */
 
 #include <unistd.h>
