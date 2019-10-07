@@ -41,6 +41,7 @@
 #include "netsrv.h"
 #endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
 
 #define BAUDTIME 10000000
@@ -416,11 +417,13 @@ again:
 	sio2b_stat &= 0b11111101;
 
 	last = data;
+
 	/* handle telnet IAC */
 	if (data == 0xff) {
 		modem_telnet_options();
 		goto again;
 	}
+
 	return(data);
 }
 
@@ -431,9 +434,9 @@ void imsai_sio2b_data_out(BYTE data)
 {
 	if (modem_device_alive(DEV_SIO2B)) {
 		modem_device_send(DEV_SIO2B, (char) data);
-	} else 
-
-	sio2b_stat &= 0b11111110;
+	} else {
+		sio2b_stat &= 0b11111110;
+	}
 }
 
 /*
@@ -452,35 +455,39 @@ void modem_telnet_options(void)
 		c2 = modem_device_get(DEV_SIO2B);
 		LOGD(TAG, "ignore telnet WILL command: %d %d", c1, c2);
 		break;
+
 	case 253:	/* handle DO commands */
 		c2 = modem_device_get(DEV_SIO2B);
 		switch (c2) {
 		case 24:	/* terminal type informations */
 			modem_device_send(DEV_SIO2B, 255); /* IAC */
 			modem_device_send(DEV_SIO2B, 252); /* WONT */
-			modem_device_send(DEV_SIO2B, 24); /* terminal type */
+			modem_device_send(DEV_SIO2B, 24);  /* terminal type */
 			LOGD(TAG, "telnet WONT terminal type");
 			break;
+
 		case 31:	/* terminal window size */
 			modem_device_send(DEV_SIO2B, 255); /* IAC */
 			modem_device_send(DEV_SIO2B, 251); /* WILL */
-			modem_device_send(DEV_SIO2B, 31); /* terminal size */
+			modem_device_send(DEV_SIO2B, 31);  /* terminal size */
                         modem_device_send(DEV_SIO2B, 255); /* IAC */
 			modem_device_send(DEV_SIO2B, 250); /* SB */
-			modem_device_send(DEV_SIO2B, 31); /* terminal size */
+			modem_device_send(DEV_SIO2B, 31);  /* terminal size */
 			modem_device_send(DEV_SIO2B, 0);
-			modem_device_send(DEV_SIO2B, 80); /* width 80 */
+			modem_device_send(DEV_SIO2B, 80);  /* width 80 */
 			modem_device_send(DEV_SIO2B, 0);
-			modem_device_send(DEV_SIO2B, 24); /* high 24 */
+			modem_device_send(DEV_SIO2B, 24);  /* high 24 */
 			modem_device_send(DEV_SIO2B, 255); /* IAC */
 			modem_device_send(DEV_SIO2B, 240); /* SE */
-			LOGD(TAG, "telnet window size 80/24");
+			LOGD(TAG, "telnet DO window size 80/24");
 			break;
+
 		default:
 			LOGW(TAG, "telnet DO command not implemented: %d", c2);
 			break;
 		}
 		break;
+
 	default:
 		LOGW(TAG, "telnet command %d not implemented", c1);
 		break;
