@@ -69,6 +69,7 @@ void config(void)
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/system.conf");
+
 	if ((fp = fopen(&fn[0], "r")) != NULL) {
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
@@ -177,4 +178,8 @@ void config(void)
 			}
 		}
 	}
+
+	LOG(TAG, "SIO 1A running at %d baud\r\n", sio1a_baud_rate);
+	LOG(TAG, "SIO 2A running at %d baud\r\n", sio2a_baud_rate);
+	LOG(TAG, "SIO 2B running at %d baud\r\n", sio2b_baud_rate);
 }
