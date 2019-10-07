@@ -24,6 +24,7 @@
  * 18-JUL-18 use logging
  * 12-JUL-19 implemented second SIO
  * 17-SEP-19 more consistent SIO naming
+ * 07-OCT-19 implemented baud rate for modem device
  */
 
 #include <stdlib.h>
@@ -42,15 +43,17 @@ int fp_size = 800;
 
 extern int exatoi(char *);
 
-extern int sio1a_upper_case;	/* SIO 1 translate input to upper case */
-extern int sio1a_strip_parity;	/* SIO 1 strip parity from output */
-extern int sio1a_drop_nulls;	/* SIO 1 drop nulls after CR/LF */
-extern int sio1a_baud_rate;	/* SIO 1 simulated baud rate */
+extern int sio1a_upper_case;	/* SIO 1 A translate input to upper case */
+extern int sio1a_strip_parity;	/* SIO 1 A strip parity from output */
+extern int sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */
+extern int sio1a_baud_rate;	/* SIO 1 A simulated baud rate */
 
-extern int sio2a_upper_case;	/* SIO 2 translate input to upper case */
-extern int sio2a_strip_parity;	/* SIO 2 strip parity from output */
-extern int sio2a_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
-extern int sio2a_baud_rate;	/* SIO 2 simulated baud rate */
+extern int sio2a_upper_case;	/* SIO 2 A translate input to upper case */
+extern int sio2a_strip_parity;	/* SIO 2 A strip parity from output */
+extern int sio2a_drop_nulls;	/* SIO 2 A drop nulls after CR/LF */
+extern int sio2a_baud_rate;	/* SIO 2 A simulated baud rate */
+
+extern int sio2b_baud_rate;	/* SIO-2 B simulated baud rate */
 
 extern char bg_color[];		/* VIO background color */
 extern char fg_color[];		/* VIO foreground color */
@@ -149,6 +152,8 @@ void config(void)
 				sio1a_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio2a_baud_rate")) {
 				sio2a_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio2b_baud_rate")) {
+				sio2b_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {

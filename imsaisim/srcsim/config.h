@@ -24,6 +24,7 @@
  * 18-JUL-18 use logging
  * 12-JUL-19 implemented second SIO
  * 17-SEP-19 more consistent SIO naming
+ * 07-OCT-19 implemented baud rate for modem device
  */
 
 extern void config(void);

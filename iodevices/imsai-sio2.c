@@ -24,6 +24,7 @@
  * 17-SEP-19 more consistent SIO naming
  * 23-SEP-19 added AT-modem
  * 06-OCT-19 started to implement telnet protocol for modem device
+ * 07-OCT-19 implemented baud rate for modem device
  */
 
 #include <unistd.h>
@@ -64,6 +65,9 @@ int sio2a_baud_rate = 115200;
 static struct timeval sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat;
 
+int sio2b_baud_rate = 2400;
+
+static struct timeval sio2b_t1, sio2b_t2;
 static BYTE sio2b_stat;
 
 /*
@@ -380,12 +384,24 @@ void modem_telnet_options(void);
  */
 BYTE imsai_sio2b_status_in(void)
 {
+	extern int time_diff(struct timeval *, struct timeval *);
+
+	int tdiff;
+
+	gettimeofday(&sio2b_t2, NULL);
+	tdiff = time_diff(&sio2b_t1, &sio2b_t2);
+	if (sio2b_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2b_baud_rate))
+			return(sio2b_stat);
+
 	if (modem_device_alive(DEV_SIO2B)) {
 		if (modem_device_poll(DEV_SIO2B)) {
 			sio2b_stat |= 2;
 		}
 		sio2b_stat |= 1;
 	}
+
+	gettimeofday(&sio2b_t1, NULL);
 
 	return(sio2b_stat);
 }
@@ -415,9 +431,8 @@ again:
 		data = res;
 	} 
 
+	gettimeofday(&sio2b_t1, NULL);
 	sio2b_stat &= 0b11111101;
-
-	last = data;
 
 	/* handle telnet IAC */
 	if (data == 0xff) {
@@ -425,6 +440,7 @@ again:
 		goto again;
 	}
 
+	last = data;
 	return(data);
 }
 
@@ -436,6 +452,7 @@ void imsai_sio2b_data_out(BYTE data)
 	if (modem_device_alive(DEV_SIO2B)) {
 		modem_device_send(DEV_SIO2B, (char) data);
 	} else {
+		gettimeofday(&sio2b_t1, NULL);
 		sio2b_stat &= 0b11111110;
 	}
 }

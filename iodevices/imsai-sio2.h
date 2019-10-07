@@ -24,6 +24,7 @@
  * 17-SEP-19 more consistent SIO naming
  * 23-SEP-19 added AT-modem
  * 06-OCT-19 started to implement telnet protocol for modem device
+ * 07-OCT-19 implemented baud rate for modem device
  */
 
 extern BYTE imsai_sio_nofun_in(void);
