@@ -64,7 +64,7 @@ int sio2a_baud_rate = 115200;
 static struct timeval sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat;
 
-void modem_telnet_options(void);
+static BYTE sio2b_stat;
 
 /*
  * the IMSAI SIO-2 occupies 16 I/O ports, from which only
@@ -369,7 +369,8 @@ again:
 
 #ifdef HAS_MODEM
 #include "generic-at-modem.h"
-static BYTE sio2b_stat;
+
+void modem_telnet_options(void);
 
 /*
  * read status register
