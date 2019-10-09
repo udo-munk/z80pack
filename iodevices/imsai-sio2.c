@@ -25,6 +25,7 @@
  * 23-SEP-19 added AT-modem
  * 06-OCT-19 started to implement telnet protocol for modem device
  * 07-OCT-19 implemented baud rate for modem device
+ * 09-OCT-19 implement telnet binary transfer
  */
 
 #include <unistd.h>
@@ -477,6 +478,12 @@ void modem_telnet_options(void)
 	case 253:	/* handle DO commands */
 		c2 = modem_device_get(DEV_SIO2B);
 		switch (c2) {
+		case 0:		/* binary trasnmission */
+			modem_device_send(DEV_SIO2B, 255); /* IAC */
+			modem_device_send(DEV_SIO2B, 251); /* WILL */
+			modem_device_send(DEV_SIO2B, 0);   /* binary transfer */
+			break;
+
 		case 24:	/* terminal type informations */
 			modem_device_send(DEV_SIO2B, 255); /* IAC */
 			modem_device_send(DEV_SIO2B, 252); /* WONT */
