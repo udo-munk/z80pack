@@ -29,6 +29,7 @@ OBJ =   sim0.o \
 	iosim.o \
 	simfun.o \
 	simglb.o \
+	simbdos.o \
 	unix_terminal.o \
 	unix_network.o \
 	config.o \
@@ -88,7 +89,7 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h log.h memory.h
+iosim.o : iosim.c sim.h simglb.h log.h memory.h simbdos.h
 	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h log.h
@@ -96,6 +97,9 @@ simfun.o : simfun.c sim.h log.h
 
 simglb.o : simglb.c sim.h
 	$(CC) $(CFLAGS) simglb.c
+
+simbdos.o : simbdos.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) simbdos.c
 
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c

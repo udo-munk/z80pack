@@ -55,6 +55,7 @@
  * 17-MAY-2018 improved hardware control
  * 10-JUN-2018 modified boot code for early loading of files
  * 30-MAR-2019 added two more 4MB HD's
+ * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  */
 
 /*
@@ -129,6 +130,7 @@
 #include <netinet/tcp.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simbdos.h"
 #include "memory.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
@@ -718,8 +720,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port	157 */
 	io_trap_out,		/* port	158 */
 	io_trap_out,		/* port	159 */
-	hwctl_out,		/* port	160 */
-	io_trap_out,		/* port	161 */
+	hwctl_out,			/* port	160 */
+	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port	162 */
 	io_trap_out,		/* port	163 */
 	io_trap_out,		/* port	164 */

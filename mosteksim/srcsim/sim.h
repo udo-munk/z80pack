@@ -42,7 +42,7 @@
  */
 
 #define USR_COM	"\nMostek AID-80F and SYS-80FT Emulator"
-#define USR_REL	"1.0"
+#define USR_REL	"1.1"
 #define USR_CPR	"by Mike Douglas"
 
 /*

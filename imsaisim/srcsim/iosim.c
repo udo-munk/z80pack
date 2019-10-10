@@ -26,6 +26,7 @@
  * 27-JUL-19 more correct emulation of IMSAI SIO-2
  * 17-SEP-19 more consistent SIO naming
  * 23-SEP-19 added AT-modem
+ * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  */
 
 #include <unistd.h>
@@ -38,6 +39,7 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simbdos.h"
 #include "../../iodevices/unix_network.h"
 #include "../../iodevices/imsai-sio2.h"
 #include "../../iodevices/imsai-fif.h"
@@ -532,8 +534,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 157 */
 	io_trap_out,		/* port 158 */
 	io_trap_out,		/* port 159 */
-	hwctl_out,		/* port 160 */	/* virtual hardware control */
-	io_trap_out,		/* port 161 */
+	hwctl_out,			/* port 160 */	/* virtual hardware control */
+	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
 	io_trap_out,		/* port 164 */

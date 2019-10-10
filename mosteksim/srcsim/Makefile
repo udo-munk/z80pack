@@ -24,6 +24,7 @@ OBJ =	sim0.o \
 	iosim.o	\
 	simfun.o \
 	simglb.o \
+	simbdos.o \
 	config.o \
 	unix_terminal.o \
 	mostek-cpu.o \
@@ -62,7 +63,7 @@ sim6.o : sim6.c	sim.h simglb.h config.h memory.h
 sim7.o : sim7.c	sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim7.c
 
-simctl.o : simctl.c sim.h simglb.h memory.h
+simctl.o : simctl.c sim.h simglb.h memory.h ../../iodevices/mostek-fdc.h ../../iodevices/unix_terminal.h
 	$(CC) $(CFLAGS) simctl.c
 
 disas.o	: disas.c
@@ -74,7 +75,7 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o	: iosim.c sim.h	simglb.h
+iosim.o	: iosim.c sim.h	simglb.h simbdos.h ../../iodevices/mostek-cpu.h ../../iodevices/mostek-fdc.h
 	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h
@@ -83,18 +84,25 @@ simfun.o : simfun.c sim.h
 simglb.o : simglb.c sim.h
 	$(CC) $(CFLAGS) simglb.c
 
-config.o : config.c
+simbdos.o : simbdos.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) simbdos.c
+
+config.o : config.c simglb.h sim.h
 	$(CC) $(CFLAGS) config.c
 
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
 
-mostek-cpu.o: ../../iodevices/mostek-cpu.c
+mostek-cpu.o: ../../iodevices/mostek-cpu.c ../../iodevices/unix_terminal.h sim.h simglb.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/mostek-cpu.c
 
-mostek-fdc.o: ../../iodevices/mostek-fdc.c
+mostek-fdc.o: ../../iodevices/mostek-fdc.c sim.h simglb.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/mostek-fdc.c
 
 clean:
 	rm -f *.o
 	./ulnsrc
+
+allclean:
+	make clean
+	rm -f ../sim

@@ -9,6 +9,7 @@
  * History:
  * 15-SEP-19 (Mike Douglas) created from iosim.c for the Altair
  * 28-SEP-19 (Udo Munk) use logging
+ * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  */
 
 #include <unistd.h>
@@ -21,6 +22,7 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simbdos.h"
 #include "../../iodevices/mostek-cpu.h"
 #include "../../iodevices/mostek-fdc.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
@@ -465,7 +467,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 158 */
 	io_trap_out,		/* port 159 */
 	io_trap_out,		/* port 160 */
-	io_trap_out,		/* port 161 */
+	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
 	io_trap_out,		/* port 164 */
