@@ -35,6 +35,9 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
+#ifdef FRONTPANEL
+#include "../../frontpanel/frontpanel.h"
+#endif
 #include "memory.h"
 
 /* BDOS Equates */
@@ -47,7 +50,7 @@
 #define SETDMA	26		/* set DMA address */
 
 #define	SECLEN	128		/* logical sector length */
-#define	CTRL_Z	0x1A	/* CP/M EOF character */
+#define	CTRL_Z	0x1A		/* CP/M EOF character */
 
 /* The following file types will be treated as text files */
 
@@ -56,9 +59,9 @@ static char *textExts[] = {"ASM","MAC","SRC","TXT","PRN","LST","SYM","LIB",
 
 /* Static variables */
 
-static FILE *fp = NULL;			/* file pointer */
-static WORD dmaAddr = 0x80;		/* buffer address in emulated space */
-static int textFile = 0;		/* text file flag */
+static FILE *fp = NULL;		/* file pointer */
+static WORD dmaAddr = 0x80;	/* buffer address in emulated space */
+static int textFile = 0;	/* text file flag */
 
 /*
  * host_bdos_out - an output to this I/O device is somewhat equivalent
@@ -70,65 +73,65 @@ static int textFile = 0;		/* text file flag */
 
 void host_bdos_out(BYTE outByte)
 {
-	WORD fcbAddr;				/* address of FCB in simulator memory */
+	WORD fcbAddr;		/* address of FCB in simulator memory */
 	char fname[16];
 	char extension[8];
 	BYTE buf[128];
-	char openFlags[4];			/* flags for fopen call */
+	char openFlags[4];	/* flags for fopen call */
 	int xferLen;
 	int i;
 
-	outByte = ~outByte;					/* compiler requires assignment */
-	if (outByte != C)					/*    for the compare to work */
+	outByte = ~outByte;	/* compiler requires assignment */
+	if (outByte != C)	/*    for the compare to work */
 		return;
 
 /* OPEN or MAKE file */
 
-	A = 0xff;							/* assume error status */
-	fcbAddr = (D << 8) + E;				/* FCB address in simulator memory */
+	A = 0xff;		/* assume error status */
+	fcbAddr = (D << 8) + E;	/* FCB address in simulator memory */
 
 	if ((C == OPENF) || (C == MAKEF)) {
-		for (i=0; i<8; i++) {			/* copy file name */
+		for (i=0; i<8; i++) {		/* copy file name */
 			fname[i] = memrdr(fcbAddr+1+i);
 			if (fname[i] == ' ')
 				break;	
 		}
 		fname[i] = 0;
 
-		for (i=0; i<3; i++) {			/* copy extension */
+		for (i=0; i<3; i++) {		/* copy extension */
 			extension[i] = memrdr(fcbAddr+9+i);
 			if (extension[i] == ' ')
 				break;	
 		}
 		extension[i] = 0;
 
-		if (extension[0] != 0) {		/* form full file name */
+		if (extension[0] != 0) {	/* form full file name */
 			strcat(fname, ".");
 			strcat(fname, extension);
 		}
 
 		if (C == MAKEF) {
-			strcpy(openFlags, "wb");	/* MAKEF opens for writing */
+			strcpy(openFlags, "wb"); /* MAKEF opens for writing */
 
 #ifdef SIMBDOS_NO_OVERWRITE
-			if (fopen(fname, "rb") != NULL) {	/* file exist? */
+			if (fopen(fname, "rb") != NULL) { /* file exist? */
 				fclose(fp);
 				openFlags[0] = 0;				/* yes, don't over-write */
 			}
 #endif
-			textFile = 0;				/* binary file is assumed */
+			textFile = 0;		/* binary file is assumed */
 			for (i=0; textExts[i] != NULL; i++) 
 				if (strcmp(extension, textExts[i]) == 0) {
-					textFile = 1;		/* it's a text file */
+					textFile = 1;	/* it's a text file */
 					break;
 				}
 		}
 		else
-			strcpy(openFlags, "rb");	/* OPENF for reading */
+			strcpy(openFlags, "rb"); /* OPENF for reading */
 
-		if (openFlags[0] != 0)			/* don't open if null string */
+		if (openFlags[0] != 0)		/* don't open if null string */
 			if ((fp = fopen(fname, openFlags)) != NULL) 
-				A = 0;					/* success */
+				A = 0;		/* success */
 	}
 	
 /* CLOSE file */
@@ -161,9 +164,9 @@ void host_bdos_out(BYTE outByte)
 			for (xferLen=0; xferLen<SECLEN; xferLen++) {
 				buf[xferLen] = memrdr(dmaAddr+xferLen);		
 				if ((buf[xferLen] == CTRL_Z) && textFile) 
-					break;			/* ctrl-z (EOF) found */
+					break;	/* ctrl-z (EOF) found */
 			}
-			if (xferLen == 0)		/* record contains only ctrl-z */
+			if (xferLen == 0)	/* record contains only ctrl-z */
 				A = 0;
 			else
 				if ((size_t)xferLen == fwrite(buf, 1, xferLen, fp))
