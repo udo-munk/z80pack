@@ -591,7 +591,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	addrh = addrh;		/* to avoid compiler warning */
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	LOGD(TAG, "input %02x from port %0sx", io_data, io_port);
+	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
 	return(io_data);
 }
 
