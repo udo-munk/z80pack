@@ -10,6 +10,7 @@
  * 24-SEP-19 (Mike Douglas) created for Mostek AID-80F and SYS-80FT
  * 27-SEP-19 (Mike Douglas) include newline \n as config.txt delimiter
  * 28-SEP-19 (Udo Munk) use logging
+ * 17-OCT-19 (Udo Munk) fix logging
  */
 
 #include <stdlib.h>
@@ -28,8 +29,6 @@ void config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2;
-
-	LOG(TAG, "");
 
 	if ((fp = fopen("conf/config.txt", "r")) != NULL) {
 		s = buf;
@@ -65,6 +64,4 @@ void config(void)
 	else {
 		LOGW(TAG, "missing conf/config.txt file");
 	}
-
-	LOG(TAG, "");
 }
