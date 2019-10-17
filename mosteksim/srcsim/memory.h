@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2019 by Mike Douglas
  *
- * This module implements memory management for z80sim
+ * This module implements memory management for mosteksim
  *
  * History:
  * 15-SEP-19 (Mike Douglas) Created from memory.h in the z80sim

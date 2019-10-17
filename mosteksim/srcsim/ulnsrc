@@ -5,7 +5,6 @@ rm -f simfun.c
 rm -f simint.c
 rm -f simglb.[hc]
 rm -f simbdos.[hc]
-rm -f memory.c
 rm -f disas.c
 rm -f config.h
 rm -f log.h

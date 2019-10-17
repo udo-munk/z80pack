@@ -2,7 +2,6 @@
 
 ln ../../z80sim/srcsim/config.h config.h
 ln ../../z80sim/srcsim/disas.c disas.c
-ln ../../z80sim/srcsim/memory.c memory.c
 ln ../../z80core/sim0.c sim0.c
 ln ../../z80core/sim1.c sim1.c
 ln ../../z80core/sim1a.c sim1a.c
