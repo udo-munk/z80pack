@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2018 by Udo Munk
+ * Copyright (C) 2016-2019 by Udo Munk
  * Copyright (C) 2018 David McNaughton
  *
  * This module implements the memory for an IMSAI 8080 system
@@ -13,6 +13,8 @@
  * 04-JUL-2018 optimization
  * 07-JUL-2018 implemended banked ROM/RAM
  * 12-JUL-2018 use logging
+ * 18-JUL-2019 bug fix so that fp shows mapped memory contents
+ * 18-OCT-2019 add MMU and memory banks
  */
 
 #include "stdio.h"
@@ -26,20 +28,42 @@
 
 static const char *TAG = "memory";
 
-/* 64KB non banked memory */
+/* 64KB memory system bank 0 */
 BYTE memory[64 << 10];
 /* 2KB banked ROM & RAM for MPU-B */
 BYTE mpubrom[2 << 10];
 BYTE mpubram[2 << 10];
 
-/* Memory access read and write vector tables */
+/* Memory access read and write vector tables system bank 0 */
 BYTE *rdrvec[64];
 BYTE *wrtvec[64];
 int cyclecount;
 static BYTE groupsel;
 
-/* page table with memory configuration/state */
+/* page table with memory configuration/state system bank 0 */
 int p_tab[64];		/* 64 pages a 1 KB */
+
+/* additional memory banks */
+static BYTE bnk1[SEGSIZ];
+static BYTE bnk2[SEGSIZ];
+static BYTE bnk3[SEGSIZ];
+static BYTE bnk4[SEGSIZ];
+static BYTE bnk5[SEGSIZ];
+static BYTE bnk6[SEGSIZ];
+static BYTE bnk7[SEGSIZ];
+
+BYTE *banks[MAXSEG] = {
+	NULL,		/* system bank 0, not addressable here */
+	&bnk1[0],
+	&bnk2[0],
+	&bnk3[0],
+	&bnk4[0],
+	&bnk5[0],
+	&bnk6[0],
+	&bnk7[0]
+};
+
+int selbnk;		/* current selected bank */
 
 void groupswap(void)
 {

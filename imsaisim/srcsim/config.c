@@ -169,10 +169,10 @@ void config(void)
 			} else if (!strcmp(t1, "ram")) {
 				ram_size = atoi(t2);
 				if (ram_size > MAX_RAM) {
-					LOGW(TAG, "Maximal possible RAM size is %dKB", MAX_RAM);
+					LOGW(TAG, "Maximal possible RAM size for bank 0 is %d KB", MAX_RAM);
 					ram_size = MAX_RAM;
 				}
-				LOG(TAG, "RAM size is %d KB\r\n", ram_size);
+				LOG(TAG, "RAM size bank 0 is %d KB\r\n", ram_size);
 			} else {
 				LOGW(TAG, "system.conf unknown command: %s", s);
 			}

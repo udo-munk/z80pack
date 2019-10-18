@@ -14,20 +14,25 @@
  * 07-JUL-2018 implemended banked ROM/RAM
  * 12-JUL-2018 use logging
  * 18-JUL-2019 bug fix so that fp shows mapped memory contents
+ * 18-OCT-2019 add MMU and memory banks
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
 extern void groupswap(void);
 extern int wait_step(void);
 extern void wait_int_step(void);
-extern BYTE memory[];
+extern BYTE memory[], *banks[];
 extern int p_tab[];
 extern int ram_size;
+extern int selbnk;
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
 #define MEM_WPROT	2	/* memory is write protected */
 #define MEM_NONE	3	/* no memory available */
+
+#define MAXSEG		8	/* max number of memory segments */
+#define SEGSIZ		49152	/* size of the memory segments, 48 KBytes */
 
 extern void ctrl_port_out(BYTE);
 extern BYTE ctrl_port_in(void);
@@ -67,8 +72,12 @@ extern int cyclecount;
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	if (p_tab[addr >> 10] == MEM_RW)
-		_MEMWRTTHRU(addr) = data;
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] == MEM_RW)
+			_MEMWRTTHRU(addr) = data;
+	} else {
+		*(banks[selbnk] + addr) = data;
+	}
 
 	cpu_bus &= ~(CPU_WO | CPU_MEMR);
 
@@ -85,10 +94,16 @@ static inline BYTE memrdr(WORD addr)
 
 	fp_clock++;
 	fp_led_address = addr;
-	if (p_tab[addr >> 10] != MEM_NONE)
-		fp_led_data = _MEMMAPPED(addr);
-	else
-		fp_led_data = 0xff;
+
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] != MEM_NONE)
+			fp_led_data = _MEMMAPPED(addr);
+		else
+			fp_led_data = 0xff;
+	} else {
+		fp_led_data = *(banks[selbnk] + addr);
+	}
+
 	fp_sampleData();
 	wait_step();
 
@@ -103,16 +118,24 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline BYTE dma_read(WORD addr)
 {
-	if (p_tab[addr >> 10] != MEM_NONE)
-		return(_MEMMAPPED(addr));
-	else
-		return(0xff);
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] != MEM_NONE)
+			return(_MEMMAPPED(addr));
+		else
+			return(0xff);
+	} else {
+		return(*(banks[selbnk] + addr));
+	}
 }
 
 static inline void dma_write(WORD addr, BYTE data)
 {
-	if (p_tab[addr >> 10] == MEM_RW)
-		_MEMDIRECT(addr) = data;
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] == MEM_RW)
+			_MEMDIRECT(addr) = data;
+	} else {
+		 *(banks[selbnk] + addr) = data;
+	}
 }
 
 /*

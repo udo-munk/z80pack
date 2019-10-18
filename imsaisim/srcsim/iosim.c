@@ -27,6 +27,7 @@
  * 17-SEP-19 more consistent SIO naming
  * 23-SEP-19 added AT-modem
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 18-OCT-19 add MMU and memory banks
  */
 
 #include <unistd.h>
@@ -70,6 +71,8 @@ static BYTE lpt_in(void);
 static void lpt_out(BYTE);
 static BYTE io_pport_in(void);
 static BYTE imsai_kbd_data_in(void), imsai_kbd_status_in(void);
+static BYTE mmu_in(void);
+static void mmu_out(BYTE);
 
 static const char *TAG = "IO";
 
@@ -159,7 +162,7 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 61 */
 	io_trap_in,		/* port 62 */
 	io_trap_in,		/* port 63 */
-	io_trap_in,		/* port 64 */
+	mmu_in,			/* port 64 */ /* MMU */
 	io_trap_in,		/* port 65 */
 	io_trap_in,		/* port 66 */
 	io_trap_in,		/* port 67 */
@@ -438,7 +441,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 61 */
 	io_trap_out,		/* port 62 */
 	io_trap_out,		/* port 63 */
-	io_trap_out,		/* port 64 */
+	mmu_out,		/* port 64 */ /* MMU */
 	io_trap_out,		/* port 65 */
 	io_trap_out,		/* port 66 */
 	io_trap_out,		/* port 67 */
@@ -534,7 +537,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 157 */
 	io_trap_out,		/* port 158 */
 	io_trap_out,		/* port 159 */
-	hwctl_out,			/* port 160 */	/* virtual hardware control */
+	hwctl_out,		/* port 160 */	/* virtual hardware control */
 	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
@@ -961,4 +964,26 @@ static BYTE imsai_kbd_data_in(void)
 	imsai_kbd_status = 0;
 
 	return((BYTE) data);
+}
+
+/*
+ *	read MMU register
+ */
+static BYTE mmu_in(void)
+{
+	return(selbnk);
+}
+
+/*
+ *	write MMU register
+ */
+static void mmu_out(BYTE data)
+{
+	selbnk = data;
+
+	if (data > MAXSEG) {
+		LOGE(TAG, "selected bank %d not available", data);
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+	}
 }
