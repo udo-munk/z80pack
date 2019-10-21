@@ -17,7 +17,6 @@
  * 18-OCT-2019 add MMU and memory banks
  */
 
-#include "stdio.h"
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
