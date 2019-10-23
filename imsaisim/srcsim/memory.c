@@ -156,6 +156,7 @@ void reset_memory(void)
 	groupswap();
 	cyclecount = 0;
 #endif
+	selbnk = 0;
 }
 
 /*
