@@ -28,6 +28,7 @@
  * 23-SEP-19 added AT-modem
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  * 18-OCT-19 add MMU and memory banks
+ * 24-OCT-19 add RTC
  */
 
 #include <unistd.h>
@@ -57,6 +58,7 @@
 #include "netsrv.h"
 #endif
 #include "log.h"
+#include "../../iodevices/rtc.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -85,7 +87,7 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	input I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256]) (void) = {
-	imsai_sio_nofun_in,	/* IMSAI SIO-2 */
+	imsai_sio_nofun_in,	/* port 0 */ /* IMSAI SIO-2 */
 	imsai_sio_nofun_in,	/* port 1 */
 	imsai_sio1a_data_in,	/* port 2 */ /* Channel A, console */
 	imsai_sio1a_status_in,	/* port 3 */
@@ -163,8 +165,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 62 */
 	io_trap_in,		/* port 63 */
 	mmu_in,			/* port 64 */ /* MMU */
-	io_trap_in,		/* port 65 */
-	io_trap_in,		/* port 66 */
+	clkc_in,		/* port 65 */ /* RTC command */
+	clkd_in,		/* port 66 */ /* RTC data */
 	io_trap_in,		/* port 67 */
 	io_trap_in,		/* port 68 */
 	io_trap_in,		/* port 69 */
@@ -361,7 +363,7 @@ BYTE (*port_in[256]) (void) = {
  *	output I/O port (0 - 255), to do the required I/O.
  */
 static void (*port_out[256]) (BYTE) = {
-	imsai_sio_nofun_out,	/* IMSAI SIO-2 */
+	imsai_sio_nofun_out,	/* port 0 */ /* IMSAI SIO-2 */
 	imsai_sio_nofun_out,	/* port 1 */
 	imsai_sio1a_data_out,	/* port 2 */ /* Channel A, console */
 	imsai_sio1a_status_out,	/* port 3 */
@@ -442,8 +444,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 62 */
 	io_trap_out,		/* port 63 */
 	mmu_out,		/* port 64 */ /* MMU */
-	io_trap_out,		/* port 65 */
-	io_trap_out,		/* port 66 */
+	clkc_out,		/* port 65 */ /* RTC command */
+	clkd_out,		/* port 66 */ /* RTC data */
 	io_trap_out,		/* port 67 */
 	io_trap_out,		/* port 68 */
 	io_trap_out,		/* port 69 */

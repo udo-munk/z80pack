@@ -48,7 +48,8 @@ OBJ =   sim0.o \
 	cromemco-88ccc.o \
 	imsai-vio.o \
 	netsrv.o \
-	generic-at-modem.o
+	generic-at-modem.o \
+	rtc.o
 
 FP =	../../frontpanel/libfrontpanel.so
 
@@ -99,7 +100,7 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h simglb.h config.h memory.h log.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h log.h simbdos.h
+iosim.o : iosim.c sim.h simglb.h log.h simbdos.h ../../iodevices/rtc.h
 	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h log.h
@@ -143,6 +144,9 @@ netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
 
 generic-at-modem.o : ../../iodevices/generic-at-modem.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/generic-at-modem.c
+
+rtc.o: ../../iodevices/rtc.c sim.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/rtc.c
 
 clean:
 	rm -f *.o
