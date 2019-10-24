@@ -30,8 +30,9 @@ OBJ =   sim0.o \
 	simfun.o \
 	simglb.o \
 	simbdos.o \
+	config.o \
 	unix_terminal.o \
-	config.o
+	rtc.o
 
 all: /tmp/.z80pack/cpmsim.auxin /tmp/.z80pack/cpmsim.auxout ../cpmsim
 	@echo
@@ -88,7 +89,7 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h simglb.h memory.h log.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h memory.h log.h simbdos.h
+iosim.o : iosim.c sim.h simglb.h memory.h log.h simbdos.h ../../iodevices/rtc.h
 	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h log.h
@@ -102,6 +103,9 @@ simbdos.o : simbdos.c sim.h simglb.h memory.h
 
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
+
+rtc.o: ../../iodevices/rtc.c sim.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/rtc.c
 
 config.o : config.c
 	$(CC) $(CFLAGS) config.c

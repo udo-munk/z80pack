@@ -55,7 +55,8 @@
  * 17-MAY-2018 improved hardware control
  * 10-JUN-2018 modified boot code for early loading of files
  * 30-MAR-2019 added two more 4MB HD's
- * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 08-OCT-2019 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 24-OCT-2019 move RTC to I/O module for usage by any machine
  */
 
 /*
@@ -117,7 +118,6 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
-#include <time.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <sys/stat.h>
@@ -134,6 +134,7 @@
 #include "memory.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+#include "../../iodevices/rtc.h"
 
 #define BUFSIZE 256		/* max line length of command buffer */
 #define MAX_BUSY_COUNT 10	/* max counter to detect I/O busy waiting
@@ -150,8 +151,6 @@ static unsigned int sector;	/* current sector (0..65535) */
 static BYTE status;		/* status of last I/O operation on FDC */
 static BYTE dmadl;		/* current DMA address destination low */
 static BYTE dmadh;		/* current DMA address destination high */
-static BYTE clkcmd;		/* clock command */
-static BYTE clkfmt;		/* clock format, 0 = BCD, 1 = decimal */
 static BYTE timer;		/* 10ms timer */
 static int drivea;		/* fd for file "drivea.dsk" */
 static int driveb;		/* fd for file "driveb.dsk" */
@@ -257,8 +256,6 @@ static BYTE mmui_in(void), mmus_in(void), mmuc_in(void);
 static void mmui_out(BYTE), mmus_out(BYTE), mmuc_out(BYTE);
 static BYTE mmup_in(void);
 static void mmup_out(BYTE);
-static BYTE clkc_in(void), clkd_in(void);
-static void clkc_out(BYTE), clkd_out(BYTE);
 static BYTE time_in(void);
 static void time_out(BYTE);
 static BYTE delay_in(void);
@@ -281,7 +278,6 @@ static void netd1_out(BYTE), nets1_out(BYTE);
 /*
  *	Forward declaration of support functions
  */
-static int to_bcd(int), get_date(struct tm *);
 static void int_timer(int);
 
 #ifdef NETWORKING
@@ -457,7 +453,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port	157 */
 	io_trap_in,		/* port	158 */
 	io_trap_in,		/* port	159 */
-	hwctl_in,		/* port	160 */
+	hwctl_in,		/* port	160 */	/* virtual hardware control */
 	io_trap_in,		/* port	161 */
 	io_trap_in,		/* port	162 */
 	io_trap_in,		/* port	163 */
@@ -720,7 +716,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port	157 */
 	io_trap_out,		/* port	158 */
 	io_trap_out,		/* port	159 */
-	hwctl_out,			/* port	160 */
+	hwctl_out,		/* port	160 */	/* virtual hardware control */
 	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port	162 */
 	io_trap_out,		/* port	163 */
@@ -2388,144 +2384,6 @@ static BYTE mmup_in(void)
 static void mmup_out(BYTE data)
 {
 	wp_common = data;
-}
-
-/*
- *	I/O handler for read clock command:
- *	return last clock command
- */
-static BYTE clkc_in(void)
-{
-	return(clkcmd);
-}
-
-/*
- *	I/O handler for write clock command:
- *	set the wanted clock command
- *	toggle BCD/decimal format if toggle command (255)
- */
-static void clkc_out(BYTE data)
-{
-	clkcmd = data;
-	if (data == 255)
-		clkfmt = clkfmt ^ 1;
-}
-
-/*
- *	I/O handler for read clock data:
- *	dependent on the last clock command the following
- *	informations are returned from the system clock:
- *		0 - seconds in BCD or decimal
- *		1 - minutes in BCD or decimal
- *		2 - hours in BCD or decimal
- *		3 - low byte number of days since 1.1.1978
- *		4 - high byte number of days since 1.1.1978
- *		5 - day of month in BCD or decimal
- *		6 - month in BCD or decimal
- *		7 - year in BCD or decimal
- *	for every other clock command a 0 is returned
- */
-static BYTE clkd_in(void)
-{
-	register struct tm *t;
-	register int val;
-	time_t Time;
-
-	time(&Time);
-	t = localtime(&Time);
-	switch(clkcmd) {
-	case 0:			/* seconds */
-		if (clkfmt)
-			val = t->tm_sec;
-		else
-			val = to_bcd(t->tm_sec);
-		break;
-	case 1:			/* minutes */
-		if (clkfmt)
-			val = t->tm_min;
-		else
-			val = to_bcd(t->tm_min);
-		break;
-	case 2:			/* hours */
-		if (clkfmt)
-			val = t->tm_hour;
-		else
-			val = to_bcd(t->tm_hour);
-		break;
-	case 3:			/* low byte days */
-		val = get_date(t) & 255;
-		break;
-	case 4:			/* high byte days */
-		val = get_date(t) >> 8;
-		break;
-	case 5:			/* day of month */
-		if (clkfmt)
-			val = t->tm_mday;
-		else
-			val = to_bcd(t->tm_mday);
-		break;
-	case 6:			/* month */
-		if (clkfmt)
-			val = t->tm_mon;
-		else
-			val = to_bcd(t->tm_mon);
-		break;
-	case 7:			/* year */
-		if (clkfmt)
-			val = t->tm_year;
-		else
-			val = to_bcd(t->tm_year);
-		break;
-	default:
-		val = 0;
-		break;
-	}
-	return((BYTE) val);
-}
-
-/*
- *	I/O handler for write clock data:
- *	under UNIX the system clock only can be set by the
- *	super user, so we do nothing here
- */
-static void clkd_out(BYTE data)
-{
-	data = data; /* to avoid compiler warning */
-}
-
-/*
- *	Convert an integer to BCD
- */
-static int to_bcd(int val)
-{
-	register int i = 0;
-
-	while (val >= 10) {
-		i += val / 10;
-		i <<= 4;
-		val %= 10;
-	}
-	i += val;
-	return (i);
-}
-
-/*
- *	Calculate number of days since 1.1.1978
- *	CP/M 3 and MP/M 2 are Y2K bug fixed and can handle the date,
- *	so the Y2K bug here is intentional.
- */
-static int get_date(struct tm *t)
-{
-	register int i;
-	register int val = 0;
-
-	for (i = 1978; i < 1900 + t->tm_year; i++) {
-		val += 365;
-		if (i % 4 == 0)
-			val++;
-	}
-	val += t->tm_yday + 1;
-	return(val);
 }
 
 /*

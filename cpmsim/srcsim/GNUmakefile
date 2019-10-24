@@ -6,7 +6,7 @@ MACHINE = cpm
 # machine specific system source files
 SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = unix_terminal.c
+SRC_IO = unix_terminal.c rtc.c
 #machine specifc libraries 
 SRC_LIBS =
 
