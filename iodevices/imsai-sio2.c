@@ -375,8 +375,6 @@ again:
 #ifdef HAS_MODEM
 #include "generic-at-modem.h"
 
-void modem_telnet_options(void);
-
 /*
  * read status register
  *
@@ -435,12 +433,6 @@ again:
 	gettimeofday(&sio2b_t1, NULL);
 	sio2b_stat &= 0b11111101;
 
-	/* handle telnet IAC */
-	if (data == 0xff) {
-		modem_telnet_options();
-		goto again;
-	}
-
 	last = data;
 	return(data);
 }
@@ -455,67 +447,6 @@ void imsai_sio2b_data_out(BYTE data)
 	} else {
 		gettimeofday(&sio2b_t1, NULL);
 		sio2b_stat &= 0b11111110;
-	}
-}
-
-/*
- * remote telnet server wants to negotiate options
- */
-void modem_telnet_options(void)
-{
-	BYTE c1 = 0, c2 = 0;
-
-	/* get the telnet command */
-	c1 = modem_device_get(DEV_SIO2B);
-
-	switch (c1) {
-	case 251:	/* handle WILL commands */
-		/* just log, we don't really care */
-		c2 = modem_device_get(DEV_SIO2B);
-		LOGD(TAG, "ignore telnet WILL command: %d %d", c1, c2);
-		break;
-
-	case 253:	/* handle DO commands */
-		c2 = modem_device_get(DEV_SIO2B);
-		switch (c2) {
-		case 0:		/* binary trasnmission */
-			modem_device_send(DEV_SIO2B, 255); /* IAC */
-			modem_device_send(DEV_SIO2B, 251); /* WILL */
-			modem_device_send(DEV_SIO2B, 0);   /* binary transfer */
-			break;
-
-		case 24:	/* terminal type informations */
-			modem_device_send(DEV_SIO2B, 255); /* IAC */
-			modem_device_send(DEV_SIO2B, 252); /* WONT */
-			modem_device_send(DEV_SIO2B, 24);  /* terminal type */
-			LOGD(TAG, "telnet WONT terminal type");
-			break;
-
-		case 31:	/* terminal window size */
-			modem_device_send(DEV_SIO2B, 255); /* IAC */
-			modem_device_send(DEV_SIO2B, 251); /* WILL */
-			modem_device_send(DEV_SIO2B, 31);  /* terminal size */
-                        modem_device_send(DEV_SIO2B, 255); /* IAC */
-			modem_device_send(DEV_SIO2B, 250); /* SB */
-			modem_device_send(DEV_SIO2B, 31);  /* terminal size */
-			modem_device_send(DEV_SIO2B, 0);
-			modem_device_send(DEV_SIO2B, 80);  /* width 80 */
-			modem_device_send(DEV_SIO2B, 0);
-			modem_device_send(DEV_SIO2B, 24);  /* high 24 */
-			modem_device_send(DEV_SIO2B, 255); /* IAC */
-			modem_device_send(DEV_SIO2B, 240); /* SE */
-			LOGD(TAG, "telnet DO window size 80/24");
-			break;
-
-		default:
-			LOGW(TAG, "telnet DO command not implemented: %d", c2);
-			break;
-		}
-		break;
-
-	default:
-		LOGW(TAG, "telnet command %d not implemented", c1);
-		break;
 	}
 }
 

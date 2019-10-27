@@ -8,12 +8,12 @@
  * History:
  * 12-SEP-19    1.0     Initial Release
  * 29-SEP-19    1.1     Added Answer modes and registers
- * 06-OCT-19	1.2	Implemented telnet protocol
+ * 20-OCT-19    1.2     Added Telnet handler
+ * 23-OCT-19    1.3     Put Telnet protocol under modem register control
  */
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
@@ -26,16 +26,57 @@
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 
-/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "libtelnet.h"
+
+#define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
 
 #define AT_BUF_LEN      41
-#define LISTENER_PORT   8023
-#define TELNET_TIMEOUT	800
-
-extern void telnet_negotiation(int);
+#define DEFAULT_LISTENER_PORT   8023
+#define _QUOTE(arg)      #arg
+#define STR_VALUE(arg)    _QUOTE(arg)
 
 static const char* TAG = "at-modem";
+
+#define SREG_AA     0
+#define SREG_RINGS  1
+#define SREG_ESCAPE 2
+#define SREG_CR     3
+#define SREG_LF     4
+#define SREG_BS     5
+#define SREG_PORT   14
+#define SREG_TELNET 15
+#define SREG_TN_SGA 16
+#define SREG_TN_ECHO 17
+#define SREG_TN_BIN 18
+#define SREG_TN_NAWS 19
+#define SREG_COLS   20
+#define SREG_ROWS   21
+#define SREG_TN_TTYPE 22
+#define MAX_REG_NUM 25
+
+#define SREG_DEFAULTS { \
+    /* SREG_AA */       0, \
+    /* SREG_RINGS */    0, \
+    /* SREG_ESCAPE */   43, \
+    /* SREG_CR */       13, \
+    /* SREG_LF */       10, \
+    /* SREG_BS */       8, \
+    0, 0, 0, 0, 0, 0, 0, 0, \
+    /* SREG_PORT */     DEFAULT_LISTENER_PORT, \
+    /* SREG_TELNET */   0, \
+    /* SREG_TN_SGA */   3, \
+    /* SREG_TN_ECHO */  0, \
+    /* SREG_TN_BIN */   0, \
+    /* SREG_TN_NAWS */  3, \
+    /* SREG_COLS */     80, \
+    /* SREG_ROWS */     24, \
+    /* SREG_TN_TTYPE */ 3, \
+};
+
+static unsigned int s_reg[MAX_REG_NUM] = SREG_DEFAULTS;
+static unsigned int s_reg_defaults[MAX_REG_NUM] = SREG_DEFAULTS;
+static int reg = 0;
 
 static int sfd = 0;
 static int answer_sfd = 0;
@@ -46,7 +87,130 @@ static int *active_sfd = &sfd;
 static char addr[AT_BUF_LEN];
 static char port_num[10];
 
+static telnet_telopt_t telnet_opts[10];
+
+void init_telnet_opts(void) {
+
+    int i=0;
+
+    telnet_opts[i].telopt = TELNET_TELOPT_SGA;
+    telnet_opts[i].us =  (s_reg[SREG_TN_SGA] & 1)? TELNET_WILL : TELNET_WONT;
+    telnet_opts[i].him = (s_reg[SREG_TN_SGA] & 2)? TELNET_DO : TELNET_DONT;
+    i++;
+    telnet_opts[i].telopt = TELNET_TELOPT_ECHO;
+    telnet_opts[i].us =  (s_reg[SREG_TN_ECHO] & 1)? TELNET_WILL : TELNET_WONT;
+    telnet_opts[i].him = (s_reg[SREG_TN_ECHO] & 2)? TELNET_DO : TELNET_DONT;
+    i++;
+    telnet_opts[i].telopt = TELNET_TELOPT_BINARY;
+    telnet_opts[i].us =  (s_reg[SREG_TN_BIN] & 1)? TELNET_WILL : TELNET_WONT;
+    telnet_opts[i].him = (s_reg[SREG_TN_BIN] & 2)? TELNET_DO : TELNET_DONT;
+    i++;
+    telnet_opts[i].telopt = TELNET_TELOPT_NAWS;
+    telnet_opts[i].us =  (s_reg[SREG_TN_NAWS] & 1)? TELNET_WILL : TELNET_WONT;
+    telnet_opts[i].him = (s_reg[SREG_TN_NAWS] & 2)? TELNET_DO : TELNET_DONT;
+    i++;
+    telnet_opts[i].telopt = TELNET_TELOPT_TTYPE;
+    telnet_opts[i].us =  (s_reg[SREG_TN_TTYPE] & 1)? TELNET_WILL : TELNET_WONT;
+    telnet_opts[i].him = (s_reg[SREG_TN_TTYPE] & 2)? TELNET_DO : TELNET_DONT;
+    i++;
+    telnet_opts[i].telopt = -1;
+    telnet_opts[i].us =  0;
+    telnet_opts[i].him = 0;
+}
+
+#define TELNET_TTYPE   "ansi"
+
+static telnet_t *telnet =  NULL;
+static unsigned char tn_recv;
+static int tn_len = 0;
+
 int time_diff_sec(struct timeval *, struct timeval *);
+
+static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
+
+    char buf[81];
+    char * p;
+    int i;
+
+    user_data = user_data;
+
+    switch (ev->type) {
+    case TELNET_EV_DATA:
+		if (ev->data.size) {
+            if (ev->data.size != 1) {
+                LOGW(TAG, "LONGER THAN EXPECTED [%ld]", ev->data.size);
+            } else {
+                tn_recv = *(ev->data.buffer);
+                tn_len = ev->data.size;
+            }
+            LOGD(TAG, "Telnet IN: %c[%ld]", tn_recv, ev->data.size);
+		}
+		break;
+    case TELNET_EV_SEND:
+		if (ev->data.size) {
+            p = buf;
+            for(i=0;i<(int)ev->data.size;i++) {
+                p += sprintf (p, "%d ", *(ev->data.buffer+i));
+            }
+            LOGD(TAG, "Telnet OUT: %s[%ld]", buf, ev->data.size);
+		}
+		write(*active_sfd, ev->data.buffer, ev->data.size);
+		break;
+    case TELNET_EV_WILL:
+        if (ev->neg.telopt == TELNET_TELOPT_SGA) {
+            LOGI(TAG, "Telnet WILL SGA");
+        } else if (ev->neg.telopt == TELNET_TELOPT_BINARY) {
+            LOGI(TAG, "Telnet WILL BINARY");
+        } else {
+            LOGW(TAG, "Telnet WILL unknown opt: %d", ev->neg.telopt);
+        }
+		break;
+    case TELNET_EV_DO:
+        if (ev->neg.telopt == TELNET_TELOPT_SGA) {
+            LOGI(TAG, "Telnet DO SGA");
+        } else if (ev->neg.telopt == TELNET_TELOPT_BINARY) {
+            LOGI(TAG, "Telnet DO BINARY");
+        } else if (ev->neg.telopt == TELNET_TELOPT_TTYPE) {
+            LOGI(TAG, "Telnet DO TTYPE");
+        } else if (ev->neg.telopt == TELNET_TELOPT_NAWS) {
+            telnet_begin_sb(telnet, TELNET_TELOPT_NAWS);
+            buf[0] = 0; 
+            buf[1] = s_reg[SREG_COLS]; 
+            buf[2] = 0; 
+            buf[3] = s_reg[SREG_ROWS]; 
+            telnet_send(telnet, buf, 4);
+            telnet_finish_sb(telnet);
+            LOGI(TAG, "Telnet DO NAWS [%d x %d]", (buf[0]<<8) + buf[1], (buf[2]<<8) + buf[3]);
+        } else {
+            LOGW(TAG, "Telnet DO unknown opt: %d", ev->neg.telopt);
+        }
+        break;
+    case TELNET_EV_SUBNEGOTIATION:
+		LOGI(TAG, "SUBNEGOTIATION [%d]", ev->sub.telopt);
+        break;
+    case TELNET_EV_TTYPE:
+		LOGI(TAG, "TTYPE negotiation cmd:%d", ev->ttype.cmd);
+        char *ttype;
+        if (((ttype = getenv("TERM")) == NULL) || (s_reg[SREG_TN_TTYPE] & 4)) {
+            ttype = TELNET_TTYPE;
+        }
+        if (ev->ttype.cmd == TELNET_TTYPE_SEND) {
+		    LOGI(TAG, "TTYPE SEND : %s", ttype);
+            telnet_ttype_is(telnet, ttype);
+        } else if (ev->ttype.cmd == TELNET_TTYPE_IS) {
+		    LOGI(TAG, "TTYPE IS : %s", ev->ttype.name);
+        }
+        break;
+    case TELNET_EV_ERROR:
+		LOGE(TAG, "ERROR: %s", ev->error.msg);
+        break;
+    default:
+        LOGW(TAG, "Telnet Event unknown [%d] opt: %d", ev->type, ev->neg.telopt);
+        break;
+    }
+}
+
+/****************************************************************************************************************************/
 
 int open_socket(void) {
 
@@ -67,7 +231,7 @@ int open_socket(void) {
 
     s = getaddrinfo(addr, port_num, &hints, &result);
     if (s != 0) {
-        LOGD(TAG, "getaddrinfo: %s\n", "failed");
+        LOGI(TAG, "getaddrinfo: %s\n", "failed");
         return 1;
     }
 
@@ -94,7 +258,7 @@ int open_socket(void) {
         }
 
         inet_ntop(rp->ai_family, addrptr, addr, 100);
-        LOGD(TAG, "Address: %s:%d", addr, ntohs(port));
+        LOGI(TAG, "Address: %s:%d", addr, ntohs(port));
 
         if ((sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol)) < 0) {
             LOGE(TAG, "Failed to create socket");
@@ -102,17 +266,29 @@ int open_socket(void) {
         };
 
         if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) { 
-            LOGD(TAG, "Failed to connect to socket: %d", errno);
+            LOGI(TAG, "Failed to connect to socket: %d", errno);
             return 1;
-        } 
-	if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on,
-	    sizeof(on)) == -1) {
-	    LOGE(TAG, "can't set sockopt TCP_NODELAY");
-	    return 1;
-	}
+        }
 
-        LOGD(TAG, "Socket connected");
+        if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on, sizeof(on)) == -1) {
+	        LOGE(TAG, "can't set sockopt TCP_NODELAY");
+	        return 1;
+	    }
+
+        LOGI(TAG, "Socket connected");
         active_sfd = &sfd;
+
+        /* Initialise Telnet session */
+        if (s_reg[SREG_TELNET]) {
+            init_telnet_opts();
+            if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
+                LOGE(TAG, "can't initialise telnet session");
+                return 1;
+            } else {
+                LOGI(TAG, "Telnet session started");
+            };
+        };
+
         return 0;
     }
 
@@ -121,11 +297,17 @@ int open_socket(void) {
 
 void close_socket(void) {
 
+    if (telnet != NULL) {
+        telnet_free(telnet);
+        telnet = NULL;
+        LOGI(TAG, "Telnet session ended");
+    }
+
     if (shutdown(*active_sfd, SHUT_RDWR) == 0) {
-        LOGD(TAG, "Socket shutdown");
+        LOGI(TAG, "Socket shutdown");
     }
     if (close(*active_sfd) == 0) {
-        LOGD(TAG, "Socket closed");
+        LOGI(TAG, "Socket closed");
         *active_sfd = 0;
     }
 }
@@ -155,14 +337,14 @@ int answer_init(void) {
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(LISTENER_PORT);
+    serv_addr.sin_port = htons(s_reg[SREG_PORT]);
     if (bind(answer_sfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         LOGE(TAG, "ERROR on binding %d %s", errno, strerror(errno));
         return 1;
     }
     listen(answer_sfd,1);
     inet_ntop(AF_INET, &serv_addr.sin_addr, addr, 100);
-    LOGD(TAG, "Listening on %s:%d", addr, ntohs(serv_addr.sin_port));
+    LOGI(TAG, "Listening on %s:%d", addr, ntohs(serv_addr.sin_port));
     return 0;
 }
 
@@ -178,16 +360,15 @@ int answer(void) {
         LOGE(TAG, "ERROR on accept");
         return 1;
     }
-    if (setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on,
-	sizeof(on)) == -1) {
+
+    if (setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on, sizeof(on)) == -1) {
 	    LOGE(TAG, "can't set sockopt TCP_NODELAY");
-	return 1;
+    	return 1;
     }
 
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
-    LOGD(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
+    LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
     active_sfd = &newsockfd;
-    telnet_negotiation(newsockfd);
     return 0;
 }
 
@@ -220,7 +401,7 @@ int answer_check_ring(void) {
             if (!ringing) {
                 gettimeofday(&ring_t1, NULL);
                 ringing = 1;
-                LOGD(TAG, "Ringing");
+                LOGI(TAG, "Ringing");
             }
             return 1;
         }
@@ -260,7 +441,7 @@ char *at_help[MAX_HELP_LINE] = {
 			"AT$ - Help" CRLF,
 			"A/  - (immediate) Repeat last" CRLF,
 			"ATZ - Reset modem" CRLF,
-			"ATDhostname:port - Dial hostname, port optional (default:23)" CRLF,
+			"ATDhostname:port - Dial hostname, port optional (default:" STR_VALUE(DEFAULT_LISTENER_PORT) ")" CRLF,
 			"+++ - Return to command mode" CRLF,
 			"ATO - Return to data mode" CRLF,
 			"ATH - Hangup" CRLF,
@@ -302,20 +483,6 @@ void at_cat_s(char *s) {
 
 	strcat(at_buf, s);
 }
-
-#define SREG_AA     0
-#define SREG_RINGS  1
-#define SREG_ESCAPE 2
-#define SREG_CR     3
-#define SREG_LF     4
-#define SREG_BS     5
-#define MAX_REG_NUM 13
-
-#define SREG_DEFAULTS { 0, 0, 43, 13, 10, 8 }
-
-static unsigned int s_reg[MAX_REG_NUM] = SREG_DEFAULTS;
-static unsigned int s_reg_defaults[MAX_REG_NUM] = SREG_DEFAULTS;
-static int reg = 0;
 
 int process_at_cmd(void) {
     int tmp_reg;
@@ -382,14 +549,14 @@ int process_at_cmd(void) {
             }
 
             strncpy(addr, arg_ptr, AT_BUF_LEN - 1);
-            LOGD(TAG, "Addr: [%s]", addr);
+            LOGI(TAG, "Addr: [%s]", addr);
             arg_ptr =  strtok(NULL, "\r");
             if (arg_ptr != NULL) {
                 strncpy(port_num, arg_ptr, 10);
             } else {
                 strcpy(port_num, "23");
             }
-            LOGD(TAG, "Port: [%s]", port_num);
+            LOGI(TAG, "Port: [%s]", port_num);
 
             if (open_socket()) {
                 strcpy(at_err, LF AT_NO_ANSWER CRLF);
@@ -408,12 +575,12 @@ int process_at_cmd(void) {
             }
 
             reg = tmp_reg;
-            LOGD(TAG, "AT Register set to %d", reg);
+            LOGI(TAG, "AT Register set to %d", reg);
             at_ptr = arg_ptr;
 			break;
 		case '?': /* AT? */
             at_ptr++;
-            LOGD(TAG, "ATS%d? is %d", reg, s_reg[reg]);
+            LOGI(TAG, "ATS%d? is %d", reg, s_reg[reg]);
             sprintf(at_err, LF "%d" CRLF, s_reg[reg]);
             at_cat_s(at_err);
 			break;
@@ -425,7 +592,7 @@ int process_at_cmd(void) {
                 return 1;
             }
 
-            LOGD(TAG, "ATS%d = %d", reg, tmp_reg);
+            LOGI(TAG, "ATS%d = %d", reg, tmp_reg);
             at_ptr = arg_ptr;
             s_reg[reg] = tmp_reg;
 			break;
@@ -487,6 +654,24 @@ int modem_device_alive(int i) {
     return 1;
 }
 
+static int _read() {
+
+    unsigned char data;
+
+    if (read(*active_sfd, &data, 1) == 0) {
+        /* this will occur if the socket is disconnected */
+        LOGI(TAG, "Socket disconnected");
+        at_buf[0] = 0;
+        at_cat_s(CRLF AT_NO_CARRIER);
+        at_cmd[0] = 0;
+        at_state = cmd;
+
+        return -1;
+    }
+
+    return data;
+}
+
 int modem_device_poll(int i) {
 
 	struct pollfd p[1];
@@ -507,18 +692,42 @@ int modem_device_poll(int i) {
             tdiff = time_diff_sec(&at_t1, &at_t2);
             if (tdiff > 0) {
                 at_state = cmd;
-                LOGD(TAG, "+++ Returning to CMD mode");
+                LOGI(TAG, "+++ Returning to CMD mode");
                 at_cat_s(CRLF AT_OK);
                 return (strlen(at_buf) > 0);
             }
         }
         return 0;
     } else if (at_state == dat) {
+
+        /**
+         * In telnet mode this "clocks" the inbound connection into telnet_recv() 
+         * and lets the event handler buffer the input (1 character)
+         * then it can check the buffer and report on available data in the buffer
+         */
+
+        if ((telnet != NULL) && tn_len) return POLLIN;
+
         p[0].fd = *active_sfd;
         p[0].events = POLLIN | POLLOUT;
         p[0].revents = 0;
         poll(p, 1, 0);
-        return (p[0].revents & POLLIN);
+
+        if (telnet == NULL) return (p[0].revents & POLLIN);
+
+        if (p[0].revents & POLLIN) {
+            int res;
+            char data;
+            res = _read();
+            if (res != -1) {
+                data = res;
+                telnet_recv(telnet, (char *) &data, 1);
+            }
+            if (tn_len) return POLLIN;
+        } 
+
+        return 0;
+
     } else {
         if (answer_check_ring()) {
             s_reg[SREG_RINGS]++;
@@ -544,24 +753,24 @@ int modem_device_get(int i) {
 
     if (at_state == dat) {
 
-        p[0].fd = *active_sfd;
-        p[0].events = POLLIN;
-        p[0].revents = 0;
-        poll(p, 1, 0);
-        if (!(p[0].revents & POLLIN))
-            return -1;
+        if (telnet != NULL) {
+            if (tn_len) {
+                tn_len = 0;
+                return tn_recv;
+            } else {
+                return -1;
+            }
+        } else {
 
-        if (read(*active_sfd, &data, 1) == 0) {
-            /* this will occur if the socket is disconnected */
-            LOGD(TAG, "Socket disconnected");
-            at_buf[0] = 0;
-            at_cat_s(CRLF AT_NO_CARRIER);
-            at_cmd[0] = 0;
-            at_state = cmd;
+            p[0].fd = *active_sfd;
+            p[0].events = POLLIN;
+            p[0].revents = 0;
+            poll(p, 1, 0);
 
-            return -1;
+            if (!(p[0].revents & POLLIN)) return -1;
+
+            return (_read());
         }
-
     } else {
     
         if (strlen(at_out) > 0) {
@@ -594,7 +803,12 @@ void modem_device_send(int i, char data) {
         	    gettimeofday(&at_t1, NULL);
                 return;
             } else {
-                write(*active_sfd, at_buf, strlen(at_buf));
+                if (telnet != NULL) {
+                    telnet_send(telnet, at_buf, strlen(at_buf));
+                } else {
+                    write(*active_sfd, at_buf, strlen(at_buf));
+                }
+
                 at_state = dat;
             }
             /***
@@ -612,7 +826,11 @@ void modem_device_send(int i, char data) {
                 at_state = intr;
                 return;
             }
-            write(*active_sfd, (char *) &data, 1);
+            if (telnet != NULL) {
+                telnet_send(telnet, (char *) &data, 1);
+            } else {
+                write(*active_sfd, (char *) &data, 1);
+            }
             break;
 	/***
 	 * AT command mode
