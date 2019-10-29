@@ -52,6 +52,7 @@ OBJ =   sim0.o \
 	imsai-vio.o \
 	netsrv.o \
 	generic-at-modem.o \
+	libtelnet.o \
 	rtc.o
 
 FP =	../../frontpanel/libfrontpanel.dylib
@@ -146,8 +147,12 @@ imsai-vio.o : ../../iodevices/imsai-vio.c sim.h $(WEB)/netsrv.h log.h
 netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
 
-generic-at-modem.o : ../../iodevices/generic-at-modem.c log.h
+generic-at-modem.o : ../../iodevices/generic-at-modem.c \
+		     ../../iodevices/libtelnet.h log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/generic-at-modem.c
+
+libtelnet.o : ../../iodevices/libtelnet.c
+	$(CC) $(CFLAGS) -I./ ../../iodevices/libtelnet.c
 
 rtc.o: ../../iodevices/rtc.c sim.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/rtc.c
