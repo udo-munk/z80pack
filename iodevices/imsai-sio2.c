@@ -421,7 +421,6 @@ BYTE imsai_sio2b_data_in(void)
 	BYTE data = 0;
 	static BYTE last;
 
-again:
 	if (modem_device_alive(DEV_SIO2B)) {
 		int res = modem_device_get(DEV_SIO2B);
 		if (res < 0) {
