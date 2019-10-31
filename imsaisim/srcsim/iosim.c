@@ -75,6 +75,10 @@ static BYTE io_pport_in(void);
 static BYTE imsai_kbd_data_in(void), imsai_kbd_status_in(void);
 static BYTE mmu_in(void);
 static void mmu_out(BYTE);
+static BYTE dma_cmd_in(void);
+static void dma_cmd_out(BYTE);
+static BYTE dma_reg_in(void);
+static void dma_reg_out(BYTE);
 
 static const char *TAG = "IO";
 
@@ -165,8 +169,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 62 */
 	io_trap_in,		/* port 63 */
 	mmu_in,			/* port 64 */ /* MMU */
-	io_trap_in,		/* port 65 */
-	io_trap_in,		/* port 66 */
+	dma_cmd_in,		/* port 65 */ /* DMA Controller */
+	dma_reg_in,		/* port 66 */ /* DMA Controller */
 	io_trap_in,		/* port 67 */
 	io_trap_in,		/* port 68 */
 	io_trap_in,		/* port 69 */
@@ -443,9 +447,9 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 61 */
 	io_trap_out,		/* port 62 */
 	io_trap_out,		/* port 63 */
-	mmu_out,		/* port 64 */ /* MMU */
-	io_trap_out,		/* port 65 */
-	io_trap_out,		/* port 66 */
+	mmu_out,			/* port 64 */ /* MMU */
+	dma_cmd_out,		/* port 65 */ /* DMA Controller */
+	dma_reg_out,		/* port 66 */ /* DMA Controller */
 	io_trap_out,		/* port 67 */
 	io_trap_out,		/* port 68 */
 	io_trap_out,		/* port 69 */
@@ -988,4 +992,136 @@ static void mmu_out(BYTE data)
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 	}
+}
+
+/**
+ * DMA Controller
+ */
+
+/* DMA Commands */
+#define DMA_RESET		1
+#define DMA_START		2
+#define DMA_BANK_SET	4
+
+/* Internal registers */
+#define DMA_SRC_H		0
+#define DMA_SRC_L		1
+#define DMA_DST_H		2
+#define DMA_DST_L		3
+#define DMA_LEN_H		4
+#define DMA_LEN_L		5
+#define DMA_SRC_BANK	6
+#define DMA_DST_BANK	7
+
+#define DMA_MAX_REGISTERS	8
+
+static BYTE dma_registers[DMA_MAX_REGISTERS] = { 0, 0, 0, 0, 0, 0, 0xFF, 0xFF };
+static BYTE dma_register_ptr = 0;
+
+/*
+ * DMA write command 
+ */
+static void dma_cmd_out(BYTE cmd)
+{
+	BYTE *src;
+	BYTE *dst;
+	uint16_t src_tmp, dst_tmp, len;
+	BYTE src_bank = selbnk; /* defaults to current bank */
+	BYTE dst_bank = selbnk; /* defaults to current bank */
+
+	switch (cmd) {
+	case DMA_RESET: /* Reset DMA controller */
+		LOGD(TAG, "DMA RESET");
+		dma_register_ptr = 0;
+		/* Reset SRC/DST BANK registers for next transaction */
+		dma_registers[DMA_SRC_BANK] = 0xFF;
+		dma_registers[DMA_DST_BANK] = 0xFF;
+		break;
+	case DMA_START: /* Start DMA transaction */
+		bus_request = 1;
+		len = (dma_registers[DMA_LEN_H] << 8) + dma_registers[DMA_LEN_L];
+
+		if (dma_registers[DMA_SRC_BANK] != 0xFF) src_bank = dma_registers[DMA_SRC_BANK];
+		if (dma_registers[DMA_DST_BANK] != 0xFF) dst_bank = dma_registers[DMA_DST_BANK];
+
+		/* TODO: there could/should be some error checking here for banks, ranges, overflows, etc... */
+
+		src_tmp = (dma_registers[DMA_SRC_H] << 8) + dma_registers[DMA_SRC_L];
+		dst_tmp = (dma_registers[DMA_DST_H] << 8) + dma_registers[DMA_DST_L];
+
+		if ((src_bank == 0) || src_tmp >= SEGSIZ) {
+			src = memory + src_tmp;
+		} else {
+			src = banks[src_bank] + src_tmp;
+		}
+
+		if ((dst_bank == 0) || dst_tmp >= SEGSIZ) {
+			dst = memory + dst_tmp;
+		} else {
+			dst = banks[dst_bank] + dst_tmp;
+		};
+
+		LOGD(TAG, "DMA MOVE from: %04X [%d] to: %04X [%d] len: %04X", 
+			(dma_registers[DMA_SRC_H] << 8) + dma_registers[DMA_SRC_L], src_bank,
+			 (dma_registers[DMA_DST_H] << 8) + dma_registers[DMA_DST_L], dst_bank,
+			 len
+		);
+
+		memcpy(dst, src, len);
+
+		/* Update registers for the end of the transfer */
+		src_tmp = (dma_registers[DMA_SRC_H] << 8) + dma_registers[DMA_SRC_L] + len;
+		dma_registers[DMA_SRC_L] = src_tmp & 0xFF;
+		dma_registers[DMA_SRC_H] = src_tmp >> 8;
+		dst_tmp = (dma_registers[DMA_DST_H] << 8) + dma_registers[DMA_DST_L] + len;
+		dma_registers[DMA_DST_L] = dst_tmp & 0xFF;
+		dma_registers[DMA_DST_H] = dst_tmp >> 8;
+		/* TODO: should DMA_LEN_H & DMA_LEN_H be zeroed? */
+		dma_registers[DMA_LEN_H] = 0;
+		dma_registers[DMA_LEN_L] = 0;
+
+		/* Reset SRC/DST BANK registers for next transaction */
+		dma_registers[DMA_SRC_BANK] = 0xFF;
+		dma_registers[DMA_DST_BANK] = 0xFF;
+
+		dma_register_ptr = 0;
+		bus_request = 0;
+		break;
+	case DMA_BANK_SET: /* Set DMA banks */
+		LOGI(TAG, "DMA BANK SET");
+		dma_register_ptr = DMA_SRC_BANK;
+		break;
+	default:
+		LOGE(TAG, "DMA command unknown error");
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+		break;
+	}
+}
+
+/*
+ * DMA write register 
+ */
+static void dma_reg_out(BYTE data)
+{
+	dma_registers[dma_register_ptr++] = data;
+	dma_register_ptr %= DMA_MAX_REGISTERS;
+}
+
+/*
+ * DMA read command   
+ */
+static BYTE dma_cmd_in(void)
+{
+	return dma_register_ptr;
+}
+/*
+ * DMA read register 
+ */
+static BYTE dma_reg_in(void)
+{
+	BYTE data = dma_registers[dma_register_ptr++];
+	dma_register_ptr %= DMA_MAX_REGISTERS;
+
+	return data;
 }

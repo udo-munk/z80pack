@@ -27,6 +27,12 @@ GETHOU	EQU	2		; get hours from RTC
 GETDAL	EQU	3		; get days low from RTC
 GETDAH	EQU	4		; get days high from RTC
 ;
+;	DMA commands
+;
+DMARES	EQU	1		; DMA reset
+DMASTRT	EQU 2		; DMA start
+DMABANK	EQU 4		; DMA bank set
+;
 ;	character devices mode byte fields
 ;
 mb$in	EQU	00000001B	; device may do input
@@ -49,6 +55,8 @@ TTY2S	EQU	23H		; tty 2 status
 MODEM	EQU	24H		; modem data
 MODEMS	EQU	25H		; modem status
 MMUSEL	EQU	40H		; MMU bank select
+DMACMD	EQU	41H		; DMA command
+DMAREG	EQU	42H		; DMA register
 PRINTER	EQU	0F6H		; IMSAI PTR-300 line printer
 FDC	EQU	0FDH		; IMSAI FIF FDC
 LEDS	EQU	0FFH		; programmed output LED's
@@ -913,14 +921,39 @@ FLUSH:	XRA	A		; no user deblocking
 ;	DE = source address
 ;	BC = count
 ;
-MOVE:	LDAX	D
-	MOV	M,A
-	INX	D
-	INX	H
-	DCX	B
-	MOV	A,B
-	ORA	C
-	JNZ	MOVE
+MOVE: IN DMACMD
+	ORA A
+	JZ DMA1
+	MVI	A, DMARES
+	OUT DMACMD
+DMA1: MOV A, D
+	OUT DMAREG
+	MOV A, E
+	OUT DMAREG
+	MOV A, H
+	OUT DMAREG
+	MOV A, L
+	OUT DMAREG
+	MOV A, B
+	OUT DMAREG
+	MOV A, C
+	OUT DMAREG
+	MVI A, DMASTRT
+	OUT DMACMD
+
+	IN DMAREG
+	MOV D, A
+	IN DMAREG
+	MOV E, A
+	IN DMAREG
+	MOV H, A
+	IN DMAREG
+	MOV L, A
+	IN DMAREG
+	MOV B, A
+	IN DMAREG
+	MOV C, A
+
 	RET
 ;
 ;	select memory bank
@@ -934,8 +967,16 @@ SETBNK:	STA	BANK
 	RET
 ;
 ;	set banks for following MOVE
+;	B = destination bank
+;	C = source bank
 ;
-XMOVE: RET			; no memory to memory DMA available
+XMOVE: MVI A, DMABANK
+	OUT DMACMD
+	MOV	A, C
+	OUT DMAREG
+	MOV A, B
+	OUT DMAREG
+	RET
 ;
 ;	get/set time
 ;
