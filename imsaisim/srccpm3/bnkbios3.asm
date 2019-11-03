@@ -7,6 +7,7 @@
 ; 24-Oct-19 get time/date from RTC
 ; 25-OCT-19 add character device table
 ; 28-OCT-19 add all character devices with I/O redirection
+; 01-NOV-19 add more complete character device mode byte
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -27,11 +28,17 @@ GETHOU	EQU	2		; get hours from RTC
 GETDAL	EQU	3		; get days low from RTC
 GETDAH	EQU	4		; get days high from RTC
 ;
-;	character devices mode byte fields
+;	character devices mode byte
 ;
 mb$in	EQU	00000001B	; device may do input
 mb$out	EQU	00000010B	; device may do ouput
 mb$inou	EQU	mb$in+mb$out	; device may do both
+mb$soft	EQU	00000100B	; software selectable baud rate
+mb$ser	EQU	00001000B	; device may use protocol
+mb$xon	EQU	00010000B	; XON/XOFF protocol enabled
+;
+;	character devices baud rate byte
+;
 baud$0	EQU	0		; IMSAI SIO-2 baudrate not software selectable
 ;
 TPA	EQU	0100H		; start of TPA
@@ -235,11 +242,11 @@ DDHDMA	EQU	FIF+6		; DMA address high
 ;	character device table
 ;
 CHRTBL:	DB	'TTY1  '
-	DB	mb$inou
+	DB	mb$inou+mb$ser
 	DB	baud$0
 ;
 	DB	'TTY2  '
-	DB	mb$inou
+	DB	mb$inou+mb$ser
 	DB	baud$0
 ;
 	DB	'CRT   '
@@ -247,7 +254,7 @@ CHRTBL:	DB	'TTY1  '
 	DB	baud$0
 ;
 	DB	'MODEM '
-	DB	mb$inou
+	DB	mb$inou+mb$ser
 	DB	baud$0
 ;
 	DB	'LPT   '
@@ -276,7 +283,7 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'IMSAI 8080 banked BIOS V1.4,',13,10
+	DB	'IMSAI 8080 banked BIOS V1.5,',13,10
 	DB	'Copyright (C) 2019, Udo Munk',13,10,13,10
 	DB	0
 ;
