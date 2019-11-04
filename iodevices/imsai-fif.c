@@ -23,7 +23,7 @@
  * 19-MAY-2018 improved reset
  * 13-JUL-2018 use logging & integrate disk manager
  * 10-SEP-2019 added support for a z80pack 4 MB harddisk
- * 04-NOV-2019 eliminate usage of mem_base()
+ * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
  */
 
 #include <unistd.h>
@@ -346,14 +346,12 @@ do_format:
 			dma_write(addr + DD_RESULT, 6);
 			goto done;
 		}
-		bus_request = 1;
 		for (i = 0; i < SEC_SZ; i++)
 			blksec[i] = dma_read(dma_addr + i);
 		if (write(fd, blksec, SEC_SZ) != SEC_SZ) {
 			dma_write(addr + DD_RESULT, 8);
 			goto done;
 		}
-		bus_request = 0;
 		dma_write(addr + DD_RESULT, 1);
 		break;
 
@@ -371,14 +369,12 @@ do_format:
 			dma_write(addr + DD_RESULT, 6);
 			goto done;
 		}
-		bus_request = 1;
 		if (read(fd, blksec, SEC_SZ) != SEC_SZ) {
 			dma_write(addr + DD_RESULT, 7);
 			goto done;
 		}
 		for (i = 0; i < SEC_SZ; i++)
 			dma_write(dma_addr + i, blksec[i]);
-		bus_request = 0;
 		dma_write(addr + DD_RESULT, 1);
 		break;
 
@@ -393,14 +389,12 @@ do_format:
 			dma_write(addr + DD_RESULT, 6);
 			goto done;
 		}
-		bus_request = 1;
 		for (i = 0; i < spt; i++) {
 			if (write(fd, &blksec, SEC_SZ) != SEC_SZ) {
 				dma_write(addr + DD_RESULT, 8);
 				goto done;
 			}
 		}
-		bus_request = 0;
 		dma_write(addr + DD_RESULT, 1);
 		break;
 
@@ -414,7 +408,6 @@ do_format:
 	}
 
 done:
-	bus_request = 0;
 	close(fd);
 }
 
