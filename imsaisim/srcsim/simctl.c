@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from an IMSAI 8080 front panel
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * History:
  * 20-OCT-08 first version finished
@@ -26,6 +26,7 @@
  * 08-JUN-18 moved hardware initialisation and reset to iosim
  * 11-JUN-18 fixed reset so that cold and warm start works
  * 12-JUL-18 use logging
+ * 04-NOV-19 eliminate usage of mem_base()
  */
 
 #include <X11/Xlib.h>
@@ -211,16 +212,16 @@ void report_error(void)
 		break;
 	case OPTRAP1:
 		LOGE(TAG, "Op-code trap at %04x %02x",
-		     PC - 1 , *(mem_base() + PC - 1));
+		     PC - 1 , getmem(PC - 1));
 		break;
 	case OPTRAP2:
 		LOGE(TAG, "Op-code trap at %04x %02x %02x",
-		     PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		     PC - 2, getmem(PC - 2), getmem(PC - 1));
 		break;
 	case OPTRAP4:
 		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
-		       PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		       PC - 4, getmem(PC - 4), getmem(PC - 3),
+		       getmem(PC - 2), getmem(PC - 1));
 		break;
 	case USERINT:
 		LOG(TAG, "User Interrupt at %04x\r\n", PC);
