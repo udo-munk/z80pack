@@ -157,10 +157,9 @@ static inline BYTE getmem(WORD addr)
 static inline void putmem(WORD addr, BYTE data)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] == MEM_RW)
-			_MEMDIRECT(addr) = data;
+		_MEMMAPPED(addr) = data;
 	} else {
-		 *(banks[selbnk] + addr) = data;
+		*(banks[selbnk] + addr) = data;
 	}
 }
 
