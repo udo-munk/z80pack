@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2017-2018 by Udo Munk
+ * Copyright (C) 2017-2019 by Udo Munk
  *
  * Emulation of a Processor Technology VDM-1 S100 board
  *
@@ -12,6 +12,7 @@
  * 21-JUN-17 don't use dma_read(), switches Tarbell ROM off
  * 20-APR-18 avoid thread deadlock on Windows/Cygwin
  * 15-JUL-18 use logging
+ * 04-NOV-19 eliminate usage of mem_base()
  */
 
 #include <X11/X.h>
@@ -194,7 +195,7 @@ static void refresh(void)
 		event_handler();
 		for (x = 0; x < 64; x++) {
 			if (y >= first) {
-				c = *(mem_base() + addr + x);
+				c = getmem(addr + x);
 				dc(c);
 			} else
 				dc(' ');
