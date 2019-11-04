@@ -23,6 +23,7 @@
  * 19-MAY-2018 improved reset
  * 13-JUL-2018 use logging & integrate disk manager
  * 10-SEP-2019 added support for a z80pack 4 MB harddisk
+ * 04-NOV-2019 eliminate usage of mem_base()
  */
 
 #include <unistd.h>
@@ -227,13 +228,13 @@ void disk_io(int addr)
 	static char blksec[SEC_SZ];
 
 	LOGD(TAG, "disk descriptor at %04x", addr);
-	LOGD(TAG, "unit: %02x", *(mem_base() + addr + DD_UNIT));
-	LOGD(TAG, "result: %02x", *(mem_base() + addr + DD_RESULT));
-	LOGD(TAG, "nn: %02x", *(mem_base() + addr + DD_NN));
-	LOGD(TAG, "track: %02x", *(mem_base() + addr + DD_TRACK));
-	LOGD(TAG, "sector: %02x", *(mem_base() + addr + DD_SECTOR));
-	LOGD(TAG, "DMA low: %02x", *(mem_base() + addr + DD_DMAL));
-	LOGD(TAG, "DMA high: %02x", *(mem_base() + addr + DD_DMAH));
+	LOGD(TAG, "unit: %02x", getmem(addr + DD_UNIT));
+	LOGD(TAG, "result: %02x", getmem(addr + DD_RESULT));
+	LOGD(TAG, "nn: %02x", getmem(addr + DD_NN));
+	LOGD(TAG, "track: %02x", getmem(addr + DD_TRACK));
+	LOGD(TAG, "sector: %02x", getmem(addr + DD_SECTOR));
+	LOGD(TAG, "DMA low: %02x", getmem(addr + DD_DMAL));
+	LOGD(TAG, "DMA high: %02x", getmem(addr + DD_DMAH));
 	LOGD(TAG, "");
 
 	unit = dma_read(addr + DD_UNIT) & 0xf;
