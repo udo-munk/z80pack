@@ -122,13 +122,6 @@ static inline void dma_write(WORD addr, BYTE data)
  */
 static inline BYTE getmem(WORD addr)
 {
-	if (tarbell_rom_active && tarbell_rom_enabled) {
-		if (addr <= 0x001f)
-			return(tarbell_rom[addr]);
-		else
-			tarbell_rom_active = 0;
-	}
-
 	if (p_tab[addr >> 8] != MEM_NONE)
 		return(memory[addr]);
 	else
@@ -137,8 +130,7 @@ static inline BYTE getmem(WORD addr)
 
 static inline void putmem(WORD addr, BYTE data)
 {
-	if (p_tab[addr >> 8] == MEM_RW)
-		memory[addr] = data;
+	memory[addr] = data;
 }
 
 /*
