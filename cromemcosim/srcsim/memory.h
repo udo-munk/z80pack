@@ -11,6 +11,7 @@
  * 18-MAY-18 optimization
  * 18-JUL-18 use logging
  * 01-OCT-19 optimization
+ * 04-NOV-19 add functions for direct memory access
  */
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */
@@ -63,7 +64,7 @@ static inline BYTE memrdr(WORD addr)
 }
 
 /*
- * memory access for DMA devices
+ * memory access for DMA devices which request bus from CPU
  */
 static inline BYTE dma_read(WORD addr)
 {
@@ -71,6 +72,19 @@ static inline BYTE dma_read(WORD addr)
 }
 
 static inline void dma_write(WORD addr, BYTE data)
+{
+	*(memory[selbnk] + addr) = data;
+}
+
+/*
+ * direct memory access for simulation frame, video logic, etc.
+ */
+static inline BYTE getmem(WORD addr)
+{
+	return(*(memory[selbnk] + addr));
+}
+
+static inline void putmem(WORD addr, BYTE data)
 {
 	*(memory[selbnk] + addr) = data;
 }

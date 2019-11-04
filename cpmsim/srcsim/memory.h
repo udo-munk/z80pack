@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * This module implements banked memory management for cpmsim
  *
@@ -26,6 +26,7 @@
  * 22-NOV-16 stuff moved to here for further improvements
  * 03-FEB-17 added ROM initialisation
  * 09-APR-18 modified MMU write protect port as used by Alan Cox for FUZIX
+ * 04-NOV-19 add functions for direct memory access
  */
 
 #define MAXSEG 16		/* max. number of memory banks */
@@ -70,7 +71,7 @@ static inline BYTE memrdr(WORD addr)
 }
 
 /*
- * memory access for DMA devices
+ * memory access for DMA devices which request bus from CPU
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
@@ -90,6 +91,37 @@ static inline void dma_write(WORD addr, BYTE data)
 }
 
 static inline BYTE dma_read(WORD addr)
+{
+	if (selbnk == 0)
+		return(*(memory[0] + addr));
+
+	if (addr >= segsize)
+		return(*(memory[0] + addr));
+	else
+		return(*(memory[selbnk] + addr));
+}
+
+/*
+ * direct memory access for simulation frame, video logic, etc.
+ */
+static inline void putmem(WORD addr, BYTE data)
+{
+	if ((addr >= segsize) && (wp_common != 0)) {
+		wp_common |= 0x80;
+		return;
+	}
+
+	if (selbnk == 0) {
+		*(memory[0] + addr) = data;
+	} else {
+		if (addr >= segsize)
+			*(memory[0] + addr) = data;
+		else
+			*(memory[selbnk] + addr) = data;
+	}
+}
+
+static inline BYTE getmem(WORD addr)
 {
 	if (selbnk == 0)
 		return(*(memory[0] + addr));

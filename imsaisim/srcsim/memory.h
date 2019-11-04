@@ -15,6 +15,7 @@
  * 12-JUL-2018 use logging
  * 18-JUL-2019 bug fix so that fp shows mapped memory contents
  * 18-OCT-2019 add MMU and memory banks
+ * 04-NOV-2019 add functions for direct memory access
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
@@ -114,7 +115,7 @@ static inline BYTE memrdr(WORD addr)
 }
 
 /*
- * memory access for DMA devices
+ * memory access for DMA devices which request bus from CPU
  */
 static inline BYTE dma_read(WORD addr)
 {
@@ -129,6 +130,31 @@ static inline BYTE dma_read(WORD addr)
 }
 
 static inline void dma_write(WORD addr, BYTE data)
+{
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] == MEM_RW)
+			_MEMDIRECT(addr) = data;
+	} else {
+		 *(banks[selbnk] + addr) = data;
+	}
+}
+
+/*
+ * direct memory access for simulation frame, video logic, etc.
+ */
+static inline BYTE getmem(WORD addr)
+{
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] != MEM_NONE)
+			return(_MEMMAPPED(addr));
+		else
+			return(0xff);
+	} else {
+		return(*(banks[selbnk] + addr));
+	}
+}
+
+static inline void putmem(WORD addr, BYTE data)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 10] == MEM_RW)

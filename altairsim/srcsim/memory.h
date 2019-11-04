@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2018 by Udo Munk
+ * Copyright (C) 2016-2019 by Udo Munk
  *
  * This module implements memory management for an Altair 8800 system
  *
@@ -13,6 +13,7 @@
  * 07-MAY-2018 added memory configuratione needed by apple monitor
  * 11-JUN-2018 fixed bug in Tarbell ROM mapping
  * 21-AUG-2018 improved memory configuration
+ ' 04-NOV-2019 add functions for direct memory access
  */
 
 extern void init_memory(void), init_rom(void);
@@ -93,7 +94,7 @@ static inline BYTE memrdr(WORD addr)
 }
 
 /*
- * memory access for DMA devices
+ * memory access for DMA devices which request bus from CPU
  */
 static inline BYTE dma_read(WORD addr)
 {
@@ -111,6 +112,30 @@ static inline BYTE dma_read(WORD addr)
 }
 
 static inline void dma_write(WORD addr, BYTE data)
+{
+	if (p_tab[addr >> 8] == MEM_RW)
+		memory[addr] = data;
+}
+
+/*
+ * direct memory access for simulation frame, video logic, etc.
+ */
+static inline BYTE getmem(WORD addr)
+{
+	if (tarbell_rom_active && tarbell_rom_enabled) {
+		if (addr <= 0x001f)
+			return(tarbell_rom[addr]);
+		else
+			tarbell_rom_active = 0;
+	}
+
+	if (p_tab[addr >> 8] != MEM_NONE)
+		return(memory[addr]);
+	else
+		return(0xff);
+}
+
+static inline void putmem(WORD addr, BYTE data)
 {
 	if (p_tab[addr >> 8] == MEM_RW)
 		memory[addr] = data;
