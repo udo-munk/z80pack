@@ -106,11 +106,6 @@ static inline BYTE dma_read(WORD addr)
  */
 static inline void putmem(WORD addr, BYTE data)
 {
-	if ((addr >= segsize) && (wp_common != 0)) {
-		wp_common |= 0x80;
-		return;
-	}
-
 	if (selbnk == 0) {
 		*(memory[0] + addr) = data;
 	} else {
