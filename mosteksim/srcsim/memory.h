@@ -48,8 +48,7 @@ static inline BYTE dma_read(WORD addr)
  */
 static inline void putmem(WORD addr, BYTE data)
 {
-	if ((addr & 0xf000) != 0xe000)
-		memory[addr] = data;
+	memory[addr] = data;
 }
 
 static inline BYTE getmem(WORD addr)
