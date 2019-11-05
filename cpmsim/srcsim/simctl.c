@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -122,16 +122,16 @@ void mon(void)
 		break;
 	case OPTRAP1:
 		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
-		     *(mem_base() + PC - 1));
+		     getmem(PC - 1));
 		break;
 	case OPTRAP2:
 		LOGE(TAG, "Op-code trap at %04x %02x %02x",
-		     PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		     PC - 2, getmem(PC - 2), getmem(PC - 1));
 		break;
 	case OPTRAP4:
 		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
-		     PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		     *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		     PC - 4, getmem(PC - 4), getmem(PC - 3),
+		     getmem(PC - 2), getmem(PC - 1));
 		break;
 	case USERINT:
 		LOG(TAG, "User Interrupt at %04x\r\n", PC);
@@ -153,8 +153,10 @@ void mon(void)
  */
 int boot(int level)
 {
-	register int fd;
+	register int i;
+	int fd;
 	struct stat sbuf;
+	static BYTE buf[128];
 	static char fn[MAX_LFN];
 
 	LOG(TAG, "\r\nBooting...\r\n\r\n");
@@ -190,11 +192,15 @@ int boot(int level)
 		close(fd);
 		return(1);
 	}
-	if (read(fd, mem_base(), 128) != 128) {
+	if (read(fd, buf, 128) != 128) {
 		LOGE(TAG, "can't read file %s", fn);
 		close(fd);
 		return(1);
 	}
 	close(fd);
+
+	for (i = 0; i < 128; i++)
+		putmem(i, buf[i]);
+
 	return(0);
 }
