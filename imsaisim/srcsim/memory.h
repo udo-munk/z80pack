@@ -44,8 +44,6 @@ extern BYTE *wrtvec[];
 extern int cyclecount;
 
 #ifdef HAS_BANKED_ROM
-#undef MEMORY_WRITE
-#define MEMORY_WRITE(addr)	_MEMMAPPED(addr)
 #define _MEMWRTTHRU(addr) 	*(wrtvec[(addr) >> 10] + ((addr) & 0x03ff))
 #define _MEMMAPPED(addr) 	*(rdrvec[(addr) >> 10] + ((addr) & 0x03ff))
 #else

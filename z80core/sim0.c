@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -609,7 +609,7 @@ static int load_hex(char *fn)
 			data += (*s <= '9') ? (*s - '0') :
 					      (*s - 'A' + 10);
 			s++;
-			MEMORY_WRITE(addr+i) = data;
+			putmem(addr + i, data);
 		}
 	}
 

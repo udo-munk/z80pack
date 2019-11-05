@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -97,5 +97,3 @@ extern BYTE 	fp_led_data;
 extern WORD 	address_switch;
 extern BYTE 	fp_led_output;
 #endif
-
-#define MEMORY_WRITE(addr) *(mem_base() + (addr))
