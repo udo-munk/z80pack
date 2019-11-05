@@ -156,7 +156,6 @@ int boot(int level)
 	register int fd;
 	struct stat sbuf;
 	static char fn[MAX_LFN];
-	static char err[256];
 
 	LOG(TAG, "\r\nBooting...\r\n\r\n");
 
@@ -186,16 +185,13 @@ int boot(int level)
 	strcat(fn, "/");
 	strcat(fn, disks[0].fn);
 
-	strcpy(err, "file ");
-	strcat(err, fn);
-
 	if ((fd = open(fn, O_RDONLY)) == -1) {
-		LOGE(TAG, "can't open %s", err);
+		LOGE(TAG, "can't open file %s", fn);
 		close(fd);
 		return(1);
 	}
 	if (read(fd, mem_base(), 128) != 128) {
-		LOGE(TAG, "can't read %s", err);
+		LOGE(TAG, "can't read file %s", fn);
 		close(fd);
 		return(1);
 	}
