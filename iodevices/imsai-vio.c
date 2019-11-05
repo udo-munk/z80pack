@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2017-2018 by Udo Munk
+ * Copyright (C) 2017-2019 by Udo Munk
  * Copyright (C) 2018 David McNaughton
  *
  * Emulation of an IMSAI VIO S100 board
@@ -18,6 +18,7 @@
  * 07-JUL-18 optimization
  * 12-JUL-18 use logging
  * 14-JUL-18 integrate webfrontend
+ * 05-NOV-19 use correct memory access function
  */
 
 #include <X11/X.h>
@@ -289,7 +290,7 @@ static void refresh(void)
 	sx = XOFF;
 	sy = YOFF;
 
-	mode = dma_read(0xf7ff);
+	mode = getmem(0xf7ff);
 	if (mode != modebuf) {
 		modebuf = mode;
 
@@ -326,7 +327,7 @@ static void refresh(void)
 			sx = XOFF;
 			event_handler();
 			for (x = 0; x < cols; x++) {
-				c = dma_read(0xf000 + (y * cols) + x);
+				c = getmem(0xf000 + (y * cols) + x);
 				dc1(c);
 				sx += (res & 1) ? 14 : 7;
 			}
@@ -339,7 +340,7 @@ static void refresh(void)
 			sx = XOFF;
 			event_handler();
 			for (x = 0; x < cols; x++) {
-				c = dma_read(0xf000 + (y * cols) + x);
+				c = getmem(0xf000 + (y * cols) + x);
 				dc2(c);
 				sx += (res & 1) ? 14 : 7;
 			}
@@ -352,7 +353,7 @@ static void refresh(void)
 			sx = XOFF;
 			event_handler();
 			for (x = 0; x < cols; x++) {
-				c = dma_read(0xf000 + (y * cols) + x);
+				c = getmem(0xf000 + (y * cols) + x);
 				dc3(c);
 				sx += (res & 1) ? 14 : 7;
 			}
@@ -381,7 +382,7 @@ static void ws_refresh(void)
 	UNUSED(vmode);
 	UNUSED(inv);
 
-	mode = dma_read(0xf7ff);
+	mode = getmem(0xf7ff);
 	if (mode != modebuf) {
 		modebuf = mode;
 		memset(dblbuf, 0, 2048);
@@ -419,12 +420,12 @@ static void ws_refresh(void)
 		n = 0;
 		cont = true;
 		while (cont && (i < len)) {
-			val = dma_read(0xf000 + i);
+			val = getmem(0xf000 + i);
 			while ((val != dblbuf[i]) && (i < len)) {
 				dblbuf[i++] = val;
 				msg.buf[n++] = val;
 				cont = false;
-				val = dma_read(0xf000 + i);
+				val = getmem(0xf000 + i);
 			}
 			if (cont)
 				break;
@@ -432,9 +433,9 @@ static void ws_refresh(void)
 #define LOOKAHEAD 4
 			/* look-ahead up to 4 bytes for next change */
 			while ((x < LOOKAHEAD) && !cont && (i < len)) {
-				val = dma_read(0xf000 + i++);
+				val = getmem(0xf000 + i++);
 				msg.buf[n++] = val;
-				val = dma_read(0xf000 + i);
+				val = getmem(0xf000 + i);
 				if ((i < len) && (val != dblbuf[i])) {
 					cont = true;
 				}
@@ -508,7 +509,7 @@ void imsai_vio_init(void)
 
 	state = 1;
 	modebuf = -1;
-	dma_write(0xf7ff, 0x00);
+	putmem(0xf7ff, 0x00);
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
 		LOGE(TAG, "can't create thread");
