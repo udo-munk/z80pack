@@ -202,31 +202,31 @@ DPBFD:	DW	26		; sectors per track
 ;
 ;	disk parameter header for 4 MB harddisk
 ;
-DPH8:	DW	0		;sector translation table
-	DB	0,0,0,0		;bdos scratch area
+DPH8:	DW	0		; sector translation table
+	DB	0,0,0,0		; bdos scratch area
 	DB	0,0,0,0,0
-	DB	0		;media flag
-	DW	DPBHD		;disk parameter block
-	DW	0		;checksum vector
-	DW	0FFFEH		;allocation vector
-	DW	0FFFEH		;directory buffer control block
-	DW	0FFFFH		;dtabcb not used
-	DW	0FFFEH		;hashing
-	DB	0		;hash bank
+	DB	0		; media flag
+	DW	DPBHD		; disk parameter block
+	DW	0		; checksum vector
+	DW	0FFFEH		; allocation vector
+	DW	0FFFEH		; directory buffer control block
+	DW	0FFFFH		; dtabcb not used
+	DW	0FFFEH		; hashing
+	DB	0		; hash bank
 ;
 ;	disk parameter block for 4 MB harddisk
 ;
-DPBHD:	DW	128		;sectors per track
-	DB	4		;block shift factor
-	DB	15		;block mask
-	DB	0		;extent mask
-	DW	2039		;disk size-1
-	DW	1023		;directory max
-	DB	255		;alloc 0
-	DB	255		;alloc 1
-	DW	8000H		;check size
-	DW	0		;track offset
-	DB	0,0		;physical sector size and shift
+DPBHD:	DW	128		; sectors per track
+	DB	4		; block shift factor
+	DB	15		; block mask
+	DB	0		; extent mask
+	DW	2039		; disk size - 1
+	DW	1023		; directory max
+	DB	255		; alloc 0
+	DB	255		; alloc 1
+	DW	8000H		; check size
+	DW	0		; track offset
+	DB	0,0		; physical sector size and shift
 ;
 ;	IMSAI FIF
 ;
