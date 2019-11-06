@@ -16,6 +16,7 @@
  * 18-JUL-2019 bug fix so that fp shows mapped memory contents
  * 18-OCT-2019 add MMU and memory banks
  * 04-NOV-2019 add functions for direct memory access
+ * 06-NOV-2019 add function for frontpanel memory write
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
@@ -158,6 +159,19 @@ static inline void putmem(WORD addr, BYTE data)
 		_MEMMAPPED(addr) = data;
 	} else {
 		*(banks[selbnk] + addr) = data;
+	}
+}
+
+/*
+ * memory write for frontpanel logic
+ */
+static inline void fp_write(WORD addr, BYTE data)
+{
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] == MEM_RW)
+			_MEMDIRECT(addr) = data;
+	} else {
+		 *(banks[selbnk] + addr) = data;
 	}
 }
 
