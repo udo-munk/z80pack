@@ -125,8 +125,6 @@ static inline BYTE getmem(WORD addr)
 	if (tarbell_rom_active && tarbell_rom_enabled) {
 		if (addr <= 0x001f)
 			return(tarbell_rom[addr]);
-		else
-			tarbell_rom_active = 0;
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)
@@ -138,6 +136,24 @@ static inline BYTE getmem(WORD addr)
 static inline void putmem(WORD addr, BYTE data)
 {
 	memory[addr] = data;
+}
+
+/*
+ * memory read for frontpanel logic
+ */
+static inline BYTE fp_read(WORD addr)
+{
+	if (tarbell_rom_active && tarbell_rom_enabled) {
+		if (addr <= 0x001f)
+			return(tarbell_rom[addr]);
+		else
+			tarbell_rom_active = 0;
+	}
+
+	if (p_tab[addr >> 8] != MEM_NONE)
+		return(memory[addr]);
+	else
+		return(0xff);
 }
 
 /*
