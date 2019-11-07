@@ -128,7 +128,7 @@ void mon(void)
 			if (power) {
 				fp_led_address = PC;
 				if (!(cpu_bus & CPU_INTA))
-					fp_led_data = dma_read(PC);
+					fp_led_data = getmem(PC);
 				else
 					fp_led_data = (int_data != -1) ?
 							(BYTE) int_data : 0xff;
@@ -409,7 +409,7 @@ void reset_clicked(int state, int val)
 
 			/* update front panel */
 			fp_led_address = 0;
-			fp_led_data = dma_read(0);
+			fp_led_data = getmem(0);
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		}
 		break;
@@ -443,12 +443,12 @@ void examine_clicked(int state, int val)
 	switch (state) {
 	case FP_SW_UP:
 		fp_led_address = address_switch;
-		fp_led_data = dma_read(address_switch);
+		fp_led_data = getmem(address_switch);
 		PC = address_switch;
 		break;
 	case FP_SW_DOWN:
 		fp_led_address++;
-		fp_led_data = dma_read(fp_led_address);
+		fp_led_data = getmem(fp_led_address);
 		PC = fp_led_address;
 		break;
 	default:
@@ -472,13 +472,13 @@ void deposit_clicked(int state, int val)
 	switch (state) {
 	case FP_SW_UP:
 		fp_led_data = address_switch & 0xff;
-		dma_write(PC, fp_led_data);
+		putmem(PC, fp_led_data);
 		break;
 	case FP_SW_DOWN:
 		PC++;
 		fp_led_address++;
 		fp_led_data = address_switch & 0xff;
-		dma_write(PC, fp_led_data);
+		putmem(PC, fp_led_data);
 		break;
 	default:
 		break;
@@ -499,7 +499,7 @@ void power_clicked(int state, int val)
 		power++;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		fp_led_address = PC;
-		fp_led_data = dma_read(PC);
+		fp_led_data = getmem(PC);
 		fp_led_speed = (f_flag == 0 || f_flag >= 4) ? 1 : 0;
 		fp_led_wait = 1;
 		fp_led_output = 0;
