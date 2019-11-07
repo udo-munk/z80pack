@@ -119,8 +119,11 @@ static inline BYTE memrdr(WORD addr)
 static inline BYTE dma_read(WORD addr)
 {
 	bus_request = 1;
+#if 0
+	/* updating the LED's slows down too much */
 	fp_clock++;
 	fp_sampleData();
+#endif
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 10] != MEM_NONE)
@@ -137,8 +140,11 @@ static inline BYTE dma_read(WORD addr)
 static inline void dma_write(WORD addr, BYTE data)
 {
 	bus_request = 1;
+#if 0
+	/* updating the LED's slows down too much */
 	fp_clock++;
 	fp_sampleData();
+#endif
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 10] == MEM_RW)
