@@ -124,6 +124,7 @@ static inline BYTE dma_read(WORD addr)
 	fp_clock++;
 	fp_sampleData();
 #endif
+	bus_request = 0;
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 10] != MEM_NONE)
@@ -133,8 +134,6 @@ static inline BYTE dma_read(WORD addr)
 	} else {
 		return(*(banks[selbnk] + addr));
 	}
-
-	bus_request = 0;
 }
 
 static inline void dma_write(WORD addr, BYTE data)
@@ -145,6 +144,7 @@ static inline void dma_write(WORD addr, BYTE data)
 	fp_clock++;
 	fp_sampleData();
 #endif
+	bus_request = 0;
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 10] == MEM_RW)
@@ -152,8 +152,6 @@ static inline void dma_write(WORD addr, BYTE data)
 	} else {
 		 *(banks[selbnk] + addr) = data;
 	}
-
-	bus_request = 0;
 }
 
 /*
