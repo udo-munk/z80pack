@@ -369,6 +369,18 @@ int answer(void) {
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
     LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
     active_sfd = &newsockfd;
+
+    /* Initialise Telnet session */
+    if (s_reg[SREG_TELNET]) {
+        init_telnet_opts();
+        if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
+            LOGE(TAG, "can't initialise telnet server session");
+            return 1;
+        } else {
+            LOGI(TAG, "Telnet server session started");
+        };
+    };
+
     return 0;
 }
 
