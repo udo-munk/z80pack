@@ -7,6 +7,7 @@
  * 
  * History:
  * 14-AUG-18    1.0     Initial Release
+ * 04-NOV-19		remove fake DMA bus request
  */
 
 #include <pthread.h>
@@ -60,10 +61,7 @@ static void *store_image(void *arg)
 	memset(&msg, 0, sizeof(msg));
 	gettimeofday(&t1, NULL);
 
-	while (state) {	/* do until total frame is recieved */
-		if (cpu_state == CONTIN_RUN)
-			bus_request = 1;
-
+	while (state) {	/* do until total frame is received */
 		if (net_device_alive(DEV_88ACC)) {
 
 			msg.auxiliary = flags & 0x0f;
@@ -107,7 +105,6 @@ static void *store_image(void *arg)
 
 		LOGD(TAG, "Time: %d", tdiff);
 
-		bus_request = 0;
 		state = 0;
 	}
 
@@ -143,7 +140,6 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 		if (state == 1) {
 			state = 0;
 			SLEEP_MS(50); /* Arbitraray 50ms timeout to let thread exit after state change, TODO: maybe should end thread? */
-			bus_request = 0;
 		}
 	}
 }

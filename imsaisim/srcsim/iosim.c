@@ -29,6 +29,7 @@
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  * 18-OCT-19 add MMU and memory banks
  * 24-OCT-19 add RTC
+ * 04-NOV-19 eliminate usage of mem_base()
  */
 
 #include <unistd.h>
@@ -645,14 +646,15 @@ static void (*port_out[256]) (BYTE) = {
 void init_io(void)
 {
 	/* initialise IMSAI VIO if firmware is loaded */
-	if (!strncmp((char *) mem_base() + 0xfffd, "VI0", 3)) {
+	if ((getmem(0xfffd) == 'V') && (getmem(0xfffe) == 'I') &&
+	    (getmem(0xffff) == '0')) {
 		imsai_vio_init();
 	} else {
 		/* release the RAM */
 		MEM_RELEASE(60);
 		MEM_RELEASE(61);
 		/* if no firmware loaded release the ROM */
-		if (*(mem_base() + 0xf800) == 0xff) {
+		if (getmem(0xf800) == 0xff) {
 			MEM_RELEASE(62);
 			MEM_RELEASE(63);
 		}

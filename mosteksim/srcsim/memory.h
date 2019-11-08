@@ -9,6 +9,7 @@
  * 15-SEP-19 (Mike Douglas) Created from memory.h in the z80sim
  * 		directory. Emulate memory of the Mostek AID-80F and SYS-80FT
  *		computers by treating 0xe000-0xefff as ROM.
+ * 04-NOV-19 (Udo Munk) add functions for direct memory access
  */
 
 extern void init_memory(void), init_rom(void);
@@ -29,7 +30,7 @@ static inline BYTE memrdr(WORD addr)
 }
 
 /*
- * memory access for DMA devices
+ * memory access for DMA devices which request bus from CPU
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
@@ -38,6 +39,19 @@ static inline void dma_write(WORD addr, BYTE data)
 }
 
 static inline BYTE dma_read(WORD addr)
+{
+	return(memory[addr]);
+}
+
+/*
+ * direct memory access for simulation frame, video logic, etc.
+ */
+static inline void putmem(WORD addr, BYTE data)
+{
+	memory[addr] = data;
+}
+
+static inline BYTE getmem(WORD addr)
 {
 	return(memory[addr]);
 }

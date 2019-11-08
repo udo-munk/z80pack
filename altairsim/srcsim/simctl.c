@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from an Altair 8800 front panel
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * History:
  * 20-OCT-08 first version finished
@@ -28,6 +28,7 @@
  * 08-JUN-18 moved hardware initialisation and reset to iosim
  * 11-JUN-18 fixed reset so that cold and warm start works
  * 17-JUL-18 use logging
+ * 04-NOV-19 eliminate usage of mem_base()
  */
 
 #include <X11/Xlib.h>
@@ -132,7 +133,7 @@ void mon(void)
 				else
 					mem_wp = 0;
 				if (!(cpu_bus & CPU_INTA))
-					fp_led_data = dma_read(PC);
+					fp_led_data = fp_read(PC);
 				else
 					fp_led_data = (int_data != -1) ?
 							(BYTE) int_data : 0xff;
@@ -208,17 +209,17 @@ void report_error(void)
 		break;
 	case OPTRAP1:
 		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
-		     *(mem_base() + PC - 1));
+		     getmem(PC - 1));
 		break;
 	case OPTRAP2:
 		LOGE(TAG, "Op-code trap at %04x %02x %02x",
-		     PC - 2, *(mem_base() + PC - 2),
-		     *(mem_base() + PC - 1));
+		     PC - 2, getmem(PC - 2),
+		     getmem(PC - 1));
 		break;
 	case OPTRAP4:
 		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
-		     PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		     *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		     PC - 4, getmem(PC - 4), getmem(PC - 3),
+		     getmem(PC - 2), getmem(PC - 1));
 		break;
 	case USERINT:
 		LOG(TAG, "User Interrupt at %04x\r\n", PC);
@@ -407,7 +408,7 @@ void reset_clicked(int state, int val)
 
 			/* update front panel */
 			fp_led_address = 0;
-			fp_led_data = dma_read(0);
+			fp_led_data = fp_read(0);
 			if ((p_tab[0] == MEM_RO) || (p_tab[0] == MEM_WPROT))
 				mem_wp = 1;
 			else
@@ -444,7 +445,7 @@ void examine_clicked(int state, int val)
 	switch (state) {
 	case FP_SW_UP:
 		fp_led_address = address_switch;
-		fp_led_data = dma_read(address_switch);
+		fp_led_data = fp_read(address_switch);
 		PC = address_switch;
 		if ((p_tab[PC >> 8] == MEM_RO) || (p_tab[PC >> 8] == MEM_WPROT))
 			mem_wp = 1;
@@ -453,7 +454,7 @@ void examine_clicked(int state, int val)
 		break;
 	case FP_SW_DOWN:
 		fp_led_address++;
-		fp_led_data = dma_read(fp_led_address);
+		fp_led_data = fp_read(fp_led_address);
 		PC = fp_led_address;
 		if ((p_tab[PC >> 8] == MEM_RO) || (p_tab[PC >> 8] == MEM_WPROT))
 			mem_wp = 1;
@@ -488,13 +489,13 @@ void deposit_clicked(int state, int val)
 	switch (state) {
 	case FP_SW_UP:
 		fp_led_data = address_switch & 0xff;
-		dma_write(PC, fp_led_data);
+		putmem(PC, fp_led_data);
 		break;
 	case FP_SW_DOWN:
 		PC++;
 		fp_led_address++;
 		fp_led_data = address_switch & 0xff;
-		dma_write(PC, fp_led_data);
+		putmem(PC, fp_led_data);
 		break;
 	default:
 		break;
@@ -548,7 +549,7 @@ void int_clicked(int state, int val)
 		break;
 	case FP_SW_DOWN:
 		fp_led_address = boot_switch;
-		fp_led_data = dma_read(boot_switch);
+		fp_led_data = fp_read(boot_switch);
 		PC = boot_switch;
 		break;
 	default:
@@ -570,7 +571,7 @@ void power_clicked(int state, int val)
 		power++;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		fp_led_address = PC;
-		fp_led_data = dma_read(PC);
+		fp_led_data = fp_read(PC);
 		fp_led_wait = 1;
 		if (isatty(1))
 			system("tput clear");

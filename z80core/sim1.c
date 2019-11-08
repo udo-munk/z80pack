@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2018 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -599,7 +599,7 @@ leave:
 #endif
 #ifdef FRONTPANEL
 	fp_led_address = PC;
-	fp_led_data = dma_read(PC);
+	fp_led_data = getmem(PC);
 	fp_clock++;
 	fp_sampleData();
 #endif

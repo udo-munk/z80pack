@@ -580,7 +580,7 @@ leave:
 #endif
 #ifdef FRONTPANEL
 	fp_led_address = PC;
-	fp_led_data = dma_read(PC);
+	fp_led_data = getmem(PC);
 	fp_clock++;
 	fp_sampleData();
 #endif

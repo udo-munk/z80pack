@@ -15,6 +15,8 @@
  * 12-JUL-2018 use logging
  * 18-JUL-2019 bug fix so that fp shows mapped memory contents
  * 18-OCT-2019 add MMU and memory banks
+ * 04-NOV-2019 add functions for direct memory access
+ * 06-NOV-2019 add function for frontpanel memory write
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
@@ -43,8 +45,6 @@ extern BYTE *wrtvec[];
 extern int cyclecount;
 
 #ifdef HAS_BANKED_ROM
-#undef MEMORY_WRITE
-#define MEMORY_WRITE(addr)	_MEMMAPPED(addr)
 #define _MEMWRTTHRU(addr) 	*(wrtvec[(addr) >> 10] + ((addr) & 0x03ff))
 #define _MEMMAPPED(addr) 	*(rdrvec[(addr) >> 10] + ((addr) & 0x03ff))
 #else
@@ -114,10 +114,18 @@ static inline BYTE memrdr(WORD addr)
 }
 
 /*
- * memory access for DMA devices
+ * memory access for DMA devices which request bus from CPU
  */
 static inline BYTE dma_read(WORD addr)
 {
+	bus_request = 1;
+#if 0
+	/* updating the LED's slows down too much */
+	fp_clock++;
+	fp_sampleData();
+#endif
+	bus_request = 0;
+
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 10] != MEM_NONE)
 			return(_MEMMAPPED(addr));
@@ -129,6 +137,51 @@ static inline BYTE dma_read(WORD addr)
 }
 
 static inline void dma_write(WORD addr, BYTE data)
+{
+	bus_request = 1;
+#if 0
+	/* updating the LED's slows down too much */
+	fp_clock++;
+	fp_sampleData();
+#endif
+	bus_request = 0;
+
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] == MEM_RW)
+			_MEMDIRECT(addr) = data;
+	} else {
+		 *(banks[selbnk] + addr) = data;
+	}
+}
+
+/*
+ * direct memory access for simulation frame, video logic, etc.
+ */
+static inline BYTE getmem(WORD addr)
+{
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		if (p_tab[addr >> 10] != MEM_NONE)
+			return(_MEMMAPPED(addr));
+		else
+			return(0xff);
+	} else {
+		return(*(banks[selbnk] + addr));
+	}
+}
+
+static inline void putmem(WORD addr, BYTE data)
+{
+	if ((selbnk == 0) || (addr >= SEGSIZ)) {
+		_MEMMAPPED(addr) = data;
+	} else {
+		*(banks[selbnk] + addr) = data;
+	}
+}
+
+/*
+ * memory write for frontpanel logic
+ */
+static inline void fp_write(WORD addr, BYTE data)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 10] == MEM_RW)

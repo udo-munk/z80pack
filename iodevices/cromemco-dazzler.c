@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2015-2018 by Udo Munk
+ * Copyright (C) 2015-2019 by Udo Munk
  * Copyright (C) 2018 David McNaughton
  *
  * Emulation of a Cromemco DAZZLER S100 board
@@ -22,6 +22,7 @@
  * 26-JAN-17 optimization
  * 15-JUL-18 use logging
  * 19-JUL-18 integrate webfrontend
+ * 04-NOV-19 remove fake DMA bus request
  */
 
 #include <X11/X.h>
@@ -232,8 +233,6 @@ void cromemco_dazzler_off(void)
 #ifdef HAS_NETSERVER
 	ws_clear();
 #endif
-
-	bus_request = 0;
 }
 
 /* draw pixels for one frame in hires */
@@ -691,8 +690,6 @@ static void *update_display(void *arg)
 
 		/* draw one frame dependend on graphics format */
 		if (state == 1) {	/* draw frame if on */
-			if (cpu_state == CONTIN_RUN)
-				bus_request = 1;
 #ifndef HAS_NETSERVER
 			XLockDisplay(display);
 			XSetForeground(display, gc, colors[0].pixel);
@@ -717,7 +714,6 @@ static void *update_display(void *arg)
 				}
 			}
 #endif
-			bus_request = 0;
 		}
 
 		/* frame done, set frame flag for 4ms */
@@ -775,7 +771,6 @@ void cromemco_dazzler_ctl_out(BYTE data)
 #else
 			ws_clear();
 #endif
-			bus_request = 0;
 		}
 	}
 }

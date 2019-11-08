@@ -7,6 +7,7 @@
  * 
  * History:
  * 14-AUG-18    1.0     Initial Release
+ * 04-NOV-19		remove fake DMA bus request
  */
 
 extern void cromemco_88ccc_ctrl_a_out(BYTE);
