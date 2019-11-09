@@ -66,7 +66,7 @@ static const char* TAG = "at-modem";
     /* SREG_PORT */     DEFAULT_LISTENER_PORT, \
     /* SREG_TELNET */   0, \
     /* SREG_TN_SGA */   3, \
-    /* SREG_TN_ECHO */  0, \
+    /* SREG_TN_ECHO */  3, \
     /* SREG_TN_BIN */   0, \
     /* SREG_TN_NAWS */  3, \
     /* SREG_COLS */     80, \
@@ -159,6 +159,8 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     case TELNET_EV_WILL:
         if (ev->neg.telopt == TELNET_TELOPT_SGA) {
             LOGI(TAG, "Telnet WILL SGA");
+	} else if (ev->neg.telopt == TELNET_TELOPT_ECHO) {
+	    LOGI(TAG, "Telnet WILL ECHO");
         } else if (ev->neg.telopt == TELNET_TELOPT_BINARY) {
             LOGI(TAG, "Telnet WILL BINARY");
         } else {
@@ -168,6 +170,8 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     case TELNET_EV_DO:
         if (ev->neg.telopt == TELNET_TELOPT_SGA) {
             LOGI(TAG, "Telnet DO SGA");
+	} else if (ev->neg.telopt == TELNET_TELOPT_ECHO) {
+	    LOGI(TAG, "Teknet DO ECHO");
         } else if (ev->neg.telopt == TELNET_TELOPT_BINARY) {
             LOGI(TAG, "Telnet DO BINARY");
         } else if (ev->neg.telopt == TELNET_TELOPT_TTYPE) {
@@ -379,6 +383,8 @@ int answer(void) {
         } else {
             LOGI(TAG, "Telnet server session started");
         };
+	telnet_negotiate(telnet, TELNET_WILL, TELNET_TELOPT_SGA);
+	telnet_negotiate(telnet, TELNET_WILL, TELNET_TELOPT_ECHO);
     };
 
     return 0;
