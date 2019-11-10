@@ -171,7 +171,7 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
         if (ev->neg.telopt == TELNET_TELOPT_SGA) {
             LOGI(TAG, "Telnet DO SGA");
 	} else if (ev->neg.telopt == TELNET_TELOPT_ECHO) {
-	    LOGI(TAG, "Teknet DO ECHO");
+	    LOGI(TAG, "Telnet DO ECHO");
         } else if (ev->neg.telopt == TELNET_TELOPT_BINARY) {
             LOGI(TAG, "Telnet DO BINARY");
         } else if (ev->neg.telopt == TELNET_TELOPT_TTYPE) {
