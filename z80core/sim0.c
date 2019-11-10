@@ -309,12 +309,13 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	init_cpu();		/* initialise CPU */
 	wrk_ram	= mem_base();	/* set work pointer for memory */
 
-	/* fill memory content with some initial value */
+	/* fill memory content of bank 0 with some initial value */
 	if (m_flag >= 0) {
-		memset((char *) wrk_ram, m_flag, 65536);
+		for (i = 0; i < 65536; i++)
+			putmem(i, m_flag);
 	} else {
 		for (i = 0; i < 65536; i++)
-			*(wrk_ram + i) = (BYTE) (rand() % 256);
+			putmem(i, (BYTE) (rand() % 256));
 	}
 
 	init_rom();		/* initialise ROM's */
