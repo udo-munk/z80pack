@@ -398,12 +398,15 @@ void reset_cpu(void)
  */
 static void save_core(void)
 {
+	register int i;
 	int fd;
+	BYTE d;
 
 	if ((fd	= open("core.z80", O_WRONLY | O_CREAT, 0600)) == -1) {
 		puts("can't open file core.z80");
 		return;
 	}
+
 	write(fd, (char	*) &A, sizeof(A));
 	write(fd, (char	*) &F, sizeof(F));
 	write(fd, (char	*) &B, sizeof(B));
@@ -427,7 +430,12 @@ static void save_core(void)
 	write(fd, (char	*) &SP, sizeof(SP));
 	write(fd, (char	*) &IX,	sizeof(IX));
 	write(fd, (char	*) &IY,	sizeof(IY));
-	write(fd, (char	*) mem_base(), 65536);
+
+	for (i = 0; i < 65536; i++) {
+		d = getmem(i);
+		write(fd, &d, 1);
+	}
+
 	close(fd);
 }
 
@@ -436,12 +444,15 @@ static void save_core(void)
  */
 int load_core(void)
 {
+	register int i;
 	int fd;
+	BYTE d;
 
 	if ((fd	= open("core.z80", O_RDONLY)) == -1) {
 		puts("can't open file core.z80");
 		return(1);
 	}
+
 	read(fd, (char *) &A, sizeof(A));
 	read(fd, (char *) &F, sizeof(F));
 	read(fd, (char *) &B, sizeof(B));
@@ -465,7 +476,12 @@ int load_core(void)
 	read(fd, (char *) &SP, sizeof(SP));
 	read(fd, (char *) &IX, sizeof(IX));
 	read(fd, (char *) &IY, sizeof(IY));
-	read(fd, (char *) mem_base(), 65536);
+
+	for (i = 0; i < 65536; i++) {
+		read(fd, &d, 1);
+		putmem(i, d);
+	}
+
 	close(fd);
 
 	return(0);
