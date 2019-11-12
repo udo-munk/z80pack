@@ -30,6 +30,7 @@
  * 18-OCT-19 add MMU and memory banks
  * 24-OCT-19 add RTC
  * 04-NOV-19 eliminate usage of mem_base()
+ * 12-NOV-19 implemented SIO control ports
  */
 
 #include <unistd.h>
@@ -96,7 +97,7 @@ BYTE (*port_in[256]) (void) = {
 	imsai_kbd_status_in,	/* port 5 */
 	imsai_sio_nofun_in,	/* port 6 */
 	imsai_sio_nofun_in,	/* port 7 */
-	imsai_sio_nofun_in,	/* port 8 */ /* SIO Control for A and B */
+	imsai_sio1_ctl_in,	/* port 8 */ /* SIO Control for A and B */
 	imsai_sio_nofun_in,	/* port 9 */
 	imsai_sio_nofun_in,	/* port 10 */
 	imsai_sio_nofun_in,	/* port 11 */
@@ -141,7 +142,7 @@ BYTE (*port_in[256]) (void) = {
 #endif
 	imsai_sio_nofun_in,	/* port 38 */
 	imsai_sio_nofun_in,	/* port 39 */
-	imsai_sio_nofun_in,	/* port 40 */ /* SIO Control for A and B */
+	imsai_sio2_ctl_in,	/* port 40 */ /* SIO Control for A and B */
 	imsai_sio_nofun_in,	/* port 41 */
 	imsai_sio_nofun_in,	/* port 42 */
 	imsai_sio_nofun_in,	/* port 43 */
@@ -372,7 +373,7 @@ static void (*port_out[256]) (BYTE) = {
 	imsai_sio_nofun_out,	/* port 5 */
 	imsai_sio_nofun_out,	/* port 6 */
 	imsai_sio_nofun_out,	/* port 7 */
-	imsai_sio_nofun_out,	/* port 8 */ /* SIO Control for A and B */
+	imsai_sio1_ctl_out,	/* port 8 */ /* SIO Control for A and B */
 	imsai_sio_nofun_out,	/* port 9 */
 	imsai_sio_nofun_out,	/* port 10 */
 	imsai_sio_nofun_out,	/* port 11 */
@@ -420,7 +421,7 @@ static void (*port_out[256]) (BYTE) = {
 #endif
 	imsai_sio_nofun_out,	/* port 38 */
 	imsai_sio_nofun_out,	/* port 39 */
-	imsai_sio_nofun_out,	/* port 40 */ /* SIO Control for A and B */
+	imsai_sio2_ctl_out,	/* port 40 */ /* SIO Control for A and B */
 	imsai_sio_nofun_out,	/* port 41 */
 	imsai_sio_nofun_out,	/* port 42 */
 	imsai_sio_nofun_out,	/* port 43 */

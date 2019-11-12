@@ -26,10 +26,14 @@
  * 06-OCT-19 started to implement telnet protocol for modem device
  * 07-OCT-19 implemented baud rate for modem device
  * 09-OCT-19 implement telnet binary transfer
+ * 12-NOV-19 implemented SIO control ports
  */
 
 extern BYTE imsai_sio_nofun_in(void);
 extern void imsai_sio_nofun_out(BYTE);
+
+extern BYTE imsai_sio1_ctl_in(void), imsai_sio2_ctl_in(void);
+extern void imsai_sio1_ctl_out(BYTE), imsai_sio2_ctl_out(BYTE);
 
 extern BYTE imsai_sio1a_status_in(void), imsai_sio2a_status_in(void);
 extern void imsai_sio1a_status_out(BYTE), imsai_sio2a_status_out(BYTE);

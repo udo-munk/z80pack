@@ -26,6 +26,7 @@
  * 06-OCT-19 started to implement telnet protocol for modem device
  * 07-OCT-19 implemented baud rate for modem device
  * 09-OCT-19 implement telnet binary transfer
+ * 12-NOV-19 implemented SIO control ports
  */
 
 #include <unistd.h>
@@ -50,6 +51,8 @@
 
 static const char *TAG = "SIO";
 
+static BYTE sio1_ctl, sio2_ctl;
+
 int sio1a_upper_case;
 int sio1a_strip_parity;
 int sio1a_drop_nulls;
@@ -67,6 +70,7 @@ static struct timeval sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat;
 
 int sio2b_baud_rate = 2400;
+int sio2b_cd;			/* carrier detect from modem */
 
 static struct timeval sio2b_t1, sio2b_t2;
 static BYTE sio2b_stat;
@@ -450,3 +454,48 @@ void imsai_sio2b_data_out(BYTE data)
 }
 
 #endif
+
+/*
+ * SIO control input bits:
+ * 0 - always 1
+ * 1 - always 1
+ * 2 - Carrier Detect channel A
+ * 3 - Clear To Send channel A
+ * 4 - always 1
+ * 5 - always 1
+ * 6 - Carrier Detect channel B
+ * 7 - Clear To Send channel B
+ */
+BYTE imsai_sio1_ctl_in(void)
+{
+	/* no modem on SIO 1, so CD always 0 and CTS always 1 */
+	return(0b10111011);
+}
+
+BYTE imsai_sio2_ctl_in(void)
+{
+	/* no modem on channel A, so CD always 0, channel B CD from modem */
+	/* CTS always 1 */
+	return((sio2b_cd == 0) ? 0b10111011 : 0b11111011);
+}
+
+/*
+ * SIO control input bits:
+ * 0 - Interrupt Enable channel A (not implemented)
+ * 1 - Carrier Detect channel A
+ * 2 - no function
+ * 3 - no function
+ * 4 - Interrupt Enable channel B (not implemented)
+ * 5 - Carrier Detect channel B (jumpered for receive, so no function)
+ * 6 - no function
+ * 7 - no function
+ */
+void imsai_sio1_ctl_out(BYTE data)
+{
+	sio1_ctl = data;
+}
+
+void imsai_sio2_ctl_out(BYTE data)
+{
+	sio2_ctl = data;
+}
