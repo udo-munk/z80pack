@@ -480,7 +480,7 @@ BYTE imsai_sio2_ctl_in(void)
 }
 
 /*
- * SIO control input bits:
+ * SIO control output bits:
  * 0 - Interrupt Enable channel A (not implemented)
  * 1 - Carrier Detect channel A
  * 2 - no function
