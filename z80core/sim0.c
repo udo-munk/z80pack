@@ -76,7 +76,7 @@ static void init_cpu(void);
 static void save_core(void);
 int load_core(void);
 int load_file(char *);
-static int load_mos(int, char *), load_hex(char *), checksum(char *);
+static int load_mos(char *), load_hex(char *), checksum(char *);
 extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
 extern int exatoi(char *);
@@ -497,8 +497,8 @@ int load_core(void)
 int load_file(char *s)
 {
 	char fn[MAX_LFN];
-	BYTE fileb[5];
-	register char *pfn = fn;
+	char *pfn = fn;
+	BYTE d;
 	int fd;
 
 	while (isspace((int)*s))
@@ -506,26 +506,29 @@ int load_file(char *s)
 	while (*s != ',' && *s != '\n' && *s != '\0')
 		*pfn++ = *s++;
 	*pfn = '\0';
+
 	if (strlen(fn) == 0) {
 		puts("no input file given");
 		return(1);
 	}
+
 	if ((fd	= open(fn, O_RDONLY)) == -1) {
 		printf("can't open file %s\n", fn);
 		return(1);
 	}
+
 	if (*s == ',')
 		wrk_ram	= mem_base() + exatoi(++s);
 	else
 		wrk_ram	= NULL;
-	read(fd, (char *) fileb, 5); /*	read first 5 bytes of file */
-	if (*fileb == (BYTE) 0xff) {	/* Mostek header ? */
-		lseek(fd, 0l, SEEK_SET);
-		return (load_mos(fd, fn));
-	}
-	else {
-		close(fd);
-		return (load_hex(fn));
+
+	read(fd, (char *) &d, 1);	/* read first byte of file */
+	close(fd);
+
+	if (d == 0xff) {		/* Mostek header ? */
+		return(load_mos(fn));
+	} else {
+		return(load_hex(fn));
 	}
 }
 
@@ -538,28 +541,46 @@ int load_file(char *s)
  *	ll = load address low
  *	lh = load address high
  */
-static int load_mos(int fd, char *fn)
+static int load_mos(char *fn)
 {
+	register int i;
+	int fd;
+	int laddr, count;
 	BYTE fileb[3];
-	unsigned count,	readn;
-	int rc = 0;
+
+	if ((fd	= open(fn, O_RDONLY)) == -1) {
+		printf("can't open file %s\n", fn);
+		return(1);
+	}
 
 	read(fd, (char *) fileb, 3);	/* read load address */
+	laddr = (fileb[2] << 8) + fileb[1];
+
 	if (wrk_ram == NULL)		/* and set if not given */
-		wrk_ram	= mem_base() + (fileb[2] << 8) + fileb[1];
-	count = mem_base() + 65535 - wrk_ram;
-	if ((readn = read(fd, (char *) wrk_ram, count)) == count) {
-		puts("Too much to load, stopped at 0xffff");
-		rc = 1;
+		wrk_ram	= mem_base() + laddr;
+	else				/* else use argument */
+		laddr = wrk_ram - mem_base();
+
+	count = 0;
+	for (i = laddr; i < 65536; i++) {
+		if (read(fd, fileb, 1) == 1) {
+			count++;
+			putmem(i, fileb[0]);
+		} else {
+			break;
+		}
 	}
+
 	close(fd);
+
 	printf("Loader statistics for file %s:\n", fn);
-	printf("START : %04X\n", (unsigned int)(wrk_ram - mem_base()));
-	printf("END   : %04X\n", (unsigned int)(wrk_ram - mem_base()
-				 + readn - 1));
-	printf("LOADED: %04X\n\n", readn);
-	PC = wrk_ram - mem_base();
-	return(rc);
+	printf("START : %04XH\n", laddr);
+	printf("END   : %04XH\n", laddr + count);
+	printf("LOADED: %04XH (%d)\n\n", count, count);
+
+	PC = laddr;
+
+	return(0);
 }
 
 /*
@@ -631,11 +652,13 @@ static int load_hex(char *fn)
 	}
 
 	fclose(fd);
+
 	count = eaddr - saddr + 1;
 	printf("Loader statistics for file %s:\n", fn);
 	printf("START : %04XH\n", saddr);
 	printf("END   : %04XH\n", eaddr);
 	printf("LOADED: %04XH (%d)\n\n", count & 0xffff, count & 0xffff);
+
 	PC = saddr;
 	wrk_ram = mem_base() + saddr;
 
