@@ -89,6 +89,8 @@ static char port_num[10];
 
 static telnet_telopt_t telnet_opts[10];
 
+extern int sio2b_cd;
+
 void init_telnet_opts(void) {
 
     int i=0;
@@ -281,6 +283,7 @@ int open_socket(void) {
 
         LOGI(TAG, "Socket connected");
         active_sfd = &sfd;
+	sio2b_cd = 1;
 
         /* Initialise Telnet session */
         if (s_reg[SREG_TELNET]) {
@@ -314,6 +317,7 @@ void close_socket(void) {
         LOGI(TAG, "Socket closed");
         *active_sfd = 0;
     }
+    sio2b_cd = 0;
 }
 
 /****************************************************************************************************************************/
@@ -373,6 +377,7 @@ int answer(void) {
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
     LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
     active_sfd = &newsockfd;
+    sio2b_cd = 1;
 
     /* Initialise Telnet session */
     if (s_reg[SREG_TELNET]) {
@@ -683,6 +688,7 @@ static int _read() {
         at_cat_s(CRLF AT_NO_CARRIER);
         at_cmd[0] = 0;
         at_state = cmd;
+	sio2b_cd = 0;
 
         return -1;
     }
