@@ -8,6 +8,7 @@
 ; 25-OCT-19 add character device table
 ; 28-OCT-19 add all character devices with I/O redirection
 ; 01-NOV-19 add more complete character device mode byte
+; 17-NOV-19 handle result codes from FIF FDC
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -283,7 +284,7 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'IMSAI 8080 banked BIOS V1.5,',13,10
+	DB	'IMSAI 8080 banked BIOS V1.6,',13,10
 	DB	'Copyright (C) 2019, Udo Munk',13,10,13,10
 	DB	0
 ;
@@ -901,8 +902,15 @@ WR1:	LDA	DDRES		; wait for FDC
 	LDA	DDRES		; get status again
 	CMA			; complement for LED's
 	OUT	LEDS		; display the error code
-	MVI	A,1		; nonrecoverable error
+	LDA	DDRES		; get status again
+	CPI	0A2H		; hardware write protected ?
+	JZ	DISKRO
+	CPI	0A3H		; software write protected ?
+	JZ	DISKRO
+	MVI	A,1		; no, nonrecoverable error
 	RET			; return with error
+DISKRO:	MVI	A,2		; disk R/O error
+	RET
 ;
 ;	set count of consecutive sectors
 ;	for read or write
