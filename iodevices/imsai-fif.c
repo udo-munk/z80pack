@@ -264,6 +264,7 @@ void disk_io(int addr)
 	case 0: /* no drive selected */
 		dma_write(addr + DD_RESULT, 0xc2);
 		return;
+
 	case 1:	/* IMDOS drive A: */
 		spt = SPT8;
 		maxtrk = TRK8;
