@@ -24,6 +24,7 @@
  * 13-JUL-2018 use logging & integrate disk manager
  * 10-SEP-2019 added support for a z80pack 4 MB harddisk
  * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
+ * 17-NOV-2019 return result codes as documented in manual
  */
 
 extern BYTE imsai_fif_in(void);

@@ -24,6 +24,7 @@
  * 13-JUL-2018 use logging & integrate disk manager
  * 10-SEP-2019 added support for a z80pack 4 MB harddisk
  * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
+ * 17-NOV-2019 return result codes as documented in manual
  */
 
 #include <unistd.h>
@@ -195,21 +196,36 @@ void imsai_fif_out(BYTE data)
  *
  *	The status byte in the disk descriptor is set as follows:
  *
- *	1 - OK
- *	2 - illegal drive
- *	3 - no disk in drive
- *	4 - illegal track
- *	5 - illegal sector
- *	6 - seek error
- *	7 - read error
- *	8 - write error
- *	15 - invalid command
+ *	MSB = error class	LSB = error number
+ *	1100 - class 1 error in command string
+ *	1010 - class 2 operator recoverable error
+ *	1001 - class 3 hardware failure
  *
- *	All error codes will abort disk I/O, but these are not the ones
- *	the real controller will set.
- *	For example the real controller will set 0A1H for drive not
- *	ready and the IMSAI BIOS waits forever, until a disk is inserted
- *	and the drive door closed.
+ *	Class 1 - Bit 6 is set, status code has the form CXH
+ *	C2 - no drive selected
+ *	C3 - more than one drive selected
+ *	C4 - illegal command number
+ *	C5 - illegal track address
+ *	C6 - illegal sector address
+ *	C7 - illegal buffer address
+ *	C8 - illegal byte-3 format
+ *
+ *	Class 2 - Bit 5 is set, status code has the form AXH
+ *	A1 - selected drive not ready
+ *	A2 - selected drive is harware write protected
+ *	A3 - selected drive is software write protected
+ *	A4 - sector lenght specified by byte 3 of command string does
+ *	     not correspond to actual sector lenght found on disk
+ *
+ *	Class 3 - Bit 4 is set, status code has the form 9XH
+ *	91 - selected drive not operable
+ *	92 - track address error while attempting to read/write
+ *	93 - data cynchronization error
+ *	94 - CRC error in the ID field of desired sector
+ *	95 - failure to recognize data AM after recognizing sector ID field
+ *	96 - CRC error in the data field of desired sector
+ *	97 - deleted data address mark in data field
+ *	98 - format operation unsuccessful
  */
 void disk_io(int addr)
 {
@@ -245,6 +261,9 @@ void disk_io(int addr)
 
 	/* convert IMSAI unit bits to internal disk no */
 	switch (unit) {
+	case 0: /* no drive selected */
+		dma_write(addr + DD_RESULT, 0x2c);
+		return;
 	case 1:	/* IMDOS drive A: */
 		spt = SPT8;
 		maxtrk = TRK8;
@@ -277,16 +296,14 @@ void disk_io(int addr)
 		break;
 #endif
 
-	default: /* set error code for all other drives */
-		 /* IMDOS sends unit 3 intermediate for drive C: & D: */
-		 /* and the IMDOS format program sends unit 0 */
-		dma_write(addr + DD_RESULT, 2);
+	default: /* more than one drive selected */
+		dma_write(addr + DD_RESULT, 0xc3);
 		return;
 	}
 
 	/* handle case when disk is ejected */
 	if(disks[disk] == NULL) {
-		dma_write(addr + DD_RESULT, 3);
+		dma_write(addr + DD_RESULT, 0xa1);
 		return;
 	}
 
@@ -301,29 +318,33 @@ void disk_io(int addr)
 				unlink(fn);
 			fd = open(fn, O_RDWR|O_CREAT, 0644);
 		} else {
-			dma_write(addr + DD_RESULT, 3);
+			dma_write(addr + DD_RESULT, 0xa1);
 			return;
 		}
 		if (fd == -1) {
-			dma_write(addr + DD_RESULT, 3);
+			dma_write(addr + DD_RESULT, 0xa1);
 			return;
 		}
 		goto do_format;
 	} else if (cmd == READ_SEC) {
 		fd = open(fn, O_RDONLY);
+		if (fd == -1) {
+			dma_write(addr + DD_RESULT, 0xa1);
+			return;
+		}
 	} else {
 		fd = open(fn, O_RDWR);
-	}
-	if (fd == -1) {
-		dma_write(addr + DD_RESULT, 3);
-		return;
+		if (fd == -1) {
+			dma_write(addr + DD_RESULT, 0xa2);
+			return;
+		}
 	}
 
 	/* check for correct disk size if not formatting a new disk */
 	fstat(fd, &s);
 	if (((disk <= 3) && (s.st_size != 256256)) ||
 	   ((disk == 8) && (s.st_size != 4177920))) {
-		dma_write(addr + DD_RESULT, 3);
+		dma_write(addr + DD_RESULT, 0xa1);
 		close(fd);
 		return;
 	}
@@ -334,22 +355,22 @@ do_format:
 	switch(cmd) {
 	case WRITE_SEC:
 		if (track >= maxtrk) {
-			dma_write(addr + DD_RESULT, 4);
+			dma_write(addr + DD_RESULT, 0xc5);
 			goto done;
 		}
 		if (sector > spt) {
-			dma_write(addr + DD_RESULT, 5);
+			dma_write(addr + DD_RESULT, 0xc6);
 			goto done;
 		}
 		pos = (track * spt + sector - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
-			dma_write(addr + DD_RESULT, 6);
+			dma_write(addr + DD_RESULT, 0x92);
 			goto done;
 		}
 		for (i = 0; i < SEC_SZ; i++)
 			blksec[i] = dma_read(dma_addr + i);
 		if (write(fd, blksec, SEC_SZ) != SEC_SZ) {
-			dma_write(addr + DD_RESULT, 8);
+			dma_write(addr + DD_RESULT, 0x93);
 			goto done;
 		}
 		dma_write(addr + DD_RESULT, 1);
@@ -357,20 +378,20 @@ do_format:
 
 	case READ_SEC:
 		if (track >= maxtrk) {
-			dma_write(addr + DD_RESULT, 4);
+			dma_write(addr + DD_RESULT, 0xc5);
 			goto done;
 		}
 		if (sector > spt) {
-			dma_write(addr + DD_RESULT, 5);
+			dma_write(addr + DD_RESULT, 0xc6);
 			goto done;
 		}
 		pos = (track * spt + sector - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
-			dma_write(addr + DD_RESULT, 6);
+			dma_write(addr + DD_RESULT, 0x92);
 			goto done;
 		}
 		if (read(fd, blksec, SEC_SZ) != SEC_SZ) {
-			dma_write(addr + DD_RESULT, 7);
+			dma_write(addr + DD_RESULT, 0x93);
 			goto done;
 		}
 		for (i = 0; i < SEC_SZ; i++)
@@ -381,17 +402,17 @@ do_format:
 	case FMT_TRACK:
 		memset(&blksec, 0xe5, SEC_SZ);
 		if (track >= maxtrk) {
-			dma_write(addr + DD_RESULT, 4);
+			dma_write(addr + DD_RESULT, 0xc5);
 			goto done;
 		}
 		pos = track * spt * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
-			dma_write(addr + DD_RESULT, 6);
+			dma_write(addr + DD_RESULT, 0x92);
 			goto done;
 		}
 		for (i = 0; i < spt; i++) {
 			if (write(fd, &blksec, SEC_SZ) != SEC_SZ) {
-				dma_write(addr + DD_RESULT, 8);
+				dma_write(addr + DD_RESULT, 0x93);
 				goto done;
 			}
 		}
@@ -403,7 +424,7 @@ do_format:
 		break;
 
 	default:	/* unknown command */
-		dma_write(addr + DD_RESULT, 15);
+		dma_write(addr + DD_RESULT, 0xc4);
 		break;
 	}
 
