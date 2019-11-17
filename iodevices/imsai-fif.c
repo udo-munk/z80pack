@@ -262,7 +262,7 @@ void disk_io(int addr)
 	/* convert IMSAI unit bits to internal disk no */
 	switch (unit) {
 	case 0: /* no drive selected */
-		dma_write(addr + DD_RESULT, 0x2c);
+		dma_write(addr + DD_RESULT, 0xc2);
 		return;
 	case 1:	/* IMDOS drive A: */
 		spt = SPT8;
