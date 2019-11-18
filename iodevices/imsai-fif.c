@@ -25,6 +25,7 @@
  * 10-SEP-2019 added support for a z80pack 4 MB harddisk
  * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
  * 17-NOV-2019 return result codes as documented in manual
+ * 18-NOV-2019 initialize command string address array
  */
 
 #include <unistd.h>
@@ -99,6 +100,7 @@ static char *disks[4] = {
 #endif
 #endif
 
+static int fdaddr[16];		/* address of disk descriptors */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fdstate = 0;		/* state of the fd */
 
@@ -131,7 +133,6 @@ BYTE imsai_fif_in(void)
 
 void imsai_fif_out(BYTE data)
 {
-	static int fdaddr[16];		/* address of disk descriptors */
 	static int descno;		/* descriptor # */
 
 	void disk_io(int);
@@ -439,6 +440,23 @@ done:
 void imsai_fif_reset(void)
 {
 	fdstate = 0;
+
+	fdaddr[0] = 0x0080;
+	fdaddr[1] = 0x1000;
+	fdaddr[2] = 0x2000;
+	fdaddr[3] = 0x3000;
+	fdaddr[4] = 0x4000;
+	fdaddr[5] = 0x5000;
+	fdaddr[6] = 0x6000;
+	fdaddr[7] = 0x7000;
+	fdaddr[8] = 0x8000;
+	fdaddr[9] = 0x9000;
+	fdaddr[10] = 0xa000;
+	fdaddr[11] = 0xb000;
+	fdaddr[12] = 0xc000;
+	fdaddr[13] = 0xd000;
+	fdaddr[14] = 0xe000;
+	fdaddr[15] = 0xf000;
 
 #ifdef HAS_DISKMANAGER
 	extern void readDiskmap(char *);
