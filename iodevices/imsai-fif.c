@@ -220,7 +220,7 @@ void imsai_fif_out(BYTE data)
  *	Class 3 - Bit 4 is set, status code has the form 9XH
  *	91 - selected drive not operable
  *	92 - track address error while attempting to read/write
- *	93 - data cynchronization error
+ *	93 - data synchronization error
  *	94 - CRC error in the ID field of desired sector
  *	95 - failure to recognize data AM after recognizing sector ID field
  *	96 - CRC error in the data field of desired sector
