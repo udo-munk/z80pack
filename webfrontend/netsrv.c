@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
@@ -254,7 +255,9 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
     request_t *req = get_request(conn);
     struct dirent *pDirent;
     DIR *pDir;
-	int i = 0;
+    int i = 0;
+    struct stat sb;
+    char fullpath[MAX_LFN];
 
     switch(req->method) {
     case HTTP_GET:
@@ -271,9 +274,14 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
 
             while ((pDirent = readdir(pDir)) != NULL) {
                 LOGD(TAG, "GET directory: %s type: %d", pDirent->d_name, pDirent->d_type);
-                if (pDirent->d_type==DT_REG) {
-					httpdPrintf(conn, "%c\"%s\"", (i++ > 0)?',':' ', pDirent->d_name);
-                 }
+		snprintf(&fullpath[0], MAX_LFN, "%s/%s", (char *) path, pDirent->d_name);
+		/*
+		 * not working with some filesystems like Linux xfs, need to use stat()
+                 * if (pDirent->d_type==DT_REG) {
+		 */
+		if (stat(fullpath, &sb) != -1 && S_ISREG(sb.st_mode)) {
+			httpdPrintf(conn, "%c\"%s\"", (i++ > 0)?',':' ', pDirent->d_name);
+                }
             }
             closedir (pDir);
             httpdPrintf(conn, "]");
