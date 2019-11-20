@@ -193,7 +193,7 @@ ifeq ($(TARGET_OS),LINUX)
   CAN_INSTALL = 1
 endif
 
-# CYGGIN defines WIN32 but has no del command because using bash
+# CYGWIN defines WIN32 but has no del command because using bash
 # ifeq ($(TARGET_OS),WIN32)
 #   MKDIR = mkdir
 #   RMF = del /q

@@ -213,7 +213,7 @@ void imsai_fif_out(BYTE data)
  *
  *	Class 2 - Bit 5 is set, status code has the form AXH
  *	A1 - selected drive not ready
- *	A2 - selected drive is harware write protected
+ *	A2 - selected drive is hardware write protected
  *	A3 - selected drive is software write protected
  *	A4 - sector lenght specified by byte 3 of command string does
  *	     not correspond to actual sector lenght found on disk
