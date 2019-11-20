@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -285,5 +285,7 @@ void config(void)
 		}
 	}
 
+	LOG(TAG, "SIO 0 running at %d baud\r\n", sio0_baud_rate);
+	LOG(TAG, "SIO 1 running at %d baud\r\n", sio1_baud_rate);
 	LOG(TAG, "\r\n");
 }
