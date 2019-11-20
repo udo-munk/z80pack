@@ -138,19 +138,15 @@ void imsai_fif_out(BYTE data)
 	void disk_io(int);
 
 	/*
-	 * The controller understands these commands:
-	 * 0x10: set address of a disk descriptor from the following two out's
-	 * 0x00: do the work as setup in the disk descriptor
-	 * 0x20: reset a drive to home position, the lower digit contains
-	 *       the drive to reset, 0x2f for all drives
+	 * controller commands: MSB command, LSB disk decsriptor or drive(s)
 	 *
-	 * The dd address only needs to be set once, the OS then can adjust
-	 * the wanted I/O in the descriptor and send the 0x00 command
-	 * multiple times for this descriptor.
-	 *
-	 * The commands 0x10 and 0x00 are OR'ed with a descriptor number
-	 * 0x0 - 0xf, so there can be 16 different disk descriptors that
-	 * need to be remembered.
+	 * 0x00: execute disk descriptor in LSB
+	 * 0x10: set address of disk descriptor in LSB from following two out's
+	 * 0x20: reset drives in LSB to home position
+	 * 0x30: write protect drives in LSB
+	 * 0x40: reset write protect for drives in LSB
+	 * 0x50: reset and read boot sector from drive 0 into memory location 0
+	 * 0x60 - 0xF0: perform no operation
 	 */
 	switch (fdstate) {
 	case 0:	/* start of command phase */
@@ -168,9 +164,20 @@ void imsai_fif_out(BYTE data)
 		case 0x20:	/* reset drive(s) */
 			break;	/* no mechanical drives, so nothing to do */
 
-		default:
-			LOGW(TAG, "unknown cmd %02x", data);
-			return;
+		case 0x30:	/* write protect drive(s) */
+			LOGW(TAG, "write protect not implemented");
+			break;
+
+		case 0x40:	/* reset write protect drive(s) */
+			LOGW(TAG, "reset write protect not implemented");
+			break;
+
+		case 0x50:	/* reset and load boot sector into memory */
+			LOGW(TAG, "read boot sector not implemented");
+			break;
+
+		default:	/* all other commands perform no operation */
+			break;
 		}
 		break;
 
