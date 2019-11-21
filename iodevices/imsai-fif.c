@@ -238,7 +238,7 @@ void imsai_fif_out(BYTE data)
 void disk_io(int addr)
 {
 	register int i;
-	static int fd;			/* fd for disk i/o */
+	static int fd = -1;		/* fd for disk i/o */
 	static long pos;		/* seek position */
 	static int unit;		/* disk unit number */
 	static int cmd;			/* disk command */
@@ -335,27 +335,39 @@ void disk_io(int addr)
 			return;
 		}
 		goto do_format;
-	} else if (cmd == READ_SEC) {
+	} else if ((cmd == READ_SEC) || (cmd == VERIFY_DATA)) {
 		fd = open(fn, O_RDONLY);
 		if (fd == -1) {
 			dma_write(addr + DD_RESULT, 0xa1);
 			return;
 		}
-	} else {
+	} else if (cmd == WRITE_SEC) {
 		fd = open(fn, O_RDWR);
+		/* if the disk can't be opened R/W */
 		if (fd == -1) {
-			dma_write(addr + DD_RESULT, 0xa2);
+			/* see if it opens R/O */
+			fd = open(fn, O_RDONLY);
+			/* if that works it is write protected */
+			if (fd != -1) {
+				close(fd);
+				dma_write(addr + DD_RESULT, 0xa2);
+			/* else no disk */
+			} else {
+				dma_write(addr + DD_RESULT, 0xa1);
+			}
 			return;
 		}
 	}
 
 	/* check for correct disk size if not formatting a new disk */
-	fstat(fd, &s);
-	if (((disk <= 3) && (s.st_size != 256256)) ||
-	   ((disk == 8) && (s.st_size != 4177920))) {
-		dma_write(addr + DD_RESULT, 0xa1);
-		close(fd);
-		return;
+	if (fd != -1) {
+		fstat(fd, &s);
+		if (((disk <= 3) && (s.st_size != 256256)) ||
+		   ((disk == 8) && (s.st_size != 4177920))) {
+			dma_write(addr + DD_RESULT, 0xa1);
+			close(fd);
+			return;
+		}
 	}
 
 do_format:
