@@ -66,6 +66,8 @@ extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
 extern int sio2_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
 extern int sio2_baud_rate;	/* SIO 2 baud rate */
 
+extern int sio3_baud_rate;	/* SIO 3 baud rate */
+
 extern char bg_color[];         /* VDM background color */
 extern char fg_color[];         /* VDM foreground color */
 extern int slf;                 /* VDM scanlines factor */
@@ -216,6 +218,8 @@ void config(void)
 				sio1_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio2_baud_rate")) {
 				sio2_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio3_baud_rate")) {
+				sio3_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {
@@ -292,5 +296,6 @@ void config(void)
 	LOG(TAG, "SIO 0 running at %d baud\r\n", sio0_baud_rate);
 	LOG(TAG, "SIO 1 running at %d baud\r\n", sio1_baud_rate);
 	LOG(TAG, "SIO 2 running at %d baud\r\n", sio2_baud_rate);
+	LOG(TAG, "SIO 3 running at %d baud\r\n", sio3_baud_rate);
 	LOG(TAG, "\r\n");
 }
