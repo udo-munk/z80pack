@@ -26,6 +26,7 @@
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 17-JUL-18 use logging
  * 21-AUG-18 improved memory configuration
+ * 24-NOV-19 configurable baud rate for second 2SIO channel
  */
 
 extern void config(void);

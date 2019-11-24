@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * Partial emulation of an Altair 88-2SIO S100 board
  *
@@ -21,6 +21,7 @@
  * 03-MAY-18 improved accuracy
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 15-JUL-18 use logging
+ * 24-NOV-19 configurable baud rate for second channel
  */
 
 #include <unistd.h>
@@ -40,6 +41,8 @@
 
 #define BAUDTIME 10000000
 
+extern int time_diff(struct timeval *, struct timeval *);
+
 static const char *TAG = "2SIO";
 
 int sio1_upper_case;
@@ -47,12 +50,16 @@ int sio1_strip_parity;
 int sio1_drop_nulls;
 int sio1_baud_rate = 115200;
 
+static struct timeval sio1_t1, sio1_t2;
+static BYTE sio1_stat;
+
 int sio2_upper_case;
 int sio2_strip_parity;
 int sio2_drop_nulls;
+int sio2_baud_rate = 115200;
 
-static struct timeval t1, t2;
-static BYTE status;
+static struct timeval sio2_t1, sio2_t2;
+static BYTE sio2_stat;
 
 /*
  * read status register
@@ -62,29 +69,27 @@ static BYTE status;
  */
 BYTE altair_sio1_status_in(void)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
-
 	struct pollfd p[1];
 	int tdiff;
 
-	gettimeofday(&t2, NULL);
-	tdiff = time_diff(&t1, &t2);
+	gettimeofday(&sio1_t2, NULL);
+	tdiff = time_diff(&sio1_t1, &sio1_t2);
 	if (sio1_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
-			return(status);
+			return(sio1_stat);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN | POLLOUT;
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (p[0].revents & POLLIN)
-		status |= 1;
+		sio1_stat |= 1;
 	if (p[0].revents & POLLOUT)
-		status |= 2;
+		sio1_stat |= 2;
 
-	gettimeofday(&t1, NULL);
+	gettimeofday(&sio1_t1, NULL);
 
-	return(status);
+	return(sio1_stat);
 }
 
 /*
@@ -123,8 +128,8 @@ again:
 		goto again;
 	}
 
-	gettimeofday(&t1, NULL);
-	status &= 0b11111110;
+	gettimeofday(&sio1_t1, NULL);
+	sio1_stat &= 0b11111110;
 
 	/* process read data */
 	if (sio1_upper_case)
@@ -159,8 +164,8 @@ again:
 		}
 	}
 
-	gettimeofday(&t1, NULL);
-	status &= 0b11111101;
+	gettimeofday(&sio1_t1, NULL);
+	sio1_stat &= 0b11111101;
 }
 
 /*
@@ -171,8 +176,8 @@ again:
  */
 BYTE altair_sio2_status_in(void)
 {
-	BYTE status = 0;
 	struct pollfd p[1];
+	int tdiff;
 
 	/* if socket not connected check for a new connection */
 	if (ucons[1].ssc == 0) {
@@ -190,6 +195,12 @@ BYTE altair_sio2_status_in(void)
 		}
 	}
 
+	gettimeofday(&sio2_t2, NULL);
+	tdiff = time_diff(&sio2_t1, &sio2_t2);
+	if (sio2_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2_baud_rate))
+			return(sio2_stat);
+
 	/* if socket is connected check for I/O */
 	if (ucons[1].ssc != 0) {
 		p[0].fd = ucons[1].ssc;
@@ -197,12 +208,14 @@ BYTE altair_sio2_status_in(void)
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN)
-			status |= 1;
+			sio2_stat |= 1;
 		if (p[0].revents & POLLOUT)
-			status |= 2;
+			sio2_stat |= 2;
 	}
 
-	return(status);
+	gettimeofday(&sio2_t1, NULL);
+
+	return(sio2_stat);
 }
 
 /*
@@ -243,6 +256,9 @@ BYTE altair_sio2_data_in(void)
 		ucons[1].ssc = 0;
 		return(last);
 	}
+
+	gettimeofday(&sio2_t1, NULL);
+	sio2_stat &= 0b11111110;
 
 	/* process read data */
 	if (sio2_upper_case)
@@ -292,4 +308,7 @@ again:
 			ucons[1].ssc = 0;
 		}
 	}
+
+	gettimeofday(&sio2_t1, NULL);
+	sio2_stat &= 0b11111101;
 }

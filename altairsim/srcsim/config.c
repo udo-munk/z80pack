@@ -24,6 +24,7 @@
  * 04-JUL-18 added baud rate to terminal SIO
  * 17-JUL-18 use logging
  * 21-AUG-18 improved memory configuration
+ * 24-NOV-19 configurable baud rate for second 2SIO channel
  */
 
 #include <stdlib.h>
@@ -63,6 +64,7 @@ extern int sio1_baud_rate;	/* SIO 1 baud rate */
 extern int sio2_upper_case;	/* SIO 2 translate input to upper case */
 extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
 extern int sio2_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
+extern int sio2_baud_rate;	/* SIO 2 baud rate */
 
 extern char bg_color[];         /* VDM background color */
 extern char fg_color[];         /* VDM foreground color */
@@ -212,6 +214,8 @@ void config(void)
 				sio0_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio1_baud_rate")) {
 				sio1_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio2_baud_rate")) {
+				sio2_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {
@@ -287,5 +291,6 @@ void config(void)
 
 	LOG(TAG, "SIO 0 running at %d baud\r\n", sio0_baud_rate);
 	LOG(TAG, "SIO 1 running at %d baud\r\n", sio1_baud_rate);
+	LOG(TAG, "SIO 2 running at %d baud\r\n", sio2_baud_rate);
 	LOG(TAG, "\r\n");
 }
