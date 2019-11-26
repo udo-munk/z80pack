@@ -32,19 +32,19 @@ DDHDMA  EQU     6               ;OFFSET FOR DMA ADDRESS HIGH
 ;
 ;       IMSAI 8080 I/O PORTS
 ;
-TTY     EQU     02H             ;TTY DATA PORT
-TTYS    EQU     03H             ;TTY STATUS PORT
+TTY1    EQU     02H             ;TTY 1 DATA PORT
+TTY1S   EQU     03H             ;TTY 1 STATUS PORT
 
 KBD     EQU     04H             ;KEYBOARD DATA PORT
 KBDS    EQU     05H             ;KEYBOARD STATUS PORT
 
 SIO1C   EQU     08H             ;CONTROL PORT FOR FIRST SIO BOARD
 
-AUX     EQU     22H             ;AUX DATA PORT
-AUXS    EQU     23H             ;AUX STATUS PORT
+TTY2    EQU     22H             ;TTY 2 DATA PORT
+TTY2S   EQU     23H             ;TTY 2 STATUS PORT
 
-USR     EQU     24H             ;USER DATA PORT
-USRS    EQU     25H             ;USER STATUS PORT
+MODEM   EQU     24H             ;MODEM DATA PORT
+MODEMS  EQU     25H             ;MODEM STATUS PORT
 
 SIO2C   EQU     28H             ;CONTROL PORT FOR SECOND SIO BOARD
 
@@ -87,7 +87,7 @@ WBE:    JMP     WBOOT           ;WARM START
 ;       DATA TABLES
 ;
 SIGNON: DB      MSIZE / 10 + '0',MSIZE MOD 10 + '0'
-        DB      'K CP/M VERS 2.2 B01',13,10,0
+        DB      'K CP/M VERS 2.2 B02',13,10,0
 VIOERR: DB      13,10,'NO VIO',13,10,0
 
 ;       BYTES FOR SIO INITIALIZATION
@@ -171,10 +171,10 @@ PRTMSG: MOV     A,M             ;GET NEXT MESSAGE BYTE
 BOOT:   LXI     SP,80H          ;USE SPACE BELOW BUFFER FOR STACK
         LXI     H,SIOSTR        ;INITIALIZE ALL SIOS
         MOV     A,M             ;GET NEXT BYTE FROM INIT STRING
-BO1:    OUT     TTYS            ;OUTPUT TO THE SIO STATUS PORTS
+BO1:    OUT     TTY1S           ;OUTPUT TO THE SIO STATUS PORTS
         OUT     KBDS
-        OUT     AUXS
-        OUT     USRS
+        OUT     TTY2S
+        OUT     MODEMS
         INX     H               ;NEXT ONE
         MOV     A,M
         ORA     A               ;IS IT ZERO ?
@@ -309,62 +309,62 @@ DSHIFT: RLC                    ;SHIFT TO POSITION BITS
 ;
 CONST:  CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
         DB      1               ;USE BITS 1-0 OF IOBYTE
-        DW      TTYIST          ;00 - TTY:
+        DW      TTY1IS          ;00 - TTY:
         DW      CRTIST          ;01 - CRT:
-        DW      AUXIST          ;10 - BAT:
-;       DW      AUXIST          ;11 - UC1:
-        DW      USRIST          ;11 - UC1:
+        DW      TTY2IS          ;10 - BAT:
+;       DW      TTY2IS          ;11 - UC1:
+        DW      MODIST          ;11 - UC1:
 
 ;
 ;       CONSOLE INPUT CHARACTER INTO REGISTER A
 ;
 CONIN:  CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
         DB      1               ;USE BITS 1-0 OF IOBYTE
-        DW      TTYIN           ;00 - TTY:
+        DW      TTY1IN          ;00 - TTY:
         DW      CRTIN           ;01 - CRT:
-        DW      AUXIN           ;10 - BAT:
-;       DW      AUXIN           ;11 - UC1:
-        DW      USRIN           ;11 - UC1:
+        DW      TTY2IN          ;10 - BAT:
+;       DW      TTY2IN          ;11 - UC1:
+        DW      MODIN           ;11 - UC1:
 
 ;
 ;       CONSOLE OUTPUT CHARACTER FROM REGISTER C
 ;
 CONOUT: CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
         DB      1               ;USE BITS 1-0 OF IOBYTE
-        DW      TTYOUT          ;00 - TTY:
+        DW      TTY1OU          ;00 - TTY:
         DW      CRTOUT          ;01 - CRT:
         DW      LPTOUT          ;10 - BAT:
-;       DW      AUXOUT          ;11 - UC1:
-        DW      USROUT          ;11 - UC1:
+;       DW      TTY2OU          ;11 - UC1:
+        DW      MODOUT          ;11 - UC1:
 
 ;
 ;       PRINTER STATUS, RETURN 0FFH IF CHARACTER READY, 00H IF NOT
 ;
 LISTST: CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
         DB      3               ;USE BITS 7-6 OF IOBYTE
-        DW      TTYOST          ;00 - TTY:
-        DW      CRTOST          ;01 - CRT:
+        DW      TTY1OS          ;00 - TTY:
+        DW      DEVRDY          ;01 - CRT: (CRT ALWAYS READY FOR OUTPUT)
         DW      LPTST           ;10 - LPT:
-        DW      NOST            ;11 - UL1:
+        DW      TTY2OS          ;11 - UL1:
 
 ;
 ;       LIST OUTPUT CHARACTER FROM REGISTER C
 ;
 LIST:   CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
         DB      3               ;USE BITS 7-6 OF IOBYTE
-        DW      TTYOUT          ;00 - TTY:
+        DW      TTY1OU          ;00 - TTY:
         DW      CRTOUT          ;01 - CRT:
         DW      LPTOUT          ;10 - LPT:
-        DW      NULLOUT         ;11 - UL1:
+        DW      TTY2OU          ;11 - UL1:
 
 ;
 ;       PUNCH CHARACTER FROM REGISTER C
 ;
 PUNCH:  CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
         DB      5               ;USE BITS 5-4 OF IOBYTE
-        DW      TTYOUT          ;00 - TTY:
-        DW      AUXOUT          ;01 - PTP:
-        DW      USROUT          ;10 - UP1:
+        DW      TTY1OU          ;00 - TTY:
+        DW      TTY2OU          ;01 - PTP:
+        DW      MODOUT          ;10 - UP1:
         DW      CRTOUT          ;11 - UP2:
 
 ;
@@ -372,9 +372,9 @@ PUNCH:  CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
 ;
 READER: CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
         DB      7               ;USE BITS 3-2 of IOBYTE
-        DW      TTYIN           ;00 - TTY:
-        DW      AUXIN           ;01 - RDR:
-        DW      USRIN           ;10 - UR1:
+        DW      TTY1IN          ;00 - TTY:
+        DW      TTY2IN          ;01 - RDR:
+        DW      MODIN           ;10 - UR1:
         DW      CRTIN           ;11 - UR2:
 
 ;***************************************************************************
@@ -384,98 +384,105 @@ READER: CALL    DISPATCH        ;GO TO ONE OF THE PHYSICAL DEVICE ROUTINES
 ;***************************************************************************
 
 ;
-;       TTY INPUT STATUS
+;       TTY 1 INPUT STATUS
 ;
-TTYIST: IN      TTYS            ;GET TTY STATUS
+TTY1IS: IN      TTY1S           ;GET TTY STATUS
         ANI     02H             ;MASK BIT
         RZ                      ;NOT READY
         MVI     A,0FFH          ;READY, SET FLAG
         RET
 
 ;
-;       TTY OUTPUT STATUS
+;       TTY 1 OUTPUT STATUS
 ;
-TTYOST: IN      TTYS            ;GET TTY STATUS
+TTY1OS: IN      TTY1S           ;GET TTY STATUS
         RRC                     ;TEST BIT 0
-        JNC     TTYO1
-        MVI     A,0FFH          ;READY
-        RET
-TTYO1:  XRA     A               ;NOT READY
+        JC      DEVRDY          ;IF DEVICE READY
+        XRA     A               ;NOT READY
         RET
 
 ;
-;       TTY INPUT
+;       TTY 1 INPUT
 ;
-TTYIN:  IN      TTYS            ;GET STATUS
+TTY1IN: IN      TTY1S           ;GET STATUS
         ANI     02H             ;MASK BIT
-        JZ      TTYIN           ;WAIT UNTIL CHARACTER AVAILABLE
-        IN      TTY             ;GET CHARACTER
+        JZ      TTY1IN          ;WAIT UNTIL CHARACTER AVAILABLE
+        IN      TTY1            ;GET CHARACTER
         RET
 
 ;
-;       TTY OUTPUT
+;       TTY 1 OUTPUT
 ;
-TTYOUT: IN      TTYS            ;GET STATUS
+TTY1OU: IN      TTY1S           ;GET STATUS
         RRC                     ;TEST BIT 0
-        JNC     TTYOUT          ;WAIT UNTIL TRANSMITTER READY
+        JNC     TTY1OU          ;WAIT UNTIL TRANSMITTER READY
         MOV     A,C             ;GET CHAR TO ACCUMULATOR
-        OUT     TTY             ;SEND TO TTY
+        OUT     TTY1            ;SEND TO TTY
         RET
 
 ;
-;       AUX INPUT STATUS
+;       TTY 2 INPUT STATUS
 ;
-AUXIST: IN      AUXS            ;GET AUX STATUS
+TTY2IS: IN      TTY2S           ;GET TTY STATUS
         ANI     02H             ;MASK BIT
         RZ                      ;NOT READY
         MVI     A,0FFH          ;READY, SET FLAG
         RET
 
 ;
-;       AUX INPUT
+;       TTY 2 OUTPUT STATUS
 ;
-AUXIN:  IN      AUXS            ;GET STATUS
-        ANI     02H             ;MASK BIT
-        JZ      AUXIN           ;WAIT UNTIL CHARACTER AVAILABLE
-        IN      AUX             ;GET CHARACTER
-        RET
-
-;
-;       AUX OUTPUT
-;
-AUXOUT: IN      AUXS            ;GET STATUS
+TTY2OS: IN      TTY2S           ;GET TTY STATUS
         RRC                     ;TEST BIT 0
-        JNC     AUXOUT          ;WAIT UNTIL TRANSMITTER READY
-        MOV     A,C             ;GET CHAR TO ACCUMULATOR
-        OUT     AUX             ;SEND TO AUX
+        JC      DEVRDY          ;IF DEVICE READY
+        XRA     A               ;NOT READY
         RET
 
 ;
-;       USER INPUT STATUS
+;       TTY 2 INPUT
 ;
-USRIST: IN      USRS            ;GET USER STATUS
+TTY2IN: IN      TTY2S           ;GET TTY STATUS
+        ANI     02H             ;MASK BIT
+        JZ      TTY2IN          ;WAIT UNTIL CHARACTER AVAILABLE
+        IN      TTY2            ;GET CHARACTER
+        RET
+
+;
+;       TTY 2 OUTPUT
+;
+TTY2OU: IN      TTY2S           ;GET TTY STATUS
+        RRC                     ;TEST BIT 0
+        JNC     TTY2OU          ;WAIT UNTIL TRANSMITTER READY
+        MOV     A,C             ;GET CHAR TO ACCUMULATOR
+        OUT     TTY2            ;SEND TO TTY
+        RET
+
+;
+;       MODEM INPUT STATUS
+;
+MODIST: IN      MODEMS          ;GET MODEM STATUS
         ANI     02H             ;MASK BIT
         RZ                      ;NOT READY
         MVI     A,0FFH          ;READY, SET FLAG
         RET
 
 ;
-;       USER INPUT
+;       MODEM INPUT
 ;
-USRIN:  IN      USRS            ;GET STATUS
+MODIN:  IN      MODEMS          ;GET MODEM STATUS
         ANI     02H             ;MASK BIT
-        JZ      USRIN           ;WAIT UNTIL CHARACTER AVAILABLE
-        IN      USR             ;GET CHARACTER
+        JZ      MODIN           ;WAIT UNTIL CHARACTER AVAILABLE
+        IN      MODEM           ;GET CHARACTER
         RET
 
 ;
-;       USER OUTPUT
+;       MODEM OUTPUT
 ;
-USROUT: IN      USRS            ;GET STATUS
+MODOUT: IN      MODEMS          ;GET MODEM STATUS
         RRC                     ;TEST BIT 0
-        JNC     USROUT          ;WAIT UNTIL TRANSMITTER READY
+        JNC     MODOUT          ;WAIT UNTIL TRANSMITTER READY
         MOV     A,C             ;GET CHAR TO ACCUMULATOR
-        OUT     USR             ;SEND TO USR
+        OUT     MODEM           ;SEND TO MODEM
         RET
 
 ;
@@ -485,12 +492,6 @@ CRTIST: IN      KBDS            ;GET STATUS
         ANI     02H             ;MASK BIT
         RZ                      ;NOT READY
         MVI     A,0FFH          ;READY, SET FLAG
-        RET
-
-;
-;       VIO CRT OUTPUT STATUS
-;
-CRTOST: MVI     A,0FFH          ;RETURN READY
         RET
 
 ;
@@ -524,9 +525,7 @@ LPTST:  IN      PRINTER         ;GET PRINTER STATUS
         CPI     0FFH            ;NO PRINTER
         JZ      LPT1
         ANI     04H             ;CHECK READY BIT
-        JZ      LPT1            ;NOT READY
-        MVI     A,0FFH          ;ELSE RETURN WITH READY STATUS
-        RET
+        JNZ     DEVRDY          ;IF DEVICE READY
 LPT1:   XRA     A               ;PRINTER NOT READY
         RET
 
@@ -543,24 +542,10 @@ LPTOUT: IN      PRINTER         ;GET PRINTER STATUS
         RET
 
 ;
-;       NULL DEVICE INPUT/OUPUT STATUS
-;       ALWAYS READY SO THAT WE WON'T HANG
+;       RETURN DEVICE READY STATUS
 ;
-NIST:
-NOST:
-        MVI     A,0FFH          ;RETURN READY
+DEVRDY: MVI     A,0FFH
         RET
-
-;
-;       NULL DEVICE INPUT
-;
-NULLIN: MVI     A,01AH          ;RETURN EOF
-        RET
-
-;
-;       NULL DEVICE OUTPUT
-;
-NULLOUT:RET
 
 ;
 ;       MOVE TO TRACK 0 POSITION ON CURRENT DISK
