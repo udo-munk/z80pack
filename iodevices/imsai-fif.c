@@ -47,7 +47,7 @@
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
 #define DD_RESULT	1	/* result code */
-#define DD_NN		2	/* track number high, not used */
+#define DD_NN		2	/* track number high, disk format */
 #define DD_TRACK	3	/* track number low */
 #define DD_SECTOR	4	/* sector number */
 #define DD_DMAL		5	/* DMA address low */
@@ -243,6 +243,8 @@ void disk_io(int addr)
 	static long pos;		/* seek position */
 	static int unit;		/* disk unit number */
 	static int cmd;			/* disk command */
+	static int res;			/* result code */
+	static int fmt;			/* disk format etc. */
 	static int track;		/* disk track */
 	static int sector;		/* disk sector */
 	static int dma_addr;		/* DMA address */
@@ -265,14 +267,21 @@ void disk_io(int addr)
 	i = dma_read(addr + DD_UNIT);
 	unit = i & 0xf;
 	cmd = i >> 4;
-	i = dma_read(addr + DD_RESULT);
+	res = dma_read(addr + DD_RESULT);
+	fmt = dma_read(addr + DD_NN);
 	track = dma_read(addr + DD_TRACK);
 	sector = dma_read(addr + DD_SECTOR);
 	dma_addr = (dma_read(addr + DD_DMAH) << 8) + dma_read(addr + DD_DMAL);
 
 	/* check if the result was initialized with 0 */
-	if (i) {
+	if (res) {
 		dma_write(addr + DD_RESULT, 0xc1); /* error if not */
+		return;
+	}
+
+	/* check if track high or a sector format <> 128 is set */
+	if (fmt) {
+		dma_write(addr + DD_RESULT, 0xc8); /* if so, error */
 		return;
 	}
 
