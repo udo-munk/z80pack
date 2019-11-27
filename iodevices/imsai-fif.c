@@ -141,7 +141,7 @@ void imsai_fif_out(BYTE data)
 	 * controller commands: MSB command, LSB disk decsriptor or drive(s)
 	 *
 	 * 0x00: execute disk descriptor in LSB
-	 * 0x10: set address of disk descriptor in LSB from following two out's
+	 * 0x10: set address of disk descriptor in LSB from following two OUT's
 	 * 0x20: reset drives in LSB to home position
 	 * 0x30: write protect drives in LSB
 	 * 0x40: reset write protect for drives in LSB
@@ -210,6 +210,7 @@ void imsai_fif_out(BYTE data)
  *	1001 - class 3 hardware failure
  *
  *	Class 1 - Bit 6 is set, status code has the form CXH
+ *	C1 - result not initialized with 0
  *	C2 - no drive selected
  *	C3 - more than one drive selected
  *	C4 - illegal command number
@@ -261,11 +262,19 @@ void disk_io(int addr)
 	LOGD(TAG, "DMA high: %02x", getmem(addr + DD_DMAH));
 	LOGD(TAG, "");
 
-	unit = dma_read(addr + DD_UNIT) & 0xf;
-	cmd = dma_read(addr + DD_UNIT) >> 4;
+	i = dma_read(addr + DD_UNIT);
+	unit = i & 0xf;
+	cmd = i >> 4;
+	i = dma_read(addr + DD_RESULT);
 	track = dma_read(addr + DD_TRACK);
 	sector = dma_read(addr + DD_SECTOR);
 	dma_addr = (dma_read(addr + DD_DMAH) << 8) + dma_read(addr + DD_DMAL);
+
+	/* check if the result was initialized with 0 */
+	if (i) {
+		dma_write(addr + DD_RESULT, 0xc1); /* error if not */
+		return;
+	}
 
 	/* convert IMSAI unit bits to internal disk no */
 	switch (unit) {
