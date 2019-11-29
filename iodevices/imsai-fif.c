@@ -41,7 +41,7 @@
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
-/* support a z80pack 4 MB drive */
+/* support a z80pack 4 MB drive as unit 15 */
 #define LARGEDISK
 
 /* offsets in disk descriptor */
@@ -54,6 +54,7 @@
 #define DD_DMAH		6	/* DMA address high */
 
 /* FD command in disk descriptor unit/command field */
+/* Commands 5-11 are not implemented, no available software uses them */
 #define WRITE_SEC	1
 #define READ_SEC	2
 #define FMT_TRACK	3
