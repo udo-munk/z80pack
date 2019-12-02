@@ -1,0 +1,6 @@
+#!/bin/sh
+
+rm -f disks/mits_a.dsk
+ln disks/library/mits-cpm22-56k.dsk disks/mits_a.dsk
+
+./altairsim -x dbl.hex $*
