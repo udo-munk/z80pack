@@ -3,12 +3,13 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2018 by Udo Munk
+ * Copyright (C) 2018-2019 by Udo Munk
  *
  * Emulation of the MITS Altair S100 floppy disk controller
  *
  * History:
  * 10-AUG-2018 first version, runs CP/M 1.4 & 2.2 & disk BASIC
+ * 02-DEC-2019 use disk names diffrent from Tarbell controller
  */
 
 #include <pthread.h>
@@ -72,22 +73,22 @@ static pthread_t thread;	/* thread for timing */
 
 /* these are our disk drives */
 static char *disks[16] = {
-	"drivea.dsk",
-	"driveb.dsk",
-	"drivec.dsk",
-	"drived.dsk",
-	"drivee.dsk",
-	"drivef.dsk",
-	"driveg.dsk",
-	"driveh.dsk",
-	"drivei.dsk",
-	"drivej.dsk",
-	"drivek.dsk",
-	"drivel.dsk",
-	"drivem.dsk",
-	"driven.dsk",
-	"driveo.dsk",
-	"drivep.dsk"
+	"mits_a.dsk",
+	"mits_b.dsk",
+	"mits_c.dsk",
+	"mits_d.dsk",
+	"mits_e.dsk",
+	"mits_f.dsk",
+	"mits_g.dsk",
+	"mits_h.dsk",
+	"mits_i.dsk",
+	"mits_j.dsk",
+	"mits_k.dsk",
+	"mits_l.dsk",
+	"mits_m.dsk",
+	"mits_n.dsk",
+	"mits_o.dsk",
+	"mits_p.dsk"
 };
 
 /*
