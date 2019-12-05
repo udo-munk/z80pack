@@ -9,7 +9,7 @@
  *
  * History:
  * 10-AUG-2018 first version, runs CP/M 1.4 & 2.2 & disk BASIC
- * 02-DEC-2019 use disk names diffrent from Tarbell controller
+ * 02-DEC-2019 use disk names different from Tarbell controller
  */
 
 #include <pthread.h>
