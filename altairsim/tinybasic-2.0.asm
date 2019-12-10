@@ -10,6 +10,8 @@
 ;                        @COPYLEFT
 ;                   ALL WRONGS RESERVED
 ; 
+;                 ADDED FIX FOR BUGGY CHGSGN
+;                 UDO MUNK, 10 DECEMBER 2019
 ;*************************************************************
 ; 
 ; *** ZERO PAGE SUBROUTINES ***
@@ -948,6 +950,9 @@ CHKSGN: MOV  A,H                        ;*** CHKSGN ***
         RP                              ;IF -, CHANGE SIGN
 ;
 CHGSGN: MOV  A,H                        ;*** CHGSGN ***
+        ORA  L                          ;*UM*
+        RZ                              ;*UM* NOT ON ZERO VALUE
+        MOV  A,H                        ;*UM*
         PUSH PSW
         CMA                             ;CHANGE SIGN OF HL
         MOV  H,A
@@ -1371,7 +1376,7 @@ PU1:    PUSH H
 INIT:   STA  OCSW
         MVI  A,3                        ;RESET ACIA
         OUT  16
-        MVI  A,15H			;15H FOR 8N1, 11H FOR 8N2
+        MVI  A,15H                      ;15H FOR 8N1, 11H FOR 8N2
         OUT  16
         MVI  D,19H
 PATLOP:

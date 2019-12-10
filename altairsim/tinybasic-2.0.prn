@@ -1,6 +1,6 @@
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 1
       
 
@@ -17,6 +17,8 @@
                    ;                        @COPYLEFT
                    ;                   ALL WRONGS RESERVED
                    ;
+                   ;                 ADDED FIX FOR BUGGY CHGSGN
+                   ;                 UDO MUNK, 10 DECEMBER 2019
                    ;*************************************************************
                    ;
                    ; *** ZERO PAGE SUBROUTINES ***
@@ -38,7 +40,7 @@
    0000                    ORG  0H
    0000   310020   START:  LXI  SP,STACK                   ;*** COLD START ***
    0003   3EFF             MVI  A,0FFH
-   0005   C34206           JMP  INIT
+   0005   C34506           JMP  INIT
                    ;
    0008   E3               XTHL                            ;*** TSTC OR RST 1 ***
    0009   EF               RST  5                          ;IGNORE BLANKS AND
@@ -50,19 +52,19 @@
    0010   F5               PUSH PSW                        ;*** OUTC OR RST 2 ***
    0011   3A0008           LDA  OCSW                       ;PRINT CHARACTER ONLY
    0014   B7               ORA  A                          ;IF OCSW SWITCH IS ON
-   0015   C36C06           JMP  OC2                        ;REST OF THIS IS AT OC2
+   0015   C36F06           JMP  OC2                        ;REST OF THIS IS AT OC2
                    ;
    0018   CD7103           CALL EXPR2                      ;*** EXPR OR RST 3 ***
    001B   E5               PUSH H                          ;EVALUATE AN EXPRESSION
-   001C   C32D03           JMP  EXPR1                      ;REST OF IT AT EXPR1
-   001F   57               DB   'W'
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 2
       
 
 
+   001C   C32D03           JMP  EXPR1                      ;REST OF IT AT EXPR1
+   001F   57               DB   'W'
                    ;
    0020   7C               MOV  A,H                        ;*** COMP OR RST 4 ***
    0021   BA               CMP  D                          ;COMPARE HL WITH DE
@@ -79,8 +81,8 @@
    002D   C32800           JMP  SS1                        ;NON-BLANK CHAR. IN A
                    ;
    0030   F1               POP  PSW                        ;*** FINISH/RST 6 ***
-   0031   CDB304           CALL FIN                        ;CHECK END OF COMMAND
-   0034   C3C604           JMP  QWHAT                      ;PRINT "WHAT?" IF WRONG
+   0031   CDB604           CALL FIN                        ;CHECK END OF COMMAND
+   0034   C3C904           JMP  QWHAT                      ;PRINT "WHAT?" IF WRONG
    0037   47               DB   'G'
                    ;
    0038   EF               RST  5                          ;*** TSTV OR RST 7 ***
@@ -95,7 +97,7 @@
    0048   EB               XCHG                            ;TEXT?
    0049   CD5904           CALL SIZE                       ;FIND SIZE OF FREE
    004C   E7               RST  4                          ;AND CHECK THAT
-   004D   DAF404           JC   ASORRY                     ;IF SO, SAY "SORRY"
+   004D   DAF704           JC   ASORRY                     ;IF SO, SAY "SORRY"
    0050   21001F           LXI  H,VARBGN                   ;IF NOT GET ADDRESS
    0053   CD7C04           CALL SUBDE                      ;OF @(EXPR) AND PUT IT
    0056   D1               POP  D                          ;IN HL
@@ -112,15 +114,15 @@
    0065   8C               ADC  H
    0066   67               MOV  H,A
    0067   C9               RET
-                   ;
-                   ;TSTC:  XTHL                            ;*** TSTC OR RST 1 ***
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 3
       
 
 
+                   ;
+                   ;TSTC:  XTHL                            ;*** TSTC OR RST 1 ***
                    ;       RST  5                          ;THIS IS AT LOC. 8
                    ;       CMP  M                          ;AND THEN JUMP HERE
    0068   23       TC1:    INX  H                          ;COMPARE THE BYTE THAT
@@ -167,18 +169,18 @@
    009C   F27C00           JP   TN1                        ;DIGIT. S SAYS OVERFLOW
    009F   D5       QHOW:   PUSH D                          ;*** ERROR "HOW?" ***
    00A0   11A600   AHOW:   LXI  D,HOW
-   00A3   C3CA04           JMP  ERROR
+   00A3   C3CD04           JMP  ERROR
    00A6   484F573F HOW:    DB   'HOW?'
    00AA   0D               DB   CR
-   00AB   4F4B     OK:     DB   'OK'
-   00AD   0D               DB   CR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 4
       
 
 
+   00AB   4F4B     OK:     DB   'OK'
+   00AD   0D               DB   CR
    00AE   57484154 WHAT:   DB   'WHAT?'
    00B2   3F      
    00B3   0D               DB   CR
@@ -222,21 +224,21 @@
    00BD   CD0E00   ST1:    CALL CRLF                       ;AND JUMP TO HERE
    00C0   11AB00           LXI  D,OK                       ;DE->STRING
    00C3   97               SUB  A                          ;A=0
-   00C4   CD6005           CALL PRTSTG                     ;PRINT STRING UNTIL CR
+   00C4   CD6305           CALL PRTSTG                     ;PRINT STRING UNTIL CR
    00C7   21CE00           LXI  H,ST2+1                    ;LITERAL 0
    00CA   220108           SHLD CURRNT                     ;CURRENT->LINE # = 0
    00CD   210000   ST2:    LXI  H,0
    00D0   220908           SHLD LOPVAR
    00D3   220308           SHLD STKGOS
-   00D6   3E3E     ST3:    MVI  A,3EH                      ;PROMPT '>' AND
-   00D8   CDFA04           CALL GETLN                      ;READ A LINE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 5
       
 
 
+   00D6   3E3E     ST3:    MVI  A,3EH                      ;PROMPT '>' AND
+   00D8   CDFD04           CALL GETLN                      ;READ A LINE
    00DB   D5               PUSH D                          ;DE->END OF LINE
    00DC   11371F           LXI  D,BUFFER                   ;DE->BEGINNING OF LINE
    00DF   CD7700           CALL TSTNUM                     ;TEST IF IT IS A NUMBER
@@ -244,7 +246,7 @@
    00E3   7C               MOV  A,H                        ;HL=VALUE OF THE # OR
    00E4   B5               ORA  L                          ;0 IF NO # WAS FOUND
    00E5   C1               POP  B                          ;BC->END OF LINE
-   00E6   CA3807           JZ   DIRECT
+   00E6   CA3B07           JZ   DIRECT
    00E9   1B               DCX  D                          ;BACKUP DE AND SAVE
    00EA   7C               MOV  A,H                        ;VALUE OF LINE # THERE
    00EB   12               STAX D
@@ -256,15 +258,15 @@
    00F1   79               MOV  A,C
    00F2   93               SUB  E
    00F3   F5               PUSH PSW                        ;A=# OF BYTES IN LINE
-   00F4   CD3805           CALL FNDLN                      ;FIND THIS LINE IN SAVE
+   00F4   CD3B05           CALL FNDLN                      ;FIND THIS LINE IN SAVE
    00F7   D5               PUSH D                          ;AREA, DE->SAVE AREA
    00F8   C20B01           JNZ  ST4                        ;NZ:NOT FOUND, INSERT
    00FB   D5               PUSH D                          ;Z:FOUND, DELETE IT
-   00FC   CD5405           CALL FNDNXT                     ;FIND NEXT LINE
+   00FC   CD5705           CALL FNDNXT                     ;FIND NEXT LINE
                                                            ;DE->NEXT LINE
    00FF   C1               POP  B                          ;BC->LINE TO BE DELETED
    0100   2A1508           LHLD TXTUNF                     ;HL->UNFILLED SAVE AREA
-   0103   CDE505           CALL MVUP                       ;MOVE UP TO DELETE
+   0103   CDE805           CALL MVUP                       ;MOVE UP TO DELETE
    0106   60               MOV  H,B                        ;TXTUNF->UNFILLED AREA
    0107   69               MOV  L,C
    0108   221508           SHLD TXTUNF                     ;UPDATE
@@ -281,20 +283,20 @@
    011B   67               MOV  H,A                        ;HL->NEW UNFILLED AREA
    011C   11001F           LXI  D,TXTEND                   ;CHECK TO SEE IF THERE
    011F   E7               RST  4                          ;IS ENOUGH SPACE
-   0120   D2F304           JNC  QSORRY                     ;SORRY, NO ROOM FOR IT
+   0120   D2F604           JNC  QSORRY                     ;SORRY, NO ROOM FOR IT
    0123   221508           SHLD TXTUNF                     ;OK, UPDATE TXTUNF
    0126   D1               POP  D                          ;DE->OLD UNFILLED AREA
-   0127   CDEE05           CALL MVDOWN
+   0127   CDF105           CALL MVDOWN
    012A   D1               POP  D                          ;DE->BEGIN, HL->END
-   012B   E1               POP  H
-   012C   CDE505           CALL MVUP                       ;MOVE NEW LINE TO SAVE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 6
       
 
 
+   012B   E1               POP  H
+   012C   CDE805           CALL MVUP                       ;MOVE NEW LINE TO SAVE
    012F   C3D600           JMP  ST3                        ;AREA
                    ;
                    ;*************************************************************
@@ -332,41 +334,41 @@
                    ; 'GOTO EXPR(CR)' EVALUATES THE EXPRESSION, FIND THE TARGET
                    ; LINE, AND JUMP TO 'RUNTSL' TO DO IT.
                    ;
-   0132   CDC204   NEW:    CALL ENDCHK                     ;*** NEW(CR) ***
+   0132   CDC504   NEW:    CALL ENDCHK                     ;*** NEW(CR) ***
    0135   211708           LXI  H,TXTBGN
    0138   221508           SHLD TXTUNF
                    ;
-   013B   CDC204   STOP:   CALL ENDCHK                     ;*** STOP(CR) ***
+   013B   CDC504   STOP:   CALL ENDCHK                     ;*** STOP(CR) ***
    013E   C3BA00           JMP  RSTART
                    ;
-   0141   CDC204   RUN:    CALL ENDCHK                     ;*** RUN(CR) ***
+   0141   CDC504   RUN:    CALL ENDCHK                     ;*** RUN(CR) ***
    0144   111708           LXI  D,TXTBGN                   ;FIRST SAVED LINE
                    ;
    0147   210000   RUNNXL: LXI  H,0                        ;*** RUNNXL ***
-   014A   CD4005           CALL FNDLP                      ;FIND WHATEVER LINE #
-   014D   DABA00           JC   RSTART                     ;C:PASSED TXTUNF, QUIT
-                   ;
+   014A   CD4305           CALL FNDLP                      ;FIND WHATEVER LINE #
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 7
       
 
 
+   014D   DABA00           JC   RSTART                     ;C:PASSED TXTUNF, QUIT
+                   ;
    0150   EB       RUNTSL: XCHG                            ;*** RUNTSL ***
    0151   220108           SHLD CURRNT                     ;SET 'CURRENT'->LINE #
    0154   EB               XCHG
    0155   13               INX  D                          ;BUMP PASS LINE #
    0156   13               INX  D
                    ;
-   0157   CD8406   RUNSML: CALL CHKIO                      ;*** RUNSML ***
-   015A   21BD06           LXI  H,TAB2-1                   ;FIND COMMAND IN TAB2
-   015D   C33B07           JMP  EXEC                       ;AND EXECUTE IT
+   0157   CD8706   RUNSML: CALL CHKIO                      ;*** RUNSML ***
+   015A   21C006           LXI  H,TAB2-1                   ;FIND COMMAND IN TAB2
+   015D   C33E07           JMP  EXEC                       ;AND EXECUTE IT
                    ;
    0160   DF       GOTO:   RST  3                          ;*** GOTO EXPR ***
    0161   D5               PUSH D                          ;SAVE FOR ERROR ROUTINE
-   0162   CDC204           CALL ENDCHK                     ;MUST FIND A CR
-   0165   CD3805           CALL FNDLN                      ;FIND THE TARGET LINE
+   0162   CDC504           CALL ENDCHK                     ;MUST FIND A CR
+   0165   CD3B05           CALL FNDLN                      ;FIND THE TARGET LINE
    0168   C2A000           JNZ  AHOW                       ;NO SUCH LINE #
    016B   F1               POP  PSW                        ;CLEAR THE PUSH DE
    016C   C35001           JMP  RUNTSL                     ;GO DO IT
@@ -400,19 +402,19 @@
                    ; ENDED WITH A COMMA, NO (CRLF) IS GENERATED.
                    ;
    016F   CD7700   LIST:   CALL TSTNUM                     ;TEST IF THERE IS A #
-   0172   CDC204           CALL ENDCHK                     ;IF NO # WE GET A 0
-   0175   CD3805           CALL FNDLN                      ;FIND THIS OR NEXT LINE
-   0178   DABA00   LS1:    JC   RSTART                     ;C:PASSED TXTUNF
-   017B   CDD205           CALL PRTLN                      ;PRINT THE LINE
+   0172   CDC504           CALL ENDCHK                     ;IF NO # WE GET A 0
+   0175   CD3B05           CALL FNDLN                      ;FIND THIS OR NEXT LINE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 8
       
 
 
-   017E   CD8406           CALL CHKIO                      ;STOP IF HIT CONTROL-C
-   0181   CD4005           CALL FNDLP                      ;FIND NEXT LINE
+   0178   DABA00   LS1:    JC   RSTART                     ;C:PASSED TXTUNF
+   017B   CDD505           CALL PRTLN                      ;PRINT THE LINE
+   017E   CD8706           CALL CHKIO                      ;STOP IF HIT CONTROL-C
+   0181   CD4305           CALL FNDLP                      ;FIND NEXT LINE
    0184   C37801           JMP  LS1                        ;AND LOOP BACK
                    ;
    0187   0E06     PRINT:  MVI  C,6                        ;C = # OF SPACES
@@ -432,18 +434,18 @@
    019E   DF               RST  3                          ;YES, EVALUATE EXPR.
    019F   4D               MOV  C,L                        ;AND SAVE IT IN C
    01A0   C3A901           JMP  PR3                        ;LOOK FOR MORE TO PRINT
-   01A3   CD6C05   PR1:    CALL QTSTG                      ;OR IS IT A STRING?
+   01A3   CD6F05   PR1:    CALL QTSTG                      ;OR IS IT A STRING?
    01A6   C3B601           JMP  PR8                        ;IF NOT, MUST BE EXPR.
    01A9   CF       PR3:    RST  1                          ;IF ",", GO FIND NEXT
    01AA   2C               DB   ','
    01AB   06               DB   PR6-$-1
-   01AC   CDB304           CALL FIN                        ;IN THE LIST.
+   01AC   CDB604           CALL FIN                        ;IN THE LIST.
    01AF   C39B01           JMP  PR0                        ;LIST CONTINUES
    01B2   CD0E00   PR6:    CALL CRLF                       ;LIST ENDS
    01B5   F7               RST  6
    01B6   DF       PR8:    RST  3                          ;EVALUATE THE EXPR
    01B7   C5               PUSH B
-   01B8   CD9205           CALL PRTNUM                     ;PRINT THE VALUE
+   01B8   CD9505           CALL PRTNUM                     ;PRINT THE VALUE
    01BB   C1               POP  B
    01BC   C3A901           JMP  PR3                        ;MORE TO PRINT?
                    ;
@@ -460,23 +462,23 @@
                    ; SAVED IN THE STACK.  IF WE ARE IN THE MAIN ROUTINE, 'STKGOS'
                    ; IS ZERO (THIS WAS DONE BY THE "MAIN" SECTION OF THE CODE),
                    ; BUT WE STILL SAVE IT AS A FLAG FOR NO FURTHER 'RETURN'S.
-                   ;
-                   ; 'RETURN(CR)' UNDOS EVERYTHING THAT 'GOSUB' DID, AND THUS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 9
       
 
 
+                   ;
+                   ; 'RETURN(CR)' UNDOS EVERYTHING THAT 'GOSUB' DID, AND THUS
                    ; RETURN THE EXECUTION TO THE COMMAND AFTER THE MOST RECENT
                    ; 'GOSUB'.  IF 'STKGOS' IS ZERO, IT INDICATES THAT WE
                    ; NEVER HAD A 'GOSUB' AND IS THUS AN ERROR.
                    ;
-   01BF   CD1906   GOSUB:  CALL PUSHA                      ;SAVE THE CURRENT "FOR"
+   01BF   CD1C06   GOSUB:  CALL PUSHA                      ;SAVE THE CURRENT "FOR"
    01C2   DF               RST  3                          ;PARAMETERS
    01C3   D5               PUSH D                          ;AND TEXT POINTER
-   01C4   CD3805           CALL FNDLN                      ;FIND THE TARGET LINE
+   01C4   CD3B05           CALL FNDLN                      ;FIND THE TARGET LINE
    01C7   C2A000           JNZ  AHOW                       ;NOT THERE. SAY "HOW?"
    01CA   2A0108           LHLD CURRNT                     ;FOUND IT, SAVE OLD
    01CD   E5               PUSH H                          ;'CURRNT' OLD 'STKGOS'
@@ -487,18 +489,18 @@
    01D8   39               DAD  SP
    01D9   220308           SHLD STKGOS
    01DC   C35001           JMP  RUNTSL                     ;THEN RUN THAT LINE
-   01DF   CDC204   RETURN: CALL ENDCHK                     ;THERE MUST BE A CR
+   01DF   CDC504   RETURN: CALL ENDCHK                     ;THERE MUST BE A CR
    01E2   2A0308           LHLD STKGOS                     ;OLD STACK POINTER
    01E5   7C               MOV  A,H                        ;0 MEANS NOT EXIST
    01E6   B5               ORA  L
-   01E7   CAC604           JZ   QWHAT                      ;SO, WE SAY: "WHAT?"
+   01E7   CAC904           JZ   QWHAT                      ;SO, WE SAY: "WHAT?"
    01EA   F9               SPHL                            ;ELSE, RESTORE IT
    01EB   E1               POP  H
    01EC   220308           SHLD STKGOS                     ;AND THE OLD 'STKGOS'
    01EF   E1               POP  H
    01F0   220108           SHLD CURRNT                     ;AND THE OLD 'CURRNT'
    01F3   D1               POP  D                          ;OLD TEXT POINTER
-   01F4   CDFD05           CALL POPA                       ;OLD "FOR" PARAMETERS
+   01F4   CD0006           CALL POPA                       ;OLD "FOR" PARAMETERS
    01F7   F7               RST  6                          ;AND WE ARE BACK HOME
                    ;
                    ;*************************************************************
@@ -518,15 +520,15 @@
                    ; 'LOPVAR'), THEN THE OLD SAVE AREA IS SAVED IN THE STACK
                    ; BEFORE THE NEW ONE OVERWRITES IT.
                    ; TBI WILL THEN DIG IN THE STACK AND FIND OUT IF THIS SAME
-                   ; VARIABLE WAS USED IN ANOTHER CURRENTLY ACTIVE 'FOR' LOOP.
-                   ; IF THAT IS THE CASE, THEN THE OLD 'FOR' LOOP IS DEACTIVATED.
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 10
       
 
 
+                   ; VARIABLE WAS USED IN ANOTHER CURRENTLY ACTIVE 'FOR' LOOP.
+                   ; IF THAT IS THE CASE, THEN THE OLD 'FOR' LOOP IS DEACTIVATED.
                    ; (PURGED FROM THE STACK..)
                    ;
                    ; 'NEXT VAR' SERVES AS THE LOGICAL (NOT NECESSARILLY PHYSICAL)
@@ -539,16 +541,16 @@
                    ; FOLLOWING THE 'FOR'.  IF OUTSIDE THE LIMIT, THE SAVE AREA
                    ; IS PURGED AND EXECUTION CONTINUES.
                    ;
-   01F8   CD1906   FOR:    CALL PUSHA                      ;SAVE THE OLD SAVE AREA
-   01FB   CDA004           CALL SETVAL                     ;SET THE CONTROL VAR.
+   01F8   CD1C06   FOR:    CALL PUSHA                      ;SAVE THE OLD SAVE AREA
+   01FB   CDA304           CALL SETVAL                     ;SET THE CONTROL VAR.
    01FE   2B               DCX  H                          ;HL IS ITS ADDRESS
    01FF   220908           SHLD LOPVAR                     ;SAVE THAT
-   0202   211307           LXI  H,TAB5-1                   ;USE 'EXEC' TO LOOK
-   0205   C33B07           JMP  EXEC                       ;FOR THE WORD 'TO'
+   0202   211607           LXI  H,TAB5-1                   ;USE 'EXEC' TO LOOK
+   0205   C33E07           JMP  EXEC                       ;FOR THE WORD 'TO'
    0208   DF       FR1:    RST  3                          ;EVALUATE THE LIMIT
    0209   220D08           SHLD LOPLMT                     ;SAVE THAT
-   020C   211907           LXI  H,TAB6-1                   ;USE 'EXEC' TO LOOK
-   020F   C33B07           JMP EXEC                        ;FOR THE WORD 'STEP'
+   020C   211C07           LXI  H,TAB6-1                   ;USE 'EXEC' TO LOOK
+   020F   C33E07           JMP EXEC                        ;FOR THE WORD 'STEP'
    0212   DF       FR2:    RST  3                          ;FOUND IT, GET STEP
    0213   C31902           JMP  FR4
    0216   210100   FR3:    LXI  H,1H                       ;NOT FOUND, SET TO 1
@@ -576,39 +578,39 @@
    023E   7E               MOV  A,M                        ;THE OTHER HALF?
    023F   BB               CMP  E
    0240   C23102           JNZ  FR7
-   0243   EB               XCHG                            ;YES, FOUND ONE
-   0244   210000           LXI  H,0H
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 11
       
 
 
+   0243   EB               XCHG                            ;YES, FOUND ONE
+   0244   210000           LXI  H,0H
    0247   39               DAD  SP                         ;TRY TO MOVE SP
    0248   44               MOV  B,H
    0249   4D               MOV  C,L
    024A   210A00           LXI  H,0AH
    024D   19               DAD  D
-   024E   CDEE05           CALL MVDOWN                     ;AND PURGE 10 WORDS
+   024E   CDF105           CALL MVDOWN                     ;AND PURGE 10 WORDS
    0251   F9               SPHL                            ;IN THE STACK
    0252   2A1108   FR8:    LHLD LOPPT                      ;JOB DONE, RESTORE DE
    0255   EB               XCHG
    0256   F7               RST  6                          ;AND CONTINUE
                    ;
    0257   FF       NEXT:   RST  7                          ;GET ADDRESS OF VAR.
-   0258   DAC604           JC   QWHAT                      ;NO VARIABLE, "WHAT?"
+   0258   DAC904           JC   QWHAT                      ;NO VARIABLE, "WHAT?"
    025B   220508           SHLD VARNXT                     ;YES, SAVE IT
    025E   D5       NX0:    PUSH D                          ;SAVE TEXT POINTER
    025F   EB               XCHG
    0260   2A0908           LHLD LOPVAR                     ;GET VAR. IN 'FOR'
    0263   7C               MOV  A,H
    0264   B5               ORA  L                          ;0 SAYS NEVER HAD ONE
-   0265   CAC704           JZ   AWHAT                      ;SO WE ASK: "WHAT?"
+   0265   CACA04           JZ   AWHAT                      ;SO WE ASK: "WHAT?"
    0268   E7               RST  4                          ;ELSE WE CHECK THEM
    0269   CA7602           JZ   NX3                        ;OK, THEY AGREE
    026C   D1               POP  D                          ;NO, LET'S SEE
-   026D   CDFD05           CALL POPA                       ;PURGE CURRENT LOOP
+   026D   CD0006           CALL POPA                       ;PURGE CURRENT LOOP
    0270   2A0508           LHLD VARNXT                     ;AND POP ONE LEVEL
    0273   C35E02           JMP  NX0                        ;GO CHECK AGAIN
    0276   5E       NX3:    MOV  E,M                        ;COME HERE WHEN AGREED
@@ -633,16 +635,16 @@
    0293   B7               ORA  A
    0294   F29802           JP   NX1                        ;STEP > 0
    0297   EB               XCHG                            ;STEP < 0
-   0298   CD9804   NX1:    CALL CKHLDE                     ;COMPARE WITH LIMIT
-   029B   D1               POP  D                          ;RESTORE TEXT POINTER
-   029C   DAAC02           JC   NX2                        ;OUTSIDE LIMIT
+   0298   CD9B04   NX1:    CALL CKHLDE                     ;COMPARE WITH LIMIT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 12
       
 
 
+   029B   D1               POP  D                          ;RESTORE TEXT POINTER
+   029C   DAAC02           JC   NX2                        ;OUTSIDE LIMIT
    029F   2A0F08           LHLD LOPLN                      ;WITHIN LIMIT, GO
    02A2   220108           SHLD CURRNT                     ;BACK TO THE SAVED
    02A5   2A1108           LHLD LOPPT                      ;'CURRNT' AND TEXT
@@ -650,7 +652,7 @@
    02A9   F7               RST  6
    02AA   E1       NX5:    POP  H
    02AB   D1               POP  D
-   02AC   CDFD05   NX2:    CALL POPA                       ;PURGE THIS LOOP
+   02AC   CD0006   NX2:    CALL POPA                       ;PURGE THIS LOOP
    02AF   F7               RST  6
                    ;
                    ;*************************************************************
@@ -692,18 +694,18 @@
    02B0   210000   REM:    LXI  H,0H                       ;*** REM ***
    02B3   3E               DB   3EH                        ;THIS IS LIKE 'IF 0'
                    ;
-   02B4   DF       IFF:    RST  3                          ;*** IF ***
-   02B5   7C               MOV  A,H                        ;IS THE EXPR.=0?
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 13
       
 
 
+   02B4   DF       IFF:    RST  3                          ;*** IF ***
+   02B5   7C               MOV  A,H                        ;IS THE EXPR.=0?
    02B6   B5               ORA  L
    02B7   C25701           JNZ  RUNSML                     ;NO, CONTINUE
-   02BA   CD5605           CALL FNDSKP                     ;YES, SKIP REST OF LINE
+   02BA   CD5905           CALL FNDSKP                     ;YES, SKIP REST OF LINE
    02BD   D25001           JNC  RUNTSL                     ;AND RUN THE NEXT LINE
    02C0   C3BA00           JMP  RSTART                     ;IF NO NEXT, RE-START
                    ;
@@ -716,20 +718,20 @@
                    ;
    02CD            INPUT:                                  ;*** INPUT ***
    02CD   D5       IP1:    PUSH D                          ;SAVE IN CASE OF ERROR
-   02CE   CD6C05           CALL QTSTG                      ;IS NEXT ITEM A STRING?
+   02CE   CD6F05           CALL QTSTG                      ;IS NEXT ITEM A STRING?
    02D1   C3DB02           JMP  IP2                        ;NO
    02D4   FF               RST  7                          ;YES, BUT FOLLOWED BY A
    02D5   DA1503           JC   IP4                        ;VARIABLE?   NO.
    02D8   C3EB02           JMP  IP3                        ;YES.  INPUT VARIABLE
    02DB   D5       IP2:    PUSH D                          ;SAVE FOR 'PRTSTG'
    02DC   FF               RST  7                          ;MUST BE VARIABLE NOW
-   02DD   DAC604           JC   QWHAT                      ;"WHAT?" IT IS NOT?
+   02DD   DAC904           JC   QWHAT                      ;"WHAT?" IT IS NOT?
    02E0   1A               LDAX D                          ;GET READY FOR 'PRTSTR'
    02E1   4F               MOV  C,A
    02E2   97               SUB  A
    02E3   12               STAX D
    02E4   D1               POP  D
-   02E5   CD6005           CALL PRTSTG                     ;PRINT STRING AS PROMPT
+   02E5   CD6305           CALL PRTSTG                     ;PRINT STRING AS PROMPT
    02E8   79               MOV  A,C                        ;RESTORE TEXT
    02E9   1B               DCX  D
    02EA   12               STAX D
@@ -744,21 +746,21 @@
    02FB   220708           SHLD STKINP
    02FE   D5               PUSH D                          ;OLD HL
    02FF   3E3A             MVI  A,3AH                      ;PRINT THIS TOO
-   0301   CDFA04           CALL GETLN                      ;AND GET A LINE
+   0301   CDFD04           CALL GETLN                      ;AND GET A LINE
    0304   11371F           LXI  D,BUFFER                   ;POINTS TO BUFFER
    0307   DF               RST  3                          ;EVALUATE INPUT
    0308   00               NOP                             ;CAN BE 'CALL ENDCHK'
    0309   00               NOP
    030A   00               NOP
-   030B   D1               POP  D                          ;OK, GET OLD HL
-   030C   EB               XCHG
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 14
       
 
 
+   030B   D1               POP  D                          ;OK, GET OLD HL
+   030C   EB               XCHG
    030D   73               MOV  M,E                        ;SAVE VALUE IN VAR.
    030E   23               INX  H
    030F   72               MOV  M,D
@@ -776,7 +778,7 @@
    031E   FE0D             CPI  CR                         ;EMPTY LINE IS OK
    0320   CA2C03           JZ   LT1                        ;ELSE IT IS 'LET'
                    ;
-   0323   CDA004   LET:    CALL SETVAL                     ;*** LET ***
+   0323   CDA304   LET:    CALL SETVAL                     ;*** LET ***
    0326   CF               RST  1                          ;SET VALUE TO VAR.
    0327   2C               DB   ','
    0328   03               DB   LT1-$-1
@@ -804,19 +806,19 @@
                    ;
                    ;EXPR:  CALL EXPR2                      ;THIS IS AT LOC. 18
                    ;       PUSH H                          ;SAVE <EXPR2> VALUE
-   032D   212107   EXPR1:  LXI  H,TAB8-1                   ;LOOKUP REL.OP.
-   0330   C33B07           JMP  EXEC                       ;GO DO IT
+   032D   212407   EXPR1:  LXI  H,TAB8-1                   ;LOOKUP REL.OP.
+   0330   C33E07           JMP  EXEC                       ;GO DO IT
    0333   CD5C03   XP11:   CALL XP18                       ;REL.OP.">="
    0336   D8               RC                              ;NO, RETURN HL=0
-   0337   6F               MOV  L,A                        ;YES, RETURN HL=1
-   0338   C9               RET
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 15
       
 
 
+   0337   6F               MOV  L,A                        ;YES, RETURN HL=1
+   0338   C9               RET
    0339   CD5C03   XP12:   CALL XP18                       ;REL.OP."#"
    033C   C8               RZ                              ;FALSE, RETURN HL=0
    033D   6F               MOV  L,A                        ;TRUE, RETURN HL=1
@@ -851,7 +853,7 @@
    0362   CD7103           CALL EXPR2                      ;GET 2ND <EXPR2>
    0365   EB               XCHG                            ;VALUE IN DE NOW
    0366   E3               XTHL                            ;1ST <EXPR2> IN HL
-   0367   CD9804           CALL CKHLDE                     ;COMPARE 1ST WITH 2ND
+   0367   CD9B04           CALL CKHLDE                     ;COMPARE 1ST WITH 2ND
    036A   D1               POP  D                          ;RESTORE TEXT POINTER
    036B   210000           LXI  H,0H                       ;SET HL=0, A=1
    036E   3E01             MVI  A,1
@@ -866,15 +868,15 @@
    037B   2B               DB   '+'
    037C   00               DB   XP22-$-1
    037D   CDA503   XP22:   CALL EXPR3                      ;1ST <EXPR3>
-   0380   CF       XP23:   RST  1                          ;ADD?
-   0381   2B               DB   '+'
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 16
       
 
 
+   0380   CF       XP23:   RST  1                          ;ADD?
+   0381   2B               DB   '+'
    0382   15               DB   XP25-$-1
    0383   E5               PUSH H                          ;YES, SAVE VALUE
    0384   CDA503           CALL EXPR3                      ;GET 2ND <EXPR3>
@@ -924,15 +926,15 @@
    03CE   DAA000           JC   AHOW                       ;OVERFLOW
    03D1   3D               DCR  A
    03D2   C2CD03           JNZ  XP33
-   03D5   C3F703           JMP  XP35                       ;FINISHED
-   03D8   CF       XP34:   RST  1                          ;DIVIDE?
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 17
       
 
 
+   03D5   C3F703           JMP  XP35                       ;FINISHED
+   03D8   CF       XP34:   RST  1                          ;DIVIDE?
    03D9   2F               DB   '/'
    03DA   46               DB   XP42-$-1
    03DB   E5               PUSH H                          ;YES, SAVE 1ST <EXPR4>
@@ -961,8 +963,8 @@
    03FF   FC8604           CM   CHGSGN                     ;CHANGE SIGN IF NEEDED
    0402   C3A803           JMP  XP31                       ;LOOK FOR MORE TERMS
                    ;
-   0405   210107   EXPR4:  LXI  H,TAB4-1                   ;FIND FUNCTION IN TAB4
-   0408   C33B07           JMP  EXEC                       ;AND GO DO IT
+   0405   210407   EXPR4:  LXI  H,TAB4-1                   ;FIND FUNCTION IN TAB4
+   0408   C33E07           JMP  EXEC                       ;AND GO DO IT
    040B   FF       XP40:   RST  7                          ;NO, NOT A FUNCTION
    040C   DA1404           JC   XP41                       ;NOR A VARIABLE
    040F   7E               MOV  A,M                        ;VARIABLE
@@ -982,15 +984,15 @@
    041F   29               DB   ')'
    0420   01               DB   XP43-$-1
    0421   C9       XP42:   RET
-   0422   C3C604   XP43:   JMP  QWHAT                      ;ELSE SAY: "WHAT?"
-                   ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 18
       
 
 
+   0422   C3C904   XP43:   JMP  QWHAT                      ;ELSE SAY: "WHAT?"
+                   ;
    0425   CD1A04   RND:    CALL PARN                       ;*** RND(EXPR) ***
    0428   7C               MOV  A,H                        ;EXPR MUST BE +
    0429   B7               ORA  A
@@ -1000,7 +1002,7 @@
    0431   D5               PUSH D                          ;SAVE BOTH
    0432   E5               PUSH H
    0433   2A1308           LHLD RANPNT                     ;GET MEMORY AS RANDOM
-   0436   116907           LXI  D,LSTROM                   ;NUMBER
+   0436   116C07           LXI  D,LSTROM                   ;NUMBER
    0439   E7               RST  4
    043A   DA4004           JC   RA1                        ;WRAP AROUND IF LAST
    043D   210000           LXI  H,START
@@ -1040,15 +1042,15 @@
                    ; 'SUBDE' SUBSTRACTS DE FROM HL
                    ;
                    ; 'CHKSGN' CHECKS SIGN OF HL.  IF +, NO CHANGE.  IF -, CHANGE
-                   ; SIGN AND FLIP SIGN OF B.
-                   ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 19
       
 
 
+                   ; SIGN AND FLIP SIGN OF B.
+                   ;
                    ; 'CHGSGN' CHECKS SIGN N OF HL AND B UNCONDITIONALLY.
                    ;
                    ; 'CKHLDE' CHECKS SIGN OF HL AND DE.  IF DIFFERENT, HL AND DE
@@ -1083,34 +1085,37 @@
    0485   F0               RP                              ;IF -, CHANGE SIGN
                    ;
    0486   7C       CHGSGN: MOV  A,H                        ;*** CHGSGN ***
-   0487   F5               PUSH PSW
-   0488   2F               CMA                             ;CHANGE SIGN OF HL
-   0489   67               MOV  H,A
-   048A   7D               MOV  A,L
-   048B   2F               CMA
-   048C   6F               MOV  L,A
-   048D   23               INX  H
-   048E   F1               POP  PSW
-   048F   AC               XRA  H
-   0490   F29F00           JP   QHOW
-   0493   78               MOV  A,B                        ;AND ALSO FLIP B
-   0494   EE80             XRI  80H
-   0496   47               MOV  B,A
-   0497   C9               RET
-                   ;
-   0498   7C       CKHLDE: MOV  A,H
-   0499   AA               XRA  D                          ;SAME SIGN?
+   0487   B5               ORA  L                          ;*UM*
+   0488   C8               RZ                              ;*UM* NOT ON ZERO VALUE
+   0489   7C               MOV  A,H                        ;*UM*
+   048A   F5               PUSH PSW
+   048B   2F               CMA                             ;CHANGE SIGN OF HL
+   048C   67               MOV  H,A
+   048D   7D               MOV  A,L
+   048E   2F               CMA
+   048F   6F               MOV  L,A
+   0490   23               INX  H
+   0491   F1               POP  PSW
+   0492   AC               XRA  H
+   0493   F29F00           JP   QHOW
+   0496   78               MOV  A,B                        ;AND ALSO FLIP B
+   0497   EE80             XRI  80H
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 20
       
 
 
-   049A   F29E04           JP   CK1                        ;YES, COMPARE
-   049D   EB               XCHG                            ;NO, XCH AND COMP
-   049E   E7       CK1:    RST  4
-   049F   C9               RET
+   0499   47               MOV  B,A
+   049A   C9               RET
+                   ;
+   049B   7C       CKHLDE: MOV  A,H
+   049C   AA               XRA  D                          ;SAME SIGN?
+   049D   F2A104           JP   CK1                        ;YES, COMPARE
+   04A0   EB               XCHG                            ;NO, XCH AND COMP
+   04A1   E7       CK1:    RST  4
+   04A2   C9               RET
                    ;
                    ;*************************************************************
                    ;
@@ -1143,86 +1148,86 @@
                    ; 'QSORRY' AND 'ASORRY' DO SAME KIND OF THING.
                    ; 'AHOW' AND 'AHOW' IN THE ZERO PAGE SECTION ALSO DO THIS.
                    ;
-   04A0   FF       SETVAL: RST  7                          ;*** SETVAL ***
-   04A1   DAC604           JC   QWHAT                      ;"WHAT?" NO VARIABLE
-   04A4   E5               PUSH H                          ;SAVE ADDRESS OF VAR.
-   04A5   CF               RST  1                          ;PASS "=" SIGN
-   04A6   3D               DB   '='
-   04A7   08               DB   SV1-$-1
-   04A8   DF               RST  3                          ;EVALUATE EXPR.
-   04A9   44               MOV  B,H                        ;VALUE IS IN BC NOW
-   04AA   4D               MOV  C,L
-   04AB   E1               POP  H                          ;GET ADDRESS
-   04AC   71               MOV  M,C                        ;SAVE VALUE
-   04AD   23               INX  H
-   04AE   70               MOV  M,B
-   04AF   C9               RET
-   04B0   C3C604   SV1:    JMP  QWHAT                      ;NO "=" SIGN
+   04A3   FF       SETVAL: RST  7                          ;*** SETVAL ***
+   04A4   DAC904           JC   QWHAT                      ;"WHAT?" NO VARIABLE
+   04A7   E5               PUSH H                          ;SAVE ADDRESS OF VAR.
+   04A8   CF               RST  1                          ;PASS "=" SIGN
+   04A9   3D               DB   '='
+   04AA   08               DB   SV1-$-1
+   04AB   DF               RST  3                          ;EVALUATE EXPR.
+   04AC   44               MOV  B,H                        ;VALUE IS IN BC NOW
+   04AD   4D               MOV  C,L
+   04AE   E1               POP  H                          ;GET ADDRESS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 21
       
 
 
+   04AF   71               MOV  M,C                        ;SAVE VALUE
+   04B0   23               INX  H
+   04B1   70               MOV  M,B
+   04B2   C9               RET
+   04B3   C3C904   SV1:    JMP  QWHAT                      ;NO "=" SIGN
                    ;
-   04B3   CF       FIN:    RST  1                          ;*** FIN ***
-   04B4   3B               DB   3BH
-   04B5   04               DB   FI1-$-1
-   04B6   F1               POP  PSW                        ;";", PURGE RET. ADDR.
-   04B7   C35701           JMP  RUNSML                     ;CONTINUE SAME LINE
-   04BA   CF       FI1:    RST  1                          ;NOT ";", IS IT CR?
-   04BB   0D               DB   CR
-   04BC   04               DB   FI2-$-1
-   04BD   F1               POP  PSW                        ;YES, PURGE RET. ADDR.
-   04BE   C34701           JMP  RUNNXL                     ;RUN NEXT LINE
-   04C1   C9       FI2:    RET                             ;ELSE RETURN TO CALLER
+   04B6   CF       FIN:    RST  1                          ;*** FIN ***
+   04B7   3B               DB   3BH
+   04B8   04               DB   FI1-$-1
+   04B9   F1               POP  PSW                        ;";", PURGE RET. ADDR.
+   04BA   C35701           JMP  RUNSML                     ;CONTINUE SAME LINE
+   04BD   CF       FI1:    RST  1                          ;NOT ";", IS IT CR?
+   04BE   0D               DB   CR
+   04BF   04               DB   FI2-$-1
+   04C0   F1               POP  PSW                        ;YES, PURGE RET. ADDR.
+   04C1   C34701           JMP  RUNNXL                     ;RUN NEXT LINE
+   04C4   C9       FI2:    RET                             ;ELSE RETURN TO CALLER
                    ;
-   04C2   EF       ENDCHK: RST  5                          ;*** ENDCHK ***
-   04C3   FE0D             CPI  CR                         ;END WITH CR?
-   04C5   C8               RZ                              ;OK, ELSE SAY: "WHAT?"
+   04C5   EF       ENDCHK: RST  5                          ;*** ENDCHK ***
+   04C6   FE0D             CPI  CR                         ;END WITH CR?
+   04C8   C8               RZ                              ;OK, ELSE SAY: "WHAT?"
                    ;
-   04C6   D5       QWHAT:  PUSH D                          ;*** QWHAT ***
-   04C7   11AE00   AWHAT:  LXI  D,WHAT                     ;*** AWHAT ***
-   04CA   97       ERROR:  SUB  A                          ;*** ERROR ***
-   04CB   CD6005           CALL PRTSTG                     ;PRINT 'WHAT?', 'HOW?'
-   04CE   D1               POP  D                          ;OR 'SORRY'
-   04CF   1A               LDAX D                          ;SAVE THE CHARACTER
-   04D0   F5               PUSH PSW                        ;AT WHERE OLD DE ->
-   04D1   97               SUB  A                          ;AND PUT A 0 THERE
-   04D2   12               STAX D
-   04D3   2A0108           LHLD CURRNT                     ;GET CURRENT LINE #
-   04D6   E5               PUSH H
-   04D7   7E               MOV  A,M                        ;CHECK THE VALUE
-   04D8   23               INX  H
-   04D9   B6               ORA  M
-   04DA   D1               POP  D
-   04DB   CABA00           JZ   RSTART                     ;IF ZERO, JUST RESTART
-   04DE   7E               MOV  A,M                        ;IF NEGATIVE,
-   04DF   B7               ORA  A
-   04E0   FAC302           JM   INPERR                     ;REDO INPUT
-   04E3   CDD205           CALL PRTLN                      ;ELSE PRINT THE LINE
-   04E6   1B               DCX  D                          ;UPTO WHERE THE 0 IS
-   04E7   F1               POP  PSW                        ;RESTORE THE CHARACTER
-   04E8   12               STAX D
-   04E9   3E3F             MVI  A,3FH                      ;PRINT A "?"
-   04EB   D7               RST  2
-   04EC   97               SUB  A                          ;AND THE REST OF THE
-   04ED   CD6005           CALL PRTSTG                     ;LINE
-   04F0   C3BA00           JMP  RSTART                     ;THEN RESTART
+   04C9   D5       QWHAT:  PUSH D                          ;*** QWHAT ***
+   04CA   11AE00   AWHAT:  LXI  D,WHAT                     ;*** AWHAT ***
+   04CD   97       ERROR:  SUB  A                          ;*** ERROR ***
+   04CE   CD6305           CALL PRTSTG                     ;PRINT 'WHAT?', 'HOW?'
+   04D1   D1               POP  D                          ;OR 'SORRY'
+   04D2   1A               LDAX D                          ;SAVE THE CHARACTER
+   04D3   F5               PUSH PSW                        ;AT WHERE OLD DE ->
+   04D4   97               SUB  A                          ;AND PUT A 0 THERE
+   04D5   12               STAX D
+   04D6   2A0108           LHLD CURRNT                     ;GET CURRENT LINE #
+   04D9   E5               PUSH H
+   04DA   7E               MOV  A,M                        ;CHECK THE VALUE
+   04DB   23               INX  H
+   04DC   B6               ORA  M
+   04DD   D1               POP  D
+   04DE   CABA00           JZ   RSTART                     ;IF ZERO, JUST RESTART
+   04E1   7E               MOV  A,M                        ;IF NEGATIVE,
+   04E2   B7               ORA  A
+   04E3   FAC302           JM   INPERR                     ;REDO INPUT
+   04E6   CDD505           CALL PRTLN                      ;ELSE PRINT THE LINE
+   04E9   1B               DCX  D                          ;UPTO WHERE THE 0 IS
+   04EA   F1               POP  PSW                        ;RESTORE THE CHARACTER
+   04EB   12               STAX D
+   04EC   3E3F             MVI  A,3FH                      ;PRINT A "?"
+   04EE   D7               RST  2
+   04EF   97               SUB  A                          ;AND THE REST OF THE
+   04F0   CD6305           CALL PRTSTG                     ;LINE
+   04F3   C3BA00           JMP  RSTART                     ;THEN RESTART
                    ;
-   04F3   D5       QSORRY: PUSH D                          ;*** QSORRY ***
-   04F4   11B400   ASORRY: LXI  D,SORRY                    ;*** ASORRY ***
-   04F7   C3CA04           JMP  ERROR
-                   ;
-                   ;*************************************************************
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 22
       
 
 
+   04F6   D5       QSORRY: PUSH D                          ;*** QSORRY ***
+   04F7   11B400   ASORRY: LXI  D,SORRY                    ;*** ASORRY ***
+   04FA   C3CD04           JMP  ERROR
+                   ;
+                   ;*************************************************************
                    ;
                    ; *** GETLN *** FNDLN (& FRIENDS) ***
                    ;
@@ -1249,76 +1254,76 @@
                    ; 'FNDNXT' WILL BUMP DE BY 2, FIND A CR AND THEN START SEARCH.
                    ; 'FNDSKP' USE DE TO FIND A CR, AND THEN START SEARCH.
                    ;
-   04FA   D7       GETLN:  RST  2                          ;*** GETLN ***
-   04FB   11371F           LXI  D,BUFFER                   ;PROMPT AND INIT.
-   04FE   CD8406   GL1:    CALL CHKIO                      ;CHECK KEYBOARD
-   0501   CAFE04           JZ   GL1                        ;NO INPUT, WAIT
-   0504   FE7F             CPI  7FH                        ;DELETE LAST CHARACTER?
-   0506   CA2305           JZ   GL3                        ;YES
-   0509   D7               RST  2                          ;INPUT, ECHO BACK
-   050A   FE0A             CPI  0AH                        ;IGNORE LF
-   050C   CAFE04           JZ   GL1
-   050F   B7               ORA  A                          ;IGNORE NULL
-   0510   CAFE04           JZ   GL1
-   0513   FE7D             CPI  7DH                        ;DELETE THE WHOLE LINE?
-   0515   CA3005           JZ   GL4                        ;YES
-   0518   12               STAX D                          ;ELSE SAVE INPUT
-   0519   13               INX  D                          ;AND BUMP POINTER
-   051A   FE0D             CPI  0DH                        ;WAS IT CR?
-   051C   C8               RZ                              ;YES, END OF LINE
-   051D   7B               MOV  A,E                        ;ELSE MORE FREE ROOM?
-   051E   FE77             CPI  BUFEND AND 0FFH
-   0520   C2FE04           JNZ  GL1                        ;YES, GET NEXT INPUT
-   0523   7B       GL3:    MOV  A,E                        ;DELETE LAST CHARACTER
-   0524   FE37             CPI  BUFFER AND 0FFH            ;BUT DO WE HAVE ANY?
-   0526   CA3005           JZ   GL4                        ;NO, REDO WHOLE LINE
-   0529   1B               DCX  D                          ;YES, BACKUP POINTER
-   052A   3E5C             MVI  A,5CH                      ;AND ECHO A BACK-SLASH
+   04FD   D7       GETLN:  RST  2                          ;*** GETLN ***
+   04FE   11371F           LXI  D,BUFFER                   ;PROMPT AND INIT.
+   0501   CD8706   GL1:    CALL CHKIO                      ;CHECK KEYBOARD
+   0504   CA0105           JZ   GL1                        ;NO INPUT, WAIT
+   0507   FE7F             CPI  7FH                        ;DELETE LAST CHARACTER?
+   0509   CA2605           JZ   GL3                        ;YES
+   050C   D7               RST  2                          ;INPUT, ECHO BACK
+   050D   FE0A             CPI  0AH                        ;IGNORE LF
+   050F   CA0105           JZ   GL1
+   0512   B7               ORA  A                          ;IGNORE NULL
+   0513   CA0105           JZ   GL1
+   0516   FE7D             CPI  7DH                        ;DELETE THE WHOLE LINE?
+   0518   CA3305           JZ   GL4                        ;YES
+   051B   12               STAX D                          ;ELSE SAVE INPUT
+   051C   13               INX  D                          ;AND BUMP POINTER
+   051D   FE0D             CPI  0DH                        ;WAS IT CR?
+   051F   C8               RZ                              ;YES, END OF LINE
+   0520   7B               MOV  A,E                        ;ELSE MORE FREE ROOM?
+   0521   FE77             CPI  BUFEND AND 0FFH
+   0523   C20105           JNZ  GL1                        ;YES, GET NEXT INPUT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 23
       
 
 
-   052C   D7               RST  2
-   052D   C3FE04           JMP  GL1                        ;GO GET NEXT INPUT
-   0530   CD0E00   GL4:    CALL CRLF                       ;REDO ENTIRE LINE
-   0533   3E5E             MVI  A,05EH                     ;CR, LF AND UP-ARROW
-   0535   C3FA04           JMP  GETLN
+   0526   7B       GL3:    MOV  A,E                        ;DELETE LAST CHARACTER
+   0527   FE37             CPI  BUFFER AND 0FFH            ;BUT DO WE HAVE ANY?
+   0529   CA3305           JZ   GL4                        ;NO, REDO WHOLE LINE
+   052C   1B               DCX  D                          ;YES, BACKUP POINTER
+   052D   3E5C             MVI  A,5CH                      ;AND ECHO A BACK-SLASH
+   052F   D7               RST  2
+   0530   C30105           JMP  GL1                        ;GO GET NEXT INPUT
+   0533   CD0E00   GL4:    CALL CRLF                       ;REDO ENTIRE LINE
+   0536   3E5E             MVI  A,05EH                     ;CR, LF AND UP-ARROW
+   0538   C3FD04           JMP  GETLN
                    ;
-   0538   7C       FNDLN:  MOV  A,H                        ;*** FNDLN ***
-   0539   B7               ORA  A                          ;CHECK SIGN OF HL
-   053A   FA9F00           JM   QHOW                       ;IT CANNOT BE -
-   053D   111708           LXI  D,TXTBGN                   ;INIT TEXT POINTER
+   053B   7C       FNDLN:  MOV  A,H                        ;*** FNDLN ***
+   053C   B7               ORA  A                          ;CHECK SIGN OF HL
+   053D   FA9F00           JM   QHOW                       ;IT CANNOT BE -
+   0540   111708           LXI  D,TXTBGN                   ;INIT TEXT POINTER
                    ;
-   0540            FNDLP:                                  ;*** FDLNP ***
-   0540   E5       FL1:    PUSH H                          ;SAVE LINE #
-   0541   2A1508           LHLD TXTUNF                     ;CHECK IF WE PASSED END
-   0544   2B               DCX  H
-   0545   E7               RST  4
-   0546   E1               POP  H                          ;GET LINE # BACK
-   0547   D8               RC                              ;C,NZ PASSED END
-   0548   1A               LDAX D                          ;WE DID NOT, GET BYTE 1
-   0549   95               SUB  L                          ;IS THIS THE LINE?
-   054A   47               MOV  B,A                        ;COMPARE LOW ORDER
-   054B   13               INX  D
-   054C   1A               LDAX D                          ;GET BYTE 2
-   054D   9C               SBB  H                          ;COMPARE HIGH ORDER
-   054E   DA5505           JC   FL2                        ;NO, NOT THERE YET
-   0551   1B               DCX  D                          ;ELSE WE EITHER FOUND
-   0552   B0               ORA  B                          ;IT, OR IT IS NOT THERE
-   0553   C9               RET                             ;NC,Z:FOUND, NC,NZ:NO
+   0543            FNDLP:                                  ;*** FDLNP ***
+   0543   E5       FL1:    PUSH H                          ;SAVE LINE #
+   0544   2A1508           LHLD TXTUNF                     ;CHECK IF WE PASSED END
+   0547   2B               DCX  H
+   0548   E7               RST  4
+   0549   E1               POP  H                          ;GET LINE # BACK
+   054A   D8               RC                              ;C,NZ PASSED END
+   054B   1A               LDAX D                          ;WE DID NOT, GET BYTE 1
+   054C   95               SUB  L                          ;IS THIS THE LINE?
+   054D   47               MOV  B,A                        ;COMPARE LOW ORDER
+   054E   13               INX  D
+   054F   1A               LDAX D                          ;GET BYTE 2
+   0550   9C               SBB  H                          ;COMPARE HIGH ORDER
+   0551   DA5805           JC   FL2                        ;NO, NOT THERE YET
+   0554   1B               DCX  D                          ;ELSE WE EITHER FOUND
+   0555   B0               ORA  B                          ;IT, OR IT IS NOT THERE
+   0556   C9               RET                             ;NC,Z:FOUND, NC,NZ:NO
                    ;
-   0554            FNDNXT:                                 ;*** FNDNXT ***
-   0554   13               INX  D                          ;FIND NEXT LINE
-   0555   13       FL2:    INX  D                          ;JUST PASSED BYTE 1 & 2
+   0557            FNDNXT:                                 ;*** FNDNXT ***
+   0557   13               INX  D                          ;FIND NEXT LINE
+   0558   13       FL2:    INX  D                          ;JUST PASSED BYTE 1 & 2
                    ;
-   0556   1A       FNDSKP: LDAX D                          ;*** FNDSKP ***
-   0557   FE0D             CPI  CR                         ;TRY TO FIND CR
-   0559   C25505           JNZ  FL2                        ;KEEP LOOKING
-   055C   13               INX  D                          ;FOUND CR, SKIP OVER
-   055D   C34005           JMP  FL1                        ;CHECK IF END OF TEXT
+   0559   1A       FNDSKP: LDAX D                          ;*** FNDSKP ***
+   055A   FE0D             CPI  CR                         ;TRY TO FIND CR
+   055C   C25805           JNZ  FL2                        ;KEEP LOOKING
+   055F   13               INX  D                          ;FOUND CR, SKIP OVER
+   0560   C34305           JMP  FL1                        ;CHECK IF END OF TEXT
                    ;
                    ;*************************************************************
                    ;
@@ -1327,18 +1332,18 @@
                    ; 'PRTSTG' PRINTS A STRING POINTED BY DE.  IT STOPS PRINTING
                    ; AND RETURNS TO CALLER WHEN EITHER A CR IS PRINTED OR WHEN
                    ; THE NEXT BYTE IS THE SAME AS WHAT WAS IN A (GIVEN BY THE
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      13:28  11/10/2019
++                                                                                      PAGE 24
+      
+
+
                    ; CALLER).  OLD A IS STORED IN B, OLD B IS LOST.
                    ;
                    ; 'QTSTG' LOOKS FOR A BACK-ARROW, SINGLE QUOTE, OR DOUBLE
                    ; QUOTE.  IF NONE OF THESE, RETURN TO CALLER.  IF BACK-ARROW,
                    ; OUTPUT A CR WITHOUT A LF.  IF SINGLE OR DOUBLE QUOTE, PRINT
-1
- 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
-+                                                                                      PAGE 24
-      
-
-
                    ; THE STRING IN THE QUOTE AND DEMANDS A MATCHING UNQUOTE.
                    ; AFTER THE PRINTING THE NEXT 3 BYTES OF THE CALLER IS SKIPPED
                    ; OVER (USUALLY A JUMP INSTRUCTION.
@@ -1351,110 +1356,110 @@
                    ;
                    ; 'PRTLN' PRINTS A SAVED TEXT LINE WITH LINE # AND ALL.
                    ;
-   0560   47       PRTSTG: MOV  B,A                        ;*** PRTSTG ***
-   0561   1A       PS1:    LDAX D                          ;GET A CHARACTER
-   0562   13               INX  D                          ;BUMP POINTER
-   0563   B8               CMP  B                          ;SAME AS OLD A?
-   0564   C8               RZ                              ;YES, RETURN
-   0565   D7               RST  2                          ;ELSE PRINT IT
-   0566   FE0D             CPI  CR                         ;WAS IT A CR?
-   0568   C26105           JNZ  PS1                        ;NO, NEXT
-   056B   C9               RET                             ;YES, RETURN
+   0563   47       PRTSTG: MOV  B,A                        ;*** PRTSTG ***
+   0564   1A       PS1:    LDAX D                          ;GET A CHARACTER
+   0565   13               INX  D                          ;BUMP POINTER
+   0566   B8               CMP  B                          ;SAME AS OLD A?
+   0567   C8               RZ                              ;YES, RETURN
+   0568   D7               RST  2                          ;ELSE PRINT IT
+   0569   FE0D             CPI  CR                         ;WAS IT A CR?
+   056B   C26405           JNZ  PS1                        ;NO, NEXT
+   056E   C9               RET                             ;YES, RETURN
                    ;
-   056C   CF       QTSTG:  RST  1                          ;*** QTSTG ***
-   056D   22               DB   '"'
-   056E   0F               DB   QT3-$-1
-   056F   3E22             MVI  A,22H                      ;IT IS A "
-   0571   CD6005   QT1:    CALL PRTSTG                     ;PRINT UNTIL ANOTHER
-   0574   FE0D             CPI  CR                         ;WAS LAST ONE A CR?
-   0576   E1               POP  H                          ;RETURN ADDRESS
-   0577   CA4701           JZ   RUNNXL                     ;WAS CR, RUN NEXT LINE
-   057A   23       QT2:    INX  H                          ;SKIP 3 BYTES ON RETURN
-   057B   23               INX  H
-   057C   23               INX  H
-   057D   E9               PCHL                            ;RETURN
-   057E   CF       QT3:    RST  1                          ;IS IT A '?
-   057F   27               DB   27H
-   0580   05               DB   QT4-$-1
-   0581   3E27             MVI  A,27H                      ;YES, DO THE SAME
-   0583   C37105           JMP  QT1                        ;AS IN "
-   0586   CF       QT4:    RST  1                          ;IS IT BACK-ARROW?
-   0587   5F               DB   5FH
-   0588   08               DB   QT5-$-1
-   0589   3E8D             MVI  A,08DH                     ;YES, CR WITHOUT LF
-   058B   D7               RST  2                          ;DO IT TWICE TO GIVE
-   058C   D7               RST  2                          ;TTY ENOUGH TIME
-   058D   E1               POP  H                          ;RETURN ADDRESS
-   058E   C37A05           JMP  QT2
-   0591   C9       QT5:    RET                             ;NONE OF ABOVE
-                   ;
-   0592   0600     PRTNUM: MVI  B,0                        ;*** PRTNUM ***
-   0594   CD8304           CALL CHKSGN                     ;CHECK SIGN
+   056F   CF       QTSTG:  RST  1                          ;*** QTSTG ***
+   0570   22               DB   '"'
+   0571   0F               DB   QT3-$-1
+   0572   3E22             MVI  A,22H                      ;IT IS A "
+   0574   CD6305   QT1:    CALL PRTSTG                     ;PRINT UNTIL ANOTHER
+   0577   FE0D             CPI  CR                         ;WAS LAST ONE A CR?
+   0579   E1               POP  H                          ;RETURN ADDRESS
+   057A   CA4701           JZ   RUNNXL                     ;WAS CR, RUN NEXT LINE
+   057D   23       QT2:    INX  H                          ;SKIP 3 BYTES ON RETURN
+   057E   23               INX  H
+   057F   23               INX  H
+   0580   E9               PCHL                            ;RETURN
+   0581   CF       QT3:    RST  1                          ;IS IT A '?
+   0582   27               DB   27H
+   0583   05               DB   QT4-$-1
+   0584   3E27             MVI  A,27H                      ;YES, DO THE SAME
+   0586   C37405           JMP  QT1                        ;AS IN "
+   0589   CF       QT4:    RST  1                          ;IS IT BACK-ARROW?
+   058A   5F               DB   5FH
+   058B   08               DB   QT5-$-1
+   058C   3E8D             MVI  A,08DH                     ;YES, CR WITHOUT LF
+   058E   D7               RST  2                          ;DO IT TWICE TO GIVE
+   058F   D7               RST  2                          ;TTY ENOUGH TIME
+   0590   E1               POP  H                          ;RETURN ADDRESS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 25
       
 
 
-   0597   F29D05           JP   PN1                        ;NO SIGN
-   059A   062D             MVI  B,'-'                      ;B=SIGN
-   059C   0D               DCR  C                          ;'-' TAKES SPACE
-   059D   D5       PN1:    PUSH D                          ;SAVE
-   059E   110A00           LXI  D,0AH                      ;DECIMAL
-   05A1   D5               PUSH D                          ;SAVE AS A FLAG
-   05A2   0D               DCR  C                          ;C=SPACES
-   05A3   C5               PUSH B                          ;SAVE SIGN & SPACE
-   05A4   CD6604   PN2:    CALL DIVIDE                     ;DIVIDE HL BY 10
-   05A7   78               MOV  A,B                        ;RESULT 0?
-   05A8   B1               ORA  C
-   05A9   CAB405           JZ   PN3                        ;YES, WE GOT ALL
-   05AC   E3               XTHL                            ;NO, SAVE REMAINDER
-   05AD   2D               DCR  L                          ;AND COUNT SPACE
-   05AE   E5               PUSH H                          ;HL IS OLD BC
-   05AF   60               MOV  H,B                        ;MOVE RESULT TO BC
-   05B0   69               MOV  L,C
-   05B1   C3A405           JMP  PN2                        ;AND DIVIDE BY 10
-   05B4   C1       PN3:    POP  B                          ;WE GOT ALL DIGITS IN
-   05B5   0D       PN4:    DCR  C                          ;THE STACK
-   05B6   79               MOV  A,C                        ;LOOK AT SPACE COUNT
-   05B7   B7               ORA  A
-   05B8   FAC105           JM   PN5                        ;NO LEADING BLANKS
-   05BB   3E20             MVI  A,20H                      ;LEADING BLANKS
-   05BD   D7               RST  2
-   05BE   C3B505           JMP  PN4                        ;MORE?
-   05C1   78       PN5:    MOV  A,B                        ;PRINT SIGN
-   05C2   B7               ORA  A
-   05C3   C41000           CNZ  10H
-   05C6   5D               MOV  E,L                        ;LAST REMAINDER IN E
-   05C7   7B       PN6:    MOV  A,E                        ;CHECK DIGIT IN E
-   05C8   FE0A             CPI  0AH                        ;10 IS FLAG FOR NO MORE
-   05CA   D1               POP  D
-   05CB   C8               RZ                              ;IF SO, RETURN
-   05CC   C630             ADI  30H                        ;ELSE CONVERT TO ASCII
-   05CE   D7               RST  2                          ;AND PRINT THE DIGIT
-   05CF   C3C705           JMP  PN6                        ;GO BACK FOR MORE
+   0591   C37D05           JMP  QT2
+   0594   C9       QT5:    RET                             ;NONE OF ABOVE
                    ;
-   05D2   1A       PRTLN:  LDAX D                          ;*** PRTLN ***
-   05D3   6F               MOV  L,A                        ;LOW ORDER LINE #
-   05D4   13               INX  D
-   05D5   1A               LDAX D                          ;HIGH ORDER
-   05D6   67               MOV  H,A
+   0595   0600     PRTNUM: MVI  B,0                        ;*** PRTNUM ***
+   0597   CD8304           CALL CHKSGN                     ;CHECK SIGN
+   059A   F2A005           JP   PN1                        ;NO SIGN
+   059D   062D             MVI  B,'-'                      ;B=SIGN
+   059F   0D               DCR  C                          ;'-' TAKES SPACE
+   05A0   D5       PN1:    PUSH D                          ;SAVE
+   05A1   110A00           LXI  D,0AH                      ;DECIMAL
+   05A4   D5               PUSH D                          ;SAVE AS A FLAG
+   05A5   0D               DCR  C                          ;C=SPACES
+   05A6   C5               PUSH B                          ;SAVE SIGN & SPACE
+   05A7   CD6604   PN2:    CALL DIVIDE                     ;DIVIDE HL BY 10
+   05AA   78               MOV  A,B                        ;RESULT 0?
+   05AB   B1               ORA  C
+   05AC   CAB705           JZ   PN3                        ;YES, WE GOT ALL
+   05AF   E3               XTHL                            ;NO, SAVE REMAINDER
+   05B0   2D               DCR  L                          ;AND COUNT SPACE
+   05B1   E5               PUSH H                          ;HL IS OLD BC
+   05B2   60               MOV  H,B                        ;MOVE RESULT TO BC
+   05B3   69               MOV  L,C
+   05B4   C3A705           JMP  PN2                        ;AND DIVIDE BY 10
+   05B7   C1       PN3:    POP  B                          ;WE GOT ALL DIGITS IN
+   05B8   0D       PN4:    DCR  C                          ;THE STACK
+   05B9   79               MOV  A,C                        ;LOOK AT SPACE COUNT
+   05BA   B7               ORA  A
+   05BB   FAC405           JM   PN5                        ;NO LEADING BLANKS
+   05BE   3E20             MVI  A,20H                      ;LEADING BLANKS
+   05C0   D7               RST  2
+   05C1   C3B805           JMP  PN4                        ;MORE?
+   05C4   78       PN5:    MOV  A,B                        ;PRINT SIGN
+   05C5   B7               ORA  A
+   05C6   C41000           CNZ  10H
+   05C9   5D               MOV  E,L                        ;LAST REMAINDER IN E
+   05CA   7B       PN6:    MOV  A,E                        ;CHECK DIGIT IN E
+   05CB   FE0A             CPI  0AH                        ;10 IS FLAG FOR NO MORE
+   05CD   D1               POP  D
+   05CE   C8               RZ                              ;IF SO, RETURN
+   05CF   C630             ADI  30H                        ;ELSE CONVERT TO ASCII
+   05D1   D7               RST  2                          ;AND PRINT THE DIGIT
+   05D2   C3CA05           JMP  PN6                        ;GO BACK FOR MORE
+                   ;
+   05D5   1A       PRTLN:  LDAX D                          ;*** PRTLN ***
+   05D6   6F               MOV  L,A                        ;LOW ORDER LINE #
    05D7   13               INX  D
-   05D8   0E04             MVI  C,4H                       ;PRINT 4 DIGIT LINE #
-   05DA   CD9205           CALL PRTNUM
-   05DD   3E20             MVI  A,20H                      ;FOLLOWED BY A BLANK
-   05DF   D7               RST  2
-   05E0   97               SUB  A                          ;AND THEN THE NEXT
-   05E1   CD6005           CALL PRTSTG
-   05E4   C9               RET
+   05D8   1A               LDAX D                          ;HIGH ORDER
+   05D9   67               MOV  H,A
+   05DA   13               INX  D
+   05DB   0E04             MVI  C,4H                       ;PRINT 4 DIGIT LINE #
+   05DD   CD9505           CALL PRTNUM
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 26
       
 
 
+   05E0   3E20             MVI  A,20H                      ;FOLLOWED BY A BLANK
+   05E2   D7               RST  2
+   05E3   97               SUB  A                          ;AND THEN THE NEXT
+   05E4   CD6305           CALL PRTSTG
+   05E7   C9               RET
                    ;
                    ;*************************************************************
                    ;
@@ -1472,71 +1477,71 @@
                    ; 'PUSHA' STACKS THE 'FOR' LOOP VARIABLE SAVE AREA INTO THE
                    ; STACK
                    ;
-   05E5   E7       MVUP:   RST  4                          ;*** MVUP ***
-   05E6   C8               RZ                              ;DE = HL, RETURN
-   05E7   1A               LDAX D                          ;GET ONE BYTE
-   05E8   02               STAX B                          ;MOVE IT
-   05E9   13               INX  D                          ;INCREASE BOTH POINTERS
-   05EA   03               INX  B
-   05EB   C3E505           JMP  MVUP                       ;UNTIL DONE
+   05E8   E7       MVUP:   RST  4                          ;*** MVUP ***
+   05E9   C8               RZ                              ;DE = HL, RETURN
+   05EA   1A               LDAX D                          ;GET ONE BYTE
+   05EB   02               STAX B                          ;MOVE IT
+   05EC   13               INX  D                          ;INCREASE BOTH POINTERS
+   05ED   03               INX  B
+   05EE   C3E805           JMP  MVUP                       ;UNTIL DONE
                    ;
-   05EE   78       MVDOWN: MOV  A,B                        ;*** MVDOWN ***
-   05EF   92               SUB  D                          ;TEST IF DE = BC
-   05F0   C2F605           JNZ  MD1                        ;NO, GO MOVE
-   05F3   79               MOV  A,C                        ;MAYBE, OTHER BYTE?
-   05F4   93               SUB  E
-   05F5   C8               RZ                              ;YES, RETURN
-   05F6   1B       MD1:    DCX  D                          ;ELSE MOVE A BYTE
-   05F7   2B               DCX  H                          ;BUT FIRST DECREASE
-   05F8   1A               LDAX D                          ;BOTH POINTERS AND
-   05F9   77               MOV  M,A                        ;THEN DO IT
-   05FA   C3EE05           JMP  MVDOWN                     ;LOOP BACK
+   05F1   78       MVDOWN: MOV  A,B                        ;*** MVDOWN ***
+   05F2   92               SUB  D                          ;TEST IF DE = BC
+   05F3   C2F905           JNZ  MD1                        ;NO, GO MOVE
+   05F6   79               MOV  A,C                        ;MAYBE, OTHER BYTE?
+   05F7   93               SUB  E
+   05F8   C8               RZ                              ;YES, RETURN
+   05F9   1B       MD1:    DCX  D                          ;ELSE MOVE A BYTE
+   05FA   2B               DCX  H                          ;BUT FIRST DECREASE
+   05FB   1A               LDAX D                          ;BOTH POINTERS AND
+   05FC   77               MOV  M,A                        ;THEN DO IT
+   05FD   C3F105           JMP  MVDOWN                     ;LOOP BACK
                    ;
-   05FD   C1       POPA:   POP  B                          ;BC = RETURN ADDR.
-   05FE   E1               POP  H                          ;RESTORE LOPVAR, BUT
-   05FF   220908           SHLD LOPVAR                     ;=0 MEANS NO MORE
-   0602   7C               MOV  A,H
-   0603   B5               ORA  L
-   0604   CA1706           JZ   PP1                        ;YEP, GO RETURN
-   0607   E1               POP  H                          ;NOP, RESTORE OTHERS
-   0608   220B08           SHLD LOPINC
-   060B   E1               POP  H
-   060C   220D08           SHLD LOPLMT
-   060F   E1               POP  H
-   0610   220F08           SHLD LOPLN
-   0613   E1               POP  H
-   0614   221108           SHLD LOPPT
+   0600   C1       POPA:   POP  B                          ;BC = RETURN ADDR.
+   0601   E1               POP  H                          ;RESTORE LOPVAR, BUT
+   0602   220908           SHLD LOPVAR                     ;=0 MEANS NO MORE
+   0605   7C               MOV  A,H
+   0606   B5               ORA  L
+   0607   CA1A06           JZ   PP1                        ;YEP, GO RETURN
+   060A   E1               POP  H                          ;NOP, RESTORE OTHERS
+   060B   220B08           SHLD LOPINC
+   060E   E1               POP  H
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 27
       
 
 
-   0617   C5       PP1:    PUSH B                          ;BC = RETURN ADDR.
-   0618   C9               RET
+   060F   220D08           SHLD LOPLMT
+   0612   E1               POP  H
+   0613   220F08           SHLD LOPLN
+   0616   E1               POP  H
+   0617   221108           SHLD LOPPT
+   061A   C5       PP1:    PUSH B                          ;BC = RETURN ADDR.
+   061B   C9               RET
                    ;
-   0619   21781F   PUSHA:  LXI  H,STKLMT                   ;*** PUSHA ***
-   061C   CD8604           CALL CHGSGN
-   061F   C1               POP  B                          ;BC=RETURN ADDRESS
-   0620   39               DAD  SP                         ;IS STACK NEAR THE TOP?
-   0621   D2F304           JNC  QSORRY                     ;YES, SORRY FOR THAT
-   0624   2A0908           LHLD LOPVAR                     ;ELSE SAVE LOOP VAR'S
-   0627   7C               MOV  A,H                        ;BUT IF LOPVAR IS 0
-   0628   B5               ORA  L                          ;THAT WILL BE ALL
-   0629   CA3F06           JZ   PU1
-   062C   2A1108           LHLD LOPPT                      ;ELSE, MORE TO SAVE
-   062F   E5               PUSH H
-   0630   2A0F08           LHLD LOPLN
-   0633   E5               PUSH H
-   0634   2A0D08           LHLD LOPLMT
-   0637   E5               PUSH H
-   0638   2A0B08           LHLD LOPINC
-   063B   E5               PUSH H
-   063C   2A0908           LHLD LOPVAR
-   063F   E5       PU1:    PUSH H
-   0640   C5               PUSH B                          ;BC = RETURN ADDR.
-   0641   C9               RET
+   061C   21781F   PUSHA:  LXI  H,STKLMT                   ;*** PUSHA ***
+   061F   CD8604           CALL CHGSGN
+   0622   C1               POP  B                          ;BC=RETURN ADDRESS
+   0623   39               DAD  SP                         ;IS STACK NEAR THE TOP?
+   0624   D2F604           JNC  QSORRY                     ;YES, SORRY FOR THAT
+   0627   2A0908           LHLD LOPVAR                     ;ELSE SAVE LOOP VAR'S
+   062A   7C               MOV  A,H                        ;BUT IF LOPVAR IS 0
+   062B   B5               ORA  L                          ;THAT WILL BE ALL
+   062C   CA4206           JZ   PU1
+   062F   2A1108           LHLD LOPPT                      ;ELSE, MORE TO SAVE
+   0632   E5               PUSH H
+   0633   2A0F08           LHLD LOPLN
+   0636   E5               PUSH H
+   0637   2A0D08           LHLD LOPLMT
+   063A   E5               PUSH H
+   063B   2A0B08           LHLD LOPINC
+   063E   E5               PUSH H
+   063F   2A0908           LHLD LOPVAR
+   0642   E5       PU1:    PUSH H
+   0643   C5               PUSH B                          ;BC = RETURN ADDR.
+   0644   C9               RET
                    ;
                    ;*************************************************************
                    ;
@@ -1559,76 +1564,76 @@
                    ;OUTC:  PUSH PSW                        ;THIS IS AT LOC. 10
                    ;       LDA  OCSW                       ;CHECK SOFTWARE SWITCH
                    ;       ORA  A
-   0642   320008   INIT:   STA  OCSW
-   0645   3E03             MVI  A,3                        ;RESET ACIA
-   0647   D310             OUT  16
-   0649   3E15             MVI  A,15H   ;15H FOR 8N1, 11H FOR 8N2
-   064B   D310             OUT  16
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 28
       
 
 
-   064D   1619             MVI  D,19H
-   064F            PATLOP:
-   064F   CD0E00           CALL CRLF
-   0652   15               DCR  D
-   0653   C24F06           JNZ  PATLOP
-   0656   97               SUB  A
-   0657   11A306           LXI  D,MSG1
-   065A   CD6005           CALL PRTSTG
-   065D   210000           LXI  H,START
-   0660   221308           SHLD RANPNT
-   0663   211708           LXI  H,TXTBGN
-   0666   221508           SHLD TXTUNF
-   0669   C3BA00           JMP  RSTART
-   066C   C27106   OC2:    JNZ  OC3                        ;IT IS ON
-   066F   F1               POP  PSW                        ;IT IS OFF
-   0670   C9               RET                             ;RESTORE AF AND RETURN
-   0671   DB10     OC3:    IN   16                         ;COME HERE TO DO OUTPUT
-   0673   E602             ANI  2H                         ;STATUS BIT
-   0675   CA7106           JZ   OC3                        ;NOT READY, WAIT
-   0678   F1               POP  PSW                        ;READY, GET OLD A BACK
-   0679   D311             OUT  17                         ;AND SEND IT OUT
-   067B   FE0D             CPI  CR                         ;WAS IT CR?
-   067D   C0               RNZ                             ;NO, FINISHED
-   067E   3E0A             MVI  A,LF                       ;YES, WE SEND LF TOO
-   0680   D7               RST  2                          ;THIS IS RECURSIVE
-   0681   3E0D             MVI  A,CR                       ;GET CR BACK IN A
-   0683   C9               RET
+   0645   320008   INIT:   STA  OCSW
+   0648   3E03             MVI  A,3                        ;RESET ACIA
+   064A   D310             OUT  16
+   064C   3E15             MVI  A,15H                      ;15H FOR 8N1, 11H FOR 8N2
+   064E   D310             OUT  16
+   0650   1619             MVI  D,19H
+   0652            PATLOP:
+   0652   CD0E00           CALL CRLF
+   0655   15               DCR  D
+   0656   C25206           JNZ  PATLOP
+   0659   97               SUB  A
+   065A   11A606           LXI  D,MSG1
+   065D   CD6305           CALL PRTSTG
+   0660   210000           LXI  H,START
+   0663   221308           SHLD RANPNT
+   0666   211708           LXI  H,TXTBGN
+   0669   221508           SHLD TXTUNF
+   066C   C3BA00           JMP  RSTART
+   066F   C27406   OC2:    JNZ  OC3                        ;IT IS ON
+   0672   F1               POP  PSW                        ;IT IS OFF
+   0673   C9               RET                             ;RESTORE AF AND RETURN
+   0674   DB10     OC3:    IN   16                         ;COME HERE TO DO OUTPUT
+   0676   E602             ANI  2H                         ;STATUS BIT
+   0678   CA7406           JZ   OC3                        ;NOT READY, WAIT
+   067B   F1               POP  PSW                        ;READY, GET OLD A BACK
+   067C   D311             OUT  17                         ;AND SEND IT OUT
+   067E   FE0D             CPI  CR                         ;WAS IT CR?
+   0680   C0               RNZ                             ;NO, FINISHED
+   0681   3E0A             MVI  A,LF                       ;YES, WE SEND LF TOO
+   0683   D7               RST  2                          ;THIS IS RECURSIVE
+   0684   3E0D             MVI  A,CR                       ;GET CR BACK IN A
+   0686   C9               RET
                    ;
-   0684   DB10     CHKIO:  IN   16                         ;*** CHKIO ***
-   0686   00               NOP                             ;STATUS BIT FLIPPED?
-   0687   E601             ANI  1H                         ;MASK STATUS BIT
-   0689   C8               RZ                              ;NOT READY, RETURN "Z"
-   068A   DB11             IN   17                         ;READY, READ DATA
-   068C   E67F             ANI  7FH                        ;MASK BIT 7 OFF
-   068E   FE0F             CPI  0FH                        ;IS IT CONTROL-O?
-   0690   C29D06           JNZ  CI1                        ;NO, MORE CHECKING
-   0693   3A0008           LDA  OCSW                       ;CONTROL-O FLIPS OCSW
-   0696   2F               CMA                             ;ON TO OFF, OFF TO ON
-   0697   320008           STA  OCSW
-   069A   C38406           JMP  CHKIO                      ;GET ANOTHER INPUT
-   069D   FE03     CI1:    CPI  3H                         ;IS IT CONTROL-C?
-   069F   C0               RNZ                             ;NO, RETURN "NZ"
-   06A0   C3BA00           JMP  RSTART                     ;YES, RESTART TBI
+   0687   DB10     CHKIO:  IN   16                         ;*** CHKIO ***
+   0689   00               NOP                             ;STATUS BIT FLIPPED?
+   068A   E601             ANI  1H                         ;MASK STATUS BIT
+   068C   C8               RZ                              ;NOT READY, RETURN "Z"
+   068D   DB11             IN   17                         ;READY, READ DATA
+   068F   E67F             ANI  7FH                        ;MASK BIT 7 OFF
+   0691   FE0F             CPI  0FH                        ;IS IT CONTROL-O?
+   0693   C2A006           JNZ  CI1                        ;NO, MORE CHECKING
+   0696   3A0008           LDA  OCSW                       ;CONTROL-O FLIPS OCSW
+   0699   2F               CMA                             ;ON TO OFF, OFF TO ON
+   069A   320008           STA  OCSW
+   069D   C38706           JMP  CHKIO                      ;GET ANOTHER INPUT
+   06A0   FE03     CI1:    CPI  3H                         ;IS IT CONTROL-C?
+   06A2   C0               RNZ                             ;NO, RETURN "NZ"
+   06A3   C3BA00           JMP  RSTART                     ;YES, RESTART TBI
                    ;
-   06A3   54494E59 MSG1:   DB   'TINY '
-   06A7   20      
-   06A8   42415349         DB   'BASIC'
-   06AC   43      
-   06AD   0D               DB   CR
-                   ;
-                   ;*************************************************************
+   06A6   54494E59 MSG1:   DB   'TINY '
+   06AA   20      
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 29
       
 
 
+   06AB   42415349         DB   'BASIC'
+   06AF   43      
+   06B0   0D               DB   CR
+                   ;
+                   ;*************************************************************
                    ;
                    ; *** TABLES *** DIRECT *** & EXEC ***
                    ;
@@ -1654,193 +1659,193 @@
                    ; STRING DOES NOT MATCH ANY OF THE OTHER ITEMS, IT WILL
                    ; MATCH THIS NULL ITEM AS DEFAULT.
                    ;
-   06AE            TAB1:                                   ;DIRECT COMMANDS
-   06AE   4C495354         DB   'LIST'
+   06B1            TAB1:                                   ;DIRECT COMMANDS
+   06B1   4C495354         DB   'LIST'
                            DWA  LIST
-   06B2 1 81      +        DB   (LIST SHR 8) + 128
-   06B3 1 6F      +        DB   LIST AND 0FFH
-   06B4   52554E           DB   'RUN'
+   06B5 1 81      +        DB   (LIST SHR 8) + 128
+   06B6 1 6F      +        DB   LIST AND 0FFH
+   06B7   52554E           DB   'RUN'
                            DWA  RUN
-   06B7 1 81      +        DB   (RUN SHR 8) + 128
-   06B8 1 41      +        DB   RUN AND 0FFH
-   06B9   4E4557           DB   'NEW'
+   06BA 1 81      +        DB   (RUN SHR 8) + 128
+   06BB 1 41      +        DB   RUN AND 0FFH
+   06BC   4E4557           DB   'NEW'
                            DWA  NEW
-   06BC 1 81      +        DB   (NEW SHR 8) + 128
-   06BD 1 32      +        DB   NEW AND 0FFH
+   06BF 1 81      +        DB   (NEW SHR 8) + 128
+   06C0 1 32      +        DB   NEW AND 0FFH
                    ;
-   06BE            TAB2:                                   ;DIRECT/STATEMENT
-   06BE   4E455854         DB   'NEXT'
+   06C1            TAB2:                                   ;DIRECT/STATEMENT
+   06C1   4E455854         DB   'NEXT'
                            DWA  NEXT
-   06C2 1 82      +        DB   (NEXT SHR 8) + 128
-   06C3 1 57      +        DB   NEXT AND 0FFH
-   06C4   4C4554           DB   'LET'
+   06C5 1 82      +        DB   (NEXT SHR 8) + 128
+   06C6 1 57      +        DB   NEXT AND 0FFH
+   06C7   4C4554           DB   'LET'
                            DWA  LET
-   06C7 1 83      +        DB   (LET SHR 8) + 128
-   06C8 1 23      +        DB   LET AND 0FFH
-   06C9   4946             DB   'IF'
-                           DWA  IFF
-   06CB 1 82      +        DB   (IFF SHR 8) + 128
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 30
       
 
 
-   06CC 1 B4      +        DB   IFF AND 0FFH
-   06CD   474F544F         DB   'GOTO'
+   06CA 1 83      +        DB   (LET SHR 8) + 128
+   06CB 1 23      +        DB   LET AND 0FFH
+   06CC   4946             DB   'IF'
+                           DWA  IFF
+   06CE 1 82      +        DB   (IFF SHR 8) + 128
+   06CF 1 B4      +        DB   IFF AND 0FFH
+   06D0   474F544F         DB   'GOTO'
                            DWA  GOTO
-   06D1 1 81      +        DB   (GOTO SHR 8) + 128
-   06D2 1 60      +        DB   GOTO AND 0FFH
-   06D3   474F5355         DB   'GOSUB'
-   06D7   42      
+   06D4 1 81      +        DB   (GOTO SHR 8) + 128
+   06D5 1 60      +        DB   GOTO AND 0FFH
+   06D6   474F5355         DB   'GOSUB'
+   06DA   42      
                            DWA  GOSUB
-   06D8 1 81      +        DB   (GOSUB SHR 8) + 128
-   06D9 1 BF      +        DB   GOSUB AND 0FFH
-   06DA   52455455         DB   'RETURN'
-   06DE   524E    
+   06DB 1 81      +        DB   (GOSUB SHR 8) + 128
+   06DC 1 BF      +        DB   GOSUB AND 0FFH
+   06DD   52455455         DB   'RETURN'
+   06E1   524E    
                            DWA  RETURN
-   06E0 1 81      +        DB   (RETUR SHR 8) + 128
-   06E1 1 DF      +        DB   RETUR AND 0FFH
-   06E2   52454D           DB   'REM'
+   06E3 1 81      +        DB   (RETUR SHR 8) + 128
+   06E4 1 DF      +        DB   RETUR AND 0FFH
+   06E5   52454D           DB   'REM'
                            DWA  REM
-   06E5 1 82      +        DB   (REM SHR 8) + 128
-   06E6 1 B0      +        DB   REM AND 0FFH
-   06E7   464F52           DB   'FOR'
+   06E8 1 82      +        DB   (REM SHR 8) + 128
+   06E9 1 B0      +        DB   REM AND 0FFH
+   06EA   464F52           DB   'FOR'
                            DWA  FOR
-   06EA 1 81      +        DB   (FOR SHR 8) + 128
-   06EB 1 F8      +        DB   FOR AND 0FFH
-   06EC   494E5055         DB   'INPUT'
-   06F0   54      
+   06ED 1 81      +        DB   (FOR SHR 8) + 128
+   06EE 1 F8      +        DB   FOR AND 0FFH
+   06EF   494E5055         DB   'INPUT'
+   06F3   54      
                            DWA  INPUT
-   06F1 1 82      +        DB   (INPUT SHR 8) + 128
-   06F2 1 CD      +        DB   INPUT AND 0FFH
-   06F3   5052494E         DB   'PRINT'
-   06F7   54      
+   06F4 1 82      +        DB   (INPUT SHR 8) + 128
+   06F5 1 CD      +        DB   INPUT AND 0FFH
+   06F6   5052494E         DB   'PRINT'
+   06FA   54      
                            DWA  PRINT
-   06F8 1 81      +        DB   (PRINT SHR 8) + 128
-   06F9 1 87      +        DB   PRINT AND 0FFH
-   06FA   53544F50         DB   'STOP'
+   06FB 1 81      +        DB   (PRINT SHR 8) + 128
+   06FC 1 87      +        DB   PRINT AND 0FFH
+   06FD   53544F50         DB   'STOP'
                            DWA  STOP
-   06FE 1 81      +        DB   (STOP SHR 8) + 128
-   06FF 1 3B      +        DB   STOP AND 0FFH
+   0701 1 81      +        DB   (STOP SHR 8) + 128
+   0702 1 3B      +        DB   STOP AND 0FFH
                            DWA  DEFLT
-   0700 1 83      +        DB   (DEFLT SHR 8) + 128
-   0701 1 1D      +        DB   DEFLT AND 0FFH
+   0703 1 83      +        DB   (DEFLT SHR 8) + 128
+   0704 1 1D      +        DB   DEFLT AND 0FFH
                    ;
-   0702            TAB4:                                   ;FUNCTIONS
-   0702   524E44           DB   'RND'
+   0705            TAB4:                                   ;FUNCTIONS
+   0705   524E44           DB   'RND'
                            DWA  RND
-   0705 1 84      +        DB   (RND SHR 8) + 128
-   0706 1 25      +        DB   RND AND 0FFH
-   0707   414253           DB   'ABS'
-                           DWA  ABS
-   070A 1 84      +        DB   (ABS SHR 8) + 128
-   070B 1 50      +        DB   ABS AND 0FFH
-   070C   53495A45         DB   'SIZE'
+   0708 1 84      +        DB   (RND SHR 8) + 128
+   0709 1 25      +        DB   RND AND 0FFH
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 31
       
 
 
+   070A   414253           DB   'ABS'
+                           DWA  ABS
+   070D 1 84      +        DB   (ABS SHR 8) + 128
+   070E 1 50      +        DB   ABS AND 0FFH
+   070F   53495A45         DB   'SIZE'
                            DWA  SIZE
-   0710 1 84      +        DB   (SIZE SHR 8) + 128
-   0711 1 59      +        DB   SIZE AND 0FFH
+   0713 1 84      +        DB   (SIZE SHR 8) + 128
+   0714 1 59      +        DB   SIZE AND 0FFH
                            DWA  XP40
-   0712 1 84      +        DB   (XP40 SHR 8) + 128
-   0713 1 0B      +        DB   XP40 AND 0FFH
+   0715 1 84      +        DB   (XP40 SHR 8) + 128
+   0716 1 0B      +        DB   XP40 AND 0FFH
                    ;
-   0714            TAB5:                                   ;"TO" IN "FOR"
-   0714   544F             DB   'TO'
+   0717            TAB5:                                   ;"TO" IN "FOR"
+   0717   544F             DB   'TO'
                            DWA  FR1
-   0716 1 82      +        DB   (FR1 SHR 8) + 128
-   0717 1 08      +        DB   FR1 AND 0FFH
+   0719 1 82      +        DB   (FR1 SHR 8) + 128
+   071A 1 08      +        DB   FR1 AND 0FFH
                            DWA  QWHAT
-   0718 1 84      +        DB   (QWHAT SHR 8) + 128
-   0719 1 C6      +        DB   QWHAT AND 0FFH
+   071B 1 84      +        DB   (QWHAT SHR 8) + 128
+   071C 1 C9      +        DB   QWHAT AND 0FFH
                    ;
-   071A            TAB6:                                   ;"STEP" IN "FOR"
-   071A   53544550         DB   'STEP'
+   071D            TAB6:                                   ;"STEP" IN "FOR"
+   071D   53544550         DB   'STEP'
                            DWA  FR2
-   071E 1 82      +        DB   (FR2 SHR 8) + 128
-   071F 1 12      +        DB   FR2 AND 0FFH
+   0721 1 82      +        DB   (FR2 SHR 8) + 128
+   0722 1 12      +        DB   FR2 AND 0FFH
                            DWA  FR3
-   0720 1 82      +        DB   (FR3 SHR 8) + 128
-   0721 1 16      +        DB   FR3 AND 0FFH
+   0723 1 82      +        DB   (FR3 SHR 8) + 128
+   0724 1 16      +        DB   FR3 AND 0FFH
                    ;
-   0722            TAB8:                                   ;RELATION OPERATORS
-   0722   3E3D             DB   '>='
+   0725            TAB8:                                   ;RELATION OPERATORS
+   0725   3E3D             DB   '>='
                            DWA  XP11
-   0724 1 83      +        DB   (XP11 SHR 8) + 128
-   0725 1 33      +        DB   XP11 AND 0FFH
-   0726   23               DB   '#'
+   0727 1 83      +        DB   (XP11 SHR 8) + 128
+   0728 1 33      +        DB   XP11 AND 0FFH
+   0729   23               DB   '#'
                            DWA  XP12
-   0727 1 83      +        DB   (XP12 SHR 8) + 128
-   0728 1 39      +        DB   XP12 AND 0FFH
-   0729   3E               DB   '>'
+   072A 1 83      +        DB   (XP12 SHR 8) + 128
+   072B 1 39      +        DB   XP12 AND 0FFH
+   072C   3E               DB   '>'
                            DWA  XP13
-   072A 1 83      +        DB   (XP13 SHR 8) + 128
-   072B 1 3F      +        DB   XP13 AND 0FFH
-   072C   3D               DB   '='
+   072D 1 83      +        DB   (XP13 SHR 8) + 128
+   072E 1 3F      +        DB   XP13 AND 0FFH
+   072F   3D               DB   '='
                            DWA  XP15
-   072D 1 83      +        DB   (XP15 SHR 8) + 128
-   072E 1 4E      +        DB   XP15 AND 0FFH
-   072F   3C3D             DB   '<='
+   0730 1 83      +        DB   (XP15 SHR 8) + 128
+   0731 1 4E      +        DB   XP15 AND 0FFH
+   0732   3C3D             DB   '<='
                            DWA  XP14
-   0731 1 83      +        DB   (XP14 SHR 8) + 128
-   0732 1 46      +        DB   XP14 AND 0FFH
-   0733   3C               DB   '<'
-                           DWA  XP16
-   0734 1 83      +        DB   (XP16 SHR 8) + 128
-   0735 1 54      +        DB   XP16 AND 0FFH
-                           DWA  XP17
+   0734 1 83      +        DB   (XP14 SHR 8) + 128
+   0735 1 46      +        DB   XP14 AND 0FFH
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 32
       
 
 
-   0736 1 83      +        DB   (XP17 SHR 8) + 128
-   0737 1 5A      +        DB   XP17 AND 0FFH
+   0736   3C               DB   '<'
+                           DWA  XP16
+   0737 1 83      +        DB   (XP16 SHR 8) + 128
+   0738 1 54      +        DB   XP16 AND 0FFH
+                           DWA  XP17
+   0739 1 83      +        DB   (XP17 SHR 8) + 128
+   073A 1 5A      +        DB   XP17 AND 0FFH
                    ;
-   0738   21AD06   DIRECT: LXI  H,TAB1-1                   ;*** DIRECT ***
+   073B   21B006   DIRECT: LXI  H,TAB1-1                   ;*** DIRECT ***
                    ;
-   073B            EXEC:                                   ;*** EXEC ***
-   073B   EF       EX0:    RST  5                          ;IGNORE LEADING BLANKS
-   073C   D5               PUSH D                          ;SAVE POINTER
-   073D   1A       EX1:    LDAX D                          ;IF FOUND '.' IN STRING
-   073E   13               INX  D                          ;BEFORE ANY MISMATCH
-   073F   FE2E             CPI  2EH                        ;WE DECLARE A MATCH
-   0741   CA5A07           JZ   EX3
-   0744   23               INX  H                          ;HL->TABLE
-   0745   BE               CMP  M                          ;IF MATCH, TEST NEXT
-   0746   CA3D07           JZ   EX1
-   0749   3E7F             MVI  A,07FH                     ;ELSE SEE IF BIT 7
-   074B   1B               DCX  D                          ;OF TABLE IS SET, WHICH
-   074C   BE               CMP  M                          ;IS THE JUMP ADDR. (HI)
-   074D   DA6107           JC   EX5                        ;C:YES, MATCHED
-   0750   23       EX2:    INX  H                          ;NC:NO, FIND JUMP ADDR.
-   0751   BE               CMP  M
-   0752   D25007           JNC  EX2
-   0755   23               INX  H                          ;BUMP TO NEXT TAB. ITEM
-   0756   D1               POP  D                          ;RESTORE STRING POINTER
-   0757   C33B07           JMP  EX0                        ;TEST AGAINST NEXT ITEM
-   075A   3E7F     EX3:    MVI  A,07FH                     ;PARTIAL MATCH, FIND
-   075C   23       EX4:    INX  H                          ;JUMP ADDR., WHICH IS
-   075D   BE               CMP  M                          ;FLAGGED BY BIT 7
-   075E   D25C07           JNC  EX4
-   0761   7E       EX5:    MOV  A,M                        ;LOAD HL WITH THE JUMP
-   0762   23               INX  H                          ;ADDRESS FROM THE TABLE
-   0763   6E               MOV  L,M
-   0764   E67F             ANI  7FH                        ;MASK OFF BIT 7
-   0766   67               MOV  H,A
-   0767   F1               POP  PSW                        ;CLEAN UP THE GABAGE
-   0768   E9               PCHL                            ;AND WE GO DO IT
+   073E            EXEC:                                   ;*** EXEC ***
+   073E   EF       EX0:    RST  5                          ;IGNORE LEADING BLANKS
+   073F   D5               PUSH D                          ;SAVE POINTER
+   0740   1A       EX1:    LDAX D                          ;IF FOUND '.' IN STRING
+   0741   13               INX  D                          ;BEFORE ANY MISMATCH
+   0742   FE2E             CPI  2EH                        ;WE DECLARE A MATCH
+   0744   CA5D07           JZ   EX3
+   0747   23               INX  H                          ;HL->TABLE
+   0748   BE               CMP  M                          ;IF MATCH, TEST NEXT
+   0749   CA4007           JZ   EX1
+   074C   3E7F             MVI  A,07FH                     ;ELSE SEE IF BIT 7
+   074E   1B               DCX  D                          ;OF TABLE IS SET, WHICH
+   074F   BE               CMP  M                          ;IS THE JUMP ADDR. (HI)
+   0750   DA6407           JC   EX5                        ;C:YES, MATCHED
+   0753   23       EX2:    INX  H                          ;NC:NO, FIND JUMP ADDR.
+   0754   BE               CMP  M
+   0755   D25307           JNC  EX2
+   0758   23               INX  H                          ;BUMP TO NEXT TAB. ITEM
+   0759   D1               POP  D                          ;RESTORE STRING POINTER
+   075A   C33E07           JMP  EX0                        ;TEST AGAINST NEXT ITEM
+   075D   3E7F     EX3:    MVI  A,07FH                     ;PARTIAL MATCH, FIND
+   075F   23       EX4:    INX  H                          ;JUMP ADDR., WHICH IS
+   0760   BE               CMP  M                          ;FLAGGED BY BIT 7
+   0761   D25F07           JNC  EX4
+   0764   7E       EX5:    MOV  A,M                        ;LOAD HL WITH THE JUMP
+   0765   23               INX  H                          ;ADDRESS FROM THE TABLE
+   0766   6E               MOV  L,M
+   0767   E67F             ANI  7FH                        ;MASK OFF BIT 7
+   0769   67               MOV  H,A
+   076A   F1               POP  PSW                        ;CLEAN UP THE GABAGE
+   076B   E9               PCHL                            ;AND WE GO DO IT
                    ;
-   0769            LSTROM:                                 ;ALL ABOVE CAN BE ROM
+   076C            LSTROM:                                 ;ALL ABOVE CAN BE ROM
                    ;       ORG  1000H                      ;HERE DOWN MUST BE RAM
    0800                    ORG  0800H
    0800            OCSW:   DS   1                          ;SWITCH FOR OUTPUT
@@ -1849,18 +1854,18 @@
    0805            VARNXT: DS   2                          ;TEMP STORAGE
    0807            STKINP: DS   2                          ;SAVES SP IN 'INPUT'
    0809            LOPVAR: DS   2                          ;'FOR' LOOP SAVE AREA
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      13:28  11/10/2019
++                                                                                      PAGE 33
+      
+
+
    080B            LOPINC: DS   2                          ;INCREMENT
    080D            LOPLMT: DS   2                          ;LIMIT
    080F            LOPLN:  DS   2                          ;LINE NUMBER
    0811            LOPPT:  DS   2                          ;TEXT POINTER
    0813            RANPNT: DS   2                          ;RANDOM NUMBER POINTER
-1
- 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
-+                                                                                      PAGE 33
-      
-
-
    0815            TXTUNF: DS   2                          ;->UNFILLED TEXT AREA
    0817            TXTBGN: DS   2                          ;TEXT SAVE AREA BEGINS
                    ;       ORG  1366H
@@ -1881,7 +1886,7 @@
  NO PROGRAM ERRORS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 34
       
 
@@ -1890,48 +1895,48 @@
 
   * 01
 
-  A      0007      ABS    0450      AHOW   00A0      ASORR  04F4      
-  AWHAT  04C7      B      0000      BUFEN  1F77      BUFFE  1F37      
-  C      0001      CHGSG  0486      CHKIO  0684      CHKSG  0483      
-  CI1    069D      CK1    049E      CKHLD  0498      CR     000D      
+  A      0007      ABS    0450      AHOW   00A0      ASORR  04F7      
+  AWHAT  04CA      B      0000      BUFEN  1F77      BUFFE  1F37      
+  C      0001      CHGSG  0486      CHKIO  0687      CHKSG  0483      
+  CI1    06A0      CK1    04A1      CKHLD  049B      CR     000D      
   CRLF   000E      CURRN  0801      D      0002      DEFLT  031D      
-  DIREC  0738      DIVID  0466      DV1    0471      DV2    0473      
-  DWA    06CB      E      0003      ENDCH  04C2      ERROR  04CA      
-  EX0    073B      EX1    073D      EX2    0750      EX3    075A      
-  EX4    075C      EX5    0761      EXEC   073B      EXPR1  032D      
-  EXPR2  0371      EXPR3  03A5      EXPR4  0405      FI1    04BA      
-  FI2    04C1      FIN    04B3      FL1    0540      FL2    0555      
-  FNDLN  0538      FNDLP  0540      FNDNX  0554      FNDSK  0556      
+  DIREC  073B      DIVID  0466      DV1    0471      DV2    0473      
+  DWA    06CB      E      0003      ENDCH  04C5      ERROR  04CD      
+  EX0    073E      EX1    0740      EX2    0753      EX3    075D      
+  EX4    075F      EX5    0764      EXEC   073E      EXPR1  032D      
+  EXPR2  0371      EXPR3  03A5      EXPR4  0405      FI1    04BD      
+  FI2    04C4      FIN    04B6      FL1    0543      FL2    0558      
+  FNDLN  053B      FNDLP  0543      FNDNX  0557      FNDSK  0559      
   FOR    01F8      FR1    0208      FR2    0212      FR3    0216      
   FR4    0219      FR5    021C *    FR7    0231      FR8    0252      
-  GETLN  04FA      GL1    04FE      GL3    0523      GL4    0530      
+  GETLN  04FD      GL1    0501      GL3    0526      GL4    0533      
   GOSUB  01BF      GOTO   0160      H      0004      HOW    00A6      
-  IFF    02B4      INIT   0642      INPER  02C3      INPUT  02CD      
+  IFF    02B4      INIT   0645      INPER  02C3      INPUT  02CD      
   IP1    02CD      IP2    02DB      IP3    02EB      IP4    0315      
   IP5    031C      L      0005      LET    0323      LF     000A      
   LIST   016F      LOPIN  080B      LOPLM  080D      LOPLN  080F      
-  LOPPT  0811      LOPVA  0809      LS1    0178      LSTRO  0769      
-  LT1    032C      M      0006      MD1    05F6      MSG1   06A3      
-  MVDOW  05EE      MVUP   05E5      NEW    0132      NEXT   0257      
+  LOPPT  0811      LOPVA  0809      LS1    0178      LSTRO  076C      
+  LT1    032C      M      0006      MD1    05F9      MSG1   06A6      
+  MVDOW  05F1      MVUP   05E8      NEW    0132      NEXT   0257      
   NX0    025E      NX1    0298      NX2    02AC      NX3    0276      
-  NX4    0288      NX5    02AA      OC2    066C      OC3    0671      
-  OCSW   0800      OK     00AB      PARN   041A      PATLO  064F      
-  PN1    059D      PN2    05A4      PN3    05B4      PN4    05B5      
-  PN5    05C1      PN6    05C7      POPA   05FD      PP1    0617      
+  NX4    0288      NX5    02AA      OC2    066F      OC3    0674      
+  OCSW   0800      OK     00AB      PARN   041A      PATLO  0652      
+  PN1    05A0      PN2    05A7      PN3    05B7      PN4    05B8      
+  PN5    05C4      PN6    05CA      POPA   0600      PP1    061A      
   PR0    019B      PR1    01A3      PR2    0192      PR3    01A9      
-  PR6    01B2      PR8    01B6      PRINT  0187      PRTLN  05D2      
-  PRTNU  0592      PRTST  0560      PS1    0561      PSW    0006      
-  PU1    063F      PUSHA  0619      QHOW   009F      QSORR  04F3      
-  QT1    0571      QT2    057A      QT3    057E      QT4    0586      
-  QT5    0591      QTSTG  056C      QWHAT  04C6      RA1    0440      
+  PR6    01B2      PR8    01B6      PRINT  0187      PRTLN  05D5      
+  PRTNU  0595      PRTST  0563      PS1    0564      PSW    0006      
+  PU1    0642      PUSHA  061C      QHOW   009F      QSORR  04F6      
+  QT1    0574      QT2    057D      QT3    0581      QT4    0589      
+  QT5    0594      QTSTG  056F      QWHAT  04C9      RA1    0440      
   RANPN  0813      REM    02B0      RETUR  01DF      RND    0425      
   RSTAR  00BA      RUN    0141      RUNNX  0147      RUNSM  0157      
-  RUNTS  0150      SETVA  04A0      SIZE   0459      SORRY  00B4      
+  RUNTS  0150      SETVA  04A3      SIZE   0459      SORRY  00B4      
   SP     0006      SS1    0028      ST1    00BD *    ST2    00CD      
   ST3    00D6      ST4    010B      STACK  2000      START  0000      
   STKGO  0803      STKIN  0807      STKLM  1F78      STOP   013B      
-  SUBDE  047C      SV1    04B0      TAB1   06AE      TAB2   06BE      
-  TAB4   0702      TAB5   0714      TAB6   071A      TAB8   0722      
+  SUBDE  047C      SV1    04B3      TAB1   06B1      TAB2   06C1      
+  TAB4   0705      TAB5   0717      TAB6   071D      TAB8   0725      
   TC1    0068      TC2    0073      TN1    007C      TSTNU  0077      
   TV1    0058      TXTBG  0817      TXTEN  1F00      TXTUN  0815      
   VARBG  1F00      VARNX  0805      WHAT   00AE      XP11   0333      
@@ -1939,7 +1944,7 @@
   XP16   0354      XP17   035A      XP18   035C      XP21   037A      
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 35
                               SYMBOL TABLE
 
@@ -1999,7 +2004,7 @@
   
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      19:48  07/25/2016
++                                                      13:28  11/10/2019
 +                                                                                      PAGE 36
                               SYMBOL TABLE
 
