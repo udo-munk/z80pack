@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2019 by Udo Munk
+ * Copyright (C) 1987-2020 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -113,8 +113,10 @@ again:
 	if (nanosleep(&timer, &rem) == -1) {
 		if ((err = errno) == EINTR) {
 			/* interrupted, resume with the remaining time */
-			memcpy(&timer, &rem, sizeof(struct timespec));
-			goto again;
+			if (rem.tv_nsec > 0L) {
+				memcpy(&timer, &rem, sizeof(struct timespec));
+				goto again;
+			}
 		} else {
 			/* some error */
 			LOGE(TAG, "sleep_ms(%d) %s", time, strerror(err));
