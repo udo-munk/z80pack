@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2018 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an Altair 8800 system
@@ -503,7 +503,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 157 */
 	io_trap_out,		/* port 158 */
 	io_trap_out,		/* port 159 */
-	hwctl_out,			/* port 160 */	/* virtual hardware control */
+	hwctl_out,		/* port 160 */	/* virtual hardware control */
 	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
