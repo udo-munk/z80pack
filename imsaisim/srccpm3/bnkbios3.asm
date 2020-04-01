@@ -1,6 +1,6 @@
 	TITLE	'CP/M 3 banked BIOS for IMSAI 8080'
 ;
-;	Copyright (C) 2019 by Udo Munk
+;	Copyright (C) 2019,2020 by Udo Munk
 ;
 ; History:
 ; 23-OCT-19 first public release
@@ -9,6 +9,7 @@
 ; 28-OCT-19 add all character devices with I/O redirection
 ; 01-NOV-19 add more complete character device mode byte
 ; 17-NOV-19 handle result codes from FIF FDC
+; 01-APR-20 moved RTC ports
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -50,13 +51,13 @@ TTY1	EQU	02H		; tty 1 data
 TTY1S	EQU	03H		; tty 1 status
 KBD	EQU	04H		; keyboard data
 KBDS	EQU	05H		; keyboard status
-CLKCMD	EQU	19H		; RTC command
-CLKDAT	EQU	1AH		; RTC data
 TTY2	EQU	22H		; tty 2 data
 TTY2S	EQU	23H		; tty 2 status
 MODEM	EQU	24H		; modem data
 MODEMS	EQU	25H		; modem status
 MMUSEL	EQU	40H		; MMU bank select
+CLKCMD	EQU	41H		; RTC command
+CLKDAT	EQU	42H		; RTC data
 PRINTER	EQU	0F6H		; IMSAI PTR-300 line printer
 FDC	EQU	0FDH		; IMSAI FIF FDC
 LEDS	EQU	0FFH		; programmed output LED's
@@ -284,8 +285,8 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'IMSAI 8080 banked BIOS V1.6,',13,10
-	DB	'Copyright (C) 2019, Udo Munk',13,10,13,10
+	DB	'IMSAI 8080 banked BIOS V1.7,',13,10
+	DB	'Copyright (C) 2019,2020 Udo Munk',13,10,13,10
 	DB	0
 ;
 ;	get control from cold start loader

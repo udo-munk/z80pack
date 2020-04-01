@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an IMSAI 8080 system
@@ -122,8 +122,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 22 */
 	io_trap_in,		/* port 23 */
 	io_trap_in,		/* port 24 */
-	clkc_in,		/* port 25 */ /* RTC command */
-	clkd_in,		/* port 26 */ /* RTC data */
+	io_trap_in,		/* port 25 */
+	io_trap_in,		/* port 26 */
 	io_trap_in,		/* port 27 */
 	io_trap_in,		/* port 28 */
 	io_trap_in,		/* port 29 */
@@ -167,8 +167,8 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 62 */
 	io_trap_in,		/* port 63 */
 	mmu_in,			/* port 64 */ /* MMU */
-	io_trap_in,		/* port 65 */
-	io_trap_in,		/* port 66 */
+	clkc_in,		/* port 65 */ /* RTC command */
+	clkd_in,		/* port 66 */ /* RTC data */
 	io_trap_in,		/* port 67 */
 	io_trap_in,		/* port 68 */
 	io_trap_in,		/* port 69 */
@@ -401,8 +401,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 22 */
 	io_trap_out,		/* port 23 */
 	io_trap_out,		/* port 24 */
-	clkc_out,		/* port 25 */ /* RTC command */
-	clkd_out,		/* port 26 */ /* RTC data */
+	io_trap_out,		/* port 25 */
+	io_trap_out,		/* port 26 */
 	io_trap_out,		/* port 27 */
 	io_trap_out,		/* port 28 */
 	io_trap_out,		/* port 29 */
@@ -446,8 +446,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 62 */
 	io_trap_out,		/* port 63 */
 	mmu_out,		/* port 64 */ /* MMU */
-	io_trap_out,		/* port 65 */
-	io_trap_out,		/* port 66 */
+	clkc_out,		/* port 65 */ /* RTC command */
+	clkd_out,		/* port 66 */ /* RTC data */
 	io_trap_out,		/* port 67 */
 	io_trap_out,		/* port 68 */
 	io_trap_out,		/* port 69 */
