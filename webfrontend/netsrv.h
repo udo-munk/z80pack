@@ -23,7 +23,8 @@ enum net_device {
 	DEV_VIO,
 	DEV_CPA,
 	DEV_DZLR,
-	DEV_88ACC
+	DEV_88ACC,
+	DEV_D7AIO
 };
 
 typedef enum net_device net_device_t;
@@ -47,6 +48,7 @@ extern void net_device_send(net_device_t, char*, int);
 extern int net_device_get(net_device_t);
 extern int net_device_get_data(net_device_t, char *, int);
 extern int net_device_poll(net_device_t);
+extern void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data));
 
 /*
 * convenience macros for http output

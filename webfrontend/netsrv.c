@@ -49,7 +49,8 @@ char *dev_name[] = {
 	"VIO",
 	"CPA",
 	"DZLR",
-	"ACC"
+	"ACC",
+	"D7AIO"
 };
 
 int last_error = 0; //TODO: replace
@@ -383,6 +384,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 			case DEV_LPT:
 			case DEV_DZLR:
 			case DEV_88ACC:
+			case DEV_D7AIO:
 				res = msgget(IPC_PRIVATE, 0644 | IPC_CREAT); //TODO: check flags
 				if (res > 0) {
 					dev[(net_device_t)device].queue = res;
@@ -462,6 +464,11 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
     if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_BINARY) {
 
         switch ((net_device_t)device) {
+		case DEV_D7AIO:
+			if (dev[DEV_D7AIO].cbfunc != NULL && (len == 8)) {
+                (*(dev[DEV_D7AIO].cbfunc))((BYTE *)data);
+            }
+			break;
 		case DEV_88ACC:
 			// LOGI(TAG, "rec: %d, %d", (int)len, (BYTE)*data);
             msg.mtype = 1L;
@@ -625,6 +632,13 @@ int start_net_services (void) {
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) DEV_88ACC);
+
+	mg_set_websocket_handler(ctx, "/d7aio",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         (void *) DEV_D7AIO);
 
 #ifdef DEBUG
 	/* List all listening ports */

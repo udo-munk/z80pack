@@ -36,14 +36,14 @@
 
 #define UNIX_TERMINAL	/* uses a UNIX terminal emulation */
 #define HAS_DAZZLER	/* has simulated I/O for Cromemeco Dazzler */
-/*#define HAS_CYCLOPS*/	/* has simulated I/O for Cromemeco 88 CCC/ACC Cyclops Camera */
+#define HAS_CYCLOPS	/* has simulated I/O for Cromemeco 88 CCC/ACC Cyclops Camera */
 
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* emulate IMSAI MPU-B banked ROM & RAM */
 
-/*#define HAS_DISKMANAGER*/	/* uses file based disk map for disks[] */
-/*#define HAS_NETSERVER*/	/* uses civet webserver to present a web based frontend */
+#define HAS_DISKMANAGER //*/	/* uses file based disk map for disks[] */
+#define HAS_NETSERVER //*/	/* uses civet webserver to present a web based frontend */
 #define HAS_MODEM		/* has simulated 'AT' style modem over TCP/IP (telnet) */
 
 #define MAX_RAM	64	/* Maximum RAM size */
@@ -66,7 +66,7 @@
 
 #define USR_COM	"IMSAI 8080 Simulation"
 #define USR_REL	"1.18"
-#define USR_CPR	"\nCopyright (C) 2008-2019 by Udo Munk & " \
+#define USR_CPR	"Copyright (C) 2008-2019 by Udo Munk & " \
 		"2018-2019 by David McNaughton"
 
 #define MAX_LFN		4096		/* maximum long file name length */

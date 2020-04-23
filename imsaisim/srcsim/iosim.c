@@ -49,6 +49,7 @@
 #include "../../iodevices/imsai-fif.h"
 #ifdef HAS_DAZZLER
 #include "../../iodevices/cromemco-dazzler.h"
+#include "../../iodevices/cromemco-d+7a.h"
 #endif /* HAS_DAZZLER */
 #ifdef HAS_CYCLOPS
 #include "../../iodevices/cromemco-88ccc.h"
@@ -121,14 +122,14 @@ BYTE (*port_in[256]) (void) = {
 	io_pport_in,		/* port 21 */ /*       "       */
 	io_trap_in,		/* port 22 */
 	io_trap_in,		/* port 23 */
-	io_trap_in,		/* port 24 */
-	io_trap_in,		/* port 25 */
-	io_trap_in,		/* port 26 */
-	io_trap_in,		/* port 27 */
-	io_trap_in,		/* port 28 */
-	io_trap_in,		/* port 29 */
-	io_trap_in,		/* port 30 */
-	io_trap_in,		/* port 31 */
+	cromemco_d7a_D_in,	/* port 24 */
+	cromemco_d7a_A1_in,	/* port 25 */
+	cromemco_d7a_A2_in,	/* port 26 */
+	cromemco_d7a_A3_in,	/* port 27 */
+	cromemco_d7a_A4_in,	/* port 28 */
+	cromemco_d7a_A5_in,	/* port 29 */
+	cromemco_d7a_A6_in,	/* port 30 */
+	cromemco_d7a_A7_in,	/* port 31 */
 	imsai_sio_nofun_in,	/* port 32 */ /* IMSAI SIO-2 */
 	imsai_sio_nofun_in,	/* port 33 */
 	imsai_sio2a_data_in,	/* port 34 */ /* Channel A, UNIX socket */
@@ -400,14 +401,14 @@ static void (*port_out[256]) (BYTE) = {
 	io_no_card_out,		/* port 21 */ /*       "       */
 	io_trap_out,		/* port 22 */
 	io_trap_out,		/* port 23 */
-	io_trap_out,		/* port 24 */
-	io_trap_out,		/* port 25 */
-	io_trap_out,		/* port 26 */
-	io_trap_out,		/* port 27 */
-	io_trap_out,		/* port 28 */
-	io_trap_out,		/* port 29 */
-	io_trap_out,		/* port 30 */
-	io_trap_out,		/* port 31 */
+	cromemco_d7a_D_out,		/* port 24 */
+	cromemco_d7a_A1_out,	/* port 25 */
+	cromemco_d7a_A2_out,	/* port 26 */
+	cromemco_d7a_A3_out,	/* port 27 */
+	cromemco_d7a_A4_out,	/* port 28 */
+	cromemco_d7a_A5_out,	/* port 29 */
+	cromemco_d7a_A6_out,	/* port 30 */
+	cromemco_d7a_A7_out,	/* port 31 */
 	imsai_sio_nofun_out,	/* port 32 */ /* IMSAI SIO-2 */
 	imsai_sio_nofun_out,	/* port 33 */
 	imsai_sio2a_data_out,	/* port 34 */ /* Channel A, UNIX socket */
@@ -662,6 +663,10 @@ void init_io(void)
 	}
 
 	imsai_fif_reset();
+
+#ifdef HAS_DAZZLER
+	cromemco_d7a_init();
+#endif
 
 	/* create local socket for SIO */
 	init_unix_server_socket(&ucons[0], "imsaisim.sio2a");
