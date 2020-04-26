@@ -35,11 +35,13 @@
 #define MAX_WS_CLIENTS (7)
 static const char *TAG = "netsrv";
 
-static int queue[MAX_WS_CLIENTS];
-
 static msgbuf_t msg;
 
-static ws_client_t ws_clients[MAX_WS_CLIENTS];
+struct {
+	int queue;
+    ws_client_t ws_client;
+    void (*cbfunc)(BYTE *);
+} dev[MAX_WS_CLIENTS];
 
 char *dev_name[] = {
 	"SIO1",
@@ -47,7 +49,8 @@ char *dev_name[] = {
 	"VIO",
 	"CPA",
 	"DZLR",
-	"ACC"
+	"ACC",
+	"D7AIO"
 };
 
 int last_error = 0; //TODO: replace
@@ -66,18 +69,36 @@ extern int DiskHandler(struct mg_connection *, void *);
  * Check if a queue is provisioned
  */
 int net_device_alive(net_device_t device) {
-	return queue[device];
+	return dev[device].queue;
+}
+
+void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data)) {
+    dev[device].cbfunc = cbfunc;
 }
 
 /**
  * Assumes the data is:
  * 		TEXT	if only a single byte
  * 		BINARY	if there are multiple bytes
+ * 		SIO1 & LPT are always BINARY now
  */
 void net_device_send(net_device_t device, char* msg, int len) {
- 	if(queue[device]) {
-		mg_websocket_write(ws_clients[device].conn,
-			(len==1)?MG_WEBSOCKET_OPCODE_TEXT:MG_WEBSOCKET_OPCODE_BINARY,
+
+	int op_code;
+
+	switch (device) {
+		case DEV_SIO1:
+		case DEV_LPT:
+			op_code = MG_WEBSOCKET_OPCODE_BINARY;
+			break;
+		default:
+			op_code = (len==1)?MG_WEBSOCKET_OPCODE_TEXT:MG_WEBSOCKET_OPCODE_BINARY;
+			break;
+	}
+
+ 	if(dev[device].queue) {
+		mg_websocket_write(dev[device].ws_client.conn,
+			op_code,
 			msg, len);
 	}
 }
@@ -92,8 +113,8 @@ int net_device_get(net_device_t device) {
 	ssize_t res;
 	msgbuf_t msg;
 
-	if (queue[device]) {
-		res = msgrcv(queue[device], &msg, 2, 1L, IPC_NOWAIT);
+	if (dev[device].queue) {
+		res = msgrcv(dev[device].queue, &msg, 2, 1L, IPC_NOWAIT);
 		LOGD(TAG, "GET: device[%d] res[%ld] msg[%ld, %s]\r\n", device, res, msg.mtype, msg.mtext);
 		if (res == 2) {
 			return msg.mtext[0];
@@ -107,10 +128,8 @@ int net_device_get_data(net_device_t device, char *dst, int len) {
 	ssize_t res;
 	msgbuf_t msg;
 
-	if (queue[device]) {
-		res = msgrcv(queue[device], &msg, len, 1L, MSG_NOERROR);
-		// if (device == DEV_88ACC)
-		// 	LOGI(TAG, "GET: device[%d] res[%ld] msg[tyep: %ld]\r\n", device, res, msg.mtype);
+	if (dev[device].queue) {
+		res = msgrcv(dev[device].queue, &msg, len, 1L, MSG_NOERROR);
 		memcpy((void *)dst, (void *)msg.mtext, res);
 		return res;
 	}
@@ -128,8 +147,8 @@ int net_device_poll(net_device_t device) {
 	ssize_t res;
 	msgbuf_t msg;
 
-	if (queue[device]) {
-		res = msgrcv(queue[device], &msg, 1, 1L, IPC_NOWAIT);
+	if (dev[device].queue) {
+		res = msgrcv(dev[device].queue, &msg, 1, 1L, IPC_NOWAIT);
 		LOGV(TAG, "POLL: device[%d] res[%ld] errno[%d]", device, res, errno);
 		if (res == -1 && errno == E2BIG) {
 			LOGD(TAG, "CHARACTERS WAITING");
@@ -184,8 +203,8 @@ void InformWebsockets(struct mg_context *ctx)
 
 	mg_lock_context(ctx);
 	for (i = 0; i < MAX_WS_CLIENTS; i++) {
-		if (ws_clients[i].state == 2) {
-			mg_websocket_write(ws_clients[i].conn,
+		if (dev[i].ws_client.state == 2) {
+			mg_websocket_write(dev[i].ws_client.conn,
 			                   MG_WEBSOCKET_OPCODE_TEXT,
 			                   text,
 			                   strlen(text));
@@ -354,10 +373,10 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
     int res;
 
 	mg_lock_context(ctx);
-		if (ws_clients[(net_device_t)device].conn == NULL) {
-			ws_clients[(net_device_t)device].conn = (struct mg_connection *)conn;
-			ws_clients[(net_device_t)device].state = 1;
-			mg_set_user_connection_data(ws_clients[(net_device_t)device].conn, (void *)(ws_clients + (net_device_t)device));
+		if (dev[(net_device_t)device].ws_client.conn == NULL) {
+			dev[(net_device_t)device].ws_client.conn = (struct mg_connection *)conn;
+			dev[(net_device_t)device].ws_client.state = 1;
+			mg_set_user_connection_data(dev[(net_device_t)device].ws_client.conn, (void *)(&(dev[(net_device_t)device].ws_client)));
 
 			switch ((net_device_t)device) {
 			case DEV_SIO1:
@@ -365,9 +384,10 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 			case DEV_LPT:
 			case DEV_DZLR:
 			case DEV_88ACC:
+			case DEV_D7AIO:
 				res = msgget(IPC_PRIVATE, 0644 | IPC_CREAT); //TODO: check flags
 				if (res > 0) {
-					queue[(net_device_t)device] = res;
+					dev[(net_device_t)device].queue = res;
 				} else {
 					perror("msgget()");
 				}
@@ -444,11 +464,16 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
     if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_BINARY) {
 
         switch ((net_device_t)device) {
+		case DEV_D7AIO:
+			if (dev[DEV_D7AIO].cbfunc != NULL && (len == 8)) {
+                (*(dev[DEV_D7AIO].cbfunc))((BYTE *)data);
+            }
+			break;
 		case DEV_88ACC:
 			// LOGI(TAG, "rec: %d, %d", (int)len, (BYTE)*data);
             msg.mtype = 1L;
             memcpy(msg.mtext, data, len);
-			if (msgsnd(queue[(net_device_t)device], &msg, len, 0)) {
+			if (msgsnd(dev[(net_device_t)device].queue, &msg, len, 0)) {
                 perror("msgsnd()");
             };
 			break;
@@ -468,7 +493,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
             msg.mtype = 1L;
             msg.mtext[0] = data[0];
             msg.mtext[1] = '\0';
-            if (msgsnd(queue[(net_device_t)device], &msg, 2, 0)) {
+            if (msgsnd(dev[(net_device_t)device].queue, &msg, 2, 0)) {
                 perror("msgsnd()");
             };
             break;
@@ -491,12 +516,12 @@ void WebSocketCloseHandler(const HttpdConnection_t *conn, void *device) {
 	
 	LOGI(TAG, "WS CLIENT CLOSED %s", dev_name[(net_device_t) device]);
 
-	if (queue[(net_device_t) device] && msgctl(queue[(net_device_t) device], IPC_RMID, NULL) == -1) {
+	if (dev[(net_device_t) device].queue && msgctl(dev[(net_device_t) device].queue, IPC_RMID, NULL) == -1) {
 		perror("msgctl()");
 	}
-	queue[(net_device_t) device] = 0;
+	dev[(net_device_t) device].queue = 0;
 
-	LOGD(TAG, "Message queue closed (%d) [%08X]", (net_device_t) device, queue[(net_device_t) device]);
+	LOGD(TAG, "Message queue closed (%d) [%08X]", (net_device_t) device, dev[(net_device_t) device].queue);
 }
 
 static struct mg_context *ctx = NULL;
@@ -546,8 +571,6 @@ int start_net_services (void) {
 #endif
 
 	atexit(stop_net_services);
-
-	memset(queue, 0, sizeof(queue));
 
     /* Start CivetWeb web server */
 	memset(&callbacks, 0, sizeof(callbacks));
@@ -609,6 +632,13 @@ int start_net_services (void) {
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) DEV_88ACC);
+
+	mg_set_websocket_handler(ctx, "/d7aio",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         (void *) DEV_D7AIO);
 
 #ifdef DEBUG
 	/* List all listening ports */
