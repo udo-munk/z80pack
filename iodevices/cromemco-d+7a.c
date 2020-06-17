@@ -3,7 +3,7 @@
  * 
  * Emulation of the Cromemco D+7A I/O 
  *
- * Copyright (C) 2018 by David McNaughton
+ * Copyright (C) 2020 by David McNaughton
  * 
  * History:
  * 14-JAN-20    1.0     Initial Release
