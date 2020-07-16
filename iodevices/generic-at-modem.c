@@ -3,13 +3,14 @@
  * 
  * Emulation of generic 'AT' modem over TCP/IP sockets (telnet)
  *
- * Copyright (C) 2019 by David McNaughton
+ * Copyright (C) 2019,2020 by David McNaughton
  * 
  * History:
  * 12-SEP-19    1.0     Initial Release
  * 29-SEP-19    1.1     Added Answer modes and registers
  * 20-OCT-19    1.2     Added Telnet handler
  * 23-OCT-19    1.3     Put Telnet protocol under modem register control
+ * 16_JUL-20	1.4	fix bug/warning detected with gcc 9
  */
 
 #include <unistd.h>
@@ -85,7 +86,7 @@ static int newsockfd = 0;
 static int *active_sfd = &sfd;
 
 static char addr[AT_BUF_LEN];
-static char port_num[10];
+static char port_num[11];
 
 static telnet_telopt_t telnet_opts[10];
 
