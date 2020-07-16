@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2015-2018 by Udo Munk
+ * Copyright (C) 2015-2020 by Udo Munk
  *
  * This module contains functions to implement networking connections.
  *
@@ -12,6 +12,7 @@
  * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
  * 22-APR-18 implemented TCP socket polling
  * 14-JUL-18 use logging
+ * 16-JUL-20 fix bug/warning detected by gcc 9
  */
 
 #include <unistd.h>
@@ -58,7 +59,7 @@ void init_unix_server_socket(struct unix_connectors *p, char *fn)
 	/* create the socket, bind it and listen */
 	memset((void *)&sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
-	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path) - 1);
+	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path));
 	if ((p->ss = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
 		exit(1);
