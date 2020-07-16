@@ -72,7 +72,7 @@ static const char *TAG = "diskmanager";
 char *disks[_MAX_DISK];
 extern char *disks[];
 
-static char path[MAX_LFN];		/* path/filename for disk image */
+static char path[MAX_LFN+1];		/* path/filename for disk image */
 static char *file_start;
 #define APPENDTOPATH(file) strncpy(file_start, file, MAX_LFN - strlen(path));
 
