@@ -1,8 +1,0 @@
-#!/bin/sh
-
-rm -f disks/drive[aij].dsk
-ln disks/library/fuzix.dsk disks/drivea.dsk
-ln disks/library/hd-fuzix1.dsk disks/drivei.dsk
-ln disks/library/hd-fuzix2.dsk disks/drivej.dsk
-
-./cpmsim $*
