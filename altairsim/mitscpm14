@@ -1,6 +1,7 @@
 #!/bin/sh
 
-rm -f disks/mits_a.dsk
+rm -f disks/mits_a.dsk disks/mits_b.dsk
 ln disks/library/mits-cpm14-24k.dsk disks/mits_a.dsk
+ln disks/library/mits-cpm-tools.dsk disks/mits_b.dsk
 
 ./altairsim -x dbl.hex $*
