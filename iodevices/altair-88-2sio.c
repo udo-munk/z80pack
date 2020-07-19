@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * Partial emulation of an Altair 88-2SIO S100 board
  *
@@ -22,6 +22,7 @@
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 15-JUL-18 use logging
  * 24-NOV-19 configurable baud rate for second channel
+ * 19-JUL-20 avoid problems with some third party terminal emulations
  */
 
 #include <unistd.h>
@@ -79,13 +80,17 @@ BYTE altair_sio1_status_in(void)
 			return(sio1_stat);
 
 	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN | POLLOUT;
+	p[0].events = POLLIN;
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (p[0].revents & POLLIN)
 		sio1_stat |= 1;
-	if (p[0].revents & POLLOUT)
-		sio1_stat |= 2;
+	if (p[0].revents & POLLNVAL) {
+		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+	}
+	sio1_stat |= 2;
 
 	gettimeofday(&sio1_t1, NULL);
 

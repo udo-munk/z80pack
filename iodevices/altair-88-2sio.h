@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * Partial emulation of an Altair 88-2SIO S100 board
  *
@@ -22,6 +22,7 @@
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 15-JUL-18 use logging
  * 24-NOV-19 configurable baud rate for second channel
+ * 19-JUL-20 avoid problems with some third party terminal emulations
  */
 
 extern BYTE altair_sio1_status_in(void);
