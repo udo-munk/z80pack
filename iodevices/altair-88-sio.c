@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2016-2020 by Udo Munk
  *
  * Partial emulation of an Altair 88-SIO Rev. 0/1 for terminal I/O,
  * and 88-SIO Rev. 1 for tape I/O
@@ -19,6 +19,7 @@
  * 04-JUL-18 added baud rate to terminal SIO
  * 15-JUL-18 use logging
  * 24-NOV-19 configurable baud rate for tape SIO
+ * 19-JUL-20 avoid problems with some third party terminal emulations
  */
 
 #include <unistd.h>
@@ -84,7 +85,7 @@ BYTE altair_sio0_status_in(void)
 			return(sio0_stat);
 
 	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN | POLLOUT;
+	p[0].events = POLLIN;
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (p[0].revents & POLLIN) {
@@ -93,12 +94,15 @@ BYTE altair_sio0_status_in(void)
 		else
 			sio0_stat &= ~1;
 	}
-	if (p[0].revents & POLLOUT) {
-		if (sio0_revision == 0)
-			sio0_stat |= 2;
-		else
-			sio0_stat &= ~128;
+	if (p[0].revents & POLLNVAL) {
+		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
 	}
+	if (sio0_revision == 0)
+		sio0_stat |= 2;
+	else
+		sio0_stat &= ~128;
 
 	gettimeofday(&sio0_t1, NULL);
 
