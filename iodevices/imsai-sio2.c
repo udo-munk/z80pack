@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  * Copyright (C) 2018-2019 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
@@ -27,6 +27,7 @@
  * 07-OCT-19 implemented baud rate for modem device
  * 09-OCT-19 implement telnet binary transfer
  * 12-NOV-19 implemented SIO control ports
+ * 19-JUL-20 avoid problems with some third party terminal emulations
  */
 
 #include <unistd.h>
@@ -119,13 +120,17 @@ BYTE imsai_sio1a_status_in(void)
 #endif
 	{
 		p[0].fd = fileno(stdin);
-		p[0].events = POLLIN | POLLOUT;
+		p[0].events = POLLIN;
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN)
 			sio1a_stat |= 2;
-		if (p[0].revents & POLLOUT)
-			sio1a_stat |= 1;
+		if (p[0].revents & POLLNVAL) {
+			LOGE(TAG, "can't use stdin, use 'screen simulation'");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+		}
+		sio1a_stat |= 1;
 	}
 
 	gettimeofday(&sio1a_t1, NULL);
