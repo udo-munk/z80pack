@@ -28,6 +28,7 @@
  * 18-JUL-18 use logging
  * 08-SEP-19 bug fixes provided by Alan Cox
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 19-JUL-20 avoid problems with some third party terminal emulations
  */
 
 #include <pthread.h>
@@ -1175,6 +1176,10 @@ void interrupt(int sig)
 		uart0a_rda = 1;
 	else
 		uart0a_rda = 0;
+	if (p[0].revents & POLLNVAL) {
+		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+		exit(1);
+	}
 
 	if (ncons[0].ssc != 0) {
 		p[0].fd = ncons[0].ssc;
