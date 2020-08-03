@@ -1,10 +1,10 @@
 Webfrontend README.md
 ===================
-Installation notes for **civetweb** ref: [https://github.com/civetweb/civetweb](url)
+Installation notes for **civetweb** ref: [https://github.com/civetweb/civetweb](https://github.com/civetweb/civetweb)
 
 A full copy of the civetweb project is ~70M can build both the `libcivetweb` library required here and a stand-alone webserver.
 
-To simplify installation I have included the minimum set of files from the project, here in the folder `civetweb`. These files are from [https://github.com/civetweb/civetweb/tree/7259a80f1d1620f351dd93fb6f4acff48c9373db](url)
+To simplify installation I have included the minimum set of files from the project, here in the folder `civetweb`. These files are from [https://github.com/civetweb/civetweb/tree/7259a80f1d1620f351dd93fb6f4acff48c9373db](https://github.com/civetweb/civetweb/tree/7259a80f1d1620f351dd93fb6f4acff48c9373db)
 The `Makefile` has been modified to build the library by default, with the required options (see below).
 
 To build the **civetweb** statically linkable library `libcivetweb.a`
