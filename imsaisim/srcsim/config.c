@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -25,6 +25,7 @@
  * 12-JUL-19 implemented second SIO
  * 17-SEP-19 more consistent SIO naming
  * 07-OCT-19 implemented baud rate for modem device
+ * 14-AUG-20 allow building machine without frontpanel
  */
 
 #include <stdlib.h>
@@ -155,10 +156,12 @@ void config(void)
 				sio2a_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio2b_baud_rate")) {
 				sio2b_baud_rate = atoi(t2);
+#ifdef FRONTPANEL
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {
 				fp_size = atoi(t2);
+#endif
 			} else if (!strcmp(t1, "vio_bg")) {
 				strncpy(&bg_color[1], t2, 6);
 			} else if (!strcmp(t1, "vio_fg")) {

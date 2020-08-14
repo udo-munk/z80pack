@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -25,6 +25,7 @@
  * 12-JUL-19 implemented second SIO
  * 17-SEP-19 more consistent SIO naming
  * 07-OCT-19 implemented baud rate for modem device
+ * 14-AUG-20 allow building machine without frontpanel
  */
 
 extern void config(void);

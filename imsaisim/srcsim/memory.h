@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2016-2020 by Udo Munk
  * Copyright (C) 2018 David McNaughton
  *
  * This module implements memory management for an IMSAI 8080 system
@@ -17,6 +17,7 @@
  * 18-OCT-2019 add MMU and memory banks
  * 04-NOV-2019 add functions for direct memory access
  * 06-NOV-2019 add function for frontpanel memory write
+ * 14-AUG-2020 allow building machine without frontpanel
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
@@ -79,38 +80,60 @@ static inline void memwrt(WORD addr, BYTE data)
 		*(banks[selbnk] + addr) = data;
 	}
 
+#ifdef BUS_8080
 	cpu_bus &= ~(CPU_WO | CPU_MEMR);
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock++;
 	fp_led_address = addr;
 	fp_led_data = data;
 	fp_sampleData();
 	wait_step();
+#endif
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	cpu_bus |= CPU_WO | CPU_MEMR;
+	BYTE data;
 
+#ifdef BUS_8080
+	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
+
+#ifdef FRONTPANEL
 	fp_clock++;
 	fp_led_address = addr;
+#endif
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] != MEM_NONE)
-			fp_led_data = _MEMMAPPED(addr);
-		else
+		if (p_tab[addr >> 10] != MEM_NONE) {
+			data = _MEMMAPPED(addr);
+#ifdef FRONTPANEL
+			fp_led_data = data;
+#endif
+		} else {
+			data = 0xff;
+#ifdef FRONTPANEL
 			fp_led_data = 0xff;
+#endif
+		}
 	} else {
-		fp_led_data = *(banks[selbnk] + addr);
+		data = *(banks[selbnk] + addr);
+#ifdef FRONTPANEL
+		fp_led_data = data;
+#endif
 	}
 
+#ifdef FRONTPANEL
 	fp_sampleData();
 	wait_step();
+#endif
 
 	if(cyclecount && --cyclecount == 0) 
 		groupswap();
 
-	return(fp_led_data);
+	return(data);
 }
 
 /*

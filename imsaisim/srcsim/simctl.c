@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from an IMSAI 8080 front panel
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * History:
  * 20-OCT-08 first version finished
@@ -28,6 +28,7 @@
  * 12-JUL-18 use logging
  * 04-NOV-19 eliminate usage of mem_base()
  * 06-NOV-19 use correct memory access functions
+ * 14-AUG-20 allow building machine without frontpanel
  */
 
 #include <X11/Xlib.h>
@@ -50,17 +51,21 @@ extern void reset_cpu(void), reset_io(void);
 
 static const char *TAG = "system";
 
+#ifdef FRONTPANEL
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;
 static int power;
+#endif
 
 static void run_cpu(void), step_cpu(void);
+#ifdef FRONTPANEL
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
 static void examine_clicked(int, int), deposit_clicked(int, int);
 static void power_clicked(int, int);
 static void quit_callback(void);
+#endif
 
 /*
  *	This function initialises the front panel and terminal.
@@ -74,6 +79,7 @@ void mon(void)
 	start_net_services();
 #endif
 
+#ifdef FRONTPANEL
 	/* initialise front panel */
 	XInitThreads();
 
@@ -108,6 +114,7 @@ void mon(void)
 	fp_addSwitchCallback("SW_EXAMINE", examine_clicked, 0);
 	fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
 	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
+#endif
 
 #ifdef UNIX_TERMINAL
 	/* give threads a bit time and then empty buffer */
@@ -124,6 +131,7 @@ void mon(void)
 		PC = 0x0000;
 #endif
 
+#ifdef FRONTPANEL
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
 		if (reset) {
@@ -163,11 +171,16 @@ void mon(void)
 		SLEEP_MS(10);
 	}
 
+#else
+	run_cpu();
+#endif
+
 #ifdef UNIX_TERMINAL
 	/* reset terminal */
 	reset_unix_terminal();
 #endif
 
+#ifdef FRONTPANEL
 	/* all LED's off and update front panel */
 	cpu_bus = 0;
 	bus_request = 0;
@@ -183,6 +196,7 @@ void mon(void)
 
 	/* stop frontpanel */
 	fp_quit();
+#endif
 }
 
 /*
@@ -277,6 +291,7 @@ void step_cpu(void)
 	report_error();
 }
 
+#ifdef FRONTPANEL
 /*
  *	Callback for RUN/STOP switch
  */
@@ -536,3 +551,4 @@ void quit_callback(void)
 	cpu_state = STOPPED;
 	cpu_error = POWEROFF;
 }
+#endif

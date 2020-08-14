@@ -31,6 +31,7 @@
  * 24-OCT-19 add RTC
  * 04-NOV-19 eliminate usage of mem_base()
  * 12-NOV-19 implemented SIO control ports
+ * 14-AUG-20 allow building machine without frontpanel
  */
 
 #include <unistd.h>
@@ -719,18 +720,22 @@ void reset_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	int val;
+	int val = 0;
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
 
+#ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock += 3;
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
 	val = wait_step();
+#endif
 
 	/* when single stepped INP get last set value of port */
 	if (val)
@@ -750,13 +755,17 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	io_data = data;
 	(*port_out[addrl]) (data);
 
+#ifdef BUS_8080
 	cpu_bus = CPU_OUT;
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock += 6;
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
 	wait_step();
+#endif
 }
 
 /*
@@ -815,7 +824,11 @@ static void io_no_card_out(BYTE data)
  */
 static BYTE fp_in(void)
 {
+#ifdef FRONTPANEL
 	return(address_switch >> 8);
+#else
+	return(0);
+#endif
 }
 
 /*
@@ -823,7 +836,9 @@ static BYTE fp_in(void)
  */
 static void fp_out(BYTE data)
 {
+#ifdef FRONTPANEL
 	fp_led_output = data;
+#endif
 }
 
 /*
