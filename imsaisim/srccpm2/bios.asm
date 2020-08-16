@@ -87,7 +87,7 @@ WBE:    JMP     WBOOT           ;WARM START
 ;       DATA TABLES
 ;
 SIGNON: DB      MSIZE / 10 + '0',MSIZE MOD 10 + '0'
-        DB      'K CP/M VERS 2.2 B02',13,10,0
+        DB      'K CP/M 2.2 VERS B02',13,10,0
 VIOERR: DB      13,10,'NO VIO',13,10,0
 
 ;       BYTES FOR SIO INITIALIZATION
