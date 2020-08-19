@@ -136,4 +136,5 @@ allclean:
 	make -f Makefile.solaris clean
 	rm -f ../altairsim
 	rm -f ../disks/drive*.dsk
+	rm -f ../disks/mits_*.dsk
 	rm -f ../printer.txt
