@@ -64,7 +64,7 @@ extern struct dskdef disks[];
 
 static const char *TAG = "system";
 
-struct termios old_term, new_term;
+extern struct termios old_term, new_term;
 
 /*
  *	This function initialises the terminal, loads boot code
