@@ -66,7 +66,7 @@ static void do_help(void);
 static void cpu_err_msg(void);
 
 extern BYTE *wrk_ram;
-struct termios old_term;
+extern struct termios old_term;
 
 /*
  *	The function "mon()" is the dialog user interface, called
