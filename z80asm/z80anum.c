@@ -307,7 +307,7 @@ static int parse() {
             index++;
             continue;
          } else
-	    if ((index > 0) && (toupper(code) == 'O')) {
+	    if ((index > 0) && (toupper(code) == 'O' || toupper(code) == 'Q')) {
 	      sstate = SS_POST;
               continue;
 	    }
