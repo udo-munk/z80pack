@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.8	Thu Nov  2 00:47:11 2017	Page 1
+Z80-Assembler	Release 1.9	Wed May 16 19:54:44 2018	Page 1
 Source file: umzapex.asm
 Title:       <Zapple Monitor Extension for MITS ALTAIR>
 
@@ -63,7 +63,7 @@ f835  ca 31 f8        57     57 	JP	Z,PUNOUT	;NO, WAIT
 f838  79              58     58 	LD	A,C		;GET DATA FROM REGISTER C
 f839  d3 13           59     59 	OUT	(SIO2D),A	;AND SEND IT
 f83b  c9              60     60 	RET
-Z80-Assembler	Release 1.8	Thu Nov  2 00:47:11 2017	Page 2
+Z80-Assembler	Release 1.9	Wed May 16 19:54:44 2018	Page 2
 Source file: umzapex.asm
 Title:       <Zapple Monitor Extension for MITS ALTAIR>
 
@@ -95,15 +95,15 @@ f848  c9              79     79 UPTOUT:	RET
 f849  c9              85     85 OCMD:	RET
                       86     86 
 f84a                  87     87 	END
-Z80-Assembler	Release 1.8	Thu Nov  2 00:47:11 2017	Page 3
+Z80-Assembler	Release 1.9	Wed May 16 19:54:44 2018	Page 3
 Source file: umzapex.asm
 Title:       Symboltable
 
-BASE     f800	CILOC    f800	COLOC    f803	CONIN    f824	
-CONOUT   f824	CONST    f825	CSLOC    f818	ICMD     f849	
-J1       f81b	J2       f81e	J3       f821	KCMD     f849	
-LDATA    0003	LNLOC    f812	LPTOUT   f83d	LPTR     0001	
-LSTAT    0002	LULOC    f815	OCMD     f849	PTPL     f80c	
-PULOC    f80f	PUNOUT   f831	RDA      0001	RDRIN    f827	
-RPTPL    f806	RULOC    f809	SIO2D    0013	SIO2S    0012	
-STOIN    f83c	STOOUT   f83c	TBE      0002	UPTOUT   f848	
+BASE     f800 	CILOC    f800*	COLOC    f803*	CONIN    f824 	
+CONOUT   f824 	CONST    f825 	CSLOC    f818*	ICMD     f849 	
+J1       f81b*	J2       f81e*	J3       f821*	KCMD     f849 	
+LDATA    0003 	LNLOC    f812*	LPTOUT   f83d 	LPTR     0001 	
+LSTAT    0002 	LULOC    f815*	OCMD     f849 	PTPL     f80c*	
+PULOC    f80f*	PUNOUT   f831 	RDA      0001 	RDRIN    f827 	
+RPTPL    f806*	RULOC    f809*	SIO2D    0013 	SIO2S    0012 	
+STOIN    f83c 	STOOUT   f83c 	TBE      0002 	UPTOUT   f848 	

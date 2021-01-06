@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -40,6 +40,8 @@
  * 12-JAN-17 Release 1.32 improved configurations, front panel, added IMSAI VIO
  * 07-FEB-17 Release 1.33 bugfixes, improvements, better front panels
  * 16-MAR-17 Release 1.34 improvements, added ProcTec VDM-1
+ * 03-AUG-17 Release 1.35 added UNIX sockets, bugfixes, improvements
+ * 21-DEC-17 Release 1.36 bugfixes and improvements
  */
 
 #include <unistd.h>
@@ -53,15 +55,16 @@
 #include "simglb.h"
 #include "memory.h"
 #include "../../iodevices/unix_terminal.h"
+#include "log.h"
 
-int boot(void);
+int boot(int);
 
-extern int load_file(char *);
-extern int load_core(void);
 extern void cpu_z80(void), cpu_8080(void);
 extern struct dskdef disks[];
 
-struct termios old_term, new_term;
+static const char *TAG = "system";
+
+extern struct termios old_term, new_term;
 
 /*
  *	This function initialises the terminal, loads boot code
@@ -70,7 +73,7 @@ struct termios old_term, new_term;
 void mon(void)
 {
 	/* load boot code into memory */
-	if (boot())
+	if (boot(0))
 		exit(1);
 
 	/* empty buffer for teletype */
@@ -78,6 +81,7 @@ void mon(void)
 
 	/* initialise terminal */
 	set_unix_terminal();
+	atexit(reset_unix_terminal);
 
 	/* start CPU emulation */
 	cpu_state = CONTIN_RUN;
@@ -99,67 +103,73 @@ void mon(void)
 	case NONE:
 		break;
 	case OPHALT:
-		printf("\nINT disabled and HALT Op-Code reached at %04x\n",
-		       PC - 1);
+		LOG(TAG, "INT disabled and HALT Op-Code reached at %04x\r\n",
+		    PC - 1);
 		break;
 	case IOTRAPIN:
-		printf("\nI/O input Trap at %04x, port %02x\n",
-			PC, io_port);
+		LOGE(TAG, "I/O input Trap at %04x, port %02x",
+		     PC, io_port);
 		break;
 	case IOTRAPOUT:
-		printf("\nI/O output Trap at %04x, port %02x\n",
-			PC, io_port);
+		LOGE(TAG, "I/O output Trap at %04x, port %02x",
+		     PC, io_port);
 		break;
 	case IOHALT:
-		printf("\nSystem halted, bye.\n");
+		LOG(TAG, "System halted, bye.\r\n");
 		break;
 	case IOERROR:
-		printf("\nFatal I/O Error at %04x\n", PC);
+		LOGE(TAG, "Fatal I/O Error at %04x", PC);
 		break;
 	case OPTRAP1:
-		printf("\nOp-code trap at %04x %02x\n", PC - 1,
-		       *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
+		     getmem(PC - 1));
 		break;
 	case OPTRAP2:
-		printf("\nOp-code trap at %04x %02x %02x\n",
-		       PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x",
+		     PC - 2, getmem(PC - 2), getmem(PC - 1));
 		break;
 	case OPTRAP4:
-		printf("\nOp-code trap at %04x %02x %02x %02x %02x\n",
-		       PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
+		     PC - 4, getmem(PC - 4), getmem(PC - 3),
+		     getmem(PC - 2), getmem(PC - 1));
 		break;
 	case USERINT:
-		printf("\nUser Interrupt at %04x\n", PC);
+		LOG(TAG, "User Interrupt at %04x\r\n", PC);
+		break;
+	case INTERROR:
+		LOGW(TAG, "Unsupported bus data during INT: %02x", int_data);
 		break;
 	case POWEROFF:
 		break;
 	default:
-		printf("\nUnknown error %d\n", cpu_error);
+		LOGW(TAG, "Unknown error %d", cpu_error);
 		break;
 	}
 }
 
 /*
- *	Load boot code from a saved core image, a boot file or from
+ *	boot from a saved core image, a boot file or from
  *	first sector of disk drive A:
  */
-int boot(void)
+int boot(int level)
 {
-	register int fd;
+	register int i;
+	int fd;
 	struct stat sbuf;
-	static char fn[4096];
-	static char err[256];
+	static BYTE buf[128];
+	static char fn[MAX_LFN];
 
-	puts("\r\nBooting...\r\n");
+	LOG(TAG, "\r\nBooting...\r\n\r\n");
 
-	if (l_flag) {
-		return(load_core());
+	/* on first boot we can run from core or file */
+	if (level == 0) {
+		if (l_flag)
+			return(0);
+		if (x_flag)
+			return(0);
 	}
 
-	if (x_flag) {
-		return(load_file(xfn));
-	}
+	/* else load boot code from disk */
 
 	/* if option -d is used disks are there */
 	if (diskdir != NULL) {
@@ -177,21 +187,20 @@ int boot(void)
 	strcat(fn, "/");
 	strcat(fn, disks[0].fn);
 
-	strcpy(err, "file ");
-	strcat(err, fn);
-
 	if ((fd = open(fn, O_RDONLY)) == -1) {
-		perror(err);
-		puts("\r\n");
+		LOGE(TAG, "can't open file %s", fn);
 		close(fd);
 		return(1);
 	}
-	if (read(fd, mem_base(), 128) != 128) {
-		perror(err);
-		puts("\r\n");
+	if (read(fd, buf, 128) != 128) {
+		LOGE(TAG, "can't read file %s", fn);
 		close(fd);
 		return(1);
 	}
 	close(fd);
+
+	for (i = 0; i < 128; i++)
+		putmem(i, buf[i]);
+
 	return(0);
 }

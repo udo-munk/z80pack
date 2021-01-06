@@ -3,15 +3,16 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2015-2017 by Udo Munk
+ * Copyright (C) 2015-2020 by Udo Munk
  *
  * This module contains functions to implement networking connections.
- * The TCP/IP sockets need to support asynchron I/O, the UNIX domain
- * sockets are used with polling.
  *
  * History:
  * 26-MAR-15 first version finished
  * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
+ * 22-APR-18 implemented TCP socket polling
+ * 14-JUL-18 use logging
+ * 16-JUL-20 fix bug/warning detected by gcc 9
  */
 
 #include <unistd.h>
@@ -29,8 +30,12 @@
 #include <netinet/tcp.h>
 #include "unix_network.h"
 #include "sim.h"
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
 
 void telnet_negotiation(int);
+
+static const char *TAG = "net";
 
 /*
  * initialise a server UNIX domain socket
@@ -46,7 +51,7 @@ void init_unix_server_socket(struct unix_connectors *p, char *fn)
 	if (stat(path, &sbuf) != 0)
 		mkdir(path, 0777);   /* no, create it */
 
-	/* create socket path and unlike file */
+	/* create socket path and unlink file */
 	strcpy(socket_path, path);
 	strcat(socket_path, fn);
 	unlink(socket_path);
@@ -54,17 +59,17 @@ void init_unix_server_socket(struct unix_connectors *p, char *fn)
 	/* create the socket, bind it and listen */
 	memset((void *)&sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
-	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path) - 1);
+	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path));
 	if ((p->ss = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		perror("create server socket");
+		LOGE(TAG, "can't create server socket");
 		exit(1);
 	}
 	if (bind(p->ss, (struct sockaddr *)&sun, sizeof(sun)) == -1) {
-		perror("bind server socket");
+		LOGE(TAG, "can't bind server socket");
 		exit(1);
 	}
 	if (listen(p->ss, 0) == -1) {
-		perror("listen on server socket");
+		LOGE(TAG, "can't listen on server socket");
 		exit(1);
 	}
 }
@@ -76,7 +81,9 @@ void init_tcp_server_socket(struct net_connectors *p)
 {
 	struct sockaddr_in sin;
 	int on = 1;
+#ifdef TCPASYNC
 	int n;
+#endif
 
 	/* if the TCP/IP port is not configured we're done here */
 	if (p->port == 0)
@@ -84,22 +91,26 @@ void init_tcp_server_socket(struct net_connectors *p)
 
 	/* create TCP/IP socket */
 	if ((p->ss = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("create server socket");
+		LOGE(TAG, "can't create server socket");
 		exit(1);
 	}
 
-	/* configure socket for async I/O */
+	/* set socket options */
 	if (setsockopt(p->ss, SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
-		perror("setsockopt SO_REUSEADDR on server socket");
+		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
 		exit(1);
 	}
+
+#ifdef TCPASYNC
+	/* configure socket for async I/O */
 	fcntl(p->ss, F_SETOWN, getpid());
 	n = fcntl(p->ss, F_GETFL, 0);
 	if (fcntl(p->ss, F_SETFL, n | FASYNC) == -1) {
-		perror("fcntl FASYNC on server socket");
+		LOGE(TAG, "can't fcntl FASYNC on server socket");
 		exit(1);
 	}
+#endif
 
 	/* bind socket and listen on it */
 	memset((void *) &sin, 0, sizeof(sin));
@@ -107,19 +118,20 @@ void init_tcp_server_socket(struct net_connectors *p)
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(p->port);
 	if (bind(p->ss, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-		perror("bind server socket");
+		LOGE(TAG, "can't bind server socket");
 		exit(1);
 	}
 	if (listen(p->ss, 0) == -1) {
-		perror("listen on server socket");
+		LOGE(TAG, "can't listen on server socket");
 		exit(1);
 	}
 
-	printf("telnet console listening on port %d\n", p->port);
+	LOG(TAG, "telnet console listening on port %d\r\n", p->port);
 }
 
 /*
  * SIGIO interrupt handler for TCP/IP server sockets
+ * if SIGIO not working (Cygwin e.g.) call from appropriate I/O thread
  */
 void sigio_tcp_server_socket(int sig)
 {
@@ -155,13 +167,13 @@ void sigio_tcp_server_socket(int sig)
 			if ((ncons[i].ssc = accept(ncons[i].ss,
 						     (struct sockaddr *) &fsin,
 						     &alen)) == -1) {
-				perror("accept on server socket");
+				LOGW(TAG, "can't accept on server socket");
 				ncons[i].ssc = 0;
 			}
 
 			if (setsockopt(ncons[i].ssc, IPPROTO_TCP, TCP_NODELAY,
 			    (void *) &on, sizeof(on)) == -1) {
-				perror("setsockopt TCP_NODELAY on server socket");
+				LOGW(TAG, "can't set sockopt TCP_NODELAY on server socket");
 			}
 
 			if (ncons[i].telnet) {
@@ -199,7 +211,7 @@ void telnet_negotiation(int fd)
 
 		/* else read the option */
 		read(fd, &c, 3);
-		//printf("telnet: %d %d %d\r\n", c[0], c[1], c[2]);
+		LOGD(TAG, "telnet: %d %d %d", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
 		if (c[1] == 251)	/* and reject other options */

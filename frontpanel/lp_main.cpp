@@ -116,6 +116,7 @@ int start_threads(void)
   int n;
 
   pthread_mutex_init(&data_lock,NULL);
+  pthread_mutex_init(&data_sample_lock,NULL);
   thread_info.run = 1;
   //n = pthread_create(&thread_info.thread_id, &attr, lp_mainloop_thread, &thread_info.thread_no);
   n = pthread_create(&thread_info.thread_id, NULL, lp_mainloop_thread, &thread_info.thread_no);

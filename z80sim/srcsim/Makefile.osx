@@ -29,8 +29,11 @@ OBJ =	sim0.o \
 	simglb.o \
 	config.o
 
-z80sim : $(OBJ)
-	$(CC) $(OBJ) $(LFLAGS) -o z80sim
+../z80sim : $(OBJ)
+	$(CC) $(OBJ) $(LFLAGS) -o ../z80sim
+
+sim0.c:
+	./lnsrc
 
 sim0.o : sim0.c	sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim0.c
@@ -74,7 +77,7 @@ memory.o : memory.c sim.h
 iosim.o	: iosim.c sim.h	simglb.h
 	$(CC) $(CFLAGS) iosim.c
 
-simfun.o : simfun.c sim.h
+simfun.o : simfun.c sim.h log.h
 	$(CC) $(CFLAGS) simfun.c
 
 simglb.o : simglb.c sim.h
@@ -84,10 +87,11 @@ config.o : config.c
 	$(CC) $(CFLAGS) config.c
 
 clean:
-	rm -f *.o core z80sim
+	rm -f *.o ../z80sim
+	./ulnsrc
 
 allclean:
 	make -f Makefile.osx clean
 
-install: z80sim
-	cp z80sim ${HOME}/bin
+install: ../z80sim
+	cp ../z80sim ${HOME}/bin

@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2020 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for a Cromemco Z-1 system
@@ -21,6 +21,14 @@
  * 06-DEC-16 implemented status display and stepping for all machine cycles
  * 22-DEC-16 moved MMU out to the new memory interface module
  * 15-AUG-17 modified index pulse handling
+ * 22-APR-18 implemented TCP socket polling
+ * 24-APR-18 cleanup
+ * 17-MAY-18 implemented hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 18-JUL-18 use logging
+ * 08-SEP-19 bug fixes provided by Alan Cox
+ * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 19-JUL-20 avoid problems with some third party terminal emulations
  */
 
 #include <pthread.h>
@@ -32,16 +40,18 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <time.h>
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simbdos.h"
 #include "../../iodevices/unix_network.h"
 #include "../../iodevices/cromemco-tu-art.h"
 #include "../../iodevices/cromemco-fdc.h"
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -50,15 +60,21 @@ static BYTE io_trap_in(void);
 static void io_trap_out(BYTE);
 static BYTE fp_in(void), mmu_in(void);
 static void fp_out(BYTE), mmu_out(BYTE);
+static BYTE hwctl_in(void);
+static void hwctl_out(BYTE);
 
 /*
- *	Forward declarations for support function
+ *	Forward declarations for support functions
  */
 static void *timing(void *);
 static void interrupt(int);
 
+static const char *TAG = "IO";
+
 static int rtc;			/* flag for 512ms RTC interrupt */
        int lpt1, lpt2;		/* fds for lpt printer files */
+
+BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /* network connections for serial ports on the TU-ART's */
 struct net_connectors ncons[NUMNSOC];
@@ -67,7 +83,7 @@ struct net_connectors ncons[NUMNSOC];
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256]) (void) = {
+BYTE (*port_in[256]) (void) = {
 	cromemco_tuart_0a_status_in,	/* port 0 */
 	cromemco_tuart_0a_data_in,	/* port 1 */
 	io_trap_in,			/* port 2 */
@@ -228,7 +244,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,			/* port 157 */
 	io_trap_in,			/* port 158 */
 	io_trap_in,			/* port 159 */
-	io_trap_in,			/* port 160 */
+	hwctl_in,			/* port 160 */
 	io_trap_in,			/* port 161 */
 	io_trap_in,			/* port 162 */
 	io_trap_in,			/* port 163 */
@@ -491,8 +507,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,			/* port 157 */
 	io_trap_out,			/* port 158 */
 	io_trap_out,			/* port 159 */
-	io_trap_out,			/* port 160 */
-	io_trap_out,			/* port 161 */
+	hwctl_out,			/* port 160 */
+	host_bdos_out,			/* port 161 */  /* host file I/O hook */
 	io_trap_out,			/* port 162 */
 	io_trap_out,			/* port 163 */
 	io_trap_out,			/* port 164 */
@@ -602,10 +618,13 @@ void init_io(void)
 	static struct sigaction newact;
 
 	/* initialise TCP/IP networking */
+#ifdef TCPASYNC
 	newact.sa_handler = sigio_tcp_server_socket;
 	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 	newact.sa_flags = 0;
 	sigaction(SIGIO, &newact, NULL);
+#endif
+
 	for (i = 0; i < NUMNSOC; i++) {
 		ncons[i].port = SERVERPORT + i;
 		ncons[i].telnet = 1;
@@ -619,13 +638,14 @@ void init_io(void)
 
 	/* create the thread for timer and interrupt handling */
 	if (pthread_create(&thread, NULL, timing, (void *) NULL)) {
-		printf("can't create timing thread\n");
+		LOGE(TAG, "can't create timing thread");
 		exit(1);
 	}
-	//pthread_setschedprio(thread, sched_get_priority_max(SCHED_RR));
 
 	/* start 10ms interrupt timer, delayed! */
 	newact.sa_handler = interrupt;
+	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
 	tim.it_value.tv_sec = 5;
 	tim.it_value.tv_usec = 0;
@@ -633,7 +653,7 @@ void init_io(void)
 	tim.it_interval.tv_usec = 10000;
 	setitimer(ITIMER_REAL, &tim, NULL);
 
-	printf("\n");
+	LOG(TAG, "\r\n");
 }
 
 /*
@@ -643,8 +663,6 @@ void init_io(void)
 void exit_io(void)
 {
 	register int i;
-	static struct itimerval tim;
-	static struct sigaction newact;
 
 	/* close line printer files */
 	if (lpt1 != 0)
@@ -658,19 +676,19 @@ void exit_io(void)
 			close(ncons[i].ssc);
 	}
 
-	/* stop 10ms interrupt timer */
-	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
-	tim.it_value.tv_sec = 0;
-	tim.it_value.tv_usec = 0;
-	tim.it_interval.tv_sec = 0;
-	tim.it_interval.tv_usec = 0;
-	setitimer(ITIMER_REAL, &tim, NULL);
-
 	/* shutdown DAZZLER */
 	cromemco_dazzler_off();
+}
+
+/*
+ *	This function is to reset the I/O devices. It is
+ *	called from the CPU simulation when an External Clear is performed.
+ */
+void reset_io(void)
+{
+	cromemco_dazzler_off();
+	cromemco_fdc_reset();
+	hwctl_lock = 0xff;
 }
 
 /*
@@ -680,11 +698,10 @@ void exit_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern void wait_step(void);
+	int val;
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_WO | CPU_INP;
 
@@ -692,7 +709,11 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
-	wait_step();
+	val = wait_step();
+
+	/* when single stepped INP get last set value of port */
+	if (val)
+		io_data = (*port_in[io_port]) ();
 
 	return(io_data);
 }
@@ -704,18 +725,15 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void wait_step();
-
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
-	//printf("output %02x to port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_OUT;
 
 	fp_clock += 6;
 	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = 0xff;
+	fp_led_data = io_data;
 	fp_sampleData();
 	wait_step();
 }
@@ -728,7 +746,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
  */
 static BYTE io_trap_in(void)
 {
-	//printf("I/O trap in port %02x\r\n", io_port);
 	if (i_flag) {
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
@@ -745,8 +762,6 @@ static BYTE io_trap_in(void)
 static void io_trap_out(BYTE data)
 {
 	data = data; /* to avoid compiler warning */
-
-	//printf("I/O trap out port %02x\r\n", io_port);
 
 	if (i_flag) {
 		cpu_error = IOTRAPOUT;
@@ -771,6 +786,43 @@ static void fp_out(BYTE data)
 }
 
 /*
+ *	Input from virtual hardware control port
+ *	returns lock status of the port
+ */
+static BYTE hwctl_in(void)
+{
+	return(hwctl_lock);
+}
+
+/*
+ *	Port is locked until magic number 0xaa is received!
+ *
+ *	Virtual hardware control output.
+ *	Doesn't exist in the real machine, used to shutdown
+ *
+ *	bit 7 = 1       halt emulation via I/O
+ */
+static void hwctl_out(BYTE data)
+{
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+	
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
+		cpu_error = IOHALT;
+		cpu_state = STOPPED;
+	}
+}
+
+/*
  *	read MMU register
  */
 static BYTE mmu_in(void)
@@ -785,7 +837,7 @@ static void mmu_out(BYTE data)
 {
 	int sel;
 
-	//printf("mmu select bank %02x\r\n", data);
+	LOGD(TAG, "mmu select bank %02x", data);
 	bankio = data;
 
 	/* set banks */
@@ -825,8 +877,8 @@ static void mmu_out(BYTE data)
 		common = 1;
 		break;
 	default:
-		printf("Not supported bank select = %02x\r\n", data);
-		cpu_error = IOHALT;
+		LOGE(TAG, "Not supported bank select = %02x", data);
+		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
 	}
@@ -839,12 +891,7 @@ static void mmu_out(BYTE data)
  */
 void *timing(void *arg)
 {
-	struct timespec timer;	/* sleep timer */
-	struct timeval t1, t2, tdiff;
-
 	arg = arg;	/* to avoid compiler warning */
-	//printf("timing thread started\r\n");
-	gettimeofday(&t1, NULL);
 
 	while (1) {	/* 1 msec per loop iteration */
 
@@ -852,41 +899,40 @@ void *timing(void *arg)
 		if (index_pulse)
 			index_pulse++;
 
+		/* the tty transmit clear happens irrespective of anything */
+		if (uart0a_tbe == 0)
+			uart0a_tbe = 2;
+
 		/* count down the timers */
 		/* 64 usec steps, so 15*64 usec per loop iteration */
 		if (uart0a_timer1 > 0) {
 			uart0a_timer1 -= 15;
 			if (uart0a_timer1 <= 0) {
 				uart0a_timer1 = -1; /* interrupt pending */
-				//printf("UART 0a timer1 went off\r\n");
 			}
 		}
 		if (uart0a_timer2 > 0) {
 			uart0a_timer2 -= 15;
 			if (uart0a_timer2 <= 0) {
 				uart0a_timer2 = -1; /* interrupt pending */
-				//printf("UART 0a timer2 went off\r\n");
 			}
 		}
 		if (uart0a_timer3 > 0) {
 			uart0a_timer3 -= 15;
 			if (uart0a_timer3 <= 0) {
 				uart0a_timer3 = -1; /* interrupt pending */
-				//printf("UART 0a timer3 went off\r\n");
 			}
 		}
 		if (uart0a_timer4 > 0) {
 			uart0a_timer4 -= 15;
 			if (uart0a_timer4 <= 0) {
 				uart0a_timer4 = -1; /* interrupt pending */
-				//printf("UART 0a timer4 went off\r\n");
 			}
 		}
 		if (uart0a_timer5 > 0) {
 			uart0a_timer5 -= 15;
 			if (uart0a_timer5 <= 0) {
 				uart0a_timer5 = -1; /* interrupt pending */
-				//printf("UART 0a timer5 went off\r\n");
 			}
 		}
 
@@ -903,7 +949,6 @@ void *timing(void *arg)
 			int_data = 0xc7;
 			int_int = 1;
 			uart0a_timer1 = 0;
-			//printf("UART 0a timer 1 interrupt\r\n");
 			goto next;
 		}
 
@@ -914,7 +959,6 @@ void *timing(void *arg)
 			int_data = 0xcf;
 			int_int = 1;
 			uart0a_timer2 = 0;
-			//printf("UART 0a timer 2 interrupt\r\n");
 			goto next;
 		}
 
@@ -924,7 +968,6 @@ void *timing(void *arg)
 			uart0a_int_pending = 1;
 			int_data = 0xd7;
 			int_int = 1;
-			//printf("UART 0a EOJ interrupt\r\n");
 			goto next;
 		}
 
@@ -935,7 +978,6 @@ void *timing(void *arg)
 			int_data = 0xdf;
 			int_int = 1;
 			uart0a_timer3 = 0;
-			//printf("UART 0a timer 3 interrupt\r\n");
 			goto next;
 		}
 
@@ -945,19 +987,19 @@ void *timing(void *arg)
 			uart0a_int_pending = 1;
 			int_data = 0xe7;
 			int_int = 1;
-			//printf("UART 0a RDA interrupt\r\n");
 			goto next;
 		}
 
 		/* UART 0A transmit buffer empty */
-		if (uart0a_tbe == 0) {
+		/* We use 2 to mean has gone empty->full but an IRQ is
+		   pending */
+		if (uart0a_tbe == 2) {
 			uart0a_tbe = 1;
 			if (uart0a_int_mask & 32) {
 				uart0a_int = 0xef;
 				uart0a_int_pending = 1;
 				int_data = 0xef;
 				int_int = 1;
-				//printf("UART 0a TBE interrupt\r\n");
 				goto next;
 			}
 		}
@@ -969,7 +1011,6 @@ void *timing(void *arg)
 			int_data = 0xf7;
 			int_int = 1;
 			uart0a_timer4 = 0;
-			//printf("UART 0a timer 4 interrupt\r\n");
 			goto next;
 		}
 
@@ -980,7 +1021,6 @@ void *timing(void *arg)
 			int_data = 0xff;
 			int_int = 1;
 			uart0a_timer5 = 0;
-			//printf("UART 0a timer 5 interrupt\r\n");
 			goto next;
 		}
 
@@ -992,7 +1032,6 @@ void *timing(void *arg)
 				uart0a_int_pending = 1;
 				int_data = 0xff;
 				int_int = 1;
-				//printf("UART 0a RTC interrupt\r\n");
 				goto next;
 			}
 		}
@@ -1020,7 +1059,6 @@ void *timing(void *arg)
 			uart1a_int_pending = 1;
 			int_data = 0x28;
 			int_int = 1;
-			//printf("UART 1a RDA interrupt\r\n");
 			goto next;
 		}
 
@@ -1032,7 +1070,6 @@ void *timing(void *arg)
 				uart1a_int_pending = 1;
 				int_data = 0x2a;
 				int_int = 1;
-				//printf("UART 1a TBE interrupt\r\n");
 				goto next;
 			}
 		}
@@ -1060,7 +1097,6 @@ void *timing(void *arg)
 			uart1b_int_pending = 1;
 			int_data = 0x38;
 			int_int = 1;
-			//printf("UART 1b RDA interrupt\r\n");
 			goto next;
 		}
 
@@ -1072,7 +1108,6 @@ void *timing(void *arg)
 				uart1b_int_pending = 1;
 				int_data = 0x3a;
 				int_int = 1;
-				//printf("UART 1b TBE interrupt\r\n");
 				goto next;
 			}
 		}
@@ -1082,27 +1117,12 @@ void *timing(void *arg)
 		uart1b_int = 0xff;
 
 next:
-		/* compute time used for processing */
-		gettimeofday(&t2, NULL);
-		tdiff.tv_sec = t2.tv_sec - t1.tv_sec;
-		tdiff.tv_usec = t2.tv_usec - t1.tv_usec;
-		if (tdiff.tv_usec < 0) {
-			--tdiff.tv_sec;
-			tdiff.tv_usec += 1000000;
-		}
-	
-		/* sleep for the difference to 1 msec */
-		if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < 1000)) {
-			timer.tv_sec = 0;
-			timer.tv_nsec = (long) ((1000 - tdiff.tv_usec) * 1000);
-			nanosleep(&timer, NULL);
-		}
+		/* sleep for 1 millisecond */
+		SLEEP_MS(1);
 
 		/* reset disk index pulse */
 		if (index_pulse > 2)
 			index_pulse = 0;
-
-		gettimeofday(&t1, NULL);
 	}
 
 	/* never reached, this thread is running endless */
@@ -1142,6 +1162,11 @@ void interrupt(int sig)
 	if ((counter % 51) == 0)
 		rtc = 1;
 
+#ifndef TCPASYNC
+	/* poll TCP sockets if SIGIO not working */
+	sigio_tcp_server_socket(0);
+#endif
+
 	/* check for RDA */
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
@@ -1151,6 +1176,10 @@ void interrupt(int sig)
 		uart0a_rda = 1;
 	else
 		uart0a_rda = 0;
+	if (p[0].revents & POLLNVAL) {
+		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+		exit(1);
+	}
 
 	if (ncons[0].ssc != 0) {
 		p[0].fd = ncons[0].ssc;

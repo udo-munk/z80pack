@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from a Cromemco Z-1 front panel
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * History:
  * 15-DEC-14 first version
@@ -18,6 +18,12 @@
  * 06-DEZ-16 implemented status display and stepping for all machine cycles
  * 13-MAR-17 can't examine/deposit if CPU running HALT instruction
  * 29-JUN-17 system reset overworked
+ * 10-APR-18 trap CPU on unsupported bus data during interrupt
+ * 17-MAY-18 implemented hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 11-JUN-18 fixed reset so that cold and warm start works
+ * 18-JUL-18 use logging
+ * 04-NOV-19 eliminate usage of mem_base()
  */
 
 #include <X11/Xlib.h>
@@ -26,21 +32,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <termios.h>
-#include <signal.h>
 #include <fcntl.h>
-#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
-#include "../../iodevices/cromemco-fdc.h"
-#include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/unix_terminal.h"
+#include "log.h"
 
-extern int load_file(char *);
-extern int load_core(void);
-extern void cpu_z80(void), cpu_8080(void), reset_cpu(void);
+extern void cpu_z80(void), cpu_8080(void);
+extern void reset_cpu(void), reset_io(void);
+
+static const char *TAG = "system";
 
 static BYTE fp_led_wait;
 static BYTE fp_led_speed;
@@ -48,7 +52,6 @@ static int cpu_switch;
 static int reset;
 static int power;
 
-static int load(void);
 static void run_cpu(void), step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
@@ -58,24 +61,18 @@ static void quit_callback(void);
 
 /*
  *	This function initialises the front panel and terminal.
- *	Boot code gets loaded if provided and then the machine
- *	waits to be operated from the front panel, until power
- *	switched OFF again.
+ *	Then the machine waits to be operated from the front panel,
+ *	until power switched OFF again.
  */
 void mon(void)
 {
-	static struct timespec timer;
-	static struct sigaction newact;
-
-	/* load memory from file */
-	if (load())
-		exit(1);
+	extern BYTE fdc_flags;
 
 	/* initialise front panel */
 	XInitThreads();
 
 	if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
-		puts("frontpanel error");
+		LOGE(TAG, "frontpanel error");
 		exit(1);
 	}
 
@@ -113,11 +110,12 @@ void mon(void)
 	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 
 	/* give threads a bit time and then empty buffer */
-	sleep(1);
+	SLEEP_MS(999);
 	fflush(stdout);
 
 	/* initialise terminal */
 	set_unix_terminal();
+	atexit(reset_unix_terminal);
 
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
@@ -130,7 +128,7 @@ void mon(void)
 			if (power) {
 				fp_led_address = PC;
 				if (!(cpu_bus & CPU_INTA))
-					fp_led_data = *(mem_base() + PC);
+					fp_led_data = getmem(PC);
 				else
 					fp_led_data = (int_data != -1) ?
 							(BYTE) int_data : 0xff;
@@ -161,17 +159,9 @@ void mon(void)
 		fp_clock++;
 		fp_sampleData();
 
-		/* wait a bit, system is idling */
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+		/* wait a bit, system is ideling */
+		SLEEP_MS(10);
 	}
-
-	/* timer interrupts off */
-	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
 
 	/* reset terminal */
 	reset_unix_terminal();
@@ -189,26 +179,10 @@ void mon(void)
 	fp_sampleData();
 
 	/* wait a bit before termination */
-	sleep(1);
+	SLEEP_MS(999);
 
 	/* shutdown frontpanel */
 	fp_quit();
-}
-
-/*
- *	Load code into memory from file, if provided
- */
-int load(void)
-{
-	if (l_flag) {
-		return(load_core());
-	}
-
-	if (x_flag) {
-		return(load_file(xfn));
-	}
-
-	return(0);
 }
 
 /*
@@ -220,42 +194,46 @@ void report_error(void)
 	case NONE:
 		break;
 	case OPHALT:
-		printf("\r\nINT disabled and HALT Op-Code reached at %04x\r\n",
-		       PC - 1);
+		LOG(TAG, "INT disabled and HALT Op-Code reached at %04x\r\n",
+		    PC - 1);
 		break;
 	case IOTRAPIN:
-		printf("\r\nI/O input Trap at %04x, port %02x\r\n", PC, io_port);
+		LOGE(TAG, "I/O input Trap at %04x, port %02x", PC, io_port);
 		break;
 	case IOTRAPOUT:
-		printf("\r\nI/O output Trap at %04x, port %02x\r\n", PC, io_port);
+		LOGE(TAG, "I/O output Trap at %04x, port %02x", PC, io_port);
 		break;
 	case IOHALT:
-		printf("\nSystem halted, bye.\n");
+		LOG(TAG, "System halted, bye.\r\n");
 		break;
 	case IOERROR:
-		printf("\r\nFatal I/O Error at %04x\r\n", PC);
+		LOGE(TAG, "Fatal I/O Error at %04x", PC);
 		break;
 	case OPTRAP1:
-		printf("\r\nOp-code trap at %04x %02x\r\n", PC - 1,
-		       *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
+		     getmem(PC - 1));
 		break;
 	case OPTRAP2:
-		printf("\r\nOp-code trap at %04x %02x %02x\r\n",
-		       PC - 2, *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x",
+		     PC - 2, getmem(PC - 2), getmem(PC - 1));
 		break;
 	case OPTRAP4:
-		printf("\r\nOp-code trap at %04x %02x %02x %02x %02x\r\n",
-		       PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
+		     PC - 4, getmem(PC - 4), getmem(PC - 3),
+		     getmem(PC - 2), getmem(PC - 1));
 		break;
 	case USERINT:
-		printf("\r\nUser Interrupt at %04x\r\n", PC);
+		LOG(TAG, "User Interrupt at %04x\r\n", PC);
+		break;
+	case INTERROR:
+		LOGW(TAG, "Unsupported bus data during INT: %02x",
+		     int_data);
 		break;
 	case POWEROFF:
-		printf("\r\nSystem powered off, bye.\r\n");
+		LOG(TAG, "System powered off, bye.\r\n");
 		break;
 	default:
-		printf("\r\nUnknown error %d\r\n", cpu_error);
+		LOGW(TAG, "Unknown error %d", cpu_error);
 		break;
 	}
 }
@@ -351,44 +329,46 @@ void step_clicked(int state, int val)
 }
 
 /*
- * Singe step through the machine cycles after M1
+ * Single step through the machine cycles after M1
  */
-void wait_step(void)
+int wait_step(void)
 {
-	static struct timespec timer;
+	extern BYTE (*port_in[256]) (void);
+	int ret = 0;
 
 	if (cpu_state != SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
-		return;
+		return(ret);
 	}
 
 	if ((cpu_bus & CPU_M1) && !m1_step) {
 		cpu_bus &= ~CPU_M1;
-		return;
+		return(ret);
 	}
 
 	cpu_switch = 3;
 
 	while ((cpu_switch == 3) && !reset) {
+		/* when INP update data bus LEDs */
+		if (cpu_bus == (CPU_WO | CPU_INP))
+			fp_led_data = (*port_in[fp_led_address & 0xff]) ();
 		fp_clock++;
 		fp_sampleData();
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(10);
+		ret = 1;
 	}
 
 	cpu_bus &= ~CPU_M1;
 	m1_step = 0;
+	return(ret);
 }
 
 /*
- * Singe step through interrupt machine cycles
+ * Single step through interrupt machine cycles
  */
 void wait_int_step(void)
 {
-	static struct timespec timer;
-
 	if (cpu_state != SINGLE_STEP)
 		return;
 
@@ -397,9 +377,7 @@ void wait_int_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		fp_clock++;
 		fp_sampleData();
-		timer.tv_sec = 0;
-		timer.tv_nsec = 10000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(10);
 	}
 }
 
@@ -415,6 +393,7 @@ void reset_clicked(int state, int val)
 
 	switch (state) {
 	case FP_SW_UP:
+		/* reset CPU only */
 		reset = 1;
 		cpu_state |= RESET;
 		m1_step = 0;
@@ -423,10 +402,6 @@ void reset_clicked(int state, int val)
 		break;
 	case FP_SW_CENTER:
 		if (reset) {
-			/* reset I/O devices */
-			cromemco_dazzler_off();
-			cromemco_fdc_reset();
-
 			/* reset CPU */
 			reset = 0;
 			reset_cpu();
@@ -434,12 +409,18 @@ void reset_clicked(int state, int val)
 
 			/* update front panel */
 			fp_led_address = 0;
-			fp_led_data = *(mem_base());
+			fp_led_data = getmem(0);
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		}
 		break;
 	case FP_SW_DOWN:
-		cromemco_dazzler_off();
+		/* reset CPU and I/O devices */
+		reset = 1;
+		cpu_state |= RESET;
+		m1_step = 0;
+		IFF = 0;
+		fp_led_output = 0;
+		reset_io();
 		break;
 	default:
 		break;
@@ -462,12 +443,12 @@ void examine_clicked(int state, int val)
 	switch (state) {
 	case FP_SW_UP:
 		fp_led_address = address_switch;
-		fp_led_data = *(mem_base() + address_switch);
+		fp_led_data = getmem(address_switch);
 		PC = address_switch;
 		break;
 	case FP_SW_DOWN:
 		fp_led_address++;
-		fp_led_data = *(mem_base() + fp_led_address);
+		fp_led_data = getmem(fp_led_address);
 		PC = fp_led_address;
 		break;
 	default:
@@ -490,12 +471,14 @@ void deposit_clicked(int state, int val)
 
 	switch (state) {
 	case FP_SW_UP:
-		fp_led_data = *(mem_base() + PC) = address_switch & 0xff;
+		fp_led_data = address_switch & 0xff;
+		putmem(PC, fp_led_data);
 		break;
 	case FP_SW_DOWN:
 		PC++;
 		fp_led_address++;
-		fp_led_data = *(mem_base() + PC) = address_switch & 0xff;
+		fp_led_data = address_switch & 0xff;
+		putmem(PC, fp_led_data);
 		break;
 	default:
 		break;
@@ -516,16 +499,14 @@ void power_clicked(int state, int val)
 		power++;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		fp_led_address = PC;
-		fp_led_data = *(mem_base() + PC);
+		fp_led_data = getmem(PC);
 		fp_led_speed = (f_flag == 0 || f_flag >= 4) ? 1 : 0;
 		fp_led_wait = 1;
 		fp_led_output = 0;
 		if (isatty(1))
 			system("tput clear");
-		else {
+		else
 			puts("\r\n\r\n\r\n");
-			fflush(stdout);
-		}
 		break;
 	case FP_SW_DOWN:
 		if (!power)

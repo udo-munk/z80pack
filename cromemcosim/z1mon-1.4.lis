@@ -1,4 +1,4 @@
-Z80-Assembler		Release 1.8				Page 1
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 1
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -63,7 +63,7 @@ ffe7                  49     49 DUHL2	EQU	-25			;(FFE7)
                       58     58 ;
                       59     59 ; ENTER THE MONITOR FROM RESET.
                       60     60 ; COLD START ENTRY. INITIALIZES THE UART
-Z80-Assembler		Release 1.8				Page 2
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 2
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -128,7 +128,7 @@ e02b  d3 52          112    112 	OUT	(BCMNDP),A		;RESET DEVICE B
                      118    118 ; PUSH CARRIAGE-RETURN TO SELECT THE PROPER BAUD
                      119    119 ; RATE FOR THE CURRENT TERMINAL. (THE MAXIMUM
                      120    120 ; NUMBER OF CARRIAGE-RETURNS REQUIRED IS FOUR.)
-Z80-Assembler		Release 1.8				Page 3
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 3
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -193,7 +193,7 @@ e061  ed b8          177    177 	LDDR
                      178    178 ;
 e063  13             179    179 	INC	DE			;-> UHL,LO ON SYS STK
 e064  eb             180    180 	EX	DE,HL
-Z80-Assembler		Release 1.8				Page 4
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 4
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -258,7 +258,7 @@ e0aa  2b             237    237 	DEC	HL
 e0ab  56             238    238 	LD	D,(HL)
 e0ac  2b             239    239 	DEC	HL
 e0ad  5e             240    240 	LD	E,(HL)
-Z80-Assembler		Release 1.8				Page 5
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 5
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -323,7 +323,7 @@ e0ea  18 b4          294    294 ESCPE:	JR	CLBP			;CLEAR ANY BRKPTS
                      298    298 ; IS NOT ON A 1K (400H) BOUNDARY, OR IF SWATH
                      299    299 ; WIDTH IS NOT A MULTIPLE OF 1K.
                      300    300 ;
-Z80-Assembler		Release 1.8				Page 6
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 6
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -388,7 +388,7 @@ e12f  cc 0f e2       357    357 	CALL	Z,PMSG
 e132  fe 3c          358    358 	CP	'<'			;RECURSIVE CALL
 e134  20 0b          359    359 	JR	NZ,PC3			;ON CMND?
 e136  f1             360    360 	POP	AF
-Z80-Assembler		Release 1.8				Page 7
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 7
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -453,7 +453,7 @@ e166  cd a5 e1       416    416 VERIF:	CALL	L3NCR			;GET 3	OPERANDS
                      418    418 ; COMPARES TWO AREAS OF MEMORY. ENTER WITH
                      419    419 ; SOURCE IN HL, DESTINATION IN DE & COUNT
                      420    420 ; IN BC. ALTERS ALL REGISTERS.
-Z80-Assembler		Release 1.8				Page 8
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 8
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -518,7 +518,7 @@ e1a5  cd 8b e1       471    471 L3NCR: CALL	LD2N
                      478    478 ; DE & HL. FINISHES WITH A CRLF.
                      479    479 ;
 e1a8  cd ae e1       480    480 L1NCR: CALL	GNHL	        	 ;SKIP SPACES, LOAD HL
-Z80-Assembler		Release 1.8				Page 9
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 9
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -583,7 +583,7 @@ e1dc  c9             531    531 	RET
                      538    538 ;
 e1dd  97             539    539 SKSG0:	SUB	A
                      540    540 ;
-Z80-Assembler		Release 1.8				Page 10
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 10
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -648,7 +648,7 @@ e20e  c9             589    589 	RET
 e20f  f5             598    598 PMSG:	PUSH	AF			;SAVE
 e210  7e             599    599 PS1:	LD	A,(HL)
 e211  23             600    600 	INC	HL
-Z80-Assembler		Release 1.8				Page 11
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 11
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -713,7 +713,7 @@ e24c  23             657    657 	INC  	HL  	 		;BUMP BPSP
 e24d  eb             658    658 	EX   	DE,HL   	 	;DE = BPSP, HL= BP ADDR
 e24e  ed a0          659    659 	LDI
 e250  2b             660    660 	DEC  	HL
-Z80-Assembler		Release 1.8				Page 12
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 12
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -778,7 +778,7 @@ e28b  f1             717    717 	POP	AF
 e28c  c9             718    718 	RET
                      719    719 
                      720    720 
-Z80-Assembler		Release 1.8				Page 13
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 13
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -843,7 +843,7 @@ e2c6  18 f0          776    776 	JR	SM1
                      778    778 ;
 e2c8  47             779    779 SUBR:	LD	B,A
 e2c9  cd 44 e1       780    780 	CALL	GCHR
-Z80-Assembler		Release 1.8				Page 14
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 14
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -908,7 +908,7 @@ e32f  28 a4          837    837 	JR	Z,SR3	   		;IF H, LOOP.
 e331  c9             838    838 	RET		    		;IT IS H'. DONE.
                      839    839 
                      840    840 
-Z80-Assembler		Release 1.8				Page 15
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 15
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -973,7 +973,7 @@ e372  c9             895    895 	RET
                      898    898 ; COMMAND
                      899    899 ; READ BINARY INPUT FROM DATA PORT
                      900    900 ;
-Z80-Assembler		Release 1.8				Page 16
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 16
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -1038,7 +1038,7 @@ e3ab  0a 00 80       956    957 LFNN:	DEFB	LF,0,0 | 80H
                      957    958 ;
                      958    959 ;
 e3ae  ba             959    960 PRMPT:	DEFB	(':' | 80H)
-Z80-Assembler		Release 1.8				Page 17
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 17
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -1103,50 +1103,50 @@ e3f0  0d 0d 43 52   1016   1017 HEAD:	DEFB	CR,CR, 'CROMEMCO ZM1.',('4' | 80H)
 e3f4  4f 4d 45 4d   1016   1018
 e3f8  43 4f 20 5a   1016   1019
 e3fc  4d 31 2e b4   1016   1020
-Z80-Assembler		Release 1.8				Page 18
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 18
 Source file: z1mon-1.4.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e400                1017   1021 	END	CSTART
-Z80-Assembler		Release 1.8				Page 19
+Z80-Assembler	Release 1.9	Wed May 16 20:15:34 2018	Page 19
 Source file: z1mon-1.4.asm
 Title:       Symboltable
 
-ABAUDP   0000	ACMNDP   0002	ALT      007d	APARLP   0004	
-B1M      0000	B2F      0005	B2M      0020	BAUDRS   e3a3	
-BCMNDP   0052	BPARLP   0054	BPMRK    000b	BPSTOR   0016	
-CASE     0000	CHKIN    e00e	CL1      e0a4	CL2      e0b3	
-CLBP     e0a0	CMND     e0be	CMND1    e0c2	COM1     e051	
-COM3     e082	COM4     e08b	COMMON   e04a	CR       000d	
-CRF      0007	CRLF     e14d	CRM      0080	CSTART   e000	
-DATA     0001	DAV      0040	DISPL    e28d	DM2      e29a	
-DSPM     e292	DSPM1    e295	DUAF     fffd	DUAF2    ffed	
-DUBC     fffb	DUBC2    ffeb	DUDE     fff9	DUDE2    ffe9	
-DUHL     fff7	DUHL2    ffe7	DUIN     ffef	DUIX     fff3	
-DUIY     fff1	DUPC     ffff	DUSP     fff5	ERROR    e0e5	
-ERRV1    e0f5	ESC      001b	ESCPE    e0ea	GBYTE    e016	
-GCHR     e144	GN1      e1bb	GNHL     e1ae	GNHL0    e1ad	
-GO       e223	GO1      e226	GO3      e23c	GO5      e25f	
-GS1      e33d	GS2      e34b	GS3      e35c	GSUBV    e332	
-HEAD     e3f0	HEXSH    e1c6	HX1      e1d4	HXSH4    e1d6	
-INIT     e029	INITBAUD e02d	IT1      e034	L1NCR    e1a8	
-L2N1     e19b	L2N2     e1a2	L2NCR    e152	L2NCR0   e151	
-L3NCR    e1a5	LD2N     e18b	LENRGS   001a	LF       000a	
-LFNN     e3ab	MOVE     e183	MVE      e21a	N2       e392	
-NBRKPT   0005	NULLS    e38d	OUTP     e398	P1HEX    e1fb	
-P2HEX    e1f7	P2NMS    e108	PADDR    e15f	PBY1     e01f	
-PBYTE    e01e	PC1      e113	PC2      e122	PC3      e141	
-PCADDR   e15c	PCHR     e112	PF       0006	PH1      e208	
-PM       0040	PMSG     e20f	PNHL     e1f2	PNM      e1ec	
-PR1      e0fb	PRMPT    e3ae	PROG     e0ec	PS1      e210	
-PSNHL    e1ef	PSNM     e1e9	RB1      e376	READB    e373	
-RETN     e265	RGTBL    e3d7	RSTLC    0030	RT1      e273	
-RT2      e27e	RT3      e288	SK1      e1df	SKSG     e1de	
-SKSG0    e1dd	SKSGCR   e155	SM1      e2b8	SPACE    e110	
-SR2      e2d2	SR3      e2d5	SR4      e2f7	SR5      e30f	
-SR6      e31e	SR8      e32d	STAT     0000	SUBM     e2b2	
-SUBR     e2c8	SUBR2    e2d1	SUBR3    e323	SUBST    e2b0	
-SVMS     e045	TBE      0080	TEMPS    0016	UART     e362	
-UARTA    e36f	VERIF    e166	VRFY     e169	WB1      e384	
-WRITB    e381	WSTART   e008	
+ABAUDP   0000 	ACMNDP   0002 	ALT      007d 	APARLP   0004 	
+B1M      0000 	B2F      0005 	B2M      0020 	BAUDRS   e3a3 	
+BCMNDP   0052 	BPARLP   0054 	BPMRK    000b 	BPSTOR   0016 	
+CASE     0000 	CHKIN    e00e 	CL1      e0a4 	CL2      e0b3 	
+CLBP     e0a0 	CMND     e0be 	CMND1    e0c2 	COM1     e051 	
+COM3     e082 	COM4     e08b 	COMMON   e04a 	CR       000d 	
+CRF      0007 	CRLF     e14d 	CRM      0080 	CSTART   e000*	
+DATA     0001 	DAV      0040 	DISPL    e28d 	DM2      e29a 	
+DSPM     e292*	DSPM1    e295 	DUAF     fffd 	DUAF2    ffed 	
+DUBC     fffb 	DUBC2    ffeb*	DUDE     fff9 	DUDE2    ffe9*	
+DUHL     fff7 	DUHL2    ffe7 	DUIN     ffef 	DUIX     fff3 	
+DUIY     fff1 	DUPC     ffff 	DUSP     fff5 	ERROR    e0e5 	
+ERRV1    e0f5 	ESC      001b 	ESCPE    e0ea 	GBYTE    e016 	
+GCHR     e144 	GN1      e1bb 	GNHL     e1ae 	GNHL0    e1ad 	
+GO       e223 	GO1      e226 	GO3      e23c 	GO5      e25f 	
+GS1      e33d 	GS2      e34b 	GS3      e35c 	GSUBV    e332 	
+HEAD     e3f0 	HEXSH    e1c6 	HX1      e1d4 	HXSH4    e1d6*	
+INIT     e029 	INITBAUD e02d 	IT1      e034 	L1NCR    e1a8 	
+L2N1     e19b 	L2N2     e1a2 	L2NCR    e152 	L2NCR0   e151 	
+L3NCR    e1a5 	LD2N     e18b 	LENRGS   001a 	LF       000a 	
+LFNN     e3ab 	MOVE     e183 	MVE      e21a 	N2       e392 	
+NBRKPT   0005 	NULLS    e38d 	OUTP     e398 	P1HEX    e1fb 	
+P2HEX    e1f7 	P2NMS    e108*	PADDR    e15f*	PBY1     e01f 	
+PBYTE    e01e 	PC1      e113 	PC2      e122*	PC3      e141 	
+PCADDR   e15c 	PCHR     e112 	PF       0006 	PH1      e208 	
+PM       0040 	PMSG     e20f 	PNHL     e1f2 	PNM      e1ec 	
+PR1      e0fb 	PRMPT    e3ae 	PROG     e0ec 	PS1      e210 	
+PSNHL    e1ef 	PSNM     e1e9 	RB1      e376 	READB    e373 	
+RETN     e265 	RGTBL    e3d7 	RSTLC    0030 	RT1      e273 	
+RT2      e27e 	RT3      e288 	SK1      e1df 	SKSG     e1de 	
+SKSG0    e1dd 	SKSGCR   e155 	SM1      e2b8 	SPACE    e110 	
+SR2      e2d2 	SR3      e2d5 	SR4      e2f7 	SR5      e30f 	
+SR6      e31e 	SR8      e32d 	STAT     0000 	SUBM     e2b2*	
+SUBR     e2c8 	SUBR2    e2d1 	SUBR3    e323 	SUBST    e2b0 	
+SVMS     e045 	TBE      0080 	TEMPS    0016 	UART     e362 	
+UARTA    e36f 	VERIF    e166 	VRFY     e169 	WB1      e384 	
+WRITB    e381 	WSTART   e008*	

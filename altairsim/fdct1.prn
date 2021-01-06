@@ -1,0 +1,41 @@
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      21:15  07/01/2018
++                                                                                      PAGE 1
+      
+
+
+                   ;
+                   ; TEST PROGRAM FOR THE 88-DCDD FLOPPY DISK CONTROLLER
+                   ; SINGLE STEP TO WATCH ROTATING DISK ON DATA BUS LEDS
+                   ;
+   0100                    ORG 100H
+                    
+   0100   3E00             MVI  A,0        ;ENABLE CONTROLLER, SELECT DISK 0
+   0102   D308             OUT  8
+                    
+   0104   3E04             MVI  A,4        ;LOAD HEAD
+   0106   D309             OUT  9
+                    
+   0108   DB09             IN   9          ;LOOK AT SECTOR POSITION
+   010A   DB08             IN   8          ;LOOK AT STATUS
+                    
+   010C   76               HLT
+                    
+                           END
+ NO PROGRAM ERRORS
+1
+ 8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
++                                                      21:15  07/01/2018
++                                                                                      PAGE 2
+      
+
+
+                        SYMBOL TABLE
+
+  * 01
+
+  A      0007      B      0000      C      0001      D      0002      
+  E      0003      H      0004      L      0005      M      0006      
+  PSW    0006      SP     0006      
+

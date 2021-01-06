@@ -4,3 +4,5 @@ rm -f sim[0-7]*.c
 rm -f simfun.c
 rm -f simint.c
 rm -f simglb.[hc]
+rm -f simbdos.[hc]
+rm -f log.h

@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -21,6 +21,11 @@
  * 21-FEB-17 VIO monitor scanlines configurable
  * 23-FEB-17 added configuration options for VDM
  * 24-MAR-17 added configuration for SIO 0
+ * 18-JUL-18 use logging
+ * 12-JUL-19 implemented second SIO
+ * 17-SEP-19 more consistent SIO naming
+ * 07-OCT-19 implemented baud rate for modem device
+ * 14-AUG-20 allow building machine without frontpanel
  */
 
 #include <stdlib.h>
@@ -28,21 +33,28 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
+
+static const char *TAG = "config";
 
 int ram_size;
 int fp_size = 800;
 
 extern int exatoi(char *);
 
-extern int sio1_upper_case;	/* SIO 1 translate input to upper case */
-extern int sio1_strip_parity;	/* SIO 1 strip parity from output */
-extern int sio1_drop_nulls;	/* SIO 1 drop nulls after CR/LF */
+extern int sio1a_upper_case;	/* SIO 1 A translate input to upper case */
+extern int sio1a_strip_parity;	/* SIO 1 A strip parity from output */
+extern int sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */
+extern int sio1a_baud_rate;	/* SIO 1 A simulated baud rate */
 
-extern int sio2_upper_case;	/* SIO 2 translate input to upper case */
-extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
-extern int sio2_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
+extern int sio2a_upper_case;	/* SIO 2 A translate input to upper case */
+extern int sio2a_strip_parity;	/* SIO 2 A strip parity from output */
+extern int sio2a_drop_nulls;	/* SIO 2 A drop nulls after CR/LF */
+extern int sio2a_baud_rate;	/* SIO 2 A simulated baud rate */
+
+extern int sio2b_baud_rate;	/* SIO-2 B simulated baud rate */
 
 extern char bg_color[];		/* VIO background color */
 extern char fg_color[];		/* VIO foreground color */
@@ -54,10 +66,11 @@ void config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2;
-	char fn[4095];
+	char fn[MAX_LFN - 1];
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/system.conf");
+
 	if ((fp = fopen(&fn[0], "r")) != NULL) {
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
@@ -65,82 +78,90 @@ void config(void)
 				continue;
 			t1 = strtok(s, " \t");
 			t2 = strtok(NULL, " \t");
-			if (!strcmp(t1, "sio1_upper_case")) {
+			if (!strcmp(t1, "sio1a_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio1_upper_case = 0;
+					sio1a_upper_case = 0;
 					break;
 				case '1':
-					sio1_upper_case = 1;
+					sio1a_upper_case = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio2_upper_case")) {
+			} else if (!strcmp(t1, "sio2a_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio2_upper_case = 0;
+					sio2a_upper_case = 0;
 					break;
 				case '1':
-					sio2_upper_case = 1;
+					sio2a_upper_case = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio1_strip_parity")) {
+			} else if (!strcmp(t1, "sio1a_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio1_strip_parity = 0;
+					sio1a_strip_parity = 0;
 					break;
 				case '1':
-					sio1_strip_parity = 1;
+					sio1a_strip_parity = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio2_strip_parity")) {
+			} else if (!strcmp(t1, "sio2a_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio2_strip_parity = 0;
+					sio2a_strip_parity = 0;
 					break;
 				case '1':
-					sio2_strip_parity = 1;
+					sio2a_strip_parity = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio1_drop_nulls")) {
+			} else if (!strcmp(t1, "sio1a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio1_drop_nulls = 0;
+					sio1a_drop_nulls = 0;
 					break;
 				case '1':
-					sio1_drop_nulls = 1;
+					sio1a_drop_nulls = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
-			} else if (!strcmp(t1, "sio2_drop_nulls")) {
+			} else if (!strcmp(t1, "sio2a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio2_drop_nulls = 0;
+					sio2a_drop_nulls = 0;
 					break;
 				case '1':
-					sio2_drop_nulls = 1;
+					sio2a_drop_nulls = 1;
 					break;
 				default:
-					printf("system.conf: illegal value for %s: %s\n", t1, t2);
+					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
 					break;
 				}
+			} else if (!strcmp(t1, "sio1a_baud_rate")) {
+				sio1a_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio2a_baud_rate")) {
+				sio2a_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio2b_baud_rate")) {
+				sio2b_baud_rate = atoi(t2);
+#ifdef FRONTPANEL
 			} else if (!strcmp(t1, "fp_fps")) {
 				fp_fps = (float) atoi(t2);
 			} else if (!strcmp(t1, "fp_size")) {
 				fp_size = atoi(t2);
+#endif
 			} else if (!strcmp(t1, "vio_bg")) {
 				strncpy(&bg_color[1], t2, 6);
 			} else if (!strcmp(t1, "vio_fg")) {
@@ -150,17 +171,18 @@ void config(void)
 					slf = 2;
 			} else if (!strcmp(t1, "ram")) {
 				ram_size = atoi(t2);
-				if (ram_size > 54) {
-					printf("Maximal possible RAM size is 54KB\n");
-					ram_size = 54;
+				if (ram_size > MAX_RAM) {
+					LOGW(TAG, "Maximal possible RAM size for bank 0 is %d KB", MAX_RAM);
+					ram_size = MAX_RAM;
 				}
-				printf("RAM size is %d KB\n", ram_size);
+				LOG(TAG, "RAM size bank 0 is %d KB\r\n", ram_size);
 			} else {
-				printf("system.conf unknown command: %s\n", s);
+				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
 		}
 	}
 
-	printf("\n");
-
+	LOG(TAG, "SIO 1A running at %d baud\r\n", sio1a_baud_rate);
+	LOG(TAG, "SIO 2A running at %d baud\r\n", sio2a_baud_rate);
+	LOG(TAG, "SIO 2B running at %d baud\r\n", sio2b_baud_rate);
 }

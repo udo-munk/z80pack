@@ -1,4 +1,4 @@
-Z80-Assembler		Release 1.8				Page 1
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 1
 Source file: zapple.asm
 Title:       
 
@@ -63,7 +63,7 @@ efff                  28     28 IOBYT	EQU	0EFFFH	     ;MEMORY LOCATION FOR TEMP.
                       58     58 ;
                       59     59 ;-C.R.T. SYSTEM
                       60     60 ;
-Z80-Assembler		Release 1.8				Page 2
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 2
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -128,7 +128,7 @@ ffff                  79     79 TRUE	EQU	~FALSE       ;IT IS SO
                      118    118 ;
                      119    119 ;
                      120    120 ;	VECTOR FOR USER DEFINED ROUTINES
-Z80-Assembler		Release 1.8				Page 3
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 3
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -193,7 +193,7 @@ f00f  c3 9f f4       177    177 	JP	LO	     ;LIST OUTPUT
 f012  c3 11 f5       178    178 	JP	CSTS	     ;CONSOLE STATUS
 f015  c3 10 f1       179    179 	JP	IOCHK	     ;I/O CHECK
 f018  c3 0b f1       180    180 	JP	IOSET	     ;I/O SET
-Z80-Assembler		Release 1.8				Page 4
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 4
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -258,7 +258,7 @@ f064  cd 42 f4       235    237 	CALL	TOM	     ;OUTPUT SIGN-ON MSG
 f067  11 67 f0       236    238 START:	LD	DE,START     ;MAIN 'WORK' LOOP
 f06a  d5             237    239 	PUSH	DE	     ;SET UP A RETURN TO HERE
 f06b  cd 09 f5       238    240 	CALL	CRLF
-Z80-Assembler		Release 1.8				Page 5
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 5
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -323,7 +323,7 @@ f0c1  6e f4          291    293 	DEFW	SIZE	    ;Z - ADDRESS OF LAST R/W LOCATION
                      296    298 ; OF THE VARIOUS I/O DRIVERS & DEVICES. THIS IS
                      297    299 ; ACCOMPLISHED VIA A HARDWARE READ/WRITE PORT.
                      298    300 ;	THIS PORT IS INITIALIZED UPON SIGN-ON
-Z80-Assembler		Release 1.8				Page 6
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 6
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -388,7 +388,7 @@ f10a  4f             355    357 	LD	C,A	     ;NEW CONFIGURATION
                      356    358 ;
                      357    359 ; THIS ALLOWS USER PROGRAMS TO MODIFY
                      358    360 ; THE I/O CONFIGURATIMN DYNAMICALLY
-Z80-Assembler		Release 1.8				Page 7
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 7
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -453,7 +453,7 @@ f13f  18 f7          411    413 	JR	PUTA2	     ;ECHO & CONTINUE
                      416    418 ; WILL BE OUTPUT TO THE CONSOLE. THIS IS USEFUL
                      417    419 ; WHEN USED WITH THE BINARY DUMP FORMAT TO BOTH
                      418    420 ; VERIFY PROPER READING & STORAGE, OR TO DETECT
-Z80-Assembler		Release 1.8				Page 8
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 8
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -518,7 +518,7 @@ f18f  cd e8 f5       475    477 	CALL	PADR	     ;PUNCH IT
 f192  c3 ee f4       476    478 	JP	NULL	     ;TRAILER & RETURN
                      477    479 ;
                      478    480 ; THIS COMMAND WILL FILL A BLOCK OF MEMORY
-Z80-Assembler		Release 1.8				Page 9
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 9
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -583,7 +583,7 @@ f1cb  23             535    537 	INC	HL
 f1cc  70             536    538 	LD	(HL),B
 f1cd  23             537    539 	INC	HL
 f1ce  0a             538    540 	LD	A,(BC)	     ;PICK UP INST. BYTE
-Z80-Assembler		Release 1.8				Page 10
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 10
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -648,7 +648,7 @@ f20c  18 e5          586    588 	JR	TEST1
 f20e  cd 2d f5       596    598 MOVE:	CALL	EXPR3	     ;GET 3 PARAMETERS
 f211  7e             597    599 MO1:	LD	A,(HL)	     ;PICK UP
 f212  02             598    600 	LD	(BC),A	     ;PUT DOWN
-Z80-Assembler		Release 1.8				Page 11
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 11
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -713,7 +713,7 @@ f24a  e3             655    657 	EX	(SP),HL	     ;RESTORE HL'
 f24b  dd e1          656    658 	POP	IX	     ; X=BIAS+LOAD
 f24d  d9             657    659 	EXX		     ;DOWNSHIFT
 f24e  e1             658    660 	POP	HL	     ;HL=LOAD ADDR
-Z80-Assembler		Release 1.8				Page 12
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 12
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -778,7 +778,7 @@ f2ad  cd b3 f2       715    717 LC1:	CALL	SBYTE	     ;GET A DATA BYTE
 f2b0  cb 24          716    718 	SLA	H	     ;TEST NEXT BIT
 f2b2  c9             717    719 	RET	
 f2b3  c5             718    720 SBYTE:	PUSH	BC	     ;PRESERVE BC
-Z80-Assembler		Release 1.8				Page 13
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 13
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -843,7 +843,7 @@ f2f1  e6 07          775    777 	AND	7
 f2f3  cc 75 f4       776    778 	CALL	Z,LFADR	     ;TIME TO CRLF
 f2f6  18 de          777    779 	JR	SUB0
 f2f8  2b             778    780 SUB2:	DEC	HL	     ;DECREMENT POINTER
-Z80-Assembler		Release 1.8				Page 14
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 14
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -908,7 +908,7 @@ f338  dd e1          835    837 	POP	IX	     ;X=SEARCH BYTE POINTER
 f33a  5a             836    838 	LD	E,D	     ;RESET COUNTER
 f33b  dd 7e 00       837    839 	LD	A,(IX+0)     ;GET THE FIRST SEARCH BYTE
 f33e  ed b1          838    840 	CPIR		     ;COMPARE, INCR., & REPEAT
-Z80-Assembler		Release 1.8				Page 15
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 15
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -973,7 +973,7 @@ f399  af             895    897 	XOR	A
 f39a  92             896    898 	SUB	D	     ;CALCULATE CHECKSUM
 f39b  c3 ed f5       897    899 	JP	PBYTE	     ;PUNCH IT, RETURN
 f39e  e1             898    900 WRT4:	POP	HL	     ;CLEAR STACK
-Z80-Assembler		Release 1.8				Page 16
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 16
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1038,7 +1038,7 @@ f3df  1a             955    957 	LD	A,(DE)
 f3e0  cd 87 f5       956    958 	CALL	LBYTE
 f3e3  cd 04 f6       957    959 XAM3:	CALL	COPCK	     ;MODIFY
 f3e6  d8             958    960 	RET	C	     ;CR ENTERED, ALL DONE
-Z80-Assembler		Release 1.8				Page 17
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 17
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1103,7 +1103,7 @@ f43b  1b            1015   1017 	DEC	DE
 f43c  1a            1016   1018 	LD	A,(DE)
 f43d  6f            1017   1019 	LD	L,A	     ;LOW BYTE
 f43e  7e            1018   1020 	LD	A,(HL)	     ;GET VALUE
-Z80-Assembler		Release 1.8				Page 18
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 18
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1168,7 +1168,7 @@ f46d  c9            1065   1067 	RET
 f46e  cd b1 f5      1076   1078 SIZE:	CALL	MEMSIZ	     ;GET THE VALUE
 f471  01 23 00      1077   1079 	LD	BC,ENDX-EXIT
 f474  09            1078   1080 	ADD	HL,BC	     ;ADJUST IT
-Z80-Assembler		Release 1.8				Page 19
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 19
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1233,7 +1233,7 @@ f4a4  28 de         1135   1137 	JR	Z,TTYOUT
 f4a6  fe 40         1136   1138 	CP	LCRT
 f4a8  28 e7         1137   1139 	JR	Z,CRTOUT
 f4aa  fe 80         1138   1140 	CP	LINE
-Z80-Assembler		Release 1.8				Page 20
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 20
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1298,7 +1298,7 @@ f4ee  cd 9b f5      1195   1197 NULL:	CALL	LEAD	     ;PUNCH NULLS
                     1196   1198 ;
                     1197   1199 ; THIS ROUTINE WILL PAUSE FOR
                     1198   1200 ; A KEYBOARD CHARACTER. IT IS
-Z80-Assembler		Release 1.8				Page 21
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 21
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1363,7 +1363,7 @@ f518  db 10         1255   1257 	IN	A,(TTS)
 f51a  18 05         1256   1258 	JR	CS1
 f51c  3d            1257   1259 CS0:	DEC	A	     ;CCRT
 f51d  20 09         1258   1260 	JR	NZ,CS3
-Z80-Assembler		Release 1.8				Page 22
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 22
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1428,7 +1428,7 @@ f55e  c9            1315   1317 	RET		     ;ELSE RETURN
 f55f  0e 01         1316   1318 EXF:	LD	C,1
 f561  21 00 00      1317   1319 	LD	HL,0
 f564  18 da         1318   1320 	JR	EX1
-Z80-Assembler		Release 1.8				Page 23
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 23
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1493,7 +1493,7 @@ f596  01 ff 08      1375   1377 MARK:	LD	BC,08FFH     ;SET-UP B&C
 f599  18 03         1376   1378 	JR	LE0
                     1377   1379 ;
                     1378   1380 ; THIS ROUTINE SENDS BLANKS TO THE
-Z80-Assembler		Release 1.8				Page 24
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 24
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1558,7 +1558,7 @@ f5ce  25            1435   1437 MEM2:	DEC	H	     ;BACK UP, SUBTRACT WORKSPACE
 f5cf  01 dd ff      1436   1438 	LD	BC,EXIT-ENDX
 f5d2  09            1437   1439 	ADD	HL,BC
 f5d3  c1            1438   1440 	POP	BC	     ;RESTORE BC
-Z80-Assembler		Release 1.8				Page 25
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 25
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1623,7 +1623,7 @@ f617  c9            1495   1497 	RET
                     1496   1498 ;
                     1497   1499 ; MAIN CONSOLE INPUT ROUTINE
                     1498   1500 ;
-Z80-Assembler		Release 1.8				Page 26
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 26
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1688,7 +1688,7 @@ f655  c9            1555   1557 	RET
 f656  db 11         1556   1558 RI2:	IN	A,(TTI)
 f658  b7            1557   1559 RID:	OR	A
 f659  e1            1558   1560 	POP	HL
-Z80-Assembler		Release 1.8				Page 27
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 27
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1753,7 +1753,7 @@ f6af  bb            1615   1617 	CP	E	     ;FOUND MAX?
 f6b0  20 f5         1616   1618 	JR	NZ,ELOA0     ;NOPE
 f6b2  c3 82 f5      1617   1619 	JP	LADR	     ;YEP, PRINT END ADDR
 f6b5  72            1618   1620 ELOA1:	LD	(HL),D
-Z80-Assembler		Release 1.8				Page 28
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 28
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1818,7 +1818,7 @@ f6f6  23            1675   1677 	INC	HL
 f6f7  23            1676   1678 	INC	HL
 f6f8  71            1677   1679 	LD	(HL),C	     ;AND USER P.C.
 f6f9  23            1678   1680 	INC	HL
-Z80-Assembler		Release 1.8				Page 29
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 29
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1883,7 +1883,7 @@ f73b  c8            1735   1737 	RET	Z
 f73c  fe 4e         1736   1738 	CP	'N'	     ;IGNORE N'S FOR NULL CMND
 f73e  c8            1737   1739 	RET	Z
 f73f  fe 6e         1738   1740 	CP	'n'
-Z80-Assembler		Release 1.8				Page 30
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 30
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1948,7 +1948,7 @@ f784  0a            1795   1797 VERI0:	LD	A,(BC)
 f785  be            1796   1798 	CP	(HL)
 f786  28 05         1797   1799 	JR	Z,VERI1
 f788  c5            1798   1800 	PUSH	BC
-Z80-Assembler		Release 1.8				Page 31
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 31
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -2013,7 +2013,7 @@ f7b5  e1            1855   1857 	POP	HL
 f7b6  08            1856   1858 	EX	AF,AF'	
 f7b7  d9            1857   1859 	EXX	
 f7b8  d1            1858   1860 	POP	DE
-Z80-Assembler		Release 1.8				Page 32
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 32
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -2078,7 +2078,7 @@ f7c9  00            1870   1872 	DEFB	0
                     1916   1918 ;			11XXXXXX=SPECIAL FOR "M" REG.
                     1917   1919 ;
                     1918   1920 ACTBL:		;NORMAL SET OF REGISTERS (8080)
-Z80-Assembler		Release 1.8				Page 33
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 33
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -2120,85 +2120,85 @@ f7fb  80            1949   1951 	DEFB	80H
                     1953   1955 ;
                     1954   1956 ;
 f7fc                1955   1957 	END
-Z80-Assembler		Release 1.8				Page 34
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 34
 Source file: zapple.asm
 Title:       Symboltable
 
-ABS0     f25a	ACTBL    f7ca	AHEAD    f04a	ALOC     0015	
-APLOC    0009	ASERR    f0ed	ASS0     f0cf	ASS1     f0d8	
-ASS2     f0d9	ASS3     f0e6	ASS4     f0f0	ASS5     f0f3	
-ASS6     f0fe	ASS7     f100	ASSIGN   f0c3	BASE     f000	
-BATCH    0002	BEGIN    f031	BELL     0007	BITS     f768	
-BLK      f47b	BLOC     0013	BPLOC    000b	BY1      f117	
-BYE      f114	CCHK     f451	CCRT     0001	CERR     f150	
-CI       f618	CI1      f628	CI2      f634	CILOC    f800	
-CLOC     0012	CMSK     00fc	CO       f47d	CO0      f48e	
-CO1      f49b	COLOC    f803	COM1     f144	COMP     f141	
-CONV     f4fa	COPCK    f604	CPLOC    000a	CR       000d	
-CRLF     f509	CRTBE    0080	CRTDA    0040	CRTI     0051	
-CRTIN    f62b	CRTO     0051	CRTOUT   f491	CRTS     0050	
-CS0      f51c	CS1      f521	CS2      f525	CS3      f528	
-CSLOC    f818	CSTS     f511	CTTY     0000	CUSE     0003	
-DIS0     f165	DIS1     f168	DISP     f162	DL0      f64a	
-DLOC     0011	DONE     f277	DONE2    f35e	DPLOC    000d	
-ELOA     f6a5	ELOA0    f6a7	ELOA1    f6b5	ELOC     0010	
-ENDX     f7ca	EOF      f179	EPLOC    000c	ERR2     f274	
-ERR3     f26e	ERROR    f457	EX0      f53d	EX1      f540	
-EX2      f54e	EX3      f558	EXF      f55f	EXIT     f7a7	
-EXLF     f504	EXPR     f53a	EXPR1    f538	EXPR3    f52d	
-FALSE    0000	FI1      f198	FIL      0000	FILL     f195	
-FIND     f337	FINDC    f332	FLOC     0014	FOUND    f346	
-FPLOC    0008	GOT0     f1b9	GOT1     f1bf	GOT2     f1d4	
-GOT2A    f1dc	GOT3     f1e7	GOTO     f1a2	HELLO    f062	
-HEXN     f576	HILO     f56c	HILOX    f566	HLOC     0031	
-HLSP     f478	HPLOC    000f	ILOC     0003	IOBYT    efff	
-IOCHK    f110	IOSET    f10b	J        f81b	KI       f72f	
-LAD      f590	LADR     f582	LBYTE    f587	LC1      f2ad	
-LCRT     0040	LE0      f59e	LEAD     f59b	LF       000a	
-LFADR    f475	LINE     0080	LLO1     f261	LLOC     0030	
-LLOCX    0020	LMSK     003f	LNLOC    f812	LO       f49f	
-LOAD     f680	LOAD0    f689	LOAD1    f68b	LOAD2    f692	
-LOAD3    f69c	LOD0     f22d	LOD1     f285	LOD3     f291	
-LOD4     f269	LOD5     f28a	LODCB    f2a3	LODR     f283	
-LPLOC    000e	LTBL     f793	LTTY     0000	LULOC    f815	
-LUSER    00c0	MARK     f596	MAX      0007	MEM0     f5b8	
-MEM1     f5c1	MEM2     f5ce	MEMC     f5ae	MEMCK    f5a4	
-MEMSIZ   f5b1	MO1      f211	MOVE     f20e	MSG      f021	
-MSGL     0010	NIBBLE   f5d8	NN       0000	NULL     f4ee	
-PADR     f5e8	PBYTE    f5ed	PCAS     0020	PCASO    0007	
-PCASS    0006	PCHK     f609	PCSBE    0080	PEOL     f4b2	
-PLOC     0034	PMSK     00cf	PO0      f4c4	PO1      f4ce	
-PPTP     0010	PRMTB    f7e3	PTPL     f80c	PTTY     0000	
-PULOC    f80f	PUO      f4b9	PUSER    0030	PUTA     f122	
-PUTA1    f129	PUTA2    f138	PUTA3    f13d	QCHK     f60c	
-QUE2     f76d	QUERY    f756	QUO      f779	RCAS     0008	
-RCSD     0007	RCSDA    0001	RCSS     0006	REA0     f228	
-READ     f219	RES0     f6cc	RES1     f6e3	RES2     f6ee	
-RES3     f6ef	RES4     f70c	RES5     f718	RESTART  f6bd	
-RI       f638	RI0      f641	RI1      f652	RI2      f656	
-RI3      f65b	RI4      f662	RI5      f66d	RI6      f671	
-RIBBLE   f5d5	RID      f658	RIFF     f467	RIX      f67a	
-RLOC     0002	RMSK     00f3	RPTPL    f806	RPTR     0004	
-RST7     0038	RTTY     0000	RUB      00ff	RULOC    f809	
-RUSER    000c	SBYTE    f2b3	SIZE     f46e	SLOC     0017	
-STARO    f073	START    f067	STKIT    f05f	STORE    f2c6	
-SUB0     f2d6	SUB1     f2ef	SUB2     f2f8	SUB3     f2f0	
-SUBS     f2d2	SWITCH   00ff	TBL      f08f	TELL     f354	
-TEST     f1f0	TEST1    f1f3	TEST2    f208	TI       f735	
-TI0      f753	TLOC     0035	TLOCX    0025	TOM      f442	
-Z80-Assembler		Release 1.8				Page 35
+ABS0     f25a 	ACTBL    f7ca 	AHEAD    f04a 	ALOC     0015 	
+APLOC    0009 	ASERR    f0ed 	ASS0     f0cf 	ASS1     f0d8 	
+ASS2     f0d9 	ASS3     f0e6 	ASS4     f0f0 	ASS5     f0f3 	
+ASS6     f0fe 	ASS7     f100 	ASSIGN   f0c3 	BASE     f000 	
+BATCH    0002*	BEGIN    f031 	BELL     0007 	BITS     f768 	
+BLK      f47b 	BLOC     0013 	BPLOC    000b 	BY1      f117 	
+BYE      f114 	CCHK     f451*	CCRT     0001*	CERR     f150 	
+CI       f618 	CI1      f628 	CI2      f634 	CILOC    f800 	
+CLOC     0012 	CMSK     00fc 	CO       f47d 	CO0      f48e 	
+CO1      f49b 	COLOC    f803 	COM1     f144 	COMP     f141 	
+CONV     f4fa 	COPCK    f604 	CPLOC    000a 	CR       000d 	
+CRLF     f509 	CRTBE    0080 	CRTDA    0040 	CRTI     0051 	
+CRTIN    f62b 	CRTO     0051 	CRTOUT   f491 	CRTS     0050 	
+CS0      f51c 	CS1      f521 	CS2      f525*	CS3      f528 	
+CSLOC    f818 	CSTS     f511 	CTTY     0000*	CUSE     0003*	
+DIS0     f165 	DIS1     f168 	DISP     f162 	DL0      f64a 	
+DLOC     0011 	DONE     f277 	DONE2    f35e 	DPLOC    000d 	
+ELOA     f6a5 	ELOA0    f6a7 	ELOA1    f6b5 	ELOC     0010 	
+ENDX     f7ca 	EOF      f179 	EPLOC    000c 	ERR2     f274*	
+ERR3     f26e 	ERROR    f457 	EX0      f53d 	EX1      f540 	
+EX2      f54e 	EX3      f558 	EXF      f55f 	EXIT     f7a7 	
+EXLF     f504 	EXPR     f53a 	EXPR1    f538 	EXPR3    f52d 	
+FALSE    0000 	FI1      f198 	FIL      0000 	FILL     f195 	
+FIND     f337 	FINDC    f332 	FLOC     0014 	FOUND    f346 	
+FPLOC    0008 	GOT0     f1b9 	GOT1     f1bf 	GOT2     f1d4 	
+GOT2A    f1dc 	GOT3     f1e7 	GOTO     f1a2 	HELLO    f062 	
+HEXN     f576 	HILO     f56c 	HILOX    f566 	HLOC     0031 	
+HLSP     f478 	HPLOC    000f 	ILOC     0003 	IOBYT    efff 	
+IOCHK    f110 	IOSET    f10b 	J        f81b*	KI       f72f 	
+LAD      f590 	LADR     f582 	LBYTE    f587 	LC1      f2ad 	
+LCRT     0040 	LE0      f59e 	LEAD     f59b 	LF       000a 	
+LFADR    f475 	LINE     0080 	LLO1     f261 	LLOC     0030 	
+LLOCX    0020 	LMSK     003f 	LNLOC    f812 	LO       f49f 	
+LOAD     f680 	LOAD0    f689 	LOAD1    f68b 	LOAD2    f692 	
+LOAD3    f69c 	LOD0     f22d 	LOD1     f285 	LOD3     f291 	
+LOD4     f269 	LOD5     f28a 	LODCB    f2a3 	LODR     f283 	
+LPLOC    000e 	LTBL     f793 	LTTY     0000*	LULOC    f815 	
+LUSER    00c0*	MARK     f596 	MAX      0007 	MEM0     f5b8 	
+MEM1     f5c1 	MEM2     f5ce 	MEMC     f5ae 	MEMCK    f5a4 	
+MEMSIZ   f5b1 	MO1      f211 	MOVE     f20e 	MSG      f021 	
+MSGL     0010 	NIBBLE   f5d8 	NN       0000*	NULL     f4ee 	
+PADR     f5e8 	PBYTE    f5ed 	PCAS     0020 	PCASO    0007 	
+PCASS    0006 	PCHK     f609 	PCSBE    0080 	PEOL     f4b2 	
+PLOC     0034 	PMSK     00cf 	PO0      f4c4 	PO1      f4ce 	
+PPTP     0010 	PRMTB    f7e3 	PTPL     f80c 	PTTY     0000*	
+PULOC    f80f 	PUO      f4b9 	PUSER    0030*	PUTA     f122 	
+PUTA1    f129 	PUTA2    f138 	PUTA3    f13d 	QCHK     f60c 	
+QUE2     f76d 	QUERY    f756 	QUO      f779 	RCAS     0008 	
+RCSD     0007 	RCSDA    0001 	RCSS     0006 	REA0     f228 	
+READ     f219 	RES0     f6cc 	RES1     f6e3 	RES2     f6ee 	
+RES3     f6ef 	RES4     f70c 	RES5     f718 	RESTART  f6bd 	
+RI       f638 	RI0      f641 	RI1      f652 	RI2      f656 	
+RI3      f65b 	RI4      f662 	RI5      f66d*	RI6      f671 	
+RIBBLE   f5d5 	RID      f658 	RIFF     f467 	RIX      f67a 	
+RLOC     0002 	RMSK     00f3 	RPTPL    f806 	RPTR     0004 	
+RST7     0038 	RTTY     0000*	RUB      00ff*	RULOC    f809 	
+RUSER    000c*	SBYTE    f2b3 	SIZE     f46e 	SLOC     0017 	
+STARO    f073 	START    f067 	STKIT    f05f 	STORE    f2c6 	
+SUB0     f2d6 	SUB1     f2ef 	SUB2     f2f8 	SUB3     f2f0 	
+SUBS     f2d2 	SWITCH   00ff 	TBL      f08f 	TELL     f354 	
+TEST     f1f0 	TEST1    f1f3 	TEST2    f208 	TI       f735 	
+TI0      f753 	TLOC     0035 	TLOCX    0025 	TOM      f442 	
+Z80-Assembler	Release 1.9	Wed May 16 19:49:49 2018	Page 35
 Source file: zapple.asm
 Title:       Symboltable
 
-TOM1     f445	TRAP     f01e	TRUE     ffff	TTI      0011	
-TTO      0011	TTS      0010	TTS2     0012	TTYBE    0002	
-TTYDA    0001	TTYIN    f61f	TTYOUT   f484	TYP0     f2fe	
-TYP1     f303	TYP2     f30a	TYP3     f30c	TYPE     f2fb	
-UNL      f4e2	UNLD     f4d6	USER     f800	VERI0    f784	
-VERI1    f78d	VERIFY   f781	WAIT     f4f1	WHER0    f31d	
-WHERE    f31b	WRITE    f363	WRT0     f369	WRT1     f374	
-WRT2     f386	WRT3     f392	WRT4     f39e	XAM      f3a3	
-XAM0     f3bb	XAM1     f3c7	XAM2     f3ca	XAM3     f3e3	
-XAM4     f3fc	XAM5     f402	XAM6     f407	XAM7     f40a	
-XAM8     f433	XAM9     f438	XLOC     0007	YLOC     0005	
-Z        f7fc	
+TOM1     f445 	TRAP     f01e 	TRUE     ffff*	TTI      0011 	
+TTO      0011 	TTS      0010 	TTS2     0012 	TTYBE    0002 	
+TTYDA    0001 	TTYIN    f61f 	TTYOUT   f484 	TYP0     f2fe 	
+TYP1     f303 	TYP2     f30a 	TYP3     f30c 	TYPE     f2fb 	
+UNL      f4e2 	UNLD     f4d6 	USER     f800 	VERI0    f784 	
+VERI1    f78d 	VERIFY   f781 	WAIT     f4f1 	WHER0    f31d 	
+WHERE    f31b 	WRITE    f363 	WRT0     f369 	WRT1     f374 	
+WRT2     f386 	WRT3     f392 	WRT4     f39e 	XAM      f3a3 	
+XAM0     f3bb 	XAM1     f3c7 	XAM2     f3ca 	XAM3     f3e3 	
+XAM4     f3fc 	XAM5     f402 	XAM6     f407 	XAM7     f40a 	
+XAM8     f433 	XAM9     f438 	XLOC     0007 	YLOC     0005 	
+Z        f7fc*	

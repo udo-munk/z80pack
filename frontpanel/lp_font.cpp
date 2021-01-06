@@ -1,3 +1,7 @@
+#ifdef __CYGWIN__
+#include <windef.h>
+#endif
+
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
 #include <GL/gl.h>
 #else
@@ -7,6 +11,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

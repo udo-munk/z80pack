@@ -3,4 +3,4 @@
 rm -f disks/drivea.dsk
 ln disks/library/imdos202.dsk disks/drivea.dsk
 
-./imsaisim -x bootrom.hex $*
+./imsaisim -r -x mpu-a-rom.hex $*

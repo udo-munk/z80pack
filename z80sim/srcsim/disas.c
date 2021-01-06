@@ -1,8 +1,9 @@
 /*
- * Z80 disassembler for Z80-CPU simulator
+ * Z80 and 8080 disassembler for Z80-CPU simulator
  *
- * Copyright (C) 1989-2017 by Udo Munk
+ * Copyright (C) 1989-2018 by Udo Munk
  * Parts Copyright (C) 2008 by Justin Clancy
+ * 8080 disassembler Copyright (C) 2018 by Christophe Staiesse
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -70,7 +71,7 @@ struct opt {
 	char *text;
 };
 
-static struct opt optab[256] = {
+static struct opt optabz80[256] = {
 	{ opout,  "NOP"			},	/* 0x00	*/
 	{ nnout,  "LD\tBC,"		},	/* 0x01	*/
 	{ opout,  "LD\t(BC),A"		},	/* 0x02	*/
@@ -329,8 +330,267 @@ static struct opt optab[256] = {
 	{ opout,  "RST\t38"		}	/* 0xff */
 };
 
+static struct opt optabi8080[256] = {
+	{ opout,  "NOP"			},	/* 0x00 */
+	{ nnout,  "LXI\tB,"		},	/* 0x01 */
+	{ opout,  "STAX\tB"		},	/* 0x02 */
+	{ opout,  "INX\tB"		},	/* 0x03 */
+	{ opout,  "INR\tB"		},	/* 0x04 */
+	{ opout,  "DCR\tB"		},	/* 0x05 */
+	{ nout,   "MVI\tB,"		},	/* 0x06 */
+	{ opout,  "RLC"			},	/* 0x07 */
+	{ opout,  "NOP*"		},	/* 0x08 */ /* undocumented */
+	{ opout,  "DAD\tB"		},	/* 0x09 */
+	{ opout,  "LDAX\tB"		},	/* 0x0a */
+	{ opout,  "DCX\tB"		},	/* 0x0b */
+	{ opout,  "INR\tC"		},	/* 0x0c */
+	{ opout,  "DCR\tC"		},	/* 0x0d */
+	{ nout,   "MVI\tC,"		},	/* 0x0e */
+	{ opout,  "RRC"			},	/* 0x0f */
+	{ opout,  "NOP*"		},	/* 0x10 */ /* undocumented */
+	{ nnout,  "LXI\tD,"		},	/* 0x11 */
+	{ opout,  "STAX\tD"		},	/* 0x12 */
+	{ opout,  "INX\tD"		},	/* 0x13 */
+	{ opout,  "INR\tD"		},	/* 0x14 */
+	{ opout,  "DCR\tD"		},	/* 0x15 */
+	{ nout,   "MVI\tD,"		},	/* 0x16 */
+	{ opout,  "RAL"			},	/* 0x17 */
+	{ opout,  "NOP*"		},	/* 0x18 */ /* undocumented */
+	{ opout,  "DAD\tD"		},	/* 0x19 */
+	{ opout,  "LDAX\tD"		},	/* 0x1a */
+	{ opout,  "DCX\tD"		},	/* 0x1b */
+	{ opout,  "INR\tE"		},	/* 0x1c */
+	{ opout,  "DCR\tE"		},	/* 0x1d */
+	{ nout,   "MVI\tE,"		},	/* 0x1e */
+	{ opout,  "RAR"			},	/* 0x1f */
+	{ opout,  "NOP*"		},	/* 0x20 */ /* undocumented */
+	{ nnout,  "LXI\tH,"		},	/* 0x21 */
+	{ nnout,  "SHLD\t"		},	/* 0x22 */
+	{ opout,  "INX\tH"		},	/* 0x23 */
+	{ opout,  "INR\tH"		},	/* 0x24 */
+	{ opout,  "DCR\tH"		},	/* 0x25 */
+	{ nout,   "MVI\tH,"		},	/* 0x26 */
+	{ opout,  "DAA"			},	/* 0x27 */
+	{ opout,  "NOP*"		},	/* 0x28 */ /* undocumented */
+	{ opout,  "DAD\tH"		},	/* 0x29 */
+	{ nnout,  "LHLD\t"		},	/* 0x2a */
+	{ opout,  "DCX\tH"		},	/* 0x2b */
+	{ opout,  "INR\tL"		},	/* 0x2c */
+	{ opout,  "DCR\tL"		},	/* 0x2d */
+	{ nout,   "MVI\tL,"		},	/* 0x2e */
+	{ opout,  "CMA"			},	/* 0x2f */
+	{ opout,  "NOP*"		},	/* 0x30 */ /* undocumented */
+	{ nnout,  "LXI\tSP,"		},	/* 0x31 */
+	{ nnout,  "STA\t"		},	/* 0x32 */
+	{ opout,  "INX\tSP"		},	/* 0x33 */
+	{ opout,  "INR\tM"		},	/* 0x34 */
+	{ opout,  "DCR\tM"		},	/* 0x35 */
+	{ nout,   "MVI\tM,"		},	/* 0x36 */
+	{ opout,  "STC"			},	/* 0x37 */
+	{ opout,  "NOP*"		},	/* 0x38 */ /* undocumented */
+	{ opout,  "DAD\tSP"		},	/* 0x39 */
+	{ nnout,  "LDA\t"		},	/* 0x3a */
+	{ opout,  "DCX\tSP"		},	/* 0x3b */
+	{ opout,  "INR\tA"		},	/* 0x3c */
+	{ opout,  "DCR\tA"		},	/* 0x3d */
+	{ nout,   "MVI\tA,"		},	/* 0x3e */
+	{ opout,  "CMC"			},	/* 0x3f */
+	{ opout,  "MOV\tB,B"		},	/* 0x40 */
+	{ opout,  "MOV\tB,C"		},	/* 0x41 */
+	{ opout,  "MOV\tB,D"		},	/* 0x42 */
+	{ opout,  "MOV\tB,E"		},	/* 0x43 */
+	{ opout,  "MOV\tB,H"		},	/* 0x44 */
+	{ opout,  "MOV\tB,L"		},	/* 0x45 */
+	{ opout,  "MOV\tB,M"		},	/* 0x46 */
+	{ opout,  "MOV\tB,A"		},	/* 0x47 */
+	{ opout,  "MOV\tC,B"		},	/* 0x48 */
+	{ opout,  "MOV\tC,C"		},	/* 0x49 */
+	{ opout,  "MOV\tC,D"		},	/* 0x4a */
+	{ opout,  "MOV\tC,E"		},	/* 0x4b */
+	{ opout,  "MOV\tC,H"		},	/* 0x4c */
+	{ opout,  "MOV\tC,L"		},	/* 0x4d */
+	{ opout,  "MOV\tC,M"		},	/* 0x4e */
+	{ opout,  "MOV\tC,A"		},	/* 0x4f */
+	{ opout,  "MOV\tD,B"		},	/* 0x50 */
+	{ opout,  "MOV\tD,C"		},	/* 0x51 */
+	{ opout,  "MOV\tD,D"		},	/* 0x52 */
+	{ opout,  "MOV\tD,E"		},	/* 0x53 */
+	{ opout,  "MOV\tD,H"		},	/* 0x54 */
+	{ opout,  "MOV\tD,L"		},	/* 0x55 */
+	{ opout,  "MOV\tD,M"		},	/* 0x56 */
+	{ opout,  "MOV\tD,A"		},	/* 0x57 */
+	{ opout,  "MOV\tE,B"		},	/* 0x58 */
+	{ opout,  "MOV\tE,C"		},	/* 0x59 */
+	{ opout,  "MOV\tE,D"		},	/* 0x5a */
+	{ opout,  "MOV\tE,E"		},	/* 0x5b */
+	{ opout,  "MOV\tE,H"		},	/* 0x5c */
+	{ opout,  "MOV\tE,L"		},	/* 0x5d */
+	{ opout,  "MOV\tE,M"		},	/* 0x5e */
+	{ opout,  "MOV\tE,A"		},	/* 0x5f */
+	{ opout,  "MOV\tH,B"		},	/* 0x60 */
+	{ opout,  "MOV\tH,C"		},	/* 0x61 */
+	{ opout,  "MOV\tH,D"		},	/* 0x62 */
+	{ opout,  "MOV\tH,E"		},	/* 0x63 */
+	{ opout,  "MOV\tH,H"		},	/* 0x64 */
+	{ opout,  "MOV\tH,L"		},	/* 0x65 */
+	{ opout,  "MOV\tH,M"		},	/* 0x66 */
+	{ opout,  "MOV\tH,A"		},	/* 0x67 */
+	{ opout,  "MOV\tL,B"		},	/* 0x68 */
+	{ opout,  "MOV\tL,C"		},	/* 0x69 */
+	{ opout,  "MOV\tL,D"		},	/* 0x6a */
+	{ opout,  "MOV\tL,E"		},	/* 0x6b */
+	{ opout,  "MOV\tL,H"		},	/* 0x6c */
+	{ opout,  "MOV\tL,L"		},	/* 0x6d */
+	{ opout,  "MOV\tL,M"		},	/* 0x6e */
+	{ opout,  "MOV\tL,A"		},	/* 0x6f */
+	{ opout,  "MOV\tM,B"		},	/* 0x70 */
+	{ opout,  "MOV\tM,C"		},	/* 0x71 */
+	{ opout,  "MOV\tM,D"		},	/* 0x72 */
+	{ opout,  "MOV\tM,E"		},	/* 0x73 */
+	{ opout,  "MOV\tM,H"		},	/* 0x74 */
+	{ opout,  "MOV\tM,L"		},	/* 0x75 */
+	{ opout,  "HLT"			},	/* 0x76 */
+	{ opout,  "MOV\tM,A"		},	/* 0x77 */
+	{ opout,  "MOV\tA,B"		},	/* 0x78 */
+	{ opout,  "MOV\tA,C"		},	/* 0x79 */
+	{ opout,  "MOV\tA,D"		},	/* 0x7a */
+	{ opout,  "MOV\tA,E"		},	/* 0x7b */
+	{ opout,  "MOV\tA,H"		},	/* 0x7c */
+	{ opout,  "MOV\tA,L"		},	/* 0x7d */
+	{ opout,  "MOV\tA,M"		},	/* 0x7e */
+	{ opout,  "MOV\tA,A"		},	/* 0x7f */
+	{ opout,  "ADD\tB"		},	/* 0x80 */
+	{ opout,  "ADD\tC"		},	/* 0x81 */
+	{ opout,  "ADD\tD"		},	/* 0x82 */
+	{ opout,  "ADD\tE"		},	/* 0x83 */
+	{ opout,  "ADD\tH"		},	/* 0x84 */
+	{ opout,  "ADD\tL"		},	/* 0x85 */
+	{ opout,  "ADD\tM"		},	/* 0x86 */
+	{ opout,  "ADD\tA"		},	/* 0x87 */
+	{ opout,  "ADC\tB"		},	/* 0x88 */
+	{ opout,  "ADC\tC"		},	/* 0x89 */
+	{ opout,  "ADC\tD"		},	/* 0x8a */
+	{ opout,  "ADC\tE"		},	/* 0x8b */
+	{ opout,  "ADC\tH"		},	/* 0x8c */
+	{ opout,  "ADC\tL"		},	/* 0x8d */
+	{ opout,  "ADC\tM"		},	/* 0x8e */
+	{ opout,  "ADC\tA"		},	/* 0x8f */
+	{ opout,  "SUB\tB"		},	/* 0x90 */
+	{ opout,  "SUB\tC"		},	/* 0x91 */
+	{ opout,  "SUB\tD"		},	/* 0x92 */
+	{ opout,  "SUB\tE"		},	/* 0x93 */
+	{ opout,  "SUB\tH"		},	/* 0x94 */
+	{ opout,  "SUB\tL"		},	/* 0x95 */
+	{ opout,  "SUB\tM"		},	/* 0x96 */
+	{ opout,  "SUB\tA"		},	/* 0x97 */
+	{ opout,  "SBB\tB"		},	/* 0x98 */
+	{ opout,  "SBB\tC"		},	/* 0x99 */
+	{ opout,  "SBB\tD"		},	/* 0x9a */
+	{ opout,  "SBB\tE"		},	/* 0x9b */
+	{ opout,  "SBB\tH"		},	/* 0x9c */
+	{ opout,  "SBB\tL"		},	/* 0x9d */
+	{ opout,  "SBB\tM"		},	/* 0x9e */
+	{ opout,  "SBB\tA"		},	/* 0x9f */
+	{ opout,  "ANA\tB"		},	/* 0xa0 */
+	{ opout,  "ANA\tC"		},	/* 0xa1 */
+	{ opout,  "ANA\tD"		},	/* 0xa2 */
+	{ opout,  "ANA\tE"		},	/* 0xa3 */
+	{ opout,  "ANA\tH"		},	/* 0xa4 */
+	{ opout,  "ANA\tL"		},	/* 0xa5 */
+	{ opout,  "ANA\tM"		},	/* 0xa6 */
+	{ opout,  "ANA\tA"		},	/* 0xa7 */
+	{ opout,  "XRA\tB"		},	/* 0xa8 */
+	{ opout,  "XRA\tC"		},	/* 0xa9 */
+	{ opout,  "XRA\tD"		},	/* 0xaa */
+	{ opout,  "XRA\tE"		},	/* 0xab */
+	{ opout,  "XRA\tH"		},	/* 0xac */
+	{ opout,  "XRA\tL"		},	/* 0xad */
+	{ opout,  "XRA\tM"		},	/* 0xae */
+	{ opout,  "XRA\tA"		},	/* 0xaf */
+	{ opout,  "ORA\tB"		},	/* 0xb0 */
+	{ opout,  "ORA\tC"		},	/* 0xb1 */
+	{ opout,  "ORA\tD"		},	/* 0xb2 */
+	{ opout,  "ORA\tE"		},	/* 0xb3 */
+	{ opout,  "ORA\tH"		},	/* 0xb4 */
+	{ opout,  "ORA\tL"		},	/* 0xb5 */
+	{ opout,  "ORA\tM"		},	/* 0xb6 */
+	{ opout,  "ORA\tA"		},	/* 0xb7 */
+	{ opout,  "CMP\tB"		},	/* 0xb8 */
+	{ opout,  "CMP\tC"		},	/* 0xb9 */
+	{ opout,  "CMP\tD"		},	/* 0xba */
+	{ opout,  "CMP\tE"		},	/* 0xbb */
+	{ opout,  "CMP\tH"		},	/* 0xbc */
+	{ opout,  "CMP\tL"		},	/* 0xbd */
+	{ opout,  "CMP\tM"		},	/* 0xbe */
+	{ opout,  "CMP\tA"		},	/* 0xbf */
+	{ opout,  "RNZ"			},	/* 0xc0 */
+	{ opout,  "POP\tB"		},	/* 0xc1 */
+	{ nnout,  "JNZ\t"		},	/* 0xc2 */
+	{ nnout,  "JMP\t"		},	/* 0xc3 */
+	{ nnout,  "CNZ\t"		},	/* 0xc4 */
+	{ opout,  "PUSH\tB"		},	/* 0xc5 */
+	{ nout,   "ADI\t"		},	/* 0xc6 */
+	{ opout,  "RST\t0"		},	/* 0xc7 */
+	{ opout,  "RZ"			},	/* 0xc8 */
+	{ opout,  "RET"			},	/* 0xc9 */
+	{ nnout,  "JZ\t"		},	/* 0xca */
+	{ nnout,  "JMP*\t"		},	/* 0xcb */ /* undocumented */
+	{ nnout,  "CZ\t"		},	/* 0xcc */
+	{ nnout,  "CALL\t"		},	/* 0xcd */
+	{ nout,   "ACI\t"		},	/* 0xce */
+	{ opout,  "RST\t1"		},	/* 0xcf */
+	{ opout,  "RNC"			},	/* 0xd0 */
+	{ opout,  "POP\tD"		},	/* 0xd1 */
+	{ nnout,  "JNC\t"		},	/* 0xd2 */
+	{ nout,   "OUT\t"		},	/* 0xd3 */
+	{ nnout,  "CNC\t"		},	/* 0xd4 */
+	{ opout,  "PUSH\tD"		},	/* 0xd5 */
+	{ nout,   "SUI\t"		},	/* 0xd6 */
+	{ opout,  "RST\t2"		},	/* 0xd7 */
+	{ opout,  "RC"			},	/* 0xd8 */
+	{ opout,  "RET*"		},	/* 0xd9 */ /* undocumented */
+	{ nnout,  "JC\t"		},	/* 0xda */
+	{ nout,   "IN\t"		},	/* 0xdb */
+	{ nnout,  "CC\t"		},	/* 0xdc */
+	{ nnout,  "CALL*\t"		},	/* 0xdd */ /* undocumented */
+	{ nout,   "SBI\t"		},	/* 0xde */
+	{ opout,  "RST\t3"		},	/* 0xdf */
+	{ opout,  "RPO"			},	/* 0xe0 */
+	{ opout,  "POP\tH"		},	/* 0xe1 */
+	{ nnout,  "JPO\t"		},	/* 0xe2 */
+	{ opout,  "XTHL"		},	/* 0xe3 */
+	{ nnout,  "CPO\t"		},	/* 0xe4 */
+	{ opout,  "PUSH\tH"		},	/* 0xe5 */
+	{ nout,   "ANI\t"		},	/* 0xe6 */
+	{ opout,  "RST\t4"		},	/* 0xe7 */
+	{ opout,  "RPE"			},	/* 0xe8 */
+	{ opout,  "PCHL"		},	/* 0xe9 */
+	{ nnout,  "JPE\t"		},	/* 0xea */
+	{ opout,  "XCHG"		},	/* 0xeb */
+	{ nnout,  "CPE\t"		},	/* 0xec */
+	{ nnout,  "CALL*\t"		},	/* 0xed */ /* undocumented */
+	{ nout,   "XRI\t"		},	/* 0xee */
+	{ opout,  "RST\t5"		},	/* 0xef */
+	{ opout,  "RP"			},	/* 0xf0 */
+	{ opout,  "POP\tPSW"		},	/* 0xf1 */
+	{ nnout,  "JP\t"		},	/* 0xf2 */
+	{ opout,  "DI"			},	/* 0xf3 */
+	{ nnout,  "CP\t"		},	/* 0xf4 */
+	{ opout,  "PUSH\tPSW"		},	/* 0xf5 */
+	{ nout,   "ORI\t"		},	/* 0xf6 */
+	{ opout,  "RST\t6"		},	/* 0xf7 */
+	{ opout,  "RM"			},	/* 0xf8 */
+	{ opout,  "SPHL"		},	/* 0xf9 */
+	{ nnout,  "JM\t"		},	/* 0xfa */
+	{ opout,  "EI"			},	/* 0xfb */
+	{ nnout,  "CM\t"		},	/* 0xfc */
+	{ nnout,  "CALL*\t"		},	/* 0xfd */ /* undocumented */
+	{ nout,   "CPI\t"		},	/* 0xfe */
+	{ opout,  "RST\t7"		}	/* 0xff */
+};
+
 static int addr;
-static char *unkown = "???";
+static char *unknown = "???";
 static char *reg[] = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
 static char *regix = "IX";
 static char *regiy = "IY";
@@ -344,35 +604,29 @@ char Opcode_Str[64];
 
 /* Set up machine code hex in Opcode_Str for GUI disassembly */
 
-void get_opcodes(unsigned char **p, int len)
+static void get_opcodes(unsigned char **p, int len)
 {
-  switch (len)
-  {
-    case 1:
-      sprintf(Opcode_Str, "%02X         ",
-                (**p & 0xff));
-      break;
-
-    case 2:
-      sprintf(Opcode_Str, "%02X %02X      ",
-                (**p & 0xff), *(*p + 1) & 0xff);
-      break;
-
-    case 3:
-      sprintf(Opcode_Str, "%02X %02X %02X   ",
-                (**p & 0xff), *(*p + 1) & 0xff,
-                *(*p + 2) & 0xff);
-      break;
-
-    case 4:
-      sprintf(Opcode_Str, "%02X %02X %02X %02X",
-                (**p & 0xff), *(*p + 1) & 0xff,
-                *(*p + 2) & 0xff, *(*p + 3) & 0xff);
-      break;
-
-    default:
-      sprintf(Opcode_Str, "xx OW OW xx");
-  }
+	switch (len) {
+	case 1:
+		sprintf(Opcode_Str, "%02X         ", (**p & 0xff));
+		break;
+	case 2:
+		sprintf(Opcode_Str, "%02X %02X      ",
+			(**p & 0xff), *(*p + 1) & 0xff);
+		break;
+	case 3:
+		sprintf(Opcode_Str, "%02X %02X %02X   ",
+			(**p & 0xff), *(*p + 1) & 0xff,
+			*(*p + 2) & 0xff);
+		break;
+	case 4:
+		sprintf(Opcode_Str, "%02X %02X %02X %02X",
+			(**p & 0xff), *(*p + 1) & 0xff,
+			*(*p + 2) & 0xff, *(*p + 3) & 0xff);
+		break;
+	default:
+		sprintf(Opcode_Str, "xx OW OW xx");
+	}
 }
 #endif
 
@@ -388,20 +642,46 @@ void get_opcodes(unsigned char **p, int len)
  *	The second argument is the (Z80) address of the
  *	op-code to disassemble. It is used to calculate the
  *	destination address of relative jumps.
+ *
+ *	At most four bytes will be read from the buffer.
+ *
+ *	To handle memory wrap around from high memory to low
+ *	memory addresses, set base to a non-null pointer
+ *	designating the base of a 64K memory block. *p should
+ *	point into this block.
  */
-void disass(unsigned char **p, int adr)
+void disass(int cpu, unsigned char **p, int adr, unsigned char *base)
 {
 	register int len;
+	unsigned char buf[4];
+	size_t ofs;
+	int i;
 
 	addr = adr;
-	len = (*optab[**p].fun)	(optab[**p].text, p);
+
+	if (base != NULL) {
+		ofs = *p - base;
+		for (i = 0; i < 4; i++)
+			buf[i] = base[(ofs + i) & 0xffff];
+		*p = buf;
+	}
+
+	if (cpu == Z80)
+		len = (*optabz80[**p].fun) (optabz80[**p].text, p);
+	else
+		len = (*optabi8080[**p].fun) (optabi8080[**p].text, p);
+
 #ifndef WANT_GUI
 	printf(Disass_Str);
 #endif
 #ifdef WANT_GUI
         get_opcodes(p, len);
 #endif
-	*p += len;
+
+	if (base != NULL)
+		*p = base + ((ofs + len) & 0xffff);
+	else
+		*p += len;
 }
 
 /*
@@ -439,7 +719,7 @@ static int iout(char *s, unsigned char **p)
  */
 static int rout(char *s, char **p)
 {
-	sprintf(Disass_Str, "%s%04X\n", s, addr + *(*p + 1) + 2);
+	sprintf(Disass_Str, "%s%04X\n", s, (addr + *(*p + 1) + 2) & 0xffff);
 	return(2);
 }
 
@@ -508,6 +788,11 @@ static int cbop(char *s, unsigned char **p)
 			reg[b2 & 7]);
 		return(2);
 	}
+	if (b2 >= 0x30 && b2 <= 0x37) {		/* undocumented */
+		sprintf(Disass_Str, "SLL*\t%s\n",
+			reg[b2 & 7]);
+		return(2);
+	}
 	if (b2 >= 0x38 && b2 <= 0x3f) {
 		sprintf(Disass_Str, "SRL\t%s\n",
 			reg[b2 & 7]);
@@ -528,7 +813,7 @@ static int cbop(char *s, unsigned char **p)
 			((b2 >> 3) & 7) + '0', reg[b2 &	7]);
 		return(2);
 	}
-	strcat(Disass_Str, unkown);
+	sprintf(Disass_Str, "%s\n", unknown);
 	return(2);
 }
 
@@ -726,7 +1011,7 @@ static int edop(char *s, unsigned char **p)
 		strcat(Disass_Str, "OTDR\n");
 		break;
 	default:
-		strcat(Disass_Str, unkown);
+		sprintf(Disass_Str, "%s\n", unknown);
 	}
 	return(len);
 }
@@ -943,7 +1228,7 @@ static int ddfd(char *s, unsigned char **p)
 			sprintf(Disass_Str, "SET\t7,(%s+%02X)\n", ireg, *(*p + 2));
 			break;
 		default:
-			strcat(Disass_Str, unkown);
+			sprintf(Disass_Str, "%s\n", unknown);
 		}
 		len = 4;
 		break;
@@ -968,7 +1253,7 @@ static int ddfd(char *s, unsigned char **p)
 		len = 2;
 		break;
 	default:
-		strcat(Disass_Str, unkown);
+		sprintf(Disass_Str, "%s\n", unknown);
 	}
 	return(len);
 }

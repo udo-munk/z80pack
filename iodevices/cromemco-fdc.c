@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -27,6 +27,11 @@
  * 26-JUL-2017 fixed buggy index pulse implementation
  * 15-AUG-2017 and more fixes for index pulse
  * 22-AUG-2017 provide write protect and track 0 bits for all commands
+ * 23-APR-2018 cleanup
+ * 20-MAY-2018 improved reset
+ * 15-JUL-2018 use logging
+ * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
+ * 24-SEP-2019 restore and seek also affect step direction
  */
 
 #include <unistd.h>
@@ -37,6 +42,7 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "cromemco-fdc.h"
 
 /* internal state of the fdc */
@@ -55,7 +61,9 @@
 #define SPT5SD		18	/* # of sectors per track 5.25" SD */
 #define SPT5DD		10	/* # of sectors per track 5.25" DD */
 
-//     BYTE fdc_flags = 16|64;	/* FDC flag register, no autoboot */
+static const char *TAG = "16FDC";
+
+/*     BYTE fdc_flags = 16|64;*//* FDC flag register, no autoboot */
        BYTE fdc_flags = 16;	/* FDC flag register, autoboot */
 static BYTE fdc_cmd;		/* FDC command last send */
 static BYTE fdc_stat;		/* FDC status register */
@@ -71,7 +79,7 @@ static int secsz = SEC_SZSD;	/* current used sector size */
 static int state;		/* internal fdc state */
 static int dcnt;		/* data counter read/write */
 static int mflag;		/* multiple sectors flag */
-static char fn[4096];		/* path/filename for disk image */
+static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk i/o */
 static BYTE buf[SEC_SZDD];	/* buffer for one sector */
        int index_pulse = 0;	/* disk index pulse */
@@ -82,10 +90,10 @@ static int headloaded;		/* head loaded flag */
 
 /* these are our disk drives, 8" SS SD initially */
 static Diskdef disks[4] = {
-	{ "drivea.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE },
-	{ "driveb.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE },
-	{ "drivec.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE },
-	{ "drived.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE }
+	{ "drivea.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
+	{ "driveb.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
+	{ "drivec.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
+	{ "drived.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE }
 };
 
 /*
@@ -130,6 +138,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5SD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 184320:		/* 5.25" DS SD */
@@ -139,6 +148,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5SD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 201984:		/* 5.25" SS DD */
@@ -148,6 +158,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5DD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 406784:		/* 5.25" DS DD */
@@ -157,6 +168,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK5;
 		disks[disk].sectors = SPT5DD;
 		disks[disk].sec0 = SPT5SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 256256:		/* 8" SS SD */
@@ -166,6 +178,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8SD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 512512:		/* 8" DS SD */
@@ -175,6 +188,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8SD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 625920:		/* 8" SS DD */
@@ -184,6 +198,7 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8DD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
 	case 1256704:		/* 8" DS DD */
@@ -193,10 +208,21 @@ void config_disk(int fd)
 		disks[disk].tracks = TRK8;
 		disks[disk].sectors = SPT8DD;
 		disks[disk].sec0 = SPT8SD;
+		disks[disk].disk_d0 = SINGLE;
 		break;
 
+	case 1261568:		/* 8" DS DD no SD track */
+		disks[disk].disk_t = LARGE;
+		disks[disk].disk_d = DOUBLE;
+		disks[disk].disk_s = TWO;
+		disks[disk].tracks = TRK8;
+		disks[disk].sectors = SPT8DD;
+		disks[disk].sec0 = SPT8DD;
+		disks[disk].disk_d0 = DOUBLE;
+ 		break;
+
 	default:
-		//printf("disk image %s has unknow format\r\n", disks[disk].fn);
+		LOGW(TAG, "disk image %s has unknown format", disks[disk].fn);
 		disks[disk].disk_t = UNKNOWN;
 		break;
 	}
@@ -214,16 +240,23 @@ long get_pos(void)
 
 	    /* single density */
 	    if (disks[disk].disk_d == SINGLE) {
-	      pos = (fdc_track * disks[disk].sectors + fdc_sec - 1) * SEC_SZSD;
+		pos = (fdc_track * disks[disk].sectors + fdc_sec - 1) *
+		      SEC_SZSD;
 
 	    /* double density */
 	    } else {
-		if (fdc_track == 0) {
-		  pos = (fdc_sec - 1) * SEC_SZSD;
+	    	if (disks[disk].disk_d0 == SINGLE) {
+		    if (fdc_track == 0) {
+			pos = (fdc_sec - 1) * SEC_SZSD;
+		    } else {
+			pos = (disks[disk].sec0 * SEC_SZSD) +
+			      ((fdc_track - 1) * disks[disk].sectors
+			      * SEC_SZDD) +
+			      ((fdc_sec - 1) * SEC_SZDD);
+		    }
 		} else {
-		  pos = (disks[disk].sec0 * SEC_SZSD) +
-			((fdc_track - 1) * disks[disk].sectors * SEC_SZDD) +
-			((fdc_sec - 1) * SEC_SZDD);
+		    pos = (fdc_track * disks[disk].sectors * SEC_SZDD) + 
+		 	  (fdc_sec - 1) * SEC_SZDD;
 		}
 	    }
 
@@ -242,15 +275,25 @@ long get_pos(void)
 
 	    /* double density */
 	    } else {
-		if ((fdc_track == 0) && (side == 0)) {
-		    pos = (fdc_sec - 1) * SEC_SZSD;
-		    goto done;
+	    	if (disks[disk].disk_d0 == SINGLE) {
+			if ((fdc_track == 0) && (side == 0)) {
+			    pos = (fdc_sec - 1) * SEC_SZSD;
+			    goto done;
+			}
+			if ((fdc_track == 0) && (side == 1)) {
+			    pos = disks[disk].sec0 * SEC_SZSD +
+				  (fdc_sec - 1) * SEC_SZDD;
+			    goto done;
+			}
+			pos = disks[disk].sec0 * SEC_SZSD +
+			      disks[disk].sectors * SEC_SZDD;
+			pos += (fdc_track - 1) * 2 * disks[disk].sectors
+			       * SEC_SZDD;
+		} else {
+			pos = fdc_track * 2 * disks[disk].sectors * SEC_SZDD;
 		}
-		if ((fdc_track == 0) && (side == 1)) {
-		    pos = disks[disk].sec0 * SEC_SZSD + (fdc_sec - 1) * SEC_SZDD;
-		    goto done;
-		}
-		pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors * SEC_SZDD;
+		pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors
+		      * SEC_SZDD;
 		pos += (fdc_track - 1) * 2 * disks[disk].sectors * SEC_SZDD;
 		if (side == 1)
 			pos += disks[disk].sectors * SEC_SZDD;
@@ -560,7 +603,7 @@ void cromemco_fdc_data_out(BYTE data)
 			if (write(fd, &buf[0], secsz) == secsz)
 				fdc_stat = 0;
 			else
-				fdc_stat = 0x10;	/* sector not found */
+				fdc_stat = 0x20;	/* write fault */
 			close(fd);
 		}
 		break;
@@ -654,7 +697,7 @@ void cromemco_fdc_data_out(BYTE data)
 				if (write(fd, buf, bcnt) == bcnt)
 					fdc_stat = 0;
 				else
-					fdc_stat = 0x10; /* sector not found */
+					fdc_stat = 0x20; /* write fault */
 				wrtstat = 1;
 			}
 		}
@@ -672,6 +715,8 @@ void cromemco_fdc_data_out(BYTE data)
 		break;
 
 	default:			/* track # for seek */
+		if (fdc_track != data)
+			step_dir = (data < fdc_track) ? -1 : 1;
 		fdc_track = data;
 		break;
 	}
@@ -853,8 +898,9 @@ void cromemco_fdc_cmd_out(BYTE data)
 	fdc_flags &= ~1;
 
 	if ((data & 0xf0) == 0) {		/* restore (seek track 0) */
-		//printf("16fdc: restore\r\n");
 		headloaded = (data & 8) ? 1 : 0;
+		if (fdc_track != 0)
+			step_dir = -1;
 		fdc_track = 0;
 		fdc_flags |= 1;			/* set EOJ */
 		fdc_stat = 4;			/* positioned to track 0 */
@@ -862,7 +908,6 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xf0) == 0x10) {	/* seek */
-		//printf("16fdc: seek\r\n");
 		headloaded = (data & 8) ? 1 : 0;
 		fdc_flags |= 1;			/* set EOJ */
 		if (fdc_track <= disks[disk].tracks)
@@ -873,10 +918,8 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x20) {	/* step */
-		//printf("16fdc: step\r\n");
 		headloaded = (data & 8) ? 1 : 0;
-		//if (data & 0x10)
-			fdc_track += step_dir;
+		fdc_track += step_dir;
 		fdc_flags |= 1;			/* set EOJ */
 		if (fdc_track <= disks[disk].tracks)
 			fdc_stat = (fdc_track == 0) ? 4 : 0;
@@ -886,10 +929,8 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x40) {	/* step in */
-		//printf("16fdc: step in\r\n");
 		headloaded = (data & 8) ? 1 : 0;
-		//if (data & 0x10)
-			fdc_track++;
+		fdc_track++;
 		fdc_flags |= 1;			/* set EOJ */
 		step_dir = 1;
 		if (fdc_track <= disks[disk].tracks)
@@ -900,10 +941,8 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x60) {	/* step out */
-		//printf("16fdc: step out\r\n");
 		headloaded = (data & 8) ? 1 : 0;
-		//if (data & 0x10)
-			fdc_track--;
+		fdc_track--;
 		fdc_flags |= 1;			/* set EOJ */
 		step_dir = -1;
 		if (fdc_track <= disks[disk].tracks)
@@ -914,7 +953,6 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xf0) == 0xd0) {	/* force interrupt */
-		//printf("16fdc: interrupt\r\n");
 		state = FDC_IDLE;		/* abort any command */
 		fdc_stat = 0;
 		fdc_flags &= ~128;		/* clear DRQ */
@@ -922,7 +960,6 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_flags |= 1;		/* set EOJ */
 
 	} else if ((data & 0xe0) == 0x80) {	/* read sector(s) */
-		//printf("16fdc: read sector\r\n");
 		mflag = (data & 16) ? 1 : 0;
 		state = FDC_READ;
 		dcnt = 0;
@@ -930,22 +967,20 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_flags |= 128;		/* set DRQ */
 
 	} else if ((data & 0xf0) == 0xa0) {	/* write single sector */
-		//prinft("16fdc: write sector\r\n");
 		state = FDC_WRITE;
 		dcnt = 0;
 		fdc_stat = 3;			/* set DRQ & busy */
 		fdc_flags |= 128;		/* set DRQ */
 
 	} else if (data == 0xc4) {		/* read address */
-		//printf("16fdc: read address\r\n");
 		state = FDC_READADR;
 		dcnt = 0;
 		fdc_stat = 3;			/* set DRQ & busy */
-		//fdc_flags |= 128;		/* set DRQ */
+		/*fdc_flags |= 128;*/		/* set DRQ */
 		fdc_flags |= 129; /* RDOS 2&3 seem to need EOJ already, why */
 
 	} else if ((data & 0xf0) == 0xe0) {	/* read track */
-		printf("16fdc: read track not implemented\r\n");
+		LOGW(TAG, "read track not implemented");
 		fdc_stat = 16;			/* not found */
 		fdc_flags |= 1;			/* set EOJ */
 
@@ -956,15 +991,16 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_flags |= 128;		/* set DRQ */
 
 	} else {
-		printf("16fdc: unknown command %02x\r\n", data);
+		LOGW(TAG, "unknown command %02x", data);
 		fdc_stat = 16|8;		/* not found & CRC error */
 		fdc_flags |= 1;			/* set EOJ */
 	}
 }
 
 /*
- * Reset FDC, placeholder for now, consult manuals
+ * Reset FDC
  */
 void cromemco_fdc_reset(void)
 {
+	state = dcnt = mflag = index_pulse = motortimer = headloaded = 0;
 }

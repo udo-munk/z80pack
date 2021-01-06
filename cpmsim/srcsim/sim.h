@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -40,6 +40,8 @@
  * 12-JAN-17 Release 1.32 improved configurations, front panel, added IMSAI VIO
  * 07-FEB-17 Release 1.33 bugfixes, improvements, better front panels
  * 16-MAR-17 Release 1.34 improvements, added ProcTec VDM-1
+ * 03-AUG-17 Release 1.35 added UNIX sockets, bugfixes, improvements
+ * 21-DEC-17 Release 1.36 bugfixes and improvements
  */
 
 /*
@@ -70,7 +72,7 @@
  * but SIGIO on BSD sockets is not
  */
 #ifdef __CYGWIN__
-//#undef PIPES		/* forking and pipes was not working correct */
+/*#undef PIPES*/	/* forking and pipes was not working correct */
 #undef TCPASYNC		/* SIGIO on BSD sockets not working */
 #endif
 
@@ -84,9 +86,10 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2017 by Udo Munk"
-#define RELEASE	"1.36"
+#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
+#define RELEASE	"1.37-dev"
 
+#define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
 
 #define S_FLAG		128		/* bit definitions of CPU flags */
@@ -124,6 +127,7 @@
 #define OPTRAP2		7		/* illegal 2 byte op-code trap */
 #define OPTRAP4		8		/* illegal 4 byte op-code trap */
 #define USERINT		9		/* user interrupt */
+#define INTERROR	10		/* unsupported bus data on interrupt */
 #define POWEROFF	255		/* CPU off, no error */
 
 typedef unsigned short WORD;		/* 16 bit unsigned */
@@ -165,3 +169,6 @@ struct dskdef {
 	unsigned int tracks;		/* number of tracks */
 	unsigned int sectors;		/* number of sectors */
 };
+
+extern void sleep_ms(int);
+#define SLEEP_MS(t)	sleep_ms(t)

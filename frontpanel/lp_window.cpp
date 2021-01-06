@@ -17,7 +17,12 @@
 
 */
 
+#ifdef __CYGWIN__
+#include <windef.h>
+#endif
+
 #include <GL/glu.h>
+
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
 #include <windows.h>
 #include <Commctrl.h>
@@ -28,6 +33,7 @@
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #endif
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>

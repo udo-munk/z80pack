@@ -1,10 +1,10 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * This module contains a complex I/O-simulation for running
- * CP/M, MP/M, UCSD p-System...
+ * CP/M, MP/M, UCSD p-System, Fuzix ...
  *
  * Please note this doesn't emulate any hardware which
  * ever existed, we've got all virtual circuits in here!
@@ -51,6 +51,12 @@
  * 21-DEC-2016 moved MMU out to the new memory interface module
  * 20-MAR-2017 renamed pipes for auxin/auxout
  * 29-JUN-2017 system reset overworked
+ * 24-APR-2018 cleanup
+ * 17-MAY-2018 improved hardware control
+ * 10-JUN-2018 modified boot code for early loading of files
+ * 30-MAR-2019 added two more 4MB HD's
+ * 08-OCT-2019 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 24-OCT-2019 move RTC to I/O module for usage by any machine
  */
 
 /*
@@ -88,7 +94,6 @@
  *	26 - clock data
  *	27 - 10ms timer causing maskable interrupt
  *	28 - x * 10ms delay circuit for busy waiting loops
- *	29 - hardware control
  *	30 - CPU speed low
  *	31 - CPU speed high
  *
@@ -103,6 +108,8 @@
  *
  *	50 - client socket #1 status
  *	51 - client socket #1 data
+ *
+ *	160 - hardware control
  */
 
 #include <unistd.h>
@@ -112,7 +119,6 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <time.h>
 #include <netdb.h>
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -124,14 +130,20 @@
 #include <netinet/tcp.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simbdos.h"
 #include "memory.h"
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
+#include "../../iodevices/rtc.h"
 
 #define BUFSIZE 256		/* max line length of command buffer */
 #define MAX_BUSY_COUNT 10	/* max counter to detect I/O busy waiting
 				   on the console status port */
 
-extern int boot(void);
+extern int boot(int);
 extern void reset_cpu(void);
+
+static const char *TAG = "IO";
 
 static BYTE drive;		/* current drive A..P (0..15) */
 static BYTE track;		/* current track (0..255) */
@@ -139,8 +151,6 @@ static unsigned int sector;	/* current sector (0..65535) */
 static BYTE status;		/* status of last I/O operation on FDC */
 static BYTE dmadl;		/* current DMA address destination low */
 static BYTE dmadh;		/* current DMA address destination high */
-static BYTE clkcmd;		/* clock command */
-static BYTE clkfmt;		/* clock format, 0 = BCD, 1 = decimal */
 static BYTE timer;		/* 10ms timer */
 static int drivea;		/* fd for file "drivea.dsk" */
 static int driveb;		/* fd for file "driveb.dsk" */
@@ -159,8 +169,9 @@ static int driven;		/* fd for file "driven.dsk" */
 static int driveo;		/* fd for file "driveo.dsk" */
 static int drivep;		/* fd for file "drivep.dsk" */
 static int printer;		/* fd for file "printer.txt" */
+static char fn[MAX_LFN];	/* path/filename for disk images */
 static int speed;		/* to reset CPU speed */
-static char fn[4096];		/* path/filename for disk images */
+static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 
 #ifdef PIPES
 static int auxin;		/* fd for pipe "auxin" */
@@ -206,8 +217,8 @@ struct dskdef disks[16] = {
 	{ "driveh.dsk", &driveh, -1, -1 },
 	{ "drivei.dsk", &drivei, 255, 128 },
 	{ "drivej.dsk", &drivej, 255, 128 },
-	{ "drivek.dsk", &drivek, -1, -1 },
-	{ "drivel.dsk", &drivel, -1, -1 },
+	{ "drivek.dsk", &drivek, 255, 128 },
+	{ "drivel.dsk", &drivel, 255, 128 },
 	{ "drivem.dsk", &drivem, -1, -1 },
 	{ "driven.dsk", &driven, -1, -1 },
 	{ "driveo.dsk", &driveo, -1, -1 },
@@ -245,8 +256,6 @@ static BYTE mmui_in(void), mmus_in(void), mmuc_in(void);
 static void mmui_out(BYTE), mmus_out(BYTE), mmuc_out(BYTE);
 static BYTE mmup_in(void);
 static void mmup_out(BYTE);
-static BYTE clkc_in(void), clkd_in(void);
-static void clkc_out(BYTE), clkd_out(BYTE);
 static BYTE time_in(void);
 static void time_out(BYTE);
 static BYTE delay_in(void);
@@ -269,7 +278,6 @@ static void netd1_out(BYTE), nets1_out(BYTE);
 /*
  *	Forward declaration of support functions
  */
-static int to_bcd(int), get_date(struct tm *);
 static void int_timer(int);
 
 #ifdef NETWORKING
@@ -314,7 +322,7 @@ static BYTE (*port_in[256]) (void) = {
 	clkd_in,		/* port 26 */
 	time_in,		/* port 27 */
 	delay_in,		/* port 28 */
-	hwctl_in,		/* port 29 */
+	io_trap_in,		/* port 29 */
 	speedl_in,		/* port 30 */
 	speedh_in,		/* port 31 */
 	io_trap_in,		/* port 32 */
@@ -445,7 +453,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port	157 */
 	io_trap_in,		/* port	158 */
 	io_trap_in,		/* port	159 */
-	io_trap_in,		/* port	160 */
+	hwctl_in,		/* port	160 */	/* virtual hardware control */
 	io_trap_in,		/* port	161 */
 	io_trap_in,		/* port	162 */
 	io_trap_in,		/* port	163 */
@@ -577,7 +585,7 @@ static void (*port_out[256]) (BYTE) = {
 	clkd_out,		/* port 26 */
 	time_out,		/* port 27 */
 	delay_out,		/* port 28 */
-	hwctl_out,		/* port 29 */
+	io_trap_out,		/* port 29 */
 	speedl_out,		/* port 30 */
 	speedh_out,		/* port 31 */
 	io_trap_out,		/* port 32 */
@@ -708,8 +716,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port	157 */
 	io_trap_out,		/* port	158 */
 	io_trap_out,		/* port	159 */
-	io_trap_out,		/* port	160 */
-	io_trap_out,		/* port	161 */
+	hwctl_out,		/* port	160 */	/* virtual hardware control */
+	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port	162 */
 	io_trap_out,		/* port	163 */
 	io_trap_out,		/* port	164 */
@@ -864,7 +872,7 @@ void init_io(void)
 	pid_rec = fork();
 	switch (pid_rec) {
 	case -1:
-		puts("can't fork");
+		LOGE(TAG, "can't fork");
 		exit(1);
 	case 0:
 		/* . might not be in path, so check that first */
@@ -876,16 +884,16 @@ void init_io(void)
 			execlp("receive", "receive", "auxiliaryout.txt",
 				(char *) NULL);
 		/* if not cry and die */
-		puts("can't exec receive process, compile/install the tools dude");
+		LOGE(TAG, "can't exec receive process, compile/install the tools dude");
 		kill(0, SIGQUIT);
 		exit(1);
 	}
 	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NDELAY)) == -1) {
-		perror("pipe auxin");
+		LOGE(TAG, "can't open pipe auxin");
 		exit(1);
 	}
 	if ((auxout = open("/tmp/.z80pack/cpmsim.auxout", O_WRONLY)) == -1) {
-		perror("pipe auxout");
+		LOGE(TAG, "can't open pipe auxout");
 		exit(1);
 	}
 #endif
@@ -921,19 +929,19 @@ static void init_server_socket(int n)
 	if (ss_port[n] == 0)
 		return;
 	if ((ss[n] = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("create server socket");
+		LOGE(TAG, "can't create server socket");
 		exit(1);
 	}
 	if (setsockopt(ss[n], SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
-		perror("setsockopt SO_REUSEADDR on server socket");
+		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
 		exit(1);
 	}
 #ifdef TCPASYNC
 	fcntl(ss[n], F_SETOWN, getpid());
 	i = fcntl(ss[n], F_GETFL, 0);
 	if (fcntl(ss[n], F_SETFL, i | FASYNC) == -1) {
-		perror("fcntl FASYNC on server socket");
+		LOGE(TAG, "can't fcntl FASYNC on server socket");
 		exit(1);
 	}
 #endif
@@ -942,11 +950,11 @@ static void init_server_socket(int n)
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(ss_port[n]);
 	if (bind(ss[n], (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-		perror("bind server socket");
+		LOGE(TAG, "can't bind server socket");
 		exit(1);
 	}
 	if (listen(ss[n], 0) == -1) {
-		perror("listen on server socket");
+		LOGE(TAG, "can't listen on server socket");
 		exit(1);
 	}
 }
@@ -960,20 +968,20 @@ static void net_server_config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s;
-	char fn[4096];
+	char fn[MAX_LFN];
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/net_server.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		printf("Server network configuration:\n");
+		LOG(TAG, "Server network configuration:\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
 				continue;
 			i = atoi(s);
 			if ((i < 1) || (i > 4)) {
-				printf("console %d not supported\n", i);
+				LOGW(TAG, "console %d not supported", i);
 				continue;
 			}
 			while((*s != ' ') && (*s != '\t'))
@@ -986,8 +994,9 @@ static void net_server_config(void)
 			while((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_port[i - 1] = atoi(s);
-			printf("console %d listening on port %d, telnet = %s\n",			       i, ss_port[i - 1],
-			       ((ss_telnet[i - 1] > 0) ? "on" : "off"));
+			LOG(TAG, "console %d listening on port %d, telnet = %s\n",
+			    i, ss_port[i - 1],
+			    ((ss_telnet[i - 1] > 0) ? "on" : "off"));
 		}
 		fclose(fp);
 	}
@@ -1001,13 +1010,13 @@ static void net_client_config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *d;
-	char fn[4096];
+	char fn[MAX_LFN];
 
 	strcpy(&fn[0], &confdir[0]);
 	strcat(&fn[0], "/net_client.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		printf("Client network configuration:\n");
+		LOG(TAG, "Client network configuration:\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
@@ -1023,8 +1032,8 @@ static void net_client_config(void)
 			while((*s == ' ') || (*s == '\t'))
 				s++;
 			cs_port = atoi(s);
-			printf("Connecting to %s at port %d\n", cs_host,
-			       cs_port);
+			LOG(TAG, "Connecting to %s at port %d\n", cs_host,
+			    cs_port);
 		}
 		fclose(fp);
 	}
@@ -1086,12 +1095,15 @@ void reset_system(void)
 	selbnk = 0;
 	segsize = SEGSIZ;
 
+	/* lock hardware control port */
+	hwctl_lock = 0xff;
+
 	/* reset CPU */
 	reset_cpu();
 	wrk_ram	= mem_base();
 
 	/* reboot */
-	boot();
+	boot(1);
 }
 
 /*
@@ -1105,7 +1117,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
 	return(io_data);
 }
 
@@ -1124,7 +1135,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	busy_loop_cnt[0] = 0;
 
 	(*port_out[addrl]) (data);
-	//printf("output %02x to port %02x\r\n", io_data, io_port)";
 }
 
 /*
@@ -1160,14 +1170,10 @@ static void io_trap_out(BYTE data)
 static BYTE cons_in(void)
 {
 	struct pollfd p[1];
-	struct timespec timer;
 
 	if (++busy_loop_cnt[0] >= MAX_BUSY_COUNT) {
-		timer.tv_sec = 0;
-		timer.tv_nsec = 1000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(1);
 		busy_loop_cnt[0] = 0;
-		//putchar('~'); fflush(stdout);
 	}
 
 	p[0].fd = fileno(stdin);
@@ -1218,13 +1224,13 @@ static BYTE cons1_in(void)
 
 		if ((ssc[0] = accept(ss[0], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[0] = 0;
 		}
 
 		if (setsockopt(ssc[0], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[0])
@@ -1290,13 +1296,13 @@ static BYTE cons2_in(void)
 
 		if ((ssc[1] = accept(ss[1], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[1] = 0;
 		}
 
 		if (setsockopt(ssc[1], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[1])
@@ -1362,13 +1368,13 @@ static BYTE cons3_in(void)
 
 		if ((ssc[2] = accept(ss[2], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[2] = 0;
 		}
 
 		if (setsockopt(ssc[2], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[2])
@@ -1434,13 +1440,13 @@ static BYTE cons4_in(void)
 
 		if ((ssc[3] = accept(ss[3], (struct sockaddr *)&fsin,
 		    &alen)) == -1) {
-			perror("accept server socket");
+			LOGW(TAG, "can't accept server socket");
 			ssc[3] = 0;
 		}
 
 		if (setsockopt(ssc[3], IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on server socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
 		if (ss_telnet[3])
@@ -1485,7 +1491,7 @@ static BYTE nets1_in(void)
 	if ((cs == 0) && (cs_port != 0)) {
 		host = gethostbyname(&cs_host[0]);
 		if ((cs = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-			perror("create client socket");
+			LOGE(TAG, "can't create client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1495,14 +1501,14 @@ static BYTE nets1_in(void)
 		sin.sin_family = AF_INET;
 		sin.sin_port = htons(cs_port);
 		if (connect(cs, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-			perror("connect client socket");
+			LOGE(TAG, "can't connect client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
 		}
 		if (setsockopt(cs, IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
-			perror("setsockopt TCP_NODELAY on client socket");
+			LOGW(TAG, "can't setsockopt TCP_NODELAY on client socket");
 		}
 	}
 
@@ -1606,7 +1612,7 @@ static BYTE cond1_in(void)
 			ssc[0] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 1");
+			LOGE(TAG, "can't read console 1");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1642,7 +1648,7 @@ static BYTE cond2_in(void)
 			ssc[1] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 2");
+			LOGE(TAG, "can't read console 2");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1678,7 +1684,7 @@ static BYTE cond3_in(void)
 			ssc[2] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 3");
+			LOGE(TAG, "can't read console 3");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1714,7 +1720,7 @@ static BYTE cond4_in(void)
 			ssc[3] = 0;
 			return((BYTE) 0);
 		} else {
-			perror("read console 4");
+			LOGE(TAG, "can't read console 4");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -1744,7 +1750,7 @@ static BYTE netd1_in(void)
 
 #ifdef NETWORKING
 	if (read(cs, &c, 1) != 1) {
-		perror("read client socket");
+		LOGE(TAG, "can't read client socket");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return((BYTE) 0);
@@ -1773,7 +1779,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 0");
+			LOGE(TAG, "can't write console 0");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1799,7 +1805,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 1");
+			LOGE(TAG, "can't write console 1");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1826,7 +1832,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 2");
+			LOGE(TAG, "can't write console 2");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1853,7 +1859,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 3");
+			LOGE(TAG, "can't write console 3");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1880,7 +1886,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write console 4");
+			LOGE(TAG, "can't write console 4");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1907,7 +1913,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write client socket");
+			LOGE(TAG, "can't write client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -1957,7 +1963,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write printer");
+				LOGE(TAG, "can't write printer");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
@@ -2009,7 +2015,7 @@ static BYTE auxd_in(void)
 #else
 	if (aux_in == 0) {
 		if ((aux_in = open("auxiliaryin.txt", O_RDONLY)) == -1){
-			perror("open auxiliaryin.txt");
+			LOGE(TAG, "can't open auxiliaryin.txt");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return((BYTE) 0);
@@ -2054,7 +2060,7 @@ static void auxd_out(BYTE data)
 
 	if (aux_out == 0) {
 		if ((aux_out = creat("auxiliaryout.txt", 0644)) == -1) {
-			perror("open auxiliaryout.txt");
+			LOGE(TAG, "can't open auxiliaryout.txt");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return;
@@ -2296,8 +2302,8 @@ static void mmui_out(BYTE data)
 		return;
 
 	if (data > MAXSEG) {
-		printf("Try to init %d banks, available %d banks\r\n",
-		       data, MAXSEG);
+		LOGE(TAG, "Try to init %d banks, available %d banks",
+		     data, MAXSEG);
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
@@ -2305,7 +2311,7 @@ static void mmui_out(BYTE data)
 
 	for (i = 1; i < data; i++) {
 		if ((memory[i] = malloc(segsize)) == NULL) {
-			printf("can't allocate memory for bank %d\r\n", i);
+			LOGE(TAG, "can't allocate memory for bank %d", i);
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return;
@@ -2331,7 +2337,7 @@ static BYTE mmus_in(void)
 static void mmus_out(BYTE data)
 {
 	if (data > maxbnk - 1) {
-		printf("%04x: try to select unallocated bank %d\r\n", PC, data);
+		LOGE(TAG, "%04x: try to select unallocated bank %d", PC, data);
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
@@ -2356,7 +2362,7 @@ static BYTE mmuc_in(void)
 static void mmuc_out(BYTE data)
 {
 	if (memory[1] != NULL) {
-		printf("Not possible to resize already allocated segments\r\n");
+		LOGE(TAG, "Not possible to resize already allocated segments");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;
@@ -2378,144 +2384,6 @@ static BYTE mmup_in(void)
 static void mmup_out(BYTE data)
 {
 	wp_common = data;
-}
-
-/*
- *	I/O handler for read clock command:
- *	return last clock command
- */
-static BYTE clkc_in(void)
-{
-	return(clkcmd);
-}
-
-/*
- *	I/O handler for write clock command:
- *	set the wanted clock command
- *	toggle BCD/decimal format if toggle command (255)
- */
-static void clkc_out(BYTE data)
-{
-	clkcmd = data;
-	if (data == 255)
-		clkfmt = clkfmt ^ 1;
-}
-
-/*
- *	I/O handler for read clock data:
- *	dependent on the last clock command the following
- *	informations are returned from the system clock:
- *		0 - seconds in BCD or decimal
- *		1 - minutes in BCD or decimal
- *		2 - hours in BCD or decimal
- *		3 - low byte number of days since 1.1.1978
- *		4 - high byte number of days since 1.1.1978
- *		5 - day of month in BCD or decimal
- *		6 - month in BCD or decimal
- *		7 - year in BCD or decimal
- *	for every other clock command a 0 is returned
- */
-static BYTE clkd_in(void)
-{
-	register struct tm *t;
-	register int val;
-	time_t Time;
-
-	time(&Time);
-	t = localtime(&Time);
-	switch(clkcmd) {
-	case 0:			/* seconds */
-		if (clkfmt)
-			val = t->tm_sec;
-		else
-			val = to_bcd(t->tm_sec);
-		break;
-	case 1:			/* minutes */
-		if (clkfmt)
-			val = t->tm_min;
-		else
-			val = to_bcd(t->tm_min);
-		break;
-	case 2:			/* hours */
-		if (clkfmt)
-			val = t->tm_hour;
-		else
-			val = to_bcd(t->tm_hour);
-		break;
-	case 3:			/* low byte days */
-		val = get_date(t) & 255;
-		break;
-	case 4:			/* high byte days */
-		val = get_date(t) >> 8;
-		break;
-	case 5:			/* day of month */
-		if (clkfmt)
-			val = t->tm_mday;
-		else
-			val = to_bcd(t->tm_mday);
-		break;
-	case 6:			/* month */
-		if (clkfmt)
-			val = t->tm_mon;
-		else
-			val = to_bcd(t->tm_mon);
-		break;
-	case 7:			/* year */
-		if (clkfmt)
-			val = t->tm_year;
-		else
-			val = to_bcd(t->tm_year);
-		break;
-	default:
-		val = 0;
-		break;
-	}
-	return((BYTE) val);
-}
-
-/*
- *	I/O handler for write clock data:
- *	under UNIX the system clock only can be set by the
- *	super user, so we do nothing here
- */
-static void clkd_out(BYTE data)
-{
-	data = data; /* to avoid compiler warning */
-}
-
-/*
- *	Convert an integer to BCD
- */
-static int to_bcd(int val)
-{
-	register int i = 0;
-
-	while (val >= 10) {
-		i += val / 10;
-		i <<= 4;
-		val %= 10;
-	}
-	i += val;
-	return (i);
-}
-
-/*
- *	Calculate number of days since 1.1.1978
- *	CP/M 3 and MP/M 2 are Y2K bug fixed and can handle the date,
- *	so the Y2K bug here is intentional.
- */
-static int get_date(struct tm *t)
-{
-	register int i;
-	register int val = 0;
-
-	for (i = 1978; i < 1900 + t->tm_year; i++) {
-		val += 365;
-		if (i % 4 == 0)
-			val++;
-	}
-	val += t->tm_yday + 1;
-	return(val);
 }
 
 /*
@@ -2566,11 +2434,7 @@ static BYTE time_in(void)
  */
 static void delay_out(BYTE data)
 {
-	struct timespec timer;
-
-	timer.tv_sec = 0;
-	timer.tv_nsec = (long) (10000000L * data);
-	nanosleep(&timer, NULL);
+	SLEEP_MS(data * 10);
 
 #ifdef CNETDEBUG
 	printf(". ");
@@ -2587,19 +2451,33 @@ static BYTE delay_in(void)
 }
 
 /*
- *	I/O handler for write hardware control:
- *	bit 0 = 1	reset CPU, MMU and reboot
+ *	Port is locked until magic number 0xaa is received!
+ *
+ *	I/O handler for write hardware control after unlocking:
+ *	bit 6 = 1	reset CPU, MMU and reboot
  *	bit 7 = 1	halt emulation via I/O
  */
 static void hwctl_out(BYTE data)
 {
-	if (data & 128) {
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+	
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
 		cpu_state = STOPPED;
 		return;
 	}
 
-	if (data & 1) {
+	if (data & 64) {	/* reset system */
 		reset_system();
 		return;
 	}
@@ -2607,11 +2485,11 @@ static void hwctl_out(BYTE data)
 
 /*
  *	I/O handler for read hardware control
- *	returns 0
+ *	returns lock status of the port
  */
 static BYTE hwctl_in(void)
 {
-	return((BYTE) 0);
+	return(hwctl_lock);
 }
 
 /*
@@ -2696,13 +2574,13 @@ static void int_io(int sig)
 
 			if ((ssc[i] = accept(ss[i], (struct sockaddr *) &fsin,
 			    &alen)) == -1) {
-				perror("accept on server socket");
+				LOGW(TAG, "can't accept on server socket");
 				ssc[i] = 0;
 			}
 
 			if (setsockopt(ssc[i], IPPROTO_TCP, TCP_NODELAY,
 			    (void *) &on, sizeof(on)) == -1) {
-				perror("setsockopt TCP_NODELAY on server socket");
+				LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 			}
 
 			if (ss_telnet[i])
@@ -2741,7 +2619,7 @@ void telnet_negotiation(int fd)
 
 		/* else read the option */
 		read(fd, &c, 3);
-		//printf("telnet: %d %d %d\r\n", c[0], c[1], c[2]);
+		LOGD(TAG, "telnet: %d %d %d\r\n", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
 		if (c[1] == 251)	/* and reject other options */

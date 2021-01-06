@@ -3,7 +3,8 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2015-2017 by Udo Munk
+ * Copyright (C) 2015-2019 by Udo Munk
+ * Copyright (C) 2018 David McNaughton
  *
  * Emulation of a Cromemco DAZZLER S100 board
  *
@@ -19,6 +20,9 @@
  * 06-DEC-16 added bus request for the DMA
  * 16-DEC-16 use DMA function for memory access
  * 26-JAN-17 optimization
+ * 15-JUL-18 use logging
+ * 19-JUL-18 integrate webfrontend
+ * 04-NOV-19 remove fake DMA bus request
  */
 
 #include <X11/X.h>
@@ -27,7 +31,6 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <signal.h>
 #include <sys/time.h>
 #include "sim.h"
@@ -35,6 +38,15 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
+
+#ifdef HAS_DAZZLER
+
+static const char *TAG = "DAZZLER";
 
 /* X11 stuff */
 #define WSIZE 512
@@ -90,6 +102,10 @@ static BYTE format;
 /* UNIX stuff */
 static pthread_t thread;
 
+#ifdef HAS_NETSERVER
+static void ws_clear(void);
+static BYTE formatBuf = 0;
+#endif
 
 /* create the X11 window for DAZZLER display */
 static void open_display(void)
@@ -196,13 +212,8 @@ static void open_display(void)
 /* switch DAZZLER off from front panel */
 void cromemco_dazzler_off(void)
 {
-	struct timespec timer;	/* sleep timer */
-
 	state = 0;
-
-	timer.tv_sec = 0;
-	timer.tv_nsec = 50000000L;
-	nanosleep(&timer, NULL);
+	SLEEP_MS(50);
 
 	if (thread != 0) {
 		pthread_cancel(thread);
@@ -219,7 +230,9 @@ void cromemco_dazzler_off(void)
 		display = NULL;
 	}
 
-	bus_request = 0;
+#ifdef HAS_NETSERVER
+	ws_clear();
+#endif
 }
 
 /* draw pixels for one frame in hires */
@@ -586,11 +599,89 @@ static void draw_lowres(void)
 	}
 }
 
+#ifdef HAS_NETSERVER
+static uint8_t dblbuf[2048];
+
+static struct {
+	uint16_t format;
+	uint16_t addr;
+	uint16_t len;
+	uint8_t buf[2048];
+} msg;
+
+void ws_clear(void)
+{
+	memset(dblbuf, 0, 2048);
+
+	msg.format = 0;
+	msg.addr = 0xFFFF;
+	msg.len = 0;
+	net_device_send(DEV_DZLR, (char *) &msg, msg.len + 6);
+	LOGD(TAG, "Clear the screen.");
+}
+
+static void ws_refresh(void)
+{
+
+	int len = (format & 32) ? 2048 : 512;
+	int addr;
+	int i, n, x, la_count;
+	bool cont;
+	uint8_t val;
+
+	for (i = 0; i < len; i++) {
+		addr = i;
+		n = 0;
+		la_count = 0;
+		cont = true;
+		while (cont && (i < len)) {
+			val = dma_read(dma_addr + i);
+			while ((val != dblbuf[i]) && (i < len)) {
+				dblbuf[i++] = val;
+				msg.buf[n++] = val;
+				cont = false;
+				val = dma_read(dma_addr + i);
+			}
+			if (cont)
+				break;
+			x = 0;
+#define LOOKAHEAD 6
+			/* look-ahead up to n bytes for next change */
+			while ((x < LOOKAHEAD) && !cont && (i < len)) {
+				val = dma_read(dma_addr + i++);
+				msg.buf[n++] = val;
+				la_count++;
+				val = dma_read(dma_addr + i);
+				if ((i < len) && (val != dblbuf[i])) {
+					cont = true;
+				}
+				x++;
+			}
+			if (!cont) {
+				n -= x;
+				la_count -= x;
+			}
+		}
+		if (n || (format != formatBuf)) {
+			formatBuf = format;
+			msg.format = format;
+			msg.addr = addr;
+			msg.len = n;
+			net_device_send(DEV_DZLR, (char *) &msg, msg.len + 6);
+			LOGD(TAG, "BUF update 0x%04X-0x%04X len: %d format: 0x%02X l/a: %d", 
+			     msg.addr, msg.addr + msg.len, msg.len, msg.format, la_count);
+		}
+	}
+}
+#endif
+
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	struct timespec timer;	/* sleep timer */
-	struct timeval t1, t2, tdiff;
+	extern int time_diff(struct timeval *, struct timeval *);
+
+	struct timeval t1, t2;
+	int tdiff;
 
 	arg = arg;	/* to avoid compiler warning */
 	gettimeofday(&t1, NULL);
@@ -599,8 +690,7 @@ static void *update_display(void *arg)
 
 		/* draw one frame dependend on graphics format */
 		if (state == 1) {	/* draw frame if on */
-			if (cpu_state == CONTIN_RUN)
-				bus_request = 1;
+#ifndef HAS_NETSERVER
 			XLockDisplay(display);
 			XSetForeground(display, gc, colors[0].pixel);
 			XFillRectangle(display, pixmap, gc, 0, 0, size, size);
@@ -612,31 +702,30 @@ static void *update_display(void *arg)
 				  size, size, 0, 0);
 			XSync(display, True);
 			XUnlockDisplay(display);
-			bus_request = 0;
+#else 
+			UNUSED(draw_hires);
+			UNUSED(draw_lowres);
+			if (net_device_alive(DEV_DZLR)) {
+				ws_refresh();
+			} else {
+				if (msg.format) { 
+					memset(dblbuf, 0, 2048);
+					msg.format = 0;
+				}
+			}
+#endif
 		}
 
 		/* frame done, set frame flag for 4ms */
 		flags = 0;
-		timer.tv_sec = 0;
-		timer.tv_nsec = 4000000L;
-		nanosleep(&timer, NULL);
+		SLEEP_MS(4);
 		flags = 64;
 
-		/* compute time used for processing */
-		gettimeofday(&t2, NULL);
-		tdiff.tv_sec = t2.tv_sec - t1.tv_sec;
-		tdiff.tv_usec = t2.tv_usec - t1.tv_usec;
-		if (tdiff.tv_usec < 0) {
-			--tdiff.tv_sec;
-			tdiff.tv_usec += 1000000;
-		}
-
 		/* sleep rest to 33ms so that we get 30 fps */
-		if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < 33000)) {
-			timer.tv_sec = 0;
-			timer.tv_nsec = (long) ((33000 - tdiff.tv_usec) * 1000);
-			nanosleep(&timer, NULL);
-		}
+		gettimeofday(&t2, NULL);
+		tdiff = time_diff(&t1, &t2);
+		if ((tdiff > 0) && (tdiff < 33000))
+			SLEEP_MS(33 - (tdiff / 1000));
 
 		gettimeofday(&t1, NULL);
 	}
@@ -647,35 +736,41 @@ static void *update_display(void *arg)
 
 void cromemco_dazzler_ctl_out(BYTE data)
 {
-	struct timespec timer;	/* sleep timer */
-
 	/* get DMA address for display memory */
 	dma_addr = (data & 0x7f) << 9;
 
 	/* switch DAZZLER on/off */
 	if (data & 128) {
+#ifndef HAS_NETSERVER
 		state = 1;
 		if (display == NULL) {
 			open_display();
 		}
+#else
+		UNUSED(open_display);
+		if (state == 0) 
+			ws_clear();
+		state = 1;
+#endif
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, update_display,
 			    (void *) NULL)) {
-				printf("can't create DAZZLER thread\r\n");
+				LOGE(TAG, "can't create thread");
 				exit(1);
 			}
 		}
 	} else {
 		if (state == 1) {
 			state = 0;
-			timer.tv_sec = 0;
-			timer.tv_nsec = 50000000L;
-			nanosleep(&timer, NULL);
+			SLEEP_MS(50);
+#ifndef HAS_NETSERVER
 			XLockDisplay(display);
 			XClearWindow(display, window);
 			XSync(display, True);
 			XUnlockDisplay(display);
-			bus_request = 0;
+#else
+			ws_clear();
+#endif
 		}
 	}
 }
@@ -692,3 +787,5 @@ void cromemco_dazzler_format_out(BYTE data)
 {
 	format = data;
 }
+
+#endif /* HAS_DAZZLER */

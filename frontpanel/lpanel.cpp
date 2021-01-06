@@ -18,6 +18,10 @@
 
 */
 
+#ifdef __CYGWIN__
+#include <windef.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

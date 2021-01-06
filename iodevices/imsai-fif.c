@@ -3,13 +3,9 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of an IMSAI FIF S100 board
- *
- * This emulation was reverse engineered from running IMDOS on the machine,
- * and from reading the CP/M 1.3 BIOS and boot sources from IMSAI.
- * I do not have the manual for this board, so there still might be bugs.
  *
  * History:
  * 18-JAN-2014 first working version finished
@@ -24,6 +20,12 @@
  * 07-DEC-2016 added bus request for the DMA
  * 19-DEC-2016 use the new memory interface for DMA access
  * 22-JUN-2017 added reset function
+ * 19-MAY-2018 improved reset
+ * 13-JUL-2018 use logging & integrate disk manager
+ * 10-SEP-2019 added support for a z80pack 4 MB harddisk
+ * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
+ * 17-NOV-2019 return result codes as documented in manual
+ * 18-NOV-2019 initialize command string address array
  */
 
 #include <unistd.h>
@@ -36,43 +38,77 @@
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
+
+/* support a z80pack 4 MB drive as unit 15 */
+#define LARGEDISK
 
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
 #define DD_RESULT	1	/* result code */
-#define DD_NN		2	/* track number high, not used */
+#define DD_NN		2	/* track number high, disk format */
 #define DD_TRACK	3	/* track number low */
 #define DD_SECTOR	4	/* sector number */
 #define DD_DMAL		5	/* DMA address low */
 #define DD_DMAH		6	/* DMA address high */
 
 /* FD command in disk descriptor unit/command field */
+/* Commands 5-11 are not implemented, no available software uses them */
 #define WRITE_SEC	1
 #define READ_SEC	2
 #define FMT_TRACK	3
 #define VERIFY_DATA	4
 
-/* 8" standard disks */
+/* sector size */
 #define SEC_SZ		128
-#define SPT		26
-#define TRK		77
 
-//#define DEBUG		/* so we can see what the FIF is asked to do */
+/* 8" standard disks */
+#define SPT8		26
+#define TRK8		77
 
+#ifdef LARGEDISK
+/* z80pack 4 MB drive */
+#define SPTHD		128
+#define TRKHD		255
+#endif
+
+static const char *TAG = "FIF";
+
+#ifdef HAS_DISKMANAGER
+extern char *disks[];
+#else
 /* these are our disk drives */
+#ifdef LARGEDISK
+static char *disks[9] = {
+	"drivea.dsk",
+	"driveb.dsk",
+	"drivec.dsk",
+	"drived.dsk",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	"drivei.dsk"
+};
+#else
 static char *disks[4] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",
 	"drived.dsk"
 };
+#endif
+#endif
 
-static char fn[4096];		/* path/filename for disk image */
+static int fdaddr[16];		/* address of disk descriptors */
+static char fn[MAX_LFN];	/* path/filename for disk image */
+static int fdstate = 0;		/* state of the fd */
 
 /*
  * find and set path for disk images
  */
-void dsk_path(void) {
+char *dsk_path(void) {
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -86,7 +122,9 @@ void dsk_path(void) {
 		} else {
 			strcpy(fn, DISKSDIR);
 		}
+		strncpy(diskd, fn, MAX_LFN);
 	}
+	return diskd;
 }
 
 BYTE imsai_fif_in(void)
@@ -96,26 +134,20 @@ BYTE imsai_fif_in(void)
 
 void imsai_fif_out(BYTE data)
 {
-	static int fdstate = 0;		/* state of the fd */
-	static int fdaddr[16];		/* address of disk descriptors */
 	static int descno;		/* descriptor # */
 
 	void disk_io(int);
 
 	/*
-	 * The controller understands these commands:
-	 * 0x10: set address of a disk descriptor from the following two out's
-	 * 0x00: do the work as setup in the disk descriptor
-	 * 0x20: reset a drive to home position, the lower digit contains
-	 *       the drive to reset, 0x2f for all drives
+	 * controller commands: MSB command, LSB disk decsriptor or drive(s)
 	 *
-	 * The dd address only needs to be set once, the OS then can adjust
-	 * the wanted I/O in the descriptor and send the 0x00 command
-	 * multiple times for this descriptor.
-	 *
-	 * The commands 0x10 and 0x00 are OR'ed with a descriptor number
-	 * 0x0 - 0xf, so there can be 16 different disk descriptors that
-	 * need to be remembered.
+	 * 0x00: execute disk descriptor in LSB
+	 * 0x10: set address of disk descriptor in LSB from following two OUT's
+	 * 0x20: reset drives in LSB to home position
+	 * 0x30: write protect drives in LSB
+	 * 0x40: reset write protect for drives in LSB
+	 * 0x50: reset and read boot sector from drive 0 into memory location 0
+	 * 0x60 - 0xF0: perform no operation
 	 */
 	switch (fdstate) {
 	case 0:	/* start of command phase */
@@ -133,9 +165,20 @@ void imsai_fif_out(BYTE data)
 		case 0x20:	/* reset drive(s) */
 			break;	/* no mechanical drives, so nothing to do */
 
-		default:
-			printf("FIF: unknown cmd %02x\r\n", data);
-			return;
+		case 0x30:	/* write protect drive(s) */
+			LOGW(TAG, "write protect not implemented");
+			break;
+
+		case 0x40:	/* reset write protect drive(s) */
+			LOGW(TAG, "reset write protect not implemented");
+			break;
+
+		case 0x50:	/* reset and load boot sector into memory */
+			LOGW(TAG, "read boot sector not implemented");
+			break;
+
+		default:	/* all other commands perform no operation */
+			break;
 		}
 		break;
 
@@ -150,7 +193,7 @@ void imsai_fif_out(BYTE data)
 		break;
 
 	default:
-		printf("FIF: internal state error\r\n");
+		LOGE(TAG, "internal state error");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		break;
@@ -161,171 +204,258 @@ void imsai_fif_out(BYTE data)
  *	Here we do the disk I/O.
  *
  *	The status byte in the disk descriptor is set as follows:
- *	1 - OK
- *	2 - illegal drive
- *	3 - no disk in drive
- *	4 - illegal track
- *	5 - illegal sector
- *	6 - seek error
- *	7 - read error
- *	8 - write error
- *	15 - invalid command
  *
- *	These error codes will abort disk I/O, but this are not the ones
- *	the real controller would set. Without FIF manual the real error
- *	codes are not known yet.
- *	In the original IMSAI BIOS the upper 4 bits of the error code
- *	are described as "error class" and used as error code for CP/M.
- *	One error code is explicitely tested, so it is known:
- *		0A1H - drive not ready
- *	The IMSAI BIOS waits forever until the drive door is closed, for
- *	now I leave the used code as is, so that the IO is aborted.
+ *	MSB = error class	LSB = error number
+ *	1100 - class 1 error in command string
+ *	1010 - class 2 operator recoverable error
+ *	1001 - class 3 hardware failure
+ *
+ *	Class 1 - Bit 6 is set, status code has the form CXH
+ *	C1 - result not initialized with 0
+ *	C2 - no drive selected
+ *	C3 - more than one drive selected
+ *	C4 - illegal command number
+ *	C5 - illegal track address
+ *	C6 - illegal sector address
+ *	C7 - illegal buffer address
+ *	C8 - illegal byte-3 format
+ *
+ *	Class 2 - Bit 5 is set, status code has the form AXH
+ *	A1 - selected drive not ready
+ *	A2 - selected drive is hardware write protected
+ *	A3 - selected drive is software write protected
+ *	A4 - sector lenght specified by byte 3 of command string does
+ *	     not correspond to actual sector lenght found on disk
+ *
+ *	Class 3 - Bit 4 is set, status code has the form 9XH
+ *	91 - selected drive not operable
+ *	92 - track address error while attempting to read/write
+ *	93 - data synchronization error
+ *	94 - CRC error in the ID field of desired sector
+ *	95 - failure to recognize data AM after recognizing sector ID field
+ *	96 - CRC error in the data field of desired sector
+ *	97 - deleted data address mark in data field
+ *	98 - format operation unsuccessful
  */
 void disk_io(int addr)
 {
 	register int i;
-	static int fd;			/* fd for disk i/o */
+	static int fd = -1;		/* fd for disk i/o */
 	static long pos;		/* seek position */
 	static int unit;		/* disk unit number */
 	static int cmd;			/* disk command */
+	static int res;			/* result code */
+	static int fmt;			/* disk format etc. */
 	static int track;		/* disk track */
 	static int sector;		/* disk sector */
 	static int dma_addr;		/* DMA address */
+	static int spt;			/* sectors per track */
+	static int maxtrk;		/* max tracks of disk */
 	static int disk;		/* internal disk no */
+	static struct stat s;
 	static char blksec[SEC_SZ];
 
-#ifdef DEBUG
-	printf("FIF disk descriptor at %04x\r\n", addr);
-	printf("FIF unit: %02x\r\n", *(mem_base() + addr + DD_UNIT));
-	printf("FIF result: %02x\r\n", *(mem_base() + addr + DD_RESULT));
-	printf("FIF nn: %02x\r\n", *(mem_base() + addr + DD_NN));
-	printf("FIF track: %02x\r\n", *(mem_base() + addr + DD_TRACK));
-	printf("FIF sector: %02x\r\n", *(mem_base() + addr + DD_SECTOR));
-	printf("FIF DMA low: %02x\r\n", *(mem_base() + addr + DD_DMAL));
-	printf("FIF DMA high: %02x\r\n", *(mem_base() + addr + DD_DMAH));
-	printf("\r\n");
-#endif
+	LOGD(TAG, "disk descriptor at %04x", addr);
+	LOGD(TAG, "unit: %02x", getmem(addr + DD_UNIT));
+	LOGD(TAG, "result: %02x", getmem(addr + DD_RESULT));
+	LOGD(TAG, "nn: %02x", getmem(addr + DD_NN));
+	LOGD(TAG, "track: %02x", getmem(addr + DD_TRACK));
+	LOGD(TAG, "sector: %02x", getmem(addr + DD_SECTOR));
+	LOGD(TAG, "DMA low: %02x", getmem(addr + DD_DMAL));
+	LOGD(TAG, "DMA high: %02x", getmem(addr + DD_DMAH));
+	LOGD(TAG, "");
 
-	unit = dma_read(addr + DD_UNIT) & 0xf;
-	cmd = dma_read(addr + DD_UNIT) >> 4;
+	i = dma_read(addr + DD_UNIT);
+	unit = i & 0xf;
+	cmd = i >> 4;
+	res = dma_read(addr + DD_RESULT);
+	fmt = dma_read(addr + DD_NN);
 	track = dma_read(addr + DD_TRACK);
 	sector = dma_read(addr + DD_SECTOR);
 	dma_addr = (dma_read(addr + DD_DMAH) << 8) + dma_read(addr + DD_DMAL);
 
+	/* check if the result was initialized with 0 */
+	if (res) {
+		dma_write(addr + DD_RESULT, 0xc1); /* error if not */
+		return;
+	}
+
+	/* check if track high or a sector format <> 128 is set */
+	if (fmt) {
+		dma_write(addr + DD_RESULT, 0xc8); /* if so, error */
+		return;
+	}
+
 	/* convert IMSAI unit bits to internal disk no */
 	switch (unit) {
+	case 0: /* no drive selected */
+		dma_write(addr + DD_RESULT, 0xc2);
+		return;
+
 	case 1:	/* IMDOS drive A: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 0;
 		break;
 
 	case 2:	/* IMDOS drive B: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 1;
 		break;
 
 	case 4: /* IMDOS drive C: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 2;
 		break;
 
 	case 8: /* IMDOS drive D: */
+		spt = SPT8;
+		maxtrk = TRK8;
 		disk = 3;
 		break;
 
-	default: /* set error code for all other drives */
-		 /* IMDOS sends unit 3 intermediate for drive C: & D: */
-		 /* and the IMDOS format program sends unit 0 */
-		dma_write(addr + DD_RESULT, 2);
+#ifdef LARGEDISK
+	case 15: /* z80pack 4 MB drive */
+		spt = SPTHD;
+		maxtrk = TRKHD;
+		disk = 8;
+		break;
+#endif
+
+	default: /* more than one drive selected */
+		dma_write(addr + DD_RESULT, 0xc3);
 		return;
 	}
 
-	/* try to open disk image for the wanted operation */
+	/* handle case when disk is ejected */
+	if(disks[disk] == NULL) {
+		dma_write(addr + DD_RESULT, 0xa1);
+		return;
+	}
+
+	/* try to open disk image */
 	dsk_path();
 	strcat(fn, "/");
 	strcat(fn, disks[disk]);
 	if (cmd == FMT_TRACK) {
-		if (track == 0)
-			unlink(fn);
-		fd = open(fn, O_RDWR|O_CREAT, 0644);
-	} else if (cmd == READ_SEC) {
+		/* can only format floppy disks */
+		if (disk <= 3) {
+			if (track == 0)
+				unlink(fn);
+			fd = open(fn, O_RDWR|O_CREAT, 0644);
+		} else {
+			dma_write(addr + DD_RESULT, 0xa1);
+			return;
+		}
+		if (fd == -1) {
+			dma_write(addr + DD_RESULT, 0xa1);
+			return;
+		}
+		goto do_format;
+	} else if ((cmd == READ_SEC) || (cmd == VERIFY_DATA)) {
 		fd = open(fn, O_RDONLY);
-	} else {
+		if (fd == -1) {
+			dma_write(addr + DD_RESULT, 0xa1);
+			return;
+		}
+	} else if (cmd == WRITE_SEC) {
 		fd = open(fn, O_RDWR);
-	}
-	if (fd == -1) {
-		dma_write(addr + DD_RESULT, 3);
-		return;
+		/* if the disk can't be opened R/W */
+		if (fd == -1) {
+			/* see if it opens R/O */
+			fd = open(fn, O_RDONLY);
+			/* if that works it is write protected */
+			if (fd != -1) {
+				close(fd);
+				dma_write(addr + DD_RESULT, 0xa2);
+			/* else no disk */
+			} else {
+				dma_write(addr + DD_RESULT, 0xa1);
+			}
+			return;
+		}
 	}
 
-	/* we have a disk, try wanted disk operation */
+	/* check for correct disk size if not formatting a new disk */
+	if (fd != -1) {
+		fstat(fd, &s);
+		if (((disk <= 3) && (s.st_size != 256256)) ||
+		   ((disk == 8) && (s.st_size != 4177920))) {
+			dma_write(addr + DD_RESULT, 0xa1);
+			close(fd);
+			return;
+		}
+	}
+
+do_format:
+
+	/* try wanted disk operation */
 	switch(cmd) {
 	case WRITE_SEC:
-		if (track >= TRK) {
-			dma_write(addr + DD_RESULT, 4);
+		if (track >= maxtrk) {
+			dma_write(addr + DD_RESULT, 0xc5);
 			goto done;
 		}
-		if (sector > SPT) {
-			dma_write(addr + DD_RESULT, 5);
+		if (sector > spt) {
+			dma_write(addr + DD_RESULT, 0xc6);
 			goto done;
 		}
-		pos = (track * SPT + sector - 1) * SEC_SZ;
+		pos = (track * spt + sector - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
-			dma_write(addr + DD_RESULT, 6);
+			dma_write(addr + DD_RESULT, 0x92);
 			goto done;
 		}
-		bus_request = 1;
 		for (i = 0; i < SEC_SZ; i++)
 			blksec[i] = dma_read(dma_addr + i);
 		if (write(fd, blksec, SEC_SZ) != SEC_SZ) {
-			dma_write(addr + DD_RESULT, 8);
+			dma_write(addr + DD_RESULT, 0x93);
 			goto done;
 		}
-		bus_request = 0;
 		dma_write(addr + DD_RESULT, 1);
 		break;
 
 	case READ_SEC:
-		if (track >= TRK) {
-			dma_write(addr + DD_RESULT, 4);
+		if (track >= maxtrk) {
+			dma_write(addr + DD_RESULT, 0xc5);
 			goto done;
 		}
-		if (sector > SPT) {
-			dma_write(addr + DD_RESULT, 5);
+		if (sector > spt) {
+			dma_write(addr + DD_RESULT, 0xc6);
 			goto done;
 		}
-		pos = (track * SPT + sector - 1) * SEC_SZ;
+		pos = (track * spt + sector - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
-			dma_write(addr + DD_RESULT, 6);
+			dma_write(addr + DD_RESULT, 0x92);
 			goto done;
 		}
-		bus_request = 1;
 		if (read(fd, blksec, SEC_SZ) != SEC_SZ) {
-			dma_write(addr + DD_RESULT, 7);
+			dma_write(addr + DD_RESULT, 0x93);
 			goto done;
 		}
 		for (i = 0; i < SEC_SZ; i++)
 			dma_write(dma_addr + i, blksec[i]);
-		bus_request = 0;
 		dma_write(addr + DD_RESULT, 1);
 		break;
 
 	case FMT_TRACK:
 		memset(&blksec, 0xe5, SEC_SZ);
-		if (track >= TRK) {
-			dma_write(addr + DD_RESULT, 4);
+		if (track >= maxtrk) {
+			dma_write(addr + DD_RESULT, 0xc5);
 			goto done;
 		}
-		pos = track * SPT * SEC_SZ;
+		pos = track * spt * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == -1L) {
-			dma_write(addr + DD_RESULT, 6);
+			dma_write(addr + DD_RESULT, 0x92);
 			goto done;
 		}
-		bus_request = 1;
-		for (i = 0; i < SPT; i++) {
+		for (i = 0; i < spt; i++) {
 			if (write(fd, &blksec, SEC_SZ) != SEC_SZ) {
-				dma_write(addr + DD_RESULT, 8);
+				dma_write(addr + DD_RESULT, 0x93);
 				goto done;
 			}
 		}
-		bus_request = 0;
 		dma_write(addr + DD_RESULT, 1);
 		break;
 
@@ -334,18 +464,40 @@ void disk_io(int addr)
 		break;
 
 	default:	/* unknown command */
-		dma_write(addr + DD_RESULT, 15);
+		dma_write(addr + DD_RESULT, 0xc4);
 		break;
 	}
 
 done:
-	bus_request = 0;
 	close(fd);
 }
 
 /*
- * Reset FDC, placeholder for now, consult manual
+ * Reset FDC
  */
 void imsai_fif_reset(void)
 {
+	fdstate = 0;
+
+	fdaddr[0] = 0x0080;
+	fdaddr[1] = 0x1000;
+	fdaddr[2] = 0x2000;
+	fdaddr[3] = 0x3000;
+	fdaddr[4] = 0x4000;
+	fdaddr[5] = 0x5000;
+	fdaddr[6] = 0x6000;
+	fdaddr[7] = 0x7000;
+	fdaddr[8] = 0x8000;
+	fdaddr[9] = 0x9000;
+	fdaddr[10] = 0xa000;
+	fdaddr[11] = 0xb000;
+	fdaddr[12] = 0xc000;
+	fdaddr[13] = 0xd000;
+	fdaddr[14] = 0xe000;
+	fdaddr[15] = 0xf000;
+
+#ifdef HAS_DISKMANAGER
+	extern void readDiskmap(char *);
+	readDiskmap(dsk_path());
+#endif
 }

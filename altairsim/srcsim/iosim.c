@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an Altair 8800 system
@@ -23,6 +23,12 @@
  * 26-FEB-17 implemented X11 keyboard for VDM
  * 22-MAR-17 connected SIO 2 to UNIX domain socket
  * 27-MAR-17 connected SIO 3 to UNIX domain socket
+ * 24-APR-18 cleanup
+ * 17-MAY-18 improved hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 15-JUL-18 use logging
+ * 10-AUG-18 added MITS 88-DCDD floppy disk controller
+ * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  */
 
 #include <unistd.h>
@@ -35,13 +41,17 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simbdos.h"
+#include "log.h"
 #include "../../iodevices/unix_network.h"
 #include "../../iodevices/altair-88-sio.h"
 #include "../../iodevices/altair-88-2sio.h"
 #include "../../iodevices/tarbell_fdc.h"
+#include "../../iodevices/altair-88-dcdd.h"
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/proctec-vdm.h"
 #include "../../frontpanel/frontpanel.h"
+#include "memory.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -59,14 +69,17 @@ static void io_no_card_out(BYTE);
 static BYTE io_no_card_in(void);
 #endif
 
+static const char *TAG = "IO";
+
 static int printer;		/* fd for file "printer.txt" */
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
+BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256]) (void) = {
+BYTE (*port_in[256]) (void) = {
 	altair_sio0_status_in,	/* port 0 */ /* SIO 0 connected to console */
 	altair_sio0_data_in,	/* port 1 */ /*  "  */
 	lpt_status_in,		/* port 2 */ /* printer status */
@@ -75,9 +88,9 @@ static BYTE (*port_in[256]) (void) = {
 	kbd_data_in,		/* port 5 */ /* data VDM keyboard */
 	altair_sio3_status_in,	/* port 6 */ /* SIO 3 connected to socket */
 	altair_sio3_data_in,	/* port 7 */ /*  "  */
-	io_trap_in,		/* port 8 */
-	io_trap_in,		/* port 9 */
-	io_trap_in,		/* port 10 */
+	altair_dsk_status_in,	/* port 8 */ /* MITS 88-DCDD status */
+	altair_dsk_sec_in,	/* port 9 */ /* MITS 88-DCDD sector position */
+	altair_dsk_data_in,	/* port 10 *//* MITS 88-DCDD read data */
 	io_trap_in,		/* port 11 */
 	io_trap_in,		/* port 12 */
 	io_trap_in,		/* port 13 */
@@ -195,7 +208,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 125 */
 	io_trap_in,		/* port 126 */
 	io_trap_in,		/* port 127 */
-	hwctl_in,		/* port 128 */ /* virtual hardware control */
+	io_trap_in,		/* port 128 */
 	io_trap_in,		/* port 129 */
 	io_trap_in,		/* port 130 */
 	io_trap_in,		/* port 131 */
@@ -227,7 +240,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 157 */
 	io_trap_in,		/* port 158 */
 	io_trap_in,		/* port 159 */
-	io_trap_in,		/* port 160 */
+	hwctl_in,		/* port 160 */	/* virtual hardware control */
 	io_trap_in,		/* port 161 */
 	io_trap_in,		/* port 162 */
 	io_trap_in,		/* port 163 */
@@ -338,9 +351,9 @@ static void (*port_out[256]) (BYTE) = {
 	io_no_card_out,		/* port 5 */ /* data VDM keyboard */
 	altair_sio3_status_out,	/* port 6 */ /* SIO 3 connected to socket */
 	altair_sio3_data_out,	/* port 7 */ /*  "  */
-	io_trap_out,		/* port 8 */
-	io_trap_out,		/* port 9 */
-	io_trap_out,		/* port 10 */
+	altair_dsk_select_out,	/* port 8 */ /* MITS 88-DCDD disk select */
+	altair_dsk_control_out,	/* port 9 */ /* MITS 88-DCDD control disk */
+	altair_dsk_data_out,	/* port 10 *//* MITS 88-DCDD write data */
 	io_trap_out,		/* port 11 */
 	io_trap_out,		/* port 12 */
 	io_trap_out,		/* port 13 */
@@ -458,7 +471,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 125 */
 	io_trap_out,		/* port 126 */
 	io_trap_out,		/* port 127 */
-	hwctl_out,		/* port 128 */	/* virtual hardware control */
+	io_trap_out,		/* port 128 */
 	io_trap_out,		/* port 129 */
 	io_trap_out,		/* port 130 */
 	io_trap_out,		/* port 131 */
@@ -490,8 +503,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 157 */
 	io_trap_out,		/* port 158 */
 	io_trap_out,		/* port 159 */
-	io_trap_out,		/* port 160 */
-	io_trap_out,		/* port 161 */
+	hwctl_out,		/* port 160 */	/* virtual hardware control */
+	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
 	io_trap_out,		/* port 164 */
@@ -626,17 +639,28 @@ void exit_io(void)
 }
 
 /*
+ *	This function is to reset the I/O devices. It is
+ *	called from the CPU simulation when an External Clear is performed.
+ */
+void reset_io(void)
+{
+	cromemco_dazzler_off();
+	tarbell_reset();
+	altair_dsk_reset();
+	hwctl_lock = 0xff;
+}
+
+/*
  *	This is the main handler for all IN op-codes,
  *	called by the simulator. It calls the input
  *	function for port addr.
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern void wait_step(void);
+	int val;
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_WO | CPU_INP;
 
@@ -644,7 +668,11 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
-	wait_step();
+	val = wait_step();
+
+	/* when single stepped INP get last set value of port */
+	if (val)
+		io_data = (*port_in[io_port]) ();
 
 	return(io_data);
 }
@@ -656,12 +684,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void wait_step(void);
-
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
-	//printf("output %02x to port %02x\r\n", io_data, io_port);
 
 	cpu_bus = CPU_OUT;
 
@@ -754,13 +779,16 @@ static void int_timer(int sig)
 
 /*
  *	Input from virtual hardware control port
+ *	returns lock status of the port
  */
 static BYTE hwctl_in(void)
 {
-	return((BYTE) 0);
+	return(hwctl_lock);
 }
 
 /*
+ *	Port is locked until magic number 0xaa is received!
+ *
  *	Virtual hardware control output.
  *	Doesn't exist in the real machine, used to shutdown
  *	and for RST 38H interrupts every 10ms.
@@ -774,13 +802,24 @@ static void hwctl_out(BYTE data)
 	static struct itimerval tim;
 	static struct sigaction newact;
 
-	if (data & 128) {
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+	
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
 		cpu_state = STOPPED;
 	}
 
 	if (data & 1) {
-		//printf("\r\n*** ENABLE TIMER ***\r\n");
 		newact.sa_handler = int_timer;
 		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 		newact.sa_flags = 0;
@@ -791,7 +830,6 @@ static void hwctl_out(BYTE data)
 		tim.it_interval.tv_usec = 10000;
 		setitimer(ITIMER_REAL, &tim, NULL);
 	} else {
-		//printf("\r\n*** DISABLE TIMER ***\r\n");
 		newact.sa_handler = SIG_IGN;
 		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 		newact.sa_flags = 0;
@@ -824,7 +862,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write printer");
+				LOGE(TAG, "can't write to printer");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}

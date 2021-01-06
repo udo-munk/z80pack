@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * This is the configuration I'm using for software testing and debugging
  *
@@ -83,9 +83,10 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2017 by Udo Munk"
-#define RELEASE	"1.36"
+#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
+#define RELEASE	"1.37-dev"
 
+#define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
 
 #define S_FLAG		128		/* bit definitions of CPU flags */
@@ -122,6 +123,7 @@
 #define OPTRAP2		7		/* illegal 2 byte op-code trap */
 #define OPTRAP4		8		/* illegal 4 byte op-code trap */
 #define USERINT		9		/* user interrupt */
+#define INTERROR	10		/* unsupported bus data on interrupt */
 #define POWEROFF	255		/* CPU off, no error */
 
 typedef unsigned short WORD;		/* 16 bit unsigned */
@@ -153,3 +155,6 @@ struct softbreak {			/* structure of a breakpoint */
 #ifndef isxdigit
 #define isxdigit(c) ((c<='f'&&c>='a')||(c<='F'&&c>='A')||(c<='9'&&c>='0'))
 #endif
+
+extern void sleep_ms(int);
+#define SLEEP_MS(t)	sleep_ms(t)

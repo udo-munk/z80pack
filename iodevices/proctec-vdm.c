@@ -3,13 +3,16 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2017 by Udo Munk
+ * Copyright (C) 2017-2019 by Udo Munk
  *
  * Emulation of a Processor Technology VDM-1 S100 board
  *
  * History:
  * 28-FEB-17 first version, all software tested with working
  * 21-JUN-17 don't use dma_read(), switches Tarbell ROM off
+ * 20-APR-18 avoid thread deadlock on Windows/Cygwin
+ * 15-JUL-18 use logging
+ * 04-NOV-19 eliminate usage of mem_base()
  */
 
 #include <X11/X.h>
@@ -18,16 +21,18 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "log.h"
 #include "proctec-vdm-charset.h"
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
+
+static const char *TAG = "VDM";
 
 /* X11 stuff */
        int slf = 1;			/* scanlines factor, default no lines */
@@ -49,7 +54,8 @@ static KeySym key;
 static char text[10];
 
 /* VDM stuff */
-static int mode;
+static int state;			/* state on/off for refresh thread */
+static int mode;			/* video mode from I/O port */
 int proctec_kbd_status = 1;		/* keyboard status */
 int proctec_kbd_data = -1;		/* keyboard data */
 static int first;			/* first displayed screen position */
@@ -109,6 +115,10 @@ static void open_display(void)
 /* shutdown VDM thread and window */
 void proctec_vdm_off(void)
 {
+	state = 0;		/* tell refresh thread to stop */
+	SLEEP_MS(50);		/* and wait a bit */
+
+	/* works if X11 with posix threads implemented correct, but ... */
 	if (thread != 0) {
 		pthread_cancel(thread);
 		pthread_join(thread, NULL);
@@ -185,7 +195,7 @@ static void refresh(void)
 		event_handler();
 		for (x = 0; x < 64; x++) {
 			if (y >= first) {
-				c = *(mem_base() + addr + x);
+				c = getmem(addr + x);
 				dc(c);
 			} else
 				dc(' ');
@@ -201,13 +211,15 @@ static void refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	struct timespec timer;	/* sleep timer */
-	struct timeval t1, t2, tdiff;
+	extern int time_diff(struct timeval *, struct timeval *);
+
+	struct timeval t1, t2;
+	int tdiff;
 
 	arg = arg;	/* to avoid compiler warning */
 	gettimeofday(&t1, NULL);
 
-	while (1) {	/* do forever or until canceled */
+	while (state) {
 
 		/* lock display, don't cancel thread while locked */
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -223,26 +235,15 @@ static void *update_display(void *arg)
 		XUnlockDisplay(display);
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
-		/* compute time used for processing */
-		gettimeofday(&t2, NULL);
-		tdiff.tv_sec = t2.tv_sec - t1.tv_sec;
-		tdiff.tv_usec = t2.tv_usec - t1.tv_usec;
-		if (tdiff.tv_usec < 0) {
-			--tdiff.tv_sec;
-			tdiff.tv_usec += 1000000;
-		}
-
 		/* sleep rest to 33ms so that we get 30 fps */
-		if ((tdiff.tv_sec == 0) && (tdiff.tv_usec < 33000)) {
-			timer.tv_sec = 0;
-			timer.tv_nsec = (long) ((33000 - tdiff.tv_usec) * 1000);
-			nanosleep(&timer, NULL);
-		}
+		gettimeofday(&t2, NULL);
+		tdiff = time_diff(&t1, &t2);
+		if ((tdiff > 0) && (tdiff < 33000))
+			SLEEP_MS(33 - (tdiff / 1000));
 
 		gettimeofday(&t1, NULL);
 	}
 
-	/* just in case it ever gets here */
 	pthread_exit(NULL);
 }
 
@@ -251,8 +252,10 @@ static void vdm_init(void)
 {
 	open_display();
 
+	state = 1;
+
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
-		printf("can't create VIO thread\r\n");
+		LOGE(TAG, "can't create thread");
 		exit(1);
 	}
 }

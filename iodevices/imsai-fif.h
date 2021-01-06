@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2017 by Udo Munk
+ * Copyright (C) 2014-2019 by Udo Munk
  *
  * Emulation of an IMSAI FIF S100 board
  *
@@ -20,6 +20,12 @@
  * 07-DEC-2016 added bus request for the DMA
  * 19-DEC-2016 use the new memory interface for DMA access
  * 22-JUN-2017 added reset function
+ * 19-MAY-2018 improved reset
+ * 13-JUL-2018 use logging & integrate disk manager
+ * 10-SEP-2019 added support for a z80pack 4 MB harddisk
+ * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
+ * 17-NOV-2019 return result codes as documented in manual
+ * 18-NOV-2019 initialize command string address array
  */
 
 extern BYTE imsai_fif_in(void);

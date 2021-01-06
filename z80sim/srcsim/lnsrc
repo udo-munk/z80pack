@@ -1,0 +1,16 @@
+# use this to link the common parts of Z80 simulation
+
+ln ../../z80core/sim0.c sim0.c
+ln ../../z80core/sim1.c sim1.c
+ln ../../z80core/sim1a.c sim1a.c
+ln ../../z80core/sim2.c sim2.c
+ln ../../z80core/sim3.c sim3.c
+ln ../../z80core/sim4.c sim4.c
+ln ../../z80core/sim5.c sim5.c
+ln ../../z80core/sim6.c sim6.c
+ln ../../z80core/sim7.c sim7.c
+ln ../../z80core/simfun.c simfun.c
+ln ../../z80core/simint.c simint.c
+ln ../../z80core/simglb.c simglb.c
+ln ../../z80core/simglb.h simglb.h
+ln ../../z80core/log.h log.h

@@ -21,3 +21,27 @@ Didier Derny <didier.derny@gmail.com>:
 
 for a node based expression parser for z80asm, that implements
 operator precedence.
+
+
+Christophe Staïesse <chastai@skynet.be>
+
+for the Intel 8080 disassembler.
+
+
+Alan Cox
+
+for building FUZIX on the machines and various bug fixes,
+improvements and helpful feedback.
+
+
+David McNaughton <dave@mackeneight.net>
+
+For building the IMSAI 8080esp replica kit and numerous
+additions and improvements.
+
+
+Mike Douglas <deramp5113@yahoo.com>
+
+For implementation of the MOSTEK AID-80F and SYS-80FT
+development systems.
+For implementation of a BDOS-like interface for host file I/O.

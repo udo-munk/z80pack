@@ -3,15 +3,15 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2015-2017 by Udo Munk
+ * Copyright (C) 2015-2018 by Udo Munk
  *
  * This module contains functions to implement networking connections.
- * The TCP/IP sockets need to support asynchron I/O, the UNIX domain
- * sockets are used with polling.
  *
  * History:
  * 26-MAR-15 first version finished
  * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
+ * 22-APR-18 implemented TCP socket polling
+ * 14-JUL-18 use logging
  */
 
 #define TELNET_TIMEOUT 800	/* telnet negotiation timeout in milliseconds */

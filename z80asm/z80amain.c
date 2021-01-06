@@ -1,6 +1,6 @@
 /*
  *	Z80 - Assembler
- *	Copyright (C) 1987-2017 by Udo Munk
+ *	Copyright (C) 1987-2018 by Udo Munk
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -13,6 +13,7 @@
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
  *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	15-MAY-2018 mark unreferenced symbols in listing
  */
 
 /*
@@ -20,8 +21,10 @@
  */
 
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
+#ifdef _POSIX_C_SOURCE
+#include <unistd.h>
+#endif
 #include <string.h>
 #include <ctype.h>
 #include "z80a.h"

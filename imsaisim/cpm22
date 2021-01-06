@@ -3,4 +3,4 @@
 rm -f disks/drivea.dsk
 ln disks/library/cpm22.dsk disks/drivea.dsk
 
-./imsaisim -x bootrom.hex $*
+./imsaisim -r -x mpu-a-rom.hex $*

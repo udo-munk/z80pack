@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2016-2017 by Udo Munk
+ * Copyright (C) 2016-2020 by Udo Munk
  *
  * Partial emulation of an Altair 88-SIO Rev. 0/1 for terminal I/O,
  * and 88-SIO Rev. 1 for tape I/O
@@ -15,6 +15,11 @@
  * 24-MAR-17 added configuration
  * 27-MAR-17 added SIO 3 for tape connected to UNIX domain socket
  * 23-OCT-17 improved UNIX domain socket connections
+ * 03-MAY-18 improved accuracy
+ * 04-JUL-18 added baud rate to terminal SIO
+ * 15-JUL-18 use logging
+ * 24-NOV-19 configurable baud rate for tape SIO
+ * 19-JUL-20 avoid problems with some third party terminal emulations
  */
 
 #include <unistd.h>
@@ -22,18 +27,35 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/time.h>
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "unix_terminal.h"
 #include "unix_network.h"
+
+#define BAUDTIME 10000000
+
+extern int time_diff(struct timeval *, struct timeval *);
+
+static const char *TAG = "SIO";
 
 int sio0_upper_case;
 int sio0_strip_parity;
 int sio0_drop_nulls;
 int sio0_revision;
+int sio0_baud_rate = 115200;
+
+static struct timeval sio0_t1, sio0_t2;
+static BYTE sio0_stat;
+
+int sio3_baud_rate = 1200;
+
+static struct timeval sio3_t1, sio3_t2;
+static BYTE sio3_stat = 0x81;
 
 /*
  * read status register
@@ -48,32 +70,43 @@ int sio0_revision;
  */
 BYTE altair_sio0_status_in(void)
 {
-	BYTE status;
 	struct pollfd p[1];
+	int tdiff;
 
 	if (sio0_revision == 0)
-		status = 0;
+		sio0_stat = 0;
 	else
-		status = 0x81;
+		sio0_stat = 0x81;
+
+	gettimeofday(&sio0_t2, NULL);
+	tdiff = time_diff(&sio0_t1, &sio0_t2);
+	if (sio0_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio0_baud_rate))
+			return(sio0_stat);
 
 	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN | POLLOUT;
+	p[0].events = POLLIN;
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (p[0].revents & POLLIN) {
 		if (sio0_revision == 0)
-			status |= 32;
+			sio0_stat |= 32;
 		else
-			status &= ~1;
+			sio0_stat &= ~1;
 	}
-	if (p[0].revents & POLLOUT) {
-		if (sio0_revision == 0)
-			status |= 2;
-		else
-			status &= ~128;
+	if (p[0].revents & POLLNVAL) {
+		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
 	}
+	if (sio0_revision == 0)
+		sio0_stat |= 2;
+	else
+		sio0_stat &= ~128;
 
-	return(status);
+	gettimeofday(&sio0_t1, NULL);
+
+	return(sio0_stat);
 }
 
 /*
@@ -86,6 +119,9 @@ void altair_sio0_status_out(BYTE data)
 
 /*
  * read data register
+ *
+ * can be configured to translate to upper case, most of the old software
+ * written for tty's won't accept lower case characters
  */
 BYTE altair_sio0_data_in(void)
 {
@@ -109,15 +145,24 @@ again:
 		goto again;
 	}
 
+	gettimeofday(&sio0_t1, NULL);
+	if (sio0_revision == 0)
+		sio0_stat &= 0b11011111;
+	else
+		sio0_stat |= 0b00000001;
+
 	/* process read data */
-	last = data;
 	if (sio0_upper_case)
 		data = toupper(data);
+	last = data;
 	return(data);
 }
 
 /*
  * write data register
+ *
+ * can be configured to strip parity bit because some old software won't.
+ * also can drop nulls usually send after CR/LF for teletypes.
  */
 void altair_sio0_data_out(BYTE data)
 {
@@ -133,11 +178,17 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write altair sio0 data");
+			LOGE(TAG, "can't write sio0 data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
 	}
+
+	gettimeofday(&sio0_t1, NULL);
+	if (sio0_revision == 0)
+		sio0_stat &= 0b11111101;
+	else
+		sio0_stat |= 0b10000000;
 }
 
 /*
@@ -150,8 +201,8 @@ again:
  */
 BYTE altair_sio3_status_in(void)
 {
-	BYTE status = 0x81;
 	struct pollfd p[1];
+	int tdiff;
 
 	/* if socket not connected check for a new connection */
 	if (ucons[0].ssc == 0) {
@@ -163,11 +214,17 @@ BYTE altair_sio3_status_in(void)
 		if (p[0].revents) {
 			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
 			    NULL)) == -1) {
-				perror("accept server socket");
+				LOGW(TAG, "can't accept server socket");
 				ucons[0].ssc = 0;
 			}
 		}
 	}
+
+	gettimeofday(&sio3_t2, NULL);
+	tdiff = time_diff(&sio3_t1, &sio3_t2);
+	if (sio3_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio3_baud_rate))
+			return(sio3_stat);
 
 	/* if socket is connected check for I/O */
 	if (ucons[0].ssc != 0) {
@@ -176,12 +233,14 @@ BYTE altair_sio3_status_in(void)
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN)
-			status &= ~1;
+			sio3_stat &= ~1;
 		if (p[0].revents & POLLOUT)
-			status &= ~128;
+			sio3_stat &= ~128;
 	}
 
-	return(status);
+	gettimeofday(&sio3_t1, NULL);
+
+	return(sio3_stat);
 }
 
 /*
@@ -214,11 +273,16 @@ BYTE altair_sio3_data_in(void)
 		return(last);
 
 	if (read(ucons[0].ssc, &data, 1) != 1) {
+		/* EOF, close socket and return last */
 		close(ucons[0].ssc);
 		ucons[0].ssc = 0;
 		return(last);
 	}
 
+	gettimeofday(&sio3_t1, NULL);
+	sio3_stat |= 0b00000001;
+
+	/* process read data */
 	last = data;
 	return(data);
 }
@@ -254,4 +318,7 @@ again:
 			ucons[0].ssc = 0;
 		}
 	}
+
+	gettimeofday(&sio3_t1, NULL);
+	sio3_stat |= 0b10000000;
 }

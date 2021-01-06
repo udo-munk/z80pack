@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2019 by Udo Munk
  *
  * This modul contains the user interface, a full qualified ICE,
  * for the Z80-CPU simulation.
@@ -48,7 +48,7 @@
  */
 
 /*
- *	This module is an ICE type user interface to debug Z80 programs
+ *	This module is an ICE type user interface to debug Z80/8080 programs
  *	on a host system.
  */
 
@@ -67,7 +67,7 @@
 #include "memory.h"
 
 extern void cpu_z80(void), cpu_8080(void);
-extern void disass(unsigned char **, int);
+extern void disass(int, unsigned char **, int, unsigned char *);
 extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
@@ -110,10 +110,9 @@ void mon(void)
 
 	tcgetattr(0, &old_term);
 
-	if (x_flag) {
-		if (load_file(xfn) == 0)
-			do_go("");
-	}
+	if (x_flag)
+		do_go("");
+
 	while (eoj) {
 		next:
 		printf(">>> ");
@@ -122,7 +121,7 @@ void mon(void)
 			putchar('\n');
 			goto next;
 		}
-		switch (*cmd) {
+		switch (tolower(*cmd)) {
 		case '\n':
 			do_step();
 			break;
@@ -210,7 +209,7 @@ static void do_step(void)
 	print_head();
 	print_reg();
 	p = mem_base() + PC;
-	disass(&p, PC);
+	disass(cpu, &p, PC, mem_base());
 }
 
 /*
@@ -373,9 +372,7 @@ static void do_list(char *s)
 		wrk_ram = mem_base() + exatoi(s);
 	for (i = 0; i <	10; i++) {
 		printf("%04x - ", (unsigned int)(wrk_ram - mem_base()));
-		disass(&wrk_ram, wrk_ram - mem_base());
-		if (wrk_ram > mem_base() + 65535)
-			wrk_ram = mem_base();
+		disass(cpu, &wrk_ram, wrk_ram - mem_base(), mem_base());
 	}
 }
 
@@ -865,6 +862,7 @@ static void do_clock(void)
 	BYTE save[3];
 	static struct sigaction newact;
 	static struct itimerval tim;
+	char *s = NULL;
 
 	save[0]	= *(mem_base() + 0x0000); /* save memory locations */
 	save[1]	= *(mem_base() + 0x0001); /* 0000H - 0002H */
@@ -888,9 +886,11 @@ static void do_clock(void)
 	switch(cpu) {			/* start CPU */
 	case Z80:
 		cpu_z80();
+		s = "JP";
 		break;
 	case I8080:
 		cpu_8080();
+		s = "JMP";
 		break;
 	}
 	newact.sa_handler = SIG_DFL;	/* reset timer interrupt handler */
@@ -898,9 +898,10 @@ static void do_clock(void)
 	*(mem_base() + 0x0000) = save[0]; /* restore memory locations */
 	*(mem_base() + 0x0001) = save[1]; /* 0000H - 0002H */
 	*(mem_base() + 0x0002) = save[2];
-	if (cpu_error == NONE)
+	if (cpu_error == NONE) {
+		printf("CPU executed %ld %s instructions in 3 seconds\n", R, s);
 		printf("clock frequency = %5.2f Mhz\n", ((float) R) / 300000.0);
-	else
+	} else
 		puts("Interrupted by user");
 }
 
@@ -1027,6 +1028,9 @@ static void cpu_err_msg(void)
 		break;
 	case USERINT:
 		puts("User Interrupt");
+		break;
+	case INTERROR:
+		printf("Unsupported bus data during INT: %02x\n", int_data);
 		break;
 	case POWEROFF:
 		break;

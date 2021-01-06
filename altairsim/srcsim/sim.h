@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2019 by Udo Munk
  *
  * Configuration for an Altair 8800 system
  *
@@ -19,6 +19,9 @@
  * 12-JAN-17 improved configuration and front panel LED timing
  * 26-FEB-17 added Processor Technology VDM-1 to the machine
  * 27-MAR-17 added SIO's connected to UNIX domain sockets
+ * 10-APR-18 trap CPU on unsupported bus data during interrupt
+ * 07-MAY-18 added memory configuratione needed by apple monitor
+ * 21-AUG-18 improved memory configuration
  */
 
 /*
@@ -34,6 +37,7 @@
 #define FRONTPANEL	/* emulate a machines frontpanel */
 #define BUS_8080	/* emulate 8080 bus status for front panel */
 
+#define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
 
@@ -50,13 +54,14 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2017 by Udo Munk"
-#define RELEASE	"1.36"
+#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
+#define RELEASE	"1.37-dev"
 
 #define USR_COM	"Altair 8800 Simulation"
-#define USR_REL	"1.17"
-#define USR_CPR	"Copyright (C) 2008-2017 by Udo Munk"
+#define USR_REL	"1.18"
+#define USR_CPR	"Copyright (C) 2008-2019 by Udo Munk"
 
+#define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
 
 #define S_FLAG		128		/* bit definitions of CPU flags */
@@ -94,6 +99,7 @@
 #define OPTRAP2		7		/* illegal 2 byte op-code trap */
 #define OPTRAP4		8		/* illegal 4 byte op-code trap */
 #define USERINT		9		/* user interrupt */
+#define INTERROR	10		/* unsupported bus data on interrupt */
 #define POWEROFF	255		/* CPU off, no error */
 
 typedef unsigned short WORD;		/* 16 bit unsigned */
@@ -125,3 +131,6 @@ struct softbreak {			/* structure of a breakpoint */
 #ifndef isxdigit
 #define isxdigit(c) ((c<='f'&&c>='a')||(c<='F'&&c>='A')||(c<='9'&&c>='0'))
 #endif
+
+extern void sleep_ms(int);
+#define SLEEP_MS(t)	sleep_ms(t)

@@ -1,4 +1,4 @@
-Z80-Assembler		Release 1.6				Page 1
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 1
 Source file: rdos1.asm
 Title:       
 
@@ -63,7 +63,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       58     58 ;
                       59     59 ;++++++++++++++++++++++++++++++++++++++++++++++++++++
                       60     60 ;
-Z80-Assembler		Release 1.6				Page 2
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 2
 Source file: rdos1.asm
 Title:       
 
@@ -128,7 +128,7 @@ c03d  18 e5          106    106 	JR	BOT300
                      118    118 ;
                      119    119 ;
 c03f  cd cb c0       120    120 DHOME:	CALL	SELECT		;SELECT DISK
-Z80-Assembler		Release 1.6				Page 3
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 3
 Source file: rdos1.asm
 Title:       
 
@@ -193,7 +193,7 @@ c078  d3 04          177    177 	OUT	(PARLEL),A
 c07a  3e 18          178    178 	LD	A,18H		;SEEK COMMAND
 c07c  cd 6a c0       179    179 	CALL	EXECUTE
 c07f  db 04          180    180 DSK540:	IN	A,(PARLEL)	;FAST SEEK DONE?
-Z80-Assembler		Release 1.6				Page 4
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 4
 Source file: rdos1.asm
 Title:       
 
@@ -258,7 +258,7 @@ c0aa  db 34          237    237 DWR250:	IN	A,(DFLAGS)	;WAIT FOR REQUEST
 c0ac  1f             238    238 	RRA			;CHECK FOR INTREQ
 c0ad  38 c2          239    239 	JR	C,EREXIT	;END OF SECTOR OR ERROR
 c0af  ed a3          240    240 	OUTI			;READ A BYTE
-Z80-Assembler		Release 1.6				Page 5
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 5
 Source file: rdos1.asm
 Title:       
 
@@ -323,7 +323,7 @@ c0d1  17             297    297 SEL300: RLA
 c0d2  10 fd          298    298 	DJNZ	SEL300
 c0d4  b1             299    299 	OR	C		;MAXI FLAG
 c0d5  f6 20          300    300 	OR	20H		;MOTOR ON
-Z80-Assembler		Release 1.6				Page 6
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 6
 Source file: rdos1.asm
 Title:       
 
@@ -388,7 +388,7 @@ c106  cd 85 c2       357    357 	CALL	L1NCR
 c109  18 13          358    358 	JR	LOADIX		;IX STORES INITIAL SP VALUE
                      359    359 ;
                      360    360 ;
-Z80-Assembler		Release 1.6				Page 7
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 7
 Source file: rdos1.asm
 Title:       
 
@@ -453,7 +453,7 @@ c157  11 d2 c3       414    417 	LD	DE,CMNDTBL
 c15a  19             415    418 	ADD	HL,DE		; + TBL ADDR
 c15b  5e             416    419 	LD	E,(HL)
 c15c  23             417    420 	INC	HL
-Z80-Assembler		Release 1.6				Page 8
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 8
 Source file: rdos1.asm
 Title:       
 
@@ -518,7 +518,7 @@ c1a3  78             470    474 	LD	A,B		;ERROR NUMBER
                      474    478 ; AND CLEAN STACK.
                      475    479 ;
                      476    480 P2HXCLEAN:
-Z80-Assembler		Release 1.6				Page 9
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 9
 Source file: rdos1.asm
 Title:       
 
@@ -583,7 +583,7 @@ c1d5  e5             533    537 	PUSH	HL		;RETURN ADDR
 c1d6  d9             534    538 	EXX
 c1d7  c0             535    539 	RET	NZ		;IF ERROR, DONE
                      536    540 ;
-Z80-Assembler		Release 1.6				Page 10
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 10
 Source file: rdos1.asm
 Title:       
 
@@ -648,7 +648,7 @@ c222  d6 20          593    597 	SUB	20H
 c224  c9             594    598 	RET
                      595    599 ;
                      596    600 ;
-Z80-Assembler		Release 1.6				Page 11
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 11
 Source file: rdos1.asm
 Title:       
 
@@ -713,7 +713,7 @@ c25c  c5             653    657 	PUSH	BC
 c25d  ed b0          654    658 	LDIR
 c25f  c1             655    659 	POP	BC
 c260  d1             656    660 	POP	DE
-Z80-Assembler		Release 1.6				Page 12
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 12
 Source file: rdos1.asm
 Title:       
 
@@ -778,7 +778,7 @@ c288  18 9f          703    707 	JR	SKSGCR		;WAIT FOR A CR
 c28a  97             714    718 GNHLO:	SUB	A
                      715    719 ;
 c28b  c5             716    720 GNHL:	PUSH	BC		;SAVE
-Z80-Assembler		Release 1.6				Page 13
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 13
 Source file: rdos1.asm
 Title:       
 
@@ -843,7 +843,7 @@ c2c5  c9             768    772 	RET
                      774    778 ;
 c2c6  cd ef c1       775    779 PSNM:	CALL	SPACE
                      776    780 ; (CONTINUE BELOW)
-Z80-Assembler		Release 1.6				Page 14
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 14
 Source file: rdos1.asm
 Title:       
 
@@ -908,7 +908,7 @@ c2f6  c9             831    835 	RET
                      834    838 ; PRINTS THE MESSAGE FOLLOWING THE CALL
                      835    839 ; TO THIS ROUTINE.
                      836    840 ; PRESERVES ALL REGISTERS
-Z80-Assembler		Release 1.6				Page 15
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 15
 Source file: rdos1.asm
 Title:       
 
@@ -973,7 +973,7 @@ c333  cd 54 c0       893    897 	CALL	DSEEK
 c336  3e 53          894    898 	LD	A,'S'		;IN CASE OF SEEK ERROR
                      895    899 ;
 c338  c3 97 c1       896    900 DERCKV:	JP	DERRCK		;DISK ERROR CHECK
-Z80-Assembler		Release 1.6				Page 16
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 16
 Source file: rdos1.asm
 Title:       
 
@@ -1038,7 +1038,7 @@ c380  fe 44          953    957 	CP	'D'+CASE
 c382  20 b7          954    958 	JR	NZ,ERRORV
                      955    959 ;
                      956    960 ; WRITE DISK
-Z80-Assembler		Release 1.6				Page 17
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 17
 Source file: rdos1.asm
 Title:       
 
@@ -1103,7 +1103,7 @@ c3be  c9            1010   1014 	RET
                     1014   1018 ; OUT <DATA-BYTE> <PORT NUMBER>
                     1015   1019 ;
 c3bf  cd 8b c2      1016   1020 OUTP:	CALL	GNHL
-Z80-Assembler		Release 1.6				Page 18
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 18
 Source file: rdos1.asm
 Title:       
 
@@ -1152,42 +1152,42 @@ c3fe  80 c3         1054   1059 	DEFW	WHANDLER	;WRITE DISK
 c3ff                1057   1062 LASTBYTE: EQU	$-1
                     1058   1063 ;
 c400                1059   1064 	END
-Z80-Assembler		Release 1.6				Page 19
+Z80-Assembler	Release 1.9	Wed May 16 20:02:56 2018	Page 19
 Source file: rdos1.asm
 Title:       Symboltable
 
-ALT      007d	BAUD     0000	BAUDRS   c3ca	BOOTDK   c018	
-BOOTMC   c015	BOOTSW   0040	BOT200   c01c	BOT300   c024	
-BOT500   c03a	CASE     0000	CHKIN    c0db	CHKNO    c3b2	
-CHKSECNO c3ae	CLEANSTA c123	CLEANV   c1b9	CM6      c143	
-CMND     c128	CMNDTBL  c3d2	CN2      c3b7	COMMND   0002	
-CR       000d	CRLF     c1a9	DATA     0001	DAV      0040	
-DCOMMND  0030	DCONTR   0034	DDATA    0033	DERCKV   c338	
-DERRCK   c197	DFLAGS   0034	DHOME    c03f	DISKMODE 0005	
-DISKSELE c162	DM2      c30d	DRD250   c095	DREAD    c08c	
-DS2      c18c	DSEC     0032	DSEEK    c054	DSK500   c076	
-DSK540   c07f	DSPM     c303	DSPM1    c308	DSTAT    0030	
-DTRACK   0031	DWR250   c0aa	DWRITE   c0a1	EREXIT   c071	
-ERROR    c1b5	ERRORV   c33b	ESC      001b	ESCAPE   c1b9	
-EXCCHK   c06c	EXECUTE  c06a	EXMINPUT c1ad	FASTSEEK 0007	
-GBYTE    c0e3	GCHR     c219	GN1      c298	GNHL     c28b	
-GNHLO    c28a	GO       c2fd	HDLDM    0020	HEXSH    c2a3	
-HX1      c2b1	HXSH4    c2b3	IMASK    0003	INITBAUD c0ee	
-INITBR   c0eb	IT1      c0f5	KICKSTK  c106	L1NCR    c285	
-L2N1     c274	L2N2     c27b	L2NCR    c226	L2NCR0   c225	
-L3NCR    c282	L3NCR0   c281	LASTBYTE c3ff	LD2N     c264	
-LF       000a	LOADIX   c11e	MAXI     0004	MAXIM    0010	
-MONITR   c10b	MOVE     c257	NDRIVES  0004	NEXTSC   c1bc	
-NS2      c1c7	NS4      c1d1	OUTP     c3bf	P1HEX    c2d8	
-P2HEX    c2d4	P2HXCLEA c1a4	PADDR    c233	PARLEL   0004	
-PC1      c1f2	PC2      c201	PC3      c217	PCADDR   c230	
-PCHR     c1f1	PERRMSG  c198	PH1      c2e5	PMSG     c2ec	
-PMSGFOLL c2f7	PNHL     c2cf	PNM      c2c9	PS1      c2ed	
-PSNHL    c2cc	PSNM     c2c6	PTRKSC   c3a2	RD2      c373	
-READDR   c370	RHANDLER c36c	SECSETUP c394	SEEKNXT  c329	
-SEEKR    c322	SEL300   c0d1	SELECT   c0cb	SETUP    c0b6	
-SHANDLER c320	SK1      c2bc	SKSG     c2bb	SKSGCR   c229	
-SKSGO    c2ba	SM1      c343	SM2      c360	SPACE    c1ef	
-STACK    007c	START    c000	STAT     0000	SUBSM    c33e	
-TBE      0080	VERIF    c23a	VRFY     c23d	WD2      c387	
-WHANDLER c380	WRITDR   c384	
+ALT      007d 	BAUD     0000 	BAUDRS   c3ca 	BOOTDK   c018 	
+BOOTMC   c015 	BOOTSW   0040 	BOT200   c01c 	BOT300   c024 	
+BOT500   c03a 	CASE     0000 	CHKIN    c0db 	CHKNO    c3b2 	
+CHKSECNO c3ae 	CLEANSTA c123 	CLEANV   c1b9 	CM6      c143 	
+CMND     c128 	CMNDTBL  c3d2 	CN2      c3b7 	COMMND   0002 	
+CR       000d 	CRLF     c1a9 	DATA     0001 	DAV      0040 	
+DCOMMND  0030 	DCONTR   0034 	DDATA    0033 	DERCKV   c338*	
+DERRCK   c197 	DFLAGS   0034 	DHOME    c03f 	DISKMODE 0005 	
+DISKSELE c162 	DM2      c30d 	DRD250   c095 	DREAD    c08c 	
+DS2      c18c 	DSEC     0032 	DSEEK    c054 	DSK500   c076 	
+DSK540   c07f 	DSPM     c303 	DSPM1    c308 	DSTAT    0030 	
+DTRACK   0031 	DWR250   c0aa 	DWRITE   c0a1 	EREXIT   c071 	
+ERROR    c1b5 	ERRORV   c33b 	ESC      001b 	ESCAPE   c1b9 	
+EXCCHK   c06c 	EXECUTE  c06a 	EXMINPUT c1ad 	FASTSEEK 0007 	
+GBYTE    c0e3 	GCHR     c219 	GN1      c298 	GNHL     c28b 	
+GNHLO    c28a 	GO       c2fd 	HDLDM    0020 	HEXSH    c2a3 	
+HX1      c2b1 	HXSH4    c2b3*	IMASK    0003 	INITBAUD c0ee 	
+INITBR   c0eb 	IT1      c0f5 	KICKSTK  c106 	L1NCR    c285 	
+L2N1     c274 	L2N2     c27b 	L2NCR    c226*	L2NCR0   c225 	
+L3NCR    c282 	L3NCR0   c281 	LASTBYTE c3ff*	LD2N     c264 	
+LF       000a 	LOADIX   c11e 	MAXI     0004 	MAXIM    0010 	
+MONITR   c10b 	MOVE     c257 	NDRIVES  0004 	NEXTSC   c1bc 	
+NS2      c1c7 	NS4      c1d1 	OUTP     c3bf 	P1HEX    c2d8 	
+P2HEX    c2d4 	P2HXCLEA c1a4 	PADDR    c233*	PARLEL   0004 	
+PC1      c1f2 	PC2      c201 	PC3      c217 	PCADDR   c230 	
+PCHR     c1f1 	PERRMSG  c198 	PH1      c2e5 	PMSG     c2ec 	
+PMSGFOLL c2f7 	PNHL     c2cf 	PNM      c2c9 	PS1      c2ed 	
+PSNHL    c2cc 	PSNM     c2c6 	PTRKSC   c3a2 	RD2      c373 	
+READDR   c370*	RHANDLER c36c 	SECSETUP c394 	SEEKNXT  c329 	
+SEEKR    c322*	SEL300   c0d1 	SELECT   c0cb 	SETUP    c0b6 	
+SHANDLER c320 	SK1      c2bc 	SKSG     c2bb 	SKSGCR   c229 	
+SKSGO    c2ba 	SM1      c343 	SM2      c360 	SPACE    c1ef 	
+STACK    007c 	START    c000*	STAT     0000 	SUBSM    c33e 	
+TBE      0080 	VERIF    c23a 	VRFY     c23d 	WD2      c387 	
+WHANDLER c380 	WRITDR   c384*	

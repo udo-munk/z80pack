@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2017 by Udo Munk
+ * Copyright (C) 1987-2018 by Udo Munk
  *
  * This module implements banked memory management for cpmsim
  *
@@ -25,6 +25,7 @@
  * History:
  * 21-DEC-16 moved banked memory implementation to here
  * 03-FEB-17 added ROM initialisation
+ * 09-APR-18 modified MMU write protect port as used by Alan Cox for FUZIX
  */
 
 #include <stdlib.h>
@@ -32,6 +33,9 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
+#include "log.h"
+
+static const char *TAG = "memory";
 
 BYTE *memory[MAXSEG];		/* MMU with pointers to the banks */
 int selbnk;			/* current selected bank */
@@ -43,7 +47,7 @@ void init_memory(void)
 {
 	/* allocate the first 64KB bank, so that we have some memory */
 	if ((memory[0] = malloc(65536)) == NULL) {
-		printf("can't allocate memory for bank 0\r\n");
+		LOGE(TAG, "can't allocate memory for bank 0");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 		return;

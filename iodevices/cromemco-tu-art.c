@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2015 by Udo Munk
+ * Copyright (C) 2014-2018 by Udo Munk
  *
  * Emulation of a Cromemco TU-ART S100 board
  *
@@ -16,6 +16,9 @@
  * 10-MAR-15 lpt's implemented for CP/M, CDOS and Cromix
  * 23-MAR-15 drop only null's
  * 26-MAR-15 tty's implemented for CDOS and Cromix
+ * 25-APR-18 cleanup
+ * 03-MAY-18 improved accuracy
+ * 15-JUL-18 use logging
  */
 
 #include <unistd.h>
@@ -26,7 +29,11 @@
 #include <sys/poll.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
+#include "unix_terminal.h"
 #include "unix_network.h"
+
+static const char *TAG = "TU-ART";
 
 /************************/
 /*	Device 0A	*/
@@ -80,20 +87,29 @@ void cromemco_tuart_0a_baud_out(BYTE data)
 BYTE cromemco_tuart_0a_data_in(void)
 {
 	BYTE data;
+	static BYTE last;
 	struct pollfd p[1];
 
 	uart0a_rda = 0;
 
+again:
+	/* if no input waiting return last */
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
 	p[0].revents = 0;
-
 	poll(p, 1, 0);
-
 	if (!(p[0].revents & POLLIN))
-		return(0);
+		return(last);
 
-	read(fileno(stdin), &data, 1);
+	if (read(fileno(stdin), &data, 1) == 0) {
+		/* try to reopen tty, input redirection exhausted */
+		freopen("/dev/tty", "r", stdin);
+		set_unix_terminal();
+		goto again;
+	}
+
+	/* process read data */
+	last = data;
 	return(data);
 }
 
@@ -109,7 +125,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write tu-art 0a data");
+			LOGE(TAG, "can't write tu-art 0a data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -122,7 +138,7 @@ again:
  * D5	Test
  * D4	High Baud
  * D3	INTA Enable
- * D3	RST7 Select
+ * D2	RST7 Select
  * D1	Break
  * D0	Reset
  */
@@ -169,7 +185,6 @@ BYTE cromemco_tuart_0a_interrupt_in(void)
  */
 void cromemco_tuart_0a_interrupt_out(BYTE data)
 {
-	//printf("tu-art 0a interrupt mask: %02x\r\n", data);
 	uart0a_int_mask = data;
 }
 
@@ -191,31 +206,26 @@ void cromemco_tuart_0a_parallel_out(BYTE data)
 
 void cromemco_tuart_0a_timer1_out(BYTE data)
 {
-	//printf("tu-art 0a timer 1: %d\r\n", data);
 	uart0a_timer1 = data;
 }
 
 void cromemco_tuart_0a_timer2_out(BYTE data)
 {
-	//printf("tu-art 0a timer 2: %d\r\n", data);
 	uart0a_timer2 = data;
 }
 
 void cromemco_tuart_0a_timer3_out(BYTE data)
 {
-	//printf("tu-art 0a timer 3: %d\r\n", data);
 	uart0a_timer3 = data;
 }
 
 void cromemco_tuart_0a_timer4_out(BYTE data)
 {
-	//printf("tu-art 0a timer 4: %d\r\n", data);
 	uart0a_timer4 = data;
 }
 
 void cromemco_tuart_0a_timer5_out(BYTE data)
 {
-	//printf("tu-art 0a timer 5: %d\r\n", data);
 	uart0a_timer5 = data;
 }
 
@@ -252,38 +262,42 @@ void cromemco_tuart_1a_baud_out(BYTE data)
 BYTE cromemco_tuart_1a_data_in(void)
 {
 	BYTE data, dummy;
+	static BYTE last;
 	struct pollfd p[1];
 
 	uart1a_rda = 0;
 
+	/* if not connected return last */
 	if (ncons[0].ssc == 0)
-		return(0);
+		return(last);
 
+	/* if no input waiting return last */
 	p[0].fd = ncons[0].ssc;
 	p[0].events = POLLIN;
 	p[0].revents = 0;
-
 	poll(p, 1, 0);
-
 	if (!(p[0].revents & POLLIN))
-		return(0);
+		return(last);
 
 	if (read(ncons[0].ssc, &data, 1) != 1) {
 		if ((errno == EAGAIN) || (errno == EINTR)) {
+			/* EOF, close socket and return last */
 			close(ncons[0].ssc);
 			ncons[0].ssc = 0;
-			return(0);
+			return(last);
 		} else {
-			perror("read tu-art 1a data");
+			LOGE(TAG, "can't read tu-art 1a data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return(0);
 		}
 	}
 
+	/* process read data */
+	/* telnet client sends \r\n or \r\0, drop second character */
 	if (ncons[0].telnet && (data == '\r'))
 		read(ncons[0].ssc, &dummy, 1);
-
+	last = data;
 	return(data);
 }
 
@@ -301,7 +315,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write tu-art 1a data");
+			LOGE(TAG, "can't write tu-art 1a data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -324,7 +338,6 @@ BYTE cromemco_tuart_1a_interrupt_in(void)
 
 void cromemco_tuart_1a_interrupt_out(BYTE data)
 {
-	//printf("tu-art 1a interrupt mask: %02x\r\n", data);
 	uart1a_int_mask = data;
 }
 
@@ -339,8 +352,6 @@ BYTE cromemco_tuart_1a_parallel_in(void)
 void cromemco_tuart_1a_parallel_out(BYTE data)
 {
 	extern int lpt2;
-
-	//printf("tu-art 1a printer data: %02x\r\n", data);
 
 	if (lpt2 == 0)
 		lpt2 = creat("lpt2.txt", 0664);
@@ -358,7 +369,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write lpt2.txt");
+				LOGE(TAG, "can't write lpt2.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
@@ -398,38 +409,42 @@ void cromemco_tuart_1b_baud_out(BYTE data)
 BYTE cromemco_tuart_1b_data_in(void)
 {
 	BYTE data, dummy;
+	static BYTE last;
 	struct pollfd p[1];
 
 	uart1b_rda = 0;
 
+	/* if not connected return last */
 	if (ncons[1].ssc == 0)
-		return(0);
+		return(last);
 
+	/* if no input waiting return last */
 	p[0].fd = ncons[1].ssc;
 	p[0].events = POLLIN;
 	p[0].revents = 0;
-
 	poll(p, 1, 0);
-
 	if (!(p[0].revents & POLLIN))
-		return(0);
+		return(last);
 
 	if (read(ncons[1].ssc, &data, 1) != 1) {
 		if ((errno == EAGAIN) || (errno == EINTR)) {
+			/* EOF, close socket and return last */
 			close(ncons[1].ssc);
 			ncons[1].ssc = 0;
-			return(0);
+			return(last);
 		} else {
-			perror("read tu-art 1b data");
+			LOGE(TAG, "can't read tu-art 1b data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return(0);
 		}
 	}
 
+	/* process read data */
+	/* telnet client sends \r\n or \r\0, drop second character */
 	if (ncons[1].telnet && (data == '\r'))
 		read(ncons[1].ssc, &dummy, 1);
-
+	last = data;
 	return(data);
 }
 
@@ -447,7 +462,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			perror("write tu-art 1b data");
+			LOGE(TAG, "can't write tu-art 1b data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -470,7 +485,6 @@ BYTE cromemco_tuart_1b_interrupt_in(void)
 
 void cromemco_tuart_1b_interrupt_out(BYTE data)
 {
-	//printf("tu-art 1b interrupt mask: %02x\r\n", data);
 	uart1b_int_mask = data;
 }
 
@@ -485,8 +499,6 @@ BYTE cromemco_tuart_1b_parallel_in(void)
 void cromemco_tuart_1b_parallel_out(BYTE data)
 {
 	extern int lpt1;
-
-	//printf("tu-art 1b printer data: %02x\r\n", data);
 
 	if (lpt1 == 0)
 		lpt1 = creat("lpt1.txt", 0664);
@@ -504,7 +516,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write lpt1.txt");
+				LOGE(TAG, "can't write lpt1.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}

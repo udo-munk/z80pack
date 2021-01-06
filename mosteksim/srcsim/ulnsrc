@@ -1,0 +1,10 @@
+# use this to unlink the common parts of Z80 simulation
+
+rm -f sim[0-7]*.c
+rm -f simfun.c
+rm -f simint.c
+rm -f simglb.[hc]
+rm -f simbdos.[hc]
+rm -f disas.c
+rm -f config.h
+rm -f log.h

@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2017 by Udo Munk
+ * Copyright (C) 2008-2020 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an IMSAI 8080 system
@@ -17,6 +17,21 @@
  * 09-MAY-15 added Cromemco DAZZLER to the machine
  * 06-DEC-16 implemented status display and stepping for all machine cycles
  * 11-JAN-17 implemented X11 keyboard input for VIO
+ * 24-APR-18 cleanup
+ * 17-MAY-18 improved hardware control
+ * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 12-JUL-18 use logging
+ * 14-JUL-18 integrate webfrontend
+ * 12-JUL-19 implemented second SIO
+ * 27-JUL-19 more correct emulation of IMSAI SIO-2
+ * 17-SEP-19 more consistent SIO naming
+ * 23-SEP-19 added AT-modem
+ * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 18-OCT-19 add MMU and memory banks
+ * 24-OCT-19 add RTC
+ * 04-NOV-19 eliminate usage of mem_base()
+ * 12-NOV-19 implemented SIO control ports
+ * 14-AUG-20 allow building machine without frontpanel
  */
 
 #include <unistd.h>
@@ -29,11 +44,25 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simbdos.h"
+#include "../../iodevices/unix_network.h"
 #include "../../iodevices/imsai-sio2.h"
 #include "../../iodevices/imsai-fif.h"
+#ifdef HAS_DAZZLER
 #include "../../iodevices/cromemco-dazzler.h"
+#include "../../iodevices/cromemco-d+7a.h"
+#endif /* HAS_DAZZLER */
+#ifdef HAS_CYCLOPS
+#include "../../iodevices/cromemco-88ccc.h"
+#endif /* HAS_CYCLOPS */
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
+#include "memory.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+#include "log.h"
+#include "../../iodevices/rtc.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -48,62 +77,81 @@ static BYTE lpt_in(void);
 static void lpt_out(BYTE);
 static BYTE io_pport_in(void);
 static BYTE imsai_kbd_data_in(void), imsai_kbd_status_in(void);
+static BYTE mmu_in(void);
+static void mmu_out(BYTE);
+
+static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
+struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
+BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256]) (void) = {
-	io_trap_in,		/* port 0 */
-	io_trap_in,		/* port 1 */
-	imsai_sio1_data_in,	/* port 2 */ /* SIO 1 connected to console */
-	imsai_sio1_status_in,	/* port 3 */
-	imsai_kbd_data_in,	/* port 4 */ /* SIO 2 not connected */
-	imsai_kbd_status_in,	/* port 5 */ /* needed for VIO keyboard input */
-	io_trap_in,		/* port 6 */
-	io_trap_in,		/* port 7 */
-	io_no_card_in,		/* port 8 */ /* SIO Control for 1 and 2 */
-	io_trap_in,		/* port 9 */
-	io_trap_in,		/* port 10 */
-	io_trap_in,		/* port 11 */
-	io_trap_in,		/* port 12 */
-	io_trap_in,		/* port 13 */
+BYTE (*port_in[256]) (void) = {
+	imsai_sio_nofun_in,	/* port 0 */ /* IMSAI SIO-2 */
+	imsai_sio_nofun_in,	/* port 1 */
+	imsai_sio1a_data_in,	/* port 2 */ /* Channel A, console */
+	imsai_sio1a_status_in,	/* port 3 */
+	imsai_kbd_data_in,	/* port 4 */ /* Channel B, keyboard for VIO */
+	imsai_kbd_status_in,	/* port 5 */
+	imsai_sio_nofun_in,	/* port 6 */
+	imsai_sio_nofun_in,	/* port 7 */
+	imsai_sio1_ctl_in,	/* port 8 */ /* SIO Control for A and B */
+	imsai_sio_nofun_in,	/* port 9 */
+	imsai_sio_nofun_in,	/* port 10 */
+	imsai_sio_nofun_in,	/* port 11 */
+	imsai_sio_nofun_in,	/* port 12 */
+	imsai_sio_nofun_in,	/* port 13 */
+#ifdef HAS_DAZZLER
 	cromemco_dazzler_flags_in, /* port 14 */
-	io_trap_in,		/* port 15 */
+#else
+	imsai_sio_nofun_in,	/* port 14 */
+#endif /* HAS_DAZZLER */
+	imsai_sio_nofun_in,	/* port 15 */
+#ifdef HAS_CYCLOPS
+	cromemco_88ccc_ctrl_a_in, /* port 16 */
+#else
 	io_trap_in,		/* port 16 */
+#endif
 	io_trap_in,		/* port 17 */
-	io_no_card_in,		/* port 18 */ /* serial port   */
-	io_no_card_in,		/* port 19 */ /*       "       */
+	io_trap_in,		/* port 18 */
+	io_trap_in,		/* port 19 */
 	io_pport_in,		/* port 20 */ /* parallel port */
 	io_pport_in,		/* port 21 */ /*       "       */
 	io_trap_in,		/* port 22 */
 	io_trap_in,		/* port 23 */
-	io_trap_in,		/* port 24 */
-	io_trap_in,		/* port 25 */
-	io_trap_in,		/* port 26 */
-	io_trap_in,		/* port 27 */
-	io_trap_in,		/* port 28 */
-	io_trap_in,		/* port 29 */
-	io_trap_in,		/* port 30 */
-	io_trap_in,		/* port 31 */
-	io_trap_in,		/* port 32 */
-	io_trap_in,		/* port 33 */
-	io_trap_in,		/* port 34 */
-	io_trap_in,		/* port 35 */
-	io_trap_in,		/* port 36 */
-	io_trap_in,		/* port 37 */
-	io_trap_in,		/* port 38 */
-	io_trap_in,		/* port 39 */
-	io_trap_in,		/* port 40 */
-	io_trap_in,		/* port 41 */
-	io_trap_in,		/* port 42 */
-	io_trap_in,		/* port 43 */
-	io_trap_in,		/* port 44 */
-	io_trap_in,		/* port 45 */
-	io_trap_in,		/* port 46 */
-	io_trap_in,		/* port 47 */
+	cromemco_d7a_D_in,	/* port 24 */
+	cromemco_d7a_A1_in,	/* port 25 */
+	cromemco_d7a_A2_in,	/* port 26 */
+	cromemco_d7a_A3_in,	/* port 27 */
+	cromemco_d7a_A4_in,	/* port 28 */
+	cromemco_d7a_A5_in,	/* port 29 */
+	cromemco_d7a_A6_in,	/* port 30 */
+	cromemco_d7a_A7_in,	/* port 31 */
+	imsai_sio_nofun_in,	/* port 32 */ /* IMSAI SIO-2 */
+	imsai_sio_nofun_in,	/* port 33 */
+	imsai_sio2a_data_in,	/* port 34 */ /* Channel A, UNIX socket */
+	imsai_sio2a_status_in,	/* port 35 */
+#ifdef HAS_MODEM
+	imsai_sio2b_data_in,	/* port 36 */ /* Channel B, AT-modem over TCP/IP (telnet) */
+	imsai_sio2b_status_in,	/* port 37 */
+#else
+	imsai_sio_nofun_in,	/* port 36 */ /* Channel B, not connected */
+	imsai_sio_nofun_in,	/* port 37 */
+#endif
+	imsai_sio_nofun_in,	/* port 38 */
+	imsai_sio_nofun_in,	/* port 39 */
+	imsai_sio2_ctl_in,	/* port 40 */ /* SIO Control for A and B */
+	imsai_sio_nofun_in,	/* port 41 */
+	imsai_sio_nofun_in,	/* port 42 */
+	imsai_sio_nofun_in,	/* port 43 */
+	imsai_sio_nofun_in,	/* port 44 */
+	imsai_sio_nofun_in,	/* port 45 */
+	imsai_sio_nofun_in,	/* port 46 */
+	imsai_sio_nofun_in,	/* port 47 */
 	io_trap_in,		/* port 48 */
 	io_trap_in,		/* port 49 */
 	io_trap_in,		/* port 50 */
@@ -120,9 +168,9 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 61 */
 	io_trap_in,		/* port 62 */
 	io_trap_in,		/* port 63 */
-	io_trap_in,		/* port 64 */
-	io_trap_in,		/* port 65 */
-	io_trap_in,		/* port 66 */
+	mmu_in,			/* port 64 */ /* MMU */
+	clkc_in,		/* port 65 */ /* RTC command */
+	clkd_in,		/* port 66 */ /* RTC data */
 	io_trap_in,		/* port 67 */
 	io_trap_in,		/* port 68 */
 	io_trap_in,		/* port 69 */
@@ -184,7 +232,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 125 */
 	io_trap_in,		/* port 126 */
 	io_trap_in,		/* port 127 */
-	hwctl_in,		/* port 128 */ /* virtual hardware control */
+	io_trap_in,		/* port 128 */
 	io_trap_in,		/* port 129 */
 	io_trap_in,		/* port 130 */
 	io_trap_in,		/* port 131 */
@@ -216,7 +264,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 157 */
 	io_trap_in,		/* port 158 */
 	io_trap_in,		/* port 159 */
-	io_trap_in,		/* port 160 */
+	hwctl_in,		/* port 160 */	/* virtual hardware control */
 	io_trap_in,		/* port 161 */
 	io_trap_in,		/* port 162 */
 	io_trap_in,		/* port 163 */
@@ -299,7 +347,7 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 240 */
 	io_trap_in,		/* port 241 */
 	io_trap_in,		/* port 242 */
-	io_no_card_in,		/* port 243 */ /* software memory control */
+	ctrl_port_in,		/* port 243 */ /* software memory control */
 	io_trap_in,		/* port 244 */
 	io_trap_in,		/* port 245 */
 	lpt_in,			/* port 246 */ /* IMSAI PTR-300 line printer */
@@ -319,54 +367,70 @@ static BYTE (*port_in[256]) (void) = {
  *	output I/O port (0 - 255), to do the required I/O.
  */
 static void (*port_out[256]) (BYTE) = {
-	io_trap_out,		/* port 0 */
-	io_trap_out,		/* port 1 */
-	imsai_sio1_data_out,	/* port 2 */ /* SIO 1 connected to console */
-	imsai_sio1_status_out,	/* port 3 */
-	io_no_card_out,		/* port 4 */ /* SIO 2 not connected */
-	io_no_card_out,		/* port 5 */
-	io_trap_out,		/* port 6 */
-	io_trap_out,		/* port 7 */
-	io_no_card_out,		/* port 8 */ /* SIO Control for 1 and 2 */
-	io_trap_out,		/* port 9 */
-	io_trap_out,		/* port 10 */
-	io_trap_out,		/* port 11 */
-	io_trap_out,		/* port 12 */
-	io_trap_out,		/* port 13 */
+	imsai_sio_nofun_out,	/* port 0 */ /* IMSAI SIO-2 */
+	imsai_sio_nofun_out,	/* port 1 */
+	imsai_sio1a_data_out,	/* port 2 */ /* Channel A, console */
+	imsai_sio1a_status_out,	/* port 3 */
+	imsai_sio_nofun_out,	/* port 4 */ /* Channel B, keyboard */
+	imsai_sio_nofun_out,	/* port 5 */
+	imsai_sio_nofun_out,	/* port 6 */
+	imsai_sio_nofun_out,	/* port 7 */
+	imsai_sio1_ctl_out,	/* port 8 */ /* SIO Control for A and B */
+	imsai_sio_nofun_out,	/* port 9 */
+	imsai_sio_nofun_out,	/* port 10 */
+	imsai_sio_nofun_out,	/* port 11 */
+	imsai_sio_nofun_out,	/* port 12 */
+	imsai_sio_nofun_out,	/* port 13 */
+#ifdef HAS_DAZZLER
 	cromemco_dazzler_ctl_out,	/* port 14 */
 	cromemco_dazzler_format_out,	/* port 15 */
+#else
+	imsai_sio_nofun_out,	/* port 14 */
+	imsai_sio_nofun_out,	/* port 15 */
+#endif /* HAS_DAZZLER */
+#ifdef HAS_CYCLOPS
+	cromemco_88ccc_ctrl_a_out, /* port 16 */
+	cromemco_88ccc_ctrl_b_out, /* port 17 */
+	cromemco_88ccc_ctrl_c_out, /* port 18 */
+#else
 	io_trap_out,		/* port 16 */
 	io_trap_out,		/* port 17 */
-	io_no_card_out,		/* port 18 */ /* serial port   */
-	io_no_card_out,		/* port 19 */ /*       "       */
+	io_trap_out,		/* port 18 */
+#endif
+	io_trap_out,		/* port 19 */
 	io_no_card_out,		/* port 20 */ /* parallel port */
 	io_no_card_out,		/* port 21 */ /*       "       */
 	io_trap_out,		/* port 22 */
 	io_trap_out,		/* port 23 */
-	io_trap_out,		/* port 24 */
-	io_trap_out,		/* port 25 */
-	io_trap_out,		/* port 26 */
-	io_trap_out,		/* port 27 */
-	io_trap_out,		/* port 28 */
-	io_trap_out,		/* port 29 */
-	io_trap_out,		/* port 30 */
-	io_trap_out,		/* port 31 */
-	io_trap_out,		/* port 32 */
-	io_trap_out,		/* port 33 */
-	io_trap_out,		/* port 34 */
-	io_trap_out,		/* port 35 */
-	io_trap_out,		/* port 36 */
-	io_trap_out,		/* port 37 */
-	io_trap_out,		/* port 38 */
-	io_trap_out,		/* port 39 */
-	io_trap_out,		/* port 40 */
-	io_trap_out,		/* port 41 */
-	io_trap_out,		/* port 42 */
-	io_trap_out,		/* port 43 */
-	io_trap_out,		/* port 44 */
-	io_trap_out,		/* port 45 */
-	io_trap_out,		/* port 46 */
-	io_trap_out,		/* port 47 */
+	cromemco_d7a_D_out,		/* port 24 */
+	cromemco_d7a_A1_out,	/* port 25 */
+	cromemco_d7a_A2_out,	/* port 26 */
+	cromemco_d7a_A3_out,	/* port 27 */
+	cromemco_d7a_A4_out,	/* port 28 */
+	cromemco_d7a_A5_out,	/* port 29 */
+	cromemco_d7a_A6_out,	/* port 30 */
+	cromemco_d7a_A7_out,	/* port 31 */
+	imsai_sio_nofun_out,	/* port 32 */ /* IMSAI SIO-2 */
+	imsai_sio_nofun_out,	/* port 33 */
+	imsai_sio2a_data_out,	/* port 34 */ /* Channel A, UNIX socket */
+	imsai_sio2a_status_out,	/* port 35 */
+#ifdef HAS_MODEM
+	imsai_sio2b_data_out,	/* port 36 */ /* Channel B, AT-modem over TCP/IP (telnet) */
+	imsai_sio2b_status_out,	/* port 37 */
+#else
+	imsai_sio_nofun_out,	/* port 36 */ /* Channel B, not connected */
+	imsai_sio_nofun_out,	/* port 37 */
+#endif
+	imsai_sio_nofun_out,	/* port 38 */
+	imsai_sio_nofun_out,	/* port 39 */
+	imsai_sio2_ctl_out,	/* port 40 */ /* SIO Control for A and B */
+	imsai_sio_nofun_out,	/* port 41 */
+	imsai_sio_nofun_out,	/* port 42 */
+	imsai_sio_nofun_out,	/* port 43 */
+	imsai_sio_nofun_out,	/* port 44 */
+	imsai_sio_nofun_out,	/* port 45 */
+	imsai_sio_nofun_out,	/* port 46 */
+	imsai_sio_nofun_out,	/* port 47 */
 	io_trap_out,		/* port 48 */
 	io_trap_out,		/* port 49 */
 	io_trap_out,		/* port 50 */
@@ -383,9 +447,9 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 61 */
 	io_trap_out,		/* port 62 */
 	io_trap_out,		/* port 63 */
-	io_trap_out,		/* port 64 */
-	io_trap_out,		/* port 65 */
-	io_trap_out,		/* port 66 */
+	mmu_out,		/* port 64 */ /* MMU */
+	clkc_out,		/* port 65 */ /* RTC command */
+	clkd_out,		/* port 66 */ /* RTC data */
 	io_trap_out,		/* port 67 */
 	io_trap_out,		/* port 68 */
 	io_trap_out,		/* port 69 */
@@ -447,7 +511,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 125 */
 	io_trap_out,		/* port 126 */
 	io_trap_out,		/* port 127 */
-	hwctl_out,		/* port 128 */	/* virtual hardware control */
+	io_trap_out,		/* port 128 */
 	io_trap_out,		/* port 129 */
 	io_trap_out,		/* port 130 */
 	io_trap_out,		/* port 131 */
@@ -479,8 +543,8 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 157 */
 	io_trap_out,		/* port 158 */
 	io_trap_out,		/* port 159 */
-	io_trap_out,		/* port 160 */
-	io_trap_out,		/* port 161 */
+	hwctl_out,		/* port 160 */	/* virtual hardware control */
+	host_bdos_out,		/* port 161 */  /* host file I/O hook */
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
 	io_trap_out,		/* port 164 */
@@ -562,7 +626,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 240 */
 	io_trap_out,		/* port 241 */
 	io_trap_out,		/* port 242 */
-	io_no_card_out,		/* port 243 */ /* software memory control */
+	ctrl_port_out,		/* port 243 */ /* software memory control */
 	io_trap_out,		/* port 244 */
 	io_trap_out,		/* port 245 */
 	lpt_out,		/* port 246 */ /* IMSAI PTR-300 line printer */
@@ -584,6 +648,29 @@ static void (*port_out[256]) (BYTE) = {
  */
 void init_io(void)
 {
+	/* initialise IMSAI VIO if firmware is loaded */
+	if ((getmem(0xfffd) == 'V') && (getmem(0xfffe) == 'I') &&
+	    (getmem(0xffff) == '0')) {
+		imsai_vio_init();
+	} else {
+		/* release the RAM */
+		MEM_RELEASE(60);
+		MEM_RELEASE(61);
+		/* if no firmware loaded release the ROM */
+		if (getmem(0xf800) == 0xff) {
+			MEM_RELEASE(62);
+			MEM_RELEASE(63);
+		}
+	}
+
+	imsai_fif_reset();
+
+#ifdef HAS_DAZZLER
+	cromemco_d7a_init();
+#endif
+
+	/* create local socket for SIO */
+	init_unix_server_socket(&ucons[0], "imsaisim.sio2a");
 }
 
 /*
@@ -592,15 +679,38 @@ void init_io(void)
  */
 void exit_io(void)
 {
+	register int i;
+
 	/* close line printer file */
 	if (printer != 0)
 		close(printer);
 
+	/* close network connections */
+	for (i = 0; i < NUMUSOC; i++) {
+		if (ucons[i].ssc)
+			close(ucons[i].ssc);
+	}
+
+#ifdef HAS_DAZZLER
 	/* shutdown DAZZLER */
 	cromemco_dazzler_off();
+#endif
 
 	/* shutdown VIO */
 	imsai_vio_off();
+}
+
+/*
+ *	This function is to reset the I/O devices. It is
+ *	called from the CPU simulation when an External Clear is performed.
+ */
+void reset_io(void)
+{
+#ifdef HAS_DAZZLER
+	cromemco_dazzler_off();
+#endif
+	imsai_fif_reset();
+	hwctl_lock = 0xff;
 }
 
 /*
@@ -610,19 +720,26 @@ void exit_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern void wait_step(void);
+	int val = 0;
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	//printf("input %02x from port %02x\r\n", io_data, io_port);
 
+#ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock += 3;
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
-	wait_step();
+	val = wait_step();
+#endif
+
+	/* when single stepped INP get last set value of port */
+	if (val)
+		io_data = (*port_in[io_port]) ();
 
 	return(io_data);
 }
@@ -634,20 +751,21 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void wait_step(void);
-
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
-	//printf("output %02x to port %02x\r\n", io_data, io_port);
 
+#ifdef BUS_8080
 	cpu_bus = CPU_OUT;
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock += 6;
 	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = 0xff;
+	fp_led_data = io_data;
 	fp_sampleData();
 	wait_step();
+#endif
 }
 
 /*
@@ -706,7 +824,11 @@ static void io_no_card_out(BYTE data)
  */
 static BYTE fp_in(void)
 {
+#ifdef FRONTPANEL
 	return(address_switch >> 8);
+#else
+	return(0);
+#endif
 }
 
 /*
@@ -714,7 +836,9 @@ static BYTE fp_in(void)
  */
 static void fp_out(BYTE data)
 {
+#ifdef FRONTPANEL
 	fp_led_output = data;
+#endif
 }
 
 /*
@@ -730,13 +854,16 @@ static void int_timer(int sig)
 
 /*
  *	Input from virtual hardware control port
+ *	returns lock status of the port
  */
 static BYTE hwctl_in(void)
 {
-	return((BYTE) 0);
+	return(hwctl_lock);
 }
 
 /*
+ *	Port is locked until magic number 0xaa is received!
+ *
  *	Virtual hardware control output.
  *	Doesn't exist in the real machine, used to shutdown
  *	and for RST 38H interrupts every 10ms.
@@ -750,13 +877,24 @@ static void hwctl_out(BYTE data)
 	static struct itimerval tim;
 	static struct sigaction newact;
 
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+	
+	/* process output to unlocked port */
+
         if (data & 128) {
                 cpu_error = IOHALT;
                 cpu_state = STOPPED;
 	}
 
         if (data & 1) {
-		//printf("\r\n*** ENABLE TIMER ***\r\n");
 		newact.sa_handler = int_timer;
 		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 		newact.sa_flags = 0;
@@ -767,7 +905,6 @@ static void hwctl_out(BYTE data)
 		tim.it_interval.tv_usec = 10000;
 		setitimer(ITIMER_REAL, &tim, NULL);
 	} else {
-		//printf("\r\n*** DISABLE TIMER ***\r\n");
 		newact.sa_handler = SIG_IGN;
 		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
 		newact.sa_flags = 0;
@@ -793,11 +930,15 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				perror("write printer");
+				LOGE(TAG, "can't write to printer");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
 		}
+
+#ifdef HAS_NETSERVER
+		net_device_send(DEV_LPT, (char *) &data, 1);
+#endif
 	}
 }
 
@@ -848,4 +989,26 @@ static BYTE imsai_kbd_data_in(void)
 	imsai_kbd_status = 0;
 
 	return((BYTE) data);
+}
+
+/*
+ *	read MMU register
+ */
+static BYTE mmu_in(void)
+{
+	return(selbnk);
+}
+
+/*
+ *	write MMU register
+ */
+static void mmu_out(BYTE data)
+{
+	selbnk = data;
+
+	if (data > MAXSEG) {
+		LOGE(TAG, "selected bank %d not available", data);
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+	}
 }
