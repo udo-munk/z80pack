@@ -139,7 +139,7 @@ void imsai_fif_out(BYTE data)
 	void disk_io(int);
 
 	/*
-	 * controller commands: MSB command, LSB disk decsriptor or drive(s)
+	 * controller commands: MSB command, LSB disk descriptor or drive(s)
 	 *
 	 * 0x00: execute disk descriptor in LSB
 	 * 0x10: set address of disk descriptor in LSB from following two OUT's
