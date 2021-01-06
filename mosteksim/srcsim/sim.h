@@ -48,8 +48,8 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
-#define RELEASE	"1.37-dev"
+#define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
+#define RELEASE	"1.37"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */

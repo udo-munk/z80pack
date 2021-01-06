@@ -11,7 +11,7 @@
 
 # the directory with the cpmsim disk images
 # needs to be adjusted, default is dist dir in users home
-diskdir=~/z80pack-1.36/cpmsim/disks
+diskdir=~/z80pack/cpmsim/disks
 
 Usage () {
 	echo "Usage: `basename $0` [-t] drive [user:]file"

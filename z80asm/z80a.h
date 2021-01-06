@@ -1,6 +1,6 @@
 /*
  *	Z80 - Assembler
- *	Copyright (C) 1987-2018 by Udo Munk
+ *	Copyright (C) 1987-2021 by Udo Munk
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -27,7 +27,7 @@
  *	various constants
  */
 #define REL		"1.9"
-#define COPYR		"Copyright (C) 1987-2018 by Udo Munk"
+#define COPYR		"Copyright (C) 1987-2021 by Udo Munk"
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */
 #define OBJEXTHEX	".hex"	/* filename extension hex */

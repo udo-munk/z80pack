@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2019 by Udo Munk
+ * Copyright (C) 1987-2021 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -42,6 +42,7 @@
  * 16-MAR-17 Release 1.34 improvements, added ProcTec VDM-1
  * 03-AUG-17 Release 1.35 added UNIX sockets, bugfixes, improvements
  * 21-DEC-17 Release 1.36 bugfixes and improvements
+ * 06-JAN-21 Release 1.37 bugfixes and improvements
  */
 
 /*
@@ -86,8 +87,8 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2019 by Udo Munk"
-#define RELEASE	"1.37-dev"
+#define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
+#define RELEASE	"1.37"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
