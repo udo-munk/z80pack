@@ -89,8 +89,8 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h log.h memory.h simbdos.h
-	$(CC) $(CFLAGS) iosim.c
+iosim.o : iosim.c sim.h simglb.h log.h memory.h ../../iodevices/simbdos.h
+	$(CC) $(CFLAGS) -I../../iodevices iosim.c
 
 simfun.o : simfun.c sim.h log.h
 	$(CC) $(CFLAGS) simfun.c
@@ -98,8 +98,8 @@ simfun.o : simfun.c sim.h log.h
 simglb.o : simglb.c sim.h
 	$(CC) $(CFLAGS) simglb.c
 
-simbdos.o : simbdos.c sim.h simglb.h memory.h
-	$(CC) $(CFLAGS) simbdos.c
+simbdos.o : ../../iodevices/simbdos.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/simbdos.c
 
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c

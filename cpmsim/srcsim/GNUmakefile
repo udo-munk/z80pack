@@ -6,7 +6,7 @@ MACHINE = cpm
 # machine specific system source files
 SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = unix_terminal.c rtc.c
+SRC_IO = unix_terminal.c rtc.c simbdos.c
 #machine specifc libraries 
 SRC_LIBS =
 
@@ -88,7 +88,7 @@ endif
 LFLAGS =
 
 # core system source files for the CPU simulation - only change if the core changes
-SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c simbdos.c
+SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
 SRC = $(SRC_CORE) $(SRC_MACHINE) $(SRC_IO)
 OBJ = $(SRC:.c=.o)
 

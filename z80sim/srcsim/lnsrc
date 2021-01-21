@@ -1,4 +1,4 @@
-# use this to link the common parts of Z80 simulation
+# use this to link the CPU core sources
 
 ln ../../z80core/sim0.c sim0.c
 ln ../../z80core/sim1.c sim1.c

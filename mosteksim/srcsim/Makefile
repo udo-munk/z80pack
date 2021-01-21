@@ -63,7 +63,8 @@ sim6.o : sim6.c	sim.h simglb.h config.h memory.h
 sim7.o : sim7.c	sim.h simglb.h config.h memory.h
 	$(CC) $(CFLAGS) sim7.c
 
-simctl.o : simctl.c sim.h simglb.h memory.h ../../iodevices/mostek-fdc.h ../../iodevices/unix_terminal.h
+simctl.o : simctl.c sim.h simglb.h memory.h ../../iodevices/mostek-fdc.h \
+	   ../../iodevices/unix_terminal.h
 	$(CC) $(CFLAGS) simctl.c
 
 disas.o	: disas.c
@@ -75,8 +76,9 @@ simint.o : simint.c sim.h simglb.h
 memory.o : memory.c sim.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o	: iosim.c sim.h	simglb.h simbdos.h ../../iodevices/mostek-cpu.h ../../iodevices/mostek-fdc.h
-	$(CC) $(CFLAGS) iosim.c
+iosim.o	: iosim.c sim.h	simglb.h ../../iodevices/simbdos.h \
+	  ../../iodevices/mostek-cpu.h ../../iodevices/mostek-fdc.h
+	$(CC) $(CFLAGS) -I../../iodevices iosim.c
 
 simfun.o : simfun.c sim.h
 	$(CC) $(CFLAGS) simfun.c
@@ -84,8 +86,8 @@ simfun.o : simfun.c sim.h
 simglb.o : simglb.c sim.h
 	$(CC) $(CFLAGS) simglb.c
 
-simbdos.o : simbdos.c sim.h simglb.h memory.h
-	$(CC) $(CFLAGS) simbdos.c
+simbdos.o : ../../iodevices/simbdos.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/simbdos.c
 
 config.o : config.c simglb.h sim.h
 	$(CC) $(CFLAGS) config.c

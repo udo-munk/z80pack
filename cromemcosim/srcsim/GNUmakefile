@@ -6,7 +6,7 @@ MACHINE = cromemco
 # machine specific system source files
 SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c unix_terminal.c unix_network.c
+SRC_IO = cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c unix_terminal.c unix_network.c simbdos.c
 #machine specifc libraries 
 SRC_LIBS = -lfrontpanel
 
@@ -93,7 +93,7 @@ LFLAGS = -L$(DIR_FP) $(SRC_LIBS) \
 	$(PLAT_LFLAGS)
 
 # core system source files for the CPU simulation - only change if the core changes
-SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c simbdos.c
+SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
 SRC = $(SRC_CORE) $(SRC_MACHINE) $(SRC_IO)
 OBJ = $(SRC:.c=.o)
 
