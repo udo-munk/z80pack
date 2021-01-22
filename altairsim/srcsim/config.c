@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2019 by Udo Munk
+ * Copyright (C) 2008-2021 by Udo Munk
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -25,6 +25,7 @@
  * 17-JUL-18 use logging
  * 21-AUG-18 improved memory configuration
  * 24-NOV-19 configurable baud rate for second 2SIO channel
+ * 22-JAN-21 added option for config file
  */
 
 #include <stdlib.h>
@@ -83,8 +84,13 @@ void config(void)
 	for (i = 0; i < MAXSEG; i++)
 		memconf[i].type = -1;
 
-	strcpy(&fn[0], &confdir[0]);
-	strcat(&fn[0], "/system.conf");
+	if (c_flag) {
+		strcpy(&fn[0], &conffn[0]);
+	} else {
+		strcpy(&fn[0], &confdir[0]);
+		strcat(&fn[0], "/system.conf");
+	}
+
 	if ((fp = fopen(&fn[0], "r")) != NULL) {
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {

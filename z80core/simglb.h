@@ -66,7 +66,7 @@ extern BYTE	cpu_state, bus_request;
 extern int	int_data;
 
 extern int	s_flag, l_flag, m_flag, x_flag, break_flag, i_flag, f_flag,
-		u_flag, r_flag,
+		u_flag, r_flag, c_flag,
 		cpu_error, int_nmi, int_int, int_mode, parity[], sb_next,
 		int_protection;
 
@@ -75,7 +75,7 @@ extern int	busy_loop_cnt[];
 
 extern char	xfn[];
 extern char	*diskdir, diskd[];
-extern char	confdir[];
+extern char	confdir[], conffn[];
 
 #ifdef HISIZE
 extern struct	history his[];

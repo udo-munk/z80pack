@@ -193,6 +193,25 @@ int main(int argc, char *argv[])
 				break;
 #endif
 
+#ifdef HAS_CONFIG
+			case 'c':	/* get config file */
+				c_flag = 1;
+				s++;
+				if (*s == '\0') {
+					if (argc <= 1)
+						goto usage;
+					argc--;
+					argv++;
+					s = argv[0];
+				}
+				p = &conffn[0];
+				while (*s)
+					*p++ = *s++;
+				*p = '\0';
+				s--;
+				break;
+#endif
+
 			case '8':
 				cpu = I8080;
 				break;
@@ -210,11 +229,14 @@ int main(int argc, char *argv[])
 
 usage:
 
+				printf("usage:\t%s -z -8 -s -l -i -u %s-m val -f freq -x filename", pn, rom);
 #ifdef HAS_DISKS
-				printf("usage:\t%s -z -8 -s -l -i -u %s-m val -f freq -x filename -d diskpath\n", pn, rom);
-#else
-				printf("usage:\t%s -z -8 -s -l -i -u %s-m val -f freq -x filename\n", pn, rom);
+				printf(" -d diskpath");
 #endif
+#ifdef HAS_CONFIG
+				printf(" -c filename");
+#endif
+				putchar('\n');
 				puts("\t-z = emulate Zilog Z80");
 				puts("\t-8 = emulate Intel 8080");
 				puts("\t-s = save core and CPU");
@@ -233,6 +255,12 @@ usage:
 				puts("\t     default path for disk images:");
 				puts("\t     ./disks");
 				printf("\t     %s\n", DISKSDIR);
+#endif
+#ifdef HAS_CONFIG
+				puts("\t-c = use config filename");
+				puts("\t     default config files:");
+				puts("\t     ./conf/system.conf");
+				printf("\t     %s/system.conf\n", CONFDIR);
 #endif
 				exit(1);
 			}

@@ -59,7 +59,7 @@
 /*#define BUS_8080*/	/* no emulation of 8080 bus status */
 
 #define HAS_DISKS	/* uses disk images */
-#define HAS_CONFIG	/* has configuration files somewhere */
+/*#define HAS_CONFIG*/	/* has no configuration file */
 
 #define PIPES		/* use named pipes for auxiliary device */
 #define NETWORKING	/* TCP/IP networked serial ports */

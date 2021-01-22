@@ -144,6 +144,7 @@ int i_flag;			/* flag for -i option */
 int f_flag;			/* flag for -f option */
 int u_flag;			/* flag for -u option */
 int r_flag;			/* flag for -r option */
+int c_flag;			/* flag for -c option */
 
 /*
  *	Variables for configuration and disk images
@@ -152,6 +153,7 @@ char xfn[MAX_LFN];		/* buffer for filename (option -x) */
 char *diskdir = NULL;		/* path for disk images (option -d) */
 char diskd[MAX_LFN];		/* disk image directory in use */
 char confdir[MAX_LFN];		/* path for configuration files */
+char conffn[MAX_LFN];		/* configuration file (option -c) */
 
 /*
  *	Precompiled table to get parity as fast as possible
