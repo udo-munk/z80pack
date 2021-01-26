@@ -32,8 +32,8 @@ void btoh(unsigned char, char **);
 extern void fatal(int, char *);
 
 static char *errmsg[] = {		/* error messages for asmerr() */
-	"illegal opcode",		/* 0 */
-	"illegal operand",		/* 1 */
+	"invalid opcode",		/* 0 */
+	"invalid operand",		/* 1 */
 	"missing operand",		/* 2 */
 	"multiply defined symbol",	/* 3 */
 	"undefined symbol",		/* 4 */
@@ -121,7 +121,7 @@ void lst_line(int val, int opanz)
 		fprintf(lstfp, "%04x              ", sd_val & 0xffff);
 		goto no_data;
 	default:
-		fatal(F_INTERN, "illegal listflag for function lst_line");
+		fatal(F_INTERN, "invalid listflag for function lst_line");
 		break;
 	}
 	if (opanz >= 1) fprintf(lstfp, "%02x ", ops[0] & 0xff);

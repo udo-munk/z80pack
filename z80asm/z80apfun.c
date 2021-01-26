@@ -337,7 +337,7 @@ int op_misc(int op_code, int dummy)
 		}
 		break;
 	default:
-		fatal(F_INTERN, "illegal opcode for function op_misc");
+		fatal(F_INTERN, "invalid opcode for function op_misc");
 		break;
 	}
 	return(0);
@@ -426,7 +426,7 @@ int op_cond(int op_code, int dummy)
 			gencode = condnest[--iflevel];
 		break;
 	default:
-		fatal(F_INTERN, "illegal opcode for function op_cond");
+		fatal(F_INTERN, "invalid opcode for function op_cond");
 		break;
 	}
 	sd_flag = 2;
@@ -447,7 +447,7 @@ int op_glob(int op_code, int dummy)
 	case 2:				/* PUBLIC */
 		break;
 	default:
-		fatal(F_INTERN, "illegal opcode for function op_glob");
+		fatal(F_INTERN, "invalid opcode for function op_glob");
 		break;
 	}
 	return(0);

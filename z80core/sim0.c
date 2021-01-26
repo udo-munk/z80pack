@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 				goto usage;
 
 			default:
-				printf("illegal option %c\n", *s);
+				printf("invalid option %c\n", *s);
 
 usage:
 

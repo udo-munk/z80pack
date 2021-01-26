@@ -2166,13 +2166,13 @@ static BYTE fdco_in(void)
  *
  *	The status byte of the FDC is set as follows:
  *	  0 - ok
- *	  1 - illegal drive
- *	  2 - illegal track
- *	  3 - illegal sector
+ *	  1 - invalid drive
+ *	  2 - invalid track
+ *	  3 - invalid sector
  *	  4 - seek error
  *	  5 - read error
  *	  6 - write error
- *	  7 - illegal command to FDC
+ *	  7 - invalid command to FDC
  */
 static void fdco_out(BYTE data)
 {
@@ -2215,7 +2215,7 @@ static void fdco_out(BYTE data)
 		else
 			status = 0;
 		break;
-	default:		/* illegal command */
+	default:		/* invalid command */
 		status = 7;
 		break;
 	}

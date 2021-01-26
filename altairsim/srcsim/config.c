@@ -107,7 +107,7 @@ void config(void)
 					sio0_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_upper_case")) {
@@ -119,7 +119,7 @@ void config(void)
 					sio1_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_upper_case")) {
@@ -131,7 +131,7 @@ void config(void)
 					sio2_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_strip_parity")) {
@@ -143,7 +143,7 @@ void config(void)
 					sio0_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_strip_parity")) {
@@ -155,7 +155,7 @@ void config(void)
 					sio1_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_strip_parity")) {
@@ -167,7 +167,7 @@ void config(void)
 					sio2_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_drop_nulls")) {
@@ -179,7 +179,7 @@ void config(void)
 					sio0_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_drop_nulls")) {
@@ -191,7 +191,7 @@ void config(void)
 					sio1_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_drop_nulls")) {
@@ -203,7 +203,7 @@ void config(void)
 					sio2_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_revision")) {
@@ -215,7 +215,7 @@ void config(void)
 					sio0_revision = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_baud_rate")) {
@@ -245,12 +245,12 @@ void config(void)
 				t3 = strtok(NULL, " \t,");
 				v1 = atoi(t2);
 				if (v1 < 0 || v1 > 255) {
-					LOGW(TAG, "illegal ram start address %d", v1);
+					LOGW(TAG, "invalid ram start address %d", v1);
 					goto next;
 				}
 				v2 = atoi(t3);
 				if (v2 < 1 || v1 + v2 > 256) {
-					LOGW(TAG, "illegal ram size %d", v2);
+					LOGW(TAG, "invalid ram size %d", v2);
 					goto next;
 				}
 				memconf[num_segs].type = MEM_RW;
@@ -267,12 +267,12 @@ void config(void)
 				t3 = strtok(NULL, " \t,");
 				v1 = atoi(t2);
 				if (v1 < 0 || v1 > 255) {
-					LOGW(TAG, "illegal rom start address %d", v1);
+					LOGW(TAG, "invalid rom start address %d", v1);
 					goto next;
 				}
 				v2 = atoi(t3);
 				if (v2 < 1 || v1 + v2 > 256) {
-					LOGW(TAG, "illegal rom size %d", v2);
+					LOGW(TAG, "invalid rom size %d", v2);
 					goto next;
 				}
 				memconf[num_segs].type = MEM_RO;

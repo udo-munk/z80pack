@@ -92,7 +92,7 @@ void config(void)
 					sio1a_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2a_upper_case")) {
@@ -104,7 +104,7 @@ void config(void)
 					sio2a_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1a_strip_parity")) {
@@ -116,7 +116,7 @@ void config(void)
 					sio1a_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2a_strip_parity")) {
@@ -128,7 +128,7 @@ void config(void)
 					sio2a_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1a_drop_nulls")) {
@@ -140,7 +140,7 @@ void config(void)
 					sio1a_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2a_drop_nulls")) {
@@ -152,7 +152,7 @@ void config(void)
 					sio2a_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: illegal value for %s: %s", t1, t2);
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1a_baud_rate")) {
