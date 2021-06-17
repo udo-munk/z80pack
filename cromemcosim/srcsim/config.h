@@ -12,6 +12,7 @@
  * 27-JAN-17 initial window size of the front panel configurable
  * 18-JUL-18 use logging
  * 22-JAN-21 added option for config file
+ * 17-JUN-21 allow building machine without frontpanel
  */
 
 extern void config(void);

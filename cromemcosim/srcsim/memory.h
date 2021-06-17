@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2016-2021 by Udo Munk
  *
  * This module implements memory management for a Cromemco Z-1 system
  *
@@ -12,6 +12,7 @@
  * 18-JUL-18 use logging
  * 01-OCT-19 optimization
  * 04-NOV-19 add functions for direct memory access
+ * 17-JUN-21 allow building machine without frontpanel
  */
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */
@@ -32,11 +33,13 @@ static inline void memwrt(WORD addr, BYTE data)
 
 	cpu_bus &= ~(CPU_WO | CPU_MEMR);
 
+#ifdef FRONTPANEL
 	fp_clock++;
 	fp_led_address = addr;
 	fp_led_data = data;
 	fp_sampleData();
 	wait_step();
+#endif
 
 	if (!common) {
 		*(memory[selbnk] + addr) = data;
@@ -54,6 +57,7 @@ static inline BYTE memrdr(WORD addr)
 {
 	cpu_bus |= CPU_WO | CPU_MEMR;
 
+#ifdef FRONTPANEL
 	fp_clock++;
 	fp_led_address = addr;
 	fp_led_data = *(memory[selbnk] + addr);
@@ -61,6 +65,9 @@ static inline BYTE memrdr(WORD addr)
 	wait_step();
 
 	return(fp_led_data);
+#else
+	return(*(memory[selbnk] + addr));
+#endif
 }
 
 /*

@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from a Cromemco Z-1 front panel
  *
- * Copyright (C) 2014-2019 by Udo Munk
+ * Copyright (C) 2014-2021 by Udo Munk
  *
  * History:
  * 15-DEC-14 first version
@@ -24,6 +24,7 @@
  * 11-JUN-18 fixed reset so that cold and warm start works
  * 18-JUL-18 use logging
  * 04-NOV-19 eliminate usage of mem_base()
+ * 17-JUN-21 allow building machine without frontpanel
  */
 
 #include <X11/Xlib.h>
@@ -46,18 +47,22 @@ extern void reset_cpu(void), reset_io(void);
 
 static const char *TAG = "system";
 
+#ifdef FRONTPANEL
 static BYTE fp_led_wait;
 static BYTE fp_led_speed;
 static int cpu_switch;
 static int reset;
 static int power;
+#endif
 
 static void run_cpu(void), step_cpu(void);
+#ifdef FRONTPANEL
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
 static void examine_clicked(int, int), deposit_clicked(int, int);
 static void power_clicked(int, int);
 static void quit_callback(void);
+#endif
 
 /*
  *	This function initialises the front panel and terminal.
@@ -68,6 +73,7 @@ void mon(void)
 {
 	extern BYTE fdc_flags;
 
+#ifdef FRONTPANEL
 	/* initialise front panel */
 	XInitThreads();
 
@@ -108,6 +114,7 @@ void mon(void)
 	fp_addSwitchCallback("SW_EXAMINE", examine_clicked, 0);
 	fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
 	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
+#endif
 
 	/* give threads a bit time and then empty buffer */
 	SLEEP_MS(999);
@@ -117,6 +124,7 @@ void mon(void)
 	set_unix_terminal();
 	atexit(reset_unix_terminal);
 
+#ifdef FRONTPANEL
 	/* operate machine from front panel */
 	while (cpu_error == NONE) {
 		/* update frontpanel LED's */
@@ -162,11 +170,16 @@ void mon(void)
 		/* wait a bit, system is ideling */
 		SLEEP_MS(10);
 	}
+#else
+	fdc_flags = 128;
+	run_cpu();
+#endif
 
 	/* reset terminal */
 	reset_unix_terminal();
 	putchar('\n');
 
+#ifdef FRONTPANEL
 	/* all LED's off and update front panel */
 	cpu_bus = 0;
 	bus_request = 0;
@@ -183,6 +196,7 @@ void mon(void)
 
 	/* shutdown frontpanel */
 	fp_quit();
+#endif
 }
 
 /*
@@ -275,6 +289,7 @@ void step_cpu(void)
 	report_error();
 }
 
+#ifdef FRONTPANEL
 /*
  *	Callback for RUN/STOP switch
  */
@@ -531,3 +546,4 @@ void quit_callback(void)
 	cpu_state = STOPPED;
 	cpu_error = POWEROFF;
 }
+#endif
