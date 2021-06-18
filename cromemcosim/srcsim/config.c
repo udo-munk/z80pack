@@ -58,5 +58,6 @@ void config(void)
 				LOGW(TAG, "system.conf unknow command: %s", s);
 			}
 		}
-#endif
 	}
+#endif
+}
