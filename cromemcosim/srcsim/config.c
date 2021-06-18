@@ -30,6 +30,7 @@ int fp_size = 800;
 
 void config(void)
 {
+#ifdef FRONTPANEL
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2;
@@ -42,7 +43,6 @@ void config(void)
 		strcat(&fn[0], "/system.conf");
 	}
 
-#ifdef FRONTPANEL
 	if ((fp = fopen(&fn[0], "r")) != NULL) {
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
@@ -58,6 +58,5 @@ void config(void)
 				LOGW(TAG, "system.conf unknow command: %s", s);
 			}
 		}
-	}
 #endif
-}
+	}
