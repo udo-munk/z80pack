@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2019 by Udo Munk
+ * Copyright (C) 2019-2021 by Udo Munk
  *
  * Emulation of a RTC to provide date and time informations.
  * This doesn't emulate a specific RTC card or chip, in 1980
@@ -11,6 +11,7 @@
  *
  * History:
  * 24-OCT-19 moved out of the cpmsim machine
+ * 30-JUN-21 clock read now returns time format instead of last command
  */
 
 #include <time.h>
@@ -56,11 +57,11 @@ static int get_date(struct tm *t)
 
 /*
  *	I/O handler for read clock command:
- *	return last clock command
+ *	return format of time, 0 = BCD - 1 = decimal
  */
 BYTE clkc_in(void)
 {
-	return(clkcmd);
+	return(clkfmt);
 }
 
 /*
