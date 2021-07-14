@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2020 by Udo Munk
+ * Copyright (C) 2008-2021 by Udo Munk
  * Copyright (C) 2018-2019 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
@@ -28,6 +28,7 @@
  * 09-OCT-19 implement telnet binary transfer
  * 12-NOV-19 implemented SIO control ports
  * 19-JUL-20 avoid problems with some third party terminal emulations
+ * 14-JUL-21 added all options for SIO 2B
  */
 
 #include <unistd.h>
@@ -70,6 +71,9 @@ int sio2a_baud_rate = 115200;
 static struct timeval sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat;
 
+int sio2b_upper_case;
+int sio2b_strip_parity;
+int sio2b_drop_nulls;
 int sio2b_baud_rate = 2400;
 int sio2b_cd;			/* carrier detect from modem */
 
@@ -424,6 +428,9 @@ void imsai_sio2b_status_out(BYTE data)
 
 /*
  * read data register
+ *
+ * can be configured to translate to upper case, most of the old software
+ * written for tty's won't accept lower case characters
  */
 BYTE imsai_sio2b_data_in(void)
 {
@@ -441,15 +448,28 @@ BYTE imsai_sio2b_data_in(void)
 	gettimeofday(&sio2b_t1, NULL);
 	sio2b_stat &= 0b11111101;
 
+	/* process read data */
+	if (sio2b_upper_case)
+		data = toupper(data);
 	last = data;
 	return(data);
 }
 
 /*
  * write data register
+ *
+ * can be configured to strip parity bit because some old software won't.
+ * also can drop nulls usually send after CR/LF for teletypes.
  */
 void imsai_sio2b_data_out(BYTE data)
 {
+	if (sio2b_strip_parity)
+		data &= 0x7f;
+
+	if (sio2b_drop_nulls)
+		if (data == 0)
+			return;
+
 	if (modem_device_alive(DEV_SIO2B)) {
 		modem_device_send(DEV_SIO2B, (char) data);
 	} else {

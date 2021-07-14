@@ -27,6 +27,7 @@
  * 07-OCT-19 implemented baud rate for modem device
  * 14-AUG-20 allow building machine without frontpanel
  * 22-JAN-21 added option for config file
+ * 14-JUL-21 added all options for SIO 2B
  */
 
 extern void config(void);

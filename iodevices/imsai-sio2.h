@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2008-2020 by Udo Munk
+ * Copyright (C) 2008-2021 by Udo Munk
  * Copyright (C) 2018-2019 David McNaughton
  *
  * Emulation of an IMSAI SIO-2 S100 board
@@ -28,6 +28,7 @@
  * 09-OCT-19 implement telnet binary transfer
  * 12-NOV-19 implemented SIO control ports
  * 19-JUL-20 avoid problems with some third party terminal emulations
+ * 14-JUL-21 added all options for SIO 2B
  */
 
 extern BYTE imsai_sio_nofun_in(void);

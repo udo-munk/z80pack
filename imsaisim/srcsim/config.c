@@ -27,6 +27,7 @@
  * 07-OCT-19 implemented baud rate for modem device
  * 14-AUG-20 allow building machine without frontpanel
  * 22-JAN-21 added option for config file
+ * 14-JUL-21 added all options for SIO 2B
  */
 
 #include <stdlib.h>
@@ -55,7 +56,10 @@ extern int sio2a_strip_parity;	/* SIO 2 A strip parity from output */
 extern int sio2a_drop_nulls;	/* SIO 2 A drop nulls after CR/LF */
 extern int sio2a_baud_rate;	/* SIO 2 A simulated baud rate */
 
-extern int sio2b_baud_rate;	/* SIO-2 B simulated baud rate */
+extern int sio2b_upper_case;	/* SIO 2 B translate input to upper case */
+extern int sio2b_strip_parity;	/* SIO 2 B strip parity from output */
+extern int sio2b_drop_nulls;	/* SIO 2 B drop nulls after CR/LF */
+extern int sio2b_baud_rate;	/* SIO 2 B simulated baud rate */
 
 extern char bg_color[];		/* VIO background color */
 extern char fg_color[];		/* VIO foreground color */
@@ -107,6 +111,18 @@ void config(void)
 					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
+			} else if (!strcmp(t1, "sio2b_upper_case")) {
+				switch (*t2) {
+				case '0':
+					sio2b_upper_case = 0;
+					break;
+				case '1':
+					sio2b_upper_case = 1;
+					break;
+				default:
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					break;
+				}
 			} else if (!strcmp(t1, "sio1a_strip_parity")) {
 				switch (*t2) {
 				case '0':
@@ -131,6 +147,18 @@ void config(void)
 					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
+			} else if (!strcmp(t1, "sio2b_strip_parity")) {
+				switch (*t2) {
+				case '0':
+					sio2b_strip_parity = 0;
+					break;
+				case '1':
+					sio2b_strip_parity = 1;
+					break;
+				default:
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					break;
+				}
 			} else if (!strcmp(t1, "sio1a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
@@ -150,6 +178,18 @@ void config(void)
 					break;
 				case '1':
 					sio2a_drop_nulls = 1;
+					break;
+				default:
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					break;
+				}
+			} else if (!strcmp(t1, "sio2b_drop_nulls")) {
+				switch (*t2) {
+				case '0':
+					sio2b_drop_nulls = 0;
+					break;
+				case '1':
+					sio2b_drop_nulls = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
