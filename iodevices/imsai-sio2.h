@@ -6,7 +6,7 @@
  * Copyright (C) 2008-2021 by Udo Munk
  * Copyright (C) 2018-2019 David McNaughton
  *
- * Emulation of an IMSAI SIO-2 S100 board
+ * Emulation of IMSAI SIO-2 S100 boards
  *
  * History:
  * 20-OCT-08 first version finished
@@ -29,6 +29,7 @@
  * 12-NOV-19 implemented SIO control ports
  * 19-JUL-20 avoid problems with some third party terminal emulations
  * 14-JUL-21 added all options for SIO 2B
+ * 15-JUL-21 refactor serial keyboard
  */
 
 extern BYTE imsai_sio_nofun_in(void);
@@ -37,10 +38,21 @@ extern void imsai_sio_nofun_out(BYTE);
 extern BYTE imsai_sio1_ctl_in(void), imsai_sio2_ctl_in(void);
 extern void imsai_sio1_ctl_out(BYTE), imsai_sio2_ctl_out(BYTE);
 
-extern BYTE imsai_sio1a_status_in(void), imsai_sio2a_status_in(void);
-extern void imsai_sio1a_status_out(BYTE), imsai_sio2a_status_out(BYTE);
-extern BYTE imsai_sio1a_data_in(void), imsai_sio2a_data_in(void);
-extern void imsai_sio1a_data_out(BYTE), imsai_sio2a_data_out(BYTE);
+extern BYTE imsai_sio1a_status_in(void);
+extern void imsai_sio1a_status_out(BYTE);
+extern BYTE imsai_sio1a_data_in(void);
+extern void imsai_sio1a_data_out(BYTE);
+
+extern BYTE imsai_sio1b_status_in(void);
+extern void imsai_sio1b_status_out(BYTE);
+extern BYTE imsai_sio1b_data_in(void);
+extern void imsai_sio1b_data_out(BYTE);
+
+extern BYTE imsai_sio2a_status_in(void);
+extern void imsai_sio2a_status_out(BYTE);
+extern BYTE imsai_sio2a_data_in(void);
+extern void imsai_sio2a_data_out(BYTE);
+
 #ifdef HAS_MODEM
 extern BYTE imsai_sio2b_status_in(void);
 extern void imsai_sio2b_status_out(BYTE);

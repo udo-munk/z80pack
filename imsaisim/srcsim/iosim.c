@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2020 by Udo Munk
+ * Copyright (C) 2008-2021 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an IMSAI 8080 system
@@ -32,6 +32,7 @@
  * 04-NOV-19 eliminate usage of mem_base()
  * 12-NOV-19 implemented SIO control ports
  * 14-AUG-20 allow building machine without frontpanel
+ * 15-JUL-21 refactor serial keyboard
  */
 
 #include <unistd.h>
@@ -76,7 +77,6 @@ static void hwctl_out(BYTE);
 static BYTE lpt_in(void);
 static void lpt_out(BYTE);
 static BYTE io_pport_in(void);
-static BYTE imsai_kbd_data_in(void), imsai_kbd_status_in(void);
 static BYTE mmu_in(void);
 static void mmu_out(BYTE);
 
@@ -95,8 +95,8 @@ BYTE (*port_in[256]) (void) = {
 	imsai_sio_nofun_in,	/* port 1 */
 	imsai_sio1a_data_in,	/* port 2 */ /* Channel A, console */
 	imsai_sio1a_status_in,	/* port 3 */
-	imsai_kbd_data_in,	/* port 4 */ /* Channel B, keyboard for VIO */
-	imsai_kbd_status_in,	/* port 5 */
+	imsai_sio1b_data_in,	/* port 4 */ /* Channel B, keyboard for VIO */
+	imsai_sio1b_status_in,	/* port 5 */
 	imsai_sio_nofun_in,	/* port 6 */
 	imsai_sio_nofun_in,	/* port 7 */
 	imsai_sio1_ctl_in,	/* port 8 */ /* SIO Control for A and B */
@@ -371,8 +371,8 @@ static void (*port_out[256]) (BYTE) = {
 	imsai_sio_nofun_out,	/* port 1 */
 	imsai_sio1a_data_out,	/* port 2 */ /* Channel A, console */
 	imsai_sio1a_status_out,	/* port 3 */
-	imsai_sio_nofun_out,	/* port 4 */ /* Channel B, keyboard */
-	imsai_sio_nofun_out,	/* port 5 */
+	imsai_sio1b_data_out,	/* port 4 */ /* Channel B, keyboard */
+	imsai_sio1b_status_out,	/* port 5 */
 	imsai_sio_nofun_out,	/* port 6 */
 	imsai_sio_nofun_out,	/* port 7 */
 	imsai_sio1_ctl_out,	/* port 8 */ /* SIO Control for A and B */
@@ -960,35 +960,6 @@ static BYTE lpt_in(void)
 static BYTE io_pport_in(void)
 {
 	return((BYTE) 0);
-}
-
-/*
- *	Return status of the IMSAI VIO keyboard
- */
-static BYTE imsai_kbd_status_in(void)
-{
-	extern int imsai_kbd_status;
-
-	return((BYTE) imsai_kbd_status);
-}
-
-/*
- *	Return next data byte from IMSAI VIO keyboard
- */
-static BYTE imsai_kbd_data_in(void)
-{
-	extern int imsai_kbd_data, imsai_kbd_status;
-	int data;
-
-	if (imsai_kbd_data == -1)
-		return((BYTE) 0);
-
-	/* take over data and reset */
-	data = imsai_kbd_data;
-	imsai_kbd_data = -1;
-	imsai_kbd_status = 0;
-
-	return((BYTE) data);
 }
 
 /*

@@ -6,7 +6,7 @@
  * Copyright (C) 2008-2021 by Udo Munk
  * Copyright (C) 2018-2019 David McNaughton
  *
- * Emulation of an IMSAI SIO-2 S100 board
+ * Emulation of IMSAI SIO-2 S100 boards
  *
  * History:
  * 20-OCT-08 first version finished
@@ -29,6 +29,7 @@
  * 12-NOV-19 implemented SIO control ports
  * 19-JUL-20 avoid problems with some third party terminal emulations
  * 14-JUL-21 added all options for SIO 2B
+ * 15-JUL-21 refactor serial keyboard
  */
 
 #include <unistd.h>
@@ -94,6 +95,8 @@ void imsai_sio_nofun_out(BYTE data)
 {
 	data = data; /* to avoid compiler warning */
 }
+
+/* -------------------- SIO 1 Channel A -------------------- */
 
 /*
  * read status register
@@ -235,6 +238,56 @@ again:
 	gettimeofday(&sio1a_t1, NULL);
 	sio1a_stat &= 0b11111110;
 }
+
+/* -------------------- SIO 1 Channel B -------------------- */
+
+/*
+ * read status register
+ */
+BYTE imsai_sio1b_status_in(void)
+{
+	extern int imsai_kbd_status;
+
+	/* return status of the serial keyboard */
+	return((BYTE) imsai_kbd_status);
+}
+
+/*
+ * write status register
+ */
+void imsai_sio1b_status_out(BYTE data)
+{
+	data = data; /* to avoid compiler warning */
+}
+
+/*
+ * read data register
+ */
+BYTE imsai_sio1b_data_in(void)
+{
+	extern int imsai_kbd_data, imsai_kbd_status;
+	int data;
+
+	/* return next data byte from serial keyboard */
+	if (imsai_kbd_data == -1)
+		return((BYTE) 0);
+
+	data = imsai_kbd_data;
+	imsai_kbd_data = -1;
+	imsai_kbd_status = 0;
+
+	return((BYTE) data);
+}
+
+/*
+ * write data register
+ */
+void imsai_sio1b_data_out(BYTE data)
+{
+	data = data; /* to avoid compiler warning */
+}
+
+/* -------------------- SIO 2 Channel A -------------------- */
 
 /*
  * read status register
@@ -385,6 +438,8 @@ again:
 	sio2a_stat &= 0b11111110;
 }
 
+/* -------------------- SIO 2 Channel B -------------------- */
+
 #ifdef HAS_MODEM
 #include "generic-at-modem.h"
 
@@ -479,6 +534,8 @@ void imsai_sio2b_data_out(BYTE data)
 }
 
 #endif
+
+/* -------------------- SIO control -------------------- */
 
 /*
  * SIO control input bits:
