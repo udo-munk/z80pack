@@ -30,6 +30,7 @@
  * 19-JUL-20 avoid problems with some third party terminal emulations
  * 14-JUL-21 added all options for SIO 2B
  * 15-JUL-21 refactor serial keyboard
+ * 16-JUL-21 added all options for SIO 1B
  */
 
 #include <unistd.h>
@@ -63,6 +64,11 @@ int sio1a_baud_rate = 115200;
 
 static struct timeval sio1a_t1, sio1a_t2;
 static BYTE sio1a_stat;
+
+int sio1b_upper_case;
+int sio1b_strip_parity;
+int sio1b_drop_nulls;
+int sio1b_baud_rate = 110;
 
 int sio2a_upper_case;
 int sio2a_strip_parity;
@@ -266,15 +272,22 @@ void imsai_sio1b_status_out(BYTE data)
 BYTE imsai_sio1b_data_in(void)
 {
 	extern int imsai_kbd_data, imsai_kbd_status;
+	static BYTE last;
 	int data;
 
-	/* return next data byte from serial keyboard */
+	/* if keyboard has no data return last */
 	if (imsai_kbd_data == -1)
-		return((BYTE) 0);
+		return(last);
 
+	/* take over data and reset status */
 	data = imsai_kbd_data;
 	imsai_kbd_data = -1;
 	imsai_kbd_status = 0;
+
+	/* process read data */
+	if (sio1b_upper_case)
+		data = toupper(data);
+	last = data;
 
 	return((BYTE) data);
 }

@@ -28,6 +28,7 @@
  * 14-AUG-20 allow building machine without frontpanel
  * 22-JAN-21 added option for config file
  * 14-JUL-21 added all options for SIO 2B
+ * 16-JUL-21 added all options for SIO 1B
  */
 
 extern void config(void);

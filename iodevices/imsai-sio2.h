@@ -30,6 +30,7 @@
  * 19-JUL-20 avoid problems with some third party terminal emulations
  * 14-JUL-21 added all options for SIO 2B
  * 15-JUL-21 refactor serial keyboard
+ * 16-JUL-21 added all options for SIO 1B
  */
 
 extern BYTE imsai_sio_nofun_in(void);

@@ -28,6 +28,7 @@
  * 14-AUG-20 allow building machine without frontpanel
  * 22-JAN-21 added option for config file
  * 14-JUL-21 added all options for SIO 2B
+ * 16-JUL-21 added all options for SIO 1B
  */
 
 #include <stdlib.h>
@@ -50,6 +51,11 @@ extern int sio1a_upper_case;	/* SIO 1 A translate input to upper case */
 extern int sio1a_strip_parity;	/* SIO 1 A strip parity from output */
 extern int sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */
 extern int sio1a_baud_rate;	/* SIO 1 A simulated baud rate */
+
+extern int sio1b_upper_case;	/* SIO 1 B translate input to upper case */
+extern int sio1b_strip_parity;	/* SIO 1 B strip parity from output */
+extern int sio1b_drop_nulls;	/* SIO 1 B drop nulls after CR/LF */
+extern int sio1b_baud_rate;	/* SIO 1 B simulated baud rate */
 
 extern int sio2a_upper_case;	/* SIO 2 A translate input to upper case */
 extern int sio2a_strip_parity;	/* SIO 2 A strip parity from output */
@@ -99,6 +105,18 @@ void config(void)
 					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
+			} else if (!strcmp(t1, "sio1b_upper_case")) {
+				switch (*t2) {
+				case '0':
+					sio1b_upper_case = 0;
+					break;
+				case '1':
+					sio1b_upper_case = 1;
+					break;
+				default:
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					break;
+				}
 			} else if (!strcmp(t1, "sio2a_upper_case")) {
 				switch (*t2) {
 				case '0':
@@ -130,6 +148,18 @@ void config(void)
 					break;
 				case '1':
 					sio1a_strip_parity = 1;
+					break;
+				default:
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					break;
+				}
+			} else if (!strcmp(t1, "sio1b_strip_parity")) {
+				switch (*t2) {
+				case '0':
+					sio1b_strip_parity = 0;
+					break;
+				case '1':
+					sio1b_strip_parity = 1;
 					break;
 				default:
 					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
@@ -171,6 +201,18 @@ void config(void)
 					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
 					break;
 				}
+			} else if (!strcmp(t1, "sio1b_drop_nulls")) {
+				switch (*t2) {
+				case '0':
+					sio1b_drop_nulls = 0;
+					break;
+				case '1':
+					sio1b_drop_nulls = 1;
+					break;
+				default:
+					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					break;
+				}
 			} else if (!strcmp(t1, "sio2a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
@@ -197,6 +239,8 @@ void config(void)
 				}
 			} else if (!strcmp(t1, "sio1a_baud_rate")) {
 				sio1a_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "sio1b_baud_rate")) {
+				sio1b_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio2a_baud_rate")) {
 				sio2a_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio2b_baud_rate")) {
@@ -228,6 +272,7 @@ void config(void)
 	}
 
 	LOG(TAG, "SIO 1A running at %d baud\r\n", sio1a_baud_rate);
+	LOG(TAG, "SIO 1B running at %d baud\r\n", sio1b_baud_rate);
 	LOG(TAG, "SIO 2A running at %d baud\r\n", sio2a_baud_rate);
 	LOG(TAG, "SIO 2B running at %d baud\r\n", sio2b_baud_rate);
 }
