@@ -68,7 +68,7 @@
 #define USR_COM	"IMSAI 8080 Simulation"
 #define USR_REL	"1.18"
 #define USR_CPR	"\nCopyright (C) 2008-2021 by Udo Munk & " \
-		"2018-2020 by David McNaughton"
+		"2018-2021 by David McNaughton"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */

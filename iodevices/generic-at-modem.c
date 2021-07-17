@@ -3,18 +3,20 @@
  * 
  * Emulation of generic 'AT' modem over TCP/IP sockets (telnet)
  *
- * Copyright (C) 2019,2020 by David McNaughton
+ * Copyright (C) 2019-2021 by David McNaughton
  * 
  * History:
  * 12-SEP-19    1.0     Initial Release
  * 29-SEP-19    1.1     Added Answer modes and registers
  * 20-OCT-19    1.2     Added Telnet handler
  * 23-OCT-19    1.3     Put Telnet protocol under modem register control
- * 16_JUL-20	1.4	fix bug/warning detected with gcc 9
+ * 16-JUL-20	1.4	    fix bug/warning detected with gcc 9
+ * 17-JUL-20    1.5     Added/Update AT$ help, ATE, ATQ, AT&A1 cmds, MODEM.init string
  */
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
@@ -32,7 +34,11 @@
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
 
-#define AT_BUF_LEN      41
+#define MODEM_ID "'AT' Modem"
+
+#define BASE_DECIMAL 10
+
+#define AT_BUF_LEN      81
 #define DEFAULT_LISTENER_PORT   8023
 #define _QUOTE(arg)      #arg
 #define STR_VALUE(arg)    _QUOTE(arg)
@@ -45,6 +51,8 @@ static const char* TAG = "at-modem";
 #define SREG_CR     3
 #define SREG_LF     4
 #define SREG_BS     5
+#define SREG_HUP_DELAY 10
+#define SREG_OPT    13
 #define SREG_PORT   14
 #define SREG_TELNET 15
 #define SREG_TN_SGA 16
@@ -54,7 +62,8 @@ static const char* TAG = "at-modem";
 #define SREG_COLS   20
 #define SREG_ROWS   21
 #define SREG_TN_TTYPE 22
-#define MAX_REG_NUM 25
+#define SREG_FLOW_CTRL 39
+#define MAX_REG_NUM 50
 
 #define SREG_DEFAULTS { \
     /* SREG_AA */       0, \
@@ -63,7 +72,10 @@ static const char* TAG = "at-modem";
     /* SREG_CR */       13, \
     /* SREG_LF */       10, \
     /* SREG_BS */       8, \
-    0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, \
+    /* SREG_HUP_DELAY */ 14, \
+    0, 0, \
+    /* SREG_OPT */      1, \
     /* SREG_PORT */     DEFAULT_LISTENER_PORT, \
     /* SREG_TELNET */   0, \
     /* SREG_TN_SGA */   3, \
@@ -73,10 +85,21 @@ static const char* TAG = "at-modem";
     /* SREG_COLS */     80, \
     /* SREG_ROWS */     24, \
     /* SREG_TN_TTYPE */ 3, \
+    0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, 0, 0, 0, 0, 0, \
+    0, 0, 0, \
 };
 
+#define OPT_ECHO    0x1
+#define OPT_QUIET   0x2
+
+void modem_device_init();
+
+static bool daemon_f = false;
+
 static unsigned int s_reg[MAX_REG_NUM] = SREG_DEFAULTS;
-static unsigned int s_reg_defaults[MAX_REG_NUM] = SREG_DEFAULTS;
+static const unsigned int s_reg_defaults[MAX_REG_NUM] = SREG_DEFAULTS;
 static int reg = 0;
 
 static int sfd = 0;
@@ -90,7 +113,7 @@ static char port_num[11];
 
 static telnet_telopt_t telnet_opts[10];
 
-extern int sio2b_cd;
+static int carrier_detect;
 
 void init_telnet_opts(void) {
 
@@ -127,6 +150,7 @@ static telnet_t *telnet =  NULL;
 static unsigned char tn_recv;
 static int tn_len = 0;
 
+int time_diff_msec(struct timeval *, struct timeval *);
 int time_diff_sec(struct timeval *, struct timeval *);
 
 static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
@@ -162,8 +186,8 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     case TELNET_EV_WILL:
         if (ev->neg.telopt == TELNET_TELOPT_SGA) {
             LOGI(TAG, "Telnet WILL SGA");
-	} else if (ev->neg.telopt == TELNET_TELOPT_ECHO) {
-	    LOGI(TAG, "Telnet WILL ECHO");
+        } else if (ev->neg.telopt == TELNET_TELOPT_ECHO) {
+            LOGI(TAG, "Telnet WILL ECHO");
         } else if (ev->neg.telopt == TELNET_TELOPT_BINARY) {
             LOGI(TAG, "Telnet WILL BINARY");
         } else {
@@ -173,8 +197,8 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     case TELNET_EV_DO:
         if (ev->neg.telopt == TELNET_TELOPT_SGA) {
             LOGI(TAG, "Telnet DO SGA");
-	} else if (ev->neg.telopt == TELNET_TELOPT_ECHO) {
-	    LOGI(TAG, "Telnet DO ECHO");
+        } else if (ev->neg.telopt == TELNET_TELOPT_ECHO) {
+            LOGI(TAG, "Telnet DO ECHO");
         } else if (ev->neg.telopt == TELNET_TELOPT_BINARY) {
             LOGI(TAG, "Telnet DO BINARY");
         } else if (ev->neg.telopt == TELNET_TELOPT_TTYPE) {
@@ -218,6 +242,23 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
 }
 
 /****************************************************************************************************************************/
+void close_socket(void) {
+
+    if (telnet != NULL) {
+        telnet_free(telnet);
+        telnet = NULL;
+        LOGI(TAG, "Telnet session ended");
+    }
+
+    if (shutdown(*active_sfd, SHUT_RDWR) == 0) {
+        LOGI(TAG, "Socket shutdown");
+    }
+    if (close(*active_sfd) == 0) {
+        LOGI(TAG, "Socket closed");
+        *active_sfd = 0;
+    }
+    carrier_detect = 0;
+}
 
 int open_socket(void) {
 
@@ -272,25 +313,29 @@ int open_socket(void) {
             return 1;
         };
 
+        active_sfd = &sfd;
+        carrier_detect = 1;
+        LOGI(TAG, "Socket created");
+
         if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) { 
-            LOGI(TAG, "Failed to connect to socket: %d", errno);
+            LOGW(TAG, "Failed to connect to socket: %d", errno);
+            close_socket();
             return 1;
         }
+        LOGI(TAG, "Socket connected");
 
         if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on, sizeof(on)) == -1) {
 	        LOGE(TAG, "can't set sockopt TCP_NODELAY");
+            close_socket();
 	        return 1;
 	    }
-
-        LOGI(TAG, "Socket connected");
-        active_sfd = &sfd;
-	sio2b_cd = 1;
 
         /* Initialise Telnet session */
         if (s_reg[SREG_TELNET]) {
             init_telnet_opts();
             if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
                 LOGE(TAG, "can't initialise telnet session");
+                close_socket();
                 return 1;
             } else {
                 LOGI(TAG, "Telnet session started");
@@ -303,22 +348,32 @@ int open_socket(void) {
     return 1;
 }
 
-void close_socket(void) {
+int hangup_timeout(bool start) {
+    static struct timeval hup_t1, hup_t2;
+    static int waiting = 0;
+    int tdiff;
 
-    if (telnet != NULL) {
-        telnet_free(telnet);
-        telnet = NULL;
-        LOGI(TAG, "Telnet session ended");
-    }
+    if (*active_sfd) {
 
-    if (shutdown(*active_sfd, SHUT_RDWR) == 0) {
-        LOGI(TAG, "Socket shutdown");
+         if (start) { 
+            gettimeofday(&hup_t1, NULL);
+            waiting = 1;
+            LOGI(TAG, "Waiting to HUP");
+        } else if (waiting) {
+            gettimeofday(&hup_t2, NULL);
+            tdiff = time_diff_msec(&hup_t1, &hup_t2) / 100; /* scale msec to 10ths of seconds */
+            if (tdiff >=  (s_reg[SREG_HUP_DELAY])) { /* SREG_HUP_DELAY is in 10ths of seconds */
+                waiting = 0;
+                s_reg[SREG_RINGS] = 0;
+                close_socket();
+                LOGI(TAG, "HUP timeout - closing socket");
+			    return 1;
+            }
+        }
+    } else {
+        waiting = 0;
     }
-    if (close(*active_sfd) == 0) {
-        LOGI(TAG, "Socket closed");
-        *active_sfd = 0;
-    }
-    sio2b_cd = 0;
+    return 0;
 }
 
 /****************************************************************************************************************************/
@@ -370,27 +425,29 @@ int answer(void) {
         return 1;
     }
 
-    if (setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on, sizeof(on)) == -1) {
-	    LOGE(TAG, "can't set sockopt TCP_NODELAY");
-    	return 1;
-    }
-
     inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
     LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
     active_sfd = &newsockfd;
-    sio2b_cd = 1;
+    carrier_detect = 1;
+
+    if (setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on, sizeof(on)) == -1) {
+	    LOGE(TAG, "can't set sockopt TCP_NODELAY");
+        close_socket();
+    	return 1;
+    }
 
     /* Initialise Telnet session */
     if (s_reg[SREG_TELNET]) {
         init_telnet_opts();
         if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
             LOGE(TAG, "can't initialise telnet server session");
+            close_socket();
             return 1;
         } else {
             LOGI(TAG, "Telnet server session started");
         };
-	telnet_negotiate(telnet, TELNET_WILL, TELNET_TELOPT_SGA);
-	telnet_negotiate(telnet, TELNET_WILL, TELNET_TELOPT_ECHO);
+        telnet_negotiate(telnet, (s_reg[SREG_TN_SGA] & 1) ? TELNET_WILL : TELNET_WONT , TELNET_TELOPT_SGA);
+	    telnet_negotiate(telnet, (s_reg[SREG_TN_ECHO] & 1) ? TELNET_WILL : TELNET_WONT, TELNET_TELOPT_ECHO);
     };
 
     return 0;
@@ -435,21 +492,21 @@ int answer_check_ring(void) {
 
 /****************************************************************************************************************************/
 
-char at_buf[AT_BUF_LEN * 4] = "";
+char at_buf[AT_BUF_LEN * 2] = "";
 char at_cmd[AT_BUF_LEN] = "";
 char at_prev[AT_BUF_LEN] = "";
-char at_err[AT_BUF_LEN] = "";
+char at_err[AT_BUF_LEN * 2] = "";
 
 char *at_out = at_buf;
 enum at_states { cmd, A_recv, AT_recv, AS_recv, dat, intr, help };
 typedef enum at_states at_state_t;
 
 at_state_t at_state = cmd;
-int help_line = 0;
 
 #define CR			"\r"
 #define LF			"\n"
 #define CRLF		CR LF
+#define END		    NULL
 
 #define AT_OK		    "OK" CRLF
 #define AT_ERROR	    "ERROR" CRLF
@@ -458,23 +515,57 @@ int help_line = 0;
 #define AT_NO_DIALTONE	"NO DIALTONE" CRLF
 #define AT_RING	        "RING" CRLF
 
-#define MAX_HELP_LINE 14
-char *at_help[MAX_HELP_LINE] = {
+static const char *at_help[] = {
 			LF "AT COMMANDS:" CRLF,
-			"AT  - 'AT' Test" CRLF,
-			"AT$ - Help" CRLF,
-			"A/  - (immediate) Repeat last" CRLF,
+			"AT  - 'AT' Test                 ",
+			"| A/  - (immediate) Repeat last" CRLF,
+			"AT$ - Help                      ",
+			"| ATIn - Information " CRLF,
 			"ATZ - Reset modem" CRLF,
+			"AT&F - Restore factory defaults ",
+#ifdef MODEM_NVRAM
+			"| AT&W - Write settings to NVRAM" CRLF,
+#else
+            CRLF,
+#endif
 			"ATDhostname:port - Dial hostname, port optional (default:" STR_VALUE(DEFAULT_LISTENER_PORT) ")" CRLF,
-			"+++ - Return to command mode" CRLF,
-			"ATO - Return to data mode" CRLF,
+			"+++ - Return to command mode    ",
+			"| ATO - Return Online" CRLF,
 			"ATH - Hangup" CRLF,
-			"AT&A - Enable Answer mode - listen for incoming calls" CRLF,
+			"AT&An - Enable Answer mode - 0=interactive, 1=daemon" CRLF,
 			"ATA - Answer" CRLF,
 			"ATSn - Select register n" CRLF,
-			"AT? - Query current register" CRLF,
-			"AT=r - Set current register to r" CRLF
+			"AT? - Query current register    ",
+			"| AT=r - Set current register to r" CRLF,
+			"ATEn - Command Echo 0=off, 1=on ",
+			"| ATQn - Quiet Results 0=off, 1=on" CRLF,
+#ifdef MODEM_UART
+			"AT&K0 - Disable flow control    ",
+			"| AT&K1 - Enable RTS/CTS flow control" CRLF,
+#endif
+#ifdef MODEM_WIFI
+			"AT+W? - Query WiFi AP Join status" CRLF,
+			"AT+W=ssid,password - Join WiFI AP" CRLF,
+			"AT+W$ - Show WiFi IP adddress   ",
+			"| AT+W# - Show WiFi MAC adddress" CRLF,
+			"AT+W+ - Reconnect WiFI AP       ",
+			"| AT+W- - Quit WiFi AP" CRLF,
+			"AT+U? - Query OTA Update        ",
+			"| AT+U=url - Set custom URL for OTA update" CRLF,
+			"AT+U^ - Upgrade to OTA Update   ",
+			"| AT+U! - Force Upgrade to OTA Update" CRLF,
+			"AT+U$ - Show OTA Parition Status" CRLF,
+#endif
+#ifdef MODEM_UART
+			"AT+B? - Query Baud Rate         ",
+			"| AT+B=nnn - Set Baud Rate (4800..115200)" CRLF,
+#endif
+			"AT+T? - Query Telnet TERM       ",
+			"| AT+T=name - Set Telnet TERM" CRLF,
+            END
 };
+
+static const char **msg;
 
 void at_cat_c(char c) {
     if (strlen(at_cmd) >= AT_BUF_LEN - 1) {
@@ -484,23 +575,28 @@ void at_cat_c(char c) {
 
 	if (c == '\b') { /*TODO: use s_reg[SREG_BS] */
 		if(strlen(at_cmd) > 2) {
-			at_buf[strlen(at_buf) + 3] = 0;
-			at_buf[strlen(at_buf) + 2] = c;
-			at_buf[strlen(at_buf) + 1] = ' ';
-			at_buf[strlen(at_buf)] = c;
+            if (s_reg[SREG_OPT] & OPT_ECHO) {
+                at_buf[strlen(at_buf) + 3] = 0;
+                at_buf[strlen(at_buf) + 2] = c;
+                at_buf[strlen(at_buf) + 1] = ' ';
+                at_buf[strlen(at_buf)] = c;
+            }
 			at_cmd[strlen(at_cmd) - 1] = 0;
 		}
 	} else {
-		at_buf[strlen(at_buf) + 1] = 0;
-		at_buf[strlen(at_buf)] = c;
+        if (s_reg[SREG_OPT] & OPT_ECHO) {
+            at_buf[strlen(at_buf) + 1] = 0;
+            at_buf[strlen(at_buf)] = c;
+        }
 		at_cmd[strlen(at_cmd) + 1] = 0;
 		at_cmd[strlen(at_cmd)] = c;
 	}
 	LOGD(TAG, "AT CMD: [%s]", at_cmd);
 }
 
-void at_cat_s(char *s) {
-    if ((strlen(at_cmd) + strlen(s)) >= (AT_BUF_LEN*4) - 1) {
+void at_cat_s(const char *s) {
+    if (s_reg[SREG_OPT] & OPT_QUIET) return;
+    if ((strlen(at_buf) + strlen(s)) >= (AT_BUF_LEN*2) - 1) {
         LOGE(TAG, "Buffer overflow");
         return;
     }
@@ -522,43 +618,89 @@ int process_at_cmd(void) {
 		return 1;
 	}
 
-#define AT_END_CMD	(at_ptr = &at_cmd[strlen(at_cmd)])
+#define AT_END_CMD	        (at_ptr = &at_cmd[strlen(at_cmd)])
+#define AT_NEXT_CMD 	    (at_ptr++)
+#define AT_NEXT_CMD2        (at_ptr += 2)
+#define AT_NEXT_CMD_ARGS    (at_ptr = arg_ptr)
 
   while (*at_ptr != 0) {
+    LOGD(__func__, "AT CMD: [%s]", at_ptr);
 	switch (*at_ptr++) {
         /*TODO: add a command to check connection status */
 		case '\r': /* AT<CR> */ /*TODO: use s_reg[SREG_CR] */
 			break;
+        case 'I':
+            tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
+
+            if (tmp_reg == 0) {
+                strcpy(at_err, LF MODEM_ID CRLF);
+                at_cat_s(at_err);
+#ifdef MODEM_ESP32
+            } else if (tmp_reg == 1) {
+                const esp_app_desc_t* desc = esp_ota_get_app_description();
+                sprintf(at_err, LF "%s" CRLF, desc->version);
+                at_cat_s(at_err);
+            } else if (tmp_reg == 2) {
+                sprintf(at_err, LF "%s" CRLF, esp_get_idf_version());
+                at_cat_s(at_err);
+            } else if (tmp_reg == 3) {
+                const esp_app_desc_t* desc = esp_ota_get_app_description();
+                sprintf(at_err, LF "%s" CRLF, desc->project_name);
+                at_cat_s(at_err);
+            } else if (tmp_reg == 4) {
+                sprintf(at_err, LF "DMA %d" CRLF, heap_caps_get_free_size(MALLOC_CAP_DMA));
+                at_cat_s(at_err);
+            } else if (tmp_reg == 5) {
+                sprintf(at_err, LF "INTERNAL %d" CRLF, heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+                at_cat_s(at_err);
+            } else if (tmp_reg == 6) {
+                sprintf(at_err, LF "TOTAL %d" CRLF, heap_caps_get_free_size(MALLOC_CAP_32BIT));
+                at_cat_s(at_err);
+#ifdef CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
+            } else if (tmp_reg == 8) {
+                char buff[1024];
+                vTaskGetRunTimeStats(buff);
+                fwrite(buff, strlen(buff), 1, stdout); /* Writes to FTDI UART not the modem */
+                at_cat_s(LF "TASK TIMES" CRLF);
+#endif
+#ifdef CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
+            } else if (tmp_reg == 9) {
+                char buff[1024];
+                vTaskList(buff);
+                fwrite(buff, strlen(buff), 1, stdout); /* Writes to FTDI UART not the modem */
+                at_cat_s(LF "TASKS" CRLF);
+#endif
+#endif
+            } else {
+                strcpy(at_err, LF AT_ERROR CRLF);
+                return 1;
+            }
+            AT_NEXT_CMD_ARGS;
+            break;
 		case '$': /* AT$ */
-            help_line = 0;
             at_state = help;
+            msg = at_help;
 			break;
 		case 'Z': /* ATZ */
             memset(at_prev, 0, sizeof(at_prev));
-            for (tmp_reg = 0; tmp_reg < MAX_REG_NUM; tmp_reg++) {
-                s_reg[tmp_reg] = s_reg_defaults[tmp_reg];
-            }
-            if (*active_sfd) {
-                close_socket();
-            }
-            if (answer_sfd) {
-                active_sfd = &answer_sfd;
-                close_socket();
-                active_sfd = &sfd;
-
-            }
+            modem_device_init();
 			AT_END_CMD;
             break;
 		case 'H': /* ATH */
             if (*active_sfd) {
+                AT_END_CMD;
                 s_reg[SREG_RINGS] = 0;
                 close_socket();
 			    at_cat_s(LF "HANGUP" CR);
             }
 			break;
 		case 'D': /* ATDaddr[:port=23] */
-            /*TODO: check and repond if Wi-Fi STA up : ie. NO DIAL TONE */
-
+#ifdef MODEM_WIFI
+            if (WiFi_status() != 3) {
+                strcpy(at_err, LF AT_NO_DIALTONE CRLF);
+			    return 1;
+            }
+#endif
             if (*active_sfd) {
                 strcpy(at_err, LF "ALREADY IN CALL" CRLF);
 			    return 1;
@@ -578,7 +720,7 @@ int process_at_cmd(void) {
             if (arg_ptr != NULL) {
                 strncpy(port_num, arg_ptr, 10);
             } else {
-                strcpy(port_num, "23");
+                strcpy(port_num, STR_VALUE(DEFAULT_LISTENER_PORT));
             }
             LOGI(TAG, "Port: [%s]", port_num);
 
@@ -588,10 +730,16 @@ int process_at_cmd(void) {
             };
 			AT_END_CMD;
             at_state = dat;
-			at_cat_s(LF "CONNECT" CR);
+            if (telnet) {
+                at_cat_s(LF "CONNECT TELNET" CRLF);
+            } else {
+                at_cat_s(LF "CONNECT" CRLF);
+            }
+            *at_err = 0;
+            return 1; /* Not an error, just want to suppress the OK mesage */
 			break;
 		case 'S': /* ATSn */
-            tmp_reg = strtod(at_ptr, &arg_ptr);
+            tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
 
             if (tmp_reg < 0 || tmp_reg > (MAX_REG_NUM - 1) || arg_ptr == at_ptr) {
                 strcpy(at_err, LF AT_ERROR CRLF);
@@ -600,16 +748,15 @@ int process_at_cmd(void) {
 
             reg = tmp_reg;
             LOGI(TAG, "AT Register set to %d", reg);
-            at_ptr = arg_ptr;
+            AT_NEXT_CMD_ARGS;
 			break;
 		case '?': /* AT? */
-            at_ptr++;
             LOGI(TAG, "ATS%d? is %d", reg, s_reg[reg]);
             sprintf(at_err, LF "%d" CRLF, s_reg[reg]);
             at_cat_s(at_err);
 			break;
 		case '=': /* AT=r */
-            tmp_reg = strtod(at_ptr, &arg_ptr);
+            tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
 
             if (tmp_reg < 0 || tmp_reg > 255 || arg_ptr == at_ptr) {
                 strcpy(at_err, LF AT_ERROR CRLF);
@@ -617,7 +764,7 @@ int process_at_cmd(void) {
             }
 
             LOGI(TAG, "ATS%d = %d", reg, tmp_reg);
-            at_ptr = arg_ptr;
+            AT_NEXT_CMD_ARGS;
             s_reg[reg] = tmp_reg;
 			break;
 		case 'O': /* ATO */
@@ -628,19 +775,260 @@ int process_at_cmd(void) {
             }
             at_state = dat;
 			break;
-        case '&': /* AT&A - enable answer - listen */
-            if (*at_ptr == 'A') {
-                AT_END_CMD;
+        case 'E': /* ATE - Command echo */
+            tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
+            AT_NEXT_CMD_ARGS;
+            if (tmp_reg < 0 || tmp_reg > 1) {
+                strcpy(at_err, LF AT_ERROR CRLF);
+                return 1;
+            }
+            if (tmp_reg) { 
+                s_reg[SREG_OPT] |= OPT_ECHO;
+            } else {
+                s_reg[SREG_OPT] &= ~OPT_ECHO;
+            }
+            break;
+        case 'Q': /* ATQ - Quiet mode */
+            tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
+            AT_NEXT_CMD_ARGS;
+            if (tmp_reg < 0 || tmp_reg > 1) {
+                strcpy(at_err, LF AT_ERROR CRLF);
+                return 1;
+            }
+            if (tmp_reg) { 
+                s_reg[SREG_OPT] |= OPT_QUIET;
+            } else {
+                s_reg[SREG_OPT] &= ~OPT_QUIET;
+            }
+            break;
+        case '&': 
+            if (*at_ptr == 'A') { /* AT&A - enable answer - listen */
+                tmp_reg = strtol(++at_ptr, &arg_ptr, BASE_DECIMAL);
+                AT_NEXT_CMD_ARGS;
+#ifdef MODEM_WIFI
+                if (WiFi_status() != 3) {
+                    strcpy(at_err, LF AT_NO_DIALTONE CRLF);
+                    return 1;
+                }
+#endif
                 if (answer_init()) {
                     strcpy(at_err, LF AT_ERROR CRLF);
                     return 1;
                 };
+                if (tmp_reg) {
+                    daemon_f = true;
+                    s_reg[SREG_OPT] &= ~OPT_ECHO;
+                    s_reg[SREG_OPT] |= OPT_QUIET;
+                    LOGI(TAG, "MODEM will be daemon and listen (No Echo & Quiet)");
+                }
+			    break;
+            } else if (*at_ptr == 'F') { /* AT&F - reset to Factory defaults */
+                for (tmp_reg = 0; tmp_reg < MAX_REG_NUM; tmp_reg++) {
+                    s_reg[tmp_reg] = s_reg_defaults[tmp_reg];
+                }
+                LOGI(TAG, "Reset to Factory defaults");
+                AT_NEXT_CMD;
+			    break;
+#ifdef MODEM_NVRAM
+            } else if (*at_ptr == 'W') { /* AT&W - write settings to NVRAM */
+                Modem_nvramWriteAllSreg(s_reg, MAX_REG_NUM);
+                LOGI(TAG, "Settings written to NVRAM");
+                AT_NEXT_CMD;
+			    break;
+#endif
+#ifdef MODEM_UART
+            } else if (*at_ptr == 'K') {
+                tmp_reg = strtol(++at_ptr, &arg_ptr, BASE_DECIMAL);
+                AT_NEXT_CMD_ARGS;
+                if (tmp_reg == 0) { /* AT&K0 - disable flow control */
+                    s_reg[SREG_FLOW_CTRL] = 0;
+                    /* clear UART flow control */
+                    Modem_setFlowControl(0);
+                    LOGI(TAG, "Flow Control Disabled");
+                } else if (tmp_reg == 1) { /* AT&K1 - enable RTS/CTS flow control */
+                    s_reg[SREG_FLOW_CTRL] = 1;
+                    /* set UART RTS/CTS flow control */
+                    Modem_setFlowControl(1);
+                    LOGI(TAG, "RTS/CTS Flow Control Enabled");
+                } else {
+                    strcpy(at_err, LF AT_ERROR CRLF);
+                    return 1;
+                }
+#endif
+            } else {
+                strcpy(at_err, LF AT_ERROR CRLF);
+                return 1;
+            }
+            break;
+        case '+': 
+            if (*at_ptr == 'T' && *(at_ptr+1) == '?') {
+                char *ttype;
+                if ((ttype = getenv("TERM")) == NULL) {
+                    ttype = TELNET_TTYPE;
+                }
+                sprintf(at_err, LF "%s" CRLF, ttype);
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'T' && *(at_ptr+1) == '=') {
+                strcpy(at_err, at_ptr+2);
+                arg_ptr = strtok(at_err, "\r");
+
+                if(arg_ptr == NULL) {
+                    unsetenv("TERM");
+                    LOGI(TAG, "TERM cleared");
+                } else {
+                    setenv("TERM", arg_ptr, 1);
+                    LOGI(TAG, "TERM: [%s]", getenv("TERM"));
+                }
+#ifdef MODEM_NVRAM
+                Modem_nvramWriteEnv("TERM");
+#endif
+                AT_END_CMD;
+#ifdef MODEM_WIFI
+/**
+ *  WIFI CONFIG HANDLING
+ */ 
+            } else if (*at_ptr == 'W' && *(at_ptr+1) == '=') {
+
+                char ssid[MAX_SSID + 1] = "";
+                char psw[MAX_PWD + 1] = "";
+
+                strcpy(at_err, at_ptr+2);
+                arg_ptr = strtok(at_err, ",\r");
+
+                if(arg_ptr == NULL) {
+                    strcpy(at_err, LF AT_ERROR CRLF);
+                    return 1;
+                }
+                strncpy(ssid, arg_ptr, MAX_SSID);
+
+                arg_ptr =  strtok(NULL, "\r");
+                if (arg_ptr != NULL) {
+                    strncpy(psw, arg_ptr, MAX_PWD);
+                }
+
+                WiFi_begin(ssid, psw);
+                AT_END_CMD;
+            } else if (*at_ptr == 'W' && *(at_ptr+1) == '?') {
+                sprintf(at_err, LF "%s" CRLF, WiFi_status_str());
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'W' && *(at_ptr+1) == '+') {
+                if (WiFi_status() == 255) {
+                    WiFi_begin_x();
+                }
+                sprintf(at_err, LF "%s" CRLF, WiFi_reconnect());
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'W' && *(at_ptr+1) == '-') {
+                sprintf(at_err, LF "%s" CRLF, WiFi_disconnect());
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'W' && *(at_ptr+1) == '$') {
+                sprintf(at_err, LF "%s" CRLF, WiFi_IP());
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'W' && *(at_ptr+1) == '#') {
+                sprintf(at_err, LF "%s" CRLF, WiFi_MAC());
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'U' && *(at_ptr+1) == '=') {
+
+                if (WiFi_status() != 3) {
+                    strcpy(at_err, LF AT_NO_DIALTONE CRLF);
+                    return 1;
+                }
+
+                strcpy(at_err, at_ptr+2);
+                arg_ptr = strtok(at_err, "\r");
+
+                if(arg_ptr == NULL) {
+                    strcpy(at_err, LF AT_ERROR CRLF);
+                    return 1;
+                }
+
+                if (ota_setURL(at_err, arg_ptr)) {
+                    return 1;
+                }
+
+                at_cat_s(at_err);
+                AT_END_CMD;
+            } else if (*at_ptr == 'U' && *(at_ptr+1) == '?') {
+
+                if (WiFi_status() != 3) {
+                    strcpy(at_err, LF AT_NO_DIALTONE CRLF);
+                    return 1;
+                }
+
+                at_err[0] = *(at_ptr+2); 
+
+                if (ota_start(at_err)) {
+                    return 1;
+                }
+
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'U' && *(at_ptr+1) == '$') {
+
+                if (ota_partitionQuery(at_err)) {
+                    return 1;
+                }
+
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'U' && *(at_ptr+1) == '^') {
+
+                if (ota_upgrade(at_err)) {
+                    return 1;
+                }
+
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+            } else if (*at_ptr == 'U' && *(at_ptr+1) == '!') {
+
+                if (ota_forceUpgrade(at_err)) {
+                    return 1;
+                }
+
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+#endif
+#ifdef MODEM_UART
+/**
+ *  SERIAL CONFIG HANDLING
+ */ 
+            } else if (*at_ptr == 'B' && *(at_ptr+1) == '=') {
+                tmp_reg = strtol(at_ptr+2, &arg_ptr, BASE_DECIMAL);
+
+                if (tmp_reg < 4800 || tmp_reg > 115200 || arg_ptr == (at_ptr+2)) {
+                    strcpy(at_err, LF AT_ERROR CRLF);
+                    return 1;
+                }
+
+                Modem_updateBaudRate(tmp_reg);
+                sprintf(at_err, LF "%d" CRLF, Modem_baudRate());
+                at_cat_s(at_err);
+                AT_NEXT_CMD_ARGS;
+            } else if (*at_ptr == 'B' && *(at_ptr+1) == '?') {
+                sprintf(at_err, LF "%d" CRLF, Modem_baudRate());
+                at_cat_s(at_err);
+                AT_NEXT_CMD2;
+#endif
+/**
+ * 
+ */
             } else {
                 strcpy(at_err, LF AT_ERROR CRLF);
                 return 1;
             }
             break;
         case 'A': /* ATA - answer */
+#ifdef MODEM_WIFI
+            if (WiFi_status() != 3) {
+                strcpy(at_err, LF AT_NO_DIALTONE CRLF);
+			    return 1;
+            }
+#endif
             answer();
             AT_END_CMD;
             at_state = dat;
@@ -653,6 +1041,20 @@ int process_at_cmd(void) {
   }
 
 	return 0;
+}
+
+int time_diff_msec(struct timeval *t1, struct timeval *t2)
+{
+	long sec, usec;
+
+	sec = (long) t2->tv_sec - (long) t1->tv_sec;
+	usec = (long) t2->tv_usec - (long) t1->tv_usec;
+	/* normalize result */
+	if (usec < 0L) {
+		sec--;
+		usec += 1000000L;
+	}
+    return (sec * 1000) + (usec / 1000);
 }
 
 int time_diff_sec(struct timeval *t1, struct timeval *t2)
@@ -672,10 +1074,24 @@ int time_diff_sec(struct timeval *t1, struct timeval *t2)
 static struct timeval at_t1, at_t2;
 int tdiff;
 
+int modem_device_poll(int i);
+
 int modem_device_alive(int i) {
 
     i = i;
-    return 1;
+    if (!daemon_f) return 1;
+
+    if (answer_sfd) {
+        if (*active_sfd) {
+            return 1;
+        } else {
+            if (at_state == cmd) {
+                modem_device_poll(0);
+                return 0;
+            }
+        }
+    } 
+    return 0;
 }
 
 static int _read() {
@@ -687,9 +1103,10 @@ static int _read() {
         LOGI(TAG, "Socket disconnected");
         at_buf[0] = 0;
         at_cat_s(CRLF AT_NO_CARRIER);
+        hangup_timeout(true);
         at_cmd[0] = 0;
         at_state = cmd;
-	sio2b_cd = 0;
+        carrier_detect = 0;
 
         return -1;
     }
@@ -705,8 +1122,9 @@ int modem_device_poll(int i) {
 
     if (at_state == help) {
         if (strlen(at_buf) == 0) {
-            strcpy(at_buf, at_help[help_line++]);
-            if (help_line == MAX_HELP_LINE) {
+            at_cat_s(*msg);
+            msg++;
+            if (*msg == NULL) {
                 at_state = cmd;
             }
         }
@@ -723,7 +1141,7 @@ int modem_device_poll(int i) {
             }
         }
         return 0;
-    } else if (at_state == dat) {
+    } else if (at_state == dat  && strlen(at_out) == 0) {
 
         /**
          * In telnet mode this "clocks" the inbound connection into telnet_recv() 
@@ -756,13 +1174,14 @@ int modem_device_poll(int i) {
     } else {
         if (answer_check_ring()) {
             s_reg[SREG_RINGS]++;
-            if ((s_reg[SREG_AA] > 0) && (s_reg[SREG_RINGS] > s_reg[SREG_AA])) {
+            at_cat_s(CRLF AT_RING);
+            if ((s_reg[SREG_AA] > 0) && (s_reg[SREG_RINGS] >= s_reg[SREG_AA])) {
                 if (!answer()) {
                     at_state = dat;
                 } 
-            } else {
-                at_cat_s(CRLF AT_RING);
             }
+        } else if(hangup_timeout(false)) {
+            at_cat_s(CRLF "HANGUP" CRLF);
         }
 
         return (strlen(at_out) > 0);
@@ -776,7 +1195,7 @@ int modem_device_get(int i) {
 
     i = i;
 
-    if (at_state == dat) {
+    if (at_state == dat && strlen(at_out) == 0) {
 
         if (telnet != NULL) {
             if (tn_len) {
@@ -840,11 +1259,12 @@ void modem_device_send(int i, char data) {
              * NO break;
              * Intentional fallthrough here.
              */
+        /* fall through */
         case dat:
         	gettimeofday(&at_t2, NULL);
             tdiff = time_diff_sec(&at_t1, &at_t2);
 
-            if (data == '+' && (tdiff > 0)) {
+            if (data == '+' && (tdiff > 0) && !daemon_f) {
                 at_buf[0] = data;
                 at_buf[1] = 0;
                 at_out = at_buf;
@@ -910,4 +1330,49 @@ void modem_device_send(int i, char data) {
 	}
 
     if (at_state == dat) gettimeofday(&at_t1, NULL);
+}
+
+int modem_device_carrier(int i) {
+    i = i;
+    
+    return carrier_detect;
+}
+
+void modem_device_init() {
+    if (*active_sfd) {
+        close_socket();
+    }
+    if (answer_sfd) {
+        active_sfd = &answer_sfd;
+        close_socket();
+        active_sfd = &sfd;
+
+    }
+    at_state = cmd;
+
+#ifdef MODEM_NVRAM
+    int tmp_reg;
+    for (tmp_reg = 0; tmp_reg < MAX_REG_NUM; tmp_reg++) {
+        s_reg[tmp_reg] = Modem_nvramReadSreg(tmp_reg, s_reg_defaults[tmp_reg]);
+    }
+    Modem_nvramReadEnv("TERM");
+    Modem_nvramReadEnv("MODEM.init");
+#else
+    memcpy(s_reg, s_reg_defaults, sizeof(s_reg_defaults));
+#endif
+    char *modem_init_string;
+    if ((modem_init_string = getenv("MODEM.init")) != NULL) {
+        LOG(TAG, "\nMODEM.init string: %s\n", modem_init_string);
+        while (*modem_init_string) {
+            modem_device_send(0, *modem_init_string++);
+        }
+        modem_device_send(0, '\r');
+        while (modem_device_poll(0)) {
+            modem_device_get(0);
+        }
+    }
+#ifdef MODEM_UART
+    /* set/clear UART flow control based on S39 */
+    Modem_setFlowControl(s_reg[SREG_FLOW_CTRL]);
+#endif
 }

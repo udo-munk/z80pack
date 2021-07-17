@@ -49,6 +49,9 @@
 #include "../../iodevices/unix_network.h"
 #include "../../iodevices/imsai-sio2.h"
 #include "../../iodevices/imsai-fif.h"
+#ifdef HAS_MODEM
+#include "../../iodevices/generic-at-modem.h"
+#endif /* HAS_MODEM */
 #ifdef HAS_DAZZLER
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/cromemco-d+7a.h"
@@ -667,6 +670,9 @@ void init_io(void)
 
 #ifdef HAS_DAZZLER
 	cromemco_d7a_init();
+#endif
+#ifdef HAS_MODEM
+	modem_device_init();
 #endif
 
 	/* create local socket for SIO */

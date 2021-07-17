@@ -4,7 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2008-2021 by Udo Munk
- * Copyright (C) 2018-2019 David McNaughton
+ * Copyright (C) 2018-2021 David McNaughton
  *
  * Emulation of IMSAI SIO-2 S100 boards
  *
@@ -571,6 +571,9 @@ BYTE imsai_sio2_ctl_in(void)
 {
 	/* no modem on channel A, so CD always 0, channel B CD from modem */
 	/* CTS always 1 */
+#ifdef HAS_MODEM
+	sio2b_cd = modem_device_carrier(DEV_SIO2B);
+#endif
 	return((sio2b_cd == 0) ? 0b10111011 : 0b11111011);
 }
 
