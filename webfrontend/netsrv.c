@@ -217,6 +217,8 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
     request_t *req = get_request(conn);
 	UNUSED(unused);
 
+	char *copyright = USR_CPR; /* a dirty fix to avoid the leading '\n' */
+
     switch(req->method) {
     case HTTP_GET:
 		LOGD(TAG, "Sending SYS: details.");
@@ -242,15 +244,35 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
             httpdPrintf(conn, "\"about\": { ");
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_COM", USR_COM);
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_REL", USR_REL);
-                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", USR_CPR);
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", &copyright[1]); 
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "cpu", cpu==Z80?"Z80":"I8080");
                 if(x_flag) {
                     httpdPrintf(conn, "\"%s\": \"%s\", ", "bootrom", xfn);
                 }
-                // if(cpa_attached) {
-                //     httpdPrintf(conn, "\"%s\": %d, ", "cpa", dip_settings);
-                // }
+#ifdef FRONTPANEL
+                    httpdPrintf(conn, "\"%s\": %d, ", "cpa", 1);
+#endif
                 httpdPrintf(conn, "\"%s\": %d ", "clock", f_flag);
+            httpdPrintf(conn, "} ");
+
+			int i=0, o=0;
+            char *t1, *t2;
+			extern char **environ;
+			char buf[2048];
+
+            httpdPrintf(conn, ", \"env\": { ");
+                while(environ[i] != NULL) {
+                    strcpy(buf, environ[i]);
+                    t1 = strtok(buf, "=");
+                    t2 = strtok(NULL, "\0");
+#define BULLET  "\xE2\x80\xA2"
+                    if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL)) 
+                        t2 = BULLET BULLET BULLET BULLET BULLET BULLET BULLET BULLET;
+					/* Filter out only TERM and non-shell environment valiables of the form '*.*' ie. contain '.' */
+					if(!strcmp(t1, "TERM") || index(t1, '.'))
+                    	httpdPrintf(conn, "%s \"%s\": \"%s\" ", (o++)==0?"":",", t1, (t2==NULL)?"":t2);
+                    i++;
+                }
             httpdPrintf(conn, "} ");
 
         httpdPrintf(conn, "}");
