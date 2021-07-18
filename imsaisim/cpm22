@@ -3,4 +3,6 @@
 rm -f disks/drivea.dsk
 ln disks/library/cpm22.dsk disks/drivea.dsk
 
-./imsaisim -r -x mpu-a-rom.hex $*
+BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf`
+
+env -S $BOOTENV ./imsaisim -r -x mpu-a-rom.hex $*
