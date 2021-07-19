@@ -362,7 +362,7 @@ int hangup_timeout(bool start) {
         } else if (waiting) {
             gettimeofday(&hup_t2, NULL);
             tdiff = time_diff_msec(&hup_t1, &hup_t2) / 100; /* scale msec to 10ths of seconds */
-            if (tdiff >=  (s_reg[SREG_HUP_DELAY])) { /* SREG_HUP_DELAY is in 10ths of seconds */
+            if (tdiff >=  (int)(s_reg[SREG_HUP_DELAY])) { /* SREG_HUP_DELAY is in 10ths of seconds */
                 waiting = 0;
                 s_reg[SREG_RINGS] = 0;
                 close_socket();
