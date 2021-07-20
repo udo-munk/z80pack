@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2016-2021 by Udo Munk
  * Copyright (C) 2018 David McNaughton
  *
  * This module implements the memory for an IMSAI 8080 system
@@ -15,6 +15,7 @@
  * 12-JUL-2018 use logging
  * 18-JUL-2019 bug fix so that fp shows mapped memory contents
  * 18-OCT-2019 add MMU and memory banks
+ * 20-JUL-2021 log banked memory
  */
 
 #include "sim.h"
@@ -62,6 +63,7 @@ BYTE *banks[MAXSEG] = {
 	&bnk7[0]
 };
 
+int num_banks = sizeof(banks) / sizeof(BYTE *) - 1;
 int selbnk;		/* current selected bank */
 
 void groupswap(void)

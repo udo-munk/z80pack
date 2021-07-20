@@ -29,6 +29,7 @@
  * 22-JAN-21 added option for config file
  * 14-JUL-21 added all options for SIO 2B
  * 16-JUL-21 added all options for SIO 1B
+ * 20-JUL-21 log banked memory
  */
 
 #include <stdlib.h>
@@ -44,6 +45,8 @@ static const char *TAG = "config";
 
 int ram_size;
 int fp_size = 800;
+
+extern int num_banks;
 
 extern int exatoi(char *);
 
@@ -264,7 +267,7 @@ void config(void)
 					LOGW(TAG, "Maximal possible RAM size for bank 0 is %d KB", MAX_RAM);
 					ram_size = MAX_RAM;
 				}
-				LOG(TAG, "RAM size bank 0 is %d KB\r\n", ram_size);
+				LOG(TAG, "RAM size bank 0 is %d KB, MMU has %d additional banks a 48 KB\r\n", ram_size, num_banks);
 			} else {
 				LOGW(TAG, "system.conf unknown command: %s", s);
 			}

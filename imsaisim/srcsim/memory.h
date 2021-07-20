@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2020 by Udo Munk
+ * Copyright (C) 2016-2021 by Udo Munk
  * Copyright (C) 2018 David McNaughton
  *
  * This module implements memory management for an IMSAI 8080 system
@@ -18,6 +18,7 @@
  * 04-NOV-2019 add functions for direct memory access
  * 06-NOV-2019 add function for frontpanel memory write
  * 14-AUG-2020 allow building machine without frontpanel
+ * 20-JUL-2021 log banked memory
  */
 
 extern void init_memory(void), reset_memory(void), init_rom(void);
