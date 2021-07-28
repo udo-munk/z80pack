@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2019 by Udo Munk
+ * Copyright (C) 2014-2021 by Udo Munk
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -32,6 +32,7 @@
  * 15-JUL-2018 use logging
  * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
  * 24-SEP-2019 restore and seek also affect step direction
+ * 17-JUN-2021 allow building machine without frontpanel
  */
 
 #include <unistd.h>
@@ -775,11 +776,15 @@ BYTE cromemco_fdc_aux_in(void)
 	fdc_aux = 0;
 
 	/* get DRQ from flag register */
-	if (fdc_flags & 128)
+	if (fdc_flags & 128) {
 		fdc_aux |= 128;
-	else
+		//putchar('+');
+	} else {
 		fdc_aux &= ~128;
+		//putchar('-');
+	}
 
+#ifdef FRONTPANEL
 	/* get front panel switch bits */
 	if ((address_switch >> 8) & 16)
 		fdc_aux &= ~8;
@@ -800,6 +805,7 @@ BYTE cromemco_fdc_aux_in(void)
 		fdc_aux &= ~1;
 	else
 		fdc_aux |= 1;
+#endif
 
 	return(fdc_aux);
 }

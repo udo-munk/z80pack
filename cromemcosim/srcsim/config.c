@@ -12,6 +12,7 @@
  * 27-JAN-17 initial window size of the front panel configurable
  * 18-JUL-18 use logging
  * 22-JAN-21 added option for config file
+ * 17-JUN-21 allow building machine without frontpanel
  */
 
 #include <stdlib.h>
@@ -29,6 +30,7 @@ int fp_size = 800;
 
 void config(void)
 {
+#ifdef FRONTPANEL
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2;
@@ -57,4 +59,5 @@ void config(void)
 			}
 		}
 	}
+#endif
 }
