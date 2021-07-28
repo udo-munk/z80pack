@@ -804,7 +804,7 @@ BYTE cromemco_fdc_aux_in(void)
 	else
 		fdc_aux |= 1;
 #else
-	fdc_aux |= 15;
+	fdc_aux |= 7;	/* RDOS 2&3 no baud rate detection for console */
 #endif
 
 	return(fdc_aux);
