@@ -778,10 +778,8 @@ BYTE cromemco_fdc_aux_in(void)
 	/* get DRQ from flag register */
 	if (fdc_flags & 128) {
 		fdc_aux |= 128;
-		//putchar('+');
 	} else {
 		fdc_aux &= ~128;
-		//putchar('-');
 	}
 
 #ifdef FRONTPANEL
@@ -805,6 +803,8 @@ BYTE cromemco_fdc_aux_in(void)
 		fdc_aux &= ~1;
 	else
 		fdc_aux |= 1;
+#else
+	fdc_aux |= 15;
 #endif
 
 	return(fdc_aux);

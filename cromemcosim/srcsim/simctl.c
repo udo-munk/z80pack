@@ -171,7 +171,6 @@ void mon(void)
 		SLEEP_MS(10);
 	}
 #else
-	fdc_flags = 128;
 	run_cpu();
 #endif
 
