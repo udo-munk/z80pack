@@ -33,6 +33,7 @@
  * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
  * 24-SEP-2019 restore and seek also affect step direction
  * 17-JUN-2021 allow building machine without frontpanel
+ * 29-JUL-2021 add boot config for machine without frontpanel
  */
 
 /*

@@ -30,6 +30,7 @@
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  * 19-JUL-20 avoid problems with some third party terminal emulations
  * 17-JUN-21 allow building machine without frontpanel
+ * 29-JUL-21 add boot config for machine without frontpanel
  */
 
 #include <pthread.h>
@@ -51,6 +52,7 @@
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "config.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
@@ -784,7 +786,7 @@ static BYTE fp_in(void)
 #ifdef FRONTPANEL
 	return(address_switch >> 8);
 #else
-	return(0);
+	return(fp_port);
 #endif
 }
 

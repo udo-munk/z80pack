@@ -33,6 +33,7 @@
  * 09-SEP-2019 added disk format without SD track 0 provided by Alan Cox
  * 24-SEP-2019 restore and seek also affect step direction
  * 17-JUN-2021 allow building machine without frontpanel
+ * 29-JUL-2021 add boot config for machine without frontpanel
  */
 
 #include <unistd.h>
@@ -44,6 +45,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "log.h"
+#include "config.h"
 #include "cromemco-fdc.h"
 
 /* internal state of the fdc */
@@ -804,7 +806,26 @@ BYTE cromemco_fdc_aux_in(void)
 	else
 		fdc_aux |= 1;
 #else
-	fdc_aux |= 7;	/* RDOS 2&3 no baud rate detection for console */
+	/* get front panel switch bits */
+	if (fp_port & 16)
+		fdc_aux &= ~8;
+	else
+		fdc_aux |= 8;
+
+	if (fp_port & 32)
+		fdc_aux &= ~4;
+	else
+		fdc_aux |= 4;
+
+	if (fp_port & 64)
+		fdc_aux &= ~2;
+	else
+		fdc_aux |= 2;
+
+	if (fp_port & 128)
+		fdc_aux &= ~1;
+	else
+		fdc_aux |= 1;
 #endif
 
 	return(fdc_aux);

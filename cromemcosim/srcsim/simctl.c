@@ -171,6 +171,9 @@ void mon(void)
 		SLEEP_MS(10);
 	}
 #else
+	/* set FDC autoboot flag from fp switch */
+	if (fp_port & 1)
+		fdc_flags |= 64;
 	run_cpu();
 #endif
 
