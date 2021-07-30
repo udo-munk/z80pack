@@ -68,6 +68,9 @@ static void quit_callback(void);
  *	This function initialises the front panel and terminal.
  *	Then the machine waits to be operated from the front panel,
  *	until power switched OFF again.
+ *
+ *	If the machine is build without front panel then just run
+ *	the CPU with the software loaded with -x option.
  */
 void mon(void)
 {
@@ -174,6 +177,7 @@ void mon(void)
 	/* set FDC autoboot flag from fp switch */
 	if (fp_port & 1)
 		fdc_flags |= 64;
+	/* and run the CPU */
 	run_cpu();
 #endif
 
