@@ -1,6 +1,6 @@
 /*
  *	Z80 - Assembler
- *	Copyright (C) 1987-2018 by Udo Munk
+ *	Copyright (C) 1987-2021 by Udo Munk
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -14,6 +14,7 @@
  *	02-OCT-2017 bug fixes in expression parser from Didier
  *	28-OCT-2017 added variable symbol lenght and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
+ *	30-JUL-2021 fix verbose option
  */
 
 /*

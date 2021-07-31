@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2020 by Udo Munk
+ * Copyright (C) 2014-2021 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for a Cromemco Z-1 system
@@ -29,6 +29,8 @@
  * 08-SEP-19 bug fixes provided by Alan Cox
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  * 19-JUL-20 avoid problems with some third party terminal emulations
+ * 17-JUN-21 allow building machine without frontpanel
+ * 29-JUL-21 add boot config for machine without frontpanel
  */
 
 #include <pthread.h>
@@ -50,6 +52,7 @@
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "config.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
@@ -698,13 +701,16 @@ void reset_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
+#ifdef FRONTPANEL
 	int val;
+#endif
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
 
 	cpu_bus = CPU_WO | CPU_INP;
 
+#ifdef FRONTPANEL
 	fp_clock += 3;
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
@@ -714,6 +720,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	/* when single stepped INP get last set value of port */
 	if (val)
 		io_data = (*port_in[io_port]) ();
+#endif
 
 	return(io_data);
 }
@@ -731,11 +738,13 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	cpu_bus = CPU_OUT;
 
+#ifdef FRONTPANEL
 	fp_clock += 6;
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
 	fp_sampleData();
 	wait_step();
+#endif
 }
 
 /*
@@ -774,7 +783,11 @@ static void io_trap_out(BYTE data)
  */
 static BYTE fp_in(void)
 {
+#ifdef FRONTPANEL
 	return(address_switch >> 8);
+#else
+	return(fp_port);
+#endif
 }
 
 /*
@@ -782,7 +795,9 @@ static BYTE fp_in(void)
  */
 static void fp_out(BYTE data)
 {
+#ifdef FRONTPANEL
 	fp_led_output = data;
+#endif
 }
 
 /*

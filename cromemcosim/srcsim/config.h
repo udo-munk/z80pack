@@ -12,8 +12,11 @@
  * 27-JAN-17 initial window size of the front panel configurable
  * 18-JUL-18 use logging
  * 22-JAN-21 added option for config file
+ * 17-JUN-21 allow building machine without frontpanel
+ * 29-JUL-21 add boot config for machine without frontpanel
  */
 
 extern void config(void);
 
-extern int fp_size;
+extern int  fp_size;
+extern BYTE fp_port;

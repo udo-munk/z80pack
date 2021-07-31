@@ -12,6 +12,8 @@
  * 27-JAN-17 initial window size of the front panel configurable
  * 18-JUL-18 use logging
  * 22-JAN-21 added option for config file
+ * 17-JUN-21 allow building machine without frontpanel
+ * 29-JUL-21 add boot config for machine without frontpanel
  */
 
 #include <stdlib.h>
@@ -25,7 +27,10 @@
 
 static const char *TAG = "config";
 
-int fp_size = 800;
+int  fp_size = 800;	/* default frontpanel size */
+BYTE fp_port = 0x10;	/* default fp input port value */
+
+extern int exatoi(char *);
 
 void config(void)
 {
@@ -48,12 +53,22 @@ void config(void)
 				continue;
 			t1 = strtok(s, " \t");
 			t2 = strtok(NULL, " \t");
-			if (!strcmp(t1, "fp_fps")) {
+			if (!strcmp(t1, "fp_port")) {
+				fp_port = (BYTE) exatoi(t2);
+			} else if (!strcmp(t1, "fp_fps")) {
+#ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
+#else
+				;
+#endif
 			} else if (!strcmp(t1, "fp_size")) {
+#ifdef FRONTPANEL
 				fp_size = atoi(t2);
+#else
+				;
+#endif
 			} else {
-				LOGW(TAG, "system.conf unknow command: %s", s);
+				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
 		}
 	}

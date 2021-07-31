@@ -29,6 +29,7 @@
  * 22-JAN-21 added option for config file
  * 14-JUL-21 added all options for SIO 2B
  * 16-JUL-21 added all options for SIO 1B
+ * 20-JUL-21 log banked memory
  */
 
 extern void config(void);
