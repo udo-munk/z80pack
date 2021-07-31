@@ -26,6 +26,7 @@
  * 21-AUG-18 improved memory configuration
  * 24-NOV-19 configurable baud rate for second 2SIO channel
  * 22-JAN-21 added option for config file
+ * 31-JUL-21 allow building machine without frontpanel
  */
 
 #include <stdlib.h>
@@ -46,8 +47,9 @@ static const char *TAG = "config";
 struct memmap memconf[MAXSEG];	/* memory map */
 static int num_segs;
 
-int boot_switch;		/* boot address for switch */
-int fp_size = 800;		/* frontpanel size */
+int  boot_switch;		/* boot address for switch */
+int  fp_size = 800;		/* default frontpanel size */
+BYTE fp_port = 0;		/* default fp input port value */
 
 extern int tarbell_rom_enabled;	/* Tarbell bootstrap ROM enable/disable */
 
@@ -226,10 +228,20 @@ void config(void)
 				sio2_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio3_baud_rate")) {
 				sio3_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "fp_port")) {
+				fp_port = (BYTE) exatoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
+#ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
+#else
+				;
+#endif
 			} else if (!strcmp(t1, "fp_size")) {
+#ifdef FRONTPANEL
 				fp_size = atoi(t2);
+#else
+				;
+#endif
 			} else if (!strcmp(t1, "vdm_bg")) {
 				strncpy(&bg_color[1], t2, 6);
 			} else if (!strcmp(t1, "vdm_fg")) {

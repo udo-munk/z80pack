@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2016-2021 by Udo Munk
  *
  * This module implements memory management for an Altair 8800 system
  *
@@ -13,7 +13,8 @@
  * 07-MAY-2018 added memory configuratione needed by apple monitor
  * 11-JUN-2018 fixed bug in Tarbell ROM mapping
  * 21-AUG-2018 improved memory configuration
- ' 04-NOV-2019 add functions for direct memory access
+ * 04-NOV-2019 add functions for direct memory access
+ * 31-JUL-2021 allow building machine without frontpanel
  */
 
 extern void init_memory(void), init_rom(void);
@@ -47,13 +48,17 @@ extern struct memmap memconf[MAXSEG];
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
+#ifdef BUS_8080
 	cpu_bus &= ~(CPU_WO | CPU_MEMR);
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock++;
 	fp_led_address = addr;
 	fp_led_data = 0xff;
 	fp_sampleData();
 	wait_step();
+#endif
 
 	if (p_tab[addr >> 8] == MEM_RW) {
 		memory[addr] = data;
@@ -82,13 +87,17 @@ static inline BYTE memrdr(WORD addr)
 			data = 0xff;
 	}
 
+#ifdef BUS_8080
 	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock++;
 	fp_led_address = addr;
 	fp_led_data = data;
 	fp_sampleData();
 	wait_step();
+#endif
 
 	return(data);
 }

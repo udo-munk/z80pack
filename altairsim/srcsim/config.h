@@ -28,9 +28,11 @@
  * 21-AUG-18 improved memory configuration
  * 24-NOV-19 configurable baud rate for second 2SIO channel
  * 22-JAN-21 added option for config file
+ * 31-JUL-21 allow building machine without frontpanel
  */
 
 extern void config(void);
 
-extern int boot_switch;
-extern int fp_size;
+extern int  boot_switch;
+extern int  fp_size;
+extern BYTE fp_port;

@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2020 by Udo Munk
+ * Copyright (C) 2008-2021 by Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for an Altair 8800 system
@@ -29,6 +29,7 @@
  * 15-JUL-18 use logging
  * 10-AUG-18 added MITS 88-DCDD floppy disk controller
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 31-JUL-21 allow building machine without frontpanel
  */
 
 #include <unistd.h>
@@ -52,6 +53,7 @@
 #include "../../iodevices/proctec-vdm.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "config.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -662,8 +664,11 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
 
+#ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock += 3;
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = io_data;
@@ -673,6 +678,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	/* when single stepped INP get last set value of port */
 	if (val)
 		io_data = (*port_in[io_port]) ();
+#endif
 
 	return(io_data);
 }
@@ -688,13 +694,17 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	io_data = data;
 	(*port_out[addrl]) (data);
 
+#ifdef BUS_8080
 	cpu_bus = CPU_OUT;
+#endif
 
+#ifdef FRONTPANEL
 	fp_clock += 6;
 	fp_led_address = (addrh << 8) + addrl;
 	fp_led_data = 0xff;
 	fp_sampleData();
 	wait_step();
+#endif
 }
 
 /*
@@ -755,7 +765,11 @@ static void io_no_card_out(BYTE data)
  */
 static BYTE fp_in(void)
 {
+#ifdef FRONTPANEL
 	return(address_switch >> 8);
+#else
+	return(fp_port);
+#endif
 }
 
 /*
