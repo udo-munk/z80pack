@@ -248,11 +248,17 @@ void config(void)
 				sio2a_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio2b_baud_rate")) {
 				sio2b_baud_rate = atoi(t2);
-#ifdef FRONTPANEL
 			} else if (!strcmp(t1, "fp_fps")) {
+#ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
+#else
+				;
+#endif
 			} else if (!strcmp(t1, "fp_size")) {
+#ifdef FRONTPANEL
 				fp_size = atoi(t2);
+#else
+				;
 #endif
 			} else if (!strcmp(t1, "vio_bg")) {
 				strncpy(&bg_color[1], t2, 6);
