@@ -67,6 +67,7 @@
 #endif
 #include "log.h"
 #include "../../iodevices/rtc.h"
+#include "../../iodevices/imsai-hal.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -674,6 +675,7 @@ void init_io(void)
 #ifdef HAS_MODEM
 	modem_device_init();
 #endif
+	hal_reset();
 
 	/* create local socket for SIO */
 	init_unix_server_socket(&ucons[0], "imsaisim.sio2a");
