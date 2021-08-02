@@ -33,6 +33,7 @@
  * 12-NOV-19 implemented SIO control ports
  * 14-AUG-20 allow building machine without frontpanel
  * 15-JUL-21 refactor serial keyboard
+ * 01-AUG-21 integrated HAL
  */
 
 #include <unistd.h>
@@ -406,7 +407,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_no_card_out,		/* port 21 */ /*       "       */
 	io_trap_out,		/* port 22 */
 	io_trap_out,		/* port 23 */
-	cromemco_d7a_D_out,		/* port 24 */
+	cromemco_d7a_D_out,	/* port 24 */
 	cromemco_d7a_A1_out,	/* port 25 */
 	cromemco_d7a_A2_out,	/* port 26 */
 	cromemco_d7a_A3_out,	/* port 27 */
@@ -743,11 +744,11 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_data = io_data;
 	fp_sampleData();
 	val = wait_step();
-#endif
 
 	/* when single stepped INP get last set value of port */
 	if (val)
 		io_data = (*port_in[io_port]) ();
+#endif
 
 	return(io_data);
 }
