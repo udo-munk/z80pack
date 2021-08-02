@@ -1,0 +1,452 @@
+ /*
+ * imsai-hal.c
+ *
+ * Copyright (C) 2021 by David McNaiughton
+ *
+ * IMSAI SIO-2 hardware abstraction layer
+ *
+ * History:
+ * 1-JUL-2021    1.0     Initial Release 
+ *
+ */
+
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <errno.h>
+#include <sys/poll.h>
+#include <sys/socket.h>
+#include "sim.h"
+#include "simglb.h"
+#include "unix_terminal.h"
+#include "unix_network.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#define LOG_LOCAL_LEVEL LOG_WARN
+#include "log.h"
+
+#include "imsai-hal.h"
+
+static const char *TAG = "HAL";
+
+/* -------------------- NULL device HAL -------------------- */
+
+int null_alive() {
+    return 1; /* NULL is always alive */
+}
+int null_dead() {
+    return 0; /* NULL is always dead */
+}
+void null_status(BYTE *stat) {
+    stat = stat;
+    return;
+}
+int null_in() {
+    return -1;
+}
+void null_out(BYTE data) {
+    data = data;
+    return;
+}
+int null_cd() {
+    return 0;
+}
+
+/* -------------------- VIOKBD HAL -------------------- */
+
+int vio_kbd_alive(void) {
+#ifdef HAS_NETSERVER
+    return net_device_alive(DEV_VIO); /* VIO (webUI) keyboard is only alive if websocket is connected */
+#else
+    return 1; /* VIO (xterm) keyboard is always alive */
+#endif
+
+}
+void vio_kbd_status(BYTE *stat)
+{
+	extern int imsai_kbd_status;
+	*stat = imsai_kbd_status;
+}
+int vio_kbd_in(void)
+{
+	extern int imsai_kbd_data, imsai_kbd_status;
+	int data;
+
+	if (imsai_kbd_data == -1)
+		return(-1);
+
+	/* take over data and reset */
+	data = imsai_kbd_data;
+	imsai_kbd_data = -1;
+	imsai_kbd_status = 0;
+
+	return(data);
+}
+void vio_kbd_out(BYTE data) {
+    data = data;
+}
+
+/* -------------------- WEBTTY HAL -------------------- */
+
+#ifdef HAS_NETSERVER
+int net_tty_alive() {
+    return net_device_alive(DEV_SIO1); /* WEBTTY is only alive if websocket is connected */
+}
+void net_tty_status(BYTE *stat) {
+    if (net_device_poll(DEV_SIO1)) {
+        *stat |= 2;
+    }
+    *stat |= 1;
+}
+int net_tty_in() {
+    return net_device_get(DEV_SIO1);
+}
+void net_tty_out(char data) {
+    net_device_send(DEV_SIO1, &data, 1);
+}
+#endif
+
+/* -------------------- STDIO HAL -------------------- */
+
+int stdio_alive() {
+    return 1; /* STDIO is always alive */
+}
+void stdio_status(BYTE *stat) {
+    struct pollfd p[1];
+
+    p[0].fd = fileno(stdin);
+    p[0].events = POLLIN;
+    p[0].revents = 0;
+    poll(p, 1, 0);
+    if (p[0].revents & POLLIN)
+        *stat |= 2;
+    if (p[0].revents & POLLNVAL) {
+        LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+        cpu_error = IOERROR;
+        cpu_state = STOPPED;
+    }
+    *stat |= 1;
+
+}
+int stdio_in() {
+    int data;
+	struct pollfd p[1];
+
+again:
+    /* if no input waiting return last */
+    p[0].fd = fileno(stdin);
+    p[0].events = POLLIN;
+    p[0].revents = 0;
+    poll(p, 1, 0);
+    if (!(p[0].revents & POLLIN))
+        return(-1);
+
+    if (read(fileno(stdin), &data, 1) == 0) {
+        /* try to reopen tty, input redirection exhausted */
+        freopen("/dev/tty", "r", stdin);
+        set_unix_terminal();
+        goto again;
+    }
+
+    return data;
+}
+void stdio_out(BYTE data) {
+    
+again:
+    if (write(fileno(stdout), (char *) &data, 1) != 1) {
+        if (errno == EINTR) {
+            goto again;
+        } else {
+            LOGE(TAG, "can't write data");
+            cpu_error = IOERROR;
+            cpu_state = STOPPED;
+        }
+    }
+}
+
+/* -------------------- SOCKET SERVER HAL -------------------- */
+
+int scktsrv_alive() {
+	return (ucons[0].ssc); /* SCKTSRV is alive if there is an open socket */
+}
+void scktsrv_status(BYTE *stat) {
+
+    struct pollfd p[1];
+
+	/* if socket not connected check for a new connection */
+	if (ucons[0].ssc == 0) {
+		p[0].fd = ucons[0].ss;
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		/* accept a new connection */
+		if (p[0].revents) {
+			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
+			     NULL)) == -1) {
+				LOGW(TAG, "can't accept server socket");
+				ucons[0].ssc = 0;
+			}
+		}
+	}
+
+	/* if socket is connected check for I/O */
+	if (ucons[0].ssc != 0) {
+		p[0].fd = ucons[0].ssc;
+		p[0].events = POLLIN | POLLOUT;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (p[0].revents & POLLIN)
+			*stat |= 2;
+		if (p[0].revents & POLLOUT)
+			*stat |= 1;
+	} else {
+		*stat = 0;
+	}
+}
+int scktsrv_in() {
+    BYTE data;
+	struct pollfd p[1];
+
+	/* if not connected return last */
+	if (ucons[0].ssc == 0)
+		return(-1);
+
+	/* if no input waiting return last */
+	p[0].fd = ucons[0].ssc;
+	p[0].events = POLLIN;
+	p[0].revents = 0;
+	poll(p, 1, 0);
+	if (!(p[0].revents & POLLIN))
+		return(-1);
+
+	if (read(ucons[0].ssc, &data, 1) != 1) {
+		/* EOF, close socket and return last */
+		close(ucons[0].ssc);
+		ucons[0].ssc = 0;
+		return(-1);
+	}
+
+    return data;
+}
+void scktsrv_out(BYTE data) {
+
+	struct pollfd p[1];
+
+	/* return if socket not connected */
+	if (ucons[0].ssc == 0)
+		return;
+
+	/* if output not possible close socket and return */
+	p[0].fd = ucons[0].ssc;
+	p[0].events = POLLOUT;
+	p[0].revents = 0;
+	poll(p, 1, 0);
+	if (!(p[0].revents & POLLOUT)) {
+		close(ucons[0].ssc);
+		ucons[0].ssc = 0;
+		return;
+	}
+
+again:
+	if (write(ucons[0].ssc, &data, 1) != 1) {
+		if (errno == EINTR) {
+			goto again;
+		} else {
+			close(ucons[0].ssc);
+			ucons[0].ssc = 0;
+		}
+	}
+}
+
+/* -------------------- MODEM HAL -------------------- */
+
+#ifdef HAS_MODEM
+#include "generic-at-modem.h"
+
+int modem_alive() {
+    return modem_device_alive(0);
+}
+void modem_status(BYTE *stat) {
+    if (modem_device_poll(0)) {
+        *stat |= 2;
+    }
+    *stat |= 1;
+}
+int modem_in() {
+    return modem_device_get(0);
+}
+void modem_out(BYTE data){
+    modem_device_send(0, (char) data);
+}
+int modem_cd() {
+    return modem_device_carrier(0);
+}
+#endif /*HAS_MODEM*/
+
+/* -------------------- HAL port/device mappings -------------------- */
+
+const char *sio_port_name[MAX_SIO_PORT] = { "SIO1.portA", "SIO1.portB", "SIO2.portA", "SIO2.portB" };
+
+const static hal_device_t devices[] = {
+#ifdef HAS_NETSERVER
+    { "WEBTTY", net_tty_alive, net_tty_status, net_tty_in, net_tty_out, null_cd },
+#else
+    { "WEBTTY", null_dead, null_status, null_in, null_out, null_cd },
+#endif
+    { "STDIO", stdio_alive, stdio_status, stdio_in, stdio_out, null_cd },
+    { "SCKTSRV", scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out, null_cd },
+#ifdef HAS_MODEM
+    { "MODEM", modem_alive, modem_status, modem_in, modem_out, modem_cd },
+#else
+    { "MODEM", null_dead, null_status, null_in, null_out, null_cd },
+#endif
+    { "VIOKBD", vio_kbd_alive, vio_kbd_status, vio_kbd_in, vio_kbd_out, null_cd },
+    { "", null_alive, null_status, null_in, null_out, null_cd }
+};
+
+hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];
+
+/* -------------------- HAL utility functions -------------------- */
+
+static void hal_report() {
+
+    int i, j;
+
+    LOG(TAG, "\r\nSIO PORT MAP:\r\n");
+
+    for (i = 0; i < MAX_SIO_PORT; i++) {
+
+        LOG(TAG, "%s = ", sio_port_name[i]);
+        j = 0;
+
+        while (sio[i][j].name && j < MAX_HAL_DEV) {
+
+            LOG(TAG, "%s ", sio[i][j].name);
+
+            j++;
+        }
+        LOG(TAG, "\r\n");
+    }
+}
+
+static int hal_find_device(char *dev) {
+
+    int i=0;
+    while (i < MAX_HAL_DEV) {
+        if (!strcmp(dev, devices[i].name)) {
+            return i;
+        }
+        i++;
+    }
+    return -1;
+}
+
+static void hal_init() {
+
+    int i, j, d;
+    char *setting;
+    char match[80];
+    char *dev;
+
+    /**
+     *  Initialise HAL with default configuration, as follows:
+     * 
+     *      SIO1.portA.device=WEBTTY,STDIO
+     *      SIO1.portB.device=VIOKBD
+     *      SIO2.portA.device=SCKTSRV
+     *      SIO2.portB.device=MODEM
+     * 
+     * Notes: 
+     *      - all ports end with NULL and that is always alive
+     *      - the first HAL device in the list that is alive will service the request
+     */
+    sio[0][0] = devices[WEBTTYDEV];
+    sio[0][1] = devices[STDIODEV];
+    sio[0][2] = devices[NULLDEV];
+
+    sio[1][0] = devices[VIOKBD];
+    sio[1][1] = devices[NULLDEV];
+
+    sio[2][0] = devices[SCKTSRVDEV];
+    sio[2][1] = devices[NULLDEV];
+    
+    sio[3][0] = devices[MODEMDEV];
+    sio[3][1] = devices[NULLDEV];
+
+    for (i = 0; i < MAX_SIO_PORT; i++) {
+
+        j = 0;
+        strcpy(match, sio_port_name[i]);
+        strcat(match, ".device");
+
+        if ((setting = getenv(match)) != NULL) {
+            LOGI(TAG, "%s = %s", match, setting);
+
+            strcpy(match, setting);
+
+            dev = strtok(match, ",\r");
+            while (dev) {
+                d = hal_find_device(dev);
+                LOGI(TAG, "\tAdding %s to %s", dev, sio_port_name[i]);
+
+                if (d >= 0) {
+                    memcpy(&sio[i][j], &devices[d], sizeof(hal_device_t));
+                    j++;
+                }
+                dev = strtok(NULL, ",\r");
+            }
+            memcpy(&sio[i][j], &devices[NULLDEV], sizeof(hal_device_t));
+        }
+    }
+}
+
+void hal_reset() {
+    hal_init();
+    hal_report();
+}
+
+/* -------------------- HAL - SIO interface -------------------- */
+
+void hal_status_in(sio_port_t dev, BYTE *stat) {
+
+    int p = 0;
+    while(!sio[dev][p].alive()) { /* Find the first device that is alive */
+        p++;
+    }
+
+    sio[dev][p].status(stat);
+}
+
+int hal_data_in(sio_port_t dev) {
+
+    int p = 0;
+    while(!sio[dev][p].alive()) { /* Find the first device that is alive */
+        p++;
+    }
+	
+	return sio[dev][p].in();
+}
+
+void hal_data_out(sio_port_t dev, BYTE data) {
+
+    int p = 0;
+    while(!sio[dev][p].alive()) { /* Find the first device that is alive */
+        p++;
+    }
+
+	sio[dev][p].out(data);
+}
+
+int hal_carrier_detect(sio_port_t dev) {
+
+    int p = 0;
+    while(!sio[dev][p].alive()) { /* Find the first device that is alive */
+        p++;
+    }
+	
+	return sio[dev][p].cd();
+}

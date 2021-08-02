@@ -6,7 +6,7 @@ MACHINE = imsai
 # machine specific system source files
 SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c imsai-fif.c imsai-sio2.c imsai-vio.c unix_terminal.c unix_network.c netsrv.c generic-at-modem.c libtelnet.c rtc.c simbdos.c
+SRC_IO = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c imsai-fif.c imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c unix_network.c netsrv.c generic-at-modem.c libtelnet.c rtc.c simbdos.c
 #machine specifc libraries 
 SRC_LIBS = -lcivetweb -lfrontpanel
 

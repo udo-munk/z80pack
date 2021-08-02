@@ -31,25 +31,20 @@
  * 14-JUL-21 added all options for SIO 2B
  * 15-JUL-21 refactor serial keyboard
  * 16-JUL-21 added all options for SIO 1B
+ * 01-AUG-21 integrated HAL
  */
 
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <errno.h>
-#include <sys/poll.h>
 #include <sys/time.h>
-#include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
-#include "unix_terminal.h"
-#include "unix_network.h"
-#ifdef HAS_NETSERVER
-#include "netsrv.h"
-#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
+
+#include "imsai-hal.h"
 
 #define BAUDTIME 10000000
 
@@ -63,12 +58,15 @@ int sio1a_drop_nulls;
 int sio1a_baud_rate = 115200;
 
 static struct timeval sio1a_t1, sio1a_t2;
-static BYTE sio1a_stat;
+static BYTE sio1a_stat = 0;
 
 int sio1b_upper_case;
 int sio1b_strip_parity;
 int sio1b_drop_nulls;
 int sio1b_baud_rate = 110;
+
+static struct timeval sio1b_t1, sio1b_t2;
+static BYTE sio1b_stat = 0;
 
 int sio2a_upper_case;
 int sio2a_strip_parity;
@@ -76,16 +74,15 @@ int sio2a_drop_nulls;
 int sio2a_baud_rate = 115200;
 
 static struct timeval sio2a_t1, sio2a_t2;
-static BYTE sio2a_stat;
+static BYTE sio2a_stat = 0;
 
 int sio2b_upper_case;
 int sio2b_strip_parity;
 int sio2b_drop_nulls;
 int sio2b_baud_rate = 2400;
-int sio2b_cd;			/* carrier detect from modem */
 
 static struct timeval sio2b_t1, sio2b_t2;
-static BYTE sio2b_stat;
+static BYTE sio2b_stat = 0;
 
 /*
  * the IMSAI SIO-2 occupies 16 I/O ports, from which only
@@ -94,11 +91,13 @@ static BYTE sio2b_stat;
  */
 BYTE imsai_sio_nofun_in(void)
 {
+	LOGD(TAG,"INVALID SIO PORT"); /* suppress TAG and _log_write warnings, won't be seen unless LOG_LOCAL_LEVEL = DEBUG */
 	return((BYTE) 0);
 }
 
 void imsai_sio_nofun_out(BYTE data)
 {
+	LOGD(TAG,"INVALID SIO PORT");
 	data = data; /* to avoid compiler warning */
 }
 
@@ -113,8 +112,6 @@ void imsai_sio_nofun_out(BYTE data)
 BYTE imsai_sio1a_status_in(void)
 {
 	extern int time_diff(struct timeval *, struct timeval *);
-
-	struct pollfd p[1];
 	int tdiff;
 
 	gettimeofday(&sio1a_t2, NULL);
@@ -123,28 +120,7 @@ BYTE imsai_sio1a_status_in(void)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1a_baud_rate))
 			return(sio1a_stat);
 
-#ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_SIO1)) {
-		if (net_device_poll(DEV_SIO1)) {
-			sio1a_stat |= 2;
-		}
-		sio1a_stat |= 1;
-	} else 
-#endif
-	{
-		p[0].fd = fileno(stdin);
-		p[0].events = POLLIN;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		if (p[0].revents & POLLIN)
-			sio1a_stat |= 2;
-		if (p[0].revents & POLLNVAL) {
-			LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-		}
-		sio1a_stat |= 1;
-	}
+	hal_status_in(SIO1A, &sio1a_stat);
 
 	gettimeofday(&sio1a_t1, NULL);
 
@@ -167,35 +143,12 @@ void imsai_sio1a_status_out(BYTE data)
  */
 BYTE imsai_sio1a_data_in(void)
 {
-	BYTE data;
+	int data;
 	static BYTE last;
-	struct pollfd p[1];
 
-#ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_SIO1)) {
-		int res = net_device_get(DEV_SIO1);
-		if (res < 0) {
-			return(last);
-		}
-		data = res;
-	} else 
-#endif
-	{
-again:
-		/* if no input waiting return last */
-		p[0].fd = fileno(stdin);
-		p[0].events = POLLIN;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		if (!(p[0].revents & POLLIN))
-			return(last);
-
-		if (read(fileno(stdin), &data, 1) == 0) {
-			/* try to reopen tty, input redirection exhausted */
-			freopen("/dev/tty", "r", stdin);
-			set_unix_terminal();
-			goto again;
-		}
+	data = hal_data_in(SIO1A);
+	if (data < 0) {
+		return last;
 	}
 
 	gettimeofday(&sio1a_t1, NULL);
@@ -205,7 +158,7 @@ again:
 	if (sio1a_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return((BYTE) data);
 }
 
 /*
@@ -223,23 +176,7 @@ void imsai_sio1a_data_out(BYTE data)
 		if (data == 0)
 			return;
 
-#ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_SIO1)) {
-		net_device_send(DEV_SIO1, (char *) &data, 1);
-	} else 
-#endif
-	{
-again:
-		if (write(fileno(stdout), (char *) &data, 1) != 1) {
-			if (errno == EINTR) {
-				goto again;
-			} else {
-				LOGE(TAG, "can't write data");
-				cpu_error = IOERROR;
-				cpu_state = STOPPED;
-			}
-		}
-	}
+	hal_data_out(SIO1A, data);
 
 	gettimeofday(&sio1a_t1, NULL);
 	sio1a_stat &= 0b11111110;
@@ -252,10 +189,20 @@ again:
  */
 BYTE imsai_sio1b_status_in(void)
 {
-	extern int imsai_kbd_status;
+	extern int time_diff(struct timeval *, struct timeval *);
+	int tdiff;
 
-	/* return status of the serial keyboard */
-	return((BYTE) imsai_kbd_status);
+	gettimeofday(&sio1b_t2, NULL);
+	tdiff = time_diff(&sio1b_t1, &sio1b_t2);
+	if (sio1b_baud_rate > 0)
+		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1b_baud_rate))
+			return(sio1b_stat);
+
+	hal_status_in(SIO1B, &sio1b_stat);
+
+	gettimeofday(&sio1b_t1, NULL);
+
+	return(sio1b_stat);
 }
 
 /*
@@ -271,18 +218,16 @@ void imsai_sio1b_status_out(BYTE data)
  */
 BYTE imsai_sio1b_data_in(void)
 {
-	extern int imsai_kbd_data, imsai_kbd_status;
-	static BYTE last;
 	int data;
+	static BYTE last;
 
-	/* if keyboard has no data return last */
-	if (imsai_kbd_data == -1)
-		return(last);
+	data = hal_data_in(SIO1B);
+	if (data < 0) {
+		return last;
+	}
 
-	/* take over data and reset status */
-	data = imsai_kbd_data;
-	imsai_kbd_data = -1;
-	imsai_kbd_status = 0;
+	gettimeofday(&sio1b_t1, NULL);
+	sio1b_stat &= 0b11111101;
 
 	/* process read data */
 	if (sio1b_upper_case)
@@ -297,7 +242,17 @@ BYTE imsai_sio1b_data_in(void)
  */
 void imsai_sio1b_data_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	if (sio1b_strip_parity)
+		data &= 0x7f;
+
+	if (sio1b_drop_nulls)
+		if (data == 0)
+			return;
+			
+	hal_data_out(SIO1B, data);
+
+	gettimeofday(&sio1b_t1, NULL);
+	sio1b_stat &= 0b11111110;
 }
 
 /* -------------------- SIO 2 Channel A -------------------- */
@@ -311,8 +266,6 @@ void imsai_sio1b_data_out(BYTE data)
 BYTE imsai_sio2a_status_in(void)
 {
 	extern int time_diff(struct timeval *, struct timeval *);
-
-	struct pollfd p[1];
 	int tdiff;
 
 	gettimeofday(&sio2a_t2, NULL);
@@ -321,35 +274,7 @@ BYTE imsai_sio2a_status_in(void)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2a_baud_rate))
 			return(sio2a_stat);
 
-	/* if socket not connected check for a new connection */
-	if (ucons[0].ssc == 0) {
-		p[0].fd = ucons[0].ss;
-		p[0].events = POLLIN;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		/* accept a new connection */
-		if (p[0].revents) {
-			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
-			     NULL)) == -1) {
-				LOGW(TAG, "can't accept server socket");
-				ucons[0].ssc = 0;
-			}
-		}
-	}
-
-	/* if socket is connected check for I/O */
-	if (ucons[0].ssc != 0) {
-		p[0].fd = ucons[0].ssc;
-		p[0].events = POLLIN | POLLOUT;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		if (p[0].revents & POLLIN)
-			sio2a_stat |= 2;
-		if (p[0].revents & POLLOUT)
-			sio2a_stat |= 1;
-	} else {
-		sio2a_stat = 0;
-	}
+	hal_status_in(SIO2A, &sio2a_stat);
 
 	gettimeofday(&sio2a_t1, NULL);
 
@@ -372,27 +297,12 @@ void imsai_sio2a_status_out(BYTE data)
  */
 BYTE imsai_sio2a_data_in(void)
 {
-	BYTE data;
+	int data;
 	static BYTE last;
-	struct pollfd p[1];
 
-	/* if not connected return last */
-	if (ucons[0].ssc == 0)
-		return(last);
-
-	/* if no input waiting return last */
-	p[0].fd = ucons[0].ssc;
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
-
-	if (read(ucons[0].ssc, &data, 1) != 1) {
-		/* EOF, close socket and return last */
-		close(ucons[0].ssc);
-		ucons[0].ssc = 0;
-		return(last);
+	data = hal_data_in(SIO2A);
+	if (data < 0) {
+		return last;
 	}
 
 	gettimeofday(&sio2a_t1, NULL);
@@ -402,7 +312,7 @@ BYTE imsai_sio2a_data_in(void)
 	if (sio2a_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return((BYTE)data);
 }
 
 /*
@@ -413,23 +323,6 @@ BYTE imsai_sio2a_data_in(void)
  */
 void imsai_sio2a_data_out(BYTE data)
 {
-	struct pollfd p[1];
-
-	/* return if socket not connected */
-	if (ucons[0].ssc == 0)
-		return;
-
-	/* if output not possible close socket and return */
-	p[0].fd = ucons[0].ssc;
-	p[0].events = POLLOUT;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLOUT)) {
-		close(ucons[0].ssc);
-		ucons[0].ssc = 0;
-		return;
-	}
-
 	if (sio2a_strip_parity)
 		data &= 0x7f;
 
@@ -437,24 +330,13 @@ void imsai_sio2a_data_out(BYTE data)
 		if (data == 0)
 			return;
 
-again:
-	if (write(ucons[0].ssc, &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			close(ucons[0].ssc);
-			ucons[0].ssc = 0;
-		}
-	}
+	hal_data_out(SIO2A, data);
 
 	gettimeofday(&sio2a_t1, NULL);
 	sio2a_stat &= 0b11111110;
 }
 
 /* -------------------- SIO 2 Channel B -------------------- */
-
-#ifdef HAS_MODEM
-#include "generic-at-modem.h"
 
 /*
  * read status register
@@ -465,7 +347,6 @@ again:
 BYTE imsai_sio2b_status_in(void)
 {
 	extern int time_diff(struct timeval *, struct timeval *);
-
 	int tdiff;
 
 	gettimeofday(&sio2b_t2, NULL);
@@ -474,12 +355,7 @@ BYTE imsai_sio2b_status_in(void)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2b_baud_rate))
 			return(sio2b_stat);
 
-	if (modem_device_alive(DEV_SIO2B)) {
-		if (modem_device_poll(DEV_SIO2B)) {
-			sio2b_stat |= 2;
-		}
-		sio2b_stat |= 1;
-	}
+	hal_status_in(SIO2B, &sio2b_stat);
 
 	gettimeofday(&sio2b_t1, NULL);
 
@@ -502,16 +378,13 @@ void imsai_sio2b_status_out(BYTE data)
  */
 BYTE imsai_sio2b_data_in(void)
 {
-	BYTE data = 0;
+	int data;
 	static BYTE last;
 
-	if (modem_device_alive(DEV_SIO2B)) {
-		int res = modem_device_get(DEV_SIO2B);
-		if (res < 0) {
-			return(last);
-		}
-		data = res;
-	} 
+	data = hal_data_in(SIO2B);
+	if (data < 0) {
+		return last;
+	}
 
 	gettimeofday(&sio2b_t1, NULL);
 	sio2b_stat &= 0b11111101;
@@ -520,7 +393,7 @@ BYTE imsai_sio2b_data_in(void)
 	if (sio2b_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return((BYTE)data);
 }
 
 /*
@@ -538,15 +411,11 @@ void imsai_sio2b_data_out(BYTE data)
 		if (data == 0)
 			return;
 
-	if (modem_device_alive(DEV_SIO2B)) {
-		modem_device_send(DEV_SIO2B, (char) data);
-	} else {
-		gettimeofday(&sio2b_t1, NULL);
-		sio2b_stat &= 0b11111110;
-	}
-}
+	hal_data_out(SIO2B, data);
 
-#endif
+	gettimeofday(&sio2b_t1, NULL);
+	sio2b_stat &= 0b11111110;
+}
 
 /* -------------------- SIO control -------------------- */
 
@@ -563,18 +432,18 @@ void imsai_sio2b_data_out(BYTE data)
  */
 BYTE imsai_sio1_ctl_in(void)
 {
-	/* no modem on SIO 1, so CD always 0 and CTS always 1 */
-	return(0b10111011);
+	int cd_a = hal_carrier_detect(SIO1A);
+	int cd_b = hal_carrier_detect(SIO1B);
+
+	return(0b10111011 | (cd_a << 2) | cd_b << 6);
 }
 
 BYTE imsai_sio2_ctl_in(void)
 {
-	/* no modem on channel A, so CD always 0, channel B CD from modem */
-	/* CTS always 1 */
-#ifdef HAS_MODEM
-	sio2b_cd = modem_device_carrier(DEV_SIO2B);
-#endif
-	return((sio2b_cd == 0) ? 0b10111011 : 0b11111011);
+	int cd_a = hal_carrier_detect(SIO2A);
+	int cd_b = hal_carrier_detect(SIO2B);
+
+	return(0b10111011 | (cd_a << 2) | cd_b << 6);
 }
 
 /*
