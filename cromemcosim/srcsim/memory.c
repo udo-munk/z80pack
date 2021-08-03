@@ -38,6 +38,8 @@ void init_memory(void)
 			exit(1);
 		}
 	}
+
+	LOG(TAG, "\r\n");
 }
 
 void init_rom(void)
