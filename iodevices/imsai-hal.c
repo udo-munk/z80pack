@@ -106,8 +106,8 @@ void net_tty_status(BYTE *stat) {
 int net_tty_in() {
     return net_device_get(DEV_SIO1);
 }
-void net_tty_out(char data) {
-    net_device_send(DEV_SIO1, &data, 1);
+void net_tty_out(BYTE data) {
+    net_device_send(DEV_SIO1, (char *)&data, 1);
 }
 #endif
 
