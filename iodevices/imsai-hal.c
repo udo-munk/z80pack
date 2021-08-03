@@ -298,7 +298,7 @@ int modem_cd() {
 
 const char *sio_port_name[MAX_SIO_PORT] = { "SIO1.portA", "SIO1.portB", "SIO2.portA", "SIO2.portB" };
 
-const static hal_device_t devices[] = {
+static const hal_device_t devices[] = {
 #ifdef HAS_NETSERVER
     { "WEBTTY", net_tty_alive, net_tty_status, net_tty_in, net_tty_out, null_cd },
 #else
