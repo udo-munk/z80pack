@@ -97,6 +97,7 @@ int net_tty_alive() {
     return net_device_alive(DEV_SIO1); /* WEBTTY is only alive if websocket is connected */
 }
 void net_tty_status(BYTE *stat) {
+    *stat &= (BYTE)(~3);
     if (net_device_poll(DEV_SIO1)) {
         *stat |= 2;
     }
@@ -105,8 +106,8 @@ void net_tty_status(BYTE *stat) {
 int net_tty_in() {
     return net_device_get(DEV_SIO1);
 }
-void net_tty_out(char data) {
-    net_device_send(DEV_SIO1, &data, 1);
+void net_tty_out(BYTE data) {
+    net_device_send(DEV_SIO1, (char *)&data, 1);
 }
 #endif
 
@@ -122,6 +123,7 @@ void stdio_status(BYTE *stat) {
     p[0].events = POLLIN;
     p[0].revents = 0;
     poll(p, 1, 0);
+    *stat &= (BYTE)(~3);
     if (p[0].revents & POLLIN)
         *stat |= 2;
     if (p[0].revents & POLLNVAL) {
@@ -171,9 +173,6 @@ again:
 /* -------------------- SOCKET SERVER HAL -------------------- */
 
 int scktsrv_alive() {
-	return (ucons[0].ssc); /* SCKTSRV is alive if there is an open socket */
-}
-void scktsrv_status(BYTE *stat) {
 
     struct pollfd p[1];
 
@@ -193,12 +192,19 @@ void scktsrv_status(BYTE *stat) {
 		}
 	}
 
+	return (ucons[0].ssc); /* SCKTSRV is alive if there is an open socket */
+}
+void scktsrv_status(BYTE *stat) {
+
+    struct pollfd p[1];
+
 	/* if socket is connected check for I/O */
 	if (ucons[0].ssc != 0) {
 		p[0].fd = ucons[0].ssc;
 		p[0].events = POLLIN | POLLOUT;
 		p[0].revents = 0;
 		poll(p, 1, 0);
+        *stat &= (BYTE)(~3);
 		if (p[0].revents & POLLIN)
 			*stat |= 2;
 		if (p[0].revents & POLLOUT)
@@ -271,6 +277,7 @@ int modem_alive() {
     return modem_device_alive(0);
 }
 void modem_status(BYTE *stat) {
+    *stat &= (BYTE)(~3);
     if (modem_device_poll(0)) {
         *stat |= 2;
     }
