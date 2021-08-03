@@ -97,6 +97,7 @@ int net_tty_alive() {
     return net_device_alive(DEV_SIO1); /* WEBTTY is only alive if websocket is connected */
 }
 void net_tty_status(BYTE *stat) {
+    *stat &= (BYTE)(~3);
     if (net_device_poll(DEV_SIO1)) {
         *stat |= 2;
     }
@@ -122,6 +123,7 @@ void stdio_status(BYTE *stat) {
     p[0].events = POLLIN;
     p[0].revents = 0;
     poll(p, 1, 0);
+    *stat &= (BYTE)(~3);
     if (p[0].revents & POLLIN)
         *stat |= 2;
     if (p[0].revents & POLLNVAL) {
@@ -199,6 +201,7 @@ void scktsrv_status(BYTE *stat) {
 		p[0].events = POLLIN | POLLOUT;
 		p[0].revents = 0;
 		poll(p, 1, 0);
+        *stat &= (BYTE)(~3);
 		if (p[0].revents & POLLIN)
 			*stat |= 2;
 		if (p[0].revents & POLLOUT)
@@ -271,6 +274,7 @@ int modem_alive() {
     return modem_device_alive(0);
 }
 void modem_status(BYTE *stat) {
+    *stat &= (BYTE)(~3);
     if (modem_device_poll(0)) {
         *stat |= 2;
     }
