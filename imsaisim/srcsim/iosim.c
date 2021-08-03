@@ -678,8 +678,8 @@ void init_io(void)
 #endif
 	hal_reset();
 
-	/* create local socket for SIO */
-	init_unix_server_socket(&ucons[0], "imsaisim.sio2a");
+	/* create local socket for SIO's */
+	init_unix_server_socket(&ucons[0], "imsaisim.sio2");
 }
 
 /*
