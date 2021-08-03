@@ -1362,7 +1362,7 @@ void modem_device_init() {
 #endif
     char *modem_init_string;
     if ((modem_init_string = getenv("MODEM.init")) != NULL) {
-        LOG(TAG, "\nMODEM.init string: %s\n", modem_init_string);
+        LOG(TAG, "MODEM.init string: %s\n", modem_init_string);
         while (*modem_init_string) {
             modem_device_send(0, *modem_init_string++);
         }
