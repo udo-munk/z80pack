@@ -173,9 +173,6 @@ again:
 /* -------------------- SOCKET SERVER HAL -------------------- */
 
 int scktsrv_alive() {
-	return (ucons[0].ssc); /* SCKTSRV is alive if there is an open socket */
-}
-void scktsrv_status(BYTE *stat) {
 
     struct pollfd p[1];
 
@@ -194,6 +191,12 @@ void scktsrv_status(BYTE *stat) {
 			}
 		}
 	}
+
+	return (ucons[0].ssc); /* SCKTSRV is alive if there is an open socket */
+}
+void scktsrv_status(BYTE *stat) {
+
+    struct pollfd p[1];
 
 	/* if socket is connected check for I/O */
 	if (ucons[0].ssc != 0) {
