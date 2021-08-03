@@ -45,6 +45,7 @@ OBJ =   sim0.o \
 	unix_network.o \
 	config.o \
 	imsai-sio2.o \
+	imsai-hal.o \
 	imsai-fif.o \
 	diskmanager.o \
 	cromemco-dazzler.o \
@@ -129,6 +130,9 @@ config.o : config.c sim.h simglb.h log.h
 
 imsai-sio2.o: ../../iodevices/imsai-sio2.c sim.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-sio2.c
+
+imsai-hal.o: ../../iodevices/imsai-hal.c sim.h simglb.h log.h $(WEB)/netsrv.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-hal.c
 
 imsai-fif.o: ../../iodevices/imsai-fif.c sim.h log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/imsai-fif.c
