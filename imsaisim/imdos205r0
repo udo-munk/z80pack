@@ -4,4 +4,6 @@ rm -f disks/drive[ab].dsk
 ln disks/library/imdos205r0-1.dsk disks/drivea.dsk
 ln disks/library/imdos205r0-2.dsk disks/driveb.dsk
 
-./imsaisim -r -x mpu-a-rom.hex $*
+BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf | xargs`
+
+env $BOOTENV ./imsaisim -r -x mpu-a-rom.hex $*
