@@ -40,11 +40,10 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "imsai-hal.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
-
-#include "imsai-hal.h"
 
 #define BAUDTIME 10000000
 
@@ -91,7 +90,9 @@ static BYTE sio2b_stat = 0;
  */
 BYTE imsai_sio_nofun_in(void)
 {
-	LOGD(TAG,"INVALID SIO PORT"); /* suppress TAG and _log_write warnings, won't be seen unless LOG_LOCAL_LEVEL = DEBUG */
+	LOGD(TAG,"INVALID SIO PORT"); /* suppress TAG and _log_write warnings */
+				      /* won't be seen unless */
+				      /* LOG_LOCAL_LEVEL = DEBUG */
 	return((BYTE) 0);
 }
 
@@ -147,6 +148,7 @@ BYTE imsai_sio1a_data_in(void)
 	static BYTE last;
 
 	data = hal_data_in(SIO1A);
+	/* if no new data available return last */
 	if (data < 0) {
 		return last;
 	}
@@ -222,6 +224,7 @@ BYTE imsai_sio1b_data_in(void)
 	static BYTE last;
 
 	data = hal_data_in(SIO1B);
+	/* if no new data available return last */
 	if (data < 0) {
 		return last;
 	}
@@ -233,7 +236,6 @@ BYTE imsai_sio1b_data_in(void)
 	if (sio1b_upper_case)
 		data = toupper(data);
 	last = data;
-
 	return((BYTE) data);
 }
 
@@ -301,6 +303,7 @@ BYTE imsai_sio2a_data_in(void)
 	static BYTE last;
 
 	data = hal_data_in(SIO2A);
+	/* if no new data available return last */
 	if (data < 0) {
 		return last;
 	}
@@ -382,6 +385,7 @@ BYTE imsai_sio2b_data_in(void)
 	static BYTE last;
 
 	data = hal_data_in(SIO2B);
+	/* if no new data available return last */
 	if (data < 0) {
 		return last;
 	}

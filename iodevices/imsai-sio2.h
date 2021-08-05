@@ -31,6 +31,7 @@
  * 14-JUL-21 added all options for SIO 2B
  * 15-JUL-21 refactor serial keyboard
  * 16-JUL-21 added all options for SIO 1B
+ * 01-AUG-21 integrated HAL
  */
 
 extern BYTE imsai_sio_nofun_in(void);
