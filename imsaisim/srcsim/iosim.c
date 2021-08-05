@@ -34,6 +34,7 @@
  * 14-AUG-20 allow building machine without frontpanel
  * 15-JUL-21 refactor serial keyboard
  * 01-AUG-21 integrated HAL
+ * 05_AUG-21 add boot config for machine without frontpanel
  */
 
 #include <unistd.h>
@@ -63,6 +64,7 @@
 #include "../../iodevices/imsai-vio.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
+#include "config.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -836,7 +838,7 @@ static BYTE fp_in(void)
 #ifdef FRONTPANEL
 	return(address_switch >> 8);
 #else
-	return(0);
+	return(fp_port);
 #endif
 }
 

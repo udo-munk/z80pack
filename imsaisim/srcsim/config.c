@@ -30,6 +30,7 @@
  * 14-JUL-21 added all options for SIO 2B
  * 16-JUL-21 added all options for SIO 1B
  * 20-JUL-21 log banked memory
+ * 05_AUG-21 add boot config for machine without frontpanel
  */
 
 #include <stdlib.h>
@@ -43,8 +44,9 @@
 
 static const char *TAG = "config";
 
-int ram_size;
-int fp_size = 800;
+int  ram_size;			/* RAM size bank 0 */
+int  fp_size = 800;		/* default frontpanel size */
+BYTE fp_port = 0;		/* default fp input port value */
 
 extern int num_banks;
 
@@ -248,6 +250,8 @@ void config(void)
 				sio2a_baud_rate = atoi(t2);
 			} else if (!strcmp(t1, "sio2b_baud_rate")) {
 				sio2b_baud_rate = atoi(t2);
+			} else if (!strcmp(t1, "fp_port")) {
+				fp_port = (BYTE) exatoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 #ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);

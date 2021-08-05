@@ -30,9 +30,11 @@
  * 14-JUL-21 added all options for SIO 2B
  * 16-JUL-21 added all options for SIO 1B
  * 20-JUL-21 log banked memory
+ * 05_AUG-21 add boot config for machine without frontpanel
  */
 
 extern void config(void);
 
-extern int ram_size;
-extern int fp_size;
+extern int  ram_size;
+extern int  fp_size;
+extern BYTE fp_port;
