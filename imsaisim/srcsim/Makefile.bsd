@@ -37,6 +37,9 @@ OBJ =   sim0.o \
 	simfun.o \
 	simglb.o \
 	simbdos.o \
+	am9511.o \
+	floatcnv.o \
+	ova.o \
 	unix_terminal.o \
 	unix_network.o \
 	config.o \
@@ -113,6 +116,19 @@ simglb.o : simglb.c sim.h
 
 simbdos.o : ../../iodevices/simbdos.c sim.h simglb.h memory.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/simbdos.c
+
+am9511.o : ../../iodevices/apu/am9511.c ../../iodevices/apu/am9511.h \
+	   ../../iodevices/apu/floatcnv.h ../../iodevices/apu/ova.h \
+	   ../../iodevices/apu/types.h
+	$(CC) $(CFLAGS) ../../iodevices/apu/am9511.c
+
+floatcnv.o : ../../iodevices/apu/floatcnv.c ../../iodevices/apu/floatcnv.h \
+	     ../../iodevices/apu/types.h
+	$(CC) $(CFLAGS) ../../iodevices/apu/floatcnv.c
+
+ova.o : ../../iodevices/apu/ova.c ../../iodevices/apu/ova.h \
+	 ../../iodevices/apu/types.h
+	$(CC) $(CFLAGS) ../../iodevices/apu/ova.c
 
 unix_terminal.o : ../../iodevices/unix_terminal.c
 	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
