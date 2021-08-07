@@ -71,6 +71,9 @@
 #include "log.h"
 #include "../../iodevices/rtc.h"
 #include "../../iodevices/imsai-hal.h"
+#ifdef HAS_APU
+#include "../../iodevices/apu/am9511.h"
+#endif
 
 /*
  *	Forward declarations for I/O functions
@@ -86,12 +89,21 @@ static void lpt_out(BYTE);
 static BYTE io_pport_in(void);
 static BYTE mmu_in(void);
 static void mmu_out(BYTE);
+#ifdef HAS_APU
+static BYTE apu_data_in(void);
+static BYTE apu_status_in(void);
+static void apu_data_out(BYTE);
+static void apu_status_out(BYTE);
+#endif
 
 static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
 BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
+#ifdef HAS_APU
+void *am9511 = NULL;
+#endif
 
 /*
  *	This array contains function pointers for every
@@ -273,8 +285,13 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,		/* port 159 */
 	hwctl_in,		/* port 160 */	/* virtual hardware control */
 	io_trap_in,		/* port 161 */
+#ifdef HAS_APU
+	apu_data_in,		/* port 162 */
+	apu_status_in,		/* port 163 */
+#else
 	io_trap_in,		/* port 162 */
 	io_trap_in,		/* port 163 */
+#endif
 	io_trap_in,		/* port 164 */
 	io_trap_in,		/* port 165 */
 	io_trap_in,		/* port 166 */
@@ -552,8 +569,13 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 159 */
 	hwctl_out,		/* port 160 */	/* virtual hardware control */
 	host_bdos_out,		/* port 161 */  /* host file I/O hook */
+#ifdef HAS_APU
+	apu_data_out,		/* port 162 */
+	apu_status_out,		/* port 163 */
+#else
 	io_trap_out,		/* port 162 */
 	io_trap_out,		/* port 163 */
+#endif
 	io_trap_out,		/* port 164 */
 	io_trap_out,		/* port 165 */
 	io_trap_out,		/* port 166 */
@@ -994,3 +1016,39 @@ static void mmu_out(BYTE data)
 		cpu_state = STOPPED;
 	}
 }
+
+#define AM_DATA   0xA2
+#define AM_STATUS 0xA3
+
+static BYTE apu_data_in(void)
+{
+	if (am9511 == NULL)
+        am9511 = am_create(AM_STATUS, AM_DATA);
+
+	return am_pop(am9511);
+
+};
+
+static BYTE apu_status_in(void)
+{
+	if (am9511 == NULL)
+        am9511 = am_create(AM_STATUS, AM_DATA);
+
+	return am_status(am9511);
+};
+
+static void apu_data_out(BYTE data)
+{
+	if (am9511 == NULL)
+        am9511 = am_create(AM_STATUS, AM_DATA);
+
+	am_push(am9511, data);
+};
+
+static void apu_status_out(BYTE status)
+{
+	if (am9511 == NULL)
+        am9511 = am_create(AM_STATUS, AM_DATA);
+
+	am_command(am9511, status);
+};
