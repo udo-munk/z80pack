@@ -34,7 +34,8 @@
  * 14-AUG-20 allow building machine without frontpanel
  * 15-JUL-21 refactor serial keyboard
  * 01-AUG-21 integrated HAL
- * 05_AUG-21 add boot config for machine without frontpanel
+ * 05-AUG-21 add boot config for machine without frontpanel
+ * 07-AUG-21 add APU emulation
  */
 
 #include <unistd.h>
