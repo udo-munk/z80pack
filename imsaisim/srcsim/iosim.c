@@ -753,6 +753,9 @@ void reset_io(void)
 #endif
 	imsai_fif_reset();
 	hwctl_lock = 0xff;
+#ifdef HAS_APU
+	am_reset(am9511);
+#endif
 }
 
 /*
