@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2008-2021 by Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module of the simulator contains the I/O simulation
  * for an IMSAI 8080 system
@@ -76,6 +77,9 @@
 #include "../../iodevices/apu/am9511.h"
 #endif
 
+#define AM_DATA   0xA2	/* instantiate am9511 for these ports */
+#define AM_STATUS 0xA3
+
 /*
  *	Forward declarations for I/O functions
  */
@@ -103,7 +107,7 @@ static int printer;		/* fd for file "printer.txt" */
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
 BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 #ifdef HAS_APU
-void *am9511 = NULL;
+void *am9511 = NULL;		/* am9511 instantiation */
 #endif
 
 /*
@@ -701,6 +705,10 @@ void init_io(void)
 #ifdef HAS_MODEM
 	modem_device_init();
 #endif
+#ifdef HAS_APU
+	am9511 = am_create(AM_STATUS, AM_DATA);
+#endif
+
 	hal_reset();
 
 	/* create local socket for SIO's */
@@ -1018,38 +1026,36 @@ static void mmu_out(BYTE data)
 	}
 }
 
-#define AM_DATA   0xA2
-#define AM_STATUS 0xA3
-
+#ifdef HAS_APU
+/*
+ *	read am9511 data port
+ */
 static BYTE apu_data_in(void)
 {
-	if (am9511 == NULL)
-        am9511 = am_create(AM_STATUS, AM_DATA);
-
 	return am_pop(am9511);
+}
 
-};
-
+/*
+ *	read am9511 status port
+ */
 static BYTE apu_status_in(void)
 {
-	if (am9511 == NULL)
-        am9511 = am_create(AM_STATUS, AM_DATA);
-
 	return am_status(am9511);
-};
+}
 
+/*
+ *	write am9511 data port
+ */
 static void apu_data_out(BYTE data)
 {
-	if (am9511 == NULL)
-        am9511 = am_create(AM_STATUS, AM_DATA);
-
 	am_push(am9511, data);
-};
+}
 
+/*
+ *	write am9511 status port
+ */
 static void apu_status_out(BYTE status)
 {
-	if (am9511 == NULL)
-        am9511 = am_create(AM_STATUS, AM_DATA);
-
 	am_command(am9511, status);
-};
+}
+#endif
