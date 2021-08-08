@@ -47,6 +47,6 @@ development systems.
 For implementation of a BDOS-like interface for host file I/O.
 
 
-Fred Weigl <fred_weigel@hotmail.com>
+Fred Weigel <fred_weigel@hotmail.com>
 
 For the AM9511 emulation and 8080/Z80 software to use it.
