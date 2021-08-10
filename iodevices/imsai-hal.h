@@ -22,6 +22,7 @@ typedef enum sio_port sio_port_t;
 
 enum hal_dev {
     WEBTTYDEV,
+    WEBPTRDEV,
     STDIODEV,
     SCKTSRVDEV,
     MODEMDEV,

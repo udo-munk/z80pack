@@ -32,7 +32,7 @@
 #define DOCUMENT_ROOT "../webfrontend/www/imsai"
 #define PORT "8080"
 
-#define MAX_WS_CLIENTS (7)
+#define MAX_WS_CLIENTS (8)
 static const char *TAG = "netsrv";
 
 static msgbuf_t msg;
@@ -50,7 +50,8 @@ char *dev_name[] = {
 	"CPA",
 	"DZLR",
 	"ACC",
-	"D7AIO"
+	"D7AIO",
+	"PTR"
 };
 
 int last_error = 0; //TODO: replace
@@ -88,6 +89,7 @@ void net_device_send(net_device_t device, char* msg, int len) {
 
 	switch (device) {
 		case DEV_SIO1:
+		case DEV_PTR:
 		case DEV_LPT:
 			op_code = MG_WEBSOCKET_OPCODE_BINARY;
 			break;
@@ -402,6 +404,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 
 			switch ((net_device_t)device) {
 			case DEV_SIO1:
+			case DEV_PTR:
 			case DEV_VIO:
 			case DEV_LPT:
 			case DEV_DZLR:
@@ -507,6 +510,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 
         switch ((net_device_t)device) {
         case DEV_SIO1:
+        case DEV_PTR:
         case DEV_VIO:
 			if (len != 1) {
 				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);
@@ -620,6 +624,14 @@ int start_net_services (void) {
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) DEV_SIO1);
+
+	mg_set_websocket_handler(ctx, "/ptr",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         (void *) DEV_PTR);
+							 
 	mg_set_websocket_handler(ctx, "/lpt",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,

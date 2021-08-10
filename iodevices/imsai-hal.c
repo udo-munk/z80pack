@@ -111,6 +111,27 @@ void net_tty_out(BYTE data) {
 }
 #endif
 
+/* -------------------- WEBPTR HAL -------------------- */
+
+#ifdef HAS_NETSERVER
+int net_ptr_alive() {
+    return net_device_alive(DEV_PTR); /* WEBPTR is only alive if websocket is connected */
+}
+void net_ptr_status(BYTE *stat) {
+    *stat &= (BYTE)(~3);
+    if (net_device_poll(DEV_PTR)) {
+        *stat |= 2;
+    }
+    *stat |= 1;
+}
+int net_ptr_in() {
+    return net_device_get(DEV_PTR);
+}
+void net_ptr_out(BYTE data) {
+    net_device_send(DEV_PTR, (char *)&data, 1);
+}
+#endif
+
 /* -------------------- STDIO HAL -------------------- */
 
 int stdio_alive() {
@@ -301,8 +322,10 @@ const char *sio_port_name[MAX_SIO_PORT] = { "SIO1.portA", "SIO1.portB", "SIO2.po
 static const hal_device_t devices[] = {
 #ifdef HAS_NETSERVER
     { "WEBTTY", net_tty_alive, net_tty_status, net_tty_in, net_tty_out, null_cd },
+    { "WEBPTR", net_ptr_alive, net_ptr_status, net_ptr_in, net_ptr_out, null_cd },
 #else
     { "WEBTTY", null_dead, null_status, null_in, null_out, null_cd },
+    { "WEBPTR", null_dead, null_status, null_in, null_out, null_cd },
 #endif
     { "STDIO", stdio_alive, stdio_status, stdio_in, stdio_out, null_cd },
     { "SCKTSRV", scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out, null_cd },
@@ -378,8 +401,9 @@ static void hal_init() {
     sio[1][0] = devices[VIOKBD];
     sio[1][1] = devices[NULLDEV];
 
-    sio[2][0] = devices[SCKTSRVDEV];
-    sio[2][1] = devices[NULLDEV];
+    sio[2][0] = devices[WEBPTRDEV];
+    sio[2][1] = devices[SCKTSRVDEV];
+    sio[2][2] = devices[NULLDEV];
     
     sio[3][0] = devices[MODEMDEV];
     sio[3][1] = devices[NULLDEV];
