@@ -321,21 +321,21 @@ const char *sio_port_name[MAX_SIO_PORT] = { "SIO1.portA", "SIO1.portB", "SIO2.po
 
 static const hal_device_t devices[] = {
 #ifdef HAS_NETSERVER
-    { "WEBTTY", net_tty_alive, net_tty_status, net_tty_in, net_tty_out, null_cd },
-    { "WEBPTR", net_ptr_alive, net_ptr_status, net_ptr_in, net_ptr_out, null_cd },
+    { "WEBTTY", 0, net_tty_alive, net_tty_status, net_tty_in, net_tty_out, null_cd },
+    { "WEBPTR", 0, net_ptr_alive, net_ptr_status, net_ptr_in, net_ptr_out, null_cd },
 #else
-    { "WEBTTY", null_dead, null_status, null_in, null_out, null_cd },
-    { "WEBPTR", null_dead, null_status, null_in, null_out, null_cd },
+    { "WEBTTY", 0, null_dead, null_status, null_in, null_out, null_cd },
+    { "WEBPTR", 0, null_dead, null_status, null_in, null_out, null_cd },
 #endif
-    { "STDIO", stdio_alive, stdio_status, stdio_in, stdio_out, null_cd },
-    { "SCKTSRV", scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out, null_cd },
+    { "STDIO", 0, stdio_alive, stdio_status, stdio_in, stdio_out, null_cd },
+    { "SCKTSRV", 0, scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out, null_cd },
 #ifdef HAS_MODEM
-    { "MODEM", modem_alive, modem_status, modem_in, modem_out, modem_cd },
+    { "MODEM", 0, modem_alive, modem_status, modem_in, modem_out, modem_cd },
 #else
-    { "MODEM", null_dead, null_status, null_in, null_out, null_cd },
+    { "MODEM", 0, null_dead, null_status, null_in, null_out, null_cd },
 #endif
-    { "VIOKBD", vio_kbd_alive, vio_kbd_status, vio_kbd_in, vio_kbd_out, null_cd },
-    { "", null_alive, null_status, null_in, null_out, null_cd }
+    { "VIOKBD", 0, vio_kbd_alive, vio_kbd_status, vio_kbd_in, vio_kbd_out, null_cd },
+    { "", 0, null_alive, null_status, null_in, null_out, null_cd }
 };
 
 hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];
@@ -355,7 +355,7 @@ static void hal_report() {
 
         while (sio[i][j].name && j < MAX_HAL_DEV) {
 
-            LOG(TAG, "%s ", sio[i][j].name);
+            LOG(TAG, "%s%s", sio[i][j].name, (sio[i][j].fallthrough?"+":" "));
 
             j++;
         }
@@ -421,11 +421,20 @@ static void hal_init() {
 
             dev = strtok(match, ",\r");
             while (dev) {
+
+                char k = dev[strlen(dev) - 1];
+                int fallthrough = 0;
+                if (k == '+') {
+                    dev[strlen(dev) - 1] = 0;
+                    fallthrough = 1;
+                }
+
                 d = hal_find_device(dev);
                 LOGI(TAG, "\tAdding %s to %s", dev, sio_port_name[i]);
 
                 if (d >= 0) {
                     memcpy(&sio[i][j], &devices[d], sizeof(hal_device_t));
+                    sio[i][j].fallthrough = fallthrough;
                     j++;
                 }
                 dev = strtok(NULL, ",\r");
@@ -445,31 +454,55 @@ void hal_reset() {
 void hal_status_in(sio_port_t dev, BYTE *stat) {
 
     int p = 0;
+    BYTE s;
+    *stat = 0;
+next:
     while(!sio[dev][p].alive()) { /* Find the first device that is alive */
         p++;
     }
 
-    sio[dev][p].status(stat);
+    sio[dev][p].status(&s);
+    *stat |= s;
+
+    if (sio[dev][p].fallthrough) {
+        p++;
+        goto next;
+    }
 }
 
 int hal_data_in(sio_port_t dev) {
 
     int p = 0;
+    int in = 0;
+next:
     while(!sio[dev][p].alive()) { /* Find the first device that is alive */
         p++;
     }
-	
-	return sio[dev][p].in();
+
+    in = sio[dev][p].in();
+
+    if (in < 0 && sio[dev][p].fallthrough) {
+        p++;
+        goto next;
+    } else {
+        return in;
+    }
 }
 
 void hal_data_out(sio_port_t dev, BYTE data) {
 
     int p = 0;
+next:
     while(!sio[dev][p].alive()) { /* Find the first device that is alive */
         p++;
     }
 
 	sio[dev][p].out(data);
+
+    if (sio[dev][p].fallthrough) {
+        p++;
+        goto next;
+    }        
 }
 
 int hal_carrier_detect(sio_port_t dev) {
