@@ -498,8 +498,13 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 			// LOGI(TAG, "rec: %d, %d", (int)len, (BYTE)*data);
             msg.mtype = 1L;
             memcpy(msg.mtext, data, len);
-			if (msgsnd(dev[(net_device_t)device].queue, &msg, len, 0)) {
-                perror("msgsnd()");
+			if (msgsnd(dev[(net_device_t)device].queue, &msg, len, IPC_NOWAIT)) {
+                if (errno == EAGAIN) {
+					LOGW(TAG, "%s Overflow", dev_name[(net_device_t)device]);
+				} else {
+					perror("msgsnd()");
+				}
+				return 0;
             };
 			break;
 		default:
@@ -519,8 +524,13 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
             msg.mtype = 1L;
             msg.mtext[0] = data[0];
             msg.mtext[1] = '\0';
-            if (msgsnd(dev[(net_device_t)device].queue, &msg, 2, 0)) {
-                perror("msgsnd()");
+            if (msgsnd(dev[(net_device_t)device].queue, &msg, 2, IPC_NOWAIT)) {
+                if (errno == EAGAIN) {
+					LOGW(TAG, "%s Overflow", dev_name[(net_device_t)device]);
+				} else {
+					perror("msgsnd()");
+				}
+				return 0;
             };
             break;
         default:
