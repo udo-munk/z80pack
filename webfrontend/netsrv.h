@@ -24,7 +24,8 @@ enum net_device {
 	DEV_CPA,
 	DEV_DZLR,
 	DEV_88ACC,
-	DEV_D7AIO
+	DEV_D7AIO,
+	DEV_PTR
 };
 
 typedef enum net_device net_device_t;
