@@ -89,6 +89,7 @@ static BYTE fp_in(void);
 static void fp_out(BYTE);
 static BYTE hwctl_in(void);
 static void hwctl_out(BYTE);
+void lpt_reset(void);
 static BYTE lpt_in(void);
 static void lpt_out(BYTE);
 static BYTE io_pport_in(void);
@@ -710,6 +711,7 @@ void init_io(void)
 #endif
 
 	hal_reset();
+	lpt_reset();
 
 	/* create local socket for SIO's */
 	init_unix_server_socket(&ucons[0], "imsaisim.sio2");
@@ -960,14 +962,26 @@ static void hwctl_out(BYTE data)
 	}
 }
 
+void lpt_reset(void) {
+	if (printer) {
+		close(printer);
+	}
+	printer = creat("printer.txt", 0664); /* clear file on init */
+}
+
 /*
  *	Print into the printer file any data with bit 7 = 0.
  *	Data with bit 7 = 1 are commands which we ignore here.
  */
 static void lpt_out(BYTE data)
 {
-	if ((printer == 0) && !(data & 0x80))
-		printer = creat("printer.txt", 0664);
+	if (data == 0x80) {
+		lpt_reset();
+#ifdef HAS_NETSERVER
+		net_device_send(DEV_LPT, (char *) &data, 1);
+#endif
+		return;
+	}
 
 	if ((data != '\r') && !(data & 0x80)) {
 again:

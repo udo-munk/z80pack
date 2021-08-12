@@ -61,6 +61,8 @@ extern int power;
 extern void quit_callback(void);
 */
 
+extern void lpt_reset(void);
+
 #ifdef HAS_DISKMANAGER
 extern int LibraryHandler(struct mg_connection *, void *);
 extern int DiskHandler(struct mg_connection *, void *);
@@ -514,6 +516,9 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
     if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_TEXT) {
 
         switch ((net_device_t)device) {
+		case DEV_LPT:
+			if (len == 1 && *data == 'R') lpt_reset();
+			break;
         case DEV_SIO1:
         case DEV_PTR:
         case DEV_VIO:
