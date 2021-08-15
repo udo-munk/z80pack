@@ -496,6 +496,23 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
                 (*(dev[DEV_D7AIO].cbfunc))((BYTE *)data);
             }
 			break;
+		case DEV_PTR:
+			if (len != 1) {
+				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);
+				return 0;
+			}
+            msg.mtype = 1L;
+            msg.mtext[0] = data[0];
+            msg.mtext[1] = '\0';
+            if (msgsnd(dev[(net_device_t)device].queue, &msg, 2, IPC_NOWAIT)) {
+                if (errno == EAGAIN) {
+					LOGW(TAG, "%s Overflow", dev_name[(net_device_t)device]);
+				} else {
+					perror("msgsnd()");
+				}
+				return 0;
+            };
+            break;	
 		case DEV_88ACC:
 			// LOGI(TAG, "rec: %d, %d", (int)len, (BYTE)*data);
             msg.mtype = 1L;
@@ -520,7 +537,6 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 			if (len == 1 && *data == 'R') lpt_reset();
 			break;
         case DEV_SIO1:
-        case DEV_PTR:
         case DEV_VIO:
 			if (len != 1) {
 				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);

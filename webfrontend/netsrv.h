@@ -31,8 +31,8 @@ enum net_device {
 typedef enum net_device net_device_t;
 
 struct msgbuf {
-	long	mtype;
-	char	mtext[128];
+	long			mtype;
+	unsigned char	mtext[128];
 };
 
 typedef struct msgbuf msgbuf_t;
