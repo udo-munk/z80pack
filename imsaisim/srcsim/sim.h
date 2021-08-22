@@ -65,10 +65,10 @@
  *	The following lines of this file should not be modified by user
  */
 #define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
-#define RELEASE	"1.37"
+#define RELEASE	"1.38-dev"
 
 #define USR_COM	"IMSAI 8080 Simulation"
-#define USR_REL	"1.18"
+#define USR_REL	"1.19"
 #define USR_CPR	"\nCopyright (C) 2008-2021 by Udo Munk & " \
 		"2018-2021 by David McNaughton"
 
