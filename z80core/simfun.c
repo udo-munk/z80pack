@@ -239,7 +239,7 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 	for (i = laddr; i < 65536; i++) {
 		if (read(fd, fileb, 1) == 1) {
 			if (psize && i > ((pstart + psize) << 8)) {
-				LOGW(TAG, "tried to load mod file outside expected address range. Address: %04X", i);
+				LOGW(TAG, "tried to load mos file outside expected address range. Address: %04X", i);
 				return(1);
 			}
 			count++;
