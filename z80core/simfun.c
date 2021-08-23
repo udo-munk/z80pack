@@ -53,15 +53,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <termios.h>
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
 #include "sim.h"
 #include "simglb.h"
+#include "memory.h"
 #include "log.h"
 
 static const char *TAG = "func";
+
+#define BUFSIZE	256		/* buffer size for file I/O */
+
+int load_file(char *, BYTE pstart, WORD psize);
+static int load_mos(char *, BYTE pstart, WORD psize), load_hex(char *, BYTE pstart, WORD psize), checksum(char *);
 
 /*
  *	atoi for hexadecimal numbers
@@ -151,4 +158,218 @@ int time_diff(struct timeval *t1, struct timeval *t2)
 		return(-1); /* result is to large */
 	else
 		return((int) usec);
+}
+
+/*
+ *	Read a file into the memory of the emulated CPU.
+ *	The following file formats are supported:
+ *
+ *		binary images with Mostek header
+ *		Intel hex
+ */
+int load_file(char *s, BYTE pstart, WORD psize)
+{
+	char fn[MAX_LFN];
+	char *pfn = fn;
+	BYTE d;
+	int fd;
+
+	while (isspace((int)*s))
+		s++;
+	while (*s != ',' && *s != '\n' && *s != '\0')
+		*pfn++ = *s++;
+	*pfn = '\0';
+
+	if (strlen(fn) == 0) {
+		LOGE(TAG, "no input file given");
+		return(1);
+	}
+
+	if ((fd	= open(fn, O_RDONLY)) == -1) {
+		LOGE(TAG, "can't open file %s\n", fn);
+		return(1);
+	}
+
+	//TODO: What is this? We need to remove references to wrk_ram and mem_base()
+	// if (*s == ',')
+	// 	wrk_ram	= mem_base() + exatoi(++s);
+	// else
+	// 	wrk_ram	= NULL;
+
+	read(fd, (char *) &d, 1);	/* read first byte of file */
+	close(fd);
+
+	if (d == 0xff) {		/* Mostek header ? */
+		return(load_mos(fn, pstart, psize));
+	} else {
+		return(load_hex(fn, pstart, psize));
+	}
+}
+
+/*
+ *	Loader for binary images with Mostek header.
+ *	Format of the first 3 bytes:
+ *
+ *	0xff ll	lh
+ *
+ *	ll = load address low
+ *	lh = load address high
+ */
+static int load_mos(char *fn, BYTE pstart, WORD psize)
+{
+	register int i;
+	int fd;
+	int laddr, count;
+	BYTE fileb[3];
+
+	if ((fd	= open(fn, O_RDONLY)) == -1) {
+		LOGE(TAG, "can't open file %s\n", fn);
+		return(1);
+	}
+
+	read(fd, (char *) fileb, 3);	/* read load address */
+	laddr = (fileb[2] << 8) + fileb[1];
+
+	if (psize && laddr < (pstart << 8)) {
+		LOGW(TAG, "tried to load mos file outside expected address range. Address: %04X", laddr);
+		return(1);
+	}
+
+	count = 0;
+	for (i = laddr; i < 65536; i++) {
+		if (read(fd, fileb, 1) == 1) {
+			if (psize && i > ((pstart + psize) << 8)) {
+				LOGW(TAG, "tried to load mod file outside expected address range. Address: %04X", i);
+				return(1);
+			}
+			count++;
+			putmem(i, fileb[0]);
+		} else {
+			break;
+		}
+	}
+
+	close(fd);
+
+	LOG(TAG, "Loader statistics for file %s:\r\n", fn);
+	LOG(TAG, "START : %04XH\r\n", laddr);
+	LOG(TAG, "END   : %04XH\\rn", laddr + count);
+	LOG(TAG, "LOADED: %04XH (%d)\r\n\r\n", count, count);
+
+	PC = laddr;
+
+	return(0);
+}
+
+/*
+ *	Loader for Intel hex
+ */
+static int load_hex(char *fn, BYTE pstart, WORD psize)
+{
+	register int i;
+	FILE *fd;
+	char buf[BUFSIZE];
+	char *s;
+	int count = 0;
+	int addr = 0;
+	int saddr = 0xffff;
+	int eaddr = 0;
+	int data;
+
+	if ((fd = fopen(fn, "r")) == NULL) {
+		LOGE(TAG, "can't open file %s\n", fn);
+		return(1);
+	}
+
+	while (fgets(&buf[0], BUFSIZE, fd) != NULL) {
+		s = &buf[0];
+		while (isspace((int)*s))
+			s++;
+		if (*s != ':')
+			continue;
+		if (checksum(s + 1) != 0) {
+			LOGE(TAG, "invalid checksum in hex record: %s", s);
+			return(1);
+		}
+		s++;
+		count = (*s <= '9') ? (*s - '0') << 4 :
+				      (*s - 'A' + 10) << 4;
+		s++;
+		count += (*s <= '9') ? (*s - '0') :
+				       (*s - 'A' + 10);
+		s++;
+		if (count == 0)
+			break;
+		addr = (*s <= '9') ? (*s - '0') << 4 :
+				     (*s - 'A' + 10) << 4;
+		s++;
+		addr += (*s <= '9') ? (*s - '0') :
+				      (*s - 'A' + 10);
+		s++;
+		addr *= 256;
+		addr += (*s <= '9') ? (*s - '0') << 4 :
+				      (*s - 'A' + 10) << 4;
+		s++;
+		addr += (*s <= '9') ? (*s - '0') :
+				      (*s - 'A' + 10);
+		s++;
+
+		if (psize) {
+			if (addr < (pstart << 8) || (addr + count) >= ((pstart + psize) << 8)) {
+				LOGW(TAG, "tried to load hex record outside expected address range. Address: %04X", addr);
+				return(1);
+			}
+		}
+
+		if (addr < saddr)
+			saddr = addr;
+		if (addr >= eaddr)
+			eaddr = addr + count - 1;
+		s += 2;
+		for (i = 0; i < count; i++) {
+			data = (*s <= '9') ? (*s - '0') << 4 :
+					     (*s - 'A' + 10) << 4;
+			s++;
+			data += (*s <= '9') ? (*s - '0') :
+					      (*s - 'A' + 10);
+			s++;
+			putmem(addr + i, data);
+		}
+	}
+
+	fclose(fd);
+
+	count = eaddr - saddr + 1;
+	LOG(TAG, "Loader statistics for file %s:\r\n", fn);
+	LOG(TAG, "START : %04XH\r\n", saddr);
+	LOG(TAG, "END   : %04XH\r\n", eaddr);
+	LOG(TAG, "LOADED: %04XH (%d)\r\n\r\n", count & 0xffff, count & 0xffff);
+
+	PC = saddr;
+
+	return(0);
+}
+
+/*
+ *	Verify checksum of Intel hex records
+ */
+static int checksum(char *s)
+{
+	int chk = 0;
+
+	while ((*s != '\r') && (*s != '\n')) {
+		chk += (*s <= '9') ?
+			(*s - '0') << 4 :
+			(*s - 'A' + 10) << 4;
+		s++;
+		chk += (*s <= '9') ?
+			(*s - '0') :
+			(*s - 'A' + 10);
+		s++;
+	}
+
+	if ((chk & 255) == 0)
+		return(0);
+	else
+		return(1);
 }
