@@ -5,4 +5,4 @@ ln disks/library/imdos202.dsk disks/drivea.dsk
 
 BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf | xargs`
 
-env $BOOTENV ./imsaisim -r -x mpu-a-rom.hex $*
+env $BOOTENV ./imsaisim -R $*

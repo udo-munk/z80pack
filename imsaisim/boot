@@ -3,7 +3,7 @@
 BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf | xargs`
 
 if [ -f disks/drivea.dsk ]; then
-	env $BOOTENV ./imsaisim -r -x mpu-a-rom.hex $*
+	env $BOOTENV ./imsaisim -R $*
 else
 	echo "no boot disk in drive a:"
 fi
