@@ -38,13 +38,14 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
+#include "memory.h"
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
 static const char *TAG = "config";
 
-int  ram_size;			/* RAM size bank 0 */
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0;		/* default fp input port value */
 
@@ -81,8 +82,12 @@ void config(void)
 {
 	FILE *fp;
 	char buf[BUFSIZE];
-	char *s, *t1, *t2;
+	char *s, *t1, *t2, *t3, *t4;
+	int v1, v2;
 	char fn[MAX_LFN - 1];
+
+	int num_segs = 0;
+	int section = 0;
 
 	if (c_flag) {
 		strcpy(&fn[0], &conffn[0]);
@@ -97,7 +102,7 @@ void config(void)
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
 			t1 = strtok(s, " \t");
-			t2 = strtok(NULL, " \t");
+			t2 = strtok(NULL, " \t,");
 			if (!strcmp(t1, "sio1a_upper_case")) {
 				switch (*t2) {
 				case '0':
@@ -272,15 +277,74 @@ void config(void)
 				if (*t2 != '0')
 					slf = 2;
 			} else if (!strcmp(t1, "ram")) {
-				ram_size = atoi(t2);
-				if (ram_size > MAX_RAM) {
-					LOGW(TAG, "Maximal possible RAM size for bank 0 is %d KB", MAX_RAM);
-					ram_size = MAX_RAM;
+				if (num_segs >= MAXMEMMAP) {
+					LOGW(TAG, "too many rom/ram statements");
+					goto next;
 				}
-				LOG(TAG, "RAM size bank 0 is %d KB, MMU has %d additional banks a 48 KB\r\n", ram_size, num_banks);
+				t3 = strtok(NULL, " \t,");
+				v1 = strtol(t2, NULL, 0);
+				if (v1 < 0 || v1 > 255) {
+					LOGW(TAG, "invalid ram start address %d", v1);
+					goto next;
+				}
+				v2 = strtol(t3, NULL, 0);
+				if (v2 < 1 || v1 + v2 > 256) {
+					LOGW(TAG, "invalid ram size %d", v2);
+					goto next;
+				}
+				memconf[section][num_segs].type = MEM_RW;
+				memconf[section][num_segs].spage = v1;
+				memconf[section][num_segs].size = v2;
+				LOGD(TAG, "RAM %04XH - %04XH",
+				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
+				num_segs++;
+			} else if (!strcmp(t1, "rom")) {
+				if (num_segs >= MAXMEMMAP) {
+					LOGW(TAG, "too many rom/ram statements");
+					goto next;
+				}
+				t3 = strtok(NULL, " \t,");
+				t4 = strtok(NULL, " \t\n");
+				v1 = strtol(t2, NULL, 0);
+				if (v1 < 0 || v1 > 255) {
+					LOGW(TAG, "invalid rom start address %d", v1);
+					goto next;
+				}
+				v2 = strtol(t3, NULL, 0);
+				if (v2 < 1 || v1 + v2 > 256) {
+					LOGW(TAG, "invalid rom size %d", v2);
+					goto next;
+				}
+				memconf[section][num_segs].type = MEM_RO;
+				memconf[section][num_segs].spage = v1;
+				memconf[section][num_segs].size = v2;
+				if (t4 != NULL) {
+					memconf[section][num_segs].rom_file = strdup(t4);
+				} else {
+					memconf[section][num_segs].rom_file = NULL;
+				}
+				LOGD(TAG, "ROM %04XH - %04XH %s",
+				    v1 << 8, (v1 << 8) + (v2 << 8) - 1,
+					(t4==NULL?"":t4));
+				num_segs++;
+			} else if (!strcmp(t1, "boot")) {
+				boot_switch[section] = strtol(t2, NULL, 0);
+				LOGD(TAG, "Boot switch address at %04XH", boot_switch[section]);
+			} else if (!strcmp(t1, "[MEMORY")) {
+				v1 = strtol(t2, &t3, 10);
+				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {
+					LOGW(TAG, "invalid MEMORY section number %d", v1);
+					goto next;
+				}
+				LOGD(TAG, "MEMORY CONFIGURATION %d", v1);
+				section = v1 -1;
+				num_segs = 0;
 			} else {
 				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
+
+			next:
+			;
 		}
 	}
 

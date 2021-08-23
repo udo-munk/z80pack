@@ -21,19 +21,39 @@
  * 20-JUL-2021 log banked memory
  */
 
+#ifdef FRONTPANEL
+#include "../../frontpanel/frontpanel.h"
+#endif
+
 extern void init_memory(void), reset_memory(void), init_rom(void);
 extern void groupswap(void);
 extern int wait_step(void);
 extern void wait_int_step(void);
 extern BYTE memory[], *banks[];
 extern int p_tab[];
-extern int ram_size;
+extern int _p_tab[];
 extern int selbnk;
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
 #define MEM_WPROT	2	/* memory is write protected */
 #define MEM_NONE	3	/* no memory available */
+
+/*
+ * configuration for memory map(s)
+ */
+#define MAXMEMMAP	6
+#define MAXMEMSECT	7
+
+struct memmap {
+	int type;	/* type of memory pages */
+	BYTE spage;	/* start page of segment */
+	WORD size;	/* size of segment in pages */
+	char *rom_file;
+};
+
+extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
+extern WORD boot_switch[MAXMEMSECT];					/* boot address for switch */
 
 #define MAXSEG		8	/* max number of memory segments */
 #define SEGSIZ		49152	/* size of the memory segments, 48 KBytes */
@@ -47,8 +67,8 @@ extern BYTE *wrtvec[];
 extern int cyclecount;
 
 #ifdef HAS_BANKED_ROM
-#define _MEMWRTTHRU(addr) 	*(wrtvec[(addr) >> 10] + ((addr) & 0x03ff))
-#define _MEMMAPPED(addr) 	*(rdrvec[(addr) >> 10] + ((addr) & 0x03ff))
+#define _MEMWRTTHRU(addr) 	*(wrtvec[(addr) >> 8] + ((addr) & 0x0ff))
+#define _MEMMAPPED(addr) 	*(rdrvec[(addr) >> 8] + ((addr) & 0x0ff))
 #else
 #define _MEMWRTTHRU(addr) 	_MEMDIRECT(addr)
 #define _MEMMAPPED(addr) 	_MEMDIRECT(addr)
@@ -61,9 +81,9 @@ extern int cyclecount;
 				   (actually 1K RAM @ DOOO-D3FF) */
 
 /* return page to RAM pool */
-#define MEM_RELEASE(page) 	p_tab[(page)] = (ram_size > (page)) ? MEM_RW : MEM_NONE
+#define MEM_RELEASE(page) 	p_tab[(page)] = _p_tab[(page)]
 /* reserve page as banked ROM */
-#define MEM_ROM_BANK_ON(page)	p_tab[(page)] = (ram_size > (page)) ? MEM_RW : MEM_RO
+#define MEM_ROM_BANK_ON(page)	p_tab[(page)] = MEM_RO
 /* reserve page as RAM */
 #define MEM_RESERVE_RAM(page)	p_tab[(page)] = MEM_RW
 /* reserve page as ROM */
@@ -75,7 +95,7 @@ extern int cyclecount;
 static inline void memwrt(WORD addr, BYTE data)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] == MEM_RW)
+		if (p_tab[addr >> 8] == MEM_RW)
 			_MEMWRTTHRU(addr) = data;
 	} else {
 		*(banks[selbnk] + addr) = data;
@@ -108,7 +128,7 @@ static inline BYTE memrdr(WORD addr)
 #endif
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] != MEM_NONE) {
+		if (p_tab[addr >> 8] != MEM_NONE) {
 			data = _MEMMAPPED(addr);
 #ifdef FRONTPANEL
 			fp_led_data = data;
@@ -151,7 +171,7 @@ static inline BYTE dma_read(WORD addr)
 	bus_request = 0;
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] != MEM_NONE)
+		if (p_tab[addr >> 8] != MEM_NONE)
 			return(_MEMMAPPED(addr));
 		else
 			return(0xff);
@@ -171,7 +191,7 @@ static inline void dma_write(WORD addr, BYTE data)
 	bus_request = 0;
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] == MEM_RW)
+		if (p_tab[addr >> 8] == MEM_RW)
 			_MEMDIRECT(addr) = data;
 	} else {
 		 *(banks[selbnk] + addr) = data;
@@ -184,7 +204,7 @@ static inline void dma_write(WORD addr, BYTE data)
 static inline BYTE getmem(WORD addr)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] != MEM_NONE)
+		if (p_tab[addr >> 8] != MEM_NONE)
 			return(_MEMMAPPED(addr));
 		else
 			return(0xff);
@@ -208,7 +228,7 @@ static inline void putmem(WORD addr, BYTE data)
 static inline void fp_write(WORD addr, BYTE data)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
-		if (p_tab[addr >> 10] == MEM_RW)
+		if (p_tab[addr >> 8] == MEM_RW)
 			_MEMDIRECT(addr) = data;
 	} else {
 		 *(banks[selbnk] + addr) = data;

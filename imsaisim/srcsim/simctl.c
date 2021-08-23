@@ -130,7 +130,7 @@ void mon(void)
 #endif
 
 #ifdef HAS_BANKED_ROM
-	if(r_flag)
+	if(R_flag)
 		PC = 0x0000;
 #endif
 

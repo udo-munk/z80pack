@@ -687,15 +687,6 @@ void init_io(void)
 	if ((getmem(0xfffd) == 'V') && (getmem(0xfffe) == 'I') &&
 	    (getmem(0xffff) == '0')) {
 		imsai_vio_init();
-	} else {
-		/* release the RAM */
-		MEM_RELEASE(60);
-		MEM_RELEASE(61);
-		/* if no firmware loaded release the ROM */
-		if (getmem(0xf800) == 0xff) {
-			MEM_RELEASE(62);
-			MEM_RELEASE(63);
-		}
 	}
 
 	imsai_fif_reset();

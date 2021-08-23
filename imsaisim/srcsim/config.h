@@ -35,6 +35,5 @@
 
 extern void config(void);
 
-extern int  ram_size;
 extern int  fp_size;
 extern BYTE fp_port;
