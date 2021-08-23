@@ -252,7 +252,9 @@ usage:
 #endif
 #ifdef HAS_CONFIG
 				printf(" -c filename");
+#if MAXMEMSECT > 0
 				printf(" -M val");
+#endif
 #endif
 #ifdef HAS_BANKED_ROM
 				printf(" -R");
@@ -282,7 +284,9 @@ usage:
 				puts("\t     default config files:");
 				puts("\t     ./conf/system.conf");
 				printf("\t     %s/system.conf\n", CONFDIR);
+#if MAXMEMSECT > 0
 				printf("\t-M = use config file memory section val (1-%d)\n", MAXMEMSECT);
+#endif
 #endif
 #ifdef HAS_BANKED_ROM
 				puts("\t-R = enable banked ROM");
