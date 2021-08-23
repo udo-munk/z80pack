@@ -15,7 +15,12 @@
  * 17-JUN-21 allow building machine without frontpanel
  */
 
+#ifdef FRONTPANEL
+#include "../../frontpanel/frontpanel.h"
+#endif
+
 #define MAXSEG 7		/* max. number of 64KB memory banks */
+#define MAXMEMSECT 0		/* no configurable memory maps */
 
 extern void init_memory(void), init_rom(void);
 extern int wait_step(void);
