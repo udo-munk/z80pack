@@ -71,13 +71,10 @@
 #endif
 #include "memory.h"
 
-#define BUFSIZE	256		/* buffer size for file I/O */
-
 static void init_cpu(void);
 static void save_core(void);
 int load_core(void);
-int load_file(char *);
-static int load_mos(char *), load_hex(char *), checksum(char *);
+extern int load_file(char *, BYTE pstart, WORD psize);
 extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
 extern int exatoi(char *);
@@ -87,7 +84,6 @@ BYTE *wrk_ram;			/* work pointer for the memory */
 int main(int argc, char *argv[])
 {
 	register char *s, *p;
-	register int i;
 	char *pn = basename(argv[0]);
 	struct timeval tv;
 #ifdef HAS_CONFIG
@@ -210,6 +206,27 @@ int main(int argc, char *argv[])
 				*p = '\0';
 				s--;
 				break;
+
+			case 'M': /* use memory map section nn */
+				if (*(s+1) != '\0') {
+					M_flag = atoi(s+1) - 1;
+					s += strlen(s+1);
+				} else {
+					if (argc <= 1)
+						goto usage;
+					argc--;
+					argv++;
+					M_flag = atoi(argv[0]) - 1;
+				}
+				if (M_flag < 0 || M_flag > (MAXMEMSECT - 1))
+						goto usage;
+				break;
+#endif
+
+#ifdef HAS_BANKED_ROM
+			case 'R':	/* enable banked ROM for machines that implement it */
+				R_flag = 1;
+				break;
 #endif
 
 			case '8':
@@ -235,6 +252,10 @@ usage:
 #endif
 #ifdef HAS_CONFIG
 				printf(" -c filename");
+				printf(" -M val");
+#endif
+#ifdef HAS_BANKED_ROM
+				printf(" -R");
 #endif
 				putchar('\n');
 				puts("\t-z = emulate Zilog Z80");
@@ -261,6 +282,10 @@ usage:
 				puts("\t     default config files:");
 				puts("\t     ./conf/system.conf");
 				printf("\t     %s/system.conf\n", CONFDIR);
+				printf("\t-M = use config file memory section val (1-%d)\n", MAXMEMSECT);
+#endif
+#ifdef HAS_BANKED_ROM
+				puts("\t-R = enable banked ROM");
 #endif
 				exit(1);
 			}
@@ -334,26 +359,14 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	srand(tv.tv_sec);
 
 	config();		/* read system configuration */
-	init_memory();		/* initialise memory configuration */
 	init_cpu();		/* initialise CPU */
-	wrk_ram	= mem_base();	/* set work pointer for memory */
-
-	/* fill memory content of bank 0 with some initial value */
-	if (m_flag >= 0) {
-		for (i = 0; i < 65536; i++)
-			putmem(i, m_flag);
-	} else {
-		for (i = 0; i < 65536; i++)
-			putmem(i, (BYTE) (rand() % 256));
-	}
-
-	init_rom();		/* initialise ROM's */
+	init_memory();	/* initialise memory configuration */
 
 	if (l_flag)	{	/* load core */
 		if (load_core())
 			return(1);
 	} else if (x_flag) { 	/* OR load memory from file */
-		if (load_file(xfn))
+		if (load_file(xfn, 0, 0)) /* (..., 0, 0) don't care where it loads */
 			return(1);
 	}
 
@@ -514,206 +527,4 @@ int load_core(void)
 	close(fd);
 
 	return(0);
-}
-
-/*
- *	Read a file into the memory of the emulated CPU.
- *	The following file formats are supported:
- *
- *		binary images with Mostek header
- *		Intel hex
- */
-int load_file(char *s)
-{
-	char fn[MAX_LFN];
-	char *pfn = fn;
-	BYTE d;
-	int fd;
-
-	while (isspace((int)*s))
-		s++;
-	while (*s != ',' && *s != '\n' && *s != '\0')
-		*pfn++ = *s++;
-	*pfn = '\0';
-
-	if (strlen(fn) == 0) {
-		puts("no input file given");
-		return(1);
-	}
-
-	if ((fd	= open(fn, O_RDONLY)) == -1) {
-		printf("can't open file %s\n", fn);
-		return(1);
-	}
-
-	if (*s == ',')
-		wrk_ram	= mem_base() + exatoi(++s);
-	else
-		wrk_ram	= NULL;
-
-	read(fd, (char *) &d, 1);	/* read first byte of file */
-	close(fd);
-
-	if (d == 0xff) {		/* Mostek header ? */
-		return(load_mos(fn));
-	} else {
-		return(load_hex(fn));
-	}
-}
-
-/*
- *	Loader for binary images with Mostek header.
- *	Format of the first 3 bytes:
- *
- *	0xff ll	lh
- *
- *	ll = load address low
- *	lh = load address high
- */
-static int load_mos(char *fn)
-{
-	register int i;
-	int fd;
-	int laddr, count;
-	BYTE fileb[3];
-
-	if ((fd	= open(fn, O_RDONLY)) == -1) {
-		printf("can't open file %s\n", fn);
-		return(1);
-	}
-
-	read(fd, (char *) fileb, 3);	/* read load address */
-	laddr = (fileb[2] << 8) + fileb[1];
-
-	if (wrk_ram == NULL)		/* and set if not given */
-		wrk_ram	= mem_base() + laddr;
-	else				/* else use argument */
-		laddr = wrk_ram - mem_base();
-
-	count = 0;
-	for (i = laddr; i < 65536; i++) {
-		if (read(fd, fileb, 1) == 1) {
-			count++;
-			putmem(i, fileb[0]);
-		} else {
-			break;
-		}
-	}
-
-	close(fd);
-
-	printf("Loader statistics for file %s:\n", fn);
-	printf("START : %04XH\n", laddr);
-	printf("END   : %04XH\n", laddr + count);
-	printf("LOADED: %04XH (%d)\n\n", count, count);
-
-	PC = laddr;
-
-	return(0);
-}
-
-/*
- *	Loader for Intel hex
- */
-static int load_hex(char *fn)
-{
-	register int i;
-	FILE *fd;
-	char buf[BUFSIZE];
-	char *s;
-	int count = 0;
-	int addr = 0;
-	int saddr = 0xffff;
-	int eaddr = 0;
-	int data;
-
-	if ((fd = fopen(fn, "r")) == NULL) {
-		printf("can't open file %s\n", fn);
-		return(1);
-	}
-
-	while (fgets(&buf[0], BUFSIZE, fd) != NULL) {
-		s = &buf[0];
-		while (isspace((int)*s))
-			s++;
-		if (*s != ':')
-			continue;
-		if (checksum(s + 1) != 0) {
-			printf("invalid checksum in hex record: %s\n", s);
-			return(1);
-		}
-		s++;
-		count = (*s <= '9') ? (*s - '0') << 4 :
-				      (*s - 'A' + 10) << 4;
-		s++;
-		count += (*s <= '9') ? (*s - '0') :
-				       (*s - 'A' + 10);
-		s++;
-		if (count == 0)
-			break;
-		addr = (*s <= '9') ? (*s - '0') << 4 :
-				     (*s - 'A' + 10) << 4;
-		s++;
-		addr += (*s <= '9') ? (*s - '0') :
-				      (*s - 'A' + 10);
-		s++;
-		addr *= 256;
-		addr += (*s <= '9') ? (*s - '0') << 4 :
-				      (*s - 'A' + 10) << 4;
-		s++;
-		addr += (*s <= '9') ? (*s - '0') :
-				      (*s - 'A' + 10);
-		s++;
-		if (addr < saddr)
-			saddr = addr;
-		if (addr >= eaddr)
-			eaddr = addr + count - 1;
-		s += 2;
-		for (i = 0; i < count; i++) {
-			data = (*s <= '9') ? (*s - '0') << 4 :
-					     (*s - 'A' + 10) << 4;
-			s++;
-			data += (*s <= '9') ? (*s - '0') :
-					      (*s - 'A' + 10);
-			s++;
-			putmem(addr + i, data);
-		}
-	}
-
-	fclose(fd);
-
-	count = eaddr - saddr + 1;
-	printf("Loader statistics for file %s:\n", fn);
-	printf("START : %04XH\n", saddr);
-	printf("END   : %04XH\n", eaddr);
-	printf("LOADED: %04XH (%d)\n\n", count & 0xffff, count & 0xffff);
-
-	PC = saddr;
-	wrk_ram = mem_base() + saddr;
-
-	return(0);
-}
-
-/*
- *	Verify checksum of Intel hex records
- */
-static int checksum(char *s)
-{
-	int chk = 0;
-
-	while ((*s != '\r') && (*s != '\n')) {
-		chk += (*s <= '9') ?
-			(*s - '0') << 4 :
-			(*s - 'A' + 10) << 4;
-		s++;
-		chk += (*s <= '9') ?
-			(*s - '0') :
-			(*s - 'A' + 10);
-		s++;
-	}
-
-	if ((chk & 255) == 0)
-		return(0);
-	else
-		return(1);
 }

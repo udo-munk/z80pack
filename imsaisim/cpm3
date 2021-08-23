@@ -6,4 +6,4 @@ ln disks/library/cpm3-2.dsk disks/driveb.dsk
 
 BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf | xargs`
 
-env $BOOTENV ./imsaisim -r -x mpu-a-rom.hex $*
+env $BOOTENV ./imsaisim -R $*
