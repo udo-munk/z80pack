@@ -255,7 +255,7 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 
 	LOG(TAG, "Loader statistics for file %s:\r\n", fn);
 	LOG(TAG, "START : %04XH\r\n", laddr);
-	LOG(TAG, "END   : %04XH\\rn", laddr + count);
+	LOG(TAG, "END   : %04XH\r\n", laddr + count);
 	LOG(TAG, "LOADED: %04XH (%d)\r\n\r\n", count, count);
 
 	PC = laddr;
