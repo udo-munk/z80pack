@@ -444,7 +444,7 @@ void cpu_z80(void)
 		if (int_nmi) {		/* non maskable interrupt */
 			IFF <<= 1 & 3;
 			memwrt(--SP, PC_H);
-			memwrt(--SP, PC);
+			memwrt(--SP, PC_L);
 			PC = 0x66;
 			int_nmi = 0;
 			t += 11;
@@ -479,7 +479,7 @@ void cpu_z80(void)
 			switch (int_mode) {
 			case 0:		/* IM 0 */
 				memwrt(--SP, PC_H);
-				memwrt(--SP, PC);
+				memwrt(--SP, PC_L);
 #ifdef FRONTPANEL
 				if (cpu_state & RESET)
 					goto leave;
@@ -521,7 +521,7 @@ void cpu_z80(void)
 				break;
 			case 1:		/* IM 1 */
 				memwrt(--SP, PC_H);
-				memwrt(--SP, PC);
+				memwrt(--SP, PC_L);
 #ifdef FRONTPANEL
 				if (cpu_state & RESET)
 					goto leave;
@@ -531,7 +531,7 @@ void cpu_z80(void)
 				break;
 			case 2:		/* IM 2 */
 				memwrt(--SP, PC_H);
-				memwrt(--SP, PC);
+				memwrt(--SP, PC_L);
 #ifdef FRONTPANEL
 				if (cpu_state & RESET)
 					goto leave;
@@ -2774,7 +2774,7 @@ static int op_call(void)		/* CALL */
 	i = memrdr(PC++);
 	i += memrdr(PC++) << 8;
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = i;
 	return(17);
 }
@@ -2901,7 +2901,7 @@ static int op_calz(void)		/* CALL Z,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -2918,7 +2918,7 @@ static int op_calnz(void)		/* CALL NZ,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -2938,7 +2938,7 @@ static int op_calc(void)		/* CALL C,nn */
 		cpu_bus = CPU_WO | CPU_MEMR;
 #endif
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -2955,7 +2955,7 @@ static int op_calnc(void)		/* CALL NC,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -2972,7 +2972,7 @@ static int op_calpe(void)		/* CALL PE,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -2989,7 +2989,7 @@ static int op_calpo(void)		/* CALL PO,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -3006,7 +3006,7 @@ static int op_calm(void)		/* CALL M,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -3023,7 +3023,7 @@ static int op_calp(void)		/* CALL P,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		memwrt(--SP, PC_H);
-		memwrt(--SP, PC);
+		memwrt(--SP, PC_L);
 		PC = i;
 		return(17);
 	} else {
@@ -3191,7 +3191,7 @@ static int op_jrnc(void)		/* JR NC,n */
 static int op_rst00(void)		/* RST 00 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0;
 	return(11);
 }
@@ -3199,7 +3199,7 @@ static int op_rst00(void)		/* RST 00 */
 static int op_rst08(void)		/* RST 08 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0x08;
 	return(11);
 }
@@ -3207,7 +3207,7 @@ static int op_rst08(void)		/* RST 08 */
 static int op_rst10(void)		/* RST 10 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0x10;
 	return(11);
 }
@@ -3215,7 +3215,7 @@ static int op_rst10(void)		/* RST 10 */
 static int op_rst18(void)		/* RST 18 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0x18;
 	return(11);
 }
@@ -3223,7 +3223,7 @@ static int op_rst18(void)		/* RST 18 */
 static int op_rst20(void)		/* RST 20 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0x20;
 	return(11);
 }
@@ -3231,7 +3231,7 @@ static int op_rst20(void)		/* RST 20 */
 static int op_rst28(void)		/* RST 28 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0x28;
 	return(11);
 }
@@ -3239,7 +3239,7 @@ static int op_rst28(void)		/* RST 28 */
 static int op_rst30(void)		/* RST 30 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0x30;
 	return(11);
 }
@@ -3247,7 +3247,7 @@ static int op_rst30(void)		/* RST 30 */
 static int op_rst38(void)		/* RST 38 */
 {
 	memwrt(--SP, PC_H);
-	memwrt(--SP, PC);
+	memwrt(--SP, PC_L);
 	PC = 0x38;
 	return(11);
 }
