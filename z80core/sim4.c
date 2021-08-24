@@ -1059,7 +1059,7 @@ static int op_ldir(void)		/* LDIR */
 	register WORD i;
 	register WORD s, d;
 
-	i = (B << 8) + C;
+	i = BC;
 	d = (D << 8) + E;
 	s = HL;
 	do {
@@ -1113,7 +1113,7 @@ static int op_lddr(void)		/* LDDR */
 	register WORD i;
 	register WORD s, d;
 
-	i = (B << 8) + C;
+	i = BC;
 	d = (D << 8) + E;
 	s = HL;
 	do {
@@ -1171,7 +1171,7 @@ static int op_cpir(void)	/* CPIR */
 	register WORD i;
 	register BYTE tmp;
 
-	i = (B << 8) + C;
+	i = BC;
 	s = HL;
 	do {
 		tmp = memrdr(s++);
@@ -1218,7 +1218,7 @@ static int op_cpdr(void)	/* CPDR */
 	register WORD i;
 	register BYTE tmp;
 
-	i = (B << 8) + C;
+	i = BC;
 	s = HL;
 	do {
 		tmp = memrdr(s--);

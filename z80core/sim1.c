@@ -419,7 +419,7 @@ void cpu_z80(void)
 		/* write history */
 		his[h_next].h_adr = PC;
 		his[h_next].h_af = (A << 8) + F;
-		his[h_next].h_bc = (B << 8) + C;
+		his[h_next].h_bc = BC;
 		his[h_next].h_de = (D << 8) + E;
 		his[h_next].h_hl = HL;
 		his[h_next].h_ix = IX;
@@ -857,7 +857,7 @@ static int op_ldln(void)		/* LD L,n */
 
 static int op_ldabc(void)		/* LD A,(BC) */
 {
-	A = memrdr((B << 8) + C);
+	A = memrdr(BC);
 	return(7);
 }
 
@@ -879,7 +879,7 @@ static int op_ldann(void)		/* LD A,(nn) */
 
 static int op_ldbca(void)		/* LD (BC),A */
 {
-	memwrt((B << 8) + C, A);
+	memwrt(BC, A);
 	return(7);
 }
 

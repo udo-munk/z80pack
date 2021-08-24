@@ -431,7 +431,7 @@ void cpu_8080(void)
 		/* write history */
 		his[h_next].h_adr = PC;
 		his[h_next].h_af = (A << 8) + F;
-		his[h_next].h_bc = (B << 8) + C;
+		his[h_next].h_bc = BC;
 		his[h_next].h_de = (D << 8) + E;
 		his[h_next].h_hl = HL;
 		his[h_next].h_sp = SP;
@@ -782,7 +782,7 @@ static int op_mviln(void)		/* MVI L,n */
 
 static int op_ldaxb(void)		/* LDAX B */
 {
-	A = memrdr((B << 8) + C);
+	A = memrdr(BC);
 	return(7);
 }
 
@@ -804,7 +804,7 @@ static int op_ldann(void)		/* LDA nn */
 
 static int op_staxb(void)		/* STAX B */
 {
-	memwrt((B << 8) + C, A);
+	memwrt(BC, A);
 	return(7);
 }
 
