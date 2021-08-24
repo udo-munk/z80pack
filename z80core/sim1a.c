@@ -432,7 +432,7 @@ void cpu_8080(void)
 		his[h_next].h_adr = PC;
 		his[h_next].h_af = (A << 8) + F;
 		his[h_next].h_bc = BC;
-		his[h_next].h_de = (D << 8) + E;
+		his[h_next].h_de = DE;
 		his[h_next].h_hl = HL;
 		his[h_next].h_sp = SP;
 		h_next++;
@@ -788,7 +788,7 @@ static int op_ldaxb(void)		/* LDAX B */
 
 static int op_ldaxd(void)		/* LDAX D */
 {
-	A = memrdr((D << 8) + E);
+	A = memrdr(DE);
 	return(7);
 }
 
@@ -810,7 +810,7 @@ static int op_staxb(void)		/* STAX B */
 
 static int op_staxd(void)		/* STAX D */
 {
-	memwrt((D << 8) + E, A);
+	memwrt(DE, A);
 	return(7);
 }
 

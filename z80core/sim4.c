@@ -1037,7 +1037,7 @@ static int op_sbchs(void)		/* SBC HL,SP */
 
 static int op_ldi(void)			/* LDI */
 {
-	memwrt((D << 8) + E, memrdr(HL));
+	memwrt(DE, memrdr(HL));
 	E++;
 	if (!E)
 		D++;
@@ -1060,7 +1060,7 @@ static int op_ldir(void)		/* LDIR */
 	register WORD s, d;
 
 	i = BC;
-	d = (D << 8) + E;
+	d = DE;
 	s = HL;
 	do {
 		memwrt(d++, memrdr(s++));
@@ -1091,7 +1091,7 @@ static int op_ldir(void)		/* LDIR */
 
 static int op_ldd(void)			/* LDD */
 {
-	memwrt((D << 8) + E, memrdr(HL));
+	memwrt(DE, memrdr(HL));
 	E--;
 	if (E == 0xff)
 		D--;
@@ -1114,7 +1114,7 @@ static int op_lddr(void)		/* LDDR */
 	register WORD s, d;
 
 	i = BC;
-	d = (D << 8) + E;
+	d = DE;
 	s = HL;
 	do {
 		memwrt(d--, memrdr(s--));

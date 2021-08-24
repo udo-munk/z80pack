@@ -420,7 +420,7 @@ void cpu_z80(void)
 		his[h_next].h_adr = PC;
 		his[h_next].h_af = (A << 8) + F;
 		his[h_next].h_bc = BC;
-		his[h_next].h_de = (D << 8) + E;
+		his[h_next].h_de = DE;
 		his[h_next].h_hl = HL;
 		his[h_next].h_ix = IX;
 		his[h_next].h_iy = IY;
@@ -863,7 +863,7 @@ static int op_ldabc(void)		/* LD A,(BC) */
 
 static int op_ldade(void)		/* LD A,(DE) */
 {
-	A = memrdr((D << 8) + E);
+	A = memrdr(DE);
 	return(7);
 }
 
@@ -885,7 +885,7 @@ static int op_ldbca(void)		/* LD (BC),A */
 
 static int op_lddea(void)		/* LD (DE),A */
 {
-	memwrt((D << 8) + E, A);
+	memwrt(DE, A);
 	return(7);
 }
 
