@@ -1435,7 +1435,7 @@ static int op_adhlsp(void)		/* ADD HL,SP */
 {
 	register int carry;
 
-	BYTE spl = SP & 0xff;
+	BYTE spl = SP_L;
 	BYTE sph = SP_H;
 	
 	carry = (L + spl > 255) ? 1 : 0;

@@ -645,7 +645,7 @@ static int op_addys(void)		/* ADD IY,SP */
 	register int carry;
 	BYTE iyl = IY & 0xff;
 	BYTE iyh = IY >> 8;
-	BYTE spl = SP & 0xff;
+	BYTE spl = SP_L;
 	BYTE sph = SP_H;
 	
 	carry = (iyl + spl > 255) ? 1 : 0;

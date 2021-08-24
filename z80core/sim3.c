@@ -648,7 +648,7 @@ static int op_addxs(void)		/* ADD IX,SP */
 	register int carry;
 	BYTE ixl = IX & 0xff;
 	BYTE ixh = IX >> 8;
-	BYTE spl = SP & 0xff;
+	BYTE spl = SP_L;
 	BYTE sph = SP_H;
 	
 	carry = (ixl + spl > 255) ? 1 : 0;
