@@ -405,7 +405,7 @@ static int op_popix(void)		/* POP IX */
 
 static int op_pusix(void)		/* PUSH IX */
 {
-	memwrt(--SP, IX >> 8);
+	memwrt(--SP, IX_H);
 	memwrt(--SP, IX);
 	return(15);
 }
@@ -422,7 +422,7 @@ static int op_exspx(void)		/* EX (SP),IX */
 
 	i = memrdr(SP) + (memrdr(SP + 1) << 8);
 	memwrt(SP, IX);
-	memwrt(SP + 1, IX >> 8);
+	memwrt(SP + 1, IX_H);
 	IX = i;
 	return(23);
 }
@@ -458,7 +458,7 @@ static int op_ldinx(void)		/* LD (nn),IX */
 	i = memrdr(PC++);
 	i += memrdr(PC++) << 8;
 	memwrt(i, IX);
-	memwrt(i + 1, IX >> 8);
+	memwrt(i + 1, IX_H);
 	return(20);
 }
 
@@ -613,7 +613,7 @@ static int op_addxb(void)		/* ADD IX,BC */
 {
 	register int carry;
 	BYTE ixl = IX & 0xff;
-	BYTE ixh = IX >> 8;
+	BYTE ixh = IX_H;
 	
 	carry = (ixl + C > 255) ? 1 : 0;
 	ixl += C;
@@ -630,7 +630,7 @@ static int op_addxd(void)		/* ADD IX,DE */
 {
 	register int carry;
 	BYTE ixl = IX & 0xff;
-	BYTE ixh = IX >> 8;
+	BYTE ixh = IX_H;
 	
 	carry = (ixl + E > 255) ? 1 : 0;
 	ixl += E;
@@ -647,7 +647,7 @@ static int op_addxs(void)		/* ADD IX,SP */
 {
 	register int carry;
 	BYTE ixl = IX & 0xff;
-	BYTE ixh = IX >> 8;
+	BYTE ixh = IX_H;
 	BYTE spl = SP_L;
 	BYTE sph = SP_H;
 	
@@ -666,7 +666,7 @@ static int op_addxx(void)		/* ADD IX,IX */
 {
 	register int carry;
 	BYTE ixl = IX & 0xff;
-	BYTE ixh = IX >> 8;
+	BYTE ixh = IX_H;
 	
 	carry = (ixl << 1 > 255) ? 1 : 0;
 	ixl <<= 1;
@@ -810,7 +810,7 @@ static int op_undoc_ldaixh(void)	/* LD A,IXH */
 		return(0);
 	}
 
-	A = IX >> 8;
+	A = IX_H;
 	return(8);
 }
 
@@ -832,7 +832,7 @@ static int op_undoc_ldbixh(void)	/* LD B,IXH */
 		return(0);
 	}
 
-	B = IX >> 8;
+	B = IX_H;
 	return(8);
 }
 
@@ -854,7 +854,7 @@ static int op_undoc_ldcixh(void)	/* LD C,IXH */
 		return(0);
 	}
 
-	C = IX >> 8;
+	C = IX_H;
 	return(8);
 }
 
@@ -876,7 +876,7 @@ static int op_undoc_lddixh(void)	/* LD D,IXH */
 		return(0);
 	}
 
-	D = IX >> 8;
+	D = IX_H;
 	return(8);
 }
 
@@ -898,7 +898,7 @@ static int op_undoc_ldeixh(void)	/* LD E,IXH */
 		return(0);
 	}
 
-	E = IX >> 8;
+	E = IX_H;
 	return(8);
 }
 
@@ -1019,7 +1019,7 @@ static int op_undoc_ldixlixh(void)	/* LD IXL,IXH */
 		return(0);
 	}
 
-	IX = (IX & 0xff00) | (IX >> 8);
+	IX = (IX & 0xff00) | (IX_H);
 	return(8);
 }
 
@@ -1130,7 +1130,7 @@ static int op_undoc_acaixh(void)	/* ADC A,IXH */
 	}
 
 	carry = (F & C_FLAG) ? 1 : 0;
-	P = IX >> 8;
+	P = IX_H;
 	((A & 0xf) + (P	& 0xf) + carry > 0xf) ?	(F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ?	(F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P + carry;
@@ -1174,7 +1174,7 @@ static int op_undoc_scaixh(void)	/* SBC A,IXH */
 	}
 
 	carry = (F & C_FLAG) ? 1 : 0;
-	P = IX >> 8;
+	P = IX_H;
 	((P & 0xf) + carry > (A	& 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P - carry;
@@ -1207,7 +1207,7 @@ static int op_undoc_oraixh(void)	/* OR IXH */
 		return(0);
 	}
 
-	A |= IX >> 8;
+	A |= IX_H;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1238,7 +1238,7 @@ static int op_undoc_andixh(void)	/* AND IXH */
 		return(0);
 	}
 
-	A &= IX >> 8;
+	A &= IX_H;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F |= H_FLAG;
@@ -1276,7 +1276,7 @@ static int op_undoc_incixh(void)	/* INC IXH */
 		return(0);
 	}
 
-	P = IX >> 8;
+	P = IX_H;
 	P++;
 	IX = (IX & 0x00ff) | (P << 8);
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1316,7 +1316,7 @@ static int op_undoc_decixh(void)	/* DEC IXH */
 		return(0);
 	}
 
-	P = IX >> 8;
+	P = IX_H;
 	P--;
 	IX = (IX & 0x00ff) | (P << 8);
 	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
