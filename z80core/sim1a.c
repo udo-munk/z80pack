@@ -481,7 +481,7 @@ void cpu_8080(void)
 			fp_sampleLightGroup(0, 0);
 #endif
 
-			memwrt(--SP, PC >> 8);
+			memwrt(--SP, PC_H);
 			memwrt(--SP, PC);
 
 #ifdef FRONTPANEL
@@ -2618,7 +2618,7 @@ static int op_call(void)		/* CALL */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = i;
 	return(17);
@@ -2773,7 +2773,7 @@ static int op_cz(void)			/* CZ nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -2793,7 +2793,7 @@ static int op_cnz(void)			/* CNZ nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -2813,7 +2813,7 @@ static int op_cc(void)			/* CC nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -2833,7 +2833,7 @@ static int op_cnc(void)			/* CNC nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -2853,7 +2853,7 @@ static int op_cpe(void)			/* CPE nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -2873,7 +2873,7 @@ static int op_cpo(void)			/* CPO nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -2893,7 +2893,7 @@ static int op_cm(void)			/* CM nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -2913,7 +2913,7 @@ static int op_cp(void)			/* CP nn */
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
-		memwrt(--SP, PC >> 8);
+		memwrt(--SP, PC_H);
 		memwrt(--SP, PC);
 		PC = i;
 		return(17);
@@ -3064,7 +3064,7 @@ static int op_rst0(void)		/* RST 0 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0;
 	return(11);
@@ -3075,7 +3075,7 @@ static int op_rst1(void)		/* RST 1 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0x08;
 	return(11);
@@ -3086,7 +3086,7 @@ static int op_rst2(void)		/* RST 2 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0x10;
 	return(11);
@@ -3097,7 +3097,7 @@ static int op_rst3(void)		/* RST 3 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0x18;
 	return(11);
@@ -3108,7 +3108,7 @@ static int op_rst4(void)		/* RST 4 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0x20;
 	return(11);
@@ -3119,7 +3119,7 @@ static int op_rst5(void)		/* RST 5 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0x28;
 	return(11);
@@ -3130,7 +3130,7 @@ static int op_rst6(void)		/* RST 6 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0x30;
 	return(11);
@@ -3141,7 +3141,7 @@ static int op_rst7(void)		/* RST 7 */
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;
 #endif
-	memwrt(--SP, PC >> 8);
+	memwrt(--SP, PC_H);
 	memwrt(--SP, PC);
 	PC = 0x38;
 	return(11);
