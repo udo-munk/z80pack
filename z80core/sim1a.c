@@ -1382,7 +1382,7 @@ static int op_dadsp(void)		/* DAD SP */
 	register int carry;
 
 	BYTE spl = SP & 0xff;
-	BYTE sph = SP >> 8;
+	BYTE sph = SP_H;
 	
 	carry = (L + spl > 255) ? 1 : 0;
 	L += spl;
