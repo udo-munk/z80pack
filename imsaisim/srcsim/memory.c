@@ -154,6 +154,11 @@ void init_memory(void)
 
 	LOG(TAG,"\r\n");
 
+	if (!memconf[M_flag][0].size) {
+		LOGW(TAG, "The [MEMORY %d] section appears missing or empty, setting memory map to default", M_flag + 1);
+		M_flag = 0;
+	}
+
 	/* initialise memory page table, no memory available */
 	for (i = 0; i < MAXPAGES; i++) {
 		p_tab[i] = MEM_NONE;
