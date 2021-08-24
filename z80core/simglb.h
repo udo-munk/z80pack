@@ -55,6 +55,26 @@ extern BYTE	A, B, C, D, E, H, L, A_, B_, C_, D_, E_, H_, L_, I, IFF;
 extern WORD	PC, SP, IX, IY;
 extern int	F, F_;
 extern long	R;
+
+/* 
+ *  Macros for 16-bit psudeo registers BC, DE, HL 
+ *  and the H(igh) and L(ow) byte of true 16-bit registers PC, SP, IX, IY 
+ *  Note: these can only be used as right-hand operands in assignmets 
+ *        and wont' work as l-values in assignments 
+ */
+
+#define BC ((B << 8) + C)
+#define DE ((D << 8) + E)
+#define HL ((H << 8) + L)
+#define PC_H (PC >> 8)
+#define PC_L (PC)
+#define SP_H (SP >> 8)
+#define SP_L (SP & 0xff)
+#define IX_H (IX >> 8)
+#define IX_L (IX & 0xff)
+#define IY_H (IY >> 8)
+#define IY_L (IY & 0xff)
+
 extern BYTE	io_port, io_data;
 
 #ifdef BUS_8080
