@@ -421,7 +421,7 @@ void cpu_z80(void)
 		his[h_next].h_af = (A << 8) + F;
 		his[h_next].h_bc = (B << 8) + C;
 		his[h_next].h_de = (D << 8) + E;
-		his[h_next].h_hl = (H << 8) + L;
+		his[h_next].h_hl = HL;
 		his[h_next].h_ix = IX;
 		his[h_next].h_iy = IY;
 		his[h_next].h_sp = SP;
@@ -901,49 +901,49 @@ static int op_ldnna(void)		/* LD (nn),A */
 
 static int op_ldhla(void)		/* LD (HL),A */
 {
-	memwrt((H << 8) + L, A);
+	memwrt(HL, A);
 	return(7);
 }
 
 static int op_ldhlb(void)		/* LD (HL),B */
 {
-	memwrt((H << 8) + L, B);
+	memwrt(HL, B);
 	return(7);
 }
 
 static int op_ldhlc(void)		/* LD (HL),C */
 {
-	memwrt((H << 8) + L, C);
+	memwrt(HL, C);
 	return(7);
 }
 
 static int op_ldhld(void)		/* LD (HL),D */
 {
-	memwrt((H << 8) + L, D);
+	memwrt(HL, D);
 	return(7);
 }
 
 static int op_ldhle(void)		/* LD (HL),E */
 {
-	memwrt((H << 8) + L, E);
+	memwrt(HL, E);
 	return(7);
 }
 
 static int op_ldhlh(void)		/* LD (HL),H */
 {
-	memwrt((H << 8) + L, H);
+	memwrt(HL, H);
 	return(7);
 }
 
 static int op_ldhll(void)		/* LD (HL),L */
 {
-	memwrt((H << 8) + L, L);
+	memwrt(HL, L);
 	return(7);
 }
 
 static int op_ldhl1(void)		/* LD (HL),n */
 {
-	memwrt((H << 8) + L, memrdr(PC++));
+	memwrt(HL, memrdr(PC++));
 	return(10);
 }
 
@@ -990,7 +990,7 @@ static int op_ldal(void)		/* LD A,L */
 
 static int op_ldahl(void)		/* LD A,(HL) */
 {
-	A = memrdr((H << 8) + L);
+	A = memrdr(HL);
 	return(7);
 }
 
@@ -1037,7 +1037,7 @@ static int op_ldbl(void)		/* LD B,L */
 
 static int op_ldbhl(void)		/* LD B,(HL) */
 {
-	B = memrdr((H << 8) + L);
+	B = memrdr(HL);
 	return(7);
 }
 
@@ -1084,7 +1084,7 @@ static int op_ldcl(void)		/* LD C,L */
 
 static int op_ldchl(void)		/* LD C,(HL) */
 {
-	C = memrdr((H << 8) + L);
+	C = memrdr(HL);
 	return(7);
 }
 
@@ -1131,7 +1131,7 @@ static int op_lddl(void)		/* LD D,L */
 
 static int op_lddhl(void)		/* LD D,(HL) */
 {
-	D = memrdr((H << 8) + L);
+	D = memrdr(HL);
 	return(7);
 }
 
@@ -1178,7 +1178,7 @@ static int op_ldel(void)		/* LD E,L */
 
 static int op_ldehl(void)		/* LD E,(HL) */
 {
-	E = memrdr((H << 8) + L);
+	E = memrdr(HL);
 	return(7);
 }
 
@@ -1225,7 +1225,7 @@ static int op_ldhl(void)		/* LD H,L */
 
 static int op_ldhhl(void)		/* LD H,(HL) */
 {
-	H = memrdr((H << 8) + L);
+	H = memrdr(HL);
 	return(7);
 }
 
@@ -1272,7 +1272,7 @@ static int op_ldll(void)		/* LD L,L */
 
 static int op_ldlhl(void)		/* LD L,(HL) */
 {
-	L = memrdr((H << 8) + L);
+	L = memrdr(HL);
 	return(7);
 }
 
@@ -1306,7 +1306,7 @@ static int op_ldspnn(void)		/* LD SP,nn */
 
 static int op_ldsphl(void)		/* LD SP,HL */
 {
-	SP = (H << 8) + L;
+	SP = HL;
 	return(6);
 }
 
@@ -1526,7 +1526,7 @@ static int op_andl(void)		/* AND L */
 
 static int op_andhl(void)		/* AND (HL) */
 {
-	A &= memrdr((H << 8) + L);
+	A &= memrdr(HL);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F |= H_FLAG;
@@ -1617,7 +1617,7 @@ static int op_orl(void)			/* OR L */
 
 static int op_orhl(void)		/* OR (HL) */
 {
-	A |= memrdr((H << 8) + L);
+	A |= memrdr(HL);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1705,7 +1705,7 @@ static int op_xorl(void)		/* XOR L */
 
 static int op_xorhl(void)		/* XOR (HL) */
 {
-	A ^= memrdr((H << 8) + L);
+	A ^= memrdr(HL);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1826,7 +1826,7 @@ static int op_addhl(void)		/* ADD A,(HL) */
 	register int i;
 	register BYTE P;
 
-	P = memrdr((H << 8) + L);
+	P = memrdr(HL);
 	((A & 0xf) + (P & 0xf) > 0xf) ?	(F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ?	(F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P;
@@ -1963,7 +1963,7 @@ static int op_adchl(void)		/* ADC A,(HL) */
 	register int i, carry;
 	register BYTE P;
 
-	P = memrdr((H << 8) + L);
+	P = memrdr(HL);
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ?	(F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ?	(F |= C_FLAG) : (F &= ~C_FLAG);
@@ -2089,7 +2089,7 @@ static int op_subhl(void)		/* SUB A,(HL) */
 	register int i;
 	register BYTE P;
 
-	P = memrdr((H << 8) + L);
+	P = memrdr(HL);
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P;
@@ -2225,7 +2225,7 @@ static int op_sbchl(void)		/* SBC A,(HL) */
 	register int i, carry;
 	register BYTE P;
 
-	P = memrdr((H << 8) + L);
+	P = memrdr(HL);
 	carry = (F & C_FLAG) ? 1 : 0;
 	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
@@ -2350,7 +2350,7 @@ static int op_cphl(void)		/* CP (HL) */
 	register int i;
 	register BYTE P;
 
-	P = memrdr((H << 8) + L);
+	P = memrdr(HL);
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = (signed char) A - (signed char) P;
@@ -2459,7 +2459,7 @@ static int op_incihl(void)		/* INC (HL) */
 	register BYTE P;
 	WORD addr;
 
-	addr = (H << 8) + L;
+	addr = HL;
 	P = memrdr(addr);
 	P++;
 	memwrt(addr, P);
@@ -2553,7 +2553,7 @@ static int op_decihl(void)		/* DEC (HL) */
 	register BYTE P;
 	WORD addr;
 
-	addr = (H << 8) + L;
+	addr = HL;
 	P = memrdr(addr);
 	P--;
 	memwrt(addr, P);
@@ -2746,7 +2746,7 @@ static int op_jp(void)			/* JP */
 
 static int op_jphl(void)		/* JP (HL) */
 {
-	PC = (H << 8) + L;
+	PC = HL;
 	return(4);
 }
 

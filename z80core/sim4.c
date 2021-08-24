@@ -579,7 +579,7 @@ static int op_ini(void)			/* INI */
 	BYTE data;
 
 	data = io_in(C, B);
-	memwrt((H << 8) + L, data);
+	memwrt(HL, data);
 	L++;
 	if (!L)
 		H++;
@@ -596,7 +596,7 @@ static int op_inir(void)		/* INIR */
 	BYTE data;
 	register int t	= -21;
 
-	addr = (H << 8) + L;
+	addr = HL;
 	do {
 		data = io_in(C, B);
 		memwrt(addr++, data);
@@ -615,7 +615,7 @@ static int op_ind(void)			/* IND */
 	BYTE data;
 
 	data = io_in(C, B);
-	memwrt((H << 8) + L, data);
+	memwrt(HL, data);
 	L--;
 	if (L == 0xff)
 		H--;
@@ -632,7 +632,7 @@ static int op_indr(void)		/* INDR */
 	BYTE data;
 	register int t	= -21;
 
-	addr = (H << 8) + L;
+	addr = HL;
 	do {
 		data = io_in(C, B);
 		memwrt(addr--, data);
@@ -650,7 +650,7 @@ static int op_outi(void)		/* OUTI */
 	BYTE io_out(BYTE, BYTE, BYTE);
 	BYTE data;
 
-	data = memrdr((H << 8) + L);
+	data = memrdr(HL);
 	io_out(C, B, data);
 	L++;
 	if (!L)
@@ -668,7 +668,7 @@ static int op_otir(void)		/* OTIR */
 	BYTE data;
 	register int t	= -21;
 
-	addr = (H << 8) + L;
+	addr = HL;
 	do {
 		data = memrdr(addr++);
 		io_out(C, B, data);
@@ -686,7 +686,7 @@ static int op_outd(void)		/* OUTD */
 	BYTE io_out(BYTE, BYTE, BYTE);
 	BYTE data;
 
-	data = memrdr((H << 8) + L);
+	data = memrdr(HL);
 	io_out(C, B, data);
 	L--;
 	if (L == 0xff)
@@ -704,7 +704,7 @@ static int op_otdr(void)		/* OTDR */
 	BYTE data;
 	register int t	= -21;
 
-	addr = (H << 8) + L;
+	addr = HL;
 	do {
 		data = memrdr(addr--);
 		io_out(C, B, data);
@@ -1037,7 +1037,7 @@ static int op_sbchs(void)		/* SBC HL,SP */
 
 static int op_ldi(void)			/* LDI */
 {
-	memwrt((D << 8) + E, memrdr((H << 8) + L));
+	memwrt((D << 8) + E, memrdr(HL));
 	E++;
 	if (!E)
 		D++;
@@ -1061,7 +1061,7 @@ static int op_ldir(void)		/* LDIR */
 
 	i = (B << 8) + C;
 	d = (D << 8) + E;
-	s = (H << 8) + L;
+	s = HL;
 	do {
 		memwrt(d++, memrdr(s++));
 		t += 21;
@@ -1091,7 +1091,7 @@ static int op_ldir(void)		/* LDIR */
 
 static int op_ldd(void)			/* LDD */
 {
-	memwrt((D << 8) + E, memrdr((H << 8) + L));
+	memwrt((D << 8) + E, memrdr(HL));
 	E--;
 	if (E == 0xff)
 		D--;
@@ -1115,7 +1115,7 @@ static int op_lddr(void)		/* LDDR */
 
 	i = (B << 8) + C;
 	d = (D << 8) + E;
-	s = (H << 8) + L;
+	s = HL;
 	do {
 		memwrt(d--, memrdr(s--));
 		t += 21;
@@ -1147,7 +1147,7 @@ static int op_cpi(void)		/* CPI */
 {
 	register BYTE i;
 
-	i = memrdr(((H << 8) + L));
+	i = memrdr((HL));
 	((i & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	i = A - i;
 	L++;
@@ -1172,7 +1172,7 @@ static int op_cpir(void)	/* CPIR */
 	register BYTE tmp;
 
 	i = (B << 8) + C;
-	s = (H << 8) + L;
+	s = HL;
 	do {
 		tmp = memrdr(s++);
 		((tmp & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1194,7 +1194,7 @@ static int op_cpdop(void)	/* CPD */
 {
 	register BYTE i;
 
-	i = memrdr(((H << 8) + L));
+	i = memrdr((HL));
 	((i & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	i = A - i;
 	L--;
@@ -1219,7 +1219,7 @@ static int op_cpdr(void)	/* CPDR */
 	register BYTE tmp;
 
 	i = (B << 8) + C;
-	s = (H << 8) + L;
+	s = HL;
 	do {
 		tmp = memrdr(s--);
 		((tmp & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1241,11 +1241,11 @@ static int op_oprld(void)	/* RLD (HL) */
 {
 	register BYTE i, j;
 
-	i = memrdr((H << 8) + L);
+	i = memrdr(HL);
 	j = A & 0x0f;
 	A = (A & 0xf0) | (i >> 4);
 	i = (i << 4) | j;
-	memwrt((H << 8) + L, i);
+	memwrt(HL, i);
 	F &= ~(H_FLAG | N_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -1257,11 +1257,11 @@ static int op_oprrd(void)	/* RRD (HL) */
 {
 	register BYTE i, j;
 
-	i = memrdr((H << 8) + L);
+	i = memrdr(HL);
 	j = A & 0x0f;
 	A = (A & 0xf0) | (i & 0x0f);
 	i = (i >> 4) | (j << 4);
-	memwrt((H << 8) + L, i);
+	memwrt(HL, i);
 	F &= ~(H_FLAG | N_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
