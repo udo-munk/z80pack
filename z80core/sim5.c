@@ -402,7 +402,7 @@ static int op_popiy(void)		/* POP IY */
 
 static int op_pusiy(void)		/* PUSH IY */
 {
-	memwrt(--SP, IY >> 8);
+	memwrt(--SP, IY_H);
 	memwrt(--SP, IY);
 	return(15);
 }
@@ -419,7 +419,7 @@ static int op_exspy(void)		/* EX (SP),IY */
 
 	i = memrdr(SP) + (memrdr(SP + 1) << 8);
 	memwrt(SP, IY);
-	memwrt(SP + 1, IY >> 8);
+	memwrt(SP + 1, IY_H);
 	IY = i;
 	return(23);
 }
@@ -455,7 +455,7 @@ static int op_ldiny(void)		/* LD (nn),IY */
 	i = memrdr(PC++);
 	i += memrdr(PC++) << 8;
 	memwrt(i, IY);
-	memwrt(i + 1, IY >> 8);
+	memwrt(i + 1, IY_H);
 	return(20);
 }
 
@@ -610,7 +610,7 @@ static int op_addyb(void)		/* ADD IY,BC */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
-	BYTE iyh = IY >> 8;
+	BYTE iyh = IY_H;
 	
 	carry = (iyl + C > 255) ? 1 : 0;
 	iyl += C;
@@ -627,7 +627,7 @@ static int op_addyd(void)		/* ADD IY,DE */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
-	BYTE iyh = IY >> 8;
+	BYTE iyh = IY_H;
 	
 	carry = (iyl + E > 255) ? 1 : 0;
 	iyl += E;
@@ -644,7 +644,7 @@ static int op_addys(void)		/* ADD IY,SP */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
-	BYTE iyh = IY >> 8;
+	BYTE iyh = IY_H;
 	BYTE spl = SP_L;
 	BYTE sph = SP_H;
 	
@@ -663,7 +663,7 @@ static int op_addyy(void)		/* ADD IY,IY */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
-	BYTE iyh = IY >> 8;
+	BYTE iyh = IY_H;
 	
 	carry = (iyl << 1 > 255) ? 1 : 0;
 	iyl <<= 1;
@@ -807,7 +807,7 @@ static int op_undoc_ldaiyh(void)	/* LD A,IYH */
 		return(0);
 	}
 
-	A = IY >> 8;
+	A = IY_H;
 	return(8);
 }
 
@@ -829,7 +829,7 @@ static int op_undoc_ldbiyh(void)	/* LD B,IYH */
 		return(0);
 	}
 
-	B = IY >> 8;
+	B = IY_H;
 	return(8);
 }
 
@@ -851,7 +851,7 @@ static int op_undoc_ldciyh(void)	/* LD C,IYH */
 		return(0);
 	}
 
-	C = IY >> 8;
+	C = IY_H;
 	return(8);
 }
 
@@ -873,7 +873,7 @@ static int op_undoc_lddiyh(void)	/* LD D,IYH */
 		return(0);
 	}
 
-	D = IY >> 8;
+	D = IY_H;
 	return(8);
 }
 
@@ -895,7 +895,7 @@ static int op_undoc_ldeiyh(void)	/* LD E,IYH */
 		return(0);
 	}
 
-	E = IY >> 8;
+	E = IY_H;
 	return(8);
 }
 
@@ -1016,7 +1016,7 @@ static int op_undoc_ldiyliyh(void)	/* LD IYL,IYH */
 		return(0);
 	}
 
-	IY = (IY & 0xff00) | (IY >> 8);
+	IY = (IY & 0xff00) | (IY_H);
 	return(8);
 }
 
@@ -1102,7 +1102,7 @@ static int op_undoc_inciyh(void)	/* INC IYH */
 		return(0);
 	}
 
-	P = IY >> 8;
+	P = IY_H;
 	P++;
 	IY = (IY & 0x00ff) | (P << 8);
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1142,7 +1142,7 @@ static int op_undoc_deciyh(void)	/* DEC IYH */
 		return(0);
 	}
 
-	P = IY >> 8;
+	P = IY_H;
 	P--;
 	IY = (IY & 0x00ff) | (P << 8);
 	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
