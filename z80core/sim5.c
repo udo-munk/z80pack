@@ -609,7 +609,7 @@ static int op_decyd(void)		/* DEC (IY+d) */
 static int op_addyb(void)		/* ADD IY,BC */
 {
 	register int carry;
-	BYTE iyl = IY & 0xff;
+	BYTE iyl = IY_L;
 	BYTE iyh = IY_H;
 	
 	carry = (iyl + C > 255) ? 1 : 0;
@@ -626,7 +626,7 @@ static int op_addyb(void)		/* ADD IY,BC */
 static int op_addyd(void)		/* ADD IY,DE */
 {
 	register int carry;
-	BYTE iyl = IY & 0xff;
+	BYTE iyl = IY_L;
 	BYTE iyh = IY_H;
 	
 	carry = (iyl + E > 255) ? 1 : 0;
@@ -643,7 +643,7 @@ static int op_addyd(void)		/* ADD IY,DE */
 static int op_addys(void)		/* ADD IY,SP */
 {
 	register int carry;
-	BYTE iyl = IY & 0xff;
+	BYTE iyl = IY_L;
 	BYTE iyh = IY_H;
 	BYTE spl = SP_L;
 	BYTE sph = SP_H;
@@ -662,7 +662,7 @@ static int op_addys(void)		/* ADD IY,SP */
 static int op_addyy(void)		/* ADD IY,IY */
 {
 	register int carry;
-	BYTE iyl = IY & 0xff;
+	BYTE iyl = IY_L;
 	BYTE iyh = IY_H;
 	
 	carry = (iyl << 1 > 255) ? 1 : 0;
@@ -796,7 +796,7 @@ static int op_undoc_ldaiyl(void)	/* LD A,IYL */
 		return(0);
 	}
 
-	A = IY & 0xff;
+	A = IY_L;
 	return(8);
 }
 
@@ -818,7 +818,7 @@ static int op_undoc_ldbiyl(void)	/* LD B,IYL */
 		return(0);
 	}
 
-	B = IY & 0xff;
+	B = IY_L;
 	return(8);
 }
 
@@ -840,7 +840,7 @@ static int op_undoc_ldciyl(void)	/* LD C,IYL */
 		return(0);
 	}
 
-	C = IY & 0xff;
+	C = IY_L;
 	return(8);
 }
 
@@ -862,7 +862,7 @@ static int op_undoc_lddiyl(void)	/* LD D,IYL */
 		return(0);
 	}
 
-	D = IY & 0xff;
+	D = IY_L;
 	return(8);
 }
 
@@ -884,7 +884,7 @@ static int op_undoc_ldeiyl(void)	/* LD E,IYL */
 		return(0);
 	}
 
-	E = IY & 0xff;
+	E = IY_L;
 	return(8);
 }
 
@@ -1082,7 +1082,7 @@ static int op_undoc_inciyl(void)	/* INC IYL */
 		return(0);
 	}
 
-	P = IY & 0xff;
+	P = IY_L;
 	P++;
 	IY = (IY & 0xff00) | P;
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1122,7 +1122,7 @@ static int op_undoc_deciyl(void)	/* DEC IYL */
 		return(0);
 	}
 
-	P = IY & 0xff;
+	P = IY_L;
 	P--;
 	IY = (IY & 0xff00) | P;
 	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
