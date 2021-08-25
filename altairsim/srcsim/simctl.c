@@ -53,6 +53,7 @@ extern void reset_cpu(void), reset_io(void);
 static const char *TAG = "system";
 
 #ifdef FRONTPANEL
+int  boot_switch;		/* boot address for switch */
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;

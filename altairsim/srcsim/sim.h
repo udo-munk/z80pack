@@ -40,6 +40,7 @@
 #define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
+#define HAS_BANKED_ROM	/* emulates tarbell banked bootstrap ROM */
 
 #define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
 #define NUMUSOC 2	/* number of UNIX sockets for SIO connections */
