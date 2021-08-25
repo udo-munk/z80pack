@@ -17,7 +17,11 @@
  * 31-JUL-2021 allow building machine without frontpanel
  */
 
-extern void init_memory(void), init_rom(void);
+#ifdef FRONTPANEL
+#include "../../frontpanel/frontpanel.h"
+#endif
+
+extern void init_memory(void);
 extern int wait_step(void);
 extern void wait_int_step(void);
 extern BYTE memory[], mem_wp;
@@ -31,17 +35,20 @@ extern int tarbell_rom_enabled, tarbell_rom_active;
 #define MEM_NONE	3	/* no memory available */
 
 /*
- * configuration for MAXSEG memory segments
+ * configuration for memory map(s)
  */
-#define MAXSEG	6
+#define MAXMEMMAP	6
+#define MAXMEMSECT	15
 
 struct memmap {
 	int type;	/* type of memory pages */
 	BYTE spage;	/* start page of segment */
-	BYTE size;	/* size of segment in pages */
+	WORD size;	/* size of segment in pages */
+	char *rom_file;
 };
 
-extern struct memmap memconf[MAXSEG];
+extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
+extern WORD _boot_switch[MAXMEMSECT];					/* boot address for switch */
 
 /*
  * memory access for the CPU cores

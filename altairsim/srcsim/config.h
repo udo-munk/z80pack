@@ -33,6 +33,5 @@
 
 extern void config(void);
 
-extern int  boot_switch;
 extern int  fp_size;
 extern BYTE fp_port;

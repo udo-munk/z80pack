@@ -44,14 +44,8 @@ extern int exatoi(char *);
 
 static const char *TAG = "config";
 
-struct memmap memconf[MAXSEG];	/* memory map */
-static int num_segs;
-
-int  boot_switch;		/* boot address for switch */
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0;		/* default fp input port value */
-
-extern int tarbell_rom_enabled;	/* Tarbell bootstrap ROM enable/disable */
 
 extern int sio0_upper_case;	/* SIO 0 translate input to upper case */
 extern int sio0_strip_parity;	/* SIO 0 strip parity from output */
@@ -77,14 +71,14 @@ extern int slf;                 /* VDM scanlines factor */
 
 void config(void)
 {
-	int i, v1, v2;
 	FILE *fp;
-	char *s, *t1, *t2, *t3;
 	char buf[BUFSIZE];
-	char fn[4095];
+	char *s, *t1, *t2, *t3, *t4;
+	int v1, v2;
+	char fn[MAX_LFN - 1];
 
-	for (i = 0; i < MAXSEG; i++)
-		memconf[i].type = -1;
+	int num_segs = 0;
+	int section = 0;
 
 	if (c_flag) {
 		strcpy(&fn[0], &conffn[0]);
@@ -250,57 +244,68 @@ void config(void)
 				if (*t2 != '0')
 					slf = 2;
 			} else if (!strcmp(t1, "ram")) {
-				if (num_segs >= MAXSEG) {
+				if (num_segs >= MAXMEMMAP) {
 					LOGW(TAG, "too many rom/ram statements");
 					goto next;
 				}
 				t3 = strtok(NULL, " \t,");
-				v1 = atoi(t2);
+				v1 = strtol(t2, NULL, 0);
 				if (v1 < 0 || v1 > 255) {
 					LOGW(TAG, "invalid ram start address %d", v1);
 					goto next;
 				}
-				v2 = atoi(t3);
+				v2 = strtol(t3, NULL, 0);
 				if (v2 < 1 || v1 + v2 > 256) {
 					LOGW(TAG, "invalid ram size %d", v2);
 					goto next;
 				}
-				memconf[num_segs].type = MEM_RW;
-				memconf[num_segs].spage = v1;
-				memconf[num_segs].size = v2;
-				LOG(TAG, "RAM %04XH - %04XH\r\n",
+				memconf[section][num_segs].type = MEM_RW;
+				memconf[section][num_segs].spage = v1;
+				memconf[section][num_segs].size = v2;
+				LOGD(TAG, "RAM %04XH - %04XH",
 				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
 				num_segs++;
 			} else if (!strcmp(t1, "rom")) {
-				if (num_segs >= MAXSEG) {
+				if (num_segs >= MAXMEMMAP) {
 					LOGW(TAG, "too many rom/ram statements");
 					goto next;
 				}
 				t3 = strtok(NULL, " \t,");
-				v1 = atoi(t2);
+				t4 = strtok(NULL, " \t\n");
+				v1 = strtol(t2, NULL, 0);
 				if (v1 < 0 || v1 > 255) {
 					LOGW(TAG, "invalid rom start address %d", v1);
 					goto next;
 				}
-				v2 = atoi(t3);
+				v2 = strtol(t3, NULL, 0);
 				if (v2 < 1 || v1 + v2 > 256) {
 					LOGW(TAG, "invalid rom size %d", v2);
 					goto next;
 				}
-				memconf[num_segs].type = MEM_RO;
-				memconf[num_segs].spage = v1;
-				memconf[num_segs].size = v2;
-				LOG(TAG, "ROM %04XH - %04XH\r\n",
-				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
+				memconf[section][num_segs].type = MEM_RO;
+				memconf[section][num_segs].spage = v1;
+				memconf[section][num_segs].size = v2;
+				if (t4 != NULL) {
+					memconf[section][num_segs].rom_file = strdup(t4);
+				} else {
+					memconf[section][num_segs].rom_file = NULL;
+				}
+				LOGD(TAG, "ROM %04XH - %04XH %s",
+				    v1 << 8, (v1 << 8) + (v2 << 8) - 1,
+					(t4==NULL?"":t4));
 				num_segs++;
 			} else if (!strcmp(t1, "boot")) {
-				boot_switch = exatoi(t2);
-				LOG(TAG, "Boot switch address at %04XH\r\n", boot_switch);
-			} else if (!strcmp(t1, "tarbell_rom_enabled")) {
-				tarbell_rom_enabled = atoi(t2);
-				LOG(TAG, "Tarbell bootstrap ROM %s\r\n",
-				    (tarbell_rom_enabled) ?
-				    "enabled" : "disabled");
+				_boot_switch[section] = strtol(t2, NULL, 0);
+				LOGD(TAG, "Boot switch address at %04XH", _boot_switch[section]);
+			} else if (!strcmp(t1, "[MEMORY")) {
+				v1 = strtol(t2, &t3, 10);
+				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {
+					LOGW(TAG, "invalid MEMORY section number %d", v1);
+					goto next;
+				}
+				LOGD(TAG, "MEMORY CONFIGURATION %d", v1);
+				section = v1 -1;
+				num_segs = 0;
 			} else {
 				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
