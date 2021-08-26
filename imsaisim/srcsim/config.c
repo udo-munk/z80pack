@@ -329,7 +329,7 @@ void config(void)
 				num_segs++;
 			} else if (!strcmp(t1, "boot")) {
 				boot_switch[section] = strtol(t2, NULL, 0);
-				LOGD(TAG, "Poweron boot address at %04XH", boot_switch[section]);
+				LOGD(TAG, "Power-on-jump address at %04XH", boot_switch[section]);
 			} else if (!strcmp(t1, "[MEMORY")) {
 				v1 = strtol(t2, &t3, 10);
 				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {

@@ -202,7 +202,7 @@ void init_memory(void)
 	}
 
 	if (boot_switch[M_flag]) {
-		LOG(TAG, "Poweron boot address at %04XH\r\n", boot_switch[M_flag]);
+		LOG(TAG, "Power-on-jump address at %04XH\r\n", boot_switch[M_flag]);
 	}
 
 	/* copy RAM page table for MPU-B banked ROM/RAM handling */
