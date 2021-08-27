@@ -4,8 +4,8 @@ CONF=/usr/local/share/imsaisim/conf
 # system wide location for disk images
 DISKS=/usr/local/share/imsaisim/disks
 
-# default boot ROM
-ROM=/usr/local/share/imsaisim/bootrom.hex
+# default boot ROM path
+ROM=/usr/local/share/imsaisim/roms
 
 CC = gcc
 
