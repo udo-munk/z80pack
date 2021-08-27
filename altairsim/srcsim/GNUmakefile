@@ -28,8 +28,8 @@ DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
 CONF = $(DIR_ROOT)/conf
 # system wide location for disk images
 DISKS = $(DIR_ROOT)/disks
-# default boot ROM
-ROM = $(DIR_ROOT)/bootrom.hex
+# default boot ROM path
+ROM = $(DIR_ROOT)/roms
 ###
 ### END MACHINE DEPENDANT VARIABLES 
 ###
@@ -65,7 +65,7 @@ endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCL = -I/opt/X11/include 
 PLAT_CFLAGS = -Wno-self-assign
-PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib 
+PLAT_LFLAGS = -L/opt/homebrew/lib -L/opt/X11/lib 
 .LIBPATTERNS += lib%.dylib
 endif
 ###
