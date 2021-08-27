@@ -1,8 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 by Udo Munk
- * Copyright (C) 2018 David McNaughton
+ * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2018-2021 David McNaughton
  *
  * This module implements memory management for an IMSAI 8080 system
  *
@@ -53,7 +53,7 @@ struct memmap {
 };
 
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
-extern WORD boot_switch[MAXMEMSECT];					/* boot address for switch */
+extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
 #define MAXSEG		8	/* max number of memory segments */
 #define SEGSIZ		49152	/* size of the memory segments, 48 KBytes */

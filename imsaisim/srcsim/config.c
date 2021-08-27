@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2021 by Udo Munk
+ * Copyright (C) 2008-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -42,7 +43,7 @@
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
-#define BUFSIZE 256	/* max line length of command buffer */
+#define BUFSIZE 256		/* max line length of command buffer */
 
 static const char *TAG = "config";
 

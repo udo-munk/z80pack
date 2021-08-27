@@ -1,8 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 by Udo Munk
- * Copyright (C) 2018 David McNaughton
+ * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2018-2021 David McNaughton
  *
  * This module implements the memory for an IMSAI 8080 system
  *
@@ -32,8 +32,8 @@ static const char *TAG = "memory";
 extern int load_file(char *, BYTE, BYTE);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
-	= { { { MEM_RW, 0, 0x100, NULL } } };		/* default config to 64K RAM only */
-WORD boot_switch[MAXMEMSECT];					/* boot address for switch */
+	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
+WORD boot_switch[MAXMEMSECT];			/* boot address */
 
 /* 64KB memory system bank 0 */
 BYTE memory[64 << 10];
@@ -184,17 +184,19 @@ void init_memory(void)
 					}
 
 					LOG(TAG, "RAM %04XH - %04XH\r\n",
-				    memconf[M_flag][i].spage << 8, 
+					memconf[M_flag][i].spage << 8, 
 					(memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
-
 					break;
+
 				case MEM_RO:
 					/* set the pages to ROM */
 					LOG(TAG, "ROM %04XH - %04XH %s\r\n",
-				    memconf[M_flag][i].spage << 8, 
+					memconf[M_flag][i].spage << 8, 
 					((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
 					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
-					/* for the IMSAI, ROM must be initialised after MPU-B banked ROM is intialised */
+					/* for the IMSAI, ROM must be
+					   initialised after MPU-B banked ROM
+					   is intialised */
 					/* see below */
 					break;
 			}
@@ -229,9 +231,12 @@ void init_memory(void)
 			switch (memconf[M_flag][i].type) {
 				case MEM_RW:
 					/* set the pages to RAM */
-					/* for the IMSAI, RAM must be initialised before MPU-B banked ROM is intialised */
+					/* for the IMSAI, RAM must be
+					   initialised before MPU-B banked ROM
+					   is intialised */
 					/* see above */
 					break;
+
 				case MEM_RO:
 					/* set the pages to ROM */
 					for (int j = 0; j < memconf[M_flag][i].size; j++)
@@ -244,7 +249,6 @@ void init_memory(void)
 
 					/* load firmware into ROM if specified */
 					if (memconf[M_flag][i].rom_file) load_file(memconf[M_flag][i].rom_file, memconf[M_flag][i].spage, memconf[M_flag][i].size);
-
 					break;
 			}
 		}
