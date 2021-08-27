@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 by Udo Munk
+ * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module implements memory management for an Altair 8800 system
  *
@@ -48,7 +49,7 @@ struct memmap {
 };
 
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
-extern WORD _boot_switch[MAXMEMSECT];					/* boot address for switch */
+extern WORD _boot_switch[MAXMEMSECT];	/* boot address */
 
 /*
  * memory access for the CPU cores

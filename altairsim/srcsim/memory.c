@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2018 by Udo Munk
+ * Copyright (C) 2016-2018 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module implements the memory for an Altair 8800 system
  *
@@ -31,10 +32,10 @@ static const char *TAG = "memory";
 extern int load_file(char *, BYTE, BYTE);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
-	= { { { MEM_RW, 0, 0x100, NULL } } };		/* default config to 64K RAM only */
-WORD _boot_switch[MAXMEMSECT];					/* boot address for switch */
+	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
+WORD _boot_switch[MAXMEMSECT];			/* boot address for switch */
 
-extern int  boot_switch;		/* boot address for switch */
+extern int  boot_switch;			/* boot address for switch */
 
 /* 64KB non banked memory */
 BYTE memory[65536];
@@ -78,25 +79,23 @@ void init_memory(void)
 					}
 
 					LOG(TAG, "RAM %04XH - %04XH\r\n",
-				    memconf[M_flag][i].spage << 8, 
+					memconf[M_flag][i].spage << 8, 
 					(memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
-
 					break;
-				case MEM_RO:
 
+				case MEM_RO:
 					/* fill the ROM's with 0xff in case no firmware loaded */
 					for (int j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
 						memset(&memory[j << 8], 0xff, 256);
 					}
 
 					LOG(TAG, "ROM %04XH - %04XH %s\r\n\r\n",
-				    memconf[M_flag][i].spage << 8, 
+					memconf[M_flag][i].spage << 8, 
 					((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
 					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
 
 					/* load firmware into ROM if specified */
 					if (memconf[M_flag][i].rom_file) load_file(memconf[M_flag][i].rom_file, memconf[M_flag][i].spage, memconf[M_flag][i].size);
-
 					break;
 			}
 		}
