@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include "sim.h"
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
@@ -26,6 +27,10 @@
 #include "log.h"
 #include "netsrv.h"
 #include "civetweb.h"
+
+#ifdef HAS_HAL
+#include "imsai-hal.h"
+#endif 
 
 #ifdef HAS_NETSERVER
 
@@ -217,6 +222,8 @@ void InformWebsockets(struct mg_context *ctx)
 	mg_unlock_context(ctx);
 }
 
+struct utsname uts;
+
 int SystemHandler(HttpdConnection_t *conn, void *unused) {
     request_t *req = get_request(conn);
 	UNUSED(unused);
@@ -229,10 +236,28 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
         httpdStartResponse(conn, 200); 
         httpdHeader(conn, "Content-Type", "application/json");
         httpdEndHeaders(conn);
+		
+		uname(&uts);
 
         httpdPrintf(conn, "{");
-                 
+
+            httpdPrintf(conn, "\"platform\": \"%s\", ", uts.sysname);
+            
+            httpdPrintf(conn, "\"network\": { ");
+
+                httpdPrintf(conn, "\"hostname\": \"%s\" ", uts.nodename);
+
+            httpdPrintf(conn, "}, ");
+
+            httpdPrintf(conn, "\"paths\": { ");
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "CONFDIR", confdir);
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "DISKSDIR", diskdir);
+                httpdPrintf(conn, "\"%s\": \"%s\" ", "BOOTROM", rompath);
+            httpdPrintf(conn, "}, ");
+
             httpdPrintf(conn, "\"system\": { ");
+                httpdPrintf(conn, "\"%s\": \"%s\",", "VER", uts.version);
+                httpdPrintf(conn, "\"%s\": \"%s\",", "MACHINE", uts.machine);
                 httpdPrintf(conn, "\"free_mem\": %d, ", 0);
                 httpdPrintf(conn, "\"time\": %ld, ", time(NULL));
                 httpdPrintf(conn, "\"uptime\": %d ", 0);
@@ -259,6 +284,62 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
                 httpdPrintf(conn, "\"%s\": %d ", "clock", f_flag);
             httpdPrintf(conn, "} ");
 
+#ifdef HAS_HAL
+            httpdPrintf(conn, ", \"sio_ports\": [ ");
+            for(int i = 0; i < MAX_SIO_PORT; i++) {
+                httpdPrintf(conn, "{ ");
+                    httpdPrintf(conn, "\"%s\": \"%s\", ", "name", sio_port_name[i]);
+                    int j = 0;
+                    httpdPrintf(conn, "\"%s\": [ ", "devices");
+                    while (sio[i][j].name && j < MAX_HAL_DEV) {
+                        if (*sio[i][j].name) 
+							httpdPrintf(conn, "%s\"%s%s\"", 
+								(j==0)?"":", ", 
+								sio[i][j].name, 
+								sio[i][j].fallthrough?"+":""
+							);
+                        j++;
+                    }
+                httpdPrintf(conn, "] }%s ", (i < (MAX_SIO_PORT-1))?",":"");
+            }
+            httpdPrintf(conn, "]");
+#endif 
+
+#ifdef HAS_CONFIG
+            httpdPrintf(conn, ", \"memmap\": [ ");
+
+				for (int i=0; i < MAXMEMMAP; i++) {
+					if (memconf[M_flag][i].size) {
+
+
+						if (i > 0) httpdPrintf(conn, ", ");
+						httpdPrintf(conn, "{ \"type\": \"%s\"", (memconf[M_flag][i].type==MEM_RW)?"RAM":"ROM");
+						httpdPrintf(conn, ", \"from\": %d", memconf[M_flag][i].spage << 8);
+						httpdPrintf(conn, ", \"to\": %d", (memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
+						if (memconf[M_flag][i].type==MEM_RO && memconf[M_flag][i].rom_file) 
+							httpdPrintf(conn, ", \"file\": \"%s\"", memconf[M_flag][i].rom_file);
+						httpdPrintf(conn, "}");
+					}
+				}
+
+            httpdPrintf(conn, "]");
+
+            httpdPrintf(conn, ", \"memextra\": [ ");
+
+			if (boot_switch[M_flag]) {
+            	httpdPrintf(conn, "\"Power-on jump address %04XH\", ", boot_switch[M_flag]);
+			}
+			if (R_flag) {
+            	httpdPrintf(conn, "\"MPU-B Banked ROM/RAM enabled\", ");
+			}
+
+			extern int num_banks;
+			if (num_banks) {
+            	httpdPrintf(conn, "\"MMU has %d additional RAM banks of %d KB\",", num_banks, SEGSIZ >> 10);
+			}
+
+            httpdPrintf(conn, " \"\" ]");
+#endif
 			int i=0, o=0;
             char *t1, *t2;
 			extern char **environ;
