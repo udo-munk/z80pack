@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -68,7 +69,9 @@ static const char *TAG = "func";
 #define BUFSIZE	256		/* buffer size for file I/O */
 
 int load_file(char *, BYTE pstart, WORD psize);
-static int load_mos(char *, BYTE pstart, WORD psize), load_hex(char *, BYTE pstart, WORD psize), checksum(char *);
+static int load_mos(char *, BYTE pstart, WORD psize);
+static int load_hex(char *, BYTE pstart, WORD psize);
+static int checksum(char *);
 
 /*
  *	atoi for hexadecimal numbers

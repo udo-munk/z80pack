@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -145,8 +146,8 @@ int f_flag;			/* flag for -f option */
 int u_flag;			/* flag for -u option */
 int r_flag;			/* flag for -r option */
 int c_flag;			/* flag for -c option */
-int M_flag = 0;		/* flag for -M option */
-int R_flag = 0;		/* flag for -R option */
+int M_flag = 0;			/* flag for -M option */
+int R_flag = 0;			/* flag for -R option */
 
 /*
  *	Variables for configuration and disk images
