@@ -2,13 +2,13 @@
 ### START MACHINE DEPENDANT VARIABLES 
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
-MACHINE = imsai
+MACHINE = altair
 # machine specific system source files
 SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c imsai-fif.c imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c unix_network.c netsrv.c generic-at-modem.c libtelnet.c rtc.c simbdos.c am9511.c floatcnv.c ova.c
+SRC_IO = cromemco-dazzler.c proctec-vdm.c tarbell_fdc.c altair-88-dcdd.c altair-88-sio.c altair-88-2sio.c unix_terminal.c unix_network.c simbdos.c
 #machine specifc libraries 
-SRC_LIBS = -lcivetweb -lfrontpanel
+SRC_LIBS = -lfrontpanel
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
@@ -40,10 +40,8 @@ EXEC = $(SIM)
 DIR_CORE = ../../z80core
 DIR_IO = ../../iodevices
 DIR_FP = ../../frontpanel
-DIR_NET = ../../webfrontend 
-DIR_CIV = $(DIR_NET:=/civetweb)
 
-VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_IO:=/apu) $(DIR_FP) $(DIR_NET) $(DIR_CIV)
+VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_FP)
 CC = gcc
 
 ###
@@ -67,14 +65,14 @@ endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCL = -I/opt/X11/include 
 PLAT_CFLAGS = -Wno-self-assign
-PLAT_LFLAGS = -L/opt/homebrew/lib -L/opt/X11/lib 
+PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib 
 .LIBPATTERNS += lib%.dylib
 endif
 ###
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCL = -iquote . -I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) -I$(DIR_NET) -I$(DIR_CIV:=/include) $(PLAT_INCL)
+INCL = -iquote . -I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) $(PLAT_INCL)
 DEFS = -DCONFDIR=\"$(CONF)\" -DDISKSDIR=\"$(DISKS)\" -DBOOTROM=\"$(ROM)\"
 
 # Production - the default
@@ -90,9 +88,9 @@ ifneq ($(DEBUG),)
 CFLAGS = -O -g -c $(PLAT_CFLAGS) $(DEFS) $(INCL)
 endif
 
-LFLAGS = -L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS) \
-        -ljpeg -lGL -lGLU -lX11 \
-        $(PLAT_LFLAGS)
+LFLAGS = -L$(DIR_FP) $(SRC_LIBS) \
+	-ljpeg -lGL -lGLU -lX11 \
+	$(PLAT_LFLAGS)
 
 # core system source files for the CPU simulation - only change if the core changes
 SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
@@ -112,9 +110,6 @@ $(SIM) : $(OBJ) $(SRC_LIBS)
 
 -include $(SRC:.c=.d)
 
--lcivetweb: $(DIR_CIV:=/Makefile)
-	make -B -C $(DIR_CIV)
-
 build: _rm_obj all
 
 install: 
@@ -133,6 +128,7 @@ _rm_deps:
 allclean: clean
 	rm -f $(EXEC)
 	rm -f ../disks/drive*.dsk
+	rm -f ../disks/mits_*.dsk
 	rm -f ../printer.txt
 
 #test : ; @echo $(DIR_ROOT)
