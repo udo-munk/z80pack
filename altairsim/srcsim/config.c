@@ -28,6 +28,7 @@
  * 24-NOV-19 configurable baud rate for second 2SIO channel
  * 22-JAN-21 added option for config file
  * 31-JUL-21 allow building machine without frontpanel
+ * 29-AUG-21 new memory configuration sections
  */
 
 #include <stdlib.h>
