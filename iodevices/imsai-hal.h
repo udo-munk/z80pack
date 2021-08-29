@@ -49,3 +49,6 @@ extern void hal_status_in(sio_port_t sio, BYTE *stat);
 extern int hal_data_in(sio_port_t sio);
 extern void hal_data_out(sio_port_t sio, BYTE data);
 extern int hal_carrier_detect(sio_port_t sio);
+
+extern const char *sio_port_name[MAX_SIO_PORT];
+extern hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];

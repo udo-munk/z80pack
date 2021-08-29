@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -151,6 +152,12 @@ void groupswap(void)
 void init_memory(void)
 {
 	register int i;
+	char fn[MAX_LFN];
+	char *pfn = fn;
+
+	strcpy(fn, rompath);
+	strcat(fn, "/");
+	pfn = &fn[strlen(fn)];
 
 	LOG(TAG,"\r\n");
 
@@ -248,7 +255,10 @@ void init_memory(void)
 					}
 
 					/* load firmware into ROM if specified */
-					if (memconf[M_flag][i].rom_file) load_file(memconf[M_flag][i].rom_file, memconf[M_flag][i].spage, memconf[M_flag][i].size);
+					if (memconf[M_flag][i].rom_file) {
+						strcpy(pfn, memconf[M_flag][i].rom_file);
+						load_file(fn, memconf[M_flag][i].spage, memconf[M_flag][i].size);
+					}
 					break;
 			}
 		}

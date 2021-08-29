@@ -156,6 +156,7 @@ char *diskdir = NULL;		/* path for disk images (option -d) */
 char diskd[MAX_LFN];		/* disk image directory in use */
 char confdir[MAX_LFN];		/* path for configuration files */
 char conffn[MAX_LFN];		/* configuration file (option -c) */
+char rompath[MAX_LFN];		/* path for boot ROM files */
 
 /*
  *	Precompiled table to get parity as fast as possible

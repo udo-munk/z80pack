@@ -48,8 +48,7 @@
 /*#define HAS_NETSERVER*/	/* uses civet webserver to present a web based frontend */
 #define HAS_MODEM		/* has simulated 'AT' style modem over TCP/IP (telnet) */
 #define HAS_APU			/* has simulated AM9511 floating point maths coprocessor */
-
-#define MAX_RAM	64	/* Maximum RAM size */
+#define HAS_HAL			/* implements a hardware abstraction layer (HAL) for SIO ports */
 
 #define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
 #define NUMUSOC 1	/* number of UNIX sockets for SIO connections */

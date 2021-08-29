@@ -4,8 +4,8 @@ CONF=/usr/local/share/altairsim/conf
 # system wide location for disk images
 DISKS=/usr/local/share/altairsim/disks
 
-# default boot ROM
-ROM=/usr/local/share/altairsim/bootrom.hex
+# default boot ROM path
+ROM=/usr/local/share/altairsim/roms
 
 CC = gcc
 

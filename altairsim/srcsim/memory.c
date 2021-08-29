@@ -50,6 +50,12 @@ BYTE mem_wp;
 void init_memory(void)
 {
 	register int i, j;
+	char fn[MAX_LFN];
+	char *pfn = fn;
+
+	strcpy(fn, rompath);
+	strcat(fn, "/");
+	pfn = &fn[strlen(fn)];
 
 	if (!memconf[M_flag][0].size) {
 		LOGW(TAG, "The [MEMORY %d] section appears missing or empty, setting memory map to default", M_flag + 1);
@@ -95,7 +101,10 @@ void init_memory(void)
 					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
 
 					/* load firmware into ROM if specified */
-					if (memconf[M_flag][i].rom_file) load_file(memconf[M_flag][i].rom_file, memconf[M_flag][i].spage, memconf[M_flag][i].size);
+					if (memconf[M_flag][i].rom_file) {
+						strcpy(pfn, memconf[M_flag][i].rom_file);
+						load_file(fn, memconf[M_flag][i].spage, memconf[M_flag][i].size);
+					}
 					break;
 			}
 		}

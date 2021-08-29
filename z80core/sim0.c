@@ -88,11 +88,13 @@ int main(int argc, char *argv[])
 	struct timeval tv;
 #ifdef HAS_CONFIG
 	struct stat sbuf;
-#endif
+	char *rom = "-r rompath ";
+#else
 #ifdef BOOTROM
 	char *rom = "-r ";
 #else
 	char *rom = "";
+#endif
 #endif
 #ifdef CPU_SPEED
 	f_flag = CPU_SPEED;
@@ -163,12 +165,29 @@ int main(int argc, char *argv[])
 				s--;
 				break;
 
+#ifdef HAS_CONFIG
+			case 'r':	/* get path for boot ROM images */
+				s++;
+				if (*s == '\0') {
+					if (argc <= 1)
+						goto usage;
+					argc--;
+					argv++;
+					s = argv[0];
+				}
+				p = rompath;
+				while (*s)
+					*p++ = *s++;
+				*p = '\0';
+				s--;
+				break;
+#else
 #ifdef BOOTROM
 			case 'r':	/* load default boot ROM */
 				r_flag = 1;
 				x_flag = 1;
 				strcpy(xfn, BOOTROM);
-				break;
+#endif
 #endif
 
 #ifdef HAS_DISKS
@@ -266,9 +285,16 @@ usage:
 				puts("\t-l = load core and CPU");
 				puts("\t-i = trap on I/O to unused ports");
 				puts("\t-u = trap on undocumented instructions");
+#ifdef HAS_CONFIG
+				puts("\t-r = use ROM images at rompath");
+				puts("\t     default path for ROM images:");
+				puts("\t     ./roms");
+				printf("\t     %s\n", BOOTROM);
+#else
 #ifdef BOOTROM
 				puts("\t-r = load and execute default ROM");
 				printf("\t     %s\n", BOOTROM);
+#endif
 #endif
 				puts("\t-m = init memory with val (00-FF)");
 				puts("\t-f = CPU clock frequency freq in MHz");
@@ -355,6 +381,17 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	/* then CONFDIR as set in Makefile */
 	} else {
 		strcpy(&confdir[0], CONFDIR);
+	}
+	
+	/* if option -r is used ROMS are there */
+	if (rompath[0] == 0) {
+		/* if not first try ./roms */
+		if ((stat("./roms", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
+			strcpy(rompath, "./roms");
+		/* then BOOTROM as set in Makefile */
+		} else {
+			strcpy(rompath, BOOTROM);
+		}
 	}
 #endif
 

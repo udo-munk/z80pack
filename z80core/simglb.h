@@ -76,6 +76,7 @@ extern int	busy_loop_cnt[];
 extern char	xfn[];
 extern char	*diskdir, diskd[];
 extern char	confdir[], conffn[];
+extern char	rompath[];
 
 #ifdef HISIZE
 extern struct	history his[];
