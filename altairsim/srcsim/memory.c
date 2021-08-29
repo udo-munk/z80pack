@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2018 Udo Munk
+ * Copyright (C) 2016-2021 Udo Munk
  * Copyright (C) 2021 David McNaughton
  *
  * This module implements the memory for an Altair 8800 system
@@ -14,6 +14,7 @@
  * 07-MAY-2018 added memory configuratione needed by apple monitor
  * 11-JUN-2018 fixed bug in Tarbell ROM mapping
  * 21-AUG-2018 improved memory configuration
+ * 29-AUG-2021 new memory configuration sections
  */
 
 #include <unistd.h>

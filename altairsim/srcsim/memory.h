@@ -16,6 +16,7 @@
  * 21-AUG-2018 improved memory configuration
  * 04-NOV-2019 add functions for direct memory access
  * 31-JUL-2021 allow building machine without frontpanel
+ * 29-AUG-2021 new memory configuration sections
  */
 
 #ifdef FRONTPANEL
