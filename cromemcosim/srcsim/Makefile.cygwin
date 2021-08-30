@@ -5,7 +5,7 @@ CONF=/usr/local/share/cromemcosim/conf
 DISKS=/usr/local/share/cromemcosim/disks
 
 # default boot ROM
-ROM=/usr/local/share/cromemcosim/bootrom.hex
+ROM=/usr/local/share/cromemcosim/roms
 
 CC = gcc
 
