@@ -3,4 +3,4 @@
 rm -f disks/drivea.dsk
 ln disks/library/cpm22.dsk disks/drivea.dsk
 
-./cromemcosim -x rdos0312.hex $*
+./cromemcosim -M1 $*
