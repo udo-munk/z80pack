@@ -31,7 +31,8 @@
  * 14-JUL-21 added all options for SIO 2B
  * 16-JUL-21 added all options for SIO 1B
  * 20-JUL-21 log banked memory
- * 05_AUG-21 add boot config for machine without frontpanel
+ * 05-AUG-21 add boot config for machine without frontpanel
+ * 29-AUG-21 new memory configuration sections
  */
 
 #include <stdlib.h>

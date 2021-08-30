@@ -16,6 +16,7 @@
  * 18-JUL-2019 bug fix so that fp shows mapped memory contents
  * 18-OCT-2019 add MMU and memory banks
  * 20-JUL-2021 log banked memory
+ * 29-AUG-2021 new memory configuration sections
  */
 
 #include <unistd.h>

@@ -19,6 +19,7 @@
  * 06-NOV-2019 add function for frontpanel memory write
  * 14-AUG-2020 allow building machine without frontpanel
  * 20-JUL-2021 log banked memory
+ * 29-AUG-2021 new memory configuration sections
  */
 
 #ifdef FRONTPANEL

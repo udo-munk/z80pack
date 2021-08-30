@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3

@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2021 by Udo Munk
+ * Copyright (C) 2008-2021 Udo Munk
+ * Copyright (C) 2018-2021 David McNaughton
  *
  * Configuration for an IMSAI 8080 system
  *

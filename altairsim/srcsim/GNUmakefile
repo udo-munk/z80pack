@@ -65,7 +65,7 @@ endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCL = -I/opt/X11/include 
 PLAT_CFLAGS = -Wno-self-assign
-PLAT_LFLAGS = -L/opt/homebrew/lib -L/opt/X11/lib 
+PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib 
 .LIBPATTERNS += lib%.dylib
 endif
 ###
