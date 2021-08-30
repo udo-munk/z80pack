@@ -20,7 +20,27 @@
 #endif
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */
-#define MAXMEMSECT 0		/* no configurable memory maps */
+
+#define MEM_RW		0	/* memory is readable and writeable */
+#define MEM_RO		1	/* memory is read-only */
+#define MEM_WPROT	2	/* memory is write protected */
+#define MEM_NONE	3	/* no memory available */
+
+/*
+ * configuration for memory map(s)
+ */
+#define MAXMEMMAP	6
+#define MAXMEMSECT	15
+
+struct memmap {
+	int type;	/* type of memory pages */
+	BYTE spage;	/* start page of segment */
+	WORD size;	/* size of segment in pages */
+	char *rom_file;
+};
+
+extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
+extern WORD _boot_switch[MAXMEMSECT];	/* boot address */
 
 extern void init_memory(void), init_rom(void);
 extern int wait_step(void);
