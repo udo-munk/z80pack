@@ -29,7 +29,7 @@ CONF = $(DIR_ROOT)/conf
 # system wide location for disk images
 DISKS = $(DIR_ROOT)/disks
 # default boot ROM
-ROM = $(DIR_ROOT)/bootrom.hex
+ROM = $(DIR_ROOT)/roms
 ###
 ### END MACHINE DEPENDANT VARIABLES 
 ###

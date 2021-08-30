@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ -f disks/drivea.dsk ]; then
-	./cromemcosim -x rdos252.hex $*
+	./cromemcosim -M3 $*
 else
 	echo "no boot disk in drive a:"
 fi
