@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 by Udo Munk
+ * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -14,6 +15,7 @@
  * 22-JAN-21 added option for config file
  * 17-JUN-21 allow building machine without frontpanel
  * 29-JUL-21 add boot config for machine without frontpanel
+ * 30-AUG-21 new memory configuration sections
  */
 
 #include <stdlib.h>

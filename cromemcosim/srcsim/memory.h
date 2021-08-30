@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 by Udo Munk
+ * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module implements memory management for a Cromemco Z-1 system
  *
@@ -13,6 +14,7 @@
  * 01-OCT-19 optimization
  * 04-NOV-19 add functions for direct memory access
  * 17-JUN-21 allow building machine without frontpanel
+ * 30-AUG-21 new memory configuration sections
  */
 
 #ifdef FRONTPANEL

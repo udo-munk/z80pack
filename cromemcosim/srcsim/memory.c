@@ -1,7 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module implements memory management for a Cromemco Z-1 system
  *
@@ -11,6 +12,7 @@
  * 18-MAY-18 optimization
  * 18-JUL-18 use logging
  * 01-OCT-19 optimization
+ * 30-AUG-21 new memory configuration sections
  */
 
 #include <stdlib.h>
@@ -28,7 +30,7 @@ extern int load_file(char *, BYTE, BYTE);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
-WORD _boot_switch[MAXMEMSECT];			/* boot address for switch */
+WORD _boot_switch[MAXMEMSECT];			/* boot address */
 
 
 BYTE *memory[MAXSEG];		/* MMU with pointers to the banks */
