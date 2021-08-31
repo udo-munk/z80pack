@@ -70,7 +70,7 @@ void init_memory(void)
 		}
 	}
 
-	/* set memory configuration from system.conf only for bank 0*/
+	/* set memory configuration from system.conf only for bank 0 */
 	for (i = 0; i < MAXMEMMAP; i++) {
 		if (memconf[M_flag][i].size) {
 

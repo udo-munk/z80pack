@@ -20,6 +20,7 @@
  * 12-JAN-17 improved configuration and front panel LED timing
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 22-APR-18 implemented TCP socket polling
+ * 29-AUG-21 new memory configuration sections
  */
 
 /*
