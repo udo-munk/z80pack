@@ -22,6 +22,7 @@
  * 12-JUL-19 implemented second SIO
  * 14-AUG-20 allow building machine without frontpanel
  * 07-AUG-21 add APU emulation
+ * 29-AUG-21 new memory configuration sections
  */
 
 /*

@@ -234,7 +234,7 @@ void init_memory(void)
 	LOG(TAG, "MMU has %d additional RAM banks of %d KB\r\n", num_banks, SEGSIZ >> 10);
 	LOG(TAG, "\r\n");
 
-	for (i=0; i < MAXMEMMAP; i++) {
+	for (i = 0; i < MAXMEMMAP; i++) {
 		if (memconf[M_flag][i].size) {
 			switch (memconf[M_flag][i].type) {
 				case MEM_RW:
