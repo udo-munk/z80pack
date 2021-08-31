@@ -294,7 +294,7 @@ void config(void)
 				}
 				LOGD(TAG, "ROM %04XH - %04XH %s",
 				    v1 << 8, (v1 << 8) + (v2 << 8) - 1,
-					(t4==NULL?"":t4));
+					(t4 == NULL ? "" : t4));
 				num_segs++;
 			} else if (!strcmp(t1, "boot")) {
 				_boot_switch[section] = strtol(t2, NULL, 0);

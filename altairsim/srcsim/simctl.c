@@ -78,7 +78,7 @@ static void quit_callback(void);
  *	until power switched OFF again.
  *
  *	If the machine is build without front panel then just run
- *	the CPU with the software loaded with -x option.
+ *	the CPU with the configured ROM or software loaded with -x option.
  */
 void mon(void)
 {
