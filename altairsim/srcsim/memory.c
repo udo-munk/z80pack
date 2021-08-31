@@ -111,9 +111,13 @@ void init_memory(void)
 		}
 	}
 
+	/* set preferred start of boot ROM if specified */
 	if (_boot_switch[M_flag]) {
 		LOG(TAG, "Boot switch address at %04XH\r\n", _boot_switch[M_flag]);
 		boot_switch = _boot_switch[M_flag];
+		PC = _boot_switch[M_flag];
+	} else {
+		PC = 0x0000;
 	}
 
 	tarbell_rom_enabled = R_flag;
