@@ -22,6 +22,7 @@
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 07-MAY-18 added memory configuratione needed by apple monitor
  * 21-AUG-18 improved memory configuration
+ * 29-AUG-21 new memory configuration sections
  */
 
 /*
