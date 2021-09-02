@@ -101,7 +101,7 @@ void init_memory(void)
 					LOG(TAG, "ROM %04XH - %04XH %s\r\n",
 					memconf[M_flag][i].spage << 8, 
 					((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
-					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
+					memconf[M_flag][i].rom_file ? memconf[M_flag][i].rom_file : "");
 					/* for the CROMEMCO Z-1, ROM must be
 					   initialised after FDC banked ROM
 					   is intialised */
