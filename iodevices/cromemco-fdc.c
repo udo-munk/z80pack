@@ -3,7 +3,8 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2021 by Udo Munk
+ * Copyright (C) 2014-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -34,6 +35,7 @@
  * 24-SEP-2019 restore and seek also affect step direction
  * 17-JUN-2021 allow building machine without frontpanel
  * 29-JUL-2021 add boot config for machine without frontpanel
+ * 02-SEP-2021 implement banked ROM
  */
 
 #include <unistd.h>
@@ -1046,5 +1048,4 @@ void cromemco_fdc_reset(void)
 		fdc_rom_active = 0;
 	}
 #endif 
-
 }
