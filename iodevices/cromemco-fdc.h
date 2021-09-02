@@ -62,6 +62,9 @@ extern int index_pulse;
 extern int motoron, motortimer;
 extern enum Disk_type dtype;
 
+extern BYTE fdc_banked_rom[]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
+extern int fdc_rom_active;
+
 extern BYTE cromemco_fdc_status_in(void);
 extern void cromemco_fdc_cmd_out(BYTE);
 

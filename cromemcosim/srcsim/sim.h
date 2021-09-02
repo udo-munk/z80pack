@@ -39,6 +39,7 @@
 #define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
+#define HAS_BANKED_ROM
 
 #define NUMNSOC 2	/* number of TCP/IP sockets, 2 per TU-ART */
 #define TCPASYNC	/* use async I/O if possible */
