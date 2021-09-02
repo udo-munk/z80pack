@@ -27,6 +27,7 @@
 static const char *TAG = "memory";
 
 extern int load_file(char *, BYTE, BYTE);
+extern void cromemco_fdc_reset(void);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
@@ -38,9 +39,9 @@ int selbnk;			/* current selected bank */
 int common;			/* flag for common writes to all banks */
 int bankio;			/* data written to banking I/O port */
 
-#define MAXPAGES 256
 /* page table with memory configuration/state */
-int p_tab[MAXPAGES];		/* 256 pages a 256 bytes */
+int p_tab[MAXPAGES];		/* 256 pages of 256 bytes */
+int _p_tab[MAXPAGES];		/* copy of p_tab[] for RAM only */
 
 void init_memory(void)
 {
@@ -74,13 +75,14 @@ void init_memory(void)
 	for (i = 0; i < MAXMEMMAP; i++) {
 		if (memconf[M_flag][i].size) {
 
-			for (j = 0; j < memconf[M_flag][i].size; j++)
-				p_tab[memconf[M_flag][i].spage + j] = memconf[M_flag][i].type;
-
 			switch (memconf[M_flag][i].type) {
 				case MEM_RW:
+					/* set the pages to RAM */
+					for (j = 0; j < memconf[M_flag][i].size; j++)
+						MEM_RESERVE_RAM(memconf[M_flag][i].spage + j);
+
 					/* fill memory content with some initial value */
-					for ( j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
+					for (j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
 						if (m_flag >= 0) {
 							memory[0][j] = m_flag;
 						} else {
@@ -94,21 +96,15 @@ void init_memory(void)
 					break;
 
 				case MEM_RO:
-					/* fill the ROM's with 0xff in case no firmware loaded */
-					for (int j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
-						memset(&memory[0][j << 8], 0xff, 256);
-					}
-
-					LOG(TAG, "ROM %04XH - %04XH %s\r\n\r\n",
+					/* set the pages to ROM */
+					LOG(TAG, "ROM %04XH - %04XH %s\r\n",
 					memconf[M_flag][i].spage << 8, 
 					((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
 					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
-
-					/* load firmware into ROM if specified */
-					if (memconf[M_flag][i].rom_file) {
-						strcpy(pfn, memconf[M_flag][i].rom_file);
-						load_file(fn, memconf[M_flag][i].spage, memconf[M_flag][i].size);
-					}
+					/* for the CROMEMCO Z-1, ROM must be
+					   initialised after FDC banked ROM
+					   is intialised */
+					/* see below */
 					break;
 			}
 		}
@@ -122,5 +118,63 @@ void init_memory(void)
 		PC = 0x0000;
 	}
 
+	/* copy RAM page table for FDC Banked ROM handling */
+	for (i = 0; i < MAXPAGES; i++) {
+		_p_tab[i] = p_tab[i];
+	}
+
+	LOG(TAG, "MMU has %d additional RAM banks of %d KB\r\n", MAXSEG, 64);
 	LOG(TAG, "\r\n");
+
+	cromemco_fdc_reset(); /* activates FDC Bankked ROM */
+
+	for (i = 0; i < MAXMEMMAP; i++) {
+		if (memconf[M_flag][i].size) {
+
+			switch (memconf[M_flag][i].type) {
+				case MEM_RW:
+					/* set the pages to RAM */
+					/* for the CROMEMCO Z-1, RAM must be
+					   initialised before FDC banked ROM
+					   is intialised */
+					/* see above */
+					break;
+				case MEM_RO:
+					/* set the pages to ROM */
+					for (int j = 0; j < memconf[M_flag][i].size; j++)
+						MEM_RESERVE_ROM(memconf[M_flag][i].spage + j);
+
+					/* fill the ROM's with 0xff in case no firmware loaded */
+					for (int j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
+						memset(&memory[0][j << 8], 0xff, 256);
+					}
+
+					/* load firmware into ROM if specified */
+					if (memconf[M_flag][i].rom_file) {
+						strcpy(pfn, memconf[M_flag][i].rom_file);
+						load_file(fn, memconf[M_flag][i].spage, memconf[M_flag][i].size);
+					}
+					break;
+			}
+		}
+	}
+
+	LOG(TAG, "\r\n");
+}
+
+void reset_fdc_rom_map(void) {
+
+	register int i;
+
+	LOGD(TAG, "FDC BANK ROM %s", fdc_rom_active?"ON":"OFF");
+
+	if (fdc_rom_active) LOG(TAG, "FDC Banked ROM enabled\r\n\r\n");
+
+	for (i = 0xC0; i < 0xE0; i++) {
+		if (fdc_rom_active) {
+			MEM_ROM_BANK_ON(i);
+		}else {
+			MEM_RELEASE(i);
+		}
+	}
 }

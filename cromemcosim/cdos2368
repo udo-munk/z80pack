@@ -3,4 +3,4 @@
 rm -f disks/drivea.dsk
 ln disks/library/cdos236_8.dsk disks/drivea.dsk
 
-./cromemcosim -M1 $*
+./cromemcosim -M1 -R $*

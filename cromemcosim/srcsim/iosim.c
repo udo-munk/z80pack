@@ -855,6 +855,11 @@ static void mmu_out(BYTE data)
 	LOGD(TAG, "mmu select bank %02x", data);
 	bankio = data;
 
+	if (fdc_rom_active) {
+		fdc_rom_active = 0;
+		reset_fdc_rom_map();
+	}
+
 	/* set banks */
 	switch (data) {
 	case 0x00:

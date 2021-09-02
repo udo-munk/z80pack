@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ -f disks/drivea.dsk ]; then
-	./cromemcosim -M1 $*
+	./cromemcosim -M1 -R $*
 else
 	echo "no boot disk in drive a:"
 fi

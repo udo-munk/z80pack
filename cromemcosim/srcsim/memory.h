@@ -33,6 +33,7 @@
  */
 #define MAXMEMMAP	6
 #define MAXMEMSECT	15
+#define MAXPAGES 256
 
 struct memmap {
 	int type;	/* type of memory pages */
@@ -51,6 +52,22 @@ extern void wait_int_step(void);
 extern BYTE *memory[MAXSEG];
 extern int selbnk, common, bankio;
 
+extern BYTE fdc_banked_rom[]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
+extern int fdc_rom_active;
+
+extern int p_tab[MAXPAGES];		/* 256 pages of 256 bytes */
+
+/* return page to RAM pool */
+#define MEM_RELEASE(page) 	p_tab[(page)] = _p_tab[(page)]
+/* reserve page as banked ROM */
+#define MEM_ROM_BANK_ON(page)	p_tab[(page)] = MEM_RO
+/* reserve page as RAM */
+#define MEM_RESERVE_RAM(page)	p_tab[(page)] = MEM_RW
+/* reserve page as ROM */
+#define MEM_RESERVE_ROM(page)	p_tab[(page)] = MEM_RO
+
+extern void reset_fdc_rom_map(void);
+
 /*
  * memory access for the CPU cores
  */
@@ -68,14 +85,19 @@ static inline void memwrt(WORD addr, BYTE data)
 	wait_step();
 #endif
 
-	if (!common) {
-		*(memory[selbnk] + addr) = data;
-	} else {
-		if (addr < 32768)
+	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		return;
+	} else if(selbnk || p_tab[addr >> 8] == MEM_RW) {
+
+		if (!common) {
 			*(memory[selbnk] + addr) = data;
-		else {
-			for (i = 0; i < MAXSEG; i++)
-				*(memory[i] + addr) = data;
+		} else {
+			if (addr < 32768)
+				*(memory[selbnk] + addr) = data;
+			else {
+				for (i = 0; i < MAXSEG; i++)
+					*(memory[i] + addr) = data;
+			}
 		}
 	}
 }
@@ -87,13 +109,26 @@ static inline BYTE memrdr(WORD addr)
 #ifdef FRONTPANEL
 	fp_clock++;
 	fp_led_address = addr;
-	fp_led_data = *(memory[selbnk] + addr);
+
+	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		fp_led_data = *(fdc_banked_rom + addr - 0xC000);
+	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+		fp_led_data = *(memory[selbnk] + addr);
+	} else {
+		fp_led_data = 0xff;
+	}
 	fp_sampleData();
 	wait_step();
 
 	return(fp_led_data);
 #else
-	return(*(memory[selbnk] + addr));
+	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		return(*(fdc_banked_rom + addr - 0xC000));
+	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+		return(*(memory[selbnk] + addr));
+	} else {
+		return(0xff);
+	}
 #endif
 }
 
@@ -102,12 +137,22 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline BYTE dma_read(WORD addr)
 {
-	return(*(memory[selbnk] + addr));
+	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		return(*(fdc_banked_rom + addr - 0xC000));
+	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+		return(*(memory[selbnk] + addr));
+	} else {
+		return(0xff);
+	}
 }
 
 static inline void dma_write(WORD addr, BYTE data)
 {
-	*(memory[selbnk] + addr) = data;
+	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		return;
+	} else if(selbnk || p_tab[addr >> 8] == MEM_RW) {
+		*(memory[selbnk] + addr) = data;
+	}
 }
 
 /*
@@ -115,18 +160,20 @@ static inline void dma_write(WORD addr, BYTE data)
  */
 static inline BYTE getmem(WORD addr)
 {
-	return(*(memory[selbnk] + addr));
+	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		return(*(fdc_banked_rom + addr - 0xC000));
+	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+		return(*(memory[selbnk] + addr));
+	} else {
+		return(0xff);
+	}
 }
 
 static inline void putmem(WORD addr, BYTE data)
 {
-	*(memory[selbnk] + addr) = data;
-}
-
-/*
- * return memory base for the simulation frame
- */
-static inline BYTE *mem_base(void)
-{
-	return(memory[0]);
+	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		*(fdc_banked_rom + addr - 0xC000) = data;
+	} else {
+		*(memory[selbnk] + addr) = data;
+	}
 }

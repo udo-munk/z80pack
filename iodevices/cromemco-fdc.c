@@ -99,6 +99,9 @@ static Diskdef disks[4] = {
 	{ "drived.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE }
 };
 
+BYTE fdc_banked_rom[8 << 10]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
+int fdc_rom_active = 0;
+
 /*
  * find and set path for disk images
  */
@@ -1027,7 +1030,21 @@ void cromemco_fdc_cmd_out(BYTE data)
 /*
  * Reset FDC
  */
+
+extern void reset_fdc_rom_map(void); /* implemnted in memory.c */
+
 void cromemco_fdc_reset(void)
 {
 	state = dcnt = mflag = index_pulse = motortimer = headloaded = 0;
+	fdc_flags = 16;
+
+#ifdef HAS_BANKED_ROM
+	if (R_flag) {
+		fdc_rom_active = 1;
+		reset_fdc_rom_map();
+	} else {
+		fdc_rom_active = 0;
+	}
+#endif 
+
 }
