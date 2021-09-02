@@ -1038,7 +1038,8 @@ extern void reset_fdc_rom_map(void); /* implemnted in memory.c */
 
 void cromemco_fdc_reset(void)
 {
-	state = dcnt = mflag = index_pulse = motortimer = headloaded = 0;
+	state = dcnt = mflag = index_pulse = disk = side = 0;
+	motoron = motortimer = headloaded = 0;
 	fdc_flags = AUTOBOOT;
 
 #ifdef HAS_BANKED_ROM
