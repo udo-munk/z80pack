@@ -13,6 +13,7 @@
  * 18-JUL-18 use logging
  * 01-OCT-19 optimization
  * 30-AUG-21 new memory configuration sections
+ * 02-SEP-21 implement banked ROM
  */
 
 #include <stdlib.h>
@@ -166,7 +167,7 @@ void reset_fdc_rom_map(void) {
 
 	register int i;
 
-	LOGD(TAG, "FDC BANK ROM %s", fdc_rom_active?"ON":"OFF");
+	LOGD(TAG, "FDC BANK ROM %s", fdc_rom_active ? "ON" : "OFF");
 
 	if (fdc_rom_active) LOG(TAG, "FDC Banked ROM enabled\r\n\r\n");
 
