@@ -66,10 +66,11 @@
 #define SPT5SD		18	/* # of sectors per track 5.25" SD */
 #define SPT5DD		10	/* # of sectors per track 5.25" DD */
 
+#define AUTOBOOT	16	/* FDC autoboot jumper, 16|64 = off */
+
 static const char *TAG = "16FDC";
 
-/*     BYTE fdc_flags = 16|64;*//* FDC flag register, no autoboot */
-       BYTE fdc_flags = 16;	/* FDC flag register, autoboot */
+       BYTE fdc_flags = AUTOBOOT; /* FDC flag register, autoboot setting */
 static BYTE fdc_cmd;		/* FDC command last send */
 static BYTE fdc_stat;		/* FDC status register */
 static BYTE fdc_aux;		/* FDC auxiliar status */
@@ -1038,7 +1039,7 @@ extern void reset_fdc_rom_map(void); /* implemnted in memory.c */
 void cromemco_fdc_reset(void)
 {
 	state = dcnt = mflag = index_pulse = motortimer = headloaded = 0;
-	fdc_flags = 16;
+	fdc_flags = AUTOBOOT;
 
 #ifdef HAS_BANKED_ROM
 	if (R_flag) {
