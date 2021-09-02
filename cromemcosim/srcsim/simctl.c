@@ -426,6 +426,9 @@ void reset_clicked(int state, int val)
 			/* reset CPU */
 			reset = 0;
 			reset_cpu();
+#ifdef HAS_BANKED_ROM
+			PC = _boot_switch[M_flag];
+#endif
 			cpu_state &= ~RESET;
 
 			/* update front panel */
