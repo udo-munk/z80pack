@@ -127,7 +127,7 @@ void init_memory(void)
 	LOG(TAG, "MMU has %d additional RAM banks of %d KB\r\n", MAXSEG, 64);
 	LOG(TAG, "\r\n");
 
-	cromemco_fdc_reset(); /* activates FDC Bankked ROM */
+	cromemco_fdc_reset(); /* activates FDC banked ROM */
 
 	for (i = 0; i < MAXMEMMAP; i++) {
 		if (memconf[M_flag][i].size) {
