@@ -21,6 +21,7 @@
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 22-APR-18 implemented TCP socket polling
  * 29-AUG-21 new memory configuration sections
+ * 02-SEP-21 implement banked ROM
  */
 
 /*
@@ -39,7 +40,7 @@
 #define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
-#define HAS_BANKED_ROM
+#define HAS_BANKED_ROM	/* has banked RDOS ROM */
 
 #define NUMNSOC 2	/* number of TCP/IP sockets, 2 per TU-ART */
 #define TCPASYNC	/* use async I/O if possible */

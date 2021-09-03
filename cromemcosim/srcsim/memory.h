@@ -15,6 +15,7 @@
  * 04-NOV-19 add functions for direct memory access
  * 17-JUN-21 allow building machine without frontpanel
  * 30-AUG-21 new memory configuration sections
+ * 02-SEP-21 implement banked ROM
  */
 
 #ifdef FRONTPANEL

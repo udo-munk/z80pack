@@ -13,6 +13,7 @@
  * 18-JUL-18 use logging
  * 01-OCT-19 optimization
  * 30-AUG-21 new memory configuration sections
+ * 02-SEP-21 implement banked ROM
  */
 
 #include <stdlib.h>
@@ -100,7 +101,7 @@ void init_memory(void)
 					LOG(TAG, "ROM %04XH - %04XH %s\r\n",
 					memconf[M_flag][i].spage << 8, 
 					((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
-					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
+					memconf[M_flag][i].rom_file ? memconf[M_flag][i].rom_file : "");
 					/* for the CROMEMCO Z-1, ROM must be
 					   initialised after FDC banked ROM
 					   is intialised */
@@ -126,7 +127,7 @@ void init_memory(void)
 	LOG(TAG, "MMU has %d additional RAM banks of %d KB\r\n", MAXSEG, 64);
 	LOG(TAG, "\r\n");
 
-	cromemco_fdc_reset(); /* activates FDC Bankked ROM */
+	cromemco_fdc_reset(); /* activates FDC banked ROM */
 
 	for (i = 0; i < MAXMEMMAP; i++) {
 		if (memconf[M_flag][i].size) {
@@ -166,7 +167,7 @@ void reset_fdc_rom_map(void) {
 
 	register int i;
 
-	LOGD(TAG, "FDC BANK ROM %s", fdc_rom_active?"ON":"OFF");
+	LOGD(TAG, "FDC BANK ROM %s", fdc_rom_active ? "ON" : "OFF");
 
 	if (fdc_rom_active) LOG(TAG, "FDC Banked ROM enabled\r\n\r\n");
 
