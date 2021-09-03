@@ -11,15 +11,24 @@
  * 15-AUG-17 don't use macros, use inline functions that coerce appropriate
  */
 
+#include <stdlib.h>
 #include "sim.h"
+#include "simglb.h"
+#include "memory.h"
 
 /* 64KB non banked memory */
 BYTE memory[65536];		/* 64KB RAM */
 
 void init_memory(void)
 {
-}
-
-void init_rom(void)
-{
+    register int i;
+    
+    /* fill memory content with some initial value */
+	if (m_flag >= 0) {
+		for (i = 0; i < 65536; i++)
+			putmem(i, m_flag);
+	} else {
+		for (i = 0; i < 65536; i++)
+			putmem(i, (BYTE) (rand() % 256));
+	}
 }

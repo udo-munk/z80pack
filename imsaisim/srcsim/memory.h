@@ -26,7 +26,7 @@
 #include "../../frontpanel/frontpanel.h"
 #endif
 
-extern void init_memory(void), reset_memory(void), init_rom(void);
+extern void init_memory(void), reset_memory(void);
 extern void groupswap(void);
 extern int wait_step(void);
 extern void wait_int_step(void);
@@ -234,12 +234,4 @@ static inline void fp_write(WORD addr, BYTE data)
 	} else {
 		 *(banks[selbnk] + addr) = data;
 	}
-}
-
-/*
- * return memory base pointer for the simulation frame
- */
-static inline BYTE *mem_base(void)
-{
-	return(&memory[0]);
 }

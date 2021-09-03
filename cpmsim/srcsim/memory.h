@@ -32,7 +32,7 @@
 #define MAXSEG 16		/* max. number of memory banks */
 #define SEGSIZ 49152		/* default size of one bank = 48 KBytes */
 
-extern void init_memory(void), init_rom(void);
+extern void init_memory(void);
 
 extern BYTE *memory[];
 extern int selbnk, maxbnk, segsize, wp_common;
@@ -129,6 +129,9 @@ static inline BYTE getmem(WORD addr)
 
 /*
  * return memory base pointer for the simulation frame
+ *
+ * iosim.c still has a dependency on this
+ * 
  */
 static inline BYTE *mem_base(void)
 {

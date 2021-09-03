@@ -12,7 +12,7 @@
  * 04-NOV-19 add functions for direct memory access
  */
 
-extern void init_memory(void), init_rom(void);
+extern void init_memory(void);
 extern BYTE memory[];
 
 /*
@@ -56,5 +56,8 @@ static inline BYTE getmem(WORD addr)
 
 /*
  * return memory base pointer for the simulation frame
+ *
+ * simctl.c still has a dependency on this
+ * 
  */
 #define mem_base() (&memory[0])
