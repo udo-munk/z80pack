@@ -32,7 +32,7 @@
 #define MAXSEG 16		/* max. number of memory banks */
 #define SEGSIZ 49152		/* default size of one bank = 48 KBytes */
 
-extern void init_memory(void), init_rom(void);
+extern void init_memory(void);
 
 extern BYTE *memory[];
 extern int selbnk, maxbnk, segsize, wp_common;

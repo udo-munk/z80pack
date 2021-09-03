@@ -45,6 +45,8 @@ int wp_common;			/* write protect/unprotect common segment */
 
 void init_memory(void)
 {
+	register int i;
+
 	/* allocate the first 64KB bank, so that we have some memory */
 	if ((memory[0] = malloc(65536)) == NULL) {
 		LOGE(TAG, "can't allocate memory for bank 0");
@@ -53,8 +55,14 @@ void init_memory(void)
 		return;
 	}
 	maxbnk = 1;
-}
+	selbnk = 0;
 
-void init_rom(void)
-{
+	/* fill memory content of bank 0 with some initial value */
+	if (m_flag >= 0) {
+		for (i = 0; i < 65536; i++)
+			putmem(i, m_flag);
+	} else {
+		for (i = 0; i < 65536; i++)
+			putmem(i, (BYTE) (rand() % 256));
+	}
 }

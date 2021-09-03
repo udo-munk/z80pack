@@ -12,7 +12,7 @@
  * 04-NOV-19 add functions for direct memory access
  */
 
-extern void init_memory(void), init_rom(void);
+extern void init_memory(void);
 extern BYTE memory[];
 
 /*
