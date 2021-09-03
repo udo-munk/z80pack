@@ -173,11 +173,3 @@ static inline BYTE fp_read(WORD addr)
 	else
 		return(0xff);
 }
-
-/*
- * return memory base pointer for the simulation frame
- */
-static inline BYTE *mem_base(void)
-{
-	return(&memory[0]);
-}

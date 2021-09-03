@@ -58,5 +58,8 @@ static inline BYTE getmem(WORD addr)
 
 /*
  * return memory base pointer for the simulation frame
+ *
+ * simctl.c still has a dependency on this
+ * 
  */
 #define mem_base() (&memory[0])

@@ -235,11 +235,3 @@ static inline void fp_write(WORD addr, BYTE data)
 		 *(banks[selbnk] + addr) = data;
 	}
 }
-
-/*
- * return memory base pointer for the simulation frame
- */
-static inline BYTE *mem_base(void)
-{
-	return(&memory[0]);
-}

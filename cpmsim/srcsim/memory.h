@@ -129,6 +129,9 @@ static inline BYTE getmem(WORD addr)
 
 /*
  * return memory base pointer for the simulation frame
+ *
+ * iosim.c still has a dependency on this
+ * 
  */
 static inline BYTE *mem_base(void)
 {
