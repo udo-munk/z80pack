@@ -748,7 +748,7 @@ CHAROUT:
         ANI     STATTXOK        ; READY BIT
         JZ      CHAROUT         ; LOOP UNTIL PORT IS READY
         MOV     A,M             ; GET THE CHARACTER
-        OUT     01H
+        OUT     DATAPORT
         RET
 
 ; <AT SIGN> (OR <SHIFT-P> ON A TELETYPE) FUNCTION ENTRY POINT (PUNCH ANIMATION)
@@ -800,7 +800,7 @@ CPWAIT:
         ANI     STATTXOK        ; READY BIT
         JZ      CPWAIT
         MOV     A,M
-        OUT     01H
+        OUT     DATAPORT
         INX     H
         JMP     CPWAIT
 
