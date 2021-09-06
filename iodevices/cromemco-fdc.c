@@ -1040,6 +1040,7 @@ void cromemco_fdc_reset(void)
 {
 	state = dcnt = mflag = index_pulse = disk = side = 0;
 	motoron = motortimer = headloaded = autowait = 0;
+	fdc_stat = fdc_aux = 0;
 	fdc_flags = AUTOBOOT;
 	secsz = SEC_SZSD;
 
