@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2021 by Udo Munk
+ * Copyright (C) 2014-2021 Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for a Cromemco Z-1 system
@@ -689,8 +689,9 @@ void exit_io(void)
  */
 void reset_io(void)
 {
-	cromemco_dazzler_off();
+	cromemco_tuart_reset();
 	cromemco_fdc_reset();
+	cromemco_dazzler_off();
 	hwctl_lock = 0xff;
 }
 
