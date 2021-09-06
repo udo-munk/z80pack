@@ -696,6 +696,7 @@ void reset_io(void)
 	cromemco_tuart_reset();
 	cromemco_fdc_reset();
 	th_suspend = 0;		/* resume timing thread */
+	selbnk = 0;
 	cromemco_dazzler_off();
 	hwctl_lock = 0xff;
 }
