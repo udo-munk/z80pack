@@ -434,7 +434,7 @@ void reset_clicked(int state, int val)
 
 			/* update front panel */
 			fp_led_address = PC;
-			fp_led_data = getmem(0);
+			fp_led_data = getmem(PC);
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		}
 		break;
