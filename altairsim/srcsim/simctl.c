@@ -421,14 +421,16 @@ void reset_clicked(int state, int val)
 	case FP_SW_CENTER:
 		if (reset) {
 			/* reset CPU */
-			reset = 0;
 			reset_cpu();
+			if (reset == 2)
+				PC = _boot_switch[M_flag];
+			reset = 0;
 			cpu_state &= ~RESET;
 
 			/* update front panel */
-			fp_led_address = 0;
-			fp_led_data = fp_read(0);
-			if ((p_tab[0] == MEM_RO) || (p_tab[0] == MEM_WPROT))
+			fp_led_address = PC;
+			fp_led_data = fp_read(PC);
+			if ((p_tab[PC] == MEM_RO) || (p_tab[PC] == MEM_WPROT))
 				mem_wp = 1;
 			else
 				mem_wp = 0;
@@ -437,10 +439,10 @@ void reset_clicked(int state, int val)
 		break;
 	case FP_SW_DOWN:
 		/* reset CPU and I/O devices */
-		reset = 1;
+		reset = 2;
 		cpu_state |= RESET;
-		IFF = 0;
 		m1_step = 0;
+		IFF = 0;
 		reset_io();
 		break;
 	default:
