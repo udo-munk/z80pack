@@ -1,6 +1,6 @@
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 1
       
 
@@ -58,7 +58,7 @@
                    ; DATA
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 2
       
 
@@ -116,7 +116,7 @@
                     
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 3
       
 
@@ -174,7 +174,7 @@
    0076   7A               MOV     A,D             ; SEE IF WE WRAPPED
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 4
       
 
@@ -232,7 +232,7 @@
    00BB   EE0F             XRI     0FH             ; XOR IT WITH 0X0F TO MAKE IT FLASH
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 5
       
 
@@ -290,7 +290,7 @@
    010A   110002           LXI     D,0200H         ; IF IT IS...
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 6
       
 
@@ -348,7 +348,7 @@
    0148            SPTOP4:
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 7
       
 
@@ -406,7 +406,7 @@
    017F   00      
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 8
       
 
@@ -464,7 +464,7 @@
    01BE   00               NOP
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 9
       
 
@@ -522,7 +522,7 @@
                    ; LOOKS LIKE ANOTHER KEYSTROKE DECODE TABLE, BUT SEEMS DEAD
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 10
       
 
@@ -580,7 +580,7 @@
    0237   FE20             CPI     20H             ; COMPARE HIGH ADDRESS TO 0X20 (OR MAY BE HACKED
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 11
       
 
@@ -638,7 +638,7 @@
    026F   3E               DB      3EH             ; <GREATER THAN>
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 12
       
 
@@ -696,7 +696,7 @@
    02B9   05000500
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 13
       
 
@@ -754,7 +754,7 @@
                     
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 14
       
 
@@ -812,7 +812,7 @@
                    ; L FUNCTION (LOW INTENSITY)
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 15
       
 
@@ -870,13 +870,13 @@
    0384   CA8003           JZ      CHAROUT         ; LOOP UNTIL PORT IS READY
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 16
       
 
 
    0387   7E               MOV     A,M             ; GET THE CHARACTER
-   0388   D301             OUT     01H
+   0388   D301             OUT     DATAPORT
    038A   C9               RET
                     
                    ; <AT SIGN> (OR <SHIFT-P> ON A TELETYPE) FUNCTION ENTRY POINT (PUNCH ANIMATION)
@@ -928,14 +928,14 @@
    03C5   E680             ANI     STATTXOK        ; READY BIT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 17
       
 
 
    03C7   CAC303           JZ      CPWAIT
    03CA   7E               MOV     A,M
-   03CB   D301             OUT     01H
+   03CB   D301             OUT     DATAPORT
    03CD   23               INX     H
    03CE   C3C303           JMP     CPWAIT
                     
@@ -986,7 +986,7 @@
    0406   2A0E00           LHLD    CMDBUFP         ; COMMAND BUFFER POINTER IN HL (CMDBUFP)
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 18
       
 
@@ -1037,7 +1037,7 @@
  NO PROGRAM ERRORS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      03:24  04/05/2016
++                                                      09:34  09/04/2021
 +                                                                                      PAGE 19
       
 

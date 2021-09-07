@@ -3,7 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2021 Udo Munk
  *
  * Emulation of a Cromemco TU-ART S100 board
  *
@@ -19,6 +19,7 @@
  * 25-APR-18 cleanup
  * 03-MAY-18 improved accuracy
  * 15-JUL-18 use logging
+ * 06-SEP-21 implement reset
  */
 
 extern BYTE cromemco_tuart_0a_status_in(void);
@@ -40,6 +41,8 @@ extern void cromemco_tuart_0a_timer2_out(BYTE);
 extern void cromemco_tuart_0a_timer3_out(BYTE);
 extern void cromemco_tuart_0a_timer4_out(BYTE);
 extern void cromemco_tuart_0a_timer5_out(BYTE);
+
+extern void cromemco_tuart_reset(void);
 
 extern int uart0a_int_mask, uart0a_int, uart0a_int_pending, uart0a_rst7;
 extern int uart0a_timer1, uart0a_timer2, uart0a_timer3, uart0a_timer4,

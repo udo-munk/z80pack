@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2021 by Udo Munk
+ * Copyright (C) 2014-2021 Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for a Cromemco Z-1 system
@@ -81,6 +81,8 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /* network connections for serial ports on the TU-ART's */
 struct net_connectors ncons[NUMNSOC];
+
+static int th_suspend;		/* timing thread suspend flag */
 
 /*
  *	This array contains function pointers for every
@@ -689,8 +691,13 @@ void exit_io(void)
  */
 void reset_io(void)
 {
-	cromemco_dazzler_off();
+	th_suspend = 1;		/* suspend timing thread */
+	SLEEP_MS(20);		/* give it enough time to suspend */
+	cromemco_tuart_reset();
 	cromemco_fdc_reset();
+	th_suspend = 0;		/* resume timing thread */
+	selbnk = 0;
+	cromemco_dazzler_off();
 	hwctl_lock = 0xff;
 }
 
@@ -909,11 +916,15 @@ static void mmu_out(BYTE data)
 /*
  *	Thread for timing and interrupts
  */
-void *timing(void *arg)
+static void *timing(void *arg)
 {
 	arg = arg;	/* to avoid compiler warning */
 
 	while (1) {	/* 1 msec per loop iteration */
+
+		/* do nothing if thread is suspended */
+		if (th_suspend)
+			goto next;
 
 		/* make sure index pulse is there long enough */
 		if (index_pulse)
@@ -1152,7 +1163,7 @@ next:
 /*
  *	10ms interrupt handler
  */
-void interrupt(int sig)
+static void interrupt(int sig)
 {
 	static unsigned long counter = 0L;
 	struct pollfd p[1];
