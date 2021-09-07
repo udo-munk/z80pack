@@ -9,4 +9,4 @@
 rm -f disks/drivea.dsk
 ln disks/library/cpm22-vdm.dsk disks/drivea.dsk
 
-./altairsim -R -M 9 $*
+./altairsim -R -M 10 $*
