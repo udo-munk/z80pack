@@ -111,7 +111,7 @@ static inline BYTE memrdr(WORD addr)
 	fp_clock++;
 	fp_led_address = addr;
 
-		if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		fp_led_data = *(fdc_banked_rom + addr - 0xC000);
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		fp_led_data = *(memory[selbnk] + addr);
