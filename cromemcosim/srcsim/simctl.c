@@ -433,7 +433,7 @@ void reset_clicked(int state, int val)
 			cpu_state &= ~RESET;
 
 			/* update front panel */
-			fp_led_address = 0;
+			fp_led_address = PC;
 			fp_led_data = getmem(0);
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		}
