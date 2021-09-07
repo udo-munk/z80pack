@@ -423,7 +423,8 @@ void reset_clicked(int state, int val)
 			/* reset CPU */
 			reset_cpu();
 			if (reset == 2)
-				PC = _boot_switch[M_flag];
+				if (!R_flag)
+					PC = _boot_switch[M_flag];
 			reset = 0;
 			cpu_state &= ~RESET;
 
