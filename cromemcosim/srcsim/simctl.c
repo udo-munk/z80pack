@@ -424,11 +424,12 @@ void reset_clicked(int state, int val)
 	case FP_SW_CENTER:
 		if (reset) {
 			/* reset CPU */
-			reset = 0;
 			reset_cpu();
 #ifdef HAS_BANKED_ROM
-			PC = _boot_switch[M_flag];
+			if (reset == 2)
+				PC = _boot_switch[M_flag];
 #endif
+			reset = 0;
 			cpu_state &= ~RESET;
 
 			/* update front panel */
@@ -439,7 +440,7 @@ void reset_clicked(int state, int val)
 		break;
 	case FP_SW_DOWN:
 		/* reset CPU and I/O devices */
-		reset = 1;
+		reset = 2;
 		cpu_state |= RESET;
 		m1_step = 0;
 		IFF = 0;
