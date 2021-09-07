@@ -86,7 +86,7 @@ static inline void memwrt(WORD addr, BYTE data)
 	wait_step();
 #endif
 
-	if (fdc_rom_active && (addr >> 12) == 0xC) {
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return;
 	} else if(selbnk || p_tab[addr >> 8] == MEM_RW) {
 
@@ -111,7 +111,7 @@ static inline BYTE memrdr(WORD addr)
 	fp_clock++;
 	fp_led_address = addr;
 
-	if (fdc_rom_active && (addr >> 12) == 0xC) {
+		if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		fp_led_data = *(fdc_banked_rom + addr - 0xC000);
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		fp_led_data = *(memory[selbnk] + addr);
@@ -123,7 +123,7 @@ static inline BYTE memrdr(WORD addr)
 
 	return(fp_led_data);
 #else
-	if (fdc_rom_active && (addr >> 12) == 0xC) {
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return(*(fdc_banked_rom + addr - 0xC000));
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		return(*(memory[selbnk] + addr));
@@ -138,7 +138,7 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline BYTE dma_read(WORD addr)
 {
-	if (fdc_rom_active && (addr >> 12) == 0xC) {
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return(*(fdc_banked_rom + addr - 0xC000));
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		return(*(memory[selbnk] + addr));
@@ -149,7 +149,7 @@ static inline BYTE dma_read(WORD addr)
 
 static inline void dma_write(WORD addr, BYTE data)
 {
-	if (fdc_rom_active && (addr >> 12) == 0xC) {
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return;
 	} else if(selbnk || p_tab[addr >> 8] == MEM_RW) {
 		*(memory[selbnk] + addr) = data;
@@ -161,7 +161,7 @@ static inline void dma_write(WORD addr, BYTE data)
  */
 static inline BYTE getmem(WORD addr)
 {
-	if (fdc_rom_active && (addr >> 12) == 0xC) {
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return(*(fdc_banked_rom + addr - 0xC000));
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		return(*(memory[selbnk] + addr));
@@ -172,7 +172,7 @@ static inline BYTE getmem(WORD addr)
 
 static inline void putmem(WORD addr, BYTE data)
 {
-	if (fdc_rom_active && (addr >> 12) == 0xC) {
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		*(fdc_banked_rom + addr - 0xC000) = data;
 	} else {
 		*(memory[selbnk] + addr) = data;
