@@ -75,6 +75,10 @@ static void quit_callback(void);
 void mon(void)
 {
 	extern BYTE fdc_flags;
+#ifdef HAS_NETSERVER
+	extern int start_net_services (void);
+	start_net_services();
+#endif
 
 #ifdef FRONTPANEL
 	/* initialise front panel */

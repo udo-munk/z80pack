@@ -53,6 +53,9 @@
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
 #include "config.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
@@ -1198,18 +1201,29 @@ static void interrupt(int sig)
 	sigio_tcp_server_socket(0);
 #endif
 
-	/* check for RDA */
-	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (p[0].revents & POLLIN)
-		uart0a_rda = 1;
-	else
-		uart0a_rda = 0;
-	if (p[0].revents & POLLNVAL) {
-		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
-		exit(1);
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_SIO1)) {
+		if (net_device_poll(DEV_SIO1)) {
+			uart0a_rda = 1;
+		} else {
+			uart0a_rda = 0;
+		}
+	} else 
+#endif
+	{
+		/* check for RDA */
+		p[0].fd = fileno(stdin);
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (p[0].revents & POLLIN)
+			uart0a_rda = 1;
+		else
+			uart0a_rda = 0;
+		if (p[0].revents & POLLNVAL) {
+			LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+			exit(1);
+		}
 	}
 
 	if (ncons[0].ssc != 0) {

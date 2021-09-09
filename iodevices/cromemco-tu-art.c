@@ -33,8 +33,20 @@
 #include "log.h"
 #include "unix_terminal.h"
 #include "unix_network.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
 
 static const char *TAG = "TU-ART";
+
+void lpt_reset(void) {
+	extern int lpt1;
+
+	if (lpt1) {
+		close(lpt1);
+	}
+	lpt1 = creat("lpt1.txt", 0664);
+}
 
 /************************/
 /*	Device 0A	*/
@@ -93,20 +105,31 @@ BYTE cromemco_tuart_0a_data_in(void)
 
 	uart0a_rda = 0;
 
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_SIO1)) {
+		int res = net_device_get(DEV_SIO1);
+		if (res < 0) {
+			return(last);
+		}
+		data = res;
+	} else 
+#endif
+	{
 again:
-	/* if no input waiting return last */
-	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
+		/* if no input waiting return last */
+		p[0].fd = fileno(stdin);
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (!(p[0].revents & POLLIN))
+			return(last);
 
-	if (read(fileno(stdin), &data, 1) == 0) {
-		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
-		set_unix_terminal();
-		goto again;
+		if (read(fileno(stdin), &data, 1) == 0) {
+			/* try to reopen tty, input redirection exhausted */
+			freopen("/dev/tty", "r", stdin);
+			set_unix_terminal();
+			goto again;
+		}
 	}
 
 	/* process read data */
@@ -121,14 +144,21 @@ void cromemco_tuart_0a_data_out(BYTE data)
 	if (data == 0x00)
 		return;
 
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_SIO1)) {
+		net_device_send(DEV_SIO1, (char *) &data, 1);
+	} else 
+#endif
+	{
 again:
-	if (write(fileno(stdout), (char *) &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			LOGE(TAG, "can't write tu-art 0a data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+		if (write(fileno(stdout), (char *) &data, 1) != 1) {
+			if (errno == EINTR) {
+				goto again;
+			} else {
+				LOGE(TAG, "can't write tu-art 0a data");
+				cpu_error = IOERROR;
+				cpu_state = STOPPED;
+			}
 		}
 	}
 }
@@ -522,6 +552,10 @@ again:
 				cpu_state = STOPPED;
 			}
 		}
+
+#ifdef HAS_NETSERVER
+		net_device_send(DEV_LPT, (char *) &data, 1);
+#endif
 	}
 }
 
