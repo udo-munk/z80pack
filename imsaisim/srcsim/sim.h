@@ -52,6 +52,8 @@
 #define HAS_APU			/* has simulated AM9511 floating point maths coprocessor */
 #define HAS_HAL			/* implements a hardware abstraction layer (HAL) for SIO ports */
 
+#define DOCUMENT_ROOT "../webfrontend/www/imsai"
+
 #define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
 #define NUMUSOC 1	/* number of UNIX sockets for SIO connections */
 
@@ -144,5 +146,5 @@ struct softbreak {			/* structure of a breakpoint */
 #define isxdigit(c) ((c<='f'&&c>='a')||(c<='F'&&c>='A')||(c<='9'&&c>='0'))
 #endif
 
-extern void sleep_ms(int);
+extern void sleep_ms(unsigned int);
 #define SLEEP_MS(t)	sleep_ms(t)

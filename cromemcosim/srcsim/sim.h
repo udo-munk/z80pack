@@ -43,6 +43,8 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* has banked RDOS ROM */
 
+#define DOCUMENT_ROOT "../webfrontend/www/cromemco"
+
 #define NUMNSOC 2	/* number of TCP/IP sockets, 2 per TU-ART */
 #define TCPASYNC	/* use async I/O if possible */
 #define SERVERPORT 4010	/* first TCP/IP server port used */
