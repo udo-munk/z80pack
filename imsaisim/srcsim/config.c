@@ -354,4 +354,12 @@ void config(void)
 	LOG(TAG, "SIO 1B running at %d baud\r\n", sio1b_baud_rate);
 	LOG(TAG, "SIO 2A running at %d baud\r\n", sio2a_baud_rate);
 	LOG(TAG, "SIO 2B running at %d baud\r\n", sio2b_baud_rate);
+
+	LOG(TAG, "\r\n");
+
+#ifndef HAS_NETSERVER
+	LOG(TAG, "Web server not builtin\r\n");
+#else
+	LOG(TAG, "Web server builtin, URL is http://localhost:8080\r\n");
+#endif
 }

@@ -147,4 +147,12 @@ void config(void)
 
 		}
 	}
+
+	LOG(TAG, "\r\n");
+
+#ifndef HAS_NETSERVER
+	LOG(TAG, "Web server not builtin\r\n");
+#else
+	LOG(TAG, "Web server builtin, URL is http://localhost:8080\r\n");
+#endif
 }
