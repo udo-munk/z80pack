@@ -23,6 +23,7 @@
 #endif
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */
+#define SEGSIZ 65536	/* size of the memory segments, 64 KBytes */
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
@@ -44,7 +45,7 @@ struct memmap {
 };
 
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
-extern WORD _boot_switch[MAXMEMSECT];	/* boot address */
+extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
 extern void init_memory(void);
 extern int wait_step(void);

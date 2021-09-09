@@ -50,9 +50,13 @@
 #include "../../iodevices/cromemco-tu-art.h"
 #include "../../iodevices/cromemco-fdc.h"
 #include "../../iodevices/cromemco-dazzler.h"
+#include "../../iodevices/cromemco-d+7a.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
 #include "config.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
@@ -113,14 +117,14 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,			/* port 21 */
 	io_trap_in,			/* port 22 */
 	io_trap_in,			/* port 23 */
-	io_trap_in,			/* port 24 */
-	io_trap_in,			/* port 25 */
-	io_trap_in,			/* port 26 */
-	io_trap_in,			/* port 27 */
-	io_trap_in,			/* port 28 */
-	io_trap_in,			/* port 29 */
-	io_trap_in,			/* port 30 */
-	io_trap_in,			/* port 31 */
+	cromemco_d7a_D_in,		/* port 24 */
+	cromemco_d7a_A1_in,		/* port 25 */
+	cromemco_d7a_A2_in,		/* port 26 */
+	cromemco_d7a_A3_in,		/* port 27 */
+	cromemco_d7a_A4_in,		/* port 28 */
+	cromemco_d7a_A5_in,		/* port 29 */
+	cromemco_d7a_A6_in,		/* port 30 */
+	cromemco_d7a_A7_in,		/* port 31 */
 	cromemco_tuart_1a_status_in,	/* port 32 */
 	cromemco_tuart_1a_data_in,	/* port 33 */
 	io_trap_in,			/* port 34 */
@@ -376,14 +380,14 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,			/* port 21 */
 	io_trap_out,			/* port 22 */
 	io_trap_out,			/* port 23 */
-	io_trap_out,			/* port 24 */
-	io_trap_out,			/* port 25 */
-	io_trap_out,			/* port 26 */
-	io_trap_out,			/* port 27 */
-	io_trap_out,			/* port 28 */
-	io_trap_out,			/* port 29 */
-	io_trap_out,			/* port 30 */
-	io_trap_out,			/* port 31 */
+	cromemco_d7a_D_out,		/* port 24 */
+	cromemco_d7a_A1_out,		/* port 25 */
+	cromemco_d7a_A2_out,		/* port 26 */
+	cromemco_d7a_A3_out,		/* port 27 */
+	cromemco_d7a_A4_out,		/* port 28 */
+	cromemco_d7a_A5_out,		/* port 29 */
+	cromemco_d7a_A6_out,		/* port 30 */
+	cromemco_d7a_A7_out,		/* port 31 */
 	cromemco_tuart_1a_baud_out,	/* port 32 */
 	cromemco_tuart_1a_data_out,	/* port 33 */
 	cromemco_tuart_1a_command_out,	/* port 34 */
@@ -1198,18 +1202,29 @@ static void interrupt(int sig)
 	sigio_tcp_server_socket(0);
 #endif
 
-	/* check for RDA */
-	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (p[0].revents & POLLIN)
-		uart0a_rda = 1;
-	else
-		uart0a_rda = 0;
-	if (p[0].revents & POLLNVAL) {
-		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
-		exit(1);
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_SIO1)) {
+		if (net_device_poll(DEV_SIO1)) {
+			uart0a_rda = 1;
+		} else {
+			uart0a_rda = 0;
+		}
+	} else 
+#endif
+	{
+		/* check for RDA */
+		p[0].fd = fileno(stdin);
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (p[0].revents & POLLIN)
+			uart0a_rda = 1;
+		else
+			uart0a_rda = 0;
+		if (p[0].revents & POLLNVAL) {
+			LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+			exit(1);
+		}
 	}
 
 	if (ncons[0].ssc != 0) {

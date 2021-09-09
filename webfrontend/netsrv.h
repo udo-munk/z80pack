@@ -68,7 +68,7 @@ enum http_method {
 	HTTP_POST,
 	HTTP_PUT,
 	HTTP_DELETE,
-	UNKNOWN
+	HTTP_UNKNOWN
 };
 
 typedef enum http_method http_method_t;

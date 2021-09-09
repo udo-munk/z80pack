@@ -131,8 +131,8 @@ again:
 		} else {
 			/* some error */
 			LOGE(TAG, "sleep_ms(%d) %s", time, strerror(err));
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			// cpu_error = IOERROR;
+			// cpu_state = STOPPED;
 		}
 	}
 }

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>LPT:</title>
+</head>
+<body class="blue">
+    <div id="printarea">
+        <div id="printer" class="pre" data-include-file="/imsai/printer.txt"></div>
+    </div>
+    <div id="controls">
+        <div class="control" onclick="lpt.connect()">
+            <i id="online" class="fa fa-circle" title="On/Off Line" alt="On/Off Line" style="color: rgb(255,0,0)"></i>
+        </div>
+        <div class="control" onclick="lpt.formFeed()">
+            <i class="fa fa-angle-double-up" title="Form Feed" alt="Form Feed"></i>
+        </div>
+        <div class="control" onclick="lpt.lineFeed()">
+            <i class="fa fa-angle-down" title="Line Feed" alt="Line Feed"></i>
+        </div>
+        <div class="control" onclick="lpt.paperChange()">
+            <i class="fa fa-file-text-o" title="Paper Style" alt="Paper Style"></i>
+        </div>
+        <div class="control" onclick="lpt.reset()">
+            <i class="fa fa-refresh" title="Reset" alt="Reset"></i>
+        </div>
+        <div class="control" onclick="print()">
+            <i class="fa fa-print" title="Print" alt="Print"></i>
+        </div>
+        <div class="control" onclick="window.close()">
+            <i class="fa fa-close" title="Close" alt="Close"></i>
+        </div>
+    </div>
+    <div id="modal">
+        <div class="modal-back">
+        </div>
+        <div class="modal-hold" onclick="Modal.close()">
+          <div class="modal-cont">
+            <div id="modalHead">
+            </div>
+            <div id="modalBody">
+            </div>
+            <div id="modalFoot">
+            </div>
+          </div>
+        </div>
+      </div>
+<script type="text/javascript" src="eef7849a8896982a56d4.js"></script></body>
+</html>
