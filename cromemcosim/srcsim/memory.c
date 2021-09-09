@@ -40,6 +40,8 @@ int selbnk;			/* current selected bank */
 int common;			/* flag for common writes to all banks */
 int bankio;			/* data written to banking I/O port */
 
+int num_banks = MAXSEG;
+
 /* page table with memory configuration/state */
 int p_tab[MAXPAGES];		/* 256 pages of 256 bytes */
 int _p_tab[MAXPAGES];		/* copy of p_tab[] for RAM only */
@@ -66,7 +68,7 @@ void init_memory(void)
 		p_tab[i] = MEM_NONE;
 
 	for (i = 0; i < MAXSEG; i++) {
-		if ((memory[i] = malloc(65536)) == NULL) {
+		if ((memory[i] = malloc(SEGSIZ)) == NULL) {
 			LOGE(TAG, "can't allocate memory for bank %d", i);
 			exit(1);
 		}
