@@ -6,9 +6,9 @@ MACHINE = cromemco
 # machine specific system source files
 SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c unix_terminal.c unix_network.c simbdos.c
+SRC_IO = cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c unix_terminal.c unix_network.c simbdos.c netsrv.c
 #machine specifc libraries 
-SRC_LIBS = -lfrontpanel
+SRC_LIBS = -lcivetweb -lfrontpanel
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
@@ -40,8 +40,10 @@ EXEC = $(SIM)
 DIR_CORE = ../../z80core
 DIR_IO = ../../iodevices
 DIR_FP = ../../frontpanel
+DIR_NET = ../../webfrontend 
+DIR_CIV = $(DIR_NET:=/civetweb)
 
-VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_FP)
+VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_FP) $(DIR_NET) $(DIR_CIV)
 CC = gcc
 
 ###
@@ -72,7 +74,7 @@ endif
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCL = -iquote . -I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) $(PLAT_INCL)
+INCL = -iquote . -I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) -I$(DIR_NET) -I$(DIR_CIV:=/include) $(PLAT_INCL)
 DEFS = -DCONFDIR=\"$(CONF)\" -DDISKSDIR=\"$(DISKS)\" -DBOOTROM=\"$(ROM)\"
 
 # Production - the default
@@ -88,7 +90,7 @@ ifneq ($(DEBUG),)
 CFLAGS = -O -g -c $(PLAT_CFLAGS) $(DEFS) $(INCL)
 endif
 
-LFLAGS = -L$(DIR_FP) $(SRC_LIBS) \
+LFLAGS = -L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS) \
 	-ljpeg -lGL -lGLU -lX11 \
 	$(PLAT_LFLAGS)
 
@@ -109,6 +111,9 @@ $(SIM) : $(OBJ) $(SRC_LIBS)
 	@$(CC) -MM $(CFLAGS) $< > $@
 
 -include $(SRC:.c=.d)
+
+-lcivetweb: $(DIR_CIV:=/Makefile)
+	make -B -C $(DIR_CIV)
 
 build: _rm_obj all
 
