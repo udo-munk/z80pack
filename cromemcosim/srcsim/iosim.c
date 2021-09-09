@@ -50,6 +50,7 @@
 #include "../../iodevices/cromemco-tu-art.h"
 #include "../../iodevices/cromemco-fdc.h"
 #include "../../iodevices/cromemco-dazzler.h"
+#include "../../iodevices/cromemco-d+7a.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
 #include "config.h"
@@ -116,14 +117,14 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,			/* port 21 */
 	io_trap_in,			/* port 22 */
 	io_trap_in,			/* port 23 */
-	io_trap_in,			/* port 24 */
-	io_trap_in,			/* port 25 */
-	io_trap_in,			/* port 26 */
-	io_trap_in,			/* port 27 */
-	io_trap_in,			/* port 28 */
-	io_trap_in,			/* port 29 */
-	io_trap_in,			/* port 30 */
-	io_trap_in,			/* port 31 */
+	cromemco_d7a_D_in,		/* port 24 */
+	cromemco_d7a_A1_in,		/* port 25 */
+	cromemco_d7a_A2_in,		/* port 26 */
+	cromemco_d7a_A3_in,		/* port 27 */
+	cromemco_d7a_A4_in,		/* port 28 */
+	cromemco_d7a_A5_in,		/* port 29 */
+	cromemco_d7a_A6_in,		/* port 30 */
+	cromemco_d7a_A7_in,		/* port 31 */
 	cromemco_tuart_1a_status_in,	/* port 32 */
 	cromemco_tuart_1a_data_in,	/* port 33 */
 	io_trap_in,			/* port 34 */
@@ -379,14 +380,14 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,			/* port 21 */
 	io_trap_out,			/* port 22 */
 	io_trap_out,			/* port 23 */
-	io_trap_out,			/* port 24 */
-	io_trap_out,			/* port 25 */
-	io_trap_out,			/* port 26 */
-	io_trap_out,			/* port 27 */
-	io_trap_out,			/* port 28 */
-	io_trap_out,			/* port 29 */
-	io_trap_out,			/* port 30 */
-	io_trap_out,			/* port 31 */
+	cromemco_d7a_D_out,		/* port 24 */
+	cromemco_d7a_A1_out,		/* port 25 */
+	cromemco_d7a_A2_out,		/* port 26 */
+	cromemco_d7a_A3_out,		/* port 27 */
+	cromemco_d7a_A4_out,		/* port 28 */
+	cromemco_d7a_A5_out,		/* port 29 */
+	cromemco_d7a_A6_out,		/* port 30 */
+	cromemco_d7a_A7_out,		/* port 31 */
 	cromemco_tuart_1a_baud_out,	/* port 32 */
 	cromemco_tuart_1a_data_out,	/* port 33 */
 	cromemco_tuart_1a_command_out,	/* port 34 */
