@@ -62,6 +62,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 static const char *TAG = "func";
@@ -130,7 +131,7 @@ again:
 			}
 		} else {
 			/* some error */
-			LOGE(TAG, "sleep_ms(%d) %s", time, strerror(err));
+			LOGD(TAG, "sleep_ms(%d) %s", time, strerror(err));
 			// cpu_error = IOERROR;
 			// cpu_state = STOPPED;
 		}
