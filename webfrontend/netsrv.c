@@ -181,7 +181,7 @@ request_t *get_request(const HttpdConnection_t *conn) {
     } else if (!strcmp(req.mg->request_method, "DELETE")) {
 		req.method = HTTP_DELETE;
     } else {
-		req.method = UNKNOWN;
+		req.method = HTTP_UNKNOWN;
 	}
 
 	//TODO: split query_string on '&' into args[] - for now its all jammed into args[0]
