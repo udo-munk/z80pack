@@ -44,7 +44,7 @@ struct memmap {
 };
 
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
-extern WORD _boot_switch[MAXMEMSECT];	/* boot address */
+extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
 extern void init_memory(void);
 extern int wait_step(void);

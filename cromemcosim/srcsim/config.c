@@ -127,8 +127,8 @@ void config(void)
 					(t4 == NULL ? "" : t4));
 				num_segs++;
 			} else if (!strcmp(t1, "boot")) {
-				_boot_switch[section] = strtol(t2, NULL, 0);
-				LOGD(TAG, "Boot switch address at %04XH", _boot_switch[section]);
+				boot_switch[section] = strtol(t2, NULL, 0);
+				LOGD(TAG, "Boot switch address at %04XH", boot_switch[section]);
 			} else if (!strcmp(t1, "[MEMORY")) {
 				v1 = strtol(t2, &t3, 10);
 				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {

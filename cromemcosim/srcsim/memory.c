@@ -32,7 +32,7 @@ extern void cromemco_fdc_reset(void);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
-WORD _boot_switch[MAXMEMSECT];			/* boot address */
+WORD boot_switch[MAXMEMSECT];			/* boot address */
 
 
 BYTE *memory[MAXSEG];		/* MMU with pointers to the banks */
@@ -112,9 +112,9 @@ void init_memory(void)
 	}
 
 	/* set preferred start of boot ROM if specified */
-	if (_boot_switch[M_flag]) {
-		LOG(TAG, "Power-on jump address at %04XH\r\n", _boot_switch[M_flag]);
-		PC = _boot_switch[M_flag];
+	if (boot_switch[M_flag]) {
+		LOG(TAG, "Power-on jump address at %04XH\r\n", boot_switch[M_flag]);
+		PC = boot_switch[M_flag];
 	} else {
 		PC = 0x0000;
 	}
