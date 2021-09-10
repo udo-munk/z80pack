@@ -171,7 +171,7 @@ void reset_fdc_rom_map(void) {
 
 	LOGD(TAG, "FDC BANK ROM %s", fdc_rom_active ? "ON" : "OFF");
 
-	if (fdc_rom_active) LOG(TAG, "FDC Banked ROM enabled\r\n\r\n");
+	if (fdc_rom_active) LOG(TAG, "%s\r\n\r\n", BANKED_ROM_MSG);
 
 	for (i = 0xC0; i < 0xE0; i++) {
 		if (fdc_rom_active) {

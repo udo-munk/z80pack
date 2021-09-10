@@ -329,7 +329,7 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
             	httpdPrintf(conn, "\"Power-on jump address %04XH\", ", boot_switch[M_flag]);
 			}
 			if (R_flag) {
-            	httpdPrintf(conn, "\"MPU-B Banked ROM/RAM enabled\", ");
+            	httpdPrintf(conn, "\"%s\", ", BANKED_ROM_MSG);
 			}
 
 			extern int num_banks;
