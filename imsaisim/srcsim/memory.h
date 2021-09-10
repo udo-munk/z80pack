@@ -46,6 +46,8 @@ extern int selbnk;
 #define MAXMEMMAP	6
 #define MAXMEMSECT	7
 
+#define BANKED_ROM_MSG "MPU-B Banked ROM/RAM enabled"
+
 struct memmap {
 	int type;	/* type of memory pages */
 	BYTE spage;	/* start page of segment */

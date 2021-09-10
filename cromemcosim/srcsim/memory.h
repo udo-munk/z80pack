@@ -37,6 +37,8 @@
 #define MAXMEMSECT	15
 #define MAXPAGES 256
 
+#define BANKED_ROM_MSG "FDC Banked ROM enabled"
+
 struct memmap {
 	int type;	/* type of memory pages */
 	BYTE spage;	/* start page of segment */

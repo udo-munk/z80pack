@@ -223,7 +223,7 @@ void init_memory(void)
 #ifdef HAS_BANKED_ROM
 	if (R_flag) {
 		groupsel = _GROUPINIT;
-		LOG(TAG, "MPU-B Banked ROM/RAM enabled\r\n");
+		LOG(TAG, "%s\r\n", BANKED_ROM_MSG);
 	} else {
 		groupsel = _GROUP0 | _GROUP1;
 	}
