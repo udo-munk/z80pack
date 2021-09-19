@@ -95,12 +95,21 @@ static int autowait;		/* autowait flag */
 static int headloaded;		/* head loaded flag */
 
 /* these are our disk drives, 8" SS SD initially */
+#ifndef HAS_DISKMANAGER
 static Diskdef disks[4] = {
 	{ "drivea.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
 	{ "driveb.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
 	{ "drivec.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
 	{ "drived.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE }
 };
+#else
+Diskdef disks[4] = {
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE }
+};
+#endif
 
 BYTE fdc_banked_rom[8 << 10]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
 int fdc_rom_active = 0;
@@ -108,7 +117,7 @@ int fdc_rom_active = 0;
 /*
  * find and set path for disk images
  */
-void dsk_path(void) {
+char *dsk_path(void) {
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -122,7 +131,9 @@ void dsk_path(void) {
 		} else {
 			strcpy(fn, DISKSDIR);
 		}
+		strncpy(diskd, fn, MAX_LFN);
 	}
+	return diskd;
 }
 
 /*
@@ -422,6 +433,13 @@ BYTE cromemco_fdc_data_in(void)
 		/* first byte? */
 		if (dcnt == 0) {
 			motortimer = 800;
+			if (disks[disk].fn == NULL) {
+				state = FDC_IDLE;	/* abort command */
+				fdc_flags |= 1;		/* set EOJ */
+				fdc_flags &= ~128;	/* reset DRQ */
+				fdc_stat = 0x80;	/* not ready */
+				return((BYTE) 0);
+			}
 			/* try to open disk image */
 			dsk_path();
 			strcat(fn, "/");
@@ -550,6 +568,13 @@ void cromemco_fdc_data_out(BYTE data)
 		/* first byte? */
 		if (dcnt == 0) {
 			motortimer = 800;
+			if (disks[disk].fn == NULL) {
+				state = FDC_IDLE;	/* abort command */
+				fdc_flags |= 1;		/* set EOJ */
+				fdc_flags &= ~128;	/* reset DRQ */
+				fdc_stat = 0x80;	/* not ready */
+				return;
+			}
 			/* try to open disk image */
 			dsk_path();
 			strcat(fn, "/");
@@ -1052,4 +1077,9 @@ void cromemco_fdc_reset(void)
 		fdc_rom_active = 0;
 	}
 #endif 
+
+#ifdef HAS_DISKMANAGER
+	extern void readDiskmap(char *);
+	readDiskmap(dsk_path());
+#endif
 }

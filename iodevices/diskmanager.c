@@ -49,28 +49,18 @@
 #define LOCAL_LOG_LEVEL LOG_DEBUG
 #include "log.h"
 #include "sim.h"
+#include "disks.h"
 #ifdef HAS_NETSERVER
 #include "civetweb.h"
 #include "netsrv.h"
 #endif
-
 
 #ifdef HAS_DISKMANAGER
 #ifndef UNUSED
 #define UNUSED(x) (void)(x)
 #endif
 
-#ifndef DISKMAP
-#define DISKMAP     "disk.map"
-#endif
-
-#define LAST_DISK   'D'
-#define _MAX_DISK   (LAST_DISK - '@')
-
 static const char *TAG = "diskmanager";
-
-char *disks[_MAX_DISK];
-extern char *disks[];
 
 static char path[MAX_LFN+1];		/* path/filename for disk image */
 static char *file_start;
@@ -92,8 +82,8 @@ int findDiskImage(const char *image) {
     int i;
 
     for (i = 0; i < _MAX_DISK; i++) {
-        if (disks[i] != NULL) {
-            if (strcmp(image, disks[i]) == 0) {
+        if (DISKNAME(i) != NULL) {
+            if (strcmp(image, DISKNAME(i)) == 0) {
                 return 1;                  
             }
         }   
@@ -127,14 +117,14 @@ disk_err_t insertDisk(int disk, const char *image) {
 
     if (disk >= 0 && disk < _MAX_DISK) {
 
-        if (disks[disk] != NULL) {
+        if (DISKNAME(disk) != NULL) {
             return DRIVE_NOT_EMPTY;
         }
 
         if (image != NULL && strlen(image) < MAX_LFN) {
 
             for (i = 0; i < _MAX_DISK; i++) {
-                if (disks[i] != NULL && strcmp(image, disks[i]) == 0) {
+                if (DISKNAME(i) != NULL && strcmp(image, DISKNAME(i)) == 0) {
                     return IMAGE_ALREADY_INSERTED;
                 }
             }
@@ -149,7 +139,7 @@ disk_err_t insertDisk(int disk, const char *image) {
                         return FAILURE;
                     } else {
                         /* Everything is OK, we can insert the disk */
-                        disks[disk] = name;
+                        DISKNAME(disk) = name;
                         return SUCCESS;
                     }
                 } else {
@@ -173,12 +163,12 @@ disk_err_t ejectDisk(int disk) {
 
     if (disk >= 0 || disk < _MAX_DISK) {
 
-        if (disks[disk] == NULL) {
+        if (DISKNAME(disk) == NULL) {
             return DRIVE_EMPTY;
         }
 
-        name = disks[disk];
-        disks[disk] = NULL;
+        name = DISKNAME(disk);
+        DISKNAME(disk) = NULL;
         free(name);
         
         return SUCCESS;
@@ -205,7 +195,7 @@ void writeDiskmap(void) {
     }
 
     for (i = 0; i < _MAX_DISK; i++) {
-        fprintf(map, "%s\n", disks[i]==NULL?"#":disks[i]);
+        fprintf(map, "%s\n", DISKNAME(i)==NULL?"#":DISKNAME(i));
     }
     fclose(map);  
 }
@@ -220,7 +210,7 @@ void readDiskmap(char *path_name) {
     disk_err_t insert;
 
     for (i = 0; i < _MAX_DISK; i++) {
-        disks[i] = NULL;
+        DISKNAME(i) = NULL;
     }
 
     strncpy(path, path_name, MAX_LFN);
@@ -259,7 +249,7 @@ again:
 
                 switch (insert) {
                     case SUCCESS :
-                        LOG(TAG, "%c:DSK:='%s'\r\n", i+'A', disks[i]);
+                        LOG(TAG, "%c:DSK:='%s'\r\n", i+'A', DISKNAME(i));
                         break;
                     case IMAGE_ALREADY_INSERTED :
                         LOGW(TAG, "%c:DSK: Image file '%s' already in use", i+'A', name);
@@ -351,7 +341,7 @@ static void sendDisks(struct mg_connection *conn) {
     httpdPrintf(conn, "{");
 
     for (i = 0; i < _MAX_DISK; i++) {
-        httpdPrintf(conn, "\"%c\": \"%s\"", i+'A', disks[i]==NULL?"":disks[i]);
+        httpdPrintf(conn, "\"%c\": \"%s\"", i+'A', DISKNAME(i)==NULL?"":DISKNAME(i));
         if (i < (_MAX_DISK - 1)) httpdPrintf(conn, ",");
     }
 

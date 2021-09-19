@@ -6,7 +6,7 @@ MACHINE = cromemco
 # machine specific system source files
 SRC_MACHINE = config.c iosim.c memory.c simctl.c 
 # machine specific I/O source files
-SRC_IO = cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c unix_terminal.c unix_network.c simbdos.c netsrv.c
+SRC_IO = cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c unix_terminal.c unix_network.c simbdos.c netsrv.c diskmanager.c 
 #machine specifc libraries 
 SRC_LIBS = -lcivetweb -lfrontpanel
 

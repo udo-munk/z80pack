@@ -75,9 +75,7 @@
 
 static const char *TAG = "FIF";
 
-#ifdef HAS_DISKMANAGER
-extern char *disks[];
-#else
+#ifndef HAS_DISKMANAGER
 /* these are our disk drives */
 #ifdef LARGEDISK
 static char *disks[9] = {
@@ -99,6 +97,8 @@ static char *disks[4] = {
 	"drived.dsk"
 };
 #endif
+#else 
+char *disks[4];
 #endif
 
 static int fdaddr[16];		/* address of disk descriptors */

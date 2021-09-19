@@ -43,7 +43,7 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* has banked RDOS ROM */
 
-/*#define HAS_DISKMANAGER*/	/* uses file based disk map for disks[] */
+#define HAS_DISKMANAGER	/* uses file based disk map for disks[] */
 #define HAS_NETSERVER	/* uses civet webserver to present a web based frontend */
 
 #define DOCUMENT_ROOT "../webfrontend/www/cromemco"
