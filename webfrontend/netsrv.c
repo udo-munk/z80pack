@@ -388,6 +388,11 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
     int i = 0;
     struct stat sb;
     char fullpath[MAX_LFN];
+    bool showSize = false;
+			
+    if (req->args[0] && *req->args[0] == 'S') {
+    	showSize = true;
+    }
 
     switch(req->method) {
     case HTTP_GET:
@@ -410,7 +415,12 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
                  * if (pDirent->d_type==DT_REG) {
 		 */
 		if (stat(fullpath, &sb) != -1 && S_ISREG(sb.st_mode)) {
-			httpdPrintf(conn, "%c\"%s\"", (i++ > 0)?',':' ', pDirent->d_name);
+			if (showSize) {
+				httpdPrintf(conn, "%c{ \"%s\":\"%s\",", (i++ > 0)?',':' ', "filename",pDirent->d_name);
+				httpdPrintf(conn, "\"%s\":%lld}", "size", sb.st_size);
+			} else {
+				httpdPrintf(conn, "%c\"%s\"", (i++ > 0)?',':' ', pDirent->d_name);
+			}
                 }
             }
             closedir (pDir);
