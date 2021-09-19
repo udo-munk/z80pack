@@ -25,7 +25,8 @@ enum net_device {
 	DEV_DZLR,
 	DEV_88ACC,
 	DEV_D7AIO,
-	DEV_PTR
+	DEV_PTR,
+	_DEV_MAX
 };
 
 typedef enum net_device net_device_t;
