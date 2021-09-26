@@ -316,6 +316,7 @@ void config(void)
 			;
 
 		}
+		fclose(fp);
 	}
 
 	LOG(TAG, "SIO 0 running at %d baud\r\n", sio0_baud_rate);

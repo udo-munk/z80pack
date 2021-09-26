@@ -258,7 +258,7 @@ again:
                         LOGW(TAG, "%c:DSK: Image file '%s' is invalid", i+'A', name);
                         break;
                     default:
-                        LOGW(TAG, "%c:DSK: Failed to insert disk, error: %d", i+'A', insert)
+                        LOGW(TAG, "%c:DSK: Failed to insert disk, error: %d", i+'A', insert);
                         break;
                 }
             } 
@@ -281,12 +281,12 @@ int LibraryHandler(HttpdConnection_t *conn, void *unused) {
 	int i = 0;
     UNUSED(unused);
 
-    *file_start = '\0';
-
     if (*path == '\0') {
          LOGW(TAG, "Path to disk map not set. Call readDiskmap(path) first.");
         return 0;      
     }
+
+    *file_start = '\0';
 
     switch(req->method) {
     case HTTP_GET:
@@ -391,7 +391,7 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
                 httpdEndHeaders(conn);   
                 break;
             default:
-                LOGW(TAG, "PUT image: %s, failed to insert disk: %d, error: %d", image, disk, result)
+                LOGW(TAG, "PUT image: %s, failed to insert disk: %d, error: %d", image, disk, result);
                 httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 break;
@@ -414,7 +414,7 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
                 httpdEndHeaders(conn);    
                 break;
             default:
-                LOGW(TAG, "DELETE /disks failed to eject disk: %d, error: %d", disk, result)
+                LOGW(TAG, "DELETE /disks failed to eject disk: %d, error: %d", disk, result);
                 httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 break;

@@ -146,6 +146,7 @@ void config(void)
 			;
 
 		}
+		fclose(fp);
 	}
 
 	LOG(TAG, "\r\n");
