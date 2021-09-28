@@ -48,12 +48,12 @@ struct {
 } dev[MAX_WS_CLIENTS];
 
 net_device_t net_device_a[_DEV_MAX] = { 
-	DEV_SIO1, DEV_LPT, DEV_VIO, DEV_CPA, 
+	DEV_TTY, DEV_LPT, DEV_VIO, DEV_CPA, 
 	DEV_DZLR, DEV_88ACC, DEV_D7AIO, DEV_PTR 
 };
 
 char *dev_name[] = {
-	"SIO1",
+	"TTY",
 	"LPT",
 	"VIO",
 	"CPA",
@@ -92,14 +92,14 @@ void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data)) {
  * Assumes the data is:
  * 		TEXT	if only a single byte
  * 		BINARY	if there are multiple bytes
- * 		SIO1 & LPT are always BINARY now
+ * 		TTY & LPT are always BINARY now
  */
 void net_device_send(net_device_t device, char* msg, int len) {
 
 	int op_code;
 
 	switch (device) {
-		case DEV_SIO1:
+		case DEV_TTY:
 		case DEV_PTR:
 		case DEV_LPT:
 			op_code = MG_WEBSOCKET_OPCODE_BINARY;
@@ -515,7 +515,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 			mg_set_user_connection_data(dev[d].ws_client.conn, (void *)(&(dev[d].ws_client)));
 
 			switch (d) {
-			case DEV_SIO1:
+			case DEV_TTY:
 			case DEV_PTR:
 			case DEV_VIO:
 			case DEV_LPT:
@@ -546,7 +546,7 @@ void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	ws_client_t *client = mg_get_user_connection_data(conn);
 	net_device_t d = *(net_device_t *) device;
 
-	if (d == DEV_SIO1) 
+	if (d == DEV_TTY) 
 		mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
 	
 	if (d == DEV_VIO) {
@@ -648,7 +648,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 		case DEV_LPT:
 			if (len == 1 && *data == 'R') lpt_reset();
 			break;
-        case DEV_SIO1:
+        case DEV_TTY:
         case DEV_VIO:
 			if (len != 1) {
 				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);
@@ -762,12 +762,12 @@ int start_net_services (void) {
     mg_set_request_handler(ctx, "/disks", 		DiskHandler, 		0);
 #endif
 
-	mg_set_websocket_handler(ctx, "/sio1",
+	mg_set_websocket_handler(ctx, "/tty",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) &net_device_a[DEV_SIO1]);
+	                         (void *) &net_device_a[DEV_TTY]);
 
 	mg_set_websocket_handler(ctx, "/ptr",
 	                         WebSocketConnectHandler,

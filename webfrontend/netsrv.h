@@ -18,7 +18,7 @@
 #define UNUSED(x) (void)(x)
 
 enum net_device {
-	DEV_SIO1,
+	DEV_TTY,
 	DEV_LPT,
 	DEV_VIO,
 	DEV_CPA,
