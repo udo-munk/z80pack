@@ -52,7 +52,8 @@
 #define HAS_APU			/* has simulated AM9511 floating point maths coprocessor */
 #define HAS_HAL			/* implements a hardware abstraction layer (HAL) for SIO ports */
 
-#define DOCUMENT_ROOT "../webfrontend/www/imsai"
+#define MACHINE "imsai"
+#define DOCUMENT_ROOT "../webfrontend/www/" MACHINE
 
 #define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
 #define NUMUSOC 1	/* number of UNIX sockets for SIO connections */

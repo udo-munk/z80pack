@@ -237,6 +237,18 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
     switch(req->method) {
     case HTTP_GET:
 		LOGD(TAG, "Sending SYS: details.");
+
+		if (req->args[0] && *req->args[0] == 'm') {
+            
+            httpdStartResponse(conn, 200); 
+            httpdHeader(conn, "Content-Type", "application/json");
+            httpdEndHeaders(conn);
+
+            httpdPrintf(conn, "{ \"machine\": \"" MACHINE "\" }");
+            
+            return 1;
+        }
+
         httpdStartResponse(conn, 200); 
         httpdHeader(conn, "Content-Type", "application/json");
         httpdEndHeaders(conn);
@@ -244,6 +256,8 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
 		uname(&uts);
 
         httpdPrintf(conn, "{");
+
+            httpdPrintf(conn, "\"machine\": \"" MACHINE "\", ");
 
             httpdPrintf(conn, "\"platform\": \"%s\", ", uts.sysname);
             
@@ -714,7 +728,7 @@ int start_net_services (void) {
 	    "enable_auth_domain_check",
 	    "no",
 		"url_rewrite_patterns",
-		"/imsai/disks/=./disks/, /imsai/conf/=./conf/, /imsai/printer.txt=./printer.txt",
+		"/" MACHINE "/disks/=./disks/, /" MACHINE "/conf/=./conf/, /" MACHINE "/printer.txt=./printer.txt",
 	    0};
 
 	struct mg_callbacks callbacks;
