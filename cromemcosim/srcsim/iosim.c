@@ -1203,8 +1203,8 @@ static void interrupt(int sig)
 #endif
 
 #ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_SIO1)) {
-		if (net_device_poll(DEV_SIO1)) {
+	if (net_device_alive(DEV_TTY)) {
+		if (net_device_poll(DEV_TTY)) {
 			uart0a_rda = 1;
 		} else {
 			uart0a_rda = 0;

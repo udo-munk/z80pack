@@ -106,8 +106,8 @@ BYTE cromemco_tuart_0a_data_in(void)
 	uart0a_rda = 0;
 
 #ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_SIO1)) {
-		int res = net_device_get(DEV_SIO1);
+	if (net_device_alive(DEV_TTY)) {
+		int res = net_device_get(DEV_TTY);
 		if (res < 0) {
 			return(last);
 		}
@@ -145,8 +145,8 @@ void cromemco_tuart_0a_data_out(BYTE data)
 		return;
 
 #ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_SIO1)) {
-		net_device_send(DEV_SIO1, (char *) &data, 1);
+	if (net_device_alive(DEV_TTY)) {
+		net_device_send(DEV_TTY, (char *) &data, 1);
 	} else 
 #endif
 	{

@@ -348,6 +348,7 @@ void config(void)
 			next:
 			;
 		}
+		fclose(fp);
 	}
 
 	LOG(TAG, "SIO 1A running at %d baud\r\n", sio1a_baud_rate);

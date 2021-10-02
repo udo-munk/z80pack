@@ -95,6 +95,8 @@ static void lpt_out(BYTE);
 static BYTE io_pport_in(void);
 static BYTE mmu_in(void);
 static void mmu_out(BYTE);
+extern void ctrl_port_out(BYTE);
+extern BYTE ctrl_port_in(void);
 #ifdef HAS_APU
 static BYTE apu_data_in(void);
 static BYTE apu_status_in(void);
@@ -1025,13 +1027,13 @@ static BYTE mmu_in(void)
  */
 static void mmu_out(BYTE data)
 {
-	selbnk = data;
-
-	if (data > MAXSEG) {
+	if (data >= MAXSEG) {
 		LOGE(TAG, "selected bank %d not available", data);
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 	}
+
+	selbnk = data;
 }
 
 #ifdef HAS_APU

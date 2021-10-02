@@ -18,14 +18,15 @@
 #define UNUSED(x) (void)(x)
 
 enum net_device {
-	DEV_SIO1,
+	DEV_TTY,
 	DEV_LPT,
 	DEV_VIO,
 	DEV_CPA,
 	DEV_DZLR,
 	DEV_88ACC,
 	DEV_D7AIO,
-	DEV_PTR
+	DEV_PTR,
+	_DEV_MAX
 };
 
 typedef enum net_device net_device_t;

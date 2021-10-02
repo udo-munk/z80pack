@@ -94,20 +94,20 @@ void vio_kbd_out(BYTE data) {
 
 #ifdef HAS_NETSERVER
 int net_tty_alive() {
-    return net_device_alive(DEV_SIO1); /* WEBTTY is only alive if websocket is connected */
+    return net_device_alive(DEV_TTY); /* WEBTTY is only alive if websocket is connected */
 }
 void net_tty_status(BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (net_device_poll(DEV_SIO1)) {
+    if (net_device_poll(DEV_TTY)) {
         *stat |= 2;
     }
     *stat |= 1;
 }
 int net_tty_in() {
-    return net_device_get(DEV_SIO1);
+    return net_device_get(DEV_TTY);
 }
 void net_tty_out(BYTE data) {
-    net_device_send(DEV_SIO1, (char *)&data, 1);
+    net_device_send(DEV_TTY, (char *)&data, 1);
 }
 #endif
 

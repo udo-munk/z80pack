@@ -133,23 +133,15 @@ static inline BYTE memrdr(WORD addr)
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 8] != MEM_NONE) {
 			data = _MEMMAPPED(addr);
-#ifdef FRONTPANEL
-			fp_led_data = data;
-#endif
 		} else {
 			data = 0xff;
-#ifdef FRONTPANEL
-			fp_led_data = 0xff;
-#endif
 		}
 	} else {
 		data = *(banks[selbnk] + addr);
-#ifdef FRONTPANEL
-		fp_led_data = data;
-#endif
 	}
 
 #ifdef FRONTPANEL
+	fp_led_data = data;
 	fp_sampleData();
 	wait_step();
 #endif
