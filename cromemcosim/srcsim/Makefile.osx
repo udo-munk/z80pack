@@ -99,7 +99,7 @@ memory.o : memory.c sim.h simglb.h memory.h log.h
 	$(CC) $(CFLAGS) memory.c
 
 iosim.o : iosim.c sim.h simglb.h log.h ../../iodevices/simbdos.h
-	$(CC) $(CFLAGS) -I../../iodevices iosim.c
+	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h log.h
 	$(CC) $(CFLAGS) simfun.c
