@@ -119,7 +119,7 @@ unix_network.o : ../../iodevices/unix_network.c log.h
 config.o : config.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) config.c
 
-diskmanager.o: ../../iodevices/diskmanager.c sim.h log.h
+diskmanager.o : ../../iodevices/diskmanager.c sim.h log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/diskmanager.c
 
 cromemco-tu-art.o : ../../iodevices/cromemco-tu-art.c log.h
@@ -131,10 +131,10 @@ cromemco-fdc.o : ../../iodevices/cromemco-fdc.c log.h
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
 
-cromemco-88ccc.o: ../../iodevices/cromemco-88ccc.c sim.h simglb.h config.h memory.h $(WEB)/netsrv.h
+cromemco-88ccc.o : ../../iodevices/cromemco-88ccc.c sim.h simglb.h config.h memory.h $(WEB)/netsrv.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-88ccc.c
 
-cromemco-d+7a.o: ../../iodevices/cromemco-d+7a.c sim.h simglb.h
+cromemco-d+7a.o : ../../iodevices/cromemco-d+7a.c sim.h simglb.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-d+7a.c
 
 netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
