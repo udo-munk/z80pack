@@ -9,14 +9,18 @@ ROM=/usr/local/share/cromemcosim/roms
 
 CC = cc
 
+WEB = ../../webfrontend
+INCL = -I$(WEB)/civetweb/include -I$(WEB)
+
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/usr/local/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/usr/local/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I../../iodevices ${INCL}
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/usr/local/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/usr/local/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I../../iodevices ${INCL}
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib \
-	-lfrontpanel -ljpeg -lGL -lGLU -lX11 -lpthread
+	-lfrontpanel -ljpeg -lGL -lGLU -lX11 -lpthread \
+	-L../../webfrontend/civetweb -lcivetweb
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -37,9 +41,13 @@ OBJ =   sim0.o \
 	unix_terminal.o \
 	unix_network.o \
 	config.o \
+	diskmanager.o \
 	cromemco-tu-art.o \
 	cromemco-fdc.o \
-	cromemco-dazzler.o
+	cromemco-dazzler.o \
+	cromemco-88ccc.o \
+	cromemco-d+7a.o \
+	netsrv.o
 
 FP =	../../frontpanel/libfrontpanel.so
 
@@ -91,7 +99,7 @@ memory.o : memory.c sim.h simglb.h memory.h log.h
 	$(CC) $(CFLAGS) memory.c
 
 iosim.o : iosim.c sim.h simglb.h log.h ../../iodevices/simbdos.h
-	$(CC) $(CFLAGS) -I../../iodevices iosim.c
+	$(CC) $(CFLAGS) iosim.c
 
 simfun.o : simfun.c sim.h log.h
 	$(CC) $(CFLAGS) simfun.c
@@ -111,6 +119,9 @@ unix_network.o : ../../iodevices/unix_network.c log.h
 config.o : config.c sim.h simglb.h log.h
 	$(CC) $(CFLAGS) config.c
 
+diskmanager.o : ../../iodevices/diskmanager.c sim.h log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/diskmanager.c
+
 cromemco-tu-art.o : ../../iodevices/cromemco-tu-art.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-tu-art.c
 
@@ -119,6 +130,15 @@ cromemco-fdc.o : ../../iodevices/cromemco-fdc.c log.h
 
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
+
+cromemco-88ccc.o : ../../iodevices/cromemco-88ccc.c sim.h simglb.h config.h memory.h $(WEB)/netsrv.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-88ccc.c
+
+cromemco-d+7a.o : ../../iodevices/cromemco-d+7a.c sim.h simglb.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-d+7a.c
+
+netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
+	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
 
 clean:
 	rm -f *.o
