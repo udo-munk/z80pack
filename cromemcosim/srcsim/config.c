@@ -103,7 +103,7 @@ void config(void)
 					goto next;
 				}
 				t3 = strtok(NULL, " \t,");
-				t4 = strtok(NULL, " \t\n");
+				t4 = strtok(NULL, " \t\r\n");
 				v1 = strtol(t2, NULL, 0);
 				if (v1 < 0 || v1 > 255) {
 					LOGW(TAG, "invalid rom start address %d", v1);
