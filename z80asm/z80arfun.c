@@ -1,6 +1,6 @@
 /*
  *	Z80 - Assembler
- *	Copyright (C) 1987-2021 by Udo Munk
+ *	Copyright (C) 1987-2022 by Udo Munk
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -15,6 +15,7 @@
  *	28-OCT-2017 added variable symbol lenght and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
+ *	28-JAN-2022 added syntax check for OUT (n),A
  */
 
 /*
@@ -2964,6 +2965,7 @@ int op_rrc(void)
 int op_out(void)
 {
 	register int op;
+	register char *p;
 
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
@@ -2992,6 +2994,10 @@ int op_out(void)
 				asmerr(E_ILLOPE);
 			}
 		} else {
+			/* check syntax for OUT (n),A */
+			p = strchr(operand, ')');
+			if (strncmp(p, "),A", 3))
+				asmerr(E_ILLOPE);
 			ops[0] = 0xd3;	/* OUT (n),A */
 			ops[1] = chk_v1(calc_val(operand + 1));
 		}
