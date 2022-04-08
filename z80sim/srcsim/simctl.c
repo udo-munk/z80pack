@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2022 by Udo Munk
  *
  * This modul contains the user interface, a full qualified ICE,
  * for the Z80-CPU simulation.
@@ -72,7 +72,7 @@ extern void disass(int, unsigned char **, int, unsigned char *);
 extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
-extern int load_file(char *, BYTE pstart, WORD psize);
+extern int load_file(char *, BYTE, WORD);
 
 static void do_step(void);
 static void do_trace(char *);
