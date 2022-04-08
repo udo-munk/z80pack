@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2016-2022 Udo Munk
  * Copyright (C) 2021 David McNaughton
  *
  * This module implements memory management for a Cromemco Z-1 system
@@ -27,7 +27,7 @@
 
 static const char *TAG = "memory";
 
-extern int load_file(char *, BYTE, BYTE);
+extern int load_file(char *, BYTE, WORD);
 extern void cromemco_fdc_reset(void);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */

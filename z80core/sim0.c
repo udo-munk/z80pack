@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 Udo Munk
+ * Copyright (C) 1987-2022 Udo Munk
  * Copyright (C) 2021 David McNaughton
  *
  * History:
@@ -75,7 +75,7 @@
 static void init_cpu(void);
 static void save_core(void);
 int load_core(void);
-extern int load_file(char *, BYTE pstart, WORD psize);
+extern int load_file(char *, BYTE, WORD);
 extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
 extern int exatoi(char *);

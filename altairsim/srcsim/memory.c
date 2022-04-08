@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2016-2022 Udo Munk
  * Copyright (C) 2021 David McNaughton
  *
  * This module implements the memory for an Altair 8800 system
@@ -30,7 +30,7 @@
 
 static const char *TAG = "memory";
 
-extern int load_file(char *, BYTE, BYTE);
+extern int load_file(char *, BYTE, WORD);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
