@@ -72,7 +72,7 @@ extern void disass(int, unsigned char **, int, unsigned char *);
 extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
-extern int load_file(char *);
+extern int load_file(char *, BYTE pstart, WORD psize);
 
 static void do_step(void);
 static void do_trace(char *);
@@ -172,7 +172,7 @@ void mon(void)
 			do_help();
 			break;
 		case 'r':
-			load_file(cmd + 1);
+			load_file(cmd + 1, 0, 0);
 			break;
 		case '!':
 			do_unix(cmd + 1);
