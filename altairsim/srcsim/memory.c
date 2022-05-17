@@ -77,7 +77,7 @@ void init_memory(void)
 			switch (memconf[M_flag][i].type) {
 				case MEM_RW:
 					/* fill memory content with some initial value */
-					for (int j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
+					for (j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
 						if (m_flag >= 0) {
 							memory[j] = m_flag;
 						} else {
@@ -92,7 +92,7 @@ void init_memory(void)
 
 				case MEM_RO:
 					/* fill the ROM's with 0xff in case no firmware loaded */
-					for (int j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
+					for (j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
 						memset(&memory[j << 8], 0xff, 256);
 					}
 
