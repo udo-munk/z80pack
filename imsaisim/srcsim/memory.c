@@ -152,7 +152,7 @@ void groupswap(void)
 
 void init_memory(void)
 {
-	register int i;
+	register int i, j;
 	char fn[MAX_LFN];
 	char *pfn = fn;
 
@@ -179,11 +179,11 @@ void init_memory(void)
 			switch (memconf[M_flag][i].type) {
 				case MEM_RW:
 					/* set the pages to RAM */
-					for (int j = 0; j < memconf[M_flag][i].size; j++)
+					for (j = 0; j < memconf[M_flag][i].size; j++)
 						MEM_RESERVE_RAM(memconf[M_flag][i].spage + j);
 
 					/* fill memory content of bank 0 with some initial value */
-					for (int j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
+					for (j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
 						if (m_flag >= 0) {
 							_MEMMAPPED(j) = m_flag;
 						} else {
@@ -247,11 +247,11 @@ void init_memory(void)
 
 				case MEM_RO:
 					/* set the pages to ROM */
-					for (int j = 0; j < memconf[M_flag][i].size; j++)
+					for (j = 0; j < memconf[M_flag][i].size; j++)
 						MEM_RESERVE_ROM(memconf[M_flag][i].spage + j);
 
 					/* fill the ROM's with 0xff in case no firmware loaded */
-					for (int j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
+					for (j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
 						_MEMMAPPED(j) = 0xff;
 					}
 
