@@ -144,11 +144,11 @@ void init_memory(void)
 					break;
 				case MEM_RO:
 					/* set the pages to ROM */
-					for (int j = 0; j < memconf[M_flag][i].size; j++)
+					for (j = 0; j < memconf[M_flag][i].size; j++)
 						MEM_RESERVE_ROM(memconf[M_flag][i].spage + j);
 
 					/* fill the ROM's with 0xff in case no firmware loaded */
-					for (int j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
+					for (j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
 						memset(&memory[0][j << 8], 0xff, 256);
 					}
 
