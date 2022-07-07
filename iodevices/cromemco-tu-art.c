@@ -271,7 +271,14 @@ int uart1a_tbe, uart1a_rda;
 
 BYTE cromemco_tuart_1a_status_in(void)
 {
-	BYTE status = (ncons[0].ssc) ? 4 : 0;
+	BYTE status = 0;
+
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY2)) {
+		status = 4;
+	} else
+#endif
+		status = (ncons[0].ssc) ? 4 : 0;
 
 	if (uart1a_tbe)
 		status |= 128;
@@ -298,36 +305,49 @@ BYTE cromemco_tuart_1a_data_in(void)
 
 	uart1a_rda = 0;
 
-	/* if not connected return last */
-	if (ncons[0].ssc == 0)
-		return(last);
-
-	/* if no input waiting return last */
-	p[0].fd = ncons[0].ssc;
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
-
-	if (read(ncons[0].ssc, &data, 1) != 1) {
-		if ((errno == EAGAIN) || (errno == EINTR)) {
-			/* EOF, close socket and return last */
-			close(ncons[0].ssc);
-			ncons[0].ssc = 0;
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY2)) {
+		int res = net_device_get(DEV_TTY2);
+		if (res < 0) {
 			return(last);
-		} else {
-			LOGE(TAG, "can't read tu-art 1a data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-			return(0);
 		}
+		data = res;
+	} else 
+#endif
+	{
+		/* if not connected return last */
+		if (ncons[0].ssc == 0)
+			return(last);
+
+		/* if no input waiting return last */
+		p[0].fd = ncons[0].ssc;
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (!(p[0].revents & POLLIN))
+			return(last);
+
+		if (read(ncons[0].ssc, &data, 1) != 1) {
+			if ((errno == EAGAIN) || (errno == EINTR)) {
+				/* EOF, close socket and return last */
+				close(ncons[0].ssc);
+				ncons[0].ssc = 0;
+				return(last);
+			} else {
+				LOGE(TAG, "can't read tu-art 1a data");
+				cpu_error = IOERROR;
+				cpu_state = STOPPED;
+				return(0);
+			}
+		}
+
+		/* process read data */
+		/* telnet client sends \r\n or \r\0, drop second character */
+		if (ncons[0].telnet && (data == '\r'))
+			read(ncons[0].ssc, &dummy, 1);
+
 	}
 
-	/* process read data */
-	/* telnet client sends \r\n or \r\0, drop second character */
-	if (ncons[0].telnet && (data == '\r'))
-		read(ncons[0].ssc, &dummy, 1);
 	last = data;
 	return(data);
 }
@@ -335,21 +355,31 @@ BYTE cromemco_tuart_1a_data_in(void)
 void cromemco_tuart_1a_data_out(BYTE data)
 {
 	uart1a_tbe = 0;
-	if (ncons[0].ssc == 0)
-		return;
 	data &= 0x7f;
 	if (data == 0x00)
 		return;
 
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY2)) {
+		net_device_send(DEV_TTY2, (char *) &data, 1);
+	} else 
+#endif
+	{
+
+		if (ncons[0].ssc == 0)
+			return;
+
 again:
-	if (write(ncons[0].ssc, (char *) &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			LOGE(TAG, "can't write tu-art 1a data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+		if (write(ncons[0].ssc, (char *) &data, 1) != 1) {
+			if (errno == EINTR) {
+				goto again;
+			} else {
+				LOGE(TAG, "can't write tu-art 1a data");
+				cpu_error = IOERROR;
+				cpu_state = STOPPED;
+			}
 		}
+
 	}
 }
 
@@ -418,7 +448,14 @@ int uart1b_tbe, uart1b_rda;
 
 BYTE cromemco_tuart_1b_status_in(void)
 {
-	BYTE status = (ncons[1].ssc) ? 4 : 0;
+	BYTE status = 0;
+
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY3)) {
+		status = 4;
+	} else
+#endif
+		status = (ncons[1].ssc) ? 4 : 0;
 
 	if (uart1b_tbe)
 		status |= 128;
@@ -445,36 +482,49 @@ BYTE cromemco_tuart_1b_data_in(void)
 
 	uart1b_rda = 0;
 
-	/* if not connected return last */
-	if (ncons[1].ssc == 0)
-		return(last);
-
-	/* if no input waiting return last */
-	p[0].fd = ncons[1].ssc;
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
-
-	if (read(ncons[1].ssc, &data, 1) != 1) {
-		if ((errno == EAGAIN) || (errno == EINTR)) {
-			/* EOF, close socket and return last */
-			close(ncons[1].ssc);
-			ncons[1].ssc = 0;
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY3)) {
+		int res = net_device_get(DEV_TTY3);
+		if (res < 0) {
 			return(last);
-		} else {
-			LOGE(TAG, "can't read tu-art 1b data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-			return(0);
 		}
+		data = res;
+	} else 
+#endif
+	{
+		/* if not connected return last */
+		if (ncons[1].ssc == 0)
+			return(last);
+
+		/* if no input waiting return last */
+		p[0].fd = ncons[1].ssc;
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (!(p[0].revents & POLLIN))
+			return(last);
+
+		if (read(ncons[1].ssc, &data, 1) != 1) {
+			if ((errno == EAGAIN) || (errno == EINTR)) {
+				/* EOF, close socket and return last */
+				close(ncons[1].ssc);
+				ncons[1].ssc = 0;
+				return(last);
+			} else {
+				LOGE(TAG, "can't read tu-art 1b data");
+				cpu_error = IOERROR;
+				cpu_state = STOPPED;
+				return(0);
+			}
+		}
+
+		/* process read data */
+		/* telnet client sends \r\n or \r\0, drop second character */
+		if (ncons[1].telnet && (data == '\r'))
+			read(ncons[1].ssc, &dummy, 1);
+	
 	}
 
-	/* process read data */
-	/* telnet client sends \r\n or \r\0, drop second character */
-	if (ncons[1].telnet && (data == '\r'))
-		read(ncons[1].ssc, &dummy, 1);
 	last = data;
 	return(data);
 }
@@ -482,21 +532,31 @@ BYTE cromemco_tuart_1b_data_in(void)
 void cromemco_tuart_1b_data_out(BYTE data)
 {
 	uart1b_tbe = 0;
-	if (ncons[1].ssc == 0)
-		return;
 	data &= 0x7f;
 	if (data == 0x00)
 		return;
 
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY3)) {
+		net_device_send(DEV_TTY3, (char *) &data, 1);
+	} else 
+#endif
+	{
+
+		if (ncons[1].ssc == 0)
+			return;
+
 again:
-	if (write(ncons[1].ssc, (char *) &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			LOGE(TAG, "can't write tu-art 1b data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+		if (write(ncons[1].ssc, (char *) &data, 1) != 1) {
+			if (errno == EINTR) {
+				goto again;
+			} else {
+				LOGE(TAG, "can't write tu-art 1b data");
+				cpu_error = IOERROR;
+				cpu_state = STOPPED;
+			}
 		}
+
 	}
 }
 
