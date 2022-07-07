@@ -4,15 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>LPT:</title>
-</head>
+    <title>LPT1:</title>
+    <style>
+        :root {
+            --color-background: #192b42;
+            --color-frame:      #6493bf;
+            --color-frame19:    #6493bf30;
+            --color-frame75:    #6493bfc0;
+            --color-highlight:  #ffffff;
+            --color-highlight90:#ffffffe6;
+            --color-offline:    #c80000;
+            --color-online:     #00c800;
+        }
+    </style>
+<link as="script" href="40e8ed353875f2b099fd.js" rel="preload"><link as="font" crossorigin="anonymous" href="af7ae505a9eed503f8b8e6982036873e.woff2" rel="preload"></head>
 <body class="blue">
-    <div id="printarea">
-        <div id="printer" class="pre" data-include-file="/imsai/printer.txt"></div>
+    <div class="printarea">
+        <div class="printer pre" data-include-file="/imsai/printer.txt"></div>
     </div>
-    <div id="controls">
+    <div class="controls">
         <div class="control" onclick="lpt.connect()">
-            <i id="online" class="fa fa-circle" title="On/Off Line" alt="On/Off Line" style="color: rgb(255,0,0)"></i>
+            <i id="online" class="fa fa-circle" title="On/Off Line" alt="On/Off Line" style="color: var(--color-offline)"></i>
         </div>
         <div class="control" onclick="lpt.formFeed()">
             <i class="fa fa-angle-double-up" title="Form Feed" alt="Form Feed"></i>
@@ -37,7 +49,7 @@
         <div class="modal-back">
         </div>
         <div class="modal-hold" onclick="Modal.close()">
-          <div class="modal-cont">
+          <div id="modalPopup" class="modal-cont">
             <div id="modalHead">
             </div>
             <div id="modalBody">
@@ -47,5 +59,5 @@
           </div>
         </div>
       </div>
-<script type="text/javascript" src="eef7849a8896982a56d4.js"></script></body>
+<script type="text/javascript" src="40e8ed353875f2b099fd.js"></script></body>
 </html>

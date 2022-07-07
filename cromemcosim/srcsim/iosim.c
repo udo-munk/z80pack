@@ -1227,6 +1227,15 @@ static void interrupt(int sig)
 		}
 	}
 
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY2)) {
+		if (net_device_poll(DEV_TTY2)) {
+			uart1a_rda = 1;
+		} else {
+			uart1a_rda = 0;
+		}
+	} else 
+#endif
 	if (ncons[0].ssc != 0) {
 		p[0].fd = ncons[0].ssc;
 		p[0].events = POLLIN;
@@ -1243,6 +1252,15 @@ static void interrupt(int sig)
 		}
 	}
 
+#ifdef HAS_NETSERVER
+	if (net_device_alive(DEV_TTY3)) {
+		if (net_device_poll(DEV_TTY3)) {
+			uart1b_rda = 1;
+		} else {
+			uart1b_rda = 0;
+		}
+	} else 
+#endif
 	if (ncons[1].ssc != 0) {
 		p[0].fd = ncons[1].ssc;
 		p[0].events = POLLIN;

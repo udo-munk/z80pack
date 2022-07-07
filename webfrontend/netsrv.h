@@ -19,6 +19,8 @@
 
 enum net_device {
 	DEV_TTY,
+	DEV_TTY2,
+	DEV_TTY3,
 	DEV_LPT,
 	DEV_VIO,
 	DEV_CPA,
