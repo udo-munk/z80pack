@@ -3,4 +3,6 @@
 rm -f disks/drivea.dsk
 ln disks/library/cpm22.dsk disks/drivea.dsk
 
-./cromemcosim -M1 -R $*
+BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf | xargs`
+
+env $BOOTENV ./cromemcosim -M1 -R $*
