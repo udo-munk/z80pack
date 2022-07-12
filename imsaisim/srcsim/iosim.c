@@ -162,13 +162,8 @@ BYTE (*port_in[256]) (void) = {
 	imsai_sio_nofun_in,	/* port 33 */
 	imsai_sio2a_data_in,	/* port 34 */ /* Channel A, UNIX socket */
 	imsai_sio2a_status_in,	/* port 35 */
-#ifdef HAS_MODEM
 	imsai_sio2b_data_in,	/* port 36 */ /* Channel B, AT-modem over TCP/IP (telnet) */
 	imsai_sio2b_status_in,	/* port 37 */
-#else
-	imsai_sio_nofun_in,	/* port 36 */ /* Channel B, not connected */
-	imsai_sio_nofun_in,	/* port 37 */
-#endif
 	imsai_sio_nofun_in,	/* port 38 */
 	imsai_sio_nofun_in,	/* port 39 */
 	imsai_sio2_ctl_in,	/* port 40 */ /* SIO Control for A and B */
@@ -446,13 +441,8 @@ static void (*port_out[256]) (BYTE) = {
 	imsai_sio_nofun_out,	/* port 33 */
 	imsai_sio2a_data_out,	/* port 34 */ /* Channel A, UNIX socket */
 	imsai_sio2a_status_out,	/* port 35 */
-#ifdef HAS_MODEM
 	imsai_sio2b_data_out,	/* port 36 */ /* Channel B, AT-modem over TCP/IP (telnet) */
 	imsai_sio2b_status_out,	/* port 37 */
-#else
-	imsai_sio_nofun_out,	/* port 36 */ /* Channel B, not connected */
-	imsai_sio_nofun_out,	/* port 37 */
-#endif
 	imsai_sio_nofun_out,	/* port 38 */
 	imsai_sio_nofun_out,	/* port 39 */
 	imsai_sio2_ctl_out,	/* port 40 */ /* SIO Control for A and B */
