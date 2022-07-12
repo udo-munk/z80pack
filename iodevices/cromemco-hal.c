@@ -57,9 +57,6 @@ void null_out(int dev, BYTE data) {
     dev = dev;
     return;
 }
-// int null_cd() {
-//     return 0;
-// }
 
 /* -------------------- WEBTTY HAL -------------------- */
 
@@ -238,9 +235,11 @@ again:
 #include "generic-at-modem.h"
 
 int modem_alive(int dev) {
+    dev = dev;
     return modem_device_alive(0);
 }
 void modem_status(int dev, BYTE *stat) {
+    dev = dev;
     *stat &= (BYTE)(~3);
     if (modem_device_poll(0)) {
         *stat |= 2;
@@ -248,14 +247,13 @@ void modem_status(int dev, BYTE *stat) {
     *stat |= 1;
 }
 int modem_in(int dev) {
+    dev = dev;
     return modem_device_get(0);
 }
 void modem_out(int dev, BYTE data){
+    dev = dev;
     modem_device_send(0, (char) data);
 }
-// int modem_cd() {
-//     return modem_device_carrier(0);
-// }
 #endif /*HAS_MODEM*/
 
 /* -------------------- HAL port/device mappings -------------------- */
@@ -333,8 +331,8 @@ static void hal_init() {
      *  Initialise HAL with default configuration, as follows:
      * 
      *      TUART0.deviceA.device=WEBTTY,STDIO
-     *      TUART1.deviceA.device=WEBTTY2,SCKTSRV1
-     *      TUART1.deviceB.device=WEBTTY3,SCKTSRV2
+     *      TUART1.deviceA.device=SCKTSRV1,WEBTTY2
+     *      TUART1.deviceB.device=SCKTSRV2,WEBTTY3
      * 
      * Notes: 
      *      - all ports end with NULL and that is always alive
@@ -344,12 +342,12 @@ static void hal_init() {
     tuart[0][1] = devices[STDIODEV];
     tuart[0][2] = devices[NULLDEV];
 
-    tuart[1][0] = devices[WEBTTY2DEV];
-    tuart[1][1] = devices[SCKTSRV1DEV];
+    tuart[1][0] = devices[SCKTSRV1DEV];
+    tuart[1][1] = devices[WEBTTY2DEV];
     tuart[1][2] = devices[NULLDEV];
     
-    tuart[2][0] = devices[WEBTTY3DEV];
-    tuart[2][1] = devices[SCKTSRV2DEV];
+    tuart[2][0] = devices[SCKTSRV2DEV];
+    tuart[2][1] = devices[WEBTTY3DEV];
     tuart[2][2] = devices[NULLDEV];
 
     for (i = 0; i < MAX_TUART_PORT; i++) {
@@ -451,12 +449,12 @@ next:
     }        
 }
 
-// int hal_carrier_detect(tuart_port_t dev) {
+int hal_alive(tuart_port_t dev) {
 
-//     int p = 0;
-//     while(!tuart[dev][p].alive()) { /* Find the first device that is alive */
-//         p++;
-//     }
+    int p = 0;
+    while(!tuart[dev][p].alive(tuart[dev][p].device_id)) { /* Find the first device that is alive */
+        p++;
+    }
 	
-// 	return tuart[dev][p].cd();
-// }
+	return tuart[dev][p].name?1:0; /* return "alive" (true) when not the NULL device */
+}

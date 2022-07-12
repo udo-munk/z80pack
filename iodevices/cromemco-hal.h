@@ -40,17 +40,16 @@ struct hal_device {
 	void (*status)(int dev, BYTE *stat);
 	int (*in)(int dev);
 	void (*out)(int dev, BYTE);
-    // int (*cd)();
 };
 
 typedef struct hal_device hal_device_t;
 
 extern void hal_reset();
 
-extern void hal_status_in(tuart_port_t sio, BYTE *stat);
-extern int hal_data_in(tuart_port_t sio);
-extern void hal_data_out(tuart_port_t sio, BYTE data);
-// extern int hal_carrier_detect(tuart_port_t sio);
+extern void hal_status_in(tuart_port_t dev, BYTE *stat);
+extern int hal_data_in(tuart_port_t dev);
+extern void hal_data_out(tuart_port_t dev, BYTE data);
+extern int hal_alive(tuart_port_t dev);
 
 extern const char *tuart_port_name[MAX_TUART_PORT];
 extern hal_device_t tuart[MAX_TUART_PORT][MAX_HAL_DEV];

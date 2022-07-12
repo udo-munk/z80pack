@@ -48,6 +48,9 @@
 #include "simbdos.h"
 #include "../../iodevices/unix_network.h"
 #include "../../iodevices/cromemco-tu-art.h"
+#ifdef HAS_MODEM
+#include "../../iodevices/generic-at-modem.h"
+#endif /* HAS_MODEM */
 #include "../../iodevices/cromemco-fdc.h"
 #include "../../iodevices/cromemco-dazzler.h"
 #include "../../iodevices/cromemco-d+7a.h"
@@ -59,6 +62,7 @@
 #endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+#include "../../iodevices/cromemco-hal.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -662,6 +666,11 @@ void init_io(void)
 	tim.it_interval.tv_usec = 10000;
 	setitimer(ITIMER_REAL, &tim, NULL);
 
+#ifdef HAS_MODEM
+	modem_device_init();
+#endif
+
+	hal_reset();
 	LOG(TAG, "\r\n");
 }
 
@@ -1170,7 +1179,6 @@ next:
 static void interrupt(int sig)
 {
 	static unsigned long counter = 0L;
-	struct pollfd p[1];
 
 	sig = sig;	/* to avoid compiler warning */
 
@@ -1202,78 +1210,30 @@ static void interrupt(int sig)
 	sigio_tcp_server_socket(0);
 #endif
 
-#ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_TTY)) {
-		if (net_device_poll(DEV_TTY)) {
-			uart0a_rda = 1;
-		} else {
-			uart0a_rda = 0;
-		}
-	} else 
-#endif
-	{
-		/* check for RDA */
-		p[0].fd = fileno(stdin);
-		p[0].events = POLLIN;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		if (p[0].revents & POLLIN)
-			uart0a_rda = 1;
-		else
-			uart0a_rda = 0;
-		if (p[0].revents & POLLNVAL) {
-			LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
-			exit(1);
-		}
+	BYTE status = 0;
+	hal_status_in(TUART0A, &status);
+
+	if (status & 2) {
+		uart0a_rda = 1;
+	} else {
+		uart0a_rda = 0;
 	}
 
-#ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_TTY2)) {
-		if (net_device_poll(DEV_TTY2)) {
-			uart1a_rda = 1;
-		} else {
-			uart1a_rda = 0;
-		}
-	} else 
-#endif
-	if (ncons[0].ssc != 0) {
-		p[0].fd = ncons[0].ssc;
-		p[0].events = POLLIN;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		if (p[0].revents & POLLHUP) {
-			close(ncons[0].ssc);
-			ncons[0].ssc = 0;
-			uart1a_rda = 0;
-		} else if (p[0].revents & POLLIN) {
-			uart1a_rda = 1;
-		} else {
-			uart1a_rda = 0;
-		}
+	status = 0;
+	hal_status_in(TUART1A, &status);
+
+	if (status & 2) {
+		uart1a_rda = 1;
+	} else {
+		uart1a_rda = 0;
 	}
 
-#ifdef HAS_NETSERVER
-	if (net_device_alive(DEV_TTY3)) {
-		if (net_device_poll(DEV_TTY3)) {
-			uart1b_rda = 1;
-		} else {
-			uart1b_rda = 0;
-		}
-	} else 
-#endif
-	if (ncons[1].ssc != 0) {
-		p[0].fd = ncons[1].ssc;
-		p[0].events = POLLIN;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		if (p[0].revents & POLLHUP) {
-			close(ncons[1].ssc);
-			ncons[1].ssc = 0;
-			uart1b_rda = 0;
-		} else if (p[0].revents & POLLIN) {
-			uart1b_rda = 1;
-		} else {
-			uart1b_rda = 0;
-		}
+	status = 0;
+	hal_status_in(TUART1B, &status);
+
+	if (status & 2) {
+		uart1b_rda = 1;
+	} else {
+		uart1b_rda = 0;
 	}
 }
