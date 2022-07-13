@@ -29,7 +29,12 @@
 #include "civetweb.h"
 
 #ifdef HAS_HAL
+#ifdef IMSAISIM
 #include "imsai-hal.h"
+#endif
+#ifdef CROMEMCOSIM
+#include "cromemco-hal.h"
+#endif
 #endif 
 
 #ifdef HAS_NETSERVER
@@ -308,7 +313,9 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
             httpdPrintf(conn, "} ");
 
 #ifdef HAS_HAL
-            httpdPrintf(conn, ", \"sio_ports\": [ ");
+#ifdef IMSAISIM
+            httpdPrintf(conn, ", \"hal\": \"SIO Ports\"");
+            httpdPrintf(conn, ", \"hal_ports\": [ ");
             for(int i = 0; i < MAX_SIO_PORT; i++) {
                 httpdPrintf(conn, "{ ");
                     httpdPrintf(conn, "\"%s\": \"%s\", ", "name", sio_port_name[i]);
@@ -326,6 +333,28 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
                 httpdPrintf(conn, "] }%s ", (i < (MAX_SIO_PORT-1))?",":"");
             }
             httpdPrintf(conn, "]");
+#endif
+#ifdef CROMEMCOSIM
+            httpdPrintf(conn, ", \"hal\": \"TU-ART Devices\"");
+            httpdPrintf(conn, ", \"hal_ports\": [ ");
+            for(int i = 0; i < MAX_TUART_PORT; i++) {
+                httpdPrintf(conn, "{ ");
+                    httpdPrintf(conn, "\"%s\": \"%s\", ", "name", tuart_port_name[i]);
+                    int j = 0;
+                    httpdPrintf(conn, "\"%s\": [ ", "devices");
+                    while (tuart[i][j].name && j < MAX_HAL_DEV) {
+                        if (*tuart[i][j].name) 
+							httpdPrintf(conn, "%s\"%s%s\"", 
+								(j==0)?"":", ", 
+								tuart[i][j].name, 
+								tuart[i][j].fallthrough?"+":""
+							);
+                        j++;
+                    }
+                httpdPrintf(conn, "] }%s ", (i < (MAX_TUART_PORT-1))?",":"");
+            }
+            httpdPrintf(conn, "]");
+#endif
 #endif 
 
 #ifdef HAS_CONFIG

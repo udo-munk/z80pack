@@ -52,6 +52,7 @@
 #define HAS_APU			/* has simulated AM9511 floating point maths coprocessor */
 #define HAS_HAL			/* implements a hardware abstraction layer (HAL) for SIO ports */
 
+#define IMSAISIM
 #define MACHINE "imsai"
 #define DOCUMENT_ROOT "../webfrontend/www/" MACHINE
 

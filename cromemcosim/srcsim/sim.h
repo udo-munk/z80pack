@@ -45,7 +45,10 @@
 
 /*#define HAS_DISKMANAGER*/	/* uses file based disk map for disks[] */
 /*#define HAS_NETSERVER*/	/* uses civet webserver to present a web based frontend */
+#define HAS_MODEM		/* has simulated 'AT' style modem over TCP/IP (telnet) */
+#define HAS_HAL			/* implements a hardware abstraction layer (HAL) for TU-ART devices */
 
+#define CROMEMCOSIM
 #define MACHINE "cromemco"
 #define DOCUMENT_ROOT "../webfrontend/www/" MACHINE
 
