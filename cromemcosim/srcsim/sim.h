@@ -1,8 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2021 Udo Munk
- * Copyright (C) 2021 David McNaughton
+ * Copyright (C) 2014-2022 Udo Munk
+ * Copyright (C) 2021-2022 David McNaughton
  *
  * Configuration for a Cromemco Z-1 system
  *
@@ -23,6 +23,7 @@
  * 22-APR-18 implemented TCP socket polling
  * 29-AUG-21 new memory configuration sections
  * 02-SEP-21 implement banked ROM
+ * 14-JUL-22 added generic AT modem and HAL
  */
 
 /*
@@ -74,13 +75,13 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2022 by Udo Munk"
 #define RELEASE	"1.38-dev"
 
 #define USR_COM	"Cromemco Z-1 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"\nCopyright (C) 2014-2021 by Udo Munk & " \
-		"2021 by David McNaughton"
+#define USR_CPR	"\nCopyright (C) 2014-2022 by Udo Munk & " \
+		"2021-2022 by David McNaughton"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
