@@ -16,7 +16,10 @@ INCL = -I$(WEB)/civetweb/include -I$(WEB)
 #CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I../../iodevices ${INCL}
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I../../iodevices ${INCL}
+#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I../../iodevices ${INCL}
+
+# Debugging
+CFLAGS = -g -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I../../iodevices ${INCL}
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib -L/opt/X11/lib \
 	-lfrontpanel -ljpeg -lGL -lGLU -lX11 \
@@ -47,7 +50,10 @@ OBJ =   sim0.o \
 	cromemco-dazzler.o \
 	cromemco-88ccc.o \
 	cromemco-d+7a.o \
-	netsrv.o
+	cromemco-hal.o \
+	netsrv.o \
+	generic-at-modem.o \
+	libtelnet.o
 
 FP =	../../frontpanel/libfrontpanel.dylib
 
@@ -137,8 +143,18 @@ cromemco-88ccc.o : ../../iodevices/cromemco-88ccc.c sim.h simglb.h config.h memo
 cromemco-d+7a.o : ../../iodevices/cromemco-d+7a.c sim.h simglb.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-d+7a.c
 
+cromemco-hal.o : ../../iodevices/cromemco-hal.c sim.h simglb.h log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-hal.c
+
 netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
+
+generic-at-modem.o : ../../iodevices/generic-at-modem.c \
+		     ../../iodevices/libtelnet.h log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/generic-at-modem.c
+
+libtelnet.o : ../../iodevices/libtelnet.c
+	$(CC) $(CFLAGS) -I./ ../../iodevices/libtelnet.c
 
 clean:
 	rm -f *.o

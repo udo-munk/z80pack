@@ -47,7 +47,10 @@ OBJ =   sim0.o \
 	cromemco-dazzler.o \
 	cromemco-88ccc.o \
 	cromemco-d+7a.o \
-	netsrv.o
+	cromemco-hal.o \
+	netsrv.o \
+	generic-at-modem.o \
+	libtelnet.o
 
 FP =	../../frontpanel/libfrontpanel.so
 
@@ -137,8 +140,18 @@ cromemco-88ccc.o : ../../iodevices/cromemco-88ccc.c sim.h simglb.h config.h memo
 cromemco-d+7a.o : ../../iodevices/cromemco-d+7a.c sim.h simglb.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-d+7a.c
 
+cromemco-hal.o : ../../iodevices/cromemco-hal.c sim.h simglb.h log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-hal.c
+
 netsrv.o : $(WEB)/netsrv.c sim.h simglb.h memory.h $(WEB)/netsrv.h log.h
 	$(CC) $(CFLAGS) -I./ ../../webfrontend/netsrv.c
+
+generic-at-modem.o : ../../iodevices/generic-at-modem.c \
+		     ../../iodevices/libtelnet.h log.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/generic-at-modem.c
+
+libtelnet.o : ../../iodevices/libtelnet.c
+	$(CC) $(CFLAGS) -I./ ../../iodevices/libtelnet.c
 
 clean:
 	rm -f *.o
