@@ -113,6 +113,33 @@ int getkey(void)
 /*
  *	Sleep for time milliseconds, 999 max
  */
+void sleep_us(int time)
+{
+	struct timespec timer, rem;
+	int err;
+
+	timer.tv_sec = 0;
+	timer.tv_nsec = 1000L * time;
+
+again:
+	if (nanosleep(&timer, &rem) == -1) {
+		if ((err = errno) == EINTR) {
+			/* interrupted, resume with the remaining time */
+			if (rem.tv_nsec > 0L) {
+				memcpy(&timer, &rem, sizeof(struct timespec));
+				goto again;
+			}
+		} else {
+			/* some error */
+			LOGD(TAG, "sleep_us(%d) %s", time, strerror(err));
+			// cpu_error = IOERROR;
+			// cpu_state = STOPPED;
+		}
+	}
+}
+/*
+ *	Sleep for time milliseconds, 999 max
+ */
 void sleep_ms(int time)
 {
 	struct timespec timer, rem;
