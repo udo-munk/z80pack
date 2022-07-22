@@ -4,7 +4,7 @@
 #include "simglb.h"
 #include "memory.h"
 
-#define LOG_LOCAL_LEVEL LOG_INFO
+#define LOG_LOCAL_LEVEL LOG_ERROR
 #include "log.h"
 
 static const char *TAG = "wdi";
@@ -138,6 +138,7 @@ struct {
         BYTE _disk_op;
 
         BYTE bus_addr;
+        BYTE sector;
 
         struct {
             BYTE uas;
@@ -174,6 +175,10 @@ void wdi_init(void)
 
     wdi.dma.wr_state = WR_BASE;
     wdi.dma.rr_state = RR_BASE;
+
+    wdi.ctc.now0 = 0;
+    wdi.ctc.now1 = 0;
+    wdi.ctc.now2 = 0;
 
     wdi.ctc.state0 = 0;
     wdi.ctc.state1 = 0;
@@ -219,24 +224,6 @@ BYTE e1_in(void)
         case 7:
 	        val = wdi.pio0.data_B;
             break;
-        // case 4:
-        //     val = wdi.hd0.status.unit_rdy;
-        //     val |= wdi.hd0.status.on_cyl << 1;
-        //     val |= wdi.hd0.status.seeking << 2;
-        //     val |= wdi.hd0.status.rezeroing << 3;
-        //     break;
-        // case 5:
-        //     // LOGE(TAG, "STATUS %d NOT IMPLEMENTED", bus);
-	    //     val = 0x00;
-        //     break;
-        // case 6:
-        //     val = wdi.hd0.status.cav & 0xff;
-        //     break;
-        // case 7:
-        //     val = wdi.hd0.status.cav >> 8;
-        //     val |= wdi.hd0.status.uav << 4;
-        //     val |= wdi.hd0.status.hav << 2;
-        //     break;
         default:
             break;
     }
@@ -312,7 +299,7 @@ BYTE eb_in(void)
 BYTE ec_in(void)
 {
     BYTE val = wdi.ctc.now0;
-	// LOGD(TAG, "IN: CTC #0 = %d", val);
+	LOGD(TAG, "IN: CTC #0 = %02x", val);
 
     gettimeofday(&t2, NULL);
     tdiff = time_diff(&t1, &t2);
@@ -326,6 +313,7 @@ BYTE ec_in(void)
     // }
     if (tdiff > 16666) {
         if (val > 0) wdi.ctc.now0--;
+        wdi.hd0.sector = 0;
         gettimeofday(&t1, NULL);
     }
 	return(val);
@@ -333,9 +321,12 @@ BYTE ec_in(void)
 BYTE ed_in(void)
 {
     BYTE val = wdi.ctc.now1;
-	LOGI(TAG, "IN: CTC #1 = %d", wdi.ctc.now1);
+	LOGD(TAG, "IN: CTC #1 = %02x", wdi.ctc.now1);
 
     if (val > 0) wdi.ctc.now1--;
+    wdi.hd0.sector++;
+    wdi.hd0.sector %= 0x14;
+	// LOGI(TAG, "IN: CTC #1 = %02x, sect: %02x", wdi.ctc.now1, wdi.hd0.sector);
 
 	return(val);
 }
@@ -399,10 +390,6 @@ void e0_command(void)
             }
             if (data & 2) {
                 LOGI(TAG, "DISK COMMAND 3 - REZERO");
-                // wdi.hd0.command.rezero = 1;
-
-                // wdi.hd0.status.hav = 0;
-                // wdi.hd0.status.cav = 0;
                 
                 wdi.hd0.status.rezeroing = 1;
                 wdi.hd0.status.on_cyl = 0;
@@ -416,7 +403,6 @@ void e0_command(void)
             wdi.pio0.data_B |= wdi.hd0.status.rezeroing << 3;
             break;
         case 5:
-            // LOGE(TAG, "STATUS %d NOT IMPLEMENTED", bus);
 	        wdi.pio0.data_B = 0x00;
             break;
         case 6:
@@ -473,12 +459,9 @@ void e4_out(BYTE data)
 	LOGD(TAG, "OUT - PIO A : %02x - bus: %d", data, wdi.hd0.bus_addr);
 
     if (wdi.hd0._cmd_stb) {
-	    LOGI(TAG, "PIO A - STROBE: %02x - bus: %d", data, wdi.hd0.bus_addr);
-        e0_command();
+	    LOGD(TAG, "PIO A - STROBE: %02x - bus: %d", data, wdi.hd0.bus_addr);
 
-        // wdi.hd0.status.cav = wdi.hd0.command.cas;
-        // wdi.hd0.status.uav = wdi.hd0.command.uas;
-        // wdi.hd0.status.hav = wdi.hd0.command.has;
+        e0_command();
     }
 }
 void e5_out(BYTE data)
@@ -488,7 +471,7 @@ void e5_out(BYTE data)
     wdi.hd0.dma_rdy = data & 0x04;
     wdi.hd0._disk_op = data & 0x01;
 
-	LOGI(TAG, "E5 OUT: %02x, DMA RDY: %d, DISK_OP: %d", data, wdi.hd0.dma_rdy, wdi.hd0._disk_op);
+	LOGD(TAG, "E5 OUT: %02x, DMA RDY: %d, DISK_OP: %d", data, wdi.hd0.dma_rdy, wdi.hd0._disk_op);
 
     if (wdi.hd0._disk_op) {
         if (wdi.hd0.status.rezeroing) {
@@ -528,28 +511,28 @@ void e5_out(BYTE data)
         
         LOGI(TAG, "            SYNC: %02x, HEAD: %02x, CYL: %02x%02x, SEC: %02x, SUM: %d, END: %02x", buffer[0], buffer[1], buffer[3], buffer[2], buffer[4], sum, buffer[517]);
 
-        if ( sum != (512 * 0xe5)) {
-            LOGW(TAG, "SECTOR SUM IS DIFFERENT");
-            // LOGI(TAG, "            BUF: %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x", 
-            //         buffer[5], buffer[6], buffer[7], buffer[8],
-            //         buffer[9], buffer[10], buffer[11], buffer[12],
-            //         buffer[13], buffer[14], buffer[15], buffer[16],
-            //         buffer[17], buffer[18], buffer[19], buffer[20]);
-            char txt[] = "................";
-            char *t = txt;
-            for (int i = 0; i < 512; i++) {
-                if (!(i % 16)) {
-                    if (i) LOG(TAG, "  %s\n\r", txt);
-                    t = txt;
-                    LOG(TAG, "%04x:", i);
-                }
-                if (!(i % 4)) LOG(TAG, " ");
-                register c = buffer[i+5];
-                LOG(TAG, "%02x ", c);
-                *t++ = (c>31 && c<127)?c:'.';
-            }
-            LOG(TAG, "\n\r");
-        }
+        // if ( sum != (512 * 0xe5)) {
+        //     LOGW(TAG, "SECTOR SUM IS DIFFERENT");
+        //     // LOGI(TAG, "            BUF: %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x", 
+        //     //         buffer[5], buffer[6], buffer[7], buffer[8],
+        //     //         buffer[9], buffer[10], buffer[11], buffer[12],
+        //     //         buffer[13], buffer[14], buffer[15], buffer[16],
+        //     //         buffer[17], buffer[18], buffer[19], buffer[20]);
+        //     char txt[] = "................";
+        //     char *t = txt;
+        //     for (int i = 0; i < 512; i++) {
+        //         if (!(i % 16)) {
+        //             if (i) LOG(TAG, "  %s\n\r", txt);
+        //             t = txt;
+        //             LOG(TAG, "%04x:", i);
+        //         }
+        //         if (!(i % 4)) LOG(TAG, " ");
+        //         register c = buffer[i+5];
+        //         LOG(TAG, "%02x ", c);
+        //         *t++ = (c>31 && c<127)?c:'.';
+        //     }
+        //     LOG(TAG, "\n\r");
+        // }
 
         if (wdi.hd0.status.hav != buffer[1]) {
             LOGE(TAG, "DISK WRITE ERROR - BAD HEAD");
@@ -557,6 +540,8 @@ void e5_out(BYTE data)
         if (wdi.hd0.status.cav != cyl) {
             LOGE(TAG, "DISK WRITE ERROR - BAD CYLINDER");
         }
+
+        // wdi.hd0.sector = (buffer[4] + 1) % 0x14;
     };
     if (wdi.hd0.dma_rdy && wdi.hd0.command.read_gate) {
 
@@ -564,8 +549,8 @@ void e5_out(BYTE data)
         buffer[0] = wdi.hd0.status.hav;
         buffer[1] = wdi.hd0.status.cav & 0xff;
         buffer[2] = wdi.hd0.status.cav >> 8;
-        // buffer[3] = (wdi.ctc.now1 + 0x13) % 0x14;
-        buffer[3] = (wdi_index++) % 0x14; // #### This ain't done yet!!!!
+        buffer[3] = wdi.hd0.sector;
+        // wdi.hd0.sector = (buffer[3] + 1) % 0x14;
 
         LOGI(TAG, "DISK READ: head: %d, cyl: %d, sec: %d", wdi.hd0.status.hav, wdi.hd0.status.cav, buffer[3]);
         LOGI(TAG, "           start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
@@ -594,7 +579,6 @@ void e6_out(BYTE data)
                     wdi.pio1.cmd_A_state = 1;
                 } else {
                     LOGW(TAG, "Unexpected PIO A mode [%02x]", wdi.pio1.mode_A);
-	                // LOGW(TAG, "E6 OUT: %02x", data);
                 }
             } else {
                 LOGW(TAG, "Unexpected PIO A command [%02x]", data);
@@ -823,7 +807,6 @@ void e8_out(BYTE data)
             break;
     }
 }
-#define LOG_LOCAL_LEVEL LOG_INFO
 
 void e9_out(BYTE data)
 {
@@ -853,6 +836,7 @@ void ec_out(BYTE data)
             if (!(data & 0x01)) LOGE(TAG, "CTC #0 - not CONTROL");
             break;
         case 1:
+            if (wdi.ctc.mode0 & 0x40) LOGD(TAG, "CTC #0 - COUNTER set to %02x", data);
             wdi.ctc.state0 = 0;
             wdi.ctc.time0 = data;
             wdi.ctc.now0 = data;
@@ -873,8 +857,11 @@ void ed_out(BYTE data)
 
             if (data & 0x80 ) LOGE(TAG, "CTC #1 - INT set");
 
-            if (!(data & 0x40)) LOGD(TAG, "CTC #1 - TIMER set")
-            else LOGW(TAG, "CTC #1 - COUNTER set");
+            if (!(data & 0x40)) {
+                LOGD(TAG, "CTC #1 - TIMER set");
+            } else {
+                LOGD(TAG, "CTC #1 - COUNTER set");
+            }
 
             if (data & 0x04 ) wdi.ctc.state1 = 1;
             if (data & 0x02 ) wdi.ctc.now1 = 0;
@@ -885,6 +872,14 @@ void ed_out(BYTE data)
             wdi.ctc.time1 = data;
             wdi.ctc.now1 = data;
             // gettimeofday(&t1, NULL);
+
+            if (wdi.ctc.mode1 & 0x40) {
+                LOGI(TAG, "CTC #1 - COUNTER set to %02x", data);
+                // wdi.hd0.sector = (data + 1) % 0x14;
+            } else {
+                LOGI(TAG, "CTC #1 - TIMER set to %02x", data);
+            }
+
             break;
         default:
         LOGE(TAG, "CTC #1 - unknown state %d", wdi.ctc.state0);
