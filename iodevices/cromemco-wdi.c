@@ -144,7 +144,7 @@ struct {
             BYTE uas;
             BYTE has;
             int cas;
-            BYTE rezero;
+            // BYTE rezero;
             BYTE write_gate;
             BYTE read_gate;
         } command;
@@ -187,7 +187,7 @@ void wdi_init(void)
     wdi.hd0._fault = 1;
     wdi.hd0._crc_error = 0;
 
-    wdi.hd0.command.rezero = 0;
+    // wdi.hd0.command.rezero = 0;
     wdi.hd0.command.write_gate = 0;
     wdi.hd0.command.read_gate = 0;
 
@@ -245,6 +245,7 @@ BYTE e4_in(void)
 	BYTE val = 0;
 
     val |= wdi.hd0.brd;
+    val |= wdi.hd0.status.seeking << 5;
     if (!wdi.hd0._cmd_stb) {
         val |= 0x80; // CMD_AK
     }
@@ -394,6 +395,7 @@ void e0_command(void)
                 wdi.hd0.status.rezeroing = 1;
                 wdi.hd0.status.on_cyl = 0;
                 wdi.hd0.status.unit_rdy = 0;
+                wdi.hd0._fault = 1; // CLEAR FAULT
             }
             break;
         case 4:
@@ -501,38 +503,41 @@ void e5_out(BYTE data)
             buffer[i] = dma_read(wdi.dma.wr4.b_addr_counter++);
         }
 
+        LOGI(TAG, "            SYNC: %02x, HEAD: %02x, CYL: %02x%02x, SEC: %02x, END: %02x", buffer[0], buffer[1], buffer[3], buffer[2], buffer[4], buffer[517]);
+ 
         int cyl = (buffer[3] << 8 ) | buffer[2];
+
         register sum = 0;
 
         for (int i = 0; i < 512; i++) {
             sum += buffer[i+5];
             hdd[wdi.hd0.status.hav][wdi.hd0.status.cav][buffer[4]][i] = buffer[i+5];
         }
-        
-        LOGI(TAG, "            SYNC: %02x, HEAD: %02x, CYL: %02x%02x, SEC: %02x, SUM: %d, END: %02x", buffer[0], buffer[1], buffer[3], buffer[2], buffer[4], sum, buffer[517]);
 
-        // if ( sum != (512 * 0xe5)) {
-        //     LOGW(TAG, "SECTOR SUM IS DIFFERENT");
-        //     // LOGI(TAG, "            BUF: %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x", 
-        //     //         buffer[5], buffer[6], buffer[7], buffer[8],
-        //     //         buffer[9], buffer[10], buffer[11], buffer[12],
-        //     //         buffer[13], buffer[14], buffer[15], buffer[16],
-        //     //         buffer[17], buffer[18], buffer[19], buffer[20]);
-        //     char txt[] = "................";
-        //     char *t = txt;
-        //     for (int i = 0; i < 512; i++) {
-        //         if (!(i % 16)) {
-        //             if (i) LOG(TAG, "  %s\n\r", txt);
-        //             t = txt;
-        //             LOG(TAG, "%04x:", i);
-        //         }
-        //         if (!(i % 4)) LOG(TAG, " ");
-        //         register c = buffer[i+5];
-        //         LOG(TAG, "%02x ", c);
-        //         *t++ = (c>31 && c<127)?c:'.';
-        //     }
-        //     LOG(TAG, "\n\r");
-        // }
+#ifdef DEBUG
+        if ( sum != (512 * 0xe5)) {
+            LOGW(TAG, "SECTOR SUM %d IS DIFFERENT", sum);
+            // LOGI(TAG, "            BUF: %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x", 
+            //         buffer[5], buffer[6], buffer[7], buffer[8],
+            //         buffer[9], buffer[10], buffer[11], buffer[12],
+            //         buffer[13], buffer[14], buffer[15], buffer[16],
+            //         buffer[17], buffer[18], buffer[19], buffer[20]);
+            char txt[] = "................";
+            char *t = txt;
+            for (int i = 0; i < 512; i++) {
+                if (!(i % 16)) {
+                    if (i) LOG(TAG, "  %s\n\r", txt);
+                    t = txt;
+                    LOG(TAG, "%04x:", i);
+                }
+                if (!(i % 4)) LOG(TAG, " ");
+                register c = buffer[i+5];
+                LOG(TAG, "%02x ", c);
+                *t++ = (c>31 && c<127)?c:'.';
+            }
+            LOG(TAG, "\n\r");
+        }
+#endif
 
         if (wdi.hd0.status.hav != buffer[1]) {
             LOGE(TAG, "DISK WRITE ERROR - BAD HEAD");
@@ -540,8 +545,6 @@ void e5_out(BYTE data)
         if (wdi.hd0.status.cav != cyl) {
             LOGE(TAG, "DISK WRITE ERROR - BAD CYLINDER");
         }
-
-        // wdi.hd0.sector = (buffer[4] + 1) % 0x14;
     };
     if (wdi.hd0.dma_rdy && wdi.hd0.command.read_gate) {
 
@@ -550,9 +553,8 @@ void e5_out(BYTE data)
         buffer[1] = wdi.hd0.status.cav & 0xff;
         buffer[2] = wdi.hd0.status.cav >> 8;
         buffer[3] = wdi.hd0.sector;
-        // wdi.hd0.sector = (buffer[3] + 1) % 0x14;
 
-        LOGI(TAG, "DISK READ: head: %d, cyl: %d, sec: %d", wdi.hd0.status.hav, wdi.hd0.status.cav, buffer[3]);
+        LOGI(TAG, "DISK READ: head: %d, cyl: %d, sec: %d", wdi.hd0.status.hav, wdi.hd0.status.cav, wdi.hd0.sector);
         LOGI(TAG, "           start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
         for (int i = 0; i < wdi.dma.wr0.len; i++) {
