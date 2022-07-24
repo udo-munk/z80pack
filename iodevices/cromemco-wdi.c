@@ -17,8 +17,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include <sys/time.h>
+
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
@@ -47,12 +47,8 @@ static int unit;
 
 static char *images[] = { "disks/hd0.hdd", "disks/hd1.hdd", "disks/hd2.hdd", "disks/hd3.hdd"};
 
-struct timeval t1, t2;
-int tdiff;
-extern int time_diff(struct timeval *, struct timeval *);
-
-#define RPM 5000
-#define INDEX_INT (1000000*60/RPM)
+#define RPM 3600
+#define INDEX_INT (1000000*60*4/RPM) /* Index interval in T ticks @ 4MHz */
 
 enum wreg { WR_BASE, WR0, WR1, WR2, WR3, WR4, WR5, WR6 };
 typedef enum wreg wreg_t;
@@ -150,6 +146,9 @@ static struct {
         BYTE state0;
         BYTE state1;
         BYTE state2;
+        unsigned long long T0;
+        unsigned long long T1;
+        unsigned long long T2;
     } ctc;
     struct {
         BYTE _cmd_ak;
@@ -361,6 +360,9 @@ void wdi_dma_read(void)
     LOGI(TAG, "DISK READ: head: %d, cyl: %d, sec: %d", wdi.hd[unit].status.hav, wdi.hd[unit].status.cav, wdi.hd[unit].sector);
     LOGI(TAG, "           start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
+    wdi.hd[unit].sector++;
+    wdi.hd[unit].sector %= WMI_SECTORS;
+
 #ifndef HDD_IN_MEMORY
     struct stat s;
 
@@ -512,49 +514,54 @@ BYTE eb_in(void)
 BYTE ec_in(void)
 {
     BYTE val = wdi.ctc.now0;
-	LOGD(TAG, "IN: CTC #0 = %02x", val);
+	LOGD(TAG, "IN: CTC #0 = %02x - Tdiff=%lld", val, T - wdi.ctc.T0);
 
-    gettimeofday(&t2, NULL);
-    tdiff = time_diff(&t1, &t2);
-	// LOGI(TAG, "IN: CTC #0 = %d, diff = %d", val, tdiff);
-	// LOGI(TAG, "IN: CTC #0 = %d, index = %d", val, wdi_index);
-
-    // if (wdi_index > 4) {
-    //     if (val > 0) wdi.ctc.now0--;
-	//     LOGD(TAG, "IN: CTC #0 = %d, index = %d", val, wdi_index);
-    //     wdi_index = 0;
-    // }
-    if (tdiff > 16666) {
-        if (val > 0) wdi.ctc.now0--;
+    if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in theta */
+    else if ((T - wdi.ctc.T0) > INDEX_INT) {
+        if (val > 0) wdi.ctc.now0--; // DOESN'T HANDLE MULTIPLES YET
         wdi.hd[unit].sector = 0;
-        gettimeofday(&t1, NULL);
+        wdi.ctc.T0 += INDEX_INT;
     }
 	return(val);
 }
 BYTE ed_in(void)
 {
-    BYTE val = wdi.ctc.now1;
-	LOGD(TAG, "IN: CTC #1 = %02x", wdi.ctc.now1);
+    unsigned long long Tdiff = T - wdi.ctc.T1;
+    unsigned int sectors = (Tdiff * WMI_SECTORS + INDEX_INT / 10) / INDEX_INT; /* +10% on sector time */
 
-    if (val > 0) wdi.ctc.now1--;
-    wdi.hd[unit].sector++;
-    wdi.hd[unit].sector %= WMI_SECTORS;
-	// LOGI(TAG, "IN: CTC #1 = %02x, sect: %02x", wdi.ctc.now1, wdi.hd[unit].sector);
+	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
-	return(val);
+    if (sectors) {
+        if (wdi.ctc.now1 > 0) { 
+            int r = (int)wdi.ctc.now1 - sectors;
+            if (r < 0) r = 0;
+            wdi.ctc.now1 = r;
+        }
+        wdi.hd[unit].sector += sectors;
+        wdi.hd[unit].sector %= WMI_SECTORS;
+        // LOGI(TAG, "IN: CTC #1 = %02x, sect: %02x", wdi.ctc.now1, wdi.hd[unit].sector);
+
+        wdi.ctc.T1 = T;
+    }
+
+	return(wdi.ctc.now1);
 }
 BYTE ee_in(void)
 {
     BYTE val = wdi.ctc.now2;
 	LOGD(TAG, "IN: CTC #2 = %d", val);
 
-    // gettimeofday(&t2, NULL);
-    // tdiff = time_diff(&t1, &t2);
+/**
+ * COULD SIMULATE HEAD SEEK TIME HERE 
+ * IMI-7710 spec gives:
+ *   single track access time   10 ms
+ *   average access time        50 ms
+ *   maximum access time        100 ms
+ * 
+ * For now, seek is complete the first time this counter is checked
+ */
 
-    // if (tdiff > 100000) {
-        if (val > 0) wdi.ctc.now2--;
-    //     gettimeofday(&t1, NULL);
-    // }
+    if (val > 0) wdi.ctc.now2--;
 
 	return(val);
 }
@@ -989,7 +996,7 @@ void ec_out(BYTE data)
             wdi.ctc.state0 = 0;
             wdi.ctc.time0 = data;
             wdi.ctc.now0 = data;
-            gettimeofday(&t1, NULL);
+            wdi.ctc.T0 = T;
             break;
         default:
         LOGE(TAG, "CTC #0 - unknown state %d", wdi.ctc.state0);
@@ -1020,7 +1027,7 @@ void ed_out(BYTE data)
             wdi.ctc.state1 = 0;
             wdi.ctc.time1 = data;
             wdi.ctc.now1 = data;
-            // gettimeofday(&t1, NULL);
+            wdi.ctc.T1 = T;
 
             if (wdi.ctc.mode1 & 0x40) {
                 LOGI(TAG, "CTC #1 - COUNTER set to %02x", data);
@@ -1052,7 +1059,7 @@ void ee_out(BYTE data)
             wdi.ctc.state2 = 0;
             wdi.ctc.time2 = data;
             wdi.ctc.now2 = data;
-            // gettimeofday(&t1, NULL);
+            wdi.ctc.T2 = T;
             break;
         default:
         LOGE(TAG, "CTC #2 - unknown state %d", wdi.ctc.state2);
