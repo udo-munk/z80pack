@@ -323,38 +323,22 @@ BYTE (*port_in[256]) (void) = {
 	io_trap_in,			/* port 221 */
 	io_trap_in,			/* port 222 */
 	io_trap_in,			/* port 223 */
-	// io_trap_in,			/* #### port 224 */
-	// io_trap_in,			/* port 225 */
-	// io_trap_in,			/* port 226 */
-	// io_trap_in,			/* port 227 */
-	// io_trap_in,			/* port 228 */
-	// io_trap_in,			/* port 229 */
-	// io_trap_in,			/* port 230 */
-	// io_trap_in,			/* port 231 */
-	// io_trap_in,			/* port 232 */
-	// io_trap_in,			/* port 233 */
-	// io_trap_in,			/* port 234 */
-	// io_trap_in,			/* port 235 */
-	// io_trap_in,			/* port 236 */
-	// io_trap_in,			/* port 237 */
-	// io_trap_in,			/* port 238 */
-	// io_trap_in,			/* port 239 */
-	e0_in,			/* ### port 224 */
-	e1_in,			/* port 225 */
-	e2_in,			/* port 226 */
-	e3_in,			/* port 227 */
-	e4_in,			/* port 228 */
-	e5_in,			/* port 229 */
-	e6_in,			/* port 230 */
-	e7_in,			/* port 231 */
-	e8_in,			/* port 232 */
-	e9_in,			/* port 233 */
-	ea_in,			/* port 234 */
-	eb_in,			/* port 235 */
-	ec_in,			/* port 236 */
-	ed_in,			/* port 237 */
-	ee_in,			/* port 238 */
-	ef_in,			/* port 239 */
+	cromemco_wdi_pio0a_data_in,	/* port 224 */
+	cromemco_wdi_pio0b_data_in,	/* port 225 */
+	cromemco_wdi_pio0a_cmd_in,	/* port 226 */
+	cromemco_wdi_pio0b_cmd_in,	/* port 227 */
+	cromemco_wdi_pio1a_data_in,	/* port 228 */
+	cromemco_wdi_pio1b_data_in,	/* port 229 */
+	cromemco_wdi_pio1a_cmd_in,	/* port 230 */
+	cromemco_wdi_pio1b_cmd_in,	/* port 231 */
+	cromemco_wdi_dma0_in,		/* port 232 */
+	cromemco_wdi_dma1_in,		/* port 233 */
+	cromemco_wdi_dma2_in,		/* port 234 */
+	cromemco_wdi_dma3_in,		/* port 235 */
+	cromemco_wdi_ctc0_in,		/* port 236 */
+	cromemco_wdi_ctc1_in,		/* port 237 */
+	cromemco_wdi_ctc2_in,		/* port 238 */
+	cromemco_wdi_ctc3_in,		/* port 239 */
 	io_trap_in,			/* port 240 */
 	io_trap_in,			/* port 241 */
 	io_trap_in,			/* port 242 */
@@ -602,38 +586,22 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,			/* port 221 */
 	io_trap_out,			/* port 222 */
 	io_trap_out,			/* port 223 */
-	// io_trap_out,			/* ### port 224 */
-	// io_trap_out,			/* port 225 */
-	// io_trap_out,			/* port 226 */
-	// io_trap_out,			/* port 227 */
-	// io_trap_out,			/* port 228 */
-	// io_trap_out,			/* port 229 */
-	// io_trap_out,			/* port 230 */
-	// io_trap_out,			/* port 231 */
-	// io_trap_out,			/* port 232 */
-	// io_trap_out,			/* port 233 */
-	// io_trap_out,			/* port 234 */
-	// io_trap_out,			/* port 235 */
-	// io_trap_out,			/* port 236 */
-	// io_trap_out,			/* port 237 */
-	// io_trap_out,			/* port 238 */
-	// io_trap_out,			/* port 239 */
-	e0_out,			/* ### port 224 */
-	e1_out,			/* port 225 */
-	e2_out,			/* port 226 */
-	e3_out,			/* port 227 */
-	e4_out,			/* port 228 */
-	e5_out,			/* port 229 */
-	e6_out,			/* port 230 */
-	e7_out,			/* port 231 */
-	e8_out,			/* port 232 */
-	e9_out,			/* port 233 */
-	ea_out,			/* port 234 */
-	eb_out,			/* port 235 */
-	ec_out,			/* port 236 */
-	ed_out,			/* port 237 */
-	ee_out,			/* port 238 */
-	ef_out,			/* port 239 */
+	cromemco_wdi_pio0a_data_out,	/* port 224 */
+	cromemco_wdi_pio0b_data_out,	/* port 225 */
+	cromemco_wdi_pio0a_cmd_out,	/* port 226 */
+	cromemco_wdi_pio0b_cmd_out,	/* port 227 */
+	cromemco_wdi_pio1a_data_out,	/* port 228 */
+	cromemco_wdi_pio1b_data_out,	/* port 229 */
+	cromemco_wdi_pio1a_cmd_out,	/* port 230 */
+	cromemco_wdi_pio1b_cmd_out,	/* port 231 */
+	cromemco_wdi_dma0_out,		/* port 232 */
+	cromemco_wdi_dma1_out,		/* port 233 */
+	cromemco_wdi_dma2_out,		/* port 234 */
+	cromemco_wdi_dma3_out,		/* port 235 */
+	cromemco_wdi_ctc0_out,		/* port 236 */
+	cromemco_wdi_ctc1_out,		/* port 237 */
+	cromemco_wdi_ctc2_out,		/* port 238 */
+	cromemco_wdi_ctc3_out,		/* port 239 */
 	io_trap_out,			/* port 240 */
 	io_trap_out,			/* port 241 */
 	io_trap_out,			/* port 242 */
@@ -975,10 +943,6 @@ static void *timing(void *arg)
 		/* do nothing if thread is suspended */
 		if (th_suspend)
 			goto next;
-
-		/* WDI-II INDEX time counter in ms.*/
-		// if (wdi_index)
-			wdi_index++;
 
 		/* make sure index pulse is there long enough */
 		if (index_pulse)

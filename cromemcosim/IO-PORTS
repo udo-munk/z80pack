@@ -45,4 +45,20 @@ Port No.	I/O	Product		Function
   70		in	TU-ART		Multi-User 5
   80		in	TU-ART		Multi-User 6
   90		in	TU-ART		Multi-User 7
+  E0    in/out WDI-II command/status
+  E1    out WDI-II extended address (not used)
+  E2    WDI-II (not used)
+  E3    WDI-II (not used)
+  E4    in/out WDI-II PIO A data
+  E5    in/out WDI-II PIO B data
+  E6    out WDI-II PIO A cmd
+  E7    out WDI-II PIO B cmd
+  E8    in/out WDI-II DMA
+  E9    WDI-II (not used)
+  EA    WDI-II (not used)
+  EB    WDI-II (not used)
+  EC    in/out WDI-II CTC #0
+  ED    in/out WDI-II CTC #1
+  EE    in/out WDI-II CTC #2
+  EF    WDI-II (not used)
   FF		in/out	Z1		Sense switches/Front pannel lights
