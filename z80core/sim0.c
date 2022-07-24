@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 					argv++;
 					f_flag = atoi(argv[0]);
 				}
-				tmax = f_flag * 10;
+				tmax = f_flag * 10000;
 				break;
 
 			case 'x':	/* get filename with executable */

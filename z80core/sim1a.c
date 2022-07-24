@@ -559,6 +559,7 @@ leave:
 		}
 
 		R++;			/* increment refresh register */
+		T += states;	/* increment CPU clock */
 
 					/* do runtime measurement */
 #ifdef WANT_TIM
