@@ -76,6 +76,24 @@ static struct {
         BYTE dir_B;
         BYTE mode_A;
         BYTE mode_B;
+
+        BYTE _cmd_ak;
+        BYTE brd;
+        BYTE _seek_cmp;
+        BYTE dsk_id;
+        BYTE _cmd_stb;
+        BYTE _cmd_sel1;
+        BYTE _cmd_sel0;
+        BYTE cmd__r_w;
+
+        BYTE _sel_un_ad3;
+        BYTE _sel_un_ad2;
+        BYTE _sel_un_ad1;
+        BYTE _sel_un_ad0;
+        BYTE dma_rdy;
+        BYTE _disk_op;
+
+        BYTE bus_addr;
     } pio1;
     struct {
         wreg_t wr_state;
@@ -150,25 +168,10 @@ static struct {
         unsigned long long T2;
     } ctc;
     struct {
-        BYTE _cmd_ak;
-        BYTE brd;
-        BYTE _seek_cmp;
-        BYTE dsk_id;
-        BYTE _cmd_stb;
-        BYTE _cmd_sel1;
-        BYTE _cmd_sel0;
-        BYTE cmd__r_w;
-        BYTE _crc_error;
-        BYTE _sel_un_ad3;
-        BYTE _sel_un_ad2;
-        BYTE _sel_un_ad1;
-        BYTE _sel_un_ad0;
-        BYTE dma_rdy;
-        BYTE _fault;
-        BYTE _disk_op;
-
-        BYTE bus_addr;
         BYTE sector;
+
+        BYTE _crc_error;
+        BYTE _fault;
 
         char *fn;
 
@@ -422,7 +425,7 @@ BYTE cromemco_wdi_pio0a_data_in(void)
 BYTE cromemco_wdi_pio0b_data_in(void)
 {
     BYTE val = 0;
-    int bus = wdi.hd[unit].bus_addr;
+    int bus = wdi.pio1.bus_addr;
 
 	LOGD(TAG, "E1 IN: - bus %d",bus);
 
@@ -460,9 +463,9 @@ BYTE cromemco_wdi_pio1a_data_in(void)
 {
 	BYTE val = 0;
 
-    val |= wdi.hd[unit].brd;
+    val |= wdi.pio1.brd;
     val |= wdi.hd[unit].status.seeking << 5;
-    if (!wdi.hd[unit]._cmd_stb) {
+    if (!wdi.pio1._cmd_stb) {
         val |= 0x80; /* CMD_AK */
     }
     val = (wdi.pio1.data_A & ~wdi.pio1.dir_A) | val;
@@ -518,9 +521,9 @@ BYTE cromemco_wdi_ctc0_in(void)
     BYTE val = wdi.ctc.now0;
 	LOGD(TAG, "IN: CTC #0 = %02x - Tdiff=%lld", val, T - wdi.ctc.T0);
 
-    if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in theta */
+    if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
     else if ((T - wdi.ctc.T0) > INDEX_INT) {
-        if (val > 0) wdi.ctc.now0--; // DOESN'T HANDLE MULTIPLES YET
+        if (val > 0) wdi.ctc.now0--; // DOESN'T HANDLE MULTIPLES YET ####
         wdi.hd[unit].sector = 0;
         wdi.ctc.T0 += INDEX_INT;
     }
@@ -529,7 +532,7 @@ BYTE cromemco_wdi_ctc0_in(void)
 BYTE cromemco_wdi_ctc1_in(void)
 {
     unsigned long long Tdiff = T - wdi.ctc.T1;
-    unsigned int sectors = (Tdiff * WMI_SECTORS + INDEX_INT / 10) / INDEX_INT; /* +10% on sector time */
+    unsigned int sectors = (Tdiff * WMI_SECTORS + INDEX_INT / 10) / INDEX_INT; /* -10% on sector time */
 
 	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
@@ -576,7 +579,7 @@ BYTE cromemco_wdi_ctc3_in(void)
 void command_bus_strobe(void)
 {
 
-    int bus = wdi.hd[unit].bus_addr;
+    int bus = wdi.pio1.bus_addr;
     BYTE data = wdi.pio0.data_A;
 
     switch (bus)
@@ -643,7 +646,7 @@ void command_bus_strobe(void)
 }
 void cromemco_wdi_pio0a_data_out(BYTE data)
 {
-    int bus = wdi.hd[unit].bus_addr;
+    int bus = wdi.pio1.bus_addr;
 
 	LOGD(TAG, "E0 OUT: %02x - bus:%d", data, bus);
     wdi.pio0.data_A = data;
@@ -672,18 +675,18 @@ void cromemco_wdi_pio1a_data_out(BYTE data)
 {
 	LOGD(TAG, "E4 OUT: %02x", data);
     wdi.pio1.data_A = data;
-    wdi.hd[unit].dsk_id = data & 0x10;
-    wdi.hd[unit].brd = wdi.hd[unit].dsk_id << 2;
-    wdi.hd[unit]._cmd_stb = data & 0x08;
-    wdi.hd[unit]._cmd_sel1 = data & 0x04;
-    wdi.hd[unit]._cmd_sel0 = data & 0x02;
-    wdi.hd[unit].cmd__r_w = data & 0x01;
+    wdi.pio1.dsk_id = data & 0x10;
+    wdi.pio1.brd = wdi.pio1.dsk_id << 2;
+    wdi.pio1._cmd_stb = data & 0x08;
+    wdi.pio1._cmd_sel1 = data & 0x04;
+    wdi.pio1._cmd_sel0 = data & 0x02;
+    wdi.pio1.cmd__r_w = data & 0x01;
 
-    wdi.hd[unit].bus_addr = (wdi.hd[unit].cmd__r_w << 2) | (wdi.hd[unit]._cmd_sel1 >> 1) | (wdi.hd[unit]._cmd_sel0 >> 1);
-	LOGD(TAG, "OUT - PIO A : %02x - bus: %d", data, wdi.hd[unit].bus_addr);
+    wdi.pio1.bus_addr = (wdi.pio1.cmd__r_w << 2) | (wdi.pio1._cmd_sel1 >> 1) | (wdi.pio1._cmd_sel0 >> 1);
+	LOGD(TAG, "OUT - PIO A : %02x - bus: %d", data, wdi.pio1.bus_addr);
 
-    if (wdi.hd[unit]._cmd_stb) {
-	    LOGD(TAG, "PIO A - STROBE: %02x - bus: %d", data, wdi.hd[unit].bus_addr);
+    if (wdi.pio1._cmd_stb) {
+	    LOGD(TAG, "PIO A - STROBE: %02x - bus: %d", data, wdi.pio1.bus_addr);
 
         command_bus_strobe();
     }
@@ -692,12 +695,12 @@ void cromemco_wdi_pio1b_data_out(BYTE data)
 {
 	LOGD(TAG, "E5 OUT: %02x", data);
     wdi.pio1.data_B = data;
-    wdi.hd[unit].dma_rdy = data & 0x04;
-    wdi.hd[unit]._disk_op = data & 0x01;
+    wdi.pio1.dma_rdy = data & 0x04;
+    wdi.pio1._disk_op = data & 0x01;
 
-	LOGD(TAG, "E5 OUT: %02x, DMA RDY: %d, DISK_OP: %d", data, wdi.hd[unit].dma_rdy, wdi.hd[unit]._disk_op);
+	LOGD(TAG, "E5 OUT: %02x, DMA RDY: %d, DISK_OP: %d", data, wdi.pio1.dma_rdy, wdi.pio1._disk_op);
 
-    if (wdi.hd[unit]._disk_op) {
+    if (wdi.pio1._disk_op) {
         if (wdi.hd[unit].status.rezeroing) {
             LOGI(TAG, "REZEROING");
             wdi.hd[unit].status.hav = 0;
@@ -717,10 +720,10 @@ void cromemco_wdi_pio1b_data_out(BYTE data)
         }
     }
 
-    if (wdi.hd[unit].dma_rdy && wdi.hd[unit].command.write_gate) {
+    if (wdi.pio1.dma_rdy && wdi.hd[unit].command.write_gate) {
         wdi_dma_write();
     };
-    if (wdi.hd[unit].dma_rdy && wdi.hd[unit].command.read_gate) {
+    if (wdi.pio1.dma_rdy && wdi.hd[unit].command.read_gate) {
         wdi_dma_read();
     }
 }
