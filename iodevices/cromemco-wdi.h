@@ -1,3 +1,15 @@
+/*
+ * cromemco-wdi.h
+ *
+ * Copyright (C) 2022 by David McNaughton
+ *
+ * Cromemco WDI-II Hard disk controller interface
+ *
+ * History:
+ * 23-JUL-2022    1.0     Initial Release 
+ *
+ */
+
 void wdi_init(void);
 
 extern BYTE wdi_index;
