@@ -56,6 +56,7 @@ extern BYTE	A, B, C, D, E, H, L, A_, B_, C_, D_, E_, H_, L_, I, IFF;
 extern WORD	PC, SP, IX, IY;
 extern int	F, F_;
 extern long	R;
+extern unsigned long long  T;
 extern BYTE	io_port, io_data;
 
 #ifdef BUS_8080
