@@ -63,7 +63,6 @@
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 #include "../../iodevices/cromemco-hal.h"
-
 #include "../../iodevices/cromemco-wdi.h"
 
 /*
@@ -728,10 +727,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #ifdef FRONTPANEL
 	int val;
 #endif
+
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-
-	if (io_port > 0xef) LOG(TAG, "IN PORT %02x = %02x\n\r", io_port, io_data);
 
 	cpu_bus = CPU_WO | CPU_INP;
 

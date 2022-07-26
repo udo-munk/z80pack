@@ -10,7 +10,6 @@
  *
  */
 
-// #include "cromemco-wdi.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -23,7 +22,7 @@
 #include "simglb.h"
 #include "memory.h"
 
-#define LOG_LOCAL_LEVEL LOG_INFO
+#define LOG_LOCAL_LEVEL LOG_ERROR
 #include "log.h"
 
 static const char *TAG = "wdi";
@@ -237,7 +236,7 @@ void wdi_init(void)
 }
 long wdi_pos(BYTE *buf)
 {
-    long p;
+    unsigned long p;
     const int c = WMI_CYLINDERS;
     const int s = WMI_SECTORS;
     const int b = WMI_BLOCK_SIZE;
@@ -248,8 +247,6 @@ long wdi_pos(BYTE *buf)
     p += cyl * s * b;
     p += buf[3] * b;
 
-    // LOG(TAG, "POS h:%1d c:%3d s:%2d p:%8d\r", buf[0], cyl, buf[3], p);
-
     return p;
 }
 void wdi_dma_write(void)
@@ -258,7 +255,7 @@ void wdi_dma_write(void)
     LOGI(TAG, "            start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
     if (wdi.dma.wr0.len >= WMI_MAX_BUFFER) {
-        wdi.hd[unit]._fault = 0; // SET FAULT
+        wdi.hd[unit]._fault = 0; /* SET FAULT */
         LOGE(TAG, "DMA length: %d > buffer: %d", wdi.dma.wr0.len, WMI_MAX_BUFFER);
         return;
     }
@@ -516,7 +513,7 @@ BYTE cromemco_wdi_ctc0_in(void)
 
     if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
     else if ((T - wdi.ctc.T0) > INDEX_INT) {
-        if (val > 0) wdi.ctc.now0--; // DOESN'T HANDLE MULTIPLES YET ####
+        if (val > 0) wdi.ctc.now0--;
         wdi.hd[unit].sector = 0;
         wdi.ctc.T0 += INDEX_INT;
     }
@@ -872,7 +869,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                     }
                     LOGD(TAG, "DMA WR6 = %02x - %s", data, cmd);
                 } else {
-                    LOGW(TAG, "DMA WR [%02x] NOT IMPLEMENTED", data);
+                    LOGE(TAG, "DMA WR [%02x] NOT IMPLEMENTED", data);
                 }
             } else { /* WR0 - WR3 */
 
@@ -906,7 +903,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                         LOGD(TAG, "DMA WR2: Port B: inc. mode %d, dev %c", wdi.dma.wr1.a_device, wdi.dma.wr1.a_device?'I':'M');
                     } else {
 
-                        LOGW(TAG, "WR [%02x] NOT IMPLEMENTED", data);
+                        LOGE(TAG, "WR [%02x] NOT IMPLEMENTED", data);
                     }
                 }
             }
@@ -999,7 +996,8 @@ void cromemco_wdi_ctc0_out(BYTE data)
             wdi.ctc.T0 = T;
             break;
         default:
-        LOGE(TAG, "CTC #0 - unknown state %d", wdi.ctc.state0);
+            LOGE(TAG, "CTC #0 - unknown state %d", wdi.ctc.state0);
+            break;
     }
 }
 void cromemco_wdi_ctc1_out(BYTE data)
@@ -1038,7 +1036,8 @@ void cromemco_wdi_ctc1_out(BYTE data)
 
             break;
         default:
-        LOGE(TAG, "CTC #1 - unknown state %d", wdi.ctc.state0);
+            LOGE(TAG, "CTC #1 - unknown state %d", wdi.ctc.state0);
+            break;
     }
 }
 void cromemco_wdi_ctc2_out(BYTE data)
@@ -1063,7 +1062,8 @@ void cromemco_wdi_ctc2_out(BYTE data)
             wdi.ctc.T2 = T;
             break;
         default:
-        LOGE(TAG, "CTC #2 - unknown state %d", wdi.ctc.state2);
+            LOGE(TAG, "CTC #2 - unknown state %d", wdi.ctc.state2);
+            break;
     }
 }
 void cromemco_wdi_ctc3_out(BYTE data)
