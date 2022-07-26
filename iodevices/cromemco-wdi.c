@@ -40,10 +40,11 @@ static BYTE buffer[WMI_MAX_BUFFER];
 static BYTE hdd[WMI_HEADS][WMI_CYLINDERS][WMI_SECTORS][WMI_BLOCK_SIZE];
 #endif
 
-static int fd;
-static int unit;
+static char fn[MAX_LFN];        /* path/filename for hard disk image */
+static int fd;                  /* fd for hard disk i/o */
+static int unit;                /* current selected hard disk unit*/
 
-static char *images[WMI_UNITS] = { "disks/hd0.hdd", "disks/hd1.hdd", "disks/hd2.hdd", "disks/hd3.hdd" };
+static char *images[WMI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd", "hd3.hdd" };
 
 #define RPM 3600
 #define INDEX_INT (1000000*60*4/RPM) /* Index interval in T ticks @ 4MHz */
@@ -292,13 +293,19 @@ void wdi_dma_write(void)
     }
     struct stat s;
 
-    if ((fd = open(wdi.hd[unit].fn, O_RDWR|O_CREAT, 0644)) == -1) {
-        if ((fd = open(wdi.hd[unit].fn, O_RDONLY)) != -1) {
+    extern char *dsk_path(void);
+
+    strcpy(fn, (const char *)dsk_path());
+    strcat(fn, "/");
+    strcat(fn, wdi.hd[unit].fn);
+
+    if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
+        if ((fd = open(fn, O_RDONLY)) != -1) {
             // close(fd);
             wdi.hd[unit].status.write_prot = 1;
         } else {
-            LOGE(TAG, "HD FILE DOES NOT EXIST - %s", wdi.hd[unit].fn);
-            wdi.hd[unit]._fault = 0; // SET FAULT
+            LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
+            wdi.hd[unit]._fault = 0; /* SET FAULT */
         }
         return;
     }
@@ -363,9 +370,15 @@ void wdi_dma_read(void)
 #ifndef HDD_IN_MEMORY
     struct stat s;
 
-    if ((fd = open(wdi.hd[unit].fn, O_RDONLY)) == -1) {
-        LOGE(TAG, "HD FILE DOES NOT EXIST - %s", wdi.hd[unit].fn);
-        wdi.hd[unit]._fault = 0; // SET FAULT
+    extern char *dsk_path(void);
+
+    strcpy(fn, (const char *)dsk_path());
+    strcat(fn, "/");
+    strcat(fn, wdi.hd[unit].fn);
+
+    if ((fd = open(fn, O_RDONLY)) == -1) {
+        LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
+        wdi.hd[unit]._fault = 0; /* SET FAULT */
         return;
     }
 
