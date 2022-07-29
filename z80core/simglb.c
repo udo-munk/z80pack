@@ -73,10 +73,10 @@ WORD SP;			/* stackpointer */
 BYTE I;				/* Z80 interrupt register */
 BYTE IFF;			/* interrupt flags */
 long R;				/* Z80 refresh register */
-unsigned long long T;		/* CPU clock */
 				/* is normally a 8 bit register */
 				/* the larger bits are used to measure the */
 				/* clock frequency */
+unsigned long long T;		/* CPU clock */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
