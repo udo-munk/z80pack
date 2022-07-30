@@ -52,6 +52,7 @@
 
 #include <stddef.h>
 #include "sim.h"
+#include "simglb.h"
 
 #define MAXCHAN 5	/* max number of channels for I/O busy detect */
 
@@ -76,7 +77,7 @@ long R;				/* Z80 refresh register */
 				/* is normally a 8 bit register */
 				/* the larger bits are used to measure the */
 				/* clock frequency */
-unsigned long long T;		/* CPU clock */
+Tstates_t T;			/* CPU clock */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */

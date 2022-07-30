@@ -160,9 +160,9 @@ static struct {
         BYTE state0;
         BYTE state1;
         BYTE state2;
-        unsigned long long T0;
-        unsigned long long T1;
-        unsigned long long T2;
+        Tstates_t T0;
+        Tstates_t T1;
+        Tstates_t T2;
     } ctc;
     struct {
         BYTE sector;
@@ -534,7 +534,7 @@ BYTE cromemco_wdi_ctc0_in(void)
 }
 BYTE cromemco_wdi_ctc1_in(void)
 {
-    unsigned long long Tdiff = T - wdi.ctc.T1;
+    Tstates_t Tdiff = T - wdi.ctc.T1;
     unsigned int sectors = (Tdiff * WMI_SECTORS + INDEX_INT / 10) / INDEX_INT; /* -10% on sector time */
 
 	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);

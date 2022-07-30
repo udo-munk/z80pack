@@ -50,13 +50,15 @@
  *	Declaration of variables in simglb.c
  */
 
+typedef unsigned long long Tstates_t;	/* 64 bit unsigned for counting T-states */
+
 extern int	cpu;
 
 extern BYTE	A, B, C, D, E, H, L, A_, B_, C_, D_, E_, H_, L_, I, IFF;
 extern WORD	PC, SP, IX, IY;
 extern int	F, F_;
 extern long	R;
-extern unsigned long long  T;
+extern Tstates_t  T;
 extern BYTE	io_port, io_data;
 
 #ifdef BUS_8080
