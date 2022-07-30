@@ -250,15 +250,17 @@ long wdi_pos(BYTE *buf)
 
     return p;
 }
-void wdi_dma_write(void)
+Tstates_t wdi_dma_write(BYTE bus_ack)
 {
+    if (!bus_ack) return 0;
+
     LOGI(TAG, "WRITE: head: %d, cyl: %x", wdi.hd[unit].status.hav, wdi.hd[unit].status.cav);
     LOGI(TAG, "            start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
     if (wdi.dma.wr0.len >= WMI_MAX_BUFFER) {
         wdi.hd[unit]._fault = 0; /* SET FAULT */
         LOGE(TAG, "DMA length: %d > buffer: %d", wdi.dma.wr0.len, WMI_MAX_BUFFER);
-        return;
+        return 0;
     }
 
     for (int i = 0; i <= wdi.dma.wr0.len; i++) {
@@ -271,11 +273,11 @@ void wdi_dma_write(void)
 
     if (wdi.hd[unit].status.hav != buffer[1]) {
         LOGE(TAG, "DISK WRITE ERROR - BAD HEAD");
-        return;
+        return 0;
     }
     if (wdi.hd[unit].status.cav != cyl) {
         LOGE(TAG, "DISK WRITE ERROR - BAD CYLINDER");
-        return;
+        return 0;
     }
 
 #ifdef DEBUG
@@ -307,7 +309,7 @@ void wdi_dma_write(void)
             LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
             wdi.hd[unit]._fault = 0; /* SET FAULT */
         }
-        return;
+        return 0;
     }
 
     fstat(fd, &s);
@@ -321,7 +323,7 @@ void wdi_dma_write(void)
     if (lseek(fd, pos, SEEK_SET) == -1L) {
         wdi.hd[unit]._fault = 0; /* write fault */
         close(fd);
-        return;
+        return 0;
     }
 
     /* write the sector */
@@ -352,10 +354,15 @@ void wdi_dma_write(void)
         LOG(TAG, "\n\r");
     }
 #endif
+
+    return wdi.dma.wr0.len * 3; /* 3 t-states per byte of DMA */
 }
-void wdi_dma_read(void)
+Tstates_t wdi_dma_read(BYTE bus_ack)
 {
     register int v;
+
+    if (!bus_ack) return 0;
+
     buffer[0] = wdi.hd[unit].status.hav;
     buffer[1] = wdi.hd[unit].status.cav & 0xff;
     buffer[2] = wdi.hd[unit].status.cav >> 8;
@@ -379,7 +386,7 @@ void wdi_dma_read(void)
     if ((fd = open(fn, O_RDONLY)) == -1) {
         LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
         wdi.hd[unit]._fault = 0; /* SET FAULT */
-        return;
+        return 0;
     }
 
     fstat(fd, &s);
@@ -393,7 +400,7 @@ void wdi_dma_read(void)
     if (lseek(fd, pos, SEEK_SET) == -1L) {
         wdi.hd[unit]._fault = 0; /* read fault */
         close(fd);
-        return;
+        return 0;
     }
 
     /* read the sector */
@@ -402,7 +409,7 @@ void wdi_dma_read(void)
     } else {
         wdi.hd[unit]._fault = 0; /* read fault */
         close(fd);
-        return;
+        return 0;
     }
 
     close(fd);
@@ -419,6 +426,8 @@ void wdi_dma_read(void)
         dma_write(wdi.dma.wr4.b_addr_counter, v);
         wdi.dma.wr4.b_addr_counter++;
     }
+
+    return wdi.dma.wr0.len * 3;  /* 3 t-states per byte of DMA */
 }
 BYTE cromemco_wdi_pio0a_data_in(void)
 {
@@ -726,10 +735,10 @@ void cromemco_wdi_pio1b_data_out(BYTE data)
     }
 
     if (wdi.pio1.dma_rdy && wdi.hd[unit].command.write_gate) {
-        wdi_dma_write();
+        start_bus_request(BUS_DMA_CONTINUOUS, &wdi_dma_write);
     };
     if (wdi.pio1.dma_rdy && wdi.hd[unit].command.read_gate) {
-        wdi_dma_read();
+        start_bus_request(BUS_DMA_CONTINUOUS, &wdi_dma_read);
     }
 }
 void cromemco_wdi_pio1a_cmd_out(BYTE data)
@@ -789,6 +798,18 @@ void cromemco_wdi_pio1b_cmd_out(BYTE data)
             break;
     }
 }
+Tstates_t wdi_dma_mem_to_mem(BYTE bus_ack)
+{
+    register int v;
+
+    if (!bus_ack) return 0;
+
+    for (int i = 0; i <= wdi.dma.wr0.len; i++) {
+        v = dma_read(wdi.dma.wr0.a_addr_counter++);
+        dma_write(wdi.dma.wr4.b_addr_counter++, v);
+    }
+    return wdi.dma.wr0.len * 6; /* 6 t-states (3 read + 3 write) for each byte */
+}
 void cromemco_wdi_dma0_out(BYTE data)
 {
     char *cmd;
@@ -835,11 +856,8 @@ void cromemco_wdi_dma0_out(BYTE data)
                                     wdi.dma.wr0.len
                                 );
 
-                                register int v;
-                                for (int i = 0; i <= wdi.dma.wr0.len; i++) {
-                                    v = dma_read(wdi.dma.wr0.a_addr_counter++);
-                                    dma_write(wdi.dma.wr4.b_addr_counter++, v);
-                                }
+                                start_bus_request(BUS_DMA_CONTINUOUS, &wdi_dma_mem_to_mem);
+
                             } else if (!wdi.dma.force_ready
                                     && !wdi.dma.wr0.dest
                                     && (wdi.dma.wr0.mode == 2) /* SEARCH */
