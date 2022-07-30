@@ -450,6 +450,34 @@ void cpu_8080(void)
 		}
 #endif
 
+		/* CPU DMA bus request handling */
+		if (bus_mode) {
+
+			if (!bus_request && (bus_mode != BUS_DMA_CONTINUOUS)) {
+				if (dma_bus_master) {
+					T += (*dma_bus_master)(0); /* hand control to the DMA bus master without BUS_ACK */
+				}
+			}
+
+			if (bus_request) {		/* dma bus request */
+	#ifdef FRONTPANEL
+				fp_clock += 1000;
+				fp_sampleData();
+	#endif
+				if (dma_bus_master) {
+					T += (*dma_bus_master)(1); /* hand control to the DMA bus master with BUS_ACK */
+				}
+				bus_request = 0; // FOR NOW - MAY BE NEED A PRIORITY SYSTEM LATER
+				if (bus_mode == BUS_DMA_CONTINUOUS)	{
+					end_bus_request();
+				}
+	#ifdef FRONTPANEL
+				fp_clock += 1000;
+				fp_sampleData();
+	#endif
+			}
+		}
+
 		/* CPU interrupt handling */
 		if (int_int) {
 			if (IFF != 3)

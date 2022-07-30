@@ -96,6 +96,8 @@ int int_int;			/* interrupt request */
 int int_data = -1;		/* data from interrupting device on data bus */
 int int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
+BusDMA_t bus_mode;		/* current bus mode dor dma */
+Tstates_t (*dma_bus_master)(BYTE bus_ack); /* call back function for DMA bus master */
 int tmax;			/* max t-states to execute in 10ms */
 int cpu_needed;			/* don't adjust CPU freq if needed */
 

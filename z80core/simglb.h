@@ -51,6 +51,10 @@
  */
 
 typedef unsigned long long Tstates_t;	/* 64 bit unsigned for counting T-states */
+typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE, BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
+
+void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack));
+void end_bus_request(void);
 
 extern int	cpu;
 
@@ -58,7 +62,7 @@ extern BYTE	A, B, C, D, E, H, L, A_, B_, C_, D_, E_, H_, L_, I, IFF;
 extern WORD	PC, SP, IX, IY;
 extern int	F, F_;
 extern long	R;
-extern Tstates_t  T;
+extern Tstates_t T;
 extern BYTE	io_port, io_data;
 
 #ifdef BUS_8080
@@ -67,6 +71,8 @@ extern int	m1_step;
 #endif
 
 extern BYTE	cpu_state, bus_request;
+extern BusDMA_t bus_mode;
+extern Tstates_t (*dma_bus_master)(BYTE bus_ack);
 extern int	int_data;
 
 extern int	s_flag, l_flag, m_flag, x_flag, break_flag, i_flag, f_flag,
