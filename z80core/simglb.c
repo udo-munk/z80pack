@@ -52,6 +52,7 @@
 
 #include <stddef.h>
 #include "sim.h"
+#include "simglb.h"
 
 #define MAXCHAN 5	/* max number of channels for I/O busy detect */
 
@@ -76,7 +77,7 @@ long R;				/* Z80 refresh register */
 				/* is normally a 8 bit register */
 				/* the larger bits are used to measure the */
 				/* clock frequency */
-unsigned long long T;		/* CPU clock */
+Tstates_t T;			/* CPU clock */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
@@ -95,6 +96,8 @@ int int_int;			/* interrupt request */
 int int_data = -1;		/* data from interrupting device on data bus */
 int int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
+BusDMA_t bus_mode;		/* current bus mode dor dma */
+Tstates_t (*dma_bus_master)(BYTE bus_ack); /* call back function for DMA bus master */
 int tmax;			/* max t-states to execute in 10ms */
 int cpu_needed;			/* don't adjust CPU freq if needed */
 
