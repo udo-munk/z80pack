@@ -27,24 +27,24 @@
 
 static const char *TAG = "wdi";
 
-#define WMI_UNITS       4
-#define WMI_HEADS       3
-#define WMI_CYLINDERS   0x162
-#define WMI_SECTORS     0x14
-#define WMI_BLOCK_SIZE  512
+#define WDI_UNITS       4
+#define WDI_HEADS       3
+#define WDI_CYLINDERS   0x162
+#define WDI_SECTORS     0x14
+#define WDI_BLOCK_SIZE  512
 
-#define WMI_MAX_BUFFER WMI_BLOCK_SIZE + 8
-static BYTE buffer[WMI_MAX_BUFFER];
+#define WDI_MAX_BUFFER WDI_BLOCK_SIZE + 8
+static BYTE buffer[WDI_MAX_BUFFER];
 
 #ifdef HDD_IN_MEMORY
-static BYTE hdd[WMI_HEADS][WMI_CYLINDERS][WMI_SECTORS][WMI_BLOCK_SIZE];
+static BYTE hdd[WDI_HEADS][WDI_CYLINDERS][WDI_SECTORS][WDI_BLOCK_SIZE];
 #endif
 
 static char fn[MAX_LFN];        /* path/filename for hard disk image */
 static int fd;                  /* fd for hard disk i/o */
 static int unit;                /* current selected hard disk unit*/
 
-static char *images[WMI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd", "hd3.hdd" };
+static char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd", "hd3.hdd" };
 
 #define RPM 3600
 #define INDEX_INT (1000000*60*4/RPM) /* Index interval in T ticks @ 4MHz */
@@ -189,7 +189,7 @@ static struct {
             BYTE rezeroing;
             BYTE write_prot;
         } status;
-    } hd[WMI_UNITS];
+    } hd[WDI_UNITS];
 } wdi;
 
 void wdi_init(void)
@@ -216,7 +216,7 @@ void wdi_init(void)
     wdi.ctc.state1 = 0;
     wdi.ctc.state2 = 0;
 
-    for (unit = 0; unit < WMI_UNITS; unit++) {
+    for (unit = 0; unit < WDI_UNITS; unit++) {
 
         wdi.hd[unit]._fault = 1;
         wdi.hd[unit]._crc_error = 0;
@@ -238,9 +238,9 @@ void wdi_init(void)
 long wdi_pos(BYTE *buf)
 {
     unsigned long p;
-    const int c = WMI_CYLINDERS;
-    const int s = WMI_SECTORS;
-    const int b = WMI_BLOCK_SIZE;
+    const int c = WDI_CYLINDERS;
+    const int s = WDI_SECTORS;
+    const int b = WDI_BLOCK_SIZE;
 
     int cyl = buf[1] + (buf[2] << 8);
 
@@ -257,9 +257,9 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
     LOGI(TAG, "WRITE: head: %d, cyl: %x", wdi.hd[unit].status.hav, wdi.hd[unit].status.cav);
     LOGI(TAG, "            start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
-    if (wdi.dma.wr0.len >= WMI_MAX_BUFFER) {
+    if (wdi.dma.wr0.len >= WDI_MAX_BUFFER) {
         wdi.hd[unit]._fault = 0; /* SET FAULT */
-        LOGE(TAG, "DMA length: %d > buffer: %d", wdi.dma.wr0.len, WMI_MAX_BUFFER);
+        LOGE(TAG, "DMA length: %d > buffer: %d", wdi.dma.wr0.len, WDI_MAX_BUFFER);
         return 0;
     }
 
@@ -284,7 +284,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
     register int sum = 0;
 #endif
 
-    for (int i = 0; i < WMI_BLOCK_SIZE; i++) {
+    for (int i = 0; i < WDI_BLOCK_SIZE; i++) {
 #ifdef DEBUG
         sum += buffer[i+5];
 #endif
@@ -327,7 +327,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
     }
 
     /* write the sector */
-    if (write(fd, &buffer[5], WMI_BLOCK_SIZE) == WMI_BLOCK_SIZE)
+    if (write(fd, &buffer[5], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE)
         wdi.hd[unit]._fault = 1;
     else
         wdi.hd[unit]._fault = 0; /* write fault */
@@ -336,11 +336,11 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
 #endif
 
 #ifdef DEBUG
-    if ( sum != (WMI_BLOCK_SIZE * 0xe5)) {
+    if ( sum != (WDI_BLOCK_SIZE * 0xe5)) {
         LOGW(TAG, "SECTOR SUM %d IS DIFFERENT", sum);
         char txt[] = "................";
         char *t = txt;
-        for (int i = 0; i < WMI_BLOCK_SIZE; i++) {
+        for (int i = 0; i < WDI_BLOCK_SIZE; i++) {
             if (!(i % 16)) {
                 if (i) LOG(TAG, "  %s\n\r", txt);
                 t = txt;
@@ -372,7 +372,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
     LOGI(TAG, "           start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
     wdi.hd[unit].sector++;
-    wdi.hd[unit].sector %= WMI_SECTORS;
+    wdi.hd[unit].sector %= WDI_SECTORS;
 
 #ifndef HDD_IN_MEMORY
     struct stat s;
@@ -404,7 +404,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
     }
 
     /* read the sector */
-    if (read(fd, &buffer[4], WMI_BLOCK_SIZE) == WMI_BLOCK_SIZE) {
+    if (read(fd, &buffer[4], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
         wdi.hd[unit]._fault = 1; 
     } else {
         wdi.hd[unit]._fault = 0; /* read fault */
@@ -544,7 +544,7 @@ BYTE cromemco_wdi_ctc0_in(void)
 BYTE cromemco_wdi_ctc1_in(void)
 {
     Tstates_t Tdiff = T - wdi.ctc.T1;
-    unsigned int sectors = (Tdiff * WMI_SECTORS + INDEX_INT / 10) / INDEX_INT; /* -10% on sector time */
+    unsigned int sectors = (Tdiff * WDI_SECTORS + INDEX_INT / 10) / INDEX_INT; /* -10% on sector time */
 
 	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
@@ -555,7 +555,7 @@ BYTE cromemco_wdi_ctc1_in(void)
             wdi.ctc.now1 = r;
         }
         wdi.hd[unit].sector += sectors;
-        wdi.hd[unit].sector %= WMI_SECTORS;
+        wdi.hd[unit].sector %= WDI_SECTORS;
         // LOGI(TAG, "IN: CTC #1 = %02x, sect: %02x", wdi.ctc.now1, wdi.hd[unit].sector);
 
         wdi.ctc.T1 = T;
