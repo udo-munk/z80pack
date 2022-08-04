@@ -675,9 +675,9 @@ void command_bus_strobe(void)
     switch (bus)
     {
         case 0:
-            unit = data >> 4;
+            unit = (data >> 4) & 0x07; /* only 3 LSB of Unit */
             wdi.hd[unit].command.uas = unit;
-            wdi.hd[unit].command.has = (data & 0x0c) >> 2;
+            wdi.hd[unit].command.has = ((data & 0x0c) >> 2) | ((data & 0x80) >> 5); /* reuse MSB of Unit for Head*/
             wdi.hd[unit].command.cas = (wdi.hd[unit].command.cas & 0xff) | ((data & 0x03) << 8);
             wdi.hd[unit].status.seeking = 1;
             wdi.hd[unit].status.on_cyl = 0;
