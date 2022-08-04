@@ -34,10 +34,6 @@ static const char *TAG = "wdi";
 #define WDI_MAX_BUFFER WDI_BLOCK_SIZE + 8
 static BYTE buffer[WDI_MAX_BUFFER];
 
-#ifdef HDD_IN_MEMORY
-static BYTE hdd[WDI_HEADS][WDI_CYLINDERS][WDI_SECTORS][WDI_BLOCK_SIZE];
-#endif
-
 static char fn[MAX_LFN];        /* path/filename for hard disk image */
 static int fd;                  /* fd for hard disk i/o */
 static int unit;                /* current selected hard disk unit*/
@@ -338,22 +334,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
         return 0;
     }
 
-#ifdef DEBUG
-    register int sum = 0;
-#endif
-
-    for (int i = 0; i < WDI_BLOCK_SIZE; i++) {
-#ifdef DEBUG
-        sum += buffer[i+5];
-#endif
-#ifdef HDD_IN_MEMORY
-        hdd[wdi.hd[unit].status.hav][wdi.hd[unit].status.cav][buffer[4]][i] = buffer[i+5];
-    }
-#else
-    }
     struct stat s;
-
-    extern char *dsk_path(void);
 
     strcpy(fn, (const char *)dsk_path());
     strcat(fn, "/");
@@ -390,27 +371,6 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
         wdi.hd[unit]._fault = 0; /* write fault */
 
     close(fd);
-#endif
-
-#ifdef DEBUG
-    if ( sum != (WDI_BLOCK_SIZE * 0xe5)) {
-        LOGW(TAG, "SECTOR SUM %d IS DIFFERENT", sum);
-        char txt[] = "................";
-        char *t = txt;
-        for (int i = 0; i < WDI_BLOCK_SIZE; i++) {
-            if (!(i % 16)) {
-                if (i) LOG(TAG, "  %s\n\r", txt);
-                t = txt;
-                LOG(TAG, "%04x:", i);
-            }
-            if (!(i % 4)) LOG(TAG, " ");
-            register c = buffer[i+5];
-            LOG(TAG, "%02x ", c);
-            *t++ = (c>31 && c<127)?c:'.';
-        }
-        LOG(TAG, "\n\r");
-    }
-#endif
 
     return wdi.dma.wr0.len * 3; /* 3 t-states per byte of DMA */
 }
@@ -431,7 +391,6 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
     wdi.hd[unit].sector++;
     wdi.hd[unit].sector %= WDI_SECTORS;
 
-#ifndef HDD_IN_MEMORY
     struct stat s;
 
     extern char *dsk_path(void);
@@ -470,15 +429,9 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
     }
 
     close(fd);
-#endif
 
     for (int i = 0; i < wdi.dma.wr0.len; i++) {
-#ifdef HDD_IN_MEMORY
-        if (i < 4) v = buffer[i];
-        else v = hdd[wdi.hd[unit].status.hav][wdi.hd[unit].status.cav][buffer[3]][i-4];
-#else
         v = buffer[i];
-#endif
 
         dma_write(wdi.dma.wr4.b_addr_counter, v);
         wdi.dma.wr4.b_addr_counter++;
