@@ -27,9 +27,7 @@
 
 static const char *TAG = "wdi";
 
-#define WDI_UNITS       4
-#define WDI_HEADS       3
-#define WDI_CYLINDERS   0x162
+#define WDI_UNITS       3
 #define WDI_SECTORS     0x14
 #define WDI_BLOCK_SIZE  512
 
@@ -44,10 +42,23 @@ static char fn[MAX_LFN];        /* path/filename for hard disk image */
 static int fd;                  /* fd for hard disk i/o */
 static int unit;                /* current selected hard disk unit*/
 
-static char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd", "hd3.hdd" };
+static char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd" }; //, "hd3.hdd" };
+extern char *dsk_path(void);
 
-#define RPM 3600
-#define INDEX_INT (1000000*60*4/RPM) /* Index interval in T ticks @ 4MHz */
+#define MAX_DISK_PARAM 4
+static struct {
+    int rpm;
+    int heads;
+    int cyl;
+    char *type;
+} disk_param[MAX_DISK_PARAM] = {
+    { 3600, 3, 0x162, "H8-1" },
+    { 3600, 5, 0x184, "H8-3" },
+    { 3600, 5, 0x308, "H8-4" },
+    { 4800, 4, 0x090, "H5-1" }
+};
+
+#define INDEX_INT (1000000*60*4) /* Index interval in T ticks per minute @ 4MHz */
 
 enum wreg { WR_BASE, WR0, WR1, WR2, WR3, WR4, WR5, WR6 };
 typedef enum wreg wreg_t;
@@ -171,6 +182,8 @@ static struct {
         BYTE _fault;
 
         char *fn;
+        int type;
+        char type_s[8];
 
         struct {
             BYTE uas;
@@ -216,6 +229,8 @@ void wdi_init(void)
     wdi.ctc.state1 = 0;
     wdi.ctc.state2 = 0;
 
+    LOG(TAG, "HARD DISK MAP: [%s]\r\n", dsk_path());
+
     for (unit = 0; unit < WDI_UNITS; unit++) {
 
         wdi.hd[unit]._fault = 1;
@@ -231,14 +246,57 @@ void wdi_init(void)
         wdi.hd[unit].status.write_prot = 0;
 
         wdi.hd[unit].fn = images[unit];
+
+        strcpy(fn, (const char *)dsk_path());
+        strcat(fn, "/");
+        strcat(fn, wdi.hd[unit].fn);
+
+        if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
+            if ((fd = open(fn, O_RDONLY)) != -1) {
+                wdi.hd[unit].status.write_prot = 1;
+            } else {
+                LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
+                wdi.hd[unit]._fault = 0; /* SET FAULT */
+            }
+        }
+        
+        struct stat s;
+        fstat(fd, &s);
+        
+        wdi.hd[unit].type = -1;
+
+        for (int i = 0; i < MAX_DISK_PARAM; i++) {
+
+            int size = WDI_BLOCK_SIZE * WDI_SECTORS * disk_param[i].cyl * disk_param[i].heads;
+
+            if (s.st_size == size) {
+                wdi.hd[unit].type = i;
+                if (read(fd, buffer, WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
+                    strncpy(wdi.hd[unit].type_s, (char *)&buffer[0x78], 4);
+                } else {
+                    wdi.hd[unit]._fault = 0; /* read fault */
+                }
+            } 
+        }
+        if (wdi.hd[unit].type < 0) {
+            wdi.hd[unit]._fault = 0;
+            wdi.hd[unit].type = 0;
+            strcpy(wdi.hd[unit].type_s, disk_param[wdi.hd[unit].type].type);
+            LOGW(TAG, "UNKNOWN DISK IMAGE SIZE [%lld] FOR %s", s.st_size, wdi.hd[unit].fn);
+        }
+
+        LOG(TAG, "HD%d:[%s]='%s'\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn);
+        close(fd);
     }
+
+    LOG(TAG, "\n\r");
 
     unit = 0;
 }
 long wdi_pos(BYTE *buf)
 {
     unsigned long p;
-    const int c = WDI_CYLINDERS;
+    const int c = disk_param[wdi.hd[unit].type].cyl;
     const int s = WDI_SECTORS;
     const int b = WDI_BLOCK_SIZE;
 
@@ -272,11 +330,11 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
     int cyl = (buffer[3] << 8 ) | buffer[2];
 
     if (wdi.hd[unit].status.hav != buffer[1]) {
-        LOGE(TAG, "DISK WRITE ERROR - BAD HEAD");
+        LOGE(TAG, "DISK WRITE ERROR - BAD HEAD %d : %d", wdi.hd[unit].status.hav, buffer[1]);
         return 0;
     }
     if (wdi.hd[unit].status.cav != cyl) {
-        LOGE(TAG, "DISK WRITE ERROR - BAD CYLINDER");
+        LOGE(TAG, "DISK WRITE ERROR - BAD CYLINDER %d : %d", wdi.hd[unit].status.cav, cyl);
         return 0;
     }
 
@@ -303,7 +361,6 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
 
     if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
         if ((fd = open(fn, O_RDONLY)) != -1) {
-            // close(fd);
             wdi.hd[unit].status.write_prot = 1;
         } else {
             LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
@@ -531,20 +588,23 @@ BYTE cromemco_wdi_dma3_in(void)
 BYTE cromemco_wdi_ctc0_in(void)
 {
     BYTE val = wdi.ctc.now0;
+    Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[unit].type].rpm;
+
 	LOGD(TAG, "IN: CTC #0 = %02x - Tdiff=%lld", val, T - wdi.ctc.T0);
 
     if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
-    else if ((T - wdi.ctc.T0) > INDEX_INT) {
+    else if ((T - wdi.ctc.T0) > index_ticks) {
         if (val > 0) wdi.ctc.now0--;
         wdi.hd[unit].sector = 0;
-        wdi.ctc.T0 += INDEX_INT;
+        wdi.ctc.T0 += index_ticks;
     }
 	return(val);
 }
 BYTE cromemco_wdi_ctc1_in(void)
 {
     Tstates_t Tdiff = T - wdi.ctc.T1;
-    unsigned int sectors = (Tdiff * WDI_SECTORS + INDEX_INT / 10) / INDEX_INT; /* -10% on sector time */
+    Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[unit].type].rpm;
+    unsigned int sectors = (Tdiff * WDI_SECTORS + index_ticks / 10) / index_ticks; /* -10% on sector time */
 
 	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
@@ -660,7 +720,7 @@ void command_bus_strobe(void)
             wdi.pio0.data_B |= wdi.hd[unit].status.rezeroing << 3;
             break;
         case 5:
-	        wdi.pio0.data_B = 0x00;
+            wdi.pio0.data_B = wdi.hd[unit].type << 5; /* Drive type in unused bits 5 & 6  of Status #5 */
             break;
         case 6:
             wdi.pio0.data_B = wdi.hd[unit].status.cav & 0xff;
