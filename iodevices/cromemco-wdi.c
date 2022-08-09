@@ -251,7 +251,7 @@ void wdi_init(void)
             if ((fd = open(fn, O_RDONLY)) != -1) {
                 wdi.hd[unit].status.write_prot = 1;
             } else {
-                LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
+                LOGE(TAG, "HDD FILE DOES NOT EXIST - %s", fn);
                 wdi.hd[unit]._fault = 0; /* SET FAULT */
             }
         }
@@ -326,11 +326,13 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
     int cyl = (buffer[3] << 8 ) | buffer[2];
 
     if (wdi.hd[unit].status.hav != buffer[1]) {
-        LOGE(TAG, "DISK WRITE ERROR - BAD HEAD %d : %d", wdi.hd[unit].status.hav, buffer[1]);
+        LOGE(TAG, "DISK WRITE ERROR UNIT [%d] - BAD HEAD %d : %d", unit, wdi.hd[unit].status.hav, buffer[1]);
+        wdi.hd[unit]._fault = 0; /* SET FAULT */
         return 0;
     }
     if (wdi.hd[unit].status.cav != cyl) {
-        LOGE(TAG, "DISK WRITE ERROR - BAD CYLINDER %d : %d", wdi.hd[unit].status.cav, cyl);
+        LOGE(TAG, "DISK WRITE ERROR UNIT [%d] - BAD CYLINDER %d : %d", unit, wdi.hd[unit].status.cav, cyl);
+        wdi.hd[unit]._fault = 0; /* SET FAULT */
         return 0;
     }
 
@@ -441,7 +443,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
 }
 BYTE cromemco_wdi_pio0a_data_in(void)
 {
-	LOGE(TAG, "E0 IN:");
+	LOGW(TAG, "E0 IN:");
 	return((BYTE) 0xFF);
 }
 BYTE cromemco_wdi_pio0b_data_in(void)
