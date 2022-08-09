@@ -22,7 +22,7 @@
 #include "simglb.h"
 #include "memory.h"
 
-#define LOG_LOCAL_LEVEL LOG_ERROR
+#define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
 
 static const char *TAG = "wdi";
@@ -197,6 +197,7 @@ static struct {
             BYTE seeking;
             BYTE rezeroing;
             BYTE write_prot;
+            BYTE illegal_address;
         } status;
     } hd[WDI_UNITS];
 } wdi;
@@ -240,6 +241,7 @@ void wdi_init(void)
         wdi.hd[unit].status.seeking = 0;
         wdi.hd[unit].status.rezeroing = 0;
         wdi.hd[unit].status.write_prot = 0;
+        wdi.hd[unit].status.illegal_address = 0;
 
         wdi.hd[unit].fn = images[unit];
 
@@ -608,6 +610,9 @@ void command_bus_strobe(void)
 
     int bus = wdi.pio1.bus_addr;
     BYTE data = wdi.pio0.data_A;
+    BYTE _unit;
+    BYTE _head;
+    WORD _cyl;
 
     if (wdi.hd[unit].status.rezeroing) {
         LOGI(TAG, "REZEROING");
@@ -630,24 +635,57 @@ void command_bus_strobe(void)
     switch (bus)
     {
         case 0:
-            unit = (data >> 4) & 0x07; /* only 3 LSB of Unit */
-            wdi.hd[unit].command.uas = unit;
-            wdi.hd[unit].command.has = ((data & 0x0c) >> 2) | ((data & 0x80) >> 5); /* reuse MSB of Unit for Head*/
-            wdi.hd[unit].command.cas = (wdi.hd[unit].command.cas & 0xff) | ((data & 0x03) << 8);
-            wdi.hd[unit].status.seeking = 1;
-            wdi.hd[unit].status.on_cyl = 0;
-            wdi.hd[unit].status.unit_rdy = 0;
+            _unit = (data >> 4) & 0x07; /* only 3 LSB of Unit */
+            _head = ((data & 0x0c) >> 2) | ((data & 0x80) >> 5); /* reuse MSB of Unit for Head*/
+            _cyl = (wdi.hd[unit].command.cas & 0xff) | ((data & 0x03) << 8);
 
-            LOGI(TAG, "DISK COMMAND 0 - UNIT: %02x, HEAD: %02x, CYL: %03x", wdi.hd[unit].command.uas, wdi.hd[unit].command.has, wdi.hd[unit].command.cas);
+            if (_unit > 0) LOGW(TAG, "UNIT = %d", _unit);
+
+            if ((_unit >= WDI_UNITS)) {
+                LOGE(TAG, "DISK COMMAND 0 - ILLEGAL UNIT: %02x", _unit);
+                wdi.hd[unit].status.illegal_address = 1;
+                wdi.hd[unit].status.unit_rdy = 0;
+                wdi.hd[unit]._fault = 0;
+            } else if (_head >= disk_param[wdi.hd[unit].type].heads) {
+                LOGE(TAG, "DISK COMMAND 0 - ILLEGAL HEAD: %02x", _head);
+                wdi.hd[unit].status.illegal_address = 1;
+                wdi.hd[unit].status.unit_rdy = 0;
+                wdi.hd[unit]._fault = 0;
+            /* 
+             * Illegal cylinder should only be checked on COMMAND 1
+             * when a full cylinder address is received (COMMAND 0 followed by COMMAND 1)
+             * otherwise there can be a false negative (illegal address)
+             */
+            } else {
+                unit = _unit;
+                wdi.hd[unit].command.uas = unit;
+                wdi.hd[unit].command.has = _head;
+                wdi.hd[unit].command.cas = _cyl;
+                wdi.hd[unit].status.seeking = 1;
+                wdi.hd[unit].status.on_cyl = 0;
+                wdi.hd[unit].status.unit_rdy = 0;
+                wdi.hd[unit].status.illegal_address = 0;
+
+                LOGI(TAG, "DISK COMMAND 0 - UNIT: %02x, HEAD: %02x, CYL: %03x", wdi.hd[unit].command.uas, wdi.hd[unit].command.has, wdi.hd[unit].command.cas);
+            }
             break;
         case 1:
-            wdi.hd[unit].command.cas = (wdi.hd[unit].command.cas & 0xf00) | data;
-            wdi.hd[unit].status.cav = wdi.hd[unit].command.cas;
-            wdi.hd[unit].status.seeking = 1;
-            wdi.hd[unit].status.on_cyl = 0;
-            wdi.hd[unit].status.unit_rdy = 0;
+            _cyl = (wdi.hd[unit].command.cas & 0xf00) | data;
 
-            LOGI(TAG, "DISK COMMAND 1 - CYL: %03x", wdi.hd[unit].status.cav);
+            if (_cyl >= disk_param[wdi.hd[unit].type].cyl) {
+                LOGE(TAG, "DISK COMMAND 1 - ILLEGAL CYLINDER: %03x", _cyl);
+                wdi.hd[unit].status.illegal_address = 1;
+                wdi.hd[unit].status.unit_rdy = 0;
+                wdi.hd[unit]._fault = 0;
+            } else {
+                wdi.hd[unit].command.cas = _cyl;
+                wdi.hd[unit].status.cav = wdi.hd[unit].command.cas;
+                wdi.hd[unit].status.seeking = 1;
+                wdi.hd[unit].status.on_cyl = 0;
+                wdi.hd[unit].status.unit_rdy = 0;
+
+                LOGI(TAG, "DISK COMMAND 1 - CYL: %03x", wdi.hd[unit].status.cav);
+            }
             break;
         case 2:           
             if (data & 0xfc) {
