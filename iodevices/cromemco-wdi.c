@@ -493,13 +493,21 @@ BYTE cromemco_wdi_pio0b_cmd_in(void)
 }
 BYTE cromemco_wdi_pio1a_data_in(void)
 {
-	BYTE val = 0;
+	BYTE val = wdi.pio1.dir_A; /* pull inputs HIGH */
 
-    val |= wdi.pio1.brd;
-    val |= wdi.hd[unit].status.seeking << 5;
-    if (!wdi.pio1._cmd_stb) {
-        val |= 0x80; /* CMD_AK */
+    if (!wdi.pio1.brd) {
+        val ^= 0x40;
     }
+
+    if (wdi.hd[unit].online) { /* Only respond if online */
+        if (!wdi.hd[unit].status.seeking) {
+            val ^= 0x20; /* _SEEK_COMPLETE if not SEEKING */
+        }
+        if (wdi.pio1._cmd_stb) {
+            val ^= 0x80; /* _CMD_AK on _CMD_STB */
+        }
+    }
+
     val = (wdi.pio1.data_A & ~wdi.pio1.dir_A) | val;
 
     LOGD(TAG, "E4 IN: = %02x", val);
@@ -507,9 +515,17 @@ BYTE cromemco_wdi_pio1a_data_in(void)
 }
 BYTE cromemco_wdi_pio1b_data_in(void)
 {
-	BYTE val = wdi.hd[unit]._fault << 1;
-    val |= wdi.hd[unit]._crc_error << 7;
-    val |= wdi.hd[unit].status.uav << 3;
+	BYTE val = wdi.pio1.dir_B; /* pull inputs HIGH */
+
+    if (wdi.hd[unit].online) { /* Only respond if online */
+        if (!wdi.hd[unit]._fault) {
+            val ^= 0x02;
+        }
+        if (!wdi.hd[unit]._crc_error) { /* Note: CRC_ERROR is not inverted */
+            val ^= 0x80;
+        }
+        val ^= wdi.hd[unit].status.uav << 3;
+    }
 
     val = (wdi.pio1.data_B & ~wdi.pio1.dir_B) | val;
 
