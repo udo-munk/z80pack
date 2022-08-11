@@ -345,6 +345,11 @@ static void sendDisks(struct mg_connection *conn) {
         if (i < (_MAX_DISK - 1)) httpdPrintf(conn, ",");
     }
 
+#ifdef CROMEMCOSIM
+    extern void sendHardDisks(struct mg_connection *conn);
+    sendHardDisks(conn);
+#endif
+
     httpdPrintf(conn, "}");          
 }
 

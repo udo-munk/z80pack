@@ -22,6 +22,11 @@
 #include "simglb.h"
 #include "memory.h"
 
+#ifdef HAS_NETSERVER
+#include "civetweb.h"
+#include "netsrv.h"
+#endif
+
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
 
@@ -297,6 +302,15 @@ void wdi_init(void)
 
     unit = 0;
 }
+#ifdef HAS_NETSERVER
+void sendHardDisks(struct mg_connection *conn)
+{
+    int i;
+    for (i = 0; i < WDI_UNITS; i++) {
+        httpdPrintf(conn, ",\"HD%d\": { \"type\": \"%s\", \"file\": \"%s\"}", i, wdi.hd[i].type_s, wdi.hd[i].online?wdi.hd[i].fn:"");
+    }
+}
+#endif
 long wdi_pos(BYTE *buf)
 {
     unsigned long p;
