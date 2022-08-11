@@ -41,7 +41,7 @@ static int unit;                /* current selected hard disk unit*/
 static char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd" }; //, "hd3.hdd" };
 extern char *dsk_path(void);
 
-#define MAX_DISK_PARAM 4
+#define MAX_DISK_PARAM 3
 static struct {
     int rpm;
     int heads;
@@ -50,8 +50,7 @@ static struct {
 } disk_param[MAX_DISK_PARAM] = {
     { 3600, 3, 0x162, "H8-1" },
     { 3600, 5, 0x184, "H8-3" },
-    { 3600, 5, 0x308, "H8-4" },
-    { 4800, 4, 0x090, "H5-1" }
+    { 3600, 5, 0x308, "H8-4" }
 };
 
 #define INDEX_INT (1000000*60*4) /* Index interval in T ticks per minute @ 4MHz */
