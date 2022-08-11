@@ -173,6 +173,7 @@ static struct {
     struct {
         BYTE sector;
 
+        BYTE online;
         BYTE _crc_error;
         BYTE _fault;
 
@@ -198,7 +199,7 @@ static struct {
             BYTE write_prot;
             BYTE illegal_address;
         } status;
-    } hd[WDI_UNITS];
+    } hd[8]; /* always allow for the maximum number of units */
 } wdi;
 
 void wdi_init(void)
@@ -229,6 +230,7 @@ void wdi_init(void)
 
     for (unit = 0; unit < WDI_UNITS; unit++) {
 
+        wdi.hd[unit].online = 0;
         wdi.hd[unit]._fault = 1;
         wdi.hd[unit]._crc_error = 0;
 
@@ -254,8 +256,13 @@ void wdi_init(void)
             } else {
                 LOGE(TAG, "HDD FILE DOES NOT EXIST - %s", fn);
                 wdi.hd[unit]._fault = 0; /* SET FAULT */
+                wdi.hd[unit].online = 0;
+                LOG(TAG, "HD%d: OFFLINE - NO FILE '%s'\n\r", unit, wdi.hd[unit].fn);
+                continue;
             }
         }
+        
+        wdi.hd[unit].online = 1;
         
         struct stat s;
         fstat(fd, &s);
@@ -548,11 +555,14 @@ BYTE cromemco_wdi_ctc0_in(void)
 
 	LOGD(TAG, "IN: CTC #0 = %02x - Tdiff=%lld", val, T - wdi.ctc.T0);
 
-    if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
-    else if ((T - wdi.ctc.T0) > index_ticks) {
-        if (val > 0) wdi.ctc.now0--;
-        wdi.hd[unit].sector = 0;
-        wdi.ctc.T0 += index_ticks;
+    if (wdi.hd[unit].online) { /* Only count indexes if online */
+
+        if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
+        else if ((T - wdi.ctc.T0) > index_ticks) {
+            if (val > 0) wdi.ctc.now0--;
+            wdi.hd[unit].sector = 0;
+            wdi.ctc.T0 += index_ticks;
+        }
     }
 	return(val);
 }
@@ -564,7 +574,7 @@ BYTE cromemco_wdi_ctc1_in(void)
 
 	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
-    if (sectors) {
+    if (sectors && wdi.hd[unit].online) { /* Only count sectors if online */
         if (wdi.ctc.now1 > 0) { 
             int r = (int)wdi.ctc.now1 - sectors;
             if (r < 0) r = 0;
@@ -594,7 +604,8 @@ BYTE cromemco_wdi_ctc2_in(void)
  * For now, seek is complete the first time this counter is checked
  */
 
-    if (val > 0) wdi.ctc.now2--;
+    /* Only count seek complete if online */
+    if (val > 0 && wdi.hd[unit].online) wdi.ctc.now2--;
 
 	return(val);
 }
@@ -613,7 +624,8 @@ void command_bus_strobe(void)
     BYTE _head;
     WORD _cyl;
 
-    if (wdi.hd[unit].status.rezeroing) {
+    /* Only rezero if online */
+    if (wdi.hd[unit].status.rezeroing && wdi.hd[unit].online) {
         LOGI(TAG, "REZEROING");
         wdi.hd[unit].status.hav = 0;
         wdi.hd[unit].status.cav = 0;
@@ -621,7 +633,8 @@ void command_bus_strobe(void)
         wdi.hd[unit].status.on_cyl = 1;
         wdi.hd[unit].status.unit_rdy = 1;
     }
-    if (wdi.hd[unit].status.seeking) {
+    /* Only seek if online */
+    if (wdi.hd[unit].status.seeking && wdi.hd[unit].online) {
         LOGI(TAG, "SEEKING: UNIT: %02x, HEAD: %02x, CYL: %03x", wdi.hd[unit].command.uas, wdi.hd[unit].command.has, wdi.hd[unit].command.cas);
         wdi.hd[unit].status.uav = wdi.hd[unit].command.uas;
         wdi.hd[unit].status.hav = wdi.hd[unit].command.has;
