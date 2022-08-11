@@ -28,7 +28,7 @@
 #include "netsrv.h"
 #endif
 
-#define LOG_LOCAL_LEVEL LOG_WARN
+#define LOG_LOCAL_LEVEL LOG_ERROR
 #include "log.h"
 
 static const char *TAG = "wdi";
