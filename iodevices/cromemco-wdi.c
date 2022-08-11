@@ -748,7 +748,9 @@ void command_bus_strobe(void)
             wdi.pio0.data_B |= wdi.hd[unit].status.illegal_address << 6;
             break;
         case 5:
-            wdi.pio0.data_B = wdi.hd[unit].type << 5; /* Drive type in unused bits 5 & 6  of Status #5 */
+            wdi.pio0.data_B = !(wdi.hd[unit]._fault); /* Inverse of _fault */
+            wdi.pio0.data_B |= wdi.hd[unit].type << 5; /* Drive type in unused bits 5 & 6  of Status #5 */
+            wdi.pio0.data_B |= wdi.hd[unit].status.write_prot << 4;
             break;
         case 6:
             wdi.pio0.data_B = wdi.hd[unit].status.cav & 0xff;
@@ -756,7 +758,8 @@ void command_bus_strobe(void)
         case 7:
             wdi.pio0.data_B = wdi.hd[unit].status.cav >> 8;
             wdi.pio0.data_B |= wdi.hd[unit].status.uav << 4;
-            wdi.pio0.data_B |= wdi.hd[unit].status.hav << 2;
+            wdi.pio0.data_B |= (wdi.hd[unit].status.hav & 0x3) << 2;
+            wdi.pio0.data_B |= (wdi.hd[unit].status.hav & 0x4) << 5; /* reuse MSB of Unit for Head*/
             break;
         default:
             break;
