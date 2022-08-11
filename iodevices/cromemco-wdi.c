@@ -636,7 +636,6 @@ void command_bus_strobe(void)
 
     int bus = wdi.pio1.bus_addr;
     BYTE data = wdi.pio0.data_A;
-    BYTE _unit;
     BYTE _head;
     WORD _cyl;
 
@@ -663,19 +662,27 @@ void command_bus_strobe(void)
     switch (bus)
     {
         case 0:
-            _unit = (data >> 4) & 0x07; /* only 3 LSB of Unit */
+            unit = (data >> 4) & 0x07; /* only 3 LSB of Unit */
             _head = ((data & 0x0c) >> 2) | ((data & 0x80) >> 5); /* reuse MSB of Unit for Head*/
             _cyl = (wdi.hd[unit].command.cas & 0xff) | ((data & 0x03) << 8);
 
-            if (_unit > 0) LOGW(TAG, "UNIT = %d", _unit);
-
-            if ((_unit >= WDI_UNITS)) {
-                LOGE(TAG, "DISK COMMAND 0 - ILLEGAL UNIT: %02x", _unit);
+            if ((unit >= WDI_UNITS)) {
+                LOGE(TAG, "DISK COMMAND 0 - ILLEGAL UNIT: %02x", unit);
+                wdi.hd[unit].online = 0;
+                wdi.hd[unit].command.uas = unit;
+                wdi.hd[unit].status.illegal_address = 1;
+                wdi.hd[unit].status.unit_rdy = 0;
+                wdi.hd[unit]._fault = 0;
+            } else if (!wdi.hd[unit].online) {
+                LOGW(TAG, "DISK COMMAND 0 - UNIT: %02x - OFFLINE", unit);
+                wdi.hd[unit].command.uas = unit;
                 wdi.hd[unit].status.illegal_address = 1;
                 wdi.hd[unit].status.unit_rdy = 0;
                 wdi.hd[unit]._fault = 0;
             } else if (_head >= disk_param[wdi.hd[unit].type].heads) {
                 LOGE(TAG, "DISK COMMAND 0 - ILLEGAL HEAD: %02x", _head);
+                wdi.hd[unit].command.uas = unit;
+                wdi.hd[unit].status.uav = unit;
                 wdi.hd[unit].status.illegal_address = 1;
                 wdi.hd[unit].status.unit_rdy = 0;
                 wdi.hd[unit]._fault = 0;
@@ -685,7 +692,6 @@ void command_bus_strobe(void)
              * otherwise there can be a false negative (illegal address)
              */
             } else {
-                unit = _unit;
                 wdi.hd[unit].command.uas = unit;
                 wdi.hd[unit].command.has = _head;
                 wdi.hd[unit].command.cas = _cyl;
@@ -739,6 +745,7 @@ void command_bus_strobe(void)
             wdi.pio0.data_B |= wdi.hd[unit].status.on_cyl << 1;
             wdi.pio0.data_B |= wdi.hd[unit].status.seeking << 2;
             wdi.pio0.data_B |= wdi.hd[unit].status.rezeroing << 3;
+            wdi.pio0.data_B |= wdi.hd[unit].status.illegal_address << 6;
             break;
         case 5:
             wdi.pio0.data_B = wdi.hd[unit].type << 5; /* Drive type in unused bits 5 & 6  of Status #5 */
