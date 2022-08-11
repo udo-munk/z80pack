@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -255,17 +256,25 @@ void wdi_init(void)
         strcat(fn, "/");
         strcat(fn, wdi.hd[unit].fn);
 
-        if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
-            if ((fd = open(fn, O_RDONLY)) != -1) {
+        int got_eintr = 0;
+again:
+        if ((fd = open(fn, O_RDWR)) == -1) {
+            if (errno == EINTR) {
+                if (!got_eintr) LOGW(TAG, "INIT: GOT EINTR - %s : errno %d", fn, errno);
+                got_eintr++;
+                goto again;
+            } else if ((fd = open(fn, O_RDONLY)) != -1) {
                 wdi.hd[unit].status.write_prot = 1;
             } else {
-                LOGE(TAG, "HDD FILE DOES NOT EXIST - %s", fn);
+                LOGW(TAG, "INIT: HDD FILE DOES NOT EXIST - %s : %s [%d]", fn, strerror(errno), errno);
                 wdi.hd[unit]._fault = 0; /* SET FAULT */
                 wdi.hd[unit].online = 0;
                 LOG(TAG, "HD%d: OFFLINE - NO FILE '%s'\n\r", unit, wdi.hd[unit].fn);
                 continue;
             }
         }
+
+        if (got_eintr) LOGW(TAG, "INIT: GOT EINTR: total %d", got_eintr);
         
         wdi.hd[unit].online = 1;
         
@@ -364,15 +373,24 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
     strcat(fn, "/");
     strcat(fn, wdi.hd[unit].fn);
 
-    if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
-        if ((fd = open(fn, O_RDONLY)) != -1) {
+    int got_eintr = 0;
+again:
+    if ((fd = open(fn, O_RDWR)) == -1) {
+        if (errno == EINTR) {
+            if (!got_eintr) LOGW(TAG, "WRITE: GOT EINTR - %s : errno %d", fn, errno);
+            got_eintr++;
+            goto again;
+        } else if ((fd = open(fn, O_RDONLY)) != -1) {
             wdi.hd[unit].status.write_prot = 1;
         } else {
-            LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
+            LOGE(TAG, "WRITE: HDD FILE DOES NOT EXIST - %s : %s [%d]", fn, strerror(errno), errno);
             wdi.hd[unit]._fault = 0; /* SET FAULT */
         }
+        close (fd);
         return 0;
     }
+    
+    if (got_eintr) LOGW(TAG, "WRITE: GOT EINTR: total %d", got_eintr);
 
     fstat(fd, &s);
     if (s.st_mode & S_IWUSR)
@@ -423,11 +441,22 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
     strcat(fn, "/");
     strcat(fn, wdi.hd[unit].fn);
 
+    int got_eintr = 0;
+again:
     if ((fd = open(fn, O_RDONLY)) == -1) {
-        LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
-        wdi.hd[unit]._fault = 0; /* SET FAULT */
-        return 0;
+        if (errno == EINTR) {
+            if (!got_eintr) LOGW(TAG, "READ: GOT EINTR - %s : errno %d", fn, errno);
+            got_eintr++;
+            goto again;
+        } else {
+            LOGE(TAG, "READ: HDD FILE DOES NOT EXIST - %s : %s [%d]", fn, strerror(errno), errno);
+            wdi.hd[unit]._fault = 0; /* SET FAULT */
+            close(fd);
+            return 0;
+        }
     }
+
+    if (got_eintr) LOGW(TAG, "READ: GOT EINTR: total %d", got_eintr);
 
     fstat(fd, &s);
     if (s.st_mode & S_IWUSR)
