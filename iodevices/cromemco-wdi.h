@@ -11,6 +11,7 @@
  */
 
 void wdi_init(void);
+void wdi_exit(void);
 
 BYTE cromemco_wdi_pio0a_data_in(void);
 BYTE cromemco_wdi_pio0b_data_in(void);

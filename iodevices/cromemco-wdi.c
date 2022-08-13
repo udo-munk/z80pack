@@ -40,8 +40,6 @@ static const char *TAG = "wdi";
 #define WDI_MAX_BUFFER WDI_BLOCK_SIZE + 8
 static BYTE buffer[WDI_MAX_BUFFER];
 
-static char fn[MAX_LFN];        /* path/filename for hard disk image */
-static int fd;                  /* fd for hard disk i/o */
 static int unit;                /* current selected hard disk unit*/
 
 static char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd" }; //, "hd3.hdd" };
@@ -179,6 +177,7 @@ static struct {
     struct {
         BYTE sector;
 
+        int fd;
         BYTE online;
         BYTE _crc_error;
         BYTE _fault;
@@ -208,8 +207,25 @@ static struct {
     } hd[8]; /* always allow for the maximum number of units */
 } wdi;
 
+void wdi_exit(void)
+{
+    int unit;
+
+    for (unit = 0; unit < WDI_UNITS; unit++) {
+
+        if (wdi.hd[unit].fd) {
+            fsync(wdi.hd[unit].fd);
+            close(wdi.hd[unit].fd);
+            wdi.hd[unit].fd =0;
+        }
+        wdi.hd[unit].online = 0;
+    }
+}
 void wdi_init(void)
 {
+    char fn[MAX_LFN];       /* path/filename for hard disk image */
+    int fd;                 /* fd for hard disk i/o */
+
     wdi.pio1.cmd_A = 0xff;
     wdi.pio1.cmd_B = 0xff;
     wdi.pio1.cmd_A_state = 0;
@@ -277,6 +293,7 @@ again:
         if (got_eintr) LOGW(TAG, "INIT: GOT EINTR: total %d", got_eintr);
         
         wdi.hd[unit].online = 1;
+        wdi.hd[unit].fd = fd;
         
         struct stat s;
         fstat(fd, &s);
@@ -303,8 +320,7 @@ again:
             LOGW(TAG, "UNKNOWN DISK IMAGE SIZE [%lld] FOR %s", s.st_size, wdi.hd[unit].fn);
         }
 
-        LOG(TAG, "HD%d:[%s]='%s'\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn);
-        close(fd);
+        LOG(TAG, "HD%d:[%s]='%s' [%d]\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn, fd);
     }
 
     LOG(TAG, "\n\r");
@@ -369,30 +385,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
 
     struct stat s;
 
-    strcpy(fn, (const char *)dsk_path());
-    strcat(fn, "/");
-    strcat(fn, wdi.hd[unit].fn);
-
-    int got_eintr = 0;
-again:
-    if ((fd = open(fn, O_RDWR)) == -1) {
-        if (errno == EINTR) {
-            if (!got_eintr) LOGW(TAG, "WRITE: GOT EINTR - %s : errno %d", fn, errno);
-            got_eintr++;
-            goto again;
-        } else if ((fd = open(fn, O_RDONLY)) != -1) {
-            wdi.hd[unit].status.write_prot = 1;
-        } else {
-            LOGE(TAG, "WRITE: HDD FILE DOES NOT EXIST - %s : %s [%d]", fn, strerror(errno), errno);
-            wdi.hd[unit]._fault = 0; /* SET FAULT */
-        }
-        close (fd);
-        return 0;
-    }
-    
-    if (got_eintr) LOGW(TAG, "WRITE: GOT EINTR: total %d", got_eintr);
-
-    fstat(fd, &s);
+    fstat(wdi.hd[unit].fd, &s);
     if (s.st_mode & S_IWUSR)
         wdi.hd[unit].status.write_prot = 0;
     else
@@ -400,19 +393,20 @@ again:
 
     long pos = wdi_pos(&buffer[1]);
 
-    if (lseek(fd, pos, SEEK_SET) == -1L) {
+    if (lseek(wdi.hd[unit].fd, pos, SEEK_SET) == -1L) {
         wdi.hd[unit]._fault = 0; /* write fault */
-        close(fd);
         return 0;
     }
 
     /* write the sector */
-    if (write(fd, &buffer[5], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE)
+    if (write(wdi.hd[unit].fd, &buffer[5], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE)
         wdi.hd[unit]._fault = 1;
     else
         wdi.hd[unit]._fault = 0; /* write fault */
 
-    close(fd);
+    // if (fsync(wdi.hd[unit].fd) == -1) {
+    //     LOGW(TAG, "WRITE: SYNC FAILED - %s [%d]", strerror(errno), errno);
+    // };
 
     return wdi.dma.wr0.len * 3; /* 3 t-states per byte of DMA */
 }
@@ -435,30 +429,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
 
     struct stat s;
 
-    extern char *dsk_path(void);
-
-    strcpy(fn, (const char *)dsk_path());
-    strcat(fn, "/");
-    strcat(fn, wdi.hd[unit].fn);
-
-    int got_eintr = 0;
-again:
-    if ((fd = open(fn, O_RDONLY)) == -1) {
-        if (errno == EINTR) {
-            if (!got_eintr) LOGW(TAG, "READ: GOT EINTR - %s : errno %d", fn, errno);
-            got_eintr++;
-            goto again;
-        } else {
-            LOGE(TAG, "READ: HDD FILE DOES NOT EXIST - %s : %s [%d]", fn, strerror(errno), errno);
-            wdi.hd[unit]._fault = 0; /* SET FAULT */
-            close(fd);
-            return 0;
-        }
-    }
-
-    if (got_eintr) LOGW(TAG, "READ: GOT EINTR: total %d", got_eintr);
-
-    fstat(fd, &s);
+    fstat(wdi.hd[unit].fd, &s);
     if (s.st_mode & S_IWUSR)
         wdi.hd[unit].status.write_prot = 0;
     else
@@ -466,22 +437,18 @@ again:
 
     long pos = wdi_pos(buffer);
 
-    if (lseek(fd, pos, SEEK_SET) == -1L) {
+    if (lseek(wdi.hd[unit].fd, pos, SEEK_SET) == -1L) {
         wdi.hd[unit]._fault = 0; /* read fault */
-        close(fd);
         return 0;
     }
 
     /* read the sector */
-    if (read(fd, &buffer[4], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
+    if (read(wdi.hd[unit].fd, &buffer[4], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
         wdi.hd[unit]._fault = 1; 
     } else {
         wdi.hd[unit]._fault = 0; /* read fault */
-        close(fd);
         return 0;
     }
-
-    close(fd);
 
     for (int i = 0; i < wdi.dma.wr0.len; i++) {
         v = buffer[i];

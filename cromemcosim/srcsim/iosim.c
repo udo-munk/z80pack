@@ -685,6 +685,8 @@ void exit_io(void)
 {
 	register int i;
 
+	wdi_exit();
+
 	/* close line printer files */
 	if (lpt1 != 0)
 		close(lpt1);
@@ -715,6 +717,7 @@ void reset_io(void)
 	selbnk = 0;
 	cromemco_dazzler_off();
 	hwctl_lock = 0xff;
+	wdi_exit();
 	wdi_init();
 }
 
