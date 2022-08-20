@@ -321,7 +321,7 @@ again:
             LOGW(TAG, "UNKNOWN DISK IMAGE SIZE [%lld] FOR %s", s.st_size, wdi.hd[unit].fn);
         }
 
-        LOG(TAG, "HD%d:[%s]='%s' [%d]\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn, fd);
+        LOG(TAG, "HD%d:[%s]='%s'\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn);
     }
 
     LOG(TAG, "\n\r");
