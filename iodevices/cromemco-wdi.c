@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -21,6 +22,11 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
+
+#ifdef HAS_NETSERVER
+#include "civetweb.h"
+#include "netsrv.h"
+#endif
 
 #define LOG_LOCAL_LEVEL LOG_ERROR
 #include "log.h"
@@ -34,14 +40,10 @@ static const char *TAG = "wdi";
 #define WDI_MAX_BUFFER WDI_BLOCK_SIZE + 8
 static BYTE buffer[WDI_MAX_BUFFER];
 
-static char fn[MAX_LFN];        /* path/filename for hard disk image */
-static int fd;                  /* fd for hard disk i/o */
-static int unit;                /* current selected hard disk unit*/
-
 static char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd" }; //, "hd3.hdd" };
 extern char *dsk_path(void);
 
-#define MAX_DISK_PARAM 4
+#define MAX_DISK_PARAM 3
 static struct {
     int rpm;
     int heads;
@@ -50,8 +52,7 @@ static struct {
 } disk_param[MAX_DISK_PARAM] = {
     { 3600, 3, 0x162, "H8-1" },
     { 3600, 5, 0x184, "H8-3" },
-    { 3600, 5, 0x308, "H8-4" },
-    { 4800, 4, 0x090, "H5-1" }
+    { 3600, 5, 0x308, "H8-4" }
 };
 
 #define INDEX_INT (1000000*60*4) /* Index interval in T ticks per minute @ 4MHz */
@@ -174,6 +175,8 @@ static struct {
     struct {
         BYTE sector;
 
+        int fd;
+        BYTE online;
         BYTE _crc_error;
         BYTE _fault;
 
@@ -197,12 +200,33 @@ static struct {
             BYTE seeking;
             BYTE rezeroing;
             BYTE write_prot;
+            BYTE illegal_address;
         } status;
-    } hd[WDI_UNITS];
+    } hd[8]; /* always allow for the maximum number of units */
+    
+    int unit;                /* current selected hard disk unit*/
 } wdi;
 
+void wdi_exit(void)
+{
+    int unit;
+
+    for (unit = 0; unit < WDI_UNITS; unit++) {
+
+        if (wdi.hd[unit].fd) {
+            fsync(wdi.hd[unit].fd);
+            close(wdi.hd[unit].fd);
+            wdi.hd[unit].fd =0;
+        }
+        wdi.hd[unit].online = 0;
+    }
+}
 void wdi_init(void)
 {
+    char fn[MAX_LFN];       /* path/filename for hard disk image */
+    int fd;                 /* fd for hard disk i/o */
+    int unit;
+
     wdi.pio1.cmd_A = 0xff;
     wdi.pio1.cmd_B = 0xff;
     wdi.pio1.cmd_A_state = 0;
@@ -229,6 +253,7 @@ void wdi_init(void)
 
     for (unit = 0; unit < WDI_UNITS; unit++) {
 
+        wdi.hd[unit].online = 0;
         wdi.hd[unit]._fault = 1;
         wdi.hd[unit]._crc_error = 0;
 
@@ -240,6 +265,7 @@ void wdi_init(void)
         wdi.hd[unit].status.seeking = 0;
         wdi.hd[unit].status.rezeroing = 0;
         wdi.hd[unit].status.write_prot = 0;
+        wdi.hd[unit].status.illegal_address = 0;
 
         wdi.hd[unit].fn = images[unit];
 
@@ -247,14 +273,28 @@ void wdi_init(void)
         strcat(fn, "/");
         strcat(fn, wdi.hd[unit].fn);
 
-        if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
-            if ((fd = open(fn, O_RDONLY)) != -1) {
+        int got_eintr = 0;
+again:
+        if ((fd = open(fn, O_RDWR)) == -1) {
+            if (errno == EINTR) {
+                if (!got_eintr) LOGW(TAG, "INIT: GOT EINTR - %s : errno %d", fn, errno);
+                got_eintr++;
+                goto again;
+            } else if ((fd = open(fn, O_RDONLY)) != -1) {
                 wdi.hd[unit].status.write_prot = 1;
             } else {
-                LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
+                LOGW(TAG, "INIT: HDD FILE DOES NOT EXIST - %s : %s [%d]", fn, strerror(errno), errno);
                 wdi.hd[unit]._fault = 0; /* SET FAULT */
+                wdi.hd[unit].online = 0;
+                LOG(TAG, "HD%d: OFFLINE - NO FILE '%s'\n\r", unit, wdi.hd[unit].fn);
+                continue;
             }
         }
+
+        if (got_eintr) LOGW(TAG, "INIT: GOT EINTR: total %d", got_eintr);
+        
+        wdi.hd[unit].online = 1;
+        wdi.hd[unit].fd = fd;
         
         struct stat s;
         fstat(fd, &s);
@@ -282,17 +322,25 @@ void wdi_init(void)
         }
 
         LOG(TAG, "HD%d:[%s]='%s'\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn);
-        close(fd);
     }
 
     LOG(TAG, "\n\r");
 
-    unit = 0;
+    wdi.unit = 0;
 }
+#ifdef HAS_NETSERVER
+void sendHardDisks(struct mg_connection *conn)
+{
+    int i;
+    for (i = 0; i < WDI_UNITS; i++) {
+        httpdPrintf(conn, ",\"HD%d\": { \"type\": \"%s\", \"file\": \"%s\"}", i, wdi.hd[i].type_s, wdi.hd[i].online?wdi.hd[i].fn:"");
+    }
+}
+#endif
 long wdi_pos(BYTE *buf)
 {
     unsigned long p;
-    const int c = disk_param[wdi.hd[unit].type].cyl;
+    const int c = disk_param[wdi.hd[wdi.unit].type].cyl;
     const int s = WDI_SECTORS;
     const int b = WDI_BLOCK_SIZE;
 
@@ -308,11 +356,11 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
 {
     if (!bus_ack) return 0;
 
-    LOGI(TAG, "WRITE: head: %d, cyl: %x", wdi.hd[unit].status.hav, wdi.hd[unit].status.cav);
+    LOGI(TAG, "WRITE: head: %d, cyl: %x", wdi.hd[wdi.unit].status.hav, wdi.hd[wdi.unit].status.cav);
     LOGI(TAG, "            start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
     if (wdi.dma.wr0.len >= WDI_MAX_BUFFER) {
-        wdi.hd[unit]._fault = 0; /* SET FAULT */
+        wdi.hd[wdi.unit]._fault = 0; /* SET FAULT */
         LOGE(TAG, "DMA length: %d > buffer: %d", wdi.dma.wr0.len, WDI_MAX_BUFFER);
         return 0;
     }
@@ -325,52 +373,41 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
 
     int cyl = (buffer[3] << 8 ) | buffer[2];
 
-    if (wdi.hd[unit].status.hav != buffer[1]) {
-        LOGE(TAG, "DISK WRITE ERROR - BAD HEAD %d : %d", wdi.hd[unit].status.hav, buffer[1]);
+    if (wdi.hd[wdi.unit].status.hav != buffer[1]) {
+        LOGE(TAG, "DISK WRITE ERROR UNIT [%d] - BAD HEAD %d : %d", wdi.unit, wdi.hd[wdi.unit].status.hav, buffer[1]);
+        wdi.hd[wdi.unit]._fault = 0; /* SET FAULT */
         return 0;
     }
-    if (wdi.hd[unit].status.cav != cyl) {
-        LOGE(TAG, "DISK WRITE ERROR - BAD CYLINDER %d : %d", wdi.hd[unit].status.cav, cyl);
+    if (wdi.hd[wdi.unit].status.cav != cyl) {
+        LOGE(TAG, "DISK WRITE ERROR UNIT [%d] - BAD CYLINDER %d : %d", wdi.unit, wdi.hd[wdi.unit].status.cav, cyl);
+        wdi.hd[wdi.unit]._fault = 0; /* SET FAULT */
         return 0;
     }
 
     struct stat s;
 
-    strcpy(fn, (const char *)dsk_path());
-    strcat(fn, "/");
-    strcat(fn, wdi.hd[unit].fn);
-
-    if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
-        if ((fd = open(fn, O_RDONLY)) != -1) {
-            wdi.hd[unit].status.write_prot = 1;
-        } else {
-            LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
-            wdi.hd[unit]._fault = 0; /* SET FAULT */
-        }
-        return 0;
-    }
-
-    fstat(fd, &s);
+    fstat(wdi.hd[wdi.unit].fd, &s);
     if (s.st_mode & S_IWUSR)
-        wdi.hd[unit].status.write_prot = 0;
+        wdi.hd[wdi.unit].status.write_prot = 0;
     else
-        wdi.hd[unit].status.write_prot = 1;
+        wdi.hd[wdi.unit].status.write_prot = 1;
 
     long pos = wdi_pos(&buffer[1]);
 
-    if (lseek(fd, pos, SEEK_SET) == -1L) {
-        wdi.hd[unit]._fault = 0; /* write fault */
-        close(fd);
+    if (lseek(wdi.hd[wdi.unit].fd, pos, SEEK_SET) == -1L) {
+        wdi.hd[wdi.unit]._fault = 0; /* write fault */
         return 0;
     }
 
     /* write the sector */
-    if (write(fd, &buffer[5], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE)
-        wdi.hd[unit]._fault = 1;
+    if (write(wdi.hd[wdi.unit].fd, &buffer[5], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE)
+        wdi.hd[wdi.unit]._fault = 1;
     else
-        wdi.hd[unit]._fault = 0; /* write fault */
+        wdi.hd[wdi.unit]._fault = 0; /* write fault */
 
-    close(fd);
+    // if (fsync(wdi.hd[wdi.unit].fd) == -1) {
+    //     LOGW(TAG, "WRITE: SYNC FAILED - %s [%d]", strerror(errno), errno);
+    // };
 
     return wdi.dma.wr0.len * 3; /* 3 t-states per byte of DMA */
 }
@@ -380,55 +417,39 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
 
     if (!bus_ack) return 0;
 
-    buffer[0] = wdi.hd[unit].status.hav;
-    buffer[1] = wdi.hd[unit].status.cav & 0xff;
-    buffer[2] = wdi.hd[unit].status.cav >> 8;
-    buffer[3] = wdi.hd[unit].sector;
+    buffer[0] = wdi.hd[wdi.unit].status.hav;
+    buffer[1] = wdi.hd[wdi.unit].status.cav & 0xff;
+    buffer[2] = wdi.hd[wdi.unit].status.cav >> 8;
+    buffer[3] = wdi.hd[wdi.unit].sector;
 
-    LOGI(TAG, "READ %s: head: %d, cyl: %d, sec: %d", (wdi.dma.wr0.len==4)?"HEADER":"DATA", wdi.hd[unit].status.hav, wdi.hd[unit].status.cav, wdi.hd[unit].sector);
+    LOGI(TAG, "READ %s: head: %d, cyl: %d, sec: %d", (wdi.dma.wr0.len==4)?"HEADER":"DATA", wdi.hd[wdi.unit].status.hav, wdi.hd[wdi.unit].status.cav, wdi.hd[wdi.unit].sector);
     LOGI(TAG, "           start: %04x, addr: %04x, len: %d", wdi.dma.wr4.b_start, wdi.dma.wr4.b_addr_counter, wdi.dma.wr0.len);
 
-    wdi.hd[unit].sector++;
-    wdi.hd[unit].sector %= WDI_SECTORS;
+    wdi.hd[wdi.unit].sector++;
+    wdi.hd[wdi.unit].sector %= WDI_SECTORS;
 
     struct stat s;
 
-    extern char *dsk_path(void);
-
-    strcpy(fn, (const char *)dsk_path());
-    strcat(fn, "/");
-    strcat(fn, wdi.hd[unit].fn);
-
-    if ((fd = open(fn, O_RDONLY)) == -1) {
-        LOGE(TAG, "HD FILE DOES NOT EXIST - %s", fn);
-        wdi.hd[unit]._fault = 0; /* SET FAULT */
-        return 0;
-    }
-
-    fstat(fd, &s);
+    fstat(wdi.hd[wdi.unit].fd, &s);
     if (s.st_mode & S_IWUSR)
-        wdi.hd[unit].status.write_prot = 0;
+        wdi.hd[wdi.unit].status.write_prot = 0;
     else
-        wdi.hd[unit].status.write_prot = 1;
+        wdi.hd[wdi.unit].status.write_prot = 1;
 
     long pos = wdi_pos(buffer);
 
-    if (lseek(fd, pos, SEEK_SET) == -1L) {
-        wdi.hd[unit]._fault = 0; /* read fault */
-        close(fd);
+    if (lseek(wdi.hd[wdi.unit].fd, pos, SEEK_SET) == -1L) {
+        wdi.hd[wdi.unit]._fault = 0; /* read fault */
         return 0;
     }
 
     /* read the sector */
-    if (read(fd, &buffer[4], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
-        wdi.hd[unit]._fault = 1; 
+    if (read(wdi.hd[wdi.unit].fd, &buffer[4], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
+        wdi.hd[wdi.unit]._fault = 1; 
     } else {
-        wdi.hd[unit]._fault = 0; /* read fault */
-        close(fd);
+        wdi.hd[wdi.unit]._fault = 0; /* read fault */
         return 0;
     }
-
-    close(fd);
 
     for (int i = 0; i < wdi.dma.wr0.len; i++) {
         v = buffer[i];
@@ -441,7 +462,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
 }
 BYTE cromemco_wdi_pio0a_data_in(void)
 {
-	LOGE(TAG, "E0 IN:");
+	LOGW(TAG, "E0 IN:");
 	return((BYTE) 0xFF);
 }
 BYTE cromemco_wdi_pio0b_data_in(void)
@@ -483,13 +504,21 @@ BYTE cromemco_wdi_pio0b_cmd_in(void)
 }
 BYTE cromemco_wdi_pio1a_data_in(void)
 {
-	BYTE val = 0;
+	BYTE val = wdi.pio1.dir_A; /* pull inputs HIGH */
 
-    val |= wdi.pio1.brd;
-    val |= wdi.hd[unit].status.seeking << 5;
-    if (!wdi.pio1._cmd_stb) {
-        val |= 0x80; /* CMD_AK */
+    if (!wdi.pio1.brd) {
+        val ^= 0x40;
     }
+
+    if (wdi.hd[wdi.unit].online) { /* Only respond if online */
+        if (!wdi.hd[wdi.unit].status.seeking) {
+            val ^= 0x20; /* _SEEK_COMPLETE if not SEEKING */
+        }
+        if (wdi.pio1._cmd_stb) {
+            val ^= 0x80; /* _CMD_AK on _CMD_STB */
+        }
+    }
+
     val = (wdi.pio1.data_A & ~wdi.pio1.dir_A) | val;
 
     LOGD(TAG, "E4 IN: = %02x", val);
@@ -497,9 +526,17 @@ BYTE cromemco_wdi_pio1a_data_in(void)
 }
 BYTE cromemco_wdi_pio1b_data_in(void)
 {
-	BYTE val = wdi.hd[unit]._fault << 1;
-    val |= wdi.hd[unit]._crc_error << 7;
-    val |= wdi.hd[unit].status.uav << 3;
+	BYTE val = wdi.pio1.dir_B; /* pull inputs HIGH */
+
+    if (wdi.hd[wdi.unit].online) { /* Only respond if online */
+        if (!wdi.hd[wdi.unit]._fault) {
+            val ^= 0x02;
+        }
+        if (!wdi.hd[wdi.unit]._crc_error) { /* Note: CRC_ERROR is not inverted */
+            val ^= 0x80;
+        }
+        val ^= wdi.hd[wdi.unit].status.uav << 3;
+    }
 
     val = (wdi.pio1.data_B & ~wdi.pio1.dir_B) | val;
 
@@ -541,35 +578,38 @@ BYTE cromemco_wdi_dma3_in(void)
 BYTE cromemco_wdi_ctc0_in(void)
 {
     BYTE val = wdi.ctc.now0;
-    Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[unit].type].rpm;
+    Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[wdi.unit].type].rpm;
 
 	LOGD(TAG, "IN: CTC #0 = %02x - Tdiff=%lld", val, T - wdi.ctc.T0);
 
-    if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
-    else if ((T - wdi.ctc.T0) > index_ticks) {
-        if (val > 0) wdi.ctc.now0--;
-        wdi.hd[unit].sector = 0;
-        wdi.ctc.T0 += index_ticks;
+    if (wdi.hd[wdi.unit].online) { /* Only count indexes if online */
+
+        if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
+        else if ((T - wdi.ctc.T0) > index_ticks) {
+            if (val > 0) wdi.ctc.now0--;
+            wdi.hd[wdi.unit].sector = 0;
+            wdi.ctc.T0 += index_ticks;
+        }
     }
 	return(val);
 }
 BYTE cromemco_wdi_ctc1_in(void)
 {
     Tstates_t Tdiff = T - wdi.ctc.T1;
-    Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[unit].type].rpm;
+    Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[wdi.unit].type].rpm;
     unsigned int sectors = (Tdiff * WDI_SECTORS + index_ticks / 10) / index_ticks; /* -10% on sector time */
 
 	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
-    if (sectors) {
+    if (sectors && wdi.hd[wdi.unit].online) { /* Only count sectors if online */
         if (wdi.ctc.now1 > 0) { 
             int r = (int)wdi.ctc.now1 - sectors;
             if (r < 0) r = 0;
             wdi.ctc.now1 = r;
         }
-        wdi.hd[unit].sector += sectors;
-        wdi.hd[unit].sector %= WDI_SECTORS;
-        // LOGI(TAG, "IN: CTC #1 = %02x, sect: %02x", wdi.ctc.now1, wdi.hd[unit].sector);
+        wdi.hd[wdi.unit].sector += sectors;
+        wdi.hd[wdi.unit].sector %= WDI_SECTORS;
+        // LOGI(TAG, "IN: CTC #1 = %02x, sect: %02x", wdi.ctc.now1, wdi.hd[wdi.unit].sector);
 
         wdi.ctc.T1 = T;
     }
@@ -591,7 +631,8 @@ BYTE cromemco_wdi_ctc2_in(void)
  * For now, seek is complete the first time this counter is checked
  */
 
-    if (val > 0) wdi.ctc.now2--;
+    /* Only count seek complete if online */
+    if (val > 0 && wdi.hd[wdi.unit].online) wdi.ctc.now2--;
 
 	return(val);
 }
@@ -606,46 +647,90 @@ void command_bus_strobe(void)
 
     int bus = wdi.pio1.bus_addr;
     BYTE data = wdi.pio0.data_A;
+    BYTE _head;
+    WORD _cyl;
 
-    if (wdi.hd[unit].status.rezeroing) {
+    /* Only rezero if online */
+    if (wdi.hd[wdi.unit].status.rezeroing && wdi.hd[wdi.unit].online) {
         LOGI(TAG, "REZEROING");
-        wdi.hd[unit].status.hav = 0;
-        wdi.hd[unit].status.cav = 0;
-        wdi.hd[unit].status.rezeroing = 0;
-        wdi.hd[unit].status.on_cyl = 1;
-        wdi.hd[unit].status.unit_rdy = 1;
+        wdi.hd[wdi.unit].status.hav = 0;
+        wdi.hd[wdi.unit].status.cav = 0;
+        wdi.hd[wdi.unit].status.rezeroing = 0;
+        wdi.hd[wdi.unit].status.on_cyl = 1;
+        wdi.hd[wdi.unit].status.unit_rdy = 1;
     }
-    if (wdi.hd[unit].status.seeking) {
-        LOGI(TAG, "SEEKING: UNIT: %02x, HEAD: %02x, CYL: %03x", wdi.hd[unit].command.uas, wdi.hd[unit].command.has, wdi.hd[unit].command.cas);
-        wdi.hd[unit].status.uav = wdi.hd[unit].command.uas;
-        wdi.hd[unit].status.hav = wdi.hd[unit].command.has;
-        wdi.hd[unit].status.cav = wdi.hd[unit].command.cas;
-        wdi.hd[unit].status.seeking = 0;
-        wdi.hd[unit].status.on_cyl = 1;
-        wdi.hd[unit].status.unit_rdy = 1;
+    /* Only seek if online */
+    if (wdi.hd[wdi.unit].status.seeking && wdi.hd[wdi.unit].online) {
+        LOGI(TAG, "SEEKING: UNIT: %02x, HEAD: %02x, CYL: %03x", wdi.hd[wdi.unit].command.uas, wdi.hd[wdi.unit].command.has, wdi.hd[wdi.unit].command.cas);
+        wdi.hd[wdi.unit].status.uav = wdi.hd[wdi.unit].command.uas;
+        wdi.hd[wdi.unit].status.hav = wdi.hd[wdi.unit].command.has;
+        wdi.hd[wdi.unit].status.cav = wdi.hd[wdi.unit].command.cas;
+        wdi.hd[wdi.unit].status.seeking = 0;
+        wdi.hd[wdi.unit].status.on_cyl = 1;
+        wdi.hd[wdi.unit].status.unit_rdy = 1;
     }
 
     switch (bus)
     {
         case 0:
-            unit = (data >> 4) & 0x07; /* only 3 LSB of Unit */
-            wdi.hd[unit].command.uas = unit;
-            wdi.hd[unit].command.has = ((data & 0x0c) >> 2) | ((data & 0x80) >> 5); /* reuse MSB of Unit for Head*/
-            wdi.hd[unit].command.cas = (wdi.hd[unit].command.cas & 0xff) | ((data & 0x03) << 8);
-            wdi.hd[unit].status.seeking = 1;
-            wdi.hd[unit].status.on_cyl = 0;
-            wdi.hd[unit].status.unit_rdy = 0;
+            wdi.unit = (data >> 4) & 0x07; /* only 3 LSB of Unit */
+            _head = ((data & 0x0c) >> 2) | ((data & 0x80) >> 5); /* reuse MSB of Unit for Head*/
+            _cyl = (wdi.hd[wdi.unit].command.cas & 0xff) | ((data & 0x03) << 8);
 
-            LOGI(TAG, "DISK COMMAND 0 - UNIT: %02x, HEAD: %02x, CYL: %03x", wdi.hd[unit].command.uas, wdi.hd[unit].command.has, wdi.hd[unit].command.cas);
+            if ((wdi.unit >= WDI_UNITS)) {
+                LOGE(TAG, "DISK COMMAND 0 - ILLEGAL UNIT: %02x", wdi.unit);
+                wdi.hd[wdi.unit].online = 0;
+                wdi.hd[wdi.unit].command.uas = wdi.unit;
+                wdi.hd[wdi.unit].status.illegal_address = 1;
+                wdi.hd[wdi.unit].status.unit_rdy = 0;
+                wdi.hd[wdi.unit]._fault = 0;
+            } else if (!wdi.hd[wdi.unit].online) {
+                LOGW(TAG, "DISK COMMAND 0 - UNIT: %02x - OFFLINE", wdi.unit);
+                wdi.hd[wdi.unit].command.uas = wdi.unit;
+                wdi.hd[wdi.unit].status.illegal_address = 1;
+                wdi.hd[wdi.unit].status.unit_rdy = 0;
+                wdi.hd[wdi.unit]._fault = 0;
+            } else if (_head >= disk_param[wdi.hd[wdi.unit].type].heads) {
+                LOGE(TAG, "DISK COMMAND 0 - ILLEGAL HEAD: %02x", _head);
+                wdi.hd[wdi.unit].command.uas = wdi.unit;
+                wdi.hd[wdi.unit].status.uav = wdi.unit;
+                wdi.hd[wdi.unit].status.illegal_address = 1;
+                wdi.hd[wdi.unit].status.unit_rdy = 0;
+                wdi.hd[wdi.unit]._fault = 0;
+            /* 
+             * Illegal cylinder should only be checked on COMMAND 1
+             * when a full cylinder address is received (COMMAND 0 followed by COMMAND 1)
+             * otherwise there can be a false negative (illegal address)
+             */
+            } else {
+                wdi.hd[wdi.unit].command.uas = wdi.unit;
+                wdi.hd[wdi.unit].command.has = _head;
+                wdi.hd[wdi.unit].command.cas = _cyl;
+                wdi.hd[wdi.unit].status.seeking = 1;
+                wdi.hd[wdi.unit].status.on_cyl = 0;
+                wdi.hd[wdi.unit].status.unit_rdy = 0;
+                wdi.hd[wdi.unit].status.illegal_address = 0;
+
+                LOGI(TAG, "DISK COMMAND 0 - UNIT: %02x, HEAD: %02x, CYL: %03x", wdi.hd[wdi.unit].command.uas, wdi.hd[wdi.unit].command.has, wdi.hd[wdi.unit].command.cas);
+            }
             break;
         case 1:
-            wdi.hd[unit].command.cas = (wdi.hd[unit].command.cas & 0xf00) | data;
-            wdi.hd[unit].status.cav = wdi.hd[unit].command.cas;
-            wdi.hd[unit].status.seeking = 1;
-            wdi.hd[unit].status.on_cyl = 0;
-            wdi.hd[unit].status.unit_rdy = 0;
+            _cyl = (wdi.hd[wdi.unit].command.cas & 0xf00) | data;
 
-            LOGI(TAG, "DISK COMMAND 1 - CYL: %03x", wdi.hd[unit].status.cav);
+            if (_cyl >= disk_param[wdi.hd[wdi.unit].type].cyl) {
+                LOGE(TAG, "DISK COMMAND 1 - ILLEGAL CYLINDER: %03x", _cyl);
+                wdi.hd[wdi.unit].status.illegal_address = 1;
+                wdi.hd[wdi.unit].status.unit_rdy = 0;
+                wdi.hd[wdi.unit]._fault = 0;
+            } else {
+                wdi.hd[wdi.unit].command.cas = _cyl;
+                wdi.hd[wdi.unit].status.cav = wdi.hd[wdi.unit].command.cas;
+                wdi.hd[wdi.unit].status.seeking = 1;
+                wdi.hd[wdi.unit].status.on_cyl = 0;
+                wdi.hd[wdi.unit].status.unit_rdy = 0;
+
+                LOGI(TAG, "DISK COMMAND 1 - CYL: %03x", wdi.hd[wdi.unit].status.cav);
+            }
             break;
         case 2:           
             if (data & 0xfc) {
@@ -655,33 +740,37 @@ void command_bus_strobe(void)
         case 3:
             if (data & 1) {
                 LOGI(TAG, "DISK COMMAND 3 - FAULT CLEAR ");
-                wdi.hd[unit]._fault = 1; /* CLEAR FAULT */
+                wdi.hd[wdi.unit]._fault = 1; /* CLEAR FAULT */
             }
             if (data & 2) {
                 LOGI(TAG, "DISK COMMAND 3 - REZERO");
                 
-                wdi.hd[unit].status.rezeroing = 1;
-                wdi.hd[unit].status.on_cyl = 0;
-                wdi.hd[unit].status.unit_rdy = 0;
-                wdi.hd[unit]._fault = 1; /* CLEAR FAULT */
+                wdi.hd[wdi.unit].status.rezeroing = 1;
+                wdi.hd[wdi.unit].status.on_cyl = 0;
+                wdi.hd[wdi.unit].status.unit_rdy = 0;
+                wdi.hd[wdi.unit]._fault = 1; /* CLEAR FAULT */
             }
             break;
         case 4:
-            wdi.pio0.data_B = wdi.hd[unit].status.unit_rdy;
-            wdi.pio0.data_B |= wdi.hd[unit].status.on_cyl << 1;
-            wdi.pio0.data_B |= wdi.hd[unit].status.seeking << 2;
-            wdi.pio0.data_B |= wdi.hd[unit].status.rezeroing << 3;
+            wdi.pio0.data_B = wdi.hd[wdi.unit].status.unit_rdy;
+            wdi.pio0.data_B |= wdi.hd[wdi.unit].status.on_cyl << 1;
+            wdi.pio0.data_B |= wdi.hd[wdi.unit].status.seeking << 2;
+            wdi.pio0.data_B |= wdi.hd[wdi.unit].status.rezeroing << 3;
+            wdi.pio0.data_B |= wdi.hd[wdi.unit].status.illegal_address << 6;
             break;
         case 5:
-            wdi.pio0.data_B = wdi.hd[unit].type << 5; /* Drive type in unused bits 5 & 6  of Status #5 */
+            wdi.pio0.data_B = !(wdi.hd[wdi.unit]._fault); /* Inverse of _fault */
+            wdi.pio0.data_B |= wdi.hd[wdi.unit].type << 5; /* Drive type in unused bits 5 & 6  of Status #5 */
+            wdi.pio0.data_B |= wdi.hd[wdi.unit].status.write_prot << 4;
             break;
         case 6:
-            wdi.pio0.data_B = wdi.hd[unit].status.cav & 0xff;
+            wdi.pio0.data_B = wdi.hd[wdi.unit].status.cav & 0xff;
             break;
         case 7:
-            wdi.pio0.data_B = wdi.hd[unit].status.cav >> 8;
-            wdi.pio0.data_B |= wdi.hd[unit].status.uav << 4;
-            wdi.pio0.data_B |= wdi.hd[unit].status.hav << 2;
+            wdi.pio0.data_B = wdi.hd[wdi.unit].status.cav >> 8;
+            wdi.pio0.data_B |= wdi.hd[wdi.unit].status.uav << 4;
+            wdi.pio0.data_B |= (wdi.hd[wdi.unit].status.hav & 0x3) << 2;
+            wdi.pio0.data_B |= (wdi.hd[wdi.unit].status.hav & 0x4) << 5; /* reuse MSB of Unit for Head*/
             break;
         default:
             break;
@@ -695,8 +784,8 @@ void cromemco_wdi_pio0a_data_out(BYTE data)
     wdi.pio0.data_A = data;
 
     if (bus == 2) {
-        wdi.hd[unit].command.write_gate = data & 1;
-        wdi.hd[unit].command.read_gate = data & 2;
+        wdi.hd[wdi.unit].command.write_gate = data & 1;
+        wdi.hd[wdi.unit].command.read_gate = data & 2;
     }
 }
 void cromemco_wdi_pio0b_data_out(BYTE data)
@@ -747,10 +836,10 @@ void cromemco_wdi_pio1b_data_out(BYTE data)
         /* NOTHING YET IDENTIFIED TO HAPPEN HERE */
     }
 
-    if (wdi.pio1.dma_rdy && wdi.hd[unit].command.write_gate) {
+    if (wdi.pio1.dma_rdy && wdi.hd[wdi.unit].command.write_gate) {
         start_bus_request(BUS_DMA_CONTINUOUS, &wdi_dma_write);
     };
-    if (wdi.pio1.dma_rdy && wdi.hd[unit].command.read_gate) {
+    if (wdi.pio1.dma_rdy && wdi.hd[wdi.unit].command.read_gate) {
         start_bus_request(BUS_DMA_CONTINUOUS, &wdi_dma_read);
     }
 }
@@ -880,7 +969,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                                     wdi.dma.wr4.b_addr_counter,
                                     wdi.dma.wr0.len
                                 );
-                                LOGD(TAG, "UNIT: %d, HEAD: %d, CYL: %d", wdi.hd[unit].status.uav, wdi.hd[unit].status.hav, wdi.hd[unit].status.cav);
+                                LOGD(TAG, "UNIT: %d, HEAD: %d, CYL: %d", wdi.hd[wdi.unit].status.uav, wdi.hd[wdi.unit].status.hav, wdi.hd[wdi.unit].status.cav);
 
                             } else {
                                 LOGE(TAG, "DMA FUNCTION NOT IMPLEMENTED");
