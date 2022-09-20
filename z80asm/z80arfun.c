@@ -30,6 +30,7 @@
 char *get_second(char *);
 int lda(void), ldb(void), ldc(void), ldd(void), lde(void);
 int ldh(void), ldl(void);
+int ldixh(void), ldixl(void), ldiyh(void), ldiyl(void);
 int ldbc(void), ldde(void), ldhl(void), ldix(void), ldiy(void);
 int ldsp(void), ldihl(void), ldiix(void), ldiiy(void), ldinn(void);
 int adda(void), addhl(void), addix(void), addiy(void);
@@ -602,6 +603,18 @@ int op_ld(void)
 	case REGL:			/* LD L,? */
 		len = ldl();
 		break;
+	case REGIXH:			/* LD IXH,? (undocumented) */
+		len = ldixh();
+		break;
+	case REGIXL:			/* LD IXL,? (undocumented) */
+		len = ldixl();
+		break;
+	case REGIYH:			/* LD IYH,? (undocumented) */
+		len = ldiyh();
+		break;
+	case REGIYL:			/* LD IYL,? (undocumented) */
+		len = ldiyl();
+		break;
 	case REGI:			/* LD I,A */
 		if (get_reg(get_second(operand)) == REGA) {
 			len = 2;
@@ -708,6 +721,26 @@ int lda(void)
 		len = 1;
 		ops[0] = 0x78 + op;
 		break;
+	case REGIXH:			/* LD A,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x7c;
+		break;
+	case REGIXL:			/* LD A,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x7d;
+		break;
+	case REGIYH:			/* LD A,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x7c;
+		break;
+	case REGIYL:			/* LD A,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x7d;
+		break;
 	case REGI:			/* LD A,I */
 		len = 2;
 		ops[0] = 0xed;
@@ -796,6 +829,26 @@ int ldb(void)
 		len = 1;
 		ops[0] = 0x40 + op;
 		break;
+	case REGIXH:			/* LD B,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x44;
+		break;
+	case REGIXL:			/* LD B,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x45;
+		break;
+	case REGIYH:			/* LD B,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x44;
+		break;
+	case REGIYL:			/* LD B,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x45;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) { /* LD B,(IX+d) */
 			len = 3;
@@ -855,6 +908,26 @@ int ldc(void)
 	case REGIHL:			/* LD C,(HL) */
 		len = 1;
 		ops[0] = 0x48 + op;
+		break;
+	case REGIXH:			/* LD C,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x4c;
+		break;
+	case REGIXL:			/* LD C,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x4d;
+		break;
+	case REGIYH:			/* LD C,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x4c;
+		break;
+	case REGIYL:			/* LD C,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x4d;
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) { /* LD C,(IX+d) */
@@ -916,6 +989,26 @@ int ldd(void)
 		len = 1;
 		ops[0] = 0x50 + op;
 		break;
+	case REGIXH:			/* LD D,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x54;
+		break;
+	case REGIXL:			/* LD D,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x55;
+		break;
+	case REGIYH:			/* LD D,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x54;
+		break;
+	case REGIYL:			/* LD D,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x55;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) { /* LD D,(IX+d) */
 			len = 3;
@@ -975,6 +1068,26 @@ int lde(void)
 	case REGIHL:			/* LD E,(HL) */
 		len = 1;
 		ops[0] = 0x58 + op;
+		break;
+	case REGIXH:			/* LD E,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x5c;
+		break;
+	case REGIXL:			/* LD E,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x5d;
+		break;
+	case REGIYH:			/* LD E,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x5c;
+		break;
+	case REGIYL:			/* LD E,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x5d;
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) { /* LD E,(IX+d) */
@@ -1127,6 +1240,210 @@ int ldl(void)
 		asmerr(E_MISOPE);
 		break;
 	default:				/* invalid operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_ILLOPE);
+	}
+	return(len);
+}
+
+/*
+ *	LD IXH,? (undocumented)
+ */
+int ldixh(void)
+{
+	register int op;
+	register int len;
+	register char *p;
+
+	p = get_second(operand);
+	switch (op = get_reg(p)) {
+	case REGA:			/* LD IXH,A (undocumented) */
+	case REGB:			/* LD IXH,B (undocumented) */
+	case REGC:			/* LD IXH,C (undocumented) */
+	case REGD:			/* LD IXH,D (undocumented) */
+	case REGE:			/* LD IXH,E (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x60 + op;
+		break;
+	case REGIXH:			/* LD IXH,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x64;
+		break;
+	case REGIXL:			/* LD IXH,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x65;
+		break;
+	case NOREG:			/* operand isn't register */
+		len = 3;		/* LD IXH,n (undocumented) */
+		if (pass == 2) {
+			ops[0] = 0xdd;
+			ops[1] = 0x26;
+			ops[2] = chk_v1(eval(p));
+		}
+		break;
+	case NOOPERA:			/* missing operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_MISOPE);
+		break;
+	default:			/* invalid operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_ILLOPE);
+	}
+	return(len);
+}
+
+/*
+ *	LD IXL,? (undocumented)
+ */
+int ldixl(void)
+{
+	register int op;
+	register int len;
+	register char *p;
+
+	p = get_second(operand);
+	switch (op = get_reg(p)) {
+	case REGA:			/* LD IXL,A (undocumented) */
+	case REGB:			/* LD IXL,B (undocumented) */
+	case REGC:			/* LD IXL,C (undocumented) */
+	case REGD:			/* LD IXL,D (undocumented) */
+	case REGE:			/* LD IXL,E (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x68 + op;
+		break;
+	case REGIXH:			/* LD IXL,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x6c;
+		break;
+	case REGIXL:			/* LD IXL,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x6d;
+		break;
+	case NOREG:			/* operand isn't register */
+		len = 3;		/* LD IXL,n (undocumented) */
+		if (pass == 2) {
+			ops[0] = 0xdd;
+			ops[1] = 0x2e;
+			ops[2] = chk_v1(eval(p));
+		}
+		break;
+	case NOOPERA:			/* missing operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_MISOPE);
+		break;
+	default:			/* invalid operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_ILLOPE);
+	}
+	return(len);
+}
+
+/*
+ *	LD IYH,? (undocumented)
+ */
+int ldiyh(void)
+{
+	register int op;
+	register int len;
+	register char *p;
+
+	p = get_second(operand);
+	switch (op = get_reg(p)) {
+	case REGA:			/* LD IYH,A (undocumented) */
+	case REGB:			/* LD IYH,B (undocumented) */
+	case REGC:			/* LD IYH,C (undocumented) */
+	case REGD:			/* LD IYH,D (undocumented) */
+	case REGE:			/* LD IYH,E (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x60 + op;
+		break;
+	case REGIYH:			/* LD IYH,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x64;
+		break;
+	case REGIYL:			/* LD IYH,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x65;
+		break;
+	case NOREG:			/* operand isn't register */
+		len = 3;		/* LD IYH,n (undocumented) */
+		if (pass == 2) {
+			ops[0] = 0xfd;
+			ops[1] = 0x26;
+			ops[2] = chk_v1(eval(p));
+		}
+		break;
+	case NOOPERA:			/* missing operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_MISOPE);
+		break;
+	default:			/* invalid operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_ILLOPE);
+	}
+	return(len);
+}
+
+/*
+ *	LD IYL,? (undocumented)
+ */
+int ldiyl(void)
+{
+	register int op;
+	register int len;
+	register char *p;
+
+	p = get_second(operand);
+	switch (op = get_reg(p)) {
+	case REGA:			/* LD IYL,A (undocumented) */
+	case REGB:			/* LD IYL,B (undocumented) */
+	case REGC:			/* LD IYL,C (undocumented) */
+	case REGD:			/* LD IYL,D (undocumented) */
+	case REGE:			/* LD IYL,E (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x68 + op;
+		break;
+	case REGIYH:			/* LD IYL,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x6c;
+		break;
+	case REGIYL:			/* LD IYL,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x6d;
+		break;
+	case NOREG:			/* operand isn't register */
+		len = 3;		/* LD IYL,n (undocumented) */
+		if (pass == 2) {
+			ops[0] = 0xfd;
+			ops[1] = 0x2e;
+			ops[2] = chk_v1(eval(p));
+		}
+		break;
+	case NOOPERA:			/* missing operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_MISOPE);
+		break;
+	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
 		asmerr(E_ILLOPE);
@@ -1697,6 +2014,26 @@ int adda(void)
 		len = 1;
 		ops[0] = 0x80 + op;
 		break;
+	case REGIXH:			/* ADD A,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x84;
+		break;
+	case REGIXL:			/* ADD A,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x85;
+		break;
+	case REGIYH:			/* ADD A,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x84;
+		break;
+	case REGIYL:			/* ADD A,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x85;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) {
 			len = 3;	/* ADD A,(IX+d) */
@@ -1892,6 +2229,26 @@ int adca(void)
 		len = 1;
 		ops[0] = 0x88 + op;
 		break;
+	case REGIXH:			/* ADC A,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x8c;
+		break;
+	case REGIXL:			/* ADC A,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x8d;
+		break;
+	case REGIYH:			/* ADC A,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x8c;
+		break;
+	case REGIYL:			/* ADC A,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x8d;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) {
 			len = 3;	/* ADC A,(IX+d) */
@@ -1984,6 +2341,26 @@ int op_sub(void)
 	case REGIHL:			/* SUB (HL) */
 		len = 1;
 		ops[0] = 0x90 + op;
+		break;
+	case REGIXH:			/* SUB IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x94;
+		break;
+	case REGIXL:			/* SUB IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x95;
+		break;
+	case REGIYH:			/* SUB IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x94;
+		break;
+	case REGIYL:			/* SUB IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x95;
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0) {
@@ -2078,6 +2455,26 @@ int sbca(void)
 	case REGIHL:			/* SBC A,(HL) */
 		len = 1;
 		ops[0] = 0x98 + op;
+		break;
+	case REGIXH:			/* SBC A,IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x9c;
+		break;
+	case REGIXL:			/* SBC A,IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x9d;
+		break;
+	case REGIYH:			/* SBC A,IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x9c;
+		break;
+	case REGIYL:			/* SBC A,IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x9d;
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) {
@@ -2198,6 +2595,26 @@ int op_inc(void)
 		ops[0] = 0xfd;
 		ops[1] = 0x23;
 		break;
+	case REGIXH:			/* INC IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x24;
+		break;
+	case REGIXL:			/* INC IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x2c;
+		break;
+	case REGIYH:			/* INC IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x24;
+		break;
+	case REGIYL:			/* INC IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x2c;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0) {
 			len = 3;	/* INC (IX+d) */
@@ -2280,6 +2697,26 @@ int op_dec(void)
 		ops[0] = 0xfd;
 		ops[1] = 0x2b;
 		break;
+	case REGIXH:			/* DEC IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x25;
+		break;
+	case REGIXL:			/* DEC IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0x2d;
+		break;
+	case REGIYH:			/* DEC IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x25;
+		break;
+	case REGIYL:			/* DEC IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0x2d;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0) {
 			len = 3;	/* DEC (IX+d) */
@@ -2335,6 +2772,26 @@ int op_or(void)
 	case REGIHL:			/* OR (HL) */
 		len = 1;
 		ops[0] = 0xb0 + op;
+		break;
+	case REGIXH:			/* OR IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xb4;
+		break;
+	case REGIXL:			/* OR IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xb5;
+		break;
+	case REGIYH:			/* OR IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xb4;
+		break;
+	case REGIYL:			/* OR IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xb5;
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0) {
@@ -2394,6 +2851,26 @@ int op_xor(void)
 		len = 1;
 		ops[0] = 0xa8 + op;
 		break;
+	case REGIXH:			/* XOR IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xac;
+		break;
+	case REGIXL:			/* XOR IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xad;
+		break;
+	case REGIYH:			/* XOR IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xac;
+		break;
+	case REGIYL:			/* XOR IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xad;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0) {
 			len = 3;	/* XOR (IX+d) */
@@ -2452,6 +2929,26 @@ int op_and(void)
 		len = 1;
 		ops[0] = 0xa0 + op;
 		break;
+	case REGIXH:			/* AND IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xa4;
+		break;
+	case REGIXL:			/* AND IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xa5;
+		break;
+	case REGIYH:			/* AND IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xa4;
+		break;
+	case REGIYL:			/* AND IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xa5;
+		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0) {
 			len = 3;	/* AND (IX+d) */
@@ -2509,6 +3006,26 @@ int op_cp(void)
 	case REGIHL:			/* CP (HL) */
 		len = 1;
 		ops[0] = 0xb8 + op;
+		break;
+	case REGIXH:			/* CP IXH (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xbc;
+		break;
+	case REGIXL:			/* CP IXL (undocumented) */
+		len = 2;
+		ops[0] = 0xdd;
+		ops[1] = 0xbd;
+		break;
+	case REGIYH:			/* CP IYH (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xbc;
+		break;
+	case REGIYL:			/* CP IYL (undocumented) */
+		len = 2;
+		ops[0] = 0xfd;
+		ops[1] = 0xbd;
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0) {
@@ -2783,6 +3300,65 @@ int op_sra(void)
 }
 
 /*
+ *	SLL (undocumented)
+ */
+int op_sll(void)
+{
+	register int len, op;
+
+	if (pass == 1)
+		if (*label)
+			put_label();
+	switch (op = get_reg(operand)) {
+	case REGA:			/* SLL A (undocumented) */
+	case REGB:			/* SLL B (undocumented) */
+	case REGC:			/* SLL C (undocumented) */
+	case REGD:			/* SLL D (undocumented) */
+	case REGE:			/* SLL E (undocumented) */
+	case REGH:			/* SLL H (undocumented) */
+	case REGL:			/* SLL L (undocumented) */
+	case REGIHL:			/* SLL (HL) (undocumented) */
+		len = 2;
+		ops[0] = 0xcb;
+		ops[1] = 0x30 + op;
+		break;
+	case NOREG:			/* operand isn't register */
+		if (strncmp(operand, "(IX+", 4) == 0) {
+			len = 4;	/* SLL (IX+d) (undocumented) */
+			if (pass == 2) {
+				ops[0] = 0xdd;
+				ops[1] = 0xcb;
+				ops[2] = chk_v2(calc_val(strchr(operand, '+') + 1));
+				ops[3] = 0x36;
+			}
+		} else if (strncmp(operand, "(IY+", 4) == 0) {
+			len = 4;	/* SLL (IY+d) (undocumented) */
+			if (pass == 2) {
+				ops[0] = 0xfd;
+				ops[1] = 0xcb;
+				ops[2] = chk_v2(calc_val(strchr(operand, '+') + 1));
+				ops[3] = 0x36;
+			}
+		} else {
+			len = 1;
+			ops[0] = 0;
+			asmerr(E_ILLOPE);
+		}
+		break;
+	case NOOPERA:			/* missing operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_MISOPE);
+		break;
+	default:			/* invalid operand */
+		len = 1;
+		ops[0] = 0;
+		asmerr(E_ILLOPE);
+	}
+	return(len);
+}
+
+/*
  *	SRL
  */
 int op_srl(void)
@@ -2971,6 +3547,11 @@ int op_out(void)
 		if (*label)
 			put_label();
 	} else {			/* PASS 2 */
+		if (undoc_flag && strncmp(operand, "(C),0", 5) == 0) {
+			ops[0] = 0xed;	/* OUT (C),0 (undocumented) */
+			ops[1] = 0x71;
+			return(2);
+		}
 		if (strncmp(operand, "(C),", 4) == 0) {
 			switch(op = get_reg(get_second(operand))) {
 			case REGA:	/* OUT (C),A */
@@ -3017,6 +3598,11 @@ int op_in(void)
 		if (*label)
 			put_label();
 	} else {			/* PASS 2 */
+		if (undoc_flag && strncmp(operand, "F,(C)", 5) == 0) {
+			ops[0] = 0xed;	/* IN F,(C) (undocumented) */
+			ops[1] = 0x70;
+			return(2);
+		}
 		p1 = operand;
 		p2 = tmp;
 		while (*p1 != ',' && *p1 != '\0')

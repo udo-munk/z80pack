@@ -45,6 +45,7 @@ struct opc *search_op(char *op_name)
 {
 	register int cond;
 	register struct opc *low, *high, *mid;
+	extern int op_sll();
 
 	low = &opctab[0];
 	high = &opctab[no_opcodes - 1];
@@ -54,6 +55,12 @@ struct opc *search_op(char *op_name)
 			high = mid - 1;
 		else if (cond > 0)
 			low = mid + 1;
+		else if (!undoc_flag) {
+			if (mid->op_fun == op_sll)
+				return(NULL);
+			else
+				return(mid);
+		}
 		else
 			return(mid);
 	}
@@ -83,7 +90,17 @@ int get_reg(char *s)
 			high = mid - 1;
 		else if (cond > 0)
 			low = mid + 1;
-		else
+		else if (!undoc_flag) {
+			switch (mid->ope_sym) {
+			case REGIXH:
+			case REGIXL:
+			case REGIYH:
+			case REGIYL:
+				return(NOREG);
+			default:
+				return(mid->ope_sym);
+			}
+		} else
 			return(mid->ope_sym);
 	}
 	return(NOREG);

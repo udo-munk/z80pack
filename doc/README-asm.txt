@@ -1,6 +1,6 @@
 Usage:
 
-z80asm -ofile -f[b|m|h] -l[file] -s[n|a] -e<num> -x -v -dsymbol ... file ...
+z80asm -ofile -f[b|m|h] -l[file] -s[n|a] -e<num> -x -u -v -dsymbol ... file ...
 
 A maximum of 512 source files is allowed. If the filename of a source
 doesn't have an extension the default extension ".asm" will be
@@ -45,6 +45,9 @@ works if unallocated data isn't followed by any code or initialised data!
 Useful for CP/M BIOS's, where unallocated data doesn't need to be
 part of the system image, if the complete image won't fit on the system
 tracks.
+
+Option u:
+Accept undocumented instructions.
 
 Option v:
 Verbose operation of the assembler.

@@ -40,6 +40,7 @@ char *infiles[MAXFN],		/* source filenames */
 
 int  list_flag,			/* flag for option -l */
      sym_flag,			/* flag for option -s */
+     undoc_flag,		/* flag for option -u */
      ver_flag,			/* flag for option -v */
      dump_flag,			/* flag for option -x */
      pc,			/* program counter */

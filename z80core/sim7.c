@@ -58,6 +58,12 @@
 #endif
 #include "memory.h"
 
+#ifdef Z80_UNDOC
+	#define UNDOC(f) f
+#else
+	#define UNDOC(f) trap_fdcb
+#endif
+
 static int trap_fdcb(void);
 static int op_tb0iyd(int), op_tb1iyd(int), op_tb2iyd(int), op_tb3iyd(int);
 static int op_tb4iyd(int), op_tb5iyd(int), op_tb6iyd(int), op_tb7iyd(int);
@@ -67,6 +73,10 @@ static int op_sb0iyd(int), op_sb1iyd(int), op_sb2iyd(int), op_sb3iyd(int);
 static int op_sb4iyd(int), op_sb5iyd(int), op_sb6iyd(int), op_sb7iyd(int);
 static int op_rlciyd(int), op_rrciyd(int), op_rliyd(int), op_rriyd(int);
 static int op_slaiyd(int), op_sraiyd(int), op_srliyd(int);
+
+#ifdef Z80_UNDOC
+static int op_undoc_slliyd(int);
+#endif
 
 int op_fdcb_handel(void)
 {
@@ -125,7 +135,7 @@ int op_fdcb_handel(void)
 		trap_fdcb,			/* 0x33 */
 		trap_fdcb,			/* 0x34 */
 		trap_fdcb,			/* 0x35 */
-		trap_fdcb,			/* 0x36 */
+		UNDOC(op_undoc_slliyd),		/* 0x36 */
 		trap_fdcb,			/* 0x37 */
 		trap_fdcb,			/* 0x38 */
 		trap_fdcb,			/* 0x39 */
@@ -654,3 +664,35 @@ static int op_srliyd(int data)		/* SRL (IY+d) */
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
+
+/**********************************************************************/
+/**********************************************************************/
+/*********       UNDOCUMENTED Z80 INSTRUCTIONS, BEWARE!      **********/
+/**********************************************************************/
+/**********************************************************************/
+
+#ifdef Z80_UNDOC
+
+static int op_undoc_slliyd(int data)	/* SLL (IY+d) */
+{
+	register BYTE P;
+	WORD addr;
+
+	if (u_flag) {
+		trap_fdcb();
+		return(0);
+	}
+
+	addr = IY + data;
+	P = memrdr(addr);
+	(P & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	P = (P << 1) | 1;
+	memwrt(addr, P);
+	F &= ~(H_FLAG | N_FLAG);
+	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	return(23);
+}
+
+#endif

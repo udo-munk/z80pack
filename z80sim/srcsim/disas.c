@@ -601,9 +601,7 @@ static char *regiy = "IY";
 char Disass_Str[64];
 char Opcode_Str[64];
 
-#ifdef WANT_GUI
-
-/* Set up machine code hex in Opcode_Str for GUI disassembly */
+/* Set up machine code hex in Opcode_Str for disassembly */
 
 static void get_opcodes(unsigned char **p, int len)
 {
@@ -629,7 +627,6 @@ static void get_opcodes(unsigned char **p, int len)
 		sprintf(Opcode_Str, "xx OW OW xx");
 	}
 }
-#endif
 
 /*
  *	The function disass() is the only global function of
@@ -672,11 +669,11 @@ void disass(int cpu, unsigned char **p, int adr, unsigned char *base)
 	else
 		len = (*optabi8080[**p].fun) (optabi8080[**p].text, p);
 
-#ifndef WANT_GUI
-	printf(Disass_Str);
-#endif
-#ifdef WANT_GUI
 	get_opcodes(p, len);
+#ifndef WANT_GUI
+	fputs(Opcode_Str, stdout);
+	putchar('\t');
+	fputs(Disass_Str, stdout);
 #endif
 
 	if (base != NULL)
@@ -926,6 +923,11 @@ static int edop(char *s, unsigned char **p)
 	case 0x62:
 		strcat(Disass_Str, "SBC\tHL,HL\n");
 		break;
+	case 0x63:				/* undocumented */
+		i = *(*p + 2) + (*(*p + 3) << 8);
+		sprintf(Disass_Str, "LD*\t(%04X),HL\n", i);
+		len = 4;
+		break;
 	case 0x67:
 		strcat(Disass_Str, "RRD\n");
 		break;
@@ -938,8 +940,19 @@ static int edop(char *s, unsigned char **p)
 	case 0x6a:
 		strcat(Disass_Str, "ADC\tHL,HL\n");
 		break;
+	case 0x6b:				/* undocumented */
+		i = *(*p + 2) + (*(*p + 3) << 8);
+		sprintf(Disass_Str, "LD*\tHL,(%04X)\n", i);
+		len = 4;
+		break;
 	case 0x6f:
 		strcat(Disass_Str, "RLD\n");
+		break;
+	case 0x70:				/* undocumented */
+		strcat(Disass_Str, "IN*\tF,(C)\n");
+		break;
+	case 0x71:				/* undocumented */
+		strcat(Disass_Str, "OUT*\t(C),0\n");
 		break;
 	case 0x72:
 		strcat(Disass_Str, "SBC\tHL,SP\n");
@@ -1033,7 +1046,7 @@ static int ddfd(char *s, unsigned char **p)
 	else
 		ireg = regiy;
 	b2 = *(*p + 1);
-	if (b2 >= 0x70 && b2 <= 0x77) {
+	if (b2 >= 0x70 && b2 <= 0x77 && b2 != 0x76) {
 		sprintf(Disass_Str, "LD\t(%s+%02X),%s\n", ireg, *(*p + 2),
 			reg[b2 & 7]);
 		return(3);
@@ -1059,6 +1072,17 @@ static int ddfd(char *s, unsigned char **p)
 		sprintf(Disass_Str, "INC\t%s\n", ireg);
 		len = 2;
 		break;
+	case 0x24:				/* undocumented */
+		sprintf(Disass_Str, "INC*\t%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x25:				/* undocumented */
+		sprintf(Disass_Str, "DEC*\t%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x26:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,%02X\n", ireg, *(*p + 2));
+		break;
 	case 0x29:
 		if (**p == 0xdd)
 			sprintf(Disass_Str, "ADD\tIX,IX\n");
@@ -1074,6 +1098,17 @@ static int ddfd(char *s, unsigned char **p)
 		sprintf(Disass_Str, "DEC\t%s\n", ireg);
 		len = 2;
 		break;
+	case 0x2c:				/* undocumented */
+		sprintf(Disass_Str, "INC*\t%sL\n", ireg);
+		len = 2;
+		break;
+	case 0x2d:				/* undocumented */
+		sprintf(Disass_Str, "DEC*\t%sL\n", ireg);
+		len = 2;
+		break;
+	case 0x2e:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,%02X\n", ireg, *(*p + 2));
+		break;
 	case 0x34:
 		sprintf(Disass_Str, "INC\t(%s+%02X)\n", ireg, *(*p + 2));
 		break;
@@ -1088,47 +1123,207 @@ static int ddfd(char *s, unsigned char **p)
 		sprintf(Disass_Str, "ADD\t%s,SP\n", ireg);
 		len = 2;
 		break;
+	case 0x44:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tB,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x45:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tB,%sL\n", ireg);
+		len = 2;
+		break;
 	case 0x46:
 		sprintf(Disass_Str, "LD\tB,(%s+%02X)\n", ireg, *(*p + 2));
+		break;
+	case 0x4c:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tC,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x4d:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tC,%sL\n", ireg);
+		len = 2;
 		break;
 	case 0x4e:
 		sprintf(Disass_Str, "LD\tC,(%s+%02X)\n", ireg, *(*p + 2));
 		break;
+	case 0x54:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tD,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x55:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tD,%sL\n", ireg);
+		len = 2;
+		break;
 	case 0x56:
 		sprintf(Disass_Str, "LD\tD,(%s+%02X)\n", ireg, *(*p + 2));
+		break;
+	case 0x5c:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tE,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x5d:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tE,%sL\n", ireg);
+		len = 2;
 		break;
 	case 0x5e:
 		sprintf(Disass_Str, "LD\tE,(%s+%02X)\n", ireg, *(*p + 2));
 		break;
+	case 0x60:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,B\n", ireg);
+		len = 2;
+		break;
+	case 0x61:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,C\n", ireg);
+		len = 2;
+		break;
+	case 0x62:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,D\n", ireg);
+		len = 2;
+		break;
+	case 0x63:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,E\n", ireg);
+		len = 2;
+		break;
+	case 0x64:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,%sH\n", ireg, ireg);
+		len = 2;
+		break;
+	case 0x65:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,%sL\n", ireg, ireg);
+		len = 2;
+		break;
 	case 0x66:
 		sprintf(Disass_Str, "LD\tH,(%s+%02X)\n", ireg, *(*p + 2));
+		break;
+	case 0x67:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sH,A\n", ireg);
+		len = 2;
+		break;
+	case 0x68:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,B\n", ireg);
+		len = 2;
+		break;
+	case 0x69:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,C\n", ireg);
+		len = 2;
+		break;
+	case 0x6a:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,D\n", ireg);
+		len = 2;
+		break;
+	case 0x6b:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,E\n", ireg);
+		len = 2;
+		break;
+	case 0x6c:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,%sH\n", ireg, ireg);
+		len = 2;
+		break;
+	case 0x6d:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,%sL\n", ireg, ireg);
+		len = 2;
 		break;
 	case 0x6e:
 		sprintf(Disass_Str, "LD\tL,(%s+%02X)\n", ireg, *(*p + 2));
 		break;
+	case 0x6f:				/* undocumented */
+		sprintf(Disass_Str, "LD*\t%sL,A\n", ireg);
+		len = 2;
+		break;
+	case 0x7c:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tA,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x7d:				/* undocumented */
+		sprintf(Disass_Str, "LD*\tA,%sL\n", ireg);
+		len = 2;
+		break;
 	case 0x7e:
 		sprintf(Disass_Str, "LD\tA,(%s+%02X)\n", ireg, *(*p + 2));
+		break;
+	case 0x84:				/* undocumented */
+		sprintf(Disass_Str, "ADD*\tA,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x85:				/* undocumented */
+		sprintf(Disass_Str, "ADD*\tA,%sL\n", ireg);
+		len = 2;
 		break;
 	case 0x86:
 		sprintf(Disass_Str, "ADD\tA,(%s+%02X)\n", ireg, *(*p + 2));
 		break;
+	case 0x8c:				/* undocumented */
+		sprintf(Disass_Str, "ADC*\tA,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x8d:				/* undocumented */
+		sprintf(Disass_Str, "ADC*\tA,%sL\n", ireg);
+		len = 2;
+		break;
 	case 0x8e:
 		sprintf(Disass_Str, "ADC\tA,(%s+%02X)\n", ireg, *(*p + 2));
+		break;
+	case 0x94:				/* undocumented */
+		sprintf(Disass_Str, "SUB*\t%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x95:				/* undocumented */
+		sprintf(Disass_Str, "SUB*\t%sL\n", ireg);
+		len = 2;
 		break;
 	case 0x96:
 		sprintf(Disass_Str, "SUB\t(%s+%02X)\n", ireg, *(*p + 2));
 		break;
+	case 0x9c:				/* undocumented */
+		sprintf(Disass_Str, "SBC*\tA,%sH\n", ireg);
+		len = 2;
+		break;
+	case 0x9d:				/* undocumented */
+		sprintf(Disass_Str, "SBC*\tA,%sL\n", ireg);
+		len = 2;
+		break;
 	case 0x9e:
 		sprintf(Disass_Str, "SBC\tA,(%s+%02X)\n", ireg, *(*p + 2));
+		break;
+	case 0xa4:				/* undocumented */
+		sprintf(Disass_Str, "AND*\t%sH\n", ireg);
+		len = 2;
+		break;
+	case 0xa5:				/* undocumented */
+		sprintf(Disass_Str, "AND*\t%sL\n", ireg);
+		len = 2;
 		break;
 	case 0xa6:
 		sprintf(Disass_Str, "AND\t(%s+%02X)\n", ireg, *(*p + 2));
 		break;
+	case 0xac:				/* undocumented */
+		sprintf(Disass_Str, "XOR*\t%sH\n", ireg);
+		len = 2;
+		break;
+	case 0xad:				/* undocumented */
+		sprintf(Disass_Str, "XOR*\t%sL\n", ireg);
+		len = 2;
+		break;
 	case 0xae:
 		sprintf(Disass_Str, "XOR\t(%s+%02X)\n", ireg, *(*p + 2));
 		break;
+	case 0xb4:				/* undocumented */
+		sprintf(Disass_Str, "OR*\t%sH\n", ireg);
+		len = 2;
+		break;
+	case 0xb5:				/* undocumented */
+		sprintf(Disass_Str, "OR*\t%sL\n", ireg);
+		len = 2;
+		break;
 	case 0xb6:
 		sprintf(Disass_Str, "OR\t(%s+%02X)\n", ireg, *(*p + 2));
+		break;
+	case 0xbc:				/* undocumented */
+		sprintf(Disass_Str, "CP*\t%sH\n", ireg);
+		len = 2;
+		break;
+	case 0xbd:				/* undocumented */
+		sprintf(Disass_Str, "CP*\t%sL\n", ireg);
+		len = 2;
 		break;
 	case 0xbe:
 		sprintf(Disass_Str, "CP\t(%s+%02X)\n", ireg, *(*p + 2));
@@ -1152,6 +1347,9 @@ static int ddfd(char *s, unsigned char **p)
 			break;
 		case 0x2e:
 			sprintf(Disass_Str, "SRA\t(%s+%02X)\n", ireg, *(*p + 2));
+			break;
+		case 0x36:			/* undocumented */
+			sprintf(Disass_Str, "SLL*\t(%s+%02X)\n", ireg, *(*p + 2));
 			break;
 		case 0x3e:
 			sprintf(Disass_Str, "SRL\t(%s+%02X)\n", ireg, *(*p + 2));
@@ -1254,7 +1452,9 @@ static int ddfd(char *s, unsigned char **p)
 		len = 2;
 		break;
 	default:
-		sprintf(Disass_Str, "%s\n", unknown);
+		Disass_Str[0] = 0;
+		strcat(Disass_Str, "NOP*\n");
+		len = 1;
 	}
 	return(len);
 }

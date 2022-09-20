@@ -119,6 +119,10 @@ struct inc {
 #define REGIIX		19	/* register indirect IX */
 #define REGIIY		20	/* register indirect IY */
 #define REGISP		21	/* register indirect SP */
+#define REGIXH		22	/* register IXH */
+#define REGIXL		23	/* register IXL */
+#define REGIYH		24	/* register IYH */
+#define REGIYL		25	/* register IYL */
 #define FLGNC		30	/* flag no carry */
 #define FLGNZ		31	/* flag not zero */
 #define FLGZ		32	/* flag zero */

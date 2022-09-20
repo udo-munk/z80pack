@@ -1,4 +1,4 @@
-	TITLE	'Z80 Instruction Set in alphabetical order'
+	TITLE	'Z80 Instruction Set in alphabetical order (incl. undocumented)'
 
 IND	EQU	5
 M	EQU	10H
@@ -15,6 +15,10 @@ Z80OPS:
 	ADC	A,D
 	ADC	A,E
 	ADC	A,H
+	ADC	A,IXH
+	ADC	A,IXL
+	ADC	A,IYH
+	ADC	A,IYL
 	ADC	A,L
 	ADC	A,N
 	ADC	HL,BC
@@ -30,6 +34,10 @@ Z80OPS:
 	ADD	A,D
 	ADD	A,E
 	ADD	A,H
+	ADD	A,IXH
+	ADD	A,IXL
+	ADD	A,IYH
+	ADD	A,IYL
 	ADD	A,L
 	ADD	A,N
 	ADD	HL,BC
@@ -53,6 +61,10 @@ Z80OPS:
 	AND	D
 	AND	E
 	AND	H
+	AND	IXH
+	AND	IXL
+	AND	IYH
+	AND	IYL
 	AND	L
 	AND	N
 	BIT	0,(HL)
@@ -154,6 +166,10 @@ Z80OPS:
 	CP	D
 	CP	E
 	CP	H
+	CP	IXH
+	CP	IXL
+	CP	IYH
+	CP	IYL
 	CP	L
 	CP	N
 	CPD
@@ -175,7 +191,11 @@ Z80OPS:
 	DEC	H
 	DEC	HL
 	DEC	IX
+	DEC	IXH
+	DEC	IXL
 	DEC	IY
+	DEC	IYH
+	DEC	IYL
 	DEC	L
 	DEC	SP
 	DI
@@ -197,6 +217,7 @@ Z80OPS:
 	IN	C,(C)
 	IN	D,(C)
 	IN	E,(C)
+	IN	F,(C)
 	IN	H,(C)
 	IN	L,(C)
 	INC	(HL)
@@ -212,7 +233,11 @@ Z80OPS:
 	INC	H
 	INC	HL
 	INC	IX
+	INC	IXH
+	INC	IXL
 	INC	IY
+	INC	IYH
+	INC	IYL
 	INC	L
 	INC	SP
 	IND
@@ -282,6 +307,10 @@ Z80OPS:
 	LD	A,E
 	LD	A,H
 	LD	A,I
+	LD	A,IXH
+	LD	A,IXL
+	LD	A,IYH
+	LD	A,IYL
 	LD	A,L
 	LD	A,N
 	LD	B,(HL)
@@ -293,6 +322,10 @@ Z80OPS:
 	LD	B,D
 	LD	B,E
 	LD	B,H
+	LD	B,IXH
+	LD	B,IXL
+	LD	B,IYH
+	LD	B,IYL
 	LD	B,L
 	LD	B,N
 	LD	BC,(NN)
@@ -306,6 +339,10 @@ Z80OPS:
 	LD	C,D
 	LD	C,E
 	LD	C,H
+	LD	C,IXH
+	LD	C,IXL
+	LD	C,IYH
+	LD	C,IYL
 	LD	C,L
 	LD	C,N
 	LD	D,(HL)
@@ -317,6 +354,10 @@ Z80OPS:
 	LD	D,D
 	LD	D,E
 	LD	D,H
+	LD	D,IXH
+	LD	D,IXL
+	LD	D,IYH
+	LD	D,IYL
 	LD	D,L
 	LD	D,N
 	LD	DE,(NN)
@@ -330,6 +371,10 @@ Z80OPS:
 	LD	E,D
 	LD	E,E
 	LD	E,H
+	LD	E,IXH
+	LD	E,IXL
+	LD	E,IYH
+	LD	E,IYL
 	LD	E,L
 	LD	E,N
 	LD	H,(HL)
@@ -348,8 +393,40 @@ Z80OPS:
 	LD	I,A
 	LD	IX,(NN)
 	LD	IX,NN
+	LD	IXH,A
+	LD	IXH,B
+	LD	IXH,C
+	LD	IXH,D
+	LD	IXH,E
+	LD	IXH,IXH
+	LD	IXH,IXL
+	LD	IXH,N
+	LD	IXL,A
+	LD	IXL,B
+	LD	IXL,C
+	LD	IXL,D
+	LD	IXL,E
+	LD	IXL,IXH
+	LD	IXL,IXL
+	LD	IXL,N
 	LD	IY,(NN)
 	LD	IY,NN
+	LD	IYH,A
+	LD	IYH,B
+	LD	IYH,C
+	LD	IYH,D
+	LD	IYH,E
+	LD	IYH,IYH
+	LD	IYH,IYL
+	LD	IYH,N
+	LD	IYL,A
+	LD	IYL,B
+	LD	IYL,C
+	LD	IYL,D
+	LD	IYL,E
+	LD	IYL,IYH
+	LD	IYL,IYL
+	LD	IYL,N
 	LD	L,(HL)
 	LD	L,(IX+IND)
 	LD	L,(IY+IND)
@@ -381,10 +458,15 @@ Z80OPS:
 	OR	D
 	OR	E
 	OR	H
+	OR	IXH
+	OR	IXL
+	OR	IYH
+	OR	IYL
 	OR	L
 	OR	N
 	OTDR
 	OTIR
+	OUT	(C),0
 	OUT	(C),A
 	OUT	(C),B
 	OUT	(C),C
@@ -561,6 +643,10 @@ Z80OPS:
 	SBC	A,D
 	SBC	A,E
 	SBC	A,H
+	SBC	A,IXH
+	SBC	A,IXL
+	SBC	A,IYH
+	SBC	A,IYL
 	SBC	A,L
 	SBC	A,N
 	SBC	HL,BC
@@ -658,6 +744,16 @@ Z80OPS:
 	SLA	E
 	SLA	H
 	SLA	L
+	SLL	(HL)
+	SLL	(IX+IND)
+	SLL	(IY+IND)
+	SLL	A
+	SLL	B
+	SLL	C
+	SLL	D
+	SLL	E
+	SLL	H
+	SLL	L
 	SRA	(HL)
 	SRA	(IX+IND)
 	SRA	(IY+IND)
@@ -687,6 +783,10 @@ Z80OPS:
 	SUB	D
 	SUB	E
 	SUB	H
+	SUB	IXH
+	SUB	IXL
+	SUB	IYH
+	SUB	IYL
 	SUB	L
 	SUB	N
 	XOR	(HL)
@@ -698,7 +798,17 @@ Z80OPS:
 	XOR	D
 	XOR	E
 	XOR	H
+	XOR	IXH
+	XOR	IXL
+	XOR	IYH
+	XOR	IYL
 	XOR	L
 	XOR	N
+
+; Rest of undocumented op-codes
+	DEFB	0EDH,063H		; LD (nn),HL
+	DEFW	NN
+	DEFB	0EDH,06BH		; LD HL,(nn)
+	DEFW	NN
 
 NN:	DEFS	2

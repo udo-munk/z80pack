@@ -29,7 +29,7 @@ extern int op_1b(), op_2b(), op_pupo(), op_ex(), op_ld();
 extern int op_call(), op_ret(), op_jp(), op_jr(), op_djnz(), op_rst();
 extern int op_add(), op_adc(), op_sub(), op_sbc(), op_cp();
 extern int op_inc(), op_dec(), op_or(), op_xor(), op_and();
-extern int op_rl(), op_rr(), op_sla(), op_sra(), op_srl(), op_rlc(), op_rrc();
+extern int op_rl(), op_rr(), op_sla(), op_sra(), op_sll(), op_srl(), op_rlc(), op_rrc();
 extern int op_out(), op_in(), op_im();
 extern int op_set(), op_res(), op_bit();
 extern int op_org(), op_dl(), op_equ();
@@ -128,6 +128,7 @@ struct opc opctab[] = {
 	{ "SCF",	op_1b,		0x37,	0	},
 	{ "SET",	op_set,		0,	0	},
 	{ "SLA",	op_sla,		0,	0	},
+	{ "SLL",	op_sll,		0,	0	},
 	{ "SRA",	op_sra,		0,	0	},
 	{ "SRL",	op_srl,		0,	0	},
 	{ "SUB",	op_sub,		0,	0	},
@@ -163,7 +164,11 @@ struct ope opetab[] = {
 	{ "HL",		REGHL  },
 	{ "I",		REGI   },
 	{ "IX",		REGIX  },
+	{ "IXH",	REGIXH },
+	{ "IXL",	REGIXL },
 	{ "IY",		REGIY  },
+	{ "IYH",	REGIYH },
+	{ "IYL",	REGIYL },
 	{ "L",		REGL   },
 	{ "M",		FLGM   },
 	{ "NC",		FLGNC  },

@@ -88,7 +88,7 @@ static int op_cpi(void), op_cpir(void), op_cpdop(void), op_cpdr(void);
 static int op_oprld(void), op_oprrd(void);
 
 #ifdef Z80_UNDOC
-static int op_undoc_out_null(void), op_undoc_in_flags(void);
+static int op_undoc_outc0(void), op_undoc_infic(void);
 #endif
 
 int op_ed_handel(void)
@@ -208,8 +208,8 @@ int op_ed_handel(void)
 		trap_ed,			/* 0x6d */
 		trap_ed,			/* 0x6e */
 		op_oprld,			/* 0x6f */
-		UNDOC(op_undoc_out_null),	/* 0x70 */
-		UNDOC(op_undoc_in_flags),	/* 0x71 */
+		UNDOC(op_undoc_infic),		/* 0x70 */
+		UNDOC(op_undoc_outc0),		/* 0x71 */
 		op_sbchs,			/* 0x72 */
 		op_ldinsp,			/* 0x73 */
 		trap_ed,			/* 0x74 */
@@ -1277,40 +1277,35 @@ static int op_oprrd(void)		/* RRD (HL) */
 
 #ifdef Z80_UNDOC
 
-int op_undoc_out_null(void)		/* OUT (n),0 */
+static int op_undoc_outc0(void)		/* OUT (C),0 */
 {
 	BYTE io_out(BYTE, BYTE, BYTE);
-	BYTE addr;
 
 	if (u_flag) {
 		trap_ed();
 		return(0);
 	}
 
-	addr = memrdr(PC++);
-	io_out(addr, 0, 0); /* NMOS, CMOS outputs 0xff */
-	return(15);
+	io_out(C, B, 0); /* NMOS, CMOS outputs 0xff */
+	return(12);
 }
 
-int op_undoc_in_flags(void)		/* IN F,(n) */
+static int op_undoc_infic(void)		/* IN F,(C) */
 {
 	BYTE io_in(BYTE, BYTE);
-	BYTE addr, tmp;
+	BYTE tmp;
 
 	if (u_flag) {
 		trap_ed();
 		return(0);
 	}
 
-	addr = memrdr(PC++);
-	tmp = io_in(addr, A); /* probably A on bus, but uncertain */
-
-	/* pretty sure about these flags, the others unknown */
+	tmp = io_in(C, B);
+	F &= ~(N_FLAG | H_FLAG);
 	(tmp) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(tmp & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[tmp]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-
-	return(15);
+	return(12);
 }
 
 #endif
