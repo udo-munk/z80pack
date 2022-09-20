@@ -189,16 +189,16 @@ int load_file(char *s, BYTE pstart, WORD psize)
 		return(1);
 	}
 
-	if ((fd	= open(fn, O_RDONLY)) == -1) {
+	if ((fd = open(fn, O_RDONLY)) == -1) {
 		LOGE(TAG, "can't open file %s\n", fn);
 		return(1);
 	}
 
 	//TODO: What is this? We need to remove references to wrk_ram and mem_base()
 	// if (*s == ',')
-	// 	wrk_ram	= mem_base() + exatoi(++s);
+	// 	wrk_ram = mem_base() + exatoi(++s);
 	// else
-	// 	wrk_ram	= NULL;
+	// 	wrk_ram = NULL;
 
 	read(fd, (char *) &d, 1);	/* read first byte of file */
 	close(fd);
@@ -216,7 +216,7 @@ int load_file(char *s, BYTE pstart, WORD psize)
  *	Loader for binary images with Mostek header.
  *	Format of the first 3 bytes:
  *
- *	0xff ll	lh
+ *	0xff ll lh
  *
  *	ll = load address low
  *	lh = load address high
@@ -228,7 +228,7 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 	int laddr, count;
 	BYTE fileb[3];
 
-	if ((fd	= open(fn, O_RDONLY)) == -1) {
+	if ((fd = open(fn, O_RDONLY)) == -1) {
 		LOGE(TAG, "can't open file %s\n", fn);
 		return(1);
 	}
@@ -298,26 +298,26 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 			return(1);
 		}
 		s++;
-		count = (*s <= '9') ? (*s - '0') << 4 :
-				      (*s - 'A' + 10) << 4;
+		count = (*s <= '9') ? (*s - '0') << 4
+				    : (*s - 'A' + 10) << 4;
 		s++;
-		count += (*s <= '9') ? (*s - '0') :
-				       (*s - 'A' + 10);
+		count += (*s <= '9') ? (*s - '0')
+				     : (*s - 'A' + 10);
 		s++;
 		if (count == 0)
 			break;
-		addr = (*s <= '9') ? (*s - '0') << 4 :
-				     (*s - 'A' + 10) << 4;
+		addr = (*s <= '9') ? (*s - '0') << 4
+				   : (*s - 'A' + 10) << 4;
 		s++;
-		addr += (*s <= '9') ? (*s - '0') :
-				      (*s - 'A' + 10);
+		addr += (*s <= '9') ? (*s - '0')
+				    : (*s - 'A' + 10);
 		s++;
 		addr *= 256;
-		addr += (*s <= '9') ? (*s - '0') << 4 :
-				      (*s - 'A' + 10) << 4;
+		addr += (*s <= '9') ? (*s - '0') << 4
+				    : (*s - 'A' + 10) << 4;
 		s++;
-		addr += (*s <= '9') ? (*s - '0') :
-				      (*s - 'A' + 10);
+		addr += (*s <= '9') ? (*s - '0')
+				    : (*s - 'A' + 10);
 		s++;
 
 		if (psize) {
@@ -333,11 +333,11 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 			eaddr = addr + count - 1;
 		s += 2;
 		for (i = 0; i < count; i++) {
-			data = (*s <= '9') ? (*s - '0') << 4 :
-					     (*s - 'A' + 10) << 4;
+			data = (*s <= '9') ? (*s - '0') << 4
+					   : (*s - 'A' + 10) << 4;
 			s++;
-			data += (*s <= '9') ? (*s - '0') :
-					      (*s - 'A' + 10);
+			data += (*s <= '9') ? (*s - '0')
+					    : (*s - 'A' + 10);
 			s++;
 			putmem(addr + i, data);
 		}

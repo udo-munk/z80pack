@@ -335,7 +335,6 @@ int op_ddcb_handel(void)
 	d = (signed char) memrdr(PC++);
 	t = (*op_ddcb[memrdr(PC++)]) (d); /* execute next opcode */
 
-
 	return(t);
 }
 
@@ -526,7 +525,7 @@ static int op_sb7ixd(int data)		/* SET 7,(IX+d) */
 static int op_rlcixd(int data)		/* RLC (IX+d) */
 {
 	register BYTE P;
-        WORD addr;
+	WORD addr;
 	int i;
 
 	addr = IX + data;
@@ -635,7 +634,7 @@ static int op_sraixd(int data)		/* SRA (IX+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
 

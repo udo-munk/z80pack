@@ -345,7 +345,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	printf("\nRelease %s, %s\n", RELEASE, COPYR);
 
-#ifdef	USR_COM
+#ifdef USR_COM
 	printf("%s Release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
 #else
 	putchar('\n');
@@ -404,7 +404,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	init_cpu();		/* initialise CPU */
 	init_memory();	/* initialise memory configuration */
 
-	if (l_flag)	{	/* load core */
+	if (l_flag) {		/* load core */
 		if (load_core())
 			return(1);
 	} else if (x_flag) { 	/* OR load memory from file */
@@ -486,34 +486,34 @@ static void save_core(void)
 	int fd;
 	BYTE d;
 
-	if ((fd	= open("core.z80", O_WRONLY | O_CREAT, 0600)) == -1) {
+	if ((fd = open("core.z80", O_WRONLY | O_CREAT, 0600)) == -1) {
 		puts("can't open file core.z80");
 		return;
 	}
 
-	write(fd, (char	*) &A, sizeof(A));
-	write(fd, (char	*) &F, sizeof(F));
-	write(fd, (char	*) &B, sizeof(B));
-	write(fd, (char	*) &C, sizeof(C));
-	write(fd, (char	*) &D, sizeof(D));
-	write(fd, (char	*) &E, sizeof(E));
-	write(fd, (char	*) &H, sizeof(H));
-	write(fd, (char	*) &L, sizeof(L));
-	write(fd, (char	*) &A_,	sizeof(A_));
-	write(fd, (char	*) &F_,	sizeof(F_));
-	write(fd, (char	*) &B_,	sizeof(B_));
-	write(fd, (char	*) &C_,	sizeof(C_));
-	write(fd, (char	*) &D_,	sizeof(D_));
-	write(fd, (char	*) &E_,	sizeof(E_));
-	write(fd, (char	*) &H_,	sizeof(H_));
-	write(fd, (char	*) &L_,	sizeof(L_));
-	write(fd, (char	*) &I, sizeof(I));
-	write(fd, (char	*) &IFF, sizeof(IFF));
-	write(fd, (char	*) &R, sizeof(R));
-	write(fd, (char	*) &PC,	sizeof(PC));
-	write(fd, (char	*) &SP, sizeof(SP));
-	write(fd, (char	*) &IX,	sizeof(IX));
-	write(fd, (char	*) &IY,	sizeof(IY));
+	write(fd, (char *) &A, sizeof(A));
+	write(fd, (char *) &F, sizeof(F));
+	write(fd, (char *) &B, sizeof(B));
+	write(fd, (char *) &C, sizeof(C));
+	write(fd, (char *) &D, sizeof(D));
+	write(fd, (char *) &E, sizeof(E));
+	write(fd, (char *) &H, sizeof(H));
+	write(fd, (char *) &L, sizeof(L));
+	write(fd, (char *) &A_, sizeof(A_));
+	write(fd, (char *) &F_, sizeof(F_));
+	write(fd, (char *) &B_, sizeof(B_));
+	write(fd, (char *) &C_, sizeof(C_));
+	write(fd, (char *) &D_, sizeof(D_));
+	write(fd, (char *) &E_, sizeof(E_));
+	write(fd, (char *) &H_, sizeof(H_));
+	write(fd, (char *) &L_, sizeof(L_));
+	write(fd, (char *) &I, sizeof(I));
+	write(fd, (char *) &IFF, sizeof(IFF));
+	write(fd, (char *) &R, sizeof(R));
+	write(fd, (char *) &PC, sizeof(PC));
+	write(fd, (char *) &SP, sizeof(SP));
+	write(fd, (char *) &IX, sizeof(IX));
+	write(fd, (char *) &IY, sizeof(IY));
 
 	for (i = 0; i < 65536; i++) {
 		d = getmem(i);
@@ -532,7 +532,7 @@ int load_core(void)
 	int fd;
 	BYTE d;
 
-	if ((fd	= open("core.z80", O_RDONLY)) == -1) {
+	if ((fd = open("core.z80", O_RDONLY)) == -1) {
 		puts("can't open file core.z80");
 		return(1);
 	}
@@ -554,7 +554,7 @@ int load_core(void)
 	read(fd, (char *) &H_, sizeof(H_));
 	read(fd, (char *) &L_, sizeof(L_));
 	read(fd, (char *) &I, sizeof(I));
-	read(fd, (char *) &IFF,	sizeof(IFF));
+	read(fd, (char *) &IFF, sizeof(IFF));
 	read(fd, (char *) &R, sizeof(R));
 	read(fd, (char *) &PC, sizeof(PC));
 	read(fd, (char *) &SP, sizeof(SP));

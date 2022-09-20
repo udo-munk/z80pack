@@ -346,7 +346,7 @@ static int trap_fdcb(void)
 {
 	cpu_error = OPTRAP4;
 	cpu_state = STOPPED;
-	return(0L);
+	return(0);
 }
 
 static int op_tb0iyd(int data)		/* BIT 0,(IY+d) */
@@ -398,8 +398,8 @@ static int op_tb5iyd(int data)		/* BIT 5,(IY+d) */
 {
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr( IY + data) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
-				  : (F |= (Z_FLAG | P_FLAG));
+	(memrdr(IY + data) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
+				 : (F |= (Z_FLAG | P_FLAG));
 	return(20);
 }
 
@@ -538,7 +538,7 @@ static int op_rlciyd(int data)		/* RLC (IY+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
 
@@ -558,7 +558,7 @@ static int op_rrciyd(int data)		/* RRC (IY+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
 
@@ -578,7 +578,7 @@ static int op_rliyd(int data)		/* RL (IY+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
 
@@ -598,7 +598,7 @@ static int op_rriyd(int data)		/* RR (IY+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
 
@@ -615,7 +615,7 @@ static int op_slaiyd(int data)		/* SLA (IY+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
 
@@ -634,7 +634,7 @@ static int op_sraiyd(int data)		/* SRA (IY+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }
 
@@ -651,6 +651,6 @@ static int op_srliyd(int data)		/* SRL (IY+d) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(23);
 }

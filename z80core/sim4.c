@@ -425,7 +425,7 @@ static int op_neg(void)			/* NEG */
 {
 	(A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	(A == 0x80) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-	(0 - ((signed char) A & 0xf) <	0) ? (F	|= H_FLAG) : (F	&= ~H_FLAG);
+	(0 - ((signed char) A & 0xf) < 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	A = 0 - A;
 	F |= N_FLAG;
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -594,7 +594,7 @@ static int op_inir(void)		/* INIR */
 	BYTE io_in(BYTE ,BYTE);
 	WORD addr;
 	BYTE data;
-	register int t	= -21;
+	register int t = -21;
 
 	addr = (H << 8) + L;
 	do {
@@ -602,7 +602,7 @@ static int op_inir(void)		/* INIR */
 		memwrt(addr++, data);
 		B--;
 		t += 21;
-	} while	(B);
+	} while (B);
 	H = addr >> 8;
 	L = addr;
 	F |= N_FLAG | Z_FLAG;
@@ -630,7 +630,7 @@ static int op_indr(void)		/* INDR */
 	BYTE io_in(BYTE, BYTE);
 	WORD addr;
 	BYTE data;
-	register int t	= -21;
+	register int t = -21;
 
 	addr = (H << 8) + L;
 	do {
@@ -638,7 +638,7 @@ static int op_indr(void)		/* INDR */
 		memwrt(addr--, data);
 		B--;
 		t += 21;
-	} while	(B);
+	} while (B);
 	H = addr >> 8;
 	L = addr;
 	F |= N_FLAG | Z_FLAG;
@@ -666,7 +666,7 @@ static int op_otir(void)		/* OTIR */
 	BYTE io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
-	register int t	= -21;
+	register int t = -21;
 
 	addr = (H << 8) + L;
 	do {
@@ -674,7 +674,7 @@ static int op_otir(void)		/* OTIR */
 		io_out(C, B, data);
 		B--;
 		t += 21;
-	} while	(B);
+	} while (B);
 	H = addr >> 8;
 	L = addr;
 	F |= N_FLAG | Z_FLAG;
@@ -702,7 +702,7 @@ static int op_otdr(void)		/* OTDR */
 	BYTE io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
-	register int t	= -21;
+	register int t = -21;
 
 	addr = (H << 8) + L;
 	do {
@@ -710,7 +710,7 @@ static int op_otdr(void)		/* OTDR */
 		io_out(C, B, data);
 		B--;
 		t += 21;
-	} while	(B);
+	} while (B);
 	H = addr >> 8;
 	L = addr;
 	F |= N_FLAG | Z_FLAG;
@@ -845,8 +845,8 @@ static int op_adchb(void)		/* ADC HL,BC */
 	WORD hl, bc;
 	SWORD shl, sbc;
 
-	hl = (H	<< 8) + L;
-	bc = (B	<< 8) + C;
+	hl = (H << 8) + L;
+	bc = (B << 8) + C;
 	shl = hl;
 	sbc = bc;
 	carry = (F & C_FLAG) ? 1 : 0;
@@ -870,8 +870,8 @@ static int op_adchd(void)		/* ADC HL,DE */
 	WORD hl, de;
 	SWORD shl, sde;
 
-	hl = (H	<< 8) + L;
-	de = (D	<< 8) + E;
+	hl = (H << 8) + L;
+	de = (D << 8) + E;
 	shl = hl;
 	sde = de;
 	carry = (F & C_FLAG) ? 1 : 0;
@@ -895,7 +895,7 @@ static int op_adchh(void)		/* ADC HL,HL */
 	WORD hl;
 	SWORD shl;
 
-	hl = (H	<< 8) + L;
+	hl = (H << 8) + L;
 	shl = hl;
 	carry = (F & C_FLAG) ? 1 : 0;
 	(((hl & 0x0fff) + (hl & 0x0fff) + carry) > 0x0fff) ? (F |= H_FLAG)
@@ -918,7 +918,7 @@ static int op_adchs(void)		/* ADC HL,SP */
 	WORD hl, sp;
 	SWORD shl, ssp;
 
-	hl = (H	<< 8) + L;
+	hl = (H << 8) + L;
 	sp = SP;
 	shl = hl;
 	ssp = sp;
@@ -943,8 +943,8 @@ static int op_sbchb(void)		/* SBC HL,BC */
 	WORD hl, bc;
 	SWORD shl, sbc;
 
-	hl = (H	<< 8) + L;
-	bc = (B	<< 8) + C;
+	hl = (H << 8) + L;
+	bc = (B << 8) + C;
 	shl = hl;
 	sbc = bc;
 	carry = (F & C_FLAG) ? 1 : 0;
@@ -968,8 +968,8 @@ static int op_sbchd(void)		/* SBC HL,DE */
 	WORD hl, de;
 	SWORD shl, sde;
 
-	hl = (H	<< 8) + L;
-	de = (D	<< 8) + E;
+	hl = (H << 8) + L;
+	de = (D << 8) + E;
 	shl = hl;
 	sde = de;
 	carry = (F & C_FLAG) ? 1 : 0;
@@ -993,7 +993,7 @@ static int op_sbchh(void)		/* SBC HL,HL */
 	WORD hl;
 	SWORD shl;
 
-	hl = (H	<< 8) + L;
+	hl = (H << 8) + L;
 	shl = hl;
 	carry = (F & C_FLAG) ? 1 : 0;
 	(((hl & 0x0fff) + carry) > (hl & 0x0fff)) ? (F |= H_FLAG)
@@ -1016,7 +1016,7 @@ static int op_sbchs(void)		/* SBC HL,SP */
 	WORD hl, sp;
 	SWORD shl, ssp;
 
-	hl = (H	<< 8) + L;
+	hl = (H << 8) + L;
 	sp = SP;
 	shl = hl;
 	ssp = sp;
@@ -1055,7 +1055,7 @@ static int op_ldi(void)			/* LDI */
 #ifdef WANT_FASTM
 static int op_ldir(void)		/* LDIR */
 {
-	register int t	= -21;
+	register int t = -21;
 	register WORD i;
 	register WORD s, d;
 
@@ -1065,7 +1065,7 @@ static int op_ldir(void)		/* LDIR */
 	do {
 		memwrt(d++, memrdr(s++));
 		t += 21;
-	} while	(--i);
+	} while (--i);
 	B = C = 0;
 	D = d >> 8;
 	E = d;
@@ -1109,7 +1109,7 @@ static int op_ldd(void)			/* LDD */
 #ifdef WANT_FASTM
 static int op_lddr(void)		/* LDDR */
 {
-	register int t	= -21;
+	register int t = -21;
 	register WORD i;
 	register WORD s, d;
 
@@ -1119,9 +1119,9 @@ static int op_lddr(void)		/* LDDR */
 	do {
 		memwrt(d--, memrdr(s--));
 		t += 21;
-	} while	(--i);
+	} while (--i);
 	B = C = 0;
-	D = d  >> 8;
+	D = d >> 8;
 	E = d;
 	H = s >> 8;
 	L = s;
@@ -1143,7 +1143,7 @@ static int op_lddr(void)		/* LDDR */
 }
 #endif
 
-static int op_cpi(void)		/* CPI */
+static int op_cpi(void)			/* CPI */
 {
 	register BYTE i;
 
@@ -1163,9 +1163,9 @@ static int op_cpi(void)		/* CPI */
 	return(16);
 }
 
-static int op_cpir(void)	/* CPIR */
+static int op_cpir(void)		/* CPIR */
 {
-	register int t	= -21;
+	register int t = -21;
 	register WORD s;
 	register BYTE d;
 	register WORD i;
@@ -1178,7 +1178,7 @@ static int op_cpir(void)	/* CPIR */
 		((tmp & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 		d = A - tmp;
 		t += 21;
-	} while	(--i && d);
+	} while (--i && d);
 	F |= N_FLAG;
 	B = i >> 8;
 	C = i;
@@ -1190,7 +1190,7 @@ static int op_cpir(void)	/* CPIR */
 	return(t + 16);
 }
 
-static int op_cpdop(void)	/* CPD */
+static int op_cpdop(void)		/* CPD */
 {
 	register BYTE i;
 
@@ -1210,9 +1210,9 @@ static int op_cpdop(void)	/* CPD */
 	return(16);
 }
 
-static int op_cpdr(void)	/* CPDR */
+static int op_cpdr(void)		/* CPDR */
 {
-	register int t	= -21;
+	register int t = -21;
 	register WORD s;
 	register BYTE d;
 	register WORD i;
@@ -1225,7 +1225,7 @@ static int op_cpdr(void)	/* CPDR */
 		((tmp & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 		d = A - tmp;
 		t += 21;
-	} while	(--i && d);
+	} while (--i && d);
 	F |= N_FLAG;
 	B = i >> 8;
 	C = i;
@@ -1237,7 +1237,7 @@ static int op_cpdr(void)	/* CPDR */
 	return(t + 16);
 }
 
-static int op_oprld(void)	/* RLD (HL) */
+static int op_oprld(void)		/* RLD (HL) */
 {
 	register BYTE i, j;
 
@@ -1253,7 +1253,7 @@ static int op_oprld(void)	/* RLD (HL) */
 	return(18);
 }
 
-static int op_oprrd(void)	/* RRD (HL) */
+static int op_oprrd(void)		/* RRD (HL) */
 {
 	register BYTE i, j;
 
@@ -1277,7 +1277,7 @@ static int op_oprrd(void)	/* RRD (HL) */
 
 #ifdef Z80_UNDOC
 
-int op_undoc_out_null(void)	/* OUT (n),0 */
+int op_undoc_out_null(void)		/* OUT (n),0 */
 {
 	BYTE io_out(BYTE, BYTE, BYTE);
 	BYTE addr;
@@ -1292,7 +1292,7 @@ int op_undoc_out_null(void)	/* OUT (n),0 */
 	return(15);
 }
 
-int op_undoc_in_flags(void)	/* IN F,(n) */
+int op_undoc_in_flags(void)		/* IN F,(n) */
 {
 	BYTE io_in(BYTE, BYTE);
 	BYTE addr, tmp;

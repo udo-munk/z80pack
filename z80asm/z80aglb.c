@@ -58,7 +58,7 @@ int  list_flag,			/* flag for option -l */
      prg_adr,			/* start address of program */
      prg_flag,			/* flag for prg_adr valid */
      out_form = OUTDEF,		/* format of object file */
-     symlen = SYMLEN,			/* max. symbol length */
+     symlen = SYMLEN,		/* max. symbol length */
      symsize;			/* size of symarray */
 
 FILE *srcfp,			/* file pointer for current source */
@@ -67,11 +67,11 @@ FILE *srcfp,			/* file pointer for current source */
      *errfp;			/* file pointer for error output */
 
 unsigned
-      c_line,			/* current line no. in current source */
-      s_line,			/* line no. counter for listing */
-      p_line,			/* no. printed lines on page */
-      ppl = PLENGTH,		/* page length */
-      page;			/* no. of pages for listing */
+     c_line,			/* current line no. in current source */
+     s_line,			/* line no. counter for listing */
+     p_line,			/* no. printed lines on page */
+     ppl = PLENGTH,		/* page length */
+     page;			/* no. of pages for listing */
 
 struct sym
      *symtab[HASHSIZE],		/* symbol table */
