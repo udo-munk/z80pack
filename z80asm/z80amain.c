@@ -58,7 +58,7 @@ extern void a_sort_sym(int);
 
 static char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-x} -v -ofile -l[file] -dsymbol ... file ...",
+	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-x} {-u} -v -ofile -l[file] -dsymbol ... file ...",
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s"		/* 4 */
@@ -177,6 +177,9 @@ void options(int argc, char *argv[])
 				*t = '\0';
 				if (put_sym(tmp, 0))
 					fatal(F_OUTMEM, "symbols");
+				break;
+			case 'u':
+				undoc_flag = 1;
 				break;
 			case 'v':
 				ver_flag = 1;

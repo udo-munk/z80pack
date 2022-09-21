@@ -21,9 +21,9 @@ BYTE memory[65536];		/* 64KB RAM */
 
 void init_memory(void)
 {
-    register int i;
-    
-    /* fill memory content with some initial value */
+	register int i;
+
+	/* fill memory content with some initial value */
 	if (m_flag >= 0) {
 		for (i = 0; i < 65536; i++)
 			putmem(i, m_flag);

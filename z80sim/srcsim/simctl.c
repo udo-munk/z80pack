@@ -139,7 +139,7 @@ void mon(void)
 			do_list(cmd + 1);
 			break;
 		case 'm':
-			do_modify(cmd +	1);
+			do_modify(cmd + 1);
 			break;
 		case 'f':
 			do_fill(cmd + 1);
@@ -230,7 +230,7 @@ static void do_trace(char *s)
 	cpu_error = NONE;
 	print_head();
 	print_reg();
-	for (i = 0; i <	count; i++) {
+	for (i = 0; i < count; i++) {
 		switch(cpu) {
 		case Z80:
 			cpu_z80();
@@ -293,7 +293,7 @@ static int handel_break(void)
 	register int i;
 	int break_address;
 
-	for (i = 0; i <	SBSIZE;	i++)	/* search for breakpoint */
+	for (i = 0; i < SBSIZE; i++)	/* search for breakpoint */
 		if (soft[i].sb_adr == PC - 1)
 			goto was_softbreak;
 	return(0);
@@ -341,12 +341,12 @@ static void do_dump(char *s)
 	if (isxdigit((int)*s))
 		wrk_ram = mem_base() + exatoi(s) - exatoi(s) % 16;
 	printf("Adr    ");
-	for (i = 0; i <	16; i++)
+	for (i = 0; i < 16; i++)
 		printf("%02x ", i);
 	puts(" ASCII");
-	for (i = 0; i <	16; i++) {
+	for (i = 0; i < 16; i++) {
 		printf("%04x - ", (unsigned int)(wrk_ram - mem_base()));
-		for (j = 0; j <	16; j++) {
+		for (j = 0; j < 16; j++) {
 			printf("%02x ", *wrk_ram);
 			wrk_ram++;
 			if (wrk_ram > mem_base() + 65535)
@@ -354,8 +354,8 @@ static void do_dump(char *s)
 		}
 		putchar('\t');
 		for (j = -16; j < 0; j++)
-			printf("%c", ((c = *(wrk_ram  + j)) >= ' ' && c <= 0x7f)
-			       ?  c : '.');
+			printf("%c", ((c = *(wrk_ram + j)) >= ' ' && c <= 0x7f)
+			       ? c : '.');
 		putchar('\n');
 	}
 }
@@ -371,7 +371,7 @@ static void do_list(char *s)
 		s++;
 	if (isxdigit((int)*s))
 		wrk_ram = mem_base() + exatoi(s);
-	for (i = 0; i <	10; i++) {
+	for (i = 0; i < 10; i++) {
 		printf("%04x - ", (unsigned int)(wrk_ram - mem_base()));
 		disass(cpu, &wrk_ram, wrk_ram - mem_base(), mem_base());
 	}
@@ -436,7 +436,7 @@ static void do_fill(char *s)
 	}
 	while (i--) {
 		*p++ = val;
-		if (p >	mem_base() + 65535)
+		if (p > mem_base() + 65535)
 			p = mem_base();
 	}
 }
@@ -469,7 +469,7 @@ static void do_move(char *s)
 		puts("count missing");
 		return;
 	}
-	while (count--)	{
+	while (count--) {
 		*p2++ = *p1++;
 		if (p1 > mem_base() + 65535)
 			p1 = mem_base();
@@ -505,7 +505,7 @@ static void do_reg(char *s)
 
 	while (isspace((int)*s))
 		s++;
-	if (*s == '\0')	{
+	if (*s == '\0') {
 		print_head();
 		print_reg();
 	} else {
@@ -531,86 +531,86 @@ static void do_reg(char *s)
 		} else if (strncmp(s, "bc", 2) == 0) {
 			printf("BC = %04x : ", B * 256 + C);
 			fgets(nv, sizeof(nv), stdin);
-			B = (exatoi(nv)	& 0xffff) / 256;
-			C = (exatoi(nv)	& 0xffff) % 256;
+			B = (exatoi(nv) & 0xffff) / 256;
+			C = (exatoi(nv) & 0xffff) % 256;
 		} else if (strncmp(s, "de", 2) == 0) {
 			printf("DE = %04x : ", D * 256 + E);
 			fgets(nv, sizeof(nv), stdin);
-			D = (exatoi(nv)	& 0xffff) / 256;
-			E = (exatoi(nv)	& 0xffff) % 256;
+			D = (exatoi(nv) & 0xffff) / 256;
+			E = (exatoi(nv) & 0xffff) % 256;
 		} else if (strncmp(s, "hl", 2) == 0) {
 			printf("HL = %04x : ", H * 256 + L);
 			fgets(nv, sizeof(nv), stdin);
-			H = (exatoi(nv)	& 0xffff) / 256;
-			L = (exatoi(nv)	& 0xffff) % 256;
+			H = (exatoi(nv) & 0xffff) / 256;
+			L = (exatoi(nv) & 0xffff) % 256;
 		} else if ((strncmp(s, "ix", 2) == 0) && (cpu == Z80)) {
 			printf("IX = %04x : ", IX);
 			fgets(nv, sizeof(nv), stdin);
-			IX = exatoi(nv)	& 0xffff;
+			IX = exatoi(nv) & 0xffff;
 		} else if ((strncmp(s, "iy", 2) == 0) && (cpu == Z80)) {
 			printf("IY = %04x : ", IY);
 			fgets(nv, sizeof(nv), stdin);
-			IY = exatoi(nv)	& 0xffff;
+			IY = exatoi(nv) & 0xffff;
 		} else if (strncmp(s, "sp", 2) == 0) {
 			printf("SP = %04x : ", SP);
 			fgets(nv, sizeof(nv), stdin);
 			SP = (exatoi(nv) & 0xffff);
 		} else if (strncmp(s, "fs", 2) == 0) {
-			printf("S-FLAG = %c : ", (F & S_FLAG) ?	'1' : '0');
+			printf("S-FLAG = %c : ", (F & S_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F |	S_FLAG)	: (F & ~S_FLAG);
+			F = (exatoi(nv)) ? (F | S_FLAG) : (F & ~S_FLAG);
 		} else if (strncmp(s, "fz", 2) == 0) {
-			printf("Z-FLAG = %c : ", (F & Z_FLAG) ?	'1' : '0');
+			printf("Z-FLAG = %c : ", (F & Z_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F |	Z_FLAG)	: (F & ~Z_FLAG);
+			F = (exatoi(nv)) ? (F | Z_FLAG) : (F & ~Z_FLAG);
 		} else if (strncmp(s, "fh", 2) == 0) {
-			printf("H-FLAG = %c : ", (F & H_FLAG) ?	'1' : '0');
+			printf("H-FLAG = %c : ", (F & H_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F |	H_FLAG)	: (F & ~H_FLAG);
+			F = (exatoi(nv)) ? (F | H_FLAG) : (F & ~H_FLAG);
 		} else if (strncmp(s, "fp", 2) == 0) {
-			printf("P-FLAG = %c : ", (F & P_FLAG) ?	'1' : '0');
+			printf("P-FLAG = %c : ", (F & P_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F |	P_FLAG)	: (F & ~P_FLAG);
+			F = (exatoi(nv)) ? (F | P_FLAG) : (F & ~P_FLAG);
 		} else if ((strncmp(s, "fn", 2) == 0) && (cpu == Z80)) {
-			printf("N-FLAG = %c : ", (F & N_FLAG) ?	'1' : '0');
+			printf("N-FLAG = %c : ", (F & N_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F |	N_FLAG)	: (F & ~N_FLAG);
+			F = (exatoi(nv)) ? (F | N_FLAG) : (F & ~N_FLAG);
 		} else if (strncmp(s, "fc", 2) == 0) {
-			printf("C-FLAG = %c : ", (F & C_FLAG) ?	'1' : '0');
+			printf("C-FLAG = %c : ", (F & C_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F |	C_FLAG)	: (F & ~C_FLAG);
+			F = (exatoi(nv)) ? (F | C_FLAG) : (F & ~C_FLAG);
 		} else if (strncmp(s, "a'", 2) == 0) {
 			printf("A' = %02x : ", A_);
 			fgets(nv, sizeof(nv), stdin);
-			A_ = exatoi(nv)	& 0xff;
+			A_ = exatoi(nv) & 0xff;
 		} else if (strncmp(s, "f'", 2) == 0) {
 			printf("F' = %02x : ", F_);
 			fgets(nv, sizeof(nv), stdin);
-			F_ = exatoi(nv)	& 0xff;
+			F_ = exatoi(nv) & 0xff;
 		} else if ((strncmp(s, "b'", 2) == 0) && (cpu == Z80)) {
 			printf("B' = %02x : ", B_);
 			fgets(nv, sizeof(nv), stdin);
-			B_ = exatoi(nv)	& 0xff;
+			B_ = exatoi(nv) & 0xff;
 		} else if ((strncmp(s, "c'", 2) == 0) && (cpu == Z80)) {
 			printf("C' = %02x : ", C_);
 			fgets(nv, sizeof(nv), stdin);
-			C_ = exatoi(nv)	& 0xff;
+			C_ = exatoi(nv) & 0xff;
 		} else if ((strncmp(s, "d'", 2) == 0) && (cpu == Z80)) {
 			printf("D' = %02x : ", D_);
 			fgets(nv, sizeof(nv), stdin);
-			D_ = exatoi(nv)	& 0xff;
+			D_ = exatoi(nv) & 0xff;
 		} else if ((strncmp(s, "e'", 2) == 0) && (cpu == Z80)) {
 			printf("E' = %02x : ", E_);
 			fgets(nv, sizeof(nv), stdin);
-			E_ = exatoi(nv)	& 0xff;
+			E_ = exatoi(nv) & 0xff;
 		} else if ((strncmp(s, "h'", 2) == 0) && (cpu == Z80)) {
 			printf("H' = %02x : ", H_);
 			fgets(nv, sizeof(nv), stdin);
-			H_ = exatoi(nv)	& 0xff;
+			H_ = exatoi(nv) & 0xff;
 		} else if ((strncmp(s, "l'", 2) == 0) && (cpu == Z80)) {
 			printf("L' = %02x : ", L_);
 			fgets(nv, sizeof(nv), stdin);
-			L_ = exatoi(nv)	& 0xff;
+			L_ = exatoi(nv) & 0xff;
 		} else if ((strncmp(s, "i", 1) == 0) && (cpu == Z80)) {
 			printf("I = %02x : ", I);
 			fgets(nv, sizeof(nv), stdin);
@@ -674,13 +674,13 @@ static void print_head(void)
 static void print_reg(void)
 {
 	printf("%04x %02x ", PC, A);
-	printf("%c", F & S_FLAG ? '1' :	'0');
-	printf("%c", F & Z_FLAG ? '1' :	'0');
-	printf("%c", F & H_FLAG ? '1' :	'0');
-	printf("%c", F & P_FLAG ? '1' :	'0');
+	printf("%c", F & S_FLAG ? '1' : '0');
+	printf("%c", F & Z_FLAG ? '1' : '0');
+	printf("%c", F & H_FLAG ? '1' : '0');
+	printf("%c", F & P_FLAG ? '1' : '0');
 	if (cpu == Z80)
-		printf("%c", F & N_FLAG ? '1' :	'0');
-	printf("%c", F & C_FLAG ? '1' :	'0');
+		printf("%c", F & N_FLAG ? '1' : '0');
+	printf("%c", F & C_FLAG ? '1' : '0');
 	if (cpu == Z80) {
 		printf(" %02x ", I);
 		printf("%c", IFF & 1 ? '1' : '0');
@@ -707,9 +707,9 @@ static void do_break(char *s)
 #else
 	register int i;
 
-	if (*s == '\n')	{
+	if (*s == '\n') {
 		puts("No Addr Pass  Counter");
-		for (i = 0; i <	SBSIZE;	i++)
+		for (i = 0; i < SBSIZE; i++)
 			if (soft[i].sb_pass)
 				printf("%02d %04x %05d %05d\n", i,
 				       soft[i].sb_adr,soft[i].sb_pass,
@@ -730,15 +730,15 @@ static void do_break(char *s)
 	while (isspace((int)*s))
 		s++;
 	if (*s == 'c') {
-		*(mem_base() +	soft[i].sb_adr)	= soft[i].sb_oldopc;
-		memset((char *)	&soft[i], 0, sizeof(struct softbreak));
+		*(mem_base() + soft[i].sb_adr) = soft[i].sb_oldopc;
+		memset((char *) &soft[i], 0, sizeof(struct softbreak));
 		return;
 	}
 	if (soft[i].sb_pass)
 		*(mem_base() + soft[i].sb_adr) = soft[i].sb_oldopc;
 	soft[i].sb_adr = exatoi(s);
 	soft[i].sb_oldopc = *(mem_base() + soft[i].sb_adr);
-	*(mem_base() +	soft[i].sb_adr)	= 0x76;
+	*(mem_base() + soft[i].sb_adr) = 0x76;
 	while (!iscntrl((int)*s) && !ispunct((int)*s))
 		s++;
 	if (*s != ',')
@@ -765,7 +765,7 @@ static void do_hist(char *s)
 		s++;
 	switch (*s) {
 	case 'c':
-		memset((char *)	his, 0, sizeof(struct history) * HISIZE);
+		memset((char *) his, 0, sizeof(struct history) * HISIZE);
 		h_next = 0;
 		h_flag = 0;
 		break;
@@ -775,7 +775,7 @@ static void do_hist(char *s)
 			break;
 		}
 		e = h_next;
-		b = (h_flag) ? h_next +	1 : 0;
+		b = (h_flag) ? h_next + 1 : 0;
 		l = 0;
 		while (isspace((int)*s))
 			s++;
@@ -829,7 +829,7 @@ static void do_count(char *s)
 #else
 	while (isspace((int)*s))
 		s++;
-	if (*s == '\0')	{
+	if (*s == '\0') {
 		puts("start  stop  status  T-states");
 		printf("%04x   %04x    %s   %lu\n",
 		       t_start, t_end,
@@ -856,7 +856,7 @@ static void do_count(char *s)
  *	fetch the R register is incremented by one and after
  *	the timer is down and stops the emulation, the clock
  *	speed of the CPU is calculated with:
- *		f = R /	300000
+ *		f = R / 300000
  */
 static void do_clock(void)
 {
@@ -865,9 +865,9 @@ static void do_clock(void)
 	static struct itimerval tim;
 	char *s = NULL;
 
-	save[0]	= *(mem_base() + 0x0000); /* save memory locations */
-	save[1]	= *(mem_base() + 0x0001); /* 0000H - 0002H */
-	save[2]	= *(mem_base() + 0x0002);
+	save[0] = *(mem_base() + 0x0000); /* save memory locations */
+	save[1] = *(mem_base() + 0x0001); /* 0000H - 0002H */
+	save[2] = *(mem_base() + 0x0002);
 	*(mem_base() + 0x0000) = 0xc3;	/* store opcode JP 0000H at address */
 	*(mem_base() + 0x0001) = 0x00;	/* 0000H */
 	*(mem_base() + 0x0002) = 0x00;

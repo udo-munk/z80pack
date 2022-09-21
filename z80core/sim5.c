@@ -74,8 +74,6 @@ static int op_adayd(void), op_acayd(void), op_suayd(void), op_scayd(void);
 static int op_andyd(void), op_xoryd(void), op_oryd(void), op_cpyd(void);
 static int op_decyd(void), op_incyd(void);
 static int op_addyb(void), op_addyd(void), op_addys(void), op_addyy(void);
-static int op_andyd(void), op_xoryd(void), op_oryd(void), op_cpyd(void);
-static int op_decyd(void), op_incyd(void);
 static int op_inciy(void), op_deciy(void);
 static int op_ldayd(void), op_ldbyd(void), op_ldcyd(void);
 static int op_lddyd(void), op_ldeyd(void);
@@ -93,12 +91,20 @@ static int op_undoc_lddiyl(void), op_undoc_lddiyh(void);
 static int op_undoc_ldeiyl(void), op_undoc_ldeiyh(void);
 static int op_undoc_ldiyha(void), op_undoc_ldiyla(void);
 static int op_undoc_ldiyhb(void), op_undoc_ldiylb(void);
-static int op_undoc_ldiyhc(void), op_undoc_ldiylc(void);;
+static int op_undoc_ldiyhc(void), op_undoc_ldiylc(void);
 static int op_undoc_ldiyhd(void), op_undoc_ldiyld(void);
 static int op_undoc_ldiyhe(void), op_undoc_ldiyle(void);
 static int op_undoc_ldiyhiyh(void), op_undoc_ldiyliyh(void);
 static int op_undoc_ldiyhiyl(void), op_undoc_ldiyliyl(void);
 static int op_undoc_ldiyhn(void), op_undoc_ldiyln(void);
+static int op_undoc_cpiyl(void), op_undoc_cpiyh(void);
+static int op_undoc_adaiyl(void), op_undoc_adaiyh(void);
+static int op_undoc_acaiyl(void), op_undoc_acaiyh(void);
+static int op_undoc_suaiyl(void), op_undoc_suaiyh(void);
+static int op_undoc_scaiyl(void), op_undoc_scaiyh(void);
+static int op_undoc_oraiyl(void), op_undoc_oraiyh(void);
+static int op_undoc_andiyl(void), op_undoc_andiyh(void);
+static int op_undoc_xoriyl(void), op_undoc_xoriyh(void);
 static int op_undoc_inciyl(void), op_undoc_inciyh(void);
 static int op_undoc_deciyl(void), op_undoc_deciyh(void);
 #endif
@@ -107,7 +113,7 @@ int op_fd_handel(void)
 {
 	register int t;
 
-	static int (*op_fd[256]) () = {
+	static int (*op_fd[256]) (void) = {
 		trap_fd,			/* 0x00 */
 		trap_fd,			/* 0x01 */
 		trap_fd,			/* 0x02 */
@@ -240,64 +246,64 @@ int op_fd_handel(void)
 		trap_fd,			/* 0x81 */
 		trap_fd,			/* 0x82 */
 		trap_fd,			/* 0x83 */
-		trap_fd,			/* 0x84 */
-		trap_fd,			/* 0x85 */
+		UNDOC(op_undoc_adaiyh),		/* 0x84 */
+		UNDOC(op_undoc_adaiyl),		/* 0x85 */
 		op_adayd,			/* 0x86 */
 		trap_fd,			/* 0x87 */
 		trap_fd,			/* 0x88 */
 		trap_fd,			/* 0x89 */
 		trap_fd,			/* 0x8a */
 		trap_fd,			/* 0x8b */
-		trap_fd,			/* 0x8c */
-		trap_fd,			/* 0x8d */
+		UNDOC(op_undoc_acaiyh),		/* 0x8c */
+		UNDOC(op_undoc_acaiyl),		/* 0x8d */
 		op_acayd,			/* 0x8e */
 		trap_fd,			/* 0x8f */
 		trap_fd,			/* 0x90 */
 		trap_fd,			/* 0x91 */
 		trap_fd,			/* 0x92 */
 		trap_fd,			/* 0x93 */
-		trap_fd,			/* 0x94 */
-		trap_fd,			/* 0x95 */
+		UNDOC(op_undoc_suaiyh),		/* 0x94 */
+		UNDOC(op_undoc_suaiyl),		/* 0x95 */
 		op_suayd,			/* 0x96 */
 		trap_fd,			/* 0x97 */
 		trap_fd,			/* 0x98 */
 		trap_fd,			/* 0x99 */
 		trap_fd,			/* 0x9a */
 		trap_fd,			/* 0x9b */
-		trap_fd,			/* 0x9c */
-		trap_fd,			/* 0x9d */
+		UNDOC(op_undoc_scaiyh),		/* 0x9c */
+		UNDOC(op_undoc_scaiyl),		/* 0x9d */
 		op_scayd,			/* 0x9e */
 		trap_fd,			/* 0x9f */
 		trap_fd,			/* 0xa0 */
 		trap_fd,			/* 0xa1 */
 		trap_fd,			/* 0xa2 */
 		trap_fd,			/* 0xa3 */
-		trap_fd,			/* 0xa4 */
-		trap_fd,			/* 0xa5 */
+		UNDOC(op_undoc_andiyh),		/* 0xa4 */
+		UNDOC(op_undoc_andiyl),		/* 0xa5 */
 		op_andyd,			/* 0xa6 */
 		trap_fd,			/* 0xa7 */
 		trap_fd,			/* 0xa8 */
 		trap_fd,			/* 0xa9 */
 		trap_fd,			/* 0xaa */
 		trap_fd,			/* 0xab */
-		trap_fd,			/* 0xac */
-		trap_fd,			/* 0xad */
+		UNDOC(op_undoc_xoriyh),		/* 0xac */
+		UNDOC(op_undoc_xoriyl),		/* 0xad */
 		op_xoryd,			/* 0xae */
 		trap_fd,			/* 0xaf */
 		trap_fd,			/* 0xb0 */
 		trap_fd,			/* 0xb1 */
 		trap_fd,			/* 0xb2 */
 		trap_fd,			/* 0xb3 */
-		trap_fd,			/* 0xb4 */
-		trap_fd,			/* 0xb5 */
+		UNDOC(op_undoc_oraiyh),		/* 0xb4 */
+		UNDOC(op_undoc_oraiyl),		/* 0xb5 */
 		op_oryd,			/* 0xb6 */
 		trap_fd,			/* 0xb7 */
 		trap_fd,			/* 0xb8 */
 		trap_fd,			/* 0xb9 */
 		trap_fd,			/* 0xba */
 		trap_fd,			/* 0xbb */
-		trap_fd,			/* 0xbc */
-		trap_fd,			/* 0xbd */
+		UNDOC(op_undoc_cpiyh),		/* 0xbc */
+		UNDOC(op_undoc_cpiyl),		/* 0xbd */
 		op_cpyd,			/* 0xbe */
 		trap_fd,			/* 0xbf */
 		trap_fd,			/* 0xc0 */
@@ -388,6 +394,13 @@ int op_fd_handel(void)
  */
 static int trap_fd(void)
 {
+#ifdef Z80_UNDOC
+	if (!u_flag) {
+		/* Treat 0xfd prefix as NOP on non IY-instructions */
+		PC--;
+		return(4);
+	}
+#endif
 	cpu_error = OPTRAP2;
 	cpu_state = STOPPED;
 	return(0);
@@ -465,7 +478,7 @@ static int op_adayd(void)		/* ADD A,(IY+d) */
 	register BYTE P;
 
 	P = memrdr(IY + (signed char) memrdr(PC++));
-	((A & 0xf) + (P	& 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
@@ -482,7 +495,7 @@ static int op_acayd(void)		/* ADC A,(IY+d) */
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = memrdr(IY + (signed char) memrdr(PC++));
-	((A & 0xf) + (P	& 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
@@ -498,8 +511,8 @@ static int op_suayd(void)		/* SUB A,(IY+d) */
 	register BYTE P;
 
 	P = memrdr(IY + (signed char) memrdr(PC++));
-	((P & 0xf) > (A	& 0xf))	? (F |= H_FLAG)	: (F &= ~H_FLAG);
-	(P > A)	? (F |= C_FLAG)	: (F &= ~C_FLAG);
+	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -515,8 +528,8 @@ static int op_scayd(void)		/* SBC A,(IY+d) */
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = memrdr(IY + (signed char) memrdr(PC++));
-	((P & 0xf) + carry > (A	& 0xf))	? (F |= H_FLAG)	: (F &= ~H_FLAG);
-	(P + carry > A)	? (F |= C_FLAG)	: (F &= ~C_FLAG);
+	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -562,8 +575,8 @@ static int op_cpyd(void)		/* CP (IY+d) */
 	register BYTE P;
 
 	P = memrdr(IY + (signed char) memrdr(PC++));
-	((P & 0xf) > (A	& 0xf))	? (F |= H_FLAG)	: (F &= ~H_FLAG);
-	(P > A)	? (F |= C_FLAG)	: (F &= ~C_FLAG);
+	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = (signed char) A - (signed char) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -583,7 +596,7 @@ static int op_incyd(void)		/* INC (IY+d) */
 	memwrt(addr, P);
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-	(P & 128) ? (F	|= S_FLAG) : (F	&= ~S_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F &= ~N_FLAG;
 	return(23);
@@ -600,7 +613,7 @@ static int op_decyd(void)		/* DEC (IY+d) */
 	memwrt(addr, P);
 	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P == 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-	(P & 128) ? (F	|= S_FLAG) : (F	&= ~S_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F |= N_FLAG;
 	return(23);
@@ -1071,6 +1084,312 @@ static int op_undoc_ldiyln(void)	/* LD IYL,n */
 
 	IY = (IY & 0xff00) | memrdr(PC++);
 	return(11);
+}
+
+static int op_undoc_cpiyl(void)		/* CP IYL */
+{
+	register int i;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY & 0xff;
+	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	i = (signed char) A - (signed char) P;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
+}
+
+static int op_undoc_cpiyh(void)		/* CP IYH */
+{
+	register int i;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY >> 8;
+	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	i = (signed char) A - (signed char) P;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
+}
+
+static int op_undoc_adaiyl(void)	/* ADD A,IYL */
+{
+	register int i;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY & 0xff;
+	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A + (signed char) P;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F &= ~N_FLAG;
+	return(8);
+}
+
+static int op_undoc_adaiyh(void)	/* ADD A,IYH */
+{
+	register int i;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY >> 8;
+	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A + (signed char) P;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F &= ~N_FLAG;
+	return(8);
+}
+
+static int op_undoc_acaiyl(void)	/* ADC A,IYL */
+{
+	register int i, carry;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	carry = (F & C_FLAG) ? 1 : 0;
+	P = IY & 0xff;
+	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A + (signed char) P + carry;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F &= ~N_FLAG;
+	return(8);
+}
+
+static int op_undoc_acaiyh(void)	/* ADC A,IYH */
+{
+	register int i, carry;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	carry = (F & C_FLAG) ? 1 : 0;
+	P = IY >> 8;
+	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A + (signed char) P + carry;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F &= ~N_FLAG;
+	return(8);
+}
+
+static int op_undoc_suaiyl(void)	/* SUB A,IYL */
+{
+	register int i;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY & 0xff;
+	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A - (signed char) P;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
+}
+
+static int op_undoc_suaiyh(void)	/* SUB A,IYH */
+{
+	register int i;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	P = IY >> 8;
+	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A - (signed char) P;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
+}
+
+static int op_undoc_scaiyl(void)	/* SBC A,IYL */
+{
+	register int i, carry;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	carry = (F & C_FLAG) ? 1 : 0;
+	P = IY & 0xff;
+	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A - (signed char) P - carry;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
+}
+
+static int op_undoc_scaiyh(void)	/* SBC A,IYH */
+{
+	register int i, carry;
+	register BYTE P;
+
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	carry = (F & C_FLAG) ? 1 : 0;
+	P = IY >> 8;
+	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	A = i = (signed char) A - (signed char) P - carry;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= N_FLAG;
+	return(8);
+}
+
+static int op_undoc_oraiyl(void)	/* OR IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A |= IY & 0xff;
+	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return(8);
+}
+
+static int op_undoc_oraiyh(void)	/* OR IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A |= IY >> 8;
+	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return(8);
+}
+
+static int op_undoc_xoriyl(void)	/* XOR IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A ^= IY & 0xff;
+	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return(8);
+}
+
+static int op_undoc_xoriyh(void)	/* XOR IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A ^= IY >> 8;
+	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return(8);
+}
+
+static int op_undoc_andiyl(void)	/* AND IYL */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A &= IY & 0xff;
+	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= H_FLAG;
+	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	F &= ~(N_FLAG | C_FLAG);
+	return(8);
+}
+
+static int op_undoc_andiyh(void)	/* AND IYH */
+{
+	if (u_flag) {
+		trap_fd();
+		return(0);
+	}
+
+	A &= IY >> 8;
+	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= H_FLAG;
+	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	F &= ~(N_FLAG | C_FLAG);
+	return(8);
 }
 
 static int op_undoc_inciyl(void)	/* INC IYL */

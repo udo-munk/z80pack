@@ -107,6 +107,7 @@
 #define CPU_STACK	4
 #define CPU_WO		2
 #define CPU_INTA	1
+
 					/* operation of simulated CPU */
 #define STOPPED		0		/* stopped */
 #define CONTIN_RUN	1		/* continual run */

@@ -36,6 +36,7 @@ extern char	*infiles[],
 
 extern int	list_flag,
 		sym_flag,
+		undoc_flag,
 		ver_flag,
 		dump_flag,
 		pc,

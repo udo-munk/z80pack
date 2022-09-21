@@ -521,7 +521,7 @@ static int op_srlhl(void)		/* SRL (HL) */
 	F &= ~(H_FLAG | N_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ?	(F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return(15);
 }
 
