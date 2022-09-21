@@ -77,6 +77,7 @@ long R;				/* Z80 refresh register */
 				/* is normally a 8 bit register */
 				/* the larger bits are used to measure the */
 				/* clock frequency */
+BYTE R_;			/* copy of low byte of R for keeping the 7th bit */
 Tstates_t T;			/* CPU clock */
 
 #ifdef BUS_8080

@@ -385,6 +385,8 @@ int op_fd_handel(void)
 
 	t = (*op_fd[memrdr(PC++)]) ();	/* execute next opcode */
 
+	R++;				/* increment refresh register */
+
 	return(t);
 }
 
@@ -398,6 +400,7 @@ static int trap_fd(void)
 	if (!u_flag) {
 		/* Treat 0xfd prefix as NOP on non IY-instructions */
 		PC--;
+		R--;
 		return(4);
 	}
 #endif

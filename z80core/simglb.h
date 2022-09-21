@@ -58,7 +58,7 @@ void end_bus_request(void);
 
 extern int	cpu;
 
-extern BYTE	A, B, C, D, E, H, L, A_, B_, C_, D_, E_, H_, L_, I, IFF;
+extern BYTE	A, B, C, D, E, H, L, A_, B_, C_, D_, E_, H_, L_, I, IFF, R_;
 extern WORD	PC, SP, IX, IY;
 extern int	F, F_;
 extern long	R;

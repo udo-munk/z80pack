@@ -367,6 +367,8 @@ int op_ed_handel(void)
 
 	t = (*op_ed[memrdr(PC++)]) ();	/* execute next opcode */
 
+	R++;				/* increment refresh register */
+
 	return(t);
 }
 
@@ -597,11 +599,13 @@ static int op_inir(void)		/* INIR */
 	register int t = -21;
 
 	addr = (H << 8) + L;
+	R -= 2;
 	do {
 		data = io_in(C, B);
 		memwrt(addr++, data);
 		B--;
 		t += 21;
+		R += 2;
 	} while (B);
 	H = addr >> 8;
 	L = addr;
@@ -633,11 +637,13 @@ static int op_indr(void)		/* INDR */
 	register int t = -21;
 
 	addr = (H << 8) + L;
+	R -= 2;
 	do {
 		data = io_in(C, B);
 		memwrt(addr--, data);
 		B--;
 		t += 21;
+		R += 2;
 	} while (B);
 	H = addr >> 8;
 	L = addr;
@@ -669,11 +675,13 @@ static int op_otir(void)		/* OTIR */
 	register int t = -21;
 
 	addr = (H << 8) + L;
+	R -= 2;
 	do {
 		data = memrdr(addr++);
 		io_out(C, B, data);
 		B--;
 		t += 21;
+		R += 2;
 	} while (B);
 	H = addr >> 8;
 	L = addr;
@@ -705,11 +713,13 @@ static int op_otdr(void)		/* OTDR */
 	register int t = -21;
 
 	addr = (H << 8) + L;
+	R -= 2;
 	do {
 		data = memrdr(addr--);
 		io_out(C, B, data);
 		B--;
 		t += 21;
+		R += 2;
 	} while (B);
 	H = addr >> 8;
 	L = addr;
@@ -729,7 +739,7 @@ static int op_ldai(void)		/* LD A,I */
 
 static int op_ldar(void)		/* LD A,R */
 {
-	A = (BYTE) R;
+	A = ((BYTE) R & 0x7f) | (R_ & 0x80);
 	F &= ~(N_FLAG | H_FLAG);
 	(IFF & 2) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -745,7 +755,7 @@ static int op_ldia(void)		/* LD I,A */
 
 static int op_ldra(void)		/* LD R,A */
 {
-	R = A;
+	R_ = R = A;
 	return(9);
 }
 
@@ -1062,9 +1072,11 @@ static int op_ldir(void)		/* LDIR */
 	i = (B << 8) + C;
 	d = (D << 8) + E;
 	s = (H << 8) + L;
+	R -= 2;
 	do {
 		memwrt(d++, memrdr(s++));
 		t += 21;
+		R += 2;
 	} while (--i);
 	B = C = 0;
 	D = d >> 8;
@@ -1116,9 +1128,11 @@ static int op_lddr(void)		/* LDDR */
 	i = (B << 8) + C;
 	d = (D << 8) + E;
 	s = (H << 8) + L;
+	R -= 2;
 	do {
 		memwrt(d--, memrdr(s--));
 		t += 21;
+		R += 2;
 	} while (--i);
 	B = C = 0;
 	D = d >> 8;
@@ -1173,11 +1187,13 @@ static int op_cpir(void)		/* CPIR */
 
 	i = (B << 8) + C;
 	s = (H << 8) + L;
+	R -= 2;
 	do {
 		tmp = memrdr(s++);
 		((tmp & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 		d = A - tmp;
 		t += 21;
+		R += 2;
 	} while (--i && d);
 	F |= N_FLAG;
 	B = i >> 8;
@@ -1220,11 +1236,13 @@ static int op_cpdr(void)		/* CPDR */
 
 	i = (B << 8) + C;
 	s = (H << 8) + L;
+	R -= 2;
 	do {
 		tmp = memrdr(s--);
 		((tmp & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 		d = A - tmp;
 		t += 21;
+		R += 2;
 	} while (--i && d);
 	F |= N_FLAG;
 	B = i >> 8;
