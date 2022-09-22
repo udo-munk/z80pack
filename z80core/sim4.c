@@ -521,7 +521,7 @@ static int op_inlic(void)		/* IN L,(C) */
 
 static int op_outca(void)		/* OUT (C),A */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, A);
 	return(12);
@@ -529,7 +529,7 @@ static int op_outca(void)		/* OUT (C),A */
 
 static int op_outcb(void)		/* OUT (C),B */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, B);
 	return(12);
@@ -537,7 +537,7 @@ static int op_outcb(void)		/* OUT (C),B */
 
 static int op_outcc(void)		/* OUT (C),C */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, C);
 	return(12);
@@ -545,7 +545,7 @@ static int op_outcc(void)		/* OUT (C),C */
 
 static int op_outcd(void)		/* OUT (C),D */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, D);
 	return(12);
@@ -553,7 +553,7 @@ static int op_outcd(void)		/* OUT (C),D */
 
 static int op_outce(void)		/* OUT (C),E */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, E);
 	return(12);
@@ -561,7 +561,7 @@ static int op_outce(void)		/* OUT (C),E */
 
 static int op_outch(void)		/* OUT (C),H */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, H);
 	return(12);
@@ -569,7 +569,7 @@ static int op_outch(void)		/* OUT (C),H */
 
 static int op_outcl(void)		/* OUT (C),L */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, L);
 	return(12);
@@ -579,6 +579,7 @@ static int op_ini(void)			/* INI */
 {
 	BYTE io_in(BYTE, BYTE);
 	BYTE data;
+	WORD k;
 
 	data = io_in(C, B);
 	memwrt((H << 8) + L, data);
@@ -586,16 +587,26 @@ static int op_ini(void)			/* INI */
 	if (!L)
 		H++;
 	B--;
-	F |= N_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) ((C + 1) & 0xff) + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
 
+#ifdef WANT_FASTB
 static int op_inir(void)		/* INIR */
 {
-	BYTE io_in(BYTE ,BYTE);
+	BYTE io_in(BYTE, BYTE);
 	WORD addr;
 	BYTE data;
+	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
@@ -609,14 +620,38 @@ static int op_inir(void)		/* INIR */
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-	F |= N_FLAG | Z_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) ((C + 1) & 0xff) + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	F &= ~S_FLAG;
+	F |= Z_FLAG;
 	return(t + 16);
 }
+#else
+static int op_inir(void)		/* INIR */
+{
+	register int t;
+
+	op_ini();
+	if (!(F & Z_FLAG)) {
+		t = 21;
+		PC -= 2;
+	} else
+		t = 16;
+	return(t);
+}
+#endif
 
 static int op_ind(void)			/* IND */
 {
 	BYTE io_in(BYTE, BYTE);
 	BYTE data;
+	WORD k;
 
 	data = io_in(C, B);
 	memwrt((H << 8) + L, data);
@@ -624,16 +659,26 @@ static int op_ind(void)			/* IND */
 	if (L == 0xff)
 		H--;
 	B--;
-	F |= N_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) ((C - 1) & 0xff) + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
 
+#ifdef WANT_FASTB
 static int op_indr(void)		/* INDR */
 {
 	BYTE io_in(BYTE, BYTE);
 	WORD addr;
 	BYTE data;
+	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
@@ -647,85 +692,176 @@ static int op_indr(void)		/* INDR */
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-	F |= N_FLAG | Z_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) ((C - 1) & 0xff) + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	F &= ~S_FLAG;
+	F |= Z_FLAG;
 	return(t + 16);
 }
+#else
+static int op_indr(void)		/* INDR */
+{
+	register int t;
+
+	op_ind();
+	if (!(F & Z_FLAG)) {
+		t = 21;
+		PC -= 2;
+	} else
+		t = 16;
+	return(t);
+}
+#endif
 
 static int op_outi(void)		/* OUTI */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
+	WORD k;
 
+	B--;
 	data = memrdr((H << 8) + L);
 	io_out(C, B, data);
 	L++;
 	if (!L)
 		H++;
-	B--;
-	F |= N_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) L + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
 
+#ifdef WANT_FASTB
 static int op_otir(void)		/* OTIR */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
+	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
 	R -= 2;
 	do {
+		B--;
 		data = memrdr(addr++);
 		io_out(C, B, data);
-		B--;
 		t += 21;
 		R += 2;
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-	F |= N_FLAG | Z_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) L + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	F &= ~S_FLAG;
+	F |= Z_FLAG;
 	return(t + 16);
 }
+#else
+static int op_otir(void)		/* OTIR */
+{
+	register int t;
+
+	op_outi();
+	if (!(F & Z_FLAG)) {
+		t = 21;
+		PC -= 2;
+	} else
+		t = 16;
+	return(t);
+}
+#endif
 
 static int op_outd(void)		/* OUTD */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
+	WORD k;
 
+	B--;
 	data = memrdr((H << 8) + L);
 	io_out(C, B, data);
 	L--;
 	if (L == 0xff)
 		H--;
-	B--;
-	F |= N_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) L + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
 
+#ifdef WANT_FASTB
 static int op_otdr(void)		/* OTDR */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
+	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
 	R -= 2;
 	do {
+		B--;
 		data = memrdr(addr--);
 		io_out(C, B, data);
-		B--;
 		t += 21;
 		R += 2;
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-	F |= N_FLAG | Z_FLAG;
+#if 0
+	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
+#endif
+	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
+	k = (WORD) L + (WORD) data;
+	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
+	F &= ~S_FLAG;
+	F |= Z_FLAG;
 	return(t + 16);
 }
+#else
+static int op_otdr(void)		/* OTDR */
+{
+	register int t;
+
+	op_outd();
+	if (!(F & Z_FLAG)) {
+		t = 21;
+		PC -= 2;
+	} else
+		t = 16;
+	return(t);
+}
+#endif
 
 static int op_ldai(void)		/* LD A,I */
 {
@@ -1062,7 +1198,7 @@ static int op_ldi(void)			/* LDI */
 	return(16);
 }
 
-#ifdef WANT_FASTM
+#ifdef WANT_FASTB
 static int op_ldir(void)		/* LDIR */
 {
 	register int t = -21;
@@ -1118,7 +1254,7 @@ static int op_ldd(void)			/* LDD */
 	return(16);
 }
 
-#ifdef WANT_FASTM
+#ifdef WANT_FASTB
 static int op_lddr(void)		/* LDDR */
 {
 	register int t = -21;
@@ -1177,6 +1313,7 @@ static int op_cpi(void)			/* CPI */
 	return(16);
 }
 
+#ifdef WANT_FASTB
 static int op_cpir(void)		/* CPIR */
 {
 	register int t = -21;
@@ -1205,6 +1342,20 @@ static int op_cpir(void)		/* CPIR */
 	(d & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	return(t + 16);
 }
+#else
+static int op_cpir(void)		/* CPIR */
+{
+	register int t;
+
+	op_cpi();
+	if ((F & (P_FLAG | Z_FLAG)) == P_FLAG) {
+		t = 21;
+		PC -= 2;
+	} else
+		t = 16;
+	return(t);
+}
+#endif
 
 static int op_cpdop(void)		/* CPD */
 {
@@ -1226,6 +1377,7 @@ static int op_cpdop(void)		/* CPD */
 	return(16);
 }
 
+#ifdef WANT_FASTB
 static int op_cpdr(void)		/* CPDR */
 {
 	register int t = -21;
@@ -1254,6 +1406,20 @@ static int op_cpdr(void)		/* CPDR */
 	(d & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	return(t + 16);
 }
+#else
+static int op_cpdr(void)		/* CPDR */
+{
+	register int t;
+
+	op_cpdop();
+	if ((F & (P_FLAG | Z_FLAG)) == P_FLAG) {
+		t = 21;
+		PC -= 2;
+	} else
+		t = 16;
+	return(t);
+}
+#endif
 
 static int op_oprld(void)		/* RLD (HL) */
 {
@@ -1297,7 +1463,7 @@ static int op_oprrd(void)		/* RRD (HL) */
 
 static int op_undoc_outc0(void)		/* OUT (C),0 */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 
 	if (u_flag) {
 		trap_ed();

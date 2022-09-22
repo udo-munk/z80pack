@@ -54,7 +54,7 @@
  */
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
-#define WANT_FASTM	/* much faster but not accurate Z80 block moves */
+#define WANT_FASTB	/* much faster but not accurate Z80 block instr. */
 /*#define WANT_TIM*/	/* count t-states */
 /*#define HISIZE 100*/	/* number of entries in history */
 /*#define SBSIZE 4*/	/* number of software breakpoints */
@@ -86,7 +86,7 @@
  *	The following lines of this file should not be modified by user
  */
 #define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
-#define RELEASE	"1.37"
+#define RELEASE	"1.38-dev"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */

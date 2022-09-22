@@ -759,7 +759,7 @@ static int op_in(void)			/* IN n */
 
 static int op_out(void)			/* OUT n */
 {
-	BYTE io_out(BYTE, BYTE, BYTE);
+	void io_out(BYTE, BYTE, BYTE);
 	BYTE addr;
 
 	addr = memrdr(PC++);
