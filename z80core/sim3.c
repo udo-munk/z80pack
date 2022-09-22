@@ -385,6 +385,8 @@ int op_dd_handel(void)
 
 	t = (*op_dd[memrdr(PC++)]) ();	/* execute next opcode */
 
+	R++;				/* increment refresh register */
+
 	return(t);
 }
 
@@ -398,6 +400,7 @@ static int trap_dd(void)
 	if (!u_flag) {
 		/* Treat 0xdd prefix as NOP on non IX-instructions */
 		PC--;
+		R--;
 		return(4);
 	}
 #endif

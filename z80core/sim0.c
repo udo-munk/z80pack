@@ -473,7 +473,7 @@ void reset_cpu(void)
 
 	if (cpu == Z80) {
 		I = 0;
-		R = 0L;
+		R_ = R = 0L;
 	}
 }
 
@@ -510,6 +510,7 @@ static void save_core(void)
 	write(fd, (char *) &I, sizeof(I));
 	write(fd, (char *) &IFF, sizeof(IFF));
 	write(fd, (char *) &R, sizeof(R));
+	write(fd, (char *) &R_, sizeof(R_));
 	write(fd, (char *) &PC, sizeof(PC));
 	write(fd, (char *) &SP, sizeof(SP));
 	write(fd, (char *) &IX, sizeof(IX));
@@ -556,6 +557,7 @@ int load_core(void)
 	read(fd, (char *) &I, sizeof(I));
 	read(fd, (char *) &IFF, sizeof(IFF));
 	read(fd, (char *) &R, sizeof(R));
+	read(fd, (char *) &R_, sizeof(R_));
 	read(fd, (char *) &PC, sizeof(PC));
 	read(fd, (char *) &SP, sizeof(SP));
 	read(fd, (char *) &IX, sizeof(IX));

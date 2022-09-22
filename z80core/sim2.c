@@ -415,7 +415,9 @@ int op_cb_handel(void)
 	fp_sampleLightGroup(0, 0);
 #endif
 
-	t = (*op_cb[memrdr(PC++)]) ();		/* execute next opcode */
+	t = (*op_cb[memrdr(PC++)]) ();	/* execute next opcode */
+
+	R++;				/* increment refresh register */
 
 	return(t);
 }
