@@ -31,7 +31,7 @@
  */
 #define CPU_SPEED 2	/* default CPU speed */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
-/*#define WANT_FASTM*/	/* much faster but not accurate Z80 block moves */
+/*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
