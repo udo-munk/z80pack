@@ -653,7 +653,7 @@ int op_ld(int dummy1, int dummy2)
 /*
  *	LD [A,B,C,D,E,H,L],?
  */
-int ldreg(int base_op, int base_op2)
+int ldreg(int base_op, int base_opn)
 {
 	register int op;
 	register int i, len;
@@ -661,21 +661,21 @@ int ldreg(int base_op, int base_op2)
 
 	p = get_second(operand);
 	switch (op = get_reg(p)) {
-	case REGA:			/* LD REG,A */
-	case REGB:			/* LD REG,B */
-	case REGC:			/* LD REG,C */
-	case REGD:			/* LD REG,D */
-	case REGE:			/* LD REG,E */
-	case REGH:			/* LD REG,H */
-	case REGL:			/* LD REG,L */
-	case REGIHL:			/* LD REG,(HL) */
+	case REGA:			/* LD reg,A */
+	case REGB:			/* LD reg,B */
+	case REGC:			/* LD reg,C */
+	case REGD:			/* LD reg,D */
+	case REGE:			/* LD reg,E */
+	case REGH:			/* LD reg,H */
+	case REGL:			/* LD reg,L */
+	case REGIHL:			/* LD reg,(HL) */
 		len = 1;
 		ops[0] = base_op + op;
 		break;
-	case REGIXH:			/* LD REG,IXH (undocumented) */
-	case REGIXL:			/* LD REG,IXL (undocumented) */
-	case REGIYH:			/* LD REG,IYH (undocumented) */
-	case REGIYL:			/* LD REG,IYL (undocumented) */
+	case REGIXH:			/* LD reg,IXH (undocumented) */
+	case REGIXL:			/* LD reg,IXL (undocumented) */
+	case REGIYH:			/* LD reg,IYH (undocumented) */
+	case REGIYL:			/* LD reg,IYL (undocumented) */
 		if ((base_op & 0xf0) != 0x60) {
 			/* only for A,B,C,D,E */
 			switch (op) {
@@ -708,10 +708,10 @@ int ldreg(int base_op, int base_op2)
 			asmerr(E_ILLOPE);
 		}
 		break;
-	case REGI:			/* LD REG,I */
-	case REGR:			/* LD REG,R */
-	case REGIBC:			/* LD REG,(BC) */
-	case REGIDE:			/* LD REG,(DE) */
+	case REGI:			/* LD reg,I */
+	case REGR:			/* LD reg,R */
+	case REGIBC:			/* LD reg,(BC) */
+	case REGIDE:			/* LD reg,(DE) */
 		if (base_op == 0x78) {
 			/* only for A */
 			switch (op) {
@@ -744,14 +744,14 @@ int ldreg(int base_op, int base_op2)
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(p, "(IX+", 4) == 0) {
-			len = 3;	/* LD REG,(IX+d) */
+			len = 3;	/* LD reg,(IX+d) */
 			if (pass == 2) {
 				ops[0] = 0xdd;
 				ops[1] = base_op + 0x06;
 				ops[2] = chk_sbyte(calc_val(strchr(p, '+') + 1));
 			}
 		} else if (strncmp(p, "(IY+", 4) == 0) {
-			len = 3;	/* LD REG,(IY+d) */
+			len = 3;	/* LD reg,(IY+d) */
 			if (pass == 2) {
 				ops[0] = 0xfd;
 				ops[1] = base_op + 0x06;
@@ -766,10 +766,10 @@ int ldreg(int base_op, int base_op2)
 				ops[1] = i & 255;
 				ops[2] = i >> 8;
 			}
-		} else {		/* LD REG,n */
+		} else {		/* LD reg,n */
 			len = 2;
 			if (pass == 2) {
-				ops[0] = base_op2;
+				ops[0] = base_opn;
 				ops[1] = chk_byte(eval(p));
 			}
 		}
@@ -1710,7 +1710,7 @@ int aluop(int base_op, char *p)
 			len = 3;	/* ALUOP {A,}(IY+d) */
 			if (pass == 2) {
 				ops[0] = 0xfd;
-				ops[1] = base_op + 006;
+				ops[1] = base_op + 0x06;
 				ops[2] = chk_sbyte(calc_val(strchr(p, '+') + 1));
 			}
 		} else {
@@ -2087,24 +2087,24 @@ int op8080_mov(int dummy1, int dummy2)
 		*p2++ = *p1++;
 	*p2 = '\0';
 	switch (op1 = get_reg(tmp)) {
-	case REGA:			/* MOV A,R */
-	case REGB:			/* MOV B,R */
-	case REGC:			/* MOV C,R */
-	case REGD:			/* MOV D,R */
-	case REGE:			/* MOV E,R */
-	case REGH:			/* MOV H,R */
-	case REGL:			/* MOV L,R */
-	case REGM:			/* MOV M,R */
+	case REGA:			/* MOV A,reg */
+	case REGB:			/* MOV B,reg */
+	case REGC:			/* MOV C,reg */
+	case REGD:			/* MOV D,reg */
+	case REGE:			/* MOV E,reg */
+	case REGH:			/* MOV H,reg */
+	case REGL:			/* MOV L,reg */
+	case REGM:			/* MOV M,reg */
 		p1 = get_second(operand);
 		switch (op2 = get_reg(p1)) {
-		case REGA:		/* MOV R,A */
-		case REGB:		/* MOV R,B */
-		case REGC:		/* MOV R,C */
-		case REGD:		/* MOV R,D */
-		case REGE:		/* MOV R,E */
-		case REGH:		/* MOV R,H */
-		case REGL:		/* MOV R,L */
-		case REGM:		/* MOV R,M */
+		case REGA:		/* MOV reg,A */
+		case REGB:		/* MOV reg,B */
+		case REGC:		/* MOV reg,C */
+		case REGD:		/* MOV reg,D */
+		case REGE:		/* MOV reg,E */
+		case REGH:		/* MOV reg,H */
+		case REGL:		/* MOV reg,L */
+		case REGM:		/* MOV reg,M */
 			if (op1 == REGM && op2 == REGM) {
 				ops[0] = 0;
 				asmerr(E_ILLOPE);
@@ -2396,7 +2396,7 @@ int op8080_mvi(int dummy1, int dummy2)
 	case REGM:			/* MVI M,n */
 		p1 = get_second(operand);
 		switch (get_reg(p1)) {
-		case NOREG:		/* MVI R,n */
+		case NOREG:		/* MVI reg,n */
 			len = 2;
 			if (pass == 2) {
 				ops[0] = 0x06 + (op << 3);
@@ -2451,7 +2451,7 @@ int op8080_lxi(int dummy1, int dummy2)
 	case REGSP:			/* LXI SP,nn */
 		p1 = get_second(operand);
 		switch (get_reg(p1)) {
-		case NOREG:		/* LXI R,nn */
+		case NOREG:		/* LXI reg,nn */
 			len = 3;
 			if (pass == 2) {
 				i = eval(p1);
