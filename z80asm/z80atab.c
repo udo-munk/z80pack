@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 2022 by Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -16,6 +17,7 @@
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
+ *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  */
 
 /*
@@ -45,10 +47,10 @@ struct opc *search_op(char *op_name)
 {
 	register int cond;
 	register struct opc *low, *high, *mid;
-	extern int op_sll();
+	extern int op_rotshf(int, int);
 
-	low = &opctab[0];
-	high = &opctab[no_opcodes - 1];
+	low = &pers->opctab[0];
+	high = &pers->opctab[pers->no_opcodes - 1];
 	while (low <= high) {
 		mid = low + (high - low) / 2;
 		if ((cond = strcmp(op_name, mid->op_name)) < 0)
@@ -56,7 +58,7 @@ struct opc *search_op(char *op_name)
 		else if (cond > 0)
 			low = mid + 1;
 		else if (!undoc_flag) {
-			if (mid->op_fun == op_sll)
+			if (mid->op_fun == op_rotshf && mid->op_c1 == 0x30) /* SLL */
 				return(NULL);
 			else
 				return(mid);
@@ -82,8 +84,8 @@ int get_reg(char *s)
 
 	if (s == NULL || *s == '\0')
 		return(NOOPERA);
-	low = &opetab[0];
-	high = &opetab[no_operands - 1];
+	low = &pers->opetab[0];
+	high = &pers->opetab[pers->no_operands - 1];
 	while (low <= high) {
 		mid = low + (high - low) / 2;
 		if ((cond = strcmp(s, mid->ope_name)) < 0)

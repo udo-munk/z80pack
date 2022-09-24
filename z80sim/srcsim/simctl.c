@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1987-2022 by Udo Munk
  *
- * This modul contains the user interface, a full qualified ICE,
+ * This module contains the user interface, a full qualified ICE,
  * for the Z80-CPU simulation.
  *
  * History:

@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 2022 by Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -16,6 +17,7 @@
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
+ *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  */
 
 /*
@@ -51,9 +53,7 @@ extern int	list_flag,
 		prg_flag,
 		out_form,
 		symlen,
-		symsize,
-		no_opcodes,
-		no_operands;
+		symsize;
 
 extern FILE	*srcfp,
 		*objfp,
@@ -69,6 +69,5 @@ extern unsigned	c_line,
 extern struct sym *symtab[],
 		  **symarray;
 
-extern struct opc opctab[];
-
-extern struct ope opetab[];
+extern struct pers perstab[],
+		   *pers;

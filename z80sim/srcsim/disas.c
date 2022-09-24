@@ -4,6 +4,7 @@
  * Copyright (C) 1989-2021 by Udo Munk
  * Parts Copyright (C) 2008 by Justin Clancy
  * 8080 disassembler Copyright (C) 2018 by Christophe Staiesse
+ * Copyright (c) 2022 Thomas Eberhardt
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -868,8 +869,22 @@ static int edop(char *s, unsigned char **p)
 		sprintf(Disass_Str, "LD\tBC,(%04X)\n", i);
 		len = 4;
 		break;
+	case 0x4c:				/* undocumented */
+	case 0x54:				/* undocumented */
+	case 0x5c:				/* undocumented */
+	case 0x64:				/* undocumented */
+	case 0x6c:				/* undocumented */
+	case 0x74:				/* undocumented */
+	case 0x7c:				/* undocumented */
+		strcat(Disass_Str, "NEG*\n");
+		break;
 	case 0x4d:
 		strcat(Disass_Str, "RETI\n");
+		break;
+	case 0x4e:				/* undocumented */
+	case 0x66:				/* undocumented */
+	case 0x6e:				/* undocumented */
+		strcat(Disass_Str, "IM*\t0\n");
 		break;
 	case 0x4f:
 		strcat(Disass_Str, "LD\tR,A\n");
@@ -887,6 +902,16 @@ static int edop(char *s, unsigned char **p)
 		i = *(*p + 2) + (*(*p + 3) << 8);
 		sprintf(Disass_Str, "LD\t(%04X),DE\n", i);
 		len = 4;
+		break;
+	case 0x55:				/* undocumented */
+	case 0x65:				/* undocumented */
+	case 0x75:				/* undocumented */
+		strcat(Disass_Str, "RETN*\n");
+		break;
+	case 0x5d:				/* undocumented */
+	case 0x6d:				/* undocumented */
+	case 0x7d:				/* undocumented */
+		strcat(Disass_Str, "RETI*\n");
 		break;
 	case 0x56:
 		strcat(Disass_Str, "IM\t1\n");
@@ -962,6 +987,9 @@ static int edop(char *s, unsigned char **p)
 		sprintf(Disass_Str, "LD\t(%04X),SP\n", i);
 		len = 4;
 		break;
+	case 0x76:				/* undocumented */
+		strcat(Disass_Str, "IM*\t1\n");
+		break;
 	case 0x78:
 		strcat(Disass_Str, "IN\tA,(C)\n");
 		break;
@@ -975,6 +1003,9 @@ static int edop(char *s, unsigned char **p)
 		i = *(*p + 2) + (*(*p + 3) << 8);
 		sprintf(Disass_Str, "LD\tSP,(%04X)\n", i);
 		len = 4;
+		break;
+	case 0x7e:				/* undocumented */
+		strcat(Disass_Str, "IM*\t2\n");
 		break;
 	case 0xa0:
 		strcat(Disass_Str, "LDI\n");
@@ -1024,8 +1055,8 @@ static int edop(char *s, unsigned char **p)
 	case 0xbb:
 		strcat(Disass_Str, "OTDR\n");
 		break;
-	default:
-		sprintf(Disass_Str, "%s\n", unknown);
+	default:				/* undocumented */
+		strcat(Disass_Str, "NOP*\n");
 	}
 	return(len);
 }
@@ -1035,7 +1066,7 @@ static int edop(char *s, unsigned char **p)
  */
 static int ddfd(char *s, unsigned char **p)
 {
-	register int b2;
+	register int b2, b4;
 	register char *ireg;
 	int len = 3;
 
@@ -1329,7 +1360,8 @@ static int ddfd(char *s, unsigned char **p)
 		sprintf(Disass_Str, "CP\t(%s+%02X)\n", ireg, *(*p + 2));
 		break;
 	case 0xcb:
-		switch (*(*p + 3)) {
+		b4 = *(*p + 3);
+		switch (b4) {
 		case 0x06:
 			sprintf(Disass_Str, "RLC\t(%s+%02X)\n", ireg, *(*p + 2));
 			break;
@@ -1426,8 +1458,43 @@ static int ddfd(char *s, unsigned char **p)
 		case 0xfe:
 			sprintf(Disass_Str, "SET\t7,(%s+%02X)\n", ireg, *(*p + 2));
 			break;
-		default:
-			sprintf(Disass_Str, "%s\n", unknown);
+		default:			/* undocumented */
+			if (b4 >= 0x00 && b4 <= 0x07) {
+				sprintf(Disass_Str, "RLC*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x08 && b4 <= 0x0f) {
+				sprintf(Disass_Str, "RRC*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x10 && b4 <= 0x17) {
+				sprintf(Disass_Str, "RL*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x18 && b4 <= 0x1f) {
+				sprintf(Disass_Str, "RR*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x20 && b4 <= 0x27) {
+				sprintf(Disass_Str, "SLA*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x28 && b4 <= 0x2f) {
+				sprintf(Disass_Str, "SRA*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x30 && b4 <= 0x37) {
+				sprintf(Disass_Str, "SLL*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x38 && b4 <= 0x3f) {
+				sprintf(Disass_Str, "SRL*\t(%s+%02X),%s\n",
+					ireg, *(*p + 2), reg[b4 & 7]);
+			} else if (b4 >= 0x40 && b4 <= 0x7f) {
+				sprintf(Disass_Str, "BIT*\t%c,(%s+%02X)\n",
+					((b4 >> 3) & 7) + '0', ireg, *(*p + 2));
+			} else if (b4 >= 0x80 && b4 <= 0xbf) {
+				sprintf(Disass_Str, "RES*\t%c,(%s+%02X),%s\n",
+					((b4 >> 3) & 7) + '0', ireg, *(*p + 2),
+					reg[b4 & 7]);
+			} else if (b4 >= 0xc0) {
+				sprintf(Disass_Str, "SET*\t%c,(%s+%02X),%s\n",
+					((b4 >> 3) & 7) + '0', ireg, *(*p + 2),
+					reg[b4 & 7]);
+			}
 		}
 		len = 4;
 		break;
