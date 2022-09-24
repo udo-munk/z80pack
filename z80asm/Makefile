@@ -1,6 +1,6 @@
 #
 # by default compile on POSIX compatible systems
-# the altenative options are provided for old ANSI C89 systems
+# the alternative options are provided for old ANSI C89 systems
 #
 CC = gcc
 #CC = cc
