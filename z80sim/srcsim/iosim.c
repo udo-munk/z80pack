@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1987-2021 by Udo Munk
  *
- * This modul of the simulator contains a simple terminal I/O
+ * This module of the simulator contains a simple terminal I/O
  * simulation as an example.
  *
  * History:

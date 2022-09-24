@@ -1,7 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (c) 2022 Thomas Eberhardt
+ *	Copyright (C) 2022 by Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -1479,7 +1479,7 @@ int op_sbc(int dummy1, int dummy2)
 }
 
 /*
- *	SBC AND ADC HL,?
+ *	SBC HL,? and ADC HL,?
  */
 int sbadchl(int base_op)
 {
