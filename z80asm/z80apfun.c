@@ -43,11 +43,15 @@ extern struct sym *get_sym(char *);
 extern int put_sym(char *, int);
 extern void put_label(void);
 
+#define UNUSED(x)	(void)(x)
+
 /*
  *	.8080 and .Z80
  */
 int op_pers(int new_pers, int dummy)
 {
+	UNUSED(dummy);
+
 	pers = &perstab[new_pers];
 	return(0);
 }
@@ -58,6 +62,9 @@ int op_pers(int new_pers, int dummy)
 int op_org(int dummy1, int dummy2)
 {
 	register int i;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (!gencode)
 		return(0);
@@ -85,6 +92,9 @@ int op_org(int dummy1, int dummy2)
  */
 int op_equ(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (!gencode)
 		return(0);
 	if (pass == 1) {		/* Pass 1 */
@@ -106,6 +116,9 @@ int op_equ(int dummy1, int dummy2)
  */
 int op_dl(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (!gencode)
 		return(0);
 	sd_flag = 1;
@@ -121,6 +134,9 @@ int op_dl(int dummy1, int dummy2)
 int op_ds(int dummy1, int dummy2)
 {
 	register int val;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (!gencode)
 		return(0);
@@ -144,6 +160,9 @@ int op_db(int dummy1, int dummy2)
 	register int i;
 	register char *p;
 	register char *s;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (!gencode)
 		return(0);
@@ -189,6 +208,9 @@ int op_dm(int dummy1, int dummy2)
 	register int i;
 	register char *p;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (!gencode)
 		return(0);
 	i = 0;
@@ -221,6 +243,9 @@ int op_dw(int dummy1, int dummy2)
 	register int i, len, temp;
 	register char *p;
 	register char *s;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (!gencode)
 		return(0);
@@ -257,6 +282,8 @@ int op_misc(int op_code, int dummy)
 	static char fn[LENFN];
 	static int incnest;
 	static struct inc incl[INCNEST];
+
+	UNUSED(dummy);
 
 	if (!gencode)
 		return(0);
@@ -365,6 +392,8 @@ int op_cond(int op_code, int dummy)
 	register char *p, *p1, *p2;
 	static int condnest[IFNEST];
 
+	UNUSED(dummy);
+
 	switch(op_code) {
 	case 1:				/* IFDEF */
 		if (iflevel >= IFNEST) {
@@ -452,6 +481,8 @@ int op_cond(int op_code, int dummy)
  */
 int op_glob(int op_code, int dummy)
 {
+	UNUSED(dummy);
+
 	if (!gencode)
 		return(0);
 	sd_flag = 2;

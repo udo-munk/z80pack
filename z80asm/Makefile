@@ -6,7 +6,7 @@ CC = gcc
 #CC = cc
 #CC = acc
 
-CFLAGS = -c -O3 -Wall -D_POSIX_C_SOURCE=200809L
+CFLAGS = -c -O3 -Wall -Wextra -D_POSIX_C_SOURCE=200809L
 #CFLAGS = -c -O
 
 LFLAGS =
