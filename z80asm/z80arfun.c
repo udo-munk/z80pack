@@ -196,97 +196,6 @@ int op_ex(int dummy1, int dummy2)
 }
 
 /*
- *	CALL
- */
-int op_call(int dummy1, int dummy2)
-{
-	register char *p1, *p2;
-	register int i;
-
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
-		p1 = operand;
-		p2 = tmp;
-		while (*p1 != ',' && *p1 != '\0')
-			*p2++ = *p1++;
-		*p2 = '\0';
-		switch (get_reg(tmp)) {
-		case REGC:		/* CALL C,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xdc;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case FLGNC:		/* CALL NC,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xd4;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case FLGZ:		/* CALL Z,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xcc;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case FLGNZ:		/* CALL NZ,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xc4;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case FLGPE:		/* CALL PE,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xec;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case FLGPO:		/* CALL PO,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xe4;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case FLGM:		/* CALL M,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xfc;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case FLGP:		/* CALL P,nn */
-			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xf4;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case NOREG:		/* CALL nn */
-			i = eval(operand);
-			ops[0] = 0xcd;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
-			break;
-		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
-			ops[2] = 0;
-			asmerr(E_MISOPE);
-			break;
-		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
-			ops[2] = 0;
-			asmerr(E_ILLOPE);
-		}
-	}
-	return(3);
-}
-
-/*
  *	RST
  */
 int op_rst(int dummy1, int dummy2)
@@ -359,15 +268,12 @@ int op_ret(int dummy1, int dummy2)
 }
 
 /*
- *	JP
+ *	JP and CALL
  */
-int op_jp(int dummy1, int dummy2)
+int op_jpcall(int base_op, int base_opd)
 {
 	register char *p1, *p2;
-	register int i, len;
-
-	UNUSED(dummy1);
-	UNUSED(dummy2);
+	register int i, len, op;
 
 	if (pass == 1)
 		if (*label)
@@ -377,98 +283,112 @@ int op_jp(int dummy1, int dummy2)
 	while (*p1 != ',' && *p1 != '\0')
 		*p2++ = *p1++;
 	*p2 = '\0';
-	switch (get_reg(tmp)) {
-	case REGC:			/* JP C,nn */
+	switch (op = get_reg(tmp)) {
+	case REGC:			/* JP/CALL C,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xda;
+			ops[0] = base_op + 0x18;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case FLGNC:			/* JP NC,nn */
+	case FLGNC:			/* JP/CALL NC,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xd2;
+			ops[0] = base_op + 0x10;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case FLGZ:			/* JP Z,nn */
+	case FLGZ:			/* JP/CALL Z,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xca;
+			ops[0] = base_op + 0x08;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case FLGNZ:			/* JP NZ,nn */
+	case FLGNZ:			/* JP/CALL NZ,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xc2;
+			ops[0] = base_op;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case FLGPE:			/* JP PE,nn */
+	case FLGPE:			/* JP/CALL PE,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xea;
+			ops[0] = base_op + 0x28;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case FLGPO:			/* JP PO,nn */
+	case FLGPO:			/* JP/CALL PO,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xe2;
+			ops[0] = base_op + 0x20;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case FLGM:			/* JP M,nn */
+	case FLGM:			/* JP/CALL M,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xfa;
+			ops[0] = base_op + 0x38;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case FLGP:			/* JP P,nn */
+	case FLGP:			/* JP/CALL P,nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(strchr(operand, ',') + 1);
-			ops[0] = 0xf2;
+			ops[0] = base_op + 0x30;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
 		break;
-	case REGIHL:			/* JP (HL) */
-		len = 1;
-		ops[0] = 0xe9;
+	case REGIHL:			/* JP/CALL (HL) */
+	case REGIIX:			/* JP/CALL (IX) */
+	case REGIIY:			/* JP/CALL (IY) */
+		if (base_op == 0xc2) {
+			/* only for JP */
+			switch (op) {
+			case REGIHL:	/* JP (HL) */
+				len = 1;
+				ops[0] = 0xe9;
+				break;
+			case REGIIX:	/* JP (IX) */
+				len = 2;
+				ops[0] = 0xdd;
+				ops[1] = 0xe9;
+				break;
+			case REGIIY:	/* JP (IY) */
+				len = 2;
+				ops[0] = 0xfd;
+				ops[1] = 0xe9;
+				break;
+			}
+		} else {
+			/* not for CALL */
+			len = 1;
+			ops[0] = 0;
+			asmerr(E_ILLOPE);
+		}
 		break;
-	case REGIIX:			/* JP (IX) */
-		len = 2;
-		ops[0] = 0xdd;
-		ops[1] = 0xe9;
-		break;
-	case REGIIY:			/* JP (IY) */
-		len = 2;
-		ops[0] = 0xfd;
-		ops[1] = 0xe9;
-		break;
-	case NOREG:			/* JP nn */
+	case NOREG:			/* JP/CALL nn */
 		len = 3;
 		if (pass == 2) {
 			i = eval(operand);
-			ops[0] = 0xc3;
+			ops[0] = base_opd;
 			ops[1] = i & 0xff;
 			ops[2] = i >> 8;
 		}
@@ -1432,15 +1352,12 @@ int addiy(void)
 }
 
 /*
- *	ADC ?,?
+ *	SBC ?,? and ADC ?,?
  */
-int op_adc(int dummy1, int dummy2)
+int op_sbadc(int base_op, int base_op16)
 {
 	register int len;
 	register char *p1, *p2;
-
-	UNUSED(dummy1);
-	UNUSED(dummy2);
 
 	if (pass == 1)
 		if (*label)
@@ -1451,64 +1368,11 @@ int op_adc(int dummy1, int dummy2)
 		*p2++ = *p1++;
 	*p2 = '\0';
 	switch (get_reg(tmp)) {
-	case REGA:			/* ADC A,? */
-		len = aluop(0x88, get_second(operand));
+	case REGA:			/* SBC/ADC A,? */
+		len = aluop(base_op, get_second(operand));
 		break;
-	case REGHL:			/* ADC HL,? */
-		len = sbadchl(0x4a);
-		break;
-	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
-		asmerr(E_MISOPE);
-		break;
-	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
-		asmerr(E_ILLOPE);
-	}
-	return(len);
-}
-
-/*
- *	SUB
- */
-int op_sub(int dummy1, int dummy2)
-{
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (pass == 1)
-		if (*label)
-			put_label();
-	return(aluop(0x90, operand));
-}
-
-/*
- *	SBC ?,?
- */
-int op_sbc(int dummy1, int dummy2)
-{
-	register int len;
-	register char *p1, *p2;
-
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (pass == 1)
-		if (*label)
-			put_label();
-	p1 = operand;
-	p2 = tmp;
-	while (*p1 != ',' && *p1 != '\0')
-		*p2++ = *p1++;
-	*p2 = '\0';
-	switch (get_reg(tmp)) {
-	case REGA:			/* SBC A,? */
-		len = aluop(0x98, get_second(operand));
-		break;
-	case REGHL:			/* SBC HL,? */
-		len = sbadchl(0x42);
+	case REGHL:			/* SBC/ADC HL,? */
+		len = sbadchl(base_op16);
 		break;
 	case NOOPERA:			/* missing operand */
 		len = 1;
@@ -1661,59 +1525,16 @@ int op_decinc(int base_op, int base_op16)
 }
 
 /*
- *	OR
+ *	SUB, AND, XOR, OR, CP
  */
-int op_or(int dummy1, int dummy2)
+int op_alu(int base_op, int dummy)
 {
-	UNUSED(dummy1);
-	UNUSED(dummy2);
+	UNUSED(dummy);
 
 	if (pass == 1)
 		if (*label)
 			put_label();
-	return(aluop(0xb0, operand));
-}
-
-/*
- *	XOR
- */
-int op_xor(int dummy1, int dummy2)
-{
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (pass == 1)
-		if (*label)
-			put_label();
-	return(aluop(0xa8, operand));
-}
-
-/*
- *	AND
- */
-int op_and(int dummy1, int dummy2)
-{
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (pass == 1)
-		if (*label)
-			put_label();
-	return(aluop(0xa0, operand));
-}
-
-/*
- *	CP
- */
-int op_cp(int dummy1, int dummy2)
-{
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (pass == 1)
-		if (*label)
-			put_label();
-	return(aluop(0xb8, operand));
+	return(aluop(base_op, operand));
 }
 
 /*
