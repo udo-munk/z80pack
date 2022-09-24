@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (c) 2022 Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -16,6 +17,7 @@
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
+ *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  */
 
 /*
@@ -77,3 +79,6 @@ unsigned
 struct sym
      *symtab[HASHSIZE],		/* symbol table */
      **symarray;		/* sorted symbol table */
+
+struct pers
+     *pers;			/* current personality */

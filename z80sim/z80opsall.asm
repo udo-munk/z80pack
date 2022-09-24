@@ -15,10 +15,10 @@ Z80OPS:
 	ADC	A,D
 	ADC	A,E
 	ADC	A,H
-	ADC	A,IXH
-	ADC	A,IXL
-	ADC	A,IYH
-	ADC	A,IYL
+	ADC	A,IXH			; Undocumented
+	ADC	A,IXL			; Undocumented
+	ADC	A,IYH			; Undocumented
+	ADC	A,IYL			; Undocumented
 	ADC	A,L
 	ADC	A,N
 	ADC	HL,BC
@@ -34,10 +34,10 @@ Z80OPS:
 	ADD	A,D
 	ADD	A,E
 	ADD	A,H
-	ADD	A,IXH
-	ADD	A,IXL
-	ADD	A,IYH
-	ADD	A,IYL
+	ADD	A,IXH			; Undocumented
+	ADD	A,IXL			; Undocumented
+	ADD	A,IYH			; Undocumented
+	ADD	A,IYL			; Undocumented
 	ADD	A,L
 	ADD	A,N
 	ADD	HL,BC
@@ -61,10 +61,10 @@ Z80OPS:
 	AND	D
 	AND	E
 	AND	H
-	AND	IXH
-	AND	IXL
-	AND	IYH
-	AND	IYL
+	AND	IXH			; Undocumented
+	AND	IXL			; Undocumented
+	AND	IYH			; Undocumented
+	AND	IYL			; Undocumented
 	AND	L
 	AND	N
 	BIT	0,(HL)
@@ -166,10 +166,10 @@ Z80OPS:
 	CP	D
 	CP	E
 	CP	H
-	CP	IXH
-	CP	IXL
-	CP	IYH
-	CP	IYL
+	CP	IXH			; Undocumented
+	CP	IXL			; Undocumented
+	CP	IYH			; Undocumented
+	CP	IYL			; Undocumented
 	CP	L
 	CP	N
 	CPD
@@ -191,11 +191,11 @@ Z80OPS:
 	DEC	H
 	DEC	HL
 	DEC	IX
-	DEC	IXH
-	DEC	IXL
+	DEC	IXH			; Undocumented
+	DEC	IXL			; Undocumented
 	DEC	IY
-	DEC	IYH
-	DEC	IYL
+	DEC	IYH			; Undocumented
+	DEC	IYL			; Undocumented
 	DEC	L
 	DEC	SP
 	DI
@@ -217,7 +217,7 @@ Z80OPS:
 	IN	C,(C)
 	IN	D,(C)
 	IN	E,(C)
-	IN	F,(C)
+	IN	F,(C)			; Undocumented
 	IN	H,(C)
 	IN	L,(C)
 	INC	(HL)
@@ -233,11 +233,11 @@ Z80OPS:
 	INC	H
 	INC	HL
 	INC	IX
-	INC	IXH
-	INC	IXL
+	INC	IXH			; Undocumented
+	INC	IXL			; Undocumented
 	INC	IY
-	INC	IYH
-	INC	IYL
+	INC	IYH			; Undocumented
+	INC	IYL			; Undocumented
 	INC	L
 	INC	SP
 	IND
@@ -307,10 +307,10 @@ Z80OPS:
 	LD	A,E
 	LD	A,H
 	LD	A,I
-	LD	A,IXH
-	LD	A,IXL
-	LD	A,IYH
-	LD	A,IYL
+	LD	A,IXH			; Undocumented
+	LD	A,IXL			; Undocumented
+	LD	A,IYH			; Undocumented
+	LD	A,IYL			; Undocumented
 	LD	A,L
 	LD	A,N
 	LD	B,(HL)
@@ -322,10 +322,10 @@ Z80OPS:
 	LD	B,D
 	LD	B,E
 	LD	B,H
-	LD	B,IXH
-	LD	B,IXL
-	LD	B,IYH
-	LD	B,IYL
+	LD	B,IXH			; Undocumented
+	LD	B,IXL			; Undocumented
+	LD	B,IYH			; Undocumented
+	LD	B,IYL			; Undocumented
 	LD	B,L
 	LD	B,N
 	LD	BC,(NN)
@@ -339,10 +339,10 @@ Z80OPS:
 	LD	C,D
 	LD	C,E
 	LD	C,H
-	LD	C,IXH
-	LD	C,IXL
-	LD	C,IYH
-	LD	C,IYL
+	LD	C,IXH			; Undocumented
+	LD	C,IXL			; Undocumented
+	LD	C,IYH			; Undocumented
+	LD	C,IYL			; Undocumented
 	LD	C,L
 	LD	C,N
 	LD	D,(HL)
@@ -354,10 +354,10 @@ Z80OPS:
 	LD	D,D
 	LD	D,E
 	LD	D,H
-	LD	D,IXH
-	LD	D,IXL
-	LD	D,IYH
-	LD	D,IYL
+	LD	D,IXH			; Undocumented
+	LD	D,IXL			; Undocumented
+	LD	D,IYH			; Undocumented
+	LD	D,IYL			; Undocumented
 	LD	D,L
 	LD	D,N
 	LD	DE,(NN)
@@ -371,10 +371,10 @@ Z80OPS:
 	LD	E,D
 	LD	E,E
 	LD	E,H
-	LD	E,IXH
-	LD	E,IXL
-	LD	E,IYH
-	LD	E,IYL
+	LD	E,IXH			; Undocumented
+	LD	E,IXL			; Undocumented
+	LD	E,IYH			; Undocumented
+	LD	E,IYL			; Undocumented
 	LD	E,L
 	LD	E,N
 	LD	H,(HL)
@@ -393,40 +393,40 @@ Z80OPS:
 	LD	I,A
 	LD	IX,(NN)
 	LD	IX,NN
-	LD	IXH,A
-	LD	IXH,B
-	LD	IXH,C
-	LD	IXH,D
-	LD	IXH,E
-	LD	IXH,IXH
-	LD	IXH,IXL
-	LD	IXH,N
-	LD	IXL,A
-	LD	IXL,B
-	LD	IXL,C
-	LD	IXL,D
-	LD	IXL,E
-	LD	IXL,IXH
-	LD	IXL,IXL
-	LD	IXL,N
+	LD	IXH,A			; Undocumented
+	LD	IXH,B			; Undocumented
+	LD	IXH,C			; Undocumented
+	LD	IXH,D			; Undocumented
+	LD	IXH,E			; Undocumented
+	LD	IXH,IXH			; Undocumented
+	LD	IXH,IXL			; Undocumented
+	LD	IXH,N			; Undocumented
+	LD	IXL,A			; Undocumented
+	LD	IXL,B			; Undocumented
+	LD	IXL,C			; Undocumented
+	LD	IXL,D			; Undocumented
+	LD	IXL,E			; Undocumented
+	LD	IXL,IXH			; Undocumented
+	LD	IXL,IXL			; Undocumented
+	LD	IXL,N			; Undocumented
 	LD	IY,(NN)
 	LD	IY,NN
-	LD	IYH,A
-	LD	IYH,B
-	LD	IYH,C
-	LD	IYH,D
-	LD	IYH,E
-	LD	IYH,IYH
-	LD	IYH,IYL
-	LD	IYH,N
-	LD	IYL,A
-	LD	IYL,B
-	LD	IYL,C
-	LD	IYL,D
-	LD	IYL,E
-	LD	IYL,IYH
-	LD	IYL,IYL
-	LD	IYL,N
+	LD	IYH,A			; Undocumented
+	LD	IYH,B			; Undocumented
+	LD	IYH,C			; Undocumented
+	LD	IYH,D			; Undocumented
+	LD	IYH,E			; Undocumented
+	LD	IYH,IYH			; Undocumented
+	LD	IYH,IYL			; Undocumented
+	LD	IYH,N			; Undocumented
+	LD	IYL,A			; Undocumented
+	LD	IYL,B			; Undocumented
+	LD	IYL,C			; Undocumented
+	LD	IYL,D			; Undocumented
+	LD	IYL,E			; Undocumented
+	LD	IYL,IYH			; Undocumented
+	LD	IYL,IYL			; Undocumented
+	LD	IYL,N			; Undocumented
 	LD	L,(HL)
 	LD	L,(IX+IND)
 	LD	L,(IY+IND)
@@ -458,15 +458,15 @@ Z80OPS:
 	OR	D
 	OR	E
 	OR	H
-	OR	IXH
-	OR	IXL
-	OR	IYH
-	OR	IYL
+	OR	IXH			; Undocumented
+	OR	IXL			; Undocumented
+	OR	IYH			; Undocumented
+	OR	IYL			; Undocumented
 	OR	L
 	OR	N
 	OTDR
 	OTIR
-	OUT	(C),0
+	OUT	(C),0			; Undocumented
 	OUT	(C),A
 	OUT	(C),B
 	OUT	(C),C
@@ -491,7 +491,21 @@ Z80OPS:
 	PUSH	IY
 	RES	0,(HL)
 	RES	0,(IX+IND)
+	RES	0,(IX+IND),A		; Undocumented
+	RES	0,(IX+IND),B		; Undocumented
+	RES	0,(IX+IND),C		; Undocumented
+	RES	0,(IX+IND),D		; Undocumented
+	RES	0,(IX+IND),E		; Undocumented
+	RES	0,(IX+IND),H		; Undocumented
+	RES	0,(IX+IND),L		; Undocumented
 	RES	0,(IY+IND)
+	RES	0,(IY+IND),A		; Undocumented
+	RES	0,(IY+IND),B		; Undocumented
+	RES	0,(IY+IND),C		; Undocumented
+	RES	0,(IY+IND),D		; Undocumented
+	RES	0,(IY+IND),E		; Undocumented
+	RES	0,(IY+IND),H		; Undocumented
+	RES	0,(IY+IND),L		; Undocumented
 	RES	0,A
 	RES	0,B
 	RES	0,C
@@ -501,7 +515,21 @@ Z80OPS:
 	RES	0,L
 	RES	1,(HL)
 	RES	1,(IX+IND)
+	RES	1,(IX+IND),A		; Undocumented
+	RES	1,(IX+IND),B		; Undocumented
+	RES	1,(IX+IND),C		; Undocumented
+	RES	1,(IX+IND),D		; Undocumented
+	RES	1,(IX+IND),E		; Undocumented
+	RES	1,(IX+IND),H		; Undocumented
+	RES	1,(IX+IND),L		; Undocumented
 	RES	1,(IY+IND)
+	RES	1,(IY+IND),A		; Undocumented
+	RES	1,(IY+IND),B		; Undocumented
+	RES	1,(IY+IND),C		; Undocumented
+	RES	1,(IY+IND),D		; Undocumented
+	RES	1,(IY+IND),E		; Undocumented
+	RES	1,(IY+IND),H		; Undocumented
+	RES	1,(IY+IND),L		; Undocumented
 	RES	1,A
 	RES	1,B
 	RES	1,C
@@ -511,7 +539,21 @@ Z80OPS:
 	RES	1,L
 	RES	2,(HL)
 	RES	2,(IX+IND)
+	RES	2,(IX+IND),A		; Undocumented
+	RES	2,(IX+IND),B		; Undocumented
+	RES	2,(IX+IND),C		; Undocumented
+	RES	2,(IX+IND),D		; Undocumented
+	RES	2,(IX+IND),E		; Undocumented
+	RES	2,(IX+IND),H		; Undocumented
+	RES	2,(IX+IND),L		; Undocumented
 	RES	2,(IY+IND)
+	RES	2,(IY+IND),A		; Undocumented
+	RES	2,(IY+IND),B		; Undocumented
+	RES	2,(IY+IND),C		; Undocumented
+	RES	2,(IY+IND),D		; Undocumented
+	RES	2,(IY+IND),E		; Undocumented
+	RES	2,(IY+IND),H		; Undocumented
+	RES	2,(IY+IND),L		; Undocumented
 	RES	2,A
 	RES	2,B
 	RES	2,C
@@ -521,7 +563,21 @@ Z80OPS:
 	RES	2,L
 	RES	3,(HL)
 	RES	3,(IX+IND)
+	RES	3,(IX+IND),A		; Undocumented
+	RES	3,(IX+IND),B		; Undocumented
+	RES	3,(IX+IND),C		; Undocumented
+	RES	3,(IX+IND),D		; Undocumented
+	RES	3,(IX+IND),E		; Undocumented
+	RES	3,(IX+IND),H		; Undocumented
+	RES	3,(IX+IND),L		; Undocumented
 	RES	3,(IY+IND)
+	RES	3,(IY+IND),A		; Undocumented
+	RES	3,(IY+IND),B		; Undocumented
+	RES	3,(IY+IND),C		; Undocumented
+	RES	3,(IY+IND),D		; Undocumented
+	RES	3,(IY+IND),E		; Undocumented
+	RES	3,(IY+IND),H		; Undocumented
+	RES	3,(IY+IND),L		; Undocumented
 	RES	3,A
 	RES	3,B
 	RES	3,C
@@ -531,7 +587,21 @@ Z80OPS:
 	RES	3,L
 	RES	4,(HL)
 	RES	4,(IX+IND)
+	RES	4,(IX+IND),A		; Undocumented
+	RES	4,(IX+IND),B		; Undocumented
+	RES	4,(IX+IND),C		; Undocumented
+	RES	4,(IX+IND),D		; Undocumented
+	RES	4,(IX+IND),E		; Undocumented
+	RES	4,(IX+IND),H		; Undocumented
+	RES	4,(IX+IND),L		; Undocumented
 	RES	4,(IY+IND)
+	RES	4,(IY+IND),A		; Undocumented
+	RES	4,(IY+IND),B		; Undocumented
+	RES	4,(IY+IND),C		; Undocumented
+	RES	4,(IY+IND),D		; Undocumented
+	RES	4,(IY+IND),E		; Undocumented
+	RES	4,(IY+IND),H		; Undocumented
+	RES	4,(IY+IND),L		; Undocumented
 	RES	4,A
 	RES	4,B
 	RES	4,C
@@ -541,7 +611,21 @@ Z80OPS:
 	RES	4,L
 	RES	5,(HL)
 	RES	5,(IX+IND)
+	RES	5,(IX+IND),A		; Undocumented
+	RES	5,(IX+IND),B		; Undocumented
+	RES	5,(IX+IND),C		; Undocumented
+	RES	5,(IX+IND),D		; Undocumented
+	RES	5,(IX+IND),E		; Undocumented
+	RES	5,(IX+IND),H		; Undocumented
+	RES	5,(IX+IND),L		; Undocumented
 	RES	5,(IY+IND)
+	RES	5,(IY+IND),A		; Undocumented
+	RES	5,(IY+IND),B		; Undocumented
+	RES	5,(IY+IND),C		; Undocumented
+	RES	5,(IY+IND),D		; Undocumented
+	RES	5,(IY+IND),E		; Undocumented
+	RES	5,(IY+IND),H		; Undocumented
+	RES	5,(IY+IND),L		; Undocumented
 	RES	5,A
 	RES	5,B
 	RES	5,C
@@ -551,7 +635,21 @@ Z80OPS:
 	RES	5,L
 	RES	6,(HL)
 	RES	6,(IX+IND)
+	RES	6,(IX+IND),A		; Undocumented
+	RES	6,(IX+IND),B		; Undocumented
+	RES	6,(IX+IND),C		; Undocumented
+	RES	6,(IX+IND),D		; Undocumented
+	RES	6,(IX+IND),E		; Undocumented
+	RES	6,(IX+IND),H		; Undocumented
+	RES	6,(IX+IND),L		; Undocumented
 	RES	6,(IY+IND)
+	RES	6,(IY+IND),A		; Undocumented
+	RES	6,(IY+IND),B		; Undocumented
+	RES	6,(IY+IND),C		; Undocumented
+	RES	6,(IY+IND),D		; Undocumented
+	RES	6,(IY+IND),E		; Undocumented
+	RES	6,(IY+IND),H		; Undocumented
+	RES	6,(IY+IND),L		; Undocumented
 	RES	6,A
 	RES	6,B
 	RES	6,C
@@ -561,7 +659,21 @@ Z80OPS:
 	RES	6,L
 	RES	7,(HL)
 	RES	7,(IX+IND)
+	RES	7,(IX+IND),A		; Undocumented
+	RES	7,(IX+IND),B		; Undocumented
+	RES	7,(IX+IND),C		; Undocumented
+	RES	7,(IX+IND),D		; Undocumented
+	RES	7,(IX+IND),E		; Undocumented
+	RES	7,(IX+IND),H		; Undocumented
+	RES	7,(IX+IND),L		; Undocumented
 	RES	7,(IY+IND)
+	RES	7,(IY+IND),A		; Undocumented
+	RES	7,(IY+IND),B		; Undocumented
+	RES	7,(IY+IND),C		; Undocumented
+	RES	7,(IY+IND),D		; Undocumented
+	RES	7,(IY+IND),E		; Undocumented
+	RES	7,(IY+IND),H		; Undocumented
+	RES	7,(IY+IND),L		; Undocumented
 	RES	7,A
 	RES	7,B
 	RES	7,C
@@ -582,7 +694,21 @@ Z80OPS:
 	RETN
 	RL	(HL)
 	RL	(IX+IND)
+	RL	(IX+IND),A		; Undocumented
+	RL	(IX+IND),B		; Undocumented
+	RL	(IX+IND),C		; Undocumented
+	RL	(IX+IND),D		; Undocumented
+	RL	(IX+IND),E		; Undocumented
+	RL	(IX+IND),H		; Undocumented
+	RL	(IX+IND),L		; Undocumented
 	RL	(IY+IND)
+	RL	(IY+IND),A		; Undocumented
+	RL	(IY+IND),B		; Undocumented
+	RL	(IY+IND),C		; Undocumented
+	RL	(IY+IND),D		; Undocumented
+	RL	(IY+IND),E		; Undocumented
+	RL	(IY+IND),H		; Undocumented
+	RL	(IY+IND),L		; Undocumented
 	RL	A
 	RL	B
 	RL	C
@@ -593,7 +719,21 @@ Z80OPS:
 	RLA
 	RLC	(HL)
 	RLC	(IX+IND)
+	RLC	(IX+IND),A		; Undocumented
+	RLC	(IX+IND),B		; Undocumented
+	RLC	(IX+IND),C		; Undocumented
+	RLC	(IX+IND),D		; Undocumented
+	RLC	(IX+IND),E		; Undocumented
+	RLC	(IX+IND),H		; Undocumented
+	RLC	(IX+IND),L		; Undocumented
 	RLC	(IY+IND)
+	RLC	(IY+IND),A		; Undocumented
+	RLC	(IY+IND),B		; Undocumented
+	RLC	(IY+IND),C		; Undocumented
+	RLC	(IY+IND),D		; Undocumented
+	RLC	(IY+IND),E		; Undocumented
+	RLC	(IY+IND),H		; Undocumented
+	RLC	(IY+IND),L		; Undocumented
 	RLC	A
 	RLC	B
 	RLC	C
@@ -605,7 +745,21 @@ Z80OPS:
 	RLD
 	RR	(HL)
 	RR	(IX+IND)
+	RR	(IX+IND),A		; Undocumented
+	RR	(IX+IND),B		; Undocumented
+	RR	(IX+IND),C		; Undocumented
+	RR	(IX+IND),D		; Undocumented
+	RR	(IX+IND),E		; Undocumented
+	RR	(IX+IND),H		; Undocumented
+	RR	(IX+IND),L		; Undocumented
 	RR	(IY+IND)
+	RR	(IY+IND),A		; Undocumented
+	RR	(IY+IND),B		; Undocumented
+	RR	(IY+IND),C		; Undocumented
+	RR	(IY+IND),D		; Undocumented
+	RR	(IY+IND),E		; Undocumented
+	RR	(IY+IND),H		; Undocumented
+	RR	(IY+IND),L		; Undocumented
 	RR	A
 	RR	B
 	RR	C
@@ -616,7 +770,21 @@ Z80OPS:
 	RRA
 	RRC	(HL)
 	RRC	(IX+IND)
+	RRC	(IX+IND),A		; Undocumented
+	RRC	(IX+IND),B		; Undocumented
+	RRC	(IX+IND),C		; Undocumented
+	RRC	(IX+IND),D		; Undocumented
+	RRC	(IX+IND),E		; Undocumented
+	RRC	(IX+IND),H		; Undocumented
+	RRC	(IX+IND),L		; Undocumented
 	RRC	(IY+IND)
+	RRC	(IY+IND),A		; Undocumented
+	RRC	(IY+IND),B		; Undocumented
+	RRC	(IY+IND),C		; Undocumented
+	RRC	(IY+IND),D		; Undocumented
+	RRC	(IY+IND),E		; Undocumented
+	RRC	(IY+IND),H		; Undocumented
+	RRC	(IY+IND),L		; Undocumented
 	RRC	A
 	RRC	B
 	RRC	C
@@ -643,10 +811,10 @@ Z80OPS:
 	SBC	A,D
 	SBC	A,E
 	SBC	A,H
-	SBC	A,IXH
-	SBC	A,IXL
-	SBC	A,IYH
-	SBC	A,IYL
+	SBC	A,IXH			; Undocumented
+	SBC	A,IXL			; Undocumented
+	SBC	A,IYH			; Undocumented
+	SBC	A,IYL			; Undocumented
 	SBC	A,L
 	SBC	A,N
 	SBC	HL,BC
@@ -656,7 +824,21 @@ Z80OPS:
 	SCF
 	SET	0,(HL)
 	SET	0,(IX+IND)
+	SET	0,(IX+IND),A		; Undocumented
+	SET	0,(IX+IND),B		; Undocumented
+	SET	0,(IX+IND),C		; Undocumented
+	SET	0,(IX+IND),D		; Undocumented
+	SET	0,(IX+IND),E		; Undocumented
+	SET	0,(IX+IND),H		; Undocumented
+	SET	0,(IX+IND),L		; Undocumented
 	SET	0,(IY+IND)
+	SET	0,(IY+IND),A		; Undocumented
+	SET	0,(IY+IND),B		; Undocumented
+	SET	0,(IY+IND),C		; Undocumented
+	SET	0,(IY+IND),D		; Undocumented
+	SET	0,(IY+IND),E		; Undocumented
+	SET	0,(IY+IND),H		; Undocumented
+	SET	0,(IY+IND),L		; Undocumented
 	SET	0,A
 	SET	0,B
 	SET	0,C
@@ -666,7 +848,21 @@ Z80OPS:
 	SET	0,L
 	SET	1,(HL)
 	SET	1,(IX+IND)
+	SET	1,(IX+IND),A		; Undocumented
+	SET	1,(IX+IND),B		; Undocumented
+	SET	1,(IX+IND),C		; Undocumented
+	SET	1,(IX+IND),D		; Undocumented
+	SET	1,(IX+IND),E		; Undocumented
+	SET	1,(IX+IND),H		; Undocumented
+	SET	1,(IX+IND),L		; Undocumented
 	SET	1,(IY+IND)
+	SET	1,(IY+IND),A		; Undocumented
+	SET	1,(IY+IND),B		; Undocumented
+	SET	1,(IY+IND),C		; Undocumented
+	SET	1,(IY+IND),D		; Undocumented
+	SET	1,(IY+IND),E		; Undocumented
+	SET	1,(IY+IND),H		; Undocumented
+	SET	1,(IY+IND),L		; Undocumented
 	SET	1,A
 	SET	1,B
 	SET	1,C
@@ -676,7 +872,21 @@ Z80OPS:
 	SET	1,L
 	SET	2,(HL)
 	SET	2,(IX+IND)
+	SET	2,(IX+IND),A		; Undocumented
+	SET	2,(IX+IND),B		; Undocumented
+	SET	2,(IX+IND),C		; Undocumented
+	SET	2,(IX+IND),D		; Undocumented
+	SET	2,(IX+IND),E		; Undocumented
+	SET	2,(IX+IND),H		; Undocumented
+	SET	2,(IX+IND),L		; Undocumented
 	SET	2,(IY+IND)
+	SET	2,(IY+IND),A		; Undocumented
+	SET	2,(IY+IND),B		; Undocumented
+	SET	2,(IY+IND),C		; Undocumented
+	SET	2,(IY+IND),D		; Undocumented
+	SET	2,(IY+IND),E		; Undocumented
+	SET	2,(IY+IND),H		; Undocumented
+	SET	2,(IY+IND),L		; Undocumented
 	SET	2,A
 	SET	2,B
 	SET	2,C
@@ -686,7 +896,21 @@ Z80OPS:
 	SET	2,L
 	SET	3,(HL)
 	SET	3,(IX+IND)
+	SET	3,(IX+IND),A		; Undocumented
+	SET	3,(IX+IND),B		; Undocumented
+	SET	3,(IX+IND),C		; Undocumented
+	SET	3,(IX+IND),D		; Undocumented
+	SET	3,(IX+IND),E		; Undocumented
+	SET	3,(IX+IND),H		; Undocumented
+	SET	3,(IX+IND),L		; Undocumented
 	SET	3,(IY+IND)
+	SET	3,(IY+IND),A		; Undocumented
+	SET	3,(IY+IND),B		; Undocumented
+	SET	3,(IY+IND),C		; Undocumented
+	SET	3,(IY+IND),D		; Undocumented
+	SET	3,(IY+IND),E		; Undocumented
+	SET	3,(IY+IND),H		; Undocumented
+	SET	3,(IY+IND),L		; Undocumented
 	SET	3,A
 	SET	3,B
 	SET	3,C
@@ -696,7 +920,21 @@ Z80OPS:
 	SET	3,L
 	SET	4,(HL)
 	SET	4,(IX+IND)
+	SET	4,(IX+IND),A		; Undocumented
+	SET	4,(IX+IND),B		; Undocumented
+	SET	4,(IX+IND),C		; Undocumented
+	SET	4,(IX+IND),D		; Undocumented
+	SET	4,(IX+IND),E		; Undocumented
+	SET	4,(IX+IND),H		; Undocumented
+	SET	4,(IX+IND),L		; Undocumented
 	SET	4,(IY+IND)
+	SET	4,(IY+IND),A		; Undocumented
+	SET	4,(IY+IND),B		; Undocumented
+	SET	4,(IY+IND),C		; Undocumented
+	SET	4,(IY+IND),D		; Undocumented
+	SET	4,(IY+IND),E		; Undocumented
+	SET	4,(IY+IND),H		; Undocumented
+	SET	4,(IY+IND),L		; Undocumented
 	SET	4,A
 	SET	4,B
 	SET	4,C
@@ -706,7 +944,21 @@ Z80OPS:
 	SET	4,L
 	SET	5,(HL)
 	SET	5,(IX+IND)
+	SET	5,(IX+IND),A		; Undocumented
+	SET	5,(IX+IND),B		; Undocumented
+	SET	5,(IX+IND),C		; Undocumented
+	SET	5,(IX+IND),D		; Undocumented
+	SET	5,(IX+IND),E		; Undocumented
+	SET	5,(IX+IND),H		; Undocumented
+	SET	5,(IX+IND),L		; Undocumented
 	SET	5,(IY+IND)
+	SET	5,(IY+IND),A		; Undocumented
+	SET	5,(IY+IND),B		; Undocumented
+	SET	5,(IY+IND),C		; Undocumented
+	SET	5,(IY+IND),D		; Undocumented
+	SET	5,(IY+IND),E		; Undocumented
+	SET	5,(IY+IND),H		; Undocumented
+	SET	5,(IY+IND),L		; Undocumented
 	SET	5,A
 	SET	5,B
 	SET	5,C
@@ -716,7 +968,21 @@ Z80OPS:
 	SET	5,L
 	SET	6,(HL)
 	SET	6,(IX+IND)
+	SET	6,(IX+IND),A		; Undocumented
+	SET	6,(IX+IND),B		; Undocumented
+	SET	6,(IX+IND),C		; Undocumented
+	SET	6,(IX+IND),D		; Undocumented
+	SET	6,(IX+IND),E		; Undocumented
+	SET	6,(IX+IND),H		; Undocumented
+	SET	6,(IX+IND),L		; Undocumented
 	SET	6,(IY+IND)
+	SET	6,(IY+IND),A		; Undocumented
+	SET	6,(IY+IND),B		; Undocumented
+	SET	6,(IY+IND),C		; Undocumented
+	SET	6,(IY+IND),D		; Undocumented
+	SET	6,(IY+IND),E		; Undocumented
+	SET	6,(IY+IND),H		; Undocumented
+	SET	6,(IY+IND),L		; Undocumented
 	SET	6,A
 	SET	6,B
 	SET	6,C
@@ -726,7 +992,21 @@ Z80OPS:
 	SET	6,L
 	SET	7,(HL)
 	SET	7,(IX+IND)
+	SET	7,(IX+IND),A		; Undocumented
+	SET	7,(IX+IND),B		; Undocumented
+	SET	7,(IX+IND),C		; Undocumented
+	SET	7,(IX+IND),D		; Undocumented
+	SET	7,(IX+IND),E		; Undocumented
+	SET	7,(IX+IND),H		; Undocumented
+	SET	7,(IX+IND),L		; Undocumented
 	SET	7,(IY+IND)
+	SET	7,(IY+IND),A		; Undocumented
+	SET	7,(IY+IND),B		; Undocumented
+	SET	7,(IY+IND),C		; Undocumented
+	SET	7,(IY+IND),D		; Undocumented
+	SET	7,(IY+IND),E		; Undocumented
+	SET	7,(IY+IND),H		; Undocumented
+	SET	7,(IY+IND),L		; Undocumented
 	SET	7,A
 	SET	7,B
 	SET	7,C
@@ -736,7 +1016,21 @@ Z80OPS:
 	SET	7,L
 	SLA	(HL)
 	SLA	(IX+IND)
+	SLA	(IX+IND),A		; Undocumented
+	SLA	(IX+IND),B		; Undocumented
+	SLA	(IX+IND),C		; Undocumented
+	SLA	(IX+IND),D		; Undocumented
+	SLA	(IX+IND),E		; Undocumented
+	SLA	(IX+IND),H		; Undocumented
+	SLA	(IX+IND),L		; Undocumented
 	SLA	(IY+IND)
+	SLA	(IY+IND),A		; Undocumented
+	SLA	(IY+IND),B		; Undocumented
+	SLA	(IY+IND),C		; Undocumented
+	SLA	(IY+IND),D		; Undocumented
+	SLA	(IY+IND),E		; Undocumented
+	SLA	(IY+IND),H		; Undocumented
+	SLA	(IY+IND),L		; Undocumented
 	SLA	A
 	SLA	B
 	SLA	C
@@ -744,19 +1038,47 @@ Z80OPS:
 	SLA	E
 	SLA	H
 	SLA	L
-	SLL	(HL)
-	SLL	(IX+IND)
-	SLL	(IY+IND)
-	SLL	A
-	SLL	B
-	SLL	C
-	SLL	D
-	SLL	E
-	SLL	H
-	SLL	L
+	SLL	(HL)			; Undocumented
+	SLL	(IX+IND)		; Undocumented
+	SLL	(IX+IND),A		; Undocumented
+	SLL	(IX+IND),B		; Undocumented
+	SLL	(IX+IND),C		; Undocumented
+	SLL	(IX+IND),D		; Undocumented
+	SLL	(IX+IND),E		; Undocumented
+	SLL	(IX+IND),H		; Undocumented
+	SLL	(IX+IND),L		; Undocumented
+	SLL	(IY+IND)		; Undocumented
+	SLL	(IY+IND),A		; Undocumented
+	SLL	(IY+IND),B		; Undocumented
+	SLL	(IY+IND),C		; Undocumented
+	SLL	(IY+IND),D		; Undocumented
+	SLL	(IY+IND),E		; Undocumented
+	SLL	(IY+IND),H		; Undocumented
+	SLL	(IY+IND),L		; Undocumented
+	SLL	A			; Undocumented
+	SLL	B			; Undocumented
+	SLL	C			; Undocumented
+	SLL	D			; Undocumented
+	SLL	E			; Undocumented
+	SLL	H			; Undocumented
+	SLL	L			; Undocumented
 	SRA	(HL)
 	SRA	(IX+IND)
+	SRA	(IX+IND),A		; Undocumented
+	SRA	(IX+IND),B		; Undocumented
+	SRA	(IX+IND),C		; Undocumented
+	SRA	(IX+IND),D		; Undocumented
+	SRA	(IX+IND),E		; Undocumented
+	SRA	(IX+IND),H		; Undocumented
+	SRA	(IX+IND),L		; Undocumented
 	SRA	(IY+IND)
+	SRA	(IY+IND),A		; Undocumented
+	SRA	(IY+IND),B		; Undocumented
+	SRA	(IY+IND),C		; Undocumented
+	SRA	(IY+IND),D		; Undocumented
+	SRA	(IY+IND),E		; Undocumented
+	SRA	(IY+IND),H		; Undocumented
+	SRA	(IY+IND),L		; Undocumented
 	SRA	A
 	SRA	B
 	SRA	C
@@ -766,7 +1088,21 @@ Z80OPS:
 	SRA	L
 	SRL	(HL)
 	SRL	(IX+IND)
+	SRL	(IX+IND),A		; Undocumented
+	SRL	(IX+IND),B		; Undocumented
+	SRL	(IX+IND),C		; Undocumented
+	SRL	(IX+IND),D		; Undocumented
+	SRL	(IX+IND),E		; Undocumented
+	SRL	(IX+IND),H		; Undocumented
+	SRL	(IX+IND),L		; Undocumented
 	SRL	(IY+IND)
+	SRL	(IY+IND),A		; Undocumented
+	SRL	(IY+IND),B		; Undocumented
+	SRL	(IY+IND),C		; Undocumented
+	SRL	(IY+IND),D		; Undocumented
+	SRL	(IY+IND),E		; Undocumented
+	SRL	(IY+IND),H		; Undocumented
+	SRL	(IY+IND),L		; Undocumented
 	SRL	A
 	SRL	B
 	SRL	C
@@ -783,10 +1119,10 @@ Z80OPS:
 	SUB	D
 	SUB	E
 	SUB	H
-	SUB	IXH
-	SUB	IXL
-	SUB	IYH
-	SUB	IYL
+	SUB	IXH			; Undocumented
+	SUB	IXL			; Undocumented
+	SUB	IYH			; Undocumented
+	SUB	IYL			; Undocumented
 	SUB	L
 	SUB	N
 	XOR	(HL)
@@ -798,17 +1134,325 @@ Z80OPS:
 	XOR	D
 	XOR	E
 	XOR	H
-	XOR	IXH
-	XOR	IXL
-	XOR	IYH
-	XOR	IYL
+	XOR	IXH			; Undocumented
+	XOR	IXL			; Undocumented
+	XOR	IYH			; Undocumented
+	XOR	IYL			; Undocumented
 	XOR	L
 	XOR	N
 
 ; Rest of undocumented op-codes
-	DEFB	0EDH,063H		; LD (nn),HL
+	DEFB	0EDH,000H		; NOP
+	DEFB	0EDH,001H		; NOP
+	DEFB	0EDH,002H		; NOP
+	DEFB	0EDH,003H		; NOP
+	DEFB	0EDH,004H		; NOP
+	DEFB	0EDH,005H		; NOP
+	DEFB	0EDH,006H		; NOP
+	DEFB	0EDH,007H		; NOP
+	DEFB	0EDH,008H		; NOP
+	DEFB	0EDH,009H		; NOP
+	DEFB	0EDH,00AH		; NOP
+	DEFB	0EDH,00BH		; NOP
+	DEFB	0EDH,00CH		; NOP
+	DEFB	0EDH,00DH		; NOP
+	DEFB	0EDH,00EH		; NOP
+	DEFB	0EDH,00FH		; NOP
+	DEFB	0EDH,010H		; NOP
+	DEFB	0EDH,011H		; NOP
+	DEFB	0EDH,012H		; NOP
+	DEFB	0EDH,013H		; NOP
+	DEFB	0EDH,014H		; NOP
+	DEFB	0EDH,015H		; NOP
+	DEFB	0EDH,016H		; NOP
+	DEFB	0EDH,017H		; NOP
+	DEFB	0EDH,018H		; NOP
+	DEFB	0EDH,019H		; NOP
+	DEFB	0EDH,01AH		; NOP
+	DEFB	0EDH,01BH		; NOP
+	DEFB	0EDH,01CH		; NOP
+	DEFB	0EDH,01DH		; NOP
+	DEFB	0EDH,01EH		; NOP
+	DEFB	0EDH,01FH		; NOP
+	DEFB	0EDH,020H		; NOP
+	DEFB	0EDH,021H		; NOP
+	DEFB	0EDH,022H		; NOP
+	DEFB	0EDH,023H		; NOP
+	DEFB	0EDH,024H		; NOP
+	DEFB	0EDH,025H		; NOP
+	DEFB	0EDH,026H		; NOP
+	DEFB	0EDH,027H		; NOP
+	DEFB	0EDH,028H		; NOP
+	DEFB	0EDH,029H		; NOP
+	DEFB	0EDH,02AH		; NOP
+	DEFB	0EDH,02BH		; NOP
+	DEFB	0EDH,02CH		; NOP
+	DEFB	0EDH,02DH		; NOP
+	DEFB	0EDH,02EH		; NOP
+	DEFB	0EDH,02FH		; NOP
+	DEFB	0EDH,030H		; NOP
+	DEFB	0EDH,031H		; NOP
+	DEFB	0EDH,032H		; NOP
+	DEFB	0EDH,033H		; NOP
+	DEFB	0EDH,034H		; NOP
+	DEFB	0EDH,035H		; NOP
+	DEFB	0EDH,036H		; NOP
+	DEFB	0EDH,037H		; NOP
+	DEFB	0EDH,038H		; NOP
+	DEFB	0EDH,039H		; NOP
+	DEFB	0EDH,03AH		; NOP
+	DEFB	0EDH,03BH		; NOP
+	DEFB	0EDH,03CH		; NOP
+	DEFB	0EDH,03DH		; NOP
+	DEFB	0EDH,03EH		; NOP
+	DEFB	0EDH,03FH		; NOP
+	DEFB	0EDH,04CH		; NEG
+	DEFB	0EDH,04EH		; IM 0
+	DEFB	0EDH,054H		; NEG
+	DEFB	0EDH,055H		; RETN
+	DEFB	0EDH,05CH		; NEG
+	DEFB	0EDH,05DH		; RETI
+	DEFB	0EDH,063H		; LD (NN),HL
 	DEFW	NN
-	DEFB	0EDH,06BH		; LD HL,(nn)
+	DEFB	0EDH,064H		; NEG
+	DEFB	0EDH,065H		; RETN
+	DEFB	0EDH,066H		; IM 0
+	DEFB	0EDH,06BH		; LD HL,(NN)
 	DEFW	NN
+	DEFB	0EDH,06CH		; NEG
+	DEFB	0EDH,06DH		; RETI
+	DEFB	0EDH,06EH		; IM 0
+	DEFB	0EDH,074H		; NEG
+	DEFB	0EDH,075H		; RETN
+	DEFB	0EDH,076H		; IM 1
+	DEFB	0EDH,077H		; NOP
+	DEFB	0EDH,07CH		; NEG
+	DEFB	0EDH,07DH		; RETI
+	DEFB	0EDH,07EH		; IM 2
+	DEFB	0EDH,07FH		; NOP
+	DEFB	0EDH,080H		; NOP
+	DEFB	0EDH,081H		; NOP
+	DEFB	0EDH,082H		; NOP
+	DEFB	0EDH,083H		; NOP
+	DEFB	0EDH,084H		; NOP
+	DEFB	0EDH,085H		; NOP
+	DEFB	0EDH,086H		; NOP
+	DEFB	0EDH,087H		; NOP
+	DEFB	0EDH,088H		; NOP
+	DEFB	0EDH,089H		; NOP
+	DEFB	0EDH,08AH		; NOP
+	DEFB	0EDH,08BH		; NOP
+	DEFB	0EDH,08CH		; NOP
+	DEFB	0EDH,08DH		; NOP
+	DEFB	0EDH,08EH		; NOP
+	DEFB	0EDH,08FH		; NOP
+	DEFB	0EDH,090H		; NOP
+	DEFB	0EDH,091H		; NOP
+	DEFB	0EDH,092H		; NOP
+	DEFB	0EDH,093H		; NOP
+	DEFB	0EDH,094H		; NOP
+	DEFB	0EDH,095H		; NOP
+	DEFB	0EDH,096H		; NOP
+	DEFB	0EDH,097H		; NOP
+	DEFB	0EDH,098H		; NOP
+	DEFB	0EDH,099H		; NOP
+	DEFB	0EDH,09AH		; NOP
+	DEFB	0EDH,09BH		; NOP
+	DEFB	0EDH,09CH		; NOP
+	DEFB	0EDH,09DH		; NOP
+	DEFB	0EDH,09EH		; NOP
+	DEFB	0EDH,09FH		; NOP
+	DEFB	0EDH,0A4H		; NOP
+	DEFB	0EDH,0A5H		; NOP
+	DEFB	0EDH,0A6H		; NOP
+	DEFB	0EDH,0A7H		; NOP
+	DEFB	0EDH,0ACH		; NOP
+	DEFB	0EDH,0ADH		; NOP
+	DEFB	0EDH,0AEH		; NOP
+	DEFB	0EDH,0AFH		; NOP
+	DEFB	0EDH,0B4H		; NOP
+	DEFB	0EDH,0B5H		; NOP
+	DEFB	0EDH,0B6H		; NOP
+	DEFB	0EDH,0B7H		; NOP
+	DEFB	0EDH,0BCH		; NOP
+	DEFB	0EDH,0BDH		; NOP
+	DEFB	0EDH,0BEH		; NOP
+	DEFB	0EDH,0BFH		; NOP
+	DEFB	0EDH,0C0H		; NOP
+	DEFB	0EDH,0C1H		; NOP
+	DEFB	0EDH,0C2H		; NOP
+	DEFB	0EDH,0C3H		; NOP
+	DEFB	0EDH,0C4H		; NOP
+	DEFB	0EDH,0C5H		; NOP
+	DEFB	0EDH,0C6H		; NOP
+	DEFB	0EDH,0C7H		; NOP
+	DEFB	0EDH,0C8H		; NOP
+	DEFB	0EDH,0C9H		; NOP
+	DEFB	0EDH,0CAH		; NOP
+	DEFB	0EDH,0CBH		; NOP
+	DEFB	0EDH,0CCH		; NOP
+	DEFB	0EDH,0CDH		; NOP
+	DEFB	0EDH,0CEH		; NOP
+	DEFB	0EDH,0CFH		; NOP
+	DEFB	0EDH,0D0H		; NOP
+	DEFB	0EDH,0D1H		; NOP
+	DEFB	0EDH,0D2H		; NOP
+	DEFB	0EDH,0D3H		; NOP
+	DEFB	0EDH,0D4H		; NOP
+	DEFB	0EDH,0D5H		; NOP
+	DEFB	0EDH,0D6H		; NOP
+	DEFB	0EDH,0D7H		; NOP
+	DEFB	0EDH,0D8H		; NOP
+	DEFB	0EDH,0D9H		; NOP
+	DEFB	0EDH,0DAH		; NOP
+	DEFB	0EDH,0DBH		; NOP
+	DEFB	0EDH,0DCH		; NOP
+	DEFB	0EDH,0DDH		; NOP
+	DEFB	0EDH,0DEH		; NOP
+	DEFB	0EDH,0DFH		; NOP
+	DEFB	0EDH,0E0H		; NOP
+	DEFB	0EDH,0E1H		; NOP
+	DEFB	0EDH,0E2H		; NOP
+	DEFB	0EDH,0E3H		; NOP
+	DEFB	0EDH,0E4H		; NOP
+	DEFB	0EDH,0E5H		; NOP
+	DEFB	0EDH,0E6H		; NOP
+	DEFB	0EDH,0E7H		; NOP
+	DEFB	0EDH,0E8H		; NOP
+	DEFB	0EDH,0E9H		; NOP
+	DEFB	0EDH,0EAH		; NOP
+	DEFB	0EDH,0EBH		; NOP
+	DEFB	0EDH,0ECH		; NOP
+	DEFB	0EDH,0EDH		; NOP
+	DEFB	0EDH,0EEH		; NOP
+	DEFB	0EDH,0EFH		; NOP
+	DEFB	0EDH,0F0H		; NOP
+	DEFB	0EDH,0F1H		; NOP
+	DEFB	0EDH,0F2H		; NOP
+	DEFB	0EDH,0F3H		; NOP
+	DEFB	0EDH,0F4H		; NOP
+	DEFB	0EDH,0F5H		; NOP
+	DEFB	0EDH,0F6H		; NOP
+	DEFB	0EDH,0F7H		; NOP
+	DEFB	0EDH,0F8H		; NOP
+	DEFB	0EDH,0F9H		; NOP
+	DEFB	0EDH,0FAH		; NOP
+	DEFB	0EDH,0FBH		; NOP
+	DEFB	0EDH,0FCH		; NOP
+	DEFB	0EDH,0FDH		; NOP
+	DEFB	0EDH,0FEH		; NOP
+	DEFB	0EDH,0FFH		; NOP
+	DEFB	0DDH,0CBH,IND,040H	; BIT 0,(IX+IND)
+	DEFB	0DDH,0CBH,IND,041H	; BIT 0,(IX+IND)
+	DEFB	0DDH,0CBH,IND,042H	; BIT 0,(IX+IND)
+	DEFB	0DDH,0CBH,IND,043H	; BIT 0,(IX+IND)
+	DEFB	0DDH,0CBH,IND,044H	; BIT 0,(IX+IND)
+	DEFB	0DDH,0CBH,IND,045H	; BIT 0,(IX+IND)
+	DEFB	0DDH,0CBH,IND,047H	; BIT 0,(IX+IND)
+	DEFB	0DDH,0CBH,IND,048H	; BIT 1,(IX+IND)
+	DEFB	0DDH,0CBH,IND,049H	; BIT 1,(IX+IND)
+	DEFB	0DDH,0CBH,IND,04AH	; BIT 1,(IX+IND)
+	DEFB	0DDH,0CBH,IND,04BH	; BIT 1,(IX+IND)
+	DEFB	0DDH,0CBH,IND,04CH	; BIT 1,(IX+IND)
+	DEFB	0DDH,0CBH,IND,04DH	; BIT 1,(IX+IND)
+	DEFB	0DDH,0CBH,IND,04FH	; BIT 1,(IX+IND)
+	DEFB	0DDH,0CBH,IND,050H	; BIT 2,(IX+IND)
+	DEFB	0DDH,0CBH,IND,051H	; BIT 2,(IX+IND)
+	DEFB	0DDH,0CBH,IND,052H	; BIT 2,(IX+IND)
+	DEFB	0DDH,0CBH,IND,053H	; BIT 2,(IX+IND)
+	DEFB	0DDH,0CBH,IND,054H	; BIT 2,(IX+IND)
+	DEFB	0DDH,0CBH,IND,055H	; BIT 2,(IX+IND)
+	DEFB	0DDH,0CBH,IND,057H	; BIT 2,(IX+IND)
+	DEFB	0DDH,0CBH,IND,058H	; BIT 3,(IX+IND)
+	DEFB	0DDH,0CBH,IND,059H	; BIT 3,(IX+IND)
+	DEFB	0DDH,0CBH,IND,05AH	; BIT 3,(IX+IND)
+	DEFB	0DDH,0CBH,IND,05BH	; BIT 3,(IX+IND)
+	DEFB	0DDH,0CBH,IND,05CH	; BIT 3,(IX+IND)
+	DEFB	0DDH,0CBH,IND,05DH	; BIT 3,(IX+IND)
+	DEFB	0DDH,0CBH,IND,05FH	; BIT 3,(IX+IND)
+	DEFB	0DDH,0CBH,IND,060H	; BIT 4,(IX+IND)
+	DEFB	0DDH,0CBH,IND,061H	; BIT 4,(IX+IND)
+	DEFB	0DDH,0CBH,IND,062H	; BIT 4,(IX+IND)
+	DEFB	0DDH,0CBH,IND,063H	; BIT 4,(IX+IND)
+	DEFB	0DDH,0CBH,IND,064H	; BIT 4,(IX+IND)
+	DEFB	0DDH,0CBH,IND,065H	; BIT 4,(IX+IND)
+	DEFB	0DDH,0CBH,IND,067H	; BIT 4,(IX+IND)
+	DEFB	0DDH,0CBH,IND,068H	; BIT 5,(IX+IND)
+	DEFB	0DDH,0CBH,IND,069H	; BIT 5,(IX+IND)
+	DEFB	0DDH,0CBH,IND,06AH	; BIT 5,(IX+IND)
+	DEFB	0DDH,0CBH,IND,06BH	; BIT 5,(IX+IND)
+	DEFB	0DDH,0CBH,IND,06CH	; BIT 5,(IX+IND)
+	DEFB	0DDH,0CBH,IND,06DH	; BIT 5,(IX+IND)
+	DEFB	0DDH,0CBH,IND,06FH	; BIT 5,(IX+IND)
+	DEFB	0DDH,0CBH,IND,070H	; BIT 6,(IX+IND)
+	DEFB	0DDH,0CBH,IND,071H	; BIT 6,(IX+IND)
+	DEFB	0DDH,0CBH,IND,072H	; BIT 6,(IX+IND)
+	DEFB	0DDH,0CBH,IND,073H	; BIT 6,(IX+IND)
+	DEFB	0DDH,0CBH,IND,074H	; BIT 6,(IX+IND)
+	DEFB	0DDH,0CBH,IND,075H	; BIT 6,(IX+IND)
+	DEFB	0DDH,0CBH,IND,077H	; BIT 6,(IX+IND)
+	DEFB	0DDH,0CBH,IND,078H	; BIT 7,(IX+IND)
+	DEFB	0DDH,0CBH,IND,079H	; BIT 7,(IX+IND)
+	DEFB	0DDH,0CBH,IND,07AH	; BIT 7,(IX+IND)
+	DEFB	0DDH,0CBH,IND,07BH	; BIT 7,(IX+IND)
+	DEFB	0DDH,0CBH,IND,07CH	; BIT 7,(IX+IND)
+	DEFB	0DDH,0CBH,IND,07DH	; BIT 7,(IX+IND)
+	DEFB	0DDH,0CBH,IND,07FH	; BIT 7,(IX+IND)
+	DEFB	0FDH,0CBH,IND,040H	; BIT 0,(IY+IND)
+	DEFB	0FDH,0CBH,IND,041H	; BIT 0,(IY+IND)
+	DEFB	0FDH,0CBH,IND,042H	; BIT 0,(IY+IND)
+	DEFB	0FDH,0CBH,IND,043H	; BIT 0,(IY+IND)
+	DEFB	0FDH,0CBH,IND,044H	; BIT 0,(IY+IND)
+	DEFB	0FDH,0CBH,IND,045H	; BIT 0,(IY+IND)
+	DEFB	0FDH,0CBH,IND,047H	; BIT 0,(IY+IND)
+	DEFB	0FDH,0CBH,IND,048H	; BIT 1,(IY+IND)
+	DEFB	0FDH,0CBH,IND,049H	; BIT 1,(IY+IND)
+	DEFB	0FDH,0CBH,IND,04AH	; BIT 1,(IY+IND)
+	DEFB	0FDH,0CBH,IND,04BH	; BIT 1,(IY+IND)
+	DEFB	0FDH,0CBH,IND,04CH	; BIT 1,(IY+IND)
+	DEFB	0FDH,0CBH,IND,04DH	; BIT 1,(IY+IND)
+	DEFB	0FDH,0CBH,IND,04FH	; BIT 1,(IY+IND)
+	DEFB	0FDH,0CBH,IND,050H	; BIT 2,(IY+IND)
+	DEFB	0FDH,0CBH,IND,051H	; BIT 2,(IY+IND)
+	DEFB	0FDH,0CBH,IND,052H	; BIT 2,(IY+IND)
+	DEFB	0FDH,0CBH,IND,053H	; BIT 2,(IY+IND)
+	DEFB	0FDH,0CBH,IND,054H	; BIT 2,(IY+IND)
+	DEFB	0FDH,0CBH,IND,055H	; BIT 2,(IY+IND)
+	DEFB	0FDH,0CBH,IND,057H	; BIT 2,(IY+IND)
+	DEFB	0FDH,0CBH,IND,058H	; BIT 3,(IY+IND)
+	DEFB	0FDH,0CBH,IND,059H	; BIT 3,(IY+IND)
+	DEFB	0FDH,0CBH,IND,05AH	; BIT 3,(IY+IND)
+	DEFB	0FDH,0CBH,IND,05BH	; BIT 3,(IY+IND)
+	DEFB	0FDH,0CBH,IND,05CH	; BIT 3,(IY+IND)
+	DEFB	0FDH,0CBH,IND,05DH	; BIT 3,(IY+IND)
+	DEFB	0FDH,0CBH,IND,05FH	; BIT 3,(IY+IND)
+	DEFB	0FDH,0CBH,IND,060H	; BIT 4,(IY+IND)
+	DEFB	0FDH,0CBH,IND,061H	; BIT 4,(IY+IND)
+	DEFB	0FDH,0CBH,IND,062H	; BIT 4,(IY+IND)
+	DEFB	0FDH,0CBH,IND,063H	; BIT 4,(IY+IND)
+	DEFB	0FDH,0CBH,IND,064H	; BIT 4,(IY+IND)
+	DEFB	0FDH,0CBH,IND,065H	; BIT 4,(IY+IND)
+	DEFB	0FDH,0CBH,IND,067H	; BIT 4,(IY+IND)
+	DEFB	0FDH,0CBH,IND,068H	; BIT 5,(IY+IND)
+	DEFB	0FDH,0CBH,IND,069H	; BIT 5,(IY+IND)
+	DEFB	0FDH,0CBH,IND,06AH	; BIT 5,(IY+IND)
+	DEFB	0FDH,0CBH,IND,06BH	; BIT 5,(IY+IND)
+	DEFB	0FDH,0CBH,IND,06CH	; BIT 5,(IY+IND)
+	DEFB	0FDH,0CBH,IND,06DH	; BIT 5,(IY+IND)
+	DEFB	0FDH,0CBH,IND,06FH	; BIT 5,(IY+IND)
+	DEFB	0FDH,0CBH,IND,070H	; BIT 6,(IY+IND)
+	DEFB	0FDH,0CBH,IND,071H	; BIT 6,(IY+IND)
+	DEFB	0FDH,0CBH,IND,072H	; BIT 6,(IY+IND)
+	DEFB	0FDH,0CBH,IND,073H	; BIT 6,(IY+IND)
+	DEFB	0FDH,0CBH,IND,074H	; BIT 6,(IY+IND)
+	DEFB	0FDH,0CBH,IND,075H	; BIT 6,(IY+IND)
+	DEFB	0FDH,0CBH,IND,077H	; BIT 6,(IY+IND)
+	DEFB	0FDH,0CBH,IND,078H	; BIT 7,(IY+IND)
+	DEFB	0FDH,0CBH,IND,079H	; BIT 7,(IY+IND)
+	DEFB	0FDH,0CBH,IND,07AH	; BIT 7,(IY+IND)
+	DEFB	0FDH,0CBH,IND,07BH	; BIT 7,(IY+IND)
+	DEFB	0FDH,0CBH,IND,07CH	; BIT 7,(IY+IND)
+	DEFB	0FDH,0CBH,IND,07DH	; BIT 7,(IY+IND)
+	DEFB	0FDH,0CBH,IND,07FH	; BIT 7,(IY+IND)
 
 NN:	DEFS	2

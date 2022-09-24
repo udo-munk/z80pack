@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (c) 2022 Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -16,6 +17,7 @@
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
+ *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  */
 
 /*
@@ -29,7 +31,7 @@
 /*
  *	various constants
  */
-#define REL		"1.10"
+#define REL		"1.11-dev"
 #define COPYR		"Copyright (C) 1987-2022 by Udo Munk"
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */
@@ -59,7 +61,7 @@
  */
 struct opc {
 	char *op_name;		/* opcode name */
-	int (*op_fun) ();	/* function pointer code generation */
+	int (*op_fun) (int, int); /* function pointer code generation */
 	int  op_c1;		/* first base opcode */
 	int  op_c2;		/* second base opcode */
 };
@@ -70,6 +72,16 @@ struct opc {
 struct ope {
 	char *ope_name;		/* operand name */
 	int ope_sym;		/* symbol value operand */
+};
+
+/*
+ *	structure personality
+ */
+struct pers {
+	int no_opcodes;		/* number of opcode entries */
+	struct opc *opctab;	/* opcode table */
+	int no_operands;	/* number of operand entries */
+	struct ope *opetab;	/* operand table */
 };
 
 /*
@@ -104,10 +116,12 @@ struct inc {
 #define REGH		4	/* register H */
 #define REGL		5	/* register L */
 #define REGIHL		6	/* register indirect HL */
+#define REGM		6	/* register indirect HL (8080) */
 #define REGA		7	/* register A */
 #define REGI		8	/* register I */
 #define REGR		9	/* register R */
 #define REGAF		10	/* register pair AF */
+#define REGPSW		10	/* register pair AF (8080) */
 #define REGBC		11	/* register pair BC */
 #define REGDE		12	/* register pair DE */
 #define REGHL		13	/* register pair HL */
@@ -132,6 +146,13 @@ struct inc {
 #define FLGPO		36	/* flag parity odd */
 #define NOOPERA		98	/* no operand */
 #define NOREG		99	/* operand isn't register */
+
+/*
+ *	definitions of personalities
+ */
+#define	NUMPERS		2	/* number of personalities */
+#define PERSZ80		0	/* Z80 personality */
+#define PERS8080	1	/* 8080 personality */
 
 /*
  *	definitions of error numbers for error messages in listfile

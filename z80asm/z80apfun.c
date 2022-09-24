@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (c) 2022 Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -16,6 +17,7 @@
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
+ *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  */
 
 /*
@@ -42,9 +44,18 @@ extern int put_sym(char *, int);
 extern void put_label(void);
 
 /*
+ *	.8080 and .Z80
+ */
+int op_pers(int new_pers, int dummy)
+{
+	pers = &perstab[new_pers];
+	return(0);
+}
+
+/*
  *	ORG
  */
-int op_org(void)
+int op_org(int dummy1, int dummy2)
 {
 	register int i;
 
@@ -72,7 +83,7 @@ int op_org(void)
 /*
  *	EQU
  */
-int op_equ(void)
+int op_equ(int dummy1, int dummy2)
 {
 	if (!gencode)
 		return(0);
@@ -93,7 +104,7 @@ int op_equ(void)
 /*
  *	DEFL
  */
-int op_dl(void)
+int op_dl(int dummy1, int dummy2)
 {
 	if (!gencode)
 		return(0);
@@ -107,7 +118,7 @@ int op_dl(void)
 /*
  *	DEFS
  */
-int op_ds(void)
+int op_ds(int dummy1, int dummy2)
 {
 	register int val;
 
@@ -128,7 +139,7 @@ int op_ds(void)
 /*
  *	DEFB
  */
-int op_db(void)
+int op_db(int dummy1, int dummy2)
 {
 	register int i;
 	register char *p;
@@ -173,7 +184,7 @@ hyp_error:
 /*
  *	DEFM
  */
-int op_dm(void)
+int op_dm(int dummy1, int dummy2)
 {
 	register int i;
 	register char *p;
@@ -205,7 +216,7 @@ int op_dm(void)
 /*
  *	DEFW
  */
-int op_dw(void)
+int op_dw(int dummy1, int dummy2)
 {
 	register int i, len, temp;
 	register char *p;

@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (c) 2022 Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -16,6 +17,7 @@
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
+ *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  */
 
 /*
@@ -58,7 +60,7 @@ extern void a_sort_sym(int);
 
 static char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-x} {-u} -v -ofile -l[file] -dsymbol ... file ...",
+	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-x} {-8} {-u} -v -ofile -l[file] -dsymbol ... file ...",
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s"		/* 4 */
@@ -103,6 +105,7 @@ int main(int argc, char *argv[])
  */
 void init(void)
 {
+	pers = &perstab[PERSZ80];
 	errfp = stdout;
 }
 
@@ -177,6 +180,9 @@ void options(int argc, char *argv[])
 				*t = '\0';
 				if (put_sym(tmp, 0))
 					fatal(F_OUTMEM, "symbols");
+				break;
+			case '8':
+				pers = &perstab[PERS8080];
 				break;
 			case 'u':
 				undoc_flag = 1;
