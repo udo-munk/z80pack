@@ -2963,9 +2963,6 @@ static int op_calc(void)		/* CALL C,nn */
 	if (F & C_FLAG) {
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
-#ifdef BUS_8080
-		cpu_bus = CPU_WO | CPU_MEMR;
-#endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
