@@ -133,10 +133,10 @@ int op_dl(int dummy1, int dummy2)
  */
 int op_ds(int dummy1, int dummy2)
 {
+	register int val;
+
 	UNUSED(dummy1);
 	UNUSED(dummy2);
-
-	register int val;
 
 	if (!gencode)
 		return(0);
