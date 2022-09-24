@@ -44,11 +44,15 @@ extern void asmerr(int);
 extern int get_reg(char *);
 extern void put_label(void);
 
+#define UNUSED(x)	(void)(x)
+
 /*
  *	process 1byte opcodes without arguments
  */
 int op_1b(int b1, int dummy)
 {
+	UNUSED(dummy);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -74,6 +78,9 @@ int op_2b(int b1, int b2)
  */
 int op_im(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -104,6 +111,8 @@ int op_im(int dummy1, int dummy2)
 int op_pupo(int base_op, int dummy)
 {
 	register int len;
+
+	UNUSED(dummy);
 
 	if (pass == 1)
 		if (*label)
@@ -155,6 +164,9 @@ int op_ex(int dummy1, int dummy2)
 {
 	register int len;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -190,6 +202,9 @@ int op_call(int dummy1, int dummy2)
 {
 	register char *p1, *p2;
 	register int i;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
@@ -278,6 +293,9 @@ int op_rst(int dummy1, int dummy2)
 {
 	register int op;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -297,6 +315,9 @@ int op_rst(int dummy1, int dummy2)
  */
 int op_ret(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -344,6 +365,9 @@ int op_jp(int dummy1, int dummy2)
 {
 	register char *p1, *p2;
 	register int i, len;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (pass == 1)
 		if (*label)
@@ -469,6 +493,9 @@ int op_jr(int dummy1, int dummy2)
 {
 	register char *p1, *p2;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -518,6 +545,9 @@ int op_jr(int dummy1, int dummy2)
  */
 int op_djnz(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -535,6 +565,9 @@ int op_ld(int dummy1, int dummy2)
 {
 	register int len, op;
 	register char *p1, *p2;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (pass == 1)
 		if (*label)
@@ -1262,6 +1295,9 @@ int op_add(int dummy1, int dummy2)
 	register int len;
 	register char *p1, *p2;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -1403,6 +1439,9 @@ int op_adc(int dummy1, int dummy2)
 	register int len;
 	register char *p1, *p2;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -1436,6 +1475,9 @@ int op_adc(int dummy1, int dummy2)
  */
 int op_sub(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -1449,6 +1491,9 @@ int op_sbc(int dummy1, int dummy2)
 {
 	register int len;
 	register char *p1, *p2;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (pass == 1)
 		if (*label)
@@ -1620,6 +1665,9 @@ int op_decinc(int base_op, int base_op16)
  */
 int op_or(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -1631,6 +1679,9 @@ int op_or(int dummy1, int dummy2)
  */
 int op_xor(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -1642,6 +1693,9 @@ int op_xor(int dummy1, int dummy2)
  */
 int op_and(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -1653,6 +1707,9 @@ int op_and(int dummy1, int dummy2)
  */
 int op_cp(int dummy1, int dummy2)
 {
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -1741,6 +1798,8 @@ int op_rotshf(int base_op, int dummy)
 {
 	register char *p;
 	register int len, op;
+
+	UNUSED(dummy);
 
 	if (pass == 1)
 		if (*label)
@@ -1850,6 +1909,9 @@ int op_out(int dummy1, int dummy2)
 	register int op;
 	register char *p;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -1905,6 +1967,9 @@ int op_in(int dummy1, int dummy2)
 	register char *p1, *p2;
 	register int op;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -1956,6 +2021,8 @@ int op_trsbit(int base_op, int dummy)
 	register int len;
 	register int i;
 	register int op;
+
+	UNUSED(dummy);
 
 	len = 2;
 	i = 0;
@@ -2078,6 +2145,9 @@ int op8080_mov(int dummy1, int dummy2)
 	register char *p1, *p2;
 	register int op1, op2;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -2139,6 +2209,8 @@ int op8080_alu(int base_op, int dummy)
 {
 	register int op;
 
+	UNUSED(dummy);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -2170,6 +2242,8 @@ int op8080_alu(int base_op, int dummy)
 int op8080_decinc(int base_op, int dummy)
 {
 	register int op;
+
+	UNUSED(dummy);
 
 	if (pass == 1)
 		if (*label)
@@ -2203,6 +2277,8 @@ int op8080_reg16(int base_op, int dummy)
 {
 	register int op;
 
+	UNUSED(dummy);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -2233,6 +2309,8 @@ int op8080_regbd(int base_op, int dummy)
 {
 	register int op;
 
+	UNUSED(dummy);
+
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -2258,6 +2336,8 @@ int op8080_regbd(int base_op, int dummy)
 int op8080_imm(int base_op, int dummy)
 {
 	register int len;
+
+	UNUSED(dummy);
 
 	if (pass == 1)
 		if (*label)
@@ -2290,6 +2370,9 @@ int op8080_rst(int dummy1, int dummy2)
 {
 	register int op;
 
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
 	if (pass == 1) {		/* PASS 1 */
 		if (*label)
 			put_label();
@@ -2309,6 +2392,8 @@ int op8080_rst(int dummy1, int dummy2)
 int op8080_pupo(int base_op, int dummy)
 {
 	register int op;
+
+	UNUSED(dummy);
 
 	if (pass == 1)
 		if (*label)
@@ -2341,6 +2426,8 @@ int op8080_pupo(int base_op, int dummy)
 int op8080_addr(int base_op, int dummy)
 {
 	register int i, len;
+
+	UNUSED(dummy);
 
 	if (pass == 1)
 		if (*label)
@@ -2376,6 +2463,9 @@ int op8080_mvi(int dummy1, int dummy2)
 	register int len;
 	register char *p1, *p2;
 	register int op;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (pass == 1)
 		if (*label)
@@ -2435,6 +2525,9 @@ int op8080_lxi(int dummy1, int dummy2)
 	register int i, len;
 	register char *p1, *p2;
 	register int op;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
 
 	if (pass == 1)
 		if (*label)
