@@ -294,7 +294,7 @@ struct opc opctab_8080[] = {
 	{ "XCHG",	op_1b,		0xeb,	0	},
 	{ "XRA",	op8080_alu,	0xa8,	0	},
 	{ "XRI",	op8080_imm,	0xee,	0	},
-	{ "XTHL",	op_1b,		0xe3,	0	},
+	{ "XTHL",	op_1b,		0xe3,	0	}
 };
 
 /*
