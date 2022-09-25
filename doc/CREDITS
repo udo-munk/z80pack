@@ -50,3 +50,12 @@ For implementation of a BDOS-like interface for host file I/O.
 Fred Weigel <fred_weigel@hotmail.com>
 
 For the AM9511 emulation and 8080/Z80 software to use it.
+
+
+Thomas Eberhardt <sneakywumpus@gmail.com>
+
+For completing the implementation of the undocumented Z80 instructions,
+in the simulator, disassembler and assembler.
+For bug fixes to the refresh register implementation.
+For improving the faithfulness of the block instructions implementation.
+For adding 8080 support to the assembler.
