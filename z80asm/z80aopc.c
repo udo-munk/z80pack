@@ -29,11 +29,10 @@
 
 extern int op_1b(int, int), op_2b(int, int), op_pupo(int, int);
 extern int op_ex(int, int), op_ld(int, int);
-extern int op_call(int, int), op_ret(int, int), op_jp(int, int);
+extern int op_ret(int, int), op_jpcall(int, int);
 extern int op_jr(int, int), op_djnz(int, int), op_rst(int, int);
-extern int op_add(int, int), op_adc(int, int), op_sub(int, int);
-extern int op_sbc(int, int), op_cp(int, int), op_decinc(int, int);
-extern int op_or(int, int), op_xor(int, int), op_and(int, int);
+extern int op_add(int, int), op_sbadc(int, int);
+extern int op_decinc(int, int), op_alu(int, int);
 extern int op_rotshf(int, int);
 extern int op_out(int, int), op_in(int, int), op_im(int, int);
 extern int op_trsbit(int, int);
@@ -56,13 +55,13 @@ extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
 struct opc opctab_z80[] = {
 	{ ".8080",	op_pers,	PERS8080, 0	},
 	{ ".Z80",	op_pers,	PERSZ80, 0	},
-	{ "ADC",	op_adc,		0,	0	},
+	{ "ADC",	op_sbadc,	0x88,	0x4a	},
 	{ "ADD",	op_add,		0,	0	},
-	{ "AND",	op_and,		0,	0	},
+	{ "AND",	op_alu,		0xa0,	0	},
 	{ "BIT",	op_trsbit,	0x40,	0	},
-	{ "CALL",	op_call,	0,	0	},
+	{ "CALL",	op_jpcall,	0xc4,	0xcd	},
 	{ "CCF",	op_1b,		0x3f,	0	},
-	{ "CP",		op_cp,		0,	0	},
+	{ "CP",		op_alu,		0xb8,	0	},
 	{ "CPD",	op_2b,		0xed,	0xa9	},
 	{ "CPDR",	op_2b,		0xed,	0xb9	},
 	{ "CPI",	op_2b,		0xed,	0xa1	},
@@ -98,7 +97,7 @@ struct opc opctab_z80[] = {
 	{ "INDR",	op_2b,		0xed,	0xba	},
 	{ "INI",	op_2b,		0xed,	0xa2	},
 	{ "INIR",	op_2b,		0xed,	0xb2	},
-	{ "JP",		op_jp,		0,	0	},
+	{ "JP",		op_jpcall,	0xc2,	0xc3	},
 	{ "JR",		op_jr,		0,	0	},
 	{ "LD",		op_ld,		0,	0	},
 	{ "LDD",	op_2b,		0xed,	0xa8	},
@@ -109,7 +108,7 @@ struct opc opctab_z80[] = {
 	{ "NEG",	op_2b,		0xed,	0x44	},
 	{ "NOLIST",	op_misc,	3,	0	},
 	{ "NOP",	op_1b,		0,	0	},
-	{ "OR",		op_or,		0,	0	},
+	{ "OR",		op_alu,		0xb0,	0	},
 	{ "ORG",	op_org,		0,	0	},
 	{ "OTDR",	op_2b,		0xed,	0xbb	},
 	{ "OTIR",	op_2b,		0xed,	0xb3	},
@@ -136,16 +135,16 @@ struct opc opctab_z80[] = {
 	{ "RRCA",	op_1b,		0x0f,	0	},
 	{ "RRD",	op_2b,		0xed,	0x67	},
 	{ "RST",	op_rst,		0,	0	},
-	{ "SBC",	op_sbc,		0,	0	},
+	{ "SBC",	op_sbadc,	0x98,	0x42	},
 	{ "SCF",	op_1b,		0x37,	0	},
 	{ "SET",	op_trsbit,	0xc0,	0	},
 	{ "SLA",	op_rotshf,	0x20,	0	},
 	{ "SLL",	op_rotshf,	0x30,	0	},
 	{ "SRA",	op_rotshf,	0x28,	0	},
 	{ "SRL",	op_rotshf,	0x38,	0	},
-	{ "SUB",	op_sub,		0,	0	},
+	{ "SUB",	op_alu,		0x90,	0	},
 	{ "TITLE",	op_misc,	7,	0	},
-	{ "XOR",	op_xor,		0,	0	}
+	{ "XOR",	op_alu,		0xa8,	0	}
 };
 
 /*
