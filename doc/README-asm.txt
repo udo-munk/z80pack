@@ -47,7 +47,7 @@ part of the system image, if the complete image won't fit on the system
 tracks.
 
 Option 8:
-Change default personality to 8080.
+Change default instruction set to 8080.
 
 Option u:
 Accept undocumented Z80 instructions.
@@ -107,6 +107,8 @@ Others:
 
 INCLUDE <filename>      - include another source file
 PRINT   <'string'>      - print string to stdout in pass one
+.8080                   - switch to 8080 instruction set
+.Z80                    - switch to Z80 instruction set
 
 
 Operator precedence for the node based parser from Didier Derny:
