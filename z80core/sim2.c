@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 2022 by Thomas Eberhardt
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -135,10 +136,11 @@ static int op_tb4l(void), op_tb5l(void), op_tb6l(void), op_tb7l(void);
 static int op_tb0hl(void), op_tb1hl(void), op_tb2hl(void), op_tb3hl(void);
 static int op_tb4hl(void), op_tb5hl(void), op_tb6hl(void), op_tb7hl(void);
 
+static int op_undoc_slla(void);
 #ifdef Z80_UNDOC
-static int op_undoc_slla(void), op_undoc_sllb(void), op_undoc_sllc(void);
-static int op_undoc_slld(void), op_undoc_slle(void);
-static int op_undoc_sllh(void), op_undoc_slll(void), op_undoc_sllhl(void);
+static int op_undoc_sllb(void), op_undoc_sllc(void), op_undoc_slld(void);
+static int op_undoc_slle(void), op_undoc_sllh(void), op_undoc_slll(void);
+static int op_undoc_sllhl(void);
 #endif
 
 int op_cb_handel(void)

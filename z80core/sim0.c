@@ -3,6 +3,7 @@
  *
  * Copyright (C) 1987-2022 Udo Munk
  * Copyright (C) 2021 David McNaughton
+ * Copyright (C) 2022 Thomas Eberhardt
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -383,7 +384,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	} else {
 		strcpy(&confdir[0], CONFDIR);
 	}
-	
+
 	/* if option -r is used ROMS are there */
 	if (rompath[0] == 0) {
 		/* if not first try ./roms */
