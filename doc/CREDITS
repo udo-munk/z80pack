@@ -57,5 +57,5 @@ Thomas Eberhardt <sneakywumpus@gmail.com>
 For completing the implementation of the undocumented Z80 instructions,
 in the simulator, disassembler and assembler.
 For bug fixes to the refresh register implementation.
-For improving the faithfulness of the block instructions implementation.
+For generalizing WANT_FASTM to all block instructions as WANT_FASTB.
 For adding 8080 support to the assembler.

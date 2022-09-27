@@ -584,7 +584,6 @@ static int op_ini(void)			/* INI */
 {
 	BYTE io_in(BYTE, BYTE);
 	BYTE data;
-	WORD k;
 
 	data = io_in(C, B);
 	memwrt((H << 8) + L, data);
@@ -592,15 +591,7 @@ static int op_ini(void)			/* INI */
 	if (!L)
 		H++;
 	B--;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) ((C + 1) & 0xff) + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	F |= N_FLAG;
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
@@ -611,7 +602,6 @@ static int op_inir(void)		/* INIR */
 	BYTE io_in(BYTE, BYTE);
 	WORD addr;
 	BYTE data;
-	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
@@ -625,16 +615,7 @@ static int op_inir(void)		/* INIR */
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) ((C + 1) & 0xff) + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	F &= ~S_FLAG;
-	F |= Z_FLAG;
+	F |= N_FLAG | Z_FLAG;
 	return(t + 16);
 }
 #else
@@ -656,7 +637,6 @@ static int op_ind(void)			/* IND */
 {
 	BYTE io_in(BYTE, BYTE);
 	BYTE data;
-	WORD k;
 
 	data = io_in(C, B);
 	memwrt((H << 8) + L, data);
@@ -664,15 +644,7 @@ static int op_ind(void)			/* IND */
 	if (L == 0xff)
 		H--;
 	B--;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) ((C - 1) & 0xff) + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	F |= N_FLAG;
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
@@ -683,7 +655,6 @@ static int op_indr(void)		/* INDR */
 	BYTE io_in(BYTE, BYTE);
 	WORD addr;
 	BYTE data;
-	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
@@ -697,16 +668,7 @@ static int op_indr(void)		/* INDR */
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) ((C - 1) & 0xff) + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	F &= ~S_FLAG;
-	F |= Z_FLAG;
+	F |= N_FLAG | Z_FLAG;
 	return(t + 16);
 }
 #else
@@ -728,7 +690,6 @@ static int op_outi(void)		/* OUTI */
 {
 	void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
-	WORD k;
 
 	B--;
 	data = memrdr((H << 8) + L);
@@ -736,15 +697,7 @@ static int op_outi(void)		/* OUTI */
 	L++;
 	if (!L)
 		H++;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) L + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	F |= N_FLAG;
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
@@ -755,7 +708,6 @@ static int op_otir(void)		/* OTIR */
 	void io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
-	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
@@ -769,16 +721,7 @@ static int op_otir(void)		/* OTIR */
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) L + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	F &= ~S_FLAG;
-	F |= Z_FLAG;
+	F |= N_FLAG | Z_FLAG;
 	return(t + 16);
 }
 #else
@@ -800,7 +743,6 @@ static int op_outd(void)		/* OUTD */
 {
 	void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
-	WORD k;
 
 	B--;
 	data = memrdr((H << 8) + L);
@@ -808,15 +750,7 @@ static int op_outd(void)		/* OUTD */
 	L--;
 	if (L == 0xff)
 		H--;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) L + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	F |= N_FLAG;
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	return(16);
 }
@@ -827,7 +761,6 @@ static int op_otdr(void)		/* OTDR */
 	void io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
-	WORD k;
 	register int t = -21;
 
 	addr = (H << 8) + L;
@@ -841,16 +774,7 @@ static int op_otdr(void)		/* OTDR */
 	} while (B);
 	H = addr >> 8;
 	L = addr;
-#if 0
-	F |= N_FLAG; /* As documented in the "Z80 CPU User Manual" */
-#endif
-	/* Real life S,H,P,N,C flags as to "The Undocumented Z80 Documented" */
-	k = (WORD) L + (WORD) data;
-	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
-	F &= ~S_FLAG;
-	F |= Z_FLAG;
+	F |= N_FLAG | Z_FLAG;
 	return(t + 16);
 }
 #else
