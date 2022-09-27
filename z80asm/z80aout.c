@@ -53,7 +53,7 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 
 #define MAXHEX	32			/* max no bytes/hex record */
 
-static unsigned short hex_adr;		/* current address in hex record */
+static unsigned short hex_addr;		/* current address in hex record */
 static int hex_cnt;			/* current no bytes in hex buffer */
 
 static unsigned char hex_buf[MAXHEX];	/* buffer for one hex record */
@@ -99,7 +99,7 @@ void lst_attl(void)
 /*
  *	print one line into listfile, if -l option set
  */
-void lst_line(int val, int opanz)
+void lst_line(int val, int opcount)
 {
 	register int i;
 
@@ -128,15 +128,23 @@ void lst_line(int val, int opanz)
 		fatal(F_INTERN, "invalid listflag for function lst_line");
 		break;
 	}
-	if (opanz >= 1) fprintf(lstfp, "%02x ", ops[0] & 0xff);
-		else fprintf(lstfp, "   ");
-	if (opanz >= 2) fprintf(lstfp, "%02x ", ops[1] & 0xff);
-		else fprintf(lstfp, "   ");
-	if (opanz >= 3) fprintf(lstfp, "%02x ", ops[2] & 0xff);
-		else fprintf(lstfp, "   ");
-	if (opanz >= 4) fprintf(lstfp, "%02x ", ops[3] & 0xff);
-		else fprintf(lstfp, "   ");
-	no_data:
+	if (opcount >= 1)
+		fprintf(lstfp, "%02x ", ops[0] & 0xff);
+	else
+		fprintf(lstfp, "   ");
+	if (opcount >= 2)
+		fprintf(lstfp, "%02x ", ops[1] & 0xff);
+	else
+		fprintf(lstfp, "   ");
+	if (opcount >= 3)
+		fprintf(lstfp, "%02x ", ops[2] & 0xff);
+	else
+		fprintf(lstfp, "   ");
+	if (opcount >= 4)
+		fprintf(lstfp, "%02x ", ops[3] & 0xff);
+	else
+		fprintf(lstfp, "   ");
+no_data:
 	fprintf(lstfp, "%6d %6d %s", c_line, s_line, line);
 	if (errnum) {
 		fprintf(errfp, "=> %s", errmsg[errnum]);
@@ -146,11 +154,11 @@ void lst_line(int val, int opanz)
 	}
 	sd_flag = 0;
 	p_line++;
-	if (opanz > 4 && sd_flag == 0) {
-		opanz -= 4;
+	if (opcount > 4 && sd_flag == 0) {
+		opcount -= 4;
 		i = 4;
 		sd_val = val;
-		while (opanz > 0) {
+		while (opcount > 0) {
 			if (p_line >= ppl) {
 				lst_header();
 				lst_attl();
@@ -158,18 +166,22 @@ void lst_line(int val, int opanz)
 			s_line++;
 			sd_val += 4;
 			fprintf(lstfp, "%04x  ", sd_val & 0xffff);
-			if (opanz-- > 0) fprintf(lstfp, "%02x ",
-						 ops[i++] & 0xff);
-				else fprintf(lstfp, "   ");
-			if (opanz-- > 0) fprintf(lstfp, "%02x ",
-						 ops[i++] & 0xff);
-				else fprintf(lstfp, "   ");
-			if (opanz-- > 0) fprintf(lstfp, "%02x ",
-						 ops[i++] & 0xff);
-				else fprintf(lstfp, "   ");
-			if (opanz-- > 0) fprintf(lstfp, "%02x ",
-						 ops[i++] & 0xff);
-				else fprintf(lstfp, "   ");
+			if (opcount-- > 0)
+				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+			else
+				fprintf(lstfp, "   ");
+			if (opcount-- > 0)
+				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+			else
+				fprintf(lstfp, "   ");
+			if (opcount-- > 0)
+				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+			else
+				fprintf(lstfp, "   ");
+			if (opcount-- > 0)
+				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+			else
+				fprintf(lstfp, "   ");
 			fprintf(lstfp, "%6d %6d\n", c_line, s_line);
 			p_line++;
 		}
@@ -186,7 +198,7 @@ void lst_sym(void)
 	char c;
 
 	p_line = j = 0;
-	strcpy(title,"Symboltable");
+	strcpy(title,"Symbol table");
 	for (i = 0; i < HASHSIZE; i++) {
 		if (symtab[i] != NULL) {
 			for (np = symtab[i]; np != NULL; np = np->sym_next) {
@@ -218,7 +230,7 @@ void lst_sort_sym(int len)
 	char c;
 
 	p_line = i = j = 0;
-	strcpy(title, "Symboltable");
+	strcpy(title, "Symbol table");
 	while (i < len) {
 		if (p_line == 0) {
 			lst_header();
@@ -248,11 +260,11 @@ void obj_header(void)
 		break;
 	case OUTMOS:
 		putc(0xff, objfp);
-		putc(prg_adr & 0xff, objfp);
-		putc(prg_adr >> 8, objfp);
+		putc(prg_addr & 0xff, objfp);
+		putc(prg_addr >> 8, objfp);
 		break;
 	case OUTHEX:
-		hex_adr = prg_adr;
+		hex_addr = prg_addr;
 		break;
 	}
 }
@@ -277,19 +289,19 @@ void obj_end(void)
 /*
  *	write opcodes in ops[] into object file
  */
-void obj_writeb(int opanz)
+void obj_writeb(int opcount)
 {
 	register int i;
 
 	switch (out_form) {
 	case OUTBIN:
-		fwrite(ops, 1, opanz, objfp);
+		fwrite(ops, 1, opcount, objfp);
 		break;
 	case OUTMOS:
-		fwrite(ops, 1, opanz, objfp);
+		fwrite(ops, 1, opcount, objfp);
 		break;
 	case OUTHEX:
-		for (i = 0; opanz; opanz--) {
+		for (i = 0; opcount; opcount--) {
 			if (hex_cnt >= MAXHEX)
 				flush_hex();
 			hex_buf[hex_cnt++] = ops[i++];
@@ -314,7 +326,7 @@ void obj_fill(int count)
 		break;
 	case OUTHEX:
 		flush_hex();
-		hex_adr += count;
+		hex_addr += count;
 		break;
 	}
 }
@@ -332,8 +344,8 @@ void flush_hex(void)
 	p = hex_out;
 	*p++ = ':';
 	btoh((unsigned char) hex_cnt, &p);
-	btoh((unsigned char) (hex_adr >> 8), &p);
-	btoh((unsigned char) (hex_adr & 0xff), &p);
+	btoh((unsigned char) (hex_addr >> 8), &p);
+	btoh((unsigned char) (hex_addr & 0xff), &p);
 	*p++ = '0';
 	*p++ = '0';
 	for (i = 0; i < hex_cnt; i++)
@@ -342,7 +354,7 @@ void flush_hex(void)
 	*p++ = '\n';
 	*p = '\0';
 	fwrite(hex_out, 1, strlen(hex_out), objfp);
-	hex_adr += hex_cnt;
+	hex_addr += hex_cnt;
 	hex_cnt = 0;
 }
 
@@ -368,8 +380,8 @@ int chksum(void)
 	register int i, j, sum;
 
 	sum = hex_cnt;
-	sum += hex_adr >> 8;
-	sum += hex_adr & 0xff;
+	sum += hex_addr >> 8;
+	sum += hex_addr & 0xff;
 	for (i = 0; i < hex_cnt; i++) {
 		j = hex_buf[i];
 		sum += j & 0xff;

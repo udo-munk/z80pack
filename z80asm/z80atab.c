@@ -37,7 +37,8 @@ extern void fatal(int, char *);
 extern void asmerr(int);
 
 /*
- *	binary search in sorted table opctab
+ *	binary search in sorted table opctab of opset and OPSET_PSD
+ *	search opset first since pseudo ops are less common
  *
  *	Input: pointer to string with opcode
  *
@@ -45,32 +46,34 @@ extern void asmerr(int);
  */
 struct opc *search_op(char *op_name)
 {
-	register int cond;
+	register int cond, i;
 	register struct opc *low, *high, *mid;
-	extern int op_rotshf(int, int);
+	register struct opset *p;
+	extern int op_cbgrp(int, int);
 
-	low = &pers->opctab[0];
-	high = &pers->opctab[pers->no_opcodes - 1];
-	while (low <= high) {
-		mid = low + (high - low) / 2;
-		if ((cond = strcmp(op_name, mid->op_name)) < 0)
-			high = mid - 1;
-		else if (cond > 0)
-			low = mid + 1;
-		else if (!undoc_flag) {
-			if (mid->op_fun == op_rotshf && mid->op_c1 == 0x30) /* SLL */
+	for (i = opset; i >= 0; i = (i == opset ? OPSET_PSD : -1)) {
+		p = &opsettab[i];
+		low = &p->opctab[0];
+		high = &p->opctab[p->no_opcodes - 1];
+		while (low <= high) {
+			mid = low + (high - low) / 2;
+			if ((cond = strcmp(op_name, mid->op_name)) < 0)
+				high = mid - 1;
+			else if (cond > 0)
+				low = mid + 1;
+			else if (i == OPSET_Z80 && !undoc_flag
+						&& mid->op_fun == op_cbgrp
+						&& mid->op_c1 == 0x30) /* SLL */
 				return(NULL);
 			else
 				return(mid);
 		}
-		else
-			return(mid);
 	}
 	return(NULL);
 }
 
 /*
- *	binary search on sorted table opetab
+ *	binary search in sorted table opetab of opset
  *
  *	Input: pointer to string with operand
  *
@@ -81,18 +84,20 @@ int get_reg(char *s)
 {
 	register int cond;
 	register struct ope *low, *high, *mid;
+	register struct opset *p;
 
 	if (s == NULL || *s == '\0')
 		return(NOOPERA);
-	low = &pers->opetab[0];
-	high = &pers->opetab[pers->no_operands - 1];
+	p = &opsettab[opset];
+	low = &p->opetab[0];
+	high = &p->opetab[p->no_operands - 1];
 	while (low <= high) {
 		mid = low + (high - low) / 2;
 		if ((cond = strcmp(s, mid->ope_name)) < 0)
 			high = mid - 1;
 		else if (cond > 0)
 			low = mid + 1;
-		else if (!undoc_flag) {
+		else if (opset == OPSET_Z80 && !undoc_flag) {
 			switch (mid->ope_sym) {
 			case REGIXH:
 			case REGIXL:
@@ -226,7 +231,10 @@ int copy_sym(void)
 			for (np = symtab[i]; np != NULL; np = np->sym_next) {
 				symarray[j++] = np;
 				if (j == symsize) {
-					symarray = (struct sym **) realloc((char *) symarray, symsize * sizeof(struct sym *) + SYMINC * sizeof(struct sym *));
+					symarray = (struct sym **)
+						   realloc((char *) symarray,
+							   symsize * sizeof(struct sym *)
+							   + SYMINC * sizeof(struct sym *));
 					if (symarray == NULL)
 						fatal(F_OUTMEM, "sorting symbol table");
 					symsize += SYMINC;

@@ -105,7 +105,6 @@ int main(int argc, char *argv[])
  */
 void init(void)
 {
-	pers = &perstab[PERSZ80];
 	errfp = stdout;
 }
 
@@ -182,7 +181,7 @@ void options(int argc, char *argv[])
 					fatal(F_OUTMEM, "symbols");
 				break;
 			case '8':
-				pers = &perstab[PERS8080];
+				opset = OPSET_8080;
 				break;
 			case 'u':
 				undoc_flag = 1;

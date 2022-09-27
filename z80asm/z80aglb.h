@@ -41,6 +41,7 @@ extern int	list_flag,
 		undoc_flag,
 		ver_flag,
 		dump_flag,
+		opset,
 		pc,
 		pass,
 		iflevel,
@@ -49,7 +50,7 @@ extern int	list_flag,
 		errnum,
 		sd_flag,
 		sd_val,
-		prg_adr,
+		prg_addr,
 		prg_flag,
 		out_form,
 		symlen,
@@ -69,5 +70,4 @@ extern unsigned	c_line,
 extern struct sym *symtab[],
 		  **symarray;
 
-extern struct pers perstab[],
-		   *pers;
+extern struct opset opsettab[];
