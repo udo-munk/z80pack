@@ -45,6 +45,7 @@ int  list_flag,			/* flag for option -l */
      undoc_flag,		/* flag for option -u */
      ver_flag,			/* flag for option -v */
      dump_flag,			/* flag for option -x */
+     opset = OPSET_Z80,		/* current operations set (default Z80) */
      pc,			/* program counter */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
@@ -58,8 +59,8 @@ int  list_flag,			/* flag for option -l */
 				/* = 3: address from <sd_val>, no data */
 				/* = 4: suppress whole line */
      sd_val,			/* output value for PSEUDO opcodes */
-     prg_adr,			/* start address of program */
-     prg_flag,			/* flag for prg_adr valid */
+     prg_addr,			/* start address of program */
+     prg_flag,			/* flag for prg_addr valid */
      out_form = OUTDEF,		/* format of object file */
      symlen = SYMLEN,		/* max. symbol length */
      symsize;			/* size of symarray */
@@ -79,6 +80,3 @@ unsigned
 struct sym
      *symtab[HASHSIZE],		/* symbol table */
      **symarray;		/* sorted symbol table */
-
-struct pers
-     *pers;			/* current personality */

@@ -48,11 +48,11 @@ extern void put_label(void);
 /*
  *	.8080 and .Z80
  */
-int op_pers(int new_pers, int dummy)
+int op_opset(int new_opset, int dummy)
 {
 	UNUSED(dummy);
 
-	pers = &perstab[new_pers];
+	opset = new_opset;
 	return(0);
 }
 
@@ -75,7 +75,7 @@ int op_org(int dummy1, int dummy2)
 	}
 	if (pass == 1) {		/* PASS 1 */
 		if (!prg_flag) {
-			prg_adr = i;
+			prg_addr = i;
 			prg_flag++;
 		}
 	} else {			/* PASS 2 */
@@ -97,14 +97,14 @@ int op_equ(int dummy1, int dummy2)
 
 	if (!gencode)
 		return(0);
-	if (pass == 1) {		/* Pass 1 */
+	if (pass == 1) {		/* PASS 1 */
 		if (get_sym(label) == NULL) {
 			sd_val = eval(operand);
 			if (put_sym(label, sd_val))
 				fatal(F_OUTMEM, "symbols");
 		} else
 			asmerr(E_MULSYM);
-	} else {			/* Pass 2 */
+	} else {			/* PASS 2 */
 		sd_flag = 1;
 		sd_val = eval(operand);
 	}
@@ -112,7 +112,7 @@ int op_equ(int dummy1, int dummy2)
 }
 
 /*
- *	DEFL
+ *	DEFL and ASET
  */
 int op_dl(int dummy1, int dummy2)
 {
@@ -129,7 +129,7 @@ int op_dl(int dummy1, int dummy2)
 }
 
 /*
- *	DEFS
+ *	DEFS and DS
  */
 int op_ds(int dummy1, int dummy2)
 {
@@ -153,7 +153,7 @@ int op_ds(int dummy1, int dummy2)
 }
 
 /*
- *	DEFB
+ *	DEFB and DB
  */
 int op_db(int dummy1, int dummy2)
 {
@@ -181,7 +181,7 @@ int op_db(int dummy1, int dummy2)
 				}
 				ops[i++] = *p++;
 				if (i >= OPCARRAY)
-				    fatal(F_INTERN, "Op-Code buffer overflow");
+				    fatal(F_INTERN, "Op-code buffer overflow");
 			}
 			p++;
 		} else {
@@ -191,7 +191,7 @@ int op_db(int dummy1, int dummy2)
 			*s = '\0';
 			ops[i++] = eval(tmp);
 			if (i >= OPCARRAY)
-				fatal(F_INTERN, "Op-Code buffer overflow");
+				fatal(F_INTERN, "Op-code buffer overflow");
 		}
 		if (*p == ',')
 			p++;
@@ -201,15 +201,14 @@ hyp_error:
 }
 
 /*
- *	DEFM
+ *	DEFM, DEFC, DC, DEFZ
  */
-int op_dm(int dummy1, int dummy2)
+int op_dm(int variant, int dummy)
 {
 	register int i;
 	register char *p;
 
-	UNUSED(dummy1);
-	UNUSED(dummy2);
+	UNUSED(dummy);
 
 	if (!gencode)
 		return(0);
@@ -230,13 +229,20 @@ int op_dm(int dummy1, int dummy2)
 		}
 		ops[i++] = *p++;
 		if (i >= OPCARRAY)
-			fatal(F_INTERN, "Op-Code buffer overflow");
+			fatal(F_INTERN, "Op-code buffer overflow");
+	}
+	if (variant == 1)		/* DEFC, DC */
+		ops[i - 1] |= 0x80;
+	else if (variant == 2) {	/* DEFZ */
+		ops[i++] = '\0';
+		if (i >= OPCARRAY)
+			fatal(F_INTERN, "Op-code buffer overflow");
 	}
 	return(i);
 }
 
 /*
- *	DEFW
+ *	DEFW and DW
  */
 int op_dw(int dummy1, int dummy2)
 {
@@ -264,7 +270,7 @@ int op_dw(int dummy1, int dummy2)
 			ops[i++] = temp & 0xff;
 			ops[i++] = temp >> 8;
 			if (i >= OPCARRAY)
-				fatal(F_INTERN, "Op-Code buffer overflow");
+				fatal(F_INTERN, "Op-code buffer overflow");
 		}
 		len += 2;
 		if (*p == ',')
@@ -477,7 +483,7 @@ int op_cond(int op_code, int dummy)
 }
 
 /*
- *	EXTRN and PUBLIC
+ *	EXTRN, EXTERNAL, EXT and PUBLIC, ENT, ENTRY, GLOBAL
  */
 int op_glob(int op_code, int dummy)
 {
@@ -487,9 +493,9 @@ int op_glob(int op_code, int dummy)
 		return(0);
 	sd_flag = 2;
 	switch(op_code) {
-	case 1:				/* EXTRN */
+	case 1:				/* EXTRN, EXTERNAL, EXT */
 		break;
-	case 2:				/* PUBLIC */
+	case 2:				/* PUBLIC, ENT, ENTRY, GLOBAL */
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_glob");

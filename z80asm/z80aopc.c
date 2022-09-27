@@ -33,10 +33,9 @@ extern int op_ret(int, int), op_jpcall(int, int);
 extern int op_jr(int, int), op_djnz(int, int), op_rst(int, int);
 extern int op_add(int, int), op_sbadc(int, int);
 extern int op_decinc(int, int), op_alu(int, int);
-extern int op_rotshf(int, int);
 extern int op_out(int, int), op_in(int, int), op_im(int, int);
-extern int op_trsbit(int, int);
-extern int op_pers(int, int), op_org(int, int), op_dl(int, int);
+extern int op_cbgrp(int, int);
+extern int op_opset(int, int), op_org(int, int), op_dl(int, int);
 extern int op_equ(int, int);
 extern int op_ds(int, int), op_db(int, int), op_dw(int, int), op_dm(int, int);
 extern int op_misc(int, int);
@@ -48,17 +47,58 @@ extern int op8080_imm(int, int), op8080_rst(int, int), op8080_pupo(int, int);
 extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
 
 /*
+ *	pseudo op table:
+ *	includes entries for all pseudo ops other than END
+ *	must be sorted in ascending order!
+ */
+struct opc opctab_psd[] = {
+	{ ".8080",	op_opset,	OPSET_8080, 0	},
+	{ ".Z80",	op_opset,	OPSET_Z80, 0	},
+	{ "ASET",	op_dl,		0,	0	},
+	{ "DB",		op_db,		0,	0	},
+	{ "DC",		op_dm,		1,	0	},
+	{ "DEFB",	op_db,		0,	0	},
+	{ "DEFC",	op_dm,		1,	0	},
+	{ "DEFL",	op_dl,		0,	0	},
+	{ "DEFM",	op_dm,		0,	0	},
+	{ "DEFS",	op_ds,		0,	0	},
+	{ "DEFW",	op_dw,		0,	0	},
+	{ "DEFZ",	op_dm,		2,	0	},
+	{ "DS",		op_ds,		0,	0	},
+	{ "DW",		op_dw,		0,	0	},
+	{ "EJECT",	op_misc,	1,	0	},
+	{ "ELSE",	op_cond,	98,	0	},
+	{ "ENDIF",	op_cond,	99,	0	},
+	{ "ENT",	op_glob,	2,	0	},
+	{ "ENTRY",	op_glob,	2,	0	},
+	{ "EQU",	op_equ,		0,	0	},
+	{ "EXT",	op_glob,	1,	0	},
+	{ "EXTERNAL",	op_glob,	1,	0	},
+	{ "EXTRN",	op_glob,	1,	0	},
+	{ "GLOBAL",	op_glob,	2,	0	},
+	{ "IFDEF",	op_cond,	1,	0	},
+	{ "IFEQ",	op_cond,	3,	0	},
+	{ "IFNDEF",	op_cond,	2,	0	},
+	{ "IFNEQ",	op_cond,	4,	0	},
+	{ "INCLUDE",	op_misc,	6,	0	},
+	{ "LIST",	op_misc,	2,	0	},
+	{ "NOLIST",	op_misc,	3,	0	},
+	{ "ORG",	op_org,		0,	0	},
+	{ "PAGE",	op_misc,	4,	0	},
+	{ "PRINT",	op_misc,	5,	0	},
+	{ "PUBLIC",	op_glob,	2,	0	},
+	{ "TITLE",	op_misc,	7,	0	}
+};
+
+/*
  *	Z80 opcode table:
- *	includes entries for all opcodes and pseudo ops other than END
  *	must be sorted in ascending order!
  */
 struct opc opctab_z80[] = {
-	{ ".8080",	op_pers,	PERS8080, 0	},
-	{ ".Z80",	op_pers,	PERSZ80, 0	},
 	{ "ADC",	op_sbadc,	0x88,	0x4a	},
 	{ "ADD",	op_add,		0,	0	},
 	{ "AND",	op_alu,		0xa0,	0	},
-	{ "BIT",	op_trsbit,	0x40,	0	},
+	{ "BIT",	op_cbgrp,	0x40,	0	},
 	{ "CALL",	op_jpcall,	0xc4,	0xcd	},
 	{ "CCF",	op_1b,		0x3f,	0	},
 	{ "CP",		op_alu,		0xb8,	0	},
@@ -69,30 +109,15 @@ struct opc opctab_z80[] = {
 	{ "CPL",	op_1b,		0x2f,	0	},
 	{ "DAA",	op_1b,		0x27,	0	},
 	{ "DEC",	op_decinc,	0x05,	0x0b	},
-	{ "DEFB",	op_db,		0,	0	},
-	{ "DEFL",	op_dl,		0,	0	},
-	{ "DEFM",	op_dm,		0,	0	},
-	{ "DEFS",	op_ds,		0,	0	},
-	{ "DEFW",	op_dw,		0,	0	},
 	{ "DI",		op_1b,		0xf3,	0	},
 	{ "DJNZ",	op_djnz,	0,	0	},
 	{ "EI",		op_1b,		0xfb,	0	},
-	{ "EJECT",	op_misc,	1,	0	},
-	{ "ELSE",	op_cond,	98,	0	},
-	{ "ENDIF",	op_cond,	99,	0	},
-	{ "EQU",	op_equ,		0,	0	},
 	{ "EX",		op_ex,		0,	0	},
-	{ "EXTRN",	op_glob,	1,	0	},
 	{ "EXX",	op_1b,		0xd9,	0	},
 	{ "HALT",	op_1b,		0x76,	0	},
-	{ "IFDEF",	op_cond,	1,	0	},
-	{ "IFEQ",	op_cond,	3,	0	},
-	{ "IFNDEF",	op_cond,	2,	0	},
-	{ "IFNEQ",	op_cond,	4,	0	},
 	{ "IM",		op_im,		0,	0	},
 	{ "IN",		op_in,		0,	0	},
 	{ "INC",	op_decinc,	0x04,	0x03	},
-	{ "INCLUDE",	op_misc,	6,	0	},
 	{ "IND",	op_2b,		0xed,	0xaa	},
 	{ "INDR",	op_2b,		0xed,	0xba	},
 	{ "INI",	op_2b,		0xed,	0xa2	},
@@ -104,46 +129,39 @@ struct opc opctab_z80[] = {
 	{ "LDDR",	op_2b,		0xed,	0xb8	},
 	{ "LDI",	op_2b,		0xed,	0xa0	},
 	{ "LDIR",	op_2b,		0xed,	0xb0	},
-	{ "LIST",	op_misc,	2,	0	},
 	{ "NEG",	op_2b,		0xed,	0x44	},
-	{ "NOLIST",	op_misc,	3,	0	},
 	{ "NOP",	op_1b,		0,	0	},
 	{ "OR",		op_alu,		0xb0,	0	},
-	{ "ORG",	op_org,		0,	0	},
 	{ "OTDR",	op_2b,		0xed,	0xbb	},
 	{ "OTIR",	op_2b,		0xed,	0xb3	},
 	{ "OUT",	op_out,		0,	0	},
 	{ "OUTD",	op_2b,		0xed,	0xab	},
 	{ "OUTI",	op_2b,		0xed,	0xa3	},
-	{ "PAGE",	op_misc,	4,	0	},
 	{ "POP",	op_pupo,	0xc1,	0	},
-	{ "PRINT",	op_misc,	5,	0	},
-	{ "PUBLIC",	op_glob,	2,	0	},
 	{ "PUSH",	op_pupo,	0xc5,	0	},
-	{ "RES",	op_trsbit,	0x80,	0	},
+	{ "RES",	op_cbgrp,	0x80,	0	},
 	{ "RET",	op_ret,		0,	0	},
 	{ "RETI",	op_2b,		0xed,	0x4d	},
 	{ "RETN",	op_2b,		0xed,	0x45	},
-	{ "RL",		op_rotshf,	0x10,	0	},
+	{ "RL",		op_cbgrp,	0x10,	0	},
 	{ "RLA",	op_1b,		0x17,	0	},
-	{ "RLC",	op_rotshf,	0x00,	0	},
+	{ "RLC",	op_cbgrp,	0x00,	0	},
 	{ "RLCA",	op_1b,		0x07,	0	},
 	{ "RLD",	op_2b,		0xed,	0x6f	},
-	{ "RR",		op_rotshf,	0x18,	0	},
+	{ "RR",		op_cbgrp,	0x18,	0	},
 	{ "RRA",	op_1b,		0x1f,	0	},
-	{ "RRC",	op_rotshf,	0x08,	0	},
+	{ "RRC",	op_cbgrp,	0x08,	0	},
 	{ "RRCA",	op_1b,		0x0f,	0	},
 	{ "RRD",	op_2b,		0xed,	0x67	},
 	{ "RST",	op_rst,		0,	0	},
 	{ "SBC",	op_sbadc,	0x98,	0x42	},
 	{ "SCF",	op_1b,		0x37,	0	},
-	{ "SET",	op_trsbit,	0xc0,	0	},
-	{ "SLA",	op_rotshf,	0x20,	0	},
-	{ "SLL",	op_rotshf,	0x30,	0	},
-	{ "SRA",	op_rotshf,	0x28,	0	},
-	{ "SRL",	op_rotshf,	0x38,	0	},
+	{ "SET",	op_cbgrp,	0xc0,	0	},
+	{ "SLA",	op_cbgrp,	0x20,	0	},
+	{ "SLL",	op_cbgrp,	0x30,	0	},
+	{ "SRA",	op_cbgrp,	0x28,	0	},
+	{ "SRL",	op_cbgrp,	0x38,	0	},
 	{ "SUB",	op_alu,		0x90,	0	},
-	{ "TITLE",	op_misc,	7,	0	},
 	{ "XOR",	op_alu,		0xa8,	0	}
 };
 
@@ -189,12 +207,9 @@ struct ope opetab_z80[] = {
 
 /*
  *	8080 opcode table:
- *	includes entries for all opcodes and pseudo ops other than END
  *	must be sorted in ascending order!
  */
 struct opc opctab_8080[] = {
-	{ ".8080",	op_pers,	PERS8080, 0	},
-	{ ".Z80",	op_pers,	PERSZ80, 0	},
 	{ "ACI",	op8080_imm,	0xce,	0	},
 	{ "ADC",	op8080_alu,	0x88,	0	},
 	{ "ADD",	op8080_alu,	0x80,	0	},
@@ -218,25 +233,10 @@ struct opc opctab_8080[] = {
 	{ "DAD",	op8080_reg16,	0x09,	0	},
 	{ "DCR",	op8080_decinc,	0x05,	0	},
 	{ "DCX",	op8080_reg16,	0x0b,	0	},
-	{ "DEFB",	op_db,		0,	0	},
-	{ "DEFL",	op_dl,		0,	0	},
-	{ "DEFM",	op_dm,		0,	0	},
-	{ "DEFS",	op_ds,		0,	0	},
-	{ "DEFW",	op_dw,		0,	0	},
 	{ "DI",		op_1b,		0xf3,	0	},
 	{ "EI",		op_1b,		0xfb,	0	},
-	{ "EJECT",	op_misc,	1,	0	},
-	{ "ELSE",	op_cond,	98,	0	},
-	{ "ENDIF",	op_cond,	99,	0	},
-	{ "EQU",	op_equ,		0,	0	},
-	{ "EXTRN",	op_glob,	1,	0	},
 	{ "HLT",	op_1b,		0x76,	0	},
-	{ "IFDEF",	op_cond,	1,	0	},
-	{ "IFEQ",	op_cond,	3,	0	},
-	{ "IFNDEF",	op_cond,	2,	0	},
-	{ "IFNEQ",	op_cond,	4,	0	},
 	{ "IN",		op8080_imm,	0xdb,	0	},
-	{ "INCLUDE",	op_misc,	6,	0	},
 	{ "INR",	op8080_decinc,	0x04,	0	},
 	{ "INX",	op8080_reg16,	0x03,	0	},
 	{ "JC",		op8080_addr,	0xda,	0	},
@@ -251,21 +251,15 @@ struct opc opctab_8080[] = {
 	{ "LDA",	op8080_addr,	0x3a,	0	},
 	{ "LDAX",	op8080_regbd,	0x0a,	0	},
 	{ "LHLD",	op8080_addr,	0x2a,	0	},
-	{ "LIST",	op_misc,	2,	0	},
 	{ "LXI",	op8080_lxi,	0,	0	},
 	{ "MOV",	op8080_mov,	0,	0	},
 	{ "MVI",	op8080_mvi,	0,	0	},
-	{ "NOLIST",	op_misc,	3,	0	},
 	{ "NOP",	op_1b,		0,	0	},
 	{ "ORA",	op8080_alu,	0xb0,	0	},
-	{ "ORG",	op_org,		0,	0	},
 	{ "ORI",	op8080_imm,	0xf6,	0	},
 	{ "OUT",	op8080_imm,	0xd3,	0	},
-	{ "PAGE",	op_misc,	4,	0	},
 	{ "PCHL",	op_1b,		0xe9,	0	},
 	{ "POP",	op8080_pupo,	0xc1,	0	},
-	{ "PRINT",	op_misc,	5,	0	},
-	{ "PUBLIC",	op_glob,	2,	0	},
 	{ "PUSH",	op8080_pupo,	0xc5,	0	},
 	{ "RAL",	op_1b,		0x17,	0	},
 	{ "RAR",	op_1b,		0x1f,	0	},
@@ -290,7 +284,6 @@ struct opc opctab_8080[] = {
 	{ "STC",	op_1b,		0x37,	0	},
 	{ "SUB",	op8080_alu,	0x90,	0	},
 	{ "SUI",	op8080_imm,	0xd6,	0	},
-	{ "TITLE",	op_misc,	7,	0	},
 	{ "XCHG",	op_1b,		0xeb,	0	},
 	{ "XRA",	op8080_alu,	0xa8,	0	},
 	{ "XRI",	op8080_imm,	0xee,	0	},
@@ -315,17 +308,24 @@ struct ope opetab_8080[] = {
 };
 
 /*
- *	table of personalities
+ *	table of operations sets
  */
-struct pers perstab[NUMPERS] = {
-	/* PERSZ80 */
+struct opset opsettab[] = {
+	/* OPSET_PSD */
+	{
+		sizeof(opctab_psd) / sizeof(struct opc),
+		opctab_psd,
+		0,
+		NULL
+	},
+	/* OPSET_Z80 */
 	{
 		sizeof(opctab_z80) / sizeof(struct opc),
 		opctab_z80,
 		sizeof(opetab_z80) / sizeof(struct ope),
 		opetab_z80
 	},
-	/* PERS8080 */
+	/* OPSET_8080 */
 	{
 		sizeof(opctab_8080) / sizeof(struct opc),
 		opctab_8080,

@@ -35,6 +35,7 @@ int ldbcde(int), ldhl(void), ldixy(int);
 int ldsp(void), ldihl(void), ldiixy(int), ldinn(void);
 int addhl(void), addix(void), addiy(void), sbadchl(int);
 int aluop(int, char *);
+void cbgrp_iixy(int, int, int, char *);
 
 extern int eval(char *);
 extern int calc_val(char *);
@@ -1613,116 +1614,6 @@ int aluop(int base_op, char *p)
 }
 
 /*
- *	RLC, RRC, RL, RR, SLA, SRA, SLL, SRL
- */
-int op_rotshf(int base_op, int dummy)
-{
-	register char *p;
-	register int len, op;
-
-	UNUSED(dummy);
-
-	if (pass == 1)
-		if (*label)
-			put_label();
-	switch (op = get_reg(operand)) {
-	case REGA:			/* ROTSHF A */
-	case REGB:			/* ROTSHF B */
-	case REGC:			/* ROTSHF C */
-	case REGD:			/* ROTSHF D */
-	case REGE:			/* ROTSHF E */
-	case REGH:			/* ROTSHF H */
-	case REGL:			/* ROTSHF L */
-	case REGIHL:			/* ROTSHF (HL) */
-		len = 2;
-		ops[0] = 0xcb;
-		ops[1] = base_op + op;
-		break;
-	case NOREG:			/* operand isn't register */
-		if (strncmp(operand, "(IX+", 4) == 0) {
-			len = 4;
-			if (pass == 1)
-				break;
-			if (undoc_flag && (p = strrchr(operand, ')'))
-				       && *(p + 1) == ',') {
-				switch (op = get_reg(p + 2)) {
-				case REGA:	/* ROTSHF (IX+d),A (undocumented) */
-				case REGB:	/* ROTSHF (IX+d),B (undocumented) */
-				case REGC:	/* ROTSHF (IX+d),C (undocumented) */
-				case REGD:	/* ROTSHF (IX+d),D (undocumented) */
-				case REGE:	/* ROTSHF (IX+d),E (undocumented) */
-				case REGH:	/* ROTSHF (IX+d),H (undocumented) */
-				case REGL:	/* ROTSHF (IX+d),L (undocumented) */
-					ops[0] = 0xdd;
-					ops[1] = 0xcb;
-					ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-					ops[3] = base_op + op;
-					break;
-				default:	/* invalid operand */
-					ops[0] = 0;
-					ops[1] = 0;
-					ops[2] = 0;
-					ops[3] = 0;
-					asmerr(E_ILLOPE);
-				}
-			} else {		/* ROTSHF (IX+d) */
-				ops[0] = 0xdd;
-				ops[1] = 0xcb;
-				ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-				ops[3] = base_op + 0x06;
-			}
-		} else if (strncmp(operand, "(IY+", 4) == 0) {
-			len = 4;
-			if (pass == 1)
-				break;
-			if (undoc_flag && (p = strrchr(operand, ')'))
-				       && *(p + 1) == ',') {
-				switch (op = get_reg(p + 2)) {
-				case REGA:	/* ROTSHF (IY+d),A (undocumented) */
-				case REGB:	/* ROTSHF (IY+d),B (undocumented) */
-				case REGC:	/* ROTSHF (IY+d),C (undocumented) */
-				case REGD:	/* ROTSHF (IY+d),D (undocumented) */
-				case REGE:	/* ROTSHF (IY+d),E (undocumented) */
-				case REGH:	/* ROTSHF (IY+d),H (undocumented) */
-				case REGL:	/* ROTSHF (IY+d),L (undocumented) */
-					ops[0] = 0xfd;
-					ops[1] = 0xcb;
-					ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-					ops[3] = base_op + op;
-					break;
-				default:	/* invalid operand */
-					ops[0] = 0;
-					ops[1] = 0;
-					ops[2] = 0;
-					ops[3] = 0;
-					asmerr(E_ILLOPE);
-				}
-			} else {		/* ROTSHF (IY+d) */
-				ops[0] = 0xfd;
-				ops[1] = 0xcb;
-				ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-				ops[3] = base_op + 0x06;
-			}
-		} else {
-			len = 1;
-			ops[0] = 0;
-			asmerr(E_ILLOPE);
-		}
-		break;
-	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
-		asmerr(E_MISOPE);
-		break;
-	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
-		asmerr(E_ILLOPE);
-	}
-	return(len);
-}
-
-/*
  *	OUT
  */
 int op_out(int dummy1, int dummy2)
@@ -1768,7 +1659,7 @@ int op_out(int dummy1, int dummy2)
 		} else {
 			/* check syntax for OUT (n),A */
 			p = strchr(operand, ')');
-			if (strncmp(p, "),A", 3)) {
+			if (operand[0] != '(' || strncmp(p, "),A", 3)) {
 				ops[0] = 0;
 				ops[1] = 0;
 				asmerr(E_ILLOPE);
@@ -1800,43 +1691,50 @@ int op_in(int dummy1, int dummy2)
 		while (*p1 != ',' && *p1 != '\0')
 			*p2++ = *p1++;
 		*p2 = '\0';
-		switch (op = get_reg(tmp)) {
-		case REGA:
-			if (strncmp(operand, "A,(C)", 5) == 0) {
-				ops[0] = 0xed;	/* IN A,(C) */
-				ops[1] = 0x78;
-			} else {
-				ops[0] = 0xdb;	/* IN A,(n) */
-				ops[1] = chk_byte(calc_val(get_second(operand) + 1));
+		if (*p1++ == ',' && *p1 == '(') {
+			switch (op = get_reg(tmp)) {
+			case REGA:
+				if (strncmp(p1, "(C)", 3) == 0) {
+					ops[0] = 0xed;	/* IN A,(C) */
+					ops[1] = 0x78;
+				} else {
+					ops[0] = 0xdb;	/* IN A,(n) */
+					ops[1] = chk_byte(calc_val(p1 + 1));
+				}
+				break;
+			case REGB:			/* IN B,(C) */
+			case REGC:			/* IN C,(C) */
+			case REGD:			/* IN D,(C) */
+			case REGE:			/* IN E,(C) */
+			case REGH:			/* IN H,(C) */
+			case REGL:			/* IN L,(C) */
+				ops[0] = 0xed;
+				ops[1] = 0x40 + (op << 3);
+				break;
+			default:
+				if (undoc_flag
+				    && strncmp(operand, "F,(C)", 5) == 0) {
+					ops[0] = 0xed;	/* IN F,(C) (undocumented) */
+					ops[1] = 0x70;
+				} else {		/* invalid operand */
+					ops[0] = 0;
+					ops[1] = 0;
+					asmerr(E_ILLOPE);
+				}
 			}
-			break;
-		case REGB:			/* IN B,(C) */
-		case REGC:			/* IN C,(C) */
-		case REGD:			/* IN D,(C) */
-		case REGE:			/* IN E,(C) */
-		case REGH:			/* IN H,(C) */
-		case REGL:			/* IN L,(C) */
-			ops[0] = 0xed;
-			ops[1] = 0x40 + (op << 3);
-			break;
-		default:
-			if (undoc_flag && strncmp(operand, "F,(C)", 5) == 0) {
-				ops[0] = 0xed;	/* IN F,(C) (undocumented) */
-				ops[1] = 0x70;
-			} else {		/* invalid operand */
-				ops[0] = 0;
-				ops[1] = 0;
-				asmerr(E_ILLOPE);
-			}
+		} else {		/* invalid operand */
+			ops[0] = 0;
+			ops[1] = 0;
+			asmerr(E_ILLOPE);
 		}
 	}
 	return(2);
 }
 
 /*
- *	BIT, RES, SET
+ *	RLC, RRC, RL, RR, SLA, SRA, SLL, SRL, BIT, RES, SET
  */
-int op_trsbit(int base_op, int dummy)
+int op_cbgrp(int base_op, int dummy)
 {
 	register char *p1, *p2;
 	register int len;
@@ -1845,104 +1743,51 @@ int op_trsbit(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	len = 2;
-	i = 0;
 	if (pass == 1)
 		if (*label)
 			put_label();
-	ops[0] = 0xcb;
+	len = 2;
+	i = 0;
 	p1 = operand;
-	p2 = tmp;
-	while (*p1 != ',' && *p1 != '\0')
-		*p2++ = *p1++;
-	*p2 = '\0';
-	if (pass == 2) {
-		i = eval(tmp);
-		if (i < 0 || i > 7)
-			asmerr(E_VALOUT);
+	if (base_op >= 0x40) {		/* TRSBIT n,? */
+		p2 = tmp;
+		while (*p1 != ',' && *p1 != '\0')
+			*p2++ = *p1++;
+		*p2 = '\0';
+		if (pass == 2) {
+			i = eval(tmp);
+			if (i < 0 || i > 7)
+				asmerr(E_VALOUT);
+		}
+		if (*p1 != '\0')
+			p1++;
 	}
-	switch (op = get_reg(++p1)) {
-	case REGA:			/* TRSBIT n,A */
-	case REGB:			/* TRSBIT n,B */
-	case REGC:			/* TRSBIT n,C */
-	case REGD:			/* TRSBIT n,D */
-	case REGE:			/* TRSBIT n,E */
-	case REGH:			/* TRSBIT n,H */
-	case REGL:			/* TRSBIT n,L */
-	case REGIHL:			/* TRSBIT n,(HL) */
-		ops[1] = base_op + i * 8 + op;
+	switch (op = get_reg(p1)) {
+	case REGA:			/* CBOP {n,}A */
+	case REGB:			/* CBOP {n,}B */
+	case REGC:			/* CBOP {n,}C */
+	case REGD:			/* CBOP {n,}D */
+	case REGE:			/* CBOP {n,}E */
+	case REGH:			/* CBOP {n,}H */
+	case REGL:			/* CBOP {n,}L */
+	case REGIHL:			/* CBOP {n,}(HL) */
+		ops[0] = 0xcb;
+		ops[1] = base_op + (i << 3) + op;
 		break;
-	case NOREG:			/* operand isn't register */
-		if (strncmp(p1, "(IX+", 4) == 0) {
-			len = 4;
-			if (pass == 1)
-				break;
-			if (undoc_flag && base_op != 0x40 && (p2 = strrchr(p1, ')'))
-							  && *(p2 + 1) == ',') {
-				/* only for SET/RES */
-				switch (op = get_reg(p2 + 2)) {
-				case REGA:	/* SETRES n,(IX+d),A (undocumented) */
-				case REGB:	/* SETRES n,(IX+d),B (undocumented) */
-				case REGC:	/* SETRES n,(IX+d),C (undocumented) */
-				case REGD:	/* SETRES n,(IX+d),D (undocumented) */
-				case REGE:	/* SETRES n,(IX+d),E (undocumented) */
-				case REGH:	/* SETRES n,(IX+d),H (undocumented) */
-				case REGL:	/* SETRES n,(IX+d),L (undocumented) */
-					ops[0] = 0xdd;
-					ops[1] = 0xcb;
-					ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-					ops[3] = base_op + i * 8 + op;
-					break;
-				default:	/* invalid operand */
-					ops[0] = 0;
-					ops[1] = 0;
-					ops[2] = 0;
-					ops[3] = 0;
-					asmerr(E_ILLOPE);
-				}
-			} else {		/* TRSBIT n,(IX+d) */
-				ops[0] = 0xdd;
-				ops[1] = 0xcb;
-				ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-				ops[3] = base_op + 0x06 + i * 8;
+	case NOREG:			/* CBOP {n,}(I[XY]+d){,reg} */
+		len = 4;
+		if (pass == 2) {
+			if (strncmp(p1, "(IX+", 4) == 0)
+				cbgrp_iixy(0xdd, base_op, i, p1);
+			else if (strncmp(p1, "(IY+", 4) == 0)
+				cbgrp_iixy(0xfd, base_op, i, p1);
+			else {		/* invalid operand */
+				ops[0] = 0;
+				ops[1] = 0;
+				ops[2] = 0;
+				ops[3] = 0;
+				asmerr(E_ILLOPE);
 			}
-		} else if (strncmp(p1, "(IY+", 4) == 0) {
-			len = 4;
-			if (pass == 1)
-				break;
-			if (undoc_flag && base_op != 0x40 && (p2 = strrchr(p1, ')'))
-							  && *(p2 + 1) == ',') {
-				/* only for SET/RES */
-				switch (op = get_reg(p2 + 2)) {
-				case REGA:	/* SETRES n,(IY+d),A (undocumented) */
-				case REGB:	/* SETRES n,(IY+d),B (undocumented) */
-				case REGC:	/* SETRES n,(IY+d),C (undocumented) */
-				case REGD:	/* SETRES n,(IY+d),D (undocumented) */
-				case REGE:	/* SETRES n,(IY+d),E (undocumented) */
-				case REGH:	/* SETRES n,(IY+d),H (undocumented) */
-				case REGL:	/* SETRES n,(IY+d),L (undocumented) */
-					ops[0] = 0xfd;
-					ops[1] = 0xcb;
-					ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-					ops[3] = base_op + i * 8 + op;
-					break;
-				default:	/* invalid operand */
-					ops[0] = 0;
-					ops[1] = 0;
-					ops[2] = 0;
-					ops[3] = 0;
-					asmerr(E_ILLOPE);
-				}
-			} else {		/* TRSBIT n,(IY+d) */
-				ops[0] = 0xfd;
-				ops[1] = 0xcb;
-				ops[2] = chk_sbyte(calc_val(strchr(operand, '+') + 1));
-				ops[3] = base_op + 0x06 + i * 8;
-			}
-		} else {
-			ops[0] = 0;
-			ops[1] = 0;
-			asmerr(E_ILLOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1956,6 +1801,45 @@ int op_trsbit(int base_op, int dummy)
 		asmerr(E_ILLOPE);
 	}
 	return(len);
+}
+
+/*
+ *	CBOP {n,}(I[XY]+d){,reg}
+ */
+void cbgrp_iixy(int prefix, int base_op, int bit, char *p)
+{
+	register char *p1;
+	register int op;
+
+	if (undoc_flag && base_op != 0x40 && (p1 = strrchr(p, ')'))
+					  && *(p1 + 1) == ',') {
+		/* not for BIT */
+		switch (op = get_reg(p1 + 2)) {
+		case REGA:		/* CBOP {n,}(I[XY]+d),A (undocumented) */
+		case REGB:		/* CBOP {n,}(I[XY]+d),B (undocumented) */
+		case REGC:		/* CBOP {n,}(I[XY]+d),C (undocumented) */
+		case REGD:		/* CBOP {n,}(I[XY]+d),D (undocumented) */
+		case REGE:		/* CBOP {n,}(I[XY]+d),E (undocumented) */
+		case REGH:		/* CBOP {n,}(I[XY]+d),H (undocumented) */
+		case REGL:		/* CBOP {n,}(I[XY]+d),L (undocumented) */
+			ops[0] = prefix;
+			ops[1] = 0xcb;
+			ops[2] = chk_sbyte(calc_val(strchr(p, '+') + 1));
+			ops[3] = base_op + (bit << 3) + op;
+			break;
+		default:		/* invalid operand */
+			ops[0] = 0;
+			ops[1] = 0;
+			ops[2] = 0;
+			ops[3] = 0;
+			asmerr(E_ILLOPE);
+		}
+	} else {			/* CBOP {n,}(I[XY]+d) */
+		ops[0] = prefix;
+		ops[1] = 0xcb;
+		ops[2] = chk_sbyte(calc_val(strchr(p, '+') + 1));
+		ops[3] = base_op + (bit << 3) + 0x06;
+	}
 }
 
 /*

@@ -168,7 +168,7 @@ int strcasecmp(unsigned char *s1, unsigned char *s2)
 	register int c, d;
 
 	for (;;) {
-		switch(c = *s1++ - (d = *s2++)) {
+		switch (c = *s1++ - (d = *s2++)) {
 		case 0:
 			if (!d)
 				break;
@@ -244,7 +244,7 @@ static int parse(void)
 
 	mark  = parsed_pos;
 	state = -1;
- again:
+again:
 	parsed_pos = mark;
 	state++;
 	sstate = SS_START;
@@ -254,7 +254,7 @@ static int parse(void)
 	pcode  = 0;
 	value  = 0;
 	start  = 1;
-	while(1) {
+	while (1) {
 		pcode = code;
 	skip_spaces:
 		code = parsed_line[parsed_pos];
@@ -262,14 +262,14 @@ static int parse(void)
 		type = ((code < 128) ? charclass[code] : 0);
 		if ((quote == 0) && ((type & C_SPC) == C_SPC))
 			goto skip_spaces;
-		switch(state) {
+		switch (state) {
 		case S_OPE:
 			if ((type & C_OPE) == C_OPE)
 				return(code);
 			goto again;
 
 		case S_HEX:
-			switch(sstate) {
+			switch (sstate) {
 			case SS_START:	/* initial condition */
 				if (!isdigit(code))
 					goto again;
@@ -301,7 +301,7 @@ static int parse(void)
 			goto again;
 
 		case S_OCT:
-			switch(sstate) {
+			switch (sstate) {
 			case SS_START:	/* initial condition */
 				if (!isdigit(code))
 					goto again;
@@ -333,7 +333,7 @@ static int parse(void)
 			goto again;
 
 		case S_BIN:
-			switch(sstate) {
+			switch (sstate) {
 			case SS_START:	/* initial condition */
 				if (!isdigit(code))
 					goto again;
@@ -364,7 +364,7 @@ static int parse(void)
 			goto again;
 
 		case S_DEC:
-			switch(sstate) {
+			switch (sstate) {
 			case SS_START:	/* initial condition */
 				if (!isdigit(code))
 					goto again;
@@ -445,7 +445,7 @@ static int asctoi(char *str)
 		num <<= 8;
 		if (*str == '\\') {
 			str++;
-			switch(*str++) {
+			switch (*str++) {
 			case 'a':
 				num |= 0x07;
 				break;
@@ -492,7 +492,7 @@ static int expr_factor(void)
 {
 	int n1, n2;
 
-	switch(tok) {
+	switch (tok) {
 	case '(':
 		tok = parse();
 		n1 = expr();
@@ -539,7 +539,7 @@ static int expr_term(void)
 	while (1) {
 		mark = parsed_pos;
 		tok = parse();
-		switch(tok) {
+		switch (tok) {
 		case '*':
 		case '/':
 		case '%':
@@ -565,7 +565,7 @@ static int expr_simple(void)
 	while (1) {
 		mark = parsed_pos;
 		tok = parse();
-		switch(tok) {
+		switch (tok) {
 		case '+':
 		case '-':
 			t = tok;
@@ -590,7 +590,7 @@ static int expr_shift(void)
 	while (1) {
 		mark = parsed_pos;
 		tok = parse();
-		switch(tok) {
+		switch (tok) {
 		case '<':
 		case '>':
 			t = tok;
@@ -615,7 +615,7 @@ static int expr_and(void)
 	while (1) {
 		mark = parsed_pos;
 		tok = parse();
-		switch(tok) {
+		switch (tok) {
 		case '&':
 			t = tok;
 			mark = parsed_pos;
@@ -639,7 +639,7 @@ static int expr_xor(void)
 	while (1) {
 		mark = parsed_pos;
 		tok = parse();
-		switch(tok) {
+		switch (tok) {
 		case '^':
 			t = tok;
 			mark = parsed_pos;
@@ -663,7 +663,7 @@ static int expr_or(void)
 	while (1) {
 		mark = parsed_pos;
 		tok = parse();
-		switch(tok) {
+		switch (tok) {
 		case '|':
 			t = tok;
 			mark = parsed_pos;
@@ -694,7 +694,7 @@ static int evaluate(int node)
 			n1 = evaluate(nodes[node].left);
 		if (nodes[node].right)
 			n2 = evaluate(nodes[node].right);
-		switch(nodes[node].op) {
+		switch (nodes[node].op) {
 		case '~':
 			return(~n1);
 		case '-':

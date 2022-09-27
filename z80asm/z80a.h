@@ -75,9 +75,9 @@ struct ope {
 };
 
 /*
- *	structure personality
+ *	structure operations set
  */
-struct pers {
+struct opset {
 	int no_opcodes;		/* number of opcode entries */
 	struct opc *opctab;	/* opcode table */
 	int no_operands;	/* number of operand entries */
@@ -148,11 +148,11 @@ struct inc {
 #define NOREG		99	/* operand isn't register */
 
 /*
- *	definitions of personalities
+ *	definitions of operations sets
  */
-#define	NUMPERS		2	/* number of personalities */
-#define PERSZ80		0	/* Z80 personality */
-#define PERS8080	1	/* 8080 personality */
+#define OPSET_PSD	0	/* pseudo ops */
+#define OPSET_Z80	1	/* Z80 opcodes */
+#define OPSET_8080	2	/* 8080 opcodes */
 
 /*
  *	definitions of error numbers for error messages in listfile
