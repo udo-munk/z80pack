@@ -226,6 +226,7 @@ void wdi_init(void)
     char fn[MAX_LFN];       /* path/filename for hard disk image */
     int fd;                 /* fd for hard disk i/o */
     int unit;
+    int i;
 
     wdi.pio1.cmd_A = 0xff;
     wdi.pio1.cmd_B = 0xff;
@@ -301,7 +302,7 @@ again:
         
         wdi.hd[unit].type = -1;
 
-        for (int i = 0; i < MAX_DISK_PARAM; i++) {
+        for (i = 0; i < MAX_DISK_PARAM; i++) {
 
             int size = WDI_BLOCK_SIZE * WDI_SECTORS * disk_param[i].cyl * disk_param[i].heads;
 
@@ -354,6 +355,8 @@ long wdi_pos(BYTE *buf)
 }
 Tstates_t wdi_dma_write(BYTE bus_ack)
 {
+    int i;
+
     if (!bus_ack) return 0;
 
     LOGI(TAG, "WRITE: head: %d, cyl: %x", wdi.hd[wdi.unit].status.hav, wdi.hd[wdi.unit].status.cav);
@@ -365,7 +368,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
         return 0;
     }
 
-    for (int i = 0; i <= wdi.dma.wr0.len; i++) {
+    for (i = 0; i <= wdi.dma.wr0.len; i++) {
         buffer[i] = dma_read(wdi.dma.wr4.b_addr_counter++);
     }
 
@@ -414,6 +417,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
 Tstates_t wdi_dma_read(BYTE bus_ack)
 {
     register int v;
+    int i;
 
     if (!bus_ack) return 0;
 
@@ -451,7 +455,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
         return 0;
     }
 
-    for (int i = 0; i < wdi.dma.wr0.len; i++) {
+    for (i = 0; i < wdi.dma.wr0.len; i++) {
         v = buffer[i];
 
         dma_write(wdi.dma.wr4.b_addr_counter, v);
@@ -903,10 +907,11 @@ void cromemco_wdi_pio1b_cmd_out(BYTE data)
 Tstates_t wdi_dma_mem_to_mem(BYTE bus_ack)
 {
     register int v;
+    int i;
 
     if (!bus_ack) return 0;
 
-    for (int i = 0; i <= wdi.dma.wr0.len; i++) {
+    for (i = 0; i <= wdi.dma.wr0.len; i++) {
         v = dma_read(wdi.dma.wr0.a_addr_counter++);
         dma_write(wdi.dma.wr4.b_addr_counter++, v);
     }
