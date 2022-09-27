@@ -38,7 +38,7 @@ extern void asmerr(int);
 
 /*
  *	binary search in sorted table opctab of opset and OPSET_PSD
- *	search opset first since pseudo ops are less common
+ *	search opset first since pseudo ops occur less often
  *
  *	Input: pointer to string with opcode
  *
