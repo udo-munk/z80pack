@@ -99,7 +99,7 @@ void lst_attl(void)
 /*
  *	print one line into listfile, if -l option set
  */
-void lst_line(int val, int opcount)
+void lst_line(int val, int op_cnt)
 {
 	register int i;
 
@@ -128,19 +128,19 @@ void lst_line(int val, int opcount)
 		fatal(F_INTERN, "invalid listflag for function lst_line");
 		break;
 	}
-	if (opcount >= 1)
+	if (op_cnt >= 1)
 		fprintf(lstfp, "%02x ", ops[0] & 0xff);
 	else
 		fprintf(lstfp, "   ");
-	if (opcount >= 2)
+	if (op_cnt >= 2)
 		fprintf(lstfp, "%02x ", ops[1] & 0xff);
 	else
 		fprintf(lstfp, "   ");
-	if (opcount >= 3)
+	if (op_cnt >= 3)
 		fprintf(lstfp, "%02x ", ops[2] & 0xff);
 	else
 		fprintf(lstfp, "   ");
-	if (opcount >= 4)
+	if (op_cnt >= 4)
 		fprintf(lstfp, "%02x ", ops[3] & 0xff);
 	else
 		fprintf(lstfp, "   ");
@@ -154,11 +154,11 @@ no_data:
 	}
 	sd_flag = 0;
 	p_line++;
-	if (opcount > 4 && sd_flag == 0) {
-		opcount -= 4;
+	if (op_cnt > 4 && sd_flag == 0) {
+		op_cnt -= 4;
 		i = 4;
 		sd_val = val;
-		while (opcount > 0) {
+		while (op_cnt > 0) {
 			if (p_line >= ppl) {
 				lst_header();
 				lst_attl();
@@ -166,19 +166,19 @@ no_data:
 			s_line++;
 			sd_val += 4;
 			fprintf(lstfp, "%04x  ", sd_val & 0xffff);
-			if (opcount-- > 0)
+			if (op_cnt-- > 0)
 				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
 			else
 				fprintf(lstfp, "   ");
-			if (opcount-- > 0)
+			if (op_cnt-- > 0)
 				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
 			else
 				fprintf(lstfp, "   ");
-			if (opcount-- > 0)
+			if (op_cnt-- > 0)
 				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
 			else
 				fprintf(lstfp, "   ");
-			if (opcount-- > 0)
+			if (op_cnt-- > 0)
 				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
 			else
 				fprintf(lstfp, "   ");
@@ -289,19 +289,19 @@ void obj_end(void)
 /*
  *	write opcodes in ops[] into object file
  */
-void obj_writeb(int opcount)
+void obj_writeb(int op_cnt)
 {
 	register int i;
 
 	switch (out_form) {
 	case OUTBIN:
-		fwrite(ops, 1, opcount, objfp);
+		fwrite(ops, 1, op_cnt, objfp);
 		break;
 	case OUTMOS:
-		fwrite(ops, 1, opcount, objfp);
+		fwrite(ops, 1, op_cnt, objfp);
 		break;
 	case OUTHEX:
-		for (i = 0; opcount; opcount--) {
+		for (i = 0; op_cnt; op_cnt--) {
 			if (hex_cnt >= MAXHEX)
 				flush_hex();
 			hex_buf[hex_cnt++] = ops[i++];
