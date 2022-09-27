@@ -384,9 +384,9 @@ int op_dd_handel(void)
 	fp_sampleLightGroup(0, 0);
 #endif
 
-	t = (*op_dd[memrdr(PC++)]) ();	/* execute next opcode */
-
 	R++;				/* increment refresh register */
+
+	t = (*op_dd[memrdr(PC++)]) ();	/* execute next opcode */
 
 	return(t);
 }
