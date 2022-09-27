@@ -476,6 +476,7 @@ void cpu_z80(void)
 			PC = 0x66;
 			int_nmi = 0;
 			t += 11;
+			R++;		/* increment refresh register */
 		}
 
 		if (int_int) {		/* maskable interrupt */
@@ -575,6 +576,7 @@ void cpu_z80(void)
 #ifdef FRONTPANEL
 			m1_step = 1;
 #endif
+			R++;		/* increment refresh register */
 		}
 leave:
 
@@ -582,6 +584,8 @@ leave:
 		/* M1 opcode fetch */
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
+
+		R++;			/* increment refresh register */
 
 		int_protection = 0;
 		states = (*op_sim[memrdr(PC++)]) (); /* execute next opcode */
@@ -605,7 +609,6 @@ leave:
 			}
 		}
 
-		R++;			/* increment refresh register */
 		T += states;	/* increment CPU clock */
 
 					/* do runtime measurement */

@@ -370,9 +370,9 @@ int op_ed_handel(void)
 	fp_sampleLightGroup(0, 0);
 #endif
 
-	t = (*op_ed[memrdr(PC++)]) ();	/* execute next opcode */
-
 	R++;				/* increment refresh register */
+
+	t = (*op_ed[memrdr(PC++)]) ();	/* execute next opcode */
 
 	return(t);
 }
