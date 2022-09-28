@@ -280,6 +280,8 @@ int op_dm(int op_code, int dummy)
 			fatal(F_INTERN, "Op-code buffer overflow");
 	}
 	switch (op_code) {
+	case 0:				/* DEFM */
+		break;
 	case 1:				/* DEFC, DC */
 		if (i)
 			ops[i - 1] |= 0x80;
