@@ -68,6 +68,10 @@ int op_org(int dummy1, int dummy2)
 
 	if (!gencode)
 		return(0);
+	if (phs_flag) {
+		asmerr(E_ORGPHS);
+		return(0);
+	}
 	i = eval(operand);
 	if (i < pc) {
 		asmerr(E_MEMOVR);
@@ -83,7 +87,50 @@ int op_org(int dummy1, int dummy2)
 			obj_fill(i - pc);
 		sd_flag = 2;
 	}
-	pc = i;
+	rpc = pc = i;
+	return(0);
+}
+
+/*
+ *	.PHASE
+ */
+int op_phase(int dummy1, int dummy2)
+{
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
+	if (!gencode)
+		return(0);
+	if (pass == 1)
+		if (*label)
+			put_label();
+	if (phs_flag)
+		asmerr(E_PHSNEST);
+	else {
+		phs_flag = 1;
+		pc = eval(operand);
+		sd_flag = 2;
+	}
+	return(0);
+}
+
+/*
+ *	.DEPHASE
+ */
+int op_dephase(int dummy1, int dummy2)
+{
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
+	if (!gencode)
+		return(0);
+	if (!phs_flag)
+		asmerr(E_MISPHS);
+	else {
+		phs_flag = 0;
+		pc = rpc;
+		sd_flag = 2;
+	}
 	return(0);
 }
 
@@ -149,6 +196,7 @@ int op_ds(int dummy1, int dummy2)
 	if ((pass == 2) && !dump_flag)
 		obj_fill(val);
 	pc += val;
+	rpc += val;
 	return(0);
 }
 

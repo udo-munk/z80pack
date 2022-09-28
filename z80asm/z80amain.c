@@ -241,7 +241,8 @@ void pass1(void)
 	register int fi;
 
 	pass = 1;
-	pc = 0;
+	rpc = pc = 0;
+	phs_flag = 0;
 	fi = 0;
 	if (ver_flag)
 		puts("Pass 1");
@@ -303,8 +304,10 @@ int p1_line(void)
 	if (*opcode) {
 		if ((op = search_op(opcode)) != NULL) {
 			i = (*op->op_fun)(op->op_c1, op->op_c2);
-			if (gencode)
+			if (gencode) {
 				pc += i;
+				rpc += i;
+			}
 		} else
 			asmerr(E_ILLOPC);
 	} else
@@ -322,7 +325,8 @@ void pass2(void)
 	register int fi;
 
 	pass = 2;
-	pc = 0;
+	rpc = pc = 0;
+	phs_flag = 0;
 	fi = 0;
 	if (ver_flag)
 		puts("Pass 2");
@@ -386,6 +390,7 @@ int p2_line(void)
 			lst_line(pc, op_count);
 			obj_writeb(op_count);
 			pc += op_count;
+			rpc += op_count;
 		} else {
 			sd_flag = 2;
 			lst_line(0, 0);

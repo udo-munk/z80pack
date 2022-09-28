@@ -27,20 +27,19 @@
 #include <stdio.h>
 #include "z80a.h"
 
-extern int op_1b(int, int), op_2b(int, int), op_pupo(int, int);
-extern int op_ex(int, int), op_ld(int, int);
-extern int op_ret(int, int), op_jpcall(int, int);
-extern int op_jr(int, int), op_djnz(int, int), op_rst(int, int);
-extern int op_add(int, int), op_sbadc(int, int);
-extern int op_decinc(int, int), op_alu(int, int);
-extern int op_out(int, int), op_in(int, int), op_im(int, int);
-extern int op_cbgrp(int, int);
-extern int op_opset(int, int), op_org(int, int), op_dl(int, int);
-extern int op_equ(int, int);
-extern int op_ds(int, int), op_db(int, int), op_dw(int, int), op_dm(int, int);
-extern int op_misc(int, int);
-extern int op_cond(int, int);
+extern int op_opset(int, int), op_org(int, int), op_phase(int, int);
+extern int op_dephase(int, int), op_equ(int, int), op_dl(int, int);
+extern int op_ds(int, int), op_db(int, int), op_dm(int, int);
+extern int op_dw(int, int), op_misc(int, int), op_cond(int, int);
 extern int op_glob(int, int);
+
+extern int op_1b(int, int), op_2b(int, int), op_im(int, int);
+extern int op_pupo(int, int), op_ex(int, int), op_rst(int, int);
+extern int op_ret(int, int), op_jpcall(int, int), op_jr(int, int);
+extern int op_djnz(int, int), op_ld(int, int), op_add(int, int);
+extern int op_sbadc(int, int), op_decinc(int, int), op_alu(int, int);
+extern int op_out(int, int), op_in(int, int), op_cbgrp(int, int);
+
 extern int op8080_mov(int, int), op8080_alu(int, int), op8080_decinc(int, int);
 extern int op8080_reg16(int, int), op8080_regbd(int, int);
 extern int op8080_imm(int, int), op8080_rst(int, int), op8080_pupo(int, int);
@@ -53,6 +52,8 @@ extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
  */
 struct opc opctab_psd[] = {
 	{ ".8080",	op_opset,	OPSET_8080, 0	},
+	{ ".DEPHASE",	op_dephase,	0,	0	},
+	{ ".PHASE",	op_phase,	0,	0	},
 	{ ".Z80",	op_opset,	OPSET_Z80, 0	},
 	{ "ASET",	op_dl,		0,	0	},
 	{ "DB",		op_db,		0,	0	},

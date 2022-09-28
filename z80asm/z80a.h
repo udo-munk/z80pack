@@ -170,6 +170,9 @@ struct inc {
 #define E_IFNEST	10	/* to many IF's nested */
 #define E_MISEIF	11	/* missing ENDIF */
 #define E_INCNEST	12	/* to many INCLUDE's nested */
+#define E_PHSNEST	13	/* .PHASE can't be nested */
+#define E_ORGPHS	14	/* invalid ORG in .PHASE block */
+#define E_MISPHS	15	/* missing .PHASE at .DEPHASE */
 
 /*
  *	definition fatal errors

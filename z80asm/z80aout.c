@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 2022 by Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -48,7 +49,10 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"missing IF",			/* 9 */
 	"IF nesting to deep",		/* 10 */
 	"missing ENDIF",		/* 11 */
-	"INCLUDE nesting to deep"	/* 12 */
+	"INCLUDE nesting to deep",	/* 12 */
+	".PHASE can not be nested",	/* 13 */
+	"invalid ORG in .PHASE block",	/* 14 */
+	"missing .PHASE"		/* 15 */
 };
 
 #define MAXHEX	32			/* max no bytes/hex record */
