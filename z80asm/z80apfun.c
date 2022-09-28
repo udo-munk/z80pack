@@ -251,7 +251,7 @@ hyp_error:
 /*
  *	DEFM, DEFC, DC, DEFZ
  */
-int op_dm(int variant, int dummy)
+int op_dm(int op_code, int dummy)
 {
 	register int i;
 	register char *p;
@@ -279,12 +279,18 @@ int op_dm(int variant, int dummy)
 		if (i >= OPCARRAY)
 			fatal(F_INTERN, "Op-code buffer overflow");
 	}
-	if (variant == 1)		/* DEFC, DC */
-		ops[i - 1] |= 0x80;
-	else if (variant == 2) {	/* DEFZ */
+	switch (op_code) {
+	case 1:				/* DEFC, DC */
+		if (i)
+			ops[i - 1] |= 0x80;
+		break;
+	case 2:				/* DEFZ */
 		ops[i++] = '\0';
 		if (i >= OPCARRAY)
 			fatal(F_INTERN, "Op-code buffer overflow");
+		break;
+	default:
+		fatal(F_INTERN, "invalid opcode for function op_dm");
 	}
 	return(i);
 }
