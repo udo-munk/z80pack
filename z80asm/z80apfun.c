@@ -229,7 +229,7 @@ int op_db(int dummy1, int dummy2)
 				}
 				ops[i++] = *p++;
 				if (i >= OPCARRAY)
-				    fatal(F_INTERN, "Op-code buffer overflow");
+				    fatal(F_INTERN, "op-code buffer overflow");
 			}
 			p++;
 		} else {
@@ -237,9 +237,12 @@ int op_db(int dummy1, int dummy2)
 			while (*p != ',' && *p != '\0')
 				*s++ = *p++;
 			*s = '\0';
-			ops[i++] = eval(tmp);
-			if (i >= OPCARRAY)
-				fatal(F_INTERN, "Op-code buffer overflow");
+			if (s != tmp) {
+				if (pass == 2)
+					ops[i] = eval(tmp);
+				if (++i >= OPCARRAY)
+				    fatal(F_INTERN, "op-code buffer overflow");
+			}
 		}
 		if (*p == ',')
 			p++;
@@ -277,7 +280,7 @@ int op_dm(int op_code, int dummy)
 		}
 		ops[i++] = *p++;
 		if (i >= OPCARRAY)
-			fatal(F_INTERN, "Op-code buffer overflow");
+			fatal(F_INTERN, "op-code buffer overflow");
 	}
 	switch (op_code) {
 	case 1:				/* DEFM */
@@ -289,7 +292,7 @@ int op_dm(int op_code, int dummy)
 	case 3:				/* DEFZ */
 		ops[i++] = '\0';
 		if (i >= OPCARRAY)
-			fatal(F_INTERN, "Op-code buffer overflow");
+			fatal(F_INTERN, "op-code buffer overflow");
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_dm");
@@ -302,7 +305,7 @@ int op_dm(int op_code, int dummy)
  */
 int op_dw(int dummy1, int dummy2)
 {
-	register int i, len, temp;
+	register int i, temp;
 	register char *p;
 	register char *s;
 
@@ -312,7 +315,7 @@ int op_dw(int dummy1, int dummy2)
 	if (!gencode)
 		return(0);
 	p = operand;
-	i = len = 0;
+	i = 0;
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -321,18 +324,20 @@ int op_dw(int dummy1, int dummy2)
 		while (*p != ',' && *p != '\0')
 			*s++ = *p++;
 		*s = '\0';
-		if (pass == 2) {
-			temp = eval(tmp);
-			ops[i++] = temp & 0xff;
-			ops[i++] = temp >> 8;
+		if (s != tmp) {
+			if (pass == 2) {
+				temp = eval(tmp);
+				ops[i] = temp & 0xff;
+				ops[i + 1] = temp >> 8;
+			}
+			i += 2;
 			if (i >= OPCARRAY)
-				fatal(F_INTERN, "Op-code buffer overflow");
+				fatal(F_INTERN, "op-code buffer overflow");
 		}
-		len += 2;
 		if (*p == ',')
 			p++;
 	}
-	return(len);
+	return(i);
 }
 
 /*

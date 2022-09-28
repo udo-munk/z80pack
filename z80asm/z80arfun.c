@@ -1715,7 +1715,7 @@ int op_cbgrp(int base_op, int dummy)
 			if (i < 0 || i > 7)
 				asmerr(E_VALOUT);
 		}
-	} else
+	} else				/* ROTSHF ? */
 		sec = operand;
 	switch (op = get_reg(sec)) {
 	case REGA:			/* CBOP {n,}A */
@@ -1766,23 +1766,30 @@ void cbgrp_iixy(int prefix, int base_op, int bit, char *sec)
 	register char *p;
 	register int op;
 
-	if (undoc_flag && base_op != 0x40 && (p = strrchr(sec, ')'))
-					  && *(p + 1) == ',') {
-		/* not for BIT */
-		switch (op = get_reg(p + 2)) {
-		case REGA:		/* CBOP {n,}(I[XY]+d),A (undocumented) */
-		case REGB:		/* CBOP {n,}(I[XY]+d),B (undocumented) */
-		case REGC:		/* CBOP {n,}(I[XY]+d),C (undocumented) */
-		case REGD:		/* CBOP {n,}(I[XY]+d),D (undocumented) */
-		case REGE:		/* CBOP {n,}(I[XY]+d),E (undocumented) */
-		case REGH:		/* CBOP {n,}(I[XY]+d),H (undocumented) */
-		case REGL:		/* CBOP {n,}(I[XY]+d),L (undocumented) */
-			ops[0] = prefix;
-			ops[1] = 0xcb;
-			ops[2] = chk_sbyte(calc_val(sec + 4));
-			ops[3] = base_op + (bit << 3) + op;
-			break;
-		default:		/* invalid operand */
+	if ((p = strrchr(sec, ')')) && *(p + 1) == ',') {
+		if (undoc_flag && base_op != 0x40) {
+			/* not for BIT */
+			switch (op = get_reg(p + 2)) {
+			case REGA:	/* CBOP {n,}(I[XY]+d),A (undocumented) */
+			case REGB:	/* CBOP {n,}(I[XY]+d),B (undocumented) */
+			case REGC:	/* CBOP {n,}(I[XY]+d),C (undocumented) */
+			case REGD:	/* CBOP {n,}(I[XY]+d),D (undocumented) */
+			case REGE:	/* CBOP {n,}(I[XY]+d),E (undocumented) */
+			case REGH:	/* CBOP {n,}(I[XY]+d),H (undocumented) */
+			case REGL:	/* CBOP {n,}(I[XY]+d),L (undocumented) */
+				ops[0] = prefix;
+				ops[1] = 0xcb;
+				ops[2] = chk_sbyte(calc_val(sec + 4));
+				ops[3] = base_op + (bit << 3) + op;
+				break;
+			default:	/* invalid operand */
+				ops[0] = 0;
+				ops[1] = 0;
+				ops[2] = 0;
+				ops[3] = 0;
+				asmerr(E_ILLOPE);
+			}
+		} else {		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
 			ops[2] = 0;
