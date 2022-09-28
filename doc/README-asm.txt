@@ -64,18 +64,27 @@ Pseudo Operations:
 Definition of symbols and allocation of memory:
 
 	 ORG    <expression>    - set program address
+<symbol> .PHASE <expression>    - set logical program counter
+	 .DEPHASE               - end of logical phase block
 <symbol> EQU    <expression>    - define constant symbol
 <symbol> DEFL   <expression>    - define variable symbol
 <symbol> DEFB   <exp,'char',..> - write bytes in memory
 <symbol> DEFW   <exp,exp..>     - write words (16 bits) in memory
 <symbol> DEFM   <'string'>      - write character string in memory
+<symbol> DEFC   <'string'>      - as DEFM, but bit 7 in the last char is set
+<symbol> DEFZ   <'string'>      - as DEFM, but an extra zero byte is added
 <symbol> DEFS   <expression>    - reserve space in memory
 
+The aliases ASET for DEFL, DB for DEFB, DC for DEFC,
+DS for DEFS, and DW for DEFW are also accepted.
 
 External symbol declarations:
 
 PUBLIC <symbol>		- make symbol public
 EXTRN  <symbol>		- symbol is defined external
+
+The aliases ENT, ENTRY, and GLOBAL for PUBLIC, and
+EXT and EXTERNAL for EXTRN are also accepted.
 
 The pseudo operations for external symbols are accepted, but won't
 do anything. Source modules can be concatenated or included, so the
