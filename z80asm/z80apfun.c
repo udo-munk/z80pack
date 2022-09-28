@@ -68,6 +68,10 @@ int op_org(int dummy1, int dummy2)
 
 	if (!gencode)
 		return(0);
+	if (phs_flag) {
+		asmerr(E_ORGPHS);
+		return(0);
+	}
 	i = eval(operand);
 	if (i < pc) {
 		asmerr(E_MEMOVR);
@@ -83,7 +87,50 @@ int op_org(int dummy1, int dummy2)
 			obj_fill(i - pc);
 		sd_flag = 2;
 	}
-	pc = i;
+	rpc = pc = i;
+	return(0);
+}
+
+/*
+ *	.PHASE
+ */
+int op_phase(int dummy1, int dummy2)
+{
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
+	if (!gencode)
+		return(0);
+	if (pass == 1)
+		if (*label)
+			put_label();
+	if (phs_flag)
+		asmerr(E_PHSNEST);
+	else {
+		phs_flag = 1;
+		pc = eval(operand);
+		sd_flag = 2;
+	}
+	return(0);
+}
+
+/*
+ *	.DEPHASE
+ */
+int op_dephase(int dummy1, int dummy2)
+{
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
+	if (!gencode)
+		return(0);
+	if (!phs_flag)
+		asmerr(E_MISPHS);
+	else {
+		phs_flag = 0;
+		pc = rpc;
+		sd_flag = 2;
+	}
 	return(0);
 }
 
@@ -149,6 +196,7 @@ int op_ds(int dummy1, int dummy2)
 	if ((pass == 2) && !dump_flag)
 		obj_fill(val);
 	pc += val;
+	rpc += val;
 	return(0);
 }
 
@@ -181,7 +229,7 @@ int op_db(int dummy1, int dummy2)
 				}
 				ops[i++] = *p++;
 				if (i >= OPCARRAY)
-				    fatal(F_INTERN, "Op-code buffer overflow");
+				    fatal(F_INTERN, "op-code buffer overflow");
 			}
 			p++;
 		} else {
@@ -189,9 +237,12 @@ int op_db(int dummy1, int dummy2)
 			while (*p != ',' && *p != '\0')
 				*s++ = *p++;
 			*s = '\0';
-			ops[i++] = eval(tmp);
-			if (i >= OPCARRAY)
-				fatal(F_INTERN, "Op-code buffer overflow");
+			if (s != tmp) {
+				if (pass == 2)
+					ops[i] = eval(tmp);
+				if (++i >= OPCARRAY)
+				    fatal(F_INTERN, "op-code buffer overflow");
+			}
 		}
 		if (*p == ',')
 			p++;
@@ -203,7 +254,7 @@ hyp_error:
 /*
  *	DEFM, DEFC, DC, DEFZ
  */
-int op_dm(int variant, int dummy)
+int op_dm(int op_code, int dummy)
 {
 	register int i;
 	register char *p;
@@ -229,14 +280,22 @@ int op_dm(int variant, int dummy)
 		}
 		ops[i++] = *p++;
 		if (i >= OPCARRAY)
-			fatal(F_INTERN, "Op-code buffer overflow");
+			fatal(F_INTERN, "op-code buffer overflow");
 	}
-	if (variant == 1)		/* DEFC, DC */
-		ops[i - 1] |= 0x80;
-	else if (variant == 2) {	/* DEFZ */
+	switch (op_code) {
+	case 1:				/* DEFM */
+		break;
+	case 2:				/* DEFC, DC */
+		if (i)
+			ops[i - 1] |= 0x80;
+		break;
+	case 3:				/* DEFZ */
 		ops[i++] = '\0';
 		if (i >= OPCARRAY)
-			fatal(F_INTERN, "Op-code buffer overflow");
+			fatal(F_INTERN, "op-code buffer overflow");
+		break;
+	default:
+		fatal(F_INTERN, "invalid opcode for function op_dm");
 	}
 	return(i);
 }
@@ -246,7 +305,7 @@ int op_dm(int variant, int dummy)
  */
 int op_dw(int dummy1, int dummy2)
 {
-	register int i, len, temp;
+	register int i, temp;
 	register char *p;
 	register char *s;
 
@@ -256,7 +315,7 @@ int op_dw(int dummy1, int dummy2)
 	if (!gencode)
 		return(0);
 	p = operand;
-	i = len = 0;
+	i = 0;
 	if (pass == 1)
 		if (*label)
 			put_label();
@@ -265,18 +324,20 @@ int op_dw(int dummy1, int dummy2)
 		while (*p != ',' && *p != '\0')
 			*s++ = *p++;
 		*s = '\0';
-		if (pass == 2) {
-			temp = eval(tmp);
-			ops[i++] = temp & 0xff;
-			ops[i++] = temp >> 8;
+		if (s != tmp) {
+			if (pass == 2) {
+				temp = eval(tmp);
+				ops[i] = temp & 0xff;
+				ops[i + 1] = temp >> 8;
+			}
+			i += 2;
 			if (i >= OPCARRAY)
-				fatal(F_INTERN, "Op-code buffer overflow");
+				fatal(F_INTERN, "op-code buffer overflow");
 		}
-		len += 2;
 		if (*p == ',')
 			p++;
 	}
-	return(len);
+	return(i);
 }
 
 /*

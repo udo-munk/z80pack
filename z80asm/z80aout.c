@@ -1,6 +1,7 @@
 /*
  *	Z80 - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 2022 by Thomas Eberhardt
  *
  *	History:
  *	17-SEP-1987 Development under Digital Research CP/M 2.2
@@ -48,7 +49,10 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"missing IF",			/* 9 */
 	"IF nesting to deep",		/* 10 */
 	"missing ENDIF",		/* 11 */
-	"INCLUDE nesting to deep"	/* 12 */
+	"INCLUDE nesting to deep",	/* 12 */
+	".PHASE can not be nested",	/* 13 */
+	"invalid ORG in .PHASE block",	/* 14 */
+	"missing .PHASE"		/* 15 */
 };
 
 #define MAXHEX	32			/* max no bytes/hex record */
@@ -204,20 +208,24 @@ void lst_sym(void)
 			for (np = symtab[i]; np != NULL; np = np->sym_next) {
 				if (p_line == 0) {
 					lst_header();
-					fputs("\n", lstfp);
+					fputc('\n', lstfp);
 					p_line += 1;
 				}
 				c = np->sym_refcnt ? ' ' : '*';
 				fprintf(lstfp, "%-8s %04x%c\t", np->sym_name,
 					np->sym_val & 0xffff, c);
 				if (++j == 4) {
-					fprintf(lstfp, "\n");
+					fputc('\n', lstfp);
 					if (p_line++ >= ppl)
 						p_line = 0;
 					j = 0;
 				}
 			}
 		}
+	}
+	if (j) {
+		fputc('\n', lstfp);
+		p_line++;
 	}
 }
 
@@ -234,19 +242,23 @@ void lst_sort_sym(int len)
 	while (i < len) {
 		if (p_line == 0) {
 			lst_header();
-			fputs("\n", lstfp);
+			fputc('\n', lstfp);
 			p_line += 1;
 		}
 		c = symarray[i]->sym_refcnt ? ' ' : '*';
 		fprintf(lstfp, "%-8s %04x%c\t", symarray[i]->sym_name,
 			symarray[i]->sym_val & 0xffff, c);
 		if (++j == 4) {
-			fprintf(lstfp, "\n");
+			fputc('\n', lstfp);
 			if (p_line++ >= ppl)
 				p_line = 0;
 			j = 0;
 		}
-	i++;
+		i++;
+	}
+	if (j) {
+		fputc('\n', lstfp);
+		p_line++;
 	}
 }
 

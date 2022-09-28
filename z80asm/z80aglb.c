@@ -46,7 +46,10 @@ int  list_flag,			/* flag for option -l */
      ver_flag,			/* flag for option -v */
      dump_flag,			/* flag for option -x */
      opset = OPSET_Z80,		/* current operations set (default Z80) */
-     pc,			/* program counter */
+     rpc,			/* real program counter */
+     pc,			/* logical program counter, normally equal */
+				/* to rpc, except when inside a .PHASE block */
+     phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
      gencode = 1,		/* flag for conditional object code */
