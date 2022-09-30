@@ -293,12 +293,12 @@ int strval(char *str)
 }
 
 /*
- *	check value for range -256 < value < 256
+ *	check value for range -257 < value < 256
  *	Output: value if in range, otherwise 0 and error message
  */
 int chk_byte(int i)
 {
-	if (i >= -255 && i <= 255)
+	if (i >= -256 && i <= 255)
 		return(i);
 	else {
 		asmerr(E_VALOUT);
@@ -307,12 +307,12 @@ int chk_byte(int i)
 }
 
 /*
- *	check value for range -128 < value < 128
+ *	check value for range -129 < value < 128
  *	Output: value if in range, otherwise 0 and error message
  */
 int chk_sbyte(int i)
 {
-	if (i >= -127 && i <= 127)
+	if (i >= -128 && i <= 127)
 		return(i);
 	else {
 		asmerr(E_VALOUT);
