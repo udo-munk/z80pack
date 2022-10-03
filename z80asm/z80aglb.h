@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -33,14 +34,17 @@ extern char	*infiles[],
 		label[],
 		opcode[],
 		operand[],
-		ops[],
 		title[];
+
+extern unsigned char
+		ops[];
 
 extern int	list_flag,
 		sym_flag,
 		undoc_flag,
 		ver_flag,
 		dump_flag,
+		radix,
 		opset,
 		rpc,
 		pc,
@@ -56,7 +60,8 @@ extern int	list_flag,
 		prg_flag,
 		out_form,
 		symlen,
-		symsize;
+		symsize,
+		hexlen;
 
 extern FILE	*srcfp,
 		*objfp,

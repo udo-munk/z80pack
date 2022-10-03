@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -30,29 +31,46 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
+/* z80amain.c */
 extern void fatal(int, char *);
 extern void p1_file(char *);
 extern void p2_file(char *);
+
+/* z80anum.c */
 extern int eval(char *);
+
+/* z80aout.c */
 extern void asmerr(int);
 extern void lst_header(void);
 extern void lst_attl(void);
 extern void lst_line(int, int);
+extern void obj_org(int);
 extern void obj_fill(int);
+
+/* z80atab.c */
 extern struct sym *get_sym(char *);
 extern int put_sym(char *, int);
-extern void put_label(void);
 
 #define UNUSED(x)	(void)(x)
 
 /*
  *	.8080 and .Z80
  */
-int op_opset(int new_opset, int dummy)
+int op_opset(int op_code, int dummy)
 {
 	UNUSED(dummy);
 
-	opset = new_opset;
+	sd_flag = 2;
+	switch (op_code) {
+	case 1:				/* .8080 */
+		opset = OPSET_8080;
+		break;
+	case 2:				/* .Z80 */
+		opset = OPSET_Z80;
+		break;
+	default:
+		fatal(F_INTERN, "invalid opcode for function op_opset");
+	}
 	return(0);
 }
 
@@ -66,25 +84,18 @@ int op_org(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
 	if (phs_flag) {
 		asmerr(E_ORGPHS);
 		return(0);
 	}
 	i = eval(operand);
-	if (i < pc) {
-		asmerr(E_MEMOVR);
-		return(0);
-	}
 	if (pass == 1) {		/* PASS 1 */
 		if (!prg_flag) {
 			prg_addr = i;
-			prg_flag++;
+			prg_flag = 1;
 		}
 	} else {			/* PASS 2 */
-		if (++prg_flag > 2)
-			obj_fill(i - pc);
+		obj_org(i);
 		sd_flag = 2;
 	}
 	rpc = pc = i;
@@ -99,11 +110,6 @@ int op_phase(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
-	if (pass == 1)
-		if (*label)
-			put_label();
 	if (phs_flag)
 		asmerr(E_PHSNEST);
 	else {
@@ -122,8 +128,6 @@ int op_dephase(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
 	if (!phs_flag)
 		asmerr(E_MISPHS);
 	else {
@@ -135,6 +139,25 @@ int op_dephase(int dummy1, int dummy2)
 }
 
 /*
+ *	.RADIX
+ */
+int op_radix(int dummy1, int dummy2)
+{
+	int i;
+
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
+	i = eval(operand);
+	if (i < 2 || i > 16)
+		asmerr(E_RADIX);
+	else
+		radix = i;
+	sd_flag = 2;
+	return(0);
+}
+
+/*
  *	EQU
  */
 int op_equ(int dummy1, int dummy2)
@@ -142,8 +165,6 @@ int op_equ(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
 	if (pass == 1) {		/* PASS 1 */
 		if (get_sym(label) == NULL) {
 			sd_val = eval(operand);
@@ -159,15 +180,13 @@ int op_equ(int dummy1, int dummy2)
 }
 
 /*
- *	DEFL and ASET
+ *	DEFL and ASET and for 8080 SET
  */
 int op_dl(int dummy1, int dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
 	sd_flag = 1;
 	sd_val = eval(operand);
 	if (put_sym(label, sd_val))
@@ -185,11 +204,6 @@ int op_ds(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sd_val = pc;
 	sd_flag = 3;
 	val = eval(operand);
@@ -205,34 +219,43 @@ int op_ds(int dummy1, int dummy2)
  */
 int op_db(int dummy1, int dummy2)
 {
-	register int i;
+	register int i, j;
 	register char *p;
 	register char *s;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
 	i = 0;
 	p = operand;
-	if (pass == 1)
-		if (*label)
-			put_label();
 	while (*p) {
-		if (*p == STRSEP) {
-			p++;
-			while (*p != STRSEP) {
-				if (*p == '\n' || *p == '\0') {
-					asmerr(E_MISHYP);
-					goto hyp_error;
+		j = 0;
+		if (*p == STRSEP || *p == STRSEP2) {
+			s = p + 1;
+			while (1) {
+				/* check for double delim */
+				if ((*s == *p) && (*++s != *p))
+					break;
+				if (*s == '\n' || *s == '\0') {
+					asmerr(E_MISSEP);
+					goto sep_error;
 				}
-				ops[i++] = *p++;
+				ops[i++] = *s++;
 				if (i >= OPCARRAY)
 				    fatal(F_INTERN, "op-code buffer overflow");
+				j++;
 			}
-			p++;
-		} else {
+			/* reset ops and evaluate if not followed by a comma */
+			if ((*s != ',') && (*s != '\0')) {
+				i -= j;
+				j = 0;
+			}
+			else {
+				p = s;
+				j = 1;
+			}
+		}
+		if (j == 0) {
 			s = tmp;
 			while (*p != ',' && *p != '\0')
 				*s++ = *p++;
@@ -247,7 +270,7 @@ int op_db(int dummy1, int dummy2)
 		if (*p == ',')
 			p++;
 	}
-hyp_error:
+sep_error:
 	return(i);
 }
 
@@ -261,21 +284,19 @@ int op_dm(int op_code, int dummy)
 
 	UNUSED(dummy);
 
-	if (!gencode)
-		return(0);
 	i = 0;
 	p = operand;
-	if (pass == 1)
-		if (*label)
-			put_label();
-	if (*p != STRSEP) {
-		asmerr(E_MISHYP);
+	if (*p != STRSEP && *p != STRSEP2) {
+		asmerr(E_MISSEP);
 		return(0);
 	}
 	p++;
-	while (*p != STRSEP) {
+	while (1) {
+		/* check for double delim */
+		if ((*p == *operand) && (*++p != *operand))
+			break;
 		if (*p == '\n' || *p == '\0') {
-			asmerr(E_MISHYP);
+			asmerr(E_MISSEP);
 			break;
 		}
 		ops[i++] = *p++;
@@ -312,13 +333,8 @@ int op_dw(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (!gencode)
-		return(0);
 	p = operand;
 	i = 0;
-	if (pass == 1)
-		if (*label)
-			put_label();
 	while (*p) {
 		s = tmp;
 		while (*p != ',' && *p != '\0')
@@ -345,15 +361,13 @@ int op_dw(int dummy1, int dummy2)
  */
 int op_misc(int op_code, int dummy)
 {
-	register char *p, *d;
+	register char *p, *d, *s;
 	static char fn[LENFN];
 	static int incnest;
 	static struct inc incl[INCNEST];
 
 	UNUSED(dummy);
 
-	if (!gencode)
-		return(0);
 	sd_flag = 2;
 	switch(op_code) {
 	case 1:				/* EJECT */
@@ -375,12 +389,23 @@ int op_misc(int op_code, int dummy)
 	case 5:				/* PRINT */
 		if (pass == 1) {
 			p = operand;
-			while (*p) {
-				if (*p != STRSEP)
+			if (*p == STRSEP || *p == STRSEP2) {
+				p++;
+				while (1) {
+					/* check for double delim */
+					if ((*p == *operand)
+					    && (*++p != *operand))
+						break;
+					if (*p == '\0') {
+						putchar('\n');
+						asmerr(E_MISSEP);
+						return(0);
+					}
 					putchar(*p++);
-				else
-					p++;
+				}
 			}
+			else
+				fputs(operand, stdout);
 			putchar('\n');
 		}
 		break;
@@ -395,13 +420,14 @@ int op_misc(int op_code, int dummy)
 		incnest++;
 		p = line;
 		d = fn;
-		while(isspace((int)*p))	/* ignore white space until INCLUDE */
-			p++;
-		while(!isspace((int)*p))/* ignore INCLUDE */
-			p++;
-		while(isspace((int)*p))	/* ignore white space until filename */
-			p++;
-		while(!isspace((int)*p) && *p != COMMENT) /* get filename */
+		while(isspace((unsigned char) *p))
+			p++;	/* ignore white space until INCLUDE */
+		while(!isspace((unsigned char) *p))
+			p++;	/* ignore INCLUDE */
+		while(isspace((unsigned char) *p))
+			p++;	/* ignore white space until filename */
+		while(!isspace((unsigned char) *p) && *p != COMMENT)
+				/* get filename */
 			*d++ = *p++;
 		*d = '\0';
 		if (pass == 1) {	/* PASS 1 */
@@ -431,16 +457,28 @@ int op_misc(int op_code, int dummy)
 		if (pass == 2) {
 			p = line;
 			d = title;
-			while (isspace((int)*p)) /* ignore white space until TITLE */
-				p++;
-			while (!isspace((int)*p))/* ignore TITLE */
-				p++;
-			while (isspace((int)*p)) /* ignore white space until text */
-				p++;
-			if (*p == STRSEP)
-				p++;
-			while (*p != '\n' && *p != STRSEP && *p != COMMENT)
-				*d++ = *p++;
+			while (isspace((unsigned char) *p))
+				p++;	/* ignore white space until TITLE */
+			while (!isspace((unsigned char) *p))
+				p++;	/* ignore TITLE */
+			while (isspace((unsigned char) *p))
+				p++;	/* ignore white space until text */
+			if (*p == STRSEP || *p == STRSEP2) {
+				s = p + 1;
+				while (1) {
+					/* check for double delim */
+					if ((*s == *p) && (*++s != *p))
+						break;
+					if (*s == '\n') {
+						asmerr(E_MISSEP);
+						break;
+					}
+					*d++ = *s++;
+				}
+			}
+			else
+				while (*p != '\n' && *p != COMMENT)
+					*d++ = *p++;
 			*d = '\0';
 		}
 		break;
@@ -452,7 +490,7 @@ int op_misc(int op_code, int dummy)
 }
 
 /*
- *	IFDEF, IFNDEF, IFEQ, IFNEQ, ELSE, ENDIF
+ *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, ELSE, ENDIF, ENDC
  */
 int op_cond(int op_code, int dummy)
 {
@@ -522,6 +560,26 @@ int op_cond(int op_code, int dummy)
 				gencode = 0;
 		}
 		break;
+	case 5:				/* COND, IF, and IFT */
+		if (iflevel >= IFNEST) {
+			asmerr(E_IFNEST);
+			break;
+		}
+		condnest[iflevel++] = gencode;
+		if (gencode)
+			if (eval(operand) == 0)
+				gencode = 0;
+		break;
+	case 6:				/* IFE and IFF */
+		if (iflevel >= IFNEST) {
+			asmerr(E_IFNEST);
+			break;
+		}
+		condnest[iflevel++] = gencode;
+		if (gencode)
+			if (eval(operand) != 0)
+				gencode = 0;
+		break;
 	case 98:			/* ELSE */
 		if (!iflevel)
 			asmerr(E_MISIFF);
@@ -529,7 +587,7 @@ int op_cond(int op_code, int dummy)
 			if ((iflevel == 0) || (condnest[iflevel - 1] == 1))
 				gencode = !gencode;
 		break;
-	case 99:			/* ENDIF */
+	case 99:			/* ENDIF and ENDC */
 		if (!iflevel)
 			asmerr(E_MISIFF);
 		else
@@ -550,8 +608,6 @@ int op_glob(int op_code, int dummy)
 {
 	UNUSED(dummy);
 
-	if (!gencode)
-		return(0);
 	sd_flag = 2;
 	switch(op_code) {
 	case 1:				/* EXTRN, EXTERNAL, EXT */

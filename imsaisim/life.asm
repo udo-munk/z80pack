@@ -332,7 +332,7 @@ GTC20:  PUSH B
         CALL CHECK
         POP  B
         JZ   GTC20
-GTC30:  POP  6
+GTC30:  POP  PSW
         CALL PTCOL
         IN   2
         OUT  2

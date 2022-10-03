@@ -187,6 +187,11 @@ int strcasecmp(unsigned char *s1, unsigned char *s2)
 }
 #endif
 
+int is_sym_char(char c)
+{
+	return(isalnum((unsigned char) c) || c == '$' || c == '_');
+}
+
 static void parser_init(char *str)
 {
 	static int initialized = 0;
@@ -271,7 +276,7 @@ again:
 		case S_HEX:
 			switch (sstate) {
 			case SS_START:	/* initial condition */
-				if (!isdigit(code))
+				if (!isdigit((unsigned char) code))
 					goto again;
 				sstate = SS_CONT;
 				/* fallthrough */
@@ -280,11 +285,12 @@ again:
 					if (code == '$')
 						continue;
 					value *= 16;
-					value += toupper(code)
+					value += toupper((unsigned char) code)
 						 - ((code <= '9') ? '0' : '7');
 					index++;
 					continue;
-				} else if ((index > 0) && (toupper(code) == 'H')) {
+				} else if ((index > 0)
+					   && (toupper((unsigned char) code) == 'H')) {
 					sstate = SS_POST;
 					continue;
 				}
@@ -303,7 +309,7 @@ again:
 		case S_OCT:
 			switch (sstate) {
 			case SS_START:	/* initial condition */
-				if (!isdigit(code))
+				if (!isdigit((unsigned char) code))
 					goto again;
 				sstate = SS_CONT;
 				/* fallthrough */
@@ -315,8 +321,9 @@ again:
 					value += code - '0';
 					index++;
 					continue;
-				} else if ((index > 0) && (toupper(code) == 'O'
-							   || toupper(code) == 'Q')) {
+				} else if ((index > 0)
+					   && (toupper((unsigned char) code) == 'O'
+					       || toupper((unsigned char) code) == 'Q')) {
 					sstate = SS_POST;
 					continue;
 				}
@@ -335,7 +342,7 @@ again:
 		case S_BIN:
 			switch (sstate) {
 			case SS_START:	/* initial condition */
-				if (!isdigit(code))
+				if (!isdigit((unsigned char) code))
 					goto again;
 				sstate = SS_CONT;
 				/* fallthrough */
@@ -347,7 +354,8 @@ again:
 					value += code - '0';
 					index++;
 					continue;
-				} else if ((index > 0) && (toupper(code) == 'B')) {
+				} else if ((index > 0)
+					   && (toupper((unsigned char) code) == 'B')) {
 					sstate = SS_POST;
 					continue;
 				}
@@ -366,7 +374,7 @@ again:
 		case S_DEC:
 			switch (sstate) {
 			case SS_START:	/* initial condition */
-				if (!isdigit(code))
+				if (!isdigit((unsigned char) code))
 					goto again;
 				sstate = SS_CONT;
 				/* fallthrough */
@@ -411,7 +419,8 @@ again:
 			break;
 
 		case S_SYM:
-			if (start && !(isalpha(code) || (code = '$') || (code == '_')))
+			if (start && !(isalpha((unsigned char) code)
+				       || (code = '$') || (code == '_')))
 				goto again;
 			start = 0;
 			if ((type & C_SYM) == C_SYM) {

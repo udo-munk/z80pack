@@ -24,7 +24,8 @@
 #include "z80aglb.h"
 
 #ifndef isxdigit
-#define isxdigit(c) (isdigit(c) || (c>='a' && c<='f') || (c>='A' && c<='F'))
+#define isxdigit(c) (isdigit(c) || (((c) >= 'a') && ((c) <= 'f'))	\
+				|| (((c) >= 'A') && ((c) <= 'F')))
 #endif
 
 /*
@@ -56,6 +57,11 @@ int aotoi(char *);
 
 extern struct sym *get_sym(char *);
 extern void asmerr(int);
+
+int is_sym_char(char c)
+{
+	return(isalnum((unsigned char) c) || c == '$' || c == '_');
+}
 
 /*
  *	recursive expression parser
@@ -92,13 +98,13 @@ int eval(char *s)
 			s++;
 			while (*s != STRSEP) {
 				if (*s == '\n' || *s == '\0') {
-					asmerr(E_MISHYP);
-					goto hyp_error;
+					asmerr(E_MISSEP);
+					goto sep_error;
 				}
 				*p++ = *s++;
 			}
 			s++;
-hyp_error:
+sep_error:
 			*p = '\0';
 			val = strval(word);
 			continue;
@@ -106,7 +112,8 @@ hyp_error:
 		if (isari(*s))
 			*p++ = *s++;
 		else
-			while (!isspace((int)*s) && !isari(*s) && (*s != '\0'))
+			while (!isspace((unsigned char) *s) && !isari(*s)
+							    && (*s != '\0'))
 				*p++ = *s++;
 		*p = '\0';
 		switch (get_type(word)) {
@@ -115,7 +122,7 @@ hyp_error:
 				val = pc;
 				break;
 			}
-			if (strlen(word) > symlen)
+			if (strlen(word) > (unsigned) symlen)
 				word[symlen] = '\0';
 			if ((sp = get_sym(word)) != NULL)
 				val = sp->sym_val;
@@ -182,15 +189,15 @@ hyp_error:
  */
 int get_type(char *s)
 {
-	if (isdigit((int)*s)) {		/* numerical operand */
-		if (isdigit((int)*(s + strlen(s) - 1)))	/* decimal number */
-			return(OPEDEC);
-		else if (*(s + strlen(s) - 1) == 'H')	/* hexadecimal number */
-			return(OPEHEX);
-		else if (*(s + strlen(s) - 1) == 'B')	/* binary number */
-			return(OPEBIN);
-		else if (*(s + strlen(s) - 1) == 'O')	/* octal number */
-			return(OPEOCT);
+	if (isdigit((unsigned char) *s)) { /* numerical operand */
+		if (isdigit((unsigned char) *(s + strlen(s) - 1)))
+			return(OPEDEC);		/* decimal number */
+		else if (*(s + strlen(s) - 1) == 'H')
+			return(OPEHEX);		/* hexadecimal number */
+		else if (*(s + strlen(s) - 1) == 'B')
+			return(OPEBIN);		/* binary number */
+		else if (*(s + strlen(s) - 1) == 'O')
+			return(OPEOCT);		/* octal number */
 	} else if (*s == '-')		/* arithmetical operand - */
 		return(OPESUB);
 	else if (*s == '+')		/* arithmetical operand + */
@@ -237,7 +244,7 @@ int axtoi(char *str)
 	register int num;
 
 	num = 0;
-	while (isxdigit((int)*str)) {
+	while (isxdigit((unsigned char) *str)) {
 		num *= 16;
 		num += *str - ((*str <= '9') ? '0' : '7');
 		str++;
@@ -287,7 +294,7 @@ int strval(char *str)
 	num = 0;
 	while (*str) {
 		num <<= 8;
-		num += (int) *str++;
+		num += (unsigned char) *str++;
 	}
 	return(num);
 }
