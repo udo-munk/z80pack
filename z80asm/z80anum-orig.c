@@ -99,12 +99,12 @@ int eval(char *s)
 			while (*s != STRDEL) {
 				if (*s == '\n' || *s == '\0') {
 					asmerr(E_MISDEL);
-					goto sep_error;
+					goto delim_error;
 				}
 				*p++ = *s++;
 			}
 			s++;
-sep_error:
+delim_error:
 			*p = '\0';
 			val = strval(word);
 			continue;
@@ -176,7 +176,7 @@ sep_error:
 			goto eval_break;
 		}
 	}
-	eval_break:
+eval_break:
 	return(val);
 }
 

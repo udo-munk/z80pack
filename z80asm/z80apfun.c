@@ -238,7 +238,7 @@ int op_db(int dummy1, int dummy2)
 					break;
 				if (*s == '\n' || *s == '\0') {
 					asmerr(E_MISDEL);
-					goto sep_error;
+					goto delim_error;
 				}
 				ops[i++] = *s++;
 				if (i >= OPCARRAY)
@@ -270,7 +270,7 @@ int op_db(int dummy1, int dummy2)
 		if (*p == ',')
 			p++;
 	}
-sep_error:
+delim_error:
 	return(i);
 }
 
