@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -30,33 +31,38 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
+void obj_fill(int);
 void flush_hex(void);
 int chksum(void);
 void btoh(unsigned char, char **);
 
+/* z80amain.c */
 extern void fatal(int, char *);
 
 static char *errmsg[] = {		/* error messages for asmerr() */
-	"invalid opcode",		/* 0 */
-	"invalid operand",		/* 1 */
-	"missing operand",		/* 2 */
-	"multiply defined symbol",	/* 3 */
-	"undefined symbol",		/* 4 */
-	"value out of range",		/* 5 */
-	"missing )",			/* 6 */
-	"missing string separator",	/* 7 */
-	"memory override",		/* 8 */
-	"missing IF",			/* 9 */
-	"IF nesting to deep",		/* 10 */
-	"missing ENDIF",		/* 11 */
-	"INCLUDE nesting to deep",	/* 12 */
-	".PHASE can not be nested",	/* 13 */
-	"invalid ORG in .PHASE block",	/* 14 */
-	"missing .PHASE"		/* 15 */
+	"no error",			/* 0 */
+	"invalid opcode",		/* 1 */
+	"invalid operand",		/* 2 */
+	"missing operand",		/* 3 */
+	"multiply defined symbol",	/* 4 */
+	"undefined symbol",		/* 5 */
+	"value out of range",		/* 6 */
+	"missing )",			/* 7 */
+	"missing string separator",	/* 8 */
+	"memory override",		/* 9 */
+	"missing IF",			/* 10 */
+	"IF nesting to deep",		/* 11 */
+	"missing ENDIF",		/* 12 */
+	"INCLUDE nesting to deep",	/* 13 */
+	".PHASE can not be nested",	/* 14 */
+	"invalid ORG in .PHASE block",	/* 15 */
+	"missing .PHASE",		/* 16 */
+	"division by zero",		/* 17 */
+	"invalid .RADIX"		/* 18 */
 };
 
-#define MAXHEX	32			/* max no bytes/hex record */
-
+static int seq_flag;			/* flag for sequential ORG */
+static int obj_addr;			/* current address in object file */
 static unsigned short hex_addr;		/* current address in hex record */
 static int hex_cnt;			/* current no bytes in hex buffer */
 
@@ -263,17 +269,40 @@ void lst_sort_sym(int len)
 }
 
 /*
+ *	set address for object file
+ */
+void obj_org(int addr)
+{
+	switch (out_form) {
+	case OUTBIN:
+	case OUTMOS:
+		seq_flag = (addr >= obj_addr);
+		if (seq_flag) {
+			obj_fill(addr - obj_addr);
+			obj_addr = addr;
+		}
+		break;
+	case OUTHEX:
+		flush_hex();
+		hex_addr = addr;
+		break;
+	}
+}
+
+/*
  *	write header record into object file
  */
 void obj_header(void)
 {
 	switch (out_form) {
 	case OUTBIN:
+		obj_addr = prg_addr;
 		break;
 	case OUTMOS:
 		putc(0xff, objfp);
 		putc(prg_addr & 0xff, objfp);
 		putc(prg_addr >> 8, objfp);
+		obj_addr = prg_addr;
 		break;
 	case OUTHEX:
 		hex_addr = prg_addr;
@@ -305,16 +334,20 @@ void obj_writeb(int op_cnt)
 {
 	register int i;
 
+	if (!op_cnt)
+		return;
 	switch (out_form) {
 	case OUTBIN:
-		fwrite(ops, 1, op_cnt, objfp);
-		break;
 	case OUTMOS:
-		fwrite(ops, 1, op_cnt, objfp);
+		if (seq_flag) {
+			fwrite(ops, 1, op_cnt, objfp);
+			obj_addr += op_cnt;
+		} else
+			asmerr(E_MEMOVR);
 		break;
 	case OUTHEX:
 		for (i = 0; op_cnt; op_cnt--) {
-			if (hex_cnt >= MAXHEX)
+			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = ops[i++];
 		}
@@ -327,14 +360,16 @@ void obj_writeb(int op_cnt)
  */
 void obj_fill(int count)
 {
+	if (!count)
+		return;
 	switch (out_form) {
 	case OUTBIN:
-		while (count--)
-			putc(0xff, objfp);
-		break;
 	case OUTMOS:
-		while (count--)
-			putc(0xff, objfp);
+		if (seq_flag) {
+			obj_addr += count;
+			while (count--)
+				putc(0xff, objfp);
+		}
 		break;
 	case OUTHEX:
 		flush_hex();

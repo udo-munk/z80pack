@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -45,6 +46,7 @@
 #define LINCOM		'*'	/* comment line if in column 1 */
 #define LABSEP		':'	/* label separator */
 #define STRSEP		'\''	/* string separator */
+#define STRSEP2		'"'	/* the other string separator */
 #define ENDFILE		"END"	/* end of source */
 #define MAXFN		512	/* max. no. source files */
 #define MAXLINE		128	/* max. line length source */
@@ -55,6 +57,7 @@
 #define HASHSIZE	500	/* max. entries in symbol hash array */
 #define OPCARRAY	256	/* size of object buffer */
 #define SYMINC		100	/* start size of sorted symbol array */
+#define MAXHEX		32	/* max no bytes/hex record */
 
 /*
  *	structure opcode table
@@ -62,8 +65,9 @@
 struct opc {
 	char *op_name;		/* opcode name */
 	int (*op_fun) (int, int); /* function pointer code generation */
-	int  op_c1;		/* first base opcode */
-	int  op_c2;		/* second base opcode */
+	unsigned char op_c1;	/* first base opcode */
+	unsigned char op_c2;	/* second base opcode */
+	unsigned char op_type;	/* opcode type */
 };
 
 /*
@@ -71,7 +75,8 @@ struct opc {
  */
 struct ope {
 	char *ope_name;		/* operand name */
-	int ope_sym;		/* symbol value operand */
+	unsigned char ope_sym;	/* symbol value operand */
+	unsigned char ope_type; /* operand type */
 };
 
 /*
@@ -102,6 +107,14 @@ struct inc {
 	char *inc_fn;		/* filename */
 	FILE *inc_fp;		/* file pointer */
 };
+
+/*
+ *	definition of opcode types
+ */
+#define OP_STD		0	/* nothing special */
+#define OP_UNDOC	1	/* undocumented opcode */
+#define OP_COND		2	/* concerns conditional assembly */
+#define OP_SET		3	/* assigns value to label */
 
 /*
  *	definition of operand symbols
@@ -148,37 +161,47 @@ struct inc {
 #define NOREG		99	/* operand isn't register */
 
 /*
- *	definitions of operations sets
+ *	definition of operand types
+ */
+#define OPE_STD		0	/* nothing special */
+#define OPE_UNDOC	1	/* undocumented operand */
+
+/*
+ *	definition of operations sets
  */
 #define OPSET_PSD	0	/* pseudo ops */
 #define OPSET_Z80	1	/* Z80 opcodes */
 #define OPSET_8080	2	/* 8080 opcodes */
 
 /*
- *	definitions of error numbers for error messages in listfile
+ *	definition of error numbers for error messages in listfile
  */
-#define E_ILLOPC	0	/* illegal opcode */
-#define E_ILLOPE	1	/* illegal operand */
-#define E_MISOPE	2	/* missing operand */
-#define E_MULSYM	3	/* multiple defined symbol */
-#define E_UNDSYM	4	/* undefined symbol */
-#define E_VALOUT	5	/* value out of bounds */
-#define E_MISPAR	6	/* missing paren */
-#define E_MISHYP	7	/* missing string separator */
-#define E_MEMOVR	8	/* memory override (ORG) */
-#define E_MISIFF	9	/* missing IF at ELSE or ENDIF */
-#define E_IFNEST	10	/* to many IF's nested */
-#define E_MISEIF	11	/* missing ENDIF */
-#define E_INCNEST	12	/* to many INCLUDE's nested */
-#define E_PHSNEST	13	/* .PHASE can't be nested */
-#define E_ORGPHS	14	/* invalid ORG in .PHASE block */
-#define E_MISPHS	15	/* missing .PHASE at .DEPHASE */
+#define E_NOERR		0	/* no error (used by eval()) */
+#define E_ILLOPC	1	/* illegal opcode */
+#define E_ILLOPE	2	/* illegal operand */
+#define E_MISOPE	3	/* missing operand */
+#define E_MULSYM	4	/* multiple defined symbol */
+#define E_UNDSYM	5	/* undefined symbol */
+#define E_VALOUT	6	/* value out of bounds */
+#define E_MISPAR	7	/* missing paren */
+#define E_MISSEP	8	/* missing string separator */
+#define E_MEMOVR	9	/* memory override (ORG) */
+#define E_MISIFF	10	/* missing IF at ELSE or ENDIF */
+#define E_IFNEST	11	/* to many IF's nested */
+#define E_MISEIF	12	/* missing ENDIF */
+#define E_INCNEST	13	/* to many INCLUDE's nested */
+#define E_PHSNEST	14	/* .PHASE can't be nested */
+#define E_ORGPHS	15	/* invalid ORG in .PHASE block */
+#define E_MISPHS	16	/* missing .PHASE at .DEPHASE */
+#define E_DIVBY0	17	/* division by zero */
+#define E_RADIX		18	/* invalid radix */
 
 /*
- *	definition fatal errors
+ *	definition of fatal errors
  */
 #define F_OUTMEM	0	/* out of memory */
 #define F_USAGE		1	/* usage: .... */
 #define F_HALT		2	/* assembly halted */
 #define F_FOPEN		3	/* can't open file */
 #define F_INTERN	4	/* internal error */
+#define F_HEXLEN	5	/* hex record length out of range */

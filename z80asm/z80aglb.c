@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -37,14 +38,17 @@ char *infiles[MAXFN],		/* source filenames */
      label[MAXLINE],		/* buffer for label */
      opcode[MAXLINE],		/* buffer for opcode */
      operand[MAXLINE],		/* buffer for operand */
-     ops[OPCARRAY],		/* buffer for generated object code */
      title[MAXLINE];		/* buffer for title of source */
+
+unsigned char
+     ops[OPCARRAY];		/* buffer for generated object code */
 
 int  list_flag,			/* flag for option -l */
      sym_flag,			/* flag for option -s */
      undoc_flag,		/* flag for option -u */
      ver_flag,			/* flag for option -v */
      dump_flag,			/* flag for option -x */
+     radix,			/* current radix, set to 10 at start of pass */
      opset = OPSET_Z80,		/* current operations set (default Z80) */
      rpc,			/* real program counter */
      pc,			/* logical program counter, normally equal */
@@ -66,7 +70,8 @@ int  list_flag,			/* flag for option -l */
      prg_flag,			/* flag for prg_addr valid */
      out_form = OUTDEF,		/* format of object file */
      symlen = SYMLEN,		/* max. symbol length */
-     symsize;			/* size of symarray */
+     symsize,			/* size of symarray */
+     hexlen = MAXHEX;		/* hex record length */
 
 FILE *srcfp,			/* file pointer for current source */
      *objfp,			/* file pointer for object code */

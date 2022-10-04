@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -44,6 +45,7 @@ char *get_label(char *, char *);
 char *get_opcode(char *, char *);
 char *get_arg(char *, char *);
 
+/* z80aout.c */
 extern void asmerr(int);
 extern void lst_line(int, int);
 extern void lst_sym(void);
@@ -51,6 +53,11 @@ extern void lst_sort_sym(int);
 extern void obj_header(void);
 extern void obj_end(void);
 extern void obj_writeb(int);
+
+/* z80anum.c */
+int is_sym_char(char);
+
+/* z80atab.c */
 extern struct opc *search_op(char *);
 extern int put_sym(char *, int);
 extern void put_label(void);
@@ -60,10 +67,12 @@ extern void a_sort_sym(int);
 
 static char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-x} {-8} {-u} -v -ofile -l[file] -dsymbol ... file ...",
+	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-h<num>} {-x} {-8} {-u} -v\n\
+              -ofile -l[file] -dsymbol ... file ...",
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
-	"internal error: %s"		/* 4 */
+	"internal error: %s",		/* 4 */
+	"invalid hex record length: %s"	/* 5 */
 };
 
 int main(int argc, char *argv[])
@@ -173,8 +182,7 @@ void options(int argc, char *argv[])
 				}
 				t = tmp;
 				while (*s)
-					*t++ = islower((int)*s) ?
-						toupper((int)*s++) : *s++;
+					*t++ = toupper((unsigned char) *s++);
 				s--;
 				*t = '\0';
 				if (put_sym(tmp, 0))
@@ -195,6 +203,16 @@ void options(int argc, char *argv[])
 					usage();
 				}
 				symlen = atoi(s);
+				s += (strlen(s) - 1);
+				break;
+			case 'h':
+				if (*++s == '\0') {
+					puts("hex record length missing in option -h");
+					usage();
+				}
+				hexlen = atoi(s);
+				if (hexlen < 1 || hexlen > MAXHEX)
+					fatal(F_HEXLEN, s);
 				s += (strlen(s) - 1);
 				break;
 			default :
@@ -241,6 +259,7 @@ void pass1(void)
 	register int fi;
 
 	pass = 1;
+	radix = 10;
 	rpc = pc = 0;
 	phs_flag = 0;
 	fi = 0;
@@ -299,20 +318,21 @@ int p1_line(void)
 	p = get_label(label, p);
 	p = get_opcode(opcode, p);
 	p = get_arg(operand, p);
-	if (strcmp(opcode, ENDFILE) == 0)
+	if (gencode && strcmp(opcode, ENDFILE) == 0)
 		return(0);
 	if (*opcode) {
 		if ((op = search_op(opcode)) != NULL) {
-			i = (*op->op_fun)(op->op_c1, op->op_c2);
-			if (gencode) {
+			if (gencode || (op->op_type == OP_COND)) {
+				if ((op->op_type != OP_SET) && *label)
+					put_label();
+				i = (*op->op_fun)(op->op_c1, op->op_c2);
 				pc += i;
 				rpc += i;
 			}
 		} else
 			asmerr(E_ILLOPC);
-	} else
-		if (*label)
-			put_label();
+	} else if (gencode && *label)
+		put_label();
 	return(1);
 }
 
@@ -325,6 +345,7 @@ void pass2(void)
 	register int fi;
 
 	pass = 2;
+	radix = 10;
 	rpc = pc = 0;
 	phs_flag = 0;
 	fi = 0;
@@ -379,13 +400,14 @@ int p2_line(void)
 	p = get_label(label, p);
 	p = get_opcode(opcode, p);
 	p = get_arg(operand, p);
-	if (strcmp(opcode, ENDFILE) == 0) {
+	if (gencode && strcmp(opcode, ENDFILE) == 0) {
 		lst_line(pc, 0);
 		return(0);
 	}
 	if (*opcode) {
 		op = search_op(opcode);
-		op_count = (*op->op_fun)(op->op_c1, op->op_c2);
+		if (gencode || (op->op_type == OP_COND))
+			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
 		if (gencode) {
 			lst_line(pc, op_count);
 			obj_writeb(op_count);
@@ -475,9 +497,9 @@ char *get_label(char *s, char *l)
 	i = 0;
 	if (*l == LINCOM)
 		goto comment;
-	while (!isspace((int)*l) && *l != COMMENT && *l != LABSEP
+	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != LABSEP
 	       && i < symlen) {
-		*s++ = islower((int)*l) ? toupper((int)*l++) : *l++;
+		*s++ = toupper((unsigned char) *l++);
 		i++;
 	}
 comment:
@@ -493,14 +515,14 @@ char *get_opcode(char *s, char *l)
 {
 	if (*l == LINCOM)
 		goto comment;
-	while (!isspace((int)*l) && *l != COMMENT && *l != LABSEP)
+	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != LABSEP)
 		l++;
 	if (*l == LABSEP)
 		l++;
 	while (*l == ' ' || *l == '\t')
 		l++;
-	while (!isspace((int)*l) && *l != COMMENT)
-		*s++ = islower((int)*l) ? toupper((int)*l++) : *l++;
+	while (!isspace((unsigned char) *l) && *l != COMMENT)
+		*s++ = toupper((unsigned char) *l++);
 comment:
 	*s = '\0';
 	return(l);
@@ -513,24 +535,41 @@ comment:
  */
 char *get_arg(char *s, char *l)
 {
+	register char *s0;
+	register char c;
+
+	s0 = s;
 	if (*l == LINCOM)
 		goto comment;
 	while (*l == ' ' || *l == '\t')
 		l++;
 	while (*l != '\n' && *l != COMMENT) {
-		if (isspace((int)*l)) {
+		if (isspace((unsigned char) *l)) {
 			l++;
+			while (*l == ' ' || *l == '\t')
+				l++;
+			if ((s > s0) && is_sym_char(*(s - 1))
+				     && is_sym_char(*l))
+				/* add space between symbols/numbers */
+				*s++ = ' ';
 			continue;
 		}
-		if (*l != STRSEP) {
-			*s++ = islower((int)*l) ? toupper((int)*l) : *l;
-			l++;
+		if ((*l != STRSEP) && (*l != STRSEP2)) {
+			*s++ = toupper((unsigned char) *l++);
 			continue;
 		}
+		c = *l;
 		*s++ = *l++;
-		if (*(s - 2) == 'F')	/* EX AF,AF' !!!!! */
+		if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
 			continue;
-		while (*l != STRSEP) {
+		while (1) {
+			if (*l == c) {
+				/* check for double delim */
+				if (*(l + 1) != c)
+					break;
+				else
+					*s++ = *l++;
+			}
 			if (*l == '\n' || *l == '\0')
 				goto comment;
 			*s++ = *l++;

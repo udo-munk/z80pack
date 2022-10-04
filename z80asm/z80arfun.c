@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -29,7 +30,6 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
-char *get_first_second(void);
 int ldreg(int, int, char *), ldixhl(int, int, char *);
 int ldiyhl(int, int, char *), ldbcde(int, char *), ldhl(char *);
 int ldixy(int, char *), ldsp(char *), ldihl(char *);
@@ -37,14 +37,19 @@ int ldiixy(int, char *), ldinn(char *);
 int addhl(char *), addix(char *), addiy(char *), sbadchl(int, char *);
 int aluop(int, char *);
 void cbgrp_iixy(int, int, int, char *);
+char *get_first_second(void);
+int calc_val(char *);
 
+/* z80amain.c */
+extern void asmerr(int);
+
+/* z80anum.c */
 extern int eval(char *);
-extern int calc_val(char *);
 extern int chk_byte(int);
 extern int chk_sbyte(int);
-extern void asmerr(int);
+
+/* z80atab.c */
 extern int get_reg(char *);
-extern void put_label(void);
 
 #define UNUSED(x)	(void)(x)
 
@@ -55,9 +60,6 @@ int op_1b(int b1, int dummy)
 {
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	ops[0] = b1;
 	return(1);
 }
@@ -67,9 +69,6 @@ int op_1b(int b1, int dummy)
  */
 int op_2b(int b1, int b2)
 {
-	if (pass == 1)
-		if (*label)
-			put_label();
 	ops[0] = b1;
 	ops[1] = b2;
 	return(2);
@@ -83,10 +82,7 @@ int op_im(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
+	if (pass == 2) {
 		ops[0] = 0xed;
 		switch(eval(operand)) {
 		case 0:			/* IM 0 */
@@ -116,9 +112,6 @@ int op_pupo(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (get_reg(operand)) {
 	case REGAF:			/* PUSH/POP AF */
 		len = 1;
@@ -169,9 +162,6 @@ int op_ex(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	if (strncmp(operand, "DE,HL", 5) == 0) {
 		len = 1;
 		ops[0] = 0xeb;
@@ -207,10 +197,7 @@ int op_rst(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
+	if (pass == 2) {
 		op = eval(operand);
 		if (op < 0 || (op / 8 > 7) || (op % 8 != 0)) {
 			ops[0] = 0;
@@ -229,42 +216,37 @@ int op_ret(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
-		switch (get_reg(operand)) {
-		case NOOPERA:		/* RET */
-			ops[0] = 0xc9;
-			break;
-		case REGC:		/* RET C */
-			ops[0] = 0xd8;
-			break;
-		case FLGNC:		/* RET NC */
-			ops[0] = 0xd0;
-			break;
-		case FLGZ:		/* RET Z */
-			ops[0] = 0xc8;
-			break;
-		case FLGNZ:		/* RET NZ */
-			ops[0] = 0xc0;
-			break;
-		case FLGPE:		/* RET PE */
-			ops[0] = 0xe8;
-			break;
-		case FLGPO:		/* RET PO */
-			ops[0] = 0xe0;
-			break;
-		case FLGM:		/* RET M */
-			ops[0] = 0xf8;
-			break;
-		case FLGP:		/* RET P */
-			ops[0] = 0xf0;
-			break;
-		default:		/* invalid operand */
-			ops[0] = 0;
-			asmerr(E_ILLOPE);
-		}
+	switch (get_reg(operand)) {
+	case NOOPERA:		/* RET */
+		ops[0] = 0xc9;
+		break;
+	case REGC:		/* RET C */
+		ops[0] = 0xd8;
+		break;
+	case FLGNC:		/* RET NC */
+		ops[0] = 0xd0;
+		break;
+	case FLGZ:		/* RET Z */
+		ops[0] = 0xc8;
+		break;
+	case FLGNZ:		/* RET NZ */
+		ops[0] = 0xc0;
+		break;
+	case FLGPE:		/* RET PE */
+		ops[0] = 0xe8;
+		break;
+	case FLGPO:		/* RET PO */
+		ops[0] = 0xe0;
+		break;
+	case FLGM:		/* RET M */
+		ops[0] = 0xf8;
+		break;
+	case FLGP:		/* RET P */
+		ops[0] = 0xf0;
+		break;
+	default:		/* invalid operand */
+		ops[0] = 0;
+		asmerr(E_ILLOPE);
 	}
 	return(1);
 }
@@ -277,9 +259,6 @@ int op_jpcall(int base_op, int base_opd)
 	register char *sec;
 	register int i, len, op;
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sec = get_first_second();
 	switch (op = get_reg(tmp)) {
 	case REGC:			/* JP/CALL C,nn */
@@ -414,10 +393,7 @@ int op_jr(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
+	if (pass == 2) {
 		sec = get_first_second();
 		switch (get_reg(tmp)) {
 		case REGC:		/* JR C,n */
@@ -462,10 +438,7 @@ int op_djnz(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
+	if (pass == 2) {
 		ops[0] = 0x10;
 		ops[1] = chk_sbyte(eval(operand) - pc - 2);
 	}
@@ -483,9 +456,6 @@ int op_ld(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sec = get_first_second();
 	switch (op = get_reg(tmp)) {
 	case REGA:			/* LD A,? */
@@ -1189,9 +1159,6 @@ int op_add(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sec = get_first_second();
 	switch (get_reg(tmp)) {
 	case REGA:			/* ADD A,? */
@@ -1326,9 +1293,6 @@ int op_sbadc(int base_op, int base_op16)
 	register int len;
 	register char *sec;
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sec = get_first_second();
 	switch (get_reg(tmp)) {
 	case REGA:			/* SBC/ADC A,? */
@@ -1392,9 +1356,6 @@ int op_decinc(int base_op, int base_op16)
 {
 	register int len, op;
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (op = get_reg(operand)) {
 	case REGA:			/* INC/DEC A */
 	case REGB:			/* INC/DEC B */
@@ -1494,9 +1455,6 @@ int op_alu(int base_op, int dummy)
 {
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	return(aluop(base_op, operand));
 }
 
@@ -1586,10 +1544,7 @@ int op_out(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
+	if (pass == 2) {
 		if (strncmp(operand, "(C),", 4) == 0) {
 			switch(op = get_reg(operand + 4)) {
 			case REGA:	/* OUT (C),A */
@@ -1643,9 +1598,6 @@ int op_in(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	if ((sec = get_first_second())) {
 		if (*sec == '(') {
 			switch (op = get_reg(tmp)) {
@@ -1703,9 +1655,6 @@ int op_cbgrp(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	len = 2;
 	i = 0;
 	if (base_op >= 0x40) {		/* TRSBIT n,? */
@@ -1815,9 +1764,6 @@ int op8080_mov(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sec = get_first_second();
 	switch (op1 = get_reg(tmp)) {
 	case REGA:			/* MOV A,reg */
@@ -1873,9 +1819,6 @@ int op8080_alu(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (op = get_reg(operand)) {
 	case REGA:			/* ALUOP A */
 	case REGB:			/* ALUOP B */
@@ -1907,9 +1850,6 @@ int op8080_decinc(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (op = get_reg(operand)) {
 	case REGA:			/* DEC/INC A */
 	case REGB:			/* DEC/INC B */
@@ -1941,9 +1881,6 @@ int op8080_reg16(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (op = get_reg(operand)) {
 	case REGB:			/* INX/DAD/DCX B */
 	case REGD:			/* INX/DAD/DCX D */
@@ -1973,9 +1910,6 @@ int op8080_regbd(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (op = get_reg(operand)) {
 	case REGB:			/* STAX/LDAX B */
 	case REGD:			/* STAX/LDAX D */
@@ -2001,9 +1935,6 @@ int op8080_imm(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (get_reg(operand)) {
 	case NOREG:			/* IMMOP n */
 		len = 2;
@@ -2035,10 +1966,7 @@ int op8080_rst(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (*label)
-			put_label();
-	} else {			/* PASS 2 */
+	if (pass == 2) {
 		op = eval(operand);
 		if (op < 0 || op > 7) {
 			ops[0] = 0;
@@ -2057,9 +1985,6 @@ int op8080_pupo(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (op = get_reg(operand)) {
 	case REGB:			/* PUSH/POP B */
 	case REGD:			/* PUSH/POP D */
@@ -2091,9 +2016,6 @@ int op8080_addr(int base_op, int dummy)
 
 	UNUSED(dummy);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	switch (get_reg(operand)) {
 	case NOREG:			/* OP nn */
 		len = 3;
@@ -2129,9 +2051,6 @@ int op8080_mvi(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sec = get_first_second();
 	switch (op = get_reg(tmp)) {
 	case REGA:			/* MVI A,n */
@@ -2186,9 +2105,6 @@ int op8080_lxi(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1)
-		if (*label)
-			put_label();
 	sec = get_first_second();
 	switch (op = get_reg(tmp)) {
 	case REGB:			/* LXI B,nn */

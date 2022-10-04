@@ -18,6 +18,7 @@
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
 /*
@@ -33,7 +34,10 @@
 int hash(char *);
 int numcmp(int, int);
 
+/* z80amain.c */
 extern void fatal(int, char *);
+
+/* z80aout.c */
 extern void asmerr(int);
 
 /*
@@ -49,7 +53,6 @@ struct opc *search_op(char *op_name)
 	register int cond, i;
 	register struct opc *low, *high, *mid;
 	register struct opset *p;
-	extern int op_cbgrp(int, int);
 
 	for (i = opset; i >= 0; i = (i == opset ? OPSET_PSD : -1)) {
 		p = &opsettab[i];
@@ -61,9 +64,7 @@ struct opc *search_op(char *op_name)
 				high = mid - 1;
 			else if (cond > 0)
 				low = mid + 1;
-			else if (i == OPSET_Z80 && !undoc_flag
-						&& mid->op_fun == op_cbgrp
-						&& mid->op_c1 == 0x30) /* SLL */
+			else if (!undoc_flag && (mid->op_type == OP_UNDOC))
 				return(NULL);
 			else
 				return(mid);
@@ -97,17 +98,9 @@ int get_reg(char *s)
 			high = mid - 1;
 		else if (cond > 0)
 			low = mid + 1;
-		else if (opset == OPSET_Z80 && !undoc_flag) {
-			switch (mid->ope_sym) {
-			case REGIXH:
-			case REGIXL:
-			case REGIYH:
-			case REGIYL:
-				return(NOREG);
-			default:
-				return(mid->ope_sym);
-			}
-		} else
+		else if (!undoc_flag && (mid->ope_type == OPE_UNDOC))
+			return(NOREG);
+		else
 			return(mid->ope_sym);
 	}
 	return(NOREG);
@@ -150,8 +143,6 @@ int put_sym(char *sym_name, int sym_val)
 
 	char *strsave(char *);
 
-	if (!gencode)
-		return(0);
 	if ((np = get_sym(sym_name)) == NULL) {
 		np = (struct sym *) malloc(sizeof (struct sym));
 		if (np == NULL)

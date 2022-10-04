@@ -38,7 +38,7 @@ RUNLOC  EQU    1000H            ;RELOCATE LOADER HERE
         LXI     H,RCODE         ;POINT TO BLOCK TO BE MOVED
         LXI     B,0180H         ;SET COUNT FOR ONE AND A HALF 1702'S
         LXI     D,RUNLOC        ;POINT TO DESTINATION OF MOVE
- MOVE:
+MOVE:
         MOV     A,M             ;GET A BYTE OF CODE FROM PROM
         STAX    D               ;STORE IT INTO RAM
         INX     H               ;INCREMENT PROM POINTER

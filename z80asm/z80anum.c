@@ -1,757 +1,575 @@
 /*
- *	Copyright (C) 2016-2017 by Didier Derny
+ *	Z80 - Assembler
+ *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 2022 by Thomas Eberhardt
+ *
+ *	History:
+ *	17-SEP-1987 Development under Digital Research CP/M 2.2
+ *	28-JUN-1988 Switched to Unix System V.3
+ *	21-OCT-2006 changed to ANSI C for modern POSIX OS's
+ *	03-FEB-2007 more ANSI C conformance and reduced compiler warnings
+ *	18-MAR-2007 use default output file extension dependent on format
+ *	04-OCT-2008 fixed comment bug, ';' string argument now working
+ *	22-FEB-2014 fixed is...() compiler warnings
+ *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
+ *	02-OCT-2017 bug fixes in expression parser from Didier
+ *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	15-MAY-2018 mark unreferenced symbols in listing
+ *	30-JUL-2021 fix verbose option
+ *	28-JAN-2022 added syntax check for OUT (n),A
+ *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
+ *	04-OCT-2022 new expression parser (TE)
  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#ifdef _POSIX_C_SOURCE
-#include <strings.h>
-#endif
 #include <ctype.h>
-
 #include "z80a.h"
 #include "z80aglb.h"
 
-#define T_NODE		0
-#define T_VALUE		1
-
-/* character classes */
-#define C_BIN		0x0001
-#define C_HEX		0x0002
-#define C_OCT		0x0004
-#define C_DEC		0x0008
-#define C_OPE		0x0010
-#define C_SPC		0x0020
-#define C_SYM		0x0040
-
-/* parser fsm states */
-#define S_OPE		0
-#define S_HEX		1
-#define S_OCT		2
-#define S_BIN		3
-#define S_DEC		4
-#define S_LIT		5
-#define S_SYM		6
-
-#define SS_START	0
-#define SS_CONT		1
-#define SS_POST		2
-
-/*
- *	standard operators: '(', ')', '*', '/', '%', '+', '-', '|', '&', '^', '~'
- *	other    operators: left shift '<', right shift '>', current position '$'
- *	other    tokens:    end of parsing 'X', numerical value 'N'
- */
-
-typedef struct node {
-	int op: 8;
-	int left: 8;
-	int right: 8;
-	int flag: 8;
-	int value;
-} Node;
-
-int getdot(void);
-int getsymvalue(char *);
-
-extern struct sym *get_sym(char *);
-extern void asmerr(int);
-
-static int  mknode(int, int, int, int);
-static void parser_init(char *);
-static int  parse(void);
-static int  asctoi(char *);
-static int  expr_factor(void);
-/*static int  expr_term(void);*/
-static int  expr_simple(void);
-/*static int  expr_shift(void);*/
-/*static int  expr_and(void);*/
-/*static int  expr_xor(void);*/
-/*static int  expr_or(void);*/
-static int  expr(void);
-static int  evaluate(int);
-
-void dump_nodes(void);
-int  eval(char *);
-
-/*
- *	precedence
- *	operators	functions
- *	+ - ~ (unary)	expr_factor
- *	* / %		expr_term
- *	+ -		expr_simple
- *	< >		expr_shift
- *	&		expr_and
- *	^		expr_xor
- *	|		expr_or
- *	( )		expr
- */
-
-#define MAXNODES	100
-
-static int   parsed_pos  = 0;
-static char *parsed_line = NULL;
-static Node  nodes[MAXNODES];
-static int   curnode = 0;
-static int   charclass[128];
-static int   code;
-static int   type;
-static int   value;
-static int   tok;
-
-static int mknode(int op, int flag, int p1, int p2)
-{
-	int node;
-
-	if (curnode < MAXNODES) {
-		node = curnode;
-		curnode++;
-		nodes[node].op    = op;
-		nodes[node].flag  = flag;
-		if (nodes[node].flag == T_NODE) {
-			nodes[node].left  = p1;
-			nodes[node].right = p2;
-			nodes[node].value = 0;
-		} else {
-			nodes[node].left  = 0;
-			nodes[node].right = 0;
-			nodes[node].value = p1;
-		}
-		return(node);
-	}
-	return(-1);
-}
-
-/*
- *	these two functions simulate the retieval
- *	of a symbol or of the current position
- */
-
-int getdot(void)
-{
-	return(pc);
-}
-
-int getsymvalue(char *str)
-{
-	struct sym *sp;
-
-	if (strcasecmp(str, "$") == 0)
-		return(getdot());
-	if (strlen(str) > (unsigned) symlen)
-		str[symlen] = '\0';
-	if ((sp = get_sym(str)) != NULL)
-		return(sp->sym_val);
-	else
-		asmerr(E_UNDSYM);
-	return(0);
-}
-
-/*
- *	strdup() and strcasecmp() is defined by POSIX only and not by
- *	any ANSI C standard. So we need a substitute if compiling in
- *	non POSIX environment.
- */
-
-#ifndef _POSIX_C_SOURCE
-char *strdup(const char *s)
-{
-	size_t len = strlen(s) + 1;
-	char *p = malloc(len);
-
-	return(p ? memcpy(p, s, len) : NULL);
-}
-
-int strcasecmp(unsigned char *s1, unsigned char *s2)
-{
-	register int c, d;
-
-	for (;;) {
-		switch (c = *s1++ - (d = *s2++)) {
-		case 0:
-			if (!d)
-				break;
-			continue;
-		case ('A' - 'a'):
-			if ((d < 'a') || (d > 'z'))
-				break;
-			continue;
-		case ('a' - 'A'):
-			if ((d < 'A') || (d > 'Z'))
-				break;
-			continue;
-		}
-		return(c);
-	}
-}
+#ifndef isxdigit
+#define isxdigit(c) (isdigit(c) || (((c) >= 'a') && ((c) <= 'f'))	\
+				|| (((c) >= 'A') && ((c) <= 'F')))
 #endif
 
-static void parser_init(char *str)
-{
-	static int initialized = 0;
-	int i;
+int expr(int *);
 
-	parsed_pos = 0;
-	curnode = 1;
-	memset(&nodes[0], '\0', sizeof(nodes));
-	if (parsed_line)
-		free(parsed_line);
-	parsed_line = strdup(str);
-	if (!initialized) {
-		memset(&charclass[0], '\0', sizeof(charclass));
-		for (i = 'a'; i <= 'z'; i++)
-			charclass[i] |= C_SYM;
-		for (i = 'A'; i <= 'Z'; i++)
-			charclass[i] |= C_SYM;
-		for (i = '0'; i <= '9'; i++)
-			charclass[i] |= C_DEC | C_HEX | C_SYM;
-		for (i = '0'; i <= '7'; i++)
-			charclass[i] |= C_OCT;
-		for (i = 'a'; i <= 'f'; i++)
-			charclass[i] |= C_HEX;
-		for (i = 'A'; i <= 'F'; i++)
-			charclass[i] |= C_HEX;
-		for (i = '0'; i <= '1'; i++)
-			charclass[i] |= C_BIN;
-		charclass['_']  |= C_SYM;
-		charclass['$']  |= C_SYM | C_OCT | C_HEX | C_BIN | C_DEC;
-		charclass['-']  |= C_OPE;
-		charclass['+']  |= C_OPE;
-		charclass['*']  |= C_OPE;
-		charclass['/']  |= C_OPE;
-		charclass['%']  |= C_OPE;
-		charclass['<']  |= C_OPE;
-		charclass['>']  |= C_OPE;
-		charclass['|']  |= C_OPE;
-		charclass['&']  |= C_OPE;
-		charclass['^']  |= C_OPE;
-		charclass['~']  |= C_OPE;
-		charclass['(']  |= C_OPE;
-		charclass[')']  |= C_OPE;
-		charclass[' ']  |= C_SPC;
-		charclass['\n'] |= C_SPC;
-		charclass['\r'] |= C_SPC;
-		charclass['\t'] |= C_SPC;
-		initialized = 1;
-	}
+/* z80aout.c */
+extern void asmerr(int);
+
+/* z80atab.c */
+extern struct sym *get_sym(char *);
+
+/*
+ *	definitions of token types
+ */
+#define T_EMPTY		0	/* nothing */
+#define T_VAL		1	/* number, string  */
+#define T_SUB		2	/* - */
+#define T_ADD		3	/* + */
+#define T_NOT		4	/* NOT or ~ */
+#define T_HIGH		5	/* HIGH */
+#define T_LOW		6	/* LOW */
+#define T_NUL		7	/* NUL */
+#define T_TYPE		8	/* TYPE */
+#define T_MUL		9	/* * */
+#define T_DIV		10	/* / */
+#define T_MOD		11	/* MOD */
+#define T_SHR		12	/* SHR or >> */
+#define T_SHL		13	/* SHL or << */
+#define T_EQ		14	/* EQ, = or == */
+#define T_NE		15	/* NE, <> or != */
+#define T_LT		16	/* LT or < */
+#define T_LE		17	/* LE or <= */
+#define T_GT		18	/* GT or > */
+#define T_GE		19	/* GE or >= */
+#define T_AND		20	/* AND or & */
+#define T_XOR		21	/* XOR */
+#define T_OR		22	/* OR or | */
+#define T_LPAREN	23	/* (, [ or { */
+#define T_RPAREN	24	/* ), ] or } */
+#define T_NOOPR		25	/* word isn't an operation, may be a symbol */
+
+/*
+ *	structure operator table
+ */
+struct opr {
+	char *opr_name;		/* operator name */
+	int opr_type;		/* token type operator */
+};
+
+/*
+ *	table with operators
+ *	must be sorted in ascending order!
+ */
+struct opr oprtab[] = {
+	{ "AND",	T_AND		},
+	{ "EQ",		T_EQ		},
+	{ "GE",		T_GE		},
+	{ "GT",		T_GT		},
+	{ "HIGH",	T_HIGH		},
+	{ "LE",		T_LE		},
+	{ "LOW",	T_LOW		},
+	{ "LT",		T_LT		},
+	{ "MOD",	T_MOD		},
+	{ "NE",		T_NE		},
+	{ "NOT",	T_NOT		},
+	{ "NUL",	T_NUL		},
+	{ "OR",		T_OR		},
+	{ "SHL",	T_SHL		},
+	{ "SHR",	T_SHR		},
+	{ "TYPE",	T_TYPE		},
+	{ "XOR",	T_XOR		}
+};
+
+int no_operators = sizeof(oprtab) / sizeof(struct opr);
+
+static int tok_type;	/* token type and flags */
+static int tok_val;	/* token value for T_VAL type */
+static char tok_sym[MAXLINE]; /* last symbol scanned (T_NOOPR) */
+static char *scan_pos;	/* current scanning position */
+
+int is_sym_char(char c)
+{
+	return(isalnum((unsigned char) c) || c == '$' || c == '%' || c == '.'
+					  || c == '?' || c == '@' || c == '_');
 }
 
-static int parse(void)
+/*
+ *	binary search in sorted table oprtab
+ *
+ *	Input: pointer to string with operator
+ *
+ *	Output: symbol for operator, T_NOOPR if operator not found
+ */
+int search_opr(char *s)
 {
-	int mark, start, state, sstate, index, quote, pcode;
-	char symbol[256];
+	register int cond;
+	register struct opr *low, *high, *mid;
 
-	mark  = parsed_pos;
-	state = -1;
-again:
-	parsed_pos = mark;
-	state++;
-	sstate = SS_START;
-	quote  = 0;
-	index  = 0;
-	code   = -1;
-	pcode  = 0;
-	value  = 0;
-	start  = 1;
-	while (1) {
-		pcode = code;
-	skip_spaces:
-		code = parsed_line[parsed_pos];
-		parsed_pos += (code) ? 1 : 0;
-		type = ((code < 128) ? charclass[code] : 0);
-		if ((quote == 0) && ((type & C_SPC) == C_SPC))
-			goto skip_spaces;
-		switch (state) {
-		case S_OPE:
-			if ((type & C_OPE) == C_OPE)
-				return(code);
-			goto again;
+	low = &oprtab[0];
+	high = &oprtab[no_operators - 1];
+	while (low <= high) {
+		mid = low + (high - low) / 2;
+		if ((cond = strcmp(s, mid->opr_name)) < 0)
+			high = mid - 1;
+		else if (cond > 0)
+			low = mid + 1;
+		else
+			return(mid->opr_type);
+		}
+	return(T_NOOPR);
+}
 
-		case S_HEX:
-			switch (sstate) {
-			case SS_START:	/* initial condition */
-				if (!isdigit(code))
-					goto again;
-				sstate = SS_CONT;
-				/* fallthrough */
-			case SS_CONT:	/* building the value from digits */
-				if ((type & C_HEX) == C_HEX) {
-					if (code == '$')
-						continue;
-					value *= 16;
-					value += toupper(code)
-						 - ((code <= '9') ? '0' : '7');
-					index++;
-					continue;
-				} else if ((index > 0) && (toupper(code) == 'H')) {
-					sstate = SS_POST;
-					continue;
-				}
-				break;
-			case SS_POST:	/* post processing, parsing position adjustment */
-				if ((type & C_OPE) == C_OPE) {
-					parsed_pos--;
-					return('N');
-				}
-				if (code == 0)
-					return('N');
-				break;
-			}
-			goto again;
+/*
+ *	get next token
+ *	updates tok_type, tok_val, tok_sym and scan_pos.
+ *	return E_NOERR on success, else E_??????
+ *
+ *	doesn't handle lower case because the assembler
+ *	already converted everything to upper case
+ */
+int get_token(void)
+{
+	register char *p1, *p2, *s;
+	register int n, m, base;
 
-		case S_OCT:
-			switch (sstate) {
-			case SS_START:	/* initial condition */
-				if (!isdigit(code))
-					goto again;
-				sstate = SS_CONT;
-				/* fallthrough */
-			case SS_CONT:
-				if ((type & C_OCT) == C_OCT) {
-					if (code == '$')
-						continue;
-					value *= 8;
-					value += code - '0';
-					index++;
-					continue;
-				} else if ((index > 0) && (toupper(code) == 'O'
-							   || toupper(code) == 'Q')) {
-					sstate = SS_POST;
-					continue;
-				}
-				break;
-			case SS_POST:
-				if ((type & C_OPE) == C_OPE) {
-					parsed_pos--;
-					return('N');
-				}
-				if (code == 0)
-					return('N');
-				break;
-			}
-			goto again;
+	s = scan_pos;
+	tok_sym[0] = '\0';
 
-		case S_BIN:
-			switch (sstate) {
-			case SS_START:	/* initial condition */
-				if (!isdigit(code))
-					goto again;
-				sstate = SS_CONT;
-				/* fallthrough */
-			case SS_CONT:
-				if ((type & C_BIN) == C_BIN) {
-					if (code == '$')
-						continue;
-					value *= 2;
-					value += code - '0';
-					index++;
-					continue;
-				} else if ((index > 0) && (toupper(code) == 'B')) {
-					sstate = SS_POST;
-					continue;
-				}
-				break;
-			case SS_POST:
-				if ((type & C_OPE) == C_OPE) {
-					parsed_pos--;
-					return('N');
-				}
-				if (code == 0)
-					return('N');
-				break;
-			}
-			goto again;
+	while (isspace((unsigned char) *s))
+		s++;
+	if (!*s) {
+		scan_pos = s;
+		tok_type = T_EMPTY;
+		return(E_NOERR);
+	}
 
-		case S_DEC:
-			switch (sstate) {
-			case SS_START:	/* initial condition */
-				if (!isdigit(code))
-					goto again;
-				sstate = SS_CONT;
-				/* fallthrough */
-			case SS_CONT:
-				if ((type & C_DEC) == C_DEC) {
-					if (code == '$')
-						continue;
-					value *= 10;
-					value += code - '0';
-					index++;
-					continue;
-				} if ((index > 0) && ((code == 0)
-						      || ((type & C_OPE) == C_OPE))) {
-					if ((type & C_OPE) == C_OPE)
-						parsed_pos--;
-					return('N');
-				}
-				break;
-			case SS_POST:
-				/* do nothing */
-				break;
-			}
-			goto again;
-
-		case S_LIT:
-			if (quote == 0) {
-				if (code != '\'')
-					goto again;
-				quote = 1;
-				continue;
-			} else {
-				if (code == '\'') {
-					if (pcode != '\\') {
-						symbol[index] = '\0';
-						value = asctoi(symbol);
-						return('N');
-					} else
-						symbol[index++] = code;
-				} else
-					symbol[index++] = code;
-			}
-			break;
-
-		case S_SYM:
-			if (start && !(isalpha(code) || (code = '$') || (code == '_')))
-				goto again;
-			start = 0;
-			if ((type & C_SYM) == C_SYM) {
-				symbol[index++] = code;
-				continue;
-			}
-			if ((index > 0) && (((type & C_OPE) == C_OPE) || (code == 0))) {
-				symbol[index] = '\0';
-				value = getsymvalue(symbol);
-				if ((type & C_OPE) == C_OPE)
-					parsed_pos--;
-				return('N');
-			}
-			goto again;
-
-		default:
-			if (code == 0)
-				return('X');
-			asmerr(E_ILLOPE);
-			return(1);
+	/* first, get X'h' out of the way */
+	if (*s == 'X' && *(s + 1) == '\'') {
+		s += 2;
+		n = 0;
+		while (isxdigit((unsigned char) *s)) {
+			n *= 16;
+			n += *s - ((*s <= '9') ? '0' : '7');
+			s++;
+		}
+		if (*s == '\'') {
+			tok_type = T_VAL;
+			tok_val = n;
+			scan_pos = s + 1;
+			return(E_NOERR);
+		} else {
+			/* missing terminating ' */
+			return(E_MISSEP);
 		}
 	}
+
+	p1 = tok_sym;
+	while (is_sym_char(*s))
+		*p1++ = *s++;
+	*p1 = '\0';
+
+	if (p1 != tok_sym) {
+		p2 = tok_sym;
+
+		/* try to parse a number */
+		if (isdigit((unsigned char) *p2)) {
+			p1--;
+			if (radix < 12 && *p1 == 'B') {
+				base = 2;
+			} else if (*p1 == 'O' || *p1 == 'Q') {
+				base = 8;
+			} else if (radix < 14 && *p1 == 'D') {
+				base = 10;
+			} else if (*p1 == 'H') {
+				base = 16;
+			} else {
+				base = radix;
+				p1++;
+			}
+			n = 0;
+			while (p2 < p1) {
+				if (*p2 == '$') {
+					p2++;
+					continue;
+				}
+				m = *p2 - ((*p2 <= '9') ? '0' : '7');
+				if (m < base) {
+					n *= base;
+					n += m;
+					p2++;
+				} else	/* digit not of correct base */
+					return(E_VALOUT);
+			}
+			tok_type = T_VAL;
+			tok_val = n;
+			scan_pos = s;
+			return(E_NOERR);
+		}
+
+		/* now try to parse a symbol */
+		if (*p2 == '$' && *(p2 + 1) == '\0') {
+			tok_type = T_VAL;
+			tok_val = pc;
+		} else {
+			/* check for word operator */
+			tok_type = search_opr(p2);
+			/* trim for later symbol search */
+			if (p1 - p2 > symlen)
+				*(p2 + symlen) = '\0';
+		}
+		scan_pos = s;
+		return(E_NOERR);
+	}
+
+	/* now try to parse a string / non-letter operator */
+	switch (*s) {
+	case '\'':
+	case '"':
+		p1 = s;
+		n = 0;
+	        while (*++s) {
+			/* check for double delim */
+			if ((*s == *p1) && (*++s != *p1)) {
+				tok_type = T_VAL;
+				tok_val = n;
+				scan_pos = s;
+				return(E_NOERR);
+			}
+			n <<= 8;
+			n |= (unsigned) *s;
+		}
+		/* unterminated string */
+		return(E_MISSEP);
+	case '!':
+		if (*(s + 1) == '=') {
+			s++;
+			tok_type = T_NE;
+		}
+		else {	/* unknown operator */
+			return(E_ILLOPE);
+		}
+		break;
+	case '&':
+		tok_type = T_AND;
+		break;
+	case '(':
+	case '[':
+	case '{':
+		tok_type = T_LPAREN;
+		break;
+	case ')':
+	case ']':
+	case '}':
+		tok_type = T_RPAREN;
+		break;
+	case '*':
+		tok_type = T_MUL;
+		break;
+	case '+':
+		tok_type = T_ADD;
+		break;
+	case '-':
+		tok_type = T_SUB;
+		break;
+	case '/':
+		tok_type = T_DIV;
+		break;
+	case '<':
+		if (*(s + 1) == '<') {
+			s++;
+			tok_type = T_SHL;
+		} else if (*(s + 1) == '=') {
+			s++;
+			tok_type = T_LE;
+		} else if (*(s + 1) == '>') {
+			s++;
+			tok_type = T_NE;
+		} else
+			tok_type = T_LT;
+		break;
+	case '=':
+		if (*(s + 1) == '=')
+			s++;
+		tok_type = T_EQ;
+		break;
+	case '>':
+		if (*(s + 1) == '=') {
+			s++;
+			tok_type = T_GE;
+		} else if (*(s + 1) == '>') {
+			s++;
+			tok_type = T_SHR;
+		} else
+			tok_type = T_GT;
+		break;
+	case '|':
+		tok_type = T_OR;
+		break;
+	case '~':
+		tok_type = T_NOT;
+		break;
+	default:	/* unknown operator */
+		return(E_ILLOPE);
+	}
+	scan_pos = s + 1;
+	return(E_NOERR);
 }
 
-static int asctoi(char *str)
-{
-	register int num;
+/*
+ *	recursive descent parser/evaluator
+ *
+ *	inspired by the old expression evaluator code by Didier Derny.
+ */
 
-	num = 0;
-	while (*str) {
-		num <<= 8;
-		if (*str == '\\') {
-			str++;
-			switch (*str++) {
-			case 'a':
-				num |= 0x07;
-				break;
-			case 'b':
-				num |= 0x08;
-				break;
-			case 'f':
-				num |= 0x0c;
-				break;
-			case 'n':
-				num |= 0x0a;
-				break;
-			case 'r':
-				num |= 0x0d;
-				break;
-			case 't':
-				num |= 0x09;
-				break;
-			case 'v':
-				num |= 0x0b;
-				break;
-			case '\\':
-				num |= 0x5c;
-				break;
-			case '\'':
-				num |= 0x27;
-				break;
-			case '"':
-				num |= 0x22;
-				break;
-			case '?':
-				num |= 0x3f;
-				break;
-			default:
-				break;
+int factor(int *resultp)
+{
+	int opr_type, value, err;
+	struct sym *sp;
+
+	/* might be a symbol */
+	if (*tok_sym && (sp = get_sym(tok_sym))) {
+		*resultp = sp->sym_val;
+		return(get_token());
+	}
+	switch (tok_type) {
+	case T_NOOPR:
+		return(E_UNDSYM);
+	case T_VAL:
+		*resultp = tok_val;
+		return(get_token());
+	case T_LPAREN:
+		if ((err = get_token()) || (err = expr(&value)))
+			return(err);
+		if (tok_type == T_RPAREN) {
+			if (get_token())
+				return(E_ILLOPE);
+			else {
+				*resultp = value;
+				return(E_NOERR);
 			}
 		} else
-			num |= (int) *str++;
-	}
-	return(num);
-}
-
-static int expr_factor(void)
-{
-	int n1, n2;
-
-	switch (tok) {
-	case '(':
-		tok = parse();
-		n1 = expr();
-		tok = parse();
-		if (tok != ')') {
-			asmerr(E_MISPAR);
-			return(0);
+			return(E_MISPAR);
+	case T_ADD:
+	case T_SUB:
+	case T_NOT:
+	case T_HIGH:
+	case T_LOW:
+	case T_TYPE:
+		/* unary operations */
+		opr_type = tok_type;
+		if ((err = get_token()) || (err = factor(&value)))
+			return(err);
+		switch (opr_type) {
+		case T_ADD:
+			*resultp = value;
+			break;
+		case T_SUB:
+			*resultp = -value;
+			break;
+		case T_NOT:
+			*resultp = ~value;
+			break;
+		case T_HIGH:
+			*resultp = (value >> 8) & 0xff;
+			break;
+		case T_LOW:
+			*resultp = value & 0xff;
+			break;
+		case T_TYPE:
+			*resultp = 0;	/* TYPE is always 0 (absolute) */
+			break;
+		default:
+			break;
 		}
-		return(n1);
-
-	case '~':
-		tok = parse();
-		n2 = expr_factor();
-		n1 = mknode('~', T_NODE, n2, 0);
-		return(n1);
-
-	case '+':
-		tok = parse();
-		n2 = expr_factor();
-		n1 = mknode('*', T_NODE, mknode('N', T_VALUE, 1, 0), n2);
-		return(n1);
-
-	case '-':
-		tok = parse();
-		n2 = expr_factor();
-		n1 = mknode('*', T_NODE, mknode('N', T_VALUE, -1, 0), n2);
-		return(n1);
-
-	case 'N':
-		n1 = mknode('N', T_VALUE, value, 0);
-		return(n1);
-
+		return(E_NOERR);
 	default:
-		asmerr(E_ILLOPE);
-		return(0);
+		return(E_ILLOPE);
 	}
 }
 
-static int expr_term(void)
+int mul_term(int *resultp)
 {
-	int n1, n2, t, mark;
+	int opr_type, value, err;
 
-	n1 = expr_factor();
-	while (1) {
-		mark = parsed_pos;
-		tok = parse();
-		switch (tok) {
-		case '*':
-		case '/':
-		case '%':
-			t = tok;
-			mark = parsed_pos;
-			tok = parse();
-			n2 = expr_factor();
-			n1 = mknode(t, T_NODE, n1, n2);
-			continue;
-
+	value = 0;	/* keep compiler happy */
+	if ((err = factor(resultp)))
+		return(err);
+	while (tok_type == T_MUL || tok_type == T_DIV || tok_type == T_MOD
+				 || tok_type == T_SHR || tok_type == T_SHL) {
+		opr_type = tok_type;
+		if ((err = get_token()) || ((err = factor(&value))))
+			return(err);
+		switch (opr_type) {
+		case T_MUL:
+			*resultp *= value;
+			break;
+		case T_DIV:
+			if (value == 0)		/* don't crash on div by 0 */
+				return(E_DIVBY0);
+			*resultp /= value;
+			break;
+		case T_MOD:
+			if (value == 0)		/* don't crash on mod by 0 */
+				return(E_DIVBY0);
+			*resultp %= value;
+			break;
+		case T_SHR:
+			*resultp = ((unsigned) *resultp) >> value;
+			break;
+		case T_SHL:
+			*resultp <<= value;
+			break;
 		default:
-			parsed_pos = mark;
-			return(n1);
+			break;
 		}
 	}
+	return(E_NOERR);
 }
 
-static int expr_simple(void)
+int add_term(int *resultp)
 {
-	int n1, n2, t, mark;
+	int opr_type, value, err;
 
-	n1 = expr_term();
-	while (1) {
-		mark = parsed_pos;
-		tok = parse();
-		switch (tok) {
-		case '+':
-		case '-':
-			t = tok;
-			mark = parsed_pos;
-			tok = parse();
-			n2 = expr_term();
-			n1 = mknode(t, T_NODE, n1, n2);
-			continue;
-
+	if ((err = mul_term(resultp)))
+		return(err);
+	while (tok_type == T_ADD || tok_type == T_SUB) {
+		opr_type = tok_type;
+		if ((err = get_token()) || (err = mul_term(&value)))
+			return(err);
+		switch (opr_type) {
+		case T_ADD:
+			*resultp += value;
+			break;
+		case T_SUB:
+			*resultp -= value;
+			break;
 		default:
-			parsed_pos = mark;
-			return(n1);
+			break;
 		}
 	}
+	return(E_NOERR);
 }
 
-static int expr_shift(void)
+int cmp_term(int *resultp)
 {
-	int n1, n2, t, mark;
+	int opr_type, value, err;
 
-	n1 = expr_simple();
-	while (1) {
-		mark = parsed_pos;
-		tok = parse();
-		switch (tok) {
-		case '<':
-		case '>':
-			t = tok;
-			mark = parsed_pos;
-			tok = parse();
-			n2 = expr_simple();
-			n1 = mknode(t, T_NODE, n1, n2);
-			return(n1);	/* not associative */
-
+	if ((err = add_term(resultp)))
+		return(err);
+	while (tok_type == T_EQ || tok_type == T_NE
+				|| tok_type == T_LT || tok_type == T_LE
+				|| tok_type == T_GT || tok_type == T_GE) {
+		opr_type = tok_type;
+		if ((err = get_token()) || (err = add_term(&value)))
+			return(err);
+		switch (opr_type) {
+		case T_EQ:
+			*resultp = (*resultp == value);
+			break;
+		case T_NE:
+			*resultp = (*resultp != value);
+			break;
+		case T_LT:
+			*resultp = (*resultp < value);
+			break;
+		case T_LE:
+			*resultp = (*resultp <= value);
+			break;
+		case T_GT:
+			*resultp = (*resultp > value);
+			break;
+		case T_GE:
+			*resultp = (*resultp >= value);
+			break;
 		default:
-			parsed_pos = mark;
-			return(n1);
+			break;
 		}
 	}
+	return(E_NOERR);
 }
 
-static int expr_and(void)
+int expr(int *resultp)
 {
-	int n1, n2, t, mark;
+	int opr_type, value, err;
 
-	n1 = expr_shift();
-	while (1) {
-		mark = parsed_pos;
-		tok = parse();
-		switch (tok) {
-		case '&':
-			t = tok;
-			mark = parsed_pos;
-			tok = parse();
-			n2 = expr_shift();
-			n1 = mknode(t, T_NODE, n1, n2);
-			continue;
-
+	if ((err = cmp_term(resultp)))
+		return(err);
+	while (tok_type == T_AND || tok_type == T_XOR || tok_type == T_OR) {
+		opr_type = tok_type;
+		if ((err = get_token()) || (err = cmp_term(&value)))
+			return(err);
+		switch (opr_type) {
+		case T_AND:
+			*resultp &= value;
+			break;
+		case T_XOR:
+			*resultp ^= value;
+			break;
+		case T_OR:
+			*resultp |= value;
+			break;
 		default:
-			parsed_pos = mark;
-			return(n1);
+			break;
 		}
 	}
+	return(E_NOERR);
 }
 
-static int expr_xor(void)
+int top_expr(int *resultp)
 {
-	int n1, n2, t, mark;
+	int err;
 
-	n1 = expr_and();
-	while (1) {
-		mark = parsed_pos;
-		tok = parse();
-		switch (tok) {
-		case '^':
-			t = tok;
-			mark = parsed_pos;
-			tok = parse();
-			n2 = expr_and();
-			n1 = mknode(t, T_NODE, n1, n2);
-			continue;
-
-		default:
-			parsed_pos = mark;
-			return(n1);
+	if (tok_type == T_NUL) {
+		if ((err = get_token()))
+			return(err);
+		else {
+			*resultp = (tok_type == T_EMPTY);
+			return(E_NOERR);
 		}
 	}
-}
-
-static int expr_or(void)
-{
-	int n1, n2, t, mark;
-
-	n1 = expr_xor();
-	while (1) {
-		mark = parsed_pos;
-		tok = parse();
-		switch (tok) {
-		case '|':
-			t = tok;
-			mark = parsed_pos;
-			tok = parse();
-			n2 = expr_xor();
-			n1 = mknode(t, T_NODE, n1, n2);
-			continue;
-
-		default:
-			parsed_pos = mark;
-			return(n1);
-		}
-	}
-}
-
-static int expr(void)
-{
-	return(expr_or());
-}
-
-static int evaluate(int node)
-{
-	int n1, n2;
-
-	n1 = n2 = 0;	/* to make the compiler happy */
-	if (nodes[node].flag == 0) {
-		if (nodes[node].left)
-			n1 = evaluate(nodes[node].left);
-		if (nodes[node].right)
-			n2 = evaluate(nodes[node].right);
-		switch (nodes[node].op) {
-		case '~':
-			return(~n1);
-		case '-':
-			return(n1 - n2);
-		case '+':
-			return(n1 + n2);
-		case '*':
-			return(n1 * n2);
-		case '/':
-			return(n1 / n2);
-		case '%':
-			return(n1 % n2);
-		case '<':
-			return(n1 << n2);
-		case '>':
-			return(n1 >> n2);
-		case '|':
-			return(n1 | n2);
-		case '^':
-			return(n1 ^ n2);
-		case '&':
-			return(n1 & n2);
-		default:
-			asmerr(E_ILLOPE);
-			return(n1);
-		}
-	} else
-		return(nodes[node].value);
-}
-
-void dump_nodes(void)
-{
-	int i;
-
-	for (i = 1; i < curnode; i++) {
-		if (nodes[i].flag == T_NODE)
-			printf("%2d: NODE:  %c  left=%d  right=%d\n",
-			       i, nodes[i].op, nodes[i].left, nodes[i].right);
-		else
-			printf("%2d: VALUE: %c value=%d\n",
-			       i, nodes[i].op, nodes[i].value);
-	}
+	else
+		return expr(resultp);
 }
 
 int eval(char *str)
 {
-	int entry;
+	int result, err;
 
-	parser_init(str);
-	tok = parse();
-	entry = expr();
-/*	printf("entry=%d\n", entry); */
-/*	dump_nodes(); */
-	return(evaluate(entry));
+	result = 0;
+	scan_pos = str;
+	if ((err = get_token()) || (err = top_expr(&result))) {
+		asmerr(err);
+		return(0);
+	} else if (tok_type != T_EMPTY) {
+		/* some leftovers, must be a badly formed expression */
+		asmerr(E_ILLOPE);
+		return(0);
+	} else
+		return(result);
 }
-
-/* from z80anum-orig.c */
 
 /*
  *	check value for range -257 < value < 256
