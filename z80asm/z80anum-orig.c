@@ -94,11 +94,11 @@ int eval(char *s)
 			val = eval(word);
 			continue;
 		}
-		if (*s == STRSEP) {
+		if (*s == STRDEL) {
 			s++;
-			while (*s != STRSEP) {
+			while (*s != STRDEL) {
 				if (*s == '\n' || *s == '\0') {
-					asmerr(E_MISSEP);
+					asmerr(E_MISDEL);
 					goto sep_error;
 				}
 				*p++ = *s++;

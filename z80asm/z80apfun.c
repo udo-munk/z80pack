@@ -150,7 +150,7 @@ int op_radix(int dummy1, int dummy2)
 
 	i = eval(operand);
 	if (i < 2 || i > 16)
-		asmerr(E_RADIX);
+		asmerr(E_VALOUT);
 	else
 		radix = i;
 	sd_flag = 2;
@@ -230,14 +230,14 @@ int op_db(int dummy1, int dummy2)
 	p = operand;
 	while (*p) {
 		j = 0;
-		if (*p == STRSEP || *p == STRSEP2) {
+		if (*p == STRDEL || *p == STRDEL2) {
 			s = p + 1;
 			while (1) {
 				/* check for double delim */
 				if ((*s == *p) && (*++s != *p))
 					break;
 				if (*s == '\n' || *s == '\0') {
-					asmerr(E_MISSEP);
+					asmerr(E_MISDEL);
 					goto sep_error;
 				}
 				ops[i++] = *s++;
@@ -286,8 +286,8 @@ int op_dm(int op_code, int dummy)
 
 	i = 0;
 	p = operand;
-	if (*p != STRSEP && *p != STRSEP2) {
-		asmerr(E_MISSEP);
+	if (*p != STRDEL && *p != STRDEL2) {
+		asmerr(E_MISDEL);
 		return(0);
 	}
 	p++;
@@ -296,7 +296,7 @@ int op_dm(int op_code, int dummy)
 		if ((*p == *operand) && (*++p != *operand))
 			break;
 		if (*p == '\n' || *p == '\0') {
-			asmerr(E_MISSEP);
+			asmerr(E_MISDEL);
 			break;
 		}
 		ops[i++] = *p++;
@@ -389,7 +389,7 @@ int op_misc(int op_code, int dummy)
 	case 5:				/* PRINT */
 		if (pass == 1) {
 			p = operand;
-			if (*p == STRSEP || *p == STRSEP2) {
+			if (*p == STRDEL || *p == STRDEL2) {
 				p++;
 				while (1) {
 					/* check for double delim */
@@ -398,7 +398,7 @@ int op_misc(int op_code, int dummy)
 						break;
 					if (*p == '\0') {
 						putchar('\n');
-						asmerr(E_MISSEP);
+						asmerr(E_MISDEL);
 						return(0);
 					}
 					putchar(*p++);
@@ -463,14 +463,14 @@ int op_misc(int op_code, int dummy)
 				p++;	/* ignore TITLE */
 			while (isspace((unsigned char) *p))
 				p++;	/* ignore white space until text */
-			if (*p == STRSEP || *p == STRSEP2) {
+			if (*p == STRDEL || *p == STRDEL2) {
 				s = p + 1;
 				while (1) {
 					/* check for double delim */
 					if ((*s == *p) && (*++s != *p))
 						break;
 					if (*s == '\n') {
-						asmerr(E_MISSEP);
+						asmerr(E_MISDEL);
 						break;
 					}
 					*d++ = *s++;

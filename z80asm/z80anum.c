@@ -144,11 +144,9 @@ int search_opr(char *s)
 
 /*
  *	get next token
- *	updates tok_type, tok_val, tok_sym and scan_pos.
- *	return E_NOERR on success, else E_??????
  *
- *	doesn't handle lower case because the assembler
- *	already converted everything to upper case
+ *	updates tok_type, tok_val, tok_sym and scan_pos.
+ *	returns E_NOERR on success
  */
 int get_token(void)
 {
@@ -157,120 +155,100 @@ int get_token(void)
 
 	s = scan_pos;
 	tok_sym[0] = '\0';
-
-	while (isspace((unsigned char) *s))
+	tok_val = 0;
+	while (isspace((unsigned char) *s))		/* skip white space */
 		s++;
-	if (!*s) {
-		scan_pos = s;
+	if (!*s) {					/* nothing there? */
 		tok_type = T_EMPTY;
-		return(E_NOERR);
+		goto finish;
 	}
-
-	/* first, get X'h' out of the way */
-	if (*s == 'X' && *(s + 1) == '\'') {
+	if (*s == 'X' && *(s + 1) == '\'') {		/* X'h' hex constant */
 		s += 2;
 		n = 0;
 		while (isxdigit((unsigned char) *s)) {
 			n *= 16;
-			n += *s - ((*s <= '9') ? '0' : '7');
+			n += toupper((unsigned char) *s)
+			     - ((*s <= '9') ? '0' : '7');
 			s++;
 		}
-		if (*s == '\'') {
+		if (*s != '\'')				/* missing final ' */
+			return(E_MISDEL);
+		else {
+			s++;
 			tok_type = T_VAL;
 			tok_val = n;
-			scan_pos = s + 1;
-			return(E_NOERR);
-		} else {
-			/* missing terminating ' */
-			return(E_MISSEP);
+			goto finish;
 		}
 	}
-
-	p1 = tok_sym;
+	p1 = p2 = tok_sym;				/* gather symbol */
 	while (is_sym_char(*s))
-		*p1++ = *s++;
-	*p1 = '\0';
-
-	if (p1 != tok_sym) {
-		p2 = tok_sym;
-
-		/* try to parse a number */
-		if (isdigit((unsigned char) *p2)) {
-			p1--;
-			if (radix < 12 && *p1 == 'B') {
+		*p2++ = *s++;
+	*p2 = '\0';
+	if (p1 != p2) {					/* a number/symbol */
+		if (isdigit((unsigned char) *p1)) {	/* a number */
+			p2--;
+			if ((radix < 12) && (*p2 == 'B'))
 				base = 2;
-			} else if (*p1 == 'O' || *p1 == 'Q') {
+			else if ((*p2 == 'O') || (*p2 == 'Q'))
 				base = 8;
-			} else if (radix < 14 && *p1 == 'D') {
+			else if ((radix < 14) && (*p2 == 'D'))
 				base = 10;
-			} else if (*p1 == 'H') {
+			else if (*p2 == 'H')
 				base = 16;
-			} else {
+			else {
 				base = radix;
-				p1++;
+				p2++;
 			}
 			n = 0;
-			while (p2 < p1) {
-				if (*p2 == '$') {
-					p2++;
+			while (p1 < p2) {
+				if (*p1 == '$') {
+					p1++;
 					continue;
 				}
-				m = *p2 - ((*p2 <= '9') ? '0' : '7');
+				m = *p1 - ((*p1 <= '9') ? '0' : '7');
 				if (m < base) {
 					n *= base;
 					n += m;
-					p2++;
-				} else	/* digit not of correct base */
+					p1++;
+				} else			/* digit not of base */
 					return(E_VALOUT);
 			}
 			tok_type = T_VAL;
 			tok_val = n;
-			scan_pos = s;
-			return(E_NOERR);
+			goto finish;
 		}
-
-		/* now try to parse a symbol */
-		if (*p2 == '$' && *(p2 + 1) == '\0') {
+		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* current location */
 			tok_type = T_VAL;
 			tok_val = pc;
-		} else {
-			/* check for word operator */
-			tok_type = search_opr(p2);
-			/* trim for later symbol search */
-			if (p1 - p2 > symlen)
-				*(p2 + symlen) = '\0';
+		} else {				/* look for word opr */
+			tok_type = search_opr(p1);
+			if (p2 - p1 > symlen)		/* trim for lookup */
+				*(p1 + symlen) = '\0';
 		}
-		scan_pos = s;
-		return(E_NOERR);
+		goto finish;
 	}
-
-	/* now try to parse a string / non-letter operator */
 	switch (*s) {
-	case '\'':
+	case '\'':					/* string constant */
 	case '"':
 		p1 = s;
 		n = 0;
 	        while (*++s) {
-			/* check for double delim */
-			if ((*s == *p1) && (*++s != *p1)) {
+			if ((*s == *p1) && (*++s != *p1)) { /* double delim? */
 				tok_type = T_VAL;
 				tok_val = n;
-				scan_pos = s;
-				return(E_NOERR);
+				goto finish;
 			}
 			n <<= 8;
 			n |= (unsigned) *s;
 		}
-		/* unterminated string */
-		return(E_MISSEP);
+		return(E_MISDEL);
 	case '!':
 		if (*(s + 1) == '=') {
 			s++;
 			tok_type = T_NE;
 		}
-		else {	/* unknown operator */
-			return(E_ILLOPE);
-		}
+		else
+			return(E_INVEXP);
 		break;
 	case '&':
 		tok_type = T_AND;
@@ -331,17 +309,19 @@ int get_token(void)
 	case '~':
 		tok_type = T_NOT;
 		break;
-	default:	/* unknown operator */
-		return(E_ILLOPE);
+	default:
+		return(E_INVEXP);
 	}
-	scan_pos = s + 1;
+	s++;
+finish:
+	scan_pos = s;
 	return(E_NOERR);
 }
 
 /*
- *	recursive descent parser/evaluator
+ *	recursive descent parser & evaluator
  *
- *	inspired by the old expression evaluator code by Didier Derny.
+ *	inspired by the previous expression parser by Didier Derny.
  */
 
 int factor(int *resultp)
@@ -349,7 +329,10 @@ int factor(int *resultp)
 	int opr_type, value, err;
 	struct sym *sp;
 
-	/* might be a symbol */
+	/*
+	 * look for symbol here, since it seems that operator names are
+	 * not reserved words
+	 */
 	if (*tok_sym && (sp = get_sym(tok_sym))) {
 		*resultp = sp->sym_val;
 		return(get_token());
@@ -365,7 +348,7 @@ int factor(int *resultp)
 			return(err);
 		if (tok_type == T_RPAREN) {
 			if (get_token())
-				return(E_ILLOPE);
+				return(E_INVEXP);
 			else {
 				*resultp = value;
 				return(E_NOERR);
@@ -378,7 +361,6 @@ int factor(int *resultp)
 	case T_HIGH:
 	case T_LOW:
 	case T_TYPE:
-		/* unary operations */
 		opr_type = tok_type;
 		if ((err = get_token()) || (err = factor(&value)))
 			return(err);
@@ -399,14 +381,14 @@ int factor(int *resultp)
 			*resultp = value & 0xff;
 			break;
 		case T_TYPE:
-			*resultp = 0;	/* TYPE is always 0 (absolute) */
+			*resultp = 0;		/* TYPE is always absolute  */
 			break;
 		default:
 			break;
 		}
 		return(E_NOERR);
 	default:
-		return(E_ILLOPE);
+		return(E_INVEXP);
 	}
 }
 
@@ -414,7 +396,7 @@ int mul_term(int *resultp)
 {
 	int opr_type, value, err;
 
-	value = 0;	/* keep compiler happy */
+	value = 0;				/* keep compiler happy */
 	if ((err = factor(resultp)))
 		return(err);
 	while (tok_type == T_MUL || tok_type == T_DIV || tok_type == T_MOD
@@ -563,9 +545,8 @@ int eval(char *str)
 	if ((err = get_token()) || (err = top_expr(&result))) {
 		asmerr(err);
 		return(0);
-	} else if (tok_type != T_EMPTY) {
-		/* some leftovers, must be a badly formed expression */
-		asmerr(E_ILLOPE);
+	} else if (tok_type != T_EMPTY) {	/* leftovers, error out */
+		asmerr(E_INVEXP);
 		return(0);
 	} else
 		return(result);
