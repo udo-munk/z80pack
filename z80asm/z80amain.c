@@ -531,7 +531,7 @@ comment:
 /*
  *	get operand into s from source line l
  *	converts to upper case
- *	strings inside of 's are copied without changes
+ *	delimited strings are copied without changes
  */
 char *get_arg(char *s, char *l)
 {
@@ -554,7 +554,7 @@ char *get_arg(char *s, char *l)
 				*s++ = ' ';
 			continue;
 		}
-		if ((*l != STRSEP) && (*l != STRSEP2)) {
+		if ((*l != STRDEL) && (*l != STRDEL2)) {
 			*s++ = toupper((unsigned char) *l++);
 			continue;
 		}

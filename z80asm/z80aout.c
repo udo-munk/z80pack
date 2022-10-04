@@ -55,10 +55,10 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"missing ENDIF",		/* 12 */
 	"INCLUDE nesting to deep",	/* 13 */
 	".PHASE can not be nested",	/* 14 */
-	"invalid ORG in .PHASE block",	/* 15 */
+	"ORG in .PHASE block",		/* 15 */
 	"missing .PHASE",		/* 16 */
 	"division by zero",		/* 17 */
-	"invalid .RADIX"		/* 18 */
+	"invalid expression"		/* 18 */
 };
 
 static int seq_flag;			/* flag for sequential ORG */

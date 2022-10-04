@@ -94,17 +94,17 @@ int eval(char *s)
 			val = eval(word);
 			continue;
 		}
-		if (*s == STRSEP) {
+		if (*s == STRDEL) {
 			s++;
-			while (*s != STRSEP) {
+			while (*s != STRDEL) {
 				if (*s == '\n' || *s == '\0') {
-					asmerr(E_MISSEP);
-					goto sep_error;
+					asmerr(E_MISDEL);
+					goto delim_error;
 				}
 				*p++ = *s++;
 			}
 			s++;
-sep_error:
+delim_error:
 			*p = '\0';
 			val = strval(word);
 			continue;
@@ -176,7 +176,7 @@ sep_error:
 			goto eval_break;
 		}
 	}
-	eval_break:
+eval_break:
 	return(val);
 }
 

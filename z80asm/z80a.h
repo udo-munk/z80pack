@@ -45,8 +45,8 @@
 #define COMMENT		';'	/* inline comment character */
 #define LINCOM		'*'	/* comment line if in column 1 */
 #define LABSEP		':'	/* label separator */
-#define STRSEP		'\''	/* string separator */
-#define STRSEP2		'"'	/* the other string separator */
+#define STRDEL		'\''	/* string delimiter */
+#define STRDEL2		'"'	/* the other string delimiter */
 #define ENDFILE		"END"	/* end of source */
 #define MAXFN		512	/* max. no. source files */
 #define MAXLINE		128	/* max. line length source */
@@ -184,7 +184,7 @@ struct inc {
 #define E_UNDSYM	5	/* undefined symbol */
 #define E_VALOUT	6	/* value out of bounds */
 #define E_MISPAR	7	/* missing paren */
-#define E_MISSEP	8	/* missing string separator */
+#define E_MISDEL	8	/* missing string delimiter */
 #define E_MEMOVR	9	/* memory override (ORG) */
 #define E_MISIFF	10	/* missing IF at ELSE or ENDIF */
 #define E_IFNEST	11	/* to many IF's nested */
@@ -194,7 +194,7 @@ struct inc {
 #define E_ORGPHS	15	/* invalid ORG in .PHASE block */
 #define E_MISPHS	16	/* missing .PHASE at .DEPHASE */
 #define E_DIVBY0	17	/* division by zero */
-#define E_RADIX		18	/* invalid radix */
+#define E_INVEXP	18	/* invalid expression */
 
 /*
  *	definition of fatal errors
