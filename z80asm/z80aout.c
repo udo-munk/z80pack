@@ -31,7 +31,7 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
-void obj_fill(int);
+void flush_bin(void);
 void flush_hex(void);
 int chksum(void);
 void btoh(unsigned char, char **);
@@ -44,16 +44,16 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"invalid opcode",		/* 1 */
 	"invalid operand",		/* 2 */
 	"missing operand",		/* 3 */
-	"multiply defined symbol",	/* 4 */
+	"multiple defined symbol",	/* 4 */
 	"undefined symbol",		/* 5 */
 	"value out of range",		/* 6 */
-	"missing )",			/* 7 */
-	"missing string separator",	/* 8 */
-	"memory override",		/* 9 */
+	"missing right parenthesis",	/* 7 */
+	"missing string delimiter",	/* 8 */
+	"non-sequential object code",	/* 9 */
 	"missing IF",			/* 10 */
-	"IF nesting to deep",		/* 11 */
+	"IF nested too deep",		/* 11 */
 	"missing ENDIF",		/* 12 */
-	"INCLUDE nesting to deep",	/* 13 */
+	"INCLUDE nested too deep",	/* 13 */
 	".PHASE can not be nested",	/* 14 */
 	"ORG in .PHASE block",		/* 15 */
 	"missing .PHASE",		/* 16 */
@@ -62,7 +62,8 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 };
 
 static int seq_flag;			/* flag for sequential ORG */
-static int obj_addr;			/* current address in object file */
+static int bin_addr;			/* current logical binary file address */
+static int wrt_addr;			/* current address written to file */
 static unsigned short hex_addr;		/* current address in hex record */
 static int hex_cnt;			/* current no bytes in hex buffer */
 
@@ -269,40 +270,19 @@ void lst_sort_sym(int len)
 }
 
 /*
- *	set address for object file
- */
-void obj_org(int addr)
-{
-	switch (out_form) {
-	case OUTBIN:
-	case OUTMOS:
-		seq_flag = (addr >= obj_addr);
-		if (seq_flag) {
-			obj_fill(addr - obj_addr);
-			obj_addr = addr;
-		}
-		break;
-	case OUTHEX:
-		flush_hex();
-		hex_addr = addr;
-		break;
-	}
-}
-
-/*
  *	write header record into object file
  */
 void obj_header(void)
 {
 	switch (out_form) {
 	case OUTBIN:
-		obj_addr = prg_addr;
+		bin_addr = wrt_addr = prg_addr;
 		break;
 	case OUTMOS:
 		putc(0xff, objfp);
 		putc(prg_addr & 0xff, objfp);
 		putc(prg_addr >> 8, objfp);
-		obj_addr = prg_addr;
+		bin_addr = wrt_addr = prg_addr;
 		break;
 	case OUTHEX:
 		hex_addr = prg_addr;
@@ -317,12 +297,31 @@ void obj_end(void)
 {
 	switch (out_form) {
 	case OUTBIN:
-		break;
 	case OUTMOS:
+		if (!nofill_flag)
+			flush_bin();
 		break;
 	case OUTHEX:
 		flush_hex();
 		fprintf(objfp, ":00000001FF\n");
+		break;
+	}
+}
+
+/*
+ *	set logical address for object file
+ */
+void obj_org(int addr)
+{
+	switch (out_form) {
+	case OUTBIN:
+	case OUTMOS:
+		seq_flag = (addr >= bin_addr);
+		bin_addr = addr;
+		break;
+	case OUTHEX:
+		flush_hex();
+		hex_addr = addr;
 		break;
 	}
 }
@@ -340,10 +339,12 @@ void obj_writeb(int op_cnt)
 	case OUTBIN:
 	case OUTMOS:
 		if (seq_flag) {
+			flush_bin();
 			fwrite(ops, 1, op_cnt, objfp);
-			obj_addr += op_cnt;
+			bin_addr += op_cnt;
+			wrt_addr = bin_addr;
 		} else
-			asmerr(E_MEMOVR);
+			asmerr(E_NSQWRT);
 		break;
 	case OUTHEX:
 		for (i = 0; op_cnt; op_cnt--) {
@@ -356,7 +357,7 @@ void obj_writeb(int op_cnt)
 }
 
 /*
- *	write <count> bytes 0xff into object file
+ *	advance logical address of object file by count
  */
 void obj_fill(int count)
 {
@@ -365,16 +366,53 @@ void obj_fill(int count)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		if (seq_flag) {
-			obj_addr += count;
-			while (count--)
-				putc(0xff, objfp);
-		}
+		if (seq_flag)
+			bin_addr += count;
 		break;
 	case OUTHEX:
 		flush_hex();
 		hex_addr += count;
 		break;
+	}
+}
+
+/*
+ *	write <count> bytes <value> into object file
+ */
+void obj_fill_value(int count, int value)
+{
+	if (!count)
+		return;
+	switch (out_form) {
+	case OUTBIN:
+	case OUTMOS:
+		if (seq_flag) {
+			flush_bin();
+			bin_addr += count;
+			wrt_addr = bin_addr;
+			while (count--)
+				putc(value, objfp);
+		} else
+			asmerr(E_NSQWRT);
+		break;
+	case OUTHEX:
+		while (count--) {
+			if (hex_cnt >= hexlen)
+				flush_hex();
+			hex_buf[hex_cnt++] = value;
+		}
+		break;
+	}
+}
+
+/*
+ *	fill binary object file up to the logical address with 0xff bytes
+ */
+void flush_bin(void)
+{
+	while (wrt_addr < bin_addr) {
+		putc(0xff, objfp);
+		wrt_addr++;
 	}
 }
 

@@ -47,7 +47,7 @@ int  list_flag,			/* flag for option -l */
      sym_flag,			/* flag for option -s */
      undoc_flag,		/* flag for option -u */
      ver_flag,			/* flag for option -v */
-     dump_flag,			/* flag for option -x */
+     nofill_flag,		/* flag for option -x */
      radix,			/* current radix, set to 10 at start of pass */
      opset = OPSET_Z80,		/* current operations set (default Z80) */
      rpc,			/* real program counter */

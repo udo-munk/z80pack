@@ -68,7 +68,7 @@ extern void a_sort_sym(int);
 static char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
 	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-h<num>} {-x} {-8} {-u} -v\n\
-              -ofile -l[file] -dsymbol ... file ...",
+              -ofile -l[file] -dsymbol ... file ...", /* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s",		/* 4 */
@@ -160,7 +160,7 @@ void options(int argc, char *argv[])
 				s += (strlen(s) - 1);
 				break;
 			case 'x':
-				dump_flag = 1;
+				nofill_flag = 1;
 				break;
 			case 'f':
 				if (*(s + 1) == 'b')
@@ -219,6 +219,10 @@ void options(int argc, char *argv[])
 				printf("unknown option %c\n", *s);
 				usage();
 			}
+	if (nofill_flag && !((out_form == OUTBIN) || (out_form == OUTMOS))) {
+		puts("option -x only allowed with binary output");
+		usage();
+	}
 	i = 0;
 	while ((argc--) && (i < MAXFN)) {
 		if ((infiles[i] = malloc(LENFN + 1)) == NULL)
