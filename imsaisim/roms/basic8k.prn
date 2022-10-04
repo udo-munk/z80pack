@@ -1,6 +1,6 @@
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 1
       
 
@@ -58,7 +58,7 @@
                    ;            - ARRAYS CAN NOW HAVE > 256 ELEMENTS PER DIM
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 2
       
 
@@ -80,26 +80,26 @@
                    ; 5/12/77   - BUG IN NESTED FOR'S AND REENTERED FOR'S FIXED
                    ;
                    ; ASSEMBLY PARAMETERS:
-   0000                    LARGE   EQU     0       ;-1=9K ASSEMBLY, 0=8K
-   0000                    CPM     EQU     0       ;-1=RUN UNDER CPM
-   0000                    HUNTER  EQU     0       ;-1= INCLUDE BAUD COMMAND
+   0000            LARGE   EQU     0       ;-1=9K ASSEMBLY, 0=8K
+   0000            CPM     EQU     0       ;-1=RUN UNDER CPM
+   0000            HUNTER  EQU     0       ;-1= INCLUDE BAUD COMMAND
                    ;
                    ; CPM EQUATES
                    ;
-   0000                    BOOT    EQU     0       ;WARM BOOT
-   0005                    BDOS    EQU     5       ;BDOS ENTRY
-   0100                    TBASE   EQU     0100H   ;PROGRAM LOAD UNDER CPM
-   0003                    CSTAT   EQU     3       ;OFFSET OF CONSOLE STATUS
+   0000            BOOT    EQU     0       ;WARM BOOT
+   0005            BDOS    EQU     5       ;BDOS ENTRY
+   0100            TBASE   EQU     0100H   ;PROGRAM LOAD UNDER CPM
+   0003            CSTAT   EQU     3       ;OFFSET OF CONSOLE STATUS
                                                    ;...QUERY IN BIOS TABLE
                    ;
                    ; ASCII EQUATES, CHARACTER LITERALS NOT WORKING WITH MACRO-80
                    ;
-   005E                    UPARR   EQU     05EH
-   005C                    BACKSL  EQU     05CH
+   005E            UPARR   EQU     05EH
+   005C            BACKSL  EQU     05CH
                    ;
                    ; BASIC EQUATES
                    ;
-   00F7                    FATAL   EQU     0F7H    ;CODE FOR FATAL IS RST 6
+   00F7            FATAL   EQU     0F7H    ;CODE FOR FATAL IS RST 6
                    ;
    0000            BASIC:  IF      NOT CPM
    0000 1                  ORG     0
@@ -116,7 +116,7 @@
                    ;       ORG     8
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 3
       
 
@@ -174,7 +174,7 @@
    0028   115822   RST5:   LXI     D,FACC  ;POINT FLOAT ACC
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 4
       
 
@@ -232,7 +232,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 5
       
 
@@ -290,7 +290,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 6
       
 
@@ -348,7 +348,7 @@
    0102   09               DAD     B       ;POINT NEXT STMT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 7
       
 
@@ -406,7 +406,7 @@
    0156   CD5E1C           CALL    ZEROM
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 8
       
 
@@ -464,7 +464,7 @@
    01A0            FREE    EQU     $
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 9
       
 
@@ -522,7 +522,7 @@
    01E6            HDRTL   EQU     $
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 10
       
 
@@ -580,7 +580,7 @@
    0236   23               INX     H       ;POINT 1ST PGM BYTE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 11
       
 
@@ -638,7 +638,7 @@
    0281   EB               XCHG            ;RESTORE H,L
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 12
       
 
@@ -696,7 +696,7 @@
    02DA   C2D502           JNZ     LIST7   ;LOOP
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 13
       
 
@@ -754,7 +754,7 @@
                    ; STMT:  RETURN
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 14
       
 
@@ -812,7 +812,7 @@
    0372   D7               RST     2       ;GO SEE IF TAB(XX)
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 15
       
 
@@ -870,7 +870,7 @@
    03C7   47               MOV     B,A     ;SAVE COUNT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 16
       
 
@@ -928,7 +928,7 @@
    0414   21EA1D           LXI     H,ONE   ;POINT CONSTANT: 1
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 17
       
 
@@ -986,7 +986,7 @@
    046F   BA               CMP     D       ;TEST IF EQUAL TO THIS FOR'S INDEX
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 18
       
 
@@ -1044,7 +1044,7 @@
    04B5   5E               MOV     E,M     ;GET LENGTH CODE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 19
       
 
@@ -1102,7 +1102,7 @@
    050B   E1       IF2:    POP     H       ;RESTORE H,L
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 20
       
 
@@ -1160,7 +1160,7 @@
    0573   E604             ANI     04H     ;MASK IT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 21
       
 
@@ -1218,7 +1218,7 @@
    05D8   C2B105           JNZ     IFG     ;BRIF BOTH NOT ZERO
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 22
       
 
@@ -1276,7 +1276,7 @@
    0636   CA8606           JZ      LET8    ;BRIF SAME LENGTH
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 23
       
 
@@ -1334,7 +1334,7 @@
    067C   2B               DCX     H       ;POINT NEXT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 24
       
 
@@ -1392,7 +1392,7 @@
    06BC   3A0020   NEXT3:  LDA     FORNE   ;GET ORIG COUNT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 25
       
 
@@ -1450,7 +1450,7 @@
    0713   228922           SHLD    LINE    ;SAVE ADDR LINE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 26
       
 
@@ -1508,7 +1508,7 @@
    0769   7E               MOV     A,M     ;LOAD CHAR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 27
       
 
@@ -1566,7 +1566,7 @@
    07C4   21CF20           LXI     H,IOBUF+1       ;POINT INPUT BUFFER
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 28
       
 
@@ -1624,7 +1624,7 @@
    0817   C22C08           JNZ     READ5   ;BRIF NOT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 29
       
 
@@ -1682,7 +1682,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 30
       
 
@@ -1740,7 +1740,7 @@
    08BC   CA0F1C           JZ      SNERR   ;BRIF ZERO (ERROR)
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 31
       
 
@@ -1798,7 +1798,7 @@
                    ;PAGE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 32
       
 
@@ -1856,7 +1856,7 @@
    096B   57               MOV     D,A     ;SAVE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 33
       
 
@@ -1914,7 +1914,7 @@
    09B1   CDC91B           CALL    VAR     ;GO GET VAR NAME
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 34
       
 
@@ -1972,7 +1972,7 @@
    09F9   2B               DCX     H       ;POINT NEXT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 35
       
 
@@ -2030,7 +2030,7 @@
                    ;PAGE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 36
       
 
@@ -2088,7 +2088,7 @@
                    ; EVALUATE POWER SERIES
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 37
       
 
@@ -2146,7 +2146,7 @@
                    ;          COS(X)
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 38
       
 
@@ -2204,7 +2204,7 @@
    0B13   CDCE18           CALL    FTEST   ;TEST THE ARGUMENT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 39
       
 
@@ -2262,7 +2262,7 @@
    0B79   DF               RST     3       ;STORE IT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 40
       
 
@@ -2320,7 +2320,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 41
       
 
@@ -2378,7 +2378,7 @@
    0C0F   7E       INT5:   MOV     A,M     ;LOAD A BYTE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 42
       
 
@@ -2436,7 +2436,7 @@
    0C59   1F               RAR             ;DIVIDE BY 2
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 43
       
 
@@ -2494,7 +2494,7 @@
    0C9F   2B               DCX     H       ;POINT NEXT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 44
       
 
@@ -2552,7 +2552,7 @@
    0CE8   23               INX     H       ;POINT NEXT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 45
       
 
@@ -2610,7 +2610,7 @@
    0D27   112021           LXI     D,STRIN ;POINT STRING BUFFER
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 46
       
 
@@ -2668,7 +2668,7 @@
    0D75   4F               MOV     C,A     ;SAVE IT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 47
       
 
@@ -2726,7 +2726,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 48
       
 
@@ -2784,7 +2784,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 49
       
 
@@ -2842,7 +2842,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 50
       
 
@@ -2900,7 +2900,7 @@
                    ; ELSE RETURN THE CHARACTER POSITION
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 51
       
 
@@ -2958,7 +2958,7 @@
    0E9F   C1               POP     B       ;GET POSITION
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 52
       
 
@@ -3016,7 +3016,7 @@
    0EEF   46               MOV     B,M     ;GET HI NAME
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 53
       
 
@@ -3074,7 +3074,7 @@
    0F3F   23               INX     H       ;SKIP IT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 54
       
 
@@ -3132,7 +3132,7 @@
    0F8F   3600             MVI     M,0     ;INIT START OF STACK
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 55
       
 
@@ -3190,7 +3190,7 @@
    0FEE   36E7             MVI     M,0E7H  ;MARK AS STRING ADDRESS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 56
       
 
@@ -3248,7 +3248,7 @@
    1049   70               MOV     M,B     ;MOVE THE LETTER
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 57
       
 
@@ -3306,7 +3306,7 @@
    10A2   C3950F           JMP     LOOKD   ;NEXT MUST BE DATA
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 58
       
 
@@ -3364,7 +3364,7 @@
    10FC   1A               LDAX    D       ;GET COUNT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 59
       
 
@@ -3422,7 +3422,7 @@
    1160   E6E3             ANI     0E3H
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 60
       
 
@@ -3480,7 +3480,7 @@
    11BA   2A5022   EVAL:   LHLD    EXPRS   ;GET END OF EXPR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 61
       
 
@@ -3538,7 +3538,7 @@
    1215   2A6922           LHLD    SPCTR   ;GET COUNTER
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 62
       
 
@@ -3596,7 +3596,7 @@
    1261   3D               DCR     A       ;DECR CTR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 63
       
 
@@ -3654,7 +3654,7 @@
    12C0   C4C413           CNZ     EDM4    ;BRIF ON
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 64
       
 
@@ -3712,7 +3712,7 @@
    1323   E5       POWER:  PUSH    H       ;SAVE ADDR OF VAR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 65
       
 
@@ -3770,7 +3770,7 @@
    1383   23       EVLD:   INX     H       ;POINT TYPE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 66
       
 
@@ -3828,7 +3828,7 @@
    13D8   F680             ORI     80H     ;SET BIT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 67
       
 
@@ -3886,7 +3886,7 @@
                    ; THIS SUBROUTINE CONVERTS AN ASCII STRING OF CHARACTERS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 68
       
 
@@ -3944,7 +3944,7 @@
    147B   F1       FIN6:   POP     PSW     ;RESTORE COUNT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 69
       
 
@@ -4002,7 +4002,7 @@
    14C3   215B22           LXI     H,FACC+3        ;POINT ACC
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 70
       
 
@@ -4060,7 +4060,7 @@
    150B   3A5822   FOUT2:  LDA     FACC    ;GET SIGN & EXP
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 71
       
 
@@ -4118,7 +4118,7 @@
    1581   E9               PCHL            ;RETURN
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 72
       
 
@@ -4176,7 +4176,7 @@
    15D5   D0               RNC             ;RETURN IF 6 OR GREATER
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 73
       
 
@@ -4234,7 +4234,7 @@
    1623   23               INX     H       ;POINT RIGHT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 74
       
 
@@ -4292,7 +4292,7 @@
    1670   215D22           LXI     H,FTEMP+1       ;DEFAULT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 75
       
 
@@ -4350,7 +4350,7 @@
    16CF   C601             ADI     1       ;INCREMENT + COMPLEMENT=NEGATE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 76
       
 
@@ -4408,7 +4408,7 @@
    170C            FSUB    EQU     $
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 77
       
 
@@ -4466,7 +4466,7 @@
    1754   7E       FMUL7:  MOV     A,M     ;GET BYTE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 78
       
 
@@ -4524,7 +4524,7 @@
    178D   7E               MOV     A,M
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 79
       
 
@@ -4582,7 +4582,7 @@
    17C4   D1               POP     D       ;GET ADDR
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 80
       
 
@@ -4640,7 +4640,7 @@
    1823   CA4118           JZ      GETS5   ;BRIF IS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 81
       
 
@@ -4698,7 +4698,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 82
       
 
@@ -4756,7 +4756,7 @@
    18AE   C1               POP     B       ;GET SUB COL
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 83
       
 
@@ -4814,7 +4814,7 @@
    18E5   9E               SBB     M       ;SUB OTHER BYTE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 84
       
 
@@ -4872,7 +4872,7 @@
    1913   FE3F             CPI     '?'     ;TEST IF Q.M.
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 85
       
 
@@ -4930,7 +4930,7 @@
         1                  DB      0,0,0   ;SAVE ROOM FOR CALL TO USER ROUTINE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 86
       
 
@@ -4988,7 +4988,7 @@
         1                  JMP     TREAD   ;GET REPLACEMENT CHARACTER
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 87
       
 
@@ -5046,7 +5046,7 @@
    19DF   3A7320           LDA     OUTSW   ;GET OUTPUT SWITCH
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 88
       
 
@@ -5104,7 +5104,7 @@
    1A2B   C2321A           JNZ     NOTZ2   ;BRIF NOT ZERO
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 89
       
 
@@ -5162,7 +5162,7 @@
    1A69   327320           STA     OUTSW   ;PUT SW
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 90
       
 
@@ -5220,7 +5220,7 @@
    1AA7   C9               RET             ;RETURN
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 91
       
 
@@ -5278,7 +5278,7 @@
    1ADD   4F               MOV     C,A     ;REPLACE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 92
       
 
@@ -5336,7 +5336,7 @@
    1B08   23               INX     H       ;PLUS ONE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 93
       
 
@@ -5394,7 +5394,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 94
       
 
@@ -5452,7 +5452,7 @@
    1B7A   C3811B           JMP     SCH5    ;BRARND
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 95
       
 
@@ -5510,7 +5510,7 @@
    1BC6   C5               PUSH    B
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 96
       
 
@@ -5568,7 +5568,7 @@
                    ; FATAL ERROR MUST BE FIRST
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 97
       
 
@@ -5626,7 +5626,7 @@
                    ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 98
       
 
@@ -5684,7 +5684,7 @@
    1C74            ARG     EQU     $
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 99
       
 
@@ -5742,7 +5742,7 @@
    1CAA   E20B             DW      INT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 100
       
 
@@ -5800,7 +5800,7 @@
    1D1D   BA0D             DW      VAL
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 101
       
 
@@ -5858,7 +5858,7 @@
         1                  DB      '9K VERS 1.4',0
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 102
       
 
@@ -5916,7 +5916,7 @@
    1DE6   749ED7B6 SINCO:  DB      74H,9EH,0D7H,0B6H    ;CONSTANT:  0.00015148419
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 103
       
 
@@ -5974,7 +5974,7 @@
    1E5D   F901             DW      XEQ
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 104
       
 
@@ -6032,7 +6032,7 @@
    1EE4   454E4400         DB      'END',0
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 105
       
 
@@ -6090,7 +6090,7 @@
                            ENDIF
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 106
       
 
@@ -6148,7 +6148,7 @@
    1F68   7E               MOV     A,M     ;FETCH HI #
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 107
       
 
@@ -6206,7 +6206,7 @@
    1FA1   17               RAL             ;HIGH BIT TO CARRY
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 108
       
 
@@ -6264,7 +6264,7 @@
         1                  MVI     A,3     ;SEARCH WILL START IN POS 3.
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 109
       
 
@@ -6322,7 +6322,7 @@
         1                  ORA     A       ;TEST
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 110
       
 
@@ -6380,7 +6380,7 @@
         1          ;       LENGTH: 128 EXCEPT LAST RECORD MAY BE LESS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 111
       
 
@@ -6438,7 +6438,7 @@
         1                  CALL    CKSUM   ;ADD TO CKSUM, PUT ADD IN LIGHTS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 112
       
 
@@ -6496,7 +6496,7 @@
         1                  LXI     H,0     ;INITIAL CHECKSUM
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 113
       
 
@@ -6554,7 +6554,7 @@
         1          ;
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 114
       
 
@@ -6612,7 +6612,7 @@
         1          NULL1:  MVI     A,60H   ;MIO CONTROL TO READ BY BITS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 115
       
 
@@ -6670,7 +6670,7 @@
                            ENDIF
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 116
       
 
@@ -6728,7 +6728,7 @@
         1          ; W. HARTER, COYOTE COMPUTERS, DAVIS, CALIF.
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 117
       
 
@@ -6786,7 +6786,7 @@
         1          ; BAUD TABLE.
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 118
       
 
@@ -6844,7 +6844,7 @@
    2077            LINEN:  DS      5
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 119
       
 
@@ -6902,7 +6902,7 @@
    2293            PROGE:  DS      2       ;ADDRESS OF PROGRAM END
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 120
       
 
@@ -6942,7 +6942,7 @@
  NO PROGRAM ERRORS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 121
       
 
@@ -7000,7 +7000,7 @@
   FNMOD  2288      FNORM  16DD      FNRM1  16EF      FNRM2  16F9      
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 122
                               SYMBOL TABLE
 
@@ -7058,7 +7058,7 @@
   MID1   0E2F      MID2   0E3C      MID3   0E40      MID4   0E48      
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 123
                               SYMBOL TABLE
 
@@ -7116,7 +7116,7 @@
   TEMP2  2233      TEMP3  2237      TEMP4  223B      TEMP5  223F      
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      21:37  05/19/2019
++                                                      11:44  10/04/2022
 +                                                                                      PAGE 124
                               SYMBOL TABLE
 

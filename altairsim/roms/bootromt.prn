@@ -1,6 +1,6 @@
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      16:31  07/23/2016
++                                                      11:22  10/04/2022
 +                                                                                      PAGE 1
       
 
@@ -45,7 +45,7 @@
    FE01   2117FE           LXI     H,RCODE         ;POINT TO BLOCK TO BE MOVED
    FE04   018001           LXI     B,0180H         ;SET COUNT FOR ONE AND A HALF 1702'S
    FE07   110010           LXI     D,RUNLOC        ;POINT TO DESTINATION OF MOVE
-   FE0A             MOVE:
+   FE0A            MOVE:
    FE0A   7E               MOV     A,M             ;GET A BYTE OF CODE FROM PROM
    FE0B   12               STAX    D               ;STORE IT INTO RAM
    FE0C   23               INX     H               ;INCREMENT PROM POINTER
@@ -58,7 +58,7 @@
    FE14   C30010           JMP     RUNLOC          ;TRANSFER CONTROL TO ROUTINE
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      16:31  07/23/2016
++                                                      11:22  10/04/2022
 +                                                                                      PAGE 2
       
 
@@ -116,7 +116,7 @@
    FE26   D311             OUT     CDATA
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      16:31  07/23/2016
++                                                      11:22  10/04/2022
 +                                                                                      PAGE 3
       
 
@@ -174,7 +174,7 @@
    FE59            INIT:
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      16:31  07/23/2016
++                                                      11:22  10/04/2022
 +                                                                                      PAGE 4
       
 
@@ -232,7 +232,7 @@
    FEA1   00               NOP                     ;ALLOW TIME FOR COMMAND SETTLING
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      16:31  07/23/2016
++                                                      11:22  10/04/2022
 +                                                                                      PAGE 5
       
 
@@ -290,7 +290,7 @@
    FEFD   4F523D  
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      16:31  07/23/2016
++                                                      11:22  10/04/2022
 +                                                                                      PAGE 6
       
 
@@ -317,7 +317,7 @@
  NO PROGRAM ERRORS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      16:31  07/23/2016
++                                                      11:22  10/04/2022
 +                                                                                      PAGE 7
       
 

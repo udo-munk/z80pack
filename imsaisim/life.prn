@@ -1,6 +1,6 @@
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 1
       
 
@@ -58,7 +58,7 @@
    0033   3E40             MVI  A,64
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 2
       
 
@@ -116,7 +116,7 @@
    0097   322C02           STA  ROWB
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 3
       
 
@@ -174,7 +174,7 @@
    00E9   CD1601   GTCOL:  CALL FNDCOL
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 4
       
 
@@ -232,7 +232,7 @@
    0137   17               RAL
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 5
       
 
@@ -290,7 +290,7 @@
    0192   CD5E01           CALL TTYOUT
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 6
       
 
@@ -348,7 +348,7 @@
    01E5   0600     RETURN: MVI  B,0
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 7
       
 
@@ -381,7 +381,7 @@
    0216   CD4501           CALL CHECK
    0219   C1               POP  B
    021A   CAFD01           JZ   GTC20
-   021D   F1       GTC30:  POP  6
+   021D   F1       GTC30:  POP  PSW
    021E   CDFA00           CALL PTCOL
    0221   DB02             IN   2
    0223   D302             OUT  2
@@ -406,7 +406,7 @@
    0248   0000     INST:   DW   0
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 8
       
 
@@ -423,7 +423,7 @@
  NO PROGRAM ERRORS
 1
  8080 MACRO ASSEMBLER, VER 3.0        ERRORS = 0      
-+                                                      20:29  05/07/2017
++                                                      11:42  10/04/2022
 +                                                                                      PAGE 9
       
 
