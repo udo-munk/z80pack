@@ -90,14 +90,14 @@ struct opc opctab_psd[] = {
 	{ "IFNDEF",	op_cond,	2,	0,	OP_COND	 },
 	{ "IFNEQ",	op_cond,	4,	0,	OP_COND	 },
 	{ "IFT",	op_cond,	5,	0,	OP_COND	 },
-	{ "INCLUDE",	op_misc,	6,	0,	0,	 },
-	{ "LIST",	op_misc,	2,	0,	0,	 },
-	{ "NOLIST",	op_misc,	3,	0,	0,	 },
-	{ "ORG",	op_org,		0,	0,	0,	 },
-	{ "PAGE",	op_misc,	4,	0,	0,	 },
-	{ "PRINT",	op_misc,	5,	0,	0,	 },
-	{ "PUBLIC",	op_glob,	2,	0,	0,	 },
-	{ "TITLE",	op_misc,	7,	0,	0,	 }
+	{ "INCLUDE",	op_misc,	6,	0,	0	 },
+	{ "LIST",	op_misc,	2,	0,	0	 },
+	{ "NOLIST",	op_misc,	3,	0,	0	 },
+	{ "ORG",	op_org,		0,	0,	0	 },
+	{ "PAGE",	op_misc,	4,	0,	0	 },
+	{ "PRINT",	op_misc,	5,	0,	0	 },
+	{ "PUBLIC",	op_glob,	2,	0,	0	 },
+	{ "TITLE",	op_misc,	7,	0,	0	 }
 };
 
 /*
