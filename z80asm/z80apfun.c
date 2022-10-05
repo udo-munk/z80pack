@@ -46,6 +46,7 @@ extern void lst_attl(void);
 extern void lst_line(int, int);
 extern void obj_org(int);
 extern void obj_fill(int);
+extern void obj_fill_value(int, int);
 
 /* z80atab.c */
 extern struct sym *get_sym(char *);
@@ -199,18 +200,35 @@ int op_dl(int dummy1, int dummy2)
  */
 int op_ds(int dummy1, int dummy2)
 {
-	register int val;
+	register char *p, *p1, *p2;
+	register int cnt, val;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	sd_val = pc;
-	sd_flag = 3;
-	val = eval(operand);
-	if ((pass == 2) && !dump_flag)
-		obj_fill(val);
-	pc += val;
-	rpc += val;
+	p = operand;
+	if (!*p)
+		asmerr(E_MISOPE);
+	else {
+		sd_val = pc;
+		sd_flag = 3;
+		if ((p1 = strchr(operand, ','))) {
+			p2 = tmp;
+			while (*p != ',')
+				*p2++ = *p++;
+			*p2 = '\0';
+			cnt = eval(tmp);
+			val = eval(p1 + 1);
+			if (pass == 2)
+				obj_fill_value(cnt, val);
+		} else {
+			cnt = eval(operand);
+			if (pass == 2)
+				obj_fill(cnt);
+		}
+		pc += cnt;
+		rpc += cnt;
+	}
 	return(0);
 }
 

@@ -183,15 +183,15 @@ struct inc {
 #define E_MULSYM	4	/* multiple defined symbol */
 #define E_UNDSYM	5	/* undefined symbol */
 #define E_VALOUT	6	/* value out of bounds */
-#define E_MISPAR	7	/* missing paren */
+#define E_MISPAR	7	/* missing right parenthesis */
 #define E_MISDEL	8	/* missing string delimiter */
-#define E_MEMOVR	9	/* memory override (ORG) */
+#define E_NSQWRT	9	/* non-sequential code write (binary output) */
 #define E_MISIFF	10	/* missing IF at ELSE or ENDIF */
-#define E_IFNEST	11	/* to many IF's nested */
+#define E_IFNEST	11	/* too many IF's nested */
 #define E_MISEIF	12	/* missing ENDIF */
-#define E_INCNEST	13	/* to many INCLUDE's nested */
+#define E_INCNEST	13	/* too many INCLUDE's nested */
 #define E_PHSNEST	14	/* .PHASE can't be nested */
-#define E_ORGPHS	15	/* invalid ORG in .PHASE block */
+#define E_ORGPHS	15	/* illegal ORG in .PHASE block */
 #define E_MISPHS	16	/* missing .PHASE at .DEPHASE */
 #define E_DIVBY0	17	/* division by zero */
 #define E_INVEXP	18	/* invalid expression */

@@ -32,11 +32,12 @@ Option h:
 Set the maximum number of bytes per hex record to <num>, the default is 32.
 
 Option x:
-Don't output data in pass 2 into a binary object file for DEFS. This only
-works if unallocated data isn't followed by any code or initialised data!
-Useful for CP/M BIOS's, where unallocated data doesn't need to be
-part of the system image, if the complete image won't fit on the system
-tracks.
+Don't fill binary files up to the last used logical address. This means,
+that single parameter DEFS's at the end of the source file won't fill up
+the output file with 0xff's.
+Useful to make CP/M BIOS's, where unallocated data doesn't need to be
+part of the system image, fit on the system tracks.
+Only valid for binary output file formats.
 
 Option 8:
 Change default instruction set to 8080.
@@ -78,7 +79,7 @@ Definition of symbols and allocation of memory:
 <symbol> DEFM   <'string'>      - write character string in memory
 <symbol> DEFC   <'string'>      - as DEFM, but bit 7 in the last char is set
 <symbol> DEFZ   <'string'>      - as DEFM, but an extra zero byte is added
-<symbol> DEFS   <expression>    - reserve space in memory
+<symbol> DEFS   <exp>[,<exp>]   - reserve space in memory, opt. initialized
 
 The aliases ASET (and SET in 8080 mode) for DEFL, DB for DEFB, DC for DEFC,
 DS for DEFS, and DW for DEFW are also accepted.
