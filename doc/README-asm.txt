@@ -33,11 +33,10 @@ Set the maximum number of bytes per hex record to <num>, the default is 32.
 
 Option x:
 Don't fill binary files up to the last used logical address. This means,
-that single parameter DEFS's at the end of your source file won't fill up
+that single parameter DEFS's at the end of the source file won't fill up
 the output file with 0xff's.
-Useful for CP/M BIOS's, where unallocated data doesn't need to be
-part of the system image, if the complete image won't fit on the system
-tracks.
+Useful to make CP/M BIOS's, where unallocated data doesn't need to be
+part of the system image, fit on the system tracks.
 Only valid for binary output file formats.
 
 Option 8:
