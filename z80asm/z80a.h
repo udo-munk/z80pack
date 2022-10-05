@@ -27,7 +27,7 @@
 #define LENFN		2048	/* max. filename length */
 #define READA		"r"	/* file open mode read ascii */
 #define WRITEA		"w"	/* file open mode write ascii */
-#define WRITEB		"w"	/* file open mode write binary */
+#define WRITEB		"wb"	/* file open mode write binary */
 
 /*
  *	various constants
