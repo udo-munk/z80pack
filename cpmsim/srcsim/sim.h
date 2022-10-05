@@ -157,10 +157,6 @@ struct softbreak {			/* structure of a breakpoint */
 };
 #endif
 
-#ifndef isxdigit
-#define isxdigit(c) ((c<='f'&&c>='a')||(c<='F'&&c>='A')||(c<='9'&&c>='0'))
-#endif
-
 /*
  *	Structure for the disk images
  */

@@ -81,12 +81,12 @@ int exatoi(char *str)
 {
 	register int num = 0;
 
-	while (isxdigit((int)*str)) {
+	while (isxdigit((unsigned char) *str)) {
 		num *= 16;
 		if (*str <= '9')
 			num += *str - '0';
 		else
-			num += toupper((int)*str) - '7';
+			num += toupper((unsigned char) *str) - '7';
 		str++;
 	}
 	return(num);
@@ -178,7 +178,7 @@ int load_file(char *s, BYTE pstart, WORD psize)
 	BYTE d;
 	int fd;
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	while (*s != ',' && *s != '\n' && *s != '\0')
 		*pfn++ = *s++;
@@ -289,7 +289,7 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 
 	while (fgets(&buf[0], BUFSIZE, fd) != NULL) {
 		s = &buf[0];
-		while (isspace((int)*s))
+		while (isspace((unsigned char) *s))
 			s++;
 		if (*s != ':')
 			continue;
