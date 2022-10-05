@@ -41,30 +41,30 @@ extern struct sym *get_sym(char *);
  */
 #define T_EMPTY		0	/* nothing */
 #define T_VAL		1	/* number, string, or $ */
-#define T_SUB		2	/* - */
-#define T_ADD		3	/* + */
-#define T_NOT		4	/* NOT or ~ */
-#define T_HIGH		5	/* HIGH */
-#define T_LOW		6	/* LOW */
-#define T_NUL		7	/* NUL */
-#define T_TYPE		8	/* TYPE */
-#define T_MUL		9	/* * */
-#define T_DIV		10	/* / */
-#define T_MOD		11	/* MOD */
-#define T_SHR		12	/* SHR or >> */
-#define T_SHL		13	/* SHL or << */
-#define T_EQ		14	/* EQ, = or == */
-#define T_NE		15	/* NE, <> or != */
-#define T_LT		16	/* LT or < */
-#define T_LE		17	/* LE or <= */
-#define T_GT		18	/* GT or > */
-#define T_GE		19	/* GE or >= */
-#define T_AND		20	/* AND or & */
-#define T_XOR		21	/* XOR */
-#define T_OR		22	/* OR or | */
-#define T_LPAREN	23	/* (, [ or { */
-#define T_RPAREN	24	/* ), ] or } */
-#define T_NOOPR		25	/* word isn't an operation, may be a symbol */
+#define T_SYM		2	/* symbol */
+#define T_SUB		3	/* - */
+#define T_ADD		4	/* + */
+#define T_NOT		5	/* NOT or ~ */
+#define T_HIGH		6	/* HIGH */
+#define T_LOW		7	/* LOW */
+#define T_NUL		8	/* NUL */
+#define T_TYPE		9	/* TYPE */
+#define T_MUL		10	/* * */
+#define T_DIV		11	/* / */
+#define T_MOD		12	/* MOD */
+#define T_SHR		13	/* SHR or >> */
+#define T_SHL		14	/* SHL or << */
+#define T_EQ		15	/* EQ, = or == */
+#define T_NE		16	/* NE, <> or != */
+#define T_LT		17	/* LT or < */
+#define T_LE		18	/* LE or <= */
+#define T_GT		19	/* GT or > */
+#define T_GE		20	/* GE or >= */
+#define T_AND		21	/* AND or & */
+#define T_XOR		22	/* XOR */
+#define T_OR		23	/* OR or | */
+#define T_LPAREN	24	/* (, [ or { */
+#define T_RPAREN	25	/* ), ] or } */
 
 /*
  *	structure operator table
@@ -102,7 +102,7 @@ int no_operators = sizeof(oprtab) / sizeof(struct opr);
 
 static int tok_type;	/* token type and flags */
 static int tok_val;	/* token value for T_VAL type */
-static char tok_sym[MAXLINE]; /* last symbol scanned (T_NOOPR) */
+static char tok_sym[MAXLINE]; /* last symbol scanned (T_VAL, T_SYM) */
 static char *scan_pos;	/* current scanning position */
 
 int is_sym_char(char c)
@@ -116,7 +116,7 @@ int is_sym_char(char c)
  *
  *	Input: pointer to string with operator
  *
- *	Output: symbol for operator, T_NOOPR if operator not found
+ *	Output: symbol for operator, T_SYM if operator not found
  */
 int search_opr(char *s)
 {
@@ -134,7 +134,7 @@ int search_opr(char *s)
 		else
 			return(mid->opr_type);
 		}
-	return(T_NOOPR);
+	return(T_SYM);
 }
 
 /*
@@ -200,13 +200,16 @@ int get_token(void)
 					p1++;
 					continue;
 				}
-				m = *p1 - ((*p1 <= '9') ? '0' : '7');
-				if (m < base) {
-					n *= base;
-					n += m;
-					p1++;
-				} else			/* digit not of base */
-					return(E_VALOUT);
+				if (isxdigit((unsigned char) *p1)) {
+					m = *p1 - ((*p1 <= '9') ? '0' : '7');
+					if (m < base) {
+						n *= base;
+						n += m;
+						p1++;
+					} else		/* digit not of base */
+						return(E_INVEXP);
+				} else			/* not a digit */
+					return(E_INVEXP);
 			}
 			tok_type = T_VAL;
 			tok_val = n;
@@ -333,7 +336,7 @@ int factor(int *resultp)
 		return(get_token());
 	}
 	switch (tok_type) {
-	case T_NOOPR:
+	case T_SYM:				/* already looked */
 		return(E_UNDSYM);
 	case T_VAL:
 		*resultp = tok_val;
