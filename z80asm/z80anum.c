@@ -45,7 +45,7 @@ extern struct sym *get_sym(char *);
  *	definitions of token types
  */
 #define T_EMPTY		0	/* nothing */
-#define T_VAL		1	/* number, string  */
+#define T_VAL		1	/* number, string, or $ */
 #define T_SUB		2	/* - */
 #define T_ADD		3	/* + */
 #define T_NOT		4	/* NOT or ~ */
@@ -232,7 +232,7 @@ int get_token(void)
 	case '"':
 		p1 = s;
 		n = 0;
-	        while (*++s) {
+		while (*++s) {
 			if ((*s == *p1) && (*++s != *p1)) { /* double delim? */
 				tok_type = T_VAL;
 				tok_val = n;
@@ -333,7 +333,7 @@ int factor(int *resultp)
 	 * look for symbol here, since it seems that operator names are
 	 * not reserved words
 	 */
-	if (*tok_sym && (sp = get_sym(tok_sym))) {
+	if (tok_type != T_VAL && *tok_sym && (sp = get_sym(tok_sym))) {
 		*resultp = sp->sym_val;
 		return(get_token());
 	}
@@ -381,7 +381,7 @@ int factor(int *resultp)
 			*resultp = value & 0xff;
 			break;
 		case T_TYPE:
-			*resultp = 0;		/* TYPE is always absolute  */
+			*resultp = 0;		/* TYPE is always absolute */
 			break;
 		default:
 			break;
