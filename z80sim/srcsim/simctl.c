@@ -122,7 +122,7 @@ void mon(void)
 			putchar('\n');
 			goto next;
 		}
-		switch (tolower(*cmd)) {
+		switch (tolower((unsigned char) *cmd)) {
 		case '\n':
 			do_step();
 			break;
@@ -220,7 +220,7 @@ static void do_trace(char *s)
 {
 	register int count, i;
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	if (*s == '\0')
 		count = 20;
@@ -257,9 +257,9 @@ static void do_trace(char *s)
  */
 static void do_go(char *s)
 {
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
-	if (isxdigit((int)*s))
+	if (isxdigit((unsigned char) *s))
 		PC = exatoi(s);
 	cont:
 	cpu_state = CONTIN_RUN;
@@ -336,9 +336,9 @@ static void do_dump(char *s)
 	register int i, j;
 	BYTE c;
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
-	if (isxdigit((int)*s))
+	if (isxdigit((unsigned char) *s))
 		wrk_ram = mem_base() + exatoi(s) - exatoi(s) % 16;
 	printf("Adr    ");
 	for (i = 0; i < 16; i++)
@@ -367,9 +367,9 @@ static void do_list(char *s)
 {
 	register int i;
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
-	if (isxdigit((int)*s))
+	if (isxdigit((unsigned char) *s))
 		wrk_ram = mem_base() + exatoi(s);
 	for (i = 0; i < 10; i++) {
 		printf("%04x - ", (unsigned int)(wrk_ram - mem_base()));
@@ -384,9 +384,9 @@ static void do_modify(char *s)
 {
 	static char nv[LENCMD];
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
-	if (isxdigit((int)*s))
+	if (isxdigit((unsigned char) *s))
 		wrk_ram = mem_base() + exatoi(s);
 	for (;;) {
 		printf("%04x = %02x : ", (unsigned int)(wrk_ram - mem_base()),
@@ -398,7 +398,7 @@ static void do_modify(char *s)
 				wrk_ram = mem_base();
 			continue;
 		}
-		if (!isxdigit((int)nv[0]))
+		if (!isxdigit((unsigned char) nv[0]))
 			break;
 		*wrk_ram++ = exatoi(nv);
 		if (wrk_ram > mem_base() + 65535)
@@ -415,7 +415,7 @@ static void do_fill(char *s)
 	register int i;
 	register BYTE val;
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	p = mem_base() + exatoi(s);
 	while (*s != ',' && *s != '\0')
@@ -450,7 +450,7 @@ static void do_move(char *s)
 	register int count;
 
 	
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	p1 = mem_base() + exatoi(s);
 	while (*s != ',' && *s != '\0')
@@ -487,12 +487,12 @@ static void do_port(char *s)
 	static char nv[LENCMD];
 	extern BYTE io_out(BYTE, BYTE, BYTE), io_in(BYTE, BYTE);
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	port = exatoi(s);
 	printf("%02x = %02x : ", port, io_in(port, 0));
 	fgets(nv, sizeof(nv), stdin);
-	if (isxdigit((int)*nv))
+	if (isxdigit((unsigned char) *nv))
 		io_out(port, 0, (BYTE) exatoi(nv));
 }
 
@@ -503,7 +503,7 @@ static void do_reg(char *s)
 {
 	static char nv[LENCMD];
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	if (*s == '\0') {
 		print_head();
@@ -716,7 +716,7 @@ static void do_break(char *s)
 				       soft[i].sb_passcount);
 		return;
 	}
-	if (isxdigit((int)*s)) {
+	if (isxdigit((unsigned char) *s)) {
 		i = atoi(s++);
 		if (i >= SBSIZE) {
 			printf("breakpoint %d not available\n", i);
@@ -727,7 +727,7 @@ static void do_break(char *s)
 		if (sb_next == SBSIZE)
 			sb_next = 0;
 	}
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	if (*s == 'c') {
 		*(mem_base() + soft[i].sb_adr) = soft[i].sb_oldopc;
@@ -739,7 +739,7 @@ static void do_break(char *s)
 	soft[i].sb_adr = exatoi(s);
 	soft[i].sb_oldopc = *(mem_base() + soft[i].sb_adr);
 	*(mem_base() + soft[i].sb_adr) = 0x76;
-	while (!iscntrl((int)*s) && !ispunct((int)*s))
+	while (!iscntrl((unsigned char) *s) && !ispunct((unsigned char) *s))
 		s++;
 	if (*s != ',')
 		soft[i].sb_pass = 1;
@@ -761,7 +761,7 @@ static void do_hist(char *s)
 #else
 	int i, l, b, e, c, sa;
 
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	switch (*s) {
 	case 'c':
@@ -777,7 +777,7 @@ static void do_hist(char *s)
 		e = h_next;
 		b = (h_flag) ? h_next + 1 : 0;
 		l = 0;
-		while (isspace((int)*s))
+		while (isspace((unsigned char) *s))
 			s++;
 		if (*s)
 			sa = exatoi(s);
@@ -808,7 +808,7 @@ static void do_hist(char *s)
 				printf("q = quit, else continue: ");
 				c = getkey();
 				putchar('\n');
-				if (toupper(c) == 'Q')
+				if (toupper((unsigned char) c) == 'Q')
 					break;
 			}
 		}
@@ -827,7 +827,7 @@ static void do_count(char *s)
 	puts("Sorry, no t-state count available");
 	puts("Please recompile with WANT_TIM defined in sim.h");
 #else
-	while (isspace((int)*s))
+	while (isspace((unsigned char) *s))
 		s++;
 	if (*s == '\0') {
 		puts("start  stop  status  T-states");

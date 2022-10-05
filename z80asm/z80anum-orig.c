@@ -23,11 +23,6 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
-#ifndef isxdigit
-#define isxdigit(c) (isdigit(c) || (((c) >= 'a') && ((c) <= 'f'))	\
-				|| (((c) >= 'A') && ((c) <= 'F')))
-#endif
-
 /*
  *	definitions of operator symbols for expression parser
  */
