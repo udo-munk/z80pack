@@ -1,6 +1,6 @@
 Usage:
 
-z80asm -f[b|m|h] -s[n|a] -e<num> {-h<num>} {-x} {-8} {-u} -v
+z80asm -f[b|m|h] -s[n|a] -e<num> -h<num> -x -8 -u -v
        -ofile -l[file] -dsymbol ... file ...
 
 A maximum of 512 source files is allowed. If the filename of a source

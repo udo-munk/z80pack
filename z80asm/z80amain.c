@@ -67,7 +67,7 @@ extern void a_sort_sym(int);
 
 static char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> {-h<num>} {-x} {-8} {-u} -v\n\
+	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> -h<num> -x -8 -u -v\n\
               -ofile -l[file] -dsymbol ... file ...", /* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
