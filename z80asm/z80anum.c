@@ -328,16 +328,12 @@ int factor(int *resultp)
 	struct sym *sp;
 
 	/*
-	 * look for symbol here, since it seems that operator names are
-	 * not reserved words
+	 *	if the token is not a T_VAL, but a word operator or
+	 *	T_SYM, look it up now since tok_sym gets overwritten
+	 *	by the next get_token().
 	 */
-	if (tok_type != T_VAL && *tok_sym && (sp = get_sym(tok_sym))) {
-		*resultp = sp->sym_val;
-		return(get_token());
-	}
+	sp = (tok_type != T_VAL && *tok_sym) ? get_sym(tok_sym) : NULL;
 	switch (tok_type) {
-	case T_SYM:				/* already looked */
-		return(E_UNDSYM);
 	case T_VAL:
 		*resultp = tok_val;
 		return(get_token());
@@ -360,7 +356,18 @@ int factor(int *resultp)
 	case T_LOW:
 	case T_TYPE:
 		opr_type = tok_type;
-		if ((err = get_token()) || (err = factor(&value)))
+		if ((err = get_token()))
+			return(err);
+		/*
+		 *	if an unary word operator is not followed by an
+		 *	operand and was found in the symbol table, take
+		 *	it as a symbol.
+		 */
+		if ((tok_type == T_EMPTY) && sp) {
+			*resultp = sp->sym_val;
+			return(E_NOERR);
+		}
+		if ((err = factor(&value)))
 			return(err);
 		switch (opr_type) {
 		case T_ADD:
@@ -385,8 +392,18 @@ int factor(int *resultp)
 			break;
 		}
 		return(E_NOERR);
+	case T_SYM:
 	default:
-		return(E_INVEXP);
+		/*
+		 *	if the token is a T_SYM, or an unexpected word
+		 *	operator that was found in the symbol table,
+		 *	take it as a symbol
+		 */
+		if (sp) {
+			*resultp = sp->sym_val;
+			return(get_token());
+		} else
+			return(tok_type == T_SYM ? E_UNDSYM : E_INVEXP);
 	}
 }
 
