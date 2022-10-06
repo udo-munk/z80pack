@@ -47,7 +47,6 @@
 #define LABSEP		':'	/* label separator */
 #define STRDEL		'\''	/* string delimiter */
 #define STRDEL2		'"'	/* the other string delimiter */
-#define ENDFILE		"END"	/* end of source */
 #define MAXFN		512	/* max. no. source files */
 #define MAXLINE		128	/* max. line length source */
 #define PLENGTH		65	/* default lines/page in listing */
@@ -115,6 +114,7 @@ struct inc {
 #define OP_UNDOC	1	/* undocumented opcode */
 #define OP_COND		2	/* concerns conditional assembly */
 #define OP_SET		3	/* assigns value to label */
+#define OP_END		4	/* end of source */
 
 /*
  *	definition of operand symbols
