@@ -326,9 +326,9 @@ int p1_line(void)
 		return(0);
 	if (*opcode) {
 		if ((op = search_op(opcode)) != NULL) {
+			if (gencode && *label && (op->op_type != OP_SET))
+				put_label();
 			if (gencode || (op->op_type == OP_COND)) {
-				if ((op->op_type != OP_SET) && *label)
-					put_label();
 				i = (*op->op_fun)(op->op_c1, op->op_c2);
 				pc += i;
 				rpc += i;
