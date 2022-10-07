@@ -13,7 +13,7 @@
  *	22-FEB-2014 fixed is...() compiler warnings
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	28-OCT-2017 added variable symbol length and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
@@ -199,7 +199,7 @@ char *strsave(char *s)
 {
 	register char *p;
 
-	if ((p = malloc((unsigned) strlen(s)+1)) != NULL)
+	if ((p = malloc((unsigned) strlen(s) + 1)) != NULL)
 		strcpy(p, s);
 	return(p);
 }
@@ -213,7 +213,7 @@ int copy_sym(void)
 	register int i, j;
 	register struct sym *np;
 
-	symarray = (struct sym **) malloc(SYMINC * sizeof(struct sym *));
+	symarray = (struct sym **) malloc(sizeof(struct sym *) * SYMINC);
 	if (symarray == NULL)
 		fatal(F_OUTMEM, "sorting symbol table");
 	symsize = SYMINC;
@@ -223,11 +223,12 @@ int copy_sym(void)
 				symarray[j++] = np;
 				if (j == symsize) {
 					symarray = (struct sym **)
-						   realloc((char *) symarray,
-							   symsize * sizeof(struct sym *)
-							   + SYMINC * sizeof(struct sym *));
+						realloc((char *) symarray,
+							sizeof(struct sym *)
+							* (symsize + SYMINC));
 					if (symarray == NULL)
-						fatal(F_OUTMEM, "sorting symbol table");
+						fatal(F_OUTMEM,
+						      "sorting symbol table");
 					symsize += SYMINC;
 				}
 			}
@@ -248,7 +249,7 @@ void n_sort_sym(int len)
 		for (i = gap; i < len; i++)
 			for (j = i-gap; j >= 0; j -= gap) {
 				if (strcmp(symarray[j]->sym_name,
-				    symarray[j+gap]->sym_name) <= 0)
+					   symarray[j+gap]->sym_name) <= 0)
 					break;
 				temp = symarray[j];
 				symarray[j] = symarray[j+gap];
@@ -268,7 +269,7 @@ void a_sort_sym(int len)
 		for (i = gap; i < len; i++)
 			for (j = i-gap; j >= 0; j -= gap) {
 				if (numcmp(symarray[j]->sym_val,
-				    symarray[j+gap]->sym_val) <= 0)
+					   symarray[j+gap]->sym_val) <= 0)
 					break;
 				temp = symarray[j];
 				symarray[j] = symarray[j+gap];
