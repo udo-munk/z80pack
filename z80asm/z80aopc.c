@@ -13,7 +13,7 @@
  *	22-FEB-2014 fixed is...() compiler warnings
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	28-OCT-2017 added variable symbol length and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A

@@ -13,7 +13,7 @@
  *	22-FEB-2014 fixed is...() compiler warnings
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	28-OCT-2017 added variable symbol length and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
@@ -59,17 +59,13 @@ int  list_flag,			/* flag for option -l */
      gencode = 1,		/* flag for conditional object code */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
-     sd_flag,			/* list flag for PSEUDO opcodes */
-				/* = 0: address from <val>, data from <ops> */
-				/* = 1: address from <sd_val>, data from <ops>*/
-				/* = 2: no address, data from <ops> */
-				/* = 3: address from <sd_val>, no data */
-				/* = 4: suppress whole line */
-     sd_val,			/* output value for PSEUDO opcodes */
-     prg_addr,			/* start address of program */
-     prg_flag,			/* flag for prg_addr valid */
+     ad_mode,			/* address/data output mode for pseudo ops */
+     ad_addr,			/* output address for AD_ADDR mode */
+     load_addr,			/* load address of program */
+     load_flag,			/* flag for load_addr valid */
+     start_addr,		/* start address of program */
      out_form = OUTDEF,		/* format of object file */
-     symlen = SYMLEN,		/* max. symbol length */
+     symlen = SYMLEN,		/* significant characters in symbols */
      symsize,			/* size of symarray */
      hexlen = MAXHEX;		/* hex record length */
 

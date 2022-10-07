@@ -13,7 +13,7 @@
  *	22-FEB-2014 fixed is...() compiler warnings
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	28-OCT-2017 added variable symbol length and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
@@ -31,9 +31,11 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
-void flush_bin(void);
+void fill_bin(void);
+void eof_hex(void);
 void flush_hex(void);
-int chksum(void);
+void hex_record(int);
+int chksum(int);
 void btoh(unsigned char, char **);
 
 /* z80amain.c */
@@ -61,8 +63,14 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"invalid expression"		/* 18 */
 };
 
+/*
+ *	Intel hex record types
+ */
+#define	HEX_DATA	0
+#define HEX_EOF		1
+
 static int seq_flag;			/* flag for sequential ORG */
-static int bin_addr;			/* current logical binary file address */
+static int bin_addr;			/* current logical file address */
 static int wrt_addr;			/* current address written to file */
 static unsigned short hex_addr;		/* current address in hex record */
 static int hex_cnt;			/* current no bytes in hex buffer */
@@ -110,93 +118,63 @@ void lst_attl(void)
 /*
  *	print one line into listfile, if -l option set
  */
-void lst_line(int val, int op_cnt)
+void lst_line(int addr, int op_cnt)
 {
-	register int i;
+	register int i, j;
 
-	if (!list_flag || sd_flag == 4) {
-		sd_flag = 0;
-		return;
-	}
+	if (!list_flag || ad_mode == AD_SUPPR)
+		goto done;
 	if ((p_line >= ppl) || (c_line == 1)) {
 		lst_header();
 		lst_attl();
 	}
-	switch (sd_flag) {
-	case 0:
-		fprintf(lstfp, "%04x  ", val & 0xffff);
+	switch (ad_mode) {
+	case AD_STD:
+		fprintf(lstfp, "%04x  ", addr & 0xffff);
 		break;
-	case 1:
-		fprintf(lstfp, "%04x  ", sd_val & 0xffff);
+	case AD_ADDR:
+		fprintf(lstfp, "%04x  ", ad_addr & 0xffff);
+		op_cnt = 0;
 		break;
-	case 2:
-		fprintf(lstfp, "      ");
+	case AD_NONE:
+		fputs("      ", lstfp);
+		op_cnt = 0;
 		break;
-	case 3:
-		fprintf(lstfp, "%04x              ", sd_val & 0xffff);
-		goto no_data;
 	default:
-		fatal(F_INTERN, "invalid listflag for function lst_line");
+		fatal(F_INTERN, "invalid ad_mode for function lst_line");
 		break;
 	}
-	if (op_cnt >= 1)
-		fprintf(lstfp, "%02x ", ops[0] & 0xff);
-	else
-		fprintf(lstfp, "   ");
-	if (op_cnt >= 2)
-		fprintf(lstfp, "%02x ", ops[1] & 0xff);
-	else
-		fprintf(lstfp, "   ");
-	if (op_cnt >= 3)
-		fprintf(lstfp, "%02x ", ops[2] & 0xff);
-	else
-		fprintf(lstfp, "   ");
-	if (op_cnt >= 4)
-		fprintf(lstfp, "%02x ", ops[3] & 0xff);
-	else
-		fprintf(lstfp, "   ");
-no_data:
+	i = 0;
+	for (j = 0; j < 4; j++)
+		if (op_cnt-- > 0)
+			fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+		else
+			fputs("   ", lstfp);
 	fprintf(lstfp, "%6d %6d %s", c_line, s_line, line);
+	p_line++;
 	if (errnum) {
-		fprintf(errfp, "=> %s", errmsg[errnum]);
-		putc('\n', errfp);
+		fprintf(errfp, "=> %s\n", errmsg[errnum]);
 		errnum = 0;
 		p_line++;
 	}
-	sd_flag = 0;
-	p_line++;
-	if (op_cnt > 4 && sd_flag == 0) {
-		op_cnt -= 4;
-		i = 4;
-		sd_val = val;
-		while (op_cnt > 0) {
-			if (p_line >= ppl) {
-				lst_header();
-				lst_attl();
-			}
-			s_line++;
-			sd_val += 4;
-			fprintf(lstfp, "%04x  ", sd_val & 0xffff);
-			if (op_cnt-- > 0)
-				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
-			else
-				fprintf(lstfp, "   ");
-			if (op_cnt-- > 0)
-				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
-			else
-				fprintf(lstfp, "   ");
-			if (op_cnt-- > 0)
-				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
-			else
-				fprintf(lstfp, "   ");
-			if (op_cnt-- > 0)
-				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
-			else
-				fprintf(lstfp, "   ");
-			fprintf(lstfp, "%6d %6d\n", c_line, s_line);
-			p_line++;
+	while (op_cnt > 0) {
+		if (p_line >= ppl) {
+			lst_header();
+			lst_attl();
 		}
+		s_line++;
+		addr += 4;
+		fprintf(lstfp, "%04x  ", addr & 0xffff);
+		for (j = 0; j < 4; j++)
+			if (op_cnt-- > 0)
+				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+			else
+				fputs("   ", lstfp);
+		fprintf(lstfp, "%6d %6d\n", c_line, s_line);
+		p_line++;
 	}
+done:
+	ad_mode = AD_STD;
 }
 
 /*
@@ -276,16 +254,16 @@ void obj_header(void)
 {
 	switch (out_form) {
 	case OUTBIN:
-		bin_addr = wrt_addr = prg_addr;
+		bin_addr = wrt_addr = load_addr;
 		break;
 	case OUTMOS:
 		putc(0xff, objfp);
-		putc(prg_addr & 0xff, objfp);
-		putc(prg_addr >> 8, objfp);
-		bin_addr = wrt_addr = prg_addr;
+		putc(load_addr & 0xff, objfp);
+		putc(load_addr >> 8, objfp);
+		bin_addr = wrt_addr = load_addr;
 		break;
 	case OUTHEX:
-		hex_addr = prg_addr;
+		hex_addr = load_addr;
 		break;
 	}
 }
@@ -299,11 +277,12 @@ void obj_end(void)
 	case OUTBIN:
 	case OUTMOS:
 		if (!nofill_flag)
-			flush_bin();
+			fill_bin();
 		break;
 	case OUTHEX:
 		flush_hex();
-		fprintf(objfp, ":00000001FF\n");
+		hex_addr = start_addr;
+		eof_hex();
 		break;
 	}
 }
@@ -339,7 +318,7 @@ void obj_writeb(int op_cnt)
 	case OUTBIN:
 	case OUTMOS:
 		if (seq_flag) {
-			flush_bin();
+			fill_bin();
 			fwrite(ops, 1, op_cnt, objfp);
 			bin_addr += op_cnt;
 			wrt_addr = bin_addr;
@@ -387,7 +366,7 @@ void obj_fill_value(int count, int value)
 	case OUTBIN:
 	case OUTMOS:
 		if (seq_flag) {
-			flush_bin();
+			fill_bin();
 			bin_addr += count;
 			wrt_addr = bin_addr;
 			while (count--)
@@ -408,7 +387,7 @@ void obj_fill_value(int count, int value)
 /*
  *	fill binary object file up to the logical address with 0xff bytes
  */
-void flush_bin(void)
+void fill_bin(void)
 {
 	while (wrt_addr < bin_addr) {
 		putc(0xff, objfp);
@@ -417,30 +396,46 @@ void flush_bin(void)
 }
 
 /*
- *	create a hex record in ASCII and write into object file
+ *	create a hex end-of-file record in ASCII and write into object file
+ */
+void eof_hex(void)
+{
+	hex_cnt = 0;
+	hex_record(HEX_EOF);
+}
+
+/*
+ *	create a hex data record in ASCII and write into object file
  */
 void flush_hex(void)
+{
+	if (!hex_cnt)
+		return;
+	hex_record(HEX_DATA);
+	hex_addr += hex_cnt;
+	hex_cnt = 0;
+}
+
+/*
+ *	write a hex record in ASCII and write into object file
+ */
+void hex_record(int rec_type)
 {
 	char *p;
 	register int i;
 
-	if (!hex_cnt)
-		return;
 	p = hex_out;
 	*p++ = ':';
 	btoh((unsigned char) hex_cnt, &p);
 	btoh((unsigned char) (hex_addr >> 8), &p);
 	btoh((unsigned char) (hex_addr & 0xff), &p);
-	*p++ = '0';
-	*p++ = '0';
+	btoh((unsigned char) rec_type, &p);
 	for (i = 0; i < hex_cnt; i++)
 		btoh(hex_buf[i], &p);
-	btoh((unsigned char) chksum(), &p);
+	btoh((unsigned char) chksum(rec_type), &p);
 	*p++ = '\n';
 	*p = '\0';
 	fwrite(hex_out, 1, strlen(hex_out), objfp);
-	hex_addr += hex_cnt;
-	hex_cnt = 0;
 }
 
 /*
@@ -460,13 +455,14 @@ void btoh(unsigned char byte, char **p)
 /*
  *	compute checksum for Intel hex record
  */
-int chksum(void)
+int chksum(int rec_type)
 {
 	register int i, j, sum;
 
 	sum = hex_cnt;
 	sum += hex_addr >> 8;
 	sum += hex_addr & 0xff;
+	sum += rec_type;
 	for (i = 0; i < hex_cnt; i++) {
 		j = hex_buf[i];
 		sum += j & 0xff;

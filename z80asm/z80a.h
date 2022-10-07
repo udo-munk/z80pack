@@ -13,7 +13,7 @@
  *	22-FEB-2014 fixed is...() compiler warnings
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	28-OCT-2017 added variable symbol length and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
@@ -74,7 +74,7 @@ struct opc {
  */
 struct ope {
 	char *ope_name;		/* operand name */
-	unsigned char ope_sym;	/* symbol value operand */
+	unsigned char ope_sym;	/* operand symbol value */
 	unsigned char ope_type; /* operand type */
 };
 
@@ -119,7 +119,7 @@ struct inc {
 /*
  *	definition of operand symbols
  *	definitions for registers A, B, C, D, H, L and (HL)
- *	are defined as the bits used in operands and may not
+ *	are defined as the bits used in opcodes and may not
  *	be changed!
  */
 #define REGB		0	/* register B */
@@ -167,11 +167,19 @@ struct inc {
 #define OPE_UNDOC	1	/* undocumented operand */
 
 /*
- *	definition of operations sets
+ *	definition of operation sets
  */
 #define OPSET_PSD	0	/* pseudo ops */
 #define OPSET_Z80	1	/* Z80 opcodes */
 #define OPSET_8080	2	/* 8080 opcodes */
+
+/*
+ *	definition of address/data output modes for pseudo ops
+ */
+#define AD_STD		0	/* address from <addr>, data from <ops> */
+#define AD_ADDR		1	/* address from <ad_addr>, no data */
+#define AD_NONE		2	/* no address, no data */
+#define AD_SUPPR	3	/* suppress whole line */
 
 /*
  *	definition of error numbers for error messages in listfile

@@ -13,7 +13,7 @@
  *	22-FEB-2014 fixed is...() compiler warnings
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	28-OCT-2017 added variable symbol length and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
@@ -67,8 +67,8 @@ extern void a_sort_sym(int);
 
 static char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	"usage: z80asm -f[b|m|h] -s[n|a] -e<num> -h<num> -x -8 -u -v\n\
-              -ofile -l[file] -dsymbol ... file ...", /* 1 */
+	"usage: z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v\n\
+              -o<file> -l[<file>] -d<symbol> ... <file> ...", /* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s",		/* 4 */
@@ -199,7 +199,7 @@ void options(int argc, char *argv[])
 				break;
 			case 'e':
 				if (*++s == '\0') {
-					puts("symbol length missing in option -e");
+					puts("length missing in option -e");
 					usage();
 				}
 				symlen = atoi(s);
@@ -207,7 +207,7 @@ void options(int argc, char *argv[])
 				break;
 			case 'h':
 				if (*++s == '\0') {
-					puts("hex record length missing in option -h");
+					puts("length missing in option -h");
 					usage();
 				}
 				hexlen = atoi(s);
@@ -231,7 +231,7 @@ void options(int argc, char *argv[])
 		i++;
 	}
 	if (i == 0) {
-		printf("no input file\n");
+		puts("no input file");
 		usage();
 	}
 }
@@ -415,11 +415,11 @@ int p2_line(void)
 			if (op->op_type == OP_END)
 				return(0);
 		} else {
-			sd_flag = 2;
+			ad_mode = AD_NONE;
 			lst_line(0, 0);
 		}
 	} else {
-		sd_flag = 2;
+		ad_mode = AD_NONE;
 		lst_line(0, 0);
 	}
 	return(1);
@@ -482,8 +482,8 @@ void get_fn(char *dest, char *src, char *ext)
 	while ((i++ < LENFN) && (*sp != '\0'))
 		*dp++ = *sp++;
 	*dp = '\0';
-	if ((strrchr(dest,'.') == NULL) &&
-	    (strlen(dest) <= (LENFN - strlen(ext))))
+	if ((strrchr(dest, '.') == NULL)
+	    && (strlen(dest) <= (LENFN - strlen(ext))))
 		strcat(dest, ext);
 }
 

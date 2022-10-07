@@ -13,7 +13,7 @@
  *	22-FEB-2014 fixed is...() compiler warnings
  *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
  *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
+ *	28-OCT-2017 added variable symbol length and other improvements
  *	15-MAY-2018 mark unreferenced symbols in listing
  *	30-JUL-2021 fix verbose option
  *	28-JAN-2022 added syntax check for OUT (n),A
@@ -61,7 +61,7 @@ int op_opset(int op_code, int dummy)
 {
 	UNUSED(dummy);
 
-	sd_flag = 2;
+	ad_mode = AD_NONE;
 	switch (op_code) {
 	case 1:				/* .8080 */
 		opset = OPSET_8080;
@@ -91,13 +91,13 @@ int op_org(int dummy1, int dummy2)
 	}
 	i = eval(operand);
 	if (pass == 1) {		/* PASS 1 */
-		if (!prg_flag) {
-			prg_addr = i;
-			prg_flag = 1;
+		if (!load_flag) {
+			load_addr = i;
+			load_flag = 1;
 		}
 	} else {			/* PASS 2 */
 		obj_org(i);
-		sd_flag = 2;
+		ad_mode = AD_NONE;
 	}
 	rpc = pc = i;
 	return(0);
@@ -116,7 +116,7 @@ int op_phase(int dummy1, int dummy2)
 	else {
 		phs_flag = 1;
 		pc = eval(operand);
-		sd_flag = 2;
+		ad_mode = AD_NONE;
 	}
 	return(0);
 }
@@ -134,7 +134,7 @@ int op_dephase(int dummy1, int dummy2)
 	else {
 		phs_flag = 0;
 		pc = rpc;
-		sd_flag = 2;
+		ad_mode = AD_NONE;
 	}
 	return(0);
 }
@@ -154,7 +154,7 @@ int op_radix(int dummy1, int dummy2)
 		asmerr(E_VALOUT);
 	else
 		radix = i;
-	sd_flag = 2;
+	ad_mode = AD_NONE;
 	return(0);
 }
 
@@ -168,14 +168,14 @@ int op_equ(int dummy1, int dummy2)
 
 	if (pass == 1) {		/* PASS 1 */
 		if (get_sym(label) == NULL) {
-			sd_val = eval(operand);
-			if (put_sym(label, sd_val))
+			ad_addr = eval(operand);
+			if (put_sym(label, ad_addr))
 				fatal(F_OUTMEM, "symbols");
 		} else
 			asmerr(E_MULSYM);
 	} else {			/* PASS 2 */
-		sd_flag = 1;
-		sd_val = eval(operand);
+		ad_mode = AD_ADDR;
+		ad_addr = eval(operand);
 	}
 	return(0);
 }
@@ -188,9 +188,9 @@ int op_dl(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	sd_flag = 1;
-	sd_val = eval(operand);
-	if (put_sym(label, sd_val))
+	ad_mode = AD_ADDR;
+	ad_addr = eval(operand);
+	if (put_sym(label, ad_addr))
 		fatal(F_OUTMEM, "symbols");
 	return(0);
 }
@@ -201,7 +201,7 @@ int op_dl(int dummy1, int dummy2)
 int op_ds(int dummy1, int dummy2)
 {
 	register char *p, *p1, *p2;
-	register int cnt, val;
+	register int count, value;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -210,25 +210,25 @@ int op_ds(int dummy1, int dummy2)
 	if (!*p)
 		asmerr(E_MISOPE);
 	else {
-		sd_val = pc;
-		sd_flag = 3;
+		ad_addr = pc;
+		ad_mode = AD_ADDR;
 		if ((p1 = strchr(operand, ','))) {
 			p2 = tmp;
 			while (*p != ',')
 				*p2++ = *p++;
 			*p2 = '\0';
-			cnt = eval(tmp);
+			count = eval(tmp);
 			if (pass == 2) {
-				val = eval(p1 + 1);
-				obj_fill_value(cnt, val);
+				value = eval(p1 + 1);
+				obj_fill_value(count, value);
 			}
 		} else {
-			cnt = eval(operand);
+			count = eval(operand);
 			if (pass == 2)
-				obj_fill(cnt);
+				obj_fill(count);
 		}
-		pc += cnt;
-		rpc += cnt;
+		pc += count;
+		rpc += count;
 	}
 	return(0);
 }
@@ -387,7 +387,7 @@ int op_misc(int op_code, int dummy)
 
 	UNUSED(dummy);
 
-	sd_flag = 2;
+	ad_mode = AD_NONE;
 	switch(op_code) {
 	case 1:				/* EJECT */
 		if (pass == 2)
@@ -454,7 +454,7 @@ int op_misc(int op_code, int dummy)
 				printf("   Include %s\n", fn);
 			p1_file(fn);
 		} else {		/* PASS 2 */
-			sd_flag = 2;
+			ad_mode = AD_NONE;
 			lst_line(0, 0);
 			if (ver_flag)
 				printf("   Include %s\n", fn);
@@ -470,7 +470,7 @@ int op_misc(int op_code, int dummy)
 			lst_header();
 			lst_attl();
 		}
-		sd_flag = 4;
+		ad_mode = AD_SUPPR;
 		break;
 	case 7:				/* TITLE */
 		if (pass == 2) {
@@ -616,7 +616,7 @@ int op_cond(int op_code, int dummy)
 		fatal(F_INTERN, "invalid opcode for function op_cond");
 		break;
 	}
-	sd_flag = 2;
+	ad_mode = AD_NONE;
 	return(0);
 }
 
@@ -627,7 +627,7 @@ int op_glob(int op_code, int dummy)
 {
 	UNUSED(dummy);
 
-	sd_flag = 2;
+	ad_mode = AD_NONE;
 	switch(op_code) {
 	case 1:				/* EXTRN, EXTERNAL, EXT */
 		break;
@@ -649,6 +649,6 @@ int op_end(int dummy1, int dummy2)
 	UNUSED(dummy2);
 
 	if (pass == 2 && *operand)
-		(void) eval(operand);
+		start_addr = eval(operand);
 	return(0);
 }
