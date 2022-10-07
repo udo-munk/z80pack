@@ -6,8 +6,8 @@ z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v
 A maximum of 512 source files is allowed. If the file name of a source
 doesn't have an extension the default extension ".asm" will be appended.
 Source files have a maximum path length of 2048 characters. For relative
-paths an extension must be specified, because z80asm appends a default
-extension only when no '.' is found in the path.
+paths an extension must be specified, because z80asm assumes, that the
+part after the last '.' of a path is an extension!
 
 Option f:
 Format of the output file:
