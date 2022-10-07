@@ -218,9 +218,10 @@ int op_ds(int dummy1, int dummy2)
 				*p2++ = *p++;
 			*p2 = '\0';
 			cnt = eval(tmp);
-			val = eval(p1 + 1);
-			if (pass == 2)
+			if (pass == 2) {
+				val = eval(p1 + 1);
 				obj_fill_value(cnt, val);
+			}
 		} else {
 			cnt = eval(operand);
 			if (pass == 2)
@@ -636,5 +637,18 @@ int op_glob(int op_code, int dummy)
 		fatal(F_INTERN, "invalid opcode for function op_glob");
 		break;
 	}
+	return(0);
+}
+
+/*
+ *	END
+ */
+int op_end(int dummy1, int dummy2)
+{
+	UNUSED(dummy1);
+	UNUSED(dummy2);
+
+	if (pass == 2 && *operand)
+		(void) eval(operand);
 	return(0);
 }

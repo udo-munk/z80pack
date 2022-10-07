@@ -33,7 +33,7 @@ extern int op_opset(int, int), op_org(int, int), op_phase(int, int);
 extern int op_dephase(int, int), op_radix(int, int), op_equ(int, int);
 extern int op_dl(int, int), op_ds(int, int), op_db(int, int), op_dm(int, int);
 extern int op_dw(int, int), op_misc(int, int), op_cond(int, int);
-extern int op_glob(int, int);
+extern int op_glob(int, int), op_end(int, int);
 
 /* z80arfun.c */
 extern int op_1b(int, int), op_2b(int, int), op_im(int, int);
@@ -49,7 +49,7 @@ extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
 
 /*
  *	pseudo op table:
- *	includes entries for all common pseudo ops other than END
+ *	includes entries for all common pseudo ops
  *	must be sorted in ascending order!
  */
 struct opc opctab_psd[] = {
@@ -73,6 +73,7 @@ struct opc opctab_psd[] = {
 	{ "DW",		op_dw,		0,	0,	0	 },
 	{ "EJECT",	op_misc,	1,	0,	0	 },
 	{ "ELSE",	op_cond,	98,	0,	OP_COND	 },
+	{ "END",	op_end,		0,	0,	OP_END	 },
 	{ "ENDC",	op_cond,	99,	0,	OP_COND	 },
 	{ "ENDIF",	op_cond,	99,	0,	OP_COND	 },
 	{ "ENT",	op_glob,	2,	0,	0	 },

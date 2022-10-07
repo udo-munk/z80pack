@@ -322,8 +322,6 @@ int p1_line(void)
 	p = get_label(label, p);
 	p = get_opcode(opcode, p);
 	p = get_arg(operand, p);
-	if (gencode && strcmp(opcode, ENDFILE) == 0)
-		return(0);
 	if (*opcode) {
 		if ((op = search_op(opcode)) != NULL) {
 			if (gencode && *label && (op->op_type != OP_SET))
@@ -332,6 +330,8 @@ int p1_line(void)
 				i = (*op->op_fun)(op->op_c1, op->op_c2);
 				pc += i;
 				rpc += i;
+				if (op->op_type == OP_END)
+					return(0);
 			}
 		} else
 			asmerr(E_ILLOPC);
@@ -404,19 +404,16 @@ int p2_line(void)
 	p = get_label(label, p);
 	p = get_opcode(opcode, p);
 	p = get_arg(operand, p);
-	if (gencode && strcmp(opcode, ENDFILE) == 0) {
-		lst_line(pc, 0);
-		return(0);
-	}
 	if (*opcode) {
 		op = search_op(opcode);
-		if (gencode || (op->op_type == OP_COND))
+		if (gencode || (op->op_type == OP_COND)) {
 			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
-		if (gencode) {
 			lst_line(pc, op_count);
 			obj_writeb(op_count);
 			pc += op_count;
 			rpc += op_count;
+			if (op->op_type == OP_END)
+				return(0);
 		} else {
 			sd_flag = 2;
 			lst_line(0, 0);
