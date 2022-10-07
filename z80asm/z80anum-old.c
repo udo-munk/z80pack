@@ -39,9 +39,9 @@
 #define SS_POST		2
 
 /*
- *	standard operators: '(', ')', '*', '/', '%', '+', '-', '|', '&', '^', '~'
- *	other    operators: left shift '<', right shift '>', current position '$'
- *	other    tokens:    end of parsing 'X', numerical value 'N'
+ * standard operators: '(', ')', '*', '/', '%', '+', '-', '|', '&', '^', '~'
+ * other    operators: left shift '<', right shift '>', current position '$'
+ * other    tokens:    end of parsing 'X', numerical value 'N'
  */
 
 typedef struct node {
@@ -285,17 +285,16 @@ again:
 					if (code == '$')
 						continue;
 					value *= 16;
-					value += toupper((unsigned char) code)
+					value += code
 						 - ((code <= '9') ? '0' : '7');
 					index++;
 					continue;
-				} else if ((index > 0)
-					   && (toupper((unsigned char) code) == 'H')) {
+				} else if ((index > 0) && (code == 'H')) {
 					sstate = SS_POST;
 					continue;
 				}
 				break;
-			case SS_POST:	/* post processing, parsing position adjustment */
+			case SS_POST:	/* post processing, parsing pos adj. */
 				if ((type & C_OPE) == C_OPE) {
 					parsed_pos--;
 					return('N');
@@ -322,8 +321,7 @@ again:
 					index++;
 					continue;
 				} else if ((index > 0)
-					   && (toupper((unsigned char) code) == 'O'
-					       || toupper((unsigned char) code) == 'Q')) {
+					   && (code == 'O' || code == 'Q')) {
 					sstate = SS_POST;
 					continue;
 				}
@@ -354,8 +352,7 @@ again:
 					value += code - '0';
 					index++;
 					continue;
-				} else if ((index > 0)
-					   && (toupper((unsigned char) code) == 'B')) {
+				} else if ((index > 0) && (code == 'B')) {
 					sstate = SS_POST;
 					continue;
 				}
@@ -386,8 +383,10 @@ again:
 					value += code - '0';
 					index++;
 					continue;
-				} if ((index > 0) && ((code == 0)
-						      || ((type & C_OPE) == C_OPE))) {
+				}
+				if ((index > 0)
+				    && ((code == 0)
+					|| ((type & C_OPE) == C_OPE))) {
 					if ((type & C_OPE) == C_OPE)
 						parsed_pos--;
 					return('N');
@@ -427,7 +426,8 @@ again:
 				symbol[index++] = code;
 				continue;
 			}
-			if ((index > 0) && (((type & C_OPE) == C_OPE) || (code == 0))) {
+			if ((index > 0) && (((type & C_OPE) == C_OPE)
+					    || (code == 0))) {
 				symbol[index] = '\0';
 				value = getsymvalue(symbol);
 				if ((type & C_OPE) == C_OPE)
