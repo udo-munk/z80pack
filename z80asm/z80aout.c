@@ -147,7 +147,7 @@ void lst_line(int addr, int op_cnt)
 	i = 0;
 	for (j = 0; j < 4; j++)
 		if (op_cnt-- > 0)
-			fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+			fprintf(lstfp, "%02x ", ops[i++]);
 		else
 			fputs("   ", lstfp);
 	fprintf(lstfp, "%6d %6d %s", c_line, s_line, line);
@@ -167,7 +167,7 @@ void lst_line(int addr, int op_cnt)
 		fprintf(lstfp, "%04x  ", addr & 0xffff);
 		for (j = 0; j < 4; j++)
 			if (op_cnt-- > 0)
-				fprintf(lstfp, "%02x ", ops[i++] & 0xff);
+				fprintf(lstfp, "%02x ", ops[i++]);
 			else
 				fputs("   ", lstfp);
 		fprintf(lstfp, "%6d %6d\n", c_line, s_line);

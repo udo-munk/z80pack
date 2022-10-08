@@ -196,7 +196,7 @@ int get_token(void)
 			}
 			n = 0;
 			while (p1 < p2) {
-				if (*p1 == '$') {
+				if (*p1 == '$') {	/* digit grouping */
 					p1++;
 					continue;
 				}
@@ -226,16 +226,18 @@ int get_token(void)
 		goto finish;
 	}
 	switch (*s) {
-	case '\'':					/* string constant */
+	case '\'':					/* character constant */
 	case '"':
 		p1 = s;
-		n = 0;
+		n = m = 0;
 		while (*++s) {
 			if ((*s == *p1) && (*++s != *p1)) { /* double delim? */
 				tok_type = T_VAL;
 				tok_val = n;
 				goto finish;
 			}
+			if (m++ == 2)
+				return(E_VALOUT);
 			n <<= 8;
 			n |= (unsigned) *s;
 		}
@@ -359,11 +361,14 @@ int factor(int *resultp)
 		if ((err = get_token()))
 			return(err);
 		/*
-		 *	if an unary word operator is not followed by an
-		 *	operand and was found in the symbol table, take
-		 *	it as a symbol.
+		 *	if an unary word operator, that was found in the
+		 *	symbol table, is not followed by a <factor> excl.
+		 *	unary + and -, return the symbol value.
 		 */
-		if ((tok_type == T_EMPTY) && sp) {
+		if (sp && (tok_type != T_VAL) && (tok_type != T_LPAREN)
+		       && (tok_type != T_NOT) && (tok_type != T_HIGH)
+		       && (tok_type != T_LOW) && (tok_type != T_TYPE)
+		       && (tok_type != T_SYM)) {
 			*resultp = sp->sym_val;
 			return(E_NOERR);
 		}
@@ -393,11 +398,12 @@ int factor(int *resultp)
 		}
 		return(E_NOERR);
 	case T_SYM:
+		/* fallthrough */
 	default:
 		/*
 		 *	if the token is a T_SYM, or an unexpected word
 		 *	operator that was found in the symbol table,
-		 *	take it as a symbol
+		 *	return the symbol value.
 		 */
 		if (sp) {
 			*resultp = sp->sym_val;
@@ -484,22 +490,22 @@ int cmp_term(int *resultp)
 			return(err);
 		switch (opr_type) {
 		case T_EQ:
-			*resultp = (*resultp == value);
+			*resultp = (*resultp == value) ? -1 : 0;
 			break;
 		case T_NE:
-			*resultp = (*resultp != value);
+			*resultp = (*resultp != value) ? -1 : 0;
 			break;
 		case T_LT:
-			*resultp = (*resultp < value);
+			*resultp = (*resultp < value) ? -1 : 0;
 			break;
 		case T_LE:
-			*resultp = (*resultp <= value);
+			*resultp = (*resultp <= value) ? -1 : 0;
 			break;
 		case T_GT:
-			*resultp = (*resultp > value);
+			*resultp = (*resultp > value) ? -1 : 0;
 			break;
 		case T_GE:
-			*resultp = (*resultp >= value);
+			*resultp = (*resultp >= value) ? -1 : 0;
 			break;
 		default:
 			break;

@@ -64,7 +64,7 @@ CB:	LD	A,B		; Befehlsbyte aus B holen
 $DL18:	LD	A,(DE)		; naechstes Byte -> A
 	LD	B,A		; und in B retten
 	PUSH	DE		; Disassemblieradr. retten
-	LD	D,MNETAB > 8	; High-Byte Operatorentabelle -> D
+	LD	D,MNETAB >> 8	; High-Byte Operatorentabelle -> D
 	LD	E,0E8H		; DE = Pointer auf "SET"
 	CP	0C0H		; SET ?
 	JR	NC,$DL19
@@ -78,7 +78,7 @@ $DL18:	LD	A,(DE)		; naechstes Byte -> A
 	RRCA			; Division durch 2
 	ADD	A,CBMTAB & 0FFH ; zur Basis der CB-Mnemonics addieren
 	LD	E,A
-	LD	D,CBMTAB > 8	; DE = Pointer auf CB-Mnemonic
+	LD	D,CBMTAB >> 8	; DE = Pointer auf CB-Mnemonic
 $DL19:	CALL	TRBY		; Mnemonic ausgeben
 	POP	DE		; akt. Disassemblieradr. wieder -> DE
 	LD	A,B		; Byte wieder -> A
@@ -122,10 +122,10 @@ $DL23:	CP	0C0H		; > C0H ?
 	JR	$DL26		; Mnemonic ausgeben
 $DL24:	SUB	80H		; wenn > C0H, -80 -> Tabellenoperator
 $DL25:	LD	E,A		; Operator -> E
-	LD	D,CODTAB > 8	; High-Byte Operatortabelle -> D
+	LD	D,CODTAB >> 8	; High-Byte Operatortabelle -> D
 	LD	A,(DE)		; LSB Mnemonic-Adresse -> A
 	LD	E,A		; und nach E
-$DL26:	LD	D,MNETAB > 8	; MSB Mnemonic-Adresse -> D
+$DL26:	LD	D,MNETAB >> 8	; MSB Mnemonic-Adresse -> D
 	CALL	TRBY		; Mnemonic ausgeben
 	POP	DE		; akt. Disassemblieradr. wieder -> DE
 	LD	A,B		; Befehlsbyte wieder -> A
@@ -159,7 +159,7 @@ $DL51:	LD	A,17H		; ja, 17 = Register A ausgeben
 	JR	$DL31		; Operanden ausgeben
 $DL29:	SUB	80H		; wenn > C0, -80 -> Operandentabelle
 $DL30:	LD	E,A		; LSB Operandentabelle -> E
-	LD	D,OPETAB > 8	; MSB Operandentabelle -> D
+	LD	D,OPETAB >> 8	; MSB Operandentabelle -> D
 	LD	A,(DE)		; 1. Operanden -> A
 $DL31:	POP	DE		; akt. Disassemblieradr. wieder -> DE
 	CALL	PRO1		; 1. Operanden ausgeben
@@ -179,7 +179,7 @@ $DL32:	AND	7		; loesche Bits 3..7, -> 2. Operanden
 $DL33:	SUB	80H		; wenn > C0 : 80 abziehen
 $DL34:	ADD	A,80H		; LSB Operandentabelle -> A
 	LD	E,A		; und -> E
-	LD	D,OPETAB > 8	; MSB Operandentabelle -> D
+	LD	D,OPETAB >> 8	; MSB Operandentabelle -> D
 	LD	A,(DE)		; 2. Operanden -> A
 $DL35:	POP	DE		; akt. Disassemblieradr. wieder -> DE
 	SET	7,C		; Komma-Flag setzen
@@ -197,12 +197,12 @@ ED:	SUB	40H		; 40 vom 2. Byte subtrahieren
 $DL36:	SUB	20H		; aus 60..7F wird 00..20
 $DL37:	ADD	A,80H		; LSB Operatortabelle -> A
 	LD	E,A		; und -> E
-	LD	D,CODTAB > 8	; MSB Operatortabelle -> D
+	LD	D,CODTAB >> 8	; MSB Operatortabelle -> D
 	LD	A,(DE)		; LSB Mnemonic-Adresse -> A
 	CP	0FFH		; leer ?
 	JP	Z,ERRO		; ja, Fehler
 	LD	E,A		; nein, -> E
-	LD	D,MNETAB > 8	; MSB Mnemonic-Adresse -> D
+	LD	D,MNETAB >> 8	; MSB Mnemonic-Adresse -> D
 	CALL	TRBY		; Mnemonic ausgeben
 	POP	DE		; Disassemblieradr. wieder -> DE
 	LD	A,B		; Befehlsbyte wieder -> A
@@ -211,7 +211,7 @@ $DL37:	ADD	A,80H		; LSB Operatortabelle -> A
 	PUSH	DE		; Disassemblieradr. retten
 	SUB	40H		; LSB 1. Operanden in A
 	LD	E,A		; und -> E
-	LD	D,OP2TAB > 8	; MSB 2. Operanden -> D
+	LD	D,OP2TAB >> 8	; MSB 2. Operanden -> D
 	LD	A,(DE)		; 1. Operanden -> A
 	POP	DE		; akt. Disassemblieradr. wieder -> DE
 	CALL	PRO1		; 1. Operanden ausgeben
@@ -220,7 +220,7 @@ $DL37:	ADD	A,80H		; LSB Operatortabelle -> A
 	JP	NC,INAD		; ja, Workspace ausgeben und fertig
 	PUSH	DE		; akt. Disassemblieradr. retten
 	LD	E,A		; LSB Operandentabelle -> E
-	LD	D,OP2TAB > 8	; MSB Operandentabelle -> D
+	LD	D,OP2TAB >> 8	; MSB Operandentabelle -> D
 	LD	A,(DE)		; 2. Operanden -> A
 	SET	7,C		; Buchstabenflag setzen
 $DL52:	POP	DE		; akt. Disassemblieradr. retten
