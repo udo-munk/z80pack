@@ -363,7 +363,8 @@ int factor(int *resultp)
 		/*
 		 *	if an unary word operator, that was found in the
 		 *	symbol table, is not followed by a <factor> excl.
-		 *	unary + and -, return the symbol value.
+		 *	unary + and - (which are also binary), return the
+		 *	symbol value.
 		 */
 		if (sp && (tok_type != T_VAL) && (tok_type != T_LPAREN)
 		       && (tok_type != T_NOT) && (tok_type != T_HIGH)
