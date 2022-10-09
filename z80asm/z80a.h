@@ -28,6 +28,7 @@
 #define READA		"r"	/* file open mode read ascii */
 #define WRITEA		"w"	/* file open mode write ascii */
 #define WRITEB		"wb"	/* file open mode write binary */
+#define PATHSEP		'/'	/* directory separator in paths */
 
 /*
  *	various constants
@@ -203,6 +204,7 @@ struct inc {
 #define E_MISPHS	16	/* missing .PHASE at .DEPHASE */
 #define E_DIVBY0	17	/* division by zero */
 #define E_INVEXP	18	/* invalid expression */
+#define E_BFRORG	19	/* code before first ORG (binary output) */
 
 /*
  *	definition of fatal errors
@@ -213,3 +215,8 @@ struct inc {
 #define F_FOPEN		3	/* can't open file */
 #define F_INTERN	4	/* internal error */
 #define F_HEXLEN	5	/* hex record length out of range */
+
+/*
+ *	macro for declaring unused function parameters
+ */
+#define UNUSED(x)	(void)(x)

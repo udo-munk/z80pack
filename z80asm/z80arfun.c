@@ -51,8 +51,6 @@ extern int chk_sbyte(int);
 /* z80atab.c */
 extern int get_reg(char *);
 
-#define UNUSED(x)	(void)(x)
-
 /*
  *	process 1byte opcodes without arguments
  */

@@ -60,7 +60,8 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"ORG in .PHASE block",		/* 15 */
 	"missing .PHASE",		/* 16 */
 	"division by zero",		/* 17 */
-	"invalid expression"		/* 18 */
+	"invalid expression",		/* 18 */
+	"object code before ORG"	/* 19 */
 };
 
 /*
@@ -69,7 +70,7 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 #define	HEX_DATA	0
 #define HEX_EOF		1
 
-static int seq_flag;			/* flag for sequential ORG */
+static int nseq_flag;			/* flag for non-sequential ORG */
 static int bin_addr;			/* current logical file address */
 static int wrt_addr;			/* current address written to file */
 static unsigned short hex_addr;		/* current address in hex record */
@@ -254,16 +255,13 @@ void obj_header(void)
 {
 	switch (out_form) {
 	case OUTBIN:
-		bin_addr = wrt_addr = load_addr;
 		break;
 	case OUTMOS:
 		putc(0xff, objfp);
 		putc(load_addr & 0xff, objfp);
 		putc(load_addr >> 8, objfp);
-		bin_addr = wrt_addr = load_addr;
 		break;
 	case OUTHEX:
-		hex_addr = load_addr;
 		break;
 	}
 }
@@ -276,7 +274,7 @@ void obj_end(void)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		if (!nofill_flag)
+		if (!nofill_flag && !(load_flag && (wrt_addr < load_addr)))
 			fill_bin();
 		break;
 	case OUTHEX:
@@ -295,7 +293,9 @@ void obj_org(int addr)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		seq_flag = (addr >= bin_addr);
+		nseq_flag = (addr < bin_addr);
+		if (load_flag && (wrt_addr < load_addr))
+			wrt_addr = addr;
 		bin_addr = addr;
 		break;
 	case OUTHEX:
@@ -317,13 +317,18 @@ void obj_writeb(int op_cnt)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		if (seq_flag) {
-			fill_bin();
-			fwrite(ops, 1, op_cnt, objfp);
-			bin_addr += op_cnt;
-			wrt_addr = bin_addr;
-		} else
+		if (nseq_flag)
 			asmerr(E_NSQWRT);
+		else {
+			if (load_flag && (wrt_addr < load_addr))
+				asmerr(E_BFRORG);
+			else {
+				fill_bin();
+				fwrite(ops, 1, op_cnt, objfp);
+				wrt_addr += op_cnt;
+			}
+			bin_addr += op_cnt;
+		}
 		break;
 	case OUTHEX:
 		for (i = 0; op_cnt; op_cnt--) {
@@ -345,7 +350,7 @@ void obj_fill(int count)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		if (seq_flag)
+		if (!nseq_flag)
 			bin_addr += count;
 		break;
 	case OUTHEX:
@@ -360,22 +365,30 @@ void obj_fill(int count)
  */
 void obj_fill_value(int count, int value)
 {
+	register int i;
+
 	if (!count)
 		return;
+	i = count;
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		if (seq_flag) {
-			fill_bin();
-			bin_addr += count;
-			wrt_addr = bin_addr;
-			while (count--)
-				putc(value, objfp);
-		} else
+		if (nseq_flag)
 			asmerr(E_NSQWRT);
+		else {
+			if (load_flag && (wrt_addr < load_addr))
+				asmerr(E_BFRORG);
+			else {
+				fill_bin();
+				while (i--)
+					putc(value, objfp);
+				wrt_addr += count;
+			}
+			bin_addr += count;
+		}
 		break;
 	case OUTHEX:
-		while (count--) {
+		while (i--) {
 			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = value;

@@ -349,6 +349,7 @@ void pass2(void)
 	rpc = pc = 0;
 	phs_flag = 0;
 	fi = 0;
+	ad_mode = AD_STD;
 	if (ver_flag)
 		puts("Pass 2");
 	obj_header();
@@ -404,8 +405,8 @@ int p2_line(void)
 		op = search_op(opcode);
 		if (gencode || (op->op_type == OP_COND)) {
 			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
-			lst_line(pc, op_count);
 			obj_writeb(op_count);
+			lst_line(pc, op_count);
 			pc += op_count;
 			rpc += op_count;
 			if (op->op_type == OP_END)
@@ -433,7 +434,11 @@ void open_o_files(char *source)
 
 	if (*objfn == '\0')
 		strcpy(objfn, source);
-	if ((p = strrchr(objfn, '.')) != NULL) {
+	if ((p = strrchr(objfn, PATHSEP)))
+		p++;
+	else
+		p = objfn;
+	if ((p = strrchr(p, '.')) != NULL) {
 		if (out_form == OUTHEX)
 			strcpy(p, OBJEXTHEX);
 		else
@@ -454,7 +459,11 @@ void open_o_files(char *source)
 	if (list_flag) {
 		if (*lstfn == '\0')
 			strcpy(lstfn, source);
-		if ((p = strrchr(lstfn, '.')) != NULL)
+		if ((p = strrchr(lstfn, PATHSEP)))
+			p++;
+		else
+			p = lstfn;
+		if ((p = strrchr(p, '.')) != NULL)
 			strcpy(p, LSTEXT);
 		else
 			strcat(lstfn, LSTEXT);
@@ -478,7 +487,11 @@ void get_fn(char *dest, char *src, char *ext)
 	while ((i++ < LENFN) && (*sp != '\0'))
 		*dp++ = *sp++;
 	*dp = '\0';
-	if ((strrchr(dest, '.') == NULL)
+	if ((dp = strrchr(dest, PATHSEP)))
+		dp++;
+	else
+		dp = dest;
+	if ((strrchr(dp, '.') == NULL)
 	    && (strlen(dest) <= (LENFN - strlen(ext))))
 		strcat(dest, ext);
 }

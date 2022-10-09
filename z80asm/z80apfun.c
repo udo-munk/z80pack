@@ -53,8 +53,6 @@ extern void obj_fill_value(int, int);
 extern struct sym *get_sym(char *);
 extern int put_sym(char *, int);
 
-#define UNUSED(x)	(void)(x)
-
 /*
  *	.8080 and .Z80
  */
