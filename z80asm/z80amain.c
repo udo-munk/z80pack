@@ -349,6 +349,7 @@ void pass2(void)
 	rpc = pc = 0;
 	phs_flag = 0;
 	fi = 0;
+	ad_mode = AD_STD;
 	if (ver_flag)
 		puts("Pass 2");
 	obj_header();
@@ -404,8 +405,8 @@ int p2_line(void)
 		op = search_op(opcode);
 		if (gencode || (op->op_type == OP_COND)) {
 			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
-			lst_line(pc, op_count);
 			obj_writeb(op_count);
+			lst_line(pc, op_count);
 			pc += op_count;
 			rpc += op_count;
 			if (op->op_type == OP_END)

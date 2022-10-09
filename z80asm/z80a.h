@@ -203,6 +203,7 @@ struct inc {
 #define E_MISPHS	16	/* missing .PHASE at .DEPHASE */
 #define E_DIVBY0	17	/* division by zero */
 #define E_INVEXP	18	/* invalid expression */
+#define E_BFRORG	19	/* code before first ORG (binary output) */
 
 /*
  *	definition of fatal errors
