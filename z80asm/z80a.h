@@ -214,3 +214,8 @@ struct inc {
 #define F_FOPEN		3	/* can't open file */
 #define F_INTERN	4	/* internal error */
 #define F_HEXLEN	5	/* hex record length out of range */
+
+/*
+ *	macro for declaring unused function parameters
+ */
+#define UNUSED(x)	(void)(x)
