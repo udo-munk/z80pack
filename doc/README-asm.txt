@@ -38,7 +38,7 @@ that single parameter DEFS's at the end of the source file won't fill up
 the output file with 0xff's.
 Useful to make CP/M BIOS's, where unallocated data doesn't need to be a
 part of the system image, fit on the system tracks.
-Only valid for binary output file formats.
+This option is a no-op for Intel hex output.
 
 Option 8:
 Change default instruction set to 8080.
@@ -75,11 +75,11 @@ Definition of symbols and allocation of memory:
 	 .DEPHASE               - end of logical phase block
 <symbol> EQU    <expression>    - define constant symbol
 <symbol> DEFL   <expression>    - define variable symbol
-<symbol> DEFB   <exp,'str',..>  - write bytes in memory
-<symbol> DEFW   <exp,exp..>     - write words (16 bits) in memory
-<symbol> DEFM   <'string'>      - write character string in memory
-<symbol> DEFC   <'string'>      - as DEFM, but bit 7 in the last char is set
-<symbol> DEFZ   <'string'>      - as DEFM, but an extra zero byte is added
+<symbol> DEFB   <exp,'str',...> - write bytes into memory
+<symbol> DEFM   <exp,'str',...> - write characters into memory (same as DEFB)
+<symbol> DEFC   <exp,'str',...> - as DEFM, but bit 7 in the last byte is set
+<symbol> DEFZ   <exp,'str',...> - as DEFM, but an extra zero byte is added
+<symbol> DEFW   <exp,exp...>    - write words (16 bits) into memory
 <symbol> DEFS   <exp>[,<exp>]   - reserve space in memory, opt. initialized
 
 The aliases ASET (and SET in 8080 mode) for DEFL, DB for DEFB, DC for

@@ -38,6 +38,7 @@ extern void p2_file(char *);
 
 /* z80anum.c */
 extern int eval(char *);
+extern int chk_byte(int);
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -234,16 +235,15 @@ int op_ds(int dummy1, int dummy2)
 }
 
 /*
- *	DEFB and DB
+ *	DEFB, DB, DEFM, DEFC, DC, DEFZ
  */
-int op_db(int dummy1, int dummy2)
+int op_db(int op_code, int dummy)
 {
 	register int i, j;
 	register char *p;
 	register char *s;
 
-	UNUSED(dummy1);
-	UNUSED(dummy2);
+	UNUSED(dummy);
 
 	i = 0;
 	p = operand;
@@ -281,7 +281,7 @@ int op_db(int dummy1, int dummy2)
 			*s = '\0';
 			if (s != tmp) {
 				if (pass == 2)
-					ops[i] = eval(tmp);
+					ops[i] = chk_byte(eval(tmp));
 				if (++i >= OPCARRAY)
 				    fatal(F_INTERN, "op-code buffer overflow");
 			}
@@ -289,41 +289,8 @@ int op_db(int dummy1, int dummy2)
 		if (*p == ',')
 			p++;
 	}
-delim_error:
-	return(i);
-}
-
-/*
- *	DEFM, DEFC, DC, DEFZ
- */
-int op_dm(int op_code, int dummy)
-{
-	register int i;
-	register char *p;
-
-	UNUSED(dummy);
-
-	i = 0;
-	p = operand;
-	if (*p != STRDEL && *p != STRDEL2) {
-		asmerr(E_MISDEL);
-		return(0);
-	}
-	p++;
-	while (1) {
-		/* check for double delim */
-		if ((*p == *operand) && (*++p != *operand))
-			break;
-		if (*p == '\n' || *p == '\0') {
-			asmerr(E_MISDEL);
-			break;
-		}
-		ops[i++] = *p++;
-		if (i >= OPCARRAY)
-			fatal(F_INTERN, "op-code buffer overflow");
-	}
 	switch (op_code) {
-	case 1:				/* DEFM */
+	case 1:				/* DEFB, DB, DEFM */
 		break;
 	case 2:				/* DEFC, DC */
 		if (i)
@@ -335,8 +302,9 @@ int op_dm(int op_code, int dummy)
 			fatal(F_INTERN, "op-code buffer overflow");
 		break;
 	default:
-		fatal(F_INTERN, "invalid opcode for function op_dm");
+		fatal(F_INTERN, "invalid opcode for function op_db");
 	}
+delim_error:
 	return(i);
 }
 

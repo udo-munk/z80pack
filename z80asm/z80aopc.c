@@ -31,9 +31,9 @@
 /* z80apfun.c */
 extern int op_opset(int, int), op_org(int, int), op_phase(int, int);
 extern int op_dephase(int, int), op_radix(int, int), op_equ(int, int);
-extern int op_dl(int, int), op_ds(int, int), op_db(int, int), op_dm(int, int);
-extern int op_dw(int, int), op_misc(int, int), op_cond(int, int);
-extern int op_glob(int, int), op_end(int, int);
+extern int op_dl(int, int), op_ds(int, int), op_db(int, int), op_dw(int, int);
+extern int op_misc(int, int), op_cond(int, int), op_glob(int, int);
+extern int op_end(int, int);
 
 /* z80arfun.c */
 extern int op_1b(int, int), op_2b(int, int), op_im(int, int);
@@ -60,15 +60,15 @@ struct opc opctab_psd[] = {
 	{ ".Z80",	op_opset,	2,	0,	0	 },
 	{ "ASET",	op_dl,		0,	0,	OP_SET	 },
 	{ "COND",	op_cond,	5,	0,	OP_COND	 },
-	{ "DB",		op_db,		0,	0,	0	 },
-	{ "DC",		op_dm,		2,	0,	0	 },
-	{ "DEFB",	op_db,		0,	0,	0	 },
-	{ "DEFC",	op_dm,		2,	0,	0	 },
+	{ "DB",		op_db,		1,	0,	0	 },
+	{ "DC",		op_db,		2,	0,	0	 },
+	{ "DEFB",	op_db,		1,	0,	0	 },
+	{ "DEFC",	op_db,		2,	0,	0	 },
 	{ "DEFL",	op_dl,		0,	0,	OP_SET	 },
-	{ "DEFM",	op_dm,		1,	0,	0	 },
+	{ "DEFM",	op_db,		1,	0,	0	 },
 	{ "DEFS",	op_ds,		0,	0,	0	 },
 	{ "DEFW",	op_dw,		0,	0,	0	 },
-	{ "DEFZ",	op_dm,		3,	0,	0	 },
+	{ "DEFZ",	op_db,		3,	0,	0	 },
 	{ "DS",		op_ds,		0,	0,	0	 },
 	{ "DW",		op_dw,		0,	0,	0	 },
 	{ "EJECT",	op_misc,	1,	0,	0	 },

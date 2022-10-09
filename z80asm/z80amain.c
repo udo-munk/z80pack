@@ -219,10 +219,6 @@ void options(int argc, char *argv[])
 				printf("unknown option %c\n", *s);
 				usage();
 			}
-	if (nofill_flag && !((out_form == OUTBIN) || (out_form == OUTMOS))) {
-		puts("option -x only allowed with binary output");
-		usage();
-	}
 	i = 0;
 	while ((argc--) && (i < MAXFN)) {
 		if ((infiles[i] = malloc(LENFN + 1)) == NULL)
