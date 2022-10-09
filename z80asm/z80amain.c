@@ -434,7 +434,11 @@ void open_o_files(char *source)
 
 	if (*objfn == '\0')
 		strcpy(objfn, source);
-	if ((p = strrchr(objfn, '.')) != NULL) {
+	if ((p = strrchr(objfn, PATHSEP)))
+		p++;
+	else
+		p = objfn;
+	if ((p = strrchr(p, '.')) != NULL) {
 		if (out_form == OUTHEX)
 			strcpy(p, OBJEXTHEX);
 		else
@@ -455,7 +459,11 @@ void open_o_files(char *source)
 	if (list_flag) {
 		if (*lstfn == '\0')
 			strcpy(lstfn, source);
-		if ((p = strrchr(lstfn, '.')) != NULL)
+		if ((p = strrchr(lstfn, PATHSEP)))
+			p++;
+		else
+			p = lstfn;
+		if ((p = strrchr(p, '.')) != NULL)
 			strcpy(p, LSTEXT);
 		else
 			strcat(lstfn, LSTEXT);
@@ -479,7 +487,11 @@ void get_fn(char *dest, char *src, char *ext)
 	while ((i++ < LENFN) && (*sp != '\0'))
 		*dp++ = *sp++;
 	*dp = '\0';
-	if ((strrchr(dest, '.') == NULL)
+	if ((dp = strrchr(dest, PATHSEP)))
+		dp++;
+	else
+		dp = dest;
+	if ((strrchr(dp, '.') == NULL)
 	    && (strlen(dest) <= (LENFN - strlen(ext))))
 		strcat(dest, ext);
 }
