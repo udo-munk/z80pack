@@ -101,7 +101,7 @@ void cromemco_tuart_0a_baud_out(BYTE data)
 
 BYTE cromemco_tuart_0a_data_in(void)
 {
-	BYTE data;
+	int data;
 	static BYTE last;
 
 	uart0a_rda = 0;
@@ -114,7 +114,7 @@ BYTE cromemco_tuart_0a_data_in(void)
 
 	/* process read data */
 	last = data;
-	return(data);
+	return((BYTE) data);
 }
 
 void cromemco_tuart_0a_data_out(BYTE data)
@@ -258,7 +258,7 @@ void cromemco_tuart_1a_baud_out(BYTE data)
 
 BYTE cromemco_tuart_1a_data_in(void)
 {
-	BYTE data;
+	int data;
 	static BYTE last;
 
 	uart1a_rda = 0;
@@ -270,7 +270,7 @@ BYTE cromemco_tuart_1a_data_in(void)
 	}
 
 	last = data;
-	return(data);
+	return((BYTE) data);
 }
 
 void cromemco_tuart_1a_data_out(BYTE data)
@@ -371,7 +371,7 @@ void cromemco_tuart_1b_baud_out(BYTE data)
 
 BYTE cromemco_tuart_1b_data_in(void)
 {
-	BYTE data;
+	int data;
 	static BYTE last;
 
 	uart1b_rda = 0;
@@ -383,7 +383,7 @@ BYTE cromemco_tuart_1b_data_in(void)
 	}
 
 	last = data;
-	return(data);
+	return((BYTE) data);
 }
 
 void cromemco_tuart_1b_data_out(BYTE data)
