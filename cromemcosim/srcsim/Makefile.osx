@@ -47,6 +47,7 @@ OBJ =   sim0.o \
 	diskmanager.o \
 	cromemco-tu-art.o \
 	cromemco-fdc.o \
+	cromemco-wdi.o \
 	cromemco-dazzler.o \
 	cromemco-88ccc.o \
 	cromemco-d+7a.o \
@@ -133,6 +134,9 @@ cromemco-tu-art.o : ../../iodevices/cromemco-tu-art.c log.h
 
 cromemco-fdc.o : ../../iodevices/cromemco-fdc.c log.h
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-fdc.c
+
+cromemco-wdi.o : ../../iodevices/cromemco-wdi.c sim.h simglb.h memory.h
+	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-wdi.c
 
 cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
 	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
