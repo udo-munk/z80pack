@@ -94,7 +94,6 @@ struct opr oprtab[] = {
 	{ "OR",		T_OR		},
 	{ "SHL",	T_SHL		},
 	{ "SHR",	T_SHR		},
-	{ "TYPE",	T_TYPE		},
 	{ "XOR",	T_XOR		}
 };
 
@@ -133,7 +132,7 @@ int search_opr(char *s)
 			low = mid + 1;
 		else
 			return(mid->opr_type);
-		}
+	}
 	return(T_SYM);
 }
 
@@ -153,7 +152,7 @@ int get_token(void)
 	tok_val = 0;
 	while (isspace((unsigned char) *s))		/* skip white space */
 		s++;
-	if (!*s) {					/* nothing there? */
+	if (*s == '\0') {				/* nothing there? */
 		tok_type = T_EMPTY;
 		goto finish;
 	}
@@ -182,11 +181,11 @@ int get_token(void)
 	if (p1 != p2) {					/* a number/symbol */
 		if (isdigit((unsigned char) *p1)) {	/* a number */
 			p2--;
-			if ((radix < 12) && (*p2 == 'B'))
+			if (radix < 12 && *p2 == 'B')
 				base = 2;
-			else if ((*p2 == 'O') || (*p2 == 'Q'))
+			else if (*p2 == 'O' || *p2 == 'Q')
 				base = 8;
-			else if ((radix < 14) && (*p2 == 'D'))
+			else if (radix < 14 && *p2 == 'D')
 				base = 10;
 			else if (*p2 == 'H')
 				base = 16;
@@ -230,8 +229,8 @@ int get_token(void)
 	case '"':
 		p1 = s;
 		n = m = 0;
-		while (*++s) {
-			if ((*s == *p1) && (*++s != *p1)) { /* double delim? */
+		while (*++s != '\0') {
+			if (*s == *p1 && *++s != *p1) {	/* double delim? */
 				tok_type = T_VAL;
 				tok_val = n;
 				goto finish;
@@ -246,8 +245,7 @@ int get_token(void)
 		if (*(s + 1) == '=') {
 			s++;
 			tok_type = T_NE;
-		}
-		else
+		} else
 			return(E_INVEXP);
 		break;
 	case '&':
@@ -356,7 +354,6 @@ int factor(int *resultp)
 	case T_NOT:
 	case T_HIGH:
 	case T_LOW:
-	case T_TYPE:
 		opr_type = tok_type;
 		if ((err = get_token()))
 			return(err);
@@ -366,10 +363,9 @@ int factor(int *resultp)
 		 *	unary + and - (which are also binary), return the
 		 *	symbol value.
 		 */
-		if (sp && (tok_type != T_VAL) && (tok_type != T_LPAREN)
-		       && (tok_type != T_NOT) && (tok_type != T_HIGH)
-		       && (tok_type != T_LOW) && (tok_type != T_TYPE)
-		       && (tok_type != T_SYM)) {
+		if (sp != NULL && (tok_type != T_VAL) && (tok_type != T_LPAREN)
+			       && (tok_type != T_NOT) && (tok_type != T_HIGH)
+			       && (tok_type != T_LOW) && (tok_type != T_SYM)) {
 			*resultp = sp->sym_val;
 			return(E_NOERR);
 		}
@@ -390,9 +386,6 @@ int factor(int *resultp)
 			break;
 		case T_LOW:
 			*resultp = value & 0xff;
-			break;
-		case T_TYPE:
-			*resultp = 0;		/* TYPE is always absolute */
 			break;
 		default:
 			break;
@@ -544,26 +537,24 @@ int expr(int *resultp)
 
 int top_expr(int *resultp)
 {
-	int err;
-
-	if (tok_type == T_NUL) {
-		if ((err = get_token()))
-			return(err);
-		else {
-			*resultp = (tok_type == T_EMPTY);
-			return(E_NOERR);
-		}
-	}
-	else
-		return expr(resultp);
+	if (tok_type == T_NUL && get_sym(tok_sym) == NULL) {
+		*resultp = (*scan_pos == '\0') ? -1 : 0;
+		tok_type = T_EMPTY;
+		return(E_NOERR);
+	} else
+		return(expr(resultp));
 }
 
-int eval(char *str)
+int eval(char *s)
 {
 	int result, err;
 
+	if (s == NULL) {
+		asmerr(E_MISOPE);
+		return(0);
+	}
 	result = 0;
-	scan_pos = str;
+	scan_pos = s;
 	if ((err = get_token()) || (err = top_expr(&result))) {
 		asmerr(err);
 		return(0);

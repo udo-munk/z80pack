@@ -103,8 +103,17 @@ IF      <expression>    - assemble if expression evaluates to not 0
 IFF     <expression>    - assemble if expression evaluates to 0
 IFDEF   <symbol>        - assemble if symbol defined
 IFNDEF  <symbol>        - assemble if symbol not defined
-IFEQ    <exp1,exp2>     - assemble if equal
-IFNEQ   <exp1,exp2>     - assemble if not equal
+IFEQ    <exp1>,<exp2>   - assemble if values of expressions are equal
+IFNEQ   <exp1>,<exp2>   - assemble if values of expressions are not equal
+IF1                     - assemble if in pass 1
+IF2                     - assemble if in pass 2
+                          the '<' and '>' in the following pseudo ops
+                          are required
+IFB     <seq>           - assemble if char sequence inside <> is empty
+IFNB    <seq>           - assemble if char sequence inside <> is not empty
+IFIDN   <seq1>,<seq2>   - assemble if char sequences inside <> are equal
+IFDIF   <seq1>,<seq2>   - assemble if char sequences inside <> are not equal
+
 ELSE                    - else for all conditionals
 ENDIF                   - end of conditional assembly
 
@@ -134,7 +143,7 @@ Operator precedence for the parser from Thomas Eberhardt:
 
 NUL
 () [] {}
-unary + - ~ NOT HIGH LOW TYPE
+unary + - ~ NOT HIGH LOW
 * / MOD SHR >> SHL <<
 + -
 EQ = == NE <> != LT < LE <= GT > GE >=

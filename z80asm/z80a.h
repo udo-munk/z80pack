@@ -67,7 +67,7 @@ struct opc {
 	int (*op_fun) (int, int); /* function pointer code generation */
 	unsigned char op_c1;	/* first base opcode */
 	unsigned char op_c2;	/* second base opcode */
-	unsigned char op_type;	/* opcode type */
+	unsigned char op_flags;	/* opcode flags */
 };
 
 /*
@@ -76,7 +76,7 @@ struct opc {
 struct ope {
 	char *ope_name;		/* operand name */
 	unsigned char ope_sym;	/* operand symbol value */
-	unsigned char ope_type; /* operand type */
+	unsigned char ope_flags; /* operand flags */
 };
 
 /*
@@ -109,13 +109,13 @@ struct inc {
 };
 
 /*
- *	definition of opcode types
+ *	definition of opcode flags
  */
-#define OP_STD		0	/* nothing special */
-#define OP_UNDOC	1	/* undocumented opcode */
-#define OP_COND		2	/* concerns conditional assembly */
-#define OP_SET		3	/* assigns value to label */
-#define OP_END		4	/* end of source */
+#define OP_UNDOC	0x01	/* undocumented opcode */
+#define OP_COND		0x02	/* concerns conditional assembly */
+#define OP_SET		0x04	/* assigns value to label */
+#define OP_END		0x08	/* end of source */
+#define OP_NOPRE	0x10	/* no preprocessing of operand */
 
 /*
  *	definition of operand symbols
@@ -162,10 +162,9 @@ struct inc {
 #define NOREG		99	/* operand isn't register */
 
 /*
- *	definition of operand types
+ *	definition of operand flags
  */
-#define OPE_STD		0	/* nothing special */
-#define OPE_UNDOC	1	/* undocumented operand */
+#define OPE_UNDOC	0x01	/* undocumented operand */
 
 /*
  *	definition of operation sets

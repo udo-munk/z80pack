@@ -752,6 +752,10 @@ int eval(char *str)
 {
 	int entry;
 
+	if (str == NULL) {
+		asmerr(E_MISOPE);
+		return(0);
+	}
 	parser_init(str);
 	tok = parse();
 	entry = expr();

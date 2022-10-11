@@ -64,7 +64,7 @@ struct opc *search_op(char *op_name)
 				high = mid - 1;
 			else if (cond > 0)
 				low = mid + 1;
-			else if (!undoc_flag && (mid->op_type == OP_UNDOC))
+			else if (!undoc_flag && (mid->op_flags & OP_UNDOC))
 				return(NULL);
 			else
 				return(mid);
@@ -98,7 +98,7 @@ int get_reg(char *s)
 			high = mid - 1;
 		else if (cond > 0)
 			low = mid + 1;
-		else if (!undoc_flag && (mid->ope_type == OPE_UNDOC))
+		else if (!undoc_flag && (mid->ope_flags & OPE_UNDOC))
 			return(NOREG);
 		else
 			return(mid->ope_sym);
