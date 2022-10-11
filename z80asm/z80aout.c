@@ -125,7 +125,7 @@ void lst_line(int addr, int op_cnt)
 
 	if (!list_flag || ad_mode == AD_SUPPR)
 		goto done;
-	if ((p_line >= ppl) || (c_line == 1)) {
+	if (p_line >= ppl || c_line == 1) {
 		lst_header();
 		lst_attl();
 	}
@@ -312,7 +312,7 @@ void obj_writeb(int op_cnt)
 {
 	register int i;
 
-	if (!op_cnt)
+	if (op_cnt == 0)
 		return;
 	switch (out_form) {
 	case OUTBIN:
@@ -345,7 +345,7 @@ void obj_writeb(int op_cnt)
  */
 void obj_fill(int count)
 {
-	if (!count)
+	if (count == 0)
 		return;
 	switch (out_form) {
 	case OUTBIN:
@@ -367,7 +367,7 @@ void obj_fill_value(int count, int value)
 {
 	register int i;
 
-	if (!count)
+	if (count == 0)
 		return;
 	i = count;
 	switch (out_form) {
@@ -422,7 +422,7 @@ void eof_hex(void)
  */
 void flush_hex(void)
 {
-	if (!hex_cnt)
+	if (hex_cnt == 0)
 		return;
 	hex_record(HEX_DATA);
 	hex_addr += hex_cnt;

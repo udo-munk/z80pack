@@ -35,6 +35,7 @@
 extern void fatal(int, char *);
 extern void p1_file(char *);
 extern void p2_file(char *);
+extern char *copy_arg(char *, char *, int *);
 
 /* z80anum.c */
 extern int eval(char *);
@@ -180,7 +181,7 @@ int op_equ(int dummy1, int dummy2)
 }
 
 /*
- *	DEFL and ASET and for 8080 SET
+ *	DEFL, ASET, and SET (in 8080 mode)
  */
 int op_dl(int dummy1, int dummy2)
 {
@@ -206,12 +207,12 @@ int op_ds(int dummy1, int dummy2)
 	UNUSED(dummy2);
 
 	p = operand;
-	if (!*p)
+	if (*p == '\0')
 		asmerr(E_MISOPE);
 	else {
 		ad_addr = pc;
 		ad_mode = AD_ADDR;
-		if ((p1 = strchr(operand, ','))) {
+		if ((p1 = strchr(operand, ',')) != NULL) {
 			p2 = tmp;
 			while (*p != ',')
 				*p2++ = *p++;
@@ -237,47 +238,32 @@ int op_ds(int dummy1, int dummy2)
  */
 int op_db(int op_code, int dummy)
 {
-	register int i, j;
+	register int i;
 	register char *p;
 	register char *s;
+	int sf;
 
 	UNUSED(dummy);
 
 	i = 0;
 	p = operand;
-	while (*p) {
-		j = 0;
-		if (*p == STRDEL || *p == STRDEL2) {
-			s = p + 1;
+	while (*p != '\0') {
+		p = copy_arg(tmp, p, &sf);
+		if (sf < 0) {		/* a non-terminated string */
+			asmerr(E_MISDEL);
+			goto delim_error;
+		} else if (sf > 0) {	/* a valid string, delimiter in *tmp */
+			s = tmp + 1;
 			while (1) {
 				/* check for double delim */
-				if ((*s == *p) && (*++s != *p))
+				if (*s == *tmp && *++s != *tmp)
 					break;
-				if (*s == '\n' || *s == '\0') {
-					asmerr(E_MISDEL);
-					goto delim_error;
-				}
-				ops[i++] = *s++;
-				if (i >= OPCARRAY)
+				ops[i] = *s++;
+				if (++i >= OPCARRAY)
 				    fatal(F_INTERN, "op-code buffer overflow");
-				j++;
 			}
-			/* reset ops and evaluate if not followed by a comma */
-			if ((*s != ',') && (*s != '\0')) {
-				i -= j;
-				j = 0;
-			}
-			else {
-				p = s;
-				j = 1;
-			}
-		}
-		if (j == 0) {
-			s = tmp;
-			while (*p != ',' && *p != '\0')
-				*s++ = *p++;
-			*s = '\0';
-			if (s != tmp) {
+		} else {		/* an expression */
+			if (*tmp != '\0') {
 				if (pass == 2)
 					ops[i] = chk_byte(eval(tmp));
 				if (++i >= OPCARRAY)
@@ -291,7 +277,7 @@ int op_db(int op_code, int dummy)
 	case 1:				/* DEFB, DB, DEFM */
 		break;
 	case 2:				/* DEFC, DC */
-		if (i)
+		if (i > 0)
 			ops[i - 1] |= 0x80;
 		break;
 	case 3:				/* DEFZ */
@@ -313,19 +299,15 @@ int op_dw(int dummy1, int dummy2)
 {
 	register int i, temp;
 	register char *p;
-	register char *s;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
 	p = operand;
 	i = 0;
-	while (*p) {
-		s = tmp;
-		while (*p != ',' && *p != '\0')
-			*s++ = *p++;
-		*s = '\0';
-		if (s != tmp) {
+	while (*p != '\0') {
+		p = copy_arg(tmp, p, NULL);
+		if (*tmp != '\0') {
 			if (pass == 2) {
 				temp = eval(tmp);
 				ops[i] = temp & 0xff;
@@ -378,8 +360,7 @@ int op_misc(int op_code, int dummy)
 				p++;
 				while (1) {
 					/* check for double delim */
-					if ((*p == *operand)
-					    && (*++p != *operand))
+					if (*p == *operand && *++p != *operand)
 						break;
 					if (*p == '\0') {
 						putchar('\n');
@@ -388,8 +369,7 @@ int op_misc(int op_code, int dummy)
 					}
 					putchar(*p++);
 				}
-			}
-			else
+			} else
 				fputs(operand, stdout);
 			putchar('\n');
 		}
@@ -403,16 +383,10 @@ int op_misc(int op_code, int dummy)
 		incl[incnest].inc_fn = srcfn;
 		incl[incnest].inc_fp = srcfp;
 		incnest++;
-		p = line;
+		p = operand;
 		d = fn;
-		while(isspace((unsigned char) *p))
-			p++;	/* ignore white space until INCLUDE */
-		while(!isspace((unsigned char) *p))
-			p++;	/* ignore INCLUDE */
-		while(isspace((unsigned char) *p))
-			p++;	/* ignore white space until filename */
-		while(!isspace((unsigned char) *p) && *p != COMMENT)
-				/* get filename */
+		while(!isspace((unsigned char) *p) && *p != COMMENT
+						   && *p != '\0')
 			*d++ = *p++;
 		*d = '\0';
 		if (pass == 1) {	/* PASS 1 */
@@ -440,29 +414,22 @@ int op_misc(int op_code, int dummy)
 		break;
 	case 7:				/* TITLE */
 		if (pass == 2) {
-			p = line;
+			p = operand;
 			d = title;
-			while (isspace((unsigned char) *p))
-				p++;	/* ignore white space until TITLE */
-			while (!isspace((unsigned char) *p))
-				p++;	/* ignore TITLE */
-			while (isspace((unsigned char) *p))
-				p++;	/* ignore white space until text */
 			if (*p == STRDEL || *p == STRDEL2) {
 				s = p + 1;
 				while (1) {
 					/* check for double delim */
-					if ((*s == *p) && (*++s != *p))
+					if (*s == *p && *++s != *p)
 						break;
-					if (*s == '\n') {
+					if (*s == '\0') {
 						asmerr(E_MISDEL);
 						break;
 					}
 					*d++ = *s++;
 				}
-			}
-			else
-				while (*p != '\n' && *p != COMMENT)
+			} else
+				while (*p != '\0' && *p != COMMENT)
 					*d++ = *p++;
 			*d = '\0';
 		}
@@ -475,114 +442,116 @@ int op_misc(int op_code, int dummy)
 }
 
 /*
- *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, ELSE, ENDIF, ENDC
+ *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF,
+ *	IF1, IF2, IFB, IFNB, IFIDN, IFDIF
  */
 int op_cond(int op_code, int dummy)
 {
-	register char *p, *p1, *p2;
+	register char *p, *p1;
 	static int condnest[IFNEST];
 
 	UNUSED(dummy);
 
-	switch(op_code) {
-	case 1:				/* IFDEF */
-		if (iflevel >= IFNEST) {
-			asmerr(E_IFNEST);
-			break;
-		}
-		condnest[iflevel++] = gencode;
-		if (gencode)
-			if (get_sym(operand) == NULL)
-				gencode = 0;
-		break;
-	case 2:				/* IFNDEF */
-		if (iflevel >= IFNEST) {
-			asmerr(E_IFNEST);
-			break;
-		}
-		condnest[iflevel++] = gencode;
-		if (gencode)
-			if (get_sym(operand) != NULL)
-				gencode = 0;
-		break;
-	case 3:				/* IFEQ */
-		if (iflevel >= IFNEST) {
-			asmerr(E_IFNEST);
-			break;
-		}
-		condnest[iflevel++] = gencode;
-		p = operand;
-		if (!*p || !(p1 = strchr(operand, ','))) {
-			asmerr(E_MISOPE);
-			break;
-		}
-		if (gencode) {
-			p2 = tmp;
-			while (*p != ',')
-				*p2++ = *p++;
-			*p2 = '\0';
-			if (eval(tmp) != eval(++p1))
-				gencode = 0;
-		}
-		break;
-	case 4:				/* IFNEQ */
-		if (iflevel >= IFNEST) {
-			asmerr(E_IFNEST);
-			break;
-		}
-		condnest[iflevel++] = gencode;
-		p = operand;
-		if (!*p || !(p1 = strchr(operand, ','))) {
-			asmerr(E_MISOPE);
-			break;
-		}
-		if (gencode) {
-			p2 = tmp;
-			while (*p != ',')
-				*p2++ = *p++;
-			*p2 = '\0';
-			if (eval(tmp) == eval(++p1))
-				gencode = 0;
-		}
-		break;
-	case 5:				/* COND, IF, and IFT */
-		if (iflevel >= IFNEST) {
-			asmerr(E_IFNEST);
-			break;
-		}
-		condnest[iflevel++] = gencode;
-		if (gencode)
-			if (eval(operand) == 0)
-				gencode = 0;
-		break;
-	case 6:				/* IFE and IFF */
-		if (iflevel >= IFNEST) {
-			asmerr(E_IFNEST);
-			break;
-		}
-		condnest[iflevel++] = gencode;
-		if (gencode)
-			if (eval(operand) != 0)
-				gencode = 0;
-		break;
-	case 98:			/* ELSE */
-		if (!iflevel)
-			asmerr(E_MISIFF);
-		else
-			if ((iflevel == 0) || (condnest[iflevel - 1] == 1))
-				gencode = !gencode;
-		break;
-	case 99:			/* ENDIF and ENDC */
-		if (!iflevel)
-			asmerr(E_MISIFF);
-		else
-			gencode = condnest[--iflevel];
-		break;
-	default:
-		fatal(F_INTERN, "invalid opcode for function op_cond");
-		break;
-	}
 	ad_mode = AD_NONE;
+	if (op_code < 90) {
+		if (iflevel >= IFNEST) {
+			asmerr(E_IFNEST);
+			return(0);
+		}
+		condnest[iflevel++] = gencode;
+		if (!gencode)
+			return(0);
+		switch(op_code) {
+		case 1:				/* IFDEF */
+		case 2:				/* IFNDEF */
+			gencode = (get_sym(operand) != NULL);
+			break;
+		case 3:				/* IFEQ */
+		case 4:				/* IFNEQ */
+			p = copy_arg(tmp, operand, NULL);
+			if (*tmp == '\0' || *p != ',' || *++p == '\0') {
+				asmerr(E_MISOPE);
+				return(0);
+			}
+			gencode = (eval(tmp) == eval(p));
+			break;
+		case 5:				/* COND, IF, and IFT */
+		case 6:				/* IFE and IFF */
+			gencode = (eval(operand) != 0);
+			break;
+		case 7:				/* IF1 */
+		case 8:				/* IF2 */
+			gencode = (pass == 1);
+			break;
+		case 9:				/* IFB */
+		case 10:			/* IFNB */
+		case 11:			/* IFIDN */
+		case 12:			/* IFDIF */
+			p = operand;
+			if (*p == '\0') {
+				asmerr(E_MISOPE);
+				return(0);
+			}
+			if (*p != '<') {
+				asmerr(E_ILLOPE);
+				return(0);
+			}
+			p1 = tmp;
+			while (*p != '\0' && *p != '>')
+				*p1++ = *p++;
+			if ((*p1++ = *p++) != '>') {
+				asmerr(E_MISPAR);
+				return(0);
+			}
+			*p1 = '\0';
+			if (op_code == 9 || op_code == 10) /* IFB and IFNB */
+				gencode = ((p1 - tmp) == 2);
+			else {			/* IFIDN and IFDIF */
+				if (*p++ != ',') {
+					asmerr(E_MISOPE);
+					return(0);
+				}
+				while (isspace((unsigned char) *p))
+					p++;
+				if (*p != '<') {
+					asmerr(E_ILLOPE);
+					return(0);
+				}
+				p1 = p;
+				while (*p != '\0' && *p != '>')
+					p++;
+				if (*p++ != '>') {
+					asmerr(E_MISPAR);
+					return(0);
+				}
+				*p = '\0';
+				gencode = (strcmp(tmp, p1) == 0);
+			}
+			break;
+		default:
+			fatal(F_INTERN, "invalid opcode for function op_cond");
+			break;
+		}
+		if ((op_code & 1) == 0)		/* negate for negative IF variation */
+			gencode = !gencode;
+	} else {
+		if (iflevel == 0) {
+			asmerr(E_MISIFF);
+			return(0);
+		}
+		switch(op_code) {
+		case 98:			/* ELSE */
+			if (condnest[iflevel - 1] == 1)
+				gencode = !gencode;
+			break;
+		case 99:			/* ENDIF and ENDC */
+			gencode = condnest[--iflevel];
+			break;
+		default:
+			fatal(F_INTERN, "invalid opcode for function op_cond");
+			break;
+		}
+	}
 	return(0);
 }
 
@@ -614,7 +583,7 @@ int op_end(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 2 && *operand)
+	if (pass == 2 && *operand != '\0')
 		start_addr = eval(operand);
 	return(0);
 }

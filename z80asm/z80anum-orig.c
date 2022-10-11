@@ -72,6 +72,10 @@ int eval(char *s)
 	char word[MAXLINE];
 	struct sym *sp;
 
+	if (s == NULL) {
+		asmerr(E_MISOPE);
+		return(0);
+	}
 	val = 0;
 	while (*s) {
 		p = word;

@@ -43,7 +43,7 @@ int p1_line(void), p2_line(void);
 void open_o_files(char *), get_fn(char *, char *, char *);
 char *get_label(char *, char *);
 char *get_opcode(char *, char *);
-char *get_arg(char *, char *);
+char *get_arg(char *, char *, int);
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -220,7 +220,7 @@ void options(int argc, char *argv[])
 				usage();
 			}
 	i = 0;
-	while ((argc--) && (i < MAXFN)) {
+	while (argc-- && i < MAXFN) {
 		if ((infiles[i] = malloc(LENFN + 1)) == NULL)
 			fatal(F_OUTMEM, "filenames");
 		get_fn(infiles[i], *argv++, SRCEXT);
@@ -317,21 +317,22 @@ int p1_line(void)
 	c_line++;
 	p = get_label(label, p);
 	p = get_opcode(opcode, p);
-	p = get_arg(operand, p);
-	if (*opcode) {
+	if (*opcode != '\0') {
 		if ((op = search_op(opcode)) != NULL) {
-			if (gencode && *label && (op->op_type != OP_SET))
+			p = get_arg(operand, p, op->op_flags & OP_NOPRE);
+			if (gencode && *label != '\0'
+				    && !(op->op_flags & OP_SET))
 				put_label();
-			if (gencode || (op->op_type == OP_COND)) {
+			if (gencode || (op->op_flags & OP_COND)) {
 				i = (*op->op_fun)(op->op_c1, op->op_c2);
 				pc += i;
 				rpc += i;
-				if (op->op_type == OP_END)
+				if (op->op_flags & OP_END)
 					return(0);
 			}
 		} else
 			asmerr(E_ILLOPC);
-	} else if (gencode && *label)
+	} else if (gencode && *label != '\0')
 		put_label();
 	return(1);
 }
@@ -348,8 +349,8 @@ void pass2(void)
 	radix = 10;
 	rpc = pc = 0;
 	phs_flag = 0;
-	fi = 0;
 	ad_mode = AD_STD;
+	fi = 0;
 	if (ver_flag)
 		puts("Pass 2");
 	obj_header();
@@ -400,16 +401,16 @@ int p2_line(void)
 	s_line++;
 	p = get_label(label, p);
 	p = get_opcode(opcode, p);
-	p = get_arg(operand, p);
-	if (*opcode) {
+	if (*opcode != '\0') {
 		op = search_op(opcode);
-		if (gencode || (op->op_type == OP_COND)) {
+		p = get_arg(operand, p, op->op_flags & OP_NOPRE);
+		if (gencode || (op->op_flags & OP_COND)) {
 			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
 			obj_writeb(op_count);
 			lst_line(pc, op_count);
 			pc += op_count;
 			rpc += op_count;
-			if (op->op_type == OP_END)
+			if (op->op_flags & OP_END)
 				return(0);
 		} else {
 			ad_mode = AD_NONE;
@@ -434,7 +435,7 @@ void open_o_files(char *source)
 
 	if (*objfn == '\0')
 		strcpy(objfn, source);
-	if ((p = strrchr(objfn, PATHSEP)))
+	if ((p = strrchr(objfn, PATHSEP)) != NULL)
 		p++;
 	else
 		p = objfn;
@@ -459,7 +460,7 @@ void open_o_files(char *source)
 	if (list_flag) {
 		if (*lstfn == '\0')
 			strcpy(lstfn, source);
-		if ((p = strrchr(lstfn, PATHSEP)))
+		if ((p = strrchr(lstfn, PATHSEP)) != NULL)
 			p++;
 		else
 			p = lstfn;
@@ -484,15 +485,14 @@ void get_fn(char *dest, char *src, char *ext)
 	i = 0;
 	sp = src;
 	dp = dest;
-	while ((i++ < LENFN) && (*sp != '\0'))
+	while (i++ < LENFN && *sp != '\0')
 		*dp++ = *sp++;
 	*dp = '\0';
-	if ((dp = strrchr(dest, PATHSEP)))
+	if ((dp = strrchr(dest, PATHSEP)) != NULL)
 		dp++;
 	else
 		dp = dest;
-	if ((strrchr(dp, '.') == NULL)
-	    && (strlen(dest) <= (LENFN - strlen(ext))))
+	if (strrchr(dp, '.') == NULL && (strlen(dest) + strlen(ext) < LENFN))
 		strcat(dest, ext);
 }
 
@@ -507,11 +507,13 @@ char *get_label(char *s, char *l)
 	i = 0;
 	if (*l == LINCOM)
 		goto comment;
-	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != LABSEP
-	       && i < symlen) {
-		*s++ = toupper((unsigned char) *l++);
-		i++;
+	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != LABSEP) {
+		if (i++ < symlen)
+			*s++ = toupper((unsigned char) *l);
+		l++;
 	}
+	if (*l == LABSEP)
+		l++;
 comment:
 	*s = '\0';
 	return(l);
@@ -525,11 +527,7 @@ char *get_opcode(char *s, char *l)
 {
 	if (*l == LINCOM)
 		goto comment;
-	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != LABSEP)
-		l++;
-	if (*l == LABSEP)
-		l++;
-	while (*l == ' ' || *l == '\t')
+	while (isspace((unsigned char) *l))
 		l++;
 	while (!isspace((unsigned char) *l) && *l != COMMENT)
 		*s++ = toupper((unsigned char) *l++);
@@ -540,10 +538,12 @@ comment:
 
 /*
  *	get operand into s from source line l
- *	converts to upper case
+ *	if nopre is 0 converts to upper case, and
+ *	removes all unnecessary white space and comment
  *	delimited strings are copied without changes
+ *	if nopre is 1 removes only leading white space
  */
-char *get_arg(char *s, char *l)
+char *get_arg(char *s, char *l, int nopre)
 {
 	register char *s0;
 	register char c;
@@ -551,20 +551,25 @@ char *get_arg(char *s, char *l)
 	s0 = s;
 	if (*l == LINCOM)
 		goto comment;
-	while (*l == ' ' || *l == '\t')
+	while (isspace((unsigned char) *l))
 		l++;
-	while (*l != '\n' && *l != COMMENT) {
+	if (nopre) {
+		while (*l != '\n' && *l != '\0')
+			*s++ = *l++;
+		goto comment;
+	}
+	while (*l != '\0' && *l != COMMENT) {
 		if (isspace((unsigned char) *l)) {
 			l++;
-			while (*l == ' ' || *l == '\t')
+			while (isspace((unsigned char) *l))
 				l++;
-			if ((s > s0) && is_sym_char(*(s - 1))
-				     && is_sym_char(*l))
+			if (s > s0 && is_sym_char(*(s - 1))
+				   && is_sym_char(*l))
 				/* add space between symbols/numbers */
 				*s++ = ' ';
 			continue;
 		}
-		if ((*l != STRDEL) && (*l != STRDEL2)) {
+		if (*l != STRDEL && *l != STRDEL2) {
 			*s++ = toupper((unsigned char) *l++);
 			continue;
 		}
@@ -579,8 +584,7 @@ char *get_arg(char *s, char *l)
 					break;
 				else
 					*s++ = *l++;
-			}
-			if (*l == '\n' || *l == '\0')
+			} else if (*l == '\n' || *l == '\0')
 				goto comment;
 			*s++ = *l++;
 		}
@@ -589,4 +593,56 @@ char *get_arg(char *s, char *l)
 comment:
 	*s = '\0';
 	return(l);
+}
+
+/*
+ *	copy next arg into s from preprocessed operand p
+ *	if str_flag is not NULL stores 1 if arg is string,
+ *	-1 if unterminated string otherwise 0
+ */
+char *copy_arg(char *s, char *p, int *str_flag)
+{
+	register char c;
+	register int sf;
+
+	sf = 1;
+	while (*p != '\0' && *p != ',') {
+		if (*p == STRDEL || *p == STRDEL2) {
+			c = *p;
+			*s++ = *p++;
+			while (1) {
+				if (*p == '\0')
+					break;
+				else if (*p == c) {
+					/* check for double delim */
+					if (*(p + 1) != c)
+						break;
+					else
+						*s++ = *p++;
+				}
+				*s++ = *p++;
+			}
+			if (*p != '\0')
+				*s++ = *p++;
+			else if (sf == 1)
+				sf = -1;
+			if (sf > 0)
+				sf++;
+			else if (sf < 0)
+				sf--;
+		} else {
+			*s++ = *p++;
+			sf = 0;
+		}
+	}
+	*s = '\0';
+	if (str_flag) {
+		if (sf == -2)
+			*str_flag = -1;
+		else if (sf == 2)
+			*str_flag = 1;
+		else
+			*str_flag = 0;
+	}
+	return(p);
 }

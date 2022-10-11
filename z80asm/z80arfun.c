@@ -42,6 +42,7 @@ int calc_val(char *);
 
 /* z80amain.c */
 extern void asmerr(int);
+extern char *copy_arg(char *, char *, int *);
 
 /* z80anum.c */
 extern int eval(char *);
@@ -608,8 +609,7 @@ int ldreg(int base_op, int base_opn, char *sec)
 				ops[1] = base_op + 0x05;
 				break;
 			}
-		}
-		else {			/* not for H, L */
+		} else {		/* not for H, L */
 			len = 1;
 			ops[0] = 0;
 			asmerr(E_ILLOPE);
@@ -640,8 +640,7 @@ int ldreg(int base_op, int base_opn, char *sec)
 				ops[0] = 0x1a;
 				break;
 			}
-		}
-		else {			/* not A */
+		} else {		/* not A */
 			len = 1;
 			ops[0] = 0;
 			asmerr(E_ILLOPE);
@@ -1568,7 +1567,7 @@ int op_out(int dummy1, int dummy2)
 		} else {
 			/* check syntax for OUT (n),A */
 			p = strrchr(operand, ')');
-			if (operand[0] == '(' && (p != NULL)
+			if (operand[0] == '(' && p != NULL
 					      && strncmp(p, "),A", 3) == 0) {
 				ops[0] = 0xd3;	/* OUT (n),A */
 				ops[1] = chk_byte(calc_val(operand + 1));
@@ -1710,7 +1709,7 @@ void cbgrp_iixy(int prefix, int base_op, int bit, char *sec)
 	register char *p;
 	register int op;
 
-	if ((p = strrchr(sec, ')')) && *(p + 1) == ',') {
+	if ((p = strrchr(sec, ')')) != NULL && *(p + 1) == ',') {
 		if (undoc_flag && base_op != 0x40) {
 			/* not for BIT */
 			switch (op = get_reg(p + 2)) {
@@ -1781,8 +1780,7 @@ int op8080_mov(int dummy1, int dummy2)
 			if (op1 == REGM && op2 == REGM) {
 				ops[0] = 0;
 				asmerr(E_ILLOPE);
-			}
-			else
+			} else
 				ops[0] = 0x40 + (op1 << 3) + op2;
 			break;
 		case NOOPERA:		/* missing operand */
@@ -2151,15 +2149,11 @@ int op8080_lxi(int dummy1, int dummy2)
  */
 char *get_first_second(void)
 {
-	register char *p1, *p2;
+	register char *p;
 
-	p1 = operand;
-	p2 = tmp;
-	while (*p1 != ',' && *p1 != '\0')
-		*p2++ = *p1++;
-	*p2 = '\0';
-	if (*p1 == ',')
-		return(p1 + 1);
+	p = copy_arg(tmp, operand, NULL);
+	if (*p == ',')
+		return(p + 1);
 	else
 		return(NULL);
 }
