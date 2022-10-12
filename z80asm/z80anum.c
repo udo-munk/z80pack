@@ -215,7 +215,7 @@ int get_token(void)
 			tok_val = n;
 			goto finish;
 		}
-		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* current location */
+		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* location counter */
 			tok_type = T_VAL;
 			tok_val = pc;
 		} else {				/* look for word opr */
@@ -325,7 +325,7 @@ finish:
 
 int factor(int *resultp)
 {
-	int opr_type, value, err;
+	int opr_type, value, err, erru;
 	struct sym *sp;
 
 	/*
@@ -336,21 +336,29 @@ int factor(int *resultp)
 	sp = (tok_type != T_VAL && *tok_sym) ? get_sym(tok_sym) : NULL;
 	switch (tok_type) {
 	case T_VAL:
-		*resultp = tok_val;
-		return(get_token());
-	case T_SYM:
-		err = get_token();
-		if (sp)
-			*resultp = sp->sym_val;
-		else
-			err = E_UNDSYM;
-		return(err);
-	case T_LPAREN:
-		if ((err = get_token()) || (err = expr(&value)))
+		value = tok_val;
+		if ((err = get_token()))
 			return(err);
+		*resultp = value;
+		return(E_NOERR);
+	case T_SYM:
+		if ((err = get_token()))
+			return(err);
+		if (sp) {
+			*resultp = sp->sym_val;
+			return(E_NOERR);
+		} else
+			return(E_UNDSYM);
+	case T_LPAREN:
+		if ((err = get_token()))
+			return(err);
+		if ((erru = expr(&value)) && erru != E_UNDSYM)
+			return(erru);
 		if (tok_type == T_RPAREN) {
-			if (get_token())
-				return(E_INVEXP);
+			if ((err = get_token()))
+				return(err);
+			else if (erru)		/* E_UNDSYM */
+				return(E_UNDSYM);
 			else {
 				*resultp = value;
 				return(E_NOERR);
@@ -376,19 +384,17 @@ int factor(int *resultp)
 		if (sp != NULL && tok_type != T_VAL && tok_type != T_SYM
 			       && tok_type != T_LPAREN && tok_type != T_NOT
 			       && tok_type != T_HIGH && tok_type != T_LOW
-			       && tok_type != T_NUL && tok_type != T_TYPE) {
+			       && tok_type != T_NUL && tok_type != T_TYPE)
 			*resultp = sp->sym_val;
-			return(E_NOERR);
-		} else if (opr_type == T_NUL) {
+		else if (opr_type == T_NUL) {
 			*resultp = (tok_type == T_EMPTY) ? -1 : 0;
 			/* short circuit to end of expression */
 			while (*scan_pos != '\0')
 				scan_pos++;
 			tok_type = T_EMPTY;
-		} else if (opr_type == T_TYPE) {
-			err = factor(&value);
-			*resultp = (err ? 0x00 : 0x20);
-		} else {
+		} else if (opr_type == T_TYPE)
+			*resultp = (factor(&value) ? 0x00 : 0x20);
+		else {
 			if ((err = factor(&value)))
 				return(err);
 			switch (opr_type) {
@@ -419,8 +425,10 @@ int factor(int *resultp)
 		 *	the symbol value.
 		 */
 		if (sp) {
+			if ((err = get_token()))
+				return(err);
 			*resultp = sp->sym_val;
-			return(get_token());
+			return(E_NOERR);
 		} else
 			return(E_INVEXP);
 	}
@@ -428,16 +436,21 @@ int factor(int *resultp)
 
 int mul_term(int *resultp)
 {
-	int opr_type, value, err;
+	int opr_type, value, err, erru;
 
-	value = 0;				/* keep compiler happy */
-	if ((err = factor(resultp)))
-		return(err);
+	if ((erru = factor(resultp)) && erru != E_UNDSYM)
+		return(erru);
 	while (tok_type == T_MUL || tok_type == T_DIV || tok_type == T_MOD
 				 || tok_type == T_SHR || tok_type == T_SHL) {
 		opr_type = tok_type;
-		if ((err = get_token()) || ((err = factor(&value))))
+		if ((err = get_token()))
 			return(err);
+		if ((err = factor(&value)) && err != E_UNDSYM)
+			return(err);
+		if (erru || err) {		/* E_UNDSYM */
+			erru = E_UNDSYM;
+			continue;
+		}
 		switch (opr_type) {
 		case T_MUL:
 			*resultp *= value;
@@ -462,19 +475,25 @@ int mul_term(int *resultp)
 			break;
 		}
 	}
-	return(E_NOERR);
+	return(erru ? E_UNDSYM : E_NOERR);
 }
 
 int add_term(int *resultp)
 {
-	int opr_type, value, err;
+	int opr_type, value, err, erru;
 
-	if ((err = mul_term(resultp)))
-		return(err);
+	if ((erru = mul_term(resultp)) && erru != E_UNDSYM)
+		return(erru);
 	while (tok_type == T_ADD || tok_type == T_SUB) {
 		opr_type = tok_type;
-		if ((err = get_token()) || (err = mul_term(&value)))
+		if ((err = get_token()))
 			return(err);
+		if ((err = mul_term(&value)) && err != E_UNDSYM)
+			return(err);
+		if (erru || err) {		/* E_UNDSYM */
+			erru = E_UNDSYM;
+			continue;
+		}
 		switch (opr_type) {
 		case T_ADD:
 			*resultp += value;
@@ -486,21 +505,27 @@ int add_term(int *resultp)
 			break;
 		}
 	}
-	return(E_NOERR);
+	return(erru ? E_UNDSYM : E_NOERR);
 }
 
 int cmp_term(int *resultp)
 {
-	int opr_type, value, err;
+	int opr_type, value, err, erru;
 
-	if ((err = add_term(resultp)))
-		return(err);
+	if ((erru = add_term(resultp)) && erru != E_UNDSYM)
+		return(erru);
 	while (tok_type == T_EQ || tok_type == T_NE
 				|| tok_type == T_LT || tok_type == T_LE
 				|| tok_type == T_GT || tok_type == T_GE) {
 		opr_type = tok_type;
-		if ((err = get_token()) || (err = add_term(&value)))
+		if ((err = get_token()))
 			return(err);
+		if ((err = add_term(&value)) && err != E_UNDSYM)
+			return(err);
+		if (erru || err) {		/* E_UNDSYM */
+			erru = E_UNDSYM;
+			continue;
+		}
 		switch (opr_type) {
 		case T_EQ:
 			*resultp = (*resultp == value) ? -1 : 0;
@@ -524,19 +549,25 @@ int cmp_term(int *resultp)
 			break;
 		}
 	}
-	return(E_NOERR);
+	return(erru ? E_UNDSYM : E_NOERR);
 }
 
 int expr(int *resultp)
 {
-	int opr_type, value, err;
+	int opr_type, value, err, erru;
 
-	if ((err = cmp_term(resultp)))
-		return(err);
+	if ((erru = cmp_term(resultp)) && erru != E_UNDSYM)
+		return(erru);
 	while (tok_type == T_AND || tok_type == T_XOR || tok_type == T_OR) {
 		opr_type = tok_type;
-		if ((err = get_token()) || (err = cmp_term(&value)))
+		if ((err = get_token()))
 			return(err);
+		if ((err = cmp_term(&value)) && err != E_UNDSYM)
+			return(err);
+		if (erru || err) {		/* E_UNDSYM */
+			erru = E_UNDSYM;
+			continue;
+		}
 		switch (opr_type) {
 		case T_AND:
 			*resultp &= value;
@@ -551,7 +582,7 @@ int expr(int *resultp)
 			break;
 		}
 	}
-	return(E_NOERR);
+	return(erru ? E_UNDSYM : E_NOERR);
 }
 
 int eval(char *s)

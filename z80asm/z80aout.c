@@ -61,7 +61,8 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"missing .PHASE",		/* 16 */
 	"division by zero",		/* 17 */
 	"invalid expression",		/* 18 */
-	"object code before ORG"	/* 19 */
+	"object code before ORG",	/* 19 */
+	"illegal label"			/* 20 */
 };
 
 /*

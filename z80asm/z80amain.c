@@ -320,9 +320,12 @@ int p1_line(void)
 	if (*opcode != '\0') {
 		if ((op = search_op(opcode)) != NULL) {
 			p = get_arg(operand, p, op->op_flags & OP_NOPRE);
-			if (gencode && *label != '\0'
-				    && !(op->op_flags & OP_SET))
-				put_label();
+			if (gencode && *label != '\0') {
+				if (op->op_flags & OP_NOLBL)
+					asmerr(E_ILLLBL);
+				else if (!(op->op_flags & OP_SET))
+					put_label();
+			}
 			if (gencode || (op->op_flags & OP_COND)) {
 				i = (*op->op_fun)(op->op_c1, op->op_c2);
 				pc += i;
@@ -407,6 +410,10 @@ int p2_line(void)
 		if (gencode || (op->op_flags & OP_COND)) {
 			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
 			obj_writeb(op_count);
+			if (gencode && *label != '\0' && ad_mode == AD_NONE) {
+				ad_mode = AD_ADDR;
+				ad_addr = pc;
+			}
 			lst_line(pc, op_count);
 			pc += op_count;
 			rpc += op_count;
@@ -417,7 +424,12 @@ int p2_line(void)
 			lst_line(0, 0);
 		}
 	} else {
-		ad_mode = AD_NONE;
+		if (gencode && *label != '\0' ) {
+			ad_mode = AD_ADDR;
+			ad_addr = pc;
+		}
+		else
+			ad_mode = AD_NONE;
 		lst_line(0, 0);
 	}
 	return(1);
@@ -636,7 +648,7 @@ char *copy_arg(char *s, char *p, int *str_flag)
 		}
 	}
 	*s = '\0';
-	if (str_flag) {
+	if (str_flag != NULL) {
 		if (sf == -2)
 			*str_flag = -1;
 		else if (sf == 2)

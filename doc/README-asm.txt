@@ -139,13 +139,13 @@ PRINT   <'string'>      - print string to stdout in pass one
 .8080                   - switch to 8080 instruction set
 .Z80                    - switch to Z80 instruction set
 .RADIX                  - change numbers radix (default 10)
+ASEG                    - does nothing (like its alias ABS)
 
 
 Operator precedence for the parser from Thomas Eberhardt:
 
-NUL
 () [] {}
-unary + - ~ NOT HIGH LOW
+unary + - ~ NOT HIGH LOW NUL TYPE
 * / MOD SHR >> SHL <<
 + -
 EQ = == NE <> != LT < LE <= GT > GE >=
