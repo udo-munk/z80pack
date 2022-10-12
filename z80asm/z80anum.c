@@ -438,7 +438,6 @@ int mul_term(int *resultp)
 {
 	int opr_type, value, err, erru;
 
-	value = 0;				/* keep compiler happy */
 	if ((erru = factor(resultp)) && erru != E_UNDSYM)
 		return(erru);
 	while (tok_type == T_MUL || tok_type == T_DIV || tok_type == T_MOD
