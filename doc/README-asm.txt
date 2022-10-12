@@ -142,9 +142,8 @@ ASEG                    - does nothing (like its alias ABS)
 
 Operator precedence for the parser from Thomas Eberhardt:
 
-NUL
 () [] {}
-unary + - ~ NOT HIGH LOW
+unary + - ~ NOT HIGH LOW NUL TYPE
 * / MOD SHR >> SHL <<
 + -
 EQ = == NE <> != LT < LE <= GT > GE >=
