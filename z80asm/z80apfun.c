@@ -556,7 +556,7 @@ int op_cond(int op_code, int dummy)
 }
 
 /*
- *	EXTRN, EXTERNAL, EXT and PUBLIC, ENT, ENTRY, GLOBAL
+ *	EXTRN, EXTERNAL, EXT and PUBLIC, ENT, ENTRY, GLOBAL, and ABS, ASEG
  */
 int op_glob(int op_code, int dummy)
 {
@@ -567,6 +567,8 @@ int op_glob(int op_code, int dummy)
 	case 1:				/* EXTRN, EXTERNAL, EXT */
 		break;
 	case 2:				/* PUBLIC, ENT, ENTRY, GLOBAL */
+		break;
+	case 3:				/* ABS, ASEG */
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_glob");

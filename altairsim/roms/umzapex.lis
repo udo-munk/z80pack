@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.9	Wed May 16 19:54:44 2018	Page 1
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:03 2022	Page 1
 Source file: umzapex.asm
 Title:       <Zapple Monitor Extension for MITS ALTAIR>
 
@@ -43,7 +43,7 @@ f821  c3 49 f8        37     37 J3:	JP	OCMD		;COMMAND O
                       38     38 ;
                       39     39 ; USER DEFINED CONSOLE
                       40     40 ;
-                      41     41 CONIN:
+f824                  41     41 CONIN:
 f824  c9              42     42 CONOUT:	RET
 f825  af              43     43 CONST:	XOR	A		;NO INPUT WAITING
 f826  c9              44     44 	RET
@@ -63,7 +63,7 @@ f835  ca 31 f8        57     57 	JP	Z,PUNOUT	;NO, WAIT
 f838  79              58     58 	LD	A,C		;GET DATA FROM REGISTER C
 f839  d3 13           59     59 	OUT	(SIO2D),A	;AND SEND IT
 f83b  c9              60     60 	RET
-Z80-Assembler	Release 1.9	Wed May 16 19:54:44 2018	Page 2
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:03 2022	Page 2
 Source file: umzapex.asm
 Title:       <Zapple Monitor Extension for MITS ALTAIR>
 
@@ -71,7 +71,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       61     61 ;
                       62     62 ; USER DEFINED STORAGE
                       63     63 ;
-                      64     64 STOIN:
+f83c                  64     64 STOIN:
 f83c  c9              65     65 STOOUT:	RET
                       66     66 ;
                       67     67 ; LINE PRINTER
@@ -90,14 +90,14 @@ f848  c9              79     79 UPTOUT:	RET
                       80     80 ;
                       81     81 ; ZAPPLE I, K AND O COMMANDS
                       82     82 ;
-                      83     83 ICMD:
-                      84     84 KCMD:
+f849                  83     83 ICMD:
+f849                  84     84 KCMD:
 f849  c9              85     85 OCMD:	RET
                       86     86 
 f84a                  87     87 	END
-Z80-Assembler	Release 1.9	Wed May 16 19:54:44 2018	Page 3
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:03 2022	Page 3
 Source file: umzapex.asm
-Title:       Symboltable
+Title:       Symbol table
 
 BASE     f800 	CILOC    f800*	COLOC    f803*	CONIN    f824 	
 CONOUT   f824 	CONST    f825 	CSLOC    f818*	ICMD     f849 	

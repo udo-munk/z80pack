@@ -116,6 +116,7 @@ struct inc {
 #define OP_SET		0x04	/* assigns value to label */
 #define OP_END		0x08	/* end of source */
 #define OP_NOPRE	0x10	/* no preprocessing of operand */
+#define OP_NOLBL	0x20	/* label not allowed */
 
 /*
  *	definition of operand symbols
@@ -204,6 +205,7 @@ struct inc {
 #define E_DIVBY0	17	/* division by zero */
 #define E_INVEXP	18	/* invalid expression */
 #define E_BFRORG	19	/* code before first ORG (binary output) */
+#define E_ILLLBL	20	/* illegal label */
 
 /*
  *	definition of fatal errors

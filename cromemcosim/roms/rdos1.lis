@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 1
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 1
 Source file: rdos1.asm
 Title:       
 
@@ -63,7 +63,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       58     58 ;
                       59     59 ;++++++++++++++++++++++++++++++++++++++++++++++++++++
                       60     60 ;
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 2
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 2
 Source file: rdos1.asm
 Title:       
 
@@ -84,13 +84,13 @@ c012  c3 0b c1        71     71 	JP	MONITR
                       74     74 ; MONITOR COMMAND
                       75     75 ; QUIT THE MONITOR & BOOT CDOS IN
                       76     76 ;
-                      77     77 BOOTMC:
+c015                  77     77 BOOTMC:
 c015  cd 29 c2        78     78 	CALL	SKSGCR		;REQUIRE A CR
                       79     79 ;
                       80     80 ;
                       81     81 ; BOOT DISK
                       82     82 ;
-                      83     83 BOOTDK:
+c018                  83     83 BOOTDK:
 c018  3e d0           84     84 	LD	A,0D0H		;TERMINATE THE HOMING
 c01a  d3 30           85     85 	OUT	(DCOMMND),A	;OF THE DISK HEAD
 c01c  db 30           86     86 BOT200:	IN	A,(DSTAT)
@@ -98,7 +98,7 @@ c01e  1f              87     87 	RRA
 c01f  38 fb           88     88 	JR	C,BOT200
 c021  f3              89     89 	DI
 c022  3e 10           90     90 	LD	A,1 << MAXI	;MAXI FLAG
-                      91     91 BOT300:
+c024                  91     91 BOT300:
 c024  21 80 00        92     92 	LD	HL,0080H	;INIT. BUFFER PNTR
 c027  f9              93     93 	LD	SP,HL		;& STACK PNTR
 c028  f5              94     94 	PUSH	AF		;SAVE MINI/MAXI FLAG
@@ -128,7 +128,7 @@ c03d  18 e5          106    106 	JR	BOT300
                      118    118 ;
                      119    119 ;
 c03f  cd cb c0       120    120 DHOME:	CALL	SELECT		;SELECT DISK
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 3
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 3
 Source file: rdos1.asm
 Title:       
 
@@ -174,14 +174,14 @@ c066  28 02          158    158 	JR	Z,EXECUTE	;MINI DISK
 c068  3e 1d          159    159 	LD	A,1DH		;LOAD COMMAND FOR MAXI
                      160    160 ;
                      161    161 ;
-                     162    162 EXECUTE:
+c06a                 162    162 EXECUTE:
 c06a  d3 30          163    163 	OUT	(DCOMMND),A	;OUTPUT COMMAND
                      164    164 ;
-                     165    165 EXCCHK:
+c06c                 165    165 EXCCHK:
 c06c  db 34          166    166 	IN	A,(DFLAGS)	;WAIT FOR COMPLETION
 c06e  1f             167    167 	RRA
 c06f  30 fb          168    168 	JR	NC,EXCCHK	;[UNTIL INTREQ]
-                     169    169 EREXIT:
+c071                 169    169 EREXIT:
 c071  db 30          170    170 	IN	A,(DSTAT)	;DISK STATUS
 c073  47             171    171 	LD	B,A		;SAVE STATUS
 c074  a2             172    172 	AND	D		;MASK FOR ERRORS
@@ -193,7 +193,7 @@ c078  d3 04          177    177 	OUT	(PARLEL),A
 c07a  3e 18          178    178 	LD	A,18H		;SEEK COMMAND
 c07c  cd 6a c0       179    179 	CALL	EXECUTE
 c07f  db 04          180    180 DSK540:	IN	A,(PARLEL)	;FAST SEEK DONE?
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 4
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 4
 Source file: rdos1.asm
 Title:       
 
@@ -258,7 +258,7 @@ c0aa  db 34          237    237 DWR250:	IN	A,(DFLAGS)	;WAIT FOR REQUEST
 c0ac  1f             238    238 	RRA			;CHECK FOR INTREQ
 c0ad  38 c2          239    239 	JR	C,EREXIT	;END OF SECTOR OR ERROR
 c0af  ed a3          240    240 	OUTI			;READ A BYTE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 5
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 5
 Source file: rdos1.asm
 Title:       
 
@@ -281,7 +281,7 @@ c0b4  18 b6          242    242 	JR	EXCCHK		;WAIT FOR INTREQ
                      256    256 ;REGISTERS A,F,B,C,D ARE CHANGED
                      257    257 ;
                      258    258 ;
-                     259    259 SETUP:
+c0b6                 259    259 SETUP:
 c0b6  cd cb c0       260    260 	CALL	SELECT		;GET SELECT BYTE
 c0b9  f6 80          261    261 	OR	80H		;TURN ON AUTO WAIT
 c0bb  57             262    262 	LD	D,A		;SAVE CONTROL BYTE
@@ -323,7 +323,7 @@ c0d1  17             297    297 SEL300: RLA
 c0d2  10 fd          298    298 	DJNZ	SEL300
 c0d4  b1             299    299 	OR	C		;MAXI FLAG
 c0d5  f6 20          300    300 	OR	20H		;MOTOR ON
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 6
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 6
 Source file: rdos1.asm
 Title:       
 
@@ -353,7 +353,7 @@ c0ea  c9             320    320 	RET
                      323    323 ; COMMAND
                      324    324 ; CHANGE BAUD RATE OF THE SERIAL PORT
                      325    325 ;
-                     326    326 INITBR:
+c0eb                 326    326 INITBR:
 c0eb  cd 29 c2       327    327 	CALL	SKSGCR		;REQUIRE CR
                      328    328 ;				;[CONTINUE BELOW]
                      329    329 ;
@@ -383,12 +383,12 @@ c105  c9             350    350 	RET
                      353    353 ; COMMAND
                      354    354 ; CHANGE LOCATION OF THE SYSTEM STACK
                      355    355 ;
-                     356    356 KICKSTK:
+c106                 356    356 KICKSTK:
 c106  cd 85 c2       357    357 	CALL	L1NCR
 c109  18 13          358    358 	JR	LOADIX		;IX STORES INITIAL SP VALUE
                      359    359 ;
                      360    360 ;
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 7
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 7
 Source file: rdos1.asm
 Title:       
 
@@ -401,20 +401,20 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      366    366 ; DE -> THE DISK FLAGS.  [THIS IS ALSO
                      367    367 ; THE TOP OF THE STACK.]
                      368    368 ;
-                     369    369 MONITR:
+c10b                 369    369 MONITR:
 c10b  cd f7 c2       370    370 	CALL	PMSGFOLLOWING
 c10e  0d 0d 43 52    371    371 	DEFB	CR,CR,'CROMEMCO RDOS',('1'+80H)
 c112  4f 4d 45 4d    371    372
 c116  43 4f 20 52    371    373
 c11a  44 4f 53 b1    371    374
                      372    375 ;
-                     373    376 LOADIX:
+c11e                 373    376 LOADIX:
 c11e  97             374    377 	SUB	A
 c11f  12             375    378 	LD	(DE),A		;CLEAR DISK MODE
 c120  d5             376    379 	PUSH	DE
 c121  dd e1          377    380 	POP	IX		;IX STORES INITIAL SP VALUE
                      378    381 ;
-                     379    382 CLEANSTACK:
+c123                 379    382 CLEANSTACK:
 c123  dd f9          380    383 	LD	SP,IX		;RE-INITIALIZE SP
                      381    384 ;
                      382    385 ;
@@ -453,7 +453,7 @@ c157  11 d2 c3       414    417 	LD	DE,CMNDTBL
 c15a  19             415    418 	ADD	HL,DE		; + TBL ADDR
 c15b  5e             416    419 	LD	E,(HL)
 c15c  23             417    420 	INC	HL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 8
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 8
 Source file: rdos1.asm
 Title:       
 
@@ -467,7 +467,7 @@ c161  e9             421    424 	JP	(HL)
                      424    427 ; DISK SELECT
                      425    428 ; ENTER WITH E CONTAINING THE DISK NUMBER
                      426    429 ;
-                     427    430 DISKSELECT:
+c162                 427    430 DISKSELECT:
 c162  7b             428    431 	LD	A,E		;DISK NUMBER
 c163  fe 04          429    432 	CP	NDRIVES		;A THROUGH D ONLY
 c165  30 4e          430    433 	JR	NC,ERROR
@@ -503,10 +503,10 @@ c191  1a             459    462 	LD	A,(DE)		;DISK FLAGS
 c192  cd 3f c0       460    463 	CALL	DHOME
 c195  3e 48          461    464 	LD	A,'H'		;IN CASE OF HOME ERROR
                      462    465 ;
-                     463    466 DERRCK:
+c197                 463    466 DERRCK:
 c197  c8             464    467 	RET	Z		;IF NO ERROR, DONE
                      465    468 ;
-                     466    469 PERRMSG:
+c198                 466    469 PERRMSG:
 c198  cd f7 c2       467    470 	CALL	PMSGFOLLOWING
 c19b  20 45 52 52    468    471 	DEFB	' ERR',(' '+80H)
 c19f  a0             468    472
@@ -517,8 +517,8 @@ c1a3  78             470    474 	LD	A,B		;ERROR NUMBER
                      473    477 ; PRINT THE 2 HEX DIGITS IN THE A-REGISTER
                      474    478 ; AND CLEAN STACK.
                      475    479 ;
-                     476    480 P2HXCLEAN:
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 9
+c1a4                 476    480 P2HXCLEAN:
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 9
 Source file: rdos1.asm
 Title:       
 
@@ -529,7 +529,7 @@ c1a7  18 10          478    482 	JR	CLEANV
                      480    484 ;
                      481    485 ; PRINT CRLF
                      482    486 ;
-                     483    487 CRLF:
+c1a9                 483    487 CRLF:
 c1a9  3e 0d          484    488 	LD	A,CR
 c1ab  18 44          485    489 	JR	PCHR
                      486    490 ;
@@ -537,7 +537,7 @@ c1ab  18 44          485    489 	JR	PCHR
                      488    492 ; COMMAND
                      489    493 ; EXAMINE INPUT PORT
                      490    494 ;
-                     491    495 EXMINPUT:
+c1ad                 491    495 EXMINPUT:
 c1ad  cd 85 c2       492    496 	CALL	L1NCR
 c1b0  4b             493    497 	LD	C,E		;PORT #
 c1b1  ed 78          494    498 	IN	A,(C)
@@ -547,11 +547,11 @@ c1b3  18 ef          495    499 	JR	P2HXCLEAN	;PRINT THE VALUE, CRLF
                      498    502 ; ERROR & ESCAPE. RETURN TO CMND WITH SP
                      499    503 ; RE-INITIALIZED.
                      500    504 ;
-                     501    505 ERROR:
+c1b5                 501    505 ERROR:
 c1b5  cd f7 c2       502    506 	CALL	PMSGFOLLOWING
 c1b8  bf             503    507 	DEFB	('?'+80H)
-                     504    508 ESCAPE:
-                     505    509 CLEANV:
+c1b9                 504    508 ESCAPE:
+c1b9                 505    509 CLEANV:
 c1b9  c3 23 c1       506    510 	JP	CLEANSTACK
                      507    511 ;
                      508    512 ;
@@ -559,7 +559,7 @@ c1b9  c3 23 c1       506    510 	JP	CLEANSTACK
                      510    514 ; ROUTINES.  PRESERVES HL AND, BEFOR RETURNING,
                      511    515 ; POPS DE AND BC FROM THE STACK.
                      512    516 ;
-                     513    517 NEXTSC:
+c1bc                 513    517 NEXTSC:
 c1bc  d9             514    518 	EXX
 c1bd  e1             515    519 	POP	HL		;RETURN ADDR
 c1be  d9             516    520 	EXX
@@ -583,7 +583,7 @@ c1d5  e5             533    537 	PUSH	HL		;RETURN ADDR
 c1d6  d9             534    538 	EXX
 c1d7  c0             535    539 	RET	NZ		;IF ERROR, DONE
                      536    540 ;
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 10
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 10
 Source file: rdos1.asm
 Title:       
 
@@ -648,7 +648,7 @@ c222  d6 20          593    597 	SUB	20H
 c224  c9             594    598 	RET
                      595    599 ;
                      596    600 ;
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 11
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 11
 Source file: rdos1.asm
 Title:       
 
@@ -687,7 +687,7 @@ c23a  cd 82 c2       625    629 VERIF:	CALL	L3NCR		;GET 3 OPERANDS
                      628    632 ; SOURCE IN HL, DESTINATION IN DE & COUNT
                      629    633 ; IN BC.  ALTERS ALL REGISTERS.
                      630    634 ;
-                     631    635 VRFY:
+c23d                 631    635 VRFY:
 c23d  1a             632    636 	LD	A,(DE)
 c23e  ed a1          633    637 	CPI			;COMPARE TO SOURCE
 c240  2b             634    638 	DEC	HL
@@ -705,7 +705,7 @@ c255  18 e6          645    649 	JR	VRFY
                      646    650 ;
                      647    651 ;	COMMAND
                      648    652 ;
-                     649    653 MOVE:
+c257                 649    653 MOVE:
 c257  cd 82 c2       650    654 	CALL	L3NCR		;OPERANDS
 c25a  e5             651    655 	PUSH	HL
 c25b  d5             652    656 	PUSH	DE
@@ -713,7 +713,7 @@ c25c  c5             653    657 	PUSH	BC
 c25d  ed b0          654    658 	LDIR
 c25f  c1             655    659 	POP	BC
 c260  d1             656    660 	POP	DE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 12
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 12
 Source file: rdos1.asm
 Title:       
 
@@ -778,7 +778,7 @@ c288  18 9f          703    707 	JR	SKSGCR		;WAIT FOR A CR
 c28a  97             714    718 GNHLO:	SUB	A
                      715    719 ;
 c28b  c5             716    720 GNHL:	PUSH	BC		;SAVE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 13
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 13
 Source file: rdos1.asm
 Title:       
 
@@ -843,7 +843,7 @@ c2c5  c9             768    772 	RET
                      774    778 ;
 c2c6  cd ef c1       775    779 PSNM:	CALL	SPACE
                      776    780 ; (CONTINUE BELOW)
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 14
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 14
 Source file: rdos1.asm
 Title:       
 
@@ -908,13 +908,13 @@ c2f6  c9             831    835 	RET
                      834    838 ; PRINTS THE MESSAGE FOLLOWING THE CALL
                      835    839 ; TO THIS ROUTINE.
                      836    840 ; PRESERVES ALL REGISTERS
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 15
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 15
 Source file: rdos1.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      837    841 ;
-                     838    842 PMSGFOLLOWING:
+c2f7                 838    842 PMSGFOLLOWING:
 c2f7  e3             839    843 	EX	(SP),HL
 c2f8  cd ec c2       840    844 	CALL	PMSG
 c2fb  e3             841    845 	EX	(SP),HL
@@ -926,7 +926,7 @@ c2fc  c9             842    846 	RET
                      847    851 ; GO <ADDR>
                      848    852 ; EXECUTION BEGINS AT ADDR.
                      849    853 ;
-                     850    854 GO:
+c2fd                 850    854 GO:
 c2fd  e1             851    855 	POP	HL		;CLEAN STACK
 c2fe  cd 85 c2       852    856 	CALL	L1NCR		;GET ADDR
 c301  eb             853    857 	EX	DE,HL
@@ -937,7 +937,7 @@ c302  e9             854    858 	JP	(HL)
                      858    862 ;
                      859    863 ; DM <STARTING ADDR> <ENDING ADDR OR SWATH>
                      860    864 ;
-                     861    865 DSPM:
+c303                 861    865 DSPM:
 c303  20 36          862    866 	JR	NZ,ERRORV	;IF NOT 'M', ERROR
 c305  cd 25 c2       863    867 	CALL	L2NCR0		;GET OPERANDS
 c308  16 10          864    868 DSPM1:	LD	D,16		;BYTE COUNT
@@ -953,17 +953,17 @@ c31b  cc ef c1       873    877 	CALL	Z,SPACE
 c31e  18 ed          874    878 	JR	DM2
                      875    879 ;
                      876    880 ;
-                     877    881 SHANDLER:
+c320                 877    881 SHANDLER:
 c320  28 1c          878    882 	JR	Z,SUBSM		;IF 'M', SUBSM
                      879    883 ;
                      880    884 ;
                      881    885 ; DISK SEEK
                      882    886 ;
-                     883    887 SEEKR:
+c322                 883    887 SEEKR:
 c322  cb 69          884    888 	BIT	DISKMODE,C
 c324  28 15          885    889 	JR	Z,ERRORV
 c326  cd 85 c2       886    890 	CALL	L1NCR		;E = TRACK #
-                     887    891 SEEKNXT:
+c329                 887    891 SEEKNXT:
 c329  3e 4c          888    892 	LD	A,76		;MAX TRACK #, MAXI DISK
 c32b  16 27          889    893 	LD	D,39		;MAX TRACK #, MINI DISK
 c32d  cd b2 c3       890    894 	CALL	CHKNO		;CHECK #
@@ -973,7 +973,7 @@ c333  cd 54 c0       893    897 	CALL	DSEEK
 c336  3e 53          894    898 	LD	A,'S'		;IN CASE OF SEEK ERROR
                      895    899 ;
 c338  c3 97 c1       896    900 DERCKV:	JP	DERRCK		;DISK ERROR CHECK
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 16
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 16
 Source file: rdos1.asm
 Title:       
 
@@ -987,7 +987,7 @@ c33b  c3 b5 c1       899    903 ERRORV:	JP	ERROR
                      903    907 ;
                      904    908 ; SM <ADDR>
                      905    909 ;
-                     906    910 SUBSM:
+c33e                 906    910 SUBSM:
 c33e  97             907    911 	SUB	A
 c33f  cd 85 c2       908    912 	CALL	L1NCR
 c342  eb             909    913 	EX	DE,HL		;HL GETS ADDR
@@ -1016,13 +1016,13 @@ c369  a5             931    935 	AND	L		;ITS A MULTIPLE OF 8
 c36a  18 d7          932    936 	JR	SM1
                      933    937 ;
                      934    938 ;
-                     935    939 RHANDLER:
+c36c                 935    939 RHANDLER:
 c36c  fe 44          936    940 	CP	'D'+CASE
 c36e  20 cb          937    941 	JR	NZ,ERRORV
                      938    942 ;
                      939    943 ; READ DISK
                      940    944 ;
-                     941    945 READDR:
+c370                 941    945 READDR:
 c370  cd 94 c3       942    946 	CALL	SECSETUP
 c373  c5             943    947 RD2:	PUSH	BC
 c374  e5             944    948 	PUSH	HL
@@ -1033,18 +1033,18 @@ c37b  cd bc c1       948    952 	CALL	NEXTSC		;NEXT SECTOR [POPS STK.]
 c37e  18 f3          949    953 	JR	RD2
                      950    954 ;
                      951    955 ;
-                     952    956 WHANDLER:
+c380                 952    956 WHANDLER:
 c380  fe 44          953    957 	CP	'D'+CASE
 c382  20 b7          954    958 	JR	NZ,ERRORV
                      955    959 ;
                      956    960 ; WRITE DISK
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 17
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 17
 Source file: rdos1.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      957    961 ;
-                     958    962 WRITDR:
+c384                 958    962 WRITDR:
 c384  cd 94 c3       959    963 	CALL	SECSETUP
 c387  c5             960    964 WD2:	PUSH	BC
 c388  e5             961    965 	PUSH	HL
@@ -1058,7 +1058,7 @@ c392  18 f3          966    970 	JR	WD2
                      969    973 ; GET MEMORY ADDRESS, SECTOR # AND CHECK IT,
                      970    974 ; AND LOAD B & C
                      971    975 ;
-                     972    976 SECSETUP:
+c394                 972    976 SECSETUP:
 c394  cb 69          973    977 	BIT	DISKMODE,C
 c396  28 a3          974    978 	JR	Z,ERRORV
 c398  c5             975    979 	PUSH	BC
@@ -1070,7 +1070,7 @@ c3a0  38 99          979    983 	JR	C,ERRORV
                      981    985 ;
                      982    986 ; PRINT TRACK & SECTOR #'S
                      983    987 ;
-                     984    988 PTRKSC:
+c3a2                 984    988 PTRKSC:
 c3a2  db 31          985    989 	IN	A,(DTRACK)
 c3a4  57             986    990 	LD	D,A
 c3a5  eb             987    991 	EX	DE,HL
@@ -1081,12 +1081,12 @@ c3ab  16 0a          991    995 	LD	D,10		;# OF RETRIALS
 c3ad  c9             992    996 	RET
                      993    997 ;
                      994    998 ;
-                     995    999 CHKSECNO:
+c3ae                 995    999 CHKSECNO:
 c3ae  3e 1a          996   1000 	LD	A,26		;MAX SEC #, MAXI DISK
 c3b0  16 12          997   1001 	LD	D,18		;MAX SEC #, MINI DISK
                      998   1002 ;
                      999   1003 ;
-                    1000   1004 CHKNO:
+c3b2                1000   1004 CHKNO:
 c3b2  cb 61         1001   1005 	BIT	MAXI,C
 c3b4  20 01         1002   1006 	JR	NZ,CN2
 c3b6  7a            1003   1007 	LD	A,D
@@ -1103,7 +1103,7 @@ c3be  c9            1010   1014 	RET
                     1014   1018 ; OUT <DATA-BYTE> <PORT NUMBER>
                     1015   1019 ;
 c3bf  cd 8b c2      1016   1020 OUTP:	CALL	GNHL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 18
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 18
 Source file: rdos1.asm
 Title:       
 
@@ -1123,7 +1123,7 @@ c3ca  90 c0 a0 90   1028   1032 BAUDRS:	DEFB	90H,0C0H,0A0H,90H,88H,84H,82H,1
 c3ce  88 84 82 01   1028   1033
                     1029   1034 ;
                     1030   1035 ;
-                    1031   1036 CMNDTBL:
+c3d2                1031   1036 CMNDTBL:
 c3d2  b5 c1         1032   1037 	DEFW	ERROR		;A
 c3d4  15 c0         1033   1038 	DEFW	BOOTMC		;BOOT CDOS
 c3d6  b5 c1         1034   1039 	DEFW	ERROR		;C
@@ -1152,7 +1152,7 @@ c3fe  80 c3         1054   1059 	DEFW	WHANDLER	;WRITE DISK
 c3ff                1057   1062 LASTBYTE: EQU	$-1
                     1058   1063 ;
 c400                1059   1064 	END
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:30:05 2022	Page 19
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:19:27 2022	Page 19
 Source file: rdos1.asm
 Title:       Symbol table
 

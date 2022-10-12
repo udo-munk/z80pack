@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 1
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 1
 Source file: zapple.asm
 Title:       
 
@@ -63,7 +63,7 @@ efff                  28     28 IOBYT	EQU	0EFFFH	     ;MEMORY LOCATION FOR TEMP.
                       58     58 ;
                       59     59 ;-C.R.T. SYSTEM
                       60     60 ;
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 2
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 2
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -128,7 +128,7 @@ ffff                  79     79 TRUE	EQU	~FALSE       ;IT IS SO
                      118    118 ;
                      119    119 ;
                      120    120 ;	VECTOR FOR USER DEFINED ROUTINES
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 3
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 3
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -193,7 +193,7 @@ f00f  c3 9f f4       177    177 	JP	LO	     ;LIST OUTPUT
 f012  c3 11 f5       178    178 	JP	CSTS	     ;CONSOLE STATUS
 f015  c3 10 f1       179    179 	JP	IOCHK	     ;I/O CHECK
 f018  c3 0b f1       180    180 	JP	IOSET	     ;I/O SET
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 4
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 4
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -218,7 +218,7 @@ f02e  31 2e 31       187    189 	DEFB	'1.1'
                      196    198 ; (OR STANDARD ROUTINES FOR INITILIZATION
                      197    199 ; MAY BE LOADED & EXECUTED IN THE USER AREA).
                      198    200 ;
-                     199    201 BEGIN:
+f031                 199    201 BEGIN:
 f031  3e 03          200    202 	LD	A,3	     ;RESET BOTH MITS 2SIO ACIA
 f033  d3 10          201    203 	OUT	(TTS),A
 f035  d3 12          202    204 	OUT	(TTS2),A
@@ -258,7 +258,7 @@ f064  cd 42 f4       235    237 	CALL	TOM	     ;OUTPUT SIGN-ON MSG
 f067  11 67 f0       236    238 START:	LD	DE,START     ;MAIN 'WORK' LOOP
 f06a  d5             237    239 	PUSH	DE	     ;SET UP A RETURN TO HERE
 f06b  cd 09 f5       238    240 	CALL	CRLF
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 5
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 5
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -286,7 +286,7 @@ f08e  e9             258    260 	JP	(HL)	     ;GO EXECUTE COMMAND
                      259    261 ;
                      260    262 ;		<COMMAND BRANCH TABLE>
                      261    263 ;
-                     262    264 TBL:	
+f08f                 262    264 TBL:	
 f08f  c3 f0          263    265 	DEFW	ASSIGN	    ;A - ASSIGN I/O
 f091  14 f1          264    266 	DEFW	BYE	    ;B - SYSTEM SHUT-DOWN
 f093  41 f1          265    267 	DEFW	COMP	    ;C - COMPARE MEMORY VS. READER INPUT
@@ -323,7 +323,7 @@ f0c1  6e f4          291    293 	DEFW	SIZE	    ;Z - ADDRESS OF LAST R/W LOCATION
                      296    298 ; OF THE VARIOUS I/O DRIVERS & DEVICES. THIS IS
                      297    299 ; ACCOMPLISHED VIA A HARDWARE READ/WRITE PORT.
                      298    300 ;	THIS PORT IS INITIALIZED UPON SIGN-ON
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 6
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 6
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -388,7 +388,7 @@ f10a  4f             355    357 	LD	C,A	     ;NEW CONFIGURATION
                      356    358 ;
                      357    359 ; THIS ALLOWS USER PROGRAMS TO MODIFY
                      358    360 ; THE I/O CONFIGURATIMN DYNAMICALLY
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 7
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 7
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -404,7 +404,7 @@ f10f  c9             365    367 	RET
                      367    369 ; THIS RETURNS THE CURRENT I/O
                      368    370 ; CONFIGURATION IN THE A REG.
                      369    371 ;
-                     370    372 IOCHK:	;IN	A,(IOBYT)    ;GET SAVED VALUE
+f110                 370    372 IOCHK:	;IN	A,(IOBYT)    ;GET SAVED VALUE
                      371    373 ;	CPL		     ;AND INVERT IT AGAIN
 f110  3a ff ef       372    374 	LD	A,(IOBYT)    ;GET SAVED VALUE
 f113  c9             373    375 	RET	
@@ -453,7 +453,7 @@ f13f  18 f7          411    413 	JR	PUTA2	     ;ECHO & CONTINUE
                      416    418 ; WILL BE OUTPUT TO THE CONSOLE. THIS IS USEFUL
                      417    419 ; WHEN USED WITH THE BINARY DUMP FORMAT TO BOTH
                      418    420 ; VERIFY PROPER READING & STORAGE, OR TO DETECT
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 8
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 8
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -518,7 +518,7 @@ f18f  cd e8 f5       475    477 	CALL	PADR	     ;PUNCH IT
 f192  c3 ee f4       476    478 	JP	NULL	     ;TRAILER & RETURN
                      477    479 ;
                      478    480 ; THIS COMMAND WILL FILL A BLOCK OF MEMORY
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 9
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 9
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -583,7 +583,7 @@ f1cb  23             535    537 	INC	HL
 f1cc  70             536    538 	LD	(HL),B
 f1cd  23             537    539 	INC	HL
 f1ce  0a             538    540 	LD	A,(BC)	     ;PICK UP INST. BYTE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 10
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 10
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -648,7 +648,7 @@ f20c  18 e5          586    588 	JR	TEST1
 f20e  cd 2d f5       596    598 MOVE:	CALL	EXPR3	     ;GET 3 PARAMETERS
 f211  7e             597    599 MO1:	LD	A,(HL)	     ;PICK UP
 f212  02             598    600 	LD	(BC),A	     ;PUT DOWN
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 11
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 11
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -713,7 +713,7 @@ f24a  e3             655    657 	EX	(SP),HL	     ;RESTORE HL'
 f24b  dd e1          656    658 	POP	IX	     ; X=BIAS+LOAD
 f24d  d9             657    659 	EXX		     ;DOWNSHIFT
 f24e  e1             658    660 	POP	HL	     ;HL=LOAD ADDR
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 12
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 12
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -778,7 +778,7 @@ f2ad  cd b3 f2       715    717 LC1:	CALL	SBYTE	     ;GET A DATA BYTE
 f2b0  cb 24          716    718 	SLA	H	     ;TEST NEXT BIT
 f2b2  c9             717    719 	RET	
 f2b3  c5             718    720 SBYTE:	PUSH	BC	     ;PRESERVE BC
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 13
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 13
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -843,7 +843,7 @@ f2f1  e6 07          775    777 	AND	7
 f2f3  cc 75 f4       776    778 	CALL	Z,LFADR	     ;TIME TO CRLF
 f2f6  18 de          777    779 	JR	SUB0
 f2f8  2b             778    780 SUB2:	DEC	HL	     ;DECREMENT POINTER
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 14
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 14
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -908,7 +908,7 @@ f338  dd e1          835    837 	POP	IX	     ;X=SEARCH BYTE POINTER
 f33a  5a             836    838 	LD	E,D	     ;RESET COUNTER
 f33b  dd 7e 00       837    839 	LD	A,(IX+0)     ;GET THE FIRST SEARCH BYTE
 f33e  ed b1          838    840 	CPIR		     ;COMPARE, INCR., & REPEAT
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 15
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 15
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -973,7 +973,7 @@ f399  af             895    897 	XOR	A
 f39a  92             896    898 	SUB	D	     ;CALCULATE CHECKSUM
 f39b  c3 ed f5       897    899 	JP	PBYTE	     ;PUNCH IT, RETURN
 f39e  e1             898    900 WRT4:	POP	HL	     ;CLEAR STACK
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 16
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 16
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1038,7 +1038,7 @@ f3df  1a             955    957 	LD	A,(DE)
 f3e0  cd 87 f5       956    958 	CALL	LBYTE
 f3e3  cd 04 f6       957    959 XAM3:	CALL	COPCK	     ;MODIFY
 f3e6  d8             958    960 	RET	C	     ;CR ENTERED, ALL DONE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 17
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 17
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1103,7 +1103,7 @@ f43b  1b            1015   1017 	DEC	DE
 f43c  1a            1016   1018 	LD	A,(DE)
 f43d  6f            1017   1019 	LD	L,A	     ;LOW BYTE
 f43e  7e            1018   1020 	LD	A,(HL)	     ;GET VALUE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 18
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 18
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1168,7 +1168,7 @@ f46d  c9            1065   1067 	RET
 f46e  cd b1 f5      1076   1078 SIZE:	CALL	MEMSIZ	     ;GET THE VALUE
 f471  01 23 00      1077   1079 	LD	BC,ENDX-EXIT
 f474  09            1078   1080 	ADD	HL,BC	     ;ADJUST IT
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 19
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 19
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1233,7 +1233,7 @@ f4a4  28 de         1135   1137 	JR	Z,TTYOUT
 f4a6  fe 40         1136   1138 	CP	LCRT
 f4a8  28 e7         1137   1139 	JR	Z,CRTOUT
 f4aa  fe 80         1138   1140 	CP	LINE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 20
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 20
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1298,7 +1298,7 @@ f4ee  cd 9b f5      1195   1197 NULL:	CALL	LEAD	     ;PUNCH NULLS
                     1196   1198 ;
                     1197   1199 ; THIS ROUTINE WILL PAUSE FOR
                     1198   1200 ; A KEYBOARD CHARACTER. IT IS
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 21
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 21
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1363,7 +1363,7 @@ f518  db 10         1255   1257 	IN	A,(TTS)
 f51a  18 05         1256   1258 	JR	CS1
 f51c  3d            1257   1259 CS0:	DEC	A	     ;CCRT
 f51d  20 09         1258   1260 	JR	NZ,CS3
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 22
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 22
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1428,7 +1428,7 @@ f55e  c9            1315   1317 	RET		     ;ELSE RETURN
 f55f  0e 01         1316   1318 EXF:	LD	C,1
 f561  21 00 00      1317   1319 	LD	HL,0
 f564  18 da         1318   1320 	JR	EX1
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 23
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 23
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1493,7 +1493,7 @@ f596  01 ff 08      1375   1377 MARK:	LD	BC,08FFH     ;SET-UP B&C
 f599  18 03         1376   1378 	JR	LE0
                     1377   1379 ;
                     1378   1380 ; THIS ROUTINE SENDS BLANKS TO THE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 24
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 24
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1558,7 +1558,7 @@ f5ce  25            1435   1437 MEM2:	DEC	H	     ;BACK UP, SUBTRACT WORKSPACE
 f5cf  01 dd ff      1436   1438 	LD	BC,EXIT-ENDX
 f5d2  09            1437   1439 	ADD	HL,BC
 f5d3  c1            1438   1440 	POP	BC	     ;RESTORE BC
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 25
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 25
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1623,7 +1623,7 @@ f617  c9            1495   1497 	RET
                     1496   1498 ;
                     1497   1499 ; MAIN CONSOLE INPUT ROUTINE
                     1498   1500 ;
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 26
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 26
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1688,7 +1688,7 @@ f655  c9            1555   1557 	RET
 f656  db 11         1556   1558 RI2:	IN	A,(TTI)
 f658  b7            1557   1559 RID:	OR	A
 f659  e1            1558   1560 	POP	HL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 27
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 27
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1753,7 +1753,7 @@ f6af  bb            1615   1617 	CP	E	     ;FOUND MAX?
 f6b0  20 f5         1616   1618 	JR	NZ,ELOA0     ;NOPE
 f6b2  c3 82 f5      1617   1619 	JP	LADR	     ;YEP, PRINT END ADDR
 f6b5  72            1618   1620 ELOA1:	LD	(HL),D
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 28
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 28
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1770,7 +1770,7 @@ f6bb  18 df         1623   1625 	JR	LOAD3
                     1628   1630 ; ARE RESTORED WHEN EXECUTING A "GO" (G)
                     1629   1631 ; COMMAND.
                     1630   1632 ;
-                    1631   1633 RESTART:
+f6bd                1631   1633 RESTART:
 f6bd  e5            1632   1634 	PUSH	HL	     ;PUSH ALL REGISTERS
 f6be  d5            1633   1635 	PUSH	DE
 f6bf  c5            1634   1636 	PUSH	BC
@@ -1818,7 +1818,7 @@ f6f6  23            1675   1677 	INC	HL
 f6f7  23            1676   1678 	INC	HL
 f6f8  71            1677   1679 	LD	(HL),C	     ;AND USER P.C.
 f6f9  23            1678   1680 	INC	HL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 29
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 29
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1883,7 +1883,7 @@ f73b  c8            1735   1737 	RET	Z
 f73c  fe 4e         1736   1738 	CP	'N'	     ;IGNORE N'S FOR NULL CMND
 f73e  c8            1737   1739 	RET	Z
 f73f  fe 6e         1738   1740 	CP	'n'
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 30
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 30
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1948,7 +1948,7 @@ f784  0a            1795   1797 VERI0:	LD	A,(BC)
 f785  be            1796   1798 	CP	(HL)
 f786  28 05         1797   1799 	JR	Z,VERI1
 f788  c5            1798   1800 	PUSH	BC
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 31
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 31
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -1966,7 +1966,7 @@ f791  18 f1         1803   1805 	JR	VERI0
                     1809   1811 ; NAMES OF THE FOUR POSSIBLE DRIVERS TO BE
                     1810   1812 ; ASSIGNED.
                     1811   1813 ;
-                    1812   1814 LTBL:	
+f793                1812   1814 LTBL:	
 f793  43            1813   1815 	DEFB	'C'	     ;CONSOLE ASSIGNMENTS
 f794  54            1814   1816 	DEFB	'T'	     ;CTTY	T=TELEPRINTER
 f795  43            1815   1817 	DEFB	'C'	     ;CCRT	C=CRT (VIDEO MONITOR)
@@ -1998,7 +1998,7 @@ f7a6  55            1835   1837 	DEFB	'U'	     ;LUSER	USER
                     1841   1843 ; THE MONITOR IS INITIALIZED, AS IT
                     1842   1844 ; REQUIRES RAM FOR PROPER OPERATION.
                     1843   1845 ;
-                    1844   1846 EXIT:			     ;EXIT ROUTINE (LOADS ALL REGISTERS)
+f7a7                1844   1846 EXIT:			     ;EXIT ROUTINE (LOADS ALL REGISTERS)
 f7a7  c1            1845   1847 	POP	BC
 f7a8  79            1846   1848 	LD	A,C
 f7a9  ed 4f         1847   1849 	LD	R,A
@@ -2013,7 +2013,7 @@ f7b5  e1            1855   1857 	POP	HL
 f7b6  08            1856   1858 	EX	AF,AF'	
 f7b7  d9            1857   1859 	EXX	
 f7b8  d1            1858   1860 	POP	DE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 32
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 32
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -2035,7 +2035,7 @@ f7c9  00            1870   1872 	DEFB	0
                     1873   1875 ; STORAGE FROM NORMAL STACK
                     1874   1876 ; LOCATION.
                     1875   1877 ;
-                    1876   1878 ENDX:	
+f7ca                1876   1878 ENDX:	
                     1877   1879 ;
 0015                1878   1880 ALOC	EQU	15H
 0013                1879   1881 BLOC	EQU	13H
@@ -2077,8 +2077,8 @@ f7c9  00            1870   1872 	DEFB	0
                     1915   1917 ;			10XXXXXX=WORD
                     1916   1918 ;			11XXXXXX=SPECIAL FOR "M" REG.
                     1917   1919 ;
-                    1918   1920 ACTBL:		;NORMAL SET OF REGISTERS (8080)
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 33
+f7ca                1918   1920 ACTBL:		;NORMAL SET OF REGISTERS (8080)
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 33
 Source file: zapple.asm
 Title:       <Zapple Monitor, Version 1.11, Dec. 18, 1976>
 
@@ -2099,7 +2099,7 @@ f7de  53 97         1931   1933 	DEFB	'S',SLOC | 080H
 f7e0  49 03         1932   1934 	DEFB	'I',ILOC | 0
 f7e2  80            1933   1935 	DEFB	80H
                     1934   1936 ;
-                    1935   1937 PRMTB:		;ADDITIONAL SET OF REGISTERS (Z-80)
+f7e3                1935   1937 PRMTB:		;ADDITIONAL SET OF REGISTERS (Z-80)
                     1936   1938 ;
 f7e3  41 09         1937   1939 	DEFB	'A',APLOC | 0
 f7e5  42 0b         1938   1940 	DEFB	'B',BPLOC | 0
@@ -2115,12 +2115,12 @@ f7f7  59 85         1947   1949 	DEFB	'Y',YLOC | 080H
 f7f9  52 02         1948   1950 	DEFB	'R',RLOC | 0
 f7fb  80            1949   1951 	DEFB	80H
                     1950   1952 ;
-                    1951   1953 Z:	
+f7fc                1951   1953 Z:	
                     1952   1954 		;END OF PROGRAM
                     1953   1955 ;
                     1954   1956 ;
 f7fc                1955   1957 	END
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 34
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 34
 Source file: zapple.asm
 Title:       Symbol table
 
@@ -2186,7 +2186,7 @@ SUB0     f2d6 	SUB1     f2ef 	SUB2     f2f8 	SUB3     f2f0
 SUBS     f2d2 	SWITCH   00ff 	TBL      f08f 	TELL     f354 	
 TEST     f1f0 	TEST1    f1f3 	TEST2    f208 	TI       f735 	
 TI0      f753 	TLOC     0035 	TLOCX    0025 	TOM      f442 	
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 11:24:39 2022	Page 35
+Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:35 2022	Page 35
 Source file: zapple.asm
 Title:       Symbol table
 
