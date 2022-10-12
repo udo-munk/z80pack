@@ -52,11 +52,11 @@ extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
  *	must be sorted in ascending order!
  */
 struct opc opctab_psd[] = {
-	{ ".8080",	op_opset,	1,	0,	OP_NOLBL },
+	{ ".8080",	op_opset,	2,	0,	OP_NOLBL },
 	{ ".DEPHASE",	op_org,		3,	0,	OP_NOLBL },
 	{ ".PHASE",	op_org,		2,	0,	OP_NOLBL },
 	{ ".RADIX",	op_radix,	0,	0,	OP_NOLBL },
-	{ ".Z80",	op_opset,	2,	0,	OP_NOLBL },
+	{ ".Z80",	op_opset,	1,	0,	OP_NOLBL },
 	{ "ABS",	op_glob,	3,	0,	OP_NOLBL },
 	{ "ASEG",	op_glob,	3,	0,	OP_NOLBL },
 	{ "ASET",	op_dl,		0,	0,	OP_SET	 },

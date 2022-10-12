@@ -63,11 +63,11 @@ int op_opset(int op_code, int dummy)
 
 	ad_mode = AD_NONE;
 	switch (op_code) {
-	case 1:				/* .8080 */
-		opset = OPSET_8080;
-		break;
-	case 2:				/* .Z80 */
+	case 1:				/* .Z80 */
 		opset = OPSET_Z80;
+		break;
+	case 2:				/* .8080 */
+		opset = OPSET_8080;
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_opset");
