@@ -69,7 +69,7 @@ Pseudo Operations:
 Definition of symbols and allocation of memory:
 
 	 ORG    <expression>    - set program address
-<symbol> .PHASE <expression>    - set logical program counter
+         .PHASE <expression>    - set logical program counter
 	 .DEPHASE               - end of logical phase block
 <symbol> EQU    <expression>    - define constant symbol
 <symbol> DEFL   <expression>    - define variable symbol

@@ -206,6 +206,7 @@ struct inc {
 #define E_INVEXP	18	/* invalid expression */
 #define E_BFRORG	19	/* code before first ORG (binary output) */
 #define E_ILLLBL	20	/* illegal label */
+#define E_MISDPH	21	/* missing .DEPHASE */
 
 /*
  *	definition of fatal errors
