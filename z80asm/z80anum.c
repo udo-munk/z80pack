@@ -94,6 +94,7 @@ struct opr oprtab[] = {
 	{ "OR",		T_OR		},
 	{ "SHL",	T_SHL		},
 	{ "SHR",	T_SHR		},
+	{ "TYPE",	T_TYPE		},
 	{ "XOR",	T_XOR		}
 };
 
@@ -337,6 +338,13 @@ int factor(int *resultp)
 	case T_VAL:
 		*resultp = tok_val;
 		return(get_token());
+	case T_SYM:
+		err = get_token();
+		if (sp)
+			*resultp = sp->sym_val;
+		else
+			err = E_UNDSYM;
+		return(err);
 	case T_LPAREN:
 		if ((err = get_token()) || (err = expr(&value)))
 			return(err);
@@ -354,6 +362,8 @@ int factor(int *resultp)
 	case T_NOT:
 	case T_HIGH:
 	case T_LOW:
+	case T_NUL:
+	case T_TYPE:
 		opr_type = tok_type;
 		if ((err = get_token()))
 			return(err);
@@ -363,47 +373,56 @@ int factor(int *resultp)
 		 *	unary + and - (which are also binary), return the
 		 *	symbol value.
 		 */
-		if (sp != NULL && (tok_type != T_VAL) && (tok_type != T_LPAREN)
-			       && (tok_type != T_NOT) && (tok_type != T_HIGH)
-			       && (tok_type != T_LOW) && (tok_type != T_SYM)) {
+		if (sp != NULL && tok_type != T_VAL && tok_type != T_SYM
+			       && tok_type != T_LPAREN && tok_type != T_NOT
+			       && tok_type != T_HIGH && tok_type != T_LOW
+			       && tok_type != T_NUL && tok_type != T_TYPE) {
 			*resultp = sp->sym_val;
 			return(E_NOERR);
-		}
-		if ((err = factor(&value)))
-			return(err);
-		switch (opr_type) {
-		case T_ADD:
-			*resultp = value;
-			break;
-		case T_SUB:
-			*resultp = -value;
-			break;
-		case T_NOT:
-			*resultp = ~value;
-			break;
-		case T_HIGH:
-			*resultp = (value >> 8) & 0xff;
-			break;
-		case T_LOW:
-			*resultp = value & 0xff;
-			break;
-		default:
-			break;
+		} else if (opr_type == T_NUL) {
+			*resultp = (tok_type == T_EMPTY) ? -1 : 0;
+			/* short circuit to end of expression */
+			while (*scan_pos != '\0')
+				scan_pos++;
+			tok_type = T_EMPTY;
+		} else if (opr_type == T_TYPE) {
+			err = factor(&value);
+			*resultp = (err ? 0x00 : 0x20);
+		} else {
+			if ((err = factor(&value)))
+				return(err);
+			switch (opr_type) {
+			case T_ADD:
+				*resultp = value;
+				break;
+			case T_SUB:
+				*resultp = -value;
+				break;
+			case T_NOT:
+				*resultp = ~value;
+				break;
+			case T_HIGH:
+				*resultp = (value >> 8) & 0xff;
+				break;
+			case T_LOW:
+				*resultp = value & 0xff;
+				break;
+			default:
+				break;
+			}
 		}
 		return(E_NOERR);
-	case T_SYM:
-		/* fallthrough */
 	default:
 		/*
-		 *	if the token is a T_SYM, or an unexpected word
-		 *	operator that was found in the symbol table,
-		 *	return the symbol value.
+		 *	if the token is an unexpected word operator
+		 *	that was found in the symbol table, return
+		 *	the symbol value.
 		 */
 		if (sp) {
 			*resultp = sp->sym_val;
 			return(get_token());
 		} else
-			return(tok_type == T_SYM ? E_UNDSYM : E_INVEXP);
+			return(E_INVEXP);
 	}
 }
 
@@ -535,16 +554,6 @@ int expr(int *resultp)
 	return(E_NOERR);
 }
 
-int top_expr(int *resultp)
-{
-	if (tok_type == T_NUL && get_sym(tok_sym) == NULL) {
-		*resultp = (*scan_pos == '\0') ? -1 : 0;
-		tok_type = T_EMPTY;
-		return(E_NOERR);
-	} else
-		return(expr(resultp));
-}
-
 int eval(char *s)
 {
 	int result, err;
@@ -555,7 +564,7 @@ int eval(char *s)
 	}
 	result = 0;
 	scan_pos = s;
-	if ((err = get_token()) || (err = top_expr(&result))) {
+	if ((err = get_token()) || (err = expr(&result))) {
 		asmerr(err);
 		return(0);
 	} else if (tok_type != T_EMPTY) {	/* leftovers, error out */
