@@ -16,6 +16,8 @@ Format of the output file:
 
 The default is Intel hex now, in earlier versions it was Mostek binary,
 but this format is not used much anymore.
+For z80sim produce Mostek binary or Intel hex files, it cannot load binary
+files that don't include the load address.
 
 Option s:
 This option prints the symbol table unsorted (-s), sorted by name (-sn)
