@@ -37,9 +37,8 @@
 
 void init(void), options(int, char *[]);
 void usage(void), fatal(int, char *);
-void pass1(void), p1_file(char *);
-void pass2(void), p2_file(char *);
-int p1_line(void), p2_line(void);
+void do_pass(void), pass_file(char *);
+int pass_line(char *);
 void open_o_files(char *), get_fn(char *, char *, char *);
 char *get_label(char *, char *);
 char *get_opcode(char *, char *);
@@ -82,8 +81,10 @@ int main(int argc, char *argv[])
 	init();
 	options(argc, argv);
 	printf("Z80 - Assembler Release %s, %s\n", REL, COPYR);
-	pass1();
-	pass2();
+	pass = 1;
+	do_pass();
+	pass = 2;
+	do_pass();
 	if (list_flag) {
 		switch (sym_flag) {
 		case 0:		/* no symbol table */
@@ -251,48 +252,59 @@ void fatal(int i, char *arg)
 }
 
 /*
- *	Pass 1:
- *	  - process all source files
+ *	process all source files
  */
-void pass1(void)
+void do_pass(void)
 {
 	register int fi;
 
-	pass = 1;
 	radix = 10;
 	rpc = pc = 0;
+	gencode = pass;
+	a_mode = A_STD;
 	fi = 0;
 	if (ver_flag)
-		puts("Pass 1");
-	open_o_files(infiles[fi]);
+		printf("Pass %d\n", pass);
+	if (pass == 1)				/* PASS 1 */
+		open_o_files(infiles[fi]);
+	else					/* PASS 2 */
+		obj_header();
 	while (infiles[fi] != NULL) {
 		if (ver_flag)
 			printf("   Read    %s\n", infiles[fi]);
-		p1_file(infiles[fi]);
+		pass_file(infiles[fi]);
 		fi++;
 	}
-	if (errors) {
+	if (pass == 1) {			/* PASS 1 */
+		if (errors) {
+			fclose(objfp);
+			unlink(objfn);
+			printf("%d error(s)\n", errors);
+			fatal(F_HALT, NULL);
+		}
+	} else {				/* PASS 2 */
+		obj_end();
 		fclose(objfp);
-		unlink(objfn);
 		printf("%d error(s)\n", errors);
-		fatal(F_HALT, NULL);
 	}
+
 }
 
 /*
- *	Pass 1:
- *	  - process one source file
+ *	process one source file
  *
  *	Input: name of source file
  */
-void p1_file(char *fn)
+void pass_file(char *fn)
 {
 	c_line = 0;
 	srcfn = fn;
 	if ((srcfp = fopen(fn, READA)) == NULL)
 		fatal(F_FOPEN, fn);
-	while (p1_line())
-		;
+	do {
+		if (fgets(line, MAXLINE, srcfp) == NULL)
+			break;
+	} while (pass_line(line));
 	fclose(srcfp);
 	if (phs_flag)
 		asmerr(E_MISDPH);
@@ -301,138 +313,59 @@ void p1_file(char *fn)
 }
 
 /*
- *	Pass 1:
- *	  - process one line of source
+ *	process one line of source from l
  *
  *	Output: 1 line processed
- *		0 EOF
+ *		0 END
  */
-int p1_line(void)
+int pass_line(char *l)
 {
 	register char *p;
-	register int i;
+	register int op_count, lbl_flag;
 	register struct opc *op;
 
-	if ((p = fgets(line, MAXLINE, srcfp)) == NULL)
-		return(0);
 	c_line++;
-	p = get_label(label, p);
+	op = NULL;
+	op_count = 0;
+	p = get_label(label, l);
 	p = get_opcode(opcode, p);
+	lbl_flag = (gencode > 0 && *label != '\0');
 	if (*opcode != '\0') {
 		if ((op = search_op(opcode)) != NULL) {
-			p = get_arg(operand, p, op->op_flags & OP_NOPRE);
-			if (gencode && *label != '\0') {
+			if (lbl_flag) {
 				if (op->op_flags & OP_NOLBL)
 					asmerr(E_ILLLBL);
 				else if (!(op->op_flags & OP_SET))
-					put_label();
+					if (gencode == 1)
+						put_label();
 			}
-			if (gencode || (op->op_flags & OP_COND)) {
-				i = (*op->op_fun)(op->op_c1, op->op_c2);
-				pc += i;
-				rpc += i;
-				if (op->op_flags & OP_END)
-					return(0);
-			}
-		} else
-			asmerr(E_ILLOPC);
-	} else if (gencode && *label != '\0')
-		put_label();
-	return(1);
-}
-
-/*
- *	Pass 2:
- *	  - process all source files
- */
-void pass2(void)
-{
-	register int fi;
-
-	pass = 2;
-	radix = 10;
-	rpc = pc = 0;
-	ad_mode = AD_STD;
-	fi = 0;
-	if (ver_flag)
-		puts("Pass 2");
-	obj_header();
-	while (infiles[fi] != NULL) {
-		if (ver_flag)
-			printf("   Read    %s\n", infiles[fi]);
-		p2_file(infiles[fi]);
-		fi++;
-	}
-	obj_end();
-	fclose(objfp);
-	printf("%d error(s)\n", errors);
-}
-
-/*
- *	Pass 2:
- *	  - process one source file
- *
- *	Input: name of source file
- */
-void p2_file(char *fn)
-{
-	c_line = 0;
-	srcfn = fn;
-	if ((srcfp = fopen(fn, READA)) == NULL)
-		fatal(F_FOPEN, fn);
-	while (p2_line())
-		;
-	fclose(srcfp);
-}
-
-/*
- *	Pass 2:
- *	  - process one line of source
- *
- *	Output: 1 line processed
- *		0 EOF
- */
-int p2_line(void)
-{
-	register char *p;
-	register int op_count;
-	register struct opc *op;
-
-	if ((p = fgets(line, MAXLINE, srcfp)) == NULL)
-		return(0);
-	c_line++;
-	s_line++;
-	p = get_label(label, p);
-	p = get_opcode(opcode, p);
-	if (*opcode != '\0') {
-		op = search_op(opcode);
-		p = get_arg(operand, p, op->op_flags & OP_NOPRE);
-		if (gencode || (op->op_flags & OP_COND)) {
-			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
-			obj_writeb(op_count);
-			if (gencode && *label != '\0' && ad_mode == AD_NONE) {
-				ad_mode = AD_ADDR;
-				ad_addr = pc;
-			}
-			lst_line(pc, op_count);
-			pc += op_count;
-			rpc += op_count;
-			if (op->op_flags & OP_END)
-				return(0);
+			p = get_arg(operand, p, op->op_flags & OP_NOPRE);
+			if ((op->op_flags & OP_NOOPR) && *operand != '\0'
+						      && *operand != COMMENT)
+				asmerr(E_ILLOPE);
+			else if (gencode > 0 || (op->op_flags & OP_COND)) {
+				op_count = (*op->op_fun)(op->op_c1, op->op_c2);
+				if (lbl_flag && a_mode == A_NONE)
+					a_mode = A_STD;
+			} else
+				a_mode = A_NONE;
 		} else {
-			ad_mode = AD_NONE;
-			lst_line(0, 0);
+			asmerr(E_ILLOPC);
+			a_mode = A_NONE;
 		}
-	} else {
-		if (gencode && *label != '\0' ) {
-			ad_mode = AD_ADDR;
-			ad_addr = pc;
-		}
-		else
-			ad_mode = AD_NONE;
-		lst_line(0, 0);
+	} else if (lbl_flag) {
+		if (gencode == 1)
+			put_label();
+	} else
+		a_mode = A_NONE;
+	if (pass == 2) {
+		s_line++;
+		obj_writeb(op_count);
+		lst_line(pc, op_count);
 	}
-	return(1);
+	pc += op_count;
+	rpc += op_count;
+	return(op == NULL || !(op->op_flags & OP_END));
 }
 
 /*
@@ -462,7 +395,6 @@ void open_o_files(char *source)
 		else
 			strcat(objfn, OBJEXTBIN);
 	}
-
 	if (out_form == OUTHEX)
 		objfp = fopen(objfn, WRITEA);
 	else
@@ -577,8 +509,7 @@ char *get_arg(char *s, char *l, int nopre)
 				l++;
 			if (s > s0 && is_sym_char(*(s - 1))
 				   && is_sym_char(*l))
-				/* add space between symbols/numbers */
-				*s++ = ' ';
+				*s++ = ' '; /* leave one space b/w symbols */
 			continue;
 		}
 		if (*l != STRDEL && *l != STRDEL2) {
@@ -591,8 +522,7 @@ char *get_arg(char *s, char *l, int nopre)
 			continue;
 		while (1) {
 			if (*l == c) {
-				/* check for double delim */
-				if (*(l + 1) != c)
+				if (*(l + 1) != c) /* double delim? */
 					break;
 				else
 					*s++ = *l++;
@@ -617,7 +547,7 @@ char *copy_arg(char *s, char *p, int *str_flag)
 	register char c;
 	register int sf;
 
-	sf = 1;
+	sf = 1;					/* pretend it is a string */
 	while (*p != '\0' && *p != ',') {
 		if (*p == STRDEL || *p == STRDEL2) {
 			c = *p;
@@ -626,8 +556,7 @@ char *copy_arg(char *s, char *p, int *str_flag)
 				if (*p == '\0')
 					break;
 				else if (*p == c) {
-					/* check for double delim */
-					if (*(p + 1) != c)
+					if (*(p + 1) != c) /* double delim? */
 						break;
 					else
 						*s++ = *p++;
@@ -636,22 +565,22 @@ char *copy_arg(char *s, char *p, int *str_flag)
 			}
 			if (*p != '\0')
 				*s++ = *p++;
-			else if (sf == 1)
+			else if (sf == 1)	/* first string unterminated */
 				sf = -1;
-			if (sf > 0)
+			if (sf > 0)		/* inc/dec for each string */
 				sf++;
 			else if (sf < 0)
 				sf--;
 		} else {
 			*s++ = *p++;
-			sf = 0;
+			sf = 0;			/* not a string */
 		}
 	}
 	*s = '\0';
 	if (str_flag != NULL) {
-		if (sf == -2)
+		if (sf == -2)			/* one string, unterminated */
 			*str_flag = -1;
-		else if (sf == 2)
+		else if (sf == 2)		/* one string, correct */
 			*str_flag = 1;
 		else
 			*str_flag = 0;

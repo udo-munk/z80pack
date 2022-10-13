@@ -117,6 +117,7 @@ struct inc {
 #define OP_END		0x08	/* end of source */
 #define OP_NOPRE	0x10	/* no preprocessing of operand */
 #define OP_NOLBL	0x20	/* label not allowed */
+#define OP_NOOPR	0x40	/* doesn't have operand */
 
 /*
  *	definition of operand symbols
@@ -175,12 +176,12 @@ struct inc {
 #define OPSET_8080	2	/* 8080 opcodes */
 
 /*
- *	definition of address/data output modes for pseudo ops
+ *	definition of address output modes for pseudo ops
  */
-#define AD_STD		0	/* address from <addr>, data from <ops> */
-#define AD_ADDR		1	/* address from <ad_addr>, no data */
-#define AD_NONE		2	/* no address, no data */
-#define AD_SUPPR	3	/* suppress whole line */
+#define A_STD		0	/* address from <addr> */
+#define A_ADDR		1	/* address from <a_addr> */
+#define A_NONE		2	/* no address */
+#define A_SUPPR		3	/* suppress whole line */
 
 /*
  *	definition of error numbers for error messages in listfile

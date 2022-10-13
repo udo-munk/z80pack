@@ -125,26 +125,24 @@ void lst_line(int addr, int op_cnt)
 {
 	register int i, j;
 
-	if (!list_flag || ad_mode == AD_SUPPR)
+	if (!list_flag || a_mode == A_SUPPR)
 		goto done;
 	if (p_line >= ppl || c_line == 1) {
 		lst_header();
 		lst_attl();
 	}
-	switch (ad_mode) {
-	case AD_STD:
+	switch (a_mode) {
+	case A_STD:
 		fprintf(lstfp, "%04x  ", addr & 0xffff);
 		break;
-	case AD_ADDR:
-		fprintf(lstfp, "%04x  ", ad_addr & 0xffff);
-		op_cnt = 0;
+	case A_ADDR:
+		fprintf(lstfp, "%04x  ", a_addr & 0xffff);
 		break;
-	case AD_NONE:
+	case A_NONE:
 		fputs("      ", lstfp);
-		op_cnt = 0;
 		break;
 	default:
-		fatal(F_INTERN, "invalid ad_mode for function lst_line");
+		fatal(F_INTERN, "invalid a_mode for function lst_line");
 		break;
 	}
 	i = 0;
@@ -177,7 +175,7 @@ void lst_line(int addr, int op_cnt)
 		p_line++;
 	}
 done:
-	ad_mode = AD_STD;
+	a_mode = A_STD;
 }
 
 /*
