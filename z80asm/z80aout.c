@@ -62,7 +62,8 @@ static char *errmsg[] = {		/* error messages for asmerr() */
 	"division by zero",		/* 17 */
 	"invalid expression",		/* 18 */
 	"object code before ORG",	/* 19 */
-	"illegal label"			/* 20 */
+	"illegal label",		/* 20 */
+	"missing .DEPHASE"		/* 21 */
 };
 
 /*

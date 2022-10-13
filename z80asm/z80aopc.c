@@ -29,11 +29,10 @@
 #include "z80a.h"
 
 /* z80apfun.c */
-extern int op_opset(int, int), op_org(int, int), op_phase(int, int);
-extern int op_dephase(int, int), op_radix(int, int), op_equ(int, int);
-extern int op_dl(int, int), op_ds(int, int), op_db(int, int), op_dw(int, int);
-extern int op_misc(int, int), op_cond(int, int), op_glob(int, int);
-extern int op_end(int, int);
+extern int op_opset(int, int), op_org(int, int), op_radix(int, int);
+extern int op_equ(int, int), op_dl(int, int), op_ds(int, int), op_db(int, int);
+extern int op_dw(int, int), op_misc(int, int), op_cond(int, int);
+extern int op_glob(int, int), op_end(int, int);
 
 /* z80arfun.c */
 extern int op_1b(int, int), op_2b(int, int), op_im(int, int);
@@ -53,11 +52,11 @@ extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
  *	must be sorted in ascending order!
  */
 struct opc opctab_psd[] = {
-	{ ".8080",	op_opset,	1,	0,	OP_NOLBL },
-	{ ".DEPHASE",	op_dephase,	0,	0,	OP_NOLBL },
-	{ ".PHASE",	op_phase,	0,	0,	OP_NOLBL },
+	{ ".8080",	op_opset,	2,	0,	OP_NOLBL },
+	{ ".DEPHASE",	op_org,		3,	0,	OP_NOLBL },
+	{ ".PHASE",	op_org,		2,	0,	OP_NOLBL },
 	{ ".RADIX",	op_radix,	0,	0,	OP_NOLBL },
-	{ ".Z80",	op_opset,	2,	0,	OP_NOLBL },
+	{ ".Z80",	op_opset,	1,	0,	OP_NOLBL },
 	{ "ABS",	op_glob,	3,	0,	OP_NOLBL },
 	{ "ASEG",	op_glob,	3,	0,	OP_NOLBL },
 	{ "ASET",	op_dl,		0,	0,	OP_SET	 },
@@ -102,7 +101,7 @@ struct opc opctab_psd[] = {
 	{ "INCLUDE",	op_misc,	6,	0,	OP_NOLBL | OP_NOPRE },
 	{ "LIST",	op_misc,	2,	0,	OP_NOLBL },
 	{ "NOLIST",	op_misc,	3,	0,	OP_NOLBL },
-	{ "ORG",	op_org,		0,	0,	OP_NOLBL },
+	{ "ORG",	op_org,		1,	0,	OP_NOLBL },
 	{ "PAGE",	op_misc,	4,	0,	OP_NOLBL },
 	{ "PRINT",	op_misc,	5,	0,	OP_NOLBL | OP_NOPRE },
 	{ "PUBLIC",	op_glob,	2,	0,	OP_NOLBL },

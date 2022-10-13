@@ -261,7 +261,6 @@ void pass1(void)
 	pass = 1;
 	radix = 10;
 	rpc = pc = 0;
-	phs_flag = 0;
 	fi = 0;
 	if (ver_flag)
 		puts("Pass 1");
@@ -295,6 +294,8 @@ void p1_file(char *fn)
 	while (p1_line())
 		;
 	fclose(srcfp);
+	if (phs_flag)
+		asmerr(E_MISDPH);
 	if (iflevel)
 		asmerr(E_MISEIF);
 }
@@ -351,7 +352,6 @@ void pass2(void)
 	pass = 2;
 	radix = 10;
 	rpc = pc = 0;
-	phs_flag = 0;
 	ad_mode = AD_STD;
 	fi = 0;
 	if (ver_flag)

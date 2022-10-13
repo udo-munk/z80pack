@@ -63,11 +63,11 @@ int op_opset(int op_code, int dummy)
 
 	ad_mode = AD_NONE;
 	switch (op_code) {
-	case 1:				/* .8080 */
-		opset = OPSET_8080;
-		break;
-	case 2:				/* .Z80 */
+	case 1:				/* .Z80 */
 		opset = OPSET_Z80;
+		break;
+	case 2:				/* .8080 */
+		opset = OPSET_8080;
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_opset");
@@ -76,65 +76,49 @@ int op_opset(int op_code, int dummy)
 }
 
 /*
- *	ORG
+ *	ORG, .PHASE, .DEPHASE
  */
-int op_org(int dummy1, int dummy2)
+int op_org(int op_code, int dummy)
 {
 	register int i;
 
-	UNUSED(dummy1);
-	UNUSED(dummy2);
+	UNUSED(dummy);
 
-	if (phs_flag) {
-		asmerr(E_ORGPHS);
-		return(0);
-	}
-	i = eval(operand);
-	if (pass == 1) {		/* PASS 1 */
-		if (!load_flag) {
-			load_addr = i;
-			load_flag = 1;
+	ad_mode = AD_NONE;
+	switch (op_code) {
+	case 1:				/* ORG */
+		if (phs_flag) {
+			asmerr(E_ORGPHS);
+			return(0);
 		}
-	} else {			/* PASS 2 */
-		obj_org(i);
-		ad_mode = AD_NONE;
-	}
-	rpc = pc = i;
-	return(0);
-}
-
-/*
- *	.PHASE
- */
-int op_phase(int dummy1, int dummy2)
-{
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (phs_flag)
-		asmerr(E_PHSNEST);
-	else {
-		phs_flag = 1;
-		pc = eval(operand);
-		ad_mode = AD_NONE;
-	}
-	return(0);
-}
-
-/*
- *	.DEPHASE
- */
-int op_dephase(int dummy1, int dummy2)
-{
-	UNUSED(dummy1);
-	UNUSED(dummy2);
-
-	if (!phs_flag)
-		asmerr(E_MISPHS);
-	else {
-		phs_flag = 0;
-		pc = rpc;
-		ad_mode = AD_NONE;
+		i = eval(operand);
+		if (pass == 1) {	/* PASS 1 */
+			if (!load_flag) {
+				load_addr = i;
+				load_flag = 1;
+			}
+		} else			/* PASS 2 */
+			obj_org(i);
+		rpc = pc = i;
+		break;
+	case 2:				/* .PHASE */
+		if (phs_flag)
+			asmerr(E_PHSNEST);
+		else {
+			phs_flag = 1;
+			pc = eval(operand);
+		}
+		break;
+	case 3:				/* .DEPHASE */
+		if (!phs_flag)
+			asmerr(E_MISPHS);
+		else {
+			phs_flag = 0;
+			pc = rpc;
+		}
+		break;
+	default:
+		fatal(F_INTERN, "invalid opcode for function op_org");
 	}
 	return(0);
 }
@@ -149,12 +133,12 @@ int op_radix(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
+	ad_mode = AD_NONE;
 	i = eval(operand);
 	if (i < 2 || i > 16)
 		asmerr(E_VALOUT);
 	else
 		radix = i;
-	ad_mode = AD_NONE;
 	return(0);
 }
 
@@ -200,31 +184,29 @@ int op_dl(int dummy1, int dummy2)
  */
 int op_ds(int dummy1, int dummy2)
 {
-	register char *p, *p1, *p2;
+	register char *p;
 	register int count, value;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
+	ad_mode = AD_ADDR;
+	ad_addr = pc;
 	p = operand;
 	if (*p == '\0')
 		asmerr(E_MISOPE);
 	else {
-		ad_addr = pc;
-		ad_mode = AD_ADDR;
-		if ((p1 = strchr(operand, ',')) != NULL) {
-			p2 = tmp;
-			while (*p != ',')
-				*p2++ = *p++;
-			*p2 = '\0';
-			count = eval(tmp);
-			if (pass == 2) {
-				value = eval(p1 + 1);
-				obj_fill_value(count, value);
-			}
-		} else {
-			count = eval(operand);
-			if (pass == 2)
+		p = copy_arg(tmp, p, NULL);
+		count = eval(tmp);
+		if (pass == 2) {
+			if (*p++ == ',') {
+				if (*p == '\0')
+					asmerr(E_MISOPE);
+				else {
+					value = eval(p);
+					obj_fill_value(count, value);
+				}
+			} else
 				obj_fill(count);
 		}
 		pc += count;
@@ -385,8 +367,8 @@ int op_misc(int op_code, int dummy)
 		incnest++;
 		p = operand;
 		d = fn;
-		while(!isspace((unsigned char) *p) && *p != COMMENT
-						   && *p != '\0')
+		while (!isspace((unsigned char) *p) && *p != COMMENT
+						    && *p != '\0')
 			*d++ = *p++;
 		*d = '\0';
 		if (pass == 1) {	/* PASS 1 */
@@ -394,7 +376,6 @@ int op_misc(int op_code, int dummy)
 				printf("   Include %s\n", fn);
 			p1_file(fn);
 		} else {		/* PASS 2 */
-			ad_mode = AD_NONE;
 			lst_line(0, 0);
 			if (ver_flag)
 				printf("   Include %s\n", fn);
