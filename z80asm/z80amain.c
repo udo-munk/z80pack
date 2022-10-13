@@ -547,7 +547,7 @@ char *copy_arg(char *s, char *p, int *str_flag)
 	register char c;
 	register int sf;
 
-	sf = 1;					/* 1 not 0, to be negatable */
+	sf = 1;					/* pretend there is a string */
 	while (*p != '\0' && *p != ',') {
 		if (*p == STRDEL || *p == STRDEL2) {
 			c = *p;
@@ -573,7 +573,7 @@ char *copy_arg(char *s, char *p, int *str_flag)
 				sf--;
 		} else {
 			*s++ = *p++;
-			sf = 0;
+			sf = 0;			/* not a string */
 		}
 	}
 	*s = '\0';
