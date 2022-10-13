@@ -547,7 +547,7 @@ char *copy_arg(char *s, char *p, int *str_flag)
 	register char c;
 	register int sf;
 
-	sf = 1;					/* pretend there is a string */
+	sf = 1;					/* pretend it is a string */
 	while (*p != '\0' && *p != ',') {
 		if (*p == STRDEL || *p == STRDEL2) {
 			c = *p;
