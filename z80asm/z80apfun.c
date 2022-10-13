@@ -33,8 +33,7 @@
 
 /* z80amain.c */
 extern void fatal(int, char *);
-extern void p1_file(char *);
-extern void p2_file(char *);
+extern void pass_file(char *);
 extern char *copy_arg(char *, char *, int *);
 
 /* z80anum.c */
@@ -55,13 +54,13 @@ extern struct sym *get_sym(char *);
 extern int put_sym(char *, int);
 
 /*
- *	.8080 and .Z80
+ *	.Z80 and .8080
  */
 int op_opset(int op_code, int dummy)
 {
 	UNUSED(dummy);
 
-	ad_mode = AD_NONE;
+	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* .Z80 */
 		opset = OPSET_Z80;
@@ -84,7 +83,7 @@ int op_org(int op_code, int dummy)
 
 	UNUSED(dummy);
 
-	ad_mode = AD_NONE;
+	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* ORG */
 		if (phs_flag) {
@@ -133,7 +132,7 @@ int op_radix(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	ad_mode = AD_NONE;
+	a_mode = A_NONE;
 	i = eval(operand);
 	if (i < 2 || i > 16)
 		asmerr(E_VALOUT);
@@ -152,14 +151,14 @@ int op_equ(int dummy1, int dummy2)
 
 	if (pass == 1) {		/* PASS 1 */
 		if (get_sym(label) == NULL) {
-			ad_addr = eval(operand);
-			if (put_sym(label, ad_addr))
+			a_addr = eval(operand);
+			if (put_sym(label, a_addr))
 				fatal(F_OUTMEM, "symbols");
 		} else
 			asmerr(E_MULSYM);
 	} else {			/* PASS 2 */
-		ad_mode = AD_ADDR;
-		ad_addr = eval(operand);
+		a_mode = A_ADDR;
+		a_addr = eval(operand);
 	}
 	return(0);
 }
@@ -172,9 +171,9 @@ int op_dl(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	ad_mode = AD_ADDR;
-	ad_addr = eval(operand);
-	if (put_sym(label, ad_addr))
+	a_mode = A_ADDR;
+	a_addr = eval(operand);
+	if (put_sym(label, a_addr))
 		fatal(F_OUTMEM, "symbols");
 	return(0);
 }
@@ -190,22 +189,17 @@ int op_ds(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	ad_mode = AD_ADDR;
-	ad_addr = pc;
-	p = operand;
-	if (*p == '\0')
+	a_mode = A_ADDR;
+	a_addr = pc;
+	p = copy_arg(tmp, operand, NULL);
+	if (*tmp == '\0' || (*p == ',' && *(p + 1) == '\0'))
 		asmerr(E_MISOPE);
 	else {
-		p = copy_arg(tmp, p, NULL);
 		count = eval(tmp);
 		if (pass == 2) {
 			if (*p++ == ',') {
-				if (*p == '\0')
-					asmerr(E_MISOPE);
-				else {
-					value = eval(p);
-					obj_fill_value(count, value);
-				}
+				value = eval(p);
+				obj_fill_value(count, value);
 			} else
 				obj_fill(count);
 		}
@@ -317,7 +311,7 @@ int op_misc(int op_code, int dummy)
 
 	UNUSED(dummy);
 
-	ad_mode = AD_NONE;
+	a_mode = A_NONE;
 	switch(op_code) {
 	case 1:				/* EJECT */
 		if (pass == 2)
@@ -371,27 +365,22 @@ int op_misc(int op_code, int dummy)
 						    && *p != '\0')
 			*d++ = *p++;
 		*d = '\0';
-		if (pass == 1) {	/* PASS 1 */
-			if (ver_flag)
-				printf("   Include %s\n", fn);
-			p1_file(fn);
-		} else {		/* PASS 2 */
+		if (pass == 2)
 			lst_line(0, 0);
-			if (ver_flag)
-				printf("   Include %s\n", fn);
-			p2_file(fn);
-		}
+		if (ver_flag)
+			printf("   Include %s\n", fn);
+		pass_file(fn);
 		incnest--;
 		c_line = incl[incnest].inc_line;
 		srcfn = incl[incnest].inc_fn;
 		srcfp = incl[incnest].inc_fp;
 		if (ver_flag)
 			printf("   Resume  %s\n", srcfn);
-		if (list_flag && (pass == 2)) {
+		if (list_flag && pass == 2) {
 			lst_header();
 			lst_attl();
 		}
-		ad_mode = AD_SUPPR;
+		a_mode = A_SUPPR;
 		break;
 	case 7:				/* TITLE */
 		if (pass == 2) {
@@ -433,19 +422,19 @@ int op_cond(int op_code, int dummy)
 
 	UNUSED(dummy);
 
-	ad_mode = AD_NONE;
+	a_mode = A_NONE;
 	if (op_code < 90) {
 		if (iflevel >= IFNEST) {
 			asmerr(E_IFNEST);
 			return(0);
 		}
 		condnest[iflevel++] = gencode;
-		if (!gencode)
+		if (gencode < 0)
 			return(0);
 		switch(op_code) {
 		case 1:				/* IFDEF */
 		case 2:				/* IFNDEF */
-			gencode = (get_sym(operand) != NULL);
+			gencode = (get_sym(operand) != NULL) ? pass : -pass;
 			break;
 		case 3:				/* IFEQ */
 		case 4:				/* IFNEQ */
@@ -454,15 +443,17 @@ int op_cond(int op_code, int dummy)
 				asmerr(E_MISOPE);
 				return(0);
 			}
-			gencode = (eval(tmp) == eval(p));
+			gencode = (eval(tmp) == eval(p)) ? pass : -pass;
 			break;
 		case 5:				/* COND, IF, and IFT */
 		case 6:				/* IFE and IFF */
-			gencode = (eval(operand) != 0);
+			gencode = (eval(operand) != 0) ? pass : -pass;
 			break;
 		case 7:				/* IF1 */
+			gencode = (pass == 1) ? 2 : -2;
+			break;
 		case 8:				/* IF2 */
-			gencode = (pass == 1);
+			gencode = (pass == 2) ? -1 : 1;
 			break;
 		case 9:				/* IFB */
 		case 10:			/* IFNB */
@@ -486,7 +477,7 @@ int op_cond(int op_code, int dummy)
 			}
 			*p1 = '\0';
 			if (op_code == 9 || op_code == 10) /* IFB and IFNB */
-				gencode = ((p1 - tmp) == 2);
+				gencode = ((p1 - tmp) == 2) ? pass : -pass;
 			else {			/* IFIDN and IFDIF */
 				if (*p++ != ',') {
 					asmerr(E_MISOPE);
@@ -506,7 +497,7 @@ int op_cond(int op_code, int dummy)
 					return(0);
 				}
 				*p = '\0';
-				gencode = (strcmp(tmp, p1) == 0);
+				gencode = (strcmp(tmp, p1) == 0) ? pass : -pass;
 			}
 			break;
 		default:
@@ -514,7 +505,7 @@ int op_cond(int op_code, int dummy)
 			break;
 		}
 		if ((op_code & 1) == 0)		/* negate for negative IF variation */
-			gencode = !gencode;
+			gencode = -gencode;
 	} else {
 		if (iflevel == 0) {
 			asmerr(E_MISIFF);
@@ -523,7 +514,7 @@ int op_cond(int op_code, int dummy)
 		switch(op_code) {
 		case 98:			/* ELSE */
 			if (condnest[iflevel - 1] == 1)
-				gencode = !gencode;
+				gencode = -gencode;
 			break;
 		case 99:			/* ENDIF and ENDC */
 			gencode = condnest[--iflevel];
@@ -543,7 +534,7 @@ int op_glob(int op_code, int dummy)
 {
 	UNUSED(dummy);
 
-	ad_mode = AD_NONE;
+	a_mode = A_NONE;
 	switch(op_code) {
 	case 1:				/* EXTRN, EXTERNAL, EXT */
 		break;

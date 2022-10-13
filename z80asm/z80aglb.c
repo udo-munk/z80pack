@@ -56,11 +56,11 @@ int  list_flag,			/* flag for option -l */
      phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
-     gencode = 1,		/* flag for conditional object code */
+     gencode,			/* flag for conditional code (>0 yes, <0 no) */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
-     ad_mode,			/* address/data output mode for pseudo ops */
-     ad_addr,			/* output address for AD_ADDR mode */
+     a_mode,			/* address output mode for pseudo ops */
+     a_addr,			/* output address for A_ADDR mode */
      load_addr,			/* load address of program */
      load_flag,			/* flag for load_addr valid */
      start_addr,		/* start address of program */
