@@ -325,6 +325,8 @@ int pass_line(char *l)
 	register struct opc *op;
 
 	c_line++;
+	if (pass == 2)
+		s_line++;
 	op = NULL;
 	op_count = 0;
 	p = get_label(label, l);
@@ -359,7 +361,6 @@ int pass_line(char *l)
 	} else
 		a_mode = A_NONE;
 	if (pass == 2) {
-		s_line++;
 		obj_writeb(op_count);
 		lst_line(pc, op_count);
 	}
