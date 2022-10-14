@@ -1882,21 +1882,21 @@ int op8080_alu(int base_op, int dummy)
 /*
  *	8080 DCR and INR
  */
-int op8080_decinc(int base_op, int dummy)
+int op8080_dcrinr(int base_op, int dummy)
 {
 	register int op;
 
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
-	case REGA:			/* DEC/INC A */
-	case REGB:			/* DEC/INC B */
-	case REGC:			/* DEC/INC C */
-	case REGD:			/* DEC/INC D */
-	case REGE:			/* DEC/INC E */
-	case REGH:			/* DEC/INC H */
-	case REGL:			/* DEC/INC L */
-	case REGM:			/* DEC/INC M */
+	case REGA:			/* DCR/INR A */
+	case REGB:			/* DCR/INR B */
+	case REGC:			/* DCR/INR C */
+	case REGD:			/* DCR/INR D */
+	case REGE:			/* DCR/INR E */
+	case REGH:			/* DCR/INR H */
+	case REGL:			/* DCR/INR L */
+	case REGM:			/* DCR/INR M */
 		ops[0] = base_op + (op << 3);
 		break;
 	case NOOPERA:			/* missing operand */
