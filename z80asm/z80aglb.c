@@ -33,11 +33,10 @@ char *infiles[MAXFN],		/* source filenames */
      objfn[LENFN + 1],		/* object filename */
      lstfn[LENFN + 1],		/* listing filename */
      *srcfn,			/* filename of current processed source file */
-     line[MAXLINE],		/* buffer for one line source */
-     tmp[MAXLINE],		/* temporary buffer */
+     line[MAXLINE],		/* buffer for one line of source */
      label[MAXLINE],		/* buffer for label */
      opcode[MAXLINE],		/* buffer for opcode */
-     operand[MAXLINE],		/* buffer for operand */
+     operand[MAXLINE],		/* buffer for working with operand */
      title[MAXLINE];		/* buffer for title of source */
 
 unsigned char

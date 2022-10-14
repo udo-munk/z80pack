@@ -181,12 +181,12 @@ void options(int argc, char *argv[])
 					puts("name missing in option -d");
 					usage();
 				}
-				t = tmp;
+				t = label;
 				while (*s)
 					*t++ = toupper((unsigned char) *s++);
 				s--;
 				*t = '\0';
-				if (put_sym(tmp, 0))
+				if (put_sym(label, 0))
 					fatal(F_OUTMEM, "symbols");
 				break;
 			case '8':
@@ -494,14 +494,12 @@ char *get_arg(char *s, char *l, int nopre)
 	register char c;
 
 	s0 = s;
-	if (*l == LINCOM)
-		goto comment;
 	while (isspace((unsigned char) *l))
 		l++;
 	if (nopre) {
 		while (*l != '\n' && *l != '\0')
 			*s++ = *l++;
-		goto comment;
+		goto done;
 	}
 	while (*l != '\0' && *l != COMMENT) {
 		if (isspace((unsigned char) *l)) {
@@ -522,69 +520,70 @@ char *get_arg(char *s, char *l, int nopre)
 		if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
 			continue;
 		while (1) {
+			if (*l == '\n' || *l == '\0')
+				goto done;
 			if (*l == c) {
-				if (*(l + 1) != c) /* double delim? */
-					break;
-				else
+				if (*(l + 1) == c) /* double delim? */
 					*s++ = *l++;
-			} else if (*l == '\n' || *l == '\0')
-				goto comment;
+				else
+					break;
+			}
 			*s++ = *l++;
 		}
 		*s++ = *l++;
 	}
-comment:
+done:
 	*s = '\0';
 	return(l);
 }
 
 /*
- *	copy next arg into s from preprocessed operand p
+ *	jump to next arg in preprocessed operand p
+ *	returns next arg and '\0' terminates current arg, or NULL
  *	if str_flag is not NULL stores 1 if arg is string,
- *	-1 if unterminated string otherwise 0
+ *	-1 if unterminated string otherwise 0,
+ *	this is used by op_db() to differentiate between
+ *	strings and expressions
  */
-char *copy_arg(char *s, char *p, int *str_flag)
+char *next_arg(char *p, int *str_flag)
 {
 	register char c;
 	register int sf;
 
 	sf = 1;					/* pretend it is a string */
 	while (*p != '\0' && *p != ',') {
-		if (*p == STRDEL || *p == STRDEL2) {
-			c = *p;
-			*s++ = *p++;
-			while (1) {
-				if (*p == '\0')
-					break;
-				else if (*p == c) {
-					if (*(p + 1) != c) /* double delim? */
-						break;
+		c = *p++;
+		if (c == STRDEL || c == STRDEL2) {
+			while (*p != '\0') {
+				if (*p == c) {
+					if (*(p + 1) == c) /* double delim? */
+						p++;
 					else
-						*s++ = *p++;
+						break;
 				}
-				*s++ = *p++;
+				p++;
 			}
-			if (*p != '\0')
-				*s++ = *p++;
-			else if (sf == 1)	/* first string unterminated */
-				sf = -1;
-			if (sf > 0)		/* inc/dec for each string */
-				sf++;
-			else if (sf < 0)
-				sf--;
-		} else {
-			*s++ = *p++;
+			if (*p == '\0')		/* unterminated string */
+				sf = -sf;
+			else {
+				if (sf)		/* when there were only */
+					sf++;	/* strings, increment */
+				p++;
+			}
+		} else
 			sf = 0;			/* not a string */
-		}
 	}
-	*s = '\0';
 	if (str_flag != NULL) {
-		if (sf == -2)			/* one string, unterminated */
+		if (sf == -1)			/* first string unterminated */
 			*str_flag = -1;
-		else if (sf == 2)		/* one string, correct */
+		else if (sf == 2)		/* one valid string */
 			*str_flag = 1;
 		else
 			*str_flag = 0;
 	}
-	return(p);
+	if (*p == ',') {
+		*p++ = '\0';			/* terminate previous arg */
+		return(p);
+	} else
+		return(NULL);
 }

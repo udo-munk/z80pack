@@ -157,7 +157,7 @@ int get_token(void)
 		tok_type = T_EMPTY;
 		goto finish;
 	}
-	if (*s == 'X' && *(s + 1) == '\'') {		/* X'h' hex constant */
+	if (*s == 'X' && *(s + 1) == STRDEL) {		/* X'h' hex constant */
 		s += 2;
 		n = 0;
 		while (isxdigit((unsigned char) *s)) {
@@ -166,7 +166,7 @@ int get_token(void)
 			     - ((*s <= '9') ? '0' : '7');
 			s++;
 		}
-		if (*s != '\'')				/* missing final ' */
+		if (*s != STRDEL)			/* missing final ' */
 			return(E_MISDEL);
 		else {
 			s++;
@@ -226,8 +226,8 @@ int get_token(void)
 		goto finish;
 	}
 	switch (*s) {
-	case '\'':					/* character constant */
-	case '"':
+	case STRDEL:					/* char constant */
+	case STRDEL2:
 		p1 = s;
 		n = m = 0;
 		while (*++s != '\0') {
@@ -589,7 +589,7 @@ int eval(char *s)
 {
 	int result, err;
 
-	if (s == NULL) {
+	if (s == NULL || *s == '\0') {
 		asmerr(E_MISOPE);
 		return(0);
 	}

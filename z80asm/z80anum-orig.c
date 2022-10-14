@@ -72,7 +72,7 @@ int eval(char *s)
 	char word[MAXLINE];
 	struct sym *sp;
 
-	if (s == NULL) {
+	if (s == NULL || *s == '\0') {
 		asmerr(E_MISOPE);
 		return(0);
 	}
