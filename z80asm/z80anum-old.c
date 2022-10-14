@@ -752,7 +752,7 @@ int eval(char *str)
 {
 	int entry;
 
-	if (str == NULL) {
+	if (str == NULL || *str == '\0') {
 		asmerr(E_MISOPE);
 		return(0);
 	}

@@ -135,7 +135,7 @@ TITLE   <'string'>      - define title for page header
 Others:
 
 INCLUDE <filename>      - include another source file
-PRINT   <'string'>      - print string to stdout in pass one
+PRINT   <'string'>      - print string to stdout
 .8080                   - switch to 8080 instruction set
 .Z80                    - switch to Z80 instruction set
 .RADIX                  - change numbers radix (default 10)
