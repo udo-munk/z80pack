@@ -197,7 +197,8 @@ int load_file(char *s, BYTE pstart, WORD psize)
 	read(fd, (char *) &d, 1);	/* read first byte of file */
 	close(fd);
 
-	LOGD(TAG, "LOAD in Range: %04Xh - %04Xh", pstart << 8, (pstart+psize)<<8);
+	LOGD(TAG, "LOAD in Range: %04Xh - %04Xh",
+	     pstart << 8, (pstart + psize) << 8);
 
 	if (d == 0xff) {		/* Mostek header ? */
 		return(load_mos(fn, pstart, psize));
@@ -231,7 +232,9 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 	laddr = (fileb[2] << 8) + fileb[1];
 
 	if (psize && laddr < (pstart << 8)) {
-		LOGW(TAG, "tried to load mos file outside expected address range. Address: %04X", laddr);
+		LOGW(TAG, "tried to load mos file outside "
+		     "expected address range. "
+		     "Address: %04X", laddr);
 		return(1);
 	}
 
@@ -239,7 +242,9 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 	for (i = laddr; i < 65536; i++) {
 		if (read(fd, fileb, 1) == 1) {
 			if (psize && i >= ((pstart + psize) << 8)) {
-				LOGW(TAG, "tried to load mos file outside expected address range. Address: %04X", i);
+				LOGW(TAG, "tried to load mos file outside "
+				     "expected address range. "
+				     "Address: %04X", i);
 				return(1);
 			}
 			count++;
@@ -321,8 +326,11 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 			break;
 
 		if (psize) {
-			if (addr < (pstart << 8) || (addr + count - 1) >= ((pstart + psize) << 8)) {
-				LOGW(TAG, "tried to load hex record outside expected address range. Address: %04X-%04X", addr, addr+count);
+			if (addr < (pstart << 8)
+			    || (addr + count - 1) >= ((pstart + psize) << 8)) {
+				LOGW(TAG, "tried to load hex record outside "
+				     "expected address range. "
+				     "Address: %04X-%04X", addr, addr+count);
 				return(1);
 			}
 		}

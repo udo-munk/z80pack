@@ -45,7 +45,7 @@ extern int load_file(char *, BYTE, WORD);
 static void do_step(void);
 static void do_trace(char *);
 static void do_go(char *);
-static int handel_break(void);
+static int handle_break(void);
 static void do_dump(char *);
 static void do_list(char *);
 static void do_modify(char *);
@@ -86,7 +86,7 @@ void mon(void)
 		do_go("");
 
 	while (eoj) {
-		next:
+	next:
 		printf(">>> ");
 		fflush(stdout);
 		if (fgets(cmd, LENCMD, stdin) == NULL) {
@@ -176,7 +176,7 @@ static void do_step(void)
 		break;
 	}
 	if (cpu_error == OPHALT)
-		handel_break();
+		handle_break();
 	cpu_err_msg();
 	print_head();
 	print_reg();
@@ -214,7 +214,7 @@ static void do_trace(char *s)
 		print_reg();
 		if (cpu_error) {
 			if (cpu_error == OPHALT) {
-				if (!handel_break()) {
+				if (!handle_break()) {
 					break;
 				}
 			} else
@@ -236,7 +236,7 @@ static void do_go(char *s)
 		s++;
 	if (isxdigit((unsigned char) *s))
 		PC = exatoi(s);
-	cont:
+cont:
 	cpu_state = CONTIN_RUN;
 	cpu_error = NONE;
 	switch(cpu) {
@@ -248,7 +248,7 @@ static void do_go(char *s)
 		break;
 	}
 	if (cpu_error == OPHALT)
-		if (handel_break())
+		if (handle_break())
 			if (!cpu_error)
 				goto cont;
 
@@ -266,7 +266,7 @@ static void do_go(char *s)
  *	Output:	0 breakpoint or other HALT opcode reached (stop)
  *		1 breakpoint reached, passcounter not reached (continue)
  */
-static int handel_break(void)
+static int handle_break(void)
 {
 #ifdef SBSIZE
 	register int i;
@@ -276,7 +276,7 @@ static int handel_break(void)
 		if (soft[i].sb_adr == PC - 1)
 			goto was_softbreak;
 	return(0);
-	was_softbreak:
+was_softbreak:
 #ifdef HISIZE
 	h_next--;			/* correct history */
 	if (h_next < 0)
@@ -328,9 +328,10 @@ static void do_dump(char *s)
 		for (j = 0; j < 16; j++)
 			printf("%02x ", getmem(wrk_addr++));
 		putchar('\t');
-		for (j = -16; j < 0; j++)
-			printf("%c", ((c = getmem(wrk_addr + j)) >= ' ' && c <= 0x7f)
-			       ? c : '.');
+		for (j = -16; j < 0; j++) {
+			c = getmem(wrk_addr + j);
+			printf("%c", isprint((unsigned char) c) ? c : '.');
+		}
 		putchar('\n');
 	}
 }
@@ -623,12 +624,10 @@ static void do_reg(char *s)
 static void print_head(void)
 {
 	if (cpu == Z80)
-
-	printf("\nPC   A  SZHPNC I  IFF BC   DE   HL   A'F' B'C' D'E' H'L' IX   IY   SP\n");
-
+		printf("\nPC   A  SZHPNC I  IFF BC   DE   HL   "
+		       "A'F' B'C' D'E' H'L' IX   IY   SP\n");
 	else
-
-	printf("\nPC   A  SZHPC BC   DE   HL   SP\n");
+		printf("\nPC   A  SZHPC BC   DE   HL   SP\n");
 }
 
 /*
@@ -650,11 +649,13 @@ static void print_reg(void)
 		printf("%c", IFF & 2 ? '1' : '0');
 	}
 	if (cpu == Z80) {
-		printf("  %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x %02x%02x %04x %04x %04x\n",
-		 B, C, D, E, H, L, A_, F_, B_, C_, D_, E_, H_, L_, IX, IY, SP);
+		printf("  %02x%02x %02x%02x %02x%02x %02x%02x "
+		       "%02x%02x %02x%02x %02x%02x %04x %04x %04x\n",
+		       B, C, D, E, H, L, A_, F_,
+		       B_, C_, D_, E_, H_, L_, IX, IY, SP);
 	} else {
 		printf(" %02x%02x %02x%02x %02x%02x %04x\n",
-		 B, C, D, E, H, L, SP);
+		       B, C, D, E, H, L, SP);
 	}
 }
 
@@ -756,12 +757,14 @@ static void do_hist(char *s)
 					sa = -1;
 			}
 			if (cpu == Z80) {
-				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x IX=%04x IY=%04x SP=%04x\n",
+				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
+				       "IX=%04x IY=%04x SP=%04x\n",
 					his[i].h_adr, his[i].h_af, his[i].h_bc,
 					his[i].h_de, his[i].h_hl, his[i].h_ix,
 					his[i].h_iy, his[i].h_sp);
 			} else {
-				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x SP=%04x\n",
+				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
+				       "SP=%04x\n",
 					his[i].h_adr, his[i].h_af, his[i].h_bc,
 					his[i].h_de, his[i].h_hl, his[i].h_sp);
 			}

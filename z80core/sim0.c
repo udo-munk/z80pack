@@ -243,7 +243,8 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef HAS_BANKED_ROM
-			case 'R':	/* enable banked ROM for machines that implement it */
+			case 'R':	/* enable banked ROM for machines
+					   that implement it */
 				R_flag = 1;
 				break;
 #endif
@@ -265,7 +266,8 @@ int main(int argc, char *argv[])
 
 usage:
 
-				printf("usage:\t%s -z -8 -s -l -i -u %s-m val -f freq -x filename", pn, rom);
+				printf("usage:\t%s -z -8 -s -l -i -u %s-m val "
+				       "-f freq -x filename", pn, rom);
 #ifdef HAS_DISKS
 				printf(" -d diskpath");
 #endif
@@ -311,7 +313,8 @@ usage:
 				puts("\t     ./conf/system.conf");
 				printf("\t     %s/system.conf\n", CONFDIR);
 #if MAXMEMSECT > 0
-				printf("\t-M = use config file memory section val (1-%d)\n", MAXMEMSECT);
+				printf("\t-M = use config file memory "
+				       "section val (1-%d)\n", MAXMEMSECT);
 #endif
 #endif
 #ifdef HAS_BANKED_ROM
@@ -360,13 +363,15 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 		printf(", CPU doesn't execute undocumented instructions\n");
 #else
 		if (u_flag)
-			printf(", CPU doesn't execute undocumented instructions\n");
+			printf(", CPU doesn't execute undocumented "
+			       "instructions\n");
 		else
 			printf(", CPU executes undocumented instructions\n");
 #endif
 	} else {
 		if (u_flag)
-			printf(", CPU doesn't execute undocumented instructions\n");
+			printf(", CPU doesn't execute undocumented "
+			       "instructions\n");
 		else
 			printf(", CPU executes undocumented instructions\n");
 	}
@@ -407,7 +412,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 		if (load_core())
 			return(1);
 	} else if (x_flag) { 	/* OR load memory from file */
-		if (load_file(xfn, 0, 0)) /* (..., 0, 0) don't care where it loads */
+		if (load_file(xfn, 0, 0)) /* don't care where it loads */
 			return(1);
 	}
 
