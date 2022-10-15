@@ -84,7 +84,6 @@ static void *store_image(void *arg)
 					for (j = 0; j < FIELDSIZE; j++) {
 						dma_write(dma_addr + (i * FIELDSIZE) + j, buffer[j]);
 					}
-					/* memcpy(mem_base() + dma_addr + (i * FIELDSIZE), buffer, len); */
 				}
 			}
 		} else {

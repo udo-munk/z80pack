@@ -81,8 +81,6 @@ extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
 extern int exatoi(char *);
 
-BYTE *wrk_ram;			/* work pointer for the memory */
-
 int main(int argc, char *argv[])
 {
 	register char *s, *p;

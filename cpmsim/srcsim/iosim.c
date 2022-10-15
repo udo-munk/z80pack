@@ -1080,7 +1080,6 @@ void exit_io(void)
  */
 void reset_system(void)
 {
-	extern BYTE *wrk_ram;
 	register int i;
 
 	/* reset hardware */
@@ -1100,7 +1099,6 @@ void reset_system(void)
 
 	/* reset CPU */
 	reset_cpu();
-	wrk_ram	= mem_base();
 
 	/* reboot */
 	boot(1);

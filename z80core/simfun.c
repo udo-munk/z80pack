@@ -194,12 +194,6 @@ int load_file(char *s, BYTE pstart, WORD psize)
 		return(1);
 	}
 
-	//TODO: What is this? We need to remove references to wrk_ram and mem_base()
-	// if (*s == ',')
-	// 	wrk_ram = mem_base() + exatoi(++s);
-	// else
-	// 	wrk_ram = NULL;
-
 	read(fd, (char *) &d, 1);	/* read first byte of file */
 	close(fd);
 
@@ -304,8 +298,6 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 		count += (*s <= '9') ? (*s - '0')
 				     : (*s - 'A' + 10);
 		s++;
-		if (count == 0)
-			break;
 		addr = (*s <= '9') ? (*s - '0') << 4
 				   : (*s - 'A' + 10) << 4;
 		s++;
@@ -319,6 +311,14 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 		addr += (*s <= '9') ? (*s - '0')
 				    : (*s - 'A' + 10);
 		s++;
+		data = (*s <= '9') ? (*s - '0') << 4
+				   : (*s - 'A' + 10) << 4;
+		s++;
+		data += (*s <= '9') ? (*s - '0')
+				    : (*s - 'A' + 10);
+		s++;
+		if (data == 1)
+			break;
 
 		if (psize) {
 			if (addr < (pstart << 8) || (addr + count - 1) >= ((pstart + psize) << 8)) {
@@ -331,7 +331,6 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 			saddr = addr;
 		if (addr >= eaddr)
 			eaddr = addr + count - 1;
-		s += 2;
 		for (i = 0; i < count; i++) {
 			data = (*s <= '9') ? (*s - '0') << 4
 					   : (*s - 'A' + 10) << 4;
@@ -345,13 +344,14 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 
 	fclose(fd);
 
+	PC = addr ? addr : saddr;
+
 	count = eaddr - saddr + 1;
 	LOG(TAG, "Loader statistics for file %s:\r\n", fn);
 	LOG(TAG, "START : %04XH\r\n", saddr);
 	LOG(TAG, "END   : %04XH\r\n", eaddr);
+	LOG(TAG, "PC    : %04XH\r\n", PC);
 	LOG(TAG, "LOADED: %04XH (%d)\r\n\r\n", count & 0xffff, count & 0xffff);
-
-	PC = saddr;
 
 	return(0);
 }

@@ -15,7 +15,7 @@
  */
 
 /*
- *	This module is an ICE type user interface to debug Z80 programs
+ *	This module is an ICE type user interface to debug Z80/8080 programs
  *	on a host system.
  */
 
@@ -36,7 +36,7 @@
 #include "../../iodevices/unix_terminal.h"
 
 extern void cpu_z80(void), cpu_8080(void);
-extern void disass(unsigned char **, int);
+extern void disass(int, WORD *);
 extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
@@ -65,7 +65,7 @@ static void do_unix(char *);
 static void do_help(void);
 static void cpu_err_msg(void);
 
-extern BYTE *wrk_ram;
+static WORD wrk_addr;
 extern struct termios old_term;
 
 /*
@@ -76,6 +76,8 @@ void mon(void)
 {
 	register int eoj = 1;
 	static char cmd[LENCMD];
+
+	wrk_addr = PC;
 
 	tcgetattr(0, &old_term);
 
@@ -161,7 +163,7 @@ void mon(void)
  */
 static void do_step(void)
 {
-	BYTE *p;
+	WORD a;
 
 	cpu_state = SINGLE_STEP;
 	cpu_error = NONE;
@@ -178,8 +180,9 @@ static void do_step(void)
 	cpu_err_msg();
 	print_head();
 	print_reg();
-	p = mem_base() + PC;
-	disass(&p, PC);
+	a = PC;
+	disass(cpu, &a);
+	wrk_addr = PC;
 }
 
 /*
@@ -282,7 +285,7 @@ static int handel_break(void)
 	break_address = PC - 1;		/* store adr of breakpoint */
 	cpu_error = NONE;		/* HALT was a breakpoint */
 	PC--;				/* substitute HALT opcode by */
-	*(mem_base() + PC) = soft[i].sb_oldopc;	/* original opcode */
+	putmem(PC, soft[i].sb_oldopc);	/* original opcode */
 	cpu_state = SINGLE_STEP;	/* and execute it */
 	switch(cpu) {
 	case Z80:
@@ -292,7 +295,7 @@ static int handel_break(void)
 		cpu_8080();
 		break;
 	}
-	*(mem_base() + soft[i].sb_adr) = 0x76; /* restore HALT opcode again */
+	putmem(soft[i].sb_adr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment passcounter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
 		return(1);		/* pass not reached, continue */
@@ -315,22 +318,18 @@ static void do_dump(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
-		wrk_ram = mem_base() + exatoi(s) - exatoi(s) % 16;
+		wrk_addr = exatoi(s) - exatoi(s) % 16;
 	printf("Adr    ");
 	for (i = 0; i < 16; i++)
 		printf("%02x ", i);
 	puts(" ASCII");
 	for (i = 0; i < 16; i++) {
-		printf("%04x - ", (unsigned int)(wrk_ram - mem_base()));
-		for (j = 0; j < 16; j++) {
-			printf("%02x ", *wrk_ram);
-			wrk_ram++;
-			if (wrk_ram > mem_base() + 65535)
-				wrk_ram = mem_base();
-		}
+		printf("%04x - ", (unsigned int) wrk_addr);
+		for (j = 0; j < 16; j++)
+			printf("%02x ", getmem(wrk_addr++));
 		putchar('\t');
 		for (j = -16; j < 0; j++)
-			printf("%c", ((c = *(wrk_ram + j)) >= ' ' && c <= 0x7f)
+			printf("%c", ((c = getmem(wrk_addr + j)) >= ' ' && c <= 0x7f)
 			       ? c : '.');
 		putchar('\n');
 	}
@@ -346,12 +345,10 @@ static void do_list(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
-		wrk_ram = mem_base() + exatoi(s);
+		wrk_addr = exatoi(s);
 	for (i = 0; i < 10; i++) {
-		printf("%04x - ", (unsigned int)(wrk_ram - mem_base()));
-		disass(&wrk_ram, wrk_ram - mem_base());
-		if (wrk_ram > mem_base() + 65535)
-			wrk_ram = mem_base();
+		printf("%04x - ", (unsigned int) wrk_addr);
+		disass(cpu, &wrk_addr);
 	}
 }
 
@@ -365,22 +362,18 @@ static void do_modify(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
-		wrk_ram = mem_base() + exatoi(s);
+		wrk_addr = exatoi(s);
 	for (;;) {
-		printf("%04x = %02x : ", (unsigned int)(wrk_ram - mem_base()),
-		       *wrk_ram);
+		printf("%04x = %02x : ", (unsigned int) wrk_addr,
+		       getmem(wrk_addr));
 		fgets(nv, sizeof(nv), stdin);
 		if (nv[0] == '\n') {
-			wrk_ram++;
-			if (wrk_ram > mem_base() + 65535)
-				wrk_ram = mem_base();
+			wrk_addr++;
 			continue;
 		}
 		if (!isxdigit((unsigned char) nv[0]))
 			break;
-		*wrk_ram++ = exatoi(nv);
-		if (wrk_ram > mem_base() + 65535)
-			wrk_ram = mem_base();
+		putmem(wrk_addr++, exatoi(nv));
 	}
 }
 
@@ -389,13 +382,13 @@ static void do_modify(char *s)
  */
 static void do_fill(char *s)
 {
-	register BYTE *p;
+	register WORD a;
 	register int i;
 	register BYTE val;
 
 	while (isspace((unsigned char) *s))
 		s++;
-	p = mem_base() + exatoi(s);
+	a = exatoi(s);
 	while (*s != ',' && *s != '\0')
 		s++;
 	if (*s) {
@@ -412,11 +405,8 @@ static void do_fill(char *s)
 		puts("value missing");
 		return;
 	}
-	while (i--) {
-		*p++ = val;
-		if (p > mem_base() + 65535)
-			p = mem_base();
-	}
+	while (i--)
+		putmem(a++, val);
 }
 
 /*
@@ -424,17 +414,17 @@ static void do_fill(char *s)
  */
 static void do_move(char *s)
 {
-	register BYTE *p1, *p2;
+	register WORD a1, a2;
 	register int count;
 
 	
 	while (isspace((unsigned char) *s))
 		s++;
-	p1 = mem_base() + exatoi(s);
+	a1 = exatoi(s);
 	while (*s != ',' && *s != '\0')
 		s++;
 	if (*s) {
-		p2 = mem_base() + exatoi(++s);
+		a2 = exatoi(++s);
 	} else {
 		puts("to missing");
 		return;
@@ -447,13 +437,8 @@ static void do_move(char *s)
 		puts("count missing");
 		return;
 	}
-	while (count--) {
-		*p2++ = *p1++;
-		if (p1 > mem_base() + 65535)
-			p1 = mem_base();
-		if (p2 > mem_base() + 65535)
-			p2 = mem_base();
-	}
+	while (count--)
+		putmem(a2++, getmem(a1++));
 }
 
 /*
@@ -708,15 +693,15 @@ static void do_break(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (*s == 'c') {
-		*(mem_base() + soft[i].sb_adr) = soft[i].sb_oldopc;
+		putmem(soft[i].sb_adr, soft[i].sb_oldopc);
 		memset((char *) &soft[i], 0, sizeof(struct softbreak));
 		return;
 	}
 	if (soft[i].sb_pass)
-		*(mem_base() + soft[i].sb_adr) = soft[i].sb_oldopc;
+		putmem(soft[i].sb_adr, soft[i].sb_oldopc);
 	soft[i].sb_adr = exatoi(s);
-	soft[i].sb_oldopc = *(mem_base() + soft[i].sb_adr);
-	*(mem_base() + soft[i].sb_adr) = 0x76;
+	soft[i].sb_oldopc = getmem(soft[i].sb_adr);
+	putmem(soft[i].sb_adr, 0x76);
 	while (!iscntrl((unsigned char) *s) && !ispunct((unsigned char) *s))
 		s++;
 	if (*s != ',')
@@ -841,13 +826,14 @@ static void do_clock(void)
 	BYTE save[3];
 	static struct sigaction newact;
 	static struct itimerval tim;
+	char *s = NULL;
 
-	save[0] = *(mem_base() + 0x0000); /* save memory locations */
-	save[1] = *(mem_base() + 0x0001); /* 0000H - 0002H */
-	save[2] = *(mem_base() + 0x0002);
-	*(mem_base() + 0x0000) = 0xc3;	/* store opcode JP 0000H at address */
-	*(mem_base() + 0x0001) = 0x00;	/* 0000H */
-	*(mem_base() + 0x0002) = 0x00;
+	save[0] = getmem(0x0000);	/* save memory locations */
+	save[1] = getmem(0x0001);	/* 0000H - 0002H */
+	save[2] = getmem(0x0002);
+	putmem(0x0000, 0xc3);		/* store opcode JP 0000H at address */
+	putmem(0x0001, 0x00);		/* 0000H */
+	putmem(0x0002, 0x00);
 	PC = 0;				/* set PC to this code */
 	R = 0L;				/* clear refresh register */
 	cpu_state = CONTIN_RUN;		/* initialise CPU */
@@ -864,19 +850,22 @@ static void do_clock(void)
 	switch(cpu) {			/* start CPU */
 	case Z80:
 		cpu_z80();
+		s = "JP";
 		break;
 	case I8080:
 		cpu_8080();
+		s = "JMP";
 		break;
 	}
 	newact.sa_handler = SIG_DFL;	/* reset timer interrupt handler */
 	sigaction(SIGALRM, &newact, NULL);
-	*(mem_base() + 0x0000) = save[0]; /* restore memory locations */
-	*(mem_base() + 0x0001) = save[1]; /* 0000H - 0002H */
-	*(mem_base() + 0x0002) = save[2];
-	if (cpu_error == NONE)
+	putmem(0x0000, save[0]);	/* restore memory locations */
+	putmem(0x0001, save[1]);	/* 0000H - 0002H */
+	putmem(0x0002, save[2]);
+	if (cpu_error == NONE) {
+		printf("CPU executed %ld %s instructions in 3 seconds\n", R, s);
 		printf("clock frequency = %5.2f Mhz\n", ((float) R) / 300000.0);
-	else
+	} else
 		puts("Interrupted by user");
 }
 
@@ -990,19 +979,22 @@ static void cpu_err_msg(void)
 		break;
 	case OPTRAP1:
 		printf("Op-code trap at %04x: %02x\n", PC - 1,
-		       *(mem_base() + PC - 1));
+		       getmem(PC - 1));
 		break;
 	case OPTRAP2:
 		printf("Op-code trap at %04x: %02x %02x\n", PC - 2,
-		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		       getmem(PC - 2), getmem(PC - 1));
 		break;
 	case OPTRAP4:
 		printf("Op-code trap at %04x: %02x %02x %02x %02x\n",
-		       PC - 4, *(mem_base() + PC - 4), *(mem_base() + PC - 3),
-		       *(mem_base() + PC - 2), *(mem_base() + PC - 1));
+		       PC - 4, getmem(PC - 4), getmem(PC - 3),
+		       getmem(PC - 2), getmem(PC - 1));
 		break;
 	case USERINT:
 		puts("User Interrupt");
+		break;
+	case INTERROR:
+		printf("Unsupported bus data during INT: %02x\n", int_data);
 		break;
 	case POWEROFF:
 		break;
