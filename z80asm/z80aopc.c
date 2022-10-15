@@ -41,7 +41,7 @@ extern int op_ret(int, int), op_jpcall(int, int), op_jr(int, int);
 extern int op_djnz(int, int), op_ld(int, int), op_add(int, int);
 extern int op_sbadc(int, int), op_decinc(int, int), op_alu(int, int);
 extern int op_out(int, int), op_in(int, int), op_cbgrp(int, int);
-extern int op8080_mov(int, int), op8080_alu(int, int), op8080_decinc(int, int);
+extern int op8080_mov(int, int), op8080_alu(int, int), op8080_dcrinr(int, int);
 extern int op8080_reg16(int, int), op8080_regbd(int, int);
 extern int op8080_imm(int, int), op8080_rst(int, int), op8080_pupo(int, int);
 extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
@@ -251,13 +251,13 @@ struct opc opctab_8080[] = {
 	{ "CZ",		op8080_addr,	0xcc,	0,	0	 },
 	{ "DAA",	op_1b,		0x27,	0,	OP_NOOPR },
 	{ "DAD",	op8080_reg16,	0x09,	0,	0	 },
-	{ "DCR",	op8080_decinc,	0x05,	0,	0	 },
+	{ "DCR",	op8080_dcrinr,	0x05,	0,	0	 },
 	{ "DCX",	op8080_reg16,	0x0b,	0,	0	 },
 	{ "DI",		op_1b,		0xf3,	0,	OP_NOOPR },
 	{ "EI",		op_1b,		0xfb,	0,	OP_NOOPR },
 	{ "HLT",	op_1b,		0x76,	0,	OP_NOOPR },
 	{ "IN",		op8080_imm,	0xdb,	0,	0	 },
-	{ "INR",	op8080_decinc,	0x04,	0,	0	 },
+	{ "INR",	op8080_dcrinr,	0x04,	0,	0	 },
 	{ "INX",	op8080_reg16,	0x03,	0,	0	 },
 	{ "JC",		op8080_addr,	0xda,	0,	0	 },
 	{ "JM",		op8080_addr,	0xfa,	0,	0	 },
