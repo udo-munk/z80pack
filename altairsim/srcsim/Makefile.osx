@@ -9,14 +9,17 @@ ROM=/usr/local/share/altairsim/roms
 
 CC = gcc
 
+Z80CORE = ../../z80core
+IODEVICES = ../../iodevices
+
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 # Debug
-#CFLAGS = -O -g -c -Wno-self-assign -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\"
+#CFLAGS = -O -g -c -Wno-self-assign -I/opt/X11/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib -L/opt/X11/lib \
 	-lfrontpanel -ljpeg -lGL -lGLU -lX11
@@ -57,87 +60,83 @@ all:  ../altairsim
 ../altairsim : $(OBJ) $(FP)
 	$(CC) $(OBJ) $(LFLAGS) -o ../altairsim
 
-sim0.c:
-	./lnsrc
+sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c
 
-sim0.o : sim0.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim0.c
+sim1.o : $(Z80CORE)/sim1.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1.c
 
-sim1.o : sim1.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1.c
+sim1a.o : $(Z80CORE)/sim1a.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1a.c
 
-sim1a.o : sim1a.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1a.c
+sim2.o : $(Z80CORE)/sim2.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim2.c
 
-sim2.o : sim2.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim2.c
+sim3.o : $(Z80CORE)/sim3.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim3.c
 
-sim3.o : sim3.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim3.c
+sim4.o : $(Z80CORE)/sim4.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim4.c
 
-sim4.o : sim4.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim4.c
+sim5.o : $(Z80CORE)/sim5.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim5.c
 
-sim5.o : sim5.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim5.c
+sim6.o : $(Z80CORE)/sim6.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim6.c
 
-sim6.o : sim6.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim6.c
+sim7.o : $(Z80CORE)/sim7.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim7.c
 
-sim7.o : sim7.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim7.c
-
-simctl.o : simctl.c sim.h simglb.h config.h memory.h log.h
+simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h config.h memory.h $(Z80CORE)/log.h
 	$(CC) $(CFLAGS) simctl.c
 
-simint.o : simint.c sim.h simglb.h
-	$(CC) $(CFLAGS) simint.c
+simint.o : $(Z80CORE)/simint.c sim.h $(Z80CORE)/simglb.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simint.c
 
-memory.o: memory.c sim.h simglb.h config.h memory.h
+memory.o : memory.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h log.h memory.h ../../iodevices/simbdos.h
-	$(CC) $(CFLAGS) -I../../iodevices iosim.c
+iosim.o : iosim.c sim.h $(Z80CORE)/simglb.h $(Z80CORE)/log.h memory.h $(IODEVICES)/simbdos.h
+	$(CC) $(CFLAGS) iosim.c
 
-simfun.o : simfun.c sim.h log.h
-	$(CC) $(CFLAGS) simfun.c
+simfun.o : $(Z80CORE)/simfun.c sim.h $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simfun.c
 
-simglb.o : simglb.c sim.h
-	$(CC) $(CFLAGS) simglb.c
+simglb.o : $(Z80CORE)/simglb.c sim.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simglb.c
 
-simbdos.o : ../../iodevices/simbdos.c sim.h simglb.h memory.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/simbdos.c
+simbdos.o : $(IODEVICES)/simbdos.c sim.h $(Z80CORE)/simglb.h memory.h
+	$(CC) $(CFLAGS) $(IODEVICES)/simbdos.c
 
-unix_terminal.o : ../../iodevices/unix_terminal.c
-	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
+unix_terminal.o : $(IODEVICES)/unix_terminal.c
+	$(CC) $(CFLAGS) $(IODEVICES)/unix_terminal.c
 
-unix_network.o : ../../iodevices/unix_network.c log.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/unix_network.c
+unix_network.o : $(IODEVICES)/unix_network.c $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(IODEVICES)/unix_network.c
 
-config.o : config.c sim.h simglb.h log.h memory.h
+config.o : config.c sim.h $(Z80CORE)/simglb.h $(Z80CORE)/log.h memory.h
 	$(CC) $(CFLAGS) config.c
 
-altair-88-sio.o: ../../iodevices/altair-88-sio.c log.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-sio.c
+altair-88-sio.o: $(IODEVICES)/altair-88-sio.c $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(IODEVICES)/altair-88-sio.c
 
-altair-88-2sio.o: ../../iodevices/altair-88-2sio.c log.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-2sio.c
+altair-88-2sio.o: $(IODEVICES)/altair-88-2sio.c $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(IODEVICES)/altair-88-2sio.c
 
-tarbell_fdc.o: ../../iodevices/tarbell_fdc.c log.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/tarbell_fdc.c
+tarbell_fdc.o: $(IODEVICES)/tarbell_fdc.c $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(IODEVICES)/tarbell_fdc.c
 
-altair-88-dcdd.o: ../../iodevices/altair-88-dcdd.c log.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/altair-88-dcdd.c
+altair-88-dcdd.o: $(IODEVICES)/altair-88-dcdd.c $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(IODEVICES)/altair-88-dcdd.c
 
-cromemco-dazzler.o : ../../iodevices/cromemco-dazzler.c
-	$(CC) $(CFLAGS) -I./ ../../iodevices/cromemco-dazzler.c
+cromemco-dazzler.o : $(IODEVICES)/cromemco-dazzler.c
+	$(CC) $(CFLAGS) $(IODEVICES)/cromemco-dazzler.c
 
-proctec-vdm.o : ../../iodevices/proctec-vdm.c log.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/proctec-vdm.c
+proctec-vdm.o : $(IODEVICES)/proctec-vdm.c $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(IODEVICES)/proctec-vdm.c
 
 clean:
 	rm -f *.o
-	./ulnsrc
 
 allclean:
 	make -f Makefile.osx clean
