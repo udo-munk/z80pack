@@ -98,7 +98,7 @@ void int_off(void)
 
 static void user_int(int sig)
 {
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	cpu_error = USERINT;
 	cpu_state = STOPPED;
@@ -106,7 +106,7 @@ static void user_int(int sig)
 
 static void quit_int(int sig)
 {
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	cpu_error = USERINT;
 	cpu_state = STOPPED;
@@ -114,7 +114,7 @@ static void quit_int(int sig)
 
 static void term_int(int sig)
 {
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	exit_io();
 	int_off();
