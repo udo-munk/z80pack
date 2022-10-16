@@ -169,3 +169,8 @@ struct dskdef {
 
 extern void sleep_ms(int);
 #define SLEEP_MS(t)	sleep_ms(t)
+
+/*
+ *	macro for declaring unused function parameters
+ */
+#define UNUSED(x)	(void)(x)

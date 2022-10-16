@@ -842,7 +842,7 @@ void init_io(void)
 			strcpy(fn, diskd);
 		} else {
 			/* if not first try ./disks */
-			if ((stat("./disks", &sbuf) == 0) && 
+			if ((stat("./disks", &sbuf) == 0) &&
 			    S_ISDIR(sbuf.st_mode)) {
 				strcpy(fn, "./disks");
 			/* nope, then DISKSDIR as set in Makefile */
@@ -2466,7 +2466,7 @@ static void hwctl_out(BYTE data)
 		hwctl_lock = 0;
 		return;
 	}
-	
+
 	/* process output to unlocked port */
 
 	if (data & 128) {	/* halt system */

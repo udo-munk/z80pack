@@ -628,7 +628,7 @@ static int op_addyb(void)		/* ADD IY,BC */
 	register int carry;
 	BYTE iyl = IY & 0xff;
 	BYTE iyh = IY >> 8;
-	
+
 	carry = (iyl + C > 255) ? 1 : 0;
 	iyl += C;
 	((iyh & 0xf) + (B & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -645,7 +645,7 @@ static int op_addyd(void)		/* ADD IY,DE */
 	register int carry;
 	BYTE iyl = IY & 0xff;
 	BYTE iyh = IY >> 8;
-	
+
 	carry = (iyl + E > 255) ? 1 : 0;
 	iyl += E;
 	((iyh & 0xf) + (D & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -664,7 +664,7 @@ static int op_addys(void)		/* ADD IY,SP */
 	BYTE iyh = IY >> 8;
 	BYTE spl = SP & 0xff;
 	BYTE sph = SP >> 8;
-	
+
 	carry = (iyl + spl > 255) ? 1 : 0;
 	iyl += spl;
 	((iyh & 0xf) + (sph & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -681,7 +681,7 @@ static int op_addyy(void)		/* ADD IY,IY */
 	register int carry;
 	BYTE iyl = IY & 0xff;
 	BYTE iyh = IY >> 8;
-	
+
 	carry = (iyl << 1 > 255) ? 1 : 0;
 	iyl <<= 1;
 	((iyh & 0xf) + (iyh & 0xf) + carry > 0xf) ? (F |= H_FLAG)

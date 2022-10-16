@@ -15,8 +15,6 @@
 #include <sys/msg.h>
 #include <string.h>
 
-#define UNUSED(x) (void)(x)
-
 enum net_device {
 	DEV_TTY,
 	DEV_TTY2,

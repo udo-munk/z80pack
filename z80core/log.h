@@ -1,8 +1,8 @@
 /**
  * log.h
- * 
+ *
  * Copyright (C) 2018 by David McNaughton
- * 
+ *
  * NOTICE: This is a deriviative of a work that is can be found at and is itself:
  * https://github.com/espressif/esp-idf/blob/master/components/log/include/esp_log.h
  * Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
@@ -10,10 +10,10 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * History:
  * 12-JUL-18    1.0     Initial Release
- * 
+ *
  */
 #include <stdio.h>
 #include <stdint.h>

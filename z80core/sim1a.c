@@ -1412,7 +1412,7 @@ static int op_dadsp(void)		/* DAD SP */
 
 	BYTE spl = SP & 0xff;
 	BYTE sph = SP >> 8;
-	
+
 	carry = (L + spl > 255) ? 1 : 0;
 	L += spl;
 	(H + sph + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);

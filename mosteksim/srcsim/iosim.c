@@ -43,7 +43,7 @@ static void io_no_card_out(BYTE);
  *	input I/O port (0 - 255), to do the required I/O.
  */
 static BYTE (*port_in[256]) (void) = {
-	io_trap_in,			/* port 0 */ 
+	io_trap_in,			/* port 0 */
 	io_trap_in,			/* port 1 */
 	io_trap_in,			/* port 2 */
 	io_trap_in,			/* port 3 */
@@ -57,11 +57,11 @@ static BYTE (*port_in[256]) (void) = {
 	io_trap_in,			/* port 11 */
 	io_trap_in,			/* port 12 */
 	io_trap_in,			/* port 13 */
-	io_trap_in,	 		/* port 14 */ 
+	io_trap_in,	 		/* port 14 */
 	io_trap_in,			/* port 15 */
-	io_trap_in,			/* port 16 */ 
-	io_trap_in,			/* port 17 */ 
-	io_trap_in,			/* port 18 */ 
+	io_trap_in,			/* port 16 */
+	io_trap_in,			/* port 17 */
+	io_trap_in,			/* port 18 */
 	io_trap_in,			/* port 19 */
 	io_trap_in,			/* port 20 */
 	io_trap_in,			/* port 21 */
@@ -313,7 +313,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 4 */
 	io_trap_out,		/* port 5 */
 	io_trap_out,		/* port 6 */
-	io_trap_out,		/* port 7 */ 
+	io_trap_out,		/* port 7 */
 	io_trap_out,		/* port 8 */
 	io_trap_out,		/* port 9 */
 	io_trap_out,		/* port 10 */
@@ -558,7 +558,7 @@ static void (*port_out[256]) (BYTE) = {
 	io_trap_out,		/* port 249 */
 	io_trap_out,		/* port 250 */
 	io_trap_out,		/* port 251 */
-	io_trap_out,		/* port 252 */ 
+	io_trap_out,		/* port 252 */
 	io_trap_out,		/* port 253 */
 	io_trap_out,		/* port 254 */
 	io_trap_out		/* port 255 */

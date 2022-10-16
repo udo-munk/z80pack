@@ -75,14 +75,14 @@ int main(int argc,char *argv[])/*Main routine*/
   }
   ifile = argv[optind];
   ofile = argv[optind+1];
-    
+
   /*Open file check*/
   if((inp = fopen(ifile, "rb")) == NULL){
     printf("ERROR: Cannot open input file.\n");
     return 1;
   }
   fseek (inp, foffset, SEEK_SET);
-  
+
   if (append == 0) {
     if((outp = fopen(ofile, "wt")) == NULL){
       printf("ERROR: Cannot open output file.\n");

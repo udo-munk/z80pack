@@ -8,7 +8,7 @@
  *
  * History:
  * 15-SEP-19 (Mike Douglas) Created from simctl.c in the z80sim
- *		source directory. Added unix_terminal code to emulate 
+ *		source directory. Added unix_terminal code to emulate
  * 		console I/O for the Mostek AID-80F and SYS-80FT computers
  * 27-SEP-19 (Udo Munk) fix double loading of ROM
  * 30-SEP-19 (Mike Douglas) accept also upper case
@@ -418,7 +418,6 @@ static void do_move(char *s)
 	register WORD a1, a2;
 	register int count;
 
-	
 	while (isspace((unsigned char) *s))
 		s++;
 	a1 = exatoi(s);

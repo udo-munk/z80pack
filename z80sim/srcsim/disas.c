@@ -53,8 +53,6 @@
 #include "sim.h"
 #include "memory.h"
 
-#define UNUSED(x)	(void)(x)
-
 /*
  *	Forward declarations
  */
@@ -471,7 +469,6 @@ char Opcode_Str[64];
 
 static void get_opcodes(WORD addr, int len)
 {
-  
 	switch (len) {
 	case 1:
 		sprintf(Opcode_Str, "%02X         ", getmem(addr));
@@ -554,13 +551,13 @@ void disass(int cpu, WORD *addr)
 			len = (*optp->fun)(optp->text, *addr);
 		}
 	}
+	strcat(Disass_Str, "\n");
 
 	get_opcodes(*addr, len);
 #ifndef WANT_GUI
 	fputs(Opcode_Str, stdout);
 	putchar('\t');
 	fputs(Disass_Str, stdout);
-	putchar('\n');
 #endif
 
 	*addr += len;
@@ -772,14 +769,14 @@ static int ddfd(char *s, WORD a)
 			sprintf(Disass_Str, "LD\t%s,(%s+%02X)", reg[r1],
 				ireg[r2], getmem(a + 2));
 			return(3);
-		} else {
+		} else {				/* undocumented */
 			sprintf(Disass_Str, "LD*\t%s,%s", ireg[r1], ireg[r2]);
 			return(2);
 		}
 	} else if (b2 < 0xc0) {
 		if (r2 < 4 || r2 > 6) {			/* undocumented */
 			strcpy(Disass_Str, "NOP*");
-			return(2);
+			return(1);
 		} else if (r2 == 6) {
 			sprintf(Disass_Str, "%s(%s+%02X)", aluins[r1],
 				ireg[r2], getmem(a + 2));
