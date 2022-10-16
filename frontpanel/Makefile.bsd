@@ -8,7 +8,7 @@ CC = c++
 # compiler switches
 
 INCLUDE = -I/usr/local/include
-DEFINES = 
+DEFINES =
 
 # Development
 #CFLAGS = -c -O3 -fPIC -Wno-deprecated -fstack-protector-all -D_FORTIFY_SOURCE=2 $(INCLUDE) $(DEFINES)
@@ -18,7 +18,7 @@ CFLAGS = -c -O3 -fPIC -Wno-deprecated -U_FORTIFY_SOURCE $(INCLUDE) $(DEFINES)
 
 LDFLAGS = -shared
 
-default: $(OBJS) 
+default: $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o libfrontpanel.so
 	@echo
 	@echo "Be sure to copy libfrontpanel.so to a shared library path!"
@@ -42,13 +42,13 @@ lp_main.o: lp_main.cpp lp_main.h lpanel.h lp_utils.h
 lp_switch.o: lp_switch.cpp lpanel.h lp_switch.h lp_utils.h
 	$(CC) $(CFLAGS) lp_switch.cpp -o lp_switch.o
 
-lp_utils.o: lp_utils.cpp lp_utils.h 
+lp_utils.o: lp_utils.cpp lp_utils.h
 	$(CC) $(CFLAGS) lp_utils.cpp -o lp_utils.o
 
-lp_window.o: lp_window.cpp lpanel.h 
+lp_window.o: lp_window.cpp lpanel.h
 	$(CC) $(CFLAGS) lp_window.cpp -o lp_window.o
 
-lp_materials.o: lp_materials.cpp lp_materials.h 
+lp_materials.o: lp_materials.cpp lp_materials.h
 	$(CC) $(CFLAGS) lp_materials.cpp -o lp_materials.o
 
 clean:

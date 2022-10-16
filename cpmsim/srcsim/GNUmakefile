@@ -1,13 +1,13 @@
 ###
-### START MACHINE DEPENDANT VARIABLES 
+### START MACHINE DEPENDANT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = cpm
 # machine specific system source files
-SRC_MACHINE = config.c iosim.c memory.c simctl.c 
+SRC_MACHINE = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
 SRC_IO = unix_terminal.c rtc.c simbdos.c
-#machine specifc libraries 
+#machine specifc libraries
 SRC_LIBS =
 
 # Installation directories by convention
@@ -29,7 +29,7 @@ CONF = $(DIR_ROOT)/conf
 # system wide location for disk images
 DISKS = $(DIR_ROOT)/disks
 ###
-### END MACHINE DEPENDANT VARIABLES 
+### END MACHINE DEPENDANT VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
@@ -58,7 +58,7 @@ PLAT_LFLAGS =
 endif
 ifeq ($(TARGET_OS),LINUX)
 PLAT_LFLAGS =
-endif 
+endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCL =
 PLAT_CFLAGS = -Wno-self-assign
@@ -88,11 +88,11 @@ endif
 LFLAGS =
 
 # core system source files for the CPU simulation - only change if the core changes
-SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
+SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c simdis.c simice.c
 SRC = $(SRC_CORE) $(SRC_MACHINE) $(SRC_IO)
 OBJ = $(SRC:.c=.o)
 
-all : $(SIM) 
+all : $(SIM)
 	@echo
 	@echo "Done."
 	@echo
@@ -107,7 +107,7 @@ $(SIM) : $(OBJ) $(SRC_LIBS)
 
 build: _rm_obj all
 
-install: 
+install:
 	@echo
 	@echo Waiting to be written...
 	@echo

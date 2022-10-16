@@ -48,7 +48,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <termios.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -60,12 +59,10 @@
 
 int boot(int);
 
-extern void cpu_z80(void), cpu_8080(void);
+extern void ice_cmd_loop(int);
 extern struct dskdef disks[];
 
 static const char *TAG = "system";
-
-extern struct termios old_term, new_term;
 
 /*
  *	This function initialises the terminal, loads boot code
@@ -80,72 +77,11 @@ void mon(void)
 	/* empty buffer for teletype */
 	fflush(stdout);
 
-	/* initialise terminal */
-	set_unix_terminal();
+	ice_before_go = set_unix_terminal;
+	ice_after_go = reset_unix_terminal;
 	atexit(reset_unix_terminal);
 
-	/* start CPU emulation */
-	cpu_state = CONTIN_RUN;
-	cpu_error = NONE;
-	switch(cpu) {
-	case Z80:
-		cpu_z80();
-		break;
-	case I8080:
-		cpu_8080();
-		break;
-	}
-
-	/* reset terminal */
-	reset_unix_terminal();
-
-	/* check for CPU emulation errors and report */
-	switch (cpu_error) {
-	case NONE:
-		break;
-	case OPHALT:
-		LOG(TAG, "INT disabled and HALT Op-Code reached at %04x\r\n",
-		    PC - 1);
-		break;
-	case IOTRAPIN:
-		LOGE(TAG, "I/O input Trap at %04x, port %02x",
-		     PC, io_port);
-		break;
-	case IOTRAPOUT:
-		LOGE(TAG, "I/O output Trap at %04x, port %02x",
-		     PC, io_port);
-		break;
-	case IOHALT:
-		LOG(TAG, "System halted, bye.\r\n");
-		break;
-	case IOERROR:
-		LOGE(TAG, "Fatal I/O Error at %04x", PC);
-		break;
-	case OPTRAP1:
-		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
-		     getmem(PC - 1));
-		break;
-	case OPTRAP2:
-		LOGE(TAG, "Op-code trap at %04x %02x %02x",
-		     PC - 2, getmem(PC - 2), getmem(PC - 1));
-		break;
-	case OPTRAP4:
-		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
-		     PC - 4, getmem(PC - 4), getmem(PC - 3),
-		     getmem(PC - 2), getmem(PC - 1));
-		break;
-	case USERINT:
-		LOG(TAG, "User Interrupt at %04x\r\n", PC);
-		break;
-	case INTERROR:
-		LOGW(TAG, "Unsupported bus data during INT: %02x", int_data);
-		break;
-	case POWEROFF:
-		break;
-	default:
-		LOGW(TAG, "Unknown error %d", cpu_error);
-		break;
-	}
+	ice_cmd_loop(1);
 }
 
 /*

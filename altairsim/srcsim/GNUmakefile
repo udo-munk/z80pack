@@ -1,13 +1,13 @@
 ###
-### START MACHINE DEPENDANT VARIABLES 
+### START MACHINE DEPENDANT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = altair
 # machine specific system source files
-SRC_MACHINE = config.c iosim.c memory.c simctl.c 
+SRC_MACHINE = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
 SRC_IO = cromemco-dazzler.c proctec-vdm.c tarbell_fdc.c altair-88-dcdd.c altair-88-sio.c altair-88-2sio.c unix_terminal.c unix_network.c simbdos.c
-#machine specifc libraries 
+#machine specifc libraries
 SRC_LIBS = -lfrontpanel
 
 # Installation directories by convention
@@ -31,7 +31,7 @@ DISKS = $(DIR_ROOT)/disks
 # default boot ROM path
 ROM = $(DIR_ROOT)/roms
 ###
-### END MACHINE DEPENDANT VARIABLES 
+### END MACHINE DEPENDANT VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
@@ -51,7 +51,7 @@ include ../../z80core/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)
 CC = cc
-PLAT_INCL = -I/usr/local/include 
+PLAT_INCL = -I/usr/local/include
 PLAT_LFLAGS = -L/usr/local/lib -lthr
 endif
 ifeq ($(TARGET_OS),WIN32)
@@ -61,11 +61,11 @@ PLAT_LFLAGS = -lXext -lm -lpthread
 endif
 ifeq ($(TARGET_OS),LINUX)
 PLAT_LFLAGS = -lXext -lXmu -lXt -lm -lpthread
-endif 
+endif
 ifeq ($(TARGET_OS),OSX)
-PLAT_INCL = -I/opt/X11/include 
+PLAT_INCL = -I/opt/X11/include
 PLAT_CFLAGS = -Wno-self-assign
-PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib 
+PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib
 .LIBPATTERNS += lib%.dylib
 endif
 ###
@@ -97,7 +97,7 @@ SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfu
 SRC = $(SRC_CORE) $(SRC_MACHINE) $(SRC_IO)
 OBJ = $(SRC:.c=.o)
 
-all : $(SIM) 
+all : $(SIM)
 	@echo
 	@echo "Done."
 	@echo
@@ -112,7 +112,7 @@ $(SIM) : $(OBJ) $(SRC_LIBS)
 
 build: _rm_obj all
 
-install: 
+install:
 	@echo
 	@echo Waiting to be written...
 	@echo
