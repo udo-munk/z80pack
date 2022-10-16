@@ -20,8 +20,9 @@ OBJ =	sim0.o \
 	sim5.o \
 	sim6.o \
 	sim7.o \
+	simdis.o \
+	simice.o \
 	simctl.o \
-	disas.o \
 	simint.o \
 	memory.o \
 	iosim.o \
@@ -63,12 +64,15 @@ sim6.o : $(Z80CORE)/sim6.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 sim7.o : $(Z80CORE)/sim7.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 	$(CC) $(CFLAGS) $(Z80CORE)/sim7.c
 
-simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h memory.h $(IODEVICES)/mostek-fdc.h \
+simdis.o : $(Z80CORE)/simdis.c sim.h $(Z80CORE)/simglb.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simdis.c
+
+simice.o : $(Z80CORE)/simice.c sim.h $(Z80CORE)/simglb.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simice.c
+
+simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h $(IODEVICES)/mostek-fdc.h \
 	   $(IODEVICES)/unix_terminal.h
 	$(CC) $(CFLAGS) simctl.c
-
-disas.o	: disas.c
-	$(CC) $(CFLAGS) disas.c
 
 simint.o : $(Z80CORE)/simint.c sim.h $(Z80CORE)/simglb.h
 	$(CC) $(CFLAGS) $(Z80CORE)/simint.c

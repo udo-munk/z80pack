@@ -110,3 +110,8 @@ extern BYTE 	fp_led_data;
 extern WORD 	address_switch;
 extern BYTE 	fp_led_output;
 #endif
+
+extern void (*ice_before_go)(void);
+extern void (*ice_after_go)(void);
+extern void (*ice_cust_cmd)(char *, WORD *);
+extern void (*ice_cust_help)(void);

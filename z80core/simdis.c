@@ -1,5 +1,5 @@
 /*
- * Z80 and 8080 disassembler for Z80-CPU simulator
+ * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1989-2021 by Udo Munk
  * Parts Copyright (C) 2008 by Justin Clancy
@@ -48,9 +48,14 @@
  * 06-JAN-21 Release 1.37 bugfixes and improvements
  */
 
+/*
+ *	This module is a Z80 and 8080 disassembler for the Z80-CPU simulator
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include "sim.h"
+#include "simglb.h"
 #include "memory.h"
 
 /*
