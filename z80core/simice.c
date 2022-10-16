@@ -107,14 +107,14 @@ void (*ice_cust_help)(void);
  *	initialization work at program start with go_flag set to 1.
  *
  *	There are also two function pointers "ice_before_go" and
- *	"ice_after_go" which can be set to a void (function)(void) to be
+ *	"ice_after_go" which can be set to a void function(void) to be
  *	called before and after the go command. For example, mosteksim
  *	uses "set_unix_terminal" and "reset_unix_terminal".
  *
  *	Additionally you can add custom commands by setting "ice_cust_cmd"
- *	to a void (function)(char *, WORD *) which gets called with the
+ *	to a void function(char *, WORD *) which gets called with the
  *	command line and a pointer to the current working address as
- *	parameters. "ice_cust_help" can be set to a void (function)(void)
+ *	parameters. "ice_cust_help" can be set to a void function(void)
  *	to display help for custom commands.
  */
 void ice_cmd_loop(int go_flag)
