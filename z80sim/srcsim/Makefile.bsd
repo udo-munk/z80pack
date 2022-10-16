@@ -1,10 +1,12 @@
 CC = cc
 
+Z80CORE = ../../z80core
+
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2
+#CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -fstack-protector-all -D_FORTIFY_SOURCE=2 -I. -I$(Z80CORE)
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE
+CFLAGS = -O3 -c -Wall -Wextra -Wno-self-assign -U_FORTIFY_SOURCE -I. -I$(Z80CORE)
 
 LFLAGS =
 
@@ -18,10 +20,10 @@ OBJ =	sim0.o \
 	sim6.o \
 	sim7.o \
 	simctl.o \
-	disas.o	\
+	disas.o \
 	simint.o \
 	memory.o \
-	iosim.o	\
+	iosim.o \
 	simfun.o \
 	simglb.o \
 	config.o
@@ -29,63 +31,59 @@ OBJ =	sim0.o \
 ../z80sim : $(OBJ)
 	$(CC) $(OBJ) $(LFLAGS) -o ../z80sim
 
-sim0.c:
-	./lnsrc
+sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c
 
-sim0.o : sim0.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim0.c
+sim1.o : $(Z80CORE)/sim1.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1.c
 
-sim1.o : sim1.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1.c
+sim1a.o : $(Z80CORE)/sim1a.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1a.c
 
-sim1a.o : sim1a.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1a.c
+sim2.o : $(Z80CORE)/sim2.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim2.c
 
-sim2.o : sim2.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim2.c
+sim3.o : $(Z80CORE)/sim3.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim3.c
 
-sim3.o : sim3.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim3.c
+sim4.o : $(Z80CORE)/sim4.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim4.c
 
-sim4.o : sim4.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim4.c
+sim5.o : $(Z80CORE)/sim5.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim5.c
 
-sim5.o : sim5.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim5.c
+sim6.o : $(Z80CORE)/sim6.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim6.c
 
-sim6.o : sim6.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim6.c
+sim7.o : $(Z80CORE)/sim7.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim7.c
 
-sim7.o : sim7.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim7.c
-
-simctl.o : simctl.c sim.h simglb.h memory.h
+simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h memory.h
 	$(CC) $(CFLAGS) simctl.c
 
-disas.o	: disas.c
+disas.o : disas.c
 	$(CC) $(CFLAGS) disas.c
 
-simint.o : simint.c sim.h simglb.h
-	$(CC) $(CFLAGS) simint.c
+simint.o : $(Z80CORE)/simint.c sim.h $(Z80CORE)/simglb.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simint.c
 
 memory.o : memory.c sim.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o	: iosim.c sim.h	simglb.h
+iosim.o : iosim.c sim.h $(Z80CORE)/simglb.h
 	$(CC) $(CFLAGS) iosim.c
 
-simfun.o : simfun.c sim.h log.h
-	$(CC) $(CFLAGS) simfun.c
+simfun.o : $(Z80CORE)/simfun.c sim.h $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simfun.c
 
-simglb.o : simglb.c sim.h
-	$(CC) $(CFLAGS) simglb.c
+simglb.o : $(Z80CORE)/simglb.c sim.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simglb.c
 
-config.o: config.c
+config.o : config.c
 	$(CC) $(CFLAGS) config.c
 
 clean:
 	rm -f *.o ../z80sim
-	./ulnsrc
 
 allclean:
 	make -f Makefile.bsd clean

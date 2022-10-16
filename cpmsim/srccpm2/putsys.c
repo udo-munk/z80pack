@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <memory.h>
+#include <string.h>
 
 /*
  *	This program writes the CP/M 2.2 OS from the following files

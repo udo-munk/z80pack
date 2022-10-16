@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <memory.h>
+#include <string.h>
 
 /*
  *	This program writes the UCSD boot code from the following files

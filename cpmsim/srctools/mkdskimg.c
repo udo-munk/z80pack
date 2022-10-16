@@ -18,8 +18,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <strings.h>
-#include <memory.h>
+#include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 

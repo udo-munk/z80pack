@@ -62,7 +62,6 @@
 #include <libgen.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <memory.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include "sim.h"

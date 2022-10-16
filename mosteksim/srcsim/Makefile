@@ -1,10 +1,13 @@
 CC = gcc
 
+Z80CORE = ../../z80core
+IODEVICES = ../../iodevices
+
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 
+#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 -I. -I$(Z80CORE) -I$(IODEVICES)
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE 
+CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE -I. -I$(Z80CORE) -I$(IODEVICES)
 
 LFLAGS =
 
@@ -18,10 +21,10 @@ OBJ =	sim0.o \
 	sim6.o \
 	sim7.o \
 	simctl.o \
-	disas.o	\
+	disas.o \
 	simint.o \
 	memory.o \
-	iosim.o	\
+	iosim.o \
 	simfun.o \
 	simglb.o \
 	simbdos.o \
@@ -33,77 +36,73 @@ OBJ =	sim0.o \
 ../sim : $(OBJ)
 	$(CC) $(OBJ) $(LFLAGS) -o ../sim
 
-sim0.c:
-	./lnsrc
+sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c
 
-sim0.o : sim0.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim0.c
+sim1.o : $(Z80CORE)/sim1.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1.c
 
-sim1.o : sim1.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1.c
+sim1a.o : $(Z80CORE)/sim1a.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1a.c
 
-sim1a.o : sim1a.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1a.c
+sim2.o : $(Z80CORE)/sim2.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim2.c
 
-sim2.o : sim2.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim2.c
+sim3.o : $(Z80CORE)/sim3.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim3.c
 
-sim3.o : sim3.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim3.c
+sim4.o : $(Z80CORE)/sim4.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim4.c
 
-sim4.o : sim4.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim4.c
+sim5.o : $(Z80CORE)/sim5.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim5.c
 
-sim5.o : sim5.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim5.c
+sim6.o : $(Z80CORE)/sim6.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim6.c
 
-sim6.o : sim6.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim6.c
+sim7.o : $(Z80CORE)/sim7.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim7.c
 
-sim7.o : sim7.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim7.c
-
-simctl.o : simctl.c sim.h simglb.h memory.h ../../iodevices/mostek-fdc.h \
-	   ../../iodevices/unix_terminal.h
+simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h memory.h $(IODEVICES)/mostek-fdc.h \
+	   $(IODEVICES)/unix_terminal.h
 	$(CC) $(CFLAGS) simctl.c
 
 disas.o	: disas.c
 	$(CC) $(CFLAGS) disas.c
 
-simint.o : simint.c sim.h simglb.h
-	$(CC) $(CFLAGS) simint.c
+simint.o : $(Z80CORE)/simint.c sim.h $(Z80CORE)/simglb.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simint.c
 
 memory.o : memory.c sim.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o	: iosim.c sim.h	simglb.h ../../iodevices/simbdos.h \
-	  ../../iodevices/mostek-cpu.h ../../iodevices/mostek-fdc.h
-	$(CC) $(CFLAGS) -I../../iodevices iosim.c
+iosim.o	: iosim.c sim.h $(Z80CORE)/simglb.h $(IODEVICES)/simbdos.h \
+	  $(IODEVICES)/mostek-cpu.h $(IODEVICES)/mostek-fdc.h
+	$(CC) $(CFLAGS) iosim.c
 
-simfun.o : simfun.c sim.h
-	$(CC) $(CFLAGS) simfun.c
+simfun.o : $(Z80CORE)/simfun.c sim.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simfun.c
 
-simglb.o : simglb.c sim.h
-	$(CC) $(CFLAGS) simglb.c
+simglb.o : $(Z80CORE)/simglb.c sim.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simglb.c
 
-simbdos.o : ../../iodevices/simbdos.c sim.h simglb.h memory.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/simbdos.c
+simbdos.o : $(IODEVICES)/simbdos.c sim.h $(Z80CORE)/simglb.h memory.h
+	$(CC) $(CFLAGS) $(IODEVICES)/simbdos.c
 
-config.o : config.c simglb.h sim.h
+config.o : config.c $(Z80CORE)/simglb.h sim.h
 	$(CC) $(CFLAGS) config.c
 
-unix_terminal.o : ../../iodevices/unix_terminal.c
-	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
+unix_terminal.o : $(IODEVICES)/unix_terminal.c
+	$(CC) $(CFLAGS) $(IODEVICES)/unix_terminal.c
 
-mostek-cpu.o: ../../iodevices/mostek-cpu.c ../../iodevices/unix_terminal.h sim.h simglb.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/mostek-cpu.c
+mostek-cpu.o: $(IODEVICES)/mostek-cpu.c $(IODEVICES)/unix_terminal.h sim.h $(Z80CORE)/simglb.h
+	$(CC) $(CFLAGS) $(IODEVICES)/mostek-cpu.c
 
-mostek-fdc.o: ../../iodevices/mostek-fdc.c sim.h simglb.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/mostek-fdc.c
+mostek-fdc.o: $(IODEVICES)/mostek-fdc.c sim.h $(Z80CORE)/simglb.h
+	$(CC) $(CFLAGS) $(IODEVICES)/mostek-fdc.c
 
 clean:
 	rm -f *.o
-	./ulnsrc
 
 allclean:
 	make clean

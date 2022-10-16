@@ -6,11 +6,14 @@ DISKS=/usr/local/share/cpmsim/disks
 
 CC = gcc
 
+Z80CORE = ../../z80core
+IODEVICES = ../../iodevices
+
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\"
+#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\"
+CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 LFLAGS =
 
@@ -50,70 +53,66 @@ all: /tmp/.z80pack/cpmsim.auxin /tmp/.z80pack/cpmsim.auxout ../cpmsim
 ../cpmsim : $(OBJ)
 	$(CC) $(OBJ) $(LFLAGS) -o ../cpmsim
 
-sim0.c:
-	./lnsrc
+sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c
 
-sim0.o : sim0.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim0.c
+sim1.o : $(Z80CORE)/sim1.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1.c
 
-sim1.o : sim1.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1.c
+sim1a.o : $(Z80CORE)/sim1a.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim1a.c
 
-sim1a.o : sim1a.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1a.c
+sim2.o : $(Z80CORE)/sim2.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim2.c
 
-sim2.o : sim2.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim2.c
+sim3.o : $(Z80CORE)/sim3.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim3.c
 
-sim3.o : sim3.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim3.c
+sim4.o : $(Z80CORE)/sim4.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim4.c
 
-sim4.o : sim4.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim4.c
+sim5.o : $(Z80CORE)/sim5.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim5.c
 
-sim5.o : sim5.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim5.c
+sim6.o : $(Z80CORE)/sim6.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim6.c
 
-sim6.o : sim6.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim6.c
+sim7.o : $(Z80CORE)/sim7.c sim.h $(Z80CORE)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/sim7.c
 
-sim7.o : sim7.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim7.c
-
-simctl.o : simctl.c sim.h simglb.h memory.h log.h
+simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h memory.h $(Z80CORE)/log.h
 	$(CC) $(CFLAGS) simctl.c
 
-simint.o : simint.c sim.h simglb.h
-	$(CC) $(CFLAGS) simint.c
+simint.o : $(Z80CORE)/simint.c sim.h $(Z80CORE)/simglb.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simint.c
 
-memory.o : memory.c sim.h simglb.h memory.h log.h
+memory.o : memory.c sim.h $(Z80CORE)/simglb.h memory.h $(Z80CORE)/log.h
 	$(CC) $(CFLAGS) memory.c
 
-iosim.o : iosim.c sim.h simglb.h memory.h log.h ../../iodevices/simbdos.h \
-	  ../../iodevices/rtc.h
-	$(CC) $(CFLAGS) -I../../iodevices iosim.c
+iosim.o : iosim.c sim.h $(Z80CORE)/simglb.h memory.h $(Z80CORE)/log.h $(IODEVICES)/simbdos.h \
+	  $(IODEVICES)/rtc.h
+	$(CC) $(CFLAGS) iosim.c
 
-simfun.o : simfun.c sim.h log.h
-	$(CC) $(CFLAGS) simfun.c
+simfun.o : $(Z80CORE)/simfun.c sim.h $(Z80CORE)/log.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simfun.c
 
-simglb.o : simglb.c sim.h
-	$(CC) $(CFLAGS) simglb.c
+simglb.o : $(Z80CORE)/simglb.c sim.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simglb.c
 
-simbdos.o : ../../iodevices/simbdos.c sim.h simglb.h memory.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/simbdos.c
+simbdos.o : $(IODEVICES)/simbdos.c sim.h $(Z80CORE)/simglb.h memory.h
+	$(CC) $(CFLAGS) $(IODEVICES)/simbdos.c
 
-unix_terminal.o : ../../iodevices/unix_terminal.c
-	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
+unix_terminal.o : $(IODEVICES)/unix_terminal.c
+	$(CC) $(CFLAGS) $(IODEVICES)/unix_terminal.c
 
-rtc.o: ../../iodevices/rtc.c sim.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/rtc.c
+rtc.o: $(IODEVICES)/rtc.c sim.h
+	$(CC) $(CFLAGS) $(IODEVICES)/rtc.c
 
 config.o : config.c
 	$(CC) $(CFLAGS) config.c
 
 clean:
 	rm -f *.o
-	./ulnsrc
 
 allclean:
 	make -f Makefile.cygwin clean
