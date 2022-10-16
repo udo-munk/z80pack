@@ -6,8 +6,8 @@
  * This is the configuration I'm using for software testing and debugging
  *
  * History:
- * 15-SEP-19 (Mike Douglas) Created from sim.h from the z80sim source 
- *		directory. Set start-up message for Mostek AID-80F and SYS-80FT 
+ * 15-SEP-19 (Mike Douglas) Created from sim.h from the z80sim source
+ *		directory. Set start-up message for Mostek AID-80F and SYS-80FT
  *		computers.
  * 27_SEP-19 (Udo Munk) modified for integration into 1.37
  */
@@ -119,3 +119,8 @@ struct softbreak {			/* structure of a breakpoint */
 
 extern void sleep_ms(int);
 #define SLEEP_MS(t)	sleep_ms(t)
+
+/*
+ *	macro for declaring unused function parameters
+ */
+#define UNUSED(x)	(void)(x)

@@ -628,7 +628,7 @@ static int op_addxb(void)		/* ADD IX,BC */
 	register int carry;
 	BYTE ixl = IX & 0xff;
 	BYTE ixh = IX >> 8;
-	
+
 	carry = (ixl + C > 255) ? 1 : 0;
 	ixl += C;
 	((ixh & 0xf) + (B & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -645,7 +645,7 @@ static int op_addxd(void)		/* ADD IX,DE */
 	register int carry;
 	BYTE ixl = IX & 0xff;
 	BYTE ixh = IX >> 8;
-	
+
 	carry = (ixl + E > 255) ? 1 : 0;
 	ixl += E;
 	((ixh & 0xf) + (D & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -664,7 +664,7 @@ static int op_addxs(void)		/* ADD IX,SP */
 	BYTE ixh = IX >> 8;
 	BYTE spl = SP & 0xff;
 	BYTE sph = SP >> 8;
-	
+
 	carry = (ixl + spl > 255) ? 1 : 0;
 	ixl += spl;
 	((ixh & 0xf) + (sph & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -681,7 +681,7 @@ static int op_addxx(void)		/* ADD IX,IX */
 	register int carry;
 	BYTE ixl = IX & 0xff;
 	BYTE ixh = IX >> 8;
-	
+
 	carry = (ixl << 1 > 255) ? 1 : 0;
 	ixl <<= 1;
 	((ixh & 0xf) + (ixh & 0xf) + carry > 0xf) ? (F |= H_FLAG)

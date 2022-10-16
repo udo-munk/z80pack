@@ -56,9 +56,6 @@
 #endif
 
 #ifdef HAS_DISKMANAGER
-#ifndef UNUSED
-#define UNUSED(x) (void)(x)
-#endif
 
 static const char *TAG = "diskmanager";
 

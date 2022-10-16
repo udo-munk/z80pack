@@ -442,7 +442,6 @@ static void do_move(char *s)
 	register WORD a1, a2;
 	register int count;
 
-	
 	while (isspace((unsigned char) *s))
 		s++;
 	a1 = exatoi(s);
