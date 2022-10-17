@@ -44,7 +44,7 @@ struct hal_device {
 
 typedef struct hal_device hal_device_t;
 
-extern void hal_reset();
+extern void hal_reset(void);
 
 extern void hal_status_in(tuart_port_t dev, BYTE *stat);
 extern int hal_data_in(tuart_port_t dev);

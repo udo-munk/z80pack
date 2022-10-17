@@ -222,7 +222,7 @@ void options(int argc, char *argv[])
 			}
 	i = 0;
 	while (argc-- && i < MAXFN) {
-		if ((infiles[i] = malloc(LENFN + 1)) == NULL)
+		if ((infiles[i] = (char *) malloc(LENFN + 1)) == NULL)
 			fatal(F_OUTMEM, "filenames");
 		get_fn(infiles[i], *argv++, SRCEXT);
 		i++;

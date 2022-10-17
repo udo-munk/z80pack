@@ -149,7 +149,7 @@ static int op_undoc_srlixdl(int);
 
 int op_ddcb_handel(void)
 {
-	static int (*op_ddcb[256]) () = {
+	static int (*op_ddcb[256]) (int) = {
 		UNDOC(op_undoc_rlcixdb),	/* 0x00 */
 		UNDOC(op_undoc_rlcixdc),	/* 0x01 */
 		UNDOC(op_undoc_rlcixdd),	/* 0x02 */

@@ -96,7 +96,7 @@ static const char* TAG = "at-modem";
 #define OPT_ECHO    0x1
 #define OPT_QUIET   0x2
 
-void modem_device_init();
+void modem_device_init(void);
 
 static bool daemon_f = false;
 
@@ -1097,7 +1097,7 @@ int modem_device_alive(int i) {
     return 0;
 }
 
-static int _read() {
+static int _read(void) {
 
     unsigned char data;
 
@@ -1341,7 +1341,7 @@ int modem_device_carrier(int i) {
     return carrier_detect;
 }
 
-void modem_device_init() {
+void modem_device_init(void) {
     if (*active_sfd) {
         close_socket();
     }

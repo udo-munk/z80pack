@@ -11,10 +11,10 @@ INCLUDE =
 DEFINES =
 
 # Development
-#CFLAGS = -c -O3 -fPIC -Wno-deprecated -fstack-protector-all -D_FORTIFY_SOURCE=2 $(INCLUDE) $(DEFINES)
+#CFLAGS = -c -O3 -fPIC -Wno-deprecated -Wno-register -fstack-protector-all -D_FORTIFY_SOURCE=2 $(INCLUDE) $(DEFINES)
 
 # Production
-CFLAGS = -c -O3 -Wno-deprecated -U_FORTIFY_SOURCE $(INCLUDE) $(DEFINES)
+CFLAGS = -c -O3 -Wno-deprecated -Wno-register -U_FORTIFY_SOURCE $(INCLUDE) $(DEFINES)
 
 LDFLAGS = -shared
 

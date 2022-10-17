@@ -31,32 +31,35 @@
 
 #include "cromemco-hal.h"
 
-#define UNUSED(x) (void)(x)
-
 static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
 
 int null_alive(int dev) {
     UNUSED(dev);
+
     return 1; /* NULL is always alive */
 }
 int null_dead(int dev) {
     UNUSED(dev);
+
     return 0; /* NULL is always dead */
 }
 void null_status(int dev, BYTE *stat) {
-    UNUSED(stat);
     UNUSED(dev);
+    UNUSED(stat);
+
     return;
 }
 int null_in(int dev) {
     UNUSED(dev);
+
     return -1;
 }
 void null_out(int dev, BYTE data) {
-    UNUSED(data);
     UNUSED(dev);
+    UNUSED(data);
+
     return;
 }
 
@@ -65,20 +68,20 @@ void null_out(int dev, BYTE data) {
 #ifdef HAS_NETSERVER
 int net_tty_alive(int dev) {
     // LOG(TAG, "WEBTTY %d: %d", dev, net_device_alive(dev));
-    return net_device_alive(dev); /* WEBTTY is only alive if websocket is connected */
+    return net_device_alive((net_device_t) dev); /* WEBTTY is only alive if websocket is connected */
 }
 void net_tty_status(int dev, BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (net_device_poll(dev)) {
+    if (net_device_poll((net_device_t) dev)) {
         *stat |= 2;
     }
     *stat |= 1;
 }
 int net_tty_in(int dev) {
-    return net_device_get(dev);
+    return net_device_get((net_device_t) dev);
 }
 void net_tty_out(int dev, BYTE data) {
-    net_device_send(dev, (char *)&data, 1);
+    net_device_send((net_device_t) dev, (char *)&data, 1);
 }
 #endif
 
@@ -86,11 +89,13 @@ void net_tty_out(int dev, BYTE data) {
 
 int stdio_alive(int dev) {
     UNUSED(dev);
+
     return 1; /* STDIO is always alive */
 }
 void stdio_status(int dev, BYTE *stat) {
-    UNUSED(dev);
     struct pollfd p[1];
+
+    UNUSED(dev);
 
     p[0].fd = fileno(stdin);
     p[0].events = POLLIN;
@@ -109,9 +114,10 @@ void stdio_status(int dev, BYTE *stat) {
 
 }
 int stdio_in(int dev) {
-    UNUSED(dev);
     int data;
     struct pollfd p[1];
+
+    UNUSED(dev);
 
 again:
     /* if no input waiting return last */
@@ -238,10 +244,12 @@ again:
 
 int modem_alive(int dev) {
     UNUSED(dev);
+
     return modem_device_alive(0);
 }
 void modem_status(int dev, BYTE *stat) {
     UNUSED(dev);
+
     *stat &= (BYTE)(~3);
     if (modem_device_poll(0)) {
         *stat |= 2;
@@ -250,10 +258,12 @@ void modem_status(int dev, BYTE *stat) {
 }
 int modem_in(int dev) {
     UNUSED(dev);
+
     return modem_device_get(0);
 }
 void modem_out(int dev, BYTE data){
     UNUSED(dev);
+
     modem_device_send(0, (char) data);
 }
 #endif /*HAS_MODEM*/
@@ -289,7 +299,7 @@ hal_device_t tuart[MAX_TUART_PORT][MAX_HAL_DEV];
 
 /* -------------------- HAL utility functions -------------------- */
 
-static void hal_report() {
+static void hal_report(void) {
 
     int i, j;
 
@@ -322,7 +332,7 @@ static int hal_find_device(char *dev) {
     return -1;
 }
 
-static void hal_init() {
+static void hal_init(void) {
 
     int i, j, d;
     char *setting;
@@ -388,7 +398,7 @@ static void hal_init() {
     }
 }
 
-void hal_reset() {
+void hal_reset(void) {
     hal_init();
     hal_report();
 }
