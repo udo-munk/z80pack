@@ -161,7 +161,7 @@ struct softbreak {			/* structure of a breakpoint */
  *	Structure for the disk images
  */
 struct dskdef {
-	char *fn;			/* filename */
+	const char *fn;			/* filename */
 	int *fd;			/* file descriptor */
 	unsigned int tracks;		/* number of tracks */
 	unsigned int sectors;		/* number of sectors */

@@ -39,9 +39,9 @@ int chksum(int);
 void btoh(unsigned char, char **);
 
 /* z80amain.c */
-extern void fatal(int, char *);
+extern void fatal(int, const char *);
 
-static char *errmsg[] = {		/* error messages for asmerr() */
+static const char *errmsg[] = {		/* error messages for asmerr() */
 	"no error",			/* 0 */
 	"invalid opcode",		/* 1 */
 	"invalid operand",		/* 2 */
