@@ -46,16 +46,17 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include "sim.h"
+
+#ifdef HAS_DISKMANAGER
+
 #define LOCAL_LOG_LEVEL LOG_DEBUG
 #include "log.h"
-#include "sim.h"
 #include "disks.h"
 #ifdef HAS_NETSERVER
 #include "civetweb.h"
 #include "netsrv.h"
 #endif
-
-#ifdef HAS_DISKMANAGER
 
 static const char *TAG = "diskmanager";
 

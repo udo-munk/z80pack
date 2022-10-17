@@ -56,7 +56,6 @@ PLAT_LFLAGS =
 endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCL =
-PLAT_CFLAGS = -Wno-self-assign
 PLAT_LFLAGS =
 .LIBPATTERNS += lib%.dylib
 endif

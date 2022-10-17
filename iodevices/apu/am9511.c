@@ -16,6 +16,7 @@
 #include "ova.h"
 #include "types.h"
 
+#define UNUSED(x) (void)(x)
 
 /* Define fp_na() -- fp to native and
  *        na_fp() -- native to fp
@@ -784,6 +785,8 @@ void am_reset(void *amp) {
 void *am_create(int status, int data) {
     struct am_context *p;
     void *fpp;
+    UNUSED(status);
+    UNUSED(data);
     fpp = malloc(apu_fp_size());
     if (fpp == NULL)
 	return NULL;
