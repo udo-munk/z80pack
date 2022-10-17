@@ -188,8 +188,8 @@ void sigio_tcp_server_socket(int sig)
  */
 void telnet_negotiation(int fd)
 {
-	static char will_echo[3] = {255, 251, 1};
-	static char char_mode[3] = {255, 251, 3};
+	static unsigned char will_echo[3] = {255, 251, 1};
+	static unsigned char char_mode[3] = {255, 251, 3};
 	struct pollfd p[1];
 	BYTE c[3];
 

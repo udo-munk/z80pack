@@ -48,7 +48,7 @@ void init_memory(void)
 	register int i;
 
 	/* allocate the first 64KB bank, so that we have some memory */
-	if ((memory[0] = malloc(65536)) == NULL) {
+	if ((memory[0] = (BYTE *) malloc(65536)) == NULL) {
 		LOGE(TAG, "can't allocate memory for bank 0");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;

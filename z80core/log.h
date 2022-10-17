@@ -43,7 +43,7 @@ static void _log_write(log_level_t level, const char* tag, const char* format, .
     (void)(level);
     (void)(tag);
 
-    va_list(args);
+    va_list args;
     va_start(args, format);
     vprintf(format, args);
 }
@@ -83,7 +83,7 @@ static inline uint32_t _log_timestamp(void) {
 #define LOG_LOCAL_LEVEL  ((log_level_t) LOG_DEFAULT_LEVEL)
 #endif
 
-#define LOG( tag, format, ... )  _log_write(0, NULL, format, ##__VA_ARGS__);
+#define LOG( tag, format, ... )  _log_write(LOG_NONE, NULL, format, ##__VA_ARGS__);
 #define LOGE( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_ERROR)   { _log_write(LOG_ERROR,   tag, _LOG_FORMAT(E, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGW( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_WARN)    { _log_write(LOG_WARN,    tag, _LOG_FORMAT(W, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGI( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_INFO)    { _log_write(LOG_INFO,    tag, _LOG_FORMAT(I, format), _log_timestamp(), tag, ##__VA_ARGS__); }

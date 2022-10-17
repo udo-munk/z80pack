@@ -31,12 +31,12 @@ enum net_device {
 
 typedef enum net_device net_device_t;
 
-struct msgbuf {
+struct msgbuf_s {
 	long			mtype;
 	unsigned char	mtext[128];
 };
 
-typedef struct msgbuf msgbuf_t;
+typedef struct msgbuf_s msgbuf_t;
 
 struct ws_client {
 	struct mg_connection *conn;

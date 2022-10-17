@@ -31,7 +31,9 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
+struct sym *get_sym(char *);
 int hash(char *);
+char *strsave(char *);
 int numcmp(int, int);
 
 /* z80amain.c */
@@ -137,11 +139,8 @@ struct sym *get_sym(char *sym_name)
  */
 int put_sym(char *sym_name, int sym_val)
 {
-	struct sym *get_sym();
 	register int hashval;
 	register struct sym *np;
-
-	char *strsave(char *);
 
 	if ((np = get_sym(sym_name)) == NULL) {
 		np = (struct sym *) malloc(sizeof (struct sym));
@@ -163,8 +162,6 @@ int put_sym(char *sym_name, int sym_val)
  */
 void put_label(void)
 {
-	struct sym *get_sym(char *);
-
 	if (get_sym(label) == NULL) {
 		if (put_sym(label, pc))
 			fatal(F_OUTMEM, "symbols");
@@ -199,7 +196,7 @@ char *strsave(char *s)
 {
 	register char *p;
 
-	if ((p = malloc((unsigned) strlen(s) + 1)) != NULL)
+	if ((p = (char *) malloc((unsigned) strlen(s) + 1)) != NULL)
 		strcpy(p, s);
 	return(p);
 }

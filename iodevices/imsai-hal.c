@@ -31,30 +31,30 @@
 
 #include "imsai-hal.h"
 
-#define UNUSED(x) (void)(x)
-
 static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
 
-int null_alive() {
+int null_alive(void) {
     return 1; /* NULL is always alive */
 }
-int null_dead() {
+int null_dead(void) {
     return 0; /* NULL is always dead */
 }
 void null_status(BYTE *stat) {
     UNUSED(stat);
+
     return;
 }
-int null_in() {
+int null_in(void) {
     return -1;
 }
 void null_out(BYTE data) {
     UNUSED(data);
+
     return;
 }
-int null_cd() {
+int null_cd(void) {
     return 0;
 }
 
@@ -95,7 +95,7 @@ void vio_kbd_out(BYTE data) {
 /* -------------------- WEBTTY HAL -------------------- */
 
 #ifdef HAS_NETSERVER
-int net_tty_alive() {
+int net_tty_alive(void) {
     return net_device_alive(DEV_TTY); /* WEBTTY is only alive if websocket is connected */
 }
 void net_tty_status(BYTE *stat) {
@@ -105,7 +105,7 @@ void net_tty_status(BYTE *stat) {
     }
     *stat |= 1;
 }
-int net_tty_in() {
+int net_tty_in(void) {
     return net_device_get(DEV_TTY);
 }
 void net_tty_out(BYTE data) {
@@ -116,7 +116,7 @@ void net_tty_out(BYTE data) {
 /* -------------------- WEBPTR HAL -------------------- */
 
 #ifdef HAS_NETSERVER
-int net_ptr_alive() {
+int net_ptr_alive(void) {
     return net_device_alive(DEV_PTR); /* WEBPTR is only alive if websocket is connected */
 }
 void net_ptr_status(BYTE *stat) {
@@ -126,7 +126,7 @@ void net_ptr_status(BYTE *stat) {
     }
     *stat |= 1;
 }
-int net_ptr_in() {
+int net_ptr_in(void) {
     return net_device_get(DEV_PTR);
 }
 void net_ptr_out(BYTE data) {
@@ -136,7 +136,7 @@ void net_ptr_out(BYTE data) {
 
 /* -------------------- STDIO HAL -------------------- */
 
-int stdio_alive() {
+int stdio_alive(void) {
     return 1; /* STDIO is always alive */
 }
 void stdio_status(BYTE *stat) {
@@ -157,7 +157,7 @@ void stdio_status(BYTE *stat) {
     *stat |= 1;
 
 }
-int stdio_in() {
+int stdio_in(void) {
     int data;
 	struct pollfd p[1];
 
@@ -195,7 +195,7 @@ again:
 
 /* -------------------- SOCKET SERVER HAL -------------------- */
 
-int scktsrv_alive() {
+int scktsrv_alive(void) {
 
     struct pollfd p[1];
 
@@ -236,7 +236,7 @@ void scktsrv_status(BYTE *stat) {
 		*stat = 0;
 	}
 }
-int scktsrv_in() {
+int scktsrv_in(void) {
     BYTE data;
 	struct pollfd p[1];
 
@@ -296,7 +296,7 @@ again:
 #ifdef HAS_MODEM
 #include "generic-at-modem.h"
 
-int modem_alive() {
+int modem_alive(void) {
     return modem_device_alive(0);
 }
 void modem_status(BYTE *stat) {
@@ -306,13 +306,13 @@ void modem_status(BYTE *stat) {
     }
     *stat |= 1;
 }
-int modem_in() {
+int modem_in(void) {
     return modem_device_get(0);
 }
 void modem_out(BYTE data){
     modem_device_send(0, (char) data);
 }
-int modem_cd() {
+int modem_cd(void) {
     return modem_device_carrier(0);
 }
 #endif /*HAS_MODEM*/
@@ -344,7 +344,7 @@ hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];
 
 /* -------------------- HAL utility functions -------------------- */
 
-static void hal_report() {
+static void hal_report(void) {
 
     int i, j;
 
@@ -377,7 +377,7 @@ static int hal_find_device(char *dev) {
     return -1;
 }
 
-static void hal_init() {
+static void hal_init(void) {
 
     int i, j, d;
     char *setting;
@@ -446,7 +446,7 @@ static void hal_init() {
     }
 }
 
-void hal_reset() {
+void hal_reset(void) {
     hal_init();
     hal_report();
 }

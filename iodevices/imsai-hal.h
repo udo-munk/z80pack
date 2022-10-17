@@ -34,16 +34,16 @@ enum hal_dev {
 struct hal_device {
     char *name;
     int fallthrough;
-	int	(*alive)();
+	int	(*alive)(void);
 	void (*status)(BYTE *stat);
-	int (*in)();
+	int (*in)(void);
 	void (*out)(BYTE);
-    int (*cd)();
+    int (*cd)(void);
 };
 
 typedef struct hal_device hal_device_t;
 
-extern void hal_reset();
+extern void hal_reset(void);
 
 extern void hal_status_in(sio_port_t sio, BYTE *stat);
 extern int hal_data_in(sio_port_t sio);

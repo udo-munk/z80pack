@@ -241,6 +241,7 @@ struct utsname uts;
 
 int SystemHandler(HttpdConnection_t *conn, void *unused) {
     request_t *req = get_request(conn);
+
 	UNUSED(unused);
 
 	char *copyright = USR_CPR; /* a dirty fix to avoid the leading '\n' */
@@ -393,25 +394,27 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
 
             httpdPrintf(conn, " \"\" ]");
 #endif
-			int i=0, o=0;
-            char *t1, *t2;
-			extern char **environ;
-			char buf[2048];
+            {
+				int i=0, o=0;
+                char *t1, *t2;
+				extern char **environ;
+				char buf[2048];
 
-            httpdPrintf(conn, ", \"env\": { ");
-                while(environ[i] != NULL) {
-                    strcpy(buf, environ[i]);
-                    t1 = strtok(buf, "=");
-                    t2 = strtok(NULL, "\0");
+                httpdPrintf(conn, ", \"env\": { ");
+                    while(environ[i] != NULL) {
+                        strcpy(buf, environ[i]);
+                        t1 = strtok(buf, "=");
+                        t2 = strtok(NULL, "\0");
 #define BULLET  "\xE2\x80\xA2"
-                    if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL)) 
-                        t2 = BULLET BULLET BULLET BULLET BULLET BULLET BULLET BULLET;
-					/* Filter out only TERM and non-shell environment valiables of the form '*.*' ie. contain '.' */
-					if(!strcmp(t1, "TERM") || index(t1, '.'))
-                    	httpdPrintf(conn, "%s \"%s\": \"%s\" ", (o++)==0?"":",", t1, (t2==NULL)?"":t2);
-                    i++;
-                }
-            httpdPrintf(conn, "} ");
+                        if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL)) 
+                            t2 = BULLET BULLET BULLET BULLET BULLET BULLET BULLET BULLET;
+						/* Filter out only TERM and non-shell environment valiables of the form '*.*' ie. contain '.' */
+						if(!strcmp(t1, "TERM") || index(t1, '.'))
+                        	httpdPrintf(conn, "%s \"%s\": \"%s\" ", (o++)==0?"":",", t1, (t2==NULL)?"":t2);
+                        i++;
+                    }
+                httpdPrintf(conn, "} ");
+            }
 
         httpdPrintf(conn, "}");
 		break;
@@ -491,7 +494,7 @@ int UploadHandler(HttpdConnection_t *conn, void *path) {
 
     switch (req->method) {
     case HTTP_PUT:
-		strncpy(output, path, MAX_LFN - 1);
+		strncpy(output, (char *) path, MAX_LFN - 1);
 		output[MAX_LFN - 1] = '\0';
 
 		if (output[strlen(output)-1] != '/')
@@ -581,7 +584,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 
 void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	const char *text = "\r\nConnected to the OSX port of Z80PACK\r\n";
-	ws_client_t *client = mg_get_user_connection_data(conn);
+	ws_client_t *client = (ws_client_t *) mg_get_user_connection_data(conn);
 	net_device_t d = *(net_device_t *) device;
 
 	if (d == DEV_TTY || d == DEV_TTY2 || d == DEV_TTY3) 
@@ -606,6 +609,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
                      void *device) {
 
 	net_device_t d = *(net_device_t *) device;
+
 	UNUSED(conn); 
 
 #ifdef DEBUG
@@ -716,7 +720,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 
 void WebSocketCloseHandler(const HttpdConnection_t *conn, void *device) {
 	struct mg_context *ctx = mg_get_context(conn);
-	ws_client_t *client = mg_get_user_connection_data(conn);
+	ws_client_t *client = (ws_client_t *) mg_get_user_connection_data(conn);
 	net_device_t d = *(net_device_t *) device;
 
 	mg_lock_context(ctx);
@@ -796,7 +800,7 @@ int start_net_services (void) {
 
 	//TODO: sort out all the paths for the handlers
     mg_set_request_handler(ctx, "/system", 		SystemHandler, 		0);
-    mg_set_request_handler(ctx, "/conf", 		ConfigHandler, 		"conf");
+    mg_set_request_handler(ctx, "/conf", 		ConfigHandler, 		(void *) "conf");
 #ifdef HAS_DISKMANAGER
     mg_set_request_handler(ctx, "/library", 	LibraryHandler, 	0);
     mg_set_request_handler(ctx, "/disks", 		DiskHandler, 		0);

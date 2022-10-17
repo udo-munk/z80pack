@@ -20,6 +20,6 @@ extern int modem_device_poll(int);
 extern int modem_device_get(int);
 extern void modem_device_send(int, char);
 extern int modem_device_carrier(int);
-extern void modem_device_init();
+extern void modem_device_init(void);
 
 #define DEV_SIO2B 0

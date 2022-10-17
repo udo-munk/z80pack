@@ -149,7 +149,7 @@ static int op_undoc_srliydl(int);
 
 int op_fdcb_handel(void)
 {
-	static int (*op_fdcb[256]) () = {
+	static int (*op_fdcb[256]) (int) = {
 		UNDOC(op_undoc_rlciydb),	/* 0x00 */
 		UNDOC(op_undoc_rlciydc),	/* 0x01 */
 		UNDOC(op_undoc_rlciydd),	/* 0x02 */

@@ -211,17 +211,17 @@ struct dskdef disks[16] = {
 	{ "driveb.dsk", &driveb, 77, 26 },
 	{ "drivec.dsk", &drivec, 77, 26 },
 	{ "drived.dsk", &drived, 77, 26 },
-	{ "drivee.dsk", &drivee, -1, -1 },
-	{ "drivef.dsk", &drivef, -1, -1 },
-	{ "driveg.dsk", &driveg, -1, -1 },
-	{ "driveh.dsk", &driveh, -1, -1 },
+	{ "drivee.dsk", &drivee,  0,  0 },
+	{ "drivef.dsk", &drivef,  0,  0 },
+	{ "driveg.dsk", &driveg,  0,  0 },
+	{ "driveh.dsk", &driveh,  0,  0 },
 	{ "drivei.dsk", &drivei, 255, 128 },
 	{ "drivej.dsk", &drivej, 255, 128 },
 	{ "drivek.dsk", &drivek, 255, 128 },
 	{ "drivel.dsk", &drivel, 255, 128 },
-	{ "drivem.dsk", &drivem, -1, -1 },
-	{ "driven.dsk", &driven, -1, -1 },
-	{ "driveo.dsk", &driveo, -1, -1 },
+	{ "drivem.dsk", &drivem,  0,  0 },
+	{ "driven.dsk", &driven,  0,  0 },
+	{ "driveo.dsk", &driveo,  0,  0 },
 	{ "drivep.dsk", &drivep, 256, 16384 }
 };
 
@@ -2308,7 +2308,7 @@ static void mmui_out(BYTE data)
 	}
 
 	for (i = 1; i < data; i++) {
-		if ((memory[i] = malloc(segsize)) == NULL) {
+		if ((memory[i] = (BYTE *) malloc(segsize)) == NULL) {
 			LOGE(TAG, "can't allocate memory for bank %d", i);
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
@@ -2594,8 +2594,8 @@ static void int_io(int sig)
  */
 void telnet_negotiation(int fd)
 {
-	static char will_echo[3] = {255, 251, 1};
-	static char char_mode[3] = {255, 251, 3};
+	static unsigned char will_echo[3] = {255, 251, 1};
+	static unsigned char char_mode[3] = {255, 251, 3};
 	struct pollfd p[1];
 	BYTE c[3];
 

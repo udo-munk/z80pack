@@ -228,7 +228,6 @@ void cromemco_tuart_0a_timer5_out(BYTE data)
 /*	Device 1A	*/
 /************************/
 
-int uart1a_int_mask;
 int uart1a_int_mask, uart1a_int, uart1a_int_pending;
 int uart1a_sense, uart1a_lpt_busy;
 int uart1a_tbe, uart1a_rda;

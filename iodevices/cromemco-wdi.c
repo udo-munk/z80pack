@@ -1026,7 +1026,7 @@ void cromemco_wdi_dma0_out(BYTE data)
 
                     if ((data & 0x07) == 4) { /* WR1 */
                         wdi.dma.wr1.base = data;
-                        wdi.dma.wr1.a_device = (data & 0x08) >> 3;
+                        wdi.dma.wr1.a_device = (dma_dev_t) ((data & 0x08) >> 3);
                         wdi.dma.wr1.a_fixed = (data & 0x30) >> 4;
                         if (wdi.dma.wr1.base & 0x40) {
                             wdi.dma.wr_state = WR1;
@@ -1034,7 +1034,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                         LOGD(TAG, "DMA WR1: Port A: inc. mode %d, dev %c", wdi.dma.wr1.a_device, wdi.dma.wr1.a_device?'I':'M');
                     } else if ((data & 0x07) == 0) { /* WR2 */
                         wdi.dma.wr2.base = data;
-                        wdi.dma.wr2.b_device = (data & 0x08) >> 3;
+                        wdi.dma.wr2.b_device = (dma_dev_t) ((data & 0x08) >> 3);
                         wdi.dma.wr2.b_fixed = (data & 0x30) >> 4;
                         if (wdi.dma.wr2.base & 0x40) {
                             wdi.dma.wr_state = WR2;
