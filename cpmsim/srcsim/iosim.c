@@ -1111,7 +1111,7 @@ void reset_system(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	addrh = addrh;	/* to avoid compiler warning */
+	UNUSED(addrh);
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
@@ -1125,7 +1125,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	addrh = addrh;	/* to avoid compiler warning */
+	UNUSED(addrh);
 
 	io_port = addrl;
 	io_data = data;
@@ -1152,7 +1152,7 @@ static BYTE io_trap_in(void)
  */
 static void io_trap_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 
 	if (i_flag) {
 		cpu_error = IOTRAPOUT;
@@ -1535,7 +1535,7 @@ static BYTE nets1_in(void)
  */
 static void cons_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1544,7 +1544,7 @@ static void cons_out(BYTE data)
  */
 static void cons1_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1553,7 +1553,7 @@ static void cons1_out(BYTE data)
  */
 static void cons2_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1562,7 +1562,7 @@ static void cons2_out(BYTE data)
  */
 static void cons3_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1571,7 +1571,7 @@ static void cons3_out(BYTE data)
  */
 static void cons4_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1580,7 +1580,7 @@ static void cons4_out(BYTE data)
  */
 static void nets1_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1934,7 +1934,7 @@ static BYTE prts_in(void)
  */
 static void prts_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1991,7 +1991,7 @@ static void auxs_out(BYTE data)
 #ifdef PIPES
 	aux_in_eof = data;
 #else
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 #endif
 }
 
@@ -2235,7 +2235,7 @@ static BYTE fdcx_in(void)
  */
 static void fdcx_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -2529,7 +2529,7 @@ static BYTE speedh_in(void)
  */
 static void int_timer(int sig)
 {
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	int_int = 1;
 	int_data = 0xff;	/* RST 38H for IM 0, 0FFH for IM 2 */
@@ -2548,7 +2548,7 @@ static void int_io(int sig)
 	int go_away;
 	int on = 1;
 
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	for (i = 0; i < NUMSOC; i++) {
 		p[i].fd = ss[i];

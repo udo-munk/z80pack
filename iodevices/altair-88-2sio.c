@@ -102,7 +102,7 @@ BYTE altair_sio1_status_in(void)
  */
 void altair_sio1_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -228,7 +228,7 @@ BYTE altair_sio2_status_in(void)
  */
 void altair_sio2_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*

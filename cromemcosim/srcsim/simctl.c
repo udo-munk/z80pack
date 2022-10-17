@@ -305,7 +305,7 @@ void step_cpu(void)
  */
 void run_clicked(int state, int val)
 {
-	val = val; /* to avoid compiler warning */
+	UNUSED(val);
 
 	if (!power)
 		return;
@@ -335,7 +335,7 @@ void run_clicked(int state, int val)
  */
 void step_clicked(int state, int val)
 {
-	val = val; /* to avoid compiler warning */
+	UNUSED(val);
 
 	if (!power)
 		return;
@@ -411,7 +411,7 @@ void wait_int_step(void)
  */
 void reset_clicked(int state, int val)
 {
-	val = val; /* to avoid compiler warning */
+	UNUSED(val);
 
 	if (!power)
 		return;
@@ -460,7 +460,7 @@ void reset_clicked(int state, int val)
  */
 void examine_clicked(int state, int val)
 {
-	val = val; /* to avoid compiler warning */
+	UNUSED(val);
 
 	if (!power)
 		return;
@@ -489,7 +489,7 @@ void examine_clicked(int state, int val)
  */
 void deposit_clicked(int state, int val)
 {
-	val = val; /* to avoid compiler warning */
+	UNUSED(val);
 
 	if (!power)
 		return;
@@ -518,7 +518,7 @@ void deposit_clicked(int state, int val)
  */
 void power_clicked(int state, int val)
 {
-	val = val; /* to avoid compiler warning */
+	UNUSED(val);
 
 	switch (state) {
 	case FP_SW_UP:

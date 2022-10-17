@@ -797,7 +797,7 @@ static BYTE io_trap_in(void)
  */
 static void io_trap_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 
 	if (i_flag) {
 		cpu_error = IOTRAPOUT;
@@ -938,7 +938,7 @@ static void mmu_out(BYTE data)
  */
 static void *timing(void *arg)
 {
-	arg = arg;	/* to avoid compiler warning */
+	UNUSED(arg);
 
 	while (1) {	/* 1 msec per loop iteration */
 
@@ -1187,7 +1187,7 @@ static void interrupt(int sig)
 {
 	static unsigned long counter = 0L;
 
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	counter++;
 

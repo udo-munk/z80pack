@@ -155,5 +155,5 @@ BYTE clkd_in(void)
  */
 void clkd_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }

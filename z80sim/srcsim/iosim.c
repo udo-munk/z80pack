@@ -129,7 +129,8 @@ void exit_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	addrh = addrh;	/* to avoid compiler warning */
+	UNUSED(addrh);
+
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
 	return(io_data);
@@ -142,7 +143,8 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	addrh = addrh;	/* to avoid compiler warning */
+	UNUSED(addrh);
+
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
@@ -171,7 +173,7 @@ static BYTE io_trap_in(void)
  */
 static void io_trap_out(BYTE data)
 {
-	data++; /* to avoid compiler warning */
+	UNUSED(data);
 
 	if (i_flag) {
 		cpu_error = IOTRAPOUT;

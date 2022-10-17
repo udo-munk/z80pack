@@ -57,7 +57,8 @@ static void *store_image(void *arg)
 	} msg;
 	BYTE msgB;
 
-	UNUSED(arg);	/* to avoid compiler warning */
+	UNUSED(arg);
+
 	memset(&msg, 0, sizeof(msg));
 	gettimeofday(&t1, NULL);
 

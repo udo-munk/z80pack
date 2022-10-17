@@ -216,7 +216,8 @@ static void *update_display(void *arg)
 	struct timeval t1, t2;
 	int tdiff;
 
-	arg = arg;	/* to avoid compiler warning */
+	UNUSED(arg);
+
 	gettimeofday(&t1, NULL);
 
 	while (state) {

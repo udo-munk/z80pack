@@ -788,7 +788,7 @@ BYTE cromemco_fdc_track_in(void)
  */
 void cromemco_fdc_track_out(BYTE data)
 {
-	data++;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
