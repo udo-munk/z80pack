@@ -22,6 +22,9 @@
 #include <sys/utsname.h>
 #include "sim.h"
 #include "simglb.h"
+
+#ifdef HAS_NETSERVER
+
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
 #include "log.h"
@@ -36,8 +39,6 @@
 #include "cromemco-hal.h"
 #endif
 #endif 
-
-#ifdef HAS_NETSERVER
 
 #define PORT "8080"
 
@@ -465,7 +466,7 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
 		if (stat(fullpath, &sb) != -1 && S_ISREG(sb.st_mode)) {
 			if (showSize) {
 				httpdPrintf(conn, "%c{ \"%s\":\"%s\",", (i++ > 0)?',':' ', "filename",pDirent->d_name);
-				httpdPrintf(conn, "\"%s\":%lld}", "size", sb.st_size);
+				httpdPrintf(conn, "\"%s\":%lld}", "size", (long long) sb.st_size);
 			} else {
 				httpdPrintf(conn, "%c\"%s\"", (i++ > 0)?',':' ', pDirent->d_name);
 			}
@@ -490,7 +491,8 @@ int UploadHandler(HttpdConnection_t *conn, void *path) {
 
     switch (req->method) {
     case HTTP_PUT:
-		strncpy(output, path, MAX_LFN);
+		strncpy(output, path, MAX_LFN - 1);
+		output[MAX_LFN - 1] = '\0';
 
 		if (output[strlen(output)-1] != '/')
 			strncat(output, "/", MAX_LFN - strlen(output));

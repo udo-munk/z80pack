@@ -13,10 +13,14 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <signal.h>
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+
+#ifdef HAS_CYCLOPS
+
 #include "config.h"
 #include "../../frontpanel/frontpanel.h"
 #include "memory.h"
@@ -25,8 +29,6 @@
 #endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
-#ifdef HAS_CYCLOPS
 
 static const char *TAG = "88CCC";
 

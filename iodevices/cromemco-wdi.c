@@ -309,7 +309,8 @@ again:
             if (s.st_size == size) {
                 wdi.hd[unit].type = i;
                 if (read(fd, buffer, WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
-                    strncpy(wdi.hd[unit].type_s, (char *)&buffer[0x78], 4);
+                    memcpy(wdi.hd[unit].type_s, (char *)&buffer[0x78], 4);
+                    wdi.hd[unit].type_s[5] = '\0';
                 } else {
                     wdi.hd[unit]._fault = 0; /* read fault */
                 }
@@ -319,7 +320,7 @@ again:
             wdi.hd[unit]._fault = 0;
             wdi.hd[unit].type = 0;
             strcpy(wdi.hd[unit].type_s, disk_param[wdi.hd[unit].type].type);
-            LOGW(TAG, "UNKNOWN DISK IMAGE SIZE [%lld] FOR %s", s.st_size, wdi.hd[unit].fn);
+            LOGW(TAG, "UNKNOWN DISK IMAGE SIZE [%lld] FOR %s", (long long) s.st_size, wdi.hd[unit].fn);
         }
 
         LOG(TAG, "HD%d:[%s]='%s'\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn);
