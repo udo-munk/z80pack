@@ -31,6 +31,8 @@
 
 #include "imsai-hal.h"
 
+#define UNUSED(x) (void)(x)
+
 static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
@@ -42,14 +44,14 @@ int null_dead() {
     return 0; /* NULL is always dead */
 }
 void null_status(BYTE *stat) {
-    stat = stat;
+    UNUSED(stat);
     return;
 }
 int null_in() {
     return -1;
 }
 void null_out(BYTE data) {
-    data = data;
+    UNUSED(data);
     return;
 }
 int null_cd() {
@@ -87,7 +89,7 @@ int vio_kbd_in(void)
 	return(data);
 }
 void vio_kbd_out(BYTE data) {
-    data = data;
+    UNUSED(data);
 }
 
 /* -------------------- WEBTTY HAL -------------------- */
