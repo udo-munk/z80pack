@@ -98,8 +98,9 @@ BYTE imsai_sio_nofun_in(void)
 
 void imsai_sio_nofun_out(BYTE data)
 {
+	UNUSED(data);
+
 	LOGD(TAG,"INVALID SIO PORT");
-	data = data; /* to avoid compiler warning */
 }
 
 /* -------------------- SIO 1 Channel A -------------------- */
@@ -133,7 +134,7 @@ BYTE imsai_sio1a_status_in(void)
  */
 void imsai_sio1a_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -212,7 +213,7 @@ BYTE imsai_sio1b_status_in(void)
  */
 void imsai_sio1b_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -288,7 +289,7 @@ BYTE imsai_sio2a_status_in(void)
  */
 void imsai_sio2a_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -370,7 +371,7 @@ BYTE imsai_sio2b_status_in(void)
  */
 void imsai_sio2b_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*

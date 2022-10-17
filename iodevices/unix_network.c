@@ -142,7 +142,7 @@ void sigio_tcp_server_socket(int sig)
 	int go_away;
 	int on = 1;
 
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	for (i = 0; i < NUMNSOC; i++) {
 		p[i].fd = ncons[i].ss;

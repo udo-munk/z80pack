@@ -831,7 +831,7 @@ static BYTE io_no_card_in(void)
  */
 static void io_trap_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 
 	if (i_flag) {
 		cpu_error = IOTRAPOUT;
@@ -846,7 +846,7 @@ static void io_trap_out(BYTE data)
  */
 static void io_no_card_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -876,7 +876,7 @@ static void fp_out(BYTE data)
  */
 static void int_timer(int sig)
 {
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	int_int = 1;
 	int_data = 0xff;	/* RST 38H */

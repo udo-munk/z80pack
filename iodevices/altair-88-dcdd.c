@@ -161,7 +161,7 @@ static void dsk_disable(void)
  */
 static void *timing(void *arg)
 {
-	arg = arg;	/* to avoid compiler warning */
+	UNUSED(arg);
 
 	/* 1 msec per loop iteration */
 	while (1) {

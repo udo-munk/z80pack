@@ -51,7 +51,7 @@ BYTE sio_status_in(void)
  */
 void sio_control_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -122,5 +122,5 @@ BYTE sio_handshake_in(void)
  */
 void sio_handshake_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }

@@ -96,7 +96,7 @@ BYTE cromemco_tuart_0a_status_in(void)
  */
 void cromemco_tuart_0a_baud_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 BYTE cromemco_tuart_0a_data_in(void)
@@ -196,7 +196,7 @@ BYTE cromemco_tuart_0a_parallel_in(void)
 
 void cromemco_tuart_0a_parallel_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 void cromemco_tuart_0a_timer1_out(BYTE data)
@@ -253,7 +253,7 @@ BYTE cromemco_tuart_1a_status_in(void)
 
 void cromemco_tuart_1a_baud_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 BYTE cromemco_tuart_1a_data_in(void)
@@ -366,7 +366,7 @@ BYTE cromemco_tuart_1b_status_in(void)
 
 void cromemco_tuart_1b_baud_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 BYTE cromemco_tuart_1b_data_in(void)

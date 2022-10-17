@@ -719,6 +719,7 @@ static void do_break(char *s)
 {
 #ifndef SBSIZE
 	UNUSED(s);
+
 	puts("Sorry, no breakpoints available");
 	puts("Please recompile with SBSIZE defined in sim.h");
 #else
@@ -773,6 +774,7 @@ static void do_hist(char *s)
 {
 #ifndef HISIZE
 	UNUSED(s);
+
 	puts("Sorry, no history available");
 	puts("Please recompile with HISIZE defined in sim.h");
 #else
@@ -843,6 +845,7 @@ static void do_count(char *s)
 {
 #ifndef WANT_TIM
 	UNUSED(s);
+
 	puts("Sorry, no t-state count available");
 	puts("Please recompile with WANT_TIM defined in sim.h");
 #else
