@@ -310,6 +310,7 @@ again:
                 wdi.hd[unit].type = i;
                 if (read(fd, buffer, WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
                     memcpy(wdi.hd[unit].type_s, (char *)&buffer[0x78], 4);
+                    wdi.hd[unit].type_s[5] = '\0';
                 } else {
                     wdi.hd[unit]._fault = 0; /* read fault */
                 }
