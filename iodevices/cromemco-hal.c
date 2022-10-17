@@ -31,30 +31,32 @@
 
 #include "cromemco-hal.h"
 
+#define UNUSED(x) (void)(x)
+
 static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
 
 int null_alive(int dev) {
-    dev = dev;
+    UNUSED(dev);
     return 1; /* NULL is always alive */
 }
 int null_dead(int dev) {
-    dev = dev;
+    UNUSED(dev);
     return 0; /* NULL is always dead */
 }
 void null_status(int dev, BYTE *stat) {
-    stat = stat;
-    dev = dev;
+    UNUSED(stat);
+    UNUSED(dev);
     return;
 }
 int null_in(int dev) {
-    dev = dev;
+    UNUSED(dev);
     return -1;
 }
 void null_out(int dev, BYTE data) {
-    data = data;
-    dev = dev;
+    UNUSED(data);
+    UNUSED(dev);
     return;
 }
 
@@ -83,12 +85,12 @@ void net_tty_out(int dev, BYTE data) {
 /* -------------------- STDIO HAL -------------------- */
 
 int stdio_alive(int dev) {
-    dev = dev;
+    UNUSED(dev);
     return 1; /* STDIO is always alive */
 }
 void stdio_status(int dev, BYTE *stat) {
+    UNUSED(dev);
     struct pollfd p[1];
-    dev = dev;
 
     p[0].fd = fileno(stdin);
     p[0].events = POLLIN;
@@ -107,9 +109,9 @@ void stdio_status(int dev, BYTE *stat) {
 
 }
 int stdio_in(int dev) {
+    UNUSED(dev);
     int data;
-	struct pollfd p[1];
-    dev = dev;
+    struct pollfd p[1];
 
 again:
     /* if no input waiting return last */
@@ -130,7 +132,7 @@ again:
     return data;
 }
 void stdio_out(int dev, BYTE data) {
-    dev = dev;
+    UNUSED(dev);
     
 again:
     if (write(fileno(stdout), (char *) &data, 1) != 1) {
@@ -235,11 +237,11 @@ again:
 #include "generic-at-modem.h"
 
 int modem_alive(int dev) {
-    dev = dev;
+    UNUSED(dev);
     return modem_device_alive(0);
 }
 void modem_status(int dev, BYTE *stat) {
-    dev = dev;
+    UNUSED(dev);
     *stat &= (BYTE)(~3);
     if (modem_device_poll(0)) {
         *stat |= 2;
@@ -247,11 +249,11 @@ void modem_status(int dev, BYTE *stat) {
     *stat |= 1;
 }
 int modem_in(int dev) {
-    dev = dev;
+    UNUSED(dev);
     return modem_device_get(0);
 }
 void modem_out(int dev, BYTE data){
-    dev = dev;
+    UNUSED(dev);
     modem_device_send(0, (char) data);
 }
 #endif /*HAS_MODEM*/

@@ -31,6 +31,8 @@
 
 #include "libtelnet.h"
 
+#define UNUSED(x) (void)(x)
+
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
 
@@ -159,7 +161,7 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     char * p;
     int i;
 
-    user_data = user_data;
+    UNUSED(user_data);
 
     switch (ev->type) {
     case TELNET_EV_DATA:
@@ -1078,7 +1080,8 @@ int modem_device_poll(int i);
 
 int modem_device_alive(int i) {
 
-    i = i;
+    UNUSED(i);
+
     if (!daemon_f) return 1;
 
     if (answer_sfd) {
@@ -1116,9 +1119,9 @@ static int _read() {
 
 int modem_device_poll(int i) {
 
-	struct pollfd p[1];
+    UNUSED(i);
 
-    i = i;
+    struct pollfd p[1];
 
     if (at_state == help) {
         if (strlen(at_buf) == 0) {
@@ -1190,10 +1193,10 @@ int modem_device_poll(int i) {
 
 int modem_device_get(int i) {
 
-	struct pollfd p[1];
-    unsigned char data;
+    UNUSED(i);
 
-    i = i;
+    struct pollfd p[1];
+    unsigned char data;
 
     if (at_state == dat && strlen(at_out) == 0) {
 
@@ -1234,7 +1237,7 @@ int modem_device_get(int i) {
 
 void modem_device_send(int i, char data) {
 
-    i = i;
+    UNUSED(i);
 
 	switch (at_state) {
     /***
@@ -1333,7 +1336,7 @@ void modem_device_send(int i, char data) {
 }
 
 int modem_device_carrier(int i) {
-    i = i;
+    UNUSED(i);
     
     return carrier_detect;
 }
