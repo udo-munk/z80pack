@@ -65,7 +65,7 @@
 	#define UNDOC(f) trap_ddcb
 #endif
 
-static int trap_ddcb(void);
+static int trap_ddcb(int);
 static int op_tb0ixd(int), op_tb1ixd(int), op_tb2ixd(int), op_tb3ixd(int);
 static int op_tb4ixd(int), op_tb5ixd(int), op_tb6ixd(int), op_tb7ixd(int);
 static int op_rb0ixd(int), op_rb1ixd(int), op_rb2ixd(int), op_rb3ixd(int);
@@ -421,8 +421,10 @@ int op_ddcb_handel(void)
  *	This function traps undocumented opcodes following the
  *	initial 0xdd 0xcb of a 4 byte opcode.
  */
-static int trap_ddcb(void)
+static int trap_ddcb(int data)
 {
+	UNUSED(data);
+
 	cpu_error = OPTRAP4;
 	cpu_state = STOPPED;
 	return(0);

@@ -65,7 +65,7 @@
 	#define UNDOC(f) trap_fdcb
 #endif
 
-static int trap_fdcb(void);
+static int trap_fdcb(int);
 static int op_tb0iyd(int), op_tb1iyd(int), op_tb2iyd(int), op_tb3iyd(int);
 static int op_tb4iyd(int), op_tb5iyd(int), op_tb6iyd(int), op_tb7iyd(int);
 static int op_rb0iyd(int), op_rb1iyd(int), op_rb2iyd(int), op_rb3iyd(int);
@@ -421,8 +421,10 @@ int op_fdcb_handel(void)
  *	This function traps undocumented opcodes following the
  *	initial 0xfd 0xcb of a 4 byte opcode.
  */
-static int trap_fdcb(void)
+static int trap_fdcb(int data)
 {
+	UNUSED(data);
+
 	cpu_error = OPTRAP4;
 	cpu_state = STOPPED;
 	return(0);
