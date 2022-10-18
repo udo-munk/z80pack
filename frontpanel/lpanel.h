@@ -188,7 +188,7 @@ class Lpanel
   int addLightToGroup( int lightnum, int groupnum);
 
   int addSwitch(const char *name, lp_obj_parm_t *obj, const char *buff, Lpanel *p);
-  int addSwitchCallback(char *name, void (*cbfunc)(int state, int val), int userval);
+  int addSwitchCallback(const char *name, void (*cbfunc)(int state, int val), int userval);
   void addQuitCallback(void (*cbfunc)(void));
 
 //  void bindSimclock(const uint64 *addr);
@@ -212,22 +212,22 @@ class Lpanel
   void sampleLightGroup(int groupnum, int clockval);
   void sampleSwitches(void);
   void setConfigRootPath(const char *path);
-  int bindLight8(char *name, void *loc, int start_bit_number);
-  int bindLight16(char *name, void *loc, int start_bit_number);
-  int bindLightfv(char *name, void *loc);
-  int bindLight32(char *name, void *loc, int start_bit_number);
-  int bindLight64(char *name, void *loc, int start_bit_number);
+  int bindLight8(const char *name, void *loc, int start_bit_number);
+  int bindLight16(const char *name, void *loc, int start_bit_number);
+  int bindLightfv(const char *name, void *loc);
+  int bindLight32(const char *name, void *loc, int start_bit_number);
+  int bindLight64(const char *name, void *loc, int start_bit_number);
 
-  int bindLight8invert(char *name, void *loc, int start_bit_number, uint8 mask);
-  int bindLight16invert(char *name, void *loc, int start_bit_number, uint16 mask);
-  int bindLight32invert(char *name, void *loc, int start_bit_number, uint32 mask);
-  int bindLight64invert(char *name, void *loc, int start_bit_number, uint64 mask);
+  int bindLight8invert(const char *name, void *loc, int start_bit_number, uint8 mask);
+  int bindLight16invert(const char *name, void *loc, int start_bit_number, uint16 mask);
+  int bindLight32invert(const char *name, void *loc, int start_bit_number, uint32 mask);
+  int bindLight64invert(const char *name, void *loc, int start_bit_number, uint64 mask);
 
-  int bindSwitch8(char *name, void *loc_down, void *loc_up, int start_bit_number);
-  int bindSwitch16(char *name, void *loc_down, void *loc_up, int start_bit_number);
-  int bindSwitch32(char *name, void *loc_down, void *loc_up, int start_bit_number);
-  int bindSwitch64(char *name, void *loc_down, void *loc_up, int start_bit_number);
-  int smoothLight(char *name, int nframes);
+  int bindSwitch8(const char *name, void *loc_down, void *loc_up, int start_bit_number);
+  int bindSwitch16(const char *name, void *loc_down, void *loc_up, int start_bit_number);
+  int bindSwitch32(const char *name, void *loc_down, void *loc_up, int start_bit_number);
+  int bindSwitch64(const char *name, void *loc_down, void *loc_up, int start_bit_number);
+  int smoothLight(const char *name, int nframes);
 
   int		num_objects,
 		max_objects,
@@ -335,7 +335,7 @@ class lpLight
 		old_clock;
 
   float		intensity,
-		intense_samples[0],	// for smoothing if enabled
+		intense_samples[2],	// for smoothing if enabled
 		intense_incr,		// increment value for smoothing transitions
 		intense_curr;		// current intensity for smoothing
   int 		intense_curr_idx;	// index for intense_samples[]

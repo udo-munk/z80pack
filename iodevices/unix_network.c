@@ -40,11 +40,11 @@ static const char *TAG = "net";
 /*
  * initialise a server UNIX domain socket
  */
-void init_unix_server_socket(struct unix_connectors *p, char *fn)
+void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 {
 	struct sockaddr_un sun;
 	struct stat sbuf;
-	static char *path = "/tmp/.z80pack/";
+	static const char *path = "/tmp/.z80pack/";
 	static char socket_path[sizeof(sun.sun_path)];
 
 	/* check if /tmp/.z80pack exists */

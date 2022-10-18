@@ -48,7 +48,11 @@ enum Disk_sides { ONE, TWO };
 enum Disk_mode { READWRITE, READONLY };
 
 typedef struct {
+#ifdef HAS_DISKMANAGER
 	char *fn;			/* filename of disk image */
+#else
+	const char *fn;			/* filename of disk image */
+#endif
 	enum Disk_type disk_t;		/* drive type 5.25" or 8" */
 	enum Disk_density disk_d;	/* disk density, single or double */
 	enum Disk_sides disk_s;		/* drive sides, 1 or 2 */

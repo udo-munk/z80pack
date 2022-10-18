@@ -82,7 +82,7 @@ static int op_ldhyd(void), op_ldlyd(void);
 static int op_ldyda(void), op_ldydb(void), op_ldydc(void);
 static int op_ldydd(void), op_ldyde(void);
 static int op_ldydh(void), op_ldydl(void), op_ldydn(void);
-extern int op_fdcb_handel(void);
+extern int op_fdcb_handle(void);
 
 #ifdef Z80_UNDOC
 static int op_undoc_ldaiyl(void), op_undoc_ldaiyh(void);
@@ -110,7 +110,7 @@ static int op_undoc_inciyl(void), op_undoc_inciyh(void);
 static int op_undoc_deciyl(void), op_undoc_deciyh(void);
 #endif
 
-int op_fd_handel(void)
+int op_fd_handle(void)
 {
 	register int t;
 
@@ -318,7 +318,7 @@ int op_fd_handel(void)
 		trap_fd,			/* 0xc8 */
 		trap_fd,			/* 0xc9 */
 		trap_fd,			/* 0xca */
-		op_fdcb_handel,			/* 0xcb */
+		op_fdcb_handle,			/* 0xcb */
 		trap_fd,			/* 0xcc */
 		trap_fd,			/* 0xcd */
 		trap_fd,			/* 0xce */

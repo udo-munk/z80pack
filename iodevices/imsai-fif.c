@@ -78,7 +78,7 @@ static const char *TAG = "FIF";
 #ifndef HAS_DISKMANAGER
 /* these are our disk drives */
 #ifdef LARGEDISK
-static char *disks[9] = {
+static const char *disks[9] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",
@@ -90,7 +90,7 @@ static char *disks[9] = {
 	"drivei.dsk"
 };
 #else
-static char *disks[4] = {
+static const char *disks[4] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",

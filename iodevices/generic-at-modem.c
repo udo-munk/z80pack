@@ -223,7 +223,7 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
         break;
     case TELNET_EV_TTYPE:
 		LOGI(TAG, "TTYPE negotiation cmd:%d", ev->ttype.cmd);
-        char *ttype;
+        const char *ttype;
         if (((ttype = getenv("TERM")) == NULL) || (s_reg[SREG_TN_TTYPE] & 4)) {
             ttype = TELNET_TTYPE;
         }
@@ -864,7 +864,7 @@ int process_at_cmd(void) {
             break;
         case '+': 
             if (*at_ptr == 'T' && *(at_ptr+1) == '?') {
-                char *ttype;
+                const char *ttype;
                 if ((ttype = getenv("TERM")) == NULL) {
                     ttype = TELNET_TTYPE;
                 }

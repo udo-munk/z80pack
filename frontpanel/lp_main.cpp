@@ -39,6 +39,8 @@
 #include "lp_main.h"
 #include "lp_utils.h"
 
+#define UNUSED(x) (void)(x)
+
 
 //static pthread_mutex_t data_lock;
 pthread_mutex_t data_lock;
@@ -55,6 +57,8 @@ lp_mainloop_thread(void *n)
   int quit = 0;
   double t1, t2;
   int framecount = 0;
+
+ UNUSED(n);
 
  //printf("mainloop thread starting\n");
  thread_info.running = 1;
@@ -132,62 +136,62 @@ int start_threads(void)
 
 // bind functions
 
-int fp_bindLight64(char *name, uint64 *bits, int bitnum)
+int fp_bindLight64(const char *name, uint64 *bits, int bitnum)
 {
 //printf("fp_bindLight64: name=%s *bits=%lx  bitnum=%d\n",name,*bits,bitnum);
  panel->bindLight64(name,bits,bitnum);
  return 1;
 }
 
-int fp_bindLight32(char *name, uint32 *bits, int bitnum)
+int fp_bindLight32(const char *name, uint32 *bits, int bitnum)
 {
  panel->bindLight32(name,bits,bitnum);
  return 1;
 }
 
-int fp_bindLight16(char *name, uint16 *bits, int bitnum)
+int fp_bindLight16(const char *name, uint16 *bits, int bitnum)
 {
  panel->bindLight16(name,bits,bitnum);
  return 1;
 }
 
-int fp_bindLightfv(char *name, float *bits)
+int fp_bindLightfv(const char *name, float *bits)
 {
  panel->bindLightfv(name,bits);
  return 1;
 }
 
-int fp_bindLight8(char *name, uint8 *bits, int bitnum)
+int fp_bindLight8(const char *name, uint8 *bits, int bitnum)
 {
  panel->bindLight8(name,bits,bitnum);
  return 1;
 }
 
-int fp_bindLight8invert(char *name, uint8 *bits, int bitnum, uint8 mask)
+int fp_bindLight8invert(const char *name, uint8 *bits, int bitnum, uint8 mask)
 {
  panel->bindLight8invert(name,bits,bitnum, mask);
  return 1;
 }
 
-int fp_bindLight16invert(char *name, uint16 *bits, int bitnum, uint16 mask)
+int fp_bindLight16invert(const char *name, uint16 *bits, int bitnum, uint16 mask)
 {
  panel->bindLight16invert(name,bits,bitnum, mask);
  return 1;
 }
 
-int fp_bindLight32invert(char *name, uint32 *bits, int bitnum, uint32 mask)
+int fp_bindLight32invert(const char *name, uint32 *bits, int bitnum, uint32 mask)
 {
  panel->bindLight32invert(name,bits,bitnum, mask);
  return 1;
 }
 
-int fp_bindLight64invert(char *name, uint64 *bits, int bitnum, uint64 mask)
+int fp_bindLight64invert(const char *name, uint64 *bits, int bitnum, uint64 mask)
 {
  panel->bindLight64invert(name,bits,bitnum, mask);
  return 1;
 }
 
-int fp_smoothLight(char *name, int nframes)
+int fp_smoothLight(const char *name, int nframes)
 {
  panel->smoothLight(name,nframes);
  return 1;
@@ -203,24 +207,24 @@ void fp_bindSimclock( uint64 *addr)
  panel->bindSimclock(addr);
 }
 
-int fp_bindSwitch8(char *name, uint8 *loc_down, uint8 *loc_up, int bitnum)
+int fp_bindSwitch8(const char *name, uint8 *loc_down, uint8 *loc_up, int bitnum)
 {
  panel->bindSwitch8(name, loc_down, loc_up, bitnum);
  return 1;
 }
 
-int fp_bindSwitch16(char *name, uint16 *loc_down, uint16 *loc_up, int bitnum)
+int fp_bindSwitch16(const char *name, uint16 *loc_down, uint16 *loc_up, int bitnum)
 {
  panel->bindSwitch16(name, loc_down, loc_up, bitnum);
  return 1;
 }
 
-int fp_bindSwitch32(char *name, uint32 *loc_down, uint32 *loc_up, int bitnum)
+int fp_bindSwitch32(const char *name, uint32 *loc_down, uint32 *loc_up, int bitnum)
 {
  panel->bindSwitch32(name, loc_down, loc_up, bitnum);
  return 1;
 }
-int fp_bindSwitch64(char *name, uint64 *loc_down, uint64 *loc_up, int bitnum)
+int fp_bindSwitch64(const char *name, uint64 *loc_down, uint64 *loc_up, int bitnum)
 {
  panel->bindSwitch64(name, loc_down, loc_up, bitnum);
  return 1;
@@ -236,13 +240,13 @@ void fp_framerate(float v)
  framerate_set(v);
 }
 
-int fp_init(char *cfg_fname)
+int fp_init(const char *cfg_fname)
 {
   return (fp_init2(NULL, cfg_fname, 800));
 }
 
 
-int fp_init2(char *cfg_root_path, char *cfg_fname, int size)
+int fp_init2(const char *cfg_root_path, const char *cfg_fname, int size)
 {
  printf("FrontPanel Simulator v2.1 Copyright (C) 2007-2015 by John Kichury\n");
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
@@ -269,8 +273,10 @@ int fp_init2(char *cfg_root_path, char *cfg_fname, int size)
   return 1;
 }
 
-int  fp_openWindow(char *title)
+int  fp_openWindow(const char *title)
 {
+   UNUSED(title);
+
    start_threads();
    return 1;
 }
@@ -300,7 +306,7 @@ void fp_sampleSwitches(void)
 
 // callback functions
 
-int fp_addSwitchCallback(char *name, void (*cbfunc)(int state, int val), int userval)
+int fp_addSwitchCallback(const char *name, void (*cbfunc)(int state, int val), int userval)
 {
  panel->addSwitchCallback(name, cbfunc, userval);
  return 1;

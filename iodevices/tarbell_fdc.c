@@ -60,7 +60,7 @@ static BYTE buf[SEC_SZ];	/* buffer for one sector */
 static int stepdir = -1;	/* stepping direction */
 
 /* these are our disk drives */
-static char *disks[4] = {
+static const char *disks[4] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",

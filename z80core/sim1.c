@@ -132,8 +132,8 @@ static int op_retpe(void), op_retpo(void), op_retm(void), op_retp(void);
 static int op_jrz(void), op_jrnz(void), op_jrc(void), op_jrnc(void);
 static int op_rst00(void), op_rst08(void), op_rst10(void), op_rst18(void);
 static int op_rst20(void), op_rst28(void), op_rst30(void), op_rst38(void);
-extern int op_cb_handel(void), op_dd_handel(void);
-extern int op_ed_handel(void), op_fd_handel(void);
+extern int op_cb_handle(void), op_dd_handle(void);
+extern int op_ed_handle(void), op_fd_handle(void);
 
 /*
  *	This function builds the Z80 central processing unit.
@@ -350,7 +350,7 @@ void cpu_z80(void)
 		op_retz,			/* 0xc8 */
 		op_ret,				/* 0xc9 */
 		op_jpz,				/* 0xca */
-		op_cb_handel,			/* 0xcb */
+		op_cb_handle,			/* 0xcb */
 		op_calz,			/* 0xcc */
 		op_call,			/* 0xcd */
 		op_adcn,			/* 0xce */
@@ -368,7 +368,7 @@ void cpu_z80(void)
 		op_jpc,				/* 0xda */
 		op_in,				/* 0xdb */
 		op_calc,			/* 0xdc */
-		op_dd_handel,			/* 0xdd */
+		op_dd_handle,			/* 0xdd */
 		op_sbcn,			/* 0xde */
 		op_rst18,			/* 0xdf */
 		op_retpo,			/* 0xe0 */
@@ -384,7 +384,7 @@ void cpu_z80(void)
 		op_jppe,			/* 0xea */
 		op_exdehl,			/* 0xeb */
 		op_calpe,			/* 0xec */
-		op_ed_handel,			/* 0xed */
+		op_ed_handle,			/* 0xed */
 		op_xorn,			/* 0xee */
 		op_rst28,			/* 0xef */
 		op_retp,			/* 0xf0 */
@@ -400,7 +400,7 @@ void cpu_z80(void)
 		op_jpm,				/* 0xfa */
 		op_ei,				/* 0xfb */
 		op_calm,			/* 0xfc */
-		op_fd_handel,			/* 0xfd */
+		op_fd_handle,			/* 0xfd */
 		op_cpn,				/* 0xfe */
 		op_rst38			/* 0xff */
 	};

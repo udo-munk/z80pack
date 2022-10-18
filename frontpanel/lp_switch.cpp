@@ -23,6 +23,8 @@
 #include "lp_switch.h"
 #include "lp_utils.h"
 
+#define UNUSED(x) (void)(x)
+
 
 // parse rules for switches defined in the user configuration file 
 
@@ -44,6 +46,9 @@ extern Parser parser;
 void
 lp_drawSwitchObjectDummy( Lpanel *p, lpSwitch *lpswitch)
 {
+ UNUSED(p);
+ UNUSED(lpswitch);
+
  // a stub function for switches that do not have a render object defined
 }
 
@@ -51,6 +56,9 @@ void
 lp_drawSwitchObject( Lpanel *p, lpSwitch *lpswitch)
 {
  int state = lpswitch->state;
+
+ UNUSED(p);
+
  glPushMatrix();
 
  glTranslatef(  lpswitch->parms->pos[0], 
@@ -100,6 +108,8 @@ lp_drawSwitchObject_rotated( Lpanel *p, lpSwitch *lpswitch)
 {
  int state = lpswitch->state;
 
+ UNUSED(p);
+
  glPushMatrix();
 
  glTranslatef( lpswitch->parms->pos[0], lpswitch->parms->pos[1], lpswitch->parms->pos[2]);
@@ -125,6 +135,8 @@ lp_drawSwitchPaddle( Lpanel *p, lpSwitch *lpswitch)
 {
  int state = lpswitch->state;
 
+ UNUSED(p);
+
  glPushMatrix();
 
  glTranslatef( lpswitch->parms->pos[0], lpswitch->parms->pos[1], lpswitch->parms->pos[2]);
@@ -147,6 +159,8 @@ void
 lp_drawSwitchToggle( Lpanel *p, lpSwitch *lpswitch)
 {
  int state = lpswitch->state;
+
+ UNUSED(p);
 
   glPushMatrix();
 
@@ -274,7 +288,7 @@ lpSwitch::action(int val)
 					}
 					break;
 				   }
-				  break;
+				break;
 
 		 }
 		break;
@@ -287,6 +301,7 @@ lpSwitch::action(int val)
 		 {	
 		  	case LP_SWITCH_OP_MOM_OFF_MOM:
 				panel->mom_switch_pressed = this;
+				/* fallthrough */
 
 			case LP_SWITCH_OP_ON_OFF:
 				if(dataptr[state])
@@ -671,12 +686,12 @@ Lpanel::addSwitch(const char *name, lp_obj_parm_t *obj, const char *buff, Lpanel
 }
 
 int 
-Lpanel::addSwitchCallback(char *name, void (*cbfunc)(int state, int val), int userval)
+Lpanel::addSwitchCallback(const char *name, void (*cbfunc)(int state, int val), int userval)
 {
   char **namelist;
   int num_names;
   int i, status = 1;
-  int bitnum = 0, bit_inc = 1;
+  // int bitnum = 0, bit_inc = 1;
   lpSwitch *sw;
 
   num_names = xpand(name, &namelist);
@@ -695,7 +710,7 @@ Lpanel::addSwitchCallback(char *name, void (*cbfunc)(int state, int val), int us
         status = 0;
       }
     if(namelist[i]) delete namelist[i];
-    bitnum += bit_inc;
+    // bitnum += bit_inc;
    }
 
   return status;
@@ -703,7 +718,7 @@ Lpanel::addSwitchCallback(char *name, void (*cbfunc)(int state, int val), int us
 
 
 int
-Lpanel::bindSwitch8(char *name, void *loc_down, void *loc_up, int start_bit_number)
+Lpanel::bindSwitch8(const char *name, void *loc_down, void *loc_up, int start_bit_number)
 {
   char **namelist;
   int num_names;
@@ -747,7 +762,7 @@ Lpanel::bindSwitch8(char *name, void *loc_down, void *loc_up, int start_bit_numb
 
 
 int 
-Lpanel::bindSwitch16(char *name, void *loc_down, void *loc_up, int start_bit_number)
+Lpanel::bindSwitch16(const char *name, void *loc_down, void *loc_up, int start_bit_number)
 {
   char **namelist;
   int num_names;
@@ -791,7 +806,7 @@ Lpanel::bindSwitch16(char *name, void *loc_down, void *loc_up, int start_bit_num
 
 
 int
-Lpanel::bindSwitch32(char *name, void *loc_down, void *loc_up, int start_bit_number)
+Lpanel::bindSwitch32(const char *name, void *loc_down, void *loc_up, int start_bit_number)
 {
   char **namelist;
   int num_names;
@@ -834,7 +849,7 @@ Lpanel::bindSwitch32(char *name, void *loc_down, void *loc_up, int start_bit_num
 }
 
 int
-Lpanel::bindSwitch64(char *name, void *loc_down, void *loc_up, int start_bit_number)
+Lpanel::bindSwitch64(const char *name, void *loc_down, void *loc_up, int start_bit_number)
 {
   char **namelist;
   int num_names;

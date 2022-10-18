@@ -96,7 +96,7 @@ static int op_undoc_reti(void), op_undoc_retn(void);
 static int op_undoc_neg(void);
 #endif
 
-int op_ed_handel(void)
+int op_ed_handle(void)
 {
 	register int t;
 

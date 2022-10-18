@@ -16,10 +16,10 @@ WEB = ../../webfrontend
 INCL = -I$(WEB)/civetweb/include -I$(WEB)
 
 # Development
-#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES) ${INCL}
+#CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -fstack-protector-all -D_FORTIFY_SOURCE=2 -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES) ${INCL}
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES) ${INCL}
+CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES) ${INCL}
 
 # Debug
 #CFLAGS = -O -g -c -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES) ${INCL}

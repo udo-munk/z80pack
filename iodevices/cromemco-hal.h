@@ -33,7 +33,7 @@ enum hal_dev {
 };
 
 struct hal_device {
-    char *name;
+    const char *name;
     int fallthrough;
     int device_id;
 	int	(*alive)(int dev);

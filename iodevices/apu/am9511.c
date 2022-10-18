@@ -810,7 +810,7 @@ void am_dump(void *amp, unsigned char op) {
     float x;
     unsigned char t = ctx->status;
     int b;
-    static char *opnames[] = {
+    static const char *opnames[] = {
         "NOP",  "SQRT", "SIN",  "COS",
         "TAN",  "ASIN", "ACOS", "ATAN",
         "LOG",  "LN",   "EXP",  "PWR",
