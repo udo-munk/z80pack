@@ -65,7 +65,7 @@
 	#define UNDOC(f) trap_ddcb
 #endif
 
-static int trap_ddcb(void);
+static int trap_ddcb(int);
 static int op_tb0ixd(int), op_tb1ixd(int), op_tb2ixd(int), op_tb3ixd(int);
 static int op_tb4ixd(int), op_tb5ixd(int), op_tb6ixd(int), op_tb7ixd(int);
 static int op_rb0ixd(int), op_rb1ixd(int), op_rb2ixd(int), op_rb3ixd(int);
@@ -421,8 +421,10 @@ int op_ddcb_handel(void)
  *	This function traps undocumented opcodes following the
  *	initial 0xdd 0xcb of a 4 byte opcode.
  */
-static int trap_ddcb(void)
+static int trap_ddcb(int data)
 {
+	UNUSED(data);
+
 	cpu_error = OPTRAP4;
 	cpu_state = STOPPED;
 	return(0);
@@ -745,7 +747,7 @@ static int op_srlixd(int data)		/* SRL (IX+d) */
 static int op_undoc_tb0ixd(int data)	/* BIT 0,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -755,7 +757,7 @@ static int op_undoc_tb0ixd(int data)	/* BIT 0,(IX+d) */
 static int op_undoc_tb1ixd(int data)	/* BIT 1,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -765,7 +767,7 @@ static int op_undoc_tb1ixd(int data)	/* BIT 1,(IX+d) */
 static int op_undoc_tb2ixd(int data)	/* BIT 2,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -775,7 +777,7 @@ static int op_undoc_tb2ixd(int data)	/* BIT 2,(IX+d) */
 static int op_undoc_tb3ixd(int data)	/* BIT 3,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -785,7 +787,7 @@ static int op_undoc_tb3ixd(int data)	/* BIT 3,(IX+d) */
 static int op_undoc_tb4ixd(int data)	/* BIT 4,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -795,7 +797,7 @@ static int op_undoc_tb4ixd(int data)	/* BIT 4,(IX+d) */
 static int op_undoc_tb5ixd(int data)	/* BIT 5,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -805,7 +807,7 @@ static int op_undoc_tb5ixd(int data)	/* BIT 5,(IX+d) */
 static int op_undoc_tb6ixd(int data)	/* BIT 6,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -815,7 +817,7 @@ static int op_undoc_tb6ixd(int data)	/* BIT 6,(IX+d) */
 static int op_undoc_tb7ixd(int data)	/* BIT 7,(IX+d) */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -825,7 +827,7 @@ static int op_undoc_tb7ixd(int data)	/* BIT 7,(IX+d) */
 static int op_undoc_rb0ixda(int data)	/* RES 0,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -837,7 +839,7 @@ static int op_undoc_rb0ixda(int data)	/* RES 0,(IX+d),A */
 static int op_undoc_rb1ixda(int data)	/* RES 1,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -849,7 +851,7 @@ static int op_undoc_rb1ixda(int data)	/* RES 1,(IX+d),A */
 static int op_undoc_rb2ixda(int data)	/* RES 2,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -861,7 +863,7 @@ static int op_undoc_rb2ixda(int data)	/* RES 2,(IX+d),A */
 static int op_undoc_rb3ixda(int data)	/* RES 3,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -873,7 +875,7 @@ static int op_undoc_rb3ixda(int data)	/* RES 3,(IX+d),A */
 static int op_undoc_rb4ixda(int data)	/* RES 4,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -885,7 +887,7 @@ static int op_undoc_rb4ixda(int data)	/* RES 4,(IX+d),A */
 static int op_undoc_rb5ixda(int data)	/* RES 5,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -897,7 +899,7 @@ static int op_undoc_rb5ixda(int data)	/* RES 5,(IX+d),A */
 static int op_undoc_rb6ixda(int data)	/* RES 6,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -909,7 +911,7 @@ static int op_undoc_rb6ixda(int data)	/* RES 6,(IX+d),A */
 static int op_undoc_rb7ixda(int data)	/* RES 7,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -921,7 +923,7 @@ static int op_undoc_rb7ixda(int data)	/* RES 7,(IX+d),A */
 static int op_undoc_rb0ixdb(int data)	/* RES 0,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -933,7 +935,7 @@ static int op_undoc_rb0ixdb(int data)	/* RES 0,(IX+d),B */
 static int op_undoc_rb1ixdb(int data)	/* RES 1,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -945,7 +947,7 @@ static int op_undoc_rb1ixdb(int data)	/* RES 1,(IX+d),B */
 static int op_undoc_rb2ixdb(int data)	/* RES 2,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -957,7 +959,7 @@ static int op_undoc_rb2ixdb(int data)	/* RES 2,(IX+d),B */
 static int op_undoc_rb3ixdb(int data)	/* RES 3,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -969,7 +971,7 @@ static int op_undoc_rb3ixdb(int data)	/* RES 3,(IX+d),B */
 static int op_undoc_rb4ixdb(int data)	/* RES 4,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -981,7 +983,7 @@ static int op_undoc_rb4ixdb(int data)	/* RES 4,(IX+d),B */
 static int op_undoc_rb5ixdb(int data)	/* RES 5,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -993,7 +995,7 @@ static int op_undoc_rb5ixdb(int data)	/* RES 5,(IX+d),B */
 static int op_undoc_rb6ixdb(int data)	/* RES 6,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1005,7 +1007,7 @@ static int op_undoc_rb6ixdb(int data)	/* RES 6,(IX+d),B */
 static int op_undoc_rb7ixdb(int data)	/* RES 7,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1017,7 +1019,7 @@ static int op_undoc_rb7ixdb(int data)	/* RES 7,(IX+d),B */
 static int op_undoc_rb0ixdc(int data)	/* RES 0,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1029,7 +1031,7 @@ static int op_undoc_rb0ixdc(int data)	/* RES 0,(IX+d),C */
 static int op_undoc_rb1ixdc(int data)	/* RES 1,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1041,7 +1043,7 @@ static int op_undoc_rb1ixdc(int data)	/* RES 1,(IX+d),C */
 static int op_undoc_rb2ixdc(int data)	/* RES 2,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1053,7 +1055,7 @@ static int op_undoc_rb2ixdc(int data)	/* RES 2,(IX+d),C */
 static int op_undoc_rb3ixdc(int data)	/* RES 3,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1065,7 +1067,7 @@ static int op_undoc_rb3ixdc(int data)	/* RES 3,(IX+d),C */
 static int op_undoc_rb4ixdc(int data)	/* RES 4,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1077,7 +1079,7 @@ static int op_undoc_rb4ixdc(int data)	/* RES 4,(IX+d),C */
 static int op_undoc_rb5ixdc(int data)	/* RES 5,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1089,7 +1091,7 @@ static int op_undoc_rb5ixdc(int data)	/* RES 5,(IX+d),C */
 static int op_undoc_rb6ixdc(int data)	/* RES 6,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1101,7 +1103,7 @@ static int op_undoc_rb6ixdc(int data)	/* RES 6,(IX+d),C */
 static int op_undoc_rb7ixdc(int data)	/* RES 7,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1113,7 +1115,7 @@ static int op_undoc_rb7ixdc(int data)	/* RES 7,(IX+d),C */
 static int op_undoc_rb0ixdd(int data)	/* RES 0,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1125,7 +1127,7 @@ static int op_undoc_rb0ixdd(int data)	/* RES 0,(IX+d),D */
 static int op_undoc_rb1ixdd(int data)	/* RES 1,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1137,7 +1139,7 @@ static int op_undoc_rb1ixdd(int data)	/* RES 1,(IX+d),D */
 static int op_undoc_rb2ixdd(int data)	/* RES 2,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1149,7 +1151,7 @@ static int op_undoc_rb2ixdd(int data)	/* RES 2,(IX+d),D */
 static int op_undoc_rb3ixdd(int data)	/* RES 3,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1161,7 +1163,7 @@ static int op_undoc_rb3ixdd(int data)	/* RES 3,(IX+d),D */
 static int op_undoc_rb4ixdd(int data)	/* RES 4,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1173,7 +1175,7 @@ static int op_undoc_rb4ixdd(int data)	/* RES 4,(IX+d),D */
 static int op_undoc_rb5ixdd(int data)	/* RES 5,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1185,7 +1187,7 @@ static int op_undoc_rb5ixdd(int data)	/* RES 5,(IX+d),D */
 static int op_undoc_rb6ixdd(int data)	/* RES 6,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1197,7 +1199,7 @@ static int op_undoc_rb6ixdd(int data)	/* RES 6,(IX+d),D */
 static int op_undoc_rb7ixdd(int data)	/* RES 7,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1209,7 +1211,7 @@ static int op_undoc_rb7ixdd(int data)	/* RES 7,(IX+d),D */
 static int op_undoc_rb0ixde(int data)	/* RES 0,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1221,7 +1223,7 @@ static int op_undoc_rb0ixde(int data)	/* RES 0,(IX+d),E */
 static int op_undoc_rb1ixde(int data)	/* RES 1,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1233,7 +1235,7 @@ static int op_undoc_rb1ixde(int data)	/* RES 1,(IX+d),E */
 static int op_undoc_rb2ixde(int data)	/* RES 2,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1245,7 +1247,7 @@ static int op_undoc_rb2ixde(int data)	/* RES 2,(IX+d),E */
 static int op_undoc_rb3ixde(int data)	/* RES 3,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1257,7 +1259,7 @@ static int op_undoc_rb3ixde(int data)	/* RES 3,(IX+d),E */
 static int op_undoc_rb4ixde(int data)	/* RES 4,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1269,7 +1271,7 @@ static int op_undoc_rb4ixde(int data)	/* RES 4,(IX+d),E */
 static int op_undoc_rb5ixde(int data)	/* RES 5,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1281,7 +1283,7 @@ static int op_undoc_rb5ixde(int data)	/* RES 5,(IX+d),E */
 static int op_undoc_rb6ixde(int data)	/* RES 6,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1293,7 +1295,7 @@ static int op_undoc_rb6ixde(int data)	/* RES 6,(IX+d),E */
 static int op_undoc_rb7ixde(int data)	/* RES 7,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1305,7 +1307,7 @@ static int op_undoc_rb7ixde(int data)	/* RES 7,(IX+d),E */
 static int op_undoc_rb0ixdh(int data)	/* RES 0,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1317,7 +1319,7 @@ static int op_undoc_rb0ixdh(int data)	/* RES 0,(IX+d),H */
 static int op_undoc_rb1ixdh(int data)	/* RES 1,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1329,7 +1331,7 @@ static int op_undoc_rb1ixdh(int data)	/* RES 1,(IX+d),H */
 static int op_undoc_rb2ixdh(int data)	/* RES 2,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1341,7 +1343,7 @@ static int op_undoc_rb2ixdh(int data)	/* RES 2,(IX+d),H */
 static int op_undoc_rb3ixdh(int data)	/* RES 3,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1353,7 +1355,7 @@ static int op_undoc_rb3ixdh(int data)	/* RES 3,(IX+d),H */
 static int op_undoc_rb4ixdh(int data)	/* RES 4,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1365,7 +1367,7 @@ static int op_undoc_rb4ixdh(int data)	/* RES 4,(IX+d),H */
 static int op_undoc_rb5ixdh(int data)	/* RES 5,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1377,7 +1379,7 @@ static int op_undoc_rb5ixdh(int data)	/* RES 5,(IX+d),H */
 static int op_undoc_rb6ixdh(int data)	/* RES 6,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1389,7 +1391,7 @@ static int op_undoc_rb6ixdh(int data)	/* RES 6,(IX+d),H */
 static int op_undoc_rb7ixdh(int data)	/* RES 7,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1401,7 +1403,7 @@ static int op_undoc_rb7ixdh(int data)	/* RES 7,(IX+d),H */
 static int op_undoc_rb0ixdl(int data)	/* RES 0,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1413,7 +1415,7 @@ static int op_undoc_rb0ixdl(int data)	/* RES 0,(IX+d),L */
 static int op_undoc_rb1ixdl(int data)	/* RES 1,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1425,7 +1427,7 @@ static int op_undoc_rb1ixdl(int data)	/* RES 1,(IX+d),L */
 static int op_undoc_rb2ixdl(int data)	/* RES 2,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1437,7 +1439,7 @@ static int op_undoc_rb2ixdl(int data)	/* RES 2,(IX+d),L */
 static int op_undoc_rb3ixdl(int data)	/* RES 3,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1449,7 +1451,7 @@ static int op_undoc_rb3ixdl(int data)	/* RES 3,(IX+d),L */
 static int op_undoc_rb4ixdl(int data)	/* RES 4,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1461,7 +1463,7 @@ static int op_undoc_rb4ixdl(int data)	/* RES 4,(IX+d),L */
 static int op_undoc_rb5ixdl(int data)	/* RES 5,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1473,7 +1475,7 @@ static int op_undoc_rb5ixdl(int data)	/* RES 5,(IX+d),L */
 static int op_undoc_rb6ixdl(int data)	/* RES 6,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1485,7 +1487,7 @@ static int op_undoc_rb6ixdl(int data)	/* RES 6,(IX+d),L */
 static int op_undoc_rb7ixdl(int data)	/* RES 7,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1497,7 +1499,7 @@ static int op_undoc_rb7ixdl(int data)	/* RES 7,(IX+d),L */
 static int op_undoc_sb0ixda(int data)	/* SET 0,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1509,7 +1511,7 @@ static int op_undoc_sb0ixda(int data)	/* SET 0,(IX+d),A */
 static int op_undoc_sb1ixda(int data)	/* SET 1,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1521,7 +1523,7 @@ static int op_undoc_sb1ixda(int data)	/* SET 1,(IX+d),A */
 static int op_undoc_sb2ixda(int data)	/* SET 2,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1533,7 +1535,7 @@ static int op_undoc_sb2ixda(int data)	/* SET 2,(IX+d),A */
 static int op_undoc_sb3ixda(int data)	/* SET 3,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1545,7 +1547,7 @@ static int op_undoc_sb3ixda(int data)	/* SET 3,(IX+d),A */
 static int op_undoc_sb4ixda(int data)	/* SET 4,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1557,7 +1559,7 @@ static int op_undoc_sb4ixda(int data)	/* SET 4,(IX+d),A */
 static int op_undoc_sb5ixda(int data)	/* SET 5,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1569,7 +1571,7 @@ static int op_undoc_sb5ixda(int data)	/* SET 5,(IX+d),A */
 static int op_undoc_sb6ixda(int data)	/* SET 6,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1581,7 +1583,7 @@ static int op_undoc_sb6ixda(int data)	/* SET 6,(IX+d),A */
 static int op_undoc_sb7ixda(int data)	/* SET 7,(IX+d),A */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1593,7 +1595,7 @@ static int op_undoc_sb7ixda(int data)	/* SET 7,(IX+d),A */
 static int op_undoc_sb0ixdb(int data)	/* SET 0,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1605,7 +1607,7 @@ static int op_undoc_sb0ixdb(int data)	/* SET 0,(IX+d),B */
 static int op_undoc_sb1ixdb(int data)	/* SET 1,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1617,7 +1619,7 @@ static int op_undoc_sb1ixdb(int data)	/* SET 1,(IX+d),B */
 static int op_undoc_sb2ixdb(int data)	/* SET 2,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1629,7 +1631,7 @@ static int op_undoc_sb2ixdb(int data)	/* SET 2,(IX+d),B */
 static int op_undoc_sb3ixdb(int data)	/* SET 3,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1641,7 +1643,7 @@ static int op_undoc_sb3ixdb(int data)	/* SET 3,(IX+d),B */
 static int op_undoc_sb4ixdb(int data)	/* SET 4,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1653,7 +1655,7 @@ static int op_undoc_sb4ixdb(int data)	/* SET 4,(IX+d),B */
 static int op_undoc_sb5ixdb(int data)	/* SET 5,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1665,7 +1667,7 @@ static int op_undoc_sb5ixdb(int data)	/* SET 5,(IX+d),B */
 static int op_undoc_sb6ixdb(int data)	/* SET 6,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1677,7 +1679,7 @@ static int op_undoc_sb6ixdb(int data)	/* SET 6,(IX+d),B */
 static int op_undoc_sb7ixdb(int data)	/* SET 7,(IX+d),B */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1689,7 +1691,7 @@ static int op_undoc_sb7ixdb(int data)	/* SET 7,(IX+d),B */
 static int op_undoc_sb0ixdc(int data)	/* SET 0,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1701,7 +1703,7 @@ static int op_undoc_sb0ixdc(int data)	/* SET 0,(IX+d),C */
 static int op_undoc_sb1ixdc(int data)	/* SET 1,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1713,7 +1715,7 @@ static int op_undoc_sb1ixdc(int data)	/* SET 1,(IX+d),C */
 static int op_undoc_sb2ixdc(int data)	/* SET 2,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1725,7 +1727,7 @@ static int op_undoc_sb2ixdc(int data)	/* SET 2,(IX+d),C */
 static int op_undoc_sb3ixdc(int data)	/* SET 3,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1737,7 +1739,7 @@ static int op_undoc_sb3ixdc(int data)	/* SET 3,(IX+d),C */
 static int op_undoc_sb4ixdc(int data)	/* SET 4,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1749,7 +1751,7 @@ static int op_undoc_sb4ixdc(int data)	/* SET 4,(IX+d),C */
 static int op_undoc_sb5ixdc(int data)	/* SET 5,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1761,7 +1763,7 @@ static int op_undoc_sb5ixdc(int data)	/* SET 5,(IX+d),C */
 static int op_undoc_sb6ixdc(int data)	/* SET 6,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1773,7 +1775,7 @@ static int op_undoc_sb6ixdc(int data)	/* SET 6,(IX+d),C */
 static int op_undoc_sb7ixdc(int data)	/* SET 7,(IX+d),C */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1785,7 +1787,7 @@ static int op_undoc_sb7ixdc(int data)	/* SET 7,(IX+d),C */
 static int op_undoc_sb0ixdd(int data)	/* SET 0,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1797,7 +1799,7 @@ static int op_undoc_sb0ixdd(int data)	/* SET 0,(IX+d),D */
 static int op_undoc_sb1ixdd(int data)	/* SET 1,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1809,7 +1811,7 @@ static int op_undoc_sb1ixdd(int data)	/* SET 1,(IX+d),D */
 static int op_undoc_sb2ixdd(int data)	/* SET 2,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1821,7 +1823,7 @@ static int op_undoc_sb2ixdd(int data)	/* SET 2,(IX+d),D */
 static int op_undoc_sb3ixdd(int data)	/* SET 3,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1833,7 +1835,7 @@ static int op_undoc_sb3ixdd(int data)	/* SET 3,(IX+d),D */
 static int op_undoc_sb4ixdd(int data)	/* SET 4,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1845,7 +1847,7 @@ static int op_undoc_sb4ixdd(int data)	/* SET 4,(IX+d),D */
 static int op_undoc_sb5ixdd(int data)	/* SET 5,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1857,7 +1859,7 @@ static int op_undoc_sb5ixdd(int data)	/* SET 5,(IX+d),D */
 static int op_undoc_sb6ixdd(int data)	/* SET 6,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1869,7 +1871,7 @@ static int op_undoc_sb6ixdd(int data)	/* SET 6,(IX+d),D */
 static int op_undoc_sb7ixdd(int data)	/* SET 7,(IX+d),D */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1881,7 +1883,7 @@ static int op_undoc_sb7ixdd(int data)	/* SET 7,(IX+d),D */
 static int op_undoc_sb0ixde(int data)	/* SET 0,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1893,7 +1895,7 @@ static int op_undoc_sb0ixde(int data)	/* SET 0,(IX+d),E */
 static int op_undoc_sb1ixde(int data)	/* SET 1,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1905,7 +1907,7 @@ static int op_undoc_sb1ixde(int data)	/* SET 1,(IX+d),E */
 static int op_undoc_sb2ixde(int data)	/* SET 2,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1917,7 +1919,7 @@ static int op_undoc_sb2ixde(int data)	/* SET 2,(IX+d),E */
 static int op_undoc_sb3ixde(int data)	/* SET 3,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1929,7 +1931,7 @@ static int op_undoc_sb3ixde(int data)	/* SET 3,(IX+d),E */
 static int op_undoc_sb4ixde(int data)	/* SET 4,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1941,7 +1943,7 @@ static int op_undoc_sb4ixde(int data)	/* SET 4,(IX+d),E */
 static int op_undoc_sb5ixde(int data)	/* SET 5,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1953,7 +1955,7 @@ static int op_undoc_sb5ixde(int data)	/* SET 5,(IX+d),E */
 static int op_undoc_sb6ixde(int data)	/* SET 6,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1965,7 +1967,7 @@ static int op_undoc_sb6ixde(int data)	/* SET 6,(IX+d),E */
 static int op_undoc_sb7ixde(int data)	/* SET 7,(IX+d),E */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1977,7 +1979,7 @@ static int op_undoc_sb7ixde(int data)	/* SET 7,(IX+d),E */
 static int op_undoc_sb0ixdh(int data)	/* SET 0,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -1989,7 +1991,7 @@ static int op_undoc_sb0ixdh(int data)	/* SET 0,(IX+d),H */
 static int op_undoc_sb1ixdh(int data)	/* SET 1,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2001,7 +2003,7 @@ static int op_undoc_sb1ixdh(int data)	/* SET 1,(IX+d),H */
 static int op_undoc_sb2ixdh(int data)	/* SET 2,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2013,7 +2015,7 @@ static int op_undoc_sb2ixdh(int data)	/* SET 2,(IX+d),H */
 static int op_undoc_sb3ixdh(int data)	/* SET 3,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2025,7 +2027,7 @@ static int op_undoc_sb3ixdh(int data)	/* SET 3,(IX+d),H */
 static int op_undoc_sb4ixdh(int data)	/* SET 4,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2037,7 +2039,7 @@ static int op_undoc_sb4ixdh(int data)	/* SET 4,(IX+d),H */
 static int op_undoc_sb5ixdh(int data)	/* SET 5,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2049,7 +2051,7 @@ static int op_undoc_sb5ixdh(int data)	/* SET 5,(IX+d),H */
 static int op_undoc_sb6ixdh(int data)	/* SET 6,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2061,7 +2063,7 @@ static int op_undoc_sb6ixdh(int data)	/* SET 6,(IX+d),H */
 static int op_undoc_sb7ixdh(int data)	/* SET 7,(IX+d),H */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2073,7 +2075,7 @@ static int op_undoc_sb7ixdh(int data)	/* SET 7,(IX+d),H */
 static int op_undoc_sb0ixdl(int data)	/* SET 0,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2085,7 +2087,7 @@ static int op_undoc_sb0ixdl(int data)	/* SET 0,(IX+d),L */
 static int op_undoc_sb1ixdl(int data)	/* SET 1,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2097,7 +2099,7 @@ static int op_undoc_sb1ixdl(int data)	/* SET 1,(IX+d),L */
 static int op_undoc_sb2ixdl(int data)	/* SET 2,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2109,7 +2111,7 @@ static int op_undoc_sb2ixdl(int data)	/* SET 2,(IX+d),L */
 static int op_undoc_sb3ixdl(int data)	/* SET 3,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2121,7 +2123,7 @@ static int op_undoc_sb3ixdl(int data)	/* SET 3,(IX+d),L */
 static int op_undoc_sb4ixdl(int data)	/* SET 4,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2133,7 +2135,7 @@ static int op_undoc_sb4ixdl(int data)	/* SET 4,(IX+d),L */
 static int op_undoc_sb5ixdl(int data)	/* SET 5,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2145,7 +2147,7 @@ static int op_undoc_sb5ixdl(int data)	/* SET 5,(IX+d),L */
 static int op_undoc_sb6ixdl(int data)	/* SET 6,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2157,7 +2159,7 @@ static int op_undoc_sb6ixdl(int data)	/* SET 6,(IX+d),L */
 static int op_undoc_sb7ixdl(int data)	/* SET 7,(IX+d),L */
 {
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2172,7 +2174,7 @@ static int op_undoc_rlcixda(int data)	/* RLC (IX+d),A */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2196,7 +2198,7 @@ static int op_undoc_rlcixdb(int data)	/* RLC (IX+d),B */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2220,7 +2222,7 @@ static int op_undoc_rlcixdc(int data)	/* RLC (IX+d),C */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2244,7 +2246,7 @@ static int op_undoc_rlcixdd(int data)	/* RLC (IX+d),D */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2268,7 +2270,7 @@ static int op_undoc_rlcixde(int data)	/* RLC (IX+d),E */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2292,7 +2294,7 @@ static int op_undoc_rlcixdh(int data)	/* RLC (IX+d),H */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2316,7 +2318,7 @@ static int op_undoc_rlcixdl(int data)	/* RLC (IX+d),L */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2340,7 +2342,7 @@ static int op_undoc_rrcixda(int data)	/* RRC (IX+d),A */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2364,7 +2366,7 @@ static int op_undoc_rrcixdb(int data)	/* RRC (IX+d),B */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2388,7 +2390,7 @@ static int op_undoc_rrcixdc(int data)	/* RRC (IX+d),C */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2412,7 +2414,7 @@ static int op_undoc_rrcixdd(int data)	/* RRC (IX+d),D */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2436,7 +2438,7 @@ static int op_undoc_rrcixde(int data)	/* RRC (IX+d),E */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2460,7 +2462,7 @@ static int op_undoc_rrcixdh(int data)	/* RRC (IX+d),H */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2484,7 +2486,7 @@ static int op_undoc_rrcixdl(int data)	/* RRC (IX+d),L */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2508,7 +2510,7 @@ static int op_undoc_rlixda(int data)	/* RL (IX+d),A */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2532,7 +2534,7 @@ static int op_undoc_rlixdb(int data)	/* RL (IX+d),B */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2556,7 +2558,7 @@ static int op_undoc_rlixdc(int data)	/* RL (IX+d),C */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2580,7 +2582,7 @@ static int op_undoc_rlixdd(int data)	/* RL (IX+d),D */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2604,7 +2606,7 @@ static int op_undoc_rlixde(int data)	/* RL (IX+d),E */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2628,7 +2630,7 @@ static int op_undoc_rlixdh(int data)	/* RL (IX+d),H */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2652,7 +2654,7 @@ static int op_undoc_rlixdl(int data)	/* RL (IX+d),L */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2676,7 +2678,7 @@ static int op_undoc_rrixda(int data)	/* RR (IX+d),A */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2700,7 +2702,7 @@ static int op_undoc_rrixdb(int data)	/* RR (IX+d),B */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2724,7 +2726,7 @@ static int op_undoc_rrixdc(int data)	/* RR (IX+d),C */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2748,7 +2750,7 @@ static int op_undoc_rrixdd(int data)	/* RR (IX+d),D */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2772,7 +2774,7 @@ static int op_undoc_rrixde(int data)	/* RR (IX+d),E */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2796,7 +2798,7 @@ static int op_undoc_rrixdh(int data)	/* RR (IX+d),H */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2820,7 +2822,7 @@ static int op_undoc_rrixdl(int data)	/* RR (IX+d),L */
 	int old_c_flag;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2843,7 +2845,7 @@ static int op_undoc_slaixda(int data)	/* SLA (IX+d),A */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2864,7 +2866,7 @@ static int op_undoc_slaixdb(int data)	/* SLA (IX+d),B */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2885,7 +2887,7 @@ static int op_undoc_slaixdc(int data)	/* SLA (IX+d),C */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2906,7 +2908,7 @@ static int op_undoc_slaixdd(int data)	/* SLA (IX+d),D */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2927,7 +2929,7 @@ static int op_undoc_slaixde(int data)	/* SLA (IX+d),E */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2948,7 +2950,7 @@ static int op_undoc_slaixdh(int data)	/* SLA (IX+d),H */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2969,7 +2971,7 @@ static int op_undoc_slaixdl(int data)	/* SLA (IX+d),L */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -2991,7 +2993,7 @@ static int op_undoc_sraixda(int data)	/* SRA (IX+d),A */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3014,7 +3016,7 @@ static int op_undoc_sraixdb(int data)	/* SRA (IX+d),B */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3037,7 +3039,7 @@ static int op_undoc_sraixdc(int data)	/* SRA (IX+d),C */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3060,7 +3062,7 @@ static int op_undoc_sraixdd(int data)	/* SRA (IX+d),D */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3083,7 +3085,7 @@ static int op_undoc_sraixde(int data)	/* SRA (IX+d),E */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3106,7 +3108,7 @@ static int op_undoc_sraixdh(int data)	/* SRA (IX+d),H */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3129,7 +3131,7 @@ static int op_undoc_sraixdl(int data)	/* SRA (IX+d),L */
 	int i;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3151,7 +3153,7 @@ static int op_undoc_sllixda(int data)	/* SLL (IX+d),A */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3172,7 +3174,7 @@ static int op_undoc_sllixdb(int data)	/* SLL (IX+d),B */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3193,7 +3195,7 @@ static int op_undoc_sllixdc(int data)	/* SLL (IX+d),C */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3214,7 +3216,7 @@ static int op_undoc_sllixdd(int data)	/* SLL (IX+d),D */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3235,7 +3237,7 @@ static int op_undoc_sllixde(int data)	/* SLL (IX+d),E */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3256,7 +3258,7 @@ static int op_undoc_sllixdh(int data)	/* SLL (IX+d),H */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3277,7 +3279,7 @@ static int op_undoc_sllixdl(int data)	/* SLL (IX+d),L */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3299,7 +3301,7 @@ static int op_undoc_sllixd(int data)	/* SLL (IX+d) */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3320,7 +3322,7 @@ static int op_undoc_srlixda(int data)	/* SRL (IX+d),A */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3341,7 +3343,7 @@ static int op_undoc_srlixdb(int data)	/* SRL (IX+d),B */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3362,7 +3364,7 @@ static int op_undoc_srlixdc(int data)	/* SRL (IX+d),C */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3383,7 +3385,7 @@ static int op_undoc_srlixdd(int data)	/* SRL (IX+d),D */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3404,7 +3406,7 @@ static int op_undoc_srlixde(int data)	/* SRL (IX+d),E */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3425,7 +3427,7 @@ static int op_undoc_srlixdh(int data)	/* SRL (IX+d),H */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
@@ -3446,7 +3448,7 @@ static int op_undoc_srlixdl(int data)	/* SRL (IX+d),L */
 	WORD addr;
 
 	if (u_flag) {
-		trap_ddcb();
+		trap_ddcb(0);
 		return(0);
 	}
 
