@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS= -O -s -Wall
+CFLAGS= -O -s -Wall -Wextra -Wwrite-strings
 
 all: boot.bin bios.bin putsys
 	@echo "done"
