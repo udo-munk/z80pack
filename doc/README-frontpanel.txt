@@ -19,9 +19,6 @@ make -f Makefile.osx		for an Apple OS X system
 
 This will build the library libfrontpanel.a.
 
-After you upgraded the library or the z80pack distribution this step
-needs to be repeated, so that the latest version of the library is used.
-
 After the library is in place build the simulated machines as follows:
 
 cd ~/z80pack-x.y/altairsim/srcsim
