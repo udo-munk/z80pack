@@ -45,6 +45,7 @@ DIR_CIV = $(DIR_NET:=/civetweb)
 
 VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_FP) $(DIR_NET) $(DIR_CIV)
 CC = gcc
+CXX = g++
 
 ###
 ### START O/S PLATFORM DEPENDANT VARIABLES
@@ -53,20 +54,21 @@ include ../../z80core/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)
 CC = cc
+CXX = c++
 PLAT_INCL = -I/usr/local/include
-PLAT_LFLAGS = -L/usr/local/lib -lthr -lc++
+PLAT_LFLAGS = -L/usr/local/lib -lthr
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
-PLAT_LFLAGS = -lXext -lm -lpthread -lstdc++
+PLAT_LFLAGS = -lXext -lm -lpthread
 .LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
-PLAT_LFLAGS = -lXext -lXmu -lXt -lm -lpthread -lstdc++
+PLAT_LFLAGS = -lXext -lXmu -lXt -lm -lpthread
 endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCL = -I/opt/X11/include
-PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib -lc++
+PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib
 .LIBPATTERNS += lib%.dylib
 endif
 ###
@@ -104,7 +106,7 @@ all : $(SIM)
 	@echo
 
 $(SIM) : $(OBJ) $(SRC_LIBS)
-	$(CC) $(OBJ) $(LFLAGS) -o $@
+	$(CXX) $(OBJ) $(LFLAGS) -o $@
 
 %.d : %.c
 	@$(CC) -MM $(CFLAGS) $< > $@

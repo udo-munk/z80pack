@@ -8,6 +8,7 @@ DISKS=/usr/local/share/altairsim/disks
 ROM=/usr/local/share/altairsim/roms
 
 CC = cc
+CXX = c++
 
 Z80CORE = ../../z80core
 IODEVICES = ../../iodevices
@@ -19,7 +20,7 @@ IODEVICES = ../../iodevices
 CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -I/usr/local/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib \
-	-lfrontpanel -ljpeg -lGL -lGLU -lX11 -lthr -lc++
+	-lfrontpanel -ljpeg -lGL -lGLU -lX11 -lthr
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -55,7 +56,7 @@ all:  ../altairsim
 	@echo
 
 ../altairsim : $(OBJ) $(FP)
-	$(CC) $(OBJ) $(LFLAGS) -o ../altairsim
+	$(CXX) $(OBJ) $(LFLAGS) -o ../altairsim
 
 sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c

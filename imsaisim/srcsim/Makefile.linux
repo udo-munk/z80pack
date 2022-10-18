@@ -8,6 +8,7 @@ DISKS=/usr/local/share/imsaisim/disks
 ROM=/usr/local/share/imsaisim/roms
 
 CC = gcc
+CXX = g++
 
 Z80CORE = ../../z80core
 IODEVICES = ../../iodevices
@@ -23,7 +24,7 @@ CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -DCONFDIR=\"${CO
 
 LFLAGS = -L../../frontpanel -lfrontpanel -ljpeg -lGL -lGLU \
 	 -lXext -lXmu -lXt -lX11 -lm -lpthread \
-	 -L../../webfrontend/civetweb -lcivetweb -lstdc++
+	 -L../../webfrontend/civetweb -lcivetweb
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -68,7 +69,7 @@ all:  ../imsaisim
 	@echo
 
 ../imsaisim : $(OBJ) $(FP)
-	$(CC) $(OBJ) $(LFLAGS) -o ../imsaisim
+	$(CXX) $(OBJ) $(LFLAGS) -o ../imsaisim
 
 sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c

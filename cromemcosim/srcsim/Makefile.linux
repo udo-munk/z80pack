@@ -8,6 +8,7 @@ DISKS=/usr/local/share/cromemcosim/disks
 ROM=/usr/local/share/cromemcosim/roms
 
 CC = gcc
+CXX = g++
 
 Z80CORE = ../../z80core
 IODEVICES = ../../iodevices
@@ -26,7 +27,7 @@ CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -DCONFDIR=\"${CO
 
 LFLAGS = -L../../frontpanel -lfrontpanel -ljpeg -lGL -lGLU \
 	 -lXext -lXmu -lXt -lX11 -lm -lpthread \
-	 -L../../webfrontend/civetweb -lcivetweb -lstdc++
+	 -L../../webfrontend/civetweb -lcivetweb
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -67,7 +68,7 @@ all:  ../cromemcosim
 	@echo
 
 ../cromemcosim : $(OBJ) $(FP)
-	$(CC) $(OBJ) $(LFLAGS) -o ../cromemcosim
+	$(CXX) $(OBJ) $(LFLAGS) -o ../cromemcosim
 
 sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c
