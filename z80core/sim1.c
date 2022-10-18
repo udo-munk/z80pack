@@ -417,7 +417,7 @@ void cpu_z80(void)
 
 #ifdef HISIZE
 		/* write history */
-		his[h_next].h_adr = PC;
+		his[h_next].h_addr = PC;
 		his[h_next].h_af = (A << 8) + F;
 		his[h_next].h_bc = (B << 8) + C;
 		his[h_next].h_de = (D << 8) + E;

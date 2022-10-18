@@ -139,7 +139,7 @@ static int op_undoc_ret(void), op_undoc_call(void);
  * logic, as dicovered by Mike Douglas.
  */
 #ifdef FRONTPANEL
-static inline void adr_leds(WORD data)
+static inline void addr_leds(WORD data)
 {
 	fp_led_address = data;
 	fp_clock++;
@@ -429,7 +429,7 @@ void cpu_8080(void)
 
 #ifdef HISIZE
 		/* write history */
-		his[h_next].h_adr = PC;
+		his[h_next].h_addr = PC;
 		his[h_next].h_af = (A << 8) + F;
 		his[h_next].h_bc = (B << 8) + C;
 		his[h_next].h_de = (D << 8) + E;
@@ -1261,7 +1261,7 @@ static int op_lxispnn(void)		/* LXI SP,nn */
 static int op_sphl(void)		/* SPHL */
 {
 #ifdef FRONTPANEL
-	adr_leds(H << 8 | L);
+	addr_leds(H << 8 | L);
 #endif
 	SP = (H << 8) + L;
 	return(5);
@@ -1292,7 +1292,7 @@ static int op_shldnn(void)		/* SHLD nn */
 static int op_inxb(void)		/* INX B */
 {
 #ifdef FRONTPANEL
-	adr_leds(B << 8 | C);
+	addr_leds(B << 8 | C);
 #endif
 	C++;
 	if (!C)
@@ -1303,7 +1303,7 @@ static int op_inxb(void)		/* INX B */
 static int op_inxd(void)		/* INX D */
 {
 #ifdef FRONTPANEL
-	adr_leds(D << 8 | E);
+	addr_leds(D << 8 | E);
 #endif
 	E++;
 	if (!E)
@@ -1314,7 +1314,7 @@ static int op_inxd(void)		/* INX D */
 static int op_inxh(void)		/* INX H */
 {
 #ifdef FRONTPANEL
-	adr_leds(H << 8 | L);
+	addr_leds(H << 8 | L);
 #endif
 	L++;
 	if (!L)
@@ -1325,7 +1325,7 @@ static int op_inxh(void)		/* INX H */
 static int op_inxsp(void)		/* INX SP */
 {
 #ifdef FRONTPANEL
-	adr_leds(SP);
+	addr_leds(SP);
 #endif
 	SP++;
 	return(5);
@@ -1334,7 +1334,7 @@ static int op_inxsp(void)		/* INX SP */
 static int op_dcxb(void)		/* DCX B */
 {
 #ifdef FRONTPANEL
-	adr_leds(B << 8 | C);
+	addr_leds(B << 8 | C);
 #endif
 	C--;
 	if (C == 0xff)
@@ -1345,7 +1345,7 @@ static int op_dcxb(void)		/* DCX B */
 static int op_dcxd(void)		/* DCX D */
 {
 #ifdef FRONTPANEL
-	adr_leds(D << 8 | E);
+	addr_leds(D << 8 | E);
 #endif
 	E--;
 	if (E == 0xff)
@@ -1356,7 +1356,7 @@ static int op_dcxd(void)		/* DCX D */
 static int op_dcxh(void)		/* DCX H */
 {
 #ifdef FRONTPANEL
-	adr_leds(H << 8 | L);
+	addr_leds(H << 8 | L);
 #endif
 	L--;
 	if (L == 0xff)
@@ -1367,7 +1367,7 @@ static int op_dcxh(void)		/* DCX H */
 static int op_dcxsp(void)		/* DCX SP */
 {
 #ifdef FRONTPANEL
-	adr_leds(SP);
+	addr_leds(SP);
 #endif
 	SP--;
 	return(5);
