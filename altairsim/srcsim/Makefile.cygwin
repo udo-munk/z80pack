@@ -22,7 +22,7 @@ CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -DCONFDIR=\"${CO
 #CFLAGS = -O -g -c -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 LFLAGS = -L../../frontpanel -lfrontpanel -ljpeg -lGL -lGLU \
-	 -lXext -lX11 -lm -lpthread
+	 -lXext -lX11 -lm -lpthread -lstdc++
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -50,7 +50,7 @@ OBJ =   sim0.o \
 	cromemco-dazzler.o \
 	proctec-vdm.o
 
-FP =    ../../frontpanel/libfrontpanel.dll.a
+FP =    ../../frontpanel/libfrontpanel.a
 
 all:  ../altairsim
 	@echo

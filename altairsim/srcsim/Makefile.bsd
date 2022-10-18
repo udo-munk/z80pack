@@ -19,7 +19,7 @@ IODEVICES = ../../iodevices
 CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -I/usr/local/include -DCONFDIR=\"${CONF}\" -DDISKSDIR=\"${DISKS}\" -DBOOTROM=\"${ROM}\" -I. -I$(Z80CORE) -I$(IODEVICES)
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib \
-	-lfrontpanel -ljpeg -lGL -lGLU -lX11 -lthr
+	-lfrontpanel -ljpeg -lGL -lGLU -lX11 -lthr -lc++
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -47,7 +47,7 @@ OBJ =   sim0.o \
 	cromemco-dazzler.o \
 	proctec-vdm.o
 
-FP =    ../../frontpanel/libfrontpanel.so
+FP =    ../../frontpanel/libfrontpanel.a
 
 all:  ../altairsim
 	@echo

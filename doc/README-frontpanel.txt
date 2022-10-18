@@ -17,21 +17,7 @@ make -f Makefile.linux		for a Linux system
 make -f Makefile.osx		for an Apple OS X system
 ...
 
-This will build the shared library libfrontpanel.so, on OS X
-libfrontpanel.dylib and on Windows/Cygwin cygfrontpanel.dll.
-
-This library needs to be in a shared library path for the runtime linker,
-so that the emulation programs can find this library. On my systems I
-copy the library to /usr/local/lib and my ~/.profile includes:
-
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-
-I have seen systems where this won't work, on such systems I copied the
-library to /usr/lib or /usr/lib64, so that it was found by the programs.
-
-Windows systems don't use a separate path for shared libraries,
-cygfrontpanel.dll needs to be in the path for executable programs,
-like /usr/local/bin.
+This will build the library libfrontpanel.a.
 
 After you upgraded the library or the z80pack distribution this step
 needs to be repeated, so that the latest version of the library is used.

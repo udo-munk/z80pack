@@ -11,18 +11,14 @@ INCLUDE = -I/usr/local/include
 DEFINES =
 
 # Development
-#CFLAGS = -c -O3 -fPIC -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 $(INCLUDE) $(DEFINES)
+#CFLAGS = -c -O3 -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 $(INCLUDE) $(DEFINES)
 
 # Production
-CFLAGS = -c -O3 -fPIC -Wall -Wextra -U_FORTIFY_SOURCE $(INCLUDE) $(DEFINES)
+CFLAGS = -c -O3 -Wall -Wextra -U_FORTIFY_SOURCE $(INCLUDE) $(DEFINES)
 
-LDFLAGS = -shared
-
-default: $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o libfrontpanel.so
-	@echo
-	@echo "Be sure to copy libfrontpanel.so to a shared library path!"
-	@echo
+libfrontpanel.a: $(OBJS)
+	rm -f $@
+	ar cq $@ $(OBJS)
 
 jpeg.o: jpeg.cpp cdjpeg.h
 	$(CC) $(CFLAGS) jpeg.cpp -o jpeg.o
@@ -56,6 +52,6 @@ clean:
 
 allclean:
 	make -f Makefile.bsd clean
-	rm -f libfrontpanel.so
+	rm -f libfrontpanel.a
 
 all: clean default

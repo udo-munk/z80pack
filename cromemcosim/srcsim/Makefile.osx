@@ -26,7 +26,7 @@ CFLAGS = -g -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -I/opt/X11/includ
 
 LFLAGS = -L../../frontpanel -L/usr/local/lib -L/opt/X11/lib \
 	-lfrontpanel -ljpeg -lGL -lGLU -lX11 \
-	-L../../webfrontend/civetweb -lcivetweb
+	-L../../webfrontend/civetweb -lcivetweb -lc++
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -59,7 +59,7 @@ OBJ =   sim0.o \
 	generic-at-modem.o \
 	libtelnet.o
 
-FP =	../../frontpanel/libfrontpanel.dylib
+FP =	../../frontpanel/libfrontpanel.a
 
 all:  ../cromemcosim
 	@echo

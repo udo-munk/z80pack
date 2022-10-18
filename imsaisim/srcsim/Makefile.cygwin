@@ -26,7 +26,7 @@ CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -DCONFDIR=\"${CO
 
 LFLAGS = -L../../frontpanel -lfrontpanel -ljpeg -lGL -lGLU \
 	 -lXext -lX11 -lm -lpthread \
-	 -L../../webfrontend/civetweb -lcivetweb
+	 -L../../webfrontend/civetweb -lcivetweb -lstdc++
 
 OBJ =   sim0.o \
 	sim1.o \
@@ -63,7 +63,7 @@ OBJ =   sim0.o \
 	libtelnet.o \
 	rtc.o
 
-FP =	../../frontpanel/libfrontpanel.dll.a
+FP =	../../frontpanel/libfrontpanel.a
 
 all:  ../imsaisim
 	@echo

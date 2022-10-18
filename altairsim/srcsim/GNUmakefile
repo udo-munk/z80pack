@@ -52,19 +52,19 @@ include ../../z80core/Makefile.in-os
 ifeq ($(TARGET_OS),BSD)
 CC = cc
 PLAT_INCL = -I/usr/local/include
-PLAT_LFLAGS = -L/usr/local/lib -lthr
+PLAT_LFLAGS = -L/usr/local/lib -lthr -lc++
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
-PLAT_LFLAGS = -lXext -lm -lpthread
+PLAT_LFLAGS = -lXext -lm -lpthread -lstdc++
 .LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
-PLAT_LFLAGS = -lXext -lXmu -lXt -lm -lpthread
+PLAT_LFLAGS = -lXext -lXmu -lXt -lm -lpthread -lstdc++
 endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCL = -I/opt/X11/include
-PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib
+PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib -lc++
 .LIBPATTERNS += lib%.dylib
 endif
 ###
