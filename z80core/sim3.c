@@ -82,7 +82,7 @@ static int op_ldhxd(void), op_ldlxd(void);
 static int op_ldxda(void), op_ldxdb(void), op_ldxdc(void);
 static int op_ldxdd(void), op_ldxde(void);
 static int op_ldxdh(void), op_ldxdl(void), op_ldxdn(void);
-extern int op_ddcb_handel(void);
+extern int op_ddcb_handle(void);
 
 #ifdef Z80_UNDOC
 static int op_undoc_ldaixl(void), op_undoc_ldaixh(void);
@@ -110,7 +110,7 @@ static int op_undoc_incixl(void), op_undoc_incixh(void);
 static int op_undoc_decixl(void), op_undoc_decixh(void);
 #endif
 
-int op_dd_handel(void)
+int op_dd_handle(void)
 {
 	register int t;
 
@@ -318,7 +318,7 @@ int op_dd_handel(void)
 		trap_dd,			/* 0xc8 */
 		trap_dd,			/* 0xc9 */
 		trap_dd,			/* 0xca */
-		op_ddcb_handel,			/* 0xcb */
+		op_ddcb_handle,			/* 0xcb */
 		trap_dd,			/* 0xcc */
 		trap_dd,			/* 0xcd */
 		trap_dd,			/* 0xce */

@@ -37,7 +37,7 @@ char *strsave(char *);
 int numcmp(int, int);
 
 /* z80amain.c */
-extern void fatal(int, char *);
+extern void fatal(int, const char *);
 
 /* z80aout.c */
 extern void asmerr(int);

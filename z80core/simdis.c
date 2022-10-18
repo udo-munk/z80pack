@@ -61,22 +61,22 @@
 /*
  *	Forward declarations
  */
-static int opout(char *, WORD);
-static int nout(char *, WORD);
-static int iout(char *, WORD);
-static int rout(char *, WORD);
-static int nnout(char *, WORD);
-static int inout(char *, WORD);
-static int cbop(char *, WORD);
-static int edop(char *, WORD);
-static int ddfd(char *, WORD);
+static int opout(const char *, WORD);
+static int nout(const char *, WORD);
+static int iout(const char *, WORD);
+static int rout(const char *, WORD);
+static int nnout(const char *, WORD);
+static int inout(const char *, WORD);
+static int cbop(const char *, WORD);
+static int edop(const char *, WORD);
+static int ddfd(const char *, WORD);
 
 /*
  *	Op-code tables
  */
 struct opt {
-	int (*fun) (char *, WORD);
-	char *text;
+	int (*fun) (const char *, WORD);
+	const char *text;
 };
 
 static struct opt optabz80_01[64] = {
@@ -449,21 +449,21 @@ static struct opt optabi8080_67[64] = {
 	{ opout,  "RST\t7"		}	/* 0xff */
 };
 
-static char *reg[]	   = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
-static char *regix[]	   = { "B", "C", "D", "E", "IXH", "IXL", "IX", "A" };
-static char *regiy[]	   = { "B", "C", "D", "E", "IYH", "IYL", "IY", "A" };
-static char *aluins[]	   = {"ADD\tA,", "ADC\tA,", "SUB\t", "SBC\tA,",
-			      "AND\t", "XOR\t", "OR\t", "CP\t"};
-static char *aluinsu[]	   = {"ADD*\tA,", "ADC*\tA,", "SUB*\t", "SBC*\tA,",
-			      "AND*\t", "XOR*\t", "OR*\t", "CP*\t"};
-static char *rsins[]	   = {"RLC", "RRC", "RL", "RR",
-			      "SLA", "SRA", "SLL*", "SRL"};
-static char *rsinsu[]	   = {"RLC*", "RRC*", "RL*", "RR*",
-			      "SLA*", "SRA*", "SLL*", "SRL*"};
-static char *bitins[]	   = {"", "BIT", "RES", "SET"};
-static char *regi8080[]	   = { "B", "C", "D", "E", "H", "L", "M", "A" };
-static char *aluinsi8080[] = {"ADD", "ADC", "SUB", "SBB",
-			      "ANA", "XRA", "ORA", "CMP"};
+static const char *reg[]     = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
+static const char *regix[]   = { "B", "C", "D", "E", "IXH", "IXL", "IX", "A" };
+static const char *regiy[]   = { "B", "C", "D", "E", "IYH", "IYL", "IY", "A" };
+static const char *aluins[]  = {"ADD\tA,", "ADC\tA,", "SUB\t", "SBC\tA,",
+				"AND\t", "XOR\t", "OR\t", "CP\t"};
+static const char *aluinsu[] = {"ADD*\tA,", "ADC*\tA,", "SUB*\t", "SBC*\tA,",
+				"AND*\t", "XOR*\t", "OR*\t", "CP*\t"};
+static const char *rsins[]   = {"RLC", "RRC", "RL", "RR",
+				"SLA", "SRA", "SLL*", "SRL"};
+static const char *rsinsu[]  = {"RLC*", "RRC*", "RL*", "RR*",
+				"SLA*", "SRA*", "SLL*", "SRL*"};
+static const char *bitins[]  = {"", "BIT", "RES", "SET"};
+static const char *regi8080[]	 = { "B", "C", "D", "E", "H", "L", "M", "A" };
+static const char *aluinsi8080[] = {"ADD", "ADC", "SUB", "SBB",
+				    "ANA", "XRA", "ORA", "CMP"};
 
 /* globals for passing disassembled code to anyone else who's interested */
 
@@ -571,7 +571,7 @@ void disass(int cpu, WORD *addr)
 /*
  *	disassemble 1 byte op-codes
  */
-static int opout(char *s, WORD a)
+static int opout(const char *s, WORD a)
 {
 	UNUSED(a);
 
@@ -582,7 +582,7 @@ static int opout(char *s, WORD a)
 /*
  *	disassemble 2 byte op-codes of type "Op n"
  */
-static int nout(char *s, WORD a)
+static int nout(const char *s, WORD a)
 {
 	sprintf(Disass_Str, "%s%02X", s, getmem(a + 1));
 	return(2);
@@ -591,7 +591,7 @@ static int nout(char *s, WORD a)
 /*
  *	disassemble 2 byte op-codes with indirect addressing
  */
-static int iout(char *s, WORD a)
+static int iout(const char *s, WORD a)
 {
 	sprintf(Disass_Str, s, getmem(a + 1));
 	return(2);
@@ -600,7 +600,7 @@ static int iout(char *s, WORD a)
 /*
  *	disassemble 2 byte op-codes with relative addressing
  */
-static int rout(char *s, WORD a)
+static int rout(const char *s, WORD a)
 {
 	sprintf(Disass_Str, "%s%04X", s, a + (signed char) getmem(a + 1) + 2);
 	return(2);
@@ -609,7 +609,7 @@ static int rout(char *s, WORD a)
 /*
  *	disassemble 3 byte op-codes of type "Op nn"
  */
-static int nnout(char *s, WORD a)
+static int nnout(const char *s, WORD a)
 {
 	register int i;
 
@@ -621,7 +621,7 @@ static int nnout(char *s, WORD a)
 /*
  *	disassemble 3 byte op-codes with indirect addressing
  */
-static int inout(char *s, WORD a)
+static int inout(const char *s, WORD a)
 {
 	register int i;
 
@@ -633,7 +633,7 @@ static int inout(char *s, WORD a)
 /*
  *	disassemble multi byte op-codes with prefix 0xcb
  */
-static int cbop(char *s, WORD a)
+static int cbop(const char *s, WORD a)
 {
 	register BYTE b2;
 
@@ -652,7 +652,7 @@ static int cbop(char *s, WORD a)
 /*
  *	disassemble multi byte op-codes with prefix 0xed
  */
-static int edop(char *s, WORD a)
+static int edop(const char *s, WORD a)
 {
 	register BYTE b2;
 	int len = 1;
@@ -678,11 +678,11 @@ static int edop(char *s, WORD a)
 /*
  *	disassemble multi byte op-codes with prefix 0xdd and 0xfd
  */
-static int ddfd(char *s, WORD a)
+static int ddfd(const char *s, WORD a)
 {
 	register BYTE b2, b4;
 	register int r1, r2;
-	register char **ireg;
+	register const char **ireg;
 
 	UNUSED(s);
 

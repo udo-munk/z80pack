@@ -143,7 +143,7 @@ static int op_undoc_slle(void), op_undoc_sllh(void), op_undoc_slll(void);
 static int op_undoc_sllhl(void);
 #endif
 
-int op_cb_handel(void)
+int op_cb_handle(void)
 {
 	register int t;
 

@@ -147,7 +147,7 @@ static int op_undoc_srlixdd(int), op_undoc_srlixde(int), op_undoc_srlixdh(int);
 static int op_undoc_srlixdl(int);
 #endif
 
-int op_ddcb_handel(void)
+int op_ddcb_handle(void)
 {
 	static int (*op_ddcb[256]) (int) = {
 		UNDOC(op_undoc_rlcixdb),	/* 0x00 */

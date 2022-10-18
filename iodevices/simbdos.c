@@ -54,8 +54,9 @@
 
 /* The following file types will be treated as text files */
 
-static char *textExts[] = {"ASM","MAC","SRC","TXT","PRN","LST","SYM","LIB",
-		"C","PAS","FOR","RAT","CBL","PLM","PLI","HEX","SUB",NULL};
+static const char *textExts[] = {"ASM", "MAC", "SRC", "TXT", "PRN", "LST",
+				 "SYM", "LIB", "C",   "PAS", "FOR", "RAT",
+				 "CBL", "PLM", "PLI", "HEX", "SUB", NULL};
 
 /* Static variables */
 
@@ -116,7 +117,7 @@ void host_bdos_out(BYTE outByte)
 #ifdef SIMBDOS_NO_OVERWRITE
 			if (fopen(fname, "rb") != NULL) { /* file exist? */
 				fclose(fp);
-				openFlags[0] = 0;				/* yes, don't over-write */
+				openFlags[0] = 0; /* yes, don't over-write */
 			}
 #endif
 			textFile = 0;		/* binary file is assumed */

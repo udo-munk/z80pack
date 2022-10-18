@@ -63,7 +63,7 @@
  *	structure opcode table
  */
 struct opc {
-	char *op_name;		/* opcode name */
+	const char *op_name;	/* opcode name */
 	int (*op_fun) (int, int); /* function pointer code generation */
 	unsigned char op_c1;	/* first base opcode */
 	unsigned char op_c2;	/* second base opcode */
@@ -74,7 +74,7 @@ struct opc {
  *	structure operand table
  */
 struct ope {
-	char *ope_name;		/* operand name */
+	const char *ope_name;	/* operand name */
 	unsigned char ope_sym;	/* operand symbol value */
 	unsigned char ope_flags; /* operand flags */
 };

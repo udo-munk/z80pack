@@ -147,7 +147,7 @@ static int op_undoc_srliydd(int), op_undoc_srliyde(int), op_undoc_srliydh(int);
 static int op_undoc_srliydl(int);
 #endif
 
-int op_fdcb_handel(void)
+int op_fdcb_handle(void)
 {
 	static int (*op_fdcb[256]) (int) = {
 		UNDOC(op_undoc_rlciydb),	/* 0x00 */

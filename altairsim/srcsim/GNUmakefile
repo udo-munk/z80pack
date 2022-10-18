@@ -75,11 +75,11 @@ INCL = -iquote . -I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) $(PLAT_INCL)
 DEFS = -DCONFDIR=\"$(CONF)\" -DDISKSDIR=\"$(DISKS)\" -DBOOTROM=\"$(ROM)\"
 
 # Production - the default
-CFLAGS = -O3 -c -Wall -Wextra $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCL)
+CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCL)
 
 # Development - use `MODE=DEV make build`
 ifeq ($(MODE), DEV)
-CFLAGS = -O3 -c -Wall -Wextra $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCL)
+CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCL)
 endif
 
 # Debug - use `DEBUG=1 make build`

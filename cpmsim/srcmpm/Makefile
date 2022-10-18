@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -O -s -Wall
+CFLAGS = -O -s -Wall -Wextra -Wwrite-strings
 
 all: putsys boot.bin
 	echo done

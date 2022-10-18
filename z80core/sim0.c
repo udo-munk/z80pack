@@ -87,12 +87,12 @@ int main(int argc, char *argv[])
 	struct timeval tv;
 #ifdef HAS_CONFIG
 	struct stat sbuf;
-	char *rom = "-r rompath ";
+	const char *rom = "-r rompath ";
 #else
 #ifdef BOOTROM
-	char *rom = "-r ";
+	const char *rom = "-r ";
 #else
-	char *rom = "";
+	const char *rom = "";
 #endif
 #endif
 #ifdef CPU_SPEED

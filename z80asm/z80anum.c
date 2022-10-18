@@ -70,7 +70,7 @@ extern struct sym *get_sym(char *);
  *	structure operator table
  */
 struct opr {
-	char *opr_name;		/* operator name */
+	const char *opr_name;	/* operator name */
 	int opr_type;		/* operator token type */
 };
 

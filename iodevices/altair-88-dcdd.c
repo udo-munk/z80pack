@@ -72,7 +72,7 @@ static int cnt_step;		/* counter for stepping track */
 static pthread_t thread;	/* thread for timing */
 
 /* these are our disk drives */
-static char *disks[16] = {
+static const char *disks[16] = {
 	"mits_a.dsk",
 	"mits_b.dsk",
 	"mits_c.dsk",

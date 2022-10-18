@@ -27,11 +27,11 @@
 #include "lp_materials.h"
 #include "jpeg.h"
 
-static GLfloat mtl2_amb[] = { 0.2, 0.2, 0.2, 1.0 };
-static GLfloat mtl2_dif[] = { 1.0, 1.0, 1.0, 1.0 };
-static GLfloat mtl2_spec[] = { 0.0, 0.0, 0.0, 1.0 };
-static GLfloat mtl2_shine[] = { 0.0 };
-static GLfloat mtl2_emission[] = { 0.0, 0.0, 0.0, 1.0 };
+// static GLfloat mtl2_amb[] = { 0.2, 0.2, 0.2, 1.0 };
+// static GLfloat mtl2_dif[] = { 1.0, 1.0, 1.0, 1.0 };
+// static GLfloat mtl2_spec[] = { 0.0, 0.0, 0.0, 1.0 };
+// static GLfloat mtl2_shine[] = { 0.0 };
+// static GLfloat mtl2_emission[] = { 0.0, 0.0, 0.0, 1.0 };
 
 
 
@@ -247,7 +247,9 @@ lpObject::draw(void)
      }
   }
  else
-  glDisable(GL_TEXTURE_2D);
+  {
+   glDisable(GL_TEXTURE_2D);
+  }
 
   glPushMatrix();
 
@@ -309,7 +311,9 @@ lpObject::draw(int referenced)
      }
   }
  else
-  glDisable(GL_TEXTURE_2D);
+  {
+    glDisable(GL_TEXTURE_2D);
+  }
 
   if(have_normals) 
    {
@@ -691,7 +695,7 @@ int
 lpTextures::downloadTextures(void)
 {
  int texnum;
- int n;
+ // int n;
 
 for(texnum = 1; texnum < num_textures; texnum++)
  if(tex[texnum]->pixels)
@@ -778,7 +782,7 @@ for(texnum = 1; texnum < num_textures; texnum++)
 
  // get a bind id from OpenGL
 
- n = glGetError(); /* clear any gl errors */
+ /* n = */ (void)glGetError(); /* clear any gl errors */
 
  glGenTextures(1,(GLuint *)&tex[texnum]->bind_id);
  glBindTexture( GL_TEXTURE_2D, tex[texnum]->bind_id );

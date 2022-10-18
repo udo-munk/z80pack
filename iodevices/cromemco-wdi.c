@@ -40,7 +40,7 @@ static const char *TAG = "wdi";
 #define WDI_MAX_BUFFER WDI_BLOCK_SIZE + 8
 static BYTE buffer[WDI_MAX_BUFFER];
 
-static char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd" }; //, "hd3.hdd" };
+static const char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd" }; //, "hd3.hdd" };
 extern char *dsk_path(void);
 
 #define MAX_DISK_PARAM 3
@@ -48,7 +48,7 @@ static struct {
     int rpm;
     int heads;
     int cyl;
-    char *type;
+    const char *type;
 } disk_param[MAX_DISK_PARAM] = {
     { 3600, 3, 0x162, "H8-1" },
     { 3600, 5, 0x184, "H8-3" },
@@ -180,7 +180,7 @@ static struct {
         BYTE _crc_error;
         BYTE _fault;
 
-        char *fn;
+        const char *fn;
         int type;
         char type_s[8];
 
@@ -920,7 +920,7 @@ Tstates_t wdi_dma_mem_to_mem(BYTE bus_ack)
 }
 void cromemco_wdi_dma0_out(BYTE data)
 {
-    char *cmd;
+    const char *cmd;
 
     cmd = "";
 

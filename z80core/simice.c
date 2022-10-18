@@ -885,7 +885,7 @@ static void do_clock(void)
 	BYTE save[3];
 	static struct sigaction newact;
 	static struct itimerval tim;
-	char *s = NULL;
+	const char *s = NULL;
 
 	save[0] = getmem(0x0000);	/* save memory locations */
 	save[1] = getmem(0x0001);	/* 0000H - 0002H */

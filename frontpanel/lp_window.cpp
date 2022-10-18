@@ -42,6 +42,8 @@
 #include "lp_materials.h"
 #include "lp_font.h"
 
+#define UNUSED(x) (void)(x)
+
 
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
 const char FPClassName[] = "FrontPanel 2.1";
@@ -61,7 +63,7 @@ static int RGBA_DB_attributes[] = {
 // OpenGL Light source
 
 static GLfloat light_pos0[] = { 0.,0.5,1.,0.};
-static GLfloat light_pos1[] = { 0.,-0.5,-1.,0.};
+// static GLfloat light_pos1[] = { 0.,-0.5,-1.,0.};
 static GLfloat light_diffuse[] = { 1.,1.,1.,1.};
 static GLfloat light_specular[] = { 1.,1.,1.,1.};
 
@@ -71,7 +73,7 @@ static GLfloat mtl_spec[] = { 0.0, 0.0, 0.0, 1.0 };
 static GLfloat mtl_shine[] = { 0.0 };
 static GLfloat mtl_emission[] = { 0.0, 0.0, 0.0, 1.0 };
 
-static int mousex, mousey, omx, omy, lmouse, mmouse, rmouse;
+static int mousex, mousey, omx, omy, lmouse; // mmouse, rmouse;
 
 
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
@@ -334,6 +336,8 @@ Lpanel::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 #else
 static Bool WaitForMapNotify(Display *d, XEvent *e, char *arg)
 {
+  UNUSED(d);
+
   if ((e->type == MapNotify) && (e->xmap.window == (Window)arg)) {
     return GL_TRUE;
   }
@@ -374,7 +378,7 @@ MSG msg;
 		resizeWindow();
 		break;
 	case ClientMessage:
-		if(event.xclient.data.l[0] == wmDeleteMessage)
+		if((Atom)event.xclient.data.l[0] == wmDeleteMessage)
 		 {
 		   // call user quit callback if exists
 		   if(quit_callbackfunc) 
@@ -553,6 +557,7 @@ MSG msg;
 		  default:
 		  break;
 		}
+		/* fallthrough */
 
 	case MotionNotify:
 

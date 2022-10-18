@@ -59,7 +59,7 @@ net_device_t net_device_a[_DEV_MAX] = {
 	DEV_DZLR, DEV_88ACC, DEV_D7AIO, DEV_PTR 
 };
 
-char *dev_name[] = {
+const char *dev_name[] = {
 	"TTY",
 	"TTY2",
 	"TTY3",
@@ -244,7 +244,7 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
 
 	UNUSED(unused);
 
-	char *copyright = USR_CPR; /* a dirty fix to avoid the leading '\n' */
+	const char *copyright = USR_CPR; /* a dirty fix to avoid the leading '\n' */
 
     switch(req->method) {
     case HTTP_GET:
@@ -396,7 +396,7 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
 #endif
             {
 				int i=0, o=0;
-                char *t1, *t2;
+                const char *t1, *t2;
 				extern char **environ;
 				char buf[2048];
 

@@ -43,6 +43,8 @@
 #define min(a,b) (a) < (b) ? (a) : (b)
 #endif
 
+#define UNUSED(x) (void)(x)
+
 
 /* ---------------------
    gtoken - token parser
@@ -277,21 +279,22 @@ enum xpnd_states  { XPN_START, XPN_PREFIX, XPN_FRMVAL, XPN_TOVAL, XPN_INC, XPN_S
 #endif
 
 
-//int xpand(char *s, int (*func)(char *m) )
+//int xpand(const char *s, int (*func)(char *m) )
 
-//int xpand(char *s, char ***namelist )
-int xpand(char *s, char **namelist[] )
+//int xpand(const char *s, char ***namelist )
+int xpand(const char *s, char **namelist[] )
 {
 
- char *cp = s,
-	c, *cp1 = NULL,
+ const char *cp = s,
+	*cp1 = NULL;
+ char	c,
 	*prefix = NULL,
 	*suffix = NULL,
 	*from	= NULL,
 	*to	= NULL,
 	*inc	= NULL;
  int	n, 
-	error	= 0,
+	// error	= 0,
 	state 	= XPN_START;
 
  int	ival,
@@ -376,7 +379,7 @@ int xpand(char *s, char **namelist[] )
 		 }
 		else if( c == '+' )
 		 {
-			error = 1;
+			// error = 1;
 		 }
 	
 		cp++;
@@ -751,6 +754,8 @@ Parser::addArg(const char *s, const char *cpos1, const char *cpos2)
  float fval;
  char *endptr;
 
+ UNUSED(s);
+
  if(results.num_args + 1 > results.max_args)
    growArgs(4);
 
@@ -942,7 +947,7 @@ Parser::parse(parser_result_t **returned_result)
 			 strncpy(var,cp1,n);
 			 var[n]=0;
 			 curr_rule= results.cmd_idx = findCmd(var);
-			 delete var;
+			 delete[] var;
 			 if(curr_rule < 0) 
 			  {
   		  	    error = PARSER_ERR_VAR_NOT_FOUND;
@@ -979,7 +984,7 @@ Parser::parse(parser_result_t **returned_result)
 			 strncpy(var,cp1,n);
 			 var[n]=0;
 			 curr_rule= results.cmd_idx = findCmd(var);
-			 delete var;
+			 delete[] var;
 			 if(curr_rule < 0) 
 			  {
   		  	    error = PARSER_ERR_VAR_NOT_FOUND;

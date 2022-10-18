@@ -32,7 +32,7 @@
 #include "z80aglb.h"
 
 /* z80amain.c */
-extern void fatal(int, char *);
+extern void fatal(int, const char *);
 extern void pass_file(char *);
 extern char *next_arg(char *, int *);
 

@@ -7,7 +7,7 @@ INSTALLDIR=${HOME}/bin
 #CC = cc
 CC = gcc
 
-CFLAGS= -O3 -Wall
+CFLAGS= -O3 -Wall -Wextra -Wwrite-strings
 
 all: test mkdskimg bin2hex send receive ptp2bin
 	@echo

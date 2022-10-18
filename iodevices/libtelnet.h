@@ -227,8 +227,8 @@ typedef enum telnet_event_type_t telnet_event_type_t; /*!< Telnet event type. */
  */
 struct telnet_environ_t {
 	unsigned char type; /*!< either TELNET_ENVIRON_VAR or TELNET_ENVIRON_USERVAR */
-	char *var;          /*!< name of the variable being set */
-	char *value;        /*!< value of variable being set; empty string if no value */
+	const char *var;    /*!< name of the variable being set */
+	const char *value;  /*!< value of variable being set; empty string if no value */
 };
 
 /*! 

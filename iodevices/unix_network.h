@@ -37,4 +37,4 @@ extern void sigio_tcp_server_socket(int);
 
 extern struct unix_connectors ucons[];
 
-extern void init_unix_server_socket(struct unix_connectors *, char *);
+extern void init_unix_server_socket(struct unix_connectors *, const char *);

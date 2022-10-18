@@ -18,6 +18,8 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#define UNUSED(x) (void)(x)
+
 int fdin, fdout;
 
 int main(int argc, char *argv[])
@@ -62,6 +64,8 @@ int main(int argc, char *argv[])
 
 void int_handler(int sig)
 {
+	UNUSED(sig);
+
 	close(fdin);
 	close(fdout);
 	exit(0);

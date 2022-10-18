@@ -36,10 +36,10 @@
 #include "z80aglb.h"
 
 void init(void), options(int, char *[]);
-void usage(void), fatal(int, char *);
+void usage(void), fatal(int, const char *);
 void do_pass(void), pass_file(char *);
 int pass_line(char *);
-void open_o_files(char *), get_fn(char *, char *, char *);
+void open_o_files(char *), get_fn(char *, char *, const char *);
 char *get_label(char *, char *);
 char *get_opcode(char *, char *);
 char *get_arg(char *, char *, int);
@@ -64,7 +64,7 @@ extern int copy_sym(void);
 extern void n_sort_sym(int);
 extern void a_sort_sym(int);
 
-static char *errmsg[] = {		/* error messages for fatal() */
+static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
 	"usage: z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v\n"
 	"              -o<file> -l[<file>] -d<symbol> ... <file> ...", /* 1 */
@@ -244,7 +244,7 @@ void usage(void)
 /*
  *	print error messages and abort
  */
-void fatal(int i, char *arg)
+void fatal(int i, const char *arg)
 {
 	printf(errmsg[i], arg);
 	putchar('\n');
@@ -422,7 +422,7 @@ void open_o_files(char *source)
 /*
  *	create a filename in "dest" from "src" and "ext"
  */
-void get_fn(char *dest, char *src, char *ext)
+void get_fn(char *dest, char *src, const char *ext)
 {
 	register int i;
 	register char *sp, *dp;
