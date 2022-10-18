@@ -97,7 +97,7 @@ typedef unsigned char  BYTE;		/* 8 bit unsigned */
 
 #ifdef HISIZE
 struct history {			/* structure of a history entry */
-	WORD	h_adr;			/* address of execution */
+	WORD	h_addr;			/* address of execution */
 	WORD	h_af;			/* register AF */
 	WORD	h_bc;			/* register BC */
 	WORD	h_de;			/* register DE */
@@ -110,7 +110,7 @@ struct history {			/* structure of a history entry */
 
 #ifdef SBSIZE
 struct softbreak {			/* structure of a breakpoint */
-	WORD	sb_adr;			/* address of breakpoint */
+	WORD	sb_addr;		/* address of breakpoint */
 	BYTE	sb_oldopc;		/* op-code at address of breakpoint */
 	int	sb_passcount;		/* pass counter of breakpoint */
 	int	sb_pass;		/* no. of pass to break */

@@ -327,7 +327,7 @@ static int handle_break(void)
 	int break_address;
 
 	for (i = 0; i < SBSIZE; i++)	/* search for breakpoint */
-		if (soft[i].sb_adr == PC - 1)
+		if (soft[i].sb_addr == PC - 1)
 			goto was_softbreak;
 	return(0);
 was_softbreak:
@@ -336,7 +336,7 @@ was_softbreak:
 	if (h_next < 0)
 		h_next = 0;
 #endif
-	break_address = PC - 1;		/* store adr of breakpoint */
+	break_address = PC - 1;		/* store addr of breakpoint */
 	cpu_error = NONE;		/* HALT was a breakpoint */
 	PC--;				/* substitute HALT opcode by */
 	putmem(PC, soft[i].sb_oldopc);	/* original opcode */
@@ -349,7 +349,7 @@ was_softbreak:
 		cpu_8080();
 		break;
 	}
-	putmem(soft[i].sb_adr, 0x76);	/* restore HALT opcode again */
+	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment passcounter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
 		return(1);		/* pass not reached, continue */
@@ -730,7 +730,7 @@ static void do_break(char *s)
 		for (i = 0; i < SBSIZE; i++)
 			if (soft[i].sb_pass)
 				printf("%02d %04x %05d %05d\n", i,
-				       soft[i].sb_adr,soft[i].sb_pass,
+				       soft[i].sb_addr,soft[i].sb_pass,
 				       soft[i].sb_passcount);
 		return;
 	}
@@ -748,15 +748,15 @@ static void do_break(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (*s == 'c') {
-		putmem(soft[i].sb_adr, soft[i].sb_oldopc);
+		putmem(soft[i].sb_addr, soft[i].sb_oldopc);
 		memset((char *) &soft[i], 0, sizeof(struct softbreak));
 		return;
 	}
 	if (soft[i].sb_pass)
-		putmem(soft[i].sb_adr, soft[i].sb_oldopc);
-	soft[i].sb_adr = exatoi(s);
-	soft[i].sb_oldopc = getmem(soft[i].sb_adr);
-	putmem(soft[i].sb_adr, 0x76);
+		putmem(soft[i].sb_addr, soft[i].sb_oldopc);
+	soft[i].sb_addr = exatoi(s);
+	soft[i].sb_oldopc = getmem(soft[i].sb_addr);
+	putmem(soft[i].sb_addr, 0x76);
 	while (!iscntrl((unsigned char) *s) && !ispunct((unsigned char) *s))
 		s++;
 	if (*s != ',')
@@ -806,7 +806,7 @@ static void do_hist(char *s)
 			if (i == HISIZE)
 				i = 0;
 			if (sa != -1) {
-				if (his[i].h_adr < sa)
+				if (his[i].h_addr < sa)
 					continue;
 				else
 					sa = -1;
@@ -814,13 +814,13 @@ static void do_hist(char *s)
 			if (cpu == Z80) {
 				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 				       "IX=%04x IY=%04x SP=%04x\n",
-					his[i].h_adr, his[i].h_af, his[i].h_bc,
+					his[i].h_addr, his[i].h_af, his[i].h_bc,
 					his[i].h_de, his[i].h_hl, his[i].h_ix,
 					his[i].h_iy, his[i].h_sp);
 			} else {
 				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 				       "SP=%04x\n",
-					his[i].h_adr, his[i].h_af, his[i].h_bc,
+					his[i].h_addr, his[i].h_af, his[i].h_bc,
 					his[i].h_de, his[i].h_hl, his[i].h_sp);
 			}
 			l++;
@@ -1005,7 +1005,7 @@ static void do_help(void)
 	puts("b[no] c                   clear soft breakpoint");
 	puts("h [address]               show history");
 	puts("h c                       clear history");
-	puts("z start,stop              set trigger adr for t-state count");
+	puts("z start,stop              set trigger addr for t-state count");
 	puts("z                         show t-state count");
 	puts("c                         measure clock frequency");
 	puts("s                         show settings");
