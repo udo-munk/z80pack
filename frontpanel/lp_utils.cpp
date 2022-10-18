@@ -294,7 +294,7 @@ int xpand(const char *s, char **namelist[] )
 	*to	= NULL,
 	*inc	= NULL;
  int	n, 
- 	// error	= 0,
+	// error	= 0,
 	state 	= XPN_START;
 
  int	ival,
