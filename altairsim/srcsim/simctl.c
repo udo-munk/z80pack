@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from an Altair 8800 front panel
  *
- * Copyright (C) 2008-2021 by Udo Munk
+ * Copyright (C) 2008-2022 by Udo Munk
  *
  * History:
  * 20-OCT-08 first version finished
@@ -52,8 +52,8 @@ extern void reset_cpu(void), reset_io(void);
 
 static const char *TAG = "system";
 
-#ifdef FRONTPANEL
 int  boot_switch;		/* boot address for switch */
+#ifdef FRONTPANEL
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;
