@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2022 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -59,7 +59,6 @@
 
 int boot(int);
 
-extern void ice_cmd_loop(int);
 extern struct dskdef disks[];
 
 static const char *TAG = "system";
@@ -77,11 +76,84 @@ void mon(void)
 	/* empty buffer for teletype */
 	fflush(stdout);
 
+#ifdef WANT_ICE
+	extern void ice_cmd_loop(int);
+
 	ice_before_go = set_unix_terminal;
 	ice_after_go = reset_unix_terminal;
 	atexit(reset_unix_terminal);
 
-	ice_cmd_loop(1);
+	ice_cmd_loop(0);
+#else
+	extern void cpu_z80(void), cpu_8080(void);
+
+	/* initialise terminal */
+	set_unix_terminal();
+	atexit(reset_unix_terminal);
+
+	/* start CPU emulation */
+	cpu_state = CONTIN_RUN;
+	cpu_error = NONE;
+	switch(cpu) {
+	case Z80:
+		cpu_z80();
+		break;
+	case I8080:
+		cpu_8080();
+		break;
+	}
+
+	/* reset terminal */
+	reset_unix_terminal();
+
+	/* check for CPU emulation errors and report */
+	switch (cpu_error) {
+	case NONE:
+		break;
+	case OPHALT:
+		LOG(TAG, "INT disabled and HALT Op-Code reached at %04x\r\n",
+		    PC - 1);
+		break;
+	case IOTRAPIN:
+		LOGE(TAG, "I/O input Trap at %04x, port %02x",
+		     PC, io_port);
+		break;
+	case IOTRAPOUT:
+		LOGE(TAG, "I/O output Trap at %04x, port %02x",
+		     PC, io_port);
+		break;
+	case IOHALT:
+		LOG(TAG, "System halted, bye.\r\n");
+		break;
+	case IOERROR:
+		LOGE(TAG, "Fatal I/O Error at %04x", PC);
+		break;
+	case OPTRAP1:
+		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
+		     getmem(PC - 1));
+		break;
+	case OPTRAP2:
+		LOGE(TAG, "Op-code trap at %04x %02x %02x",
+		     PC - 2, getmem(PC - 2), getmem(PC - 1));
+		break;
+	case OPTRAP4:
+		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
+		     PC - 4, getmem(PC - 4), getmem(PC - 3),
+		     getmem(PC - 2), getmem(PC - 1));
+		break;
+	case USERINT:
+		LOG(TAG, "User Interrupt at %04x\r\n", PC);
+		break;
+	case INTERROR:
+		LOGW(TAG, "Unsupported bus data during INT: %02x", int_data);
+		break;
+	case POWEROFF:
+		break;
+	default:
+		LOGW(TAG, "Unknown error %d", cpu_error);
+		break;
+	}
+#endif
 }
 
 /*

@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2021 Udo Munk
+ * Copyright (C) 2008-2022 Udo Munk
  * Copyright (C) 2018-2021 David McNaughton
  *
  * Configuration for an IMSAI 8080 system
@@ -32,9 +32,12 @@
 #define CPU_SPEED 2	/* default CPU speed */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+
+/*#define WANT_ICE*/	/* attach ICE to headless machine */
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
+
 #define BUS_8080	/* emulate 8080 bus status for front panel */
 
 #define UNIX_TERMINAL	/* uses a UNIX terminal emulation */
@@ -68,12 +71,12 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2022 by Udo Munk"
 #define RELEASE	"1.38-dev"
 
 #define USR_COM	"IMSAI 8080 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"\nCopyright (C) 2008-2021 by Udo Munk & " \
+#define USR_CPR	"\nCopyright (C) 2008-2022 by Udo Munk & " \
 		"2018-2021 by David McNaughton"
 
 #define MAX_LFN		4096		/* maximum long file name length */

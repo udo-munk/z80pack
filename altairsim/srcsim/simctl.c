@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from an Altair 8800 front panel
  *
- * Copyright (C) 2008-2021 by Udo Munk
+ * Copyright (C) 2008-2022 by Udo Munk
  *
  * History:
  * 20-OCT-08 first version finished
@@ -127,7 +127,9 @@ void mon(void)
 	fflush(stdout);
 
 	/* initialise terminal */
+#ifndef WANT_ICE
 	set_unix_terminal();
+#endif
 	atexit(reset_unix_terminal);
 
 #ifdef FRONTPANEL
@@ -176,13 +178,23 @@ void mon(void)
 		SLEEP_MS(10);
 	}
 #else
+#ifdef WANT_ICE
+	extern void ice_cmd_loop(int);
+
+	ice_before_go = set_unix_terminal;
+	ice_after_go = reset_unix_terminal;
+	ice_cmd_loop(0);
+#else
 	/* run the CPU */
 	run_cpu();
 #endif
+#endif
 
+#ifndef WANT_ICE
 	/* reset terminal */
 	reset_unix_terminal();
 	putchar('\n');
+#endif
 
 #ifdef FRONTPANEL
 	/* all LED's off and update front panel */
