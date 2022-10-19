@@ -6,15 +6,15 @@
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = altair
 # emulate a machine's frontpanel
-#FP_OBJS = fpmain.o
-#FP_DEFS = -DFRONTPANEL
-#FP_LDFLAGS = -lfrontpanel -ljpeg -lGL -lGLU
-#CCLD = $(CXX)
+FP_OBJS = fpmain.o
+FP_DEFS = -DFRONTPANEL
+FP_LDFLAGS = -lfrontpanel -ljpeg -lGL -lGLU
+CCLD = $(CXX)
 # no frontpanel emulation
-FP_OBJS =
-FP_DEFS =
-FP_LDFLAGS =
-CCLD = $(CC)
+#FP_OBJS =
+#FP_DEFS =
+#FP_LDFLAGS =
+#CCLD = $(CC)
 # machine specific system object files
 MACHINE_OBJS = config.o iosim.o memory.o simctl.o
 # machine specific I/O object files
