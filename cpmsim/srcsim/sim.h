@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2022 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -52,9 +52,12 @@
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 #define WANT_FASTB	/* much faster but not accurate Z80 block instr. */
+
+/*#define WANT_ICE*/	/* attach ICE to machine */
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
+
 /*#define FRONTPANEL*/	/* no frontpanel emulation */
 /*#define BUS_8080*/	/* no emulation of 8080 bus status */
 
@@ -87,7 +90,7 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2022 by Udo Munk"
 #define RELEASE	"1.38-dev"
 
 #define MAX_LFN		4096		/* maximum long file name length */
