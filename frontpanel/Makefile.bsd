@@ -1,61 +1,63 @@
+# Makefile pre-configured for BSD
+
+LIB = libfrontpanel.a
+
 SRCS = jpeg.cpp lpanel.cpp lp_gfx.cpp lp_main.cpp lp_utils.cpp lp_window.cpp \
 	lp_switch.cpp lp_font.cpp lp_materials.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
-CC = c++
+CXX = g++
 
 # compiler switches
 
-INCLUDE = -I/usr/local/include
-DEFINES =
+INCS = -I/usr/local/include
+DEFS =
+
+CXXWARNS = -Wall -Wextra
+COMMON = $(INCS) $(DEFS)
 
 # Development
-#CFLAGS = -c -O3 -fPIC -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 $(INCLUDE) $(DEFINES)
+#CXXFLAGS = -O3 $(CXXWARNS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(COMMON)
 
 # Production
-CFLAGS = -c -O3 -fPIC -Wall -Wextra -U_FORTIFY_SOURCE $(INCLUDE) $(DEFINES)
+CXXFLAGS = -O3 $(CXXWARNS) -U_FORTIFY_SOURCE $(COMMON)
 
-LDFLAGS = -shared
-
-default: $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o libfrontpanel.so
-	@echo
-	@echo "Be sure to copy libfrontpanel.so to a shared library path!"
-	@echo
+$(LIB): $(OBJS)
+	rm -f $@
+	ar cq $@ $(OBJS)
 
 jpeg.o: jpeg.cpp cdjpeg.h
-	$(CC) $(CFLAGS) jpeg.cpp -o jpeg.o
+	$(CXX) $(CXXFLAGS) -c jpeg.cpp -o jpeg.o
 
 lpanel.o: lpanel.cpp lpanel.h lp_utils.h
-	$(CC) $(CFLAGS) lpanel.cpp -o lpanel.o
+	$(CXX) $(CXXFLAGS) -c lpanel.cpp -o lpanel.o
 
 lp_font.o: lp_font.cpp lp_font.h
-	$(CC) $(CFLAGS) lp_font.cpp -o lp_font.o
+	$(CXX) $(CXXFLAGS) -c lp_font.cpp -o lp_font.o
 
 lp_gfx.o: lp_gfx.cpp lpanel.h lp_utils.h jpeg.h
-	$(CC) $(CFLAGS) lp_gfx.cpp -o lp_gfx.o
+	$(CXX) $(CXXFLAGS) -c lp_gfx.cpp -o lp_gfx.o
 
 lp_main.o: lp_main.cpp lp_main.h lpanel.h lp_utils.h
-	$(CC) $(CFLAGS) lp_main.cpp -o lp_main.o
+	$(CXX) $(CXXFLAGS) -c lp_main.cpp -o lp_main.o
 
 lp_switch.o: lp_switch.cpp lpanel.h lp_switch.h lp_utils.h
-	$(CC) $(CFLAGS) lp_switch.cpp -o lp_switch.o
+	$(CXX) $(CXXFLAGS) -c lp_switch.cpp -o lp_switch.o
 
 lp_utils.o: lp_utils.cpp lp_utils.h
-	$(CC) $(CFLAGS) lp_utils.cpp -o lp_utils.o
+	$(CXX) $(CXXFLAGS) -c lp_utils.cpp -o lp_utils.o
 
 lp_window.o: lp_window.cpp lpanel.h
-	$(CC) $(CFLAGS) lp_window.cpp -o lp_window.o
+	$(CXX) $(CXXFLAGS) -c lp_window.cpp -o lp_window.o
 
 lp_materials.o: lp_materials.cpp lp_materials.h
-	$(CC) $(CFLAGS) lp_materials.cpp -o lp_materials.o
+	$(CXX) $(CXXFLAGS) -c lp_materials.cpp -o lp_materials.o
 
 clean:
 	rm -f *.o
 
-allclean:
-	make -f Makefile.bsd clean
-	rm -f libfrontpanel.so
+allclean: clean
+	rm -f $(LIB)
 
-all: clean default
+all: clean $(LIB)

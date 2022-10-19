@@ -358,6 +358,7 @@ Lpanel::Lpanel(void)		 // constructor
 
  // init config root path
 
+ config_root_path = NULL;
  setConfigRootPath(".");
 
  // init graphics objects
@@ -467,7 +468,7 @@ Lpanel::Quit(void)
  for(i=0;i<LP_MAX_LIGHT_GROUPS;i++)
  {
    if(light_groups[i].list) 
-    { delete light_groups[i].list;
+    { delete[] light_groups[i].list;
       light_groups[i].list = NULL;
     }
    light_groups[i].num_items = 0;
@@ -575,7 +576,7 @@ Lpanel::addLightToGroup( int lightnum, int groupnum)
     if(light_groups[groupnum].list) 
      { for(i=0; i < light_groups[groupnum].max_items;i++)
 		new_list[i] = light_groups[groupnum].list[i];
-       delete light_groups[groupnum].list;
+       delete[] light_groups[groupnum].list;
      }
     light_groups[groupnum].list = new_list;
   }
@@ -620,7 +621,7 @@ Lpanel::bindLight8(const char *name, void *loc, int start_bit_number)
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight8: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -667,7 +668,7 @@ Lpanel::bindLight8invert(const char *name, void *loc, int start_bit_number, uint
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight8invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -709,7 +710,7 @@ Lpanel::bindLight16(const char *name, void *loc, int start_bit_number)
         if(!ignore_bind_errors) fprintf(stderr, "bindLight16: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -748,7 +749,7 @@ Lpanel::bindLightfv(const char *name, void *loc)
         if(!ignore_bind_errors) fprintf(stderr, "bindLightfv: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     // bitnum += bit_inc;
    }
 
@@ -793,7 +794,7 @@ Lpanel::bindLight16invert(const char *name, void *loc, int start_bit_number, uin
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight16invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -837,7 +838,7 @@ Lpanel::bindLight32(const char *name, void *loc, int start_bit_number)
         if(!ignore_bind_errors) fprintf(stderr, "bindLight32: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -882,7 +883,7 @@ Lpanel::bindLight32invert(const char *name, void *loc, int start_bit_number, uin
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight32invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -925,7 +926,7 @@ Lpanel::bindLight64(const char *name, void *loc, int start_bit_number)
         if(!ignore_bind_errors) fprintf(stderr, "bindLight64: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -970,7 +971,7 @@ Lpanel::bindLight64invert(const char *name, void *loc, int start_bit_number, uin
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight64invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -1091,7 +1092,7 @@ Lpanel::growLights(void)
     new_lights[i] = lights[i];
 
   max_lights += 8;
-  delete lights;
+  delete[] lights;
   lights = new_lights;
 }
 
@@ -1106,7 +1107,7 @@ Lpanel::growSwitches(void)
     new_switches[i] = switches[i];
 
   max_switches += 1;
-  delete switches;
+  delete[] switches;
   switches = new_switches;
 }
 
@@ -1845,7 +1846,7 @@ Lpanel::sampleLightGroup(int groupnum, int clockval)
 void
 Lpanel::setConfigRootPath(const char *path)
 {
- if(config_root_path) delete config_root_path;
+ if(config_root_path) delete[] config_root_path;
  config_root_path = new char [strlen(path) + 1];
  strcpy(config_root_path,path);
 
@@ -1884,8 +1885,8 @@ lpLight::lpLight(void)
 
 lpLight::~lpLight(void)
 {
- if(name) delete name;
- if(obj_refname) delete obj_refname;
+ if(name) delete[] name;
+ if(obj_refname) delete[] obj_refname;
  if(parms) delete parms;
 }
 

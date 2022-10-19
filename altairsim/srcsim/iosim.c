@@ -659,7 +659,11 @@ void reset_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
+#ifdef FRONTPANEL
 	int val;
+#else
+	UNUSED(addrh);
+#endif
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
@@ -690,6 +694,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
+#ifndef FRONTPANEL
+	UNUSED(addrh);
+#endif
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);

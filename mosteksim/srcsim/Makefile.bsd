@@ -1,24 +1,14 @@
-# Makefile pre-configured for macOS
+# Makefile pre-configured for BSD
 
 ###
 ### START MACHINE DEPENDANT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
-MACHINE = altair
-# emulate a machine's frontpanel
-FP_OBJS = fpmain.o
-FP_DEFS = -DFRONTPANEL
-FP_LDFLAGS = -lfrontpanel -ljpeg -lGL -lGLU
-CCLD = $(CXX)
-# no frontpanel emulation
-#FP_OBJS =
-#FP_DEFS =
-#FP_LDFLAGS =
-#CCLD = $(CC)
+MACHINE = mostek
 # machine specific system object files
 MACHINE_OBJS = config.o iosim.o memory.o simctl.o
 # machine specific I/O object files
-IO_OBJS = cromemco-dazzler.o proctec-vdm.o tarbell_fdc.o altair-88-dcdd.o altair-88-sio.o altair-88-2sio.o unix_terminal.o unix_network.o simbdos.o
+IO_OBJS = simbdos.o unix_terminal.o mostek-cpu.o mostek-fdc.o
 #machine specifc libraries
 MACHINE_LIBS =
 
@@ -40,8 +30,6 @@ ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
 CONF_DIR = $(ROOT_DIR)/conf
 # system wide location for disk images
 DISKS_DIR = $(ROOT_DIR)/disks
-# default boot ROM path
-ROMS_DIR = $(ROOT_DIR)/roms
 ###
 ### END MACHINE DEPENDANT VARIABLES
 ###
@@ -50,45 +38,39 @@ SIM = ../$(MACHINE)sim
 
 CORE_DIR = ../../z80core
 IO_DIR = ../../iodevices
-FP_DIR = ../../frontpanel
 
 ###
 ### START O/S PLATFORM DEPENDANT VARIABLES
 ###
-CC = gcc
-CXX = g++
+CC = cc
 EXEC = $(SIM)
-PLAT_INCS = -I/opt/X11/include
-PLAT_LDFLAGS = -L/usr/local/lib -L/opt/X11/lib
+PLAT_INCS =
+PLAT_LDFLAGS =
 PLAT_LIBS =
 ###
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS)
-DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" -DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
+DEFS =
 
 CWARNS = -Wall -Wextra -Wwrite-strings
-CXXWARNS = -Wall -Wextra
 
 # Production
 CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
-CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
 
 # Development
 #CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
-#CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
 
 # Debug
 #CFLAGS = -O -g $(PLAT_CFLAGS) $(DEFS) $(INCS)
-#CXXFLAGS = -O -g $(PLAT_CXXFLAGS) $(DEFS) $(INCS)
 
-LDFLAGS = -L$(FP_DIR) $(PLAT_LDFLAGS) $(MACHINE_LIBS) \
-	  $(FP_LDFLAGS) -lX11 $(PLAT_LIBS)
+LDFLAGS = $(PLAT_LDFLAGS) $(MACHINE_LIBS) \
+	  $(PLAT_LIBS)
 
 # core system source files for the CPU simulation - only change if the core changes
 CORE_OBJS = sim0.o sim1.o sim1a.o sim2.o sim3.o sim4.o sim5.o sim6.o sim7.o simdis.o simfun.o simglb.o simice.o simint.o
-OBJS = $(CORE_OBJS) $(MACHINE_OBJS) $(IO_OBJS) $(FP_OBJS)
+OBJS = $(CORE_OBJS) $(MACHINE_OBJS) $(IO_OBJS)
 
 all: $(SIM)
 	@echo
@@ -96,7 +78,7 @@ all: $(SIM)
 	@echo
 
 $(SIM): $(OBJS)
-	$(CCLD) $(OBJS) $(LDFLAGS) -o $@
+	$(CC) $(OBJS) $(LDFLAGS) -o $@
 
 build: _rm_obj all
 
@@ -112,14 +94,8 @@ _rm_obj:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f ../disks/drive*.dsk
-	rm -f ../disks/mits_*.dsk
-	rm -f ../printer.txt
 
 #test: ; @echo $(ROOT_DIR)
-
-fpmain.o: $(CORE_DIR)/fpmain.cpp
-	$(CXX) $(CXXFLAGS) -c $(CORE_DIR)/fpmain.cpp
 
 sim0.o: $(CORE_DIR)/sim0.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
 	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim0.c
@@ -163,17 +139,19 @@ simice.o: $(CORE_DIR)/simice.c sim.h $(CORE_DIR)/simglb.h memory.h
 simint.o: $(CORE_DIR)/simint.c sim.h $(CORE_DIR)/simglb.h
 	$(CC) $(CFLAGS) -c $(CORE_DIR)/simint.c
 
-config.o: config.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h memory.h
+config.o: config.c
 	$(CC) $(CFLAGS) -c config.c
 
-iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h memory.h \
-	 $(IO_DIR)/simbdos.h
+iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
+	 $(IO_DIR)/simbdos.h $(IO_DIR)/mostek-cpu.h \
+	 $(IO_DIR)/mostek-fdc.h
 	$(CC) $(CFLAGS) -c iosim.c
 
-memory.o: memory.c sim.h $(CORE_DIR)/simglb.h config.h memory.h $(CORE_DIR)/log.h
+memory.o: memory.c sim.h $(CORE_DIR)/simglb.h memory.h
 	$(CC) $(CFLAGS) -c memory.c
 
-simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h config.h memory.h $(CORE_DIR)/log.h
+simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h $(IO_DIR)/unix_terminal.h \
+	  $(IO_DIR)/mostek-fdc.h
 	$(CC) $(CFLAGS) -c simctl.c
 
 simbdos.o: $(IO_DIR)/simbdos.c sim.h $(CORE_DIR)/simglb.h memory.h
@@ -182,23 +160,9 @@ simbdos.o: $(IO_DIR)/simbdos.c sim.h $(CORE_DIR)/simglb.h memory.h
 unix_terminal.o: $(IO_DIR)/unix_terminal.c
 	$(CC) $(CFLAGS) -c $(IO_DIR)/unix_terminal.c
 
-unix_network.o: $(IO_DIR)/unix_network.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/unix_network.c
+mostek-cpu.o: $(IO_DIR)/mostek-cpu.c $(IO_DIR)/unix_terminal.h sim.h \
+	      $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c $(IO_DIR)/mostek-cpu.c
 
-altair-88-sio.o: $(IO_DIR)/altair-88-sio.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/altair-88-sio.c
-
-altair-88-2sio.o: $(IO_DIR)/altair-88-2sio.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/altair-88-2sio.c
-
-tarbell_fdc.o: $(IO_DIR)/tarbell_fdc.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/tarbell_fdc.c
-
-altair-88-dcdd.o: $(IO_DIR)/altair-88-dcdd.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/altair-88-dcdd.c
-
-cromemco-dazzler.o: $(IO_DIR)/cromemco-dazzler.c
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-dazzler.c
-
-proctec-vdm.o: $(IO_DIR)/proctec-vdm.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/proctec-vdm.c
+mostek-fdc.o: $(IO_DIR)/mostek-fdc.c sim.h $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c $(IO_DIR)/mostek-fdc.c

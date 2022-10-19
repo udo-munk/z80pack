@@ -136,7 +136,7 @@ Lpanel::growObjects(void)
     new_objects[i] = objects[i];
 
   max_objects += 1;
-  if(objects) delete objects;
+  if(objects) delete[] objects;
   objects = new_objects;
 }
 
@@ -151,7 +151,7 @@ Lpanel::growAlphaObjects(void)
     new_alpha_objects[i] = alpha_objects[i];
 
   max_alpha_objects += 1;
-  if(alpha_objects) delete objects;
+  if(alpha_objects) delete[] objects;
   alpha_objects = new_alpha_objects;
 }
 
@@ -194,7 +194,7 @@ lpObject::~lpObject(void)
    for(i=0;i<num_elements;i++)
     if(elements[i]) delete elements[i];
 
-   delete elements;
+   delete[] elements;
   } 
 }
 
@@ -417,7 +417,7 @@ lpObject::growElements(void)
     new_elements[i] = elements[i];
 
   max_elements += 1;
-  if(elements) delete elements;
+  if(elements) delete[] elements;
   elements = new_elements;
 }
 
@@ -425,7 +425,7 @@ lpObject::growElements(void)
 void
 lpObject::setName(char *s)
 {
-  if(name) delete name;
+  if(name) delete[] name;
   name = new char[ strlen(s)+1];
   strcpy(name,s);
 }
@@ -433,7 +433,7 @@ void
 
 lpObject::setInstanceName(char *s)
 {
-  if(instance_name) delete instance_name;
+  if(instance_name) delete[] instance_name;
   instance_name = new char[ strlen(s)+1];
   strcpy(instance_name,s);
 }
@@ -457,7 +457,7 @@ lpElement::~lpElement(void)
      for(i=0;i<num_verts;i++)
 	if(verts[i]) delete verts[i];
 
-     delete verts;
+     delete[] verts;
    }
 }
 
@@ -618,7 +618,7 @@ lpElement::growVerts(void)
     new_verts[i] = verts[i];
 
    max_verts += 4;
-   if(verts) delete verts;
+   if(verts) delete[] verts;
    verts = new_verts;
   }
 }
@@ -651,7 +651,7 @@ lpTextures::~lpTextures(void)
 	   delete tex[i]; 
 	 }
 
-  delete tex;
+  delete[] tex;
  }
 
 }
@@ -839,7 +839,7 @@ lpTextures::growTextures(void)
 
    max_textures += n;
 
-   if(tex) delete tex;
+   if(tex) delete[] tex;
 
    tex = new_tex;
   }

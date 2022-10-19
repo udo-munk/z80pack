@@ -36,7 +36,6 @@
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
-#define FRONTPANEL	/* emulate a machines frontpanel */
 #define BUS_8080	/* emulate 8080 bus status for front panel */
 
 #define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */

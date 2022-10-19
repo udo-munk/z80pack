@@ -567,11 +567,11 @@ int xpand(const char *s, char **namelist[] )
      num_names++;
   }
 
-  if(prefix) delete prefix;
-  if(from)  delete from;
-  if(to) delete to;
-  if(inc) delete inc;
-  if(suffix) delete(suffix);
+  if(prefix) delete[] prefix;
+  if(from)  delete[] from;
+  if(to) delete[] to;
+  if(inc) delete[] inc;
+  if(suffix) delete[] suffix;
 
   return(num_names);
 
@@ -738,13 +738,13 @@ Parser::~Parser(void)
  if(results.strings)
   {
     for(i=0;i<results.max_args;i++)
-       if(results.strings[i]) delete results.strings[i];
+       if(results.strings[i]) delete[] results.strings[i];
   }
 
- if(results.strings) delete results.strings;
- if(results.stringlengths) delete results.stringlengths;
- if(results.floats) delete results.floats;
- if(results.ints) delete results.ints;
+ if(results.strings) delete[] results.strings;
+ if(results.stringlengths) delete[] results.stringlengths;
+ if(results.floats) delete[] results.floats;
+ if(results.ints) delete[] results.ints;
 }
 
 int
@@ -764,7 +764,7 @@ Parser::addArg(const char *s, const char *cpos1, const char *cpos2)
 
     if(results.stringlengths[results.num_args] < len+1)
      {
-	if(results.strings[results.num_args]) delete results.strings[results.num_args];
+	if(results.strings[results.num_args]) delete[] results.strings[results.num_args];
      }
     results.strings[results.num_args] = new char[ len + 1];
     results.stringlengths[results.num_args] = len + 1;
@@ -856,10 +856,10 @@ void Parser:: growArgs(int n)
    new_stringlengths[i] = 0;
   }
 
- if(results.strings) delete results.strings;
- if(results.stringlengths) delete results.stringlengths;
- if(results.floats) delete results.floats;
- if(results.ints) delete results.ints;
+ if(results.strings) delete[] results.strings;
+ if(results.stringlengths) delete[] results.stringlengths;
+ if(results.floats) delete[] results.floats;
+ if(results.ints) delete[] results.ints;
  results.strings = new_strings;
  results.stringlengths = new_stringlengths;
  results.floats = new_floats;
