@@ -30,6 +30,8 @@ OBJ =   sim0.o \
 	sim5.o \
 	sim6.o \
 	sim7.o \
+	simdis.o \
+	simice.o \
 	simctl.o \
 	simint.o \
 	memory.o \
@@ -83,6 +85,12 @@ sim6.o : $(Z80CORE)/sim6.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 
 sim7.o : $(Z80CORE)/sim7.c sim.h $(Z80CORE)/simglb.h config.h memory.h
 	$(CC) $(CFLAGS) $(Z80CORE)/sim7.c
+
+simdis.o : $(Z80CORE)/simdis.c sim.h $(Z80CORE)/simglb.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simdis.c
+
+simice.o : $(Z80CORE)/simice.c sim.h $(Z80CORE)/simglb.h memory.h
+	$(CC) $(CFLAGS) $(Z80CORE)/simice.c
 
 simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h config.h memory.h $(Z80CORE)/log.h
 	$(CC) $(CFLAGS) simctl.c

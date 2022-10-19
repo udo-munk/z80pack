@@ -92,7 +92,7 @@ LFLAGS = -L$(DIR_FP) $(SRC_LIBS) \
 	$(PLAT_LFLAGS)
 
 # core system source files for the CPU simulation - only change if the core changes
-SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
+SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c simdis.c simice.c
 SRC = $(SRC_CORE) $(SRC_MACHINE) $(SRC_IO)
 OBJ = $(SRC:.c=.o)
 
