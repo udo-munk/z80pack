@@ -42,11 +42,13 @@ ROMS_DIR = $(ROOT_DIR)/roms
 ifeq ($(FRONTPANEL),YES)
 FP_SRCS = fpmain.cpp
 FP_DEFS = -DFRONTPANEL
-FP_LDFLAGS = -lfrontpanel -ljpeg -lGL -lGLU
+FP_LIB = -lfrontpanel
+FP_LDFLAGS = $(FP_LIB) -ljpeg -lGL -lGLU
 CCLD = $(CXX)
 else
 FP_SRCS =
 FP_DEFS =
+FP_LIB =
 FP_LDFLAGS =
 CCLD = $(CC)
 endif
@@ -130,7 +132,7 @@ all: $(SIM)
 	@echo "Done."
 	@echo
 
-$(SIM): $(OBJS) $(MACHINE_LIBS)
+$(SIM): $(OBJS) $(MACHINE_LIBS) $(FP_LIB)
 	$(CCLD) $(OBJS) $(LDFLAGS) -o $@
 
 %.d: %.c
@@ -140,6 +142,9 @@ $(SIM): $(OBJS) $(MACHINE_LIBS)
 	@$(CXX) -MM $(CXXFLAGS) $< > $@
 
 -include $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
+
+-lfrontpanel: $(FP_DIR:=/GNUmakefile)
+	make -B -C $(FP_DIR)
 
 build: _rm_obj all
 
