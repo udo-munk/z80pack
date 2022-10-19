@@ -56,7 +56,7 @@ ifeq ($(TARGET_OS),LINUX)
 PLAT_LIBS =
 endif
 ifeq ($(TARGET_OS),OSX)
-PLAT_INCS 
+PLAT_INCS =
 PLAT_LDFLAGS =
 .LIBPATTERNS += lib%.dylib
 endif
