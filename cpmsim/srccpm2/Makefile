@@ -1,12 +1,14 @@
 CC = gcc
 
-CFLAGS= -O -s -Wall -Wextra -Wwrite-strings
+CWARNS= -Wall -Wextra -Wwrite-strings
+CFLAGS= -O $(CWARNS)
+LDFLAGS= -s
 
 all: putsys bios.bin boot.bin
 	@echo "done"
 
 putsys: putsys.c
-	$(CC) $(CFLAGS) -o putsys putsys.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
 
 bios.bin: bios.asm
 	z80asm -vl -sn -x bios.asm

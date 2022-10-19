@@ -201,7 +201,7 @@ lpSwitch::lpSwitch(void)
 
 lpSwitch::~lpSwitch(void)
 {
- if(name) delete name;
+ if(name) delete[] name;
  if(parms) delete parms;
 
 }
@@ -709,7 +709,7 @@ Lpanel::addSwitchCallback(const char *name, void (*cbfunc)(int state, int val), 
         if(!ignore_bind_errors) fprintf(stderr, "addSwitchCallback: switch %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     // bitnum += bit_inc;
    }
 
@@ -753,7 +753,7 @@ Lpanel::bindSwitch8(const char *name, void *loc_down, void *loc_up, int start_bi
         if(!ignore_bind_errors) fprintf(stderr, "bindSwitch8: switch %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -797,7 +797,7 @@ Lpanel::bindSwitch16(const char *name, void *loc_down, void *loc_up, int start_b
        if(!ignore_bind_errors)  fprintf(stderr, "bindSwitch16: switch %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -841,7 +841,7 @@ Lpanel::bindSwitch32(const char *name, void *loc_down, void *loc_up, int start_b
         if(!ignore_bind_errors) fprintf(stderr, "bindSwitch32: switch %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 
@@ -884,7 +884,7 @@ Lpanel::bindSwitch64(const char *name, void *loc_down, void *loc_up, int start_b
         if(!ignore_bind_errors) fprintf(stderr, "bindSwitch64: switch %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
 

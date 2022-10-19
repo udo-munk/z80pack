@@ -4,11 +4,11 @@
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = z80
 # machine specific system source files
-SRC_MACHINE = config.c iosim.c memory.c simctl.c
+MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
-SRC_IO =
+IO_SRCS =
 #machine specifc libraries
-SRC_LIBS =
+MACHINE_LIBS =
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
@@ -23,7 +23,7 @@ HTMLDIR = $(DOCDIR)
 INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
 LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
-# DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
+# ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
 ###
 ### END MACHINE DEPENDANT VARIABLES
 ###
@@ -31,75 +31,77 @@ LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 SIM = ../$(MACHINE)sim
 EXEC = $(SIM)
 
-DIR_CORE = ../../z80core
+CORE_DIR = ../../z80core
 
-VPATH = $(DIR_CORE)
+VPATH = $(CORE_DIR) $(IO_DIR)
 CC = gcc
 
 ###
 ### START O/S PLATFORM DEPENDANT VARIABLES
 ###
-include ../../z80core/Makefile.in-os
+include $(CORE_DIR)/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)
 CC = cc
-PLAT_INCL =
-PLAT_LFLAGS =
+PLAT_INCS =
+PLAT_LDFLAGS =
+PLAT_LIBS =
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
-PLAT_LFLAGS =
+PLAT_LDFLAGS =
 .LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
-PLAT_LFLAGS =
+PLAT_LIBS =
 endif
 ifeq ($(TARGET_OS),OSX)
-PLAT_INCL =
-PLAT_LFLAGS =
+PLAT_INCS 
+PLAT_LDFLAGS =
 .LIBPATTERNS += lib%.dylib
 endif
 ###
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCL = -iquote . -I$(DIR_CORE)
+INCS = -iquote . -I$(CORE_DIR) $(PLAT_INCS)
+DEFS =
+
+CWARNS = -Wall -Wextra -Wwrite-strings
 
 # Production - the default
-CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCL)
+CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
 
 # Development - use `MODE=DEV make build`
-ifeq ($(MODE), DEV)
-CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCL)
+ifeq ($(MODE),DEV)
+CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
-CFLAGS = -O -g -c $(PLAT_CFLAGS) $(DEFS) $(INCL)
+CFLAGS = -O -g $(PLAT_CFLAGS) $(DEFS) $(INCS)
 endif
 
-LFLAGS = $(PLAT_LFLAGS)
+LDFLAGS = $(PLAT_LDFLAGS) $(MACHINE_LIBS) \
+	  $(PLAT_LIBS)
 
 # core system source files for the CPU simulation - only change if the core changes
-SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c simdis.c simice.c
-SRC = $(SRC_CORE) $(SRC_MACHINE) $(SRC_IO)
-OBJ = $(SRC:.c=.o)
+CORE_SRCS = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simdis.c simfun.c simglb.c simice.c simint.c
+SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
+OBJS = $(SRCS:.c=.o)
 
-all : $(SIM)
+all: $(SIM)
 	@echo
 	@echo "Done."
 	@echo
 
-$(SIM) : $(OBJ) $(SRC_LIBS)
-	$(CC) $(OBJ) $(LFLAGS) -o $@
+$(SIM): $(OBJS) $(MACHINE_LIBS)
+	$(CC) $(OBJS) $(LDFLAGS) -o $@
 
-%.d : %.c
+%.d: %.c
 	@$(CC) -MM $(CFLAGS) $< > $@
 
--include $(SRC:.c=.d)
-
--lcivetweb: $(DIR_CIV:=/Makefile)
-	make -B -C $(DIR_CIV)
+-include $(SRCS:.c=.d)
 
 build: _rm_obj all
 
@@ -108,7 +110,7 @@ install:
 	@echo Waiting to be written...
 	@echo
 
-clean : _rm_obj _rm_deps
+clean: _rm_obj _rm_deps
 
 _rm_obj:
 	rm -f *.o
@@ -119,6 +121,6 @@ _rm_deps:
 allclean: clean
 	rm -f $(EXEC)
 
-#test : ; @echo $(DIR_ROOT)
+#test: ; @echo $(ROOT_DIR)
 
-.PHONY : all build install clean allclean
+.PHONY: all build install clean allclean

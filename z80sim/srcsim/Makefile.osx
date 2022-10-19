@@ -1,99 +1,147 @@
+# Makefile pre-configured for macOS
+
+###
+### START MACHINE DEPENDANT VARIABLES
+###
+# (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
+MACHINE = z80
+# machine specific system object files
+MACHINE_OBJS = config.o iosim.o memory.o simctl.o
+# machine specific I/O object files
+IO_OBJS =
+#machine specifc libraries
+MACHINE_LIBS =
+
+# Installation directories by convention
+# http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
+CPROG = $(MACHINE)sim
+PREFIX ?= /usr/local
+EXEC_PREFIX = $(PREFIX)
+BINDIR = $(EXEC_PREFIX)/bin
+DATAROOTDIR = $(PREFIX)/share
+DOCDIR = $(DATAROOTDIR)/doc/$(CPROG)
+SYSCONFDIR = $(PREFIX)/etc
+HTMLDIR = $(DOCDIR)
+INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
+LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
+
+# ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
+###
+### END MACHINE DEPENDANT VARIABLES
+###
+
+SIM = ../$(MACHINE)sim
+
+CORE_DIR = ../../z80core
+
+###
+### START O/S PLATFORM DEPENDANT VARIABLES
+###
 CC = gcc
+EXEC = $(SIM)
+PLAT_INCS =
+PLAT_LDFLAGS =
+PLAT_LIBS =
+###
+### END O/S DEPENDANT VARIABLES
+###
 
-Z80CORE = ../../z80core
+INCS = -I. -I$(CORE_DIR) $(PLAT_INCS)
+DEFS =
 
-# Development
-#CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -fstack-protector-all -D_FORTIFY_SOURCE=2 -I. -I$(Z80CORE)
+CWARNS = -Wall -Wextra -Wwrite-strings
 
 # Production
-CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -I. -I$(Z80CORE)
+CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
 
-# Debugging
-#CFLAGS = -O -g -c -Wall -Wextra -Wwrite-strings -U_FORTIFY_SOURCE -I. -I$(Z80CORE)
+# Development
+#CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
 
-LFLAGS =
+# Debug
+#CFLAGS = -O -g $(PLAT_CFLAGS) $(DEFS) $(INCS)
 
-OBJ =	sim0.o \
-	sim1.o \
-	sim1a.o \
-	sim2.o \
-	sim3.o \
-	sim4.o \
-	sim5.o \
-	sim6.o \
-	sim7.o \
-	simdis.o \
-	simice.o \
-	simctl.o \
-	simint.o \
-	memory.o \
-	iosim.o \
-	simfun.o \
-	simglb.o \
-	config.o
+LDFLAGS = $(PLAT_LDFLAGS) $(MACHINE_LIBS) \
+	  $(PLAT_LIBS)
 
-../z80sim : $(OBJ)
-	$(CC) $(OBJ) $(LFLAGS) -o ../z80sim
+# core system source files for the CPU simulation - only change if the core changes
+CORE_OBJS = sim0.o sim1.o sim1a.o sim2.o sim3.o sim4.o sim5.o sim6.o sim7.o simdis.o simfun.o simglb.o simice.o simint.o
+OBJS = $(CORE_OBJS) $(MACHINE_OBJS) $(IO_OBJS)
 
-sim0.o : $(Z80CORE)/sim0.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim0.c
+all: $(SIM)
+	@echo
+	@echo "Done."
+	@echo
 
-sim1.o : $(Z80CORE)/sim1.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim1.c
+$(SIM): $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) -o $@
 
-sim1a.o : $(Z80CORE)/sim1a.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim1a.c
+build: _rm_obj all
 
-sim2.o : $(Z80CORE)/sim2.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim2.c
+install:
+	@echo
+	@echo Waiting to be written...
+	@echo
 
-sim3.o : $(Z80CORE)/sim3.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim3.c
+clean: _rm_obj
 
-sim4.o : $(Z80CORE)/sim4.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim4.c
+_rm_obj:
+	rm -f *.o
 
-sim5.o : $(Z80CORE)/sim5.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim5.c
+allclean: clean
+	rm -f $(EXEC)
 
-sim6.o : $(Z80CORE)/sim6.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim6.c
+#test: ; @echo $(ROOT_DIR)
 
-sim7.o : $(Z80CORE)/sim7.c sim.h $(Z80CORE)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/sim7.c
+sim0.o: $(CORE_DIR)/sim0.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim0.c
 
-simdis.o : $(Z80CORE)/simdis.c sim.h $(Z80CORE)/simglb.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/simdis.c
+sim1.o: $(CORE_DIR)/sim1.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim1.c
 
-simice.o : $(Z80CORE)/simice.c sim.h $(Z80CORE)/simglb.h memory.h
-	$(CC) $(CFLAGS) $(Z80CORE)/simice.c
+sim1a.o: $(CORE_DIR)/sim1a.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim1a.c
 
-simctl.o : simctl.c sim.h $(Z80CORE)/simglb.h
-	$(CC) $(CFLAGS) simctl.c
+sim2.o: $(CORE_DIR)/sim2.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim2.c
 
-simint.o : $(Z80CORE)/simint.c sim.h $(Z80CORE)/simglb.h
-	$(CC) $(CFLAGS) $(Z80CORE)/simint.c
+sim3.o: $(CORE_DIR)/sim3.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim3.c
 
-memory.o : memory.c sim.h
-	$(CC) $(CFLAGS) memory.c
+sim4.o: $(CORE_DIR)/sim4.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim4.c
 
-iosim.o : iosim.c sim.h $(Z80CORE)/simglb.h
-	$(CC) $(CFLAGS) iosim.c
+sim5.o: $(CORE_DIR)/sim5.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim5.c
 
-simfun.o : $(Z80CORE)/simfun.c sim.h $(Z80CORE)/log.h
-	$(CC) $(CFLAGS) $(Z80CORE)/simfun.c
+sim6.o: $(CORE_DIR)/sim6.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim6.c
 
-simglb.o : $(Z80CORE)/simglb.c sim.h
-	$(CC) $(CFLAGS) $(Z80CORE)/simglb.c
+sim7.o: $(CORE_DIR)/sim7.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim7.c
 
-config.o : config.c
-	$(CC) $(CFLAGS) config.c
+simdis.o: $(CORE_DIR)/simdis.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/simdis.c
 
-clean:
-	rm -f *.o ../z80sim
+simfun.o: $(CORE_DIR)/simfun.c sim.h $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/simfun.c
 
-allclean:
-	make -f Makefile.osx clean
+simglb.o: $(CORE_DIR)/simglb.c sim.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/simglb.c
 
-install: ../z80sim
-	cp ../z80sim ${HOME}/bin
+simice.o: $(CORE_DIR)/simice.c sim.h $(CORE_DIR)/simglb.h memory.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/simice.c
+
+simint.o: $(CORE_DIR)/simint.c sim.h $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c $(CORE_DIR)/simint.c
+
+config.o: config.c
+	$(CC) $(CFLAGS) -c config.c
+
+iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c iosim.c
+
+memory.o: memory.c sim.h
+	$(CC) $(CFLAGS) -c memory.c
+
+simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c simctl.c

@@ -750,7 +750,12 @@ void reset_io(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
+#ifdef FRONTPANEL
 	int val = 0;
+#else
+	UNUSED(addrl);
+	UNUSED(addrh);
+#endif
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
@@ -781,6 +786,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
+#ifndef FRONTPANEL
+	UNUSED(addrh);
+#endif
 	io_port = addrl;
 	io_data = data;
 	(*port_out[addrl]) (data);
@@ -868,6 +876,8 @@ static void fp_out(BYTE data)
 {
 #ifdef FRONTPANEL
 	fp_led_output = data;
+#else
+	UNUSED(data);
 #endif
 }
 

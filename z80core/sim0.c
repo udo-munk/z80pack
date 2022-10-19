@@ -80,7 +80,11 @@ extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
 extern int exatoi(char *);
 
+#ifdef FRONTPANEL
+int sim_main(int argc, char *argv[])
+#else
 int main(int argc, char *argv[])
+#endif
 {
 	register char *s, *p;
 	char *pn = basename(argv[0]);

@@ -58,8 +58,9 @@ static int reset;
 static int power;
 #endif
 
-static void run_cpu(void), step_cpu(void);
+static void run_cpu(void);
 #ifdef FRONTPANEL
+static void step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
 static void examine_clicked(int, int), deposit_clicked(int, int);
@@ -276,6 +277,7 @@ void run_cpu(void)
 	report_error();
 }
 
+#ifdef FRONTPANEL
 /*
  *	Step CPU
  */
@@ -295,7 +297,6 @@ void step_cpu(void)
 	report_error();
 }
 
-#ifdef FRONTPANEL
 /*
  *	Callback for RUN/STOP switch
  */

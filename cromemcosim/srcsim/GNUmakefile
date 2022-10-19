@@ -3,12 +3,14 @@
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = cromemco
+# emulate a machine's frontpanel
+FRONTPANEL = YES
 # machine specific system source files
-SRC_MACHINE = config.c iosim.c memory.c simctl.c
+MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
-SRC_IO = cromemco-wdi.c cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c cromemco-hal.c unix_terminal.c unix_network.c simbdos.c netsrv.c generic-at-modem.c libtelnet.c diskmanager.c
+IO_SRCS = cromemco-wdi.c cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c cromemco-hal.c unix_terminal.c unix_network.c simbdos.c netsrv.c generic-at-modem.c libtelnet.c diskmanager.c
 #machine specifc libraries
-SRC_LIBS = -lcivetweb -lfrontpanel
+MACHINE_LIBS = -lcivetweb
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
@@ -23,98 +25,126 @@ HTMLDIR = $(DOCDIR)
 INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
 LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
-DIR_ROOT = $(DATAROOTDIR)/$(CPROG)
+ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
 # system wide location for machines configuration files
-CONF = $(DIR_ROOT)/conf
+CONF_DIR = $(ROOT_DIR)/conf
 # system wide location for disk images
-DISKS = $(DIR_ROOT)/disks
-# default boot ROM
-ROM = $(DIR_ROOT)/roms
+DISKS_DIR = $(ROOT_DIR)/disks
+# default boot ROM path
+ROMS_DIR = $(ROOT_DIR)/roms
 ###
 ### END MACHINE DEPENDANT VARIABLES
+###
+
+###
+### FRONTPANEL VARIABLES
+###
+ifeq ($(FRONTPANEL),YES)
+FP_SRCS = fpmain.cpp
+FP_DEFS = -DFRONTPANEL
+FP_LDFLAGS = -lfrontpanel -ljpeg -lGL -lGLU
+CCLD = $(CXX)
+else
+FP_SRCS =
+FP_DEFS =
+FP_LDFLAGS =
+CCLD = $(CC)
+endif
+###
+### END FRONTPANEL VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
 EXEC = $(SIM)
 
-DIR_CORE = ../../z80core
-DIR_IO = ../../iodevices
-DIR_FP = ../../frontpanel
-DIR_NET = ../../webfrontend
-DIR_CIV = $(DIR_NET:=/civetweb)
+CORE_DIR = ../../z80core
+IO_DIR = ../../iodevices
+FP_DIR = ../../frontpanel
+NET_DIR = ../../webfrontend
+CIV_DIR = $(NET_DIR:=/civetweb)
 
-VPATH = $(DIR_CORE) $(DIR_IO) $(DIR_FP) $(DIR_NET) $(DIR_CIV)
+VPATH = $(CORE_DIR) $(IO_DIR) $(FP_DIR) $(NET_DIR) $(CIV_DIR)
 CC = gcc
 CXX = g++
 
 ###
 ### START O/S PLATFORM DEPENDANT VARIABLES
 ###
-include ../../z80core/Makefile.in-os
+include $(CORE_DIR)/Makefile.in-os
 
 ifeq ($(TARGET_OS),BSD)
 CC = cc
 CXX = c++
-PLAT_INCL = -I/usr/local/include
-PLAT_LFLAGS = -L/usr/local/lib -lthr
+PLAT_INCS = -I/usr/local/include
+PLAT_LDFLAGS = -L/usr/local/lib
+PLAT_LIBS = -lthr
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
-PLAT_LFLAGS = -lXext -lm -lpthread
+PLAT_LDFLAGS = -lm -lpthread
 .LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
-PLAT_LFLAGS = -lXext -lXmu -lXt -lm -lpthread
+PLAT_LIBS = -lm -lpthread
 endif
 ifeq ($(TARGET_OS),OSX)
-PLAT_INCL = -I/opt/X11/include
-PLAT_LFLAGS = -L/usr/local/lib -L/opt/X11/lib
+PLAT_INCS = -I/opt/X11/include
+PLAT_LDFLAGS = -L/usr/local/lib -L/opt/X11/lib
 .LIBPATTERNS += lib%.dylib
 endif
 ###
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCL = -iquote . -I$(DIR_CORE) -I$(DIR_IO) -I$(DIR_FP) -I$(DIR_NET) -I$(DIR_CIV:=/include) $(PLAT_INCL)
-DEFS = -DCONFDIR=\"$(CONF)\" -DDISKSDIR=\"$(DISKS)\" -DBOOTROM=\"$(ROM)\"
+INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) -I$(CIV_DIR:=/include) $(PLAT_INCS)
+DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" -DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
+
+CWARNS = -Wall -Wextra -Wwrite-strings
+CXXWARNS = -Wall -Wextra
 
 # Production - the default
-CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCL)
+CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
+CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
 
 # Development - use `MODE=DEV make build`
-ifeq ($(MODE), DEV)
-CFLAGS = -O3 -c -Wall -Wextra -Wwrite-strings $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCL)
+ifeq ($(MODE),DEV)
+CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
+CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
-CFLAGS = -O -g -c $(PLAT_CFLAGS) $(DEFS) $(INCL)
+CFLAGS = -O -g $(PLAT_CFLAGS) $(DEFS) $(INCS)
+CXXFLAGS = -O -g $(PLAT_CXXFLAGS) $(DEFS) $(INCS)
 endif
 
-LFLAGS = -L$(DIR_FP) -L$(DIR_CIV) $(SRC_LIBS) \
-	-ljpeg -lGL -lGLU -lX11 \
-	$(PLAT_LFLAGS)
+LDFLAGS = -L$(FP_DIR) -L$(CIV_DIR) $(PLAT_LDFLAGS) $(MACHINE_LIBS) \
+	  $(FP_LDFLAGS) -lX11 $(PLAT_LIBS)
 
 # core system source files for the CPU simulation - only change if the core changes
-SRC_CORE = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simfun.c simglb.c simint.c
-SRC = $(SRC_CORE) $(SRC_MACHINE) $(SRC_IO)
-OBJ = $(SRC:.c=.o)
+CORE_SRCS = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simdis.c simfun.c simglb.c simice.c simint.c
+SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
+XXSRCS = $(FP_SRCS)
+OBJS = $(SRCS:.c=.o) $(XXSRCS:.cpp=.o)
 
-all : $(SIM)
+all: $(SIM)
 	@echo
 	@echo "Done."
 	@echo
 
-$(SIM) : $(OBJ) $(SRC_LIBS)
-	$(CXX) $(OBJ) $(LFLAGS) -o $@
+$(SIM): $(OBJS) $(MACHINE_LIBS)
+	$(CCLD) $(OBJS) $(LDFLAGS) -o $@
 
-%.d : %.c
+%.d: %.c
 	@$(CC) -MM $(CFLAGS) $< > $@
 
--include $(SRC:.c=.d)
+%.d: %.cpp
+	@$(CXX) -MM $(CXXFLAGS) $< > $@
 
--lcivetweb: $(DIR_CIV:=/Makefile)
-	make -B -C $(DIR_CIV)
+-include $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
+
+-lcivetweb: $(CIV_DIR:=/Makefile)
+	make -B -C $(CIV_DIR)
 
 build: _rm_obj all
 
@@ -123,7 +153,7 @@ install:
 	@echo Waiting to be written...
 	@echo
 
-clean : _rm_obj _rm_deps
+clean: _rm_obj _rm_deps
 
 _rm_obj:
 	rm -f *.o
@@ -134,8 +164,8 @@ _rm_deps:
 allclean: clean
 	rm -f $(EXEC)
 	rm -f ../disks/drive*.dsk
-	rm -f ../printer.txt
+	rm -f ../lpt[12].txt
 
-#test : ; @echo $(DIR_ROOT)
+#test: ; @echo $(ROOT_DIR)
 
-.PHONY : all build install clean allclean
+.PHONY: all build install clean allclean

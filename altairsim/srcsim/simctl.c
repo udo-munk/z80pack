@@ -52,8 +52,8 @@ extern void reset_cpu(void), reset_io(void);
 
 static const char *TAG = "system";
 
-#ifdef FRONTPANEL
 int  boot_switch;		/* boot address for switch */
+#ifdef FRONTPANEL
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;
@@ -61,8 +61,9 @@ static BYTE power_switch = 1;
 static int power;
 #endif
 
-static void run_cpu(void), step_cpu(void);
+static void run_cpu(void);
 #ifdef FRONTPANEL
+static void step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
 static void examine_clicked(int, int), deposit_clicked(int, int);
@@ -273,6 +274,7 @@ void run_cpu(void)
 	report_error();
 }
 
+#ifdef FRONTPANEL
 /*
  *	Step CPU
  */
@@ -292,7 +294,6 @@ void step_cpu(void)
 	report_error();
 }
 
-#ifdef FRONTPANEL
 /*
  *	Callback for RUN/STOP switch
  */

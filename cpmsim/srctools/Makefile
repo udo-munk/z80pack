@@ -7,7 +7,8 @@ INSTALLDIR=${HOME}/bin
 #CC = cc
 CC = gcc
 
-CFLAGS= -O3 -Wall -Wextra -Wwrite-strings
+CWARNS= -Wall -Wextra -Wwrite-strings
+CFLAGS= -O3 $(CWARNS)
 
 all: test mkdskimg bin2hex send receive ptp2bin
 	@echo

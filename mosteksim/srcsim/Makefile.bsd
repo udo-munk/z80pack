@@ -1,14 +1,14 @@
-# Makefile pre-configured for Windows/Cygwin
+# Makefile pre-configured for BSD
 
 ###
 ### START MACHINE DEPENDANT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
-MACHINE = z80
+MACHINE = mostek
 # machine specific system object files
 MACHINE_OBJS = config.o iosim.o memory.o simctl.o
 # machine specific I/O object files
-IO_OBJS =
+IO_OBJS = simbdos.o unix_terminal.o mostek-cpu.o mostek-fdc.o
 #machine specifc libraries
 MACHINE_LIBS =
 
@@ -25,7 +25,11 @@ HTMLDIR = $(DOCDIR)
 INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
 LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
-# ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
+ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
+# system wide location for machines configuration files
+CONF_DIR = $(ROOT_DIR)/conf
+# system wide location for disk images
+DISKS_DIR = $(ROOT_DIR)/disks
 ###
 ### END MACHINE DEPENDANT VARIABLES
 ###
@@ -33,12 +37,13 @@ LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 SIM = ../$(MACHINE)sim
 
 CORE_DIR = ../../z80core
+IO_DIR = ../../iodevices
 
 ###
 ### START O/S PLATFORM DEPENDANT VARIABLES
 ###
-CC = gcc
-EXEC = $(SIM).exe
+CC = cc
+EXEC = $(SIM)
 PLAT_INCS =
 PLAT_LDFLAGS =
 PLAT_LIBS =
@@ -46,7 +51,7 @@ PLAT_LIBS =
 ### END O/S DEPENDANT VARIABLES
 ###
 
-INCS = -I. -I$(CORE_DIR) $(PLAT_INCS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 DEFS =
 
 CWARNS = -Wall -Wextra -Wwrite-strings
@@ -137,11 +142,27 @@ simint.o: $(CORE_DIR)/simint.c sim.h $(CORE_DIR)/simglb.h
 config.o: config.c
 	$(CC) $(CFLAGS) -c config.c
 
-iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h
+iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
+	 $(IO_DIR)/simbdos.h $(IO_DIR)/mostek-cpu.h \
+	 $(IO_DIR)/mostek-fdc.h
 	$(CC) $(CFLAGS) -c iosim.c
 
-memory.o: memory.c sim.h
+memory.o: memory.c sim.h $(CORE_DIR)/simglb.h memory.h
 	$(CC) $(CFLAGS) -c memory.c
 
-simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h
+simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h $(IO_DIR)/unix_terminal.h \
+	  $(IO_DIR)/mostek-fdc.h
 	$(CC) $(CFLAGS) -c simctl.c
+
+simbdos.o: $(IO_DIR)/simbdos.c sim.h $(CORE_DIR)/simglb.h memory.h
+	$(CC) $(CFLAGS) -c $(IO_DIR)/simbdos.c
+
+unix_terminal.o: $(IO_DIR)/unix_terminal.c
+	$(CC) $(CFLAGS) -c $(IO_DIR)/unix_terminal.c
+
+mostek-cpu.o: $(IO_DIR)/mostek-cpu.c $(IO_DIR)/unix_terminal.h sim.h \
+	      $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c $(IO_DIR)/mostek-cpu.c
+
+mostek-fdc.o: $(IO_DIR)/mostek-fdc.c sim.h $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c $(IO_DIR)/mostek-fdc.c
