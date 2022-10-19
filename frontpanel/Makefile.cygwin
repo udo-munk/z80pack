@@ -14,14 +14,14 @@ CXX = g++
 INCS =
 DEFS =
 
-CXXWARN = -Wall -Wextra
+CXXWARNS = -Wall -Wextra
 COMMON = $(INCS) $(DEFS)
 
 # Development
-#CXXFLAGS = -O3 $(CXXWARN) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(COMMON)
+#CXXFLAGS = -O3 $(CXXWARNS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(COMMON)
 
 # Production
-CXXFLAGS = -O3 $(CXXWARN) -U_FORTIFY_SOURCE $(COMMON)
+CXXFLAGS = -O3 $(CXXWARNS) -U_FORTIFY_SOURCE $(COMMON)
 
 $(LIB): $(OBJS)
 	rm -f $@
