@@ -58,7 +58,9 @@ static int reset;
 static int power;
 #endif
 
+#if defined(FRONTPANEL) || !defined(WANT_ICE)
 static void run_cpu(void);
+#endif
 #ifdef FRONTPANEL
 static void step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
@@ -271,6 +273,7 @@ void report_error(void)
 	}
 }
 
+#if defined(FRONTPANEL) || !defined(WANT_ICE)
 /*
  *	Run CPU
  */
@@ -288,6 +291,7 @@ void run_cpu(void)
 	}
 	report_error();
 }
+#endif
 
 #ifdef FRONTPANEL
 /*
