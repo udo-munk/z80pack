@@ -33,16 +33,16 @@ endif
 CXXWARNS = -Wall -Wextra
 
 # Production - the default
-CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE
+CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE $(PLAT_INCS)
 
 # Development - use `MODE=DEV make build`
 ifeq ($(MODE),DEV)
-CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2
+CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(PLAT_INCS)
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
-CXXFLAGS = -O -g $(PLAT_CXXFLAGS)
+CXXFLAGS = -O -g $(PLAT_CXXFLAGS) $(PLAT_INCS)
 endif
 
 OBJS = $(SRCS:.cpp=.o)
