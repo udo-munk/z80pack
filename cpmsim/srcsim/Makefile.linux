@@ -1,7 +1,7 @@
 # Makefile pre-configured for Linux
 
 ###
-### START MACHINE DEPENDANT VARIABLES
+### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = cpm
@@ -31,7 +31,7 @@ CONF_DIR = $(ROOT_DIR)/conf
 # system wide location for disk images
 DISKS_DIR = $(ROOT_DIR)/disks
 ###
-### END MACHINE DEPENDANT VARIABLES
+### END MACHINE DEPENDENT VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
@@ -40,19 +40,16 @@ CORE_DIR = ../../z80core
 IO_DIR = ../../iodevices
 
 ###
-### START O/S PLATFORM DEPENDANT VARIABLES
+### START O/S PLATFORM DEPENDENT VARIABLES
 ###
 CC = gcc
 EXEC = $(SIM)
-PLAT_INCS =
-PLAT_LDFLAGS =
-PLAT_LIBS =
 ###
-### END O/S DEPENDANT VARIABLES
+### END O/S DEPENDENT VARIABLES
 ###
 
-INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\"
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 
 CWARNS = -Wall -Wextra -Wwrite-strings
 

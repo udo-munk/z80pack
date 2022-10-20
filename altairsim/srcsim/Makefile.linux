@@ -1,7 +1,7 @@
 # Makefile pre-configured for Linux
 
 ###
-### START MACHINE DEPENDANT VARIABLES
+### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = altair
@@ -43,7 +43,7 @@ DISKS_DIR = $(ROOT_DIR)/disks
 # default boot ROM path
 ROMS_DIR = $(ROOT_DIR)/roms
 ###
-### END MACHINE DEPENDANT VARIABLES
+### END MACHINE DEPENDENT VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
@@ -53,20 +53,18 @@ IO_DIR = ../../iodevices
 FP_DIR = ../../frontpanel
 
 ###
-### START O/S PLATFORM DEPENDANT VARIABLES
+### START O/S PLATFORM DEPENDENT VARIABLES
 ###
 CC = gcc
 CXX = g++
 EXEC = $(SIM)
-PLAT_INCS =
-PLAT_LDFLAGS =
 PLAT_LIBS = -lm -lpthread
 ###
-### END O/S DEPENDANT VARIABLES
+### END O/S DEPENDENT VARIABLES
 ###
 
-INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS)
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" -DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS)
 
 CWARNS = -Wall -Wextra -Wwrite-strings
 CXXWARNS = -Wall -Wextra

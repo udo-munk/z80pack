@@ -1,5 +1,5 @@
 ###
-### START MACHINE DEPENDANT VARIABLES
+### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = mostek
@@ -25,48 +25,39 @@ LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
 #ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
 ###
-### END MACHINE DEPENDANT VARIABLES
+### END MACHINE DEPENDENT VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
-EXEC = $(SIM)
 
 CORE_DIR = ../../z80core
 IO_DIR = ../../iodevices
 
 VPATH = $(CORE_DIR) $(IO_DIR)
-CC = gcc
 
 ###
-### START O/S PLATFORM DEPENDANT VARIABLES
+### START O/S PLATFORM DEPENDENT VARIABLES
 ###
 include $(CORE_DIR)/Makefile.in-os
 
+CC = gcc
+EXEC = $(SIM)
 ifeq ($(TARGET_OS),BSD)
 CC = cc
-PLAT_INCS =
-PLAT_LDFLAGS =
-PLAT_LIBS =
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
-PLAT_LDFLAGS =
-.LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
-PLAT_LIBS =
 endif
 ifeq ($(TARGET_OS),OSX)
-PLAT_INCS =
-PLAT_LDFLAGS =
-.LIBPATTERNS += lib%.dylib
 endif
 ###
-### END O/S DEPENDANT VARIABLES
+### END O/S DEPENDENT VARIABLES
 ###
 
-INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 DEFS =
+INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 
 CWARNS = -Wall -Wextra -Wwrite-strings
 

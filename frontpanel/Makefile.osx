@@ -5,27 +5,46 @@ LIB = libfrontpanel.a
 SRCS = jpeg.cpp lpanel.cpp lp_gfx.cpp lp_main.cpp lp_utils.cpp lp_window.cpp \
 	lp_switch.cpp lp_font.cpp lp_materials.cpp
 
-OBJS = $(SRCS:.cpp=.o)
-
+###
+### START O/S PLATFORM DEPENDENT VARIABLES
+###
 CXX = g++
-
-# compiler switches
-
-INCS = -I/opt/X11/include -I/usr/local/include
-DEFS =
+PLAT_INCS = -I/opt/X11/include -I/usr/local/include
+###
+### END O/S DEPENDENT VARIABLES
+###
 
 CXXWARNS = -Wall -Wextra
-COMMON = $(INCS) $(DEFS)
 
 # Development
-#CXXFLAGS = -O3 $(CXXWARNS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(COMMON)
+#CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(PLAT_INCS)
 
 # Production
-CXXFLAGS = -O3 $(CXXWARNS) -U_FORTIFY_SOURCE $(COMMON)
+CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE $(PLAT_INCS)
+
+# Debug
+#CXXFLAGS = -O -g $(PLAT_CXXFLAGS) $(PLAT_INCS)
+
+OBJS = $(SRCS:.cpp=.o)
+
+all: $(LIB)
+	@echo
+	@echo "Done."
+	@echo
 
 $(LIB): $(OBJS)
-	rm -f $@
+	@rm -f $@
 	ar cq $@ $(OBJS)
+
+build: _rm_obj all
+
+clean: _rm_obj
+
+_rm_obj:
+	rm -f *.o
+
+allclean: clean
+	rm -f $(LIB)
 
 jpeg.o: jpeg.cpp cdjpeg.h
 	$(CXX) $(CXXFLAGS) -c jpeg.cpp -o jpeg.o
@@ -53,11 +72,3 @@ lp_window.o: lp_window.cpp lpanel.h
 
 lp_materials.o: lp_materials.cpp lp_materials.h
 	$(CXX) $(CXXFLAGS) -c lp_materials.cpp -o lp_materials.o
-
-clean:
-	rm -f *.o
-
-allclean: clean
-	rm -f $(LIB)
-
-all: clean $(LIB)

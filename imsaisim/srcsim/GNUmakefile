@@ -1,5 +1,5 @@
 ###
-### START MACHINE DEPENDANT VARIABLES
+### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = imsai
@@ -33,7 +33,7 @@ DISKS_DIR = $(ROOT_DIR)/disks
 # default boot ROM path
 ROMS_DIR = $(ROOT_DIR)/roms
 ###
-### END MACHINE DEPENDANT VARIABLES
+### END MACHINE DEPENDENT VARIABLES
 ###
 
 ###
@@ -57,7 +57,6 @@ endif
 ###
 
 SIM = ../$(MACHINE)sim
-EXEC = $(SIM)
 
 CORE_DIR = ../../z80core
 IO_DIR = ../../iodevices
@@ -66,14 +65,15 @@ NET_DIR = ../../webfrontend
 CIV_DIR = $(NET_DIR:=/civetweb)
 
 VPATH = $(CORE_DIR) $(IO_DIR) $(IO_DIR:=/apu) $(FP_DIR) $(NET_DIR) $(CIV_DIR)
-CC = gcc
-CXX = g++
 
 ###
-### START O/S PLATFORM DEPENDANT VARIABLES
+### START O/S PLATFORM DEPENDENT VARIABLES
 ###
 include $(CORE_DIR)/Makefile.in-os
 
+CC = gcc
+CXX = g++
+EXEC = $(SIM)
 ifeq ($(TARGET_OS),BSD)
 CC = cc
 CXX = c++
@@ -84,7 +84,6 @@ endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
 PLAT_LDFLAGS = -lm -lpthread
-.LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
 PLAT_LIBS = -lm -lpthread
@@ -92,14 +91,13 @@ endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCS = -I/opt/X11/include
 PLAT_LDFLAGS = -L/usr/local/lib -L/opt/X11/lib
-.LIBPATTERNS += lib%.dylib
 endif
 ###
-### END O/S DEPENDANT VARIABLES
+### END O/S DEPENDENT VARIABLES
 ###
 
-INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) -I$(CIV_DIR:=/include) $(PLAT_INCS)
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" -DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
+INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) -I$(CIV_DIR:=/include) $(PLAT_INCS)
 
 CWARNS = -Wall -Wextra -Wwrite-strings
 CXXWARNS = -Wall -Wextra

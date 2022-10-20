@@ -1,7 +1,7 @@
 # Makefile pre-configured for macOS
 
 ###
-### START MACHINE DEPENDANT VARIABLES
+### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = cromemco
@@ -43,7 +43,7 @@ DISKS_DIR = $(ROOT_DIR)/disks
 # default boot ROM path
 ROMS_DIR = $(ROOT_DIR)/roms
 ###
-### END MACHINE DEPENDANT VARIABLES
+### END MACHINE DEPENDENT VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
@@ -55,20 +55,19 @@ NET_DIR = ../../webfrontend
 CIV_DIR = $(NET_DIR)/civetweb
 
 ###
-### START O/S PLATFORM DEPENDANT VARIABLES
+### START O/S PLATFORM DEPENDENT VARIABLES
 ###
 CC = gcc
 CXX = g++
 EXEC = $(SIM)
 PLAT_INCS = -I/opt/X11/include
 PLAT_LDFLAGS = -L/usr/local/lib -L/opt/X11/lib
-PLAT_LIBS =
 ###
-### END O/S DEPENDANT VARIABLES
+### END O/S DEPENDENT VARIABLES
 ###
 
-INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) -I$(CIV_DIR)/include $(PLAT_INCS)
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" -DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) -I$(CIV_DIR)/include $(PLAT_INCS)
 
 CWARNS = -Wall -Wextra -Wwrite-strings
 CXXWARNS = -Wall -Wextra
