@@ -38,8 +38,6 @@
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
 
-#define BUS_8080	/* emulate 8080 bus status for front panel */
-
 #define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
@@ -85,6 +83,10 @@
 #define CPU_STACK	4
 #define CPU_WO		2
 #define CPU_INTA	1
+
+#ifdef FRONTPANEL
+#define BUS_8080			/* emulate 8080 bus status */
+#endif
 
 					/* operation of simulated CPU */
 #define STOPPED		0		/* stopped */

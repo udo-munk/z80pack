@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2016-2021 Udo Munk
+ * Copyright (C) 2016-2022 Udo Munk
  * Copyright (C) 2021 David McNaughton
  *
  * This module implements memory management for a Cromemco Z-1 system
@@ -79,7 +79,9 @@ static inline void memwrt(WORD addr, BYTE data)
 {
 	register int i;
 
+#ifdef BUS_8080
 	cpu_bus &= ~(CPU_WO | CPU_MEMR);
+#endif
 
 #ifdef FRONTPANEL
 	fp_clock++;
@@ -108,7 +110,9 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
+#ifdef BUS_8080
 	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
 
 #ifdef FRONTPANEL
 	fp_clock++;

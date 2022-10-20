@@ -737,7 +737,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
 
+#ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
+#endif
 
 #ifdef FRONTPANEL
 	fp_clock += 3;
@@ -768,7 +770,9 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	io_data = data;
 	(*port_out[addrl]) (data);
 
+#ifdef BUS_8080
 	cpu_bus = CPU_OUT;
+#endif
 
 #ifdef FRONTPANEL
 	fp_clock += 6;

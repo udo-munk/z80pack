@@ -33,10 +33,10 @@
 #define CPU_SPEED 4	/* default CPU speed */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
-#define BUS_8080	/* emulate 8080 bus status for front panel */
 
 #define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */
 #define HAS_DISKS	/* uses disk images */
@@ -102,6 +102,10 @@
 #define CPU_STACK	4
 #define CPU_WO		2
 #define CPU_INTA	1
+
+#ifdef FRONTPANEL
+#define BUS_8080			/* emulate 8080 bus status */
+#endif
 
 					/* operation of simulated CPU */
 #define STOPPED		0		/* stopped */
