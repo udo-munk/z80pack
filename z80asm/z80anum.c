@@ -63,8 +63,8 @@ extern struct sym *get_sym(char *);
 #define T_AND		21	/* AND or & */
 #define T_XOR		22	/* XOR */
 #define T_OR		23	/* OR or | */
-#define T_LPAREN	24	/* (, [ or { */
-#define T_RPAREN	25	/* ), ] or } */
+#define T_LPAREN	24	/* ( */
+#define T_RPAREN	25	/* ) */
 
 /*
  *	structure operator table
@@ -253,13 +253,9 @@ int get_token(void)
 		tok_type = T_AND;
 		break;
 	case '(':
-	case '[':
-	case '{':
 		tok_type = T_LPAREN;
 		break;
 	case ')':
-	case ']':
-	case '}':
 		tok_type = T_RPAREN;
 		break;
 	case '*':
