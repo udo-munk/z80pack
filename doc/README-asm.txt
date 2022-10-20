@@ -142,30 +142,11 @@ PRINT   <'string'>      - print string to stdout
 ASEG                    - does nothing (like its alias ABS)
 
 
-Operator precedence for the parser from Thomas Eberhardt:
+Precedeuce for expression operators:
 
-() [] {}
+()
 unary + - ~ NOT HIGH LOW NUL TYPE
 * / MOD SHR >> SHL <<
 + -
 EQ = == NE <> != LT < LE <= GT > GE >=
 AND & XOR OR |
-
-(% for MOD, ^ for XOR, < for SHL, and > for SHR are no longer valid)
-
-
-Operator precedence for the (old) node based parser from Didier Derny:
-
-()
-unary + - ~
-* / %
-+ -
-< >
-&
-^
-|
-
-
-Operator precedence for my (original) recursive parser:
-
-()
