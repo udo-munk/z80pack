@@ -9,7 +9,7 @@ FRONTPANEL = YES
 MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-dazzler.c proctec-vdm.c tarbell_fdc.c altair-88-dcdd.c altair-88-sio.c altair-88-2sio.c unix_terminal.c unix_network.c simbdos.c
-#machine specifc libraries
+# machine specifc libraries
 MACHINE_LIBS =
 
 # Installation directories by convention
@@ -161,10 +161,31 @@ _rm_deps:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f ../disks/drive*.dsk
-	rm -f ../disks/mits_*.dsk
+	rm -f ../disks/drive[abcd].dsk
+	rm -f ../disks/mits_[abcd].dsk
 	rm -f ../printer.txt
 
-#test: ; @echo $(ROOT_DIR)
+makerules:
+	@echo "# AUTOMATICALLY GENERATED DO NOT EDIT" >tmp.rules
+	@echo >>tmp.rules;
+	@for i in *.d; do \
+		sed -e 's;$(CORE_DIR);$$(CORE_DIR);g' -e 's;$(IO_DIR);$$(IO_DIR);g' \
+			-e 's;$(FP_DIR);$$(FP_DIR);g' <$$i >tmp.deps; \
+		cat tmp.deps >>tmp.rules; \
+		f=`sed 's/.*: \([^ ]*\).*/\1/;2,$$d' tmp.deps`; \
+		if grep -q '\.cpp' tmp.deps; then \
+			echo '	$$(CXX) $$(CXXFLAGS) -c -o $$@' $$f >>tmp.rules; \
+		else \
+			echo '	$$(CC) $$(CFLAGS) -c -o $$@' $$f >>tmp.rules; \
+		fi ; \
+		echo >>tmp.rules; \
+	done
+	@echo '# DO NOT PUT ANYTHING AFTER THIS LINE' >>tmp.rules;
+	@for i in Makefile.*; do \
+		sed '/^# AUTOMATICALLY GENERATED DO NOT EDIT/,$$d' <$$i >tmp.make; \
+		cat tmp.rules >>tmp.make; \
+		mv -f tmp.make $$i; \
+	done
+	@rm -f tmp.rules tmp.deps tmp.make
 
-.PHONY: all build install clean allclean
+.PHONY: all build install clean allclean makerules

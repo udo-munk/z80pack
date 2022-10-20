@@ -70,4 +70,25 @@ _rm_deps:
 allclean: clean
 	rm -f $(LIB)
 
-.PHONY: all build clean allclean
+makerules:
+	@echo "# AUTOMATICALLY GENERATED DO NOT EDIT" >tmp.rules
+	@echo >>tmp.rules;
+	@for i in *.d; do \
+		cat $$i >>tmp.rules; \
+		f=`sed 's/.*: \([^ ]*\).*/\1/;2,$$d' $$i`; \
+		if grep -q '\.cpp' $$i; then \
+			echo '	$$(CXX) $$(CXXFLAGS) -c -o $$@' $$f >>tmp.rules; \
+		else \
+			echo '	$$(CC) $$(CFLAGS) -c -o $$@' $$f >>tmp.rules; \
+		fi ; \
+		echo >>tmp.rules; \
+	done
+	@echo '# DO NOT PUT ANYTHING AFTER THIS LINE' >>tmp.rules;
+	@for i in Makefile.*; do \
+		sed '/^# AUTOMATICALLY GENERATED DO NOT EDIT/,$$d' <$$i >tmp.make; \
+		cat tmp.rules >>tmp.make; \
+		mv -f tmp.make $$i; \
+	done
+	@rm -f tmp.rules tmp.make
+
+.PHONY: all build clean allclean makerules
