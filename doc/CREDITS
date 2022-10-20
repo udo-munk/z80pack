@@ -36,8 +36,10 @@ improvements and helpful feedback.
 
 David McNaughton <dave@mackeneight.net>
 
-For building the IMSAI 8080esp replica kit and numerous
-additions and improvements.
+For building the IMSAI 8080 and Cromemco Z-1 8080esp replica kits.
+For adding a web based GUI to the IMSAI and Cromemco emulations.
+For adding diskmanager, HAL, generic AT modem emulation to the
+IMSAI and Cromemco emulations.
 
 
 Mike Douglas <deramp5113@yahoo.com>
