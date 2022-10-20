@@ -45,29 +45,37 @@ _rm_obj:
 allclean: clean
 	rm -f $(LIB)
 
-jpeg.o: jpeg.cpp cdjpeg.h
-	$(CXX) $(CXXFLAGS) -c jpeg.cpp -o jpeg.o
+# AUTOMATICALLY GENERATED DO NOT EDIT
 
-lpanel.o: lpanel.cpp lpanel.h lp_utils.h
-	$(CXX) $(CXXFLAGS) -c lpanel.cpp -o lpanel.o
+jpeg.o: jpeg.cpp cdjpeg.h jinclude.h cderror.h
+	$(CXX) $(CXXFLAGS) -c -o $@ jpeg.cpp
 
 lp_font.o: lp_font.cpp lp_font.h
-	$(CXX) $(CXXFLAGS) -c lp_font.cpp -o lp_font.o
+	$(CXX) $(CXXFLAGS) -c -o $@ lp_font.cpp
 
-lp_gfx.o: lp_gfx.cpp lpanel.h lp_utils.h jpeg.h
-	$(CXX) $(CXXFLAGS) -c lp_gfx.cpp -o lp_gfx.o
+lp_gfx.o: lp_gfx.cpp lpanel.h lp_gfx.h lp_switch.h lp_utils.h \
+ lp_materials.h jpeg.h
+	$(CXX) $(CXXFLAGS) -c -o $@ lp_gfx.cpp
 
-lp_main.o: lp_main.cpp lp_main.h lpanel.h lp_utils.h
-	$(CXX) $(CXXFLAGS) -c lp_main.cpp -o lp_main.o
-
-lp_switch.o: lp_switch.cpp lpanel.h lp_switch.h lp_utils.h
-	$(CXX) $(CXXFLAGS) -c lp_switch.cpp -o lp_switch.o
-
-lp_utils.o: lp_utils.cpp lp_utils.h
-	$(CXX) $(CXXFLAGS) -c lp_utils.cpp -o lp_utils.o
-
-lp_window.o: lp_window.cpp lpanel.h
-	$(CXX) $(CXXFLAGS) -c lp_window.cpp -o lp_window.o
+lp_main.o: lp_main.cpp lpanel.h lp_gfx.h lp_switch.h lp_main.h \
+ frontpanel.h lp_utils.h
+	$(CXX) $(CXXFLAGS) -c -o $@ lp_main.cpp
 
 lp_materials.o: lp_materials.cpp lp_materials.h
-	$(CXX) $(CXXFLAGS) -c lp_materials.cpp -o lp_materials.o
+	$(CXX) $(CXXFLAGS) -c -o $@ lp_materials.cpp
+
+lp_switch.o: lp_switch.cpp lpanel.h lp_gfx.h lp_switch.h lp_utils.h
+	$(CXX) $(CXXFLAGS) -c -o $@ lp_switch.cpp
+
+lp_utils.o: lp_utils.cpp lp_utils.h
+	$(CXX) $(CXXFLAGS) -c -o $@ lp_utils.cpp
+
+lp_window.o: lp_window.cpp lpanel.h lp_gfx.h lp_switch.h lp_materials.h \
+ lp_font.h
+	$(CXX) $(CXXFLAGS) -c -o $@ lp_window.cpp
+
+lpanel.o: lpanel.cpp lp_utils.h lp_materials.h lpanel.h lp_gfx.h \
+ lp_switch.h lpanel_data.h
+	$(CXX) $(CXXFLAGS) -c -o $@ lpanel.cpp
+
+# DO NOT PUT ANYTHING AFTER THIS LINE

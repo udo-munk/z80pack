@@ -19,7 +19,7 @@ CCLD = $(CXX)
 MACHINE_OBJS = config.o iosim.o memory.o simctl.o
 # machine specific I/O object files
 IO_OBJS = cromemco-wdi.o cromemco-d+7a.o cromemco-dazzler.o cromemco-fdc.o cromemco-tu-art.o cromemco-hal.o unix_terminal.o unix_network.o simbdos.o netsrv.o generic-at-modem.o libtelnet.o diskmanager.o
-#machine specifc libraries
+# machine specifc libraries
 MACHINE_LIBS = -lcivetweb
 
 # Installation directories by convention
@@ -113,111 +113,142 @@ _rm_obj:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f ../disks/drive*.dsk
+	rm -f ../disks/drive[abcd].dsk
 	rm -f ../lpt[12].txt
 
-#test: ; @echo $(ROOT_DIR)
+# AUTOMATICALLY GENERATED DO NOT EDIT
+
+config.o: config.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
+ $(FP_DIR)/frontpanel.h memory.h
+	$(CC) $(CFLAGS) -c -o $@ config.c
+
+cromemco-d+7a.o: $(IO_DIR)/cromemco-d+7a.c sim.h \
+ $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/cromemco-d+7a.c
+
+cromemco-dazzler.o: $(IO_DIR)/cromemco-dazzler.c sim.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/cromemco-dazzler.c
+
+cromemco-fdc.o: $(IO_DIR)/cromemco-fdc.c sim.h \
+ $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h config.h \
+ $(IO_DIR)/cromemco-fdc.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/cromemco-fdc.c
+
+cromemco-hal.o: $(IO_DIR)/cromemco-hal.c sim.h \
+ $(CORE_DIR)/simglb.h $(IO_DIR)/unix_terminal.h \
+ $(IO_DIR)/unix_network.h $(CORE_DIR)/log.h \
+ $(IO_DIR)/cromemco-hal.h $(IO_DIR)/generic-at-modem.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/cromemco-hal.c
+
+cromemco-tu-art.o: $(IO_DIR)/cromemco-tu-art.c sim.h \
+ $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
+ $(IO_DIR)/unix_terminal.h $(IO_DIR)/unix_network.h \
+ $(IO_DIR)/cromemco-hal.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/cromemco-tu-art.c
+
+cromemco-wdi.o: $(IO_DIR)/cromemco-wdi.c sim.h \
+ $(CORE_DIR)/simglb.h memory.h $(FP_DIR)/frontpanel.h \
+ $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/cromemco-wdi.c
+
+diskmanager.o: $(IO_DIR)/diskmanager.c sim.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/diskmanager.c
 
 fpmain.o: $(CORE_DIR)/fpmain.cpp
-	$(CXX) $(CXXFLAGS) -c $(CORE_DIR)/fpmain.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $(CORE_DIR)/fpmain.cpp
 
-sim0.o: $(CORE_DIR)/sim0.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim0.c
+generic-at-modem.o: $(IO_DIR)/generic-at-modem.c \
+ $(IO_DIR)/libtelnet.h $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/generic-at-modem.c
 
-sim1.o: $(CORE_DIR)/sim1.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim1.c
+iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h $(IO_DIR)/simbdos.h \
+ $(IO_DIR)/unix_network.h $(IO_DIR)/cromemco-tu-art.h \
+ $(IO_DIR)/generic-at-modem.h $(IO_DIR)/cromemco-fdc.h \
+ $(IO_DIR)/cromemco-dazzler.h $(IO_DIR)/cromemco-d+7a.h \
+ $(FP_DIR)/frontpanel.h memory.h config.h $(CORE_DIR)/log.h \
+ $(IO_DIR)/cromemco-hal.h $(IO_DIR)/cromemco-wdi.h
+	$(CC) $(CFLAGS) -c -o $@ iosim.c
 
-sim1a.o: $(CORE_DIR)/sim1a.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim1a.c
+libtelnet.o: $(IO_DIR)/libtelnet.c $(IO_DIR)/libtelnet.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/libtelnet.c
 
-sim2.o: $(CORE_DIR)/sim2.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim2.c
+memory.o: memory.c sim.h $(CORE_DIR)/simglb.h \
+ $(FP_DIR)/frontpanel.h memory.h $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ memory.c
 
-sim3.o: $(CORE_DIR)/sim3.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim3.c
+netsrv.o: $(NET_DIR)/netsrv.c sim.h $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c -o $@ $(NET_DIR)/netsrv.c
 
-sim4.o: $(CORE_DIR)/sim4.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim4.c
+sim0.o: $(CORE_DIR)/sim0.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim0.c
 
-sim5.o: $(CORE_DIR)/sim5.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim5.c
+sim1.o: $(CORE_DIR)/sim1.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim1.c
 
-sim6.o: $(CORE_DIR)/sim6.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim6.c
+sim1a.o: $(CORE_DIR)/sim1a.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim1a.c
 
-sim7.o: $(CORE_DIR)/sim7.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/sim7.c
+sim2.o: $(CORE_DIR)/sim2.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim2.c
 
-simdis.o: $(CORE_DIR)/simdis.c sim.h $(CORE_DIR)/simglb.h config.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/simdis.c
+sim3.o: $(CORE_DIR)/sim3.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim3.c
 
-simfun.o: $(CORE_DIR)/simfun.c sim.h $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/simfun.c
+sim4.o: $(CORE_DIR)/sim4.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim4.c
 
-simglb.o: $(CORE_DIR)/simglb.c sim.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/simglb.c
+sim5.o: $(CORE_DIR)/sim5.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim5.c
 
-simice.o: $(CORE_DIR)/simice.c sim.h $(CORE_DIR)/simglb.h memory.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/simice.c
+sim6.o: $(CORE_DIR)/sim6.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim6.c
+
+sim7.o: $(CORE_DIR)/sim7.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim7.c
+
+simbdos.o: $(IO_DIR)/simbdos.c sim.h $(CORE_DIR)/simglb.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/simbdos.c
+
+simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(IO_DIR)/unix_terminal.h \
+ $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ simctl.c
+
+simdis.o: $(CORE_DIR)/simdis.c sim.h $(CORE_DIR)/simglb.h memory.h \
+ $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simdis.c
+
+simfun.o: $(CORE_DIR)/simfun.c sim.h $(CORE_DIR)/simglb.h memory.h \
+ $(FP_DIR)/frontpanel.h $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simfun.c
+
+simglb.o: $(CORE_DIR)/simglb.c sim.h $(CORE_DIR)/simglb.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simglb.c
+
+simice.o: $(CORE_DIR)/simice.c sim.h $(CORE_DIR)/simglb.h memory.h \
+ $(FP_DIR)/frontpanel.h
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simice.c
 
 simint.o: $(CORE_DIR)/simint.c sim.h $(CORE_DIR)/simglb.h
-	$(CC) $(CFLAGS) -c $(CORE_DIR)/simint.c
+	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simint.c
 
-config.o: config.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h memory.h
-	$(CC) $(CFLAGS) -c config.c
-
-iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h memory.h \
-	 $(IO_DIR)/simbdos.h
-	$(CC) $(CFLAGS) -c iosim.c
-
-memory.o: memory.c sim.h $(CORE_DIR)/simglb.h memory.h $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c memory.c
-
-simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h config.h memory.h $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c simctl.c
-
-simbdos.o: $(IO_DIR)/simbdos.c sim.h $(CORE_DIR)/simglb.h memory.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/simbdos.c
+unix_network.o: $(IO_DIR)/unix_network.c \
+ $(IO_DIR)/unix_network.h sim.h $(CORE_DIR)/log.h
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/unix_network.c
 
 unix_terminal.o: $(IO_DIR)/unix_terminal.c
-	$(CC) $(CFLAGS) -c $(IO_DIR)/unix_terminal.c
+	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/unix_terminal.c
 
-unix_network.o: $(IO_DIR)/unix_network.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/unix_network.c
-
-diskmanager.o: $(IO_DIR)/diskmanager.c sim.h $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/diskmanager.c
-
-cromemco-tu-art.o: $(IO_DIR)/cromemco-tu-art.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-tu-art.c
-
-cromemco-fdc.o: $(IO_DIR)/cromemco-fdc.c $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-fdc.c
-
-cromemco-wdi.o: $(IO_DIR)/cromemco-wdi.c sim.h $(CORE_DIR)/simglb.h memory.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-wdi.c
-
-cromemco-dazzler.o: $(IO_DIR)/cromemco-dazzler.c
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-dazzler.c
-
-cromemco-88ccc.o: $(IO_DIR)/cromemco-88ccc.c sim.h $(CORE_DIR)/simglb.h \
-		  config.h memory.h $(NET_DIR)/netsrv.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-88ccc.c
-
-cromemco-d+7a.o: $(IO_DIR)/cromemco-d+7a.c sim.h $(CORE_DIR)/simglb.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-d+7a.c
-
-cromemco-hal.o: $(IO_DIR)/cromemco-hal.c sim.h $(CORE_DIR)/simglb.h \
-		$(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/cromemco-hal.c
-
-netsrv.o: $(NET_DIR)/netsrv.c sim.h $(CORE_DIR)/simglb.h memory.h $(NET_DIR)/netsrv.h \
-	  $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(NET_DIR)/netsrv.c
-
-generic-at-modem.o: $(IO_DIR)/generic-at-modem.c $(IO_DIR)/libtelnet.h \
-		    $(CORE_DIR)/log.h
-	$(CC) $(CFLAGS) -c $(IO_DIR)/generic-at-modem.c
-
-libtelnet.o: $(IO_DIR)/libtelnet.c
-	$(CC) $(CFLAGS) -c $(IO_DIR)/libtelnet.c
+# DO NOT PUT ANYTHING AFTER THIS LINE
