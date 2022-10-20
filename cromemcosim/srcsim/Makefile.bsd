@@ -114,7 +114,7 @@ _rm_obj:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f ../disks/drive[abcd].dsk
+	rm -f ../disks/drive*.dsk
 	rm -f ../lpt[12].txt
 
 # AUTOMATICALLY GENERATED DO NOT EDIT

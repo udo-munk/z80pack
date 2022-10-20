@@ -166,7 +166,7 @@ _rm_deps:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f ../disks/drive[abcd].dsk
+	rm -f ../disks/drive*.dsk
 	rm -f ../printer.txt
 
 makerules:
