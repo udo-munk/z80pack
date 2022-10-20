@@ -174,8 +174,8 @@ makerules:
 	@echo >>tmp.rules;
 	@for i in *.d; do \
 		sed -e 's;$(CORE_DIR);$$(CORE_DIR);g' -e 's;$(IO_DIR);$$(IO_DIR);g' \
-			-e 's;$(FP_DIR);$$(FP_DIR);g' -e 's;$(NET_DIR);$$(NET_DIR);g' \
-			-e 's;$(CIV_DIR);$$(CIV_DIR);g' <$$i >tmp.deps; \
+			-e 's;$(FP_DIR);$$(FP_DIR);g' \-e 's;$(CIV_DIR);$$(CIV_DIR);g' \
+			-e 's;$(NET_DIR);$$(NET_DIR);g' <$$i >tmp.deps; \
 		cat tmp.deps >>tmp.rules; \
 		f=`sed 's/.*: \([^ ]*\).*/\1/;2,$$d' tmp.deps`; \
 		if grep -q '\.cpp' tmp.deps; then \
