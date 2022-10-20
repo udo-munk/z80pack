@@ -5,29 +5,25 @@ SRCS = jpeg.cpp lpanel.cpp lp_gfx.cpp lp_main.cpp lp_utils.cpp lp_window.cpp \
 
 CORE_DIR = ../z80core
 
-CXX = g++
-
 ###
-### START O/S PLATFORM DEPENDANT VARIABLES
+### START O/S PLATFORM DEPENDENT VARIABLES
 ###
 include $(CORE_DIR)/Makefile.in-os
 
+CXX = g++
 ifeq ($(TARGET_OS),BSD)
 CXX = c++
 PLAT_INCS = -I/usr/local/include
 endif
 ifeq ($(TARGET_OS),WIN32)
-EXEC := $(EXEC:=.exe)
-.LIBPATTERNS += lib%.dll.a
 endif
 ifeq ($(TARGET_OS),LINUX)
 endif
 ifeq ($(TARGET_OS),OSX)
 PLAT_INCS = -I/opt/X11/include
-.LIBPATTERNS += lib%.dylib
 endif
 ###
-### END O/S DEPENDANT VARIABLES
+### END O/S DEPENDENT VARIABLES
 ###
 
 CXXWARNS = -Wall -Wextra
@@ -53,7 +49,7 @@ all: $(LIB)
 	@echo
 
 $(LIB): $(OBJS)
-	rm -f $@
+	@rm -f $@
 	ar cq $@ $(OBJS)
 
 %.d: %.cpp

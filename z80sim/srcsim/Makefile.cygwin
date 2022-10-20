@@ -1,7 +1,7 @@
 # Makefile pre-configured for Windows/Cygwin
 
 ###
-### START MACHINE DEPENDANT VARIABLES
+### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
 MACHINE = z80
@@ -27,7 +27,7 @@ LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 
 # ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
 ###
-### END MACHINE DEPENDANT VARIABLES
+### END MACHINE DEPENDENT VARIABLES
 ###
 
 SIM = ../$(MACHINE)sim
@@ -35,19 +35,16 @@ SIM = ../$(MACHINE)sim
 CORE_DIR = ../../z80core
 
 ###
-### START O/S PLATFORM DEPENDANT VARIABLES
+### START O/S PLATFORM DEPENDENT VARIABLES
 ###
 CC = gcc
 EXEC = $(SIM).exe
-PLAT_INCS =
-PLAT_LDFLAGS =
-PLAT_LIBS =
 ###
-### END O/S DEPENDANT VARIABLES
+### END O/S DEPENDENT VARIABLES
 ###
 
-INCS = -I. -I$(CORE_DIR) $(PLAT_INCS)
 DEFS =
+INCS = -I. -I$(CORE_DIR) $(PLAT_INCS)
 
 CWARNS = -Wall -Wextra -Wwrite-strings
 
