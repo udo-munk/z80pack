@@ -19,10 +19,10 @@
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
-/*#define BUS_8080*/	/* no emulation of 8080 bus status */
 
 /*#define HAS_DISKS*/	/* not using standard disk define */
 /*#define HAS_CONFIG*/  /* not using standard config define */
@@ -47,7 +47,7 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2022 by Udo Munk"
 #define RELEASE	"1.38-dev"
 
 #define MAX_LFN		4096		/* maximum long file name length */
@@ -70,6 +70,9 @@
 #define CPU_STACK	4
 #define CPU_WO		2
 #define CPU_INTA	1
+
+/*#define BUS_8080*/	/* no emulation of 8080 bus status */
+
 					/* operation of simulated CPU */
 #define STOPPED		0		/* stopped */
 #define CONTIN_RUN	1		/* continual run */

@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2022 by Udo Munk
  *
  * This is the configuration I'm using for software testing and debugging
  *
@@ -54,10 +54,10 @@
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
-/*#define BUS_8080*/	/* no emulation of 8080 bus status */
 
 /*#define HAS_DISKS*/	/* has no disk drives */
 /*#define HAS_CONFIG*/	/* has no configuration files */
@@ -83,7 +83,7 @@
 /*
  *	The following lines of this file should not be modified by user
  */
-#define COPYR	"Copyright (C) 1987-2021 by Udo Munk"
+#define COPYR	"Copyright (C) 1987-2022 by Udo Munk"
 #define RELEASE	"1.38-dev"
 
 #define MAX_LFN		4096		/* maximum long file name length */
@@ -106,6 +106,8 @@
 #define CPU_STACK	4
 #define CPU_WO		2
 #define CPU_INTA	1
+
+/*#define BUS_8080*/			/* no emulation of 8080 bus status */
 
 					/* operation of simulated CPU */
 #define STOPPED		0		/* stopped */
