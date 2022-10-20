@@ -113,7 +113,7 @@ _rm_obj:
 
 allclean: clean
 	rm -f $(EXEC)
-	rm -f ../disks/drive[abcd].dsk
+	rm -f ../disks/drive*.dsk
 	rm -f ../printer.txt
 
 # AUTOMATICALLY GENERATED DO NOT EDIT
