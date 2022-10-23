@@ -34,6 +34,7 @@
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 
+/*#define WANT_ICE*/	/* attach ICE to headless machine */
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */

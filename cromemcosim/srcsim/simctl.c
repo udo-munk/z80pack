@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from a Cromemco Z-1 front panel
  *
- * Copyright (C) 2014-2021 by Udo Munk
+ * Copyright (C) 2014-2022 by Udo Munk
  *
  * History:
  * 15-DEC-14 first version
@@ -55,7 +55,9 @@ static int reset;
 static int power;
 #endif
 
+#if defined(FRONTPANEL) || !defined(WANT_ICE)
 static void run_cpu(void);
+#endif
 #ifdef FRONTPANEL
 static void step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
@@ -129,7 +131,9 @@ void mon(void)
 	fflush(stdout);
 
 	/* initialise terminal */
+#ifndef WANT_ICE
 	set_unix_terminal();
+#endif
 	atexit(reset_unix_terminal);
 
 #ifdef FRONTPANEL
@@ -182,12 +186,22 @@ void mon(void)
 	/* set FDC autoboot flag from fp switch */
 	if (fp_port & 1)
 		fdc_flags |= 64;
-	/* and run the CPU */
+#ifdef WANT_ICE
+	extern void ice_cmd_loop(int), ice_go(void), ice_break(void);
+
+	ice_before_go = ice_go;
+	ice_after_go = ice_break;
+	ice_cmd_loop(0);
+#else
+	/* run the CPU */
 	run_cpu();
+#endif
 #endif
 
 	/* reset terminal */
+#ifndef WANT_ICE
 	reset_unix_terminal();
+#endif
 	putchar('\n');
 
 #ifdef FRONTPANEL

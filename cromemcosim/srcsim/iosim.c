@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2021 Udo Munk
+ * Copyright (C) 2014-2022 Udo Munk
  *
  * This module of the simulator contains the I/O simulation
  * for a Cromemco Z-1 system
@@ -64,6 +64,7 @@
 #include "log.h"
 #include "../../iodevices/cromemco-hal.h"
 #include "../../iodevices/cromemco-wdi.h"
+#include "../../iodevices/unix_terminal.h"
 
 /*
  *	Forward declarations for I/O functions
@@ -656,17 +657,6 @@ void init_io(void)
 		exit(1);
 	}
 
-	/* start 10ms interrupt timer, delayed! */
-	newact.sa_handler = interrupt;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
-	newact.sa_flags = 0;
-	sigaction(SIGALRM, &newact, NULL);
-	tim.it_value.tv_sec = 5;
-	tim.it_value.tv_usec = 0;
-	tim.it_interval.tv_sec = 0;
-	tim.it_interval.tv_usec = 10000;
-	setitimer(ITIMER_REAL, &tim, NULL);
-
 #ifdef HAS_MODEM
 	modem_device_init();
 #endif
@@ -675,6 +665,21 @@ void init_io(void)
 	LOG(TAG, "\r\n");
 
 	wdi_init();
+
+	/* start 10ms interrupt timer, delayed! */
+#ifndef WANT_ICE
+	newact.sa_handler = interrupt;
+#else
+	newact.sa_handler = SIG_IGN;
+#endif
+	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+	tim.it_value.tv_sec = 5;
+	tim.it_value.tv_usec = 0;
+	tim.it_interval.tv_sec = 0;
+	tim.it_interval.tv_usec = 10000;
+	setitimer(ITIMER_REAL, &tim, NULL);
 }
 
 /*
@@ -1254,4 +1259,34 @@ static void interrupt(int sig)
 	} else {
 		uart1b_rda = 0;
 	}
+}
+
+/*
+ *	setup and start terminal I/O for the machine
+ */
+void ice_go(void)
+{
+	static struct sigaction newact;
+
+	set_unix_terminal();
+
+	newact.sa_handler = interrupt;
+	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+}
+
+/*
+ *	give terminal I/O back to ICE
+ */
+void ice_break(void)
+{
+	static struct sigaction newact;
+
+	newact.sa_handler = SIG_IGN;
+	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+
+	reset_unix_terminal();
 }
