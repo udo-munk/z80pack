@@ -1,7 +1,8 @@
 #!/bin/sh
 
-rm -f disks/drivea.dsk
-ln disks/library/cromix1127_8.dsk disks/drivea.dsk
+rm -f disks/hd0.hdd disks/drivea.dsk
+ln disks/library/cromix_work.dsk disks/drivea.dsk
+ln disks/library/cromix_work.hdd disks/hd0.hdd
 
 BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf | xargs`
 
