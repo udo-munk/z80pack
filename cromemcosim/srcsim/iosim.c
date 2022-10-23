@@ -1261,6 +1261,7 @@ static void interrupt(int sig)
 	}
 }
 
+#ifdef WANT_ICE
 /*
  *	setup and start terminal I/O for the machine
  */
@@ -1290,3 +1291,4 @@ void ice_break(void)
 
 	reset_unix_terminal();
 }
+#endif
