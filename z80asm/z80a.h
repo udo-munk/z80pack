@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -34,7 +34,8 @@
  *	various constants
  */
 #define REL		"1.11-dev"
-#define COPYR		"Copyright (C) 1987-2022 by Udo Munk"
+#define COPYR		"Copyright (C) 1987-2022 by Udo Munk" \
+			" & 2022 by Thomas Eberhardt"
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */
 #define OBJEXTHEX	".hex"	/* filename extension hex */
@@ -53,11 +54,11 @@
 #define PLENGTH		65	/* default lines/page in listing */
 #define SYMLEN		8	/* default max. symbol length */
 #define INCNEST		5	/* max. INCLUDE nesting depth */
-#define IFNEST		5	/* max IF.. nesting depth */
+#define IFNEST		20	/* max. IF.. nesting depth */
 #define HASHSIZE	500	/* max. entries in symbol hash array */
 #define OPCARRAY	256	/* size of object buffer */
 #define SYMINC		100	/* start size of sorted symbol array */
-#define MAXHEX		32	/* max no bytes/hex record */
+#define MAXHEX		32	/* max. no bytes/hex record */
 
 /*
  *	structure opcode table
@@ -67,7 +68,7 @@ struct opc {
 	int (*op_fun) (int, int); /* function pointer code generation */
 	unsigned char op_c1;	/* first base opcode */
 	unsigned char op_c2;	/* second base opcode */
-	unsigned char op_flags;	/* opcode flags */
+	unsigned short op_flags; /* opcode flags */
 };
 
 /*
@@ -111,13 +112,17 @@ struct inc {
 /*
  *	definition of opcode flags
  */
-#define OP_UNDOC	0x01	/* undocumented opcode */
-#define OP_COND		0x02	/* concerns conditional assembly */
-#define OP_SET		0x04	/* assigns value to label */
-#define OP_END		0x08	/* end of source */
-#define OP_NOPRE	0x10	/* no preprocessing of operand */
-#define OP_NOLBL	0x20	/* label not allowed */
-#define OP_NOOPR	0x40	/* doesn't have operand */
+#define OP_UNDOC	0x0001	/* undocumented opcode */
+#define OP_COND		0x0002	/* concerns conditional assembly */
+#define OP_SET		0x0004	/* assigns value to label */
+#define OP_END		0x0008	/* end of source */
+#define OP_NOPRE	0x0010	/* no preprocessing of operand */
+#define OP_NOLBL	0x0020	/* label not allowed */
+#define OP_NOOPR	0x0040	/* doesn't have an operand */
+#define OP_INCL		0x0080	/* include (list before executing) */
+#define OP_DS		0x0100	/* define space (does own obj_* calls) */
+#define OP_MDEF		0x0200	/* macro definition start */
+#define OP_MEND		0x0400	/* macro definition end */
 
 /*
  *	definition of operand symbols
@@ -179,9 +184,10 @@ struct inc {
  *	definition of address output modes for pseudo ops
  */
 #define A_STD		0	/* address from <addr> */
-#define A_ADDR		1	/* address from <a_addr> */
-#define A_NONE		2	/* no address */
-#define A_SUPPR		3	/* suppress whole line */
+#define A_EQU		1	/* address from <a_addr>, '=' */
+#define A_SET		2	/* address from <a_addr>, '#' */
+#define A_DS		3	/* address from <a_addr>, no data */
+#define A_NONE		4	/* no address */
 
 /*
  *	definition of error numbers for error messages in listfile
@@ -208,6 +214,11 @@ struct inc {
 #define E_BFRORG	19	/* code before first ORG (binary output) */
 #define E_ILLLBL	20	/* illegal label */
 #define E_MISDPH	21	/* missing .DEPHASE */
+#define E_NIMDEF	22	/* not in macro definition */
+#define E_MISEMA	23	/* missing ENDM */
+#define E_NIMEXP	24	/* not in macro expansion */
+#define E_MACNEST	25	/* macro expansion nested too deep */
+#define E_OUTLCL	26	/* too many local labels */
 
 /*
  *	definition of fatal errors
@@ -217,7 +228,8 @@ struct inc {
 #define F_HALT		2	/* assembly halted */
 #define F_FOPEN		3	/* can't open file */
 #define F_INTERN	4	/* internal error */
-#define F_HEXLEN	5	/* hex record length out of range */
+#define F_SYMLEN	5	/* symbol length out of range */
+#define F_HEXLEN	6	/* hex record length out of range */
 
 /*
  *	macro for declaring unused function parameters

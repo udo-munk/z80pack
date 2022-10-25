@@ -26,11 +26,11 @@ together with option -l.
 
 Option e:
 Set the significant number of characters in symbols to <num>.
-The default is 8.
+The default is 8 and the allowed range is 6 to 32.
 
 Option h:
 Set the maximum number of bytes per hex record to <num>.
-The default is 32.
+The default is 32 and the allowed range is 1 to 32.
 
 Option x:
 Don't fill binary files up to the last used logical address. This means,
@@ -142,7 +142,7 @@ PRINT   <'string'>      - print string to stdout
 ASEG                    - does nothing (like its alias ABS)
 
 
-Precedeuce for expression operators:
+Precedence for expression operators:
 
 ()
 unary + - ~ NOT HIGH LOW NUL TYPE

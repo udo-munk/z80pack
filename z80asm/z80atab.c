@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *

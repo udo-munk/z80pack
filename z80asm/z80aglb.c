@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -55,11 +55,14 @@ int  list_flag,			/* flag for option -l */
      phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
+     condnest[IFNEST],		/* IF nesting stack */
      gencode,			/* flag for conditional code (>0 yes, <0 no) */
+     mac_def_nest,		/* macro definition nesting level */
+     mac_exp_nest,		/* macro expansion nesting level */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
-     a_mode,			/* address output mode for pseudo ops */
-     a_addr,			/* output address for A_ADDR mode */
+     a_mode,			/* location output mode for pseudo ops */
+     a_addr,			/* output value for A_ADDR/A_VALUE mode */
      load_addr,			/* load address of program */
      load_flag,			/* flag for load_addr valid */
      start_addr,		/* start address of program */
@@ -75,7 +78,6 @@ FILE *srcfp,			/* file pointer for current source */
 
 unsigned
      c_line,			/* current line no. in current source */
-     s_line,			/* line no. counter for listing */
      p_line,			/* no. printed lines on page */
      ppl = PLENGTH,		/* page length */
      page;			/* no. of pages for listing */

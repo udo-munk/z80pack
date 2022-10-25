@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -27,6 +27,11 @@
 
 #include <stdio.h>
 #include "z80a.h"
+
+/* z80amfun.c */
+extern int op_endm(int, int), op_exitm(int, int), op_irp(int, int);
+extern int op_irpc(int, int), op_local(int, int), op_macro(int, int);
+extern int op_mcond(int, int), op_rept(int, int);
 
 /* z80apfun.c */
 extern int op_opset(int, int), op_org(int, int), op_radix(int, int);
@@ -67,19 +72,21 @@ struct opc opctab_psd[] = {
 	{ "DEFC",	op_db,		2,	0,	0	 },
 	{ "DEFL",	op_dl,		0,	0,	OP_SET	 },
 	{ "DEFM",	op_db,		1,	0,	0	 },
-	{ "DEFS",	op_ds,		0,	0,	0	 },
+	{ "DEFS",	op_ds,		0,	0,	OP_DS	 },
 	{ "DEFW",	op_dw,		0,	0,	0	 },
 	{ "DEFZ",	op_db,		3,	0,	0	 },
-	{ "DS",		op_ds,		0,	0,	0	 },
+	{ "DS",		op_ds,		0,	0,	OP_DS	 },
 	{ "DW",		op_dw,		0,	0,	0	 },
 	{ "EJECT",	op_misc,	1,	0,	OP_NOLBL | OP_NOOPR },
 	{ "ELSE",	op_cond,	98,	0,	OP_COND  | OP_NOOPR },
 	{ "END",	op_end,		0,	0,	OP_END	 },
 	{ "ENDC",	op_cond,	99,	0,	OP_COND  | OP_NOOPR },
 	{ "ENDIF",	op_cond,	99,	0,	OP_COND  | OP_NOOPR },
+	{ "ENDM",	op_endm,	0,	0,	OP_MEND	 },
 	{ "ENT",	op_glob,	2,	0,	OP_NOLBL },
 	{ "ENTRY",	op_glob,	2,	0,	OP_NOLBL },
 	{ "EQU",	op_equ,		0,	0,	OP_SET	 },
+	{ "EXITM",	op_exitm,	0,	0,	0	 },
 	{ "EXT",	op_glob,	1,	0,	OP_NOLBL },
 	{ "EXTERNAL",	op_glob,	1,	0,	OP_NOLBL },
 	{ "EXTRN",	op_glob,	1,	0,	OP_NOLBL },
@@ -87,24 +94,32 @@ struct opc opctab_psd[] = {
 	{ "IF",		op_cond,	5,	0,	OP_COND	 },
 	{ "IF1",	op_cond,	7,	0,	OP_COND  | OP_NOOPR },
 	{ "IF2",	op_cond,	8,	0,	OP_COND  | OP_NOOPR },
-	{ "IFB",	op_cond,	9,	0,	OP_COND  | OP_NOPRE },
+	{ "IFB",	op_mcond,	1,	0,	OP_COND  | OP_NOPRE },
 	{ "IFDEF",	op_cond,	1,	0,	OP_COND	 },
-	{ "IFDIF",	op_cond,	12,	0,	OP_COND  | OP_NOPRE },
+	{ "IFDIF",	op_mcond,	4,	0,	OP_COND  | OP_NOPRE },
 	{ "IFE",	op_cond,	6,	0,	OP_COND	 },
 	{ "IFEQ",	op_cond,	3,	0,	OP_COND	 },
 	{ "IFF",	op_cond,	6,	0,	OP_COND	 },
-	{ "IFIDN",	op_cond,	11,	0,	OP_COND  | OP_NOPRE },
-	{ "IFNB",	op_cond,	10,	0,	OP_COND  | OP_NOPRE },
+	{ "IFIDN",	op_mcond,	3,	0,	OP_COND  | OP_NOPRE },
+	{ "IFNB",	op_mcond,	2,	0,	OP_COND  | OP_NOPRE },
 	{ "IFNDEF",	op_cond,	2,	0,	OP_COND	 },
 	{ "IFNEQ",	op_cond,	4,	0,	OP_COND	 },
 	{ "IFT",	op_cond,	5,	0,	OP_COND	 },
-	{ "INCLUDE",	op_misc,	6,	0,	OP_NOLBL | OP_NOPRE },
+	{ "INCLUDE",	op_misc,	6,	0,	OP_INCL  | OP_NOLBL
+								 | OP_NOPRE },
+	{ "IRP",	op_irp,		0,	0,	OP_MDEF  | OP_NOPRE },
+	{ "IRPC",	op_irpc,	0,	0,	OP_MDEF  | OP_NOPRE },
 	{ "LIST",	op_misc,	2,	0,	OP_NOLBL | OP_NOOPR },
+	{ "LOCAL",	op_local,	0,	0,	OP_NOLBL },
+	{ "MACLIB",	op_misc,	6,	0,	OP_INCL  | OP_NOLBL
+								 | OP_NOPRE },
+	{ "MACRO",	op_macro,	0,	0,	OP_MDEF  | OP_SET   },
 	{ "NOLIST",	op_misc,	3,	0,	OP_NOLBL | OP_NOOPR },
 	{ "ORG",	op_org,		1,	0,	OP_NOLBL },
 	{ "PAGE",	op_misc,	4,	0,	OP_NOLBL },
 	{ "PRINT",	op_misc,	5,	0,	OP_NOLBL | OP_NOPRE },
 	{ "PUBLIC",	op_glob,	2,	0,	OP_NOLBL },
+	{ "REPT",	op_rept,	3,	0,	OP_MDEF	 },
 	{ "TITLE",	op_misc,	7,	0,	OP_NOLBL | OP_NOPRE }
 };
 
