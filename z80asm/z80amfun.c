@@ -51,7 +51,6 @@ struct mac {					/* macro */
 	void (*mac_start)(struct expn *);	/* start expansion function */
 	int (*mac_rept)(struct expn *);		/* repeat expansion function */
 	char *mac_name;				/* macro name */
-	int mac_level;				/* definition nesting level */
 	int mac_count;				/* REPT count */
 	char *mac_irp;				/* IRP, IRPC character list */
 	struct dum *mac_dums, *mac_dums_last;	/* macro dummies */
@@ -134,7 +133,6 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
 			fatal(F_OUTMEM, "macro name");
 	} else
 		m->mac_name = NULL;
-	m->mac_level = mac_exp_nest;
 	m->mac_start = start;
 	m->mac_rept = rept;
 	m->mac_count = 0;
