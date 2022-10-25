@@ -87,22 +87,6 @@ static struct expn mac_expn[MACNEST];		/* macro expansion stack */
 static int mac_loc_cnt;				/* counter for LOCAL labels */
 static char tmp[MAXLINE + 1];			/* temporary buffer */
 
-void mac_print_table(void)
-{
-	register struct mac *m;
-	register struct dum *d;
-	register struct line *l;
-
-	for (m = mac_table; m != NULL; m = m->mac_next) {
-		printf("MACRO: %s\n", m->mac_name);
-		for (d = m->mac_dums; d != NULL; d = d->dum_next)
-			printf("DUMMY: %s\n", d->dum_name);
-		for (l = m->mac_lines; l != NULL; l = l->line_next)
-			printf("LINE: %s", l->line_text);
-		putchar('\n');
-	}
-}
-
 /*
  *	verify that p is a legal symbol
  *	return 1 if legal, otherwise 0
