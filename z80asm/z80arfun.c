@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -19,6 +19,7 @@
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  *	04-OCT-2022 new expression parser (TE)
+ *	25-OCT-2022 Intel-like macros (TE)
  */
 
 /*

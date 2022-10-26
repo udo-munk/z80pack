@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -19,6 +19,7 @@
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  *	04-OCT-2022 new expression parser (TE)
+ *	25-OCT-2022 Intel-like macros (TE)
  */
 
 #include <stdlib.h>
@@ -40,8 +41,8 @@ extern struct sym *get_sym(char *);
  *	definition of token types
  */
 #define T_EMPTY		0	/* nothing */
-#define T_VAL		1	/* number, string, or $ */
-#define T_SYM		2	/* symbol */
+#define T_VAL		1	/* number, string, $, or symbol */
+#define T_UNDSYM	2	/* undefined symbol */
 #define T_SUB		3	/* - */
 #define T_ADD		4	/* + */
 #define T_NOT		5	/* NOT or ~ */
@@ -102,13 +103,19 @@ int no_operators = sizeof(oprtab) / sizeof(struct opr);
 
 static int tok_type;	/* token type and flags */
 static int tok_val;	/* token value for T_VAL type */
-static char tok_sym[MAXLINE]; /* last symbol scanned (T_VAL, T_SYM) */
+static char tok_sym[MAXLINE]; /* last symbol scanned (T_VAL) */
 static char *scan_pos;	/* current scanning position */
+
+int is_first_sym_char(char c)
+{
+	return(isalpha((unsigned char) c) || c == '$' || c == '.' || c == '?'
+					  || c == '@' || c == '_');
+}
 
 int is_sym_char(char c)
 {
-	return(isalnum((unsigned char) c) || c == '$' || c == '%' || c == '.'
-					  || c == '?' || c == '@' || c == '_');
+	return(isalnum((unsigned char) c) || c == '$' || c == '.' || c == '?'
+					  || c == '@' || c == '_');
 }
 
 /*
@@ -116,7 +123,7 @@ int is_sym_char(char c)
  *
  *	Input: pointer to string with operator
  *
- *	Output: symbol for operator, T_SYM if operator not found
+ *	Output: symbol for operator, T_UNDSYM if operator not found
  */
 int search_opr(char *s)
 {
@@ -134,7 +141,7 @@ int search_opr(char *s)
 		else
 			return(mid->opr_type);
 	}
-	return(T_SYM);
+	return(T_UNDSYM);
 }
 
 /*
@@ -147,6 +154,7 @@ int get_token(void)
 {
 	register char *p1, *p2, *s;
 	register int n, m, base;
+	register struct sym *sp;
 
 	s = scan_pos;
 	tok_sym[0] = '\0';
@@ -218,10 +226,14 @@ int get_token(void)
 		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* location counter */
 			tok_type = T_VAL;
 			tok_val = pc;
-		} else {				/* look for word opr */
-			tok_type = search_opr(p1);
+		} else {				/* symbol / word opr */
 			if (p2 - p1 > symlen)		/* trim for lookup */
 				*(p1 + symlen) = '\0';
+			if ((sp = get_sym(tok_sym)) != NULL) {	/* a symbol */
+				tok_type = T_VAL;
+				tok_val = sp->sym_val;
+			} else				/* look for word opr */
+				tok_type = search_opr(p1);
 		}
 		goto finish;
 	}
@@ -321,15 +333,10 @@ finish:
 
 int factor(int *resultp)
 {
-	int opr_type, value, err, erru;
-	struct sym *sp;
+	register int opr_type, err, erru;
+	register char *s;
+	int value;
 
-	/*
-	 *	if the token is not a T_VAL, but a word operator or
-	 *	T_SYM, look it up now since tok_sym gets overwritten
-	 *	by the next get_token().
-	 */
-	sp = (tok_type != T_VAL && *tok_sym) ? get_sym(tok_sym) : NULL;
 	switch (tok_type) {
 	case T_VAL:
 		value = tok_val;
@@ -337,14 +344,57 @@ int factor(int *resultp)
 			return(err);
 		*resultp = value;
 		return(E_NOERR);
-	case T_SYM:
+	case T_UNDSYM:
 		if ((err = get_token()))
 			return(err);
-		if (sp) {
-			*resultp = sp->sym_val;
-			return(E_NOERR);
-		} else
-			return(E_UNDSYM);
+		return(E_UNDSYM);
+	case T_NUL:
+		s = scan_pos;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (strcmp(s, "''") == 0 || strcmp(s, "\"\"") == 0)
+			*resultp = -1;
+		else
+			*resultp = (*s == '\0') ? -1 : 0;
+		/* short circuit to end of expression */
+		while (*s != '\0')
+			s++;
+		scan_pos = s;
+		tok_type = T_EMPTY;
+		return(E_NOERR);
+	case T_TYPE:
+		if ((erru = get_token()) && erru != E_UNDSYM)
+			return(erru);
+		*resultp = ((erru || factor(&value)) ? 0x00 : 0x20);
+		return(E_NOERR);
+	case T_ADD:
+	case T_SUB:
+	case T_NOT:
+	case T_HIGH:
+	case T_LOW:
+		opr_type = tok_type;
+		if ((err = get_token()) || (err = factor(&value)))
+			return(err);
+		switch (opr_type) {
+		case T_ADD:
+			*resultp = value;
+			break;
+		case T_SUB:
+			*resultp = -value;
+			break;
+		case T_NOT:
+			*resultp = ~value;
+			break;
+		case T_HIGH:
+			*resultp = (value >> 8) & 0xff;
+			break;
+		case T_LOW:
+			*resultp = value & 0xff;
+			break;
+		default:
+			break;
+		}
+		return(E_NOERR);
 	case T_LPAREN:
 		if ((err = get_token()))
 			return(err);
@@ -358,81 +408,18 @@ int factor(int *resultp)
 			else {
 				*resultp = value;
 				return(E_NOERR);
-			}
+ 			}
 		} else
 			return(E_MISPAR);
-	case T_ADD:
-	case T_SUB:
-	case T_NOT:
-	case T_HIGH:
-	case T_LOW:
-	case T_NUL:
-	case T_TYPE:
-		opr_type = tok_type;
-		if ((err = get_token()))
-			return(err);
-		/*
-		 *	if an unary word operator, that was found in the
-		 *	symbol table, is not followed by a <factor> excl.
-		 *	unary + and - (which are also binary), return the
-		 *	symbol value.
-		 */
-		if (sp != NULL && tok_type != T_VAL && tok_type != T_SYM
-			       && tok_type != T_LPAREN && tok_type != T_NOT
-			       && tok_type != T_HIGH && tok_type != T_LOW
-			       && tok_type != T_NUL && tok_type != T_TYPE)
-			*resultp = sp->sym_val;
-		else if (opr_type == T_NUL) {
-			*resultp = (tok_type == T_EMPTY) ? -1 : 0;
-			/* short circuit to end of expression */
-			while (*scan_pos != '\0')
-				scan_pos++;
-			tok_type = T_EMPTY;
-		} else if (opr_type == T_TYPE)
-			*resultp = (factor(&value) ? 0x00 : 0x20);
-		else {
-			if ((err = factor(&value)))
-				return(err);
-			switch (opr_type) {
-			case T_ADD:
-				*resultp = value;
-				break;
-			case T_SUB:
-				*resultp = -value;
-				break;
-			case T_NOT:
-				*resultp = ~value;
-				break;
-			case T_HIGH:
-				*resultp = (value >> 8) & 0xff;
-				break;
-			case T_LOW:
-				*resultp = value & 0xff;
-				break;
-			default:
-				break;
-			}
-		}
-		return(E_NOERR);
 	default:
-		/*
-		 *	if the token is an unexpected word operator
-		 *	that was found in the symbol table, return
-		 *	the symbol value.
-		 */
-		if (sp) {
-			if ((err = get_token()))
-				return(err);
-			*resultp = sp->sym_val;
-			return(E_NOERR);
-		} else
-			return(E_INVEXP);
+		return(E_INVEXP);
 	}
 }
 
 int mul_term(int *resultp)
 {
-	int opr_type, value, err, erru;
+	register int opr_type, err, erru;
+	int value;
 
 	if ((erru = factor(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -476,7 +463,8 @@ int mul_term(int *resultp)
 
 int add_term(int *resultp)
 {
-	int opr_type, value, err, erru;
+	register int opr_type, err, erru;
+	int value;
 
 	if ((erru = mul_term(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -506,7 +494,8 @@ int add_term(int *resultp)
 
 int cmp_term(int *resultp)
 {
-	int opr_type, value, err, erru;
+	register int opr_type, err, erru;
+	int value;
 
 	if ((erru = add_term(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -550,7 +539,8 @@ int cmp_term(int *resultp)
 
 int expr(int *resultp)
 {
-	int opr_type, value, err, erru;
+	register int opr_type, err, erru;
+	int value;
 
 	if ((erru = cmp_term(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -583,7 +573,8 @@ int expr(int *resultp)
 
 int eval(char *s)
 {
-	int result, err;
+	register int err;
+	int result;
 
 	if (s == NULL || *s == '\0') {
 		asmerr(E_MISOPE);

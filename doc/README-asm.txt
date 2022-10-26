@@ -26,11 +26,11 @@ together with option -l.
 
 Option e:
 Set the significant number of characters in symbols to <num>.
-The default is 8.
+The default is 8 and the allowed range is 6 to 32.
 
 Option h:
 Set the maximum number of bytes per hex record to <num>.
-The default is 32.
+The default is 32 and the allowed range is 1 to 32.
 
 Option x:
 Don't fill binary files up to the last used logical address. This means,
@@ -111,16 +111,25 @@ IF1                     - assemble if in pass 1
 IF2                     - assemble if in pass 2
                           the '<' and '>' in the following pseudo ops
                           are required
-IFB     <seq>           - assemble if char sequence inside <> is empty
-IFNB    <seq>           - assemble if char sequence inside <> is not empty
-IFIDN   <seq1>,<seq2>   - assemble if char sequences inside <> are equal
-IFDIF   <seq1>,<seq2>   - assemble if char sequences inside <> are not equal
-
 ELSE                    - else for all conditionals
 ENDIF                   - end of conditional assembly
 
 The aliases COND and IFT for IF, and IFE for IFF, and ENDC for ENDIF are
 also accepted.
+
+
+Intel-like macros:
+<sym> MACRO <dummy>,... - define named macro
+IRP     <id>,<<cl,...>> - inline macro, iterate over character lists
+IRPC    <id>,<clist>    - inline macro, iterate over character list
+REPT    <count>         - inline macro, repeat <count> times
+ENDM                    - end macro
+EXITM                   - exit macro expansion
+MACLIB  <filename>      - include macro library
+IFB     <seq>           - assemble if char sequence inside <> is empty
+IFNB    <seq>           - assemble if char sequence inside <> is not empty
+IFIDN   <seq1>,<seq2>   - assemble if char sequences inside <> are equal
+IFDIF   <seq1>,<seq2>   - assemble if char sequences inside <> are not equal
 
 
 Manipulation of list file:
@@ -142,7 +151,7 @@ PRINT   <'string'>      - print string to stdout
 ASEG                    - does nothing (like its alias ABS)
 
 
-Precedeuce for expression operators:
+Precedence for expression operators:
 
 ()
 unary + - ~ NOT HIGH LOW NUL TYPE

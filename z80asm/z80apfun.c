@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -19,10 +19,11 @@
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  *	04-OCT-2022 new expression parser (TE)
+ *	25-OCT-2022 Intel-like macros (TE)
  */
 
 /*
- *	processing of all PSEUDO ops
+ *	processing of all PSEUDO ops except macro related
  */
 
 #include <stdio.h>
@@ -33,7 +34,7 @@
 
 /* z80amain.c */
 extern void fatal(int, const char *);
-extern void pass_file(char *);
+extern void process_file(char *);
 extern char *next_arg(char *, int *);
 
 /* z80anum.c */
@@ -44,7 +45,6 @@ extern int chk_byte(int);
 extern void asmerr(int);
 extern void lst_header(void);
 extern void lst_attl(void);
-extern void lst_line(int, int);
 extern void obj_org(int);
 extern void obj_fill(int);
 extern void obj_fill_value(int, int);
@@ -157,7 +157,7 @@ int op_equ(int dummy1, int dummy2)
 		} else
 			asmerr(E_MULSYM);
 	} else {			/* PASS 2 */
-		a_mode = A_ADDR;
+		a_mode = A_EQU;
 		a_addr = eval(operand);
 	}
 	return(0);
@@ -171,7 +171,7 @@ int op_dl(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	a_mode = A_ADDR;
+	a_mode = A_SET;
 	a_addr = eval(operand);
 	if (put_sym(label, a_addr))
 		fatal(F_OUTMEM, "symbols");
@@ -189,7 +189,7 @@ int op_ds(int dummy1, int dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	a_mode = A_ADDR;
+	a_mode = A_DS;
 	a_addr = pc;
 	p = next_arg(operand, NULL);
 	count = eval(operand);
@@ -200,9 +200,7 @@ int op_ds(int dummy1, int dummy2)
 		} else
 			obj_fill(count);
 	}
-	pc += count;
-	rpc += count;
-	return(0);
+	return(count);
 }
 
 /*
@@ -290,7 +288,7 @@ int op_dw(int dummy1, int dummy2)
 }
 
 /*
- *	EJECT, LIST, NOLIST, PAGE, PRINT, TITLE, INCLUDE
+ *	EJECT, LIST, NOLIST, PAGE, PRINT, INCLUDE, MACLIB, TITLE
  */
 int op_misc(int op_code, int dummy)
 {
@@ -338,7 +336,7 @@ int op_misc(int op_code, int dummy)
 			fputs(operand, stdout);
 		putchar('\n');
 		break;
-	case 6:				/* INCLUDE */
+	case 6:				/* INCLUDE and MACLIB */
 		if (incnest >= INCNEST) {
 			asmerr(E_INCNEST);
 			break;
@@ -353,11 +351,9 @@ int op_misc(int op_code, int dummy)
 						    && *p != '\0')
 			*d++ = *p++;
 		*d = '\0';
-		if (pass == 2)
-			lst_line(0, 0);
 		if (ver_flag)
 			printf("   Include %s\n", fn);
-		pass_file(fn);
+		process_file(fn);
 		incnest--;
 		c_line = incl[incnest].inc_line;
 		srcfn = incl[incnest].inc_fn;
@@ -368,7 +364,6 @@ int op_misc(int op_code, int dummy)
 			lst_header();
 			lst_attl();
 		}
-		a_mode = A_SUPPR;
 		break;
 	case 7:				/* TITLE */
 		if (pass == 2) {
@@ -401,13 +396,11 @@ int op_misc(int op_code, int dummy)
 }
 
 /*
- *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF,
- *	IF1, IF2, IFB, IFNB, IFIDN, IFDIF
+ *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, IF1, IF2
  */
 int op_cond(int op_code, int dummy)
 {
-	register char *p, *p1, *p2;
-	static int condnest[IFNEST];
+	register char *p;
 
 	UNUSED(dummy);
 
@@ -444,66 +437,6 @@ int op_cond(int op_code, int dummy)
 		case 8:				/* IF2 */
 			gencode = (pass == 2) ? -1 : 1;
 			break;
-		case 9:				/* IFB */
-		case 10:			/* IFNB */
-		case 11:			/* IFIDN */
-		case 12:			/* IFDIF */
-			p = operand;
-			if (*p == '\0' || *p == COMMENT) {
-				asmerr(E_MISOPE);
-				return(0);
-			}
-			if (*p++ != '<') {
-				asmerr(E_ILLOPE);
-				return(0);
-			}
-			while (*p != '>' && *p != '\0' && *p != COMMENT)
-				p++;
-			if (*p++ != '>') {
-				asmerr(E_MISPAR);
-				return(0);
-			}
-			p1 = p;
-			while (isspace((unsigned char) *p1))
-				p1++;
-			if (op_code == 9 || op_code == 10) { /* IFB and IFNB */
-				if (*p1 != '\0' && *p1 != COMMENT) {
-					asmerr(E_ILLOPE);
-					return(0);
-				}
-				gencode = ((p - operand) == 2) ? pass : -pass;
-			} else {		/* IFIDN and IFDIF */
-				if (*p1 != ',') {
-					asmerr(E_MISOPE);
-					return(0);
-				}
-				*p = '\0';
-				while (isspace((unsigned char) *p1))
-					p1++;
-				p = p1;
-				if (*p1++ != '<') {
-					asmerr(E_ILLOPE);
-					return(0);
-				}
-				while (*p1 != '>' && *p1 != '\0'
-						  && *p1 != COMMENT)
-					p1++;
-				if (*p1++ != '>') {
-					asmerr(E_MISPAR);
-					return(0);
-				}
-				p2 = p1;
-				while (isspace((unsigned char) *p2))
-					p2++;
-				if (*p2 != '\0' && *p2 != COMMENT) {
-					asmerr(E_ILLOPE);
-					return(0);
-				}
-				*p1 = '\0';
-				gencode = (strcmp(operand, p) == 0) ? pass
-								    : -pass;
-			}
-			break;
 		default:
 			fatal(F_INTERN, "invalid opcode for function op_cond");
 			break;
@@ -517,7 +450,7 @@ int op_cond(int op_code, int dummy)
 		}
 		switch(op_code) {
 		case 98:			/* ELSE */
-			if (condnest[iflevel - 1] == 1)
+			if (condnest[iflevel - 1] > 0)
 				gencode = -gencode;
 			break;
 		case 99:			/* ENDIF and ENDC */

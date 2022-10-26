@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -19,6 +19,7 @@
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  *	04-OCT-2022 new expression parser (TE)
+ *	25-OCT-2022 Intel-like macros (TE)
  */
 
 /*
@@ -63,7 +64,12 @@ static const char *errmsg[] = {		/* error messages for asmerr() */
 	"invalid expression",		/* 18 */
 	"object code before ORG",	/* 19 */
 	"illegal label",		/* 20 */
-	"missing .DEPHASE"		/* 21 */
+	"missing .DEPHASE",		/* 21 */
+	"not in macro definition",	/* 22 */
+	"missing ENDM",			/* 23 */
+	"not in macro expansion",	/* 24 */
+	"macro expansion nested too deep", /* 25 */
+	"too many local labels"		/* 26 */
 };
 
 /*
@@ -102,7 +108,7 @@ void lst_header(void)
 {
 	time_t tloc = time(&tloc);
 
-	fprintf(lstfp, "\fZ80-Assembler\tRelease %s\t%.24s\tPage %d\n", REL,
+	fprintf(lstfp, "\fZ80-Macro-Assembler  Release %s\t%.24s\tPage %d\n", REL,
 		ctime(&tloc), ++page);
 	fprintf(lstfp, "Source file: %s\n", srcfn);
 	fprintf(lstfp, "Title:       %s\n", title);
@@ -121,22 +127,35 @@ void lst_attl(void)
 /*
  *	print one line into listfile, if -l option set
  */
-void lst_line(int addr, int op_cnt)
+void lst_line(char *l, int addr, int op_cnt, int expn_flag)
 {
 	register int i, j;
+	register const char *a_mark;
+	static int s_line;
 
-	if (!list_flag || a_mode == A_SUPPR)
-		goto done;
+	s_line++;
+	if (!list_flag)
+		return;
 	if (p_line >= ppl || c_line == 1) {
 		lst_header();
 		lst_attl();
 	}
+	a_mark = "   ";
 	switch (a_mode) {
 	case A_STD:
 		fprintf(lstfp, "%04x  ", addr & 0xffff);
 		break;
-	case A_ADDR:
+	case A_EQU:
 		fprintf(lstfp, "%04x  ", a_addr & 0xffff);
+		a_mark = "=  ";
+		break;
+	case A_SET:
+		fprintf(lstfp, "%04x  ", a_addr & 0xffff);
+		a_mark = "#  ";
+		break;
+	case A_DS:
+		fprintf(lstfp, "%04x  ", a_addr & 0xffff);
+		op_cnt = 0;
 		break;
 	case A_NONE:
 		fputs("      ", lstfp);
@@ -149,9 +168,12 @@ void lst_line(int addr, int op_cnt)
 	for (j = 0; j < 4; j++)
 		if (op_cnt-- > 0)
 			fprintf(lstfp, "%02x ", ops[i++]);
+		else if (j == 0)
+			fputs(a_mark, lstfp);
 		else
 			fputs("   ", lstfp);
-	fprintf(lstfp, "%6d %6d %s", c_line, s_line, line);
+	fprintf(lstfp, "%c%5d %6d %s", expn_flag ? '+' : ' ',
+		c_line, s_line, l);
 	p_line++;
 	if (errnum) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
@@ -171,11 +193,10 @@ void lst_line(int addr, int op_cnt)
 				fprintf(lstfp, "%02x ", ops[i++]);
 			else
 				fputs("   ", lstfp);
-		fprintf(lstfp, "%6d %6d\n", c_line, s_line);
+		fprintf(lstfp, "%c%5d %6d\n", expn_flag ? '+' : ' ',
+			c_line, s_line);
 		p_line++;
 	}
-done:
-	a_mode = A_STD;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *	Z80 - Assembler
+ *	Z80 - Macro - Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
@@ -19,6 +19,7 @@
  *	28-JAN-2022 added syntax check for OUT (n),A
  *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
  *	04-OCT-2022 new expression parser (TE)
+ *	25-OCT-2022 Intel-like macros (TE)
  */
 
 /*
@@ -37,8 +38,8 @@
 
 void init(void), options(int, char *[]);
 void usage(void), fatal(int, const char *);
-void do_pass(void), pass_file(char *);
-int pass_line(char *);
+void do_pass(int), process_file(char *);
+int process_line(char *);
 void open_o_files(char *), get_fn(char *, char *, const char *);
 char *get_label(char *, char *);
 char *get_opcode(char *, char *);
@@ -46,12 +47,20 @@ char *get_arg(char *, char *, int);
 
 /* z80aout.c */
 extern void asmerr(int);
-extern void lst_line(int, int);
+extern void lst_line(char *, int, int, int);
 extern void lst_sym(void);
 extern void lst_sort_sym(int);
 extern void obj_header(void);
 extern void obj_end(void);
 extern void obj_writeb(int);
+
+/* z80mfun.c */
+extern void mac_start_pass(void);
+extern void mac_end_pass(void);
+extern char *mac_expand(void);
+extern void mac_add_line(struct opc *, char *);
+extern int mac_lookup(char *);
+extern int mac_call(void);
 
 /* z80anum.c */
 int is_sym_char(char);
@@ -66,12 +75,13 @@ extern void a_sort_sym(int);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	"usage: z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v\n"
-	"              -o<file> -l[<file>] -d<symbol> ... <file> ...", /* 1 */
+	("usage: z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v\n"
+	 "              -o<file> -l[<file>] -d<symbol> ... <file> ..."),/* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s",		/* 4 */
-	"invalid hex record length: %s"	/* 5 */
+	"invalid symbol length: %s",	/* 5 */
+	"invalid hex record length: %s"	/* 6 */
 };
 
 int main(int argc, char *argv[])
@@ -80,11 +90,9 @@ int main(int argc, char *argv[])
 
 	init();
 	options(argc, argv);
-	printf("Z80 - Assembler Release %s, %s\n", REL, COPYR);
-	pass = 1;
-	do_pass();
-	pass = 2;
-	do_pass();
+	printf("Z80 - Macro - Assembler Release %s\n%s\n", REL, COPYR);
+	do_pass(1);
+	do_pass(2);
 	if (list_flag) {
 		switch (sym_flag) {
 		case 0:		/* no symbol table */
@@ -204,6 +212,8 @@ void options(int argc, char *argv[])
 					usage();
 				}
 				symlen = atoi(s);
+				if (symlen < 6 || symlen > 32)
+					fatal(F_SYMLEN, s);
 				s += (strlen(s) - 1);
 				break;
 			case 'h':
@@ -254,14 +264,15 @@ void fatal(int i, const char *arg)
 /*
  *	process all source files
  */
-void do_pass(void)
+void do_pass(int p)
 {
 	register int fi;
 
+	pass = p;
 	radix = 10;
 	rpc = pc = 0;
 	gencode = pass;
-	a_mode = A_STD;
+	mac_start_pass();
 	fi = 0;
 	if (ver_flag)
 		printf("Pass %d\n", pass);
@@ -272,9 +283,10 @@ void do_pass(void)
 	while (infiles[fi] != NULL) {
 		if (ver_flag)
 			printf("   Read    %s\n", infiles[fi]);
-		pass_file(infiles[fi]);
+		process_file(infiles[fi]);
 		fi++;
 	}
+	mac_end_pass();
 	if (pass == 1) {			/* PASS 1 */
 		if (errors) {
 			fclose(objfp);
@@ -287,7 +299,6 @@ void do_pass(void)
 		fclose(objfp);
 		printf("%d error(s)\n", errors);
 	}
-
 }
 
 /*
@@ -295,17 +306,24 @@ void do_pass(void)
  *
  *	Input: name of source file
  */
-void pass_file(char *fn)
+void process_file(char *fn)
 {
+	register char *l;
+
 	c_line = 0;
 	srcfn = fn;
 	if ((srcfp = fopen(fn, READA)) == NULL)
 		fatal(F_FOPEN, fn);
 	do {
-		if (fgets(line, MAXLINE, srcfp) == NULL)
+		l = NULL;
+		while (mac_exp_nest > 0 && (l = mac_expand()) == NULL)
+			;
+		if (l == NULL && (l = fgets(line, MAXLINE, srcfp)) == NULL)
 			break;
-	} while (pass_line(line));
+	} while (process_line(l));
 	fclose(srcfp);
+	if (mac_def_nest > 0)
+		asmerr(E_MISEMA);
 	if (phs_flag)
 		asmerr(E_MISDPH);
 	if (iflevel)
@@ -318,55 +336,87 @@ void pass_file(char *fn)
  *	Output: 1 line processed
  *		0 END
  */
-int pass_line(char *l)
+int process_line(char *l)
 {
 	register char *p;
-	register int op_count, lbl_flag;
+	register int op_count, lbl_flag, expn_flag;
 	register struct opc *op;
 
-	c_line++;
-	if (pass == 2)
-		s_line++;
+	/*
+	 *	need expn_flag and lbl_flag, since the conditions
+	 *	can change during opcode execution or macro definition
+	 */
+	expn_flag = (mac_exp_nest > 0);
+	if (!expn_flag)
+		c_line++;
+	a_mode = A_STD;
 	op = NULL;
 	op_count = 0;
 	p = get_label(label, l);
 	p = get_opcode(opcode, p);
 	lbl_flag = (gencode > 0 && *label != '\0');
-	if (*opcode != '\0') {
-		if ((op = search_op(opcode)) != NULL) {
-			if (lbl_flag) {
-				if (op->op_flags & OP_NOLBL)
-					asmerr(E_ILLLBL);
-				else if (!(op->op_flags & OP_SET))
-					if (gencode == 1)
-						put_label();
-			}
-			p = get_arg(operand, p, op->op_flags & OP_NOPRE);
-			if ((op->op_flags & OP_NOOPR) && *operand != '\0'
-						      && *operand != COMMENT)
-				asmerr(E_ILLOPE);
-			else if (gencode > 0 || (op->op_flags & OP_COND)) {
-				op_count = (*op->op_fun)(op->op_c1, op->op_c2);
-				if (lbl_flag && a_mode == A_NONE)
-					a_mode = A_STD;
-			} else
-				a_mode = A_NONE;
-		} else {
-			asmerr(E_ILLOPC);
+	if (mac_def_nest > 0) {
+		if (*opcode != '\0')
+			op = search_op(opcode);
+		mac_add_line(op, l);
+	} else if (*opcode == '\0') {
+		if (lbl_flag) {
+			if (gencode == 1)
+				put_label();
+		} else
 			a_mode = A_NONE;
-		}
-	} else if (lbl_flag) {
-		if (gencode == 1)
+	} else if (mac_lookup(opcode)) {
+		p = get_arg(operand, p, 1);
+		if (lbl_flag && gencode == 1)
 			put_label();
-	} else
+		if (gencode > 0) {
+			mac_call();
+			if (lbl_flag)
+				a_mode = A_STD;
+		} else
+			a_mode = A_NONE;
+	} else if ((op = search_op(opcode)) != NULL) {
+		p = get_arg(operand, p, op->op_flags & OP_NOPRE);
+		if (lbl_flag) {
+			if (op->op_flags & OP_NOLBL)
+				asmerr(E_ILLLBL);
+			else if (!(op->op_flags & OP_SET))
+				if (gencode == 1)
+					put_label();
+		}
+		if (*operand != '\0' && *operand != COMMENT
+				     && (op->op_flags & OP_NOOPR))
+			asmerr(E_ILLOPE);
+		else if (gencode > 0 || (op->op_flags & OP_COND)) {
+			if (pass == 2 && (op->op_flags & OP_INCL)) {
+				/* list INCLUDE before include file */
+				a_mode = A_NONE;
+				lst_line(l, 0, 0, expn_flag);
+			}
+			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
+			if (lbl_flag && !(op->op_flags & OP_SET)
+				     && a_mode == A_NONE)
+				a_mode = A_STD;
+		} else
+			a_mode = A_NONE;
+	} else {
+		asmerr(E_ILLOPC);
 		a_mode = A_NONE;
-	if (pass == 2) {
-		obj_writeb(op_count);
-		lst_line(pc, op_count);
 	}
-	pc += op_count;
-	rpc += op_count;
-	return(op == NULL || !(op->op_flags & OP_END));
+	if (pass == 2) {
+		if (gencode > 0 && (op == NULL || !(op->op_flags & OP_DS)))
+			obj_writeb(op_count);
+		/* already listed INCLUDE */
+		if ((op == NULL || !(op->op_flags & OP_INCL))
+		    && !(expn_flag && (a_mode == A_NONE || op_count == 0)))
+			lst_line(l, pc, op_count, expn_flag);
+	}
+	if (gencode > 0) {
+		pc += op_count;
+		rpc += op_count;
+		return(op == NULL || !(op->op_flags & OP_END));
+	} else
+		return(1);
 }
 
 /*
@@ -474,7 +524,7 @@ char *get_opcode(char *s, char *l)
 		goto comment;
 	while (isspace((unsigned char) *l))
 		l++;
-	while (!isspace((unsigned char) *l) && *l != COMMENT)
+	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != '\0')
 		*s++ = toupper((unsigned char) *l++);
 comment:
 	*s = '\0';
@@ -550,7 +600,7 @@ char *next_arg(char *p, int *str_flag)
 	register char c;
 	register int sf;
 
-	sf = 1;					/* pretend it is a string */
+	sf = 1;					/* assume it is a string */
 	while (*p != '\0' && *p != ',') {
 		c = *p++;
 		if (c == STRDEL || c == STRDEL2) {

@@ -20,6 +20,7 @@ OBJ =   z80amain.o \
 	z80atab.o \
 	z80anum.o \
 	z80aout.o \
+	z80amfun.o \
 	z80arfun.o \
 	z80apfun.o \
 	z80aopc.o \
@@ -39,6 +40,9 @@ z80anum.o : z80anum.c z80a.h z80aglb.h
 
 z80aout.o : z80aout.c z80a.h z80aglb.h
 	$(CC) $(CFLAGS) -c z80aout.c
+
+z80amfun.o : z80amfun.c z80a.h z80aglb.h
+	$(CC) $(CFLAGS) -c z80amfun.c
 
 z80arfun.o : z80arfun.c z80a.h z80aglb.h
 	$(CC) $(CFLAGS) -c z80arfun.c
