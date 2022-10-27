@@ -75,7 +75,7 @@ extern void a_sort_sym(int);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	("usage: z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v\n"
+	("usage: z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v -m\n"
 	 "              -o<file> -l[<file>] -d<symbol> ... <file> ..."),/* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
@@ -205,6 +205,10 @@ void options(int argc, char *argv[])
 				break;
 			case 'v':
 				ver_flag = 1;
+				break;
+			case 'm':
+				if (mac_list_flag < 2)
+					mac_list_flag++;
 				break;
 			case 'e':
 				if (*++s == '\0') {
@@ -339,7 +343,7 @@ void process_file(char *fn)
 int process_line(char *l)
 {
 	register char *p;
-	register int op_count, lbl_flag, expn_flag;
+	register int op_count, lbl_flag, expn_flag, lflag;
 	register struct opc *op;
 
 	/*
@@ -399,16 +403,25 @@ int process_line(char *l)
 				a_mode = A_STD;
 		} else
 			a_mode = A_NONE;
-	} else {
+	} else if (gencode > 0) {
 		asmerr(E_ILLOPC);
 		a_mode = A_NONE;
 	}
 	if (pass == 2) {
 		if (gencode > 0 && (op == NULL || !(op->op_flags & OP_DS)))
 			obj_writeb(op_count);
+		lflag = 1;
 		/* already listed INCLUDE */
-		if ((op == NULL || !(op->op_flags & OP_INCL))
-		    && !(expn_flag && (a_mode == A_NONE || op_count == 0)))
+		if (op != NULL && (op->op_flags & OP_INCL))
+			lflag = 0;
+		else if (expn_flag) {
+			if (mac_list_flag == M_NONE)
+				lflag = 0;
+			else if (mac_list_flag == M_OPS
+				 && (op_count == 0 || a_mode == A_NONE))
+				lflag = 0;
+		}
+		if (lflag)
 			lst_line(l, pc, op_count, expn_flag);
 	}
 	if (gencode > 0) {

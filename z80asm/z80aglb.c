@@ -48,6 +48,7 @@ int  list_flag,			/* flag for option -l */
      undoc_flag,		/* flag for option -u */
      ver_flag,			/* flag for option -v */
      nofill_flag,		/* flag for option -x */
+     mac_list_flag,		/* flag for option -m */
      radix,			/* current radix, set to 10 at start of pass */
      opset = OPSET_Z80,		/* current operations set (default Z80) */
      rpc,			/* real program counter */
