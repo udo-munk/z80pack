@@ -1,6 +1,6 @@
 Usage:
 
-z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v
+z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v -m
        -o<file> -l[<file>] -d<symbol> ... <file> ...
 
 A maximum of 512 source files is allowed. If the file name of a source
@@ -48,6 +48,11 @@ Accept undocumented Z80 instructions.
 
 Option v:
 Verbose operation of the assembler.
+
+Option m:
+Modify macro expansion listing. Use once to list all macro expansions,
+twice to list no macro expansions.
+The default is to list only macro expansions that produce object code.
 
 Option o:
 To override the default name of the output file. Without this option the

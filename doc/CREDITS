@@ -61,6 +61,6 @@ Thomas Eberhardt <sneakywumpus@gmail.com>
 For completing the implementation of the undocumented Z80 instructions,
 in the simulator, disassembler and assembler.
 For some improvements to the simulator.
-For much work on the assembler: 8080 mode, new expression parser,
+For much work on the assembler: macros, new expression parser, 8080 mode,
 and various other improvements and bug fixes.
 For refactoring the ICE so that it can be better attached to systems.

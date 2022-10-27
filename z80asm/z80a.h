@@ -191,6 +191,13 @@ struct inc {
 #define A_NONE		4	/* no address */
 
 /*
+ *	definition of macro list flag options
+ */
+#define	M_OPS		0	/* only list macro expansions producing ops */
+#define M_ALL		1	/* list all macro expansions */
+#define M_NONE		2	/* list no macro expansions */
+
+/*
  *	definition of error numbers for error messages in listfile
  */
 #define E_NOERR		0	/* no error (used by eval()) */

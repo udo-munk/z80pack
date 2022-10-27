@@ -31,8 +31,8 @@
 
 /* z80amfun.c */
 extern int op_endm(int, int), op_exitm(int, int), op_irp(int, int);
-extern int op_irpc(int, int), op_local(int, int), op_macro(int, int);
-extern int op_mcond(int, int), op_rept(int, int);
+extern int op_local(int, int), op_macro(int, int), op_mcond(int, int);
+extern int op_rept(int, int);
 
 /* z80apfun.c */
 extern int op_opset(int, int), op_org(int, int), op_radix(int, int);
@@ -108,8 +108,8 @@ struct opc opctab_psd[] = {
 	{ "IFT",	op_cond,	5,	0,	OP_COND	 },
 	{ "INCLUDE",	op_misc,	6,	0,	OP_INCL  | OP_NOLBL
 								 | OP_NOPRE },
-	{ "IRP",	op_irp,		0,	0,	OP_MDEF  | OP_NOPRE },
-	{ "IRPC",	op_irpc,	0,	0,	OP_MDEF  | OP_NOPRE },
+	{ "IRP",	op_irp,		1,	0,	OP_MDEF  | OP_NOPRE },
+	{ "IRPC",	op_irp,		2,	0,	OP_MDEF  | OP_NOPRE },
 	{ "LIST",	op_misc,	2,	0,	OP_NOLBL | OP_NOOPR },
 	{ "LOCAL",	op_local,	0,	0,	OP_NOLBL },
 	{ "MACLIB",	op_misc,	6,	0,	OP_INCL  | OP_NOLBL
