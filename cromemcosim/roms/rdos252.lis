@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 1
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 1
 Source file: rdos252.asm
 Title:       
 
@@ -9,12 +9,12 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        4      4 ;
                        5      5         ORG     0C000H
                        6      6 ;
-000d                   7      7 CR	EQU	0DH
-0020                   8      8 SPACE	EQU	20H
-0008                   9      9 BS	EQU	08H
-001b                  10     10 ESC	EQU	1BH
-0027                  11     11 squote	equ	27h
-0080                  12     12 msbon	EQU	80H
+000d  =                7      7 CR	EQU	0DH
+0020  =                8      8 SPACE	EQU	20H
+0008  =                9      9 BS	EQU	08H
+001b  =               10     10 ESC	EQU	1BH
+0027  =               11     11 squote	equ	27h
+0080  =               12     12 msbon	EQU	80H
                       13     13 ;
 c000  f3              14     14 start:	DI
 c001  18 3c           15     15 	JR	cldst
@@ -63,7 +63,7 @@ c054  20 fc           57     57 	JR	NZ,clp2
 c056  24              58     58 	INC	H
 c057  22 62 00        59     59 	LD	(62H),HL
 c05a  22 64 00        60     60 	LD	(64H),HL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 2
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 2
 Source file: rdos252.asm
 Title:       
 
@@ -128,7 +128,7 @@ c0ef  fe e5          108    117 	CP	0E5H
 c0f1  20 07          109    118 	JR	NZ,C0FA
 c0f3  cd 06 c8       110    119 C0F3:	CALL	ptfol
 c0f6  0d ce          111    120         DEFB    CR,'N'+msbon
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 3
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 3
 Source file: rdos252.asm
 Title:       
 
@@ -193,7 +193,7 @@ c17a  cd 86 c1       160    177 	CALL	C186
 c17d  7e             161    178 	LD	A,(HL)
 c17e  23             162    179 	INC	HL
 c17f  66             163    180 	LD	H,(HL)
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 4
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 4
 Source file: rdos252.asm
 Title:       
 
@@ -258,7 +258,7 @@ c1e2  3a 6c 00       220    237 C1E2:	LD	A,(6CH)
 c1e5  b7             221    238 	OR	A
 c1e6  c8             222    239 	RET	Z
 c1e7  cd fe c7       223    240 	CALL	pt7ba
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 5
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 5
 Source file: rdos252.asm
 Title:       
 
@@ -323,7 +323,7 @@ c24d  e6 08          280    297 	AND	8
 c24f  28 5d          281    298 	JR	Z,C2AE	; baud rate preset
 c251  3e 0a          282    299 C251:	LD	A,0AH
 c253  d3 02          283    300 	OUT	(2),A	; UART command register
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 6
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 6
 Source file: rdos252.asm
 Title:       
 
@@ -388,7 +388,7 @@ c2c6  47             340    357 	LD	B,A
 c2c7  13             341    358 	INC	DE
 c2c8  1a             342    359 	LD	A,(DE)
 c2c9  fe 3b          343    360 	CP	';'
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 7
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 7
 Source file: rdos252.asm
 Title:       
 
@@ -453,7 +453,7 @@ c33d  21 64 00       400    417 	LD	HL,64H
 c340  cd f1 cf       401    418 	CALL	dela1
 c343  18 db          402    419 	JR	C320
                      403    420 ;
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 8
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 8
 Source file: rdos252.asm
 Title:       
 
@@ -518,7 +518,7 @@ c3c4  cd de c3       457    477 	CALL	C3DE
 c3c7  cd 14 c8       458    478 	CALL	loctok
 c3ca  fe 43          459    479 	CP	'C'
 c3cc  20 06          460    480 	JR	NZ,C3D4
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 9
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 9
 Source file: rdos252.asm
 Title:       
 
@@ -583,7 +583,7 @@ c436  c3 55 c1       513    536 	JP	inlp
 c439  cd 27 c8       515    538 C439:	CALL	fndeol
 c43c  3a 77 00       516    539 	LD	A,(77H)
 c43f  f5             517    540 	PUSH	AF
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 10
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 10
 Source file: rdos252.asm
 Title:       
 
@@ -648,7 +648,7 @@ c4ba  32 70 00       573    597 	LD	(70H),A
 c4bd  e1             574    598 	POP	HL
 c4be  af             575    599 	XOR	A
 c4bf  b4             576    600 	OR	H
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 11
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 11
 Source file: rdos252.asm
 Title:       
 
@@ -713,7 +713,7 @@ c52c  60             632    657 	LD	H,B
 c52d  69             633    658 	LD	L,C
 c52e  d5             634    659 C52E:	PUSH	DE
 c52f  e5             635    660 	PUSH	HL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 12
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 12
 Source file: rdos252.asm
 Title:       
 
@@ -778,7 +778,7 @@ c5ae  46             686    717 	LD	B,(HL)
 c5af  c5             687    718 	PUSH	BC
 c5b0  cb ce          688    719 	SET	1,(HL)
 c5b2  cd 5f cd       689    720 	CALL	CD5F
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 13
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 13
 Source file: rdos252.asm
 Title:       
 
@@ -843,7 +843,7 @@ c61b  c3 9b c3       745    776 	JP	C39B
 c61e  3a 7e 00       747    778 C61E:	LD	A,(7EH)
 c621  cb 6f          748    779 	BIT	5,A
 c623  c8             749    780 	RET	Z
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 14
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 14
 Source file: rdos252.asm
 Title:       
 
@@ -908,7 +908,7 @@ c686  cd 5b c8       806    837 	CALL	C85B
 c689  cd e2 c7       807    838 C689:	CALL	hxphl
 c68c  7e             808    839 	LD	A,(HL)
 c68d  cd db c7       809    840 	CALL	pspa
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 15
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 15
 Source file: rdos252.asm
 Title:       
 
@@ -973,7 +973,7 @@ c6eb  1b             866    897 	DEC	DE
 c6ec  7a             867    898 	LD	A,D
 c6ed  b3             868    899 	OR	E
 c6ee  20 e2          869    900 	JR	NZ,C6D2
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 16
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 16
 Source file: rdos252.asm
 Title:       
 
@@ -1038,7 +1038,7 @@ c748  b1             926    957 	OR	C
 c749  28 01          927    958 	JR	Z,C74C
 c74b  59             928    959 	LD	E,C
 c74c  c5             929    960 C74C:	PUSH	BC
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 17
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 17
 Source file: rdos252.asm
 Title:       
 
@@ -1103,7 +1103,7 @@ c7a9  d5             986   1017 	PUSH	DE
 c7aa  cd ea cb       987   1018 	CALL	CBEA
 c7ad  e3             988   1019 	EX	(SP),HL
 c7ae  23             989   1020 	INC	HL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 18
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 18
 Source file: rdos252.asm
 Title:       
 
@@ -1168,7 +1168,7 @@ c7fe  f5            1046   1077 pt7ba:	PUSH	AF	; print 7-bit char.
 c7ff  e6 7f         1047   1078 	AND	7FH
 c801  cd 99 cc      1048   1079 	CALL	CC99
 c804  f1            1049   1080 	POP	AF
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 19
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 19
 Source file: rdos252.asm
 Title:       
 
@@ -1233,7 +1233,7 @@ c85b  e5            1106   1137 C85B:	PUSH	HL
 c85c  cd ad c8      1107   1138 	CALL	C8AD
 c85f  38 01         1108   1139 	JR	C,C862
 c861  e3            1109   1140 	EX	(SP),HL
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 20
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 20
 Source file: rdos252.asm
 Title:       
 
@@ -1298,7 +1298,7 @@ c8ac  c9            1166   1197 	RET
                     1167   1198 ;
 c8ad  cd 14 c8      1168   1199 C8AD:	CALL	loctok
 c8b0  cd e0 c8      1169   1200 C8B0:	CALL	C8E0
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 21
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 21
 Source file: rdos252.asm
 Title:       
 
@@ -1363,7 +1363,7 @@ c903  09            1226   1257 	ADD	HL,BC
 c904  c1            1227   1258 	POP	BC
 c905  cd 86 c1      1228   1259 	CALL	C186
 c908  18 ed         1229   1260 	JR	C8F7
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 22
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 22
 Source file: rdos252.asm
 Title:       
 
@@ -1428,7 +1428,7 @@ c974  68            1285   1317 	LD	L,B
 c975  cd fc c7      1286   1318 C975:	CALL	ptspc
 c978  e5            1287   1319 	PUSH	HL
 c979  11 00 10      1288   1320 	LD	DE,1000H
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 23
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 23
 Source file: rdos252.asm
 Title:       
 
@@ -1493,7 +1493,7 @@ c9f8  21 20 ca      1334   1377 	LD	HL,sektab
 c9fb  db 31         1335   1378 seklp:	IN	A,(31H)
 c9fd  32 7d 00      1336   1379 	LD	(7DH),A
 ca00  7e            1337   1380 	LD	A,(HL)
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 24
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 24
 Source file: rdos252.asm
 Title:       
 
@@ -1558,7 +1558,7 @@ ca7e  65 20 74 65   1384   1437
 ca82  73 74 20 4d   1384   1438
 ca86  41 59 20 44   1384   1439
 ca8a  45 53 54 52   1384   1440
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 25
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 25
 Source file: rdos252.asm
 Title:       
 
@@ -1623,7 +1623,7 @@ cb3b  cd b0 cb      1414   1497 	CALL	CBB0
 cb3e  38 87         1415   1498 	JR	C,CAC7
 cb40  cd 06 c8      1416   1499 	CALL	ptfol
 cb43  50 61 74 74   1417   1500 	DEFB	'Pattern compare',SPACE+msbon
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 26
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 26
 Source file: rdos252.asm
 Title:       
 
@@ -1688,7 +1688,7 @@ cbc4  cd 06 c8      1468   1557 	CALL	ptfol
 cbc7  20 77 72 69   1469   1558 	DEFB	' write',SPACE+msbon
 cbcb  74 65 a0      1469   1559
 cbce  cd ab c5      1470   1560 	CALL	C5AB
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 27
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 27
 Source file: rdos252.asm
 Title:       
 
@@ -1753,7 +1753,7 @@ cc3a  18 b6         1527   1617 	JR	CBF2
 cc3c  36 00         1528   1618 CC3C:	LD	(HL),0
 cc3e  78            1529   1619 	LD	A,B
 cc3f  13            1530   1620 	INC	DE
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 28
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 28
 Source file: rdos252.asm
 Title:       
 
@@ -1818,7 +1818,7 @@ cc9d  d9            1587   1677 	EXX
 cc9e  c4 cb cc      1588   1678 	CALL	NZ,CCCB
 cca1  cd 23 cd      1589   1679 	CALL	CD23
 cca4  db 00         1590   1680 CCA4:	IN	A,(0)	;check cons. status
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 29
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 29
 Source file: rdos252.asm
 Title:       
 
@@ -1883,7 +1883,7 @@ cd05  13            1647   1737 	INC	DE
 cd06  1a            1648   1738 	LD	A,(DE)
 cd07  fe 4e         1649   1739 	CP	'N'
 cd09  28 0e         1650   1740 	JR	Z,CD19
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 30
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 30
 Source file: rdos252.asm
 Title:       
 
@@ -1948,7 +1948,7 @@ cd62  cd 9f ce      1707   1797 	CALL	CE9F
 cd65  d1            1708   1798 	POP	DE
 cd66  d0            1709   1799 	RET	NC
 cd67  15            1710   1800 	DEC	D
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 31
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 31
 Source file: rdos252.asm
 Title:       
 
@@ -2013,7 +2013,7 @@ cdcf  d3 34         1767   1857 	OUT	(34H),A
 cdd1  3a 75 00      1768   1858 	LD	A,(75H)
 cdd4  d3 33         1769   1859 	OUT	(33H),A
 cdd6  4f            1770   1860 	LD	C,A
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 32
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 32
 Source file: rdos252.asm
 Title:       
 
@@ -2078,7 +2078,7 @@ ce3e  cd cf cf      1827   1917 CE3E:	CALL	CFCF
 ce41  21 64 00      1828   1918 	LD	HL,64H
 ce44  cd f1 cf      1829   1919 	CALL	dela1
 ce47  db 30         1830   1920 	IN	A,(30H)
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 33
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 33
 Source file: rdos252.asm
 Title:       
 
@@ -2143,7 +2143,7 @@ ceac  5f            1887   1977 	LD	E,A
 cead  7a            1888   1978 	LD	A,D
 ceae  d3 34         1889   1979 	OUT	(34H),A
 ceb0  7b            1890   1980 	LD	A,E
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 34
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 34
 Source file: rdos252.asm
 Title:       
 
@@ -2208,7 +2208,7 @@ cf17  d8            1947   2037 	RET	C
 cf18  db 33         1948   2038 	IN	A,(33H)
 cf1a  ae            1949   2039 	XOR	(HL)
 cf1b  c0            1950   2040 	RET	NZ
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 35
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 35
 Source file: rdos252.asm
 Title:       
 
@@ -2273,7 +2273,7 @@ cf77  3a 73 00      2007   2097 	LD	A,(73H)
 cf7a  b8            2008   2098 	CP	B
 cf7b  20 1b         2009   2099 	JR	NZ,CF98
 cf7d  3a 74 00      2010   2100 	LD	A,(74H)
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 36
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 36
 Source file: rdos252.asm
 Title:       
 
@@ -2338,7 +2338,7 @@ cfdc  a7            2067   2157 	AND	A
 cfdd  28 02         2068   2158 	JR	Z,CFE1
 cfdf  06 7d         2069   2159 	LD	B,7DH	; opposite side
 cfe1  78            2070   2160 CFE1:	LD	A,B
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 37
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 37
 Source file: rdos252.asm
 Title:       
 
@@ -2365,7 +2365,7 @@ cffe  c9            2089   2179 	RET
                     2090   2180 ;
 cfff  ff            2091   2181 	DEFB	0FFH
 d000                2092   2182 	END
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 38
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 38
 Source file: rdos252.asm
 Title:       Symbol table
 
@@ -2431,7 +2431,7 @@ CE3E     ce3e 	CE50     ce50 	CE58     ce58 	CE5D     ce5d
 CE6F     ce6f 	CE78     ce78 	CE85     ce85 	CE8D     ce8d 	
 CE8F     ce8f 	CE9F     ce9f 	CEB3     ceb3 	CEC5     cec5 	
 CECA     ceca 	CEE5     cee5 	CEEE     ceee 	CEEF     ceef 	
-Z80-Assembler	Release 1.11-dev	Tue Oct  4 12:02:56 2022	Page 39
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:04 2022	Page 39
 Source file: rdos252.asm
 Title:       Symbol table
 

@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:03 2022	Page 1
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:16:31 2022	Page 1
 Source file: umzapex.asm
 Title:       <Zapple Monitor Extension for MITS ALTAIR>
 
@@ -11,18 +11,18 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        6      6 ;
                        7      7 ; V1.0 - OCT. 2017 - UDO MUNK
                        8      8 ;
-f800                   9      9 BASE	EQU	0F800H
+f800  =                9      9 BASE	EQU	0F800H
                       10     10 ;
                       11     11 ; I/O DEFINITIONS
                       12     12 ;
-0002                  13     13 LSTAT	EQU	02H		;PRINTER STATUS PORT
-0003                  14     14 LDATA	EQU	03H		;PRINTER DATA PORT
-0001                  15     15 LPTR	EQU	01H		;PRINTER READY BIT
+0002  =               13     13 LSTAT	EQU	02H		;PRINTER STATUS PORT
+0003  =               14     14 LDATA	EQU	03H		;PRINTER DATA PORT
+0001  =               15     15 LPTR	EQU	01H		;PRINTER READY BIT
                       16     16 ;
-0012                  17     17 SIO2S	EQU	12H		;MITS 2SIO B STATUS PORT
-0013                  18     18 SIO2D	EQU	13H		;MITS 2SIO B DATA PORT
-0001                  19     19 RDA	EQU	01H		;MITS 2SIO RECEIVER DATA AVAILABLE
-0002                  20     20 TBE	EQU	02H		;MITS 2SIO TRANSMIT BUFFER EMPTY
+0012  =               17     17 SIO2S	EQU	12H		;MITS 2SIO B STATUS PORT
+0013  =               18     18 SIO2D	EQU	13H		;MITS 2SIO B DATA PORT
+0001  =               19     19 RDA	EQU	01H		;MITS 2SIO RECEIVER DATA AVAILABLE
+0002  =               20     20 TBE	EQU	02H		;MITS 2SIO TRANSMIT BUFFER EMPTY
                       21     21 ;
                       22     22 	ORG	BASE
                       23     23 ;
@@ -63,7 +63,7 @@ f835  ca 31 f8        57     57 	JP	Z,PUNOUT	;NO, WAIT
 f838  79              58     58 	LD	A,C		;GET DATA FROM REGISTER C
 f839  d3 13           59     59 	OUT	(SIO2D),A	;AND SEND IT
 f83b  c9              60     60 	RET
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:03 2022	Page 2
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:16:31 2022	Page 2
 Source file: umzapex.asm
 Title:       <Zapple Monitor Extension for MITS ALTAIR>
 
@@ -95,7 +95,7 @@ f849                  84     84 KCMD:
 f849  c9              85     85 OCMD:	RET
                       86     86 
 f84a                  87     87 	END
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:18:03 2022	Page 3
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:16:31 2022	Page 3
 Source file: umzapex.asm
 Title:       Symbol table
 

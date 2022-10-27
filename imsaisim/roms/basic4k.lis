@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 1
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 1
 Source file: basic4k.asm
 Title:       
 
@@ -11,7 +11,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        6      6       ORG   0
                        7      7 ;
                        8      8 ;
-0000                   9      9 BASIC EQU   $
+0000  =                9      9 BASIC EQU   $
 0000  21 00 14        10     10       LD    HL,RAM+1024      ;POINT FIRST POSSIBLE END OF RAM
                       11     11 ;     LD    A,0FAH           ;GET MODE SET
 0003  3e ba           12     12       LD    A,0BAH           ;**UM**
@@ -19,7 +19,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       14     14 ;
                       15     15 ;
                       16     16       ORG   8
-0008                  17     17 RST1  EQU   $
+0008  =               17     17 RST1  EQU   $
                       18     18 ;
                       19     19 ;SKIP CHARS POINTED TO BY HL UNTIL NON-BLANK,
                       20     20 ;LEAVE IN REG A
@@ -32,7 +32,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       27     27 ;
                       28     28 ;
                       29     29       ORG   16
-0010                  30     30 RST2  EQU   $
+0010  =               30     30 RST2  EQU   $
                       31     31 ;
                       32     32 ;COMPARE STRING AT (HL) TO STRING AT (DE)
                       33     33 ;RETURN IF EQUAL (THRU X'00' IN DE) OR ON FIRST NOT EQUAL
@@ -47,7 +47,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       42     42 ;
                       43     43 ;
                       44     44       ORG   24
-0018                  45     45 RST3  EQU   $
+0018  =               45     45 RST3  EQU   $
                       46     46 ;
                       47     47 ;PRINT: 'XX ERR @ NNNN'
                       48     48 ;
@@ -58,12 +58,12 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       53     53 ;
                       54     54 ;
                       55     55       ORG   32
-0020                  56     56 RST4  EQU   $
+0020  =               56     56 RST4  EQU   $
                       57     57 ;
                       58     58 ;SHIFT THE LOW ORDER 4 BITS OF REG A TO THE HIGH 4 BITS
                       59     59 ;
 0020  e6 0f           60     60       AND   0FH              ;ISOLATE LOW 4
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 2
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 2
 Source file: basic4k.asm
 Title:       
 
@@ -76,7 +76,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       66     66 ;
                       67     67 ;
                       68     68       ORG   40
-0028                  69     69 RST5  EQU   $
+0028  =               69     69 RST5  EQU   $
                       70     70 ;
                       71     71 ;LOAD THE FLOATING POINT ACCUMULATOR WITH THE 4 BYTES AT (HL)
                       72     72 ;
@@ -86,7 +86,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       76     76 ;
                       77     77 ;
                       78     78       ORG 48
-0030                  79     79 RST6  EQU   $
+0030  =               79     79 RST6  EQU   $
                       80     80 ;
                       81     81 ;STORE THE FLOATING POINT ACCUMULATOR AT (HL)
                       82     82 ;
@@ -96,7 +96,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       86     86 ;
                       87     87 ;
                       88     88       ORG   56
-0038                  89     89 RST7  EQU   $
+0038  =               89     89 RST7  EQU   $
                       90     90 ;
                       91     91 ;INCREMENT HL BY BYTE AT (SP), RETURN TO (SP)+1
                       92     92 ;
@@ -116,7 +116,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      106    106 ;
                      107    107 ;
                      108    108 ;
-0049                 109    109 CONTI EQU   $
+0049  =              109    109 CONTI EQU   $
                      110    110 ;
                      111    111 ;INITIALIZATION ROUTINE
                      112    112 ;DETERMINE MEMORY SIZE. (START AT 4K AND TRY 1K INCREMENTS)
@@ -128,14 +128,14 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      118    118 ;     LD    A,17H            ;CMND: DTR, ENABLE TRNS, & RCVR,
 004b  3e 37          119    119       LD    A,37H            ;**UM**
                      120    120 ;     OUT   (TTY-1),A        ;WRITE TO SIO
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 3
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 3
 Source file: basic4k.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 004d  d3 03          121    121       OUT   (TTY+1),A        ;**UM**
 004f  01 00 04       122    122       LD    BC,1024          ;1K INCR
-0052                 123    123 FINDL EQU   $
+0052  =              123    123 FINDL EQU   $
 0052  7e             124    124       LD    A,(HL)           ;GET A BYTE FROM MEMORY
 0053  2f             125    125       CPL                    ;COMPLEMENT
 0054  77             126    126       LD    (HL),A           ;REPLACE
@@ -171,7 +171,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0088  e6 02          156    156       AND   2                ;**UM**
 008a  ca 83 00       157    157       JP    Z,GENRN
                      158    158 *HEADING IMSAI 8080 4K BASIC
-008d                 159    159 READY EQU   $
+008d  =              159    159 READY EQU   $
                      160    160 ;
                      161    161 ;
                      162    162 ;COMMAND INPUT ROUTINE
@@ -193,7 +193,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00a1  eb             178    178       EX    DE,HL            ;FLIP/FLOP
 00a2  70             179    179       LD    (HL),B           ;PUT LO LINE
 00a3  23             180    180       INC   HL               ;POINT NEXT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 4
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 4
 Source file: basic4k.asm
 Title:       
 
@@ -258,7 +258,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0102  09             238    238       ADD   HL,BC            ;DISP LEN OF INSERT
 0103  22 1a 11       239    239       LD    (PROGE),HL       ;UPDATE END POINT
 0106  c1             240    240       POP   BC               ;GET ADDR
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 5
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 5
 Source file: basic4k.asm
 Title:       
 
@@ -280,7 +280,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 011d  cd 57 0e       255    255       CALL  COPYH            ;GO MOVE IT
 0120  c3 8d 00       256    256       JP    GETCM            ;GO COMMAND
                      257    257 *HEADING IMSAI 8080 4K BASIC
-0123                 258    258 EXEC  EQU   $
+0123  =              258    258 EXEC  EQU   $
                      259    259 ;
                      260    260 ;
                      261    261 ;
@@ -322,8 +322,8 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0167  21 d0 10       297    297       LD    HL,IMMED         ;POINT START OF CMMD
 016a  c3 a2 01       298    298       JP    IMMD             ;GO IMMEDIATE
                      299    299 *HEADING IMSAI 8080 4K BASIC
-016d                 300    300 RUNIT EQU   $
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 6
+016d  =              300    300 RUNIT EQU   $
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 6
 Source file: basic4k.asm
 Title:       
 
@@ -351,14 +351,14 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 018c  19             321    321       ADD   HL,DE            ;INCR STMT POINTER
 018d  22 5d 10       322    322       LD    (STMT),HL        ;SAVE IT
                      323    323 ;
-0190                 324    324 NEXTS EQU   $
+0190  =              324    324 NEXTS EQU   $
 0190  3a 62 10       325    325       LD    A,(RUNSW)        ;GET RUN TYPE
 0193  b7             326    326       OR    A                ;TEST IT
 0194  c2 8d 00       327    327       JP    NZ,GETCM         ;BRIF IMMEDIATE MODE
 0197  7e             328    328       LD    A,(HL)           ;GET LEN CODE
 0198  b7             329    329       OR    A                ;SEE IF NO MORE STATEMENTS
 0199  ca 8d 00       330    330       JP    Z,READY          ;BRIF END
-019c                 331    331 NOTDO EQU   $
+019c  =              331    331 NOTDO EQU   $
 019c  23             332    332       INC   HL               ;POINT LINE NUMBER
 019d  22 6a 10       333    333       LD    (LINE),HL        ;SAVE ADDR
 01a0  23             334    334       INC   HL               ;POINT 2ND BYTE
@@ -388,7 +388,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01c4  c2 c1 01       358    358       JP    NZ,NOJMP         ;BRIF NOT
 01c7  13             359    359       INC   DE               ;POINT NEXT
 01c8  13             360    360       INC   DE               ;DITTO
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 7
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 7
 Source file: basic4k.asm
 Title:       
 
@@ -399,7 +399,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01cd  2a 57 10       364    364 TABEN LD    HL,(ADDR1)       ;RESTORE HL POINTER
 01d0  c3 1a 04       365    365       JP    LET              ;ASSUME IT'S A LET STATEMENT
                      366    366 *HEADING IMSAI 8080 4K BASIC
-01d3                 367    367 LIST  EQU   $
+01d3  =              367    367 LIST  EQU   $
                      368    368 ;
                      369    369 ;
                      370    370 ;LIST PROCESSOR
@@ -423,7 +423,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01f0  c3 d6 01       388    388       JP    LISTX            ;CONTINUE
                      389    389 ;
                      390    390 *HEADING IMSAI 8080 4K BASIC
-01f3                 391    391 GOSUB EQU   $
+01f3  =              391    391 GOSUB EQU   $
                      392    392 ;
                      393    393 ;
                      394    394 ; STMT:  GOSUB NNNN
@@ -436,7 +436,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01fb  eb             401    401       EX    DE,HL            ;RESTORE HL
                      402    402 ;
                      403    403 ;
-01fc                 404    404 GOTO  EQU   $
+01fc  =              404    404 GOTO  EQU   $
                      405    405 ;
                      406    406 ;
                      407    407 ; STMT:  GOTO NNNN
@@ -453,7 +453,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 020d  23             418    418       INC   HL               ;POINT NEXT BYTE
 020e  7e             419    419       LD    A,(HL)           ;GET LOW LINE NUMBER
 020f  2b             420    420       DEC   HL               ;POINT BACK
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 8
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 8
 Source file: basic4k.asm
 Title:       
 
@@ -470,7 +470,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0222  19             430    430       ADD   HL,DE            ;POINT NEXT STMT
 0223  c3 02 02       431    431       JP    GOTO1            ;LOOP
                      432    432 *HEADING IMSAI 8080 4K BASIC
-0226                 433    433 RETUR EQU   $
+0226  =              433    433 RETUR EQU   $
                      434    434 ;
                      435    435 ;
                      436    436 ; STMT:  RETURN
@@ -482,7 +482,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 022d  22 5d 10       442    442       LD    (STMT),HL        ;RESTORE
 0230  c3 86 01       443    443       JP    RUN              ;CONTINUE AT STMT FOLLOWING GOSUB
                      444    444 *HEADING IMSAI 8080 4K BASIC
-0233                 445    445 PRINT EQU   $
+0233  =              445    445 PRINT EQU   $
                      446    446 ;
                      447    447 ;
                      448    448 ; STMT:  PRINT . . . .
@@ -518,7 +518,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0267  ca 57 02       478    478       JP    Z,PR4            ;BRIF IT IS
 026a  fe 2c          479    479       CP    ','              ;TEST IF COMMA
 026c  ca 87 02       480    480       JP    Z,PR7            ;BRIF IT IS
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 9
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 9
 Source file: basic4k.asm
 Title:       
 
@@ -561,7 +561,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02b4  cd b9 0d       516    516 TBEND CALL  CRLF             ;PUT CR/LF
 02b7  c3 ad 02       517    517       JP    PR8              ;GO SET SW
                      518    518 *HEADING IMSAI 8080 4K BASIC
-02ba                 519    519 FOR   EQU   $
+02ba  =              519    519 FOR   EQU   $
                      520    520 ;
                      521    521 ;
                      522    522 ; STMT:  FOR VAR = EXPR TO EXPR :STEP EXPR:
@@ -583,7 +583,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02d4  22 57 10       538    538       LD    (ADDR1),HL       ;SAVE ADDR
 02d7  f7             539    539       RST   RST6             ;GO STORE THE VALUE
 02d8  e1             540    540       POP   HL               ;RESTORE POINTER TO STMT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 10
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 10
 Source file: basic4k.asm
 Title:       
 
@@ -648,7 +648,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 034a  d2 85 0e       598    598       JP    NC,FOERR         ;ERROR IF MORE THAN 8 OPEN FOR/NEXT
 034d  32 6e 10       599    599       LD    (FORNE),A        ;PUT IN TABLE
 0350  72             600    600       LD    (HL),D           ;STORE IT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 11
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 11
 Source file: basic4k.asm
 Title:       
 
@@ -701,7 +701,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 039e  c2 6e 03       646    646       JP    NZ,LNEXT         ;BRIF NOT END
 03a1  c3 86 01       647    647       JP    RUN              ;ELSE, GO NEXT STMT
                      648    648 *HEADING IMSAI 8080 4K BASIC
-03a4                 649    649 IF    EQU   $
+03a4  =              649    649 IF    EQU   $
                      650    650 ;
                      651    651 ;
                      652    652 ; STMT:  IF EXPR RELATION EXPR THEN STMT #
@@ -713,7 +713,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03ab  f7             658    658       RST   RST6             ;SAVE IT
 03ac  e1             659    659       POP   HL               ;RESTORE HL
 03ad  af             660    660       XOR   A                ;CLEAR A
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 12
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 12
 Source file: basic4k.asm
 Title:       
 
@@ -770,7 +770,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0414  c2 79 0e       710    710       JP    NZ,SNERR         ;BRIF ERROR
 0417  c3 fc 01       711    711       JP    GOTO             ;BRIF IT IS
                      712    712 *HEADING IMSAI 8080 4K BASIC
-041a                 713    713 LET   EQU   $
+041a  =              713    713 LET   EQU   $
                      714    714 ;
                      715    715 ;
                      716    716 ; STMT:  :LET: VAR = EXPR
@@ -778,7 +778,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      718    718 ;
 041a  cd 2f 0f       719    719       CALL  VAR              ;NEXT MUST BE VARIABLE NAME
 041d  fe 3d          720    720       CP    '='              ;TEST FOR EQUAL SIGN
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 13
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 13
 Source file: basic4k.asm
 Title:       
 
@@ -792,7 +792,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 042b  f7             727    727       RST   RST6             ;GO STORE VARIABLE
 042c  c3 86 01       728    728       JP    RUN              ;CONTINUE
                      729    729 *HEADING IMSAI 8080 4K BASIC
-042f                 730    730 NEXT  EQU   $
+042f  =              730    730 NEXT  EQU   $
                      731    731 ;
                      732    732 ;
                      733    733 ; STMT:  NEXT VAR
@@ -843,7 +843,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0475  cd cb 07       778    778       CALL  FSUB             ;SUBTRACT TO VALUE
 0478  cd 9e 09       779    779       CALL  FTEST            ;GET SIGN OF DIFFERENCE
 047b  ca 93 04       780    780       JP    Z,NXTZR          ;BRIF ZERO
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 14
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 14
 Source file: basic4k.asm
 Title:       
 
@@ -872,12 +872,12 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04a3  06 04          802    802       LD    B,4              ;LENGTH
 04a5  cd 60 0e       803    803       CALL  COPYD            ;GO MOVE TO I
 04a8  c3 86 01       804    804       JP    RUN              ;CONTINUE STMT AFTER FOR
-04ab                 805    805 NEXTZ EQU   $
+04ab  =              805    805 NEXTZ EQU   $
 04ab  21 6e 10       806    806       LD    HL,FORNE         ;GET ADDR TABLE
 04ae  35             807    807       DEC   (HL)             ;SUBTRACT ONE FROM COUNT
 04af  c3 86 01       808    808       JP    RUN              ;GO STMT AFTER NEXT
                      809    809 *HEADING IMSAI 8080 4K BASIC
-04b2                 810    810 INPUT EQU   $
+04b2  =              810    810 INPUT EQU   $
                      811    811 ;
                      812    812 ;
                      813    813 ; STMT:  INPUT VAR :, VAR, VAR:
@@ -908,7 +908,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04df  e1             838    838       POP   HL               ;RESTORE STMT POINTER
 04e0  cf             839    839       RST   RST1             ;SKIP SPACES
 04e1  fe 2c          840    840       CP    ','              ;TEST FOR COMMA
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 15
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 15
 Source file: basic4k.asm
 Title:       
 
@@ -918,7 +918,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04e7  2b             843    843       DEC   HL               ;POINT BACK
 04e8  c3 86 01       844    844       JP    RUN              ;GO NEXT STMT
                      845    845 *HEADING IMSAI 8080 4K BASIC
-04eb                 846    846 READ  EQU   $
+04eb  =              846    846 READ  EQU   $
                      847    847 ;
                      848    848 ; STMT:  READ VAR :,VAR ...:
                      849    849 ;
@@ -970,10 +970,10 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0541  c3 79 0e       895    895       JP    SNERR            ;GO PROCESS ERROR
                      896    896 ;
                      897    897 *HEADING IMSAI 8080 4K BASIC
-0544                 898    898 FIN   EQU   $
+0544  =              898    898 FIN   EQU   $
                      899    899 ;
                      900    900 ;FLOATING POINT INPUT CONVERSION ROUTINE
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 16
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 16
 Source file: basic4k.asm
 Title:       
 
@@ -1038,7 +1038,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05a4  3c             958    958       INC   A                ;PLUS ONE
 05a5  1f             959    959       RRA                    ;DIVIDE BY TWO
 05a6  e6 0f          960    960       AND   0FH              ;MASK OFF UNUSED BITS
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 17
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 17
 Source file: basic4k.asm
 Title:       
 
@@ -1103,7 +1103,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05ff  78            1018   1018       LD    A,B              ;GET EXPONENT
 0600  e6 7f         1019   1019       AND   7FH              ;TURN OFF HIGH BIT
 0602  b6            1020   1020       OR    (HL)             ;OR IN MANTISSA SIGN
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 18
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 18
 Source file: basic4k.asm
 Title:       
 
@@ -1113,7 +1113,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0605  eb            1023   1023 FIN20 EX    DE,HL            ;FLIP/FLOP
 0606  c9            1024   1024       RET                    ;RETURN
                     1025   1025 *HEADING IMSAI 8080 4K BASIC
-0607                1026   1026 FOUT  EQU   $
+0607  =             1026   1026 FOUT  EQU   $
                     1027   1027 ;
                     1028   1028 ;FLOATING POINT OUTPUT FORMAT ROUTINE
                     1029   1029 ;
@@ -1168,7 +1168,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 064b  79            1078   1078       LD    A,C              ;RELOAD EXPONENT BYTE
 064c  f6 c0         1079   1079       OR    0C0H             ;SET ALL ON
 064e  2f            1080   1080       CPL                    ;COMPLEMENT ACC
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 19
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 19
 Source file: basic4k.asm
 Title:       
 
@@ -1233,7 +1233,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06a5  fe 2e         1138   1138 FOX4  CP    '.'              ;TEST FOR TRAILING DOT
 06a7  c0            1139   1139       RET   NZ               ;RETURN IF NOT
 06a8  36 20         1140   1140       LD    (HL),' '         ;SPACE IT OUT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 20
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 20
 Source file: basic4k.asm
 Title:       
 
@@ -1266,7 +1266,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06cd  36 2e         1166   1166       LD    (HL),'.'         ;MOVE THE DOT
 06cf  c3 98 06      1167   1167       JP    FOX1             ;CONTINUE
                     1168   1168 *HEADING IMSAI 8080 4K BASIC
-06d2                1169   1169 FADD  EQU   $
+06d2  =             1169   1169 FADD  EQU   $
                     1170   1170 ;
                     1171   1171 ;
                     1172   1172 ;FLOATING POINT ADD THE NUMBER AT (HL) TO THE FACC
@@ -1298,7 +1298,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06fa  f0            1198   1198       RET   P                ;RETURN IF FACC > ADDER
 06fb  c3 28 00      1199   1199       JP    RST5             ;ELSE, ADDER > FACC
 06fe  f5            1200   1200 FADD4 PUSH  AF               ;SAVE DIFFERENCE
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 21
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 21
 Source file: basic4k.asm
 Title:       
 
@@ -1333,7 +1333,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 072d  e1            1228   1228       POP   HL               ;GET ADDR
 072e  0d            1229   1229       DEC   C                ;DECR CTR
 072f  c2 25 07      1230   1230       JP    NZ,FADD7         ;LOOP
-0732                1231   1231 FADD9 EQU   $
+0732  =             1231   1231 FADD9 EQU   $
 0732  11 2a 10      1232   1232       LD    DE,FACC          ;POINT SIGN OF ADDUEND
 0735  21 2e 10      1233   1233       LD    HL,FTEMP         ;AND SIGN OF ADDER
 0738  1a            1234   1234       LD    A,(DE)           ;GET SIGN OF ADDUEND
@@ -1359,11 +1359,11 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 075c  06 03         1254   1254       LD    B,3              ;CTR
 075e  cd e4 09      1255   1255       CALL  FSHFT            ;GO SHIFT IT
 0761  c9            1256   1256       RET                    ;RETURN
-0762                1257   1257 FADD1 EQU   $
+0762  =             1257   1257 FADD1 EQU   $
 0762  21 32 10      1258   1258       LD    HL,FTEMP+4       ;POINT TEMP2 AREA
 0765  06 04         1259   1259       LD    B,4              ;PREPARE TO SAVE ACC
 0767  cd 60 0e      1260   1260       CALL  COPYD            ;GO COPY
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 22
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 22
 Source file: basic4k.asm
 Title:       
 
@@ -1384,7 +1384,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 078c  12            1274   1274       LD    (DE),A           ;PUT TO NEW ACC
 078d  c3 6a 07      1275   1275       JP    FADX2            ;GO SUBTRACT AGAIN
                     1276   1276 *HEADING IMSAI 8080 4K BASIC
-0790                1277   1277 FNORM EQU   $
+0790  =             1277   1277 FNORM EQU   $
                     1278   1278 ;
                     1279   1279 ;
                     1280   1280 ;NORMALIZE THE FLOATING ACCUMULATOR
@@ -1428,13 +1428,13 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07c6  b0            1318   1318       OR    B                ;PLUS SAVED SIGN
 07c7  77            1319   1319       LD    (HL),A           ;PUT BACK
 07c8  c3 90 07      1320   1320       JP    FNORM            ;GO NORMALIZE
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 23
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 23
 Source file: basic4k.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1321   1321 *HEADING IMSAI 8080 4K BASIC
-07cb                1322   1322 FSUB  EQU   $
+07cb  =             1322   1322 FSUB  EQU   $
                     1323   1323 ;
                     1324   1324 ;
                     1325   1325 ;FLOATING POINT SUBTRACT THE NUMBER AT (HL) FROM THE FACC
@@ -1454,7 +1454,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07de  77            1339   1339       LD    (HL),A           ;REPLACE
 07df  c3 d2 06      1340   1340       JP    FADD             ;GO ADD THE TWO
                     1341   1341 *HEADING IMSAI 8080 4K BASIC
-07e2                1342   1342 FMUL  EQU   $
+07e2  =             1342   1342 FMUL  EQU   $
                     1343   1343 ;
                     1344   1344 ;
                     1345   1345 ;FLOATING POINT MULTIPLY THE NUMBER AT (HL) TO THE FACC
@@ -1493,7 +1493,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0815  88            1378   1378       ADC   A,B              ;ADD EXPONENTS TOGETHER
 0816  cd 8f 09      1379   1379       CALL  FOVUN            ;GO SEE IF OVERFLOW/UNDERFLOW
 0819  e6 7f         1380   1380       AND   7FH              ;TURN OFF SIGN
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 24
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 24
 Source file: basic4k.asm
 Title:       
 
@@ -1558,7 +1558,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0880  7e            1438   1438       LD    A,(HL)           ;GET MSD PAIR
 0881  e6 f0         1439   1439       AND   0F0H             ;ISOLATE LEFT HALF
 0883  c2 b1 08      1440   1440       JP    NZ,FMUX3         ;BRIF NORMALIZED
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 25
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 25
 Source file: basic4k.asm
 Title:       
 
@@ -1608,7 +1608,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08ca  da 49 07      1483   1483       JP    C,FADX1          ;BRIF CARRY INTO 7 DIGITS
 08cd  c3 90 07      1484   1484       JP    FNORM            ;GO NORMALIZE
                     1485   1485 *HEADING IMSAI 8080 4K BASIC
-08d0                1486   1486 FDIV  EQU   $
+08d0  =             1486   1486 FDIV  EQU   $
                     1487   1487 ;
                     1488   1488 ;
                     1489   1489 ;FLOATING POINT DIVIDE THE NUMBER AT (HL) INTO FACC
@@ -1623,7 +1623,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08d8  ca 71 0e      1498   1498       JP    Z,OVERR          ;DIVISION BY ZERO = ERROR
 08db  7e            1499   1499       LD    A,(HL)           ;LOAD EXPONENT OF DIVISOR
 08dc  cd ac 09      1500   1500       CALL  FEXP             ;GO GET EXPON
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 26
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 26
 Source file: basic4k.asm
 Title:       
 
@@ -1688,7 +1688,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 093f  47            1558   1558       LD    B,A              ;SAVE IT
 0940  2b            1559   1559       DEC   HL               ;POINT NEXT
 0941  0d            1560   1560       DEC   C                ;DECR CTR
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 27
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 27
 Source file: basic4k.asm
 Title:       
 
@@ -1727,7 +1727,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0987  fe 05         1592   1592       CP    5                ;COMPARE TO 5
 0989  da 90 07      1593   1593       JP    C,FNORM          ;BRIF LESS
 098c  c3 ba 08      1594   1594       JP    FROUN            ;ELSE, GO ROUND IT
-098f                1595   1595 FOVUN EQU   $                ;TEST IF EXPONENT OVERFLOW/UNDER
+098f  =             1595   1595 FOVUN EQU   $                ;TEST IF EXPONENT OVERFLOW/UNDER
 098f  f2 98 09      1596   1596       JP    P,FOVUX          ;BRIF POSITIVE
 0992  fe c1         1597   1597       CP    0C1H             ;TEST FOR UNDERFLOW
 0994  d0            1598   1598       RET   NC               ;RETIFNOT UNDERFLOW
@@ -1736,7 +1736,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 099a  d8            1601   1601       RET   C                ;RETIF LESS
 099b  c3 71 0e      1602   1602       JP    OVERR            ;ELSE, OVER/UNDEFLOW
                     1603   1603 *HEADING IMSAI 8080 4K BASIC
-099e                1604   1604 FTEST EQU   $
+099e  =             1604   1604 FTEST EQU   $
                     1605   1605 ;
                     1606   1606 ;TEST THE SIGN OF THE NUMBER IN THE FACC
                     1607   1607 ;RETURN WITH S & Z ZET TO SIGN
@@ -1749,11 +1749,11 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09a8  3a 2a 10      1614   1614       LD    A,(FACC)         ;RE-LOAD EXPON BYTE
 09ab  c9            1615   1615       RET                    ;THEN RETURN
                     1616   1616 *HEADING IMSAI 8080 4K BASIC
-09ac                1617   1617 FEXP  EQU   $
+09ac  =             1617   1617 FEXP  EQU   $
                     1618   1618 ;
                     1619   1619 ;EXPAND EXPONENT INTO 8 BINARY BITS
                     1620   1620 ;
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 28
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 28
 Source file: basic4k.asm
 Title:       
 
@@ -1765,7 +1765,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09b2  1f            1625   1625 FEXP1 RRA                    ;SHIFT BACK
 09b3  c9            1626   1626       RET                    ;RETURN
                     1627   1627 *HEADING IMSAI 8080 4K BASIC
-09b4                1628   1628 FSUBT EQU   $
+09b4  =             1628   1628 FSUBT EQU   $
                     1629   1629 ;
                     1630   1630 ;DECIMAL SUBTRACT THE TWO 6 DIGIT NUMBERS (DE) & (HL)
                     1631   1631 ;
@@ -1797,7 +1797,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09d4  c2 b5 09      1657   1657       JP    NZ,FSUX1         ;LOOP
 09d7  c9            1658   1658       RET                    ;RETURN
                     1659   1659 *HEADING IMSAI 8080 4K BASIC
-09d8                1660   1660 FADDT EQU   $
+09d8  =             1660   1660 FADDT EQU   $
                     1661   1661 ;
                     1662   1662 ;ADD TWO DECIMAL NUMBERS (DE) & (HL)
                     1663   1663 ;
@@ -1812,13 +1812,13 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09e0  c2 d9 09      1672   1672       JP    NZ,FADXT         ;LOOP
 09e3  c9            1673   1673       RET                    ;RETURN
                     1674   1674 *HEADING IMSAI 8080 4K BASIC
-09e4                1675   1675 FSHFT EQU   $
+09e4  =             1675   1675 FSHFT EQU   $
                     1676   1676 ;
                     1677   1677 ;INCREMENTING SHIFT RIGHT
                     1678   1678 ;
 09e4  7e            1679   1679       LD    A,(HL)           ;GET A BYTE
 09e5  5f            1680   1680       LD    E,A              ;SAVE IT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 29
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 29
 Source file: basic4k.asm
 Title:       
 
@@ -1834,7 +1834,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09f0  c2 e4 09      1689   1689       JP    NZ,FSHFT         ;LOOP
 09f3  c9            1690   1690       RET                    ;RETURN
                     1691   1691 *HEADING IMSAI 8080 4K BASIC
-09f4                1692   1692 FSHFX EQU   $
+09f4  =             1692   1692 FSHFX EQU   $
                     1693   1693 ;
                     1694   1694 ;DECREMENTING SHIFT RIGHT
                     1695   1695 ;
@@ -1853,7 +1853,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1708   1708 ;
                     1709   1709 ;
                     1710   1710 *HEADING IMSAI 8080 4K BASIC
-0a04                1711   1711 ABS   EQU   $
+0a04  =             1711   1711 ABS   EQU   $
                     1712   1712 ;
                     1713   1713 ;
                     1714   1714 ;RETURN THE ABSOLUTE VALUE OF THE FLOATING ACCUMULATOR
@@ -1864,7 +1864,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a09  32 2a 10      1719   1719       LD    (FACC),A         ;REPLACE
 0a0c  c9            1720   1720       RET                    ;RETURN
                     1721   1721 *HEADING IMSAI 8080 4K BASIC
-0a0d                1722   1722 SGN   EQU   $
+0a0d  =             1722   1722 SGN   EQU   $
                     1723   1723 ;
                     1724   1724 ;
                     1725   1725 ;RETURNS THE SIGN OF THE FLOATING ACCUMULATOR
@@ -1883,12 +1883,12 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a19  32 2a 10      1738   1738       LD    (FACC),A         ;SET THE SIGN & EXPONENT
 0a1c  c9            1739   1739       RET                    ;RETURN
                     1740   1740 *HEADING IMSAI 8080 4K BASIC
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 30
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 30
 Source file: basic4k.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
-0a1d                1741   1741 INT   EQU   $
+0a1d  =             1741   1741 INT   EQU   $
                     1742   1742 ;
                     1743   1743 ;
                     1744   1744 ;RETURNS THE GREATEST INTEGER NOT LARGER THAN THE ABSOLUTE VALUE
@@ -1920,7 +1920,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a43  c2 39 0a      1770   1770       JP    NZ,INT3          ;LOOP
 0a46  c9            1771   1771       RET                    ;CONTINUE EVALUATION
                     1772   1772 *HEADING IMSAI 8080 4K BASIC
-0a47                1773   1773 SQR   EQU   $
+0a47  =             1773   1773 SQR   EQU   $
                     1774   1774 ;
                     1775   1775 ;
                     1776   1776 ;COMPUTE THE SQUARE ROOT OF THE FACC
@@ -1948,7 +1948,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a6c  21 42 10      1798   1798       LD    HL,ORIGS         ;GET ORIGINAL NUMBER
 0a6f  cd cb 07      1799   1799       CALL  FSUB             ;SUBTRACT FROM PREV**2
 0a72  cd 9e 09      1800   1800       CALL  FTEST            ;GET SIGN OF DIFFERENCE
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 31
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 31
 Source file: basic4k.asm
 Title:       
 
@@ -1987,7 +1987,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ac5  ef            1832   1832 SQRGX RST   RST5             ;GO LOAD ACC
 0ac6  c9            1833   1833       RET                    ;THEN RETURN
                     1834   1834 *HEADING IMSAI 8080 4K BASIC
-0ac7                1835   1835 NEG   EQU   $
+0ac7  =             1835   1835 NEG   EQU   $
                     1836   1836 ;
                     1837   1837 ;
                     1838   1838 ;REVERSES THE SIGN OF THE FLOATING ACC
@@ -1999,7 +1999,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0acd  32 2a 10      1844   1844       LD    (FACC),A         ;RESTORE EXPONENT
 0ad0  c9            1845   1845       RET                    ;CONTINUE EVALUATION
                     1846   1846 *HEADING IMSAI 8080 4K BASIC
-0ad1                1847   1847 RND   EQU   $
+0ad1  =             1847   1847 RND   EQU   $
                     1848   1848 ;
                     1849   1849 ;
                     1850   1850 ;PSEUDO RANDOM NUMBER GENERATOR
@@ -2013,7 +2013,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ade  36 7f         1858   1858       LD    (HL),7FH         ;DEFAULT . XXXXXX
 0ae0  23            1859   1859       INC   HL               ;POINT MSD
 0ae1  46            1860   1860       LD    B,(HL)           ;LOAD IT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 32
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 32
 Source file: basic4k.asm
 Title:       
 
@@ -2028,7 +2028,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0aed  f7            1868   1868       RST   RST6             ;GO STORE IT
 0aee  c9            1869   1869       RET                    ;RETURN
                     1870   1870 *HEADING IMSAI 8080 4K BASIC
-0aef                1871   1871 EXPR  EQU   $
+0aef  =             1871   1871 EXPR  EQU   $
                     1872   1872 ;
                     1873   1873 ;
                     1874   1874 ;EVALUATE EXPRESSION ROUTINE
@@ -2044,7 +2044,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0afa  22 52 10      1884   1884       LD    (EXPRS),HL       ;SAVE IT
 0afd  eb            1885   1885       EX    DE,HL            ;RESTORE HL
                     1886   1886 ;
-0afe                1887   1887 LOOKD EQU   $                ;LOOK FOR CONSTANT, VARIABLE, OR
+0afe  =             1887   1887 LOOKD EQU   $                ;LOOK FOR CONSTANT, VARIABLE, OR
 0afe  cd ed 0e      1888   1888       CALL  NUMER            ;GO TEST IF NUMERIC
 0b01  c2 17 0b      1889   1889       JP    NZ,LDALP         ;BRIF NOT
 0b04  cd 44 05      1890   1890 LDNUM CALL  FIN              ;GO CONVERT NUMERIC (PUT TO FACC
@@ -2078,7 +2078,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b3e  c3 d2 0b      1918   1918       JP    LOOKO            ;GO LOOK FOR OPCODE
 0b41  cd e4 0e      1919   1919 LDFN  CALL  ALPHA            ;GO SEE IF FUNCTION
 0b44  c2 2e 0b      1920   1920       JP    NZ,LDVR1         ;BRIF IT'S NOT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 33
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 33
 Source file: basic4k.asm
 Title:       
 
@@ -2143,7 +2143,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0bb2  23            1978   1978       INC   HL               ;POINT NEXT
 0bb3  e5            1979   1979       PUSH  HL               ;SAVE HL
 0bb4  c3 97 0b      1980   1980       JP    LDFNC            ;GO AS IF FUNCTION
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 34
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 34
 Source file: basic4k.asm
 Title:       
 
@@ -2208,7 +2208,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c27  e1            2038   2038       POP   HL               ;GET STMT POINTER
 0c28  23            2039   2039       INC   HL               ;POINT NEXT
 0c29  c3 fe 0a      2040   2040       JP    LOOKD            ;NEXT IS DATA
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 35
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 35
 Source file: basic4k.asm
 Title:       
 
@@ -2267,13 +2267,13 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c7d  e5            2092   2092       PUSH  HL               ;SAVE ON STACK
 0c7e  eb            2093   2093       EX    DE,HL            ;PUT TO HL
 0c7f  e9            2094   2094       JP    (HL)             ;GO EXECUTE THE FUNCTION
-0c80                2095   2095 EV3   EQU   $                ;FUNCTIONS RETURN HERE
+0c80  =             2095   2095 EV3   EQU   $                ;FUNCTIONS RETURN HERE
 0c80  d1            2096   2096       POP   DE               ;GET LOCATION
 0c81  c1            2097   2097       POP   BC               ;GET COUNTERS
 0c82  21 00 00      2098   2098       LD    HL,0             ;LOAD ZERO TO HL
 0c85  e5            2099   2099       PUSH  HL               ;GET BLOCK OF
 0c86  e5            2100   2100       PUSH  HL               ;4 BYTES
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 36
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 36
 Source file: basic4k.asm
 Title:       
 
@@ -2338,7 +2338,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ce6  b7            2158   2158       OR    A                ;TEST IT
 0ce7  c8            2159   2159       RET   Z                ;RETURN IF ZERO
 0ce8  d1            2160   2160 EV7   POP   DE               ;RETURN 2 BYTES
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 37
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 37
 Source file: basic4k.asm
 Title:       
 
@@ -2403,7 +2403,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d48  d6 03         2218   2218       SUB   3                ;MINUS THREE
 0d4a  47            2219   2219       LD    B,A              ;SAVE
 0d4b  cd bb 0e      2220   2220       CALL  SQUIS            ;GO COMPRESS
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 38
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 38
 Source file: basic4k.asm
 Title:       
 
@@ -2416,7 +2416,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2226   2226 ;
                     2227   2227 ;
                     2228   2228 *HEADING IMSAI 8080 4K BASIC
-0d59                2229   2229 TERMI EQU   $
+0d59  =             2229   2229 TERMI EQU   $
                     2230   2230 ;
                     2231   2231 ;READ A LINE FROM THE TTY
                     2232   2232 ;FIRST PROMPT WITH THE CHAR IN THE A REG
@@ -2436,7 +2436,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d6b  cd a5 0d      2246   2246       CALL  TESTO            ;GO WRITE IT
 0d6e  3e 20         2247   2247       LD    A,' '            ;GET A SPACE
 0d70  cd a5 0d      2248   2248       CALL  TESTO            ;WRITE SPACE
-0d73                2249   2249 TREAD EQU   $
+0d73  =             2249   2249 TREAD EQU   $
 0d73  cd 9d 0d      2250   2250       CALL  TESTI            ;GO WAIT FOR READY
 0d76  cd 32 0e      2251   2251       CALL  GETCH            ;GO GET THE CHARACTER
 0d79  77            2252   2252       LD    (HL),A           ;PUT IN BUFFER
@@ -2456,19 +2456,19 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d96  ca 61 0d      2266   2266       JP    Z,REIN           ;BRIF IS (NULL LINE)
 0d99  21 02 10      2267   2267       LD    HL,IOBUF         ;POINT TO START
 0d9c  c9            2268   2268       RET                    ;ELSE, RETURN
-0d9d                2269   2269 TESTI EQU   $
+0d9d  =             2269   2269 TESTI EQU   $
                     2270   2270 ;     IN    A,(TTY-1)        ;GET TERM STATUS
                     2271   2271 ;     AND   40H              ;MASK FOR RXRDY
 0d9d  db 03         2272   2272       IN    A,(TTY+1)        ;**UM**
 0d9f  e6 02         2273   2273       AND   2                ;**UM**
 0da1  ca 9d 0d      2274   2274       JP    Z,TESTI          ;LOOP TILL READY
 0da4  c9            2275   2275       RET                    ;RETURN
-0da5                2276   2276 TESTO EQU   $
+0da5  =             2276   2276 TESTO EQU   $
 0da5  f5            2277   2277       PUSH  AF               ;SAVE CHAR TO OUTPUT
 0da6  3a 61 10      2278   2278       LD    A,(OUTSW)        ;GET OUTPUT SWITCH
 0da9  b7            2279   2279       OR    A                ;TEST IF OFF
 0daa  c2 b7 0d      2280   2280       JP    NZ,TOUT2         ;BRIF NOT
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 39
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 39
 Source file: basic4k.asm
 Title:       
 
@@ -2514,7 +2514,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0df1  c3 73 0d      2319   2319       JP    TREAD            ;LOOP FOR NEXT
                     2320   2320 ;
                     2321   2321 ;
-0df4                2322   2322 TERMO EQU   $
+0df4  =             2322   2322 TERMO EQU   $
                     2323   2323 ;
                     2324   2324 ;TTY PRINT ROUTINE
                     2325   2325 ;
@@ -2533,7 +2533,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0dfd  c2 06 0e      2338   2338       JP    NZ,OUT2          ;BRIF NOT
 0e00  cd b9 0d      2339   2339       CALL  CRLF             ;LINE FEED
 0e03  c3 15 0e      2340   2340       JP    OUT4             ;CONTINUE
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 40
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 40
 Source file: basic4k.asm
 Title:       
 
@@ -2550,13 +2550,13 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2350   2350 ;
                     2351   2351 ;
                     2352   2352 ;
-0e19                2353   2353 LINEO EQU   $
+0e19  =             2353   2353 LINEO EQU   $
                     2354   2354 ;
                     2355   2355 ;UNPACK LINE NUMBER FROM (HL) TO (DE)
                     2356   2356 ;
                     2357   2357 ;
 0e19  cd 1c 0e      2358   2358       CALL  LOUT             ;GO FORMAT 2 BYTES
-0e1c                2359   2359 LOUT  EQU   $
+0e1c  =             2359   2359 LOUT  EQU   $
 0e1c  7e            2360   2360       LD    A,(HL)           ;GET BYTE
 0e1d  cd f6 0e      2361   2361       CALL  RIGHT            ;GO SHIFT TO RIGHT
 0e20  f6 30         2362   2362       OR    30H              ;ZONE
@@ -2571,7 +2571,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e2c  c9            2371   2371       RET                    ;RETURN
                     2372   2372 ;
                     2373   2373 ;
-0e2d                2374   2374 TSTCH EQU   $
+0e2d  =             2374   2374 TSTCH EQU   $
                     2375   2375 ;
                     2376   2376 ;TEST IF INPUT CHAR ON KEYBOARD
                     2377   2377 ;IF THERE IS, THEN READ IT
@@ -2598,12 +2598,12 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e4e  c9            2398   2398       RET                    ;RETURN
                     2399   2399 ;
                     2400   2400 ;
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 41
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 41
 Source file: basic4k.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
-0e4f                2401   2401 ZEROM EQU   $
+0e4f  =             2401   2401 ZEROM EQU   $
                     2402   2402 ;
                     2403   2403 ;MOVE STRING OF ZEROS TO (HL)+...  CNT IN B
                     2404   2404 ;
@@ -2614,7 +2614,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e56  c9            2409   2409       RET                    ;RETURN
                     2410   2410 ;
                     2411   2411 ;
-0e57                2412   2412 COPYH EQU   $
+0e57  =             2412   2412 COPYH EQU   $
                     2413   2413 ;
                     2414   2414 ;COPY STRING FROM (HL) TO (DE)
                     2415   2415 ;COUNT IN B
@@ -2628,7 +2628,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e5f  c9            2423   2423       RET                    ;RETURN
                     2424   2424 ;
                     2425   2425 ;
-0e60                2426   2426 COPYD EQU   $
+0e60  =             2426   2426 COPYD EQU   $
                     2427   2427 ;
                     2428   2428 ;COPY STRING FROM (DE) TO (HL)
                     2429   2429 ;COUNT IN B
@@ -2639,7 +2639,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e65  c9            2434   2434       RET                    ;RETURN
                     2435   2435 ;
                     2436   2436 ;
-0e66                2437   2437 COMP2 EQU   $
+0e66  =             2437   2437 COMP2 EQU   $
                     2438   2438 ;
                     2439   2439 ;CONTINUE COMP SUBROUTINE (RST RST2)
                     2440   2440 ;
@@ -2663,7 +2663,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e81  01 41 44      2458   2458 DAERR LD    BC,'DA'          ;OUT OF DATA
 0e84  df            2459   2459       RST   RST3
 0e85  01 4f 46      2460   2460 FOERR LD    BC,'FO'          ;MORE THAN 8 NESTED FOR/NEXT OR
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 42
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 42
 Source file: basic4k.asm
 Title:       
 
@@ -2675,7 +2675,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2465   2465 ;
                     2466   2466 ;
                     2467   2467 ;
-0e8d                2468   2468 PACK  EQU   $
+0e8d  =             2468   2468 PACK  EQU   $
                     2469   2469 ;
                     2470   2470 ;PACK LINE NUMBER FROM (HL) TO BC
                     2471   2471 ;
@@ -2710,7 +2710,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2500   2500 ;
                     2501   2501 ;
                     2502   2502 ;
-0ebb                2503   2503 SQUIS EQU   $
+0ebb  =             2503   2503 SQUIS EQU   $
                     2504   2504 ;
                     2505   2505 ;COMPRESS THE EXPR STACK
                     2506   2506 ;TO ADDR IN HL
@@ -2726,9 +2726,9 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ec3  c9            2516   2516       RET                    ;RETURN
                     2517   2517 ;
                     2518   2518 ;
-0ec4                2519   2519 GTEMP EQU   $
+0ec4  =             2519   2519 GTEMP EQU   $
                     2520   2520 ;
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 43
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 43
 Source file: basic4k.asm
 Title:       
 
@@ -2764,7 +2764,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ee3  c9            2549   2549       RET                    ;RETURN
                     2550   2550 ;
                     2551   2551 ;
-0ee4                2552   2552 ALPHA EQU   $
+0ee4  =             2552   2552 ALPHA EQU   $
                     2553   2553 ;
                     2554   2554 ;TESTS THE CHAR AT (HL)
                     2555   2555 ;RETURNS WITH Z SET IF CHAR IS ALPHA (A-Z)
@@ -2780,7 +2780,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0eec  c9            2565   2565       RET                    ;RETURN
                     2566   2566 ;
                     2567   2567 ;
-0eed                2568   2568 NUMER EQU   $
+0eed  =             2568   2568 NUMER EQU   $
                     2569   2569 ;
                     2570   2570 ;TESTS THE CHAR AT (HL)
                     2571   2571 ;RETURNS WITH Z SET IF NUMERIC (0-9)
@@ -2793,7 +2793,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ef1  fe 3a         2578   2578       CP    '9'+1            ;TEST IF 9 OR LESS
 0ef3  d0            2579   2579       RET   NC               ;RETURN IF NOT NUMERIC
 0ef4  bf            2580   2580       CP    A                ;SET Z
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 44
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 44
 Source file: basic4k.asm
 Title:       
 
@@ -2801,7 +2801,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ef5  c9            2581   2581       RET                    ;RETURN
                     2582   2582 ;
                     2583   2583 ;
-0ef6                2584   2584 RIGHT EQU   $
+0ef6  =             2584   2584 RIGHT EQU   $
                     2585   2585 ;
                     2586   2586 ;SHIFT THE LEFTMOST 4 BITS OF REG A RIGHT FOUR BITS
                     2587   2587 ;
@@ -2813,7 +2813,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0efc  c9            2593   2593       RET                    ;RETURN
                     2594   2594 ;
                     2595   2595 ;
-0efd                2596   2596 SEARC EQU   $
+0efd  =             2596   2596 SEARC EQU   $
                     2597   2597 ;
                     2598   2598 ;SEARCES FOR THE VARIABLE IN DE
                     2599   2599 ;RETURNS WITH ADDR OF DATA AREA FOR VARIABLE
@@ -2854,11 +2854,11 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f2e  c9            2634   2634       RET                    ;RETURN
                     2635   2635 ;
                     2636   2636 ;
-0f2f                2637   2637 VAR   EQU   $
+0f2f  =             2637   2637 VAR   EQU   $
                     2638   2638 ;
                     2639   2639 ;
                     2640   2640 ;TEST (HL) FOR A VARIABLE NAME
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 45
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 45
 Source file: basic4k.asm
 Title:       
 
@@ -2878,7 +2878,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f40  c9            2653   2653       RET                    ;THEN RETURN
                     2654   2654 ;
                     2655   2655 ;
-0f41                2656   2656 ERROR EQU   $
+0f41  =             2656   2656 ERROR EQU   $
                     2657   2657 ;
                     2658   2658 ;CONTINUE ERROR ROUTINE (RST RST3)
                     2659   2659 ;
@@ -2910,7 +2910,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f76  00            2685   2685       DEFB  0
 0f77  53 47 4e      2686   2686 SGNLI DEFM  'SGN'
 0f7a  00            2687   2687       DEFB  0
-0f7b                2688   2688 JMPTB EQU   $
+0f7b  =             2688   2688 JMPTB EQU   $
 0f7b  49 46         2689   2689 IFLIT DEFM  'IF'
 0f7d  00            2690   2690       DEFB  0
 0f7e  a4 03         2691   2691       DEFW  IF
@@ -2923,7 +2923,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f8e  46 4f 52      2698   2698 FORLI DEFM  'FOR'
 0f91  00            2699   2699       DEFB  0
 0f92  ba 02         2700   2700       DEFW  FOR
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 46
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 46
 Source file: basic4k.asm
 Title:       
 
@@ -2981,14 +2981,14 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ff9  00 00         2748   2751       DEFW  0
 0ffb  7f 83         2749   2752 RNDX  DEFW  837FH            ;RANDOMIZER
 0ffd  74 19         2750   2753       DEFW  1974H
-0fff                2751   2754 ROMEN EQU   $                ;END OF READ-ONLY-MEMORY
+0fff  =             2751   2754 ROMEN EQU   $                ;END OF READ-ONLY-MEMORY
                     2752   2755 *HEADING IMSAI 8080 4K BASIC
                     2753   2756       ORG   1000H            ;RAM AREA
-1000                2754   2757 RAM   EQU   $                ;ALIGN RAM ON 4K BOUNDARY
+1000  =             2754   2757 RAM   EQU   $                ;ALIGN RAM ON 4K BOUNDARY
                     2755   2758 ;TTY   EQU   1                ;DEVICE ADDRESS FOR TERMINAL
-0002                2756   2759 TTY   EQU   2                ;**UM**
+0002  =             2756   2759 TTY   EQU   2                ;**UM**
 1000                2757   2760 NULLI DEFS  2
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 47
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 47
 Source file: basic4k.asm
 Title:       
 
@@ -3027,11 +3027,11 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1118                2789   2792 DATAB DEFS  2                ;ADDRESS OF DATA POOL
 111a                2790   2793 PROGE DEFS  2                ;ADDR OF PROG POOL END
 111c                2791   2794       DEFS  1                ;THIS HAS LOW VALUE AT RUN TIME
-111d                2792   2795 BEGPR EQU   $                ;PROGRAM AREA STARTS HERE
+111d  =             2792   2795 BEGPR EQU   $                ;PROGRAM AREA STARTS HERE
                     2793   2796 ;
                     2794   2797 ;
 111d                2795   2798       END   BASIC
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 48
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 48
 Source file: basic4k.asm
 Title:       Symbol table
 
@@ -3097,7 +3097,7 @@ OP1L2    0c14 	OP1L3    0c18 	OP2      0c2c 	OP2A     0c33
 OP3      0c41 	ORIGS    1042 	OUT1     0df7 	OUT2     0e06 	
 OUT4     0e15 	OUTSW    1061 	OVERR    0e71 	PACK     0e8d 	
 PARCT    1054 	PK1      0e96 	PK3      0eaa 	PR1      0237 	
-Z80-Assembler	Release 1.11-dev	Fri Oct  7 00:22:35 2022	Page 49
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:42 2022	Page 49
 Source file: basic4k.asm
 Title:       Symbol table
 
