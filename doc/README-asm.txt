@@ -114,8 +114,6 @@ IFEQ    <exp1>,<exp2>   - assemble if values of expressions are equal
 IFNEQ   <exp1>,<exp2>   - assemble if values of expressions are not equal
 IF1                     - assemble if in pass 1
 IF2                     - assemble if in pass 2
-                          the '<' and '>' in the following pseudo ops
-                          are required
 ELSE                    - else for all conditionals
 ENDIF                   - end of conditional assembly
 
