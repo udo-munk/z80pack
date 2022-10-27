@@ -79,7 +79,7 @@ static struct mac *mac_found;			/* found macro */
 static struct expn mac_expn[MACNEST];		/* macro expansion stack */
 static int mac_loc_cnt;				/* counter for LOCAL labels */
 static char tmp[MAXLINE];			/* temporary buffer */
-static char expr[MAXLINE];			/* expression buffer (for '%') */
+static char expr[MAXLINE];			/* expr buffer (for '%') */
 
 /*
  *	verify that p is a legal symbol
