@@ -1,0 +1,372 @@
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 1
+Source file: mbl.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ; MBL - MULTI BOOT LOADER FOR THE ALTAIR 8800
+                       2      2 ;
+                       3      3 ; DISAASEMBLED AND COMMENTED BY GEOFF HARRISON (GHOV SOLIVANT COM)
+                       4      4 ;
+                       5      5 ; THIS IS A BOOT LOADER THAT CAN BE LOACATED IN ROM AND WHICH
+                       6      6 ; CAN READ ANY OF THE PUNCHED TAPE FORMATS THAT MITS DESIGNED.
+                       7      7 ; IT RUNS OUT OF ROM BY CREATING A READBYTE ROUTINE IN RAM WHICH
+                       8      8 ; IS CUSTOMIZED FOR WHATEVER I/O BOARD THE USER SPECIFIES AT
+                       9      9 ; RUN TIME ON THE FRONT PANEL SWITCHES. IT THEN SKIPS OVER THE
+                      10     10 ; LEADIN BYTES AND THE SECOND STAGE LOADER WHICH ALWAYS PRECEED
+                      11     11 ; THE PAYLOAD ON A MITS TAPE.  SINCE IT DOESN'T USE THE
+                      12     12 ; SECOND STAGE LOADER, IT DOESN'T CARE WHICH OF SEVERAL POSSIBLE
+                      13     13 ; VERSIONS OF TAPE IT IS LOADING.  NORMALLY YOU HAVE TO BE SURE
+                      14     14 ; TO USE THE CORRECT 1ST STAGE LOADER FOR THE TAPE YOU ARE LOADING,
+                      15     15 ; WITH THE MBL IT DOESN'T MATTER.  AFTER SKIPPING THE 2ND STAGE
+                      16     16 ; LOADER ON THE TAPE, IT STARTS READING AND STORING PAYLOAD
+                      17     17 ; BYTES AND CHECKING THAT THE CHECKSUM IS CORRECT FOR EACH PACKET
+                      18     18 ; OF BYTES READ.  WHEN THE ENTIRE PAYLOAD HAS BEEN READ INTO MEMORY,
+                      19     19 ; IT READS THE ENTRY POINT FOR THE PROGRAM FROM THE TAPE AND JUMPS
+                      20     20 ; TO THAT LOCATION.
+                      21     21 ;
+                      22     22 ; THE FORMAT OF A MITS PAPER TAPE IS:
+                      23     23 ;       - SOME NUMBER OF IDENTICAL BYTES, EACH CONTAINING
+                      24     24 ;               THE LENGTH (N) OF THE STAGE2 LOADER
+                      25     25 ;       - N BYTES OF STAGE 2 LOADER
+                      26     26 ;       - OPTIONALLY SOME NUMBER OF NULLS
+                      27     27 ;       - ONE OR MORE LOAD RECORDS (SEE BELOW)
+                      28     28 ;       - AN EOF RECORD (SEE BELOW)
+                      29     29 ;
+                      30     30 ; A LOAD RECORD CONSISTS OF:
+                      31     31 ;       074     - SYNC BYTE (HEX 03CH)
+                      32     32 ;       NNN     - # BYTES IN RECORD
+                      33     33 ;       LLL     - LOW BYTE OF LOAD ADDRESS
+                      34     34 ;       HHH     - HIGH BYTE OF LOAD ADDRESS
+                      35     35 ;   <NNN BYTES> - NNN BYTES OF PROGRAM DATA (THE PAYLOAD)
+                      36     36 ;       CCC     - CHECKSUM BYTE
+                      37     37 ;                (CHECKSUM INCLUDES LLL & HHH)
+                      38     38 ; THERE WILL BE 1 OR MORE PROG LOAD RECORDS,
+                      39     39 ; EACH ONE WITH UP TO 256 BYTES OF PAYLOAD
+                      40     40 ; BYTES.
+                      41     41 ;
+                      42     42 ; THE EOF RECORD CONSISTS OF:
+                      43     43 ;       0170    - SYNC BYTE (HEX 078H)
+                      44     44 ;       LLL     - LOW BYTE OF START ADDRESS
+                      45     45 ;       HHH     - HIGH BYTE OF START ADDRESS
+                      46     46 ;
+                      47     47 ; BEFORE EXECUTING THIS PROGRAM, THE FRONT PANEL SENSE SWITCHES
+                      48     48 ; MUST BE SET TO INDICATE WHAT DEVICE TO READ THE TAPE FROM AND
+                      49     49 ; WHAT DEVICE THE TERMINAL IS ATTACHED TO.  THIS PROGRAM USES
+                      50     50 ; A11..A8 TO DETERMINE THE DEVICE ATTACHED TO THE TAPE READER.
+                      51     51 ; IF THE PAYLOAD IS NOT EARLIER THAN BASIC 4.0, IT USES A15..A12
+                      52     52 ; TO DETERMINE WHERE THE TERMINAL DEVICE IS.
+                      53     53 ; POSSIBLE SWITCH VALUES ARE
+                      54     54 ;
+                      55     55 ; DEVICE                SWITCH VALUE
+                      56     56 ; 2SIO (2 STOP BITS)      0000B
+                      57     57 ; 2SIO (1 STOP BIT)       0001B
+                      58     58 ; SIO                     0010B
+                      59     59 ; ACR                     0011B
+                      60     60 ; 4PIO                    0100B
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 2
+Source file: mbl.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                      61     61 ; PIO                     0101B
+                      62     62 ; HSR                     0110B
+                      63     63 ;
+                      64     64 ; IF A VALUE LARGER THAN 7 IS ENTERED THIS PROGRAM WILL RETURN
+                      65     65 ; AN ERROR.
+                      66     66 ;
+                      67     67 ; PRIOR TO BASIC 4.0, MITS USED DIFFERENT SENSE SWITCH SETTINGS
+                      68     68 ; TO SPECIFY THE TERMINAL DEVICE.  YOU SHOULD STILL BE ABLE TO
+                      69     69 ; LOAD AN OLDER TAPE WITH THIS LOADER BY SETTING THE SWITCHES AS
+                      70     70 ; ABOVE, STOPPING THE PROGRAM AFTER IT LOADS AND STARTS, CHANGING
+                      71     71 ; THE SENSE SWITCHES (SEE THE APPROPRIATE MITS MANUAL FOR SWITCH
+                      72     72 ; SETTINGS) AND RESTARTING THE PROGRAM AT ITS ENTRY POINT (E.G.
+                      73     73 ; 00000H FOR BASIC 3.2).
+                      74     74 ; 
+                      75     75 ; THIS LISTING WAS GENERATED FROM A HEX DUMP OF MBL PROVIDED BY
+                      76     76 ; GRANT STOCKLY.  THE ASSEMBLY CODE AND COMMENTS WERE REVERSE
+                      77     77 ; ENGINEERED FROM THAT DUMP BY GEOFF HARRISON.
+                      78     78 
+                      79     79 ; DEFAULT LOCATION IS AT 0FE00H.  MAY BE ASSEMBLED TO RUN
+                      80     80 ; AT ANY LOCATION.
+                      81     81 ;
+                      82     82 ; ASSEMBLER SYNTAX IS FOR THE SPASM ASSEMBLER.  TO ASSEMBLE USE:
+                      83     83 ;      SPASM MBL /F
+                      84     84 ;      SLINK MBL=MBL.OBJ /C:0FE00
+                      85     85 ;
+                      86     86 ; FOR OTHER ASSEMBLERS, UNCOMMENT THE FOLLOWING LINE AND
+                      87     87 ; (POSSIBLY) CHANGE THE SYNTAX OF ORG, DB, ETC.
+                      88     88 ;
+                      89     89                 ORG 0FE00H
+                      90     90 
+                      91     91 ;----------------------------------------------------------
+                      92     92 ; WE DON'T KNOW WHAT I/O CARDS ARE IN THE SYSTEM, SO
+                      93     93 ; TRY TO INITIALIZE JUST ABOUT ANYTHING MITS HAD AVAILABLE
+                      94     94 ; AT THE TIME.
+                      95     95 ;
+fe00  f3              96     96                 DI
+fe01  af              97     97                 XRA A
+fe02  d3 20           98     98                 OUT 020H
+fe04  d3 21           99     99                 OUT 021H
+fe06  d3 24          100    100                 OUT 024H
+fe08  d3 25          101    101                 OUT 025H
+fe0a  d3 26          102    102                 OUT 026H
+fe0c  d3 22          103    103                 OUT 022H
+fe0e  2f             104    104                 CMA
+fe0f  d3 23          105    105                 OUT 023H
+fe11  d3 27          106    106                 OUT 027H
+fe13  3e 0c          107    107                 MVI A,00CH
+fe15  d3 24          108    108                 OUT 024H
+fe17  3e 2c          109    109                 MVI A,02CH
+fe19  d3 20          110    110                 OUT 020H
+fe1b  d3 22          111    111                 OUT 022H
+fe1d  d3 26          112    112                 OUT 026H
+fe1f  3e 03          113    113                 MVI A,003H
+fe21  d3 27          114    114                 OUT 027H
+fe23  d3 10          115    115                 OUT 010H
+fe25  3e 11          116    116                 MVI A,011H
+fe27  d3 10          117    117                 OUT 010H
+                     118    118 
+                     119    119 ;----------------------------------------------------------
+                     120    120 ; FIND TOP OF RAM.  ASSUMES THAT THERE IS NOT 64K OF RAM
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 3
+Source file: mbl.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     121    121 ; AVAILABLE, A REASONABLE ASSUMPTION GIVEN THAT THIS ROUTINE
+                     122    122 ; RESIDES IN ROM SOMEWHERE AT THE TOP OF MEMORY.
+                     123    123 ;
+fe29  21 ff ff       124    124                 LXI H, 0FFFFH
+fe2c  23             125    125 SCANRAM:        INX H           ; POINT @ NEXT BYTE
+fe2d  7e             126    126                 MOV A,M         ; GET IT
+fe2e  47             127    127                 MOV B,A         ; SAVE IT
+fe2f  2f             128    128                 CMA             ; INVERT IT
+fe30  77             129    129                 MOV M,A         ; TRY TO WRITE IT BACK OUT
+fe31  be             130    130                 CMP M           ; SEE IF IT WROTE OUT CORRECTLY
+fe32  70             131    131                 MOV M,B         ; RESTORE THE BYTE TO ITS ORIG VALUE
+fe33  ca 2c fe       132    132                 JZ SCANRAM      ; LOOP IF THE BYTE WROTE CORRECTLY
+                     133    133 
+                     134    134                 ; SOMETHING'S WRONG IF THE FAILURE TO WRITE TO RAM
+                     135    135                 ; HAPPENED ON OTHER THAN A PAGE BOUNDARY
+fe36  af             136    136                 XRA A           ; A = 0
+fe37  bd             137    137                 CMP L
+fe38  c2 c1 fe       138    138                 JNZ MERROR      ; IF L != 0 GO TO 'M' ERROR HANDLER
+                     139    139 
+                     140    140                 ; HL NOW POINTS TO THE LAST WRITABLE BYTE IN RAM PLUS 1.
+                     141    141                 ; SUBTRACT 14 TO MAKE ROOM FOR A STACK & INITIALIZE SP.
+fe3b  01 f2 ff       142    142                 LXI B,0FFF2H
+fe3e  09             143    143                 DAD B           ; HL += BC
+fe3f  f9             144    144                 SPHL            ; SP = HL
+                     145    145 
+fe40  09             146    146                 DAD B           ; SET HL TO POINT TO WHAT WILL BE
+                     147    147                                 ; THE START OF THE READBYTE ROUTINE.
+fe41  e5             148    148                 PUSH H          ; SAVE THE START ADDRESS ON THE STACK.
+                     149    149 
+fe42  db ff          150    150                 IN 0FFH         ; READ FRONT PANEL SWITCHES
+fe44  e6 0f          151    151                 ANI 00FH        ; MASK LOWER 4 BITS
+fe46  fe 07          152    152                 CPI 007H        ; SWITCHES SET TO >= 7?
+fe48  f2 d7 fe       153    153                 JP IERROR       ; Y - GO TO 'I' ERROR HANDLER
+                     154    154 
+                     155    155                 ; POINT HL AT THE NTH ENTRY IN THE MOD TABLE,
+                     156    156                 ; WHERE N = THE FRONT PANEL SWITCH SETTING
+fe4b  21 eb fe       157    157                 LXI H, TABLE1   ; POINT HL TO START OF THE MOD TABLE
+fe4e  04             158    158                 INR B           ; B CURRENTLY CONTAINS 0FFH, INC IT TO 0
+fe4f  4f             159    159                 MOV C,A         ; \
+fe50  87             160    160                 ADD A           ;  \ C = A * 3
+fe51  81             161    161                 ADD C           ;  /
+fe52  4f             162    162                 MOV C,A         ; /
+fe53  09             163    163                 DAD B           ; HL += BC
+                     164    164 
+                     165    165 ;----------------------------------------------------------
+                     166    166 ; CONSTRUCT AN INPUT FUNCTION ON THE STACK.
+                     167    167 ; SINCE THIS IS A PUSH DOWN STACK, THE ROUTINE IS BUILT IN REVERSE.
+                     168    168 ; WHEN FINISHED, THE ROUTINE WILL LOOK LIKE THIS. (XX VALUES ARE
+                     169    169 ; CALCULATED ON THE FLY OR READ FROM THE MOD TABLE.  THE ROUTINE
+                     170    170 ; HAS TO BE BUILT DYNAMICALLY LIKE THIS BECAUSE DIFFERENT I/O CARDS
+                     171    171 ; REQUIRE DIFFERENT CODE TO READ THEIR DATA AND STATUS.  THE USER
+                     172    172 ; SPECIFIED WHICH CARD IS IN USE ON THE FRONT PANEL SWITCHES.)
+                     173    173 ; READBYTE:
+                     174    174 ;       DB XX           IN XX           ; CHECK PORT STATUS
+                     175    175 ;       E6 XX           ANI XX
+                     176    176 ;       XX LO HI        JZ/JNZ READBYTE ; LOOP 'TILL BYTE ARRIVES
+                     177    177 ;       DB XX           IN XX           ; GET INPUT BYTE
+                     178    178 ;       F5              PUSH PSW        ; SAVE IT
+                     179    179 ;       80              ADD B           ; UPDATE CHECKSUM IN B
+                     180    180 ;       47              MOV B,A
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 4
+Source file: mbl.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     181    181 ;       F1              POP PSW         ; RETRIEVE INPUT BYTE
+                     182    182 ;       C9              RET             ; RETURN A=BYTE, B=CHECKSUM
+                     183    183 ;
+fe54  d1             184    184                 POP D           ; DE = THE START ADRESS OF THIS ROUTINE
+                     185    185 
+                     186    186                 ; CONSTRUCT RET; POP PSW
+fe55  01 f1 c9       187    187                 LXI B,0C9F1H
+fe58  c5             188    188                 PUSH B
+                     189    189 
+                     190    190                 ; CONSTRUCT MOV B,A; ADD B
+fe59  01 80 47       191    191                 LXI B,04780H
+fe5c  c5             192    192                 PUSH B
+                     193    193 
+                     194    194                 ; CONSTRUCT  PUSH PSW; {INPUT PORT RETRIEVED FROM MOD TABLE}
+fe5d  06 f5          195    195                 MVI B,0F5H
+fe5f  4e             196    196                 MOV C,M
+fe60  79             197    197                 MOV A,C
+fe61  c5             198    198                 PUSH B
+                     199    199 
+                     200    200                 ; CONSTRUCT IN (USED WITH PORT CONSTRUCTED ABOVE); {HIGH BYTE OF JMP INSTR}
+fe62  06 db          201    201                 MVI B,0DBH
+fe64  4a             202    202                 MOV C,D
+fe65  c5             203    203                 PUSH B
+                     204    204 
+                     205    205                 ; CONSTRUCT {LOW BYTE OF JMP}; JZ/JNZ (FROM MOD TABLE)
+fe66  43             206    206                 MOV B,E
+fe67  23             207    207                 INX H
+fe68  4e             208    208                 MOV C,M
+fe69  c5             209    209                 PUSH B
+                     210    210 
+                     211    211                 ; CONSTRUCT ANI {MASK FROM MOD TABLE}
+fe6a  23             212    212                 INX H
+fe6b  46             213    213                 MOV B,M
+fe6c  0e e6          214    214                 MVI C,0E6H
+fe6e  c5             215    215                 PUSH B
+                     216    216 
+                     217    217                 ; CONSTRUCT IN {PORT STATUS ADDRESS (PORT NUMBER - 1)}
+fe6f  3d             218    218                 DCR A
+fe70  47             219    219                 MOV B,A
+fe71  0e db          220    220                 MVI C,0DBH
+fe73  c5             221    221                 PUSH B
+                     222    222 ;----------------------------------------------------------
+                     223    223 ; READ A STREAM OF INPUT BYTES.
+                     224    224 ;
+fe74  eb             225    225                 XCHG            ; HL = START OF READBYTE ROUTINE, DE = JUNK
+                     226    226 
+                     227    227                 ; ???????????????????????????????????????????????????
+fe75  3e 04          228    228                 MVI A,004H      ; WHY ARE WE SENDING 04H TO DEVICE 027H?
+fe77  d3 27          229    229                 OUT 027H        ; IN FACT, WHAT IS DEVICE 027H? ANYONE KNOW? IS IT THE
+                     230    230                                 ; 88-HSR?  PERHAPS WE'RE SWITCHING ON THE DRIVE MOTOR.
+                     231    231                 ; ???????????????????????????????????????????????????
+                     232    232 
+                     233    233                 ; SKIP OVER LEADIN BYTES.
+fe79  cd a5 fe       234    234                 CALL LINK       ; FLUSH INPUT BUFFER
+fe7c  cd a5 fe       235    235                 CALL LINK       ; GET A BYTE
+fe7f  4f             236    236                 MOV C,A         ; REMEMBER IT
+fe80  cd a5 fe       237    237 LEADINSKIP:     CALL LINK       ; GET ANOTHER BYTE
+fe83  b9             238    238                 CMP C
+fe84  ca 80 fe       239    239                 JZ LEADINSKIP   ; LOOP UNTIL WE RECEIVE A DIFFERENT BYTE VALUE
+                     240    240 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 5
+Source file: mbl.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     241    241                 ; AT THIS POINT, C CONTAINS THE FIRST LEADIN BYTE
+                     242    242                 ; THAT WAS ON THE TAPE, WHICH SHOULD REPRESENT THE
+                     243    243                 ; LENGTH OF THE STAGE 2 LOADER.
+                     244    244                 ; SKIP OVER STAGE 2 LOADER.
+fe87  0d             245    245                 DCR C
+fe88  cd a5 fe       246    246 STAGE2SKIP:     CALL LINK       ; GET A BYTE
+fe8b  0d             247    247                 DCR C
+fe8c  c2 88 fe       248    248                 JNZ STAGE2SKIP  ; LOOP WHILE C > 0
+                     249    249 
+                     250    250                 ; NOW WE'VE SKIPPED OVER ALL THE UNNEEDED STUFF, START
+                     251    251                 ; LOOKING FOR THE FIRST LOAD RECORD.
+fe8f  cd a5 fe       252    252 FINDTOKEN:      CALL LINK       ; GET A BYTE
+fe92  fe 3c          253    253                 CPI 03CH        ; IS IT A LOAD RECORD TOKEN?
+fe94  ca a6 fe       254    254                 JZ LOADRECORD   ; Y - GO AND PROCESS A LOAD RECORD
+fe97  fe 78          255    255                 CPI 078H        ; IS IT AN EOF TOKEN?
+fe99  c2 8f fe       256    256                 JNZ FINDTOKEN   ; N - KEEP LOOKING
+                     257    257 
+                     258    258                 ; GOT AN EOF TOKEN.  READ NEXT TWO BYTES AS PROGRAM
+                     259    259                 ; START ADDRESS AND JUMP TO THAT ADDRESS.
+fe9c  cd a5 fe       260    260 EOF:            CALL LINK       ; GET PROG START LOW
+fe9f  4f             261    261                 MOV C,A
+fea0  cd a5 fe       262    262                 CALL LINK       ; GET PROG START HIGH
+fea3  69             263    263                 MOV L,C
+fea4  67             264    264                 MOV H,A
+                     265    265 
+                     266    266                 ; THIS IS MOSTLY USED TO CALL THE BYTE INPUT ROUTINE
+                     267    267                 ; ON THE STACK, BUT IS ALSO USED TO JUMP TO THE ENTRY
+                     268    268                 ; POINT OF THE DOWNLOADED PROGRAM.
+fea5  e9             269    269 LINK:           PCHL            ; JMP TO (HL)
+                     270    270 
+                     271    271                 ; PROCESS A LOAD RECORD
+fea6  cd a5 fe       272    272 LOADRECORD:     CALL LINK       ; GET BYTE COUNT IN THIS RECORD
+fea9  4f             273    273                 MOV C,A         ; SAVE IT
+feaa  06 00          274    274                 MVI B,000H      ; INITIALIZE CHECKSUM
+feac  cd a5 fe       275    275                 CALL LINK       ; GET LOAD ADDRESS LOW
+feaf  5f             276    276                 MOV E,A
+feb0  cd a5 fe       277    277                 CALL LINK       ; GET LOAD ADDRESS HIGH
+feb3  57             278    278                 MOV D,A
+                     279    279 
+feb4  7a             280    280 LOREC2:         MOV A,D
+feb5  bc             281    281                 CMP H           ; ARE THE INCOMING BYTES ABOUT TO
+                     282    282                                 ;    OVERWRITE THE READBYTE ROUTINE?
+feb6  3e 4f          283    283                 MVI A,04FH      ; PREPARE TO SEND 'O', IF NECESSARY
+feb8  ca d9 fe       284    284                 JZ ERREXIT      ; Y - ERROR EXIT
+febb  cd a5 fe       285    285                 CALL LINK       ; N - GET ANOTHER BYTE
+febe  eb             286    286                 XCHG            ; HL = DEST POINTER, DE = START OF READBYTE
+febf  77             287    287                 MOV M,A         ; STORE RECEIVED BYTE AT DESTINATION
+fec0  be             288    288                 CMP M           ; DID IT STORE CORRECTLY?
+fec1  3e 4d          289    289 MERROR:         MVI A,04DH      ; PREPARE TO SEND 'M', IF NECESSARY
+fec3  c2 d9 fe       290    290                 JNZ ERREXIT     ; N - ERROR EXIT
+fec6  23             291    291                 INX H           ; Y - INCREMENT DESTINATION POINTER
+fec7  eb             292    292                 XCHG            ; HL = START OF READBYTE, DE = DEST POINTER
+fec8  0d             293    293                 DCR C           ; DECREMENT BYTE COUNTER
+fec9  c2 b4 fe       294    294                 JNZ LOREC2      ; IF NOT 0 THEN LOOP TO GET MORE BYTES
+                     295    295 
+fecc  48             296    296                 MOV C,B         ; SAVE CALCULATED CHECKSUM VALUE BEFORE WE UPDATE IT AGAIN
+fecd  cd a5 fe       297    297                 CALL LINK       ; GET EXPECTED CHECKSUM FROM INPUT STREAM
+fed0  b9             298    298                 CMP C           ; DOES IT MATCH OUR CALCULATED SUM?
+fed1  ca 8f fe       299    299                 JZ FINDTOKEN    ; Y - LOOK FOR MORE RECORDS ON THE TAPE
+fed4  3e 43          300    300                 MVI A,043H      ; N - PREPARE TO SEND 'C' ERROR
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 6
+Source file: mbl.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fed6  01             301    301                 DB 001H         ; LXI - HIDES NEXT TWO BYTES
+fed7  3e             302    302 IERROR:         DB 03EH         ; MVI A, 049H   ; PREPARE TO SEND 'I'
+fed8  49             303    303                 DB 049H
+                     304    304 
+                     305    305 ; STORE AN ERROR CODE AND THE ADDRESS @ WHICH IT HAPPENED IN
+                     306    306 ; THE FIRST 3 BYTES OF RAM, THEN LOOP FOREVER SENDING THE
+                     307    307 ; ERROR CODE TO ALL POSSIBLE TERMINAL DEVICES.
+                     308    308 ;
+fed9  32 00 00       309    309 ERREXIT:        STA 00000H
+fedc  22 01 00       310    310                 SHLD 00001H
+fedf  fb             311    311                 EI
+fee0  d3 01          312    312 FOREVER:        OUT 001H
+fee2  d3 11          313    313                 OUT 011H
+fee4  d3 05          314    314                 OUT 005H
+fee6  d3 23          315    315                 OUT 023H
+fee8  c3 e0 fe       316    316                 JMP FOREVER
+                     317    317 
+                     318    318 ;----------------------------------------------------------
+                     319    319 ; MOD TABLE.
+                     320    320 ; THIS IS A TABLE OF PORT ADDRESSES, COMMANDS FOR CHECKING
+                     321    321 ; THE PORT STATUS (JZ/JNZ), AND STATUS MASKS FOR SEVERAL
+                     322    322 ; I/O BOARDS.  THE VALUES ARE STUFFED INTO THE READBYTE
+                     323    323 ; ROUTINE AT RUNTIME TO CUSTOMIZE IT FOR THE HARDWARE
+                     324    324 ; BEING USED TO LOAD THE TAPE.
+                     325    325 ;
+feeb  11 ca 01       326    326 TABLE1:         DB      011H, 0CAH, 001H        ; 2SIO (2 STOP BITS)
+feee  11 ca 01       327    327                 DB      011H, 0CAH, 001H        ; 2SIO (1 STOP BIT)
+fef1  01 c2 01       328    328                 DB      001H, 0C2H, 001H        ; SIO
+fef4  07 c2 01       329    329                 DB      007H, 0C2H, 001H        ; ACR
+fef7  21 ca 80       330    330                 DB      021H, 0CAH, 080H        ; 4PIO
+fefa  05 ca 02       331    331                 DB      005H, 0CAH, 002H        ; PIO
+fefd  25 ca 40       332    332                 DB      025H, 0CAH, 040H        ; HSR
+                     333    333 
+ff00                 334    334                 END
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 7
+Source file: mbl.asm
+Title:       Symbol table
+
+EOF      fe9c*	ERREXIT  fed9 	FINDTOKE fe8f 	FOREVER  fee0 	
+IERROR   fed7 	LEADINSK fe80 	LINK     fea5 	LOADRECO fea6 	
+LOREC2   feb4 	MERROR   fec1 	SCANRAM  fe2c 	STAGE2SK fe88 	
+TABLE1   feeb 	
