@@ -1,0 +1,2072 @@
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 1
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1         TITLE '8080 MICROCHESS'
+                       2      2 
+                       3      3 ; 8080 MICROCHESS
+                       4      4 ; (C) COPYRIGHT 1977, MICRO-WARE LIMITED
+                       5      5 ; WRITTEN BY P. JENNINGS & T. O'BRIEN
+                       6      6 ;
+                       7      7 ; TYPED IN HEXDUMP FROM THE MANUAL AND APPLIED PATCHES
+                       8      8 ; FROM THE OCTOBER 1977 MICROCHESS NOTES.
+                       9      9 ;
+                      10     10 ; BY DEFAULT THE PROGRAM USES TERMINAL I/O FOR
+                      11     11 ; A CROMEMCO TU-ART. BY SETTING ONE OF MITS
+                      12     12 ; OR IMSAI TO 1, THE TERMINAL I/O ROUTINES ARE
+                      13     13 ; PATCHED FOR A MITS 2SIO OR IMSAI SIO2.
+                      14     14 ;
+                      15     15 ; ADDED THE DOCUMENTED PATCHES FOR DISPLAY OPTIONS.
+                      16     16 ; ADDED PATCHES TO MAKE IT WORKING UNDER CP/M.
+                      17     17 ;
+                      18     18 ; UDO MUNK, OCTOBER 2016
+                      19     19 ;
+                      20     20 ; ADDED PATCH TO DISPLAY A SMALL BOARD WITH COORDINATES.
+                      21     21 ; ADDED DAZZLER OUPUT USING 8080 INSTRUCTIONS ONLY.
+                      22     22 ; MADE PATCH FOR BOARD WITH COORDINATES RELOCATABLE.
+                      23     23 ; FIRST SWITCH DAZZLER ON AND THEN DRAW BOARD, SO THAT
+                      24     24 ; IT ALSO WORKS WITH DAZZLER II.
+                      25     25 ; IMPROVED CP/M PATCH, NOW ALSO SAVES IOBYTE, SOME BIOS'S
+                      26     26 ; NEED IT.
+                      27     27 ;
+                      28     28 ; UDO MUNK, NOVEMBER 2016
+                      29     29 ;
+                      30     30 ; ASSEMBLE WITH INTEL 8080 CROSSASSEMBLER OR DRI MAC UNDER CP/M.
+                      31     31 ; UNDER CP/M DRI LOAD WILL NOT WORK, USE MLOAD.
+                      32     32 
+                      33     33 
+0000  #               34     34 OFFSET  SET  0
+                      35     35 
+                      36     36 ;
+                      37     37 ; BUILD STANDALONE OR CP/M VERSION
+                      38     38 ;
+0000  #               39     39 CPM     SET  0
+                      40     40 
+                      41     41         IF   CPM
+                      42     42 OFFSET  SET  0100H
+                      43     43         ENDIF
+                      44     44 
+                      45     45 ;
+                      46     46 ; ADDITIONAL DAZZLER GRAPHICS OUTPUT
+                      47     47 ;
+0001  #               48     48 DAZZLER SET  1
+                      49     49 
+                      50     50 ;
+                      51     51 ; TERMINAL I/O PATCH OPTIONS FOR STANDALONE
+                      52     52 ;
+0000  #               53     53 MITS    SET  0
+0000  #               54     54 IMSAI   SET  0
+                      55     55 
+                      56     56 ;
+                      57     57 ; DISPLAY OPTIONS
+                      58     58 ;
+0000  #               59     59 SMALLD  SET  0          ;SMALL BOARD DISPLAY
+0001  #               60     60 COORD   SET  1          ;DISPLAY SMALL BOARD WITH COORDINATES
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 2
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0001  #               61     61 MAUTO   SET  1          ;AUTO DISPLAY AFTER MICROCHESS MOVES
+0001  #               62     62 CAUTO   SET  1          ;AUTO DISPLAY AFTER CHALLENGER MOVES
+                      63     63 
+                      64     64         ORG  OFFSET
+                      65     65 
+0000  31 82 0d cd     66     66 L000:   DB 031H,082H,00DH,0CDH,0ACH,009H,021H,06DH
+0004  ac 09 21 6d     66     67
+0008  0b cd da 01     67     68         DB 00BH,0CDH,0DAH,001H,021H,093H,00BH,0CDH
+000c  21 93 0b cd     67     69
+                      68     70 
+0010  da 01 21 b9     69     71 L010:   DB 0DAH,001H,021H,0B9H,00BH,0CDH,0DAH,001H
+0014  0b cd da 01     69     72
+0018  cd ac 09 cd     70     73         DB 0CDH,0ACH,009H,0CDH,0AFH,005H,021H,095H
+001c  af 05 21 95     70     74
+                      71     75 
+0020  0a 22 7d 0a     72     76 L020:   DB 00AH,022H,07DH,00AH,021H,0CBH,00AH,022H
+0024  21 cb 0a 22     72     77
+0028  7f 0a 21 01     73     78         DB 07FH,00AH,021H,001H,00BH,022H,079H,00AH
+002c  0b 22 79 0a     73     79
+                      74     80 
+0030  21 37 0b 22     75     81 L030:   DB 021H,037H,00BH,022H,07BH,00AH,0AFH,032H
+0034  7b 0a af 32     75     82
+0038  74 0a 32 78     76     83         DB 074H,00AH,032H,078H,00AH,032H,082H,00AH
+003c  0a 32 82 0a     76     84
+                      77     85 
+0040  32 81 0a 32     78     86 L040:   DB 032H,081H,00AH,032H,075H,00AH,032H,076H
+0044  75 0a 32 76     78     87
+0048  0a 3e 10 32     79     88         DB 00AH,03EH,010H,032H,077H,00AH,03EH,0EEH
+004c  77 0a 3e ee     79     89
+                      80     90 
+0050  32 4d 0a 32     81     91 L050:   DB 032H,04DH,00AH,032H,04EH,00AH,021H,0F5H
+0054  4e 0a 21 f5     81     92
+0058  0b cd 5c 01     82     93         DB 00BH,0CDH,05CH,001H,0CDH,0C9H,009H,0CDH
+005c  cd c9 09 cd     82     94
+                      83     95 
+0060  bf 09 78 0f     84     96 L060:   DB 0BFH,009H,078H,00FH,0D2H,06FH,000H,03EH
+0064  d2 6f 00 3e     84     97
+0068  01 32 82 0a     85     98         DB 001H,032H,082H,00AH,0CDH,0C3H,005H,0CDH
+006c  cd c3 05 cd     85     99
+                      86    100 
+0070  42 02 cd ac     87    101 L070:   DB 042H,002H,0CDH,0ACH,009H,031H,082H,00DH
+0074  09 31 82 0d     87    102
+0078  21 e6 0d 22     88    103         DB 021H,0E6H,00DH,022H,059H,00AH,021H,020H
+007c  59 0a 21 20     88    104
+                      89    105 
+0080  20 22 20 0c     90    106 L080:   DB 020H,022H,020H,00CH,021H,010H,00CH,0CDH
+0084  21 10 0c cd     90    107
+0088  5c 01 cd 20     91    108         DB 05CH,001H,0CDH,020H,003H,0CDH,0ACH,009H
+008c  03 cd ac 09     91    109
+                      92    110 
+0090  21 0a 0d 7e     93    111 L090:   DB 021H,00AH,00DH,07EH,0FEH,047H,0CAH,0D7H
+0094  fe 47 ca d7     93    112
+0098  00 fe 44 ca     94    113         DB 000H,0FEH,044H,0CAH,042H,003H,0FEH,045H
+009c  42 03 fe 45     94    114
+                      95    115 
+00a0  ca 2c 02 fe     96    116 L0A0:   DB 0CAH,02CH,002H,0FEH,053H,0CAH,0E1H,001H
+00a4  53 ca e1 01     96    117
+00a8  fe 4f ca d1     97    118         DB 0FEH,04FH,0CAH,0D1H,003H,0FEH,052H,0CAH
+00ac  03 fe 52 ca     97    119
+                      98    120 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 3
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+00b0  20 02 fe 41     99    121 L0B0:   DB 020H,002H,0FEH,041H,0CAH,0F1H,002H,0FEH
+00b4  ca f1 02 fe     99    122
+00b8  4e ca 05 03    100    123         DB 04EH,0CAH,005H,003H,0CDH,068H,001H,03AH
+00bc  cd 68 01 3a    100    124
+                     101    125 
+00c0  0f 0d fe 4d    102    126 L0C0:   DB 00FH,00DH,0FEH,04DH,0CAH,026H,001H,0FEH
+00c4  ca 26 01 fe    102    127
+00c8  3d ca 48 03    103    128         DB 03DH,0CAH,048H,003H,0FEH,00DH,0C2H,02CH
+00cc  fe 0d c2 2c    103    129
+                     104    130 
+00d0  01 cd 6d 08    105    131 L0D0:   DB 001H,0CDH,06DH,008H,000H,000H,000H,0CDH
+00d4  00 00 00 cd    105    132
+00d8  7d 04 3a 78    106    133         DB 07DH,004H,03AH,078H,00AH,0B7H,0CAH,0F4H
+00dc  0a b7 ca f4    106    134
+                     107    135 
+00e0  00 21 4f 20    108    136 L0E0:   DB 000H,021H,04FH,020H,022H,01EH,00CH,021H
+00e4  22 1e 0c 21    108    137
+00e8  20 4f 22 1b    109    138         DB 020H,04FH,022H,01BH,00CH,0AFH,032H,078H
+00ec  0c af 32 78    109    139
+                     110    140 
+00f0  0a c3 02 01    111    141 L0F0:   DB 00AH,0C3H,002H,001H,0CDH,0ADH,001H,0CDH
+00f4  cd ad 01 cd    111    142
+00f8  97 03 3a 4f    112    143         DB 097H,003H,03AH,04FH,00AH,0FEH,0FFH,0CAH
+00fc  0a fe ff ca    112    144
+                     113    145 
+0100  38 01 21 16    114    146 L100:   DB 038H,001H,021H,016H,00CH,0CDH,05CH,001H
+0104  0c cd 5c 01    114    147
+0108  3a 81 0a fe    115    148         DB 03AH,081H,00AH,0FEH,0FFH,0CAH,017H,003H
+010c  ff ca 17 03    115    149
+                     116    150 
+0110  3a 74 0a b7    117    151 L110:   DB 03AH,074H,00AH,0B7H,0CAH,01DH,001H,021H
+0114  ca 1d 01 21    117    152
+0118  ae 0c cd 5c    118    153         DB 0AEH,00CH,0CDH,05CH,001H,0CDH,0ACH,009H
+011c  01 cd ac 09    118    154
+                     119    155 
+0120  00 00 00 c3    120    156 L120:   DB 000H,000H,000H,0C3H,075H,000H,0CDH,06DH
+0124  75 00 cd 6d    120    157
+0128  08 c3 75 00    121    158         DB 008H,0C3H,075H,000H,021H,023H,00CH,0CDH
+012c  21 23 0c cd    121    159
+                     122    160 
+0130  5c 01 cd ac    123    161 L130:   DB 05CH,001H,0CDH,0ACH,009H,0C3H,075H,000H
+0134  09 c3 75 00    123    162
+0138  21 30 0c cd    124    163         DB 021H,030H,00CH,0CDH,0DAH,001H,0CDH,042H
+013c  da 01 cd 42    124    164
+                     125    165 
+0140  02 cd ac 09    126    166 L140:   DB 002H,0CDH,0ACH,009H,021H,047H,00CH,0CDH
+0144  21 47 0c cd    126    167
+0148  5c 01 cd c9    127    168         DB 05CH,001H,0CDH,0C9H,009H,0CDH,0BFH,009H
+014c  09 cd bf 09    127    169
+                     128    170 
+0150  78 fe 59 c2    129    171 L150:   DB 078H,0FEH,059H,0C2H,0C8H,001H,0CDH,0ACH
+0154  c8 01 cd ac    129    172
+0158  09 c3 18 00    130    173         DB 009H,0C3H,018H,000H,07EH,0FEH,00DH,0C8H
+015c  7e fe 0d c8    130    174
+                     131    175 
+0160  47 cd bf 09    132    176 L160:   DB 047H,0CDH,0BFH,009H,023H,0C3H,05CH,001H
+0164  23 c3 5c 01    132    177
+0168  2a 0a 0d cd    133    178         DB 02AH,00AH,00DH,0CDH,099H,001H,032H,050H
+016c  99 01 32 50    133    179
+                     134    180 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 4
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0170  0a 2a 0d 0d    135    181 L170:   DB 00AH,02AH,00DH,00DH,0CDH,099H,001H,032H
+0174  cd 99 01 32    135    182
+0178  51 0a 32 4e    136    183         DB 051H,00AH,032H,04EH,00AH,03AH,050H,00AH
+017c  0a 3a 50 0a    136    184
+                     137    185 
+0180  21 0c 0a 0e    138    186 L180:   DB 021H,00CH,00AH,00EH,01FH,0BEH,0CAH,091H
+0184  1f be ca 91    138    187
+0188  01 2b 0d f2    139    188         DB 001H,02BH,00DH,0F2H,085H,001H,0C3H,02CH
+018c  85 01 c3 2c    139    189
+                     140    190 
+0190  01 79 32 4d    141    191 L190:   DB 001H,079H,032H,04DH,00AH,032H,04FH,00AH
+0194  0a 32 4f 0a    141    192
+0198  c9 7d e6 0f    142    193         DB 0C9H,07DH,0E6H,00FH,017H,017H,017H,017H
+019c  17 17 17 17    142    194
+                     143    195 
+01a0  47 7c e6 0f    144    196 L1A0:   DB 047H,07CH,0E6H,00FH,0B0H,047H,0E6H,088H
+01a4  b0 47 e6 88    144    197
+01a8  c2 2c 01 78    145    198         DB 0C2H,02CH,001H,078H,0C9H,03AH,050H,00AH
+01ac  c9 3a 50 0a    145    199
+                     146    200 
+01b0  47 cd 8f 09    147    201 L1B0:   DB 047H,0CDH,08FH,009H,02AH,0DDH,009H,022H
+01b4  2a dd 09 22    147    202
+01b8  1b 0c 3a 51    148    203         DB 01BH,00CH,03AH,051H,00AH,047H,0CDH,08FH
+01bc  0a 47 cd 8f    148    204
+                     149    205 
+01c0  09 2a dd 09    150    206 L1C0:   DB 009H,02AH,0DDH,009H,022H,01EH,00CH,0C9H
+01c4  22 1e 0c c9    150    207
+01c8  cd ac 09 cd    151    208         DB 0CDH,0ACH,009H,0CDH,0ACH,009H,021H,05BH
+01cc  ac 09 21 5b    151    209
+                     152    210 
+01d0  0c cd 5c 01    153    211 L1D0:   DB 00CH,0CDH,05CH,001H,0CDH,0ACH,009H,076H
+01d4  cd ac 09 76    153    212
+01d8  00 00 cd 5c    154    213         DB 000H,000H,0CDH,05CH,001H,0CDH,0ACH,009H
+01dc  01 cd ac 09    154    214
+                     155    215 
+01e0  c9 cd ac 09    156    216 L1E0:   DB 0C9H,0CDH,0ACH,009H,021H,0DFH,00BH,0CDH
+01e4  21 df 0b cd    156    217
+01e8  5c 01 cd c9    157    218         DB 05CH,001H,0CDH,0C9H,009H,0CDH,0BFH,009H
+01ec  09 cd bf 09    157    219
+                     158    220 
+01f0  78 fe 53 ca    159    221 L1F0:   DB 078H,0FEH,053H,0CAH,003H,002H,0FEH,042H
+01f4  03 02 fe 42    159    222
+01f8  ca 0a 02 fe    160    223         DB 0CAH,00AH,002H,0FEH,04EH,0CAH,011H,002H
+01fc  4e ca 11 02    160    224
+                     161    225 
+0200  c3 2c 01 06    162    226 L200:   DB 0C3H,02CH,001H,006H,000H,00EH,0FFH,0C3H
+0204  00 0e ff c3    162    227
+0208  15 02 06 00    163    228         DB 015H,002H,006H,000H,00EH,0FBH,0C3H,015H
+020c  0e fb c3 15    163    229
+                     164    230 
+0210  02 06 08 0e    165    231 L210:   DB 002H,006H,008H,00EH,0FBH,078H,032H,01EH
+0214  fb 78 32 1e    165    232
+0218  07 79 32 61    166    233         DB 007H,079H,032H,061H,008H,0C3H,072H,000H
+021c  08 c3 72 00    166    234
+                     167    235 
+0220  cd ac 09 21    168    236 L220:   DB 0CDH,0ACH,009H,021H,07EH,00CH,0CDH,05CH
+0224  7e 0c cd 5c    168    237
+0228  01 c3 3e 01    169    238         DB 001H,0C3H,03EH,001H,0CDH,0C3H,005H,03AH
+022c  cd c3 05 3a    169    239
+                     170    240 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 5
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0230  82 0a b7 ca    171    241 L230:   DB 082H,00AH,0B7H,0CAH,03AH,002H,0AFH,0C3H
+0234  3a 02 af c3    171    242
+0238  3c 02 3e 01    172    243         DB 03CH,002H,03EH,001H,032H,082H,00AH,0C3H
+023c  32 82 0a c3    172    244
+                     173    245 
+0240  75 00 cd ac    174    246 L240:   DB 075H,000H,0CDH,0ACH,009H,0CDH,0ACH,009H
+0244  09 cd ac 09    174    247
+0248  16 00 21 b6    175    248         DB 016H,000H,021H,0B6H,00CH,0CDH,0DAH,001H
+024c  0c cd da 01    175    249
+                     176    250 
+0250  7a b7 ca 5b    177    251 L250:   DB 07AH,0B7H,0CAH,05BH,002H,021H,0D2H,00CH
+0254  02 21 d2 0c    177    252
+0258  cd da 01 06    178    253         DB 0CDH,0DAH,001H,006H,021H,0CDH,0BFH,009H
+025c  21 cd bf 09    178    254
+                     179    255 
+0260  06 20 cd bf    180    256 L260:   DB 006H,020H,0CDH,0BFH,009H,021H,00CH,00AH
+0264  09 21 0c 0a    180    257
+0268  0e 1f 7e ba    181    258         DB 00EH,01FH,07EH,0BAH,0CAH,0B8H,002H,02BH
+026c  ca b8 02 2b    181    259
+                     182    260 
+0270  0d f2 6a 02    183    261 L270:   DB 00DH,0F2H,06AH,002H,07AH,0E6H,00FH,05FH
+0274  7a e6 0f 5f    183    262
+0278  7a e6 f0 0f    184    263         DB 07AH,0E6H,0F0H,00FH,00FH,00FH,00FH,083H
+027c  0f 0f 0f 83    184    264
+                     185    265 
+0280  1f da 89 02    186    266 L280:   DB 01FH,0DAH,089H,002H,006H,020H,0C3H,08BH
+0284  06 20 c3 8b    186    267
+0288  02 06 3a cd    187    268         DB 002H,006H,03AH,0CDH,0BFH,009H,0CDH,0BFH
+028c  bf 09 cd bf    187    269
+                     188    270 
+0290  09 06 20 cd    189    271 L290:   DB 009H,006H,020H,0CDH,0BFH,009H,014H,07AH
+0294  bf 09 14 7a    189    272
+0298  e6 0f fe 08    190    273         DB 0E6H,00FH,0FEH,008H,0C2H,065H,002H,006H
+029c  c2 65 02 06    190    274
+                     191    275 
+02a0  21 cd bf 09    192    276 L2A0:   DB 021H,0CDH,0BFH,009H,0CDH,0ACH,009H,07AH
+02a4  cd ac 09 7a    192    277
+02a8  c6 08 57 f2    193    278         DB 0C6H,008H,057H,0F2H,050H,002H,021H,0EEH
+02ac  50 02 21 ee    193    279
+                     194    280 
+02b0  0c cd da 01    195    281 L2B0:   DB 00CH,0CDH,0DAH,001H,0CDH,0ACH,009H,0C9H
+02b4  cd ac 09 c9    195    282
+02b8  79 fe 10 d2    196    283         DB 079H,0FEH,010H,0D2H,0D3H,002H,03AH,082H
+02bc  d3 02 3a 82    196    284
+                     197    285 
+02c0  0a b7 c2 cc    198    286 L2C0:   DB 00AH,0B7H,0C2H,0CCH,002H,03AH,083H,00AH
+02c4  02 3a 83 0a    198    287
+02c8  47 c3 dd 02    199    288         DB 047H,0C3H,0DDH,002H,03AH,084H,00AH,047H
+02cc  3a 84 0a 47    199    289
+                     200    290 
+02d0  c3 dd 02 3a    201    291 L2D0:   DB 0C3H,0DDH,002H,03AH,082H,00AH,0B7H,0C2H
+02d4  82 0a b7 c2    201    292
+02d8  c5 02 c3 cc    202    293         DB 0C5H,002H,0C3H,0CCH,002H,0CDH,0BFH,009H
+02dc  02 cd bf 09    202    294
+                     203    295 
+02e0  79 e6 0f 4f    204    296 L2E0:   DB 079H,0E6H,00FH,04FH,006H,000H,021H,085H
+02e4  06 00 21 85    204    297
+02e8  0a 09 46 cd    205    298         DB 00AH,009H,046H,0CDH,0BFH,009H,0C3H,091H
+02ec  bf 09 c3 91    205    299
+                     206    300 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 6
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+02f0  02 3e cd 32    207    301 L2F0:   DB 002H,03EH,0CDH,032H,0D4H,000H,032H,020H
+02f4  d4 00 32 20    207    302
+02f8  01 21 42 02    208    303         DB 001H,021H,042H,002H,022H,0D5H,000H,022H
+02fc  22 d5 00 22    208    304
+                     209    305 
+0300  21 01 c3 72    210    306 L300:   DB 021H,001H,0C3H,072H,000H,021H,000H,000H
+0304  00 21 00 00    210    307
+0308  22 d4 00 22    211    308         DB 022H,0D4H,000H,022H,0D5H,000H,022H,020H
+030c  d5 00 22 20    211    309
+                     212    310 
+0310  01 22 21 01    213    311 L310:   DB 001H,022H,021H,001H,0C3H,072H,000H,021H
+0314  c3 72 00 21    213    312
+0318  96 0c cd 5c    214    313         DB 096H,00CH,0CDH,05CH,001H,0C3H,03EH,001H
+031c  01 c3 3e 01    214    314
+                     215    315 
+0320  21 0a 0d 0e    216    316 L320:   DB 021H,00AH,00DH,00EH,000H,0CDH,0C9H,009H
+0324  00 cd c9 09    216    317
+0328  78 77 fe 0d    217    318         DB 078H,077H,0FEH,00DH,0CAH,03CH,003H,0FEH
+032c  ca 3c 03 fe    217    319
+                     218    320 
+0330  18 ca 72 00    219    321 L330:   DB 018H,0CAH,072H,000H,0CDH,0BFH,009H,023H
+0334  cd bf 09 23    219    322
+0338  0c c3 25 03    220    323         DB 00CH,0C3H,025H,003H,0AFH,0B9H,0CAH,025H
+033c  af b9 ca 25    220    324
+                     221    325 
+0340  03 c9 cd 42    222    326 L340:   DB 003H,0C9H,0CDH,042H,002H,0C3H,075H,000H
+0344  02 c3 75 00    222    327
+0348  cd 68 01 21    223    328         DB 0CDH,068H,001H,021H,00CH,00AH,00EH,00FH
+034c  0c 0a 0e 0f    223    329
+                     224    330 
+0350  3a 50 0a be    225    331 L350:   DB 03AH,050H,00AH,0BEH,0CAH,05CH,003H,02BH
+0354  ca 5c 03 2b    225    332
+0358  0d f2 53 03    226    333         DB 00DH,0F2H,053H,003H,036H,0CCH,021H,08CH
+035c  36 cc 21 8c    226    334
+                     227    335 
+0360  0a 0e 07 3a    228    336 L360:   DB 00AH,00EH,007H,03AH,010H,00DH,0BEH,0CAH
+0364  10 0d be ca    228    337
+0368  72 03 2b 0d    229    338         DB 072H,003H,02BH,00DH,0F2H,066H,003H,0C3H
+036c  f2 66 03 c3    229    339
+                     230    340 
+0370  2c 01 21 fd    231    341 L370:   DB 02CH,001H,021H,0FDH,009H,006H,000H,009H
+0374  09 06 00 09    231    342
+0378  3e cc be ca    232    343         DB 03EH,0CCH,0BEH,0CAH,083H,003H,02BH,0BEH
+037c  83 03 2b be    232    344
+                     233    345 
+0380  c2 2c 01 3a    234    346 L380:   DB 0C2H,02CH,001H,03AH,051H,00AH,077H,03AH
+0384  51 0a 77 3a    234    347
+0388  11 0d fe 4d    235    348         DB 011H,00DH,0FEH,04DH,0CAH,072H,000H,0FEH
+038c  ca 72 00 fe    235    349
+                     236    350 
+0390  0d ca d4 00    237    351 L390:   DB 00DH,0CAH,0D4H,000H,0C3H,02CH,001H,03AH
+0394  c3 2c 01 3a    237    352
+0398  51 0a e6 f0    238    353         DB 051H,00AH,0E6H,0F0H,0FEH,070H,0C0H,03AH
+039c  fe 70 c0 3a    238    354
+                     239    355 
+03a0  4f 0a 4f e6    240    356 L3A0:   DB 04FH,00AH,04FH,0E6H,008H,0C8H,021H,0EDH
+03a4  08 c8 21 ed    240    357
+03a8  09 06 00 09    241    358         DB 009H,006H,000H,009H,03EH,0CCH,077H,021H
+03ac  3e cc 77 21    241    359
+                     242    360 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 7
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+03b0  ee 09 1e 00    243    361 L3B0:   DB 0EEH,009H,01EH,000H,0BEH,0CAH,0BDH,003H
+03b4  be ca bd 03    243    362
+03b8  23 1c c3 b4    244    363         DB 023H,01CH,0C3H,0B4H,003H,03AH,051H,00AH
+03bc  03 3a 51 0a    244    364
+                     245    365 
+03c0  77 3e 3d 32    246    366 L3C0:   DB 077H,03EH,03DH,032H,020H,00CH,021H,086H
+03c4  20 0c 21 86    246    367
+03c8  0a 16 00 19    247    368         DB 00AH,016H,000H,019H,07EH,032H,021H,00CH
+03cc  7e 32 21 0c    247    369
+                     248    370 
+03d0  c9 3a 0c 0d    249    371 L3D0:   DB 0C9H,03AH,00CH,00DH,0FEH,04FH,0C2H,02CH
+03d4  fe 4f c2 2c    249    372
+03d8  01 3a 0e 0d    250    373         DB 001H,03AH,00EH,00DH,0FEH,04FH,0C2H,02FH
+03dc  fe 4f c2 2f    250    374
+                     251    375 
+03e0  04 3a 82 0a    252    376 L3E0:   DB 004H,03AH,082H,00AH,0B7H,0CAH,005H,004H
+03e4  b7 ca 05 04    252    377
+03e8  3a fd 09 fe    253    378         DB 03AH,0FDH,009H,0FEH,074H,0C2H,02CH,001H
+03ec  74 c2 2c 01    253    379
+                     254    380 
+03f0  3e 72 32 fd    255    381 L3F0:   DB 03EH,072H,032H,0FDH,009H,03EH,073H,032H
+03f4  09 3e 73 32    255    382
+03f8  00 0a 32 4e    256    383         DB 000H,00AH,032H,04EH,00AH,03EH,013H,032H
+03fc  0a 3e 13 32    256    384
+                     257    385 
+0400  4d 0a c3 1f    258    386 L400:   DB 04DH,00AH,0C3H,01FH,004H,03AH,0FDH,009H
+0404  04 3a fd 09    258    387
+0408  fe 73 c2 2c    259    388         DB 0FEH,073H,0C2H,02CH,001H,03EH,075H,032H
+040c  01 3e 75 32    259    389
+                     260    390 
+0410  fd 09 3e 74    261    391 L410:   DB 0FDH,009H,03EH,074H,032H,000H,00AH,032H
+0414  32 00 0a 32    261    392
+0418  4e 0a 3e 13    262    393         DB 04EH,00AH,03EH,013H,032H,04DH,00AH,03AH
+041c  32 4d 0a 3a    262    394
+                     263    395 
+0420  0f 0d fe 4d    264    396 L420:   DB 00FH,00DH,0FEH,04DH,0CAH,072H,000H,0FEH
+0424  ca 72 00 fe    264    397
+0428  0d ca d4 00    265    398         DB 00DH,0CAH,0D4H,000H,0C3H,02CH,001H,03AH
+042c  c3 2c 01 3a    265    399
+                     266    400 
+0430  82 0a b7 ca    267    401 L430:   DB 082H,00AH,0B7H,0CAH,053H,004H,03AH,0FDH
+0434  53 04 3a fd    267    402
+0438  09 fe 74 c2    268    403         DB 009H,0FEH,074H,0C2H,02CH,001H,03EH,076H
+043c  2c 01 3e 76    268    404
+                     269    405 
+0440  32 fd 09 3e    270    406 L440:   DB 032H,0FDH,009H,03EH,075H,032H,0FFH,009H
+0444  75 32 ff 09    270    407
+0448  32 4e 0a 3e    271    408         DB 032H,04EH,00AH,03EH,012H,032H,04DH,00AH
+044c  12 32 4d 0a    271    409
+                     272    410 
+0450  c3 6d 04 3a    273    411 L450:   DB 0C3H,06DH,004H,03AH,0FDH,009H,0FEH,073H
+0454  fd 09 fe 73    273    412
+0458  c2 2c 01 3e    274    413         DB 0C2H,02CH,001H,03EH,071H,032H,0FDH,009H
+045c  71 32 fd 09    274    414
+                     275    415 
+0460  3e 72 32 ff    276    416 L460:   DB 03EH,072H,032H,0FFH,009H,032H,04EH,00AH
+0464  09 32 4e 0a    276    417
+0468  3e 12 32 4d    277    418         DB 03EH,012H,032H,04DH,00AH,03AH,00DH,00DH
+046c  0a 3a 0d 0d    277    419
+                     278    420 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 8
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0470  fe 4d ca 72    279    421 L470:   DB 0FEH,04DH,0CAH,072H,000H,0FEH,00DH,0CAH
+0474  00 fe 0d ca    279    422
+0478  d4 00 c3 2c    280    423         DB 0D4H,000H,0C3H,02CH,001H,02AH,075H,00AH
+047c  01 2a 75 0a    280    424
+                     281    425 
+0480  7d fe 36 d2    282    426 L480:   DB 07DH,0FEH,036H,0D2H,06BH,005H,0CDH,0CFH
+0484  6b 05 cd cf    282    427
+0488  04 f5 2a 75    283    428         DB 004H,0F5H,02AH,075H,00AH,023H,022H,075H
+048c  0a 23 22 75    283    429
+                     284    430 
+0490  0a f1 d2 6b    285    431 L490:   DB 00AH,0F1H,0D2H,06BH,005H,0CDH,04FH,005H
+0494  05 cd 4f 05    285    432
+0498  cd b7 04 cd    286    433         DB 0CDH,0B7H,004H,0CDH,06DH,008H,03AH,04DH
+049c  6d 08 3a 4d    286    434
+                     287    435 
+04a0  0a fe 00 c0    288    436 L4A0:   DB 00AH,0FEH,000H,0C0H,03EH,002H,032H,04DH
+04a4  3e 02 32 4d    288    437
+04a8  0a 3a 4e 0a    289    438         DB 00AH,03AH,04EH,00AH,0EEH,003H,032H,04EH
+04ac  ee 03 32 4e    289    439
+                     290    440 
+04b0  0a 32 78 0a    291    441 L4B0:   DB 00AH,032H,078H,00AH,0C3H,098H,004H,021H
+04b4  c3 98 04 21    291    442
+04b8  ed 09 3a 4d    292    443         DB 0EDH,009H,03AH,04DH,00AH,032H,04FH,00AH
+04bc  0a 32 4f 0a    292    444
+                     293    445 
+04c0  4f 06 00 09    294    446 L4C0:   DB 04FH,006H,000H,009H,07EH,032H,050H,00AH
+04c4  7e 32 50 0a    294    447
+04c8  3a 4e 0a 32    295    448         DB 03AH,04EH,00AH,032H,051H,00AH,0C9H,0CDH
+04cc  51 0a c9 cd    295    449
+                     296    450 
+04d0  04 05 ca eb    297    451 L4D0:   DB 004H,005H,0CAH,0EBH,004H,0CDH,01CH,005H
+04d4  04 cd 1c 05    297    452
+04d8  21 77 0a 35    298    453         DB 021H,077H,00AH,035H,0F2H,0E7H,004H,0AFH
+04dc  f2 e7 04 af    298    454
+                     299    455 
+04e0  26 00 2e f0    300    456 L4E0:   DB 026H,000H,02EH,0F0H,022H,075H,00AH,0DAH
+04e4  22 75 0a da    300    457
+04e8  cf 04 c9 cd    301    458         DB 0CFH,004H,0C9H,0CDH,029H,005H,02AH,075H
+04ec  29 05 2a 75    301    459
+                     302    460 
+04f0  0a eb 2a 79    303    461 L4F0:   DB 00AH,0EBH,02AH,079H,00AH,019H,07EH,032H
+04f4  0a 19 7e 32    303    462
+04f8  4d 0a 2a 7b    304    463         DB 04DH,00AH,02AH,07BH,00AH,019H,07EH,032H
+04fc  0a 19 7e 32    304    464
+                     305    465 
+0500  4e 0a 37 c9    306    466 L500:   DB 04EH,00AH,037H,0C9H,02AH,075H,00AH,0EBH
+0504  2a 75 0a eb    306    467
+0508  2a 7d 0a 19    307    468         DB 02AH,07DH,00AH,019H,03AH,04DH,00AH,0BEH
+050c  3a 4d 0a be    307    469
+                     308    470 
+0510  c2 1b 05 2a    309    471 L510:   DB 0C2H,01BH,005H,02AH,07FH,00AH,019H,03AH
+0514  7f 0a 19 3a    309    472
+0518  4e 0a be c9    310    473         DB 04EH,00AH,0BEH,0C9H,02AH,075H,00AH,07DH
+051c  2a 75 0a 7d    310    474
+                     311    475 
+0520  c6 09 6f 22    312    476 L520:   DB 0C6H,009H,06FH,022H,075H,00AH,0FEH,036H
+0524  75 0a fe 36    312    477
+0528  c9 2a 75 0a    313    478         DB 0C9H,02AH,075H,00AH,0E5H,03AH,077H,00AH
+052c  e5 3a 77 0a    313    479
+                     314    480 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 9
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0530  4f 3e ff 32    315    481 L530:   DB 04FH,03EH,0FFH,032H,077H,00AH,0CDH,01CH
+0534  77 0a cd 1c    315    482
+0538  05 21 77 0a    316    483         DB 005H,021H,077H,00AH,034H,0D2H,04AH,005H
+053c  34 d2 4a 05    316    484
+                     317    485 
+0540  0d fa 4a 05    318    486 L540:   DB 00DH,0FAH,04AH,005H,0CDH,004H,005H,0CAH
+0544  cd 04 05 ca    318    487
+0548  36 05 e1 22    319    488         DB 036H,005H,0E1H,022H,075H,00AH,0C9H,03AH
+054c  75 0a c9 3a    319    489
+                     320    490 
+0550  1e 07 3c 57    321    491 L550:   DB 01EH,007H,03CH,057H,006H,005H,00EH,0FFH
+0554  06 05 0e ff    321    492
+0558  3e ff 3d c2    322    493         DB 03EH,0FFH,03DH,0C2H,05AH,005H,00DH,0C2H
+055c  5a 05 0d c2    322    494
+                     323    495 
+0560  58 05 05 c2    324    496 L560:   DB 058H,005H,005H,0C2H,056H,005H,015H,0C2H
+0564  56 05 15 c2    324    497
+0568  54 05 c9 3e    325    498         DB 054H,005H,0C9H,03EH,00CH,032H,054H,00AH
+056c  0c 32 54 0a    325    499
+                     326    500 
+0570  32 50 0a 0e    327    501 L570:   DB 032H,050H,00AH,00EH,014H,0CDH,0DFH,005H
+0574  14 cd df 05    327    502
+0578  3e 04 32 54    328    503         DB 03EH,004H,032H,054H,00AH,0CDH,0DDH,005H
+057c  0a cd dd 05    328    504
+                     329    505 
+0580  3a 50 0a fe    330    506 L580:   DB 03AH,050H,00AH,0FEH,00FH,0DAH,0A3H,005H
+0584  0f da a3 05    330    507
+0588  21 ed 09 06    331    508         DB 021H,0EDH,009H,006H,000H,03AH,04FH,00AH
+058c  00 3a 4f 0a    331    509
+                     332    510 
+0590  32 4d 0a 4f    333    511 L590:   DB 032H,04DH,00AH,04FH,009H,07EH,032H,050H
+0594  09 7e 32 50    333    512
+0598  0a 3a 51 0a    334    513         DB 00AH,03AH,051H,00AH,032H,04EH,00AH,0CDH
+059c  32 4e 0a cd    334    514
+                     335    515 
+05a0  6d 08 c9 3e    336    516 L5A0:   DB 06DH,008H,0C9H,03EH,0FFH,032H,04FH,00AH
+05a4  ff 32 4f 0a    336    517
+05a8  32 50 0a 32    337    518         DB 032H,050H,00AH,032H,051H,00AH,0C9H,021H
+05ac  51 0a c9 21    337    519
+                     338    520 
+05b0  0d 0a 11 ed    339    521 L5B0:   DB 00DH,00AH,011H,0EDH,009H,00EH,020H,07EH
+05b4  09 0e 20 7e    339    522
+05b8  12 23 13 0d    340    523         DB 012H,023H,013H,00DH,0C2H,0B7H,005H,0C9H
+05bc  c2 b7 05 c9    340    524
+                     341    525 
+05c0  cd af 05 21    342    526 L5C0:   DB 0CDH,0AFH,005H,021H,0EDH,009H,011H,0FDH
+05c4  ed 09 11 fd    342    527
+05c8  09 0e 10 3e    343    528         DB 009H,00EH,010H,03EH,077H,096H,047H,0EBH
+05cc  77 96 47 eb    343    529
+                     344    530 
+05d0  3e 77 96 70    345    531 L5D0:   DB 03EH,077H,096H,070H,0EBH,077H,023H,013H
+05d4  eb 77 23 13    345    532
+05d8  0d c2 cb 05    346    533         DB 00DH,0C2H,0CBH,005H,0C9H,00EH,010H,021H
+05dc  c9 0e 10 21    346    534
+                     347    535 
+05e0  5d 0a af 77    348    536 L5E0:   DB 05DH,00AH,0AFH,077H,023H,00DH,0F2H,0E3H
+05e4  23 0d f2 e3    348    537
+05e8  05 3e 10 32    349    538         DB 005H,03EH,010H,032H,04DH,00AH,021H,04DH
+05ec  4d 0a 21 4d    349    539
+                     350    540 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 10
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+05f0  0a 35 f8 cd    351    541 L5F0:   DB 00AH,035H,0F8H,0CDH,058H,007H,03EH,008H
+05f4  58 07 3e 08    351    542
+05f8  32 55 0a 3a    352    543         DB 032H,055H,00AH,03AH,04DH,00AH,0FEH,008H
+05fc  4d 0a fe 08    352    544
+                     353    545 
+0600  f2 56 06 fe    354    546 L600:   DB 0F2H,056H,006H,0FEH,006H,0F2H,043H,006H
+0604  06 f2 43 06    354    547
+0608  fe 04 f2 35    355    548         DB 0FEH,004H,0F2H,035H,006H,0FEH,001H,0CAH
+060c  06 fe 01 ca    355    549
+                     356    550 
+0610  1e 06 f2 27    357    551 L610:   DB 01EH,006H,0F2H,027H,006H,0CDH,098H,006H
+0614  06 cd 98 06    357    552
+0618  c2 15 06 c3    358    553         DB 0C2H,015H,006H,0C3H,0EEH,005H,0CDH,0A9H
+061c  ee 05 cd a9    358    554
+                     359    555 
+0620  06 c2 1e 06    360    556 L620:   DB 006H,0C2H,01EH,006H,0C3H,0EEH,005H,03EH
+0624  c3 ee 05 3e    360    557
+0628  04 32 55 0a    361    558         DB 004H,032H,055H,00AH,0CDH,0A9H,006H,0C2H
+062c  cd a9 06 c2    361    559
+                     362    560 
+0630  2c 06 c3 ee    363    561 L630:   DB 02CH,006H,0C3H,0EEH,005H,0CDH,0A9H,006H
+0634  05 cd a9 06    363    562
+0638  3a 55 0a fe    364    563         DB 03AH,055H,00AH,0FEH,004H,0C2H,035H,006H
+063c  04 c2 35 06    364    564
+                     365    565 
+0640  c3 ee 05 3e    366    566 L640:   DB 0C3H,0EEH,005H,03EH,010H,032H,055H,00AH
+0644  10 32 55 0a    366    567
+0648  cd 98 06 3a    367    568         DB 0CDH,098H,006H,03AH,055H,00AH,0FEH,008H
+064c  55 0a fe 08    367    569
+                     368    570 
+0650  c2 48 06 c3    369    571 L650:   DB 0C2H,048H,006H,0C3H,0EEH,005H,03EH,006H
+0654  ee 05 3e 06    369    572
+0658  32 55 0a cd    370    573         DB 032H,055H,00AH,0CDH,0DAH,006H,0FAH,06BH
+065c  da 06 fa 6b    370    574
+                     371    575 
+0660  06 3a 52 0a    372    576 L660:   DB 006H,03AH,052H,00AH,0B7H,0CAH,06BH,006H
+0664  b7 ca 6b 06    372    577
+0668  cd 93 07 cd    373    578         DB 0CDH,093H,007H,0CDH,058H,007H,021H,055H
+066c  58 07 21 55    373    579
+                     374    580 
+0670  0a 35 7e fe    375    581 L670:   DB 00AH,035H,07EH,0FEH,005H,0CAH,05BH,006H
+0674  05 ca 5b 06    375    582
+0678  cd da 06 da    376    583         DB 0CDH,0DAH,006H,0DAH,08BH,006H,0FAH,0EEH
+067c  8b 06 fa ee    376    584
+                     377    585 
+0680  05 3a 52 0a    378    586 L680:   DB 005H,03AH,052H,00AH,0B7H,0C2H,0EEH,005H
+0684  b7 c2 ee 05    378    587
+0688  cd 93 07 3a    379    588         DB 0CDH,093H,007H,03AH,04EH,00AH,0E6H,0F0H
+068c  4e 0a e6 f0    379    589
+                     380    590 
+0690  fe 20 ca 78    381    591 L690:   DB 0FEH,020H,0CAH,078H,006H,0C3H,0EEH,005H
+0694  06 c3 ee 05    381    592
+0698  cd da 06 fa    382    593         DB 0CDH,0DAH,006H,0FAH,0A1H,006H,0CDH,093H
+069c  a1 06 cd 93    382    594
+                     383    595 
+06a0  07 cd 58 07    384    596 L6A0:   DB 007H,0CDH,058H,007H,021H,055H,00AH,035H
+06a4  21 55 0a 35    384    597
+06a8  c9 cd da 06    385    598         DB 0C9H,0CDH,0DAH,006H,0D2H,0C0H,006H,0F5H
+06ac  d2 c0 06 f5    385    599
+                     386    600 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 11
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+06b0  e1 22 72 0a    387    601 L6B0:   DB 0E1H,022H,072H,00AH,03AH,052H,00AH,0B7H
+06b4  3a 52 0a b7    387    602
+06b8  ca a9 06 2a    388    603         DB 0CAH,0A9H,006H,02AH,072H,00AH,0E5H,0F1H
+06bc  72 0a e5 f1    388    604
+                     389    605 
+06c0  fa d2 06 3a    390    606 L6C0:   DB 0FAH,0D2H,006H,03AH,052H,00AH,0F5H,0CDH
+06c4  52 0a f5 cd    390    607
+06c8  93 07 f1 32    391    608         DB 093H,007H,0F1H,032H,052H,00AH,0B7H,0CAH
+06cc  52 0a b7 ca    391    609
+                     392    610 
+06d0  a9 06 cd 58    393    611 L6D0:   DB 0A9H,006H,0CDH,058H,007H,021H,055H,00AH
+06d4  07 21 55 0a    393    612
+06d8  35 c9 3a 55    394    613         DB 035H,0C9H,03AH,055H,00AH,006H,000H,021H
+06dc  0a 06 00 21    394    614
+                     395    615 
+06e0  2c 0a 4f 09    396    616 L6E0:   DB 02CH,00AH,04FH,009H,03AH,04EH,00AH,086H
+06e4  3a 4e 0a 86    396    617
+06e8  32 4e 0a e6    397    618         DB 032H,04EH,00AH,0E6H,088H,0C2H,051H,007H
+06ec  88 c2 51 07    397    619
+                     398    620 
+06f0  3a 4e 0a 0e    399    621 L6F0:   DB 03AH,04EH,00AH,00EH,01FH,021H,00CH,00AH
+06f4  1f 21 0c 0a    399    622
+06f8  be ca 04 07    400    623         DB 0BEH,0CAH,004H,007H,02BH,00DH,0F2H,0F8H
+06fc  2b 0d f2 f8    400    624
+                     401    625 
+0700  06 c3 12 07    402    626 L700:   DB 006H,0C3H,012H,007H,079H,0FEH,010H,0DAH
+0704  79 fe 10 da    402    627
+0708  51 07 3e 01    403    628         DB 051H,007H,03EH,001H,032H,052H,00AH,0C3H
+070c  32 52 0a c3    403    629
+                     404    630 
+0710  16 07 af 32    405    631 L710:   DB 016H,007H,0AFH,032H,052H,00AH,03AH,054H
+0714  52 0a 3a 54    405    632
+0718  0a b7 fa 4f    406    633         DB 00AH,0B7H,0FAH,04FH,007H,0FEH,000H,0F2H
+071c  07 fe 00 f2    406    634
+                     407    635 
+0720  4f 07 f5 3a    408    636 L720:   DB 04FH,007H,0F5H,03AH,052H,00AH,0F5H,03EH
+0724  52 0a f5 3e    408    637
+0728  f9 32 54 0a    409    638         DB 0F9H,032H,054H,00AH,032H,053H,00AH,0CDH
+072c  32 53 0a cd    409    639
+                     410    640 
+0730  6d 08 cd c3    411    641 L730:   DB 06DH,008H,0CDH,0C3H,005H,0CDH,0E9H,005H
+0734  05 cd e9 05    411    642
+0738  cd 70 07 f1    412    643         DB 0CDH,070H,007H,0F1H,032H,052H,00AH,0F1H
+073c  32 52 0a f1    412    644
+                     413    645 
+0740  32 54 0a 3a    414    646 L740:   DB 032H,054H,00AH,03AH,053H,00AH,0B7H,0FAH
+0744  53 0a b7 fa    414    647
+0748  4f 07 3e 80    415    648         DB 04FH,007H,03EH,080H,0B7H,037H,0C9H,0AFH
+074c  b7 37 c9 af    415    649
+                     416    650 
+0750  c9 af 32 52    417    651 L750:   DB 0C9H,0AFH,032H,052H,00AH,02FH,0B7H,0C9H
+0754  0a 2f b7 c9    417    652
+0758  21 ed 09 06    418    653         DB 021H,0EDH,009H,006H,000H,03AH,04DH,00AH
+075c  00 3a 4d 0a    418    654
+                     419    655 
+0760  4f 09 7e 32    420    656 L760:   DB 04FH,009H,07EH,032H,04EH,00AH,0C9H,0CDH
+0764  4e 0a c9 cd    420    657
+0768  6d 08 cd c3    421    658         DB 06DH,008H,0CDH,0C3H,005H,0CDH,0E9H,005H
+076c  05 cd e9 05    421    659
+                     422    660 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 12
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0770  cd c3 05 21    423    661 L770:   DB 0CDH,0C3H,005H,021H,000H,000H,039H,022H
+0774  00 00 39 22    423    662
+0778  57 0a 2a 59    424    663         DB 057H,00AH,02AH,059H,00AH,0F9H,0D1H,021H
+077c  0a f9 d1 21    424    664
+                     425    665 
+0780  55 0a 72 21    426    666 L780:   DB 055H,00AH,072H,021H,04DH,00AH,073H,0C1H
+0784  4d 0a 73 c1    426    667
+0788  e1 71 e1 70    427    668         DB 0E1H,071H,0E1H,070H,078H,032H,04EH,00AH
+078c  78 32 4e 0a    427    669
+                     428    670 
+0790  c3 a0 08 3a    429    671 L790:   DB 0C3H,0A0H,008H,03AH,054H,00AH,0B7H,016H
+0794  54 0a b7 16    429    672
+0798  00 5f fa 20    430    673         DB 000H,05FH,0FAH,020H,008H,03AH,04DH,00AH
+079c  08 3a 4d 0a    430    674
+                     431    675 
+07a0  b7 ca b2 07    432    676 L7A0:   DB 0B7H,0CAH,0B2H,007H,047H,03EH,008H,0BBH
+07a4  47 3e 08 bb    432    677
+07a8  c2 b2 07 3a    433    678         DB 0C2H,0B2H,007H,03AH,065H,00AH,0B8H,0CAH
+07ac  65 0a b8 ca    433    679
+                     434    680 
+07b0  fb 07 21 62    435    681 L7B0:   DB 0FBH,007H,021H,062H,00AH,019H,034H,03EH
+07b4  0a 19 34 3e    435    682
+07b8  01 b8 c2 be    436    683         DB 001H,0B8H,0C2H,0BEH,007H,034H,03AH,052H
+07bc  07 34 3a 52    436    684
+                     437    685 
+07c0  0a b7 ca f2    438    686 L7C0:   DB 00AH,0B7H,0CAH,0F2H,007H,00EH,00FH,021H
+07c4  07 0e 0f 21    438    687
+07c8  0c 0a 3a 4e    439    688         DB 00CH,00AH,03AH,04EH,00AH,0BEH,0CAH,0D7H
+07cc  0a be ca d7    439    689
+                     440    690 
+07d0  07 2b 0d f2    441    691 L7D0:   DB 007H,02BH,00DH,0F2H,0CDH,007H,076H,021H
+07d4  cd 07 76 21    441    692
+07d8  3d 0a 06 00    442    693         DB 03DH,00AH,006H,000H,009H,07EH,021H,063H
+07dc  09 7e 21 63    442    694
+                     443    695 
+07e0  0a 19 be da    444    696 L7E0:   DB 00AH,019H,0BEH,0DAH,0ECH,007H,077H,021H
+07e4  ec 07 77 21    444    697
+07e8  65 0a 19 71    445    698         DB 065H,00AH,019H,071H,021H,064H,00AH,019H
+07ec  21 64 0a 19    445    699
+                     446    700 
+07f0  86 77 7b fe    447    701 L7F0:   DB 086H,077H,07BH,0FEH,004H,0CAH,0FCH,007H
+07f4  04 ca fc 07    447    702
+07f8  fa 34 08 c9    448    703         DB 0FAH,034H,008H,0C9H,03AH,067H,00AH,032H
+07fc  3a 67 0a 32    448    704
+                     449    705 
+0800  5c 0a af 32    450    706 L800:   DB 05CH,00AH,0AFH,032H,054H,00AH,0CDH,06DH
+0804  54 0a cd 6d    450    707
+0808  08 cd c3 05    451    708         DB 008H,0CDH,0C3H,005H,0CDH,0DDH,005H,0CDH
+080c  cd dd 05 cd    451    709
+                     452    710 
+0810  c3 05 3e 08    453    711 L810:   DB 0C3H,005H,03EH,008H,032H,054H,00AH,0CDH
+0814  32 54 0a cd    453    712
+0818  e9 05 cd 73    454    713         DB 0E9H,005H,0CDH,073H,007H,0C3H,0ACH,008H
+081c  07 c3 ac 08    454    714
+                     455    715 
+0820  16 ff fe f9    456    716 L820:   DB 016H,0FFH,0FEH,0F9H,0C2H,034H,008H,03AH
+0824  c2 34 08 3a    456    717
+0828  fd 09 21 4e    457    718         DB 0FDH,009H,021H,04EH,00AH,0BEH,0C0H,0AFH
+082c  0a be c0 af    457    719
+                     458    720 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 13
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0830  32 53 0a c9    459    721 L830:   DB 032H,053H,00AH,0C9H,03AH,052H,00AH,0B7H
+0834  3a 52 0a b7    459    722
+0838  c8 3a 4e 0a    460    723         DB 0C8H,03AH,04EH,00AH,00EH,007H,021H,004H
+083c  0e 07 21 04    460    724
+                     461    725 
+0840  0a be ca 4b    462    726 L840:   DB 00AH,0BEH,0CAH,04BH,008H,02BH,00DH,0C2H
+0844  08 2b 0d c2    462    727
+0848  41 08 c9 21    463    728         DB 041H,008H,0C9H,021H,03DH,00AH,006H,000H
+084c  3d 0a 06 00    463    729
+                     464    730 
+0850  09 7e 21 61    465    731 L850:   DB 009H,07EH,021H,061H,00AH,019H,0BEH,0DAH
+0854  0a 19 be da    465    732
+0858  5b 08 77 1b    466    733         DB 05BH,008H,077H,01BH,07BH,032H,054H,00AH
+085c  7b 32 54 0a    466    734
+                     467    735 
+0860  fe ff ca 68    468    736 L860:   DB 0FEH,0FFH,0CAH,068H,008H,0CDH,067H,007H
+0864  08 cd 67 07    468    737
+0868  21 54 0a 34    469    738         DB 021H,054H,00AH,034H,0C9H,021H,000H,000H
+086c  c9 21 00 00    469    739
+                     470    740 
+0870  39 22 57 0a    471    741 L870:   DB 039H,022H,057H,00AH,02AH,059H,00AH,0F9H
+0874  2a 59 0a f9    471    742
+0878  3a 4e 0a 47    472    743         DB 03AH,04EH,00AH,047H,00EH,01FH,021H,00CH
+087c  0e 1f 21 0c    472    744
+                     473    745 
+0880  0a be ca 8a    474    746 L880:   DB 00AH,0BEH,0CAH,08AH,008H,02BH,00DH,0F2H
+0884  08 2b 0d f2    474    747
+0888  81 08 36 cc    475    748         DB 081H,008H,036H,0CCH,0E5H,021H,0EDH,009H
+088c  e5 21 ed 09    475    749
+                     476    750 
+0890  16 00 3a 4d    477    751 L890:   DB 016H,000H,03AH,04DH,00AH,05FH,019H,0E5H
+0894  0a 5f 19 e5    477    752
+0898  4e 70 c5 21    478    753         DB 04EH,070H,0C5H,021H,055H,00AH,056H,0D5H
+089c  55 0a 56 d5    478    754
+                     479    755 
+08a0  21 00 00 39    480    756 L8A0:   DB 021H,000H,000H,039H,022H,059H,00AH,02AH
+08a4  22 59 0a 2a    480    757
+08a8  57 0a f9 c9    481    758         DB 057H,00AH,0F9H,0C9H,097H,03EH,080H,021H
+08ac  97 3e 80 21    481    759
+                     482    760 
+08b0  6a 0a 86 23    483    761 L8B0:   DB 06AH,00AH,086H,023H,086H,023H,086H,021H
+08b4  86 23 86 21    483    762
+08b8  60 0a 86 21    484    763         DB 060H,00AH,086H,021H,05EH,00AH,086H,021H
+08bc  5e 0a 86 21    484    764
+                     485    765 
+08c0  6f 0a 96 23    486    766 L8C0:   DB 06FH,00AH,096H,023H,096H,021H,061H,00AH
+08c4  96 21 61 0a    486    767
+08c8  96 21 5f 0a    487    768         DB 096H,021H,05FH,00AH,096H,021H,05DH,00AH
+08cc  96 21 5d 0a    487    769
+                     488    770 
+08d0  96 21 6e 0a    489    771 L8D0:   DB 096H,021H,06EH,00AH,096H,021H,062H,00AH
+08d4  96 21 62 0a    489    772
+08d8  96 d2 dd 08    490    773         DB 096H,0D2H,0DDH,008H,097H,01FH,0C6H,040H
+08dc  97 1f c6 40    490    774
+                     491    775 
+08e0  21 6b 0a 86    492    776 L8E0:   DB 021H,06BH,00AH,086H,023H,086H,021H,063H
+08e4  23 86 21 63    492    777
+08e8  0a 96 1f c6    493    778         DB 00AH,096H,01FH,0C6H,090H,021H,05CH,00AH
+08ec  90 21 5c 0a    493    779
+                     494    780 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 14
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+08f0  86 86 86 86    495    781 L8F0:   DB 086H,086H,086H,086H,021H,060H,00AH,086H
+08f4  21 60 0a 86    495    782
+08f8  21 63 0a 96    496    783         DB 021H,063H,00AH,096H,096H,023H,096H,096H
+08fc  96 23 96 96    496    784
+                     497    785 
+0900  21 5f 0a 96    498    786 L900:   DB 021H,05FH,00AH,096H,0F5H,03AH,04EH,00AH
+0904  f5 3a 4e 0a    498    787
+0908  fe 33 ca 30    499    788         DB 0FEH,033H,0CAH,030H,009H,0FEH,034H,0CAH
+090c  09 fe 34 ca    499    789
+                     500    790 
+0910  30 09 fe 22    501    791 L910:   DB 030H,009H,0FEH,022H,0CAH,030H,009H,0FEH
+0914  ca 30 09 fe    501    792
+0918  25 ca 30 09    502    793         DB 025H,0CAH,030H,009H,03AH,04DH,00AH,0B7H
+091c  3a 4d 0a b7    502    794
+                     503    795 
+0920  ca 34 09 21    504    796 L920:   DB 0CAH,034H,009H,021H,0EDH,009H,006H,000H
+0924  ed 09 06 00    504    797
+0928  4f 09 7e fe    505    798         DB 04FH,009H,07EH,0FEH,010H,0F2H,034H,009H
+092c  10 f2 34 09    505    799
+                     506    800 
+0930  f1 c6 02 f5    507    801 L930:   DB 0F1H,0C6H,002H,0F5H,03AH,063H,00AH,021H
+0934  3a 63 0a 21    507    802
+0938  3d 0a be c2    508    803         DB 03DH,00AH,0BEH,0C2H,043H,009H,0F1H,097H
+093c  43 09 f1 97    508    804
+                     509    805 
+0940  c3 5b 09 3a    510    806 L940:   DB 0C3H,05BH,009H,03AH,062H,00AH,0B7H,0C2H
+0944  62 0a b7 c2    510    807
+0948  5a 09 3a 6d    511    808         DB 05AH,009H,03AH,06DH,00AH,0B7H,0C2H,05AH
+094c  0a b7 c2 5a    511    809
+                     512    810 
+0950  09 f1 3e ff    513    811 L950:   DB 009H,0F1H,03EH,0FFH,032H,081H,00AH,0C3H
+0954  32 81 0a c3    513    812
+0958  5b 09 f1 0e    514    813         DB 05BH,009H,0F1H,00EH,004H,021H,054H,00AH
+095c  04 21 54 0a    514    814
+                     515    815 
+0960  71 21 50 0a    516    816 L960:   DB 071H,021H,050H,00AH,032H,05BH,00AH,0BEH
+0964  32 5b 0a be    516    817
+0968  da 8e 09 ca    517    818         DB 0DAH,08EH,009H,0CAH,08EH,009H,032H,050H
+096c  8e 09 32 50    517    819
+                     518    820 
+0970  0a 3a 4d 0a    519    821 L970:   DB 00AH,03AH,04DH,00AH,032H,04FH,00AH,03AH
+0974  32 4f 0a 3a    519    822
+0978  4e 0a 32 51    520    823         DB 04EH,00AH,032H,051H,00AH,0AFH,032H,074H
+097c  0a af 32 74    520    824
+                     521    825 
+0980  0a 3a 6b 0a    522    826 L980:   DB 00AH,03AH,06BH,00AH,021H,03DH,00AH,0BEH
+0984  21 3d 0a be    522    827
+0988  c2 8e 09 32    523    828         DB 0C2H,08EH,009H,032H,074H,00AH,0C9H,021H
+098c  74 0a c9 21    523    829
+                     524    830 
+0990  dd 09 47 1f    525    831 L990:   DB 0DDH,009H,047H,01FH,01FH,01FH,01FH,0CDH
+0994  1f 1f 1f cd    525    832
+0998  a2 09 77 23    526    833         DB 0A2H,009H,077H,023H,078H,0CDH,0A2H,009H
+099c  78 cd a2 09    526    834
+                     527    835 
+09a0  77 c9 e6 0f    528    836 L9A0:   DB 077H,0C9H,0E6H,00FH,0C6H,030H,0FEH,03AH
+09a4  c6 30 fe 3a    528    837
+09a8  d8 c6 07 c9    529    838         DB 0D8H,0C6H,007H,0C9H,006H,00DH,0CDH,0BFH
+09ac  06 0d cd bf    529    839
+                     530    840 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 15
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+09b0  09 06 0a cd    531    841 L9B0:   DB 009H,006H,00AH,0CDH,0BFH,009H,006H,07FH
+09b4  bf 09 06 7f    531    842
+09b8  cd bf 09 cd    532    843         DB 0CDH,0BFH,009H,0CDH,0BFH,009H,0C9H,0E5H
+09bc  bf 09 c9 e5    532    844
+                     533    845 
+09c0  c5 d5 cd d7    534    846 L9C0:   DB 0C5H,0D5H,0CDH,0D7H,009H,0D1H,0C1H,0E1H
+09c4  09 d1 c1 e1    534    847
+09c8  c9 e5 d5 c5    535    848         DB 0C9H,0E5H,0D5H,0C5H,0CDH,0DAH,009H,078H
+09cc  cd da 09 78    535    849
+                     536    850 
+09d0  c1 d1 e1 e6    537    851 L9D0:   DB 0C1H,0D1H,0E1H,0E6H,07FH,047H,0C9H,0C3H
+09d4  7f 47 c9 c3    537    852
+09d8  e6 0d c3 f1    538    853         DB 0E6H,00DH,0C3H,0F1H,00DH,000H,000H,000H
+09dc  0d 00 00 00    538    854
+                     539    855 
+09e0  00 00 00 00    540    856 L9E0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+09e4  00 00 00 00    540    857
+09e8  00 00 00 00    541    858         DB 000H,000H,000H,000H,000H,003H,004H,000H
+09ec  00 03 04 00    541    859
+                     542    860 
+09f0  07 02 05 01    543    861 L9F0:   DB 007H,002H,005H,001H,006H,010H,017H,011H
+09f4  06 10 17 11    543    862
+09f8  16 12 15 14    544    863         DB 016H,012H,015H,014H,013H,073H,074H,070H
+09fc  13 73 74 70    544    864
+                     545    865 
+0a00  77 72 75 71    546    866 LA00:   DB 077H,072H,075H,071H,076H,060H,067H,061H
+0a04  76 60 67 61    546    867
+0a08  66 62 65 64    547    868         DB 066H,062H,065H,064H,063H,003H,004H,000H
+0a0c  63 03 04 00    547    869
+                     548    870 
+0a10  07 02 05 01    549    871 LA10:   DB 007H,002H,005H,001H,006H,010H,017H,011H
+0a14  06 10 17 11    549    872
+0a18  16 12 15 14    550    873         DB 016H,012H,015H,014H,013H,073H,074H,070H
+0a1c  13 73 74 70    550    874
+                     551    875 
+0a20  77 72 75 71    552    876 LA20:   DB 077H,072H,075H,071H,076H,060H,067H,061H
+0a24  76 60 67 61    552    877
+0a28  66 62 65 64    553    878         DB 066H,062H,065H,064H,063H,0F0H,0FFH,001H
+0a2c  63 f0 ff 01    553    879
+                     554    880 
+0a30  10 11 0f ef    555    881 LA30:   DB 010H,011H,00FH,0EFH,0F1H,0DFH,0E1H,0EEH
+0a34  f1 df e1 ee    555    882
+0a38  f2 12 0e 1f    556    883         DB 0F2H,012H,00EH,01FH,021H,00BH,00AH,006H
+0a3c  21 0b 0a 06    556    884
+                     557    885 
+0a40  06 04 04 04    558    886 LA40:   DB 006H,004H,004H,004H,004H,002H,002H,002H
+0a44  04 02 02 02    558    887
+0a48  02 02 02 02    559    888         DB 002H,002H,002H,002H,002H,0EEH,0EEH,000H
+0a4c  02 ee ee 00    559    889
+                     560    890 
+0a50  00 00 00 00    561    891 LA50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0a54  00 00 00 00    561    892
+0a58  00 e6 0d 00    562    893         DB 000H,0E6H,00DH,000H,000H,000H,000H,000H
+0a5c  00 00 00 00    562    894
+                     563    895 
+0a60  00 00 00 00    564    896 LA60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0a64  00 00 00 00    564    897
+0a68  00 00 00 00    565    898         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0a6c  00 00 00 00    565    899
+                     566    900 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 16
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0a70  00 00 00 00    567    901 LA70:   DB 000H,000H,000H,000H,000H,000H,000H,010H
+0a74  00 00 00 10    567    902
+0a78  00 01 0b 37    568    903         DB 000H,001H,00BH,037H,00BH,095H,00AH,0CBH
+0a7c  0b 95 0a cb    568    904
+                     569    905 
+0a80  0a 00 00 57    570    906 LA80:   DB 00AH,000H,000H,057H,042H,04BH,051H,052H
+0a84  42 4b 51 52    570    907
+0a88  52 42 42 4e    571    908         DB 052H,042H,042H,04EH,04EH,050H,050H,050H
+0a8c  4e 50 50 50    571    909
+                     572    910 
+0a90  50 50 50 50    573    911 LA90:   DB 050H,050H,050H,050H,050H,0EEH,01FH,017H
+0a94  50 ee 1f 17    573    912
+0a98  16 16 14 16    574    913         DB 016H,016H,014H,016H,01BH,016H,0EEH,01FH
+0a9c  1b 16 ee 1f    574    914
+                     575    915 
+0aa0  1e 16 14 16    576    916 LAA0:   DB 01EH,016H,014H,016H,011H,010H,01DH,01EH
+0aa4  11 10 1d 1e    576    917
+0aa8  1d 16 1a 14    577    918         DB 01DH,016H,01AH,014H,012H,017H,011H,011H
+0aac  12 17 11 11    577    919
+                     578    920 
+0ab0  1f 16 17 14    579    921 LAB0:   DB 01FH,016H,017H,014H,012H,01EH,015H,01BH
+0ab4  12 1e 15 1b    579    922
+0ab8  12 1f 16 14    580    923         DB 012H,01FH,016H,014H,012H,01EH,011H,014H
+0abc  12 1e 11 14    580    924
+                     581    925 
+0ac0  1e 17 1f 16    582    926 LAC0:   DB 01EH,017H,01FH,016H,014H,01DH,01EH,01DH
+0ac4  14 1d 1e 1d    582    927
+0ac8  17 12 1b ee    583    928         DB 017H,012H,01BH,0EEH,043H,055H,052H,033H
+0acc  43 55 52 33    583    929
+                     584    930 
+0ad0  63 54 55 66    585    931 LAD0:   DB 063H,054H,055H,066H,0EEH,053H,044H,052H
+0ad4  ee 53 44 52    585    932
+0ad8  63 64 63 72    586    933         DB 063H,064H,063H,072H,045H,043H,042H,055H
+0adc  45 43 42 55    586    934
+                     587    935 
+0ae0  56 66 75 52    588    936 LAE0:   DB 056H,066H,075H,052H,062H,052H,044H,055H
+0ae4  62 52 44 55    588    937
+0ae8  52 31 75 53    589    938         DB 052H,031H,075H,053H,036H,052H,074H,044H
+0aec  36 52 74 44    589    939
+                     590    940 
+0af0  55 31 75 43    591    941 LAF0:   DB 055H,031H,075H,043H,064H,022H,034H,052H
+0af4  64 22 34 52    591    942
+0af8  44 55 42 52    592    943         DB 044H,055H,042H,052H,043H,043H,052H,075H
+0afc  43 43 52 75    592    944
+                     593    945 
+0b00  52 0f 06 04    594    946 LB00:   DB 052H,00FH,006H,004H,000H,00EH,001H,004H
+0b04  00 0e 01 04    594    947
+0b08  0e 07 0f 0e    595    948         DB 00EH,007H,00FH,00EH,007H,005H,00FH,005H
+0b0c  07 05 0f 05    595    949
+                     596    950 
+0b10  01 0c 06 06    597    951 LB10:   DB 001H,00CH,006H,006H,00FH,00BH,005H,004H
+0b14  0f 0b 05 04    597    952
+0b18  00 06 06 0c    598    953         DB 000H,006H,006H,00CH,00FH,007H,006H,004H
+0b1c  0f 07 06 04    598    954
+                     599    955 
+0b20  00 0e 04 01    600    956 LB20:   DB 000H,00EH,004H,001H,007H,00FH,007H,006H
+0b24  07 0f 07 06    600    957
+0b28  06 04 06 0b    601    958         DB 006H,004H,006H,00BH,006H,000H,00FH,007H
+0b2c  06 00 0f 07    601    959
+                     602    960 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 17
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0b30  04 06 0f 04    603    961 LB30:   DB 004H,006H,00FH,004H,006H,006H,004H,033H
+0b34  06 06 04 33    603    962
+0b38  22 46 01 34    604    963         DB 022H,046H,001H,034H,013H,055H,043H,025H
+0b3c  13 55 43 25    604    964
+                     605    965 
+0b40  33 34 25 41    606    966 LB40:   DB 033H,034H,025H,041H,043H,063H,014H,032H
+0b44  43 63 14 32    606    967
+0b48  22 25 24 21    607    968         DB 022H,025H,024H,021H,011H,014H,006H,044H
+0b4c  11 14 06 44    607    969
+                     608    970 
+0b50  52 35 34 22    609    971 LB50:   DB 052H,035H,034H,022H,025H,041H,006H,023H
+0b54  25 41 06 23    609    972
+0b58  52 14 03 34    610    973         DB 052H,014H,003H,034H,022H,025H,044H,014H
+0b5c  22 25 44 14    610    974
+                     611    975 
+0b60  23 22 11 06    612    976 LB60:   DB 023H,022H,011H,006H,034H,022H,032H,025H
+0b64  34 22 32 25    612    977
+0b68  43 41 44 52    613    978         DB 043H,041H,044H,052H,052H,04DH,049H,043H
+0b6c  52 4d 49 43    613    979
+                     614    980 
+0b70  52 4f 43 48    615    981 LB70:   DB 052H,04FH,043H,048H,045H,053H,053H,020H
+0b74  45 53 53 20    615    982
+0b78  20 20 20 20    616    983         DB 020H,020H,020H,020H,020H,020H,020H,020H
+0b7c  20 20 20 20    616    984
+                     617    985 
+0b80  20 20 20 20    618    986 LB80:   DB 020H,020H,020H,020H,020H,020H,020H,020H
+0b84  20 20 20 20    618    987
+0b88  20 28 43 29    619    988         DB 020H,028H,043H,029H,020H,031H,039H,037H
+0b8c  20 31 39 37    619    989
+                     620    990 
+0b90  37 2e 0d 57    621    991 LB90:   DB 037H,02EH,00DH,057H,052H,049H,054H,054H
+0b94  52 49 54 54    621    992
+0b98  45 4e 20 42    622    993         DB 045H,04EH,020H,042H,059H,03AH,020H,050H
+0b9c  59 3a 20 50    622    994
+                     623    995 
+0ba0  2e 20 4a 45    624    996 LBA0:   DB 02EH,020H,04AH,045H,04EH,04EH,049H,04EH
+0ba4  4e 4e 49 4e    624    997
+0ba8  47 53 20 26    625    998         DB 047H,053H,020H,026H,020H,054H,02EH,020H
+0bac  20 54 2e 20    625    999
+                     626   1000 
+0bb0  4f 27 42 52    627   1001 LBB0:   DB 04FH,027H,042H,052H,049H,045H,04EH,02EH
+0bb4  49 45 4e 2e    627   1002
+0bb8  0d 2d 2d 2d    628   1003         DB 00DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bbc  2d 2d 2d 2d    628   1004
+                     629   1005 
+0bc0  2d 2d 2d 2d    630   1006 LBC0:   DB 02DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bc4  2d 2d 2d 2d    630   1007
+0bc8  2d 2d 2d 2d    631   1008         DB 02DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bcc  2d 2d 2d 2d    631   1009
+                     632   1010 
+0bd0  2d 2d 2d 2d    633   1011 LBD0:   DB 02DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bd4  2d 2d 2d 2d    633   1012
+0bd8  2d 2d 2d 2d    634   1013         DB 02DH,02DH,02DH,02DH,02DH,02DH,00DH,057H
+0bdc  2d 2d 0d 57    634   1014
+                     635   1015 
+0be0  48 49 43 48    636   1016 LBE0:   DB 048H,049H,043H,048H,020H,04DH,04FH,044H
+0be4  20 4d 4f 44    636   1017
+0be8  45 20 3f 20    637   1018         DB 045H,020H,03FH,020H,028H,053H,02CH,042H
+0bec  28 53 2c 42    637   1019
+                     638   1020 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 18
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0bf0  2c 4e 29 20    639   1021 LBF0:   DB 02CH,04EH,029H,020H,00DH,044H,04FH,020H
+0bf4  0d 44 4f 20    639   1022
+0bf8  59 4f 55 20    640   1023         DB 059H,04FH,055H,020H,057H,041H,04EH,054H
+0bfc  57 41 4e 54    640   1024
+                     641   1025 
+0c00  20 57 48 49    642   1026 LC00:   DB 020H,057H,048H,049H,054H,045H,020H,03FH
+0c04  54 45 20 3f    642   1027
+0c08  20 28 59 2c    643   1028         DB 020H,028H,059H,02CH,04EH,029H,020H,00DH
+0c0c  4e 29 20 0d    643   1029
+                     644   1030 
+0c10  3a 20 20 20    645   1031 LC10:   DB 03AH,020H,020H,020H,020H,00DH,04DH,043H
+0c14  20 0d 4d 43    645   1032
+0c18  20 3a 20 00    646   1033         DB 020H,03AH,020H,000H,000H,02DH,000H,000H
+0c1c  00 2d 00 00    646   1034
+                     647   1035 
+0c20  20 20 0d 49    648   1036 LC20:   DB 020H,020H,00DH,049H,04EH,050H,055H,054H
+0c24  4e 50 55 54    648   1037
+0c28  20 45 52 52    649   1038         DB 020H,045H,052H,052H,04FH,052H,02EH,00DH
+0c2c  4f 52 2e 0d    649   1039
+                     650   1040 
+0c30  43 48 45 43    651   1041 LC30:   DB 043H,048H,045H,043H,04BH,04DH,041H,054H
+0c34  4b 4d 41 54    651   1042
+0c38  45 20 2d 20    652   1043         DB 045H,020H,02DH,020H,059H,04FH,055H,020H
+0c3c  59 4f 55 20    652   1044
+                     653   1045 
+0c40  57 49 4e 21    654   1046 LC40:   DB 057H,049H,04EH,021H,021H,021H,00DH,050H
+0c44  21 21 0d 50    654   1047
+0c48  4c 41 59 20    655   1048         DB 04CH,041H,059H,020H,041H,047H,041H,049H
+0c4c  41 47 41 49    655   1049
+                     656   1050 
+0c50  4e 20 3f 20    657   1051 LC50:   DB 04EH,020H,03FH,020H,028H,059H,02CH,04EH
+0c54  28 59 2c 4e    657   1052
+0c58  29 20 0d 54    658   1053         DB 029H,020H,00DH,054H,048H,041H,04EH,04BH
+0c5c  48 41 4e 4b    658   1054
+                     659   1055 
+0c60  53 20 46 4f    660   1056 LC60:   DB 053H,020H,046H,04FH,052H,020H,054H,048H
+0c64  52 20 54 48    660   1057
+0c68  45 20 47 41    661   1058         DB 045H,020H,047H,041H,04DH,045H,02EH,02EH
+0c6c  4d 45 2e 2e    661   1059
+                     662   1060 
+0c70  2e 20 4d 49    663   1061 LC70:   DB 02EH,020H,04DH,049H,043H,052H,04FH,043H
+0c74  43 52 4f 43    663   1062
+0c78  48 45 53 53    664   1063         DB 048H,045H,053H,053H,02EH,00DH,059H,04FH
+0c7c  2e 0d 59 4f    664   1064
+                     665   1065 
+0c80  55 20 52 45    666   1066 LC80:   DB 055H,020H,052H,045H,053H,049H,047H,04EH
+0c84  53 49 47 4e    666   1067
+0c88  45 44 20 2d    667   1068         DB 045H,044H,020H,02DH,020H,049H,020H,057H
+0c8c  20 49 20 57    667   1069
+                     668   1070 
+0c90  49 4e 21 21    669   1071 LC90:   DB 049H,04EH,021H,021H,021H,00DH,020H,020H
+0c94  21 0d 20 20    669   1072
+0c98  43 48 45 43    670   1073         DB 043H,048H,045H,043H,04BH,04DH,041H,054H
+0c9c  4b 4d 41 54    670   1074
+                     671   1075 
+0ca0  45 20 2d 20    672   1076 LCA0:   DB 045H,020H,02DH,020H,049H,020H,057H,049H
+0ca4  49 20 57 49    672   1077
+0ca8  4e 21 21 21    673   1078         DB 04EH,021H,021H,021H,021H,00DH,020H,043H
+0cac  21 0d 20 43    673   1079
+                     674   1080 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 19
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0cb0  48 45 43 4b    675   1081 LCB0:   DB 048H,045H,043H,04BH,021H,00DH,02BH,02DH
+0cb4  21 0d 2b 2d    675   1082
+0cb8  2d 2d 2d 2d    676   1083         DB 02DH,02DH,02DH,02DH,02DH,020H,04DH,049H
+0cbc  2d 20 4d 49    676   1084
+                     677   1085 
+0cc0  43 52 4f 43    678   1086 LCC0:   DB 043H,052H,04FH,043H,048H,045H,053H,053H
+0cc4  48 45 53 53    678   1087
+0cc8  20 2d 2d 2d    679   1088         DB 020H,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0ccc  2d 2d 2d 2d    679   1089
+                     680   1090 
+0cd0  2b 0d 21 20    681   1091 LCDO:   DB 02BH,00DH,021H,020H,020H,020H,020H,020H
+0cd4  20 20 20 20    681   1092
+0cd8  20 20 20 20    682   1093         DB 020H,020H,020H,020H,020H,020H,020H,020H
+0cdc  20 20 20 20    682   1094
+                     683   1095 
+0ce0  20 20 20 20    684   1096 LCE0:   DB 020H,020H,020H,020H,020H,020H,020H,020H
+0ce4  20 20 20 20    684   1097
+0ce8  20 20 20 20    685   1098         DB 020H,020H,020H,020H,021H,00DH,02BH,02DH
+0cec  21 0d 2b 2d    685   1099
+                     686   1100 
+0cf0  2d 2d 2d 2d    687   1101 LCF0:   DB 02DH,02DH,02DH,02DH,02DH,020H,043H,048H
+0cf4  2d 20 43 48    687   1102
+0cf8  41 4c 4c 45    688   1103         DB 041H,04CH,04CH,045H,04EH,047H,045H,052H
+0cfc  4e 47 45 52    688   1104
+                     689   1105 
+0d00  20 2d 2d 2d    690   1106 LD00:   DB 020H,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0d04  2d 2d 2d 2d    690   1107
+0d08  2b 0d 00 00    691   1108         DB 02BH,00DH,000H,000H,000H,000H,000H,000H
+0d0c  00 00 00 00    691   1109
+                     692   1110 
+0d10  00 00 00 00    693   1111 LD10:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d14  00 00 00 00    693   1112
+0d18  00 00 00 00    694   1113         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d1c  00 00 00 00    694   1114
+                     695   1115 
+0d20  00 00 00 00    696   1116 LD20:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d24  00 00 00 00    696   1117
+0d28  00 00 00 00    697   1118         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d2c  00 00 00 00    697   1119
+                     698   1120 
+0d30  00 00 00 00    699   1121 LD30:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d34  00 00 00 00    699   1122
+0d38  00 00 00 00    700   1123         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d3c  00 00 00 00    700   1124
+                     701   1125 
+0d40  00 00 00 00    702   1126 LD40:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d44  00 00 00 00    702   1127
+0d48  00 00 00 00    703   1128         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d4c  00 00 00 00    703   1129
+                     704   1130 
+0d50  00 00 00 00    705   1131 LD50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d54  00 00 00 00    705   1132
+0d58  00 00 00 00    706   1133         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d5c  00 00 00 00    706   1134
+                     707   1135 
+0d60  00 00 00 00    708   1136 LD60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d64  00 00 00 00    708   1137
+0d68  00 00 00 00    709   1138         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d6c  00 00 00 00    709   1139
+                     710   1140 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 20
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0d70  00 00 15 d7    711   1141 LD70:   DB 000H,000H,015H,0D7H,01FH,0D0H,0CFH,009H
+0d74  1f d0 cf 09    711   1142
+0d78  00 20 07 80    712   1143         DB 000H,020H,007H,080H,00AH,00DH,028H,003H
+0d7c  0a 0d 28 03    712   1144
+                     713   1145 
+0d80  8d 00 00 00    714   1146 LD80:   DB 08DH,000H,000H,000H,000H,000H,000H,000H
+0d84  00 00 00 00    714   1147
+0d88  00 00 00 00    715   1148         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d8c  00 00 00 00    715   1149
+                     716   1150 
+0d90  00 00 00 00    717   1151 LD90:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d94  00 00 00 00    717   1152
+0d98  00 00 00 00    718   1153         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d9c  00 00 00 00    718   1154
+                     719   1155 
+0da0  00 00 00 00    720   1156 LDA0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0da4  00 00 00 00    720   1157
+0da8  00 00 00 00    721   1158         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dac  00 00 00 00    721   1159
+                     722   1160 
+0db0  00 00 00 00    723   1161 LDB0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0db4  00 00 00 00    723   1162
+0db8  00 00 00 00    724   1163         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dbc  00 00 00 00    724   1164
+                     725   1165 
+0dc0  00 00 00 00    726   1166 LDC0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dc4  00 00 00 00    726   1167
+0dc8  00 00 00 00    727   1168         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dcc  00 00 00 00    727   1169
+                     728   1170 
+0dd0  00 00 00 00    729   1171 LDD0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dd4  00 00 00 00    729   1172
+0dd8  00 00 00 00    730   1173         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ddc  00 00 00 00    730   1174
+                     731   1175 
+0de0  00 00 00 00    732   1176 LDE0:   DB 000H,000H,000H,000H,000H,000H,0DBH,000H
+0de4  00 00 db 00    732   1177
+0de8  e6 80 ca e6    733   1178         DB 0E6H,080H,0CAH,0E6H,00DH,078H,0D3H,001H
+0dec  0d 78 d3 01    733   1179
+                     734   1180 
+0df0  c9 db 00 e6    735   1181 LDF0:   DB 0C9H,0DBH,000H,0E6H,040H,0CAH,0F1H,00DH
+0df4  40 ca f1 0d    735   1182
+0df8  db 01 e6 7f    736   1183         DB 0DBH,001H,0E6H,07FH,047H,0C9H,000H,000H
+0dfc  47 c9 00 00    736   1184
+                     737   1185 
+0e00  00 00 00 00    738   1186 LE00:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e04  00 00 00 00    738   1187
+0e08  00 00 00 00    739   1188         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e0c  00 00 00 00    739   1189
+                     740   1190 
+0e10  00 00 00 00    741   1191 LE10:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e14  00 00 00 00    741   1192
+0e18  00 00 00 00    742   1193         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e1c  00 00 00 00    742   1194
+                     743   1195 
+0e20  00 00 00 00    744   1196 LE20:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e24  00 00 00 00    744   1197
+0e28  00 00 00 00    745   1198         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e2c  00 00 00 00    745   1199
+                     746   1200 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 21
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0e30  00 00 00 00    747   1201 LE30:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e34  00 00 00 00    747   1202
+0e38  00 00 00 00    748   1203         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e3c  00 00 00 00    748   1204
+                     749   1205 
+0e40  00 00 00 00    750   1206 LE40:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e44  00 00 00 00    750   1207
+0e48  00 00 00 00    751   1208         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e4c  00 00 00 00    751   1209
+                     752   1210 
+0e50  00 00 00 00    753   1211 LE50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e54  00 00 00 00    753   1212
+0e58  00 00 00 00    754   1213         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e5c  00 00 00 00    754   1214
+                     755   1215 
+0e60  00 00 00 00    756   1216 LE60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e64  00 00 00 00    756   1217
+0e68  00 00 00 00    757   1218         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e6c  00 00 00 00    757   1219
+                     758   1220 
+0e70  00 00 00 00    759   1221 LE70:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e74  00 00 00 00    759   1222
+0e78  00 00 00 00    760   1223         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e7c  00 00 00 00    760   1224
+                     761   1225 
+0e80  00 00 00 00    762   1226 LE80:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e84  00 00 00 00    762   1227
+0e88  00 00 00 00    763   1228         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e8c  00 00 00 00    763   1229
+                     764   1230 
+0e90  00 00 00 00    765   1231 LE90:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e94  00 00 00 00    765   1232
+0e98  00 00 00 00    766   1233         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e9c  00 00 00 00    766   1234
+                     767   1235 
+0ea0  00 00 00 00    768   1236 LEA0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ea4  00 00 00 00    768   1237
+0ea8  00 00 00 00    769   1238         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0eac  00 00 00 00    769   1239
+                     770   1240 
+0eb0  00 00 00 00    771   1241 LEB0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0eb4  00 00 00 00    771   1242
+0eb8  00 00 00 00    772   1243         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ebc  00 00 00 00    772   1244
+                     773   1245 
+0ec0  00 00 00 00    774   1246 LEC0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ec4  00 00 00 00    774   1247
+0ec8  00 00 00 00    775   1248         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ecc  00 00 00 00    775   1249
+                     776   1250 
+0ed0  00 00 00 00    777   1251 LED0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ed4  00 00 00 00    777   1252
+0ed8  00 00 00 00    778   1253         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0edc  00 00 00 00    778   1254
+                     779   1255 
+0ee0  00 00 00 00    780   1256 LEE0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ee4  00 00 00 00    780   1257
+0ee8  00 00 00 00    781   1258         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0eec  00 00 00 00    781   1259
+                     782   1260 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 22
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0ef0  00 00 00 00    783   1261 LEF0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ef4  00 00 00 00    783   1262
+0ef8  00 00 00 00    784   1263         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0efc  00 00 00 00    784   1264
+                     785   1265 
+0f00  00 00 00 00    786   1266 LF00:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f04  00 00 00 00    786   1267
+0f08  00 00 00 00    787   1268         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f0c  00 00 00 00    787   1269
+                     788   1270 
+0f10  00 00 00 00    789   1271 LF10:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f14  00 00 00 00    789   1272
+0f18  00 00 00 00    790   1273         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f1c  00 00 00 00    790   1274
+                     791   1275 
+0f20  00 00 00 00    792   1276 LF20:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f24  00 00 00 00    792   1277
+0f28  00 00 00 00    793   1278         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f2c  00 00 00 00    793   1279
+                     794   1280 
+0f30  00 00 00 00    795   1281 LF30:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f34  00 00 00 00    795   1282
+0f38  00 00 00 00    796   1283         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f3c  00 00 00 00    796   1284
+                     797   1285 
+0f40  00 00 00 00    798   1286 LF40:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f44  00 00 00 00    798   1287
+0f48  00 00 00 00    799   1288         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f4c  00 00 00 00    799   1289
+                     800   1290 
+0f50  00 00 00 00    801   1291 LF50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f54  00 00 00 00    801   1292
+0f58  00 00 00 00    802   1293         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f5c  00 00 00 00    802   1294
+                     803   1295 
+0f60  00 00 00 00    804   1296 LF60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f64  00 00 00 00    804   1297
+0f68  00 00 00 00    805   1298         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f6c  00 00 00 00    805   1299
+                     806   1300 
+0f70  00 00 00 00    807   1301 LF70:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f74  00 00 00 00    807   1302
+0f78  00 00 00 00    808   1303         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f7c  00 00 00 00    808   1304
+                     809   1305 
+0f80  00 00 00 00    810   1306 LF80:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f84  00 00 00 00    810   1307
+0f88  00 00 00 00    811   1308         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f8c  00 00 00 00    811   1309
+                     812   1310 
+0f90  00 00 00 00    813   1311 LF90:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f94  00 00 00 00    813   1312
+0f98  00 00 00 00    814   1313         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f9c  00 00 00 00    814   1314
+                     815   1315 
+0fa0  00 00 00 00    816   1316 LFA0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fa4  00 00 00 00    816   1317
+0fa8  00 00 00 00    817   1318         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fac  00 00 00 00    817   1319
+                     818   1320 
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 23
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0fb0  00 00 00 00    819   1321 LFB0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fb4  00 00 00 00    819   1322
+0fb8  00 00 00 00    820   1323         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fbc  00 00 00 00    820   1324
+                     821   1325 
+0fc0  00 00 00 00    822   1326 LFC0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fc4  00 00 00 00    822   1327
+0fc8  00 00 00 00    823   1328         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fcc  00 00 00 00    823   1329
+                     824   1330 
+0fd0  00 00 00 00    825   1331 LFD0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fd4  00 00 00 00    825   1332
+0fd8  00 00 00 00    826   1333         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fdc  00 00 00 00    826   1334
+                     827   1335 
+0fe0  00 00 00 00    828   1336 LFE0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fe4  00 00 00 00    828   1337
+0fe8  00 00 00 00    829   1338         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fec  00 00 00 00    829   1339
+                     830   1340 
+0ff0  00 00 00 00    831   1341 LFF0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ff4  00 00 00 00    831   1342
+0ff8  00 00 00 00    832   1343         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ffc  00 00 00 00    832   1344
+                     833   1345 
+                     834   1346 ;
+                     835   1347 ; PATCH TERMINAL I/O FOR MITS 2SIO
+                     836   1348 ;
+                     837   1349         IF   MITS
+                     838   1350         ORG  0DE6H + OFFSET
+                     839   1351 TTYO:   IN   16
+                     840   1352         ANI  2
+                     841   1353         JZ   TTYO - OFFSET
+                     842   1354         MOV  A,B
+                     843   1355         OUT  17
+                     844   1356         RET
+                     845   1357 TTYI:   IN   16
+                     846   1358         ANI  1
+                     847   1359         JZ   TTYI - OFFSET
+                     848   1360         IN   17
+                     849   1361         ANI  7FH
+                     850   1362         MOV  B,A
+                     851   1363         RET
+                     852   1364         ENDIF
+                     853   1365 
+                     854   1366 ;
+                     855   1367 ; PATCH TERMINAL I/O FOR IMSAI SIO2
+                     856   1368 ;
+                     857   1369         IF   IMSAI
+                     858   1370         ORG  0DE6H + OFFSET
+                     859   1371 TTYO:   IN   3
+                     860   1372         ANI  1
+                     861   1373         JZ   TTYO - OFFSET
+                     862   1374         MOV  A,B
+                     863   1375         OUT  2
+                     864   1376         RET
+                     865   1377 TTYI:   IN   3
+                     866   1378         ANI  2
+                     867   1379         JZ   TTYI - OFFSET
+                     868   1380         IN   2
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 24
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     869   1381         ANI  7FH
+                     870   1382         MOV  B,A
+                     871   1383         RET
+                     872   1384         ENDIF
+                     873   1385 
+                     874   1386 ;
+                     875   1387 ; PATCH FOR SMALL BOARD DISPLAY
+                     876   1388 ;
+                     877   1389         IF   SMALLD
+                     878   1390         ORG  0258H + OFFSET
+                     879   1391         DB   0,0,0
+                     880   1392         ENDIF
+                     881   1393 
+                     882   1394 ;
+                     883   1395 ; PATCH FOR AUTO DISPLAY AFTER MICROCHESS MOVES
+                     884   1396 ;
+                     885   1397         IF   MAUTO
+                     886   1398         ORG  0120H + OFFSET
+0120  cd 42 02       887   1399         DB   0CDH,042H,002H
+                     888   1400         ENDIF
+                     889   1401 
+                     890   1402 ;
+                     891   1403 ; PATCH FOR AUTO DISPLAY AFTER CHALLENGER MOVES
+                     892   1404 ;
+                     893   1405         IF   CAUTO
+                     894   1406         ORG  00D4H + OFFSET
+00d4  cd 42 02       895   1407         DB   0CDH,042H,002H
+                     896   1408         ENDIF
+                     897   1409 
+                     898   1410 ;
+                     899   1411 ; ORIGINAL PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
+                     900   1412 ; DO NOT ACTIVATE TOGETHER WITH DAZZLER OUTPUT, USES SAME MEMORY
+                     901   1413 ; PATCH AREA
+                     902   1414 ; REPLACED WITH A RELOCATABLE PATCH FOR THIS BELOW
+                     903   1415 ;
+                     904   1416         IF   0
+                     905   1417         ORG  024AH + OFFSET
+                     906   1418         DB   021H,040H,00EH,0CDH,078H,00EH,03AH,02FH
+                     907   1419         DB   00EH,0C6H,030H,047H,0CDH,060H,00EH,000H
+                     908   1420         DB   000H
+                     909   1421         ORG  02B1H + OFFSET
+                     910   1422         DB   0CDH,084H,00EH
+                     911   1423         ORG  0E40H + OFFSET
+                     912   1424         DB   020H,020H,020H,020H,020H,030H,020H,020H
+                     913   1425         DB   031H,020H,020H,032H,020H,020H,033H,020H
+                     914   1426         DB   020H,034H,020H,020H,035H,020H,020H,036H
+                     915   1427         DB   020H,020H,037H,00DH,000H,000H,000H,000H
+                     916   1428         DB   0CDH,0BFH,009H,004H,078H,0E6H,007H,032H
+                     917   1429         DB   02FH,00EH,006H,020H,0C3H,0BFH,009H,00EH
+                     918   1430         DB   006H,020H,0CDH,0BFH,009H,0C3H,0BFH,009H
+                     919   1431         DB   0CDH,0DAH,001H,0CDH,070H,00EH,021H,0B6H
+                     920   1432         DB   00CH,0C3H,0DAH,001H,0CDH,070H,00EH,0C3H
+                     921   1433         DB   0DAH,001H
+                     922   1434         ENDIF
+                     923   1435 
+                     924   1436 ;
+                     925   1437 ; RELOCATABLE PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
+                     926   1438 ;
+                     927   1439         IF   COORD
+                     928   1440         ORG  024AH + OFFSET     ;PATCH IN ROUTINES FOR BOARD COORDINATES
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 25
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+024a  21 a3 0f       929   1441         LXI  H,CTEXT - OFFSET
+024d  cd 79 0f       930   1442         CALL DISP1 - OFFSET
+0250  3a a2 0f       931   1443         LDA  DDAT - OFFSET
+0253  c6 30          932   1444         ADI  30H
+0255  47             933   1445         MOV  B,A
+0256  cd 8d 0f       934   1446         CALL DISP3 - OFFSET
+0259  00             935   1447         NOP
+025a  00             936   1448         NOP
+                     937   1449         ORG  02B1H + OFFSET
+02b1  cd 9c 0f       938   1450         CALL DISP4 - OFFSET
+                     939   1451         ENDIF
+                     940   1452 
+                     941   1453 ;
+                     942   1454 ; MAKE SURE THAT PATCHES BELOW GO INTO THE PATCH AREA, IF
+                     943   1455 ; NOT ORG'ED OTHERWISE
+                     944   1456 ;
+                     945   1457         ORG  0E00H + OFFSET
+                     946   1458 
+                     947   1459 ;
+                     948   1460 ; THE DAZZLER OUPUT ROUTINES FROM CROMEMCO DAZZLECHESS REWRITTEN WITH
+                     949   1461 ; 8080 INSTRUCTIONS, SO THAT IT WORKS WITH ANY 8080/8085/Z80 SYSTEM
+                     950   1462 ;
+                     951   1463 
+                     952   1464         IF   DAZZLER
+                     953   1465 
+                     954   1466         ORG  6 + OFFSET         ;PATCH THIRD INSTRUCTION TO CALL
+0006  cd 0d 0e       955   1467         CALL DINIT - OFFSET     ;THE DAZZLER INITIALISATION
+                     956   1468 
+                     957   1469         ORG  0059H + OFFSET     ;PATCH IN DATA INITALISATION
+0059  cd 1c 0e       958   1470         CALL IDATA - OFFSET
+                     959   1471 
+                     960   1472         ORG  0242H + OFFSET     ;PATCH CALL TO CUSTOM BOARD DISPLAY
+0242  cd 25 0e       961   1473         CALL DDISP - OFFSET
+                     962   1474 
+                     963   1475         ORG  05C3H + OFFSET     ;PATCH IN SUBROUTINE TO SWITCH PIECE COLOR
+05c3  cd 00 0e       964   1476         CALL SWC - OFFSET
+                     965   1477 
+                     966   1478         ORG  0E00H + OFFSET     ;DAZZLER OUTPUT ROUTINES GO HERE
+                     967   1479 
+0e00  f5             968   1480 SWC:    PUSH PSW                ;SWITCH PIECE COLOR
+0e01  3a 40 0f       969   1481         LDA  DAT1 - OFFSET
+0e04  2f             970   1482         CMA
+0e05  32 40 0f       971   1483         STA  DAT1 - OFFSET
+0e08  f1             972   1484         POP  PSW
+0e09  21 ed 09       973   1485         LXI  H,09EDH
+0e0c  c9             974   1486         RET
+                     975   1487 
+0e0d                 976   1488 DINIT:                          ;INITIALISE DAZZLER
+0e0d  3e 8c          977   1489         MVI  A,8CH              ;DAZZLER ON, VIDEO MEMORY @ 1800H
+0e0f  d3 0e          978   1490         OUT  0EH
+0e11  3e 30          979   1491         MVI  A,30H              ;NORMAL COLOR MODE, 64X64
+0e13  d3 0f          980   1492         OUT  0FH
+0e15  cd 2c 0e       981   1493         CALL DBOARD - OFFSET    ;DRAW CHESS BOARD
+0e18  21 6d 0b       982   1494         LXI  H,0B6DH
+0e1b  c9             983   1495         RET
+                     984   1496 
+0e1c                 985   1497 IDATA:                          ;INITIALISE DATA
+0e1c  3e ff          986   1498         MVI  A,0FFH             ;PIECE COLOR BLACK
+0e1e  32 40 0f       987   1499         STA  DAT1 - OFFSET
+0e21  cd 5c 01       988   1500         CALL 015CH
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 26
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0e24  c9             989   1501         RET
+                     990   1502 
+0e25                 991   1503 DDISP:                          ;CUSTOM BOARD DISPLAY
+0e25  cd 2c 0e       992   1504         CALL DBOARD - OFFSET    ;DRAW CHESS BOAD
+0e28  cd 65 0e       993   1505         CALL DPIECE - OFFSET    ;DRAW CHESS PIECES
+0e2b  c9             994   1506         RET
+                     995   1507 
+0e2c  06 10          996   1508 DBOARD: MVI  B,10H              ;DRAW CHESS BOARD
+0e2e  11 01 18       997   1509         LXI  D,1801H
+0e31  21 00 18       998   1510         LXI  H,1800H            ;DAZZLER VIDEO MEMORY @ 1800H
+0e34  c5             999   1511 DB1:    PUSH B
+0e35  3e 03         1000   1512         MVI  A,03H
+0e37  06 10         1001   1513         MVI  B,10H
+0e39  c5            1002   1514 DB2:    PUSH B
+0e3a  06 00         1003   1515         MVI  B,0                ;DRAW FIELDS
+0e3c  36 33         1004   1516 DBP1:   MVI  M,33H              ;WHITE FIELD AS GREEN
+0e3e  4f            1005   1517         MOV  C,A
+0e3f  cd bf 0f      1006   1518         CALL LDIR
+0e42  13            1007   1519         INX  D
+0e43  23            1008   1520         INX  H
+0e44  36 99         1009   1521 DBP2:   MVI  M,99H              ;BLACK FIELD AS RED
+0e46  4f            1010   1522         MOV  C,A
+0e47  cd bf 0f      1011   1523         CALL LDIR
+0e4a  13            1012   1524         INX  D
+0e4b  23            1013   1525         INX  H
+0e4c  c1            1014   1526         POP  B
+0e4d  05            1015   1527         DCR  B
+0e4e  c2 39 0e      1016   1528         JNZ  DB2 - OFFSET
+0e51  3a 3d 0e      1017   1529         LDA  DBP1 + 1 - OFFSET  ;FLIP COLORS AND DRAW NEXT ROW OF FIELDS
+0e54  47            1018   1530         MOV  B,A
+0e55  3a 45 0e      1019   1531         LDA  DBP2 + 1 - OFFSET
+0e58  32 3d 0e      1020   1532         STA  DBP1 + 1 - OFFSET
+0e5b  78            1021   1533         MOV  A,B
+0e5c  32 45 0e      1022   1534         STA  DBP2 + 1 - OFFSET
+0e5f  c1            1023   1535         POP  B
+0e60  05            1024   1536         DCR  B
+0e61  c2 34 0e      1025   1537         JNZ  DB1 - OFFSET
+0e64  c9            1026   1538         RET
+                    1027   1539 
+0e65                1028   1540 DPIECE:                         ;DRAW CHESS PIECES
+0e65  11 ec 09      1029   1541         LXI  D,09ECH            ;PIECE ADDRESS TABLE - 1
+0e68  06 02         1030   1542         MVI  B,02H
+0e6a  c5            1031   1543 DPIE0:  PUSH B
+0e6b  21 3d 0f      1032   1544         LXI  H,PTAB - 6 - OFFSET ;PIECE GRAPHICS TABLE - 1 ENTRY
+0e6e  22 41 0f      1033   1545         SHLD DAT2 - OFFSET
+0e71  06 08         1034   1546         MVI  B,08H
+0e73  c5            1035   1547 DPIE1:  PUSH B
+0e74  cd 9e 0e      1036   1548         CALL DONEP - OFFSET
+0e77  c1            1037   1549         POP  B
+0e78  05            1038   1550         DCR  B
+0e79  c2 73 0e      1039   1551         JNZ  DPIE1 - OFFSET
+0e7c  06 08         1040   1552         MVI  B,08H
+0e7e  c5            1041   1553 DPIE2:  PUSH B
+0e7f  cd 9e 0e      1042   1554         CALL DONEP - OFFSET
+0e82  01 fa ff      1043   1555         LXI  B,0FFFAH           ;BC = -6
+0e85  2a 41 0f      1044   1556         LHLD DAT2 - OFFSET
+0e88  09            1045   1557         DAD  B
+0e89  22 41 0f      1046   1558         SHLD DAT2 - OFFSET
+0e8c  c1            1047   1559         POP  B
+0e8d  05            1048   1560         DCR  B
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 27
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0e8e  c2 7e 0e      1049   1561         JNZ  DPIE2 - OFFSET
+0e91  3a 40 0f      1050   1562         LDA  DAT1 - OFFSET
+0e94  2f            1051   1563         CMA
+0e95  32 40 0f      1052   1564         STA  DAT1 - OFFSET
+0e98  c1            1053   1565         POP  B
+0e99  05            1054   1566         DCR  B
+0e9a  c2 6a 0e      1055   1567         JNZ  DPIE0 - OFFSET
+0e9d  c9            1056   1568         RET
+                    1057   1569 
+0e9e                1058   1570 DONEP:                          ;DRAW ONE PIECE
+0e9e  13            1059   1571         INX  D                  ;DE -> NEXT PIECE IN TABLE
+0e9f  d5            1060   1572         PUSH D
+0ea0  cd b2 0e      1061   1573         CALL SUB1 - OFFSET
+0ea3  01 06 00      1062   1574         LXI  B,6                ;6 BYTES PER PIECE GRAPHICS
+0ea6  2a 41 0f      1063   1575         LHLD DAT2 - OFFSET
+0ea9  09            1064   1576         DAD  B
+0eaa  22 41 0f      1065   1577         SHLD DAT2 - OFFSET
+0ead  cd ef 0e      1066   1578         CALL SUB2 - OFFSET
+0eb0  d1            1067   1579         POP  D
+0eb1  c9            1068   1580         RET
+                    1069   1581 
+0eb2  eb            1070   1582 SUB1:   XCHG                    ;BIT FIDDLING TO GET PIECE GRAPHICS ON BOARD
+0eb3  7e            1071   1583         MOV  A,M
+0eb4  e6 80         1072   1584         ANI  80H
+0eb6  7e            1073   1585         MOV  A,M
+0eb7  ca c7 0e      1074   1586         JZ   SUB11 - OFFSET
+0eba  d1            1075   1587         POP  D
+0ebb  01 06 00      1076   1588         LXI  B,6
+0ebe  2a 41 0f      1077   1589         LHLD DAT2 - OFFSET
+0ec1  09            1078   1590         DAD  B
+0ec2  22 41 0f      1079   1591         SHLD DAT2 - OFFSET
+0ec5  d1            1080   1592         POP  D
+0ec6  c9            1081   1593         RET
+0ec7  0f            1082   1594 SUB11:  RRC
+0ec8  47            1083   1595         MOV  B,A
+0ec9  07            1084   1596         RLC
+0eca  07            1085   1597         RLC
+0ecb  07            1086   1598         RLC
+0ecc  4f            1087   1599         MOV  C,A
+0ecd  07            1088   1600         RLC
+0ece  5f            1089   1601         MOV  E,A
+0ecf  07            1090   1602         RLC
+0ed0  e6 04         1091   1603         ANI  4
+0ed2  57            1092   1604         MOV  D,A
+0ed3  7b            1093   1605         MOV  A,E
+0ed4  e6 01         1094   1606         ANI  1
+0ed6  b2            1095   1607         ORA  D
+0ed7  57            1096   1608         MOV  D,A
+0ed8  78            1097   1609         MOV  A,B
+0ed9  e6 02         1098   1610         ANI  2
+0edb  b2            1099   1611         ORA  D
+0edc  57            1100   1612         MOV  D,A
+0edd  3e 18         1101   1613         MVI  A,18H
+0edf  b2            1102   1614         ORA  D
+0ee0  57            1103   1615         MOV  D,A
+0ee1  7b            1104   1616         MOV  A,E
+0ee2  e6 80         1105   1617         ANI  80H
+0ee4  5f            1106   1618         MOV  E,A
+0ee5  79            1107   1619         MOV  A,C
+0ee6  e6 0c         1108   1620         ANI  0CH
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 28
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0ee8  b3            1109   1621         ORA  E
+0ee9  f5            1110   1622         PUSH PSW
+0eea  f6 10         1111   1623         ORI  16
+0eec  5f            1112   1624         MOV  E,A
+0eed  f1            1113   1625         POP  PSW
+0eee  c9            1114   1626         RET
+                    1115   1627 
+0eef  41            1116   1628 SUB2:   MOV  B,C
+0ef0  7e            1117   1629 SUB22:  MOV  A,M
+0ef1  e6 20         1118   1630         ANI  32
+0ef3  c4 32 0f      1119   1631         CNZ  SUB4 - OFFSET
+0ef6  13            1120   1632         INX  D
+0ef7  7e            1121   1633         MOV  A,M
+0ef8  e6 10         1122   1634         ANI  16
+0efa  c4 24 0f      1123   1635         CNZ  SUB3 - OFFSET
+0efd  7e            1124   1636         MOV  A,M
+0efe  e6 08         1125   1637         ANI  8
+0f00  c4 32 0f      1126   1638         CNZ  SUB4 - OFFSET
+0f03  13            1127   1639         INX  D
+0f04  7e            1128   1640         MOV  A,M
+0f05  e6 04         1129   1641         ANI  4
+0f07  c4 24 0f      1130   1642         CNZ  SUB3 - OFFSET
+0f0a  7e            1131   1643         MOV  A,M
+0f0b  e6 02         1132   1644         ANI  2
+0f0d  c4 32 0f      1133   1645         CNZ  SUB4 - OFFSET
+0f10  13            1134   1646         INX  D
+0f11  7e            1135   1647         MOV  A,M
+0f12  e6 01         1136   1648         ANI  1
+0f14  c4 24 0f      1137   1649         CNZ  SUB3 - OFFSET
+0f17  e5            1138   1650         PUSH H
+0f18  21 0d 00      1139   1651         LXI  H,000DH
+0f1b  19            1140   1652         DAD  D
+0f1c  eb            1141   1653         XCHG
+0f1d  e1            1142   1654         POP  H
+0f1e  23            1143   1655         INX  H
+0f1f  05            1144   1656         DCR  B
+0f20  c2 f0 0e      1145   1657         JNZ  SUB22 - OFFSET
+0f23  c9            1146   1658         RET
+                    1147   1659 
+0f24  eb            1148   1660 SUB3:   XCHG
+0f25  7e            1149   1661         MOV  A,M
+0f26  e6 f0         1150   1662         ANI  0F0H
+0f28  4f            1151   1663         MOV  C,A
+0f29  3a 40 0f      1152   1664         LDA  DAT1 - OFFSET
+0f2c  e6 0f         1153   1665         ANI  00FH
+0f2e  b1            1154   1666         ORA  C
+0f2f  77            1155   1667         MOV  M,A
+0f30  eb            1156   1668         XCHG
+0f31  c9            1157   1669         RET
+                    1158   1670 
+0f32  eb            1159   1671 SUB4:   XCHG
+0f33  7e            1160   1672         MOV  A,M
+0f34  e6 0f         1161   1673         ANI  00FH
+0f36  4f            1162   1674         MOV  C,A
+0f37  3a 40 0f      1163   1675         LDA  DAT1 - OFFSET
+0f3a  e6 f0         1164   1676         ANI  0F0H
+0f3c  b1            1165   1677         ORA  C
+0f3d  77            1166   1678         MOV  M,A
+0f3e  eb            1167   1679         XCHG
+0f3f  c9            1168   1680         RET
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 29
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1169   1681 
+0f40  ff            1170   1682 DAT1:   DB   0FFH                       ;PIECE COLOR
+0f41  00 00         1171   1683 DAT2:   DW   0                          ;PIECE LOCATION
+                    1172   1684 
+0f43  0c 3f 33 21   1173   1685 PTAB:   DB   0CH,3FH,33H,21H,33H,1EH    ;PIECE GRAPHICS
+0f47  33 1e         1173   1686
+0f49  00 2d 3f 2d   1174   1687         DB   00H,2DH,3FH,2DH,3FH,3FH
+0f4d  3f 3f         1174   1688
+0f4f  2d 3f 1e 1e   1175   1689         DB   2DH,3FH,1EH,1EH,1EH,1EH
+0f53  1e 1e         1175   1690
+0f55  2d 3f 1e 1e   1176   1691         DB   2DH,3FH,1EH,1EH,1EH,1EH
+0f59  1e 1e         1176   1692
+0f5b  0c 1c 3f 1e   1177   1693         DB   0CH,1CH,3FH,1EH,0CH,3FH
+0f5f  0c 3f         1177   1694
+0f61  0c 1c 3f 1e   1178   1695         DB   0CH,1CH,3FH,1EH,0CH,3FH
+0f65  0c 3f         1178   1696
+0f67  08 1e 3f 37   1179   1697         DB   08H,1EH,3FH,37H,07H,0FH
+0f6b  07 0f         1179   1698
+0f6d  08 1e 3f 37   1180   1699         DB   08H,1EH,3FH,37H,07H,0FH
+0f71  07 0f         1180   1700
+0f73  00 0c 0c 1e   1181   1701         DB   00H,0CH,0CH,1EH,3FH,3FH
+0f77  3f 3f         1181   1702
+                    1182   1703 
+                    1183   1704         ENDIF
+                    1184   1705 
+                    1185   1706 ;
+                    1186   1707 ; RELOCATABLE PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
+                    1187   1708 ;
+                    1188   1709         IF   COORD
+                    1189   1710 
+0f79  cd da 01      1190   1711 DISP1:  CALL 01DAH
+0f7c  cd 85 0f      1191   1712         CALL DISP2 - OFFSET
+0f7f  21 b6 0c      1192   1713         LXI  H,0CB6H
+0f82  c3 da 01      1193   1714         JMP  01DAH
+                    1194   1715 
+0f85  06 20         1195   1716 DISP2:  MVI  B,20H
+0f87  cd bf 09      1196   1717         CALL 09BFH
+0f8a  c3 bf 09      1197   1718         JMP  09BFH
+                    1198   1719 
+0f8d  cd bf 09      1199   1720 DISP3:  CALL 09BFH
+0f90  04            1200   1721         INR  B
+0f91  78            1201   1722         MOV  A,B
+0f92  e6 07         1202   1723         ANI  07H
+0f94  32 a2 0f      1203   1724         STA  DDAT - OFFSET
+0f97  06 20         1204   1725         MVI  B,20H
+0f99  c3 bf 09      1205   1726         JMP  09BFH
+                    1206   1727 
+0f9c  cd 85 0f      1207   1728 DISP4:  CALL DISP2 - OFFSET
+0f9f  c3 da 01      1208   1729         JMP  01DAH
+                    1209   1730 
+0fa2  00            1210   1731 DDAT:   DB   0
+0fa3  20 20 20 20   1211   1732 CTEXT:  DB   '     0  1  2  3  4  5  6  7',0DH
+0fa7  20 30 20 20   1211   1733
+0fab  31 20 20 32   1211   1734
+0faf  20 20 33 20   1211   1735
+0fb3  20 34 20 20   1211   1736
+0fb7  35 20 20 36   1211   1737
+0fbb  20 20 37 0d   1211   1738
+                    1212   1739 
+                    1213   1740         ENDIF
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 30
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1214   1741 
+                    1215   1742 ;
+                    1216   1743 ; PATCH TO RUN IT UNDER CP/M
+                    1217   1744 ;
+                    1218   1745         IF   CPM
+                    1219   1746 
+                    1220   1747         ORG  0 + OFFSET         ;PATCH FIRST INSTRUCTION TO JUMP
+                    1221   1748         JMP  CPMIN              ;TO THE CP/M PATCH
+                    1222   1749 
+                    1223   1750         ORG  01D7H + OFFSET     ;PATCH HLT FOR STANDALONE TO
+                    1224   1751         JMP  CPMOUT             ;RETURN TO CP/M
+                    1225   1752 
+                    1226   1753         ORG  0DE6H + OFFSET     ;PATCH TERMINAL OUT FOR CP/M
+                    1227   1754         MOV  C,B
+                    1228   1755         CALL CONOUT
+                    1229   1756         RET
+                    1230   1757 
+                    1231   1758         ORG  0DF1H + OFFSET     ;PATCH TERMINAL IN FOR CP/M
+                    1232   1759         CALL CONIN
+                    1233   1760         ANI  7FH
+                    1234   1761         MOV  B,A
+                    1235   1762         RET
+                    1236   1763 
+                    1237   1764         ORG  1000H + OFFSET     ;CP/M PATCH AREA
+                    1238   1765 CPMIN:  LHLD 1                  ;BIOS WARM BOOT -> HL
+                    1239   1766         LXI  B,6                ;BIOS CONIN -> HL
+                    1240   1767         DAD  B
+                    1241   1768         INX  H
+                    1242   1769         MOV  A,M                ;STORE ADR. FOR CONIN
+                    1243   1770         STA  CONIN + 1
+                    1244   1771         INX  H
+                    1245   1772         MOV  A,M
+                    1246   1773         STA  CONIN + 2
+                    1247   1774         LHLD 1                  ;BIOS WARM BOOT -> HL
+                    1248   1775         LXI  B,9                ;BIOS CONOUT -> HL
+                    1249   1776         DAD  B
+                    1250   1777         INX  H
+                    1251   1778         MOV  A,M                ;STORE ADR. FOR CONOUT
+                    1252   1779         STA  CONOUT + 1
+                    1253   1780         INX  H
+                    1254   1781         MOV  A,M
+                    1255   1782         STA  CONOUT + 2
+                    1256   1783         LDA  3                  ;GET THE IOBYTE
+                    1257   1784         LXI  SP,STACK
+                    1258   1785         LXI  H,0                ;FOR CP/M WE NEED TO SAVE 00-7FH
+                    1259   1786         LXI  D,SAVE
+                    1260   1787         LXI  B,0080H
+                    1261   1788         CALL LDIR
+                    1262   1789         LXI  H,OFFSET           ;NOW MOVE THE PROGRAM DOWN TO 0
+                    1263   1790         LXI  D,0
+                    1264   1791         LXI  B,0FFFH
+                    1265   1792         CALL LDIR
+                    1266   1793         STA  3                  ;RESTORE THE IOBYTE, BIOS MIGHT NEED IT
+                    1267   1794         LXI  SP,0D82H           ;FIRST INSTRUCTION JUST PATCHED ABOVE
+                    1268   1795         CALL 09ACH              ;SECOND INSTRUCTION DESTROYED BY IOBYTE
+                    1269   1796         JMP  6                  ;GO TO MICROCHESS
+                    1270   1797 
+                    1271   1798 CPMOUT: LXI  SP,STACK
+                    1272   1799         LXI  H,SAVE             ;RESTORE 00-7FH FOR CP/M
+                    1273   1800         LXI  D,0
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 31
+Source file: microchess.asm
+Title:       8080 MICROCHESS
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1274   1801         LXI  B,0080H
+                    1275   1802         CALL LDIR
+                    1276   1803         IF   DAZZLER
+                    1277   1804         XRA  A                  ;SWITCH DAZZLER OFF
+                    1278   1805         OUT  0EH
+                    1279   1806         ENDIF
+                    1280   1807         RST  0                  ;AND THEN RETURN TO CP/M
+                    1281   1808 
+                    1282   1809 CONIN:  JMP  0                  ;CALL BIOS CONSOLE IN
+                    1283   1810 CONOUT: JMP  0                  ;CALL BIOS CONSOLE OUT
+                    1284   1811 
+                    1285   1812 SAVE:   DS   80H
+                    1286   1813         DS   16
+                    1287   1814 STACK:
+                    1288   1815 
+                    1289   1816         ENDIF
+                    1290   1817 
+                    1291   1818 ;
+                    1292   1819 ; SUPPORT ROUTINE TO AVOID USING Z80 LDIR INSTRUCTION
+                    1293   1820 ;
+                    1294   1821         IF   CPM OR DAZZLER
+0fbf  f5            1295   1822 LDIR:   PUSH PSW
+0fc0  7e            1296   1823 LDIR1:  MOV  A,M
+0fc1  12            1297   1824         STAX D
+0fc2  23            1298   1825         INX  H
+0fc3  13            1299   1826         INX  D
+0fc4  0b            1300   1827         DCX  B
+0fc5  78            1301   1828         MOV  A,B
+0fc6  b1            1302   1829         ORA  C
+0fc7  c2 c0 0f      1303   1830         JNZ  LDIR1
+0fca  f1            1304   1831         POP  PSW
+0fcb  c9            1305   1832         RET
+                    1306   1833         ENDIF
+                    1307   1834 
+0fcc                1308   1835         END
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 32
+Source file: microchess.asm
+Title:       Symbol table
+
+CAUTO    0001 	COORD    0001 	CPM      0000 	CTEXT    0fa3 	
+DAT1     0f40 	DAT2     0f41 	DAZZLER  0001 	DB1      0e34 	
+DB2      0e39 	DBOARD   0e2c 	DBP1     0e3c 	DBP2     0e44 	
+DDAT     0fa2 	DDISP    0e25 	DINIT    0e0d 	DISP1    0f79 	
+DISP2    0f85 	DISP3    0f8d 	DISP4    0f9c 	DONEP    0e9e 	
+DPIE0    0e6a 	DPIE1    0e73 	DPIE2    0e7e 	DPIECE   0e65 	
+IDATA    0e1c 	IMSAI    0000 	L000     0000*	L010     0010*	
+L020     0020*	L030     0030*	L040     0040*	L050     0050*	
+L060     0060*	L070     0070*	L080     0080*	L090     0090*	
+L0A0     00a0*	L0B0     00b0*	L0C0     00c0*	L0D0     00d0*	
+L0E0     00e0*	L0F0     00f0*	L100     0100*	L110     0110*	
+L120     0120*	L130     0130*	L140     0140*	L150     0150*	
+L160     0160*	L170     0170*	L180     0180*	L190     0190*	
+L1A0     01a0*	L1B0     01b0*	L1C0     01c0*	L1D0     01d0*	
+L1E0     01e0*	L1F0     01f0*	L200     0200*	L210     0210*	
+L220     0220*	L230     0230*	L240     0240*	L250     0250*	
+L260     0260*	L270     0270*	L280     0280*	L290     0290*	
+L2A0     02a0*	L2B0     02b0*	L2C0     02c0*	L2D0     02d0*	
+L2E0     02e0*	L2F0     02f0*	L300     0300*	L310     0310*	
+L320     0320*	L330     0330*	L340     0340*	L350     0350*	
+L360     0360*	L370     0370*	L380     0380*	L390     0390*	
+L3A0     03a0*	L3B0     03b0*	L3C0     03c0*	L3D0     03d0*	
+L3E0     03e0*	L3F0     03f0*	L400     0400*	L410     0410*	
+L420     0420*	L430     0430*	L440     0440*	L450     0450*	
+L460     0460*	L470     0470*	L480     0480*	L490     0490*	
+L4A0     04a0*	L4B0     04b0*	L4C0     04c0*	L4D0     04d0*	
+L4E0     04e0*	L4F0     04f0*	L500     0500*	L510     0510*	
+L520     0520*	L530     0530*	L540     0540*	L550     0550*	
+L560     0560*	L570     0570*	L580     0580*	L590     0590*	
+L5A0     05a0*	L5B0     05b0*	L5C0     05c0*	L5D0     05d0*	
+L5E0     05e0*	L5F0     05f0*	L600     0600*	L610     0610*	
+L620     0620*	L630     0630*	L640     0640*	L650     0650*	
+L660     0660*	L670     0670*	L680     0680*	L690     0690*	
+L6A0     06a0*	L6B0     06b0*	L6C0     06c0*	L6D0     06d0*	
+L6E0     06e0*	L6F0     06f0*	L700     0700*	L710     0710*	
+L720     0720*	L730     0730*	L740     0740*	L750     0750*	
+L760     0760*	L770     0770*	L780     0780*	L790     0790*	
+L7A0     07a0*	L7B0     07b0*	L7C0     07c0*	L7D0     07d0*	
+L7E0     07e0*	L7F0     07f0*	L800     0800*	L810     0810*	
+L820     0820*	L830     0830*	L840     0840*	L850     0850*	
+L860     0860*	L870     0870*	L880     0880*	L890     0890*	
+L8A0     08a0*	L8B0     08b0*	L8C0     08c0*	L8D0     08d0*	
+L8E0     08e0*	L8F0     08f0*	L900     0900*	L910     0910*	
+L920     0920*	L930     0930*	L940     0940*	L950     0950*	
+L960     0960*	L970     0970*	L980     0980*	L990     0990*	
+L9A0     09a0*	L9B0     09b0*	L9C0     09c0*	L9D0     09d0*	
+L9E0     09e0*	L9F0     09f0*	LA00     0a00*	LA10     0a10*	
+LA20     0a20*	LA30     0a30*	LA40     0a40*	LA50     0a50*	
+LA60     0a60*	LA70     0a70*	LA80     0a80*	LA90     0a90*	
+LAA0     0aa0*	LAB0     0ab0*	LAC0     0ac0*	LAD0     0ad0*	
+LAE0     0ae0*	LAF0     0af0*	LB00     0b00*	LB10     0b10*	
+LB20     0b20*	LB30     0b30*	LB40     0b40*	LB50     0b50*	
+LB60     0b60*	LB70     0b70*	LB80     0b80*	LB90     0b90*	
+LBA0     0ba0*	LBB0     0bb0*	LBC0     0bc0*	LBD0     0bd0*	
+LBE0     0be0*	LBF0     0bf0*	LC00     0c00*	LC10     0c10*	
+LC20     0c20*	LC30     0c30*	LC40     0c40*	LC50     0c50*	
+LC60     0c60*	LC70     0c70*	LC80     0c80*	LC90     0c90*	
+LCA0     0ca0*	LCB0     0cb0*	LCC0     0cc0*	LCDO     0cd0*	
+LCE0     0ce0*	LCF0     0cf0*	LD00     0d00*	LD10     0d10*	
+LD20     0d20*	LD30     0d30*	LD40     0d40*	LD50     0d50*	
+LD60     0d60*	LD70     0d70*	LD80     0d80*	LD90     0d90*	
+LDA0     0da0*	LDB0     0db0*	LDC0     0dc0*	LDD0     0dd0*	
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:07:15 2022	Page 33
+Source file: microchess.asm
+Title:       Symbol table
+
+LDE0     0de0*	LDF0     0df0*	LDIR     0fbf 	LDIR1    0fc0 	
+LE00     0e00*	LE10     0e10*	LE20     0e20*	LE30     0e30*	
+LE40     0e40*	LE50     0e50*	LE60     0e60*	LE70     0e70*	
+LE80     0e80*	LE90     0e90*	LEA0     0ea0*	LEB0     0eb0*	
+LEC0     0ec0*	LED0     0ed0*	LEE0     0ee0*	LEF0     0ef0*	
+LF00     0f00*	LF10     0f10*	LF20     0f20*	LF30     0f30*	
+LF40     0f40*	LF50     0f50*	LF60     0f60*	LF70     0f70*	
+LF80     0f80*	LF90     0f90*	LFA0     0fa0*	LFB0     0fb0*	
+LFC0     0fc0*	LFD0     0fd0*	LFE0     0fe0*	LFF0     0ff0*	
+MAUTO    0001 	MITS     0000 	OFFSET   0000 	PTAB     0f43 	
+SMALLD   0000 	SUB1     0eb2 	SUB11    0ec7 	SUB2     0eef 	
+SUB22    0ef0 	SUB3     0f24 	SUB4     0f32 	SWC      0e00 	
