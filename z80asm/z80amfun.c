@@ -79,7 +79,7 @@ static struct mac *mac_found;			/* found macro */
 static struct expn mac_expn[MACNEST];		/* macro expansion stack */
 static int mac_loc_cnt;				/* counter for LOCAL labels */
 static char tmp[MAXLINE];			/* temporary buffer */
-static char expr[MAXLINE];			/* expression buffer (for '%') */
+static char expr[MAXLINE];			/* expr buffer (for '%') */
 
 /*
  *	verify that p is a legal symbol
@@ -841,6 +841,7 @@ int op_irp(int op_code, int dummy)
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
+	m = NULL;			/* silence compiler */
 	switch(op_code) {
 	case 1:				/* IRP */
 		m = mac_new(NULL, mac_start_irp, mac_rept_irp);

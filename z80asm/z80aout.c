@@ -108,8 +108,8 @@ void lst_header(void)
 {
 	time_t tloc = time(&tloc);
 
-	fprintf(lstfp, "\fZ80-Macro-Assembler  Release %s\t%.24s\tPage %d\n", REL,
-		ctime(&tloc), ++page);
+	fprintf(lstfp, "\fZ80-Macro-Assembler  Release %s\t%.24s\tPage %d\n",
+		REL, ctime(&tloc), ++page);
 	fprintf(lstfp, "Source file: %s\n", srcfn);
 	fprintf(lstfp, "Title:       %s\n", title);
 	p_line = 3;

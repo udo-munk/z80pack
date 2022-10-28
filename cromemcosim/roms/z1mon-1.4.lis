@@ -1,4 +1,4 @@
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 1
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 1
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -10,50 +10,50 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        5      5 ;
                        6      6 ;	Use z80asm 1.8, won't assemble correct with versions before
                        7      7 ;
-0000                   8      8 STAT	EQU	0			;STATUS PORT, DEVICE A
-0001                   9      9 DATA	EQU	1			;DATA PORT, DEVICE A
-0002                  10     10 ACMNDP	EQU	2			;COMMAND PORT, DEV. A
-0000                  11     11 ABAUDP	EQU	0			;BAUD PORT, DEVICE A
-0004                  12     12 APARLP	EQU	4			;PARALLEL PORT, DEV. A
-0052                  13     13 BCMNDP	EQU	52H			;COMMAND PORT, DEV. B
-0054                  14     14 BPARLP	EQU	54H			;PARALLEL PORT, DEV. B
-0040                  15     15 DAV	EQU	40H			;DATA-AVLAILABLE MASK
-0080                  16     16 TBE	EQU	80H			;XMITTER-BUF-EMPTY MASK
+0000  =                8      8 STAT	EQU	0			;STATUS PORT, DEVICE A
+0001  =                9      9 DATA	EQU	1			;DATA PORT, DEVICE A
+0002  =               10     10 ACMNDP	EQU	2			;COMMAND PORT, DEV. A
+0000  =               11     11 ABAUDP	EQU	0			;BAUD PORT, DEVICE A
+0004  =               12     12 APARLP	EQU	4			;PARALLEL PORT, DEV. A
+0052  =               13     13 BCMNDP	EQU	52H			;COMMAND PORT, DEV. B
+0054  =               14     14 BPARLP	EQU	54H			;PARALLEL PORT, DEV. B
+0040  =               15     15 DAV	EQU	40H			;DATA-AVLAILABLE MASK
+0080  =               16     16 TBE	EQU	80H			;XMITTER-BUF-EMPTY MASK
                       17     17 ;
-0005                  18     18 NBRKPT	EQU	5			;ALLOW ROOM FOR
-0016                  19     19 BPSTOR	EQU	NBRKPT*4+2		;BREAKPOINT STORAGE
-0016                  20     20 TEMPS	EQU	BPSTOR
-000b                  21     21 BPMRK	EQU	0BH			;USED TO MARK THE SET-
+0005  =               18     18 NBRKPT	EQU	5			;ALLOW ROOM FOR
+0016  =               19     19 BPSTOR	EQU	NBRKPT*4+2		;BREAKPOINT STORAGE
+0016  =               20     20 TEMPS	EQU	BPSTOR
+000b  =               21     21 BPMRK	EQU	0BH			;USED TO MARK THE SET-
                       22     22 ;					;TING OF A BP IN BPSTOR.
-0030                  23     23 RSTLC	EQU	30H			;RST LOCATION
-0000                  24     24 CASE	EQU	0			;(REQUIRES UPPER-CASE)
-0005                  25     25 B2F	EQU	5			;2-BYTE FLAG
-0006                  26     26 PF	EQU	6			;PRIME-ABLE REG FLAG
-0007                  27     27 CRF	EQU	7			;CRLF FLAG
+0030  =               23     23 RSTLC	EQU	30H			;RST LOCATION
+0000  =               24     24 CASE	EQU	0			;(REQUIRES UPPER-CASE)
+0005  =               25     25 B2F	EQU	5			;2-BYTE FLAG
+0006  =               26     26 PF	EQU	6			;PRIME-ABLE REG FLAG
+0007  =               27     27 CRF	EQU	7			;CRLF FLAG
                       28     28 ;
-000d                  29     29 CR	EQU	0DH
-000a                  30     30 LF	EQU	0AH
-001b                  31     31 ESC	EQU	1BH
-007d                  32     32 ALT	EQU	7DH
+000d  =               29     29 CR	EQU	0DH
+000a  =               30     30 LF	EQU	0AH
+001b  =               31     31 ESC	EQU	1BH
+007d  =               32     32 ALT	EQU	7DH
                       33     33 ;
                       34     34 ;  DISPLACEMENTS FROM IX OF HI BYTE OF REG PAIRS
                       35     35 ;
                       36     36 ;
-ffff                  37     37 DUPC	EQU	-1			;(FFFF)
-fffd                  38     38 DUAF	EQU	-3			;(FFFD)
-fffb                  39     39 DUBC	EQU	-5			;(FFFB)
-fff9                  40     40 DUDE	EQU	-7			;(FFF9)
-fff7                  41     41 DUHL	EQU	-9			;(FFF7)
-fff5                  42     42 DUSP	EQU	-11			;(FFF5)
-fff3                  43     43 DUIX	EQU	-13			;(FFF3)	
-fff1                  44     44 DUIY	EQU	-15			;(FFF1)
-ffef                  45     45 DUIN	EQU	-17			;(FFEF)        I & THE INTERRUPT FF
-ffed                  46     46 DUAF2	EQU	-19			;(FFED)
-ffeb                  47     47 DUBC2	EQU	-21			;(FFEB)
-ffe9                  48     48 DUDE2	EQU	-23			;(FFE9)
-ffe7                  49     49 DUHL2	EQU	-25			;(FFE7)
+ffff  =               37     37 DUPC	EQU	-1			;(FFFF)
+fffd  =               38     38 DUAF	EQU	-3			;(FFFD)
+fffb  =               39     39 DUBC	EQU	-5			;(FFFB)
+fff9  =               40     40 DUDE	EQU	-7			;(FFF9)
+fff7  =               41     41 DUHL	EQU	-9			;(FFF7)
+fff5  =               42     42 DUSP	EQU	-11			;(FFF5)
+fff3  =               43     43 DUIX	EQU	-13			;(FFF3)	
+fff1  =               44     44 DUIY	EQU	-15			;(FFF1)
+ffef  =               45     45 DUIN	EQU	-17			;(FFEF)        I & THE INTERRUPT FF
+ffed  =               46     46 DUAF2	EQU	-19			;(FFED)
+ffeb  =               47     47 DUBC2	EQU	-21			;(FFEB)
+ffe9  =               48     48 DUDE2	EQU	-23			;(FFE9)
+ffe7  =               49     49 DUHL2	EQU	-25			;(FFE7)
                       50     50 ;
-001a                  51     51 LENRGS	EQU	DUPC-DUHL2+2
+001a  =               51     51 LENRGS	EQU	DUPC-DUHL2+2
                       52     52 ;
                       53     53 ;
                       54     54 ;
@@ -63,7 +63,7 @@ ffe7                  49     49 DUHL2	EQU	-25			;(FFE7)
                       58     58 ;
                       59     59 ; ENTER THE MONITOR FROM RESET.
                       60     60 ; COLD START ENTRY. INITIALIZES THE UART
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 2
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 2
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -128,7 +128,7 @@ e02b  d3 52          112    112 	OUT	(BCMNDP),A		;RESET DEVICE B
                      118    118 ; PUSH CARRIAGE-RETURN TO SELECT THE PROPER BAUD
                      119    119 ; RATE FOR THE CURRENT TERMINAL. (THE MAXIMUM
                      120    120 ; NUMBER OF CARRIAGE-RETURNS REQUIRED IS FOUR.)
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 3
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 3
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -193,7 +193,7 @@ e061  ed b8          177    177 	LDDR
                      178    178 ;
 e063  13             179    179 	INC	DE			;-> UHL,LO ON SYS STK
 e064  eb             180    180 	EX	DE,HL
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 4
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 4
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -258,7 +258,7 @@ e0aa  2b             237    237 	DEC	HL
 e0ab  56             238    238 	LD	D,(HL)
 e0ac  2b             239    239 	DEC	HL
 e0ad  5e             240    240 	LD	E,(HL)
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 5
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 5
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -323,7 +323,7 @@ e0ea  18 b4          294    294 ESCPE:	JR	CLBP			;CLEAR ANY BRKPTS
                      298    298 ; IS NOT ON A 1K (400H) BOUNDARY, OR IF SWATH
                      299    299 ; WIDTH IS NOT A MULTIPLE OF 1K.
                      300    300 ;
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 6
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 6
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -388,7 +388,7 @@ e12f  cc 0f e2       357    357 	CALL	Z,PMSG
 e132  fe 3c          358    358 	CP	'<'			;RECURSIVE CALL
 e134  20 0b          359    359 	JR	NZ,PC3			;ON CMND?
 e136  f1             360    360 	POP	AF
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 7
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 7
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -453,7 +453,7 @@ e166  cd a5 e1       416    416 VERIF:	CALL	L3NCR			;GET 3	OPERANDS
                      418    418 ; COMPARES TWO AREAS OF MEMORY. ENTER WITH
                      419    419 ; SOURCE IN HL, DESTINATION IN DE & COUNT
                      420    420 ; IN BC. ALTERS ALL REGISTERS.
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 8
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 8
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -518,7 +518,7 @@ e1a5  cd 8b e1       471    471 L3NCR: CALL	LD2N
                      478    478 ; DE & HL. FINISHES WITH A CRLF.
                      479    479 ;
 e1a8  cd ae e1       480    480 L1NCR: CALL	GNHL	        	 ;SKIP SPACES, LOAD HL
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 9
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 9
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -583,7 +583,7 @@ e1dc  c9             531    531 	RET
                      538    538 ;
 e1dd  97             539    539 SKSG0:	SUB	A
                      540    540 ;
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 10
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 10
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -648,7 +648,7 @@ e20e  c9             589    589 	RET
 e20f  f5             598    598 PMSG:	PUSH	AF			;SAVE
 e210  7e             599    599 PS1:	LD	A,(HL)
 e211  23             600    600 	INC	HL
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 11
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 11
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -713,7 +713,7 @@ e24c  23             657    657 	INC  	HL  	 		;BUMP BPSP
 e24d  eb             658    658 	EX   	DE,HL   	 	;DE = BPSP, HL= BP ADDR
 e24e  ed a0          659    659 	LDI
 e250  2b             660    660 	DEC  	HL
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 12
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 12
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -778,7 +778,7 @@ e28b  f1             717    717 	POP	AF
 e28c  c9             718    718 	RET
                      719    719 
                      720    720 
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 13
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 13
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -843,7 +843,7 @@ e2c6  18 f0          776    776 	JR	SM1
                      778    778 ;
 e2c8  47             779    779 SUBR:	LD	B,A
 e2c9  cd 44 e1       780    780 	CALL	GCHR
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 14
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 14
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -908,7 +908,7 @@ e32f  28 a4          837    837 	JR	Z,SR3	   		;IF H, LOOP.
 e331  c9             838    838 	RET		    		;IT IS H'. DONE.
                      839    839 
                      840    840 
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 15
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 15
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -973,7 +973,7 @@ e372  c9             895    895 	RET
                      898    898 ; COMMAND
                      899    899 ; READ BINARY INPUT FROM DATA PORT
                      900    900 ;
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 16
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 16
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -1038,7 +1038,7 @@ e3ab  0a 00 80       956    957 LFNN:	DEFB	LF,0,0 | 80H
                      957    958 ;
                      958    959 ;
 e3ae  ba             959    960 PRMPT:	DEFB	(':' | 80H)
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 17
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 17
 Source file: z1mon-1.4.asm
 Title:       
 
@@ -1067,10 +1067,10 @@ e3d1  62 e3          980    981 	DEFW	UART			;UART: UA, UB
 e3d3  66 e1          981    982 	DEFW	VERIF			;VERIFY BLOCKS OF MEMORY
 e3d5  81 e3          982    983 	DEFW	WRITB			;WRITE BINARY OR ASCII
                      983    984 ;
-0040                 984    985 PM	EQU	1 << PF			;PRIMEABLE-REG MASK
-0000                 985    986 B1M	EQU	0			;1-BYTE REG MASK
-0020                 986    987 B2M	EQU	1 << B2F		;2-BYTE REG MASK
-0080                 987    988 CRM	EQU	1 << CRF		;CARRIAGE-RETURN MASK
+0040  =              984    985 PM	EQU	1 << PF			;PRIMEABLE-REG MASK
+0000  =              985    986 B1M	EQU	0			;1-BYTE REG MASK
+0020  =              986    987 B2M	EQU	1 << B2F		;2-BYTE REG MASK
+0080  =              987    988 CRM	EQU	1 << CRF		;CARRIAGE-RETURN MASK
                      988    989 
 e3d7  43             989    990 RGTBL:	DEFB	-DUAF | PM		;A
 e3d8  45             990    991 	DEFB	-DUBC | PM		;B
@@ -1103,13 +1103,13 @@ e3f0  0d 0d 43 52   1016   1017 HEAD:	DEFB	CR,CR, 'CROMEMCO ZM1.',('4' | 80H)
 e3f4  4f 4d 45 4d   1016   1018
 e3f8  43 4f 20 5a   1016   1019
 e3fc  4d 31 2e b4   1016   1020
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 18
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 18
 Source file: z1mon-1.4.asm
 Title:       
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e400                1017   1021 	END	CSTART
-Z80-Assembler	Release 1.11-dev	Wed Oct 12 20:20:55 2022	Page 19
+Z80-Macro-Assembler  Release 1.11-dev	Thu Oct 27 23:17:11 2022	Page 19
 Source file: z1mon-1.4.asm
 Title:       Symbol table
 
