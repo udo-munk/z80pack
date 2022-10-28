@@ -1,0 +1,215 @@
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 1
+Source file: turnmon.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ; **************************************************************
+                       2      2 ;
+                       3      3 ; MITS ALTAIR 8800 ROM MONITOR
+                       4      4 ;
+                       5      5 ; **************************************************************
+                       6      6 ;
+                       7      7 ; BASED ON THE ORIGINAL ALTAIR TURNKEY SYSTEM MONITOR
+                       8      8 ;
+                       9      9 ; MODIFIED BY:  SCOTT LABOMBARD
+                      10     10 ;               8/9/02
+                      11     11 ;
+                      12     12 ; MODIFIED TO ASSEMBLE WITH INTEL 8080 CROSS ASSEMBLER
+                      13     13 ;               UDO MUNK
+                      14     14 ;               10/11/08
+                      15     15 ;
+                      16     16 ; **************************************************************
+                      17     17 
+fc00  =               18     18 STACK   EQU     0FC00H          ;MUST BE VALID RAM, NOT ROM!
+0010  =               19     19 CONSTAT EQU     020Q            ;IO STATUS PORT
+0011  =               20     20 CONDATA EQU     021Q            ;IO DATA PORT
+                      21     21 
+                      22     22         ORG     0FD00H          ;ROM BASED CODE
+                      23     23 
+fd00  3e 03           24     24 MON:    MVI     A,3             ;RESET 2SIO BOARD
+fd02  d3 10           25     25         OUT     CONSTAT
+fd04  3e 11           26     26         MVI     A,021Q          ;INITIALIZE 2SIO BOARD
+fd06  d3 10           27     27         OUT     CONSTAT
+fd08  31 00 fc        28     28 ENTER:  LXI     SP,STACK        ;INITIALIZE STACK POINTER
+fd0b  cd 96 fd        29     29         CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+fd0e  cd 96 fd        30     30         CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+fd11  3e 2e           31     31         MVI     A,'.'           ;MONITOR PROMPT
+fd13  cd f2 fd        32     32         CALL    OUTCHK          ;PRINT CHAR TO CONSOLE
+fd16  cd e8 fd        33     33         CALL    INCH            ;GET CHAR FROM CONSOLE
+fd19  fe 4d           34     34         CPI     'M'
+fd1b  ca 2c fd        35     35         JZ      MEM             ;DO MEMORY EXAMINE/ALTER
+fd1e  fe 44           36     36         CPI     'D'
+fd20  ca 54 fd        37     37         JZ      DMP             ;DO MEMORY DUMP
+fd23  fe 4a           38     38         CPI     'J'
+fd25  c2 08 fd        39     39         JNZ     ENTER
+                      40     40 
+                      41     41 ; **************************************************************
+                      42     42 ; GET JUMP ADDRESS, LOAD TO PC, AND GO
+                      43     43 ; **************************************************************
+fd28  cd a0 fd        44     44         CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+fd2b  e9              45     45         PCHL
+                      46     46 
+                      47     47 ; **************************************************************
+                      48     48 ; MEMORY FUNCTION - DISPLAY AND/OR ALTER MEMORY
+                      49     49 ; **************************************************************
+fd2c  cd a0 fd        50     50 MEM:    CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+fd2f  c3 33 fd        51     51         JMP     CONT1
+fd32  23              52     52 CONT:   INX     H               ;POINT TO NEXT ADDRESS
+fd33  cd 96 fd        53     53 CONT1:  CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+fd36  54              54     54         MOV     D,H             ;SAVE ADDR TO DE
+fd37  5d              55     55         MOV     E,L
+fd38  cd c6 fd        56     56         CALL    PRT6            ;CVT TO ASCII + PRINT
+fd3b  1a              57     57         LDAX    D               ;LOAD DATA FROM CURRENT MEM LOC
+fd3c  67              58     58         MOV     H,A
+fd3d  cd cc fd        59     59         CALL    PRT3            ;CVT TO ASCII + PRINT
+fd40  cd a5 fd        60     60         CALL    OCTL3           ;GET 3 OCTAL DIGITS IN HL
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 2
+Source file: turnmon.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fd43  eb              61     61         XCHG                    ;EXCHANGE HL AND DE
+fd44  da 32 fd        62     62         JC      CONT
+fd47  77              63     63         MOV     M,A             ;STORE USER SPECIFIED BYTE
+fd48  be              64     64         CMP     M               ;VALIDATE DATA BYTE IN MEMORY
+fd49  ca 32 fd        65     65         JZ      CONT            ;IF BYTE OKAY, KEEP GOING
+fd4c  3e 3f           66     66 ERR:    MVI     A,'?'           ;WE HAVE A PROBLEM
+fd4e  cd f2 fd        67     67         CALL    OUTCHK          ;PRINT ERROR CHAR TO CONSOLE
+fd51  c3 08 fd        68     68         JMP     ENTER
+                      69     69 
+                      70     70 ; **************************************************************
+                      71     71 ; DUMP FUNCTION - DISPLAY DATA BETWEEN TWO SPECIFIED MEM LOCS
+                      72     72 ; **************************************************************
+fd54  cd a0 fd        73     73 DMP:    CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+fd57  eb              74     74         XCHG                    ;SAVE START ADDR TO DE
+fd58  d4 e3 fd        75     75         CNC     SPACE
+fd5b  cd a0 fd        76     76         CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
+fd5e  e5              77     77         PUSH    H               ;SAVE END ADDR
+fd5f  62              78     78 DCONT:  MOV     H,D             ;MOV ADDR IN DE TO HL FOR PRINT
+fd60  6b              79     79         MOV     L,E
+fd61  cd 96 fd        80     80         CALL    CRLF            ;PRINT CARRIAGE RET+LINE FEED
+fd64  cd c6 fd        81     81         CALL    PRT6            ;CVT TO ASCII + PRINT
+fd67  cd e3 fd        82     82         CALL    SPACE
+fd6a  01 10 00        83     83         LXI     B,020Q          ;PRINT 16 MEM LOCATIONS PER LINE
+fd6d  1a              84     84 DO20:   LDAX    D               ;LOAD DATA FROM CURRENT MEM LOC
+fd6e  67              85     85         MOV     H,A
+fd6f  c5              86     86         PUSH    B               ;SAVE PRINT LOCATION COUNTER
+fd70  3e 08           87     87         MVI     A,010Q          ;IS HALF THE LINE PRINTED?
+fd72  b9              88     88         CMP     C
+fd73  c2 7e fd        89     89         JNZ     NXTMEM
+fd76  3e 2d           90     90         MVI     A,'-'           ;MAKES EACH LINE EASIER TO READ
+fd78  cd f2 fd        91     91         CALL    OUTCHK
+fd7b  cd e3 fd        92     92         CALL    SPACE
+fd7e  cd cc fd        93     93 NXTMEM: CALL    PRT3            ;CVT TO ASCII + PRINT MEM DATA
+fd81  c1              94     94         POP     B               ;RESTORE PRINT LOCATION COUNTER
+fd82  e1              95     95         POP     H               ;RESTORE END ADDR
+fd83  7c              96     96         MOV     A,H             ;COMPARE CURRENT ADDR WITH END
+fd84  ba              97     97         CMP     D
+fd85  c2 8d fd        98     98         JNZ     DAGN
+fd88  7d              99     99         MOV     A,L
+fd89  bb             100    100         CMP     E
+fd8a  ca 08 fd       101    101         JZ      ENTER           ;PROCESSED LAST ADDRESS SO DONE
+fd8d  e5             102    102 DAGN:   PUSH    H               ;SAVE END ADDR TO USE AGAIN
+fd8e  13             103    103         INX     D               ;NEXT MEMORY LOCATION TO PRINT
+fd8f  0d             104    104         DCR     C               ;CURRENT PRINT LOCATION COUNTER
+fd90  c2 6d fd       105    105         JNZ     DO20            ;16 LOCATIONS PRINTED YET?              
+fd93  c3 5f fd       106    106         JMP     DCONT           ;NEXT LINE IF 16 LOCATIONS DONE
+                     107    107 
+                     108    108 ; **************************************************************
+                     109    109 ; PRINT CARRIAGE RETURN AND LINE FEED
+                     110    110 ; **************************************************************
+fd96  3e 0d          111    111 CRLF:   MVI     A,015Q
+fd98  cd f2 fd       112    112         CALL    OUTCHK          ;PRINT CHAR TO CONSOLE
+fd9b  3e 0a          113    113         MVI     A,012Q
+fd9d  c3 f2 fd       114    114         JMP     OUTCHK          ;PRINT CHAR TO CONSOLE
+                     115    115 
+                     116    116 ; **************************************************************
+                     117    117 ; BUILD 3/6 OCTAL DIGITS IN HL
+                     118    118 ; **************************************************************
+fda0  06 06          119    119 OCTL6:  MVI     B,6             ;SET DIGIT COUNTER
+fda2  c3 a7 fd       120    120         JMP     OCTL
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 3
+Source file: turnmon.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fda5  06 03          121    121 OCTL3:  MVI     B,3             ;SET DIGIT COUNTER
+fda7  21 00 00       122    122 OCTL:   LXI     H,0             ;CLEAR ALL 16 BITS OF HL REG
+fdaa  cd e8 fd       123    123 AGN:    CALL    INCH            ;GET CHAR FROM CONSOLE
+fdad  4f             124    124         MOV     C,A
+fdae  fe 20          125    125         CPI     ' '             ;CHECK FOR SPACE CHAR
+fdb0  37             126    126         STC
+fdb1  c8             127    127         RZ                      ;SPACE CHAR ENTERED SO QUIT
+fdb2  e6 b8          128    128         ANI     270Q            ;CHECK FOR VALID OCTAL DIGIT
+fdb4  ee 30          129    129         XRI     060Q
+fdb6  c2 4c fd       130    130         JNZ     ERR             ;NOT OCTAL SO LEAVE
+fdb9  79             131    131         MOV     A,C             ;CONVERT ASCII TO BINARY
+fdba  e6 07          132    132         ANI     007Q            ;STRIP ASCII
+fdbc  29             133    133         DAD     H               ;SHIFT HL LEFT 3 BITS
+fdbd  29             134    134         DAD     H
+fdbe  29             135    135         DAD     H
+fdbf  85             136    136         ADD     L
+fdc0  6f             137    137         MOV     L,A             ;PUT OCTAL IN H
+fdc1  05             138    138         DCR     B               ;MORE DIGITS?
+fdc2  c2 aa fd       139    139         JNZ     AGN
+fdc5  c9             140    140         RET
+                     141    141 
+                     142    142 ; **************************************************************
+                     143    143 ; PRINT 3 OR 6 OCTAL DIGITS FROM H OR HL
+                     144    144 ; **************************************************************
+fdc6  06 06          145    145 PRT6:   MVI     B,6             ;SET DIGIT COUNTER
+fdc8  af             146    146         XRA     A
+fdc9  c3 d6 fd       147    147         JMP     NEXT1
+fdcc  06 03          148    148 PRT3:   MVI     B,3             ;SET DIGIT COUNTER
+fdce  af             149    149         XRA     A
+fdcf  c3 d3 fd       150    150         JMP     NXT3
+fdd2  29             151    151 NEXT3:  DAD     H               ;SHIFT 1 BIT
+fdd3  17             152    152 NXT3:   RAL
+fdd4  29             153    153         DAD     H               ;SHIFT 1 BIT
+fdd5  17             154    154         RAL
+fdd6  29             155    155 NEXT1:  DAD     H               ;SHIFT 1 BIT
+fdd7  17             156    156         RAL
+fdd8  e6 07          157    157         ANI     7               ;STRIP OFF OCTAL
+fdda  f6 30          158    158         ORI     060Q            ;CONVERT TO ASCII
+fddc  cd f2 fd       159    159         CALL    OUTCHK          ;PRINT CHAR TO CONSOLE
+fddf  05             160    160         DCR     B
+fde0  c2 d2 fd       161    161         JNZ     NEXT3
+fde3  3e 20          162    162 SPACE:  MVI     A,' '           ;ASCII SPACE CHARACTER
+fde5  c3 f2 fd       163    163         JMP     OUTCHK          ;PRINT CHAR TO CONSOLE
+                     164    164 
+                     165    165 ; **************************************************************
+                     166    166 ; INPUT AND ECHO CHARACTER
+                     167    167 ; **************************************************************
+fde8  db 10          168    168 INCH:   IN      CONSTAT
+fdea  0f             169    169         RRC
+fdeb  d2 e8 fd       170    170         JNC     INCH            ;CHECK READ STATUS
+fdee  db 11          171    171         IN      CONDATA         ;READ CHARACTER
+fdf0  e6 7f          172    172         ANI     177Q            ;STRIP PARITY BIT
+fdf2  f5             173    173 OUTCHK: PUSH    PSW             ;SAVE CHARACTER
+fdf3  81             174    174         ADD     C               ;ADD IN CHECKSUM
+fdf4  4f             175    175         MOV     C,A             ;RESTORE CHECKSUM
+fdf5  db 10          176    176 LOOP:   IN      CONSTAT
+fdf7  0f             177    177         RRC
+fdf8  0f             178    178         RRC
+fdf9  d2 f5 fd       179    179         JNC     LOOP            ;GET READ STATUS
+fdfc  f1             180    180         POP     PSW
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 4
+Source file: turnmon.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fdfd  d3 11          181    181         OUT     CONDATA         ;PRINT USER TYPED CHARACTER
+fdff  c9             182    182         RET
+                     183    183 
+fe00                 184    184         END
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 5
+Source file: turnmon.asm
+Title:       Symbol table
+
+AGN      fdaa 	CONDATA  0011 	CONSTAT  0010 	CONT     fd32 	
+CONT1    fd33 	CRLF     fd96 	DAGN     fd8d 	DCONT    fd5f 	
+DMP      fd54 	DO20     fd6d 	ENTER    fd08 	ERR      fd4c 	
+INCH     fde8 	LOOP     fdf5 	MEM      fd2c 	MON      fd00*	
+NEXT1    fdd6 	NEXT3    fdd2 	NXT3     fdd3 	NXTMEM   fd7e 	
+OCTL     fda7 	OCTL3    fda5 	OCTL6    fda0 	OUTCHK   fdf2 	
+PRT3     fdcc 	PRT6     fdc6 	SPACE    fde3 	STACK    fc00 	
