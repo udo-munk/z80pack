@@ -1,0 +1,1609 @@
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 1
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;*************************************************************
+                       2      2 ; VIO TERMINAL FIRMWARE  REQUIRES REFRESH MEMORY TO BE AT
+                       3      3 ; F000 AND FIRMWARE ITSELF AT F800
+                       4      4 ; COPYRIGHT IMSAI MANUFACTURING COMPANY
+                       5      5 ;           SAN LEANDRO, CALIFORNIA
+                       6      6 ;           6/1/77
+                       7      7 ;
+                       8      8 ; MODIFIED TO ASSEMBLE WITH INTEL 8080 CROSS ASSEMBLER
+                       9      9 ; AND PRETTIFIED SOURCE
+                      10     10 ;           UDO MUNK
+                      11     11 ;           1/3/2017
+                      12     12 ;
+                      13     13 ; CHANGED DEFINITIONS OF SYSRAM VARIABLES FROM DB/DW TO DS
+                      14     14 ; SO THAT NO CODE IS EMITTED
+                      15     15 ;           UDO MUNK
+                      16     16 ;           02/17/2017
+                      17     17 ;**************************************************************
+f000  =               18     18 REFRESH EQU  0F000H     ;REFRESH MEMORY ON VIO
+f780  =               19     19 SYSRAM  EQU  0F780H     ;SYSTEM RAM
+f800  =               20     20 VIOFM   EQU  0F800H     ;FIRMWARE BEGINNING
+                      21     21         ORG  VIOFM+7FDH
+fffd  56 49 30        22     22         DB   'VI0'      ;SYSTEM IDENTIFIER
+f7ff  =               23     23 CTRPORT EQU  REFRESH+7FFH ;HARDWARE CONTROL WORD
+                      24     24         ORG  SYSRAM
+f780                  25     25 CURLIN: DS   1          ;CURRENT LINE # 0-23
+f781                  26     26 CURCOL: DS   1          ;CURRENT COL # 0-79
+f782                  27     27 INVIDIO:DS   1          ;INVERSE VIDIO MODE(BY CHAR)
+f783                  28     28 VDIMDE: DS   1          ;MODE 0=GRAPHICS, NOT 0= TEXT
+f784                  29     29 INSRT:  DS   1          ;INSERTING CHARS MODE
+f785                  30     30 ESCCNT: DS   1          ;ESCAPE CHAR COUNT
+f786                  31     31 ESCCDE: DS   1          ;ESCAPE CODE LAST USED
+f787                  32     32 USRCTR: DS   2          ;USER CTR TBLE PTR, NON ZERO
+f789                  33     33 USRESC: DS   2          ;USER ESCAPE TBLE PTR,NON ZERO
+f78b                  34     34 USERCMD:DS   2          ;USER MONITOR COMMAND TABLE
+f78d                  35     35 RAMPTR: DS   2          ;RAM SPACE PTR WITH DIRECT I/O
+f78f                  36     36 CURPTR: DS   2          ;CURSOR ADDRESS
+f791                  37     37 PRTMD:  DS   1          ;PROTECTED MODE 0=NO
+f792                  38     38 CCUR:   DS   1          ;CHAR UNDER CURSOR(FOR GRAPHICS MODE)
+f793                  39     39 CCHAR:  DS   1          ;CURRENT CHARACTER TO DISPLAY
+f794                  40     40 CTRLC:  DS   1          ;CONTROL WORD AS FOLLOWS
+                      41     41 ;                               7 SCROLL MODE 0=SCROLL,1=WRAP
+                      42     42 ;                               6 UNUSED
+                      43     43 ;                               5 UP/LOW        0=UP,1=UP+LOW
+                      44     44 ;                               4 1=INVERSE VIDIO SCREEN
+                      45     45 ;                               3 00=BLANK,01=LOW128+INV,10=HIGH128+INV
+                      46     46 ;                               2 11=256 CHAR GRAPHICS
+                      47     47 ;                               1 #LINES 0=24,1=12
+                      48     48 ;                               0 #CHARS 0=80,1=40
+f795  =               49     49 TAB     EQU  $
+                      50     50         ORG  $+10       ;80 BITS FOR TAB CONTROL
+f79f                  51     51 CLINE:  DS   2          ;CHARS/LINE
+f7a1                  52     52 LPAGE:  DS   1          ;LINES/PAGE-1
+f7a2                  53     53 NCHARS: DS   2          ;#CHARS ON DISPLAY
+f7a4                  54     54 PRUPRF: DS   1          ;TRANSITION PROTECT FLAG
+f7a5                  55     55 USERF:  DS   1          ;ENTRY POINT FLAG 0=INIT48,1=CHAR48,2=USER
+f7a6                  56     56 LASTC:  DS   2          ;LAST CHAR ON SCREEN PTR+1
+                      57     57 ;***********************************
+                      58     58 ; USER ENTRY POINTS
+                      59     59 ;***********************************
+                      60     60         ORG  VIOFM
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 2
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+f800  c3 15 f8        61     61         JMP  INIT               ;INITIALIZATION POINT
+f803  c3 7e f8        62     62         JMP  CHAROUT            ;CHARACTER OUTPUT
+f806  c3 e2 fb        63     63         JMP  MONT               ;MONITOR ENTRY POINT
+f809  31 fe f7        64     64 VIOTEST:LXI  SP,SYSRAM+7EH
+f80c  cd 15 f8        65     65         CALL INIT
+f80f  cd 10 ff        66     66         CALL CHIN
+f812  c3 0f f8        67     67         JMP  VIOTEST+6          ;DEMO TESTER
+                      68     68 ;**********************************************
+f815  e5              69     69 INIT:   PUSH H
+f816  d5              70     70         PUSH D
+f817  c5              71     71         PUSH B
+f818  f5              72     72         PUSH PSW
+f819  21 80 f7        73     73         LXI  H,CURLIN           ;START OF ZEROED AREA
+f81c  06 1f           74     74         MVI  B,CLINE-CURLIN AND 0FFH
+f81e  af              75     75         XRA  A
+f81f  77              76     76 INIT1:  MOV  M,A                ;ZERO AREA
+f820  23              77     77         INX  H
+f821  05              78     78         DCR  B
+f822  c2 1f f8        79     79         JNZ  INIT1
+f825  21 00 f0        80     80         LXI  H,REFRESH  ;BEGIN CURSOR POS
+f828  22 8f f7        81     81         SHLD CURPTR
+f82b  21 80 07        82     82         LXI  H,1920     ;DEFAULT CHARS/SCREEN
+f82e  22 a2 f7        83     83         SHLD NCHARS
+f831  cd 9f f9        84     84         CALL BLNKS      ;CLEAR SCREEN AND HOME
+f834  3e 08           85     85         MVI  A,8H       ;DEFAULT 80X24 SCREEN TEXT MODE
+f836  11 df f8        86     86         LXI  D,BMP1     ;SET UP RETURN ADDR
+f839  d5              87     87         PUSH D
+                      88     88 ;SUBROUTINE TO SET HARDWARE CONTROL PORT
+f83a  32 94 f7        89     89 SETCMD: STA  CTRLC
+f83d  32 ff f7        90     90         STA  CTRPORT    ;HARDWARE CONTROL PORT
+f840  2f              91     91         CMA
+f841  e6 03           92     92         ANI  3
+f843  0f              93     93         RRC             ;FINDING NCHARS ON SCREEN
+f844  21 28 00        94     94         LXI  H,40       ;COLS/LINE
+f847  d2 4b f8        95     95         JNC  $+4        ;ENOUGH
+f84a  29              96     96         DAD  H          ;COLS/LINE=80
+f84b  22 9f f7        97     97         SHLD CLINE
+f84e  21 a1 f7        98     98         LXI  H,LPAGE    ;PT AT LINES/PAGE
+f851  36 0b           99     99         MVI  M,11
+f853  1f             100    100         RAR
+f854  d2 59 f8       101    101         JNC  $+5
+f857  36 17          102    102         MVI  M,23
+f859  21 e0 01       103    103         LXI  H,480      ;COUNT FOR 12 X 40 SCREEN
+f85c  d2 60 f8       104    104         JNC  $+4
+f85f  29             105    105         DAD  H
+f860  b7             106    106         ORA  A          ;SET FLAGS
+f861  ca 65 f8       107    107         JZ   $+4
+f864  29             108    108         DAD  H
+f865  22 a2 f7       109    109         SHLD NCHARS
+f868  11 00 f0       110    110         LXI  D,REFRESH
+f86b  19             111    111         DAD  D
+f86c  22 a6 f7       112    112         SHLD LASTC      ;LAST CHAR ON SCREEN PTR+1
+f86f  3a 94 f7       113    113         LDA  CTRLC      ;CONTROL CODE
+f872  e6 0c          114    114         ANI  0CH        ;MODE BITS ONLY
+f874  ee 0c          115    115         XRI  0CH
+f876  32 83 f7       116    116         STA  VDIMDE     ;0=GRAPHICS
+                     117    117 ;CHECK CURSOR WITHIN POSSIBLE NEW BOUNDS
+f879  af             118    118 ESCRET: XRA  A
+f87a  32 85 f7       119    119         STA  ESCCNT     ;COUNT=0
+f87d  c9             120    120         RET
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 3
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     121    121 ;****************************************************************
+                     122    122 ; THIS IS THE NORMAL ENTRY POINT FOR COMMUNICATING WITH THE
+                     123    123 ; VIDIO MONITOR AS YOU WOULD A CRT.
+                     124    124 ;****************************************************************
+f87e  e5             125    125 CHAROUT:PUSH H
+f87f  d5             126    126         PUSH D
+f880  c5             127    127         PUSH B
+f881  f5             128    128         PUSH PSW
+f882  32 93 f7       129    129         STA  CCHAR
+f885  2a 8f f7       130    130         LHLD CURPTR     ;CURSOR POSITION
+f888  3a 92 f7       131    131         LDA  CCUR       ;CHAR UNDER CURSOR
+f88b  77             132    132         MOV  M,A        ;REMOVE CURSOR
+f88c  21 93 f7       133    133         LXI  H,CCHAR    ;PT AT CURRENT CHAR
+f88f  7e             134    134         MOV  A,M        ;GET CHAR
+f890  fe 1b          135    135         CPI  1BH        ;ESCAPE CHAR?
+f892  ca 4d f9       136    136         JZ   ESCAPE
+f895  3a 85 f7       137    137         LDA  ESCCNT     ;ARE WE IN ESCAPE SEQ ALREADY?
+f898  b7             138    138         ORA  A
+f899  c2 4d f9       139    139         JNZ  ESCAPE     ;YES
+f89c  7e             140    140         MOV  A,M        ;CURRENT CHAR
+f89d  fe 7f          141    141         CPI  7FH        ;DELETE CHAR (RUBOUT)?
+f89f  ca 3c f9       142    142         JZ   NOUSER+3   ;YES
+f8a2  3a 83 f7       143    143         LDA  VDIMDE     ;GRAPHICS MODE?
+f8a5  b7             144    144         ORA  A
+f8a6  ca d6 f8       145    145         JZ   CHAR1      ;YES
+f8a9  7e             146    146         MOV  A,M
+f8aa  fe ff          147    147         CPI  0FFH       ;DUMMY PAD FROM USER?
+f8ac  ca df f8       148    148         JZ   BMP1       ;YES
+f8af  e6 7f          149    149         ANI  7FH        ;STRIP PARITY BIT
+f8b1  77             150    150         MOV  M,A
+f8b2  de 20          151    151         SBI  20H        ;CONTROL CODE?
+f8b4  fa 29 f9       152    152         JM   CONTROL    ;YES
+f8b7  3a 94 f7       153    153         LDA  CTRLC      ;CONTROL WORD
+f8ba  47             154    154         MOV  B,A        ;TMP SAVE
+f8bb  e6 0c          155    155         ANI  0CH        ;MODE ONLY
+f8bd  fe 08          156    156         CPI  08H        ;LOW HALF OF CHAR GEN ROM?
+f8bf  c2 d6 f8       157    157         JNZ  CHAR1      ;NO,UPPER HALF
+f8c2  78             158    158         MOV  A,B        ;CONTROL WORD
+f8c3  e6 20          159    159         ANI  20H        ;UP/LOW CASE
+f8c5  c2 d6 f8       160    160         JNZ  CHAR1      ;LOWER OK AS IS
+f8c8  7e             161    161         MOV  A,M        ;CURRENT CHAR
+f8c9  de 61          162    162         SBI  61H        ;LOWER CASE A
+f8cb  fa d6 f8       163    163         JM   CHAR1      ;NOT ALPHA
+f8ce  de 1a          164    164         SBI  7BH-61H
+f8d0  f2 d6 f8       165    165         JP   CHAR1      ;NOT ALPHA
+f8d3  c6 5b          166    166         ADI  7BH-20H    ;RESTORE AND CONVERT TO UPPER CASE
+f8d5  77             167    167         MOV  M,A
+f8d6  cd 63 fb       168    168 CHAR1:  CALL INSCHR     ;INSERT CCHAR AT CURSOR POS
+f8d9  cd e7 f8       169    169         CALL BMPCUR
+f8dc  cd 0c fb       170    170 BMP10:  CALL CALPOS     ;CURSOR POS
+f8df  cd 95 fa       171    171 BMP1:   CALL INSCURS    ;INSERT CURSOR
+f8e2  f1             172    172         POP  PSW
+f8e3  c1             173    173         POP  B
+f8e4  d1             174    174         POP  D
+f8e5  e1             175    175         POP  H
+f8e6  c9             176    176         RET
+f8e7  =              177    177 BMPCUR  EQU  $
+f8e7  cd 26 fb       178    178         CALL BMPC       ;BUMP CURSOR CHAR POSITION
+f8ea  cc f9 f8       179    179         CZ   BMPC1      ;DO LINE FEED
+f8ed  3a 91 f7       180    180         LDA  PRTMD      ;PROTECT MODE?
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 4
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+f8f0  eb             181    181         XCHG            ;H,L=CURRENT CURSOR PTR
+f8f1  a6             182    182         ANA  M          ;IS IT PROTECTED?
+f8f2  fa e7 f8       183    183         JM   BMPCUR     ;YES,SKIP PROTECTED FIELD
+f8f5  c9             184    184         RET             ;GO INSERT CURSOR
+f8f6  21 80 f7       185    185 LFEED:  LXI  H,CURLIN
+f8f9  34             186    186 BMPC1:  INR  M
+f8fa  3a a1 f7       187    187         LDA  LPAGE      ;MAX LINES/PAGE
+f8fd  be             188    188         CMP  M          ;EXCEED MAX?
+f8fe  f0             189    189         RP
+f8ff  35             190    190         DCR  M          ;LEAVE AT LAST LINE
+                     191    191 ;********************************************
+                     192    192 ;SCROLL UP OR WRAP AROUND AS SET BY CTRLC
+                     193    193 ;********************************************
+f900  3a 94 f7       194    194 SCROLL: LDA  CTRLC      ;KIND OF SCROLL?
+f903  e6 8c          195    195         ANI  8CH        ;LEAVE SCROLL AND MODE BITS
+f905  fa 0d f9       196    196         JM   SCR3       ;WRAP AROUND
+f908  fe 0c          197    197         CPI  0CH        ;GRAPHICS MODE
+f90a  c2 12 f9       198    198         JNZ  SCR1       ;NO, ALLOW SCROLL
+f90d  af             199    199 SCR3:   XRA  A
+f90e  77             200    200         MOV  M,A        ;HOME CURSOR FOR WRAP AROUND
+f90f  23             201    201         INX  H
+f910  77             202    202         MOV  M,A
+f911  c9             203    203         RET
+f912  2a 9f f7       204    204 SCR1:   LHLD CLINE      ;COLS/LINE
+f915  e5             205    205         PUSH H          ;SAVE COLS/LINE
+f916  eb             206    206         XCHG
+f917  2a a2 f7       207    207         LHLD NCHARS     ;# CAHRS PER PAGE
+f91a  7d             208    208         MOV  A,L
+f91b  93             209    209         SUB  E
+f91c  4f             210    210         MOV  C,A
+f91d  44             211    211         MOV  B,H
+f91e  eb             212    212         XCHG
+f91f  11 00 f0       213    213         LXI  D,REFRESH
+f922  19             214    214         DAD  D          ;HL=SOURCE,DE=DEST.
+f923  cd dd fd       215    215         CALL MVCUP
+f926  c3 31 fa       216    216 SCR2:   JMP  DLN1       ;ERASE CURRENT LINE AND RETURN
+                     217    217 ;******************************
+                     218    218 ;PROCESS CONTROL CODES
+                     219    219 ;******************************
+f929  eb             220    220 CONTROL:XCHG            ;D,E=CCHR PTR
+f92a  2a 87 f7       221    221         LHLD USRCTR     ;USER TABLE IF ANY
+f92d  7c             222    222         MOV  A,H
+f92e  b7             223    223         ORA  A
+f92f  1a             224    224         LDAX D          ;CCHAR IN A
+f930  ca 39 f9       225    225         JZ   NOUSER     ;NO TABLE USER DEFINED
+f933  cd 11 fa       226    226         CALL LOOKUP
+f936  c2 45 f9       227    227         JNZ  FNDCTRL    ;FOUND TABLE ENTRY
+f939  3a 93 f7       228    228 NOUSER: LDA  CCHAR
+f93c  21 92 fb       229    229         LXI  H,CTRTBL
+f93f  cd 11 fa       230    230         CALL LOOKUP
+f942  ca df f8       231    231         JZ   BMP1       ;NOT FOUND
+f945  11 dc f8       232    232 FNDCTRL:LXI  D,BMP10    ;RETURN ADDRESS
+f948  d5             233    233         PUSH D          ;ON STACK
+f949  11 81 f7       234    234         LXI  D,CURCOL
+f94c  e9             235    235         PCHL
+                     236    236 ;****************************************
+                     237    237 ;PROCESS ESCAPE SEQUENCES
+                     238    238 ;****************************************
+f94d  11 dc f8       239    239 ESCAPE: LXI  D,BMP10    ;RETURN ADDR
+f950  d5             240    240         PUSH D
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 5
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+f951  eb             241    241         XCHG
+f952  21 85 f7       242    242         LXI  H,ESCCNT
+f955  7e             243    243         MOV  A,M        ;ESCCAPE COUNT
+f956  34             244    244         INR  M          ;ESCCNT=ESCCNT+1
+f957  b7             245    245         ORA  A
+f958  c8             246    246         RZ
+f959  3d             247    247         DCR  A
+f95a  23             248    248         INX  H
+f95b  1a             249    249         LDAX D          ;GET CCHAR
+f95c  c2 60 f9       250    250         JNZ  ESC1       ;ESCCNT>1
+f95f  77             251    251         MOV  M,A        ;SAVE ESCAPE CODE
+f960  2a 89 f7       252    252 ESC1:   LHLD USRESC     ;USER ESCAPE TABLE PTR
+f963  7c             253    253         MOV  A,H
+f964  b7             254    254         ORA  A
+f965  1a             255    255         LDAX D          ;ESCCODE
+f966  ca 6f f9       256    256         JZ   NUESC      ;NO USER DEFINED TABLE
+f969  cd 11 fa       257    257         CALL LOOKUP     ;LOOKUP IN USERS TABLE
+f96c  c2 7d f9       258    258         JNZ  FNDESC     ;FOUND ESCAPE SEQ IN USER
+f96f  3a 86 f7       259    259 NUESC:  LDA  ESCCDE     ;TRY AGAIN IN VIO TABLE
+f972  e6 df          260    260         ANI  0DFH       ;REMOVE LOWER CASE BIT
+f974  21 c0 fb       261    261         LXI  H,ESCTBL
+f977  cd 11 fa       262    262         CALL LOOKUP
+f97a  ca 79 f8       263    263         JZ   ESCRET     ;NOT FOUND
+f97d  3a 94 f7       264    264 FNDESC: LDA  CTRLC
+f980  11 3a f8       265    265         LXI  D,SETCMD
+f983  e9             266    266         PCHL
+                     267    267 ;************************
+                     268    268 ;CURSOR CONTROL
+                     269    269 ;************************
+f984  1b             270    270 UPLINE: DCX  D          ;D,E=CURLIN PTR
+f985  1a             271    271 BCKLNE: LDAX D          ;D,E=CURLIN OR CURCOL
+f986  b7             272    272         ORA  A          ;SET FLAGS
+f987  c8             273    273         RZ
+f988  3d             274    274         DCR  A          ;BACK UP 1
+f989  12             275    275 BCKL1:  STAX D
+f98a  c9             276    276         RET
+f98b  af             277    277 CRET:   XRA  A
+f98c  32 84 f7       278    278         STA  INSRT      ;REMOVE INSERT MODE
+f98f  c3 89 f9       279    279         JMP  BCKL1
+                     280    280 ;**********************************
+                     281    281 ;TOGGLE PROTECTED MODE FLAG
+                     282    282 ;**********************************
+f992  21 91 f7       283    283 PRTECT: LXI  H,PRTMD    ;PT AT FLAG
+f995  c3 9b f9       284    284         JMP  INSMDE+3   ;GO TOGGLE IT
+                     285    285 ;*************************************
+                     286    286 ;TOGGLE INSERT MODE FLAG
+                     287    287 ;*************************************
+f998  21 84 f7       288    288 INSMDE: LXI  H,INSRT
+f99b  7e             289    289         MOV  A,M
+f99c  2f             290    290         CMA
+f99d  77             291    291         MOV  M,A
+f99e  c9             292    292         RET
+                     293    293 ;***********************
+                     294    294 ;BLANK SCREEN AND HOME
+                     295    295 ;***********************
+f99f  2a a2 f7       296    296 BLNKS:  LHLD NCHARS     ;#CHARS ON SCREEN
+f9a2  eb             297    297         XCHG
+f9a3  21 00 f0       298    298         LXI  H,REFRESH
+f9a6  3a 91 f7       299    299 BLNK1:  LDA  PRTMD      ;IN PROTECTED MODE?
+f9a9  e6 80          300    300         ANI  80H
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 6
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+f9ab  a6             301    301         ANA  M          ;PROTECTED?
+f9ac  fa b1 f9       302    302         JM   BLNK2      ;IS PROTECTED, DO NOT BLANK
+f9af  36 20          303    303         MVI  M,' '
+f9b1  23             304    304 BLNK2:  INX  H
+f9b2  1b             305    305         DCX  D
+f9b3  7a             306    306         MOV  A,D
+f9b4  b3             307    307         ORA  E          ;DONE YET?
+f9b5  c2 a6 f9       308    308         JNZ  BLNK1      ;NO
+f9b8  21 00 00       309    309 HOME:   LXI  H,0
+f9bb  22 80 f7       310    310         SHLD CURLIN
+f9be  c9             311    311         RET
+                     312    312 ;***********************************************
+                     313    313 ;BLANK FROM CURSOR TO END OF UNPROTECTED FIELD
+                     314    314 ;***********************************************
+f9bf  cd ee f9       315    315 BLANKL: CALL CHARLN     ;CALC # CHARS TO END OF FIELD
+f9c2  3a 91 f7       316    316 BLAN3:  LDA  PRTMD      ;PROTECTED MODE?
+f9c5  b7             317    317         ORA  A
+f9c6  ca ce f9       318    318         JZ   BLAN1      ;NOT PROTECTED,SKIP CHECK
+f9c9  7e             319    319         MOV  A,M        ;GET CHAR
+f9ca  b7             320    320         ORA  A
+f9cb  fa d1 f9       321    321         JM   BLAN1+3    ;IS PROTECTED,DO NOT BLANK
+f9ce  3e 20          322    322 BLAN1:  MVI  A,' '
+f9d0  77             323    323         MOV  M,A        ;INSERT BLANK
+f9d1  23             324    324         INX  H          ;NEXT CHAR
+f9d2  0d             325    325         DCR  C          ;COUNT
+f9d3  c2 c2 f9       326    326         JNZ  BLAN3
+f9d6  c9             327    327         RET
+                     328    328 ;**********************************************
+                     329    329 ;TURN ON PROTECTED FIELD/TURN OFF PROT FIELD
+                     330    330 ;**********************************************
+f9d7  21 82 f7       331    331 PROTC:  LXI  H,INVIDIO  ;PT AT INVERTED VIDIO FLAG
+f9da  c3 9b f9       332    332         JMP  INSMDE+3
+                     333    333 ;****************************************************
+                     334    334 ;DELETE CHAR AND SHIFT PROTECTED FIELD LEFT ONE PLACE
+                     335    335 ;****************************************************
+f9dd  cd ee f9       336    336 DELETE: CALL CHARLN
+f9e0  2a 8f f7       337    337         LHLD CURPTR     ;CURSOR POSITION
+f9e3  54             338    338         MOV  D,H
+f9e4  5d             339    339         MOV  E,L
+f9e5  23             340    340         INX  H
+f9e6  cd dd fd       341    341         CALL MVCUP      ;SHIFT LINE LEFT ONE PLACE
+f9e9  3e 20          342    342         MVI  A,' '
+f9eb  1b             343    343         DCX  D          ;BACK UP ONE
+f9ec  12             344    344         STAX D          ;INSERT FINAL BLANK
+f9ed  c9             345    345         RET
+                     346    346 ;**********************************************************
+                     347    347 ;CALC # CHARS FROM CURSOR TO END OF UNPROT FIELD INCLUSIVE
+                     348    348 ; RETURN H,L=CURSOR PTR
+                     349    349 ;**********************************************************
+f9ee  3a 91 f7       350    350 CHARLN: LDA  PRTMD      ;PROTECT MODE FLAG
+f9f1  e6 80          351    351         ANI  80H
+f9f3  57             352    352         MOV  D,A        ;SAVE PROTECT MODE BIT
+f9f4  2a 8f f7       353    353         LHLD CURPTR     ;CURSOR POSITION
+f9f7  e5             354    354         PUSH H
+f9f8  3a 81 f7       355    355         LDA  CURCOL
+f9fb  5f             356    356         MOV  E,A        ;E=CURRENT COLUMN
+f9fc  01 00 00       357    357         LXI  B,0        ;# CHARS TO END
+f9ff  3a 9f f7       358    358 CHRL1:  LDA  CLINE      ;COLS/LINE
+fa02  93             359    359         SUB  E
+fa03  1c             360    360         INR  E
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 7
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fa04  23             361    361         INX  H
+fa05  0c             362    362         INR  C          ;COUNT INCREASED
+fa06  3d             363    363         DCR  A          ;DNE YET WITH LINE
+fa07  ca 0f fa       364    364         JZ   CHRL2      ;END OF LINE RETURN
+fa0a  7e             365    365         MOV  A,M        ;H,L=END +1
+fa0b  a2             366    366         ANA  D          ;PROTECTED?
+fa0c  f2 ff f9       367    367         JP   CHRL1      ;NO, KEEP GOING
+fa0f  e1             368    368 CHRL2:  POP  H          ;CURSOR POSITION
+fa10  c9             369    369         RET
+                     370    370 ;*******************************************************************
+                     371    371 ;TABLE LOOK UP ROUTINE. SEARCHES FIRST BYTE OF THREE BYTE TABLE OF
+                     372    372 ;RECORDS FOR A MATCH OR ZERO. ZERO INDICATES END OF TABLE WITH NO
+                     373    373 ;MATCH, RETURNED IN A REG.H,L LOADED WITH SECOND TWO BYTES OF TABLE
+                     374    374 ;IF MATCH FOUND.
+                     375    375 ;*******************************************************************
+fa11  47             376    376 LOOKUP: MOV  B,A        ;SAVE
+fa12  7e             377    377         MOV  A,M        ;GET FIRST BYTE OF RECORD
+fa13  11 80 f7       378    378         LXI  D,CURLIN
+fa16  b7             379    379         ORA  A
+fa17  c8             380    380         RZ              ;DONE,NO MATCH
+fa18  b8             381    381         CMP  B          ;SAME AS REQUESTED?
+fa19  c2 23 fa       382    382         JNZ  TBLUP1     ;NO
+fa1c  23             383    383         INX  H
+fa1d  5e             384    384         MOV  E,M
+fa1e  23             385    385         INX  H
+fa1f  56             386    386         MOV  D,M
+fa20  eb             387    387         XCHG
+fa21  b7             388    388         ORA  A          ;SET FLAGS
+fa22  c9             389    389         RET
+fa23  23             390    390 TBLUP1: INX  H
+fa24  23             391    391         INX  H
+fa25  23             392    392         INX  H          ;BUMP TO NEXT RECORD
+fa26  c3 12 fa       393    393         JMP  LOOKUP+1   ;
+                     394    394 ;*************************************************
+                     395    395 ;DELETE CURRENT LINE AND RETURN CURSOR
+                     396    396 ;*************************************************
+fa29  cd 4d fa       397    397 DLINE:  CALL NMCHM      ;SET UP FOR MOVE
+fa2c  e5             398    398         PUSH H          ;SAVE COLS/LINE
+fa2d  19             399    399         DAD  D          ;H,L=SOURCE BEGIN
+fa2e  cd dd fd       400    400         CALL MVCUP
+fa31  c1             401    401 DLN1:   POP  B          ;COLS/LINE
+fa32  eb             402    402         XCHG
+fa33  c3 45 fa       403    403         JMP  EN1        ;ERASE LINE
+                     404    404 ;***********************************************
+                     405    405 ;ENTER NEW LINE AT CURSOR LINE,PUSH BOTTOM DOWN
+                     406    406 ;***********************************************
+fa36  cd 4d fa       407    407 ENLINE: CALL NMCHM      ;SET UP FOR MOVE
+fa39  e5             408    408         PUSH H          ;SAVE COLS/LINE
+fa3a  19             409    409         DAD  D          ;H,L=SOURCE BEGIN
+fa3b  09             410    410         DAD  B          ;H,L=END OF DEST+1
+fa3c  eb             411    411         XCHG
+fa3d  09             412    412         DAD  B          ;H,L=END OF SOURCE+1
+fa3e  2b             413    413         DCX  H
+fa3f  1b             414    414         DCX  D
+fa40  cd 87 fb       415    415         CALL MVCDN      ;MOVE DOWN 1 LINE
+fa43  c1             416    416         POP  B
+fa44  23             417    417         INX  H
+fa45  36 20          418    418 EN1:    MVI  M,' '
+fa47  23             419    419         INX  H
+fa48  0d             420    420         DCR  C
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 8
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fa49  c2 45 fa       421    421         JNZ  EN1
+fa4c  c9             422    422         RET
+fa4d  af             423    423 NMCHM:  XRA  A
+fa4e  12             424    424         STAX D          ;COL=0
+fa4f  cd 5d fa       425    425         CALL CHARSN     ;#CHARS TO END OF SCREEN
+fa52  eb             426    426         XCHG            ;D,E=DEST.
+fa53  2a 9f f7       427    427         LHLD CLINE      ;COLS/LINE
+fa56  7d             428    428         MOV  A,L        ;COLS/LINE
+fa57  0b             429    429         DCX  B
+fa58  3d             430    430         DCR  A
+fa59  c2 57 fa       431    431         JNZ  $-2        ;DECREASE COUNT BY ONE LINES WORTH
+fa5c  c9             432    432         RET
+                     433    433 ;********************************************
+                     434    434 ;CALC # CHARS TO END OF SCREEN FROM CURSOR
+                     435    435 ;********************************************
+fa5d  cd 0c fb       436    436 CHARSN: CALL CALPOS
+fa60  e5             437    437         PUSH H          ;SAVE
+fa61  eb             438    438         XCHG            ;D,E=CURSOR POS
+fa62  2a a6 f7       439    439         LHLD LASTC      ;LAST CHAR POSITION+1
+fa65  7a             440    440         MOV  A,D
+fa66  2f             441    441         CMA
+fa67  57             442    442         MOV  D,A
+fa68  7b             443    443         MOV  A,E
+fa69  2f             444    444         CMA
+fa6a  5f             445    445         MOV  E,A
+fa6b  13             446    446         INX  D          ;COMPLIMENT D,E
+fa6c  19             447    447         DAD  D          ;H,L=# CHARS TO END-1
+fa6d  e5             448    448         PUSH H
+fa6e  c1             449    449         POP  B          ;B,C=#CHARS TO END
+fa6f  e1             450    450         POP  H          ;CURRENT POSITION CURSOR
+fa70  c9             451    451         RET
+                     452    452 ;************************
+                     453    453 ;ESCAPE CODE PROCESSING
+                     454    454 ;************************
+fa71  e6 f3          455    455 HIGH128:ANI  0F3H
+fa73  f6 04          456    456         ORI  4H
+fa75  eb             457    457         XCHG            ;H,L=SETCMD ADDR
+fa76  e9             458    458         PCHL
+                     459    459 ;GRAPHIC MODE 256 CHAR ROM,NO INVERSE VIDIO
+fa77  f6 0c          460    460 GRAPHIC:ORI  0CH
+fa79  eb             461    461         XCHG            ;H,L=SETCMD ADDR
+fa7a  e9             462    462         PCHL
+                     463    463 ;LOWER HALF OF ROM+REVERSE VIDIO
+fa7b  e6 f3          464    464 LOW128: ANI  0F3H
+fa7d  f6 08          465    465         ORI  8H
+fa7f  eb             466    466         XCHG            ;H,L=SETCMD ADDR
+fa80  e9             467    467         PCHL
+                     468    468 ;SCROLL TOGGLE
+fa81  ee 80          469    469 SCRL:   XRI  80H
+fa83  eb             470    470         XCHG            ;H,L=SETCMD ADDR
+fa84  e9             471    471         PCHL
+                     472    472 ;UPPER LOWER CASE TOGGLE
+fa85  ee 20          473    473 UPLOW:  XRI  20H
+fa87  eb             474    474         XCHG            ;H,L=SETCMD ADDR
+fa88  e9             475    475         PCHL
+                     476    476 ;INVERSE VIDIO TOGGLE
+fa89  ee 10          477    477 VIDIO:  XRI  10H
+fa8b  eb             478    478         XCHG            ;H,L=SETCMD ADDR
+fa8c  e9             479    479         PCHL
+                     480    480 ;# LINES PER PAGE SWITCH
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 9
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fa8d  ee 02          481    481 LINES:  XRI  02H
+fa8f  eb             482    482         XCHG            ;H,L=SETCMD ADDR
+fa90  e9             483    483         PCHL
+                     484    484 ;#COLS/LINE TIGGLE
+fa91  ee 01          485    485 COLS:   XRI  01H
+fa93  eb             486    486         XCHG            ;H,L=SETCMD ADDR
+fa94  e9             487    487         PCHL
+                     488    488 ;**************************************
+                     489    489 ;INSERT CURSOR CHAR AT PROPER POSITION
+                     490    490 ;**************************************
+fa95  2a 8f f7       491    491 INSCURS:LHLD CURPTR
+fa98  7e             492    492         MOV  A,M
+fa99  32 92 f7       493    493         STA  CCUR       ;SAVE CHAR UNDER CURSOR FOR GRAPHICS MODE
+fa9c  f6 80          494    494         ORI  80H        ;BIT 7 FOR INVERSE VIDIO
+fa9e  77             495    495         MOV  M,A        ;STORE BACK
+fa9f  3a 83 f7       496    496         LDA  VDIMDE
+faa2  b7             497    497         ORA  A
+faa3  c0             498    498         RNZ             ;NO GRAPHICS
+faa4  36 7f          499    499         MVI  M,7FH      ;BLOCK FOR GRAPHICS MODE
+faa6  c9             500    500         RET
+                     501    501 ;*****************************************
+                     502    502 ;CLEAR TABS
+                     503    503 ;*****************************************
+faa7  21 95 f7       504    504 CLRTBS: LXI  H,TAB      ;TABS BITS
+faaa  06 0a          505    505         MVI  B,10       ;#BYTES FOR TABS
+faac  af             506    506         XRA  A
+faad  77             507    507 CLRT1:  MOV  M,A
+faae  23             508    508         INX  H
+faaf  05             509    509         DCR  B
+fab0  c2 ad fa       510    510         JNZ  CLRT1
+fab3  c3 79 f8       511    511         JMP  ESCRET     ;PUT IN CURSOR
+                     512    512 ;***********************************
+                     513    513 ;SET OR CLEAR TAB TOGGLE BIT
+                     514    514 ;***********************************
+fab6  cd c4 fa       515    515 SETTAB: CALL FNDTB
+fab9  ee 80          516    516         XRI  80H        ;INVERT TAB BIT
+fabb  0f             517    517 SETD2:  RRC
+fabc  05             518    518         DCR  B
+fabd  c2 bb fa       519    519         JNZ  SETD2
+fac0  12             520    520         STAX D          ;STORE TAB BYTE
+fac1  c3 79 f8       521    521         JMP  ESCRET     ;DO CURSOR
+                     522    522 ;FIND TAB BIT, LEAVE IN A REG BIT 7
+fac4  3a 81 f7       523    523 FNDTB:  LDA  CURCOL     ;COL #
+fac7  67             524    524         MOV  H,A
+fac8  24             525    525         INR  H
+fac9  11 95 f7       526    526         LXI  D,TAB      ;WORD PTR
+facc  0e 08          527    527 FNDT1:  MVI  C,8        ;BIT COUNTER
+face  25             528    528         DCR  H
+facf  ca da fa       529    529         JZ   FNDTDN     ;FOUND IT
+fad2  0d             530    530         DCR  C          ;BIT COUNTER
+fad3  c2 ce fa       531    531         JNZ  FNDT1+2
+fad6  13             532    532         INX  D          ;PT AT NEXT BYTE
+fad7  c3 cc fa       533    533         JMP  FNDT1
+fada  1a             534    534 FNDTDN: LDAX D          ;GET TAB BYTE BITS
+fadb  41             535    535         MOV  B,C        ;SAVE COUNT OF BITS
+fadc  07             536    536 FNDT2:  RLC
+fadd  0d             537    537         DCR  C
+fade  c2 dc fa       538    538         JNZ  FNDT2      ;ROTATE UNTIL FOUND
+fae1  c9             539    539         RET
+                     540    540 ;*****************************************************************
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 10
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     541    541 ;TAB TO BEGINNING OF NEXT UNPROTECTED FIELD OR TAB OR HOME IF NONE
+                     542    542 ;*****************************************************************
+fae2  af             543    543 TABB:   XRA  A
+fae3  32 a4 f7       544    544         STA  PRUPRF     ;PROTECT/UNPROTECT TRANSITION FLAG
+fae6  cd 26 fb       545    545 TAB3:   CALL BMPC       ;BUMP CURSOR POSITION
+fae9  c2 f1 fa       546    546         JNZ  TAB1       ;NO LINE FEED NECESSARY
+faec  34             547    547         INR  M          ;BUMP LINE #
+faed  be             548    548         CMP  M          ;EXCEED LPAGE?
+faee  fa 0d f9       549    549         JM   SCR3       ;YES,HOME AND RETURN
+faf1  3a 91 f7       550    550 TAB1:   LDA  PRTMD      ;PROTECT MODE FLAG
+faf4  eb             551    551         XCHG            ;H,L PTS AT CHAR
+faf5  a6             552    552         ANA  M          ;PROTECTED?
+faf6  7e             553    553         MOV  A,M        ;GET CHAR
+faf7  11 a4 f7       554    554         LXI  D,PRUPRF   ;TRANSITION FLAG
+fafa  f2 01 fb       555    555         JP   TAB2       ;NO PROTECTED FIELD
+fafd  12             556    556         STAX D          ;SET TRANSITION FLAG
+fafe  c3 e6 fa       557    557         JMP  TAB3
+fb01  1a             558    558 TAB2:   LDAX D          ;GET TRANSITION FLAG
+fb02  b7             559    559         ORA  A
+fb03  f8             560    560         RM              ;UNPROT FIELD WITH TRANSITION
+fb04  cd c4 fa       561    561         CALL FNDTB      ;FIND TAB POSITION BIT
+fb07  b7             562    562         ORA  A          ;SET FLAGS
+fb08  f8             563    563         RM              ;TAB IS SET
+fb09  c3 e6 fa       564    564         JMP  TAB3
+                     565    565 ;**************************************************
+                     566    566 ;CALCULATE CURSOR POSITION FROM CURLIN AND CURCOL
+                     567    567 ;**************************************************
+fb0c  2a 9f f7       568    568 CALPOS: LHLD CLINE      ;CHARS/LINE-1
+fb0f  eb             569    569         XCHG
+fb10  2a 80 f7       570    570         LHLD CURLIN     ;L=CURLIN,H=CURCOL
+fb13  4c             571    571         MOV  C,H
+fb14  45             572    572         MOV  B,L
+fb15  21 00 f0       573    573         LXI  H,REFRESH  ;BOTTOM OF REFRESH MEMORY
+fb18  04             574    574         INR  B
+fb19  05             575    575 CALP1:  DCR  B          ;DONE YET
+fb1a  ca 21 fb       576    576         JZ   CALP2      ;YES
+fb1d  19             577    577         DAD  D          ;ADD ANOTHER LINE OF CHARS
+fb1e  c3 19 fb       578    578         JMP  CALP1
+fb21  09             579    579 CALP2:  DAD  B          ;ADD CURRENT COL
+fb22  22 8f f7       580    580         SHLD CURPTR     ;SAVE
+fb25  c9             581    581         RET
+                     582    582 ;**********************************************************
+                     583    583 ;BMPC BUMP CURSOR 1 PLACE. ON RETURN
+                     584    584 ; D,E=CURSOR POSITION
+                     585    585 ; H,L=CURCOL PTR OR CURLIN PTR DEPENDING ON Z FLAG
+                     586    586 ; Z FLAG=0 IF NO LINE FEED NEEDED,1 IF LINE FEED NEEDED
+                     587    587 ; CURLIN AND CURCOL AND CURPTR ARE UPDATED AS IF LINE FEED
+                     588    588 ; A REG =LPAGE IF LINE FEED NEEDED
+                     589    589 ;**********************************************************
+fb26  2a 8f f7       590    590 BMPC:   LHLD CURPTR
+fb29  23             591    591         INX  H
+fb2a  22 8f f7       592    592         SHLD CURPTR     ;UPDATE ABS CURSOR ADDRESS
+fb2d  eb             593    593         XCHG            ;D,E=PTR
+fb2e  21 81 f7       594    594         LXI  H,CURCOL
+fb31  34             595    595         INR  M          ;BUMP COLUMN
+fb32  3a 9f f7       596    596         LDA  CLINE      ;MAX COLS/LINE
+fb35  96             597    597         SUB  M          ;ZERO IF EXCEED LINE
+fb36  c0             598    598         RNZ             ;OK AS IS
+fb37  77             599    599         MOV  M,A        ;COL=0
+fb38  2b             600    600         DCX  H
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 11
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fb39  3a a1 f7       601    601         LDA  LPAGE      ;MAX LINES/PAGE
+fb3c  c9             602    602         RET
+                     603    603 ;************************************************
+                     604    604 ;ADDRESSABLE CURSOR FUNCTION
+                     605    605 ;************************************************
+fb3d  21 85 f7       606    606 ADDCURS:LXI  H,ESCCNT   ;PT AT ESCAPE COUNT
+fb40  11 80 f7       607    607         LXI  D,CURLIN   ;PT AT CURRENT LINE COUNT
+fb43  3a 93 f7       608    608         LDA  CCHAR
+fb46  d6 20          609    609         SUI  20H        ;REMOVE OFFSET FOR COUNT
+fb48  47             610    610         MOV  B,A
+fb49  7e             611    611         MOV  A,M        ;GET COUNT
+fb4a  d6 03          612    612         SUI  3
+fb4c  f8             613    613         RM              ;NO VALID NUMBS YET
+fb4d  c2 59 fb       614    614         JNZ  XADD       ;X AXIS VALUE
+                     615    615 ;Y-AXIS VALUE
+fb50  3a a1 f7       616    616         LDA  LPAGE
+fb53  12             617    617 XADD3:  STAX D          ;MAX LINE #
+fb54  b8             618    618         CMP  B
+fb55  f8             619    619         RM
+fb56  78             620    620         MOV  A,B
+fb57  12             621    621         STAX D
+fb58  c9             622    622         RET
+fb59  36 00          623    623 XADD:   MVI  M,0        ;ESCCNT=0
+fb5b  3a 9f f7       624    624         LDA  CLINE      ;MAX COL/LINE
+fb5e  13             625    625         INX  D
+fb5f  3d             626    626         DCR  A
+fb60  c3 53 fb       627    627         JMP  XADD3
+                     628    628 ;************************************************************
+                     629    629 ;INSERT CHAR AT CURSOR POSITION.EITHER WRITES OVER PREVIOS
+                     630    630 ;CHAR OR PUSHES ENTIRE FIELD OVER ONE CHAR BEFORE INSERTING.
+                     631    631 ;************************************************************
+fb63  2a 8f f7       632    632 INSCHR: LHLD CURPTR     ;CURSOR ADDRESS
+fb66  e5             633    633         PUSH H          ;SAVE
+fb67  3a 84 f7       634    634         LDA  INSRT      ;INSERT FLAG
+fb6a  b7             635    635         ORA  A
+fb6b  ca 7a fb       636    636         JZ   INSC3      ;OVERWRITE
+fb6e  cd ee f9       637    637         CALL CHARLN
+fb71  0b             638    638         DCX  B          ;3CHARS-1 TO END
+fb72  09             639    639         DAD  B          ;H,L PTS AT LAST CHAR ON LINE
+fb73  54             640    640         MOV  D,H
+fb74  5d             641    641         MOV  E,L
+fb75  1b             642    642         DCX  D          ;D,E PTS AT SOURCE
+fb76  eb             643    643         XCHG            ;H,L=SOURCE,D,E=DEST
+fb77  cd 87 fb       644    644         CALL MVCDN      ;MOVE CHARS RIGHT
+fb7a  e1             645    645 INSC3:  POP  H          ;CURSOR POSITION
+fb7b  3a 82 f7       646    646         LDA  INVIDIO
+fb7e  e6 80          647    647         ANI  80H
+fb80  47             648    648         MOV  B,A        ;INVERT BIT
+fb81  3a 93 f7       649    649         LDA  CCHAR
+fb84  b0             650    650         ORA  B          ;MERGE WITH INVERT BIT
+fb85  77             651    651 INSC4:  MOV  M,A
+fb86  c9             652    652         RET
+                     653    653 ;********************************************************
+                     654    654 ;SHIFT CHARS RIGHT FROM D,E TO H,L,  B,C CHARS FROM RIGHT
+                     655    655 ;********************************************************
+fb87  79             656    656 MVCDN:  MOV  A,C
+fb88  b0             657    657         ORA  B
+fb89  c8             658    658         RZ              ;DONE
+fb8a  7e             659    659         MOV  A,M
+fb8b  12             660    660         STAX D
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 12
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fb8c  2b             661    661         DCX  H
+fb8d  1b             662    662         DCX  D
+fb8e  0b             663    663         DCX  B
+fb8f  c3 87 fb       664    664         JMP  MVCDN
+                     665    665 ;CONTROL FUNCTION JUMP TABLE
+fb92  =              666    666 CTRTBL  EQU  $
+fb92  0d             667    667         DB   0DH        ;CARRIAGE RETURN
+fb93  8b f9          668    668         DW   CRET
+fb95  0a             669    669         DB   0AH        ;LINE FEED
+fb96  f6 f8          670    670         DW   LFEED
+fb98  0b             671    671         DB   0BH        ;UP CURSOR (CTRL K)
+fb99  84 f9          672    672         DW   UPLINE
+fb9b  0c             673    673         DB   0CH        ;FORWARD CURSOR (CTRL L)
+fb9c  e7 f8          674    674         DW   BMPCUR
+fb9e  08             675    675         DB   08H        ;BACK CURSOR (CTRL H)
+fb9f  85 f9          676    676         DW   BCKLNE
+fba1  1e             677    677         DB   1EH        ;HOME CURSOR (CTRL ^)
+fba2  b8 f9          678    678         DW   HOME
+fba4  1a             679    679         DB   1AH        ;SCREEN ERASE (CTRL Z)
+fba5  9f f9          680    680         DW   BLNKS
+fba7  15             681    681         DB   15H        ;CLEAR TO EOL (CTRL U)
+fba8  bf f9          682    682         DW   BLANKL
+fbaa  16             683    683         DB   16H        ;PROTECTED FIELDS (CTRL V)
+fbab  d7 f9          684    684         DW   PROTC
+fbad  09             685    685         DB   09H        ;TAB (CTRL I)
+fbae  e2 fa          686    686         DW   TABB
+fbb0  7f             687    687         DB   7FH        ;DELETE CHAR (RUBOUT)
+fbb1  dd f9          688    688         DW   DELETE
+fbb3  14             689    689         DB   14H        ;INSERT MODE (CTRL T)
+fbb4  98 f9          690    690         DW   INSMDE
+fbb6  04             691    691         DB   04H        ;DELETE LINE CTRL D
+fbb7  29 fa          692    692         DW   DLINE
+fbb9  05             693    693         DB   05H        ;INSERT LINE (CTRL E)
+fbba  36 fa          694    694         DW   ENLINE
+fbbc  10             695    695         DB   10H        ;PROTECTED MODE TOGGLE (CTRL P)
+fbbd  92 f9          696    696         DW   PRTECT
+fbbf  00             697    697         DB   0          ;TERMINATOR
+                     698    698 ;ESCAPE FUNCTION JUMP TABLE
+fbc0  =              699    699 ESCTBL  EQU  $
+fbc0  1d             700    700         DB   1DH        ;CURSOR CONTROL ('=' LESS BIT 5 LOWER CASE)
+fbc1  3d fb          701    701         DW   ADDCURS
+fbc3  49             702    702         DB   49H        ;SET TAB
+fbc4  b6 fa          703    703         DW   SETTAB
+fbc6  09             704    704         DB   09H        ;CLEAR TABS
+fbc7  a7 fa          705    705         DW   CLRTBS
+fbc9  54             706    706         DB   'T'        ;LOWER 128 BYTES OF ROM
+fbca  7b fa          707    707         DW   LOW128
+fbcc  45             708    708         DB   'E'        ;EXTENDED MODE UPPER 128
+fbcd  71 fa          709    709         DW   HIGH128
+fbcf  47             710    710         DB   'G'        ;GRAPHIC SET
+fbd0  77 fa          711    711         DW   GRAPHIC
+fbd2  53             712    712         DB   'S'        ;SCROLL TOGGLE
+fbd3  81 fa          713    713         DW   SCRL
+fbd5  55             714    714         DB   'U'        ;UPPER/LOWER CASE
+fbd6  85 fa          715    715         DW   UPLOW
+fbd8  56             716    716         DB   'V'        ;INVERSE VIDIO TOGGLE
+fbd9  89 fa          717    717         DW   VIDIO
+fbdb  4c             718    718         DB   'L'        ;LINES/PAGE
+fbdc  8d fa          719    719         DW   LINES
+fbde  43             720    720         DB   'C'        ;COLS/LINE
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 13
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fbdf  91 fa          721    721         DW   COLS
+fbe1  00             722    722         DB   0          ;TERMINATOR
+                     723    723 ;*******************************************************
+                     724    724 ;8085 MONITOR PROGRAM USING THE VIO FIRMWARE
+                     725    725 ; COPYRIGHT IMSAI MANUFACTURING COMPANY, INC.
+                     726    726 ; SAN LEANDRO,CALIFORNIA
+                     727    727 ; 6/7/77
+                     728    728 ;*******************************************************
+fbe2  31 ff f7       729    729 MONT:   LXI  SP,REFRESH+7FFH ;TOP OF MEMORY
+fbe5  3e aa          730    730         MVI  A,0AAH
+fbe7  d3 03          731    731         OUT  3
+fbe9  2f             732    732         CMA
+fbea  d3 03          733    733         OUT  3
+fbec  2f             734    734         CMA
+fbed  d3 03          735    735         OUT  3
+fbef  3e 27          736    736         MVI  A,27H
+fbf1  d3 03          737    737         OUT  3          ;SET UP USART
+fbf3  cd 15 f8       738    738         CALL INIT       ;INIT VIO
+fbf6  21 29 fc       739    739         LXI  H,SIGNON
+fbf9  cd b6 ff       740    740         CALL MSGNC      ;SIGNON MSG
+fbfc  31 ff f7       741    741 PRMPT:  LXI  SP,REFRESH+7FFH
+fbff  cd 50 ff       742    742         CALL CRLF
+fc02  3e 3f          743    743         MVI  A,'?'
+fc04  cd 7e f8       744    744         CALL CHAROUT
+fc07  cd 10 ff       745    745         CALL CHIN       ;GET COMMAND
+fc0a  47             746    746         MOV  B,A        ;SAVE IT
+fc0b  11 fc fb       747    747         LXI  D,PRMPT
+fc0e  d5             748    748         PUSH D          ;RETURN ADDRESS
+fc0f  2a 8b f7       749    749         LHLD USERCMD    ;USER COMMAND TABLE
+fc12  7c             750    750         MOV  A,H
+fc13  b7             751    751         ORA  A          ;SET FLAGS
+fc14  78             752    752         MOV  A,B        ;RETRIEVE CODE
+fc15  ca 1e fc       753    753         JZ   NUCMD      ;NO USER COMMAND TABLE
+fc18  cd 11 fa       754    754         CALL LOOKUP     ;LOOKUP IN USER TABLE
+fc1b  c2 28 fc       755    755         JNZ  FNDCMD     ;FOUND COMMAND
+fc1e  78             756    756 NUCMD:  MOV  A,B        ;GET COMMAND AGAIN
+fc1f  21 c0 ff       757    757         LXI  H,CMDTBL   ;COMAND TABLE PTR
+fc22  cd 11 fa       758    758         CALL LOOKUP
+fc25  c8             759    759         RZ              ;NO  ENTRY,PROMPT AGIN
+fc26  06 01          760    760         MVI  B,1        ;FOR PROT/UNPROT
+fc28  e9             761    761 FNDCMD: PCHL            ;GO TO ROUTINE
+fc29  49 4d 53 41    762    762 SIGNON: DB   'IMSAI SMP/80.0',0
+fc2d  49 20 53 4d    762    763
+fc31  50 2f 38 30    762    764
+fc35  2e 30 00       762    765
+fc38  43 4f 50 59    763    766         DB   'COPYRIGHT 6/77'
+fc3c  52 49 47 48    763    767
+fc40  54 20 36 2f    763    768
+fc44  37 37          763    769
+                     764    770 ;*************************************************
+                     765    771 ;JUMP TO MEMORY "JAAAA"
+                     766    772 ;CALL MEMORY WITH RETURN TO MONITOR
+                     767    773 ;*************************************************
+fc46  d1             768    774 JUMP:   POP  D          ;REMOVE RETURN ADDRESS
+fc47  cd 5b ff       769    775 CALL1:  CALL IHEX       ;GET JUMP ADDRESS
+fc4a  e9             770    776         PCHL            ;DO IT
+                     771    777 ;******************************************************
+                     772    778 ;ENTER BYTE INTO MEMORY AND MODIFY IF DESIRED
+                     773    779 ;******************************************************
+fc4b  cd 5b ff       774    780 ENTR:   CALL IHEX       ;START ADDR
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 14
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fc4e  cd 50 ff       775    781         CALL CRLF
+fc51  cd b6 fc       776    782         CALL OHEXHL     ;DISPLAY ADDRESS
+fc54  7e             777    783         MOV  A,M        ;GET BYTE IN MEMORY
+fc55  5f             778    784         MOV  E,A        ;PRESET FOR IHEX
+fc56  cd ad fc       779    785         CALL OHEXB      ;DISPLAY BYTE
+fc59  eb             780    786         XCHG            ;D,E=ADDRESS,L=DEFAULT CHAR
+fc5a  cd 5e ff       781    787         CALL IHEX+3     ;GET MODIFIER OR DEFAULT
+fc5d  eb             782    788         XCHG            ;H,L=ADDR,E=BYTE
+fc5e  73             783    789         MOV  M,E
+fc5f  2b             784    790         DCX  H
+fc60  fe 0a          785    791         CPI  0AH        ;DONE?
+fc62  c8             786    792         RZ              ;YES
+fc63  fe 2d          787    793         CPI  '-'        ;BACKWARD
+fc65  ca 4e fc       788    794         JZ   ENTR+3     ;YES
+fc68  23             789    795         INX  H
+fc69  23             790    796         INX  H          ;DEFAULT FORWARD
+fc6a  c3 4e fc       791    797         JMP  ENTR+3
+                     792    798 ;*****************************************************
+                     793    799 ;DISPLAY MEMORY "D,START,END CR"
+                     794    800 ;*****************************************************
+fc6d  cd 20 fd       795    801 DISP:   CALL SIZE       ;H,L=START,B,C=SIZE
+fc70  3a 94 f7       796    802         LDA  CTRLC      ;#LINES/COLS
+fc73  0f             797    803         RRC             ;#LINES BIT IN CARRY
+fc74  0f             798    804         RRC
+fc75  16 0c          799    805         MVI  D,12
+fc77  da 7c fc       800    806         JC   $+5
+fc7a  16 18          801    807         MVI  D,24
+fc7c  cd 50 ff       802    808 DISP2:  CALL CRLF
+fc7f  db 03          803    809         IN   3
+fc81  e6 02          804    810         ANI  2          ;ANY INPUT
+fc83  c0             805    811         RNZ             ;YES,INTERRRUPT
+fc84  1e 08          806    812         MVI  E,8
+fc86  3a 94 f7       807    813         LDA  CTRLC
+fc89  0f             808    814         RRC
+fc8a  da 8f fc       809    815         JC   $+5
+fc8d  1e 10          810    816         MVI  E,16
+fc8f  cd b6 fc       811    817         CALL OHEXHL     ;OUTPUT ASCII H,L REG
+fc92  7e             812    818 DISP1:  MOV  A,M        ;GET DATA BYTE
+fc93  cd ad fc       813    819         CALL OHEXB      ;OUTPUT WITH TRAIL BLANK
+fc96  23             814    820         INX  H
+fc97  0b             815    821         DCX  B
+fc98  78             816    822         MOV  A,B
+fc99  b1             817    823         ORA  C
+fc9a  c8             818    824         RZ              ;DONE
+fc9b  1d             819    825         DCR  E
+fc9c  c2 92 fc       820    826         JNZ  DISP1      ;KEEP WITH CURRENT LINE
+fc9f  15             821    827         DCR  D          ;FILLED PAGE YET?
+fca0  c2 7c fc       822    828         JNZ  DISP2
+fca3  cd 10 ff       823    829         CALL CHIN       ;WAIT FOR PAGE PROMT
+fca6  c3 70 fc       824    830         JMP  DISP+3
+                     825    831 ;*********************************
+                     826    832 ;ALLOW ESCAPE SEQUENCES TO CONTROL
+                     827    833 ;*********************************
+fca9  cd 10 ff       828    834 ESCCO:  CALL CHIN       ;READ ESCAPE SEQUENCE CODE
+fcac  c9             829    835         RET
+                     830    836 ;********************************
+                     831    837 ;OUTPUT HEX WITH TRAILING BYTE
+                     832    838 ;********************************
+fcad  cd 9a ff       833    839 OHEXB:  CALL OHEX
+fcb0  3e 20          834    840         MVI  A,' '
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 15
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fcb2  cd 7e f8       835    841         CALL CHAROUT
+fcb5  c9             836    842         RET
+                     837    843 ;*********************************
+                     838    844 ;OUTPUT 16 BIT ASCII HEX FROM H,L
+                     839    845 ;*********************************
+fcb6  7c             840    846 OHEXHL: MOV  A,H
+fcb7  cd 9a ff       841    847         CALL OHEX
+fcba  7d             842    848         MOV  A,L
+fcbb  cd ad fc       843    849         CALL OHEXB
+fcbe  c9             844    850         RET
+                     845    851 ;*******************************************
+                     846    852 ;PROTECT /UNPROTECT RAM4A-4 MEMORY
+                     847    853 ;*******************************************
+fcbf  04             848    854 PROT:   INR  B          ;PROTECT/UNPROTECT FLAG
+fcc0  cd 3a ff       849    855 UNPRT:  CALL PARM2      ;GET START,END ADDRESSES IN H,L D,E
+fcc3  7a             850    856 MEMP:   MOV  A,D
+fcc4  e6 fc          851    857         ANI  0FCH       ;GET 1K OFFSET ONLY
+fcc6  b0             852    858         ORA  B
+fcc7  57             853    859         MOV  D,A
+fcc8  7c             854    860         MOV  A,H
+fcc9  e6 fc          855    861         ANI  0FCH
+fccb  b0             856    862         ORA  B
+fccc  d3 fe          857    863 PROT1:  OUT  0FEH       ;DO IT
+fcce  ba             858    864         CMP  D          ;DONE?
+fccf  c8             859    865         RZ              ;YES
+fcd0  c6 04          860    866         ADI  4          ;SET FOR NEXT 1K BLOCK
+fcd2  c3 cc fc       861    867         JMP  PROT1
+                     862    868 ;**************************************************
+                     863    869 ;INTEL LOADER LOADS INTEL FORMAT TAPES FROM
+                     864    870 ;TELETYPE (PORT 2,3) 
+                     865    871 ;**************************************************
+fcd5  cd 10 ff       866    872 INTEL:  CALL CHIN       ;READ WITHOUT ECHO
+fcd8  de 3a          867    873         SBI  ':'        ;RCORD MARKER?
+fcda  c2 d5 fc       868    874         JNZ  INTEL      ;NO
+fcdd  57             869    875         MOV  D,A        ;ZERO CHECKSUM
+fcde  cd 04 fd       870    876         CALL IBYTE      ;INPUT 2 HEX CHARS
+fce1  b7             871    877         ORA  A          ;SET FLAGS
+fce2  c8             872    878         RZ              ;COUNT =0 MEANS END
+fce3  57             873    879         MOV  D,A        ;BYTE COUNT
+fce4  cd 04 fd       874    880         CALL IBYTE
+fce7  67             875    881         MOV  H,A
+fce8  cd 04 fd       876    882         CALL IBYTE
+fceb  6f             877    883         MOV  L,A
+fcec  cd 04 fd       878    884         CALL IBYTE      ;DUMMY RECORD TYPE IGNORED
+fcef  cd 04 fd       879    885 DATA:   CALL IBYTE
+fcf2  77             880    886         MOV  M,A
+fcf3  23             881    887         INX  H
+fcf4  15             882    888         DCR  D
+fcf5  c2 ef fc       883    889         JNZ  DATA
+fcf8  cd 04 fd       884    890         CALL IBYTE      ;READ AND ADD CHECKSUM
+fcfb  ca d5 fc       885    891         JZ   INTEL      ;OK AS IS
+fcfe  3e 43          886    892         MVI  A,'C'
+fd00  cd 7e f8       887    893         CALL CHAROUT    ;ERROR MESSAGE
+fd03  c9             888    894         RET
+                     889    895 ;********************************************
+                     890    896 ;READ 2 ASCII HEX BYTES AND CONVERT TO BINARY
+                     891    897 ;********************************************
+fd04  cd 10 ff       892    898 IBYTE:  CALL CHIN       ;READ CHAR
+fd07  cd 74 ff       893    899         CALL ASBI       ;CONVERT TO BINARY
+fd0a  da 07 fe       894    900         JC   ERR2
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 16
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fd0d  87             895    901         ADD  A
+fd0e  87             896    902         ADD  A
+fd0f  87             897    903         ADD  A
+fd10  87             898    904         ADD  A
+fd11  5f             899    905         MOV  E,A        ;SAVE
+fd12  cd 10 ff       900    906         CALL CHIN
+fd15  cd 74 ff       901    907         CALL ASBI
+fd18  da 07 fe       902    908         JC   ERR2       ;INVALID ASCII HEX CHAR
+fd1b  83             903    909         ADD  E
+fd1c  5f             904    910         MOV  E,A        ;SAVE CHAR
+fd1d  82             905    911         ADD  D          ;ADD TO CHECKSUM
+fd1e  57             906    912         MOV  D,A
+fd1f  c9             907    913         RET
+                     908    914 ;*************************************************
+                     909    915 ;SIZE INPUTS START,END ADDR AND CONVERTS TO START
+                     910    916 ;  AND SIZE IN H,L AND B,C
+                     911    917 ;*************************************************
+fd20  cd 3a ff       912    918 SIZE:   CALL PARM2      ;H,L=START D,E=END
+fd23  f5             913    919         PUSH PSW
+fd24  7b             914    920         MOV  A,E
+fd25  95             915    921         SUB  L          ;LOW BYTE SIZE
+fd26  4f             916    922         MOV  C,A
+fd27  7a             917    923         MOV  A,D
+fd28  9c             918    924         SBB  H          ;HIGH BYTE SIZE
+fd29  47             919    925         MOV  B,A
+fd2a  03             920    926         INX  B          ;ADD 1
+fd2b  f1             921    927         POP  PSW
+fd2c  c9             922    928         RET
+                     923    929 ;***********************************************
+                     924    930 ;MEMORY MOVE "M SOURCE BEG,SOURCE END,DEST BEG"
+                     925    931 ;***********************************************
+fd2d  cd d7 fd       926    932 MOVE:   CALL PARM4      ;START,END,DEST
+fd30  cd dd fd       927    933 MOVE1:  CALL MVCUP      ;DO MOVE
+fd33  c9             928    934         RET
+                     929    935 ;******************************
+                     930    936 ;FILL MEMORY WITH CHAR
+                     931    937 ;******************************
+fd34  cd d7 fd       932    938 FILL:   CALL PARM4      ;START,END,FILL CHAR IN L
+fd37  7b             933    939         MOV  A,E        ;FILL CHAR
+fd38  77             934    940         MOV  M,A        ;STORE IN FIRST LOCATION
+fd39  0b             935    941         DCX  B
+fd3a  54             936    942         MOV  D,H
+fd3b  5d             937    943         MOV  E,L        ;DEST ADDR
+fd3c  13             938    944         INX  D          ;=START ADDR+1
+fd3d  c3 30 fd       939    945         JMP  MOVE1
+                     940    946 ;*******************************
+                     941    947 ;MEMORY TEST ROUTINE
+                     942    948 ;*******************************
+fd40  cd 20 fd       943    949 MEMTEST:CALL SIZE       ;H,L=START,B,C=SIZE
+fd43  0b             944    950         DCX  B          ;B,C=SIZE-1 OR 0
+fd44  af             945    951 MEM2:   XRA  A
+fd45  56             946    952         MOV  D,M        ;SAVE CELL
+fd46  77             947    953 MEM1:   MOV  M,A
+fd47  be             948    954         CMP  M
+fd48  c2 5d fd       949    955         JNZ  MEMERR     ;NOT GOOD
+fd4b  3d             950    956         DCR  A          ;NEXT PATTERN
+fd4c  c2 46 fd       951    957         JNZ  MEM1
+fd4f  72             952    958         MOV  M,D        ;RESTORE MEMORY
+fd50  db 03          953    959         IN   3
+fd52  e6 02          954    960         ANI  2          ;BAIL OUT?
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 17
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fd54  c0             955    961         RNZ             ;YES
+fd55  23             956    962         INX  H
+fd56  0b             957    963         DCX  B
+fd57  78             958    964         MOV  A,B
+fd58  b1             959    965         ORA  C
+fd59  c2 44 fd       960    966         JNZ  MEM2
+fd5c  c9             961    967         RET
+fd5d  23             962    968 MEMERR: INX  H          ;ADJUST FOR PRNMEM
+fd5e  5f             963    969         MOV  E,A        ;SAVE
+fd5f  cd 8d ff       964    970         CALL PNTMEM     ;PRINT ADDR,CONTENTS
+fd62  7b             965    971         MOV  A,E        ;RESTORE
+fd63  c3 89 ff       966    972         JMP  SRCP1      ;PRINT SOULD BE
+                     967    973 ;******************************************
+                     968    974 ;DO DIRECT INPUT/OUTPUT FROM SPECIFIED PORT
+                     969    975 ;******************************************
+fd66  05             970    976 INPORT: DCR  B          ;B=0=INPUT,B=1=OUTPUT
+fd67  cd 3a ff       971    977 OUTPORT:CALL PARM2      ;INPUT PORT,VALUE IN H,L AND D,E
+fd6a  78             972    978         MOV  A,B        ;FLAG
+fd6b  07             973    979         RLC
+fd6c  07             974    980         RLC
+fd6d  07             975    981         RLC
+fd6e  ee 08          976    982         XRI  08H        ;INVERT BIT 3
+fd70  f6 d3          977    983         ORI  0D3H       ;FORM I/O INST
+fd72  55             978    984         MOV  D,L
+fd73  2a 8d f7       979    985         LHLD RAMPTR     ;GET AVAIL RAM PTR
+fd76  77             980    986         MOV  M,A
+fd77  be             981    987         CMP  M
+fd78  c0             982    988         RNZ             ;INVALID RAM
+fd79  e5             983    989         PUSH H
+fd7a  23             984    990         INX  H
+fd7b  72             985    991         MOV  M,D        ;PORT #
+fd7c  23             986    992         INX  H
+fd7d  36 c9          987    993         MVI  M,0C9H     ;RETURN
+fd7f  21 87 fd       988    994         LXI  H,IORET
+fd82  e3             989    995         XTHL            ;PUT RETURN ADDRESS,GET START ADDR
+fd83  78             990    996         MOV  A,B
+fd84  b7             991    997         ORA  A          ;SET FLAG FOR IN OR OUT
+fd85  7b             992    998         MOV  A,E        ;OUTPUT BYTE
+fd86  e9             993    999         PCHL
+fd87  c0             994   1000 IORET:  RNZ             ;DONE IF OUTPUT INST
+fd88  cd ad fc       995   1001         CALL OHEXB      ;PRINT VALUE IF INPUT
+fd8b  c9             996   1002         RET
+                     997   1003 ;************************************
+                     998   1004 ;SET FREE RAM PTR FOR DIRECT IO INSTS
+                     999   1005 ;************************************
+fd8c  cd 5b ff      1000   1006 RAMFND: CALL IHEX       ;GET RAM ADDR
+fd8f  22 8d f7      1001   1007         SHLD RAMPTR     ;SAVE IN VIO RAM
+fd92  c9            1002   1008         RET
+                    1003   1009 ;************************************************
+                    1004   1010 ;COMPARE MEMORY BLOCKS AND PRINT DIFFERENCES
+                    1005   1011 ;************************************************
+fd93  cd d7 fd      1006   1012 CMPBLK: CALL PARM4      ;START,SIZE,DEST IN HL BC,DE
+fd96  1a            1007   1013 CMPB1:  LDAX D          ;DEST BYTE
+fd97  be            1008   1014         CMP  M          ;SAME AS SOURCE BYTE?
+fd98  23            1009   1015         INX  H
+fd99  13            1010   1016         INX  D
+fd9a  ca a5 fd      1011   1017         JZ   CMPB2      ;YES, NO PRINT
+fd9d  cd 8d ff      1012   1018         CALL PNTMEM     ;PRINT ADDR,SOURCE DEST
+fda0  eb            1013   1019         XCHG
+fda1  cd 90 ff      1014   1020         CALL PNTMEM+3   ;NO CRLF
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 18
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fda4  eb            1015   1021         XCHG
+fda5  0b            1016   1022 CMPB2:  DCX  B
+fda6  78            1017   1023         MOV  A,B
+fda7  b1            1018   1024         ORA  C
+fda8  c8            1019   1025         RZ              ;YES,RETURN
+fda9  db 03         1020   1026         IN   3
+fdab  e6 02         1021   1027         ANI  2
+fdad  c0            1022   1028         RNZ             ;BAIL OUT
+fdae  c3 96 fd      1023   1029         JMP  CMPB1
+                    1024   1030 ;*****************************************
+                    1025   1031 ;SEARCH MEMORY FOR MASKED 16 BIT VALUE
+                    1026   1032 ;S,FROM,TO,16BIT VALUE,16 BIT MASK
+                    1027   1033 ;*****************************************
+fdb1  cd d7 fd      1028   1034 SEARCH: CALL PARM4      ;START,SIZE,VALUE IN H,L B,C D,E
+fdb4  e5            1029   1035         PUSH H          ;SAVE
+fdb5  21 ff ff      1030   1036         LXI  H,-1       ;DEFAULT MASK ALL
+fdb8  fe 0a         1031   1037         CPI  0AH        ;USER SPECIFIED MASK?
+fdba  c4 5b ff      1032   1038         CNZ  IHEX       ;YES,READ IT INTO H,L
+fdbd  e3            1033   1039         XTHL            ;MASK ON STACK,START IN H,L
+fdbe  7e            1034   1040 SEAR1:  MOV  A,M        ;LOW BYTE
+fdbf  e3            1035   1041         XTHL            ;H,L=MASK VALUE
+fdc0  a4            1036   1042         ANA  H          ;MASK HIGH BYTE
+fdc1  ba            1037   1043         CMP  D          ;IS IT CORRECT VALUE?
+fdc2  e3            1038   1044         XTHL            ;RESTORE START PTR
+fdc3  23            1039   1045         INX  H          ;BUMP PTR
+fdc4  c2 cf fd      1040   1046         JNZ  CMP16      ;NO MATCH
+fdc7  7e            1041   1047         MOV  A,M        ;LOW BYTE
+fdc8  e3            1042   1048         XTHL            ;GET MASK IN H,L
+fdc9  a5            1043   1049         ANA  L
+fdca  bb            1044   1050         CMP  E
+fdcb  e3            1045   1051         XTHL            ;H,L=START,STACK=MASK
+fdcc  cc 85 ff      1046   1052         CZ   SRCPNT     ;PRINT MATCH IF FOUND
+fdcf  0b            1047   1053 CMP16:  DCX  B
+fdd0  78            1048   1054         MOV  A,B
+fdd1  b1            1049   1055         ORA  C
+fdd2  c2 be fd      1050   1056         JNZ  SEAR1
+fdd5  c1            1051   1057         POP  B          ;REMOVE MASK VALUE
+fdd6  c9            1052   1058         RET
+                    1053   1059 ;**************************************************
+                    1054   1060 ;PARM4 INPUTS START,END,VALUE AND
+                    1055   1061 ;CONVERTS TO START,SIZE,VALUE IN H,L B,C AND D,E
+                    1056   1062 ;RESPECTIVELY
+                    1057   1063 ;**************************************************
+fdd7  cd 20 fd      1058   1064 PARM4:  CALL SIZE
+fdda  c3 4a ff      1059   1065         JMP  PARM3
+                    1060   1066 ;************************************************
+                    1061   1067 ;MVCUP MOVE B,C CHARS FROM H,L TO D,E FROM BOTTOM
+                    1062   1068 ;************************************************
+fddd  78            1063   1069 MVCUP:  MOV  A,B
+fdde  b1            1064   1070         ORA  C
+fddf  c8            1065   1071         RZ
+fde0  7e            1066   1072         MOV  A,M
+fde1  12            1067   1073         STAX D          ;MOVE IT
+fde2  0b            1068   1074         DCX  B
+fde3  23            1069   1075         INX  H
+fde4  13            1070   1076         INX  D
+fde5  c3 dd fd      1071   1077         JMP  MVCUP      ;KEEP GOING
+                    1072   1078 ;**************************************************
+                    1073   1079 ;LOAD OR EXECUTE CASETTE FILE USING HEADER OR
+                    1074   1080 ;USER SPECIFIED START,END,EXEC ADDRESSES
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 19
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1075   1081 ;**************************************************
+fde8  05            1076   1082 EXEC:   DCR  B          ;EXECUTE FLAG
+fde9  c5            1077   1083 LOAD:   PUSH B          ;SAVE EXEC/LOAD FLAG
+fdea  cd 3a ff      1078   1084         CALL PARM2      ;ANY PARMS SPECIFIED?
+fded  7a            1079   1085         MOV  A,D
+fdee  b3            1080   1086         ORA  E
+fdef  ca 04 fe      1081   1087         JZ   HEADER     ;NO PARMS,OR NOT ENOUGH PARMS
+                    1082   1088 ;SKIP HEADER IF PRESENT
+fdf2  e5            1083   1089         PUSH H          ;START
+fdf3  d5            1084   1090         PUSH D          ;END
+fdf4  cd 5b ff      1085   1091         CALL IHEX       ;GET EXEC IF ANY
+fdf7  e5            1086   1092         PUSH H          ;EXEC ADDR
+fdf8  cd 66 fe      1087   1093         CALL RDHEAD     ;READ HEADER IF THERE
+fdfb  c2 12 fe      1088   1094         JNZ  RDRCRDS    ;NOT THERE DO OBJECT
+fdfe  f1            1089   1095         POP  PSW
+fdff  f1            1090   1096         POP  PSW
+fe00  f1            1091   1097         POP  PSW        ;REMOVE HEADER PARMS
+fe01  c3 12 fe      1092   1098         JMP  RDRCRDS    ;DO OBJECT
+fe04  cd 66 fe      1093   1099 HEADER: CALL RDHEAD     ;READ HEADER
+fe07  3e 54         1094   1100 ERR2:   MVI  A,'T'      ;TYPE CODE ERROR
+fe09  ca 12 fe      1095   1101         JZ   RDRCRDS    ;NO ERROR
+fe0c  cd 7e f8      1096   1102 ERR1:   CALL CHAROUT
+fe0f  c3 fc fb      1097   1103         JMP  PRMPT      ;BAIL OUT
+fe12  c1            1098   1104 RDRCRDS:POP  B          ;EXEC
+fe13  e1            1099   1105         POP  H          ;END
+fe14  d1            1100   1106         POP  D          ;START
+fe15  c5            1101   1107         PUSH B          ;RETURN EXEC ADDR
+fe16  e5            1102   1108         PUSH H          ;END
+fe17  d5            1103   1109         PUSH D          ;START
+fe18  7d            1104   1110         MOV  A,L
+fe19  93            1105   1111         SUB  E
+fe1a  6f            1106   1112         MOV  L,A
+fe1b  7c            1107   1113         MOV  A,H
+fe1c  9a            1108   1114         SBB  D
+fe1d  67            1109   1115         MOV  H,A
+fe1e  29            1110   1116         DAD  H
+fe1f  4c            1111   1117         MOV  C,H
+fe20  0c            1112   1118         INR  C          ;RECORD COUNT TO READ
+fe21  cd c2 fe      1113   1119 RDRCO:  CALL CASIN      ;TYPE CODE
+fe24  fe 81         1114   1120 RDRC1:  CPI  81H        ;ABS BINARY?
+fe26  c2 07 fe      1115   1121         JNZ  ERR2       ;TYPE CODE ERROR
+fe29  cd c2 fe      1116   1122         CALL CASIN      ;BYTE COUNT
+fe2c  47            1117   1123         MOV  B,A        ;SAVE RECORD BYTE COUNT
+fe2d  21 00 00      1118   1124         LXI  H,0        ;0 CHECKSUM
+fe30  cd d0 fe      1119   1125 RDATA:  CALL CAINCK     ;READ DATA BYTE
+fe33  12            1120   1126         STAX D          ;STORE IT
+fe34  13            1121   1127         INX  D
+fe35  05            1122   1128         DCR  B
+fe36  c2 30 fe      1123   1129         JNZ  RDATA      ;CONTINUE IF NOT DONE
+fe39  d5            1124   1130         PUSH D          ;SAVE MEMORY PTR
+fe3a  eb            1125   1131         XCHG            ;DE=CHECKSUM
+fe3b  cd 07 ff      1126   1132         CALL CASWD      ;READ TAPE CHECKSUM
+fe3e  65            1127   1133         MOV  H,L
+fe3f  6f            1128   1134         MOV  L,A        ;REVERSE BYTES
+fe40  19            1129   1135         DAD  D          ;ADD TO COMPUTED CHECKSUM
+fe41  7c            1130   1136         MOV  A,H
+fe42  b5            1131   1137         ORA  L
+fe43  3e 43         1132   1138         MVI  A,'C'      ;CHECKSUM ERROR
+fe45  c4 7e f8      1133   1139         CNZ  CHAROUT    ;TYPE 'C'
+fe48  c2 50 fe      1134   1140         JNZ  $+8
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 20
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+fe4b  3e 2a         1135   1141         MVI  A,'*'
+fe4d  cd 7e f8      1136   1142         CALL CHAROUT    ;TYPE * FOR GOOD RECORD
+fe50  d1            1137   1143         POP  D          ;RETRIEVE MEMORY PTR
+fe51  0d            1138   1144         DCR  C          ;ALL RECORDS READ YET
+fe52  c2 21 fe      1139   1145         JNZ  RDRCO      ;NO READ ANOTHER
+fe55  cd 50 ff      1140   1146         CALL CRLF
+fe58  0e 03         1141   1147         MVI  C,3
+fe5a  e1            1142   1148 LP2:    POP  H
+fe5b  cd b6 fc      1143   1149         CALL OHEXHL
+fe5e  0d            1144   1150         DCR  C
+fe5f  c2 5a fe      1145   1151         JNZ  LP2
+fe62  f1            1146   1152         POP  PSW        ;EXEC/LOAD FLAG
+fe63  1f            1147   1153         RAR
+fe64  d8            1148   1154         RC              ;DONE
+fe65  e9            1149   1155         PCHL
+                    1150   1156 ;******************************
+                    1151   1157 ;READ HEADER RECORD
+                    1152   1158 ;******************************
+fe66  cd 8e fe      1153   1159 RDHEAD: CALL CAINIT     ;INIT CASETTE
+fe69  cd c2 fe      1154   1160         CALL CASIN      ;READ TYPE CODE
+fe6c  fe 01         1155   1161         CPI  1          ;HEADER RECORD?
+fe6e  c0            1156   1162         RNZ             ;NO
+fe6f  cd c2 fe      1157   1163         CALL CASIN      ;RECORD LENGTH
+fe72  0e 05         1158   1164         MVI  C,5        ;NAME SIZE
+fe74  cd c2 fe      1159   1165 NM1:    CALL CASIN      ;NAME BYTE
+fe77  cd 7e f8      1160   1166         CALL CHAROUT    ;DISPLAY IT
+fe7a  0d            1161   1167         DCR  C
+fe7b  c2 74 fe      1162   1168         JNZ  NM1        ;DO IT TILL DONE
+fe7e  0e 03         1163   1169         MVI  C,3
+fe80  cd 07 ff      1164   1170 ADDRS:  CALL CASWD      ;INPUT START,END,EXEC
+fe83  e3            1165   1171         XTHL            ;EXCH RETURN ADDR WITH PARM
+fe84  e5            1166   1172         PUSH H          ;PUSH RETURN ADDR AGAIN
+fe85  0d            1167   1173         DCR  C
+fe86  c2 80 fe      1168   1174         JNZ  ADDRS
+fe89  cd 07 ff      1169   1175         CALL CASWD      ;DUMMY CHECKSUM
+fe8c  af            1170   1176         XRA  A          ;ZER FLAGS FOR NORMAL RETURN
+fe8d  c9            1171   1177         RET
+                    1172   1178 ;**********************************************
+                    1173   1179 ;CAINIT READ CASETTE UNTIL 32 SYNC BYTES READ
+                    1174   1180 ;**********************************************
+fe8e  cd f6 fe      1175   1181 CAINIT: CALL BYTESET    ;READ FIRST SYNC
+fe91  06 1f         1176   1182         MVI  B,31
+fe93  cd c2 fe      1177   1183 CAIN2:  CALL CASIN
+fe96  fe e6         1178   1184         CPI  0E6H
+fe98  3e 49         1179   1185         MVI  A,'I'
+fe9a  c2 0c fe      1180   1186         JNZ  ERR1
+fe9d  05            1181   1187         DCR  B
+fe9e  c2 93 fe      1182   1188         JNZ  CAIN2
+fea1  c9            1183   1189         RET
+                    1184   1190 ;*******************************
+                    1185   1191 ;CASETTE OUTPUT BYTE
+                    1186   1192 ;*******************************
+fea2  f5            1187   1193 CASOUT: PUSH PSW        ;SAVE IT
+fea3  db 03         1188   1194         IN   3
+fea5  e6 04         1189   1195         ANI  4
+fea7  ca a3 fe      1190   1196         JZ   CASOUT+1
+feaa  f1            1191   1197         POP  PSW
+feab  d3 00         1192   1198         OUT  0          ;WRITE BYTE
+fead  c9            1193   1199         RET
+                    1194   1200 ;*****************************
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 21
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1195   1201 ;GENERATE SYNC STREAM
+                    1196   1202 ;*****************************
+feae  cd 5b ff      1197   1203 GEN:    CALL IHEX       ;WAIT FOR RETURN
+feb1  3e 10         1198   1204         MVI  A,10H
+feb3  d3 03         1199   1205         OUT  3          ;WRITE ENABLE MIO
+feb5  3e e6         1200   1206 GEN1:   MVI  A,0E6H
+feb7  cd a2 fe      1201   1207         CALL CASOUT
+feba  db 03         1202   1208         IN   3
+febc  e6 02         1203   1209         ANI  2
+febe  c0            1204   1210         RNZ
+febf  c3 b5 fe      1205   1211         JMP  GEN1
+                    1206   1212 ;************************************************
+                    1207   1213 ;READ BYTE FROM CASETTE WITHOUT CHECKSUM
+                    1208   1214 ;************************************************
+fec2  db 03         1209   1215 CASIN:  IN   3
+fec4  0f            1210   1216         RRC
+fec5  0f            1211   1217         RRC             ;C=SERIAL READY
+fec6  da fc fb      1212   1218         JC   PRMPT      ;BAIL OUT
+fec9  0f            1213   1219         RRC             ;C=CASETTE READY
+feca  d2 c2 fe      1214   1220         JNC  CASIN      ;KEEP TRYING
+fecd  db 00         1215   1221         IN   0          ;DATA PORT
+fecf  c9            1216   1222         RET
+                    1217   1223 ;*****************************************
+                    1218   1224 ;CAINCK- READ BYTE WITH CHECKSUM
+                    1219   1225 ;*****************************************
+fed0  cd c2 fe      1220   1226 CAINCK: CALL CASIN
+fed3  c5            1221   1227 CHKSUM: PUSH B
+fed4  4f            1222   1228         MOV  C,A        ;NEW CHAR IN LOW BYTE
+fed5  06 00         1223   1229         MVI  B,0
+fed7  09            1224   1230         DAD  B          ;ADD TO CHECKSUM
+fed8  c1            1225   1231         POP  B          ;RESTORE
+fed9  c9            1226   1232         RET
+                    1227   1233 ;**********************************************
+                    1228   1234 ;ALLIGN CASETTE BY READING AND DISPLAYING BYTES
+                    1229   1235 ;**********************************************
+feda  cd 10 ff      1230   1236 ALIGN:  CALL CHIN       ;WAIT FOR CR
+fedd  cd f6 fe      1231   1237         CALL BYTESET
+fee0  21 00 f0      1232   1238 ALL4:   LXI  H,REFRESH
+fee3  11 e1 01      1233   1239         LXI  D,481      ;FILL SMALLEST SCREEN
+fee6  1b            1234   1240 ALL3:   DCX  D
+fee7  7a            1235   1241         MOV  A,D
+fee8  b3            1236   1242         ORA  E
+fee9  ca e0 fe      1237   1243         JZ   ALL4       ;START AGAIN EVERY 256 CHARS
+feec  36 7f         1238   1244         MVI  M,7FH
+feee  cd c2 fe      1239   1245         CALL CASIN      ;READ NEXT CHAR
+fef1  77            1240   1246         MOV  M,A        ;PUT IN SCREEN
+fef2  23            1241   1247         INX  H
+fef3  c3 e6 fe      1242   1248         JMP  ALL3
+                    1243   1249 ;*******************************************
+                    1244   1250 ;GET CASETTE IN BYTE MODE IE READ FIRST 0E6H
+                    1245   1251 ;*******************************************
+fef6  3e 60         1246   1252 BYTESET:MVI  A,60H      ;BIT MODE
+fef8  d3 03         1247   1253         OUT  3
+fefa  cd c2 fe      1248   1254 BYTE1:  CALL CASIN      ;READ BYTE EVERY BIT TIME
+fefd  fe e6         1249   1255         CPI  0E6H       ;SYNC YET
+feff  c2 fa fe      1250   1256         JNZ  BYTE1      ;NO
+ff02  3e 20         1251   1257         MVI  A,20H      ;BYTE MODE
+ff04  d3 03         1252   1258         OUT  3
+ff06  c9            1253   1259         RET
+                    1254   1260 ;*******************************************
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 22
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1255   1261 ;CASWD-INPUT WORD TO H,L ADD FIRST BYTE ONLY
+                    1256   1262 ;TO CHECKSUM
+                    1257   1263 ;*******************************************
+ff07  cd c2 fe      1258   1264 CASWD:  CALL CASIN      ;READ LOW BYTE
+ff0a  6f            1259   1265         MOV  L,A
+ff0b  cd c2 fe      1260   1266         CALL CASIN      ;READ HIGH BYTE
+ff0e  67            1261   1267         MOV  H,A
+ff0f  c9            1262   1268         RET
+                    1263   1269 ;********************************
+                    1264   1270 ;CHARACTER INPUT ROUTINES
+                    1265   1271 ;********************************
+ff10  cd 21 ff      1266   1272 CHIN:   CALL CHIN1
+ff13  fe 03         1267   1273         CPI  03         ;CRTL C?
+ff15  ca e2 fb      1268   1274         JZ   MONT       ;YES,RESET AND PROMPT
+ff18  cd 7e f8      1269   1275         CALL CHAROUT
+ff1b  fe 0d         1270   1276         CPI  0DH
+ff1d  cc 50 ff      1271   1277         CZ   CRLF       ;ADD LINE FEED
+ff20  c9            1272   1278         RET
+ff21  db 03         1273   1279 CHIN1:  IN   3
+ff23  e6 02         1274   1280         ANI  2
+ff25  ca 21 ff      1275   1281         JZ   CHIN1
+ff28  db 02         1276   1282         IN   2          ;READ PORT 2
+ff2a  e6 7f         1277   1283         ANI  7FH        ;MASK PARITY
+ff2c  c9            1278   1284         RET
+ff2d  00 00 00 00   1279   1285         DB   0,0,0,0,0,0,0,0,0,0,0,0,0
+ff31  00 00 00 00   1279   1286
+ff35  00 00 00 00   1279   1287
+ff39  00            1279   1288
+                    1280   1289 ;********************************************************
+                    1281   1290 ;PARM2 READ 2 PARAMATERS 16 BITS EACH INTO H,L AND D,E
+                    1282   1291 ;********************************************************
+ff3a  cd 5b ff      1283   1292 PARM2:  CALL IHEX
+ff3d  54            1284   1293         MOV  D,H
+ff3e  5d            1285   1294         MOV  E,L
+ff3f  fe 0a         1286   1295         CPI  0AH        ;TERMINATED?
+ff41  c8            1287   1296         RZ              ;YES,USE SAME VALUE
+ff42  fe 2c         1288   1297         CPI  ','
+ff44  ca 4a ff      1289   1298         JZ   PARM3
+ff47  fe 20         1290   1299         CPI  ' '
+ff49  c0            1291   1300         RNZ             ;INVALID
+ff4a  eb            1292   1301 PARM3:  XCHG
+ff4b  cd 5b ff      1293   1302         CALL IHEX       ;GET SECOND PARM
+ff4e  eb            1294   1303         XCHG
+ff4f  c9            1295   1304         RET
+                    1296   1305 ;*********************************
+                    1297   1306 ;CRLF DO CARRIAGE RETURN/LINE FEED
+                    1298   1307 ;*********************************
+ff50  3e 0d         1299   1308 CRLF:   MVI  A,0DH
+ff52  cd 7e f8      1300   1309         CALL CHAROUT
+ff55  3e 0a         1301   1310         MVI  A,0AH
+ff57  cd 7e f8      1302   1311         CALL CHAROUT
+ff5a  c9            1303   1312         RET
+                    1304   1313 ;:************************************************
+                    1305   1314 ;INPUT CHARS ASSUMED HEX AND CONVERT TO BINARY
+                    1306   1315 ;TERMINATES ON FIRST NO HEX CHAR WHICH IS LEFT
+                    1307   1316 ;IN A REG. H,L RETURNS WITH VALUE
+                    1308   1317 ;*************************************************
+ff5b  21 00 00      1309   1318 IHEX:   LXI  H,0
+ff5e  cd 10 ff      1310   1319         CALL CHIN       ;READ CHAR
+ff61  f5            1311   1320         PUSH PSW
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 23
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+ff62  cd 74 ff      1312   1321         CALL ASBI       ;CONVERT TO BIBARY
+ff65  d2 6a ff      1313   1322         JNC  IHEX1
+ff68  f1            1314   1323         POP  PSW
+ff69  c9            1315   1324         RET
+ff6a  29            1316   1325 IHEX1:  DAD  H
+ff6b  29            1317   1326         DAD  H
+ff6c  29            1318   1327         DAD  H
+ff6d  29            1319   1328         DAD  H          ;ADD NEW DIGIT
+ff6e  85            1320   1329         ADD  L
+ff6f  6f            1321   1330         MOV  L,A
+ff70  f1            1322   1331         POP  PSW
+ff71  c3 5e ff      1323   1332         JMP  IHEX+3
+                    1324   1333 ;********************************************************
+                    1325   1334 ;CONVERT ASCII HEX CHAR IN A-REG TO BINARY IN A REG
+                    1326   1335 ;RETURN WITH CARRY SET IF INVALID CHAR,RESET OTHERWISE
+                    1327   1336 ;********************************************************
+ff74  d6 30         1328   1337 ASBI:   SUI  30H        ;REMOVE ASCII BIAS
+ff76  d8            1329   1338         RC              ;INVALID <0
+ff77  fe 0a         1330   1339         CPI  10
+ff79  da 83 ff      1331   1340         JC   ASBI1      ;VALID 0-9
+ff7c  d6 11         1332   1341         SUI  17
+ff7e  d8            1333   1342         RC              ;INVALID
+ff7f  c6 0a         1334   1343         ADI  10
+ff81  fe 10         1335   1344         CPI  16         ;SET CARRY IF <0FH
+ff83  3f            1336   1345 ASBI1:  CMC
+ff84  c9            1337   1346         RET
+                    1338   1347 ;*****************************************
+                    1339   1348 ;PRINT H,L AND 16 BIT MEMORY AT H,L
+                    1340   1349 ;*****************************************
+ff85  cd 8d ff      1341   1350 SRCPNT: CALL PNTMEM
+ff88  7e            1342   1351         MOV  A,M        ;BYTE 2
+ff89  cd 9a ff      1343   1352 SRCP1:  CALL OHEX
+ff8c  c9            1344   1353         RET
+ff8d  cd 50 ff      1345   1354 PNTMEM: CALL CRLF
+ff90  2b            1346   1355         DCX  H          ;BACK UP 1
+ff91  cd b6 fc      1347   1356         CALL OHEXHL
+ff94  7e            1348   1357         MOV  A,M
+ff95  cd ad fc      1349   1358         CALL OHEXB
+ff98  23            1350   1359         INX  H
+ff99  c9            1351   1360         RET
+                    1352   1361 ;**********************************************
+                    1353   1362 ;OUTPUT HEX CHARS TO VIDIO FROM A REG
+                    1354   1363 ;**********************************************
+ff9a  f5            1355   1364 OHEX:   PUSH PSW        ;SAVE CHAR
+ff9b  0f            1356   1365         RRC 
+ff9c  0f            1357   1366         RRC
+ff9d  0f            1358   1367         RRC
+ff9e  0f            1359   1368         RRC
+ff9f  cd a7 ff      1360   1369         CALL BIAS       ;BINARY TO ASCII AND OUT
+ffa2  f1            1361   1370         POP  PSW
+ffa3  cd a7 ff      1362   1371         CALL BIAS
+ffa6  c9            1363   1372         RET
+                    1364   1373 ;****************************
+                    1365   1374 ;CONVERT BINARY TO ASCII
+                    1366   1375 ;****************************
+ffa7  e6 0f         1367   1376 BIAS:   ANI  0FH        ;MASK NIBBLE
+ffa9  c6 90         1368   1377         ADI  90H
+ffab  27            1369   1378         DAA
+ffac  ce 40         1370   1379         ACI  40H
+ffae  27            1371   1380         DAA
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 24
+Source file: viofm1.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+ffaf  cd 7e f8      1372   1381         CALL CHAROUT
+ffb2  c9            1373   1382         RET
+                    1374   1383 ;*********************************************
+                    1375   1384 ;OUTPUT MESSAGE PTED TO BY H,L AND TERMINATED
+                    1376   1385 ;BY ONE BYTE OF BINARY ZEROS
+                    1377   1386 ;*********************************************
+ffb3  cd 50 ff      1378   1387 MSG:    CALL CRLF
+ffb6  7e            1379   1388 MSGNC:  MOV  A,M
+ffb7  b7            1380   1389         ORA  A
+ffb8  c8            1381   1390         RZ
+ffb9  cd 7e f8      1382   1391         CALL CHAROUT
+ffbc  23            1383   1392         INX  H
+ffbd  c3 b6 ff      1384   1393         JMP  MSGNC
+ffc0  =             1385   1394 CMDTBL  EQU  $
+ffc0  48            1386   1395         DB   'H'
+ffc1  d5 fc         1387   1396         DW   INTEL      ;INTEL HEX LOADS
+ffc3  52            1388   1397         DB   'R'        ;FREE RAM LOCATION
+ffc4  8c fd         1389   1398         DW   RAMFND
+ffc6  47            1390   1399         DB   'G'
+ffc7  ae fe         1391   1400         DW   GEN        ;GENERATE SYNC STREAM
+ffc9  41            1392   1401         DB   'A'
+ffca  da fe         1393   1402         DW   ALIGN      ;ALLIGN CASETTE ON MIO
+ffcc  56            1394   1403         DB   'V'
+ffcd  93 fd         1395   1404         DW   CMPBLK     ;COMPARE MEMORY BLOCKS
+ffcf  49            1396   1405         DB   'I'
+ffd0  66 fd         1397   1406         DW   INPORT     ;INPUT FROM SPECIFIED PORT
+ffd2  4f            1398   1407         DB   'O'
+ffd3  67 fd         1399   1408         DW   OUTPORT    ;OUPUT TO SPECIFIED PORT
+ffd5  54            1400   1409         DB   'T'
+ffd6  40 fd         1401   1410         DW   MEMTEST
+ffd8  4a            1402   1411         DB   'J'
+ffd9  46 fc         1403   1412         DW   JUMP       ;JUMP TO ADDRESS
+ffdb  43            1404   1413         DB   'C'
+ffdc  47 fc         1405   1414         DW   CALL1      ;CALL MEMORY WITH RETURN
+ffde  44            1406   1415         DB   'D'        ;DISPLAY MEMORY
+ffdf  6d fc         1407   1416         DW   DISP
+ffe1  45            1408   1417         DB   'E'
+ffe2  4b fc         1409   1418         DW   ENTR       ;ENTER INTO MEMORY
+ffe4  4d            1410   1419         DB   'M'
+ffe5  2d fd         1411   1420         DW   MOVE       ;MOVE MEMORY BLOCK
+ffe7  46            1412   1421         DB   'F'        ;FILL MEMORY
+ffe8  34 fd         1413   1422         DW   FILL
+ffea  55            1414   1423         DB   'U'
+ffeb  c0 fc         1415   1424         DW   UNPRT      ;UNPROTECT MEMORY
+ffed  50            1416   1425         DB   'P'
+ffee  bf fc         1417   1426         DW   PROT       ;PROTECT MEMORY
+fff0  4c            1418   1427         DB   'L'
+fff1  e9 fd         1419   1428         DW   LOAD       ;LOAD CASETTE
+fff3  53            1420   1429         DB   'S'
+fff4  b1 fd         1421   1430         DW   SEARCH     ;16 BIT MASKED SEARCH
+fff6  58            1422   1431         DB   'X'
+fff7  e8 fd         1423   1432         DW   EXEC       ;EXECUTE FROM CASETTE
+fff9  1b            1424   1433         DB   1BH        ;ESCAPE CODE
+fffa  a9 fc         1425   1434         DW   ESCCO
+fffc  00            1426   1435         DB   0
+fffd                1427   1436         END
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 25
+Source file: viofm1.asm
+Title:       Symbol table
+
+ADDCURS  fb3d 	ADDRS    fe80 	ALIGN    feda 	ALL3     fee6 	
+ALL4     fee0 	ASBI     ff74 	ASBI1    ff83 	BCKL1    f989 	
+BCKLNE   f985 	BIAS     ffa7 	BLAN1    f9ce 	BLAN3    f9c2 	
+BLANKL   f9bf 	BLNK1    f9a6 	BLNK2    f9b1 	BLNKS    f99f 	
+BMP1     f8df 	BMP10    f8dc 	BMPC     fb26 	BMPC1    f8f9 	
+BMPCUR   f8e7 	BYTE1    fefa 	BYTESET  fef6 	CAIN2    fe93 	
+CAINCK   fed0 	CAINIT   fe8e 	CALL1    fc47 	CALP1    fb19 	
+CALP2    fb21 	CALPOS   fb0c 	CASIN    fec2 	CASOUT   fea2 	
+CASWD    ff07 	CCHAR    f793 	CCUR     f792 	CHAR1    f8d6 	
+CHARLN   f9ee 	CHAROUT  f87e 	CHARSN   fa5d 	CHIN     ff10 	
+CHIN1    ff21 	CHKSUM   fed3*	CHRL1    f9ff 	CHRL2    fa0f 	
+CLINE    f79f 	CLRT1    faad 	CLRTBS   faa7 	CMDTBL   ffc0 	
+CMP16    fdcf 	CMPB1    fd96 	CMPB2    fda5 	CMPBLK   fd93 	
+COLS     fa91 	CONTROL  f929 	CRET     f98b 	CRLF     ff50 	
+CTRLC    f794 	CTRPORT  f7ff 	CTRTBL   fb92 	CURCOL   f781 	
+CURLIN   f780 	CURPTR   f78f 	DATA     fcef 	DELETE   f9dd 	
+DISP     fc6d 	DISP1    fc92 	DISP2    fc7c 	DLINE    fa29 	
+DLN1     fa31 	EN1      fa45 	ENLINE   fa36 	ENTR     fc4b 	
+ERR1     fe0c 	ERR2     fe07 	ESC1     f960 	ESCAPE   f94d 	
+ESCCDE   f786 	ESCCNT   f785 	ESCCO    fca9 	ESCRET   f879 	
+ESCTBL   fbc0 	EXEC     fde8 	FILL     fd34 	FNDCMD   fc28 	
+FNDCTRL  f945 	FNDESC   f97d 	FNDT1    facc 	FNDT2    fadc 	
+FNDTB    fac4 	FNDTDN   fada 	GEN      feae 	GEN1     feb5 	
+GRAPHIC  fa77 	HEADER   fe04 	HIGH128  fa71 	HOME     f9b8 	
+IBYTE    fd04 	IHEX     ff5b 	IHEX1    ff6a 	INIT     f815 	
+INIT1    f81f 	INPORT   fd66 	INSC3    fb7a 	INSC4    fb85*	
+INSCHR   fb63 	INSCURS  fa95 	INSMDE   f998 	INSRT    f784 	
+INTEL    fcd5 	INVIDIO  f782 	IORET    fd87 	JUMP     fc46 	
+LASTC    f7a6 	LFEED    f8f6 	LINES    fa8d 	LOAD     fde9 	
+LOOKUP   fa11 	LOW128   fa7b 	LP2      fe5a 	LPAGE    f7a1 	
+MEM1     fd46 	MEM2     fd44 	MEMERR   fd5d 	MEMP     fcc3*	
+MEMTEST  fd40 	MONT     fbe2 	MOVE     fd2d 	MOVE1    fd30 	
+MSG      ffb3*	MSGNC    ffb6 	MVCDN    fb87 	MVCUP    fddd 	
+NCHARS   f7a2 	NM1      fe74 	NMCHM    fa4d 	NOUSER   f939 	
+NUCMD    fc1e 	NUESC    f96f 	OHEX     ff9a 	OHEXB    fcad 	
+OHEXHL   fcb6 	OUTPORT  fd67 	PARM2    ff3a 	PARM3    ff4a 	
+PARM4    fdd7 	PNTMEM   ff8d 	PRMPT    fbfc 	PROT     fcbf 	
+PROT1    fccc 	PROTC    f9d7 	PRTECT   f992 	PRTMD    f791 	
+PRUPRF   f7a4 	RAMFND   fd8c 	RAMPTR   f78d 	RDATA    fe30 	
+RDHEAD   fe66 	RDRC1    fe24*	RDRCO    fe21 	RDRCRDS  fe12 	
+REFRESH  f000 	SCR1     f912 	SCR2     f926*	SCR3     f90d 	
+SCRL     fa81 	SCROLL   f900*	SEAR1    fdbe 	SEARCH   fdb1 	
+SETCMD   f83a 	SETD2    fabb 	SETTAB   fab6 	SIGNON   fc29 	
+SIZE     fd20 	SRCP1    ff89 	SRCPNT   ff85 	SYSRAM   f780 	
+TAB      f795 	TAB1     faf1 	TAB2     fb01 	TAB3     fae6 	
+TABB     fae2 	TBLUP1   fa23 	UNPRT    fcc0 	UPLINE   f984 	
+UPLOW    fa85 	USERCMD  f78b 	USERF    f7a5*	USRCTR   f787 	
+USRESC   f789 	VDIMDE   f783 	VIDIO    fa89 	VIOFM    f800 	
+VIOTEST  f809 	XADD     fb59 	XADD3    fb53 	
