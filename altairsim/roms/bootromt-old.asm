@@ -22,9 +22,8 @@
 ;               MICRO RESOURCES
 ; THESE DAYS MIKE CAN BE REACHED AT MKARAS@CAROUSEL-DESIGN.COM (MARCH 23, 2009)
 ;
-; INSTEAD OF APPLYING THE REOCATION OFFSET TO ALL RELEVANT INSTRUCTIONS
-; LET THE ASSEMBLER DO ALL THE NASTY WORK.
-; UDO MUNK, OCTOBER 2022
+; MODIFIED SO THAT THE BOOT CODE CAN BE MOVED TO RAM @ 1000H
+; UDO MUNK, AUGUST 2016
 ;
 ;******************************************************************
 ;
@@ -55,14 +54,14 @@ MOVE:
 ;
 ;BASE THIS ROUTINE INTO SYSTEM RAM AT 1000H
 ;
-RCODE:
-        .PHASE  RUNLOC
+;       ORG     01000H
 ;
-        DI                      ;DISABLE INTERRUPTS
+RCODE:  DI                      ;DISABLE INTERRUPTS
 ;
+OFFSET  EQU     RCODE-RUNLOC    ;CALCULATE CODE ADDRESS OFFSET FOR RELOCATION
 ;
-        LXI     SP,STACK        ;SET THE STACK DUMMY?
-        JMP     INIT            ;GO INITIALIZE THIS BUGGER 
+        LXI     SP,STACK-OFFSET ;SET THE STACK DUMMY?
+        JMP     INIT-OFFSET     ;GO INITIALIZE THIS BUGGER 
 ;
 ;
 ;SYSTEM EQUATES FOR TARBELL CONTROLLER
@@ -98,7 +97,7 @@ CTRDY   EQU     002H            ;TRANSMITTER READY BIT
 CO:
         IN      CCTRL
         ANI     CTRDY
-        JZ      CO
+        JZ      CO-OFFSET
         MOV     A,C
         OUT     CDATA
         RET
@@ -107,13 +106,13 @@ CO:
 ;
 BYTEO:
         PUSH    PSW
-        CALL    BYTO1
+        CALL    BYTO1-OFFSET
         MOV     C,A
-        CALL    CO
+        CALL    CO-OFFSET
         POP     PSW
-        CALL    BYTO2
+        CALL    BYTO2-OFFSET
         MOV     C,A
-        JMP     CO
+        JMP     CO-OFFSET
 ;
 ;
 ;
@@ -125,7 +124,7 @@ BYTO1:
 BYTO2:
         ANI     0FH
         CPI     0AH
-        JM      BYTO3
+        JM      BYTO3-OFFSET
         ADI     7
 BYTO3:
         ADI     30H
@@ -140,10 +139,10 @@ MSG:
         INX     H
 MSGA:
         MOV     C,M
-        CALL    CO
+        CALL    CO-OFFSET
         INX     H
         DCR     B
-        JNZ     MSGA
+        JNZ     MSGA-OFFSET
         POP     B
         POP     PSW
         RET
@@ -158,7 +157,7 @@ LOOP:
         DCX     H
         MOV     A,H
         ORA     L
-        JNZ     LOOP
+        JNZ     LOOP-OFFSET
         MVI     A,003H          ;INITIALIZE SI/O WITH RESET
         OUT     CCTRL
         MVI     A,011H          ;INITIALIZE SIO WITH 16X,8 BITS, NO PAR
@@ -169,8 +168,8 @@ LOOP:
 ;START OF COLD BOOT LOADER CODE
 ;
 START:
-        LXI     H,CBMSG         ;OUTPUT "CP/M COLD BOOT" TO THE CONSOLE
-        CALL    MSG
+        LXI     H,CBMSG-OFFSET  ;OUTPUT "CP/M COLD BOOT" TO THE CONSOLE
+        CALL    MSG-OFFSET
         MVI     A,0F2H          ;SELECT DISK A: AT SINGLE DENSITY
         OUT     DSEL
         MVI     A,0D0H          ;CLEAR ANY PENDING COMMAND
@@ -182,7 +181,7 @@ START:
 HOME:
         IN      DSTAT           ;GET STATUS
         RRC
-        JC      HOME            ;WAIT FOR NOT BUSY COMPLETION
+        JC      HOME-OFFSET     ;WAIT FOR NOT BUSY COMPLETION
         MVI     A,002H          ;ISSUE RESTORE CMND (10 MSEC. STEP RATE)
         OUT     DCOM
         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
@@ -191,10 +190,10 @@ HOME:
         NOP
         IN      DWAIT           ;WAIT FOR COMPLETION
         ORA     A               ;SET FLAGS FOR ERROR ON "DRQ",NOT "INTRQ"
-        JM      DRQER
+        JM      DRQER-OFFSET
         IN      DSTAT           ;GET DISK STATUS
         ANI     004H            ;MASK FOR TRACK 00 STATUS BIT
-        JZ      TK0ER
+        JZ      TK0ER-OFFSET
         XRA     A               ;ZERO ACCUMULATOR
         MOV     L,A             ;SETUP MEMORY LOAD ADDRESS 0000H
         MOV     H,A
@@ -209,31 +208,31 @@ HOME:
 RLOOP:
         IN      DWAIT           ;WAIT FOR DISK CONTROLLER
         ORA     A               ;SET FLAGS
-        JP      RDONE           ;ARE WE DONE YET
+        JP      RDONE-OFFSET    ;ARE WE DONE YET
         IN      DDATA           ;GET DATA FROM DISK
         MOV     M,A             ;MOVE IT INTO MEMORY
         INX     H               ;INCREMENT MEMORY POINTER
-        JMP     RLOOP           ;GO GET NEXT BYTE
+        JMP     RLOOP-OFFSET    ;GO GET NEXT BYTE
 RDONE:
         IN      DSTAT           ;GET DISK READ STATUS
         ORA     A               ;CHECK FOR ERRORS
         JZ      SBOOT           ;NO ERRORS?
                                 ;THEN GO BOOT SINGLE DENSITY CP/M
         PUSH    PSW             ;OOPS...GOT AN ERROR,SAVE STATUS
-        LXI     H,LEMSG         ;OUTPUT "BOOT LOAD ERROR=" TO CONSOLE
-        JMP     LERR
+        LXI     H,LEMSG-OFFSET  ;OUTPUT "BOOT LOAD ERROR=" TO CONSOLE
+        JMP     LERR-OFFSET
 DRQER:  PUSH    PSW             ;SAVE ERROR STATUS
-        LXI     H,RQMSG         ;OUTPUT "COMMAND COMPLETION ERROR=" TO CONSOLE
-        JMP     LERR
+        LXI     H,RQMSG-OFFSET  ;OUTPUT "COMMAND COMPLETION ERROR=" TO CONSOLE
+        JMP     LERR-OFFSET
 TK0ER:  PUSH    PSW             ;SAVE ERROR STATUS
-        LXI     H,REMSG         ;OUTPUT "RESTORE ERROR=" TO CONSOLE
-LERR:   CALL    MSG
+        LXI     H,REMSG-OFFSET  ;OUTPUT "RESTORE ERROR=" TO CONSOLE
+LERR:   CALL    MSG-OFFSET
         POP     PSW             ;GET ERROR STATUS BACK
-        CALL    BYTEO           ;INDICATE ERROR AND DO CRLF
+        CALL    BYTEO-OFFSET    ;INDICATE ERROR AND DO CRLF
         MVI     C,0AH
-        CALL    CO
+        CALL    CO-OFFSET
         MVI     C,0DH
-        CALL    CO
+        CALL    CO-OFFSET
 ;
 HERE:
 ;       JMP     START           ;GO TRY BOOTING AGAIN
@@ -253,7 +252,5 @@ REMSG:  DB      16,0DH,0AH,'RESTORE ERROR='
 ;
         DS      64      ;SETUP STORAGE FOR A RAM BASED STACK
 STACK   EQU     $
-;
-	.DEPHASE
 ;
         END

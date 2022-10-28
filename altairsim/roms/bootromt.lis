@@ -1,0 +1,316 @@
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 1
+Source file: bootromt.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;******************************************************************
+                       2      2 ;       PROM BASED BOOT ROUTINE FOR TARBELL SINGLE DENSITY CP/M
+                       3      3 ;******************************************************************
+                       4      4 ;
+                       5      5 ;       THIS PROGRAM IS DESIGNED TO BOOT SECTOR 1 OF TRACK 0
+                       6      6 ;       ON A TARBELL DISK USING THE TARBELL SINGLE DENSITY
+                       7      7 ;       DISK CONTROLLER BOARD. TRACK 0 IS FORMATTED SINGLE
+                       8      8 ;       DENSITY SO THE CPU CAN DO THE DATA TRANSFER. THE BOOT
+                       9      9 ;       ROUTINE LOADS A PROGRAM FROM DISK INTO MEMORY AND THEN
+                      10     10 ;       JUMPS TO THAT ROUTINE. THE PROGRAM LOADED STARTS AT
+                      11     11 ;       MEMORY ADDRESS 0000H.
+                      12     12 ;               THE PART OF THIS PROGRAM THAT ACTUALLY DOES THE
+                      13     13 ;       THE BOOT OPERATION IS MOVED FROM A DATA AREA IN THE 1702A
+                      14     14 ;       TURNKEY PROMS AT ADDRESS 0FE00H TO BE EXECUTED FROM WITHIN
+                      15     15 ;       CPU RAM AT ADDRESS 01000H. THIS IS NECESSARY DUE TO THE
+                      16     16 ;       EXTENDED WAITSTATE TIME AFFORDED BY THE TURNKEY MODULE
+                      17     17 ;       WHICH COULD RESULT IN DATA LOST ERRORS AT THE DISK CONTROLLER
+                      18     18 ;       BOARD. THE FIRST PROM ONLY CONTAINS A BLOCK MOVE ROUTINE
+                      19     19 ;       TO TRANSFER THE DATA TO THE EXECUTION AREA AT 01000H.
+                      20     20 ;
+                      21     21 ;               MICHAEL J. KARAS
+                      22     22 ;               MICRO RESOURCES
+                      23     23 ; THESE DAYS MIKE CAN BE REACHED AT MKARAS@CAROUSEL-DESIGN.COM (MARCH 23, 2009)
+                      24     24 ;
+                      25     25 ; INSTEAD OF APPLYING THE REOCATION OFFSET TO ALL RELEVANT INSTRUCTIONS
+                      26     26 ; LET THE ASSEMBLER DO ALL THE NASTY WORK.
+                      27     27 ; UDO MUNK, OCTOBER 2022
+                      28     28 ;
+                      29     29 ;******************************************************************
+                      30     30 ;
+1000  =               31     31 RUNLOC  EQU    1000H            ;RELOCATE LOADER HERE
+                      32     32 ;
+                      33     33 ;MAKE A BLOCK MOVE ROUTINE TO SEND EXECUTABLE CODE INTO
+                      34     34 ;SYSTEM RAM AT 1000H
+                      35     35  
+                      36     36         ORG     0FE00H          ;PUT THE MOVE ROUTINE HERE
+                      37     37  
+fe00  f3              38     38         DI                      ;NO INTERRUPTS
+fe01  21 17 fe        39     39         LXI     H,RCODE         ;POINT TO BLOCK TO BE MOVED
+fe04  01 80 01        40     40         LXI     B,0180H         ;SET COUNT FOR ONE AND A HALF 1702'S
+fe07  11 00 10        41     41         LXI     D,RUNLOC        ;POINT TO DESTINATION OF MOVE
+fe0a                  42     42 MOVE:
+fe0a  7e              43     43         MOV     A,M             ;GET A BYTE OF CODE FROM PROM
+fe0b  12              44     44         STAX    D               ;STORE IT INTO RAM
+fe0c  23              45     45         INX     H               ;INCREMENT PROM POINTER
+fe0d  13              46     46         INX     D               ;INCREMENT RAM POINTER
+fe0e  0b              47     47         DCX     B               ;DECREMENT BYTE COUNT
+fe0f  79              48     48         MOV     A,C             ;CHECK IF DONE
+fe10  b0              49     49         ORA     B
+fe11  c2 0a fe        50     50         JNZ     MOVE            ;IF NOT DONE GO DO IT AGAIN
+                      51     51 ;
+fe14  c3 00 10        52     52         JMP     RUNLOC          ;TRANSFER CONTROL TO ROUTINE
+                      53     53                                 ;JUST MOVED TO RAM
+                      54     54 ;
+                      55     55 ;
+                      56     56 ;BASE THIS ROUTINE INTO SYSTEM RAM AT 1000H
+                      57     57 ;
+fe17                  58     58 RCODE:
+                      59     59         .PHASE  RUNLOC
+                      60     60 ;
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 2
+Source file: bootromt.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+1000  f3              61     61         DI                      ;DISABLE INTERRUPTS
+                      62     62 ;
+                      63     63 ;
+1001  31 56 11        64     64         LXI     SP,STACK        ;SET THE STACK DUMMY?
+1004  c3 42 10        65     65         JMP     INIT            ;GO INITIALIZE THIS BUGGER 
+                      66     66 ;
+                      67     67 ;
+                      68     68 ;SYSTEM EQUATES FOR TARBELL CONTROLLER
+                      69     69 ;
+00fc  =               70     70 DWAIT   EQU     0FCH            ;WAIT FOR DISK PORT
+00f8  =               71     71 DCOM    EQU     0F8H            ;DISK COMMAND PORT
+00fb  =               72     72 DDATA   EQU     0FBH            ;DISK DATA PORT
+00f8  =               73     73 DSTAT   EQU     0F8H            ;DISK STATUS PORT
+00fa  =               74     74 DSEC    EQU     0FAH            ;DISK SECTOR PORT
+00f9  =               75     75 DTRK    EQU     0F9H            ;DISK TRACK PORT
+00fc  =               76     76 DSEL    EQU     0FCH            ;DISK SELECT PORT
+                      77     77 ;
+                      78     78 ;
+                      79     79 ;SYSTEM VARIABLES AND ADDRESS POINTERS
+                      80     80 ;
+007d  =               81     81 SBOOT   EQU     007DH           ;SINGLE DENSITY BOOT ENTRY
+008c  =               82     82 RDCMD   EQU     008CH           ;READ COMMAND FOR 1791 CONTROLLER
+                      83     83 ;
+                      84     84 ;
+                      85     85 ;DEFINE SI/O RS-232 CONSOLE I/O PARAMETERS
+                      86     86 ;
+0010  =               87     87 CCTRL   EQU     010H            ;CONSOLE COMMAND/STATUS PORT
+0011  =               88     88 CDATA   EQU     011H            ;CONSOLE DATA PORT
+0001  =               89     89 CRRDY   EQU     001H            ;RECEIVER READY BIT
+0002  =               90     90 CTRDY   EQU     002H            ;TRANSMITTER READY BIT
+                      91     91 ;
+                      92     92 ;
+                      93     93 ;COLD BOOT LOADER CONSOLE I/O INTERFACE ROUTINES
+                      94     94 ;
+                      95     95 ;
+                      96     96 ;       CONSOLE  OUTPUT ROUTINE
+                      97     97 ;
+1007                  98     98 CO:
+1007  db 10           99     99         IN      CCTRL
+1009  e6 02          100    100         ANI     CTRDY
+100b  ca 07 10       101    101         JZ      CO
+100e  79             102    102         MOV     A,C
+100f  d3 11          103    103         OUT     CDATA
+1011  c9             104    104         RET
+                     105    105 ;
+                     106    106 ;       BYTE PRINT CONVERSION ROUTINE
+                     107    107 ;
+1012                 108    108 BYTEO:
+1012  f5             109    109         PUSH    PSW
+1013  cd 22 10       110    110         CALL    BYTO1
+1016  4f             111    111         MOV     C,A
+1017  cd 07 10       112    112         CALL    CO
+101a  f1             113    113         POP     PSW
+101b  cd 26 10       114    114         CALL    BYTO2
+101e  4f             115    115         MOV     C,A
+101f  c3 07 10       116    116         JMP     CO
+                     117    117 ;
+                     118    118 ;
+                     119    119 ;
+1022                 120    120 BYTO1:
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 3
+Source file: bootromt.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+1022  0f             121    121         RRC
+1023  0f             122    122         RRC
+1024  0f             123    123         RRC
+1025  0f             124    124         RRC
+1026                 125    125 BYTO2:
+1026  e6 0f          126    126         ANI     0FH
+1028  fe 0a          127    127         CPI     0AH
+102a  fa 2f 10       128    128         JM      BYTO3
+102d  c6 07          129    129         ADI     7
+102f                 130    130 BYTO3:
+102f  c6 30          131    131         ADI     30H
+1031  c9             132    132         RET
+                     133    133 ;
+                     134    134 ;       MESSAGE PRINTING ROUTINE
+                     135    135 ;
+1032                 136    136 MSG:
+1032  f5             137    137         PUSH    PSW             ;FOLLOWING OUTPUTS MESSAGES
+1033  c5             138    138         PUSH    B               ;  TO CONSOLE
+1034  46             139    139         MOV     B,M
+1035  23             140    140         INX     H
+1036                 141    141 MSGA:
+1036  4e             142    142         MOV     C,M
+1037  cd 07 10       143    143         CALL    CO
+103a  23             144    144         INX     H
+103b  05             145    145         DCR     B
+103c  c2 36 10       146    146         JNZ     MSGA
+103f  c1             147    147         POP     B
+1040  f1             148    148         POP     PSW
+1041  c9             149    149         RET
+                     150    150 ;
+                     151    151 ;
+                     152    152 ;INITIALIZE
+                     153    153 ;
+1042                 154    154 INIT:
+1042  21 ff 0f       155    155         LXI     H,00FFFH        ;DELAY SI/O INIT FOR
+                     156    156                                 ; MESSAGE IN PROGRESS
+1045                 157    157 LOOP:
+1045  2b             158    158         DCX     H
+1046  7c             159    159         MOV     A,H
+1047  b5             160    160         ORA     L
+1048  c2 45 10       161    161         JNZ     LOOP
+104b  3e 03          162    162         MVI     A,003H          ;INITIALIZE SI/O WITH RESET
+104d  d3 10          163    163         OUT     CCTRL
+104f  3e 11          164    164         MVI     A,011H          ;INITIALIZE SIO WITH 16X,8 BITS, NO PAR
+                     165    165                                 ;2 STOP BITS
+1051  d3 10          166    166         OUT     CCTRL
+                     167    167 ;
+                     168    168 ;
+                     169    169 ;START OF COLD BOOT LOADER CODE
+                     170    170 ;
+1053                 171    171 START:
+1053  21 c5 10       172    172         LXI     H,CBMSG         ;OUTPUT "CP/M COLD BOOT" TO THE CONSOLE
+1056  cd 32 10       173    173         CALL    MSG
+1059  3e f2          174    174         MVI     A,0F2H          ;SELECT DISK A: AT SINGLE DENSITY
+105b  d3 fc          175    175         OUT     DSEL
+105d  3e d0          176    176         MVI     A,0D0H          ;CLEAR ANY PENDING COMMAND
+105f  d3 f8          177    177         OUT     DCOM
+1061  00             178    178         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
+1062  00             179    179         NOP
+1063  00             180    180         NOP
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 4
+Source file: bootromt.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+1064  00             181    181         NOP
+1065                 182    182 HOME:
+1065  db f8          183    183         IN      DSTAT           ;GET STATUS
+1067  0f             184    184         RRC
+1068  da 65 10       185    185         JC      HOME            ;WAIT FOR NOT BUSY COMPLETION
+106b  3e 02          186    186         MVI     A,002H          ;ISSUE RESTORE CMND (10 MSEC. STEP RATE)
+106d  d3 f8          187    187         OUT     DCOM
+106f  00             188    188         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
+1070  00             189    189         NOP
+1071  00             190    190         NOP
+1072  00             191    191         NOP
+1073  db fc          192    192         IN      DWAIT           ;WAIT FOR COMPLETION
+1075  b7             193    193         ORA     A               ;SET FLAGS FOR ERROR ON "DRQ",NOT "INTRQ"
+1076  fa a8 10       194    194         JM      DRQER
+1079  db f8          195    195         IN      DSTAT           ;GET DISK STATUS
+107b  e6 04          196    196         ANI     004H            ;MASK FOR TRACK 00 STATUS BIT
+107d  ca af 10       197    197         JZ      TK0ER
+1080  af             198    198         XRA     A               ;ZERO ACCUMULATOR
+1081  6f             199    199         MOV     L,A             ;SETUP MEMORY LOAD ADDRESS 0000H
+1082  67             200    200         MOV     H,A
+1083  3c             201    201         INR     A               ;SETUP FOR SECTOR 01
+1084  d3 fa          202    202         OUT     DSEC
+1086  3e 8c          203    203         MVI     A,RDCMD         ;SETUP READ COMMAND
+1088  d3 f8          204    204         OUT     DCOM
+108a  00             205    205         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
+108b  00             206    206         NOP
+108c  00             207    207         NOP
+108d  00             208    208         NOP
+108e                 209    209 RLOOP:
+108e  db fc          210    210         IN      DWAIT           ;WAIT FOR DISK CONTROLLER
+1090  b7             211    211         ORA     A               ;SET FLAGS
+1091  f2 9b 10       212    212         JP      RDONE           ;ARE WE DONE YET
+1094  db fb          213    213         IN      DDATA           ;GET DATA FROM DISK
+1096  77             214    214         MOV     M,A             ;MOVE IT INTO MEMORY
+1097  23             215    215         INX     H               ;INCREMENT MEMORY POINTER
+1098  c3 8e 10       216    216         JMP     RLOOP           ;GO GET NEXT BYTE
+109b                 217    217 RDONE:
+109b  db f8          218    218         IN      DSTAT           ;GET DISK READ STATUS
+109d  b7             219    219         ORA     A               ;CHECK FOR ERRORS
+109e  ca 7d 00       220    220         JZ      SBOOT           ;NO ERRORS?
+                     221    221                                 ;THEN GO BOOT SINGLE DENSITY CP/M
+10a1  f5             222    222         PUSH    PSW             ;OOPS...GOT AN ERROR,SAVE STATUS
+10a2  21 d6 10       223    223         LXI     H,LEMSG         ;OUTPUT "BOOT LOAD ERROR=" TO CONSOLE
+10a5  c3 b3 10       224    224         JMP     LERR
+10a8  f5             225    225 DRQER:  PUSH    PSW             ;SAVE ERROR STATUS
+10a9  21 e9 10       226    226         LXI     H,RQMSG         ;OUTPUT "COMMAND COMPLETION ERROR=" TO CONSOLE
+10ac  c3 b3 10       227    227         JMP     LERR
+10af  f5             228    228 TK0ER:  PUSH    PSW             ;SAVE ERROR STATUS
+10b0  21 05 11       229    229         LXI     H,REMSG         ;OUTPUT "RESTORE ERROR=" TO CONSOLE
+10b3  cd 32 10       230    230 LERR:   CALL    MSG
+10b6  f1             231    231         POP     PSW             ;GET ERROR STATUS BACK
+10b7  cd 12 10       232    232         CALL    BYTEO           ;INDICATE ERROR AND DO CRLF
+10ba  0e 0a          233    233         MVI     C,0AH
+10bc  cd 07 10       234    234         CALL    CO
+10bf  0e 0d          235    235         MVI     C,0DH
+10c1  cd 07 10       236    236         CALL    CO
+                     237    237 ;
+10c4                 238    238 HERE:
+                     239    239 ;       JMP     START           ;GO TRY BOOTING AGAIN
+10c4  76             240    240         HLT                     ;OR HALT SYSTEM
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 5
+Source file: bootromt.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     241    241 ;
+                     242    242 ;
+                     243    243 ;COLD BOOT ROUTINE MESSAGES
+                     244    244 ;
+                     245    245 ;
+10c5  10 43 50 2f    246    246 CBMSG:  DB      16,'CP/M COLD BOOT',0AH,0DH
+10c9  4d 20 43 4f    246    247
+10cd  4c 44 20 42    246    248
+10d1  4f 4f 54 0a    246    249
+10d5  0d             246    250
+                     247    251 ;
+10d6  12 0d 0a 42    248    252 LEMSG:  DB      18,0DH,0AH,'BOOT LOAD ERROR='
+10da  4f 4f 54 20    248    253
+10de  4c 4f 41 44    248    254
+10e2  20 45 52 52    248    255
+10e6  4f 52 3d       248    256
+                     249    257 ;
+10e9  1b 0d 0a 43    250    258 RQMSG:  DB      27,0DH,0AH,'COMMAND COMPLETION ERROR='
+10ed  4f 4d 4d 41    250    259
+10f1  4e 44 20 43    250    260
+10f5  4f 4d 50 4c    250    261
+10f9  45 54 49 4f    250    262
+10fd  4e 20 45 52    250    263
+1101  52 4f 52 3d    250    264
+                     251    265 ;
+1105  10 0d 0a 52    252    266 REMSG:  DB      16,0DH,0AH,'RESTORE ERROR='
+1109  45 53 54 4f    252    267
+110d  52 45 20 45    252    268
+1111  52 52 4f 52    252    269
+1115  3d             252    270
+                     253    271 ;
+1116                 254    272         DS      64      ;SETUP STORAGE FOR A RAM BASED STACK
+1156  =              255    273 STACK   EQU     $
+                     256    274 ;
+                     257    275 	.DEPHASE
+                     258    276 ;
+ff6d                 259    277         END
+Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 6
+Source file: bootromt.asm
+Title:       Symbol table
+
+BYTEO    1012 	BYTO1    1022 	BYTO2    1026 	BYTO3    102f 	
+CBMSG    10c5 	CCTRL    0010 	CDATA    0011 	CO       1007 	
+CRRDY    0001*	CTRDY    0002 	DCOM     00f8 	DDATA    00fb 	
+DRQER    10a8 	DSEC     00fa 	DSEL     00fc 	DSTAT    00f8 	
+DTRK     00f9*	DWAIT    00fc 	HERE     10c4*	HOME     1065 	
+INIT     1042 	LEMSG    10d6 	LERR     10b3 	LOOP     1045 	
+MOVE     fe0a 	MSG      1032 	MSGA     1036 	RCODE    fe17 	
+RDCMD    008c 	RDONE    109b 	REMSG    1105 	RLOOP    108e 	
+RQMSG    10e9 	RUNLOC   1000 	SBOOT    007d 	STACK    1156 	
+START    1053*	TK0ER    10af 	
