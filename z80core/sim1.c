@@ -57,7 +57,7 @@
 #include "memory.h"
 
 #ifdef WANT_GUI
-void check_gui_break(void);
+extern void check_gui_break(void);
 #endif
 
 static int op_nop(void), op_halt(void), op_scf(void);
@@ -827,7 +827,7 @@ static int op_di(void)			/* DI */
 
 static int op_in(void)			/* IN A,(n) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 	BYTE addr;
 
 	addr = memrdr(PC++);
@@ -837,7 +837,7 @@ static int op_in(void)			/* IN A,(n) */
 
 static int op_out(void)			/* OUT (n),A */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 	BYTE addr;
 
 	addr = memrdr(PC++);

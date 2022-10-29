@@ -27,7 +27,7 @@
 
 static const char *TAG = "memory";
 
-extern int load_file(char *, BYTE, WORD);
+extern int load_file(char *, WORD, int);
 extern void cromemco_fdc_reset(void);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
@@ -155,7 +155,7 @@ void init_memory(void)
 					/* load firmware into ROM if specified */
 					if (memconf[M_flag][i].rom_file) {
 						strcpy(pfn, memconf[M_flag][i].rom_file);
-						load_file(fn, memconf[M_flag][i].spage, memconf[M_flag][i].size);
+						load_file(fn, memconf[M_flag][i].spage << 8, memconf[M_flag][i].size << 8);
 					}
 					break;
 			}

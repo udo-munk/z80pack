@@ -442,7 +442,7 @@ static int op_neg(void)			/* NEG */
 
 static int op_inaic(void)		/* IN A,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 
 	A = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -454,7 +454,7 @@ static int op_inaic(void)		/* IN A,(C) */
 
 static int op_inbic(void)		/* IN B,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 
 	B = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -466,7 +466,7 @@ static int op_inbic(void)		/* IN B,(C) */
 
 static int op_incic(void)		/* IN C,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 
 	C = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -478,7 +478,7 @@ static int op_incic(void)		/* IN C,(C) */
 
 static int op_indic(void)		/* IN D,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 
 	D = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -490,7 +490,7 @@ static int op_indic(void)		/* IN D,(C) */
 
 static int op_ineic(void)		/* IN E,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 
 	E = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -502,7 +502,7 @@ static int op_ineic(void)		/* IN E,(C) */
 
 static int op_inhic(void)		/* IN H,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 
 	H = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -514,7 +514,7 @@ static int op_inhic(void)		/* IN H,(C) */
 
 static int op_inlic(void)		/* IN L,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 
 	L = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -526,7 +526,7 @@ static int op_inlic(void)		/* IN L,(C) */
 
 static int op_outca(void)		/* OUT (C),A */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, A);
 	return(12);
@@ -534,7 +534,7 @@ static int op_outca(void)		/* OUT (C),A */
 
 static int op_outcb(void)		/* OUT (C),B */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, B);
 	return(12);
@@ -542,7 +542,7 @@ static int op_outcb(void)		/* OUT (C),B */
 
 static int op_outcc(void)		/* OUT (C),C */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, C);
 	return(12);
@@ -550,7 +550,7 @@ static int op_outcc(void)		/* OUT (C),C */
 
 static int op_outcd(void)		/* OUT (C),D */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, D);
 	return(12);
@@ -558,7 +558,7 @@ static int op_outcd(void)		/* OUT (C),D */
 
 static int op_outce(void)		/* OUT (C),E */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, E);
 	return(12);
@@ -566,7 +566,7 @@ static int op_outce(void)		/* OUT (C),E */
 
 static int op_outch(void)		/* OUT (C),H */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, H);
 	return(12);
@@ -574,7 +574,7 @@ static int op_outch(void)		/* OUT (C),H */
 
 static int op_outcl(void)		/* OUT (C),L */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	io_out(C, B, L);
 	return(12);
@@ -582,7 +582,7 @@ static int op_outcl(void)		/* OUT (C),L */
 
 static int op_ini(void)			/* INI */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 	BYTE data;
 
 	data = io_in(C, B);
@@ -599,7 +599,7 @@ static int op_ini(void)			/* INI */
 #ifdef WANT_FASTB
 static int op_inir(void)		/* INIR */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 	WORD addr;
 	BYTE data;
 	register int t = -21;
@@ -635,7 +635,7 @@ static int op_inir(void)		/* INIR */
 
 static int op_ind(void)			/* IND */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 	BYTE data;
 
 	data = io_in(C, B);
@@ -652,7 +652,7 @@ static int op_ind(void)			/* IND */
 #ifdef WANT_FASTB
 static int op_indr(void)		/* INDR */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 	WORD addr;
 	BYTE data;
 	register int t = -21;
@@ -688,7 +688,7 @@ static int op_indr(void)		/* INDR */
 
 static int op_outi(void)		/* OUTI */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
 
 	B--;
@@ -705,7 +705,7 @@ static int op_outi(void)		/* OUTI */
 #ifdef WANT_FASTB
 static int op_otir(void)		/* OTIR */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
 	register int t = -21;
@@ -741,7 +741,7 @@ static int op_otir(void)		/* OTIR */
 
 static int op_outd(void)		/* OUTD */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
 
 	B--;
@@ -758,7 +758,7 @@ static int op_outd(void)		/* OUTD */
 #ifdef WANT_FASTB
 static int op_otdr(void)		/* OTDR */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 	WORD addr;
 	BYTE data;
 	register int t = -21;
@@ -1392,7 +1392,7 @@ static int op_oprrd(void)		/* RRD (HL) */
 
 static int op_undoc_outc0(void)		/* OUT (C),0 */
 {
-	void io_out(BYTE, BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 
 	if (u_flag) {
 		trap_ed();
@@ -1405,7 +1405,7 @@ static int op_undoc_outc0(void)		/* OUT (C),0 */
 
 static int op_undoc_infic(void)		/* IN F,(C) */
 {
-	BYTE io_in(BYTE, BYTE);
+	extern BYTE io_in(BYTE, BYTE);
 	BYTE tmp;
 
 	if (u_flag) {

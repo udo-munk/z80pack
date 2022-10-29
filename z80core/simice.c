@@ -68,7 +68,7 @@ extern void disass(int, WORD *);
 extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
-extern int load_file(char *, BYTE, WORD);
+extern int load_file(char *, WORD, int);
 
 static void do_step(void);
 static void do_trace(char *);
@@ -89,6 +89,7 @@ static void do_count(char *);
 static void do_clock(void);
 static void timeout(int);
 static void do_show(void);
+static void do_load(char *);
 static void do_unix(char *);
 static void do_help(void);
 static void cpu_err_msg(void);
@@ -195,7 +196,7 @@ void ice_cmd_loop(int go_flag)
 			do_help();
 			break;
 		case 'r':
-			load_file(cmd + 1, 0, 0);
+			do_load(cmd + 1);
 			break;
 		case '!':
 			do_unix(cmd + 1);
@@ -500,9 +501,10 @@ static void do_move(char *s)
  */
 static void do_port(char *s)
 {
+	extern BYTE io_in(BYTE, BYTE);
+	extern void io_out(BYTE, BYTE, BYTE);
 	register BYTE port;
 	static char nv[LENCMD];
-	extern BYTE io_out(BYTE, BYTE, BYTE), io_in(BYTE, BYTE);
 
 	while (isspace((unsigned char) *s))
 		s++;
@@ -971,6 +973,26 @@ static void do_show(void)
 	i = 0;
 #endif
 	printf("T-State counting %spossible\n", i ? "" : "im");
+}
+
+/*
+ *	Load a file into the memory of the emulated CPU
+ */
+static void do_load(char *s)
+{
+	static char fn[MAX_LFN];
+	char *pfn = fn;
+
+	while (isspace((unsigned char) *s))
+		s++;
+	while (*s != ',' && *s != '\n' && *s != '\0')
+		*pfn++ = *s++;
+	*pfn = '\0';
+	if (*s == ',')
+		load_file(fn, exatoi(++s), -1);
+	else
+		load_file(fn, 0, 0);
+	wrk_addr = PC;
 }
 
 /*
