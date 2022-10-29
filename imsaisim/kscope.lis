@@ -1,0 +1,108 @@
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:41:31 2022	Page 1
+Source file: kscope.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ; CROMEMCO DAZZLER KALEIDOSCOPE
+                       3      3 ; WRITTEN BY LI-CHEN WANG
+                       4      4 ;
+                       5      5 
+                       6      6         ORG  0
+                       7      7 
+0000  31 00 01         8      8         LXI  SP,0100H
+0003  3e 81            9      9         MVI  A,081H
+0005  d3 0e           10     10         OUT  14
+0007  3e 30           11     11         MVI  A,030H
+0009  d3 0f           12     12         OUT  15
+000b  78              13     13         MOV  A,B
+000c  0f              14     14         RRC
+000d  0f              15     15         RRC
+000e  a2              16     16         ANA  D
+000f  81              17     17         ADD  C
+0010  4f              18     18         MOV  C,A
+0011  0f              19     19         RRC
+0012  0f              20     20         RRC
+0013  a2              21     21         ANA  D
+0014  6f              22     22         MOV  L,A
+0015  78              23     23         MOV  A,B
+0016  95              24     24         SUB  L
+0017  47              25     25         MOV  B,A
+0018  c5              26     26         PUSH B
+0019  d5              27     27         PUSH D
+001a  e5              28     28         PUSH H
+001b  11 00 00        29     29         LXI  D,0
+001e  7c              30     30         MOV  A,H
+001f  e6 1f           31     31         ANI  01FH
+0021  1f              32     32         RAR
+0022  da 2b 00        33     33         JC   002BH
+0025  5f              34     34         MOV  E,A
+0026  07              35     35         RLC
+0027  07              36     36         RLC
+0028  07              37     37         RLC
+0029  07              38     38         RLC
+002a  57              39     39         MOV  D,A
+002b  26 08           40     40         MVI  H,08H
+002d  cd 5d 00        41     41         CALL 005DH
+0030  78              42     42         MOV  A,B
+0031  2f              43     43         CMA
+0032  47              44     44         MOV  B,A
+0033  26 06           45     45         MVI  H,06H
+0035  cd 5d 00        46     46         CALL 005DH
+0038  79              47     47         MOV  A,C
+0039  2f              48     48         CMA
+003a  4f              49     49         MOV  C,A
+003b  26 02           50     50         MVI  H,02H
+003d  cd 5d 00        51     51         CALL 005DH
+0040  78              52     52         MOV  A,B
+0041  2f              53     53         CMA
+0042  47              54     54         MOV  B,A
+0043  26 04           55     55         MVI  H,04H
+0045  cd 5d 00        56     56         CALL 005DH
+0048  e1              57     57         POP  H
+0049  d1              58     58         POP  D
+004a  c1              59     59         POP  B
+004b  1d              60     60         DCR  E
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:41:31 2022	Page 2
+Source file: kscope.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+004c  c2 0b 00        61     61         JNZ  000BH
+004f  04              62     62         INR  B
+0050  0c              63     63         INR  C
+0051  1e 3f           64     64         MVI  E,03FH
+0053  25              65     65         DCR  H
+0054  c2 0b 00        66     66         JNZ  0000BH
+0057  14              67     67         INR  D
+0058  26 1f           68     68         MVI  H,01FH
+005a  c3 0b 00        69     69         JMP  000BH
+005d  79              70     70         MOV  A,C
+005e  e6 f8           71     71         ANI  0F8H
+0060  17              72     72         RAL
+0061  6f              73     73         MOV  L,A
+0062  7c              74     74         MOV  A,H
+0063  ce 00           75     75         ACI  00H
+0065  67              76     76         MOV  H,A
+0066  78              77     77         MOV  A,B
+0067  e6 f8           78     78         ANI  0F8H
+0069  1f              79     79         RAR
+006a  1f              80     80         RAR
+006b  1f              81     81         RAR
+006c  1f              82     82         RAR
+006d  f5              83     83         PUSH PSW
+006e  85              84     84         ADD  L
+006f  6f              85     85         MOV  L,A
+0070  f1              86     86         POP  PSW
+0071  7e              87     87         MOV  A,M
+0072  da 7a 00        88     88         JC   007AH
+0075  e6 f0           89     89         ANI  0F0H
+0077  83              90     90         ADD  E
+0078  77              91     91         MOV  M,A
+0079  c9              92     92         RET
+007a  e6 0f           93     93         ANI  0FH
+007c  82              94     94         ADD  D
+007d  77              95     95         MOV  M,A
+007e  c9              96     96         RET
+                      97     97 
+007f                  98     98         END
