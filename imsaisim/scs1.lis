@@ -1,0 +1,2586 @@
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 1
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1         TITLE           'IMSAI SCS-1 REV. 2 06 OCT. 1976'
+                       2      2 ;
+                       3      3 ;       PAGE    62
+                       4      4 ;
+                       5      5 ; MODIFIED TO ASSEMBLE WITH INTEL 8080 CROSS ASSEMBLER
+                       6      6 ; OCTOBER 2008, UDO MUNK
+                       7      7 ;
+0003  =                8      8 TTS     EQU     03H
+0002  =                9      9 TTI     EQU     02H
+0002  =               10     10 TTO     EQU     02H
+0002  =               11     11 TTYDA   EQU     02H
+0001  =               12     12 TTYTR   EQU     01H
+                      13     13 ;
+                      14     14         ORG     0H
+0000  c3 40 00        15     15         JMP     INITA           ;DEAD START
+0003  c3 67 00        16     16         JMP     EOR             ;RESTART MONITOR
+                      17     17 ;
+                      18     18         ORG     08H
+0008  c3 2e 0d        19     19         JMP     BRKP            ;BREAKPOINT RESTART
+                      20     20 ;
+                      21     21         ORG     40H;
+                      22     22 ;
+                      23     23 ; THIS ROUTINE SETS UP THE SIO BOARD
+                      24     24 ;
+0040  3e aa           25     25 INITA:  MVI     A,0AAH          ;GET DUMMY MODE WORD
+0042  d3 03           26     26         OUT     TTS             ;OUTPUT IT
+0044  3e 40           27     27         MVI     A,40H           ;GET RESET BIT
+0046  d3 03           28     28         OUT     TTS             ;RESET SIO BOARD
+0048  3e ce           29     29         MVI     A,0CEH          ;GET REAL MODE WORD
+004a  d3 03           30     30         OUT     TTS             ;SET THE MODE FOR REAL
+004c  3e 37           31     31         MVI     A,37H           ;GET THE COMMAND
+004e  d3 03           32     32         OUT     TTS             ;OUTPUT IT
+                      33     33 ;
+                      34     34 ; THIS ROUTINE INITIALIZES THE FILE AREAD FOR SUBSEQUENT
+                      35     35 ; PROCESSING
+                      36     36 ;
+0050  21 24 10        37     37         LXI     H,FILE0
+0053  0e 4e           38     38         MVI     C,MAXFIL*FELEN
+0055  af              39     39         XRA     A
+0056  77              40     40 INIT2:  MOV     M,A
+0057  23              41     41         INX     H
+0058  0d              42     42         DCR     C
+0059  c2 56 00        43     43         JNZ     INIT2
+                      44     44 ;
+                      45     45 ; CLEAR THE BREAKPOINT TABLE
+                      46     46 ;
+005c  06 18           47     47         MVI     B,NBR*3
+005e  21 0c 10        48     48         LXI     H,BRT
+0061  77              49     49 INIT3:  MOV     M,A
+0062  23              50     50         INX     H
+0063  05              51     51         DCR     B
+0064  c2 61 00        52     52         JNZ     INIT3
+                      53     53 ;
+                      54     54 ; THIS IS THE STARTING POINT OF THE SELF CONTAINED
+                      55     55 ; SYSTEM ONCE THE SYSTEM HAS BEEN INITIALIZED.  COMMANDS
+                      56     56 ; ARE READ FROM THE USER, EXECUTED, AND CONTROL RETURNS
+                      57     57 ; BACK TO THIS POINT TO READ ANOTHER COMMAND.
+                      58     58 ;
+0067  31 b2 10        59     59 EOR:    LXI     SP,AREA+18
+006a  cd 0e 01        60     60         CALL    CRLF            ;PRINT C/R, LINE FEED
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 2
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+006d  cd 80 00        61     61         CALL    READ            ;READ INPUT LINE
+0070  23              62     62         INX     H
+0071  7e              63     63         MOV     A,M             ;FETCH FIRST CHARACTER
+0072  fe 3a           64     64         CPI     '9'+1           ;COMMAND OR LINE NUMBER?
+0074  da b5 04        65     65         JC      LINE            ;JUMP IF LINE FOR FILE
+0077  cd 73 01        66     66         CALL    VALC
+007a  cd 2b 01        67     67         CALL    COMM
+007d  c3 67 00        68     68         JMP     EOR
+                      69     69 ;
+                      70     70 ; THIS ROUTINE READS IN A LINE FROM THE TTY AND PLACES
+                      71     71 ; IT IN AN INPUT BUFFER.
+                      72     72 ; THE FOLLOWING ARE SPECIAL CHARACTERS
+                      73     73 ;   CR          TERMINATES READ ROUTINE
+                      74     74 ;   LF          NOT RECOGNIZED BY ROUTINE
+                      75     75 ;   CTRL X      DELETES CURRENT LINE
+                      76     76 ;   DEL         DELETES CHARACER
+                      77     77 ; ALL DISPLAYABLE CHARACTERS BETWEEN BLANK & Z AND THE
+                      78     78 ; ABOVE ARE RECOGNIZED BY THE READ ROUTINE, ALL OTHERS
+                      79     79 ; ARE SKIPPED OVER.  THE ROUTINE WILL NOT ACCEPT MORE
+                      80     80 ; CHARACTERS THAN THE INPUT BUFFER WILL HOLD.
+                      81     81 ;
+0080  21 c7 10        82     82 READ:   LXI     H,IBUF          ;GET INPUT BUFFER ADDRESS
+0083  22 74 10        83     83         SHLD    ADDS            ;SAVE ADDRESS
+0086  1e 02           84     84         MVI     E,2             ;INITIALIZE CHARACTER COUNT
+0088  cd f6 00        85     85 NEXT:   CALL    IN8             ;READ A LINE
+008b  78              86     86         MOV     A,B
+008c  fe 18           87     87         CPI     24              ;CHECK FOR CTRL X
+008e  c2 97 00        88     88         JNZ     CR
+0091  cd 0e 01        89     89         CALL    CRLF            ;OUTPUT A CRLF
+0094  c3 80 00        90     90         JMP     READ
+0097  fe 0d           91     91 CR:     CPI     ASCR            ;GET AN ASCII CR
+0099  c2 b2 00        92     92         JNZ     DEL
+009c  7d              93     93         MOV     A,L
+009d  fe c7           94     94         CPI     IBUF AND 00FFH  ;CHECK FOR FIRST CHAR
+009f  ca 80 00        95     95         JZ      READ
+00a2  36 0d           96     96         MVI     M,ASCR          ;PLACE CR AT END OF LINE
+00a4  23              97     97         INX     H
+00a5  36 01           98     98         MVI     M,1             ;PLACE EOF INDICATOR IN LINE
+00a7  23              99     99         INX     H
+00a8  3e 1a          100    100         MVI     A,IBUF+83 AND 00FFH
+00aa  cd e1 00       101    101         CALL    CLER            ;CLEAR REMAINING BUFFER
+00ad  21 c6 10       102    102         LXI     H,IBUF-1
+00b0  73             103    103         MOV     M,E             ;SAVE CHARACTER COUNT
+00b1  c9             104    104         RET
+00b2  fe 7f          105    105 DEL:    CPI     127             ;CHECK FOR DELETE CHARACTER
+00b4  c2 c7 00       106    106         JNZ     CHAR
+00b7  3e c7          107    107         MVI     A,IBUF AND 00FFH
+00b9  bd             108    108         CMP     L               ;IS IT 1ST CHARACTER
+00ba  ca 88 00       109    109         JZ      NEXT
+00bd  2b             110    110         DCX     H               ;DECREMENT POINTER
+00be  1d             111    111         DCR     E               ;DECREMENT COUNT
+00bf  06 5f          112    112 BSPA:   MVI     B,5FH
+00c1  cd 03 01       113    113         CALL    OUT8
+00c4  c3 88 00       114    114         JMP     NEXT
+00c7  fe 20          115    115 CHAR:   CPI     ' '             ;CHECK FOR LEGAL CHARACTER
+00c9  da 88 00       116    116         JC      NEXT
+00cc  fe 5b          117    117         CPI     'Z'+1
+00ce  d2 88 00       118    118         JNC     NEXT
+00d1  47             119    119         MOV     B,A
+00d2  cd 03 01       120    120         CALL    OUT8            ;ECHO CHARACTER
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 3
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+00d5  70             121    121         MOV     M,B
+00d6  3e 18          122    122         MVI     A,IBUF+81 AND 00FFH
+00d8  bd             123    123         CMP     L               ;CHECK FOR END OF LINE
+00d9  ca bf 00       124    124         JZ      BSPA
+00dc  23             125    125         INX     H
+00dd  1c             126    126         INR     E               ;INCREMENT CHARACTER COUNT
+00de  c3 88 00       127    127         JMP     NEXT
+                     128    128 ;
+                     129    129 ; THIS ROUTINE IS USED TO BLANK OUT A PORTION OF MEMORY
+                     130    130 ;
+00e1  bd             131    131 CLER:   CMP     L
+00e2  c8             132    132         RZ      
+00e3  36 20          133    133         MVI     M,' '           ;PLACE BLANK IN MEMORY
+00e5  23             134    134         INX     H
+00e6  c3 e1 00       135    135         JMP     CLER
+                     136    136 ;
+                     137    137 ; SEE IF TTY INPUT READY AND CHECK FOR CTRL X.
+                     138    138 ;
+00e9  db 03          139    139 INK:    IN      TTS             ;GET TTY STATUS
+00eb  2f             140    140         CMA                     ;INVERT STATUS
+00ec  e6 02          141    141         ANI     TTYDA           ;IS DATA AVAILABLE?
+00ee  c0             142    142         RNZ                     ;RETURN IF NOT
+00ef  db 02          143    143         IN      TTI             ;GET THE CHAR
+00f1  e6 7f          144    144         ANI     07FH            ;STRIP OFF PARITY
+00f3  fe 18          145    145         CPI     'X'-40H         ;IS IT A CTRL X?
+00f5  c9             146    146         RET
+                     147    147 ;
+                     148    148 ; THIS ROUTINE READS A BYTE OF DATA FROM THE USART
+                     149    149 ;
+00f6  db 03          150    150 IN8:    IN      TTS             ;READ USART STATUS
+00f8  e6 02          151    151         ANI     TTYDA
+00fa  ca f6 00       152    152         JZ      IN8
+00fd  db 02          153    153         IN      TTI             ;READ DATA
+00ff  e6 7f          154    154         ANI     127             ;STRIP OFF PARITY
+0101  47             155    155         MOV     B,A
+0102  c9             156    156         RET
+                     157    157 
+                     158    158 ;
+                     159    159 ; THIS ROUTINE OUTPUTS A BYTE OF DATA TO THE USART
+                     160    160 ;
+0103  db 03          161    161 OUT8:   IN      TTS             ;READ STATUS
+0105  e6 01          162    162         ANI     TTYTR
+0107  ca 03 01       163    163         JZ      OUT8
+010a  78             164    164 OK:     MOV     A,B
+010b  d3 02          165    165         OUT     TTO             ;TRANSMIT DATA
+010d  c9             166    166         RET
+                     167    167 ;
+                     168    168 ; THIS ROUTINE WILL OUTPUT A CARRIAGE RETURN AND
+                     169    169 ; LINE FEED FOLLOWED BY TWO DELETE CHARACTERS WHICH
+                     170    170 ; PROVIDE TIME FOR PRINT HEAD TO RETURN.
+                     171    171 ;
+010e  06 0d          172    172 CRLF:   MVI     B,13            ;CR
+0110  cd 03 01       173    173         CALL    OUT8
+0113  06 0a          174    174 LF:     MVI     B,10            ;LF
+0115  cd 03 01       175    175         CALL    OUT8
+0118  06 7f          176    176         MVI     B,127
+011a  cd 03 01       177    177         CALL    OUT8
+011d  cd 03 01       178    178         CALL    OUT8
+0120  c9             179    179         RET
+                     180    180 ;
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 4
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     181    181 ; THIS ROUTINE JUMPS TO A LOCATION IN MEMORY GIVEN BY
+                     182    182 ; THE INPUT COMMAND AND BEGINS EXECUTION OF PROGRAM
+                     183    183 ; THERE.
+                     184    184 ;
+0121  cd 00 03       185    185 EXEC:   CALL    VCHK            ;CHECK FOR PARAMETERS
+0124  cd 0e 01       186    186         CALL    CRLF
+0127  2a 8a 10       187    187         LHLD    BBUF            ;FETCH ADDRESS
+012a  e9             188    188         PCHL                    ;JUMP TO PROGRAM
+                     189    189 ;
+                     190    190 ; THIS ROUTINE CHECKS THE INPUT COMMAND AGAINS ALL
+                     191    191 ; LEGAL COMMANDS STORED IN A TABLE.  IF A LEGAL COMMAND
+                     192    192 ; IS FOUND, A JUMP IS MADE TO THAT ROUTINE.  OTHERWISE
+                     193    193 ; AN ERROR MESSAGE IS OUTPUT TO THE USER.
+                     194    194 ;
+012b  11 be 02       195    195 COMM:   LXI     D,CTAB          ;COMMAND TABLE ADDRESS
+012e  06 0b          196    196         MVI     B,NCOM          ;NUMBER OF COMMANDS
+0130  3e 04          197    197         MVI     A,4             ;LENGTH OF COMMAND
+0132  32 95 10       198    198         STA     NCHR            ;SAVE
+0135  cd 3c 01       199    199         CALL    COMS            ;SEARCH TABLE
+0138  c2 5a 04       200    200         JNZ     WHAT            ;JUMP IF ILLEGAL COMMAND
+013b  e9             201    201         PCHL                    ;BE HERE NOW
+                     202    202 ;
+                     203    203 ; THIS ROUTINE CHECKS TO SEE IF A BASE CHARACTER STRING
+                     204    204 ; IS EQUAL TO ANY OF THE STRINGS CONTAINED IN A TABLE
+                     205    205 ; POINTED TO BY D,E.  tHE TABLE CONSISTS OF ANY NUMBER
+                     206    206 ; OF CHARS, WITH 2 BYTES CONTAINING VALUES ASSOCIATED
+                     207    207 ; WITH IT.  REG B CONTAINS THE # OF STRINGS TO COMPARE.
+                     208    208 ; THIS ROUTINE CAN BE USED TO SEARCH THROUGH A COMMAND
+                     209    209 ; OR SYMBOL TABLE.  ON RETURN, IF THE ZERO FLAG IS SET,
+                     210    210 ; A MATCH WAS FOUND; IF NOT, NO MATCH WAS FOUND.  IF
+                     211    211 ; A MATCH WAS FOUND, D,E POINT TO THE LAST BYTE
+                     212    212 ; ASSOCIATED WITH THE CHARACTER STRING.  iF NOT, D,E
+                     213    213 ; POINT TO THE NEXT LOCATION AFTER THE END FO THE TABLE.
+                     214    214 ;
+013c  2a 74 10       215    215 COMS:   LHLD    ADDS            ;FETCH COMPARE ADDRESS
+013f  3a 95 10       216    216         LDA     NCHR            ;GET LENGTH OF STRING
+0142  4f             217    217         MOV     C,A
+0143  cd 53 01       218    218         CALL    SEAR            ;COMPARE STRINGS
+0146  1a             219    219         LDAX    D               ;FETCH VALUE
+0147  6f             220    220         MOV     L,A
+0148  13             221    221         INX     D
+0149  1a             222    222         LDAX    D               ;FETCH VALUE
+014a  67             223    223         MOV     H,A
+014b  c8             224    224         RZ      
+014c  13             225    225         INX     D               ;SET TO NEXT STRING
+014d  05             226    226         DCR     B               ;DECREMENT COUNT
+014e  c2 3c 01       227    227         JNZ     COMS
+0151  04             228    228         INR     B               ;CLEAR ZERO FLAG
+0152  c9             229    229         RET
+                     230    230 ;
+                     231    231 ; THIS ROUTINE CHECKS TO SEE IF TWO CHARACTER STRINGS IN
+                     232    232 ; MEMORY ARE EQUAL.  tHE STRINGS ARE POINTED TO BY D,E
+                     233    233 ; AND H,L.  ON RETURN, THE ZERO FLAG SET INDICATES A
+                     234    234 ; MATCH.  REG C INDICATES THE LENGTH OF THE STRINGS.  ON
+                     235    235 ; RETURN, THE POINTERS POINT TO THE NEXT ADDRESS AFTER
+                     236    236 ; THE CHARACTER STRINGS.
+                     237    237 ;
+0153  1a             238    238 SEAR:   LDAX    D               ;FETCH CHARACTER
+0154  be             239    239         CMP     M               ;COMPARE CHARACTERS
+0155  c2 5f 01       240    240         JNZ     INCA
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 5
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0158  23             241    241         INX     H
+0159  13             242    242         INX     D
+015a  0d             243    243         DCR     C               ;DECREMENT CHARACTER COUNT
+015b  c2 53 01       244    244         JNZ     SEAR
+015e  c9             245    245         RET
+015f  13             246    246 INCA:   INX     D
+0160  0d             247    247         DCR     C
+0161  c2 5f 01       248    248         JNZ     INCA
+0164  0c             249    249         INR     C               ;CLEAR ZERO FLAG
+0165  c9             250    250         RET
+                     251    251 ;
+                     252    252 ; THIS ROUTINE ZEROES OUT A BUFFER IN MEMORY WHICH IS
+                     253    253 ; THEN USED BY OTHER SCANNING ROUTINES
+                     254    254 ;
+0166  af             255    255 ZBUF:   XRA     A               ;GET A ZERO
+0167  11 8a 10       256    256         LXI     D,ABUF+12       ;BUFFER ADDRESS
+016a  06 0c          257    257         MVI     B,12            ;BUFFER LENGTH
+016c  1b             258    258 ZBU1:   DCX     D               ;DECREMENT ADDRESS
+016d  12             259    259         STAX    D               ;ZERO BUFFER
+016e  05             260    260         DCR     B
+016f  c2 6c 01       261    261         JNZ     ZBU1
+0172  c9             262    262         RET
+                     263    263 ;
+                     264    264 ; THIS ROUTINE CALLS ETRA TO OBTAIN THE INPUT PARAMETER
+                     265    265 ; VALUES AND CALLS AN ERROR ROUTINE IF AN ERROR OCCURED
+                     266    266 ; IN THAT ROUTINE
+                     267    267 ;
+0173  cd 7a 01       268    268 VALC:   CALL    ETRA            ;GET INPUT PARAMETERS
+0176  da 5a 04       269    269         JC      WHAT            ;JUMP IF ERROR
+0179  c9             270    270         RET
+                     271    271 ;
+                     272    272 ; THIS ROUTINE EXTRACTS THE VALUES ASSOCIATED WITH A
+                     273    273 ; COMMAND FROM THE INPUT STREAM AND PLACES THEM IN THE
+                     274    274 ; ASCII BUFFER (ABUF).  IT ALSO CALLS A ROUTINE TO
+                     275    275 ; CONVERT THE ASCII HEXADECIMALS TO BINARY AND STORES
+                     276    276 ; THEM IN THE BINARY BUFFER (BBUF).  ON RETURN, CARRY
+                     277    277 ; SET INDICATES AN ERROR IN INPUT PARAMETERS.
+                     278    278 ;
+017a  21 00 00       279    279 ETRA:   LXI     H,0             ;GET A ZERO
+017d  22 8c 10       280    280         SHLD    BBUF+2          ;ZERO VALUE
+0180  22 76 10       281    281         SHLD    FBUF            ;SET NO FILE NAME
+0183  cd 66 01       282    282         CALL    ZBUF            ;ZERO BUFFER
+0186  21 c6 10       283    283         LXI     H,IBUF-1
+0189  23             284    284 VAL1:   INX     H
+018a  7e             285    285         MOV     A,M             ;FETCH INPUT CHARACTER
+018b  fe 20          286    286         CPI     ' '             ;LOOK FOR FIRST CHARACTER
+018d  3f             287    287         CMC
+018e  d0             288    288         RNC                     ;RETURN IF NO CARRY
+018f  c2 89 01       289    289         JNZ     VAL1            ;JUMP IF NO BLACK
+0192  22 96 10       290    290         SHLD    PNTR            ;SAVE POINTER
+0195  cd 0d 09       291    291         CALL    SBLK            ;SCAN TO FIRST PARAMETER
+0198  3f             292    292         CMC
+0199  d0             293    293         RNC                     ;RETURN IF CR
+019a  fe 2f          294    294         CPI     '/'
+019c  c2 c4 01       295    295         JNZ     VAL5            ;NO FILE NAME
+019f  11 76 10       296    296         LXI     D,FBUF          ;NAME FOLLOWS PUT IN FBUF
+01a2  0e 05          297    297         MVI     C,NMLEN
+01a4  23             298    298 VAL2:   INX     H
+01a5  7e             299    299         MOV     A,M
+01a6  fe 2f          300    300         CPI     '/'
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 6
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+01a8  ca b4 01       301    301         JZ      VAL3
+01ab  0d             302    302         DCR     C
+01ac  fa 5a 04       303    303         JM      WHAT
+01af  12             304    304         STAX    D               ;STORE FILE NAME
+01b0  13             305    305         INX     D
+01b1  c3 a4 01       306    306         JMP     VAL2
+01b4  3e 20          307    307 VAL3:   MVI     A,' '           ;GET AN ASCII SPACE
+01b6  0d             308    308 VAL4:   DCR     C
+01b7  fa bf 01       309    309         JM      DONE
+01ba  12             310    310         STAX    D               ;FILL IN WITH SPACES
+01bb  13             311    311         INX     D
+01bc  c3 b6 01       312    312         JMP     VAL4
+01bf  cd 14 09       313    313 DONE:   CALL    SBL2
+01c2  3f             314    314         CMC
+01c3  d0             315    315         RNC
+01c4  11 7e 10       316    316 VAL5:   LXI     D,ABUF
+01c7  cd 75 0b       317    317         CALL    ALPS            ;PLACE PARAMETER IN BUFFER
+01ca  78             318    318         MOV     A,B             ;GET DIGIT COUNT
+01cb  fe 05          319    319         CPI     5               ;CHECK NUMBER OF DIGITS
+01cd  3f             320    320         CMC
+01ce  d8             321    321         RC                      ;RETURN IF TOO MANY DIGITS
+01cf  01 7e 10       322    322         LXI     B,ABUF
+01d2  cd 1b 02       323    323         CALL    AHEX            ;CONVERT VALUE
+01d5  d8             324    324         RC                      ;ILLEGAL CHARACTER
+01d6  22 8a 10       325    325         SHLD    BBUF            ;SAVE IN BINARY BUFFER
+01d9  21 7e 10       326    326         LXI     H,ABUF
+01dc  cd bd 05       327    327         CALL    NORM            ;NORMALIZE ASCII VALUE
+01df  cd 0d 09       328    328         CALL    SBLK            ;SCAN TO NEXT PARAMETER
+01e2  3f             329    329         CMC
+01e3  d0             330    330         RNC                     ;RETURN IF cr
+01e4  11 82 10       331    331         LXI     D,ABUF+4
+01e7  cd 75 0b       332    332         CALL    ALPS            ;PLACE PARAMETERS IN BUFFER
+01ea  78             333    333         MOV     A,B             ;GET DIGIT COUNT
+01eb  fe 05          334    334         CPI     5               ;CHECK NUMBER OF DIGITS
+01ed  3f             335    335         CMC
+01ee  d8             336    336         RC                      ;RETURN IF TOO MANY DIGITS
+01ef  01 82 10       337    337         LXI     B,ABUF+4
+01f2  cd 1b 02       338    338         CALL    AHEX            ;CONVERT VALUE
+01f5  d8             339    339         RC                      ;ILLEGAL VALUE
+01f6  22 8c 10       340    340         SHLD    BBUF+2          ;SAVE IN BINARY BUFFER
+01f9  21 82 10       341    341         LXI     H,ABUF+4
+01fc  cd bd 05       342    342         CALL    NORM            ;NORMALIZE ASCII VALUE
+01ff  b7             343    343         ORA     A               ;CLEAR CARRY
+0200  c9             344    344         RET
+                     345    345 ;
+                     346    346 ; THIS ROUTINE FETCHES DIGITS FROM THE BUFFER ADDRESSED
+                     347    347 ; BY B,C AND CONVERTS THE ASCII DECIMAL DIGITS INTO
+                     348    348 ; BINARY.  UP TO A 16-BIT VALUE CAN BE CONVERTED.  THE
+                     349    349 ; SCAN STOPS WHEN A BINARY ZERO IS FOUND IN THE BUFFER.
+                     350    350 ;
+0201  21 00 00       351    351 ADEC:   LXI     H,0             ;GET A 16 BIT ZERO
+0204  0a             352    352 ADE1:   LDAX    B               ;FETCH ASCII DIGIT
+0205  b7             353    353         ORA     A               ;SET ZERO FLAG
+0206  c8             354    354         RZ                      ;RETURN IFF FINISHED
+0207  54             355    355         MOV     D,H             ;SAVE CURRENT VALUE
+0208  5d             356    356         MOV     E,L             ;SAVE CURRENT VALUE
+0209  29             357    357         DAD     H               ;TIMES TWO
+020a  29             358    358         DAD     H               ;TIMES TWO
+020b  19             359    359         DAD     D               ;ADD IN ORIGINAL VALUE
+020c  29             360    360         DAD     H               ;TIMES TWO
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 7
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+020d  d6 30          361    361         SUI     48              ;ASCII BIAS
+020f  fe 0a          362    362         CPI     10              ;CHECK FOR LEGAL VALUE
+0211  3f             363    363         CMC
+0212  d8             364    364         RC                      ;RETURN IF ERROR
+0213  5f             365    365         MOV     E,A
+0214  16 00          366    366         MVI     D,0
+0216  19             367    367         DAD     D               ;ADD IN NEXT DIGIT
+0217  03             368    368         INX     B               ;INCREMENT POINTER
+0218  c3 04 02       369    369         JMP     ADE1
+                     370    370 ;
+                     371    371 ; THIS ROUTINE FETCHES DIGITS FROM THE BUFFER ADDRESSED
+                     372    372 ; BY B,C AND CONVERTS THE ASCII HEXADECIMAL DIGITS INTO
+                     373    373 ; BINARY.  UP TO A 16-BIT VALUE CAN BE CONVERTED.  THE
+                     374    374 ; SCAN STOPS WHEN A BINARY ZERO IS FOUNDIN THE BUFFER.
+                     375    375 ;
+021b  21 00 00       376    376 AHEX:   LXI     H,0             ;GET A 16 BIT ZERO
+021e  0a             377    377 AHE1:   LDAX    B               ;FETCH ASCII DIGIT
+021f  b7             378    378         ORA     A               ;SET ZERO FLAG
+0220  c8             379    379         RZ                      ;RETURN IF DONE
+0221  29             380    380         DAD     H               ;LEFT SHIFT
+0222  29             381    381         DAD     H               ;LEFT SHIFT
+0223  29             382    382         DAD     H               ;LEFT SHIFT
+0224  29             383    383         DAD     H               ;LEFT SHIFT
+0225  cd 32 02       384    384         CALL    AHS1            ;CONVERT TO BINARY
+0228  fe 10          385    385         CPI     10H             ;CHECK FOR LEGAL VALUE
+022a  3f             386    386         CMC
+022b  d8             387    387         RC                      ;RETURN IF ERROR
+022c  85             388    388         ADD     L
+022d  6f             389    389         MOV     L,A
+022e  03             390    390         INX     B               ;INCREMENT POINTER
+022f  c3 1e 02       391    391         JMP     AHE1
+                     392    392 ;
+                     393    393 ; THIS ROUTINE CONVERTS ASCII HEX DIGITS INTO BINARY
+                     394    394 ;
+0232  d6 30          395    395 AHS1:   SUI     48              ;ASCII BIAS
+0234  fe 0a          396    396         CPI     10              ;DIGIT 0-10
+0236  d8             397    397         RC
+0237  d6 07          398    398         SUI     7               ;ALPHA BIAS
+0239  c9             399    399         RET
+                     400    400 ;
+                     401    401 ; THIS ROUTINE CONVERTS A BINARY VALUE TO ASCII
+                     402    402 ; HEXADECIMAL AND OUTPUTS THE CHARACTERS TO THE TTY.
+                     403    403 ;
+023a  cd 86 02       404    404 HOUT:   CALL    BINH
+023d  21 74 10       405    405         LXI     H,HCON
+0240  46             406    406 CHOT:   MOV     B,M
+0241  cd 03 01       407    407         CALL    OUT8
+0244  23             408    408         INX     H
+0245  46             409    409         MOV     B,M
+0246  cd 03 01       410    410         CALL    OUT8
+0249  c9             411    411         RET
+                     412    412 ;
+                     413    413 ; THIS ROUTINE DOES THE SAME AS ABOVE BUT OUTPUTS A
+                     414    414 ; BLANK AFTER THE LAST CHARACTER
+                     415    415 ;
+024a  cd 3a 02       416    416 HOTB:   CALL    HOUT            ;CONVERT AND OUTPUT
+024d  cd 5d 02       417    417         CALL    BLK1            ;OUTPUT A BLANK
+0250  c9             418    418         RET
+                     419    419 ;
+                     420    420 ; THIS ROUTINE CONVERTS A BINARY VALUE TO ASCII
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 8
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     421    421 ; DECIMAL DIGITS AND OPTPUTS THE CHARACTERS TO THE TTY
+                     422    422 ;
+                     423    423 
+0251  cd a3 02       424    424 DOUT:   CALL    BIND            ;CONVERT VALUE
+0254  cd 3d 02       425    425         CALL    HOUT+3          ;OUTPUT VALUE (2 DIGITS)
+0257  23             426    426         INX     H
+0258  46             427    427         MOV     B,M             ;GET LAST DIGIT
+0259  cd 03 01       428    428         CALL    OUT8            ;OUTPUT
+025c  c9             429    429         RET
+                     430    430 ;
+                     431    431 ; THIS ROUTINE OUTPUTS A BLANK
+                     432    432 ;
+025d  06 20          433    433 BLK1:   MVI     B,' '           ;GET A BLANK
+025f  cd 03 01       434    434         CALL    OUT8
+0262  c9             435    435         RET
+                     436    436 ;
+                     437    437 ; THIS ROUTINE IS USED BY OTHER ROUTINES TO INCREMENT
+                     438    438 ; THE STARTING ADDRESS IN A COMMAND AND COMPARE IT WITH
+                     439    439 ; THE FINAL ADDRESS IN THE COMMAND.  ON RETURN, THE
+                     440    440 ; CARRY FLAG SET INDICATES THAT THE FINAL ADDRESS HAS
+                     441    441 ; BEEN REACHED.
+                     442    442 ;
+0263  2a 8a 10       443    443 ACHK:   LHLD    BBUF            ;FETCH START ADDRESS
+0266  3a 8d 10       444    444         LDA     BBUF+3          ;STOP ADDRESS (HIGH)
+0269  bc             445    445         CMP     H               ;COMPARE ADDRESSES
+026a  c2 75 02       446    446         JNZ     ACH1
+026d  3a 8c 10       447    447         LDA     BBUF+2          ;STOP ADDRESS (LOW)
+0270  bd             448    448         CMP     L               ;COMPARE ADDRESSES
+0271  c2 75 02       449    449         JNZ     ACH1
+0274  37             450    450         STC                     ;SET CARRY IF EQUAL
+0275  23             451    451 ACH1:   INX     H               ;INCREMENT START ADDRESSES
+0276  22 8a 10       452    452         SHLD    BBUF            ;STORE START ADDRESS
+0279  c9             453    453         RET
+                     454    454 ;
+                     455    455 ; THIS ROUTINE OUTPUTS CHARACTER OF A STRING
+                     456    456 ; UNTIL A CARRIAGE RETURN IS FOUND
+                     457    457 ;
+027a  46             458    458 SCRN:   MOV     B,M             ;FETCH CHARACTER
+027b  3e 0d          459    459         MVI     A,13            ;CARRIAGE RETURN
+027d  b8             460    460         CMP     B               ;CHARACTER = CR?
+027e  c8             461    461         RZ      
+027f  cd 03 01       462    462         CALL    OUT8
+0282  23             463    463         INX     H
+0283  c3 7a 02       464    464         JMP     SCRN
+                     465    465 ;
+                     466    466 ; THIS ROUTINE CONVERTS THE BINARY VALUE IN REG A INTO
+                     467    467 ; ASCII HEXADECIMAL DIGITS AND STORES THEM IN MEMORY
+                     468    468 ;
+0286  21 74 10       469    469 BINH:   LXI     H,HCON          ;CONVERSION
+0289  47             470    470         MOV     B,A             ;SAVE VALUE
+028a  1f             471    471         RAR
+028b  1f             472    472         RAR
+028c  1f             473    473         RAR
+028d  1f             474    474         RAR
+028e  cd 99 02       475    475         CALL    BIN1
+0291  77             476    476         MOV     M,A
+0292  23             477    477         INX     H
+0293  78             478    478         MOV     A,B
+0294  cd 99 02       479    479         CALL    BIN1            ;CONVERT TO ASCII
+0297  77             480    480         MOV     M,A
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 9
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0298  c9             481    481         RET
+                     482    482 ;
+                     483    483 ; THIS ROUTINE CONVERTS A VALUE TO HEXADECIMAL
+                     484    484 ;
+0299  e6 0f          485    485 BIN1:   ANI     0FH             ;LOW 4 BITS
+029b  c6 30          486    486         ADI     48              ;CONVERT TO ASCII
+029d  fe 3a          487    487         CPI     58              ;DIGIT 0-9
+029f  d8             488    488         RC
+02a0  c6 07          489    489         ADI     7               ;MODIFY FOR A-F
+02a2  c9             490    490         RET
+                     491    491 ;
+                     492    492 ; THIS ROUTINE CONVERTS THE BINARY VALUE IN REG A INTO
+                     493    493 ; ASCII DECIMAL DIGITS AND STORES THEM IN MEMORY
+                     494    494 ;
+02a3  21 74 10       495    495 BIND:   LXI     H,HCON          ;CONVERSION ADDRESS
+02a6  06 64          496    496         MVI     B,100
+02a8  cd b4 02       497    497         CALL    BID1            ;CONVERT HUNDREDS DIGIT
+02ab  06 0a          498    498         MVI     B,10
+02ad  cd b4 02       499    499         CALL    BID1            ;CONVERT TENS DIGIT
+02b0  c6 30          500    500         ADI     '0'             ;GET UNITS DIGIT
+02b2  77             501    501         MOV     M,A             ;STORE IN MEMORY
+02b3  c9             502    502         RET
+                     503    503 ;
+                     504    504 ; THIS ROUTINE CONVERTS A VALUE TO DECIMAL
+                     505    505 ;
+02b4  36 2f          506    506 BID1:   MVI     M,'0'-1         ;INITIALIZE DIGIT COUNT
+02b6  34             507    507         INR     M
+02b7  90             508    508         SUB     B               ;CHECK DIGIT
+02b8  d2 b6 02       509    509         JNC     BID1+2
+02bb  80             510    510         ADD     B               ;RESTORE VALUE
+02bc  23             511    511         INX     H
+02bd  c9             512    512         RET
+                     513    513 ;
+                     514    514 ; LEGAL COMMAND TABLE
+                     515    515 ;
+02be  44 55 4d 50    516    516 CTAB:   DB      'DUMP'
+02c2  08 03          517    517         DW      DUMP
+02c4  45 58 45 43    518    518         DB      'EXEC'
+02c8  21 01          519    519         DW      EXEC
+02ca  45 4e 54 52    520    520         DB      'ENTR'
+02ce  76 04          521    521         DW      ENTR
+02d0  46 49 4c 45    522    522         DB      'FILE'
+02d4  3e 03          523    523         DW      FILE
+02d6  4c 49 53 54    524    524         DB      'LIST'
+02da  d0 05          525    525         DW      LIST
+02dc  44 45 4c 54    526    526         DB      'DELT'
+02e0  e7 05          527    527         DW      DELL
+02e2  41 53 53 4d    528    528         DB      'ASSM'
+02e6  5e 06          529    529         DW      ASSM
+02e8  50 41 47 45    530    530         DB      'PAGE'
+02ec  22 03          531    531         DW      PAGEMOV
+02ee  43 55 53 54    532    532         DB      'CUST'
+02f2  00 20          533    533         DW      2000H
+02f4  42 52 45 4b    534    534         DB      'BREK'
+02f8  d2 0c          535    535         DW      BREAK
+02fa  50 52 4f 43    536    536         DB      'PROC'
+02fe  8f 0d          537    537         DW      PROC
+                     538    538 ;
+                     539    539 ; THIS ROUTINE CHECKS IF ANY PARAMETERS WERE ENTERED
+                     540    540 ; WITH THE COMMAND, IF NOT AN ERROR MESSAGE IS ISSUED
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 10
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     541    541 ;
+0300  3a 7e 10       542    542 VCHK:   LDA     ABUF            ;FETCH PARAMETER BYTE
+0303  b7             543    543         ORA     A               ;SET FLAGS
+0304  ca 5a 04       544    544         JZ      WHAT            ;NO PARAMETER
+0307  c9             545    545         RET
+                     546    546 ;
+                     547    547 ; THIS ROUTINE DUMPS OUT THE FONTENTS OF MEMORY FROM
+                     548    548 ; THE START TO FINAL ADDRESSES GIVEN IN THE COMMAND.
+                     549    549 ;
+0308  cd 00 03       550    550 DUMP:   CALL    VCHK            ;CHECK FOR PARAMETERS
+030b  cd 0e 01       551    551 DUMS:   CALL    CRLF            ;START NEW LINE
+030e  2a 8a 10       552    552 DUM1:   LHLD    BBUF            ;FETCH MEMORY ADDRESS
+0311  7e             553    553         MOV     A,M
+0312  cd 4a 02       554    554         CALL    HOTB            ;OUTPUT VALUE
+0315  cd 63 02       555    555         CALL    ACHK            ;CHECK ADDRESS
+0318  d8             556    556         RC                      ;RETURN IF FINISHED
+0319  7d             557    557         MOV     A,L             ;IS NEXT ADDRESS
+031a  e6 0f          558    558         ANI     0FH             ; DIVISIBLE BY 16?
+031c  c2 0e 03       559    559         JNZ     DUM1
+031f  c3 0b 03       560    560         JMP     DUMS
+                     561    561 ;
+                     562    562 ; THIS ROUTINE WILL MOVE 256 BYTES FROM 1ST ADDRESS
+                     563    563 ; GIVEN IN COMMAND TO 2ND ADDRESS IN COMMAND.
+                     564    564 ;
+0322  cd 00 03       565    565 PAGEMOV:CALL    VCHK            ;CHECK FOR PARAMETER
+0325  3a 82 10       566    566         LDA     ABUF+4          ;FETCH 2ND PARAMETER
+0328  b7             567    567         ORA     A               ;DOES 2ND PARAMETER EXIST?
+0329  ca 5a 04       568    568         JZ      WHAT
+032c  2a 8a 10       569    569         LHLD    BBUF            ;FETCH MOVE TO ADDRESS
+032f  eb             570    570         XCHG
+0330  2a 8c 10       571    571         LHLD    BBUF+2          ;FETCH MOVE TO ADDRESS
+0333  06 00          572    572         MVI     B,0             ;SET COUNTER
+0335  1a             573    573 PAG1:   LDAX    D
+0336  77             574    574         MOV     M,A
+0337  23             575    575         INX     H
+0338  13             576    576         INX     D
+0339  05             577    577         DCR     B               ;DECREMENT COUNTER
+033a  c2 35 03       578    578         JNZ     PAG1
+033d  c9             579    579         RET
+                     580    580 ;
+                     581    581 ; THIS COMMAND INITIALIZES THE BEGINNING OF FILE ADDRESS
+                     582    582 ; AND END OF FILE ADDRESS AS WELL AS THE FILE AREA
+                     583    583 ; WHEN THE FILE COMMAND IS USED
+                     584    584 ;
+033e  cd 0e 01       585    585 FILE:   CALL    CRLF
+                     586    586 ; CHECK FOR FILE PARAMETERS
+0341  3a 76 10       587    587         LDA     FBUF
+0344  b7             588    588         ORA     A
+0345  ca b9 03       589    589         JZ      FOUT            ;NO ? GO LIST
+0348  cd 18 04       590    590         CALL    FSEA            ;LOOK UP FILE
+034b  eb             591    591         XCHG                    ;PNTR IN DE
+034c  c2 63 03       592    592         JNZ     TEST
+                     593    593 ; NO ENTRY
+034f  3a 7e 10       594    594         LDA     ABUF            ;CHECK FOR PARAM
+0352  b7             595    595         ORA     A
+0353  ca 5d 04       596    596         JZ      WHA1            ;NO?? - ERROR
+                     597    597 ; CHECK FOR ROOM IN DIRECTORY
+0356  3a 7d 10       598    598         LDA     FEF
+0359  b7             599    599         ORA     A
+035a  c2 78 03       600    600         JNZ     ROOM
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 11
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+035d  21 6b 04       601    601         LXI     H,EMES1
+0360  c3 60 04       602    602         JMP     MESS
+                     603    603 ; ENTRY FOUND ARE THESE PARAMETERS
+0363  3a 7e 10       604    604 TEST:   LDA     ABUF
+0366  b7             605    605         ORA     A
+0367  ca 8b 03       606    606         JZ      SWAPS
+036a  2a 8a 10       607    607         LHLD    BBUF
+036d  7c             608    608         MOV     A,H
+036e  b5             609    609         ORA     L
+036f  ca 8b 03       610    610         JZ      SWAPS
+0372  21 70 04       611    611         LXI     H,EMES2         ;NO-NO CAN?T DO
+0375  c3 60 04       612    612         JMP     MESS            ;IT - DELETE FIRST
+                     613    613 ; MOVE FILE NAME TO BLOCK POINTED TO BY FREAD
+0378  2a 7b 10       614    614 ROOM:   LHLD    FREAD
+037b  eb             615    615         XCHG
+037c  21 76 10       616    616         LXI     H,FBUF          ;FILE NAME POINTER IN H,L
+037f  d5             617    617         PUSH    D
+0380  0e 05          618    618         MVI     C,NMLEN         ;NAME LENGTH COUNT
+0382  7e             619    619 MOV23:  MOV     A,M
+0383  12             620    620         STAX    D
+0384  13             621    621         INX     D
+0385  0d             622    622         DCR     C               ;TEST COUNT
+0386  23             623    623         INX     H
+0387  c2 82 03       624    624         JNZ     MOV23
+038a  d1             625    625         POP     D               ;RESTORE ENTRY POINTER
+                     626    626 ; MAKE FILE POINTED TO BY D,E CURRENT
+038b  21 24 10       627    627 SWAPS:  LXI     H,FILE0
+038e  0e 0d          628    628         MVI     C,FELEN         ;ENTRY LENGTH
+0390  1a             629    629 SWAP:   LDAX    D
+0391  46             630    630         MOV     B,M
+0392  77             631    631         MOV     M,A             ;EXCHANGE
+0393  78             632    632         MOV     A,B
+0394  12             633    633         STAX    D
+0395  13             634    634         INX     D
+0396  23             635    635         INX     H               ;BUMP POINTER
+0397  0d             636    636         DCR     C               ;TEST COUNT
+0398  c2 90 03       637    637         JNZ     SWAP
+                     638    638 
+                     639    639 ; CHECK FOR 2ND PARAMETER
+039b  3a 7e 10       640    640             LDA ABUF
+039e  b7             641    641         ORA     A
+039f  ca c3 03       642    642         JZ      FOOT            ;NO SECOND PARAMETER
+                     643    643 ; PROCESS 2ND PARAMETER
+03a2  2a 8a 10       644    644         LHLD    BBUF            ;GET ADDRESS
+03a5  22 29 10       645    645         SHLD    BOFP            ;SET BEGIN
+03a8  22 2b 10       646    646         SHLD    EOFP            ;SET END
+03ab  7d             647    647         MOV     A,L             ;IS ADDRESS ZERO
+03ac  b4             648    648         ORA     H
+03ad  ca b2 03       649    649         JZ      FIL35           ;YES
+03b0  36 01          650    650 FIL30:  MVI     M,1             ;NON-ZERO ? SET EOF
+03b2  af             651    651 FIL35:  XRA     A               ;AND MAX LINE #
+03b3  32 2d 10       652    652         STA     MAXL
+03b6  c3 c3 03       653    653         JMP     FOOT            ;OUTPUT PARAMETERS
+03b9  3a cb 10       654    654 FOUT:   LDA     IBUF+4
+03bc  fe 53          655    655         CPI     'S'             ;IS COMMAND FILES?
+03be  0e 06          656    656         MVI     C,MAXFIL
+03c0  ca c5 03       657    657         JZ      FOUL
+03c3  0e 01          658    658 FOOT:   MVI     C,1
+                     659    659 ; OUTPUT THE # OF ENTRIES IN C
+03c5  21 24 10       660    660 FOUL:   LXI     H,FILE0
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 12
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+03c8  79             661    661         MOV     A,C
+03c9  32 7d 10       662    662 FINE:   STA     FOCNT           ;SAVE COUNT
+03cc  e5             663    663         PUSH    H
+03cd  11 05 00       664    664         LXI     D,NMLEN
+03d0  19             665    665         DAD     D
+03d1  7e             666    666         MOV     A,M
+03d2  b7             667    667         ORA     A
+03d3  c2 e3 03       668    668         JNZ     FOOD
+03d6  23             669    669         INX     H
+03d7  86             670    670         ADD     M
+03d8  23             671    671         INX     H
+03d9  c2 e3 03       672    672         JNZ     FOOD            ;NON ZERO, OK TO OUTPUT
+03dc  33             673    673         INX     SP
+03dd  33             674    674         INX     SP
+03de  23             675    675         INX     H
+03df  23             676    676         INX     H
+03e0  c3 f8 03       677    677         JMP     FEET
+                     678    678 ; HAVE AN ENTRY TO OUTPUT
+03e3  e1             679    679 FOOD:   POP     H               ;PTR
+03e4  0e 05          680    680         MVI     C,NMLEN
+03e6  46             681    681 FAST:   MOV     B,M             ;LOAD CHARACTER TO B
+03e7  cd 03 01       682    682         CALL    OUT8
+03ea  0d             683    683         DCR     C
+03eb  23             684    684         INX     H
+03ec  c2 e6 03       685    685         JNZ     FAST            ;DO THE REST
+                     686    686 ; NOW OUTPUT BEGIN-END PTRS
+03ef  cd 04 04       687    687         CALL    FOOL            ;OUTPUT BEGIN
+03f2  cd 04 04       688    688         CALL    FOOL            ;OUTPUT END
+03f5  cd 0e 01       689    689         CALL    CRLF            ;AND C/R
+                     690    690 ; TEST COUNT, H,L POINTS PAST EOFP
+03f8  11 04 00       691    691 FEET:   LXI     D,FELEN-NMLEN-4
+03fb  19             692    692         DAD     D               ;MOVE TO NEXT ENTRY
+03fc  3a 7d 10       693    693         LDA     FOCNT
+03ff  3d             694    694         DCR     A               ;TEST COUNT
+0400  c2 c9 03       695    695         JNZ     FINE            ;MORE TO DO
+0403  c9             696    696         RET                     ;DONE!
+                     697    697 ; OUTPUT NUMBER POINTED TO BY H,L
+                     698    698 ; ON RET, H,L POINT 2 WORDS LATER
+0404  cd 5d 02       699    699 FOOL:   CALL    BLK1            ;SPACE
+0407  23             700    700         INX     H
+0408  7e             701    701         MOV     A,M
+0409  2b             702    702         DCX     H
+040a  e5             703    703         PUSH    H
+040b  cd 3a 02       704    704         CALL    HOUT            ;OUTPUT
+040e  e1             705    705         POP     H
+040f  7e             706    706         MOV     A,M
+0410  23             707    707         INX     H
+0411  23             708    708         INX     H
+0412  e5             709    709         PUSH    H
+0413  cd 4a 02       710    710         CALL    HOTB            ;OUTPUT
+0416  e1             711    711         POP     H               ;RESTORE H,L
+0417  c9             712    712         RET
+                     713    713 ;
+                     714    714 ; SEARCH THE FILE DIRECTORY FOR THE FILE
+                     715    715 ; WHOSE NAME IS IN FBUF.
+                     716    716 ; RETURN IF FOUND, ZERO IF OFF, H,L POINT TO
+                     717    717 ; ENTRY WHILE SEARCHING, ON ENTRY FOUND WITH ADDR
+                     718    718 ; ZERO, SET FEF TO >0 AND FREAD TO THE ADDR OF ENTRY
+                     719    719 ;
+0418  af             720    720 FSEA:   XRA     A
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 13
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0419  32 7d 10       721    721         STA     FEF             ;CLAIM NO FREE ENTRIES
+041c  06 06          722    722         MVI     B,MAXFIL        ;COUNT OF ENTRIES
+041e  11 24 10       723    723         LXI     D,FILE0         ;TABLE ADDRESS
+0421  21 76 10       724    724 FSE10:  LXI     H,FBUF
+0424  0e 05          725    725         MVI     C,NMLEN
+0426  cd 53 01       726    726         CALL    SEAR            ;TEST STRINGS
+0429  f5             727    727         PUSH    PSW             ;SAVE FLAG
+042a  d5             728    728         PUSH    D
+042b  1a             729    729         LDAX    D               ;GET BOFP
+042c  b7             730    730         ORA     A               ;EMPTY ENTRY?
+042d  c2 4e 04       731    731         JNZ     FSE20
+0430  13             732    732         INX     D               ;STORE OTHER WORD
+0431  1a             733    733         LDAX    D
+0432  b7             734    734         ORA     A
+0433  c2 4e 04       735    735         JNZ     FSE20           ;NOPE-GO TEST FOR MATCH
+0436  eb             736    736         XCHG
+0437  11 fa ff       737    737         LXI     D,-NMLEN-1
+043a  19             738    738         DAD     D               ;MOVE TO BEGINNING
+043b  22 7b 10       739    739         SHLD    FREAD           ;SAVE ADDR
+043e  7a             740    740         MOV     A,D
+043f  32 7d 10       741    741         STA     FEF             ;SET FREE ENTRY FOUND
+0442  e1             742    742         POP     H               ;RESTORE INTERIM PTR
+0443  f1             743    743         POP     PSW             ;UNJUNK STACK
+                     744    744 ; MOVE TO NEXT ENTRY
+0444  11 08 00       745    745 FSE15:  LXI     D,FELEN-NMLEN
+0447  19             746    746         DAD     D
+0448  eb             747    747         XCHG                    ;NEXT ENTRY IN DE
+0449  05             748    748         DCR     B               ;TEST COUNT
+044a  c8             749    749         RZ                      ;DONE--NOPE
+044b  c3 21 04       750    750         JMP     FSE10           ;TRY NEXT
+                     751    751 ; ENTRY WASN?T FREE, TEST FOR MATCH
+044e  e1             752    752 FSE20:  POP     H
+044f  f1             753    753         POP     PSW
+0450  c2 44 04       754    754         JNZ     FSE15           ;IF ZERO CLEAR, NO MATCH
+                     755    755 ; ENTRY FOUND
+0453  11 fb ff       756    756         LXI     D,-NMLEN        ;BACKUP
+0456  19             757    757         DAD     D               ;H,L POINTS TO ENTRY
+0457  7a             758    758         MOV     A,D
+0458  b7             759    759         ORA     A               ;CLEAR ZERO
+0459  c9             760    760         RET                     ;THAT?S ALL
+                     761    761 ;
+                     762    762 ; OUTPUT ERROR MESSAGE FOR ILLEGAL COMMAND
+                     763    763 ;
+045a  cd 0e 01       764    764 WHAT:   CALL    CRLF            ;OUT CRLF
+045d  21 66 04       765    765 WHA1:   LXI     H,EMES          ;MESSAGE ADDRESS
+0460  cd 7a 02       766    766 MESS:   CALL    SCRN
+0463  c3 67 00       767    767         JMP     EOR
+                     768    768 ;
+0466  57 48 41 54    769    769 EMES:   DB      'WHAT'
+046a  0d             770    770         DB      13
+046b  46 55 4c 4c    771    771 EMES1:  DB      'FULL',13
+046f  0d             771    772
+0470  4e 4f 20 4e    772    773 EMES2:  DB      'NO NO',13
+0474  4f 0d          772    774
+                     773    775 ;
+                     774    776 ; CALL ROUTINE TO ENTER DATA INTO MEMORY
+                     775    777 ; AND CHECK FOR ERROR ON RETURN
+                     776    778 ;
+                     777    779 ; THIS ROUTINE IS USED TO ENTER DATA VALUES INTO MEMORY.
+                     778    780 ; EACH VALUE IS ONE BYTE AND IS WRITTEN IN HEXADECIMAL
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 14
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     779    781 ; VALUES GREATER THAN 255 WILL CAUSE CARRY TO BE SET
+                     780    782 ; AND RETURN TO BE MADE TO CALLING PROGRAM
+                     781    783 ;
+0476  cd 00 03       782    784 ENTR:   CALL    VCHK            ;CHECK FOR PARAMETERS
+0479  cd 83 04       783    785         CALL    ENTS
+047c  da 5a 04       784    786         JC      WHAT
+047f  cd 0e 01       785    787         CALL    CRLF
+0482  c9             786    788         RET
+                     787    789 ;
+002f  =              788    790 EEND    EQU     '/'             ;TERMINATION CHARACTER
+0483  cd 0e 01       789    791 ENTS:   CALL    CRLF
+0486  cd 80 00       790    792         CALL    READ            ;READ INPUT DATA
+0489  21 c7 10       791    793         LXI     H,IBUF          ;SET LINE POINTER
+048c  22 96 10       792    794         SHLD    PNTR            ;SAVE POINTER
+048f  cd 66 01       793    795 ENT1:   CALL    ZBUF            ;CLEAR BUFFER
+0492  cd 0d 09       794    796         CALL    SBLK            ;SCAN TO FIRST VALUE
+0495  da 83 04       795    797         JC      ENTS            ;JUMP IF CR FOUND
+0498  fe 2f          796    798         CPI     EEND
+049a  c8             797    799         RZ                      ;RETURN CARRY IS ZERO
+049b  cd 75 0b       798    800         CALL    ALPS            ;PLACE VALUE IN BUFFER
+049e  78             799    801         MOV     A,B             ;GET DIGIT COUNT
+049f  fe 03          800    802         CPI     3               ;CHECK NMBR OF DIGITS
+04a1  3f             801    803         CMC
+04a2  d8             802    804         RC                      ;RETURN IF MORE THAN 2 DIGITS
+04a3  01 7e 10       803    805         LXI     B,ABUF          ;CONVERSION ADDRESS
+04a6  cd 1b 02       804    806         CALL    AHEX            ;CONVERT VALUE
+04a9  d8             805    807         RC                      ;ERROR IN HEX CHARACTER
+04aa  7d             806    808         MOV     A,L
+04ab  2a 8a 10       807    809         LHLD    BBUF            ;FETCH MEMORY ADDRESS
+04ae  77             808    810         MOV     M,A             ;PUT IN MEMORY
+04af  cd 75 02       809    811         CALL    ACH1            ;INCREMENT MEMORY LOCATION
+04b2  c3 8f 04       810    812         JMP     ENT1
+                     811    813 ;
+                     812    814 ; THIS ROUTINE IS USED TO ENTER LINES INTO THE FILE
+                     813    815 ; AREA.  THE LINE NUMBER IS FIRST CHECKED TO SEE IF IT IS
+                     814    816 ; A VALID NUMBER (0000-9999).  NEXT IT IS CHECKED TO SEE
+                     815    817 ; IF IT IS GREATER THAN THE MAXIMUM CURRENT LINE NUMBER.
+                     816    818 ; IF IT IS, THE NEXT LINE IS INSERTED AT THE END OF THE
+                     817    819 ; CURRENT FILE AND THE MAXIMUM LINE NUMBER IS UPDATED AS
+                     818    820 ; WELL AS THE END OF FILE POSITION.  LINE NUMBERS THAT
+                     819    821 ; ALREADY EXIST ARE INSERTED INTO THE FILE AREA AT THE
+                     820    822 ; APPROPRIATE PLACE AND ANY EXTRA CHARACTERS IN THE OLD
+                     821    823 ; LINE ARE DELETED.
+                     822    824 ;
+04b5  3a 24 10       823    825 LINE:   LDA     FILE0           ;IS A FILE DEFINED?
+04b8  b7             824    826         ORA     A
+04b9  ca 5a 04       825    827         JZ      WHAT            ;ABORT IF NOT
+04bc  0e 04          826    828         MVI     C,4             ;NO OF DIGITS TO CHECK
+04be  21 c6 10       827    829         LXI     H,IBUF-1                ;INITIALIZE ADDRESS
+04c1  23             828    830 LICK:   INX     H
+04c2  7e             829    831         MOV     A,M             ;FETCH LINE DIGIT
+04c3  fe 30          830    832         CPI     '0'             ;CHECK FOR VALID NUMBER
+04c5  da 5a 04       831    833         JC      WHAT
+04c8  fe 3a          832    834         CPI     '9'+1
+04ca  d2 5a 04       833    835         JNC     WHAT
+04cd  0d             834    836         DCR     C
+04ce  c2 c1 04       835    837         JNZ     LICK
+04d1  22 74 10       836    838         SHLD    ADDS            ;FIND ADDRESS
+04d4  11 30 10       837    839         LXI     D,MAXL+3                ;GET ADDRESS
+04d7  cd a2 05       838    840         CALL    COM0
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 15
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+04da  d2 fa 04       839    841         JNC     INSR
+                     840    842 ; GET HERE IF NEW LINE IS GREATER THAN MAXIMUM LINE #
+04dd  23             841    843         INX     H
+04de  cd 92 05       842    844         CALL    LODM            ;GET NEW LINE NUMBER
+04e1  21 30 10       843    845         LXI     H,MAXL+3
+04e4  cd 9a 05       844    846         CALL    STOM            ;MAKE IT MAXIMUM LINE NUMBER
+04e7  11 c6 10       845    847         LXI     D,IBUF-1
+04ea  2a 2b 10       846    848         LHLD    EOFP            ;END OF FILE POSITION
+04ed  0e 01          847    849         MVI     C,1
+04ef  cd 80 05       848    850         CALL    LMOV            ;PLACE LINE IN FILE
+04f2  36 01          849    851 SEOF:   MVI     M,1             ;END OF FILE INDICATOR
+04f4  22 2b 10       850    852         SHLD    EOFP            ;END OF FILE ADDRESS
+04f7  c3 67 00       851    853         JMP     EOR
+                     852    854 ; GET HERE IF NEW LINE MUST BE INSERTED INTO ALREADY
+                     853    855 ; EISTING FILE AREA
+04fa  cd 52 05       854    856 INSR:   CALL    FIN1            ;FIND LINE IN FILE
+04fd  0e 02          855    857         MVI     C,2
+04ff  ca 03 05       856    858         JZ      EQUL
+0502  0d             857    859         DCR     C               ;NEW LN NOT EQUAL TO SOME OLD LN
+0503  46             858    860 EQUL:   MOV     B,M
+0504  2b             859    861         DCX     H
+0505  36 02          860    862         MVI     M,2             ;MOVE LINE INDICATOR
+0507  22 72 10       861    863         SHLD    INSP            ;INSERT LINE POSITION
+050a  3a c6 10       862    864         LDA     IBUF-1          ;NEW LINE COUNT
+050d  0d             863    865         DCR     C
+050e  ca 18 05       864    866         JZ      LESS            ;NEW LN NOT = OLD LN
+0511  90             865    867         SUB     B               ;COUNT DIFFERENCE
+0512  ca 3b 05       866    868         JZ      ZERO            ;LINE LENGTHS EQUAL
+0515  da 2b 05       867    869         JC      MORE
+                     868    870 ; GET HERE IF # OF CHARS IN OLD LINE > # OF CHARS IN
+                     869    871 ; NEW LINE OR NEW LINE # WAS NOT EQUAL TO SOLD OLD
+                     870    872 ; LINE #
+0518  2a 2b 10       871    873 LESS:   LHLD    EOFP            ;END OF FILE ADDRESS
+051b  54             872    874         MOV     D,H
+051c  5d             873    875         MOV     E,L
+051d  cd 7b 05       874    876         CALL    ADR             ;MOVE TO ADDRESS
+0520  22 2b 10       875    877         SHLD    EOFP            ;NEW END OF FILE ADDRESS
+0523  0e 02          876    878         MVI     C,2
+0525  cd 89 05       877    879         CALL    RMOV            ;OPEN UP FILE AREA
+0528  c3 3b 05       878    880         JMP     ZERO
+                     879    881 ; GET HERE IF # OF CHARS IN OLD LINE < # OF CHARS IN
+                     880    882 ; NEW LINE
+052b  2f             881    883 MORE:   CMA
+052c  3c             882    884         INR     A               ;COUNT DIFFERENCE
+052d  54             883    885         MOV     D,H
+052e  5d             884    886         MOV     E,L
+052f  cd 7b 05       885    887         CALL    ADR
+0532  eb             886    888         XCHG
+0533  cd 80 05       887    889         CALL    LMOV            ;DELETE EXCESS CHAR IN FILE
+0536  36 01          888    890         MVI     M,1             ;E-O-F INDICATOR
+0538  22 2b 10       889    891         SHLD    EOFP            ;E-O-F ADDRESS
+                     890    892 ; GET HERE TO INSERT LINE INTO FILE AREA
+053b  2a 72 10       891    893 ZERO:   LHLD    INSP            ;INSERT ADDRESS
+053e  36 0d          892    894         MVI     M,ASCR
+0540  23             893    895         INX     H
+0541  11 c6 10       894    896         LXI     D,IBUF-1                ;NEW LINE ADDRESS
+0544  0e 01          895    897         MVI     C,1             ;CHECK VALUE
+0546  cd 80 05       896    898         CALL    LMOV            ;PLACE LINE IN FILE
+0549  c3 67 00       897    899         JMP     EOR
+                     898    900 ;
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 16
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                     899    901 ; THIS ROUTINE IS USED TO FIND A LN IN THE FILE AREA
+                     900    902 ; WHICH IS GREATER THAN OR EQUAL TO THE CURRENT LINE #
+                     901    903 ;
+054c  21 81 10       902    904 FIND:   LXI     H,ABUF+3                ;BUFFER ADDRESS
+054f  22 74 10       903    905         SHLD    ADDS            ;SAVE ADDRESS
+0552  2a 29 10       904    906 FIN1:   LHLD    BOFP            ;BEGIN FILE ADDRESS
+0555  7c             905    907         MOV     A,H             ;RETURN TO MONITOR IF
+0556  b5             906    908         ORA     L               ;  FILE IS EMPTY...
+0557  ca 67 00       907    909         JZ      EOR
+055a  cd 74 05       908    910 FI1:    CALL    EO1             ;CHECK FOR END OF FILE
+055d  eb             909    911         XCHG
+055e  2a 74 10       910    912         LHLD    ADDS            ;FETCH FIND ADDRESS
+0561  eb             911    913         XCHG
+0562  3e 04          912    914         MVI     A,4
+0564  cd 7b 05       913    915         CALL    ADR             ;BUMP LINE ADDRESS
+0567  cd a2 05       914    916         CALL    COM0            ;COMPARE LINE NUMBERS
+056a  d8             915    917         RC
+056b  c8             916    918         RZ      
+056c  7e             917    919 FI2:    MOV     A,M
+056d  cd 7b 05       918    920         CALL    ADR             ;NEXT LINE ADDRESS
+0570  c3 5a 05       919    921         JMP     FI1
+                     920    922 ;
+                     921    923 ; WHEN SEARCHING THROUGH THE FILE AREA, THIS ROUTINE
+                     922    924 ; CHECKS TO SEE IF THE CURRENT ADDRESS IS THE END OF
+                     923    925 ; FILE
+                     924    926 ;
+0573  23             925    927 EOF:    INX     H
+0574  3e 01          926    928 EO1:    MVI     A,1             ;E-O-F INDICATOR
+0576  be             927    929         CMP     M
+0577  c0             928    930         RNZ
+0578  c3 67 00       929    931         JMP     EOR
+                     930    932 ;
+                     931    933 ; THIS ROUTINE IS USED TO ADD A VALUE TO AN ADDRESS
+                     932    934 ; CONTAINED IN REGISTER H,L
+                     933    935 ;
+057b  85             934    936 ADR:    ADD     L
+057c  6f             935    937         MOV     L,A
+057d  d0             936    938         RNC
+057e  24             937    939         INR     H
+057f  c9             938    940         RET
+                     939    941 ;
+                     940    942 ; THIS ROUTINE WILL MOVE CHARACTER STRINGS FROM ONE
+                     941    943 ; LOCATION OF MEMORY TO ANOTHER
+                     942    944 ; CHARACTERS ARE MOVED FROM LOCATION ADDRESSED BY D,E
+                     943    945 ; TO LOCATION ADDRESSED BY H,L.  ADDITIONAL CHARACTERS
+                     944    946 ; ARE MOVED BY BUMPING POINTERS UNTIL THE CHARACTER IN
+                     945    947 ; REG C IS FETCHED.
+                     946    948 ;
+0580  1a             947    949 LMOV:   LDAX    D               ;FETCH CHARACTER
+0581  13             948    950         INX     D               ;INCREMENT FETCH ADDRESS
+0582  b9             949    951         CMP     C               ;TERMINATION CHARACTER
+0583  c8             950    952         RZ      
+0584  77             951    953         MOV     M,A             ;STORE CHARACTER
+0585  23             952    954         INX     H               ;INCREMENT STORE ADDRESS
+0586  c3 80 05       953    955         JMP     LMOV
+                     954    956 ;
+                     955    957 ; THIS ROUTINE IS SIMILAR TO ABOVE EXCEPT THAT THE
+                     956    958 ; CHARACTER ADDRESS IS DECREMENTED AFTER EACH FETCH
+                     957    959 ; AND STORE
+                     958    960 ;
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 17
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0589  1a             959    961 RMOV:   LDAX    D               ;FETCH CHARACTER
+058a  1b             960    962         DCX     D               ;DECREMENT FETCH CHARACTER
+058b  b9             961    963         CMP     C               ;TERMINATION CHARACTER
+058c  c8             962    964         RZ      
+058d  77             963    965         MOV     M,A             ;STORE CHARACTER
+058e  2b             964    966         DCX     H               ;DECREMENT STORE ADDRESS
+058f  c3 89 05       965    967         JMP     RMOV
+                     966    968 ;
+                     967    969 ; THIS ROUTINE IS USED TO LOAD FOUR CHARACTERS FROM
+                     968    970 ; MEMORY INTO REGISTERS
+                     969    971 ;
+                     970    972 
+0592  46             971    973 LODM:   MOV     B,M             ;FETCH CHARACTER
+0593  23             972    974         INX     H
+0594  4e             973    975         MOV     C,M             ;FETCH CHARACTER 
+0595  23             974    976         INX     H
+0596  56             975    977         MOV     D,M             ;FETCH CHARACTER 
+0597  23             976    978         INX     H
+0598  5e             977    979         MOV     E,M             ;FETCH CHARACTER 
+0599  c9             978    980         RET
+                     979    981 ;
+                     980    982 ; THIS ROUTINE STORES FOUR CHARACTERS FROM THE REGISTERS
+                     981    983 ; INTO MEMORY
+                     982    984 ;
+059a  73             983    985 STOM:   MOV     M,E             ;STORE CHARACTER
+059b  2b             984    986         DCX     H
+059c  72             985    987         MOV     M,D             ;STORE CHARACTER 
+059d  2b             986    988         DCX     H
+059e  71             987    989         MOV     M,C             ;STORE CHARACTER 
+059f  2b             988    990         DCX     H
+05a0  70             989    991         MOV     M,B             ;STORE CHARACTER 
+05a1  c9             990    992         RET
+                     991    993 ;
+                     992    994 ; THIS ROUTINE IS USED TO COMPARE TWO CHARACTER STRINGS
+                     993    995 ; OF LENGTH 4, ON RETURN ZERO FLAG SET MEANS BOTH
+                     994    996 ; STRINGS ARE EQUAL.  CARRY FLAG =0 MEANS STRING ADDRESS
+                     995    997 ; BY D,E WAS GREATER THAN OR EQUAL TO CHARACTER STRING
+                     996    998 ; ADDRESSED BY H,L
+                     997    999 ;
+05a2  06 01          998   1000 COM0:   MVI     B,1             ;EQUAL COUNTER
+05a4  0e 04          999   1001         MVI     C,4             ;STRING LENGTH
+05a6  b7            1000   1002         ORA     A               ;CLEAR CARRY
+05a7  1a            1001   1003 CO1:    LDAX    D               ;FETCH CHARACTER
+05a8  9e            1002   1004         SBB     M               ;COMPARE CHARACTERS
+05a9  ca ad 05      1003   1005         JZ      CO2
+05ac  04            1004   1006         INR     B               ;INCREMENT EQUAL COUNTER
+05ad  1b            1005   1007 CO2:    DCX     D
+05ae  2b            1006   1008         DCX     H
+05af  0d            1007   1009         DCR     C
+05b0  c2 a7 05      1008   1010         JNZ     CO1
+05b3  05            1009   1011         DCR     B
+05b4  c9            1010   1012         RET
+                    1011   1013 ;
+                    1012   1014 ; THIS ROUTINE IS SIMILAR TO THE ABOVE ROUTINE EXCEPT ON
+                    1013   1015 ; RETURN CARRY FLAG = 0 MEANS THAT CHARACTER STRING
+                    1014   1016 ; ADDRESSED BY D,E IS ONLY > STRING ADDRESSED BY H,L.
+                    1015   1017 ;
+05b5  0e 04         1016   1018 COM1:   MVI     C,4             ;STRING LENGTH
+05b7  1a            1017   1019         LDAX    D               ;TCH CHARACTER
+05b8  d6 01         1018   1020         SUI     1
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 18
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+05ba  c3 a8 05      1019   1021         JMP     CO1+1
+                    1020   1022 ;
+                    1021   1023 ; THIS ROUTINE WILL TAKE ASCII CHARACTERS AND ADD ANY
+                    1022   1024 ; NECESSARY ASCII ZEROES SO THE RESULT IS A 4 CHARACTER
+                    1023   1025 ; ASCII VALUE
+                    1024   1026 ;
+05bd  cd 92 05      1025   1027 NORM:   CALL    LODM            ;LOAD CHARACTERS
+05c0  af            1026   1028         XRA     A               ;FETCH A ZERO
+05c1  b8            1027   1029         CMP     B
+05c2  c8            1028   1030         RZ      
+05c3  bb            1029   1031 NOR1:   CMP     E
+05c4  c4 9a 05      1030   1032         CNZ     STOM            ;STORE VALUES
+05c7  c0            1031   1033         RNZ
+05c8  5a            1032   1034         MOV     E,D             ;NORMALIZE VALUE
+05c9  51            1033   1035         MOV     D,C
+05ca  48            1034   1036         MOV     C,B
+05cb  06 30         1035   1037         MVI     B,'0'
+05cd  c3 c3 05      1036   1038         JMP     NOR1
+                    1037   1039 ;
+                    1038   1040 ; THIS ROUTINE IS USED TO LIST THE CONTENTS OF THE FILE
+                    1039   1041 ; AREA STARTING AT THE LINE NUMBER GIVEN IN THE COMMAND
+                    1040   1042 ;
+05d0  cd 0e 01      1041   1043 LIST:   CALL    CRLF
+05d3  cd 4c 05      1042   1044         CALL    FIND            ;FIND STARTING LINE NUMBER
+05d6  23            1043   1045 LIST0:  INX     H               ;OUTPUT LINE...
+05d7  cd 7a 02      1044   1046         CALL    SCRN
+05da  cd 0e 01      1045   1047         CALL    CRLF
+05dd  cd 73 05      1046   1048         CALL    EOF             ;CHECK FOR END OF FILE
+05e0  cd e9 00      1047   1049         CALL    INK             ;CHECK FOR ?X
+05e3  c2 d6 05      1048   1050         JNZ     LIST0           ;LOOP IF NO ?X
+05e6  c9            1049   1051         RET
+                    1050   1052 ;
+                    1051   1053 ; THIS ROUTINE IS USED TO DELETE LINES FROM THE
+                    1052   1054 ; FILE AREA.  THE REMAINING FILE AREA IS THEN MOVED IN
+                    1053   1055 ; MEMORY SO THAT THERE IS NO EXCESS SPACE.
+                    1054   1056 ;
+05e7  cd 00 03      1055   1057 DELL:   CALL    VCHK            ;CHECK FOR PARAMETER
+05ea  cd 4c 05      1056   1058         CALL    FIND            ;FIND LINE IN FILE AREA
+05ed  22 72 10      1057   1059         SHLD    DELP            ;SAVE DELETE POSITION
+05f0  21 85 10      1058   1060         LXI     H,ABUF+7
+05f3  7e            1059   1061         MOV     A,M             ;CHECK FOR 2ND PARAMETER
+05f4  b7            1060   1062         ORA     A               ;SET FLAGS
+05f5  c2 fb 05      1061   1063         JNZ     DEL1
+05f8  21 81 10      1062   1064         LXI     H,ABUF+3                ;USE FIRST PARAMETER
+05fb  22 74 10      1063   1065 DEL1:   SHLD    ADDS            ;SAVE FIND ADDRESS
+05fe  eb            1064   1066         XCHG
+05ff  21 30 10      1065   1067         LXI     H,MAXL+3
+0602  cd a2 05      1066   1068         CALL    COM0            ;COMPARE LINE NUMBERS
+0605  2a 72 10      1067   1069         LHLD    DELP            ;LOAD DELETE POSITION
+0608  da 49 06      1068   1070         JC      NOVR
+                    1069   1071 ; GET HERE IF DELETION INVOLVES END OF FILE
+060b  22 2b 10      1070   1072         SHLD    EOFP            ;CHANGE E-O-F POSITION
+060e  36 01         1071   1073         MVI     M,1             ;SET E-O-F INDICATOR
+0610  eb            1072   1074         XCHG
+0611  2a 29 10      1073   1075         LHLD    BOFP
+0614  eb            1074   1076         XCHG
+0615  06 0d         1075   1077         MVI     B,13            ;SET SCAN SWITCH
+0617  2b            1076   1078         DCX     H               ;CHECK FOR BOFP
+0618  7d            1077   1079 DEL2:   MOV     A,L
+0619  93            1078   1080         SUB     E
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 19
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+061a  7c            1079   1081         MOV     A,H
+061b  9a            1080   1082         SBB     D
+061c  3e 0d         1081   1083         MVI     A,ASCR          ;LOOK FOR CR
+061e  da 40 06      1082   1084         JC      DEL4            ;DECREMENTED PAST BOF
+0621  05            1083   1085         DCR     B
+0622  2b            1084   1086         DCX     H
+0623  be            1085   1087         CMP     M               ;FIND NEW MAX LN
+0624  c2 18 06      1086   1088         JNZ     DEL2
+0627  2b            1087   1089         DCX     H
+0628  7d            1088   1090         MOV     A,L
+0629  93            1089   1091         SUB     E
+062a  7c            1090   1092         MOV     A,H
+062b  9a            1091   1093         SBB     D
+062c  da 41 06      1092   1094         JC      DEL5
+062f  be            1093   1095         CMP     M               ;END OF PREVIOUS LINE
+0630  23            1094   1096         INX     H
+0631  23            1095   1097         INX     H
+0632  ca 36 06      1096   1098         JZ      DEL3
+0635  23            1097   1099         INX     H
+0636  cd 92 05      1098   1100 DEL3:   CALL    LODM            ;LOAD NEW MAX LN
+0639  21 30 10      1099   1101         LXI     H,MAXL+3                ;SET ADDRESS
+063c  cd 9a 05      1100   1102         CALL    STOM            ;STORE NEW MAX LN
+063f  c9            1101   1103         RET
+0640  b8            1102   1104 DEL4:   CMP     B               ;CHECK SWITCH
+0641  eb            1103   1105 DEL5:   XCHG
+0642  c2 35 06      1104   1106         JNZ     DEL3-1
+0645  32 2d 10      1105   1107         STA     MAXL            ;MAKE MAX LN A SMALL NUMBER
+0648  c9            1106   1108         RET
+                    1107   1109 ; GET HERE IF DELETION IS IN THE MIDDLE OF FILE AREA
+0649  cd 5a 05      1108   1110 NOVR:   CALL    FI1             ;FIND END OF DELETE AREA
+064c  cc 6c 05      1109   1111         CZ      FI2             ;NEXT LINE IF THIS LN EQUAL
+064f  eb            1110   1112 NOV1:   XCHG
+0650  2a 72 10      1111   1113         LHLD    DELP            ;CHAR MOVE TO POSITION
+0653  0e 01         1112   1114         MVI     C,1             ;MOVE TERMINATOR
+0655  cd 80 05      1113   1115         CALL    LMOV            ;COMPACT FILE AREA
+0658  22 2b 10      1114   1116         SHLD    EOFP            ;SET EOF POSITION
+065b  36 01         1115   1117         MVI     M,1             ;SET EOF INDICATOR
+065d  c9            1116   1118         RET
+                    1117   1119 ;
+                    1118   1120 ; STARTING HERE IS THE SELF ASSEMBLER PROGRAM
+                    1119   1121 ; THIS PROGRAM ASSEMBLES PROGRAMS WHICH ARE
+                    1120   1122 ; IN THE FILE AREA
+                    1121   1123 ;
+065e  cd 00 03      1122   1124 ASSM:   CALL    VCHK            ;CHECK FOR PARAMETERS
+0661  3a 82 10      1123   1125         LDA     ABUF+4          ;GET 2ND PARAMETER
+0664  b7            1124   1126         ORA     A               ;CHECK FOR PRARMETERS
+0665  c2 6e 06      1125   1127         JNZ     ASM4
+0668  2a 8a 10      1126   1128         LHLD    BBUF            ;FETCH 1ST PARAMETER
+066b  22 8c 10      1127   1129         SHLD    BBUF+2          ;STORE INTO 2ND PARAMETER
+066e  3a cb 10      1128   1130 ASM4:   LDA     IBUF+4          ;FETCH INPUT CHARACTER
+0671  d6 45         1129   1131         SUI     'E'             ;RESET a IF ERRORS ONLY
+0673  32 8e 10      1130   1132         STA     AERR            ;SAVE ERROR FLAG
+0676  af            1131   1133         XRA     A               ;GET A ZERO
+0677  32 98 10      1132   1134         STA     NOLA            ;INITIALIZE LABEL COUNT
+067a  32 94 10      1133   1135 ASM3:   STA     PASI            ;SET PASS INDICATOR
+067d  cd 0e 01      1134   1136         CALL    CRLF            ;INDICATE START OF PASS
+0680  2a 8a 10      1135   1137         LHLD    BBUF            ;FETCH ORIGIN
+0683  22 92 10      1136   1138         SHLD    ASPC            ;INITIALIZE PC
+0686  2a 29 10      1137   1139         LHLD    BOFP            ;GET START OF FILE
+0689  22 72 10      1138   1140         SHLD    APNT
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 20
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+068c  2a 72 10      1139   1141 ASM1:   LHLD    APNT            ;FETCH LINE POINTER
+068f  31 b2 10      1140   1142         LXI     SP,AREA+18
+0692  7e            1141   1143         MOV     A,M             ;FETCH CHARACTER
+0693  fe 01         1142   1144         CPI     1               ;END OF FILE?
+0695  ca 01 09      1143   1145         JZ      EASS            ;JUMP IF END OF FILE
+0698  eb            1144   1146         XCHG
+0699  13            1145   1147         INX     D               ;INCREMENT ADDRESS
+069a  21 b2 10      1146   1148         LXI     H,OBUF          ;BLANK START ADDRESS
+069d  3e c2         1147   1149         MVI     A,IBUF-5 AND 0FFH       ;BLANK END ADDRESS
+069f  cd e1 00      1148   1150         CALL    CLER            ;BLANK OUT BUFFER
+06a2  0e 0d         1149   1151         MVI     C,ASCR          ;STOP CHARACTER
+06a4  cd 80 05      1150   1152         CALL    LMOV            ;MOVE LINE INTO BUFFER
+06a7  71            1151   1153         MOV     M,C             ;PLACE CR IN BUFFER
+06a8  eb            1152   1154         XCHG
+06a9  22 72 10      1153   1155         SHLD    APNT            ;SAVE ADDRESS
+06ac  3a 94 10      1154   1156         LDA     PASI            ;FETCH PASS INDICATOR
+06af  b7            1155   1157         ORA     A               ;SET FLAGW
+06b0  c2 b9 06      1156   1158         JNZ     ASM2            ;JUMP IF PASS 2
+06b3  cd dc 06      1157   1159         CALL    PAS1
+06b6  c3 8c 06      1158   1160         JMP     ASM1
+                    1159   1161 ;
+06b9  cd 93 07      1160   1162 ASM2:   CALL    PAS2
+06bc  21 b2 10      1161   1163         LXI     H,OBUF          ;OUTPUT BUFFER ADDRESS
+06bf  cd c5 06      1162   1164         CALL    AOUT            ;OUTPUT LINE
+06c2  c3 8c 06      1163   1165         JMP     ASM1
+                    1164   1166 ;
+                    1165   1167 ; THIS ROUTINE IS USED TO OUTPUT THE LISTING FOR
+                    1166   1168 ; AN ASSEMBLY.  IT CHECKS THE ERROR SWITCH TO SEE IF
+                    1167   1169 ; ALL LINES ARE TO BE PRINTED OR JUST THOSE WITH
+                    1168   1170 ; ERRORS.
+                    1169   1171 ;
+06c5  3a 8e 10      1170   1172 AOUT:   LDA     AERR            ;FETCH ERROR SWITCH
+06c8  b7            1171   1173         ORA     A               ;SET FLAGS
+06c9  c2 d2 06      1172   1174         JNZ     AOU1            ;OUTPUT ALL LINES
+06cc  3a b2 10      1173   1175 AOU2:   LDA     OBUF            ;FETCH ERROR INDICATOR
+06cf  fe 20         1174   1176         CPI     ' '             ;CHECK FOR AN ERROR
+06d1  c8            1175   1177         RZ                      ;RETURN IF NO ERROR
+06d2  21 b2 10      1176   1178 AOU1:   LXI     H,OBUF          ;OUTPUT BUFFER ADDRESS
+06d5  cd 7a 02      1177   1179         CALL    SCRN            ;OUTPUT LINE...
+06d8  cd 0e 01      1178   1180         CALL    CRLF
+06db  c9            1179   1181         RET
+                    1180   1182 ;
+                    1181   1183 ; PASS 1 OF ASSEMBLER, USED TO FORM SYMBOL TABLE
+                    1182   1184 ;
+06dc  cd 66 01      1183   1185 PAS1:   CALL    ZBUF            ;CLEAR BUFFER
+06df  32 94 10      1184   1186         STA     PASI            ;SET FOR PASS1
+06e2  21 c7 10      1185   1187         LXI     H,IBUF          ;INITIALIZE LINE POINTER
+06e5  22 96 10      1186   1188         SHLD    PNTR
+06e8  7e            1187   1189         MOV     A,M             ;FETCH CHARACTER
+06e9  fe 20         1188   1190         CPI     ' '             ;CHECK FOR A BLANK
+06eb  ca 1e 07      1189   1191         JZ      OPC             ;JUMP IF NO LABLE
+06ee  fe 2a         1190   1192         CPI     '*'             ;CHECK FOR COMMENT
+06f0  c8            1191   1193         RZ                      ;RETURN IF COMMENT
+                    1192   1194 ;
+                    1193   1195 ; PROCESS LABEL
+                    1194   1196 ;
+06f1  cd 20 0b      1195   1197         CALL    SLAB            ;GET AND CHECK LABEL
+06f4  da df 0a      1196   1198         JC      OP5             ;ERROR IN LABEL
+06f7  ca c7 0c      1197   1199         JZ      ERRD            ;DUPLICATE LABEL
+06fa  cd 35 07      1198   1200         CALL    LCHK            ;CHECK CHARACTER AFTER LABEL
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 21
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+06fd  c2 df 0a      1199   1201         JNZ     OP5             ;ERROR IF NO BLANK
+0700  0e 05         1200   1202         MVI     C,LLAB          ;LENGTH OF LABELS
+0702  21 7e 10      1201   1203         LXI     H,ABUF          ;SET BUFFER ADDRESS
+0705  7e            1202   1204 MLAB:   MOV     A,M             ;FETCH NEXT CHARACTER
+0706  12            1203   1205         STAX    D               ;STORE IN SYMBOL TABLE
+0707  13            1204   1206         INX     D
+0708  23            1205   1207         INX     H
+0709  0d            1206   1208         DCR     C
+070a  c2 05 07      1207   1209         JNZ     MLAB
+070d  eb            1208   1210         XCHG
+070e  22 90 10      1209   1211         SHLD    TABA            ;SAVE TABLE ADDRESS FOR EQU
+0711  3a 93 10      1210   1212         LDA     ASPC+1          ;FETCH PC (HIGH)
+0714  77            1211   1213         MOV     M,A
+0715  23            1212   1214         INX     H
+0716  3a 92 10      1213   1215         LDA     ASPC            ;FETCH PC (LOW)
+0719  77            1214   1216         MOV     M,A             ;STORE IN TABLE
+071a  21 98 10      1215   1217         LXI     H,NOLA
+071d  34            1216   1218         INR     M               ;INCREMENT NUMBER OF LABELS
+                    1217   1219 ;
+                    1218   1220 ; PROCESS OPCODE
+                    1219   1221 ;
+071e  cd 66 01      1220   1222 OPC:    CALL    ZBUF            ;ZERO WORKING BUFFER
+0721  cd 0d 09      1221   1223         CALL    SBLK            ;SCAN TO OPCODE
+0724  da 06 0b      1222   1224         JC      OERR            ;FOUND CARRIAGE RETURN
+0727  cd 75 0b      1223   1225         CALL    ALPS            ;PLACE OPCODE IN BUFFER
+072a  fe 20         1224   1226         CPI     ' '             ;CHECK FOR BLANK AFTER OPCODE
+072c  da 65 0a      1225   1227         JC      OPCD            ;CR AFTER OPCODE
+072f  c2 06 0b      1226   1228         JNZ     OERR            ;ERROR IF NO BLANK
+0732  c3 65 0a      1227   1229         JMP     OPCD            ;CHECK OPCODE
+                    1228   1230 ;
+                    1229   1231 ; THIS ROUTINE CHECKS THE CHARACTER AFTER A LABEL
+                    1230   1232 ; FOR A BLANK OR COLON
+                    1231   1233 ;
+0735  2a 96 10      1232   1234 LCHK:   LHLD    PNTR
+0738  7e            1233   1235         MOV     A,M             ;GET CHARACTER AFTER LABEL
+0739  fe 20         1234   1236         CPI     ' '             ;CHECK FOR BLANK
+073b  c8            1235   1237         RZ                      ;RETURN IF A BLANK
+073c  fe 3a         1236   1238         CPI     ':'             ;CHECK FOR COLON
+073e  c0            1237   1239         RNZ
+073f  23            1238   1240         INX     H
+0740  22 96 10      1239   1241         SHLD    PNTR            ;SAVE POINTER
+0743  c9            1240   1242         RET
+                    1241   1243 ;
+                    1242   1244 ; PROCESS ANY PSEUDO OPS THAT NEED TO BE IN PASS 1
+                    1243   1245 ;
+0744  cd 0d 09      1244   1246 PSU1:   CALL    SBLK            ;SCAN TO OPERAND
+0747  1a            1245   1247         LDAX    D               ;FETCH VALUE
+0748  b7            1246   1248         ORA     A               ;SET FLAGS
+0749  ca 60 07      1247   1249         JZ      ORG1            ;ORG OPCODE
+074c  fa 90 07      1248   1250         JM      DAT1            ;DATA STATEMENT
+074f  e2 75 07      1249   1251         JPO     EQU1            ;EQU OPCODE
+0752  fe 05         1250   1252         CPI     5
+0754  da 88 07      1251   1253         JC      RES1            ;RES OPCODE
+0757  c2 01 09      1252   1254         JNZ     EASS            ;JUMP IF END
+                    1253   1255 ; DO DW PSEUDO/OP
+075a  0e 02         1254   1256 ACO1:   MVI     C,2             ;2 BYTE INSTRUCTION
+075c  af            1255   1257         XRA     A               ;GET A ZERO
+075d  c3 f5 0a      1256   1258         JMP     OCN1            ;ADD VALUE TO PROGRAM COUNTER
+                    1257   1259 ; DO ORG PSUEDO OP
+0760  cd 97 0b      1258   1260 ORG1:   CALL    ASCN            ;GET OPERAND
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 22
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0763  3a b2 10      1259   1261         LDA     OBUF            ;FETCH ERROR INDICATOR
+0766  fe 20         1260   1262         CPI     ' '             ;CHECK FOR AN ERROR
+0768  c0            1261   1263         RNZ
+0769  22 92 10      1262   1264         SHLD    ASPC            ;STORE NEW ORIGIN
+076c  3a c7 10      1263   1265         LDA     IBUF            ;GET FIRST CHARACTER
+076f  fe 20         1264   1266         CPI     ' '             ;CHECK FOR AN ERROR
+0771  c8            1265   1267         RZ                      ;NO LABEL
+0772  c3 80 07      1266   1268         JMP     EQUS            ;CHANGE LABEL VALUE
+                    1267   1269 ; DO EQU PSUEDO-OP
+0775  cd 97 0b      1268   1270 EQU1:   CALL    ASCN            ;GET OPERAND
+0778  3a c7 10      1269   1271         LDA     IBUF            ;FETCH 1ST CHARACTER
+077b  fe 20         1270   1272         CPI     ' '             ;CHECK FOR LABEL
+077d  ca 9f 0c      1271   1273         JZ      ERRM            ;MISSING LABEL
+0780  eb            1272   1274 EQUS:   XCHG
+0781  2a 90 10      1273   1275         LHLD    TABA            ;SYMBOL TABLE ADDRESS
+0784  72            1274   1276         MOV     M,D             ;STORE LABEL VALUE
+0785  23            1275   1277         INX     H
+0786  73            1276   1278         MOV     M,E
+0787  c9            1277   1279         RET
+                    1278   1280 ; DO DS PSEUDO-OP
+0788  cd 97 0b      1279   1281 RES1:   CALL    ASCN            ;GET OPERAND
+078b  44            1280   1282         MOV     B,H
+078c  4d            1281   1283         MOV     C,L
+078d  c3 ed 07      1282   1284         JMP     RES21           ;ADD VALUE TO PROGRAM COUNTER
+                    1283   1285 ;
+                    1284   1286 ; DO DB PSEUDO-OP
+                    1285   1287 ;
+0790  c3 f4 07      1286   1288 DAT1:   JMP     DAT2A
+                    1287   1289 ;
+                    1288   1290 ; PERFORM PASS 2 OF THE ASSEMBLER
+                    1289   1291 ;
+0793  21 b4 10      1290   1292 PAS2:   LXI     H,OBUF+2                ;SET OUTPUT BUFFER ADDRESS
+0796  3a 93 10      1291   1293         LDA     ASPC+1          ;FETCH PC (HIGH)
+0799  cd 89 02      1292   1294         CALL    BINH+3          ;CONVERT FOR OUTPUT
+079c  23            1293   1295         INX     H
+079d  3a 92 10      1294   1296         LDA     ASPC            ;FETCH PC(LOW)
+07a0  cd 89 02      1295   1297         CALL    BINH+3          ;CONVERT FOR OUTPUT
+07a3  23            1296   1298         INX     H
+07a4  22 9e 10      1297   1299         SHLD    OIND            ;SAVE OUTPUT ADDRESS
+07a7  cd 66 01      1298   1300         CALL    ZBUF            ;CLEAR BUFFER
+07aa  21 c7 10      1299   1301         LXI     H,IBUF          ;INITIALIZE LINE POINTER
+07ad  22 96 10      1300   1302 PABL:   SHLD    PNTR            ;SAVE POINTER
+07b0  7e            1301   1303         MOV     A,M             ;FETCH FIRST CHARACTER
+07b1  fe 20         1302   1304         CPI     ' '             ;CHECK FOR LABEL
+07b3  ca 1e 07      1303   1305         JZ      OPC             ;GET OPCODE
+07b6  fe 2a         1304   1306         CPI     '*'             ;CHECK FOR COMMENT
+07b8  c8            1305   1307         RZ                      ;RETURN IF COMMENT
+07b9  cd 20 0b      1306   1308         CALL    SLAB            ;SCAN OFF LABEL
+07bc  da c2 0c      1307   1309         JC      ERRL            ;ERROR IN LABEL
+07bf  cd 35 07      1308   1310         CALL    LCHK            ;CHECK FOR A BLANK OR COLON
+07c2  c2 c2 0c      1309   1311         JNZ     ERRL            ;ERROR IF NOT A BLANK
+07c5  c3 1e 07      1310   1312         JMP     OPC
+                    1311   1313 ;
+                    1312   1314 ; PROCESS PSEUDO OPS FOR PASS2
+                    1313   1315 ;
+07c8  1a            1314   1316 PSU2:   LDAX    D
+07c9  b7            1315   1317         ORA     A               ;SET FLAGS
+07ca  ca 0c 08      1316   1318         JZ      ORG2            ;ORG OPCODE
+07cd  fa f1 07      1317   1319         JM      DAT2            ;DATA OPCODE
+07d0  e2 fa 07      1318   1320         JPO     EQU2            ;EQUATE PSEUDO-OP
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 23
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+07d3  fe 05         1319   1321         CPI     5
+07d5  da e1 07      1320   1322         JC      RES2            ;RES OPCODE
+07d8  c2 01 09      1321   1323         JNZ     EASS            ;END OPCODE
+                    1322   1324 ; DO DW OPCODE
+07db  cd e1 08      1323   1325 ACO2:   CALL    TYS6            ;GET VALUE
+07de  c3 5a 07      1324   1326         JMP     ACO1
+                    1325   1327 ; DO DS PSEUDO-OP
+07e1  cd 94 0b      1326   1328 RES2:   CALL    ASBL            ;GET OPERAND
+07e4  44            1327   1329         MOV     B,H
+07e5  4d            1328   1330         MOV     C,L
+07e6  2a 8c 10      1329   1331         LHLD    BBUF+2          ;FETCH STORAGE COUNTER
+07e9  09            1330   1332         DAD     B               ;ADD VALUE
+07ea  22 8c 10      1331   1333         SHLD    BBUF+2
+07ed  af            1332   1334 RES21:  XRA     A               ;GET A ZERO
+07ee  c3 f8 0a      1333   1335         JMP     OCN2
+                    1334   1336 ; DO DB PSEUDO-OP
+07f1  cd a0 08      1335   1337 DAT2:   CALL    TY55            ;GET OPERAND
+07f4  af            1336   1338 DAT2A:  XRA     A               ;MAKE ZERO
+07f5  0e 01         1337   1339         MVI     C,1             ;BYTE COUNT
+07f7  c3 f5 0a      1338   1340         JMP     OCN1
+                    1339   1341 ;
+                    1340   1342 ; HANDLE EQUATES ON 2ND PASS
+                    1341   1343 ;
+07fa  cd 94 0b      1342   1344 EQU2:   CALL    ASBL            ;GET OPERAND INTO HL AND
+                    1343   1345                                 ;  FALL INTO NEXT ROUTINE
+                    1344   1346 ;
+                    1345   1347 ; STORE CONTENTS OF HL AS HEX ASCII AT OBUF+2
+                    1346   1348 ;   ON RETURN, DE HOLDS VALUE WHICH WAS IN HL.
+                    1347   1349 ;
+07fd  eb            1348   1350 BINAD:  XCHG                    ;PUT VALUE INTO DE
+07fe  21 b4 10      1349   1351         LXI     H,OBUF+2                ;POINTER TO ADDR IN OBUF
+0801  7a            1350   1352         MOV     A,D             ;STORE HI BYTE
+0802  cd 89 02      1351   1353         CALL    BINH+3
+0805  23            1352   1354         INX     H
+0806  7b            1353   1355         MOV     A,E             ;STORE LOW BYTE...
+0807  cd 89 02      1354   1356         CALL    BINH+3
+080a  23            1355   1357         INX     H
+080b  c9            1356   1358         RET
+                    1357   1359 ; DO ORG PSEUDO-OP
+080c  cd 94 0b      1358   1360 ORG2:   CALL    ASBL            ;GET NEW ORIGIN
+080f  3a b2 10      1359   1361         LDA     OBUF            ;GET ERROR INDICATOR
+0812  fe 20         1360   1362         CPI     ' '             ;CHECK FOR AN ERROR
+0814  c0            1361   1363         RNZ                     ;DON?T MODIFY PC IF ERROR
+0815  cd fd 07      1362   1364         CALL    BINAD           ;STORE NEW ADDR IN OBUF
+0818  2a 92 10      1363   1365         LHLD    ASPC            ;FETCH PC
+081b  eb            1364   1366         XCHG
+081c  22 92 10      1365   1367         SHLD    ASPC            ;STORE NEW PC
+081f  7d            1366   1368         MOV     A,L
+0820  93            1367   1369         SUB     E               ;FORM DIFFERENCE OF ORIGINS
+0821  5f            1368   1370         MOV     E,A
+0822  7c            1369   1371         MOV     A,H
+0823  9a            1370   1372         SBB     D
+0824  57            1371   1373         MOV     D,A
+0825  2a 8c 10      1372   1374         LHLD    BBUF+2          ;FETCH STORAGE POINTER
+0828  19            1373   1375         DAD     D               ;MODIFY
+0829  22 8c 10      1374   1376         SHLD    BBUF+2          ;SAVE
+082c  c9            1375   1377         RET
+                    1376   1378 ;
+                    1377   1379 ; PROCESS 1 BYTE INSTRUCTIONS WITHOUT OPERANDS
+                    1378   1380 ;
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 24
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+082d  cd ee 08      1379   1381 TYP1:   CALL    ASTO            ;STORE VALUE IN MEMORY
+0830  c9            1380   1382         RET
+                    1381   1383 ;
+                    1382   1384 ; PROCESS STAX AND LDAX INSTRUCTIONS
+                    1383   1385 ;
+0831  cd 94 0b      1384   1386 TYP2:   CALL    ASBL            ;FETCH OPERAND
+0834  c4 81 0c      1385   1387         CNZ     ERRR            ;ILLEGAL REGISTER
+0837  7d            1386   1388         MOV     A,L             ;GET LOW ORDER OPERAND
+0838  b7            1387   1389         ORA     A               ;SET FLAGS
+0839  ca 55 08      1388   1390         JZ      TY31            ;OPERAND = 0
+083c  fe 02         1389   1391         CPI     2               ;OPERAND = 2
+083e  c4 81 0c      1390   1392         CNZ     ERRR            ;ILLEGAL REGISTER
+0841  c3 55 08      1391   1393         JMP     TY31
+                    1392   1394 ;
+                    1393   1395 ; PROCESS PUSH, POP, INX, DCX, DAD INSTRUCTIONS
+                    1394   1396 ;
+0844  cd 94 0b      1395   1397 TYP3:   CALL    ASBL            ;FETCH OPERAND
+0847  c4 81 0c      1396   1398         CNZ     ERRR            ;ILLEGAL REGISTER
+084a  7d            1397   1399         MOV     A,L             ;GET LOW ORDER OPERAND
+084b  0f            1398   1400         RRC                     ;CHECK LOW ORDER BIT
+084c  dc 81 0c      1399   1401         CC      ERRR            ;ILLEGAL REGISTER
+084f  17            1400   1402         RAL                     ;RESTORE
+0850  fe 08         1401   1403         CPI     8
+0852  d4 81 0c      1402   1404         CNC     ERRR            ;ILLEGAL REGISTER
+0855  07            1403   1405 TY31:   RLC                     ;MULTIPLY BY 8
+0856  17            1404   1406         RAL
+0857  17            1405   1407         RAL
+0858  47            1406   1408 TY32:   MOV     B,A
+0859  1a            1407   1409         LDAX    D               ;FETCH OPCODE BASE
+085a  80            1408   1410         ADD     B               ;FORM OPCODE
+085b  fe 76         1409   1411         CPI     118             ;CHECK FOR MOV M,M
+085d  cc 81 0c      1410   1412         CZ      ERRR            ;ILLEGAL REGISTER
+0860  c3 2d 08      1411   1413         JMP     TYP1
+                    1412   1414 ;
+                    1413   1415 ; PROCESS ACCUMULATOR, INR,DCR,MOV,RST INSTRUCTIONS
+                    1414   1416 ;
+0863  cd 94 0b      1415   1417 TYP4:   CALL    ASBL            ;FETCH OPERAND
+0866  c4 81 0c      1416   1418         CNZ     ERRR            ;ILLEGAL REGISTER
+0869  7d            1417   1419         MOV     A,L             ;GET LOW ORDER OPERAND
+086a  fe 08         1418   1420         CPI     8
+086c  d4 81 0c      1419   1421         CNC     ERRR            ;ILLEGAL REGISTER
+086f  1a            1420   1422         LDAX    D               ;FETCH OPCODE BASE
+0870  fe 40         1421   1423         CPI     64              ;CHECK FOR MOV INSTRUCTION
+0872  ca 81 08      1422   1424         JZ      TY41
+0875  fe c7         1423   1425         CPI     199
+0877  7d            1424   1426         MOV     A,L
+0878  ca 55 08      1425   1427         JZ      TY31            ;RST INSTRUCTION
+087b  fa 58 08      1426   1428         JM      TY32            ;ACCUMULATOR INSTRUCTION
+087e  c3 55 08      1427   1429         JMP     TY31            ;INR, DCR
+                    1428   1430 ; PROCESS MOV INSTRUCTION
+0881  29            1429   1431 TY41:   DAD     H               ;MULTIPLY OPERAND BY 8
+0882  29            1430   1432         DAD     H
+0883  29            1431   1433         DAD     H
+0884  85            1432   1434         ADD     L               ;FORM OPCODE
+0885  12            1433   1435         STAX    D               ;SAVE OPCODE
+0886  cd bf 08      1434   1436         CALL    MPNT
+0889  cd 97 0b      1435   1437         CALL    ASCN
+088c  c4 81 0c      1436   1438         CNZ     ERRR            ;INCREMENT POINTER
+088f  7d            1437   1439         MOV     A,L
+0890  fe 08         1438   1440         CPI     8
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 25
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0892  d4 81 0c      1439   1441         CNC     ERRR            ;ILLEGAL REGISTER
+0895  c3 58 08      1440   1442         JMP     TY32
+                    1441   1443 ;
+                    1442   1444 ; PROCESS IMMEDIATE INSTRUCTIONS
+                    1443   1445 ; IMMEDIATE BYTE CAN BETWEEN -256 AND +255
+                    1444   1446 ; MVI INSTRUCTION IS A SPECIAL CASE AND CONTAINS
+                    1445   1447 ; 2 ARGUMENTS IN OPERAND
+                    1446   1448 ;
+0898  fe 06         1447   1449 TYP5:   CPI     6               ;CHECK FOR MVI
+089a  cc ad 08      1448   1450         CZ      TY56
+089d  cd ee 08      1449   1451         CALL    ASTO            ;STORE OBJECT BYTE
+08a0  cd 94 0b      1450   1452 TY55:   CALL    ASBL            ;GET IMMEDIATE ARGUMENT
+08a3  3c            1451   1453         INR     A
+08a4  fe 02         1452   1454         CPI     2               ;CHECK OPERAND FOR RANGE
+08a6  d4 9a 0c      1453   1455         CNC     ERRV
+08a9  7d            1454   1456         MOV     A,L
+08aa  c3 2d 08      1455   1457         JMP     TYP1
+                    1456   1458 ;
+                    1457   1459 ; FETCH 1ST ARG FOR MVI AND LXI INSTRUCTIONS
+                    1458   1460 ;
+08ad  cd 94 0b      1459   1461 TY56:   CALL    ASBL            ;FETCH ARG
+08b0  c4 81 0c      1460   1462         CNZ     ERRR            ;ILLEGAL REGISTER
+08b3  7d            1461   1463         MOV     A,L             ;GET LOW ORDER ARGUMENT
+08b4  fe 08         1462   1464         CPI     8
+08b6  d4 81 0c      1463   1465         CNC     ERRR            ;ILLEGAL REGISTER
+08b9  29            1464   1466         DAD     H
+08ba  29            1465   1467         DAD     H
+08bb  29            1466   1468         DAD     H
+08bc  1a            1467   1469         LDAX    D               ;FETCH OPCODE BASE
+08bd  85            1468   1470         ADD     L               ;FOR OPCODE
+08be  5f            1469   1471         MOV     E,A             ;SAVE OBJECT BYTE
+08bf  2a 96 10      1470   1472 MPNT:   LHLD    PNTR            ;FETCH POINTER
+08c2  7e            1471   1473         MOV     A,M             ;FETCH CHARACTER
+08c3  fe 2c         1472   1474         CPI     ','             ;CHECK FOR COMMA
+08c5  23            1473   1475         INX     H               ;INCREMENT POINTER
+08c6  22 96 10      1474   1476         SHLD    PNTR
+08c9  c2 8a 0c      1475   1477         JNZ     ERRS            ;SYNTAX ERROR IF NO COMMA
+08cc  7b            1476   1478         MOV     A,E
+08cd  c9            1477   1479         RET
+                    1478   1480 ;
+                    1479   1481 ; PROCESS 3 BYTE INSTRUCTIONS
+                    1480   1482 ; LXI INSTRUCTION IS A SPECIAL CASE
+                    1481   1483 ;
+08ce  fe 01         1482   1484 TYP6:   CPI     1               ;CHECK FOR LXI INSTRUCTION
+08d0  c2 de 08      1483   1485         JNZ     TY6             ;JUMP IF NOT LXI
+08d3  cd ad 08      1484   1486         CALL    TY56            ;GET REGISTER
+08d6  e6 08         1485   1487         ANI     08H             ;CHECK FOR ILLEGAL REGISTER
+08d8  c4 81 0c      1486   1488         CNZ     ERRR            ;REGISTER ERROR
+08db  7b            1487   1489         MOV     A,E             ;GET OPCODE
+08dc  e6 f7         1488   1490         ANI     0F7H            ;CLEAR BIT IN ERROR
+08de  cd ee 08      1489   1491 TY6:    CALL    ASTO            ;STORE OBJECT BYTE
+08e1  cd 94 0b      1490   1492 TYS6:   CALL    ASBL            ;FETCH OPERAND
+08e4  7d            1491   1493         MOV     A,L
+08e5  54            1492   1494         MOV     D,H
+08e6  cd ee 08      1493   1495         CALL    ASTO            ;STORE 2ND BYTE
+08e9  7a            1494   1496         MOV     A,D
+08ea  c3 2d 08      1495   1497         JMP     TYP1
+08ed  c9            1496   1498         RET
+                    1497   1499 ;
+                    1498   1500 ; THIS ROUTINE IS USED TO STORE OBJECT CODE PRODUCED
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 26
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1499   1501 ; BY THE ASSEMBLER DURING PASS 2 INTO MEMORY
+                    1500   1502 ;
+08ee  2a 8c 10      1501   1503 ASTO:   LHLD    BBUF+2          ;FETCH STORAGE ADDRESS
+08f1  77            1502   1504         MOV     M,A             ;STORE OBJECT BYTE
+08f2  23            1503   1505         INX     H               ;INCREMENT LOCATION
+08f3  22 8c 10      1504   1506         SHLD    BBUF+2
+08f6  2a 9e 10      1505   1507         LHLD    OIND            ;FETCH OUTPUT ADDRESS
+08f9  23            1506   1508         INX     H
+08fa  cd 89 02      1507   1509         CALL    BINH+3          ;CONVERT OBJECT BYTE
+08fd  22 9e 10      1508   1510         SHLD    OIND
+0900  c9            1509   1511         RET
+                    1510   1512 ;
+                    1511   1513 ; GET HERE WHEN END PSEUDO-OP IS FOUND OR WHEN
+                    1512   1514 ; END-OF-FILE OCCURS IN SOURCE FILE.  CONTROL IS SET
+                    1513   1515 ; FOR EITHER PASS 2 OR ASSEMBLY TERMINATOR IF FINISHED
+                    1514   1516 ;
+0901  3a 94 10      1515   1517 EASS:   LDA     PASI            ;FETCH PASS INDICATOR
+0904  b7            1516   1518         ORA     A               ;SET FLAGS
+0905  c2 67 00      1517   1519         JNZ     EOR             ;JUMP IF FINISHED
+0908  3e 01         1518   1520         MVI     A,1             ;PASS INDICATOR FOR 2ND PASS
+090a  c3 7a 06      1519   1521         JMP     ASM3            ;DO 2ND PASS
+                    1520   1522 ;
+                    1521   1523 ; THIS ROUTINE SCANS THROUGH A CHARACTER STRING UNTIL
+                    1522   1524 ; THE FIRST NON-BLANK CHARACTER IS FOUND
+                    1523   1525 ;
+                    1524   1526 ; ON RETURN, CARRY SET INDICATES A CARRIAGE RETURN
+                    1525   1527 ; AS  FIRST NON-BLANK CHARACTER.
+                    1526   1528 ;
+090d  2a 96 10      1527   1529 SBLK:   LHLD    PNTR            ;FETCH ADDRESS
+0910  7e            1528   1530 SBL1:   MOV     A,M             ;FETCH CHARACTER
+0911  fe 20         1529   1531         CPI     ' '             ;CHECK FOR BLANK
+0913  c0            1530   1532         RNZ                     ;RETURN IF NON-BLANK
+0914  23            1531   1533 SBL2:   INX     H               ;INCREMENT
+0915  22 96 10      1532   1534         SHLD    PNTR            ;SAVE POINTER
+0918  c3 10 09      1533   1535         JMP     SBL1
+                    1534   1536 ;
+                    1535   1537 ; THIS ROUTINE IS USED TO CHECK THE CONDITION
+                    1536   1538 ; CODE NMEUMONICS FOR CONDITIONAL JUMPS, CALLS,
+                    1537   1539 ; AND RETURNS.
+                    1538   1540 ;
+091b  21 7f 10      1539   1541 COND:   LXI     H,ABUF+1
+091e  22 74 10      1540   1542         SHLD    ADDS
+0921  06 02         1541   1543         MVI     B,2             ;2 CHARACTERS
+0923  cd 50 0a      1542   1544         CALL    COPC
+0926  c9            1543   1545         RET
+                    1544   1546 ;
+                    1545   1547 ; THE FOLLOWING IS THE OPCODE TABLE
+                    1546   1548 ;
+0927  4f 52 47      1547   1549 OTAB:   DB      'ORG'
+092a  00            1548   1550         DB      0
+092b  00            1549   1551         DB      0
+092c  45 51 55      1550   1552         DB      'EQU'
+092f  00            1551   1553         DB      0
+0930  01            1552   1554         DB      1
+0931  44 42         1553   1555         DB      'DB'
+0933  00            1554   1556         DB      0
+0934  00            1555   1557         DB      0
+0935  ff            1556   1558         DB      -1 AND 0FFH
+0936  44 53         1557   1559         DB      'DS'
+0938  00            1558   1560         DB      0
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 27
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0939  00            1559   1561         DB      0
+093a  03            1560   1562         DB      3
+093b  44 57         1561   1563         DB      'DW'
+093d  00            1562   1564         DB      0
+093e  00            1563   1565         DB      0
+093f  05            1564   1566         DB      5
+0940  45 4e 44      1565   1567         DB      'END'
+0943  00            1566   1568         DB      0
+0944  06            1567   1569         DB      6
+0945  00            1568   1570         DB      0
+0946  48 4c 54      1569   1571         DB      'HLT'
+0949  76            1570   1572         DB      118
+094a  52 4c 43      1571   1573         DB      'RLC'
+094d  07            1572   1574         DB      7
+094e  52 52 43      1573   1575         DB      'RRC'
+0951  0f            1574   1576         DB      15
+0952  52 41 4c      1575   1577         DB      'RAL'
+0955  17            1576   1578         DB      23
+0956  52 41 52      1577   1579         DB      'RAR'
+0959  1f            1578   1580         DB      31
+095a  52 45 54      1579   1581         DB      'RET'
+095d  c9            1580   1582         DB      201
+095e  43 4d 41      1581   1583         DB      'CMA'
+0961  2f            1582   1584         DB      47
+0962  53 54 43      1583   1585         DB      'STC'
+0965  37            1584   1586         DB      55
+0966  44 41 41      1585   1587         DB      'DAA'
+0969  27            1586   1588         DB      39
+096a  43 4d 43      1587   1589         DB      'CMC'
+096d  3f            1588   1590         DB      63
+096e  45 49         1589   1591         DB      'EI'
+0970  00            1590   1592         DB      0
+0971  fb            1591   1593         DB      251
+0972  44 49         1592   1594         DB      'DI'
+0974  00            1593   1595         DB      0
+0975  f3            1594   1596         DB      243
+0976  4e 4f 50      1595   1597         DB      'NOP'
+0979  00            1596   1598         DB      0
+097a  00            1597   1599         DB      0
+097b  58 43 48 47   1598   1600         DB      'XCHG'
+097f  eb            1599   1601         DB      235
+0980  58 54 48 4c   1600   1602         DB      'XTHL'
+0984  e3            1601   1603         DB      227
+0985  53 50 48 4c   1602   1604         DB      'SPHL'
+0989  f9            1603   1605         DB      249
+098a  50 43 48 4c   1604   1606         DB      'PCHL'
+098e  e9            1605   1607         DB      233
+098f  00            1606   1608         DB      0
+0990  53 54 41 58   1607   1609         DB      'STAX'
+0994  02            1608   1610         DB      2
+0995  4c 44 41 58   1609   1611         DB      'LDAX'
+0999  0a            1610   1612         DB      10
+099a  00            1611   1613         DB      0
+099b  50 55 53 48   1612   1614         DB      'PUSH'
+099f  c5            1613   1615         DB      197
+09a0  50 4f 50      1614   1616         DB      'POP'
+09a3  00            1615   1617         DB      0
+09a4  c1            1616   1618         DB      193
+09a5  49 4e 58      1617   1619         DB      'INX'
+09a8  00            1618   1620         DB      0
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 28
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+09a9  03            1619   1621         DB      3
+09aa  44 43 58      1620   1622         DB      'DCX'
+09ad  00            1621   1623         DB      0
+09ae  0b            1622   1624         DB      11
+09af  44 41 44      1623   1625         DB      'DAD'
+09b2  00            1624   1626         DB      0
+09b3  09            1625   1627         DB      9
+09b4  00            1626   1628         DB      0
+09b5  49 4e 52      1627   1629         DB      'INR'
+09b8  04            1628   1630         DB      4
+09b9  44 43 52      1629   1631         DB      'DCR'
+09bc  05            1630   1632         DB      5
+09bd  4d 4f 56      1631   1633         DB      'MOV'
+09c0  40            1632   1634         DB      64
+09c1  41 44 44      1633   1635         DB      'ADD'
+09c4  80            1634   1636         DB      128
+09c5  41 44 43      1635   1637         DB      'ADC'
+09c8  88            1636   1638         DB      136
+09c9  53 55 42      1637   1639         DB      'SUB'
+09cc  90            1638   1640         DB      144
+09cd  53 42 42      1639   1641         DB      'SBB'
+09d0  98            1640   1642         DB      152
+09d1  41 4e 41      1641   1643         DB      'ANA'
+09d4  a0            1642   1644         DB      160
+09d5  58 52 41      1643   1645         DB      'XRA'
+09d8  a8            1644   1646         DB      168
+09d9  4f 52 41      1645   1647         DB      'ORA'
+09dc  b0            1646   1648         DB      176
+09dd  43 4d 50      1647   1649         DB      'CMP'
+09e0  b8            1648   1650         DB      184
+09e1  52 53 54      1649   1651         DB      'RST'
+09e4  c7            1650   1652         DB      199
+09e5  00            1651   1653         DB      0
+09e6  41 44 49      1652   1654         DB      'ADI'
+09e9  c6            1653   1655         DB      198
+09ea  41 43 49      1654   1656         DB      'ACI'
+09ed  ce            1655   1657         DB      206
+09ee  53 55 49      1656   1658         DB      'SUI'
+09f1  d6            1657   1659         DB      214
+09f2  53 42 49      1658   1660         DB      'SBI'
+09f5  de            1659   1661         DB      222
+09f6  41 4e 49      1660   1662         DB      'ANI'
+09f9  e6            1661   1663         DB      230
+09fa  58 52 49      1662   1664         DB      'XRI'
+09fd  ee            1663   1665         DB      238
+09fe  4f 52 49      1664   1666         DB      'ORI'
+0a01  f6            1665   1667         DB      246
+0a02  43 50 49      1666   1668         DB      'CPI'
+0a05  fe            1667   1669         DB      254
+0a06  49 4e         1668   1670         DB      'IN'
+0a08  00            1669   1671         DB      0
+0a09  db            1670   1672         DB      219
+0a0a  4f 55 54      1671   1673         DB      'OUT'
+0a0d  d3            1672   1674         DB      211
+0a0e  4d 56 49      1673   1675         DB      'MVI'
+0a11  06            1674   1676         DB      6
+0a12  00            1675   1677         DB      0
+0a13  4a 4d 50      1676   1678         DB      'JMP'
+0a16  00            1677   1679         DB      0
+0a17  c3            1678   1680         DB      195
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 29
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0a18  43 41 4c 4c   1679   1681         DB      'CALL'
+0a1c  cd            1680   1682         DB      205
+0a1d  4c 58 49      1681   1683         DB      'LXI'
+0a20  00            1682   1684         DB      0
+0a21  01            1683   1685         DB      1
+0a22  4c 44 41      1684   1686         DB      'LDA'
+0a25  00            1685   1687         DB      0
+0a26  3a            1686   1688         DB      58
+0a27  53 54 41      1687   1689         DB      'STA'
+0a2a  00            1688   1690         DB      0
+0a2b  32            1689   1691         DB      50
+0a2c  53 48 4c 44   1690   1692         DB      'SHLD'
+0a30  22            1691   1693         DB      34
+0a31  4c 48 4c 44   1692   1694         DB      'LHLD'
+0a35  2a            1693   1695         DB      42
+0a36  00            1694   1696         DB      0
+                    1695   1697 ;       CONDITION       CODE    TABLE
+0a37  4e 5a         1696   1698         DB      'NZ'
+0a39  00            1697   1699         DB      0
+0a3a  5a            1698   1700         DB      'Z'
+0a3b  00            1699   1701         DB      0
+0a3c  08            1700   1702         DB      8
+0a3d  4e 43         1701   1703         DB      'NC'
+0a3f  10            1702   1704         DB      16
+0a40  43            1703   1705         DB      'C'
+0a41  00            1704   1706         DB      0
+0a42  18            1705   1707         DB      24
+0a43  50 4f         1706   1708         DB      'PO'
+0a45  20            1707   1709         DB      32
+0a46  50 45         1708   1710         DB      'PE'
+0a48  28            1709   1711         DB      40
+0a49  50            1710   1712         DB      'P'
+0a4a  00            1711   1713         DB      0
+0a4b  30            1712   1714         DB      48
+0a4c  4d            1713   1715         DB      'M'
+0a4d  00            1714   1716         DB      0
+0a4e  38            1715   1717         DB      56
+0a4f  00            1716   1718         DB      0
+                    1717   1719 ;
+                    1718   1720 ; THIS ROUTINE IS USED TO CHECK A GIVEN OPCODE
+                    1719   1721 ; AGAINST THE LEGAL OPCODES IN THE OPCODE TABLE
+                    1720   1722 ;
+0a50  2a 74 10      1721   1723 COPC:   LHLD    ADDS
+0a53  1a            1722   1724         LDAX    D               ;FETCH CHARACTER
+0a54  b7            1723   1725         ORA     A               ;SET FLAGS
+0a55  ca 62 0a      1724   1726         JZ      COP1            ;JUMP IF TERMINATION CHARACTER
+0a58  48            1725   1727         MOV     C,B
+0a59  cd 53 01      1726   1728         CALL    SEAR
+0a5c  1a            1727   1729         LDAX    D
+0a5d  c8            1728   1730         RZ                      ;RETURN IF A MATCH
+0a5e  13            1729   1731         INX     D               ; NEXT STRING
+0a5f  c3 50 0a      1730   1732         JMP     COPC            ;CONTINUE SEARCH
+0a62  3c            1731   1733 COP1:   INR     A               ;CLEAR ZERO FLAG
+0a63  13            1732   1734         INX     D               ;INCREMENT ADDRESS
+0a64  c9            1733   1735         RET
+                    1734   1736 ;
+                    1735   1737 ; THIS ROUTINE CHECKS THE LEGAL OPCODES IN BOTH PASS 1
+                    1736   1738 ; AND PASS 2.  IN PASS 1 THE PROGRAM COUNTER IS INCRE-
+                    1737   1739 ; MENTED BY THE CORRECT NUMBER OF BYTES.  AN ADDRESS IS
+                    1738   1740 ; ALSO SET SO THAT AN INDEXED JUMP CAN BE MADE TO
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 30
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    1739   1741 ; PROCESS THE OPCODE FOR PASS 2.
+                    1740   1742 ;
+0a65  21 7e 10      1741   1743 OPCD:   LXI     H,ABUF          ;GET ADDRESS
+0a68  22 74 10      1742   1744         SHLD    ADDS
+0a6b  11 27 09      1743   1745         LXI     D,OTAB          ;OPCODE TABLE ADDRESS
+0a6e  06 04         1744   1746         MVI     B,4             ;CHARACTER COUNT
+0a70  cd 50 0a      1745   1747         CALL    COPC            ;CHECK OPCODE
+0a73  ca 0e 0b      1746   1748         JZ      PSEU            ;JUMP IF PSEUDO-OP
+0a76  05            1747   1749         DCR     B               ;3-CHARACTER OPCODES
+0a77  cd 50 0a      1748   1750         CALL    COPC
+0a7a  ca 81 0a      1749   1751         JZ      OP1
+0a7d  04            1750   1752         INR     B               ;4 CHARACTER OPCODES
+0a7e  cd 50 0a      1751   1753         CALL    COPC
+0a81  21 2d 08      1752   1754 OP1:    LXI     H,TYP1          ;TYPE 1 INSTRUCTIONS
+0a84  0e 01         1753   1755 OP2:    MVI     C,1             ;1 BYTE INSTRUCTIONS
+0a86  ca e1 0a      1754   1756         JZ      OCNT
+                    1755   1757 ;
+0a89  cd 50 0a      1756   1758 OPC2:   CALL    COPC            ;CHECK FOR STAX, LDAX
+0a8c  21 31 08      1757   1759         LXI     H,TYP2
+0a8f  ca 84 0a      1758   1760         JZ      OP2
+0a92  cd 50 0a      1759   1761         CALL    COPC            ;CHECK FOR PUSH,POP,INX
+                    1760   1762                                 ; DCX AND DAD
+0a95  21 44 08      1761   1763         LXI     H,TYP3
+0a98  ca 84 0a      1762   1764         JZ      OP2
+0a9b  05            1763   1765         DCR     B               ;3 CHAR OPCODES
+0a9c  cd 50 0a      1764   1766         CALL    COPC            ;ACCUMULATOR INSTRUCTIONS,
+                    1765   1767                                 ; INR, DCR, MOV, RST
+0a9f  21 63 08      1766   1768         LXI     H,TYP4
+0aa2  ca 84 0a      1767   1769         JZ      OP2
+                    1768   1770 ;
+0aa5  cd 50 0a      1769   1771 OPC3:   CALL    COPC            ;IMMEDIATE INSTRUCTIONS
+0aa8  21 98 08      1770   1772         LXI     H,TYP5
+0aab  0e 02         1771   1773         MVI     C,2             ;2 BYTE INSTRUCTIONS
+0aad  ca e1 0a      1772   1774         JZ      OCNT
+0ab0  04            1773   1775         INR     B               ;4 CHARACTER OPCODES
+0ab1  cd 50 0a      1774   1776         CALL    COPC            ;JMP, CALL, LIX, LDA, STA,
+                    1775   1777                                 ; LHLD, SHLD OPCODES
+0ab4  ca dc 0a      1776   1778         JZ      OP4
+0ab7  cd 1b 09      1777   1779         CALL    COND            ;CONDITIONAL INSTRUCTIONS
+0aba  c2 06 0b      1778   1780         JNZ     OERR            ;ILLEGAL OPCODE
+0abd  c6 c0         1779   1781         ADI     192             ;ADD BASE VALUE TO RETURN
+0abf  57            1780   1782         MOV     D,A
+0ac0  06 03         1781   1783         MVI     B,3             ;3 CHARACTER OPCODES
+0ac2  3a 7e 10      1782   1784         LDA     ABUF            ;FETCH FIRST CHARACTER
+0ac5  4f            1783   1785         MOV     C,A             ;SAVE CHARACTER
+0ac6  fe 52         1784   1786         CPI     'R'             ;CONDITIONAL RETURN
+0ac8  7a            1785   1787         MOV     A,D
+0ac9  ca 81 0a      1786   1788         JZ      OP1
+0acc  79            1787   1789         MOV     A,C
+0acd  14            1788   1790         INR     D               ;FORM CONDITIONAL JUMP
+0ace  14            1789   1791         INR     D
+0acf  fe 4a         1790   1792         CPI     'J'             ;CONDITIONAL JUMP
+0ad1  ca db 0a      1791   1793         JZ      OPAD
+0ad4  fe 43         1792   1794         CPI     'C'             ;CONDITIONAL CALL
+0ad6  c2 06 0b      1793   1795         JNZ     OERR            ;ILLEGAL OPCODE
+0ad9  14            1794   1796         INR     D               ;FORM CONDITIONAL CALL
+0ada  14            1795   1797         INR     D
+0adb  7a            1796   1798 OPAD:   MOV     A,D             ;GET OPCODE
+0adc  21 ce 08      1797   1799 OP4:    LXI     H,TYP6
+0adf  0e 03         1798   1800 OP5:    MVI     C,3             ;3 BYTE INSTRUCTION
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 31
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0ae1  32 9d 10      1799   1801 OCNT:   STA     TEMP            ;SAVE OPCODE
+                    1800   1802 ;
+                    1801   1803 ; CHECK FOR OPCODE ONLY CONTAINING THE CORRECT NUMBER OF
+                    1802   1804 ; CHARACTERS.  THUS ADDQ, SAY, WOULD GIVE AN ERROR
+                    1803   1805 ;
+0ae4  3e 7e         1804   1806         MVI     A,ABUF AND 0FFH ;LOAD BUFFER ADDRESS
+0ae6  80            1805   1807         ADD     B               ;ADD LENGTH OF BUFFER
+0ae7  5f            1806   1808         MOV     E,A
+0ae8  3e 10         1807   1809         MVI     A,ABUF/256
+0aea  ce 00         1808   1810         ACI     0               ;GET HIGH ORDER ADDRESS
+0aec  57            1809   1811         MOV     D,A
+0aed  1a            1810   1812         LDAX    D               ;FETCH CHARACTER AFTER OPCODE
+0aee  b7            1811   1813         ORA     A               ;IT SHOULD BE ZERO
+0aef  c2 06 0b      1812   1814         JNZ     OERR            ;OPCODE ERROR
+0af2  3a 94 10      1813   1815         LDA     PASI            ;FETCH PASS INDICATOR
+0af5  06 00         1814   1816 OCN1:   MVI     B,0
+0af7  eb            1815   1817         XCHG
+0af8  2a 92 10      1816   1818 OCN2:   LHLD    ASPC            ;FETCH PROGRAM COUNTER
+0afb  09            1817   1819         DAD     B               ;ADD IN BYTE COUNT
+0afc  22 92 10      1818   1820         SHLD    ASPC            ;STORE PC
+0aff  b7            1819   1821         ORA     A               ;WHICH PASS?
+0b00  c8            1820   1822         RZ                      ;RETURN IF PASS 1
+0b01  3a 9d 10      1821   1823         LDA     TEMP            ;FETCH OPCODE
+0b04  eb            1822   1824         XCHG
+0b05  e9            1823   1825         PCHL
+                    1824   1826 ;
+0b06  21 ad 0c      1825   1827 OERR:   LXI     H,ERRO          ;GET ERROR ADDRESS
+0b09  0e 03         1826   1828         MVI     C,3             ;LEAVE 3 BYTES FOR PATCH
+0b0b  c3 f2 0a      1827   1829         JMP     OCN1-3
+                    1828   1830 ;
+0b0e  21 82 10      1829   1831 PSEU:   LXI     H,ABUF+4                ;SET BUFFER ADDRESS
+0b11  7e            1830   1832         MOV     A,M             ;FETCH CHARACTER AFTER OPCODE
+0b12  b7            1831   1833         ORA     A               ;SHOULD BE A ZERO
+0b13  c2 06 0b      1832   1834         JNZ     OERR
+0b16  3a 94 10      1833   1835         LDA     PASI            ;FETCH PASS INDICATOR
+0b19  b7            1834   1836         ORA     A
+0b1a  ca 44 07      1835   1837         JZ      PSU1
+0b1d  c3 c8 07      1836   1838         JMP     PSU2
+                    1837   1839 ;
+                    1838   1840 ; THIS ROUTINE IS USED TO PROCESS LABELS.
+                    1839   1841 ; IT CHECKS TO SEE IF A LABEL IS IN THE SYMBOL TABLE
+                    1840   1842 ; OR NOT.  ON RETURN, Z=1 INDICATES A MATCH WAS FOUND
+                    1841   1843 ; AND H,L CONTAIN THE VALUE ASSOCIATED WITH THE LABEL.
+                    1842   1844 ; THE REGISTER NAMES A, B, C, D, E, H, L, P, AND S ARE
+                    1843   1845 ; PRE-DEFINED AND NEED NOT BE ENTERED BY THE USER.
+                    1844   1846 ; ON RETURN, C=1 INDICATES A LABEL ERROR.
+                    1845   1847 ;
+0b20  fe 41         1846   1848 SLAB:   CPI     'A'             ;CHECK FOR LEGAL CHARACTER
+0b22  d8            1847   1849         RC
+0b23  fe 5b         1848   1850         CPI     'Z'+1           ;CHECK FOR ILLEGAL CHARACTER
+0b25  3f            1849   1851         CMC
+0b26  d8            1850   1852         RC                      ;RETURN IF ILLEGAL CHARACTER
+0b27  cd 75 0b      1851   1853         CALL    ALPS            ;PLACE SYMBOL IN BUFFER
+0b2a  21 7e 10      1852   1854         LXI     H,ABUF          ;SET BUFFER ADDRESS
+0b2d  22 74 10      1853   1855         SHLD    ADDS            ;SAVE ADDRESS
+0b30  05            1854   1856         DCR     B               ;CHECK IF ONE CHARACTER
+0b31  c2 44 0b      1855   1857         JNZ     SLA1
+                    1856   1858 ; CHECK IF PREFEFINED REGISTER NAME
+0b34  04            1857   1859         INR     B               ;SET B=1
+0b35  11 60 0b      1858   1860         LXI     D,RTAB          ;REGISTER NAME TABLE
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 32
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0b38  cd 50 0a      1859   1861         CALL    COPC            ;CHECK NAME OF REGISTER
+0b3b  c2 44 0b      1860   1862         JNZ     SLA1            ;NOT A PREFEFINED REGIGTER
+0b3e  6f            1861   1863         MOV     L,A             ;SET VALUE (HIGH)
+0b3f  26 00         1862   1864         MVI     H,0
+0b41  c3 5a 0b      1863   1865         JMP     SLA2
+0b44  3a 98 10      1864   1866 SLA1:   LDA     NOLA            ;FETCH SYMBOL COUNT
+0b47  47            1865   1867         MOV     B,A
+0b48  11 1a 11      1866   1868         LXI     D,SYMT          ;SET SYMBOL TABLE ADDRESS
+0b4b  b7            1867   1869         ORA     A               ;ARE THERE ANY LABELS?
+0b4c  ca 5d 0b      1868   1870         JZ      SLA3            ;JUMP IF NO LABELS
+0b4f  3e 05         1869   1871         MVI     A,LLAB          ;FETCH LENGTH OF LABEL
+0b51  32 95 10      1870   1872         STA     NCHR
+0b54  cd 3c 01      1871   1873         CALL    COMS            ;CHECK TABLE
+0b57  4c            1872   1874         MOV     C,H             ;SWAP H AND L
+0b58  65            1873   1875         MOV     H,L
+0b59  69            1874   1876         MOV     L,C
+0b5a  37            1875   1877 SLA2:   STC                     ;SET CARRY
+0b5b  3f            1876   1878         CMC                     ;CLEAR CARRY
+0b5c  c9            1877   1879         RET                     ;RETURN
+0b5d  3c            1878   1880 SLA3:   INR     A               ;CLEAR ZERO FLAG
+0b5e  b7            1879   1881         ORA     A               ;CLEAR CARRY
+0b5f  c9            1880   1882         RET
+                    1881   1883 ;
+                    1882   1884 ; PREDEFINE REGISTER VALUES IN THIS TABLE
+                    1883   1885 ;
+0b60  41            1884   1886 RTAB:   DB      'A'
+0b61  07            1885   1887         DB      7
+0b62  42            1886   1888         DB      'B'
+0b63  00            1887   1889         DB      0
+0b64  43            1888   1890         DB      'C'
+0b65  01            1889   1891         DB      1
+0b66  44            1890   1892         DB      'D'
+0b67  02            1891   1893         DB      2
+0b68  45            1892   1894         DB      'E'
+0b69  03            1893   1895         DB      3
+0b6a  48            1894   1896         DB      'H'
+0b6b  04            1895   1897         DB      4
+0b6c  4c            1896   1898         DB      'L'
+0b6d  05            1897   1899         DB      5
+0b6e  4d            1898   1900         DB      'M'
+0b6f  06            1899   1901         DB      6
+0b70  50            1900   1902         DB      'P'
+0b71  06            1901   1903         DB      6
+0b72  53            1902   1904         DB      'S'
+0b73  06            1903   1905         DB      6
+0b74  00            1904   1906         DB      0               ;END OF TABLE INDICATOR.
+                    1905   1907 ;
+                    1906   1908 ; THIS ROUTINE SCANS THE INPUT LINE AND PLACES TH
+                    1907   1909 ; OPCODES AND LABELS IN THE BUFFER.  THE SCAN TERMINATES
+                    1908   1910 ; WHEN A CHARACTER OTHER THAN 0-9 OR A-Z IS FOUND.
+                    1909   1911 ;
+0b75  06 00         1910   1912 ALPS:   MVI     B,0             ;SET COUNT
+0b77  12            1911   1913 ALP1:   STAX    D               ;STORE CHARACTER IN BUFFER
+0b78  04            1912   1914         INR     B               ;INCREMENT COUNT
+0b79  78            1913   1915         MOV     A,B             ;FETCH COUNT
+0b7a  fe 0b         1914   1916         CPI     11              ;MAXIMUM BUFFER SIZE
+0b7c  d0            1915   1917         RNC                     ;RETURN IF BUFFER FILLED
+0b7d  13            1916   1918         INX     D               ;INCREMENT BUFFER
+0b7e  23            1917   1919         INX     H               ;INCREMENT INPUT POINTER
+0b7f  22 96 10      1918   1920         SHLD    PNTR            ;SAVE LINE POINTER
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 33
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0b82  7e            1919   1921         MOV     A,M             ;FETCH CHARACTER
+0b83  fe 30         1920   1922         CPI     '0'             ;CHECK FOR ILLEGAL CHARACTERS
+0b85  d8            1921   1923         RC
+0b86  fe 3a         1922   1924         CPI     '9'+1
+0b88  da 77 0b      1923   1925         JC      ALP1
+0b8b  fe 41         1924   1926         CPI     'A'
+0b8d  d8            1925   1927         RC
+0b8e  fe 5b         1926   1928         CPI     'Z'+1
+0b90  da 77 0b      1927   1929         JC      ALP1
+0b93  c9            1928   1930         RET
+                    1929   1931 ;
+                    1930   1932 ; THIS ROUTINE IS USED TO SCAN THROUGH THE INPUT LINE
+                    1931   1933 ; TO FETCH THE VALUE OF THE OPERAND FIELD.  ON RETURN,
+                    1932   1934 ; THE VALUE OF THE OPERAND IS CONTAINED IN REG?S H,L
+                    1933   1935 ;
+0b94  cd 0d 09      1934   1936 ASBL:   CALL    SBLK            ;GET 1ST ARGUMENT
+0b97  21 00 00      1935   1937 ASCN:   LXI     H,0             ;GET A ZERO
+0b9a  22 9a 10      1936   1938         SHLD    OPRD            ;INITIALIZE OPERAND
+0b9d  24            1937   1939         INR     H
+0b9e  22 9b 10      1938   1940         SHLD    OPRI-1          ;INITIALIZE OPERAND INDICATOR
+0ba1  2a 96 10      1939   1941 NXT1:   LHLD    PNTR            ;FETCH SCAN POINTER
+0ba4  2b            1940   1942         DCX     H
+0ba5  cd 66 01      1941   1943         CALL    ZBUF            ;CLEAR BUFFER
+0ba8  32 99 10      1942   1944         STA     SIGN            ;ZERO SIGN INDICATOR
+0bab  23            1943   1945 NXT2:   INX     H               ;INCREMENT POINTER
+0bac  7e            1944   1946         MOV     A,M             ;FETCH NEXT CHARACTER
+0bad  fe 21         1945   1947         CPI     ' '+1
+0baf  da 53 0c      1946   1948         JC      SEND            ;JUMP IF CR OR BLANK
+0bb2  fe 2c         1947   1949         CPI     ','             ;FIELD SEPARATOR
+0bb4  ca 53 0c      1948   1950         JZ      SEND
+                    1949   1951 ; CHECK FOR OPERATOR
+0bb7  fe 2b         1950   1952         CPI     '+'             ;CHECK FOR PLUS
+0bb9  ca c4 0b      1951   1953         JZ      ASC1
+0bbc  fe 2d         1952   1954         CPI     '-'             ;CHECK FOR MINUS
+0bbe  c2 d4 0b      1953   1955         JNZ     ASC2
+0bc1  32 99 10      1954   1956         STA     SIGN
+0bc4  3a 9c 10      1955   1957 ASC1:   LDA     OPRI            ;FETCH OPERAND INDICATOR
+0bc7  fe 02         1956   1958         CPI     2               ;CHECK FOR 2 OPERATORS
+0bc9  ca 8a 0c      1957   1959         JZ      ERRS            ;SYNTAX ERROR
+0bcc  3e 02         1958   1960         MVI     A,2
+0bce  32 9c 10      1959   1961         STA     OPRI            ;SET INDICATOR
+0bd1  c3 ab 0b      1960   1962         JMP     NXT2
+                    1961   1963 ; CHECK FOR OPERANDS
+0bd4  4f            1962   1964 ASC2:   MOV     C,A             ;SAVE CHARACTER
+0bd5  3a 9c 10      1963   1965         LDA     OPRI            ;GET INDICATOR
+0bd8  b7            1964   1966         ORA     A               ;CHECK FOR 2 OPERANDS
+0bd9  ca 8a 0c      1965   1967         JZ      ERRS            ;SYNTAX ERROR
+0bdc  79            1966   1968         MOV     A,C
+0bdd  fe 24         1967   1969         CPI     '$'             ;LC EXPRESSION
+0bdf  c2 ec 0b      1968   1970         JNZ     ASC3
+0be2  23            1969   1971         INX     H               ;INCREMENT POINTER
+0be3  22 96 10      1970   1972         SHLD    PNTR            ;SAVE POINTER
+0be6  2a 92 10      1971   1973         LHLD    ASPC            ;FETCH LOCATION COUNTER
+0be9  c3 28 0c      1972   1974         JMP     AVAL
+                    1973   1975 ;CHECK FOR ASCII CHARACTERS
+0bec  fe 27         1974   1976 ASC3:   CPI     27H             ;CHECK FOR SINGLE QUOTE
+0bee  c2 18 0c      1975   1977         JNZ     ASC5            ;JUMP IF NOT QUOTE
+0bf1  11 00 00      1976   1978         LXI     D,0             ;GET A ZERO
+0bf4  0e 03         1977   1979         MVI     C,3             ;CHARACTER COUNT
+0bf6  23            1978   1980 ASC4:   INX     H               ;BUMP POINTER
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 34
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0bf7  22 96 10      1979   1981         SHLD    PNTR            ;SAVE
+0bfa  7e            1980   1982         MOV     A,M             ;FETCH NEXT CHARACTER
+0bfb  fe 0d         1981   1983         CPI     ASCR            ;IS IT A CARRIAGE RETURN?
+0bfd  ca a8 0c      1982   1984         JZ      ERAR            ;ARGUMENT ERROR
+0c00  fe 27         1983   1985         CPI     27H             ;IS IT A QUOTE?
+0c02  c2 0f 0c      1984   1986         JNZ     SSTR
+0c05  23            1985   1987         INX     H               ;INCREMENT POINTER
+0c06  22 96 10      1986   1988         SHLD    PNTR            ;SAVE
+0c09  7e            1987   1989         MOV     A,M             ;FETCH NEXT CHAR
+0c0a  fe 27         1988   1990         CPI     27H             ;CHECK FOR 2 QUOTES IN A ROW
+0c0c  c2 29 0c      1989   1991         JNZ     AVAL+1          ;TERMINAL QUOTE
+0c0f  0d            1990   1992 SSTR:   DCR     C               ;CHECK COUNT
+0c10  ca a8 0c      1991   1993         JZ      ERAR            ;TOO MANY CHARACTERS
+0c13  53            1992   1994         MOV     D,E
+0c14  5f            1993   1995         MOV     E,A             ;SET CHARACTER IN BUFFER
+0c15  c3 f6 0b      1994   1996         JMP     ASC4
+0c18  fe 30         1995   1997 ASC5:   CPI     '0'             ;CHECK FOR NUMERIC
+0c1a  da a8 0c      1996   1998         JC      ERAR            ;ILLEGAL CHARACTER
+0c1d  fe 3a         1997   1999         CPI     '9'+1
+0c1f  d2 47 0c      1998   2000         JNC     ALAB
+0c22  cd 63 0c      1999   2001         CALL    NUMS            ;GET NUMERIC VALUE
+0c25  da a8 0c      2000   2002         JC      ERAR            ;ARGUMENT ERROR
+0c28  eb            2001   2003 AVAL:   XCHG
+0c29  2a 9a 10      2002   2004         LHLD    OPRD            ;FETCH OPERAND
+0c2c  af            2003   2005         XRA     A               ;GET A ZERO
+0c2d  32 9c 10      2004   2006         STA     OPRI            ;STOR IN OPERAND INDICATOR
+0c30  3a 99 10      2005   2007         LDA     SIGN            ;GET SIGN INDICATOR
+0c33  b7            2006   2008         ORA     A               ;SET FLAGS
+0c34  c2 3e 0c      2007   2009         JNZ     ASUB
+0c37  19            2008   2010         DAD     D               ;FORM RESULT
+0c38  22 9a 10      2009   2011 ASC7:   SHLD    OPRD            ;SAVE RESULT
+0c3b  c3 a1 0b      2010   2012         JMP     NXT1
+0c3e  7d            2011   2013 ASUB:   MOV     A,L
+0c3f  93            2012   2014         SUB     E
+0c40  6f            2013   2015         MOV     L,A
+0c41  7c            2014   2016         MOV     A,H
+0c42  9a            2015   2017         SBB     D
+0c43  67            2016   2018         MOV     H,A
+0c44  c3 38 0c      2017   2019         JMP     ASC7
+0c47  cd 20 0b      2018   2020 ALAB:   CALL    SLAB
+0c4a  ca 28 0c      2019   2021         JZ      AVAL
+0c4d  da a8 0c      2020   2022         JC      ERAR            ;ILLEGAL SYMBOL
+0c50  c3 95 0c      2021   2023         JMP     ERRU            ;UNDEFINED SYMBOL
+                    2022   2024 ;
+                    2023   2025 ; GET HERE WHEN TERMINATING CHARACTER IS FOUND.
+                    2024   2026 ; CHECK FOR LEADING FIELD SEPARATOR
+                    2025   2027 ;
+0c53  3a 9c 10      2026   2028 SEND:   LDA     OPRI            ;FETCH OPERAND INDICATOR
+0c56  b7            2027   2029         ORA     A               ;SET FLAGS
+0c57  c2 8a 0c      2028   2030         JNZ     ERRS            ;SYNTAX ERROR
+0c5a  2a 9a 10      2029   2031         LHLD    OPRD
+0c5d  7c            2030   2032 SEN1:   MOV     A,H             ;GET HIGH ORDER BYTE
+0c5e  11 9d 10      2031   2033         LXI     D,TEMP          ;GET ADDRESS
+0c61  b7            2032   2034         ORA     A               ;SET FLAGS
+0c62  c9            2033   2035         RET
+                    2034   2036 ;
+                    2035   2037 ; GET A NUMERIC VALUE WHICH IS EITHER HEXADECIMAL OR
+                    2036   2038 ; DECIMAL.  ON RETURN, CARRY SET INDICATES AN ERROR.
+                    2037   2039 ;
+0c63  cd 75 0b      2038   2040 NUMS:   CALL    ALPS            ;GET NUMERIC
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 35
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0c66  1b            2039   2041         DCX     D
+0c67  1a            2040   2042         LDAX    D               ;GET LAST CHARACTER
+0c68  01 7e 10      2041   2043         LXI     B,ABUF          ;SET BUFFER ADDRESS
+0c6b  fe 48         2042   2044         CPI     'H'             ;IS IT HEXADECIMAL?
+0c6d  ca 7b 0c      2043   2045         JZ      NUM2
+0c70  fe 44         2044   2046         CPI     'D'             ;IS IT DECIMAL
+0c72  c2 77 0c      2045   2047         JNZ     NUM1
+0c75  af            2046   2048         XRA     A               ;GET A ZERO
+0c76  12            2047   2049         STAX    D               ;CLEAR D FROM BUFFER
+0c77  cd 01 02      2048   2050 NUM1:   CALL    ADEC            ;CONVERT DECIMAL VALUE
+0c7a  c9            2049   2051         RET
+0c7b  af            2050   2052 NUM2:   XRA     A               ;GET A ZERO
+0c7c  12            2051   2053         STAX    D               ;CLEAR H FROM BUFFER
+0c7d  cd 1b 02      2052   2054         CALL    AHEX
+0c80  c9            2053   2055         RET
+                    2054   2056 ;
+                    2055   2057 ; PROCESS REGISTER ERROR
+                    2056   2058 ;
+0c81  3e 52         2057   2059 ERRR:   MVI     A,'R'           ;GET INDICATOR
+0c83  21 00 00      2058   2060         LXI     H,0             ;GET A ZERO
+0c86  32 b2 10      2059   2061         STA     OBUF            ;SET IN OUTPUT BUFFER
+0c89  c9            2060   2062         RET
+                    2061   2063 ;
+                    2062   2064 ; PROCESS SYNTAX ERROR
+                    2063   2065 ;
+0c8a  3e 53         2064   2066 ERRS:   MVI     A,'S'           ;GET INDICATOR
+0c8c  32 b2 10      2065   2067         STA     OBUF            ;STORE IN OUTPUT BUFFER
+0c8f  21 00 00      2066   2068         LXI     H,0
+0c92  c3 5d 0c      2067   2069         JMP     SEN1
+                    2068   2070 ;
+                    2069   2071 ; PROCESS UNDEFINED SYMBOL ERROR
+                    2070   2072 ;
+0c95  3e 55         2071   2073 ERRU:   MVI     A,'U'           ;GET INDICATOR
+0c97  c3 8c 0c      2072   2074         JMP     ERRS+2
+                    2073   2075 ;
+                    2074   2076 ; PROCESS VALUE ERROR
+                    2075   2077 ;
+0c9a  3e 56         2076   2078 ERRV:   MVI     A,'V'           ;GET INDICATOR
+0c9c  c3 83 0c      2077   2079         JMP     ERRR+2
+                    2078   2080 ;
+                    2079   2081 ; PROCESS MISSING LABEL ERROR
+                    2080   2082 ;
+0c9f  3e 4d         2081   2083 ERRM:   MVI     A,'M'           ;GET INDICATOR
+0ca1  32 b2 10      2082   2084         STA     OBUF            ;STORE IN OUTPUT BUFFER
+0ca4  cd d2 06      2083   2085         CALL    AOU1            ;DISPLAY ERROR
+0ca7  c9            2084   2086         RET
+                    2085   2087 ;
+                    2086   2088 ;PROCESS ARGUMENT ERROR
+                    2087   2089 ;
+0ca8  3e 41         2088   2090 ERAR:   MVI     A,'A'           ;GET INDICATOR
+0caa  c3 8c 0c      2089   2091         JMP     ERRS+2
+                    2090   2092 ;
+                    2091   2093 ; PROCESS OPCODE ERROR
+                    2092   2094 ; STORE 3 BYTES OF ZERO IN OBJECT CODE TO PROVIDE
+                    2093   2095 ; FOR A PATCH
+                    2094   2096 ;
+0cad  3e 4f         2095   2097 ERRO:   MVI     A,'O'           ;GET INDICATOR
+0caf  32 b2 10      2096   2098         STA     OBUF            ;STORE IN OUTPUT BUFFER
+0cb2  3a 94 10      2097   2099         LDA     PASI            ;FETCH PASS INDICATOR
+0cb5  b7            2098   2100         ORA     A               ;WHICH PASS
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 36
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0cb6  c8            2099   2101         RZ                      ;RETURN IF PASS 1
+0cb7  0e 03         2100   2102         MVI     C,3             ;NEED 3 BYTES
+0cb9  af            2101   2103 ERO1:   XRA     A               ;GET A ZERO
+0cba  cd ee 08      2102   2104         CALL    ASTO            ;PUT IN LISTING AND MEMORY
+0cbd  0d            2103   2105         DCR     C
+0cbe  c2 b9 0c      2104   2106         JNZ     ERO1
+0cc1  c9            2105   2107         RET
+                    2106   2108 ;
+                    2107   2109 ; PROCESS LABEL ERROR
+                    2108   2110 ;
+0cc2  3e 4c         2109   2111 ERRL:   MVI     A,'L'           ;GET INDICATOR
+0cc4  c3 af 0c      2110   2112         JMP     ERRO+2
+                    2111   2113 ;
+                    2112   2114 ; PROCESS DUPLICATE LABEL ERROR
+                    2113   2115 ;
+0cc7  3e 44         2114   2116 ERRD:   MVI     A,'D'           ;GET INDICATOR
+0cc9  32 b2 10      2115   2117         STA     OBUF
+0ccc  cd c5 06      2116   2118         CALL    AOUT
+0ccf  c3 1e 07      2117   2119         JMP     OPC
+                    2118   2120 ;
+                    2119   2121 ; THIS ROUTINE SETS OR CLEARS BREAKPOINTS
+                    2120   2122 ;
+0cd2  3a 7e 10      2121   2123 BREAK:  LDA     ABUF            ;CHECK FOR AN ARG
+0cd5  b7            2122   2124         ORA     A
+0cd6  ca 14 0d      2123   2125         JZ      CLRB            ;IF NO ARGUMENT, GO CLEAR BREAKPOINT
+0cd9  16 08         2124   2126         MVI     D, NBR          ;ELSE GET NUMBER OF BREAKPOINTS
+0cdb  21 0c 10      2125   2127         LXI     H,BRT           ;AND ADDR OF TABLE
+0cde  7e            2126   2128 B1:     MOV     A,M             ;GET HI BYTE OF ENTRY
+0cdf  23            2127   2129         INX     H
+0ce0  46            2128   2130         MOV     B,M             ;GET LOW BYTE OF ENTRY
+0ce1  b0            2129   2131         ORA     B               ;CHECK FOR EMPTY ENTRY
+0ce2  ca ee 0c      2130   2132         JZ      B2              ;BRANCH IF EMPTY
+0ce5  23            2131   2133         INX     H               ;ELSE GO ON TO NEXT ENTRY
+0ce6  23            2132   2134         INX     H
+0ce7  15            2133   2135         DCR     D               ;BUMP COUNT
+0ce8  c2 de 0c      2134   2136         JNZ     B1              ;AND TRY AGAIN
+0ceb  c3 5a 04      2135   2137         JMP     WHAT            ;OOPS NO ROOM
+0cee  2b            2136   2138 B2:     DCX     H
+0cef  eb            2137   2139         XCHG
+0cf0  2a 8a 10      2138   2140         LHLD    BBUF            ;GET ADDRESS
+0cf3  eb            2139   2141         XCHG                    ;IN D,E
+0cf4  7a            2140   2142         MOV     A,D             ;CHECK FOR ADDR > 11D
+0cf5  b7            2141   2143         ORA     A
+0cf6  c2 ff 0c      2142   2144         JNZ     B3
+0cf9  7b            2143   2145         MOV     A,E
+0cfa  fe 0b         2144   2146         CPI     11
+0cfc  da 5a 04      2145   2147             JC  WHAT            ;OOPS, TOO LOW
+0cff  72            2146   2148 B3:     MOV     M,D             ;SAVE ADDRESS
+0d00  23            2147   2149         INX     H
+0d01  73            2148   2150         MOV     M,E
+0d02  23            2149   2151         INX     H
+0d03  1a            2150   2152         LDAX    D               ;PICK UP INSTRUCTION
+0d04  77            2151   2153         MOV     M,A             ;SAVE IT
+0d05  3e cf         2152   2154         MVI     A,0CFH          ;RST 1 INSTRUCTION
+0d07  12            2153   2155         STAX    D
+0d08  3e c3         2154   2156         MVI     A,0C3H          ;SET UP LO MEMORY
+0d0a  32 08 00      2155   2157         STA     8               ;WITH A JUMP TO BREAKPOINT
+0d0d  21 2e 0d      2156   2158         LXI     H,BRKP
+0d10  22 09 00      2157   2159         SHLD    9
+0d13  c9            2158   2160         RET                     ;THEN RETURN
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 37
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                    2159   2161 ;
+                    2160   2162 ; THIS ROUTINE CLEARS ALL BREAKPOINTS
+                    2161   2163 ;
+0d14  21 0c 10      2162   2164 CLRB:   LXI     H,BRT           ;GET TABLE ADDRESS
+0d17  06 08         2163   2165         MVI     B,NBR           ;GET NUMBER OF BREAKPOINTS
+0d19  af            2164   2166 CLBL:   XRA     A               ;GET A ZERO
+0d1a  56            2165   2167         MOV     D,M             ;GET HI-BYTE OF ENTRY
+0d1b  77            2166   2168         MOV     M,A
+0d1c  23            2167   2169         INX     H
+0d1d  5e            2168   2170         MOV     E,M             ;GET LO-BYTE OF ENTRY
+0d1e  77            2169   2171         MOV     M,A
+0d1f  23            2170   2172         INX     H
+0d20  46            2171   2173         MOV     B,M             ;GET INST BYTE
+0d21  23            2172   2174         INX     H
+0d22  7a            2173   2175         MOV     A,D             ;WAS THIS A NULL ENTRY
+0d23  b3            2174   2176         ORA     E
+0d24  ca 29 0d      2175   2177         JZ      CL2             ;BRANCH IF IT WAS
+0d27  78            2176   2178         MOV     A,B
+0d28  12            2177   2179         STAX    D               ;ELSE PLUG INST BACK IN
+0d29  05            2178   2180 CL2:    DCR     B               ;BUMP COUNT
+0d2a  c2 19 0d      2179   2181         JNZ     CLBL            ;GO DO NEXT ONE
+0d2d  c9            2180   2182         RET
+                    2181   2183 ;
+                    2182   2184 ; COME HERE WHEN WE HIT A BREAKPOINT
+                    2183   2185 ;
+0d2e  22 08 10      2184   2186 BRKP:   SHLD    HOLD+8          ;SAVE H,L
+0d31  e1            2185   2187         POP     H               ;GET PC
+0d32  2b            2186   2188         DCX     H               ;ADJUST IT
+0d33  22 0a 10      2187   2189         SHLD    HOLD+10         ;SAVE IT
+0d36  f5            2188   2190         PUSH    PSW             ;SAVE FLAGS
+0d37  e1            2189   2191         POP     H               ;GET THEM INTO H,L
+0d38  22 00 10      2190   2192         SHLD    HOLD            ;NOW STORE THEM FOR USER
+0d3b  21 00 00      2191   2193         LXI     H,0
+0d3e  39            2192   2194         DAD     SP              ;GET STACK POINTER
+0d3f  31 08 10      2193   2195         LXI     SP,HOLD+8       ;SET STACK POINTER AGAIN
+0d42  e5            2194   2196         PUSH    H               ;SAVE OLD SP
+0d43  d5            2195   2197         PUSH    D               ;SAVE D,E
+0d44  c5            2196   2198         PUSH    B               ;SAVE B,C
+0d45  2f            2197   2199         CMA                     ;COMPLEMENT ACCUMULATOR
+0d46  d3 ff         2198   2200         OUT     0FFH            ;DISPLAY IT IN LIGHTS
+0d48  31 b2 10      2199   2201         LXI     SP,AREA+18      ;SET SP AGAIN
+0d4b  2a 0a 10      2200   2202         LHLD    HOLD+10         ;GET PC
+0d4e  eb            2201   2203         XCHG                    ;INTO D,E
+0d4f  21 0c 10      2202   2204         LXI     H,BRT           ;GET ADDR OF TABLE
+0d52  06 08         2203   2205         MVI     B,NBR           ;AND NUMBER OF ENTRIES
+0d54  7e            2204   2206 BL1:    MOV     A,M             ;GET AN ENTRY FROM THE TABLE
+0d55  23            2205   2207         INX     H
+0d56  ba            2206   2208         CMP     D               ;DOES IT MATCH?
+0d57  c2 5f 0d      2207   2209         JNZ     BL2             ;BRANCH IF NOT
+0d5a  7e            2208   2210         MOV     A,M             ;ELSE GET NEXT BYTE
+0d5b  bb            2209   2211         CMP     E               ;CHECK IT
+0d5c  ca 68 0d      2210   2212         JZ      BL3             ;IT MATCHES!
+0d5f  23            2211   2213 BL2:    INX     H               ;BUMP AROUND THIS ENTRY
+0d60  23            2212   2214         INX     H
+0d61  05            2213   2215         DCR     B               ;BUMP COUNT
+0d62  ca 5a 04      2214   2216         JZ      WHAT            ;NOT IN OUR TABLE
+0d65  c3 54 0d      2215   2217         JMP     BL1
+                    2216   2218 ;
+0d68  23            2217   2219 BL3:    INX     H
+0d69  7e            2218   2220         MOV     A,M             ;GET INSTR BYTE
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 38
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0d6a  12            2219   2221         STAX    D               ;PUT IT BACK
+0d6b  af            2220   2222         XRA     A               ;CLEAR ENTRY IN TABLE
+0d6c  2b            2221   2223         DCX     H
+0d6d  77            2222   2224         MOV     M,A
+0d6e  2b            2223   2225         DCX     H
+0d6f  77            2224   2226         MOV     M,A
+0d70  cd 0e 01      2225   2227         CALL    CRLF            ;RESTORE THE CARRIAGE
+0d73  3a 0b 10      2226   2228         LDA     HOLD+11         ;GET HI-BYTE OF PC
+0d76  cd 3a 02      2227   2229         CALL    HOUT            ;TYPE IT
+0d79  3a 0a 10      2228   2230         LDA     HOLD+10         ;GET LO-BYTE OF PC
+0d7c  cd 3a 02      2229   2231         CALL    HOUT            ;TYPE IT
+0d7f  21 88 0d      2230   2232         LXI     H,BMES          ;TELL USER WHAT IT IS
+0d82  cd 7a 02      2231   2233         CALL    SCRN
+0d85  c3 67 00      2232   2234         JMP     EOR             ;GO BACK TO COMMAND LEVEL
+                    2233   2235 ;
+0d88  20 42 52 45   2234   2236 BMES:   DB      ' BREAK',13
+0d8c  41 4b 0d      2234   2237
+                    2235   2238 ;
+                    2236   2239 ; THIS ROUTINE PROCEEDS FROM A BREAKPOINT
+                    2237   2240 ;
+0d8f  3a 7e 10      2238   2241 PROC:   LDA     ABUF            ;CHECK FOR ARG
+0d92  b7            2239   2242         ORA     A
+0d93  ca 9c 0d      2240   2243         JZ      P1              ;JUMP IF NO ARG
+0d96  2a 8a 10      2241   2244         LHLD    BBUF            ;ELSE GET ARG
+0d99  22 0a 10      2242   2245         SHLD    HOLD+10         ;PLUG IT INTO PC SLOT
+0d9c  31 00 10      2243   2246 P1:     LXI     SP,HOLD         ;SET SP TO POINT AT REG?S
+0d9f  f1            2244   2247         POP     PSW             ;RESTORE PSW
+0da0  c1            2245   2248         POP     B               ;RESTORE B,C
+0da1  d1            2246   2249         POP     D               ;RESTORE D,E
+0da2  e1            2247   2250         POP     H               ;GET OLD SP
+0da3  f9            2248   2251         SPHL                    ;RESTORE IT
+0da4  2a 0a 10      2249   2252         LHLD    HOLD+10         ;GET PC
+0da7  e5            2250   2253         PUSH    H               ;PUT IT ON STACK
+0da8  2a 08 10      2251   2254         LHLD    HOLD+8          ;RESTORE H,L
+0dab  c9            2252   2255         RET                     ;AND PROCEED
+                    2253   2256 ;
+                    2254   2257 ; SYSTEM RAM
+                    2255   2258 ;
+                    2256   2259         ORG     1000H
+                    2257   2260 ;
+                    2258   2261 ; DEFINE BREAKPOINT REGION
+                    2259   2262 ;
+0008  =             2260   2263 NBR     EQU     8               ;NUMBER OF BREAKPOINTS
+1000                2261   2264 HOLD:   DS      12              ;REGISTER HOLD AREA
+100c                2262   2265 BRT:    DS      3*NBR           ;BREAKPOINT TABLE
+                    2263   2266 ;
+                    2264   2267 ; FILE AREA PARAMETERS
+                    2265   2268 ;
+0006  =             2266   2269 MAXFIL  EQU     6
+0005  =             2267   2270 NMLEN   EQU     5
+000d  =             2268   2271 FELEN   EQU     NMLEN+8
+1024                2269   2272 FILE0:  DS      NMLEN
+1029                2270   2273 BOFP:   DS      2
+102b                2271   2274 EOFP:   DS      2
+102d                2272   2275 MAXL:   DS      4
+1031                2273   2276 FILTB:  DS      (MAXFIL-1)*FELEN
+1072                2274   2277 INSP:   DS      2
+1072  =             2275   2278 DELP    EQU     INSP
+000d  =             2276   2279 ASCR    EQU     13
+1074                2277   2280 HCON:   DS      2
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 39
+Source file: scs1.asm
+Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+1074  =             2278   2281 ADDS    EQU     HCON
+1076                2279   2282 FBUF:   DS      NMLEN
+107b                2280   2283 FREAD:  DS      2
+107d                2281   2284 FEF:    DS      1
+107d  =             2282   2285 FOCNT   EQU     FEF
+107e                2283   2286 ABUF:   DS      12
+108a                2284   2287 BBUF:   DS      4
+108e                2285   2288 SCNT:   DS      1
+108f                2286   2289 DCNT:   DS      1
+000b  =             2287   2290 NCOM    EQU     11
+1090                2288   2291 TABA:   DS      2
+1092                2289   2292 ASPC:   DS      2
+1094                2290   2293 PASI:   DS      1
+1095                2291   2294 NCHR:   DS      1
+1096                2292   2295 PNTR:   DS      2
+1098                2293   2296 NOLA:   DS      1
+1099                2294   2297 SIGN:   DS      1
+109a                2295   2298 OPRD:   DS      2
+109c                2296   2299 OPRI:   DS      1
+109d                2297   2300 TEMP:   DS      1
+1072  =             2298   2301 APNT    EQU     INSP
+108e  =             2299   2302 AERR    EQU     SCNT
+109e                2300   2303 OIND:   DS      2
+0005  =             2301   2304 LLAB    EQU     5
+10a0                2302   2305 AREA:   DS      18
+10b2                2303   2306 OBUF:   DS      16
+10c2                2304   2307         DS      5
+10c7                2305   2308 IBUF:   DS      83
+00ff  =             2306   2309 SWCH    EQU     0FFH
+111a  =             2307   2310 SYMT    EQU     $
+111a                2308   2311         END
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 40
+Source file: scs1.asm
+Title:       Symbol table
+
+ABUF     107e 	ACH1     0275 	ACHK     0263 	ACO1     075a 	
+ACO2     07db*	ADDS     1074 	ADE1     0204 	ADEC     0201 	
+ADR      057b 	AERR     108e 	AHE1     021e 	AHEX     021b 	
+AHS1     0232 	ALAB     0c47 	ALP1     0b77 	ALPS     0b75 	
+AOU1     06d2 	AOU2     06cc*	AOUT     06c5 	APNT     1072 	
+AREA     10a0 	ASBL     0b94 	ASC1     0bc4 	ASC2     0bd4 	
+ASC3     0bec 	ASC4     0bf6 	ASC5     0c18 	ASC7     0c38 	
+ASCN     0b97 	ASCR     000d 	ASM1     068c 	ASM2     06b9 	
+ASM3     067a 	ASM4     066e 	ASPC     1092 	ASSM     065e 	
+ASTO     08ee 	ASUB     0c3e 	AVAL     0c28 	B1       0cde 	
+B2       0cee 	B3       0cff 	BBUF     108a 	BID1     02b4 	
+BIN1     0299 	BINAD    07fd 	BIND     02a3 	BINH     0286 	
+BL1      0d54 	BL2      0d5f 	BL3      0d68 	BLK1     025d 	
+BMES     0d88 	BOFP     1029 	BREAK    0cd2 	BRKP     0d2e 	
+BRT      100c 	BSPA     00bf 	CHAR     00c7 	CHOT     0240*	
+CL2      0d29 	CLBL     0d19 	CLER     00e1 	CLRB     0d14 	
+CO1      05a7 	CO2      05ad 	COM0     05a2 	COM1     05b5*	
+COMM     012b 	COMS     013c 	COND     091b 	COP1     0a62 	
+COPC     0a50 	CR       0097 	CRLF     010e 	CTAB     02be 	
+DAT1     0790 	DAT2     07f1 	DAT2A    07f4 	DCNT     108f*	
+DEL      00b2 	DEL1     05fb 	DEL2     0618 	DEL3     0636 	
+DEL4     0640 	DEL5     0641 	DELL     05e7 	DELP     1072 	
+DONE     01bf 	DOUT     0251*	DUM1     030e 	DUMP     0308 	
+DUMS     030b 	EASS     0901 	EEND     002f 	EMES     0466 	
+EMES1    046b 	EMES2    0470 	ENT1     048f 	ENTR     0476 	
+ENTS     0483 	EO1      0574 	EOF      0573 	EOFP     102b 	
+EOR      0067 	EQU1     0775 	EQU2     07fa 	EQUL     0503 	
+EQUS     0780 	ERAR     0ca8 	ERO1     0cb9 	ERRD     0cc7 	
+ERRL     0cc2 	ERRM     0c9f 	ERRO     0cad 	ERRR     0c81 	
+ERRS     0c8a 	ERRU     0c95 	ERRV     0c9a 	ETRA     017a 	
+EXEC     0121 	FAST     03e6 	FBUF     1076 	FEET     03f8 	
+FEF      107d 	FELEN    000d 	FI1      055a 	FI2      056c 	
+FIL30    03b0*	FIL35    03b2 	FILE     033e 	FILE0    1024 	
+FILTB    1031*	FIN1     0552 	FIND     054c 	FINE     03c9 	
+FOCNT    107d 	FOOD     03e3 	FOOL     0404 	FOOT     03c3 	
+FOUL     03c5 	FOUT     03b9 	FREAD    107b 	FSE10    0421 	
+FSE15    0444 	FSE20    044e 	FSEA     0418 	HCON     1074 	
+HOLD     1000 	HOTB     024a 	HOUT     023a 	IBUF     10c7 	
+IN8      00f6 	INCA     015f 	INIT2    0056 	INIT3    0061 	
+INITA    0040 	INK      00e9 	INSP     1072 	INSR     04fa 	
+LCHK     0735 	LESS     0518 	LF       0113*	LICK     04c1 	
+LINE     04b5 	LIST     05d0 	LIST0    05d6 	LLAB     0005 	
+LMOV     0580 	LODM     0592 	MAXFIL   0006 	MAXL     102d 	
+MESS     0460 	MLAB     0705 	MORE     052b 	MOV23    0382 	
+MPNT     08bf 	NBR      0008 	NCHR     1095 	NCOM     000b 	
+NEXT     0088 	NMLEN    0005 	NOLA     1098 	NOR1     05c3 	
+NORM     05bd 	NOV1     064f*	NOVR     0649 	NUM1     0c77 	
+NUM2     0c7b 	NUMS     0c63 	NXT1     0ba1 	NXT2     0bab 	
+OBUF     10b2 	OCN1     0af5 	OCN2     0af8 	OCNT     0ae1 	
+OERR     0b06 	OIND     109e 	OK       010a*	OP1      0a81 	
+OP2      0a84 	OP4      0adc 	OP5      0adf 	OPAD     0adb 	
+OPC      071e 	OPC2     0a89*	OPC3     0aa5*	OPCD     0a65 	
+OPRD     109a 	OPRI     109c 	ORG1     0760 	ORG2     080c 	
+OTAB     0927 	OUT8     0103 	P1       0d9c 	PABL     07ad*	
+PAG1     0335 	PAGEMOV  0322 	PAS1     06dc 	PAS2     0793 	
+PASI     1094 	PNTR     1096 	PROC     0d8f 	PSEU     0b0e 	
+PSU1     0744 	PSU2     07c8 	READ     0080 	RES1     0788 	
+RES2     07e1 	RES21    07ed 	RMOV     0589 	ROOM     0378 	
+RTAB     0b60 	SBL1     0910 	SBL2     0914 	SBLK     090d 	
+SCNT     108e 	SCRN     027a 	SEAR     0153 	SEN1     0c5d 	
+SEND     0c53 	SEOF     04f2*	SIGN     1099 	SLA1     0b44 	
+SLA2     0b5a 	SLA3     0b5d 	SLAB     0b20 	SSTR     0c0f 	
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 41
+Source file: scs1.asm
+Title:       Symbol table
+
+STOM     059a 	SWAP     0390 	SWAPS    038b 	SWCH     00ff*	
+SYMT     111a 	TABA     1090 	TEMP     109d 	TEST     0363 	
+TTI      0002 	TTO      0002 	TTS      0003 	TTYDA    0002 	
+TTYTR    0001 	TY31     0855 	TY32     0858 	TY41     0881 	
+TY55     08a0 	TY56     08ad 	TY6      08de 	TYP1     082d 	
+TYP2     0831 	TYP3     0844 	TYP4     0863 	TYP5     0898 	
+TYP6     08ce 	TYS6     08e1 	VAL1     0189 	VAL2     01a4 	
+VAL3     01b4 	VAL4     01b6 	VAL5     01c4 	VALC     0173 	
+VCHK     0300 	WHA1     045d 	WHAT     045a 	ZBU1     016c 	
+ZBUF     0166 	ZERO     053b 	
