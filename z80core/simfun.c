@@ -69,9 +69,9 @@ static const char *TAG = "func";
 
 #define BUFSIZE	256		/* buffer size for file I/O */
 
-int load_file(char *, BYTE pstart, WORD psize);
-static int load_mos(char *, BYTE pstart, WORD psize);
-static int load_hex(char *, BYTE pstart, WORD psize);
+int load_file(char *, WORD, int);
+static int load_mos(char *, WORD, int);
+static int load_hex(char *, WORD, int);
 static int checksum(char *);
 
 /*
@@ -170,19 +170,16 @@ int time_diff(struct timeval *t1, struct timeval *t2)
  *
  *		binary images with Mostek header
  *		Intel hex
+ *
+ *	size == 0	don't care where it is loaded
+ *	size < 0	try to load it at address "start"
+ *	size > 0	check it is loaded in memory range
+ *			"start" and "start + size - 1"
  */
-int load_file(char *s, BYTE pstart, WORD psize)
+int load_file(char *fn, WORD start, int size)
 {
-	char fn[MAX_LFN];
-	char *pfn = fn;
 	BYTE d;
 	int fd;
-
-	while (isspace((unsigned char) *s))
-		s++;
-	while (*s != ',' && *s != '\n' && *s != '\0')
-		*pfn++ = *s++;
-	*pfn = '\0';
 
 	if (strlen(fn) == 0) {
 		LOGE(TAG, "no input file given");
@@ -197,13 +194,12 @@ int load_file(char *s, BYTE pstart, WORD psize)
 	read(fd, (char *) &d, 1);	/* read first byte of file */
 	close(fd);
 
-	LOGD(TAG, "LOAD in Range: %04Xh - %04Xh",
-	     pstart << 8, (pstart + psize) << 8);
+	LOGD(TAG, "LOAD in Range: %04Xh - %04Xh", start, start + size - 1);
 
 	if (d == 0xff) {		/* Mostek header ? */
-		return(load_mos(fn, pstart, psize));
+		return(load_mos(fn, start, size));
 	} else {
-		return(load_hex(fn, pstart, psize));
+		return(load_hex(fn, start, size));
 	}
 }
 
@@ -216,7 +212,7 @@ int load_file(char *s, BYTE pstart, WORD psize)
  *	ll = load address low
  *	lh = load address high
  */
-static int load_mos(char *fn, BYTE pstart, WORD psize)
+static int load_mos(char *fn, WORD start, int size)
 {
 	register int i;
 	int fd;
@@ -231,7 +227,9 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 	read(fd, (char *) fileb, 3);	/* read load address */
 	laddr = (fileb[2] << 8) + fileb[1];
 
-	if (psize && laddr < (pstart << 8)) {
+	if (size < 0)
+		laddr = start;
+	if (size > 0 && laddr < start) {
 		LOGW(TAG, "tried to load mos file outside "
 		     "expected address range. "
 		     "Address: %04X", laddr);
@@ -241,7 +239,7 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 	count = 0;
 	for (i = laddr; i < 65536; i++) {
 		if (read(fd, fileb, 1) == 1) {
-			if (psize && i >= ((pstart + psize) << 8)) {
+			if (size > 0 && i >= (start + size)) {
 				LOGW(TAG, "tried to load mos file outside "
 				     "expected address range. "
 				     "Address: %04X", i);
@@ -256,12 +254,13 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 
 	close(fd);
 
+	PC = laddr;
+
 	LOG(TAG, "Loader statistics for file %s:\r\n", fn);
 	LOG(TAG, "START : %04XH\r\n", laddr);
-	LOG(TAG, "END   : %04XH\r\n", laddr + count);
+	LOG(TAG, "END   : %04XH\r\n", laddr + count - 1);
+	LOG(TAG, "PC    : %04XH\r\n", PC);
 	LOG(TAG, "LOADED: %04XH (%d)\r\n\r\n", count, count);
-
-	PC = laddr;
 
 	return(0);
 }
@@ -269,10 +268,10 @@ static int load_mos(char *fn, BYTE pstart, WORD psize)
 /*
  *	Loader for Intel hex
  */
-static int load_hex(char *fn, BYTE pstart, WORD psize)
+static int load_hex(char *fn, WORD start, int size)
 {
 	register int i;
-	FILE *fd;
+	FILE *fp;
 	char buf[BUFSIZE];
 	char *s;
 	int count = 0;
@@ -281,12 +280,12 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 	int eaddr = 0;
 	int data;
 
-	if ((fd = fopen(fn, "r")) == NULL) {
+	if ((fp = fopen(fn, "r")) == NULL) {
 		LOGE(TAG, "can't open file %s\n", fn);
 		return(1);
 	}
 
-	while (fgets(&buf[0], BUFSIZE, fd) != NULL) {
+	while (fgets(&buf[0], BUFSIZE, fp) != NULL) {
 		s = &buf[0];
 		while (isspace((unsigned char) *s))
 			s++;
@@ -325,12 +324,13 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 		if (data == 1)
 			break;
 
-		if (psize) {
-			if (addr < (pstart << 8)
-			    || (addr + count - 1) >= ((pstart + psize) << 8)) {
+		if (size > 0) {
+			if (addr < start
+			    || (addr + count - 1) >= (start + size)) {
 				LOGW(TAG, "tried to load hex record outside "
 				     "expected address range. "
-				     "Address: %04X-%04X", addr, addr+count);
+				     "Address: %04X-%04X",
+				     addr, addr + count - 1);
 				return(1);
 			}
 		}
@@ -348,9 +348,10 @@ static int load_hex(char *fn, BYTE pstart, WORD psize)
 			s++;
 			putmem(addr + i, data);
 		}
+		addr = 0;
 	}
 
-	fclose(fd);
+	fclose(fp);
 
 	PC = addr ? addr : saddr;
 

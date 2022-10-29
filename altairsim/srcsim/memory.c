@@ -30,7 +30,7 @@
 
 static const char *TAG = "memory";
 
-extern int load_file(char *, BYTE, WORD);
+extern int load_file(char *, WORD, int);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
@@ -104,7 +104,7 @@ void init_memory(void)
 					/* load firmware into ROM if specified */
 					if (memconf[M_flag][i].rom_file) {
 						strcpy(pfn, memconf[M_flag][i].rom_file);
-						load_file(fn, memconf[M_flag][i].spage, memconf[M_flag][i].size);
+						load_file(fn, memconf[M_flag][i].spage << 8, memconf[M_flag][i].size << 8);
 					}
 					break;
 			}

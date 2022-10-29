@@ -75,7 +75,7 @@
 static void init_cpu(void);
 static void save_core(void);
 int load_core(void);
-extern int load_file(char *, BYTE, WORD);
+extern int load_file(char *, WORD, int);
 extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
 extern int exatoi(char *);
