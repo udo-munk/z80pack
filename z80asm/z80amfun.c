@@ -625,7 +625,7 @@ int mac_lookup(char *opcode)
 
 	mac_curr = NULL;
 	for (m = mac_table; m; m = m->mac_next)
-		if (strcmp(m->mac_name, opcode) == 0) {
+		if (strncmp(m->mac_name, opcode, symlen) == 0) {
 			mac_curr = m;
 			return(1);
 		}
