@@ -194,7 +194,9 @@ int load_file(char *fn, WORD start, int size)
 	read(fd, (char *) &d, 1);	/* read first byte of file */
 	close(fd);
 
-	LOGD(TAG, "LOAD in Range: %04Xh - %04Xh", start, start + size - 1);
+	if (size > 0)
+		LOGD(TAG, "LOAD in Range: %04Xh - %04Xh",
+		     start, start + size - 1);
 
 	if (d == 0xff) {		/* Mostek header ? */
 		return(load_mos(fn, start, size));
