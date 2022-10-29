@@ -1,0 +1,422 @@
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 1
+Source file: life.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ; LIFE .... VERSION 2.0
+                       2      2 ; WRITTEN BY ED HALL
+                       3      3 ; ASSEMBLED BY GORDEN FRENCH
+                       4      4 ; AND RDM
+                       5      5 ;
+                       6      6 ; RETYPED FROM MANUAL APRIL 2015, UDO MUNK
+                       7      7 ; THIS VERSION MODIFIED FOR IMSAI SIO-2
+                       8      8 ;
+                       9      9 ;
+                      10     10 ; CNTL-A IS USED TO DEPOSIT A CELL OF LIFE ON THE SCREEN.
+                      11     11 ; CNTL-N, O, I AND H STEP THE CURSOR UP, DOWN, RIGHT, AND
+                      12     12 ; LEFT RESPECTIVELY. CNTL-B CAN BE USED TO ERASE THE SCREEN.
+                      13     13 ; ONCE THE INITIAL COLONY IS COMPLETE, CNTL-D IS USED TO
+                      14     14 ; START THE EVOLUTION OF THE CELLS. DURING THE COLORFUL
+                      15     15 ; EVOLUTION OF THE CELLS THE LETTER F ON YOUR KEYBOARD
+                      16     16 ; CAN BE USED TO FREEZE THE PICTURE. HIT THE LETTER G TO
+                      17     17 ; GO AND THE LETTER S TO STOP.
+                      18     18 
+0009  =               19     19 RED     EQU  9
+000a  =               20     20 GREEN   EQU  10
+000c  =               21     21 BLUE    EQU  12
+0800  =               22     22 STACK   EQU  800H
+0800  =               23     23 DISPLY  EQU  800H
+d800  =               24     24 TIME    EQU  0D800H
+                      25     25 ;DAV     EQU  32                 ; FOR ALTAIR 88SIO REV 0
+                      26     26 ;TBE     EQU  2
+0002  =               27     27 DAV     EQU  2                  ; FOR IMSAI SIO-2
+0001  =               28     28 TBE     EQU  1
+0000  =               29     29 DELAY   EQU  0
+                      30     30 
+0000  c3 03 00        31     31         JMP  START
+0003  31 00 08        32     32 START:  LXI  SP,STACK
+0006  cd 6a 01        33     33         CALL INIT
+0009  cd 8f 01        34     34 MAN20:  CALL SETUP
+000c  cd 2d 00        35     35 MAN30:  CALL GEN
+000f  db 02           36     36 FRZE:   IN   2
+0011  fe 46           37     37         CPI  'F'
+0013  ca 0f 00        38     38         JZ   FRZE
+0016  cd 42 00        39     39         CALL CHANGE
+0019  db 02           40     40 STP:    IN   2
+001b  fe 53           41     41         CPI  'S'
+001d  ca 09 00        42     42         JZ   MAN20
+0020  db ff           43     43 MAN40:  IN   255
+0022  17              44     44         RAL
+0023  da 20 00        45     45         JC   MAN40
+0026  17              46     46         RAL
+0027  da 09 00        47     47         JC   MAN20
+002a  c3 0c 00        48     48         JMP  MAN30
+002d  01 00 00        49     49 GEN:    LXI  B,0
+0030  cd 84 00        50     50 GEN20:  CALL UPDATE
+0033  3e 40           51     51         MVI  A,64
+0035  0c              52     52         INR  C
+0036  b9              53     53         CMP  C
+0037  c2 30 00        54     54         JNZ  GEN20
+003a  0e 00           55     55         MVI  C,0
+003c  04              56     56         INR  B
+003d  b8              57     57         CMP  B
+003e  c2 30 00        58     58         JNZ  GEN20
+0041  c9              59     59         RET
+0042  01 00 00        60     60 CHANGE: LXI  B,0
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 2
+Source file: life.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0045  cd e9 00        61     61 CHN15:  CALL GTCOL
+0048  fe 09           62     62         CPI  RED
+004a  c2 55 00        63     63         JNZ  CHN20
+004d  3e 00           64     64         MVI  A,0
+004f  cd fa 00        65     65         CALL PTCOL
+0052  c3 5f 00        66     66         JMP  CHN30
+0055  fe 0a           67     67 CHN20:  CPI  GREEN
+0057  c2 5f 00        68     68         JNZ  CHN30
+005a  3e 0c           69     69         MVI  A,BLUE
+005c  cd fa 00        70     70         CALL PTCOL
+005f  3e 40           71     71 CHN30:  MVI  A,64
+0061  0c              72     72         INR  C
+0062  b9              73     73         CMP  C
+0063  c2 45 00        74     74         JNZ  CHN15
+0066  0e 00           75     75         MVI  C,0
+0068  04              76     76         INR  B
+0069  b8              77     77         CMP  B
+006a  c2 45 00        78     78         JNZ  CHN15
+006d  c9              79     79         RET
+006e  21 00 08        80     80 CDISP:  LXI  H,DISPLY
+0071  11 00 f8        81     81         LXI  D,-2048
+0074  06 00           82     82 CLEAR:  MVI  B,0
+0076  3e 00           83     83 FILL:   MVI  A,0
+0078  ba              84     84 FLL12:  CMP  D
+0079  c2 7e 00        85     85         JNZ  FLL20
+007c  bb              86     86         CMP  E
+007d  c8              87     87         RZ
+007e  70              88     88 FLL20:  MOV  M,B
+007f  13              89     89         INX  D
+0080  23              90     90         INX  H
+0081  c3 78 00        91     91         JMP  FLL12
+0084  c5              92     92 UPDATE: PUSH B
+0085  3e 00           93     93         MVI  A,0
+0087  b9              94     94         CMP  C
+0088  c2 9c 00        95     95         JNZ  UPD10
+008b  0d              96     96         DCR  C
+008c  cd cc 00        97     97         CALL UPROW
+008f  32 2a 02        98     98         STA  ROWA
+0092  c1              99     99         POP  B
+0093  c5             100    100         PUSH B
+0094  cd cc 00       101    101         CALL UPROW
+0097  32 2c 02       102    102         STA  ROWB
+009a  c1             103    103         POP  B
+009b  c5             104    104         PUSH B
+009c  0c             105    105 UPD10:  INR  C
+009d  cd cc 00       106    106         CALL UPROW
+00a0  21 2c 02       107    107         LXI  H,ROWB
+00a3  46             108    108         MOV  B,M
+00a4  77             109    109         MOV  M,A
+00a5  80             110    110         ADD  B
+00a6  2b             111    111         DCX  H
+00a7  4e             112    112         MOV  C,M
+00a8  70             113    113         MOV  M,B
+00a9  81             114    114         ADD  C
+00aa  57             115    115         MOV  D,A
+00ab  c1             116    116         POP  B
+00ac  c8             117    117         RZ
+00ad  d5             118    118         PUSH D
+00ae  cd e9 00       119    119         CALL GTCOL
+00b1  d1             120    120         POP  D
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 3
+Source file: life.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+00b2  fe 00          121    121         CPI  0
+00b4  ca c3 00       122    122         JZ   UPD20
+00b7  7a             123    123         MOV  A,D
+00b8  fe 03          124    124         CPI  3
+00ba  c8             125    125         RZ
+00bb  fe 04          126    126         CPI  4
+00bd  c8             127    127         RZ
+00be  3e 09          128    128         MVI  A,RED
+00c0  c3 fa 00       129    129         JMP  PTCOL
+00c3  7a             130    130 UPD20:  MOV  A,D
+00c4  fe 03          131    131         CPI  3
+00c6  c0             132    132         RNZ
+00c7  3e 0a          133    133         MVI  A,GREEN
+00c9  c3 fa 00       134    134         JMP  PTCOL
+00cc  05             135    135 UPROW:  DCR  B
+00cd  16 00          136    136         MVI  D,0
+00cf  cd dc 00       137    137         CALL UPONE
+00d2  04             138    138         INR  B
+00d3  cd dc 00       139    139         CALL UPONE
+00d6  04             140    140         INR  B
+00d7  cd dc 00       141    141         CALL UPONE
+00da  7a             142    142         MOV  A,D
+00db  c9             143    143         RET
+00dc  d5             144    144 UPONE:  PUSH D
+00dd  cd e9 00       145    145         CALL GTCOL
+00e0  d1             146    146         POP  D
+00e1  fe 00          147    147         CPI  0
+00e3  c8             148    148         RZ
+00e4  fe 0a          149    149         CPI  10
+00e6  c8             150    150         RZ
+00e7  14             151    151         INR  D
+00e8  c9             152    152         RET
+00e9  cd 16 01       153    153 GTCOL:  CALL FNDCOL
+00ec  7e             154    154         MOV  A,M
+00ed  da f3 00       155    155         JC   GT20
+00f0  e6 0f          156    156         ANI  15
+00f2  c9             157    157         RET
+00f3  e6 f0          158    158 GT20:   ANI  240
+00f5  07             159    159         RLC
+00f6  07             160    160         RLC
+00f7  07             161    161         RLC
+00f8  07             162    162         RLC
+00f9  c9             163    163         RET
+00fa  e6 0f          164    164 PTCOL:  ANI  15
+00fc  f5             165    165         DB   0F5H
+00fd  cd 16 01       166    166         CALL FNDCOL
+0100  d1             167    167         POP  D
+0101  da 0a 01       168    168         JC   PTC20
+0104  7e             169    169         MOV  A,M
+0105  e6 f0          170    170         ANI  240
+0107  82             171    171         ADD  D
+0108  77             172    172         MOV  M,A
+0109  c9             173    173         RET
+010a  7a             174    174 PTC20:  MOV  A,D
+010b  07             175    175         RLC
+010c  07             176    176         RLC
+010d  07             177    177         RLC
+010e  07             178    178         RLC
+010f  57             179    179         MOV  D,A
+0110  7e             180    180         MOV  A,M
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 4
+Source file: life.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0111  e6 0f          181    181         ANI  15
+0113  82             182    182         ADD  D
+0114  77             183    183         MOV  M,A
+0115  c9             184    184         RET
+0116  21 00 08       185    185 FNDCOL: LXI  H,DISPLY
+0119  78             186    186         MOV  A,B
+011a  e6 20          187    187         ANI  32
+011c  ca 23 01       188    188         JZ   FND20
+011f  11 00 02       189    189         LXI  D,512
+0122  19             190    190         DAD  D
+0123  79             191    191 FND20:  MOV  A,C
+0124  e6 20          192    192         ANI  32
+0126  ca 2d 01       193    193         JZ   FND30
+0129  11 00 04       194    194         LXI  D,1024
+012c  19             195    195         DAD  D
+012d  79             196    196 FND30:  MOV  A,C
+012e  e6 1f          197    197         ANI  31
+0130  07             198    198         RLC
+0131  07             199    199         RLC
+0132  07             200    200         RLC
+0133  17             201    201         RAL
+0134  5f             202    202         MOV  E,A
+0135  3e 00          203    203         MVI  A,0
+0137  17             204    204         RAL
+0138  57             205    205         MOV  D,A
+0139  19             206    206         DAD  D
+013a  78             207    207         MOV  A,B
+013b  1f             208    208         RAR
+013c  f5             209    209         DB   0F5H
+013d  e6 0f          210    210         ANI  15
+013f  5f             211    211         MOV  E,A
+0140  16 00          212    212         MVI  D,0
+0142  19             213    213         DAD  D
+0143  f1             214    214         DB   0F1H
+0144  c9             215    215         RET
+0145  db 03          216    216 CHECK:  IN   3
+0147  e6 02          217    217         ANI  DAV
+0149  c0             218    218         RNZ
+014a  0c             219    219         INR  C
+014b  c2 45 01       220    220         JNZ  CHECK
+014e  04             221    221         INR  B
+014f  c2 45 01       222    222         JNZ  CHECK
+0152  c9             223    223         RET
+0153  db 03          224    224 TTYONE: IN   3
+0155  e6 01          225    225         ANI  TBE
+0157  ca 53 01       226    226         JZ   TTYONE
+015a  78             227    227         MOV  A,B
+015b  d3 02          228    228         OUT  2
+015d  c9             229    229         RET
+015e  46             230    230 TTYOUT: MOV  B,M
+015f  3e 00          231    231         MVI  A,0
+0161  b8             232    232         CMP  B
+0162  c8             233    233         RZ
+0163  cd 53 01       234    234         CALL TTYONE
+0166  23             235    235         INX  H
+0167  c3 5e 01       236    236         JMP  TTYOUT
+016a  cd 6e 00       237    237 INIT:   CALL CDISP
+016d  3e 84          238    238         MVI  A,132
+016f  d3 0e          239    239         OUT  14
+0171  3e b0          240    240         MVI  A,176
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 5
+Source file: life.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0173  d3 0f          241    241         OUT  15
+0175  21 2e 02       242    242         LXI  H,IDENT
+0178  cd 5e 01       243    243         CALL TTYOUT
+017b  cd 45 01       244    244 INT20:  CALL CHECK
+                     245    245 ;       JZ   INT20               ; INSERT JZ INT20 HERE FOR INST
+017e  db 02          246    246         IN   2
+0180  47             247    247         MOV  B,A
+0181  cd 53 01       248    248         CALL TTYONE
+0184  e6 7f          249    249         ANI  127
+0186  fe 59          250    250         CPI  89
+0188  c9             251    251         RET                     ; INSERT RZ HERE FOR INST
+0189  21 48 02       252    252         LXI  H,INST
+018c  cd 5e 01       253    253         CALL TTYOUT
+018f  21 4a 02       254    254 SETUP:  LXI  H,ENTER
+0192  cd 5e 01       255    255         CALL TTYOUT
+0195  cd 6e 00       256    256         CALL CDISP
+0198  01 00 00       257    257         LXI  B,0
+019b  cd f9 01       258    258 STP20:  CALL GTCHR
+019e  21 c0 01       259    259         LXI  H,TAB
+01a1  e6 7f          260    260         ANI  7FH
+01a3  57             261    261         MOV  D,A
+01a4  97             262    262 STP30:  SUB  A
+01a5  be             263    263         CMP  M
+01a6  ca 9b 01       264    264         JZ   STP20
+01a9  7a             265    265         MOV  A,D
+01aa  be             266    266         CMP  M
+01ab  ca b4 01       267    267         JZ   STP40
+01ae  23             268    268         INX  H
+01af  23             269    269         INX  H
+01b0  23             270    270         INX  H
+01b1  c3 a4 01       271    271         JMP  STP30
+01b4  23             272    272 STP40:  INX  H
+01b5  5e             273    273         MOV  E,M
+01b6  23             274    274         INX  H
+01b7  56             275    275         MOV  D,M
+01b8  eb             276    276         XCHG
+01b9  cd bf 01       277    277         CALL INDEX
+01bc  c3 9b 01       278    278         JMP  STP20
+01bf  e9             279    279 INDEX:  PCHL
+01c0  01             280    280 TAB:    DB   1
+01c1  e9 01          281    281         DW   ON
+01c3  02             282    282         DB   2
+01c4  f0 01          283    283         DW   OFF
+01c6  04             284    284         DB   4
+01c7  df 01          285    285         DW   THRU
+01c9  08             286    286         DB   8
+01ca  f7 01          287    287         DW   BACK
+01cc  09             288    288         DB   9
+01cd  ee 01          289    289         DW   FWD
+01cf  0f             290    290         DB   15
+01d0  e7 01          291    291         DW   DOWN
+01d2  0b             292    292         DB   11
+01d3  e1 01          293    293         DW   HOME
+01d5  0d             294    294         DB   13
+01d6  e5 01          295    295         DW   RETURN
+01d8  0e             296    296         DB   14
+01d9  f5 01          297    297         DW   UP
+01db  00             298    298         DB   0
+01dc  00             299    299         DB   0
+01dd  00             300    300         DB   0
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 6
+Source file: life.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+01de  00             301    301         DB   0
+01df  c1             302    302 THRU:   POP  B
+01e0  c9             303    303         RET
+01e1  01 00 00       304    304 HOME:   LXI  B,0
+01e4  c9             305    305         RET
+01e5  06 00          306    306 RETURN: MVI  B,0
+01e7  0c             307    307 DOWN:   INR  C
+01e8  c9             308    308         RET
+01e9  3e 0f          309    309 ON:     MVI  A,15
+01eb  cd fa 00       310    310 BOTH:   CALL PTCOL
+01ee  04             311    311 FWD:    INR  B
+01ef  c9             312    312         RET
+01f0  3e 00          313    313 OFF:    MVI  A,0
+01f2  c3 eb 01       314    314         JMP  BOTH
+01f5  0d             315    315 UP:     DCR  C
+01f6  c9             316    316         RET
+01f7  05             317    317 BACK:   DCR  B
+01f8  c9             318    318         RET
+01f9  cd e9 00       319    319 GTCHR:  CALL GTCOL
+01fc  f5             320    320         DB   0F5H
+01fd  c5             321    321 GTC20:  PUSH B
+01fe  3e 0c          322    322         MVI  A,12
+0200  cd fa 00       323    323         CALL PTCOL
+0203  01 00 00       324    324         LXI  B,DELAY
+0206  cd 45 01       325    325         CALL CHECK
+0209  c2 26 02       326    326         JNZ  GTC40
+020c  c1             327    327         POP  B
+020d  c5             328    328         PUSH B
+020e  3e 00          329    329         MVI  A,0
+0210  cd fa 00       330    330         CALL PTCOL
+0213  01 00 00       331    331         LXI  B,DELAY
+0216  cd 45 01       332    332         CALL CHECK
+0219  c1             333    333         POP  B
+021a  ca fd 01       334    334         JZ   GTC20
+021d  f1             335    335 GTC30:  POP  PSW
+021e  cd fa 00       336    336         CALL PTCOL
+0221  db 02          337    337         IN   2
+0223  d3 02          338    338         OUT  2
+0225  c9             339    339         RET
+0226  c1             340    340 GTC40:  POP  B
+0227  c3 1d 02       341    341         JMP  GTC30
+022a  00 00          342    342 ROWA:   DW   0
+022c  00 00          343    343 ROWB:   DW   0
+022e  4c 49          344    344 IDENT:  DW   'IL'
+0230  46 45          345    345         DW   'EF'
+0232  2e 2e          346    346         DW   '..'
+0234  2e 2e          347    347         DW   '..'
+0236  56 45          348    348         DW   'EV'
+0238  52 53          349    349         DW   'SR'
+023a  49 4f          350    350         DW   'OI'
+023c  4e 20          351    351         DW   ' N'
+023e  32 2e          352    352         DW   '.2'
+0240  30 20          353    353         DW   ' 0'
+0242  0d 0a          354    354         DW   0A0DH
+0244  0a 0a          355    355         DW   0A0AH
+0246  00 00          356    356         DW   0
+0248  00 00          357    357 INST:   DW   0
+024a  45 4e          358    358 ENTER:  DW   'NE'
+024c  54 45          359    359         DW   'ET'
+024e  52 20          360    360         DW   ' R'
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 7
+Source file: life.asm
+Title:       
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+0250  44 41          361    361         DW   'AD'
+0252  54 41          362    362         DW   'AT'
+0254  0d 0a          363    363         DW   0A0DH
+0256  00 00          364    364         DW   0
+                     365    365 
+0258                 366    366         END
+Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:43:57 2022	Page 8
+Source file: life.asm
+Title:       Symbol table
+
+BACK     01f7 	BLUE     000c 	BOTH     01eb 	CDISP    006e 	
+CHANGE   0042 	CHECK    0145 	CHN15    0045 	CHN20    0055 	
+CHN30    005f 	CLEAR    0074*	DAV      0002 	DELAY    0000 	
+DISPLY   0800 	DOWN     01e7 	ENTER    024a 	FILL     0076*	
+FLL12    0078 	FLL20    007e 	FND20    0123 	FND30    012d 	
+FNDCOL   0116 	FRZE     000f 	FWD      01ee 	GEN      002d 	
+GEN20    0030 	GREEN    000a 	GT20     00f3 	GTC20    01fd 	
+GTC30    021d 	GTC40    0226 	GTCHR    01f9 	GTCOL    00e9 	
+HOME     01e1 	IDENT    022e 	INDEX    01bf 	INIT     016a 	
+INST     0248 	INT20    017b*	MAN20    0009 	MAN30    000c 	
+MAN40    0020 	OFF      01f0 	ON       01e9 	PTC20    010a 	
+PTCOL    00fa 	RED      0009 	RETURN   01e5 	ROWA     022a 	
+ROWB     022c 	SETUP    018f 	STACK    0800 	START    0003 	
+STP      0019*	STP20    019b 	STP30    01a4 	STP40    01b4 	
+TAB      01c0 	TBE      0001 	THRU     01df 	TIME     d800*	
+TTYONE   0153 	TTYOUT   015e 	UP       01f5 	UPD10    009c 	
+UPD20    00c3 	UPDATE   0084 	UPONE    00dc 	UPROW    00cc 	
