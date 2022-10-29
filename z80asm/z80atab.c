@@ -140,7 +140,7 @@ struct sym *get_sym(char *sym_name)
  */
 int put_sym(char *sym_name, int sym_val)
 {
-	register int hashval;
+	register int hashval, n;
 	register struct sym *np;
 
 	if ((np = get_sym(sym_name)) == NULL) {
@@ -153,6 +153,9 @@ int put_sym(char *sym_name, int sym_val)
 		np->sym_next = symtab[hashval];
 		symtab[hashval] = np;
 		np->sym_refcnt = 0;
+		n = strlen(sym_name);
+		if (n > symmax)
+			symmax = n;
 	}
 	np->sym_val = sym_val;
 	return(0);
@@ -221,7 +224,7 @@ int copy_sym(void)
 				symarray[j++] = np;
 				if (j == symsize) {
 					symarray = (struct sym **)
-						realloc((char *) symarray,
+						realloc(symarray,
 							sizeof(struct sym *)
 							* (symsize + SYMINC));
 					if (symarray == NULL)

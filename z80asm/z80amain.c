@@ -48,6 +48,7 @@ char *get_arg(char *, char *, int);
 /* z80aout.c */
 extern void asmerr(int);
 extern void lst_line(char *, int, int, int);
+extern void lst_mac(int);
 extern void lst_sym(void);
 extern void lst_sort_sym(int);
 extern void obj_header(void);
@@ -98,14 +99,17 @@ int main(int argc, char *argv[])
 		case 0:		/* no symbol table */
 			break;
 		case 1:		/* unsorted symbol table */
+			lst_mac(0);
 			lst_sym();
 			break;
 		case 2:		/* symbol table sorted by name */
+			lst_mac(1);
 			len = copy_sym();
 			n_sort_sym(len);
 			lst_sort_sym(len);
 			break;
 		case 3:		/* symbol table sorted by address */
+			lst_mac(0);
 			len = copy_sym();
 			a_sort_sym(len);
 			lst_sort_sym(len);
@@ -418,7 +422,7 @@ int process_line(char *l)
 			if (mac_list_flag == M_NONE)
 				lflag = 0;
 			else if (mac_list_flag == M_OPS
-				 && (op_count == 0 || a_mode == A_NONE))
+				 && (op_count == 0 && a_mode != A_EQU))
 				lflag = 0;
 		}
 		if (lflag)

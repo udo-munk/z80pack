@@ -42,6 +42,10 @@ void btoh(unsigned char, char **);
 /* z80amain.c */
 extern void fatal(int, const char *);
 
+/* z80amfun.c */
+extern char *mac_lst_first(int, int *);
+extern char *mac_lst_next(int, int *);
+
 static const char *errmsg[] = {		/* error messages for asmerr() */
 	"no error",			/* 0 */
 	"invalid opcode",		/* 1 */
@@ -200,13 +204,50 @@ void lst_line(char *l, int addr, int op_cnt, int expn_flag)
 }
 
 /*
+ *	print macro table into listfile
+ */
+void lst_mac(int sorted)
+{
+	register int i, j;
+	register char *p;
+	int refcnt;
+
+	p = mac_lst_first(sorted, &refcnt);
+	if (p == NULL)
+		return;
+	p_line = i = 0;
+	strcpy(title,"Macro table");
+	while (p != NULL) {
+		if (p_line == 0) {
+			lst_header();
+			fputc('\n', lstfp);
+			p_line++;
+		}
+		j = strlen(p);
+		fprintf(lstfp, "%s%c", p, refcnt > 0 ? ' ' : '*');
+		while (j++ < mac_symmax)
+			fputc(' ', lstfp);
+		i += mac_symmax + 4;
+		if (i + mac_symmax + 1 >= 80) {
+			fputc('\n', lstfp);
+			if (p_line++ >= ppl)
+				p_line = 0;
+			i = 0;
+		} else
+			fputs("   ", lstfp);
+		p = mac_lst_next(sorted, &refcnt);
+	}
+	if (i > 0)
+		fputc('\n', lstfp);
+}
+
+/*
  *	print symbol table into listfile unsorted
  */
 void lst_sym(void)
 {
 	register int i, j;
 	register struct sym *np;
-	char c;
 
 	p_line = j = 0;
 	strcpy(title,"Symbol table");
@@ -216,24 +257,24 @@ void lst_sym(void)
 				if (p_line == 0) {
 					lst_header();
 					fputc('\n', lstfp);
-					p_line += 1;
+					p_line++;
 				}
-				c = np->sym_refcnt ? ' ' : '*';
-				fprintf(lstfp, "%-8s %04x%c\t", np->sym_name,
-					np->sym_val & 0xffff, c);
-				if (++j == 4) {
+				fprintf(lstfp, "%*s %04x%c", -symmax,
+					np->sym_name, np->sym_val & 0xffff,
+					np->sym_refcnt > 0 ? ' ' : '*');
+				j += symmax + 9;
+				if (j + symmax + 6 >= 80) {
 					fputc('\n', lstfp);
 					if (p_line++ >= ppl)
 						p_line = 0;
 					j = 0;
-				}
+				} else
+					fputs("   ", lstfp);
 			}
 		}
 	}
-	if (j) {
+	if (j > 0)
 		fputc('\n', lstfp);
-		p_line++;
-	}
 }
 
 /*
@@ -242,7 +283,6 @@ void lst_sym(void)
 void lst_sort_sym(int len)
 {
 	register int i, j;
-	char c;
 
 	p_line = i = j = 0;
 	strcpy(title, "Symbol table");
@@ -250,23 +290,23 @@ void lst_sort_sym(int len)
 		if (p_line == 0) {
 			lst_header();
 			fputc('\n', lstfp);
-			p_line += 1;
+			p_line++;
 		}
-		c = symarray[i]->sym_refcnt ? ' ' : '*';
-		fprintf(lstfp, "%-8s %04x%c\t", symarray[i]->sym_name,
-			symarray[i]->sym_val & 0xffff, c);
-		if (++j == 4) {
+		fprintf(lstfp, "%*s %04x%c", -symmax, symarray[i]->sym_name,
+			symarray[i]->sym_val & 0xffff,
+			symarray[i]->sym_refcnt > 0 ? ' ' : '*');
+		j += symmax + 9;
+		if (j + symmax + 6 >= 80) {
 			fputc('\n', lstfp);
 			if (p_line++ >= ppl)
 				p_line = 0;
 			j = 0;
-		}
+		} else
+			fputs("   ", lstfp);
 		i++;
 	}
-	if (j) {
+	if (j > 0)
 		fputc('\n', lstfp);
-		p_line++;
-	}
 }
 
 /*
