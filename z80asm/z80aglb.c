@@ -61,6 +61,7 @@ int  list_flag,			/* flag for option -l */
      gencode,			/* flag for conditional code (>0 yes, <0 no) */
      mac_def_nest,		/* macro definition nesting level */
      mac_exp_nest,		/* macro expansion nesting level */
+     mac_symmax,		/* max. macro symbol length encountered */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
      a_mode,			/* location output mode for pseudo ops */
@@ -70,6 +71,7 @@ int  list_flag,			/* flag for option -l */
      start_addr,		/* start address of program */
      out_form = OUTDEF,		/* format of object file */
      symlen = SYMLEN,		/* significant characters in symbols */
+     symmax,			/* max. symbol name length encountered */
      symsize,			/* size of symarray */
      hexlen = MAXHEX;		/* hex record length */
 

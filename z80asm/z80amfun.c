@@ -33,6 +33,7 @@ extern void asmerr(int);
 extern char *strsave(char *);
 
 #define MACNEST	16				/* max. expansion nesting */
+#define MACAINC	50				/* start size of mac_array */
 
 struct dum {					/* macro dummy */
 	char *dum_name;				/* dummy name */
@@ -50,11 +51,12 @@ struct mac {					/* macro */
 	void (*mac_start)(struct expn *);	/* start expansion function */
 	int (*mac_rept)(struct expn *);		/* repeat expansion function */
 	char *mac_name;				/* macro name */
+	int mac_refcnt;				/* macro reference counter */
 	int mac_count;				/* REPT count */
 	char *mac_irp;				/* IRP, IRPC character list */
 	struct dum *mac_dums, *mac_dums_last;	/* macro dummies */
 	struct line *mac_lines, *mac_lines_last; /* macro body */
-	struct mac *mac_next;
+	struct mac *mac_prev, *mac_next;
 };
 
 struct parm {					/* expansion parameter */
@@ -63,10 +65,16 @@ struct parm {					/* expansion parameter */
 	struct parm *parm_next;
 };
 
+struct loc {					/* expansion local label */
+	char *loc_name;				/* local label name */
+	char loc_val[8];			/* local label value ??xxxx */
+	struct loc *loc_next;
+};
+
 struct expn {					/* macro expansion */
 	struct mac *expn_mac;			/* macro being expanded */
 	struct parm *expn_parms, *expn_parms_last; /* macro parameters */
-	struct parm *expn_locs, *expn_locs_last; /* locals (after parms) */
+	struct loc *expn_locs, *expn_locs_last;	/* local labels */
 	struct line *expn_line;			/* current expansion line */
 	int expn_iflevel;			/* iflevel before expansion */
 	int expn_iter;				/* curr. expansion iteration */
@@ -74,8 +82,11 @@ struct expn {					/* macro expansion */
 };
 
 static struct mac *mac_table;			/* MACRO table */
-static struct mac *mac_def;			/* macro being defined */
-static struct mac *mac_found;			/* found macro */
+static struct mac *mac_curr;			/* current macro */
+static struct mac **mac_array;			/* sorted macro table */
+static int mac_asize;				/* size of mac_array */
+static int mac_aused;				/* used entries of mac_array */
+static int mac_aindex;				/* index into mac_array */
 static struct expn mac_expn[MACNEST];		/* macro expansion stack */
 static int mac_loc_cnt;				/* counter for LOCAL labels */
 static char tmp[MAXLINE];			/* temporary buffer */
@@ -95,28 +106,121 @@ int is_symbol(char *s)
 }
 
 /*
+ *	save symbol truncated to symlen into allocated memory
+ */
+char *symsave(char *s)
+{
+	register char *p;
+	register int n;
+
+	n = strlen(s);
+	if (n > symlen)
+		n = symlen;
+	if ((p = (char *) malloc(n + 1)) != NULL) {
+		strncpy(p, s, n);
+		*(p + n) = '\0';
+	}
+	return(p);
+}
+
+/*
+ *	compare function for qsort of mac_array
+ */
+int mac_compare(const void *p1, const void *p2)
+{
+	return(strcmp((*(const struct mac **) p1)->mac_name,
+		      (*(const struct mac **) p2)->mac_name));
+}
+
+/*
+ *	return first macro name and refcnt in *ip for listing
+ */
+char *mac_lst_first(int sorted, int *ip)
+{
+	register struct mac *m;
+	register int i;
+
+	if (mac_table == NULL)
+		return(NULL);
+	if (sorted) {
+		mac_array = (struct mac **) malloc(sizeof(struct mac *)
+						   * MACAINC);
+		if (mac_array == NULL)
+			fatal(F_OUTMEM, "sorting macro table");
+		mac_asize = MACAINC;
+		i = mac_aindex = 0;
+		for (m = mac_table; m != NULL; m = m->mac_next) {
+			mac_array[i++] = m;
+			if (i == mac_asize) {
+				mac_array = (struct mac **)
+					realloc(mac_array,
+						sizeof(struct mac *)
+						* (mac_asize + MACAINC));
+				if (mac_array == NULL)
+					fatal(F_OUTMEM, "sorting macro table");
+				mac_asize += MACAINC;
+			}
+		}
+		mac_aused = i;
+		qsort(mac_array, mac_aused, sizeof(struct mac *), mac_compare);
+		return(mac_array[mac_aindex++]->mac_name);
+	} else {
+		for (m = mac_table; m->mac_next != NULL; m = m->mac_next)
+			;
+		mac_curr = m;
+		*ip = mac_curr->mac_refcnt;
+		return(mac_curr->mac_name);
+	}
+}
+
+/*
+ *	return next macro name and refcnt in *ip for listing
+ */
+char *mac_lst_next(int sorted, int *ip)
+{
+	if (sorted) {
+		if (mac_aindex < mac_aused)
+			return(mac_array[mac_aindex++]->mac_name);
+		else
+			return(NULL);
+	} else {
+		mac_curr = mac_curr->mac_prev;
+		if (mac_curr != NULL) {
+			*ip = mac_curr->mac_refcnt;
+			return(mac_curr->mac_name);
+		} else
+			return(NULL);
+	}
+}
+
+/*
  *	allocate a new macro with optional name and
  *	start/repeat expansion function
  */
 struct mac *mac_new(char *name, void (*start)(struct expn *),
 		    int (*rept)(struct expn *))
 {
-	struct mac *m;
+	register struct mac *m;
+	register int n;
 
 	if ((m = (struct mac *) malloc(sizeof(struct mac))) == NULL)
 		fatal(F_OUTMEM, "macro");
 	if (name != NULL) {
-		if ((m->mac_name = strsave(name)) == NULL)
+		if ((m->mac_name = symsave(name)) == NULL)
 			fatal(F_OUTMEM, "macro name");
+		n = strlen(name);
+		if (n > mac_symmax)
+			mac_symmax = n;
 	} else
 		m->mac_name = NULL;
 	m->mac_start = start;
 	m->mac_rept = rept;
+	m->mac_refcnt = 0;
 	m->mac_count = 0;
 	m->mac_irp = NULL;
 	m->mac_dums_last = m->mac_dums = NULL;
 	m->mac_lines_last = m->mac_lines = NULL;
-	m->mac_next = NULL;
+	m->mac_next = m->mac_prev = NULL;
 	return(m);
 }
 
@@ -125,8 +229,8 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
  */
 void mac_delete(struct mac *m)
 {
-	struct dum *d, *d1;
-	struct line *ln, *ln1;
+	register struct dum *d, *d1;
+	register struct line *ln, *ln1;
 
 	for (d = m->mac_dums; d != NULL; d = d1) {
 		d1 = d->dum_next;
@@ -160,11 +264,12 @@ void mac_end_pass(void)
 {
 	register struct mac *m;
 
-	while (mac_table != NULL) {
-		m = mac_table->mac_next;
-		mac_delete(mac_table);
-		mac_table = m;
-	}
+	if (pass == 1)
+		while (mac_table != NULL) {
+			m = mac_table->mac_next;
+			mac_delete(mac_table);
+			mac_table = m;
+		}
 }
 
 /*
@@ -175,7 +280,7 @@ void mac_add_dum(struct mac *m, char *name)
 	register struct dum *d;
 
 	d = (struct dum *) malloc(sizeof(struct dum));
-	if (d == NULL || (d->dum_name = strsave(name)) == NULL)
+	if (d == NULL || (d->dum_name = symsave(name)) == NULL)
 		fatal(F_OUTMEM, "macro dummy");
 	d->dum_next = NULL;
 	if (m->mac_dums == NULL)
@@ -186,35 +291,22 @@ void mac_add_dum(struct mac *m, char *name)
 }
 
 /*
- * 	add a parameter/local to a macro expansion
+ * 	add a local to a macro expansion
  */
-struct parm *expn_add_parm(struct expn *e, char *name, int is_local)
+struct loc *expn_add_loc(struct expn *e, char *name)
 {
-	register struct parm *p;
+	register struct loc *l;
 
-	p = (struct parm *) malloc(sizeof(struct parm));
-	if (p == NULL || (p->parm_name = strsave(name)) == NULL)
-		fatal(F_OUTMEM, "macro parameter/local");
-	p->parm_val = NULL;
-	p->parm_next = NULL;
-	if (e->expn_parms == NULL) {
-		e->expn_parms = p;
-		if (is_local)
-			e->expn_locs = p;
-	} else if (is_local) {
-		if (e->expn_locs == NULL) {
-			e->expn_locs = p;
-			if (e->expn_parms_last != NULL)
-				e->expn_parms_last->parm_next = p;
-		} else
-			e->expn_locs_last->parm_next = p;
-	} else
-		e->expn_parms_last->parm_next = p;
-	if (is_local)
-		e->expn_locs_last = p;
+	l = (struct loc *) malloc(sizeof(struct loc));
+	if (l == NULL || (l->loc_name = symsave(name)) == NULL)
+		fatal(F_OUTMEM, "macro local label");
+	l->loc_next = NULL;
+	if (e->expn_locs == NULL)
+		e->expn_locs = l;
 	else
-		e->expn_parms_last = p;
-	return(p);
+		e->expn_locs_last->loc_next = l;
+	e->expn_locs_last = l;
+	return(l);
 }
 
 /*
@@ -225,6 +317,7 @@ void mac_start_expn(struct mac *m)
 {
 	register struct expn *e;
 	register struct dum *d;
+	register struct parm *p;
 
 	if (mac_exp_nest == MACNEST) {
 		/* abort macro expansion */
@@ -239,13 +332,25 @@ void mac_start_expn(struct mac *m)
 	e = &mac_expn[mac_exp_nest];
 	e->expn_mac = m;
 	e->expn_parms_last = e->expn_parms = NULL;
+	for (d = m->mac_dums; d; d = d->dum_next) {
+		p = (struct parm *) malloc(sizeof(struct parm));
+		if (p == NULL)
+			fatal(F_OUTMEM, "macro parameter");
+		p->parm_name = d->dum_name;
+		p->parm_val = NULL;
+		p->parm_next = NULL;
+		if (e->expn_parms == NULL)
+			e->expn_parms = p;
+		else
+			e->expn_parms_last->parm_next = p;
+		e->expn_parms_last = p;
+	}
 	e->expn_locs_last = e->expn_locs = NULL;
 	e->expn_line = m->mac_lines;
 	e->expn_iflevel = iflevel;
 	e->expn_iter = 0;
 	e->expn_irp = m->mac_irp;
-	for (d = m->mac_dums; d; d = d->dum_next)
-		(void) expn_add_parm(e, d->dum_name, 0);
+	m->mac_refcnt++;
 	(*m->mac_start)(e);
 	mac_exp_nest++;
 }
@@ -258,6 +363,7 @@ void mac_end_expn(void)
 {
 	register struct expn *e;
 	register struct parm *p, *p1;
+	register struct loc *l, *l1;
 	register struct mac *m;
 
 	e = &mac_expn[mac_exp_nest - 1];
@@ -266,6 +372,10 @@ void mac_end_expn(void)
 		if (p->parm_val != NULL)
 			free(p->parm_val);
 		free(p);
+	}
+	for (l = e->expn_locs; l; l = l1) {
+		l1 = l->loc_next;
+		free(l);
 	}
 	if ((iflevel = e->expn_iflevel) > 0)
 		gencode = condnest[iflevel - 1];
@@ -286,22 +396,16 @@ int mac_rept_expn(void)
 {
 	register struct expn *e;
 	register struct mac *m;
-	register struct parm *p, *p1;
+	register struct loc *l, *l1;
 
 	e = &mac_expn[mac_exp_nest - 1];
 	e->expn_iter++;
 	m = e->expn_mac;
 	if (*m->mac_rept != NULL && (*m->mac_rept)(e)) {
-		for (p = e->expn_locs; p; p = p1) {
-			p1 = p->parm_next;
-			if (p->parm_val != NULL)
-				free(p->parm_val);
-			free(p);
+		for (l = e->expn_locs; l; l = l1) {
+			l1 = l->loc_next;
+			free(l);
 		}
-		if (e->expn_parms_last == NULL)
-			e->expn_parms = NULL;
-		else
-			e->expn_parms_last->parm_next = NULL;
 		e->expn_locs_last = e->expn_locs = NULL;
 		e->expn_line = m->mac_lines;
 		if ((iflevel = e->expn_iflevel) > 0)
@@ -328,7 +432,7 @@ void mac_add_line(struct opc *op, char *line)
 	if (l == NULL || (l->line_text = strsave(line)) == NULL)
 		fatal(F_OUTMEM, "macro body line");
 	l->line_next = NULL;
-	m = mac_def;
+	m = mac_curr;
 	if (m->mac_lines == NULL)
 		m->mac_lines = l;
 	else
@@ -339,8 +443,8 @@ void mac_add_line(struct opc *op, char *line)
 			mac_def_nest++;
 		else if (op->op_flags & OP_MEND) {
 			if (--mac_def_nest == 0) {
-				m = mac_def;
-				mac_def = NULL;
+				m = mac_curr;
+				mac_curr = NULL;
 				/* start expansion for IRP, IRPC, REPT */
 				if (m->mac_name == NULL)
 					mac_start_expn(m);
@@ -350,36 +454,47 @@ void mac_add_line(struct opc *op, char *line)
 }
 
 /*
- *	return value of dummy or local s, NULL if not found
+ *	return value of dummy s, NULL if not found
  */
 const char *mac_get_dummy(struct expn *e, char *s)
 {
 	register struct parm *p;
 
 	for (p = e->expn_parms; p; p = p->parm_next)
-		if (strcmp(p->parm_name, s) == 0)
+		if (strncmp(p->parm_name, s, symlen) == 0)
 			return(p->parm_val == NULL ? "" : p->parm_val);
 	return(NULL);
 }
 
 /*
- *	substitute dummies and locals with actual values
- *	in current expansion source line and return the
- *	result
+ *	return value of local label s, NULL if not found
  */
-char *mac_subst_dummies(struct expn *e)
+const char *mac_get_local(struct expn *e, char *s)
 {
-	register char *s, *t, *t1;
+	register struct loc *l;
+
+	for (l = e->expn_locs; l; l = l->loc_next)
+		if (strncmp(l->loc_name, s, symlen) == 0)
+			return(l->loc_val);
+	return(NULL);
+}
+
+/*
+ *	substitute dummies or locals with actual values
+ *	in source line s and return the result in t
+ */
+void mac_subst(char *t, char *s, struct expn *e,
+	       const char *(getf)(struct expn *, char *))
+{
+	register char *t1;
 	register const char *v;
 	register char c;
 	register int n;
 	int amp_flag;	/* 0 = no &, 1 = & before, 2 = & after */
 	int esc_flag;	/* 0 = no ^, 1 = ^ before */
 
-	s = e->expn_line->line_text;
 	if (*s == LINCOM)
-		return(s);
-	t = line;
+		goto done;
 	n = 0;
 	amp_flag = esc_flag = 0;
 	while (*s != '\n' && *s != '\0') {
@@ -389,7 +504,7 @@ char *mac_subst_dummies(struct expn *e)
 			while (is_sym_char(*s))
 				*t++ = toupper((unsigned char) *s++);
 			*t = '\0';
-			v = mac_get_dummy(e, t1);
+			v = (*getf)(e, t1);
 			if (v == NULL)
 				amp_flag = 0;
 			else if (esc_flag) {
@@ -434,7 +549,7 @@ char *mac_subst_dummies(struct expn *e)
 						*t++ = *s++;
 					*t = '\0';
 					if (amp_flag > 0 || *s == '&') {
-						v = mac_get_dummy(e, t1);
+						v = (*getf)(e, t1);
 						if (v == NULL)
 							amp_flag = 0;
 						else {
@@ -481,7 +596,6 @@ char *mac_subst_dummies(struct expn *e)
 done:
 	*t++ = '\n';
 	*t = '\0';
-	return(line);
 }
 
 /*
@@ -490,14 +604,16 @@ done:
 char *mac_expand(void)
 {
 	register struct expn *e;
-	register char *s;
 
 	e = &mac_expn[mac_exp_nest - 1];
 	if (e->expn_line == NULL && !mac_rept_expn())
 		return(NULL);
-	s = mac_subst_dummies(e);
+	/* first substitute dummies with parameter values */
+	mac_subst(tmp, e->expn_line->line_text, e, mac_get_dummy);
+	/* next substitute local labels with ??xxxx */
+	mac_subst(line, tmp, e, mac_get_local);
 	e->expn_line = e->expn_line->line_next;
-	return(s);
+	return(line);
 }
 
 /*
@@ -507,10 +623,10 @@ int mac_lookup(char *opcode)
 {
 	register struct mac *m;
 
-	mac_found = NULL;
+	mac_curr = NULL;
 	for (m = mac_table; m; m = m->mac_next)
 		if (strcmp(m->mac_name, opcode) == 0) {
-			mac_found = m;
+			mac_curr = m;
 			return(1);
 		}
 	return(0);
@@ -521,9 +637,10 @@ int mac_lookup(char *opcode)
  */
 void mac_call(void)
 {
-	if (mac_found != NULL)
-		mac_start_expn(mac_found);
-	else
+	if (mac_curr != NULL) {
+		mac_start_expn(mac_curr);
+		mac_curr = NULL;
+	} else
 		fatal(F_INTERN, "mac_call with no macro");
 }
 
@@ -879,7 +996,7 @@ int op_irp(int op_code, int dummy)
 	}
 	if ((m->mac_irp = strsave(tmp)) == NULL)
 		fatal(F_OUTMEM, "IRP/IRPC character list");
-	mac_def = m;
+	mac_curr = m;
 	mac_def_nest++;
 	return(0);
 }
@@ -891,7 +1008,7 @@ int op_local(int dummy1, int dummy2)
 {
 	register char *s, *s1;
 	register struct expn *e;
-	register struct parm *p;
+	register struct loc *l;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -907,14 +1024,12 @@ int op_local(int dummy1, int dummy2)
 		s1 = next_arg(s, NULL);
 		if (*s != '\0') {
 			if (is_symbol(s)) {
-				p = expn_add_parm(e, s, 1);
+				l = expn_add_loc(e, s);
 				if (mac_loc_cnt == 10000)
 					asmerr(E_OUTLCL);
 				else
 					mac_loc_cnt++;
-				sprintf(tmp, "??%04d", mac_loc_cnt);
-				if ((p->parm_val = strsave(tmp)) == NULL)
-					fatal(F_OUTMEM, "local assignment");
+				sprintf(l->loc_val, "??%04d", mac_loc_cnt);
 			} else
 				asmerr(E_ILLOPE);
 		}
@@ -936,6 +1051,8 @@ int op_macro(int dummy1, int dummy2)
 
 	a_mode = A_NONE;
 	m = mac_new(label, mac_start_macro, NULL);
+	if (mac_table != NULL)
+		mac_table->mac_prev = m;
 	m->mac_next = mac_table;
 	mac_table = m;
 	s = operand;
@@ -949,7 +1066,7 @@ int op_macro(int dummy1, int dummy2)
 		}
 		s = s1;
 	}
-	mac_def = m;
+	mac_curr = m;
 	mac_def_nest++;
 	return(0);
 }
@@ -967,7 +1084,7 @@ int op_rept(int dummy1, int dummy2)
 	a_mode = A_NONE;
 	m = mac_new(NULL, mac_start_rept, mac_rept_rept);
 	m->mac_count = eval(operand);
-	mac_def = m;
+	mac_curr = m;
 	mac_def_nest++;
 	return(0);
 }
