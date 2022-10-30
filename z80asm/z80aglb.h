@@ -68,7 +68,9 @@ extern int	list_flag,
 		symlen,
 		symmax,
 		symsize,
-		hexlen;
+		hexlen,
+		p_line,
+		ppl;
 
 extern FILE	*srcfp,
 		*objfp,
@@ -76,8 +78,6 @@ extern FILE	*srcfp,
 		*errfp;
 
 extern unsigned	c_line,
-		p_line,
-		ppl,
 		page;
 
 extern struct sym *symtab[],

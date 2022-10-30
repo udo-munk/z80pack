@@ -110,13 +110,23 @@ void asmerr(int i)
  */
 void lst_header(void)
 {
+	static int header_done;
 	time_t tloc = time(&tloc);
 
-	fprintf(lstfp, "\fZ80-Macro-Assembler  Release %s\t%.24s\tPage %d\n",
-		REL, ctime(&tloc), ++page);
-	fprintf(lstfp, "Source file: %s\n", srcfn);
-	fprintf(lstfp, "Title:       %s\n", title);
-	p_line = 3;
+	if (header_done && ppl != 0)
+		fputc('\f', lstfp);
+	if (!header_done || ppl != 0)
+		fprintf(lstfp, "Z80-Macro-Assembler  Release %s\t%.24s",
+			REL, ctime(&tloc));
+	if (ppl != 0) {
+		fprintf(lstfp, "\tPage %d\n", ++page);
+		fprintf(lstfp, "Source file: %s\n", srcfn);
+		fprintf(lstfp, "Title:       %s", title);
+		p_line = 3;
+	} else
+		p_line = 0;
+	fputc('\n', lstfp);
+	header_done = 1;
 }
 
 /*
@@ -124,8 +134,13 @@ void lst_header(void)
  */
 void lst_attl(void)
 {
-	fprintf(lstfp, "\nLOC   OBJECT CODE   LINE   STMT SOURCE CODE\n");
-	p_line += 2;
+	static int attl_done;
+
+	if (!attl_done || ppl != 0)
+		fprintf(lstfp, "\nLOC   OBJECT CODE   LINE   STMT SOURCE CODE\n");
+	if (ppl != 0)
+		p_line += 2;
+	attl_done = 1;
 }
 
 /*
@@ -140,9 +155,13 @@ void lst_line(char *l, int addr, int op_cnt, int expn_flag)
 	s_line++;
 	if (!list_flag)
 		return;
-	if (p_line >= ppl || c_line == 1) {
+	if (ppl != 0)
+		p_line++;
+	if (p_line > ppl || c_line == 1) {
 		lst_header();
 		lst_attl();
+		if (ppl != 0)
+			p_line++;
 	}
 	a_mark = "   ";
 	switch (a_mode) {
@@ -178,16 +197,20 @@ void lst_line(char *l, int addr, int op_cnt, int expn_flag)
 			fputs("   ", lstfp);
 	fprintf(lstfp, "%c%5d %6d %s", expn_flag ? '+' : ' ',
 		c_line, s_line, l);
-	p_line++;
 	if (errnum) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
 		errnum = 0;
-		p_line++;
+		if (ppl != 0)
+			p_line++;
 	}
 	while (op_cnt > 0) {
-		if (p_line >= ppl) {
+		if (ppl != 0)
+			p_line++;
+		if (p_line > ppl) {
 			lst_header();
 			lst_attl();
+			if (ppl != 0)
+				p_line++;
 		}
 		s_line++;
 		addr += 4;
@@ -199,8 +222,9 @@ void lst_line(char *l, int addr, int op_cnt, int expn_flag)
 				fputs("   ", lstfp);
 		fprintf(lstfp, "%c%5d %6d\n", expn_flag ? '+' : ' ',
 			c_line, s_line);
-		p_line++;
 	}
+	if (p_line < 0)
+		p_line = 1;
 }
 
 /*
@@ -219,6 +243,10 @@ void lst_mac(int sorted)
 	strcpy(title,"Macro table");
 	while (p != NULL) {
 		if (p_line == 0) {
+			if (ppl == 0) {
+				fputc('\n', lstfp);
+				fputs(title, lstfp);
+			}
 			lst_header();
 			fputc('\n', lstfp);
 			p_line++;
@@ -230,7 +258,7 @@ void lst_mac(int sorted)
 		i += mac_symmax + 4;
 		if (i + mac_symmax + 1 >= 80) {
 			fputc('\n', lstfp);
-			if (p_line++ >= ppl)
+			if (ppl != 0 && ++p_line >= ppl)
 				p_line = 0;
 			i = 0;
 		} else
@@ -255,6 +283,10 @@ void lst_sym(void)
 		if (symtab[i] != NULL) {
 			for (np = symtab[i]; np != NULL; np = np->sym_next) {
 				if (p_line == 0) {
+					if (ppl == 0) {
+						fputc('\n', lstfp);
+						fputs(title, lstfp);
+					}
 					lst_header();
 					fputc('\n', lstfp);
 					p_line++;
@@ -265,7 +297,7 @@ void lst_sym(void)
 				j += symmax + 9;
 				if (j + symmax + 6 >= 80) {
 					fputc('\n', lstfp);
-					if (p_line++ >= ppl)
+					if (ppl != 0 && ++p_line >= ppl)
 						p_line = 0;
 					j = 0;
 				} else
@@ -288,6 +320,10 @@ void lst_sort_sym(int len)
 	strcpy(title, "Symbol table");
 	while (i < len) {
 		if (p_line == 0) {
+			if (ppl == 0) {
+				fputc('\n', lstfp);
+				fputs(title, lstfp);
+			}
 			lst_header();
 			fputc('\n', lstfp);
 			p_line++;
@@ -298,7 +334,7 @@ void lst_sort_sym(int len)
 		j += symmax + 9;
 		if (j + symmax + 6 >= 80) {
 			fputc('\n', lstfp);
-			if (p_line++ >= ppl)
+			if (ppl != 0 && ++p_line >= ppl)
 				p_line = 0;
 			j = 0;
 		} else

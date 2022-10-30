@@ -236,8 +236,9 @@ struct inc {
 #define F_HALT		2	/* assembly halted */
 #define F_FOPEN		3	/* can't open file */
 #define F_INTERN	4	/* internal error */
-#define F_SYMLEN	5	/* symbol length out of range */
-#define F_HEXLEN	6	/* hex record length out of range */
+#define F_PAGLEN	5	/* page length out of range */
+#define F_SYMLEN	6	/* symbol length out of range */
+#define F_HEXLEN	7	/* hex record length out of range */
 
 /*
  *	macro for declaring unused function parameters

@@ -163,6 +163,7 @@ char *mac_lst_first(int sorted, int *ip)
 		}
 		mac_aused = i;
 		qsort(mac_array, mac_aused, sizeof(struct mac *), mac_compare);
+		*ip = mac_array[mac_aindex]->mac_refcnt;
 		return(mac_array[mac_aindex++]->mac_name);
 	} else {
 		for (m = mac_table; m->mac_next != NULL; m = m->mac_next)
@@ -179,9 +180,10 @@ char *mac_lst_first(int sorted, int *ip)
 char *mac_lst_next(int sorted, int *ip)
 {
 	if (sorted) {
-		if (mac_aindex < mac_aused)
+		if (mac_aindex < mac_aused) {
+			*ip = mac_array[mac_aindex]->mac_refcnt;
 			return(mac_array[mac_aindex++]->mac_name);
-		else
+		} else
 			return(NULL);
 	} else {
 		mac_curr = mac_curr->mac_prev;
