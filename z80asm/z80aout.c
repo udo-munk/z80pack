@@ -243,11 +243,11 @@ void lst_mac(int sorted)
 	strcpy(title,"Macro table");
 	while (p != NULL) {
 		if (p_line == 0) {
-			if (ppl == 0) {
-				fputc('\n', lstfp);
-				fputs(title, lstfp);
-			}
 			lst_header();
+			if (ppl == 0) {
+				fputs(title, lstfp);
+				fputc('\n', lstfp);
+			}
 			fputc('\n', lstfp);
 			p_line++;
 		}
@@ -283,11 +283,11 @@ void lst_sym(void)
 		if (symtab[i] != NULL) {
 			for (np = symtab[i]; np != NULL; np = np->sym_next) {
 				if (p_line == 0) {
-					if (ppl == 0) {
-						fputc('\n', lstfp);
-						fputs(title, lstfp);
-					}
 					lst_header();
+					if (ppl == 0) {
+						fputs(title, lstfp);
+						fputc('\n', lstfp);
+					}
 					fputc('\n', lstfp);
 					p_line++;
 				}
@@ -320,11 +320,11 @@ void lst_sort_sym(int len)
 	strcpy(title, "Symbol table");
 	while (i < len) {
 		if (p_line == 0) {
-			if (ppl == 0) {
-				fputc('\n', lstfp);
-				fputs(title, lstfp);
-			}
 			lst_header();
+			if (ppl == 0) {
+				fputs(title, lstfp);
+				fputc('\n', lstfp);
+			}
 			fputc('\n', lstfp);
 			p_line++;
 		}
