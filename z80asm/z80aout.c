@@ -83,10 +83,10 @@ static const char *errmsg[] = {		/* error messages for asmerr() */
 #define HEX_EOF		1
 
 static int nseq_flag;			/* flag for non-sequential ORG */
-static int bin_addr;			/* current logical file address */
-static int wrt_addr;			/* current address written to file */
+static int curr_addr;			/* current logical file address */
+static int bin_addr;			/* current address written to file */
 static unsigned short hex_addr;		/* current address in hex record */
-static int hex_cnt;			/* current no bytes in hex buffer */
+static int hex_cnt;			/* number of bytes in hex buffer */
 
 static unsigned char hex_buf[MAXHEX];	/* buffer for one hex record */
 static char hex_out[MAXHEX*2+20];	/* ASCII buffer for one hex record */
@@ -243,11 +243,11 @@ void lst_mac(int sorted)
 	strcpy(title,"Macro table");
 	while (p != NULL) {
 		if (p_line == 0) {
-			if (ppl == 0) {
-				fputc('\n', lstfp);
-				fputs(title, lstfp);
-			}
 			lst_header();
+			if (ppl == 0) {
+				fputs(title, lstfp);
+				fputc('\n', lstfp);
+			}
 			fputc('\n', lstfp);
 			p_line++;
 		}
@@ -283,11 +283,11 @@ void lst_sym(void)
 		if (symtab[i] != NULL) {
 			for (np = symtab[i]; np != NULL; np = np->sym_next) {
 				if (p_line == 0) {
-					if (ppl == 0) {
-						fputc('\n', lstfp);
-						fputs(title, lstfp);
-					}
 					lst_header();
+					if (ppl == 0) {
+						fputs(title, lstfp);
+						fputc('\n', lstfp);
+					}
 					fputc('\n', lstfp);
 					p_line++;
 				}
@@ -320,11 +320,11 @@ void lst_sort_sym(int len)
 	strcpy(title, "Symbol table");
 	while (i < len) {
 		if (p_line == 0) {
-			if (ppl == 0) {
-				fputc('\n', lstfp);
-				fputs(title, lstfp);
-			}
 			lst_header();
+			if (ppl == 0) {
+				fputs(title, lstfp);
+				fputc('\n', lstfp);
+			}
 			fputc('\n', lstfp);
 			p_line++;
 		}
@@ -371,7 +371,7 @@ void obj_end(void)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		if (!nofill_flag && !(load_flag && (wrt_addr < load_addr)))
+		if (!nofill_flag && !(load_flag && (bin_addr < load_addr)))
 			fill_bin();
 		break;
 	case OUTHEX:
@@ -390,14 +390,13 @@ void obj_org(int addr)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		nseq_flag = (addr < bin_addr);
-		if (load_flag && (wrt_addr < load_addr))
-			wrt_addr = addr;
-		bin_addr = addr;
+		nseq_flag = (addr < curr_addr);
+		if (load_flag && (bin_addr < load_addr))
+			bin_addr = addr;
+		curr_addr = addr;
 		break;
 	case OUTHEX:
-		flush_hex();
-		hex_addr = addr;
+		curr_addr = addr;
 		break;
 	}
 }
@@ -417,21 +416,24 @@ void obj_writeb(int op_cnt)
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
-			if (load_flag && (wrt_addr < load_addr))
+			if (load_flag && (bin_addr < load_addr))
 				asmerr(E_BFRORG);
 			else {
 				fill_bin();
 				fwrite(ops, 1, op_cnt, objfp);
-				wrt_addr += op_cnt;
+				bin_addr += op_cnt;
 			}
-			bin_addr += op_cnt;
+			curr_addr += op_cnt;
 		}
 		break;
 	case OUTHEX:
+		if (hex_addr + hex_cnt != curr_addr)
+			flush_hex();
 		for (i = 0; op_cnt; op_cnt--) {
 			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = ops[i++];
+			curr_addr++;
 		}
 		break;
 	}
@@ -448,11 +450,10 @@ void obj_fill(int count)
 	case OUTBIN:
 	case OUTMOS:
 		if (!nseq_flag)
-			bin_addr += count;
+			curr_addr += count;
 		break;
 	case OUTHEX:
-		flush_hex();
-		hex_addr += count;
+		curr_addr += count;
 		break;
 	}
 }
@@ -473,22 +474,25 @@ void obj_fill_value(int count, int value)
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
-			if (load_flag && (wrt_addr < load_addr))
+			if (load_flag && (bin_addr < load_addr))
 				asmerr(E_BFRORG);
 			else {
 				fill_bin();
 				while (i--)
 					putc(value, objfp);
-				wrt_addr += count;
+				bin_addr += count;
 			}
-			bin_addr += count;
+			curr_addr += count;
 		}
 		break;
 	case OUTHEX:
+		if (hex_addr + hex_cnt != curr_addr)
+			flush_hex();
 		while (i--) {
 			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = value;
+			curr_addr++;
 		}
 		break;
 	}
@@ -499,9 +503,9 @@ void obj_fill_value(int count, int value)
  */
 void fill_bin(void)
 {
-	while (wrt_addr < bin_addr) {
+	while (bin_addr < curr_addr) {
 		putc(0xff, objfp);
-		wrt_addr++;
+		bin_addr++;
 	}
 }
 
@@ -519,11 +523,11 @@ void eof_hex(void)
  */
 void flush_hex(void)
 {
-	if (hex_cnt == 0)
-		return;
-	hex_record(HEX_DATA);
-	hex_addr += hex_cnt;
-	hex_cnt = 0;
+	if (hex_cnt != 0) {
+		hex_record(HEX_DATA);
+		hex_cnt = 0;
+	}
+	hex_addr = curr_addr;
 }
 
 /*
