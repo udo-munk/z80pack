@@ -293,9 +293,11 @@ int op_dw(int dummy1, int dummy2)
 int op_misc(int op_code, int dummy)
 {
 	register char *p, *d, c;
+	register int n;
 	static char fn[LENFN];
 	static int incnest;
 	static struct inc incl[INCNEST];
+	static int page_done;
 
 	UNUSED(dummy);
 
@@ -303,7 +305,7 @@ int op_misc(int op_code, int dummy)
 	switch(op_code) {
 	case 1:				/* EJECT */
 		if (pass == 2)
-			p_line = ppl;
+			p_line = ppl - 1;
 		break;
 	case 2:				/* LIST */
 		if (pass == 2)
@@ -314,8 +316,17 @@ int op_misc(int op_code, int dummy)
 			list_flag = 0;
 		break;
 	case 4:				/* PAGE */
-		if (pass == 2)
-			ppl = eval(operand);
+		if (*operand != '\0') {
+			if ((pass == 1 && !page_done) || pass == 2) {
+				n = eval(operand);
+				if (n != 0 && (n < 6 || n > 144))
+					asmerr(E_VALOUT);
+				else
+					ppl = n;
+				page_done = 1;
+			}
+		} else if (pass == 2)
+			p_line = ppl - 1;
 		break;
 	case 5:				/* PRINT */
 		p = operand;

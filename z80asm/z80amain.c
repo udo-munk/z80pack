@@ -76,13 +76,14 @@ extern void a_sort_sym(int);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	("usage: z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v -m\n"
-	 "              -o<file> -l[<file>] -d<symbol> ... <file> ..."),/* 1 */
+	("usage: z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u\n"
+	 "              -v -m -o<file> -l[<file>] -d<symbol> ... <file> ..."),
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s",		/* 4 */
-	"invalid symbol length: %s",	/* 5 */
-	"invalid hex record length: %s"	/* 6 */
+	"invalid page length: %s",	/* 5 */
+	"invalid symbol length: %s",	/* 6 */
+	"invalid hex record length: %s"	/* 7 */
 };
 
 int main(int argc, char *argv[])
@@ -214,6 +215,16 @@ void options(int argc, char *argv[])
 				if (mac_list_flag < 2)
 					mac_list_flag++;
 				break;
+			case 'p':
+				if (*++s == '\0') {
+					puts("length missing in option -p");
+					usage();
+				}
+				ppl = atoi(s);
+				if (ppl != 0 && (ppl < 6 || ppl > 144))
+					fatal(F_PAGLEN, s);
+				s += (strlen(s) - 1);
+				break;
 			case 'e':
 				if (*++s == '\0') {
 					puts("length missing in option -e");
@@ -234,7 +245,7 @@ void options(int argc, char *argv[])
 					fatal(F_HEXLEN, s);
 				s += (strlen(s) - 1);
 				break;
-			default :
+			default:
 				printf("unknown option %c\n", *s);
 				usage();
 			}

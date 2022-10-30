@@ -1,7 +1,7 @@
 Usage:
 
-z80asm -f{b|m|h} -s[n|a] -e<num> -h<num> -x -8 -u -v -m
-       -o<file> -l[<file>] -d<symbol> ... <file> ...
+z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u
+       -v -m -o<file> -l[<file>] -d<symbol> ... <file> ...
 
 A maximum of 512 source files is allowed. If the file name of a source
 doesn't have an extension the default extension ".asm" will be appended.
@@ -23,6 +23,10 @@ Option s:
 This option prints the symbol table unsorted (-s), sorted by name (-sn)
 or sorted by address (-sa) into the list file. This option only works
 together with option -l.
+
+Option p:
+Set the page length for the list file.
+The default is 65 and the allowed range is 6 to 144 or 0.
 
 Option e:
 Set the significant number of characters in symbols to <num>.

@@ -73,7 +73,9 @@ int  list_flag,			/* flag for option -l */
      symlen = SYMLEN,		/* significant characters in symbols */
      symmax,			/* max. symbol name length encountered */
      symsize,			/* size of symarray */
-     hexlen = MAXHEX;		/* hex record length */
+     hexlen = MAXHEX,		/* hex record length */
+     p_line,			/* no. printed lines on page */
+     ppl = PLENGTH;		/* page length */
 
 FILE *srcfp,			/* file pointer for current source */
      *objfp,			/* file pointer for object code */
@@ -82,8 +84,6 @@ FILE *srcfp,			/* file pointer for current source */
 
 unsigned
      c_line,			/* current line no. in current source */
-     p_line,			/* no. printed lines on page */
-     ppl = PLENGTH,		/* page length */
      page;			/* no. of pages for listing */
 
 struct sym
