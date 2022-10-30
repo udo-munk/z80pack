@@ -83,8 +83,8 @@ static const char *errmsg[] = {		/* error messages for asmerr() */
 #define HEX_EOF		1
 
 static int nseq_flag;			/* flag for non-sequential ORG */
-static int bin_addr;			/* current logical file address */
-static int wrt_addr;			/* current address written to file */
+static int curr_addr;			/* current logical file address */
+static int bin_addr;			/* current address written to file */
 static unsigned short hex_addr;		/* current address in hex record */
 static int hex_cnt;			/* current no bytes in hex buffer */
 
@@ -371,7 +371,7 @@ void obj_end(void)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		if (!nofill_flag && !(load_flag && (wrt_addr < load_addr)))
+		if (!nofill_flag && !(load_flag && (bin_addr < load_addr)))
 			fill_bin();
 		break;
 	case OUTHEX:
@@ -390,10 +390,10 @@ void obj_org(int addr)
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
-		nseq_flag = (addr < bin_addr);
-		if (load_flag && (wrt_addr < load_addr))
-			wrt_addr = addr;
-		bin_addr = addr;
+		nseq_flag = (addr < curr_addr);
+		if (load_flag && (bin_addr < load_addr))
+			bin_addr = addr;
+		curr_addr = addr;
 		break;
 	case OUTHEX:
 		flush_hex();
@@ -417,14 +417,14 @@ void obj_writeb(int op_cnt)
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
-			if (load_flag && (wrt_addr < load_addr))
+			if (load_flag && (bin_addr < load_addr))
 				asmerr(E_BFRORG);
 			else {
 				fill_bin();
 				fwrite(ops, 1, op_cnt, objfp);
-				wrt_addr += op_cnt;
+				bin_addr += op_cnt;
 			}
-			bin_addr += op_cnt;
+			curr_addr += op_cnt;
 		}
 		break;
 	case OUTHEX:
@@ -448,7 +448,7 @@ void obj_fill(int count)
 	case OUTBIN:
 	case OUTMOS:
 		if (!nseq_flag)
-			bin_addr += count;
+			curr_addr += count;
 		break;
 	case OUTHEX:
 		flush_hex();
@@ -473,15 +473,15 @@ void obj_fill_value(int count, int value)
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
-			if (load_flag && (wrt_addr < load_addr))
+			if (load_flag && (bin_addr < load_addr))
 				asmerr(E_BFRORG);
 			else {
 				fill_bin();
 				while (i--)
 					putc(value, objfp);
-				wrt_addr += count;
+				bin_addr += count;
 			}
-			bin_addr += count;
+			curr_addr += count;
 		}
 		break;
 	case OUTHEX:
@@ -499,9 +499,9 @@ void obj_fill_value(int count, int value)
  */
 void fill_bin(void)
 {
-	while (wrt_addr < bin_addr) {
+	while (bin_addr < curr_addr) {
 		putc(0xff, objfp);
-		wrt_addr++;
+		bin_addr++;
 	}
 }
 
