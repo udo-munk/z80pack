@@ -86,7 +86,7 @@ static int nseq_flag;			/* flag for non-sequential ORG */
 static int curr_addr;			/* current logical file address */
 static int bin_addr;			/* current address written to file */
 static unsigned short hex_addr;		/* current address in hex record */
-static int hex_cnt;			/* current no bytes in hex buffer */
+static int hex_cnt;			/* number of bytes in hex buffer */
 
 static unsigned char hex_buf[MAXHEX];	/* buffer for one hex record */
 static char hex_out[MAXHEX*2+20];	/* ASCII buffer for one hex record */
@@ -396,8 +396,7 @@ void obj_org(int addr)
 		curr_addr = addr;
 		break;
 	case OUTHEX:
-		flush_hex();
-		hex_addr = addr;
+		curr_addr = addr;
 		break;
 	}
 }
@@ -428,10 +427,13 @@ void obj_writeb(int op_cnt)
 		}
 		break;
 	case OUTHEX:
+		if (hex_addr + hex_cnt != curr_addr)
+			flush_hex();
 		for (i = 0; op_cnt; op_cnt--) {
 			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = ops[i++];
+			curr_addr++;
 		}
 		break;
 	}
@@ -451,8 +453,7 @@ void obj_fill(int count)
 			curr_addr += count;
 		break;
 	case OUTHEX:
-		flush_hex();
-		hex_addr += count;
+		curr_addr += count;
 		break;
 	}
 }
@@ -485,10 +486,13 @@ void obj_fill_value(int count, int value)
 		}
 		break;
 	case OUTHEX:
+		if (hex_addr + hex_cnt != curr_addr)
+			flush_hex();
 		while (i--) {
 			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = value;
+			curr_addr++;
 		}
 		break;
 	}
@@ -519,11 +523,11 @@ void eof_hex(void)
  */
 void flush_hex(void)
 {
-	if (hex_cnt == 0)
-		return;
-	hex_record(HEX_DATA);
-	hex_addr += hex_cnt;
-	hex_cnt = 0;
+	if (hex_cnt != 0) {
+		hex_record(HEX_DATA);
+		hex_cnt = 0;
+	}
+	hex_addr = curr_addr;
 }
 
 /*
