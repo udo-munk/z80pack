@@ -519,9 +519,9 @@ void mac_subst(char *t, char *s, struct expn *e,
 				while (s < s1)
 					*t++ = *s++;
 			} else {
-				if (amp_flag == 1)
-					t1--;
 				t = t1;
+				if (amp_flag == 1)
+					t--;
 				while (*v != '\0')
 					*t++ = *v++;
 				if (*s == '&') {
@@ -558,9 +558,9 @@ void mac_subst(char *t, char *s, struct expn *e,
 						if (v == NULL)
 							amp_flag = 0;
 						else {
-							if (amp_flag == 1)
-								t1--;
 							t = t1;
+							if (amp_flag == 1)
+								t--;
 							while (*v != '\0')
 								*t++ = *v++;
 							if (*s == '&') {
