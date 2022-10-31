@@ -1526,8 +1526,6 @@ int op8080_reg16(int base_op, int dummy)
 	case REGD:			/* INX/DAD/DCX D */
 	case REGH:			/* INX/DAD/DCX H */
 	case REGSP:			/* INX/DAD/DCX SP */
-		if (op == REGSP)
-			op = REGM;
 		ops[0] = base_op + ((op & OPMASK) << 3);
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1613,8 +1611,6 @@ int op8080_pupo(int base_op, int dummy)
 	case REGD:			/* PUSH/POP D */
 	case REGH:			/* PUSH/POP H */
 	case REGPSW:			/* PUSH/POP PSW */
-		if (op == REGPSW)
-			op = REGM;
 		ops[0] = base_op + ((op & OPMASK) << 3);
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1705,8 +1701,6 @@ int op8080_lxi(int base_op, int dummy)
 	case REGSP:			/* LXI SP,nn */
 		len = 3;
 		if (pass == 2) {
-			if (op == REGSP)
-				op = REGM;
 			i = eval(sec);
 			ops[0] = base_op + ((op & OPMASK) << 3);
 			ops[1] = i & 0xff;
