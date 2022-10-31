@@ -461,13 +461,9 @@ void mac_add_line(struct opc *op, char *line)
 const char *mac_get_dummy(struct expn *e, char *s)
 {
 	register struct parm *p;
-	register char *t;
 
-	for (t = expr; *s != '\0'; s++)
-		*t++ = toupper((unsigned char) *s);
-	*t = '\0';
 	for (p = e->expn_parms; p; p = p->parm_next)
-		if (strncmp(p->parm_name, expr, symlen) == 0)
+		if (strncmp(p->parm_name, s, symlen) == 0)
 			return(p->parm_val == NULL ? "" : p->parm_val);
 	return(NULL);
 }
@@ -478,13 +474,9 @@ const char *mac_get_dummy(struct expn *e, char *s)
 const char *mac_get_local(struct expn *e, char *s)
 {
 	register struct loc *l;
-	register char *t;
 
-	for (t = expr; *s != '\0'; s++)
-		*t++ = toupper((unsigned char) *s);
-	*t = '\0';
 	for (l = e->expn_locs; l; l = l->loc_next)
-		if (strncmp(l->loc_name, expr, symlen) == 0)
+		if (strncmp(l->loc_name, s, symlen) == 0)
 			return(l->loc_val);
 	return(NULL);
 }
@@ -496,7 +488,7 @@ const char *mac_get_local(struct expn *e, char *s)
 void mac_subst(char *t, char *s, struct expn *e,
 	       const char *(getf)(struct expn *, char *))
 {
-	register char *t1;
+	register char *s1, *t1;
 	register const char *v;
 	register char c;
 	register int n;
@@ -509,24 +501,27 @@ void mac_subst(char *t, char *s, struct expn *e,
 	amp_flag = esc_flag = 0;
 	while (*s != '\n' && *s != '\0') {
 		if (is_first_sym_char(*s)) {
+			s1 = s;
 			t1 = t;
-			*t++ = *s++;
+			*t++ = toupper((unsigned char) *s++);
 			while (is_sym_char(*s))
-				*t++ = *s++;
+				*t++ = toupper((unsigned char) *s++);
 			*t = '\0';
 			v = (*getf)(e, t1);
-			if (v == NULL)
+			if (v == NULL || esc_flag) {
 				amp_flag = 0;
-			else if (esc_flag) {
-				t = t1 - 1;
-				while (*(t + 1) != '\0') {
-					*t = *(t + 1);
-					t++;
-				}
-			} else {
-				if (amp_flag == 1)
-					t1--;
+				t = s;
+				s = s1;
+				s1 = t;
 				t = t1;
+				if (v != NULL && esc_flag)
+					t--;
+				while (s < s1)
+					*t++ = *s++;
+			} else {
+				t = t1;
+				if (amp_flag == 1)
+					t--;
 				while (*v != '\0')
 					*t++ = *v++;
 				if (*s == '&') {
@@ -563,9 +558,9 @@ void mac_subst(char *t, char *s, struct expn *e,
 						if (v == NULL)
 							amp_flag = 0;
 						else {
-							if (amp_flag == 1)
-								t1--;
 							t = t1;
+							if (amp_flag == 1)
+								t--;
 							while (*v != '\0')
 								*t++ = *v++;
 							if (*s == '&') {
