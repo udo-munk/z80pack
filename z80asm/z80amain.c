@@ -358,7 +358,7 @@ void process_file(char *fn)
 int process_line(char *l)
 {
 	register char *p;
-	register int op_count, lbl_flag, expn_flag, lflag;
+	register int op_count, old_genc, lbl_flag, expn_flag, lflag;
 	register struct opc *op;
 
 	/*
@@ -373,6 +373,7 @@ int process_line(char *l)
 	op_count = 0;
 	p = get_label(label, l);
 	p = get_opcode(opcode, p);
+	old_genc = gencode;
 	lbl_flag = (gencode > 0 && *label != '\0');
 	if (mac_def_nest > 0) {
 		if (*opcode != '\0')
@@ -429,13 +430,15 @@ int process_line(char *l)
 		/* already listed INCLUDE */
 		if (op != NULL && (op->op_flags & OP_INCL))
 			lflag = 0;
-		else if (expn_flag) {
+		if (expn_flag) {
 			if (mac_list_flag == M_NONE)
 				lflag = 0;
 			else if (mac_list_flag == M_OPS
 				 && (op_count == 0 && a_mode != A_EQU))
 				lflag = 0;
 		}
+		if (nofalselist && old_genc < 0 && gencode < 0)
+			lflag = 0;
 		if (lflag)
 			lst_line(l, pc, op_count, expn_flag);
 	}

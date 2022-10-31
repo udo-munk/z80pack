@@ -288,7 +288,8 @@ int op_dw(int dummy1, int dummy2)
 }
 
 /*
- *	EJECT, LIST, NOLIST, PAGE, PRINT, INCLUDE, MACLIB, TITLE
+ *	EJECT, PAGE, LIST, .LIST, NOLIST, .XLIST, .PRINTX, PRINT, INCLUDE,
+ *	MACLIB, TITLE, .XALL, .LALL, .SALL, .SFCOND, .LFCOND
  */
 int op_misc(int op_code, int dummy)
 {
@@ -303,19 +304,7 @@ int op_misc(int op_code, int dummy)
 
 	a_mode = A_NONE;
 	switch(op_code) {
-	case 1:				/* EJECT */
-		if (pass == 2)
-			p_line = ppl - 1;
-		break;
-	case 2:				/* LIST */
-		if (pass == 2)
-			list_flag = 1;
-		break;
-	case 3:				/* NOLIST */
-		if (pass == 2)
-			list_flag = 0;
-		break;
-	case 4:				/* PAGE */
+	case 1:				/* EJECT and PAGE */
 		if (*operand != '\0') {
 			if ((pass == 1 && !page_done) || pass == 2) {
 				n = eval(operand);
@@ -327,6 +316,25 @@ int op_misc(int op_code, int dummy)
 			}
 		} else if (pass == 2)
 			p_line = ppl - 1;
+		break;
+	case 2:				/* LIST and .LIST */
+		if (pass == 2)
+			list_flag = 1;
+		break;
+	case 3:				/* NOLIST and .XLIST */
+		if (pass == 2)
+			list_flag = 0;
+		break;
+	case 4:				/* .PRINTX */
+		p = operand;
+		c = *p++;
+		putchar(c);
+		while (*p != '\0') {
+			putchar(*p);
+			if (*p++ == c)
+				break;
+		}
+		putchar('\n');
 		break;
 	case 5:				/* PRINT */
 		p = operand;
@@ -399,6 +407,26 @@ int op_misc(int op_code, int dummy)
 			*d = '\0';
 		}
 		break;
+	case 8:				/* .XALL */
+		if (pass == 2)
+			mac_list_flag = M_OPS;
+		break;
+	case 9:				/* .LALL */
+		if (pass == 2)
+			mac_list_flag = M_ALL;
+		break;
+	case 10:			/* .SALL */
+		if (pass == 2)
+			mac_list_flag = M_NONE;
+		break;
+	case 11:			/* .SFCOND */
+		if (pass == 2)
+			nofalselist = 1;
+		break;
+	case 12:			/* .LFCOND */
+		if (pass == 2)
+			nofalselist = 0;
+		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_misc");
 		break;
@@ -425,12 +453,12 @@ int op_cond(int op_code, int dummy)
 		if (gencode < 0)
 			return(0);
 		switch(op_code) {
-		case 1:				/* IFDEF */
-		case 2:				/* IFNDEF */
+		case 1:			/* IFDEF */
+		case 2:			/* IFNDEF */
 			gencode = (get_sym(operand) != NULL) ? pass : -pass;
 			break;
-		case 3:				/* IFEQ */
-		case 4:				/* IFNEQ */
+		case 3:			/* IFEQ */
+		case 4:			/* IFNEQ */
 			p = next_arg(operand, NULL);
 			if (p == NULL) {
 				asmerr(E_MISOPE);
@@ -438,14 +466,14 @@ int op_cond(int op_code, int dummy)
 			}
 			gencode = (eval(operand) == eval(p)) ? pass : -pass;
 			break;
-		case 5:				/* COND, IF, and IFT */
-		case 6:				/* IFE and IFF */
+		case 5:			/* COND, IF, and IFT */
+		case 6:			/* IFE and IFF */
 			gencode = (eval(operand) != 0) ? pass : -pass;
 			break;
-		case 7:				/* IF1 */
+		case 7:			/* IF1 */
 			gencode = (pass == 1) ? 2 : -2;
 			break;
-		case 8:				/* IF2 */
+		case 8:			/* IF2 */
 			gencode = (pass == 2) ? -1 : 1;
 			break;
 		default:
@@ -460,11 +488,11 @@ int op_cond(int op_code, int dummy)
 			return(0);
 		}
 		switch(op_code) {
-		case 98:			/* ELSE */
+		case 98:		/* ELSE */
 			if (condnest[iflevel - 1] > 0)
 				gencode = -gencode;
 			break;
-		case 99:			/* ENDIF and ENDC */
+		case 99:		/* ENDIF and ENDC */
 			gencode = condnest[--iflevel];
 			break;
 		default:
