@@ -458,16 +458,19 @@ void mac_add_line(struct opc *op, char *line)
 /*
  *	return value of dummy s, NULL if not found
  */
-const char *mac_get_dummy(struct expn *e, char *s)
+const char *mac_get_dummy(struct expn *e, char *s, int uc_flag)
 {
 	register struct parm *p;
 	register char *t;
 
-	for (t = expr; *s != '\0'; s++)
-		*t++ = toupper((unsigned char) *s);
-	*t = '\0';
+	if (uc_flag) {
+		for (t = expr; *s != '\0'; s++)
+			*t++ = toupper((unsigned char) *s);
+		*t = '\0';
+		s = expr;
+	}
 	for (p = e->expn_parms; p; p = p->parm_next)
-		if (strncmp(p->parm_name, expr, symlen) == 0)
+		if (strncmp(p->parm_name, s, symlen) == 0)
 			return(p->parm_val == NULL ? "" : p->parm_val);
 	return(NULL);
 }
@@ -475,16 +478,19 @@ const char *mac_get_dummy(struct expn *e, char *s)
 /*
  *	return value of local label s, NULL if not found
  */
-const char *mac_get_local(struct expn *e, char *s)
+const char *mac_get_local(struct expn *e, char *s, int uc_flag)
 {
 	register struct loc *l;
 	register char *t;
 
-	for (t = expr; *s != '\0'; s++)
-		*t++ = toupper((unsigned char) *s);
-	*t = '\0';
+	if (uc_flag) {
+		for (t = expr; *s != '\0'; s++)
+			*t++ = toupper((unsigned char) *s);
+		*t = '\0';
+		s = expr;
+	}
 	for (l = e->expn_locs; l; l = l->loc_next)
-		if (strncmp(l->loc_name, expr, symlen) == 0)
+		if (strncmp(l->loc_name, s, symlen) == 0)
 			return(l->loc_val);
 	return(NULL);
 }
@@ -494,7 +500,7 @@ const char *mac_get_local(struct expn *e, char *s)
  *	in source line s and return the result in t
  */
 void mac_subst(char *t, char *s, struct expn *e,
-	       const char *(getf)(struct expn *, char *))
+	       const char *(getf)(struct expn *, char *, int))
 {
 	register char *t1;
 	register const char *v;
@@ -514,7 +520,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 			while (is_sym_char(*s))
 				*t++ = *s++;
 			*t = '\0';
-			v = (*getf)(e, t1);
+			v = (*getf)(e, t1, 1);
 			if (v == NULL)
 				amp_flag = 0;
 			else if (esc_flag) {
@@ -559,7 +565,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 						*t++ = *s++;
 					*t = '\0';
 					if (amp_flag > 0 || *s == '&') {
-						v = (*getf)(e, t1);
+						v = (*getf)(e, t1, 0);
 						if (v == NULL)
 							amp_flag = 0;
 						else {
