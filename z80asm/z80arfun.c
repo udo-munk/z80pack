@@ -561,7 +561,7 @@ int ldreg(int base_op, char *sec)
 		    || strncmp(sec, "(IY+", 4) == 0) {
 			len = 3;	/* LD reg,(I[XY]+d) */
 			if (pass == 2) {
-				*(sec + 3) = '('; /* replace ',' */
+				*(sec + 3) = '('; /* replace '+' */
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK);
 				ops[2] = chk_sbyte(eval(sec + 3));
@@ -782,7 +782,7 @@ int ldiixy(int prefix, int base_op, char *sec)
 	case REGL:			/* LD (I[XY]+d),L */
 		len = 3;
 		if (pass == 2) {
-			operand[3] = '('; /* replace ',' */
+			operand[3] = '('; /* replace '+' */
 			ops[0] = prefix;
 			ops[1] = base_op + (op & OPMASK);
 			ops[2] = chk_sbyte(eval(&operand[3]));
@@ -791,7 +791,7 @@ int ldiixy(int prefix, int base_op, char *sec)
 	case NOREG:			/* LD (I[XY]+d),n */
 		len = 4;
 		if (pass == 2) {
-			operand[3] = '('; /* replace ',' */
+			operand[3] = '('; /* replace '+' */
 			ops[0] = prefix;
 			ops[1] = base_op - 0x40 + (REGIHL & OPMASK);
 			ops[2] = chk_sbyte(eval(&operand[3]));
@@ -1052,7 +1052,7 @@ int op_decinc(int base_op, int base_op16)
 		    || strncmp(operand, "(IY+", 4) == 0) {
 			len = 3;	/* INC/DEC (I[XY]+d) */
 			if (pass == 2) {
-				operand[3] = '('; /* replace ',' */
+				operand[3] = '('; /* replace '+' */
 				ops[0] = (operand[2] == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + ((REGIHL & OPMASK) << 3);
 				ops[2] = chk_sbyte(eval(&operand[3]));
@@ -1118,7 +1118,7 @@ int aluop(int base_op, char *sec)
 		    || strncmp(sec, "(IY+", 4) == 0) {
 			len = 3;	/* ALUOP {A,}(I[XY]+d) */
 			if (pass == 2) {
-				*(sec + 3) = '('; /* replace ',' */
+				*(sec + 3) = '('; /* replace '+' */
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK);
 				ops[2] = chk_sbyte(eval(sec + 3));
@@ -1358,7 +1358,7 @@ void cbgrp_iixy(int prefix, int base_op, int bit, char *sec)
 			case REGE:	/* CBOP {n,}(I[XY]+d),E (undoc) */
 			case REGH:	/* CBOP {n,}(I[XY]+d),H (undoc) */
 			case REGL:	/* CBOP {n,}(I[XY]+d),L (undoc) */
-				*(sec + 3) = '('; /* replace ',' */
+				*(sec + 3) = '('; /* replace '+' */
 				ops[0] = prefix;
 				ops[1] = 0xcb;
 				ops[2] = chk_sbyte(eval(sec + 3));
