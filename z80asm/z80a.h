@@ -127,47 +127,50 @@ struct inc {
 
 /*
  *	definition of operand symbols
- *	definitions for registers A, B, C, D, H, L and (HL)
- *	are defined as the bits used in opcodes and may not
- *	be changed!
+ *	these are defined as the bits used in opcodes and
+ *	may not be changed!
  */
-#define REGB		0	/* register B */
-#define REGC		1	/* register C */
-#define REGD		2	/* register D */
-#define REGE		3	/* register E */
-#define REGH		4	/* register H */
-#define REGL		5	/* register L */
-#define REGIHL		6	/* register indirect HL */
-#define REGM		6	/* register indirect HL (8080) */
-#define REGA		7	/* register A */
-#define REGI		8	/* register I */
-#define REGR		9	/* register R */
-#define REGAF		10	/* register pair AF */
-#define REGPSW		10	/* register pair AF (8080) */
-#define REGBC		11	/* register pair BC */
-#define REGDE		12	/* register pair DE */
-#define REGHL		13	/* register pair HL */
-#define REGIX		14	/* register IX */
-#define REGIY		15	/* register IY */
-#define REGSP		16	/* register SP */
-#define REGIBC		17	/* register indirect BC */
-#define REGIDE		18	/* register indirect DE */
-#define REGIIX		19	/* register indirect IX */
-#define REGIIY		20	/* register indirect IY */
-#define REGISP		21	/* register indirect SP */
-#define REGIXH		22	/* register IXH */
-#define REGIXL		23	/* register IXL */
-#define REGIYH		24	/* register IYH */
-#define REGIYL		25	/* register IYL */
-#define FLGNC		30	/* flag no carry */
-#define FLGNZ		31	/* flag not zero */
-#define FLGZ		32	/* flag zero */
-#define FLGM		33	/* flag minus */
-#define FLGP		34	/* flag plus */
-#define FLGPE		35	/* flag parity even */
-#define FLGPO		36	/* flag parity odd */
-#define NOOPERA		98	/* no operand */
-#define NOREG		99	/* operand isn't register */
+#define REGB		000	/* register B */
+#define REGC		001	/* register C */
+#define REGD		002	/* register D */
+#define REGE		003	/* register E */
+#define REGH		004	/* register H */
+#define REGL		005	/* register L */
+#define REGIHL		006	/* register indirect HL */
+#define REGM		006	/* register indirect HL (8080) */
+#define REGA		007	/* register A */
+#define REGBC		010	/* register pair BC */
+#define REGDE		012	/* register pair DE */
+#define REGHL		014	/* register pair HL */
+#define REGAF		016	/* register pair AF */
+#define REGPSW		016	/* register pair AF (8080) */
+#define REGIXH		024	/* register IXH */
+#define REGIXL		025	/* register IXL */
+#define REGIX		034	/* register IX */
+#define REGIIX		036	/* register indirect IX */
+#define REGIYH		044	/* register IYH */
+#define REGIYL		045	/* register IYL */
+#define REGIY		054	/* register IY */
+#define REGIIY		056	/* register indirect IY */
+#define REGSP		066	/* register SP */
+#define REGIBC		070	/* register indirect BC */
+#define REGIDE		072	/* register indirect DE */
+#define REGISP		076	/* register indirect SP */
+#define REGI		0100	/* register I */
+#define REGR		0101	/* register R */
+#define FLGNZ		0110	/* flag not zero */
+#define FLGZ		0111	/* flag zero */
+#define FLGNC		0112	/* flag no carry */
+#define FLGC		0113	/* flag carry */
+#define FLGPO		0114	/* flag parity odd */
+#define FLGPE		0115	/* flag parity even */
+#define FLGP		0116	/* flag plus */
+#define FLGM		0117	/* flag minus */
+#define NOOPERA		0176	/* no operand */
+#define NOREG		0177	/* operand isn't register */
+
+#define OPMASK		007	/* bit mask for the registers/flags */
+#define XYMASK		040	/* bit mask for IX/IY */
 
 /*
  *	definition of operand flags
