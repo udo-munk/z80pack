@@ -137,7 +137,8 @@ void lst_attl(void)
 	static int attl_done;
 
 	if (!attl_done || ppl != 0)
-		fprintf(lstfp, "\nLOC   OBJECT CODE   LINE   STMT SOURCE CODE\n");
+		fprintf(lstfp,
+			"\nLOC   OBJECT CODE   LINE   STMT SOURCE CODE\n");
 	if (ppl != 0)
 		p_line += 2;
 	attl_done = 1;

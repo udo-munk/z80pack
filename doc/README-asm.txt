@@ -10,9 +10,9 @@ Source files have a maximum path length of 2048 characters.
 Option f:
 Format of the output file:
 
-	-fb -> binary file
-	-fm -> binary file with Mostek header
-	-fh -> Intel hex
+        -fb -> binary file
+        -fm -> binary file with Mostek header
+        -fh -> Intel hex
 
 The default is Intel hex now, in earlier versions it was Mostek binary,
 but this format is not used much anymore.
@@ -79,9 +79,9 @@ Pseudo Operations:
 
 Definition of symbols and allocation of memory:
 
-	 ORG    <expression>    - set program address
+         ORG    <expression>    - set program address
          .PHASE <expression>    - set logical program counter
-	 .DEPHASE               - end of logical phase block
+         .DEPHASE               - end of logical phase block
 <symbol> EQU    <expression>    - define constant symbol
 <symbol> DEFL   <expression>    - define variable symbol
 <symbol> DEFB   <exp,'str',...> - write bytes into memory
@@ -96,8 +96,8 @@ DEFC, DS for DEFS, and DW for DEFW are also accepted.
 
 External symbol declarations:
 
-PUBLIC <symbol>		- make symbol public
-EXTRN  <symbol>		- symbol is defined external
+PUBLIC <symbol>         - make symbol public
+EXTRN  <symbol>         - symbol is defined external
 
 The aliases ENT, ENTRY, and GLOBAL for PUBLIC, and EXT and EXTERNAL for
 EXTRN are also accepted.
@@ -127,7 +127,7 @@ also accepted.
 
 Intel-like macros:
 <sym> MACRO <dummy>,... - define named macro
-IRP     <id>,<<cl,...>> - inline macro, iterate over character lists
+IRP     <id>,<<cl>,...> - inline macro, iterate over character lists
 IRPC    <id>,<clist>    - inline macro, iterate over character list
 REPT    <count>         - inline macro, repeat <count> times
 ENDM                    - end macro
@@ -141,21 +141,31 @@ IFDIF   <seq1>,<seq2>   - assemble if char sequences inside <> are not equal
 
 Manipulation of list file:
 
-PAGE    <expression>    - number of lines/page
-EJECT                   - skip to new page
+PAGE    [<expression>]  - number of lines/page or eject
 LIST                    - listing on
 NOLIST                  - listing off
+.SFCOND                 - suppress listing of conditional false blocks
+.LFCOND                 - enable listing of conditional false blocks
+.XALL                   - only list macro expansions lines that produce code
+.LALL                   - list all macro expansions lines
+.SALL                   - list no macro expansions lines
 TITLE   <'string'>      - define title for page header
+
+The aliases EJECT for PAGE, .LIST for LIST, .XLIST for NOLIST are
+also accepted.
 
 
 Others:
 
 INCLUDE <filename>      - include another source file
 PRINT   <'string'>      - print string to stdout
+.PRINTX <d><string><d>  - print string with delimiters <d> to stdout
 .8080                   - switch to 8080 instruction set
 .Z80                    - switch to Z80 instruction set
 .RADIX                  - change numbers radix (default 10)
-ASEG                    - does nothing (like its alias ABS)
+ASEG                    - does nothing
+
+The alias ABS for ASEG is also accepted.
 
 
 Precedence for expression operators:
