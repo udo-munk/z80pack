@@ -461,9 +461,13 @@ void mac_add_line(struct opc *op, char *line)
 const char *mac_get_dummy(struct expn *e, char *s)
 {
 	register struct parm *p;
+	register char *t;
 
+	for (t = expr; *s != '\0'; s++)
+		*t++ = toupper((unsigned char) *s);
+	*t = '\0';
 	for (p = e->expn_parms; p; p = p->parm_next)
-		if (strncmp(p->parm_name, s, symlen) == 0)
+		if (strncmp(p->parm_name, expr, symlen) == 0)
 			return(p->parm_val == NULL ? "" : p->parm_val);
 	return(NULL);
 }
@@ -474,9 +478,13 @@ const char *mac_get_dummy(struct expn *e, char *s)
 const char *mac_get_local(struct expn *e, char *s)
 {
 	register struct loc *l;
+	register char *t;
 
+	for (t = expr; *s != '\0'; s++)
+		*t++ = toupper((unsigned char) *s);
+	*t = '\0';
 	for (l = e->expn_locs; l; l = l->loc_next)
-		if (strncmp(l->loc_name, s, symlen) == 0)
+		if (strncmp(l->loc_name, expr, symlen) == 0)
 			return(l->loc_val);
 	return(NULL);
 }
@@ -502,9 +510,9 @@ void mac_subst(char *t, char *s, struct expn *e,
 	while (*s != '\n' && *s != '\0') {
 		if (is_first_sym_char(*s)) {
 			t1 = t;
-			*t++ = toupper((unsigned char) *s++);
+			*t++ = *s++;
 			while (is_sym_char(*s))
-				*t++ = toupper((unsigned char) *s++);
+				*t++ = *s++;
 			*t = '\0';
 			v = (*getf)(e, t1);
 			if (v == NULL)
@@ -590,7 +598,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 			}
 			amp_flag = (*s == '&');
 			esc_flag = (*s == '^');
-			*t++ = toupper((unsigned char) *s++);
+			*t++ = *s++;
 		}
 	}
 	if (n > 0)
@@ -658,12 +666,12 @@ char *mac_next_parm(char *s)
 	n = 0;
 	while (isspace((unsigned char) *s))
 		s++;
-	while (*s != '\n' && *s != '\0') {
+	while (*s != '\0') {
 		if (*s == STRDEL || *s == STRDEL2) {
 			/* keep delimiters, but reduce double delimiters */
 			*t++ = c = *s++;
 			while (1) {
-				if (*s == '\n' || *s == '\0') {
+				if (*s == '\0') {
 					asmerr(E_MISDEL);
 					return(NULL);
 				} else if (*s == c) {
@@ -679,12 +687,11 @@ char *mac_next_parm(char *s)
 			/* evaluate as expression */
 			s++;
 			u = expr;
-			while (*s != '\n' && *s != '\0'
-					  && *s != ',' && *s != COMMENT) {
+			while (*s != '\0' && *s != ',' && *s != COMMENT) {
 				if (*s == STRDEL || *s == STRDEL2) {
 					*u++ = c = *s++;
 					while (1) {
-						if (*s == '\n' || *s == '\0') {
+						if (*s == '\0') {
 							asmerr(E_MISDEL);
 							return(NULL);
 						} else if (*s == c) {
@@ -697,7 +704,7 @@ char *mac_next_parm(char *s)
 				} else if (*s == '^') {
 					/* escape next character */
 					s++;
-					if (*s == '\n' || *s == '\0') {
+					if (*s == '\0') {
 						asmerr(E_ILLOPE);
 						return(NULL);
 					} else
@@ -712,7 +719,7 @@ char *mac_next_parm(char *s)
 		} else if (*s == '^') {
 			/* escape next character */
 			s++;
-			if (*s == '\n' || *s == '\0') {
+			if (*s == '\0') {
 				asmerr(E_ILLOPE);
 				return(NULL);
 			} else
@@ -737,9 +744,9 @@ char *mac_next_parm(char *s)
 		} else if ((*s == ',' || *s == COMMENT) && n == 0)
 			break;
 		else
-			*t++ = toupper((unsigned char) *s++);
+			*t++ = *s++;
 		t1 = t;
-		while (isspace((unsigned char) *s) && *s != '\n')
+		while (isspace((unsigned char) *s))
 			*t++ = *s++;
 	}
 	if (n > 0) {
@@ -831,7 +838,7 @@ void mac_start_macro(struct expn *e)
 
 	s = operand;
 	p = e->expn_parms;
-	while (p != NULL && *s != '\n' && *s != '\0' && *s != COMMENT) {
+	while (p != NULL && *s != '\0' && *s != COMMENT) {
 		if ((s = mac_next_parm(s)) == NULL)
 			return;
 		if (*s == ',')
@@ -1027,11 +1034,11 @@ int op_local(int dummy1, int dummy2)
 		if (*s != '\0') {
 			if (is_symbol(s)) {
 				l = expn_add_loc(e, s);
-				if (mac_loc_cnt == 10000)
+				if (mac_loc_cnt == 65536)
 					asmerr(E_OUTLCL);
 				else
 					mac_loc_cnt++;
-				sprintf(l->loc_val, "??%04d", mac_loc_cnt);
+				sprintf(l->loc_val, "??%04X", mac_loc_cnt);
 			} else
 				asmerr(E_ILLOPE);
 		}
