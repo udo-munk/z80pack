@@ -77,7 +77,8 @@ extern void a_sort_sym(int);
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
 	("usage: z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u\n"
-	 "              -v -m -o<file> -l[<file>] -d<symbol> ... <file> ..."),
+	 "              -v -m -U -o<file> -l[<file>] "
+	 "-d<symbol> ... <file> ..."),	/* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s",		/* 4 */
@@ -215,6 +216,9 @@ void options(int argc, char *argv[])
 				if (mac_list_flag < 2)
 					mac_list_flag++;
 				break;
+			case 'U':
+				upcase_flag = 1;
+				break;
 			case 'p':
 				if (*++s == '\0') {
 					puts("length missing in option -p");
@@ -327,7 +331,7 @@ void do_pass(int p)
  */
 void process_file(char *fn)
 {
-	register char *l;
+	register char *l, *s;
 
 	c_line = 0;
 	srcfn = fn;
@@ -339,6 +343,9 @@ void process_file(char *fn)
 			;
 		if (l == NULL && (l = fgets(line, MAXLINE, srcfp)) == NULL)
 			break;
+		if (upcase_flag)
+			for (s = l; *s; s++)
+				*s = toupper((unsigned char) *s);
 	} while (process_line(l));
 	fclose(srcfp);
 	if (mac_def_nest > 0)
