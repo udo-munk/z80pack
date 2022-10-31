@@ -458,17 +458,10 @@ void mac_add_line(struct opc *op, char *line)
 /*
  *	return value of dummy s, NULL if not found
  */
-const char *mac_get_dummy(struct expn *e, char *s, int uc_flag)
+const char *mac_get_dummy(struct expn *e, char *s)
 {
 	register struct parm *p;
-	register char *t;
 
-	if (uc_flag) {
-		for (t = expr; *s != '\0'; s++)
-			*t++ = toupper((unsigned char) *s);
-		*t = '\0';
-		s = expr;
-	}
 	for (p = e->expn_parms; p; p = p->parm_next)
 		if (strncmp(p->parm_name, s, symlen) == 0)
 			return(p->parm_val == NULL ? "" : p->parm_val);
@@ -478,17 +471,10 @@ const char *mac_get_dummy(struct expn *e, char *s, int uc_flag)
 /*
  *	return value of local label s, NULL if not found
  */
-const char *mac_get_local(struct expn *e, char *s, int uc_flag)
+const char *mac_get_local(struct expn *e, char *s)
 {
 	register struct loc *l;
-	register char *t;
 
-	if (uc_flag) {
-		for (t = expr; *s != '\0'; s++)
-			*t++ = toupper((unsigned char) *s);
-		*t = '\0';
-		s = expr;
-	}
 	for (l = e->expn_locs; l; l = l->loc_next)
 		if (strncmp(l->loc_name, s, symlen) == 0)
 			return(l->loc_val);
@@ -500,9 +486,9 @@ const char *mac_get_local(struct expn *e, char *s, int uc_flag)
  *	in source line s and return the result in t
  */
 void mac_subst(char *t, char *s, struct expn *e,
-	       const char *(getf)(struct expn *, char *, int))
+	       const char *(getf)(struct expn *, char *))
 {
-	register char *t1;
+	register char *s1, *t1;
 	register const char *v;
 	register char c;
 	register int n;
@@ -515,20 +501,23 @@ void mac_subst(char *t, char *s, struct expn *e,
 	amp_flag = esc_flag = 0;
 	while (*s != '\n' && *s != '\0') {
 		if (is_first_sym_char(*s)) {
+			s1 = s;
 			t1 = t;
-			*t++ = *s++;
+			*t++ = toupper((unsigned char) *s++);
 			while (is_sym_char(*s))
-				*t++ = *s++;
+				*t++ = toupper((unsigned char) *s++);
 			*t = '\0';
-			v = (*getf)(e, t1, 1);
-			if (v == NULL)
+			v = (*getf)(e, t1);
+			if (v == NULL || esc_flag) {
 				amp_flag = 0;
-			else if (esc_flag) {
-				t = t1 - 1;
-				while (*(t + 1) != '\0') {
-					*t = *(t + 1);
-					t++;
-				}
+				t = s;
+				s = s1;
+				s1 = t;
+				t = t1;
+				if (v != NULL && esc_flag)
+					t--;
+				while (s < s1)
+					*t++ = *s++;
 			} else {
 				if (amp_flag == 1)
 					t1--;
@@ -565,7 +554,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 						*t++ = *s++;
 					*t = '\0';
 					if (amp_flag > 0 || *s == '&') {
-						v = (*getf)(e, t1, 0);
+						v = (*getf)(e, t1);
 						if (v == NULL)
 							amp_flag = 0;
 						else {
