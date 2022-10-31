@@ -1,7 +1,7 @@
 Usage:
 
 z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u
-       -v -m -o<file> -l[<file>] -d<symbol> ... <file> ...
+       -v -m -U -o<file> -l[<file>] -d<symbol> ... <file> ...
 
 A maximum of 512 source files is allowed. If the file name of a source
 doesn't have an extension the default extension ".asm" will be appended.
@@ -57,6 +57,9 @@ Option m:
 Modify macro expansion listing. Use once to list all macro expansions,
 twice to list no macro expansions.
 The default is to list only macro expansions that produce object code.
+
+Option U:
+Convert everything to upper case for compatibility with old source code.
 
 Option o:
 To override the default name of the output file. Without this option the
