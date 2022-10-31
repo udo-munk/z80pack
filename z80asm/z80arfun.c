@@ -481,12 +481,10 @@ int op_ld(int base_op, int dummy)
 		asmerr(E_MISOPE);
 		break;
 	default:
-		if (strncmp(operand, "(IX+", 4) == 0)	/* LD (IX+d),? */
-			len = ldiixy(0xdd, base_op + ((REGIHL & OPMASK) << 3),
-				     sec);
-		else if (strncmp(operand, "(IY+", 4) == 0) /* LD (IY+d),? */
-			len = ldiixy(0xfd, base_op + ((REGIHL & OPMASK) << 3),
-				     sec);
+		if (strncmp(operand, "(IX+", 4) == 0	/* LD (I[XY]+d),? */
+		    || strncmp(operand, "(IY+", 4) == 0)
+			len = ldiixy(operand[2] == 'Y' ? 0xfd : 0xdd,
+				     base_op + ((REGIHL & OPMASK) << 3), sec);
 		else if (*operand == '(')		/* LD (nn),? */
 			len = ldinn(sec);
 		else {			/* invalid operand */
@@ -1313,10 +1311,10 @@ int op_cbgrp(int base_op, int dummy)
 	case NOREG:			/* CBOP {n,}(I[XY]+d){,reg} */
 		len = 4;
 		if (pass == 2) {
-			if (strncmp(sec, "(IX+", 4) == 0)
-				cbgrp_iixy(0xdd, base_op, i, sec);
-			else if (strncmp(sec, "(IY+", 4) == 0)
-				cbgrp_iixy(0xfd, base_op, i, sec);
+			if (strncmp(sec, "(IX+", 4) == 0
+			    || strncmp(sec, "(IY+", 4) == 0)
+				cbgrp_iixy(*(sec + 2) == 'Y' ? 0xfd : 0xdd,
+					   base_op, i, sec);
 			else {		/* invalid operand */
 				ops[0] = 0;
 				ops[1] = 0;
