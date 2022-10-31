@@ -33,7 +33,7 @@
 #include "z80aglb.h"
 
 void fill_bin(void);
-void eof_hex(void);
+void eof_hex(int);
 void flush_hex(void);
 void hex_record(int);
 int chksum(int);
@@ -377,8 +377,7 @@ void obj_end(void)
 		break;
 	case OUTHEX:
 		flush_hex();
-		hex_addr = start_addr;
-		eof_hex();
+		eof_hex(start_addr);
 		break;
 	}
 }
@@ -513,9 +512,10 @@ void fill_bin(void)
 /*
  *	create a hex end-of-file record in ASCII and write into object file
  */
-void eof_hex(void)
+void eof_hex(int addr)
 {
 	hex_cnt = 0;
+	hex_addr = addr;
 	hex_record(HEX_EOF);
 }
 
