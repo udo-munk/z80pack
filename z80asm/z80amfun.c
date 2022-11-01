@@ -88,7 +88,7 @@ static int mac_asize;				/* size of mac_array */
 static int mac_aused;				/* used entries of mac_array */
 static int mac_aindex;				/* index into mac_array */
 static struct expn mac_expn[MACNEST];		/* macro expansion stack */
-static int mac_loc_cnt;				/* counter for LOCAL labels */
+static unsigned mac_loc_cnt;			/* counter for LOCAL labels */
 static char tmp[MAXLINE];			/* temporary buffer */
 static char expr[MAXLINE];			/* expr buffer (for '%') */
 
@@ -486,7 +486,7 @@ const char *mac_get_local(struct expn *e, char *s)
  *	in source line s and return the result in t
  */
 void mac_subst(char *t, char *s, struct expn *e,
-	       const char *(getf)(struct expn *, char *))
+	       const char *(*getf)(struct expn *, char *))
 {
 	register char *s1, *t1;
 	register const char *v;
@@ -1029,11 +1029,9 @@ int op_local(int dummy1, int dummy2)
 		if (*s != '\0') {
 			if (is_symbol(s)) {
 				l = expn_add_loc(e, s);
-				if (mac_loc_cnt == 65536)
+				if (mac_loc_cnt == 65535U)
 					asmerr(E_OUTLCL);
-				else
-					mac_loc_cnt++;
-				sprintf(l->loc_val, "??%04X", mac_loc_cnt);
+				sprintf(l->loc_val, "??%04x", mac_loc_cnt++);
 			} else
 				asmerr(E_ILLOPE);
 		}
