@@ -377,15 +377,15 @@ void lst_byte(BYTE b)
  */
 void obj_header(void)
 {
-	switch (out_form) {
-	case OUTBIN:
+	switch (obj_fmt) {
+	case OBJ_BIN:
 		break;
-	case OUTMOS:
+	case OBJ_MOS:
 		putc(0xff, objfp);
 		putc(load_addr & 0xff, objfp);
 		putc(load_addr >> 8, objfp);
 		break;
-	case OUTHEX:
+	case OBJ_HEX:
 		break;
 	}
 }
@@ -395,13 +395,13 @@ void obj_header(void)
  */
 void obj_end(void)
 {
-	switch (out_form) {
-	case OUTBIN:
-	case OUTMOS:
+	switch (obj_fmt) {
+	case OBJ_BIN:
+	case OBJ_MOS:
 		if (!nofill_flag && !(load_flag && (bin_addr < load_addr)))
 			fill_bin();
 		break;
-	case OUTHEX:
+	case OBJ_HEX:
 		flush_hex();
 		eof_hex(start_addr);
 		break;
@@ -413,15 +413,15 @@ void obj_end(void)
  */
 void obj_org(WORD addr)
 {
-	switch (out_form) {
-	case OUTBIN:
-	case OUTMOS:
+	switch (obj_fmt) {
+	case OBJ_BIN:
+	case OBJ_MOS:
 		nseq_flag = (addr < curr_addr);
 		if (load_flag && (bin_addr < load_addr))
 			bin_addr = addr;
 		curr_addr = addr;
 		break;
-	case OUTHEX:
+	case OBJ_HEX:
 		curr_addr = addr;
 		break;
 	}
@@ -436,9 +436,9 @@ void obj_writeb(int op_cnt)
 
 	if (op_cnt == 0)
 		return;
-	switch (out_form) {
-	case OUTBIN:
-	case OUTMOS:
+	switch (obj_fmt) {
+	case OBJ_BIN:
+	case OBJ_MOS:
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
@@ -452,7 +452,7 @@ void obj_writeb(int op_cnt)
 			curr_addr += op_cnt;
 		}
 		break;
-	case OUTHEX:
+	case OBJ_HEX:
 		if (hex_addr + hex_cnt != curr_addr)
 			flush_hex();
 		for (i = 0; op_cnt > 0; op_cnt--) {
@@ -472,13 +472,13 @@ void obj_fill(WORD count)
 {
 	if (count == 0)
 		return;
-	switch (out_form) {
-	case OUTBIN:
-	case OUTMOS:
+	switch (obj_fmt) {
+	case OBJ_BIN:
+	case OBJ_MOS:
 		if (!nseq_flag)
 			curr_addr += count;
 		break;
-	case OUTHEX:
+	case OBJ_HEX:
 		curr_addr += count;
 		break;
 	}
@@ -494,9 +494,9 @@ void obj_fill_value(WORD count, WORD value)
 	if (count == 0)
 		return;
 	n = count;
-	switch (out_form) {
-	case OUTBIN:
-	case OUTMOS:
+	switch (obj_fmt) {
+	case OBJ_BIN:
+	case OBJ_MOS:
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
@@ -511,7 +511,7 @@ void obj_fill_value(WORD count, WORD value)
 			curr_addr += count;
 		}
 		break;
-	case OUTHEX:
+	case OBJ_HEX:
 		if (hex_addr + hex_cnt != curr_addr)
 			flush_hex();
 		while (n-- > 0) {

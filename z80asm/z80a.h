@@ -41,10 +41,6 @@
 #define OBJEXTBIN	".bin"	/* filename extension object */
 #define OBJEXTHEX	".hex"	/* filename extension hex */
 #define LSTEXT		".lis"	/* filename extension listing */
-#define OUTBIN		1	/* format of object: binary */
-#define OUTMOS		2	/*		     Mostek binary */
-#define OUTHEX		3	/*		     Intel hex */
-#define OUTDEF		OUTHEX	/* default object format */
 #define COMMENT		';'	/* inline comment character */
 #define LINCOM		'*'	/* comment line if in column 1 */
 #define LABSEP		':'	/* label separator */
@@ -186,6 +182,13 @@ struct inc {
  *	definition of operand flags
  */
 #define OPE_UNDOC	0x01	/* undocumented operand */
+
+/*
+ *	definition of object file formats
+ */
+#define OBJ_BIN		0	/* binary file */
+#define OBJ_MOS		1	/* Mostek binary file */
+#define OBJ_HEX		2	/* Intel hex file */
 
 /*
  *	definition of operation sets
