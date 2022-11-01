@@ -29,7 +29,7 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
-int expr(int *);
+int expr(WORD *);
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -102,7 +102,7 @@ struct opr oprtab[] = {
 int no_operators = sizeof(oprtab) / sizeof(struct opr);
 
 static int tok_type;	/* token type and flags */
-static int tok_val;	/* token value for T_VAL type */
+static WORD tok_val;	/* token value for T_VAL type */
 static char tok_sym[MAXLINE]; /* last symbol scanned (T_VAL) */
 static char *scan_pos;	/* current scanning position */
 
@@ -153,7 +153,7 @@ int search_opr(char *s)
 int get_token(void)
 {
 	register char *p1, *p2, *s;
-	register int n, m, base;
+	register WORD n, m, base;
 	register struct sym *sp;
 
 	s = scan_pos;
@@ -331,11 +331,11 @@ finish:
  *	inspired by the previous expression parser by Didier Derny.
  */
 
-int factor(int *resultp)
+int factor(WORD *resultp)
 {
 	register int opr_type, err, erru;
 	register char *s;
-	int value;
+	WORD value;
 
 	switch (tok_type) {
 	case T_VAL:
@@ -386,7 +386,7 @@ int factor(int *resultp)
 			*resultp = ~value;
 			break;
 		case T_HIGH:
-			*resultp = (value >> 8) & 0xff;
+			*resultp = value >> 8;
 			break;
 		case T_LOW:
 			*resultp = value & 0xff;
@@ -416,10 +416,10 @@ int factor(int *resultp)
 	}
 }
 
-int mul_term(int *resultp)
+int mul_term(WORD *resultp)
 {
 	register int opr_type, err, erru;
-	int value;
+	WORD value;
 
 	if ((erru = factor(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -449,7 +449,7 @@ int mul_term(int *resultp)
 			*resultp %= value;
 			break;
 		case T_SHR:
-			*resultp = ((unsigned) *resultp) >> value;
+			*resultp >>= value;
 			break;
 		case T_SHL:
 			*resultp <<= value;
@@ -461,10 +461,10 @@ int mul_term(int *resultp)
 	return(erru ? E_UNDSYM : E_NOERR);
 }
 
-int add_term(int *resultp)
+int add_term(WORD *resultp)
 {
 	register int opr_type, err, erru;
-	int value;
+	WORD value;
 
 	if ((erru = mul_term(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -492,10 +492,10 @@ int add_term(int *resultp)
 	return(erru ? E_UNDSYM : E_NOERR);
 }
 
-int cmp_term(int *resultp)
+int cmp_term(WORD *resultp)
 {
 	register int opr_type, err, erru;
-	int value;
+	WORD value;
 
 	if ((erru = add_term(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -537,10 +537,10 @@ int cmp_term(int *resultp)
 	return(erru ? E_UNDSYM : E_NOERR);
 }
 
-int expr(int *resultp)
+int expr(WORD *resultp)
 {
 	register int opr_type, err, erru;
-	int value;
+	WORD value;
 
 	if ((erru = cmp_term(resultp)) && erru != E_UNDSYM)
 		return(erru);
@@ -571,10 +571,10 @@ int expr(int *resultp)
 	return(erru ? E_UNDSYM : E_NOERR);
 }
 
-int eval(char *s)
+WORD eval(char *s)
 {
 	register int err;
-	int result;
+	WORD result;
 
 	if (s == NULL || *s == '\0') {
 		asmerr(E_MISOPE);
@@ -596,10 +596,10 @@ int eval(char *s)
  *	check value for range -257 < value < 256
  *	Output: value if in range, otherwise 0 and error message
  */
-int chk_byte(int i)
+BYTE chk_byte(WORD n)
 {
-	if (i >= -256 && i <= 255)
-		return(i);
+	if (n >= (WORD) -256 || n <= 255)
+		return(n);
 	else {
 		asmerr(E_VALOUT);
 		return(0);
@@ -610,10 +610,10 @@ int chk_byte(int i)
  *	check value for range -129 < value < 128
  *	Output: value if in range, otherwise 0 and error message
  */
-int chk_sbyte(int i)
+BYTE chk_sbyte(WORD n)
 {
-	if (i >= -128 && i <= 127)
-		return(i);
+	if (n >= (WORD) -128 || n <= 127)
+		return(n);
 	else {
 		asmerr(E_VALOUT);
 		return(0);

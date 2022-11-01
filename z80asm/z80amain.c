@@ -47,7 +47,7 @@ char *get_arg(char *, char *, int);
 
 /* z80aout.c */
 extern void asmerr(int);
-extern void lst_line(char *, int, int, int);
+extern void lst_line(char *, WORD, int, int);
 extern void lst_mac(int);
 extern void lst_sym(void);
 extern void lst_sort_sym(int);

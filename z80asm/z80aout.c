@@ -32,12 +32,13 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
+void lst_byte(BYTE);
 void fill_bin(void);
-void eof_hex(int);
+void eof_hex(WORD);
 void flush_hex(void);
-void hex_record(int);
-int chksum(int);
-void btoh(unsigned char, char **);
+void hex_record(BYTE);
+BYTE chksum(BYTE);
+void btoh(BYTE, char **);
 
 /* z80amain.c */
 extern void fatal(int, const char *);
@@ -83,13 +84,13 @@ static const char *errmsg[] = {		/* error messages for asmerr() */
 #define HEX_EOF		1
 
 static int nseq_flag;			/* flag for non-sequential ORG */
-static int curr_addr;			/* current logical file address */
-static int bin_addr;			/* current address written to file */
-static unsigned short hex_addr;		/* current address in hex record */
-static int hex_cnt;			/* number of bytes in hex buffer */
+static WORD curr_addr;			/* current logical file address */
+static WORD bin_addr;			/* current address written to file */
+static WORD hex_addr;			/* current address in hex record */
+static WORD hex_cnt;			/* number of bytes in hex buffer */
 
-static unsigned char hex_buf[MAXHEX];	/* buffer for one hex record */
-static char hex_out[MAXHEX*2+20];	/* ASCII buffer for one hex record */
+static BYTE hex_buf[MAXHEX];		/* buffer for one hex record */
+static char hex_out[MAXHEX*2+13];	/* ASCII buffer for one hex record */
 
 /*
  *	print error message to listfile and increase error counter
@@ -97,7 +98,8 @@ static char hex_out[MAXHEX*2+20];	/* ASCII buffer for one hex record */
 void asmerr(int i)
 {
 	if (pass == 1) {
-		fprintf(errfp, "Error in file: %s  Line: %d\n", srcfn, c_line);
+		fprintf(errfp, "Error in file: %s  Line: %ld\n",
+			srcfn, c_line);
 		fputs(errmsg[i], errfp);
 		fputc('\n', errfp);
 	} else
@@ -147,11 +149,11 @@ void lst_attl(void)
 /*
  *	print one line into listfile, if -l option set
  */
-void lst_line(char *l, int addr, int op_cnt, int expn_flag)
+void lst_line(char *l, WORD addr, int op_cnt, int expn_flag)
 {
 	register int i, j;
 	register const char *a_mark;
-	static int s_line;
+	static unsigned long s_line;
 
 	s_line++;
 	if (!list_flag)
@@ -164,39 +166,44 @@ void lst_line(char *l, int addr, int op_cnt, int expn_flag)
 		if (ppl != 0)
 			p_line++;
 	}
-	a_mark = "   ";
+	a_mark = "  ";
 	switch (a_mode) {
 	case A_STD:
-		fprintf(lstfp, "%04x  ", addr & 0xffff);
+		a_addr = addr;
 		break;
 	case A_EQU:
-		fprintf(lstfp, "%04x  ", a_addr & 0xffff);
-		a_mark = "=  ";
+		a_mark = "= ";
 		break;
 	case A_SET:
-		fprintf(lstfp, "%04x  ", a_addr & 0xffff);
-		a_mark = "#  ";
+		a_mark = "# ";
 		break;
 	case A_DS:
-		fprintf(lstfp, "%04x  ", a_addr & 0xffff);
 		op_cnt = 0;
 		break;
 	case A_NONE:
-		fputs("      ", lstfp);
 		break;
 	default:
 		fatal(F_INTERN, "invalid a_mode for function lst_line");
 		break;
 	}
+	if (a_mode == A_NONE)
+		fputs("    ", lstfp);
+	else {
+		lst_byte(a_addr >> 8);
+		lst_byte(a_addr & 0xff);
+	}
+	fputs("  ", lstfp);
 	i = 0;
-	for (j = 0; j < 4; j++)
+	for (j = 0; j < 4; j++) {
 		if (op_cnt-- > 0)
-			fprintf(lstfp, "%02x ", ops[i++]);
+			lst_byte(ops[i++]);
 		else if (j == 0)
 			fputs(a_mark, lstfp);
 		else
-			fputs("   ", lstfp);
-	fprintf(lstfp, "%c%5d %6d %s", expn_flag ? '+' : ' ',
+			fputs("  ", lstfp);
+		fputc(' ', lstfp);
+	}
+	fprintf(lstfp, "%c%5ld %6ld %s", expn_flag ? '+' : ' ',
 		c_line, s_line, l);
 	if (errnum) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
@@ -215,13 +222,17 @@ void lst_line(char *l, int addr, int op_cnt, int expn_flag)
 		}
 		s_line++;
 		addr += 4;
-		fprintf(lstfp, "%04x  ", addr & 0xffff);
-		for (j = 0; j < 4; j++)
+		lst_byte(addr >> 8);
+		lst_byte(addr & 0xff);
+		fputs("  ", lstfp);
+		for (j = 0; j < 4; j++) {
 			if (op_cnt-- > 0)
-				fprintf(lstfp, "%02x ", ops[i++]);
+				lst_byte(ops[i++]);
 			else
-				fputs("   ", lstfp);
-		fprintf(lstfp, "%c%5d %6d\n", expn_flag ? '+' : ' ',
+				fputs("  ", lstfp);
+			fputc(' ', lstfp);
+		}
+		fprintf(lstfp, "%c%5ld %6ld\n", expn_flag ? '+' : ' ',
 			c_line, s_line);
 	}
 	if (p_line < 0)
@@ -292,9 +303,10 @@ void lst_sym(void)
 					fputc('\n', lstfp);
 					p_line++;
 				}
-				fprintf(lstfp, "%*s %04x%c", -symmax,
-					np->sym_name, np->sym_val & 0xffff,
-					np->sym_refcnt > 0 ? ' ' : '*');
+				fprintf(lstfp, "%*s ", -symmax, np->sym_name);
+				lst_byte(np->sym_val >> 8);
+				lst_byte(np->sym_val & 0xff);
+				fputc(np->sym_refcnt > 0 ? ' ' : '*', lstfp);
 				j += symmax + 9;
 				if (j + symmax + 6 >= 80) {
 					fputc('\n', lstfp);
@@ -329,9 +341,10 @@ void lst_sort_sym(int len)
 			fputc('\n', lstfp);
 			p_line++;
 		}
-		fprintf(lstfp, "%*s %04x%c", -symmax, symarray[i]->sym_name,
-			symarray[i]->sym_val & 0xffff,
-			symarray[i]->sym_refcnt > 0 ? ' ' : '*');
+		fprintf(lstfp, "%*s ", -symmax, symarray[i]->sym_name);
+		lst_byte(symarray[i]->sym_val >> 8);
+		lst_byte(symarray[i]->sym_val & 0xff);
+		fputc(symarray[i]->sym_refcnt > 0 ? ' ' : '*', lstfp);
 		j += symmax + 9;
 		if (j + symmax + 6 >= 80) {
 			fputc('\n', lstfp);
@@ -344,6 +357,19 @@ void lst_sort_sym(int len)
 	}
 	if (j > 0)
 		fputc('\n', lstfp);
+}
+
+/*
+ *	print BYTE as ASCII hex into listfile
+ */
+void lst_byte(BYTE b)
+{
+	register char c;
+
+	c = b >> 4;
+	fputc(c + (c < 10 ? '0' : 'W'), lstfp);
+	c = b & 0xf;
+	fputc(c + (c < 10 ? '0' : 'W'), lstfp);
 }
 
 /*
@@ -385,7 +411,7 @@ void obj_end(void)
 /*
  *	set logical address for object file
  */
-void obj_org(int addr)
+void obj_org(WORD addr)
 {
 	switch (out_form) {
 	case OUTBIN:
@@ -429,7 +455,7 @@ void obj_writeb(int op_cnt)
 	case OUTHEX:
 		if (hex_addr + hex_cnt != curr_addr)
 			flush_hex();
-		for (i = 0; op_cnt; op_cnt--) {
+		for (i = 0; op_cnt > 0; op_cnt--) {
 			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = ops[i++];
@@ -442,7 +468,7 @@ void obj_writeb(int op_cnt)
 /*
  *	advance logical address of object file by count
  */
-void obj_fill(int count)
+void obj_fill(WORD count)
 {
 	if (count == 0)
 		return;
@@ -461,13 +487,13 @@ void obj_fill(int count)
 /*
  *	write <count> bytes <value> into object file
  */
-void obj_fill_value(int count, int value)
+void obj_fill_value(WORD count, WORD value)
 {
-	register int i;
+	register WORD n;
 
 	if (count == 0)
 		return;
-	i = count;
+	n = count;
 	switch (out_form) {
 	case OUTBIN:
 	case OUTMOS:
@@ -478,7 +504,7 @@ void obj_fill_value(int count, int value)
 				asmerr(E_BFRORG);
 			else {
 				fill_bin();
-				while (i--)
+				while (n-- > 0)
 					putc(value, objfp);
 				bin_addr += count;
 			}
@@ -488,7 +514,7 @@ void obj_fill_value(int count, int value)
 	case OUTHEX:
 		if (hex_addr + hex_cnt != curr_addr)
 			flush_hex();
-		while (i--) {
+		while (n-- > 0) {
 			if (hex_cnt >= hexlen)
 				flush_hex();
 			hex_buf[hex_cnt++] = value;
@@ -512,7 +538,7 @@ void fill_bin(void)
 /*
  *	create a hex end-of-file record in ASCII and write into object file
  */
-void eof_hex(int addr)
+void eof_hex(WORD addr)
 {
 	hex_cnt = 0;
 	hex_addr = addr;
@@ -534,53 +560,52 @@ void flush_hex(void)
 /*
  *	write a hex record in ASCII and write into object file
  */
-void hex_record(int rec_type)
+void hex_record(BYTE rec_type)
 {
+	register WORD n;
 	char *p;
-	register int i;
 
 	p = hex_out;
 	*p++ = ':';
-	btoh((unsigned char) hex_cnt, &p);
-	btoh((unsigned char) (hex_addr >> 8), &p);
-	btoh((unsigned char) (hex_addr & 0xff), &p);
-	btoh((unsigned char) rec_type, &p);
-	for (i = 0; i < hex_cnt; i++)
-		btoh(hex_buf[i], &p);
-	btoh((unsigned char) chksum(rec_type), &p);
+	btoh(hex_cnt, &p);
+	btoh(hex_addr >> 8, &p);
+	btoh(hex_addr & 0xff, &p);
+	btoh(rec_type, &p);
+	for (n = 0; n < hex_cnt; n++)
+		btoh(hex_buf[n], &p);
+	btoh(chksum(rec_type), &p);
 	*p++ = '\n';
 	*p = '\0';
-	fwrite(hex_out, 1, strlen(hex_out), objfp);
+	fputs(hex_out, objfp);
 }
 
 /*
- *	convert unsigned char into ASCII hex and copy to string at p
+ *	convert BYTE into ASCII hex and copy to string at p
  *	increase p by 2
  */
-void btoh(unsigned char byte, char **p)
+void btoh(BYTE b, char **p)
 {
-	register unsigned char c;
+	register char c;
 
-	c = byte >> 4;
-	*(*p)++ = (c < 10) ? (c + '0') : (c - 10 + 'A');
-	c = byte & 0xf;
-	*(*p)++ = (c < 10) ? (c + '0') : (c - 10 + 'A');
+	c = b >> 4;
+	*(*p)++ = c + (c < 10 ? '0' : '7');
+	c = b & 0xf;
+	*(*p)++ = c + (c < 10 ? '0' : '7');
 }
 
 /*
  *	compute checksum for Intel hex record
  */
-int chksum(int rec_type)
+BYTE chksum(BYTE rec_type)
 {
-	register int i, j, sum;
+	register WORD n;
+	register BYTE sum;
 
 	sum = hex_cnt;
 	sum += hex_addr >> 8;
 	sum += hex_addr & 0xff;
 	sum += rec_type;
-	for (i = 0; i < hex_cnt; i++) {
-		j = hex_buf[i];
-		sum += j & 0xff;
-	}
-	return (0x100 - (sum & 0xff));
+	for (n = 0; n < hex_cnt; n++)
+		sum += hex_buf[n];
+	return(-sum);
 }

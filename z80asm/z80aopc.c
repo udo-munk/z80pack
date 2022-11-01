@@ -30,27 +30,29 @@
 #include "z80a.h"
 
 /* z80amfun.c */
-extern int op_endm(int, int), op_exitm(int, int), op_irp(int, int);
-extern int op_local(int, int), op_macro(int, int), op_mcond(int, int);
-extern int op_rept(int, int);
+extern int op_endm(BYTE, BYTE), op_exitm(BYTE, BYTE), op_irp(BYTE, BYTE);
+extern int op_local(BYTE, BYTE), op_macro(BYTE, BYTE), op_mcond(BYTE, BYTE);
+extern int op_rept(BYTE, BYTE);
 
 /* z80apfun.c */
-extern int op_opset(int, int), op_org(int, int), op_radix(int, int);
-extern int op_equ(int, int), op_dl(int, int), op_ds(int, int), op_db(int, int);
-extern int op_dw(int, int), op_misc(int, int), op_cond(int, int);
-extern int op_glob(int, int), op_end(int, int);
+extern int op_opset(BYTE, BYTE), op_org(BYTE, BYTE), op_radix(BYTE, BYTE);
+extern int op_equ(BYTE, BYTE), op_dl(BYTE, BYTE), op_ds(BYTE, BYTE);
+extern int op_db(BYTE, BYTE), op_dw(BYTE, BYTE), op_misc(BYTE, BYTE);
+extern int op_cond(BYTE, BYTE), op_glob(BYTE, BYTE), op_end(BYTE, BYTE);
 
 /* z80arfun.c */
-extern int op_1b(int, int), op_2b(int, int), op_im(int, int);
-extern int op_pupo(int, int), op_ex(int, int), op_rst(int, int);
-extern int op_ret(int, int), op_jpcall(int, int), op_jr(int, int);
-extern int op_djnz(int, int), op_ld(int, int), op_add(int, int);
-extern int op_sbadc(int, int), op_decinc(int, int), op_alu(int, int);
-extern int op_out(int, int), op_in(int, int), op_cbgrp(int, int);
-extern int op8080_mov(int, int), op8080_alu(int, int), op8080_dcrinr(int, int);
-extern int op8080_reg16(int, int), op8080_regbd(int, int);
-extern int op8080_imm(int, int), op8080_rst(int, int), op8080_pupo(int, int);
-extern int op8080_addr(int, int), op8080_mvi(int, int), op8080_lxi(int, int);
+extern int op_1b(BYTE, BYTE), op_2b(BYTE, BYTE), op_im(BYTE, BYTE);
+extern int op_pupo(BYTE, BYTE), op_ex(BYTE, BYTE), op_rst(BYTE, BYTE);
+extern int op_ret(BYTE, BYTE), op_jpcall(BYTE, BYTE), op_jr(BYTE, BYTE);
+extern int op_djnz(BYTE, BYTE), op_ld(BYTE, BYTE), op_add(BYTE, BYTE);
+extern int op_sbadc(BYTE, BYTE), op_decinc(BYTE, BYTE), op_alu(BYTE, BYTE);
+extern int op_out(BYTE, BYTE), op_in(BYTE, BYTE), op_cbgrp(BYTE, BYTE);
+extern int op8080_mov(BYTE, BYTE), op8080_alu(BYTE, BYTE);
+extern int op8080_dcrinr(BYTE, BYTE), op8080_reg16(BYTE, BYTE);
+extern int op8080_regbd(BYTE, BYTE), op8080_imm(BYTE, BYTE);
+extern int op8080_rst(BYTE, BYTE), op8080_pupo(BYTE, BYTE);
+extern int op8080_addr(BYTE, BYTE), op8080_mvi(BYTE, BYTE);
+extern int op8080_lxi(BYTE, BYTE);
 
 /*
  *	pseudo op table:
@@ -158,7 +160,7 @@ struct opc opctab_z80[] = {
 	{ "EX",		op_ex,		0xe3,	0xeb,	0	 },
 	{ "EXX",	op_1b,		0xd9,	0,	OP_NOOPR },
 	{ "HALT",	op_1b,		0x76,	0,	OP_NOOPR },
-	{ "IM",		op_im,		0x46,	0,	0	 },
+	{ "IM",		op_im,		0xed,	0x46,	0	 },
 	{ "IN",		op_in,		0xdb,	0x40,	0	 },
 	{ "INC",	op_decinc,	0x04,	0x03,	0	 },
 	{ "IND",	op_2b,		0xed,	0xaa,	OP_NOOPR },

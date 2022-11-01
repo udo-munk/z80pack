@@ -40,8 +40,15 @@ char *infiles[MAXFN],		/* source filenames */
      operand[MAXLINE],		/* buffer for working with operand */
      title[MAXLINE];		/* buffer for title of source */
 
-unsigned char
-     ops[OPCARRAY];		/* buffer for generated object code */
+BYTE ops[OPCARRAY];		/* buffer for generated object code */
+
+WORD rpc,			/* real program counter */
+     pc,			/* logical program counter, normally equal */
+				/* to rpc, except when inside a .PHASE block */
+     a_addr,			/* output value for A_ADDR/A_VALUE mode */
+     load_addr,			/* load address of program */
+     start_addr,		/* start address of program */
+     hexlen = MAXHEX;		/* hex record length */
 
 int  list_flag,			/* flag for option -l */
      sym_flag,			/* flag for option -s */
@@ -52,9 +59,6 @@ int  list_flag,			/* flag for option -l */
      mac_list_flag,		/* flag for option -m */
      radix,			/* current radix, set to 10 at start of pass */
      opset = OPSET_Z80,		/* current operations set (default Z80) */
-     rpc,			/* real program counter */
-     pc,			/* logical program counter, normally equal */
-				/* to rpc, except when inside a .PHASE block */
      phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
@@ -67,15 +71,11 @@ int  list_flag,			/* flag for option -l */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
      a_mode,			/* location output mode for pseudo ops */
-     a_addr,			/* output value for A_ADDR/A_VALUE mode */
-     load_addr,			/* load address of program */
      load_flag,			/* flag for load_addr valid */
-     start_addr,		/* start address of program */
      out_form = OUTDEF,		/* format of object file */
      symlen = SYMLEN,		/* significant characters in symbols */
      symmax,			/* max. symbol name length encountered */
      symsize,			/* size of symarray */
-     hexlen = MAXHEX,		/* hex record length */
      p_line,			/* no. printed lines on page */
      ppl = PLENGTH;		/* page length */
 
@@ -85,8 +85,10 @@ FILE *srcfp,			/* file pointer for current source */
      *errfp;			/* file pointer for error output */
 
 unsigned
-     c_line,			/* current line no. in current source */
      page;			/* no. of pages for listing */
+
+unsigned long
+     c_line;			/* current line no. in current source */
 
 struct sym
      *symtab[HASHSIZE],		/* symbol table */

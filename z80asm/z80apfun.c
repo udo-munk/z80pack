@@ -38,16 +38,16 @@ extern void process_file(char *);
 extern char *next_arg(char *, int *);
 
 /* z80anum.c */
-extern int eval(char *);
-extern int chk_byte(int);
+extern WORD eval(char *);
+extern BYTE chk_byte(WORD);
 
 /* z80aout.c */
 extern void asmerr(int);
 extern void lst_header(void);
 extern void lst_attl(void);
-extern void obj_org(int);
-extern void obj_fill(int);
-extern void obj_fill_value(int, int);
+extern void obj_org(WORD);
+extern void obj_fill(WORD);
+extern void obj_fill_value(WORD, WORD);
 
 /* z80atab.c */
 extern struct sym *get_sym(char *);
@@ -56,7 +56,7 @@ extern int put_sym(char *, int);
 /*
  *	.Z80 and .8080
  */
-int op_opset(int op_code, int dummy)
+int op_opset(BYTE op_code, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -77,9 +77,9 @@ int op_opset(int op_code, int dummy)
 /*
  *	ORG, .PHASE, .DEPHASE
  */
-int op_org(int op_code, int dummy)
+int op_org(BYTE op_code, BYTE dummy)
 {
-	register int i;
+	register WORD n;
 
 	UNUSED(dummy);
 
@@ -90,15 +90,15 @@ int op_org(int op_code, int dummy)
 			asmerr(E_ORGPHS);
 			return(0);
 		}
-		i = eval(operand);
+		n = eval(operand);
 		if (pass == 1) {	/* PASS 1 */
 			if (!load_flag) {
-				load_addr = i;
+				load_addr = n;
 				load_flag = 1;
 			}
 		} else			/* PASS 2 */
-			obj_org(i);
-		rpc = pc = i;
+			obj_org(n);
+		rpc = pc = n;
 		break;
 	case 2:				/* .PHASE */
 		if (phs_flag)
@@ -125,7 +125,7 @@ int op_org(int op_code, int dummy)
 /*
  *	.RADIX
  */
-int op_radix(int dummy1, int dummy2)
+int op_radix(BYTE dummy1, BYTE dummy2)
 {
 	int i;
 
@@ -144,7 +144,7 @@ int op_radix(int dummy1, int dummy2)
 /*
  *	EQU
  */
-int op_equ(int dummy1, int dummy2)
+int op_equ(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -166,7 +166,7 @@ int op_equ(int dummy1, int dummy2)
 /*
  *	DEFL, ASET, and SET (in 8080 mode)
  */
-int op_dl(int dummy1, int dummy2)
+int op_dl(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -181,10 +181,10 @@ int op_dl(int dummy1, int dummy2)
 /*
  *	DEFS and DS
  */
-int op_ds(int dummy1, int dummy2)
+int op_ds(BYTE dummy1, BYTE dummy2)
 {
 	register char *p;
-	register int count, value;
+	register WORD count, value;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -206,7 +206,7 @@ int op_ds(int dummy1, int dummy2)
 /*
  *	DEFB, DB, DEFM, DEFC, DC, DEFZ
  */
-int op_db(int op_code, int dummy)
+int op_db(BYTE op_code, BYTE dummy)
 {
 	register char *p, *p1, c;
 	register int i;
@@ -260,10 +260,11 @@ delim_error:
 /*
  *	DEFW and DW
  */
-int op_dw(int dummy1, int dummy2)
+int op_dw(BYTE dummy1, BYTE dummy2)
 {
 	register char *p, *p1;
-	register int i, temp;
+	register int i;
+	register WORD n;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -274,9 +275,9 @@ int op_dw(int dummy1, int dummy2)
 		p1 = next_arg(p, NULL);
 		if (*p != '\0') {
 			if (pass == 2) {
-				temp = eval(p);
-				ops[i] = temp & 0xff;
-				ops[i + 1] = temp >> 8;
+				n = eval(p);
+				ops[i] = n & 0xff;
+				ops[i + 1] = n >> 8;
 			}
 			i += 2;
 			if (i >= OPCARRAY)
@@ -291,10 +292,10 @@ int op_dw(int dummy1, int dummy2)
  *	EJECT, PAGE, LIST, .LIST, NOLIST, .XLIST, .PRINTX, PRINT, INCLUDE,
  *	MACLIB, TITLE, .XALL, .LALL, .SALL, .SFCOND, .LFCOND
  */
-int op_misc(int op_code, int dummy)
+int op_misc(BYTE op_code, BYTE dummy)
 {
 	register char *p, *d, c;
-	register int n;
+	register BYTE n;
 	static char fn[LENFN];
 	static int incnest;
 	static struct inc incl[INCNEST];
@@ -307,7 +308,7 @@ int op_misc(int op_code, int dummy)
 	case 1:				/* EJECT and PAGE */
 		if (*operand != '\0') {
 			if ((pass == 1 && !page_done) || pass == 2) {
-				n = eval(operand);
+				n = chk_byte(eval(operand));
 				if (n != 0 && (n < 6 || n > 144))
 					asmerr(E_VALOUT);
 				else
@@ -437,7 +438,7 @@ int op_misc(int op_code, int dummy)
 /*
  *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, IF1, IF2
  */
-int op_cond(int op_code, int dummy)
+int op_cond(BYTE op_code, BYTE dummy)
 {
 	register char *p;
 
@@ -506,7 +507,7 @@ int op_cond(int op_code, int dummy)
 /*
  *	EXTRN, EXTERNAL, EXT and PUBLIC, ENT, ENTRY, GLOBAL, and ABS, ASEG
  */
-int op_glob(int op_code, int dummy)
+int op_glob(BYTE op_code, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -528,7 +529,7 @@ int op_glob(int op_code, int dummy)
 /*
  *	END
  */
-int op_end(int dummy1, int dummy2)
+int op_end(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);

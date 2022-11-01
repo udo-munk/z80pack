@@ -31,27 +31,27 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
-int ldreg(int, char *), ldixhl(int, char *), ldiyhl(int, char *);
-int ldsp(char *), ldihl(int, char *), ldiixy(int, int, char *), ldinn(char *);
-int aluop(int, char *);
-void cbgrp_iixy(int, int, int, char *);
+int ldreg(BYTE, char *), ldixhl(BYTE, char *), ldiyhl(BYTE, char *);
+int ldsp(char *), ldihl(BYTE, char *), ldiixy(BYTE, BYTE, char *);
+int ldinn(char *), aluop(BYTE, char *);
+void cbgrp_iixy(BYTE, BYTE, BYTE, char *);
 
 /* z80amain.c */
 extern void asmerr(int);
 extern char *next_arg(char *, int *);
 
 /* z80anum.c */
-extern int eval(char *);
-extern int chk_byte(int);
-extern int chk_sbyte(int);
+extern WORD eval(char *);
+extern BYTE chk_byte(WORD);
+extern BYTE chk_sbyte(WORD);
 
 /* z80atab.c */
-extern int get_reg(char *);
+extern BYTE get_reg(char *);
 
 /*
  *	process 1byte opcodes without arguments
  */
-int op_1b(int b1, int dummy)
+int op_1b(BYTE b1, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -62,7 +62,7 @@ int op_1b(int b1, int dummy)
 /*
  *	process 2byte opcodes without arguments
  */
-int op_2b(int b1, int b2)
+int op_2b(BYTE b1, BYTE b2)
 {
 	ops[0] = b1;
 	ops[1] = b2;
@@ -72,21 +72,19 @@ int op_2b(int b1, int b2)
 /*
  *	IM
  */
-int op_im(int base_op, int dummy)
+int op_im(BYTE base_op1, BYTE base_op2)
 {
-	register int op;
-
-	UNUSED(dummy);
+	register WORD n;
 
 	if (pass == 2) {
-		switch(op = eval(operand)) {
+		switch(n = eval(operand)) {
 		case 0:			/* IM 0 */
 		case 1:			/* IM 1 */
 		case 2:			/* IM 2 */
-			if (op > 0)
-				op++;
-			ops[0] = 0xed;
-			ops[1] = base_op + (op << 3);
+			if (n > 0)
+				n++;
+			ops[0] = base_op1;
+			ops[1] = base_op2 + (n << 3);
 			break;
 		default:
 			ops[0] = 0;
@@ -101,9 +99,10 @@ int op_im(int base_op, int dummy)
 /*
  *	PUSH and POP
  */
-int op_pupo(int base_op, int dummy)
+int op_pupo(BYTE base_op, BYTE dummy)
 {
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	UNUSED(dummy);
 
@@ -113,13 +112,13 @@ int op_pupo(int base_op, int dummy)
 	case REGDE:			/* PUSH/POP DE */
 	case REGHL:			/* PUSH/POP HL */
 		len = 1;
-		ops[0] = base_op + ((op & OPMASK) << 3);
+		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case REGIX:			/* PUSH/POP IX */
 	case REGIY:			/* PUSH/POP IY */
 		len = 2;
 		ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
-		ops[1] = base_op + ((op & OPMASK) << 3);
+		ops[1] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
 		len = 1;
@@ -137,7 +136,7 @@ int op_pupo(int base_op, int dummy)
 /*
  *	EX
  */
-int op_ex(int base_ops, int base_opd)
+int op_ex(BYTE base_ops, BYTE base_opd)
 {
 	register int len;
 
@@ -169,15 +168,15 @@ int op_ex(int base_ops, int base_opd)
 /*
  *	RST
  */
-int op_rst(int base_op, int dummy)
+int op_rst(BYTE base_op, BYTE dummy)
 {
-	register int op;
+	register BYTE op;
 
 	UNUSED(dummy);
 
 	if (pass == 2) {
-		op = eval(operand);
-		if (op < 0 || (op / 8 > 7) || (op % 8 != 0)) {
+		op = chk_byte(eval(operand));
+		if ((op >> 3) > 7 || (op & 7) != 0) {
 			ops[0] = 0;
 			asmerr(E_VALOUT);
 		} else
@@ -189,9 +188,9 @@ int op_rst(int base_op, int dummy)
 /*
  *	RET
  */
-int op_ret(int base_op, int base_opc)
+int op_ret(BYTE base_op, BYTE base_opc)
 {
-	register int op;
+	register BYTE op;
 
 	switch (op = get_reg(operand)) {
 	case NOOPERA:		/* RET */
@@ -207,7 +206,7 @@ int op_ret(int base_op, int base_opc)
 	case FLGP:		/* RET P */
 		if (op == REGC)
 			op = FLGC;
-		ops[0] = base_opc + ((op & OPMASK) << 3);
+		ops[0] = base_opc + (op & OPMASK3);
 		break;
 	default:		/* invalid operand */
 		ops[0] = 0;
@@ -219,11 +218,14 @@ int op_ret(int base_op, int base_opc)
 /*
  *	JP and CALL
  */
-int op_jpcall(int base_op, int base_opc)
+int op_jpcall(BYTE base_op, BYTE base_opc)
 {
 	register char *sec;
-	register int op, len, i;
+	register BYTE op;
+	register WORD n;
+	register int len;
 
+	len = 0;			/* silence compiler */
 	sec = next_arg(operand, NULL);
 	switch (op = get_reg(operand)) {
 	case REGC:			/* JP/CALL C,nn */
@@ -238,10 +240,10 @@ int op_jpcall(int base_op, int base_opc)
 		if (pass == 2) {
 			if (op == REGC)
 				op = FLGC;
-			i = eval(sec);
-			ops[0] = base_opc + ((op & OPMASK) << 3);
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
+			n = eval(sec);
+			ops[0] = base_opc + (op & OPMASK3);
+			ops[1] = n & 0xff;
+			ops[2] = n >> 8;
 		}
 		break;
 	case REGIHL:			/* JP/CALL (HL) */
@@ -270,10 +272,10 @@ int op_jpcall(int base_op, int base_opc)
 		if (sec == NULL) {
 			len = 3;
 			if (pass == 2) {
-				i = eval(operand);
+				n = eval(operand);
 				ops[0] = base_op;
-				ops[1] = i & 0xff;
-				ops[2] = i >> 8;
+				ops[1] = n & 0xff;
+				ops[2] = n >> 8;
 			}
 		} else {		/* too many operands */
 			len = 1;
@@ -297,10 +299,10 @@ int op_jpcall(int base_op, int base_opc)
 /*
  *	JR
  */
-int op_jr(int base_op, int base_opc)
+int op_jr(BYTE base_op, BYTE base_opc)
 {
 	register char *sec;
-	register int op;
+	register BYTE op;
 
 	if (pass == 2) {
 		sec = next_arg(operand, NULL);
@@ -311,7 +313,7 @@ int op_jr(int base_op, int base_opc)
 		case FLGNZ:		/* JR NZ,n */
 			if (op == REGC)
 				op = FLGC;
-			ops[0] = base_opc + ((op & OPMASK) << 3);
+			ops[0] = base_opc + (op & OPMASK3);
 			ops[1] = chk_sbyte(eval(sec) - pc - 2);
 			break;
 		case NOREG:		/* JR n */
@@ -341,7 +343,7 @@ int op_jr(int base_op, int base_opc)
 /*
  *	DJNZ
  */
-int op_djnz(int base_op, int dummy)
+int op_djnz(BYTE base_op, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -355,10 +357,12 @@ int op_djnz(int base_op, int dummy)
 /*
  *	LD
  */
-int op_ld(int base_op, int dummy)
+int op_ld(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
-	register int op, len, i;
+	register BYTE op;
+	register WORD n;
+	register int len;
 
 	UNUSED(dummy);
 
@@ -371,22 +375,22 @@ int op_ld(int base_op, int dummy)
 	case REGE:			/* LD E,? */
 	case REGH:			/* LD H,? */
 	case REGL:			/* LD L,? */
-		len = ldreg(base_op + ((op & OPMASK) << 3), sec);
+		len = ldreg(base_op + (op & OPMASK3), sec);
 		break;
 	case REGIXH:			/* LD IXH,? (undoc) */
 	case REGIXL:			/* LD IXL,? (undoc) */
-		len = ldixhl(base_op + ((op & OPMASK) << 3), sec);
+		len = ldixhl(base_op + (op & OPMASK3), sec);
 		break;
 	case REGIYH:			/* LD IYH,? (undoc) */
 	case REGIYL:			/* LD IYL,? (undoc) */
-		len = ldiyhl(base_op + ((op & OPMASK) << 3), sec);
+		len = ldiyhl(base_op + (op & OPMASK3), sec);
 		break;
 	case REGI:			/* LD I,A */
 	case REGR:			/* LD R,A */
 		if (get_reg(sec) == REGA) {
 			len = 2;
 			ops[0] = 0xed;
-			ops[1] = 0x47 + ((op & OPMASK) << 3);
+			ops[1] = 0x47 + (op & OPMASK3);
 		} else {		/* illegal operand */
 			len = 1;
 			ops[0] = 0;
@@ -399,19 +403,19 @@ int op_ld(int base_op, int dummy)
 				&& *(sec + strlen(sec) - 1) == ')') {
 			len = 4;	/* LD {BC,DE},(nn) */
 			if (pass == 2) {
-				i = eval(sec);
+				n = eval(sec);
 				ops[0] = 0xed;
-				ops[1] = 0x4b + ((op & OPMASK) << 3);
-				ops[2] = i & 0xff;
-				ops[3] = i >> 8;
+				ops[1] = 0x4b + (op & OPMASK3);
+				ops[2] = n & 0xff;
+				ops[3] = n >> 8;
 			}
 		} else {
 			len = 3;	/* LD {BC,DE},nn */
 			if (pass == 2) {
-				i = eval(sec);
-				ops[0] = 0x01 + ((op & OPMASK) << 3);
-				ops[1] = i & 0xff;
-				ops[2] = i >> 8;
+				n = eval(sec);
+				ops[0] = 0x01 + (op & OPMASK3);
+				ops[1] = n & 0xff;
+				ops[2] = n >> 8;
 			}
 		}
 		break;
@@ -420,18 +424,18 @@ int op_ld(int base_op, int dummy)
 				&& *(sec + strlen(sec) - 1) == ')') {
 			len = 3;	/* LD HL,(nn) */
 			if (pass == 2) {
-				i = eval(sec);
-				ops[0] = 0x0a + ((op & OPMASK) << 3);
-				ops[1] = i & 0xff;
-				ops[2] = i >> 8;
+				n = eval(sec);
+				ops[0] = 0x0a + (op & OPMASK3);
+				ops[1] = n & 0xff;
+				ops[2] = n >> 8;
 			}
 		} else {
 			len = 3;	/* LD HL,nn */
 			if (pass == 2) {
-				i = eval(sec);
-				ops[0] = 0x01 + ((op & OPMASK) << 3);
-				ops[1] = i & 0xff;
-				ops[2] = i >> 8;
+				n = eval(sec);
+				ops[0] = 0x01 + (op & OPMASK3);
+				ops[1] = n & 0xff;
+				ops[2] = n >> 8;
 			}
 		}
 		break;
@@ -441,20 +445,20 @@ int op_ld(int base_op, int dummy)
 				&& *(sec + strlen(sec) - 1) == ')') {
 			len = 4;	/* LD I[XY],(nn) */
 			if (pass == 2) {
-				i = eval(sec);
+				n = eval(sec);
 				ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
-				ops[1] = 0x0a + ((op & OPMASK) << 3);
-				ops[2] = i & 0xff;
-				ops[3] = i >> 8;
+				ops[1] = 0x0a + (op & OPMASK3);
+				ops[2] = n & 0xff;
+				ops[3] = n >> 8;
 			}
 		} else {
 			len = 4;	/* LD I[XY],nn */
 			if (pass == 2) {
-				i = eval(sec);
+				n = eval(sec);
 				ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
-				ops[1] = 0x01 + ((op & OPMASK) << 3);
-				ops[2] = i & 0xff;
-				ops[3] = i >> 8;
+				ops[1] = 0x01 + (op & OPMASK3);
+				ops[2] = n & 0xff;
+				ops[3] = n >> 8;
 			}
 		}
 		break;
@@ -462,13 +466,13 @@ int op_ld(int base_op, int dummy)
 		len = ldsp(sec);
 		break;
 	case REGIHL:			/* LD (HL),? */
-		len = ldihl(base_op + ((op & OPMASK) << 3), sec);
+		len = ldihl(base_op + (op & OPMASK3), sec);
 		break;
 	case REGIBC:			/* LD (BC),A */
 	case REGIDE:			/* LD (DE),A */
 		if (get_reg(sec) == REGA) {
 			len = 1;
-			ops[0] = 0x02 + ((op & OPMASK) << 3);
+			ops[0] = 0x02 + (op & OPMASK3);
 		} else {		/* illegal operand */
 			len = 1;
 			ops[0] = 0;
@@ -484,7 +488,7 @@ int op_ld(int base_op, int dummy)
 		if (strncmp(operand, "(IX+", 4) == 0	/* LD (I[XY]+d),? */
 		    || strncmp(operand, "(IY+", 4) == 0)
 			len = ldiixy(operand[2] == 'Y' ? 0xfd : 0xdd,
-				     base_op + ((REGIHL & OPMASK) << 3), sec);
+				     base_op + (REGIHL & OPMASK3), sec);
 		else if (*operand == '(')		/* LD (nn),? */
 			len = ldinn(sec);
 		else {			/* invalid operand */
@@ -499,9 +503,11 @@ int op_ld(int base_op, int dummy)
 /*
  *	LD [A,B,C,D,E,H,L],?
  */
-int ldreg(int base_op, char *sec)
+int ldreg(BYTE base_op, char *sec)
 {
-	register int op, len, i;
+	register BYTE op;
+	register WORD n;
+	register int len;
 
 	len = 0;			/* silence compiler */
 	switch (op = get_reg(sec)) {
@@ -514,7 +520,7 @@ int ldreg(int base_op, char *sec)
 	case REGL:			/* LD reg,L */
 	case REGIHL:			/* LD reg,(HL) */
 		len = 1;
-		ops[0] = base_op + (op & OPMASK);
+		ops[0] = base_op + (op & OPMASK0);
 		break;
 	case REGIXH:			/* LD reg,IXH (undoc) */
 	case REGIXL:			/* LD reg,IXL (undoc) */
@@ -523,7 +529,7 @@ int ldreg(int base_op, char *sec)
 		if ((base_op & 0xf0) != 0x60) { /* only for A,B,C,D,E */
 			len = 2;
 			ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
-			ops[1] = base_op + (op & OPMASK);
+			ops[1] = base_op + (op & OPMASK0);
 		} else {		/* not for H, L */
 			len = 1;
 			ops[0] = 0;
@@ -540,12 +546,12 @@ int ldreg(int base_op, char *sec)
 			case REGR:	/* LD A,R */
 				len = 2;
 				ops[0] = 0xed;
-				ops[1] = 0x57 + ((op & OPMASK) << 3);
+				ops[1] = 0x57 + (op & OPMASK3);
 				break;
 			case REGIBC:	/* LD A,(BC) */
 			case REGIDE:	/* LD A,(DE) */
 				len = 1;
-				ops[0] = 0x0a + ((op & OPMASK) << 3);
+				ops[0] = 0x0a + (op & OPMASK3);
 				break;
 			}
 		} else {		/* not A */
@@ -561,22 +567,22 @@ int ldreg(int base_op, char *sec)
 			if (pass == 2) {
 				*(sec + 3) = '('; /* replace '+' */
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
-				ops[1] = base_op + (REGIHL & OPMASK);
+				ops[1] = base_op + (REGIHL & OPMASK0);
 				ops[2] = chk_sbyte(eval(sec + 3));
 			}
 		} else if (base_op == 0x78 /* only for A */
 			   && *sec == '(' && *(sec + strlen(sec) - 1) == ')') {
 			len = 3;	/* LD A,(nn) */
 			if (pass == 2) {
-				i = eval(sec);
+				n = eval(sec);
 				ops[0] = 0x3a;
-				ops[1] = i & 255;
-				ops[2] = i >> 8;
+				ops[1] = n & 0xff;
+				ops[2] = n >> 8;
 			}
 		} else {		/* LD reg,n */
 			len = 2;
 			if (pass == 2) {
-				ops[0] = base_op - 0x40 + (REGIHL & OPMASK);
+				ops[0] = base_op - 0x40 + (REGIHL & OPMASK0);
 				ops[1] = chk_byte(eval(sec));
 			}
 		}
@@ -597,9 +603,10 @@ int ldreg(int base_op, char *sec)
 /*
  *	LD IX[HL],? (undoc)
  */
-int ldixhl(int base_op, char *sec)
+int ldixhl(BYTE base_op, char *sec)
 {
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD IX[HL],A (undoc) */
@@ -611,13 +618,13 @@ int ldixhl(int base_op, char *sec)
 	case REGIXL:			/* LD IX[HL],IXL (undoc) */
 		len = 2;
 		ops[0] = 0xdd;
-		ops[1] = base_op + (op & OPMASK);
+		ops[1] = base_op + (op & OPMASK0);
 		break;
 	case NOREG:			/* LD IX[HL],n (undoc) */
 		len = 3;
 		if (pass == 2) {
 			ops[0] = 0xdd;
-			ops[1] = base_op - 0x40 + (REGIHL & OPMASK);
+			ops[1] = base_op - 0x40 + (REGIHL & OPMASK0);
 			ops[2] = chk_byte(eval(sec));
 		}
 		break;
@@ -637,9 +644,10 @@ int ldixhl(int base_op, char *sec)
 /*
  *	LD IY[HL],? (undoc)
  */
-int ldiyhl(int base_op, char *sec)
+int ldiyhl(BYTE base_op, char *sec)
 {
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD IY[HL],A (undoc) */
@@ -651,13 +659,13 @@ int ldiyhl(int base_op, char *sec)
 	case REGIYL:			/* LD IY[HL],IYL (undoc) */
 		len = 2;
 		ops[0] = 0xfd;
-		ops[1] = base_op + (op & OPMASK);
+		ops[1] = base_op + (op & OPMASK0);
 		break;
 	case NOREG:			/* LD IY[HL],n (undoc) */
 		len = 3;
 		if (pass == 2) {
 			ops[0] = 0xfd;
-			ops[1] = base_op - 0x40 + (REGIHL & OPMASK);
+			ops[1] = base_op - 0x40 + (REGIHL & OPMASK0);
 			ops[2] = chk_byte(eval(sec));
 		}
 		break;
@@ -679,7 +687,9 @@ int ldiyhl(int base_op, char *sec)
  */
 int ldsp(char *sec)
 {
-	register int op, len, i;
+	register BYTE op;
+	register WORD n;
+	register int len;
 
 	switch (op = get_reg(sec)) {
 	case REGHL:			/* LD SP,HL */
@@ -696,19 +706,19 @@ int ldsp(char *sec)
 		if (*sec == '(' && *(sec + strlen(sec) - 1) == ')') {
 			len = 4;	/* LD SP,(nn) */
 			if (pass == 2) {
-				i = eval(sec);
+				n = eval(sec);
 				ops[0] = 0xed;
 				ops[1] = 0x7b;
-				ops[2] = i & 0xff;
-				ops[3] = i >> 8;
+				ops[2] = n & 0xff;
+				ops[3] = n >> 8;
 			}
 		} else {
 			len = 3;	/* LD SP,nn */
 			if (pass == 2) {
-				i = eval(sec);
+				n = eval(sec);
 				ops[0] = 0x31;
-				ops[1] = i & 0xff;
-				ops[2] = i >> 8;
+				ops[1] = n & 0xff;
+				ops[2] = n >> 8;
 			}
 		}
 		break;
@@ -728,9 +738,10 @@ int ldsp(char *sec)
 /*
  *	LD (HL),?
  */
-int ldihl(int base_op, char *sec)
+int ldihl(BYTE base_op, char *sec)
 {
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (HL),A */
@@ -741,12 +752,12 @@ int ldihl(int base_op, char *sec)
 	case REGH:			/* LD (HL),H */
 	case REGL:			/* LD (HL),L */
 		len = 1;
-		ops[0] = base_op + (op & OPMASK);
+		ops[0] = base_op + (op & OPMASK0);
 		break;
 	case NOREG:			/* LD (HL),n */
 		len = 2;
 		if (pass == 2) {
-			ops[0] = base_op - 0x40 + (REGIHL & OPMASK);
+			ops[0] = base_op - 0x40 + (REGIHL & OPMASK0);
 			ops[1] = chk_byte(eval(sec));
 		}
 		break;
@@ -766,9 +777,10 @@ int ldihl(int base_op, char *sec)
 /*
  *	LD (I[XY]+d),?
  */
-int ldiixy(int prefix, int base_op, char *sec)
+int ldiixy(BYTE prefix, BYTE base_op, char *sec)
 {
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (I[XY]+d),A */
@@ -782,7 +794,7 @@ int ldiixy(int prefix, int base_op, char *sec)
 		if (pass == 2) {
 			operand[3] = '('; /* replace '+' */
 			ops[0] = prefix;
-			ops[1] = base_op + (op & OPMASK);
+			ops[1] = base_op + (op & OPMASK0);
 			ops[2] = chk_sbyte(eval(&operand[3]));
 		}
 		break;
@@ -791,7 +803,7 @@ int ldiixy(int prefix, int base_op, char *sec)
 		if (pass == 2) {
 			operand[3] = '('; /* replace '+' */
 			ops[0] = prefix;
-			ops[1] = base_op - 0x40 + (REGIHL & OPMASK);
+			ops[1] = base_op - 0x40 + (REGIHL & OPMASK0);
 			ops[2] = chk_sbyte(eval(&operand[3]));
 			ops[3] = chk_byte(eval(sec));
 		}
@@ -814,16 +826,18 @@ int ldiixy(int prefix, int base_op, char *sec)
  */
 int ldinn(char *sec)
 {
-	register int op, len, i;
+	register BYTE op;
+	register WORD n;
+	register int len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (nn),A */
 		len = 3;
 		if (pass == 2) {
-			i = eval(operand);
+			n = eval(operand);
 			ops[0] = 0x32;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
+			ops[1] = n & 0xff;
+			ops[2] = n >> 8;
 		}
 		break;
 	case REGBC:			/* LD (nn),BC */
@@ -831,31 +845,31 @@ int ldinn(char *sec)
 	case REGSP:			/* LD (nn),SP */
 		len = 4;
 		if (pass == 2) {
-			i = eval(operand);
+			n = eval(operand);
 			ops[0] = 0xed;
-			ops[1] = 0x43 + ((op & OPMASK) << 3);
-			ops[2] = i & 0xff;
-			ops[3] = i >> 8;
+			ops[1] = 0x43 + (op & OPMASK3);
+			ops[2] = n & 0xff;
+			ops[3] = n >> 8;
 		}
 		break;
 	case REGHL:			/* LD (nn),HL */
 		len = 3;
 		if (pass == 2) {
-			i = eval(operand);
+			n = eval(operand);
 			ops[0] = 0x22;
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
+			ops[1] = n & 0xff;
+			ops[2] = n >> 8;
 		}
 		break;
 	case REGIX:			/* LD (nn),IX */
 	case REGIY:			/* LD (nn),IY */
 		len = 4;
 		if (pass == 2) {
-			i = eval(operand);
+			n = eval(operand);
 			ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
 			ops[1] = 0x22;
-			ops[2] = i & 0xff;
-			ops[3] = i >> 8;
+			ops[2] = n & 0xff;
+			ops[3] = n >> 8;
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -874,10 +888,11 @@ int ldinn(char *sec)
 /*
  *	ADD ?,?
  */
-int op_add(int base_op, int base_op16)
+int op_add(BYTE base_op, BYTE base_op16)
 {
 	register char *sec;
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
@@ -891,7 +906,7 @@ int op_add(int base_op, int base_op16)
 		case REGDE:		/* ADD HL,DE */
 		case REGHL:		/* ADD HL,HL */
 		case REGSP:		/* ADD HL,SP */
-			ops[0] = base_op16 + ((op & OPMASK) << 3);
+			ops[0] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
@@ -910,7 +925,7 @@ int op_add(int base_op, int base_op16)
 		case REGIX:		/* ADD IX,IX */
 		case REGSP:		/* ADD IX,SP */
 			ops[0] = 0xdd;
-			ops[1] = base_op16 + ((op & OPMASK) << 3);
+			ops[1] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
@@ -931,7 +946,7 @@ int op_add(int base_op, int base_op16)
 		case REGIY:		/* ADD IY,IY */
 		case REGSP:		/* ADD IY,SP */
 			ops[0] = 0xfd;
-			ops[1] = base_op16 + ((op & OPMASK) << 3);
+			ops[1] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
@@ -957,14 +972,14 @@ int op_add(int base_op, int base_op16)
 	return(len);
 }
 
-
 /*
  *	SBC ?,? and ADC ?,?
  */
-int op_sbadc(int base_op, int base_op16)
+int op_sbadc(BYTE base_op, BYTE base_op16)
 {
 	register char *sec;
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
@@ -979,7 +994,7 @@ int op_sbadc(int base_op, int base_op16)
 		case REGHL:		/* SBC/ADC HL,HL */
 		case REGSP:		/* SBC/ADC HL,SP */
 			ops[0] = 0xed;
-			ops[1] = base_op16 + ((op & OPMASK) << 3);
+			ops[1] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
@@ -1008,9 +1023,10 @@ int op_sbadc(int base_op, int base_op16)
 /*
  *	DEC and INC
  */
-int op_decinc(int base_op, int base_op16)
+int op_decinc(BYTE base_op, BYTE base_op16)
 {
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	switch (op = get_reg(operand)) {
 	case REGA:			/* INC/DEC A */
@@ -1022,20 +1038,20 @@ int op_decinc(int base_op, int base_op16)
 	case REGL:			/* INC/DEC L */
 	case REGIHL:			/* INC/DEC (HL) */
 		len = 1;
-		ops[0] = base_op + ((op & OPMASK) << 3);
+		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case REGBC:			/* INC/DEC BC */
 	case REGDE:			/* INC/DEC DE */
 	case REGHL:			/* INC/DEC HL */
 	case REGSP:			/* INC/DEC SP */
 		len = 1;
-		ops[0] = base_op16 + ((op & OPMASK) << 3);
+		ops[0] = base_op16 + (op & OPMASK3);
 		break;
 	case REGIX:			/* INC/DEC IX */
 	case REGIY:			/* INC/DEC IY */
 		len = 2;
 		ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
-		ops[1] = base_op16 + ((op & OPMASK) << 3);
+		ops[1] = base_op16 + (op & OPMASK3);
 		break;
 	case REGIXH:			/* INC/DEC IXH (undoc) */
 	case REGIXL:			/* INC/DEC IXL (undoc) */
@@ -1043,7 +1059,7 @@ int op_decinc(int base_op, int base_op16)
 	case REGIYL:			/* INC/DEC IYL (undoc) */
 		len = 2;
 		ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
-		ops[1] = base_op + ((op & OPMASK) << 3);
+		ops[1] = base_op + (op & OPMASK3);
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(operand, "(IX+", 4) == 0
@@ -1052,7 +1068,7 @@ int op_decinc(int base_op, int base_op16)
 			if (pass == 2) {
 				operand[3] = '('; /* replace '+' */
 				ops[0] = (operand[2] == 'Y') ? 0xfd : 0xdd;
-				ops[1] = base_op + ((REGIHL & OPMASK) << 3);
+				ops[1] = base_op + (REGIHL & OPMASK3);
 				ops[2] = chk_sbyte(eval(&operand[3]));
 			}
 		} else {
@@ -1077,7 +1093,7 @@ int op_decinc(int base_op, int base_op16)
 /*
  *	SUB, AND, XOR, OR, CP
  */
-int op_alu(int base_op, int dummy)
+int op_alu(BYTE base_op, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -1087,9 +1103,10 @@ int op_alu(int base_op, int dummy)
 /*
  *	ADD A, ADC A, SUB, SBC A, AND, XOR, OR, CP
  */
-int aluop(int base_op, char *sec)
+int aluop(BYTE base_op, char *sec)
 {
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* ALUOP {A,}A */
@@ -1101,7 +1118,7 @@ int aluop(int base_op, char *sec)
 	case REGL:			/* ALUOP {A,}L */
 	case REGIHL:			/* ALUOP {A,}(HL) */
 		len = 1;
-		ops[0] = base_op + (op & OPMASK);
+		ops[0] = base_op + (op & OPMASK0);
 		break;
 	case REGIXH:			/* ALUOP {A,}IXH (undoc) */
 	case REGIXL:			/* ALUOP {A,}IXL (undoc) */
@@ -1109,7 +1126,7 @@ int aluop(int base_op, char *sec)
 	case REGIYL:			/* ALUOP {A,}IYL (undoc) */
 		len = 2;
 		ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
-		ops[1] = base_op + (op & OPMASK);
+		ops[1] = base_op + (op & OPMASK0);
 		break;
 	case NOREG:			/* operand isn't register */
 		if (strncmp(sec, "(IX+", 4) == 0
@@ -1118,13 +1135,13 @@ int aluop(int base_op, char *sec)
 			if (pass == 2) {
 				*(sec + 3) = '('; /* replace '+' */
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
-				ops[1] = base_op + (REGIHL & OPMASK);
+				ops[1] = base_op + (REGIHL & OPMASK0);
 				ops[2] = chk_sbyte(eval(sec + 3));
 			}
 		} else {
 			len = 2;	/* ALUOP {A,}n */
 			if (pass == 2) {
-				ops[0] = base_op + 0x40 + (REGIHL & OPMASK);
+				ops[0] = base_op + 0x40 + (REGIHL & OPMASK0);
 				ops[1] = chk_byte(eval(sec));
 			}
 		}
@@ -1145,10 +1162,10 @@ int aluop(int base_op, char *sec)
 /*
  *	OUT
  */
-int op_out(int op_base, int op_basec)
+int op_out(BYTE op_base, BYTE op_basec)
 {
 	register char *sec;
-	register int op;
+	register BYTE op;
 
 	sec = next_arg(operand, NULL);
 	if (*operand == '\0') {		/* missing operand */
@@ -1165,7 +1182,7 @@ int op_out(int op_base, int op_basec)
 		case REGH:		/* OUT (C),H */
 		case REGL:		/* OUT (C),L */
 			ops[0] = 0xed;
-			ops[1] = op_basec + ((op & OPMASK) << 3);
+			ops[1] = op_basec + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
@@ -1175,7 +1192,7 @@ int op_out(int op_base, int op_basec)
 		default:
 			if (undoc_flag && *sec == '0' && *(sec + 1) == '\0') {
 				ops[0] = 0xed; /* OUT (C),0 (undoc) */
-				ops[1] = op_basec + ((REGIHL & OPMASK) << 3);
+				ops[1] = op_basec + (REGIHL & OPMASK3);
 			} else {	/* invalid operand */
 				ops[0] = 0;
 				ops[1] = 0;
@@ -1211,10 +1228,10 @@ int op_out(int op_base, int op_basec)
 /*
  *	IN
  */
-int op_in(int op_base, int op_basec)
+int op_in(BYTE op_base, BYTE op_basec)
 {
 	register char *sec;
-	register int op;
+	register BYTE op;
 
 	sec = next_arg(operand, NULL);
 	if (sec == NULL) {		/* missing operand */
@@ -1231,7 +1248,7 @@ int op_in(int op_base, int op_basec)
 		case REGH:		/* IN H,(C) */
 		case REGL:		/* IN L,(C) */
 			ops[0] = 0xed;
-			ops[1] = op_basec + ((op & OPMASK) << 3);
+			ops[1] = op_basec + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
@@ -1242,7 +1259,7 @@ int op_in(int op_base, int op_basec)
 			if (undoc_flag
 			    && operand[0] == 'F' && operand[1] == '\0') {
 				ops[0] = 0xed;	/* IN F,(C) (undoc) */
-				ops[1] = op_basec + ((REGIHL & OPMASK) << 3);
+				ops[1] = op_basec + (REGIHL & OPMASK3);
 			} else {	/* invalid operand */
 				ops[0] = 0;
 				ops[1] = 0;
@@ -1278,21 +1295,23 @@ int op_in(int op_base, int op_basec)
 /*
  *	RLC, RRC, RL, RR, SLA, SRA, SLL, SRL, BIT, RES, SET
  */
-int op_cbgrp(int base_op, int dummy)
+int op_cbgrp(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
-	register int op, len, i;
+	register BYTE op, bit;
+	register int len;
 
 	UNUSED(dummy);
 
 	len = 2;
-	i = 0;
+	bit = 0;
 	if (base_op >= 0x40) {		/* TRSBIT n,? */
 		sec = next_arg(operand, NULL);
 		if (pass == 2) {
-			i = eval(operand);
-			if (i < 0 || i > 7)
+			bit = chk_byte(eval(operand));
+			if (bit > 7)
 				asmerr(E_VALOUT);
+			bit <<= 3;
 		}
 	} else				/* ROTSHF ? */
 		sec = operand;
@@ -1306,7 +1325,7 @@ int op_cbgrp(int base_op, int dummy)
 	case REGL:			/* CBOP {n,}L */
 	case REGIHL:			/* CBOP {n,}(HL) */
 		ops[0] = 0xcb;
-		ops[1] = base_op + (i << 3) + (op & OPMASK);
+		ops[1] = base_op + bit + (op & OPMASK0);
 		break;
 	case NOREG:			/* CBOP {n,}(I[XY]+d){,reg} */
 		len = 4;
@@ -1314,7 +1333,7 @@ int op_cbgrp(int base_op, int dummy)
 			if (strncmp(sec, "(IX+", 4) == 0
 			    || strncmp(sec, "(IY+", 4) == 0)
 				cbgrp_iixy(*(sec + 2) == 'Y' ? 0xfd : 0xdd,
-					   base_op, i, sec);
+					   base_op, bit, sec);
 			else {		/* invalid operand */
 				ops[0] = 0;
 				ops[1] = 0;
@@ -1340,10 +1359,10 @@ int op_cbgrp(int base_op, int dummy)
 /*
  *	CBOP {n,}(I[XY]+d){,reg}
  */
-void cbgrp_iixy(int prefix, int base_op, int bit, char *sec)
+void cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 {
 	register char *tert;
-	register int op;
+	register BYTE op;
 
 	tert = next_arg(sec, NULL);
 	if (tert != NULL) {
@@ -1360,7 +1379,7 @@ void cbgrp_iixy(int prefix, int base_op, int bit, char *sec)
 				ops[0] = prefix;
 				ops[1] = 0xcb;
 				ops[2] = chk_sbyte(eval(sec + 3));
-				ops[3] = base_op + (bit << 3) + (op & OPMASK);
+				ops[3] = base_op + bit + (op & OPMASK0);
 				break;
 			case NOOPERA:	/* missing operand */
 				ops[0] = 0;
@@ -1388,17 +1407,17 @@ void cbgrp_iixy(int prefix, int base_op, int bit, char *sec)
 		ops[0] = prefix;
 		ops[1] = 0xcb;
 		ops[2] = chk_sbyte(eval(sec + 3));
-		ops[3] = base_op + (bit << 3) + (REGIHL & OPMASK);
+		ops[3] = base_op + bit + (REGIHL & OPMASK0);
 	}
 }
 
 /*
  *	8080 MOV
  */
-int op8080_mov(int base_op, int dummy)
+int op8080_mov(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
-	register int op1, op2;
+	register BYTE op1, op2;
 
 	UNUSED(dummy);
 
@@ -1425,8 +1444,8 @@ int op8080_mov(int base_op, int dummy)
 				ops[0] = 0;
 				asmerr(E_ILLOPE);
 			} else
-				ops[0] = base_op + ((op1 & OPMASK) << 3)
-						 + (op2 & OPMASK);
+				ops[0] = base_op + (op1 & OPMASK3)
+						 + (op2 & OPMASK0);
 			break;
 		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
@@ -1451,9 +1470,9 @@ int op8080_mov(int base_op, int dummy)
 /*
  *	8080 ADC, ADD, ANA, CMP, ORA, SBB, SUB, XRA
  */
-int op8080_alu(int base_op, int dummy)
+int op8080_alu(BYTE base_op, BYTE dummy)
 {
-	register int op;
+	register BYTE op;
 
 	UNUSED(dummy);
 
@@ -1466,7 +1485,7 @@ int op8080_alu(int base_op, int dummy)
 	case REGH:			/* ALUOP H */
 	case REGL:			/* ALUOP L */
 	case REGM:			/* ALUOP M */
-		ops[0] = base_op + (op & OPMASK);
+		ops[0] = base_op + (op & OPMASK0);
 		break;
 	case NOOPERA:			/* missing operand */
 		ops[0] = 0;
@@ -1482,9 +1501,9 @@ int op8080_alu(int base_op, int dummy)
 /*
  *	8080 DCR and INR
  */
-int op8080_dcrinr(int base_op, int dummy)
+int op8080_dcrinr(BYTE base_op, BYTE dummy)
 {
-	register int op;
+	register BYTE op;
 
 	UNUSED(dummy);
 
@@ -1497,7 +1516,7 @@ int op8080_dcrinr(int base_op, int dummy)
 	case REGH:			/* DCR/INR H */
 	case REGL:			/* DCR/INR L */
 	case REGM:			/* DCR/INR M */
-		ops[0] = base_op + ((op & OPMASK) << 3);
+		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
 		ops[0] = 0;
@@ -1513,9 +1532,9 @@ int op8080_dcrinr(int base_op, int dummy)
 /*
  *	8080 INX, DAD, DCX
  */
-int op8080_reg16(int base_op, int dummy)
+int op8080_reg16(BYTE base_op, BYTE dummy)
 {
-	register int op;
+	register BYTE op;
 
 	UNUSED(dummy);
 
@@ -1524,7 +1543,7 @@ int op8080_reg16(int base_op, int dummy)
 	case REGD:			/* INX/DAD/DCX D */
 	case REGH:			/* INX/DAD/DCX H */
 	case REGSP:			/* INX/DAD/DCX SP */
-		ops[0] = base_op + ((op & OPMASK) << 3);
+		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
 		ops[0] = 0;
@@ -1540,16 +1559,16 @@ int op8080_reg16(int base_op, int dummy)
 /*
  *	8080 STAX and LDAX
  */
-int op8080_regbd(int base_op, int dummy)
+int op8080_regbd(BYTE base_op, BYTE dummy)
 {
-	register int op;
+	register BYTE op;
 
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
 	case REGB:			/* STAX/LDAX B */
 	case REGD:			/* STAX/LDAX D */
-		ops[0] = base_op + ((op & OPMASK) << 3);
+		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
 		ops[0] = 0;
@@ -1565,7 +1584,7 @@ int op8080_regbd(int base_op, int dummy)
 /*
  *	8080 ACI, ADI, ANI, CPI, ORI, SBI, SUI, XRI, OUT, IN
  */
-int op8080_imm(int base_op, int dummy)
+int op8080_imm(BYTE base_op, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -1579,15 +1598,15 @@ int op8080_imm(int base_op, int dummy)
 /*
  *	8080 RST
  */
-int op8080_rst(int base_op, int dummy)
+int op8080_rst(BYTE base_op, BYTE dummy)
 {
-	register int op;
+	register BYTE op;
 
 	UNUSED(dummy);
 
 	if (pass == 2) {
-		op = eval(operand);
-		if (op < 0 || op > 7) {
+		op = chk_byte(eval(operand));
+		if (op > 7) {
 			ops[0] = 0;
 			asmerr(E_VALOUT);
 		} else
@@ -1598,9 +1617,9 @@ int op8080_rst(int base_op, int dummy)
 /*
  *	8080 PUSH and POP
  */
-int op8080_pupo(int base_op, int dummy)
+int op8080_pupo(BYTE base_op, BYTE dummy)
 {
-	register int op;
+	register BYTE op;
 
 	UNUSED(dummy);
 
@@ -1609,7 +1628,7 @@ int op8080_pupo(int base_op, int dummy)
 	case REGD:			/* PUSH/POP D */
 	case REGH:			/* PUSH/POP H */
 	case REGPSW:			/* PUSH/POP PSW */
-		ops[0] = base_op + ((op & OPMASK) << 3);
+		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
 		ops[0] = 0;
@@ -1627,17 +1646,17 @@ int op8080_pupo(int base_op, int dummy)
  *	     JMP, JNZ, JZ, JNC, JC, JPO, JPE, JP, JM
  *	     CALL, CNZ, CZ, CNC, CC, CPO, CPE, CP, CM
  */
-int op8080_addr(int base_op, int dummy)
+int op8080_addr(BYTE base_op, BYTE dummy)
 {
-	register int i;
+	register WORD n;
 
 	UNUSED(dummy);
 
 	if (pass == 2) {
-		i = eval(operand);
+		n = eval(operand);
 		ops[0] = base_op;
-		ops[1] = i & 0xff;
-		ops[2] = i >> 8;
+		ops[1] = n & 0xff;
+		ops[2] = n >> 8;
 	}
 	return(3);
 }
@@ -1645,10 +1664,11 @@ int op8080_addr(int base_op, int dummy)
 /*
  *	8080 MVI
  */
-int op8080_mvi(int base_op, int dummy)
+int op8080_mvi(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
-	register int op, len;
+	register BYTE op;
+	register int len;
 
 	UNUSED(dummy);
 
@@ -1664,7 +1684,7 @@ int op8080_mvi(int base_op, int dummy)
 	case REGM:			/* MVI M,n */
 		len = 2;
 		if (pass == 2) {
-			ops[0] = base_op + ((op & OPMASK) << 3);
+			ops[0] = base_op + (op & OPMASK3);
 			ops[1] = chk_byte(eval(sec));
 		}
 		break;
@@ -1684,10 +1704,12 @@ int op8080_mvi(int base_op, int dummy)
 /*
  *	8080 LXI
  */
-int op8080_lxi(int base_op, int dummy)
+int op8080_lxi(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
-	register int op, len, i;
+	register BYTE op;
+	register WORD n;
+	register int len;
 
 	UNUSED(dummy);
 
@@ -1699,10 +1721,10 @@ int op8080_lxi(int base_op, int dummy)
 	case REGSP:			/* LXI SP,nn */
 		len = 3;
 		if (pass == 2) {
-			i = eval(sec);
-			ops[0] = base_op + ((op & OPMASK) << 3);
-			ops[1] = i & 0xff;
-			ops[2] = i >> 8;
+			n = eval(sec);
+			ops[0] = base_op + (op & OPMASK3);
+			ops[1] = n & 0xff;
+			ops[2] = n >> 8;
 		}
 		break;
 	case NOOPERA:			/* missing operand */
