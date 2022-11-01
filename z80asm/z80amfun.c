@@ -24,7 +24,7 @@ extern char *next_arg(char *, int *);
 /* z80anum.c */
 extern int is_first_sym_char(char);
 extern int is_sym_char(char);
-extern int eval(char *);
+extern WORD eval(char *);
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -52,7 +52,7 @@ struct mac {					/* macro */
 	int (*mac_rept)(struct expn *);		/* repeat expansion function */
 	char *mac_name;				/* macro name */
 	int mac_refcnt;				/* macro reference counter */
-	int mac_count;				/* REPT count */
+	unsigned mac_count;			/* REPT count */
 	char *mac_irp;				/* IRP, IRPC character list */
 	struct dum *mac_dums, *mac_dums_last;	/* macro dummies */
 	struct line *mac_lines, *mac_lines_last; /* macro body */
@@ -77,7 +77,7 @@ struct expn {					/* macro expansion */
 	struct loc *expn_locs, *expn_locs_last;	/* local labels */
 	struct line *expn_line;			/* current expansion line */
 	int expn_iflevel;			/* iflevel before expansion */
-	int expn_iter;				/* curr. expansion iteration */
+	unsigned expn_iter;			/* curr. expansion iteration */
 	char *expn_irp;				/* IRP, IRPC character list */
 };
 
@@ -88,7 +88,7 @@ static int mac_asize;				/* size of mac_array */
 static int mac_aused;				/* used entries of mac_array */
 static int mac_aindex;				/* index into mac_array */
 static struct expn mac_expn[MACNEST];		/* macro expansion stack */
-static unsigned mac_loc_cnt;			/* counter for LOCAL labels */
+static WORD mac_loc_cnt;			/* counter for LOCAL labels */
 static char tmp[MAXLINE];			/* temporary buffer */
 static char expr[MAXLINE];			/* expr buffer (for '%') */
 
@@ -656,6 +656,7 @@ char *mac_next_parm(char *s)
 {
 	register char *t, *t1, *u, c;
 	register int n;
+	register WORD x;
 
 	t1 = t = tmp;
 	n = 0;
@@ -708,7 +709,16 @@ char *mac_next_parm(char *s)
 					*u++ = toupper((unsigned char) *s++);
 			}
 			*u = '\0';
-			t += sprintf(t, "%d", eval(expr));
+			x = eval(expr);
+			if (x > 9999)
+				*t++ = (x / 10000) + '0';
+			if (x > 999)
+				*t++ = ((x / 1000) % 10) + '0';
+			if (x > 99)
+				*t++ = ((x / 100) % 10) + '0';
+			if (x > 9)
+				*t++ = ((x / 10) % 10) + '0';
+			*t++ = (x % 10) + '0';
 			t1 = t;
 			break;
 		} else if (*s == '^') {
@@ -749,7 +759,7 @@ char *mac_next_parm(char *s)
 		return(NULL);
 	}
 	*t1 = '\0';
-	return s;
+	return(s);
 }
 
 /*
@@ -853,7 +863,7 @@ void mac_start_macro(struct expn *e)
  */
 void mac_start_rept(struct expn *e)
 {
-	if (e->expn_mac->mac_count <= 0)
+	if (e->expn_mac->mac_count == 0)
 		e->expn_line = NULL;
 }
 
@@ -868,7 +878,7 @@ int mac_rept_rept(struct expn *e)
 /*
  *	ENDM
  */
-int op_endm(int dummy1, int dummy2)
+int op_endm(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -884,7 +894,7 @@ int op_endm(int dummy1, int dummy2)
 /*
  *	EXITM
  */
-int op_exitm(int dummy1, int dummy2)
+int op_exitm(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -900,7 +910,7 @@ int op_exitm(int dummy1, int dummy2)
 /*
  *	IFB, IFNB, IFIDN, IFDIF
  */
-int op_mcond(int op_code, int dummy)
+int op_mcond(BYTE op_code, BYTE dummy)
 {
 	register char *s, *t;
 
@@ -954,7 +964,7 @@ int op_mcond(int op_code, int dummy)
 /*
  *	IRP and IRPC
  */
-int op_irp(int op_code, int dummy)
+int op_irp(BYTE op_code, BYTE dummy)
 {
 	register char *s, *t;
 	register struct mac *m;
@@ -1008,9 +1018,10 @@ int op_irp(int op_code, int dummy)
 /*
  *	LOCAL
  */
-int op_local(int dummy1, int dummy2)
+int op_local(BYTE dummy1, BYTE dummy2)
 {
 	register char *s, *s1;
+	register char c;
 	register struct expn *e;
 	register struct loc *l;
 
@@ -1031,7 +1042,18 @@ int op_local(int dummy1, int dummy2)
 				l = expn_add_loc(e, s);
 				if (mac_loc_cnt == 65535U)
 					asmerr(E_OUTLCL);
-				sprintf(l->loc_val, "??%04x", mac_loc_cnt++);
+				s = l->loc_val;
+				*s++ = '?';
+				*s++ = '?';
+				c = mac_loc_cnt >> 12;
+				*s++ = c + (c < 10 ? '0' : 'W');
+				c = (mac_loc_cnt >> 8) & 0xf;
+				*s++ = c + (c < 10 ? '0' : 'W');
+				c = (mac_loc_cnt >> 4) & 0xf;
+				*s++ = c + (c < 10 ? '0' : 'W');
+				c = mac_loc_cnt++ & 0xf;
+				*s++ = c + (c < 10 ? '0' : 'W');
+				*s = '\0';
 			} else
 				asmerr(E_ILLOPE);
 		}
@@ -1043,7 +1065,7 @@ int op_local(int dummy1, int dummy2)
 /*
  *	MACRO
  */
-int op_macro(int dummy1, int dummy2)
+int op_macro(BYTE dummy1, BYTE dummy2)
 {
 	register char *s, *s1;
 	register struct mac *m;
@@ -1076,7 +1098,7 @@ int op_macro(int dummy1, int dummy2)
 /*
  *	REPT
  */
-int op_rept(int dummy1, int dummy2)
+int op_rept(BYTE dummy1, BYTE dummy2)
 {
 	register struct mac *m;
 

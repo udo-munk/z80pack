@@ -62,14 +62,20 @@
 #define MAXHEX		32	/* max. no bytes/hex record */
 
 /*
+ *	types for working with op-codes, addresses and expressions
+ */
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+
+/*
  *	structure opcode table
  */
 struct opc {
 	const char *op_name;	/* opcode name */
-	int (*op_fun) (int, int); /* function pointer code generation */
-	unsigned char op_c1;	/* first base opcode */
-	unsigned char op_c2;	/* second base opcode */
-	unsigned short op_flags; /* opcode flags */
+	int (*op_fun) (BYTE, BYTE); /* function pointer code gen. */
+	BYTE op_c1;		/* first base opcode */
+	BYTE op_c2;		/* second base opcode */
+	WORD op_flags;		/* opcode flags */
 };
 
 /*
@@ -77,8 +83,8 @@ struct opc {
  */
 struct ope {
 	const char *ope_name;	/* operand name */
-	unsigned char ope_sym;	/* operand symbol value */
-	unsigned char ope_flags; /* operand flags */
+	BYTE ope_sym;		/* operand symbol value */
+	BYTE ope_flags;		/* operand flags */
 };
 
 /*
@@ -96,7 +102,7 @@ struct opset {
  */
 struct sym {
 	char *sym_name;		/* symbol name */
-	int  sym_val;		/* symbol value */
+	WORD sym_val;		/* symbol value */
 	int  sym_refcnt;	/* symbol reference counter */
 	struct sym *sym_next;	/* next entry */
 };
@@ -130,47 +136,51 @@ struct inc {
  *	these are defined as the bits used in opcodes and
  *	may not be changed!
  */
-#define REGB		000	/* register B */
-#define REGC		001	/* register C */
-#define REGD		002	/* register D */
-#define REGE		003	/* register E */
-#define REGH		004	/* register H */
-#define REGL		005	/* register L */
-#define REGIHL		006	/* register indirect HL */
-#define REGM		006	/* register indirect HL (8080) */
-#define REGA		007	/* register A */
-#define REGBC		010	/* register pair BC */
-#define REGDE		012	/* register pair DE */
-#define REGHL		014	/* register pair HL */
-#define REGAF		016	/* register pair AF */
-#define REGPSW		016	/* register pair AF (8080) */
-#define REGIXH		024	/* register IXH */
-#define REGIXL		025	/* register IXL */
-#define REGIX		034	/* register IX */
-#define REGIIX		036	/* register indirect IX */
-#define REGIYH		044	/* register IYH */
-#define REGIYL		045	/* register IYL */
-#define REGIY		054	/* register IY */
-#define REGIIY		056	/* register indirect IY */
-#define REGSP		066	/* register SP */
-#define REGIBC		070	/* register indirect BC */
-#define REGIDE		072	/* register indirect DE */
-#define REGISP		076	/* register indirect SP */
-#define REGI		0100	/* register I */
-#define REGR		0101	/* register R */
-#define FLGNZ		0110	/* flag not zero */
-#define FLGZ		0111	/* flag zero */
-#define FLGNC		0112	/* flag no carry */
-#define FLGC		0113	/* flag carry */
-#define FLGPO		0114	/* flag parity odd */
-#define FLGPE		0115	/* flag parity even */
-#define FLGP		0116	/* flag plus */
-#define FLGM		0117	/* flag minus */
-#define NOOPERA		0176	/* no operand */
-#define NOREG		0177	/* operand isn't register */
+				/* usable with OPMASK0 and OPMASK3 */
+#define REGB		0000	/* register B */
+#define REGC		0011	/* register C */
+#define REGD		0022	/* register D */
+#define REGE		0033	/* register E */
+#define REGH		0044	/* register H */
+#define REGL		0055	/* register L */
+#define REGIHL		0066	/* register indirect HL */
+#define REGM		0066	/* register indirect HL (8080) */
+#define REGA		0077	/* register A */
+#define REGIXH		0244	/* register IXH */
+#define REGIXL		0255	/* register IXL */
+#define REGIYH		0344	/* register IYH */
+#define REGIYL		0355	/* register IYL */
+				/* usable with OPMASK3 */
+#define REGBC		0001	/* register pair BC */
+#define REGDE		0021	/* register pair DE */
+#define REGHL		0041	/* register pair HL */
+#define REGAF		0061	/* register pair AF */
+#define REGPSW		0061	/* register pair AF (8080) */
+#define REGSP		0062	/* register SP */
+#define REGIBC		0003	/* register indirect BC */
+#define REGIDE		0023	/* register indirect DE */
+#define REGISP		0063	/* register indirect SP */
+#define REGIX		0240	/* register IX */
+#define REGIIX		0260	/* register indirect IX */
+#define REGIY		0340	/* register IY */
+#define REGIIY		0360	/* register indirect IY */
+#define REGI		0004	/* register I */
+#define REGR		0014	/* register R */
+#define FLGNZ		0100	/* flag not zero */
+#define FLGZ		0110	/* flag zero */
+#define FLGNC		0120	/* flag no carry */
+#define FLGC		0130	/* flag carry */
+#define FLGPO		0140	/* flag parity odd */
+#define FLGPE		0150	/* flag parity even */
+#define FLGP		0160	/* flag plus */
+#define FLGM		0170	/* flag minus */
 
-#define OPMASK		007	/* bit mask for the registers/flags */
-#define XYMASK		040	/* bit mask for IX/IY */
+#define NOOPERA		0376	/* no operand */
+#define NOREG		0377	/* operand isn't register */
+
+#define OPMASK0		0007	/* << 0 bit mask for the registers */
+#define OPMASK3		0070	/* << 3 bit mask for the registers/flags */
+#define XYMASK		0100	/* bit mask for IX/IY */
 
 /*
  *	definition of operand flags

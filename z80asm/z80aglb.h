@@ -36,8 +36,14 @@ extern char	*infiles[],
 		operand[],
 		title[];
 
-extern unsigned char
-		ops[];
+extern BYTE	ops[];
+
+extern WORD	rpc,
+		pc,
+		a_addr,
+		load_addr,
+		start_addr,
+		hexlen;
 
 extern int	list_flag,
 		sym_flag,
@@ -48,8 +54,6 @@ extern int	list_flag,
 		mac_list_flag,
 		radix,
 		opset,
-		rpc,
-		pc,
 		phs_flag,
 		pass,
 		iflevel,
@@ -62,15 +66,11 @@ extern int	list_flag,
 		errors,
 		errnum,
 		a_mode,
-		a_addr,
-		load_addr,
 		load_flag,
-		start_addr,
 		out_form,
 		symlen,
 		symmax,
 		symsize,
-		hexlen,
 		p_line,
 		ppl;
 
@@ -79,8 +79,9 @@ extern FILE	*srcfp,
 		*lstfp,
 		*errfp;
 
-extern unsigned	c_line,
-		page;
+extern unsigned	page;
+
+extern unsigned long c_line;
 
 extern struct sym *symtab[],
 		  **symarray;

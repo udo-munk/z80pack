@@ -35,7 +35,7 @@
 struct sym *get_sym(char *);
 int hash(char *);
 char *strsave(char *);
-int numcmp(int, int);
+int numcmp(WORD, WORD);
 
 /* z80amain.c */
 extern void fatal(int, const char *);
@@ -84,7 +84,7 @@ struct opc *search_op(char *op_name)
  *	Output: symbol for operand, NOOPERA if empty operand,
  *		NOREG if operand not found
  */
-int get_reg(char *s)
+BYTE get_reg(char *s)
 {
 	register int cond;
 	register struct ope *low, *high, *mid;
@@ -281,11 +281,11 @@ void a_sort_sym(int len)
 /*
  *	compares two 16bit values, result like strcmp()
  */
-int numcmp(int n1, int n2)
+int numcmp(WORD n1, WORD n2)
 {
-	if ((unsigned) (n1 & 0xffff) < (unsigned) (n2 & 0xffff))
+	if (n1 < n2)
 		return(-1);
-	else if ((unsigned) (n1 & 0xffff) > (unsigned) (n2 & 0xffff))
+	else if (n1 > n2)
 		return(1);
 	else
 		return(0);
