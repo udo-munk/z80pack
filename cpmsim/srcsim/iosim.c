@@ -876,15 +876,15 @@ void init_io(void)
 		exit(1);
 	case 0:
 		/* . might not be in path, so check that first */
-		if (access("./receive", X_OK) == 0)
-			execlp("./receive", "receive", "auxiliaryout.txt",
+		if (access("./cpmrecv", X_OK) == 0)
+			execlp("./cpmrecv", "cpmrecv", "auxiliaryout.txt",
 				(char *) NULL);
 		/* should be in path somewhere */
 		else
-			execlp("receive", "receive", "auxiliaryout.txt",
+			execlp("cpmrecv", "cpmrecv", "auxiliaryout.txt",
 				(char *) NULL);
 		/* if not cry and die */
-		LOGE(TAG, "can't exec receive process, compile/install the tools dude");
+		LOGE(TAG, "can't exec cpmrecv process, compile/install the tools dude");
 		kill(0, SIGQUIT);
 		exit(1);
 	}

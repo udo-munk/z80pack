@@ -37,7 +37,7 @@ mkdskimg:
 bin2hex:
 	converts binary files to Intel hex.
 
-receive:
+cpmrecv:
 	This is a process spawned by cpmsim. It reads input from
 	the named pipe auxout and writes all input from the pipe to the
 	file, which is given as first argument. cpmsim spawns this process
@@ -47,9 +47,9 @@ receive:
 	to device PUN: goes into the file auxiliaryout.txt on the
 	host system.
 
-send:
+cpmsend:
 	This program is used to send a file from the host to the
-	simulator. Type send <filename> &, and then run cpmsim.
+	simulator. Type cpmsend <filename> &, and then run cpmsim.
 	The process writes all data from file into the named pipe
 	auxin, which is also connected to I/O-port 5, which is
 	assigned to the CP/M 2 device RDR:. One may use this to
