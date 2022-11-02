@@ -213,7 +213,7 @@ void options(int argc, char *argv[])
 				ver_flag = 1;
 				break;
 			case 'm':
-				if (mac_list_flag < 2)
+				if (mac_list_flag < M_NONE)
 					mac_list_flag++;
 				break;
 			case 'U':
