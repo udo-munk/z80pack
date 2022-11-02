@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:04:18 2022	Page 1
-Source file: bootromt-old.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 18:07:58 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;******************************************************************
@@ -63,11 +61,6 @@ fe14  c3 00 10        51     51         JMP     RUNLOC          ;TRANSFER CONTRO
                       58     58 ;
 fe17  f3              59     59 RCODE:  DI                      ;DISABLE INTERRUPTS
                       60     60 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:04:18 2022	Page 2
-Source file: bootromt-old.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ee17  =               61     61 OFFSET  EQU     RCODE-RUNLOC    ;CALCULATE CODE ADDRESS OFFSET FOR RELOCATION
                       62     62 ;
 fe18  31 56 11        63     63         LXI     SP,STACK-OFFSET ;SET THE STACK DUMMY?
@@ -128,11 +121,6 @@ fe36  c3 07 10       115    115         JMP     CO-OFFSET
                      118    118 ;
 fe39                 119    119 BYTO1:
 fe39  0f             120    120         RRC
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:04:18 2022	Page 3
-Source file: bootromt-old.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fe3a  0f             121    121         RRC
 fe3b  0f             122    122         RRC
 fe3c  0f             123    123         RRC
@@ -193,11 +181,6 @@ fe78  00             177    177         NOP                     ;ALLOW TIME FOR 
 fe79  00             178    178         NOP
 fe7a  00             179    179         NOP
 fe7b  00             180    180         NOP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:04:18 2022	Page 4
-Source file: bootromt-old.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fe7c                 181    181 HOME:
 fe7c  db f8          182    182         IN      DSTAT           ;GET STATUS
 fe7e  0f             183    183         RRC
@@ -258,11 +241,6 @@ fedb                 237    237 HERE:
                      238    238 ;       JMP     START           ;GO TRY BOOTING AGAIN
 fedb  76             239    239         HLT                     ;OR HALT SYSTEM
                      240    240 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:04:18 2022	Page 5
-Source file: bootromt-old.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      241    241 ;
                      242    242 ;COLD BOOT ROUTINE MESSAGES
                      243    243 ;
@@ -297,17 +275,14 @@ ff2d                 253    271         DS      64      ;SETUP STORAGE FOR A RAM
 ff6d  =              254    272 STACK   EQU     $
                      255    273 ;
 ff6d                 256    274         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:04:18 2022	Page 6
-Source file: bootromt-old.asm
-Title:       Symbol table
 
-BYTEO    fe29 	BYTO1    fe39 	BYTO2    fe3d 	BYTO3    fe46 	
-CBMSG    fedc 	CCTRL    0010 	CDATA    0011 	CO       fe1e 	
-CRRDY    0001*	CTRDY    0002 	DCOM     00f8 	DDATA    00fb 	
-DRQER    febf 	DSEC     00fa 	DSEL     00fc 	DSTAT    00f8 	
-DTRK     00f9*	DWAIT    00fc 	HERE     fedb*	HOME     fe7c 	
-INIT     fe59 	LEMSG    feed 	LERR     feca 	LOOP     fe5c 	
-MOVE     fe0a 	MSG      fe49 	MSGA     fe4d 	OFFSET   ee17 	
-RCODE    fe17 	RDCMD    008c 	RDONE    feb2 	REMSG    ff1c 	
-RLOOP    fea5 	RQMSG    ff00 	RUNLOC   1000 	SBOOT    007d 	
-STACK    ff6d 	START    fe6a*	TK0ER    fec6 	
+Symbol table
+
+BYTEO  fe29    BYTO1  fe39    BYTO2  fe3d    BYTO3  fe46    CBMSG  fedc 
+CCTRL  0010    CDATA  0011    CO     fe1e    CRRDY  0001*   CTRDY  0002 
+DCOM   00f8    DDATA  00fb    DRQER  febf    DSEC   00fa    DSEL   00fc 
+DSTAT  00f8    DTRK   00f9*   DWAIT  00fc    HERE   fedb*   HOME   fe7c 
+INIT   fe59    LEMSG  feed    LERR   feca    LOOP   fe5c    MOVE   fe0a 
+MSG    fe49    MSGA   fe4d    OFFSET ee17    RCODE  fe17    RDCMD  008c 
+RDONE  feb2    REMSG  ff1c    RLOOP  fea5    RQMSG  ff00    RUNLOC 1000 
+SBOOT  007d    STACK  ff6d    START  fe6a*   TK0ER  fec6    

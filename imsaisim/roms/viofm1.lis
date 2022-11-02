@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 1
-Source file: viofm1.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:59:28 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;*************************************************************
@@ -63,11 +61,6 @@ f7a6                  56     56 LASTC:  DS   2          ;LAST CHAR ON SCREEN PTR
                       58     58 ; USER ENTRY POINTS
                       59     59 ;***********************************
                       60     60         ORG  VIOFM
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 2
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f800  c3 15 f8        61     61         JMP  INIT               ;INITIALIZATION POINT
 f803  c3 7e f8        62     62         JMP  CHAROUT            ;CHARACTER OUTPUT
 f806  c3 e2 fb        63     63         JMP  MONT               ;MONITOR ENTRY POINT
@@ -128,11 +121,6 @@ f876  32 83 f7       116    116         STA  VDIMDE     ;0=GRAPHICS
 f879  af             118    118 ESCRET: XRA  A
 f87a  32 85 f7       119    119         STA  ESCCNT     ;COUNT=0
 f87d  c9             120    120         RET
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 3
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      121    121 ;****************************************************************
                      122    122 ; THIS IS THE NORMAL ENTRY POINT FOR COMMUNICATING WITH THE
                      123    123 ; VIDIO MONITOR AS YOU WOULD A CRT.
@@ -193,11 +181,6 @@ f8e7  =              177    177 BMPCUR  EQU  $
 f8e7  cd 26 fb       178    178         CALL BMPC       ;BUMP CURSOR CHAR POSITION
 f8ea  cc f9 f8       179    179         CZ   BMPC1      ;DO LINE FEED
 f8ed  3a 91 f7       180    180         LDA  PRTMD      ;PROTECT MODE?
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 4
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f8f0  eb             181    181         XCHG            ;H,L=CURRENT CURSOR PTR
 f8f1  a6             182    182         ANA  M          ;IS IT PROTECTED?
 f8f2  fa e7 f8       183    183         JM   BMPCUR     ;YES,SKIP PROTECTED FIELD
@@ -258,11 +241,6 @@ f94c  e9             235    235         PCHL
                      238    238 ;****************************************
 f94d  11 dc f8       239    239 ESCAPE: LXI  D,BMP10    ;RETURN ADDR
 f950  d5             240    240         PUSH D
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 5
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f951  eb             241    241         XCHG
 f952  21 85 f7       242    242         LXI  H,ESCCNT
 f955  7e             243    243         MOV  A,M        ;ESCCAPE COUNT
@@ -323,11 +301,6 @@ f9a2  eb             297    297         XCHG
 f9a3  21 00 f0       298    298         LXI  H,REFRESH
 f9a6  3a 91 f7       299    299 BLNK1:  LDA  PRTMD      ;IN PROTECTED MODE?
 f9a9  e6 80          300    300         ANI  80H
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 6
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f9ab  a6             301    301         ANA  M          ;PROTECTED?
 f9ac  fa b1 f9       302    302         JM   BLNK2      ;IS PROTECTED, DO NOT BLANK
 f9af  36 20          303    303         MVI  M,' '
@@ -388,11 +361,6 @@ f9fc  01 00 00       357    357         LXI  B,0        ;# CHARS TO END
 f9ff  3a 9f f7       358    358 CHRL1:  LDA  CLINE      ;COLS/LINE
 fa02  93             359    359         SUB  E
 fa03  1c             360    360         INR  E
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 7
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fa04  23             361    361         INX  H
 fa05  0c             362    362         INR  C          ;COUNT INCREASED
 fa06  3d             363    363         DCR  A          ;DNE YET WITH LINE
@@ -453,11 +421,6 @@ fa44  23             417    417         INX  H
 fa45  36 20          418    418 EN1:    MVI  M,' '
 fa47  23             419    419         INX  H
 fa48  0d             420    420         DCR  C
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 8
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fa49  c2 45 fa       421    421         JNZ  EN1
 fa4c  c9             422    422         RET
 fa4d  af             423    423 NMCHM:  XRA  A
@@ -518,11 +481,6 @@ fa89  ee 10          477    477 VIDIO:  XRI  10H
 fa8b  eb             478    478         XCHG            ;H,L=SETCMD ADDR
 fa8c  e9             479    479         PCHL
                      480    480 ;# LINES PER PAGE SWITCH
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 9
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fa8d  ee 02          481    481 LINES:  XRI  02H
 fa8f  eb             482    482         XCHG            ;H,L=SETCMD ADDR
 fa90  e9             483    483         PCHL
@@ -583,11 +541,6 @@ fadd  0d             537    537         DCR  C
 fade  c2 dc fa       538    538         JNZ  FNDT2      ;ROTATE UNTIL FOUND
 fae1  c9             539    539         RET
                      540    540 ;*****************************************************************
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 10
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      541    541 ;TAB TO BEGINNING OF NEXT UNPROTECTED FIELD OR TAB OR HOME IF NONE
                      542    542 ;*****************************************************************
 fae2  af             543    543 TABB:   XRA  A
@@ -648,11 +601,6 @@ fb35  96             597    597         SUB  M          ;ZERO IF EXCEED LINE
 fb36  c0             598    598         RNZ             ;OK AS IS
 fb37  77             599    599         MOV  M,A        ;COL=0
 fb38  2b             600    600         DCX  H
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 11
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fb39  3a a1 f7       601    601         LDA  LPAGE      ;MAX LINES/PAGE
 fb3c  c9             602    602         RET
                      603    603 ;************************************************
@@ -713,11 +661,6 @@ fb88  b0             657    657         ORA  B
 fb89  c8             658    658         RZ              ;DONE
 fb8a  7e             659    659         MOV  A,M
 fb8b  12             660    660         STAX D
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 12
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fb8c  2b             661    661         DCX  H
 fb8d  1b             662    662         DCX  D
 fb8e  0b             663    663         DCX  B
@@ -778,11 +721,6 @@ fbd9  89 fa          717    717         DW   VIDIO
 fbdb  4c             718    718         DB   'L'        ;LINES/PAGE
 fbdc  8d fa          719    719         DW   LINES
 fbde  43             720    720         DB   'C'        ;COLS/LINE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 13
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fbdf  91 fa          721    721         DW   COLS
 fbe1  00             722    722         DB   0          ;TERMINATOR
                      723    723 ;*******************************************************
@@ -843,11 +781,6 @@ fc4a  e9             770    776         PCHL            ;DO IT
                      772    778 ;ENTER BYTE INTO MEMORY AND MODIFY IF DESIRED
                      773    779 ;******************************************************
 fc4b  cd 5b ff       774    780 ENTR:   CALL IHEX       ;START ADDR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 14
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fc4e  cd 50 ff       775    781         CALL CRLF
 fc51  cd b6 fc       776    782         CALL OHEXHL     ;DISPLAY ADDRESS
 fc54  7e             777    783         MOV  A,M        ;GET BYTE IN MEMORY
@@ -908,11 +841,6 @@ fcac  c9             829    835         RET
                      832    838 ;********************************
 fcad  cd 9a ff       833    839 OHEXB:  CALL OHEX
 fcb0  3e 20          834    840         MVI  A,' '
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 15
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fcb2  cd 7e f8       835    841         CALL CHAROUT
 fcb5  c9             836    842         RET
                      837    843 ;*********************************
@@ -973,11 +901,6 @@ fd03  c9             888    894         RET
 fd04  cd 10 ff       892    898 IBYTE:  CALL CHIN       ;READ CHAR
 fd07  cd 74 ff       893    899         CALL ASBI       ;CONVERT TO BINARY
 fd0a  da 07 fe       894    900         JC   ERR2
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 16
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fd0d  87             895    901         ADD  A
 fd0e  87             896    902         ADD  A
 fd0f  87             897    903         ADD  A
@@ -1038,11 +961,6 @@ fd4c  c2 46 fd       951    957         JNZ  MEM1
 fd4f  72             952    958         MOV  M,D        ;RESTORE MEMORY
 fd50  db 03          953    959         IN   3
 fd52  e6 02          954    960         ANI  2          ;BAIL OUT?
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 17
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fd54  c0             955    961         RNZ             ;YES
 fd55  23             956    962         INX  H
 fd56  0b             957    963         DCX  B
@@ -1103,11 +1021,6 @@ fd9a  ca a5 fd      1011   1017         JZ   CMPB2      ;YES, NO PRINT
 fd9d  cd 8d ff      1012   1018         CALL PNTMEM     ;PRINT ADDR,SOURCE DEST
 fda0  eb            1013   1019         XCHG
 fda1  cd 90 ff      1014   1020         CALL PNTMEM+3   ;NO CRLF
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 18
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fda4  eb            1015   1021         XCHG
 fda5  0b            1016   1022 CMPB2:  DCX  B
 fda6  78            1017   1023         MOV  A,B
@@ -1168,11 +1081,6 @@ fde5  c3 dd fd      1071   1077         JMP  MVCUP      ;KEEP GOING
                     1072   1078 ;**************************************************
                     1073   1079 ;LOAD OR EXECUTE CASETTE FILE USING HEADER OR
                     1074   1080 ;USER SPECIFIED START,END,EXEC ADDRESSES
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 19
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1075   1081 ;**************************************************
 fde8  05            1076   1082 EXEC:   DCR  B          ;EXECUTE FLAG
 fde9  c5            1077   1083 LOAD:   PUSH B          ;SAVE EXEC/LOAD FLAG
@@ -1233,11 +1141,6 @@ fe42  b5            1131   1137         ORA  L
 fe43  3e 43         1132   1138         MVI  A,'C'      ;CHECKSUM ERROR
 fe45  c4 7e f8      1133   1139         CNZ  CHAROUT    ;TYPE 'C'
 fe48  c2 50 fe      1134   1140         JNZ  $+8
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 20
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fe4b  3e 2a         1135   1141         MVI  A,'*'
 fe4d  cd 7e f8      1136   1142         CALL CHAROUT    ;TYPE * FOR GOOD RECORD
 fe50  d1            1137   1143         POP  D          ;RETRIEVE MEMORY PTR
@@ -1298,11 +1201,6 @@ feaa  f1            1191   1197         POP  PSW
 feab  d3 00         1192   1198         OUT  0          ;WRITE BYTE
 fead  c9            1193   1199         RET
                     1194   1200 ;*****************************
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 21
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1195   1201 ;GENERATE SYNC STREAM
                     1196   1202 ;*****************************
 feae  cd 5b ff      1197   1203 GEN:    CALL IHEX       ;WAIT FOR RETURN
@@ -1363,11 +1261,6 @@ ff02  3e 20         1251   1257         MVI  A,20H      ;BYTE MODE
 ff04  d3 03         1252   1258         OUT  3
 ff06  c9            1253   1259         RET
                     1254   1260 ;*******************************************
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 22
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1255   1261 ;CASWD-INPUT WORD TO H,L ADD FIRST BYTE ONLY
                     1256   1262 ;TO CHECKSUM
                     1257   1263 ;*******************************************
@@ -1428,11 +1321,6 @@ ff5a  c9            1303   1312         RET
 ff5b  21 00 00      1309   1318 IHEX:   LXI  H,0
 ff5e  cd 10 ff      1310   1319         CALL CHIN       ;READ CHAR
 ff61  f5            1311   1320         PUSH PSW
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 23
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ff62  cd 74 ff      1312   1321         CALL ASBI       ;CONVERT TO BIBARY
 ff65  d2 6a ff      1313   1322         JNC  IHEX1
 ff68  f1            1314   1323         POP  PSW
@@ -1493,11 +1381,6 @@ ffa9  c6 90         1368   1377         ADI  90H
 ffab  27            1369   1378         DAA
 ffac  ce 40         1370   1379         ACI  40H
 ffae  27            1371   1380         DAA
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 24
-Source file: viofm1.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ffaf  cd 7e f8      1372   1381         CALL CHAROUT
 ffb2  c9            1373   1382         RET
                     1374   1383 ;*********************************************
@@ -1554,56 +1437,45 @@ fff9  1b            1424   1433         DB   1BH        ;ESCAPE CODE
 fffa  a9 fc         1425   1434         DW   ESCCO
 fffc  00            1426   1435         DB   0
 fffd                1427   1436         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:45:46 2022	Page 25
-Source file: viofm1.asm
-Title:       Symbol table
 
-ADDCURS  fb3d 	ADDRS    fe80 	ALIGN    feda 	ALL3     fee6 	
-ALL4     fee0 	ASBI     ff74 	ASBI1    ff83 	BCKL1    f989 	
-BCKLNE   f985 	BIAS     ffa7 	BLAN1    f9ce 	BLAN3    f9c2 	
-BLANKL   f9bf 	BLNK1    f9a6 	BLNK2    f9b1 	BLNKS    f99f 	
-BMP1     f8df 	BMP10    f8dc 	BMPC     fb26 	BMPC1    f8f9 	
-BMPCUR   f8e7 	BYTE1    fefa 	BYTESET  fef6 	CAIN2    fe93 	
-CAINCK   fed0 	CAINIT   fe8e 	CALL1    fc47 	CALP1    fb19 	
-CALP2    fb21 	CALPOS   fb0c 	CASIN    fec2 	CASOUT   fea2 	
-CASWD    ff07 	CCHAR    f793 	CCUR     f792 	CHAR1    f8d6 	
-CHARLN   f9ee 	CHAROUT  f87e 	CHARSN   fa5d 	CHIN     ff10 	
-CHIN1    ff21 	CHKSUM   fed3*	CHRL1    f9ff 	CHRL2    fa0f 	
-CLINE    f79f 	CLRT1    faad 	CLRTBS   faa7 	CMDTBL   ffc0 	
-CMP16    fdcf 	CMPB1    fd96 	CMPB2    fda5 	CMPBLK   fd93 	
-COLS     fa91 	CONTROL  f929 	CRET     f98b 	CRLF     ff50 	
-CTRLC    f794 	CTRPORT  f7ff 	CTRTBL   fb92 	CURCOL   f781 	
-CURLIN   f780 	CURPTR   f78f 	DATA     fcef 	DELETE   f9dd 	
-DISP     fc6d 	DISP1    fc92 	DISP2    fc7c 	DLINE    fa29 	
-DLN1     fa31 	EN1      fa45 	ENLINE   fa36 	ENTR     fc4b 	
-ERR1     fe0c 	ERR2     fe07 	ESC1     f960 	ESCAPE   f94d 	
-ESCCDE   f786 	ESCCNT   f785 	ESCCO    fca9 	ESCRET   f879 	
-ESCTBL   fbc0 	EXEC     fde8 	FILL     fd34 	FNDCMD   fc28 	
-FNDCTRL  f945 	FNDESC   f97d 	FNDT1    facc 	FNDT2    fadc 	
-FNDTB    fac4 	FNDTDN   fada 	GEN      feae 	GEN1     feb5 	
-GRAPHIC  fa77 	HEADER   fe04 	HIGH128  fa71 	HOME     f9b8 	
-IBYTE    fd04 	IHEX     ff5b 	IHEX1    ff6a 	INIT     f815 	
-INIT1    f81f 	INPORT   fd66 	INSC3    fb7a 	INSC4    fb85*	
-INSCHR   fb63 	INSCURS  fa95 	INSMDE   f998 	INSRT    f784 	
-INTEL    fcd5 	INVIDIO  f782 	IORET    fd87 	JUMP     fc46 	
-LASTC    f7a6 	LFEED    f8f6 	LINES    fa8d 	LOAD     fde9 	
-LOOKUP   fa11 	LOW128   fa7b 	LP2      fe5a 	LPAGE    f7a1 	
-MEM1     fd46 	MEM2     fd44 	MEMERR   fd5d 	MEMP     fcc3*	
-MEMTEST  fd40 	MONT     fbe2 	MOVE     fd2d 	MOVE1    fd30 	
-MSG      ffb3*	MSGNC    ffb6 	MVCDN    fb87 	MVCUP    fddd 	
-NCHARS   f7a2 	NM1      fe74 	NMCHM    fa4d 	NOUSER   f939 	
-NUCMD    fc1e 	NUESC    f96f 	OHEX     ff9a 	OHEXB    fcad 	
-OHEXHL   fcb6 	OUTPORT  fd67 	PARM2    ff3a 	PARM3    ff4a 	
-PARM4    fdd7 	PNTMEM   ff8d 	PRMPT    fbfc 	PROT     fcbf 	
-PROT1    fccc 	PROTC    f9d7 	PRTECT   f992 	PRTMD    f791 	
-PRUPRF   f7a4 	RAMFND   fd8c 	RAMPTR   f78d 	RDATA    fe30 	
-RDHEAD   fe66 	RDRC1    fe24*	RDRCO    fe21 	RDRCRDS  fe12 	
-REFRESH  f000 	SCR1     f912 	SCR2     f926*	SCR3     f90d 	
-SCRL     fa81 	SCROLL   f900*	SEAR1    fdbe 	SEARCH   fdb1 	
-SETCMD   f83a 	SETD2    fabb 	SETTAB   fab6 	SIGNON   fc29 	
-SIZE     fd20 	SRCP1    ff89 	SRCPNT   ff85 	SYSRAM   f780 	
-TAB      f795 	TAB1     faf1 	TAB2     fb01 	TAB3     fae6 	
-TABB     fae2 	TBLUP1   fa23 	UNPRT    fcc0 	UPLINE   f984 	
-UPLOW    fa85 	USERCMD  f78b 	USERF    f7a5*	USRCTR   f787 	
-USRESC   f789 	VDIMDE   f783 	VIDIO    fa89 	VIOFM    f800 	
-VIOTEST  f809 	XADD     fb59 	XADD3    fb53 	
+Symbol table
+
+ADDCURS fb3d    ADDRS   fe80    ALIGN   feda    ALL3    fee6    ALL4    fee0 
+ASBI    ff74    ASBI1   ff83    BCKL1   f989    BCKLNE  f985    BIAS    ffa7 
+BLAN1   f9ce    BLAN3   f9c2    BLANKL  f9bf    BLNK1   f9a6    BLNK2   f9b1 
+BLNKS   f99f    BMP1    f8df    BMP10   f8dc    BMPC    fb26    BMPC1   f8f9 
+BMPCUR  f8e7    BYTE1   fefa    BYTESET fef6    CAIN2   fe93    CAINCK  fed0 
+CAINIT  fe8e    CALL1   fc47    CALP1   fb19    CALP2   fb21    CALPOS  fb0c 
+CASIN   fec2    CASOUT  fea2    CASWD   ff07    CCHAR   f793    CCUR    f792 
+CHAR1   f8d6    CHARLN  f9ee    CHAROUT f87e    CHARSN  fa5d    CHIN    ff10 
+CHIN1   ff21    CHKSUM  fed3*   CHRL1   f9ff    CHRL2   fa0f    CLINE   f79f 
+CLRT1   faad    CLRTBS  faa7    CMDTBL  ffc0    CMP16   fdcf    CMPB1   fd96 
+CMPB2   fda5    CMPBLK  fd93    COLS    fa91    CONTROL f929    CRET    f98b 
+CRLF    ff50    CTRLC   f794    CTRPORT f7ff    CTRTBL  fb92    CURCOL  f781 
+CURLIN  f780    CURPTR  f78f    DATA    fcef    DELETE  f9dd    DISP    fc6d 
+DISP1   fc92    DISP2   fc7c    DLINE   fa29    DLN1    fa31    EN1     fa45 
+ENLINE  fa36    ENTR    fc4b    ERR1    fe0c    ERR2    fe07    ESC1    f960 
+ESCAPE  f94d    ESCCDE  f786    ESCCNT  f785    ESCCO   fca9    ESCRET  f879 
+ESCTBL  fbc0    EXEC    fde8    FILL    fd34    FNDCMD  fc28    FNDCTRL f945 
+FNDESC  f97d    FNDT1   facc    FNDT2   fadc    FNDTB   fac4    FNDTDN  fada 
+GEN     feae    GEN1    feb5    GRAPHIC fa77    HEADER  fe04    HIGH128 fa71 
+HOME    f9b8    IBYTE   fd04    IHEX    ff5b    IHEX1   ff6a    INIT    f815 
+INIT1   f81f    INPORT  fd66    INSC3   fb7a    INSC4   fb85*   INSCHR  fb63 
+INSCURS fa95    INSMDE  f998    INSRT   f784    INTEL   fcd5    INVIDIO f782 
+IORET   fd87    JUMP    fc46    LASTC   f7a6    LFEED   f8f6    LINES   fa8d 
+LOAD    fde9    LOOKUP  fa11    LOW128  fa7b    LP2     fe5a    LPAGE   f7a1 
+MEM1    fd46    MEM2    fd44    MEMERR  fd5d    MEMP    fcc3*   MEMTEST fd40 
+MONT    fbe2    MOVE    fd2d    MOVE1   fd30    MSG     ffb3*   MSGNC   ffb6 
+MVCDN   fb87    MVCUP   fddd    NCHARS  f7a2    NM1     fe74    NMCHM   fa4d 
+NOUSER  f939    NUCMD   fc1e    NUESC   f96f    OHEX    ff9a    OHEXB   fcad 
+OHEXHL  fcb6    OUTPORT fd67    PARM2   ff3a    PARM3   ff4a    PARM4   fdd7 
+PNTMEM  ff8d    PRMPT   fbfc    PROT    fcbf    PROT1   fccc    PROTC   f9d7 
+PRTECT  f992    PRTMD   f791    PRUPRF  f7a4    RAMFND  fd8c    RAMPTR  f78d 
+RDATA   fe30    RDHEAD  fe66    RDRC1   fe24*   RDRCO   fe21    RDRCRDS fe12 
+REFRESH f000    SCR1    f912    SCR2    f926*   SCR3    f90d    SCRL    fa81 
+SCROLL  f900*   SEAR1   fdbe    SEARCH  fdb1    SETCMD  f83a    SETD2   fabb 
+SETTAB  fab6    SIGNON  fc29    SIZE    fd20    SRCP1   ff89    SRCPNT  ff85 
+SYSRAM  f780    TAB     f795    TAB1    faf1    TAB2    fb01    TAB3    fae6 
+TABB    fae2    TBLUP1  fa23    UNPRT   fcc0    UPLINE  f984    UPLOW   fa85 
+USERCMD f78b    USERF   f7a5*   USRCTR  f787    USRESC  f789    VDIMDE  f783 
+VIDIO   fa89    VIOFM   f800    VIOTEST f809    XADD    fb59    XADD3   fb53 

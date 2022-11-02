@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:19:04 2022	Page 1
-Source file: kscope.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:48:37 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0049  d1              58     58         POP  D
 004a  c1              59     59         POP  B
 004b  1d              60     60         DCR  E
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:19:04 2022	Page 2
-Source file: kscope.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 004c  c2 0b 00        61     61         JNZ  000BH
 004f  04              62     62         INR  B
 0050  0c              63     63         INR  C

@@ -810,7 +810,7 @@ SR4:	AND	1FH	    		;STRIP FLAGS FROM ENTRY
 	CP	'H'+CASE
 	LD	A,'L'+CASE
 	CALL	Z,PCHR
-	XOR	'L'+CASE XOR '='	;CLEAR CY, A = '='.
+	XOR	'L'+CASE ^ '='		;CLEAR CY, A = '='.
 	BIT	0,C	    		; PRIME?
 	JR	Z,SR5
 	LD	A,''''

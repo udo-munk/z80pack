@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 1
-Source file: als8-rom.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:50:33 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -63,11 +61,6 @@ e01c  5f              57     57         MOV     E,A             ;ELSE MOVE BINAR
 e01d  16 00           58     58         MVI     D,0             ;AND ZERO TO D
 e01f  19              59     59         DAD     D               ;AND ADD TO 10X ORIG. NUMBER
 e020  03              60     60         INX     B               ;NOW POINT TO NEXT DIGIT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 2
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e021  c3 0d e0        61     61         JMP     ADE1            ;AND PROCESS IT
                       62     62 ;
                       63     63 ;LOWEST LEVEL ENTRY POINT -- INITIALIZES EVERYTHING
@@ -128,11 +121,6 @@ e082  da 57 e8       117    117         JC      LINE            ;NEW LINE IF 1ST
 e085  cd 15 e5       118    118         CALL    VALC            ;EXTRACT ASCII & BINARY ARGS
 e088  06 04          119    119         MVI     B,4             ;LENGTH OF ALS8 COMMANDS
 e08a  11 e6 e3       120    120         LXI     D,CTAB          ;POINT AT COMMAND TABLE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 3
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e08d  cd 28 e2       121    121         CALL    COMS            ;SEE IF COMMAND IS IN TABLE
 e090  e5             122    122         PUSH    H               ;SAVE H,L PNTR INTO LINE
 e091  ca ac e0       123    123         JZ      LE0AC           ;MATCH WAS FOUND
@@ -193,11 +181,6 @@ e0eb  cd 8d e6       176    177         CALL    LE68D           ;SEARCH DIRECTOR
 e0ee  c2 fe e0       177    178         JNZ     LE0FE           ;NAME FOUND
 e0f1  cd 1c e5       178    179         CALL    VCHK            ;NOT FOUND - CHECK FOR PARMS
 e0f4  3a de d0       179    180         LDA     FEF             ;GET FREE ENTRY FOUND FLAG
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 4
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e0f7  b7             180    181         ORA     A               ;SET FLAGS
 e0f8  ca cc e5       181    182         JZ      LE5CC           ;NO ENTRIES LEFT - PRT "FULL"
 e0fb  2a dc d0       182    183         LHLD    FREAD           ;GET ADDR OF FREE ENTRY
@@ -258,11 +241,6 @@ e157  2a 05 d1       236    237 LE157:  LHLD    OPRD            ;GET ADDRESS OF 
                      237    238 ;
                      238    239 ;STORE I/O JUMPS TO ADDRESSES POINTED TO BY CONTENTS OF
                      239    240 ;H,L -- SYSIO, OR IF ENTERD IN LINE, ONE OF THE OTHER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 5
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      240    241 ;I/O DRIVERS
                      241    242 ;
 e15a  cd 82 e9       242    243 LE15A:  CALL    LODM            ;GET THE 4 BYTES OF 2 ADDRESSES
@@ -323,11 +301,6 @@ e1bc  cd cf d0       296    297 CHAR:   CALL    OUT8            ;ECHO THE CHAR
 e1bf  fe 20          297    298         CPI     ' '             ;MAKE SURE IT'S PRINTABLE
 e1c1  da 7a e1       298    299         JC      NEXT            ;SKIP IT IF IT'S CNTL CHAR
 e1c4  77             299    300         MOV     M,A             ;ELSE PUT IT IN THE BUFFER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 6
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e1c5  3a 8f d1       300    301         LDA     TERMW           ;GET TERMINAL WIDTH
 e1c8  bd             301    302         CMP     L               ;SEE IF WE'RE THERE
 e1c9  ca b4 e1       302    303         JZ      BSPA            ;BACKSPACE IF BUFFER OVERFLOW
@@ -388,11 +361,6 @@ e213  da dd e7       352    354         JC      WHAT            ;IF ERROR FOUND
 e216  06 0d          356    358 CRLF:   MVI     B,0DH           ;CAR. RETURN
 e218  cd cf d0       357    359         CALL    OUT8
 e21b  06 0a          358    360 LF:     MVI     B,0AH           ;LINE FEED
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 7
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e21d  cd cf d0       359    361         CALL    OUT8
 e220  06 7f          360    362         MVI     B,7FH           ;NULLS FOR SLOW TERMINALS
 e222  cd cf d0       361    363         CALL    OUT8
@@ -453,11 +421,6 @@ e257  1a             415    417 SEAR:   LDAX    D               ;GET A CHAR FROM
 e258  be             416    418         CMP     M               ;COMPARE TO OTHER STRING
 e259  c2 63 e2       417    419         JNZ     INCA            ;IF IT DOESN'T MATCH
 e25c  23             418    420         INX     H               ;INCREMENT POINTER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 8
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e25d  13             419    421         INX     D               ;INCREMENT POINTER
 e25e  0d             420    422         DCR     C               ;COUNT OF CHARS LEFT TO CHECK
 e25f  c2 57 e2       421    423         JNZ     SEAR            ;IF CHARS LEFT, TEST THEM
@@ -518,11 +481,6 @@ e2b6  12             475    477         STAX    D               ;ELSE PUT LETTER
 e2b7  13             476    478         INX     D               ;INCREMENT DEST. POINTER
 e2b8  c3 ab e2       477    479         JMP     VAL2            ;AND DO NEXT CHARACTER
 e2bb  3e 20          478    480 VAL3:   MVI     A,' '           ;GET A SPACE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 9
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e2bd  0d             479    481 VAL4:   DCR     C               ;DECREMENT COUNT OF CHARS LEFT
 e2be  fa c6 e2       480    482         JM      DONE            ;IF NEGATIVE, DONE
 e2c1  12             481    483         STAX    D               ;PAD REST OF BUFR WITH SPACES
@@ -583,11 +541,6 @@ e30c  6f             535    537         MOV     L,A             ;AND RESTORE TO 
 e30d  03             536    538         INX     B               ;NOW POINT TO NEXT ASCII DIGIT
 e30e  c3 fd e2       537    539         JMP     AHE1            ;AND PROCESS IT
                      538    540 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 10
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      539    541 ;ROUTINE TO CONVERT ASCII HEX DIGIT INTO BINARY
                      540    542 ;
 e311  d6 30          541    543 AHS1:   SUI     30H             ;CONVERT 0-9 TO BINARY
@@ -648,11 +601,6 @@ e356  c3 4b e3       593    595         JMP     LE34B           ;PUT OUT 3 OCTAL
                      596    598 ;
 e359  cd 53 e3       597    599 OOTB:   CALL    OOUT            ;PUT OUT OCTAL NO.
 e35c  06 20          598    600 LE35C:  MVI     B,' '           ;GET A SPACE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 11
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e35e  c3 cf d0       599    601         JMP     OUT8            ;PUT IT OUT
                      600    602 ;
                      601    603 ;OUTPUT NUMBER OF SPACES IN REG C
@@ -713,11 +661,6 @@ e3a5  c6 30          655    657         ADI     30H             ;CONVERT TO NO.
 e3a7  fe 3a          656    658         CPI     '9'+1           ;SEE IF > 9
 e3a9  d8             657    659         RC                      ;IT WASN'T -- DONE
 e3aa  c6 07          658    660         ADI     7               ;ADD 7 TO GET LETTER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 12
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e3ac  c9             659    661         RET                     ;DONE
                      660    662 ;
                      661    663 ;BINARY TO DECIMAL
@@ -778,11 +721,6 @@ e3f6  ea 2c          715    717         DB      (DELT SHR 8) AND 0FFH, DELT AND 
 e3f8  4d 4f 44 45    716    718         DB      'MODE'
 e3fc  e5 8c          717    719         DB      (MODE SHR 8) AND 0FFH, MODE AND 0FFH
 e3fe  46 43 48 4b    718    720         DB      'FCHK'
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 13
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e402  e6 d3          719    721         DB      (FCHK SHR 8) AND 0FFH, FCHK AND 0FFH
 e404  46 4f 52 4d    720    722         DB      'FORM'
 e408  e6 cc          721    723         DB      (FORM SHR 8) AND 0FFH, FORM AND 0FFH
@@ -843,11 +781,6 @@ e48f  3e 04          775    777 LE48F:  MVI     A,4             ;PRINT 4 ACROSS
 e491  32 f3 d0       776    778         STA     CCNT            ;SAVE AS COUNT
 e494  cd 16 e2       777    779         CALL    CRLF            ;START ON NEW LINE
 e497  7e             778    780 LE497:  MOV     A,M             ;GET 1ST CHAR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 14
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e498  b7             779    781         ORA     A               ;END OF TABLE ?
 e499  ca ee e4       780    782         JZ      LE4EE           ;THEN PRINT END ADDRESS
 e49c  cd a8 ee       781    783         CALL    LEEA8           ;PRINT 1 SYMBOL & VALUE
@@ -908,11 +841,6 @@ e4ee  eb             835    837 LE4EE:  XCHG                    ;POINTER FROM D,
 e4ef  cd 16 e2       836    838         CALL    CRLF            ;START ON NEW LINE
 e4f2  c3 5c e5       837    839         JMP     ADOUT           ;PRINT ADDR POINTED TO BY H,L
                      838    840 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 15
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      839    841 ;CUSTOM COMMAND TABLE MANAGEMENT
                      840    842 ;
 e4f5  21 e8 d1       841    843 CUST:   LXI     H,IBUF+4        ;POINT AT 5TH CHAR
@@ -973,11 +901,6 @@ e559  c3 2c e5       893    895         JMP     LE52C           ;DO ANOTHER LINE
                      896    898 ;
                      897    899 ;NOTE THAT THIS ROUTINE TAKES ADVANTAGE (?) OF THE FACT THAT
                      898    900 ;BINO USES THE CARRY BIT TO OUTPUT A SINGLE BYTE IN A AS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 16
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      899    901 ;XXX WHERE XXX MAY BE 777 (INCLUDING CARRY) AND IS NOT
                      900    902 ;LIMITED TO 377.  ADDRESSES THUS COME OUT AS A SINGLE 16 BIT
                      901    903 ;NUMBER RATHER THAN IN THE MORE COMMON "SPLIT OCTAL" CONSISTING
@@ -1038,11 +961,6 @@ e5b4  ca 18 e6       955    957         JZ      FOUT            ;NO NAME GIVEN -
 e5b7  cd 8a e6       956    958         CALL    FSEA            ;LOOK UP FILE
 e5ba  eb             957    959         XCHG                    ;D,E HAS ADDR OF DIR. ENTRY
 e5bb  c2 d2 e5       958    960         JNZ     TEST            ;IF DIR. ENTRY FOUND
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 17
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      959    961 ;
                      960    962 ;ENTRY MATCHING FBUF NOT FOUND
                      961    963 ;
@@ -1103,11 +1021,6 @@ e607  22 07 d0      1015   1017         SHLD    EOFP            ;AND END OF FILE
 e60a  7d            1016   1018         MOV     A,L             ;TEST FOR ADDR = 0
 e60b  b4            1017   1019         ORA     H               ;
 e60c  ca 11 e6      1018   1020         JZ      FIL35           ;YES - DELETE IT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 18
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e60f  36 01         1019   1021         MVI     M,1             ;NO - PUT EOF MARK AT BOFP
 e611  af            1020   1022 FIL35:  XRA     A               ;BINARY ZERO
 e612  32 09 d0      1021   1023         STA     MAXL            ;AT MAX. LINE NO.
@@ -1168,11 +1081,6 @@ e666  cd 5c e3      1075   1077 LE666:  CALL    LE35C           ;PRINT SPACE
 e669  5e            1076   1078         MOV     E,M             ;GET BYTE OF BOFP OR EOFP
 e66a  23            1077   1079         INX     H               ;POINT TO 2ND BYTE
 e66b  56            1078   1080         MOV     D,M             ;GET IT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 19
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e66c  e5            1079   1081         PUSH    H               ;SAVE POINTER INTO FILE DIR.
 e66d  cd 5c e5      1080   1082         CALL    ADOUT           ;PRINT ADDRESS
 e670  cd 5c e3      1081   1083         CALL    LE35C           ;AND TRAILING SPACE
@@ -1233,11 +1141,6 @@ e6b6  11 08 00      1135   1137 FSE15:  LXI     D,FELEN-NMLEN
 e6b9  19            1136   1138         DAD     D               ;H,L POINTS TO NEXT ENTRY
 e6ba  eb            1137   1139         XCHG                    ;ENTRY ADDR TO D,E
 e6bb  05            1138   1140         DCR     B               ;COUNT OF FILES IN DIR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 20
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e6bc  c8            1139   1141         RZ                      ;NO FILES LEFT TO SEARCH
 e6bd  c3 93 e6      1140   1142         JMP     FSE10           ;SEARCH REMAINING FILES
                     1141   1143 ;
@@ -1298,11 +1201,6 @@ e70c  da 18 e7      1195   1197         JC      LE718           ;CNTL CHARS NOT 
 e70f  c3 04 e7      1196   1198         JMP     LE704           ;TEST NEXT CHAR IN LINE
 e712  fe 0d         1197   1199 LE712:  CPI     0DH             ;IS CHAR C/R ?
 e714  23            1198   1200         INX     H               ;POINT TO NEXT CHAR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 21
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e715  ca f3 e6      1199   1201         JZ      LE6F3           ;YES - GO ON, CHECK FOR EOF
                     1200   1202 ;
                     1201   1203 ;ERROR
@@ -1363,11 +1261,6 @@ e769  cd 1c e5      1255   1257 RNUM:   CALL    VCHK            ;CHECK FOR REQD.
 e76c  3a e6 d0      1256   1258         LDA     ABUF+7          ;SEE IF INCREMENT SPECIFIED
 e76f  06 05         1257   1259         MVI     B,5             ;DEFAULT INCREMENT
 e771  b7            1258   1260         ORA     A               ;SET FLAGS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 22
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e772  ca 85 e7      1259   1261         JZ      LE785           ;NO INCREMENT GIVEN, USE 5
 e775  01 e6 d0      1260   1262         LXI     B,ABUF+7        ;POINT AT GIVEN INCREMENT
 e778  cd 0a e0      1261   1263         CALL    ADEC            ;CONVERT TO DECIMAL
@@ -1428,11 +1321,6 @@ e7d8  7e            1315   1317         MOV     A,M             ;GET IT
 e7d9  81            1316   1318         ADD     C               ;ADD CARRY FROM PREV. DIGIT
 e7da  c3 b5 e7      1317   1319         JMP     LE7B5           ;AND REPEAT THE PROCESS
                     1318   1320 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 23
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1319   1321 ;GENERAL ERROR MESSAGE ROUTINES
                     1320   1322 ;
 e7dd  21 f1 e7      1321   1323 WHAT:   LXI     H,EMES
@@ -1493,11 +1381,6 @@ e854  c3 17 e8      1370   1377         JMP     ENT1            ;DO MORE BYTES
                     1371   1378 ;
                     1372   1379 ;HERE ARE THE ROUTINES THAT ADD OR REPLACE LINES IN FILES
                     1373   1380 ;BASED ON THEIR LINE NUMBERS.  DELETE IS HANDLED BY A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 24
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1374   1381 ;SEPARATE ROUTINE
                     1375   1382 ;
 e857  fe 30         1376   1383 LINE:   CPI     '0'             ;MAKE SURE 1ST CHAR IS NUMERIC
@@ -1558,11 +1441,6 @@ e8b8  d2 d8 e8      1430   1437         JNC     INSRT           ;LINE GOES INTO 
                     1431   1438 ;
                     1432   1439 ;LINE GOES AT END OF FILE
                     1433   1440 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 25
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e8bb  23            1434   1441         INX     H               ;POINT TO LINE NO.
 e8bc  cd 82 e9      1435   1442         CALL    LODM            ;GET IT IN BCDE
 e8bf  21 0c d0      1436   1443         LXI     H,MAXL+3        ;POINT TO END OF MAXL
@@ -1623,11 +1501,6 @@ e919  2a c9 d1      1490   1497 ZERO:   LHLD    SAVL            ;LINE ADDRESS
 e91c  eb            1491   1498         XCHG                    ;TO D,E
 e91d  2a d2 d0      1492   1499         LHLD    APNT            ;INSERT ADDRESS
 e920  36 0d         1493   1500         MVI     M,0DH           ;REPLACE MOVE TERM. MARK W/CR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 26
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e922  23            1494   1501         INX     H               ;POINT TO WHERE NEW LINE GOES
 e923  0e 01         1495   1502         MVI     C,1             ;MOVE TERMINATION MARK
 e925  cd 70 e9      1496   1503         CALL    LMOV            ;PUT LINE INTO FILE
@@ -1688,11 +1561,6 @@ e972  b9            1550   1557         CMP     C               ;TERMINATION CHA
 e973  c8            1551   1558         RZ                      ;YES - DONE THEN
 e974  77            1552   1559         MOV     M,A             ;NO - MOVE TO DEST.
 e975  23            1553   1560         INX     H               ;INR DESTINATION POINTER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 27
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e976  c3 70 e9      1554   1561         JMP     LMOV            ;DO NEXT CHAR
                     1555   1562 ;
                     1556   1563 ;CHARACTER MOVEMENT ROUTINE TO MOVE FROM D,E TO H,L
@@ -1753,11 +1621,6 @@ e9a4  c9            1607   1614         RET                     ;DONE W/ZERO SET
                     1611   1618 ;
 e9a5  cd 82 e9      1612   1619 NORM:   CALL    LODM            ;GET 4 DIGITS
 e9a8  af            1613   1620         XRA     A               ;GET A BINARY ZERO
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 28
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e9a9  b8            1614   1621         CMP     B               ;ARE ALL DIGITS ZERO ?
 e9aa  c8            1615   1622         RZ                      ;YES - NOTHING TO NORMALIZE
 e9ab  bb            1616   1623 NOR1:   CMP     E               ;NORMALIZED ?
@@ -1818,11 +1681,6 @@ ea08  11 e9 d0      1670   1677         LXI     D,ABUF+10       ;D POINTS TO END
 ea0b  cd 92 e9      1671   1678         CALL    COM0            ;COMPARE LINE NO. & END LIN NO.
 ea0e  d8            1672   1679         RC                      ;RETURN IF > ENDING LINE NO
 ea0f  3a fa d0      1673   1680         LDA     LFMT            ;GET FORMAT FLAG
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 29
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ea12  b7            1674   1681         ORA     A               ;SET FLAGS
 ea13  c4 61 f3      1675   1682         CNZ     LF361           ;TO FORMAT LINE
 ea16  21 df d1      1676   1683         LXI     H,IBUF-5        ;POINT TO START OF LINE
@@ -1883,11 +1741,6 @@ ea6f  da 85 ea      1730   1737         JC      DEL4            ;0DH WAS 1ST CHA
 ea72  3e 0d         1731   1738         MVI     A,0DH           ;COMPARE THIS CHAR TO 0DH
 ea74  be            1732   1739         CMP     M               ;
 ea75  23            1733   1740         INX     H               ;POINT TO NEXT CHAR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 30
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ea76  23            1734   1741         INX     H               ;POINT TO NEXT CHAR
 ea77  ca 7b ea      1735   1742         JZ      DEL3            ;WERE TWO 0DH'S, AT LINE # NOW
 ea7a  23            1736   1743 LEA7A:  INX     H               ;ONLY 1 0DH, 1 MORE==>AT LINE #
@@ -1948,11 +1801,6 @@ ead9  3a e7 d1      1790   1797         LDA     IBUF+3          ;GET ASSEMBLY TY
 eadc  32 00 d1      1791   1798         STA     ASMTY           ;SAVE AS ASSEMBLY TYPE
 eadf  af            1792   1799         XRA     A               ;GET A ZERO
 eae0  2a 32 d1      1793   1800         LHLD    SYMADD          ;POINT TO SYMBOL TABLE START
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 31
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 eae3  77            1794   1801         MOV     M,A             ;PUT IN END OF TABLE MARK
 eae4  32 0a d1      1795   1802         STA     ALST            ;ASSUME LIST TURNED 'ON'
 eae7  32 f9 d0      1796   1803         STA     PASI            ;SET PASS INDICATOR TO PASS 1
@@ -2013,11 +1861,6 @@ eb57  cd 6a e2      1850   1857 PAS1:   CALL    ZBUF            ;CLEAR OUT THE A
 eb5a  32 f9 d0      1851   1858         STA     PASI            ;PUT PASS INDICATOR BACK
 eb5d  21 e4 d1      1852   1859         LXI     H,IBUF          ;POINT TO 1ST CHAR OF LINE
 eb60  22 01 d1      1853   1860         SHLD    PNTR            ;SAVE AS POINTER INTO LINE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 32
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 eb63  7e            1854   1861         MOV     A,M             ;GET 1ST CHAR
 eb64  fe 20         1855   1862         CPI     ' '             ;BLANK ?
 eb66  ca 8e eb      1856   1863         JZ      OPC             ;NO LABEL THEN
@@ -2078,11 +1921,6 @@ ebbe  22 01 d1      1910   1917         SHLD    PNTR            ;AND UPDATE POIN
 ebc1  c9            1911   1918         RET                     ;THEN RETURN
                     1912   1919 ;
                     1913   1920 ;PROCESS PSEUDO OPS IN PASS 1
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 33
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1914   1921 ;H,L POINTS INTO LINE, D,E POINTS INTO OPCODE TABLE
                     1915   1922 ;
 ebc2  cd cc ee      1916   1923 PSU1:   CALL    SBLK            ;SCAN TO OPERAND
@@ -2143,11 +1981,6 @@ ec1e  fe 20         1970   1977         CPI     ' '             ;LINE O.K. ?
 ec20  c2 41 eb      1971   1978         JNZ     LEB41           ;PRINT IT IF NOT
 ec23  c3 a1 ec      1972   1979         JMP     RES21           ;ELSE ADD B,C TO PGM. CTR.
                     1973   1980 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 34
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1974   1981 ;DO ASC PSEUDO OP
                     1975   1982 ;
 ec26  7e            1976   1983 LEC26:  MOV     A,M             ;GET 1ST NON-SPACE CHAR
@@ -2208,11 +2041,6 @@ ec8c  ea 39 ee      2027   2034         JPE     LEE39           ;END PSEUDO OP
 ec8f  cd 14 ee      2031   2038 ACO2:   CALL    TYS6            ;GET VALUE & PUT IN MEM
 ec92  c3 e0 eb      2032   2039         JMP     ACO1            ;INR P.C. & RET
                     2033   2040 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 35
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2034   2041 ;DO DS PSEUDO OP IN PASS 2
                     2035   2042 ;
 ec95  cd 5d f1      2036   2043 RES2:   CALL    ASBL            ;GET VALUE IN H,L
@@ -2273,11 +2101,6 @@ ecd6  cd cc ee      2090   2097         CALL    SBLK            ;SCAN TO LABEL T
 ecd9  cd f8 f0      2091   2098         CALL    SLAB            ;LOOKUP LABEL, VALUE IN H,L
 ecdc  da 37 f3      2092   2099         JC      ERRA            ;IF ERROR IN LABEL
 ecdf  c2 25 f3      2093   2100         JNZ     ERRU            ;IF LABEL NOT FOUND
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 36
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ece2  11 00 d3      2094   2101 LECE2:  LXI     D,SYSYM         ;SYSTEM SYMBOL TABLE
 ece5  22 05 d1      2095   2102 LECE5:  SHLD    OPRD            ;SAVE VALUE IN OPRD
 ece8  06 05         2096   2103         MVI     B,LLAB          ;LENGTH OF LABELS
@@ -2338,11 +2161,6 @@ ed4c  22 0b d1      2150   2157         SHLD    OIND            ;OUTPUT POINTER 
 ed4f  2a 01 d1      2151   2158 LED4F:  LHLD    PNTR            ;GET STRING POINTER
 ed52  c1            2152   2159         POP     B               ;RESTORE B,C
 ed53  23            2153   2160         INX     H               ;INCREMENT STRING POINTER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 37
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ed54  c3 15 ed      2154   2161         JMP     LED15           ;DO NEXT BYTE OF STRING
                     2155   2162 ;
                     2156   2163 ;GET HERE WHEN HAVE REACHED 2ND DELIMITER OR C/R
@@ -2403,11 +2221,6 @@ edab  ca 88 ed      2210   2217         JZ      TY31            ;RST INSTRUCTION
 edae  fa 8b ed      2211   2218         JM      TY32            ;ACCUMULATOR INST.
 edb1  c3 88 ed      2212   2219         JMP     TY31            ;INR, DCR INSTRUCTIONS
                     2213   2220 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 38
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2214   2221 ;PROCESS MOV INSTRUCTIONS
                     2215   2222 ;
 edb4  29            2216   2223 TY41:   DAD     H               ;MULT OPRND BY 8 (3 LFT SHIFTS)
@@ -2468,11 +2281,6 @@ ee06  cd e0 ed      2270   2277         CALL    TY56            ;GET REGISTER
 ee09  e6 08         2271   2278         ANI     8               ;CHECK FOR ILLEGAL REGISTER
 ee0b  c4 11 f3      2272   2279         CNZ     ERRR            ;REGISTER ERROR
 ee0e  7b            2273   2280         MOV     A,E             ;GET OPCODE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 39
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ee0f  e6 f7         2274   2281         ANI     0F7H            ;CLEAR BIT IN ERROR
 ee11  cd 1d ee      2275   2282 TY6:    CALL    ASTO            ;STORE OBJECT BYTE
 ee14  cd 5d f1      2276   2283 TYS6:   CALL    ASBL            ;FETCH OPERAND
@@ -2533,11 +2341,6 @@ ee64  01 04 00      2330   2337 LEE64:  LXI     B,LLAB-1        ;OFFSET TO LAST 
 ee67  7e            2331   2338         MOV     A,M             ;GET 1ST CHAR OF NAME
 ee68  b7            2332   2339         ORA     A               ;ZERO ?
 ee69  ca 82 ee      2333   2340         JZ      LEE82           ;REACHED END OF SYMBOL TABLE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 40
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ee6c  09            2334   2341         DAD     B               ;POINT TO LAST CHAR
 ee6d  eb            2335   2342         XCHG                    ;
 ee6e  09            2336   2343         DAD     B               ;POINT TO LAST CHAR
@@ -2598,11 +2401,6 @@ eec1  5e            2390   2397         MOV     E,M             ;IN D,E
 eec2  e5            2391   2398         PUSH    H               ;SAVE POINTER
 eec3  cd 5c e5      2392   2399         CALL    ADOUT           ;PRINT VALUE
 eec6  d1            2393   2400         POP     D               ;RESTORE POINTER TO D,E
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 41
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 eec7  0e 05         2394   2401         MVI     C,5             ;NO OF SPACES AFTER VALUE
 eec9  c3 61 e3      2395   2402         JMP     BLKO            ;PRINT THEM & RETURN
                     2396   2403 ;
@@ -2663,11 +2461,6 @@ ef1f  07            2450   2457         DB      7
 ef20  52 52 43      2451   2458         DB      'RRC'
 ef23  0f            2452   2459         DB      15
 ef24  52 41 4c      2453   2460         DB      'RAL'
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 42
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ef27  17            2454   2461         DB      23
 ef28  52 41 52      2455   2462         DB      'RAR'
 ef2b  1f            2456   2463         DB      31
@@ -2728,11 +2521,6 @@ efa3  41 4e 41      2510   2517         DB      'ANA'
 efa6  a0            2511   2518         DB      160
 efa7  58 52 41      2512   2519         DB      'XRA'
 efaa  a8            2513   2520         DB      168
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 43
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 efab  4f 52 41      2514   2521         DB      'ORA'
 efae  b0            2515   2522         DB      176
 efaf  43 4d 50      2516   2523         DB      'CMP'
@@ -2793,11 +2581,6 @@ f015  50 4f         2570   2577         DB      'PO'
 f017  20            2571   2578         DB      32
 f018  50 45         2572   2579         DB      'PE'
 f01a  28            2573   2580         DB      40
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 44
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f01b  50            2574   2581         DB      'P'
 f01c  00 30         2575   2582         DW      3000H
 f01e  4d            2576   2583         DB      'M'
@@ -2858,11 +2641,6 @@ f074  ca 56 f0      2629   2636         JZ      OP2             ;
 f077  cd 22 f0      2631   2638 OPC3:   CALL    COPC            ;IMMEDIATE INSTRUCTIONS
 f07a  21 cb ed      2632   2639         LXI     H,TYP5
 f07d  0e 02         2633   2640         MVI     C,2             ;2 BYTE INSTRUCTIONS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 45
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f07f  ca b3 f0      2634   2641         JZ      OCNT            ;
 f082  04            2635   2642         INR     B               ;4 CHAR OPCODES
 f083  cd 22 f0      2636   2643         CALL    COPC            ;JMP, CALL, LXI, LDA, STA,
@@ -2923,11 +2701,6 @@ f0dd  c3 c4 f0      2689   2696         JMP     OCN1-3          ;
 f0e0  21 51 f3      2691   2698 LF0E0:  LXI     H,ERRL
 f0e3  c3 db f0      2692   2699         JMP     LF0DB
                     2693   2700 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 46
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f0e6  21 e3 d0      2694   2701 PSEU:   LXI     H,ABUF+4        ;SET BUFFER ADDRESS
 f0e9  7e            2695   2702         MOV     A,M             ;FETCH CHAR AFTER OPCODE
 f0ea  b7            2696   2703         ORA     A               ;IT SHOULD BE ZERO
@@ -2988,11 +2761,6 @@ f135  45            2750   2757         DB      'E'
 f136  03            2751   2758         DB      3
 f137  48            2752   2759         DB      'H'
 f138  04            2753   2760         DB      4
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 47
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f139  4c            2754   2761         DB      'L'
 f13a  05            2755   2762         DB      5
 f13b  4d            2756   2763         DB      'M'
@@ -3053,11 +2821,6 @@ f18c  ca c8 f2      2808   2815         JZ      SEND            ;ALSO END OF FIE
                     2811   2818 ;
 f18f  fe 2b         2812   2819         CPI     '+'             ;CHECK FOR PLUS
 f191  ca a6 f1      2813   2820         JZ      LF1A6           ;STORE 0 AS SIGN
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 48
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f194  04            2814   2821         INR     B               ;MAKE B 01
 f195  fe 2d         2815   2822         CPI     '-'             ;MINUS SIGN ?
 f197  ca a6 f1      2816   2823         JZ      LF1A6           ;SAVE NON-ZERO SIGN
@@ -3118,11 +2881,6 @@ f201  da 37 f3      2870   2877         JC      ERRA            ;ARGUMENT ERROR
 f204  eb            2871   2878 AVAL:   XCHG                    ;OPERAND VALUE IN H,L
 f205  2a 05 d1      2872   2879         LHLD    OPRD            ;FETCH OPERAND VALUE
 f208  af            2873   2880         XRA     A               ;GET A ZERO
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 49
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f209  32 07 d1      2874   2881         STA     OPRI            ;AND CLEAR OPERAND INDICATOR
 f20c  3a 04 d1      2875   2882         LDA     SIGN            ;GET SIGN
 f20f  fe 01         2876   2883         CPI     1               ;MINUS SIGN ?
@@ -3183,11 +2941,6 @@ f250  c3 18 f2      2926   2933         JMP     ASC7            ;TO FINISH UP
 f253  3e 10         2931   2938 LF253:  MVI     A,16            ;16 BITS
 f255  32 f3 d0      2932   2939 LF255:  STA     SCNT            ;SAVE AS COUNT
 f258  29            2933   2940         DAD     H               ;SHIFT LEFT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 50
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f259  eb            2934   2941         XCHG                    ;SWITCH REGISTERS
 f25a  29            2935   2942         DAD     H               ;SHIFT LEFT
 f25b  eb            2936   2943         XCHG                    ;RESTORE REGISTERS
@@ -3248,11 +3001,6 @@ f2bb  0d            2990   2997         DCR     C               ;DECR CHAR COUNT
 f2bc  c2 b6 f2      2991   2998         JNZ     LF2B6           ;DO NEXT CHAR IF NOT DONE
 f2bf  cd 5c e3      2992   2999         CALL    LE35C           ;PUT OUT A SPACE AFTER LINE NO
 f2c2  af            2993   3000 LF2C2:  XRA     A               ;CLEAR FLAGS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 51
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f2c3  26 00         2994   3001         MVI     H,0             ;AND H,L
 f2c5  c3 04 f2      2995   3002         JMP     AVAL            ;AND CONTINUE SEARCH
                     2996   3003 ;
@@ -3313,11 +3061,6 @@ f32a  3e 56         3050   3057 ERRV:   MVI     A,'V'           ;VALUE ERROR
 f32c  c3 13 f3      3051   3058         JMP     ERRR+2
 f32f  3e 4d         3052   3059 ERRM:   MVI     A,'M'           ;MISSING LABEL
 f331  32 db d1      3053   3060         STA     OBUF+18         ;WHERE THE ERROR LETTER GOES
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 52
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f334  c3 41 eb      3054   3061         JMP     LEB41           ;FINISH STATEMENT PROCESSING
 f337  3e 41         3055   3062 ERRA:   MVI     A,'A'           ;ARGUMENT ERROR
 f339  c3 1c f3      3056   3063         JMP     ERRS+2
@@ -3378,11 +3121,6 @@ f391  47            3110   3117         MOV     B,A
 f392  78            3111   3118 LF392:  MOV     A,B
 f393  c6 05         3112   3119         ADI     5
 f395  47            3113   3120         MOV     B,A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 53
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f396  5a            3114   3121 LF396:  MOV     E,D
 f397  0c            3115   3122 LF397:  INR     C
 f398  7e            3116   3123         MOV     A,M
@@ -3443,11 +3181,6 @@ f3e4  01 df d0      3170   3177 TERM:   LXI     B,ABUF          ;POINT TO KEYED 
 f3e7  cd 0a e0      3171   3178         CALL    ADEC            ;CONVERT TO BINARY
 f3ea  7d            3172   3179         MOV     A,L             ;VALUE TO A
 f3eb  d6 1b         3173   3180         SUI     (-(IBUF+1)) AND 0FFH
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 54
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f3ed  fe 5c         3174   3181         CPI     (IBUF+120) AND 0FFH
 f3ef  d2 dd e7      3175   3182         JNC     WHAT            ;IF TERMW > 120 SPECIFIED
 f3f2  32 8f d1      3176   3183         STA     TERMW           ;SAVE IT
@@ -3508,11 +3241,6 @@ f42e  c2 1b f4      3227   3234         JNZ     LF41B           ;JMP IF NOT MVI
 f431  23            3231   3238 LF431:  INX     H               ;POINT TO 2ND BYTE
 f432  7e            3232   3239         MOV     A,M             ;GET IT
 f433  32 4d d1      3233   3240         STA     LD14C+1         ;SAVE AS 2ND BYTE TO SIMULATE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 55
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f436  c3 1b f4      3234   3241         JMP     LF41B           ;SIMULATE INST. EXECUTION
                     3235   3242 ;
                     3236   3243 ;COME HERE FOR LXI, STAX, DAD, LDAX, SHLD, LHLD, STA, LDA
@@ -3573,11 +3301,6 @@ f492  af            3289   3297         XRA     A               ;GET A ZERO
 f493  32 3f d1      3290   3298         STA     LD13E+1         ;CLEAR HIGH ORDER CALLED ADDR
 f496  78            3291   3299         MOV     A,B             ;RESTORE OPCODE TO A
 f497  e6 38         3292   3300         ANI     38H             ;MASK RST TYPE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 56
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f499  32 3e d1      3293   3301         STA     LD13E           ;STORE AS LOW ORDER BYTE
 f49c  c3 11 f5      3294   3302         JMP     LF511           ;PROCESS AS NORMAL CALL
                     3295   3303 ;
@@ -3638,11 +3361,6 @@ f4e9  32 4d d1      3349   3357         STA     LD14C+1         ;SAVE AS SIM 3RD
 f4ec  2b            3350   3358         DCX     H               ;POINT BACK AT 2ND INST BYTE
 f4ed  f1            3351   3359         POP     PSW             ;RESTORE PSW
 f4ee  c9            3352   3360         RET                     ;DONE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 57
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3353   3361 ;
                     3354   3362 ;GET HERE FOR JMP, OUT, IN, XTHL, XCHG, EI, DI INSTRUCTIONS
                     3355   3363 ;
@@ -3703,11 +3421,6 @@ f54e  c3 89 f5      3407   3415         JMP     LF589           ;ILLEGAL OPCODE
                     3410   3418 ;
 f551  78            3411   3419 LF551:  MOV     A,B             ;RESTORE OP CODE
 f552  e6 08         3412   3420         ANI     8               ;MASK CNDX TRUE/FALSE BIT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 58
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f554  4f            3413   3421         MOV     C,A             ;SAVE TRUE/FALSE STATUS
 f555  ca 5a f5      3414   3422         JZ      LF55A           ;JUMP IF NZ,NC,PO,P
 f558  0e c5         3415   3423         MVI     C,0C5H          ;PSW COND FLAG MASK
@@ -3768,11 +3481,6 @@ f5b1  cd d9 f5      3469   3477         CALL    LF5D9           ;PRINT PGM CTR &
 f5b4  cd 72 e1      3470   3478         CALL    READ            ;GET USER'S ANSWER
 f5b7  cd 6a e2      3471   3479         CALL    ZBUF            ;CLEAR ABUF
 f5ba  21 e4 d1      3472   3480         LXI     H,IBUF          ;POINT TO INPUT BUFFER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 59
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f5bd  cd cf ee      3473   3481         CALL    SBL1            ;SCAN PAST SPACES
 f5c0  cd eb f2      3474   3482         CALL    NUMS            ;CONVERT TO BINARY
 f5c3  da 49 f9      3475   3483         JC      LF949           ;IF ERROR IN ANSWER
@@ -3833,11 +3541,6 @@ f629  c3 6a f6      3528   3537         JMP     LF66A           ;THEN PRINT REGS
                     3529   3538 ;
 f62c  4f 55 54 50   3530   3539 LF62C:  DB      'OUTPUT '
 f630  55 54 20      3530   3540
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 60
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f633  0d            3531   3541         DB      0DH
                     3532   3542 ;
                     3533   3543 ;COME HERE TO EXECUTE AN INST.
@@ -3898,11 +3601,6 @@ f694  c2 af f6      3586   3596         JNZ     LF6AF           ;BKPT NOT REACHE
                     3588   3598 ;COME HERE WHEN BREAKPOINT IS REACHED
                     3589   3599 ;
 f697  cd ca f6      3590   3600 LF697:  CALL    LF6CA           ;PRINT REGS, P.C., ETC.
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 61
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f69a  c3 74 f7      3591   3601         JMP     LF774           ;RESTART SIMULATOR
                     3592   3602 ;
                     3593   3603 ;GET HERE AFTER EA. INST IN SIMULATED CONT. RUN MODE
@@ -3963,11 +3661,6 @@ f705  1b            3647   3657         DCX     D               ;POINT TO H
 f706  1a            3648   3658         LDAX    D               ;GET IT
 f707  cd 56 f7      3649   3659         CALL    LF756           ;PRINT IT
 f70a  1b            3650   3660         DCX     D               ;POINT TO L
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 62
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f70b  1a            3651   3661         LDAX    D               ;GET IT
 f70c  cd 56 f7      3652   3662         CALL    LF756           ;PRINT IT
 f70f  2a 44 d1      3653   3663         LHLD    LD144           ;GET H,L
@@ -4028,11 +3721,6 @@ f771  32 34 d1      3707   3717 LF771:  STA     LD134           ;CLEAR BRKPT FLA
                     3708   3718 ;
                     3709   3719 ;WARM RESTART ENTRY POINT
                     3710   3720 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 63
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f774  31 2f d1      3711   3721 LF774:  LXI     SP,SMODE        ;SET STACK
 f777  cd 16 e2      3712   3722         CALL    CRLF            ;DO CR/LF
 f77a  06 2a         3713   3723         MVI     B,'*'           ;PROMPT
@@ -4093,11 +3781,6 @@ f7ff  c3 74 f7      3767   3777         JMP     LF774           ;ELSE RESTART
 f802  fe 58         3768   3778 LF802:  CPI     'X'             ;EXIT SIMULATOR COMMAND ?
 f804  ca 60 e0      3769   3779         JZ      EORMS           ;YES - RET TO ALS-8
 f807  fe 4d         3770   3780         CPI     'M'             ;MODE COMMAND ?
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 64
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f809  c2 1f f8      3771   3781         JNZ     LF81F           ;NO - TEST OTHER COMMANDS
 f80c  cd 32 f9      3772   3782         CALL    LF932           ;GET VALUE IN H,L
 f80f  7d            3773   3783         MOV     A,L             ;NOW TO A
@@ -4158,11 +3841,6 @@ f874  79            3827   3837         MOV     A,C             ;GET NO OF PORTS
 f875  fe 10         3828   3838         CPI     16              ;TABLE FULL ?
 f877  d2 49 f9      3829   3839         JNC     LF949           ;ERROR THEN
 f87a  32 37 d1      3830   3840         STA     LD137           ;ELSE UPDATE # OF TABLE ENTRIES
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 65
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f87d  06 ff         3831   3841         MVI     B,0FFH          ;ASSUME REAL-TIME
 f87f  3a e5 d1      3832   3842         LDA     IBUF+1          ;GET NEXT CHAR OF COMMAND
 f882  fe 52         3833   3843         CPI     'R'             ;REAL-TIME ?
@@ -4223,11 +3901,6 @@ f8e6  eb            3887   3897         XCHG                    ;POINTER TO H,L
 f8e7  23            3888   3898         INX     H               ;POINT TO NEXT CHAR
 f8e8  7e            3889   3899         MOV     A,M             ;GET IT
 f8e9  fe 3d         3890   3900         CPI     '='             ;EQUALS SIGN ?
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 66
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f8eb  c2 49 f9      3891   3901         JNZ     LF949           ;ERROR IF NOT
 f8ee  23            3892   3902         INX     H               ;POINT TO ARGUMENT
 f8ef  7e            3893   3903         MOV     A,M             ;GET IT
@@ -4288,11 +3961,6 @@ f951  c3 74 f7      3944   3954         JMP     LF774           ;THEN RESTART SI
                     3948   3958 ;IN REVERSE ORDER.  THERE IS ONE ENTRY HERE FOR EACH
                     3949   3959 ;ENTRY IN THAT TABLE.  NOTE THAT THE ACCUM. APPEARS
                     3950   3960 ;TWICE, ONCE BY ITSELF & ONCE WITH THE FLAGS (AS PSW)
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 67
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3951   3961 ;
 f954  41            3952   3962 LF954:  DB      'A'
 f955  42            3953   3963         DB      'B'
@@ -4353,11 +4021,6 @@ f9a3  3e 1b         4007   4017         MVI     A,1BH           ;YES - SEE IF ES
 f9a5  b8            4008   4018         CMP     B               ;
 f9a6  ca 60 e0      4009   4019         JZ      EORMS           ;IT IS ESC - DO COMPLETE RESET
 f9a9  21 e9 d1      4010   4020         LXI     H,IBUF+5        ;POINT TO NEW CHAR DEST
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 68
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f9ac  1e 07         4011   4021         MVI     E,7             ;AND RESET LINE LENGTH
 f9ae  3e 0d         4012   4022 LF9AE:  MVI     A,0DH           ;GET ASCII CAR. RET.
 f9b0  b8            4013   4023         CMP     B               ;END OF LINE ?
@@ -4418,11 +4081,6 @@ f9f7  00            4067   4077         NOP
 f9f8  00            4068   4078         NOP
 f9f9  00            4069   4079         NOP
 f9fa  00            4070   4080         NOP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 69
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f9fb  00            4071   4081         NOP
 f9fc  00            4072   4082         NOP
 f9fd  00            4073   4083         NOP
@@ -4483,11 +4141,6 @@ fa4d  21 65 fa      4127   4137         LXI     H,LFA65         ;EDITOR COMMAND 
 fa50  7e            4128   4138 LFA50:  MOV     A,M             ;GET TABLE COMMAND
 fa51  b7            4129   4139         ORA     A               ;END OF TABLE ?
 fa52  c8            4130   4140         RZ                      ;YES
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 70
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fa53  b8            4131   4141         CMP     B               ;NO - SAME AS COMMAND ?
 fa54  23            4132   4142         INX     H               ;POINT TO COMMAND ADDR
 fa55  ca 60 fa      4133   4143         JZ      LFA60           ;DISPATCH TO IT ON MATCH
@@ -4548,11 +4201,6 @@ fa9b  00            4185   4195         DB      0
                     4188   4198 ;
 fa9c  af            4189   4199 LFA9C:  XRA     A               ;GET A ZERO
 fa9d  32 96 d1      4190   4200         STA     NCHAR           ;MAKE IT THE COLUMN
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 71
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 faa0  3e 06         4191   4201         MVI     A,6             ;HOME=LINE 7 (START W/0 AT TOP)
 faa2  c3 d6 fa      4192   4202         JMP     LFAD6           ;PUT THE CURSOR THERE
                     4193   4203 ;
@@ -4613,11 +4261,6 @@ fb01  f5            4247   4257         PUSH    PSW
 fb02  c2 e4 fa      4248   4258         JNZ     LFAE4
 fb05  06 00         4249   4259         MVI     B,0
 fb07  0e 23         4250   4260         MVI     C,'#'
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 72
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fb09  21 01 40      4251   4261         LXI     H,4001H
 fb0c  cd 4e fe      4252   4262         CALL    LFE4E
 fb0f  c3 f6 fa      4253   4263         JMP     LFAF6
@@ -4678,11 +4321,6 @@ fb68  be            4303   4317         CMP     M
 fb69  c2 6e fb      4304   4318         JNZ     LFB6E
 fb6c  3e ff         4305   4319         MVI     A,0FFH
 fb6e  3c            4306   4320 LFB6E:  INR     A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 73
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fb6f  c3 d6 fa      4307   4321         JMP     LFAD6
                     4308   4322 ;
                     4309   4323 ;TOGGLE CHAR INSERT MODE
@@ -4743,11 +4381,6 @@ fbcf  c3 d9 fa      4361   4375         JMP     LFAD9
                     4364   4378 ;
 fbd2  97            4365   4379 LFBD2:  SUB     A               ;GET A ZERO
 fbd3  32 98 d1      4366   4380         STA     LD198           ;USE IT TO CLEAR INSERT MODE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 74
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fbd6  2a 05 d0      4367   4381         LHLD    BOFP
 fbd9  7e            4368   4382         MOV     A,M
 fbda  cd 32 fd      4369   4383         CALL    LFD32
@@ -4808,11 +4441,6 @@ fc2b  c3 10 fc      4420   4434         JMP     LFC10
 fc2e  cd ed fd      4424   4438 LFC2E:  CALL    LFDED           ;CALC CURSOR POSITION
 fc31  3a 96 d1      4425   4439         LDA     NCHAR           ;GET CURRENT COLUMN
 fc34  fe 3f         4426   4440         CPI     3FH             ;COLUMN 63 (LAST) ?
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 75
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fc36  da 3c fc      4427   4441         JC      LFC3C           ;NO - DELETE CHAR
 fc39  36 a0         4428   4442         MVI     M,' '+80H       ;MAKE LAST COL SPACE W/CURSOR
 fc3b  c9            4429   4443         RET                     ;DONE
@@ -4873,11 +4501,6 @@ fc72  2a 9a d1      4483   4497 LFC72:  LHLD    LD19A
 fc75  cd 95 fc      4484   4498         CALL    LFC95
 fc78  c8            4485   4499         RZ
 fc79  2b            4486   4500         DCX     H
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 76
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fc7a  2b            4487   4501 LFC7A:  DCX     H
 fc7b  cd 95 fc      4488   4502         CALL    LFC95
 fc7e  ca 90 fc      4489   4503         JZ      LFC90
@@ -4938,11 +4561,6 @@ fcd0  c9            4540   4554         RET
 fcd1  47            4544   4558 LFCD1:  MOV     B,A
 fcd2  b7            4545   4559         ORA     A
 fcd3  c8            4546   4560         RZ
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 77
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fcd4  fa 1a fd      4547   4561         JM      LFD1A
 fcd7  2a 07 d0      4548   4562         LHLD    EOFP
 fcda  cd 32 fd      4549   4563         CALL    LFD32
@@ -5003,11 +4621,6 @@ fd37  6f            4603   4617         MOV     L,A
 fd38  d0            4604   4618         RNC
 fd39  24            4605   4619         INR     H
 fd3a  c9            4606   4620         RET
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 78
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4607   4621 ;
                     4608   4622 ;
                     4609   4623 ;
@@ -5068,11 +4681,6 @@ fd79  2c            4663   4677 LFD79:  INR     L
 fd7a  7d            4664   4678         MOV     A,L
 fd7b  e6 3f         4665   4679         ANI     3FH
 fd7d  c0            4666   4680         RNZ
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 79
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fd7e  7d            4667   4681         MOV     A,L
 fd7f  c6 c0         4668   4682         ADI     0C0H
 fd81  6f            4669   4683         MOV     L,A
@@ -5133,11 +4741,6 @@ fddd  96            4723   4737 LFDDD:  SUB     M
 fdde  0e 00         4724   4738         MVI     C,0
 fde0  cd 0c fe      4725   4739         CALL    LFE0C
 fde3  21 93 d1      4726   4740         LXI     H,BOTL          ;BEGINNING OF TEXT LINE (0-F)
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 80
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fde6  7e            4727   4741         MOV     A,M
 fde7  e6 0f         4728   4742         ANI     0FH
 fde9  77            4729   4743         MOV     M,A
@@ -5198,11 +4801,6 @@ fe29  0c            4783   4797         INR     C
 fe2a  0d            4784   4798 LFE2A:  DCR     C
 fe2b  c8            4785   4799         RZ
 fe2c  7e            4786   4800         MOV     A,M
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 81
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fe2d  12            4787   4801         STAX    D
 fe2e  23            4788   4802         INX     H
 fe2f  13            4789   4803         INX     D
@@ -5263,11 +4861,6 @@ fe77  78            4843   4857 LFE77:  MOV     A,B             ;GET CHAR TO A
 fe78  fe 7f         4844   4858         CPI     7FH             ;DELETE CHAR ?
 fe7a  c8            4845   4859         RZ                      ;RETURN IF SO
 fe7b  e5            4846   4860         PUSH    H               ;ELSE SAVE REGISTERS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 82
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fe7c  d5            4847   4861         PUSH    D               ;
 fe7d  c5            4848   4862         PUSH    B               ;
 fe7e  3a a0 d1      4849   4863         LDA     SPEED           ;GET SPEED CONTROL BYTE
@@ -5328,11 +4921,6 @@ fed4  23            4903   4917         INX     H               ;POINT TO NEXT C
 fed5  7e            4904   4918         MOV     A,M             ;GET IT
 fed6  b7            4905   4919         ORA     A               ;SET FLAGS
 fed7  c2 ce fe      4906   4920         JNZ     LFECE           ;PRINT IT IF NOT ZERO
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 83
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 feda  cd cc d0      4907   4921         CALL    IN8             ;GET CHAR
 fedd  cd a8 fe      4908   4922         CALL    LFEA8           ;TEST NUMERIC & SET SPEED
 fee0  cd 16 e2      4909   4923         CALL    CRLF            ;DO CR/LF
@@ -5393,11 +4981,6 @@ ff47  fe 01         4962   4977         CPI     1               ;EOF FOUND ?
 ff49  c8            4963   4978         RZ                      ;DONE IF YES
 ff4a  2a d2 d0      4964   4979         LHLD    INSP            ;ELSE POINT TO LINE W/STRING
 ff4d  23            4965   4980         INX     H               ;POINT PAST LENGTH BYTE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 84
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 ff4e  cd 80 e3      4966   4981         CALL    SCRN            ;PRINT LINE
 ff51  cd 16 e2      4967   4982         CALL    CRLF            ;CAR. RET AT END OF LINE
 ff54  23            4968   4983         INX     H               ;INR TO NEXT LINE
@@ -5458,11 +5041,6 @@ ffbc  70            5022   5037         MOV     M,B             ;PUT CHAR IN STR
 ffbd  23            5023   5038         INX     H               ;INR POINTER
 ffbe  c3 9b ff      5024   5039         JMP     LFF9B           ;AND DO NEXT CHAR
                     5025   5040 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 85
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5026   5041 ;ROUTINE TO SEARCH FOR STRING
                     5027   5042 ;
 ffc1  23            5028   5043 LFFC1:  INX     H               ;POINT PAST LENGTH BYTE
@@ -5523,11 +5101,6 @@ fff9  c3 60 e0      5061   5076         JMP     EORMS           ;AND GO BACK TO 
 000d  =             5083   5098 FELEN   EQU     NMLEN+8         ;DIRECTORY ENTRY LENGTH
                     5084   5099 ;
                     5085   5100 ;FILE TABLE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 86
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5086   5101 ;
                     5087   5102 ;FILE 0 IS THE "CURRENT FILE" ALL OTHER FILES
                     5088   5103 ;ARE STORED IN THE FILE TABLE IN THIS FORMAT
@@ -5588,11 +5161,6 @@ d100                5142   5157 ASMTY:  DS      1               ;ASSEMBLY TYPE F
 d101                5143   5158 PNTR:   DS      2               ;LINE POINTER STORAGE
 d103                5144   5159 NOLA:   DS      1               ;NUMBER OF LABELS
 d104                5145   5160 SIGN:   DS      1               ;SIGN STORAGE FOR SCAN
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 87
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 d105                5146   5161 OPRD:   DS      2
 d107                5147   5162 OPRI:   DS      1
 d108                5148   5163 GTLT:   DS      1
@@ -5653,11 +5221,6 @@ d1c9                5202   5217 OBUF:   DS      22
 d1df                5203   5218         DS      5
 d1e4                5204   5219 IBUF:   DS      120             ;INPUT BUFFER
 fa0e  =             5205   5220 EDIT    EQU     0FA0EH
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 88
-Source file: als8-rom.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 d1c9  =             5206   5221 SAVL    EQU     OBUF
 d25c                5207   5222 CUCOM:  DS      70              ;CUSTOM COMMAND TABLE
                     5208   5223         ORG     DATA+300H
@@ -5665,193 +5228,148 @@ d300                5209   5224 SYSYM:  DS      2               ;START OF SYSTEM
 e000  =             5210   5225 SYMT    EQU     CODE
                     5211   5226 ;
 d302                5212   5227         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 89
-Source file: als8-rom.asm
-Title:       Symbol table
 
-ABUF     d0df 	ACH1     e37b 	ACHK     e369 	ACO1     ebe0 	
-ACO2     ec8f*	ADDS     d0d4 	ADE1     e00d 	ADEC     e00a 	
-ADOUT    e55c 	ADR      e96b 	AERR     d0f4 	AHE1     e2fd 	
-AHEX     e2fa 	AHS1     e311 	ALAB     f274 	ALP1     f140 	
-ALPS     f13e 	ALS8     e000 	ALST     d10a 	AOCT     e333 	
-AOUT     eb2e 	APNT     d0d2 	AREA     d11d*	ASBL     f15d 	
-ASC1     f1aa*	ASC2     f1ba 	ASC3     f1c8*	ASC4     f1d2 	
-ASC5     f1f4 	ASC7     f218 	ASCN     f160 	ASCR     000d*	
-ASM2     eb22 	ASM4     eabf 	ASMTY    d100 	ASPC     d0f7 	
-ASSM     eaaf 	ASTO     ee1d 	ASUB     f21e 	AUTO     f96a 	
-AVAL     f204 	BBUF     d0ef 	BID1     e3be 	BIN1     e3a3 	
-BIND     e3ad 	BINH     e390 	BINO     e3c8 	BITBKT   e12c 	
-BLKO     e361 	BOFP     d005 	BOSL     d194 	BOTL     d193 	
-BSPA     e1b4 	C01      e997 	C02      e99d 	CCNT     d0f3 	
-CHAR     e1bc 	CHRR     d190 	CLER     e1d1 	CODE     e000 	
-COM0     e992 	COM1     e994 	COMCHR   002a 	COMS     e228 	
-COND     eeda 	COP1     f034 	COPC     f022 	CR       e188 	
-CRLF     e216 	CTAB     e3e6 	CUCOM    d25c 	CUST     e4f5 	
-DAT2     eca5 	DAT2A    eca8 	DATA     d000 	DAV      0001 	
-DCNT     d0f4 	DEL      e1a7 	DEL2     ea5c 	DEL3     ea7b 	
-DEL4     ea85 	DELP     d0d2 	DELT     ea2c 	DONE     e2c6 	
-DOUT     e348 	DUMO     e56f 	DUMP     e524 	E01      e964 	
-EDIT     fa0e*	EMES     e7f1 	EMES1    e7f7 	EMES2    e7fc 	
-EMODE    e2f3 	ENT1     e817 	ENTR     e20d 	ENTS     e80b 	
-EOF      e963*	EOFP     d007 	EOR      e0b7 	EORMS    e060 	
-EORNS    e0d1 	EQU1     ebfb 	EQUL     e8e1 	EQUS     ec06 	
-ERO1     f348 	ERRA     f337 	ERRD     f356 	ERRL     f351 	
-ERRM     f32f 	ERRO     f33c 	ERRR     f311 	ERRS     f31a 	
-ERRU     f325 	ERRV     f32a 	ESC      001b 	ETRA     e281 	
-EXEC     e277 	FAST     e64b 	FBUF     d0d7 	FCHK     e6d3 	
-FEET     e65a 	FEF      d0de 	FELEN    000d 	FERR     e801 	
-FI1      e94a 	FI2      e95c 	FIL35    e611 	FILE     e5b0 	
-FILE0    d000 	FILTB    d00d*	FIND     e941 	FIND1    e944*	
-FIND2    ff3b 	FINE     e62b 	FMOV     e731 	FOCNT    d0de 	
-FOOD     e645 	FOOT     e625 	FORM     e6cc 	FOUL     e627 	
-FOUT     e618 	FREAD    d0dc 	FSE10    e693 	FSE15    e6b6 	
-FSE20    e6c0 	FSEA     e68a 	GT       e909 	GTLT     d108 	
-HCON     d0d4 	HOTB     e586*	HOUT     e577 	IBUF     d1e4 	
-IN8      d0cc 	INCA     e263 	INDR     d098 	INIT2    e029 	
-INITA    e024*	INP8     e1e2 	INSP     d0d2 	INSRT    e8d8 	
-IODR     e0de 	IOFLE    d04e 	IONME    e1d9 	IOSWC    d0fc 	
-LCHK     ebb3 	LD12B    d12b 	LD134    d134 	LD135    d135 	
-LD136    d136 	LD137    d137 	LD138    d138 	LD13A    d13a 	
-LD13C    d13c 	LD13E    d13e 	LD140    d140 	LD142    d142 	
-LD144    d144 	LD145    d145*	LD146    d146*	LD147    d147*	
-LD148    d148*	LD149    d149*	LD14A    d14a 	LD14B    d14b 	
-LD14C    d14c 	LD14F    d14f 	LD152    d152 	LD162    d162 	
-LD191    d191 	LD197    d197 	LD198    d198 	LD199    d199 	
-LD19A    d19a 	LD19C    d19c 	LD19E    d19e 	LD1A1    d1a1 	
-LE004    e004 	LE03B    e03b 	LE046    e046 	LE072    e072 	
-LE078    e078 	LE0A5    e0a5 	LE0AC    e0ac 	LE0CB    e0cb 	
-LE0DD    e0dd 	LE0FE    e0fe 	LE119    e119 	LE12D    e12d 	
-LE130    e130 	LE148    e148 	LE14C    e14c 	LE151    e151 	
-LE157    e157 	LE15A    e15a 	LE23E    e23e 	LE240    e240 	
-LE2D7    e2d7 	LE31E    e31e 	LE336    e336 	LE34B    e34b 	
-LE35C    e35c 	LE48F    e48f 	LE497    e497 	LE4AB    e4ab 	
-LE4AE    e4ae 	LE4B4    e4b4 	LE4B7    e4b7 	LE4BF    e4bf 	
-LE4C2    e4c2 	LE4CE    e4ce 	LE4EE    e4ee 	LE509    e509 	
-LE50C    e50c 	LE52C    e52c 	LE541    e541 	LE565    e565 	
-LE57A    e57a 	LE5AB    e5ab 	LE5CC    e5cc 	LE5E1    e5e1 	
-LE62A    e62a 	LE666    e666 	LE68D    e68d 	LE6E0    e6e0 	
-LE6F3    e6f3 	LE704    e704 	LE712    e712 	LE718    e718 	
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 90
-Source file: als8-rom.asm
-Title:       Symbol table
+Symbol table
 
-LE725    e725 	LE72B    e72b 	LE760    e760 	LE765    e765 	
-LE785    e785 	LE78B    e78b 	LE797    e797 	LE7B5    e7b5 	
-LE7C9    e7c9 	LE7CC    e7cc 	LE7CE    e7ce 	LE837    e837 	
-LE83A    e83a 	LE84C    e84c 	LE86A    e86a 	LE87C    e87c 	
-LE889    e889 	LE893    e893 	LE896    e896 	LE92B    e92b 	
-LE947    e947 	LE9EF    e9ef 	LE9F9    e9f9 	LE9FF    e9ff 	
-LEA23    ea23 	LEA2F    ea2f 	LEA40    ea40 	LEA50    ea50 	
-LEA7A    ea7a 	LEAD6    ead6 	LEAEA    eaea 	LEAF6    eaf6 	
-LEB12    eb12 	LEB15    eb15 	LEB41    eb41 	LEBA5    eba5 	
-LEC26    ec26 	LEC2E    ec2e 	LECC3    ecc3 	LECCD    eccd 	
-LECD3    ecd3 	LECE2    ece2 	LECE5    ece5 	LECF9    ecf9 	
-LED01    ed01 	LED15    ed15 	LED4F    ed4f 	LED57    ed57 	
-LEE39    ee39 	LEE4C    ee4c 	LEE58    ee58 	LEE5C    ee5c 	
-LEE64    ee64 	LEE7E    ee7e 	LEE82    ee82 	LEE9D    ee9d 	
-LEEA8    eea8 	LEEAA    eeaa 	LEEB1    eeb1 	LF       e21b*	
-LF0DB    f0db 	LF0E0    f0e0 	LF154    f154 	LF1A6    f1a6 	
-LF227    f227 	LF238    f238 	LF23A    f23a 	LF242    f242 	
-LF247    f247 	LF253    f253 	LF255    f255 	LF260    f260 	
-LF26C    f26c 	LF291    f291 	LF2B1    f2b1 	LF2B6    f2b6 	
-LF2C2    f2c2 	LF2DE    f2de 	LF2E3    f2e3 	LF361    f361 	
-LF37A    f37a 	LF37C    f37c 	LF38E    f38e 	LF392    f392 	
-LF396    f396 	LF397    f397 	LF3A4    f3a4 	LF3C5    f3c5 	
-LF3D3    f3d3 	LF3DF    f3df 	LF400    f400 	LF41B    f41b 	
-LF422    f422 	LF431    f431 	LF439    f439 	LF444    f444 	
-LF451    f451 	LF459    f459 	LF461    f461 	LF470    f470 	
-LF475    f475 	LF49F    f49f 	LF4A5    f4a5 	LF4B0    f4b0 	
-LF4CA    f4ca 	LF4CD    f4cd 	LF4D9    f4d9 	LF4DA    f4da 	
-LF4DB    f4db 	LF4E1    f4e1 	LF4EF    f4ef 	LF505    f505 	
-LF50B    f50b 	LF511    f511 	LF51A    f51a 	LF521    f521 	
-LF527    f527 	LF542    f542 	LF551    f551 	LF55A    f55a 	
-LF565    f565 	LF572    f572 	LF577    f577 	LF579    f579 	
-LF57F    f57f 	LF589    f589 	LF58F    f58f 	LF5AE    f5ae 	
-LF5D2    f5d2 	LF5D9    f5d9 	LF5F2    f5f2 	LF604    f604 	
-LF618    f618 	LF61E    f61e 	LF626    f626 	LF62C    f62c 	
-LF634    f634 	LF652    f652 	LF66A    f66a 	LF67F    f67f 	
-LF697    f697 	LF69D    f69d 	LF6AC    f6ac 	LF6AF    f6af 	
-LF6B8    f6b8 	LF6CA    f6ca 	LF6F9    f6f9 	LF733    f733 	
-LF73C    f73c 	LF742    f742 	LF747    f747 	LF753    f753 	
-LF756    f756 	LF771    f771 	LF774    f774 	LF796    f796 	
-LF7A4    f7a4 	LF7B7    f7b7 	LF7D9    f7d9 	LF7DE    f7de 	
-LF7F1    f7f1 	LF802    f802 	LF818    f818 	LF81F    f81f 	
-LF854    f854 	LF863    f863 	LF890    f890 	LF897    f897 	
-LF8A1    f8a1 	LF8A8    f8a8 	LF8AF    f8af 	LF8B8    f8b8 	
-LF8BC    f8bc 	LF8C7    f8c7 	LF8D6    f8d6 	LF8E2    f8e2 	
-LF912    f912 	LF92C    f92c 	LF932    f932 	LF949    f949 	
-LF954    f954 	LF983    f983 	LF989    f989 	LF99A    f99a 	
-LF9AE    f9ae 	LF9BB    f9bb 	LF9C8    f9c8 	LF9D8    f9d8 	
-LFA00    fa00 	LFA27    fa27 	LFA2D    fa2d 	LFA33    fa33 	
-LFA39    fa39 	LFA50    fa50 	LFA5D    fa5d 	LFA60    fa60 	
-LFA65    fa65 	LFA9C    fa9c 	LFAA5    faa5 	LFAAE    faae 	
-LFAB9    fab9 	LFAC6    fac6 	LFACC    facc 	LFAD6    fad6 	
-LFAD9    fad9 	LFAE4    fae4 	LFAF3    faf3 	LFAF6    faf6 	
-LFB12    fb12 	LFB14    fb14 	LFB21    fb21 	LFB23    fb23 	
-LFB30    fb30 	LFB3B    fb3b 	LFB46    fb46 	LFB57    fb57 	
-LFB5C    fb5c 	LFB62    fb62 	LFB6E    fb6e 	LFB72    fb72 	
-LFB7B    fb7b 	LFB7E    fb7e 	LFB8E    fb8e 	LFB94    fb94 	
-LFB9D    fb9d 	LFBAC    fbac 	LFBC8    fbc8 	LFBD2    fbd2 	
-LFBEA    fbea 	LFC04    fc04 	LFC10    fc10 	LFC18    fc18 	
-LFC1F    fc1f 	LFC2E    fc2e 	LFC3C    fc3c 	LFC44    fc44 	
-LFC4D    fc4d 	LFC51    fc51 	LFC5F    fc5f 	LFC62    fc62 	
-LFC72    fc72 	LFC7A    fc7a 	LFC8F    fc8f 	LFC90    fc90 	
-LFC95    fc95 	LFCA4    fca4 	LFCB8    fcb8 	LFCD1    fcd1 	
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:50:00 2022	Page 91
-Source file: als8-rom.asm
-Title:       Symbol table
-
-LFCF0    fcf0 	LFCFC    fcfc 	LFCFE    fcfe 	LFD1A    fd1a 	
-LFD26    fd26 	LFD32    fd32 	LFD3B    fd3b 	LFD42    fd42 	
-LFD4E    fd4e 	LFD51    fd51 	LFD69    fd69 	LFD79    fd79 	
-LFD83    fd83 	LFDB1    fdb1 	LFDBD    fdbd 	LFDCD    fdcd 	
-LFDD9    fdd9 	LFDDD    fddd 	LFDED    fded 	LFE07    fe07 	
-LFE0C    fe0c 	LFE13    fe13 	LFE1D    fe1d 	LFE24    fe24 	
-LFE2A    fe2a 	LFE33    fe33 	LFE3A    fe3a 	LFE46    fe46 	
-LFE4E    fe4e 	LFE4F    fe4f 	LFE54    fe54 	LFE64    fe64 	
-LFE6E    fe6e 	LFE77    fe77*	LFE88    fe88 	LFE9D    fe9d 	
-LFEA8    fea8 	LFEB9    feb9 	LFEC1    fec1 	LFEC2    fec2 	
-LFEC6    fec6 	LFECE    fece 	LFEE6    fee6 	LFEED    feed 	
-LFF00    ff00 	LFF06    ff06 	LFF13    ff13 	LFF16    ff16 	
-LFF1A    ff1a 	LFF2A    ff2a 	LFF2D    ff2d 	LFF44    ff44 	
-LFF58    ff58 	LFF64    ff64 	LFF80    ff80 	LFF8A    ff8a 	
-LFF9B    ff9b 	LFFA1    ffa1 	LFFB1    ffb1 	LFFB6    ffb6 	
-LFFC1    ffc1 	LFFC2    ffc2 	LFFC7    ffc7 	LFFCE    ffce 	
-LFFDF    ffdf 	LFFE7    ffe7 	LFFF3    fff3*	LFMT     d0fa 	
-LINE     e857 	LIST     e9db 	LLAB     0005 	LMOV     e970 	
-LODM     e982 	LT       e8f6 	MAXFIL   0006 	MAXL     d009 	
-MESS     e7e0 	MLAB     ebaa 	MODE     e58c 	MOV23    e680 	
-MOVEL    e9b8 	MPNT     edf2 	NCHAR    d196 	NEXT     e17a 	
-NFOR     e6cd 	NMLEN    0005 	NOCHR    d0b8 	NOLA     d103*	
-NOLIN    d0fb 	NOR1     e9ab 	NORM     e9a5 	NOVR     ea8e 	
-NUM1     f302 	NUM2     f307 	NUM3     f30c 	NUMS     f2eb 	
-NXT1     f16f 	NXT2     f179 	OBUF     d1c9 	OCN1     f0c7 	
-OCN2     f0ca 	OCNT     f0b3 	OERR     f0d8 	OIND     d10b 	
-OOTB     e359*	OOUT     e353 	OP1      f053 	OP2      f056 	
-OP4      f0ae 	OP5      f0b1*	OPAD     f0ad 	OPC      eb8e 	
-OPC2     f05b*	OPC3     f077*	OPCD     f037 	OPRD     d105 	
-OPRI     d107 	ORG1     ebe6 	ORG2     ecae 	OTAB     eee5 	
-OUT8     d0cf 	OUTDR    d0a9 	OUTP8    e1f3 	PABL     ec56*	
-PAS1     eb57 	PAS2     ec3d 	PASI     d0f9 	PNTR     d101 	
-PSEU     f0e6 	PSU1     ebc2 	PSU2     ec71 	RDYMG    e0d7 	
-READ     e172 	RES2     ec95 	RES21    eca1 	RESI     ec16 	
-RMOV     e979 	RNUM     e769 	ROOM     e676 	ROOM1    e5e7 	
-RTAB     f12d 	SAVL     d1c9 	SBL1     eecf 	SBL2     eed3 	
-SBLK     eecc 	SCNT     d0f3 	SCRN     e380 	SEAR     e257 	
-SEN1     f2e5 	SEND     f2c8 	SIGN     d104 	SIMU     f75c 	
-SLA1     f123 	SLAB     f0f8 	SLINE    d195 	SMODE    d12f 	
-SPEED    d1a0 	SSTR     f1eb 	STAB     eaa3 	STAT     d0a4 	
-STOM     e98a 	SWAP     e5ef 	SWAPS    e5ea 	SWCH     00ff*	
-SWCH1    d0fd 	SWCH2    d0fe 	SYMADD   d132 	SYML     e47e 	
-SYMSV    d130 	SYMT     e000*	SYMX     d0f4 	SYSIN    d094 	
-SYSIO    d08f 	SYSOT    d096 	SYSYM    d300 	TABA     d0f5 	
-TBE      0080 	TEMP     d109 	TERM     f3e4 	TERMW    d18f 	
-TEST     e5d2 	TEXT     e9dc 	TXT2     fa0b 	TY31     ed88 	
-TY32     ed8b 	TY41     edb4 	TY56     ede0 	TY6      ee11 	
-TYP2     ed64 	TYP3     ed77 	TYP4     ed96 	TYP5     edcb 	
-TYP6     ee01 	TYS5     edd3 	TYS6     ee14 	UDAI     0001*	
-UDAO     0001*	UDATA    0001 	USARE    d1a3*	USTA     0000 	
-VAL1     e290 	VAL2     e2ab 	VAL3     e2bb 	VAL4     e2bd 	
-VAL5     e2cb 	VALC     e515 	VCHK     e51c 	VDAD     fdf4 	
-VDM1     cc00 	WHAT     e7dd 	XOUT     d0ff 	ZBU1     e270 	
-ZBUF     e26a 	ZERO     e919 	
+ABUF   d0df    ACH1   e37b    ACHK   e369    ACO1   ebe0    ACO2   ec8f*
+ADDS   d0d4    ADE1   e00d    ADEC   e00a    ADOUT  e55c    ADR    e96b 
+AERR   d0f4    AHE1   e2fd    AHEX   e2fa    AHS1   e311    ALAB   f274 
+ALP1   f140    ALPS   f13e    ALS8   e000    ALST   d10a    AOCT   e333 
+AOUT   eb2e    APNT   d0d2    AREA   d11d*   ASBL   f15d    ASC1   f1aa*
+ASC2   f1ba    ASC3   f1c8*   ASC4   f1d2    ASC5   f1f4    ASC7   f218 
+ASCN   f160    ASCR   000d*   ASM2   eb22    ASM4   eabf    ASMTY  d100 
+ASPC   d0f7    ASSM   eaaf    ASTO   ee1d    ASUB   f21e    AUTO   f96a 
+AVAL   f204    BBUF   d0ef    BID1   e3be    BIN1   e3a3    BIND   e3ad 
+BINH   e390    BINO   e3c8    BITBKT e12c    BLKO   e361    BOFP   d005 
+BOSL   d194    BOTL   d193    BSPA   e1b4    C01    e997    C02    e99d 
+CCNT   d0f3    CHAR   e1bc    CHRR   d190    CLER   e1d1    CODE   e000 
+COM0   e992    COM1   e994    COMCHR 002a    COMS   e228    COND   eeda 
+COP1   f034    COPC   f022    CR     e188    CRLF   e216    CTAB   e3e6 
+CUCOM  d25c    CUST   e4f5    DAT2   eca5    DAT2A  eca8    DATA   d000 
+DAV    0001    DCNT   d0f4    DEL    e1a7    DEL2   ea5c    DEL3   ea7b 
+DEL4   ea85    DELP   d0d2    DELT   ea2c    DONE   e2c6    DOUT   e348 
+DUMO   e56f    DUMP   e524    E01    e964    EDIT   fa0e*   EMES   e7f1 
+EMES1  e7f7    EMES2  e7fc    EMODE  e2f3    ENT1   e817    ENTR   e20d 
+ENTS   e80b    EOF    e963*   EOFP   d007    EOR    e0b7    EORMS  e060 
+EORNS  e0d1    EQU1   ebfb    EQUL   e8e1    EQUS   ec06    ERO1   f348 
+ERRA   f337    ERRD   f356    ERRL   f351    ERRM   f32f    ERRO   f33c 
+ERRR   f311    ERRS   f31a    ERRU   f325    ERRV   f32a    ESC    001b 
+ETRA   e281    EXEC   e277    FAST   e64b    FBUF   d0d7    FCHK   e6d3 
+FEET   e65a    FEF    d0de    FELEN  000d    FERR   e801    FI1    e94a 
+FI2    e95c    FIL35  e611    FILE   e5b0    FILE0  d000    FILTB  d00d*
+FIND   e941    FIND1  e944*   FIND2  ff3b    FINE   e62b    FMOV   e731 
+FOCNT  d0de    FOOD   e645    FOOT   e625    FORM   e6cc    FOUL   e627 
+FOUT   e618    FREAD  d0dc    FSE10  e693    FSE15  e6b6    FSE20  e6c0 
+FSEA   e68a    GT     e909    GTLT   d108    HCON   d0d4    HOTB   e586*
+HOUT   e577    IBUF   d1e4    IN8    d0cc    INCA   e263    INDR   d098 
+INIT2  e029    INITA  e024*   INP8   e1e2    INSP   d0d2    INSRT  e8d8 
+IODR   e0de    IOFLE  d04e    IONME  e1d9    IOSWC  d0fc    LCHK   ebb3 
+LD12B  d12b    LD134  d134    LD135  d135    LD136  d136    LD137  d137 
+LD138  d138    LD13A  d13a    LD13C  d13c    LD13E  d13e    LD140  d140 
+LD142  d142    LD144  d144    LD145  d145*   LD146  d146*   LD147  d147*
+LD148  d148*   LD149  d149*   LD14A  d14a    LD14B  d14b    LD14C  d14c 
+LD14F  d14f    LD152  d152    LD162  d162    LD191  d191    LD197  d197 
+LD198  d198    LD199  d199    LD19A  d19a    LD19C  d19c    LD19E  d19e 
+LD1A1  d1a1    LE004  e004    LE03B  e03b    LE046  e046    LE072  e072 
+LE078  e078    LE0A5  e0a5    LE0AC  e0ac    LE0CB  e0cb    LE0DD  e0dd 
+LE0FE  e0fe    LE119  e119    LE12D  e12d    LE130  e130    LE148  e148 
+LE14C  e14c    LE151  e151    LE157  e157    LE15A  e15a    LE23E  e23e 
+LE240  e240    LE2D7  e2d7    LE31E  e31e    LE336  e336    LE34B  e34b 
+LE35C  e35c    LE48F  e48f    LE497  e497    LE4AB  e4ab    LE4AE  e4ae 
+LE4B4  e4b4    LE4B7  e4b7    LE4BF  e4bf    LE4C2  e4c2    LE4CE  e4ce 
+LE4EE  e4ee    LE509  e509    LE50C  e50c    LE52C  e52c    LE541  e541 
+LE565  e565    LE57A  e57a    LE5AB  e5ab    LE5CC  e5cc    LE5E1  e5e1 
+LE62A  e62a    LE666  e666    LE68D  e68d    LE6E0  e6e0    LE6F3  e6f3 
+LE704  e704    LE712  e712    LE718  e718    LE725  e725    LE72B  e72b 
+LE760  e760    LE765  e765    LE785  e785    LE78B  e78b    LE797  e797 
+LE7B5  e7b5    LE7C9  e7c9    LE7CC  e7cc    LE7CE  e7ce    LE837  e837 
+LE83A  e83a    LE84C  e84c    LE86A  e86a    LE87C  e87c    LE889  e889 
+LE893  e893    LE896  e896    LE92B  e92b    LE947  e947    LE9EF  e9ef 
+LE9F9  e9f9    LE9FF  e9ff    LEA23  ea23    LEA2F  ea2f    LEA40  ea40 
+LEA50  ea50    LEA7A  ea7a    LEAD6  ead6    LEAEA  eaea    LEAF6  eaf6 
+LEB12  eb12    LEB15  eb15    LEB41  eb41    LEBA5  eba5    LEC26  ec26 
+LEC2E  ec2e    LECC3  ecc3    LECCD  eccd    LECD3  ecd3    LECE2  ece2 
+LECE5  ece5    LECF9  ecf9    LED01  ed01    LED15  ed15    LED4F  ed4f 
+LED57  ed57    LEE39  ee39    LEE4C  ee4c    LEE58  ee58    LEE5C  ee5c 
+LEE64  ee64    LEE7E  ee7e    LEE82  ee82    LEE9D  ee9d    LEEA8  eea8 
+LEEAA  eeaa    LEEB1  eeb1    LF     e21b*   LF0DB  f0db    LF0E0  f0e0 
+LF154  f154    LF1A6  f1a6    LF227  f227    LF238  f238    LF23A  f23a 
+LF242  f242    LF247  f247    LF253  f253    LF255  f255    LF260  f260 
+LF26C  f26c    LF291  f291    LF2B1  f2b1    LF2B6  f2b6    LF2C2  f2c2 
+LF2DE  f2de    LF2E3  f2e3    LF361  f361    LF37A  f37a    LF37C  f37c 
+LF38E  f38e    LF392  f392    LF396  f396    LF397  f397    LF3A4  f3a4 
+LF3C5  f3c5    LF3D3  f3d3    LF3DF  f3df    LF400  f400    LF41B  f41b 
+LF422  f422    LF431  f431    LF439  f439    LF444  f444    LF451  f451 
+LF459  f459    LF461  f461    LF470  f470    LF475  f475    LF49F  f49f 
+LF4A5  f4a5    LF4B0  f4b0    LF4CA  f4ca    LF4CD  f4cd    LF4D9  f4d9 
+LF4DA  f4da    LF4DB  f4db    LF4E1  f4e1    LF4EF  f4ef    LF505  f505 
+LF50B  f50b    LF511  f511    LF51A  f51a    LF521  f521    LF527  f527 
+LF542  f542    LF551  f551    LF55A  f55a    LF565  f565    LF572  f572 
+LF577  f577    LF579  f579    LF57F  f57f    LF589  f589    LF58F  f58f 
+LF5AE  f5ae    LF5D2  f5d2    LF5D9  f5d9    LF5F2  f5f2    LF604  f604 
+LF618  f618    LF61E  f61e    LF626  f626    LF62C  f62c    LF634  f634 
+LF652  f652    LF66A  f66a    LF67F  f67f    LF697  f697    LF69D  f69d 
+LF6AC  f6ac    LF6AF  f6af    LF6B8  f6b8    LF6CA  f6ca    LF6F9  f6f9 
+LF733  f733    LF73C  f73c    LF742  f742    LF747  f747    LF753  f753 
+LF756  f756    LF771  f771    LF774  f774    LF796  f796    LF7A4  f7a4 
+LF7B7  f7b7    LF7D9  f7d9    LF7DE  f7de    LF7F1  f7f1    LF802  f802 
+LF818  f818    LF81F  f81f    LF854  f854    LF863  f863    LF890  f890 
+LF897  f897    LF8A1  f8a1    LF8A8  f8a8    LF8AF  f8af    LF8B8  f8b8 
+LF8BC  f8bc    LF8C7  f8c7    LF8D6  f8d6    LF8E2  f8e2    LF912  f912 
+LF92C  f92c    LF932  f932    LF949  f949    LF954  f954    LF983  f983 
+LF989  f989    LF99A  f99a    LF9AE  f9ae    LF9BB  f9bb    LF9C8  f9c8 
+LF9D8  f9d8    LFA00  fa00    LFA27  fa27    LFA2D  fa2d    LFA33  fa33 
+LFA39  fa39    LFA50  fa50    LFA5D  fa5d    LFA60  fa60    LFA65  fa65 
+LFA9C  fa9c    LFAA5  faa5    LFAAE  faae    LFAB9  fab9    LFAC6  fac6 
+LFACC  facc    LFAD6  fad6    LFAD9  fad9    LFAE4  fae4    LFAF3  faf3 
+LFAF6  faf6    LFB12  fb12    LFB14  fb14    LFB21  fb21    LFB23  fb23 
+LFB30  fb30    LFB3B  fb3b    LFB46  fb46    LFB57  fb57    LFB5C  fb5c 
+LFB62  fb62    LFB6E  fb6e    LFB72  fb72    LFB7B  fb7b    LFB7E  fb7e 
+LFB8E  fb8e    LFB94  fb94    LFB9D  fb9d    LFBAC  fbac    LFBC8  fbc8 
+LFBD2  fbd2    LFBEA  fbea    LFC04  fc04    LFC10  fc10    LFC18  fc18 
+LFC1F  fc1f    LFC2E  fc2e    LFC3C  fc3c    LFC44  fc44    LFC4D  fc4d 
+LFC51  fc51    LFC5F  fc5f    LFC62  fc62    LFC72  fc72    LFC7A  fc7a 
+LFC8F  fc8f    LFC90  fc90    LFC95  fc95    LFCA4  fca4    LFCB8  fcb8 
+LFCD1  fcd1    LFCF0  fcf0    LFCFC  fcfc    LFCFE  fcfe    LFD1A  fd1a 
+LFD26  fd26    LFD32  fd32    LFD3B  fd3b    LFD42  fd42    LFD4E  fd4e 
+LFD51  fd51    LFD69  fd69    LFD79  fd79    LFD83  fd83    LFDB1  fdb1 
+LFDBD  fdbd    LFDCD  fdcd    LFDD9  fdd9    LFDDD  fddd    LFDED  fded 
+LFE07  fe07    LFE0C  fe0c    LFE13  fe13    LFE1D  fe1d    LFE24  fe24 
+LFE2A  fe2a    LFE33  fe33    LFE3A  fe3a    LFE46  fe46    LFE4E  fe4e 
+LFE4F  fe4f    LFE54  fe54    LFE64  fe64    LFE6E  fe6e    LFE77  fe77*
+LFE88  fe88    LFE9D  fe9d    LFEA8  fea8    LFEB9  feb9    LFEC1  fec1 
+LFEC2  fec2    LFEC6  fec6    LFECE  fece    LFEE6  fee6    LFEED  feed 
+LFF00  ff00    LFF06  ff06    LFF13  ff13    LFF16  ff16    LFF1A  ff1a 
+LFF2A  ff2a    LFF2D  ff2d    LFF44  ff44    LFF58  ff58    LFF64  ff64 
+LFF80  ff80    LFF8A  ff8a    LFF9B  ff9b    LFFA1  ffa1    LFFB1  ffb1 
+LFFB6  ffb6    LFFC1  ffc1    LFFC2  ffc2    LFFC7  ffc7    LFFCE  ffce 
+LFFDF  ffdf    LFFE7  ffe7    LFFF3  fff3*   LFMT   d0fa    LINE   e857 
+LIST   e9db    LLAB   0005    LMOV   e970    LODM   e982    LT     e8f6 
+MAXFIL 0006    MAXL   d009    MESS   e7e0    MLAB   ebaa    MODE   e58c 
+MOV23  e680    MOVEL  e9b8    MPNT   edf2    NCHAR  d196    NEXT   e17a 
+NFOR   e6cd    NMLEN  0005    NOCHR  d0b8    NOLA   d103*   NOLIN  d0fb 
+NOR1   e9ab    NORM   e9a5    NOVR   ea8e    NUM1   f302    NUM2   f307 
+NUM3   f30c    NUMS   f2eb    NXT1   f16f    NXT2   f179    OBUF   d1c9 
+OCN1   f0c7    OCN2   f0ca    OCNT   f0b3    OERR   f0d8    OIND   d10b 
+OOTB   e359*   OOUT   e353    OP1    f053    OP2    f056    OP4    f0ae 
+OP5    f0b1*   OPAD   f0ad    OPC    eb8e    OPC2   f05b*   OPC3   f077*
+OPCD   f037    OPRD   d105    OPRI   d107    ORG1   ebe6    ORG2   ecae 
+OTAB   eee5    OUT8   d0cf    OUTDR  d0a9    OUTP8  e1f3    PABL   ec56*
+PAS1   eb57    PAS2   ec3d    PASI   d0f9    PNTR   d101    PSEU   f0e6 
+PSU1   ebc2    PSU2   ec71    RDYMG  e0d7    READ   e172    RES2   ec95 
+RES21  eca1    RESI   ec16    RMOV   e979    RNUM   e769    ROOM   e676 
+ROOM1  e5e7    RTAB   f12d    SAVL   d1c9    SBL1   eecf    SBL2   eed3 
+SBLK   eecc    SCNT   d0f3    SCRN   e380    SEAR   e257    SEN1   f2e5 
+SEND   f2c8    SIGN   d104    SIMU   f75c    SLA1   f123    SLAB   f0f8 
+SLINE  d195    SMODE  d12f    SPEED  d1a0    SSTR   f1eb    STAB   eaa3 
+STAT   d0a4    STOM   e98a    SWAP   e5ef    SWAPS  e5ea    SWCH   00ff*
+SWCH1  d0fd    SWCH2  d0fe    SYMADD d132    SYML   e47e    SYMSV  d130 
+SYMT   e000*   SYMX   d0f4    SYSIN  d094    SYSIO  d08f    SYSOT  d096 
+SYSYM  d300    TABA   d0f5    TBE    0080    TEMP   d109    TERM   f3e4 
+TERMW  d18f    TEST   e5d2    TEXT   e9dc    TXT2   fa0b    TY31   ed88 
+TY32   ed8b    TY41   edb4    TY56   ede0    TY6    ee11    TYP2   ed64 
+TYP3   ed77    TYP4   ed96    TYP5   edcb    TYP6   ee01    TYS5   edd3 
+TYS6   ee14    UDAI   0001*   UDAO   0001*   UDATA  0001    USARE  d1a3*
+USTA   0000    VAL1   e290    VAL2   e2ab    VAL3   e2bb    VAL4   e2bd 
+VAL5   e2cb    VALC   e515    VCHK   e51c    VDAD   fdf4    VDM1   cc00 
+WHAT   e7dd    XOUT   d0ff    ZBU1   e270    ZBUF   e26a    ZERO   e919 

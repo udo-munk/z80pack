@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 1
-Source file: dzmation.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:57:33 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ; HAND DISASSEMBLY OF THE DAZZLEMATION MEMORY IMAGE PROVIDED IN THE
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0003                  58     58 COORDS:                         ; CURSOR X,Y COORDINATES
 0003  1f              59     59         DB      1FH             ; INITIALIZED TO (0X1F, 0X1F) AND SET AGAIN IN START TO POSITION
 0004  1f              60     60         DB      1FH             ;   THE CURSOR AT THE MIDDLE OF THE SCREEN
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 2
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0005                  61     61 CUSORDAT:                       ; TWO BYTE DATA INITIALIZED TO 0X00AA AND SET AGAIN IN START
 0005  00              62     62         DB      00H             ; THIS BYTE APPARENTLY UNUSED
 0006                  63     63 CURONSCR:                       ; ROTATED TO INDICATE CURSOR STATUS.
@@ -128,11 +121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0035  c3 e4 01       118    118         JMP     SWTDLY
                      119    119 
                      120    120 ; GO INTO TIGHT LOOP (CALLED VIA RST 7) SEEMS DEAD
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 3
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0038                 121    121 TGHTLOOP:
 0038  c3 38 00       122    122         JMP     TGHTLOOP
                      123    123 
@@ -193,11 +181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 008e  79             175    178         MOV     A,C
 008f  c6 04          176    179         ADI     04H             ; ADJUST Y AGAIN - LINE 383
 0091  00             177    180         NOP
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 4
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0092  00             178    181         NOP
 0093  00             179    182         NOP
 0094  4f             180    183         MOV     C,A
@@ -258,11 +241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00f2                 232    238 GETHIGH:
 00f2  e6 f0          233    239         ANI     0F0H            ; MASK OFF LOW BITS
 00f4  07             234    240         RLC                     ; ROTATE THE HIGH BITS LOW
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 5
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00f5  07             235    241         RLC
 00f6  07             236    242         RLC
 00f7  07             237    243         RLC
@@ -323,11 +301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0138                 290    298 SETPIXVAL:
 0138  e6 0f          291    299         ANI     0FH             ; EVERYBODY DOES THIS... BUT JUST TO BE SURE, I GUESS
 013a  f5             292    300         PUSH    PSW             ; PUSHES A AND FLAGS
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 6
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 013b  cd 00 01       293    301         CALL    GETPADDR
 013e  d1             294    302         POP     D               ; POPS D AND E (PRESUMABLY A IS NOW IN D)
 013f  da 48 01       295    303         JC      SPTOP4          ; IF CARRY, SET THE TOP FOUR BITS
@@ -388,11 +361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 017a  ff             350    358         DB      0FFH            ; END OF TABLE
                      351    359 
                      352    360 ; SEEMS DEAD
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 7
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 017b  00 00 00 00    353    361         DB      00H, 00H, 00H, 00H, 00H
 017f  00             353    362
                      354    363 
@@ -453,11 +421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      409    418 ; OR IF KEYSTROKE DETECTED AVAILABLE ON PORT
                      410    419 ; SET THE CURRENT COLOR AT THE CURRENT CURSOR COORDINATES AND FALL
                      411    420 ; THROUGH TO MOVE THE CURSOR COORDINATES USING THE CURRENT MOTION
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 8
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      412    421 ; XY (LOTSA CURRENT)
 01c0                 413    422 DOCURRENT:
 01c0  2a 03 00       414    423         LHLD    COORDS          ; CURSOR X,Y IN HL
@@ -518,11 +481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01ff  1b             469    478         DB      1BH
                      470    479 
                      471    480 ; INITIALIZE THINGS AND THEN JUMP TO KEYSTROKE PROCESSING
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 9
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0200                 472    481 START:
 0200  31 ff 0f       473    482         LXI     SP,0FFFH        ; STACK DOWN FROM 0X0FFF
 0203  3e 88          474    483         MVI     A,88H           ; DAZZLER SETUP, ON, START ADDRESS 0X1000
@@ -583,11 +541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0254  6b             529    538         MOV     L,E             ; GET LOW BYTE OF FUNCTION ADDRESS
 0255  6e             530    539         MOV     L,M
 0256  24             531    540         INR     H               ; FUNCTION ADDRESS HIGH BYTE IS ALWAYS 0X03
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 10
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0257  e9             532    541         PCHL                    ; JUMP TO FUNCTION
                      533    542 
                      534    543 ; SEEMS DEAD
@@ -648,11 +601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 028d  50             589    598         DB      50H             ; <ETX><CTRL-C> FUNCTION AT 0X0350
 028e  5a             590    599         DB      5AH             ; <STX><CTRL-B> FUNCTION AT 0X035A
 028f  c0             591    600         DB      0C0H            ; <DLE><CTRL-P> FUNCTION AT 0X03C0
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 11
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0290  8b             592    601         DB      8BH             ; <AT SIGN> FUNCTION AT 0X038B
 0291  98             593    602         DB      98H             ; <ESCAPE> FUNCTION AT 0X0398
 0292                 594    603 RUNTBLENT:                      ; THIS BYTE IS MODIFIED BY CODE BELOW
@@ -713,11 +661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02f6  c6 02          643    658         ADI     02H
 02f8  2e 3f          644    659         MVI     L,3FH
 02fa  25             645    660         DCR     H
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 12
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02fb  c3 c6 02       646    661         JMP     RECHECK
 02fe  00             647    662         NOP
 02ff  00             648    663         NOP
@@ -778,11 +721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      703    718 
                      704    719 ; L FUNCTION (LOW INTENSITY)
 0343  c3 58 01       705    720         JMP     LOWINT
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 13
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      706    721 
                      707    722 ; H FUNCTION (HIGH INTENSITY)
 0346  c3 60 01       708    723         JMP     HIGHINT
@@ -843,11 +781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      762    778 
                      763    779 ; FINISH UP OF <AT SIGN>
 0391                 764    780 OUTDONE:
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 14
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0391  cd 64 03       765    781         CALL    NULOUT
 0394  c3 58 00       766    782         JMP     PROCESS
 0397  00             767    783         NOP
@@ -908,11 +841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03dc  c8             822    838         RZ                      ; IF IT IS A CHARACTER IN OUR TABLE, RETURN RIGHT HERE DON'T STORE IT
 03dd  7e             823    839         MOV     A,M             ; GET THE TABLE VALUE SO WE CAN... - LINE 1229 OK
 03de  fe ff          824    840         CPI     0FFH            ; CHECK FOR THE END OF THE TABLE
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 15
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03e0  c2 d9 03       825    841         JNZ     GPBLOOP         ; NOT THE END? LOOP BACK AND CHECK THE NEXT VALUE
 03e3  78             826    842         MOV     A,B             ; IF WE'RE HERE, IT'S NOT IN THE TABLE...
 03e4  2a 0e 00       827    843         LHLD    CMDBUFP         ; STORE IT TO THE COMMAND BUFFER POINTER
@@ -973,11 +901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0434  32 92 02       881    898         STA     RUNTBLENT       ; MODIFY JUMP TABLE FOR <CTRL-R>
 0437  c3 58 00       882    899         JMP     PROCESS         ; GO BACK TO KEYSTROKE LOOP
                      883    900 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 16
-Source file: dzmation.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      884    901 ; SEEMS DEAD
 043a  07 07 07 07    885    902         DB      07H, 07H, 07H, 07H, 07H, 07H
 043e  07 07          885    903
@@ -993,28 +916,27 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0461  0d 0d 0d 0d    890    913
                      891    914 
 0465                 892    915         END
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:38:28 2022	Page 17
-Source file: dzmation.asm
-Title:       Symbol table
 
-ADJCUR   01d2 	BOLOOP1  0373 	BUFOUT   0370 	CFLSHFLG 000b 	
-CHAROUT  0380 	CHK18    0425 	CHKCURPO 02c3 	CHKCZ    0418 	
-CHKDONE  02f2 	CHKNXT   0246 	CHKY     02dc 	CLEARBUF 0230 	
-CLRBCMP  0237 	CLRBLOOP 0233 	CLRKEYTB 0172 	CMDBUFP  000e 	
-COLOR    0007 	COORDS   0003 	CPWAIT   03c3 	CTRLZ    001a 	
-CUROFFFL 000c 	CURONSCR 0006 	CUSORDAT 0005 	DATAPORT 0002 	
-DLYLOOP1 01ea 	DOCURREN 01c0 	FUNCCHAR 0240 	FUNCLADD 0280*	
-GETHIGH  00f2 	GETKEY   0180 	GETPADDR 0100 	GETPORTB 03d1 	
-GETPVAL  00e8 	GPBLOOP  03d9 	GPBTABLE 03f0 	HIGHINT  0160 	
-INSRT1   0400 	INTENS   0008 	JTBLHACK 042a*	JTBLUNHA 0432 	
-JUMPMTCH 0268 	KEYCOLOR 01aa 	LOWINT   0158 	MORERUN  0406 	
-MOVNOSTO 001c 	NOFLSHLO 0066 	NOLOOP   0367 	NOTRUNNI 005b 	
-NULOUT   0364 	OUTDONE  0391 	PCLOOP1  0197 	PROCCHAR 018a 	
-PROCESS  0058 	RECHECK  02c6 	RUN2     03bb 	RUNCHECK 00c1 	
-RUNFLG   000d 	RUNNING  03b5 	RUNTBLEN 0292 	SETPIXVA 0138 	
-SKIPCUR  0063 	SKP200   010e 	SKP400   0119 	SPTOP4   0148 	
-START    0200 	STATPORT 0003 	STATRXOK 0002 	STATTXOK 0001 	
-STCLRLOO 0220 	STORMOTN 0019 	SWITPORT 00ff 	SWTDLY   01e4 	
-TBLMATCH 0254 	TGHTLOOP 0038 	TGLCURSO 0080 	WRPBTM   02ec 	
-WRPRIGHT 02d6 	XCURMOT  000a 	XORPIXVA 00b8 	XSETMOTI 0010 	
-YCURMOT  0009 	YSETMOTI 0016 	
+Symbol table
+
+ADJCUR      01d2    BOLOOP1     0373    BUFOUT      0370    CFLSHFLG    000b 
+CHAROUT     0380    CHK18       0425    CHKCURPOS   02c3    CHKCZ       0418 
+CHKDONE     02f2    CHKNXT      0246    CHKY        02dc    CLEARBUF    0230 
+CLRBCMP     0237    CLRBLOOP    0233    CLRKEYTBL   0172    CMDBUFP     000e 
+COLOR       0007    COORDS      0003    CPWAIT      03c3    CTRLZ       001a 
+CUROFFFLG   000c    CURONSCR    0006    CUSORDAT    0005    DATAPORT    0002 
+DLYLOOP1    01ea    DOCURRENT   01c0    FUNCCHAR    0240    FUNCLADDR   0280*
+GETHIGH     00f2    GETKEY      0180    GETPADDR    0100    GETPORTBYTE 03d1 
+GETPVAL     00e8    GPBLOOP     03d9    GPBTABLE    03f0    HIGHINT     0160 
+INSRT1      0400    INTENS      0008    JTBLHACK    042a*   JTBLUNHACK  0432 
+JUMPMTCHTBL 0268    KEYCOLOR    01aa    LOWINT      0158    MORERUN     0406 
+MOVNOSTORE  001c    NOFLSHLOOP  0066    NOLOOP      0367    NOTRUNNING  005b 
+NULOUT      0364    OUTDONE     0391    PCLOOP1     0197    PROCCHAR    018a 
+PROCESS     0058    RECHECK     02c6    RUN2        03bb    RUNCHECK    00c1 
+RUNFLG      000d    RUNNING     03b5    RUNTBLENT   0292    SETPIXVAL   0138 
+SKIPCUR     0063    SKP200      010e    SKP400      0119    SPTOP4      0148 
+START       0200    STATPORT    0003    STATRXOK    0002    STATTXOK    0001 
+STCLRLOOP   0220    STORMOTNMOV 0019    SWITPORT    00ff    SWTDLY      01e4 
+TBLMATCH    0254    TGHTLOOP    0038    TGLCURSOR   0080    WRPBTM      02ec 
+WRPRIGHT    02d6    XCURMOT     000a    XORPIXVAL   00b8    XSETMOTION  0010 
+YCURMOT     0009    YSETMOTION  0016    

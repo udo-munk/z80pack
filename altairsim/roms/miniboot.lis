@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:48:12 2022	Page 1
-Source file: miniboot.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:52:39 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -36,9 +34,8 @@ fe1c  ca 7d 00        30     30         JZ   7DH                ;GO TO SBOOT IF 
 fe1f  76              31     31         HLT                     ;ERROR - HALT
                       32     32 
 fe20                  33     33         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:48:12 2022	Page 2
-Source file: miniboot.asm
-Title:       Symbol table
 
-DCOM     00f8 	DDATA    00fb 	DONE     fe19 	NEXT     fe0c 	
-SECT     00fa 	STAT     00f8 	WAIT     00fc 	
+Symbol table
+
+DCOM  00f8    DDATA 00fb    DONE  fe19    NEXT  fe0c    SECT  00fa 
+STAT  00f8    WAIT  00fc    
