@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 1
-Source file: basic8k78.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:46:11 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 001c  c5              58     58 	push	b
 001d  d5              59     59 	push	d
 001e  e5              60     60 	push	h
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 2
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 001f  cd 11 00        61     61 	call	cinb	;get char
 0022  d2 33 00        62     62 	jnc	syskeynone
 0025  fe 00           63     63 	cpi	0
@@ -128,11 +121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      118    118 ;
                      119    119 ;  DELAY
                      120    120 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 3
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0060                 121    121 SYSWAIT:
 0060  c9             122    122 	RET
                      123    123 ;
@@ -193,11 +181,6 @@ b400  =              126    126 MONITOR	EQU	0B400H
 0099  =              178    178 KEYLIS	EQU	KEYCON+1
 009a  =              179    179 KEYEDI	EQU	KEYLIS+1
 009b  =              180    180 KEYCLR	EQU	KEYEDI+1
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 4
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 009c  =              181    181 KEYCLD	EQU	KEYCLR+1
 009d  =              182    182 KEYCSV	EQU	KEYCLD+1
 009e  =              183    183 KEYNEW	EQU	KEYCSV+1
@@ -258,11 +241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00c6  =              238    238 KEYMEM	EQU	KEYPOS+1
 00c7  =              239    239 KEYLEN	EQU	KEYMEM+1
 00c8  =              240    240 KEYSTR	EQU	KEYLEN+1
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 5
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00c9  =              241    241 KEYVAL	EQU	KEYSTR+1
 00ca  =              242    242 KEYASC	EQU	KEYVAL+1
 00cb  =              243    243 KEYCHR	EQU	KEYASC+1
@@ -323,11 +301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00a4  79             298    298 	DB	79H
 00a5  6c 1d          299    299 	DW	ADDOPR
 00a7  79             300    300 	DB	79H
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 6
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00a8  c5 19          301    301 	DW	SUBOPR
 00aa  7b             302    302 	DB	7BH
 00ab  b5 1a          303    303 	DW	MULOPR
@@ -388,11 +361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00fa  1a 01 35 01    358    358 	DW	KEYWRD0, KEYWRD1, KEYWRD2, KEYWRD3
 00fe  4a 01 71 01    358    359
 0102  ad 01 d1 01    359    360 	DW	KEYWRD4, KEYWRD5, KEYWRD6, KEYWRD7
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 7
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0106  ee 01 fd 01    359    361
 010a  0d 02 17 02    360    362 	DW	KEYWRD8, KEYWRD9, KEYWRDA, KEYWRDB
 010e  2a 02 2c 02    360    363
@@ -453,11 +421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01a3  c8 53 54 52    400    418 	DB	KEYSTR, 'STR', '$'+128
 01a7  a4             400    419
 01a8  4b 43 48 52    401    420 	DB	KEYCHR-80H, 'CHR', '$'+128
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 8
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01ac  a4             401    421
 01ad                 402    422 KEYWRD4:
 01ad  80 44 41 54    403    423 	DB	KEYDAT, 'DAT', 'A'+128
@@ -518,11 +481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 022e  88 4c 45 d4    445    478 	DB	KEYLET, 'LE', 'T'+128
 0232  99 4c 49 53    446    479 	DB	KEYLIS, 'LIS', 'T'+128
 0236  d4             446    480
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 9
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0237  9c 4c 4f 41    447    481 	DB	KEYCLD, 'LOA', 'D'+128
 023b  c4             447    482
 023c  a4 4c 49 4e    448    483 	DB	KEYLINE, 'LIN', 'E'+128
@@ -583,11 +541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02ae  44 45 20 42    492    538
 02b2  59 20 30 00    492    539
 02b6                 493    540 ERRNFC:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 10
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02b6  46 55 4e 43    494    541 	DB	'FUNCTION CALL',0	;FUNCTION CALL
 02ba  54 49 4f 4e    494    542
 02be  20 43 41 4c    494    543
@@ -648,11 +601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 033e  55 4e 44 46    523    598 	DB	'UNDFND FUNCTION',0	;UNDEFINED FUNCTION
 0342  4e 44 20 46    523    599
 0346  55 4e 43 54    523    600
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 11
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 034a  49 4f 4e 00    523    601
 034e                 524    602 ERRNUS:
 034e  55 4e 44 46    525    603 	DB	'UNDFND LINE',0		;UNDEFINED STATEMENT
@@ -713,11 +661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0064  =              572    658 PREDREL	    EQU	064H		;PRECEDENCE OF RELATION
 0070  =              573    659 PREDNUM	    EQU	070H		;LOWER BNDRY OF NUM OP PREC.
 005a  =              574    660 PREDNOT	    EQU	05AH		;PRECEDENCE OF NOT OPERATOR
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 12
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 007d  =              575    661 PREDUMIN    EQU	07DH		;PRECEDENCE OF UNARY MINUS
 009d  =              576    662 LINESYZE    EQU	79+78		;DEFAULT LINESYZE
 000e  =              577    663 ITEMSIZE    EQU	14		;DEFAULT WIDTH OF PRINT ITEM
@@ -778,11 +721,6 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 00c9  =              632    718 OPCRET       EQU 0C9H		;RETURN INSTRUCTION
                      633    719 
 03b5  52 c7 4f 80    634    720 RNDFCTSD:    DB  052h, 0c7h, 04fh, 080h   ;RANDOM SEED
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 13
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      635    721 
                      636    722 ;
                      637    723 ; Page 17
@@ -843,11 +781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      692    778 ;
 03e4                 693    779 CHARMTCH:
 03e4  ae             694    780 	XRA	M		;MAKE MATCH TEST
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 14
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03e5  c8             695    781 	RZ			;Z-SUCCESS]
 03e6  fe 20          696    782 	CPI	'a'-'A'		;LOWER CASE - UPPER CASE
 03e8  c0             697    783 	RNZ			;NOT LOWER-UPPER DIFFERENCE
@@ -908,11 +841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 041a  11 ff ff       752    838 	LXI	D,0FFFFH	;EMPTY SECOND OPERAND = END
 041d  cd c1 03       753    839 	CALL	SCANNXT		;bscan ,
 0420  c8             754    840 	RZ
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 15
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      755    841 
                      756    842 ;
                      757    843 ;  SCAN A LINE NUMBER
@@ -973,11 +901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 045a  3f             812    898 	CMC
 045b  c8             813    899 	RZ
 045c  d2 49 04       814    900 	JNC	LINESRCL
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 16
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 045f  60             815    901 	MOV	H,B
 0460  69             816    902 	MOV	L,C
 0461  3f             817    903 	CMC
@@ -1038,11 +961,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0498  73             872    958 	MOV	M,E		;INSERT LINE NUMBER
 0499  23             873    959 	INX	H
 049a  72             874    960 	MOV	M,D
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 17
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 049b  23             875    961 	INX	H
 049c  eb             876    962 	XCHG
 049d  e1             877    963 	POP	H		;RECOVER TEXT POINTER
@@ -1103,11 +1021,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04da  7d             932   1018 	MOV	A,L
 04db  93             933   1019 	SUB	E
 04dc  c9             934   1020 	RET
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 18
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      935   1021 
                      936   1022 ;
                      937   1023 ;  Page 24
@@ -1168,11 +1081,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      992   1078 ;  RE-INITIALIZATION ROUTINES
                      993   1079 ;
 050c                 994   1080 NEWSTM:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 19
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 050c  c0             995   1081 	RNZ			;NEW COMMAND
 050d                 996   1082 CLEARPGM:
 050d  2a 97 03       997   1083 	LHLD	PROGBASE	;CLEAR PROGRAM
@@ -1233,11 +1141,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0561                1052   1138 RESSTM:
 0561  ca 73 05      1053   1139 	JZ	RESSTMDF	;RESTORE STATEMENT
 0564  cd 21 04      1054   1140 	CALL	SCANLINN
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 20
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0567  e5            1055   1141 	PUSH	H
 0568  cd 46 04      1056   1142 	CALL	LINESRCH
 056b  d2 60 0b      1057   1143 	JNC	ERRAUS
@@ -1298,11 +1201,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05ae  f5            1112   1198 	PUSH	PSW		;TRANSMIT CHARACTER
 05af  3a 7b 03      1113   1199 	LDA	PRINTFLG
 05b2  b7            1114   1200 	ORA	A
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 21
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05b3  c2 55 15      1115   1201 	JNZ	POPAFRET
 05b6  f1            1116   1202 	POP	PSW
 05b7  f5            1117   1203 	PUSH	PSW
@@ -1363,11 +1261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 060b  32 7b 03      1168   1258 	STA	PRINTFLG	;TURN ON PRINTING
 060e  32 7d 03      1169   1259 	STA	SCANPFLG	;ALLOW SUBSCRIPTING
 0611  cd 5f 0d      1170   1260 	CALL	PRNTCRLF
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 22
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0614  21 89 02      1171   1261 	LXI	H,ERRN
 0617  57            1172   1262 	MOV	D,A
 0618  cd aa 05      1173   1263 	CALL	PRNTCHRI	;print (val)
@@ -1428,11 +1321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1228   1318 ;
 066d                1229   1319 AUTSTMIN:
 066d  d5            1230   1320 	PUSH	D		;SAVE LINE NUMBER
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 23
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 066e  cd 6f 04      1231   1321 	CALL	LINEINS		;INSERT LINE
 0671  e1            1232   1322 	POP	H		;RECOVER LINE NUMBER,
 0672  d1            1233   1323 	POP	D		;INCREMENT
@@ -1493,11 +1381,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06c5  fe 3c         1288   1378 	CPI	'<'		;   SO WE DON'T SCAN
 06c7  da 3d 07      1289   1379 	JC	KEYSCANP
 06ca                1290   1380 KEYSCANK:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 24
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06ca  c5            1291   1381 	PUSH	B		;SCAN FOR MATCHING KEYWORD
 06cb  d5            1292   1382 	PUSH	D
 06cc  e5            1293   1383 	PUSH	H
@@ -1558,11 +1441,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 070e  0e 00         1348   1438 	MVI	C,0
 0710  f2 ec 06      1349   1439 	JP	KEYSCANC
 0713  7e            1350   1440 	MOV	A,M		;NO MATCH, GET CHARACTER
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 25
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0714                1351   1441 KEYSCANF:
 0714  d1            1352   1442 	POP	D		;RECOVER OUTPUT POINTER
 0715  d1            1353   1443 	POP	D
@@ -1623,11 +1501,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0752  c8            1408   1498 	RZ
 0753  b8            1409   1499 	CMP	B
 0754  c8            1410   1500 	RZ
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 26
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0755  fe 22         1411   1501 	CPI	'"'		;STRING WITHIN TEXT?
 0757  c2 4c 07      1412   1502 	JNZ	KEYSCANV
 075a  c5            1413   1503 	PUSH	B
@@ -1688,11 +1561,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07ae  fe 20         1468   1558 	CPI	' '
 07b0  da 90 07      1469   1559 	JC	INPTLINL	;IGNORE OTHER CONTROL CHARS
                     1470   1560 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 27
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1471   1561 ;
                     1472   1562 ;  Page 35
                     1473   1563 ;
@@ -1753,11 +1621,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07ff                1528   1618 SETSTMPR:
 07ff  78            1529   1619 	MOV	A,B
 0800  32 79 03      1530   1620 	sta	p3010		;used to be printflg **
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 28
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0803  c9            1531   1621 	RET
 0804                1532   1622 SETSTMGT:
 0804  78            1533   1623 	MOV	A,B
@@ -1818,11 +1681,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 084c  cd 54 00      1588   1678 	CALL	SYSBREAK	;ALLOW BREAK
 084f  ca e2 0a      1589   1679 	JZ	EXECUTEB
 0852  c5            1590   1680 	PUSH	B
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 29
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0853  e3            1591   1681 	XTHL
 0854  cd 63 04      1592   1682 	CALL	LINELINK
 0857  ca 86 08      1593   1683 	JZ	POPHLRET	;END OF PROGRAM, QUIT
@@ -1883,11 +1741,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 089c  39            1648   1738 	DAD	SP
 089d  eb            1649   1739 	XCHG
 089e  06 9d         1650   1740 	MVI	B,LINESYZE	;INITIALIZE LENGTH COUNTER
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 30
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08a0  c3 a6 08      1651   1741 	JMP	LISEDIKD
 08a3                1652   1742 LISEDISC:
 08a3  cd f3 08      1653   1743 	CALL	LISEDIST	;STUFF ONE CHARACTER OF LINE
@@ -1948,11 +1801,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08f1  3e 20         1708   1798 	MVI	A,' '		;GENERATE BLANK
 08f3                1709   1799 LISEDIST:
 08f3  12            1710   1800 	STAX	D
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 31
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08f4  13            1711   1801 	INX	D
 08f5  05            1712   1802 	DCR	B
 08f6  c0            1713   1803 	RNZ			;TRUNCATE TOO LONG A LINE
@@ -2013,11 +1861,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0949  c3 2a 09      1768   1858 	JMP	EDISTMNX
                     1769   1859 
                     1770   1860 ;  ADVANCE
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 32
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1771   1861 ;
 094c                1772   1862 EDISTMAD:
 094c  79            1773   1863 	MOV	A,C
@@ -2078,11 +1921,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0989  e1            1828   1918 	POP	H
 098a  23            1829   1919 	INX	H
 098b  c3 70 09      1830   1920 	JMP	EDISTMIN
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 33
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1831   1921 
                     1832   1922 ;
                     1833   1923 ;  Page 42
@@ -2143,11 +1981,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1888   1978 
                     1889   1979 ;  LIST LINE, PREPARE FOR UPDATES
                     1890   1980 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 34
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09d2                1891   1981 EDISTMCR:
 09d2  d1            1892   1982 	POP	D
 09d3  e1            1893   1983 	POP	H		;RETRIEVE COPY OF LINE NUMBER
@@ -2208,11 +2041,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a1e  23            1948   2038 	INX	H
 0a1f  46            1949   2039 	MOV	B,M
 0a20  23            1950   2040 	INX	H
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 35
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a21  e5            1951   2041 	PUSH	H
 0a22  60            1952   2042 	MOV	H,B
 0a23  69            1953   2043 	MOV	L,C
@@ -2273,11 +2101,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a71  d5            2008   2098 	PUSH	D
 0a72  01 00 81      2009   2099 	LXI	B,08100H	;LOAD DEFAULT STEP=1.0
 0a75  51            2010   2100 	MOV	D,C
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 36
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a76  5a            2011   2101 	MOV	E,D
 0a77  7e            2012   2102 	MOV	A,M
 0a78  fe a2         2013   2103 	CPI	KEYSTEP		;CHECK FOR EXPLICIT STEP SIZE
@@ -2338,11 +2161,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ac2                2068   2158 EXECUTES:
 0ac2  fe 80         2069   2159 	CPI	KEYSTM		;WHAT KIND OF STATEMENT?
 0ac4  da c0 0b      2070   2160 	JC	LETSTM
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 37
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ac7  fe a0         2071   2161 	CPI	KEYSUGR
 0ac9  d2 53 0c      2072   2162 	JNC	EXECUTE2
 0acc  87            2073   2163 	ADD	A
@@ -2403,11 +2221,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b1a  c9            2128   2218 	RET
                     2129   2219 
 0b1b                2130   2220 RUNSTM:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 38
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b1b  ca 18 05      2131   2221 	JZ	CLEARSET	;RUN COMMAND
 0b1e  cd 1b 05      2132   2222 	CALL	CLEARVST
 0b21  01 9a 0a      2133   2223 	LXI	B,EXECUTEL
@@ -2468,11 +2281,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b66  16 ff         2188   2278 	MVI	D,0FFH
 0b68  cd 0f 0a      2189   2279 	CALL	FORCHK		;KILL ACTIVE FOR LOOPS
 0b6b  f9            2190   2280 	SPHL			;INSIDE SUBROUTINE
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 39
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b6c  fe 8e         2191   2281 	CPI	KEYGSB
 0b6e  1e 76         2192   2282 	MVI	E,ERRNRG-ERRN
 0b70  c2 07 06      2193   2283 	JNZ	ERRMSG
@@ -2533,11 +2341,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0bad  cd 79 1d      2248   2338 	CALL	PRINTINT	;PRINT CURRENT LINE NUMBER
 0bb0  cd aa 05      2249   2339 	CALL	PRNTCHRI	;print (val)
 0bb3  2c            2250   2340 	DB	','
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 40
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0bb4  e1            2251   2341 	POP	H
 0bb5  e5            2252   2342 	PUSH	H
 0bb6  cd 79 1d      2253   2343 	CALL	PRINTINT	;PRINT DESTINATION LINE NUMBER
@@ -2598,11 +2401,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2308   2398 ;  Page 51
                     2309   2399 ;
                     2310   2400 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 41
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2311   2401 ;
                     2312   2402 ;  COERCE ACCUMULATOR TO TYPE IN A
                     2313   2403 ;
@@ -2663,11 +2461,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2368   2458 ;  Page 52
                     2369   2459 ;
                     2370   2460 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 42
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c4d  2b            2371   2461 	DCX	H
 0c4e  cd c1 03      2372   2462 	CALL	SCANNXT		;bscan ,
 0c51  7b            2373   2463 	MOV	A,E
@@ -2728,11 +2521,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2428   2518 ;
                     2429   2519 ;  Page 53
                     2430   2520 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 43
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2431   2521 
 0ca7  7e            2432   2522 	MOV	A,M		;GET ITS LENGTH
 0ca8  15            2433   2523 	DCR	D
@@ -2793,11 +2581,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ce0                2488   2578 ONNSTMC:
 0ce0  4b            2489   2579 	MOV	C,E
 0ce1                2490   2580 ONNSTMSL:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 44
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ce1  0d            2491   2581 	DCR	C		;LOOK FOR RIGHT LINE NUMBER
 0ce2  78            2492   2582 	MOV	A,B
 0ce3  ca c2 0a      2493   2583 	JZ	EXECUTES	;THEN EXECUTE STATEMENT
@@ -2858,11 +2641,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d3a  ca 55 0d      2548   2638 	JZ	PRTSTRNG
 0d3d  cd 5f 11      2549   2639 	CALL	VALSTRGN	;CREATE STRING FROM NUMBER
 0d40  2a a9 03      2550   2640 	LHLD	ACCUMLTR	;VERIFY ROOM ENOUGH ON LINE
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 45
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d43  7e            2551   2641 	MOV	A,M
 0d44  21 af 03      2552   2642 	LXI	H,CURSPOS
 0d47  86            2553   2643 	ADD	M
@@ -2923,11 +2701,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d9d  e5            2608   2698 	PUSH	H
 0d9e  7b            2609   2699 	MOV	A,E
 0d9f  ca ab 0d      2610   2700 	JZ	PRNTBLNK
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 46
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0da2  3a af 03      2611   2701 	LDA	CURSPOS
 0da5  2f            2612   2702 	CMA
 0da6  83            2613   2703 	ADD	E
@@ -2988,11 +2761,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2668   2758 ;
                     2669   2759 ;  PLOT STATEMENT
                     2670   2760 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 47
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0de9                2671   2761 PLTSTM:
 0de9  cd 07 0c      2672   2762 	CALL	VALNUMBR	;bscan numbr  ;GET X-COORDINATE
 0dec  cd 26 0c      2673   2763 	CALL	CINTEGER
@@ -3053,11 +2821,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e45  f9            2720   2818 	SPHL			;AND CREATE A NEW BUFFER
 0e46  22 95 03      2721   2819 	SHLD	INPTBUFR
 0e49  eb            2722   2820 	XCHG
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 48
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e4a  7e            2723   2821 	MOV	A,M
 0e4b  fe 22         2724   2822 	CPI	'"'
 0e4d  ca 5b 0e      2725   2823 	JZ	INPSTMPR
@@ -3118,11 +2881,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ea1  f1            2780   2878 	POP	PSW		;ASSIGN VALUE
 0ea2  d1            2781   2879 	POP	D
 0ea3  cd d1 0b      2782   2880 	CALL	ASSIGN
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 49
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ea6  2b            2783   2881 	DCX	H		;bscan -
 0ea7  cd c1 03      2784   2882 	CALL	SCANNXT		;bscan ,
 0eaa  ca b2 0e      2785   2883 	JZ	REAINPCM
@@ -3183,11 +2941,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2840   2938 ;
 0ef0                2841   2939 DATAGET:
 0ef0  3a 7a 03      2842   2940 	LDA	REAINPFL
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 50
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ef3  b7            2843   2941 	ORA	A		;READ OR INPUT?
 0ef4  11 0b 0e      2844   2942 	LXI	D,MSGQUES
 0ef7  ca 1c 0f      2845   2943 	JZ	DATAINPT	;INPUT
@@ -3248,11 +3001,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f4a  3a 81 03      2900   2998 	LDA	TYPEFLG
 0f4d  f5            2901   2999 	PUSH	PSW
 0f4e  06 00         2902   3000 	MVI	B,0
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 51
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f50  cd 6a 11      2903   3001 	CALL	VALSTRGY	;SWALOW REST OF INPUT LINE
 0f53  c3 a1 0e      2904   3002 	JMP	REAINPLA	;AND ASSIGN TO STRING VARIABLE
                     2905   3003 
@@ -3313,11 +3061,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2960   3058 
                     2961   3059 ;
                     2962   3060 ;  Page 65
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 52
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2963   3061 ;
                     2964   3062 
                     2965   3063 ;
@@ -3378,11 +3121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3020   3118 
                     3021   3119 ;
                     3022   3120 ;  Page 66
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 53
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3023   3121 ;
                     3024   3122 
 0fff  19            3025   3123 	DAD	D
@@ -3443,11 +3181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 103d                3080   3178 RELOPRC:
 103d  79            3081   3179 	MOV	A,C
 103e  c1            3082   3180 	POP	B
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 54
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 103f  d1            3083   3181 	POP	D
 1040  f5            3084   3182 	PUSH	PSW
 1041  0f            3085   3183 	RRC
@@ -3508,11 +3241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1083  3e 04         3140   3238 	MVI	A,TYPESING	;SCAN & EVALUATE A PRIMARY
 1085  32 81 03      3141   3239 	STA	TYPEFLG
 1088  cd c1 03      3142   3240 	CALL	SCANNXT		;bscan ,
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 55
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 108b  da cf 1c      3143   3241 	JC	DECODE		;NUMERIC CONSTANT?
 108e  cd d1 03      3144   3242 	CALL	ALPHACHK
 1091  da d9 10      3145   3243 	JC	VALVAR		;VARIABLE?
@@ -3573,11 +3301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 10ee  c4 ed 1b      3200   3298 	CNZ	COPYVAL
 10f1  d1            3201   3299 	POP	D
 10f2  e1            3202   3300 	POP	H
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 56
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 10f3  c9            3203   3301 	RET
                     3204   3302 
                     3205   3303 ;
@@ -3638,11 +3361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1146  eb            3260   3358 	XCHG
 1147  2a a9 03      3261   3359 	LHLD	ACCUMLTR
 114a  e3            3262   3360 	XTHL			;PUSH STRING ONTO STACK
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 57
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 114b  c3 56 11      3263   3361 	JMP	VALFCTLK
                     3264   3362 
 114e                3265   3363 VALFCTAR:
@@ -3703,11 +3421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 118d  3f            3320   3418 	CMC
 118e  1f            3321   3419 	RAR
 118f  b0            3322   3420 	ORA	B
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 58
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1190  f4 7d 16      3323   3421 	CP	STRGSTOR	;MAKE COPY OF CERTAIN BUFFERS
                     3324   3422 
                     3325   3423 ;
@@ -3768,11 +3481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 11d0  cd d7 04      3380   3478 	CALL	CMHLLTDE
 11d3  c2 86 08      3381   3479 	JNZ	POPHLRET
 11d6  47            3382   3480 	MOV	B,A		;RELEASE STRING SPACE
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 59
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 11d7  09            3383   3481 	DAD	B
 11d8  22 a1 03      3384   3482 	SHLD	STRGFREE
 11db  e1            3385   3483 	POP	H
@@ -3833,11 +3541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1224                3440   3538 VALCONCP:
 1224  e1            3441   3539 	POP	H		;COPY STRING FOR CATENATION
 1225  e3            3442   3540 	XTHL
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 60
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1226  7e            3443   3541 	MOV	A,M		;GET LENGTH,
 1227  23            3444   3542 	INX	H
 1228  4e            3445   3543 	MOV	C,M		;ADDRESS OF STRING
@@ -3898,11 +3601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1266  4f            3500   3598 	MOV	C,A
 1267                3501   3599 VARSKIPL:
 1267  cd c1 03      3502   3600 	CALL	SCANNXT		;bscan ,  ;SKIP EXTRA ALPHANUMERIC
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 61
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 126a  da 67 12      3503   3601 	JC	VARSKIPL	;CHARACTERS IN NAME
 126d  cd d1 03      3504   3602 	CALL	ALPHACHK
 1270  da 67 12      3505   3603 	JC	VARSKIPL
@@ -3963,11 +3661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 12b9  1a            3560   3658 	LDAX	D
 12ba  6f            3561   3659 	MOV	L,A
 12bb  b9            3562   3660 	CMP	C
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 62
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 12bc  13            3563   3661 	INX	D
 12bd  c2 c2 12      3564   3662 	JNZ	VARSCANM
 12c0  1a            3565   3663 	LDAX	D
@@ -4028,11 +3721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 12ff                3620   3718 MATSCANB:
 12ff  c6 01         3621   3719 	ADI	']'-'['+'('-')'	;(got me?)
 1301                3622   3720 MATSCANP:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 63
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1301  c6 01         3623   3721 	ADI	')'-'('
 1303  e5            3624   3722 	PUSH	H		;SCAN SUBSCRIPT OF VARIABLE
 1304  2a 80 03      3625   3723 	LHLD	MATDMFLG
@@ -4093,11 +3781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 134e  56            3680   3778 	MOV	D,M
 134f  23            3681   3779 	INX	H
 1350  c2 37 13      3682   3780 	JNZ	MATSCANN
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 64
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1353  3a 80 03      3683   3781 	LDA	MATDMFLG	;NAME FOUND
 1356  b7            3684   3782 	ORA	A
 1357  1e 10         3685   3783 	MVI	E,ERRNDD-ERRN
@@ -4158,11 +3841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 139e  4b            3740   3838 	MOV	C,E
 139f  eb            3741   3839 	XCHG			;ALLOCATE ARRAY,
 13a0  19            3742   3840 	DAD	D
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 65
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 13a1  da 61 13      3743   3841 	JC	ERRABS
 13a4  cd fb 04      3744   3842 	CALL	SPACECHK
 13a7  22 9d 03      3745   3843 	SHLD	FREELIMT
@@ -4223,11 +3901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 13f5  09            3800   3898 	DAD	B
 13f6  eb            3801   3899 	XCHG
 13f7                3802   3900 MATSCANX:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 66
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 13f7  2a 87 03      3803   3901 	LHLD	SCANPTR2
 13fa  cd c1 03      3804   3902 	CALL	SCANNXT		;bscan ,
 13fd  bf            3805   3903 	CMP	A
@@ -4288,11 +3961,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1439  7e            3860   3958 	MOV	A,M
 143a  fe 2c         3861   3959 	CPI	','
 143c  c3 30 14      3862   3960 	JMP	DEFSTML
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 67
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3863   3961 
                     3864   3962 ;  USER-DEFINED FUNCTION EVALUATION
                     3865   3963 ;
@@ -4353,11 +4021,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1493  1b            3920   4018 	DCX	D
 1494  1b            3921   4019 	DCX	D
 1495  1b            3922   4020 	DCX	D		;plus 3
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 68
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1496  12            3923   4021 	STAX	D
 1497  2a a9 03      3924   4022 	LHLD	ACCUMLTR	;GET ADDRESS OF DESCRIPTOR
 149a  e5            3925   4023 	PUSH	H
@@ -4418,11 +4081,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 14e7  73            3980   4078 	MOV	M,E		;RESTORE NUMERIC VALUE
 14e8  23            3981   4079 	INX	H
 14e9  72            3982   4080 	MOV	M,D
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 69
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 14ea  23            3983   4081 	INX	H
 14eb  71            3984   4082 	MOV	M,C
 14ec  23            3985   4083 	INX	H
@@ -4483,11 +4141,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4040   4138 ;
                     4041   4139 ;  ALLOCATE STORAGE IN STRING SPACE
                     4042   4140 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 70
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1537                4043   4141 STRGALOC:
 1537  b7            4044   4142 	ORA	A		;ALLOCATE SPACE FOR STRING,
 1538  c3 3c 15      4045   4143 	JMP	STRGALAH	;SIZE IN A
@@ -4548,11 +4201,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1583  2a 99 03      4100   4198 	LHLD	VARTABLE	;SCAN REGULAR VARIABLES,
 1586                4101   4199 STRGGBVR:
 1586  eb            4102   4200 	XCHG
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 71
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1587  2a 9b 03      4103   4201 	LHLD	MATTABLE
 158a  eb            4104   4202 	XCHG
 158b  cd d7 04      4105   4203 	CALL	CMHLLTDE
@@ -4613,11 +4261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 15d9  4e            4160   4258 	MOV	C,M		;LOAD STRING DESCRIPTOR
 15da  23            4161   4259 	INX	H
 15db  5e            4162   4260 	MOV	E,M
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 72
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 15dc  23            4163   4261 	INX	H
 15dd  56            4164   4262 	MOV	D,M
 15de  23            4165   4263 	INX	H
@@ -4678,11 +4321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 161a  71            4220   4318 	MOV	M,C
 161b  23            4221   4319 	INX	H
 161c  70            4222   4320 	MOV	M,B
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 73
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 161d  60            4223   4321 	MOV	H,B
 161e  69            4224   4322 	MOV	L,C
 161f  2b            4225   4323 	DCX	H
@@ -4743,11 +4381,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4280   4378 
                     4281   4379 ;
                     4282   4380 ;  DECODE NUMBER FROM STRING
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 74
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4283   4381 ;
 1653                4284   4382 VALFCT:
 1653  cd 27 16      4285   4383 	CALL	LENFCTC		;VAL FUNCTION
@@ -4808,11 +4441,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1691  cd 27 16      4340   4438 	CALL	LENFCTC		;DO INITIAL PROCESSING
 1694  ca 30 1a      4341   4439 	JZ	ZEROAC
 1697  5f            4342   4440 	MOV	E,A
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 75
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1698  4e            4343   4441 	MOV	C,M
 1699  23            4344   4442 	INX	H
 169a  46            4345   4443 	MOV	B,M
@@ -4873,11 +4501,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 16e4  3f            4400   4498 	CMC			;COVERT TO CHARACTER FORM
 16e5  ce 30         4401   4499 	ACI	'0'
 16e7  27            4402   4500 	DAA
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 76
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 16e8  77            4403   4501 	MOV	M,A
 16e9  23            4404   4502 	INX	H
 16ea  c9            4405   4503 	RET
@@ -4938,11 +4561,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1729                4460   4558 LEFRIGMC:
 1729  0e 00         4461   4559 	MVI	C,0
 172b                4462   4560 LEFRIGMB:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 77
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 172b  c5            4463   4561 	PUSH	B
 172c  cd 37 15      4464   4562 	CALL	STRGALOC	;ALLOCATE ANSWER STRING
 172f  c1            4465   4563 	POP	B
@@ -5003,11 +4621,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1778  bb            4520   4618 	CMP	E
 1779  47            4521   4619 	MOV	B,A
 177a  d8            4522   4620 	RC			;LEN0 = MIN(LENI-START,LENR)
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 78
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 177b  43            4523   4621 	MOV	B,E
 177c  c9            4524   4622 	RET
                     4525   4623 
@@ -5068,11 +4681,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 17be  c2 ab 17      4580   4678 	JNZ	INSFCTSL	;KEEP TRYING
 17c1  c3 30 1a      4581   4679 	JMP	ZEROAC		;OR NOMATCH
                     4582   4680 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 79
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4583   4681 ;
                     4584   4682 ;  Page 97
                     4585   4683 ;
@@ -5133,11 +4741,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 181e  d1            4640   4738 	POP	D
 181f  12            4641   4739 	STAX	D
                     4642   4740 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 80
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4643   4741 ;
                     4644   4742 ;  Page 98
                     4645   4743 ;
@@ -5198,11 +4801,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 186e  72            4700   4798 	MOV	M,D
 186f  23            4701   4799 	INX	H
 1870  73            4702   4800 	MOV	M,E
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 81
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1871  23            4703   4801 	INX	H
 1872  36 c9         4704   4802 	MVI	M,OPCRET
 1874  e1            4705   4803 	POP	H
@@ -5263,11 +4861,6 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 18b8  7c            4760   4858 	mov	a,h		;is this the end?
 18b9  ba            4761   4859 	cmp	d
 18ba  c2 b3 18      4762   4860 	jnz	saveloop
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 82
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 18bd  7d            4763   4861 	mov	a,l
 18be  bb            4764   4862 	cmp	e
 18bf  c2 b3 18      4765   4863 	jnz	saveloop
@@ -5328,11 +4921,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 18fb  b7            4820   4918 	ora	a
 18fc  23            4821   4919 	inx	h
 18fd  ca f1 18      4822   4920 	jz	cprogloop	;zero at the end of the line
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 83
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1900  c3 fa 18      4823   4921 	jmp	cprogloop2
 1903                4824   4922 cprogok:
 1903  c9            4825   4923 	ret
@@ -5393,11 +4981,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 197a  4f            4880   4978 	MOV	C,A
 197b  7a            4881   4979 	MOV	A,D
 197c  2f            4882   4980 	CMA
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 84
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 197d  cd 69 19      4883   4981 	CALL	LOGOPRXT
 1980  c1            4884   4982 	POP	B
 1981  c3 b8 0f      4885   4983 	JMP	VALEXPRC
@@ -5458,11 +5041,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 19b9  cd e1 1b      4940   5038 	CALL	LDRGMM
 19bc  c3 ca 19      4941   5039 	JMP	FLADD
                     4942   5040 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 85
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 19bf                4943   5041 FLMMMAC:
 19bf  cd e1 1b      4944   5042 	CALL	LDRGMM		;COMPUTE MM-AC
 19c2  c3 c7 19      4945   5043 	JMP	FLSUB
@@ -5523,11 +5101,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a10  23            5000   5098 	INX	H
 1a11  7e            5001   5099 	MOV	A,M
 1a12  9a            5002   5100 	SBB	D
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 86
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a13  57            5003   5101 	MOV	D,A
 1a14  23            5004   5102 	INX	H
 1a15  7e            5005   5103 	MOV	A,M
@@ -5588,11 +5161,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a50  78            5060   5158 	MOV	A,B		;ROUND RESULT
 1a51                5061   5159 FLROUNDV:
 1a51  21 ac 03      5062   5160 	LXI	H,FLACCEXP
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 87
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a54  b7            5063   5161 	ORA	A
 1a55  fc 62 1a      5064   5162 	CM	INCCDE
 1a58  46            5065   5163 	MOV	B,M
@@ -5653,11 +5221,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a8d  7d            5120   5218 	MOV	A,L
 1a8e  99            5121   5219 	SBB	C
 1a8f  4f            5122   5220 	MOV	C,A
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 88
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a90  c9            5123   5221 	RET
                     5124   5222 
 1a91                5125   5223 SHIFTR0:
@@ -5718,11 +5281,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1acd  21 1b 1a      5180   5278 	LXI	H,NORMALIZ	;NORMALIZE ANSWER AFTER
 1ad0  e5            5181   5279 	PUSH	H
 1ad1  21 d9 1a      5182   5280 	LXI	H,FLMULLP	;THREE TIMES THROUGH LOOP
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 89
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1ad4  e5            5183   5281 	PUSH	H
 1ad5  e5            5184   5282 	PUSH	H
 1ad6  21 a9 03      5185   5283 	LXI	H,ACCUMLTR
@@ -5783,11 +5341,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1b10  21 ac 03      5240   5338 	LXI	H,FLACCEXP
 1b13  ae            5241   5339 	XRA	M
 1b14  80            5242   5340 	ADD	B
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 90
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1b15  47            5243   5341 	MOV	B,A
 1b16  1f            5244   5342 	RAR
 1b17  a8            5245   5343 	XRA	B
@@ -5848,11 +5401,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1b5d  7e            5300   5398 	MOV	A,M
 1b5e  2f            5301   5399 	CMA
 1b5f  32 b1 03      5302   5400 	STA	FLSCR0
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 91
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1b62  41            5303   5401 	MOV	B,C
 1b63  eb            5304   5402 	XCHG
 1b64  af            5305   5403 	XRA	A
@@ -5913,11 +5461,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1ba8  17            5360   5458 	RAL
 1ba9  32 b4 03      5361   5459 	STA	FLSCR3
 1bac  79            5362   5460 	MOV	A,C
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 92
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1bad  b2            5363   5461 	ORA	D
 1bae  b3            5364   5462 	ORA	E
 1baf  c2 6b 1b      5365   5463 	JNZ	FLDIVLP
@@ -5978,11 +5521,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1be1                5420   5518 LDRGMM:
 1be1  5e            5421   5519 	MOV	E,M		;LOAD REGISTERS FROM FLOAT NUMBER
 1be2  23            5422   5520 	INX	H
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 93
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1be3                5423   5521 LDDCBMM:
 1be3  56            5424   5522 	MOV	D,M		;LOAD REGISTERS FROM STRING
 1be4                5425   5523 LDICBMM:
@@ -6043,11 +5581,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5480   5578 ;  Page 114
                     5481   5579 ;
                     5482   5580 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 94
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5483   5581 ;
                     5484   5582 ;  FLOATING POINT COMPARISON:  REGISTERS VS ACCUMULATOR
                     5485   5583 ;
@@ -6108,11 +5641,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1c43  cd de 1b      5540   5638 	CALL	LDRGAC
 1c46  cd fa 1b      5541   5639 	CALL	SIGNIFY
 1c49  ae            5542   5640 	XRA	M
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 95
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1c4a  67            5543   5641 	MOV	H,A
 1c4b  fc 60 1c      5544   5642 	CM	DECCDE
 1c4e  3e 98         5545   5643 	MVI	A,098H
@@ -6173,11 +5701,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1c8f                5600   5698 CMANSWR:
 1c8f  21 ae 1c      5601   5699 	LXI	H,CMACCS	;F(X)=-F(0)
 1c92  e3            5602   5700 	XTHL
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 96
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1c93  e9            5603   5701 	PCHL
                     5604   5702 
 1c94                5605   5703 SGNFCT:
@@ -6238,11 +5761,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5660   5758 ;  FLOATING POINT DECODE ROUTINE
                     5661   5759 ;
                     5662   5760 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 97
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5663   5761 
 1ccf                5664   5762 DECODE:
 1ccf  fe 2d         5665   5763 	CPI	'-'		;DECODE EXTERNAL FORM OF NUMBER
@@ -6303,11 +5821,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1d1f  c3 10 1d      5720   5818 	JMP	DECODEXL
 1d22                5721   5819 DECODEXQ:
 1d22  14            5722   5820 	INR	D
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 98
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1d23  c2 2e 1d      5723   5821 	JNZ	DECODVAL
 1d26  af            5724   5822 	XRA	A
 1d27  93            5725   5823 	SUB	E
@@ -6368,11 +5881,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5780   5878 
 1d66                5781   5879 DECDGADD:
 1d66  cd c3 1b      5782   5880 	CALL	PUSHAC
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 99
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1d69  cd 97 1c      5783   5881 	CALL	FLOATBYT
 1d6c                5784   5882 ADDOPR:
 1d6c  c1            5785   5883 	POP	B
@@ -6433,11 +5941,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1dbb  cd 35 1b      5840   5938 	CALL	FLDIVB10	;FORCE NUMBER TO RANGE
 1dbe  f1            5841   5939 	POP	PSW		;AC < 10**6 BY DIVISION
 1dbf  3c            5842   5940 	INR	A
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 100
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1dc0  f5            5843   5941 	PUSH	PSW
 1dc1  cd 47 1e      5844   5942 	CALL	ENCODCMP
 1dc4                5845   5943 ENCODRND:
@@ -6498,11 +6001,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1e0e  70            5900   5998 	MOV	M,B
 1e0f  23            5901   5999 	INX	H
 1e10  c1            5902   6000 	POP	B
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 101
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1e11  0d            5903   6001 	DCR	C
 1e12  c2 e5 1d      5904   6002 	JNZ	ENCODDGL
 1e15  05            5905   6003 	DCR	B
@@ -6563,11 +6061,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1e5a  a0 86 01      5960   6058 	db	0a0h, 086h, 001h	;10**5
 1e5d  10 27 00      5961   6059 	db	010h, 027h, 000h	;10**4
 1e60  e8 03 00      5962   6060 	db	0e8h, 003h, 000h	;10**3
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 102
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1e63  64 00 00      5963   6061 	db	064h, 000h, 000h	;10**2
 1e66  0a 00 00      5964   6062 	db	00ah, 000h, 000h	;10**1
 1e69  01 00 00      5965   6063 	db	001h, 000h, 000h	;10**0
@@ -6628,11 +6121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6020   6118 ;
                     6021   6119 
 1ebe                6022   6120 SQRFCT:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 103
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1ebe  cd c3 1b      6023   6121 	CALL	PUSHAC		;SQR FUNCTION
 1ec1  21 56 1e      6024   6122 	LXI	H,FLHALF	;SQR(X)=X**1/2
 1ec4  cd d0 1b      6025   6123 	CALL	LDRGACMM
@@ -6693,11 +6181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1f16  d2 28 1b      6080   6178 	JNC	EXPRNEXC
 1f19  cd b6 1c      6081   6179 	CALL	INTFCT
 1f1c  c6 80         6082   6180 	ADI	080H
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 104
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1f1e  c6 02         6083   6181 	ADI	002H
 1f20  da 28 1b      6084   6182 	JC	EXPRNEXC
 1f23  f5            6085   6183 	PUSH	PSW
@@ -6758,11 +6241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1f81  d5            6140   6238 	PUSH	D
 1f82  c5            6141   6239 	PUSH	B
 1f83  f5            6142   6240 	PUSH	PSW
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 105
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1f84  e5            6143   6241 	PUSH	H
 1f85  cd b7 1a      6144   6242 	CALL	FLMUL
 1f88  e1            6145   6243 	POP	H
@@ -6823,11 +6301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1fcf  cd c3 1b      6200   6298 	CALL	PUSHAC		;SIN FUNCTION
 1fd2  01 49 83      6201   6299 	LXI	B,08349H	;Y=X*2*PI
 1fd5  11 db 0f      6202   6300 	LXI	D,00FDBH
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 106
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1fd8  cd d3 1b      6203   6301 	CALL	LDACRG
 1fdb  c1            6204   6302 	POP	B
 1fdc  d1            6205   6303 	POP	D
@@ -6888,11 +6361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 2030  cd c3 1b      6260   6358 	CALL	PUSHAC		;TAN FUNCTION
 2033  cd cf 1f      6261   6359 	CALL	SINFCT
 2036  c1            6262   6360 	POP	B		;TAN(X) = SIN(X)/COS(X)
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 107
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 2037  e1            6263   6361 	POP	H
 2038  cd c3 1b      6264   6362 	CALL	PUSHAC
 203b  eb            6265   6363 	XCHG
@@ -6953,11 +6421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6318   6418 ;
                     6319   6419 
 209b                6320   6420 INITIALZ:
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 108
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6321   6421 
 209b  21 ff ff      6322   6422 	LXI	H,0FFFFH
 209e  22 89 03      6323   6423 	SHLD	CURLINE
@@ -7018,11 +6481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 210b  e9            6378   6478 	PCHL
                     6379   6479 
                     6380   6480 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 109
-Source file: basic8k78.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 210c                6381   6481 INITMFRE:
 210c  20 42 59 54   6382   6482 	DB	' BYTES FREE'
 2110  45 53 20 46   6382   6483
@@ -7041,283 +6499,266 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6390   6496 
                     6391   6497 
 221a                6392   6498 	END
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 110
-Source file: basic8k78.asm
-Title:       Symbol table
 
-ABSFCT       1caa    ACCUMLTR     03a9    ADDM2CDE     1a71 
-ADDOPR       1d6c    ALPHACHA     03d2    ALPHACHK     03d1 
-ALPHACHL     03e1    ANDOPR       1944    ASCFCT       1636 
-ASSIGN       0bd1    ASSIGNVL     0bc7    ATNCOEF      206c 
-ATNFCT       2045    ATNFCTC      2062    AUTSTM       067a 
-AUTSTMBR     06a0    AUTSTMIN     066d    AUTSTMN      068b 
-AUTSTMS      067b    BASIC        0000*   BEL          0007 
-BOOTSTART    b39b    BREAKCHK     0add    BS           0008 
-CANNOTOPEN   18c8    CBYTE        0c45    CD1          0011*
-CHARMTCH     03e4    CHECKPROGRAM 18ee    CHRFCT       1643 
-CINB         0011    CINTEGER     0c26    CINTPOS      0c20 
-CLDSTM       1876    CLEARPCN     0551    CLEARPGM     050d 
-CLEARSCREEN  0037    CLEARSET     0518    CLEARSTK     0521 
-CLEARVAR     0541    CLEARVST     051b    CLOSES       b82d 
-CLRSTM       057d    CMACCS       1cae    CMANSWR      1c8f 
-CMHLLTDE     04d7    CMNDINPT     0642    CMNDRSTR     0661 
-CMNDSTRT     062f    CMPXT        1c8b    CMREGS       1a7d 
-CO           0006    COERCE       0bfb    COERCEF      0bfe 
-CONSTM       0b07    COPYCHK      04dd    COPYSTRG     122c 
-COPYSTRL     122d    COPYTEXT     04e0    COPYTXTL     04e3 
-COPYVAL      1bed    COPYVALL     1bf1    COSCOEF      201b 
-COSFCT       1fc9    CPROGLOOP    18f1    CPROGLOOP2   18fa 
-CPROGOK      1903    CR           000d    CSINGLE      0c0a 
-CSTRING      0c11    CSVSTM       1890    CURDATAP     0393 
-CURLDATA     0391    CURLINE      0389    CURLINES     038b 
-CURSLIM      03b0    CURSPOS      03af    D14BASE      b400 
-DATAGET      0ef0    DATAINPT     0f1c    DATASRCH     0efa 
-DATASRCK     0f13    DATRSKIP     0b8b    DATRSKST     0b88 
-DATSTM       0b7f    DCLR         001a    DECCDE       1c60 
-DECDEXAL     1d3d    DECDEXPA     1d31    DECDGADD     1d66 
-DECDIGIT     1d4f    DECMULUP     1d47    DECODE       1ccf 
-DECODEIN     1cdb    DECODELP     1ce3    DECODEPT     1d2a 
-DECODEXL     1d10    DECODEXP     1cf8    DECODEXQ     1d22 
-DECODVAL     1d2e    DEFSTM       141a    DEFSTML      1430 
-DEL          007f*   DELSTM       0813    DIMSTM       123f 
-DIMSTML      1236    DIRECTORYLOO b8e0    DIVOPR       1b41 
-EDISTM       0904    EDISTMAD     094c    EDISTMCH     09e7 
-EDISTMCR     09d2    EDISTMDL     0957    EDISTMDM     0964 
-EDISTMEC     0946    EDISTMER     0944    EDISTMIM     0981 
-EDISTMIN     0970    EDISTMLS     091f    EDISTMNX     092a 
-EDISTMQT     09cb    EDISTMRI     0974    EDISTMRP     098e 
-EDISTMSL     09aa    EDISTMSR     09a1    EDISTMXT     09bf 
-ELSSTM       0b84    ENCDCOEF     1e5a    ENCDEXPL     1e37 
-ENCDEXPP     1e35    ENCDEXPS     1ddf    ENCDRTZR     1e19 
-ENCODCMP     1e47    ENCODDGL     1de5    ENCODDNL     1dbb 
-ENCODE       1d85    ENCODEHL     1d7e    ENCODEXP     1e25 
-ENCODEXT     1e44    ENCODFRS     1d97    ENCODRND     1dc4 
-ENCODSBL     1df4    ENCODUPL     1da6    ENCODZXT     1e41 
-ENDINTRP     209a    ENDPROGM     0ae6    ENDSTM       0b27 
-ENDSTMC      0af9    ERRABS       1361    ERRAD0       1bbe 
-ERRAFC       0c39    ERRAID       1516    ERRANF       0f94 
-ERRAOM       0507    ERRAOV       1a6c    ERRASN       0605 
-ERRAST       11ba    ERRATM       0c18    ERRAUS       0b60 
-ERRDATA      05ff    ERRMSG       0607    ERRMSGIN     1d71 
-ERRMSGPR     0623    ERRN         0289    ERRNBS       0328 
-ERRNCN       0289    ERRND0       02aa    ERRNDD       0299 
-ERRNFC       02b6    ERRNFI       036a    ERRNID       02a3 
-ERRNLS       02c4    ERRNNF       02dd    ERRNOD       02ea 
-ERRNOM       02d0    ERRNOS       030e    ERRNOV       02f6 
-ERRNRG       02ff    ERRNSL       0292    ERRNSN       0332 
-ERRNST       031b    ERRNTM       0339    ERRNUF       033e 
-ERRNUS       034e    ERRNUV       035a    ESC          0018 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 111
-Source file: basic8k78.asm
-Title:       Symbol table
+Symbol table
 
-ETX          0003    EXECUTE      0aba    EXECUTE2     0c53 
-EXECUTEB     0ae2    EXECUTEC     0ac1    EXECUTEL     0a9a 
-EXECUTES     0ac2    EXPCOEF      1f45    EXPEXPOS     1eed 
-EXPFCT       1f05    EXPOPR       1ec7    EXPRNEXC     1b28 
-FCTPOLY1     1f75    FCTPOLY2     1f66    FCTPOLYL     1f7d 
-FCTTABL      00c2    FF           000c    FILENAME     1904 
-FIXAC        1c3c    FLACCEXP     03ac    FLACCMSB     03ab 
-FLACCSSV     03ad    FLADD        19ca    FLADDHLF     19b6 
-FLADDIFF     1a0a    FLADDM       19b9    FLADDMGC     19e4 
-FLCMP        1c0f    FLCMPM       1c29    FLCMPXT      1c89 
-FLDIV        1b43    FLDIVB10     1b35    FLDIVLP      1b6b 
-FLDIVSF      1b8e    FLDIVSS      1b90    FLHALF       1e56 
-FLMLB10C     1d48    FLMLDVEX     1b0a    FLMLDVEY     1b2d 
-FLMLDVEZ     1b2e    FLMMMAC      19bf    FLMUL        1ab7 
-FLMULB10     1c67    FLMULLN2     1eb5    FLMULLP      1ad9 
-FLMULLQ      1ae2    FLMULNA      1af3    FLMULXT      1b05 
-FLOATA       0de4    FLOATAB      17e4    FLOATBYT     1c97 
-FLOATHL      16b7    FLOATINT     1c9c    FLONE        1e79 
-FLQUART      2017    FLROUND      1a50    FLROUNDV     1a51 
-FLSCR0       03b1    FLSCR1       03b2    FLSCR2       03b3 
-FLSCR3       03b4    FLSUB        19c7    FORBLCK      0010 
-FORCHK       0a0f    FORCHKL      0a13    FORCHKXT     0a2e 
-FORMARK      0a96    FORSTM       0a37    FORSTMNF     0a54 
-FORSTMST     0a8d    FREELIMT     039d    FREFCT       17c4 
-FREFCTNS     17df    FSPROM       b000    GOMONITOR    003d 
-GSBSTM       0b31    GTOSTM       0b42    HEXFCT       16c5 
-HEXFCTL      16da    HT           0009    HXVFCT       1691 
-HXVFCTCH     16bc    HXVFCTL      169e    IFNSTMC      0cfc 
-IFNSTMCH     0d12    IFNSTMSK     0d04    IFSTM        0cef 
-INCCDE       1a62    INCHLRET     1be8    INITIALZ     209b 
-INITMFRE     210c    INITSTCK     2206    INITSTSP     212d 
-INOTGEN      186a    INOTINS      03b1    INPSTM       0e32 
-INPSTMBR     0ae5    INPSTMER     0ec9    INPSTMIN     0e6d 
-INPSTMLN     0f3b    INPSTMPR     0e5b    INPSTMRD     0e36 
-INPSTMXT     0ecd    INPTBUFR     0395    INPTCHAR     05d1 
-INPTCRLF     077e    INPTCRTN     07cc    INPTEXIT     07d0 
-INPTLINC     0795*   INPTLINL     0790    INPTLNBS     0767 
-INPTLNEC     07c6    INPTLNRD     0774    INPTLNST     07b3 
-INPTRQST     0781    INSFCT       177d    INSFCTSL     17ab 
-INSFCTXT     17b5    INTFCT       1cb6    ITEMSIZE     000e 
-KEYABS       00b9    KEYADD       00aa    KEYAND       00b0 
-KEYASC       00ca    KEYATA       00c1    KEYAUT       0092 
-KEYCHR       00cb    KEYCLD       009c    KEYCLR       009b 
-KEYCON       0098    KEYCOS       00be    KEYCSV       009d 
-KEYDAT       0080    KEYDEF       0097    KEYDEL       0093 
-KEYDIM       0086    KEYDIV       00ad    KEYEDI       009a 
-KEYELS       008c    KEYEND       0082    KEYEQ        00b5 
-KEYEXP       00bd    KEYEXPT      00af    KEYFCT       00b7 
-KEYFN        00a7    KEYFOR       0083    KEYFRE       00c3 
-KEYGSB       008e    KEYGT        00b4    KEYGTO       0089 
-KEYHEX       00cc    KEYHXV       00cd    KEYIF        008b 
-KEYINPT      0085    KEYINS       00d2    KEYINT       00b8 
-KEYLEN       00c7    KEYLET       0088    KEYLFT       00cf 
-KEYLINE      00a4    KEYLIS       0099    KEYLOG       00bc 
-KEYLSAH      00a5    KEYLSAL      0082    KEYLSBH      00a3 
-KEYLSBL      00a0    KEYLT        00b6    KEYMAX       00b2 
-KEYMEM       00c6    KEYMID       00d1    KEYMIN       00b3 
-KEYMOD       00ae    KEYMUL       00ac    KEYNEW       009e 
-KEYNEX       0084    KEYNOT       00a8    KEYOFF       00a9 
-KEYON        0091    KEYOPR       00aa    KEYOR        00b1 
-KEYPLT       0094    KEYPORT      00c4    KEYPOS       00c5 
-KEYPRM       00a3    KEYPRT       0096    KEYREA       0087 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 112
-Source file: basic8k78.asm
-Title:       Symbol table
-
-KEYREL       00b4    KEYREM       0081    KEYRES       008d 
-KEYRET       008f    KEYRIG       00d0    KEYRND       00bb 
-KEYRUN       008a    KEYS         00d3    KEYSCAN      06a7 
-KEYSCANA     0702    KEYSCANB     0709    KEYSCANC     06ec 
-KEYSCAND     0723    KEYSCANF     0714    KEYSCANH     0740 
-KEYSCANI     0736    KEYSCANK     06ca    KEYSCANL     06b0 
-KEYSCANM     06e3    KEYSCANN     06e9    KEYSCANP     073d 
-KEYSCANV     074c    KEYSCANW     0703    KEYSCANX     0744 
-KEYSCANZ     06de    KEYSET       009f    KEYSGN       00b7 
-KEYSIN       00bf    KEYSPC       00a6    KEYSQR       00ba 
-KEYSTEP      00a2    KEYSTM       0080    KEYSTOP      0090 
-KEYSTR       00c8    KEYSUB       00ab    KEYSUGR      00a0 
-KEYTAB       00a5    KEYTAN       00c0    KEYTHEN      00a0 
-KEYTO        00a1    KEYUPR       00ce    KEYUSR       00c2 
-KEYVAL       00c9    KEYWADDS     00fa    KEYWAI       0095 
-KEYWORDS     011a    KEYWRD0      011a    KEYWRD1      0135 
-KEYWRD2      014a    KEYWRD3      0171    KEYWRD4      01ad 
-KEYWRD5      01d1    KEYWRD6      01ee    KEYWRD7      01fd 
-KEYWRD8      020d    KEYWRD9      0217    KEYWRDA      022a 
-KEYWRDB      022c    KEYWRDC      022e    KEYWRDD      0251 
-KEYWRDE      026a    KEYWRDF      027b    LDACCE       1a31 
-LDACRG       1bd3    LDDCBMM      1be3    LDICBMM      1be4 
-LDMMAC       1bea    LDRGAC       1bde    LDRGACMM     1bd0 
-LDRGMM       1be1    LEFRIGAR     171f    LEFRIGMB     172b 
-LEFRIGMC     1729    LEFRIGMD     1715    LEFRIGMR     1713 
-LENFCT       1623    LENFCTC      1627    LETSTM       0bc0 
-LETSTMNM     0be6    LF           000a    LFTFCT       170f 
-LIMLOWER     8000    LIMUPPER     af00    LINEDEL      04a9 
-LINEDELL     04b4    LINEDELU     04bf    LINEINS      046f 
-LINEINSL     049e    LINELINK     0463    LINESRCH     0446 
-LINESRCL     0449    LINESYZE     009d    LISEDIKD     08a6 
-LISEDIKL     08cb    LISEDIKS     08d0    LISEDIKT     08b6 
-LISEDIKY     08d8    LISEDINC     08a8    LISEDISB     08ed 
-LISEDISC     08a3    LISEDIST     08f3    LISEDIXP     0888 
-LISEDIXT     08fa    LISSTM       0830    LISSTMLP     0849 
-LISSTMSC     083c    LISSTMXT     0883    LOGCOEF      1e6c 
-LOGFCT       1e7d    LOGOPRIC     1945    LOGOPRXT     1969 
-MATDMFLG     0380    MATSCANB     12ff    MATSCANC     1366 
-MATSCANI     13ca    MATSCANL     130c    MATSCANM     134b 
-MATSCANN     1337    MATSCANO     1338    MATSCANP     1301 
-MATSCANR     13d1    MATSCANS     13d2    MATSCANX     13f7 
-MATSCANZ     13aa    MATSCCNT     037f    MATSCNSB     1380 
-MATSCNSD     138d    MATTABLE     039b    MAXOPR       199e 
-MEMFCT       17f1    MEMFCTC      17fe    MEMSTM       180d 
-MIDFCT       1754    MIDSTM       0c5d*   MIDSTMLM     0cb2 
-MIDSTMLN     0ca6    MIDSTMXT     0cbf    MINOPR       19aa 
-MODOPR       1984    MONITOR      b400    MSGBREAK     05f7 
-MSGERROR     05e4    MSGEXTRA     0e21    MSGIN        05eb 
-MSGOK        05f0    MSGQUES      0e0b    MSGREDO      0e0e 
-MSGSTARS     07db    MUL16        13ff    MUL16LP      1407 
-MUL16XT      1415    MULOPR       1ab5    NAMENOTFOUND 188b 
-NEWLOAD      0515    NEWSTM       050c    NEXSTM       0f56 
-NEXSTMC      0f99    NEXSTML      0f59    NOBREAK      005c 
-NORMAL1      1a3d    NORMAL1L     1a35    NORMAL8      1a1e 
-NORMALIZ     1a1b    NORMALZI     1a18    NULLCNT      03ae 
-ONNSTMC      0ce0    ONNSTMSL     0ce1    ONSTM        0cd1 
-OPCINP       00db    OPCOUT       00d3    OPCRET       00c9 
-OPENS        b796    OPRTABL      00a4    ORNOPR       1940 
-ORNOPRFN     1965    P3010        0379    PIOVER2      2013 
-PLTSTM       0de9    POPAFRET     1555    POPDEBCR     0bbd 
-POPDERET     168f*   POPHL3RT     0884    POPHLRET     0886 
-PORFCT       1821    PORSTM       182f    POSFCT       0de1 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 113
-Source file: basic8k78.asm
-Title:       Symbol table
-
-PREDNOT      005a    PREDNUM      0070    PREDREL      0064 
-PREDUMIN     007d    PRINTFLG     037b    PRINTINT     1d79 
-PRNTBLNK     0dab    PRNTBLNL     0db2    PRNTCHRA     05ae 
-PRNTCHRI     05aa    PRNTCHRW     05cc    PRNTCOMA     0d78 
-PRNTCOMC     0daa    PRNTCOML     0d83    PRNTCRLF     0d5f 
-PRNTMSG      0dc2    PRNTNULL     0d6a    PRNTNULS     0d67 
-PRNTNUMS     0dc1    PRNTOPTN     0d8c    PRNTSEMI     0db9 
-PRNTSTRL     0dd2    PRNTSTRT     0dcb    PROGBASE     0397 
-PROGCNTR     038d    PROGCNTS     038f    PRTSTM       0d5c 
-PRTSTMN      0d1c    PRTSTRNG     0d55    PUSHAC       1bc3 
-PUSHAC1      1bc4    PUTS         b7dc    REAINPCM     0eb2 
-REAINPDC     0f24    REAINPER     0ee1    REAINPFL     037a 
-REAINPFS     0e7d    REAINPLA     0ea1    REAINPLP     0e83 
-REAINPLQ     0e8e    REASTM       0e74    REENTERBASIC 0003*
-RELOPR       103b    RELOPRC      103d    RELOPRSL     106b 
-RELOPRXT     1031    REMSTM       0b84    RESDTPTR     0578 
-RESSTM       0561    RESSTMBU     0577    RESSTMDF     0573 
-RETSTM       0b65    RIGFCT       174a    RNDFCT       1f95 
-RNDFCTSD     03b5    RNDFCTUS     1fb4    RUNSTM       0b1b 
-RUNSTMC      0b41    SAVELOOP     18b3    SCAN2KEY     0b86 
-SCANFNN      151b    SCANLINL     0425    SCANLINN     0421 
-SCANLINR     0422    SCANLPR1     0408    SCANLPR2     041a 
-SCANLPRM     03fd    SCANLPRZ     03fa    SCANNXT      03c1 
-SCANNXTV     03b9    SCANPFLD     00ab    SCANPFLE     037e*
-SCANPFLG     037d    SCANPTR1     0385    SCANPTR2     0387 
-SETFILENAME  18cd    SETSTM       07df    SETSTMGT     0804 
-SETSTMLS     0809    SETSTMPR     07ff*   SFNDONE      18e4 
-SFNLOOP      18d2    SGNFCT       1c94    SHIFTR       1a93 
-SHIFTR0      1a91    SHIFTRB      1aa0    SHIFTRBL     1aa3 
-SHIFTRLB     1aa7    SI           000f    SIGNACC      1c7e 
-SIGNIFY      1bfa    SIGNXTND     1c8a    SINFCT       1fcf 
-SINFCTC      1fff    SPACECHK     04fb    SPACESTK     04ee 
-SQRFCT       1ebe    STCKBASE     039f    STMTABL      0064 
-STPSTM       0ae0    STRFCT       166f    STRGALAG     153b 
-STRGALAH     153c    STRGALGC     1557    STRGALOC     1537 
-STRGALOT     1193    STRGALOU     1196    STRGALOV     11b6 
-STRGBASE     03a3    STRGFREE     03a1    STRGGBAL     15a6 
-STRGGBAS     15c9    STRGGBCL     1563    STRGGBHI     15d7 
-STRGGBHV     15d9    STRGGBLP     1566    STRGGBMV     15ff 
-STRGGBTL     1575    STRGGBVR     1586    STRGGNAV     15a7 
-STRGRELA     11bf    STRGRELD     11c3    STRGRELH     11c2 
-STRGRELT     11dd    STRGSTOR     167d    STRGTEST     0cc3 
-STRGTLIM     03a7    STRGTMPA     0383    STRGTMPL     0382 
-STRGTMPP     03a5    STRGUNIQ     0bec    STRNGEN      1529 
-STRSTCDS     152c    SUBOPR       19c5    SYSBREAK     0054 
-SYSDISPL     0040    SYSINITJ     0000    SYSKEYIN     001c 
-SYSKEYINRET  002f    SYSKEYNONE   0033    SYSQUIT      0061 
-SYSWAIT      0060    TAB          0009*   TANFCT       2030 
-TRACE        0b9f    TRACEFLG     037c    TYPECHK      03ef 
-TYPECHKA     03f2    TYPEDEF      0020    TYPEDUBL     0008*
-TYPEFLG      0381    TYPEINTG     0002*   TYPESING     0004 
-TYPESTRG     0003    UPRFCT       16eb    UPRFCTL      1701 
-VALBYTE      0c42    VALBYTE2     0c3e    VALCNDFL     1119 
-VALCNDTL     1109    VALCONCP     1224    VALCONCT     11ed 
-VALCOND      10f4    VALCONDF     1117    VALEXPR      0fa9 
-VALEXPR2     1008    VALEXPRC     0fb8    VALEXPRD     0fbb 
-VALEXPRL     0fac    VALEXPRO     0fe1    VALEXPRR     0fc5 
-VALFCT       1653    VALFCTAR     114e    VALFCTCR     14ff 
-VALFCTD      143f    VALFCTDL     1465    VALFCTDM     146e 
-VALFCTLK     1156    VALFCTN      112e    VALFCTNA     14bb 
-VALFCTPS     148f    VALFCTPT     149c    VALFCTRL     14da 
-VALFCTRS     14f1    VALINTDE     0c1d    VALNUMBR     0c07 
-Z80-Macro-Assembler  Release 1.11-dev	Sun Oct 30 00:46:51 2022	Page 114
-Source file: basic8k78.asm
-Title:       Symbol table
-
-VALPARN2     10c0    VALPARNS     10bc    VALPRMRY     1083 
-VALREL       101e    VALRETNM     10d4    VALRETST     164f 
-VALSTRGC     1168    VALSTRGE     117d    VALSTRGL     116e 
-VALSTRGN     115f    VALSTRGS     116b    VALSTRGY     116a 
-VALSTRGZ     1162    VALUMINS     10c8    VALUNOT      196d 
-VALVAR       10d9    VARALLOC     12ed    VARINDEX     038d 
-VARNAME      127d    VARSCAN      1248    VARSCAND     1266 
-VARSCANF     12d0    VARSCANI     1249    VARSCANM     12c2 
-VARSCANS     1273    VARSCANT     12af    VARSCANX     12fd 
-VARSCNDF     124e    VARSKIPL     1267    VARTABLE     0399 
-VERSNDAT     2091    WAISTM       1849    WAISTMIN     185e 
-XCO          001b    ZEROAC       1a30    
+ABSFCT          1caa    ACCUMLTR        03a9    ADDM2CDE        1a71 
+ADDOPR          1d6c    ALPHACHA        03d2    ALPHACHK        03d1 
+ALPHACHL        03e1    ANDOPR          1944    ASCFCT          1636 
+ASSIGN          0bd1    ASSIGNVL        0bc7    ATNCOEF         206c 
+ATNFCT          2045    ATNFCTC         2062    AUTSTM          067a 
+AUTSTMBR        06a0    AUTSTMIN        066d    AUTSTMN         068b 
+AUTSTMS         067b    BASIC           0000*   BEL             0007 
+BOOTSTART       b39b    BREAKCHK        0add    BS              0008 
+CANNOTOPEN      18c8    CBYTE           0c45    CD1             0011*
+CHARMTCH        03e4    CHECKPROGRAM    18ee    CHRFCT          1643 
+CINB            0011    CINTEGER        0c26    CINTPOS         0c20 
+CLDSTM          1876    CLEARPCN        0551    CLEARPGM        050d 
+CLEARSCREEN     0037    CLEARSET        0518    CLEARSTK        0521 
+CLEARVAR        0541    CLEARVST        051b    CLOSES          b82d 
+CLRSTM          057d    CMACCS          1cae    CMANSWR         1c8f 
+CMHLLTDE        04d7    CMNDINPT        0642    CMNDRSTR        0661 
+CMNDSTRT        062f    CMPXT           1c8b    CMREGS          1a7d 
+CO              0006    COERCE          0bfb    COERCEF         0bfe 
+CONSTM          0b07    COPYCHK         04dd    COPYSTRG        122c 
+COPYSTRL        122d    COPYTEXT        04e0    COPYTXTL        04e3 
+COPYVAL         1bed    COPYVALL        1bf1    COSCOEF         201b 
+COSFCT          1fc9    CPROGLOOP       18f1    CPROGLOOP2      18fa 
+CPROGOK         1903    CR              000d    CSINGLE         0c0a 
+CSTRING         0c11    CSVSTM          1890    CURDATAP        0393 
+CURLDATA        0391    CURLINE         0389    CURLINES        038b 
+CURSLIM         03b0    CURSPOS         03af    D14BASE         b400 
+DATAGET         0ef0    DATAINPT        0f1c    DATASRCH        0efa 
+DATASRCK        0f13    DATRSKIP        0b8b    DATRSKST        0b88 
+DATSTM          0b7f    DCLR            001a    DECCDE          1c60 
+DECDEXAL        1d3d    DECDEXPA        1d31    DECDGADD        1d66 
+DECDIGIT        1d4f    DECMULUP        1d47    DECODE          1ccf 
+DECODEIN        1cdb    DECODELP        1ce3    DECODEPT        1d2a 
+DECODEXL        1d10    DECODEXP        1cf8    DECODEXQ        1d22 
+DECODVAL        1d2e    DEFSTM          141a    DEFSTML         1430 
+DEL             007f*   DELSTM          0813    DIMSTM          123f 
+DIMSTML         1236    DIRECTORYLOOKUP b8e0    DIVOPR          1b41 
+EDISTM          0904    EDISTMAD        094c    EDISTMCH        09e7 
+EDISTMCR        09d2    EDISTMDL        0957    EDISTMDM        0964 
+EDISTMEC        0946    EDISTMER        0944    EDISTMIM        0981 
+EDISTMIN        0970    EDISTMLS        091f    EDISTMNX        092a 
+EDISTMQT        09cb    EDISTMRI        0974    EDISTMRP        098e 
+EDISTMSL        09aa    EDISTMSR        09a1    EDISTMXT        09bf 
+ELSSTM          0b84    ENCDCOEF        1e5a    ENCDEXPL        1e37 
+ENCDEXPP        1e35    ENCDEXPS        1ddf    ENCDRTZR        1e19 
+ENCODCMP        1e47    ENCODDGL        1de5    ENCODDNL        1dbb 
+ENCODE          1d85    ENCODEHL        1d7e    ENCODEXP        1e25 
+ENCODEXT        1e44    ENCODFRS        1d97    ENCODRND        1dc4 
+ENCODSBL        1df4    ENCODUPL        1da6    ENCODZXT        1e41 
+ENDINTRP        209a    ENDPROGM        0ae6    ENDSTM          0b27 
+ENDSTMC         0af9    ERRABS          1361    ERRAD0          1bbe 
+ERRAFC          0c39    ERRAID          1516    ERRANF          0f94 
+ERRAOM          0507    ERRAOV          1a6c    ERRASN          0605 
+ERRAST          11ba    ERRATM          0c18    ERRAUS          0b60 
+ERRDATA         05ff    ERRMSG          0607    ERRMSGIN        1d71 
+ERRMSGPR        0623    ERRN            0289    ERRNBS          0328 
+ERRNCN          0289    ERRND0          02aa    ERRNDD          0299 
+ERRNFC          02b6    ERRNFI          036a    ERRNID          02a3 
+ERRNLS          02c4    ERRNNF          02dd    ERRNOD          02ea 
+ERRNOM          02d0    ERRNOS          030e    ERRNOV          02f6 
+ERRNRG          02ff    ERRNSL          0292    ERRNSN          0332 
+ERRNST          031b    ERRNTM          0339    ERRNUF          033e 
+ERRNUS          034e    ERRNUV          035a    ESC             0018 
+ETX             0003    EXECUTE         0aba    EXECUTE2        0c53 
+EXECUTEB        0ae2    EXECUTEC        0ac1    EXECUTEL        0a9a 
+EXECUTES        0ac2    EXPCOEF         1f45    EXPEXPOS        1eed 
+EXPFCT          1f05    EXPOPR          1ec7    EXPRNEXC        1b28 
+FCTPOLY1        1f75    FCTPOLY2        1f66    FCTPOLYL        1f7d 
+FCTTABL         00c2    FF              000c    FILENAME        1904 
+FIXAC           1c3c    FLACCEXP        03ac    FLACCMSB        03ab 
+FLACCSSV        03ad    FLADD           19ca    FLADDHLF        19b6 
+FLADDIFF        1a0a    FLADDM          19b9    FLADDMGC        19e4 
+FLCMP           1c0f    FLCMPM          1c29    FLCMPXT         1c89 
+FLDIV           1b43    FLDIVB10        1b35    FLDIVLP         1b6b 
+FLDIVSF         1b8e    FLDIVSS         1b90    FLHALF          1e56 
+FLMLB10C        1d48    FLMLDVEX        1b0a    FLMLDVEY        1b2d 
+FLMLDVEZ        1b2e    FLMMMAC         19bf    FLMUL           1ab7 
+FLMULB10        1c67    FLMULLN2        1eb5    FLMULLP         1ad9 
+FLMULLQ         1ae2    FLMULNA         1af3    FLMULXT         1b05 
+FLOATA          0de4    FLOATAB         17e4    FLOATBYT        1c97 
+FLOATHL         16b7    FLOATINT        1c9c    FLONE           1e79 
+FLQUART         2017    FLROUND         1a50    FLROUNDV        1a51 
+FLSCR0          03b1    FLSCR1          03b2    FLSCR2          03b3 
+FLSCR3          03b4    FLSUB           19c7    FORBLCK         0010 
+FORCHK          0a0f    FORCHKL         0a13    FORCHKXT        0a2e 
+FORMARK         0a96    FORSTM          0a37    FORSTMNF        0a54 
+FORSTMST        0a8d    FREELIMT        039d    FREFCT          17c4 
+FREFCTNS        17df    FSPROM          b000    GOMONITOR       003d 
+GSBSTM          0b31    GTOSTM          0b42    HEXFCT          16c5 
+HEXFCTL         16da    HT              0009    HXVFCT          1691 
+HXVFCTCH        16bc    HXVFCTL         169e    IFNSTMC         0cfc 
+IFNSTMCH        0d12    IFNSTMSK        0d04    IFSTM           0cef 
+INCCDE          1a62    INCHLRET        1be8    INITIALZ        209b 
+INITMFRE        210c    INITSTCK        2206    INITSTSP        212d 
+INOTGEN         186a    INOTINS         03b1    INPSTM          0e32 
+INPSTMBR        0ae5    INPSTMER        0ec9    INPSTMIN        0e6d 
+INPSTMLN        0f3b    INPSTMPR        0e5b    INPSTMRD        0e36 
+INPSTMXT        0ecd    INPTBUFR        0395    INPTCHAR        05d1 
+INPTCRLF        077e    INPTCRTN        07cc    INPTEXIT        07d0 
+INPTLINC        0795*   INPTLINL        0790    INPTLNBS        0767 
+INPTLNEC        07c6    INPTLNRD        0774    INPTLNST        07b3 
+INPTRQST        0781    INSFCT          177d    INSFCTSL        17ab 
+INSFCTXT        17b5    INTFCT          1cb6    ITEMSIZE        000e 
+KEYABS          00b9    KEYADD          00aa    KEYAND          00b0 
+KEYASC          00ca    KEYATA          00c1    KEYAUT          0092 
+KEYCHR          00cb    KEYCLD          009c    KEYCLR          009b 
+KEYCON          0098    KEYCOS          00be    KEYCSV          009d 
+KEYDAT          0080    KEYDEF          0097    KEYDEL          0093 
+KEYDIM          0086    KEYDIV          00ad    KEYEDI          009a 
+KEYELS          008c    KEYEND          0082    KEYEQ           00b5 
+KEYEXP          00bd    KEYEXPT         00af    KEYFCT          00b7 
+KEYFN           00a7    KEYFOR          0083    KEYFRE          00c3 
+KEYGSB          008e    KEYGT           00b4    KEYGTO          0089 
+KEYHEX          00cc    KEYHXV          00cd    KEYIF           008b 
+KEYINPT         0085    KEYINS          00d2    KEYINT          00b8 
+KEYLEN          00c7    KEYLET          0088    KEYLFT          00cf 
+KEYLINE         00a4    KEYLIS          0099    KEYLOG          00bc 
+KEYLSAH         00a5    KEYLSAL         0082    KEYLSBH         00a3 
+KEYLSBL         00a0    KEYLT           00b6    KEYMAX          00b2 
+KEYMEM          00c6    KEYMID          00d1    KEYMIN          00b3 
+KEYMOD          00ae    KEYMUL          00ac    KEYNEW          009e 
+KEYNEX          0084    KEYNOT          00a8    KEYOFF          00a9 
+KEYON           0091    KEYOPR          00aa    KEYOR           00b1 
+KEYPLT          0094    KEYPORT         00c4    KEYPOS          00c5 
+KEYPRM          00a3    KEYPRT          0096    KEYREA          0087 
+KEYREL          00b4    KEYREM          0081    KEYRES          008d 
+KEYRET          008f    KEYRIG          00d0    KEYRND          00bb 
+KEYRUN          008a    KEYS            00d3    KEYSCAN         06a7 
+KEYSCANA        0702    KEYSCANB        0709    KEYSCANC        06ec 
+KEYSCAND        0723    KEYSCANF        0714    KEYSCANH        0740 
+KEYSCANI        0736    KEYSCANK        06ca    KEYSCANL        06b0 
+KEYSCANM        06e3    KEYSCANN        06e9    KEYSCANP        073d 
+KEYSCANV        074c    KEYSCANW        0703    KEYSCANX        0744 
+KEYSCANZ        06de    KEYSET          009f    KEYSGN          00b7 
+KEYSIN          00bf    KEYSPC          00a6    KEYSQR          00ba 
+KEYSTEP         00a2    KEYSTM          0080    KEYSTOP         0090 
+KEYSTR          00c8    KEYSUB          00ab    KEYSUGR         00a0 
+KEYTAB          00a5    KEYTAN          00c0    KEYTHEN         00a0 
+KEYTO           00a1    KEYUPR          00ce    KEYUSR          00c2 
+KEYVAL          00c9    KEYWADDS        00fa    KEYWAI          0095 
+KEYWORDS        011a    KEYWRD0         011a    KEYWRD1         0135 
+KEYWRD2         014a    KEYWRD3         0171    KEYWRD4         01ad 
+KEYWRD5         01d1    KEYWRD6         01ee    KEYWRD7         01fd 
+KEYWRD8         020d    KEYWRD9         0217    KEYWRDA         022a 
+KEYWRDB         022c    KEYWRDC         022e    KEYWRDD         0251 
+KEYWRDE         026a    KEYWRDF         027b    LDACCE          1a31 
+LDACRG          1bd3    LDDCBMM         1be3    LDICBMM         1be4 
+LDMMAC          1bea    LDRGAC          1bde    LDRGACMM        1bd0 
+LDRGMM          1be1    LEFRIGAR        171f    LEFRIGMB        172b 
+LEFRIGMC        1729    LEFRIGMD        1715    LEFRIGMR        1713 
+LENFCT          1623    LENFCTC         1627    LETSTM          0bc0 
+LETSTMNM        0be6    LF              000a    LFTFCT          170f 
+LIMLOWER        8000    LIMUPPER        af00    LINEDEL         04a9 
+LINEDELL        04b4    LINEDELU        04bf    LINEINS         046f 
+LINEINSL        049e    LINELINK        0463    LINESRCH        0446 
+LINESRCL        0449    LINESYZE        009d    LISEDIKD        08a6 
+LISEDIKL        08cb    LISEDIKS        08d0    LISEDIKT        08b6 
+LISEDIKY        08d8    LISEDINC        08a8    LISEDISB        08ed 
+LISEDISC        08a3    LISEDIST        08f3    LISEDIXP        0888 
+LISEDIXT        08fa    LISSTM          0830    LISSTMLP        0849 
+LISSTMSC        083c    LISSTMXT        0883    LOGCOEF         1e6c 
+LOGFCT          1e7d    LOGOPRIC        1945    LOGOPRXT        1969 
+MATDMFLG        0380    MATSCANB        12ff    MATSCANC        1366 
+MATSCANI        13ca    MATSCANL        130c    MATSCANM        134b 
+MATSCANN        1337    MATSCANO        1338    MATSCANP        1301 
+MATSCANR        13d1    MATSCANS        13d2    MATSCANX        13f7 
+MATSCANZ        13aa    MATSCCNT        037f    MATSCNSB        1380 
+MATSCNSD        138d    MATTABLE        039b    MAXOPR          199e 
+MEMFCT          17f1    MEMFCTC         17fe    MEMSTM          180d 
+MIDFCT          1754    MIDSTM          0c5d*   MIDSTMLM        0cb2 
+MIDSTMLN        0ca6    MIDSTMXT        0cbf    MINOPR          19aa 
+MODOPR          1984    MONITOR         b400    MSGBREAK        05f7 
+MSGERROR        05e4    MSGEXTRA        0e21    MSGIN           05eb 
+MSGOK           05f0    MSGQUES         0e0b    MSGREDO         0e0e 
+MSGSTARS        07db    MUL16           13ff    MUL16LP         1407 
+MUL16XT         1415    MULOPR          1ab5    NAMENOTFOUND    188b 
+NEWLOAD         0515    NEWSTM          050c    NEXSTM          0f56 
+NEXSTMC         0f99    NEXSTML         0f59    NOBREAK         005c 
+NORMAL1         1a3d    NORMAL1L        1a35    NORMAL8         1a1e 
+NORMALIZ        1a1b    NORMALZI        1a18    NULLCNT         03ae 
+ONNSTMC         0ce0    ONNSTMSL        0ce1    ONSTM           0cd1 
+OPCINP          00db    OPCOUT          00d3    OPCRET          00c9 
+OPENS           b796    OPRTABL         00a4    ORNOPR          1940 
+ORNOPRFN        1965    P3010           0379    PIOVER2         2013 
+PLTSTM          0de9    POPAFRET        1555    POPDEBCR        0bbd 
+POPDERET        168f*   POPHL3RT        0884    POPHLRET        0886 
+PORFCT          1821    PORSTM          182f    POSFCT          0de1 
+PREDNOT         005a    PREDNUM         0070    PREDREL         0064 
+PREDUMIN        007d    PRINTFLG        037b    PRINTINT        1d79 
+PRNTBLNK        0dab    PRNTBLNL        0db2    PRNTCHRA        05ae 
+PRNTCHRI        05aa    PRNTCHRW        05cc    PRNTCOMA        0d78 
+PRNTCOMC        0daa    PRNTCOML        0d83    PRNTCRLF        0d5f 
+PRNTMSG         0dc2    PRNTNULL        0d6a    PRNTNULS        0d67 
+PRNTNUMS        0dc1    PRNTOPTN        0d8c    PRNTSEMI        0db9 
+PRNTSTRL        0dd2    PRNTSTRT        0dcb    PROGBASE        0397 
+PROGCNTR        038d    PROGCNTS        038f    PRTSTM          0d5c 
+PRTSTMN         0d1c    PRTSTRNG        0d55    PUSHAC          1bc3 
+PUSHAC1         1bc4    PUTS            b7dc    REAINPCM        0eb2 
+REAINPDC        0f24    REAINPER        0ee1    REAINPFL        037a 
+REAINPFS        0e7d    REAINPLA        0ea1    REAINPLP        0e83 
+REAINPLQ        0e8e    REASTM          0e74    REENTERBASIC    0003*
+RELOPR          103b    RELOPRC         103d    RELOPRSL        106b 
+RELOPRXT        1031    REMSTM          0b84    RESDTPTR        0578 
+RESSTM          0561    RESSTMBU        0577    RESSTMDF        0573 
+RETSTM          0b65    RIGFCT          174a    RNDFCT          1f95 
+RNDFCTSD        03b5    RNDFCTUS        1fb4    RUNSTM          0b1b 
+RUNSTMC         0b41    SAVELOOP        18b3    SCAN2KEY        0b86 
+SCANFNN         151b    SCANLINL        0425    SCANLINN        0421 
+SCANLINR        0422    SCANLPR1        0408    SCANLPR2        041a 
+SCANLPRM        03fd    SCANLPRZ        03fa    SCANNXT         03c1 
+SCANNXTV        03b9    SCANPFLD        00ab    SCANPFLE        037e*
+SCANPFLG        037d    SCANPTR1        0385    SCANPTR2        0387 
+SETFILENAME     18cd    SETSTM          07df    SETSTMGT        0804 
+SETSTMLS        0809    SETSTMPR        07ff*   SFNDONE         18e4 
+SFNLOOP         18d2    SGNFCT          1c94    SHIFTR          1a93 
+SHIFTR0         1a91    SHIFTRB         1aa0    SHIFTRBL        1aa3 
+SHIFTRLB        1aa7    SI              000f    SIGNACC         1c7e 
+SIGNIFY         1bfa    SIGNXTND        1c8a    SINFCT          1fcf 
+SINFCTC         1fff    SPACECHK        04fb    SPACESTK        04ee 
+SQRFCT          1ebe    STCKBASE        039f    STMTABL         0064 
+STPSTM          0ae0    STRFCT          166f    STRGALAG        153b 
+STRGALAH        153c    STRGALGC        1557    STRGALOC        1537 
+STRGALOT        1193    STRGALOU        1196    STRGALOV        11b6 
+STRGBASE        03a3    STRGFREE        03a1    STRGGBAL        15a6 
+STRGGBAS        15c9    STRGGBCL        1563    STRGGBHI        15d7 
+STRGGBHV        15d9    STRGGBLP        1566    STRGGBMV        15ff 
+STRGGBTL        1575    STRGGBVR        1586    STRGGNAV        15a7 
+STRGRELA        11bf    STRGRELD        11c3    STRGRELH        11c2 
+STRGRELT        11dd    STRGSTOR        167d    STRGTEST        0cc3 
+STRGTLIM        03a7    STRGTMPA        0383    STRGTMPL        0382 
+STRGTMPP        03a5    STRGUNIQ        0bec    STRNGEN         1529 
+STRSTCDS        152c    SUBOPR          19c5    SYSBREAK        0054 
+SYSDISPL        0040    SYSINITJ        0000    SYSKEYIN        001c 
+SYSKEYINRET     002f    SYSKEYNONE      0033    SYSQUIT         0061 
+SYSWAIT         0060    TAB             0009*   TANFCT          2030 
+TRACE           0b9f    TRACEFLG        037c    TYPECHK         03ef 
+TYPECHKA        03f2    TYPEDEF         0020    TYPEDUBL        0008*
+TYPEFLG         0381    TYPEINTG        0002*   TYPESING        0004 
+TYPESTRG        0003    UPRFCT          16eb    UPRFCTL         1701 
+VALBYTE         0c42    VALBYTE2        0c3e    VALCNDFL        1119 
+VALCNDTL        1109    VALCONCP        1224    VALCONCT        11ed 
+VALCOND         10f4    VALCONDF        1117    VALEXPR         0fa9 
+VALEXPR2        1008    VALEXPRC        0fb8    VALEXPRD        0fbb 
+VALEXPRL        0fac    VALEXPRO        0fe1    VALEXPRR        0fc5 
+VALFCT          1653    VALFCTAR        114e    VALFCTCR        14ff 
+VALFCTD         143f    VALFCTDL        1465    VALFCTDM        146e 
+VALFCTLK        1156    VALFCTN         112e    VALFCTNA        14bb 
+VALFCTPS        148f    VALFCTPT        149c    VALFCTRL        14da 
+VALFCTRS        14f1    VALINTDE        0c1d    VALNUMBR        0c07 
+VALPARN2        10c0    VALPARNS        10bc    VALPRMRY        1083 
+VALREL          101e    VALRETNM        10d4    VALRETST        164f 
+VALSTRGC        1168    VALSTRGE        117d    VALSTRGL        116e 
+VALSTRGN        115f    VALSTRGS        116b    VALSTRGY        116a 
+VALSTRGZ        1162    VALUMINS        10c8    VALUNOT         196d 
+VALVAR          10d9    VARALLOC        12ed    VARINDEX        038d 
+VARNAME         127d    VARSCAN         1248    VARSCAND        1266 
+VARSCANF        12d0    VARSCANI        1249    VARSCANM        12c2 
+VARSCANS        1273    VARSCANT        12af    VARSCANX        12fd 
+VARSCNDF        124e    VARSKIPL        1267    VARTABLE        0399 
+VERSNDAT        2091    WAISTM          1849    WAISTMIN        185e 
+XCO             001b    ZEROAC          1a30    

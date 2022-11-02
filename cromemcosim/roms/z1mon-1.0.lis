@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 1
-Source file: z1mon-1.0.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:56:07 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -63,11 +61,6 @@ fffc  =               57     57 DUAF    EQU     -4
 fffa  =               58     58 DUBC    EQU     -6
 fff8  =               59     59 DUDE    EQU     -8
 fff6  =               60     60 DUHL    EQU     -10
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 2
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fff4  =               61     61 DUIT    EQU     -12             ;USER I & INTERRUPT ENABLE
 fff2  =               62     62 DUIX    EQU     -14
 fff0  =               63     63 DUIY    EQU     -16
@@ -128,11 +121,6 @@ e02d  f4             117    117         DB      INIT1-$-1
                      118    118 ;
 e02e  21 94 e3       119    119         LXI     H,HEAD          ;HEADING
 e031  cd 0c e2       120    120         CALL    PMSG
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 3
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      121    121 ;
 e034  18             122    122         DB      JR
 e035  66             123    123         DB      CMND-$-1
@@ -193,11 +181,6 @@ e06a  0e 00          177    177         MVI     C,0
 e06c  e2 70 e0       178    178        	JPO     SVMS3           ;IFF?
 e06f  0c             179    179         INR     C               ;C NOW HOLDS USER-IFF
 e070  47             180    180 SVMS3:  MOV     B,A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 4
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e071  c5             181    181         PUSH    B               ;UIF (USER-I & USER-IFF)
                      182    182 ;
 e072  dd             183    183         DB      IX
@@ -258,11 +241,6 @@ e0a5  cd 1a e2       237    237         CALL    GCMND           ;DE GETS LETTER 
 e0a8  eb             238    238         XCHG
 e0a9  29             239    239         DAD     H               ;TIMES 2
 e0aa  19             240    240         DAD     D               ; + TBL ADDR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 5
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e0ab  5e             241    241         MOV     E,M
 e0ac  23             242    242         INX     H
 e0ad  56             243    243         MOV     D,M
@@ -323,11 +301,6 @@ e0e6  c5             297    297         PUSH    B               ;SAVE
 e0e7  cd 50 e2       298    298         CALL    MVE             ;MOVE IT
 e0ea  c1             299    299         POP     B               ;RETRIEVE
 e0eb  e3             300    300         XTHL                    ;INCRM TO HL
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 6
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e0ec  b7             301    301         ORA     A               ;RESET CY
 e0ed  ed             302    302         DB      0EDH            ;SBC HL,BC
 e0ee  42             303    303         DB      42H
@@ -388,11 +361,6 @@ e12b  fe 0d          357    357         CPI     CR
 e12d  cc 0c e2       358    358         CZ      PMSG
 e130  e1             359    359         POP     H
 e131  f1             360    360         POP     PSW
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 7
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e132  c9             361    361         RET
                      362    362 ;
                      363    363 ; GET CHARATER. RETURNS IT IN A. CONVERTS
@@ -453,11 +421,6 @@ e163  aa             414    414         DB      PCHR-$-1
 e164  cd 70 e1       418    418 L2NCR:  CALL    LD2N
                      419    419 ;
                      420    420 ; SKIP INITIAL SPACES.
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 8
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      421    421 ; IF DELIMITER NOT A CR, ERROR
                      422    422 ;
 e167  cd d1 e1       423    423 SKSGC:  CALL    SKSG            ;LOOK FOR A NON-SPACE
@@ -518,11 +481,6 @@ e196  c9             470    470         RET
                      478    478 ;
 e197  c5             479    479 GNHL:   PUSH    B               ;SAVE
 e198  21 00 00       480    480 GNHL1:  LXI     H,0             ;CLEAR BUFFER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 9
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      481    481 ; STRIP LEADING SPACES & GET CHAR
 e19b  cd d1 e1       482    482         CALL    SKSG
                      483    483 ; FIRST CHAR MUST BE HEX
@@ -583,11 +541,6 @@ e1d9  c9             537    537         RET
                      538    538 ;
                      539    539 ; PRINT THE NUMBER IN HL. PRESERVES ALL REGS.
                      540    540 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 10
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e1da  f5             541    541 PNHL:   PUSH    PSW
 e1db  e5             542    542         PUSH    H               ;TO STACK
 e1dc  cd eb e1       543    543         CALL    P4HEX
@@ -648,11 +601,6 @@ e20f  7e             597    597 PMSG1:  MOV     A,M
 e210  23             598    598         INX     H
 e211  cd 0e e1       599    599         CALL    PCHR
 e214  e6 f8          600    600         ANI     0F8H            ;<NULL> THRU <BELL>?
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 11
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e216  20             601    601         DB      JRNZ
 e217  f7             602    602         DB      PMSG1-$-1
 e218  f1             603    603         POP     PSW
@@ -713,11 +661,6 @@ e24e  3e 01          651    651         MVI     A,1             ;# OF ITERATION
                      658    658 ; & PRINTS THE ERRORS FOUND.
 e250  37             659    659 MVE:    STC                     ;CY IS USED IN ITERATION COUNT
 e251  e5             660    660 MVE1:   PUSH    H               ;SOURCE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 12
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e252  d5             661    661         PUSH    D               ;DEST
 e253  c5             662    662         PUSH    B               ;BYTE COUNT
 e254  f3             663    663         DI                      ;FOR PROM PROGRAMMING
@@ -778,11 +721,6 @@ e290  23             717    717         INX     H
 e291  6e             718    718         MOV     L,M             ;HL = BPSP
                      719    719 ;
 e292  23             720    720         INX     H               ;BUMP BPSP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 13
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e293  eb             721    721         XCHG                    ;DE=BPSP, HL= BP ADDR
 e294  46             722    722         MOV     B,M             ;CONTENTS
 e295  36 f7          723    723         MVI     M,0C7H+RSTLC    ;RST INSTRUCTION
@@ -843,11 +781,6 @@ e2cb  1b             777    777         DCX     D
 e2cc  21 09 00       778    778         LXI     H,9
 e2cf  39             779    779         DAD     SP
 e2d0  ed             780    780         DB      LDDR            ;TRANSFER UPC THRU UHL, L
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 14
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e2d1  b8             781    781         DB      LDDR1           ;TO USER STACK
 e2d2  eb             782    782         XCHG                    ;IS (USER SP - 1) RAM?
 e2d3  7e             783    783         MOV     A,M
@@ -908,11 +841,6 @@ e303  c9             830    830         RET
                      838    838 ; SR <REGISTER NAME>    SUBSTITUTE USER REGISTER
                      839    839 ;
                      840    840 ; REGISTER NAMES: P (PC), S (SP),
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 15
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      841    841 ;                 A, F, B, C, D, E, H, L,
                      842    842 ;                 I, T (IFF), X (IX), Y (IY),
                      843    843 ;                 A',F',B',C',D',E',H',L'.
@@ -973,11 +901,6 @@ e349  18             897    897         DB      JR
 e34a  ce             898    898         DB      SBSR-$-1
                      899    899 ;
 e34b  78             900    900 DISPL:  MOV     A,B             ;LAST CMND CHAR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 16
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e34c  fe 72          901    901         CPI     'R'+CASE        ;DR?
 e34e  79             902    902         MOV     A,C             ;CMND DELIMITER
 e34f  ca f5 e0       903    903         JZ      DSPR
@@ -1038,11 +961,6 @@ e388  c9             953    953         RET
 e389  cd 97 e1       958    958 OUTP:   CALL    GNHL
 e38c  eb             959    959         XCHG                    ;E GETS DATA
 e38d  cd 97 e1       960    960         CALL    GNHL            ;GET PORT NUMBER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 17
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      961    961 ;
 e390  4d             962    962         MOV     C,L             ;TO C
 e391  ed 59          963    963         DW      59EDH           ;OUT (C),E
@@ -1103,11 +1021,6 @@ e3eb  89            1012   1017         DB      -DUDE+1+PF      ;E
 e3ec  85            1013   1018         DB      -DUAF+1+PF      ;F
 e3ed  00            1014   1019         DB      0
 e3ee  8a            1015   1020         DB      -DUHL+PF        ;H
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 18
-Source file: z1mon-1.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 e3ef  0c            1016   1021         DB      -DUIT           ;I
 e3f0  00            1017   1022         DB      0
 e3f1  00            1018   1023         DB      0
@@ -1129,45 +1042,36 @@ e3fe  4e            1033   1038         DB      -DUIX+R2F       ;X (IX)
 e3ff  50            1034   1039         DB      -DUIY+R2F       ;Y (IY)
                     1035   1040 
 e400                1036   1041         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 13:10:08 2022	Page 19
-Source file: z1mon-1.0.asm
-Title:       Symbol table
 
-ABCYZ    e0b5 	BAUD     e036 	BELL     0007 	CASE     0020 	
-CK16B    e156 	CKBND    e158 	CLBP1    e088 	CLBP2    e096 	
-CMND     e09c 	CMND1    e09f 	CPI0     00ed 	CPI1     00a1 	
-CPIR     00ed*	CPIR1    00b1*	CR       000d 	CRLF     e10c 	
-DATA     0001 	DAV      0040 	DISPL    e34b 	DJNZ     0010 	
-DSPM     e352*	DSPM1    e356*	DSPM2    e359 	DSPR     e0f5 	
-DUAF     fffc 	DUAF2    ffee 	DUBC     fffa 	DUBC2    ffec*	
-DUDE     fff8 	DUDE2    ffea*	DUHL     fff6 	DUHL2    ffe8 	
-DUIT     fff4 	DUIX     fff2 	DUIY     fff0 	DUPC     0000 	
-DUSP     fffe 	ERROR    e0bc 	ESC      001b 	ESCPE    e0bf 	
-EXAF     0008 	EXX      00d9 	GBYTE    e141 	GCHR     e133 	
-GCHR1    e13e 	GCMN1    e225 	GCMND    e21a 	GNHL     e197 	
-GNHL1    e198*	GNHL3    e1a4 	GNHL5    e1a7*	GO       e263 	
-GO1      e26c 	GO3      e285 	GO5      e2a5 	GSBV1    e2eb 	
-GSBV2    e302 	GSUBV    e2e0 	HEAD     e394 	HEXSH    e1af 	
-HXSH0    e1bd 	HXSH1    e1c8 	HXSH4    e1bf*	INIT     e007 	
-INIT1    e022 	IX       00dd 	IY       00fd 	JR       0018 	
-JRC      0038 	JRNC     0030 	JRNZ     0020 	JRZ      0028 	
-L2NCR    e164 	LD2N     e170 	LD2N1    e181 	LD2N2    e188 	
-LD3N     e18b 	LDD      00ed*	LDD1     00a8*	LDDR     00ed 	
-LDDR1    00b8 	LDI      00ed*	LDI1     00a0*	LDIR     00ed 	
-LDIR1    00b0 	LF       000a 	LFNN     e3b0 	LINCR    e18e 	
-MOVE     e24b 	MVE      e250 	MVE1     e251 	OUTP     e389 	
-P1HEX    e1fc 	P1HX1    e204 	P2BMS    e14a 	P2HEX    e1f3 	
-P4HEX    e1eb 	PADDR    e15a*	PADR1    e15d 	PCHR     e10e 	
-PCHR1    e119 	PCHR2    e11d 	PF       0080 	PMSG     e20c 	
-PMSG1    e20f 	PNHL     e1da 	PNM      e1e5 	PPAGE    00ff 	
-PREGS    e107 	PRMPT    e3b3 	PROG     e0c9 	PROG1    e0cb*	
-PROG3    e0e0 	PSNM     e1e2 	PSQS     e209 	R2F      0040 	
-RDB1     e36b 	READB    e368 	RETN     e2ad 	RETN1    e2bf 	
-RETN2    e2db 	RGTBL    e3e7 	RLD      00ed*	RLD1     006f*	
-RSTLC    0030 	SBSM     e30a*	SBSM1    e30d 	SBSR     e319 	
-SBSR1    e331 	SBSR3    e346 	SET5A    00cb*	SKSG     e1d1 	
-SKSG0    e1d0 	SKSG1    e1d2 	SKSGC    e167 	SPACE    e152 	
-SQS      e3ad 	ST5A1    00ef*	START    e000*	STAT     0000 	
-SUBST    e304 	SVMS     e043 	SVMS1    e053 	SVMS3    e070 	
-TBE      0080 	TEMPS    0016 	VERIF    e22f 	VRFY     e232 	
-WRITB    e376 	WRTB1    e379 	
+Symbol table
+
+ABCYZ e0b5    BAUD  e036    BELL  0007    CASE  0020    CK16B e156 
+CKBND e158    CLBP1 e088    CLBP2 e096    CMND  e09c    CMND1 e09f 
+CPI0  00ed    CPI1  00a1    CPIR  00ed*   CPIR1 00b1*   CR    000d 
+CRLF  e10c    DATA  0001    DAV   0040    DISPL e34b    DJNZ  0010 
+DSPM  e352*   DSPM1 e356*   DSPM2 e359    DSPR  e0f5    DUAF  fffc 
+DUAF2 ffee    DUBC  fffa    DUBC2 ffec*   DUDE  fff8    DUDE2 ffea*
+DUHL  fff6    DUHL2 ffe8    DUIT  fff4    DUIX  fff2    DUIY  fff0 
+DUPC  0000    DUSP  fffe    ERROR e0bc    ESC   001b    ESCPE e0bf 
+EXAF  0008    EXX   00d9    GBYTE e141    GCHR  e133    GCHR1 e13e 
+GCMN1 e225    GCMND e21a    GNHL  e197    GNHL1 e198*   GNHL3 e1a4 
+GNHL5 e1a7*   GO    e263    GO1   e26c    GO3   e285    GO5   e2a5 
+GSBV1 e2eb    GSBV2 e302    GSUBV e2e0    HEAD  e394    HEXSH e1af 
+HXSH0 e1bd    HXSH1 e1c8    HXSH4 e1bf*   INIT  e007    INIT1 e022 
+IX    00dd    IY    00fd    JR    0018    JRC   0038    JRNC  0030 
+JRNZ  0020    JRZ   0028    L2NCR e164    LD2N  e170    LD2N1 e181 
+LD2N2 e188    LD3N  e18b    LDD   00ed*   LDD1  00a8*   LDDR  00ed 
+LDDR1 00b8    LDI   00ed*   LDI1  00a0*   LDIR  00ed    LDIR1 00b0 
+LF    000a    LFNN  e3b0    LINCR e18e    MOVE  e24b    MVE   e250 
+MVE1  e251    OUTP  e389    P1HEX e1fc    P1HX1 e204    P2BMS e14a 
+P2HEX e1f3    P4HEX e1eb    PADDR e15a*   PADR1 e15d    PCHR  e10e 
+PCHR1 e119    PCHR2 e11d    PF    0080    PMSG  e20c    PMSG1 e20f 
+PNHL  e1da    PNM   e1e5    PPAGE 00ff    PREGS e107    PRMPT e3b3 
+PROG  e0c9    PROG1 e0cb*   PROG3 e0e0    PSNM  e1e2    PSQS  e209 
+R2F   0040    RDB1  e36b    READB e368    RETN  e2ad    RETN1 e2bf 
+RETN2 e2db    RGTBL e3e7    RLD   00ed*   RLD1  006f*   RSTLC 0030 
+SBSM  e30a*   SBSM1 e30d    SBSR  e319    SBSR1 e331    SBSR3 e346 
+SET5A 00cb*   SKSG  e1d1    SKSG0 e1d0    SKSG1 e1d2    SKSGC e167 
+SPACE e152    SQS   e3ad    ST5A1 00ef*   START e000*   STAT  0000 
+SUBST e304    SVMS  e043    SVMS1 e053    SVMS3 e070    TBE   0080 
+TEMPS 0016    VERIF e22f    VRFY  e232    WRITB e376    WRTB1 e379 

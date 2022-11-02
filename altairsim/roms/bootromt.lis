@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 1
-Source file: bootromt.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:51:25 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;******************************************************************
@@ -63,11 +61,6 @@ fe14  c3 00 10        52     52         JMP     RUNLOC          ;TRANSFER CONTRO
 fe17                  58     58 RCODE:
                       59     59         .PHASE  RUNLOC
                       60     60 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 2
-Source file: bootromt.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1000  f3              61     61         DI                      ;DISABLE INTERRUPTS
                       62     62 ;
                       63     63 ;
@@ -128,11 +121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      118    118 ;
                      119    119 ;
 1022                 120    120 BYTO1:
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 3
-Source file: bootromt.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1022  0f             121    121         RRC
 1023  0f             122    122         RRC
 1024  0f             123    123         RRC
@@ -193,11 +181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1061  00             178    178         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
 1062  00             179    179         NOP
 1063  00             180    180         NOP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 4
-Source file: bootromt.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1064  00             181    181         NOP
 1065                 182    182 HOME:
 1065  db f8          183    183         IN      DSTAT           ;GET STATUS
@@ -258,11 +241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 10c4                 238    238 HERE:
                      239    239 ;       JMP     START           ;GO TRY BOOTING AGAIN
 10c4  76             240    240         HLT                     ;OR HALT SYSTEM
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 5
-Source file: bootromt.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      241    241 ;
                      242    242 ;
                      243    243 ;COLD BOOT ROUTINE MESSAGES
@@ -300,17 +278,14 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      257    275 	.DEPHASE
                      258    276 ;
 ff6d                 259    277         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 19:30:44 2022	Page 6
-Source file: bootromt.asm
-Title:       Symbol table
 
-BYTEO    1012 	BYTO1    1022 	BYTO2    1026 	BYTO3    102f 	
-CBMSG    10c5 	CCTRL    0010 	CDATA    0011 	CO       1007 	
-CRRDY    0001*	CTRDY    0002 	DCOM     00f8 	DDATA    00fb 	
-DRQER    10a8 	DSEC     00fa 	DSEL     00fc 	DSTAT    00f8 	
-DTRK     00f9*	DWAIT    00fc 	HERE     10c4*	HOME     1065 	
-INIT     1042 	LEMSG    10d6 	LERR     10b3 	LOOP     1045 	
-MOVE     fe0a 	MSG      1032 	MSGA     1036 	RCODE    fe17 	
-RDCMD    008c 	RDONE    109b 	REMSG    1105 	RLOOP    108e 	
-RQMSG    10e9 	RUNLOC   1000 	SBOOT    007d 	STACK    1156 	
-START    1053*	TK0ER    10af 	
+Symbol table
+
+BYTEO  1012    BYTO1  1022    BYTO2  1026    BYTO3  102f    CBMSG  10c5 
+CCTRL  0010    CDATA  0011    CO     1007    CRRDY  0001*   CTRDY  0002 
+DCOM   00f8    DDATA  00fb    DRQER  10a8    DSEC   00fa    DSEL   00fc 
+DSTAT  00f8    DTRK   00f9*   DWAIT  00fc    HERE   10c4*   HOME   1065 
+INIT   1042    LEMSG  10d6    LERR   10b3    LOOP   1045    MOVE   fe0a 
+MSG    1032    MSGA   1036    RCODE  fe17    RDCMD  008c    RDONE  109b 
+REMSG  1105    RLOOP  108e    RQMSG  10e9    RUNLOC 1000    SBOOT  007d 
+STACK  1156    START  1053*   TK0ER  10af    

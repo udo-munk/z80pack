@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 1
-Source file: memon80.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 18:00:50 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;==============================================================
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       58     58 ;    Salota FDC
                       59     59 ;    SD Systems Versafloppy (Single-density)
                       60     60 ;    SD Systems Versafloppy II (Double-density)
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 2
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       61     61 ;    Tarbell 1011 8" (Single-density)
                       62     62 ;    Tarbell 2022 8" (Double-density)
                       63     63 ;
@@ -128,11 +121,6 @@ ffff  =              114    114 RAMEND	equ	0FFFFh	;Last allowed RAM address for 
                      118    118 			;hex digits must be larger than 70h. (a
                      119    119 			;few more if your I/O ports use
                      120    120 			;interrupts.) -->Must be xxFFh for
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 3
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      121    121 			;Altair disk drives<--
                      122    122 
 ffff  =              123    123 HELPC	equ	TRUE	;TRUE includes a minimal help command.
@@ -193,11 +181,6 @@ ffff  =              166    166 CISIO2A	equ	TRUE	;IMSAI SIO-2 Port A
                      178    178 
                      179    179 ;================================---------------------------
                      180    180 ;= 5. Specify the Transfer Port =
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 4
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      181    181 ;================================
                      182    182 ;At most one of these must be TRUE. If none is TRUE then the
                      183    183 ;following commands will be deleted: TB (set Transfer Port
@@ -258,11 +241,6 @@ ffff  =              202    202 TISIO2A	equ	TRUE	;IMSAI SIO-2 Port A
                      238    238 ; MITS 88-UIO                Serial   10h     10h-11h
                      239    239 ;
                      240    240 ; CCS 2718                    Ser A  00h     00h-03h
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 5
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      241    241 ; (Jumpers SPR=N,SAI-N,SBI=I) Ser B  00h
                      242    242 ;
                      243    243 ; CCS 2719                   Port A   50h     50h-57h
@@ -323,11 +301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      298    298 ; VG BitStreamer II          Port A   02h     02h-09h
                      299    299 ;                            Port B   04h
                      300    300 ;                            Port C   06h
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 6
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      301    301 ;
                      302    302 ; Wameco IOB-1               Serial   04h     00h-05h
                      303    303 ;-------------------------------------------------------------
@@ -388,11 +361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0000  =              358    358 C4FDC	equ	FALSE	;Cromemco 4FDC
 0000  =              359    359 C16FDC	equ	FALSE	;Cromemco 16FDC
 0000  =              360    360 C64FDC	equ	FALSE	;Cromemco 64FDC
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 7
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0000  =              361    361 H17R	equ	FALSE	;Heathkit H17 (onboard boot ROM),
 ffff  =              362    362 IFIF	equ	TRUE	;IMSAI FIF
 0000  =              363    363 IMD8R	equ	FALSE	;IMSAI MDC-DIO with 8" disk (onboard
@@ -453,11 +421,6 @@ ffff  =              362    362 IFIF	equ	TRUE	;IMSAI FIF
                      418    418 ;
                      419    419 ;"ENINTS equ FALSE" will mask interrupts always, and save
                      420    420 ;several bytes of code space, and protect you from random
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 8
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      421    421 ;interrupts and potential code crashes in a computer where
                      422    422 ;interrupts are not set up.
                      423    423 ;
@@ -518,11 +481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      478    478 ;    Stop when fill reaches Memon/80'S RAM page.
                      479    479 ;
                      480    480 ; HD <ADR> <BCNT>
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 9
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      481    481 ;    Intel hex dump <BCNT> bytes of memory starting at <ADR>,
                      482    482 ;    to the Transfer Port
                      483    483 ;
@@ -583,11 +541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      538    538 ; TP [<0/1>] {deleted if no Transfer Port specified}
                      539    539 ;    Enable the Transfer Port. "TP 0" disables the Transfer
                      540    540 ;    port, causing Transfer Port operations to use the Console
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 10
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      541    541 ;    Port instead. defaults to 1 (enabled).
                      542    542 ;
                      543    543 ; VE <SRC> <DST> <BCNT>
@@ -648,11 +601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      598    598  endif ;not ROM2K
                      599    599  if ROM2K
 0800  =              600    600 ROMSIZ	equ	800h		;2K EPROM size (e.g. 2716)
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 11
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      601    601  endif ;ROM2K
                      602    602 
                      603    603 ;***********************
@@ -713,11 +661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      658    658 ;************************************************************
                      659    659 ;CP/M Equates (for CE command)
                      660    660 ;The CE command creates a CP/M BIOS-like jump to Memon/80's
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 12
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      661    661 ;warm-boot entry point, which is followed by a CP/M BIOS-
                      662    662 ;like jump table to its I/O routines. The CE command also
                      663    663 ;moves the command-line text entered by the user to the
@@ -778,11 +721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      718    718 ;
                      719    719 ;The 88-SIO is built around a 2502-type generic UART,
                      720    720 ;with a jumper selectable baud rate generator and with
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 13
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      721    721 ;external logic providing status and control registers.
                      722    722 ;
                      723    723 ;Note that the 88-SIO requires no initialization.
@@ -843,11 +781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      778    778 ;--------------------------------------------------------------
                      779    779  if CC2718A
                      780    780 CSTAT	equ	CBASE	;serial port A status
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 14
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      781    781 CCTRL	equ	CBASE	;channel a control
                      782    782 CDATA	equ	CBASE+1	;serial port A data
                      783    783 
@@ -908,11 +841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      838    838 TBD2400	equ	10Ch	;5= 2400 baud
                      839    839 TBD4800	equ	109h	;6= 4800 baud
                      840    840 TBD9600	equ	108H	;7= 9600 baud
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 15
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      841    841 TBD192	equ	100h	;8= 19200 baud
                      842    842 TBD384	equ	0	;9= 38400 baud (not supported)
                      843    843 TBD576	equ	0	;a= 57600 baud (not supported)
@@ -973,11 +901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      898    898 DI7	equ	0EAh	;Tx 8-bit bytes, enable Tx, 
                      899    899 			;handshakes true
                      900    900 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 16
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      901    901  endif ;CC2719A or CC2719B or TC2719A or TC2719B
                      902    902 
                      903    903  if CC2719A
@@ -1038,11 +961,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      958    958 
                      959    959   if (CC2719A or CC2719B) and ((0-CBAUD) SHR 15)
                      960    960 CSTOPS	set	CSTOP1
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 17
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      961    961  endif ;(CC2719A or CC2719B) and ((0-CBAUD) SHR 15)
                      962    962 
                      963    963  if TC2719A or TC2719B
@@ -1103,11 +1021,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1018   1018  endif ;CC2810
                     1019   1019 
                     1020   1020 ;CCS2810 serial Port As the Transfer Port
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 18
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1021   1021 
                     1022   1022  if TC2810
                     1023   1023 T8250	set	TRUE
@@ -1168,11 +1081,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1078   1078 
                     1079   1079 CTXRDY	  equ	  01h	;Console Tx ready bit
                     1080   1080 CRXRDY	  equ	  02h	;Console Rx ready bit
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 19
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1081   1081 
                     1082   1082 CIFRST	equ	0ACH	;reset: 8 data, no parity, flow
                     1083   1083 			;..control outputs high, no ints
@@ -1233,11 +1141,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1138   1138 CBD1200	equ	0008h or CSTOP1	;1200 baud
                     1139   1139 CBD2400	equ	0010h or CSTOP1	;2400 baud
                     1140   1140 CBD4800	equ	0020h or CSTOP1	;4800 baud
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 20
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1141   1141 CBD9600	equ	0040h or CSTOP1	;9600 baud
                     1142   1142 CBD192	equ	1010h or CSTOP1	;19200 baud
                     1143   1143 CBD384	equ	1020h or CSTOP1	;38400 baud
@@ -1298,11 +1201,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1198   1198 TSTOPS	set	TSTOP2
                     1199   1199  endif ;TTUART or TCFDCS
                     1200   1200 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 21
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1201   1201   if (TTUART or TCFDCS) and ((0-TBAUD) SHR 15)
                     1202   1202 TSTOPS	set	TSTOP1
                     1203   1203  endif ;(TTUART or TCFDCS) and ((0-TBAUD) SHR 15)
@@ -1363,11 +1261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1258   1258 TB8250	equ	TBASE
                     1259   1259  endif ;TH84
                     1260   1260 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 22
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1261   1261 ;--------------------------------------------------------------
                     1262   1262 ;Heathkit H8-5 Serial Port Equates
                     1263   1263 ;
@@ -1428,11 +1321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1318   1318  if CISIO2A or CISIO2B
 ffff  #             1319   1319 C8251	set	TRUE	;8251 UART
 0002  =             1320   1320 CB8251	equ	CBASE	;Base of Console 8251 registers
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 23
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1321   1321  endif ;CISIO2A or CISIO2B
                     1322   1322 
                     1323   1323  if TISIO2A or TISIO2B
@@ -1493,11 +1381,6 @@ ffff  #             1325   1325 T8251	set	TRUE	;8251 UART
                     1378   1378 CBD768	equ	0		;76800 baud (Not supported)
                     1379   1379 
                     1380   1380 CSBAUD	set	TRUE	;software Console baud control
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 24
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1381   1381 
                     1382   1382  endif ;CIVIO2
                     1383   1383 
@@ -1558,11 +1441,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1438   1438 
                     1439   1439  if TJADSP
                     1440   1440 TPORT	set	TRUE	;Transfer port is defined
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 25
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1441   1441 
                     1442   1442 TDATA	equ	TBASE
                     1443   1443 TSTAT	equ	TBASE or 80h
@@ -1623,11 +1501,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1498   1498 
                     1499   1499 T8251	set	TRUE	;8251 UART
                     1500   1500 TB8251	equ	TBASE	;Base of T-port 8251 registers
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 26
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1501   1501  endif ;TTARBL
                     1502   1502 
                     1503   1503 ;------------------------------------------------------
@@ -1688,11 +1561,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1558   1558 
                     1559   1559  if TPT3PS
                     1560   1560 TPORT	set	TRUE	;Transfer port is defined
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 27
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1561   1561 
                     1562   1562 TSTAT	equ	TBASE	;Transfer Port status
                     1563   1563 TCTRL	equ	TBASE	;Transfer Port control
@@ -1753,11 +1621,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1618   1618 TPORT	set	TRUE	;Transfer port is defined
                     1619   1619 
                     1620   1620 T8251	set	TRUE	;8251 UART
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 28
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1621   1621 TB8251	equ	TBASE	;Base of T-port 8251 registers
                     1622   1622  endif ;TWIOB1
                     1623   1623 
@@ -1818,11 +1681,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1678   1678 CBD4800	equ	24	;6= 4800 baud
                     1679   1679 CBD9600	equ	12	;7= 9600 baud
                     1680   1680 CBD192	equ	6	;8= 19200 baud
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 29
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1681   1681 CBD384	equ	3	;9= 38400 baud
                     1682   1682 CBD576	equ	0	;a= 57600 baud (not supported)
                     1683   1683 CBD768	equ	0	;b= 76800 baud (not supported)
@@ -1883,11 +1741,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1738   1738 TSIDENT	equ	TDATA+2	;interrupt ID port
                     1739   1739 TSLCTRL	equ	TDATA+3	;line control port
                     1740   1740 TSMDMCT	equ	TDATA+4	;modem control port
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 30
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1741   1741 TSTAT	equ	TDATA+5	;line status port
                     1742   1742 TMSTAT	equ	TDATA+6	;modem status port
                     1743   1743 
@@ -1948,11 +1801,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1798   1798 ;Compute Baud Rate Constants
                     1799   1799 ;---------------------------
                     1800   1800  if CSBAUD
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 31
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1801   1801 CPBAUD	set	CBD110
                     1802   1802  endif ;CSBAUD
                     1803   1803 
@@ -2013,11 +1861,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1858   1858  endif ;TSBAUD and ((1-TBAUD)SHR 15)
                     1859   1859 
                     1860   1860  if TSBAUD and ((2-TBAUD)SHR 15)
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 32
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1861   1861 TPBAUD	set	TBD600
                     1862   1862  endif ;TSBAUD and ((2-TBAUD)SHR 15)
                     1863   1863 
@@ -2078,11 +1921,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1918   1918 ;Altair 8800 Floppy Disk controller Equates (These are the
                     1919   1919 ;same for the 88-DCDD controller and the 88-MDS controller.)
                     1920   1920 ;-----------------------------------------------------------
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 33
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1921   1921  if A88DCD or A88MCD
                     1922   1922 BOOTER	set	TRUE		;Boot command exists
                     1923   1923 
@@ -2143,11 +1981,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1978   1978  if CC2422
                     1979   1979 
                     1980   1980 BOOTER	set	TRUE		;Boot command exists
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 34
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1981   1981 WD179X	set	TRUE		;WD1793-type controller
                     1982   1982 
                     1983   1983 MAXTRYS	equ	16		;max retries
@@ -2208,11 +2041,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2038   2038 
                     2039   2039 ;Status reg 2 (BSTAT) input bits
                     2040   2040 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 35
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2041   2041 BTRK0	equ	00000001b	;when on track 0: 1=8" disk
                     2042   2042 BMINI	equ	00000010b	;-DCTRL reg bit: 1=Minidisk
                     2043   2043 BWPRT	equ	00000100b	;0=disk is write-protected
@@ -2273,11 +2101,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2098   2098 
                     2099   2099 ;DFLAG input bits
                     2100   2100 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 36
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2101   2101 DFSEOJ  equ	00000001B ;Disk cmd complete
                     2102   2102 DFAWTO	equ	00000010B ;Auto-wait timeout
                     2103   2103 DFSMTO	equ	00000100B ;Motor timeout
@@ -2338,11 +2161,6 @@ ffff  #             2120   2120 BOOTER	set	TRUE		;Boot command exists
                     2158   2158 BOOTER	set	TRUE		;Boot command exists
                     2159   2159 
                     2160   2160 FDCMD	equ	DMBASE+200h	;Command register
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 37
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2161   2161 FDSECT	equ	DMBASE+200h	;Sector register
                     2162   2162 FDSTAT	equ	DMBASE+201h	;Status register
                     2163   2163 FDDATA	equ	DMBASE+203h	;Data in/out	
@@ -2403,11 +2221,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2218   2218 			;(entry point used during boot)
                     2219   2219 
                     2220   2220  endif ;MICROP
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 38
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2221   2221 
                     2222   2222 ;--------------------------------------------------------
                     2223   2223 ;Northstar MDC-A and MDS-A Single-Density Disk Controller
@@ -2468,11 +2281,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2278   2278 MAXTRYS	equ	10		;Max retries
                     2279   2279 BDRIVE	equ	1		;Boot drive
                     2280   2280 				;..(Code assumes this is 01.)
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 39
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2281   2281 BTRACK	equ	0		;Boot track
                     2282   2282 BSECTR	equ	4		;Boot sector
                     2283   2283 LODADR	equ	2000h		;Standard MDS-A load address
@@ -2533,11 +2341,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2338   2338 SAMO	equ	10h		;Motor on
                     2339   2339 SADD	equ	20h		;Double density detected
                     2340   2340 SAIX	equ	40h		;Index hole on previous sector
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 40
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2341   2341 SASF	equ	80h		;Sector flag
                     2342   2342 				;..(cleared by software)
                     2343   2343 
@@ -2598,11 +2401,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2398   2398 
                     2399   2399  if VERSA1
                     2400   2400 ;Versafloppy VDRSEL bit assignments (all active-low)
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 41
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2401   2401 
                     2402   2402 VDSEL0N	equ	00000001b	;select drive 0
                     2403   2403 VDSEL1N	equ	00000010b	;select drive 1
@@ -2663,11 +2461,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2458   2458 TSEL0	equ	TDSEL + (TDSEL1N xor 0F0h) ;select drive 0	
                     2459   2459  endif ;TARBL1
                     2460   2460 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 42
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2461   2461  if TARBL2
                     2462   2462 TEXTP0	equ	DIBASE+4h	;Extended Output Port 0
                     2463   2463 TEXTP1	equ	DIBASE+5h	;Ext. Out Port 1 (bank select)
@@ -2728,11 +2521,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2518   2518 SWPROT	equ	01000000b ;(All) write protect
                     2519   2519 SNORDY	equ	10000000b ;(All) drive not ready
                     2520   2520 SINDEX	equ	00000010b ;(I) index
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 43
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2521   2521 STRAK0	equ	00000100b ;(I) track 0
                     2522   2522 SSEKER	equ	00010000b ;(I) seek error
                     2523   2523 SHEADL	equ	00100000b ;(I) head loaded
@@ -2793,11 +2581,6 @@ f818                2574   2574 METPSO:				;Get T-Port output status
                     2578   2578 ;Fall into TPOSTA
                     2579   2579  endif ;TPORT
                     2580   2580 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 44
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2581   2581 ;***CP/M External Subroutine************************
                     2582   2582 ;Get Transfer Port Output Status
                     2583   2583 ;On Exit:
@@ -2858,11 +2641,6 @@ f81f                2614   2614 INIT:
                     2638   2638 ; a=0
                     2639   2639 ;--------------------------------
                     2640   2640 ;INS8250 as Console
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 45
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2641   2641 
                     2642   2642  if C8250 and (not T8250)
                     2643   2643 	out	CSINTEN		;Interrupts off
@@ -2923,11 +2701,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2698   2698 	mvi	a,cPBAUD and 0FFh
                     2699   2699 	out	CDATA		;Divisor low byte
                     2700   2700 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 46
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2701   2701 	mvi	a,CSTOPS	;stop pointing to divisor
                     2702   2702 	out	CSLCTRL
                     2703   2703 
@@ -2988,11 +2761,6 @@ f82d  d3 08         2753   2753 	out	SIOCTL		;a=0: disable SIO-2 interrupts
                     2758   2758 ;-------------------------------
                     2759   2759  if C6850 or T6850
                     2760   2760 	mvi	a,U68RES	;ACIA reset
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 47
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2761   2761  endif ;C6850 or T6850 
                     2762   2762 
                     2763   2763  if C6850
@@ -3053,11 +2821,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2818   2818  endif ;DART
                     2819   2819 
                     2820   2820  if CC2719A or CC2719B
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 48
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2821   2821 	out	CCTRL
                     2822   2822  endif ;CC2719A or CC2719B
                     2823   2823 
@@ -3118,11 +2881,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2878   2878  if CIFAC
                     2879   2879 	out	CCTRL
                     2880   2880  endif ;CIFAC
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 49
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2881   2881 
                     2882   2882  if TIFAC
                     2883   2883 	out	TCTRL	
@@ -3183,11 +2941,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2938   2938 	mvi	a,TPBAUD and 0FFh ;set Transfer Port baud rate
                     2939   2939 	out	TTPBAUD	
                     2940   2940  endif ;TTUART
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 50
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2941   2941 
                     2942   2942 ;----------------------------------------
                     2943   2943 ;Install jump vectors for H8-5 interrupts
@@ -3248,11 +3001,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2998   2998 ;Initialize any/all Jade Serial/Parallel I/O  serial ports
                     2999   2999 ;---------------------------------------------------------
                     3000   3000  if CJADSP or TJADSP
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 51
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3001   3001 	mvi	a,JRESET
                     3002   3002  endif ;CJADSP or TJADSP
                     3003   3003 
@@ -3313,11 +3061,6 @@ f841  2e 8f         3048   3048 	mvi	l,RAMBEG	;For announcement
                     3058   3058 
                     3059   3059  if TPORT
                     3060   3060 ;set up default: Transfer Port enabled (H<>0 here)
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 52
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3061   3061 
 f843  e5            3062   3062 	push	h		;h=port flag at top of stack
                     3063   3063  endif ;TPORT
@@ -3378,11 +3121,6 @@ f877  11 a7 fe      3110   3116 	lxi	d,COMTAB-1	;point to command table
 f87a  4e            3112   3118 	mov	c,m		;1st command byte in c
 f87b  23            3113   3119 	inx	h		;2nd command byte in m
                     3114   3120 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 53
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3115   3121 ;Search through table at de for a 2-chr match of c,m. Note
                     3116   3122 ;that c & m have their parity bits stripped. The msb of the
                     3117   3123 ;2nd table chr is the high bit of the address offset, so
@@ -3443,11 +3181,6 @@ f899  e5            3158   3164 	push	h		;command address on stack
                     3172   3178 
                     3173   3179  if ROM2K and TPORT 
 f89a  0f            3174   3180 	rrc			;put msb in high bit
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 54
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f89b  b1            3175   3181 	ora	c		;combine low bits
 f89c  e6 fc         3176   3182 	ani	0FCh		;0 if offset = 0 or 3
 f89e  c8            3177   3183 	rz
@@ -3508,11 +3241,6 @@ f8b4                3230   3236 FXHL1:
                     3232   3238 
 f8b4  cd 4c fd      3233   3239 	call	HEXCON		;convert a to binary
 f8b7  d2 07 fd      3234   3240 	jnc	CMDERR		;not valid hexidecimal value?
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 55
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3235   3241 
 f8ba  85            3236   3242 	add	l
 f8bb  6f            3237   3243 	mov	l,a		;move new digit in
@@ -3573,11 +3301,6 @@ f8de  f6 40         3290   3297 	ori	'C'-CTRLC	;make it printable
 f8e0  cd c8 fd      3291   3298 	call	PRINTA
                     3292   3299 
 f8e3  cd 59 fd      3293   3300 	call	CILPRT		;CR,LF,CR to be pretty
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 56
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f8e6  8d            3294   3301 	db	CR+80h		;(start on a new line)
                     3295   3302 
                     3296   3303 ;Be a Terminal until we get an exit character=l
@@ -3638,11 +3361,6 @@ f905  c3 d5 fa      3337   3344 SECMD:	jmp	GSECMD
                     3351   3358 ;*******************************************************
 f908                3352   3359 BOCMD:
 ffff  #             3353   3360 JMPBOT	set	TRUE
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 57
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3354   3361 
                     3355   3362  if H17R or MDUBLR or MICROR or NSTRSR or NSTRDR or IMD8R or IMDMR
                     3356   3363 BOOTER	set	TRUE
@@ -3703,11 +3421,6 @@ f913  c3 47 fc      3399   3407 	jmp	GBOCMD
                     3410   3418 ;On Entry:
                     3411   3419 ;  hl=address, defaultING to 0
                     3412   3420 ;  carry set if none entered
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 58
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3413   3421 ;********************************************************
 f916  cd 90 fd      3414   3422 ENCMD:	call	PHLADR		;print hl as an address
                     3415   3423 				;trash c, b=0
@@ -3768,11 +3481,6 @@ f935  cd b3 fa      3469   3477 	call	RAMPAG		;get h=RAM page
 f938  5c            3470   3478 	mov	e,h
                     3471   3479  endif ;RAMHNT
                     3472   3480 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 59
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3473   3481  if not RAMHNT
                     3474   3482 	mvi	e,RAMEND/256
                     3475   3483  endif ;not RAMHNT
@@ -3833,11 +3541,6 @@ f95d  43            3529   3537 	mov	b,e		;Y:short line
 f95e                3530   3538 HDLIN1:
                     3531   3539 
                     3532   3540 ;If byte count is 0 then go finish EOF record
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 60
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3533   3541 
 f95e  78            3534   3542 	mov	a,b
 f95f  b7            3535   3543 	ora	a
@@ -3898,11 +3601,6 @@ f982  cd 97 fd      3588   3596 INCMD:	call	PCCOLS		;': ' as separator
 f985  11 ab fd      3590   3598 	lxi	d,PCAHEX	;create return address
 f988  d5            3591   3599 	push	d		;ret through PCAHEX
                     3592   3600 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 61
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3593   3601 ;	mvi	h,RET		;opcode
 f989  26 c9         3594   3602 	mvi	h,0C9H
 f98b  e5            3595   3603 	push	h		;l=<PORT>
@@ -3963,11 +3661,6 @@ f99c  c3 ab f9      3637   3645 	jmp	EXSTK		;recycle some code
                     3650   3658 ;***Command Routine******************************************
                     3651   3659 ;EX [<ADR> [<OPT>]](execute)
                     3652   3660 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 62
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3653   3661 ;EXOPT=TRUE adds <OPT> to optionally disable the EPROM on an
                     3654   3662 ;Altair-type board (such as on the Turnkey Module or my own
                     3655   3663 ;88-2SIOJP) on the way to executing at the requested address.
@@ -4028,11 +3721,6 @@ f9b2  7d            3709   3717 TPCMD:	mov	a,l		;get state
 f9b3  21 03 00      3710   3718 	lxi	h,3		;TP flag is 3 back
 f9b6  39            3711   3719 	dad	sp		;..on the stack
 f9b7  77            3712   3720 	mov	m,a		;New state
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 63
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3713   3721 
 f9b8  c9            3714   3722 	ret
                     3715   3723  endif ;TPORT
@@ -4093,11 +3781,6 @@ f9db                3765   3773 DLDONE:
                     3770   3778 ;(This just makes the display a little prettier.)
                     3771   3779 
 f9db  3e 10         3772   3780 	mvi	a,10h		;a full line has 16 bytes
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 64
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f9dd  91            3773   3781 	sub	c		;how short is this line?
 f9de  ca ec f9      3774   3782 	jz	DNOPAD		;No pading for full lines
                     3775   3783 
@@ -4158,11 +3841,6 @@ fa07  c3 c0 f9      3811   3819 	jmp	DULINE		;next line
                     3830   3838 ;  b: Scratch
                     3831   3839 ;  c: record byte count
                     3832   3840 ;  d: record checksum
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 65
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3833   3841 ;  e: RAM page address
                     3834   3842 ;  hl: memory address
                     3835   3843 ;  top of stack: address offset
@@ -4223,11 +3901,6 @@ fa29  d5            3884   3892 	push	d		;save offset
                     3890   3898 	pop	h
                     3891   3899 	jnc	OVMERR		;y: error
                     3892   3900  endif ;RAMCOD
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 66
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3893   3901 
 fa2a  57            3894   3902 	mov	d,a		;d=checksum so far
                     3895   3903 
@@ -4288,11 +3961,6 @@ fa4d  c2 1c fc      3945   3953 	jnz	CSMERR		;NZ means checksum error
 fa50  cd 5d fd      3950   3958 	call	ILPRNT		;pacifier on Console
 fa53  ae            3951   3959 	db	PCFIER+80h
                     3952   3960 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 67
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fa54  0d            3953   3961 	dcr	c		;0-byte record?
 fa55  ca 0f fa      3954   3962 	jz	GETCOL		;N: go get another record
                     3955   3963 
@@ -4353,11 +4021,6 @@ fa7a  cd a0 f8      4007   4017 	call	PHFHEX		;push byte count and
                     4008   4018 				;..get repeat count
 fa7d  8d            4009   4019 	adc	l		;On ret, a=0
                     4010   4020 				;carry set if no value given
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 68
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4011   4021 
                     4012   4022 ;Repeat copy the specified number of times (for
                     4013   4023 ;programming an EPROM, e.g. a 2708 on a bytesaver)
@@ -4418,11 +4081,6 @@ fa9a  e1            4065   4075 	pop	h		;hl=source
 fa9b  cd 59 fd      4068   4078 	call	CILPRT
 fa9e  63 68 65 63   4069   4079 	db	'checkin','g'+80h
 faa2  6b 69 6e e7   4069   4080
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 69
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4070   4081  endif ;CORPT
                     4071   4082 
                     4072   4083 ;Loop to compare memory, reporting mismatches
@@ -4483,11 +4141,6 @@ fabf  1a            4126   4137 	ldax	d
 fac0  77            4127   4138 	mov	m,a
 fac1  13            4128   4139 	inx	d
 fac2  04            4129   4140 	inr	b		;count chrs
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 70
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4130   4141 
 fac3  b7            4131   4142 	ora	a		;copy 'till null termination
 fac4  c2 be fa      4132   4143 	jnz	CLLOOP
@@ -4548,11 +4201,6 @@ fad2  c3 00 01      4149   4160 	jmp	USAREA
                     4187   4198 	jz	CMDERR
                     4188   4199 
                     4189   4200 ;Set baud rate, and set the stop bits to 1
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 71
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4190   4201 ;except for 110 baud, which gets 2 stop bits
                     4191   4202 ;b=0
                     4192   4203 
@@ -4613,11 +4261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4247   4258 	ora	a
                     4248   4259 	mvi	a,TDLAB or TSTOP1 ;baud rate access, 1 stop bit
                     4249   4260 	jnz	TBC1
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 72
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4250   4261 	mvi	a,TDLAB or TSTOP2 ;110 baud gets 2 stop bits
                     4251   4262 TBC1:	out	TSLCTRL
                     4252   4263 	mov	e,a		;temp save
@@ -4678,11 +4321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4307   4318 ;  Carry set if none entered
                     4308   4319 ;  de points to <bytes>
                     4309   4320 ;***************************************************
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 73
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4310   4321  if ROM2K
 fad5  e5            4311   4322 GSECMD:	push	h		;remember <ADR>
                     4312   4323 
@@ -4743,11 +4381,6 @@ faf8  ca 32 fb      4366   4377 	jz	NOMTCH
                     4367   4378 
 fafb  1a            4368   4379 	ldax	d		;search string
 fafc  be            4369   4380 	cmp	m		;current RAM
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 74
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fafd  c2 32 fb      4370   4381 	jnz	NOMTCH
                     4371   4382 
 fb00  23            4372   4383 	inx	h		;test next byte
@@ -4808,11 +4441,6 @@ fb46  c9            4420   4436 	ret
                     4422   4438 ;---Local Subroutine-----------------------
                     4423   4439 ;Get a text string from user input at (de),
                     4424   4440 ;store string at (hl), bump count in b
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 75
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4425   4441 ;On Entry:
                     4426   4442 ;  b=byte count
                     4427   4443 ;  c=QUOTE
@@ -4873,11 +4501,6 @@ fb5f  77            4481   4497 	mov	m,a		;store the hex digit
 fb60  23            4482   4498 	inx	h
 fb61  04            4483   4499 	inr	b
                     4484   4500 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 76
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fb62  c9            4485   4501 	ret
                     4486   4502  endif ;ROM2K
                     4487   4503 
@@ -4938,11 +4561,6 @@ fb7c  f5            4537   4554 	push	psw		;a=RAM page
                     4541   4558 ;a read/invert/write twice to stress the memory.
                     4542   4559 ;------------------------------------------------
 fb7d  f1            4543   4560 FIL0:	pop	psw		;a=RAM page address
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 77
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fb7e  f5            4544   4561 	push	psw
                     4545   4562 
 fb7f  bc            4546   4563 	cmp	h		;On RAM page?
@@ -5003,11 +4621,6 @@ fbae  7d            4600   4617 	mov	a,l		;y: stack part of RAM page?
 fbaf  fe 8f         4601   4618 	cpi	RAMBEG and 0FFh	;Can't test above the stack
 fbb1  d2 c1 fb      4602   4619 	jnc	CML3
                     4603   4620 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 78
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fbb4  0a            4604   4621 CML1:	ldax	b		;Get pattern byte
                     4605   4622 
 fbb5  b7            4606   4623 	ora	a		;Pattern end?
@@ -5068,11 +4681,6 @@ fbdd  cd 90 fd      4659   4676 	call	PHLADR		;address:
 fbe0  cd 5d fd      4661   4678 	call	ILPRNT
 fbe3  57 72 6f 74   4662   4679 	db	'Wrote',' '+80h
 fbe7  65 a0         4662   4680
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 79
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4663   4681 
 fbe9  f1            4664   4682 	pop	psw		;expected data
 fbea  cd a6 fd      4665   4683 	call	PAHCSM
@@ -5133,11 +4741,6 @@ fc1b  00            4681   4704 	db	00h	;End of table mark
                     4715   4738 ;The first time through, delay at least 25 ms to force
                     4716   4739 ;a minimum 43 ms step wait instead of 10ms. This meets
                     4717   4740 ;the 8" spec for changing seek direction. (Minidisk
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 80
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4718   4741 ;step time is always 50ms, enforced by the mninidsk
                     4719   4742 ;controller hardware.) See the 88-DCDD documentation
                     4720   4743 ;for details. This loop ends with hl=0.
@@ -5198,11 +4801,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4775   4798 	jc	CKDSK3		;wait for sector to be valid
                     4776   4799 
                     4777   4800  endif ;(A88DCD or A88MCD)
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 81
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4778   4801  if (A88DCD or A88MCD) and (ENINTS or CRXINT or TRXINT)
                     4779   4802 	ei			;denable interrupts
                     4780   4803  endif ;(A88DCD or A88MCD) and (ENINTS or CRXINT or TRXINT)
@@ -5263,11 +4861,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4835   4858 ; top-of-stack=RAMBUF address
                     4836   4859 ; next on stack=execution address=0
                     4837   4860 ;-----------------------------------------
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 82
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4838   4861 RDSCTR:	pop	d		;(10)get RAMBUF address
                     4839   4862 	push	d		;(11)keep it on the stack
                     4840   4863 	push	psw		;(11)Remaining retry count
@@ -5328,11 +4921,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4895   4918 				;..and test for end
                     4896   4919 	jnz	DATLUP		;(10)loop if more data
                     4897   4920 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 83
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4898   4921 ;------------------------------------------------
                     4899   4922 ;Sector Read Step 3: Move sector data from RAMBUF
                     4900   4923 ;into memory at hl. compute checksum as we go.
@@ -5393,11 +4981,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4955   4978 	sbb	d		;(4)..but keep Carry (borrow)
                     4956   4979 
                     4957   4980 	pop	d		;(10)chuck old DMA address
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 84
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4958   4981 	pop	d		;(10)chuck old retry count
                     4959   4982 
                     4960   4983 	jnc	FDEXEC		;(10)done loading if hl >= de
@@ -5458,11 +5041,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5015   5038 FDEXEC:	mvi	a,DDISBL	;Disable floppy controller
                     5016   5039 	out	DENABL
                     5017   5040 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 85
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5018   5041 	pop	d		;chuck RAMBUF address
                     5019   5042 				;..to expose exec address
                     5020   5043 
@@ -5523,11 +5101,6 @@ fc22  c3 34 fc      5070   5093 	jmp	RPTERR		;go give details
                     5075   5098  endif ;not ROM2K
                     5076   5099 
                     5077   5100 ;---Error Routine----------------------------------
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 86
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5078   5101 ;Memory Overwrite Error: Attempt to overwrite stack
                     5079   5102 ;(for both HL and BO commands)
                     5080   5103 ;On Entry:
@@ -5588,11 +5161,6 @@ fc44  c3 0b fd      5127   5152 	jmp	CABORT		;Repair stack, go to MAIN
                     5133   5158 ;*****************************************
                     5134   5159  if CC2422
                     5135   5160 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 87
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5136   5161 GBOCMD:	mvi	c,MAXTRYS+1	;sector retry counter
                     5137   5162 
                     5138   5163 	mvi	a,DCMDMO+(1 shl BOTDSK)
@@ -5653,11 +5221,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5193   5218 ;Execute the loaded code if it's ok
                     5194   5219 
                     5195   5220 	jz	BOTADR
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 88
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5196   5221 
                     5197   5222 ;----------------------------------
                     5198   5223 ;Read fail. Try again if possible.
@@ -5718,11 +5281,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5253   5278 ECLUP2:	dcr	e		;(5)inner loop: 9984 cycles
                     5254   5279 	jz	ECLOOP		;(10)
                     5255   5280 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 89
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5256   5281 	in	DFLAG		;(10)wait for command to end
                     5257   5282 	rrc			;(4)test DFSEOJ
                     5258   5283 	jnc	ECLUP2		;(10) 39 cycles/pass
@@ -5783,11 +5341,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5313   5338 
                     5314   5339 	mvi	a,80h		;compute drive select
                     5315   5340 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 90
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5316   5341 DSLOOP:	rlc
                     5317   5342 	dcr	l
                     5318   5343 	jp	DSLOOP
@@ -5848,11 +5401,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5373   5398 	jz	BOTADR
                     5374   5399 
                     5375   5400 ;----------------------------------------
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 91
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5376   5401 ;Read fail. Try again with the other size
                     5377   5402 ;size disk (maxi vs mini) if possible.
                     5378   5403 ;Give user feedback about retries.
@@ -5913,11 +5461,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5433   5458 EXCCHK:	lxi	h,400*CPUMHz	;(7)about 2 seconds
                     5434   5459 				;(e a little random at first)
                     5435   5460 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 92
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5436   5461 ECLOOP:	dcx	h		;(5)
                     5437   5462 	mov	a,l		;(5)
                     5438   5463 	ora	h		;(4)
@@ -5978,11 +5521,6 @@ fc47  0e 11         5492   5517 GBOCMD:	mvi	c,MAXTRYS+1	;retry counter
                     5493   5518 
 fc49  3e 10         5494   5519 	mvi	a,ISSPTR	;Set string pointer 0
 fc4b  d3 fd         5495   5520 	out	IDISK
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 93
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5496   5521 
                     5497   5522 ;Set Floppy Disk Interface string pointer
                     5498   5523 
@@ -6043,11 +5581,6 @@ fc82  52 65 74 72   5552   5577 	db	'Retryin','g'+80h
 fc86  79 69 6e e7   5552   5578
                     5553   5579 
 fc8a  cd 5d fd      5554   5580 RBR1:	call	ILPRNT
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 94
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fc8d  ae            5555   5581 	db	'.'+80h
                     5556   5582 
 fc8e  0d            5557   5583 	dcr	c		;too many retries?
@@ -6108,11 +5641,6 @@ fcaa  c3 0b fd      5577   5606 	jmp	CABORT
                     5609   5638 ;   c=0
                     5610   5639 ;   hl=command register address
                     5611   5640 ;--------------------------------------
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 95
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5612   5641 
                     5613   5642 ;Select drive 0 and give the drive time to spin up.
                     5614   5643 ;The drive may not be spinning if the FDC has been
@@ -6173,11 +5701,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5669   5698 
                     5670   5699 	lxi	b,(90*256)+STEP+STEPO ;b=90 steps max,
                     5671   5700 				      ;..c=step out
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 96
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5672   5701 
                     5673   5702 SEEK0:	call	HSTEP		;exits with de=0,
                     5674   5703 				;..a=status reg value
@@ -6238,11 +5761,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5729   5758 	di			;disable interrupts
                     5730   5759  endif ;MICROP and (ENINTS or CRXINT or TRXINT)
                     5731   5760  if MICROP
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 97
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5732   5761 
                     5733   5762 	pchl			;execute boot loader from disk
                     5734   5763 
@@ -6303,11 +5821,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5789   5818 	mvi	d,7		;delay for 7*5.89=41.2 mS
                     5790   5819 
                     5791   5820 ;Fall into DELSTA to delay and read the status register
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 98
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5792   5821 
                     5793   5822 ;---Local Subroutine---------------------------------
                     5794   5823 ;Delay 5.89 mS times value specified in d, and return
@@ -6368,11 +5881,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5849   5878 	jmp	CABORT
                     5850   5879 
                     5851   5880 ;---RAM Subroutine--------------------------------------
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 99
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5852   5881 ;Read sector into RAM
                     5853   5882 ;This code gets moved into RAM at RDSEC
                     5854   5883 ;
@@ -6433,11 +5941,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5909   5938 movSec:	ldax	d		;read data byte
                     5910   5939 	mov	m,a		;save in buffer
                     5911   5940 	inx	h
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 100
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5912   5941 	adc	b		;update checksum
                     5913   5942 	mov	b,a
                     5914   5943 
@@ -6498,11 +6001,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5969   5998 ;hl=CTLORD+ORDSIN+ORDDS
                     5970   5999 ;-------------------------------------------------------
                     5971   6000 IWLOOP:	dcr	b		;Too many sectors?
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 101
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5972   6001 	jz	INFERR		;y: no index hole
                     5973   6002 
                     5974   6003 	call	WSECT1		;wait for next sector
@@ -6563,11 +6061,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6029   6058 ;or about 34 uS on a 4 MHz Z80
                     6030   6059 
                     6031   6060 	mvi	e,9
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 102
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6032   6061 STAL68:	dcr	e		;(5)
                     6033   6062 	jnz	STAL68		;(10)end with e=0
                     6034   6063 
@@ -6628,11 +6121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6089   6118 ;  Byte 512: CRC of Bytes 0-511
                     6090   6119 ;Bytes1-511 get written into RAM at <PA>01 through <PA+1>FF.
                     6091   6120 ; <PA> gets written to <PA>01 before getting overwritten by
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 103
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6092   6121 ; byte 1. Note that <PA>00 never gets written
                     6093   6122 ;------------------------------------------------------------
                     6094   6123 	ldax	d		;read 1st disk data byte
@@ -6693,11 +6181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6149   6178 
                     6150   6179 ;Fall into WSECTD
                     6151   6180 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 104
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6152   6181 ;---Local Subroutine---------------
                     6153   6182 ;Wait d sector times
                     6154   6183 ;On Entry:
@@ -6758,11 +6241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6209   6238 ;--------------------------
                     6210   6239 NSERR:	dcr	c		;More retries left?
                     6211   6240 	jnz	HOME		;y: try again
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 105
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6212   6241 
                     6213   6242 SNFERR:	call	CILPRT
                     6214   6243 	db	'Secto','r'+80h
@@ -6823,11 +6301,6 @@ fcad                6221   6250 T0STUK:T0FAIL:	call	CILPRT
                     6269   6298 	mvi	c,59h		;max 59 steps outward
                     6270   6299 	call	STEP
                     6271   6300 	jz	T0FAIL		;Can't find track 0
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 106
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6272   6301 
                     6273   6302 ;------------------------
                     6274   6303 ;Hunt for the boot sector
@@ -6888,11 +6361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6329   6358 ;Execute the loaded code
                     6330   6359 ;-----------------------
                     6331   6360 	jmp	EXEADR
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 107
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6332   6361 
                     6333   6362 ;--------------------------------
                     6334   6363 ;CRC fail: retry sector if we can
@@ -6953,11 +6421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6389   6418 	jmp	WSECTS		;n: Keep waiting
                     6390   6419 
                     6391   6420 ;---Error Routines---------
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 108
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6392   6421 ;These all repair the stack
                     6393   6422 ;and return to the prompt.
                     6394   6423 ;--------------------------
@@ -7018,11 +6481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6449   6478 	ana	d
                     6450   6479 	jnz	DNRERR		;Fail if not ready
                     6451   6480 	
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 109
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6452   6481 	mvi	a,STRAK0
                     6453   6482 	ana	d
                     6454   6483 	jz	T0FAIL		;Error if can't find home
@@ -7083,11 +6541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6509   6538  if VERSA2 or SALFDC
                     6510   6539 
                     6511   6540 	in	VDRSEL		;get drive sel, mini/maxi
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 110
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6512   6541 	ani	VWAIT xor 0FFh
                     6513   6542 
                     6514   6543  endif ;VERSA2 or SALFDC
@@ -7148,11 +6601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6569   6598 ;These all repair the stack
                     6570   6599 ;and return to the prompt.
                     6571   6600 ;On Entry:
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 111
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6572   6601 ;  b=error code
                     6573   6602 ;--------------------------
                     6574   6603 BOTERR:	call	CILPRT
@@ -7213,11 +6661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6629   6658 	ora	a		;Test for success
                     6630   6659 	jm	DNRERR		;Fail if not ready
                     6631   6660 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 112
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6632   6661 	in	TDSTAT		;controller status
                     6633   6662 	ani	STRAK0		;b is home error code too
                     6634   6663 	jz	T0FAIL		;Error if can't find home
@@ -7278,11 +6721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6689   6718 	jnz	RBRTRY
                     6690   6719 
                     6691   6720 ;Fall into BOTERR
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 113
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6692   6721 
                     6693   6722 ;---Error Routines---------
                     6694   6723 ;These all repair the stack
@@ -7343,11 +6781,6 @@ fcc0  c1            6747   6776 	pop	b
                     6749   6778 ;Fall into CPAUSE for Pause and abort opportunity
                     6750   6779 
                     6751   6780 ;***Subroutine**************************************
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 114
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6752   6781 ;Get a keyboard character, abort if control-C, pause
                     6753   6782 ;until the next keyboard character if anything else.
                     6754   6783 ;On Exit:
@@ -7408,11 +6841,6 @@ fcde  cd ee fc      6808   6837 GTPBYT:	call	GTPNIB		;get high nibble
 fce1  87            6809   6838 	add	a		;shift high nibble up
 fce2  87            6810   6839 	add	a
 fce3  87            6811   6840 	add	a
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 115
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fce4  87            6812   6841 	add	a
 fce5  47            6813   6842 	mov	b,a
 fce6  cd ee fc      6814   6843 	call	GTPNIB		;get low nibble
@@ -7473,11 +6901,6 @@ fd06  d0            6868   6897 	rnc
                     6869   6898 
                     6870   6899 ;Fall into CMDERR if no hex value provided
                     6871   6900 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 116
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6872   6901 ;*********************
                     6873   6902 ;command Error Handler
                     6874   6903 ;*********************
@@ -7538,11 +6961,6 @@ fd11  c9            6898   6927 	ret			;return to MAIN
 fd12  e5            6929   6958 GETLIN:	push	h
                     6930   6959 
                     6931   6960  if RAMHNT
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 117
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fd13  cd b3 fa      6932   6961 	call	RAMPAG		;get RAM address
 fd16  2e b0         6933   6962 	mvi	l,RAMBUF	;buffer location in page
                     6934   6963  endif ;RAMHNT
@@ -7603,11 +7021,6 @@ fd2c  13            6988   7017 	inx	d	;next scan address
 fd2d  c3 28 fd      6989   7018 	jmp	SSPACE	;keep skipping
                     6990   7019 
                     6991   7020 ;***Subroutine****************************************
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 118
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6992   7021 ;Get, echo, and store a Console character in the input
                     6993   7022 ;line buffer. Handle deletes and backspaces. This
                     6994   7023 ;assumes that the line buffer is all in one page. CR's
@@ -7668,11 +7081,6 @@ fd55  d0            7047   7076 	rnc			;error: return W/O carry
 fd56  d6 f6         7049   7078 	sui	0F6h		;add 0Ah, set Carry
 fd58  c9            7050   7079 	ret
                     7051   7080 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 119
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7052   7081 ;***Subroutine***********************************
                     7053   7082 ;Print CR LF, followed by inline message at (sp)
                     7054   7083 ;on Console. (CallS to CILPRT are followed by the
@@ -7733,11 +7141,6 @@ fd71  c9            7107   7136 	ret
                     7109   7138 ;***Subroutine***************************************
                     7110   7139 ;Test which port is the Transfer Port
                     7111   7140 ;On Entry:
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 120
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7112   7141 ;  sp points into the RAM page
                     7113   7142 ;  RAM page flag=0 for Console, <>0 for Transfer Port
                     7114   7143 ;On Exit:
@@ -7798,11 +7201,6 @@ fd8f  c9            7160   7189 	ret
                     7169   7198  if TPORT and TRXINT
                     7170   7199 	call	TPIDAI
                     7171   7200 	ani	7Fh		;strip parity
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 121
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7172   7201 	ret
                     7173   7202  endif ;TPORT and TRXINT
                     7174   7203 
@@ -7863,11 +7261,6 @@ fda4  fe            7226   7255 	db	0FEH
                     7229   7258 
                     7230   7259 ;***Subroutine********************************
                     7231   7260 ;Print m as 2 hex digits & accumulate checksum
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 122
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7232   7261 ;On Entry:
                     7233   7262 ;  (HL)=byte to print
                     7234   7263 ;  b=0 for Console, <>0 for Transfer Port
@@ -7928,11 +7321,6 @@ fdad  f5            7288   7317 PAHEX2:	push	psw		;save for low digit
                     7289   7318 	
 fdae  0f            7290   7319 	rrc			;move the high four down
 fdaf  0f            7291   7320 	rrc
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 123
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fdb0  0f            7292   7321 	rrc
 fdb1  0f            7293   7322 	rrc
 fdb2  cd b6 fd      7294   7323 	call	PAHEX1		;print high digit
@@ -7993,11 +7381,6 @@ fdcb  e6 01         7348   7377 	ani	CTXRDY		;wait for transmitter ready
                     7349   7378 
                     7350   7379  endif ;not CMEMAP
                     7351   7380 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 124
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7352   7381  if CMEMAP
                     7353   7382 PAWAIT:	lda	CSTAT
                     7354   7383 	ani	CTXRDY		;wait for transmitter ready
@@ -8058,11 +7441,6 @@ fdde  c9            7405   7434 	ret
                     7409   7438 ;On Exit:
                     7410   7439 ;  a=0 and Z set if nothing waiting
                     7411   7440 ;  a=FF and Z cleared if kbd chr waiting
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 125
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7412   7441 ;***************************************
 fddf                7413   7442 KSTAT:
                     7414   7443  if (not CMEMAP) and (not CRXINT)
@@ -8123,11 +7501,6 @@ fde9  e6 02         7468   7497 	ani	TRXRDY
 fdeb  c3 e3 fd      7469   7498 	jmp	DOSTAT
                     7470   7499  endif ;TPORT and (not TRXINT)
                     7471   7500 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 126
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7472   7501  if TPORT and TRXINT
                     7473   7502 	lda	TIFLAG
                     7474   7503 	ora	a	;a=0 or FF
@@ -8188,11 +7561,6 @@ fe01  3e 0d         7528   7557 TPCRLF:	mvi	a,CR		;CR,LF to Transfer Port
 fe03  cd 08 fe      7529   7558 	call	TPOUT
                     7530   7559 
 fe06  3e 0a         7531   7560 	mvi	a,LF
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 127
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7532   7561 
                     7533   7562 ;Fall into TPOUT
                     7534   7563 
@@ -8253,11 +7621,6 @@ fe1a  c9            7582   7611 	ret
                     7589   7618  endif ;TPORT and TMEMAP
                     7590   7619 
                     7591   7620 ;*************************
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 128
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7592   7621 ;8251 initialization table
                     7593   7622 ;*************************
                     7594   7623  if C8251 or T8251
@@ -8318,11 +7681,6 @@ fe1b  aa 40 4e 37   7596   7625 IN8251:	db	SI21,SI22,SI23,SI24
                     7649   7678  if BD384 and TSBAUD and ROM2K
                     7650   7679 	dw	TBD384	;9= 38400 baud
                     7651   7680 	db	38h,40h
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 129
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7652   7681  endif ;BD383 and TSBAUD and ROM2K
                     7653   7682 
                     7654   7683  if BD576 and TSBAUD and ROM2K
@@ -8383,11 +7741,6 @@ fe70  4f 54 20 70   7693   7737 	db 'OT p v',CR,LF
 fe74  20 76 0d 0a   7693   7738
                     7694   7739  endif ;HELPC
                     7695   7740 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 130
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7696   7741 ;Disk commands
                     7697   7742 
                     7698   7743  if HELPC and BOOTER
@@ -8448,11 +7801,6 @@ fe98  6f 5d 0d      7731   7780
                     7749   7798 
                     7750   7799  if (HELPC and TSBAUD and BD384) and not (BD576 or BD768)
                     7751   7800 	db '9'
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 131
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7752   7801  endif ;(HELPC and TSBAUD and BD384) and not (BD576 or BD768)
                     7753   7802 
                     7754   7803  if (HELPC and TSBAUD and BD576) and not BD768
@@ -8513,11 +7861,6 @@ febd  54 50         7806   7857 	db	'TP'		;Set Transfer Port
 febf  ec            7807   7858 	db	TPCMD-CMDBAS
                     7808   7859  endif ;TPORT
                     7809   7860 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 132
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01a0  =             7810   7861 VED	equ	VECMD-CMDBAS
 fec0  56 c5         7811   7862 	db	'V','E'+((VED/2) and 80h) ;verify
 fec2  a0            7812   7863 	db	VED and 0FFh
@@ -8578,11 +7921,6 @@ fedb  00            7858   7909 	db	0			;End of table mark
                     7867   7918  if CH85
                     7868   7919 CONINT:	push	psw		;onto MEMON's stack
                     7869   7920 
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 133
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7870   7921 ;Receive and enqueue a character, ignoring any overflow	
                     7871   7922 
                     7872   7923 	in	CDATA		;get chr now
@@ -8643,11 +7981,6 @@ fedc                7926   7977 ERROR: RAMHNT with a port that uses interrupts
                     7927   7978  endif ;RAMHNT and (ENINTS or CRXINT or TRXINT)
                     7928   7979 
                     7929   7980 ;==========================================
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 134
-Source file: memon80.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     7930   7981 ;Create an assembly error if any of the
                     7931   7982 ;command execution routines is out of range
                     7932   7983 ;==========================================
@@ -8666,96 +7999,74 @@ fedc                7944   7995 ERROR: code is larger than available EPROM space
                     7945   7996  endif ;(not RAMCOD) and ((CODEND-MEBASE-1)/ROMSIZ)
                     7946   7997 
 fedc                7947   7998 	END
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 135
-Source file: memon80.asm
-Title:       Symbol table
 
-A88DCD   0000 	A88MCD   0000 	ADLOOP   f9ed 	BD192    0000 	
-BD384    0000 	BD576    0000 	BD768    0000 	BOCMD    f908 	
-BOD      0042 	BOOTER   ffff 	BOTERR   fc92*	BS       0008 	
-C16FDC   0000 	C4FDC    0000 	C64FDC   0000 	C6850    0000 	
-C8250    0000 	C8251    ffff 	CA2SIO   0000 	CABKEY   0003 	
-CABORT   fd0b 	CALSIO   0000 	CB8251   0002 	CBASE    0002 	
-CBAUD    0009 	CBD18    0000 	CBITS1   0000 	CBITS2   0000 	
-CC2422   0000 	CC2718A  0000 	CC2718B  0000 	CC2719A  0000 	
-CC2719B  0000 	CC2810   0000 	CCFDCS   0000 	CCTRL    0003 	
-CDATA    0002 	CECMD    f8c6 	CER2IO   0000 	CH84     0000 	
-CH85     0000 	CHKKBD   fcd1 	CIFAC    0000 	CIFAC2   0000 	
-CIFLAG   008f*	CILPRT   fd59 	CISIO2A  ffff 	CISIO2B  0000 	
-CISTAT   0000 	CIVIO2   0000 	CJADSP   0000 	CLLOOP   fabe 	
-CMDBAS   f8c6 	CMDERR   fd07 	CMDUBLR  0000 	CMEMAP   0000 	
-CML1     fbb4 	CML2     fbbc 	CML3     fbc1 	CMLOOP   fba8 	
-CMPERR   fbdb 	COCMD    fa6d 	COD      01a7 	CODEND   fedc 	
-COLOOP   fa85 	COMBUF   0080 	COMTAB   fea8 	CORLUP   fa7e 	
-CORPT    ffff 	CPAUSE   fcc1 	CPT3PS   0000 	CPUMHZ   0004*	
-CR       000d 	CRXBUF   008e*	CRXINT   0000 	CRXRDY   0002 	
-CSAL21   0000 	CSBAUD   0000 	CSIO5    0000 	CSMERR   fc1c 	
-CSTAT    0003 	CTARBL   0000 	CTRLC    0003 	CTUART   0000 	
-CTXMTY   0004*	CTXRDY   0001 	CWIOB1   0000 	DART     0000 	
-DEL      007f 	DIBASE   00fd 	DLDONE   f9db 	DMBASE   0000*	
-DNOPAD   f9ec 	DOSTAT   fde3 	DPLOOP   f9e2 	DTEXIT   0003 	
-DUCMD    f9b9 	DULINE   f9c0 	DULOOP   f9c5 	DUPRTY   ffff 	
-ENCMD    f916 	ENINTS   0000 	ENLOOP   f91d 	EXCMD    f99f 	
-EXECDP   f9a4*	EXOPT    ffff 	EXSTK    f9ab 	FALSE    0000 	
-FHEXLP   f8a5 	FICMD    f92d 	FIL0     fb7d 	FIL1     fb89 	
-FIL2     fb91 	FIL3     fb99 	FILOOP   f93a 	FNDHEX   f8a2*	
-FSEND    f83f 	FSLOOP   f832 	FXHL1    f8b4 	GBOCMD   fc47 	
-GCECMD   fab8 	GETCOL   fa0f 	GETCSM   fa4a 	GETHEX   fd02 	
-GETHX2   fcfe 	GETKBD   fcc5 	GETLIN   fd12 	GETTPD   fd7c 	
-GHELP    fe1f 	GLLOOP   fd19 	GMTCMD   fb63 	GSECMD   fad5 	
-GTPBYT   fcde 	GTPLUP   fd82 	GTPNIB   fcee 	H17R     0000 	
-HDCMD    f946 	HDD      0080 	HDELUP   fdf9 	HDEOF    fdf7 	
-HDLIN1   f95e 	HDLINE   f94b 	HDLOOP   f96d 	HDRLEN   0010 	
-HELP     f8ff 	HELPC    ffff 	HEXCON   fd4c 	HLCMD    fa0a 	
-HLD      0144 	HLHDR    fa1a 	HLLOOP   fa36 	HLRECS   ffff 	
-HUNTA    00b0 	IBCMD    0080 	IBSECT   0084*	IBSTAT   0081 	
-IBTRK    0082*	IBUFAD   0085*	IDISK    00fd 	IDWAIT   fc6c 	
-IEXEC0   0000*	IFIF     ffff 	ILPRNT   fd5d 	IMD8R    0000 	
-IMDMR    0000 	IN8251   fe1b 	INCMD    f982 	INIT     f81f 	
-IOCMD    f99b 	IPLOOP   fd5e 	IRDSEC   0021 	IRESTR   0021 	
-ISSPTR   0010 	ISUCCS   0001 	JMPBOT   ffff 	KDATA    fdd4 	
-KSTAT    fddf 	LBCHR    fd30 	LBSIZE   0050 	LDELET   fd40 	
-LF       000a 	LOWERC   ffff 	MAIN     f86a 	MAXTRYS  0010 	
-MDUBLR   0000 	MEBASE   f800 	MECIN    f809*	MECOUT   f80c*	
-MECSTA   f806*	MEINIT   f800*	MEMERR   fc2e 	METPDI   f815*	
-METPDO   f812*	METPSI   f80f*	METPSO   f818*	MEWARM   f803 	
-MICROP   0000 	MICROR   0000 	MTCMD    f902 	MTLOOP   fb79 	
-MTPAT    fbfe 	NOMTCH   fb32 	NSTARD   0000 	NSTARS   0000 	
-NSTRDR   0000 	NSTRSR   0000 	NXTCOM   f87c 	OTCMD    f992 	
-OVMERR   fc25 	PAHCSM   fda6 	PAHEX1   fdb6 	PAHEX2   fdad 	
-PAWAIT   fdc9 	PBODA1   fe11 	PBODAT   fe10 	PCAHEX   fdab 	
-PCCOLS   fd97 	PCFIER   002e 	PHFHEX   f8a0 	PHLADR   fd90 	
-PHLCHX   fd9d 	PHLHEX   fd9f 	PMHCSM   fda5 	PNIB1    fdc1 	
-PRINTA   fdc8 	PRINTC   fdc7 	PRNTBL   f9f8 	PROMPT   003e 	
-QUOTE    0027 	RAMBEG   008f 	RAMBUF   00b0 	RAMCOD   0000 	
-RAMEND   ffff 	RAMHNT   ffff 	RAMPAG   fab3 	RBR1     fc8a 	
-RBRTRY   fc65 	ROM2K    ffff 	ROMSIZ   0800 	RPTERR   fc34 	
-SALFDC   0000 	SCHHEX   fb54 	SCHLUP   fadf 	SECMD    f905 	
-SED      003f 	SI21     00aa 	SI22     0040 	SI23     004e 	
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 13:21:17 2022	Page 136
-Source file: memon80.asm
-Title:       Symbol table
+Symbol table
 
-SI24     0037 	SI2LUP   f822 	SIOCTL   0008 	SLOOP1   faf3 	
-SLOOP2   faf6 	SSPACE   fd28 	SSTRNG   fb47 	STACK    00b0 	
-STKSIZ   0020 	STLOOP   fb48 	T5511    0000 	T6850    0000 	
-T8250    0000 	T8251    ffff 	TA2SIO   0000 	TALSIO   0000 	
-TARBL1   0000 	TARBL2   0000 	TB8251   0022 	TBASE    0022 	
-TBAUD    000a 	TBD      0000 	TBD18    0000 	TBITS1   0000 	
-TBITS2   0000 	TC2718A  0000 	TC2718B  0000 	TC2719A  0000 	
-TC2719B  0000 	TC2810   0000 	TCFDCS   0000 	TCTRL    0023 	
-TDATA    0022 	TECMD    f8c9 	TER2IO   0000 	TESTTP   fd72 	
-TH84     0000 	TH85     0000 	TIFAC    0000 	TIFAC2   0000 	
-TIFLAG   008d*	TISIO2A  ffff 	TISIO2B  0000 	TISTAT   0000 	
-TIVIO2   0000 	TJADSP   0000 	TLOOP    f8e7 	TMDUBLR  0000 	
-TMEMAP   0000 	TMNL1    f8db 	TMRCTC   0000 	TPCMD    f9b2 	
-TPCRLF   fe01 	TPDATC   fe0f 	TPIDAT   fdee 	TPISTA   fde7 	
-TPORT    ffff 	TPOSTA   f818 	TPOUT    fe08 	TPT3PS   0000 	
-TRUE     ffff 	TRXBUF   008c*	TRXINT   0000 	TRXRDY   0002 	
-TSAL21   0000 	TSBAUD   0000 	TSIO5    0000 	TSTAT    0023 	
-TTARBL   0000 	TTUART   0000 	TTXMTY   0004*	TTXRDY   0001 	
-TWIOB1   0000 	UCMDEI   0036*	UCMDEN   0037 	UCMDRE   0040 	
-UMOD16   004e 	USAREA   0100 	VECMD    fa66 	VED      01a0 	
-VELOOP   faa6 	VERIFY   fa98 	VERROR   fcad 	VERSA1   0000 	
-VERSA2   0000 	VERSION  0026 	WBOOT    0000 	WBOOTA   0001 	
-WD179X   0000 	
+A88DCD  0000    A88MCD  0000    ADLOOP  f9ed    BD192   0000    BD384   0000 
+BD576   0000    BD768   0000    BOCMD   f908    BOD     0042    BOOTER  ffff 
+BOTERR  fc92*   BS      0008    C16FDC  0000    C4FDC   0000    C64FDC  0000 
+C6850   0000    C8250   0000    C8251   ffff    CA2SIO  0000    CABKEY  0003 
+CABORT  fd0b    CALSIO  0000    CB8251  0002    CBASE   0002    CBAUD   0009 
+CBD18   0000    CBITS1  0000    CBITS2  0000    CC2422  0000    CC2718A 0000 
+CC2718B 0000    CC2719A 0000    CC2719B 0000    CC2810  0000    CCFDCS  0000 
+CCTRL   0003    CDATA   0002    CECMD   f8c6    CER2IO  0000    CH84    0000 
+CH85    0000    CHKKBD  fcd1    CIFAC   0000    CIFAC2  0000    CIFLAG  008f*
+CILPRT  fd59    CISIO2A ffff    CISIO2B 0000    CISTAT  0000    CIVIO2  0000 
+CJADSP  0000    CLLOOP  fabe    CMDBAS  f8c6    CMDERR  fd07    CMDUBLR 0000 
+CMEMAP  0000    CML1    fbb4    CML2    fbbc    CML3    fbc1    CMLOOP  fba8 
+CMPERR  fbdb    COCMD   fa6d    COD     01a7    CODEND  fedc    COLOOP  fa85 
+COMBUF  0080    COMTAB  fea8    CORLUP  fa7e    CORPT   ffff    CPAUSE  fcc1 
+CPT3PS  0000    CPUMHZ  0004*   CR      000d    CRXBUF  008e*   CRXINT  0000 
+CRXRDY  0002    CSAL21  0000    CSBAUD  0000    CSIO5   0000    CSMERR  fc1c 
+CSTAT   0003    CTARBL  0000    CTRLC   0003    CTUART  0000    CTXMTY  0004*
+CTXRDY  0001    CWIOB1  0000    DART    0000    DEL     007f    DIBASE  00fd 
+DLDONE  f9db    DMBASE  0000*   DNOPAD  f9ec    DOSTAT  fde3    DPLOOP  f9e2 
+DTEXIT  0003    DUCMD   f9b9    DULINE  f9c0    DULOOP  f9c5    DUPRTY  ffff 
+ENCMD   f916    ENINTS  0000    ENLOOP  f91d    EXCMD   f99f    EXECDP  f9a4*
+EXOPT   ffff    EXSTK   f9ab    FALSE   0000    FHEXLP  f8a5    FICMD   f92d 
+FIL0    fb7d    FIL1    fb89    FIL2    fb91    FIL3    fb99    FILOOP  f93a 
+FNDHEX  f8a2*   FSEND   f83f    FSLOOP  f832    FXHL1   f8b4    GBOCMD  fc47 
+GCECMD  fab8    GETCOL  fa0f    GETCSM  fa4a    GETHEX  fd02    GETHX2  fcfe 
+GETKBD  fcc5    GETLIN  fd12    GETTPD  fd7c    GHELP   fe1f    GLLOOP  fd19 
+GMTCMD  fb63    GSECMD  fad5    GTPBYT  fcde    GTPLUP  fd82    GTPNIB  fcee 
+H17R    0000    HDCMD   f946    HDD     0080    HDELUP  fdf9    HDEOF   fdf7 
+HDLIN1  f95e    HDLINE  f94b    HDLOOP  f96d    HDRLEN  0010    HELP    f8ff 
+HELPC   ffff    HEXCON  fd4c    HLCMD   fa0a    HLD     0144    HLHDR   fa1a 
+HLLOOP  fa36    HLRECS  ffff    HUNTA   00b0    IBCMD   0080    IBSECT  0084*
+IBSTAT  0081    IBTRK   0082*   IBUFAD  0085*   IDISK   00fd    IDWAIT  fc6c 
+IEXEC0  0000*   IFIF    ffff    ILPRNT  fd5d    IMD8R   0000    IMDMR   0000 
+IN8251  fe1b    INCMD   f982    INIT    f81f    IOCMD   f99b    IPLOOP  fd5e 
+IRDSEC  0021    IRESTR  0021    ISSPTR  0010    ISUCCS  0001    JMPBOT  ffff 
+KDATA   fdd4    KSTAT   fddf    LBCHR   fd30    LBSIZE  0050    LDELET  fd40 
+LF      000a    LOWERC  ffff    MAIN    f86a    MAXTRYS 0010    MDUBLR  0000 
+MEBASE  f800    MECIN   f809*   MECOUT  f80c*   MECSTA  f806*   MEINIT  f800*
+MEMERR  fc2e    METPDI  f815*   METPDO  f812*   METPSI  f80f*   METPSO  f818*
+MEWARM  f803    MICROP  0000    MICROR  0000    MTCMD   f902    MTLOOP  fb79 
+MTPAT   fbfe    NOMTCH  fb32    NSTARD  0000    NSTARS  0000    NSTRDR  0000 
+NSTRSR  0000    NXTCOM  f87c    OTCMD   f992    OVMERR  fc25    PAHCSM  fda6 
+PAHEX1  fdb6    PAHEX2  fdad    PAWAIT  fdc9    PBODA1  fe11    PBODAT  fe10 
+PCAHEX  fdab    PCCOLS  fd97    PCFIER  002e    PHFHEX  f8a0    PHLADR  fd90 
+PHLCHX  fd9d    PHLHEX  fd9f    PMHCSM  fda5    PNIB1   fdc1    PRINTA  fdc8 
+PRINTC  fdc7    PRNTBL  f9f8    PROMPT  003e    QUOTE   0027    RAMBEG  008f 
+RAMBUF  00b0    RAMCOD  0000    RAMEND  ffff    RAMHNT  ffff    RAMPAG  fab3 
+RBR1    fc8a    RBRTRY  fc65    ROM2K   ffff    ROMSIZ  0800    RPTERR  fc34 
+SALFDC  0000    SCHHEX  fb54    SCHLUP  fadf    SECMD   f905    SED     003f 
+SI21    00aa    SI22    0040    SI23    004e    SI24    0037    SI2LUP  f822 
+SIOCTL  0008    SLOOP1  faf3    SLOOP2  faf6    SSPACE  fd28    SSTRNG  fb47 
+STACK   00b0    STKSIZ  0020    STLOOP  fb48    T5511   0000    T6850   0000 
+T8250   0000    T8251   ffff    TA2SIO  0000    TALSIO  0000    TARBL1  0000 
+TARBL2  0000    TB8251  0022    TBASE   0022    TBAUD   000a    TBD     0000 
+TBD18   0000    TBITS1  0000    TBITS2  0000    TC2718A 0000    TC2718B 0000 
+TC2719A 0000    TC2719B 0000    TC2810  0000    TCFDCS  0000    TCTRL   0023 
+TDATA   0022    TECMD   f8c9    TER2IO  0000    TESTTP  fd72    TH84    0000 
+TH85    0000    TIFAC   0000    TIFAC2  0000    TIFLAG  008d*   TISIO2A ffff 
+TISIO2B 0000    TISTAT  0000    TIVIO2  0000    TJADSP  0000    TLOOP   f8e7 
+TMDUBLR 0000    TMEMAP  0000    TMNL1   f8db    TMRCTC  0000    TPCMD   f9b2 
+TPCRLF  fe01    TPDATC  fe0f    TPIDAT  fdee    TPISTA  fde7    TPORT   ffff 
+TPOSTA  f818    TPOUT   fe08    TPT3PS  0000    TRUE    ffff    TRXBUF  008c*
+TRXINT  0000    TRXRDY  0002    TSAL21  0000    TSBAUD  0000    TSIO5   0000 
+TSTAT   0023    TTARBL  0000    TTUART  0000    TTXMTY  0004*   TTXRDY  0001 
+TWIOB1  0000    UCMDEI  0036*   UCMDEN  0037    UCMDRE  0040    UMOD16  004e 
+USAREA  0100    VECMD   fa66    VED     01a0    VELOOP  faa6    VERIFY  fa98 
+VERROR  fcad    VERSA1  0000    VERSA2  0000    VERSION 0026    WBOOT   0000 
+WBOOTA  0001    WD179X  0000    

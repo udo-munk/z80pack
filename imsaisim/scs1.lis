@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 1
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:59:44 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1         TITLE           'IMSAI SCS-1 REV. 2 06 OCT. 1976'
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       58     58 ;
 0067  31 b2 10        59     59 EOR:    LXI     SP,AREA+18
 006a  cd 0e 01        60     60         CALL    CRLF            ;PRINT C/R, LINE FEED
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 2
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 006d  cd 80 00        61     61         CALL    READ            ;READ INPUT LINE
 0070  23              62     62         INX     H
 0071  7e              63     63         MOV     A,M             ;FETCH FIRST CHARACTER
@@ -128,11 +121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00ce  d2 88 00       118    118         JNC     NEXT
 00d1  47             119    119         MOV     B,A
 00d2  cd 03 01       120    120         CALL    OUT8            ;ECHO CHARACTER
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 3
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00d5  70             121    121         MOV     M,B
 00d6  3e 18          122    122         MVI     A,IBUF+81 AND 00FFH
 00d8  bd             123    123         CMP     L               ;CHECK FOR END OF LINE
@@ -193,11 +181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 011d  cd 03 01       178    178         CALL    OUT8
 0120  c9             179    179         RET
                      180    180 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 4
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      181    181 ; THIS ROUTINE JUMPS TO A LOCATION IN MEMORY GIVEN BY
                      182    182 ; THE INPUT COMMAND AND BEGINS EXECUTION OF PROGRAM
                      183    183 ; THERE.
@@ -258,11 +241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0153  1a             238    238 SEAR:   LDAX    D               ;FETCH CHARACTER
 0154  be             239    239         CMP     M               ;COMPARE CHARACTERS
 0155  c2 5f 01       240    240         JNZ     INCA
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 5
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0158  23             241    241         INX     H
 0159  13             242    242         INX     D
 015a  0d             243    243         DCR     C               ;DECREMENT CHARACTER COUNT
@@ -323,11 +301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01a4  23             298    298 VAL2:   INX     H
 01a5  7e             299    299         MOV     A,M
 01a6  fe 2f          300    300         CPI     '/'
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 6
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01a8  ca b4 01       301    301         JZ      VAL3
 01ab  0d             302    302         DCR     C
 01ac  fa 5a 04       303    303         JM      WHAT
@@ -388,11 +361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 020a  29             358    358         DAD     H               ;TIMES TWO
 020b  19             359    359         DAD     D               ;ADD IN ORIGINAL VALUE
 020c  29             360    360         DAD     H               ;TIMES TWO
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 7
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 020d  d6 30          361    361         SUI     48              ;ASCII BIAS
 020f  fe 0a          362    362         CPI     10              ;CHECK FOR LEGAL VALUE
 0211  3f             363    363         CMC
@@ -453,11 +421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0250  c9             418    418         RET
                      419    419 ;
                      420    420 ; THIS ROUTINE CONVERTS A BINARY VALUE TO ASCII
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 8
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      421    421 ; DECIMAL DIGITS AND OPTPUTS THE CHARACTERS TO THE TTY
                      422    422 ;
                      423    423 
@@ -518,11 +481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0293  78             478    478         MOV     A,B
 0294  cd 99 02       479    479         CALL    BIN1            ;CONVERT TO ASCII
 0297  77             480    480         MOV     M,A
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 9
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0298  c9             481    481         RET
                      482    482 ;
                      483    483 ; THIS ROUTINE CONVERTS A VALUE TO HEXADECIMAL
@@ -583,11 +541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      538    538 ;
                      539    539 ; THIS ROUTINE CHECKS IF ANY PARAMETERS WERE ENTERED
                      540    540 ; WITH THE COMMAND, IF NOT AN ERROR MESSAGE IS ISSUED
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 10
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      541    541 ;
 0300  3a 7e 10       542    542 VCHK:   LDA     ABUF            ;FETCH PARAMETER BYTE
 0303  b7             543    543         ORA     A               ;SET FLAGS
@@ -648,11 +601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0356  3a 7d 10       598    598         LDA     FEF
 0359  b7             599    599         ORA     A
 035a  c2 78 03       600    600         JNZ     ROOM
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 11
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 035d  21 6b 04       601    601         LXI     H,EMES1
 0360  c3 60 04       602    602         JMP     MESS
                      603    603 ; ENTRY FOUND ARE THESE PARAMETERS
@@ -713,11 +661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03c3  0e 01          658    658 FOOT:   MVI     C,1
                      659    659 ; OUTPUT THE # OF ENTRIES IN C
 03c5  21 24 10       660    660 FOUL:   LXI     H,FILE0
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 12
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03c8  79             661    661         MOV     A,C
 03c9  32 7d 10       662    662 FINE:   STA     FOCNT           ;SAVE COUNT
 03cc  e5             663    663         PUSH    H
@@ -778,11 +721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      718    718 ; ZERO, SET FEF TO >0 AND FREAD TO THE ADDR OF ENTRY
                      719    719 ;
 0418  af             720    720 FSEA:   XRA     A
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 13
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0419  32 7d 10       721    721         STA     FEF             ;CLAIM NO FREE ENTRIES
 041c  06 06          722    722         MVI     B,MAXFIL        ;COUNT OF ENTRIES
 041e  11 24 10       723    723         LXI     D,FILE0         ;TABLE ADDRESS
@@ -843,11 +781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      776    778 ;
                      777    779 ; THIS ROUTINE IS USED TO ENTER DATA VALUES INTO MEMORY.
                      778    780 ; EACH VALUE IS ONE BYTE AND IS WRITTEN IN HEXADECIMAL
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 14
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      779    781 ; VALUES GREATER THAN 255 WILL CAUSE CARRY TO BE SET
                      780    782 ; AND RETURN TO BE MADE TO CALLING PROGRAM
                      781    783 ;
@@ -908,11 +841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04d1  22 74 10       836    838         SHLD    ADDS            ;FIND ADDRESS
 04d4  11 30 10       837    839         LXI     D,MAXL+3                ;GET ADDRESS
 04d7  cd a2 05       838    840         CALL    COM0
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 15
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04da  d2 fa 04       839    841         JNC     INSR
                      840    842 ; GET HERE IF NEW LINE IS GREATER THAN MAXIMUM LINE #
 04dd  23             841    843         INX     H
@@ -973,11 +901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0546  cd 80 05       896    898         CALL    LMOV            ;PLACE LINE IN FILE
 0549  c3 67 00       897    899         JMP     EOR
                      898    900 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 16
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      899    901 ; THIS ROUTINE IS USED TO FIND A LN IN THE FILE AREA
                      900    902 ; WHICH IS GREATER THAN OR EQUAL TO THE CURRENT LINE #
                      901    903 ;
@@ -1038,11 +961,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      956    958 ; CHARACTER ADDRESS IS DECREMENTED AFTER EACH FETCH
                      957    959 ; AND STORE
                      958    960 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 17
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0589  1a             959    961 RMOV:   LDAX    D               ;FETCH CHARACTER
 058a  1b             960    962         DCX     D               ;DECREMENT FETCH CHARACTER
 058b  b9             961    963         CMP     C               ;TERMINATION CHARACTER
@@ -1103,11 +1021,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05b5  0e 04         1016   1018 COM1:   MVI     C,4             ;STRING LENGTH
 05b7  1a            1017   1019         LDAX    D               ;TCH CHARACTER
 05b8  d6 01         1018   1020         SUI     1
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 18
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05ba  c3 a8 05      1019   1021         JMP     CO1+1
                     1020   1022 ;
                     1021   1023 ; THIS ROUTINE WILL TAKE ASCII CHARACTERS AND ADD ANY
@@ -1168,11 +1081,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0617  2b            1076   1078         DCX     H               ;CHECK FOR BOFP
 0618  7d            1077   1079 DEL2:   MOV     A,L
 0619  93            1078   1080         SUB     E
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 19
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 061a  7c            1079   1081         MOV     A,H
 061b  9a            1080   1082         SBB     D
 061c  3e 0d         1081   1083         MVI     A,ASCR          ;LOOK FOR CR
@@ -1233,11 +1141,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0683  22 92 10      1136   1138         SHLD    ASPC            ;INITIALIZE PC
 0686  2a 29 10      1137   1139         LHLD    BOFP            ;GET START OF FILE
 0689  22 72 10      1138   1140         SHLD    APNT
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 20
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 068c  2a 72 10      1139   1141 ASM1:   LHLD    APNT            ;FETCH LINE POINTER
 068f  31 b2 10      1140   1142         LXI     SP,AREA+18
 0692  7e            1141   1143         MOV     A,M             ;FETCH CHARACTER
@@ -1298,11 +1201,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06f4  da df 0a      1196   1198         JC      OP5             ;ERROR IN LABEL
 06f7  ca c7 0c      1197   1199         JZ      ERRD            ;DUPLICATE LABEL
 06fa  cd 35 07      1198   1200         CALL    LCHK            ;CHECK CHARACTER AFTER LABEL
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 21
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06fd  c2 df 0a      1199   1201         JNZ     OP5             ;ERROR IF NO BLANK
 0700  0e 05         1200   1202         MVI     C,LLAB          ;LENGTH OF LABELS
 0702  21 7e 10      1201   1203         LXI     H,ABUF          ;SET BUFFER ADDRESS
@@ -1363,11 +1261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 075d  c3 f5 0a      1256   1258         JMP     OCN1            ;ADD VALUE TO PROGRAM COUNTER
                     1257   1259 ; DO ORG PSUEDO OP
 0760  cd 97 0b      1258   1260 ORG1:   CALL    ASCN            ;GET OPERAND
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 22
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0763  3a b2 10      1259   1261         LDA     OBUF            ;FETCH ERROR INDICATOR
 0766  fe 20         1260   1262         CPI     ' '             ;CHECK FOR AN ERROR
 0768  c0            1261   1263         RNZ
@@ -1428,11 +1321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07ca  ca 0c 08      1316   1318         JZ      ORG2            ;ORG OPCODE
 07cd  fa f1 07      1317   1319         JM      DAT2            ;DATA OPCODE
 07d0  e2 fa 07      1318   1320         JPO     EQU2            ;EQUATE PSEUDO-OP
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 23
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07d3  fe 05         1319   1321         CPI     5
 07d5  da e1 07      1320   1322         JC      RES2            ;RES OPCODE
 07d8  c2 01 09      1321   1323         JNZ     EASS            ;END OPCODE
@@ -1493,11 +1381,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1376   1378 ;
                     1377   1379 ; PROCESS 1 BYTE INSTRUCTIONS WITHOUT OPERANDS
                     1378   1380 ;
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 24
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 082d  cd ee 08      1379   1381 TYP1:   CALL    ASTO            ;STORE VALUE IN MEMORY
 0830  c9            1380   1382         RET
                     1381   1383 ;
@@ -1558,11 +1441,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 088c  c4 81 0c      1436   1438         CNZ     ERRR            ;INCREMENT POINTER
 088f  7d            1437   1439         MOV     A,L
 0890  fe 08         1438   1440         CPI     8
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 25
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0892  d4 81 0c      1439   1441         CNC     ERRR            ;ILLEGAL REGISTER
 0895  c3 58 08      1440   1442         JMP     TY32
                     1441   1443 ;
@@ -1623,11 +1501,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08ed  c9            1496   1498         RET
                     1497   1499 ;
                     1498   1500 ; THIS ROUTINE IS USED TO STORE OBJECT CODE PRODUCED
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 26
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1499   1501 ; BY THE ASSEMBLER DURING PASS 2 INTO MEMORY
                     1500   1502 ;
 08ee  2a 8c 10      1501   1503 ASTO:   LHLD    BBUF+2          ;FETCH STORAGE ADDRESS
@@ -1688,11 +1561,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0935  ff            1556   1558         DB      -1 AND 0FFH
 0936  44 53         1557   1559         DB      'DS'
 0938  00            1558   1560         DB      0
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 27
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0939  00            1559   1561         DB      0
 093a  03            1560   1562         DB      3
 093b  44 57         1561   1563         DB      'DW'
@@ -1753,11 +1621,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09a4  c1            1616   1618         DB      193
 09a5  49 4e 58      1617   1619         DB      'INX'
 09a8  00            1618   1620         DB      0
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 28
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09a9  03            1619   1621         DB      3
 09aa  44 43 58      1620   1622         DB      'DCX'
 09ad  00            1621   1623         DB      0
@@ -1818,11 +1681,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a13  4a 4d 50      1676   1678         DB      'JMP'
 0a16  00            1677   1679         DB      0
 0a17  c3            1678   1680         DB      195
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 29
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a18  43 41 4c 4c   1679   1681         DB      'CALL'
 0a1c  cd            1680   1682         DB      205
 0a1d  4c 58 49      1681   1683         DB      'LXI'
@@ -1883,11 +1741,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1736   1738 ; AND PASS 2.  IN PASS 1 THE PROGRAM COUNTER IS INCRE-
                     1737   1739 ; MENTED BY THE CORRECT NUMBER OF BYTES.  AN ADDRESS IS
                     1738   1740 ; ALSO SET SO THAT AN INDEXED JUMP CAN BE MADE TO
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 30
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1739   1741 ; PROCESS THE OPCODE FOR PASS 2.
                     1740   1742 ;
 0a65  21 7e 10      1741   1743 OPCD:   LXI     H,ABUF          ;GET ADDRESS
@@ -1948,11 +1801,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0adb  7a            1796   1798 OPAD:   MOV     A,D             ;GET OPCODE
 0adc  21 ce 08      1797   1799 OP4:    LXI     H,TYP6
 0adf  0e 03         1798   1800 OP5:    MVI     C,3             ;3 BYTE INSTRUCTION
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 31
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ae1  32 9d 10      1799   1801 OCNT:   STA     TEMP            ;SAVE OPCODE
                     1800   1802 ;
                     1801   1803 ; CHECK FOR OPCODE ONLY CONTAINING THE CORRECT NUMBER OF
@@ -2013,11 +1861,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1856   1858 ; CHECK IF PREFEFINED REGISTER NAME
 0b34  04            1857   1859         INR     B               ;SET B=1
 0b35  11 60 0b      1858   1860         LXI     D,RTAB          ;REGISTER NAME TABLE
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 32
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b38  cd 50 0a      1859   1861         CALL    COPC            ;CHECK NAME OF REGISTER
 0b3b  c2 44 0b      1860   1862         JNZ     SLA1            ;NOT A PREFEFINED REGIGTER
 0b3e  6f            1861   1863         MOV     L,A             ;SET VALUE (HIGH)
@@ -2078,11 +1921,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b7d  13            1916   1918         INX     D               ;INCREMENT BUFFER
 0b7e  23            1917   1919         INX     H               ;INCREMENT INPUT POINTER
 0b7f  22 96 10      1918   1920         SHLD    PNTR            ;SAVE LINE POINTER
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 33
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0b82  7e            1919   1921         MOV     A,M             ;FETCH CHARACTER
 0b83  fe 30         1920   1922         CPI     '0'             ;CHECK FOR ILLEGAL CHARACTERS
 0b85  d8            1921   1923         RC
@@ -2143,11 +1981,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0bf1  11 00 00      1976   1978         LXI     D,0             ;GET A ZERO
 0bf4  0e 03         1977   1979         MVI     C,3             ;CHARACTER COUNT
 0bf6  23            1978   1980 ASC4:   INX     H               ;BUMP POINTER
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 34
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0bf7  22 96 10      1979   1981         SHLD    PNTR            ;SAVE
 0bfa  7e            1980   1982         MOV     A,M             ;FETCH NEXT CHARACTER
 0bfb  fe 0d         1981   1983         CPI     ASCR            ;IS IT A CARRIAGE RETURN?
@@ -2208,11 +2041,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2036   2038 ; DECIMAL.  ON RETURN, CARRY SET INDICATES AN ERROR.
                     2037   2039 ;
 0c63  cd 75 0b      2038   2040 NUMS:   CALL    ALPS            ;GET NUMERIC
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 35
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c66  1b            2039   2041         DCX     D
 0c67  1a            2040   2042         LDAX    D               ;GET LAST CHARACTER
 0c68  01 7e 10      2041   2043         LXI     B,ABUF          ;SET BUFFER ADDRESS
@@ -2273,11 +2101,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0caf  32 b2 10      2096   2098         STA     OBUF            ;STORE IN OUTPUT BUFFER
 0cb2  3a 94 10      2097   2099         LDA     PASI            ;FETCH PASS INDICATOR
 0cb5  b7            2098   2100         ORA     A               ;WHICH PASS
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 36
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0cb6  c8            2099   2101         RZ                      ;RETURN IF PASS 1
 0cb7  0e 03         2100   2102         MVI     C,3             ;NEED 3 BYTES
 0cb9  af            2101   2103 ERO1:   XRA     A               ;GET A ZERO
@@ -2338,11 +2161,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d0d  21 2e 0d      2156   2158         LXI     H,BRKP
 0d10  22 09 00      2157   2159         SHLD    9
 0d13  c9            2158   2160         RET                     ;THEN RETURN
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 37
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2159   2161 ;
                     2160   2162 ; THIS ROUTINE CLEARS ALL BREAKPOINTS
                     2161   2163 ;
@@ -2403,11 +2221,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2216   2218 ;
 0d68  23            2217   2219 BL3:    INX     H
 0d69  7e            2218   2220         MOV     A,M             ;GET INSTR BYTE
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 38
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d6a  12            2219   2221         STAX    D               ;PUT IT BACK
 0d6b  af            2220   2222         XRA     A               ;CLEAR ENTRY IN TABLE
 0d6c  2b            2221   2223         DCX     H
@@ -2468,11 +2281,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1072  =             2275   2278 DELP    EQU     INSP
 000d  =             2276   2279 ASCR    EQU     13
 1074                2277   2280 HCON:   DS      2
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 39
-Source file: scs1.asm
-Title:       IMSAI SCS-1 REV. 2 06 OCT. 1976
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1074  =             2278   2281 ADDS    EQU     HCON
 1076                2279   2282 FBUF:   DS      NMLEN
 107b                2280   2283 FREAD:  DS      2
@@ -2504,83 +2312,64 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00ff  =             2306   2309 SWCH    EQU     0FFH
 111a  =             2307   2310 SYMT    EQU     $
 111a                2308   2311         END
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 40
-Source file: scs1.asm
-Title:       Symbol table
 
-ABUF     107e 	ACH1     0275 	ACHK     0263 	ACO1     075a 	
-ACO2     07db*	ADDS     1074 	ADE1     0204 	ADEC     0201 	
-ADR      057b 	AERR     108e 	AHE1     021e 	AHEX     021b 	
-AHS1     0232 	ALAB     0c47 	ALP1     0b77 	ALPS     0b75 	
-AOU1     06d2 	AOU2     06cc*	AOUT     06c5 	APNT     1072 	
-AREA     10a0 	ASBL     0b94 	ASC1     0bc4 	ASC2     0bd4 	
-ASC3     0bec 	ASC4     0bf6 	ASC5     0c18 	ASC7     0c38 	
-ASCN     0b97 	ASCR     000d 	ASM1     068c 	ASM2     06b9 	
-ASM3     067a 	ASM4     066e 	ASPC     1092 	ASSM     065e 	
-ASTO     08ee 	ASUB     0c3e 	AVAL     0c28 	B1       0cde 	
-B2       0cee 	B3       0cff 	BBUF     108a 	BID1     02b4 	
-BIN1     0299 	BINAD    07fd 	BIND     02a3 	BINH     0286 	
-BL1      0d54 	BL2      0d5f 	BL3      0d68 	BLK1     025d 	
-BMES     0d88 	BOFP     1029 	BREAK    0cd2 	BRKP     0d2e 	
-BRT      100c 	BSPA     00bf 	CHAR     00c7 	CHOT     0240*	
-CL2      0d29 	CLBL     0d19 	CLER     00e1 	CLRB     0d14 	
-CO1      05a7 	CO2      05ad 	COM0     05a2 	COM1     05b5*	
-COMM     012b 	COMS     013c 	COND     091b 	COP1     0a62 	
-COPC     0a50 	CR       0097 	CRLF     010e 	CTAB     02be 	
-DAT1     0790 	DAT2     07f1 	DAT2A    07f4 	DCNT     108f*	
-DEL      00b2 	DEL1     05fb 	DEL2     0618 	DEL3     0636 	
-DEL4     0640 	DEL5     0641 	DELL     05e7 	DELP     1072 	
-DONE     01bf 	DOUT     0251*	DUM1     030e 	DUMP     0308 	
-DUMS     030b 	EASS     0901 	EEND     002f 	EMES     0466 	
-EMES1    046b 	EMES2    0470 	ENT1     048f 	ENTR     0476 	
-ENTS     0483 	EO1      0574 	EOF      0573 	EOFP     102b 	
-EOR      0067 	EQU1     0775 	EQU2     07fa 	EQUL     0503 	
-EQUS     0780 	ERAR     0ca8 	ERO1     0cb9 	ERRD     0cc7 	
-ERRL     0cc2 	ERRM     0c9f 	ERRO     0cad 	ERRR     0c81 	
-ERRS     0c8a 	ERRU     0c95 	ERRV     0c9a 	ETRA     017a 	
-EXEC     0121 	FAST     03e6 	FBUF     1076 	FEET     03f8 	
-FEF      107d 	FELEN    000d 	FI1      055a 	FI2      056c 	
-FIL30    03b0*	FIL35    03b2 	FILE     033e 	FILE0    1024 	
-FILTB    1031*	FIN1     0552 	FIND     054c 	FINE     03c9 	
-FOCNT    107d 	FOOD     03e3 	FOOL     0404 	FOOT     03c3 	
-FOUL     03c5 	FOUT     03b9 	FREAD    107b 	FSE10    0421 	
-FSE15    0444 	FSE20    044e 	FSEA     0418 	HCON     1074 	
-HOLD     1000 	HOTB     024a 	HOUT     023a 	IBUF     10c7 	
-IN8      00f6 	INCA     015f 	INIT2    0056 	INIT3    0061 	
-INITA    0040 	INK      00e9 	INSP     1072 	INSR     04fa 	
-LCHK     0735 	LESS     0518 	LF       0113*	LICK     04c1 	
-LINE     04b5 	LIST     05d0 	LIST0    05d6 	LLAB     0005 	
-LMOV     0580 	LODM     0592 	MAXFIL   0006 	MAXL     102d 	
-MESS     0460 	MLAB     0705 	MORE     052b 	MOV23    0382 	
-MPNT     08bf 	NBR      0008 	NCHR     1095 	NCOM     000b 	
-NEXT     0088 	NMLEN    0005 	NOLA     1098 	NOR1     05c3 	
-NORM     05bd 	NOV1     064f*	NOVR     0649 	NUM1     0c77 	
-NUM2     0c7b 	NUMS     0c63 	NXT1     0ba1 	NXT2     0bab 	
-OBUF     10b2 	OCN1     0af5 	OCN2     0af8 	OCNT     0ae1 	
-OERR     0b06 	OIND     109e 	OK       010a*	OP1      0a81 	
-OP2      0a84 	OP4      0adc 	OP5      0adf 	OPAD     0adb 	
-OPC      071e 	OPC2     0a89*	OPC3     0aa5*	OPCD     0a65 	
-OPRD     109a 	OPRI     109c 	ORG1     0760 	ORG2     080c 	
-OTAB     0927 	OUT8     0103 	P1       0d9c 	PABL     07ad*	
-PAG1     0335 	PAGEMOV  0322 	PAS1     06dc 	PAS2     0793 	
-PASI     1094 	PNTR     1096 	PROC     0d8f 	PSEU     0b0e 	
-PSU1     0744 	PSU2     07c8 	READ     0080 	RES1     0788 	
-RES2     07e1 	RES21    07ed 	RMOV     0589 	ROOM     0378 	
-RTAB     0b60 	SBL1     0910 	SBL2     0914 	SBLK     090d 	
-SCNT     108e 	SCRN     027a 	SEAR     0153 	SEN1     0c5d 	
-SEND     0c53 	SEOF     04f2*	SIGN     1099 	SLA1     0b44 	
-SLA2     0b5a 	SLA3     0b5d 	SLAB     0b20 	SSTR     0c0f 	
-Z80-Macro-Assembler  Release 1.11-dev	Sat Oct 29 11:49:12 2022	Page 41
-Source file: scs1.asm
-Title:       Symbol table
+Symbol table
 
-STOM     059a 	SWAP     0390 	SWAPS    038b 	SWCH     00ff*	
-SYMT     111a 	TABA     1090 	TEMP     109d 	TEST     0363 	
-TTI      0002 	TTO      0002 	TTS      0003 	TTYDA    0002 	
-TTYTR    0001 	TY31     0855 	TY32     0858 	TY41     0881 	
-TY55     08a0 	TY56     08ad 	TY6      08de 	TYP1     082d 	
-TYP2     0831 	TYP3     0844 	TYP4     0863 	TYP5     0898 	
-TYP6     08ce 	TYS6     08e1 	VAL1     0189 	VAL2     01a4 	
-VAL3     01b4 	VAL4     01b6 	VAL5     01c4 	VALC     0173 	
-VCHK     0300 	WHA1     045d 	WHAT     045a 	ZBU1     016c 	
-ZBUF     0166 	ZERO     053b 	
+ABUF    107e    ACH1    0275    ACHK    0263    ACO1    075a    ACO2    07db*
+ADDS    1074    ADE1    0204    ADEC    0201    ADR     057b    AERR    108e 
+AHE1    021e    AHEX    021b    AHS1    0232    ALAB    0c47    ALP1    0b77 
+ALPS    0b75    AOU1    06d2    AOU2    06cc*   AOUT    06c5    APNT    1072 
+AREA    10a0    ASBL    0b94    ASC1    0bc4    ASC2    0bd4    ASC3    0bec 
+ASC4    0bf6    ASC5    0c18    ASC7    0c38    ASCN    0b97    ASCR    000d 
+ASM1    068c    ASM2    06b9    ASM3    067a    ASM4    066e    ASPC    1092 
+ASSM    065e    ASTO    08ee    ASUB    0c3e    AVAL    0c28    B1      0cde 
+B2      0cee    B3      0cff    BBUF    108a    BID1    02b4    BIN1    0299 
+BINAD   07fd    BIND    02a3    BINH    0286    BL1     0d54    BL2     0d5f 
+BL3     0d68    BLK1    025d    BMES    0d88    BOFP    1029    BREAK   0cd2 
+BRKP    0d2e    BRT     100c    BSPA    00bf    CHAR    00c7    CHOT    0240*
+CL2     0d29    CLBL    0d19    CLER    00e1    CLRB    0d14    CO1     05a7 
+CO2     05ad    COM0    05a2    COM1    05b5*   COMM    012b    COMS    013c 
+COND    091b    COP1    0a62    COPC    0a50    CR      0097    CRLF    010e 
+CTAB    02be    DAT1    0790    DAT2    07f1    DAT2A   07f4    DCNT    108f*
+DEL     00b2    DEL1    05fb    DEL2    0618    DEL3    0636    DEL4    0640 
+DEL5    0641    DELL    05e7    DELP    1072    DONE    01bf    DOUT    0251*
+DUM1    030e    DUMP    0308    DUMS    030b    EASS    0901    EEND    002f 
+EMES    0466    EMES1   046b    EMES2   0470    ENT1    048f    ENTR    0476 
+ENTS    0483    EO1     0574    EOF     0573    EOFP    102b    EOR     0067 
+EQU1    0775    EQU2    07fa    EQUL    0503    EQUS    0780    ERAR    0ca8 
+ERO1    0cb9    ERRD    0cc7    ERRL    0cc2    ERRM    0c9f    ERRO    0cad 
+ERRR    0c81    ERRS    0c8a    ERRU    0c95    ERRV    0c9a    ETRA    017a 
+EXEC    0121    FAST    03e6    FBUF    1076    FEET    03f8    FEF     107d 
+FELEN   000d    FI1     055a    FI2     056c    FIL30   03b0*   FIL35   03b2 
+FILE    033e    FILE0   1024    FILTB   1031*   FIN1    0552    FIND    054c 
+FINE    03c9    FOCNT   107d    FOOD    03e3    FOOL    0404    FOOT    03c3 
+FOUL    03c5    FOUT    03b9    FREAD   107b    FSE10   0421    FSE15   0444 
+FSE20   044e    FSEA    0418    HCON    1074    HOLD    1000    HOTB    024a 
+HOUT    023a    IBUF    10c7    IN8     00f6    INCA    015f    INIT2   0056 
+INIT3   0061    INITA   0040    INK     00e9    INSP    1072    INSR    04fa 
+LCHK    0735    LESS    0518    LF      0113*   LICK    04c1    LINE    04b5 
+LIST    05d0    LIST0   05d6    LLAB    0005    LMOV    0580    LODM    0592 
+MAXFIL  0006    MAXL    102d    MESS    0460    MLAB    0705    MORE    052b 
+MOV23   0382    MPNT    08bf    NBR     0008    NCHR    1095    NCOM    000b 
+NEXT    0088    NMLEN   0005    NOLA    1098    NOR1    05c3    NORM    05bd 
+NOV1    064f*   NOVR    0649    NUM1    0c77    NUM2    0c7b    NUMS    0c63 
+NXT1    0ba1    NXT2    0bab    OBUF    10b2    OCN1    0af5    OCN2    0af8 
+OCNT    0ae1    OERR    0b06    OIND    109e    OK      010a*   OP1     0a81 
+OP2     0a84    OP4     0adc    OP5     0adf    OPAD    0adb    OPC     071e 
+OPC2    0a89*   OPC3    0aa5*   OPCD    0a65    OPRD    109a    OPRI    109c 
+ORG1    0760    ORG2    080c    OTAB    0927    OUT8    0103    P1      0d9c 
+PABL    07ad*   PAG1    0335    PAGEMOV 0322    PAS1    06dc    PAS2    0793 
+PASI    1094    PNTR    1096    PROC    0d8f    PSEU    0b0e    PSU1    0744 
+PSU2    07c8    READ    0080    RES1    0788    RES2    07e1    RES21   07ed 
+RMOV    0589    ROOM    0378    RTAB    0b60    SBL1    0910    SBL2    0914 
+SBLK    090d    SCNT    108e    SCRN    027a    SEAR    0153    SEN1    0c5d 
+SEND    0c53    SEOF    04f2*   SIGN    1099    SLA1    0b44    SLA2    0b5a 
+SLA3    0b5d    SLAB    0b20    SSTR    0c0f    STOM    059a    SWAP    0390 
+SWAPS   038b    SWCH    00ff*   SYMT    111a    TABA    1090    TEMP    109d 
+TEST    0363    TTI     0002    TTO     0002    TTS     0003    TTYDA   0002 
+TTYTR   0001    TY31    0855    TY32    0858    TY41    0881    TY55    08a0 
+TY56    08ad    TY6     08de    TYP1    082d    TYP2    0831    TYP3    0844 
+TYP4    0863    TYP5    0898    TYP6    08ce    TYS6    08e1    VAL1    0189 
+VAL2    01a4    VAL3    01b4    VAL4    01b6    VAL5    01c4    VALC    0173 
+VCHK    0300    WHA1    045d    WHAT    045a    ZBU1    016c    ZBUF    0166 
+ZERO    053b    

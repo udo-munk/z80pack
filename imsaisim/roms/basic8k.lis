@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 1
-Source file: basic8k.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:59:09 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;EDITS:
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       58     58 ; 05/02/77   -ADD DDT, BYE COMMANDS, BIOS I/O
                       59     59 ; 05/03/77   -OPTIMIZE FUNCTION ITERATION LOOP (SIN5)
                       60     60 ;            -SO UNDERFLOW CAN BE MADE NON-FATAL
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 2
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       61     61 ; 05/04/77   -OPTIMIZE SIN(X) ROUTINE
                       62     62 ;            -ADD NON-FATAL ERRORS
                       63     63 ; 05/09/77   -SQUISH TO INCLUDE PEEK,POKE,CALL IN 8K
@@ -128,11 +121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      118    118 ; ONLY THE FIRST THREE CHARS NEED BE EQUAL
                      119    119 ; IGNORE ALL SPACES
                      120    120 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 3
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0010  c5             121    121 RST2:   PUSH    B       ;SAVE B,C
 0011  06 00          122    122         MVI     B,0     ;INIT COUNT
 0013  cf             123    123 COMP1:  RST     1       ;SKIP SPACES
@@ -193,11 +181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0042  16 ff          178    178         MVI     D,0FFH  ;ELSE, NEG
 0044  19             179    179 RST4B:  DAD     D       ;BUMP H,L
 0045  d1             180    180         POP     D       ;RESTORE D,E
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 4
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0046  c9             181    181         RET             ;RETURN
                      182    182 ;PAGE
 0047  43 4f 50 59    183    183         DB      'COPYRIGHT (C) 1977 '
@@ -258,11 +241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      226    238         JNZ     PROTC   ;CONTINUE TO PROTECT
                      227    239         ENDIF
 00a7  af             228    240         XRA     A       ;GET A ZERO IN A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 5
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00a8  f5             229    241         PUSH    PSW     ;SET STACK 1 LEVEL DEEP WITHOUT A GOSUB
 00a9  21 00 00       230    242         LXI     H,0     ;CLEAR H,L
 00ac  39             231    243         DAD     SP      ;SP TO H,L
@@ -323,11 +301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00f5  c1             286    298         POP     B       ;GET LINE NUM
 00f6  cd 5e 1f       287    299         CALL    LOCAT   ;GO FIND REQUESTED LINE NUMBER
 00f9  e5             288    300         PUSH    H       ;SAVE H,L
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 6
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00fa  da 14 01       289    301         JC      EDIT5   ;BRIF IF LINE NOT FOUND
 00fd  54             290    302 EDIT2:  MOV     D,H     ;COPY ADDR
 00fe  5d             291    303         MOV     E,L     ;TO D,E
@@ -388,11 +361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0159  11 6b 1d       346    358         LXI     D,NRNDX ;MOVE RANDOM # SERIES TO RNDX
 015c  21 77 22       347    359         LXI     H,RNDX
 015f  06 08          348    360         MVI     B,8     ;COUNT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 7
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0161  c3 4d 1c       349    361         JMP     COPYD   ;MOVE IT & RETURN
                      350    362 ;PAGE
 0164  =              351    363 EXEC    EQU     $
@@ -453,11 +421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01a9  5f             406    418         MOV     E,A     ;SAVE IT
 01aa  7a             407    419         MOV     A,D     ;HI ADDR TO REG A
 01ab  9c             408    420         SBB     H       ;SUBTRACT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 8
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01ac  57             409    421         MOV     D,A     ;SAVE IT
 01ad  cd 89 1c       410    422         CALL    BINFL   ;GO FLOAT D,E
 01b0  21 ce 20       411    423         LXI     H,IOBUF ;POINT BUFFER
@@ -518,11 +481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01f8  77             466    478         MOV     M,A     ;INITIALIZE TO 0
 01f9  =              467    479 XEQ     EQU     $       ;START FOR EXECUTION WITH OLD DATA
 01f9  cd 51 01       468    480         CALL    IRAM    ;INITALIZE START OF RAM
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 9
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01fc  21 95 22       469    481         LXI     H,BEGPR-1       ;POINT 1 PRIOR TO BEGIN
 01ff  22 8f 22       470    482         SHLD    DATAP   ;RESTORE DATA STMT POINTER
 0202  36 00          471    483         MVI     M,0     ;RESET DATA STMT POINTER
@@ -583,11 +541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      526    538 ;
 0262  =              527    539 LIST    EQU     $
                      528    540 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 10
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      529    541 ;
                      530    542 ; LIST PROCESSOR
                      531    543 ; DUMP THE SOURCE PROGRAM TO TTY OR PAPER TAPE
@@ -648,11 +601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02c2  c3 cf 02       586    598         JMP     LIST6   ;GO AROUND
 02c5  23             587    599 LIST5:  INX     H       ;POINT NEXT
 02c6  7e             588    600         MOV     A,M     ;GET NEXT BYTE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 11
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 02c7  2b             589    601         DCX     H       ;POINT BACK
 02c8  bb             590    602         CMP     E       ;COMPARE LOW BYTES
 02c9  ca cf 02       591    603         JZ      LIST6   ;BRIF EQUAL
@@ -713,11 +661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0319  21 95 22       646    658         LXI     H,BEGPR-1       ;POINT 1 BEFORE START OF PROGRAM
 031c  22 8f 22       647    659         SHLD    DATAP   ;FORCE NEXT DATA TO BE AT START
 031f  c3 0b 02       648    660         JMP     RUN     ;GO NEXT STMT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 12
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      649    661 ;
                      650    662 ;
                      651    663 ; STMT:  RETURN
@@ -778,11 +721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 037a  d1             706    718         POP     D       ;RESTORE D,E
 037b  e5             707    719         PUSH    H       ;SAVE H,L
 037c  eb             708    720         XCHG            ;FLIP/FLOP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 13
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 037d  3a 8e 22       709    721         LDA     NS      ;GET TYPE OF RESULT
 0380  fe e7          710    722         CPI     0E7H    ;TEST IF STRING
 0382  ca 96 03       711    723         JZ      PRIN5   ;BRIF IS
@@ -843,11 +781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03dd  b7             766    778         ORA     A       ;TEST IF CONTROL-O IN EFFECT
 03de  b0             767    779         ORA     B       ;AND IF STATEMENT ENDED IN , OR ;
 03df  cc 5a 19       768    780         CZ      CRLF    ;CRLF IF NEITHER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 14
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03e2  c3 0b 02       769    781         JMP     RUN     ;CONTINUE NEXT STATEMENT
                      770    782 ;PAGE
                      771    783 ;
@@ -908,11 +841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0437  cd ce 18       826    838         CALL    FTEST   ;GET STATUS OF FACC
 043a  f5             827    839         PUSH    PSW     ;SAVE A,STATUS
 043b  21 27 22       828    840         LXI     H,TVAR1 ;GET END VALUE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 15
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 043e  ef             829    841         RST     5       ;LOAD IT
 043f  f1             830    842         POP     PSW     ;RESTORE STATUS
 0440  f2 52 04       831    843         JP      FOR4    ;BRIF FOR IS POSITIVE
@@ -973,11 +901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 049c  eb             886    898         XCHG            ;FLIP/FLOP
 049d  2a 72 22       887    899         LHLD    ENDLI   ;GET END ADDR
 04a0  2b             888    900         DCX     H       ;POINT ONE PRIOR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 16
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04a1  eb             889    901         XCHG            ;FLIP BACK
 04a2  72             890    902         MOV     M,D     ;STORE IT
 04a3  23             891    903         INX     H       ;POINT NEXT
@@ -1038,11 +961,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04f3  fe e7          946    958         CPI     0E7H    ;TEST IF STRING
 04f5  c2 07 05       947    959         JNZ     IF1     ;BRIF NOT
 04f8  21 ce 20       948    960         LXI     H,IOBUF ;POINT BUFFER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 17
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04fb  11 20 21       949    961         LXI     D,STRIN ;POINT RESULT
 04fe  1a             950    962         LDAX    D       ;GET LEN
 04ff  3c             951    963         INR     A       ;PLUS ONE
@@ -1103,11 +1021,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 056d  fa 81 05      1006   1018         JM      TRUE    ;BRIF GT
 0570  3a 25 22      1007   1019 IF9:    LDA     REL     ;LOAD RELATION
 0573  e6 04         1008   1020         ANI     04H     ;MASK IT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 18
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0575  ca 0b 02      1009   1021         JZ      FALSE   ;BRIF NO <
 0578  cd ce 18      1010   1022         CALL    FTEST   ;GET STATUS OF FACC
 057b  fa 0b 02      1011   1023         JM      FALSE   ;BRIF GT
@@ -1168,11 +1081,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05e9  c3 dd 05      1066   1078         JMP     IFL     ;JUMP
 05ec  06 04         1067   1079 IFN:    MVI     B,4     ;SET CODE
 05ee  c3 dd 05      1068   1080         JMP     IFL     ;JUMP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 19
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1069   1081 ;PAGE
                     1070   1082 ;
 05f1  =             1071   1083 LET     EQU     $
@@ -1233,11 +1141,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 064a  2b            1126   1138         DCX     H       ;POINT NEXT ENTRY
 064b  7e            1127   1139 LET4:   MOV     A,M     ;GET NEXT
 064c  b7            1128   1140         ORA     A       ;TEST IF END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 20
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 064d  ca 64 06      1129   1141         JZ      LET6    ;BRIF IS
 0650  e5            1130   1142         PUSH    H       ;SAVE H,L
 0651  2b            1131   1143         DCX     H       ;SKIP NEXT
@@ -1298,11 +1201,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1186   1198 ;
                     1187   1199 ;
 0692  cd c9 1b      1188   1200 NEXT:   CALL    VAR     ;GET VARIABLE NAME
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 21
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0695  cd 94 1a      1189   1201         CALL    EOL     ;ERROR IF NOT END-OF-LNE
 0698  eb            1190   1202         XCHG            ;FLIP/FLOP
 0699  22 23 22      1191   1203         SHLD    INDX    ;SAVE VAR NAME
@@ -1363,11 +1261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06f8  fa ef 06      1246   1258         JM      NEXT7   ;BRIF END OF LOOP
 06fb  e1            1247   1259 NEXT6:  POP     H       ;GET PTR TO TBL
 06fc  e7            1248   1260         RST     4       ;ADJUST H,L
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 22
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06fd  08            1249   1261         DB      8
 06fe  56            1250   1262         MOV     D,M     ;GET HI BYTE
 06ff  23            1251   1263         INX     H       ;POINT NEXT
@@ -1428,11 +1321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0758  ca 60 07      1306   1318         JZ      INPU5   ;BRIF IS
 075b  fe 3b         1307   1319         CPI     ';'     ;TEST IF COMMA
 075d  c2 61 07      1308   1320         JNZ     INPU6   ;BRIF NOT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 23
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0760  23            1309   1321 INPU5:  INX     H       ;SKIP IT
 0761  cd 4f 18      1310   1322 INPU6:  CALL    GETS8   ;GO GET VAR ADDR
 0764  e5            1311   1323         PUSH    H       ;SAVE H ADDR
@@ -1493,11 +1381,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07c7  7e            1366   1378 INPL1:  MOV     A,M     ;GET NEXT BYTE
 07c8  b7            1367   1379         ORA     A       ;TEST IT
 07c9  ca d3 07      1368   1380         JZ      INPL2   ;BRIF END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 24
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 07cc  04            1369   1381         INR     B       ;ADD TO COUNT
 07cd  12            1370   1382         STAX    D       ;PUT TO STRING BUFF
 07ce  13            1371   1383         INX     D       ;POINT NEXT
@@ -1558,11 +1441,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0828  2b            1426   1438         DCX     H       ;RESET
 0829  c3 96 07      1427   1439         JMP     INPUB   ;CONTINUE
 082c  b7            1428   1440 READ5:  ORA     A       ;TEST IF END OF STMT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 25
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 082d  ca 1b 08      1429   1441         JZ      READ3   ;BRIF OK
 0830  c3 1f 1c      1430   1442         JMP     CVERR   ;GO PROCESS ERROR
 0833  cd 0d 18      1431   1443 READ6:  CALL    GETST   ;GO GET STRING
@@ -1623,11 +1501,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0890  22 89 22      1486   1498         SHLD    LINE    ;SAVE ADDR
 0893  11 77 20      1487   1499         LXI     D,LINEN ;POINT AREA
 0896  cd 09 1a      1488   1500         CALL    LINEO   ;GO CONVERT LINE NUMBER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 26
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0899  eb            1489   1501         XCHG            ;FLIP TO H,L
 089a  36 00         1490   1502         MVI     M,0     ;MARK END
 089c  c3 c3 00      1491   1503         JMP     RDY     ;GO TO READY MSG
@@ -1688,11 +1561,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08f2  c2 f9 08      1546   1558         JNZ     ON5     ;BRIF NOT
 08f5  23            1547   1559         INX     H       ;POINT NEXT
 08f6  c3 ef 08      1548   1560         JMP     ON4     ;LOOP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 27
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 08f9  0d            1549   1561 ON5:    DCR     C       ;SUB ONE FROM COUNT
 08fa  c2 dc 08      1550   1562         JNZ     ON3A    ;LOOP TILL JUST BEFORE STMT#
 08fd  cd ad 1a      1551   1563 ON6:    CALL    NOTEO   ;ERROR IF NOT END-OF-LINE
@@ -1753,11 +1621,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 095a  df            1606   1618         RST     3       ;STORE IT
 095b  e7            1607   1619         RST     4       ;POINT TO NEXT
 095c  f8            1608   1620         DB      -8 AND 0FFH
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 28
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 095d  d1            1609   1621         POP     D       ;RESTORE STRING
 095e  c1            1610   1622         POP     B       ;AND CTR
 095f  13            1611   1623         INX     D       ;POINT NEXT CHAR
@@ -1818,11 +1681,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09b1  =             1666   1678 DIM     EQU     $
                     1667   1679 ;
                     1668   1680 ; STMT: DIM VAR(A,B),...
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 29
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1669   1681 ;
                     1670   1682 ;
 09b1  cd c9 1b      1671   1683         CALL    VAR     ;GO GET VAR NAME
@@ -1883,11 +1741,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 09fd  72            1726   1738         MOV     M,D     ;MOVE HI ROW
 09fe  2b            1727   1739         DCX     H       ;POINT NEXT
 09ff  73            1728   1740         MOV     M,E     ;MOVE LO ROW
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 30
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a00  2b            1729   1741         DCX     H       ;POINT NEXT
 0a01  36 00         1730   1742 DIM2:   MVI     M,0     ;CLEAR ONE BYTE
 0a03  2b            1731   1743         DCX     H       ;POINT NEXT
@@ -1948,11 +1801,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a45  f5            1786   1798         PUSH    PSW     ;SAVE SIGN OF ANGLE
 0a46  cd c7 0b      1787   1799         CALL    ABS
 0a49  f1            1788   1800 SIN1:   POP     PSW     ;COMPLEMENT SIGN FOR EACH PI SUB'D
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 31
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0a4a  2f            1789   1801         CMA             ;..
 0a4b  f5            1790   1802         PUSH    PSW     ;..
 0a4c  21 a2 1d      1791   1803         LXI     H,PI    ;REDUCE TO -PI<X<0
@@ -2013,11 +1861,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0aa0  e7            1846   1858         RST     4       ;MOVE TO NEXT COEFFICIENT
 0aa1  fc            1847   1859         DB      -4 AND 0FFH
 0aa2  7e            1848   1860         MOV     A,M     ;GET EXPONENT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 32
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0aa3  3d            1849   1861         DCR     A       ;TEST FOR 1
 0aa4  c2 95 0a      1850   1862         JNZ     EVPS1   ;BRIF NOT 1
 0aa7  21 33 22      1851   1863         LXI     H,TEMP2 ;MUL BY TEMP2
@@ -2078,11 +1921,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0af6  cd 9b 17      1906   1918         CALL    FDIV    ;DIVIDE
 0af9  21 33 22      1907   1919         LXI     H,TEMP2 ;POINT SAVE
 0afc  df            1908   1920         RST     3       ;SAVE X'=(X-1)/(X+1)
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 33
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0afd  21 a6 1d      1909   1921         LXI     H,QTRPI ;X'+PI/4 -> TEMP1
 0b00  cd 37 16      1910   1922         CALL    FADD
 0b03  21 2f 22      1911   1923         LXI     H,TEMP1
@@ -2143,11 +1981,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1966   1978 ;
                     1967   1979 ;  COMPUTES EXP(X) USING ALGORITHM EXP(X)=(2^I)*(2^FP) WHERE
                     1968   1980 ;  2^I=INT(X*LN BASE 2 OF E) AND,
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 34
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1969   1981 ;  2^FP=5TH DEGREE POLY. APPROXIMATION
                     1970   1982 ;  FP=FRACTIONAL PART OF INT(X*LN2E)
                     1971   1983 ;
@@ -2208,11 +2041,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0bd0  =             2026   2038 SGN     EQU     $
                     2027   2039 ;
                     2028   2040 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 35
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2029   2041 ; RETURNS THE SIGN OF THE FLOATING ACCUMULATOR
                     2030   2042 ; THAT IS:
                     2031   2043 ;  1 IF FACC > 0
@@ -2273,11 +2101,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c18  c2 09 0c      2086   2098         JNZ     INT4    ;LOOP
 0c1b  21 58 22      2087   2099         LXI     H,FACC  ;POINT SIGN & EXP
 0c1e  7e            2088   2100         MOV     A,M     ;LOAD IT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 36
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c1f  e6 80         2089   2101         ANI     80H     ;ISOLATE SIGN
 0c21  c6 18         2090   2102         ADI     24      ;PLUS INTEGER
 0c23  77            2091   2103         MOV     M,A     ;REPLACE IT
@@ -2338,11 +2161,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c76  32 58 22      2146   2158         STA     FACC    ;FORM (TEMP1 + MANT/TEMP1)/2
 0c79  c9            2147   2159         RET             ;RETURN
                     2148   2160 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 37
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0c7a  =             2149   2161 NEG     EQU     $
                     2150   2162 ;
                     2151   2163 ;
@@ -2403,11 +2221,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0cc3  23            2206   2218         INX     H       ;DITTO
 0cc4  eb            2207   2219         XCHG            ;RESTORE ADDRS
 0cc5  13            2208   2220 RND5:   INX     D       ;POINT NEXT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 38
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0cc6  23            2209   2221         INX     H       ;DITTO
 0cc7  05            2210   2222         DCR     B       ;DECR CTR
 0cc8  c2 aa 0c      2211   2223         JNZ     FND3    ;LOOP
@@ -2468,11 +2281,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2266   2278 ;
 0d20  =             2267   2279 POS     EQU     $
                     2268   2280 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 39
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2269   2281 ;
                     2270   2282 ; RETURNS THE CURRENT POSITION OF THE TTY CURSOR
                     2271   2283 ;
@@ -2533,11 +2341,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d6a  23            2326   2338         INX     H       ;POINT NEXT
 0d6b  73            2327   2339         MOV     M,E     ;MOVE LO ADDR
 0d6c  23            2328   2340         INX     H       ;POINT NEXT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 40
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0d6d  36 e7         2329   2341         MVI     M,0E7H  ;TYPE=STRING
 0d6f  e5            2330   2342         PUSH    H       ;SAVE H,L
 0d70  21 20 21      2331   2343         LXI     H,STRIN ;GET TEMP STR
@@ -2598,11 +2401,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2386   2398 ; A$=NUM$(X)
                     2387   2399 ;
                     2388   2400 ; RETURNS A STRING REPRESENTING X AS IT WOULD HAVE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 41
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     2389   2401 ; BEEN PRINTED (INCLUDING TRAILING SPACE)
                     2390   2402 ;
 0da7  21 20 21      2391   2403         LXI     H,STRIN ;POINT STRING AREA
@@ -2663,11 +2461,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ded  3d            2446   2458         DCR     A       ;DECR CTR
 0dee  c3 e9 0d      2447   2459         JMP     SPAC1   ;LOOP
                     2448   2460 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 42
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0df1  =             2449   2461 STRFN   EQU     $
                     2450   2462 ;
                     2451   2463 ; A$=STRING$(X,Y)
@@ -2728,11 +2521,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e2c  36 00         2506   2518         MVI     M,0     ;ELSE, RESULT IS NULL
 0e2e  c9            2507   2519         RET             ;RETURN
 0e2f  81            2508   2520 MID1:   ADD     C       ;COMPUTE END POSITION
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 43
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e30  da 3c 0e      2509   2521         JC      MID2    ;BRIF OVERFLOW
 0e33  de 01         2510   2522         SBI     1       ;COMPUTE X+Y-1
 0e35  da 3c 0e      2511   2523         JC      MID2    ;BRIF OVERFLOW
@@ -2793,11 +2581,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e7d  b7            2566   2578         ORA     A       ;TEST IF NULL
 0e7e  c2 87 0e      2567   2579         JNZ     INST6   ;BRIF NOT
 0e81  0e 01         2568   2580         MVI     C,1     ;SET POSIT = 1
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 44
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0e83  79            2569   2581 INST5:  MOV     A,C     ;GET POSIT
 0e84  c3 1a 0d      2570   2582         JMP     FDEC    ;CONVERT TO DECIMAL & RETURN
 0e87  eb            2571   2583 INST6:  XCHG            ;FLIP/FLOP
@@ -2858,11 +2641,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ed2  2a 6c 22      2626   2638         LHLD    FNARG   ;GET OLD ARG NAME
 0ed5  e5            2627   2639         PUSH    H       ;SAVE
 0ed6  2a 6e 22      2628   2640         LHLD    FNARG+2 ;GET OLD ARG ADDRESS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 45
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0ed9  e5            2629   2641         PUSH    H       ;SAVE
 0eda  2a 93 22      2630   2642         LHLD    PROGE   ;GET END OF PROGRAM
 0edd  e5            2631   2643         PUSH    H       ;SAVE IT
@@ -2923,11 +2701,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f37  12            2686   2698         STAX    D       ;PUT TO TABLE
 0f38  e1            2687   2699         POP     H       ;RESTORE PTR TO STMT
 0f39  cf            2688   2700         RST     1       ;SKIP BLANKS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 46
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f3a  fe 29         2689   2701         CPI     ')'     ;TEST IF CLOSE PAREN
 0f3c  c2 0f 1c      2690   2702         JNZ     SNERR   ;BRIF NOT
 0f3f  23            2691   2703         INX     H       ;SKIP IT
@@ -2988,11 +2761,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f95  =             2746   2758 LOOKD   EQU     $       ;LOOK FOR CON, VAR, OR FUNCTION
 0f95  cf            2747   2759         RST     1       ;SKIP TO NON-BLANK
 0f96  cd 2a 1b      2748   2760         CALL    NUMER   ;GO TEST IF NUMERIC
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 47
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0f99  c2 af 0f      2749   2761         JNZ     LDALP   ;BRIF NOT
 0f9c  cd 2e 14      2750   2762 LDNUM:  CALL    FIN     ;GO CONVERT NUMERIC (PUT TO FACC)
 0f9f  44            2751   2763 LDF:    MOV     B,H     ;COPY H,L TO B,C
@@ -3053,11 +2821,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1009  e1            2806   2818         POP     H       ;GET H,L
 100a  e5            2807   2819         PUSH    H       ;RESAVE
 100b  11 21 1f      2808   2820         LXI     D,FNLIT ;POINT LITERAL
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 48
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 100e  d7            2809   2821         RST     2       ;GO SEE IF FN X
 100f  ca 3e 10      2810   2822         JZ      FNL     ;BRIF IS
 1012  e1            2811   2823         POP     H       ;GET H,L
@@ -3118,11 +2881,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1071  d1            2866   2878         POP     D       ;RESTORE STACK POINTER
 1072  c3 9f 0f      2867   2879         JMP     LDF     ;ACT AS IF CONSTANT
 1075  3c            2868   2880 LDPI:   INR     A       ;SET NON ZERO
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 49
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1076  d1            2869   2881         POP     D       ;DUMMY STACK POP
 1077  f5            2870   2882         PUSH    PSW     ;SAVE STATUS
 1078  e5            2871   2883         PUSH    H       ;SAVE H,L
@@ -3183,11 +2941,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 10db  09            2926   2938         DAD     B       ;PLUS OLD
 10dc  22 69 22      2927   2939         SHLD    SPCTR   ;UPDATE IT
 10df  d1            2928   2940         POP     D       ;GET OLD H,L
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 50
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 10e0  21 00 00      2929   2941         LXI     H,0     ;GET A ZERO
 10e3  e5            2930   2942 LIT2:   PUSH    H       ;GET 2 WORK BYTES
 10e4  0d            2931   2943         DCR     C       ;SUB 1 FROM COUNT
@@ -3248,11 +3001,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1148  ca 58 11      2986   2998         JZ      OP1     ;BRIF IS
                     2987   2999 ; ELSE MUST BE END OF EXPRESSION
 114b  3a 68 22      2988   3000 ENDXP:  LDA     PARCT   ;GET OPEN PAREN COUNT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 51
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 114e  b7            2989   3001         ORA     A       ;TEST IT
 114f  c2 0f 1c      2990   3002         JNZ     SNERR   ;BRIF # OF ('S NOT = # OF )'S
 1152  22 56 22      2991   3003         SHLD    ADDR3   ;SAVE ADDR OF STMT
@@ -3313,11 +3061,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 11b6  23            3046   3058         INX     H       ;POINT NEXT SOURCE
 11b7  22 56 22      3047   3059 OP4:    SHLD    ADDR3   ;SAVE ADDR
 11ba  2a 50 22      3048   3060 EVAL:   LHLD    EXPRS   ;GET END OF EXPR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 52
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 11bd  01 00 00      3049   3061         LXI     B,0     ;INIT B,C TO ZERO
 11c0  04            3050   3062 EV1:    INR     B       ;COUNT EACH BYTE
 11c1  7e            3051   3063         MOV     A,M     ;GET CODE IN REG A
@@ -3378,11 +3121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1222  39            3106   3118         DAD     SP      ;GET STACK ADDR
 1223  c5            3107   3119         PUSH    B       ;SAVE CTRS
 1224  e5            3108   3120         PUSH    H       ;SAVE ADDR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 53
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1225  df            3109   3121         RST     3       ;GO STORE THE VARIABLE
 1226  3e e3         3110   3122         MVI     A,0E3H  ;TYPE=NUM
 1228  d1            3111   3123 EV3A:   POP     D       ;GET ADDR IN STACK
@@ -3443,11 +3181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1278  fe 05         3166   3178 EV5:    CPI     5       ;TEST IF OPEN PAREN
 127a  c2 96 12      3167   3179         JNZ     EV6     ;BRIF NOT
 127d  3e 01         3168   3180         MVI     A,1     ;DELETE 1 BYTE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 54
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 127f  cd e2 1a      3169   3181         CALL    SQUIS   ;GO COMPRESS IT
 1282  2a 56 22      3170   3182         LHLD    ADDR3   ;RESTORE STMT POINTER
 1285  3a 72 20      3171   3183         LDA     DIMSW   ;GET SUBSR SWITCH
@@ -3508,11 +3241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 12fc  d5            3226   3238         PUSH    D       ;SAVE ROUTINE ADDR
 12fd  56            3227   3239         MOV     D,M     ;HIGH TO D
 12fe  23            3228   3240         INX     H       ;POINT NEXT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 55
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 12ff  5e            3229   3241         MOV     E,M     ;LOW TO E
 1300  e5            3230   3242         PUSH    H       ;SAVE POINTER
 1301  cd 83 13      3231   3243         CALL    EVLD    ;GO LOAD VALUE
@@ -3573,11 +3301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1365  e5            3286   3298         PUSH    H       ;SAVE H,L
 1366  23            3287   3299         INX     H       ;DITTO
 1367  56            3288   3300         MOV     D,M     ;GET HI BYTE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 56
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1368  23            3289   3301         INX     H       ;POINT NEXT
 1369  5e            3290   3302         MOV     E,M     ;GET LO BYTE
 136a  cd 83 13      3291   3303         CALL    EVLD    ;GO LOAD VAR
@@ -3638,11 +3361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 13ca  21 2f 22      3346   3358         LXI     H,TEMP1 ;POINT 2ND ARGUMENT
 13cd  ef            3347   3359         RST     5       ;LOAD IT IN FACC
 13ce  cd 35 1f      3348   3360         CALL    FACDE   ;CONVERT TO D,E
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 57
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 13d1  c1            3349   3361         POP     B       ;GET COL
 13d2  af            3350   3362         XRA     A       ;GET A ZERO
 13d3  32 72 20      3351   3363         STA     DIMSW   ;RESET SW
@@ -3703,11 +3421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3406   3418 ; TO THE FLOATING POINT ACCUMULATOR.  THE INPUT FIELD
                     3407   3419 ; MAY CONTAIN ANY VALID NUMBER, INCLUDING SCIENTIFIC
                     3408   3420 ; NOTATION (NNN.NNNNE+NN).
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 58
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3409   3421 ; THE INPUT STRING IS TERMINATED BY ANY NON-NUMERIC CHAR
                     3410   3422 ;
                     3411   3423 ;
@@ -3768,11 +3481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3466   3478 ;             DE=INPUT STRING
                     3467   3479 ; ON EXIT, SIGN IS ON STACK
                     3468   3480 ;       B=DIGIT COUNT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 59
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3469   3481 ;       C=EXCESS DIGIT COUNT
                     3470   3482 ;
 1488  21 58 22      3471   3483 FIN8:   LXI     H,FACC  ;CLEAR FACC
@@ -3833,11 +3541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 14df  21 63 22      3526   3538         LXI     H,FTEMP+7
 14e2  cd e8 14      3527   3539         CALL    FIND0   ;*5
 14e5  21 5b 22      3528   3540 FIND:   LXI     H,FACC+3        ;DOUBLE FACC
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 60
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 14e8  11 5b 22      3529   3541 FIND0:  LXI     D,FACC+3
 14eb  06 04         3530   3542         MVI     B,4     ;BYTE COUNT
 14ed  c3 f0 18      3531   3543         JMP     FADDT   ;ADD & RETURN
@@ -3898,11 +3601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1553  fa 5d 15      3586   3598         JM      FOUTU   ;BRIF LT
 1556  21 5c 22      3587   3599         LXI     H,FTEMP ;POINT SAVE AREA
 1559  ef            3588   3600         RST     5       ;LOAD IT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 61
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 155a  c3 27 15      3589   3601         JMP     FOUT4   ;ONCE MORE
 155d  cd 70 15      3590   3602 FOUTU:  CALL    FOUT9   ;PUT DIGIT
 1560  af            3591   3603 FOUT7:  XRA     A       ;CLEAR STATUS
@@ -3963,11 +3661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 15bc  47            3646   3658         MOV     B,A     ;SAVE UNITS
 15bd  7b            3647   3659         MOV     A,E     ;GET TENS
 15be  cd 70 15      3648   3660         CALL    FOUT9   ;OUTPUT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 62
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 15c1  78            3649   3661         MOV     A,B     ;GET UNITS
 15c2  cd 70 15      3650   3662         CALL    FOUT9   ;OUTPUT
 15c5  e1            3651   3663         POP     H       ;GET PTR
@@ -4028,11 +3721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 161b  77            3706   3718         MOV     M,A     ;SHIFT THE DIGIT
 161c  c3 fc 15      3707   3719         JMP     FOUTO   ;GO ZERO SUPPRESS
 161f  2b            3708   3720 FOUTS:  DCX     H       ;POINT ONE TO LEFT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 63
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1620  7e            3709   3721         MOV     A,M     ;PICK UP DIGIT
 1621  36 30         3710   3722         MVI     M,'0'   ;REPLACE
 1623  23            3711   3723         INX     H       ;POINT RIGHT
@@ -4093,11 +3781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1676  f2 86 16      3766   3778         JP      FADD6   ;BRIF TEMP MUST BE SHIFTED
 1679  21 58 22      3767   3779         LXI     H,FACC  ;POINT FLOAT ACC
 167c  79            3768   3780         MOV     A,C     ;GET EXPONENT, SIGN
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 64
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 167d  e6 7f         3769   3781         ANI     7FH     ;STRIP EXP SIGN
 167f  4f            3770   3782         MOV     C,A     ;PUT BACK
 1680  7e            3771   3783         MOV     A,M     ;GET THE EXP
@@ -4158,11 +3841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3826   3838 ; THAT IS, THE FIRST BIT MUST BE SIGNIFICANT
                     3827   3839 ;
                     3828   3840 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 65
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 16dd  21 5b 22      3829   3841         LXI     H,FACC+3        ;POINT LSB
 16e0  7e            3830   3842         MOV     A,M     ;LOAD IT
 16e1  2b            3831   3843         DCX     H       ;POINT PRIOR
@@ -4223,11 +3901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 171e  2b            3886   3898         DCX     H       ;RESTORE
 171f  b7            3887   3899         ORA     A       ;TEST IF ZERO
 1720  ca 28 00      3888   3900         JZ      RST5    ;GO LOAD TO FACC IF IT IS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 66
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1723  e5            3889   3901         PUSH    H       ;SAVE MULTIPLIER ADDRESS
 1724  cd 7f 17      3890   3902         CALL    MDSGN   ;GET SIGN PRODUCT, & BOTH EXPONENTS
 1727  80            3891   3903         ADD     B       ;ADD EXPONENTS
@@ -4288,11 +3961,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     3946   3958 ;       C = SIGN PRODUCT
                     3947   3959 ;       HL DESTROYED
                     3948   3960 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 67
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 177f  cd 89 17      3949   3961 MDSGN:  CALL    SVSGN   ;GET SIGN IN C, EXP IN A
 1782  47            3950   3962         MOV     B,A     ;SAVE EXPONENT
 1783  21 58 22      3951   3963         LXI     H,FACC
@@ -4353,11 +4021,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 17b5  36 00         4006   4018         MVI     M,0     ;CLEAR MSB
 17b7  23            4007   4019         INX     H       ;POINT NEXT
 17b8  06 03         4008   4020         MVI     B,3     ;LOOP CTR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 68
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 17ba  1a            4009   4021 FDIV3:  LDAX    D       ;GET BYTE FROM FACC
 17bb  77            4010   4022         MOV     M,A     ;PUT TO FTEMP
 17bc  af            4011   4023         XRA     A       ;CLEAR A
@@ -4418,11 +4081,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 181f  ca 41 18      4066   4078         JZ      GETS5   ;BRIF IS
 1822  b7            4067   4079         ORA     A       ;TEST IF END
 1823  ca 41 18      4068   4080         JZ      GETS5   ;BRIF IS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 69
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1826  04            4069   4081         INR     B       ;COUNT IT
 1827  13            4070   4082         INX     D       ;POINT NEXT
 1828  12            4071   4083         STAX    D       ;PUT CHAR
@@ -4483,11 +4141,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1878  3e c1         4126   4138         MVI     A,0C1H  ;SET EXPONENT AT MINIMUM
 187a  c3 2c 1c      4127   4139         JMP     UNERR
 187d  fe 40         4128   4140 FOV1:   CPI     40H     ;TEST MAX POS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 70
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 187f  d8            4129   4141         RC              ;RETURN IF NO OVER.
 1880  3e 3f         4130   4142         MVI     A,3FH   ;SET EXPONENT AT MAXIMUM
 1882  c3 27 1c      4131   4143         JMP     OVERR
@@ -4548,11 +4201,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 18c5  2f            4186   4198         CMA             ;COMPLEMENT
 18c6  ce 00         4187   4199         ACI     0       ;PLUS CARRY
 18c8  57            4188   4200         MOV     D,A     ;SAVE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 71
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 18c9  e1            4189   4201         POP     H       ;GET ADDR (0,0)
 18ca  19            4190   4202         DAD     D       ;COMPUTE (I,J) RIGHT SIDE
 18cb  e7            4191   4203         RST     4       ;ADJUST H,L
@@ -4613,11 +4261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 18fb  7e            4246   4258         MOV     A,M     ;GET A BYTE
 18fc  1f            4247   4259         RAR             ;SHIFT RIGHT
 18fd  77            4248   4260         MOV     M,A     ;PUT DOWN
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 72
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 18fe  23            4249   4261         INX     H       ;POINT NEXT
 18ff  05            4250   4262         DCR     B       ;DECR CTR
 1900  c2 fb 18      4251   4263         JNZ     FSHFT   ;LOOP
@@ -4678,11 +4321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1950  db 03         4306   4318 TEST1:  IN      TTY+1   ;GET STATUS
 1952  1f            4307   4319         RAR             ;TEST IF TXRDY
 1953  d2 50 19      4308   4320         JNC     TEST1   ;LOOP TILL READY
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 73
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1956  f1            4309   4321         POP     PSW     ;GET CHAR
 1957  d3 02         4310   4322         OUT     TTY     ;WRITE IT
                     4311   4323         ENDIF
@@ -4743,11 +4381,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4366   4378         DCX     H       ;POINT PRIOR
                     4367   4379         MOV     A,M     ;FETCH CHARACTER
                     4368   4380         ORA     A       ;TEST FOR BEGINNING
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 74
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4369   4381         JZ      ECHO    ;BRIF IT IS
                     4370   4382         PUSH    H       ;SAVE POSITION
                     4371   4383         LXI     H,RBOUT ;POINT RUBOUT SEQUENCE
@@ -4808,11 +4441,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 19e2  b7            4426   4438         ORA     A       ;TEST IT
 19e3  c0            4427   4439         RNZ             ;RETURN IF SUPPRESSED
 19e4  3a 76 22      4428   4440         LDA     COLUM   ;GET COLUMN POINTER
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 75
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 19e7  fe 38         4429   4441         CPI     56      ;COMPARE TO 56
 19e9  d2 5a 19      4430   4442         JNC     CRLF    ;BRIF NO ROOM LEFT
 19ec  47            4431   4443         MOV     B,A     ;SAVE IT
@@ -4873,11 +4501,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a3a  =             4486   4498 TSTCC   EQU     $
                     4487   4499 ;
                     4488   4500 ; TEST IF KEY WAS PRESSED DURING EXECUTION
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 76
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4489   4501 ; CANCEL IF CONTROL-C
                     4490   4502 ; TOGGLE OUTPUT SUPPRESS SW IF CONTROL-O
                     4491   4503 ;
@@ -4938,11 +4561,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4546   4558 ; CONTINUATION OF COMPARE (RST 2) ROUTINE
                     4547   4559 ;
 1a79  b7            4548   4560         ORA     A       ;TEST IT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 77
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1a7a  c2 81 1a      4549   4561         JNZ     COMP5   ;BRIF NOT END
 1a7d  af            4550   4562 COMP3:  XRA     A       ;SET EQUAL STATUS
 1a7e  7e            4551   4563 COMP4:  MOV     A,M     ;GET LAST CHAR
@@ -5003,11 +4621,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1ab5  01 00 00      4606   4618         LXI     B,0     ;CLEAR B AND C
 1ab8  3e 04         4607   4619         MVI     A,4     ;INIT DIGIT COUNTER
 1aba  32 8d 22      4608   4620         STA     PRSW    ;SAVE A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 78
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1abd  7e            4609   4621 PK1:    MOV     A,M     ;GET CHAR
 1abe  cd 2a 1b      4610   4622         CALL    NUMER   ;TEST FOR NUMERIC
 1ac1  c0            4611   4623         RNZ             ;RETURN IF NOT NUMERIC
@@ -5068,11 +4681,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1afd  c3 f9 1a      4666   4678         JMP     SKP2Z   ;LOOP
                     4667   4679 ;
 1b00  =             4668   4680 GTEMP   EQU     $
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 79
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4669   4681 ;
                     4670   4682 ; GETS FOUR BYTE TEMPORARY STORAGE AREA,
                     4671   4683 ; STORES THE FACC THERE,
@@ -5133,11 +4741,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1b31  d0            4726   4738         RNC             ;RETURN IF NOT NUMERIC
 1b32  bf            4727   4739         CMP     A       ;SET Z
 1b33  c9            4728   4740         RET             ;RETURN
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 80
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4729   4741 ;
 1b34  =             4730   4742 SEARC   EQU     $
                     4731   4743 ;
@@ -5198,11 +4801,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1b82  36 00         4786   4798         MVI     M,0     ;ZERO THE VALUE
 1b84  05            4787   4799         DCR     B       ;DECR CTR
 1b85  c2 81 1b      4788   4800         JNZ     SCH5    ;LOOP
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 81
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1b88  2b            4789   4801         DCX     H       ;POINT NEXT
 1b89  36 00         4790   4802         MVI     M,0     ;MARK NEW END
 1b8b  23            4791   4803         INX     H       ;POINT ADDR OF VARIABLE
@@ -5263,11 +4861,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1bcd  c2 0f 1c      4846   4858         JNZ     SNERR   ;BRIF NOT ALPHA
 1bd0  57            4847   4859         MOV     D,A     ;FIRST CHAR
 1bd1  1e 20         4848   4860         MVI     E,' '   ;DEFAULT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 82
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1bd3  23            4849   4861         INX     H       ;POINT NEXT
 1bd4  cf            4850   4862         RST     1       ;GET 2ND CHAR
 1bd5  cd 2a 1b      4851   4863         CALL    NUMER   ;TEST IF NUMERIC
@@ -5328,11 +4921,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4906   4918 ;
                     4907   4919 ; NON-FATAL ERRORS
                     4908   4920 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 83
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1c27  =             4909   4921 OVERR   EQU     $-1             ;OVERFLOW ERROR
 1c28  4f 56 fe      4910   4922         DB      'OV',EM
 1c2b  c9            4911   4923         RET                     ;RETURN TO ROUTINE
@@ -5393,11 +4981,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1c65  c9            4966   4978         RET             ;RETURN
                     4967   4979 ;
 1c66  =             4968   4980 FBIN    EQU     $
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 84
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     4969   4981 ;
                     4970   4982 ;
                     4971   4983 ; CONVERT FLOAT ACC TO UNSIGNED BINARY NUMBER IN A REG
@@ -5458,11 +5041,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5026   5038 ;
                     5027   5039 ; TABLE IS TERMINATED WITH A '00'
                     5028   5040 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 85
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1c98  =             5029   5041 FUNCT   EQU     $
 1c98  41 42 53 00   5030   5042         DB      'ABS',0
 1c9c  c7 0b         5031   5043         DW      ABS
@@ -5523,11 +5101,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1d18  cb            5083   5098         DB      0CBH
 1d19  56 41 4c 00   5084   5099         DB      'VAL',0
 1d1d  ba 0d         5085   5100         DW      VAL
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 86
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1d1f  ab            5086   5101         DB      0ABH
 1d20  53 50 41 43   5087   5102         DB      'SPACE$',0
 1d24  45 24 00      5087   5103
@@ -5588,11 +5161,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5133   5158         ENDIF
 1d84  4c 49 4e 45   5134   5159 LLINE:  DB      'LINE',0
 1d88  00            5134   5160
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 87
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1d89  54 41 42 00   5135   5161 TABLI:  DB      'TAB',0
 1d8d  53 54 45 50   5136   5162 STEPL:  DB      'STEP',0
 1d91  00            5136   5163
@@ -5653,11 +5221,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5190   5218 ;
 1e22  7f de 5b d0   5191   5219 LNC:    DB      07FH,0DEH,05BH,0D0H     ;C=LOG BASE 10 OF E
 1e26  =             5192   5220 READY   EQU     $
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 88
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1e26  fd            5193   5221         DB      0FDH
 1e27  52 45 41 44   5194   5222         DB      'READY',0
 1e2b  59 00         5194   5223
@@ -5718,11 +5281,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1ea6  e5 03         5237   5278         DW      FOR
 1ea8  4e 45 58 54   5238   5279 NEXTL:  DB      'NEXT',0
 1eac  00            5238   5280
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 89
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1ead  92 06         5239   5281         DW      NEXT
 1eaf  47 4f 53 55   5240   5282 GOSBL:  DB      'GOSUB',0
 1eb3  42 00         5240   5283
@@ -5783,11 +5341,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5286   5338         IF      LARGE   ;INCLUDE ONLY IN 8K+ VERSION
                     5287   5339         DB      'EDIT',0
                     5288   5340         DW      FIX
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 90
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5289   5341         DB      'CLOAD',0
                     5290   5342         DW      CLOAD
                     5291   5343         DB      'CSAVE',0
@@ -5848,11 +5401,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1f64  ca 83 1f      5346   5398         JZ      FIND3   ;BRIF END
 1f67  23            5347   5399         INX     H       ;POINT LINE #
 1f68  7e            5348   5400         MOV     A,M     ;FETCH HI #
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 91
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1f69  b8            5349   5401         CMP     B       ;COMPARE TO REQUESTED
 1f6a  da 7b 1f      5350   5402         JC      FIND2   ;BRIF LOW
 1f6d  c2 83 1f      5351   5403         JNZ     FIND3   ;BRIF PAST AND NOT FOUND
@@ -5913,11 +5461,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5406   5458 ;
                     5407   5459 ;
                     5408   5460 ; EDIT COMMAND
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 92
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5409   5461 ; EDIT <LINE #><DELIMITER><OLD TEXT><DELIMITER><NEW TEXT>
                     5410   5462 ;
                     5411   5463 FIX:    EQU     $
@@ -5978,11 +5521,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5466   5518         ORA     A       ;TEST
                     5467   5519         JZ      DAERR   ;BR IF NOT FOUND
                     5468   5520         MOV     C,A     ;SAVE POSITION IN C
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 93
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5469   5521         DCR     A       ;ADJUST
                     5470   5522         MOV     B,A     ;COPY TO B
                     5471   5523         LXI     H,STRIN+1       ;POINT <OLD SOURCE>
@@ -6043,11 +5581,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5526   5578 ;
                     5527   5579 ;
                     5528   5580 ;       TAPE CASSETTE EQUATES
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 94
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5529   5581 ;
                     5530   5582 SWCH    EQU     0FFH    ;SWITCH PORT
                     5531   5583 CASC    EQU     3       ;STATUS PORT FOR TARBELL
@@ -6108,11 +5641,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5586   5638 ;
                     5587   5639 ;
                     5588   5640 ; RECO          WRITE A RECORD TO THE TARBELL.
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 95
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5589   5641 ;               D,E==>TYPE, LENGTH BYTES
                     5590   5642 ;               H,L==>START OF SOURCE
                     5591   5643 ;               RETURNS UPDATED SOURCE POINTER IN DE
@@ -6173,11 +5701,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5646   5698 ;               CLOBBERS B,H,L
                     5647   5699 ;
                     5648   5700 RECI:   CALL    CASI    ;GET TYPE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 96
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5649   5701         PUSH    PSW     ;SAVE TYPE TO RETURN TO CALLER
                     5650   5702         CALL    CASI    ;GET LENGTH
                     5651   5703         MOV     C,A     ;STORE LEN
@@ -6238,11 +5761,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5706   5758 ; CALCULATE LGTH OF PROGRAM FILE&WRITE IT ON THE HEADER
                     5707   5759 ;
                     5708   5760         LXI     D,BEGPR ;BEGINNING OF PROGRAM
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 97
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5709   5761         LHLD    PROGE   ;END
                     5710   5762         MOV     A,L
                     5711   5763         SUB     E
@@ -6303,11 +5821,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5766   5818         OUT     SWCH
                     5767   5819         CPI     0E6H
                     5768   5820         JNZ     NULL1   ;TRY FOR MORE NULLS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 98
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5769   5821         DCR     B
                     5770   5822         JNZ     SYNC
                     5771   5823         LXI     H,IOBUF ;POINT BUFFER
@@ -6368,11 +5881,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1fbc  c2 0f 1c      5826   5878         JNZ     SNERR   ;BRIF ERROR
 1fbf  23            5827   5879         INX     H       ;POINT NEXT
 1fc0  e5            5828   5880         PUSH    H       ;SAVE H,L
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 99
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1fc1  cd 35 1f      5829   5881         CALL    FACDE   ;PUT ADDRESS IN D,E
 1fc4  e1            5830   5882         POP     H       ;RESTORE H,L
 1fc5  d5            5831   5883         PUSH    D       ;SAVE ADDRESS
@@ -6433,11 +5941,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5886   5938         POP     D       ;RESTORE CONTROL BYTES
                     5887   5939 SETIT:  LXI     H,4     ;LOAD OFFSET
                     5888   5940         DAD     D       ;PIONT 1ST CONTROL BYTE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 100
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     5889   5941         MVI     A,40H   ;LOAD RESET
                     5890   5942         OUT     TTY+1   ;WRITE IT
                     5891   5943         MVI     A,M     ;MODE BYTE
@@ -6498,11 +6001,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 2071                5946   5998 TAPES:  DS      1       ;TAPE SWITCH (MUST BE HERE)
 2072                5947   5999 DIMSW:  DS      1       ;DIM SWITCH (MUST BE HERE)
 2073                5948   6000 OUTSW:  DS      1       ;OUTPUT SWITCH (MUST BE HERE)
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 101
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 2074                5949   6001 ILSW:   DS      1       ;INPUT LINE SWITCH (MUST BE HERE)
 2075                5950   6002 RUNSW:  DS      1       ;RUN SWITCH(MUST BE HERE)
 2076                5951   6003 EDSW:   DS      1       ;MODE SWITCH(MUST BE HERE)
@@ -6563,11 +6061,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6006   6058 ;
                     6007   6059         IF      CPM
                     6008   6060 ;TEMPORARY CODE FOR INITIALIZATION HERE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 102
-Source file: basic8k.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     6009   6061 ;
                     6010   6062 INITC:  LHLD    BOOT+1  ;PTR TO BIOS TABLE
                     6011   6063         LXI     D,CSTAT ;OFFSET OF CONSOLE QUERY ENTRY
@@ -6591,172 +6084,132 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 2296                6029   6081 BEGPR:
                     6030   6082 ;
 2296                6031   6083         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 103
-Source file: basic8k.asm
-Title:       Symbol table
 
-ABS      0bc7 	ADDR1    2252 	ADDR2    2254 	ADDR3    2256 	
-ALPHA    1b21 	ARG      1c74 	ARGNU    1c83 	ASCII    0d9a 	
-ATN      0ad4 	ATN1     0ae3 	ATNCO    1dd2 	BACKSL   005c 	
-BASIC    0000*	BDOS     0005*	BEGPR    2296 	BINFL    1c89 	
-BOOT     0000*	BZERO    2000 	CERCE    110b 	CHA1     0953 	
-CHA2     0968 	CHA3     0998 	CHANG    092a 	CHRFN    0d8f 	
-CKERR    1c23*	CMACT    226b 	COLUM    2276 	COMP1    0013 	
-COMP2    1a79 	COMP3    1a7d 	COMP4    1a7e 	COMP5    1a81 	
-COMP6    1a8e 	CONC2    0d3c 	CONC3    0d44 	CONC4    0d4c 	
-CONC5    0d62 	CONC6    0d76 	CONCA    0d26 	CONTI    02ee 	
-COPYD    1c4d 	COPYH    1c58 	COS      0ab3 	CPM      0000 	
-CPY4D    1c4b 	CPY4H    1c56 	CR1      1939 	CRLF     195a 	
-CSTAT    0003*	CVERR    1c1f 	DAERR    1c17 	DATAB    2291 	
-DATAL    1e9b 	DATAP    228f 	DEFLI    1f1e 	DEXP     2275 	
-DIM      09b1 	DIM1     09cf 	DIM2     0a01 	DIM3     0a0c 	
-DIM4     0a17 	DIMSW    2072 	DV8      12bc 	ECHO     19b1 	
-ED7A     013d 	ED7B     0146 	EDIT1    00e8 	EDIT2    00fd*	
-EDIT3    0103 	EDIT5    0114 	EDIT6    0129 	EDIT7    0135 	
-EDIT8    010f 	EDM1     139d 	EDM2A    13ac 	EDM3     13b0 	
-EDM4     13c4 	EDSW     2076 	ELOOP    0b9d 	EM       00fe 	
-ENDIT    01cb 	ENDLI    2272 	ENDXP    114b 	EOL      1a94 	
-EOL1     1aa3 	ERRMS    1e3c 	ERROR    1c31 	EV1      11c0 	
-EV10     12f9 	EV11     1352 	EV1A     11c8 	EV2      11d0 	
-EV2A     11f0 	EV3      1207 	EV3A     1228 	EV4      124c 	
-EV4A     1260 	EV4B     126b 	EV5      1278 	EV6      1296 	
-EV7      12b2 	EV9      12c7 	EVAL     11ba 	EVCOM    1377 	
-EVLD     1383 	EVLD1    1394 	EVNEG    1363 	EVPS     0a8b 	
-EVPS1    0a95 	EVPS2    0a9c 	EXEC     0164 	EXEC1    0174 	
-EXP      0b6a 	EXP1     0b84 	EXPCO    1e1e 	EXPR     0f80 	
-EXPRS    2250 	EZERO    2077 	FACC     2258 	FACDE    1f35 	
-FAD1     18f1 	FADD     1637 	FADD3    1656 	FADD4    1663 	
-FADD6    1686 	FADD7    1688 	FADD9    1694 	FADDA    16bc 	
-FADDJ    131b 	FADDT    18f0 	FADT3    18ee 	FALSE    020b 	
-FATAL    00f7 	FBIN     1c66 	FBIN1    1c71 	FDE1     1f4a 	
-FDE2     1f57 	FDEC     0d1a 	FDIV     179b 	FDIV3    17ba 	
-FDIV5    17d0 	FDIV6    17ea 	FDIV7    17f0 	FDIV8    17fe 	
-FEXP     18dc 	FIN      142e 	FIN2     143e 	FIN3     1464 	
-FIN4     146c 	FIN5     146e 	FIN6     147b 	FIN7     1480 	
-FIN8     1488 	FIN8A    14a0 	FIN9     14a2 	FINB     14be 	
-FIND     14e5 	FIND0    14e8 	FIND1    1f61 	FIND2    1f7b 	
-FIND3    1f83 	FMTEN    14d5 	FMUL     1718 	FMUL5    1742 	
-FMUL6    174e 	FMUL7    1754 	FMUL8    176a 	FMUL9    1770 	
-FN       0eb1 	FN2      0ef3 	FN3      0f11 	FN4      0f19 	
-FNARG    226c 	FND3     0caa 	FNEG1    16ca 	FNEG2    16d1 	
-FNL      103e 	FNL3     1056 	FNLIT    1f21 	FNMOD    2288 	
-FNORM    16dd 	FNRM1    16ef 	FNRM2    16f9 	FNRM3    1705 	
-FOR      03e5 	FOR1     042a 	FOR2     042e 	FOR4     0452 	
-FOR5     045e 	FOR6     046e 	FOR7     047a 	FOR8     0481 	
-FOR9     04b2 	FORA     04e0 	FORNE    2000 	FOUT     14f0 	
-FOUT0    1501 	FOUT2    150b 	FOUT3    151c 	FOUT4    1527 	
-FOUT5    1537 	FOUT6    153d 	FOUT7    1560 	FOUT9    1570 	
-FOUTA    157f 	FOUTB    1582 	FOUTC    1587 	FOUTD    158c 	
-FOUTH    1599 	FOUTI    15b0 	FOUTJ    15b4 	FOUTK    15d3 	
-FOUTL    15d6 	FOUTM    15d9 	FOUTN    15f1 	FOUTO    15fc 	
-FOUTP    15fd 	FOUTQ    1609 	FOUTR    1611 	FOUTS    161f 	
-FOUTT    1629 	FOUTU    155d 	FOUTV    1516 	FOV1     187d 	
-FOVUN    1871 	FREE     01a0 	FSB1     18e4 	FSHFT    18fb 	
-FSUB     170c 	FSUBT    18e3 	FTEMP    225c 	FTEST    18ce 	
-FUNC0    101b 	FUNC4    1036 	FUNCT    1c98 	GETCH    1a3f 	
-GETCM    00c9 	GETS1    181d 	GETS2    182e 	GETS3    182f 	
-GETS4    183f 	GETS5    1841 	GETS8    184f 	GETS9    186c 	
-GETST    180d 	GOSBL    1eaf 	GOSU1    0343 	GOSUB    033a 	
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 104
-Source file: basic8k.asm
-Title:       Symbol table
+Symbol table
 
-GOTO     02f6 	GOTO2    0306 	GOTOL    1ed0 	GTEMP    1b00 	
-HALFP    1dd6 	HDR1     01e8 	HDRTL    01e6 	HUNTER   0000 	
-IF1      0507 	IF2      050b 	IF3      050f 	IF4      0518 	
-IF5      0520 	IF6      052a 	IF8      0562 	IF9      0570 	
-IFF      05a8 	IFG      05b1 	IFH      05ba 	IFI      05c2 	
-IFJ      05d0 	IFK      05d6 	IFL      05dd 	IFM      05e7 	
-IFN      05ec 	IFSTM    04e9 	IFTYP    2226 	ILSW     2074 	
-IMMED    207c 	INDX     2223 	INIT1    0081 	INIT2    0092 	
-INIT3    009f 	INP      0d0a 	INPL     07a5 	INPL1    07c7 	
-INPL2    07d3 	INPU1    0733 	INPU2    073e 	INPU3    0742 	
-INPU4    074d 	INPU5    0760 	INPU6    0761 	INPU7    0775 	
-INPU8    0788 	INPU9    078d 	INPUA    079c 	INPUB    0796 	
-INPUT    0721 	INS      1181 	INS1     1182 	INST1    0e5b 	
-INST2    0e60 	INST3    0e67 	INST5    0e83 	INST6    0e87 	
-INST8    0e92 	INST9    0ea3 	INSTA    0eac 	INSTR    0e51 	
-INT      0be2 	INT2     0bf0 	INT3     0bff 	INT4     0c09 	
-INT5     0c0f 	IOBUF    20ce 	IRAM     0151 	JMPTB    1e4c 	
-JUMP     1fd4 	KEY      01dc 	KEYL     1e79 	LARGE    0000 	
-LDALP    0faf 	LDDTN    1091 	LDDTP    10a5 	LDF      0f9f 	
-LDFN     0ff4 	LDFN1    0ffa 	LDFNC    107f 	LDNUM    0f9c 	
-LDPI     1075 	LDRND    1063 	LDV      0fde 	LDV1     0fc6 	
-LDV2     0fd3 	LDV2A    13d7 	LEFT     0e05 	LENFN    0d89 	
-LET      05f1 	LET1     060c 	LET2     0626 	LET2A    0631 	
-LET3     063d 	LET4     064b 	LET5     0657 	LET6     0664 	
-LET7     0679 	LET8     0686 	LET9     0689 	LINE     2289 	
-LINEH    224d 	LINEL    224b 	LINEN    2077 	LINEO    1a09 	
-LIST     0262 	LIST1    0292 	LIST2    0295 	LIST4    02b5 	
-LIST5    02c5 	LIST6    02cf 	LIST7    02d5 	LIST8    02e5 	
-LIT1     10bf 	LIT2     10e3 	LIT3     10ff 	LITST    10b9 	
-LLINE    1d84 	LN       0b13 	LN0      0b2c 	LN1      0b38 	
-LN2      0b3d 	LN2C     1dae 	LN2E     1e0a 	LNC      1e22 	
-LNCO     1e06 	LOCAT    1f5e 	LOG      0b61 	LOOKD    0f95 	
-LOOKO    111d 	LOUT     1a14 	MDSGN    177f 	MID0     0e21 	
-MID1     0e2f 	MID2     0e3c 	MID3     0e40 	MID4     0e48 	
-MIDFN    0e17 	MULTI    2274 	NEG      0c7a 	NEGON    1daa 	
-NEW      0188 	NEW0     0193*	NEW1     0198 	NEXT     0692 	
-NEXT1    06a8 	NEXT2    06b3 	NEXT3    06bc 	NEXT5    06f7 	
-NEXT6    06fb 	NEXT7    06ef 	NEXTL    1ea8 	NOTBS    19a6 	
-NOTCH    19a6*	NOTCO    1983 	NOTCR    1975 	NOTEO    1aad 	
-NOTZ1    1a22 	NOTZ2    1a32 	NRNDX    1d6b 	NS       228e 	
-NULLI    1dec 	NUM1     0db2 	NUMEN    1b30 	NUMER    1b2a 	
-NUMFN    0da7 	NXERR    1c1b 	ON       08b5 	ON3      08db 	
-ON3A     08dc 	ON4      08ef 	ON5      08f9 	ON6      08fd 	
-ON7      0909 	ON8      0912 	ON9      091d 	ONE      1dea 	
-OP1      1158 	OP2      1197 	OP3      11ac 	OP4      11b7 	
-OPLP1    1163 	OPLP2    1167 	OT1      19bd 	OT2      19cc 	
-OT4      19db 	OUTA     2220 	OUTP     084a 	OUTSW    2073 	
-OVERR    1c27 	PACK     1ab5 	PARCT    2268 	PAUZ     1968 	
-PCHOF    1d62 	PEEK     1fab 	PI       1da2 	PILIT    1d97 	
-PK1      1abd 	PK3      1ad1 	POKE     1fb6 	POS      0d20 	
-POWER    1323 	PRCNT    1a6d 	PRIN2    038b 	PRIN4    0356 	
-PRIN5    0396 	PRIN6    039f 	PRIN7    0389 	PRIN8    03aa 	
-PRIN9    03ad 	PRINA    03b3 	PRINB    03ca 	PRINC    03d3 	
-PRINT    0355 	PRLIN    1bf1 	PROGE    2293 	PROMP    224f 	
-PRSW     228d 	QTRPI    1da6 	RAM      2000 	RANDO    089f 	
-RDY      00c3 	RDYM     00c0 	READ     07e1 	READ1    07f0 	
-READ2    080b 	READ3    081b 	READ4    0820 	READ5    082c 	
-READ6    0833 	READ7    0843 	READ8    0844 	READY    1e26 	
-REDIM    0a1d 	REDM1    0a33 	REIN     1907 	REL      2225 	
-RESTO    0316 	RETUR    0322 	RIGHT    0e0e 	RND      0c84 	
-RND1     0c96 	RND2     0c9c 	RND4     0cb9 	RND5     0cc5 	
-RND6     0ccd 	RND7     0d01 	RNDLI    1cb4 	RNDP     1d65 	
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 22:41:59 2022	Page 105
-Source file: basic8k.asm
-Title:       Symbol table
-
-RNDS     227d 	RNDSW    2287 	RNDX     2277 	RNDY     2279*	
-RNDZ     227b 	ROMEN    1fe2*	RSSGN    1791 	RST1     0008 	
-RST2     0010*	RST3     0018*	RST4     0020*	RST4A    003b 	
-RST4B    0044 	RST5     0028 	RST6     0030*	RTERR    1c13 	
-RUN      020b 	RUN1     021b 	RUN2     0225 	RUN3     0237 	
-RUN4     0238 	RUN7     024f 	RUNCM    01f4 	RUNSW    2075 	
-SADR     1b19 	SAVE     0255 	SCH0     1b3c 	SCH1     1b3f 	
-SCH2     1b61 	SCH3     1b65 	SCH4     1b7d 	SCH5     1b81 	
-SCH6     1b8f 	SCH7     1ba3 	SCH8     1bb8 	SCH9     1bc4 	
-SEARC    1b34 	SEEK     1f86*	SEEK1    1f86 	SEEK2    1f99 	
-SEEK3    1fa9 	SGN      0bd0 	SGN1     0bd6 	SIN      0a41 	
-SIN1     0a49 	SIN3A    0a78 	SINCO    1de6 	SKP2Z    1af9 	
-SKPP     10a1 	SNERR    1c0f 	SPAC1    0de9 	SPACE    0de1 	
-SPCTR    2269 	SQC1     1db2 	SQC2     1db6 	SQC3     1dba 	
-SQR      0c27 	SQR1     0c64 	SQUI2    1aed 	SQUIS    1ae2 	
-STACK    228b 	STEPL    1d8d 	STERR    1c0b 	STMT     2270 	
-STOP     0872 	STOPM    1e2d 	STR11    0dfe 	STRFN    0df1 	
-STRIN    2120 	SUB1     1898 	SUB2     18a3 	SUB3     18ad 	
-SUB4     18bc 	SUBSC    1885 	SVSGN    1789 	TABLI    1d89 	
-TABST    19df 	TAN      0abc 	TAPE     01be 	TAPES    2071 	
-TBASE    0100*	TBLP     19ee 	TBLP2    19f5 	TBON     19fa 	
-TBSPA    19ff 	TEMP1    222f 	TEMP2    2233 	TEMP3    2237 	
-TEMP4    223b 	TEMP5    223f 	TEMP6    2243*	TEMP7    2247 	
-TEN      1d9e 	TERMI    1904 	TERMM    19bd 	TERMO    19b5 	
-TEST1    1950 	TESTO    194f 	THENL    1d92 	TOLIT    1ed2 	
-TREAD    191d 	TRNDS    2285*	TRNDX    227f 	TRNDY    2281*	
-TRNDZ    2283*	TRUE     0581 	TSTC1    1a5e 	TSTCC    1a3a 	
-TSTEL    1aa8 	TTY      0002 	TVAR1    2227 	TVAR2    222b 	
-TWO      1d9a 	ULERR    1c03 	UNERR    1c2c 	UPARR    005e 	
-VAL      0dba 	VAL1     0dc6 	VAL2     0dcf 	VAR      1bc9 	
-VAR2     1bde 	VAR3     1be9 	VERS     1d78 	WHATL    1d73 	
-XEQ      01f9 	XSQR     1348*	Z1       1a28 	Z2       1a38 	
-ZEROM    1c5e 	ZMERR    1c07 	
+ABS    0bc7    ADDR1  2252    ADDR2  2254    ADDR3  2256    ALPHA  1b21 
+ARG    1c74    ARGNU  1c83    ASCII  0d9a    ATN    0ad4    ATN1   0ae3 
+ATNCO  1dd2    BACKSL 005c    BASIC  0000*   BDOS   0005*   BEGPR  2296 
+BINFL  1c89    BOOT   0000*   BZERO  2000    CERCE  110b    CHA1   0953 
+CHA2   0968    CHA3   0998    CHANG  092a    CHRFN  0d8f    CKERR  1c23*
+CMACT  226b    COLUM  2276    COMP1  0013    COMP2  1a79    COMP3  1a7d 
+COMP4  1a7e    COMP5  1a81    COMP6  1a8e    CONC2  0d3c    CONC3  0d44 
+CONC4  0d4c    CONC5  0d62    CONC6  0d76    CONCA  0d26    CONTI  02ee 
+COPYD  1c4d    COPYH  1c58    COS    0ab3    CPM    0000    CPY4D  1c4b 
+CPY4H  1c56    CR1    1939    CRLF   195a    CSTAT  0003*   CVERR  1c1f 
+DAERR  1c17    DATAB  2291    DATAL  1e9b    DATAP  228f    DEFLI  1f1e 
+DEXP   2275    DIM    09b1    DIM1   09cf    DIM2   0a01    DIM3   0a0c 
+DIM4   0a17    DIMSW  2072    DV8    12bc    ECHO   19b1    ED7A   013d 
+ED7B   0146    EDIT1  00e8    EDIT2  00fd*   EDIT3  0103    EDIT5  0114 
+EDIT6  0129    EDIT7  0135    EDIT8  010f    EDM1   139d    EDM2A  13ac 
+EDM3   13b0    EDM4   13c4    EDSW   2076    ELOOP  0b9d    EM     00fe 
+ENDIT  01cb    ENDLI  2272    ENDXP  114b    EOL    1a94    EOL1   1aa3 
+ERRMS  1e3c    ERROR  1c31    EV1    11c0    EV10   12f9    EV11   1352 
+EV1A   11c8    EV2    11d0    EV2A   11f0    EV3    1207    EV3A   1228 
+EV4    124c    EV4A   1260    EV4B   126b    EV5    1278    EV6    1296 
+EV7    12b2    EV9    12c7    EVAL   11ba    EVCOM  1377    EVLD   1383 
+EVLD1  1394    EVNEG  1363    EVPS   0a8b    EVPS1  0a95    EVPS2  0a9c 
+EXEC   0164    EXEC1  0174    EXP    0b6a    EXP1   0b84    EXPCO  1e1e 
+EXPR   0f80    EXPRS  2250    EZERO  2077    FACC   2258    FACDE  1f35 
+FAD1   18f1    FADD   1637    FADD3  1656    FADD4  1663    FADD6  1686 
+FADD7  1688    FADD9  1694    FADDA  16bc    FADDJ  131b    FADDT  18f0 
+FADT3  18ee    FALSE  020b    FATAL  00f7    FBIN   1c66    FBIN1  1c71 
+FDE1   1f4a    FDE2   1f57    FDEC   0d1a    FDIV   179b    FDIV3  17ba 
+FDIV5  17d0    FDIV6  17ea    FDIV7  17f0    FDIV8  17fe    FEXP   18dc 
+FIN    142e    FIN2   143e    FIN3   1464    FIN4   146c    FIN5   146e 
+FIN6   147b    FIN7   1480    FIN8   1488    FIN8A  14a0    FIN9   14a2 
+FINB   14be    FIND   14e5    FIND0  14e8    FIND1  1f61    FIND2  1f7b 
+FIND3  1f83    FMTEN  14d5    FMUL   1718    FMUL5  1742    FMUL6  174e 
+FMUL7  1754    FMUL8  176a    FMUL9  1770    FN     0eb1    FN2    0ef3 
+FN3    0f11    FN4    0f19    FNARG  226c    FND3   0caa    FNEG1  16ca 
+FNEG2  16d1    FNL    103e    FNL3   1056    FNLIT  1f21    FNMOD  2288 
+FNORM  16dd    FNRM1  16ef    FNRM2  16f9    FNRM3  1705    FOR    03e5 
+FOR1   042a    FOR2   042e    FOR4   0452    FOR5   045e    FOR6   046e 
+FOR7   047a    FOR8   0481    FOR9   04b2    FORA   04e0    FORNE  2000 
+FOUT   14f0    FOUT0  1501    FOUT2  150b    FOUT3  151c    FOUT4  1527 
+FOUT5  1537    FOUT6  153d    FOUT7  1560    FOUT9  1570    FOUTA  157f 
+FOUTB  1582    FOUTC  1587    FOUTD  158c    FOUTH  1599    FOUTI  15b0 
+FOUTJ  15b4    FOUTK  15d3    FOUTL  15d6    FOUTM  15d9    FOUTN  15f1 
+FOUTO  15fc    FOUTP  15fd    FOUTQ  1609    FOUTR  1611    FOUTS  161f 
+FOUTT  1629    FOUTU  155d    FOUTV  1516    FOV1   187d    FOVUN  1871 
+FREE   01a0    FSB1   18e4    FSHFT  18fb    FSUB   170c    FSUBT  18e3 
+FTEMP  225c    FTEST  18ce    FUNC0  101b    FUNC4  1036    FUNCT  1c98 
+GETCH  1a3f    GETCM  00c9    GETS1  181d    GETS2  182e    GETS3  182f 
+GETS4  183f    GETS5  1841    GETS8  184f    GETS9  186c    GETST  180d 
+GOSBL  1eaf    GOSU1  0343    GOSUB  033a    GOTO   02f6    GOTO2  0306 
+GOTOL  1ed0    GTEMP  1b00    HALFP  1dd6    HDR1   01e8    HDRTL  01e6 
+HUNTER 0000    IF1    0507    IF2    050b    IF3    050f    IF4    0518 
+IF5    0520    IF6    052a    IF8    0562    IF9    0570    IFF    05a8 
+IFG    05b1    IFH    05ba    IFI    05c2    IFJ    05d0    IFK    05d6 
+IFL    05dd    IFM    05e7    IFN    05ec    IFSTM  04e9    IFTYP  2226 
+ILSW   2074    IMMED  207c    INDX   2223    INIT1  0081    INIT2  0092 
+INIT3  009f    INP    0d0a    INPL   07a5    INPL1  07c7    INPL2  07d3 
+INPU1  0733    INPU2  073e    INPU3  0742    INPU4  074d    INPU5  0760 
+INPU6  0761    INPU7  0775    INPU8  0788    INPU9  078d    INPUA  079c 
+INPUB  0796    INPUT  0721    INS    1181    INS1   1182    INST1  0e5b 
+INST2  0e60    INST3  0e67    INST5  0e83    INST6  0e87    INST8  0e92 
+INST9  0ea3    INSTA  0eac    INSTR  0e51    INT    0be2    INT2   0bf0 
+INT3   0bff    INT4   0c09    INT5   0c0f    IOBUF  20ce    IRAM   0151 
+JMPTB  1e4c    JUMP   1fd4    KEY    01dc    KEYL   1e79    LARGE  0000 
+LDALP  0faf    LDDTN  1091    LDDTP  10a5    LDF    0f9f    LDFN   0ff4 
+LDFN1  0ffa    LDFNC  107f    LDNUM  0f9c    LDPI   1075    LDRND  1063 
+LDV    0fde    LDV1   0fc6    LDV2   0fd3    LDV2A  13d7    LEFT   0e05 
+LENFN  0d89    LET    05f1    LET1   060c    LET2   0626    LET2A  0631 
+LET3   063d    LET4   064b    LET5   0657    LET6   0664    LET7   0679 
+LET8   0686    LET9   0689    LINE   2289    LINEH  224d    LINEL  224b 
+LINEN  2077    LINEO  1a09    LIST   0262    LIST1  0292    LIST2  0295 
+LIST4  02b5    LIST5  02c5    LIST6  02cf    LIST7  02d5    LIST8  02e5 
+LIT1   10bf    LIT2   10e3    LIT3   10ff    LITST  10b9    LLINE  1d84 
+LN     0b13    LN0    0b2c    LN1    0b38    LN2    0b3d    LN2C   1dae 
+LN2E   1e0a    LNC    1e22    LNCO   1e06    LOCAT  1f5e    LOG    0b61 
+LOOKD  0f95    LOOKO  111d    LOUT   1a14    MDSGN  177f    MID0   0e21 
+MID1   0e2f    MID2   0e3c    MID3   0e40    MID4   0e48    MIDFN  0e17 
+MULTI  2274    NEG    0c7a    NEGON  1daa    NEW    0188    NEW0   0193*
+NEW1   0198    NEXT   0692    NEXT1  06a8    NEXT2  06b3    NEXT3  06bc 
+NEXT5  06f7    NEXT6  06fb    NEXT7  06ef    NEXTL  1ea8    NOTBS  19a6 
+NOTCH  19a6*   NOTCO  1983    NOTCR  1975    NOTEO  1aad    NOTZ1  1a22 
+NOTZ2  1a32    NRNDX  1d6b    NS     228e    NULLI  1dec    NUM1   0db2 
+NUMEN  1b30    NUMER  1b2a    NUMFN  0da7    NXERR  1c1b    ON     08b5 
+ON3    08db    ON3A   08dc    ON4    08ef    ON5    08f9    ON6    08fd 
+ON7    0909    ON8    0912    ON9    091d    ONE    1dea    OP1    1158 
+OP2    1197    OP3    11ac    OP4    11b7    OPLP1  1163    OPLP2  1167 
+OT1    19bd    OT2    19cc    OT4    19db    OUTA   2220    OUTP   084a 
+OUTSW  2073    OVERR  1c27    PACK   1ab5    PARCT  2268    PAUZ   1968 
+PCHOF  1d62    PEEK   1fab    PI     1da2    PILIT  1d97    PK1    1abd 
+PK3    1ad1    POKE   1fb6    POS    0d20    POWER  1323    PRCNT  1a6d 
+PRIN2  038b    PRIN4  0356    PRIN5  0396    PRIN6  039f    PRIN7  0389 
+PRIN8  03aa    PRIN9  03ad    PRINA  03b3    PRINB  03ca    PRINC  03d3 
+PRINT  0355    PRLIN  1bf1    PROGE  2293    PROMP  224f    PRSW   228d 
+QTRPI  1da6    RAM    2000    RANDO  089f    RDY    00c3    RDYM   00c0 
+READ   07e1    READ1  07f0    READ2  080b    READ3  081b    READ4  0820 
+READ5  082c    READ6  0833    READ7  0843    READ8  0844    READY  1e26 
+REDIM  0a1d    REDM1  0a33    REIN   1907    REL    2225    RESTO  0316 
+RETUR  0322    RIGHT  0e0e    RND    0c84    RND1   0c96    RND2   0c9c 
+RND4   0cb9    RND5   0cc5    RND6   0ccd    RND7   0d01    RNDLI  1cb4 
+RNDP   1d65    RNDS   227d    RNDSW  2287    RNDX   2277    RNDY   2279*
+RNDZ   227b    ROMEN  1fe2*   RSSGN  1791    RST1   0008    RST2   0010*
+RST3   0018*   RST4   0020*   RST4A  003b    RST4B  0044    RST5   0028 
+RST6   0030*   RTERR  1c13    RUN    020b    RUN1   021b    RUN2   0225 
+RUN3   0237    RUN4   0238    RUN7   024f    RUNCM  01f4    RUNSW  2075 
+SADR   1b19    SAVE   0255    SCH0   1b3c    SCH1   1b3f    SCH2   1b61 
+SCH3   1b65    SCH4   1b7d    SCH5   1b81    SCH6   1b8f    SCH7   1ba3 
+SCH8   1bb8    SCH9   1bc4    SEARC  1b34    SEEK   1f86*   SEEK1  1f86 
+SEEK2  1f99    SEEK3  1fa9    SGN    0bd0    SGN1   0bd6    SIN    0a41 
+SIN1   0a49    SIN3A  0a78    SINCO  1de6    SKP2Z  1af9    SKPP   10a1 
+SNERR  1c0f    SPAC1  0de9    SPACE  0de1    SPCTR  2269    SQC1   1db2 
+SQC2   1db6    SQC3   1dba    SQR    0c27    SQR1   0c64    SQUI2  1aed 
+SQUIS  1ae2    STACK  228b    STEPL  1d8d    STERR  1c0b    STMT   2270 
+STOP   0872    STOPM  1e2d    STR11  0dfe    STRFN  0df1    STRIN  2120 
+SUB1   1898    SUB2   18a3    SUB3   18ad    SUB4   18bc    SUBSC  1885 
+SVSGN  1789    TABLI  1d89    TABST  19df    TAN    0abc    TAPE   01be 
+TAPES  2071    TBASE  0100*   TBLP   19ee    TBLP2  19f5    TBON   19fa 
+TBSPA  19ff    TEMP1  222f    TEMP2  2233    TEMP3  2237    TEMP4  223b 
+TEMP5  223f    TEMP6  2243*   TEMP7  2247    TEN    1d9e    TERMI  1904 
+TERMM  19bd    TERMO  19b5    TEST1  1950    TESTO  194f    THENL  1d92 
+TOLIT  1ed2    TREAD  191d    TRNDS  2285*   TRNDX  227f    TRNDY  2281*
+TRNDZ  2283*   TRUE   0581    TSTC1  1a5e    TSTCC  1a3a    TSTEL  1aa8 
+TTY    0002    TVAR1  2227    TVAR2  222b    TWO    1d9a    ULERR  1c03 
+UNERR  1c2c    UPARR  005e    VAL    0dba    VAL1   0dc6    VAL2   0dcf 
+VAR    1bc9    VAR2   1bde    VAR3   1be9    VERS   1d78    WHATL  1d73 
+XEQ    01f9    XSQR   1348*   Z1     1a28    Z2     1a38    ZEROM  1c5e 
+ZMERR  1c07    

@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 1
-Source file: life.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:48:57 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ; LIFE .... VERSION 2.0
@@ -63,11 +61,6 @@ d800  =               24     24 TIME    EQU  0D800H
 003e  c2 30 00        58     58         JNZ  GEN20
 0041  c9              59     59         RET
 0042  01 00 00        60     60 CHANGE: LXI  B,0
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 2
-Source file: life.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0045  cd e9 00        61     61 CHN15:  CALL GTCOL
 0048  fe 09           62     62         CPI  RED
 004a  c2 55 00        63     63         JNZ  CHN20
@@ -128,11 +121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00ad  d5             118    118         PUSH D
 00ae  cd e9 00       119    119         CALL GTCOL
 00b1  d1             120    120         POP  D
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 3
-Source file: life.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00b2  fe 00          121    121         CPI  0
 00b4  ca c3 00       122    122         JZ   UPD20
 00b7  7a             123    123         MOV  A,D
@@ -193,11 +181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 010e  07             178    178         RLC
 010f  57             179    179         MOV  D,A
 0110  7e             180    180         MOV  A,M
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 4
-Source file: life.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0111  e6 0f          181    181         ANI  15
 0113  82             182    182         ADD  D
 0114  77             183    183         MOV  M,A
@@ -258,11 +241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 016d  3e 84          238    238         MVI  A,132
 016f  d3 0e          239    239         OUT  14
 0171  3e b0          240    240         MVI  A,176
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 5
-Source file: life.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0173  d3 0f          241    241         OUT  15
 0175  21 2e 02       242    242         LXI  H,IDENT
 0178  cd 5e 01       243    243         CALL TTYOUT
@@ -323,11 +301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01db  00             298    298         DB   0
 01dc  00             299    299         DB   0
 01dd  00             300    300         DB   0
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 6
-Source file: life.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01de  00             301    301         DB   0
 01df  c1             302    302 THRU:   POP  B
 01e0  c9             303    303         RET
@@ -388,35 +361,26 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 024a  45 4e          358    358 ENTER:  DW   'NE'
 024c  54 45          359    359         DW   'ET'
 024e  52 20          360    360         DW   ' R'
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 7
-Source file: life.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0250  44 41          361    361         DW   'AD'
 0252  54 41          362    362         DW   'AT'
 0254  0d 0a          363    363         DW   0A0DH
 0256  00 00          364    364         DW   0
                      365    365 
 0258                 366    366         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:30:15 2022	Page 8
-Source file: life.asm
-Title:       Symbol table
 
-BACK     01f7 	BLUE     000c 	BOTH     01eb 	CDISP    006e 	
-CHANGE   0042 	CHECK    0145 	CHN15    0045 	CHN20    0055 	
-CHN30    005f 	CLEAR    0074*	DAV      0001 	DELAY    0000 	
-DISPLY   0800 	DOWN     01e7 	ENTER    024a 	FILL     0076*	
-FLL12    0078 	FLL20    007e 	FND20    0123 	FND30    012d 	
-FNDCOL   0116 	FRZE     000f 	FWD      01ee 	GEN      002d 	
-GEN20    0030 	GREEN    000a 	GT20     00f3 	GTC20    01fd 	
-GTC30    021d 	GTC40    0226 	GTCHR    01f9 	GTCOL    00e9 	
-HOME     01e1 	IDENT    022e 	INDEX    01bf 	INIT     016a 	
-INST     0248 	INT20    017b*	MAN20    0009 	MAN30    000c 	
-MAN40    0020 	OFF      01f0 	ON       01e9 	PTC20    010a 	
-PTCOL    00fa 	RED      0009 	RETURN   01e5 	ROWA     022a 	
-ROWB     022c 	SETUP    018f 	STACK    0800 	START    0003 	
-STP      0019*	STP20    019b 	STP30    01a4 	STP40    01b4 	
-TAB      01c0 	TBE      0002 	THRU     01df 	TIME     d800*	
-TTYONE   0153 	TTYOUT   015e 	UP       01f5 	UPD10    009c 	
-UPD20    00c3 	UPDATE   0084 	UPONE    00dc 	UPROW    00cc 	
+Symbol table
+
+BACK   01f7    BLUE   000c    BOTH   01eb    CDISP  006e    CHANGE 0042 
+CHECK  0145    CHN15  0045    CHN20  0055    CHN30  005f    CLEAR  0074*
+DAV    0001    DELAY  0000    DISPLY 0800    DOWN   01e7    ENTER  024a 
+FILL   0076*   FLL12  0078    FLL20  007e    FND20  0123    FND30  012d 
+FNDCOL 0116    FRZE   000f    FWD    01ee    GEN    002d    GEN20  0030 
+GREEN  000a    GT20   00f3    GTC20  01fd    GTC30  021d    GTC40  0226 
+GTCHR  01f9    GTCOL  00e9    HOME   01e1    IDENT  022e    INDEX  01bf 
+INIT   016a    INST   0248    INT20  017b*   MAN20  0009    MAN30  000c 
+MAN40  0020    OFF    01f0    ON     01e9    PTC20  010a    PTCOL  00fa 
+RED    0009    RETURN 01e5    ROWA   022a    ROWB   022c    SETUP  018f 
+STACK  0800    START  0003    STP    0019*   STP20  019b    STP30  01a4 
+STP40  01b4    TAB    01c0    TBE    0002    THRU   01df    TIME   d800*
+TTYONE 0153    TTYOUT 015e    UP     01f5    UPD10  009c    UPD20  00c3 
+UPDATE 0084    UPONE  00dc    UPROW  00cc    

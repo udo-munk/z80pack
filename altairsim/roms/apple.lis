@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 1
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:51:01 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1         TITLE '<APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>'
@@ -63,11 +61,6 @@ f800  =               13     13 USER    EQU  BASE+800H
 ffff  =               58     58 TRUE    EQU  NOT FALSE          ;IT IS SO
 000d  =               59     59 CR      EQU  0DH                ;ASCII CARRIAGE RETURN
 000a  =               60     60 LF      EQU  0AH                ;ASCII LINE FEED
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 2
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0007  =               61     61 BELL    EQU  7                  ;DING
 00ff  =               62     62 RUB     EQU  0FFH               ;RUB OUT
 0000  =               63     63 FIL     EQU  0                  ;FILL CHARACTER AFTER CRLF
@@ -128,11 +121,6 @@ f000  c3 d8 f0       112    112 APPLE:  JMP  BEGIN              ;GO AROUND VECTO
                      118    118 ; FROM SYSTEM TO SYSTEM.  WHATEVER THE CURRENT
                      119    119 ; ASSIGNED DEVICE, THESE VECTORS WILL PERFORM
                      120    120 ; THE REQUIRED I/O OPERATIION, AND RETURN TO
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 3
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      121    121 ; THE CALLING PROGRAM. (RET)
                      122    122 ;
                      123    123 ; THE REGISTER CONVENTION USED FOLLOWS-
@@ -193,11 +181,6 @@ f038  21 14 00       177    177         LXI  H,TLOC
 f03b  39             178    178         DAD  SP
 f03c  cd 7a f0       179    179         CALL TR5                ;TEST IF A TRAP SET
 f03f  23             180    180         INX  H
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 4
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f040  23             181    181         INX  H
 f041  c4 7a f0       182    182         CNZ  TR5                ;TEST FOR 2ND TRAP
 f044  ca 48 f0       183    183         JZ   TR2                ; NO
@@ -258,11 +241,6 @@ f08f  7e             237    237         MOV  A,M
 f090  2f             238    238         CMA
 f091  77             239    239         MOV  M,A
 f092  be             240    240         CMP  M
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 5
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f093  2f             241    241         CMA
 f094  77             242    242         MOV  M,A
 f095  ca 8e f0       243    243         JZ   ME1
@@ -323,11 +301,6 @@ f0e6  c2 e1 f0       294    297         JNZ  BG1
 f0e9  cd 81 f0       295    298         CALL MEMSIZ             ;GET USER'S STACK
 f0ec  e5             296    299         PUSH H
 f0ed  60             297    300         MOV  H,B                ;ZERO OUT HL
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 6
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f0ee  68             298    301         MOV  L,B
 f0ef  e5             299    302         PUSH H
 f0f0  e5             300    303         PUSH H
@@ -388,11 +361,6 @@ f151  e9 f6          354    357         DW   UNLD               ;U - DUMP MEMORY
 f153  4c f4          355    358         DW   VERIFY             ;V - COMPARE MEMORY TO MEMORY
 f155  72 f4          356    359         DW   WRITE              ;W - DUMP MEMORY IN HEX FILE FORMAT
 f157  ba f4          357    360         DW   XAM                ;X - EXAMINE/MODIFY CPU REGISTERS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 7
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f159  db f2          358    361         DW   WHERE              ;Y - FIND 'N' BYTES IN MEMORY
 f15b  5f f5          359    362         DW   SIZE               ;Z - ADDR OF LAST R/W MEMORY LOCATION
                      360    363 ;
@@ -453,11 +421,6 @@ f1ae  21 80 f8       414    417         LXI  H,UTAB             ;POINT TO USER'S
 f1b1  c3 0b f1       415    418         JMP  STAR0              ;GOOD LUCK
                      416    419 ;
 000e  =              417    420 SZB     EQU  $-BRANCH
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 8
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      418    421 ;
 0000  =              419    422 SZC     EQU  $-$
                      420    423 ;
@@ -518,11 +481,6 @@ f216  21 16 00       474    477         LXI  H,TLOCX
 f219  39             475    478         DAD  SP
 f21a  e5             476    479 GO1:    PUSH H
 f21b  cd 23 f6       477    480         CALL EXPR               ;GET AN ADDRESS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 9
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f21e  c1             478    481         POP  B                  ;IN BC
 f21f  e1             479    482         POP  H
 f220  f5             480    483         PUSH PSW                ;SAVE DELIMITER
@@ -583,11 +541,6 @@ f279  05             534    537         DCR  B
 f27a  c2 73 f2       535    538         JNZ  LO1
 f27d  cd 85 f7       536    539 LO2:    CALL RIFF
 f280  ca 7d f2       537    540         JZ   LO2
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 10
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f283  77             538    541         MOV  M,A
 f284  cd 6a f5       539    542         CALL CO                 ;TELL CONSOLE
 f287  23             540    543 LO3:    INX  H
@@ -648,11 +601,6 @@ f2e2  cd 23 f6       594    597 WH1:    CALL EXPR
 f2e5  e1             595    598         POP  H                  ;CONSERVE STACK USAGE
 f2e6  65             596    599         MOV  H,L                ;L=SEARCH BYTE
 f2e7  e5             597    600         PUSH H                  ;H=L
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 11
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f2e8  33             598    601         INX  SP                 ;ADJUST STACK
 f2e9  0c             599    602         INR  C                  ;COUNT SEARCH BYTES
 f2ea  d2 e2 f2       600    603         JNC  WH1
@@ -713,11 +661,6 @@ f33f  d6 3a          654    657         SUI  ':'                ;GET FILE TYPE C
 f341  47             655    658         MOV  B,A                ;SAVE CUE CLUE
 f342  e6 fe          656    659         ANI  0FEH               ;KILL BIT 0
 f344  c2 3c f3       657    660         JNZ  RD1                ;NOT ':' OR ';'
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 12
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f347  57             658    661         MOV  D,A                ;ZERO CHECKSUM STORAGE
 f348  cd d4 f3       659    662         CALL BYTE               ;GET FILE LRNGTH
 f34b  5f             660    663         MOV  E,A                ;SAVE IN E
@@ -778,11 +721,6 @@ f3a6  e3             714    717         XTHL
 f3a7  23             715    718         INX  H                  ;STICK AT LOAD+1
 f3a8  77             716    719         MOV  M,A
 f3a9  2b             717    720         DCX  H                  ;GET LOAD BYTE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 13
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f3aa  7e             718    721         MOV  A,M                ;IN A
 f3ab  e3             719    722         XTHL
 f3ac  2b             720    723         DCX  H
@@ -843,11 +781,6 @@ f3f1  72             774    777         MOV  M,D                ;IN 'EXIT' TEMPL
 f3f2  2b             775    778         DCX  H
 f3f3  73             776    779         MOV  M,E
 f3f4  c9             777    780         RET                     ;REALLY DONE.
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 14
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      778    781 ;
 00d6  =              779    782 SZR     EQU  $-READ
                      780    783 ;
@@ -908,11 +841,6 @@ f450  d5             834    837         PUSH D                  ;SAVE END POINTE
 f451  5e             835    838         MOV  E,M                ;GET MEMORY DATA
 f452  bb             836    839         CMP  E                  ;TEST FOR MATCH
 f453  ca 6a f4       837    840         JZ   VE1                ;MATCHES
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 15
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f456  c5             838    841         PUSH B
 f457  47             839    842         MOV  B,A
 f458  cd 65 f5       840    843         CALL HLSP
@@ -973,11 +901,6 @@ f4b7  c3 a2 f6       893    896         JMP  PBYTE
 0048  =              895    898 SZW     EQU  $-WRITE
                      896    899 ;
 f4ba  cd b6 f6       897    900 XAM:    CALL PCHK
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 16
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f4bd  21 d6 f7       898    901         LXI  H,ACTBL            ;POINT TO REG. TABLE
 f4c0  06 0b          899    902         MVI  B,ACTSZ            ;SET UP B
 f4c2  da f9 f4       900    903         JC   XA6
@@ -1038,11 +961,6 @@ f51c  23             954    957         INX  H                  ;ADJUST FOR RET 
 f51d  23             955    958         INX  H
 f51e  78             956    959         MOV  A,B                ;TEST FOR 'M'
 f51f  e6 40          957    960         ANI  40H                ;BIT 6
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 17
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f521  ca 28 f5       958    961         JZ   XA9                ;NO, NOT 'M'
 f524  7e             959    962         MOV  A,M                ;ELSE GET 'M' POINTER
 f525  2b             960    963         DCX  H                  ; INSTEAD
@@ -1103,11 +1021,6 @@ f572  3d            1014   1017         DCR  A
 f573  c2 8c f5      1015   1018         JNZ  COU
                     1016   1019 ;
 f576  db 02         1017   1020 TTYOUT: IN   TTS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 18
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f578  e6 80         1018   1021         ANI  TTYBE
 f57a  c2 76 f5      1019   1022         JNZ  TTYOUT
 f57d  79            1020   1023         MOV  A,C
@@ -1168,11 +1081,6 @@ f5d3  c1            1074   1077         POP  B
 f5d4  e1            1075   1078         POP  H
 f5d5  c9            1076   1079         RET
                     1077   1080 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 19
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f5d6  3a ff ff      1078   1081 CSTS:   LDA  -1
 f5d9  e6 03         1079   1082         ANI  NOT CMSK
 f5db  ca ee f5      1080   1083         JZ   CS1                ;CRT
@@ -1233,11 +1141,6 @@ f61b  c9            1131   1134         RET
                     1135   1138 ; ERROR CONDITION.
                     1136   1139 ;
 f61c  cd f7 f5      1137   1140 EXP3:   CALL EXPC               ;GET THREE PARAMETERS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 20
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f61f  da ba f0      1138   1141         JC   ERROR              ;I SAID 3
 f622  c9            1139   1142         RET
                     1140   1143 ;
@@ -1298,11 +1201,6 @@ f669  7d            1193   1196         MOV  A,L
 f66a  f5            1195   1198 LBYTE:  PUSH PSW
 f66b  0f            1196   1199         RRC
 f66c  0f            1197   1200         RRC
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 21
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f66d  0f            1198   1201         RRC
 f66e  0f            1199   1202         RRC
 f66f  cd 73 f6      1200   1203         CALL LB
@@ -1363,11 +1261,6 @@ f6c4  c9            1254   1257         RET
                     1255   1258 ;
 f6c5  0e 0d         1256   1259 PEOL:   MVI  C,CR
 f6c7  cd cc f6      1257   1260         CALL PO
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 22
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f6ca  0e 0a         1258   1261         MVI  C,LF
                     1259   1262 ;
 f6cc  3a ff ff      1260   1263 PO:     LDA  -1
@@ -1428,11 +1321,6 @@ f72c  c2 00 f8      1314   1317         JNZ  CILOC              ; NO, MUST BE US
                     1315   1318 ;
 f72f  3a ff ff      1316   1319 RI:     LDA  -1
 f732  e6 0c         1317   1320         ANI  NOT RMSK
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 23
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f734  d3 02         1318   1321         OUT  TTS                ;PULSE A PORT TO SHOW REQUEST
 f736  c2 46 f7      1319   1322         JNZ  RI3                ;NEXT
                     1320   1323 ;DATA XFER
@@ -1493,11 +1381,6 @@ f792  c9            1373   1376         RET
 f793  cd 8d f7      1375   1378 TI:     CALL KI
 f796  c8            1376   1379         RZ
 f797  fe 7f         1377   1380         CPI  7FH
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 24
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f799  c8            1378   1381         RZ                      ;TEST FOR RUB-OUT
 f79a  fe 0d         1379   1382         CPI  CR                 ;IGNORE CR'S
 f79c  c8            1380   1383         RZ
@@ -1558,11 +1441,6 @@ f7c0  55            1433   1436         DB   'U'                ;LUSER  USER
 f7c1                1435   1438 EXIT:
 f7c1  d1            1436   1439         POP  D
 f7c2  c1            1437   1440         POP  B
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 25
-Source file: apple.asm
-Title:       <APPLE MONITOR, *ECT ROM* V1.0  JAN 07, 1979>
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 f7c3  f1            1438   1441         POP  PSW
 f7c4  e1            1439   1442         POP  H
 f7c5  f9            1440   1443         SPHL
@@ -1619,83 +1497,64 @@ f7f0                1490   1493 Z:                              ;END OF PROGRAM
                     1491   1494 ;
                     1492   1495 ;
 f7f0                1493   1496         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 26
-Source file: apple.asm
-Title:       Symbol table
 
-ACTBL    f7d6 	ACTSZ    000b 	ALOC     0007 	APPLE    f000*	
-AS1      f16a 	AS2      f17d 	AS3      f186 	AS4      f189 	
-AS5      f195 	ASSIGN   f15d 	BASE     f000 	BATCH    0002*	
-BEGIN    f0d8 	BELL     0007*	BG1      f0e1 	BI       f5bd 	
-BITS     f5b7 	BLK      f568 	BLOC     0005 	BRANCH   f1a6 	
-BYTE     f3d4 	CCHK     f0b4*	CCRT     0000*	CI       f70b 	
-CILOC    f800 	CIU      f72b 	CLOC     0004 	CMSK     00fc 	
-CO       f56a 	COLOC    f803 	CONV     f5ad 	COPCK    f6b1 	
-COU      f58c 	CR       000d 	CRLF     f5cc 	CRTBE    0080 	
-CRTDA    0001 	CRTI     0001 	CRTIN    f721 	CRTO     0001 	
-CRTOUT   f581 	CRTS     0000 	CS0      f5e7 	CS1      f5ee 	
-CS2      f5f2 	CSLOC    f806 	CSTS     f5d6 	CTTY     0001*	
-CUSE     0003*	DI0      f1ba 	DI1      f1c0 	DISP     f1b4 	
-DLOC     0003 	DONE     f3e7 	ELOC     0002 	ENDX     f7d6 	
-EOF      f1d4 	ERROR    f0ba 	EX1      f615 	EXF      f626 	
-EXIT     f7c1 	EXP3     f61c*	EXPC     f5f7 	EXPR     f623 	
-FALSE    0000 	FI1      f1f3 	FIL      0000 	FILL     f1f0 	
-FLOC     0006 	GO0      f20f 	GO1      f21a 	GO2      f230 	
-GO3      f238 	GO4      f243 	GOTO     f1fe 	HEXN     f656 	
-HILO     f64c 	HILOX    f646 	HLOC     0012 	HLSP     f565 	
-HLX      f7c8 	IO       0000 	IOCHK    f1a2 	IOSET    f19d 	
-J        f812 	KI       f78d 	LADR     f665 	LB       f673 	
-LBYTE    f66a 	LCRT     0040 	LEAD     f67f 	LEED     f682 	
-LF       000a 	LFADR    f562 	LINE     0080 	LLOC     000f 	
-LMSK     003f 	LNLOC    f5a2 	LO       f590 	LO0      f270 	
-LO1      f273 	LO2      f27d 	LO3      f287 	LO4      f28e 	
-LO5      f292 	LO6      f294 	LO7      f2a4 	LOAD     f267 	
-LTBL     f7ad 	LTTY     0000*	LULOC    f80f 	LUSER    00c0*	
-MARK     f679 	MAX      0007 	ME0      f084 	ME1      f08e 	
-MEMCK    f09a 	MEMSIZ   f081 	MO       f2b0 	MOVE     f2ad 	
-MSG      f0c5 	MSGL     0013 	NIBBLE   f68d 	NULL     f702 	
-OFF      ffff 	PADR     f69d 	PBL      f6ab 	PBYTE    f6a2 	
-PCAS     0020 	PCASO    0005 	PCHK     f6b6 	PCSBE    0080 	
-PCX      f7cb 	PEOL     f6c5 	PLOC     0015 	PMSK     00cf 	
-PO       f6cc 	PPBE     0080 	PPDA     0001 	PPDATA   0007 	
-PPSTAT   0006 	PPTP     0000*	PRET     f64a 	PTPL     f6de 	
-PTTY     0010 	PU0      f2c0 	PU1      f2d0 	PU2      f2d6 	
-PULOC    f80c 	PUSER    0030*	PUTA     f2b9 	QCHK     f6b9 	
-QI       f54d 	QIO      f7d3 	QLOC     001d 	QUERY    f535 	
-RCAS     0008 	RCSD     0005 	RCSDA    0001 	RCSS     0004 	
-RD0      f337 	RD1      f33c 	RD10     f3be 	RD11     f3c9 	
-RD2      f365 	RD3      f371 	RD4      f37a 	RD5      f380*	
-RD6      f386 	RD7      f392 	RD8      f3a5 	RD9      f3b6 	
-READ     f31f 	RI       f72f 	RI1      f74b 	RI2      f76a 	
-RI3      f746 	RI4      f739 	RI5      f758 	RI6      f75d 	
-RIBBLE   f68a 	RIFF     f785 	RIX      f77f 	RMSK     00f3 	
-RPTR     0000*	RST7     0038 	RTTY     0004 	RUB      00ff 	
-RULOC    f809 	RUSER    000c*	SIZE     f55f 	SLOC     0009 	
-STAR0    f10b 	START    f0fc 	SU0      f3fa 	SU1      f412 	
-SU2      f413 	SU3      f41c 	SUBS     f3f5 	SZA      0040*	
-SZB      000e*	SZC      0000*	SZD      0020*	SZE      001c*	
-SZF      000e*	SZG      004e*	SZH      000f*	SZJ      001b*	
-SZL      0046*	SZM      000c*	SZN      0003*	SZP      0022*	
-SZQ      002a*	SZR      00d6*	SZS      002b*	SZT      002c*	
-SZU      0019*	SZV      0026*	SZW      0048*	SZX      007b*	
-SZY      0044*	T1A      f7cd 	TBL      f129 	TE1      f24f 	
-TE2      f261 	TEST     f24c 	TI       f793 	TLOC     0014 	
-TLOCX    0016 	TOM      f0a3 	TOM1     f0a6 	TR0      f025*	
-TR1      f02c 	TR2      f048 	TR3      f065 	TR4      f072 	
-TR5      f07a 	TRAP     f01e 	TRUE     ffff 	TTI      0003 	
-TTO      0003 	TTS      0002 	TTYBE    0080 	TTYDA    0001 	
-TTYIN    f717 	TTYOUT   f576 	TY0      f426 	TY1      f42c 	
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 15:30:08 2022	Page 27
-Source file: apple.asm
-Title:       Symbol table
+Symbol table
 
-TY2      f434 	TY3      f436 	TYPE     f420 	UL1      f6f5 	
-UNLD     f6e9 	USER     f800 	UTAB     f880 	VE0      f44f 	
-VE1      f46a 	VERIFY   f44c 	WAIT     f705 	WH1      f2e2 	
-WH2      f2f4 	WH3      f2f7 	WH4      f300*	WH5      f303 	
-WH6      f308 	WH7      f316 	WHERE    f2db 	WR0      f478 	
-WR1      f483 	WR2      f498 	WR3      f49a 	WR4      f4a9 	
-WRITE    f472 	XA0      f4c5 	XA1      f4d2 	XA2      f4d5 	
-XA3      f4d8*	XA4      f4f0 	XA5      f4f2 	XA6      f4f9 	
-XA7      f4fc 	XA8      f511 	XA9      f528 	XAM      f4ba 	
-XF1      f629 	XF2      f63c 	Z        f7f0*	
+ACTBL  f7d6    ACTSZ  000b    ALOC   0007    APPLE  f000*   AS1    f16a 
+AS2    f17d    AS3    f186    AS4    f189    AS5    f195    ASSIGN f15d 
+BASE   f000    BATCH  0002*   BEGIN  f0d8    BELL   0007*   BG1    f0e1 
+BI     f5bd    BITS   f5b7    BLK    f568    BLOC   0005    BRANCH f1a6 
+BYTE   f3d4    CCHK   f0b4*   CCRT   0000*   CI     f70b    CILOC  f800 
+CIU    f72b    CLOC   0004    CMSK   00fc    CO     f56a    COLOC  f803 
+CONV   f5ad    COPCK  f6b1    COU    f58c    CR     000d    CRLF   f5cc 
+CRTBE  0080    CRTDA  0001    CRTI   0001    CRTIN  f721    CRTO   0001 
+CRTOUT f581    CRTS   0000    CS0    f5e7    CS1    f5ee    CS2    f5f2 
+CSLOC  f806    CSTS   f5d6    CTTY   0001*   CUSE   0003*   DI0    f1ba 
+DI1    f1c0    DISP   f1b4    DLOC   0003    DONE   f3e7    ELOC   0002 
+ENDX   f7d6    EOF    f1d4    ERROR  f0ba    EX1    f615    EXF    f626 
+EXIT   f7c1    EXP3   f61c*   EXPC   f5f7    EXPR   f623    FALSE  0000 
+FI1    f1f3    FIL    0000    FILL   f1f0    FLOC   0006    GO0    f20f 
+GO1    f21a    GO2    f230    GO3    f238    GO4    f243    GOTO   f1fe 
+HEXN   f656    HILO   f64c    HILOX  f646    HLOC   0012    HLSP   f565 
+HLX    f7c8    IO     0000    IOCHK  f1a2    IOSET  f19d    J      f812 
+KI     f78d    LADR   f665    LB     f673    LBYTE  f66a    LCRT   0040 
+LEAD   f67f    LEED   f682    LF     000a    LFADR  f562    LINE   0080 
+LLOC   000f    LMSK   003f    LNLOC  f5a2    LO     f590    LO0    f270 
+LO1    f273    LO2    f27d    LO3    f287    LO4    f28e    LO5    f292 
+LO6    f294    LO7    f2a4    LOAD   f267    LTBL   f7ad    LTTY   0000*
+LULOC  f80f    LUSER  00c0*   MARK   f679    MAX    0007    ME0    f084 
+ME1    f08e    MEMCK  f09a    MEMSIZ f081    MO     f2b0    MOVE   f2ad 
+MSG    f0c5    MSGL   0013    NIBBLE f68d    NULL   f702    OFF    ffff 
+PADR   f69d    PBL    f6ab    PBYTE  f6a2    PCAS   0020    PCASO  0005 
+PCHK   f6b6    PCSBE  0080    PCX    f7cb    PEOL   f6c5    PLOC   0015 
+PMSK   00cf    PO     f6cc    PPBE   0080    PPDA   0001    PPDATA 0007 
+PPSTAT 0006    PPTP   0000*   PRET   f64a    PTPL   f6de    PTTY   0010 
+PU0    f2c0    PU1    f2d0    PU2    f2d6    PULOC  f80c    PUSER  0030*
+PUTA   f2b9    QCHK   f6b9    QI     f54d    QIO    f7d3    QLOC   001d 
+QUERY  f535    RCAS   0008    RCSD   0005    RCSDA  0001    RCSS   0004 
+RD0    f337    RD1    f33c    RD10   f3be    RD11   f3c9    RD2    f365 
+RD3    f371    RD4    f37a    RD5    f380*   RD6    f386    RD7    f392 
+RD8    f3a5    RD9    f3b6    READ   f31f    RI     f72f    RI1    f74b 
+RI2    f76a    RI3    f746    RI4    f739    RI5    f758    RI6    f75d 
+RIBBLE f68a    RIFF   f785    RIX    f77f    RMSK   00f3    RPTR   0000*
+RST7   0038    RTTY   0004    RUB    00ff    RULOC  f809    RUSER  000c*
+SIZE   f55f    SLOC   0009    STAR0  f10b    START  f0fc    SU0    f3fa 
+SU1    f412    SU2    f413    SU3    f41c    SUBS   f3f5    SZA    0040*
+SZB    000e*   SZC    0000*   SZD    0020*   SZE    001c*   SZF    000e*
+SZG    004e*   SZH    000f*   SZJ    001b*   SZL    0046*   SZM    000c*
+SZN    0003*   SZP    0022*   SZQ    002a*   SZR    00d6*   SZS    002b*
+SZT    002c*   SZU    0019*   SZV    0026*   SZW    0048*   SZX    007b*
+SZY    0044*   T1A    f7cd    TBL    f129    TE1    f24f    TE2    f261 
+TEST   f24c    TI     f793    TLOC   0014    TLOCX  0016    TOM    f0a3 
+TOM1   f0a6    TR0    f025*   TR1    f02c    TR2    f048    TR3    f065 
+TR4    f072    TR5    f07a    TRAP   f01e    TRUE   ffff    TTI    0003 
+TTO    0003    TTS    0002    TTYBE  0080    TTYDA  0001    TTYIN  f717 
+TTYOUT f576    TY0    f426    TY1    f42c    TY2    f434    TY3    f436 
+TYPE   f420    UL1    f6f5    UNLD   f6e9    USER   f800    UTAB   f880 
+VE0    f44f    VE1    f46a    VERIFY f44c    WAIT   f705    WH1    f2e2 
+WH2    f2f4    WH3    f2f7    WH4    f300*   WH5    f303    WH6    f308 
+WH7    f316    WHERE  f2db    WR0    f478    WR1    f483    WR2    f498 
+WR3    f49a    WR4    f4a9    WRITE  f472    XA0    f4c5    XA1    f4d2 
+XA2    f4d5    XA3    f4d8*   XA4    f4f0    XA5    f4f2    XA6    f4f9 
+XA7    f4fc    XA8    f511    XA9    f528    XAM    f4ba    XF1    f629 
+XF2    f63c    Z      f7f0*   

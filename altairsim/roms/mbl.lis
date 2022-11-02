@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 1
-Source file: mbl.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:52:21 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ; MBL - MULTI BOOT LOADER FOR THE ALTAIR 8800
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       58     58 ; SIO                     0010B
                       59     59 ; ACR                     0011B
                       60     60 ; 4PIO                    0100B
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 2
-Source file: mbl.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       61     61 ; PIO                     0101B
                       62     62 ; HSR                     0110B
                       63     63 ;
@@ -128,11 +121,6 @@ fe27  d3 10          117    117                 OUT 010H
                      118    118 
                      119    119 ;----------------------------------------------------------
                      120    120 ; FIND TOP OF RAM.  ASSUMES THAT THERE IS NOT 64K OF RAM
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 3
-Source file: mbl.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      121    121 ; AVAILABLE, A REASONABLE ASSUMPTION GIVEN THAT THIS ROUTINE
                      122    122 ; RESIDES IN ROM SOMEWHERE AT THE TOP OF MEMORY.
                      123    123 ;
@@ -193,11 +181,6 @@ fe53  09             163    163                 DAD B           ; HL += BC
                      178    178 ;       F5              PUSH PSW        ; SAVE IT
                      179    179 ;       80              ADD B           ; UPDATE CHECKSUM IN B
                      180    180 ;       47              MOV B,A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 4
-Source file: mbl.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      181    181 ;       F1              POP PSW         ; RETRIEVE INPUT BYTE
                      182    182 ;       C9              RET             ; RETURN A=BYTE, B=CHECKSUM
                      183    183 ;
@@ -258,11 +241,6 @@ fe80  cd a5 fe       237    237 LEADINSKIP:     CALL LINK       ; GET ANOTHER BY
 fe83  b9             238    238                 CMP C
 fe84  ca 80 fe       239    239                 JZ LEADINSKIP   ; LOOP UNTIL WE RECEIVE A DIFFERENT BYTE VALUE
                      240    240 
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 5
-Source file: mbl.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      241    241                 ; AT THIS POINT, C CONTAINS THE FIRST LEADIN BYTE
                      242    242                 ; THAT WAS ON THE TAPE, WHICH SHOULD REPRESENT THE
                      243    243                 ; LENGTH OF THE STAGE 2 LOADER.
@@ -323,11 +301,6 @@ fecd  cd a5 fe       297    297                 CALL LINK       ; GET EXPECTED C
 fed0  b9             298    298                 CMP C           ; DOES IT MATCH OUR CALCULATED SUM?
 fed1  ca 8f fe       299    299                 JZ FINDTOKEN    ; Y - LOOK FOR MORE RECORDS ON THE TAPE
 fed4  3e 43          300    300                 MVI A,043H      ; N - PREPARE TO SEND 'C' ERROR
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 6
-Source file: mbl.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fed6  01             301    301                 DB 001H         ; LXI - HIDES NEXT TWO BYTES
 fed7  3e             302    302 IERROR:         DB 03EH         ; MVI A, 049H   ; PREPARE TO SEND 'I'
 fed8  49             303    303                 DB 049H
@@ -362,11 +335,10 @@ fefa  05 ca 02       331    331                 DB      005H, 0CAH, 002H        
 fefd  25 ca 40       332    332                 DB      025H, 0CAH, 040H        ; HSR
                      333    333 
 ff00                 334    334                 END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:43:19 2022	Page 7
-Source file: mbl.asm
-Title:       Symbol table
 
-EOF      fe9c*	ERREXIT  fed9 	FINDTOKE fe8f 	FOREVER  fee0 	
-IERROR   fed7 	LEADINSK fe80 	LINK     fea5 	LOADRECO fea6 	
-LOREC2   feb4 	MERROR   fec1 	SCANRAM  fe2c 	STAGE2SK fe88 	
-TABLE1   feeb 	
+Symbol table
+
+EOF        fe9c*   ERREXIT    fed9    FINDTOKEN  fe8f    FOREVER    fee0 
+IERROR     fed7    LEADINSKIP fe80    LINK       fea5    LOADRECORD fea6 
+LOREC2     feb4    MERROR     fec1    SCANRAM    fe2c    STAGE2SKIP fe88 
+TABLE1     feeb    

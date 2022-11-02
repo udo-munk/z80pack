@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 1
-Source file: tinybasic-2.0.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:53:15 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;*************************************************************
@@ -63,11 +61,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0023  7d              58     58         MOV  A,L                        ;Z FLAGS
 0024  bb              59     59         CMP  E                          ;BUT OLD A IS LOST
 0025  c9              60     60         RET
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 2
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0026  41 4e           61     61         DB   'AN'
                       62     62 ;
 0028  1a              63     63 SS1:    LDAX D                          ;*** IGNBLK/RST 5 ***
@@ -128,11 +121,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0076  c9             118    118         RET
                      119    119 ;
 0077  21 00 00       120    120 TSTNUM: LXI  H,0                        ;*** TSTNUM ***
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 3
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 007a  44             121    121         MOV  B,H                        ;TEST IF THE TEXT IS
 007b  ef             122    122         RST  5                          ;A NUMBER
 007c  fe 30          123    123 TN1:    CPI  30H                        ;IF NOT, RETURN 0 IN
@@ -193,11 +181,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      176    178 ; AND ANY EXISTING LINE WITH THE SAME LINE NUMBER IS DELETED.
                      177    179 ;
                      178    180 ; AFTER A LINE IS INSERTED, REPLACED, OR DELETED, THE PROGRAM
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 4
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      179    181 ; LOOPS BACK AND ASKS FOR ANOTHER LINE.  THIS LOOP WILL BE
                      180    182 ; TERMINATED WHEN IT READS A LINE WITH ZERO OR NO LINE
                      181    183 ; NUMBER; AND CONTROL IS TRANSFERED TO "DIRECT".
@@ -258,11 +241,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 010b  c1             236    238 ST4:    POP  B                          ;GET READY TO INSERT
 010c  2a 15 08       237    239         LHLD TXTUNF                     ;BUT FIRST CHECK IF
 010f  f1             238    240         POP  PSW                        ;THE LENGTH OF NEW LINE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 5
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0110  e5             239    241         PUSH H                          ;IS 3 (LINE # AND CR)
 0111  fe 03          240    242         CPI  3                          ;THEN DO NOT INSERT
 0113  ca ba 00       241    243         JZ   RSTART                     ;MUST CLEAR THE STACK
@@ -323,11 +301,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      296    298 ;
 013b  cd c5 04       297    299 STOP:   CALL ENDCHK                     ;*** STOP(CR) ***
 013e  c3 ba 00       298    300         JMP  RSTART
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 6
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      299    301 ;
 0141  cd c5 04       300    302 RUN:    CALL ENDCHK                     ;*** RUN(CR) ***
 0144  11 17 08       301    303         LXI  D,TXTBGN                   ;FIRST SAVED LINE
@@ -388,11 +361,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0178  da ba 00       356    358 LS1:    JC   RSTART                     ;C:PASSED TXTUNF
 017b  cd d5 05       357    359         CALL PRTLN                      ;PRINT THE LINE
 017e  cd 87 06       358    360         CALL CHKIO                      ;STOP IF HIT CONTROL-C
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 7
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0181  cd 43 05       359    361         CALL FNDLP                      ;FIND NEXT LINE
 0184  c3 78 01       360    362         JMP  LS1                        ;AND LOOP BACK
                      361    363 ;
@@ -453,11 +421,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01c4  cd 3b 05       416    418         CALL FNDLN                      ;FIND THE TARGET LINE
 01c7  c2 a0 00       417    419         JNZ  AHOW                       ;NOT THERE. SAY "HOW?"
 01ca  2a 01 08       418    420         LHLD CURRNT                     ;FOUND IT, SAVE OLD
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 8
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 01cd  e5             419    421         PUSH H                          ;'CURRNT' OLD 'STKGOS'
 01ce  2a 03 08       420    422         LHLD STKGOS
 01d1  e5             421    423         PUSH H
@@ -518,11 +481,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0202  21 16 07       476    478         LXI  H,TAB5-1                   ;USE 'EXEC' TO LOOK
 0205  c3 3e 07       477    479         JMP  EXEC                       ;FOR THE WORD 'TO'
 0208  df             478    480 FR1:    RST  3                          ;EVALUATE THE LIMIT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 9
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0209  22 0d 08       479    481         SHLD LOPLMT                     ;SAVE THAT
 020c  21 1c 07       480    482         LXI  H,TAB6-1                   ;USE 'EXEC' TO LOOK
 020f  c3 3e 07       481    483         JMP EXEC                        ;FOR THE WORD 'STEP'
@@ -583,11 +541,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0273  c3 5e 02       536    538         JMP  NX0                        ;GO CHECK AGAIN
 0276  5e             537    539 NX3:    MOV  E,M                        ;COME HERE WHEN AGREED
 0277  23             538    540         INX  H
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 10
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0278  56             539    541         MOV  D,M                        ;DE=VALUE OF VAR.
 0279  2a 0b 08       540    542         LHLD LOPINC
 027c  e5             541    543         PUSH H
@@ -648,11 +601,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      596    598 ;
                      597    599 ; IF THE INPUT EXPR. IS INVALID, TBI WILL PRINT "WHAT?",
                      598    600 ; "HOW?" OR "SORRY" AND REPRINT THE PROMPT AND REDO THE INPUT.
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 11
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      599    601 ; THE EXECUTION WILL NOT TERMINATE UNLESS YOU TYPE CONTROL-C.
                      600    602 ; THIS IS HANDLED IN 'INPERR'.
                      601    603 ;
@@ -713,11 +661,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0301  cd fd 04       656    658         CALL GETLN                      ;AND GET A LINE
 0304  11 37 1f       657    659         LXI  D,BUFFER                   ;POINTS TO BUFFER
 0307  df             658    660         RST  3                          ;EVALUATE INPUT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 12
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0308  00             659    661         NOP                             ;CAN BE 'CALL ENDCHK'
 0309  00             660    662         NOP
 030a  00             661    663         NOP
@@ -778,11 +721,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 033c  c8             716    718         RZ                              ;FALSE, RETURN HL=0
 033d  6f             717    719         MOV  L,A                        ;TRUE, RETURN HL=1
 033e  c9             718    720         RET
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 13
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 033f  cd 5c 03       719    721 XP13:   CALL XP18                       ;REL.OP.">"
 0342  c8             720    722         RZ                              ;FALSE
 0343  d8             721    723         RC                              ;ALSO FALSE, HL=0
@@ -843,11 +781,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 038e  fa 80 03       776    778         JM   XP23                       ;1ST AND 2ND SIGN DIFFER
 0391  ac             777    779         XRA  H                          ;1ST AND 2ND SIGN EQUAL
 0392  f2 80 03       778    780         JP   XP23                       ;SO IS RESULT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 14
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0395  c3 9f 00       779    781         JMP  QHOW                       ;ELSE WE HAVE OVERFLOW
 0398  cf             780    782 XP25:   RST  1                          ;SUBTRACT?
 0399  2d             781    783         DB   '-'
@@ -908,11 +841,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03f7  d1             836    838 XP35:   POP  D                          ;AND TEXT POINTER
 03f8  7c             837    839         MOV  A,H                        ;HL MUST BE +
 03f9  b7             838    840         ORA  A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 15
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 03fa  fa 9f 00       839    841         JM   QHOW                       ;ELSE IT IS OVERFLOW
 03fd  78             840    842         MOV  A,B
 03fe  b7             841    843         ORA  A
@@ -973,11 +901,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0454  cd 83 04       896    898         CALL CHKSGN                     ;CHECK SIGN
 0457  13             897    899         INX  D
 0458  c9             898    900         RET
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 16
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      899    901 ;
 0459  2a 15 08       900    902 SIZE:   LHLD TXTUNF                     ;*** SIZE ***
 045c  d5             901    903         PUSH D                          ;GET THE NUMBER OF FREE
@@ -1038,11 +961,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 048a  f5             956    958         PUSH PSW
 048b  2f             957    959         CMA                             ;CHANGE SIGN OF HL
 048c  67             958    960         MOV  H,A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 17
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 048d  7d             959    961         MOV  A,L
 048e  2f             960    962         CMA
 048f  6f             961    963         MOV  L,A
@@ -1103,11 +1021,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04ac  44            1016   1018         MOV  B,H                        ;VALUE IS IN BC NOW
 04ad  4d            1017   1019         MOV  C,L
 04ae  e1            1018   1020         POP  H                          ;GET ADDRESS
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 18
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 04af  71            1019   1021         MOV  M,C                        ;SAVE VALUE
 04b0  23            1020   1022         INX  H
 04b1  70            1021   1023         MOV  M,B
@@ -1168,11 +1081,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1076   1078 ; *** GETLN *** FNDLN (& FRIENDS) ***
                     1077   1079 ;
                     1078   1080 ; 'GETLN' READS A INPUT LINE INTO 'BUFFER'.  IT FIRST PROMPT
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 19
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1079   1081 ; THE CHARACTER IN A (GIVEN BY THE CALLER), THEN IT FILLS
                     1080   1082 ; THE BUFFER AND ECHOS.  IT IGNORES LF'S AND NULLS, BUT STILL
                     1081   1083 ; ECHOS THEM BACK.  RUB-OUT IS USED TO CAUSE IT TO DELETE
@@ -1233,11 +1141,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1136   1138 ;
 0543                1137   1139 FNDLP:                                  ;*** FDLNP ***
 0543  e5            1138   1140 FL1:    PUSH H                          ;SAVE LINE #
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 20
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0544  2a 15 08      1139   1141         LHLD TXTUNF                     ;CHECK IF WE PASSED END
 0547  2b            1140   1142         DCX  H
 0548  e7            1141   1143         RST  4
@@ -1298,11 +1201,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 056b  c2 64 05      1196   1198         JNZ  PS1                        ;NO, NEXT
 056e  c9            1197   1199         RET                             ;YES, RETURN
                     1198   1200 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 21
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 056f  cf            1199   1201 QTSTG:  RST  1                          ;*** QTSTG ***
 0570  22            1200   1202         DB   '"'
 0571  0f            1201   1203         DB   QT3-$-1
@@ -1363,11 +1261,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05c6  c4 10 00      1256   1258         CNZ  10H
 05c9  5d            1257   1259         MOV  E,L                        ;LAST REMAINDER IN E
 05ca  7b            1258   1260 PN6:    MOV  A,E                        ;CHECK DIGIT IN E
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 22
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 05cb  fe 0a         1259   1261         CPI  0AH                        ;10 IS FLAG FOR NO MORE
 05cd  d1            1260   1262         POP  D
 05ce  c8            1261   1263         RZ                              ;IF SO, RETURN
@@ -1428,11 +1321,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0600  c1            1316   1318 POPA:   POP  B                          ;BC = RETURN ADDR.
 0601  e1            1317   1319         POP  H                          ;RESTORE LOPVAR, BUT
 0602  22 09 08      1318   1320         SHLD LOPVAR                     ;=0 MEANS NO MORE
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 23
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0605  7c            1319   1321         MOV  A,H
 0606  b5            1320   1322         ORA  L
 0607  ca 1a 06      1321   1323         JZ   PP1                        ;YEP, GO RETURN
@@ -1493,11 +1381,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0645  32 00 08      1376   1378 INIT:   STA  OCSW
 0648  3e 03         1377   1379         MVI  A,3                        ;RESET ACIA
 064a  d3 10         1378   1380         OUT  16
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 24
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 064c  3e 15         1379   1381         MVI  A,15H                      ;15H FOR 8N1, 11H FOR 8N2
 064e  d3 10         1380   1382         OUT  16
 0650  16 19         1381   1383         MVI  D,19H
@@ -1558,11 +1441,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1434   1438 ; WHEN A MATCH IS FOUND, CONTROL IS TRANSFERED TO THE SECTION
                     1435   1439 ; OF CODE ACCORDING TO THE TABLE.
                     1436   1440 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 25
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1437   1441 ; AT 'EXEC', DE SHOULD POINT TO THE STRING AND HL SHOULD POINT
                     1438   1442 ; TO THE TABLE-1.  AT 'DIRECT', DE SHOULD POINT TO THE STRING.
                     1439   1443 ; HL WILL BE SET UP TO POINT TO TAB1-1, WHICH IS THE TABLE OF
@@ -1623,11 +1501,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06e3  81          + 1475   1498         DB   (RETURN SHR 8) + 128
 06e4  df          + 1475   1499         DB   RETURN AND 0FFH
 06e5  52 45 4d      1476   1500         DB   'REM'
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 26
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 06e8                1477   1501         DWA  REM
 06e8  82          + 1477   1502         DB   (REM SHR 8) + 128
 06e9  b0          + 1477   1503         DB   REM AND 0FFH
@@ -1688,11 +1561,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0723  82          + 1505   1558         DB   (FR3 SHR 8) + 128
 0724  16          + 1505   1559         DB   FR3 AND 0FFH
                     1506   1560 ;
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 27
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0725                1507   1561 TAB8:                                   ;RELATION OPERATORS
 0725  3e 3d         1508   1562         DB   '>='
 0727                1509   1563         DWA  XP11
@@ -1753,11 +1621,6 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0766  6e            1550   1618         MOV  L,M
 0767  e6 7f         1551   1619         ANI  7FH                        ;MASK OFF BIT 7
 0769  67            1552   1620         MOV  H,A
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 28
-Source file: tinybasic-2.0.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 076a  f1            1553   1621         POP  PSW                        ;CLEAN UP THE GABAGE
 076b  e9            1554   1622         PCHL                            ;AND WE GO DO IT
                     1555   1623 ;
@@ -1792,55 +1655,49 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 000a  =             1584   1652 LF      EQU  0AH
                     1585   1653 
 2000                1586   1654         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 12:22:19 2022	Page 29
-Source file: tinybasic-2.0.asm
-Title:       Symbol table
 
-ABS      0450 	AHOW     00a0 	ASORRY   04f7 	AWHAT    04ca 	
-BUFEND   1f77 	BUFFER   1f37 	CHGSGN   0486 	CHKIO    0687 	
-CHKSGN   0483 	CI1      06a0 	CK1      04a1 	CKHLDE   049b 	
-CR       000d 	CRLF     000e 	CURRNT   0801 	DEFLT    031d 	
-DIRECT   073b 	DIVIDE   0466 	DV1      0471 	DV2      0473 	
-ENDCHK   04c5 	ERROR    04cd 	EX0      073e 	EX1      0740 	
-EX2      0753 	EX3      075d 	EX4      075f 	EX5      0764 	
-EXEC     073e 	EXPR1    032d 	EXPR2    0371 	EXPR3    03a5 	
-EXPR4    0405 	FI1      04bd 	FI2      04c4 	FIN      04b6 	
-FL1      0543 	FL2      0558 	FNDLN    053b 	FNDLP    0543 	
-FNDNXT   0557 	FNDSKP   0559 	FOR      01f8 	FR1      0208 	
-FR2      0212 	FR3      0216 	FR4      0219 	FR5      021c*	
-FR7      0231 	FR8      0252 	GETLN    04fd 	GL1      0501 	
-GL3      0526 	GL4      0533 	GOSUB    01bf 	GOTO     0160 	
-HOW      00a6 	IFF      02b4 	INIT     0645 	INPERR   02c3 	
-INPUT    02cd 	IP1      02cd 	IP2      02db 	IP3      02eb 	
-IP4      0315 	IP5      031c 	LET      0323 	LF       000a 	
-LIST     016f 	LOPINC   080b 	LOPLMT   080d 	LOPLN    080f 	
-LOPPT    0811 	LOPVAR   0809 	LS1      0178 	LSTROM   076c 	
-LT1      032c 	MD1      05f9 	MSG1     06a6 	MVDOWN   05f1 	
-MVUP     05e8 	NEW      0132 	NEXT     0257 	NX0      025e 	
-NX1      0298 	NX2      02ac 	NX3      0276 	NX4      0288 	
-NX5      02aa 	OC2      066f 	OC3      0674 	OCSW     0800 	
-OK       00ab 	PARN     041a 	PATLOP   0652 	PN1      05a0 	
-PN2      05a7 	PN3      05b7 	PN4      05b8 	PN5      05c4 	
-PN6      05ca 	POPA     0600 	PP1      061a 	PR0      019b 	
-PR1      01a3 	PR2      0192 	PR3      01a9 	PR6      01b2 	
-PR8      01b6 	PRINT    0187 	PRTLN    05d5 	PRTNUM   0595 	
-PRTSTG   0563 	PS1      0564 	PU1      0642 	PUSHA    061c 	
-QHOW     009f 	QSORRY   04f6 	QT1      0574 	QT2      057d 	
-QT3      0581 	QT4      0589 	QT5      0594 	QTSTG    056f 	
-QWHAT    04c9 	RA1      0440 	RANPNT   0813 	REM      02b0 	
-RETURN   01df 	RND      0425 	RSTART   00ba 	RUN      0141 	
-RUNNXL   0147 	RUNSML   0157 	RUNTSL   0150 	SETVAL   04a3 	
-SIZE     0459 	SORRY    00b4 	SS1      0028 	ST1      00bd*	
-ST2      00cd 	ST3      00d6 	ST4      010b 	STACK    2000 	
-START    0000 	STKGOS   0803 	STKINP   0807 	STKLMT   1f78 	
-STOP     013b 	SUBDE    047c 	SV1      04b3 	TAB1     06b1 	
-TAB2     06c1 	TAB4     0705 	TAB5     0717 	TAB6     071d 	
-TAB8     0725 	TC1      0068 	TC2      0073 	TN1      007c 	
-TSTNUM   0077 	TV1      0058 	TXTBGN   0817 	TXTEND   1f00 	
-TXTUNF   0815 	VARBGN   1f00 	VARNXT   0805 	WHAT     00ae 	
-XP11     0333 	XP12     0339 	XP13     033f 	XP14     0346 	
-XP15     034e 	XP16     0354 	XP17     035a 	XP18     035c 	
-XP21     037a 	XP22     037d 	XP23     0380 	XP24     0387 	
-XP25     0398 	XP26     039b 	XP31     03a8 	XP32     03c5 	
-XP33     03cd 	XP34     03d8 	XP35     03f7 	XP40     040b 	
-XP41     0414 	XP42     0421 	XP43     0422 	
+Macro table
+
+DWA    
+
+Symbol table
+
+ABS    0450    AHOW   00a0    ASORRY 04f7    AWHAT  04ca    BUFEND 1f77 
+BUFFER 1f37    CHGSGN 0486    CHKIO  0687    CHKSGN 0483    CI1    06a0 
+CK1    04a1    CKHLDE 049b    CR     000d    CRLF   000e    CURRNT 0801 
+DEFLT  031d    DIRECT 073b    DIVIDE 0466    DV1    0471    DV2    0473 
+ENDCHK 04c5    ERROR  04cd    EX0    073e    EX1    0740    EX2    0753 
+EX3    075d    EX4    075f    EX5    0764    EXEC   073e    EXPR1  032d 
+EXPR2  0371    EXPR3  03a5    EXPR4  0405    FI1    04bd    FI2    04c4 
+FIN    04b6    FL1    0543    FL2    0558    FNDLN  053b    FNDLP  0543 
+FNDNXT 0557    FNDSKP 0559    FOR    01f8    FR1    0208    FR2    0212 
+FR3    0216    FR4    0219    FR5    021c*   FR7    0231    FR8    0252 
+GETLN  04fd    GL1    0501    GL3    0526    GL4    0533    GOSUB  01bf 
+GOTO   0160    HOW    00a6    IFF    02b4    INIT   0645    INPERR 02c3 
+INPUT  02cd    IP1    02cd    IP2    02db    IP3    02eb    IP4    0315 
+IP5    031c    LET    0323    LF     000a    LIST   016f    LOPINC 080b 
+LOPLMT 080d    LOPLN  080f    LOPPT  0811    LOPVAR 0809    LS1    0178 
+LSTROM 076c    LT1    032c    MD1    05f9    MSG1   06a6    MVDOWN 05f1 
+MVUP   05e8    NEW    0132    NEXT   0257    NX0    025e    NX1    0298 
+NX2    02ac    NX3    0276    NX4    0288    NX5    02aa    OC2    066f 
+OC3    0674    OCSW   0800    OK     00ab    PARN   041a    PATLOP 0652 
+PN1    05a0    PN2    05a7    PN3    05b7    PN4    05b8    PN5    05c4 
+PN6    05ca    POPA   0600    PP1    061a    PR0    019b    PR1    01a3 
+PR2    0192    PR3    01a9    PR6    01b2    PR8    01b6    PRINT  0187 
+PRTLN  05d5    PRTNUM 0595    PRTSTG 0563    PS1    0564    PU1    0642 
+PUSHA  061c    QHOW   009f    QSORRY 04f6    QT1    0574    QT2    057d 
+QT3    0581    QT4    0589    QT5    0594    QTSTG  056f    QWHAT  04c9 
+RA1    0440    RANPNT 0813    REM    02b0    RETURN 01df    RND    0425 
+RSTART 00ba    RUN    0141    RUNNXL 0147    RUNSML 0157    RUNTSL 0150 
+SETVAL 04a3    SIZE   0459    SORRY  00b4    SS1    0028    ST1    00bd*
+ST2    00cd    ST3    00d6    ST4    010b    STACK  2000    START  0000 
+STKGOS 0803    STKINP 0807    STKLMT 1f78    STOP   013b    SUBDE  047c 
+SV1    04b3    TAB1   06b1    TAB2   06c1    TAB4   0705    TAB5   0717 
+TAB6   071d    TAB8   0725    TC1    0068    TC2    0073    TN1    007c 
+TSTNUM 0077    TV1    0058    TXTBGN 0817    TXTEND 1f00    TXTUNF 0815 
+VARBGN 1f00    VARNXT 0805    WHAT   00ae    XP11   0333    XP12   0339 
+XP13   033f    XP14   0346    XP15   034e    XP16   0354    XP17   035a 
+XP18   035c    XP21   037a    XP22   037d    XP23   0380    XP24   0387 
+XP25   0398    XP26   039b    XP31   03a8    XP32   03c5    XP33   03cd 
+XP34   03d8    XP35   03f7    XP40   040b    XP41   0414    XP42   0421 
+XP43   0422    

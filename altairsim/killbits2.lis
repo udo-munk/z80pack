@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:15:19 2022	Page 1
-Source file: killbits2.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:48:14 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -37,8 +35,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0017  c3 08 00        32     32         JMP     BEG             ;REPEAT SEQUENCE
                       33     33 
 001a                  34     34         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 14:15:19 2022	Page 2
-Source file: killbits2.asm
-Title:       Symbol table
 
-BEG      0008 	
+Symbol table
+
+BEG 0008    

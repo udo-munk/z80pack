@@ -1,6 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 1
-Source file: turnmon.asm
-Title:       
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:53:37 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ; **************************************************************
@@ -63,11 +61,6 @@ fd3b  1a              57     57         LDAX    D               ;LOAD DATA FROM 
 fd3c  67              58     58         MOV     H,A
 fd3d  cd cc fd        59     59         CALL    PRT3            ;CVT TO ASCII + PRINT
 fd40  cd a5 fd        60     60         CALL    OCTL3           ;GET 3 OCTAL DIGITS IN HL
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 2
-Source file: turnmon.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fd43  eb              61     61         XCHG                    ;EXCHANGE HL AND DE
 fd44  da 32 fd        62     62         JC      CONT
 fd47  77              63     63         MOV     M,A             ;STORE USER SPECIFIED BYTE
@@ -128,11 +121,6 @@ fd9d  c3 f2 fd       114    114         JMP     OUTCHK          ;PRINT CHAR TO C
                      118    118 ; **************************************************************
 fda0  06 06          119    119 OCTL6:  MVI     B,6             ;SET DIGIT COUNTER
 fda2  c3 a7 fd       120    120         JMP     OCTL
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 3
-Source file: turnmon.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fda5  06 03          121    121 OCTL3:  MVI     B,3             ;SET DIGIT COUNTER
 fda7  21 00 00       122    122 OCTL:   LXI     H,0             ;CLEAR ALL 16 BITS OF HL REG
 fdaa  cd e8 fd       123    123 AGN:    CALL    INCH            ;GET CHAR FROM CONSOLE
@@ -193,23 +181,16 @@ fdf7  0f             177    177         RRC
 fdf8  0f             178    178         RRC
 fdf9  d2 f5 fd       179    179         JNC     LOOP            ;GET READ STATUS
 fdfc  f1             180    180         POP     PSW
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 4
-Source file: turnmon.asm
-Title:       
-
-LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 fdfd  d3 11          181    181         OUT     CONDATA         ;PRINT USER TYPED CHARACTER
 fdff  c9             182    182         RET
                      183    183 
 fe00                 184    184         END
-Z80-Macro-Assembler  Release 1.11-dev	Fri Oct 28 21:45:35 2022	Page 5
-Source file: turnmon.asm
-Title:       Symbol table
 
-AGN      fdaa 	CONDATA  0011 	CONSTAT  0010 	CONT     fd32 	
-CONT1    fd33 	CRLF     fd96 	DAGN     fd8d 	DCONT    fd5f 	
-DMP      fd54 	DO20     fd6d 	ENTER    fd08 	ERR      fd4c 	
-INCH     fde8 	LOOP     fdf5 	MEM      fd2c 	MON      fd00*	
-NEXT1    fdd6 	NEXT3    fdd2 	NXT3     fdd3 	NXTMEM   fd7e 	
-OCTL     fda7 	OCTL3    fda5 	OCTL6    fda0 	OUTCHK   fdf2 	
-PRT3     fdcc 	PRT6     fdc6 	SPACE    fde3 	STACK    fc00 	
+Symbol table
+
+AGN     fdaa    CONDATA 0011    CONSTAT 0010    CONT    fd32    CONT1   fd33 
+CRLF    fd96    DAGN    fd8d    DCONT   fd5f    DMP     fd54    DO20    fd6d 
+ENTER   fd08    ERR     fd4c    INCH    fde8    LOOP    fdf5    MEM     fd2c 
+MON     fd00*   NEXT1   fdd6    NEXT3   fdd2    NXT3    fdd3    NXTMEM  fd7e 
+OCTL    fda7    OCTL3   fda5    OCTL6   fda0    OUTCHK  fdf2    PRT3    fdcc 
+PRT6    fdc6    SPACE   fde3    STACK   fc00    
