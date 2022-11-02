@@ -98,19 +98,19 @@ int main(int argc, char *argv[])
 	do_pass(2);
 	if (list_flag) {
 		switch (sym_flag) {
-		case 0:		/* no symbol table */
+		case SYM_NONE:		/* no symbol table */
 			break;
-		case 1:		/* unsorted symbol table */
+		case SYM_UNSORT:	/* unsorted symbol table */
 			lst_mac(0);
 			lst_sym();
 			break;
-		case 2:		/* symbol table sorted by name */
+		case SYM_SORTN:		/* symbol table sorted by name */
 			lst_mac(1);
 			len = copy_sym();
 			n_sort_sym(len);
 			lst_sort_sym(len);
 			break;
-		case 3:		/* symbol table sorted by address */
+		case SYM_SORTA:		/* symbol table sorted by address */
 			lst_mac(0);
 			len = copy_sym();
 			a_sort_sym(len);
@@ -163,11 +163,11 @@ void options(int argc, char *argv[])
 				break;
 			case 's':
 				if (*(s + 1) == '\0')
-					sym_flag = 1;
+					sym_flag = SYM_UNSORT;
 				else if (*(s + 1) == 'n')
-					sym_flag = 2;
+					sym_flag = SYM_SORTN;
 				else if (*(s + 1) == 'a')
-					sym_flag = 3;
+					sym_flag = SYM_SORTA;
 				else {
 					printf("unknown option -%s\n", s);
 					usage();
@@ -213,7 +213,7 @@ void options(int argc, char *argv[])
 				ver_flag = 1;
 				break;
 			case 'm':
-				if (mac_list_flag < 2)
+				if (mac_list_flag < M_NONE)
 					mac_list_flag++;
 				break;
 			case 'U':

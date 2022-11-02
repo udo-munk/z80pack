@@ -191,6 +191,14 @@ struct inc {
 #define OBJ_HEX		2	/* Intel hex file */
 
 /*
+ *	definition of symbol table listing options
+ */
+#define SYM_NONE	0	/* no symbol table */
+#define SYM_UNSORT	1	/* unsorted symbol table */
+#define SYM_SORTN	2	/* symbol table sorted by name */
+#define SYM_SORTA	3	/* symbol table sorted by address */
+
+/*
  *	definition of operation sets
  */
 #define OPSET_PSD	0	/* pseudo ops */
