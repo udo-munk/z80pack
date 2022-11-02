@@ -52,7 +52,7 @@ extern struct sym *get_sym(char *);
 #define T_TYPE		9	/* TYPE */
 #define T_MUL		10	/* * */
 #define T_DIV		11	/* / */
-#define T_MOD		12	/* MOD */
+#define T_MOD		12	/* MOD or % */
 #define T_SHR		13	/* SHR or >> */
 #define T_SHL		14	/* SHL or << */
 #define T_EQ		15	/* EQ, = or == */
@@ -62,7 +62,7 @@ extern struct sym *get_sym(char *);
 #define T_GT		19	/* GT or > */
 #define T_GE		20	/* GE or >= */
 #define T_AND		21	/* AND or & */
-#define T_XOR		22	/* XOR */
+#define T_XOR		22	/* XOR or ^ */
 #define T_OR		23	/* OR or | */
 #define T_LPAREN	24	/* ( */
 #define T_RPAREN	25	/* ) */
@@ -261,6 +261,9 @@ int get_token(void)
 		} else
 			return(E_INVEXP);
 		break;
+	case '%':
+		tok_type = T_MOD;
+		break;
 	case '&':
 		tok_type = T_AND;
 		break;
@@ -309,6 +312,9 @@ int get_token(void)
 			tok_type = T_SHR;
 		} else
 			tok_type = T_GT;
+		break;
+	case '^':
+		tok_type = T_XOR;
 		break;
 	case '|':
 		tok_type = T_OR;
