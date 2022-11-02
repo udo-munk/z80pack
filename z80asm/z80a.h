@@ -224,7 +224,7 @@ struct inc {
 /*
  *	definition of error numbers for error messages in listfile
  */
-#define E_NOERR		0	/* no error (used by eval()) */
+#define E_NOERR		0	/* no error */
 #define E_ILLOPC	1	/* illegal opcode */
 #define E_ILLOPE	2	/* illegal operand */
 #define E_MISOPE	3	/* missing operand */

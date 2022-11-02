@@ -205,9 +205,9 @@ void lst_line(char *l, WORD addr, int op_cnt, int expn_flag)
 	}
 	fprintf(lstfp, "%c%5ld %6ld %s", expn_flag ? '+' : ' ',
 		c_line, s_line, l);
-	if (errnum) {
+	if (errnum != E_NOERR) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
-		errnum = 0;
+		errnum = E_NOERR;
 		if (ppl != 0)
 			p_line++;
 	}
@@ -248,12 +248,10 @@ void lst_mac(int sorted)
 	register char *p;
 	int refcnt;
 
-	p = mac_lst_first(sorted, &refcnt);
-	if (p == NULL)
-		return;
 	p_line = i = 0;
-	strcpy(title,"Macro table");
-	while (p != NULL) {
+	strcpy(title, "Macro table");
+	for (p = mac_lst_first(sorted, &refcnt); p != NULL;
+	     p = mac_lst_next(sorted, &refcnt)) {
 		if (p_line == 0) {
 			lst_header();
 			if (ppl == 0) {
@@ -275,7 +273,6 @@ void lst_mac(int sorted)
 			i = 0;
 		} else
 			fputs("   ", lstfp);
-		p = mac_lst_next(sorted, &refcnt);
 	}
 	if (i > 0)
 		fputc('\n', lstfp);
@@ -290,7 +287,7 @@ void lst_sym(void)
 	register struct sym *np;
 
 	p_line = j = 0;
-	strcpy(title,"Symbol table");
+	strcpy(title, "Symbol table");
 	for (i = 0; i < HASHSIZE; i++) {
 		if (symtab[i] != NULL) {
 			for (np = symtab[i]; np != NULL; np = np->sym_next) {

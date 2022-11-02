@@ -226,14 +226,16 @@ int op_db(BYTE op_code, BYTE dummy)
 			while (*p != c || *++p == c) { /* double delim? */
 				ops[i] = *p++;
 				if (++i >= OPCARRAY)
-				    fatal(F_INTERN, "op-code buffer overflow");
+					fatal(F_INTERN,
+					      "op-code buffer overflow");
 			}
 		} else {		/* an expression */
 			if (*p != '\0') {
 				if (pass == 2)
 					ops[i] = chk_byte(eval(p));
 				if (++i >= OPCARRAY)
-				    fatal(F_INTERN, "op-code buffer overflow");
+					fatal(F_INTERN,
+					      "op-code buffer overflow");
 			}
 		}
 		p = p1;
@@ -481,7 +483,7 @@ int op_cond(BYTE op_code, BYTE dummy)
 			fatal(F_INTERN, "invalid opcode for function op_cond");
 			break;
 		}
-		if ((op_code & 1) == 0)		/* negate for inverse IF */
+		if ((op_code & 1) == 0)	/* negate for inverse IF */
 			gencode = -gencode;
 	} else {
 		if (iflevel == 0) {
