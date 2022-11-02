@@ -197,6 +197,7 @@ struct inc {
 #define SYM_UNSORT	1	/* unsorted symbol table */
 #define SYM_SORTN	2	/* symbol table sorted by name */
 #define SYM_SORTA	3	/* symbol table sorted by address */
+
 /*
  *	definition of operation sets
  */
