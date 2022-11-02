@@ -346,12 +346,12 @@ int factor(WORD *resultp)
 	switch (tok_type) {
 	case T_VAL:
 		value = tok_val;
-		if ((err = get_token()))
+		if ((err = get_token()) != E_NOERR)
 			return(err);
 		*resultp = value;
 		return(E_NOERR);
 	case T_UNDSYM:
-		if ((err = get_token()))
+		if ((err = get_token()) != E_NOERR)
 			return(err);
 		return(E_UNDSYM);
 	case T_NUL:
@@ -369,7 +369,7 @@ int factor(WORD *resultp)
 		tok_type = T_EMPTY;
 		return(E_NOERR);
 	case T_TYPE:
-		if ((erru = get_token()) && erru != E_UNDSYM)
+		if ((erru = get_token()) != E_NOERR && erru != E_UNDSYM)
 			return(erru);
 		*resultp = ((erru || factor(&value)) ? 0x00 : 0x20);
 		return(E_NOERR);
@@ -379,7 +379,8 @@ int factor(WORD *resultp)
 	case T_HIGH:
 	case T_LOW:
 		opr_type = tok_type;
-		if ((err = get_token()) || (err = factor(&value)))
+		if ((err = get_token()) != E_NOERR
+		    || (err = factor(&value)) != E_NOERR)
 			return(err);
 		switch (opr_type) {
 		case T_ADD:
@@ -402,14 +403,14 @@ int factor(WORD *resultp)
 		}
 		return(E_NOERR);
 	case T_LPAREN:
-		if ((err = get_token()))
+		if ((err = get_token()) != E_NOERR)
 			return(err);
-		if ((erru = expr(&value)) && erru != E_UNDSYM)
+		if ((erru = expr(&value)) != E_NOERR && erru != E_UNDSYM)
 			return(erru);
 		if (tok_type == T_RPAREN) {
-			if ((err = get_token()))
+			if ((err = get_token()) != E_NOERR)
 				return(err);
-			else if (erru)		/* E_UNDSYM */
+			else if (erru != E_NOERR) /* E_UNDSYM */
 				return(E_UNDSYM);
 			else {
 				*resultp = value;
@@ -427,16 +428,16 @@ int mul_term(WORD *resultp)
 	register int opr_type, err, erru;
 	WORD value;
 
-	if ((erru = factor(resultp)) && erru != E_UNDSYM)
+	if ((erru = factor(resultp)) != E_NOERR && erru != E_UNDSYM)
 		return(erru);
 	while (tok_type == T_MUL || tok_type == T_DIV || tok_type == T_MOD
 				 || tok_type == T_SHR || tok_type == T_SHL) {
 		opr_type = tok_type;
-		if ((err = get_token()))
+		if ((err = get_token()) != E_NOERR)
 			return(err);
-		if ((err = factor(&value)) && err != E_UNDSYM)
+		if ((err = factor(&value)) != E_NOERR && err != E_UNDSYM)
 			return(err);
-		if (erru || err) {		/* E_UNDSYM */
+		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
 			erru = E_UNDSYM;
 			continue;
 		}
@@ -472,15 +473,15 @@ int add_term(WORD *resultp)
 	register int opr_type, err, erru;
 	WORD value;
 
-	if ((erru = mul_term(resultp)) && erru != E_UNDSYM)
+	if ((erru = mul_term(resultp)) != E_NOERR && erru != E_UNDSYM)
 		return(erru);
 	while (tok_type == T_ADD || tok_type == T_SUB) {
 		opr_type = tok_type;
-		if ((err = get_token()))
+		if ((err = get_token()) != E_NOERR)
 			return(err);
-		if ((err = mul_term(&value)) && err != E_UNDSYM)
+		if ((err = mul_term(&value)) != E_NOERR && err != E_UNDSYM)
 			return(err);
-		if (erru || err) {		/* E_UNDSYM */
+		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
 			erru = E_UNDSYM;
 			continue;
 		}
@@ -503,17 +504,17 @@ int cmp_term(WORD *resultp)
 	register int opr_type, err, erru;
 	WORD value;
 
-	if ((erru = add_term(resultp)) && erru != E_UNDSYM)
+	if ((erru = add_term(resultp)) != E_NOERR && erru != E_UNDSYM)
 		return(erru);
 	while (tok_type == T_EQ || tok_type == T_NE
 				|| tok_type == T_LT || tok_type == T_LE
 				|| tok_type == T_GT || tok_type == T_GE) {
 		opr_type = tok_type;
-		if ((err = get_token()))
+		if ((err = get_token()) != E_NOERR)
 			return(err);
-		if ((err = add_term(&value)) && err != E_UNDSYM)
+		if ((err = add_term(&value)) != E_NOERR && err != E_UNDSYM)
 			return(err);
-		if (erru || err) {		/* E_UNDSYM */
+		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
 			erru = E_UNDSYM;
 			continue;
 		}
@@ -548,15 +549,15 @@ int expr(WORD *resultp)
 	register int opr_type, err, erru;
 	WORD value;
 
-	if ((erru = cmp_term(resultp)) && erru != E_UNDSYM)
+	if ((erru = cmp_term(resultp)) != E_NOERR && erru != E_UNDSYM)
 		return(erru);
 	while (tok_type == T_AND || tok_type == T_XOR || tok_type == T_OR) {
 		opr_type = tok_type;
-		if ((err = get_token()))
+		if ((err = get_token()) != E_NOERR)
 			return(err);
-		if ((err = cmp_term(&value)) && err != E_UNDSYM)
+		if ((err = cmp_term(&value)) != E_NOERR && err != E_UNDSYM)
 			return(err);
-		if (erru || err) {		/* E_UNDSYM */
+		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
 			erru = E_UNDSYM;
 			continue;
 		}
@@ -588,7 +589,8 @@ WORD eval(char *s)
 	}
 	result = 0;
 	scan_pos = s;
-	if ((err = get_token()) || (err = expr(&result))) {
+	if ((err = get_token()) != E_NOERR
+	    || (err = expr(&result)) != E_NOERR) {
 		asmerr(err);
 		return(0);
 	} else if (tok_type != T_EMPTY) {	/* leftovers, error out */
@@ -599,7 +601,7 @@ WORD eval(char *s)
 }
 
 /*
- *	check value for range -257 < value < 256
+ *	check value for range -256 <= value <= 255
  *	Output: value if in range, otherwise 0 and error message
  */
 BYTE chk_byte(WORD n)
@@ -613,7 +615,7 @@ BYTE chk_byte(WORD n)
 }
 
 /*
- *	check value for range -129 < value < 128
+ *	check value for range -128 <= value <= 127
  *	Output: value if in range, otherwise 0 and error message
  */
 BYTE chk_sbyte(WORD n)

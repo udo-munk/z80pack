@@ -213,8 +213,10 @@ void options(int argc, char *argv[])
 				ver_flag = 1;
 				break;
 			case 'm':
-				if (mac_list_flag < M_NONE)
-					mac_list_flag++;
+				if (mac_list_flag == M_OPS)
+					mac_list_flag = M_ALL;
+				else
+					mac_list_flag = M_NONE;
 				break;
 			case 'U':
 				upcase_flag = 1;
@@ -311,7 +313,7 @@ void do_pass(int p)
 	}
 	mac_end_pass();
 	if (pass == 1) {			/* PASS 1 */
-		if (errors) {
+		if (errors > 0) {
 			fclose(objfp);
 			unlink(objfn);
 			printf("%d error(s)\n", errors);
@@ -352,7 +354,7 @@ void process_file(char *fn)
 		asmerr(E_MISEMA);
 	if (phs_flag)
 		asmerr(E_MISDPH);
-	if (iflevel)
+	if (iflevel > 0)
 		asmerr(E_MISEIF);
 }
 
