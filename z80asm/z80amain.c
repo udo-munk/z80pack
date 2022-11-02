@@ -148,7 +148,7 @@ void options(int argc, char *argv[])
 					puts("name missing in option -o");
 					usage();
 				}
-				if (out_form == OUTHEX)
+				if (obj_fmt == OBJ_HEX)
 					get_fn(objfn, s, OBJEXTHEX);
 				else
 					get_fn(objfn, s, OBJEXTBIN);
@@ -179,11 +179,11 @@ void options(int argc, char *argv[])
 				break;
 			case 'f':
 				if (*(s + 1) == 'b')
-					out_form = OUTBIN;
+					obj_fmt = OBJ_BIN;
 				else if (*(s + 1) == 'm')
-					out_form = OUTMOS;
+					obj_fmt = OBJ_MOS;
 				else if (*(s + 1) == 'h')
-					out_form = OUTHEX;
+					obj_fmt = OBJ_HEX;
 				else {
 					printf("unknown option -%s\n", s);
 					usage();
@@ -474,17 +474,17 @@ void open_o_files(char *source)
 	else
 		p = objfn;
 	if ((p = strrchr(p, '.')) != NULL) {
-		if (out_form == OUTHEX)
+		if (obj_fmt == OBJ_HEX)
 			strcpy(p, OBJEXTHEX);
 		else
 			strcpy(p, OBJEXTBIN);
 	} else {
-		if (out_form == OUTHEX)
+		if (obj_fmt == OBJ_HEX)
 			strcat(objfn, OBJEXTHEX);
 		else
 			strcat(objfn, OBJEXTBIN);
 	}
-	if (out_form == OUTHEX)
+	if (obj_fmt == OBJ_HEX)
 		objfp = fopen(objfn, WRITEA);
 	else
 		objfp = fopen(objfn, WRITEB);

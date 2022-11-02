@@ -72,7 +72,7 @@ int  list_flag,			/* flag for option -l */
      errnum,			/* error number in pass 2 */
      a_mode,			/* location output mode for pseudo ops */
      load_flag,			/* flag for load_addr valid */
-     out_form = OUTDEF,		/* format of object file */
+     obj_fmt = OBJ_HEX,		/* format of object file (default Intel hex) */
      symlen = SYMLEN,		/* significant characters in symbols */
      symmax,			/* max. symbol name length encountered */
      symsize,			/* size of symarray */

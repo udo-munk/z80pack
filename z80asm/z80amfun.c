@@ -495,8 +495,11 @@ void mac_subst(char *t, char *s, struct expn *e,
 	int amp_flag;	/* 0 = no &, 1 = & before, 2 = & after */
 	int esc_flag;	/* 0 = no ^, 1 = ^ before */
 
-	if (*s == LINCOM)
+	if (*s == LINCOM) {
+		while (*s != '\n' && *s != '\0')
+			*t++ = *s++;
 		goto done;
+	}
 	n = 0;
 	amp_flag = esc_flag = 0;
 	while (*s != '\n' && *s != '\0') {
