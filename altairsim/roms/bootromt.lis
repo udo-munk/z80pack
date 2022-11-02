@@ -1,4 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 17:51:25 2022
+Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 19:30:32 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;******************************************************************
@@ -25,7 +25,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       22     22 ;               MICRO RESOURCES
                       23     23 ; THESE DAYS MIKE CAN BE REACHED AT MKARAS@CAROUSEL-DESIGN.COM (MARCH 23, 2009)
                       24     24 ;
-                      25     25 ; INSTEAD OF APPLYING THE REOCATION OFFSET TO ALL RELEVANT INSTRUCTIONS
+                      25     25 ; INSTEAD OF APPLYING THE RELOCATION OFFSET TO ALL RELEVANT INSTRUCTIONS
                       26     26 ; LET THE ASSEMBLER DO ALL THE NASTY WORK.
                       27     27 ; UDO MUNK, OCTOBER 2022
                       28     28 ;
