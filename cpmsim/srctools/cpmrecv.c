@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	fdout = 0;
 
 	if (argc != 2) {
-		puts("usage: receive filname &");
+		puts("usage: cpmrecv filename &");
 		exit(1);
 	}
 	if ((fdin = open("/tmp/.z80pack/cpmsim.auxout", O_RDONLY)) == -1) {

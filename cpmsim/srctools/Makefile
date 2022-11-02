@@ -10,7 +10,7 @@ CC = gcc
 CWARNS= -Wall -Wextra -Wwrite-strings
 CFLAGS= -O3 $(CWARNS)
 
-all: test mkdskimg bin2hex send receive ptp2bin
+all: test mkdskimg bin2hex cpmsend cpmrecv ptp2bin
 	@echo
 	@echo "Done."
 	@echo "Now run make install"
@@ -25,11 +25,11 @@ mkdskimg: mkdskimg.c
 bin2hex: bin2hex.c
 	$(CC) $(CFLAGS) -o bin2hex bin2hex.c
 
-send: send.c
-	$(CC) $(CFLAGS) -o send send.c
+cpmsend: cpmsend.c
+	$(CC) $(CFLAGS) -o cpmsend cpmsend.c
 
-receive: receive.c
-	$(CC) $(CFLAGS) -o receive receive.c
+cpmrecv: cpmrecv.c
+	$(CC) $(CFLAGS) -o cpmrecv cpmrecv.c
 
 ptp2bin: ptp2bin.c
 	$(CC) $(CFLAGS) -o ptp2bin ptp2bin.c
@@ -37,8 +37,8 @@ ptp2bin: ptp2bin.c
 install:
 	cp mkdskimg ${INSTALLDIR}
 	cp bin2hex ${INSTALLDIR}
-	cp send ${INSTALLDIR}
-	cp receive ${INSTALLDIR}
+	cp cpmsend ${INSTALLDIR}
+	cp cpmrecv ${INSTALLDIR}
 	cp ptp2bin ${INSTALLDIR}
 	@echo
 	@echo "Tools installed in ${INSTALLDIR}, make sure it is"
@@ -46,5 +46,5 @@ install:
 	@echo
 
 clean:
-	rm -f mkdskimg mkdskimg.exe bin2hex bin2hex.exe receive receive.exe \
-	send send.exe ptp2bin ptp2bin.exe
+	rm -f mkdskimg mkdskimg.exe bin2hex bin2hex.exe cpmrecv cpmrecv.exe \
+	cpmsend cpmsend.exe ptp2bin ptp2bin.exe

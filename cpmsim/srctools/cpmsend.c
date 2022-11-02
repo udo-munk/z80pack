@@ -27,7 +27,7 @@ int main(int argc,char *argv[])
 	register int readn;
 
 	if (argc != 2) {
-		puts("usage: send filname &");
+		puts("usage: cpmsend filname &");
 		exit(1);
 	}
 	if ((fdin = open(argv[1], O_RDONLY)) == -1) {
