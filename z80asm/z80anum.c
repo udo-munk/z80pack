@@ -163,7 +163,7 @@ int get_token(void)
 		s++;
 	if (*s == '\0') {				/* nothing there? */
 		tok_type = T_EMPTY;
-		goto finish;
+		goto done;
 	}
 	if (*s == 'X' && *(s + 1) == STRDEL) {		/* X'h' hex constant */
 		s += 2;
@@ -180,7 +180,7 @@ int get_token(void)
 			s++;
 			tok_type = T_VAL;
 			tok_val = n;
-			goto finish;
+			goto done;
 		}
 	}
 	p1 = p2 = tok_sym;				/* gather symbol */
@@ -221,7 +221,7 @@ int get_token(void)
 			}
 			tok_type = T_VAL;
 			tok_val = n;
-			goto finish;
+			goto done;
 		}
 		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* location counter */
 			tok_type = T_VAL;
@@ -235,7 +235,7 @@ int get_token(void)
 			} else				/* look for word opr */
 				tok_type = search_opr(p1);
 		}
-		goto finish;
+		goto done;
 	}
 	switch (*s) {
 	case STRDEL:					/* char constant */
@@ -246,7 +246,7 @@ int get_token(void)
 			if (*s == *p1 && *++s != *p1) {	/* double delim? */
 				tok_type = T_VAL;
 				tok_val = n;
-				goto finish;
+				goto done;
 			}
 			if (m++ == 2)
 				return(E_VALOUT);
@@ -326,7 +326,7 @@ int get_token(void)
 		return(E_INVEXP);
 	}
 	s++;
-finish:
+done:
 	scan_pos = s;
 	return(E_NOERR);
 }

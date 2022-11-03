@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include "z80a.h"
 #include "z80aglb.h"
 
@@ -50,8 +51,10 @@ extern void obj_fill(WORD);
 extern void obj_fill_value(WORD, WORD);
 
 /* z80atab.c */
+extern struct sym *look_sym(char *);
 extern struct sym *get_sym(char *);
-extern int put_sym(char *, int);
+extern struct sym *new_sym(char *);
+extern void put_sym(char *, int);
 
 /*
  *	.Z80 and .8080
@@ -146,20 +149,17 @@ int op_radix(BYTE dummy1, BYTE dummy2)
  */
 int op_equ(BYTE dummy1, BYTE dummy2)
 {
+	register struct sym *sp;
+
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 1) {		/* PASS 1 */
-		if (get_sym(label) == NULL) {
-			a_addr = eval(operand);
-			if (put_sym(label, a_addr))
-				fatal(F_OUTMEM, "symbols");
-		} else
-			asmerr(E_MULSYM);
-	} else {			/* PASS 2 */
-		a_mode = A_EQU;
-		a_addr = eval(operand);
-	}
+	a_mode = A_EQU;
+	a_addr = eval(operand);
+	if ((sp = look_sym(label)) == NULL)
+		new_sym(label)->sym_val = a_addr;
+	else if (sp->sym_val != a_addr)
+		asmerr(E_MULSYM);
 	return(0);
 }
 
@@ -173,8 +173,7 @@ int op_dl(BYTE dummy1, BYTE dummy2)
 
 	a_mode = A_SET;
 	a_addr = eval(operand);
-	if (put_sym(label, a_addr))
-		fatal(F_OUTMEM, "symbols");
+	put_sym(label, a_addr);
 	return(0);
 }
 
@@ -220,7 +219,7 @@ int op_db(BYTE op_code, BYTE dummy)
 		p1 = next_arg(p, &sf);
 		if (sf < 0) {		/* a non-terminated string */
 			asmerr(E_MISDEL);
-			goto delim_error;
+			return(i);
 		} else if (sf > 0) {	/* a valid string */
 			c = *p++;
 			while (*p != c || *++p == c) { /* double delim? */
@@ -255,7 +254,6 @@ int op_db(BYTE op_code, BYTE dummy)
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_db");
 	}
-delim_error:
 	return(i);
 }
 
@@ -448,17 +446,18 @@ int op_cond(BYTE op_code, BYTE dummy)
 
 	a_mode = A_NONE;
 	if (op_code < 90) {
-		if (iflevel >= IFNEST) {
+		if (iflevel == INT_MAX) {
 			asmerr(E_IFNEST);
 			return(0);
 		}
-		condnest[iflevel++] = gencode;
-		if (gencode < 0)
+		iflevel++;
+		if (!gencode)
 			return(0);
 		switch(op_code) {
 		case 1:			/* IFDEF */
 		case 2:			/* IFNDEF */
-			gencode = (get_sym(operand) != NULL) ? pass : -pass;
+			if (get_sym(operand) == NULL)
+				gencode = 0;
 			break;
 		case 3:			/* IFEQ */
 		case 4:			/* IFNEQ */
@@ -467,24 +466,26 @@ int op_cond(BYTE op_code, BYTE dummy)
 				asmerr(E_MISOPE);
 				return(0);
 			}
-			gencode = (eval(operand) == eval(p)) ? pass : -pass;
+			if (eval(operand) != eval(p))
+				gencode = 0;
 			break;
 		case 5:			/* COND, IF, and IFT */
 		case 6:			/* IFE and IFF */
-			gencode = (eval(operand) != 0) ? pass : -pass;
+			if (eval(operand) == 0)
+				gencode = 0;
 			break;
 		case 7:			/* IF1 */
-			gencode = (pass == 1) ? 2 : -2;
-			break;
 		case 8:			/* IF2 */
-			gencode = (pass == 2) ? -1 : 1;
+			if (pass == 2)
+				gencode = 0;
 			break;
 		default:
 			fatal(F_INTERN, "invalid opcode for function op_cond");
 			break;
 		}
 		if ((op_code & 1) == 0)	/* negate for inverse IF */
-			gencode = -gencode;
+			gencode = !gencode;
+		act_iflevel = iflevel;
 	} else {
 		if (iflevel == 0) {
 			asmerr(E_MISIFF);
@@ -492,11 +493,21 @@ int op_cond(BYTE op_code, BYTE dummy)
 		}
 		switch(op_code) {
 		case 98:		/* ELSE */
-			if (condnest[iflevel - 1] > 0)
-				gencode = -gencode;
+			if (iflevel == act_iflevel) {
+				if (iflevel == act_elselevel)
+					asmerr(E_MISEIF);
+				else
+					act_elselevel = iflevel;
+				gencode = !gencode;
+			}
 			break;
 		case 99:		/* ENDIF and ENDC */
-			gencode = condnest[--iflevel];
+			if (iflevel == act_iflevel) {
+				gencode = 1;
+				act_elselevel = 0;
+				act_iflevel--;
+			}
+			iflevel--;
 			break;
 		default:
 			fatal(F_INTERN, "invalid opcode for function op_cond");

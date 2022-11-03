@@ -7893,7 +7893,7 @@ CONINT:	push	psw		;onto MEMON's stack
  if TH85
 TBINT:	push	psw		;onto MEMON's stack
 
-:Receive and enqueue a character, ignoring any overflow	
+;Receive and enqueue a character, ignoring any overflow	
 
 	in	TDATA		;get chr now
 	sta	TRXBUF		;enqueue chr

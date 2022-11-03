@@ -47,34 +47,35 @@ extern void fatal(int, const char *);
 extern char *mac_lst_first(int, int *);
 extern char *mac_lst_next(int, int *);
 
-static const char *errmsg[] = {		/* error messages for asmerr() */
-	"no error",			/* 0 */
-	"invalid opcode",		/* 1 */
-	"invalid operand",		/* 2 */
-	"missing operand",		/* 3 */
-	"multiple defined symbol",	/* 4 */
-	"undefined symbol",		/* 5 */
-	"value out of range",		/* 6 */
-	"missing right parenthesis",	/* 7 */
-	"missing string delimiter",	/* 8 */
-	"non-sequential object code",	/* 9 */
-	"missing IF",			/* 10 */
-	"IF nested too deep",		/* 11 */
-	"missing ENDIF",		/* 12 */
-	"INCLUDE nested too deep",	/* 13 */
-	".PHASE can not be nested",	/* 14 */
-	"ORG in .PHASE block",		/* 15 */
-	"missing .PHASE",		/* 16 */
-	"division by zero",		/* 17 */
-	"invalid expression",		/* 18 */
-	"object code before ORG",	/* 19 */
-	"illegal label",		/* 20 */
-	"missing .DEPHASE",		/* 21 */
-	"not in macro definition",	/* 22 */
-	"missing ENDM",			/* 23 */
-	"not in macro expansion",	/* 24 */
-	"macro expansion nested too deep", /* 25 */
-	"too many local labels"		/* 26 */
+static const char *errmsg[] = {			/* error messages for asmerr */
+	"no error",				/* 0 */
+	"invalid opcode",			/* 1 */
+	"invalid operand",			/* 2 */
+	"missing operand",			/* 3 */
+	"multiple defined symbol",		/* 4 */
+	"undefined symbol",			/* 5 */
+	"value out of range",			/* 6 */
+	"missing right parenthesis",		/* 7 */
+	"missing string delimiter",		/* 8 */
+	"non-sequential object code",		/* 9 */
+	"missing IF",				/* 10 */
+	"IF nested too deep",			/* 11 */
+	"missing ENDIF",			/* 12 */
+	"INCLUDE nested too deep",		/* 13 */
+	".PHASE can not be nested",		/* 14 */
+	"ORG in .PHASE block",			/* 15 */
+	"missing .PHASE",			/* 16 */
+	"division by zero",			/* 17 */
+	"invalid expression",			/* 18 */
+	"object code before ORG",		/* 19 */
+	"illegal label",			/* 20 */
+	"missing .DEPHASE",			/* 21 */
+	"not in macro definition",		/* 22 */
+	"missing ENDM",				/* 23 */
+	"not in macro expansion",		/* 24 */
+	"macro expansion nested too deep",	/* 25 */
+	"too many local labels",		/* 26 */
+	"label value differs between passes"	/* 27 */
 };
 
 /*

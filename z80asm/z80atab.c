@@ -32,7 +32,9 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
+struct sym *look_sym(char *);
 struct sym *get_sym(char *);
+struct sym *new_sym(char *);
 int hash(char *);
 char *strsave(char *);
 int numcmp(WORD, WORD);
@@ -116,61 +118,88 @@ BYTE get_reg(char *s)
  *
  *	Output: pointer to table element, or NULL if not found
  */
+struct sym *look_sym(char *sym_name)
+{
+	register struct sym *sp;
+
+	for (sp = symtab[hash(sym_name)]; sp != NULL; sp = sp->sym_next)
+		if (strcmp(sym_name, sp->sym_name) == 0)
+			return(sp);
+	return(NULL);
+}
+
+/*
+ *	hash search on symbol table symtab, increase refcnt if found
+ *
+ *	Input: pointer to string with symbol
+ *
+ *	Output: pointer to table element, or NULL if not found
+ */
 struct sym *get_sym(char *sym_name)
 {
-	register struct sym *np;
+	register struct sym *sp;
 
-	for (np = symtab[hash(sym_name)]; np != NULL; np = np->sym_next) {
-		if (strcmp(sym_name, np->sym_name) == 0) {
-			np->sym_refcnt++;
-			return(np);
-		}
+	if ((sp = look_sym(sym_name)) != NULL) {
+		sp->sym_refcnt++;
+		return(sp);
 	}
 	return(NULL);
 }
 
 /*
- *	add symbol to symbol table symtab, or modify existing symbol
+ *	add symbol to symbol table symtab
  *
  *	Input: sym_name pointer to string with symbol name
  *	       sym_val  value of symbol
  *
- *	Output: 0 symbol added/modified
- *		1 out of memory
+ *	Output: pointer to table element
  */
-int put_sym(char *sym_name, int sym_val)
+struct sym *new_sym(char *sym_name)
 {
 	register int hashval, n;
-	register struct sym *np;
+	register struct sym *sp;
 
-	if ((np = get_sym(sym_name)) == NULL) {
-		np = (struct sym *) malloc(sizeof (struct sym));
-		if (np == NULL)
-			return(1);
-		if ((np->sym_name = strsave(sym_name)) == NULL)
-			return(1);
-		hashval = hash(sym_name);
-		np->sym_next = symtab[hashval];
-		symtab[hashval] = np;
-		np->sym_refcnt = 0;
-		n = strlen(sym_name);
-		if (n > symmax)
-			symmax = n;
-	}
-	np->sym_val = sym_val;
-	return(0);
+	if ((sp = (struct sym *) malloc(sizeof (struct sym))) == NULL
+	    || ((sp->sym_name = strsave(sym_name)) == NULL))
+		fatal(F_OUTMEM, "symbols");
+	hashval = hash(sym_name);
+	sp->sym_next = symtab[hashval];
+	symtab[hashval] = sp;
+	sp->sym_refcnt = 0;
+	n = strlen(sym_name);
+	if (n > symmax)
+		symmax = n;
+	return(sp);
+}
+
+/*
+ *	add symbol to symbol table symtab, or modify existing symbol
+ *	and increase refcnt
+ *
+ *	Input: sym_name pointer to string with symbol name
+ *	       sym_val  value of symbol
+ */
+void put_sym(char *sym_name, int sym_val)
+{
+	register struct sym *sp;
+
+	if ((sp = get_sym(sym_name)) == NULL)
+		sp = new_sym(sym_name);
+	sp->sym_val = sym_val;
 }
 
 /*
  *	add label to symbol table, error if symbol already exists
+ *	and differs in value
  */
 void put_label(void)
 {
-	if (get_sym(label) == NULL) {
-		if (put_sym(label, pc))
-			fatal(F_OUTMEM, "symbols");
-	} else
-		asmerr(E_MULSYM);
+	register struct sym *sp;
+
+	if ((sp = look_sym(label)) == NULL)
+		new_sym(label)->sym_val = pc;
+	else if (sp->sym_val != pc)
+		asmerr(E_LBLDIF);
 }
 
 /*
