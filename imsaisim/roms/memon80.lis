@@ -1,4 +1,4 @@
-Z80-Macro-Assembler  Release 1.11-dev	Wed Nov  2 18:00:50 2022
+Z80-Macro-Assembler  Release 1.11-dev	Thu Nov  3 22:57:19 2022
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;==============================================================
@@ -7947,7 +7947,7 @@ fedb  00            7858   7909 	db	0			;End of table mark
                     7893   7944  if TH85
                     7894   7945 TBINT:	push	psw		;onto MEMON's stack
                     7895   7946 
-fedc                7896   7947 :Receive and enqueue a character, ignoring any overflow	
+                    7896   7947 ;Receive and enqueue a character, ignoring any overflow	
                     7897   7948 
                     7898   7949 	in	TDATA		;get chr now
                     7899   7950 	sta	TRXBUF		;enqueue chr

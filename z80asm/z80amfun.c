@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include "z80a.h"
 #include "z80aglb.h"
 
@@ -32,7 +33,7 @@ extern void asmerr(int);
 /* z80atab.c */
 extern char *strsave(char *);
 
-#define MACNEST	16				/* max. expansion nesting */
+#define MACNEST	50				/* max. expansion nesting */
 #define MACAINC	50				/* start size of mac_array */
 
 struct dum {					/* macro dummy */
@@ -77,8 +78,11 @@ struct expn {					/* macro expansion */
 	struct loc *expn_locs, *expn_locs_last;	/* local labels */
 	struct line *expn_line;			/* current expansion line */
 	int expn_iflevel;			/* iflevel before expansion */
+	int expn_act_iflevel;			/* act_iflevel before expn */
+	int expn_act_elselevel;			/* act_elselevel before expn */
 	unsigned expn_iter;			/* curr. expansion iteration */
 	char *expn_irp;				/* IRP, IRPC character list */
+	struct expn *expn_next;
 };
 
 static struct mac *mac_table;			/* MACRO table */
@@ -87,40 +91,28 @@ static struct mac **mac_array;			/* sorted macro table */
 static int mac_asize;				/* size of mac_array */
 static int mac_aused;				/* used entries of mac_array */
 static int mac_aindex;				/* index into mac_array */
-static struct expn mac_expn[MACNEST];		/* macro expansion stack */
+static struct expn *mac_expn;			/* macro expansion stack */
 static WORD mac_loc_cnt;			/* counter for LOCAL labels */
 static char tmp[MAXLINE];			/* temporary buffer */
 static char expr[MAXLINE];			/* expr buffer (for '%') */
 
 /*
- *	verify that p is a legal symbol
+ *	verify that s is a legal symbol, also truncates to symlen
  *	return 1 if legal, otherwise 0
  */
 int is_symbol(char *s)
 {
+	register int i;
+
 	if (!is_first_sym_char(*s++))
 		return(0);
-	while (is_sym_char(*s))
+	i = 1;
+	while (is_sym_char(*s)) {
+		if (i++ == symlen)
+			*s = '\0';
 		s++;
-	return(*s == '\0');
-}
-
-/*
- *	save symbol truncated to symlen into allocated memory
- */
-char *symsave(char *s)
-{
-	register char *p;
-	register int n;
-
-	n = strlen(s);
-	if (n > symlen)
-		n = symlen;
-	if ((p = (char *) malloc(n + 1)) != NULL) {
-		strncpy(p, s, n);
-		*(p + n) = '\0';
 	}
-	return(p);
+	return(*s == '\0');
 }
 
 /*
@@ -208,7 +200,7 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
 	if ((m = (struct mac *) malloc(sizeof(struct mac))) == NULL)
 		fatal(F_OUTMEM, "macro");
 	if (name != NULL) {
-		if ((m->mac_name = symsave(name)) == NULL)
+		if ((m->mac_name = strsave(name)) == NULL)
 			fatal(F_OUTMEM, "macro name");
 		n = strlen(name);
 		if (n > mac_symmax)
@@ -282,7 +274,7 @@ void mac_add_dum(struct mac *m, char *name)
 	register struct dum *d;
 
 	d = (struct dum *) malloc(sizeof(struct dum));
-	if (d == NULL || (d->dum_name = symsave(name)) == NULL)
+	if (d == NULL || (d->dum_name = strsave(name)) == NULL)
 		fatal(F_OUTMEM, "macro dummy");
 	d->dum_next = NULL;
 	if (m->mac_dums == NULL)
@@ -300,7 +292,7 @@ struct loc *expn_add_loc(struct expn *e, char *name)
 	register struct loc *l;
 
 	l = (struct loc *) malloc(sizeof(struct loc));
-	if (l == NULL || (l->loc_name = symsave(name)) == NULL)
+	if (l == NULL || (l->loc_name = strsave(name)) == NULL)
 		fatal(F_OUTMEM, "macro local label");
 	l->loc_next = NULL;
 	if (e->expn_locs == NULL)
@@ -317,21 +309,29 @@ struct loc *expn_add_loc(struct expn *e, char *name)
  */
 void mac_start_expn(struct mac *m)
 {
-	register struct expn *e;
+	register struct expn *e, *e1;
 	register struct dum *d;
 	register struct parm *p;
 
 	if (mac_exp_nest == MACNEST) {
 		/* abort macro expansion */
-		mac_exp_nest = 0;
-		if ((iflevel = mac_expn[0].expn_iflevel) > 0)
-			gencode = condnest[iflevel - 1];
-		else
-			gencode = pass;
+		for (e = mac_expn; e != NULL; e = e1) {
+			if ((e1 = e->expn_next) == NULL) {
+				iflevel = e->expn_iflevel;
+				act_iflevel = e->expn_act_iflevel;
+				act_elselevel = e->expn_act_elselevel;
+				gencode = 1;
+			}
+			free(e);
+		}
+		/* delete unnamed macros (IRP, IRPC, REPT) */
+		if (m->mac_name == NULL)
+			mac_delete(m);
 		asmerr(E_MACNEST);
 		return;
 	}
-	e = &mac_expn[mac_exp_nest];
+	if ((e = (struct expn *) malloc(sizeof(struct expn))) == NULL)
+		fatal(F_OUTMEM, "macro expansion");
 	e->expn_mac = m;
 	e->expn_parms_last = e->expn_parms = NULL;
 	for (d = m->mac_dums; d; d = d->dum_next) {
@@ -350,10 +350,14 @@ void mac_start_expn(struct mac *m)
 	e->expn_locs_last = e->expn_locs = NULL;
 	e->expn_line = m->mac_lines;
 	e->expn_iflevel = iflevel;
+	e->expn_act_iflevel = act_iflevel;
+	e->expn_act_elselevel = act_elselevel;
 	e->expn_iter = 0;
 	e->expn_irp = m->mac_irp;
 	m->mac_refcnt++;
 	(*m->mac_start)(e);
+	e->expn_next = mac_expn;
+	mac_expn = e;
 	mac_exp_nest++;
 }
 
@@ -368,7 +372,7 @@ void mac_end_expn(void)
 	register struct loc *l, *l1;
 	register struct mac *m;
 
-	e = &mac_expn[mac_exp_nest - 1];
+	e = mac_expn;
 	for (p = e->expn_parms; p; p = p1) {
 		p1 = p->parm_next;
 		if (p->parm_val != NULL)
@@ -379,12 +383,14 @@ void mac_end_expn(void)
 		l1 = l->loc_next;
 		free(l);
 	}
-	if ((iflevel = e->expn_iflevel) > 0)
-		gencode = condnest[iflevel - 1];
-	else
-		gencode = pass;
+	iflevel = e->expn_iflevel;
+	act_iflevel = e->expn_act_iflevel;
+	act_elselevel = e->expn_act_elselevel;
+	gencode = 1;
 	m = e->expn_mac;
+	mac_expn = e->expn_next;
 	mac_exp_nest--;
+	free(e);
 	/* delete unnamed macros (IRP, IRPC, REPT) */
 	if (m->mac_name == NULL)
 		mac_delete(m);
@@ -400,7 +406,7 @@ int mac_rept_expn(void)
 	register struct mac *m;
 	register struct loc *l, *l1;
 
-	e = &mac_expn[mac_exp_nest - 1];
+	e = mac_expn;
 	e->expn_iter++;
 	m = e->expn_mac;
 	if (*m->mac_rept != NULL && (*m->mac_rept)(e)) {
@@ -410,10 +416,10 @@ int mac_rept_expn(void)
 		}
 		e->expn_locs_last = e->expn_locs = NULL;
 		e->expn_line = m->mac_lines;
-		if ((iflevel = e->expn_iflevel) > 0)
-			gencode = condnest[iflevel - 1];
-		else
-			gencode = pass;
+		iflevel = e->expn_iflevel;
+		act_iflevel = e->expn_act_iflevel;
+		act_elselevel = e->expn_act_elselevel;
+		gencode = 1;
 		return(1);
 	} else {
 		mac_end_expn();
@@ -495,7 +501,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 	int amp_flag;	/* 0 = no &, 1 = & before, 2 = & after */
 	int esc_flag;	/* 0 = no ^, 1 = ^ before */
 
-	if (*s == LINCOM) {
+	if (*s == LINCOM || *s == LINOPT) {
 		while (*s != '\n' && *s != '\0')
 			*t++ = *s++;
 		goto done;
@@ -613,7 +619,7 @@ char *mac_expand(void)
 {
 	register struct expn *e;
 
-	e = &mac_expn[mac_exp_nest - 1];
+	e = mac_expn;
 	if (e->expn_line == NULL && !mac_rept_expn())
 		return(NULL);
 	/* first substitute dummies with parameter values */
@@ -830,7 +836,7 @@ void mac_start_irpc(struct expn *e)
 int mac_rept_irpc(struct expn *e)
 {
 	if (*e->expn_irp != '\0') {
-		e->expn_parms->parm_val[0] = *e->expn_irp++;
+		*e->expn_parms->parm_val = *e->expn_irp++;
 		return(1);
 	} else
 		return(0);
@@ -920,12 +926,12 @@ int op_mcond(BYTE op_code, BYTE dummy)
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
-	if (iflevel >= IFNEST) {
+	if (iflevel == INT_MAX) {
 		asmerr(E_IFNEST);
 		return(0);
 	}
-	condnest[iflevel++] = gencode;
-	if (gencode < 0)
+	iflevel++;
+	if (!gencode)
 		return(0);
 	switch(op_code) {
 	case 1:				/* IFB */
@@ -935,7 +941,8 @@ int op_mcond(BYTE op_code, BYTE dummy)
 			asmerr(E_ILLOPE);
 			return(0);
 		}
-		gencode = (*tmp == '\0') ? pass : -pass;
+		if (*tmp != '\0')
+			gencode = 0;
 		break;
 	case 3:				/* IFIDN */
 	case 4:				/* IFDIF */
@@ -952,7 +959,8 @@ int op_mcond(BYTE op_code, BYTE dummy)
 			free(t);
 			return(0);
 		}
-		gencode = (strcmp(t, s) == 0) ? pass : -pass;
+		if (strcmp(t, s) != 0)
+			gencode = 0;
 		free(t);
 		break;
 	default:
@@ -960,7 +968,8 @@ int op_mcond(BYTE op_code, BYTE dummy)
 		break;
 	}
 	if ((op_code & 1) == 0)		/* negate for inverse IF */
-		gencode = -gencode;
+		gencode = !gencode;
+	act_iflevel = iflevel;
 	return(0);
 }
 
@@ -970,6 +979,7 @@ int op_mcond(BYTE op_code, BYTE dummy)
 int op_irp(BYTE op_code, BYTE dummy)
 {
 	register char *s, *t;
+	register int i;
 	register struct mac *m;
 
 	UNUSED(dummy);
@@ -994,8 +1004,12 @@ int op_irp(BYTE op_code, BYTE dummy)
 		return(0);
 	}
 	*t++ = toupper((unsigned char) *s++);
-	while (is_sym_char(*s))
-		*t++ = toupper((unsigned char) *s++);
+	i = 1;
+	while (is_sym_char(*s)) {
+		if (i++ < symlen)
+			*t++ = toupper((unsigned char) *s);
+		s++;
+	}
 	*t = '\0';
 	mac_add_dum(m, tmp);
 	while (isspace((unsigned char) *s))
@@ -1036,7 +1050,7 @@ int op_local(BYTE dummy1, BYTE dummy2)
 		asmerr(E_NIMEXP);
 		return(0);
 	}
-	e = &mac_expn[mac_exp_nest - 1];
+	e = mac_expn;
 	s = operand;
 	while (s != NULL) {
 		s1 = next_arg(s, NULL);

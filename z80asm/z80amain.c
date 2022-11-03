@@ -41,9 +41,8 @@ void usage(void), fatal(int, const char *);
 void do_pass(int), process_file(char *);
 int process_line(char *);
 void open_o_files(char *), get_fn(char *, char *, const char *);
-char *get_label(char *, char *);
-char *get_opcode(char *, char *);
-char *get_arg(char *, char *, int);
+char *get_symbol(char *, char *, int);
+char *get_operand(char *, char *, int);
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -64,11 +63,12 @@ extern int mac_lookup(char *);
 extern int mac_call(void);
 
 /* z80anum.c */
+int is_first_sym_char(char);
 int is_sym_char(char);
 
 /* z80atab.c */
 extern struct opc *search_op(char *);
-extern int put_sym(char *, int);
+extern void put_sym(char *, int);
 extern void put_label(void);
 extern int copy_sym(void);
 extern void n_sort_sym(int);
@@ -200,8 +200,7 @@ void options(int argc, char *argv[])
 					*t++ = toupper((unsigned char) *s++);
 				s--;
 				*t = '\0';
-				if (put_sym(label, 0))
-					fatal(F_OUTMEM, "symbols");
+				put_sym(label, 0);
 				break;
 			case '8':
 				opset = OPSET_8080;
@@ -296,7 +295,7 @@ void do_pass(int p)
 	pass = p;
 	radix = 10;
 	rpc = pc = 0;
-	gencode = pass;
+	gencode = 1;
 	mac_start_pass();
 	fi = 0;
 	if (ver_flag)
@@ -380,60 +379,64 @@ int process_line(char *l)
 	a_mode = A_STD;
 	op = NULL;
 	op_count = 0;
-	p = get_label(label, l);
-	p = get_opcode(opcode, p);
 	old_genc = gencode;
-	lbl_flag = (gencode > 0 && *label != '\0');
-	if (mac_def_nest > 0) {
-		if (*opcode != '\0')
-			op = search_op(opcode);
-		mac_add_line(op, l);
-	} else if (*opcode == '\0') {
-		if (lbl_flag) {
-			if (gencode == 1)
-				put_label();
-		} else
-			a_mode = A_NONE;
-	} else if (mac_lookup(opcode)) {
-		p = get_arg(operand, p, 1);
-		if (lbl_flag && gencode == 1)
-			put_label();
-		if (gencode > 0) {
-			mac_call();
-			if (lbl_flag)
-				a_mode = A_STD;
-		} else
-			a_mode = A_NONE;
-	} else if ((op = search_op(opcode)) != NULL) {
-		p = get_arg(operand, p, op->op_flags & OP_NOPRE);
-		if (lbl_flag) {
-			if (op->op_flags & OP_NOLBL)
-				asmerr(E_ILLLBL);
-			else if (!(op->op_flags & OP_SET))
-				if (gencode == 1)
-					put_label();
-		}
-		if (*operand != '\0' && *operand != COMMENT
-				     && (op->op_flags & OP_NOOPR))
-			asmerr(E_ILLOPE);
-		else if (gencode > 0 || (op->op_flags & OP_COND)) {
-			if (pass == 2 && (op->op_flags & OP_INCL)) {
-				/* list INCLUDE before include file */
-				a_mode = A_NONE;
-				lst_line(l, 0, 0, expn_flag);
-			}
-			op_count = (*op->op_fun)(op->op_c1, op->op_c2);
-			if (lbl_flag && !(op->op_flags & OP_SET)
-				     && a_mode == A_NONE)
-				a_mode = A_STD;
-		} else
-			a_mode = A_NONE;
-	} else if (gencode > 0) {
-		asmerr(E_ILLOPC);
+	if (*l == LINCOM || *l == LINOPT)
 		a_mode = A_NONE;
+	else {
+		p = get_symbol(label, l, 1);
+		p = get_symbol(opcode, p, 0);
+		lbl_flag = (gencode && *label != '\0');
+		if (mac_def_nest > 0) {
+			if (*opcode != '\0')
+				op = search_op(opcode);
+			mac_add_line(op, l);
+		} else if (*opcode == '\0') {
+			if (lbl_flag) {
+				if (gencode)
+					put_label();
+			} else
+				a_mode = A_NONE;
+		} else if (mac_lookup(opcode)) {
+			p = get_operand(operand, p, 1);
+			if (lbl_flag && gencode)
+				put_label();
+			if (gencode) {
+				mac_call();
+				if (lbl_flag)
+					a_mode = A_STD;
+			} else
+				a_mode = A_NONE;
+		} else if ((op = search_op(opcode)) != NULL) {
+			p = get_operand(operand, p, op->op_flags & OP_NOPRE);
+			if (lbl_flag) {
+				if (op->op_flags & OP_NOLBL)
+					asmerr(E_ILLLBL);
+				else if (!(op->op_flags & OP_SET))
+					if (gencode)
+						put_label();
+			}
+			if (*operand != '\0' && *operand != COMMENT
+					     && (op->op_flags & OP_NOOPR))
+				asmerr(E_ILLOPE);
+			else if (gencode || (op->op_flags & OP_COND)) {
+				if (pass == 2 && (op->op_flags & OP_INCL)) {
+					/* list INCLUDE before include file */
+					a_mode = A_NONE;
+					lst_line(l, 0, 0, expn_flag);
+				}
+				op_count = (*op->op_fun)(op->op_c1, op->op_c2);
+				if (lbl_flag && !(op->op_flags & OP_SET)
+					     && a_mode == A_NONE)
+					a_mode = A_STD;
+			} else
+				a_mode = A_NONE;
+		} else if (gencode) {
+			asmerr(E_ILLOPC);
+			a_mode = A_NONE;
+		}
 	}
 	if (pass == 2) {
-		if (gencode > 0 && (op == NULL || !(op->op_flags & OP_DS)))
+		if (gencode && (op == NULL || !(op->op_flags & OP_DS)))
 			obj_writeb(op_count);
 		lflag = 1;
 		/* already listed INCLUDE */
@@ -446,12 +449,12 @@ int process_line(char *l)
 				 && (op_count == 0 && a_mode != A_EQU))
 				lflag = 0;
 		}
-		if (nofalselist && old_genc < 0 && gencode < 0)
+		if (nofalselist && !old_genc && !gencode)
 			lflag = 0;
 		if (lflag)
 			lst_line(l, pc, op_count, expn_flag);
 	}
-	if (gencode > 0) {
+	if (gencode) {
 		pc += op_count;
 		rpc += op_count;
 		return(op == NULL || !(op->op_flags & OP_END));
@@ -532,53 +535,41 @@ void get_fn(char *dest, char *src, const char *ext)
 }
 
 /*
- *	get labels, constants and variables from source line
+ *	get label or opcode from source line
+ *	if lbl_flag is 0 skip front white space
+ *	if lbl_flag is 1 skip LABSEP at end of symbol
  *	convert names to upper case and truncate length of name
  */
-char *get_label(char *s, char *l)
+char *get_symbol(char *s, char *l, int lbl_flag)
 {
 	register int i;
 
-	i = 0;
-	if (*l == LINCOM)
-		goto comment;
-	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != LABSEP) {
-		if (i++ < symlen)
-			*s++ = toupper((unsigned char) *l);
-		l++;
-	}
-	if (*l == LABSEP)
-		l++;
-comment:
-	*s = '\0';
-	return(l);
-}
-
-/*
- *	get opcode into s from source line l
- *	converts to upper case
- */
-char *get_opcode(char *s, char *l)
-{
-	if (*l == LINCOM)
-		goto comment;
-	while (isspace((unsigned char) *l))
-		l++;
-	while (!isspace((unsigned char) *l) && *l != COMMENT && *l != '\0')
+	if (!lbl_flag)
+		while (isspace((unsigned char) *l))
+			l++;
+	if (is_first_sym_char(*l)) {
 		*s++ = toupper((unsigned char) *l++);
-comment:
+		i = 1;
+		while (is_sym_char(*l)) {
+			if (i++ < symlen)
+				*s++ = toupper((unsigned char) *l);
+			l++;
+		}
+		if (lbl_flag && *l == LABSEP)
+			l++;
+	}
 	*s = '\0';
 	return(l);
 }
 
 /*
  *	get operand into s from source line l
- *	if nopre is 0 converts to upper case, and
+ *	if nopre_flag is 0 converts to upper case, and
  *	removes all unnecessary white space and comment
  *	delimited strings are copied without changes
- *	if nopre is 1 removes only leading white space
+ *	if nopre_flag is 1 removes only leading white space
  */
-char *get_arg(char *s, char *l, int nopre)
+char *get_operand(char *s, char *l, int nopre_flag)
 {
 	register char *s0;
 	register char c;
@@ -586,43 +577,46 @@ char *get_arg(char *s, char *l, int nopre)
 	s0 = s;
 	while (isspace((unsigned char) *l))
 		l++;
-	if (nopre) {
+	if (nopre_flag) {
 		while (*l != '\n' && *l != '\0')
 			*s++ = *l++;
-		goto done;
-	}
-	while (*l != '\0' && *l != COMMENT) {
-		if (isspace((unsigned char) *l)) {
-			l++;
-			while (isspace((unsigned char) *l))
+	} else {
+		while (*l != '\0' && *l != COMMENT) {
+			if (isspace((unsigned char) *l)) {
 				l++;
-			if (s > s0 && is_sym_char(*(s - 1))
-				   && is_sym_char(*l))
-				*s++ = ' '; /* leave one space b/w symbols */
-			continue;
-		}
-		if (*l != STRDEL && *l != STRDEL2) {
-			*s++ = toupper((unsigned char) *l++);
-			continue;
-		}
-		c = *l;
-		*s++ = *l++;
-		if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
-			continue;
-		while (1) {
-			if (*l == '\n' || *l == '\0')
-				goto done;
-			if (*l == c) {
-				if (*(l + 1) == c) /* double delim? */
-					*s++ = *l++;
-				else
-					break;
+				while (isspace((unsigned char) *l))
+					l++;
+				/* leave one space between symbols */
+				if (s > s0 && is_sym_char(*(s - 1))
+					   && is_sym_char(*l))
+					*s++ = ' ';
+				continue;
+			}
+			if (*l != STRDEL && *l != STRDEL2) {
+				*s++ = toupper((unsigned char) *l++);
+				continue;
+			}
+			c = *l;
+			*s++ = *l++;
+			if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
+				continue;
+			while (1) {
+				if (*l == '\n' || *l == '\0') {
+					/* undelimited string */
+					*s = '\0';
+					return(l);
+				}
+				if (*l == c) {
+					if (*(l + 1) == c) /* double delim? */
+						*s++ = *l++;
+					else
+						break;
+				}
+				*s++ = *l++;
 			}
 			*s++ = *l++;
 		}
-		*s++ = *l++;
 	}
-done:
 	*s = '\0';
 	return(l);
 }

@@ -8,7 +8,7 @@ CC = gcc
 
 CWARNS = -Wall -Wextra -Wwrite-strings
 CFLAGS = -O3 $(CWARNS) -D_POSIX_C_SOURCE=200809L
-#CFLAGS = -O $(CWARNS)
+#CFLAGS = -O
 
 #
 # installation directory

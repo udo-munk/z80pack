@@ -62,8 +62,9 @@ int  list_flag,			/* flag for option -l */
      phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
-     condnest[IFNEST],		/* IF nesting stack */
-     gencode,			/* flag for conditional code (>0 yes, <0 no) */
+     act_iflevel,		/* active IF nesting level */
+     act_elselevel,		/* active ELSE nesting level */
+     gencode,			/* flag for conditional code */
      nofalselist,		/* flag for false conditional listing */
      mac_def_nest,		/* macro definition nesting level */
      mac_exp_nest,		/* macro expansion nesting level */

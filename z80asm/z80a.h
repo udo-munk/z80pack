@@ -43,6 +43,7 @@
 #define LSTEXT		".lis"	/* filename extension listing */
 #define COMMENT		';'	/* inline comment character */
 #define LINCOM		'*'	/* comment line if in column 1 */
+#define LINOPT		'$'	/* option line if in column 1 */
 #define LABSEP		':'	/* label separator */
 #define STRDEL		'\''	/* string delimiter */
 #define STRDEL2		'"'	/* the other string delimiter */
@@ -51,7 +52,6 @@
 #define PLENGTH		65	/* default lines/page in listing */
 #define SYMLEN		8	/* default max. symbol length */
 #define INCNEST		5	/* max. INCLUDE nesting depth */
-#define IFNEST		20	/* max. IF.. nesting depth */
 #define HASHSIZE	500	/* max. entries in symbol hash array */
 #define OPCARRAY	256	/* size of object buffer */
 #define SYMINC		100	/* start size of sorted symbol array */
@@ -251,6 +251,7 @@ struct inc {
 #define E_NIMEXP	24	/* not in macro expansion */
 #define E_MACNEST	25	/* macro expansion nested too deep */
 #define E_OUTLCL	26	/* too many local labels */
+#define E_LBLDIF	27	/* label value differs between passes */
 
 /*
  *	definition of fatal errors
