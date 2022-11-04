@@ -37,7 +37,8 @@ struct sym *get_sym(char *);
 struct sym *new_sym(char *);
 int hash(char *);
 char *strsave(char *);
-int numcmp(WORD, WORD);
+int namecmp(const void *, const void *);
+int valcmp(const void *, const void *);
 
 /* z80amain.c */
 extern void fatal(int, const char *);
@@ -159,8 +160,8 @@ struct sym *new_sym(char *sym_name)
 	register int hashval, n;
 	register struct sym *sp;
 
-	if ((sp = (struct sym *) malloc(sizeof (struct sym))) == NULL
-	    || ((sp->sym_name = strsave(sym_name)) == NULL))
+	sp = (struct sym *) malloc(sizeof (struct sym));
+	if (sp == NULL || (sp->sym_name = strsave(sym_name)) == NULL)
 		fatal(F_OUTMEM, "symbols");
 	hashval = hash(sym_name);
 	sp->sym_next = symtab[hashval];
@@ -272,19 +273,16 @@ int copy_sym(void)
  */
 void n_sort_sym(int len)
 {
-	register int gap, i, j;
-	register struct sym *temp;
+	qsort(symarray, len, sizeof(struct sym *), namecmp);
+}
 
-	for (gap = len/2; gap > 0; gap /= 2)
-		for (i = gap; i < len; i++)
-			for (j = i-gap; j >= 0; j -= gap) {
-				if (strcmp(symarray[j]->sym_name,
-					   symarray[j+gap]->sym_name) <= 0)
-					break;
-				temp = symarray[j];
-				symarray[j] = symarray[j+gap];
-				symarray[j+gap] = temp;
-			}
+/*
+ *	compares two symbol names for qsort()
+ */
+int namecmp(const void *p1, const void *p2)
+{
+	return(strcmp((*(const struct sym **) p1)->sym_name,
+		      (*(const struct sym **) p2)->sym_name));
 }
 
 /*
@@ -292,30 +290,23 @@ void n_sort_sym(int len)
  */
 void a_sort_sym(int len)
 {
-	register int gap, i, j;
-	register struct sym *temp;
-
-	for (gap = len/2; gap > 0; gap /= 2)
-		for (i = gap; i < len; i++)
-			for (j = i-gap; j >= 0; j -= gap) {
-				if (numcmp(symarray[j]->sym_val,
-					   symarray[j+gap]->sym_val) <= 0)
-					break;
-				temp = symarray[j];
-				symarray[j] = symarray[j+gap];
-				symarray[j+gap] = temp;
-			}
+	qsort(symarray, len, sizeof(struct sym *), valcmp);
 }
 
 /*
- *	compares two 16bit values, result like strcmp()
+ *	compares two symbol values for qsort(), result like strcmp()
+ *	if equal compares symbol names
  */
-int numcmp(WORD n1, WORD n2)
+int valcmp(const void *p1, const void *p2)
 {
+	register int n1, n2;
+
+	n1 = (*(const struct sym **) p1)->sym_val;
+	n2 = (*(const struct sym **) p2)->sym_val;
 	if (n1 < n2)
 		return(-1);
 	else if (n1 > n2)
 		return(1);
 	else
-		return(0);
+		return(namecmp(p1, p2));
 }
