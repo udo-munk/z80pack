@@ -391,23 +391,24 @@ int process_line(char *l)
 				op = search_op(opcode);
 			mac_add_line(op, l);
 		} else if (*opcode == '\0') {
-			if (lbl_flag) {
-				if (gencode)
-					put_label();
-			} else
-				a_mode = A_NONE;
-		} else if (mac_lookup(opcode)) {
-			p = get_operand(operand, p, 1);
-			if (lbl_flag && gencode)
-				put_label();
+			a_mode = A_NONE;
 			if (gencode) {
+				if (lbl_flag) {
+					put_label();
+					a_mode = A_STD;
+				}
+			}
+		} else if (mac_lookup(opcode)) {
+			if (gencode) {
+				if (lbl_flag)
+					put_label();
+				p = get_operand(operand, p, 1);
 				mac_call();
 				if (lbl_flag)
 					a_mode = A_STD;
 			} else
 				a_mode = A_NONE;
 		} else if ((op = search_op(opcode)) != NULL) {
-			p = get_operand(operand, p, op->op_flags & OP_NOPRE);
 			if (lbl_flag) {
 				if (op->op_flags & OP_NOLBL)
 					asmerr(E_ILLLBL);
@@ -415,6 +416,7 @@ int process_line(char *l)
 					if (gencode)
 						put_label();
 			}
+			p = get_operand(operand, p, op->op_flags & OP_NOPRE);
 			if (*operand != '\0' && *operand != COMMENT
 					     && (op->op_flags & OP_NOOPR))
 				asmerr(E_ILLOPE);
