@@ -380,7 +380,7 @@ int process_line(char *l)
 	op = NULL;
 	op_count = 0;
 	old_genc = gencode;
-	if (*l == LINCOM || *l == LINOPT)
+	if (*l == LINCOM || (*l == LINOPT && !is_sym_char(*(l + 1))))
 		a_mode = A_NONE;
 	else {
 		p = get_symbol(label, l, 1);

@@ -33,8 +33,7 @@
 
 int ldreg(BYTE, char *), ldixhl(BYTE, char *), ldiyhl(BYTE, char *);
 int ldsp(char *), ldihl(BYTE, char *), ldiixy(BYTE, BYTE, char *);
-int ldinn(char *), aluop(BYTE, char *);
-void cbgrp_iixy(BYTE, BYTE, BYTE, char *);
+int ldinn(char *), aluop(BYTE, char *), cbgrp_iixy(BYTE, BYTE, BYTE, char *);
 
 /* z80amain.c */
 extern void asmerr(int);
@@ -1328,19 +1327,14 @@ int op_cbgrp(BYTE base_op, BYTE dummy)
 		ops[1] = base_op + bit + (op & OPMASK0);
 		break;
 	case NOREG:			/* CBOP {n,}(I[XY]+d){,reg} */
-		len = 4;
-		if (pass == 2) {
-			if (strncmp(sec, "(IX+", 4) == 0
-			    || strncmp(sec, "(IY+", 4) == 0)
-				cbgrp_iixy(*(sec + 2) == 'Y' ? 0xfd : 0xdd,
-					   base_op, bit, sec);
-			else {		/* invalid operand */
-				ops[0] = 0;
-				ops[1] = 0;
-				ops[2] = 0;
-				ops[3] = 0;
-				asmerr(E_ILLOPE);
-			}
+		if (strncmp(sec, "(IX+", 4) == 0
+		    || strncmp(sec, "(IY+", 4) == 0)
+			len = cbgrp_iixy(*(sec + 2) == 'Y' ? 0xfd : 0xdd,
+					 base_op, bit, sec);
+		else {			/* invalid operand */
+			ops[0] = 0;
+			ops[1] = 0;
+			asmerr(E_ILLOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1359,7 +1353,7 @@ int op_cbgrp(BYTE base_op, BYTE dummy)
 /*
  *	CBOP {n,}(I[XY]+d){,reg}
  */
-void cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
+int cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 {
 	register char *tert;
 	register BYTE op;
@@ -1375,11 +1369,14 @@ void cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 			case REGE:	/* CBOP {n,}(I[XY]+d),E (undoc) */
 			case REGH:	/* CBOP {n,}(I[XY]+d),H (undoc) */
 			case REGL:	/* CBOP {n,}(I[XY]+d),L (undoc) */
-				*(sec + 3) = '('; /* replace '+' */
-				ops[0] = prefix;
-				ops[1] = 0xcb;
-				ops[2] = chk_sbyte(eval(sec + 3));
-				ops[3] = base_op + bit + (op & OPMASK0);
+				if (pass == 2) {
+					*(sec + 3) = '('; /* replace '+' */
+					ops[0] = prefix;
+					ops[1] = 0xcb;
+					ops[2] = chk_sbyte(eval(sec + 3));
+					ops[3] = base_op + bit
+							 + (op & OPMASK0);
+				}
 				break;
 			case NOOPERA:	/* missing operand */
 				ops[0] = 0;
@@ -1402,13 +1399,14 @@ void cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 			ops[3] = 0;
 			asmerr(E_ILLOPE);
 		}
-	} else {			/* CBOP {n,}(I[XY]+d) */
-		*(sec + 3) = '(';
+	} else if (pass == 2) {		/* CBOP {n,}(I[XY]+d) */
+		*(sec + 3) = '(';	/* replace '+' */
 		ops[0] = prefix;
 		ops[1] = 0xcb;
 		ops[2] = chk_sbyte(eval(sec + 3));
 		ops[3] = base_op + bit + (REGIHL & OPMASK0);
 	}
+	return(4);
 }
 
 /*

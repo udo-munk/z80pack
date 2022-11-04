@@ -501,7 +501,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 	int amp_flag;	/* 0 = no &, 1 = & before, 2 = & after */
 	int esc_flag;	/* 0 = no ^, 1 = ^ before */
 
-	if (*s == LINCOM || *s == LINOPT) {
+	if (*s == LINCOM || (*s == LINOPT && !is_sym_char(*(s + 1)))) {
 		while (*s != '\n' && *s != '\0')
 			*t++ = *s++;
 		goto done;
