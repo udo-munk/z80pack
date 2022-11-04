@@ -277,7 +277,7 @@ void n_sort_sym(int len)
 }
 
 /*
- *	compares two symbol name for qsort()
+ *	compares two symbol names for qsort()
  */
 int namecmp(const void *p1, const void *p2)
 {
@@ -295,7 +295,7 @@ void a_sort_sym(int len)
 
 /*
  *	compares two symbol values for qsort(), result like strcmp()
- *	if equal compare symbol names
+ *	if equal compares symbol names
  */
 int valcmp(const void *p1, const void *p2)
 {
