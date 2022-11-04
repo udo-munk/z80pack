@@ -161,7 +161,7 @@ struct sym *new_sym(char *sym_name)
 	register struct sym *sp;
 
 	sp = (struct sym *) malloc(sizeof (struct sym));
-	if (sp == NULL || ((sp->sym_name = strsave(sym_name)) == NULL))
+	if (sp == NULL || (sp->sym_name = strsave(sym_name)) == NULL)
 		fatal(F_OUTMEM, "symbols");
 	hashval = hash(sym_name);
 	sp->sym_next = symtab[hashval];
