@@ -36,7 +36,8 @@ extern char	*infiles[],
 		operand[],
 		title[];
 
-extern BYTE	ops[];
+extern BYTE	ops[],
+		ctype[];
 
 extern WORD	rpc,
 		pc,
@@ -56,22 +57,12 @@ extern int	list_flag,
 		opset,
 		phs_flag,
 		pass,
-		iflevel,
-		act_iflevel,
-		act_elselevel,
 		gencode,
 		nofalselist,
-		mac_def_nest,
-		mac_exp_nest,
-		mac_symmax,
-		errors,
 		errnum,
 		a_mode,
 		load_flag,
 		obj_fmt,
-		symlen,
-		symmax,
-		symsize,
 		p_line,
 		ppl;
 
@@ -80,11 +71,25 @@ extern FILE	*srcfp,
 		*lstfp,
 		*errfp;
 
-extern unsigned	page;
+extern unsigned	iflevel,
+		act_iflevel,
+		act_elselevel,
+		mac_def_nest,
+		mac_exp_nest,
+		mac_symmax,
+		errors,
+		symlen,
+		symmax,
+		symcnt,
+		page,
+		no_opcodes,
+		no_operands;
 
 extern unsigned long c_line;
 
 extern struct sym *symtab[],
 		  **symarray;
 
-extern struct opset opsettab[];
+extern struct opc **opctab;
+
+extern struct ope *opetab;

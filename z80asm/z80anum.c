@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include "z80a.h"
 #include "z80aglb.h"
 
@@ -72,7 +71,7 @@ extern struct sym *get_sym(char *);
  */
 struct opr {
 	const char *opr_name;	/* operator name */
-	int opr_type;		/* operator token type */
+	BYTE opr_type;		/* operator token type */
 };
 
 /*
@@ -98,24 +97,38 @@ struct opr oprtab[] = {
 	{ "TYPE",	T_TYPE		},
 	{ "XOR",	T_XOR		}
 };
+unsigned no_operators = sizeof(oprtab) / sizeof(struct opr);
 
-int no_operators = sizeof(oprtab) / sizeof(struct opr);
-
-static int tok_type;	/* token type and flags */
+static BYTE tok_type;	/* token type and flags */
 static WORD tok_val;	/* token value for T_VAL type */
 static char tok_sym[MAXLINE]; /* last symbol scanned (T_VAL) */
 static char *scan_pos;	/* current scanning position */
 
-int is_first_sym_char(char c)
+void init_ctype(void)
 {
-	return(isalpha((unsigned char) c) || c == '$' || c == '.' || c == '?'
-					  || c == '@' || c == '_');
-}
+	register BYTE i;
 
-int is_sym_char(char c)
-{
-	return(isalnum((unsigned char) c) || c == '$' || c == '.' || c == '?'
-					  || c == '@' || c == '_');
+	for (i = '0'; i <= '9'; i++)
+		ctype[i] = C_SYM | C_DIG | C_XDIG;
+	for (i = 'A'; i <= 'F'; i++)
+		ctype[i] = C_FSYM | C_SYM | C_XDIG;
+	for (i = 'G'; i <= 'Z'; i++)
+		ctype[i] = C_FSYM | C_SYM;
+	for (i = 'a'; i <= 'f'; i++)
+		ctype[i] = C_FSYM | C_SYM | C_LOW | C_XDIG;
+	for (i = 'g'; i <= 'z'; i++)
+		ctype[i] = C_FSYM | C_SYM | C_LOW;
+	ctype[(BYTE) '$'] = C_FSYM | C_SYM;
+	ctype[(BYTE) '.'] = C_FSYM | C_SYM;
+	ctype[(BYTE) '?'] = C_FSYM | C_SYM;
+	ctype[(BYTE) '@'] = C_FSYM | C_SYM;
+	ctype[(BYTE) '_'] = C_FSYM | C_SYM;
+	ctype[(BYTE) ' '] = C_SPC;
+	ctype[(BYTE) '\f'] = C_SPC;
+	ctype[(BYTE) '\n'] = C_SPC;
+	ctype[(BYTE) '\r'] = C_SPC;
+	ctype[(BYTE) '\t'] = C_SPC;
+	ctype[(BYTE) '\v'] = C_SPC;
 }
 
 /*
@@ -125,7 +138,7 @@ int is_sym_char(char c)
  *
  *	Output: symbol for operator, T_UNDSYM if operator not found
  */
-int search_opr(char *s)
+BYTE search_opr(char *s)
 {
 	register int cond;
 	register struct opr *low, *high, *mid;
@@ -159,7 +172,7 @@ int get_token(void)
 	s = scan_pos;
 	tok_sym[0] = '\0';
 	tok_val = 0;
-	while (isspace((unsigned char) *s))		/* skip white space */
+	while (IS_SPC(*s))				/* skip white space */
 		s++;
 	if (*s == '\0') {				/* nothing there? */
 		tok_type = T_EMPTY;
@@ -168,10 +181,9 @@ int get_token(void)
 	if (*s == 'X' && *(s + 1) == STRDEL) {		/* X'h' hex constant */
 		s += 2;
 		n = 0;
-		while (isxdigit((unsigned char) *s)) {
+		while (IS_XDIG(*s)) {
 			n *= 16;
-			n += toupper((unsigned char) *s)
-			     - ((*s <= '9') ? '0' : '7');
+			n += TO_UPP(*s) - ((*s <= '9') ? '0' : '7');
 			s++;
 		}
 		if (*s != STRDEL)			/* missing final ' */
@@ -184,11 +196,11 @@ int get_token(void)
 		}
 	}
 	p1 = p2 = tok_sym;				/* gather symbol */
-	while (is_sym_char(*s))
+	while (IS_SYM(*s))
 		*p2++ = *s++;
 	*p2 = '\0';
 	if (p1 != p2) {					/* a number/symbol */
-		if (isdigit((unsigned char) *p1)) {	/* a number */
+		if (IS_DIG(*p1)) {			/* a number */
 			p2--;
 			if (radix < 12 && *p2 == 'B')
 				base = 2;
@@ -208,7 +220,7 @@ int get_token(void)
 					p1++;
 					continue;
 				}
-				if (isxdigit((unsigned char) *p1)) {
+				if (IS_XDIG(*p1)) {
 					m = *p1 - ((*p1 <= '9') ? '0' : '7');
 					if (m < base) {
 						n *= base;
@@ -339,7 +351,8 @@ done:
 
 int factor(WORD *resultp)
 {
-	register int opr_type, err, erru;
+	register int err, erru;
+	register BYTE opr_type;
 	register char *s;
 	WORD value;
 
@@ -356,7 +369,7 @@ int factor(WORD *resultp)
 		return(E_UNDSYM);
 	case T_NUL:
 		s = scan_pos;
-		while (isspace((unsigned char) *s))
+		while (IS_SPC(*s))
 			s++;
 		if (strcmp(s, "''") == 0 || strcmp(s, "\"\"") == 0)
 			*resultp = -1;
@@ -425,7 +438,8 @@ int factor(WORD *resultp)
 
 int mul_term(WORD *resultp)
 {
-	register int opr_type, err, erru;
+	register int err, erru;
+	register BYTE opr_type;
 	WORD value;
 
 	if ((erru = factor(resultp)) != E_NOERR && erru != E_UNDSYM)
@@ -470,7 +484,8 @@ int mul_term(WORD *resultp)
 
 int add_term(WORD *resultp)
 {
-	register int opr_type, err, erru;
+	register int err, erru;
+	register BYTE opr_type;
 	WORD value;
 
 	if ((erru = mul_term(resultp)) != E_NOERR && erru != E_UNDSYM)
@@ -501,7 +516,8 @@ int add_term(WORD *resultp)
 
 int cmp_term(WORD *resultp)
 {
-	register int opr_type, err, erru;
+	register int err, erru;
+	register BYTE opr_type;
 	WORD value;
 
 	if ((erru = add_term(resultp)) != E_NOERR && erru != E_UNDSYM)
@@ -546,7 +562,8 @@ int cmp_term(WORD *resultp)
 
 int expr(WORD *resultp)
 {
-	register int opr_type, err, erru;
+	register int err, erru;
+	register BYTE opr_type;
 	WORD value;
 
 	if ((erru = cmp_term(resultp)) != E_NOERR && erru != E_UNDSYM)

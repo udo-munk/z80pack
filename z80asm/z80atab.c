@@ -35,8 +35,7 @@
 struct sym *look_sym(char *);
 struct sym *get_sym(char *);
 struct sym *new_sym(char *);
-int hash(char *);
-char *strsave(char *);
+unsigned hash(char *);
 int namecmp(const void *, const void *);
 int valcmp(const void *, const void *);
 
@@ -47,8 +46,7 @@ extern void fatal(int, const char *);
 extern void asmerr(int);
 
 /*
- *	binary search in sorted table opctab of opset and OPSET_PSD
- *	search opset first since pseudo ops occur less often
+ *	binary search in sorted table opctab
  *
  *	Input: pointer to string with opcode
  *
@@ -56,31 +54,27 @@ extern void asmerr(int);
  */
 struct opc *search_op(char *op_name)
 {
-	register int cond, i;
-	register struct opc *low, *high, *mid;
-	register struct opset *p;
+	register int cond;
+	register struct opc **low, **high, **mid;
 
-	for (i = opset; i >= 0; i = (i == opset ? OPSET_PSD : -1)) {
-		p = &opsettab[i];
-		low = &p->opctab[0];
-		high = &p->opctab[p->no_opcodes - 1];
-		while (low <= high) {
-			mid = low + (high - low) / 2;
-			if ((cond = strcmp(op_name, mid->op_name)) < 0)
-				high = mid - 1;
-			else if (cond > 0)
-				low = mid + 1;
-			else if (!undoc_flag && (mid->op_flags & OP_UNDOC))
-				return(NULL);
-			else
-				return(mid);
-		}
+	low = opctab;
+	high = opctab + no_opcodes - 1;
+	while (low <= high) {
+		mid = low + (high - low) / 2;
+		if ((cond = strcmp(op_name, (*mid)->op_name)) < 0)
+			high = mid - 1;
+		else if (cond > 0)
+			low = mid + 1;
+		else if (!undoc_flag && ((*mid)->op_flags & OP_UNDOC))
+			return(NULL);
+		else
+			return(*mid);
 	}
 	return(NULL);
 }
 
 /*
- *	binary search in sorted table opetab of opset
+ *	binary search in sorted table opetab
  *
  *	Input: pointer to string with operand
  *
@@ -91,13 +85,11 @@ BYTE get_reg(char *s)
 {
 	register int cond;
 	register struct ope *low, *high, *mid;
-	register struct opset *p;
 
 	if (s == NULL || *s == '\0')
 		return(NOOPERA);
-	p = &opsettab[opset];
-	low = &p->opetab[0];
-	high = &p->opetab[p->no_operands - 1];
+	low = opetab;
+	high = opetab + no_operands - 1;
 	while (low <= high) {
 		mid = low + (high - low) / 2;
 		if ((cond = strcmp(s, mid->ope_name)) < 0)
@@ -140,10 +132,11 @@ struct sym *get_sym(char *sym_name)
 {
 	register struct sym *sp;
 
-	if ((sp = look_sym(sym_name)) != NULL) {
-		sp->sym_refcnt++;
-		return(sp);
-	}
+	for (sp = symtab[hash(sym_name)]; sp != NULL; sp = sp->sym_next)
+		if (strcmp(sym_name, sp->sym_name) == 0) {
+			sp->sym_refcnt++;
+			return(sp);
+		}
 	return(NULL);
 }
 
@@ -151,25 +144,26 @@ struct sym *get_sym(char *sym_name)
  *	add symbol to symbol table symtab
  *
  *	Input: sym_name pointer to string with symbol name
- *	       sym_val  value of symbol
  *
  *	Output: pointer to table element
  */
 struct sym *new_sym(char *sym_name)
 {
-	register int hashval, n;
+	register unsigned hashval, n;
 	register struct sym *sp;
 
+	n = strlen(sym_name);
 	sp = (struct sym *) malloc(sizeof (struct sym));
-	if (sp == NULL || (sp->sym_name = strsave(sym_name)) == NULL)
+	if (sp == NULL || (sp->sym_name = (char *) malloc(n + 1)) == NULL)
 		fatal(F_OUTMEM, "symbols");
+	strcpy(sp->sym_name, sym_name);
 	hashval = hash(sym_name);
 	sp->sym_next = symtab[hashval];
 	symtab[hashval] = sp;
 	sp->sym_refcnt = 0;
-	n = strlen(sym_name);
 	if (n > symmax)
 		symmax = n;
+	symcnt++;
 	return(sp);
 }
 
@@ -180,7 +174,7 @@ struct sym *new_sym(char *sym_name)
  *	Input: sym_name pointer to string with symbol name
  *	       sym_val  value of symbol
  */
-void put_sym(char *sym_name, int sym_val)
+void put_sym(char *sym_name, WORD sym_val)
 {
 	register struct sym *sp;
 
@@ -200,7 +194,7 @@ void put_label(void)
 	if ((sp = look_sym(label)) == NULL)
 		new_sym(label)->sym_val = pc;
 	else if (sp->sym_val != pc)
-		asmerr(E_LBLDIF);
+		asmerr(pass == 1 ? E_MULSYM : E_LBLDIF);
 }
 
 /*
@@ -210,70 +204,38 @@ void put_label(void)
  *
  *	Output: hash value
  */
-int hash(char *name)
+unsigned hash(char *name)
 {
-	register int hashval;
+	register unsigned hashval;
 
-	for (hashval = 0; *name;)
+	for (hashval = 0; *name != '\0';)
 		hashval += *name++;
 	return(hashval % HASHSIZE);
-}
-
-/*
- *	save string into allocated memory
- *
- *	Input: pointer to string
- *
- *	Output: pointer to allocated memory with string
- */
-char *strsave(char *s)
-{
-	register char *p;
-
-	if ((p = (char *) malloc((unsigned) strlen(s) + 1)) != NULL)
-		strcpy(p, s);
-	return(p);
 }
 
 /*
  *	copy whole symbol hash table into allocated pointer array
  *	used for sorting the symbol table later
  */
-int copy_sym(void)
+void copy_sym(void)
 {
-	register int i, j;
-	register struct sym *np;
+	register unsigned i, j;
+	register struct sym *sp;
 
-	symarray = (struct sym **) malloc(sizeof(struct sym *) * SYMINC);
+	symarray = (struct sym **) malloc(sizeof(struct sym *) * symcnt);
 	if (symarray == NULL)
 		fatal(F_OUTMEM, "sorting symbol table");
-	symsize = SYMINC;
-	for (i = 0, j = 0; i < HASHSIZE; i++) {
-		if (symtab[i] != NULL) {
-			for (np = symtab[i]; np != NULL; np = np->sym_next) {
-				symarray[j++] = np;
-				if (j == symsize) {
-					symarray = (struct sym **)
-						realloc(symarray,
-							sizeof(struct sym *)
-							* (symsize + SYMINC));
-					if (symarray == NULL)
-						fatal(F_OUTMEM,
-						      "sorting symbol table");
-					symsize += SYMINC;
-				}
-			}
-		}
-	}
-	return(j);
+	for (i = 0, j = 0; i < HASHSIZE; i++)
+		for (sp = symtab[i]; sp != NULL; sp = sp->sym_next)
+			symarray[j++] = sp;
 }
 
 /*
  *	sort symbol table by name
  */
-void n_sort_sym(int len)
+void n_sort_sym(void)
 {
-	qsort(symarray, len, sizeof(struct sym *), namecmp);
+	qsort(symarray, symcnt, sizeof(struct sym *), namecmp);
 }
 
 /*
@@ -288,9 +250,9 @@ int namecmp(const void *p1, const void *p2)
 /*
  *	sort symbol table by address
  */
-void a_sort_sym(int len)
+void a_sort_sym(void)
 {
-	qsort(symarray, len, sizeof(struct sym *), valcmp);
+	qsort(symarray, symcnt, sizeof(struct sym *), valcmp);
 }
 
 /*
@@ -299,7 +261,7 @@ void a_sort_sym(int len)
  */
 int valcmp(const void *p1, const void *p2)
 {
-	register int n1, n2;
+	register WORD n1, n2;
 
 	n1 = (*(const struct sym **) p1)->sym_val;
 	n2 = (*(const struct sym **) p2)->sym_val;
