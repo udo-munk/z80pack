@@ -80,7 +80,6 @@ extern unsigned	iflevel,
 		errors,
 		symlen,
 		symmax,
-		symcnt,
 		page;
 
 extern unsigned long c_line;

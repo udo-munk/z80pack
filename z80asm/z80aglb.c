@@ -86,7 +86,6 @@ unsigned
      errors,			/* error counter */
      symlen = SYMLEN,		/* significant characters in symbols */
      symmax,			/* max. symbol name length encountered */
-     symcnt,			/* number of symbols defined */
      page;			/* no. of pages for listing */
 
 unsigned long

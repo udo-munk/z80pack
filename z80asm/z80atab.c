@@ -46,6 +46,7 @@ extern void fatal(int, const char *);
 extern void asmerr(int);
 
 static struct sym *symtab[HASHSIZE];	/* symbol table */
+static unsigned symcnt;			/* number of symbols defined */
 static struct sym **symarray;		/* sorted symbol table */
 static int symsort;			/* sort mode for iterator */
 static unsigned symidx;			/* hash table index for iterator */
