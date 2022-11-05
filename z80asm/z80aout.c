@@ -44,8 +44,8 @@ void btoh(BYTE, char **);
 extern void fatal(int, const char *);
 
 /* z80amfun.c */
-extern char *mac_lst_first(int, int *);
-extern char *mac_lst_next(int, int *);
+extern char *mac_lst_first(int, unsigned *);
+extern char *mac_lst_next(int, unsigned *);
 
 static const char *errmsg[] = {			/* error messages for asmerr */
 	"no error",				/* 0 */
@@ -75,7 +75,7 @@ static const char *errmsg[] = {			/* error messages for asmerr */
 	"not in macro expansion",		/* 24 */
 	"macro expansion nested too deep",	/* 25 */
 	"too many local labels",		/* 26 */
-	"label value differs between passes"	/* 27 */
+	"label address differs between passes"	/* 27 */
 };
 
 /*
@@ -150,9 +150,9 @@ void lst_attl(void)
 /*
  *	print one line into listfile, if -l option set
  */
-void lst_line(char *l, WORD addr, int op_cnt, int expn_flag)
+void lst_line(char *l, WORD addr, unsigned op_cnt, int expn_flag)
 {
-	register int i, j;
+	register unsigned i, j;
 	register const char *a_mark;
 	static unsigned long s_line;
 
@@ -196,9 +196,10 @@ void lst_line(char *l, WORD addr, int op_cnt, int expn_flag)
 	fputs("  ", lstfp);
 	i = 0;
 	for (j = 0; j < 4; j++) {
-		if (op_cnt-- > 0)
+		if (op_cnt > 0) {
 			lst_byte(ops[i++]);
-		else if (j == 0)
+			op_cnt--;
+		} else if (j == 0)
 			fputs(a_mark, lstfp);
 		else
 			fputs("  ", lstfp);
@@ -227,9 +228,10 @@ void lst_line(char *l, WORD addr, int op_cnt, int expn_flag)
 		lst_byte(addr & 0xff);
 		fputs("  ", lstfp);
 		for (j = 0; j < 4; j++) {
-			if (op_cnt-- > 0)
+			if (op_cnt > 0) {
 				lst_byte(ops[i++]);
-			else
+				op_cnt--;
+			} else
 				fputs("  ", lstfp);
 			fputc(' ', lstfp);
 		}
@@ -245,9 +247,9 @@ void lst_line(char *l, WORD addr, int op_cnt, int expn_flag)
  */
 void lst_mac(int sorted)
 {
-	register int i, j;
+	register unsigned i, j;
 	register char *p;
-	int refcnt;
+	unsigned refcnt;
 
 	p_line = i = 0;
 	strcpy(title, "Macro table");
@@ -284,36 +286,34 @@ void lst_mac(int sorted)
  */
 void lst_sym(void)
 {
-	register int i, j;
-	register struct sym *np;
+	register unsigned i, j;
+	register struct sym *sp;
 
 	p_line = j = 0;
 	strcpy(title, "Symbol table");
 	for (i = 0; i < HASHSIZE; i++) {
-		if (symtab[i] != NULL) {
-			for (np = symtab[i]; np != NULL; np = np->sym_next) {
-				if (p_line == 0) {
-					lst_header();
-					if (ppl == 0) {
-						fputs(title, lstfp);
-						fputc('\n', lstfp);
-					}
+		for (sp = symtab[i]; sp != NULL; sp = sp->sym_next) {
+			if (p_line == 0) {
+				lst_header();
+				if (ppl == 0) {
+					fputs(title, lstfp);
 					fputc('\n', lstfp);
-					p_line++;
 				}
-				fprintf(lstfp, "%*s ", -symmax, np->sym_name);
-				lst_byte(np->sym_val >> 8);
-				lst_byte(np->sym_val & 0xff);
-				fputc(np->sym_refcnt > 0 ? ' ' : '*', lstfp);
-				j += symmax + 9;
-				if (j + symmax + 6 >= 80) {
-					fputc('\n', lstfp);
-					if (ppl != 0 && ++p_line >= ppl)
-						p_line = 0;
-					j = 0;
-				} else
-					fputs("   ", lstfp);
+				fputc('\n', lstfp);
+				p_line++;
 			}
+			fprintf(lstfp, "%*s ", -symmax, sp->sym_name);
+			lst_byte(sp->sym_val >> 8);
+			lst_byte(sp->sym_val & 0xff);
+			fputc(sp->sym_refcnt > 0 ? ' ' : '*', lstfp);
+			j += symmax + 9;
+			if (j + symmax + 6 >= 80) {
+				fputc('\n', lstfp);
+				if (ppl != 0 && ++p_line >= ppl)
+					p_line = 0;
+				j = 0;
+			} else
+				fputs("   ", lstfp);
 		}
 	}
 	if (j > 0)
@@ -323,13 +323,13 @@ void lst_sym(void)
 /*
  *	print sorted symbol table into listfile
  */
-void lst_sort_sym(int len)
+void lst_sort_sym(void)
 {
-	register int i, j;
+	register unsigned i, j;
 
-	p_line = i = j = 0;
+	p_line = j = 0;
 	strcpy(title, "Symbol table");
-	while (i < len) {
+	for (i = 0; i < symcnt; i++) {
 		if (p_line == 0) {
 			lst_header();
 			if (ppl == 0) {
@@ -351,7 +351,6 @@ void lst_sort_sym(int len)
 			j = 0;
 		} else
 			fputs("   ", lstfp);
-		i++;
 	}
 	if (j > 0)
 		fputc('\n', lstfp);
@@ -379,9 +378,9 @@ void obj_header(void)
 	case OBJ_BIN:
 		break;
 	case OBJ_MOS:
-		putc(0xff, objfp);
-		putc(load_addr & 0xff, objfp);
-		putc(load_addr >> 8, objfp);
+		fputc(0xff, objfp);
+		fputc(load_addr & 0xff, objfp);
+		fputc(load_addr >> 8, objfp);
 		break;
 	case OBJ_HEX:
 		break;
@@ -428,9 +427,9 @@ void obj_org(WORD addr)
 /*
  *	write opcodes in ops[] into object file
  */
-void obj_writeb(int op_cnt)
+void obj_writeb(unsigned op_cnt)
 {
-	register int i;
+	register unsigned i;
 
 	if (op_cnt == 0)
 		return;
@@ -503,7 +502,7 @@ void obj_fill_value(WORD count, WORD value)
 			else {
 				fill_bin();
 				while (n-- > 0)
-					putc(value, objfp);
+					fputc(value, objfp);
 				bin_addr += count;
 			}
 			curr_addr += count;
@@ -528,7 +527,7 @@ void obj_fill_value(WORD count, WORD value)
 void fill_bin(void)
 {
 	while (bin_addr < curr_addr) {
-		putc(0xff, objfp);
+		fputc(0xff, objfp);
 		bin_addr++;
 	}
 }

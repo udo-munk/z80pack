@@ -54,11 +54,11 @@
 #define INCNEST		5	/* max. INCLUDE nesting depth */
 #define HASHSIZE	500	/* max. entries in symbol hash array */
 #define OPCARRAY	256	/* size of object buffer */
-#define SYMINC		100	/* start size of sorted symbol array */
 #define MAXHEX		32	/* max. no bytes/hex record */
 
 /*
- *	types for working with op-codes, addresses and expressions
+ *	types for working with op-codes, addresses, expressions,
+ *	and bit flags and masks
  */
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
@@ -68,7 +68,7 @@ typedef unsigned short WORD;
  */
 struct opc {
 	const char *op_name;	/* opcode name */
-	int (*op_fun) (BYTE, BYTE); /* function pointer code gen. */
+	unsigned (*op_fun) (BYTE, BYTE); /* function pointer code gen. */
 	BYTE op_c1;		/* first base opcode */
 	BYTE op_c2;		/* second base opcode */
 	WORD op_flags;		/* opcode flags */
@@ -84,22 +84,12 @@ struct ope {
 };
 
 /*
- *	structure operations set
- */
-struct opset {
-	int no_opcodes;		/* number of opcode entries */
-	struct opc *opctab;	/* opcode table */
-	int no_operands;	/* number of operand entries */
-	struct ope *opetab;	/* operand table */
-};
-
-/*
  *	structure symbol table entries
  */
 struct sym {
 	char *sym_name;		/* symbol name */
 	WORD sym_val;		/* symbol value */
-	int  sym_refcnt;	/* symbol reference counter */
+	unsigned sym_refcnt;	/* symbol reference counter */
 	struct sym *sym_next;	/* next entry */
 };
 
@@ -201,7 +191,7 @@ struct inc {
 /*
  *	definition of operation sets
  */
-#define OPSET_PSD	0	/* pseudo ops */
+#define OPSET_NONE	0	/* not set */
 #define OPSET_Z80	1	/* Z80 opcodes */
 #define OPSET_8080	2	/* 8080 opcodes */
 
@@ -220,6 +210,16 @@ struct inc {
 #define	M_OPS		0	/* only list macro expansions producing ops */
 #define M_ALL		1	/* list all macro expansions */
 #define M_NONE		2	/* list no macro expansions */
+
+/*
+ *	definition of character types
+ */
+#define C_FSYM		0x01	/* first symbol character */
+#define C_SYM		0x02	/* symbol character */
+#define C_LOW		0x04	/* lower case letter */
+#define C_DIG		0x08	/* decimal digit */
+#define C_XDIG		0x10	/* hexadecimal digit */
+#define C_SPC		0x20	/* white space */
 
 /*
  *	definition of error numbers for error messages in listfile
@@ -251,7 +251,7 @@ struct inc {
 #define E_NIMEXP	24	/* not in macro expansion */
 #define E_MACNEST	25	/* macro expansion nested too deep */
 #define E_OUTLCL	26	/* too many local labels */
-#define E_LBLDIF	27	/* label value differs between passes */
+#define E_LBLDIF	27	/* label address differs between passes */
 
 /*
  *	definition of fatal errors
@@ -269,3 +269,14 @@ struct inc {
  *	macro for declaring unused function parameters
  */
 #define UNUSED(x)	(void)(x)
+
+/*
+ *	macros for character classification and conversion
+ */
+#define IS_FSYM(c)	(ctype[(BYTE) (c)] & C_FSYM)
+#define IS_SYM(c)	(ctype[(BYTE) (c)] & C_SYM)
+#define IS_DIG(c)	(ctype[(BYTE) (c)] & C_DIG)
+#define IS_XDIG(c)	(ctype[(BYTE) (c)] & C_XDIG)
+#define IS_SPC(c)	(ctype[(BYTE) (c)] & C_SPC)
+/* don't use parameters with side-effects with this! */
+#define TO_UPP(c)	((ctype[(BYTE) (c)] & C_LOW) ? ((c) - 32) : (c))

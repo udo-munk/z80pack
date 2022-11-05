@@ -28,7 +28,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <limits.h>
 #include "z80a.h"
 #include "z80aglb.h"
@@ -42,6 +41,9 @@ extern char *next_arg(char *, int *);
 extern WORD eval(char *);
 extern BYTE chk_byte(WORD);
 
+/* z80aopc.c */
+extern void set_opset(int);
+
 /* z80aout.c */
 extern void asmerr(int);
 extern void lst_header(void);
@@ -54,22 +56,22 @@ extern void obj_fill_value(WORD, WORD);
 extern struct sym *look_sym(char *);
 extern struct sym *get_sym(char *);
 extern struct sym *new_sym(char *);
-extern void put_sym(char *, int);
+extern void put_sym(char *, WORD);
 
 /*
  *	.Z80 and .8080
  */
-int op_opset(BYTE op_code, BYTE dummy)
+unsigned op_opset(BYTE op_code, BYTE dummy)
 {
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* .Z80 */
-		opset = OPSET_Z80;
+		set_opset(OPSET_Z80);
 		break;
 	case 2:				/* .8080 */
-		opset = OPSET_8080;
+		set_opset(OPSET_8080);
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_opset");
@@ -80,7 +82,7 @@ int op_opset(BYTE op_code, BYTE dummy)
 /*
  *	ORG, .PHASE, .DEPHASE
  */
-int op_org(BYTE op_code, BYTE dummy)
+unsigned op_org(BYTE op_code, BYTE dummy)
 {
 	register WORD n;
 
@@ -128,26 +130,26 @@ int op_org(BYTE op_code, BYTE dummy)
 /*
  *	.RADIX
  */
-int op_radix(BYTE dummy1, BYTE dummy2)
+unsigned op_radix(BYTE dummy1, BYTE dummy2)
 {
-	int i;
+	BYTE r;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
 	a_mode = A_NONE;
-	i = eval(operand);
-	if (i < 2 || i > 16)
+	r = chk_byte(eval(operand));
+	if (r < 2 || r > 16)
 		asmerr(E_VALOUT);
 	else
-		radix = i;
+		radix = r;
 	return(0);
 }
 
 /*
  *	EQU
  */
-int op_equ(BYTE dummy1, BYTE dummy2)
+unsigned op_equ(BYTE dummy1, BYTE dummy2)
 {
 	register struct sym *sp;
 
@@ -166,7 +168,7 @@ int op_equ(BYTE dummy1, BYTE dummy2)
 /*
  *	DEFL, ASET, and SET (in 8080 mode)
  */
-int op_dl(BYTE dummy1, BYTE dummy2)
+unsigned op_dl(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -180,7 +182,7 @@ int op_dl(BYTE dummy1, BYTE dummy2)
 /*
  *	DEFS and DS
  */
-int op_ds(BYTE dummy1, BYTE dummy2)
+unsigned op_ds(BYTE dummy1, BYTE dummy2)
 {
 	register char *p;
 	register WORD count, value;
@@ -205,10 +207,10 @@ int op_ds(BYTE dummy1, BYTE dummy2)
 /*
  *	DEFB, DB, DEFM, DEFC, DC, DEFZ
  */
-int op_db(BYTE op_code, BYTE dummy)
+unsigned op_db(BYTE op_code, BYTE dummy)
 {
 	register char *p, *p1, c;
-	register int i;
+	register unsigned i;
 	int sf;
 
 	UNUSED(dummy);
@@ -260,10 +262,10 @@ int op_db(BYTE op_code, BYTE dummy)
 /*
  *	DEFW and DW
  */
-int op_dw(BYTE dummy1, BYTE dummy2)
+unsigned op_dw(BYTE dummy1, BYTE dummy2)
 {
 	register char *p, *p1;
-	register int i;
+	register unsigned i;
 	register WORD n;
 
 	UNUSED(dummy1);
@@ -292,12 +294,12 @@ int op_dw(BYTE dummy1, BYTE dummy2)
  *	EJECT, PAGE, LIST, .LIST, NOLIST, .XLIST, .PRINTX, PRINT, INCLUDE,
  *	MACLIB, TITLE, .XALL, .LALL, .SALL, .SFCOND, .LFCOND
  */
-int op_misc(BYTE op_code, BYTE dummy)
+unsigned op_misc(BYTE op_code, BYTE dummy)
 {
 	register char *p, *d, c;
 	register BYTE n;
 	static char fn[LENFN];
-	static int incnest;
+	static unsigned incnest;
 	static struct inc incl[INCNEST];
 	static int page_done;
 
@@ -367,8 +369,7 @@ int op_misc(BYTE op_code, BYTE dummy)
 		incnest++;
 		p = operand;
 		d = fn;
-		while (!isspace((unsigned char) *p) && *p != COMMENT
-						    && *p != '\0')
+		while (!IS_SPC(*p) && *p != COMMENT && *p != '\0')
 			*d++ = *p++;
 		*d = '\0';
 		if (ver_flag)
@@ -438,7 +439,7 @@ int op_misc(BYTE op_code, BYTE dummy)
 /*
  *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, IF1, IF2
  */
-int op_cond(BYTE op_code, BYTE dummy)
+unsigned op_cond(BYTE op_code, BYTE dummy)
 {
 	register char *p;
 
@@ -446,7 +447,7 @@ int op_cond(BYTE op_code, BYTE dummy)
 
 	a_mode = A_NONE;
 	if (op_code < 90) {
-		if (iflevel == INT_MAX) {
+		if (iflevel == UINT_MAX) {
 			asmerr(E_IFNEST);
 			return(0);
 		}
@@ -520,7 +521,7 @@ int op_cond(BYTE op_code, BYTE dummy)
 /*
  *	EXTRN, EXTERNAL, EXT and PUBLIC, ENT, ENTRY, GLOBAL, and ABS, ASEG
  */
-int op_glob(BYTE op_code, BYTE dummy)
+unsigned op_glob(BYTE op_code, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -542,7 +543,7 @@ int op_glob(BYTE op_code, BYTE dummy)
 /*
  *	END
  */
-int op_end(BYTE dummy1, BYTE dummy2)
+unsigned op_end(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);

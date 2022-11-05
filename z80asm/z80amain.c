@@ -32,7 +32,6 @@
 #include <unistd.h>
 #endif
 #include <string.h>
-#include <ctype.h>
 #include "z80a.h"
 #include "z80aglb.h"
 
@@ -46,13 +45,13 @@ char *get_operand(char *, char *, int);
 
 /* z80aout.c */
 extern void asmerr(int);
-extern void lst_line(char *, WORD, int, int);
+extern void lst_line(char *, WORD, unsigned, int);
 extern void lst_mac(int);
 extern void lst_sym(void);
-extern void lst_sort_sym(int);
+extern void lst_sort_sym(void);
 extern void obj_header(void);
 extern void obj_end(void);
-extern void obj_writeb(int);
+extern void obj_writeb(unsigned);
 
 /* z80mfun.c */
 extern void mac_start_pass(void);
@@ -60,19 +59,21 @@ extern void mac_end_pass(void);
 extern char *mac_expand(void);
 extern void mac_add_line(struct opc *, char *);
 extern int mac_lookup(char *);
-extern int mac_call(void);
+extern void mac_call(void);
 
 /* z80anum.c */
-int is_first_sym_char(char);
-int is_sym_char(char);
+void init_ctype(void);
+
+/* z80aopc.c */
+void set_opset(int);
 
 /* z80atab.c */
 extern struct opc *search_op(char *);
-extern void put_sym(char *, int);
+extern void put_sym(char *, WORD);
 extern void put_label(void);
-extern int copy_sym(void);
-extern void n_sort_sym(int);
-extern void a_sort_sym(int);
+extern void copy_sym(void);
+extern void n_sort_sym(void);
+extern void a_sort_sym(void);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
@@ -89,8 +90,6 @@ static const char *errmsg[] = {		/* error messages for fatal() */
 
 int main(int argc, char *argv[])
 {
-	int len;
-
 	init();
 	options(argc, argv);
 	printf("Z80 - Macro - Assembler Release %s\n%s\n", REL, COPYR);
@@ -106,15 +105,15 @@ int main(int argc, char *argv[])
 			break;
 		case SYM_SORTN:		/* symbol table sorted by name */
 			lst_mac(1);
-			len = copy_sym();
-			n_sort_sym(len);
-			lst_sort_sym(len);
+			copy_sym();
+			n_sort_sym();
+			lst_sort_sym();
 			break;
 		case SYM_SORTA:		/* symbol table sorted by address */
 			lst_mac(0);
-			len = copy_sym();
-			a_sort_sym(len);
-			lst_sort_sym(len);
+			copy_sym();
+			a_sort_sym();
+			lst_sort_sym();
 			break;
 		default:
 			break;
@@ -129,6 +128,7 @@ int main(int argc, char *argv[])
  */
 void init(void)
 {
+	init_ctype();
 	errfp = stdout;
 }
 
@@ -138,8 +138,10 @@ void init(void)
 void options(int argc, char *argv[])
 {
 	register char *s, *t;
-	register int i;
+	register unsigned i;
+	register int os;
 
+	os = OPSET_Z80;
 	while (--argc > 0 && (*++argv)[0] == '-')
 		for (s = argv[0] + 1; *s != '\0'; s++)
 			switch (*s) {
@@ -196,14 +198,16 @@ void options(int argc, char *argv[])
 					usage();
 				}
 				t = label;
-				while (*s)
-					*t++ = toupper((unsigned char) *s++);
+				while (*s) {
+					*t++ = TO_UPP(*s);
+					s++;
+				}
 				s--;
 				*t = '\0';
 				put_sym(label, 0);
 				break;
 			case '8':
-				opset = OPSET_8080;
+				os = OPSET_8080;
 				break;
 			case 'u':
 				undoc_flag = 1;
@@ -254,6 +258,7 @@ void options(int argc, char *argv[])
 				printf("unknown option %c\n", *s);
 				usage();
 			}
+	set_opset(os);
 	i = 0;
 	while (argc-- && i < MAXFN) {
 		if ((infiles[i] = (char *) malloc(LENFN + 1)) == NULL)
@@ -290,7 +295,7 @@ void fatal(int i, const char *arg)
  */
 void do_pass(int p)
 {
-	register int fi;
+	register unsigned fi;
 
 	pass = p;
 	radix = 10;
@@ -342,11 +347,13 @@ void process_file(char *fn)
 		l = NULL;
 		while (mac_exp_nest > 0 && (l = mac_expand()) == NULL)
 			;
-		if (l == NULL && (l = fgets(line, MAXLINE, srcfp)) == NULL)
-			break;
-		if (upcase_flag)
-			for (s = l; *s; s++)
-				*s = toupper((unsigned char) *s);
+		if (l == NULL) {
+			if ((l = fgets(line, MAXLINE, srcfp)) == NULL)
+				break;
+			if (upcase_flag)
+				for (s = l; *s; s++)
+					*s = TO_UPP(*s);
+		}
 	} while (process_line(l));
 	fclose(srcfp);
 	if (mac_def_nest > 0)
@@ -366,7 +373,8 @@ void process_file(char *fn)
 int process_line(char *l)
 {
 	register char *p;
-	register int op_count, old_genc, lbl_flag, expn_flag, lflag;
+	register int old_genc, lbl_flag, expn_flag, lflag;
+	register unsigned op_count;
 	register struct opc *op;
 
 	/*
@@ -380,7 +388,7 @@ int process_line(char *l)
 	op = NULL;
 	op_count = 0;
 	old_genc = gencode;
-	if (*l == LINCOM || (*l == LINOPT && !is_sym_char(*(l + 1))))
+	if (*l == LINCOM || (*l == LINOPT && !IS_SYM(*(l + 1))))
 		a_mode = A_NONE;
 	else {
 		p = get_symbol(label, l, 1);
@@ -448,7 +456,8 @@ int process_line(char *l)
 			if (mac_list_flag == M_NONE)
 				lflag = 0;
 			else if (mac_list_flag == M_OPS
-				 && (op_count == 0 && a_mode != A_EQU))
+				 && (op_count == 0 && a_mode != A_EQU
+						   && a_mode != A_DS))
 				lflag = 0;
 		}
 		if (nofalselist && !old_genc && !gencode)
@@ -519,7 +528,7 @@ void open_o_files(char *source)
  */
 void get_fn(char *dest, char *src, const char *ext)
 {
-	register int i;
+	register unsigned i;
 	register char *sp, *dp;
 
 	i = 0;
@@ -544,17 +553,18 @@ void get_fn(char *dest, char *src, const char *ext)
  */
 char *get_symbol(char *s, char *l, int lbl_flag)
 {
-	register int i;
+	register unsigned i;
 
 	if (!lbl_flag)
-		while (isspace((unsigned char) *l))
+		while (IS_SPC(*l))
 			l++;
-	if (is_first_sym_char(*l)) {
-		*s++ = toupper((unsigned char) *l++);
+	if (IS_FSYM(*l)) {
+		*s++ = TO_UPP(*l);
+		l++;
 		i = 1;
-		while (is_sym_char(*l)) {
+		while (IS_SYM(*l)) {
 			if (i++ < symlen)
-				*s++ = toupper((unsigned char) *l);
+				*s++ = TO_UPP(*l);
 			l++;
 		}
 		if (lbl_flag && *l == LABSEP)
@@ -577,25 +587,25 @@ char *get_operand(char *s, char *l, int nopre_flag)
 	register char c;
 
 	s0 = s;
-	while (isspace((unsigned char) *l))
+	while (IS_SPC(*l))
 		l++;
 	if (nopre_flag) {
 		while (*l != '\n' && *l != '\0')
 			*s++ = *l++;
 	} else {
 		while (*l != '\0' && *l != COMMENT) {
-			if (isspace((unsigned char) *l)) {
+			if (IS_SPC(*l)) {
 				l++;
-				while (isspace((unsigned char) *l))
+				while (IS_SPC(*l))
 					l++;
 				/* leave one space between symbols */
-				if (s > s0 && is_sym_char(*(s - 1))
-					   && is_sym_char(*l))
+				if (s > s0 && IS_SYM(*(s - 1)) && IS_SYM(*l))
 					*s++ = ' ';
 				continue;
 			}
 			if (*l != STRDEL && *l != STRDEL2) {
-				*s++ = toupper((unsigned char) *l++);
+				*s++ = TO_UPP(*l);
+				l++;
 				continue;
 			}
 			c = *l;
@@ -649,10 +659,11 @@ char *next_arg(char *p, int *str_flag)
 				}
 				p++;
 			}
-			if (*p == '\0')		/* unterminated string */
+			if (*p == '\0')	{	/* unterminated string */
 				sf = -sf;
-			else {
-				if (sf)		/* when there were only */
+				break;
+			} else {
+				if (sf > 0)	/* when there were only */
 					sf++;	/* strings, increment */
 				p++;
 			}
