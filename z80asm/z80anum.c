@@ -78,7 +78,7 @@ struct opr {
  *	table with operators
  *	must be sorted in ascending order!
  */
-struct opr oprtab[] = {
+static struct opr oprtab[] = {
 	{ "AND",	T_AND		},
 	{ "EQ",		T_EQ		},
 	{ "GE",		T_GE		},
@@ -97,7 +97,7 @@ struct opr oprtab[] = {
 	{ "TYPE",	T_TYPE		},
 	{ "XOR",	T_XOR		}
 };
-unsigned no_operators = sizeof(oprtab) / sizeof(struct opr);
+static unsigned no_operators = sizeof(oprtab) / sizeof(struct opr);
 
 static BYTE tok_type;	/* token type and flags */
 static WORD tok_val;	/* token value for T_VAL type */

@@ -23,7 +23,7 @@
  */
 
 /*
- *	module with table operations on opcode and symbol tables
+ *	symbol table functions
  */
 
 #include <stdlib.h>
@@ -45,64 +45,11 @@ extern void fatal(int, const char *);
 /* z80aout.c */
 extern void asmerr(int);
 
-/*
- *	binary search in sorted table opctab
- *
- *	Input: pointer to string with opcode
- *
- *	Output: pointer to table element, or NULL if not found
- */
-struct opc *search_op(char *op_name)
-{
-	register int cond;
-	register struct opc **low, **high, **mid;
-
-	low = opctab;
-	high = opctab + no_opcodes - 1;
-	while (low <= high) {
-		mid = low + (high - low) / 2;
-		if ((cond = strcmp(op_name, (*mid)->op_name)) < 0)
-			high = mid - 1;
-		else if (cond > 0)
-			low = mid + 1;
-		else if (!undoc_flag && ((*mid)->op_flags & OP_UNDOC))
-			return(NULL);
-		else
-			return(*mid);
-	}
-	return(NULL);
-}
-
-/*
- *	binary search in sorted table opetab
- *
- *	Input: pointer to string with operand
- *
- *	Output: symbol for operand, NOOPERA if empty operand,
- *		NOREG if operand not found
- */
-BYTE get_reg(char *s)
-{
-	register int cond;
-	register struct ope *low, *high, *mid;
-
-	if (s == NULL || *s == '\0')
-		return(NOOPERA);
-	low = opetab;
-	high = opetab + no_operands - 1;
-	while (low <= high) {
-		mid = low + (high - low) / 2;
-		if ((cond = strcmp(s, mid->ope_name)) < 0)
-			high = mid - 1;
-		else if (cond > 0)
-			low = mid + 1;
-		else if (!undoc_flag && (mid->ope_flags & OPE_UNDOC))
-			return(NOREG);
-		else
-			return(mid->ope_sym);
-	}
-	return(NOREG);
-}
+static struct sym *symtab[HASHSIZE];	/* symbol table */
+static struct sym **symarray;		/* sorted symbol table */
+static int symsort;			/* sort mode for iterator */
+static unsigned symidx;			/* hash table index for iterator */
+static struct sym *symptr;		/* symbol pointer for iterator */
 
 /*
  *	hash search on symbol table symtab
@@ -214,28 +161,61 @@ unsigned hash(char *name)
 }
 
 /*
- *	copy whole symbol hash table into allocated pointer array
- *	used for sorting the symbol table later
+ *	return first symbol for listing, sorted as specified in sort_mode
  */
-void copy_sym(void)
+struct sym *first_sym(int sort_mode)
 {
 	register unsigned i, j;
 	register struct sym *sp;
 
-	symarray = (struct sym **) malloc(sizeof(struct sym *) * symcnt);
-	if (symarray == NULL)
-		fatal(F_OUTMEM, "sorting symbol table");
-	for (i = 0, j = 0; i < HASHSIZE; i++)
-		for (sp = symtab[i]; sp != NULL; sp = sp->sym_next)
-			symarray[j++] = sp;
+	if (symcnt == 0)
+		return(NULL);
+	symsort = sort_mode;
+	switch(sort_mode) {
+	case SYM_UNSORT:
+		symidx = 0;
+		while ((symptr = symtab[symidx]) == NULL)
+			if (++symidx == HASHSIZE)
+				break;
+		return(symptr);
+	case SYM_SORTN:
+	case SYM_SORTA:
+		symarray = (struct sym **) malloc(sizeof(struct sym *)
+						  * symcnt);
+		if (symarray == NULL)
+			fatal(F_OUTMEM, "sorting symbol table");
+		for (i = 0, j = 0; i < HASHSIZE; i++)
+			for (sp = symtab[i]; sp != NULL;
+			     sp = sp->sym_next)
+				symarray[j++] = sp;
+		qsort(symarray, symcnt, sizeof(struct sym *),
+		      sort_mode == SYM_SORTN ? namecmp : valcmp);
+		symidx = 0;
+		return(symarray[symidx]);
+	default:
+		fatal(F_INTERN, "unknown sort mode in first_sym");
+	}
+	return(NULL);		/* silence compiler */
 }
 
 /*
- *	sort symbol table by name
+ *	return next symbol for listing
  */
-void n_sort_sym(void)
+struct sym *next_sym(void)
 {
-	qsort(symarray, symcnt, sizeof(struct sym *), namecmp);
+	if (symsort == SYM_UNSORT) {
+		if ((symptr = symptr->sym_next) == NULL) {
+			do {
+				if (++symidx == HASHSIZE)
+					break;
+				else
+					symptr = symtab[symidx];
+			} while (symptr == NULL);
+		}
+		return(symptr);
+	} else if (++symidx < symcnt)
+		return(symarray[symidx]);
+	return(NULL);
 }
 
 /*
@@ -245,14 +225,6 @@ int namecmp(const void *p1, const void *p2)
 {
 	return(strcmp((*(const struct sym **) p1)->sym_name,
 		      (*(const struct sym **) p2)->sym_name));
-}
-
-/*
- *	sort symbol table by address
- */
-void a_sort_sym(void)
-{
-	qsort(symarray, symcnt, sizeof(struct sym *), valcmp);
 }
 
 /*

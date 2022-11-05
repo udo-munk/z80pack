@@ -23,7 +23,7 @@
  */
 
 /*
- *	opcode tables
+ *	opcode tables and functions for setup and lookup
  */
 
 #include <stdlib.h>
@@ -31,6 +31,8 @@
 #include <string.h>
 #include "z80a.h"
 #include "z80aglb.h"
+
+int opccmp(const void *, const void *);
 
 /* z80amain.c */
 extern void fatal(int, const char *);
@@ -41,10 +43,11 @@ extern unsigned op_local(BYTE, BYTE), op_macro(BYTE, BYTE);
 extern unsigned op_mcond(BYTE, BYTE), op_rept(BYTE, BYTE);
 
 /* z80apfun.c */
-extern unsigned op_opset(BYTE, BYTE), op_org(BYTE, BYTE), op_radix(BYTE, BYTE);
-extern unsigned op_equ(BYTE, BYTE), op_dl(BYTE, BYTE), op_ds(BYTE, BYTE);
-extern unsigned op_db(BYTE, BYTE), op_dw(BYTE, BYTE), op_misc(BYTE, BYTE);
-extern unsigned op_cond(BYTE, BYTE), op_glob(BYTE, BYTE), op_end(BYTE, BYTE);
+extern unsigned op_instrset(BYTE, BYTE), op_org(BYTE, BYTE);
+extern unsigned op_radix(BYTE, BYTE), op_equ(BYTE, BYTE), op_dl(BYTE, BYTE);
+extern unsigned op_ds(BYTE, BYTE), op_db(BYTE, BYTE), op_dw(BYTE, BYTE);
+extern unsigned op_misc(BYTE, BYTE), op_cond(BYTE, BYTE), op_glob(BYTE, BYTE);
+extern unsigned op_end(BYTE, BYTE);
 
 /* z80arfun.c */
 extern unsigned op_1b(BYTE, BYTE), op_2b(BYTE, BYTE), op_im(BYTE, BYTE);
@@ -60,15 +63,12 @@ extern unsigned op8080_imm(BYTE, BYTE), op8080_rst(BYTE, BYTE);
 extern unsigned op8080_pupo(BYTE, BYTE), op8080_addr(BYTE, BYTE);
 extern unsigned op8080_mvi(BYTE, BYTE), op8080_lxi(BYTE, BYTE);
 
-int opccmp(const void *, const void *);
-
 /*
  *	pseudo op table:
  *	includes entries for all common pseudo ops
- *	must be sorted in ascending order!
  */
-struct opc opctab_psd[] = {
-	{ ".8080",	op_opset,	2,	0,	OP_NOLBL | OP_NOOPR },
+static struct opc opctab_psd[] = {
+	{ ".8080",	op_instrset,	2,	0,	OP_NOLBL | OP_NOOPR },
 	{ ".DEPHASE",	op_org,		3,	0,	OP_NOLBL | OP_NOOPR },
 	{ ".LALL",	op_misc,	9,	0,	OP_NOLBL | OP_NOOPR },
 	{ ".LFCOND",	op_misc,	12,	0,	OP_NOLBL | OP_NOOPR },
@@ -80,7 +80,7 @@ struct opc opctab_psd[] = {
 	{ ".SFCOND",	op_misc,	11,	0,	OP_NOLBL | OP_NOOPR },
 	{ ".XALL",	op_misc,	8,	0,	OP_NOLBL | OP_NOOPR },
 	{ ".XLIST",	op_misc,	3,	0,	OP_NOLBL | OP_NOOPR },
-	{ ".Z80",	op_opset,	1,	0,	OP_NOLBL | OP_NOOPR },
+	{ ".Z80",	op_instrset,	1,	0,	OP_NOLBL | OP_NOOPR },
 	{ "ABS",	op_glob,	3,	0,	OP_NOLBL | OP_NOOPR },
 	{ "ASEG",	op_glob,	3,	0,	OP_NOLBL | OP_NOOPR },
 	{ "ASET",	op_dl,		0,	0,	OP_SET	 },
@@ -141,14 +141,14 @@ struct opc opctab_psd[] = {
 	{ "REPT",	op_rept,	3,	0,	OP_MDEF	 },
 	{ "TITLE",	op_misc,	7,	0,	OP_NOLBL | OP_NOPRE }
 };
-unsigned no_opc_psd = sizeof(opctab_psd) / sizeof(struct opc);
+static unsigned no_opc_psd = sizeof(opctab_psd) / sizeof(struct opc);
 
 /*
  *	Z80 opcode table:
  *	includes entries for all Z80 opcodes
- *	must be sorted in ascending order!
+ *	must not contain any ops already in opctab_psd!
  */
-struct opc opctab_z80[] = {
+static struct opc opctab_z80[] = {
 	{ "ADC",	op_sbadc,	0x88,	0x4a,	0	 },
 	{ "ADD",	op_add,		0x80,	0x09,	0	 },
 	{ "AND",	op_alu,		0xa0,	0,	0	 },
@@ -218,13 +218,13 @@ struct opc opctab_z80[] = {
 	{ "SUB",	op_alu,		0x90,	0,	0	 },
 	{ "XOR",	op_alu,		0xa8,	0,	0	 }
 };
-unsigned no_opc_z80 = sizeof(opctab_z80) / sizeof(struct opc);
+static unsigned no_opc_z80 = sizeof(opctab_z80) / sizeof(struct opc);
 
 /*
  *	table with reserved Z80 operand words: registers and flags
  *	must be sorted in ascending order!
  */
-struct ope opetab_z80[] = {
+static struct ope opetab_z80[] = {
 	{ "(BC)",	REGIBC,	0	  },
 	{ "(DE)",	REGIDE,	0	  },
 	{ "(HL)",	REGIHL,	0	  },
@@ -259,14 +259,14 @@ struct ope opetab_z80[] = {
 	{ "SP",		REGSP,	0	  },
 	{ "Z",		FLGZ,	0	  }
 };
-unsigned no_ope_z80 = sizeof(opetab_z80) / sizeof(struct ope);
+static unsigned no_ope_z80 = sizeof(opetab_z80) / sizeof(struct ope);
 
 /*
  *	8080 opcode table:
  *	includes entries for all 8080 opcodes and 8080 specific pseudo ops
- *	must be sorted in ascending order!
+ *	must not contain any ops already in opctab_psd!
  */
-struct opc opctab_8080[] = {
+static struct opc opctab_8080[] = {
 	{ "ACI",	op8080_imm,	0xce,	0,	0	 },
 	{ "ADC",	op8080_alu,	0x88,	0,	0	 },
 	{ "ADD",	op8080_alu,	0x80,	0,	0	 },
@@ -347,13 +347,13 @@ struct opc opctab_8080[] = {
 	{ "XRI",	op8080_imm,	0xee,	0,	0	 },
 	{ "XTHL",	op_1b,		0xe3,	0,	OP_NOOPR }
 };
-unsigned no_opc_8080 = sizeof(opctab_8080) / sizeof(struct opc);
+static unsigned no_opc_8080 = sizeof(opctab_8080) / sizeof(struct opc);
 
 /*
  *	table with reserved 8080 operand words: registers and flags
  *	must be sorted in ascending order!
  */
-struct ope opetab_8080[] = {
+static struct ope opetab_8080[] = {
 	{ "A",		REGA,	0 },
 	{ "B",		REGB,	0 },
 	{ "C",		REGC,	0 },
@@ -365,45 +365,47 @@ struct ope opetab_8080[] = {
 	{ "PSW",	REGPSW,	0 },
 	{ "SP",		REGSP,	0 }
 };
-unsigned no_ope_8080 = sizeof(opetab_8080) / sizeof(struct ope);
+static unsigned no_ope_8080 = sizeof(opetab_8080) / sizeof(struct ope);
 
-struct opc **opctab;
-unsigned no_opcodes;
-struct ope *opetab;
-unsigned no_operands;
+static int curr_instrset;	/* current instructions set */
+static struct opc **opctab;	/* current sorted operations table */
+static unsigned no_opcodes;	/* current of operations */
+static struct ope *opetab;	/* current sorted register/flags table */
+static unsigned no_operands;	/* current number of register/flags */
 
-void set_opset(int os)
+/*
+ *	build sorted table opctab for instruction set os
+ */
+void instrset(int is)
 {
 	register struct opc *opc, *p, **q;
 	register unsigned i, nopc;
 
 	nopc = 0;		/* silence compiler */
-	if (os == opset)
+	if (is == curr_instrset)
 		return;
-	switch (os) {
-	case OPSET_Z80:
+	switch (is) {
+	case INSTR_Z80:
 		opc = opctab_z80;
 		nopc = no_opc_z80;
 		opetab = opetab_z80;
 		no_operands = no_ope_z80;
 		break;
-	case OPSET_8080:
+	case INSTR_8080:
 		opc = opctab_8080;
 		nopc = no_opc_8080;
 		opetab = opetab_8080;
 		no_operands = no_ope_8080;
 		break;
 	default:
-		fatal(F_INTERN, "invalid opset for function set_opset");
+		fatal(F_INTERN, "invalid instr. set for function instrset");
 	}
 	if (opctab == NULL) {
-		i = no_opc_z80;
-		if (no_opc_8080 > i)
-			i = no_opc_8080;
-		i += no_opc_psd;
+		i = no_opc_psd;
+		i += (no_opc_z80 > no_opc_8080 ? no_opc_z80 : no_opc_8080);
 		opctab = (struct opc **) malloc(sizeof(struct opc *) * i);
 		if (opctab == NULL)
-			fatal(F_OUTMEM, "operation set table");
+			fatal(F_OUTMEM, "operations table");
 	}
 	no_opcodes = no_opc_psd + nopc;
 	q = opctab;
@@ -412,11 +414,73 @@ void set_opset(int os)
 	for (i = 0, p = opc; i < nopc; i++)
 		*q++ = p++;
 	qsort(opctab, no_opcodes, sizeof(struct opc *), opccmp);
-	opset = os;
+	curr_instrset = is;
 }
 
+/*
+ *	compares two opcodes for qsort()
+ */
 int opccmp(const void *p1, const void *p2)
 {
 	return(strcmp((*(const struct opc **) p1)->op_name,
 		      (*(const struct opc **) p2)->op_name));
+}
+
+/*
+ *	binary search in sorted table opctab
+ *
+ *	Input: pointer to string with opcode
+ *
+ *	Output: pointer to table element, or NULL if not found
+ */
+struct opc *search_op(char *op_name)
+{
+	register int cond;
+	register struct opc **low, **high, **mid;
+
+	low = opctab;
+	high = opctab + no_opcodes - 1;
+	while (low <= high) {
+		mid = low + (high - low) / 2;
+		if ((cond = strcmp(op_name, (*mid)->op_name)) < 0)
+			high = mid - 1;
+		else if (cond > 0)
+			low = mid + 1;
+		else if (!undoc_flag && ((*mid)->op_flags & OP_UNDOC))
+			return(NULL);
+		else
+			return(*mid);
+	}
+	return(NULL);
+}
+
+/*
+ *	binary search in sorted table opetab
+ *
+ *	Input: pointer to string with operand
+ *
+ *	Output: symbol for operand, NOOPERA if empty operand,
+ *		NOREG if operand not found
+ */
+BYTE get_reg(char *s)
+{
+	register int cond;
+	register struct ope *low, *high, *mid;
+
+	if (s == NULL || *s == '\0')
+		return(NOOPERA);
+	low = opetab;
+	high = opetab + no_operands - 1;
+	while (low <= high) {
+		mid = low + (high - low) / 2;
+		if ((cond = strcmp(s, mid->ope_name)) < 0)
+			high = mid - 1;
+		else if (cond > 0)
+			low = mid + 1;
+		else if (!undoc_flag && (mid->ope_flags & OPE_UNDOC))
+			return(NOREG);
+		else
+			return(mid->ope_sym);
+	}
+	return(NOREG);
 }

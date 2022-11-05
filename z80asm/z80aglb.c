@@ -58,8 +58,8 @@ int  list_flag,			/* flag for option -l */
      nofill_flag,		/* flag for option -x */
      upcase_flag,		/* flag for option -U */
      mac_list_flag,		/* flag for option -m */
+     i8080_flag,		/* flag for option -8 */
      radix,			/* current radix, set to 10 at start of pass */
-     opset,			/* current operations set */
      phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      gencode,			/* flag for conditional code */
@@ -91,7 +91,3 @@ unsigned
 
 unsigned long
      c_line;			/* current line no. in current source */
-
-struct sym
-     *symtab[HASHSIZE],		/* symbol table */
-     **symarray;		/* sorted symbol table */
