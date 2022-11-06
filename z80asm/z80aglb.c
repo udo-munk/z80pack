@@ -82,7 +82,8 @@ int  list_flag,			/* flag for option -l */
      ppl = PLENGTH,		/* page length */
      page;			/* no. of pages for listing */
 
-unsigned long c_line;		/* current line no. in current source */
+unsigned long
+     c_line;			/* current line no. in current source */
 
 FILE *srcfp,			/* file pointer for current source */
      *objfp,			/* file pointer for object code */
