@@ -167,12 +167,12 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     case TELNET_EV_DATA:
 		if (ev->data.size) {
             if (ev->data.size != 1) {
-                LOGW(TAG, "LONGER THAN EXPECTED [%ld]", ev->data.size);
+                LOGW(TAG, "LONGER THAN EXPECTED [%lld]", (long long) ev->data.size);
             } else {
                 tn_recv = *(ev->data.buffer);
                 tn_len = ev->data.size;
             }
-            LOGD(TAG, "Telnet IN: %c[%ld]", tn_recv, ev->data.size);
+            LOGD(TAG, "Telnet IN: %c[%lld]", tn_recv, (long long) ev->data.size);
 		}
 		break;
     case TELNET_EV_SEND:
@@ -181,7 +181,7 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
             for(i=0;i<(int)ev->data.size;i++) {
                 p += sprintf (p, "%d ", *(ev->data.buffer+i));
             }
-            LOGD(TAG, "Telnet OUT: %s[%ld]", buf, ev->data.size);
+            LOGD(TAG, "Telnet OUT: %s[%lld]", buf, (long long) ev->data.size);
 		}
 		write(*active_sfd, ev->data.buffer, ev->data.size);
 		break;
