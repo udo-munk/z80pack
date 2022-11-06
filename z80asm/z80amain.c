@@ -307,9 +307,7 @@ void do_pass(int p)
 }
 
 /*
- *	process one source file
- *
- *	Input: name of source file
+ *	process source file fn
  */
 void process_file(char *fn)
 {
@@ -342,9 +340,7 @@ void process_file(char *fn)
 
 /*
  *	process one line of source from l
- *
- *	Output: 1 line processed
- *		0 END
+ *	returns 0 when END encountered, otherwise 1
  */
 int process_line(char *l)
 {
@@ -450,7 +446,7 @@ int process_line(char *l)
 }
 
 /*
- *	open output files:
+ *	open output files
  *	input is filename of source file
  *	list and object filenames are build from source filename if
  *	not given by options

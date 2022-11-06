@@ -53,11 +53,8 @@ static unsigned symidx;			/* hash table index for iterator */
 static struct sym *symptr;		/* symbol pointer for iterator */
 
 /*
- *	hash search on symbol table symtab
- *
- *	Input: pointer to string with symbol
- *
- *	Output: pointer to table element, or NULL if not found
+ *	hash search for sym_name in symbol table symtab
+ *	returns pointer to table element, or NULL if not found
  */
 struct sym *look_sym(char *sym_name)
 {
@@ -70,11 +67,9 @@ struct sym *look_sym(char *sym_name)
 }
 
 /*
- *	hash search on symbol table symtab, increase refcnt if found
- *
- *	Input: pointer to string with symbol
- *
- *	Output: pointer to table element, or NULL if not found
+ *	hash search for sym_name in symbol table symtab
+ *	increases refcnt and returns pointer to table element if found,
+ *	otherwise NULL
  */
 struct sym *get_sym(char *sym_name)
 {
@@ -89,11 +84,8 @@ struct sym *get_sym(char *sym_name)
 }
 
 /*
- *	add symbol to symbol table symtab
- *
- *	Input: sym_name pointer to string with symbol name
- *
- *	Output: pointer to table element
+ *	add symbol sym_name to symbol table symtab
+ *	returns pointer to table element
  */
 struct sym *new_sym(char *sym_name)
 {
@@ -116,11 +108,8 @@ struct sym *new_sym(char *sym_name)
 }
 
 /*
- *	add symbol to symbol table symtab, or modify existing symbol
- *	and increase refcnt
- *
- *	Input: sym_name pointer to string with symbol name
- *	       sym_val  value of symbol
+ *	add symbol sym_name with value sym_val to symbol table symtab,
+ *	or modify existing symbol with new value and increase refcnt
  */
 void put_sym(char *sym_name, WORD sym_val)
 {
@@ -146,11 +135,8 @@ void put_label(void)
 }
 
 /*
- *	hash algorithm
- *
- *	Input: pointer to string with name
- *
- *	Output: hash value
+ *	calculate the hash value of the string name
+ *	returns hash value
  */
 unsigned hash(char *name)
 {

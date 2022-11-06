@@ -132,11 +132,8 @@ void init_ctype(void)
 }
 
 /*
- *	binary search in sorted table oprtab
- *
- *	Input: pointer to string with operator
- *
- *	Output: symbol for operator, T_UNDSYM if operator not found
+ *	do binary search for operator in sorted table oprtab
+ *	returns symbol for operator or T_UNDSYM if not found
  */
 BYTE search_opr(char *s)
 {
@@ -159,8 +156,7 @@ BYTE search_opr(char *s)
 
 /*
  *	get next token
- *
- *	updates tok_type, tok_val, tok_sym and scan_pos.
+ *	updates tok_type, tok_val, tok_sym and scan_pos
  *	returns E_NOERR on success
  */
 int get_token(void)
@@ -619,7 +615,7 @@ WORD eval(char *s)
 
 /*
  *	check value for range -256 <= value <= 255
- *	Output: value if in range, otherwise 0 and error message
+ *	return value if in range, otherwise 0 and error message
  */
 BYTE chk_byte(WORD n)
 {
@@ -633,7 +629,7 @@ BYTE chk_byte(WORD n)
 
 /*
  *	check value for range -128 <= value <= 127
- *	Output: value if in range, otherwise 0 and error message
+ *	return value if in range, otherwise 0 and error message
  */
 BYTE chk_sbyte(WORD n)
 {
