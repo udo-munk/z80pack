@@ -38,30 +38,29 @@ int opccmp(const void *, const void *);
 extern void fatal(int, const char *);
 
 /* z80amfun.c */
-extern unsigned op_endm(BYTE, BYTE), op_exitm(BYTE, BYTE), op_irp(BYTE, BYTE);
-extern unsigned op_local(BYTE, BYTE), op_macro(BYTE, BYTE);
-extern unsigned op_mcond(BYTE, BYTE), op_rept(BYTE, BYTE);
+extern WORD op_endm(BYTE, BYTE), op_exitm(BYTE, BYTE), op_irp(BYTE, BYTE);
+extern WORD op_local(BYTE, BYTE), op_macro(BYTE, BYTE), op_mcond(BYTE, BYTE);
+extern WORD op_rept(BYTE, BYTE);
 
 /* z80apfun.c */
-extern unsigned op_instrset(BYTE, BYTE), op_org(BYTE, BYTE);
-extern unsigned op_radix(BYTE, BYTE), op_equ(BYTE, BYTE), op_dl(BYTE, BYTE);
-extern unsigned op_ds(BYTE, BYTE), op_db(BYTE, BYTE), op_dw(BYTE, BYTE);
-extern unsigned op_misc(BYTE, BYTE), op_cond(BYTE, BYTE), op_glob(BYTE, BYTE);
-extern unsigned op_end(BYTE, BYTE);
+extern WORD op_instrset(BYTE, BYTE), op_org(BYTE, BYTE), op_radix(BYTE, BYTE);
+extern WORD op_equ(BYTE, BYTE), op_dl(BYTE, BYTE), op_ds(BYTE, BYTE);
+extern WORD op_db(BYTE, BYTE), op_dw(BYTE, BYTE), op_misc(BYTE, BYTE);
+extern WORD op_cond(BYTE, BYTE), op_glob(BYTE, BYTE), op_end(BYTE, BYTE);
 
 /* z80arfun.c */
-extern unsigned op_1b(BYTE, BYTE), op_2b(BYTE, BYTE), op_im(BYTE, BYTE);
-extern unsigned op_pupo(BYTE, BYTE), op_ex(BYTE, BYTE), op_rst(BYTE, BYTE);
-extern unsigned op_ret(BYTE, BYTE), op_jpcall(BYTE, BYTE), op_jr(BYTE, BYTE);
-extern unsigned op_djnz(BYTE, BYTE), op_ld(BYTE, BYTE), op_add(BYTE, BYTE);
-extern unsigned op_sbadc(BYTE, BYTE), op_decinc(BYTE, BYTE);
-extern unsigned op_alu(BYTE, BYTE), op_out(BYTE, BYTE), op_in(BYTE, BYTE);
-extern unsigned op_cbgrp(BYTE, BYTE), op8080_mov(BYTE, BYTE);
-extern unsigned op8080_alu(BYTE, BYTE), op8080_dcrinr(BYTE, BYTE);
-extern unsigned op8080_reg16(BYTE, BYTE), op8080_regbd(BYTE, BYTE);
-extern unsigned op8080_imm(BYTE, BYTE), op8080_rst(BYTE, BYTE);
-extern unsigned op8080_pupo(BYTE, BYTE), op8080_addr(BYTE, BYTE);
-extern unsigned op8080_mvi(BYTE, BYTE), op8080_lxi(BYTE, BYTE);
+extern WORD op_1b(BYTE, BYTE), op_2b(BYTE, BYTE), op_im(BYTE, BYTE);
+extern WORD op_pupo(BYTE, BYTE), op_ex(BYTE, BYTE), op_rst(BYTE, BYTE);
+extern WORD op_ret(BYTE, BYTE), op_jpcall(BYTE, BYTE), op_jr(BYTE, BYTE);
+extern WORD op_djnz(BYTE, BYTE), op_ld(BYTE, BYTE), op_add(BYTE, BYTE);
+extern WORD op_sbadc(BYTE, BYTE), op_decinc(BYTE, BYTE), op_alu(BYTE, BYTE);
+extern WORD op_out(BYTE, BYTE), op_in(BYTE, BYTE), op_cbgrp(BYTE, BYTE);
+extern WORD op8080_mov(BYTE, BYTE), op8080_alu(BYTE, BYTE);
+extern WORD op8080_dcrinr(BYTE, BYTE), op8080_reg16(BYTE, BYTE);
+extern WORD op8080_regbd(BYTE, BYTE), op8080_imm(BYTE, BYTE);
+extern WORD op8080_rst(BYTE, BYTE), op8080_pupo(BYTE, BYTE);
+extern WORD op8080_addr(BYTE, BYTE), op8080_mvi(BYTE, BYTE);
+extern WORD op8080_lxi(BYTE, BYTE);
 
 /*
  *	pseudo op table
@@ -141,7 +140,7 @@ static struct opc opctab_psd[] = {
 	{ "REPT",	op_rept,	3,	0,	OP_MDEF	 },
 	{ "TITLE",	op_misc,	7,	0,	OP_NOLBL | OP_NOPRE }
 };
-static unsigned no_opc_psd = sizeof(opctab_psd) / sizeof(struct opc);
+static int no_opc_psd = sizeof(opctab_psd) / sizeof(struct opc);
 
 /*
  *	Z80 opcode table
@@ -218,7 +217,7 @@ static struct opc opctab_z80[] = {
 	{ "SUB",	op_alu,		0x90,	0,	0	 },
 	{ "XOR",	op_alu,		0xa8,	0,	0	 }
 };
-static unsigned no_opc_z80 = sizeof(opctab_z80) / sizeof(struct opc);
+static int no_opc_z80 = sizeof(opctab_z80) / sizeof(struct opc);
 
 /*
  *	table with reserved Z80 register and flag operand words
@@ -259,7 +258,7 @@ static struct ope opetab_z80[] = {
 	{ "SP",		REGSP,	0	  },
 	{ "Z",		FLGZ,	0	  }
 };
-static unsigned no_ope_z80 = sizeof(opetab_z80) / sizeof(struct ope);
+static int no_ope_z80 = sizeof(opetab_z80) / sizeof(struct ope);
 
 /*
  *	8080 opcode table
@@ -347,7 +346,7 @@ static struct opc opctab_8080[] = {
 	{ "XRI",	op8080_imm,	0xee,	0,	0	 },
 	{ "XTHL",	op_1b,		0xe3,	0,	OP_NOOPR }
 };
-static unsigned no_opc_8080 = sizeof(opctab_8080) / sizeof(struct opc);
+static int no_opc_8080 = sizeof(opctab_8080) / sizeof(struct opc);
 
 /*
  *	table with reserved 8080 register and flag operand words
@@ -365,13 +364,13 @@ static struct ope opetab_8080[] = {
 	{ "PSW",	REGPSW,	0 },
 	{ "SP",		REGSP,	0 }
 };
-static unsigned no_ope_8080 = sizeof(opetab_8080) / sizeof(struct ope);
+static int no_ope_8080 = sizeof(opetab_8080) / sizeof(struct ope);
 
 static int curr_instrset;	/* current instructions set */
 static struct opc **opctab;	/* current sorted operations table */
-static unsigned no_opcodes;	/* current of operations */
+static int no_opcodes;		/* current of operations */
 static struct ope *opetab;	/* current sorted register/flags table */
-static unsigned no_operands;	/* current number of register/flags */
+static int no_operands;		/* current number of register/flags */
 
 /*
  *	build sorted table opctab for instruction set is
@@ -379,7 +378,7 @@ static unsigned no_operands;	/* current number of register/flags */
 void instrset(int is)
 {
 	register struct opc *opc, *p, **q;
-	register unsigned i, nopc;
+	register int i, nopc;
 
 	nopc = 0;		/* silence compiler */
 	if (is == curr_instrset)

@@ -35,7 +35,7 @@
 struct sym *look_sym(char *);
 struct sym *get_sym(char *);
 struct sym *new_sym(char *);
-unsigned hash(char *);
+int hash(char *);
 int namecmp(const void *, const void *);
 int valcmp(const void *, const void *);
 
@@ -46,10 +46,10 @@ extern void fatal(int, const char *);
 extern void asmerr(int);
 
 static struct sym *symtab[HASHSIZE];	/* symbol table */
-static unsigned symcnt;			/* number of symbols defined */
+static int symcnt;			/* number of symbols defined */
 static struct sym **symarray;		/* sorted symbol table */
 static int symsort;			/* sort mode for iterator */
-static unsigned symidx;			/* hash table index for iterator */
+static int symidx;			/* hash table index for iterator */
 static struct sym *symptr;		/* symbol pointer for iterator */
 
 /*
@@ -68,7 +68,7 @@ struct sym *look_sym(char *sym_name)
 
 /*
  *	hash search for sym_name in symbol table symtab
- *	increases refcnt when found
+ *	set refflg when found
  *	returns pointer to table element, or NULL if not found
  */
 struct sym *get_sym(char *sym_name)
@@ -77,7 +77,7 @@ struct sym *get_sym(char *sym_name)
 
 	for (sp = symtab[hash(sym_name)]; sp != NULL; sp = sp->sym_next)
 		if (strcmp(sym_name, sp->sym_name) == 0) {
-			sp->sym_refcnt++;
+			sp->sym_refflg = 1;
 			return(sp);
 		}
 	return(NULL);
@@ -89,7 +89,7 @@ struct sym *get_sym(char *sym_name)
  */
 struct sym *new_sym(char *sym_name)
 {
-	register unsigned hashval, n;
+	register int hashval, n;
 	register struct sym *sp;
 
 	n = strlen(sym_name);
@@ -100,7 +100,7 @@ struct sym *new_sym(char *sym_name)
 	hashval = hash(sym_name);
 	sp->sym_next = symtab[hashval];
 	symtab[hashval] = sp;
-	sp->sym_refcnt = 0;
+	sp->sym_refflg = 0;
 	if (n > symmax)
 		symmax = n;
 	symcnt++;
@@ -109,7 +109,7 @@ struct sym *new_sym(char *sym_name)
 
 /*
  *	add symbol sym_name with value sym_val to symbol table symtab,
- *	or modify existing symbol with new value and increase refcnt
+ *	or modify existing symbol with new value and set refflg
  */
 void put_sym(char *sym_name, WORD sym_val)
 {
@@ -138,12 +138,12 @@ void put_label(void)
  *	calculate the hash value of the string name
  *	returns hash value
  */
-unsigned hash(char *name)
+int hash(char *name)
 {
 	register unsigned hashval;
 
 	for (hashval = 0; *name != '\0';)
-		hashval += *name++;
+		hashval += (unsigned) *name++;
 	return(hashval % HASHSIZE);
 }
 
@@ -152,7 +152,7 @@ unsigned hash(char *name)
  */
 struct sym *first_sym(int sort_mode)
 {
-	register unsigned i, j;
+	register int i, j;
 	register struct sym *sp;
 
 	if (symcnt == 0)

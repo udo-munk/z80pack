@@ -44,8 +44,8 @@ void btoh(BYTE, char **);
 extern void fatal(int, const char *);
 
 /* z80amfun.c */
-extern char *mac_first(int, unsigned *);
-extern char *mac_next(unsigned *);
+extern char *mac_first(int, int *);
+extern char *mac_next(int *);
 
 /* z80atab.c */
 extern struct sym *first_sym(int);
@@ -154,9 +154,9 @@ void lst_attl(void)
 /*
  *	print one line into listfile, if -l option set
  */
-void lst_line(char *l, WORD addr, unsigned op_cnt, int expn_flag)
+void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
 {
-	register unsigned i, j;
+	register int i, j;
 	register const char *a_mark;
 	static unsigned long s_line;
 
@@ -209,7 +209,7 @@ void lst_line(char *l, WORD addr, unsigned op_cnt, int expn_flag)
 			fputs("  ", lstfp);
 		fputc(' ', lstfp);
 	}
-	fprintf(lstfp, "%c%5ld %6ld %s", expn_flag ? '+' : ' ',
+	fprintf(lstfp, "%c%5lu %6lu %s", expn_flag ? '+' : ' ',
 		c_line, s_line, l);
 	if (errnum != E_NOERR) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
@@ -239,7 +239,7 @@ void lst_line(char *l, WORD addr, unsigned op_cnt, int expn_flag)
 				fputs("  ", lstfp);
 			fputc(' ', lstfp);
 		}
-		fprintf(lstfp, "%c%5ld %6ld\n", expn_flag ? '+' : ' ',
+		fprintf(lstfp, "%c%5lu %6lu\n", expn_flag ? '+' : ' ',
 			c_line, s_line);
 	}
 	if (p_line < 0)
@@ -251,13 +251,13 @@ void lst_line(char *l, WORD addr, unsigned op_cnt, int expn_flag)
  */
 void lst_mac(int sort_mode)
 {
-	register unsigned i, j;
+	register int i, j;
 	register char *p;
-	unsigned rc;
+	int rf;
 
 	p_line = i = 0;
 	strcpy(title, "Macro table");
-	for (p = mac_first(sort_mode, &rc); p != NULL; p = mac_next(&rc)) {
+	for (p = mac_first(sort_mode, &rf); p != NULL; p = mac_next(&rf)) {
 		if (p_line == 0) {
 			lst_header();
 			if (ppl == 0) {
@@ -268,7 +268,7 @@ void lst_mac(int sort_mode)
 			p_line++;
 		}
 		j = strlen(p);
-		fprintf(lstfp, "%s%c", p, rc > 0 ? ' ' : '*');
+		fprintf(lstfp, "%s%c", p, rf ? ' ' : '*');
 		while (j++ < mac_symmax)
 			fputc(' ', lstfp);
 		i += mac_symmax + 4;
@@ -289,7 +289,7 @@ void lst_mac(int sort_mode)
  */
 void lst_sym(int sort_mode)
 {
-	register unsigned i;
+	register int i;
 	register struct sym *sp;
 
 	p_line = i = 0;
@@ -307,7 +307,7 @@ void lst_sym(int sort_mode)
 		fprintf(lstfp, "%*s ", -symmax, sp->sym_name);
 		lst_byte(sp->sym_val >> 8);
 		lst_byte(sp->sym_val & 0xff);
-		fputc(sp->sym_refcnt > 0 ? ' ' : '*', lstfp);
+		fputc(sp->sym_refflg ? ' ' : '*', lstfp);
 		i += symmax + 9;
 		if (i + symmax + 6 >= 80) {
 			fputc('\n', lstfp);
@@ -392,9 +392,9 @@ void obj_org(WORD addr)
 /*
  *	write opcodes in ops[] into object file
  */
-void obj_writeb(unsigned op_cnt)
+void obj_writeb(WORD op_cnt)
 {
-	register unsigned i;
+	register int i;
 
 	if (op_cnt == 0)
 		return;
@@ -524,7 +524,7 @@ void flush_hex(void)
  */
 void hex_record(BYTE rec_type)
 {
-	register WORD n;
+	register int i;
 	char *p;
 
 	p = hex_out;
@@ -533,8 +533,8 @@ void hex_record(BYTE rec_type)
 	btoh(hex_addr >> 8, &p);
 	btoh(hex_addr & 0xff, &p);
 	btoh(rec_type, &p);
-	for (n = 0; n < hex_cnt; n++)
-		btoh(hex_buf[n], &p);
+	for (i = 0; i < hex_cnt; i++)
+		btoh(hex_buf[i], &p);
 	btoh(chksum(rec_type), &p);
 	*p++ = '\n';
 	*p = '\0';
@@ -560,14 +560,14 @@ void btoh(BYTE b, char **p)
  */
 BYTE chksum(BYTE rec_type)
 {
-	register WORD n;
+	register int i;
 	register BYTE sum;
 
 	sum = hex_cnt;
 	sum += hex_addr >> 8;
 	sum += hex_addr & 0xff;
 	sum += rec_type;
-	for (n = 0; n < hex_cnt; n++)
-		sum += hex_buf[n];
+	for (i = 0; i < hex_cnt; i++)
+		sum += hex_buf[i];
 	return(-sum);
 }

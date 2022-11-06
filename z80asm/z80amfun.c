@@ -43,8 +43,8 @@ struct mac {					/* macro */
 	void (*mac_start)(struct expn *);	/* start expansion function */
 	int (*mac_rept)(struct expn *);		/* repeat expansion function */
 	char *mac_name;				/* macro name */
-	unsigned mac_refcnt;			/* macro reference counter */
-	unsigned mac_nrept;			/* REPT count */
+	int mac_refflg;				/* macro reference flag */
+	WORD mac_nrept;				/* REPT count */
 	char *mac_irp;				/* IRP, IRPC character list */
 	struct dum *mac_dums, *mac_dums_last;	/* macro dummies */
 	struct line *mac_lines, *mac_lines_last; /* macro body */
@@ -68,10 +68,10 @@ struct expn {					/* macro expansion */
 	struct parm *expn_parms, *expn_parms_last; /* macro parameters */
 	struct loc *expn_locs, *expn_locs_last;	/* local labels */
 	struct line *expn_line;			/* current expansion line */
-	unsigned expn_iflevel;			/* iflevel before expansion */
-	unsigned expn_act_iflevel;		/* act_iflevel before expn */
-	unsigned expn_act_elselevel;		/* act_elselevel before expn */
-	unsigned expn_iter;			/* curr. expansion iteration */
+	int expn_iflevel;			/* iflevel before expansion */
+	int expn_act_iflevel;			/* act_iflevel before expn */
+	int expn_act_elselevel;			/* act_elselevel before expn */
+	WORD expn_iter;				/* curr. expansion iteration */
 	char *expn_irp;				/* IRP, IRPC character list */
 	struct expn *expn_next;
 };
@@ -79,13 +79,12 @@ struct expn {					/* macro expansion */
 static struct mac *mac_table;			/* MACRO table */
 static struct mac *mac_curr;			/* current macro */
 static struct mac **mac_array;			/* sorted table for iterator */
-static unsigned mac_index;			/* index for iterator */
+static int mac_index;				/* index for iterator */
 static int mac_sort;				/* sort mode for iterator */
-static unsigned mac_count;			/* number of macros defined */
+static int mac_count;				/* number of macros defined */
 static struct expn *mac_expn;			/* macro expansion stack */
 static WORD mac_loc_cnt;			/* counter for LOCAL labels */
-static char tmp[MAXLINE];			/* temporary buffer */
-static char expr[MAXLINE];			/* expr buffer (for '%') */
+static char expr[MAXLINE + 1];			/* expr buffer (for '%') */
 
 /*
  *	save string into allocated memory
@@ -105,7 +104,7 @@ char *strsave(char *s)
  */
 int is_symbol(char *s)
 {
-	register unsigned i;
+	register int i;
 
 	if (!IS_FSYM(*s))
 		return(0);
@@ -129,13 +128,13 @@ int mac_compare(const void *p1, const void *p2)
 }
 
 /*
- *	get first macro name and refcnt in *rp for listing
+ *	get first macro name and refflg in *rp for listing
  *	sorted as specified in sort_mode
  */
-char *mac_first(int sort_mode, unsigned *rp)
+char *mac_first(int sort_mode, int *rp)
 {
 	register struct mac *m;
-	register unsigned i;
+	register int i;
 
 	if (mac_count == 0)
 		return(NULL);
@@ -145,7 +144,7 @@ char *mac_first(int sort_mode, unsigned *rp)
 		for (m = mac_table; m->mac_next != NULL; m = m->mac_next)
 			;
 		mac_curr = m;
-		*rp = mac_curr->mac_refcnt;
+		*rp = mac_curr->mac_refflg;
 		return(mac_curr->mac_name);
 	case SYM_SORTN:
 	case SYM_SORTA:
@@ -158,7 +157,7 @@ char *mac_first(int sort_mode, unsigned *rp)
 			mac_array[i++] = m;
 		qsort(mac_array, mac_count, sizeof(struct mac *), mac_compare);
 		mac_index = 0;
-		*rp = mac_array[mac_index]->mac_refcnt;
+		*rp = mac_array[mac_index]->mac_refflg;
 		return(mac_array[mac_index]->mac_name);
 	default:
 		fatal(F_INTERN, "unknown sort mode in mac_first");
@@ -167,18 +166,18 @@ char *mac_first(int sort_mode, unsigned *rp)
 }
 
 /*
- *	get next macro name and refcnt in *rp for listing
+ *	get next macro name and refflg in *rp for listing
  */
-char *mac_next(unsigned *rp)
+char *mac_next(int *rp)
 {
 	if (mac_sort == SYM_UNSORT) {
 		mac_curr = mac_curr->mac_prev;
 		if (mac_curr != NULL) {
-			*rp = mac_curr->mac_refcnt;
+			*rp = mac_curr->mac_refflg;
 			return(mac_curr->mac_name);
 		}
 	} else if (++mac_index < mac_count) {
-		*rp = mac_array[mac_index]->mac_refcnt;
+		*rp = mac_array[mac_index]->mac_refflg;
 		return(mac_array[mac_index]->mac_name);
 	}
 	return(NULL);
@@ -192,7 +191,7 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
 		    int (*rept)(struct expn *))
 {
 	register struct mac *m;
-	register unsigned n;
+	register int n;
 
 	if ((m = (struct mac *) malloc(sizeof(struct mac))) == NULL)
 		fatal(F_OUTMEM, "macro");
@@ -207,7 +206,7 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
 		m->mac_name = NULL;
 	m->mac_start = start;
 	m->mac_rept = rept;
-	m->mac_refcnt = 0;
+	m->mac_refflg = 0;
 	m->mac_nrept = 0;
 	m->mac_irp = NULL;
 	m->mac_dums_last = m->mac_dums = NULL;
@@ -353,7 +352,7 @@ void mac_start_expn(struct mac *m)
 	e->expn_act_elselevel = act_elselevel;
 	e->expn_iter = 0;
 	e->expn_irp = m->mac_irp;
-	m->mac_refcnt++;
+	m->mac_refflg = 1;
 	(*m->mac_start)(e);
 	e->expn_next = mac_expn;
 	mac_expn = e;
@@ -497,7 +496,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 {
 	register char *s1, *t1, c;
 	register const char *v;
-	register unsigned n;
+	register int n;
 	int amp_flag;	/* 0 = no &, 1 = & before, 2 = & after */
 	int esc_flag;	/* 0 = no ^, 1 = ^ before */
 
@@ -667,8 +666,8 @@ void mac_call(void)
 char *mac_next_parm(char *s)
 {
 	register char *t, *t1, *u, c;
-	register unsigned n;
-	register WORD x;
+	register int n;
+	register WORD w;
 
 	t1 = t = tmp;
 	n = 0;
@@ -723,16 +722,16 @@ char *mac_next_parm(char *s)
 				}
 			}
 			*u = '\0';
-			x = eval(expr);
-			if (x > 9999)
-				*t++ = (x / 10000) + '0';
-			if (x > 999)
-				*t++ = ((x / 1000) % 10) + '0';
-			if (x > 99)
-				*t++ = ((x / 100) % 10) + '0';
-			if (x > 9)
-				*t++ = ((x / 10) % 10) + '0';
-			*t++ = (x % 10) + '0';
+			w = eval(expr);
+			if (w > 9999)
+				*t++ = (w / 10000) + '0';
+			if (w > 999)
+				*t++ = ((w / 1000) % 10) + '0';
+			if (w > 99)
+				*t++ = ((w / 100) % 10) + '0';
+			if (w > 9)
+				*t++ = ((w / 10) % 10) + '0';
+			*t++ = (w % 10) + '0';
 			t1 = t;
 			break;
 		} else if (*s == '^') {
@@ -892,7 +891,7 @@ int mac_rept_rept(struct expn *e)
 /*
  *	ENDM
  */
-unsigned op_endm(BYTE dummy1, BYTE dummy2)
+WORD op_endm(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -908,7 +907,7 @@ unsigned op_endm(BYTE dummy1, BYTE dummy2)
 /*
  *	EXITM
  */
-unsigned op_exitm(BYTE dummy1, BYTE dummy2)
+WORD op_exitm(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -924,14 +923,14 @@ unsigned op_exitm(BYTE dummy1, BYTE dummy2)
 /*
  *	IFB, IFNB, IFIDN, IFDIF
  */
-unsigned op_mcond(BYTE op_code, BYTE dummy)
+WORD op_mcond(BYTE op_code, BYTE dummy)
 {
 	register char *s, *t;
 
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
-	if (iflevel == UINT_MAX) {
+	if (iflevel == INT_MAX) {
 		asmerr(E_IFNEST);
 		return(0);
 	}
@@ -981,10 +980,10 @@ unsigned op_mcond(BYTE op_code, BYTE dummy)
 /*
  *	IRP and IRPC
  */
-unsigned op_irp(BYTE op_code, BYTE dummy)
+WORD op_irp(BYTE op_code, BYTE dummy)
 {
 	register char *s, *t;
-	register unsigned i;
+	register int i;
 	register struct mac *m;
 
 	UNUSED(dummy);
@@ -1041,7 +1040,7 @@ unsigned op_irp(BYTE op_code, BYTE dummy)
 /*
  *	LOCAL
  */
-unsigned op_local(BYTE dummy1, BYTE dummy2)
+WORD op_local(BYTE dummy1, BYTE dummy2)
 {
 	register char *s, *s1, c;
 	register struct expn *e;
@@ -1087,7 +1086,7 @@ unsigned op_local(BYTE dummy1, BYTE dummy2)
 /*
  *	MACRO
  */
-unsigned op_macro(BYTE dummy1, BYTE dummy2)
+WORD op_macro(BYTE dummy1, BYTE dummy2)
 {
 	register char *s, *s1;
 	register struct mac *m;
@@ -1121,7 +1120,7 @@ unsigned op_macro(BYTE dummy1, BYTE dummy2)
 /*
  *	REPT
  */
-unsigned op_rept(BYTE dummy1, BYTE dummy2)
+WORD op_rept(BYTE dummy1, BYTE dummy2)
 {
 	register struct mac *m;
 

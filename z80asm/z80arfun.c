@@ -31,10 +31,9 @@
 #include "z80a.h"
 #include "z80aglb.h"
 
-unsigned ldreg(BYTE, char *), ldixhl(BYTE, char *), ldiyhl(BYTE, char *);
-unsigned ldsp(char *), ldihl(BYTE, char *), ldiixy(BYTE, BYTE, char *);
-unsigned ldinn(char *), aluop(BYTE, char *);
-unsigned cbgrp_iixy(BYTE, BYTE, BYTE, char *);
+WORD ldreg(BYTE, char *), ldixhl(BYTE, char *), ldiyhl(BYTE, char *);
+WORD ldsp(char *), ldihl(BYTE, char *), ldiixy(BYTE, BYTE, char *);
+WORD ldinn(char *), aluop(BYTE, char *), cbgrp_iixy(BYTE, BYTE, BYTE, char *);
 
 /* z80amain.c */
 extern void asmerr(int);
@@ -51,7 +50,7 @@ extern BYTE get_reg(char *);
 /*
  *	process 1byte opcodes without arguments
  */
-unsigned op_1b(BYTE b1, BYTE dummy)
+WORD op_1b(BYTE b1, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -62,7 +61,7 @@ unsigned op_1b(BYTE b1, BYTE dummy)
 /*
  *	process 2byte opcodes without arguments
  */
-unsigned op_2b(BYTE b1, BYTE b2)
+WORD op_2b(BYTE b1, BYTE b2)
 {
 	ops[0] = b1;
 	ops[1] = b2;
@@ -72,7 +71,7 @@ unsigned op_2b(BYTE b1, BYTE b2)
 /*
  *	IM
  */
-unsigned op_im(BYTE base_op1, BYTE base_op2)
+WORD op_im(BYTE base_op1, BYTE base_op2)
 {
 	register WORD n;
 
@@ -99,10 +98,10 @@ unsigned op_im(BYTE base_op1, BYTE base_op2)
 /*
  *	PUSH and POP
  */
-unsigned op_pupo(BYTE base_op, BYTE dummy)
+WORD op_pupo(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	UNUSED(dummy);
 
@@ -136,9 +135,9 @@ unsigned op_pupo(BYTE base_op, BYTE dummy)
 /*
  *	EX
  */
-unsigned op_ex(BYTE base_ops, BYTE base_opd)
+WORD op_ex(BYTE base_ops, BYTE base_opd)
 {
-	register unsigned len;
+	register WORD len;
 
 	if (strcmp(operand, "DE,HL") == 0) {
 		len = 1;
@@ -168,7 +167,7 @@ unsigned op_ex(BYTE base_ops, BYTE base_opd)
 /*
  *	RST
  */
-unsigned op_rst(BYTE base_op, BYTE dummy)
+WORD op_rst(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
 
@@ -188,7 +187,7 @@ unsigned op_rst(BYTE base_op, BYTE dummy)
 /*
  *	RET
  */
-unsigned op_ret(BYTE base_op, BYTE base_opc)
+WORD op_ret(BYTE base_op, BYTE base_opc)
 {
 	register BYTE op;
 
@@ -218,12 +217,11 @@ unsigned op_ret(BYTE base_op, BYTE base_opc)
 /*
  *	JP and CALL
  */
-unsigned op_jpcall(BYTE base_op, BYTE base_opc)
+WORD op_jpcall(BYTE base_op, BYTE base_opc)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD n;
-	register unsigned len;
+	register WORD len, n;
 
 	len = 0;			/* silence compiler */
 	sec = next_arg(operand, NULL);
@@ -299,7 +297,7 @@ unsigned op_jpcall(BYTE base_op, BYTE base_opc)
 /*
  *	JR
  */
-unsigned op_jr(BYTE base_op, BYTE base_opc)
+WORD op_jr(BYTE base_op, BYTE base_opc)
 {
 	register char *sec;
 	register BYTE op;
@@ -343,7 +341,7 @@ unsigned op_jr(BYTE base_op, BYTE base_opc)
 /*
  *	DJNZ
  */
-unsigned op_djnz(BYTE base_op, BYTE dummy)
+WORD op_djnz(BYTE base_op, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -357,12 +355,11 @@ unsigned op_djnz(BYTE base_op, BYTE dummy)
 /*
  *	LD
  */
-unsigned op_ld(BYTE base_op, BYTE dummy)
+WORD op_ld(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD n;
-	register unsigned len;
+	register WORD len, n;
 
 	UNUSED(dummy);
 
@@ -503,11 +500,10 @@ unsigned op_ld(BYTE base_op, BYTE dummy)
 /*
  *	LD [A,B,C,D,E,H,L],?
  */
-unsigned ldreg(BYTE base_op, char *sec)
+WORD ldreg(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register WORD n;
-	register unsigned len;
+	register WORD len, n;
 
 	len = 0;			/* silence compiler */
 	switch (op = get_reg(sec)) {
@@ -603,10 +599,10 @@ unsigned ldreg(BYTE base_op, char *sec)
 /*
  *	LD IX[HL],? (undoc)
  */
-unsigned ldixhl(BYTE base_op, char *sec)
+WORD ldixhl(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD IX[HL],A (undoc) */
@@ -644,10 +640,10 @@ unsigned ldixhl(BYTE base_op, char *sec)
 /*
  *	LD IY[HL],? (undoc)
  */
-unsigned ldiyhl(BYTE base_op, char *sec)
+WORD ldiyhl(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD IY[HL],A (undoc) */
@@ -685,11 +681,10 @@ unsigned ldiyhl(BYTE base_op, char *sec)
 /*
  *	LD SP,?
  */
-unsigned ldsp(char *sec)
+WORD ldsp(char *sec)
 {
 	register BYTE op;
-	register WORD n;
-	register unsigned len;
+	register WORD len, n;
 
 	switch (op = get_reg(sec)) {
 	case REGHL:			/* LD SP,HL */
@@ -738,10 +733,10 @@ unsigned ldsp(char *sec)
 /*
  *	LD (HL),?
  */
-unsigned ldihl(BYTE base_op, char *sec)
+WORD ldihl(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (HL),A */
@@ -777,10 +772,10 @@ unsigned ldihl(BYTE base_op, char *sec)
 /*
  *	LD (I[XY]+d),?
  */
-unsigned ldiixy(BYTE prefix, BYTE base_op, char *sec)
+WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (I[XY]+d),A */
@@ -824,11 +819,10 @@ unsigned ldiixy(BYTE prefix, BYTE base_op, char *sec)
 /*
  *	LD (nn),?
  */
-unsigned ldinn(char *sec)
+WORD ldinn(char *sec)
 {
 	register BYTE op;
-	register WORD n;
-	register unsigned len;
+	register WORD len, n;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (nn),A */
@@ -888,11 +882,11 @@ unsigned ldinn(char *sec)
 /*
  *	ADD ?,?
  */
-unsigned op_add(BYTE base_op, BYTE base_op16)
+WORD op_add(BYTE base_op, BYTE base_op16)
 {
 	register char *sec;
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
@@ -975,11 +969,11 @@ unsigned op_add(BYTE base_op, BYTE base_op16)
 /*
  *	SBC ?,? and ADC ?,?
  */
-unsigned op_sbadc(BYTE base_op, BYTE base_op16)
+WORD op_sbadc(BYTE base_op, BYTE base_op16)
 {
 	register char *sec;
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
@@ -1023,10 +1017,10 @@ unsigned op_sbadc(BYTE base_op, BYTE base_op16)
 /*
  *	DEC and INC
  */
-unsigned op_decinc(BYTE base_op, BYTE base_op16)
+WORD op_decinc(BYTE base_op, BYTE base_op16)
 {
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	switch (op = get_reg(operand)) {
 	case REGA:			/* INC/DEC A */
@@ -1093,7 +1087,7 @@ unsigned op_decinc(BYTE base_op, BYTE base_op16)
 /*
  *	SUB, AND, XOR, OR, CP
  */
-unsigned op_alu(BYTE base_op, BYTE dummy)
+WORD op_alu(BYTE base_op, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -1103,10 +1097,10 @@ unsigned op_alu(BYTE base_op, BYTE dummy)
 /*
  *	ADD A, ADC A, SUB, SBC A, AND, XOR, OR, CP
  */
-unsigned aluop(BYTE base_op, char *sec)
+WORD aluop(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* ALUOP {A,}A */
@@ -1162,7 +1156,7 @@ unsigned aluop(BYTE base_op, char *sec)
 /*
  *	OUT
  */
-unsigned op_out(BYTE op_base, BYTE op_basec)
+WORD op_out(BYTE op_base, BYTE op_basec)
 {
 	register char *sec;
 	register BYTE op;
@@ -1228,7 +1222,7 @@ unsigned op_out(BYTE op_base, BYTE op_basec)
 /*
  *	IN
  */
-unsigned op_in(BYTE op_base, BYTE op_basec)
+WORD op_in(BYTE op_base, BYTE op_basec)
 {
 	register char *sec;
 	register BYTE op;
@@ -1295,11 +1289,11 @@ unsigned op_in(BYTE op_base, BYTE op_basec)
 /*
  *	RLC, RRC, RL, RR, SLA, SRA, SLL, SRL, BIT, RES, SET
  */
-unsigned op_cbgrp(BYTE base_op, BYTE dummy)
+WORD op_cbgrp(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op, bit;
-	register unsigned len;
+	register WORD len;
 
 	UNUSED(dummy);
 
@@ -1354,7 +1348,7 @@ unsigned op_cbgrp(BYTE base_op, BYTE dummy)
 /*
  *	CBOP {n,}(I[XY]+d){,reg}
  */
-unsigned cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
+WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 {
 	register char *tert;
 	register BYTE op;
@@ -1413,7 +1407,7 @@ unsigned cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 /*
  *	8080 MOV
  */
-unsigned op8080_mov(BYTE base_op, BYTE dummy)
+WORD op8080_mov(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op1, op2;
@@ -1469,7 +1463,7 @@ unsigned op8080_mov(BYTE base_op, BYTE dummy)
 /*
  *	8080 ADC, ADD, ANA, CMP, ORA, SBB, SUB, XRA
  */
-unsigned op8080_alu(BYTE base_op, BYTE dummy)
+WORD op8080_alu(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
 
@@ -1500,7 +1494,7 @@ unsigned op8080_alu(BYTE base_op, BYTE dummy)
 /*
  *	8080 DCR and INR
  */
-unsigned op8080_dcrinr(BYTE base_op, BYTE dummy)
+WORD op8080_dcrinr(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
 
@@ -1531,7 +1525,7 @@ unsigned op8080_dcrinr(BYTE base_op, BYTE dummy)
 /*
  *	8080 INX, DAD, DCX
  */
-unsigned op8080_reg16(BYTE base_op, BYTE dummy)
+WORD op8080_reg16(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
 
@@ -1558,7 +1552,7 @@ unsigned op8080_reg16(BYTE base_op, BYTE dummy)
 /*
  *	8080 STAX and LDAX
  */
-unsigned op8080_regbd(BYTE base_op, BYTE dummy)
+WORD op8080_regbd(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
 
@@ -1583,7 +1577,7 @@ unsigned op8080_regbd(BYTE base_op, BYTE dummy)
 /*
  *	8080 ACI, ADI, ANI, CPI, ORI, SBI, SUI, XRI, OUT, IN
  */
-unsigned op8080_imm(BYTE base_op, BYTE dummy)
+WORD op8080_imm(BYTE base_op, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -1597,7 +1591,7 @@ unsigned op8080_imm(BYTE base_op, BYTE dummy)
 /*
  *	8080 RST
  */
-unsigned op8080_rst(BYTE base_op, BYTE dummy)
+WORD op8080_rst(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
 
@@ -1616,7 +1610,7 @@ unsigned op8080_rst(BYTE base_op, BYTE dummy)
 /*
  *	8080 PUSH and POP
  */
-unsigned op8080_pupo(BYTE base_op, BYTE dummy)
+WORD op8080_pupo(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
 
@@ -1645,7 +1639,7 @@ unsigned op8080_pupo(BYTE base_op, BYTE dummy)
  *	     JMP, JNZ, JZ, JNC, JC, JPO, JPE, JP, JM
  *	     CALL, CNZ, CZ, CNC, CC, CPO, CPE, CP, CM
  */
-unsigned op8080_addr(BYTE base_op, BYTE dummy)
+WORD op8080_addr(BYTE base_op, BYTE dummy)
 {
 	register WORD n;
 
@@ -1663,11 +1657,11 @@ unsigned op8080_addr(BYTE base_op, BYTE dummy)
 /*
  *	8080 MVI
  */
-unsigned op8080_mvi(BYTE base_op, BYTE dummy)
+WORD op8080_mvi(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op;
-	register unsigned len;
+	register WORD len;
 
 	UNUSED(dummy);
 
@@ -1703,12 +1697,11 @@ unsigned op8080_mvi(BYTE base_op, BYTE dummy)
 /*
  *	8080 LXI
  */
-unsigned op8080_lxi(BYTE base_op, BYTE dummy)
+WORD op8080_lxi(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD n;
-	register unsigned len;
+	register WORD len, n;
 
 	UNUSED(dummy);
 
