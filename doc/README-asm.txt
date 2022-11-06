@@ -173,7 +173,7 @@ The alias ABS for ASEG is also accepted.
 
 Precedence for expression operators:
 
-()
+( )
 unary + - ~ NOT HIGH LOW NUL TYPE
 * / MOD % SHR >> SHL <<
 + -
@@ -181,5 +181,5 @@ EQ = == NE <> != LT < LE <= GT > GE >=
 AND & XOR ^ OR |
 
 Usage of the %, ^, >>, <<, <>, <, <=, >, and >= operators in macros
-and macro parameters is not recommended, since they clash with the
+and macro parameters is not possible, since they clash with the
 escape character ^, the pass by value % and <> bracket lists.

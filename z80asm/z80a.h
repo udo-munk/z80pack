@@ -69,7 +69,7 @@ typedef unsigned short WORD;
  */
 struct opc {
 	const char *op_name;	/* opcode name */
-	unsigned (*op_fun) (BYTE, BYTE); /* function pointer code gen. */
+	WORD (*op_fun) (BYTE, BYTE); /* function pointer code gen. */
 	BYTE op_c1;		/* first base opcode */
 	BYTE op_c2;		/* second base opcode */
 	WORD op_flags;		/* opcode flags */
@@ -90,7 +90,7 @@ struct ope {
 struct sym {
 	char *sym_name;		/* symbol name */
 	WORD sym_val;		/* symbol value */
-	unsigned sym_refcnt;	/* symbol reference counter */
+	int sym_refflg;		/* symbol reference flag */
 	struct sym *sym_next;	/* next entry */
 };
 
@@ -98,7 +98,7 @@ struct sym {
  *	structure nested INCLUDE's
  */
 struct inc {
-	unsigned inc_line;	/* line counter for listing */
+	unsigned long inc_line;	/* line counter for listing */
 	char *inc_fn;		/* filename */
 	FILE *inc_fp;		/* file pointer */
 };

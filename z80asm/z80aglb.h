@@ -27,10 +27,11 @@
  */
 
 extern char	*infiles[],
+		*srcfn,
 		objfn[],
 		lstfn[],
-		*srcfn,
 		line[],
+		tmp[],
 		label[],
 		opcode[],
 		operand[],
@@ -57,29 +58,29 @@ extern int	list_flag,
 		radix,
 		phs_flag,
 		pass,
+		iflevel,
+		act_iflevel,
+		act_elselevel,
 		gencode,
 		nofalselist,
+		mac_def_nest,
+		mac_exp_nest,
+		mac_symmax,
+		errors,
 		errnum,
 		a_mode,
 		load_flag,
 		obj_fmt,
+		symlen,
+		symmax,
 		p_line,
-		ppl;
+		ppl,
+		page;
+
+extern unsigned long
+		c_line;
 
 extern FILE	*srcfp,
 		*objfp,
 		*lstfp,
 		*errfp;
-
-extern unsigned	iflevel,
-		act_iflevel,
-		act_elselevel,
-		mac_def_nest,
-		mac_exp_nest,
-		mac_symmax,
-		errors,
-		symlen,
-		symmax,
-		page;
-
-extern unsigned long c_line;

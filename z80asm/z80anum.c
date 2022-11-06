@@ -97,11 +97,10 @@ static struct opr oprtab[] = {
 	{ "TYPE",	T_TYPE		},
 	{ "XOR",	T_XOR		}
 };
-static unsigned no_operators = sizeof(oprtab) / sizeof(struct opr);
+static int no_operators = sizeof(oprtab) / sizeof(struct opr);
 
 static BYTE tok_type;	/* token type and flags */
 static WORD tok_val;	/* token value for T_VAL type */
-static char tok_sym[MAXLINE]; /* last symbol scanned (T_VAL) */
 static char *scan_pos;	/* current scanning position */
 
 void init_ctype(void)
@@ -156,7 +155,7 @@ BYTE search_opr(char *s)
 
 /*
  *	get next token
- *	updates tok_type, tok_val, tok_sym and scan_pos
+ *	updates tok_type, tok_val and scan_pos
  *	returns E_NOERR on success
  */
 int get_token(void)
@@ -166,7 +165,6 @@ int get_token(void)
 	register struct sym *sp;
 
 	s = scan_pos;
-	tok_sym[0] = '\0';
 	tok_val = 0;
 	while (IS_SPC(*s))				/* skip white space */
 		s++;
@@ -191,7 +189,7 @@ int get_token(void)
 			goto done;
 		}
 	}
-	p1 = p2 = tok_sym;				/* gather symbol */
+	p1 = p2 = tmp;					/* gather symbol */
 	while (IS_SYM(*s))
 		*p2++ = *s++;
 	*p2 = '\0';
@@ -235,9 +233,9 @@ int get_token(void)
 			tok_type = T_VAL;
 			tok_val = pc;
 		} else {				/* symbol / word opr */
-			if ((unsigned) (p2 - p1) > symlen) /* trim to symlen */
+			if ((p2 - p1) > symlen)		/* trim for lookup */
 				*(p1 + symlen) = '\0';
-			if ((sp = get_sym(tok_sym)) != NULL) {	/* a symbol */
+			if ((sp = get_sym(tmp)) != NULL) { /* a symbol */
 				tok_type = T_VAL;
 				tok_val = sp->sym_val;
 			} else				/* look for word opr */
@@ -614,13 +612,13 @@ WORD eval(char *s)
 }
 
 /*
- *	check value for range -256 <= value <= 255
- *	returns value if in range, otherwise 0 and error message
+ *	check w for range -256 <= value <= 255
+ *	returns w as BYTE if in range, otherwise 0 and error message
  */
-BYTE chk_byte(WORD n)
+BYTE chk_byte(WORD w)
 {
-	if (n >= (WORD) -256 || n <= 255)
-		return(n);
+	if (w >= (WORD) -256 || w <= 255)
+		return(w);
 	else {
 		asmerr(E_VALOUT);
 		return(0);
@@ -628,13 +626,13 @@ BYTE chk_byte(WORD n)
 }
 
 /*
- *	check value for range -128 <= value <= 127
- *	returns value if in range, otherwise 0 and error message
+ *	check w for range -128 <= value <= 127
+ *	returns w as BYTE if in range, otherwise 0 and error message
  */
-BYTE chk_sbyte(WORD n)
+BYTE chk_sbyte(WORD w)
 {
-	if (n >= (WORD) -128 || n <= 127)
-		return(n);
+	if (w >= (WORD) -128 || w <= 127)
+		return(w);
 	else {
 		asmerr(E_VALOUT);
 		return(0);

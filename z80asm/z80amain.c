@@ -45,12 +45,12 @@ char *get_operand(char *, char *, int);
 
 /* z80aout.c */
 extern void asmerr(int);
-extern void lst_line(char *, WORD, unsigned, int);
+extern void lst_line(char *, WORD, WORD, int);
 extern void lst_mac(int);
 extern void lst_sym(int);
 extern void obj_header(void);
 extern void obj_end(void);
-extern void obj_writeb(unsigned);
+extern void obj_writeb(WORD);
 
 /* z80mfun.c */
 extern void mac_start_pass(void);
@@ -117,7 +117,7 @@ void init(void)
 void options(int argc, char *argv[])
 {
 	register char *s, *t;
-	register unsigned i;
+	register int i;
 
 	while (--argc > 0 && (*++argv)[0] == '-')
 		for (s = argv[0] + 1; *s != '\0'; s++)
@@ -271,14 +271,13 @@ void fatal(int i, const char *arg)
  */
 void do_pass(int p)
 {
-	register unsigned fi;
+	register int fi;
 
 	pass = p;
 	radix = 10;
 	rpc = pc = 0;
-	gencode = 1;
-	mac_start_pass();
 	fi = 0;
+	mac_start_pass();
 	if (ver_flag)
 		printf("Pass %d\n", pass);
 	if (pass == 1)				/* PASS 1 */
@@ -322,7 +321,7 @@ void process_file(char *fn)
 		while (mac_exp_nest > 0 && (l = mac_expand()) == NULL)
 			;
 		if (l == NULL) {
-			if ((l = fgets(line, MAXLINE, srcfp)) == NULL)
+			if ((l = fgets(line, MAXLINE + 2, srcfp)) == NULL)
 				break;
 			if (upcase_flag)
 				for (s = l; *s; s++)
@@ -346,7 +345,7 @@ int process_line(char *l)
 {
 	register char *p;
 	register int old_genc, lbl_flag, expn_flag, lflag;
-	register unsigned op_count;
+	register WORD op_count;
 	register struct opc *op;
 
 	/*
@@ -500,7 +499,7 @@ void open_o_files(char *source)
  */
 void get_fn(char *dest, char *src, const char *ext)
 {
-	register unsigned i;
+	register int i;
 	register char *sp, *dp;
 
 	i = 0;
@@ -513,7 +512,7 @@ void get_fn(char *dest, char *src, const char *ext)
 		dp++;
 	else
 		dp = dest;
-	if (strrchr(dp, '.') == NULL && (strlen(dest) + strlen(ext) < LENFN))
+	if (strrchr(dp, '.') == NULL && (strlen(dest) + strlen(ext) <= LENFN))
 		strcat(dest, ext);
 }
 
@@ -525,7 +524,7 @@ void get_fn(char *dest, char *src, const char *ext)
  */
 char *get_symbol(char *s, char *l, int lbl_flag)
 {
-	register unsigned i;
+	register int i;
 
 	if (!lbl_flag)
 		while (IS_SPC(*l))

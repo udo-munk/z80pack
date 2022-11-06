@@ -61,7 +61,7 @@ extern void put_sym(char *, WORD);
 /*
  *	.Z80 and .8080
  */
-unsigned op_instrset(BYTE op_code, BYTE dummy)
+WORD op_instrset(BYTE op_code, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -82,7 +82,7 @@ unsigned op_instrset(BYTE op_code, BYTE dummy)
 /*
  *	ORG, .PHASE, .DEPHASE
  */
-unsigned op_org(BYTE op_code, BYTE dummy)
+WORD op_org(BYTE op_code, BYTE dummy)
 {
 	register WORD n;
 
@@ -130,7 +130,7 @@ unsigned op_org(BYTE op_code, BYTE dummy)
 /*
  *	.RADIX
  */
-unsigned op_radix(BYTE dummy1, BYTE dummy2)
+WORD op_radix(BYTE dummy1, BYTE dummy2)
 {
 	BYTE r;
 
@@ -149,7 +149,7 @@ unsigned op_radix(BYTE dummy1, BYTE dummy2)
 /*
  *	EQU
  */
-unsigned op_equ(BYTE dummy1, BYTE dummy2)
+WORD op_equ(BYTE dummy1, BYTE dummy2)
 {
 	register struct sym *sp;
 
@@ -168,7 +168,7 @@ unsigned op_equ(BYTE dummy1, BYTE dummy2)
 /*
  *	DEFL, ASET, and SET (in 8080 mode)
  */
-unsigned op_dl(BYTE dummy1, BYTE dummy2)
+WORD op_dl(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -182,7 +182,7 @@ unsigned op_dl(BYTE dummy1, BYTE dummy2)
 /*
  *	DEFS and DS
  */
-unsigned op_ds(BYTE dummy1, BYTE dummy2)
+WORD op_ds(BYTE dummy1, BYTE dummy2)
 {
 	register char *p;
 	register WORD count, value;
@@ -207,10 +207,10 @@ unsigned op_ds(BYTE dummy1, BYTE dummy2)
 /*
  *	DEFB, DB, DEFM, DEFC, DC, DEFZ
  */
-unsigned op_db(BYTE op_code, BYTE dummy)
+WORD op_db(BYTE op_code, BYTE dummy)
 {
 	register char *p, *p1, c;
-	register unsigned i;
+	register int i;
 	int sf;
 
 	UNUSED(dummy);
@@ -262,10 +262,10 @@ unsigned op_db(BYTE op_code, BYTE dummy)
 /*
  *	DEFW and DW
  */
-unsigned op_dw(BYTE dummy1, BYTE dummy2)
+WORD op_dw(BYTE dummy1, BYTE dummy2)
 {
 	register char *p, *p1;
-	register unsigned i;
+	register int i;
 	register WORD n;
 
 	UNUSED(dummy1);
@@ -294,12 +294,12 @@ unsigned op_dw(BYTE dummy1, BYTE dummy2)
  *	EJECT, PAGE, LIST, .LIST, NOLIST, .XLIST, .PRINTX, PRINT, INCLUDE,
  *	MACLIB, TITLE, .XALL, .LALL, .SALL, .SFCOND, .LFCOND
  */
-unsigned op_misc(BYTE op_code, BYTE dummy)
+WORD op_misc(BYTE op_code, BYTE dummy)
 {
 	register char *p, *d, c;
 	register BYTE n;
 	static char fn[LENFN];
-	static unsigned incnest;
+	static int incnest;
 	static struct inc incl[INCNEST];
 	static int page_done;
 
@@ -439,7 +439,7 @@ unsigned op_misc(BYTE op_code, BYTE dummy)
 /*
  *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, IF1, IF2
  */
-unsigned op_cond(BYTE op_code, BYTE dummy)
+WORD op_cond(BYTE op_code, BYTE dummy)
 {
 	register char *p;
 
@@ -447,7 +447,7 @@ unsigned op_cond(BYTE op_code, BYTE dummy)
 
 	a_mode = A_NONE;
 	if (op_code < 90) {
-		if (iflevel == UINT_MAX) {
+		if (iflevel == INT_MAX) {
 			asmerr(E_IFNEST);
 			return(0);
 		}
@@ -521,7 +521,7 @@ unsigned op_cond(BYTE op_code, BYTE dummy)
 /*
  *	EXTRN, EXTERNAL, EXT and PUBLIC, ENT, ENTRY, GLOBAL, and ABS, ASEG
  */
-unsigned op_glob(BYTE op_code, BYTE dummy)
+WORD op_glob(BYTE op_code, BYTE dummy)
 {
 	UNUSED(dummy);
 
@@ -543,7 +543,7 @@ unsigned op_glob(BYTE op_code, BYTE dummy)
 /*
  *	END
  */
-unsigned op_end(BYTE dummy1, BYTE dummy2)
+WORD op_end(BYTE dummy1, BYTE dummy2)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
