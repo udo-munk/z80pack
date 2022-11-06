@@ -59,11 +59,11 @@ extern struct sym *next_sym(void);
 
 static const char *errmsg[] = {			/* error messages for asmerr */
 	"no error",				/* 0 */
-	"invalid opcode",			/* 1 */
-	"invalid operand",			/* 2 */
-	"missing operand",			/* 3 */
-	"multiple defined symbol",		/* 4 */
-	"undefined symbol",			/* 5 */
+	"undefined symbol",			/* 1 */
+	"invalid opcode",			/* 2 */
+	"invalid operand",			/* 3 */
+	"missing operand",			/* 4 */
+	"multiple defined symbol",		/* 5 */
 	"value out of range",			/* 6 */
 	"missing right parenthesis",		/* 7 */
 	"missing string delimiter",		/* 8 */
@@ -211,9 +211,9 @@ void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
 	}
 	fprintf(lstfp, "%c%5lu %6lu %s", expn_flag ? '+' : ' ',
 		c_line, s_line, l);
-	if (errnum != E_NOERR) {
+	if (errnum != E_OK) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
-		errnum = E_NOERR;
+		errnum = E_OK;
 		if (ppl != 0)
 			p_line++;
 	}
