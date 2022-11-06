@@ -423,7 +423,7 @@ int factor(WORD *resultp)
 			if ((err = get_token()) != E_OK)
 				return(err);
 			else if (erru != E_OK)
-				return(E_UNDSYM);
+				return(erru);
 			else {
 				*resultp = value;
 				return(E_OK);
