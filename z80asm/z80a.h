@@ -224,13 +224,15 @@ struct inc {
 
 /*
  *	definition of error numbers for error messages in listfile
+ *	E_OK and E_UNDSYM have special meaning for eval()
+ *	and must not be changed!
  */
-#define E_NOERR		0	/* no error */
-#define E_INVOPC	1	/* invalid opcode */
-#define E_INVOPE	2	/* invalid operand */
-#define E_MISOPE	3	/* missing operand */
-#define E_MULSYM	4	/* multiple defined symbol */
-#define E_UNDSYM	5	/* undefined symbol */
+#define E_OK		0	/* no error */
+#define E_UNDSYM	1	/* undefined symbol */
+#define E_INVOPC	2	/* invalid opcode */
+#define E_INVOPE	3	/* invalid operand */
+#define E_MISOPE	4	/* missing operand */
+#define E_MULSYM	5	/* multiple defined symbol */
 #define E_VALOUT	6	/* value out of range */
 #define E_MISPAR	7	/* missing right parenthesis */
 #define E_MISDEL	8	/* missing string delimiter */

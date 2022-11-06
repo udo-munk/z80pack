@@ -156,7 +156,7 @@ BYTE search_opr(char *s)
 /*
  *	get next token
  *	updates tok_type, tok_val and scan_pos
- *	returns E_NOERR on success
+ *	returns E_OK on success, otherwise a hard error code
  */
 int get_token(void)
 {
@@ -334,11 +334,12 @@ int get_token(void)
 	s++;
 done:
 	scan_pos = s;
-	return(E_NOERR);
+	return(E_OK);
 }
 
 /*
  *	recursive descent parser & evaluator
+ *	error values > E_UNDSYM are hard errors that abort parsing
  *
  *	inspired by the previous expression parser by Didier Derny.
  */
@@ -353,41 +354,45 @@ int factor(WORD *resultp)
 	switch (tok_type) {
 	case T_VAL:
 		value = tok_val;
-		if ((err = get_token()) != E_NOERR)
+		if ((err = get_token()) != E_OK)
 			return(err);
 		*resultp = value;
-		return(E_NOERR);
+		return(E_OK);
 	case T_UNDSYM:
-		if ((err = get_token()) != E_NOERR)
+		if ((err = get_token()) != E_OK)
 			return(err);
 		return(E_UNDSYM);
 	case T_NUL:
 		s = scan_pos;
 		while (IS_SPC(*s))
 			s++;
-		if (strcmp(s, "''") == 0 || strcmp(s, "\"\"") == 0)
+		/* if there is nothing or an empty string return true */
+		if (*s == '\0' || (((*s == STRDEL && *(s + 1) == STRDEL)
+				    || (*s == STRDEL2 && *(s + 1) == STRDEL2))
+				   && *(s + 2) == '\0'))
 			*resultp = -1;
 		else
-			*resultp = (*s == '\0') ? -1 : 0;
-		/* short circuit to end of expression */
+			*resultp = 0;
+		/* short circuit parsing to end of expression */
 		while (*s != '\0')
 			s++;
 		scan_pos = s;
 		tok_type = T_EMPTY;
-		return(E_NOERR);
+		return(E_OK);
 	case T_TYPE:
-		if ((erru = get_token()) != E_NOERR && erru != E_UNDSYM)
-			return(erru);
-		*resultp = ((erru || factor(&value)) ? 0x00 : 0x20);
-		return(E_NOERR);
+		if (get_token() != E_OK || factor(&value) != E_OK)
+			*resultp = 0;
+		else
+			*resultp = 0x20; /* local defined absolute */
+		return(E_OK);
 	case T_ADD:
 	case T_SUB:
 	case T_NOT:
 	case T_HIGH:
 	case T_LOW:
 		opr_type = tok_type;
-		if ((err = get_token()) != E_NOERR
-		    || (err = factor(&value)) != E_NOERR)
+		if ((err = get_token()) != E_OK
+		    || (err = factor(&value)) != E_OK)
 			return(err);
 		switch (opr_type) {
 		case T_ADD:
@@ -408,22 +413,22 @@ int factor(WORD *resultp)
 		default:
 			break;
 		}
-		return(E_NOERR);
+		return(E_OK);
 	case T_LPAREN:
-		if ((err = get_token()) != E_NOERR)
+		if ((err = get_token()) != E_OK)
 			return(err);
-		if ((erru = expr(&value)) != E_NOERR && erru != E_UNDSYM)
+		if ((erru = expr(&value)) > E_UNDSYM)
 			return(erru);
-		if (tok_type == T_RPAREN) {
-			if ((err = get_token()) != E_NOERR)
+		if (tok_type == T_RPAREN)
+			if ((err = get_token()) != E_OK)
 				return(err);
-			else if (erru != E_NOERR) /* E_UNDSYM */
+			else if (erru != E_OK)
 				return(E_UNDSYM);
 			else {
 				*resultp = value;
-				return(E_NOERR);
+				return(E_OK);
  			}
-		} else
+		else
 			return(E_MISPAR);
 	default:
 		return(E_INVEXP);
@@ -436,17 +441,17 @@ int mul_term(WORD *resultp)
 	register BYTE opr_type;
 	WORD value;
 
-	if ((erru = factor(resultp)) != E_NOERR && erru != E_UNDSYM)
+	if ((erru = factor(resultp)) > E_UNDSYM)
 		return(erru);
 	while (tok_type == T_MUL || tok_type == T_DIV || tok_type == T_MOD
 				 || tok_type == T_SHR || tok_type == T_SHL) {
 		opr_type = tok_type;
-		if ((err = get_token()) != E_NOERR)
+		if ((err = get_token()) != E_OK)
 			return(err);
-		if ((err = factor(&value)) != E_NOERR && err != E_UNDSYM)
+		if ((err = factor(&value)) > E_UNDSYM)
 			return(err);
-		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
-			erru = E_UNDSYM;
+		if (err != E_OK) {
+			erru = err;
 			continue;
 		}
 		switch (opr_type) {
@@ -473,7 +478,7 @@ int mul_term(WORD *resultp)
 			break;
 		}
 	}
-	return(erru ? E_UNDSYM : E_NOERR);
+	return(erru);
 }
 
 int add_term(WORD *resultp)
@@ -482,16 +487,16 @@ int add_term(WORD *resultp)
 	register BYTE opr_type;
 	WORD value;
 
-	if ((erru = mul_term(resultp)) != E_NOERR && erru != E_UNDSYM)
+	if ((erru = mul_term(resultp)) > E_UNDSYM)
 		return(erru);
 	while (tok_type == T_ADD || tok_type == T_SUB) {
 		opr_type = tok_type;
-		if ((err = get_token()) != E_NOERR)
+		if ((err = get_token()) != E_OK)
 			return(err);
-		if ((err = mul_term(&value)) != E_NOERR && err != E_UNDSYM)
+		if ((err = mul_term(&value)) > E_UNDSYM)
 			return(err);
-		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
-			erru = E_UNDSYM;
+		if (err != E_OK) {
+			erru = err;
 			continue;
 		}
 		switch (opr_type) {
@@ -505,7 +510,7 @@ int add_term(WORD *resultp)
 			break;
 		}
 	}
-	return(erru ? E_UNDSYM : E_NOERR);
+	return(erru);
 }
 
 int cmp_term(WORD *resultp)
@@ -514,18 +519,18 @@ int cmp_term(WORD *resultp)
 	register BYTE opr_type;
 	WORD value;
 
-	if ((erru = add_term(resultp)) != E_NOERR && erru != E_UNDSYM)
+	if ((erru = add_term(resultp)) > E_UNDSYM)
 		return(erru);
 	while (tok_type == T_EQ || tok_type == T_NE
 				|| tok_type == T_LT || tok_type == T_LE
 				|| tok_type == T_GT || tok_type == T_GE) {
 		opr_type = tok_type;
-		if ((err = get_token()) != E_NOERR)
+		if ((err = get_token()) != E_OK)
 			return(err);
-		if ((err = add_term(&value)) != E_NOERR && err != E_UNDSYM)
+		if ((err = add_term(&value)) > E_UNDSYM)
 			return(err);
-		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
-			erru = E_UNDSYM;
+		if (err != E_OK) {
+			erru = err;
 			continue;
 		}
 		switch (opr_type) {
@@ -551,7 +556,7 @@ int cmp_term(WORD *resultp)
 			break;
 		}
 	}
-	return(erru ? E_UNDSYM : E_NOERR);
+	return(erru);
 }
 
 int expr(WORD *resultp)
@@ -560,16 +565,16 @@ int expr(WORD *resultp)
 	register BYTE opr_type;
 	WORD value;
 
-	if ((erru = cmp_term(resultp)) != E_NOERR && erru != E_UNDSYM)
+	if ((erru = cmp_term(resultp)) > E_UNDSYM)
 		return(erru);
 	while (tok_type == T_AND || tok_type == T_XOR || tok_type == T_OR) {
 		opr_type = tok_type;
-		if ((err = get_token()) != E_NOERR)
+		if ((err = get_token()) != E_OK)
 			return(err);
-		if ((err = cmp_term(&value)) != E_NOERR && err != E_UNDSYM)
+		if ((err = cmp_term(&value)) > E_UNDSYM)
 			return(err);
-		if (erru != E_NOERR || err != E_NOERR) { /* E_UNDSYM */
-			erru = E_UNDSYM;
+		if (err != E_OK) {
+			erru = err;
 			continue;
 		}
 		switch (opr_type) {
@@ -586,9 +591,13 @@ int expr(WORD *resultp)
 			break;
 		}
 	}
-	return(erru ? E_UNDSYM : E_NOERR);
+	return(erru);
 }
 
+/*
+ *	parse and evaluate string s
+ *	returns result if valid expression, otherwise 0 and error message
+ */
 WORD eval(char *s)
 {
 	register int err;
@@ -600,8 +609,7 @@ WORD eval(char *s)
 	}
 	result = 0;
 	scan_pos = s;
-	if ((err = get_token()) != E_NOERR
-	    || (err = expr(&result)) != E_NOERR) {
+	if ((err = get_token()) != E_OK || (err = expr(&result)) != E_OK) {
 		asmerr(err);
 		return(0);
 	} else if (tok_type != T_EMPTY) {	/* leftovers, error out */
@@ -612,7 +620,7 @@ WORD eval(char *s)
 }
 
 /*
- *	check w for range -256 <= value <= 255
+ *	check w for range -256 <= w <= 255
  *	returns w as BYTE if in range, otherwise 0 and error message
  */
 BYTE chk_byte(WORD w)
@@ -626,7 +634,7 @@ BYTE chk_byte(WORD w)
 }
 
 /*
- *	check w for range -128 <= value <= 127
+ *	check w for range -128 <= w <= 127
  *	returns w as BYTE if in range, otherwise 0 and error message
  */
 BYTE chk_sbyte(WORD w)
