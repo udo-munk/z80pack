@@ -68,8 +68,8 @@ struct sym *look_sym(char *sym_name)
 
 /*
  *	hash search for sym_name in symbol table symtab
- *	increases refcnt and returns pointer to table element if found,
- *	otherwise NULL
+ *	increases refcnt when found
+ *	returns pointer to table element, or NULL if not found
  */
 struct sym *get_sym(char *sym_name)
 {
@@ -148,7 +148,7 @@ unsigned hash(char *name)
 }
 
 /*
- *	return first symbol for listing, sorted as specified in sort_mode
+ *	get first symbol for listing, sorted as specified in sort_mode
  */
 struct sym *first_sym(int sort_mode)
 {
@@ -186,7 +186,7 @@ struct sym *first_sym(int sort_mode)
 }
 
 /*
- *	return next symbol for listing
+ *	get next symbol for listing
  */
 struct sym *next_sym(void)
 {

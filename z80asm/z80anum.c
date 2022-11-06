@@ -615,7 +615,7 @@ WORD eval(char *s)
 
 /*
  *	check value for range -256 <= value <= 255
- *	return value if in range, otherwise 0 and error message
+ *	returns value if in range, otherwise 0 and error message
  */
 BYTE chk_byte(WORD n)
 {
@@ -629,7 +629,7 @@ BYTE chk_byte(WORD n)
 
 /*
  *	check value for range -128 <= value <= 127
- *	return value if in range, otherwise 0 and error message
+ *	returns value if in range, otherwise 0 and error message
  */
 BYTE chk_sbyte(WORD n)
 {

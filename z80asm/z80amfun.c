@@ -103,7 +103,7 @@ char *strsave(char *s)
 
 /*
  *	verify that s is a legal symbol, also truncates to symlen
- *	return 1 if legal, otherwise 0
+ *	returns 1 if legal, otherwise 0
  */
 int is_symbol(char *s)
 {
@@ -131,7 +131,7 @@ int mac_compare(const void *p1, const void *p2)
 }
 
 /*
- *	return first macro name and refcnt in *rp for listing
+ *	get first macro name and refcnt in *rp for listing
  *	sorted as specified in sort_mode
  */
 char *mac_first(int sort_mode, unsigned *rp)
@@ -169,7 +169,7 @@ char *mac_first(int sort_mode, unsigned *rp)
 }
 
 /*
- *	return next macro name and refcnt in *rp for listing
+ *	get next macro name and refcnt in *rp for listing
  */
 char *mac_next(unsigned *rp)
 {
@@ -465,7 +465,7 @@ void mac_add_line(struct opc *op, char *line)
 }
 
 /*
- *	return value of dummy s, NULL if not found
+ *	get value of dummy s, NULL if not found
  */
 const char *mac_get_dummy(struct expn *e, char *s)
 {
@@ -478,7 +478,7 @@ const char *mac_get_dummy(struct expn *e, char *s)
 }
 
 /*
- *	return value of local label s, NULL if not found
+ *	get value of local label s, NULL if not found
  */
 const char *mac_get_local(struct expn *e, char *s)
 {
@@ -491,8 +491,8 @@ const char *mac_get_local(struct expn *e, char *s)
 }
 
 /*
- *	substitute dummies or locals with actual values
- *	in source line s and return the result in t
+ *	substitute dummies or locals with actual values in source line s
+ *	returns the result in t
  */
 void mac_subst(char *t, char *s, struct expn *e,
 	       const char *(*getf)(struct expn *, char *))
