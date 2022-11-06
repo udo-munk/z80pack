@@ -27,8 +27,6 @@ extern WORD eval(char *);
 /* z80aout.c */
 extern void asmerr(int);
 
-#define MACNEST	50				/* max. expansion nesting */
-
 struct dum {					/* macro dummy */
 	char *dum_name;				/* dummy name */
 	struct dum *dum_next;
@@ -103,7 +101,7 @@ char *strsave(char *s)
 
 /*
  *	verify that s is a legal symbol, also truncates to symlen
- *	return 1 if legal, otherwise 0
+ *	returns 1 if legal, otherwise 0
  */
 int is_symbol(char *s)
 {
@@ -131,7 +129,7 @@ int mac_compare(const void *p1, const void *p2)
 }
 
 /*
- *	return first macro name and refcnt in *rp for listing
+ *	get first macro name and refcnt in *rp for listing
  *	sorted as specified in sort_mode
  */
 char *mac_first(int sort_mode, unsigned *rp)
@@ -169,7 +167,7 @@ char *mac_first(int sort_mode, unsigned *rp)
 }
 
 /*
- *	return next macro name and refcnt in *rp for listing
+ *	get next macro name and refcnt in *rp for listing
  */
 char *mac_next(unsigned *rp)
 {
@@ -328,7 +326,7 @@ void mac_start_expn(struct mac *m)
 		/* delete unnamed macros (IRP, IRPC, REPT) */
 		if (m->mac_name == NULL)
 			mac_delete(m);
-		asmerr(E_MACNEST);
+		asmerr(E_MACNST);
 		return;
 	}
 	if ((e = (struct expn *) malloc(sizeof(struct expn))) == NULL)
@@ -465,7 +463,7 @@ void mac_add_line(struct opc *op, char *line)
 }
 
 /*
- *	return value of dummy s, NULL if not found
+ *	get value of dummy s, NULL if not found
  */
 const char *mac_get_dummy(struct expn *e, char *s)
 {
@@ -478,7 +476,7 @@ const char *mac_get_dummy(struct expn *e, char *s)
 }
 
 /*
- *	return value of local label s, NULL if not found
+ *	get value of local label s, NULL if not found
  */
 const char *mac_get_local(struct expn *e, char *s)
 {
@@ -491,8 +489,8 @@ const char *mac_get_local(struct expn *e, char *s)
 }
 
 /*
- *	substitute dummies or locals with actual values
- *	in source line s and return the result in t
+ *	substitute dummies or locals with actual values in source line s
+ *	returns the result in t
  */
 void mac_subst(char *t, char *s, struct expn *e,
 	       const char *(*getf)(struct expn *, char *))
@@ -600,7 +598,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 				n++;
 			else if (*s == '>') {
 				if (n == 0) {
-					asmerr(E_ILLOPE);
+					asmerr(E_INVOPE);
 					goto done;
 				} else
 					n--;
@@ -715,7 +713,7 @@ char *mac_next_parm(char *s)
 					/* escape next character */
 					s++;
 					if (*s == '\0') {
-						asmerr(E_ILLOPE);
+						asmerr(E_INVOPE);
 						return(NULL);
 					} else
 						*u++ = *s++;
@@ -741,7 +739,7 @@ char *mac_next_parm(char *s)
 			/* escape next character */
 			s++;
 			if (*s == '\0') {
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 				return(NULL);
 			} else
 				*t++ = *s++;
@@ -753,7 +751,7 @@ char *mac_next_parm(char *s)
 			n++;
 		} else if (*s == '>') {
 			if (n == 0) {
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 				return(NULL);
 			} else {
 				n--;
@@ -806,7 +804,7 @@ int mac_rept_irp(struct expn *e)
 	if (*s == '\0')
 		return(0);
 	else if (*s++ != ',') {
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 		return(0);
 	} else {
 		if ((s = mac_next_parm(s)) == NULL)
@@ -865,7 +863,7 @@ void mac_start_macro(struct expn *e)
 		if (*s == ',')
 			s++;
 		else if (*s != '\0' && *s != COMMENT) {
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 			return;
 		}
 		if ((p->parm_val = strsave(tmp)) == NULL)
@@ -945,7 +943,7 @@ unsigned op_mcond(BYTE op_code, BYTE dummy)
 	case 2:				/* IFNB */
 		s = mac_next_parm(operand);
 		if (*s != '\0' && *s != COMMENT) {
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 			return(0);
 		}
 		if (*tmp != '\0')
@@ -962,7 +960,7 @@ unsigned op_mcond(BYTE op_code, BYTE dummy)
 			fatal(F_OUTMEM, "macro IF parameter");
 		s = mac_next_parm(s);
 		if (*s != '\0' && *s != COMMENT) {
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 			free(t);
 			return(0);
 		}
@@ -1007,7 +1005,7 @@ unsigned op_irp(BYTE op_code, BYTE dummy)
 	s = operand;
 	t = tmp;
 	if (!IS_FSYM(*s)) {
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 		return(0);
 	}
 	*t++ = TO_UPP(*s);
@@ -1023,14 +1021,14 @@ unsigned op_irp(BYTE op_code, BYTE dummy)
 	while (IS_SPC(*s))
 		s++;
 	if (*s++ != ',') {
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 		return(0);
 	}
 	while (IS_SPC(*s))
 		s++;
 	s = mac_next_parm(s);
 	if (*s != '\0' && *s != COMMENT) {
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 		return(0);
 	}
 	if ((m->mac_irp = strsave(tmp)) == NULL)
@@ -1079,7 +1077,7 @@ unsigned op_local(BYTE dummy1, BYTE dummy2)
 				*s++ = c + (c < 10 ? '0' : 'W');
 				*s = '\0';
 			} else
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 		}
 		s = s1;
 	}
@@ -1111,7 +1109,7 @@ unsigned op_macro(BYTE dummy1, BYTE dummy2)
 			if (is_symbol(s))
 				mac_add_dum(m, s);
 			else
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 		}
 		s = s1;
 	}

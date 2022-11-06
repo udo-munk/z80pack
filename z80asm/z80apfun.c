@@ -107,7 +107,7 @@ unsigned op_org(BYTE op_code, BYTE dummy)
 		break;
 	case 2:				/* .PHASE */
 		if (phs_flag)
-			asmerr(E_PHSNEST);
+			asmerr(E_PHSNST);
 		else {
 			phs_flag = 1;
 			pc = eval(operand);
@@ -360,7 +360,7 @@ unsigned op_misc(BYTE op_code, BYTE dummy)
 		break;
 	case 6:				/* INCLUDE and MACLIB */
 		if (incnest >= INCNEST) {
-			asmerr(E_INCNEST);
+			asmerr(E_INCNST);
 			break;
 		}
 		incl[incnest].inc_line = c_line;

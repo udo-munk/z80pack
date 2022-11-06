@@ -68,17 +68,17 @@ static const char *errmsg[] = {			/* error messages for asmerr */
 	"missing right parenthesis",		/* 7 */
 	"missing string delimiter",		/* 8 */
 	"non-sequential object code",		/* 9 */
-	"missing IF",				/* 10 */
+	"missing IF at ELSE of ENDIF",		/* 10 */
 	"IF nested too deep",			/* 11 */
 	"missing ENDIF",			/* 12 */
 	"INCLUDE nested too deep",		/* 13 */
-	".PHASE can not be nested",		/* 14 */
-	"ORG in .PHASE block",			/* 15 */
-	"missing .PHASE",			/* 16 */
+	"invalid .PHASE nesting",		/* 14 */
+	"invalid ORG in .PHASE block",		/* 15 */
+	"missing .PHASE at .DEPHASE",		/* 16 */
 	"division by zero",			/* 17 */
 	"invalid expression",			/* 18 */
 	"object code before ORG",		/* 19 */
-	"illegal label",			/* 20 */
+	"invalid label",			/* 20 */
 	"missing .DEPHASE",			/* 21 */
 	"not in macro definition",		/* 22 */
 	"missing ENDM",				/* 23 */

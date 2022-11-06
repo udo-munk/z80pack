@@ -64,7 +64,7 @@ extern unsigned op8080_pupo(BYTE, BYTE), op8080_addr(BYTE, BYTE);
 extern unsigned op8080_mvi(BYTE, BYTE), op8080_lxi(BYTE, BYTE);
 
 /*
- *	pseudo op table:
+ *	pseudo op table
  *	includes entries for all common pseudo ops
  */
 static struct opc opctab_psd[] = {
@@ -144,7 +144,7 @@ static struct opc opctab_psd[] = {
 static unsigned no_opc_psd = sizeof(opctab_psd) / sizeof(struct opc);
 
 /*
- *	Z80 opcode table:
+ *	Z80 opcode table
  *	includes entries for all Z80 opcodes
  *	must not contain any ops already in opctab_psd!
  */
@@ -221,7 +221,7 @@ static struct opc opctab_z80[] = {
 static unsigned no_opc_z80 = sizeof(opctab_z80) / sizeof(struct opc);
 
 /*
- *	table with reserved Z80 operand words: registers and flags
+ *	table with reserved Z80 register and flag operand words
  *	must be sorted in ascending order!
  */
 static struct ope opetab_z80[] = {
@@ -262,7 +262,7 @@ static struct ope opetab_z80[] = {
 static unsigned no_ope_z80 = sizeof(opetab_z80) / sizeof(struct ope);
 
 /*
- *	8080 opcode table:
+ *	8080 opcode table
  *	includes entries for all 8080 opcodes and 8080 specific pseudo ops
  *	must not contain any ops already in opctab_psd!
  */
@@ -350,7 +350,7 @@ static struct opc opctab_8080[] = {
 static unsigned no_opc_8080 = sizeof(opctab_8080) / sizeof(struct opc);
 
 /*
- *	table with reserved 8080 operand words: registers and flags
+ *	table with reserved 8080 register and flag operand words
  *	must be sorted in ascending order!
  */
 static struct ope opetab_8080[] = {
@@ -374,7 +374,7 @@ static struct ope *opetab;	/* current sorted register/flags table */
 static unsigned no_operands;	/* current number of register/flags */
 
 /*
- *	build sorted table opctab for instruction set os
+ *	build sorted table opctab for instruction set is
  */
 void instrset(int is)
 {
@@ -427,11 +427,8 @@ int opccmp(const void *p1, const void *p2)
 }
 
 /*
- *	binary search in sorted table opctab
- *
- *	Input: pointer to string with opcode
- *
- *	Output: pointer to table element, or NULL if not found
+ *	do binary search for op_name in sorted table opctab
+ *	returns pointer to table element, or NULL if not found
  */
 struct opc *search_op(char *op_name)
 {
@@ -455,12 +452,9 @@ struct opc *search_op(char *op_name)
 }
 
 /*
- *	binary search in sorted table opetab
- *
- *	Input: pointer to string with operand
- *
- *	Output: symbol for operand, NOOPERA if empty operand,
- *		NOREG if operand not found
+ *	do binary search for operand s in sorted table opetab
+ *	returns symbol for operand, NOOPERA if empty operand,
+ *	or NOREG if operand not found
  */
 BYTE get_reg(char *s)
 {

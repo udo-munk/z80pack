@@ -89,7 +89,7 @@ unsigned op_im(BYTE base_op1, BYTE base_op2)
 		default:
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 			break;
 		}
 	}
@@ -128,7 +128,7 @@ unsigned op_pupo(BYTE base_op, BYTE dummy)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -160,7 +160,7 @@ unsigned op_ex(BYTE base_ops, BYTE base_opd)
 	} else {
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -210,7 +210,7 @@ unsigned op_ret(BYTE base_op, BYTE base_opc)
 		break;
 	default:		/* invalid operand */
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(1);
 }
@@ -265,7 +265,7 @@ unsigned op_jpcall(BYTE base_op, BYTE base_opc)
 		} else {		/* CALL, or too many operands */
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOREG:			/* JP/CALL nn */
@@ -280,7 +280,7 @@ unsigned op_jpcall(BYTE base_op, BYTE base_opc)
 		} else {		/* too many operands */
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -291,7 +291,7 @@ unsigned op_jpcall(BYTE base_op, BYTE base_opc)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -323,7 +323,7 @@ unsigned op_jr(BYTE base_op, BYTE base_opc)
 			} else {	/* too many operands */
 				ops[0] = 0;
 				ops[1] = 0;
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 			}
 			break;
 		case NOOPERA:		/* missing operand */
@@ -334,7 +334,7 @@ unsigned op_jr(BYTE base_op, BYTE base_opc)
 		default:		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 	}
 	return(2);
@@ -391,10 +391,10 @@ unsigned op_ld(BYTE base_op, BYTE dummy)
 			len = 2;
 			ops[0] = 0xed;
 			ops[1] = 0x47 + (op & OPMASK3);
-		} else {		/* illegal operand */
+		} else {		/* invalid operand */
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case REGBC:			/* LD BC,? */
@@ -473,10 +473,10 @@ unsigned op_ld(BYTE base_op, BYTE dummy)
 		if (get_reg(sec) == REGA) {
 			len = 1;
 			ops[0] = 0x02 + (op & OPMASK3);
-		} else {		/* illegal operand */
+		} else {		/* invalid operand */
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -494,7 +494,7 @@ unsigned op_ld(BYTE base_op, BYTE dummy)
 		else {			/* invalid operand */
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 	}
 	return(len);
@@ -533,7 +533,7 @@ unsigned ldreg(BYTE base_op, char *sec)
 		} else {		/* not for H, L */
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case REGI:			/* LD reg,I */
@@ -557,7 +557,7 @@ unsigned ldreg(BYTE base_op, char *sec)
 		} else {		/* not A */
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOREG:			/* operand isn't register */
@@ -595,7 +595,7 @@ unsigned ldreg(BYTE base_op, char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -636,7 +636,7 @@ unsigned ldixhl(BYTE base_op, char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -677,7 +677,7 @@ unsigned ldiyhl(BYTE base_op, char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -730,7 +730,7 @@ unsigned ldsp(char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -769,7 +769,7 @@ unsigned ldihl(BYTE base_op, char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -816,7 +816,7 @@ unsigned ldiixy(BYTE prefix, BYTE base_op, char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -880,7 +880,7 @@ unsigned ldinn(char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -914,7 +914,7 @@ unsigned op_add(BYTE base_op, BYTE base_op16)
 			break;
 		default:		/* invalid operand */
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case REGIX:			/* ADD IX,? */
@@ -935,7 +935,7 @@ unsigned op_add(BYTE base_op, BYTE base_op16)
 		default:		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case REGIY:			/* ADD IY,? */
@@ -956,7 +956,7 @@ unsigned op_add(BYTE base_op, BYTE base_op16)
 		default:		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -967,7 +967,7 @@ unsigned op_add(BYTE base_op, BYTE base_op16)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -1004,7 +1004,7 @@ unsigned op_sbadc(BYTE base_op, BYTE base_op16)
 		default:		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1015,7 +1015,7 @@ unsigned op_sbadc(BYTE base_op, BYTE base_op16)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -1074,7 +1074,7 @@ unsigned op_decinc(BYTE base_op, BYTE base_op16)
 		} else {
 			len = 1;
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1085,7 +1085,7 @@ unsigned op_decinc(BYTE base_op, BYTE base_op16)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -1154,7 +1154,7 @@ unsigned aluop(BYTE base_op, char *sec)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -1196,7 +1196,7 @@ unsigned op_out(BYTE op_base, BYTE op_basec)
 			} else {	/* invalid operand */
 				ops[0] = 0;
 				ops[1] = 0;
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 			}
 		}
 	} else if (operand[0] == '(' && operand[strlen(operand) - 1] == ')') {
@@ -1215,12 +1215,12 @@ unsigned op_out(BYTE op_base, BYTE op_basec)
 		default:		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 	} else {			/* invalid operand */
 		ops[0] = 0;
 		ops[1] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(2);
 }
@@ -1263,7 +1263,7 @@ unsigned op_in(BYTE op_base, BYTE op_basec)
 			} else {	/* invalid operand */
 				ops[0] = 0;
 				ops[1] = 0;
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 			}
 		}
 	} else if (*sec == '(' && *(sec + strlen(sec) - 1) == ')') {
@@ -1282,12 +1282,12 @@ unsigned op_in(BYTE op_base, BYTE op_basec)
 		default:		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 	} else {			/* invalid operand */
 		ops[0] = 0;
 		ops[1] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(2);
 }
@@ -1335,7 +1335,7 @@ unsigned op_cbgrp(BYTE base_op, BYTE dummy)
 		else {			/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1346,7 +1346,7 @@ unsigned op_cbgrp(BYTE base_op, BYTE dummy)
 	default:			/* invalid operand */
 		ops[0] = 0;
 		ops[1] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -1391,14 +1391,14 @@ unsigned cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 				ops[1] = 0;
 				ops[2] = 0;
 				ops[3] = 0;
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 			}
 		} else {		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
 			ops[2] = 0;
 			ops[3] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 	} else if (pass == 2) {		/* CBOP {n,}(I[XY]+d) */
 		*(sec + 3) = '(';	/* replace '+' */
@@ -1441,7 +1441,7 @@ unsigned op8080_mov(BYTE base_op, BYTE dummy)
 		case REGM:		/* MOV reg,M */
 			if (op1 == REGM && op2 == REGM) {
 				ops[0] = 0;
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 			} else
 				ops[0] = base_op + (op1 & OPMASK3)
 						 + (op2 & OPMASK0);
@@ -1452,7 +1452,7 @@ unsigned op8080_mov(BYTE base_op, BYTE dummy)
 			break;
 		default:		/* invalid operand */
 			ops[0] = 0;
-			asmerr(E_ILLOPE);
+			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1461,7 +1461,7 @@ unsigned op8080_mov(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(1);
 }
@@ -1492,7 +1492,7 @@ unsigned op8080_alu(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(1);
 }
@@ -1523,7 +1523,7 @@ unsigned op8080_dcrinr(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(1);
 }
@@ -1550,7 +1550,7 @@ unsigned op8080_reg16(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(1);
 }
@@ -1575,7 +1575,7 @@ unsigned op8080_regbd(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(1);
 }
@@ -1635,7 +1635,7 @@ unsigned op8080_pupo(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(1);
 }
@@ -1695,7 +1695,7 @@ unsigned op8080_mvi(BYTE base_op, BYTE dummy)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -1734,7 +1734,7 @@ unsigned op8080_lxi(BYTE base_op, BYTE dummy)
 	default:			/* invalid operand */
 		len = 1;
 		ops[0] = 0;
-		asmerr(E_ILLOPE);
+		asmerr(E_INVOPE);
 	}
 	return(len);
 }
