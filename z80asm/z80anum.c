@@ -132,7 +132,7 @@ void init_ctype(void)
 }
 
 /*
- *	do binary search for operator in sorted table oprtab
+ *	do binary search for operator s in sorted table oprtab
  *	returns symbol for operator or T_UNDSYM if not found
  */
 BYTE search_opr(char *s)
