@@ -235,7 +235,7 @@ int get_token(void)
 			tok_type = T_VAL;
 			tok_val = pc;
 		} else {				/* symbol / word opr */
-			if ((unsigned) (p2 - p1) > symlen) /* trim for lookup */
+			if ((unsigned) (p2 - p1) > symlen) /* trim to symlen */
 				*(p1 + symlen) = '\0';
 			if ((sp = get_sym(tok_sym)) != NULL) {	/* a symbol */
 				tok_type = T_VAL;
