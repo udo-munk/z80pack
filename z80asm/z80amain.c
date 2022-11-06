@@ -391,7 +391,7 @@ int process_line(char *l)
 		} else if ((op = search_op(opcode)) != NULL) {
 			if (lbl_flag) {
 				if (op->op_flags & OP_NOLBL)
-					asmerr(E_ILLLBL);
+					asmerr(E_INVLBL);
 				else if (!(op->op_flags & OP_SET))
 					if (gencode)
 						put_label();
@@ -399,7 +399,7 @@ int process_line(char *l)
 			p = get_operand(operand, p, op->op_flags & OP_NOPRE);
 			if (*operand != '\0' && *operand != COMMENT
 					     && (op->op_flags & OP_NOOPR))
-				asmerr(E_ILLOPE);
+				asmerr(E_INVOPE);
 			else if (gencode || (op->op_flags & OP_COND)) {
 				if (pass == 2 && (op->op_flags & OP_INCL)) {
 					/* list INCLUDE before include file */
@@ -413,7 +413,7 @@ int process_line(char *l)
 			} else
 				a_mode = A_NONE;
 		} else if (gencode) {
-			asmerr(E_ILLOPC);
+			asmerr(E_INVOPC);
 			a_mode = A_NONE;
 		}
 	}

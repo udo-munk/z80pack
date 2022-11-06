@@ -225,31 +225,31 @@ struct inc {
  *	definition of error numbers for error messages in listfile
  */
 #define E_NOERR		0	/* no error */
-#define E_ILLOPC	1	/* illegal opcode */
-#define E_ILLOPE	2	/* illegal operand */
+#define E_INVOPC	1	/* invalid opcode */
+#define E_INVOPE	2	/* invalid operand */
 #define E_MISOPE	3	/* missing operand */
 #define E_MULSYM	4	/* multiple defined symbol */
 #define E_UNDSYM	5	/* undefined symbol */
-#define E_VALOUT	6	/* value out of bounds */
+#define E_VALOUT	6	/* value out of range */
 #define E_MISPAR	7	/* missing right parenthesis */
 #define E_MISDEL	8	/* missing string delimiter */
-#define E_NSQWRT	9	/* non-sequential code write (binary output) */
+#define E_NSQWRT	9	/* non-sequential object code (binary) */
 #define E_MISIFF	10	/* missing IF at ELSE or ENDIF */
-#define E_IFNEST	11	/* too many IF's nested */
+#define E_IFNEST	11	/* IF nested too deep */
 #define E_MISEIF	12	/* missing ENDIF */
-#define E_INCNEST	13	/* too many INCLUDE's nested */
-#define E_PHSNEST	14	/* .PHASE can't be nested */
-#define E_ORGPHS	15	/* illegal ORG in .PHASE block */
+#define E_INCNST	13	/* INCLUDE nested too deep */
+#define E_PHSNST	14	/* invalid .PHASE nesting */
+#define E_ORGPHS	15	/* invalid ORG in .PHASE block */
 #define E_MISPHS	16	/* missing .PHASE at .DEPHASE */
 #define E_DIVBY0	17	/* division by zero */
 #define E_INVEXP	18	/* invalid expression */
-#define E_BFRORG	19	/* code before first ORG (binary output) */
-#define E_ILLLBL	20	/* illegal label */
+#define E_BFRORG	19	/* object code before ORG (binary) */
+#define E_INVLBL	20	/* invalid label */
 #define E_MISDPH	21	/* missing .DEPHASE */
 #define E_NIMDEF	22	/* not in macro definition */
 #define E_MISEMA	23	/* missing ENDM */
 #define E_NIMEXP	24	/* not in macro expansion */
-#define E_MACNEST	25	/* macro expansion nested too deep */
+#define E_MACNST	25	/* macro expansion nested too deep */
 #define E_OUTLCL	26	/* too many local labels */
 #define E_LBLDIF	27	/* label address differs between passes */
 
