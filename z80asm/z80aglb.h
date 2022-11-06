@@ -53,8 +53,8 @@ extern int	list_flag,
 		nofill_flag,
 		upcase_flag,
 		mac_list_flag,
+		i8080_flag,
 		radix,
-		opset,
 		phs_flag,
 		pass,
 		gencode,
@@ -80,16 +80,6 @@ extern unsigned	iflevel,
 		errors,
 		symlen,
 		symmax,
-		symcnt,
-		page,
-		no_opcodes,
-		no_operands;
+		page;
 
 extern unsigned long c_line;
-
-extern struct sym *symtab[],
-		  **symarray;
-
-extern struct opc **opctab;
-
-extern struct ope *opetab;

@@ -47,8 +47,7 @@ char *get_operand(char *, char *, int);
 extern void asmerr(int);
 extern void lst_line(char *, WORD, unsigned, int);
 extern void lst_mac(int);
-extern void lst_sym(void);
-extern void lst_sort_sym(void);
+extern void lst_sym(int);
 extern void obj_header(void);
 extern void obj_end(void);
 extern void obj_writeb(unsigned);
@@ -62,18 +61,15 @@ extern int mac_lookup(char *);
 extern void mac_call(void);
 
 /* z80anum.c */
-void init_ctype(void);
+extern void init_ctype(void);
 
 /* z80aopc.c */
-void set_opset(int);
+extern void instrset(int);
+extern struct opc *search_op(char *);
 
 /* z80atab.c */
-extern struct opc *search_op(char *);
 extern void put_sym(char *, WORD);
 extern void put_label(void);
-extern void copy_sym(void);
-extern void n_sort_sym(void);
-extern void a_sort_sym(void);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
@@ -92,31 +88,14 @@ int main(int argc, char *argv[])
 {
 	init();
 	options(argc, argv);
+	instrset(i8080_flag ? INSTR_8080 : INSTR_Z80);
 	printf("Z80 - Macro - Assembler Release %s\n%s\n", REL, COPYR);
 	do_pass(1);
 	do_pass(2);
 	if (list_flag) {
-		switch (sym_flag) {
-		case SYM_NONE:		/* no symbol table */
-			break;
-		case SYM_UNSORT:	/* unsorted symbol table */
-			lst_mac(0);
-			lst_sym();
-			break;
-		case SYM_SORTN:		/* symbol table sorted by name */
-			lst_mac(1);
-			copy_sym();
-			n_sort_sym();
-			lst_sort_sym();
-			break;
-		case SYM_SORTA:		/* symbol table sorted by address */
-			lst_mac(0);
-			copy_sym();
-			a_sort_sym();
-			lst_sort_sym();
-			break;
-		default:
-			break;
+		if (sym_flag != SYM_NONE) {
+			lst_mac(sym_flag);
+			lst_sym(sym_flag);
 		}
 		fclose(lstfp);
 	}
@@ -139,9 +118,7 @@ void options(int argc, char *argv[])
 {
 	register char *s, *t;
 	register unsigned i;
-	register int os;
 
-	os = OPSET_Z80;
 	while (--argc > 0 && (*++argv)[0] == '-')
 		for (s = argv[0] + 1; *s != '\0'; s++)
 			switch (*s) {
@@ -207,7 +184,7 @@ void options(int argc, char *argv[])
 				put_sym(label, 0);
 				break;
 			case '8':
-				os = OPSET_8080;
+				i8080_flag = 1;
 				break;
 			case 'u':
 				undoc_flag = 1;
@@ -258,7 +235,6 @@ void options(int argc, char *argv[])
 				printf("unknown option %c\n", *s);
 				usage();
 			}
-	set_opset(os);
 	i = 0;
 	while (argc-- && i < MAXFN) {
 		if ((infiles[i] = (char *) malloc(LENFN + 1)) == NULL)

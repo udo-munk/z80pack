@@ -80,9 +80,10 @@ struct expn {					/* macro expansion */
 
 static struct mac *mac_table;			/* MACRO table */
 static struct mac *mac_curr;			/* current macro */
-static struct mac **mac_array;			/* sorted macro table */
+static struct mac **mac_array;			/* sorted table for iterator */
+static unsigned mac_index;			/* index for iterator */
+static int mac_sort;				/* sort mode for iterator */
 static unsigned mac_count;			/* number of macros defined */
-static unsigned mac_index;			/* index into mac_array */
 static struct expn *mac_expn;			/* macro expansion stack */
 static WORD mac_loc_cnt;			/* counter for LOCAL labels */
 static char tmp[MAXLINE];			/* temporary buffer */
@@ -130,16 +131,26 @@ int mac_compare(const void *p1, const void *p2)
 }
 
 /*
- *	return first macro name and refcnt in *ip for listing
+ *	return first macro name and refcnt in *rp for listing
+ *	sorted as specified in sort_mode
  */
-char *mac_lst_first(int sorted, unsigned *rp)
+char *mac_first(int sort_mode, unsigned *rp)
 {
 	register struct mac *m;
 	register unsigned i;
 
-	if (mac_table == NULL)
+	if (mac_count == 0)
 		return(NULL);
-	if (sorted) {
+	mac_sort = sort_mode;
+	switch(sort_mode) {
+	case SYM_UNSORT:
+		for (m = mac_table; m->mac_next != NULL; m = m->mac_next)
+			;
+		mac_curr = m;
+		*rp = mac_curr->mac_refcnt;
+		return(mac_curr->mac_name);
+	case SYM_SORTN:
+	case SYM_SORTA:
 		mac_array = (struct mac **) malloc(sizeof(struct mac *)
 						   * mac_count);
 		if (mac_array == NULL)
@@ -150,35 +161,29 @@ char *mac_lst_first(int sorted, unsigned *rp)
 		qsort(mac_array, mac_count, sizeof(struct mac *), mac_compare);
 		mac_index = 0;
 		*rp = mac_array[mac_index]->mac_refcnt;
-		return(mac_array[mac_index++]->mac_name);
-	} else {
-		for (m = mac_table; m->mac_next != NULL; m = m->mac_next)
-			;
-		mac_curr = m;
-		*rp = mac_curr->mac_refcnt;
-		return(mac_curr->mac_name);
+		return(mac_array[mac_index]->mac_name);
+	default:
+		fatal(F_INTERN, "unknown sort mode in mac_first");
 	}
+	return(NULL);		/* silence compiler */
 }
 
 /*
- *	return next macro name and refcnt in *ip for listing
+ *	return next macro name and refcnt in *rp for listing
  */
-char *mac_lst_next(int sorted, unsigned *rp)
+char *mac_next(unsigned *rp)
 {
-	if (sorted) {
-		if (mac_index < mac_count) {
-			*rp = mac_array[mac_index]->mac_refcnt;
-			return(mac_array[mac_index++]->mac_name);
-		} else
-			return(NULL);
-	} else {
+	if (mac_sort == SYM_UNSORT) {
 		mac_curr = mac_curr->mac_prev;
 		if (mac_curr != NULL) {
 			*rp = mac_curr->mac_refcnt;
 			return(mac_curr->mac_name);
-		} else
-			return(NULL);
+		}
+	} else if (++mac_index < mac_count) {
+		*rp = mac_array[mac_index]->mac_refcnt;
+		return(mac_array[mac_index]->mac_name);
 	}
+	return(NULL);
 }
 
 /*

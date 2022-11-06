@@ -44,8 +44,18 @@ void btoh(BYTE, char **);
 extern void fatal(int, const char *);
 
 /* z80amfun.c */
-extern char *mac_lst_first(int, unsigned *);
-extern char *mac_lst_next(int, unsigned *);
+extern char *mac_first(int, unsigned *);
+extern char *mac_next(unsigned *);
+
+/* z80atab.c */
+extern struct sym *first_sym(int);
+extern struct sym *next_sym(void);
+
+/*
+ *	Intel hex record types
+ */
+#define	HEX_DATA	0
+#define HEX_EOF		1
 
 static const char *errmsg[] = {			/* error messages for asmerr */
 	"no error",				/* 0 */
@@ -77,12 +87,6 @@ static const char *errmsg[] = {			/* error messages for asmerr */
 	"too many local labels",		/* 26 */
 	"label address differs between passes"	/* 27 */
 };
-
-/*
- *	Intel hex record types
- */
-#define	HEX_DATA	0
-#define HEX_EOF		1
 
 static int nseq_flag;			/* flag for non-sequential ORG */
 static WORD curr_addr;			/* current logical file address */
@@ -243,18 +247,17 @@ void lst_line(char *l, WORD addr, unsigned op_cnt, int expn_flag)
 }
 
 /*
- *	print macro table into listfile
+ *	print macro table into listfile, sorted as specified in sort_mode
  */
-void lst_mac(int sorted)
+void lst_mac(int sort_mode)
 {
 	register unsigned i, j;
 	register char *p;
-	unsigned refcnt;
+	unsigned rc;
 
 	p_line = i = 0;
 	strcpy(title, "Macro table");
-	for (p = mac_lst_first(sorted, &refcnt); p != NULL;
-	     p = mac_lst_next(sorted, &refcnt)) {
+	for (p = mac_first(sort_mode, &rc); p != NULL; p = mac_next(&rc)) {
 		if (p_line == 0) {
 			lst_header();
 			if (ppl == 0) {
@@ -265,7 +268,7 @@ void lst_mac(int sorted)
 			p_line++;
 		}
 		j = strlen(p);
-		fprintf(lstfp, "%s%c", p, refcnt > 0 ? ' ' : '*');
+		fprintf(lstfp, "%s%c", p, rc > 0 ? ' ' : '*');
 		while (j++ < mac_symmax)
 			fputc(' ', lstfp);
 		i += mac_symmax + 4;
@@ -282,54 +285,16 @@ void lst_mac(int sorted)
 }
 
 /*
- *	print symbol table into listfile unsorted
+ *	print symbol table into listfile, sorted as specified in sort_mode
  */
-void lst_sym(void)
+void lst_sym(int sort_mode)
 {
-	register unsigned i, j;
+	register unsigned i;
 	register struct sym *sp;
 
-	p_line = j = 0;
+	p_line = i = 0;
 	strcpy(title, "Symbol table");
-	for (i = 0; i < HASHSIZE; i++) {
-		for (sp = symtab[i]; sp != NULL; sp = sp->sym_next) {
-			if (p_line == 0) {
-				lst_header();
-				if (ppl == 0) {
-					fputs(title, lstfp);
-					fputc('\n', lstfp);
-				}
-				fputc('\n', lstfp);
-				p_line++;
-			}
-			fprintf(lstfp, "%*s ", -symmax, sp->sym_name);
-			lst_byte(sp->sym_val >> 8);
-			lst_byte(sp->sym_val & 0xff);
-			fputc(sp->sym_refcnt > 0 ? ' ' : '*', lstfp);
-			j += symmax + 9;
-			if (j + symmax + 6 >= 80) {
-				fputc('\n', lstfp);
-				if (ppl != 0 && ++p_line >= ppl)
-					p_line = 0;
-				j = 0;
-			} else
-				fputs("   ", lstfp);
-		}
-	}
-	if (j > 0)
-		fputc('\n', lstfp);
-}
-
-/*
- *	print sorted symbol table into listfile
- */
-void lst_sort_sym(void)
-{
-	register unsigned i, j;
-
-	p_line = j = 0;
-	strcpy(title, "Symbol table");
-	for (i = 0; i < symcnt; i++) {
+	for (sp = first_sym(sort_mode); sp != NULL; sp = next_sym()) {
 		if (p_line == 0) {
 			lst_header();
 			if (ppl == 0) {
@@ -339,20 +304,20 @@ void lst_sort_sym(void)
 			fputc('\n', lstfp);
 			p_line++;
 		}
-		fprintf(lstfp, "%*s ", -symmax, symarray[i]->sym_name);
-		lst_byte(symarray[i]->sym_val >> 8);
-		lst_byte(symarray[i]->sym_val & 0xff);
-		fputc(symarray[i]->sym_refcnt > 0 ? ' ' : '*', lstfp);
-		j += symmax + 9;
-		if (j + symmax + 6 >= 80) {
+		fprintf(lstfp, "%*s ", -symmax, sp->sym_name);
+		lst_byte(sp->sym_val >> 8);
+		lst_byte(sp->sym_val & 0xff);
+		fputc(sp->sym_refcnt > 0 ? ' ' : '*', lstfp);
+		i += symmax + 9;
+		if (i + symmax + 6 >= 80) {
 			fputc('\n', lstfp);
 			if (ppl != 0 && ++p_line >= ppl)
 				p_line = 0;
-			j = 0;
+			i = 0;
 		} else
 			fputs("   ", lstfp);
 	}
-	if (j > 0)
+	if (i > 0)
 		fputc('\n', lstfp);
 }
 

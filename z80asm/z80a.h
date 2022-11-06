@@ -189,11 +189,11 @@ struct inc {
 #define SYM_SORTA	3	/* symbol table sorted by address */
 
 /*
- *	definition of operation sets
+ *	definition of instruction sets
  */
-#define OPSET_NONE	0	/* not set */
-#define OPSET_Z80	1	/* Z80 opcodes */
-#define OPSET_8080	2	/* 8080 opcodes */
+#define INSTR_NONE	0	/* not yet initialized */
+#define INSTR_Z80 	1	/* Z80 instructions set */
+#define INSTR_8080	2	/* 8080 instructions set */
 
 /*
  *	definition of address output modes for pseudo ops

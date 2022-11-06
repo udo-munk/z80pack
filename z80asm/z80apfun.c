@@ -42,7 +42,7 @@ extern WORD eval(char *);
 extern BYTE chk_byte(WORD);
 
 /* z80aopc.c */
-extern void set_opset(int);
+extern void instrset(int);
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -61,20 +61,20 @@ extern void put_sym(char *, WORD);
 /*
  *	.Z80 and .8080
  */
-unsigned op_opset(BYTE op_code, BYTE dummy)
+unsigned op_instrset(BYTE op_code, BYTE dummy)
 {
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* .Z80 */
-		set_opset(OPSET_Z80);
+		instrset(INSTR_Z80);
 		break;
 	case 2:				/* .8080 */
-		set_opset(OPSET_8080);
+		instrset(INSTR_8080);
 		break;
 	default:
-		fatal(F_INTERN, "invalid opcode for function op_opset");
+		fatal(F_INTERN, "invalid opcode for function op_instrset");
 	}
 	return(0);
 }
