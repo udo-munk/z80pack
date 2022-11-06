@@ -55,6 +55,7 @@
 #define HASHSIZE	500	/* max. entries in symbol hash array */
 #define OPCARRAY	256	/* size of object buffer */
 #define MAXHEX		32	/* max. no bytes/hex record */
+#define MACNEST		50	/* max. expansion nesting */
 
 /*
  *	types for working with op-codes, addresses, expressions,

@@ -27,8 +27,6 @@ extern WORD eval(char *);
 /* z80aout.c */
 extern void asmerr(int);
 
-#define MACNEST	50				/* max. expansion nesting */
-
 struct dum {					/* macro dummy */
 	char *dum_name;				/* dummy name */
 	struct dum *dum_next;
