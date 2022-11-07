@@ -201,9 +201,17 @@ lpSwitch::lpSwitch(void)
 
 lpSwitch::~lpSwitch(void)
 {
+ int i;
+
  if(name) delete[] name;
  if(parms) delete parms;
 
+ if(object_ref_names)
+  {
+    for(i=0; i<num_object_refs;i++)
+      delete[] object_ref_names[i];
+    delete[] object_ref_names;
+  }
 }
 
 
@@ -712,6 +720,7 @@ Lpanel::addSwitchCallback(const char *name, void (*cbfunc)(int state, int val), 
     if(namelist[i]) delete[] namelist[i];
     // bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -756,6 +765,7 @@ Lpanel::bindSwitch8(const char *name, void *loc_down, void *loc_up, int start_bi
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -800,6 +810,7 @@ Lpanel::bindSwitch16(const char *name, void *loc_down, void *loc_up, int start_b
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -844,6 +855,7 @@ Lpanel::bindSwitch32(const char *name, void *loc_down, void *loc_up, int start_b
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -887,6 +899,7 @@ Lpanel::bindSwitch64(const char *name, void *loc_down, void *loc_up, int start_b
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }

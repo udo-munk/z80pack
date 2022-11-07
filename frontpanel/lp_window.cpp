@@ -697,7 +697,6 @@ Lpanel::openWindow(const char *title)
 
   int status;
   
-  XVisualInfo *vi = NULL;
   XSetWindowAttributes swa;
   XSizeHints hints;
   XEvent ev;
@@ -798,9 +797,11 @@ Lpanel::destroyWindow(void)
 
  glXDestroyContext(dpy,cx);
  XDestroyWindow(dpy, window);
+ XFree(vi);
  XCloseDisplay(dpy);
  dpy = 0;
  cx = 0;
+ vi = NULL;
  window = 0;
 
 #endif

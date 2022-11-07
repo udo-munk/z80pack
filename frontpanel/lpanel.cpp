@@ -312,6 +312,7 @@ Lpanel::Lpanel(void)		 // constructor
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
 #else
  window = 0;
+ vi = NULL;
  cx = 0;
  dpy = 0;
 #endif
@@ -624,6 +625,7 @@ Lpanel::bindLight8(const char *name, void *loc, int start_bit_number)
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -671,6 +673,7 @@ Lpanel::bindLight8invert(const char *name, void *loc, int start_bit_number, uint
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -713,6 +716,7 @@ Lpanel::bindLight16(const char *name, void *loc, int start_bit_number)
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -752,6 +756,7 @@ Lpanel::bindLightfv(const char *name, void *loc)
     if(namelist[i]) delete[] namelist[i];
     // bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -797,6 +802,7 @@ Lpanel::bindLight16invert(const char *name, void *loc, int start_bit_number, uin
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -841,6 +847,7 @@ Lpanel::bindLight32(const char *name, void *loc, int start_bit_number)
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -886,6 +893,7 @@ Lpanel::bindLight32invert(const char *name, void *loc, int start_bit_number, uin
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -929,6 +937,7 @@ Lpanel::bindLight64(const char *name, void *loc, int start_bit_number)
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -974,6 +983,7 @@ Lpanel::bindLight64invert(const char *name, void *loc, int start_bit_number, uin
     if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -1193,7 +1203,7 @@ Lpanel::readConfig(const char *_fname)
 
  char *fname;
 
- fname = new char[strlen(config_root_path) + strlen(_fname) + 1];
+ fname = new char[strlen(config_root_path) + 1 + strlen(_fname) + 1];
  strcpy(fname, config_root_path);
  strcat(fname, "/");
  strcat(fname, _fname);
@@ -1866,6 +1876,7 @@ lpLight::lpLight(void)
   sampleDataFunc = sampleData8_error;
   drawFunc = drawLightGraphics;
   t1 = t2 = on_time = 1;
+  start_clock = 0;
   old_clock = 0;
   dirty = 0;
   state = 0;
@@ -2171,6 +2182,7 @@ Lpanel::smoothLight(const char *name, int nframes)
       }
     if(namelist[i]) delete namelist[i];
    }
+  delete[] namelist;
 
   return status;
 }
