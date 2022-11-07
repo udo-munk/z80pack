@@ -764,9 +764,14 @@ Parser::addArg(const char *s, const char *cpos1, const char *cpos2)
 
     if(results.stringlengths[results.num_args] < len+1)
      {
-	if(results.strings[results.num_args]) delete[] results.strings[results.num_args];
+       if(results.strings[results.num_args])
+	{
+	 delete[] results.strings[results.num_args];
+	 results.strings[results.num_args] = NULL;
+	}
      }
-    results.strings[results.num_args] = new char[ len + 1];
+    if (results.strings[results.num_args] == NULL)
+      results.strings[results.num_args] = new char[ len + 1];
     results.stringlengths[results.num_args] = len + 1;
     strncpy(results.strings[results.num_args], cpos1,len);
     results.strings[results.num_args][len] = 0;

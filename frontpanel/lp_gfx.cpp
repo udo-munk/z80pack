@@ -196,6 +196,7 @@ lpObject::~lpObject(void)
 
    delete[] elements;
   } 
+ if(name) delete[] name;
 }
 
 

@@ -135,6 +135,7 @@ class Lpanel
 #else
   Display	*dpy;		// Xwindows display
   Window	window;		// Xwindows window
+  XVisualInfo	*vi;
   GLXContext	cx;
   Atom		wmDeleteMessage; // for processing window close event
 #endif
