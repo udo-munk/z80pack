@@ -99,9 +99,10 @@ static struct opr oprtab[] = {
 };
 static int no_operators = sizeof(oprtab) / sizeof(struct opr);
 
-static BYTE tok_type;	/* token type and flags */
-static WORD tok_val;	/* token value for T_VAL type */
-static char *scan_pos;	/* current scanning position */
+static BYTE tok_type;			/* token type and flags */
+static WORD tok_val;			/* token value for T_VAL type */
+static char tok_sym[MAXLINE + 1];	/* buffer for symbol/number */
+static char *scan_pos;			/* current scanning position */
 
 void init_ctype(void)
 {
@@ -189,10 +190,9 @@ int get_token(void)
 			goto done;
 		}
 	}
-	p1 = p2 = tmp;					/* gather symbol */
+	p1 = p2 = tok_sym;				/* gather symbol */
 	while (IS_SYM(*s))
 		*p2++ = *s++;
-	*p2 = '\0';
 	if (p1 != p2) {					/* a number/symbol */
 		if (IS_DIG(*p1)) {			/* a number */
 			p2--;
@@ -208,8 +208,9 @@ int get_token(void)
 				base = radix;
 				p2++;
 			}
+			*p2 = '\0';
 			n = 0;
-			while (p1 < p2) {
+			while (*p1 != '\0') {
 				if (*p1 == '$') {	/* digit grouping */
 					p1++;
 					continue;
@@ -229,13 +230,14 @@ int get_token(void)
 			tok_val = n;
 			goto done;
 		}
+		*p2 = '\0';
 		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* location counter */
 			tok_type = T_VAL;
 			tok_val = pc;
 		} else {				/* symbol / word opr */
 			if ((p2 - p1) > symlen)		/* trim for lookup */
 				*(p1 + symlen) = '\0';
-			if ((sp = get_sym(tmp)) != NULL) { /* a symbol */
+			if ((sp = get_sym(tok_sym)) != NULL) { /* a symbol */
 				tok_type = T_VAL;
 				tok_val = sp->sym_val;
 			} else				/* look for word opr */

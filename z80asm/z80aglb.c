@@ -35,7 +35,6 @@ char *infiles[MAXFN],		/* source filenames */
      objfn[LENFN + 1],		/* object filename */
      lstfn[LENFN + 1],		/* listing filename */
      line[MAXLINE + 2],		/* buffer for one line of source */
-     tmp[MAXLINE + 2],		/* temporary buffer */
      label[MAXLINE + 1],	/* buffer for label */
      opcode[MAXLINE + 1],	/* buffer for opcode */
      operand[MAXLINE + 1],	/* buffer for working with operand */

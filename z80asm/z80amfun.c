@@ -84,7 +84,7 @@ static int mac_sort;				/* sort mode for iterator */
 static int mac_count;				/* number of macros defined */
 static struct expn *mac_expn;			/* macro expansion stack */
 static WORD mac_loc_cnt;			/* counter for LOCAL labels */
-static char expr[MAXLINE + 1];			/* expr buffer (for '%') */
+static char tmp[MAXLINE + 2];			/* temporary buffer */
 
 /*
  *	save string into allocated memory
@@ -665,7 +665,7 @@ void mac_call(void)
  */
 char *mac_next_parm(char *s)
 {
-	register char *t, *t1, *u, c;
+	register char *t, *t1, c;
 	register int n;
 	register WORD w;
 
@@ -693,20 +693,20 @@ char *mac_next_parm(char *s)
 		} else if (*s == '%') {
 			/* evaluate as expression */
 			s++;
-			u = expr;
+			t1 = t;
 			while (*s != '\0' && *s != ',' && *s != COMMENT) {
 				if (*s == STRDEL || *s == STRDEL2) {
-					*u++ = c = *s++;
+					*t++ = c = *s++;
 					while (1) {
 						if (*s == '\0') {
 							asmerr(E_MISDEL);
 							return(NULL);
 						} else if (*s == c) {
-							*u++ = *s++;
+							*t++ = *s++;
 							if (*s != c)
 								break;
 						}
-						*u++ = *s++;
+						*t++ = *s++;
 					}
 				} else if (*s == '^') {
 					/* escape next character */
@@ -715,24 +715,23 @@ char *mac_next_parm(char *s)
 						asmerr(E_INVOPE);
 						return(NULL);
 					} else
-						*u++ = *s++;
+						*t++ = *s++;
 				} else {
-					*u++ = TO_UPP(*s);
+					*t++ = TO_UPP(*s);
 					s++;
 				}
 			}
-			*u = '\0';
-			w = eval(expr);
+			*t = '\0';
+			w = eval(t1);
 			if (w > 9999)
-				*t++ = (w / 10000) + '0';
+				*t1++ = (w / 10000) + '0';
 			if (w > 999)
-				*t++ = ((w / 1000) % 10) + '0';
+				*t1++ = ((w / 1000) % 10) + '0';
 			if (w > 99)
-				*t++ = ((w / 100) % 10) + '0';
+				*t1++ = ((w / 100) % 10) + '0';
 			if (w > 9)
-				*t++ = ((w / 10) % 10) + '0';
-			*t++ = (w % 10) + '0';
-			t1 = t;
+				*t1++ = ((w / 10) % 10) + '0';
+			*t1++ = (w % 10) + '0';
 			break;
 		} else if (*s == '^') {
 			/* escape next character */
