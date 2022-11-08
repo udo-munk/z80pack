@@ -119,115 +119,134 @@ allclean: clean
 # AUTOMATICALLY GENERATED DO NOT EDIT
 
 altair-88-2sio.o: $(IO_DIR)/altair-88-2sio.c sim.h \
- $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
+ $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
  $(IO_DIR)/unix_terminal.h $(IO_DIR)/unix_network.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/altair-88-2sio.c
 
 altair-88-dcdd.o: $(IO_DIR)/altair-88-dcdd.c sim.h \
- $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h
+ $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/altair-88-dcdd.c
 
 altair-88-sio.o: $(IO_DIR)/altair-88-sio.c sim.h \
- $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
+ $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
  $(IO_DIR)/unix_terminal.h $(IO_DIR)/unix_network.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/altair-88-sio.c
 
-config.o: config.c sim.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h \
- $(FP_DIR)/frontpanel.h memory.h
+config.o: config.c sim.h $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h \
+ $(CORE_DIR)/log.h $(FP_DIR)/frontpanel.h memory.h
 	$(CC) $(CFLAGS) -c -o $@ config.c
 
 cromemco-dazzler.o: $(IO_DIR)/cromemco-dazzler.c sim.h \
- $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h config.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h \
  $(CORE_DIR)/log.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/cromemco-dazzler.c
 
 fpmain.o: $(CORE_DIR)/fpmain.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $(CORE_DIR)/fpmain.cpp
 
-iosim.o: iosim.c sim.h $(CORE_DIR)/simglb.h $(IO_DIR)/simbdos.h \
- $(CORE_DIR)/log.h $(IO_DIR)/unix_network.h \
- $(IO_DIR)/altair-88-sio.h $(IO_DIR)/altair-88-2sio.h \
- $(IO_DIR)/tarbell_fdc.h $(IO_DIR)/altair-88-dcdd.h \
- $(IO_DIR)/cromemco-dazzler.h $(IO_DIR)/proctec-vdm.h \
- $(FP_DIR)/frontpanel.h memory.h config.h
+iosim.o: iosim.c sim.h $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h \
+ $(IO_DIR)/simbdos.h $(CORE_DIR)/log.h \
+ $(IO_DIR)/unix_network.h $(IO_DIR)/altair-88-sio.h \
+ $(IO_DIR)/altair-88-2sio.h $(IO_DIR)/tarbell_fdc.h \
+ $(IO_DIR)/altair-88-dcdd.h $(IO_DIR)/cromemco-dazzler.h \
+ $(IO_DIR)/proctec-vdm.h $(FP_DIR)/frontpanel.h memory.h \
+ config.h
 	$(CC) $(CFLAGS) -c -o $@ iosim.c
 
-memory.o: memory.c sim.h $(CORE_DIR)/simglb.h config.h \
- $(FP_DIR)/frontpanel.h memory.h $(CORE_DIR)/log.h
+memory.o: memory.c sim.h $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h \
+ config.h $(FP_DIR)/frontpanel.h memory.h $(CORE_DIR)/log.h
 	$(CC) $(CFLAGS) -c -o $@ memory.c
 
-proctec-vdm.o: $(IO_DIR)/proctec-vdm.c sim.h $(CORE_DIR)/simglb.h \
- $(FP_DIR)/frontpanel.h memory.h $(CORE_DIR)/log.h \
- $(IO_DIR)/proctec-vdm-charset.h
+proctec-vdm.o: $(IO_DIR)/proctec-vdm.c sim.h \
+ $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h \
+ $(FP_DIR)/frontpanel.h memory.h $(FP_DIR)/frontpanel.h \
+ $(CORE_DIR)/log.h $(IO_DIR)/proctec-vdm-charset.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/proctec-vdm.c
 
-sim0.o: $(CORE_DIR)/sim0.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim0.o: $(CORE_DIR)/sim0.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim0.c
 
-sim1.o: $(CORE_DIR)/sim1.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim1.o: $(CORE_DIR)/sim1.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim1.c
 
-sim1a.o: $(CORE_DIR)/sim1a.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim1a.o: $(CORE_DIR)/sim1a.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim1a.c
 
-sim2.o: $(CORE_DIR)/sim2.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim2.o: $(CORE_DIR)/sim2.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim2.c
 
-sim3.o: $(CORE_DIR)/sim3.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim3.o: $(CORE_DIR)/sim3.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim3.c
 
-sim4.o: $(CORE_DIR)/sim4.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim4.o: $(CORE_DIR)/sim4.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim4.c
 
-sim5.o: $(CORE_DIR)/sim5.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim5.o: $(CORE_DIR)/sim5.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim5.c
 
-sim6.o: $(CORE_DIR)/sim6.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim6.o: $(CORE_DIR)/sim6.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim6.c
 
-sim7.o: $(CORE_DIR)/sim7.c sim.h $(CORE_DIR)/simglb.h config.h \
- memory.h
+sim7.o: $(CORE_DIR)/sim7.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/sim7.c
 
-simbdos.o: $(IO_DIR)/simbdos.c sim.h $(CORE_DIR)/simglb.h \
- memory.h
+simbdos.o: $(IO_DIR)/simbdos.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h $(FP_DIR)/frontpanel.h memory.h \
+ $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/simbdos.c
 
-simctl.o: simctl.c sim.h $(CORE_DIR)/simglb.h config.h \
- $(FP_DIR)/frontpanel.h memory.h $(IO_DIR)/unix_terminal.h \
- $(CORE_DIR)/log.h
+simctl.o: simctl.c sim.h $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h \
+ config.h $(FP_DIR)/frontpanel.h memory.h \
+ $(IO_DIR)/unix_terminal.h $(CORE_DIR)/log.h
 	$(CC) $(CFLAGS) -c -o $@ simctl.c
 
-simdis.o: $(CORE_DIR)/simdis.c sim.h $(CORE_DIR)/simglb.h memory.h
+simdis.o: $(CORE_DIR)/simdis.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h memory.h $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simdis.c
 
-simfun.o: $(CORE_DIR)/simfun.c sim.h $(CORE_DIR)/simglb.h memory.h \
+simfun.o: $(CORE_DIR)/simfun.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h memory.h $(FP_DIR)/frontpanel.h \
  $(CORE_DIR)/log.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simfun.c
 
-simglb.o: $(CORE_DIR)/simglb.c sim.h $(CORE_DIR)/simglb.h
+simglb.o: $(CORE_DIR)/simglb.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simglb.c
 
-simice.o: $(CORE_DIR)/simice.c sim.h $(CORE_DIR)/simglb.h memory.h
+simice.o: $(CORE_DIR)/simice.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h memory.h $(FP_DIR)/frontpanel.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simice.c
 
-simint.o: $(CORE_DIR)/simint.c sim.h $(CORE_DIR)/simglb.h
+simint.o: $(CORE_DIR)/simint.c sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/simglb.h
 	$(CC) $(CFLAGS) -c -o $@ $(CORE_DIR)/simint.c
 
-tarbell_fdc.o: $(IO_DIR)/tarbell_fdc.c sim.h $(CORE_DIR)/simglb.h \
- $(CORE_DIR)/log.h
+tarbell_fdc.o: $(IO_DIR)/tarbell_fdc.c sim.h \
+ $(CORE_DIR)/simcore.h $(CORE_DIR)/simglb.h $(CORE_DIR)/log.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/tarbell_fdc.c
 
 unix_network.o: $(IO_DIR)/unix_network.c \
- $(IO_DIR)/unix_network.h sim.h $(CORE_DIR)/log.h
+ $(IO_DIR)/unix_network.h sim.h $(CORE_DIR)/simcore.h \
+ $(CORE_DIR)/log.h
 	$(CC) $(CFLAGS) -c -o $@ $(IO_DIR)/unix_network.c
 
 unix_terminal.o: $(IO_DIR)/unix_terminal.c

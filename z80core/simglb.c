@@ -60,7 +60,7 @@
 /*
  *	Type of CPU, either Z80 or 8080
  */
-int cpu = DEFAULT_CPU;
+int cpu = DEF_CPU;
 
 /*
  *	CPU Registers
