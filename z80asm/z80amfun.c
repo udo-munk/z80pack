@@ -708,14 +708,6 @@ char *mac_next_parm(char *s)
 						}
 						*t++ = *s++;
 					}
-				} else if (*s == '^') {
-					/* escape next character */
-					s++;
-					if (*s == '\0') {
-						asmerr(E_INVOPE);
-						return(NULL);
-					} else
-						*t++ = *s++;
 				} else {
 					*t++ = TO_UPP(*s);
 					s++;
