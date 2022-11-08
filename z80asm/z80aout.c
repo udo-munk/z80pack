@@ -85,7 +85,8 @@ static const char *errmsg[] = {			/* error messages for asmerr */
 	"not in macro expansion",		/* 24 */
 	"macro expansion nested too deep",	/* 25 */
 	"too many local labels",		/* 26 */
-	"label address differs between passes"	/* 27 */
+	"label address differs between passes",	/* 27 */
+	"macro buffer overflow"			/* 28 */
 };
 
 static int nseq_flag;			/* flag for non-sequential ORG */

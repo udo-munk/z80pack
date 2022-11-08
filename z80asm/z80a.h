@@ -255,6 +255,7 @@ struct inc {
 #define E_MACNST	25	/* macro expansion nested too deep */
 #define E_OUTLCL	26	/* too many local labels */
 #define E_LBLDIF	27	/* label address differs between passes */
+#define E_MACOVF	28	/* macro buffer overflow */
 
 /*
  *	definition of fatal errors
