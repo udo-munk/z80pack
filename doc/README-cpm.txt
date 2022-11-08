@@ -1,6 +1,7 @@
 	Quickstart to run CP/M and MP/M on the Z80-CPU simulation
 
 1. Change to directory ~/z80pack-x.y/cpmsim/srcsim
+   If you use GNU make just type "make" and "make clean", otherwise
    make -f Makefile.operating-system
    make -f Makefile.operating-system clean
 This compiles the CPU and hardware emulation needed to run CP/M and MP/M.
@@ -30,7 +31,7 @@ mkdskimg:
 	input: mkdskimg <a | b | c | d | i | j | p>
 	output: in directory disks files drivea.dsk, driveb.dsk,
 		drivec.dsk, drived.dsk, drivei.dsk, drivej.dsk
-		and drivep.dsk
+		and drivep.dsk.
 		If directory disks doesn't exists the image files
 		are created in the current working directory.
 
@@ -59,14 +60,14 @@ cpmsend:
 	is AUX: for both directions.
 
 If one uses PIP to transfer files between the host system and the
-simulator, only send ASCII files, because pip uses CNTL-Z
+simulator, only send ASCII files, because pip uses CTRL-Z
 for EOF! To transfer a binary file from the host system to the
 simulator convert it to Intel hex format with bin2hex. This
 can be converted back to a binary file under CP/M with the LOAD
 command.
 
-Copy the both shell scripts cpmr.sh and cpmw.sh to ~/bin
-or /usr/local/bin. Edit the line with: 
+Copy both shell scripts cpmr.sh and cpmw.sh to ~/bin
+or /usr/local/bin. Edit the line with:
 	diskdir=~/z80pack-x.y/cpmsim/disks
 to the path where you have extracted the z80pack distribution.
 
@@ -77,7 +78,7 @@ cpmr:
 	and CP/M for text files. The user number 0-15 is optional.
 
 cpmw:
-	Uses cpmstools to write a file to a CP/M disk image.
+	Uses cpmtools to write a file to a CP/M disk image.
 	Usage: cpmw [-t] drive [user:]file
 	Option -t does the text file conversions between UNIX
 	and CP/M for text files. The user number 0-15 is optional.
