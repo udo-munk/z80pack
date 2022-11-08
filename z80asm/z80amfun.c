@@ -666,8 +666,8 @@ void mac_call(void)
 char *mac_next_parm(char *s)
 {
 	register char *t, *t1, c;
-	register int n;
-	register WORD w;
+	register int n, m;
+	register WORD w, v;
 
 	t1 = t = tmp;
 	n = 0;		/* <> bracket nesting level */
@@ -690,7 +690,7 @@ char *mac_next_parm(char *s)
 				*t++ = *s++;
 			}
 			*t++ = *s++;
-		} else if (n == 0 && *s == '%') {
+		} else if (*s == '%' && n == 0) {
 			/* evaluate as expression */
 			s++;
 			t1 = t;
@@ -714,16 +714,17 @@ char *mac_next_parm(char *s)
 				}
 			}
 			*t = '\0';
-			w = eval(t1);
-			if (w > 9999)
-				*t1++ = (w / 10000) + '0';
-			if (w > 999)
-				*t1++ = ((w / 1000) % 10) + '0';
-			if (w > 99)
-				*t1++ = ((w / 100) % 10) + '0';
-			if (w > 9)
-				*t1++ = ((w / 10) % 10) + '0';
-			*t1++ = (w % 10) + '0';
+			v = w = eval(t1);
+			for (m = 1; v > radix; m++)
+				v /= radix;
+			if (v > 9)
+				m++;
+			t1 += m;
+			for (t = t1; m > 0; m--) {
+				v = w % radix;
+				*--t = v + (v < 10 ? '0' : 'W');
+				w /= radix;
+			}
 			break;
 		} else if (*s == '^') {
 			/* escape next character */
