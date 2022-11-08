@@ -505,7 +505,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 			*t++ = *s++;
 		goto done;
 	}
-	n = 0;
+	n = 0;		/* <> bracket nesting level */
 	amp_flag = esc_flag = 0;
 	while (*s != '\n' && *s != '\0') {
 		if (IS_FSYM(*s)) {
@@ -670,7 +670,7 @@ char *mac_next_parm(char *s)
 	register WORD w;
 
 	t1 = t = tmp;
-	n = 0;
+	n = 0;		/* <> bracket nesting level */
 	while (IS_SPC(*s))
 		s++;
 	while (*s != '\0') {
@@ -690,7 +690,7 @@ char *mac_next_parm(char *s)
 				*t++ = *s++;
 			}
 			*t++ = *s++;
-		} else if (*s == '%') {
+		} else if (n == 0 && *s == '%') {
 			/* evaluate as expression */
 			s++;
 			t1 = t;
