@@ -84,7 +84,7 @@ static int mac_sort;				/* sort mode for iterator */
 static int mac_count;				/* number of macros defined */
 static struct expn *mac_expn;			/* macro expansion stack */
 static WORD mac_loc_cnt;			/* counter for LOCAL labels */
-static char expr[MAXLINE + 1];			/* expr buffer (for '%') */
+static char tmp[MAXLINE + 2];			/* temporary buffer */
 
 /*
  *	save string into allocated memory
@@ -505,7 +505,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 			*t++ = *s++;
 		goto done;
 	}
-	n = 0;
+	n = 0;		/* <> bracket nesting level */
 	amp_flag = esc_flag = 0;
 	while (*s != '\n' && *s != '\0') {
 		if (IS_FSYM(*s)) {
@@ -665,12 +665,12 @@ void mac_call(void)
  */
 char *mac_next_parm(char *s)
 {
-	register char *t, *t1, *u, c;
-	register int n;
-	register WORD w;
+	register char *t, *t1, c;
+	register int n, m;
+	register WORD w, v;
 
 	t1 = t = tmp;
-	n = 0;
+	n = 0;		/* <> bracket nesting level */
 	while (IS_SPC(*s))
 		s++;
 	while (*s != '\0') {
@@ -690,49 +690,41 @@ char *mac_next_parm(char *s)
 				*t++ = *s++;
 			}
 			*t++ = *s++;
-		} else if (*s == '%') {
+		} else if (*s == '%' && n == 0) {
 			/* evaluate as expression */
 			s++;
-			u = expr;
+			t1 = t;
 			while (*s != '\0' && *s != ',' && *s != COMMENT) {
 				if (*s == STRDEL || *s == STRDEL2) {
-					*u++ = c = *s++;
+					*t++ = c = *s++;
 					while (1) {
 						if (*s == '\0') {
 							asmerr(E_MISDEL);
 							return(NULL);
 						} else if (*s == c) {
-							*u++ = *s++;
+							*t++ = *s++;
 							if (*s != c)
 								break;
 						}
-						*u++ = *s++;
+						*t++ = *s++;
 					}
-				} else if (*s == '^') {
-					/* escape next character */
-					s++;
-					if (*s == '\0') {
-						asmerr(E_INVOPE);
-						return(NULL);
-					} else
-						*u++ = *s++;
 				} else {
-					*u++ = TO_UPP(*s);
+					*t++ = TO_UPP(*s);
 					s++;
 				}
 			}
-			*u = '\0';
-			w = eval(expr);
-			if (w > 9999)
-				*t++ = (w / 10000) + '0';
-			if (w > 999)
-				*t++ = ((w / 1000) % 10) + '0';
-			if (w > 99)
-				*t++ = ((w / 100) % 10) + '0';
-			if (w > 9)
-				*t++ = ((w / 10) % 10) + '0';
-			*t++ = (w % 10) + '0';
-			t1 = t;
+			*t = '\0';
+			v = w = eval(t1);
+			for (m = 1; v > radix; m++)
+				v /= radix;
+			if (v > 9)
+				m++;
+			t1 += m;
+			for (t = t1; m > 0; m--) {
+				v = w % radix;
+				*--t = v + (v < 10 ? '0' : 'W');
+				w /= radix;
+			}
 			break;
 		} else if (*s == '^') {
 			/* escape next character */

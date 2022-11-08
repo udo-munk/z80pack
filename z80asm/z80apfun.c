@@ -138,6 +138,7 @@ WORD op_radix(BYTE dummy1, BYTE dummy2)
 	UNUSED(dummy2);
 
 	a_mode = A_NONE;
+	radix = 10;
 	r = chk_byte(eval(operand));
 	if (r < 2 || r > 16)
 		asmerr(E_VALOUT);
