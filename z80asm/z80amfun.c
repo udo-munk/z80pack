@@ -27,6 +27,19 @@ extern WORD eval(char *);
 /* z80aout.c */
 extern void asmerr(int);
 
+#define CONCAT		'&'			/* parameter concatenation */
+#define LITERAL		'^'			/* literal character escape */
+#define BYVALUE		'%'			/* pass by value */
+#define LBRACK		'<'			/* left angle bracket */
+#define RBRACK		'>'			/* right angle bracket */
+
+#define NO_LITERAL	0			/* mac_subst lit_flag values */
+#define LIT_BEFORE	1
+
+#define NO_CONCAT	0			/* mac_subst cat_flag values */
+#define CAT_BEFORE	1
+#define CAT_AFTER	2
+
 struct dum {					/* macro dummy */
 	char *dum_name;				/* dummy name */
 	struct dum *dum_next;
@@ -494,21 +507,24 @@ const char *mac_get_local(struct expn *e, char *s)
 void mac_subst(char *t, char *s, struct expn *e,
 	       const char *(*getf)(struct expn *, char *))
 {
-	register char *s1, *t1, c;
+	register char *s1, *t0, *t1, c;
 	register const char *v;
-	register int n;
-	int amp_flag;	/* 0 = no &, 1 = & before, 2 = & after */
-	int esc_flag;	/* 0 = no ^, 1 = ^ before */
+	register int n, m;
+	int cat_flag;
+	int lit_flag;
 
 	if (*s == LINCOM || (*s == LINOPT && !IS_SYM(*(s + 1)))) {
 		while (*s != '\n' && *s != '\0')
 			*t++ = *s++;
 		goto done;
 	}
-	n = 0;		/* <> bracket nesting level */
-	amp_flag = esc_flag = 0;
+	t0 = t;
+	n = 0;		/* angle brackets nesting level */
+	cat_flag = NO_CONCAT;
+	lit_flag = NO_LITERAL;
 	while (*s != '\n' && *s != '\0') {
 		if (IS_FSYM(*s)) {
+			/* gather symbol */
 			s1 = s;
 			t1 = t;
 			*t++ = TO_UPP(*s);
@@ -519,96 +535,127 @@ void mac_subst(char *t, char *s, struct expn *e,
 			}
 			*t = '\0';
 			v = (*getf)(e, t1);
-			if (v == NULL || esc_flag) {
-				amp_flag = 0;
+			/* don't substitute dummy if leading LITERAL */
+			if (v == NULL || lit_flag == LIT_BEFORE) {
 				t = s;
 				s = s1;
 				s1 = t;
 				t = t1;
-				if (v != NULL && esc_flag)
+				/* remove leading LITERAL if dummy */
+				if (v != NULL && lit_flag == LIT_BEFORE)
 					t--;
 				while (s < s1)
 					*t++ = *s++;
-			} else {
-				t = t1;
-				if (amp_flag == 1)
-					t--;
-				while (*v != '\0')
-					*t++ = *v++;
-				if (*s == '&') {
-					amp_flag = 2;
-					s++;
-				} else
-					amp_flag = 0;
+				cat_flag = NO_CONCAT;
+				lit_flag = NO_LITERAL;
+				continue;
 			}
-			esc_flag = 0;
+			/* substitute dummy */
+			t = t1;
+			/* remove leading CONCAT */
+			if (cat_flag == CAT_BEFORE)
+				t--;
+			m = MAXLINE - (t - t0);
+			while (*v != '\0') {
+				if (m-- == 0) {
+					asmerr(E_MACOVF);
+					goto done;
+				}
+				*t++ = *v++;
+			}
+			/* skip trailing CONCAT */
+			if (*s == CONCAT) {
+				cat_flag = CAT_AFTER;
+				s++;
+			} else
+				cat_flag = NO_CONCAT;
+			lit_flag = NO_LITERAL;
 		} else if (*s == STRDEL || *s == STRDEL2) {
 			*t++ = c = *s++;
-			amp_flag = 0;
+			cat_flag = NO_CONCAT;
 			while (1) {
 				if (*s == '\n' || *s == '\0') {
 					asmerr(E_MISDEL);
 					goto done;
 				} else if (*s == c) {
-					amp_flag = 0;
+					cat_flag = NO_CONCAT;
 					*t++ = *s++;
-					if (*s != c)
+					if (*s != c) /* double delim? */
 						break;
 					else {
 						*t++ = *s++;
 						continue;
 					}
-				} else if (IS_FSYM(*s)) {
-					t1 = t;
+				} else if (!IS_FSYM(*s)) {
+					if (*s == CONCAT)
+						cat_flag = CAT_BEFORE;
+					else
+						cat_flag = NO_CONCAT;
 					*t++ = *s++;
-					while (IS_SYM(*s))
-						*t++ = *s++;
+					continue;
+				}
+				/* gather symbol */
+				t1 = t;
+				*t++ = *s++;
+				while (IS_SYM(*s))
+					*t++ = *s++;
+				/* subst. poss. dummy if CONCAT before/after */
+				if (cat_flag != NO_CONCAT || *s == CONCAT) {
 					*t = '\0';
-					if (amp_flag > 0 || *s == '&') {
-						v = (*getf)(e, t1);
-						if (v == NULL)
-							amp_flag = 0;
-						else {
-							t = t1;
-							if (amp_flag == 1)
-								t--;
-							while (*v != '\0')
-								*t++ = *v++;
-							if (*s == '&') {
-								amp_flag = 2;
-								s++;
-							} else
-								amp_flag = 0;
-						}
+					v = (*getf)(e, t1);
+					/* not a dummy? */
+					if (v == NULL) {
+						cat_flag = NO_CONCAT;
+						continue;
 					}
-				} else {
-					amp_flag = (*s == '&');
-					*t++ = *s++;
+					/* substitute dummy */
+					t = t1;
+					/* remove leading CONCAT */
+					if (cat_flag == CAT_BEFORE)
+						t--;
+					m = MAXLINE - (t - t0);
+					while (*v != '\0') {
+						if (m-- == 0) {
+							asmerr(E_MACOVF);
+							goto done;
+						}
+						*t++ = *v++;
+					}
+					/* skip trailing CONCAT */
+					if (*s == CONCAT) {
+						cat_flag = CAT_AFTER;
+						s++;
+					} else
+						cat_flag = NO_CONCAT;
 				}
 			}
-			esc_flag = 0;
+			lit_flag = NO_LITERAL;
 		} else if (*s == COMMENT && n == 0) {
+			/* don't copy double COMMENT comments */
 			if (*(s + 1) != COMMENT)
 				while (*s != '\n' && *s != '\0')
 					*t++ = *s++;
 			goto done;
 		} else {
-			if (*s == '<')
+			cat_flag = NO_CONCAT;
+			lit_flag = NO_LITERAL;
+			if (*s == LBRACK)
 				n++;
-			else if (*s == '>') {
+			else if (*s == RBRACK) {
 				if (n == 0) {
 					asmerr(E_INVOPE);
 					goto done;
 				} else
 					n--;
-			}
-			amp_flag = (*s == '&');
-			esc_flag = (*s == '^');
+			} else if (*s == CONCAT)
+				cat_flag = CAT_BEFORE;
+			else if (*s == LITERAL)
+				lit_flag = LIT_BEFORE;
 			*t++ = *s++;
 		}
 	}
 	if (n > 0)
-		asmerr(E_MISPAR);
+		asmerr(E_INVOPE);
 done:
 	*t++ = '\n';
 	*t = '\0';
@@ -670,7 +717,7 @@ char *mac_next_parm(char *s)
 	register WORD w, v;
 
 	t1 = t = tmp;
-	n = 0;		/* <> bracket nesting level */
+	n = 0;		/* angle brackets nesting level */
 	while (IS_SPC(*s))
 		s++;
 	while (*s != '\0') {
@@ -682,7 +729,7 @@ char *mac_next_parm(char *s)
 					asmerr(E_MISDEL);
 					return(NULL);
 				} else if (*s == c) {
-					if (*(s + 1) != c)
+					if (*(s + 1) != c) /* double delim? */
 						break;
 					else
 						s++;
@@ -690,8 +737,8 @@ char *mac_next_parm(char *s)
 				*t++ = *s++;
 			}
 			*t++ = *s++;
-		} else if (*s == '%' && n == 0) {
-			/* evaluate as expression */
+		} else if (*s == BYVALUE && n == 0) {
+			/* pass by value */
 			s++;
 			t1 = t;
 			while (*s != '\0' && *s != ',' && *s != COMMENT) {
@@ -715,36 +762,44 @@ char *mac_next_parm(char *s)
 			}
 			*t = '\0';
 			v = w = eval(t1);
+			/* count digits in current radix */
 			for (m = 1; v > radix; m++)
 				v /= radix;
 			if (v > 9)
 				m++;
 			t1 += m;
+			if (t1 - tmp > MAXLINE) {
+				asmerr(E_MACOVF);
+				return(NULL);
+			}
+			/* generate digits backwards in current radix */
 			for (t = t1; m > 0; m--) {
 				v = w % radix;
 				*--t = v + (v < 10 ? '0' : 'W');
 				w /= radix;
 			}
 			break;
-		} else if (*s == '^') {
-			/* escape next character */
+		} else if (*s == LITERAL) {
+			/* literalize next character */
 			s++;
 			if (*s == '\0') {
 				asmerr(E_INVOPE);
 				return(NULL);
 			} else
 				*t++ = *s++;
-		} else if (*s == '<') {
+		} else if (*s == LBRACK) {
+			/* remove top level LBRACK */
 			if (n > 0)
 				*t++ = *s++;
 			else
 				s++;
 			n++;
-		} else if (*s == '>') {
+		} else if (*s == RBRACK) {
 			if (n == 0) {
 				asmerr(E_INVOPE);
 				return(NULL);
 			} else {
+				/* remove top level RBRACK */
 				n--;
 				if (n > 0)
 					*t++ = *s++;
@@ -760,7 +815,7 @@ char *mac_next_parm(char *s)
 			*t++ = *s++;
 	}
 	if (n > 0) {
-		asmerr(E_MISPAR);
+		asmerr(E_INVOPE);
 		return(NULL);
 	}
 	*t1 = '\0';
