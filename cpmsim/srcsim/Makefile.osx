@@ -77,12 +77,12 @@ all: /tmp/.z80pack/cpmsim.auxin /tmp/.z80pack/cpmsim.auxout $(SIM)
 /tmp/.z80pack/cpmsim.auxin:
 	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
 	test -f /tmp/.z80pack/cpmsim.auxin || \
-		mknod /tmp/.z80pack/cpmsim.auxin p
+		mkfifo /tmp/.z80pack/cpmsim.auxin
 
 /tmp/.z80pack/cpmsim.auxout:
 	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
 	test -f /tmp/.z80pack/cpmsim.auxout || \
-		mknod /tmp/.z80pack/cpmsim.auxout p
+		mkfifo /tmp/.z80pack/cpmsim.auxout
 
 $(SIM): $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
