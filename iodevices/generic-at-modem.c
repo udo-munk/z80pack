@@ -26,8 +26,9 @@
 #include <sys/poll.h>
 #include <sys/time.h>
 #include <netdb.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 
 #include "libtelnet.h"
 
