@@ -28,7 +28,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <sys/time.h>
-#include <sys/timeb.h>
 #include <time.h>
 #include <unistd.h>
 #include "lp_utils.h"
