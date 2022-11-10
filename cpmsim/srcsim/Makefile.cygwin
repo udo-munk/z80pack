@@ -42,7 +42,6 @@ IO_DIR = ../../iodevices
 ###
 ### START O/S PLATFORM DEPENDENT VARIABLES
 ###
-CC = gcc
 EXEC = $(SIM).exe
 ###
 ### END O/S DEPENDENT VARIABLES

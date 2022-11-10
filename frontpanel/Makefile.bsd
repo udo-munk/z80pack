@@ -8,7 +8,6 @@ SRCS = jpeg.cpp lpanel.cpp lp_gfx.cpp lp_main.cpp lp_utils.cpp lp_window.cpp \
 ###
 ### START O/S PLATFORM DEPENDENT VARIABLES
 ###
-CXX = c++
 PLAT_INCS = -I/usr/local/include
 ###
 ### END O/S DEPENDENT VARIABLES

@@ -57,8 +57,6 @@ CIV_DIR = $(NET_DIR)/civetweb
 ###
 ### START O/S PLATFORM DEPENDENT VARIABLES
 ###
-CC = gcc
-CXX = g++
 EXEC = $(SIM).exe
 PLAT_LIBS = -lm -lpthread
 ###

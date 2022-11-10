@@ -44,10 +44,8 @@ VPATH = $(CORE_DIR) $(IO_DIR)
 ###
 include $(CORE_DIR)/Makefile.in-os
 
-CC = gcc
 EXEC = $(SIM)
 ifeq ($(TARGET_OS),BSD)
-CC = cc
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)

@@ -2,8 +2,6 @@
 # by default compile on POSIX compatible systems
 # the alternative options are provided for old ANSI C89 systems
 #
-CC = gcc
-#CC = cc
 #CC = acc
 
 CWARNS = -Wall -Wextra -Wwrite-strings

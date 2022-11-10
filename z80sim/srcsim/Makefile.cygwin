@@ -35,7 +35,6 @@ CORE_DIR = ../../z80core
 ###
 ### START O/S PLATFORM DEPENDENT VARIABLES
 ###
-CC = gcc
 EXEC = $(SIM).exe
 ###
 ### END O/S DEPENDENT VARIABLES
