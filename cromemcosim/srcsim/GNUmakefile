@@ -71,12 +71,8 @@ VPATH = $(CORE_DIR) $(IO_DIR) $(FP_DIR) $(NET_DIR) $(CIV_DIR)
 ###
 include $(CORE_DIR)/Makefile.in-os
 
-CC = gcc
-CXX = g++
 EXEC = $(SIM)
 ifeq ($(TARGET_OS),BSD)
-CC = cc
-CXX = c++
 PLAT_INCS = -I/usr/local/include
 PLAT_LDFLAGS = -L/usr/local/lib
 PLAT_LIBS = -lthr

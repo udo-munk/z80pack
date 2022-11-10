@@ -10,9 +10,7 @@ CORE_DIR = ../z80core
 ###
 include $(CORE_DIR)/Makefile.in-os
 
-CXX = g++
 ifeq ($(TARGET_OS),BSD)
-CXX = c++
 PLAT_INCS = -I/usr/local/include
 endif
 ifeq ($(TARGET_OS),WIN32)

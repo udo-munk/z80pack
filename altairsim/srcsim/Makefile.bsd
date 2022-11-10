@@ -55,8 +55,6 @@ FP_DIR = ../../frontpanel
 ###
 ### START O/S PLATFORM DEPENDENT VARIABLES
 ###
-CC = cc
-CXX = c++
 EXEC = $(SIM)
 PLAT_INCS = -I/usr/local/include
 PLAT_LDFLAGS = -L/usr/local/lib

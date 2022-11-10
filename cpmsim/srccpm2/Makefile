@@ -1,5 +1,3 @@
-CC = gcc
-
 CWARNS= -Wall -Wextra -Wwrite-strings
 CFLAGS= -O $(CWARNS)
 LDFLAGS= -s

@@ -4,9 +4,6 @@
 INSTALLDIR=${HOME}/bin
 #INSTALLDIR=/usr/local/bin
 
-#CC = cc
-CC = gcc
-
 CWARNS= -Wall -Wextra -Wwrite-strings
 CFLAGS= -O3 $(CWARNS)
 
