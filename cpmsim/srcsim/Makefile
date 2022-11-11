@@ -2,11 +2,11 @@
 ### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
-MACHINE = mostek
+MACHINE = cpm
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
-IO_SRCS = simbdos.c unix_terminal.c mostek-cpu.c mostek-fdc.c
+IO_SRCS = unix_terminal.c rtc.c simbdos.c
 # machine specifc libraries
 MACHINE_LIBS =
 
@@ -22,6 +22,12 @@ SYSCONFDIR = $(PREFIX)/etc
 HTMLDIR = $(DOCDIR)
 INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
 LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
+
+ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
+# system wide location for machines configuration files
+CONF_DIR = $(ROOT_DIR)/conf
+# system wide location for disk images
+DISKS_DIR = $(ROOT_DIR)/disks
 ###
 ### END MACHINE DEPENDENT VARIABLES
 ###
@@ -52,7 +58,7 @@ endif
 ### END O/S DEPENDENT VARIABLES
 ###
 
-DEFS =
+DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\"
 INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 
 CWARNS = -Wall -Wextra -Wwrite-strings
@@ -78,10 +84,20 @@ CORE_SRCS = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simd
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 OBJS = $(SRCS:.c=.o)
 
-all: $(SIM)
+all: /tmp/.z80pack/cpmsim.auxin /tmp/.z80pack/cpmsim.auxout $(SIM)
 	@echo
 	@echo "Done."
 	@echo
+
+/tmp/.z80pack/cpmsim.auxin:
+	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
+	test -f /tmp/.z80pack/cpmsim.auxin || \
+		mkfifo /tmp/.z80pack/cpmsim.auxin
+
+/tmp/.z80pack/cpmsim.auxout:
+	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
+	test -f /tmp/.z80pack/cpmsim.auxout || \
+		mkfifo /tmp/.z80pack/cpmsim.auxout
 
 $(SIM): $(OBJS) $(MACHINE_LIBS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
@@ -108,28 +124,7 @@ _rm_deps:
 
 allclean: clean
 	rm -f $(EXEC)
+	rm -f ../disks/drive*.dsk
+	rm -f ../auxiliaryin.txt ../auxiliaryout.txt ../printer.txt
 
-makerules:
-	@echo "# AUTOMATICALLY GENERATED DO NOT EDIT" >tmp.rules
-	@echo >>tmp.rules;
-	@for i in *.d; do \
-		sed -e 's;$(CORE_DIR);$$(CORE_DIR);g' \
-			-e 's;$(IO_DIR);$$(IO_DIR);g' <$$i >tmp.deps; \
-		cat tmp.deps >>tmp.rules; \
-		f=`sed 's/.*: \([^ ]*\).*/\1/;2,$$d' tmp.deps`; \
-		if grep -q '\.cpp' tmp.deps; then \
-			echo '	$$(CXX) $$(CXXFLAGS) -c -o $$@' $$f >>tmp.rules; \
-		else \
-			echo '	$$(CC) $$(CFLAGS) -c -o $$@' $$f >>tmp.rules; \
-		fi ; \
-		echo >>tmp.rules; \
-	done
-	@echo '# DO NOT PUT ANYTHING AFTER THIS LINE' >>tmp.rules;
-	@for i in Makefile.*; do \
-		sed '/^# AUTOMATICALLY GENERATED DO NOT EDIT/,$$d' <$$i >tmp.make; \
-		cat tmp.rules >>tmp.make; \
-		mv -f tmp.make $$i; \
-	done
-	@rm -f tmp.rules tmp.deps tmp.make
-
-.PHONY: all build install clean allclean makerules
+.PHONY: all build install clean allclean

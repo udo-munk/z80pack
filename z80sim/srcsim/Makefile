@@ -108,26 +108,4 @@ _rm_deps:
 allclean: clean
 	rm -f $(EXEC)
 
-makerules:
-	@echo "# AUTOMATICALLY GENERATED DO NOT EDIT" >tmp.rules
-	@echo >>tmp.rules;
-	@for i in *.d; do \
-		sed -e 's;$(CORE_DIR);$$(CORE_DIR);g' <$$i >tmp.deps; \
-		cat tmp.deps >>tmp.rules; \
-		f=`sed 's/.*: \([^ ]*\).*/\1/;2,$$d' tmp.deps`; \
-		if grep -q '\.cpp' tmp.deps; then \
-			echo '	$$(CXX) $$(CXXFLAGS) -c -o $$@' $$f >>tmp.rules; \
-		else \
-			echo '	$$(CC) $$(CFLAGS) -c -o $$@' $$f >>tmp.rules; \
-		fi ; \
-		echo >>tmp.rules; \
-	done
-	@echo '# DO NOT PUT ANYTHING AFTER THIS LINE' >>tmp.rules;
-	@for i in Makefile.*; do \
-		sed '/^# AUTOMATICALLY GENERATED DO NOT EDIT/,$$d' <$$i >tmp.make; \
-		cat tmp.rules >>tmp.make; \
-		mv -f tmp.make $$i; \
-	done
-	@rm -f tmp.rules tmp.deps tmp.make
-
-.PHONY: all build install clean allclean makerules
+.PHONY: all build install clean allclean

@@ -8,9 +8,11 @@ The frontpanel configuration files have small modifications from
 the released version at sourceforge, due to somewhat different directory
 structure of the packages.
 
+z80pack uses GNU make, so you must use "gmake" on BSD systems wherever
+"make" is used in the following text.
+
 To build the Altair 8800, IMSAI 8080 and Cromemco Z-1 emulations including
-the frontpanel and you use GNU make (usually the case on Linux, macOS, and
-Windows/Cygwin) build the simulated machines as follows:
+the frontpanel build the simulated machines as follows:
 
 cd ~/z80pack-x.y/altairsim/srcsim
 make
@@ -26,35 +28,6 @@ make clean
 
 If you don't want to include the frontpanel replace the first "make"
 command with "make FRONTPANEL=NO".
-
-Without GNU make first change to the directory ~/z80pack-x.y/frontpanel.
-There you'll find several files Makefile.operating-system, to build the
-library for your OS type:
-
-make -f Makefile.linux		for a Linux system
-make -f Makefile.osx		for an Apple macOS system
-...
-
-This will build the library libfrontpanel.a.
-
-After the library is in place build the simulated machines as follows:
-
-cd ~/z80pack-x.y/altairsim/srcsim
-make -f Makefile.operating.system
-make -f Makefile.operating-system clean
-
-cd ~/z80pack-x.y/imsaisim/srcsim
-make -f Makefile.operating-system
-make -f Makefile.operating-system clean
-
-cd ~/z80pack-x.y/cromemco/srcsim
-make -f Makefile.operating-system
-make -f Makefile.operating-system clean
-
-To build without the frontpanel you must first edit the file
-"Makefile.operating-system" and comment out the four lines after
-"# emulate a machine's frontpanel" and uncomment the four lines
-after "# no frontpanel emulation" and then run the "make" commands.
 
 To run the systems change into directory ~/z80pack-x.y/imsaisim
 and run the program imsasim. To load memory with the included

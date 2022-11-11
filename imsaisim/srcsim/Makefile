@@ -2,13 +2,13 @@
 ### START MACHINE DEPENDENT VARIABLES
 ###
 # (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
-MACHINE = cromemco
+MACHINE = imsai
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
-IO_SRCS = cromemco-wdi.c cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c cromemco-tu-art.c cromemco-hal.c unix_terminal.c unix_network.c simbdos.c netsrv.c generic-at-modem.c libtelnet.c diskmanager.c
+IO_SRCS = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c imsai-fif.c imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c unix_network.c netsrv.c generic-at-modem.c libtelnet.c rtc.c simbdos.c am9511.c floatcnv.c ova.c
 # machine specifc libraries
 MACHINE_LIBS = -lcivetweb
 
@@ -64,7 +64,7 @@ FP_DIR = ../../frontpanel
 NET_DIR = ../../webfrontend
 CIV_DIR = $(NET_DIR:=/civetweb)
 
-VPATH = $(CORE_DIR) $(IO_DIR) $(FP_DIR) $(NET_DIR) $(CIV_DIR)
+VPATH = $(CORE_DIR) $(IO_DIR) $(IO_DIR:=/apu) $(FP_DIR) $(NET_DIR) $(CIV_DIR)
 
 ###
 ### START O/S PLATFORM DEPENDENT VARIABLES
@@ -140,10 +140,10 @@ $(SIM): $(OBJS) $(MACHINE_LIBS) $(FP_LIB)
 -include $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
 
 -lcivetweb: $(CIV_DIR:=/Makefile)
-	make -B -C $(CIV_DIR)
+	$(MAKE) -B -C $(CIV_DIR)
 
--lfrontpanel: $(FP_DIR:=/GNUmakefile)
-	make -B -C $(FP_DIR)
+-lfrontpanel: $(FP_DIR:=/Makefile)
+	$(MAKE) -B -C $(FP_DIR)
 
 build: _rm_obj all
 
@@ -163,30 +163,6 @@ _rm_deps:
 allclean: clean
 	rm -f $(EXEC)
 	rm -f ../disks/drive*.dsk
-	rm -f ../lpt[12].txt
+	rm -f ../printer.txt
 
-makerules:
-	@echo "# AUTOMATICALLY GENERATED DO NOT EDIT" >tmp.rules
-	@echo >>tmp.rules;
-	@for i in *.d; do \
-		sed -e 's;$(CORE_DIR);$$(CORE_DIR);g' -e 's;$(IO_DIR);$$(IO_DIR);g' \
-			-e 's;$(FP_DIR);$$(FP_DIR);g' \-e 's;$(CIV_DIR);$$(CIV_DIR);g' \
-			-e 's;$(NET_DIR);$$(NET_DIR);g' <$$i >tmp.deps; \
-		cat tmp.deps >>tmp.rules; \
-		f=`sed 's/.*: \([^ ]*\).*/\1/;2,$$d' tmp.deps`; \
-		if grep -q '\.cpp' tmp.deps; then \
-			echo '	$$(CXX) $$(CXXFLAGS) -c -o $$@' $$f >>tmp.rules; \
-		else \
-			echo '	$$(CC) $$(CFLAGS) -c -o $$@' $$f >>tmp.rules; \
-		fi ; \
-		echo >>tmp.rules; \
-	done
-	@echo '# DO NOT PUT ANYTHING AFTER THIS LINE' >>tmp.rules;
-	@for i in Makefile.*; do \
-		sed '/^# AUTOMATICALLY GENERATED DO NOT EDIT/,$$d' <$$i >tmp.make; \
-		cat tmp.rules >>tmp.make; \
-		mv -f tmp.make $$i; \
-	done
-	@rm -f tmp.rules tmp.deps tmp.make
-
-.PHONY: all build install clean allclean makerules
+.PHONY: all build install clean allclean
