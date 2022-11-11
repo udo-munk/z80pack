@@ -1,9 +1,11 @@
 	Quickstart to run CP/M and MP/M on the Z80-CPU simulation
 
+z80pack uses GNU make, so you must use "gmake" on BSD systems wherever
+"make" is used in the following text.
+
 1. Change to directory ~/z80pack-x.y/cpmsim/srcsim
-   If you use GNU make just type "make" and "make clean", otherwise
-   make -f Makefile.operating-system
-   make -f Makefile.operating-system clean
+   make
+   make clean
 This compiles the CPU and hardware emulation needed to run CP/M and MP/M.
 
 2. Change to directory ~/z80pack-x.y/cpmsim/srctools
