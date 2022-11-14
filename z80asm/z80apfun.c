@@ -309,7 +309,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 	a_mode = A_NONE;
 	switch(op_code) {
 	case 1:				/* EJECT and PAGE */
-		if (*operand != '\0') {
+		if (operand[0] != '\0') {
 			if ((pass == 1 && !page_done) || pass == 2) {
 				n = chk_byte(eval(operand));
 				if (n != 0 && (n < 6 || n > 144))
@@ -549,7 +549,7 @@ WORD op_end(BYTE dummy1, BYTE dummy2)
 	UNUSED(dummy1);
 	UNUSED(dummy2);
 
-	if (pass == 2 && *operand != '\0')
+	if (pass == 2 && operand[0] != '\0')
 		start_addr = eval(operand);
 	return(0);
 }

@@ -364,12 +364,12 @@ int process_line(char *l)
 	else {
 		p = get_symbol(label, l, 1);
 		p = get_symbol(opcode, p, 0);
-		lbl_flag = (gencode && *label != '\0');
+		lbl_flag = (gencode && label[0] != '\0');
 		if (mac_def_nest > 0) {
-			if (*opcode != '\0')
+			if (opcode[0] != '\0')
 				op = search_op(opcode);
 			mac_add_line(op, l);
-		} else if (*opcode == '\0') {
+		} else if (opcode[0] == '\0') {
 			a_mode = A_NONE;
 			if (gencode) {
 				if (lbl_flag) {
@@ -396,8 +396,8 @@ int process_line(char *l)
 						put_label();
 			}
 			p = get_operand(operand, p, op->op_flags & OP_NOPRE);
-			if (*operand != '\0' && *operand != COMMENT
-					     && (op->op_flags & OP_NOOPR))
+			if (operand[0] != '\0' && operand[0] != COMMENT
+					       && (op->op_flags & OP_NOOPR))
 				asmerr(E_INVOPE);
 			else if (gencode || (op->op_flags & OP_COND)) {
 				if (pass == 2 && (op->op_flags & OP_INCL)) {
