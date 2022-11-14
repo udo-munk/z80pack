@@ -680,9 +680,10 @@ static int edop(const char *s, WORD a)
  */
 static int ddfd(const char *s, WORD a)
 {
-	register BYTE b2, b4;
+	register BYTE b2, b4, off;
 	register int r1, r2;
 	register const char **ireg;
+	register char sign;
 
 	UNUSED(s);
 
@@ -691,6 +692,12 @@ static int ddfd(const char *s, WORD a)
 	else
 		ireg = regiy;
 	b2 = getmem(a + 1);
+	sign = '+';
+	off = getmem(a + 2);
+	if (off > 127) {
+		sign = '-';
+		off = -off;
+	}
 	r1 = (b2 >> 3) & 7;
 	r2 = b2 & 7;
 	if (b2 < 0x40) {
@@ -743,16 +750,16 @@ static int ddfd(const char *s, WORD a)
 				getmem(a + 2));
 			return(3);
 		case 0x34:
-			sprintf(Disass_Str, "INC\t(%s+%02X)", ireg[6],
-				getmem(a + 2));
+			sprintf(Disass_Str, "INC\t(%s%c%02X)",
+				ireg[6], sign, off);
 			return(3);
 		case 0x35:
-			sprintf(Disass_Str, "DEC\t(%s+%02X)", ireg[6],
-				getmem(a + 2));
+			sprintf(Disass_Str, "DEC\t(%s%c%02X)",
+				ireg[6], sign, off);
 			return(3);
 		case 0x36:
-			sprintf(Disass_Str, "LD\t(%s+%02X),%02X", ireg[6],
-				getmem(a + 2), getmem(a + 3));
+			sprintf(Disass_Str, "LD\t(%s%c%02X),%02X",
+				ireg[6], sign, off, getmem(a + 3));
 			return(4);
 		case 0x39:
 			sprintf(Disass_Str, "ADD\t%s,SP", ireg[6]);
@@ -767,12 +774,12 @@ static int ddfd(const char *s, WORD a)
 			strcpy(Disass_Str, "NOP*");
 			return(1);
 		} else if (r1 == 6) {
-			sprintf(Disass_Str, "LD\t(%s+%02X),%s", ireg[r1],
-				getmem(a + 2), reg[r2]);
+			sprintf(Disass_Str, "LD\t(%s%c%02X),%s",
+				ireg[r1], sign, off, reg[r2]);
 			return(3);
 		} else if (r2 == 6) {
-			sprintf(Disass_Str, "LD\t%s,(%s+%02X)", reg[r1],
-				ireg[r2], getmem(a + 2));
+			sprintf(Disass_Str, "LD\t%s,(%s%c%02X)",
+				reg[r1], ireg[r2], sign, off);
 			return(3);
 		} else {				/* undocumented */
 			sprintf(Disass_Str, "LD*\t%s,%s", ireg[r1], ireg[r2]);
@@ -783,8 +790,8 @@ static int ddfd(const char *s, WORD a)
 			strcpy(Disass_Str, "NOP*");
 			return(1);
 		} else if (r2 == 6) {
-			sprintf(Disass_Str, "%s(%s+%02X)", aluins[r1],
-				ireg[r2], getmem(a + 2));
+			sprintf(Disass_Str, "%s(%s%c%02X)", aluins[r1],
+				ireg[r2], sign, off);
 			return(3);
 		} else {				/* undocumented */
 			sprintf(Disass_Str, "%s%s", aluinsu[r1], ireg[r2]);
@@ -796,31 +803,34 @@ static int ddfd(const char *s, WORD a)
 			b4 = getmem(a + 3);
 			if ((b4 & 7) == 6) {
 				if (b4 < 0x40)
-					sprintf(Disass_Str, "%s\t(%s+%02X)",
-						rsins[b4 >> 3], ireg[6],
-						getmem(a + 2));
+					sprintf(Disass_Str, "%s\t(%s%c%02X)",
+						rsins[b4 >> 3],
+						ireg[6], sign, off);
 				else
-					sprintf(Disass_Str, "%s\t%c,(%s+%02X)",
+					sprintf(Disass_Str,
+						"%s\t%c,(%s%c%02X)",
 						bitins[b4 >> 6],
 						((b4 >> 3) & 7) + '0',
-						ireg[6], getmem(a + 2));
+						ireg[6], sign, off);
 			} else {
 				if (b4 < 0x40)		/* undocumented */
-					sprintf(Disass_Str, "%s\t(%s+%02X),%s",
-						rsinsu[b4 >> 3], ireg[6],
-						getmem(a + 2), reg[b4 & 7]);
+					sprintf(Disass_Str,
+						"%s\t(%s%c%02X),%s",
+						rsinsu[b4 >> 3],
+						ireg[6], sign, off,
+						reg[b4 & 7]);
 				else if (b4 < 0x80)	/* undocumented */
 					sprintf(Disass_Str,
-						"%s*\t%c,(%s+%02X)",
+						"%s*\t%c,(%s%c%02X)",
 						bitins[b4 >> 6],
 						((b4 >> 3) & 7) + '0',
-						ireg[6], getmem(a + 2));
+						ireg[6], sign, off);
 				else			/* undocumented */
 					sprintf(Disass_Str,
-						"%s*\t%c,(%s+%02X),%s",
+						"%s*\t%c,(%s%c%02X),%s",
 						bitins[b4 >> 6],
 						((b4 >> 3) & 7) + '0',
-						ireg[6], getmem(a + 2),
+						ireg[6], sign, off,
 						reg[b4 & 7]);
 			}
 			return(4);
