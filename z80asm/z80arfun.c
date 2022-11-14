@@ -482,12 +482,14 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		asmerr(E_MISOPE);
 		break;
 	default:
-		if (strncmp(operand, "(IX+", 4) == 0	/* LD (I[XY]+d),? */
-		    || strncmp(operand, "(IY+", 4) == 0)
+		if (operand[0] == '(' && operand[1] == 'I'
+		    && (operand[2] == 'X' || operand[2] == 'Y')
+		    && (operand[3] == '+' || operand[3] == '-'))
+					/* LD (I[XY][+-]d),? */
 			len = ldiixy(operand[2] == 'Y' ? 0xfd : 0xdd,
 				     base_op + (REGIHL & OPMASK3), sec);
-		else if (*operand == '(')		/* LD (nn),? */
-			len = ldinn(sec);
+		else if (operand[0] == '(')
+			len = ldinn(sec); /* LD (nn),? */
 		else {			/* invalid operand */
 			len = 1;
 			ops[0] = 0;
@@ -557,14 +559,15 @@ WORD ldreg(BYTE base_op, char *sec)
 		}
 		break;
 	case NOREG:			/* operand isn't register */
-		if (strncmp(sec, "(IX+", 4) == 0
-		    || strncmp(sec, "(IY+", 4) == 0) {
-			len = 3;	/* LD reg,(I[XY]+d) */
+		if (*sec == '(' && *(sec + 1) == 'I'
+		    && (*(sec + 2) == 'X' || *(sec + 2) == 'Y')
+		    && (*(sec + 3) == '+' || *(sec + 3) == '-')) {
+			len = 3;	/* LD reg,(I[XY][+-]d) */
 			if (pass == 2) {
-				*(sec + 3) = '('; /* replace '+' */
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK0);
-				ops[2] = chk_sbyte(eval(sec + 3));
+				*(sec + 2) = '('; /* replace [XY] */
+				ops[2] = chk_sbyte(eval(sec + 2));
 			}
 		} else if (base_op == 0x78 /* only for A */
 			   && *sec == '(' && *(sec + strlen(sec) - 1) == ')') {
@@ -770,7 +773,7 @@ WORD ldihl(BYTE base_op, char *sec)
 }
 
 /*
- *	LD (I[XY]+d),?
+ *	LD (I[XY][+-]d),?
  */
 WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 {
@@ -778,28 +781,28 @@ WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 	register WORD len;
 
 	switch (op = get_reg(sec)) {
-	case REGA:			/* LD (I[XY]+d),A */
-	case REGB:			/* LD (I[XY]+d),B */
-	case REGC:			/* LD (I[XY]+d),C */
-	case REGD:			/* LD (I[XY]+d),D */
-	case REGE:			/* LD (I[XY]+d),E */
-	case REGH:			/* LD (I[XY]+d),H */
-	case REGL:			/* LD (I[XY]+d),L */
+	case REGA:			/* LD (I[XY][+-]d),A */
+	case REGB:			/* LD (I[XY][+-]d),B */
+	case REGC:			/* LD (I[XY][+-]d),C */
+	case REGD:			/* LD (I[XY][+-]d),D */
+	case REGE:			/* LD (I[XY][+-]d),E */
+	case REGH:			/* LD (I[XY][+-]d),H */
+	case REGL:			/* LD (I[XY][+-]d),L */
 		len = 3;
 		if (pass == 2) {
-			operand[3] = '('; /* replace '+' */
 			ops[0] = prefix;
 			ops[1] = base_op + (op & OPMASK0);
-			ops[2] = chk_sbyte(eval(&operand[3]));
+			operand[2] = '('; /* replace [XY] */
+			ops[2] = chk_sbyte(eval(&operand[2]));
 		}
 		break;
-	case NOREG:			/* LD (I[XY]+d),n */
+	case NOREG:			/* LD (I[XY][+-]d),n */
 		len = 4;
 		if (pass == 2) {
-			operand[3] = '('; /* replace '+' */
 			ops[0] = prefix;
 			ops[1] = base_op - 0x40 + (REGIHL & OPMASK0);
-			ops[2] = chk_sbyte(eval(&operand[3]));
+			operand[2] = '('; /* replace [XY] */
+			ops[2] = chk_sbyte(eval(&operand[2]));
 			ops[3] = chk_byte(eval(sec));
 		}
 		break;
@@ -1056,14 +1059,15 @@ WORD op_decinc(BYTE base_op, BYTE base_op16)
 		ops[1] = base_op + (op & OPMASK3);
 		break;
 	case NOREG:			/* operand isn't register */
-		if (strncmp(operand, "(IX+", 4) == 0
-		    || strncmp(operand, "(IY+", 4) == 0) {
-			len = 3;	/* INC/DEC (I[XY]+d) */
+		if (operand[0] == '(' && operand[1] == 'I'
+		    && (operand[2] == 'X' || operand[2] == 'Y')
+		    && (operand[3] == '+' || operand[3] == '-')) {
+			len = 3;	/* INC/DEC (I[XY][+-]d) */
 			if (pass == 2) {
-				operand[3] = '('; /* replace '+' */
 				ops[0] = (operand[2] == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK3);
-				ops[2] = chk_sbyte(eval(&operand[3]));
+				operand[2] = '('; /* replace [XY] */
+				ops[2] = chk_sbyte(eval(&operand[2]));
 			}
 		} else {
 			len = 1;
@@ -1123,14 +1127,15 @@ WORD aluop(BYTE base_op, char *sec)
 		ops[1] = base_op + (op & OPMASK0);
 		break;
 	case NOREG:			/* operand isn't register */
-		if (strncmp(sec, "(IX+", 4) == 0
-		    || strncmp(sec, "(IY+", 4) == 0) {
-			len = 3;	/* ALUOP {A,}(I[XY]+d) */
+		if (*sec == '(' && *(sec + 1) == 'I'
+		    && (*(sec + 2) == 'X' || *(sec + 2) == 'Y')
+		    && (*(sec + 3) == '+' || *(sec + 3) == '-')) {
+			len = 3;	/* ALUOP {A,}(I[XY][+-]d) */
 			if (pass == 2) {
-				*(sec + 3) = '('; /* replace '+' */
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK0);
-				ops[2] = chk_sbyte(eval(sec + 3));
+				*(sec + 2) = '('; /* replace [XY] */
+				ops[2] = chk_sbyte(eval(sec + 2));
 			}
 		} else {
 			len = 2;	/* ALUOP {A,}n */
@@ -1162,7 +1167,7 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 	register BYTE op;
 
 	sec = next_arg(operand, NULL);
-	if (*operand == '\0') {		/* missing operand */
+	if (operand[0] == '\0') {	/* missing operand */
 		ops[0] = 0;
 		ops[1] = 0;
 		asmerr(E_MISOPE);
@@ -1321,9 +1326,11 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 		ops[0] = 0xcb;
 		ops[1] = base_op + bit + (op & OPMASK0);
 		break;
-	case NOREG:			/* CBOP {n,}(I[XY]+d){,reg} */
-		if (strncmp(sec, "(IX+", 4) == 0
-		    || strncmp(sec, "(IY+", 4) == 0)
+	case NOREG:
+		if (*sec == '(' && *(sec + 1) == 'I'
+		    && (*(sec + 2) == 'X' || *(sec + 2) == 'Y')
+		    && (*(sec + 3) == '+' || *(sec + 3) == '-'))
+					/* CBOP {n,}(I[XY][+-]d){,reg} */
 			len = cbgrp_iixy(*(sec + 2) == 'Y' ? 0xfd : 0xdd,
 					 base_op, bit, sec);
 		else {			/* invalid operand */
@@ -1346,7 +1353,7 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 }
 
 /*
- *	CBOP {n,}(I[XY]+d){,reg}
+ *	CBOP {n,}(I[XY][+-]d){,reg}
  */
 WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 {
@@ -1357,18 +1364,18 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 	if (tert != NULL) {
 		if (undoc_flag && base_op != 0x40) { /* not for BIT */
 			switch (op = get_reg(tert)) {
-			case REGA:	/* CBOP {n,}(I[XY]+d),A (undoc) */
-			case REGB:	/* CBOP {n,}(I[XY]+d),B (undoc) */
-			case REGC:	/* CBOP {n,}(I[XY]+d),C (undoc) */
-			case REGD:	/* CBOP {n,}(I[XY]+d),D (undoc) */
-			case REGE:	/* CBOP {n,}(I[XY]+d),E (undoc) */
-			case REGH:	/* CBOP {n,}(I[XY]+d),H (undoc) */
-			case REGL:	/* CBOP {n,}(I[XY]+d),L (undoc) */
+			case REGA:	/* CBOP {n,}(I[XY][+-]d),A (undoc) */
+			case REGB:	/* CBOP {n,}(I[XY][+-]d),B (undoc) */
+			case REGC:	/* CBOP {n,}(I[XY][+-]d),C (undoc) */
+			case REGD:	/* CBOP {n,}(I[XY][+-]d),D (undoc) */
+			case REGE:	/* CBOP {n,}(I[XY][+-]d),E (undoc) */
+			case REGH:	/* CBOP {n,}(I[XY][+-]d),H (undoc) */
+			case REGL:	/* CBOP {n,}(I[XY][+-]d),L (undoc) */
 				if (pass == 2) {
-					*(sec + 3) = '('; /* replace '+' */
 					ops[0] = prefix;
 					ops[1] = 0xcb;
-					ops[2] = chk_sbyte(eval(sec + 3));
+					*(sec + 2) = '('; /* replace [XY] */
+					ops[2] = chk_sbyte(eval(sec + 2));
 					ops[3] = base_op + bit
 							 + (op & OPMASK0);
 				}
@@ -1394,11 +1401,11 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 			ops[3] = 0;
 			asmerr(E_INVOPE);
 		}
-	} else if (pass == 2) {		/* CBOP {n,}(I[XY]+d) */
-		*(sec + 3) = '(';	/* replace '+' */
+	} else if (pass == 2) {		/* CBOP {n,}(I[XY][+-]d) */
 		ops[0] = prefix;
 		ops[1] = 0xcb;
-		ops[2] = chk_sbyte(eval(sec + 3));
+		*(sec + 2) = '(';	/* replace [XY] */
+		ops[2] = chk_sbyte(eval(sec + 2));
 		ops[3] = base_op + bit + (REGIHL & OPMASK0);
 	}
 	return(4);
