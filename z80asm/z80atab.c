@@ -23,7 +23,7 @@
  */
 
 /*
- *	symbol table functions
+ *	symbol table module
  */
 
 #include <stdlib.h>

@@ -23,7 +23,7 @@
  */
 
 /*
- *	opcode tables and functions for setup and lookup
+ *	opcode tables module with setup and lookup functions
  */
 
 #include <stdlib.h>

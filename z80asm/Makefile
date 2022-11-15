@@ -2,6 +2,7 @@
 # by default compile on POSIX compatible systems
 # the alternative options are provided for old ANSI C89 systems
 #
+
 #CC = acc
 
 CWARNS = -Wall -Wextra -Wwrite-strings
@@ -48,7 +49,7 @@ z80arfun.o: z80arfun.c z80a.h z80aglb.h
 z80apfun.o: z80apfun.c z80a.h z80aglb.h
 	$(CC) $(CFLAGS) -c z80apfun.c
 
-z80aopc.o: z80aopc.c z80a.h
+z80aopc.o: z80aopc.c z80a.h z80aglb.h
 	$(CC) $(CFLAGS) -c z80aopc.c
 
 z80aglb.o: z80aglb.c z80a.h

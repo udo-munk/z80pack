@@ -22,6 +22,10 @@
  *	25-OCT-2022 Intel-like macros (TE)
  */
 
+/*
+ *	expression parser and evaluator module
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
