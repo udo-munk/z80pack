@@ -23,8 +23,7 @@
  */
 
 /*
- *	this module contains all global variables other
- *	than CPU specific tables
+ *	this module contains all global variables
  */
 
 #include <stdio.h>
