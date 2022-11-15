@@ -143,16 +143,17 @@ struct inc {
 #define REGHL		0041	/* register pair HL */
 #define REGAF		0061	/* register pair AF */
 #define REGPSW		0061	/* register pair AF (8080) */
-#define REGSP		0062	/* register SP */
-#define REGIBC		0003	/* register indirect BC */
-#define REGIDE		0023	/* register indirect DE */
-#define REGISP		0063	/* register indirect SP */
+#define REGAFA		0062	/* register pair AF' */
+#define REGSP		0063	/* register SP */
+#define REGIBC		0004	/* register indirect BC */
+#define REGIDE		0024	/* register indirect DE */
+#define REGISP		0064	/* register indirect SP */
 #define REGIX		0240	/* register IX */
 #define REGIIX		0260	/* register indirect IX */
 #define REGIY		0340	/* register IY */
 #define REGIIY		0360	/* register indirect IY */
-#define REGI		0004	/* register I */
-#define REGR		0014	/* register R */
+#define REGI		0005	/* register I */
+#define REGR		0015	/* register R */
 #define FLGNZ		0100	/* flag not zero */
 #define FLGZ		0110	/* flag zero */
 #define FLGNC		0120	/* flag no carry */

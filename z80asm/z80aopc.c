@@ -232,6 +232,7 @@ static struct ope opetab_z80[] = {
 	{ "(SP)",	REGISP,	0	  },
 	{ "A",		REGA,	0	  },
 	{ "AF",		REGAF,	0	  },
+	{ "AF'",	REGAFA,	0	  },
 	{ "B",		REGB,	0	  },
 	{ "BC",		REGBC,	0	  },
 	{ "C",		REGC,	0	  },
