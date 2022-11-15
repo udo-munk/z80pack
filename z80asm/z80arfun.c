@@ -883,7 +883,7 @@ WORD ldinn(char *sec)
 }
 
 /*
- *	ADD ?,?
+ *	ADD {?,}?
  */
 WORD op_add(BYTE base_op, BYTE base_op16)
 {
@@ -892,18 +892,62 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
-	switch (get_reg(operand)) {
-	case REGA:			/* ADD A,? */
-		len = aluop(base_op, sec);
-		break;
-	case REGHL:			/* ADD HL,? */
-		switch (op = get_reg(sec)) {
-		case REGBC:		/* ADD HL,BC */
-		case REGDE:		/* ADD HL,DE */
-		case REGHL:		/* ADD HL,HL */
-		case REGSP:		/* ADD HL,SP */
-			len = 1;
-			ops[0] = base_op16 + (op & OPMASK3);
+	if (sec == NULL)		/* ADD ? */
+		len = aluop(base_op, operand);
+	else {
+		switch (get_reg(operand)) {
+		case REGA:		/* ADD A,? */
+			len = aluop(base_op, sec);
+			break;
+		case REGHL:		/* ADD HL,? */
+			switch (op = get_reg(sec)) {
+			case REGBC:	/* ADD HL,BC */
+			case REGDE:	/* ADD HL,DE */
+			case REGHL:	/* ADD HL,HL */
+			case REGSP:	/* ADD HL,SP */
+				len = 1;
+				ops[0] = base_op16 + (op & OPMASK3);
+				break;
+			case NOOPERA:	/* missing operand */
+				asmerr(E_MISOPE);
+				break;
+			default:	/* invalid operand */
+				asmerr(E_INVOPE);
+			}
+			break;
+		case REGIX:		/* ADD IX,? */
+			switch (op = get_reg(sec)) {
+			case REGBC:	/* ADD IX,BC */
+			case REGDE:	/* ADD IX,DE */
+			case REGIX:	/* ADD IX,IX */
+			case REGSP:	/* ADD IX,SP */
+				len = 2;
+				ops[0] = 0xdd;
+				ops[1] = base_op16 + (op & OPMASK3);
+				break;
+			case NOOPERA:	/* missing operand */
+				asmerr(E_MISOPE);
+				break;
+			default:	/* invalid operand */
+				asmerr(E_INVOPE);
+			}
+			break;
+		case REGIY:		/* ADD IY,? */
+			switch (op = get_reg(sec)) {
+			case REGBC:	/* ADD IY,BC */
+			case REGDE:	/* ADD IY,DE */
+			case REGIY:	/* ADD IY,IY */
+			case REGSP:	/* ADD IY,SP */
+				len = 2;
+				ops[0] = 0xfd;
+				ops[1] = base_op16 + (op & OPMASK3);
+				break;
+			case NOOPERA:	/* missing operand */
+				asmerr(E_MISOPE);
+				break;
+			default:	/* invalid operand */
+				asmerr(E_INVOPE);
+			}
 			break;
 		case NOOPERA:		/* missing operand */
 			asmerr(E_MISOPE);
@@ -911,52 +955,12 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
 		}
-		break;
-	case REGIX:			/* ADD IX,? */
-		switch (op = get_reg(sec)) {
-		case REGBC:		/* ADD IX,BC */
-		case REGDE:		/* ADD IX,DE */
-		case REGIX:		/* ADD IX,IX */
-		case REGSP:		/* ADD IX,SP */
-			len = 2;
-			ops[0] = 0xdd;
-			ops[1] = base_op16 + (op & OPMASK3);
-			break;
-		case NOOPERA:		/* missing operand */
-			asmerr(E_MISOPE);
-			break;
-		default:		/* invalid operand */
-			asmerr(E_INVOPE);
-		}
-		break;
-	case REGIY:			/* ADD IY,? */
-		switch (op = get_reg(sec)) {
-		case REGBC:		/* ADD IY,BC */
-		case REGDE:		/* ADD IY,DE */
-		case REGIY:		/* ADD IY,IY */
-		case REGSP:		/* ADD IY,SP */
-			len = 2;
-			ops[0] = 0xfd;
-			ops[1] = base_op16 + (op & OPMASK3);
-			break;
-		case NOOPERA:		/* missing operand */
-			asmerr(E_MISOPE);
-			break;
-		default:		/* invalid operand */
-			asmerr(E_INVOPE);
-		}
-		break;
-	case NOOPERA:			/* missing operand */
-		asmerr(E_MISOPE);
-		break;
-	default:			/* invalid operand */
-		asmerr(E_INVOPE);
 	}
 	return(len);
 }
 
 /*
- *	SBC ?,? and ADC ?,?
+ *	SBC {?,}? and ADC {?,}?
  */
 WORD op_sbadc(BYTE base_op, BYTE base_op16)
 {
@@ -965,19 +969,29 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
-	switch (get_reg(operand)) {
-	case REGA:			/* SBC/ADC A,? */
-		len = aluop(base_op, sec);
-		break;
-	case REGHL:			/* SBC/ADC HL,? */
-		switch (op = get_reg(sec)) {
-		case REGBC:		/* SBC/ADC HL,BC */
-		case REGDE:		/* SBC/ADC HL,DE */
-		case REGHL:		/* SBC/ADC HL,HL */
-		case REGSP:		/* SBC/ADC HL,SP */
-			len = 2;
-			ops[0] = 0xed;
-			ops[1] = base_op16 + (op & OPMASK3);
+	if (sec == NULL)		/* SBC/ADC ? */
+		len = aluop(base_op, operand);
+	else {
+		switch (get_reg(operand)) {
+		case REGA:		/* SBC/ADC A,? */
+			len = aluop(base_op, sec);
+			break;
+		case REGHL:		/* SBC/ADC HL,? */
+			switch (op = get_reg(sec)) {
+			case REGBC:	/* SBC/ADC HL,BC */
+			case REGDE:	/* SBC/ADC HL,DE */
+			case REGHL:	/* SBC/ADC HL,HL */
+			case REGSP:	/* SBC/ADC HL,SP */
+				len = 2;
+				ops[0] = 0xed;
+				ops[1] = base_op16 + (op & OPMASK3);
+				break;
+			case NOOPERA:	/* missing operand */
+				asmerr(E_MISOPE);
+				break;
+			default:	/* invalid operand */
+				asmerr(E_INVOPE);
+			}
 			break;
 		case NOOPERA:		/* missing operand */
 			asmerr(E_MISOPE);
@@ -985,12 +999,6 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
 		}
-		break;
-	case NOOPERA:			/* missing operand */
-		asmerr(E_MISOPE);
-		break;
-	default:			/* invalid operand */
-		asmerr(E_INVOPE);
 	}
 	return(len);
 }
@@ -1095,7 +1103,7 @@ WORD op_alu(BYTE base_op, BYTE dummy)
 }
 
 /*
- *	ADD A, ADC A, SUB {A}, SBC A, AND {A}, XOR {A}, OR {A}, CP {A}
+ *	ADD {A}, ADC {A}, SUB {A}, SBC {A}, AND {A}, XOR {A}, OR {A}, CP {A}
  */
 WORD aluop(BYTE base_op, char *sec)
 {
