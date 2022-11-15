@@ -192,22 +192,22 @@ WORD op_ret(BYTE base_op, BYTE base_opc)
 	register BYTE op;
 
 	switch (op = get_reg(operand)) {
-	case NOOPERA:		/* RET */
+	case NOOPERA:			/* RET */
 		ops[0] = base_op;
 		break;
-	case REGC:		/* RET C */
-	case FLGNC:		/* RET NC */
-	case FLGZ:		/* RET Z */
-	case FLGNZ:		/* RET NZ */
-	case FLGPE:		/* RET PE */
-	case FLGPO:		/* RET PO */
-	case FLGM:		/* RET M */
-	case FLGP:		/* RET P */
+	case REGC:			/* RET C */
+	case FLGNC:			/* RET NC */
+	case FLGZ:			/* RET Z */
+	case FLGNZ:			/* RET NZ */
+	case FLGPE:			/* RET PE */
+	case FLGPO:			/* RET PO */
+	case FLGM:			/* RET M */
+	case FLGP:			/* RET P */
 		if (op == REGC)
 			op = FLGC;
 		ops[0] = base_opc + (op & OPMASK3);
 		break;
-	default:		/* invalid operand */
+	default:			/* invalid operand */
 		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
@@ -1401,7 +1401,7 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 	register BYTE op;
 
 	tert = next_arg(sec, NULL);
-	if (tert == NULL) {	/* CBOP {n,}(I[XY]{[+-]d}) */
+	if (tert == NULL) {		/* CBOP {n,}(I[XY]{[+-]d}) */
 		if (pass == 2) {
 			ops[0] = prefix;
 			ops[1] = 0xcb;
@@ -1417,13 +1417,13 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 	}
 	if (undoc_flag && base_op != 0x40) { /* not for BIT */
 		switch (op = get_reg(tert)) {
-		case REGA:	/* CBOP {n,}(I[XY]{[+-]d}),A (undoc) */
-		case REGB:	/* CBOP {n,}(I[XY]{[+-]d}),B (undoc) */
-		case REGC:	/* CBOP {n,}(I[XY]{[+-]d}),C (undoc) */
-		case REGD:	/* CBOP {n,}(I[XY]{[+-]d}),D (undoc) */
-		case REGE:	/* CBOP {n,}(I[XY]{[+-]d}),E (undoc) */
-		case REGH:	/* CBOP {n,}(I[XY]{[+-]d}),H (undoc) */
-		case REGL:	/* CBOP {n,}(I[XY]{[+-]d}),L (undoc) */
+		case REGA:		/* CBOP {n,}(I[XY]{[+-]d}),A (undoc) */
+		case REGB:		/* CBOP {n,}(I[XY]{[+-]d}),B (undoc) */
+		case REGC:		/* CBOP {n,}(I[XY]{[+-]d}),C (undoc) */
+		case REGD:		/* CBOP {n,}(I[XY]{[+-]d}),D (undoc) */
+		case REGE:		/* CBOP {n,}(I[XY]{[+-]d}),E (undoc) */
+		case REGH:		/* CBOP {n,}(I[XY]{[+-]d}),H (undoc) */
+		case REGL:		/* CBOP {n,}(I[XY]{[+-]d}),L (undoc) */
 			if (pass == 2) {
 				ops[0] = prefix;
 				ops[1] = 0xcb;
@@ -1436,21 +1436,21 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 				ops[3] = base_op + bit + (op & OPMASK0);
 			}
 			break;
-		case NOOPERA:	/* missing operand */
+		case NOOPERA:		/* missing operand */
 			ops[0] = 0;
 			ops[1] = 0;
 			ops[2] = 0;
 			ops[3] = 0;
 			asmerr(E_MISOPE);
 			break;
-		default:	/* invalid operand */
+		default:		/* invalid operand */
 			ops[0] = 0;
 			ops[1] = 0;
 			ops[2] = 0;
 			ops[3] = 0;
 			asmerr(E_INVOPE);
 		}
-	} else {		/* invalid operand */
+	} else {			/* invalid operand */
 		ops[0] = 0;
 		ops[1] = 0;
 		ops[2] = 0;
