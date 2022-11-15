@@ -44,7 +44,7 @@ extern WORD eval(char *);
 extern BYTE chk_byte(WORD);
 extern BYTE chk_sbyte(WORD);
 
-/* z80atab.c */
+/* z80aopc.c */
 extern BYTE get_reg(char *);
 
 /*
@@ -73,24 +73,17 @@ WORD op_2b(BYTE b1, BYTE b2)
  */
 WORD op_im(BYTE base_op1, BYTE base_op2)
 {
-	register WORD n;
+	register BYTE op;
 
 	if (pass == 2) {
-		switch(n = eval(operand)) {
-		case 0:			/* IM 0 */
-		case 1:			/* IM 1 */
-		case 2:			/* IM 2 */
-			if (n > 0)
-				n++;
-			ops[0] = base_op1;
-			ops[1] = base_op2 + (n << 3);
-			break;
-		default:
-			ops[0] = 0;
-			ops[1] = 0;
+		op = chk_byte(eval(operand));
+		if (op > 2) {
+			op = 0;
 			asmerr(E_INVOPE);
-			break;
-		}
+		} else if (op > 0)
+			op++;
+		ops[0] = base_op1;
+		ops[1] = base_op2 + (op << 3);
 	}
 	return(2);
 }
@@ -101,7 +94,7 @@ WORD op_im(BYTE base_op1, BYTE base_op2)
 WORD op_pupo(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -120,13 +113,9 @@ WORD op_pupo(BYTE base_op, BYTE dummy)
 		ops[1] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -137,28 +126,61 @@ WORD op_pupo(BYTE base_op, BYTE dummy)
  */
 WORD op_ex(BYTE base_ops, BYTE base_opd)
 {
-	register WORD len;
+	register char *sec;
+	register BYTE op;
+	register WORD len = 0;
 
-	if (strcmp(operand, "DE,HL") == 0) {
-		len = 1;
-		ops[0] = base_opd;
-	} else if (strcmp(operand, "AF,AF'") == 0) {
-		len = 1;
-		ops[0] = 0x08;
-	} else if (strcmp(operand, "(SP),HL") == 0) {
-		len = 1;
-		ops[0] = base_ops;
-	} else if (strcmp(operand, "(SP),IX") == 0) {
-		len = 2;
-		ops[0] = 0xdd;
-		ops[1] = base_ops;
-	} else if (strcmp(operand, "(SP),IY") == 0) {
-		len = 2;
-		ops[0] = 0xfd;
-		ops[1] = base_ops;
-	} else {
-		len = 1;
-		ops[0] = 0;
+	sec = next_arg(operand, NULL);
+	switch (get_reg(operand)) {
+	case REGDE:
+		switch (get_reg(sec)) {
+		case REGHL:		/* EX DE,HL */
+			len = 1;
+			ops[0] = base_opd;
+			break;
+		case NOOPERA:		/* missing operand */
+			asmerr(E_MISOPE);
+			break;
+		default:		/* invalid operand */
+			asmerr(E_INVOPE);
+		}
+		break;
+	case REGAF:
+		switch (get_reg(sec)) {
+		case REGAFA:		/* EX AF,AF' */
+			len = 1;
+			ops[0] = 0x08;
+			break;
+		case NOOPERA:		/* missing operand */
+			asmerr(E_MISOPE);
+			break;
+		default:		/* invalid operand */
+			asmerr(E_INVOPE);
+		}
+		break;
+	case REGISP:
+		switch (op = get_reg(sec)) {
+		case REGHL:		/* EX (SP),HL */
+			len = 1;
+			ops[0] = base_ops;
+			break;
+		case REGIX:		/* EX (SP),IX */
+		case REGIY:		/* EX (SP),IY */
+			len = 2;
+			ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
+			ops[1] = base_ops;
+			break;
+		case NOOPERA:		/* missing operand */
+			asmerr(E_MISOPE);
+			break;
+		default:		/* invalid operand */
+			asmerr(E_INVOPE);
+		}
+		break;
+	case NOOPERA:			/* missing operand */
+		asmerr(E_MISOPE);
+		break;
+	default:			/* invalid operand */
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -176,10 +198,10 @@ WORD op_rst(BYTE base_op, BYTE dummy)
 	if (pass == 2) {
 		op = chk_byte(eval(operand));
 		if ((op >> 3) > 7 || (op & 7) != 0) {
-			ops[0] = 0;
+			op = 0;
 			asmerr(E_VALOUT);
-		} else
-			ops[0] = base_op + op;
+		}
+		ops[0] = base_op + op;
 	}
 	return(1);
 }
@@ -190,9 +212,11 @@ WORD op_rst(BYTE base_op, BYTE dummy)
 WORD op_ret(BYTE base_op, BYTE base_opc)
 {
 	register BYTE op;
+	register WORD len = 0;
 
 	switch (op = get_reg(operand)) {
 	case NOOPERA:			/* RET */
+		len = 1;
 		ops[0] = base_op;
 		break;
 	case REGC:			/* RET C */
@@ -205,13 +229,13 @@ WORD op_ret(BYTE base_op, BYTE base_opc)
 	case FLGP:			/* RET P */
 		if (op == REGC)
 			op = FLGC;
+		len = 1;
 		ops[0] = base_opc + (op & OPMASK3);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
-	return(1);
+	return(len);
 }
 
 /*
@@ -221,9 +245,9 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD len, n;
+	register WORD n;
+	register WORD len = 0;
 
-	len = 0;			/* silence compiler */
 	sec = next_arg(operand, NULL);
 	switch (op = get_reg(operand)) {
 	case REGC:			/* JP/CALL C,nn */
@@ -234,10 +258,10 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
 	case FLGPO:			/* JP/CALL PO,nn */
 	case FLGM:			/* JP/CALL M,nn */
 	case FLGP:			/* JP/CALL P,nn */
+		if (op == REGC)
+			op = FLGC;
 		len = 3;
 		if (pass == 2) {
-			if (op == REGC)
-				op = FLGC;
 			n = eval(sec);
 			ops[0] = base_opc + (op & OPMASK3);
 			ops[1] = n & 0xff;
@@ -260,11 +284,8 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
 				ops[1] = 0xe9;
 				break;
 			}
-		} else {		/* CALL, or too many operands */
-			len = 1;
-			ops[0] = 0;
+		} else			/* CALL, or too many operands */
 			asmerr(E_INVOPE);
-		}
 		break;
 	case NOREG:			/* JP/CALL nn */
 		if (sec == NULL) {
@@ -275,20 +296,13 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
 				ops[1] = n & 0xff;
 				ops[2] = n >> 8;
 			}
-		} else {		/* too many operands */
-			len = 1;
-			ops[0] = 0;
+		} else			/* too many operands */
 			asmerr(E_INVOPE);
-		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -301,41 +315,39 @@ WORD op_jr(BYTE base_op, BYTE base_opc)
 {
 	register char *sec;
 	register BYTE op;
+	register WORD len = 0;
 
-	if (pass == 2) {
-		sec = next_arg(operand, NULL);
-		switch (op = get_reg(operand)) {
-		case REGC:		/* JR C,n */
-		case FLGNC:		/* JR NC,n */
-		case FLGZ:		/* JR Z,n */
-		case FLGNZ:		/* JR NZ,n */
-			if (op == REGC)
-				op = FLGC;
+	sec = next_arg(operand, NULL);
+	switch (op = get_reg(operand)) {
+	case REGC:			/* JR C,n */
+	case FLGNC:			/* JR NC,n */
+	case FLGZ:			/* JR Z,n */
+	case FLGNZ:			/* JR NZ,n */
+		if (op == REGC)
+			op = FLGC;
+		len = 2;
+		if (pass == 2) {
 			ops[0] = base_opc + (op & OPMASK3);
 			ops[1] = chk_sbyte(eval(sec) - pc - 2);
-			break;
-		case NOREG:		/* JR n */
-			if (sec == NULL) {
+		}
+		break;
+	case NOREG:			/* JR n */
+		if (sec == NULL) {
+			len = 2;
+			if (pass == 2) {
 				ops[0] = base_op;
 				ops[1] = chk_sbyte(eval(operand) - pc - 2);
-			} else {	/* too many operands */
-				ops[0] = 0;
-				ops[1] = 0;
-				asmerr(E_INVOPE);
 			}
-			break;
-		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
-			asmerr(E_MISOPE);
-			break;
-		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
+		} else			/* too many operands */
 			asmerr(E_INVOPE);
-		}
+		break;
+	case NOOPERA:			/* missing operand */
+		asmerr(E_MISOPE);
+		break;
+	default:			/* invalid operand */
+		asmerr(E_INVOPE);
 	}
-	return(2);
+	return(len);
 }
 
 /*
@@ -359,7 +371,8 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD len, n;
+	register WORD n;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -384,13 +397,16 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		break;
 	case REGI:			/* LD I,A */
 	case REGR:			/* LD R,A */
-		if (get_reg(sec) == REGA) {
+		switch (get_reg(sec)) {
+		case REGA:		/* LD [IR],A */
 			len = 2;
 			ops[0] = 0xed;
 			ops[1] = 0x47 + (op & OPMASK3);
-		} else {		/* invalid operand */
-			len = 1;
-			ops[0] = 0;
+			break;
+		case NOOPERA:		/* missing operand */
+			asmerr(E_MISOPE);
+			break;
+		default:		/* invalid operand */
 			asmerr(E_INVOPE);
 		}
 		break;
@@ -406,8 +422,8 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 				ops[2] = n & 0xff;
 				ops[3] = n >> 8;
 			}
-		} else {
-			len = 3;	/* LD {BC,DE},nn */
+		} else {		/* LD {BC,DE},nn */
+			len = 3;
 			if (pass == 2) {
 				n = eval(sec);
 				ops[0] = 0x01 + (op & OPMASK3);
@@ -417,17 +433,16 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		}
 		break;
 	case REGHL:			/* LD HL,? */
+		len = 3;
 		if (sec != NULL && *sec == '('
 				&& *(sec + strlen(sec) - 1) == ')') {
-			len = 3;	/* LD HL,(nn) */
-			if (pass == 2) {
+			if (pass == 2) { /* LD HL,(nn) */
 				n = eval(sec);
 				ops[0] = 0x0a + (op & OPMASK3);
 				ops[1] = n & 0xff;
 				ops[2] = n >> 8;
 			}
-		} else {
-			len = 3;	/* LD HL,nn */
+		} else {		/* LD HL,nn */
 			if (pass == 2) {
 				n = eval(sec);
 				ops[0] = 0x01 + (op & OPMASK3);
@@ -438,18 +453,17 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		break;
 	case REGIX:			/* LD IX,? */
 	case REGIY:			/* LD IY,? */
+		len = 4;
 		if (sec != NULL && *sec == '('
 				&& *(sec + strlen(sec) - 1) == ')') {
-			len = 4;	/* LD I[XY],(nn) */
-			if (pass == 2) {
+			if (pass == 2) { /* LD I[XY],(nn) */
 				n = eval(sec);
 				ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
 				ops[1] = 0x0a + (op & OPMASK3);
 				ops[2] = n & 0xff;
 				ops[3] = n >> 8;
 			}
-		} else {
-			len = 4;	/* LD I[XY],nn */
+		} else {		/* LD I[XY],nn */
 			if (pass == 2) {
 				n = eval(sec);
 				ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
@@ -467,12 +481,15 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		break;
 	case REGIBC:			/* LD (BC),A */
 	case REGIDE:			/* LD (DE),A */
-		if (get_reg(sec) == REGA) {
+		switch (get_reg(sec)) {
+		case REGA:		/* LD ([BC,DE]),A */
 			len = 1;
 			ops[0] = 0x02 + (op & OPMASK3);
-		} else {		/* invalid operand */
-			len = 1;
-			ops[0] = 0;
+			break;
+		case NOOPERA:		/* missing operand */
+			asmerr(E_MISOPE);
+			break;
+		default:		/* invalid operand */
 			asmerr(E_INVOPE);
 		}
 		break;
@@ -482,8 +499,6 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 			     base_op + (REGIHL & OPMASK3), sec);
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:
@@ -495,11 +510,8 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 				     base_op + (REGIHL & OPMASK3), sec);
 		else if (operand[0] == '(')
 			len = ldinn(sec); /* LD (nn),? */
-		else {			/* invalid operand */
-			len = 1;
-			ops[0] = 0;
+		else			/* invalid operand */
 			asmerr(E_INVOPE);
-		}
 	}
 	return(len);
 }
@@ -510,9 +522,9 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 WORD ldreg(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register WORD len, n;
+	register WORD n;
+	register WORD len = 0;
 
-	len = 0;			/* silence compiler */
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD reg,A */
 	case REGB:			/* LD reg,B */
@@ -533,11 +545,8 @@ WORD ldreg(BYTE base_op, char *sec)
 			len = 2;
 			ops[0] = (op & XYMASK) ? 0xfd : 0xdd;
 			ops[1] = base_op + (op & OPMASK0);
-		} else {		/* not for H, L */
-			len = 1;
-			ops[0] = 0;
+		} else			/* not for H, L */
 			asmerr(E_INVOPE);
-		}
 		break;
 	case REGI:			/* LD reg,I */
 	case REGR:			/* LD reg,R */
@@ -557,11 +566,8 @@ WORD ldreg(BYTE base_op, char *sec)
 				ops[0] = 0x0a + (op & OPMASK3);
 				break;
 			}
-		} else {		/* not A */
-			len = 1;
-			ops[0] = 0;
+		} else			/* not A */
 			asmerr(E_INVOPE);
-		}
 		break;
 	case REGIIX:			/* LD reg,(IX) */
 	case REGIIY:			/* LD reg,(IY) */
@@ -599,13 +605,9 @@ WORD ldreg(BYTE base_op, char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -617,7 +619,7 @@ WORD ldreg(BYTE base_op, char *sec)
 WORD ldixhl(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD IX[HL],A (undoc) */
@@ -640,13 +642,9 @@ WORD ldixhl(BYTE base_op, char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -658,7 +656,7 @@ WORD ldixhl(BYTE base_op, char *sec)
 WORD ldiyhl(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD IY[HL],A (undoc) */
@@ -681,13 +679,9 @@ WORD ldiyhl(BYTE base_op, char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -699,7 +693,8 @@ WORD ldiyhl(BYTE base_op, char *sec)
 WORD ldsp(char *sec)
 {
 	register BYTE op;
-	register WORD len, n;
+	register WORD n;
+	register WORD len = 0;
 
 	switch (op = get_reg(sec)) {
 	case REGHL:			/* LD SP,HL */
@@ -722,8 +717,8 @@ WORD ldsp(char *sec)
 				ops[2] = n & 0xff;
 				ops[3] = n >> 8;
 			}
-		} else {
-			len = 3;	/* LD SP,nn */
+		} else {		/* LD SP,nn */
+			len = 3;
 			if (pass == 2) {
 				n = eval(sec);
 				ops[0] = 0x31;
@@ -733,13 +728,9 @@ WORD ldsp(char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -751,7 +742,7 @@ WORD ldsp(char *sec)
 WORD ldihl(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (HL),A */
@@ -772,13 +763,9 @@ WORD ldihl(BYTE base_op, char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -790,7 +777,7 @@ WORD ldihl(BYTE base_op, char *sec)
 WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (I[XY]{[+-]d}),A */
@@ -827,13 +814,9 @@ WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -845,7 +828,8 @@ WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 WORD ldinn(char *sec)
 {
 	register BYTE op;
-	register WORD len, n;
+	register WORD n;
+	register WORD len = 0;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* LD (nn),A */
@@ -890,13 +874,9 @@ WORD ldinn(char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -909,7 +889,7 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
@@ -917,73 +897,59 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 		len = aluop(base_op, sec);
 		break;
 	case REGHL:			/* ADD HL,? */
-		len = 1;
 		switch (op = get_reg(sec)) {
 		case REGBC:		/* ADD HL,BC */
 		case REGDE:		/* ADD HL,DE */
 		case REGHL:		/* ADD HL,HL */
 		case REGSP:		/* ADD HL,SP */
+			len = 1;
 			ops[0] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
 			asmerr(E_INVOPE);
 		}
 		break;
 	case REGIX:			/* ADD IX,? */
-		len = 2;
 		switch (op = get_reg(sec)) {
 		case REGBC:		/* ADD IX,BC */
 		case REGDE:		/* ADD IX,DE */
 		case REGIX:		/* ADD IX,IX */
 		case REGSP:		/* ADD IX,SP */
+			len = 2;
 			ops[0] = 0xdd;
 			ops[1] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_INVOPE);
 		}
 		break;
 	case REGIY:			/* ADD IY,? */
-		len = 2;
 		switch (op = get_reg(sec)) {
 		case REGBC:		/* ADD IY,BC */
 		case REGDE:		/* ADD IY,DE */
 		case REGIY:		/* ADD IY,IY */
 		case REGSP:		/* ADD IY,SP */
+			len = 2;
 			ops[0] = 0xfd;
 			ops[1] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -996,7 +962,7 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
@@ -1004,34 +970,26 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 		len = aluop(base_op, sec);
 		break;
 	case REGHL:			/* SBC/ADC HL,? */
-		len = 2;
 		switch (op = get_reg(sec)) {
 		case REGBC:		/* SBC/ADC HL,BC */
 		case REGDE:		/* SBC/ADC HL,DE */
 		case REGHL:		/* SBC/ADC HL,HL */
 		case REGSP:		/* SBC/ADC HL,SP */
+			len = 2;
 			ops[0] = 0xed;
 			ops[1] = base_op16 + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -1043,7 +1001,7 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 WORD op_decinc(BYTE base_op, BYTE base_op16)
 {
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	switch (op = get_reg(operand)) {
 	case REGA:			/* INC/DEC A */
@@ -1096,20 +1054,13 @@ WORD op_decinc(BYTE base_op, BYTE base_op16)
 				operand[2] = '('; /* replace [XY] */
 				ops[2] = chk_sbyte(eval(&operand[2]));
 			}
-		} else {
-			len = 1;
-			ops[0] = 0;
+		} else
 			asmerr(E_INVOPE);
-		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -1131,7 +1082,7 @@ WORD op_alu(BYTE base_op, BYTE dummy)
 WORD aluop(BYTE base_op, char *sec)
 {
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	switch (op = get_reg(sec)) {
 	case REGA:			/* ALUOP {A,}A */
@@ -1171,8 +1122,8 @@ WORD aluop(BYTE base_op, char *sec)
 				*(sec + 2) = '('; /* replace [XY] */
 				ops[2] = chk_sbyte(eval(sec + 2));
 			}
-		} else {
-			len = 2;	/* ALUOP {A,}n */
+		} else {		/* ALUOP {A,}n */
+			len = 2;
 			if (pass == 2) {
 				ops[0] = base_op + 0x40 + (REGIHL & OPMASK0);
 				ops[1] = chk_byte(eval(sec));
@@ -1180,13 +1131,9 @@ WORD aluop(BYTE base_op, char *sec)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -1199,13 +1146,12 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 {
 	register char *sec;
 	register BYTE op;
+	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
-	if (operand[0] == '\0') {	/* missing operand */
-		ops[0] = 0;
-		ops[1] = 0;
+	if (operand[0] == '\0')		/* missing operand */
 		asmerr(E_MISOPE);
-	} else if (strcmp(operand, "(C)") == 0) {
+	else if (strcmp(operand, "(C)") == 0) {
 		switch(op = get_reg(sec)) {
 		case REGA:		/* OUT (C),A */
 		case REGB:		/* OUT (C),B */
@@ -1214,48 +1160,39 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 		case REGE:		/* OUT (C),E */
 		case REGH:		/* OUT (C),H */
 		case REGL:		/* OUT (C),L */
+			len = 2;
 			ops[0] = 0xed;
 			ops[1] = op_basec + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:
 			if (undoc_flag && *sec == '0' && *(sec + 1) == '\0') {
-				ops[0] = 0xed; /* OUT (C),0 (undoc) */
+				len = 2; /* OUT (C),0 (undoc) */
+				ops[0] = 0xed;
 				ops[1] = op_basec + (REGIHL & OPMASK3);
-			} else {	/* invalid operand */
-				ops[0] = 0;
-				ops[1] = 0;
+			} else		/* invalid operand */
 				asmerr(E_INVOPE);
-			}
 		}
 	} else if (operand[0] == '(' && operand[strlen(operand) - 1] == ')') {
 		switch (get_reg(sec)) {
 		case REGA:		/* OUT (n),A */
+			len = 2;
 			if (pass == 2) {
 				ops[0] = op_base;
 				ops[1] = chk_byte(eval(operand));
 			}
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_INVOPE);
 		}
-	} else {			/* invalid operand */
-		ops[0] = 0;
-		ops[1] = 0;
+	} else				/* invalid operand */
 		asmerr(E_INVOPE);
-	}
-	return(2);
+	return(len);
 }
 
 /*
@@ -1265,13 +1202,12 @@ WORD op_in(BYTE op_base, BYTE op_basec)
 {
 	register char *sec;
 	register BYTE op;
+	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
-	if (sec == NULL) {		/* missing operand */
-		ops[0] = 0;
-		ops[1] = 0;
+	if (sec == NULL)		/* missing operand */
 		asmerr(E_MISOPE);
-	} else if (strcmp(sec, "(C)") == 0) {
+	else if (strcmp(sec, "(C)") == 0) {
 		switch (op = get_reg(operand)) {
 		case REGA:		/* IN A,(C) */
 		case REGB:		/* IN B,(C) */
@@ -1280,49 +1216,40 @@ WORD op_in(BYTE op_base, BYTE op_basec)
 		case REGE:		/* IN E,(C) */
 		case REGH:		/* IN H,(C) */
 		case REGL:		/* IN L,(C) */
+			len = 2;
 			ops[0] = 0xed;
 			ops[1] = op_basec + (op & OPMASK3);
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:
 			if (undoc_flag
 			    && operand[0] == 'F' && operand[1] == '\0') {
-				ops[0] = 0xed;	/* IN F,(C) (undoc) */
+				len = 2; /* IN F,(C) (undoc) */
+				ops[0] = 0xed;
 				ops[1] = op_basec + (REGIHL & OPMASK3);
-			} else {	/* invalid operand */
-				ops[0] = 0;
-				ops[1] = 0;
+			} else		/* invalid operand */
 				asmerr(E_INVOPE);
-			}
 		}
 	} else if (*sec == '(' && *(sec + strlen(sec) - 1) == ')') {
 		switch (get_reg(operand)) {
 		case REGA:		/* IN A,(n) */
+			len = 2;
 			if (pass == 2) {
 				ops[0] = op_base;
 				ops[1] = chk_byte(eval(sec));
 			}
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
 			asmerr(E_INVOPE);
 		}
-	} else {			/* invalid operand */
-		ops[0] = 0;
-		ops[1] = 0;
+	} else				/* invalid operand */
 		asmerr(E_INVOPE);
-	}
-	return(2);
+	return(len);
 }
 
 /*
@@ -1331,19 +1258,20 @@ WORD op_in(BYTE op_base, BYTE op_basec)
 WORD op_cbgrp(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
-	register BYTE op, bit;
-	register WORD len;
+	register BYTE op;
+	register BYTE bit = 0;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
-	len = 2;
-	bit = 0;
 	if (base_op >= 0x40) {		/* TRSBIT n,? */
 		sec = next_arg(operand, NULL);
 		if (pass == 2) {
 			bit = chk_byte(eval(operand));
-			if (bit > 7)
+			if (bit > 7) {
+				bit = 0;
 				asmerr(E_VALOUT);
+			}
 			bit <<= 3;
 		}
 	} else				/* ROTSHF ? */
@@ -1357,6 +1285,7 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 	case REGH:			/* CBOP {n,}H */
 	case REGL:			/* CBOP {n,}L */
 	case REGIHL:			/* CBOP {n,}(HL) */
+		len = 2;
 		ops[0] = 0xcb;
 		ops[1] = base_op + bit + (op & OPMASK0);
 		break;
@@ -1373,20 +1302,13 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 					/* CBOP {n,}(I[XY]{[+-]d}){,reg} */
 			len = cbgrp_iixy(*(sec + 2) == 'Y' ? 0xfd : 0xdd,
 					 base_op, bit, sec);
-		else {			/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
+		else			/* invalid operand */
 			asmerr(E_INVOPE);
-		}
 		break;
 	case NOOPERA:			/* missing operand */
-		ops[0] = 0;
-		ops[1] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
-		ops[1] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -1399,9 +1321,11 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 {
 	register char *tert;
 	register BYTE op;
+	register WORD len = 0;
 
 	tert = next_arg(sec, NULL);
 	if (tert == NULL) {		/* CBOP {n,}(I[XY]{[+-]d}) */
+		len = 4;
 		if (pass == 2) {
 			ops[0] = prefix;
 			ops[1] = 0xcb;
@@ -1413,9 +1337,7 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 			}
 			ops[3] = base_op + bit + (REGIHL & OPMASK0);
 		}
-		return(4);
-	}
-	if (undoc_flag && base_op != 0x40) { /* not for BIT */
+	} else if (undoc_flag && base_op != 0x40) { /* not for BIT */
 		switch (op = get_reg(tert)) {
 		case REGA:		/* CBOP {n,}(I[XY]{[+-]d}),A (undoc) */
 		case REGB:		/* CBOP {n,}(I[XY]{[+-]d}),B (undoc) */
@@ -1424,6 +1346,7 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 		case REGE:		/* CBOP {n,}(I[XY]{[+-]d}),E (undoc) */
 		case REGH:		/* CBOP {n,}(I[XY]{[+-]d}),H (undoc) */
 		case REGL:		/* CBOP {n,}(I[XY]{[+-]d}),L (undoc) */
+			len = 4;
 			if (pass == 2) {
 				ops[0] = prefix;
 				ops[1] = 0xcb;
@@ -1437,27 +1360,14 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 			}
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
-			ops[1] = 0;
-			ops[2] = 0;
-			ops[3] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
-			ops[1] = 0;
-			ops[2] = 0;
-			ops[3] = 0;
 			asmerr(E_INVOPE);
 		}
-	} else {			/* invalid operand */
-		ops[0] = 0;
-		ops[1] = 0;
-		ops[2] = 0;
-		ops[3] = 0;
+	} else				/* invalid operand */
 		asmerr(E_INVOPE);
-	}
-	return(4);
+	return(len);
 }
 
 /*
@@ -1467,6 +1377,7 @@ WORD op8080_mov(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op1, op2;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1489,31 +1400,28 @@ WORD op8080_mov(BYTE base_op, BYTE dummy)
 		case REGH:		/* MOV reg,H */
 		case REGL:		/* MOV reg,L */
 		case REGM:		/* MOV reg,M */
-			if (op1 == REGM && op2 == REGM) {
-				ops[0] = 0;
+			if (op1 == REGM && op2 == REGM)
 				asmerr(E_INVOPE);
-			} else
+			else {
+				len = 1;
 				ops[0] = base_op + (op1 & OPMASK3)
 						 + (op2 & OPMASK0);
+			}
 			break;
 		case NOOPERA:		/* missing operand */
-			ops[0] = 0;
 			asmerr(E_MISOPE);
 			break;
 		default:		/* invalid operand */
-			ops[0] = 0;
 			asmerr(E_INVOPE);
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
-	return(1);
+	return(len);
 }
 
 /*
@@ -1522,6 +1430,7 @@ WORD op8080_mov(BYTE base_op, BYTE dummy)
 WORD op8080_alu(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1534,17 +1443,16 @@ WORD op8080_alu(BYTE base_op, BYTE dummy)
 	case REGH:			/* ALUOP H */
 	case REGL:			/* ALUOP L */
 	case REGM:			/* ALUOP M */
+		len = 1;
 		ops[0] = base_op + (op & OPMASK0);
 		break;
 	case NOOPERA:			/* missing operand */
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
-	return(1);
+	return(len);
 }
 
 /*
@@ -1553,6 +1461,7 @@ WORD op8080_alu(BYTE base_op, BYTE dummy)
 WORD op8080_dcrinr(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1565,17 +1474,16 @@ WORD op8080_dcrinr(BYTE base_op, BYTE dummy)
 	case REGH:			/* DCR/INR H */
 	case REGL:			/* DCR/INR L */
 	case REGM:			/* DCR/INR M */
+		len = 1;
 		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
-	return(1);
+	return(len);
 }
 
 /*
@@ -1584,6 +1492,7 @@ WORD op8080_dcrinr(BYTE base_op, BYTE dummy)
 WORD op8080_reg16(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1592,17 +1501,16 @@ WORD op8080_reg16(BYTE base_op, BYTE dummy)
 	case REGD:			/* INX/DAD/DCX D */
 	case REGH:			/* INX/DAD/DCX H */
 	case REGSP:			/* INX/DAD/DCX SP */
+		len = 1;
 		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
-	return(1);
+	return(len);
 }
 
 /*
@@ -1611,23 +1519,23 @@ WORD op8080_reg16(BYTE base_op, BYTE dummy)
 WORD op8080_regbd(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
 	case REGB:			/* STAX/LDAX B */
 	case REGD:			/* STAX/LDAX D */
+		len = 1;
 		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
-	return(1);
+	return(len);
 }
 
 /*
@@ -1656,10 +1564,10 @@ WORD op8080_rst(BYTE base_op, BYTE dummy)
 	if (pass == 2) {
 		op = chk_byte(eval(operand));
 		if (op > 7) {
-			ops[0] = 0;
+			op = 0;
 			asmerr(E_VALOUT);
-		} else
-			ops[0] = base_op + (op << 3);
+		}
+		ops[0] = base_op + (op << 3);
 	}
 	return(1);
 }
@@ -1669,6 +1577,7 @@ WORD op8080_rst(BYTE base_op, BYTE dummy)
 WORD op8080_pupo(BYTE base_op, BYTE dummy)
 {
 	register BYTE op;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1677,17 +1586,16 @@ WORD op8080_pupo(BYTE base_op, BYTE dummy)
 	case REGD:			/* PUSH/POP D */
 	case REGH:			/* PUSH/POP H */
 	case REGPSW:			/* PUSH/POP PSW */
+		len = 1;
 		ops[0] = base_op + (op & OPMASK3);
 		break;
 	case NOOPERA:			/* missing operand */
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
-	return(1);
+	return(len);
 }
 
 /*
@@ -1717,7 +1625,7 @@ WORD op8080_mvi(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD len;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1738,13 +1646,9 @@ WORD op8080_mvi(BYTE base_op, BYTE dummy)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);
@@ -1757,7 +1661,8 @@ WORD op8080_lxi(BYTE base_op, BYTE dummy)
 {
 	register char *sec;
 	register BYTE op;
-	register WORD len, n;
+	register WORD n;
+	register WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1776,13 +1681,9 @@ WORD op8080_lxi(BYTE base_op, BYTE dummy)
 		}
 		break;
 	case NOOPERA:			/* missing operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_MISOPE);
 		break;
 	default:			/* invalid operand */
-		len = 1;
-		ops[0] = 0;
 		asmerr(E_INVOPE);
 	}
 	return(len);

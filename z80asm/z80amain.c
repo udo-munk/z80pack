@@ -423,7 +423,7 @@ int process_line(char *l)
 		/* already listed INCLUDE */
 		if (op != NULL && (op->op_flags & OP_INCL))
 			lflag = 0;
-		if (expn_flag) {
+		if (errnum == E_OK && expn_flag) {
 			if (mac_list_flag == M_NONE)
 				lflag = 0;
 			else if (mac_list_flag == M_OPS
