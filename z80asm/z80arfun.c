@@ -1067,17 +1067,35 @@ WORD op_decinc(BYTE base_op, BYTE base_op16)
 }
 
 /*
- *	SUB, AND, XOR, OR, CP
+ *	SUB {A,}, AND {A,}, XOR {A,}, OR {A,}, CP {A,}
  */
 WORD op_alu(BYTE base_op, BYTE dummy)
 {
+	register char *sec;
+	register WORD len = 0;
+
 	UNUSED(dummy);
 
-	return(aluop(base_op, operand));
+	sec = next_arg(operand, NULL);
+	if (sec == NULL)		/* ALUOP ? */
+		len = aluop(base_op, operand);
+	else {
+		switch (get_reg(operand)) {
+		case REGA:		/* ALUOP A,? */
+			len = aluop(base_op, sec);
+			break;
+		case NOOPERA:		/* missing operand */
+			asmerr(E_MISOPE);
+			break;
+		default:		/* invalid operand */
+			asmerr(E_INVOPE);
+		}
+	}
+	return(len);
 }
 
 /*
- *	ADD A, ADC A, SUB, SBC A, AND, XOR, OR, CP
+ *	ADD A, ADC A, SUB {A}, SBC A, AND {A}, XOR {A}, OR {A}, CP {A}
  */
 WORD aluop(BYTE base_op, char *sec)
 {
