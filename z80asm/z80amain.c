@@ -41,7 +41,6 @@ void do_pass(int), process_file(char *);
 int process_line(char *);
 void open_o_files(char *);
 char *get_fn(char *, const char *, int);
-char *strsave(char *);
 char *get_symbol(char *, char *, int);
 char *get_operand(char *, char *, int);
 
