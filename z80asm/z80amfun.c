@@ -42,12 +42,12 @@ extern void asmerr(int);
 
 struct dum {					/* macro dummy */
 	char *dum_name;				/* dummy name */
-	struct dum *dum_next;
+	struct dum *dum_next;			/* next dummy in list */
 };
 
 struct line {					/* macro source line */
 	char *line_text;			/* source line */
-	struct line *line_next;			/* next line */
+	struct line *line_next;			/* next line in list */
 };
 
 struct expn;
