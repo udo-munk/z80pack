@@ -420,9 +420,11 @@ int process_line(char *l)
 		if (gencode && (op == NULL || !(op->op_flags & OP_DS)))
 			obj_writeb(op_count);
 		lflag = 1;
-		/* already listed INCLUDE */
-		if (op != NULL && (op->op_flags & OP_INCL))
+		/* already listed INCLUDE, force eject page */
+		if (op != NULL && (op->op_flags & OP_INCL)) {
 			lflag = 0;
+			p_line = ppl + 1;
+		}
 		if (errnum == E_OK && expn_flag) {
 			if (mac_list_flag == M_NONE)
 				lflag = 0;

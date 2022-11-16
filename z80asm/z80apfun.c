@@ -46,8 +46,6 @@ extern void instrset(int);
 
 /* z80aout.c */
 extern void asmerr(int);
-extern void lst_header(void);
-extern void lst_attl(void);
 extern void obj_org(WORD);
 extern void obj_fill(WORD);
 extern void obj_fill_value(WORD, WORD);
@@ -299,9 +297,11 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 {
 	register char *p, *d, c;
 	register BYTE n;
+	unsigned long inc_line;
+	char *inc_fn;
+	FILE *inc_fp;
 	static char fn[LENFN];
 	static int incnest;
-	static struct inc incl[INCNEST];
 	static int page_done;
 
 	UNUSED(dummy);
@@ -364,9 +364,9 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 			asmerr(E_INCNST);
 			break;
 		}
-		incl[incnest].inc_line = c_line;
-		incl[incnest].inc_fn = srcfn;
-		incl[incnest].inc_fp = srcfp;
+		inc_line = c_line;
+		inc_fn = srcfn;
+		inc_fp = srcfp;
 		incnest++;
 		p = operand;
 		d = fn;
@@ -377,15 +377,11 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 			printf("   Include %s\n", fn);
 		process_file(fn);
 		incnest--;
-		c_line = incl[incnest].inc_line;
-		srcfn = incl[incnest].inc_fn;
-		srcfp = incl[incnest].inc_fp;
+		c_line = inc_line;
+		srcfn = inc_fn;
+		srcfp = inc_fp;
 		if (ver_flag)
 			printf("   Resume  %s\n", srcfn);
-		if (list_flag && pass == 2) {
-			lst_header();
-			lst_attl();
-		}
 		break;
 	case 7:				/* TITLE */
 		if (pass == 2) {

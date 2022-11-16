@@ -47,7 +47,7 @@ struct dum {					/* macro dummy */
 
 struct line {					/* macro source line */
 	char *line_text;			/* source line */
-	struct line *line_next;
+	struct line *line_next;			/* next line */
 };
 
 struct expn;
@@ -61,19 +61,19 @@ struct mac {					/* macro */
 	char *mac_irp;				/* IRP, IRPC character list */
 	struct dum *mac_dums, *mac_dums_last;	/* macro dummies */
 	struct line *mac_lines, *mac_lines_last; /* macro body */
-	struct mac *mac_prev, *mac_next;
+	struct mac *mac_prev, *mac_next;	/* prev./next macro in list */
 };
 
 struct parm {					/* expansion parameter */
 	char *parm_name;			/* dummy name */
 	char *parm_val;				/* parameter value */
-	struct parm *parm_next;
+	struct parm *parm_next;			/* next parameter in list */
 };
 
 struct loc {					/* expansion local label */
 	char *loc_name;				/* local label name */
 	char loc_val[8];			/* local label value ??xxxx */
-	struct loc *loc_next;
+	struct loc *loc_next;			/* next local label in list */
 };
 
 struct expn {					/* macro expansion */
@@ -86,7 +86,7 @@ struct expn {					/* macro expansion */
 	int expn_act_elselevel;			/* act_elselevel before expn */
 	WORD expn_iter;				/* curr. expansion iteration */
 	char *expn_irp;				/* IRP, IRPC character list */
-	struct expn *expn_next;
+	struct expn *expn_next;			/* next expansion in list */
 };
 
 static struct mac *mac_table;			/* MACRO table */
