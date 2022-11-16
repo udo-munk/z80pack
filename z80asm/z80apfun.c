@@ -26,6 +26,7 @@
  *	processing of all PSEUDO ops except macro related
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -35,6 +36,7 @@
 /* z80amain.c */
 extern void fatal(int, const char *);
 extern void process_file(char *);
+extern char *strsave(char *);
 extern char *next_arg(char *, int *);
 
 /* z80anum.c */
@@ -46,8 +48,6 @@ extern void instrset(int);
 
 /* z80aout.c */
 extern void asmerr(int);
-extern void lst_header(void);
-extern void lst_attl(void);
 extern void obj_org(WORD);
 extern void obj_fill(WORD);
 extern void obj_fill_value(WORD, WORD);
@@ -297,11 +297,12 @@ WORD op_dw(BYTE dummy1, BYTE dummy2)
  */
 WORD op_misc(BYTE op_code, BYTE dummy)
 {
-	register char *p, *d, c;
+	register char *p, *d, *fn, c;
 	register BYTE n;
-	static char fn[LENFN];
+	unsigned long inc_line;
+	char *inc_fn;
+	FILE *inc_fp;
 	static int incnest;
-	static struct inc incl[INCNEST];
 	static int page_done;
 
 	UNUSED(dummy);
@@ -364,28 +365,25 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 			asmerr(E_INCNST);
 			break;
 		}
-		incl[incnest].inc_line = c_line;
-		incl[incnest].inc_fn = srcfn;
-		incl[incnest].inc_fp = srcfp;
+		inc_line = c_line;
+		inc_fn = srcfn;
+		inc_fp = srcfp;
 		incnest++;
 		p = operand;
-		d = fn;
 		while (!IS_SPC(*p) && *p != COMMENT && *p != '\0')
-			*d++ = *p++;
-		*d = '\0';
+			p++;
+		*p = '\0';
+		fn = strsave(operand);
 		if (ver_flag)
 			printf("   Include %s\n", fn);
 		process_file(fn);
+		free(fn);
 		incnest--;
-		c_line = incl[incnest].inc_line;
-		srcfn = incl[incnest].inc_fn;
-		srcfp = incl[incnest].inc_fp;
+		c_line = inc_line;
+		srcfn = inc_fn;
+		srcfp = inc_fp;
 		if (ver_flag)
 			printf("   Resume  %s\n", srcfn);
-		if (list_flag && pass == 2) {
-			lst_header();
-			lst_attl();
-		}
 		break;
 	case 7:				/* TITLE */
 		if (pass == 2) {

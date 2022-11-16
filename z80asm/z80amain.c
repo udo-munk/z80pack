@@ -39,7 +39,8 @@ void init(void), options(int, char *[]);
 void usage(void), fatal(int, const char *);
 void do_pass(int), process_file(char *);
 int process_line(char *);
-void open_o_files(char *), get_fn(char *, char *, const char *);
+void open_o_files(char *);
+char *get_fn(char *, const char *, int);
 char *get_symbol(char *, char *, int);
 char *get_operand(char *, char *, int);
 
@@ -116,8 +117,7 @@ void init(void)
  */
 void options(int argc, char *argv[])
 {
-	register char *s, *t;
-	register int i;
+	register char *s, *t, **p;
 
 	while (--argc > 0 && (*++argv)[0] == '-')
 		for (s = argv[0] + 1; *s != '\0'; s++)
@@ -128,14 +128,14 @@ void options(int argc, char *argv[])
 					usage();
 				}
 				if (obj_fmt == OBJ_HEX)
-					get_fn(objfn, s, OBJEXTHEX);
+					objfn = get_fn(s, OBJEXTHEX, 0);
 				else
-					get_fn(objfn, s, OBJEXTBIN);
+					objfn = get_fn(s, OBJEXTBIN, 0);
 				s += (strlen(s) - 1);
 				break;
 			case 'l':
 				if (*(s + 1) != '\0') {
-					get_fn(lstfn, ++s, LSTEXT);
+					lstfn = get_fn(++s, LSTEXT, 0);
 					s += (strlen(s) - 1);
 				}
 				list_flag = 1;
@@ -235,17 +235,15 @@ void options(int argc, char *argv[])
 				printf("unknown option %c\n", *s);
 				usage();
 			}
-	i = 0;
-	while (argc-- && i < MAXFN) {
-		if ((infiles[i] = (char *) malloc(LENFN + 1)) == NULL)
-			fatal(F_OUTMEM, "filenames");
-		get_fn(infiles[i], *argv++, SRCEXT);
-		i++;
-	}
-	if (i == 0) {
+	if (argc == 0) {
 		puts("no input file");
 		usage();
 	}
+	nfiles = argc;
+	if ((infiles = (char **) malloc(sizeof(char *) * nfiles)) == NULL)
+		fatal(F_OUTMEM, "input file names");
+	for (p = infiles; argc--; p++)
+		*p = get_fn(*argv++, SRCEXT, 0);
 }
 
 /*
@@ -271,24 +269,23 @@ void fatal(int i, const char *arg)
  */
 void do_pass(int p)
 {
-	register int fi;
+	register int i;
+	register char **ip;
 
 	pass = p;
 	radix = 10;
 	rpc = pc = 0;
-	fi = 0;
 	mac_start_pass();
 	if (ver_flag)
 		printf("Pass %d\n", pass);
 	if (pass == 1)				/* PASS 1 */
-		open_o_files(infiles[fi]);
+		open_o_files(*infiles);
 	else					/* PASS 2 */
 		obj_header();
-	while (infiles[fi] != NULL) {
+	for (i = 0, ip = infiles; i < nfiles; i++, ip++) {
 		if (ver_flag)
-			printf("   Read    %s\n", infiles[fi]);
-		process_file(infiles[fi]);
-		fi++;
+			printf("   Read    %s\n", *ip);
+		process_file(*ip);
 	}
 	mac_end_pass();
 	if (pass == 1) {			/* PASS 1 */
@@ -420,9 +417,11 @@ int process_line(char *l)
 		if (gencode && (op == NULL || !(op->op_flags & OP_DS)))
 			obj_writeb(op_count);
 		lflag = 1;
-		/* already listed INCLUDE */
-		if (op != NULL && (op->op_flags & OP_INCL))
+		/* already listed INCLUDE, force eject page */
+		if (op != NULL && (op->op_flags & OP_INCL)) {
 			lflag = 0;
+			p_line = ppl + 1;
+		}
 		if (errnum == E_OK && expn_flag) {
 			if (mac_list_flag == M_NONE)
 				lflag = 0;
@@ -452,24 +451,11 @@ int process_line(char *l)
  */
 void open_o_files(char *source)
 {
-	register char *p;
-
-	if (*objfn == '\0')
-		strcpy(objfn, source);
-	if ((p = strrchr(objfn, PATHSEP)) != NULL)
-		p++;
-	else
-		p = objfn;
-	if ((p = strrchr(p, '.')) != NULL) {
+	if (objfn == NULL) {
 		if (obj_fmt == OBJ_HEX)
-			strcpy(p, OBJEXTHEX);
+			objfn = get_fn(source, OBJEXTHEX, 1);
 		else
-			strcpy(p, OBJEXTBIN);
-	} else {
-		if (obj_fmt == OBJ_HEX)
-			strcat(objfn, OBJEXTHEX);
-		else
-			strcat(objfn, OBJEXTBIN);
+			objfn = get_fn(source, OBJEXTBIN, 1);
 	}
 	if (obj_fmt == OBJ_HEX)
 		objfp = fopen(objfn, WRITEA);
@@ -478,16 +464,8 @@ void open_o_files(char *source)
 	if (objfp == NULL)
 		fatal(F_FOPEN, objfn);
 	if (list_flag) {
-		if (*lstfn == '\0')
-			strcpy(lstfn, source);
-		if ((p = strrchr(lstfn, PATHSEP)) != NULL)
-			p++;
-		else
-			p = lstfn;
-		if ((p = strrchr(p, '.')) != NULL)
-			strcpy(p, LSTEXT);
-		else
-			strcat(lstfn, LSTEXT);
+		if (lstfn == NULL)
+			lstfn = get_fn(source, LSTEXT, 1);
 		if ((lstfp = fopen(lstfn, WRITEA)) == NULL)
 			fatal(F_FOPEN, lstfn);
 		errfp = lstfp;
@@ -495,25 +473,45 @@ void open_o_files(char *source)
 }
 
 /*
- *	create a filename in "dest" from "src" and "ext"
+ *	return a filename created from "src" and "ext"
+ *	append "ext" if "src" has no extension
+ *	replace existing extension with "ext" if "replace" is 1
  */
-void get_fn(char *dest, char *src, const char *ext)
+char *get_fn(char *src, const char *ext, int replace)
 {
-	register int i;
-	register char *sp, *dp;
+	register char *sp, *ep, *dp;
+	register int n, m;
 
-	i = 0;
-	sp = src;
-	dp = dest;
-	while (i++ < LENFN && *sp != '\0')
-		*dp++ = *sp++;
-	*dp = '\0';
-	if ((dp = strrchr(dest, PATHSEP)) != NULL)
-		dp++;
+	if ((sp = strrchr(src, PATHSEP)) == NULL)
+		sp = src;
 	else
-		dp = dest;
-	if (strrchr(dp, '.') == NULL && (strlen(dest) + strlen(ext) <= LENFN))
-		strcat(dest, ext);
+		sp++;
+	if ((ep = strrchr(sp, '.')) == NULL)
+		n = strlen(src) + strlen(ext);
+	else
+		n = (m = ep - src) + (replace ? strlen(ext) : strlen(ep));
+	if ((dp = (char *) malloc(n + 1)) == NULL)
+		fatal(F_OUTMEM, "file name");
+	if (ep == NULL) {
+		strcpy(dp, src);
+		strcat(dp, ext);
+	} else {
+		strncpy(dp, src, m);
+		strcpy(dp + m, (replace ? ext : ep));
+	}
+	return(dp);
+}
+
+/*
+ *	save string into allocated memory
+ */
+char *strsave(char *s)
+{
+	register char *p;
+
+	if ((p = (char *) malloc(strlen(s) + 1)) == NULL)
+		fatal(F_OUTMEM, "strsave");
+	return(strcpy(p, s));
 }
 
 /*

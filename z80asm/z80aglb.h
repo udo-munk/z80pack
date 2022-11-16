@@ -26,10 +26,10 @@
  *	global variable declarations
  */
 
-extern char	*infiles[],
+extern char	**infiles,
 		*srcfn,
-		objfn[],
-		lstfn[],
+		*objfn,
+		*lstfn,
 		line[],
 		label[],
 		opcode[],
@@ -54,6 +54,7 @@ extern int	list_flag,
 		upcase_flag,
 		mac_list_flag,
 		i8080_flag,
+		nfiles,
 		radix,
 		phs_flag,
 		pass,

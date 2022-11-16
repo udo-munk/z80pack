@@ -25,7 +25,6 @@
 /*
  *	OS dependant definitions
  */
-#define LENFN		2048	/* max. filename length */
 #define READA		"r"	/* file open mode read ascii */
 #define WRITEA		"w"	/* file open mode write ascii */
 #define WRITEB		"wb"	/* file open mode write binary */
@@ -47,13 +46,12 @@
 #define LABSEP		':'	/* label separator */
 #define STRDEL		'\''	/* string delimiter */
 #define STRDEL2		'"'	/* the other string delimiter */
-#define MAXFN		512	/* max. no. source files */
 #define MAXLINE		128	/* max. line length source */
 #define PLENGTH		65	/* default lines/page in listing */
 #define SYMLEN		8	/* default max. symbol length */
-#define INCNEST		5	/* max. INCLUDE nesting depth */
+#define INCNEST		10	/* max. INCLUDE nesting depth */
 #define HASHSIZE	500	/* max. entries in symbol hash array */
-#define OPCARRAY	256	/* size of object buffer */
+#define OPCARRAY	128	/* size of object buffer */
 #define MAXHEX		32	/* max. no bytes/hex record */
 #define MACNEST		50	/* max. expansion nesting */
 
@@ -92,15 +90,6 @@ struct sym {
 	WORD sym_val;		/* symbol value */
 	int sym_refflg;		/* symbol reference flag */
 	struct sym *sym_next;	/* next entry */
-};
-
-/*
- *	structure nested INCLUDE's
- */
-struct inc {
-	unsigned long inc_line;	/* line counter for listing */
-	char *inc_fn;		/* filename */
-	FILE *inc_fp;		/* file pointer */
 };
 
 /*

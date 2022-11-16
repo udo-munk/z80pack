@@ -243,6 +243,7 @@ void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
 		fprintf(lstfp, "%c%5lu %6lu\n", expn_flag ? '+' : ' ',
 			c_line, s_line);
 	}
+	/* reset p_line after EJECT when ppl is 0 */
 	if (p_line < 0)
 		p_line = 1;
 }
