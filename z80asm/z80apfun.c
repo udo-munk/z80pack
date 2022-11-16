@@ -300,7 +300,6 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 	unsigned long inc_line;
 	char *inc_fn;
 	FILE *inc_fp;
-	static char fn[LENFN];
 	static int incnest;
 	static int page_done;
 
@@ -369,13 +368,12 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 		inc_fp = srcfp;
 		incnest++;
 		p = operand;
-		d = fn;
 		while (!IS_SPC(*p) && *p != COMMENT && *p != '\0')
-			*d++ = *p++;
-		*d = '\0';
+			p++;
+		*p = '\0';
 		if (ver_flag)
-			printf("   Include %s\n", fn);
-		process_file(fn);
+			printf("   Include %s\n", operand);
+		process_file(operand);
 		incnest--;
 		c_line = inc_line;
 		srcfn = inc_fn;

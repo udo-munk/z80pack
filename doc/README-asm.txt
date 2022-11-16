@@ -3,9 +3,8 @@ Usage:
 z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u
        -v -m -U -o<file> -l[<file>] -d<symbol> ... <file> ...
 
-A maximum of 512 source files is allowed. If the file name of a source
-doesn't have an extension the default extension ".asm" will be appended.
-Source files have a maximum path length of 2048 characters.
+If the file name of a source doesn't have an extension the default
+extension ".asm" will be appended.
 
 Option f:
 Format of the output file:
@@ -64,14 +63,12 @@ Convert everything to upper case for compatibility with old source code.
 Option o:
 To override the default name of the output file. Without this option the
 name of the output file becomes the name of the input file, but with the
-extension ".bin" or ".hex". The output file has a maximum path length of
-2048 characters.
+extension ".bin" or ".hex".
 
 Option l:
 Without this option no list file will be generated. With -l a list file
 with the name of the source file but extension ".lis" will be generated.
-An optional file name path (2048 characters maximum) may be added to
-this option.
+An optional file name path may be added to this option.
 
 Option d:
 This option predefines symbols with a value of 0 and may be used

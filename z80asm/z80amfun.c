@@ -19,6 +19,7 @@
 
 /* z80amain.c */
 extern void fatal(int, const char *);
+extern char *strsave(char *);
 extern char *next_arg(char *, int *);
 
 /* z80anum.c */
@@ -98,18 +99,6 @@ static int mac_count;				/* number of macros defined */
 static struct expn *mac_expn;			/* macro expansion stack */
 static WORD mac_loc_cnt;			/* counter for LOCAL labels */
 static char tmp[MAXLINE + 2];			/* temporary buffer */
-
-/*
- *	save string into allocated memory
- */
-char *strsave(char *s)
-{
-	register char *p;
-
-	if ((p = (char *) malloc(strlen(s) + 1)) != NULL)
-		strcpy(p, s);
-	return(p);
-}
 
 /*
  *	verify that s is a legal symbol, also truncates to symlen

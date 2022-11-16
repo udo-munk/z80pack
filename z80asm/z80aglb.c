@@ -29,10 +29,10 @@
 #include <stdio.h>
 #include "z80a.h"
 
-char *infiles[MAXFN],		/* source filenames */
+char **infiles,			/* source filenames */
      *srcfn,			/* filename of current processed source file */
-     objfn[LENFN + 1],		/* object filename */
-     lstfn[LENFN + 1],		/* listing filename */
+     *objfn,			/* object filename */
+     *lstfn,			/* listing filename */
      line[MAXLINE + 2],		/* buffer for one line of source */
      label[MAXLINE + 1],	/* buffer for label */
      opcode[MAXLINE + 1],	/* buffer for opcode */
@@ -58,6 +58,7 @@ int  list_flag,			/* flag for option -l */
      upcase_flag,		/* flag for option -U */
      mac_list_flag,		/* flag for option -m */
      i8080_flag,		/* flag for option -8 */
+     nfiles,			/* number of input files */
      radix,			/* current radix, set to 10 at start of pass */
      phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
