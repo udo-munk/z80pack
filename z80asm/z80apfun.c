@@ -26,6 +26,7 @@
  *	processing of all PSEUDO ops except macro related
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -35,6 +36,7 @@
 /* z80amain.c */
 extern void fatal(int, const char *);
 extern void process_file(char *);
+extern char *strsave(char *);
 extern char *next_arg(char *, int *);
 
 /* z80anum.c */
@@ -295,7 +297,7 @@ WORD op_dw(BYTE dummy1, BYTE dummy2)
  */
 WORD op_misc(BYTE op_code, BYTE dummy)
 {
-	register char *p, *d, c;
+	register char *p, *d, *fn, c;
 	register BYTE n;
 	unsigned long inc_line;
 	char *inc_fn;
@@ -371,9 +373,11 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 		while (!IS_SPC(*p) && *p != COMMENT && *p != '\0')
 			p++;
 		*p = '\0';
+		fn = strsave(operand);
 		if (ver_flag)
-			printf("   Include %s\n", operand);
-		process_file(operand);
+			printf("   Include %s\n", fn);
+		process_file(fn);
+		free(fn);
 		incnest--;
 		c_line = inc_line;
 		srcfn = inc_fn;

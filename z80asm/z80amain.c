@@ -311,7 +311,7 @@ void process_file(char *fn)
 	register char *l, *s;
 
 	c_line = 0;
-	srcfn = strsave(fn);
+	srcfn = fn;
 	if ((srcfp = fopen(fn, READA)) == NULL)
 		fatal(F_FOPEN, fn);
 	do {
@@ -327,7 +327,6 @@ void process_file(char *fn)
 		}
 	} while (process_line(l));
 	fclose(srcfp);
-	free(srcfn);
 	if (mac_def_nest > 0)
 		asmerr(E_MISEMA);
 	if (phs_flag)
