@@ -273,9 +273,9 @@ void mac_add_dum(struct mac *m, char *name)
 {
 	register struct dum *d;
 
-	d = (struct dum *) malloc(sizeof(struct dum));
-	if (d == NULL || (d->dum_name = strsave(name)) == NULL)
+	if ((d = (struct dum *) malloc(sizeof(struct dum))) == NULL)
 		fatal(F_OUTMEM, "macro dummy");
+	d->dum_name = strsave(name);
 	d->dum_next = NULL;
 	if (m->mac_dums == NULL)
 		m->mac_dums = d;
@@ -291,9 +291,9 @@ struct loc *expn_add_loc(struct expn *e, char *name)
 {
 	register struct loc *l;
 
-	l = (struct loc *) malloc(sizeof(struct loc));
-	if (l == NULL || (l->loc_name = strsave(name)) == NULL)
+	if ((l = (struct loc *) malloc(sizeof(struct loc))) == NULL)
 		fatal(F_OUTMEM, "macro local label");
+	l->loc_name = strsave(name);
 	l->loc_next = NULL;
 	if (e->expn_locs == NULL)
 		e->expn_locs = l;
@@ -438,9 +438,9 @@ void mac_add_line(struct opc *op, char *line)
 	register struct mac *m;
 
 	a_mode = A_NONE;
-	l = (struct line *) malloc(sizeof(struct line));
-	if (l == NULL || (l->line_text = strsave(line)) == NULL)
+	if ((l = (struct line *) malloc(sizeof(struct line))) == NULL)
 		fatal(F_OUTMEM, "macro body line");
+	l->line_text = strsave(line);
 	l->line_next = NULL;
 	m = mac_curr;
 	if (m->mac_lines == NULL)
@@ -821,9 +821,7 @@ void mac_start_irp(struct expn *e)
 	if (*e->expn_irp != '\0') {
 		if ((s = mac_next_parm(e->expn_irp)) != NULL) {
 			e->expn_irp = s;
-			if ((s = strsave(tmp)) == NULL)
-				fatal(F_OUTMEM, "IRP character list");
-			e->expn_parms->parm_val = s;
+			e->expn_parms->parm_val = strsave(tmp);
 		}
 	}
 }
@@ -845,11 +843,9 @@ int mac_rept_irp(struct expn *e)
 		if ((s = mac_next_parm(s)) == NULL)
 			return(0);
 		e->expn_irp = s;
-		if ((s = strsave(tmp)) == NULL)
-			fatal(F_OUTMEM, "IRP character list");
 		if (e->expn_parms->parm_val != NULL)
 			free(e->expn_parms->parm_val);
-		e->expn_parms->parm_val = s;
+		e->expn_parms->parm_val = strsave(tmp);
 		return(1);
 	}
 }
@@ -901,8 +897,7 @@ void mac_start_macro(struct expn *e)
 			asmerr(E_INVOPE);
 			return;
 		}
-		if ((p->parm_val = strsave(tmp)) == NULL)
-			fatal(F_OUTMEM, "parameter assignment");
+		p->parm_val = strsave(tmp);
 		p = p->parm_next;
 	}
 }
@@ -991,8 +986,7 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 			asmerr(E_MISOPE);
 			return(0);
 		}
-		if ((t = strsave(tmp)) == NULL)
-			fatal(F_OUTMEM, "macro IF parameter");
+		t = strsave(tmp);
 		s = mac_next_parm(s);
 		if (*s != '\0' && *s != COMMENT) {
 			asmerr(E_INVOPE);
@@ -1066,8 +1060,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 		asmerr(E_INVOPE);
 		return(0);
 	}
-	if ((m->mac_irp = strsave(tmp)) == NULL)
-		fatal(F_OUTMEM, "IRP/IRPC character list");
+	m->mac_irp = strsave(tmp);
 	mac_curr = m;
 	mac_def_nest++;
 	return(0);
