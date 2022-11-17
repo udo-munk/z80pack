@@ -50,7 +50,7 @@
 #define PLENGTH		65	/* default lines/page in listing */
 #define SYMLEN		8	/* default max. symbol length */
 #define INCNEST		10	/* max. INCLUDE nesting depth */
-#define HASHSIZE	500	/* max. entries in symbol hash array */
+#define HASHSIZE	503	/* max. entries in symbol hash array */
 #define OPCARRAY	128	/* size of object buffer */
 #define MAXHEX		32	/* max. no bytes/hex record */
 #define MACNEST		50	/* max. expansion nesting */

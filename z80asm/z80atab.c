@@ -140,11 +140,11 @@ void put_label(void)
  */
 int hash(char *name)
 {
-	register unsigned hashval;
+	register WORD h;
 
-	for (hashval = 0; *name != '\0';)
-		hashval += (unsigned) *name++;
-	return(hashval % HASHSIZE);
+	for (h = 0; *name != '\0';)
+		h = (h << 5) ^ ((h & 0xf800) >> 11) ^ (BYTE) *name++;
+	return(h % HASHSIZE);
 }
 
 /*
