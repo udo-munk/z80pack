@@ -142,9 +142,10 @@ int hash(char *name)
 {
 	register unsigned h;
 
-	for (h = 0; *name != '\0';)
-		h = (h << 5) ^ (h >> (sizeof(unsigned) * 8 - 5))
-			     ^ (BYTE) *name++;
+	for (h = 0; *name != '\0';) {
+		h = (h << 5) | (h >> (sizeof(unsigned) * 8 - 5));
+		h ^= (BYTE) *name++;
+	}
 	return(h % HASHSIZE);
 }
 
