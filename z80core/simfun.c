@@ -169,7 +169,7 @@ int time_diff(struct timeval *t1, struct timeval *t2)
  *	The following file formats are supported:
  *
  *		binary images with Mostek header
- *		Intel hex
+ *		Intel HEX
  *
  *	size == 0	don't care where it is loaded
  *	size < 0	try to load it at address "start"
@@ -268,7 +268,7 @@ static int load_mos(char *fn, WORD start, int size)
 }
 
 /*
- *	Loader for Intel hex
+ *	Loader for Intel HEX
  */
 static int load_hex(char *fn, WORD start, int size)
 {
@@ -294,7 +294,7 @@ static int load_hex(char *fn, WORD start, int size)
 		if (*s != ':')
 			continue;
 		if (checksum(s + 1) != 0) {
-			LOGE(TAG, "invalid checksum in hex record: %s", s);
+			LOGE(TAG, "invalid checksum in HEX record: %s", s);
 			return(1);
 		}
 		s++;
@@ -329,7 +329,7 @@ static int load_hex(char *fn, WORD start, int size)
 		if (size > 0) {
 			if (addr < start
 			    || (addr + count - 1) >= (start + size)) {
-				LOGW(TAG, "tried to load hex record outside "
+				LOGW(TAG, "tried to load HEX record outside "
 				     "expected address range. "
 				     "Address: %04X-%04X",
 				     addr, addr + count - 1);
@@ -368,7 +368,7 @@ static int load_hex(char *fn, WORD start, int size)
 }
 
 /*
- *	Verify checksum of Intel hex records
+ *	Verify checksum of Intel HEX records
  */
 static int checksum(char *s)
 {

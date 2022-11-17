@@ -11,11 +11,11 @@ Format of the output file:
 
         -fb -> binary file
         -fm -> binary file with Mostek header
-        -fh -> Intel hex
+        -fh -> Intel HEX
 
-The default is Intel hex now, in earlier versions it was Mostek binary,
+The default is Intel HEX now, in earlier versions it was Mostek binary,
 but this format is not used much anymore.
-For z80sim produce Mostek binary or Intel hex files, it cannot load binary
+For z80sim use Mostek binary or Intel HEX files, it cannot load binary
 files that don't include the load address.
 
 Option s:
@@ -26,13 +26,16 @@ together with option -l.
 Option p:
 Set the page length for the list file.
 The default is 65 and the allowed range is 6 to 144 or 0.
+If page length is 0 the assembler only prints a single header at the
+start of the listing and inserts an empty line for PAGE/EJECT and
+INCLUDE/MACLIB instead of starting a new page.
 
 Option e:
-Set the significant number of characters in symbols to <num>.
+Set the number of significant characters in symbols to <num>.
 The default is 8 and the allowed range is 6 to 32.
 
 Option h:
-Set the maximum number of bytes per hex record to <num>.
+Set the maximum number of bytes per HEX record to <num>.
 The default is 32 and the allowed range is 1 to 32.
 
 Option x:
@@ -41,7 +44,7 @@ that single parameter DEFS's at the end of the source file won't fill up
 the output file with 0xff's.
 Useful to make CP/M BIOS's, where unallocated data doesn't need to be a
 part of the system image, fit on the system tracks.
-This option is a no-op for Intel hex output.
+This option is a no-op for Intel HEX output.
 
 Option 8:
 Change default instruction set to 8080.
@@ -61,14 +64,16 @@ Option U:
 Convert everything to upper case for compatibility with old source code.
 
 Option o:
-To override the default name of the output file. Without this option the
-name of the output file becomes the name of the input file, but with the
-extension ".bin" or ".hex".
+To override the default name of the output file. The extension ".bin" or
+".hex" will be added when none is specified. Without this option the
+name of the output file becomes the name of the first input file, but
+with the extension ".bin" or ".hex".
 
 Option l:
 Without this option no list file will be generated. With -l a list file
-with the name of the source file but extension ".lis" will be generated.
-An optional file name path may be added to this option.
+with the name of the first source file but extension ".lis" will be
+generated. An optional file name path may be added to this option, which
+has the extension ".lis" appended when none is specified.
 
 Option d:
 This option predefines symbols with a value of 0 and may be used
@@ -85,9 +90,10 @@ Definition of symbols and allocation of memory:
 <symbol> EQU    <expression>    - define constant symbol
 <symbol> DEFL   <expression>    - define variable symbol
 <symbol> DEFB   <exp,'str',...> - write bytes into memory
-<symbol> DEFM   <exp,'str',...> - write characters into memory (same as DEFB)
-<symbol> DEFC   <exp,'str',...> - as DEFM, but bit 7 in the last byte is set
-<symbol> DEFZ   <exp,'str',...> - as DEFM, but an extra zero byte is added
+<symbol> DEFM   <exp,'str',...> - same as DEFB
+<symbol> DEFC   <exp,'str',...> - as DEFB, but bit 7 in the last byte is set
+<symbol> DEFT   <exp,'str',...> - as DEFB, but a length byte is prepended
+<symbol> DEFZ   <exp,'str',...> - as DEFB, but an extra zero byte is added
 <symbol> DEFW   <exp,exp...>    - write words (16 bits) into memory
 <symbol> DEFS   <exp>[,<exp>]   - reserve space in memory, opt. initialized
 
@@ -132,7 +138,7 @@ IRPC    <id>,<clist>    - inline macro, iterate over character list
 REPT    <count>         - inline macro, repeat <count> times
 ENDM                    - end macro
 EXITM                   - exit macro expansion
-MACLIB  <filename>      - include macro library
+MACLIB  <filename>      - include macro library (an alias for INCLUDE)
 IFB     <seq>           - assemble if char sequence inside <> is empty
 IFNB    <seq>           - assemble if char sequence inside <> is not empty
 IFIDN   <seq1>,<seq2>   - assemble if char sequences inside <> are equal
@@ -163,7 +169,7 @@ PRINT   <'string'>      - print string to stdout
 .8080                   - switch to 8080 instruction set
 .Z80                    - switch to Z80 instruction set
 .RADIX                  - change numbers radix (default 10)
-ASEG                    - does nothing
+ASEG                    - absolute code segment (the only mode z80asm supports)
 
 The alias ABS for ASEG is also accepted.
 
@@ -179,4 +185,4 @@ AND & XOR ^ OR |
 
 Usage of the %, ^, >>, <<, <>, <, <=, >, and >= operators in macros
 and macro parameters is not possible, since they clash with the
-escape character ^, the pass by value % and <> bracket lists.
+literalize character ^, the pass by value % and <> bracket lists.
