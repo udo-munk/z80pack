@@ -310,6 +310,7 @@ void do_pass(int p)
 void process_file(char *fn)
 {
 	register char *l, *s;
+	register int c;
 
 	c_line = 0;
 	srcfn = fn;
@@ -320,8 +321,14 @@ void process_file(char *fn)
 		while (mac_exp_nest > 0 && (l = mac_expand()) == NULL)
 			;
 		if (l == NULL) {
+			line[MAXLINE] = '\n';
 			if ((l = fgets(line, MAXLINE + 2, srcfp)) == NULL)
 				break;
+			if (line[MAXLINE] != '\n') {
+				line[MAXLINE] = '\n';
+				while ((c = fgetc(srcfp)) != EOF && c != '\n')
+					;
+			}
 			if (upcase_flag)
 				for (s = l; *s; s++)
 					*s = TO_UPP(*s);

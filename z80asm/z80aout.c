@@ -212,6 +212,8 @@ void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
 	}
 	fprintf(lstfp, "%c%5lu %6lu %s", expn_flag ? '+' : ' ',
 		c_line, s_line, l);
+	if (*(l + strlen(l) - 1) != '\n')
+		fputc('\n', lstfp);
 	if (errnum != E_OK) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
 		errnum = E_OK;
