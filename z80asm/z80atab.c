@@ -75,12 +75,9 @@ struct sym *get_sym(char *sym_name)
 {
 	register struct sym *sp;
 
-	for (sp = symtab[hash(sym_name)]; sp != NULL; sp = sp->sym_next)
-		if (strcmp(sym_name, sp->sym_name) == 0) {
-			sp->sym_refflg = 1;
-			return(sp);
-		}
-	return(NULL);
+	if ((sp = look_sym(sym_name)) != NULL)
+		sp->sym_refflg = 1;
+	return(sp);
 }
 
 /*
@@ -93,7 +90,7 @@ struct sym *new_sym(char *sym_name)
 	register struct sym *sp;
 
 	n = strlen(sym_name);
-	sp = (struct sym *) malloc(sizeof (struct sym));
+	sp = (struct sym *) malloc(sizeof(struct sym));
 	if (sp == NULL || (sp->sym_name = (char *) malloc(n + 1)) == NULL)
 		fatal(F_OUTMEM, "symbols");
 	strcpy(sp->sym_name, sym_name);
@@ -142,10 +139,8 @@ int hash(char *name)
 {
 	register unsigned h;
 
-	for (h = 0; *name != '\0';) {
-		h = (h << 5) | (h >> (sizeof(unsigned) * 8 - 5));
-		h ^= (BYTE) *name++;
-	}
+	for (h = 0; *name != '\0';)
+		h = ((h << 5) | (h >> (sizeof(h) * 8 - 5))) ^ (BYTE) *name++;
 	return(h % HASHSIZE);
 }
 

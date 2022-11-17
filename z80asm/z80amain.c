@@ -82,7 +82,7 @@ static const char *errmsg[] = {		/* error messages for fatal() */
 	"internal error: %s",		/* 4 */
 	"invalid page length: %s",	/* 5 */
 	"invalid symbol length: %s",	/* 6 */
-	"invalid hex record length: %s"	/* 7 */
+	"invalid HEX record length: %s"	/* 7 */
 };
 
 int main(int argc, char *argv[])
@@ -255,12 +255,16 @@ void usage(void)
 }
 
 /*
- *	print error messages and abort
+ *	print error message and abort
  */
 void fatal(int i, const char *arg)
 {
 	printf(errmsg[i], arg);
 	putchar('\n');
+	if (objfp != NULL) {
+		fclose(objfp);
+		unlink(objfn);
+	}
 	exit(1);
 }
 
@@ -290,8 +294,6 @@ void do_pass(int p)
 	mac_end_pass();
 	if (pass == 1) {			/* PASS 1 */
 		if (errors > 0) {
-			fclose(objfp);
-			unlink(objfn);
 			printf("%d error(s)\n", errors);
 			fatal(F_HALT, NULL);
 		}
@@ -398,7 +400,7 @@ int process_line(char *l)
 				asmerr(E_INVOPE);
 			else if (gencode || (op->op_flags & OP_COND)) {
 				if (pass == 2 && (op->op_flags & OP_INCL)) {
-					/* list INCLUDE before include file */
+					/* list INCLUDE before included file */
 					a_mode = A_NONE;
 					lst_line(l, 0, 0, expn_flag);
 				}
@@ -417,7 +419,7 @@ int process_line(char *l)
 		if (gencode && (op == NULL || !(op->op_flags & OP_DS)))
 			obj_writeb(op_count);
 		lflag = 1;
-		/* already listed INCLUDE, force eject page */
+		/* already listed INCLUDE, force page eject */
 		if (op != NULL && (op->op_flags & OP_INCL)) {
 			lflag = 0;
 			p_line = ppl + 1;

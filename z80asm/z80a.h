@@ -38,7 +38,7 @@
 			" & 2022 by Thomas Eberhardt"
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */
-#define OBJEXTHEX	".hex"	/* filename extension hex */
+#define OBJEXTHEX	".hex"	/* filename extension HEX */
 #define LSTEXT		".lis"	/* filename extension listing */
 #define COMMENT		';'	/* inline comment character */
 #define LINCOM		'*'	/* comment line if in column 1 */
@@ -52,7 +52,7 @@
 #define INCNEST		10	/* max. INCLUDE nesting depth */
 #define HASHSIZE	503	/* max. entries in symbol hash array */
 #define OPCARRAY	128	/* size of object buffer */
-#define MAXHEX		32	/* max. no bytes/hex record */
+#define MAXHEX		32	/* max. no bytes per HEX record */
 #define MACNEST		50	/* max. expansion nesting */
 
 /*
@@ -169,7 +169,7 @@ struct sym {
  */
 #define OBJ_BIN		0	/* binary file */
 #define OBJ_MOS		1	/* Mostek binary file */
-#define OBJ_HEX		2	/* Intel hex file */
+#define OBJ_HEX		2	/* Intel HEX file */
 
 /*
  *	definition of symbol table listing options
@@ -257,7 +257,7 @@ struct sym {
 #define F_INTERN	4	/* internal error */
 #define F_PAGLEN	5	/* page length out of range */
 #define F_SYMLEN	6	/* symbol length out of range */
-#define F_HEXLEN	7	/* hex record length out of range */
+#define F_HEXLEN	7	/* HEX record length out of range */
 
 /*
  *	macro for declaring unused function parameters

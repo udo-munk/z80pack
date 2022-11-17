@@ -52,7 +52,7 @@ extern struct sym *first_sym(int);
 extern struct sym *next_sym(void);
 
 /*
- *	Intel hex record types
+ *	Intel HEX record types
  */
 #define	HEX_DATA	0
 #define HEX_EOF		1
@@ -92,11 +92,11 @@ static const char *errmsg[] = {			/* error messages for asmerr */
 static int nseq_flag;			/* flag for non-sequential ORG */
 static WORD curr_addr;			/* current logical file address */
 static WORD bin_addr;			/* current address written to file */
-static WORD hex_addr;			/* current address in hex record */
-static WORD hex_cnt;			/* number of bytes in hex buffer */
+static WORD hex_addr;			/* current address in HEX record */
+static WORD hex_cnt;			/* number of bytes in HEX buffer */
 
-static BYTE hex_buf[MAXHEX];		/* buffer for one hex record */
-static char hex_out[MAXHEX*2+13];	/* ASCII buffer for one hex record */
+static BYTE hex_buf[MAXHEX];		/* buffer for one HEX record */
+static char hex_out[MAXHEX*2+13];	/* ASCII buffer for one HEX record */
 
 /*
  *	print error message to listfile and increase error counter
@@ -500,7 +500,7 @@ void fill_bin(void)
 }
 
 /*
- *	create a hex end-of-file record in ASCII and write into object file
+ *	create a HEX end-of-file record in ASCII and write into object file
  */
 void eof_hex(WORD addr)
 {
@@ -510,7 +510,7 @@ void eof_hex(WORD addr)
 }
 
 /*
- *	create a hex data record in ASCII and write into object file
+ *	create a HEX data record in ASCII and write into object file
  */
 void flush_hex(void)
 {
@@ -522,7 +522,7 @@ void flush_hex(void)
 }
 
 /*
- *	write a hex record in ASCII and write into object file
+ *	write a HEX record in ASCII and write into object file
  */
 void hex_record(BYTE rec_type)
 {
@@ -558,7 +558,7 @@ void btoh(BYTE b, char **p)
 }
 
 /*
- *	compute checksum for Intel hex record
+ *	compute checksum for Intel HEX record
  */
 BYTE chksum(BYTE rec_type)
 {

@@ -38,7 +38,7 @@ mkdskimg:
 		are created in the current working directory.
 
 bin2hex:
-	converts binary files to Intel hex.
+	converts binary files to Intel HEX.
 
 cpmrecv:
 	This is a process spawned by cpmsim. It reads input from
@@ -64,7 +64,7 @@ cpmsend:
 If one uses PIP to transfer files between the host system and the
 simulator, only send ASCII files, because pip uses CTRL-Z
 for EOF! To transfer a binary file from the host system to the
-simulator convert it to Intel hex format with bin2hex. This
+simulator convert it to Intel HEX format with bin2hex. This
 can be converted back to a binary file under CP/M with the LOAD
 command.
 

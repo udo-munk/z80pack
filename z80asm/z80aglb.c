@@ -48,7 +48,7 @@ WORD rpc,			/* real program counter */
      a_addr,			/* output value for A_ADDR/A_VALUE mode */
      load_addr,			/* load address of program */
      start_addr,		/* start address of program */
-     hexlen = MAXHEX;		/* hex record length */
+     hexlen = MAXHEX;		/* HEX record length */
 
 int  list_flag,			/* flag for option -l */
      sym_flag,			/* flag for option -s */
@@ -74,7 +74,7 @@ int  list_flag,			/* flag for option -l */
      errnum,			/* error number in pass 2 */
      a_mode,			/* address output mode for pseudo ops */
      load_flag,			/* flag for load_addr valid */
-     obj_fmt = OBJ_HEX,		/* format of object file (default Intel hex) */
+     obj_fmt = OBJ_HEX,		/* format of object file (default Intel HEX) */
      symlen = SYMLEN,		/* significant characters in symbols */
      symmax,			/* max. symbol name length encountered */
      p_line,			/* no. printed lines on page (can be < 0) */

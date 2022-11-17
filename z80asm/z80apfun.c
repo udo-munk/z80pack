@@ -206,7 +206,7 @@ WORD op_ds(BYTE dummy1, BYTE dummy2)
 }
 
 /*
- *	DEFB, DB, DEFM, DEFC, DC, DEFZ
+ *	DEFB, DB, DEFM, DEFC, DC, DEFT, DEFZ
  */
 WORD op_db(BYTE op_code, BYTE dummy)
 {
@@ -216,7 +216,7 @@ WORD op_db(BYTE op_code, BYTE dummy)
 
 	UNUSED(dummy);
 
-	i = 0;
+	i = (op_code == 3 ? 1 : 0);	/* DEFT length byte */
 	p = operand;
 	while (p != NULL) {
 		p1 = next_arg(p, &sf);
@@ -225,20 +225,12 @@ WORD op_db(BYTE op_code, BYTE dummy)
 			return(i);
 		} else if (sf > 0) {	/* a valid string */
 			c = *p++;
-			while (*p != c || *++p == c) { /* double delim? */
-				ops[i] = *p++;
-				if (++i >= OPCARRAY)
-					fatal(F_INTERN,
-					      "op-code buffer overflow");
-			}
-		} else {		/* an expression */
-			if (*p != '\0') {
-				if (pass == 2)
-					ops[i] = chk_byte(eval(p));
-				if (++i >= OPCARRAY)
-					fatal(F_INTERN,
-					      "op-code buffer overflow");
-			}
+			while (*p != c || *++p == c) /* double delim? */
+				ops[i++] = *p++;
+		} else if (*p != '\0') { /* an expression */
+			if (pass == 2)
+				ops[i] = chk_byte(eval(p));
+			i++;
 		}
 		p = p1;
 	}
@@ -249,10 +241,11 @@ WORD op_db(BYTE op_code, BYTE dummy)
 		if (i > 0)
 			ops[i - 1] |= 0x80;
 		break;
-	case 3:				/* DEFZ */
+	case 3:				/* DEFT */
+		ops[0] = i - 1;
+		break;
+	case 4:				/* DEFZ */
 		ops[i++] = '\0';
-		if (i >= OPCARRAY)
-			fatal(F_INTERN, "op-code buffer overflow");
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_db");
@@ -283,8 +276,6 @@ WORD op_dw(BYTE dummy1, BYTE dummy2)
 				ops[i + 1] = n >> 8;
 			}
 			i += 2;
-			if (i >= OPCARRAY)
-				fatal(F_INTERN, "op-code buffer overflow");
 		}
 		p = p1;
 	}
