@@ -143,7 +143,7 @@ int hash(char *name)
 	register WORD h;
 
 	for (h = 0; *name != '\0';)
-		h = (h << 5) ^ ((h & 0xf800) >> 11) ^ (BYTE) *name++;
+		h = (h << 5) ^ (h >> 11) ^ (BYTE) *name++;
 	return(h % HASHSIZE);
 }
 
