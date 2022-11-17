@@ -324,7 +324,7 @@ void process_file(char *fn)
 			line[MAXLINE] = '\n';
 			if ((l = fgets(line, MAXLINE + 2, srcfp)) == NULL)
 				break;
-			if (line[MAXLINE] != '\n') {
+			if (line[MAXLINE] != '\n' && line[MAXLINE] != '\0') {
 				line[MAXLINE] = '\n';
 				while ((c = fgetc(srcfp)) != EOF && c != '\n')
 					;
