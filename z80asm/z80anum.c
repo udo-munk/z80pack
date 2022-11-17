@@ -263,7 +263,7 @@ int get_token(void)
 			if (m++ == 2)
 				return(E_VALOUT);
 			n <<= 8;
-			n |= (unsigned) *s;
+			n |= (BYTE) *s;
 		}
 		return(E_MISDEL);
 	case '!':
