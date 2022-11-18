@@ -126,8 +126,8 @@ WORD op_pupo(BYTE base_op, BYTE dummy)
  */
 WORD op_ex(BYTE base_ops, BYTE base_opd)
 {
-	register char *sec;
 	register BYTE op;
+	register char *sec;
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
@@ -243,9 +243,9 @@ WORD op_ret(BYTE base_op, BYTE base_opc)
  */
 WORD op_jpcall(BYTE base_op, BYTE base_opc)
 {
-	register char *sec;
 	register BYTE op;
 	register WORD n;
+	register char *sec;
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
@@ -313,8 +313,8 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
  */
 WORD op_jr(BYTE base_op, BYTE base_opc)
 {
-	register char *sec;
 	register BYTE op;
+	register char *sec;
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
@@ -369,9 +369,9 @@ WORD op_djnz(BYTE base_op, BYTE dummy)
  */
 WORD op_ld(BYTE base_op, BYTE dummy)
 {
-	register char *sec;
 	register BYTE op;
 	register WORD n;
+	register char *sec;
 	register WORD len = 0;
 
 	UNUSED(dummy);
@@ -887,8 +887,8 @@ WORD ldinn(char *sec)
  */
 WORD op_add(BYTE base_op, BYTE base_op16)
 {
-	register char *sec;
 	register BYTE op;
+	register char *sec;
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
@@ -960,8 +960,8 @@ WORD op_add(BYTE base_op, BYTE base_op16)
  */
 WORD op_sbadc(BYTE base_op, BYTE base_op16)
 {
-	register char *sec;
 	register BYTE op;
+	register char *sec;
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
@@ -1144,8 +1144,8 @@ WORD aluop(BYTE base_op, char *sec)
  */
 WORD op_out(BYTE op_base, BYTE op_basec)
 {
-	register char *sec;
 	register BYTE op;
+	register char *sec;
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
@@ -1200,8 +1200,8 @@ WORD op_out(BYTE op_base, BYTE op_basec)
  */
 WORD op_in(BYTE op_base, BYTE op_basec)
 {
-	register char *sec;
 	register BYTE op;
+	register char *sec;
 	register WORD len = 0;
 
 	sec = next_arg(operand, NULL);
@@ -1257,9 +1257,9 @@ WORD op_in(BYTE op_base, BYTE op_basec)
  */
 WORD op_cbgrp(BYTE base_op, BYTE dummy)
 {
-	register char *sec;
 	register BYTE op;
 	register BYTE bit = 0;
+	register char *sec;
 	register WORD len = 0;
 
 	UNUSED(dummy);
@@ -1319,8 +1319,8 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
  */
 WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 {
-	register char *tert;
 	register BYTE op;
+	register char *tert;
 	register WORD len = 0;
 
 	tert = next_arg(sec, NULL);
@@ -1375,8 +1375,8 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
  */
 WORD op8080_mov(BYTE base_op, BYTE dummy)
 {
-	register char *sec;
 	register BYTE op1, op2;
+	register char *sec;
 	register WORD len = 0;
 
 	UNUSED(dummy);
@@ -1623,8 +1623,8 @@ WORD op8080_addr(BYTE base_op, BYTE dummy)
  */
 WORD op8080_mvi(BYTE base_op, BYTE dummy)
 {
-	register char *sec;
 	register BYTE op;
+	register char *sec;
 	register WORD len = 0;
 
 	UNUSED(dummy);
@@ -1659,9 +1659,9 @@ WORD op8080_mvi(BYTE base_op, BYTE dummy)
  */
 WORD op8080_lxi(BYTE base_op, BYTE dummy)
 {
-	register char *sec;
 	register BYTE op;
 	register WORD n;
+	register char *sec;
 	register WORD len = 0;
 
 	UNUSED(dummy);

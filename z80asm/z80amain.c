@@ -117,7 +117,8 @@ void init(void)
  */
 void options(int argc, char *argv[])
 {
-	register char *s, *t, **p;
+	register char *s, *t;
+	register char **p;
 
 	while (--argc > 0 && (*++argv)[0] == '-')
 		for (s = argv[0] + 1; *s != '\0'; s++)
@@ -309,8 +310,9 @@ void do_pass(int p)
  */
 void process_file(char *fn)
 {
-	register char *l, *s;
+	register char *s;
 	register int i;
+	register char *l;
 
 	c_line = 0;
 	srcfn = fn;
@@ -351,10 +353,11 @@ void process_file(char *fn)
  */
 int process_line(char *l)
 {
-	register char *p;
-	register int old_genc, lbl_flag, expn_flag, lflag;
-	register WORD op_count;
 	register struct opc *op;
+	register int lbl_flag;
+	register WORD op_count;
+	char *p;
+	int old_genc, expn_flag, lflag;
 
 	/*
 	 *	need expn_flag and lbl_flag, since the conditions
@@ -490,8 +493,9 @@ void open_o_files(char *source)
  */
 char *get_fn(char *src, const char *ext, int replace)
 {
-	register char *sp, *ep, *dp;
-	register int n, m;
+	register char *sp, *dp;
+	register char *ep;
+	int n, m;
 
 	if ((sp = strrchr(src, PATHSEP)) == NULL)
 		sp = src;

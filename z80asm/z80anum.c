@@ -141,8 +141,9 @@ void init_ctype(void)
  */
 BYTE search_opr(char *s)
 {
+	register struct opr *low, *mid;
+	register struct opr *high;
 	register int cond;
-	register struct opr *low, *high, *mid;
 
 	low = &oprtab[0];
 	high = &oprtab[no_operators - 1];
@@ -165,9 +166,10 @@ BYTE search_opr(char *s)
  */
 int get_token(void)
 {
-	register char *p1, *p2, *s;
-	register WORD n, m, base;
-	register struct sym *sp;
+	register char *s, *p1;
+	register char *p2;
+	WORD n, m, base;
+	struct sym *sp;
 
 	s = scan_pos;
 	tok_val = 0;
@@ -353,8 +355,8 @@ done:
 int factor(WORD *resultp)
 {
 	register int err, erru;
-	register BYTE opr_type;
 	register char *s;
+	BYTE opr_type;
 	WORD value;
 
 	switch (tok_type) {

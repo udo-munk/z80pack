@@ -86,8 +86,8 @@ struct sym *get_sym(char *sym_name)
  */
 struct sym *new_sym(char *sym_name)
 {
-	register int hashval, n;
 	register struct sym *sp;
+	register int n, hashval;
 
 	n = strlen(sym_name);
 	sp = (struct sym *) malloc(sizeof(struct sym));
@@ -149,8 +149,8 @@ int hash(char *name)
  */
 struct sym *first_sym(int sort_mode)
 {
-	register int i, j;
 	register struct sym *sp;
+	register int i, j;
 
 	if (symcnt == 0)
 		return(NULL);

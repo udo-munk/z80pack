@@ -222,18 +222,20 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
  */
 void mac_delete(struct mac *m)
 {
-	register struct dum *d, *d1;
-	register struct line *ln, *ln1;
+	register struct dum *d;
+	register struct line *l;
+	struct dum *d1;
+	struct line *l1;
 
 	for (d = m->mac_dums; d != NULL; d = d1) {
 		d1 = d->dum_next;
 		free(d->dum_name);
 		free(d);
 	}
-	for (ln = m->mac_lines; ln != NULL; ln = ln1) {
-		ln1 = ln->line_next;
-		free(ln->line_text);
-		free(ln);
+	for (l = m->mac_lines; l != NULL; l = l1) {
+		l1 = l->line_next;
+		free(l->line_text);
+		free(l);
 	}
 	if (m->mac_irp != NULL)
 		free(m->mac_irp);
@@ -309,9 +311,10 @@ struct loc *expn_add_loc(struct expn *e, char *name)
  */
 void mac_start_expn(struct mac *m)
 {
-	register struct expn *e, *e1;
-	register struct dum *d;
+	register struct expn *e;
 	register struct parm *p;
+	register struct dum *d;
+	struct expn *e1;
 
 	if (mac_exp_nest == MACNEST) {
 		/* abort macro expansion */
@@ -367,10 +370,12 @@ void mac_start_expn(struct mac *m)
  */
 void mac_end_expn(void)
 {
+	register struct parm *p;
+	register struct loc *l;
 	register struct expn *e;
-	register struct parm *p, *p1;
-	register struct loc *l, *l1;
-	register struct mac *m;
+	struct mac *m;
+	struct parm *p1;
+	struct loc *l1;
 
 	e = mac_expn;
 	for (p = e->expn_parms; p != NULL; p = p1) {
@@ -404,8 +409,9 @@ void mac_end_expn(void)
 int mac_rept_expn(void)
 {
 	register struct expn *e;
+	register struct loc *l;
 	register struct mac *m;
-	register struct loc *l, *l1;
+	struct loc *l1;
 
 	e = mac_expn;
 	e->expn_iter++;
@@ -496,11 +502,11 @@ const char *mac_get_local(struct expn *e, char *s)
 void mac_subst(char *t, char *s, struct expn *e,
 	       const char *(*getf)(struct expn *, char *))
 {
-	register char *s1, *t0, *t1, c;
 	register const char *v;
-	register int n, m;
-	int cat_flag;
-	int lit_flag;
+	register int m;
+	register int cat_flag;
+	char *s1, *t0, *t1, c;
+	int n, lit_flag;
 
 	if (*s == LINCOM || (*s == LINOPT && !IS_SYM(*(s + 1)))) {
 		strcpy(t, s);
@@ -700,9 +706,11 @@ void mac_call(void)
  */
 char *mac_next_parm(char *s)
 {
-	register char *t, *t1, c;
-	register int n, m;
-	register WORD w, v;
+	register char *t, c;
+	register int m;
+	WORD w, v;
+	int n;
+	char *t1;
 
 	t1 = t = tmp;
 	n = 0;		/* angle brackets nesting level */
@@ -1015,7 +1023,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 {
 	register char *s, *t;
 	register int i;
-	register struct mac *m;
+	struct mac *m;
 
 	UNUSED(dummy);
 
@@ -1073,9 +1081,10 @@ WORD op_irp(BYTE op_code, BYTE dummy)
  */
 WORD op_local(BYTE dummy1, BYTE dummy2)
 {
-	register char *s, *s1, c;
+	register char *s, c;
 	register struct expn *e;
-	register struct loc *l;
+	char *s1;
+	struct loc *l;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
