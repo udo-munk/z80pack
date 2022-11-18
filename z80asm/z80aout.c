@@ -38,7 +38,7 @@ void eof_hex(WORD);
 void flush_hex(void);
 void hex_record(BYTE);
 BYTE chksum(BYTE);
-void btoh(BYTE, char **);
+char *btoh(BYTE, char *);
 
 /* z80amain.c */
 extern void fatal(int, const char *);
@@ -527,17 +527,17 @@ void flush_hex(void)
 void hex_record(BYTE rec_type)
 {
 	register int i;
-	char *p;
+	register char *p;
 
 	p = hex_out;
 	*p++ = ':';
-	btoh(hex_cnt, &p);
-	btoh(hex_addr >> 8, &p);
-	btoh(hex_addr & 0xff, &p);
-	btoh(rec_type, &p);
+	p = btoh(hex_cnt, p);
+	p = btoh(hex_addr >> 8, p);
+	p = btoh(hex_addr & 0xff, p);
+	p = btoh(rec_type, p);
 	for (i = 0; i < hex_cnt; i++)
-		btoh(hex_buf[i], &p);
-	btoh(chksum(rec_type), &p);
+		p = btoh(hex_buf[i], p);
+	p = btoh(chksum(rec_type), p);
 	*p++ = '\n';
 	*p = '\0';
 	fputs(hex_out, objfp);
@@ -545,16 +545,17 @@ void hex_record(BYTE rec_type)
 
 /*
  *	convert BYTE into ASCII hex and copy to string at p
- *	increase p by 2
+ *	returns p increased by 2
  */
-void btoh(BYTE b, char **p)
+char *btoh(BYTE b, char *p)
 {
 	register char c;
 
 	c = b >> 4;
-	*(*p)++ = c + (c < 10 ? '0' : '7');
+	*p++ = c + (c < 10 ? '0' : '7');
 	c = b & 0xf;
-	*(*p)++ = c + (c < 10 ? '0' : '7');
+	*p++ = c + (c < 10 ? '0' : '7');
+	return(p);
 }
 
 /*

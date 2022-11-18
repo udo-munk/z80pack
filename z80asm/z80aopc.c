@@ -379,8 +379,10 @@ static int no_operands;		/* current number of register/flags */
  */
 void instrset(int is)
 {
-	register struct opc *opc, *p, **q;
-	register int i, nopc;
+	register struct opc *p, **q;
+	register int i;
+	struct opc *opc;
+	int nopc;
 
 	nopc = 0;		/* silence compiler */
 	if (is == curr_instrset)
@@ -433,8 +435,9 @@ int opccmp(const void *p1, const void *p2)
  */
 struct opc *search_op(char *op_name)
 {
-	register int cond;
-	register struct opc **low, **high, **mid;
+	register struct opc **low, **mid;
+	register struct opc **high;
+	int cond;
 
 	low = opctab;
 	high = opctab + no_opcodes - 1;
@@ -459,8 +462,9 @@ struct opc *search_op(char *op_name)
  */
 BYTE get_reg(char *s)
 {
-	register int cond;
-	register struct ope *low, *high, *mid;
+	register struct ope *low, *mid;
+	register struct ope *high;
+	int cond;
 
 	if (s == NULL || *s == '\0')
 		return(NOOPERA);
