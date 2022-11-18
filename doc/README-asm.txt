@@ -6,6 +6,9 @@ z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u
 If the file name of a source doesn't have an extension the default
 extension ".asm" will be appended.
 
+Source lines have a maximum length of 128 characters, excluding the
+new line character. Any characters after this limit are ignored.
+
 Option f:
 Format of the output file:
 

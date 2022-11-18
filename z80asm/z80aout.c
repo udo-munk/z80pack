@@ -210,7 +210,7 @@ void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
 			fputs("  ", lstfp);
 		fputc(' ', lstfp);
 	}
-	fprintf(lstfp, "%c%5lu %6lu %s", expn_flag ? '+' : ' ',
+	fprintf(lstfp, "%c%5lu %6lu %s\n", expn_flag ? '+' : ' ',
 		c_line, s_line, l);
 	if (errnum != E_OK) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);

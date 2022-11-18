@@ -42,7 +42,7 @@ int process_line(char *);
 void open_o_files(char *);
 char *get_fn(char *, const char *, int);
 char *get_symbol(char *, char *, int);
-char *get_operand(char *, char *, int);
+void get_operand(char *, char *, int);
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -310,6 +310,7 @@ void do_pass(int p)
 void process_file(char *fn)
 {
 	register char *l, *s;
+	register int i;
 
 	c_line = 0;
 	srcfn = fn;
@@ -322,6 +323,14 @@ void process_file(char *fn)
 		if (l == NULL) {
 			if ((l = fgets(line, MAXLINE + 2, srcfp)) == NULL)
 				break;
+			i = strlen(line) - 1;
+			if (line[i] == '\n')
+				line[i] = '\0';
+			else if (i == MAXLINE) {
+				line[i] = '\0';
+				while ((i = fgetc(srcfp)) != EOF && i != '\n')
+					;
+			}
 			if (upcase_flag)
 				for (s = l; *s; s++)
 					*s = TO_UPP(*s);
@@ -380,7 +389,7 @@ int process_line(char *l)
 			if (gencode) {
 				if (lbl_flag)
 					put_label();
-				p = get_operand(operand, p, 1);
+				get_operand(operand, p, 1);
 				mac_call();
 				if (lbl_flag)
 					a_mode = A_STD;
@@ -394,7 +403,7 @@ int process_line(char *l)
 					if (gencode)
 						put_label();
 			}
-			p = get_operand(operand, p, op->op_flags & OP_NOPRE);
+			get_operand(operand, p, op->op_flags & OP_NOPRE);
 			if (operand[0] != '\0' && operand[0] != COMMENT
 					       && (op->op_flags & OP_NOOPR))
 				asmerr(E_INVOPE);
@@ -552,56 +561,49 @@ char *get_symbol(char *s, char *l, int lbl_flag)
  *	delimited strings are copied without changes
  *	if nopre_flag is 1 removes only leading white space
  */
-char *get_operand(char *s, char *l, int nopre_flag)
+void get_operand(char *s, char *l, int nopre_flag)
 {
 	register char *s0;
 	register char c;
 
-	s0 = s;
 	while (IS_SPC(*l))
 		l++;
 	if (nopre_flag) {
-		while (*l != '\n' && *l != '\0')
-			*s++ = *l++;
-	} else {
-		while (*l != '\0' && *l != COMMENT) {
-			if (IS_SPC(*l)) {
+		strcpy(s, l);
+		return;
+	}
+	s0 = s;
+	while (*l != '\0' && *l != COMMENT) {
+		if (IS_SPC(*l)) {
+			l++;
+			while (IS_SPC(*l))
 				l++;
-				while (IS_SPC(*l))
-					l++;
-				/* leave one space between symbols */
-				if (s > s0 && IS_SYM(*(s - 1)) && IS_SYM(*l))
-					*s++ = ' ';
-				continue;
-			}
-			if (*l != STRDEL && *l != STRDEL2) {
-				*s++ = TO_UPP(*l);
-				l++;
-				continue;
-			}
-			c = *l;
-			*s++ = *l++;
+			/* leave one space between symbols */
+			if (s > s0 && IS_SYM(*(s - 1)) && IS_SYM(*l))
+				*s++ = ' ';
+		} else if (*l == STRDEL || *l == STRDEL2) {
+			*s++ = c = *l++;
 			if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
 				continue;
 			while (1) {
-				if (*l == '\n' || *l == '\0') {
-					/* undelimited string */
-					*s = '\0';
-					return(l);
-				}
-				if (*l == c) {
-					if (*(l + 1) == c) /* double delim? */
-						*s++ = *l++;
-					else
+				if (*l == '\0') /* undelimited string */
+					goto done;
+				else if (*l == c) {
+					if (*(l + 1) != c) /* double delim? */
 						break;
+					else
+						*s++ = *l++;
 				}
 				*s++ = *l++;
 			}
 			*s++ = *l++;
+		} else {
+			*s++ = TO_UPP(*l);
+			l++;
 		}
 	}
+done:
 	*s = '\0';
-	return(l);
 }
 
 /*
