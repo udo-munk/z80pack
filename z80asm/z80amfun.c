@@ -98,7 +98,7 @@ static int mac_sort;				/* sort mode for iterator */
 static int mac_count;				/* number of macros defined */
 static struct expn *mac_expn;			/* macro expansion stack */
 static WORD mac_loc_cnt;			/* counter for LOCAL labels */
-static char tmp[MAXLINE + 2];			/* temporary buffer */
+static char tmp[MAXLINE + 1];			/* temporary buffer */
 
 /*
  *	verify that s is a legal symbol, also truncates to symlen
@@ -503,15 +503,14 @@ void mac_subst(char *t, char *s, struct expn *e,
 	int lit_flag;
 
 	if (*s == LINCOM || (*s == LINOPT && !IS_SYM(*(s + 1)))) {
-		while (*s != '\n' && *s != '\0')
-			*t++ = *s++;
-		goto done;
+		strcpy(t, s);
+		return;
 	}
 	t0 = t;
 	n = 0;		/* angle brackets nesting level */
 	cat_flag = NO_CONCAT;
 	lit_flag = NO_LITERAL;
-	while (*s != '\n' && *s != '\0') {
+	while (*s != '\0') {
 		if (IS_FSYM(*s)) {
 			/* gather symbol */
 			s1 = s;
@@ -563,7 +562,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 			*t++ = c = *s++;
 			cat_flag = NO_CONCAT;
 			while (1) {
-				if (*s == '\n' || *s == '\0') {
+				if (*s == '\0') {
 					asmerr(E_MISDEL);
 					goto done;
 				} else if (*s == c) {
@@ -621,10 +620,11 @@ void mac_subst(char *t, char *s, struct expn *e,
 			lit_flag = NO_LITERAL;
 		} else if (*s == COMMENT && n == 0) {
 			/* don't copy double COMMENT comments */
-			if (*(s + 1) != COMMENT)
-				while (*s != '\n' && *s != '\0')
-					*t++ = *s++;
-			goto done;
+			if (*(s + 1) == COMMENT)
+				*t = '\0';
+			else
+				strcpy(t, s);
+			return;
 		} else {
 			cat_flag = NO_CONCAT;
 			lit_flag = NO_LITERAL;
@@ -646,7 +646,6 @@ void mac_subst(char *t, char *s, struct expn *e,
 	if (n > 0)
 		asmerr(E_INVOPE);
 done:
-	*t++ = '\n';
 	*t = '\0';
 }
 
@@ -956,7 +955,7 @@ WORD op_exitm(BYTE dummy1, BYTE dummy2)
  */
 WORD op_mcond(BYTE op_code, BYTE dummy)
 {
-	register char *s, *t;
+	register char *s, *t = NULL;
 
 	UNUSED(dummy);
 
@@ -971,31 +970,30 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 	switch(op_code) {
 	case 1:				/* IFB */
 	case 2:				/* IFNB */
-		s = mac_next_parm(operand);
-		if (*s != '\0' && *s != COMMENT) {
+		if ((s = mac_next_parm(operand)) == NULL)
+			goto done;
+		else if (*s != '\0' && *s != COMMENT) {
 			asmerr(E_INVOPE);
-			return(0);
-		}
-		if (*tmp != '\0')
+			goto done;
+		} else if (*tmp != '\0')
 			gencode = 0;
 		break;
 	case 3:				/* IFIDN */
 	case 4:				/* IFDIF */
-		s = mac_next_parm(operand);
-		if (*s++ != ',') {
+		if ((s = mac_next_parm(operand)) == NULL)
+			goto done;
+		else if (*s++ != ',') {
 			asmerr(E_MISOPE);
-			return(0);
+			goto done;
 		}
 		t = strsave(tmp);
-		s = mac_next_parm(s);
-		if (*s != '\0' && *s != COMMENT) {
+		if ((s = mac_next_parm(s)) == NULL)
+			goto done;
+		else if ((*s != '\0' && *s != COMMENT)) {
 			asmerr(E_INVOPE);
-			free(t);
-			return(0);
-		}
-		if (strcmp(t, s) != 0)
+			goto done;
+		} else if (strcmp(t, s) != 0)
 			gencode = 0;
-		free(t);
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_mcond");
@@ -1003,6 +1001,9 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 	}
 	if ((op_code & 1) == 0)		/* negate for inverse IF */
 		gencode = !gencode;
+done:
+	if (t != NULL)
+		free(t);
 	act_iflevel = iflevel;
 	return(0);
 }
@@ -1055,8 +1056,9 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 	}
 	while (IS_SPC(*s))
 		s++;
-	s = mac_next_parm(s);
-	if (*s != '\0' && *s != COMMENT) {
+	if ((s = mac_next_parm(s)) == NULL)
+		return(0);
+	else if (*s != '\0' && *s != COMMENT) {
 		asmerr(E_INVOPE);
 		return(0);
 	}
