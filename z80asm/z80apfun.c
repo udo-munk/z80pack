@@ -186,7 +186,8 @@ WORD op_dl(BYTE dummy1, BYTE dummy2)
 WORD op_ds(BYTE dummy1, BYTE dummy2)
 {
 	register char *p;
-	register WORD count, value;
+	register WORD count;
+	register WORD value;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -210,8 +211,10 @@ WORD op_ds(BYTE dummy1, BYTE dummy2)
  */
 WORD op_db(BYTE op_code, BYTE dummy)
 {
-	register char *p, *p1, c;
+	register char *p;
 	register int i;
+	register char c;
+	char *p1;
 	int sf;
 
 	UNUSED(dummy);
@@ -258,9 +261,10 @@ WORD op_db(BYTE op_code, BYTE dummy)
  */
 WORD op_dw(BYTE dummy1, BYTE dummy2)
 {
-	register char *p, *p1;
+	register char *p;
 	register int i;
 	register WORD n;
+	char *p1;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -288,10 +292,11 @@ WORD op_dw(BYTE dummy1, BYTE dummy2)
  */
 WORD op_misc(BYTE op_code, BYTE dummy)
 {
-	register char *p, *d, *fn, c;
-	register BYTE n;
+	register char *p, *d;
+	register char c;
+	BYTE n;
 	unsigned long inc_line;
-	char *inc_fn;
+	char *inc_fn, *fn;
 	FILE *inc_fp;
 	static int incnest;
 	static int page_done;

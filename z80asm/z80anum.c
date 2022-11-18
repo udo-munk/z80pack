@@ -143,7 +143,7 @@ BYTE search_opr(char *s)
 {
 	register struct opr *low, *mid;
 	register struct opr *high;
-	register int cond;
+	int cond;
 
 	low = &oprtab[0];
 	high = &oprtab[no_operators - 1];
