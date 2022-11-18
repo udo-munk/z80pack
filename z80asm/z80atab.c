@@ -87,7 +87,8 @@ struct sym *get_sym(char *sym_name)
 struct sym *new_sym(char *sym_name)
 {
 	register struct sym *sp;
-	register int n, hashval;
+	register int n;
+	register int hashval;
 
 	n = strlen(sym_name);
 	sp = (struct sym *) malloc(sizeof(struct sym));
