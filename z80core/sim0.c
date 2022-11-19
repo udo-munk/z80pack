@@ -489,46 +489,52 @@ void reset_cpu(void)
  */
 static void save_core(void)
 {
+	register FILE *fp;
 	register int i;
 	int fd;
-	BYTE d;
 
-	if ((fd = open("core.z80", O_WRONLY | O_CREAT, 0600)) == -1) {
+	if ((fd = open("core.z80", O_WRONLY | O_CREAT, 0600)) == -1
+	    || (fp = fdopen(fd, "w")) == NULL) {
+		if (fd >= 0)
+			close(fd);
 		puts("can't open file core.z80");
 		return;
 	}
 
-	write(fd, (char *) &A, sizeof(A));
-	write(fd, (char *) &F, sizeof(F));
-	write(fd, (char *) &B, sizeof(B));
-	write(fd, (char *) &C, sizeof(C));
-	write(fd, (char *) &D, sizeof(D));
-	write(fd, (char *) &E, sizeof(E));
-	write(fd, (char *) &H, sizeof(H));
-	write(fd, (char *) &L, sizeof(L));
-	write(fd, (char *) &A_, sizeof(A_));
-	write(fd, (char *) &F_, sizeof(F_));
-	write(fd, (char *) &B_, sizeof(B_));
-	write(fd, (char *) &C_, sizeof(C_));
-	write(fd, (char *) &D_, sizeof(D_));
-	write(fd, (char *) &E_, sizeof(E_));
-	write(fd, (char *) &H_, sizeof(H_));
-	write(fd, (char *) &L_, sizeof(L_));
-	write(fd, (char *) &I, sizeof(I));
-	write(fd, (char *) &IFF, sizeof(IFF));
-	write(fd, (char *) &R, sizeof(R));
-	write(fd, (char *) &R_, sizeof(R_));
-	write(fd, (char *) &PC, sizeof(PC));
-	write(fd, (char *) &SP, sizeof(SP));
-	write(fd, (char *) &IX, sizeof(IX));
-	write(fd, (char *) &IY, sizeof(IY));
+	fwrite(&A, sizeof(A), 1, fp);
+	fwrite(&F, sizeof(F), 1, fp);
+	fwrite(&B, sizeof(B), 1, fp);
+	fwrite(&C, sizeof(C), 1, fp);
+	fwrite(&D, sizeof(D), 1, fp);
+	fwrite(&E, sizeof(E), 1, fp);
+	fwrite(&H, sizeof(H), 1, fp);
+	fwrite(&L, sizeof(L), 1, fp);
+	fwrite(&A_, sizeof(A_), 1, fp);
+	fwrite(&F_, sizeof(F_), 1, fp);
+	fwrite(&B_, sizeof(B_), 1, fp);
+	fwrite(&C_, sizeof(C_), 1, fp);
+	fwrite(&D_, sizeof(D_), 1, fp);
+	fwrite(&E_, sizeof(E_), 1, fp);
+	fwrite(&H_, sizeof(H_), 1, fp);
+	fwrite(&L_, sizeof(L_), 1, fp);
+	fwrite(&I, sizeof(I), 1, fp);
+	fwrite(&IFF, sizeof(IFF), 1, fp);
+	fwrite(&R, sizeof(R), 1, fp);
+	fwrite(&R_, sizeof(R_), 1, fp);
+	fwrite(&PC, sizeof(PC), 1, fp);
+	fwrite(&SP, sizeof(SP), 1, fp);
+	fwrite(&IX, sizeof(IX), 1, fp);
+	fwrite(&IY, sizeof(IY), 1, fp);
 
-	for (i = 0; i < 65536; i++) {
-		d = getmem(i);
-		write(fd, &d, 1);
+	for (i = 0; i < 65536; i++)
+		fputc(getmem(i), fp);
+
+	if (ferror(fp)) {
+		fclose(fp);
+		puts("error writing core.z80");
+		return;
 	}
-
-	close(fd);
+	fclose(fp);
 }
 
 /*
@@ -536,46 +542,47 @@ static void save_core(void)
  */
 int load_core(void)
 {
+	register FILE *fp;
 	register int i;
-	int fd;
-	BYTE d;
 
-	if ((fd = open("core.z80", O_RDONLY)) == -1) {
+	if ((fp = fopen("core.z80", "r")) == NULL) {
 		puts("can't open file core.z80");
 		return(1);
 	}
 
-	read(fd, (char *) &A, sizeof(A));
-	read(fd, (char *) &F, sizeof(F));
-	read(fd, (char *) &B, sizeof(B));
-	read(fd, (char *) &C, sizeof(C));
-	read(fd, (char *) &D, sizeof(D));
-	read(fd, (char *) &E, sizeof(E));
-	read(fd, (char *) &H, sizeof(H));
-	read(fd, (char *) &L, sizeof(L));
-	read(fd, (char *) &A_, sizeof(A_));
-	read(fd, (char *) &F_, sizeof(F_));
-	read(fd, (char *) &B_, sizeof(B_));
-	read(fd, (char *) &C_, sizeof(C_));
-	read(fd, (char *) &D_, sizeof(D_));
-	read(fd, (char *) &E_, sizeof(E_));
-	read(fd, (char *) &H_, sizeof(H_));
-	read(fd, (char *) &L_, sizeof(L_));
-	read(fd, (char *) &I, sizeof(I));
-	read(fd, (char *) &IFF, sizeof(IFF));
-	read(fd, (char *) &R, sizeof(R));
-	read(fd, (char *) &R_, sizeof(R_));
-	read(fd, (char *) &PC, sizeof(PC));
-	read(fd, (char *) &SP, sizeof(SP));
-	read(fd, (char *) &IX, sizeof(IX));
-	read(fd, (char *) &IY, sizeof(IY));
+	fread(&A, sizeof(A), 1, fp);
+	fread(&F, sizeof(F), 1, fp);
+	fread(&B, sizeof(B), 1, fp);
+	fread(&C, sizeof(C), 1, fp);
+	fread(&D, sizeof(D), 1, fp);
+	fread(&E, sizeof(E), 1, fp);
+	fread(&H, sizeof(H), 1, fp);
+	fread(&L, sizeof(L), 1, fp);
+	fread(&A_, sizeof(A_), 1, fp);
+	fread(&F_, sizeof(F_), 1, fp);
+	fread(&B_, sizeof(B_), 1, fp);
+	fread(&C_, sizeof(C_), 1, fp);
+	fread(&D_, sizeof(D_), 1, fp);
+	fread(&E_, sizeof(E_), 1, fp);
+	fread(&H_, sizeof(H_), 1, fp);
+	fread(&L_, sizeof(L_), 1, fp);
+	fread(&I, sizeof(I), 1, fp);
+	fread(&IFF, sizeof(IFF), 1, fp);
+	fread(&R, sizeof(R), 1, fp);
+	fread(&R_, sizeof(R_), 1, fp);
+	fread(&PC, sizeof(PC), 1, fp);
+	fread(&SP, sizeof(SP), 1, fp);
+	fread(&IX, sizeof(IX), 1, fp);
+	fread(&IY, sizeof(IY), 1, fp);
 
-	for (i = 0; i < 65536; i++) {
-		read(fd, &d, 1);
-		putmem(i, d);
+	for (i = 0; i < 65536; i++)
+		putmem(i, getc(fp));
+
+	if (ferror(fp)) {
+		fclose(fp);
+		puts("error reading core.z80");
+		return(1);
 	}
-
-	close(fd);
-
+	fclose(fp);
 	return(0);
 }

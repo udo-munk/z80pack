@@ -151,7 +151,7 @@ Lpanel::growAlphaObjects(void)
     new_alpha_objects[i] = alpha_objects[i];
 
   max_alpha_objects += 1;
-  if(alpha_objects) delete[] objects;
+  if(alpha_objects) delete[] alpha_objects;
   alpha_objects = new_alpha_objects;
 }
 

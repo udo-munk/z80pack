@@ -1211,6 +1211,7 @@ Lpanel::readConfig(const char *_fname)
  if( (fd=fopen(fname,"r")) == 0)
   {
     fprintf(stderr,"readFile: could not open file %s\n",fname);
+    delete[] fname;
     return 0;
   }
 
