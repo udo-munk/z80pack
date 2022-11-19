@@ -284,7 +284,7 @@ static int load_hex(char *fn, WORD start, int size)
 	register int i;
 	FILE *fp;
 	char inbuf[BUFSIZE];
-	unsigned char outbuf[BUFSIZE / 2];
+	BYTE outbuf[BUFSIZE / 2];
 	char *s0;
 	int count, n;
 	int addr = 0;
