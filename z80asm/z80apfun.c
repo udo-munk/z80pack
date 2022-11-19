@@ -99,7 +99,7 @@ WORD op_org(BYTE op_code, BYTE dummy)
 		if (pass == 1) {	/* PASS 1 */
 			if (!load_flag) {
 				load_addr = n;
-				load_flag = 1;
+				load_flag = TRUE;
 			}
 		} else			/* PASS 2 */
 			obj_org(n);
@@ -109,7 +109,7 @@ WORD op_org(BYTE op_code, BYTE dummy)
 		if (phs_flag)
 			asmerr(E_PHSNST);
 		else {
-			phs_flag = 1;
+			phs_flag = TRUE;
 			pc = eval(operand);
 		}
 		break;
@@ -117,7 +117,7 @@ WORD op_org(BYTE op_code, BYTE dummy)
 		if (!phs_flag)
 			asmerr(E_MISPHS);
 		else {
-			phs_flag = 0;
+			phs_flag = FALSE;
 			pc = rpc;
 		}
 		break;
@@ -313,18 +313,18 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 					asmerr(E_VALOUT);
 				else
 					ppl = n;
-				page_done = 1;
+				page_done = TRUE;
 			}
 		} else if (pass == 2)
 			p_line = ppl - 1;
 		break;
 	case 2:				/* LIST and .LIST */
 		if (pass == 2)
-			list_flag = 1;
+			list_flag = TRUE;
 		break;
 	case 3:				/* NOLIST and .XLIST */
 		if (pass == 2)
-			list_flag = 0;
+			list_flag = FALSE;
 		break;
 	case 4:				/* .PRINTX */
 		p = operand;
@@ -418,11 +418,11 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 		break;
 	case 11:			/* .SFCOND */
 		if (pass == 2)
-			nofalselist = 1;
+			nofalselist = TRUE;
 		break;
 	case 12:			/* .LFCOND */
 		if (pass == 2)
-			nofalselist = 0;
+			nofalselist = FALSE;
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_misc");
@@ -437,6 +437,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 WORD op_cond(BYTE op_code, BYTE dummy)
 {
 	register char *p;
+	register int err = FALSE;
 
 	UNUSED(dummy);
 
@@ -453,34 +454,36 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 		case 1:			/* IFDEF */
 		case 2:			/* IFNDEF */
 			if (get_sym(operand) == NULL)
-				gencode = 0;
+				gencode = FALSE;
 			break;
 		case 3:			/* IFEQ */
 		case 4:			/* IFNEQ */
-			p = next_arg(operand, NULL);
-			if (p == NULL) {
+			if ((p = next_arg(operand, NULL)) != NULL) {
+				if (eval(operand) != eval(p))
+					gencode = FALSE;
+			} else {
 				asmerr(E_MISOPE);
-				return(0);
+				err = TRUE;
 			}
-			if (eval(operand) != eval(p))
-				gencode = 0;
 			break;
 		case 5:			/* COND, IF, and IFT */
 		case 6:			/* IFE and IFF */
 			if (eval(operand) == 0)
-				gencode = 0;
+				gencode = FALSE;
 			break;
 		case 7:			/* IF1 */
 		case 8:			/* IF2 */
 			if (pass == 2)
-				gencode = 0;
+				gencode = FALSE;
 			break;
 		default:
 			fatal(F_INTERN, "invalid opcode for function op_cond");
 			break;
 		}
-		if ((op_code & 1) == 0)	/* negate for inverse IF */
-			gencode = !gencode;
+		if (!err) {
+			if ((op_code & 1) == 0) /* negate for inverse IF */
+				gencode = !gencode;
+		}
 		act_iflevel = iflevel;
 	} else {
 		if (iflevel == 0) {
@@ -499,7 +502,7 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 			break;
 		case 99:		/* ENDIF and ENDC */
 			if (iflevel == act_iflevel) {
-				gencode = 1;
+				gencode = TRUE;
 				act_elselevel = 0;
 				act_iflevel--;
 			}

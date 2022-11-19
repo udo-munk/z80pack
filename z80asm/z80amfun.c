@@ -208,7 +208,7 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
 		m->mac_name = NULL;
 	m->mac_start = start;
 	m->mac_rept = rept;
-	m->mac_refflg = 0;
+	m->mac_refflg = FALSE;
 	m->mac_nrept = 0;
 	m->mac_irp = NULL;
 	m->mac_dums_last = m->mac_dums = NULL;
@@ -289,20 +289,42 @@ void mac_add_dum(struct mac *m, char *name)
 /*
  * 	add a local to a macro expansion
  */
-struct loc *expn_add_loc(struct expn *e, char *name)
+void expn_add_loc(struct expn *e, char *name)
 {
 	register struct loc *l;
+	register char *s;
+	register char c;
 
 	if ((l = (struct loc *) malloc(sizeof(struct loc))) == NULL)
 		fatal(F_OUTMEM, "macro local label");
 	l->loc_name = strsave(name);
+	s = l->loc_val;
+	*s++ = '?';
+	*s++ = '?';
+	if (mac_loc_cnt == 65535U) {
+		*s++ = 'x';
+		*s++ = 'x';
+		*s++ = 'x';
+		*s++ = 'x';
+		asmerr(E_OUTLCL);
+	} else {
+		c = mac_loc_cnt >> 12;
+		*s++ = c + (c < 10 ? '0' : 'W');
+		c = (mac_loc_cnt >> 8) & 0xf;
+		*s++ = c + (c < 10 ? '0' : 'W');
+		c = (mac_loc_cnt >> 4) & 0xf;
+		*s++ = c + (c < 10 ? '0' : 'W');
+		c = mac_loc_cnt++ & 0xf;
+		*s++ = c + (c < 10 ? '0' : 'W');
+	}
+	*s = '\0';
 	l->loc_next = NULL;
 	if (e->expn_locs == NULL)
 		e->expn_locs = l;
 	else
 		e->expn_locs_last->loc_next = l;
 	e->expn_locs_last = l;
-	return(l);
+	return;
 }
 
 /*
@@ -323,7 +345,7 @@ void mac_start_expn(struct mac *m)
 				iflevel = e->expn_iflevel;
 				act_iflevel = e->expn_act_iflevel;
 				act_elselevel = e->expn_act_elselevel;
-				gencode = 1;
+				gencode = TRUE;
 			}
 			free(e);
 		}
@@ -357,7 +379,7 @@ void mac_start_expn(struct mac *m)
 	e->expn_act_elselevel = act_elselevel;
 	e->expn_iter = 0;
 	e->expn_irp = m->mac_irp;
-	m->mac_refflg = 1;
+	m->mac_refflg = TRUE;
 	(*m->mac_start)(e);
 	e->expn_next = mac_expn;
 	mac_expn = e;
@@ -392,7 +414,7 @@ void mac_end_expn(void)
 	iflevel = e->expn_iflevel;
 	act_iflevel = e->expn_act_iflevel;
 	act_elselevel = e->expn_act_elselevel;
-	gencode = 1;
+	gencode = TRUE;
 	m = e->expn_mac;
 	mac_expn = e->expn_next;
 	mac_exp_nest--;
@@ -427,7 +449,7 @@ int mac_rept_expn(void)
 		iflevel = e->expn_iflevel;
 		act_iflevel = e->expn_act_iflevel;
 		act_elselevel = e->expn_act_elselevel;
-		gencode = 1;
+		gencode = TRUE;
 		return(1);
 	} else {
 		mac_end_expn();
@@ -553,7 +575,8 @@ void mac_subst(char *t, char *s, struct expn *e,
 			while (*v != '\0') {
 				if (m-- == 0) {
 					asmerr(E_MACOVF);
-					goto done;
+					*t = '\0';
+					return;
 				}
 				*t++ = *v++;
 			}
@@ -570,7 +593,8 @@ void mac_subst(char *t, char *s, struct expn *e,
 			while (1) {
 				if (*s == '\0') {
 					asmerr(E_MISDEL);
-					goto done;
+					*t = '\0';
+					return;
 				} else if (*s == c) {
 					cat_flag = NO_CONCAT;
 					*t++ = *s++;
@@ -611,7 +635,8 @@ void mac_subst(char *t, char *s, struct expn *e,
 					while (*v != '\0') {
 						if (m-- == 0) {
 							asmerr(E_MACOVF);
-							goto done;
+							*t = '\0';
+							return;
 						}
 						*t++ = *v++;
 					}
@@ -639,7 +664,8 @@ void mac_subst(char *t, char *s, struct expn *e,
 			else if (*s == RBRACK) {
 				if (n == 0) {
 					asmerr(E_INVOPE);
-					goto done;
+					*t = '\0';
+					return;
 				} else
 					n--;
 			} else if (*s == CONCAT)
@@ -651,7 +677,6 @@ void mac_subst(char *t, char *s, struct expn *e,
 	}
 	if (n > 0)
 		asmerr(E_INVOPE);
-done:
 	*t = '\0';
 }
 
@@ -708,9 +733,9 @@ char *mac_next_parm(char *s)
 {
 	register char *t, c;
 	register int m;
-	WORD w, v;
-	int n;
 	char *t1;
+	int n;
+	WORD w, v;
 
 	t1 = t = tmp;
 	n = 0;		/* angle brackets nesting level */
@@ -964,6 +989,7 @@ WORD op_exitm(BYTE dummy1, BYTE dummy2)
 WORD op_mcond(BYTE op_code, BYTE dummy)
 {
 	register char *s, *t = NULL;
+	register int err = FALSE;
 
 	UNUSED(dummy);
 
@@ -978,38 +1004,47 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 	switch(op_code) {
 	case 1:				/* IFB */
 	case 2:				/* IFNB */
-		if ((s = mac_next_parm(operand)) == NULL)
-			goto done;
-		else if (*s != '\0' && *s != COMMENT) {
-			asmerr(E_INVOPE);
-			goto done;
-		} else if (*tmp != '\0')
-			gencode = 0;
+		if ((s = mac_next_parm(operand)) != NULL) {
+			if (*s == '\0' || *s == COMMENT) {
+				if (*tmp != '\0')
+					gencode = FALSE;
+			} else {
+				asmerr(E_INVOPE);
+				err = TRUE;
+			}
+		} else
+			err = TRUE;
 		break;
 	case 3:				/* IFIDN */
 	case 4:				/* IFDIF */
-		if ((s = mac_next_parm(operand)) == NULL)
-			goto done;
-		else if (*s++ != ',') {
-			asmerr(E_MISOPE);
-			goto done;
-		}
-		t = strsave(tmp);
-		if ((s = mac_next_parm(s)) == NULL)
-			goto done;
-		else if ((*s != '\0' && *s != COMMENT)) {
-			asmerr(E_INVOPE);
-			goto done;
-		} else if (strcmp(t, s) != 0)
-			gencode = 0;
+		if ((s = mac_next_parm(operand)) != NULL) {
+			if (*s++ == ',') {
+				t = strsave(tmp);
+				if ((s = mac_next_parm(s)) != NULL) {
+					if ((*s == '\0' || *s == COMMENT)) {
+						if (strcmp(t, s) != 0)
+							gencode = FALSE;
+					} else {
+						asmerr(E_INVOPE);
+						err = TRUE;
+					}
+				} else
+					err = TRUE;
+			} else {
+				asmerr(E_MISOPE);
+				err = TRUE;
+			}
+		} else
+			err = TRUE;
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_mcond");
 		break;
 	}
-	if ((op_code & 1) == 0)		/* negate for inverse IF */
-		gencode = !gencode;
-done:
+	if (!err) {
+		if ((op_code & 1) == 0)	/* negate for inverse IF */
+			gencode = !gencode;
+	}
 	if (t != NULL)
 		free(t);
 	act_iflevel = iflevel;
@@ -1024,6 +1059,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 	register char *s, *t;
 	register int i;
 	struct mac *m;
+	int err = FALSE;
 
 	UNUSED(dummy);
 
@@ -1042,37 +1078,43 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 	}
 	s = operand;
 	t = tmp;
-	if (!IS_FSYM(*s)) {
-		asmerr(E_INVOPE);
-		return(0);
-	}
-	*t++ = TO_UPP(*s);
-	s++;
-	i = 1;
-	while (IS_SYM(*s)) {
-		if (i++ < symlen)
-			*t++ = TO_UPP(*s);
+	if (IS_FSYM(*s)) {
+		*t++ = TO_UPP(*s);
 		s++;
-	}
-	*t = '\0';
-	mac_add_dum(m, tmp);
-	while (IS_SPC(*s))
-		s++;
-	if (*s++ != ',') {
+		i = 1;
+		while (IS_SYM(*s)) {
+			if (i++ < symlen)
+				*t++ = TO_UPP(*s);
+			s++;
+		}
+		*t = '\0';
+		mac_add_dum(m, tmp);
+		while (IS_SPC(*s))
+			s++;
+		if (*s++ == ',') {
+			while (IS_SPC(*s))
+				s++;
+			if ((s = mac_next_parm(s)) != NULL) {
+				if (*s == '\0' || *s == COMMENT) {
+					m->mac_irp = strsave(tmp);
+					mac_curr = m;
+					mac_def_nest++;
+				} else {
+					asmerr(E_INVOPE);
+					err = TRUE;
+				}
+			} else
+				err = TRUE;
+		} else {
+			asmerr(E_MISOPE);
+			err = TRUE;
+		}
+	} else {
 		asmerr(E_INVOPE);
-		return(0);
+		err = TRUE;
 	}
-	while (IS_SPC(*s))
-		s++;
-	if ((s = mac_next_parm(s)) == NULL)
-		return(0);
-	else if (*s != '\0' && *s != COMMENT) {
-		asmerr(E_INVOPE);
-		return(0);
-	}
-	m->mac_irp = strsave(tmp);
-	mac_curr = m;
-	mac_def_nest++;
+	if (err)
+		mac_delete(m);
 	return(0);
 }
 
@@ -1081,10 +1123,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
  */
 WORD op_local(BYTE dummy1, BYTE dummy2)
 {
-	register char *s, c;
-	register struct expn *e;
-	char *s1;
-	struct loc *l;
+	register char *s, *s1;
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
@@ -1094,29 +1133,16 @@ WORD op_local(BYTE dummy1, BYTE dummy2)
 		asmerr(E_NIMEXP);
 		return(0);
 	}
-	e = mac_expn;
 	s = operand;
 	while (s != NULL) {
 		s1 = next_arg(s, NULL);
 		if (*s != '\0') {
-			if (is_symbol(s)) {
-				l = expn_add_loc(e, s);
-				if (mac_loc_cnt == 65535U)
-					asmerr(E_OUTLCL);
-				s = l->loc_val;
-				*s++ = '?';
-				*s++ = '?';
-				c = mac_loc_cnt >> 12;
-				*s++ = c + (c < 10 ? '0' : 'W');
-				c = (mac_loc_cnt >> 8) & 0xf;
-				*s++ = c + (c < 10 ? '0' : 'W');
-				c = (mac_loc_cnt >> 4) & 0xf;
-				*s++ = c + (c < 10 ? '0' : 'W');
-				c = mac_loc_cnt++ & 0xf;
-				*s++ = c + (c < 10 ? '0' : 'W');
-				*s = '\0';
-			} else
+			if (is_symbol(s))
+				expn_add_loc(mac_expn, s);
+			else {
 				asmerr(E_INVOPE);
+				break;
+			}
 		}
 		s = s1;
 	}
@@ -1147,8 +1173,10 @@ WORD op_macro(BYTE dummy1, BYTE dummy2)
 		if (*s != '\0') {
 			if (is_symbol(s))
 				mac_add_dum(m, s);
-			else
+			else {
 				asmerr(E_INVOPE);
+				break;
+			}
 		}
 		s = s1;
 	}

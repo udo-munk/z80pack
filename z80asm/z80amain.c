@@ -139,7 +139,7 @@ void options(int argc, char *argv[])
 					lstfn = get_fn(++s, LSTEXT, 0);
 					s += (strlen(s) - 1);
 				}
-				list_flag = 1;
+				list_flag = TRUE;
 				break;
 			case 's':
 				if (*(s + 1) == '\0')
@@ -155,7 +155,7 @@ void options(int argc, char *argv[])
 				s += (strlen(s) - 1);
 				break;
 			case 'x':
-				nofill_flag = 1;
+				nofill_flag = TRUE;
 				break;
 			case 'f':
 				if (*(s + 1) == 'b')
@@ -185,13 +185,13 @@ void options(int argc, char *argv[])
 				put_sym(label, 0);
 				break;
 			case '8':
-				i8080_flag = 1;
+				i8080_flag = TRUE;
 				break;
 			case 'u':
-				undoc_flag = 1;
+				undoc_flag = TRUE;
 				break;
 			case 'v':
-				ver_flag = 1;
+				ver_flag = TRUE;
 				break;
 			case 'm':
 				if (mac_list_flag == M_OPS)
@@ -200,7 +200,7 @@ void options(int argc, char *argv[])
 					mac_list_flag = M_NONE;
 				break;
 			case 'U':
-				upcase_flag = 1;
+				upcase_flag = TRUE;
 				break;
 			case 'p':
 				if (*++s == '\0') {
@@ -430,22 +430,22 @@ int process_line(char *l)
 	if (pass == 2) {
 		if (gencode && (op == NULL || !(op->op_flags & OP_DS)))
 			obj_writeb(op_count);
-		lflag = 1;
+		lflag = TRUE;
 		/* already listed INCLUDE, force page eject */
 		if (op != NULL && (op->op_flags & OP_INCL)) {
-			lflag = 0;
+			lflag = FALSE;
 			p_line = ppl + 1;
 		}
 		if (errnum == E_OK && expn_flag) {
 			if (mac_list_flag == M_NONE)
-				lflag = 0;
+				lflag = FALSE;
 			else if (mac_list_flag == M_OPS
 				 && (op_count == 0 && a_mode != A_EQU
 						   && a_mode != A_DS))
-				lflag = 0;
+				lflag = FALSE;
 		}
 		if (nofalselist && !old_genc && !gencode)
-			lflag = 0;
+			lflag = FALSE;
 		if (lflag)
 			lst_line(l, pc, op_count, expn_flag);
 	}
@@ -590,9 +590,10 @@ void get_operand(char *s, char *l, int nopre_flag)
 			if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
 				continue;
 			while (1) {
-				if (*l == '\0') /* undelimited string */
-					goto done;
-				else if (*l == c) {
+				if (*l == '\0') { /* undelimited string */
+					*s = '\0';
+					return;
+				} else if (*l == c) {
 					if (*(l + 1) != c) /* double delim? */
 						break;
 					else
@@ -606,7 +607,6 @@ void get_operand(char *s, char *l, int nopre_flag)
 			l++;
 		}
 	}
-done:
 	*s = '\0';
 }
 

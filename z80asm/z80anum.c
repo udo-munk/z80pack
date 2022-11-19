@@ -177,7 +177,8 @@ int get_token(void)
 		s++;
 	if (*s == '\0') {				/* nothing there? */
 		tok_type = T_EMPTY;
-		goto done;
+		scan_pos = s;
+		return(E_OK);
 	}
 	if (*s == 'X' && *(s + 1) == STRDEL) {		/* X'h' hex constant */
 		s += 2;
@@ -187,14 +188,13 @@ int get_token(void)
 			n += TO_UPP(*s) - ((*s <= '9') ? '0' : '7');
 			s++;
 		}
-		if (*s != STRDEL)			/* missing final ' */
-			return(E_MISDEL);
-		else {
-			s++;
+		if (*s == STRDEL) {
 			tok_type = T_VAL;
 			tok_val = n;
-			goto done;
-		}
+			scan_pos = s + 1;
+			return(E_OK);
+		} else					/* missing final ' */
+			return(E_MISDEL);
 	}
 	p1 = p2 = tok_sym;				/* gather symbol */
 	while (IS_SYM(*s))
@@ -234,7 +234,8 @@ int get_token(void)
 			}
 			tok_type = T_VAL;
 			tok_val = n;
-			goto done;
+			scan_pos = s;
+			return(E_OK);
 		}
 		*p2 = '\0';
 		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* location counter */
@@ -249,7 +250,8 @@ int get_token(void)
 			} else				/* look for word opr */
 				tok_type = search_opr(p1);
 		}
-		goto done;
+		scan_pos = s;
+		return(E_OK);
 	}
 	switch (*s) {
 	case STRDEL:					/* char constant */
@@ -260,7 +262,8 @@ int get_token(void)
 			if (*s == *p1 && *++s != *p1) {	/* double delim? */
 				tok_type = T_VAL;
 				tok_val = n;
-				goto done;
+				scan_pos = s;
+				return(E_OK);
 			}
 			if (m++ == 2)
 				return(E_VALOUT);
@@ -339,9 +342,7 @@ int get_token(void)
 	default:
 		return(E_INVEXP);
 	}
-	s++;
-done:
-	scan_pos = s;
+	scan_pos = s + 1;
 	return(E_OK);
 }
 
@@ -384,8 +385,8 @@ int factor(WORD *resultp)
 		/* short circuit parsing to end of expression */
 		while (*s != '\0')
 			s++;
-		scan_pos = s;
 		tok_type = T_EMPTY;
+		scan_pos = s;
 		return(E_OK);
 	case T_TYPE:
 		if (get_token() != E_OK || factor(&value) != E_OK)
