@@ -255,73 +255,37 @@ long get_pos(void)
 {
 	long pos = -1L;
 
-	/* single sided */
-	if (disks[disk].disk_s == ONE) {
-
-	    /* single density */
-	    if (disks[disk].disk_d == SINGLE) {
-		pos = (fdc_track * disks[disk].sectors + fdc_sec - 1) *
-		      SEC_SZSD;
-
-	    /* double density */
-	    } else {
-	    	if (disks[disk].disk_d0 == SINGLE) {
-		    if (fdc_track == 0) {
+	if (disks[disk].disk_s == ONE)
+		if (disks[disk].disk_d == SINGLE)
+			/* single sided, single density */
+			pos = (fdc_track * disks[disk].sectors + fdc_sec - 1)
+			      * SEC_SZSD;
+		else if (disks[disk].disk_d0 == SINGLE)
+			/* single sided, double density, track 0 sd */
+			if (fdc_track == 0)
+				pos = (fdc_sec - 1) * SEC_SZSD;
+			else
+				pos = ((fdc_track - 1) * disks[disk].sectors
+				       + fdc_sec - 1) * SEC_SZDD
+				      + disks[disk].sec0 * SEC_SZSD;
+		else	/* single sided, double density */
+			pos = (fdc_track * disks[disk].sectors + fdc_sec - 1)
+			      * SEC_SZDD;
+	else if (disks[disk].disk_d == SINGLE)
+		/* double sided, single density */
+		pos = ((fdc_track * 2 + side) * disks[disk].sectors
+		       + fdc_sec - 1) * SEC_SZSD;
+	else if (disks[disk].disk_d0 == SINGLE)
+		/* double sided, double density, side 0 track 0 sd */
+		if (fdc_track == 0 && side == 0)
 			pos = (fdc_sec - 1) * SEC_SZSD;
-		    } else {
-			pos = (disks[disk].sec0 * SEC_SZSD) +
-			      ((fdc_track - 1) * disks[disk].sectors
-			      * SEC_SZDD) +
-			      ((fdc_sec - 1) * SEC_SZDD);
-		    }
-		} else {
-		    pos = (fdc_track * disks[disk].sectors * SEC_SZDD) + 
-		 	  (fdc_sec - 1) * SEC_SZDD;
-		}
-	    }
-
-	/* double sided */
-	} else {
-
-	    /* single density */
-	    if (disks[disk].disk_d == SINGLE) {
-		pos = fdc_track * 2 * disks[disk].sectors * SEC_SZSD;
-		if (side == 0) {
-		    pos += (fdc_sec - 1) * SEC_SZSD;
-		} else {
-		    pos += disks[disk].sectors * SEC_SZSD;
-		    pos += (fdc_sec - 1) * SEC_SZSD;
-		}
-
-	    /* double density */
-	    } else {
-	    	if (disks[disk].disk_d0 == SINGLE) {
-			if ((fdc_track == 0) && (side == 0)) {
-			    pos = (fdc_sec - 1) * SEC_SZSD;
-			    goto done;
-			}
-			if ((fdc_track == 0) && (side == 1)) {
-			    pos = disks[disk].sec0 * SEC_SZSD +
-				  (fdc_sec - 1) * SEC_SZDD;
-			    goto done;
-			}
-			pos = disks[disk].sec0 * SEC_SZSD +
-			      disks[disk].sectors * SEC_SZDD;
-			pos += (fdc_track - 1) * 2 * disks[disk].sectors
-			       * SEC_SZDD;
-		} else {
-			pos = fdc_track * 2 * disks[disk].sectors * SEC_SZDD;
-		}
-		pos = disks[disk].sec0 * SEC_SZSD + disks[disk].sectors
-		      * SEC_SZDD;
-		pos += (fdc_track - 1) * 2 * disks[disk].sectors * SEC_SZDD;
-		if (side == 1)
-			pos += disks[disk].sectors * SEC_SZDD;
-		pos += (fdc_sec - 1) * SEC_SZDD;
-	    }
-	}
-
-done:
+		else
+			pos = ((fdc_track * 2 + side - 1) * disks[disk].sectors
+			       + fdc_sec - 1) * SEC_SZDD
+			      + disks[disk].sec0 * SEC_SZSD;
+	else	/* double sided, double density */
+		pos = ((fdc_track * 2 + side) * disks[disk].sectors
+		       + fdc_sec - 1) * SEC_SZDD;
 	return(pos);
 }
 
