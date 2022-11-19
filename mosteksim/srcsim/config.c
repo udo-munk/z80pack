@@ -39,12 +39,12 @@ void config(void)
 			t2 = strtok(NULL, "= \t\r\n");
 
 			if (0 == strcmp(t1, "bootrom")) {
-				LOG(TAG, "\nBoot ROM: %s\r\n\r\n", t2);
+				LOG(TAG, "\r\nBoot ROM: %s\r\n\r\n", t2);
 				strcpy(xfn, t2);
 				x_flag = 1;
 			}
 			else if (0 == strcmp(t1, "drive0")) {
-				LOG(TAG, "\nDrive 0: %s\r\n", t2);
+				LOG(TAG, "\r\nDrive 0: %s\r\n", t2);
 			}
 			else if (0 == strcmp(t1, "drive1")) {
 				LOG(TAG, "Drive 1: %s\r\n", t2);
