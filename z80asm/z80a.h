@@ -55,6 +55,13 @@
 #define MAXHEX		32	/* max. no bytes per HEX record */
 #define MACNEST		50	/* max. expansion nesting */
 
+#ifndef FALSE
+#define FALSE		0
+#endif
+#ifndef TRUE
+#define TRUE		1
+#endif
+
 /*
  *	types for working with op-codes, addresses, expressions,
  *	and bit flags and masks

@@ -76,7 +76,7 @@ struct sym *get_sym(char *sym_name)
 	register struct sym *sp;
 
 	if ((sp = look_sym(sym_name)) != NULL)
-		sp->sym_refflg = 1;
+		sp->sym_refflg = TRUE;
 	return(sp);
 }
 
@@ -98,7 +98,7 @@ struct sym *new_sym(char *sym_name)
 	hashval = hash(sym_name);
 	sp->sym_next = symtab[hashval];
 	symtab[hashval] = sp;
-	sp->sym_refflg = 0;
+	sp->sym_refflg = FALSE;
 	if (n > symmax)
 		symmax = n;
 	symcnt++;
@@ -151,7 +151,8 @@ int hash(char *name)
 struct sym *first_sym(int sort_mode)
 {
 	register struct sym *sp;
-	register int i, j;
+	register int j;
+	register int i;
 
 	if (symcnt == 0)
 		return(NULL);
@@ -170,8 +171,7 @@ struct sym *first_sym(int sort_mode)
 		if (symarray == NULL)
 			fatal(F_OUTMEM, "sorting symbol table");
 		for (i = 0, j = 0; i < HASHSIZE; i++)
-			for (sp = symtab[i]; sp != NULL;
-			     sp = sp->sym_next)
+			for (sp = symtab[i]; sp != NULL; sp = sp->sym_next)
 				symarray[j++] = sp;
 		qsort(symarray, symcnt, sizeof(struct sym *),
 		      sort_mode == SYM_SORTN ? namecmp : valcmp);

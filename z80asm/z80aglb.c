@@ -65,7 +65,7 @@ int  list_flag,			/* flag for option -l */
      iflevel,			/* IF nesting level */
      act_iflevel,		/* active IF nesting level */
      act_elselevel,		/* active ELSE nesting level */
-     gencode = 1,		/* flag for conditional code */
+     gencode = TRUE,		/* flag for conditional code */
      nofalselist,		/* flag for false conditional listing */
      mac_def_nest,		/* macro definition nesting level */
      mac_exp_nest,		/* macro expansion nesting level */

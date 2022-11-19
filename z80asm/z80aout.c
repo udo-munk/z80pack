@@ -134,7 +134,7 @@ void lst_header(void)
 	} else
 		p_line = 0;
 	fputc('\n', lstfp);
-	header_done = 1;
+	header_done = TRUE;
 }
 
 /*
@@ -149,7 +149,7 @@ void lst_attl(void)
 			"\nLOC   OBJECT CODE   LINE   STMT SOURCE CODE\n");
 	if (ppl != 0)
 		p_line += 2;
-	attl_done = 1;
+	attl_done = TRUE;
 }
 
 /*

@@ -246,7 +246,7 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
 	register BYTE op;
 	register WORD n;
 	register char *sec;
-	register WORD len = 0;
+	WORD len = 0;
 
 	sec = next_arg(operand, NULL);
 	switch (op = get_reg(operand)) {
@@ -372,7 +372,7 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 	register BYTE op;
 	register WORD n;
 	register char *sec;
-	register WORD len = 0;
+	WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1260,7 +1260,7 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 	register BYTE op;
 	register BYTE bit = 0;
 	register char *sec;
-	register WORD len = 0;
+	WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1377,7 +1377,7 @@ WORD op8080_mov(BYTE base_op, BYTE dummy)
 {
 	register BYTE op1, op2;
 	register char *sec;
-	register WORD len = 0;
+	WORD len = 0;
 
 	UNUSED(dummy);
 
@@ -1662,7 +1662,7 @@ WORD op8080_lxi(BYTE base_op, BYTE dummy)
 	register BYTE op;
 	register WORD n;
 	register char *sec;
-	register WORD len = 0;
+	WORD len = 0;
 
 	UNUSED(dummy);
 
