@@ -437,6 +437,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 WORD op_cond(BYTE op_code, BYTE dummy)
 {
 	register char *p;
+	register int err = FALSE;
 
 	UNUSED(dummy);
 
@@ -457,13 +458,13 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 			break;
 		case 3:			/* IFEQ */
 		case 4:			/* IFNEQ */
-			p = next_arg(operand, NULL);
-			if (p == NULL) {
+			if ((p = next_arg(operand, NULL)) != NULL) {
+				if (eval(operand) != eval(p))
+					gencode = FALSE;
+			} else {
 				asmerr(E_MISOPE);
-				return(0);
+				err = TRUE;
 			}
-			if (eval(operand) != eval(p))
-				gencode = FALSE;
 			break;
 		case 5:			/* COND, IF, and IFT */
 		case 6:			/* IFE and IFF */
@@ -479,8 +480,10 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 			fatal(F_INTERN, "invalid opcode for function op_cond");
 			break;
 		}
-		if ((op_code & 1) == 0)	/* negate for inverse IF */
-			gencode = !gencode;
+		if (!err) {
+			if ((op_code & 1) == 0) /* negate for inverse IF */
+				gencode = !gencode;
+		}
 		act_iflevel = iflevel;
 	} else {
 		if (iflevel == 0) {
