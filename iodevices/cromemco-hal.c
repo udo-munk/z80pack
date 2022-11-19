@@ -67,7 +67,7 @@ void null_out(int dev, BYTE data) {
 
 #ifdef HAS_NETSERVER
 int net_tty_alive(int dev) {
-    // LOG(TAG, "WEBTTY %d: %d", dev, net_device_alive(dev));
+    // LOG(TAG, "WEBTTY %d: %d\r\n", dev, net_device_alive(dev));
     return net_device_alive((net_device_t) dev); /* WEBTTY is only alive if websocket is connected */
 }
 void net_tty_status(int dev, BYTE *stat) {

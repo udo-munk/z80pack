@@ -287,7 +287,7 @@ again:
                 LOGW(TAG, "INIT: HDD FILE DOES NOT EXIST - %s : %s [%d]", fn, strerror(errno), errno);
                 wdi.hd[unit]._fault = 0; /* SET FAULT */
                 wdi.hd[unit].online = 0;
-                LOG(TAG, "HD%d: OFFLINE - NO FILE '%s'\n\r", unit, wdi.hd[unit].fn);
+                LOG(TAG, "HD%d: OFFLINE - NO FILE '%s'\r\n", unit, wdi.hd[unit].fn);
                 continue;
             }
         }
@@ -323,10 +323,10 @@ again:
             LOGW(TAG, "UNKNOWN DISK IMAGE SIZE [%lld] FOR %s", (long long) s.st_size, wdi.hd[unit].fn);
         }
 
-        LOG(TAG, "HD%d:[%s]='%s'\n\r", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn);
+        LOG(TAG, "HD%d:[%s]='%s'\r\n", unit, wdi.hd[unit].type_s, wdi.hd[unit].fn);
     }
 
-    LOG(TAG, "\n\r");
+    LOG(TAG, "\r\n");
 
     wdi.unit = 0;
 }

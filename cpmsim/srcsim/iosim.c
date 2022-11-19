@@ -974,7 +974,7 @@ static void net_server_config(void)
 	strcat(&fn[0], "/net_server.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		LOG(TAG, "Server network configuration:\n");
+		LOG(TAG, "Server network configuration:\r\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
@@ -994,7 +994,7 @@ static void net_server_config(void)
 			while((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_port[i - 1] = atoi(s);
-			LOG(TAG, "console %d listening on port %d, telnet = %s\n",
+			LOG(TAG, "console %d listening on port %d, telnet = %s\r\n",
 			    i, ss_port[i - 1],
 			    ((ss_telnet[i - 1] > 0) ? "on" : "off"));
 		}
@@ -1016,7 +1016,7 @@ static void net_client_config(void)
 	strcat(&fn[0], "/net_client.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		LOG(TAG, "Client network configuration:\n");
+		LOG(TAG, "Client network configuration:\r\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
@@ -1032,7 +1032,7 @@ static void net_client_config(void)
 			while((*s == ' ') || (*s == '\t'))
 				s++;
 			cs_port = atoi(s);
-			LOG(TAG, "Connecting to %s at port %d\n", cs_host,
+			LOG(TAG, "Connecting to %s at port %d\r\n", cs_host,
 			    cs_port);
 		}
 		fclose(fp);

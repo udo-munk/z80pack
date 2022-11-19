@@ -72,7 +72,6 @@ static const char *TAG = "func";
 int load_file(char *, WORD, int);
 static int load_mos(char *, WORD, int);
 static int load_hex(char *, WORD, int);
-static int checksum(char *);
 
 /*
  *	atoi for hexadecimal numbers
@@ -179,7 +178,7 @@ int time_diff(struct timeval *t1, struct timeval *t2)
 int load_file(char *fn, WORD start, int size)
 {
 	BYTE d;
-	int fd;
+	int fd, n;
 
 	if (strlen(fn) == 0) {
 		LOGE(TAG, "no input file given");
@@ -187,12 +186,16 @@ int load_file(char *fn, WORD start, int size)
 	}
 
 	if ((fd = open(fn, O_RDONLY)) == -1) {
-		LOGE(TAG, "can't open file %s\n", fn);
+		LOGE(TAG, "can't open file %s", fn);
 		return(1);
 	}
 
-	read(fd, (char *) &d, 1);	/* read first byte of file */
+	n = read(fd, (char *) &d, 1);	/* read first byte of file */
 	close(fd);
+	if (n != 1) {
+		LOGE(TAG, "invalid file %s", fn);
+		return(1);
+	}
 
 	if (size > 0)
 		LOGD(TAG, "LOAD in Range: %04Xh - %04Xh",
@@ -217,44 +220,48 @@ int load_file(char *fn, WORD start, int size)
 static int load_mos(char *fn, WORD start, int size)
 {
 	register int i;
-	int fd;
+	int c, c2;
+	FILE *fp;
 	int laddr, count;
-	BYTE fileb[3];
 
-	if ((fd = open(fn, O_RDONLY)) == -1) {
-		LOGE(TAG, "can't open file %s\n", fn);
+	if ((fp = fopen(fn, "r")) == NULL) {
+		LOGE(TAG, "can't open file %s", fn);
 		return(1);
 	}
 
-	read(fd, (char *) fileb, 3);	/* read load address */
-	laddr = (fileb[2] << 8) + fileb[1];
+	/* read load address */
+	if ((c = getc(fp)) == EOF || c != 0xff
+	    || (c = getc(fp)) == EOF || (c2 = getc(fp)) == EOF) {
+		LOGE(TAG, "invalid Mostek file %s", fn);
+		return(1);
+	}
+	laddr = (c2 << 8) | c;
 
 	if (size < 0)
 		laddr = start;
 	if (size > 0 && laddr < start) {
-		LOGW(TAG, "tried to load mos file outside "
-		     "expected address range. "
-		     "Address: %04X", laddr);
+		LOGW(TAG, "tried to load Mostek file outside "
+		     "expected address range. Address: %04X", laddr);
 		return(1);
 	}
 
 	count = 0;
 	for (i = laddr; i < 65536; i++) {
-		if (read(fd, fileb, 1) == 1) {
+		if ((c = getc(fp)) != EOF) {
 			if (size > 0 && i >= (start + size)) {
-				LOGW(TAG, "tried to load mos file outside "
+				LOGW(TAG, "tried to load Mostek file outside "
 				     "expected address range. "
 				     "Address: %04X", i);
 				return(1);
 			}
 			count++;
-			putmem(i, fileb[0]);
+			putmem(i, (BYTE) c);
 		} else {
 			break;
 		}
 	}
 
-	close(fd);
+	fclose(fp);
 
 	PC = laddr;
 
@@ -272,58 +279,84 @@ static int load_mos(char *fn, WORD start, int size)
  */
 static int load_hex(char *fn, WORD start, int size)
 {
+	register char *s;
+	register BYTE *p;
 	register int i;
 	FILE *fp;
-	char buf[BUFSIZE];
-	char *s;
-	int count = 0;
+	char inbuf[BUFSIZE];
+	BYTE outbuf[BUFSIZE / 2];
+	char *s0;
+	int count, n;
 	int addr = 0;
 	int saddr = 0xffff;
 	int eaddr = 0;
-	int data;
+	int chksum;
 
 	if ((fp = fopen(fn, "r")) == NULL) {
 		LOGE(TAG, "can't open file %s\n", fn);
 		return(1);
 	}
 
-	while (fgets(&buf[0], BUFSIZE, fp) != NULL) {
-		s = &buf[0];
+	while (fgets(inbuf, BUFSIZE, fp) != NULL) {
+		s = inbuf;
 		while (isspace((unsigned char) *s))
 			s++;
 		if (*s != ':')
 			continue;
-		if (checksum(s + 1) != 0) {
-			LOGE(TAG, "invalid checksum in HEX record: %s", s);
+		s0 = s++;
+
+		p = outbuf;
+		n = 0;
+		chksum = 0;
+		while (*s != '\r' && *s != '\n' && *s != '\0') {
+			if (!(*s >= '0' && *s <= '9')
+			    && !(*s >= 'A' && *s <= 'F')) {
+				LOGE(TAG, "invalid character in "
+				     "HEX record %s", s0);
+				fclose(fp);
+				return(1);
+			}
+			*p = (*s <= '9' ? *s - '0' : *s - 'A' + 10) << 4;
+			s++;
+			if (*s == '\r' || *s == '\n' || *s == '\0') {
+				LOGE(TAG, "odd number of characters in "
+				     "HEX record %s", s0);
+				fclose(fp);
+				return(1);
+			}
+			else if (!(*s >= '0' && *s <= '9')
+				 && !(*s >= 'A' && *s <= 'F')) {
+				LOGE(TAG, "invalid character in "
+				     "HEX record %s", s0);
+				fclose(fp);
+				return(1);
+			}
+			*p |= (*s <= '9' ? *s - '0' : *s - 'A' + 10);
+			s++;
+			chksum += *p++;
+			n++;
+		}
+		if (n < 5) {
+			LOGE(TAG, "invalid HEX record %s", s0);
+			fclose(fp);
 			return(1);
 		}
-		s++;
-		count = (*s <= '9') ? (*s - '0') << 4
-				    : (*s - 'A' + 10) << 4;
-		s++;
-		count += (*s <= '9') ? (*s - '0')
-				     : (*s - 'A' + 10);
-		s++;
-		addr = (*s <= '9') ? (*s - '0') << 4
-				   : (*s - 'A' + 10) << 4;
-		s++;
-		addr += (*s <= '9') ? (*s - '0')
-				    : (*s - 'A' + 10);
-		s++;
-		addr *= 256;
-		addr += (*s <= '9') ? (*s - '0') << 4
-				    : (*s - 'A' + 10) << 4;
-		s++;
-		addr += (*s <= '9') ? (*s - '0')
-				    : (*s - 'A' + 10);
-		s++;
-		data = (*s <= '9') ? (*s - '0') << 4
-				   : (*s - 'A' + 10) << 4;
-		s++;
-		data += (*s <= '9') ? (*s - '0')
-				    : (*s - 'A' + 10);
-		s++;
-		if (data == 1)
+		if ((chksum & 255) != 0) {
+			LOGE(TAG, "invalid checksum in HEX record %s", s0);
+			fclose(fp);
+			return(1);
+		}
+
+		p = outbuf;
+		count = *p++;
+		if (count + 5 != n) {
+			LOGE(TAG, "invalid count in HEX record %s", s0);
+			fclose(fp);
+			return(1);
+		}
+		addr = *p++;
+		addr = (addr << 8) | *p++;
+		if (*p++ == 1)
 			break;
 
 		if (size > 0) {
@@ -333,6 +366,7 @@ static int load_hex(char *fn, WORD start, int size)
 				     "expected address range. "
 				     "Address: %04X-%04X",
 				     addr, addr + count - 1);
+				fclose(fp);
 				return(1);
 			}
 		}
@@ -341,23 +375,17 @@ static int load_hex(char *fn, WORD start, int size)
 			saddr = addr;
 		if (addr >= eaddr)
 			eaddr = addr + count - 1;
-		for (i = 0; i < count; i++) {
-			data = (*s <= '9') ? (*s - '0') << 4
-					   : (*s - 'A' + 10) << 4;
-			s++;
-			data += (*s <= '9') ? (*s - '0')
-					    : (*s - 'A' + 10);
-			s++;
-			putmem(addr + i, data);
-		}
+		for (i = 0; i < count; i++)
+			putmem(addr + i, *p++);
 		addr = 0;
 	}
 
 	fclose(fp);
-
-	PC = addr ? addr : saddr;
-
-	count = eaddr - saddr + 1;
+	if (saddr > eaddr)
+		saddr = eaddr = count = 0;
+	else
+		count = eaddr - saddr + 1;
+	PC = (addr != 0 ? addr : saddr);
 	LOG(TAG, "Loader statistics for file %s:\r\n", fn);
 	LOG(TAG, "START : %04XH\r\n", saddr);
 	LOG(TAG, "END   : %04XH\r\n", eaddr);
@@ -365,30 +393,6 @@ static int load_hex(char *fn, WORD start, int size)
 	LOG(TAG, "LOADED: %04XH (%d)\r\n\r\n", count & 0xffff, count & 0xffff);
 
 	return(0);
-}
-
-/*
- *	Verify checksum of Intel HEX records
- */
-static int checksum(char *s)
-{
-	int chk = 0;
-
-	while ((*s != '\r') && (*s != '\n')) {
-		chk += (*s <= '9') ?
-			(*s - '0') << 4 :
-			(*s - 'A' + 10) << 4;
-		s++;
-		chk += (*s <= '9') ?
-			(*s - '0') :
-			(*s - 'A' + 10);
-		s++;
-	}
-
-	if ((chk & 255) == 0)
-		return(0);
-	else
-		return(1);
 }
 
 /*

@@ -502,7 +502,7 @@ int UploadHandler(HttpdConnection_t *conn, void *path) {
 
 		strncat(output, req->args[0], MAX_LFN - strlen(output));
 
-		filelen = 0;
+		//filelen = 0;
 		filelen = mg_store_body(conn, output);
 
         LOGI(TAG, "%d bytes written to %s, received %d", filelen, output, (int) req->len);

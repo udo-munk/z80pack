@@ -271,7 +271,7 @@ int open_socket(void) {
     void *addrptr = NULL;
     uint16_t port = 0;
     struct sockaddr_in *sktv4 = NULL;
-    struct sockaddr_in6 *sktv6 = NULL;
+    /* struct sockaddr_in6 *sktv6 = NULL; */
     int on = 1;
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -296,9 +296,11 @@ int open_socket(void) {
                 addrptr = &sktv4->sin_addr;
                 break;
             case AF_INET6:
+                /*
                 sktv6 = (struct sockaddr_in6 *)rp->ai_addr;
                 port = sktv6->sin6_port;
                 addrptr = &sktv6->sin6_addr;
+                */
                 LOGE(TAG, "Not expecting IPV6 addresses");
                 return 1;
                 break;
@@ -1069,7 +1071,7 @@ int time_diff_sec(struct timeval *t1, struct timeval *t2)
 	/* normalize result */
 	if (usec < 0L) {
 		sec--;
-		usec += 1000000L;
+		/* usec += 1000000L; */
 	}
     return sec;
 }
@@ -1366,7 +1368,7 @@ void modem_device_init(void) {
 #endif
     char *modem_init_string;
     if ((modem_init_string = getenv("MODEM.init")) != NULL) {
-        LOG(TAG, "MODEM.init string: %s\n", modem_init_string);
+        LOG(TAG, "MODEM.init string: %s\r\n", modem_init_string);
         while (*modem_init_string) {
             modem_device_send(0, *modem_init_string++);
         }

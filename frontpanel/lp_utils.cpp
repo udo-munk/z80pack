@@ -995,7 +995,7 @@ Parser::parse(parser_result_t **returned_result)
 			    return (cp1-buff);
 			  }
 
-			   leadspace = 1;
+			   // leadspace = 1;
 			   if(results.num_args < rules[curr_rule].minvals)
 			    {
 				error=PARSER_ERR_TOO_FEW_VALS;
@@ -1048,7 +1048,7 @@ Parser::parse(parser_result_t **returned_result)
 		   cp1 = cp+1;
 
 		    state = PARSER_GETVAR;
-		    leadspace = 1;
+		    // leadspace = 1;
 		    cp1 = cp+1;
 		    cp2 = cp;
 		    return PARSER_OK;

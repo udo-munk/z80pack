@@ -50,7 +50,7 @@ void init_memory(void)
 {
 	register int i, j;
 	char fn[MAX_LFN];
-	char *pfn = fn;
+	char *pfn;
 
 	strcpy(fn, rompath);
 	strcat(fn, "/");
