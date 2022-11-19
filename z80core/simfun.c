@@ -280,7 +280,7 @@ static int load_mos(char *fn, WORD start, int size)
 static int load_hex(char *fn, WORD start, int size)
 {
 	register char *s;
-	register unsigned char *p;
+	register BYTE *p;
 	register int i;
 	FILE *fp;
 	char inbuf[BUFSIZE];
