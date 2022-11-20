@@ -129,14 +129,14 @@ void options(int argc, char *argv[])
 					usage();
 				}
 				if (obj_fmt == OBJ_HEX)
-					objfn = get_fn(s, OBJEXTHEX, 0);
+					objfn = get_fn(s, OBJEXTHEX, FALSE);
 				else
-					objfn = get_fn(s, OBJEXTBIN, 0);
+					objfn = get_fn(s, OBJEXTBIN, FALSE);
 				s += (strlen(s) - 1);
 				break;
 			case 'l':
 				if (*(s + 1) != '\0') {
-					lstfn = get_fn(++s, LSTEXT, 0);
+					lstfn = get_fn(++s, LSTEXT, FALSE);
 					s += (strlen(s) - 1);
 				}
 				list_flag = TRUE;
@@ -244,7 +244,7 @@ void options(int argc, char *argv[])
 	if ((infiles = (char **) malloc(sizeof(char *) * nfiles)) == NULL)
 		fatal(F_OUTMEM, "input file names");
 	for (p = infiles; argc--; p++)
-		*p = get_fn(*argv++, SRCEXT, 0);
+		*p = get_fn(*argv++, SRCEXT, FALSE);
 }
 
 /*
@@ -349,7 +349,7 @@ void process_file(char *fn)
 
 /*
  *	process one line of source from l
- *	returns 0 when END encountered, otherwise 1
+ *	returns FALSE when END encountered, otherwise TRUE
  */
 int process_line(char *l)
 {
@@ -373,8 +373,8 @@ int process_line(char *l)
 	if (*l == LINCOM || (*l == LINOPT && !IS_SYM(*(l + 1))))
 		a_mode = A_NONE;
 	else {
-		p = get_symbol(label, l, 1);
-		p = get_symbol(opcode, p, 0);
+		p = get_symbol(label, l, TRUE);
+		p = get_symbol(opcode, p, FALSE);
 		lbl_flag = (gencode && label[0] != '\0');
 		if (mac_def_nest > 0) {
 			if (opcode[0] != '\0')
@@ -392,7 +392,7 @@ int process_line(char *l)
 			if (gencode) {
 				if (lbl_flag)
 					put_label();
-				get_operand(operand, p, 1);
+				get_operand(operand, p, TRUE);
 				mac_call();
 				if (lbl_flag)
 					a_mode = A_STD;
@@ -454,7 +454,7 @@ int process_line(char *l)
 		rpc += op_count;
 		return(op == NULL || !(op->op_flags & OP_END));
 	} else
-		return(1);
+		return(TRUE);
 }
 
 /*
@@ -467,9 +467,9 @@ void open_o_files(char *source)
 {
 	if (objfn == NULL) {
 		if (obj_fmt == OBJ_HEX)
-			objfn = get_fn(source, OBJEXTHEX, 1);
+			objfn = get_fn(source, OBJEXTHEX, TRUE);
 		else
-			objfn = get_fn(source, OBJEXTBIN, 1);
+			objfn = get_fn(source, OBJEXTBIN, TRUE);
 	}
 	if (obj_fmt == OBJ_HEX)
 		objfp = fopen(objfn, WRITEA);
@@ -479,7 +479,7 @@ void open_o_files(char *source)
 		fatal(F_FOPEN, objfn);
 	if (list_flag) {
 		if (lstfn == NULL)
-			lstfn = get_fn(source, LSTEXT, 1);
+			lstfn = get_fn(source, LSTEXT, TRUE);
 		if ((lstfp = fopen(lstfn, WRITEA)) == NULL)
 			fatal(F_FOPEN, lstfn);
 		errfp = lstfp;
@@ -489,7 +489,7 @@ void open_o_files(char *source)
 /*
  *	return a filename created from "src" and "ext"
  *	append "ext" if "src" has no extension
- *	replace existing extension with "ext" if "replace" is 1
+ *	replace existing extension with "ext" if "replace" is TRUE
  */
 char *get_fn(char *src, const char *ext, int replace)
 {
@@ -531,8 +531,8 @@ char *strsave(char *s)
 
 /*
  *	get label or opcode from source line
- *	if lbl_flag is 0 skip front white space
- *	if lbl_flag is 1 skip LABSEP at end of symbol
+ *	if lbl_flag is FALSE skip front white space
+ *	if lbl_flag is TRUE skip LABSEP at end of symbol
  *	convert names to upper case and truncate length of name
  */
 char *get_symbol(char *s, char *l, int lbl_flag)
@@ -560,10 +560,10 @@ char *get_symbol(char *s, char *l, int lbl_flag)
 
 /*
  *	get operand into s from source line l
- *	if nopre_flag is 0 converts to upper case, and
+ *	if nopre_flag is FALSE converts to upper case, and
  *	removes all unnecessary white space and comment
  *	delimited strings are copied without changes
- *	if nopre_flag is 1 removes only leading white space
+ *	if nopre_flag is TRUE removes only leading white space
  */
 void get_operand(char *s, char *l, int nopre_flag)
 {
@@ -589,7 +589,7 @@ void get_operand(char *s, char *l, int nopre_flag)
 			*s++ = c = *l++;
 			if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
 				continue;
-			while (1) {
+			while (TRUE) {
 				if (*l == '\0') { /* undelimited string */
 					*s = '\0';
 					return;
