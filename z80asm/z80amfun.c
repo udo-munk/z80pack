@@ -102,14 +102,14 @@ static char tmp[MAXLINE + 1];			/* temporary buffer */
 
 /*
  *	verify that s is a legal symbol, also truncates to symlen
- *	returns 1 if legal, otherwise 0
+ *	returns TRUE if legal, otherwise FALSE
  */
 int is_symbol(char *s)
 {
 	register int i;
 
 	if (!IS_FSYM(*s))
-		return(0);
+		return(FALSE);
 	s++;
 	i = 1;
 	while (IS_SYM(*s)) {
@@ -450,10 +450,10 @@ int mac_rept_expn(void)
 		act_iflevel = e->expn_act_iflevel;
 		act_elselevel = e->expn_act_elselevel;
 		gencode = TRUE;
-		return(1);
+		return(TRUE);
 	} else {
 		mac_end_expn();
-		return(0);
+		return(FALSE);
 	}
 }
 
@@ -590,7 +590,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 		} else if (*s == STRDEL || *s == STRDEL2) {
 			*t++ = c = *s++;
 			cat_flag = NO_CONCAT;
-			while (1) {
+			while (TRUE) {
 				if (*s == '\0') {
 					asmerr(E_MISDEL);
 					*t = '\0';
@@ -709,9 +709,9 @@ int mac_lookup(char *opcode)
 	for (m = mac_table; m != NULL; m = m->mac_next)
 		if (strncmp(m->mac_name, opcode, symlen) == 0) {
 			mac_curr = m;
-			return(1);
+			return(TRUE);
 		}
-	return(0);
+	return(FALSE);
 }
 
 /*
@@ -745,7 +745,7 @@ char *mac_next_parm(char *s)
 		if (*s == STRDEL || *s == STRDEL2) {
 			/* keep delimiters, but reduce double delimiters */
 			*t++ = c = *s++;
-			while (1) {
+			while (TRUE) {
 				if (*s == '\0') {
 					asmerr(E_MISDEL);
 					return(NULL);
@@ -765,7 +765,7 @@ char *mac_next_parm(char *s)
 			while (*s != '\0' && *s != ',' && *s != COMMENT) {
 				if (*s == STRDEL || *s == STRDEL2) {
 					*t++ = c = *s++;
-					while (1) {
+					while (TRUE) {
 						if (*s == '\0') {
 							asmerr(E_MISDEL);
 							return(NULL);
@@ -867,18 +867,18 @@ int mac_rept_irp(struct expn *e)
 
 	s = e->expn_irp;
 	if (*s == '\0')
-		return(0);
+		return(FALSE);
 	else if (*s++ != ',') {
 		asmerr(E_INVOPE);
-		return(0);
+		return(FALSE);
 	} else {
 		if ((s = mac_next_parm(s)) == NULL)
-			return(0);
+			return(FALSE);
 		e->expn_irp = s;
 		if (e->expn_parms->parm_val != NULL)
 			free(e->expn_parms->parm_val);
 		e->expn_parms->parm_val = strsave(tmp);
-		return(1);
+		return(TRUE);
 	}
 }
 
@@ -905,9 +905,9 @@ int mac_rept_irpc(struct expn *e)
 {
 	if (*e->expn_irp != '\0') {
 		*e->expn_parms->parm_val = *e->expn_irp++;
-		return(1);
+		return(TRUE);
 	} else
-		return(0);
+		return(FALSE);
 }
 
 /*

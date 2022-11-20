@@ -341,7 +341,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 		p = operand;
 		c = *p++;
 		if (c == STRDEL || c == STRDEL2) {
-			while (1) {
+			while (TRUE) {
 				if (*p == '\0') {
 					putchar('\n');
 					asmerr(E_MISDEL);
@@ -388,7 +388,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 			c = *p;
 			if (c == STRDEL || c == STRDEL2) {
 				p++;
-				while (1) {
+				while (TRUE) {
 					if (*p == '\0') {
 						asmerr(E_MISDEL);
 						break;
