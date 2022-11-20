@@ -282,7 +282,7 @@ int open_socket(void) {
 
     s = getaddrinfo(addr, port_num, &hints, &result);
     if (s != 0) {
-        LOGI(TAG, "getaddrinfo: %s\n", "failed");
+        LOGI(TAG, "getaddrinfo: %s", "failed");
         return 1;
     }
 
