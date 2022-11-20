@@ -139,7 +139,7 @@ int net_device_get(net_device_t device) {
 
 	if (dev[device].queue) {
 		res = msgrcv(dev[device].queue, &msg, 2, 1L, IPC_NOWAIT);
-		LOGD(TAG, "GET: device[%d] res[%ld] msg[%ld, %s]\r\n", device, res, msg.mtype, msg.mtext);
+		LOGD(TAG, "GET: device[%d] res[%ld] msg[%ld, %s]", device, res, msg.mtype, msg.mtext);
 		if (res == 2) {
 			return msg.mtext[0];
 		}

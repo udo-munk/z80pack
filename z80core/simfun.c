@@ -293,7 +293,7 @@ static int load_hex(char *fn, WORD start, int size)
 	int chksum;
 
 	if ((fp = fopen(fn, "r")) == NULL) {
-		LOGE(TAG, "can't open file %s\n", fn);
+		LOGE(TAG, "can't open file %s", fn);
 		return(1);
 	}
 
