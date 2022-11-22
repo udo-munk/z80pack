@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 		strcpy(fn, dn);
 	}
 	memset((char *) sector, 0xe5, 128);
-	if ((fd = open(fn, O_RDONLY)) != -1) {
+	if (open(fn, O_RDONLY) != -1) {
 		printf("disk file %s exists, aborting\n", fn);
 		exit(1);
 	}

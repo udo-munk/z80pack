@@ -29,7 +29,7 @@
 int main(void)
 {
 	unsigned char sector[128];
-	int fd, drivea, readn;
+	int fd, drivea;
 
 	/* open drive A for writing */
 	if ((drivea = open("../disks/drivea.dsk", O_WRONLY)) == -1) {
@@ -53,7 +53,7 @@ int main(void)
 		exit(1);
 	}
 	/* read from cpmldr.bin and write to disk in drive A */
-	while ((readn = read(fd, (char *) sector, 128)) == 128)
+	while (read(fd, (char *) sector, 128) == 128)
 		write(drivea, (char *) sector, 128);
 	write(drivea, (char *) sector, 128);
 	close(fd);
@@ -65,7 +65,7 @@ int main(void)
 		exit(1);
 	}
 	/* read from ccp.bin and write to disk in drive A */
-	while ((readn = read(fd, (char *) sector, 128)) == 128)
+	while (read(fd, (char *) sector, 128) == 128)
 		write(drivea, (char *) sector, 128);
 	write(drivea, (char *) sector, 128);
 	close(fd);

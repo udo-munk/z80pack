@@ -44,7 +44,7 @@ int main(void)
 		exit(1);
 	}
 	/* read and check 3 byte header */
-	if ((readn = read(fd, (char *) header, 3)) != 3) {
+	if (read(fd, (char *) header, 3) != 3) {
 		perror("file boot.bin");
 		exit(1);
 	}
@@ -67,7 +67,7 @@ int main(void)
 	lseek(fd, (long) 17 * 128, SEEK_SET);
 	/* read CCP and BDOS from cpm.bin and write them to disk in drive A */
 	for (i = 0; i < 44; i++) {
-		if ((readn = read(fd, (char *) sector, 128)) != 128) {
+		if (read(fd, (char *) sector, 128) != 128) {
 			perror("file cpm.bin");
 			exit(1);
 		}
@@ -80,7 +80,7 @@ int main(void)
 		exit(1);
 	}
 	/* read and check 3 byte header */
-	if ((readn = read(fd, (char *) header, 3)) != 3) {
+	if (read(fd, (char *) header, 3) != 3) {
 		perror("file bios.bin");
 		exit(1);
 	}
