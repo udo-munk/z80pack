@@ -16,7 +16,6 @@
 
 int main(int argc, char *argv[])
 {
-	register int n;
 	int fdin, fdout;
 	int flag = 0;
 	char c;
@@ -37,7 +36,7 @@ int main(int argc, char *argv[])
 		return(1);
 	}
 
-	while ((n = read(fdin, &c, 1)) == 1) {
+	while (read(fdin, &c, 1) == 1) {
 		if (flag == 0) {
 			if (c == 0)
 				continue;
