@@ -233,6 +233,7 @@ static int load_mos(char *fn, WORD start, int size)
 	if ((c = getc(fp)) == EOF || c != 0xff
 	    || (c = getc(fp)) == EOF || (c2 = getc(fp)) == EOF) {
 		LOGE(TAG, "invalid Mostek file %s", fn);
+		fclose(fp);
 		return(1);
 	}
 	laddr = (c2 << 8) | c;
@@ -242,6 +243,7 @@ static int load_mos(char *fn, WORD start, int size)
 	if (size > 0 && laddr < start) {
 		LOGW(TAG, "tried to load Mostek file outside "
 		     "expected address range. Address: %04X", laddr);
+		fclose(fp);
 		return(1);
 	}
 
@@ -252,6 +254,7 @@ static int load_mos(char *fn, WORD start, int size)
 				LOGW(TAG, "tried to load Mostek file outside "
 				     "expected address range. "
 				     "Address: %04X", i);
+				fclose(fp);
 				return(1);
 			}
 			count++;
