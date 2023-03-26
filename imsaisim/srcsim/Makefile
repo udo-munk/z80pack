@@ -75,7 +75,7 @@ EXEC = $(SIM)
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include
 PLAT_LDFLAGS = -L/usr/local/lib
-PLAT_LIBS = -lthr
+PLAT_LIBS = -lthr -lm
 endif
 ifeq ($(TARGET_OS),WIN32)
 EXEC := $(EXEC:=.exe)
