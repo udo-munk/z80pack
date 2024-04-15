@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2024 by Udo Munk
  *
  * History:
  * 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
@@ -2829,8 +2829,9 @@ static int op_jpz(void)			/* JP Z,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
@@ -2842,8 +2843,9 @@ static int op_jpnz(void)		/* JP NZ,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
@@ -2855,8 +2857,9 @@ static int op_jpc(void)			/* JP C,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
@@ -2868,8 +2871,9 @@ static int op_jpnc(void)		/* JP NC,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
@@ -2881,8 +2885,9 @@ static int op_jppe(void)		/* JP PE,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
@@ -2894,8 +2899,9 @@ static int op_jppo(void)		/* JP PO,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
@@ -2907,8 +2913,9 @@ static int op_jpm(void)			/* JP M,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
@@ -2920,8 +2927,9 @@ static int op_jpp(void)			/* JP P,nn */
 		i = memrdr(PC++);
 		i += memrdr(PC++) << 8;
 		PC = i;
-	} else
+	} else {
 		PC += 2;
+	}
 	return(10);
 }
 
