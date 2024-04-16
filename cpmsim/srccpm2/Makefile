@@ -16,3 +16,7 @@ boot.bin: boot.asm
 
 clean:
 	rm -f *.lis bios.bin boot.bin putsys putsys.exe
+
+allclean: clean
+
+.PHONY: all clean allclean

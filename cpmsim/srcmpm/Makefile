@@ -13,3 +13,7 @@ boot.bin: boot.asm
 
 clean:
 	rm -f *.lis putsys boot.bin
+
+allclean: clean
+
+.PHONY: all clean allclean

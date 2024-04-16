@@ -331,6 +331,8 @@ clean:
 	$(RMRF) $(CPROG)
 	$(RMF) $(UNIT_TEST_PROG)
 
+allclean: clean
+
 distclean: clean
 	@$(RMRF) VS2012/Debug VS2012/*/Debug  VS2012/*/*/Debug
 	@$(RMRF) VS2012/Release VS2012/*/Release  VS2012/*/*/Release
@@ -384,5 +386,5 @@ $(BUILD_RESOURCES) : $(WINDOWS_RESOURCES)
 indent:
 	astyle --suffix=none --style=linux --indent=spaces=4 --lineend=linux  include/*.h src/*.c src/*.cpp src/*.inl examples/*/*.c  examples/*/*.cpp
 
-.PHONY: all help build install clean lib so
+.PHONY: default all help build unit_test install install-headers install-lib install-slib lib slib clean distclean allclean indent
 
