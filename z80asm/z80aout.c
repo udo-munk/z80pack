@@ -1,6 +1,6 @@
 /*
  *	Z80 - Macro - Assembler
- *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 1987-2024 by Udo Munk
  *	Copyright (C) 2022 by Thomas Eberhardt
  *
  *	History:
@@ -124,7 +124,7 @@ void lst_header(void)
 	if (header_done && ppl != 0)
 		fputc('\f', lstfp);
 	if (!header_done || ppl != 0)
-		fprintf(lstfp, "Z80-Macro-Assembler  Release %s\t%.24s",
+		fprintf(lstfp, "Z80/8080-Macro-Assembler  Release %s\t%.24s",
 			REL, ctime(&tloc));
 	if (ppl != 0) {
 		fprintf(lstfp, "\tPage %d\n", ++page);
