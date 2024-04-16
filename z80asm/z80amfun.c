@@ -1,9 +1,6 @@
 /*
- *	Z80 - Macro - Assembler - Intel-like macro implementation
+ *	Z80/8080-Macro-Assembler - Intel-like macro implementation
  *	Copyright (C) 2022 by Thomas Eberhardt
- *
- *	History:
- *	25-OCT-2022 Intel-like macros (TE)
  */
 
 /*
