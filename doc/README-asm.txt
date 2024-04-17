@@ -1,6 +1,6 @@
 Usage:
 
-z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u
+z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -c<num> -x -8 -u
        -v -m -U -o<file> -l[<file>] -d<symbol> ... <file> ...
 
 If the file name of a source doesn't have an extension the default
@@ -15,6 +15,7 @@ Format of the output file:
         -fb -> binary file
         -fm -> binary file with Mostek header
         -fh -> Intel HEX
+        -fc -> C initialized array
 
 The default is Intel HEX now, in earlier versions it was Mostek binary,
 but this format is not used much anymore.
@@ -40,6 +41,11 @@ The default is 8 and the allowed range is 6 to 32.
 Option h:
 Set the maximum number of bytes per HEX record to <num>.
 The default is 32 and the allowed range is 1 to 32.
+
+Option c:
+Set the maximum number of bytes per C array line to <num>.
+The default is 12 and the allowed range is 1 to 16.
+Values greater than 12 omit the space between bytes.
 
 Option x:
 Don't fill binary files up to the last used logical address. This means,
@@ -67,10 +73,10 @@ Option U:
 Convert everything to upper case for compatibility with old source code.
 
 Option o:
-To override the default name of the output file. The extension ".bin" or
-".hex" will be added when none is specified. Without this option the
-name of the output file becomes the name of the first input file, but
-with the extension ".bin" or ".hex".
+To override the default name of the output file. The extension ".bin",
+".hex", or ".c" will be added when none is specified. Without this
+option the name of the output file becomes the name of the first input
+file, but with the extension ".bin", ".hex", or ".c".
 
 Option l:
 Without this option no list file will be generated. With -l a list file

@@ -56,15 +56,26 @@ extern void put_label(void);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	("usage: z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -x -8 -u\n"
-	 "              -v -m -U -o<file> -l[<file>] "
+	("usage: z80asm -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num>\n"
+	 "              -x -8 -u -v -m -U -o<file> -l[<file>] "
 	 "-d<symbol> ... <file> ..."),	/* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s",		/* 4 */
 	"invalid page length: %s",	/* 5 */
 	"invalid symbol length: %s",	/* 6 */
-	"invalid HEX record length: %s"	/* 7 */
+	"invalid C bytes per line: %s",	/* 7 */
+	"invalid HEX record length: %s"	/* 8 */
+};
+
+static const struct {
+	const char *ext;
+	const char *mode;
+} obj_str[] = {
+	{ OBJEXTBIN, WRITEB },	/* OBJ_BIN */
+	{ OBJEXTBIN, WRITEB },	/* OBJ_MOS */
+	{ OBJEXTHEX, WRITEA },	/* OBJ_HEX */
+	{ OBJEXTCARY, WRITEA }	/* OBJ_CARY */
 };
 
 int main(int argc, char *argv[])
@@ -110,10 +121,7 @@ void options(int argc, char *argv[])
 					puts("name missing in option -o");
 					usage();
 				}
-				if (obj_fmt == OBJ_HEX)
-					objfn = get_fn(s, OBJEXTHEX, FALSE);
-				else
-					objfn = get_fn(s, OBJEXTBIN, FALSE);
+				objfn = get_fn(s, obj_str[obj_fmt].ext, FALSE);
 				s += (strlen(s) - 1);
 				break;
 			case 'l':
@@ -146,6 +154,8 @@ void options(int argc, char *argv[])
 					obj_fmt = OBJ_MOS;
 				else if (*(s + 1) == 'h')
 					obj_fmt = OBJ_HEX;
+				else if (*(s + 1) == 'c')
+					obj_fmt = OBJ_CARY;
 				else {
 					printf("unknown option -%s\n", s);
 					usage();
@@ -212,6 +222,16 @@ void options(int argc, char *argv[])
 				hexlen = atoi(s);
 				if (hexlen < 1 || hexlen > MAXHEX)
 					fatal(F_HEXLEN, s);
+				s += (strlen(s) - 1);
+				break;
+			case 'c':
+				if (*++s == '\0') {
+					puts("length missing in option -c");
+					usage();
+				}
+				carylen = atoi(s);
+				if (carylen < 1 || carylen > 16)
+					fatal(F_CARYLEN, s);
 				s += (strlen(s) - 1);
 				break;
 			default:
@@ -447,16 +467,9 @@ int process_line(char *l)
  */
 void open_o_files(char *source)
 {
-	if (objfn == NULL) {
-		if (obj_fmt == OBJ_HEX)
-			objfn = get_fn(source, OBJEXTHEX, TRUE);
-		else
-			objfn = get_fn(source, OBJEXTBIN, TRUE);
-	}
-	if (obj_fmt == OBJ_HEX)
-		objfp = fopen(objfn, WRITEA);
-	else
-		objfp = fopen(objfn, WRITEB);
+	if (objfn == NULL)
+		objfn = get_fn(source, obj_str[obj_fmt].ext, TRUE);
+	objfp = fopen(objfn, obj_str[obj_fmt].mode);
 	if (objfp == NULL)
 		fatal(F_FOPEN, objfn);
 	if (list_flag) {

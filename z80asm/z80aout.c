@@ -1,7 +1,7 @@
 /*
  *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2024 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -16,6 +16,8 @@
 
 void lst_byte(BYTE);
 void fill_bin(void);
+void fill_cary(void);
+void cary_byte(BYTE);
 void eof_hex(WORD);
 void flush_hex(void);
 void hex_record(BYTE);
@@ -76,6 +78,7 @@ static WORD curr_addr;			/* current logical file address */
 static WORD bin_addr;			/* current address written to file */
 static WORD hex_addr;			/* current address in HEX record */
 static WORD hex_cnt;			/* number of bytes in HEX buffer */
+static unsigned long cary_cnt;		/* number of bytes in C array */
 
 static BYTE hex_buf[MAXHEX];		/* buffer for one HEX record */
 static char hex_out[MAXHEX*2+13];	/* ASCII buffer for one HEX record */
@@ -333,6 +336,8 @@ void obj_header(void)
 		break;
 	case OBJ_HEX:
 		break;
+	case OBJ_CARY:
+		fputs("const unsigned char code[] = {", objfp);
 	}
 }
 
@@ -351,6 +356,13 @@ void obj_end(void)
 		flush_hex();
 		eof_hex(start_addr);
 		break;
+	case OBJ_CARY:
+		if (!nofill_flag && !(load_flag && (bin_addr < load_addr)))
+			fill_cary();
+		fputs("\n};\n", objfp);
+		fprintf(objfp, "const unsigned long code_length = %luUL;\n",
+			cary_cnt);
+		break;
 	}
 }
 
@@ -362,6 +374,7 @@ void obj_org(WORD addr)
 	switch (obj_fmt) {
 	case OBJ_BIN:
 	case OBJ_MOS:
+	case OBJ_CARY:
 		nseq_flag = (addr < curr_addr);
 		if (load_flag && (bin_addr < load_addr))
 			bin_addr = addr;
@@ -385,14 +398,21 @@ void obj_writeb(WORD op_cnt)
 	switch (obj_fmt) {
 	case OBJ_BIN:
 	case OBJ_MOS:
+	case OBJ_CARY:
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
 			if (load_flag && (bin_addr < load_addr))
 				asmerr(E_BFRORG);
 			else {
-				fill_bin();
-				fwrite(ops, 1, op_cnt, objfp);
+				if (obj_fmt == OBJ_CARY) {
+					fill_cary();
+					for (i = 0; i < op_cnt; i++)
+						cary_byte(ops[i]);
+				} else {
+					fill_bin();
+					fwrite(ops, 1, op_cnt, objfp);
+				}
 				bin_addr += op_cnt;
 			}
 			curr_addr += op_cnt;
@@ -421,6 +441,7 @@ void obj_fill(WORD count)
 	switch (obj_fmt) {
 	case OBJ_BIN:
 	case OBJ_MOS:
+	case OBJ_CARY:
 		if (!nseq_flag)
 			curr_addr += count;
 		break;
@@ -443,15 +464,22 @@ void obj_fill_value(WORD count, WORD value)
 	switch (obj_fmt) {
 	case OBJ_BIN:
 	case OBJ_MOS:
+	case OBJ_CARY:
 		if (nseq_flag)
 			asmerr(E_NSQWRT);
 		else {
 			if (load_flag && (bin_addr < load_addr))
 				asmerr(E_BFRORG);
 			else {
-				fill_bin();
-				while (n-- > 0)
-					fputc(value, objfp);
+				if (obj_fmt == OBJ_CARY) {
+					fill_cary();
+					while (n-- > 0)
+						cary_byte(value);
+				} else {
+					fill_bin();
+					while (n-- > 0)
+						fputc(value, objfp);
+				  }
 				bin_addr += count;
 			}
 			curr_addr += count;
@@ -479,6 +507,35 @@ void fill_bin(void)
 		fputc(0xff, objfp);
 		bin_addr++;
 	}
+}
+
+/*
+ *	fill C array object file up to the logical address with 0xff bytes
+ */
+void fill_cary(void)
+{
+	while (bin_addr < curr_addr) {
+		cary_byte(0xff);
+		bin_addr++;
+	}
+}
+
+/*
+ *	Output a C array byte
+ */
+void cary_byte(BYTE b)
+{
+	if (cary_cnt == 0)
+		fputs("\n\t", objfp);
+	else {
+		fputc(',', objfp);
+		if ((cary_cnt % carylen) == 0)
+			fputs("\n\t", objfp);
+		else if (carylen <= 12)
+			fputc(' ', objfp);
+	}
+	fprintf(objfp, "0x%02x", b);
+	cary_cnt++;
 }
 
 /*
