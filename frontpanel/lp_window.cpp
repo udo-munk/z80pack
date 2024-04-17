@@ -988,7 +988,7 @@ Lpanel::draw_stats(void)
   glDisable(GL_DEPTH_TEST);
 
   glColor3f(1.,1.,0.);
-  sprintf(perf_txt,"fps:%d sps:%d",frames_per_second, samples_per_second);
+  snprintf(perf_txt,sizeof(perf_txt),"fps:%d sps:%d",frames_per_second, samples_per_second);
   printStringAt(perf_txt, bbox.xyz_min[0] + .2, bbox.xyz_min[1] + .2);
 
   glMatrixMode(GL_PROJECTION);
@@ -1050,6 +1050,6 @@ Lpanel::make_cursor_text(void)
 {
  cursor_textpos[0] = (bbox.xyz_max[0] + bbox.xyz_min[0]) * .5;
  cursor_textpos[1] = bbox.xyz_min[1] + .1;
- sprintf(cursor_txt,"cursor position=%7.3f,%7.3f", cursor[0], cursor[1]);
+ snprintf(cursor_txt,sizeof(cursor_txt),"cursor position=%7.3f,%7.3f", cursor[0], cursor[1]);
 }
 
