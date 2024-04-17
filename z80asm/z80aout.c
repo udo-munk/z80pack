@@ -78,7 +78,7 @@ static WORD curr_addr;			/* current logical file address */
 static WORD bin_addr;			/* current address written to file */
 static WORD hex_addr;			/* current address in HEX record */
 static WORD hex_cnt;			/* number of bytes in HEX buffer */
-static unsigned long cary_cnt;		/* number of bytes in C array */
+static WORD cary_cnt;			/* number of bytes in C array */
 
 static BYTE hex_buf[MAXHEX];		/* buffer for one HEX record */
 static char hex_out[MAXHEX*2+13];	/* ASCII buffer for one HEX record */
@@ -337,7 +337,7 @@ void obj_header(void)
 	case OBJ_HEX:
 		break;
 	case OBJ_CARY:
-		fputs("const unsigned char code[] = {", objfp);
+		fputs("unsigned char code[] = {", objfp);
 	}
 }
 
@@ -360,8 +360,13 @@ void obj_end(void)
 		if (!nofill_flag && !(load_flag && (bin_addr < load_addr)))
 			fill_cary();
 		fputs("\n};\n", objfp);
-		fprintf(objfp, "const unsigned long code_length = %luUL;\n",
+		fprintf(objfp, "unsigned short code_length = %u;\n",
 			cary_cnt);
+		fprintf(objfp, "unsigned short code_load_addr = 0x%04x;\n",
+			load_addr);
+		if (start_addr >= load_addr)
+			fprintf(objfp, "unsigned short "
+				"code_start_addr = 0x%04x;\n", start_addr);
 		break;
 	}
 }
