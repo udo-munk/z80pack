@@ -1,7 +1,7 @@
 /*
  *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -26,7 +26,8 @@ extern WORD	rpc,
 		a_addr,
 		load_addr,
 		start_addr,
-		hexlen;
+		hexlen,
+		carylen;
 
 extern int	list_flag,
 		sym_flag,

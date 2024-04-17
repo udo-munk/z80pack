@@ -1,7 +1,7 @@
 /*
  *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -30,7 +30,8 @@ WORD rpc,			/* real program counter */
      a_addr,			/* output value for A_ADDR/A_VALUE mode */
      load_addr,			/* load address of program */
      start_addr,		/* start address of program */
-     hexlen = MAXHEX;		/* HEX record length */
+     hexlen = MAXHEX,		/* HEX record length */
+     carylen = CARYLEN;		/* C array bytes per line */
 
 int  list_flag,			/* flag for option -l */
      sym_flag,			/* flag for option -s */
