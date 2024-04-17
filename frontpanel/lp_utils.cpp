@@ -518,7 +518,7 @@ int xpand(const char *s, char **namelist[] )
 
     ival = from_ival;
 
-    sprintf(format, "%%0%dd",ndigits);
+    snprintf(format, sizeof(format), "%%0%dd",ndigits);
 
    max_names = ( (max(ival, to_ival)) - (min(ival,to_ival))) / abs(inc_ival) + 1;
 
@@ -529,7 +529,7 @@ int xpand(const char *s, char **namelist[] )
    do
     {
      obuf[0]=0;
-     sprintf(dbuf,format,ival);
+     snprintf(dbuf,sizeof(dbuf),format,ival);
      if(prefix) strcpy(obuf,prefix);
      strcat(obuf,dbuf);
      if(suffix) strcat(obuf,suffix);
@@ -540,7 +540,7 @@ int xpand(const char *s, char **namelist[] )
      ival += inc_ival;
     } while (ival != to_ival);
 
-     sprintf(dbuf,format,ival);
+     snprintf(dbuf,sizeof(dbuf),format,ival);
      obuf[0]=0;
      if(prefix) strcpy(obuf,prefix);
      strcat(obuf,dbuf);
