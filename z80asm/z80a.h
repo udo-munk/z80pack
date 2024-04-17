@@ -1,25 +1,7 @@
 /*
- *	Z80 - Macro - Assembler
+ *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
- *
- *	History:
- *	17-SEP-1987 Development under Digital Research CP/M 2.2
- *	28-JUN-1988 Switched to Unix System V.3
- *	21-OCT-2006 changed to ANSI C for modern POSIX OS's
- *	03-FEB-2007 more ANSI C conformance and reduced compiler warnings
- *	18-MAR-2007 use default output file extension dependent on format
- *	04-OCT-2008 fixed comment bug, ';' string argument now working
- *	22-FEB-2014 fixed is...() compiler warnings
- *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
- *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol length and other improvements
- *	15-MAY-2018 mark unreferenced symbols in listing
- *	30-JUL-2021 fix verbose option
- *	28-JAN-2022 added syntax check for OUT (n),A
- *	24-SEP-2022 added undocumented Z80 instructions and 8080 mode (TE)
- *	04-OCT-2022 new expression parser (TE)
- *	25-OCT-2022 Intel-like macros (TE)
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -33,9 +15,10 @@
 /*
  *	various constants
  */
-#define REL		"1.11-dev"
-#define COPYR		"Copyright (C) 1987-2022 by Udo Munk" \
-			" & 2022 by Thomas Eberhardt"
+#define COPYR		"Copyright (C) 1987-2024 by Udo Munk" \
+			" & 2022-2024 by Thomas Eberhardt"
+#define RELEASE		"2.0-dev"
+
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */
 #define OBJEXTHEX	".hex"	/* filename extension HEX */

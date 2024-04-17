@@ -58,6 +58,10 @@ z80aglb.o: z80aglb.c z80a.h
 clean:
 	rm -f core *.o z80asm
 
+allclean: clean
+
 install: z80asm
 	strip z80asm
 	cp z80asm ${DESTDIR}
+
+.PHONY: clean allclean install

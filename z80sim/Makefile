@@ -14,3 +14,7 @@ z80opsall.hex: z80opsall.asm
 
 clean:
 	rm -f *.hex *.lis
+
+allclean: clean
+
+.PHONY: all clean allclean

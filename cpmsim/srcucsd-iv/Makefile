@@ -16,3 +16,7 @@ putsys: putsys.c
 
 clean:
 	rm -f *.lis *.bin putsys putsys.exe
+
+allclean: clean
+
+.PHONY: all clean allclean
