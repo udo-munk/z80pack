@@ -69,7 +69,7 @@ IMSAI_Z80 = \
 	imsaisim/roms/basic4k.asm
 
 help:
-	@echo "This Makefile is primary for developers."
+	@echo "This Makefile is primarily for developers."
 	@echo "Please consult the files in the doc directory."
 
 all: z80asm cpmtools libs bioses misc machines
