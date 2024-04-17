@@ -1,5 +1,5 @@
 # Developer Makefile to easily build/clean everything.
-# Don't use indiscriminately, because "make tools" will install files.
+# Don't use indiscriminately, because "make all" will install files.
 #
 # Targets:
 #	all - build all tools and simulators
@@ -10,6 +10,7 @@
 DESTDIR=${HOME}/bin
 #DESTDIR=/usr/local/bin
 
+TOOLS = z80asm cpmsim/srctools
 LIBS = frontpanel webfrontend/civetweb
 BIOSES = cpmsim/srccpm2 cpmsim/srccpm3 cpmsim/srcmpm cpmsim/srcucsd-iv \
 	imsaisim/srcucsd-iv
