@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2024 by Udo Munk
  *
  * This module of the simulator contains a simple terminal I/O
  * simulation as an example.
@@ -10,6 +10,7 @@
 /*
  *	Sample I/O-handler
  *
+ *	Port 0 input:	reads status of stdin
  *	Port 1 input:	reads the next byte from stdin
  *	Port 1 output:	writes the byte to stdout
  *
@@ -18,6 +19,7 @@
  */
 
 #include <stdio.h>
+#include <sys/poll.h>
 #include "sim.h"
 #include "simglb.h"
 
@@ -27,7 +29,7 @@
  */
 static BYTE io_trap_in(void);
 static void io_trap_out(BYTE);
-static BYTE p001_in(void);
+static BYTE p000_in(void), p001_in(void);
 static void p001_out(BYTE);
 
 /*
@@ -35,7 +37,7 @@ static void p001_out(BYTE);
  *	I/O port (0 - 255), to do the required I/O.
  */
 static BYTE (*port_in[256]) (void) = {
-	 io_trap_in,		/* port 0 */
+	 p000_in,		/* port 0 */
 	 p001_in		/* port 1 */
 };
 
@@ -112,7 +114,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 /*
  *	I/O input trap function
  *	This function should be added into all unused
- *	entries of the input port array. It stops the
+ *	entries of the input port array. It can stop the
  *	emulation with an I/O error.
  */
 static BYTE io_trap_in(void)
@@ -127,7 +129,7 @@ static BYTE io_trap_in(void)
 /*
  *	I/O trap function
  *	This function should be added into all unused
- *	entries of the output port array. It stops the
+ *	entries of the output port array. It can stop the
  *	emulation with an I/O error.
  */
 static void io_trap_out(BYTE data)
@@ -138,6 +140,31 @@ static void io_trap_out(BYTE data)
 		cpu_error = IOTRAPOUT;
 		cpu_state = STOPPED;
 	}
+}
+
+/*
+ * 	I/O function port 0 read:
+ * 	Read status from stdin:
+ *	bit 0 = 0, character available for input from stdin
+ *	bit 7 = 0, transmitter ready to write character to stdout
+ *		   always true
+ */
+static BYTE p000_in(void)
+{
+	struct pollfd p[1];
+	BYTE tty_stat = 0x81;
+
+        p[0].fd = fileno(stdin);
+        p[0].events = POLLIN;
+        p[0].revents = 0;
+        poll(p, 1, 0);
+	if (p[0].revents & POLLIN)
+		tty_stat &= ~1;
+        if (p[0].revents & POLLNVAL) {
+                cpu_error = IOERROR;
+                cpu_state = STOPPED;
+        }
+	return(tty_stat);
 }
 
 /*
