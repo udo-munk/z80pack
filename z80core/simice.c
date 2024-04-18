@@ -93,7 +93,6 @@ void ice_cmd_loop(int go_flag)
 	wrk_addr = PC;
 
 	while (eoj) {
-	next:
 		if (go_flag) {
 			strcpy(cmd, "g");
 			go_flag = 0;
@@ -102,7 +101,8 @@ void ice_cmd_loop(int go_flag)
 			fflush(stdout);
 			if (fgets(cmd, LENCMD, stdin) == NULL) {
 				putchar('\n');
-				goto next;
+				eoj = 0;
+				break;
 			}
 		}
 		switch (tolower((unsigned char) *cmd)) {
