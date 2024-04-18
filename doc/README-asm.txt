@@ -1,6 +1,6 @@
 Usage:
 
-z80asm -f{b|m|h} -s[n|a] -p<num> -e<num> -h<num> -c<num> -x -8 -u
+z80asm -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num> -x -8 -u
        -v -m -U -o<file> -l[<file>] -d<symbol> ... <file> ...
 
 If the file name of a source doesn't have an extension the default
