@@ -1,7 +1,7 @@
 /*
  *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -567,7 +567,7 @@ WORD ldreg(BYTE base_op, char *sec)
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK0);
 				*(sec + 2) = '('; /* replace [XY] */
-				ops[2] = chk_sbyte(eval(sec + 2));
+				ops[2] = chk_byte(eval(sec + 2));
 			}
 		} else if (base_op == 0x78 /* only for A */
 			   && *sec == '(' && *(sec + strlen(sec) - 1) == ')') {
@@ -777,7 +777,7 @@ WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 				ops[2] = 0;
 			else {
 				operand[2] = '('; /* replace [XY] */
-				ops[2] = chk_sbyte(eval(&operand[2]));
+				ops[2] = chk_byte(eval(&operand[2]));
 			}
 		}
 		break;
@@ -790,7 +790,7 @@ WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 				ops[2] = 0;
 			else {
 				operand[2] = '('; /* replace [XY] */
-				ops[2] = chk_sbyte(eval(&operand[2]));
+				ops[2] = chk_byte(eval(&operand[2]));
 			}
 			ops[3] = chk_byte(eval(sec));
 		}
@@ -1034,7 +1034,7 @@ WORD op_decinc(BYTE base_op, BYTE base_op16)
 				ops[0] = (operand[2] == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK3);
 				operand[2] = '('; /* replace [XY] */
-				ops[2] = chk_sbyte(eval(&operand[2]));
+				ops[2] = chk_byte(eval(&operand[2]));
 			}
 		} else
 			asmerr(E_INVOPE);
@@ -1102,7 +1102,7 @@ WORD aluop(BYTE base_op, char *sec)
 				ops[0] = (*(sec + 2) == 'Y') ? 0xfd : 0xdd;
 				ops[1] = base_op + (REGIHL & OPMASK0);
 				*(sec + 2) = '('; /* replace [XY] */
-				ops[2] = chk_sbyte(eval(sec + 2));
+				ops[2] = chk_byte(eval(sec + 2));
 			}
 		} else {		/* ALUOP {A,}n */
 			len = 2;
@@ -1315,7 +1315,7 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 				ops[2] = 0;
 			else {
 				*(sec + 2) = '('; /* replace [XY] */
-				ops[2] = chk_sbyte(eval(sec + 2));
+				ops[2] = chk_byte(eval(sec + 2));
 			}
 			ops[3] = base_op + bit + (REGIHL & OPMASK0);
 		}
@@ -1336,7 +1336,7 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 					ops[2] = 0;
 				else {
 					*(sec + 2) = '('; /* replace [XY] */
-					ops[2] = chk_sbyte(eval(sec + 2));
+					ops[2] = chk_byte(eval(sec + 2));
 				}
 				ops[3] = base_op + bit + (op & OPMASK0);
 			}
