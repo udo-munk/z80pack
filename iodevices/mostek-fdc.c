@@ -93,7 +93,7 @@ void get_disk_filename(void)
 	char inbuf[256];
 	char *left, *right;
 
-	*fn = (char)0;		/* init to null string */	
+	*fn = '\0';		/* init to null string */
 
 	if ((fp = fopen("conf/config.txt", "r")) != NULL) {
 
@@ -106,11 +106,11 @@ void get_disk_filename(void)
 				if (left[5] == (char)disk + '0') { /* match drive? */
 					right = strtok(NULL, "= \t\r\n");
 					strcpy(fn, right);
-					fclose(fp);
 					break;
 				}
 			}
 		} 	/* end while */
+		fclose(fp);
 	}
 }
 
