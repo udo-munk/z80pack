@@ -1952,8 +1952,15 @@ static BYTE prtd_in(void)
  */
 static void prtd_out(BYTE data)
 {
-	if (printer == 0)
-		printer = creat("printer.txt", 0664);
+	if (printer == 0) {
+		if ((printer = creat("printer.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create printer.txt");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			printer = 0;
+			return;
+		}
+	}
 
 	if (data != '\r') {
 again:
@@ -1961,7 +1968,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				LOGE(TAG, "can't write printer");
+				LOGE(TAG, "can't write to printer.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
