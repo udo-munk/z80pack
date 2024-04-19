@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 				if (fdout == 0) {
 				  if ((fdout = creat(argv[1], 0644)) == -1) {
 					perror(argv[1]);
+					close(fdin);
 					exit(EXIT_FAILURE);
 				  }
 				}
@@ -59,6 +60,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	close(fdin);
+	if (fdout)
+		close(fdout);
 	return(EXIT_SUCCESS);
 }
 

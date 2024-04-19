@@ -41,15 +41,20 @@ int main(void)
 	/* open boot loader (boot.bin) for reading */
 	if ((fd = open("boot.bin", O_RDONLY)) == -1) {
 		perror("file boot.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read and check 3 byte header */
 	if (read(fd, (char *) header, 3) != 3) {
 		perror("file boot.bin");
+		close(fd);
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	if (header[0] != 0xff || header[1] != 0 || header[2] != 0) {
 		puts("start address of boot.bin <> 0");
+		close(fd);
+		close(drivea);
 		exit(EXIT_SUCCESS);
 	}
 	/* read boot loader */
@@ -61,6 +66,7 @@ int main(void)
 	/* open CP/M system file (cpm.bin) for reading */
 	if ((fd = open("cpm.bin", O_RDONLY)) == -1) {
 		perror("file cpm.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* position to CCP in cpm.bin, needed if created with SAVE or similar */
@@ -69,6 +75,8 @@ int main(void)
 	for (i = 0; i < 44; i++) {
 		if (read(fd, (char *) sector, 128) != 128) {
 			perror("file cpm.bin");
+			close(fd);
+			close(drivea);
 			exit(EXIT_FAILURE);
 		}
 		write(drivea, (char *) sector, 128);
@@ -77,15 +85,20 @@ int main(void)
 	/* open BIOS (bios.bin) for reading */
 	if ((fd = open("bios.bin", O_RDONLY)) == -1) {
 		perror("file bios.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read and check 3 byte header */
 	if (read(fd, (char *) header, 3) != 3) {
 		perror("file bios.bin");
+		close(fd);
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	if (header[0] != 0xff) {
 		puts("unknown format of bios.bin");
+		close(fd);
+		close(drivea);
 		exit(EXIT_SUCCESS);
 	}
 	/* read BIOS from bios.bin and write it to disk in drive A */

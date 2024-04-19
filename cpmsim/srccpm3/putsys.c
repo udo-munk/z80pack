@@ -39,6 +39,7 @@ int main(void)
 	/* open boot loader (boot.bin) for reading */
 	if ((fd = open("boot.bin", O_RDONLY)) == -1) {
 		perror("file boot.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read boot loader */
@@ -50,6 +51,7 @@ int main(void)
 	/* open CP/M 3 cpmldr file (cpmldr.bin) for reading */
 	if ((fd = open("cpmldr.bin", O_RDONLY)) == -1) {
 		perror("file cpmldr.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read from cpmldr.bin and write to disk in drive A */
@@ -62,6 +64,7 @@ int main(void)
 	/* open CP/M 3 ccp file (ccp.bin) for reading */
 	if ((fd = open("ccp.bin", O_RDONLY)) == -1) {
 		perror("file ccp.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read from ccp.bin and write to disk in drive A */

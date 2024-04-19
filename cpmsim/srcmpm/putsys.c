@@ -34,6 +34,7 @@ int main(void)
 	/* open boot loader (boot.bin) for reading */
 	if ((fd = open("boot.bin", O_RDONLY)) == -1) {
 		perror("file boot.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read boot loader */
@@ -45,6 +46,7 @@ int main(void)
 	/* open MP/M 2 mpmldr file (mpmldr.bin) for reading */
 	if ((fd = open("mpmldr.bin", O_RDONLY)) == -1) {
 		perror("file mpmldr.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read from mpmldr.bin and write to disk in drive A */

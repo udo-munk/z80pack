@@ -35,6 +35,7 @@ int main(void)
 	/* open boot loader (boot.bin) for reading */
 	if ((fd = open("boot.bin", O_RDONLY)) == -1) {
 		perror("file boot.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read boot loader */
@@ -48,6 +49,7 @@ int main(void)
 	/* open BIOS (bios.bin) for reading */
 	if ((fd = open("bios.bin", O_RDONLY)) == -1) {
 		perror("file bios.bin");
+		close(drivea);
 		exit(EXIT_FAILURE);
 	}
 	/* read BIOS from bios.bin and write it to disk in drive A */

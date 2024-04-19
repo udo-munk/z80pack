@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 
 	if ((fdout = open(argv[2], O_WRONLY|O_CREAT, 0644)) == -1) {
 		perror(argv[2]);
+		close(fdin);
 		return(EXIT_FAILURE);
 	}
 

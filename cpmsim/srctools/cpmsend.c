@@ -36,6 +36,7 @@ int main(int argc,char *argv[])
 	}
 	if ((fdout = open("/tmp/.z80pack/cpmsim.auxin", O_WRONLY)) == -1) {
 		perror("pipe auxin");
+		close(fdin);
 		exit(EXIT_FAILURE);
 	}
 	while ((readn = read(fdin, buf, BUFSIZ)) == BUFSIZ)

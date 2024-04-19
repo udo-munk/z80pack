@@ -86,11 +86,13 @@ int main(int argc,char *argv[])/*Main routine*/
   if (append == 0) {
     if((outp = fopen(ofile, "wt")) == NULL){
       printf("ERROR: Cannot open output file.\n");
+      fclose(inp);
       return EXIT_FAILURE;
     }
   } else {
     if((outp = fopen(ofile, "at")) == NULL){
       printf("ERROR: Cannot re-open output file.\n");
+      fclose(inp);
       return EXIT_FAILURE;
     }
     fseek (outp, 0, SEEK_END);
