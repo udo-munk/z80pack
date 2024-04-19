@@ -268,7 +268,7 @@ void fatal(int i, const char *arg)
 		fclose(objfp);
 		unlink(objfn);
 	}
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 /*

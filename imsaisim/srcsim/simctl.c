@@ -92,7 +92,7 @@ void mon(void)
 	putchar('\n');
 	if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
 		LOGE(TAG, "frontpanel error");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	fp_addQuitCallback(quit_callback);

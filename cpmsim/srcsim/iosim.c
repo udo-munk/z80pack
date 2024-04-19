@@ -873,7 +873,7 @@ void init_io(void)
 	switch (pid_rec) {
 	case -1:
 		LOGE(TAG, "can't fork");
-		exit(1);
+		exit(EXIT_FAILURE);
 	case 0:
 		/* . might not be in path, so check that first */
 		if (access("./cpmrecv", X_OK) == 0)
@@ -886,15 +886,15 @@ void init_io(void)
 		/* if not cry and die */
 		LOGE(TAG, "can't exec cpmrecv process, compile/install the tools dude");
 		kill(0, SIGQUIT);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NDELAY)) == -1) {
 		LOGE(TAG, "can't open pipe auxin");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if ((auxout = open("/tmp/.z80pack/cpmsim.auxout", O_WRONLY)) == -1) {
 		LOGE(TAG, "can't open pipe auxout");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #endif
 
@@ -930,19 +930,19 @@ static void init_server_socket(int n)
 		return;
 	if ((ss[n] = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (setsockopt(ss[n], SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
 		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #ifdef TCPASYNC
 	fcntl(ss[n], F_SETOWN, getpid());
 	i = fcntl(ss[n], F_GETFL, 0);
 	if (fcntl(ss[n], F_SETFL, i | FASYNC) == -1) {
 		LOGE(TAG, "can't fcntl FASYNC on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #endif
 	memset((void *) &sin, 0, sizeof(sin));
@@ -951,11 +951,11 @@ static void init_server_socket(int n)
 	sin.sin_port = htons(ss_port[n]);
 	if (bind(ss[n], (struct sockaddr *) &sin, sizeof(sin)) == -1) {
 		LOGE(TAG, "can't bind server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (listen(ss[n], 0) == -1) {
 		LOGE(TAG, "can't listen on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 

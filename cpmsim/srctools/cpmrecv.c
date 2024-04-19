@@ -31,11 +31,11 @@ int main(int argc, char *argv[])
 
 	if (argc != 2) {
 		puts("usage: cpmrecv filename &");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if ((fdin = open("/tmp/.z80pack/cpmsim.auxout", O_RDONLY)) == -1) {
 		perror("pipe auxout");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	signal(SIGINT, SIG_IGN);
@@ -48,18 +48,18 @@ int main(int argc, char *argv[])
 				if (fdout == 0) {
 				  if ((fdout = creat(argv[1], 0644)) == -1) {
 					perror(argv[1]);
-					exit(1);
+					exit(EXIT_FAILURE);
 				  }
 				}
 				write(fdout, &c, 1);
 			}
 		} else {
 			close(fdout);
-			return(0);
+			return(EXIT_SUCCESS);
 		}
 	}
 
-	return(0);
+	return(EXIT_SUCCESS);
 }
 
 void int_handler(int sig)
@@ -68,5 +68,5 @@ void int_handler(int sig)
 
 	close(fdin);
 	close(fdout);
-	exit(0);
+	exit(EXIT_SUCCESS);
 }

@@ -128,7 +128,7 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 			if (thread == 0) {
 				if (pthread_create(&thread, NULL, store_image, (void *) NULL)) {
 					LOGE(TAG, "can't create thread");
-					exit(1);
+					exit(EXIT_FAILURE);
 				}
 			} else {
 				LOGW(TAG, "Transfer with 88CCC already in progess.");

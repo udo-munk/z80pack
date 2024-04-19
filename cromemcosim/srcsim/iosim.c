@@ -654,7 +654,7 @@ void init_io(void)
 	/* create the thread for timer and interrupt handling */
 	if (pthread_create(&thread, NULL, timing, (void *) NULL)) {
 		LOGE(TAG, "can't create timing thread");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 #ifdef HAS_MODEM

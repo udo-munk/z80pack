@@ -54,14 +54,14 @@ int main(int argc, char *argv[])
 
 	if (argc != 2) {
 		puts(usage);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	i = *argv[1];
 	if (argc != 2 ||
 	    (i != 'a' && i != 'b' && i != 'c' && i != 'd' && i != 'i'
 	     && i != 'j' && i != 'p')) {
 		puts(usage);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	dn[5] = drive = (char) i;
 	if (stat(ddir, &sb) == 0 && S_ISDIR(sb.st_mode)) {
@@ -74,11 +74,11 @@ int main(int argc, char *argv[])
 	memset((char *) sector, 0xe5, 128);
 	if (open(fn, O_RDONLY) != -1) {
 		printf("disk file %s exists, aborting\n", fn);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if ((fd = creat(fn, 0644)) == -1) {
 		perror("disk file");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (drive <= 'd') {
 		for (i = 0; i < TRACK * SECTOR; i++)
@@ -91,5 +91,5 @@ int main(int argc, char *argv[])
 			write(fd, (char *) sector, 128);
 	}
 	close(fd);
-	return(0);
+	return(EXIT_SUCCESS);
 }
