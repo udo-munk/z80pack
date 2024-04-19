@@ -282,7 +282,7 @@ usage:
 #ifdef HAS_BANKED_ROM
 				puts("\t-R = enable banked ROM");
 #endif
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 
 	putchar('\n');
@@ -372,10 +372,10 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	if (l_flag) {		/* load core */
 		if (load_core())
-			return(1);
+			return(EXIT_FAILURE);
 	} else if (x_flag) { 	/* OR load memory from file */
 		if (load_file(xfn, 0, 0)) /* don't care where it loads */
-			return(1);
+			return(EXIT_FAILURE);
 	}
 
 	int_on();		/* initialize UNIX interrupts */
@@ -389,7 +389,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	exit_io();		/* stop I/O devices */
 	int_off();		/* stop UNIX interrupts */
 
-	return(0);
+	return(EXIT_SUCCESS);
 }
 
 /*

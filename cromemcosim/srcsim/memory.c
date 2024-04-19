@@ -70,7 +70,7 @@ void init_memory(void)
 	for (i = 0; i < MAXSEG; i++) {
 		if ((memory[i] = (BYTE *) malloc(SEGSIZ)) == NULL) {
 			LOGE(TAG, "can't allocate memory for bank %d", i);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 

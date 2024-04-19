@@ -25,7 +25,7 @@ BYTE chksum(BYTE);
 char *btoh(BYTE, char *);
 
 /* z80amain.c */
-extern void fatal(int, const char *);
+extern void fatal(int, const char *) NORETURN;
 
 /* z80amfun.c */
 extern char *mac_first(int, int *);

@@ -230,7 +230,7 @@ void altair_dsk_select_out(BYTE data)
 			if (pthread_create(&thread, NULL, timing,
 			    (void *) NULL)) {
 				LOGE(TAG, "can't create timing thread");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 		}
 		LOGD(TAG, "enabled, disk = %d", disk);

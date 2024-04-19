@@ -28,15 +28,15 @@ int main(int argc,char *argv[])
 
 	if (argc != 2) {
 		puts("usage: cpmsend filename &");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if ((fdin = open(argv[1], O_RDONLY)) == -1) {
 		perror(argv[1]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if ((fdout = open("/tmp/.z80pack/cpmsim.auxin", O_WRONLY)) == -1) {
 		perror("pipe auxin");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	while ((readn = read(fdin, buf, BUFSIZ)) == BUFSIZ)
 		sendbuf(BUFSIZ);
@@ -44,7 +44,7 @@ int main(int argc,char *argv[])
 		sendbuf(readn);
 	close(fdin);
 	close(fdout);
-	return(0);
+	return(EXIT_SUCCESS);
 }
 
 void sendbuf(int size)

@@ -1,7 +1,7 @@
 /*
  *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -16,7 +16,7 @@
 #include "z80aglb.h"
 
 /* z80amain.c */
-extern void fatal(int, const char *);
+extern void fatal(int, const char *) NORETURN;
 extern void process_file(char *);
 extern char *strsave(char *);
 extern char *next_arg(char *, int *);

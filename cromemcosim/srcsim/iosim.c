@@ -635,7 +635,7 @@ void init_io(void)
 	/* initialise TCP/IP networking */
 #ifdef TCPASYNC
 	newact.sa_handler = sigio_tcp_server_socket;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGIO, &newact, NULL);
 #endif
@@ -654,7 +654,7 @@ void init_io(void)
 	/* create the thread for timer and interrupt handling */
 	if (pthread_create(&thread, NULL, timing, (void *) NULL)) {
 		LOGE(TAG, "can't create timing thread");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 #ifdef HAS_MODEM
@@ -672,7 +672,7 @@ void init_io(void)
 #else
 	newact.sa_handler = SIG_IGN;
 #endif
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
 	tim.it_value.tv_sec = 5;
@@ -1272,7 +1272,7 @@ void ice_go(void)
 	set_unix_terminal();
 
 	newact.sa_handler = interrupt;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
 }
@@ -1285,7 +1285,7 @@ void ice_break(void)
 	static struct sigaction newact;
 
 	newact.sa_handler = SIG_IGN;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
 

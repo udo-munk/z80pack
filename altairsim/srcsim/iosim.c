@@ -842,7 +842,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 1) {
 		newact.sa_handler = int_timer;
-		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+		sigemptyset(&newact.sa_mask);
 		newact.sa_flags = 0;
 		sigaction(SIGALRM, &newact, NULL);
 		tim.it_value.tv_sec = 0;
@@ -852,7 +852,7 @@ static void hwctl_out(BYTE data)
 		setitimer(ITIMER_REAL, &tim, NULL);
 	} else {
 		newact.sa_handler = SIG_IGN;
-		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+		sigemptyset(&newact.sa_mask);
 		newact.sa_flags = 0;
 		sigaction(SIGALRM, &newact, NULL);
 		tim.it_value.tv_sec = 0;

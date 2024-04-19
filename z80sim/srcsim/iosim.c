@@ -143,8 +143,8 @@ static void io_trap_out(BYTE data)
 }
 
 /*
- * 	I/O function port 0 read:
- * 	Read status from stdin:
+ *	I/O function port 0 read:
+ *	Read status from stdin:
  *	bit 0 = 0, character available for input from stdin
  *	bit 7 = 0, transmitter ready to write character to stdout
  *		   always true
@@ -154,16 +154,16 @@ static BYTE p000_in(void)
 	struct pollfd p[1];
 	BYTE tty_stat = 0x01;
 
-        p[0].fd = fileno(stdin);
-        p[0].events = POLLIN;
-        p[0].revents = 0;
-        poll(p, 1, 0);
+	p[0].fd = fileno(stdin);
+	p[0].events = POLLIN;
+	p[0].revents = 0;
+	poll(p, 1, 0);
 	if (p[0].revents & POLLIN)
 		tty_stat &= ~1;
-        if (p[0].revents & POLLNVAL) {
-                cpu_error = IOERROR;
-                cpu_state = STOPPED;
-        }
+	if (p[0].revents & POLLNVAL) {
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+	}
 	return(tty_stat);
 }
 

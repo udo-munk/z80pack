@@ -757,7 +757,7 @@ void cromemco_dazzler_ctl_out(BYTE data)
 			if (pthread_create(&thread, NULL, update_display,
 			    (void *) NULL)) {
 				LOGE(TAG, "can't create thread");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 		}
 	} else {

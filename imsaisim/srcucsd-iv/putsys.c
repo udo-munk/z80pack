@@ -30,12 +30,12 @@ int main(void)
 	/* open drive A for writing */
 	if ((drivea = open("../disks/drivea.dsk", O_WRONLY)) == -1) {
 		perror("file ../disks/drivea.dsk");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	/* open boot loader (boot.bin) for reading */
 	if ((fd = open("boot.bin", O_RDONLY)) == -1) {
 		perror("file boot.bin");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	/* read boot loader */
 	memset((char *) sector, 0, 128);
@@ -48,7 +48,7 @@ int main(void)
 	/* open BIOS (bios.bin) for reading */
 	if ((fd = open("bios.bin", O_RDONLY)) == -1) {
 		perror("file bios.bin");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	/* read BIOS from bios.bin and write it to disk in drive A */
 	i = 0;
@@ -66,5 +66,5 @@ int main(void)
 stop:
 	close(fd);
 	close(drivea);
-	return(0);
+	return(EXIT_SUCCESS);
 }

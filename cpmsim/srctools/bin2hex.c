@@ -62,16 +62,16 @@ int main(int argc,char *argv[])/*Main routine*/
     case 'v':
       printf("%s - BINARY to Intel HEX file convertor version 1.00\n"\
              "(c)BCL Vysoke Myto 2001 (benedikt@lphard.cz)\n",argv[0]);
-      return 0;
+      return EXIT_SUCCESS;
     case '?':
       help (argv[0]);
-      return 1;
+      return EXIT_FAILURE;
   }
 
   if ((argc - optind) != 2) {
     printf("ERROR: Missing input/output file.\n");
     help(argv[0]);
-    return 1;
+    return EXIT_FAILURE;
   }
   ifile = argv[optind];
   ofile = argv[optind+1];
@@ -79,19 +79,19 @@ int main(int argc,char *argv[])/*Main routine*/
   /*Open file check*/
   if((inp = fopen(ifile, "rb")) == NULL){
     printf("ERROR: Cannot open input file.\n");
-    return 1;
+    return EXIT_FAILURE;
   }
   fseek (inp, foffset, SEEK_SET);
 
   if (append == 0) {
     if((outp = fopen(ofile, "wt")) == NULL){
       printf("ERROR: Cannot open output file.\n");
-      return 1;
+      return EXIT_FAILURE;
     }
   } else {
     if((outp = fopen(ofile, "at")) == NULL){
       printf("ERROR: Cannot re-open output file.\n");
-      return 1;
+      return EXIT_FAILURE;
     }
     fseek (outp, 0, SEEK_END);
   }
@@ -157,5 +157,5 @@ int main(int argc,char *argv[])/*Main routine*/
 
   fclose(inp);
   fclose(outp);
-  return 0;
+  return EXIT_SUCCESS;
 }

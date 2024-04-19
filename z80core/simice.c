@@ -102,7 +102,7 @@ void ice_cmd_loop(int go_flag)
 			if (fgets(cmd, LENCMD, stdin) == NULL) {
 				putchar('\n');
 				eoj = 0;
-				break;
+				continue;
 			}
 		}
 		switch (tolower((unsigned char) *cmd)) {
@@ -859,7 +859,7 @@ static void do_clock(void)
 	cpu_state = CONTIN_RUN;		/* initialise CPU */
 	cpu_error = NONE;
 	newact.sa_handler = timeout;	/* set timer interrupt handler */
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
 	tim.it_value.tv_sec = 3;	/* start 3 second timer */
