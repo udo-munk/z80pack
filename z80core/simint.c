@@ -32,7 +32,7 @@ void int_on(void)
 	static struct sigaction newact;
 
 	newact.sa_handler = user_int;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGINT, &newact, NULL);
 	newact.sa_handler = quit_int;
@@ -45,7 +45,7 @@ void int_off(void)
 {
 	static struct sigaction newact;
 
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	newact.sa_handler = SIG_IGN;
 	sigaction(SIGALRM, &newact, NULL);

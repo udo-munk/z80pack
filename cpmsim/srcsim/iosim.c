@@ -904,7 +904,7 @@ void init_io(void)
 
 #ifdef TCPASYNC
 	newact.sa_handler = int_io;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGIO, &newact, NULL);
 #endif
@@ -2396,7 +2396,7 @@ static void time_out(BYTE data)
 	if (data == 1) {
 		timer = 1;
 		newact.sa_handler = int_timer;
-		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+		sigemptyset(&newact.sa_mask);
 		newact.sa_flags = 0;
 		sigaction(SIGALRM, &newact, NULL);
 		tim.it_value.tv_sec = 0;
@@ -2407,7 +2407,7 @@ static void time_out(BYTE data)
 	} else {
 		timer = 0;
 		newact.sa_handler = SIG_IGN;
-		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+		sigemptyset(&newact.sa_mask);
 		newact.sa_flags = 0;
 		sigaction(SIGALRM, &newact, NULL);
 		tim.it_value.tv_sec = 0;
