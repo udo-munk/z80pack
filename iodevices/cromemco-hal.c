@@ -106,7 +106,7 @@ void stdio_status(int dev, BYTE *stat) {
         *stat |= 2;
     if (p[0].revents & POLLNVAL) {
         LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
-        exit(1);
+        exit(EXIT_FAILURE);
         // cpu_error = IOERROR;
         // cpu_state = STOPPED;
     }

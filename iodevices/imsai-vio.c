@@ -514,6 +514,6 @@ void imsai_vio_init(void)
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
 		LOGE(TAG, "can't create thread");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }

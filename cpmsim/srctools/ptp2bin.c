@@ -23,17 +23,17 @@ int main(int argc, char *argv[])
 
 	if (argc != 3) {
 		printf("usage: %s infile outfile\n", pn);
-		return(1);
+		return(EXIT_FAILURE);
 	}
 
 	if ((fdin = open(argv[1], O_RDONLY)) == -1) {
 		perror(argv[1]);
-		return(1);
+		return(EXIT_FAILURE);
 	}
 
 	if ((fdout = open(argv[2], O_WRONLY|O_CREAT, 0644)) == -1) {
 		perror(argv[2]);
-		return(1);
+		return(EXIT_FAILURE);
 	}
 
 	while (read(fdin, &c, 1) == 1) {
@@ -49,5 +49,5 @@ int main(int argc, char *argv[])
 	close(fdin);
 	close(fdout);
 
-	return(0);
+	return(EXIT_SUCCESS);
 }

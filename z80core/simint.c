@@ -79,5 +79,5 @@ static void term_int(int sig)
 	int_off();
 	tcsetattr(0, TCSADRAIN, &old_term);
 	puts("\nKilled by user");
-	exit(0);
+	exit(EXIT_SUCCESS);
 }

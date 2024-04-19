@@ -62,15 +62,15 @@ void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path));
 	if ((p->ss = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (bind(p->ss, (struct sockaddr *)&sun, sizeof(sun)) == -1) {
 		LOGE(TAG, "can't bind server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (listen(p->ss, 0) == -1) {
 		LOGE(TAG, "can't listen on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -92,14 +92,14 @@ void init_tcp_server_socket(struct net_connectors *p)
 	/* create TCP/IP socket */
 	if ((p->ss = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* set socket options */
 	if (setsockopt(p->ss, SOL_SOCKET, SO_REUSEADDR, (void *) &on,
 	    sizeof(on)) == -1) {
 		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 #ifdef TCPASYNC
@@ -108,7 +108,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 	n = fcntl(p->ss, F_GETFL, 0);
 	if (fcntl(p->ss, F_SETFL, n | FASYNC) == -1) {
 		LOGE(TAG, "can't fcntl FASYNC on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #endif
 
@@ -119,11 +119,11 @@ void init_tcp_server_socket(struct net_connectors *p)
 	sin.sin_port = htons(p->port);
 	if (bind(p->ss, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
 		LOGE(TAG, "can't bind server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (listen(p->ss, 0) == -1) {
 		LOGE(TAG, "can't listen on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	LOG(TAG, "telnet console listening on port %d\r\n", p->port);

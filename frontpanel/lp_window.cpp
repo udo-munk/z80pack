@@ -179,7 +179,7 @@ Lpanel::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		switch (kcode) 
 		{
 		  case VK_ESCAPE:
-			//exit(0);
+			//exit(EXIT_SUCCESS);
 			break;
 		  case 'c':
 		  case 'C':
@@ -323,7 +323,7 @@ Lpanel::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			   if(quit_callbackfunc) 
 				(*quit_callbackfunc)();
 			   else
-				  exit(0);
+				  exit(EXIT_SUCCESS);
 			return 0;  
 		   break;
 
@@ -386,7 +386,7 @@ MSG msg;
 		    }
 		   else
 		    { XCloseDisplay(dpy);
-		      exit(0);
+		      exit(EXIT_SUCCESS);
 		    }
 		 }
 		break;
@@ -439,7 +439,7 @@ MSG msg;
 		switch (key) 
 		{
 		  case XK_Escape:
-			//exit(0);
+			//exit(EXIT_SUCCESS);
 			break;
 		  case XK_Shift_L:
 		  case XK_Shift_R:

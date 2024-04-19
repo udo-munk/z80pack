@@ -29,12 +29,12 @@ int main(void)
 	/* open drive A for writing */
 	if ((drivea = open("../disks/drivea.dsk", O_WRONLY)) == -1) {
 		perror("file ../disks/drivea.dsk");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	/* open boot loader (boot.bin) for reading */
 	if ((fd = open("boot.bin", O_RDONLY)) == -1) {
 		perror("file boot.bin");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	/* read boot loader */
 	memset((char *) sector, 0, 128);
@@ -45,7 +45,7 @@ int main(void)
 	/* open MP/M 2 mpmldr file (mpmldr.bin) for reading */
 	if ((fd = open("mpmldr.bin", O_RDONLY)) == -1) {
 		perror("file mpmldr.bin");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	/* read from mpmldr.bin and write to disk in drive A */
 	while (read(fd, (char *) sector, 128) == 128)
@@ -53,5 +53,5 @@ int main(void)
 	write(drivea, (char *) sector, 128);
 	close(fd);
 	close(drivea);
-	return(0);
+	return(EXIT_SUCCESS);
 }

@@ -30,7 +30,7 @@ void mon(void)
 {
 	/* load boot code into memory */
 	if (boot(0))
-		exit(1);
+		exit(EXIT_FAILURE);
 
 	/* empty buffer for teletype */
 	fflush(stdout);
