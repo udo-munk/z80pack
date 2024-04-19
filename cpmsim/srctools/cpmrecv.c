@@ -2,6 +2,7 @@
  * Receive a file out of the named pipe "auxout" from CP/M simulation
  *
  * Copyright (C) 1988-2017 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * History:
  * 05-OKT-1988 Development on TARGON/35 with AT&T Unix System V.3
@@ -10,6 +11,7 @@
  * 09-MAR-2016 moved pipes to /tmp/.z80pack
  * 11-MAY-2016 delayed create outfile so that it is created if used
  * 20-MAR-2017 renamed pipe
+ * 19-APR-2024 don't use exit() in signal handler and switch to sigaction()
  */
 
 #include <unistd.h>
@@ -20,11 +22,13 @@
 
 #define UNUSED(x) (void)(x)
 
-int fdin, fdout;
+int signal_catched;
 
 int main(int argc, char *argv[])
 {
 	char c;
+	int fdin, fdout;
+	static struct sigaction newact;
 	void int_handler(int);
 
 	fdout = 0;
@@ -38,27 +42,29 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	signal(SIGINT, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGHUP, int_handler);
+	newact.sa_handler = SIG_IGN;
+	sigemptyset(&newact.sa_mask);
+	newact.sa_flags = 0;
+	sigaction(SIGINT, &newact, NULL);
+	sigaction(SIGQUIT, &newact, NULL);
+	newact.sa_handler = int_handler;
+	sigaction(SIGHUP, &newact, NULL);
 
-	for (;;) {
-		if (read(fdin, &c, 1) == 1) {
-			if (c != '\r') {
-				if (fdout == 0) {
-				  if ((fdout = creat(argv[1], 0644)) == -1) {
+	while (!signal_catched && read(fdin, &c, 1) == 1) {
+		if (c != '\r') {
+			if (fdout == 0) {
+				if ((fdout = creat(argv[1], 0644)) == -1) {
 					perror(argv[1]);
 					exit(EXIT_FAILURE);
-				  }
 				}
-				write(fdout, &c, 1);
 			}
-		} else {
-			close(fdout);
-			return(EXIT_SUCCESS);
+			write(fdout, &c, 1);
 		}
 	}
 
+	close(fdin);
+	if (fdout)
+		close(fdout);
 	return(EXIT_SUCCESS);
 }
 
@@ -66,7 +72,5 @@ void int_handler(int sig)
 {
 	UNUSED(sig);
 
-	close(fdin);
-	close(fdout);
-	exit(EXIT_SUCCESS);
+	signal_catched = 1;
 }
