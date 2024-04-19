@@ -874,8 +874,14 @@ static BYTE lpt_data_in(void)
  */
 static void lpt_data_out(BYTE data)
 {
-	if (printer == 0)
-		printer = creat("printer.txt", 0664);
+	if (printer == 0) {
+		if ((printer = creat("printer.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create printer file");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			return;
+		}
+	}
 
 	if ((data != '\r') && (data != 0x00)) {
 again:
