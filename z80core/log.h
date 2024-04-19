@@ -46,6 +46,7 @@ static void _log_write(log_level_t level, const char* tag, const char* format, .
     va_list args;
     va_start(args, format);
     vprintf(format, args);
+    va_end(args);
 }
 
 static inline uint32_t _log_timestamp(void) {
