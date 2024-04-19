@@ -102,7 +102,7 @@ void ice_cmd_loop(int go_flag)
 			if (fgets(cmd, LENCMD, stdin) == NULL) {
 				putchar('\n');
 				eoj = 0;
-				break;
+				continue;
 			}
 		}
 		switch (tolower((unsigned char) *cmd)) {
