@@ -15,7 +15,7 @@
 #include "z80aglb.h"
 
 /* z80amain.c */
-extern void fatal(int, const char *);
+extern void fatal(int, const char *) NORETURN;
 extern char *strsave(char *);
 extern char *next_arg(char *, int *);
 
@@ -161,7 +161,6 @@ char *mac_first(int sort_mode, int *rp)
 	default:
 		fatal(F_INTERN, "unknown sort mode in mac_first");
 	}
-	return(NULL);		/* silence compiler */
 }
 
 /*
@@ -1036,7 +1035,6 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_mcond");
-		break;
 	}
 	if (!err) {
 		if ((op_code & 1) == 0)	/* negate for inverse IF */
@@ -1061,7 +1059,6 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
-	m = NULL;			/* silence compiler */
 	switch(op_code) {
 	case 1:				/* IRP */
 		m = mac_new(NULL, mac_start_irp, mac_rept_irp);
@@ -1071,7 +1068,6 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_irp");
-		break;
 	}
 	s = operand;
 	t = tmp;

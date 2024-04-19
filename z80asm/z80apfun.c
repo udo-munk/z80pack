@@ -16,7 +16,7 @@
 #include "z80aglb.h"
 
 /* z80amain.c */
-extern void fatal(int, const char *);
+extern void fatal(int, const char *) NORETURN;
 extern void process_file(char *);
 extern char *strsave(char *);
 extern char *next_arg(char *, int *);

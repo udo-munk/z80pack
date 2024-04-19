@@ -259,6 +259,15 @@ struct sym {
 #define UNUSED(x)	(void)(x)
 
 /*
+ *	attribute for declaring that a function doesn't return
+ */
+#if __GNUC__ > 2 || __clang__
+#define NORETURN	__attribute__ ((noreturn))
+#else
+#define NORETURN
+#endif
+
+/*
  *	macros for character classification and conversion
  */
 #define IS_FSYM(c)	(ctype[(BYTE) (c)] & C_FSYM)

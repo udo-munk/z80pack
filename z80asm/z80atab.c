@@ -22,7 +22,7 @@ int namecmp(const void *, const void *);
 int valcmp(const void *, const void *);
 
 /* z80amain.c */
-extern void fatal(int, const char *);
+extern void fatal(int, const char *) NORETURN;
 
 /* z80aout.c */
 extern void asmerr(int);
@@ -162,7 +162,6 @@ struct sym *first_sym(int sort_mode)
 	default:
 		fatal(F_INTERN, "unknown sort mode in first_sym");
 	}
-	return(NULL);		/* silence compiler */
 }
 
 /*

@@ -17,7 +17,7 @@
 int opccmp(const void *, const void *);
 
 /* z80amain.c */
-extern void fatal(int, const char *);
+extern void fatal(int, const char *) NORETURN;
 
 /* z80amfun.c */
 extern WORD op_endm(BYTE, BYTE), op_exitm(BYTE, BYTE), op_irp(BYTE, BYTE);
@@ -366,7 +366,6 @@ void instrset(int is)
 	struct opc *opc;
 	int nopc;
 
-	nopc = 0;		/* silence compiler */
 	if (is == curr_instrset)
 		return;
 	switch (is) {

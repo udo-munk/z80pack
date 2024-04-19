@@ -18,7 +18,7 @@
 #include "z80aglb.h"
 
 void init(void), options(int, char *[]);
-void usage(void), fatal(int, const char *);
+void usage(void), fatal(int, const char *) NORETURN;
 void do_pass(int), process_file(char *);
 int process_line(char *);
 void open_o_files(char *);
@@ -264,10 +264,10 @@ void fatal(int i, const char *arg)
 {
 	printf(errmsg[i], arg);
 	putchar('\n');
-	if (objfp != NULL) {
+	if (objfp != NULL)
 		fclose(objfp);
+	if (objfn != NULL)
 		unlink(objfn);
-	}
 	exit(EXIT_FAILURE);
 }
 
