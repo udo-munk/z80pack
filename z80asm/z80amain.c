@@ -243,7 +243,7 @@ void options(int argc, char *argv[])
 		usage();
 	}
 	nfiles = argc;
-	if ((infiles = (char **) malloc(sizeof(char *) * nfiles)) == NULL)
+	if ((infiles = (char **) malloc((int)(sizeof(char *) * nfiles))) == NULL)
 		fatal(F_OUTMEM, "input file names");
 	for (p = infiles; argc--; p++)
 		*p = get_fn(*argv++, SRCEXT, FALSE);
