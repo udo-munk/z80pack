@@ -337,7 +337,7 @@ void obj_header(void)
 	case OBJ_HEX:
 		break;
 	case OBJ_CARY:
-		fputs("unsigned char code[] = {", objfp);
+		fputs("unsigned char code[MEMSIZE] = {", objfp);
 	}
 }
 
@@ -360,12 +360,12 @@ void obj_end(void)
 		if (!nofill_flag && !(load_flag && (bin_addr < load_addr)))
 			fill_cary();
 		fputs("\n};\n", objfp);
-		fprintf(objfp, "unsigned short code_length = %u;\n",
+		fprintf(objfp, "//unsigned short code_length = %u;\n",
 			cary_cnt);
-		fprintf(objfp, "unsigned short code_load_addr = 0x%04x;\n",
+		fprintf(objfp, "//unsigned short code_load_addr = 0x%04x;\n",
 			load_addr);
 		if (start_addr >= load_addr)
-			fprintf(objfp, "unsigned short "
+			fprintf(objfp, "//unsigned short "
 				"code_start_addr = 0x%04x;\n", start_addr);
 		break;
 	}
