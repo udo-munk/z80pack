@@ -337,7 +337,9 @@ void obj_header(void)
 	case OBJ_HEX:
 		break;
 	case OBJ_CARY:
+		fprintf(objfp, "//build from source file %s\n", srcfn);
 		fputs("unsigned char code[MEMSIZE] = {", objfp);
+		break;
 	}
 }
 
