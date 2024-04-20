@@ -92,10 +92,8 @@ $(SIM): $(OBJS) $(MACHINE_LIBS)
 
 build: _rm_obj all
 
-install:
-	@echo
-	@echo Waiting to be written...
-	@echo
+install: $(SIM)
+	cp $(SIM) ${HOME}/bin
 
 clean: _rm_obj _rm_deps
 
