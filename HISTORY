@@ -1,7 +1,7 @@
 28-SEP-87 Development on TARGON/35 with AT&T Unix System V.3
-11-JAN-89 Release 1.1 <included proprietary hardware emulation, not public available>
-08-FEB-89 Release 1.2 <included proprietary hardware emulation, not public available>
-13-MAR-89 Release 1.3 <included proprietary hardware emulation, not public available>
+11-JAN-89 Release 1.1 <included proprietary hardware emulation, not publicly available>
+08-FEB-89 Release 1.2 <included proprietary hardware emulation, not publicly available>
+13-MAR-89 Release 1.3 <included proprietary hardware emulation, not publicly available>
 09-FEB-90 Release 1.4  Ported to TARGON/31 M10/30
 20-DEC-90 Release 1.5  Ported to COHERENT 3.0
 10-JUN-92 Release 1.6  long casting problem solved with COHERENT 3.2

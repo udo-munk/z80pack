@@ -47,7 +47,12 @@ void lpt_reset(void) {
 	if (lpt1) {
 		close(lpt1);
 	}
-	lpt1 = creat("lpt1.txt", 0664);
+	if ((lpt1 = creat("lpt1.txt", 0664)) == -1) {
+		LOGE(TAG, "can't create lpt1.txt");
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+		lpt1 = 0;
+	}
 }
 
 /************************/
@@ -313,8 +318,15 @@ void cromemco_tuart_1a_parallel_out(BYTE data)
 {
 	extern int lpt2;
 
-	if (lpt2 == 0)
-		lpt2 = creat("lpt2.txt", 0664);
+	if (lpt2 == 0) {
+		if ((lpt2 = creat("lpt2.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create lpt2.txt");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			lpt2 = 0;
+			return;
+		}
+	}
 
 	uart1a_sense = 1;
 	uart1a_lpt_busy = 1;
@@ -329,7 +341,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				LOGE(TAG, "can't write lpt2.txt");
+				LOGE(TAG, "can't write to lpt2.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
@@ -426,8 +438,15 @@ void cromemco_tuart_1b_parallel_out(BYTE data)
 {
 	extern int lpt1;
 
-	if (lpt1 == 0)
-		lpt1 = creat("lpt1.txt", 0664);
+	if (lpt1 == 0) {
+		if ((lpt1 = creat("lpt1.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create lpt1.txt");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			lpt1 = 0;
+			return;
+		}
+	}
 
 	uart1b_sense = 1;
 	uart1b_lpt_busy = 1;
@@ -442,7 +461,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				LOGE(TAG, "can't write lpt1.txt");
+				LOGE(TAG, "can't write to lpt1.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}

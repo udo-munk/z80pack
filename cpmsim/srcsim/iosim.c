@@ -816,15 +816,15 @@ static void (*port_out[256]) (BYTE) = {
 
 /*
  *	This function initialises the I/O handlers:
- *	1. Open the files which emulate the disk drives.
+ *	1. Creates the named pipes under /tmp/.z80pack, if they don't
+ *	   exist.
+ *	2. Fork the process for receiving from the auxiliary serial port.
+ *	3. Open the named pipes "auxin" and "auxout" for simulation
+ *	   of the auxiliary serial port.
+ *	4. Open the files which emulate the disk drives.
  *	   Errors for opening one of the drives results
  *	   in a NULL pointer for fd in the dskdef structure,
  *	   so that this drive can't be used.
- *	2. Creates the named pipes under /tmp/.z80pack, if they don't
- *	   exist.
- *	3. Fork the process for receiving from the auxiliary serial port.
- *	4. Open the named pipes "auxin" and "auxout" for simulation
- *	   of the auxiliary serial port.
  *	5. Prepare TCP/IP sockets for serial port simulation
  */
 void init_io(void)
@@ -834,30 +834,6 @@ void init_io(void)
 #if defined(NETWORKING) && defined(TCPASYNC)
 	static struct sigaction newact;
 #endif
-
-	for (i = 0; i <= 15; i++) {
-
-		/* if option -d is used disks are there */
-		if (diskdir != NULL) {
-			strcpy(fn, diskd);
-		} else {
-			/* if not first try ./disks */
-			if ((stat("./disks", &sbuf) == 0) &&
-			    S_ISDIR(sbuf.st_mode)) {
-				strcpy(fn, "./disks");
-			/* nope, then DISKSDIR as set in Makefile */
-			} else {
-				strcpy(fn, DISKSDIR);
-			}
-		}
-
-		strcat(fn, "/");
-		strcat(fn, disks[i].fn);
-
-		if ((*disks[i].fd = open(fn, O_RDWR)) == -1)
-			if ((*disks[i].fd = open(fn, O_RDONLY)) == -1)
-				disks[i].fd = NULL;
-	}
 
 #ifdef PIPES
 	/* check if /tmp/.z80pack exists */
@@ -897,6 +873,30 @@ void init_io(void)
 		exit(EXIT_FAILURE);
 	}
 #endif
+
+	for (i = 0; i <= 15; i++) {
+
+		/* if option -d is used disks are there */
+		if (diskdir != NULL) {
+			strcpy(fn, diskd);
+		} else {
+			/* if not first try ./disks */
+			if ((stat("./disks", &sbuf) == 0) &&
+			    S_ISDIR(sbuf.st_mode)) {
+				strcpy(fn, "./disks");
+			/* nope, then DISKSDIR as set in Makefile */
+			} else {
+				strcpy(fn, DISKSDIR);
+			}
+		}
+
+		strcat(fn, "/");
+		strcat(fn, disks[i].fn);
+
+		if ((*disks[i].fd = open(fn, O_RDWR)) == -1)
+			if ((*disks[i].fd = open(fn, O_RDONLY)) == -1)
+				disks[i].fd = NULL;
+	}
 
 #ifdef NETWORKING
 	net_server_config();
@@ -1046,8 +1046,8 @@ static void net_client_config(void)
  *	1. The files emulating the disk drives are closed.
  *	2. The file "printer.txt" emulating a printer is closed.
  *	3. The named pipes "auxin" and "auxout" are closed.
- *	4. All connected sockets are closed
- *	5. The receiving process for the aux serial port is stopped.
+ *	4. The receiving process for the aux serial port is stopped.
+ *	5. All connected sockets are closed
  */
 void exit_io(void)
 {
@@ -1952,8 +1952,15 @@ static BYTE prtd_in(void)
  */
 static void prtd_out(BYTE data)
 {
-	if (printer == 0)
-		printer = creat("printer.txt", 0664);
+	if (printer == 0) {
+		if ((printer = creat("printer.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create printer.txt");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			printer = 0;
+			return;
+		}
+	}
 
 	if (data != '\r') {
 again:
@@ -1961,7 +1968,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				LOGE(TAG, "can't write printer");
+				LOGE(TAG, "can't write to printer.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
