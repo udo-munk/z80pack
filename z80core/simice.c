@@ -28,6 +28,7 @@ extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
 extern int load_file(char *, WORD, int);
+extern void report_cpu_error(void);
 
 static void do_step(void);
 static void do_trace(char *);
@@ -51,7 +52,6 @@ static void do_show(void);
 static void do_load(char *);
 static void do_unix(char *);
 static void do_help(void);
-static void cpu_err_msg(void);
 
 static WORD wrk_addr;
 
@@ -84,7 +84,7 @@ void ice_cmd_loop(int go_flag)
 	static char cmd[LENCMD];
 
 	if (!go_flag) {
-		cpu_err_msg();
+		report_cpu_error();
 		print_head();
 		print_reg();
 		a = PC;
@@ -192,7 +192,7 @@ static void do_step(void)
 	}
 	if (cpu_error == OPHALT)
 		handle_break();
-	cpu_err_msg();
+	report_cpu_error();
 	print_head();
 	print_reg();
 	a = PC;
@@ -236,7 +236,7 @@ static void do_trace(char *s)
 				break;
 		}
 	}
-	cpu_err_msg();
+	report_cpu_error();
 	wrk_addr = PC;
 }
 
@@ -268,7 +268,7 @@ cont:
 				goto cont;
 	if (ice_after_go)
 		(*ice_after_go)();
-	cpu_err_msg();
+	report_cpu_error();
 	print_head();
 	print_reg();
 	wrk_addr = PC;
@@ -994,54 +994,4 @@ static void do_help(void)
 	if (ice_cust_help)
 		(*ice_cust_help)();
 	puts("q                         quit");
-}
-
-/*
- *	Error handler after CPU is stopped
- */
-static void cpu_err_msg(void)
-{
-	switch (cpu_error) {
-	case NONE:
-		break;
-	case OPHALT:
-		printf("HALT Op-Code reached at %04x\n", PC - 1);
-		break;
-	case IOTRAPIN:
-		printf("I/O input Trap at %04x, port %02x\n", PC, io_port);
-		break;
-	case IOTRAPOUT:
-		printf("I/O output Trap at %04x, port %02x\n", PC, io_port);
-		break;
-	case IOHALT:
-		printf("\nSystem halted, bye.\n");
-		break;
-	case IOERROR:
-		printf("Fatal I/O Error at %04x\n", PC);
-		break;
-	case OPTRAP1:
-		printf("Op-code trap at %04x: %02x\n", PC - 1,
-		       getmem(PC - 1));
-		break;
-	case OPTRAP2:
-		printf("Op-code trap at %04x: %02x %02x\n", PC - 2,
-		       getmem(PC - 2), getmem(PC - 1));
-		break;
-	case OPTRAP4:
-		printf("Op-code trap at %04x: %02x %02x %02x %02x\n",
-		       PC - 4, getmem(PC - 4), getmem(PC - 3),
-		       getmem(PC - 2), getmem(PC - 1));
-		break;
-	case USERINT:
-		puts("User Interrupt");
-		break;
-	case INTERROR:
-		printf("Unsupported bus data during INT: %02x\n", int_data);
-		break;
-	case POWEROFF:
-		break;
-	default:
-		printf("Unknown error %d\n", cpu_error);
-		break;
-	}
 }
