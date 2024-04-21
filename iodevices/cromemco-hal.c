@@ -126,7 +126,7 @@ again:
     p[0].revents = 0;
     poll(p, 1, 0);
     if (!(p[0].revents & POLLIN))
-        return(-1);
+        return (-1);
 
     if (read(fileno(stdin), &data, 1) == 0) {
         /* try to reopen tty, input redirection exhausted */
@@ -188,7 +188,7 @@ int scktsrv_in(int dev) {
 
 	/* if not connected return last */
 	if (ncons[dev].ssc == 0)
-		return(-1);
+		return (-1);
 
 	/* if no input waiting return last */
 	p[0].fd = ncons[dev].ssc;
@@ -196,19 +196,19 @@ int scktsrv_in(int dev) {
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(-1);
+		return (-1);
 
 	if (read(ncons[dev].ssc, &data, 1) != 1) {
         if ((errno == EAGAIN) || (errno == EINTR)) {
             /* EOF, close socket and return last */
             close(ncons[dev].ssc);
             ncons[dev].ssc = 0;
-            return(-1);
+            return (-1);
         } else {
             LOGE(TAG, "can't read tcpsocket %d data", dev);
             cpu_error = IOERROR;
             cpu_state = STOPPED;
-            return(0);
+            return (0);
         }
 	}
 

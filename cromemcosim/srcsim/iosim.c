@@ -758,7 +758,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		io_data = (*port_in[io_port]) ();
 #endif
 
-	return(io_data);
+	return (io_data);
 }
 
 /*
@@ -800,7 +800,7 @@ static BYTE io_trap_in(void)
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
 	}
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -825,9 +825,9 @@ static void io_trap_out(BYTE data)
 static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
-	return(address_switch >> 8);
+	return (address_switch >> 8);
 #else
-	return(fp_port);
+	return (fp_port);
 #endif
 }
 
@@ -849,7 +849,7 @@ static void fp_out(BYTE data)
  */
 static BYTE hwctl_in(void)
 {
-	return(hwctl_lock);
+	return (hwctl_lock);
 }
 
 /*
@@ -885,7 +885,7 @@ static void hwctl_out(BYTE data)
  */
 static BYTE mmu_in(void)
 {
-	return(bankio);
+	return (bankio);
 }
 
 /*

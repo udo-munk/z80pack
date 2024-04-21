@@ -59,7 +59,7 @@ WORD op_instrset(BYTE op_code, BYTE dummy)
 		fatal(F_INTERN, "invalid opcode for function op_instrset");
 		break;
 	}
-	return(0);
+	return (0);
 }
 
 /*
@@ -76,7 +76,7 @@ WORD op_org(BYTE op_code, BYTE dummy)
 	case 1:				/* ORG */
 		if (phs_flag) {
 			asmerr(E_ORGPHS);
-			return(0);
+			return (0);
 		}
 		n = eval(operand);
 		if (pass == 1) {	/* PASS 1 */
@@ -108,7 +108,7 @@ WORD op_org(BYTE op_code, BYTE dummy)
 		fatal(F_INTERN, "invalid opcode for function op_org");
 		break;
 	}
-	return(0);
+	return (0);
 }
 
 /*
@@ -128,7 +128,7 @@ WORD op_radix(BYTE dummy1, BYTE dummy2)
 		asmerr(E_VALOUT);
 	else
 		radix = r;
-	return(0);
+	return (0);
 }
 
 /*
@@ -147,7 +147,7 @@ WORD op_equ(BYTE dummy1, BYTE dummy2)
 		new_sym(label)->sym_val = a_addr;
 	else if (sp->sym_val != a_addr)
 		asmerr(E_MULSYM);
-	return(0);
+	return (0);
 }
 
 /*
@@ -161,7 +161,7 @@ WORD op_dl(BYTE dummy1, BYTE dummy2)
 	a_mode = A_SET;
 	a_addr = eval(operand);
 	put_sym(label, a_addr);
-	return(0);
+	return (0);
 }
 
 /*
@@ -187,7 +187,7 @@ WORD op_ds(BYTE dummy1, BYTE dummy2)
 		} else
 			obj_fill(count);
 	}
-	return(count);
+	return (count);
 }
 
 /*
@@ -209,7 +209,7 @@ WORD op_db(BYTE op_code, BYTE dummy)
 		p1 = next_arg(p, &sf);
 		if (sf < 0) {		/* a non-terminated string */
 			asmerr(E_MISDEL);
-			return(i);
+			return (i);
 		} else if (sf > 0) {	/* a valid string */
 			c = *p++;
 			while (*p != c || *++p == c) /* double delim? */
@@ -238,7 +238,7 @@ WORD op_db(BYTE op_code, BYTE dummy)
 		fatal(F_INTERN, "invalid opcode for function op_db");
 		break;
 	}
-	return(i);
+	return (i);
 }
 
 /*
@@ -268,7 +268,7 @@ WORD op_dw(BYTE dummy1, BYTE dummy2)
 		}
 		p = p1;
 	}
-	return(i);
+	return (i);
 }
 
 /*
@@ -330,7 +330,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 				if (*p == '\0') {
 					putchar('\n');
 					asmerr(E_MISDEL);
-					return(0);
+					return (0);
 				}
 				/* check for double delim */
 				if (*p == c && *++p != c)
@@ -413,7 +413,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 		fatal(F_INTERN, "invalid opcode for function op_misc");
 		break;
 	}
-	return(0);
+	return (0);
 }
 
 /*
@@ -430,11 +430,11 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 	if (op_code < 90) {
 		if (iflevel == INT_MAX) {
 			asmerr(E_IFNEST);
-			return(0);
+			return (0);
 		}
 		iflevel++;
 		if (!gencode)
-			return(0);
+			return (0);
 		switch (op_code) {
 		case 1:			/* IFDEF */
 		case 2:			/* IFNDEF */
@@ -473,7 +473,7 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 	} else {
 		if (iflevel == 0) {
 			asmerr(E_MISIFF);
-			return(0);
+			return (0);
 		}
 		switch (op_code) {
 		case 98:		/* ELSE */
@@ -498,7 +498,7 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 			break;
 		}
 	}
-	return(0);
+	return (0);
 }
 
 /*
@@ -520,7 +520,7 @@ WORD op_glob(BYTE op_code, BYTE dummy)
 		fatal(F_INTERN, "invalid opcode for function op_glob");
 		break;
 	}
-	return(0);
+	return (0);
 }
 
 /*
@@ -533,5 +533,5 @@ WORD op_end(BYTE dummy1, BYTE dummy2)
 
 	if (pass == 2 && operand[0] != '\0')
 		start_addr = eval(operand);
-	return(0);
+	return (0);
 }

@@ -307,5 +307,5 @@ BYTE ctrl_port_in(void)
 		cyclecount = 3;
 	}
 #endif
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }

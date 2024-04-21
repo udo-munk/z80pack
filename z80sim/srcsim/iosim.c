@@ -94,7 +94,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	return(io_data);
+	return (io_data);
 }
 
 /*
@@ -123,7 +123,7 @@ static BYTE io_trap_in(void)
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
 	}
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -164,7 +164,7 @@ static BYTE p000_in(void)
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 	}
-	return(tty_stat);
+	return (tty_stat);
 }
 
 /*
@@ -173,7 +173,7 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-	return((BYTE) getchar());
+	return ((BYTE) getchar());
 }
 
 /*

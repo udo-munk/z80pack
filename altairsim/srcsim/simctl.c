@@ -375,12 +375,12 @@ int wait_step(void)
 	if (cpu_state != SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
-		return(ret);
+		return (ret);
 	}
 
 	if ((cpu_bus & CPU_M1) && !m1_step) {
 		cpu_bus &= ~CPU_M1;
-		return(ret);
+		return (ret);
 	}
 
 	cpu_switch = 3;
@@ -397,7 +397,7 @@ int wait_step(void)
 
 	cpu_bus &= ~CPU_M1;
 	m1_step = 0;
-	return(ret);
+	return (ret);
 }
 
 /*

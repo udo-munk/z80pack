@@ -1117,7 +1117,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
-	return(io_data);
+	return (io_data);
 }
 
 /*
@@ -1146,7 +1146,7 @@ static BYTE io_trap_in(void)
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
 	}
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -1181,9 +1181,9 @@ static BYTE cons_in(void)
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (p[0].revents & POLLIN)
-		return((BYTE) 0xff);
+		return ((BYTE) 0xff);
 	else
-		return((BYTE) 0x00);
+		return ((BYTE) 0x00);
 }
 
 /*
@@ -1204,7 +1204,7 @@ static BYTE cons1_in(void)
 	int on = 1;
 
 	if (ss[0] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[0];
 	p[0].events = POLLIN;
@@ -1247,7 +1247,7 @@ ss0_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[0]);
 			ssc[0] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1255,7 +1255,7 @@ ss0_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1276,7 +1276,7 @@ static BYTE cons2_in(void)
 	int on = 1;
 
 	if (ss[1] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[1];
 	p[0].events = POLLIN;
@@ -1319,7 +1319,7 @@ ss1_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[1]);
 			ssc[1] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1327,7 +1327,7 @@ ss1_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1348,7 +1348,7 @@ static BYTE cons3_in(void)
 	int on = 1;
 
 	if (ss[2] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[2];
 	p[0].events = POLLIN;
@@ -1391,7 +1391,7 @@ ss2_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[2]);
 			ssc[2] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1399,7 +1399,7 @@ ss2_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1420,7 +1420,7 @@ static BYTE cons4_in(void)
 	int on = 1;
 
 	if (ss[3] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[3];
 	p[0].events = POLLIN;
@@ -1463,7 +1463,7 @@ ss3_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[3]);
 			ssc[3] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1471,7 +1471,7 @@ ss3_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1494,7 +1494,7 @@ static BYTE nets1_in(void)
 			LOGE(TAG, "can't create client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 		memset((void *) &sin, 0, sizeof(sin));
 		memcpy((void *) &sin.sin_addr, (void *) host->h_addr, host->h_length);
@@ -1504,7 +1504,7 @@ static BYTE nets1_in(void)
 			LOGE(TAG, "can't connect client socket");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 		if (setsockopt(cs, IPPROTO_TCP, TCP_NODELAY,
 		    (void *)&on, sizeof(on)) == -1) {
@@ -1520,7 +1520,7 @@ static BYTE nets1_in(void)
 		if (p[0].revents & POLLHUP) {
 			close(cs);
 			cs = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1528,7 +1528,7 @@ static BYTE nets1_in(void)
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1594,7 +1594,7 @@ static BYTE cond_in(void)
 
 	busy_loop_cnt[0] = 0;
 	read(0, &c, 1);
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1610,12 +1610,12 @@ static BYTE cond1_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[0]);
 			ssc[0] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 1");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[0] && (c == '\r'))
@@ -1630,7 +1630,7 @@ static BYTE cond1_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1646,12 +1646,12 @@ static BYTE cond2_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[1]);
 			ssc[1] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 2");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[1] && (c == '\r'))
@@ -1666,7 +1666,7 @@ static BYTE cond2_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1682,12 +1682,12 @@ static BYTE cond3_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[2]);
 			ssc[2] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 3");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[2] && (c == '\r'))
@@ -1702,7 +1702,7 @@ static BYTE cond3_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1718,12 +1718,12 @@ static BYTE cond4_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[3]);
 			ssc[3] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 4");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[3] && (c == '\r'))
@@ -1738,7 +1738,7 @@ static BYTE cond4_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1753,7 +1753,7 @@ static BYTE netd1_in(void)
 		LOGE(TAG, "can't read client socket");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
-		return((BYTE) 0);
+		return ((BYTE) 0);
 	}
 #ifdef CNETDEBUG
 	if (cdirection != 1) {
@@ -1765,7 +1765,7 @@ static BYTE netd1_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1927,7 +1927,7 @@ again:
  */
 static BYTE prts_in(void)
 {
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -1945,7 +1945,7 @@ static void prts_out(BYTE data)
  */
 static BYTE prtd_in(void)
 {
-	return((BYTE) 0x1a);	/* CP/M EOF */
+	return ((BYTE) 0x1a);	/* CP/M EOF */
 }
 
 /*
@@ -1985,9 +1985,9 @@ again:
 static BYTE auxs_in(void)
 {
 #ifdef PIPES
-	return((BYTE) aux_in_eof);
+	return ((BYTE) aux_in_eof);
 #else
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 #endif
 }
 
@@ -2014,10 +2014,10 @@ static BYTE auxd_in(void)
 
 #ifdef PIPES
 	if (read(auxin, &c, 1) == 1)
-		return((BYTE) c);
+		return ((BYTE) c);
 	else {
 		aux_in_eof = 0xff;
-		return((BYTE) 0x1a);	/* CP/M EOF */
+		return ((BYTE) 0x1a);	/* CP/M EOF */
 	}
 #else
 	if (aux_in == 0) {
@@ -2025,27 +2025,27 @@ static BYTE auxd_in(void)
 			LOGE(TAG, "can't open auxiliaryin.txt");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 
 	if (aux_in_lf) {
 		aux_in_lf = 0;
-		return((BYTE) '\n');
+		return ((BYTE) '\n');
 	}
 
 	if (read(aux_in, &c, 1) != 1) {
 		close(aux_in);
 		aux_in = 0;
-		return((BYTE) 0x1a);
+		return ((BYTE) 0x1a);
 	}
 
 	if (c == '\n') {
 		aux_in_lf = 1;
-		return((BYTE) '\r');
+		return ((BYTE) '\r');
 	}
 
-	return((BYTE) c);
+	return ((BYTE) c);
 #endif
 }
 
@@ -2091,7 +2091,7 @@ static void auxd_out(BYTE data)
  */
 static BYTE fdcd_in(void)
 {
-	return((BYTE) drive);
+	return ((BYTE) drive);
 }
 
 /*
@@ -2109,7 +2109,7 @@ static void fdcd_out(BYTE data)
  */
 static BYTE fdct_in(void)
 {
-	return((BYTE) track);
+	return ((BYTE) track);
 }
 
 /*
@@ -2127,7 +2127,7 @@ static void fdct_out(BYTE data)
  */
 static BYTE fdcs_in(void)
 {
-	return((BYTE) sector & 0xff);
+	return ((BYTE) sector & 0xff);
 }
 
 /*
@@ -2145,7 +2145,7 @@ static void fdcs_out(BYTE data)
  */
 static BYTE fdcsh_in(void)
 {
-	return((BYTE) (sector >> 8));
+	return ((BYTE) (sector >> 8));
 }
 
 /*
@@ -2163,7 +2163,7 @@ static void fdcsh_out(BYTE data)
  */
 static BYTE fdco_in(void)
 {
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 /*
@@ -2235,7 +2235,7 @@ static void fdco_out(BYTE data)
  */
 static BYTE fdcx_in(void)
 {
-	return((BYTE) status);
+	return ((BYTE) status);
 }
 
 /*
@@ -2253,7 +2253,7 @@ static void fdcx_out(BYTE data)
  */
 static BYTE dmal_in(void)
 {
-	return((BYTE) dmadl);
+	return ((BYTE) dmadl);
 }
 
 /*
@@ -2271,7 +2271,7 @@ static void dmal_out(BYTE data)
  */
 static BYTE dmah_in(void)
 {
-	return((BYTE) dmadh);
+	return ((BYTE) dmadh);
 }
 
 /*
@@ -2289,7 +2289,7 @@ static void dmah_out(BYTE data)
  */
 static BYTE mmui_in(void)
 {
-	return((BYTE) maxbnk);
+	return ((BYTE) maxbnk);
 }
 
 /*
@@ -2334,7 +2334,7 @@ static void mmui_out(BYTE data)
  */
 static BYTE mmus_in(void)
 {
-	return((BYTE) selbnk);
+	return ((BYTE) selbnk);
 }
 
 /*
@@ -2358,7 +2358,7 @@ static void mmus_out(BYTE data)
  */
 static BYTE mmuc_in(void)
 {
-	return((BYTE) (segsize >> 8));
+	return ((BYTE) (segsize >> 8));
 }
 
 /*
@@ -2382,7 +2382,7 @@ static void mmuc_out(BYTE data)
  */
 static BYTE mmup_in(void)
 {
-	return(wp_common);
+	return (wp_common);
 }
 
 /*
@@ -2432,7 +2432,7 @@ static void time_out(BYTE data)
  */
 static BYTE time_in(void)
 {
-	return(timer);
+	return (timer);
 }
 
 /*
@@ -2454,7 +2454,7 @@ static void delay_out(BYTE data)
  */
 static BYTE delay_in(void)
 {
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 /*
@@ -2496,7 +2496,7 @@ static void hwctl_out(BYTE data)
  */
 static BYTE hwctl_in(void)
 {
-	return(hwctl_lock);
+	return (hwctl_lock);
 }
 
 /*
@@ -2512,7 +2512,7 @@ static void speedl_out(BYTE data)
  */
 static BYTE speedl_in(void)
 {
-	return(f_flag & 0xff);
+	return (f_flag & 0xff);
 }
 
 /*
@@ -2530,7 +2530,7 @@ static void speedh_out(BYTE data)
  */
 static BYTE speedh_in(void)
 {
-	return(f_flag  >> 8);
+	return (f_flag  >> 8);
 }
 
 /*

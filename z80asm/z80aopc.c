@@ -407,8 +407,8 @@ void instrset(int is)
  */
 int opccmp(const void *p1, const void *p2)
 {
-	return(strcmp((*(const struct opc **) p1)->op_name,
-		      (*(const struct opc **) p2)->op_name));
+	return (strcmp((*(const struct opc **) p1)->op_name,
+		       (*(const struct opc **) p2)->op_name));
 }
 
 /*
@@ -430,11 +430,11 @@ struct opc *search_op(char *op_name)
 		else if (cond > 0)
 			low = mid + 1;
 		else if (!undoc_flag && ((*mid)->op_flags & OP_UNDOC))
-			return(NULL);
+			return (NULL);
 		else
-			return(*mid);
+			return (*mid);
 	}
-	return(NULL);
+	return (NULL);
 }
 
 /*
@@ -449,7 +449,7 @@ BYTE get_reg(char *s)
 	int cond;
 
 	if (s == NULL || *s == '\0')
-		return(NOOPERA);
+		return (NOOPERA);
 	low = opetab;
 	high = opetab + no_operands - 1;
 	while (low <= high) {
@@ -459,9 +459,9 @@ BYTE get_reg(char *s)
 		else if (cond > 0)
 			low = mid + 1;
 		else if (!undoc_flag && (mid->ope_flags & OPE_UNDOC))
-			return(NOREG);
+			return (NOREG);
 		else
-			return(mid->ope_sym);
+			return (mid->ope_sym);
 	}
-	return(NOREG);
+	return (NOREG);
 }

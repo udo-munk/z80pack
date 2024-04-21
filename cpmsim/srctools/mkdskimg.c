@@ -91,5 +91,5 @@ int main(int argc, char *argv[])
 			write(fd, (char *) sector, 128);
 	}
 	close(fd);
-	return(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }

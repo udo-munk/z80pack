@@ -779,9 +779,9 @@ void cromemco_dazzler_ctl_out(BYTE data)
 BYTE cromemco_dazzler_flags_in(void)
 {
 	if (thread != 0)
-		return(flags);
+		return (flags);
 	else
-		return((BYTE) 0xff);
+		return ((BYTE) 0xff);
 }
 
 void cromemco_dazzler_format_out(BYTE data)

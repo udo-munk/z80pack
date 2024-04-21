@@ -289,7 +289,7 @@ static int handle_break(void)
 	for (i = 0; i < SBSIZE; i++)	/* search for breakpoint */
 		if (soft[i].sb_addr == PC - 1)
 			goto was_softbreak;
-	return(0);
+	return (0);
 was_softbreak:
 #ifdef HISIZE
 	h_next--;			/* correct history */
@@ -312,12 +312,12 @@ was_softbreak:
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment passcounter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
-		return(1);		/* pass not reached, continue */
+		return (1);		/* pass not reached, continue */
 	printf("Software breakpoint %d reached at %04x\n", i, break_address);
 	soft[i].sb_passcount = 0;	/* reset passcounter */
-	return(0);			/* pass reached, stop */
+	return (0);			/* pass reached, stop */
 #else
-	return(0);
+	return (0);
 #endif
 }
 

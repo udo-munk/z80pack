@@ -11,5 +11,5 @@ extern "C" int sim_main(int, char *[]);
 
 int main(int argc, char *argv[])
 {
-	return sim_main(argc, argv);
+	return (sim_main(argc, argv));
 }

@@ -372,10 +372,10 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	if (l_flag) {		/* load core */
 		if (load_core())
-			return(EXIT_FAILURE);
+			return (EXIT_FAILURE);
 	} else if (x_flag) { 	/* OR load memory from file */
 		if (load_file(xfn, 0, 0)) /* don't care where it loads */
-			return(EXIT_FAILURE);
+			return (EXIT_FAILURE);
 	}
 
 	int_on();		/* initialize UNIX interrupts */
@@ -389,7 +389,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	exit_io();		/* stop I/O devices */
 	int_off();		/* stop UNIX interrupts */
 
-	return(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }
 
 /*
@@ -506,7 +506,7 @@ int load_core(void)
 
 	if ((fp = fopen("core.z80", "r")) == NULL) {
 		puts("can't open file core.z80");
-		return(1);
+		return (1);
 	}
 
 	fread(&A, sizeof(A), 1, fp);
@@ -540,8 +540,8 @@ int load_core(void)
 	if (ferror(fp)) {
 		fclose(fp);
 		puts("error reading core.z80");
-		return(1);
+		return (1);
 	}
 	fclose(fp);
-	return(0);
+	return (0);
 }

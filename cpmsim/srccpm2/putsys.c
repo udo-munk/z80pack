@@ -104,5 +104,5 @@ int main(void)
 stop:
 	close(fd);
 	close(drivea);
-	return(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }

@@ -129,7 +129,7 @@ char *dsk_path(void) {
 
 BYTE imsai_fif_in(void)
 {
-	return(0);
+	return (0);
 }
 
 void imsai_fif_out(BYTE data)

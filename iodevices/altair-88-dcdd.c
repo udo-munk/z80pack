@@ -124,15 +124,15 @@ static int dsk_check(void)
 	strcat(fn, "/");
 	strcat(fn, disks[disk]);
 	if ((fd = open(fn, O_RDONLY)) == -1)
-		return(0);
+		return (0);
 
 	/* check for correct image size */
 	fstat(fd, &s);
 	close(fd);
 	if (s.st_size != 337568)
-		return(0);
+		return (0);
 	else
-		return(1);
+		return (1);
 }
 
 /*
@@ -276,7 +276,7 @@ BYTE altair_dsk_status_in(void)
 		}
 	}
 
-	return(status);
+	return (status);
 }
 
 /*
@@ -377,7 +377,7 @@ BYTE altair_dsk_sec_in(void)
 		status |= NRDA;
 		status |= ENWD;
 		pthread_mutex_unlock(&mustatus);
-		return(0xff);
+		return (0xff);
 	} else {
 		if (sec != rwsec) {
 			rwsec = sec;
@@ -392,7 +392,7 @@ BYTE altair_dsk_sec_in(void)
 		}
 	}
 
-	return(sectrue + (rwsec << 1));
+	return (sectrue + (rwsec << 1));
 }
 
 /*
@@ -454,7 +454,7 @@ BYTE altair_dsk_data_in(void)
 
 	/* no more data? */
 	if (dcnt == SEC_SZ)
-		return(0xff);
+		return (0xff);
 
 	/* return byte from buffer and increment counter */
 	data = buf[dcnt++];
@@ -463,7 +463,7 @@ BYTE altair_dsk_data_in(void)
 		status |= NRDA;	/* no more data to read */
 		pthread_mutex_unlock(&mustatus);
 	}
-	return(data);
+	return (data);
 }
 
 /*
