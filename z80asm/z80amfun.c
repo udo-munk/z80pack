@@ -106,7 +106,7 @@ int is_symbol(char *s)
 	register int i;
 
 	if (!IS_FSYM(*s))
-		return(FALSE);
+		return (FALSE);
 	s++;
 	i = 1;
 	while (IS_SYM(*s)) {
@@ -114,7 +114,7 @@ int is_symbol(char *s)
 			*s = '\0';
 		s++;
 	}
-	return(*s == '\0');
+	return (*s == '\0');
 }
 
 /*
@@ -122,8 +122,8 @@ int is_symbol(char *s)
  */
 int mac_compare(const void *p1, const void *p2)
 {
-	return(strcmp((*(const struct mac **) p1)->mac_name,
-		      (*(const struct mac **) p2)->mac_name));
+	return (strcmp((*(const struct mac **) p1)->mac_name,
+		       (*(const struct mac **) p2)->mac_name));
 }
 
 /*
@@ -136,15 +136,15 @@ char *mac_first(int sort_mode, int *rp)
 	register int i;
 
 	if (mac_count == 0)
-		return(NULL);
+		return (NULL);
 	mac_sort = sort_mode;
-	switch(sort_mode) {
+	switch (sort_mode) {
 	case SYM_UNSORT:
 		for (m = mac_table; m->mac_next != NULL; m = m->mac_next)
 			;
 		mac_curr = m;
 		*rp = mac_curr->mac_refflg;
-		return(mac_curr->mac_name);
+		return (mac_curr->mac_name);
 	case SYM_SORTN:
 	case SYM_SORTA:
 		mac_array = (struct mac **) malloc(sizeof(struct mac *)
@@ -157,9 +157,10 @@ char *mac_first(int sort_mode, int *rp)
 		qsort(mac_array, mac_count, sizeof(struct mac *), mac_compare);
 		mac_index = 0;
 		*rp = mac_array[mac_index]->mac_refflg;
-		return(mac_array[mac_index]->mac_name);
+		return (mac_array[mac_index]->mac_name);
 	default:
 		fatal(F_INTERN, "unknown sort mode in mac_first");
+		break;
 	}
 }
 
@@ -172,13 +173,13 @@ char *mac_next(int *rp)
 		mac_curr = mac_curr->mac_prev;
 		if (mac_curr != NULL) {
 			*rp = mac_curr->mac_refflg;
-			return(mac_curr->mac_name);
+			return (mac_curr->mac_name);
 		}
 	} else if (++mac_index < mac_count) {
 		*rp = mac_array[mac_index]->mac_refflg;
-		return(mac_array[mac_index]->mac_name);
+		return (mac_array[mac_index]->mac_name);
 	}
-	return(NULL);
+	return (NULL);
 }
 
 /*
@@ -210,7 +211,7 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
 	m->mac_dums_last = m->mac_dums = NULL;
 	m->mac_lines_last = m->mac_lines = NULL;
 	m->mac_next = m->mac_prev = NULL;
-	return(m);
+	return (m);
 }
 
 /*
@@ -446,10 +447,10 @@ int mac_rept_expn(void)
 		act_iflevel = e->expn_act_iflevel;
 		act_elselevel = e->expn_act_elselevel;
 		gencode = TRUE;
-		return(TRUE);
+		return (TRUE);
 	} else {
 		mac_end_expn();
-		return(FALSE);
+		return (FALSE);
 	}
 }
 
@@ -496,8 +497,8 @@ const char *mac_get_dummy(struct expn *e, char *s)
 
 	for (p = e->expn_parms; p != NULL; p = p->parm_next)
 		if (strncmp(p->parm_name, s, symlen) == 0)
-			return(p->parm_val == NULL ? "" : p->parm_val);
-	return(NULL);
+			return (p->parm_val == NULL ? "" : p->parm_val);
+	return (NULL);
 }
 
 /*
@@ -509,8 +510,8 @@ const char *mac_get_local(struct expn *e, char *s)
 
 	for (l = e->expn_locs; l != NULL; l = l->loc_next)
 		if (strncmp(l->loc_name, s, symlen) == 0)
-			return(l->loc_val);
-	return(NULL);
+			return (l->loc_val);
+	return (NULL);
 }
 
 /*
@@ -685,13 +686,13 @@ char *mac_expand(void)
 
 	e = mac_expn;
 	if (e->expn_line == NULL && !mac_rept_expn())
-		return(NULL);
+		return (NULL);
 	/* first substitute dummies with parameter values */
 	mac_subst(tmp, e->expn_line->line_text, e, mac_get_dummy);
 	/* next substitute local labels with ??xxxx */
 	mac_subst(line, tmp, e, mac_get_local);
 	e->expn_line = e->expn_line->line_next;
-	return(line);
+	return (line);
 }
 
 /*
@@ -705,9 +706,9 @@ int mac_lookup(char *opcode)
 	for (m = mac_table; m != NULL; m = m->mac_next)
 		if (strncmp(m->mac_name, opcode, symlen) == 0) {
 			mac_curr = m;
-			return(TRUE);
+			return (TRUE);
 		}
-	return(FALSE);
+	return (FALSE);
 }
 
 /*
@@ -744,7 +745,7 @@ char *mac_next_parm(char *s)
 			while (TRUE) {
 				if (*s == '\0') {
 					asmerr(E_MISDEL);
-					return(NULL);
+					return (NULL);
 				} else if (*s == c) {
 					if (*(s + 1) != c) /* double delim? */
 						break;
@@ -764,7 +765,7 @@ char *mac_next_parm(char *s)
 					while (TRUE) {
 						if (*s == '\0') {
 							asmerr(E_MISDEL);
-							return(NULL);
+							return (NULL);
 						} else if (*s == c) {
 							*t++ = *s++;
 							if (*s != c)
@@ -787,7 +788,7 @@ char *mac_next_parm(char *s)
 			t1 += m;
 			if (t1 - tmp > MAXLINE) {
 				asmerr(E_MACOVF);
-				return(NULL);
+				return (NULL);
 			}
 			/* generate digits backwards in current radix */
 			for (t = t1; m > 0; m--) {
@@ -801,7 +802,7 @@ char *mac_next_parm(char *s)
 			s++;
 			if (*s == '\0') {
 				asmerr(E_INVOPE);
-				return(NULL);
+				return (NULL);
 			} else
 				*t++ = *s++;
 		} else if (*s == LBRACK) {
@@ -814,7 +815,7 @@ char *mac_next_parm(char *s)
 		} else if (*s == RBRACK) {
 			if (n == 0) {
 				asmerr(E_INVOPE);
-				return(NULL);
+				return (NULL);
 			} else {
 				/* remove top level RBRACK */
 				n--;
@@ -833,10 +834,10 @@ char *mac_next_parm(char *s)
 	}
 	if (n > 0) {
 		asmerr(E_INVOPE);
-		return(NULL);
+		return (NULL);
 	}
 	*t1 = '\0';
-	return(s);
+	return (s);
 }
 
 /*
@@ -863,18 +864,18 @@ int mac_rept_irp(struct expn *e)
 
 	s = e->expn_irp;
 	if (*s == '\0')
-		return(FALSE);
+		return (FALSE);
 	else if (*s++ != ',') {
 		asmerr(E_INVOPE);
-		return(FALSE);
+		return (FALSE);
 	} else {
 		if ((s = mac_next_parm(s)) == NULL)
-			return(FALSE);
+			return (FALSE);
 		e->expn_irp = s;
 		if (e->expn_parms->parm_val != NULL)
 			free(e->expn_parms->parm_val);
 		e->expn_parms->parm_val = strsave(tmp);
-		return(TRUE);
+		return (TRUE);
 	}
 }
 
@@ -901,9 +902,9 @@ int mac_rept_irpc(struct expn *e)
 {
 	if (*e->expn_irp != '\0') {
 		*e->expn_parms->parm_val = *e->expn_irp++;
-		return(TRUE);
+		return (TRUE);
 	} else
-		return(FALSE);
+		return (FALSE);
 }
 
 /*
@@ -944,7 +945,7 @@ void mac_start_rept(struct expn *e)
  */
 int mac_rept_rept(struct expn *e)
 {
-	return(e->expn_iter < e->expn_mac->mac_nrept);
+	return (e->expn_iter < e->expn_mac->mac_nrept);
 }
 
 /*
@@ -960,7 +961,7 @@ WORD op_endm(BYTE dummy1, BYTE dummy2)
 		asmerr(E_NIMEXP);
 	else
 		(void) mac_rept_expn();
-	return(0);
+	return (0);
 }
 
 /*
@@ -976,7 +977,7 @@ WORD op_exitm(BYTE dummy1, BYTE dummy2)
 		asmerr(E_NIMEXP);
 	else
 		mac_end_expn();
-	return(0);
+	return (0);
 }
 
 /*
@@ -992,12 +993,12 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 	a_mode = A_NONE;
 	if (iflevel == INT_MAX) {
 		asmerr(E_IFNEST);
-		return(0);
+		return (0);
 	}
 	iflevel++;
 	if (!gencode)
-		return(0);
-	switch(op_code) {
+		return (0);
+	switch (op_code) {
 	case 1:				/* IFB */
 	case 2:				/* IFNB */
 		if ((s = mac_next_parm(operand)) != NULL) {
@@ -1035,6 +1036,7 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_mcond");
+		break;
 	}
 	if (!err) {
 		if ((op_code & 1) == 0)	/* negate for inverse IF */
@@ -1043,7 +1045,7 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 	if (t != NULL)
 		free(t);
 	act_iflevel = iflevel;
-	return(0);
+	return (0);
 }
 
 /*
@@ -1059,7 +1061,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
-	switch(op_code) {
+	switch (op_code) {
 	case 1:				/* IRP */
 		m = mac_new(NULL, mac_start_irp, mac_rept_irp);
 		break;
@@ -1068,6 +1070,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_irp");
+		break;
 	}
 	s = operand;
 	t = tmp;
@@ -1108,7 +1111,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 	}
 	if (err)
 		mac_delete(m);
-	return(0);
+	return (0);
 }
 
 /*
@@ -1124,7 +1127,7 @@ WORD op_local(BYTE dummy1, BYTE dummy2)
 	a_mode = A_NONE;
 	if (mac_exp_nest == 0) {
 		asmerr(E_NIMEXP);
-		return(0);
+		return (0);
 	}
 	s = operand;
 	while (s != NULL) {
@@ -1139,7 +1142,7 @@ WORD op_local(BYTE dummy1, BYTE dummy2)
 		}
 		s = s1;
 	}
-	return(0);
+	return (0);
 }
 
 /*
@@ -1175,7 +1178,7 @@ WORD op_macro(BYTE dummy1, BYTE dummy2)
 	}
 	mac_curr = m;
 	mac_def_nest++;
-	return(0);
+	return (0);
 }
 
 /*
@@ -1193,5 +1196,5 @@ WORD op_rept(BYTE dummy1, BYTE dummy2)
 	m->mac_nrept = eval(operand);
 	mac_curr = m;
 	mac_def_nest++;
-	return(0);
+	return (0);
 }

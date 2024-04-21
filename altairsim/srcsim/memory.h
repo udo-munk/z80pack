@@ -108,7 +108,7 @@ static inline BYTE memrdr(WORD addr)
 	wait_step();
 #endif
 
-	return(data);
+	return (data);
 }
 
 /*
@@ -118,15 +118,15 @@ static inline BYTE dma_read(WORD addr)
 {
 	if (tarbell_rom_active && tarbell_rom_enabled) {
 		if (addr <= 0x001f)
-			return(tarbell_rom[addr]);
+			return (tarbell_rom[addr]);
 		else
 			tarbell_rom_active = 0;
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)
-		return(memory[addr]);
+		return (memory[addr]);
 	else
-		return(0xff);
+		return (0xff);
 }
 
 static inline void dma_write(WORD addr, BYTE data)
@@ -142,13 +142,13 @@ static inline BYTE getmem(WORD addr)
 {
 	if (tarbell_rom_active && tarbell_rom_enabled) {
 		if (addr <= 0x001f)
-			return(tarbell_rom[addr]);
+			return (tarbell_rom[addr]);
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)
-		return(memory[addr]);
+		return (memory[addr]);
 	else
-		return(0xff);
+		return (0xff);
 }
 
 static inline void putmem(WORD addr, BYTE data)
@@ -163,13 +163,13 @@ static inline BYTE fp_read(WORD addr)
 {
 	if (tarbell_rom_active && tarbell_rom_enabled) {
 		if (addr <= 0x001f)
-			return(tarbell_rom[addr]);
+			return (tarbell_rom[addr]);
 		else
 			tarbell_rom_active = 0;
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)
-		return(memory[addr]);
+		return (memory[addr]);
 	else
-		return(0xff);
+		return (0xff);
 }

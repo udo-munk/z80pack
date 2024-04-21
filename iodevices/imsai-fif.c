@@ -129,7 +129,7 @@ char *dsk_path(void) {
 
 BYTE imsai_fif_in(void)
 {
-	return(0);
+	return (0);
 }
 
 void imsai_fif_out(BYTE data)
@@ -392,7 +392,7 @@ void disk_io(int addr)
 do_format:
 
 	/* try wanted disk operation */
-	switch(cmd) {
+	switch (cmd) {
 	case WRITE_SEC:
 		if (track >= maxtrk) {
 			dma_write(addr + DD_RESULT, 0xc5);

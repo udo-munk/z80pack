@@ -593,7 +593,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	io_port = addrl;
 	io_data = (*port_in[addrl]) ();
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
-	return(io_data);
+	return (io_data);
 }
 
 /*
@@ -622,7 +622,7 @@ static BYTE io_trap_in(void)
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
 	}
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -632,7 +632,7 @@ static BYTE io_trap_in(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*

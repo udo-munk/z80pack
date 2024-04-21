@@ -53,7 +53,7 @@ void mon(void)
 	/* start CPU emulation */
 	cpu_state = CONTIN_RUN;
 	cpu_error = NONE;
-	switch(cpu) {
+	switch (cpu) {
 	case Z80:
 		cpu_z80();
 		break;
@@ -132,9 +132,9 @@ int boot(int level)
 	/* on first boot we can run from core or file */
 	if (level == 0) {
 		if (l_flag)
-			return(0);
+			return (0);
 		if (x_flag)
-			return(0);
+			return (0);
 	}
 
 	/* else load boot code from disk */
@@ -158,17 +158,17 @@ int boot(int level)
 	if ((fd = open(fn, O_RDONLY)) == -1) {
 		LOGE(TAG, "can't open file %s", fn);
 		close(fd);
-		return(1);
+		return (1);
 	}
 	if (read(fd, buf, 128) != 128) {
 		LOGE(TAG, "can't read file %s", fn);
 		close(fd);
-		return(1);
+		return (1);
 	}
 	close(fd);
 
 	for (i = 0; i < 128; i++)
 		putmem(i, buf[i]);
 
-	return(0);
+	return (0);
 }

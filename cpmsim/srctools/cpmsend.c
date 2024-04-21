@@ -44,7 +44,7 @@ int main(int argc,char *argv[])
 		sendbuf(readn);
 	close(fdin);
 	close(fdout);
-	return(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }
 
 void sendbuf(int size)

@@ -1061,6 +1061,7 @@ static void _process(telnet_t *telnet, const char *buffer, size_t size) {
 				/* state update */
 				start = i + 1;
 				telnet->state = TELNET_STATE_DATA;
+				break;
 			}
 			break;
 

@@ -684,7 +684,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		io_data = (*port_in[io_port]) ();
 #endif
 
-	return(io_data);
+	return (io_data);
 }
 
 /*
@@ -726,7 +726,7 @@ static BYTE io_trap_in(void)
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
 	}
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 #if 0		/* currently not used */
@@ -737,7 +737,7 @@ static BYTE io_trap_in(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 #endif
 
@@ -773,9 +773,9 @@ static void io_no_card_out(BYTE data)
 static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
-	return(address_switch >> 8);
+	return (address_switch >> 8);
 #else
-	return(fp_port);
+	return (fp_port);
 #endif
 }
 
@@ -804,7 +804,7 @@ static void int_timer(int sig)
  */
 static BYTE hwctl_in(void)
 {
-	return(hwctl_lock);
+	return (hwctl_lock);
 }
 
 /*
@@ -866,7 +866,7 @@ static void hwctl_out(BYTE data)
  */
 static BYTE lpt_data_in(void)
 {
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 /*
@@ -904,7 +904,7 @@ again:
  */
 static BYTE lpt_status_in(void)
 {
-	return((BYTE) 3);
+	return ((BYTE) 3);
 }
 
 /*
@@ -922,7 +922,7 @@ static BYTE kbd_status_in(void)
 {
 	extern int proctec_kbd_status;
 
-	return((BYTE) proctec_kbd_status);
+	return ((BYTE) proctec_kbd_status);
 }
 
 /*
@@ -934,12 +934,12 @@ static BYTE kbd_data_in(void)
 	int data;
 
 	if (proctec_kbd_data == -1)
-		return((BYTE) 0);
+		return ((BYTE) 0);
 
 	/* take over data and reset status */
 	data = proctec_kbd_data;
 	proctec_kbd_data = -1;
 	proctec_kbd_status = 1;
 
-	return((BYTE) data);
+	return ((BYTE) data);
 }

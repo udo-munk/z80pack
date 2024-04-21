@@ -62,12 +62,12 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	if (selbnk == 0)
-		return(*(memory[0] + addr));
+		return (*(memory[0] + addr));
 
 	if (addr >= segsize)
-		return(*(memory[0] + addr));
+		return (*(memory[0] + addr));
 	else
-		return(*(memory[selbnk] + addr));
+		return (*(memory[selbnk] + addr));
 }
 
 /*
@@ -93,12 +93,12 @@ static inline void dma_write(WORD addr, BYTE data)
 static inline BYTE dma_read(WORD addr)
 {
 	if (selbnk == 0)
-		return(*(memory[0] + addr));
+		return (*(memory[0] + addr));
 
 	if (addr >= segsize)
-		return(*(memory[0] + addr));
+		return (*(memory[0] + addr));
 	else
-		return(*(memory[selbnk] + addr));
+		return (*(memory[selbnk] + addr));
 }
 
 /*
@@ -119,10 +119,10 @@ static inline void putmem(WORD addr, BYTE data)
 static inline BYTE getmem(WORD addr)
 {
 	if (selbnk == 0)
-		return(*(memory[0] + addr));
+		return (*(memory[0] + addr));
 
 	if (addr >= segsize)
-		return(*(memory[0] + addr));
+		return (*(memory[0] + addr));
 	else
-		return(*(memory[selbnk] + addr));
+		return (*(memory[selbnk] + addr));
 }

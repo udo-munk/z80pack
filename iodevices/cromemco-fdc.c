@@ -286,7 +286,7 @@ long get_pos(void)
 	else	/* double sided, double density */
 		pos = ((fdc_track * 2 + side) * disks[disk].sectors
 		       + fdc_sec - 1) * SEC_SZDD;
-	return(pos);
+	return (pos);
 }
 
 /*
@@ -327,7 +327,7 @@ BYTE cromemco_fdc_diskflags_in(void)
 	if (headloaded)
 		ret |= 32;
 
-	return(ret);
+	return (ret);
 }
 
 /*
@@ -402,7 +402,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x80;	/* not ready */
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			/* try to open disk image */
 			dsk_path();
@@ -413,7 +413,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x80;	/* not ready */
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			/* get drive and disk geometry */
 			config_disk(fd);
@@ -423,7 +423,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			/* check track/sector */
 			if ((fdc_track == 0) && (side == 0))
@@ -438,7 +438,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			/* seek to sector */
 			pos = get_pos();
@@ -448,7 +448,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			/* read the sector */
 			if (read(fd, &buf[0], secsz) != secsz) {
@@ -457,7 +457,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			close(fd);
 		}
@@ -481,13 +481,12 @@ BYTE cromemco_fdc_data_in(void)
 				} else {
 					dcnt = 0;	/* read next sector */
 					fdc_sec++;
-					return(buf[secsz - 1]);
+					return (buf[secsz - 1]);
 				}
 			}
 		}
 		/* return next byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	case FDC_READADR:	/* read disk address */
 		/* first byte? */
@@ -507,12 +506,10 @@ BYTE cromemco_fdc_data_in(void)
 			fdc_stat = 0;
 		}
 		/* return next byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	default:
-		return((BYTE) 0);
-		break;
+		return ((BYTE) 0);
 	}
 }
 
@@ -725,7 +722,7 @@ void cromemco_fdc_data_out(BYTE data)
  */
 BYTE cromemco_fdc_sector_in(void)
 {
-	return(fdc_sec);
+	return (fdc_sec);
 }
 
 /*
@@ -741,7 +738,7 @@ void cromemco_fdc_sector_out(BYTE data)
  */
 BYTE cromemco_fdc_track_in(void)
 {
-	return(fdc_track);
+	return (fdc_track);
 }
 
 /*
@@ -823,7 +820,7 @@ BYTE cromemco_fdc_aux_in(void)
 		fdc_aux |= 1;
 #endif
 
-	return(fdc_aux);
+	return (fdc_aux);
 }
 
 /*
@@ -903,7 +900,7 @@ BYTE cromemco_fdc_status_in(void)
 			fdc_stat &= ~4;
 	}
 
-	return(fdc_stat);
+	return (fdc_stat);
 }
 
 /*

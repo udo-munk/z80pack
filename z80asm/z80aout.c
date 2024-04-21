@@ -601,7 +601,7 @@ char *btoh(BYTE b, char *p)
 	*p++ = c + (c < 10 ? '0' : '7');
 	c = b & 0xf;
 	*p++ = c + (c < 10 ? '0' : '7');
-	return(p);
+	return (p);
 }
 
 /*
@@ -618,5 +618,5 @@ BYTE chksum(BYTE rec_type)
 	sum += rec_type;
 	for (i = 0; i < hex_cnt; i++)
 		sum += hex_buf[i];
-	return(-sum);
+	return (-sum);
 }

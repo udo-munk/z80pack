@@ -149,7 +149,7 @@ static inline BYTE memrdr(WORD addr)
 	if(cyclecount && --cyclecount == 0) 
 		groupswap();
 
-	return(data);
+	return (data);
 }
 
 /*
@@ -167,11 +167,11 @@ static inline BYTE dma_read(WORD addr)
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 8] != MEM_NONE)
-			return(_MEMMAPPED(addr));
+			return (_MEMMAPPED(addr));
 		else
-			return(0xff);
+			return (0xff);
 	} else {
-		return(*(banks[selbnk] + addr));
+		return (*(banks[selbnk] + addr));
 	}
 }
 
@@ -200,11 +200,11 @@ static inline BYTE getmem(WORD addr)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 8] != MEM_NONE)
-			return(_MEMMAPPED(addr));
+			return (_MEMMAPPED(addr));
 		else
-			return(0xff);
+			return (0xff);
 	} else {
-		return(*(banks[selbnk] + addr));
+		return (*(banks[selbnk] + addr));
 	}
 }
 

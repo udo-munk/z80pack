@@ -44,8 +44,8 @@ struct sym *look_sym(char *sym_name)
 
 	for (sp = symtab[hash(sym_name)]; sp != NULL; sp = sp->sym_next)
 		if (strcmp(sym_name, sp->sym_name) == 0)
-			return(sp);
-	return(NULL);
+			return (sp);
+	return (NULL);
 }
 
 /*
@@ -59,7 +59,7 @@ struct sym *get_sym(char *sym_name)
 
 	if ((sp = look_sym(sym_name)) != NULL)
 		sp->sym_refflg = TRUE;
-	return(sp);
+	return (sp);
 }
 
 /*
@@ -84,7 +84,7 @@ struct sym *new_sym(char *sym_name)
 	if (n > symmax)
 		symmax = n;
 	symcnt++;
-	return(sp);
+	return (sp);
 }
 
 /*
@@ -124,7 +124,7 @@ int hash(char *name)
 
 	for (h = 0; *name != '\0';)
 		h = ((h << 5) | (h >> (sizeof(h) * 8 - 5))) ^ (BYTE) *name++;
-	return(h % HASHSIZE);
+	return (h % HASHSIZE);
 }
 
 /*
@@ -137,15 +137,15 @@ struct sym *first_sym(int sort_mode)
 	register int i;
 
 	if (symcnt == 0)
-		return(NULL);
+		return (NULL);
 	symsort = sort_mode;
-	switch(sort_mode) {
+	switch (sort_mode) {
 	case SYM_UNSORT:
 		symidx = 0;
 		while ((symptr = symtab[symidx]) == NULL)
 			if (++symidx == HASHSIZE)
 				break;
-		return(symptr);
+		return (symptr);
 	case SYM_SORTN:
 	case SYM_SORTA:
 		symarray = (struct sym **) malloc(sizeof(struct sym *)
@@ -158,9 +158,10 @@ struct sym *first_sym(int sort_mode)
 		qsort(symarray, symcnt, sizeof(struct sym *),
 		      sort_mode == SYM_SORTN ? namecmp : valcmp);
 		symidx = 0;
-		return(symarray[symidx]);
+		return (symarray[symidx]);
 	default:
 		fatal(F_INTERN, "unknown sort mode in first_sym");
+		break;
 	}
 }
 
@@ -178,10 +179,10 @@ struct sym *next_sym(void)
 					symptr = symtab[symidx];
 			} while (symptr == NULL);
 		}
-		return(symptr);
+		return (symptr);
 	} else if (++symidx < symcnt)
-		return(symarray[symidx]);
-	return(NULL);
+		return (symarray[symidx]);
+	return (NULL);
 }
 
 /*
@@ -189,8 +190,8 @@ struct sym *next_sym(void)
  */
 int namecmp(const void *p1, const void *p2)
 {
-	return(strcmp((*(const struct sym **) p1)->sym_name,
-		      (*(const struct sym **) p2)->sym_name));
+	return (strcmp((*(const struct sym **) p1)->sym_name,
+		       (*(const struct sym **) p2)->sym_name));
 }
 
 /*
@@ -204,9 +205,9 @@ int valcmp(const void *p1, const void *p2)
 	n1 = (*(const struct sym **) p1)->sym_val;
 	n2 = (*(const struct sym **) p2)->sym_val;
 	if (n1 < n2)
-		return(-1);
+		return (-1);
 	else if (n1 > n2)
-		return(1);
+		return (1);
 	else
-		return(namecmp(p1, p2));
+		return (namecmp(p1, p2));
 }

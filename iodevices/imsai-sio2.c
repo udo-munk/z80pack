@@ -93,7 +93,7 @@ BYTE imsai_sio_nofun_in(void)
 	LOGD(TAG,"INVALID SIO PORT"); /* suppress TAG and _log_write warnings */
 				      /* won't be seen unless */
 				      /* LOG_LOCAL_LEVEL = DEBUG */
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 void imsai_sio_nofun_out(BYTE data)
@@ -120,13 +120,13 @@ BYTE imsai_sio1a_status_in(void)
 	tdiff = time_diff(&sio1a_t1, &sio1a_t2);
 	if (sio1a_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1a_baud_rate))
-			return(sio1a_stat);
+			return (sio1a_stat);
 
 	hal_status_in(SIO1A, &sio1a_stat);
 
 	gettimeofday(&sio1a_t1, NULL);
 
-	return(sio1a_stat);
+	return (sio1a_stat);
 }
 
 /*
@@ -161,7 +161,7 @@ BYTE imsai_sio1a_data_in(void)
 	if (sio1a_upper_case)
 		data = toupper(data);
 	last = data;
-	return((BYTE) data);
+	return ((BYTE) data);
 }
 
 /*
@@ -199,13 +199,13 @@ BYTE imsai_sio1b_status_in(void)
 	tdiff = time_diff(&sio1b_t1, &sio1b_t2);
 	if (sio1b_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1b_baud_rate))
-			return(sio1b_stat);
+			return (sio1b_stat);
 
 	hal_status_in(SIO1B, &sio1b_stat);
 
 	gettimeofday(&sio1b_t1, NULL);
 
-	return(sio1b_stat);
+	return (sio1b_stat);
 }
 
 /*
@@ -237,7 +237,7 @@ BYTE imsai_sio1b_data_in(void)
 	if (sio1b_upper_case)
 		data = toupper(data);
 	last = data;
-	return((BYTE) data);
+	return ((BYTE) data);
 }
 
 /*
@@ -275,13 +275,13 @@ BYTE imsai_sio2a_status_in(void)
 	tdiff = time_diff(&sio2a_t1, &sio2a_t2);
 	if (sio2a_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2a_baud_rate))
-			return(sio2a_stat);
+			return (sio2a_stat);
 
 	hal_status_in(SIO2A, &sio2a_stat);
 
 	gettimeofday(&sio2a_t1, NULL);
 
-	return(sio2a_stat);
+	return (sio2a_stat);
 }
 
 /*
@@ -316,7 +316,7 @@ BYTE imsai_sio2a_data_in(void)
 	if (sio2a_upper_case)
 		data = toupper(data);
 	last = data;
-	return((BYTE)data);
+	return ((BYTE)data);
 }
 
 /*
@@ -357,13 +357,13 @@ BYTE imsai_sio2b_status_in(void)
 	tdiff = time_diff(&sio2b_t1, &sio2b_t2);
 	if (sio2b_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2b_baud_rate))
-			return(sio2b_stat);
+			return (sio2b_stat);
 
 	hal_status_in(SIO2B, &sio2b_stat);
 
 	gettimeofday(&sio2b_t1, NULL);
 
-	return(sio2b_stat);
+	return (sio2b_stat);
 }
 
 /*
@@ -398,7 +398,7 @@ BYTE imsai_sio2b_data_in(void)
 	if (sio2b_upper_case)
 		data = toupper(data);
 	last = data;
-	return((BYTE)data);
+	return ((BYTE)data);
 }
 
 /*
@@ -440,7 +440,7 @@ BYTE imsai_sio1_ctl_in(void)
 	int cd_a = hal_carrier_detect(SIO1A);
 	int cd_b = hal_carrier_detect(SIO1B);
 
-	return(0b10111011 | (cd_a << 2) | cd_b << 6);
+	return (0b10111011 | (cd_a << 2) | cd_b << 6);
 }
 
 BYTE imsai_sio2_ctl_in(void)
@@ -448,7 +448,7 @@ BYTE imsai_sio2_ctl_in(void)
 	int cd_a = hal_carrier_detect(SIO2A);
 	int cd_b = hal_carrier_detect(SIO2B);
 
-	return(0b10111011 | (cd_a << 2) | cd_b << 6);
+	return (0b10111011 | (cd_a << 2) | cd_b << 6);
 }
 
 /*

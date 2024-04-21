@@ -776,7 +776,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		io_data = (*port_in[io_port]) ();
 #endif
 
-	return(io_data);
+	return (io_data);
 }
 
 /*
@@ -818,7 +818,7 @@ static BYTE io_trap_in(void)
 		cpu_error = IOTRAPIN;
 		cpu_state = STOPPED;
 	}
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -828,7 +828,7 @@ static BYTE io_trap_in(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -863,9 +863,9 @@ static void io_no_card_out(BYTE data)
 static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
-	return(address_switch >> 8);
+	return (address_switch >> 8);
 #else
-	return(fp_port);
+	return (fp_port);
 #endif
 }
 
@@ -898,7 +898,7 @@ static void int_timer(int sig)
  */
 static BYTE hwctl_in(void)
 {
-	return(hwctl_lock);
+	return (hwctl_lock);
 }
 
 /*
@@ -1001,7 +1001,7 @@ again:
  */
 static BYTE lpt_in(void)
 {
-	return((BYTE) 0xf4);
+	return ((BYTE) 0xf4);
 }
 
 /*
@@ -1011,7 +1011,7 @@ static BYTE lpt_in(void)
  */
 static BYTE io_pport_in(void)
 {
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 /*
@@ -1019,7 +1019,7 @@ static BYTE io_pport_in(void)
  */
 static BYTE mmu_in(void)
 {
-	return(selbnk);
+	return (selbnk);
 }
 
 /*

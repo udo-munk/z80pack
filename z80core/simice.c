@@ -182,7 +182,7 @@ static void do_step(void)
 
 	cpu_state = SINGLE_STEP;
 	cpu_error = NONE;
-	switch(cpu) {
+	switch (cpu) {
 	case Z80:
 		cpu_z80();
 		break;
@@ -218,7 +218,7 @@ static void do_trace(char *s)
 	print_head();
 	print_reg();
 	for (i = 0; i < count; i++) {
-		switch(cpu) {
+		switch (cpu) {
 		case Z80:
 			cpu_z80();
 			break;
@@ -254,7 +254,7 @@ static void do_go(char *s)
 cont:
 	cpu_state = CONTIN_RUN;
 	cpu_error = NONE;
-	switch(cpu) {
+	switch (cpu) {
 	case Z80:
 		cpu_z80();
 		break;
@@ -289,7 +289,7 @@ static int handle_break(void)
 	for (i = 0; i < SBSIZE; i++)	/* search for breakpoint */
 		if (soft[i].sb_addr == PC - 1)
 			goto was_softbreak;
-	return(0);
+	return (0);
 was_softbreak:
 #ifdef HISIZE
 	h_next--;			/* correct history */
@@ -301,7 +301,7 @@ was_softbreak:
 	PC--;				/* substitute HALT opcode by */
 	putmem(PC, soft[i].sb_oldopc);	/* original opcode */
 	cpu_state = SINGLE_STEP;	/* and execute it */
-	switch(cpu) {
+	switch (cpu) {
 	case Z80:
 		cpu_z80();
 		break;
@@ -312,12 +312,12 @@ was_softbreak:
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment passcounter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
-		return(1);		/* pass not reached, continue */
+		return (1);		/* pass not reached, continue */
 	printf("Software breakpoint %d reached at %04x\n", i, break_address);
 	soft[i].sb_passcount = 0;	/* reset passcounter */
-	return(0);			/* pass reached, stop */
+	return (0);			/* pass reached, stop */
 #else
-	return(0);
+	return (0);
 #endif
 }
 
@@ -867,7 +867,7 @@ static void do_clock(void)
 	tim.it_interval.tv_sec = 0;
 	tim.it_interval.tv_usec = 0;
 	setitimer(ITIMER_REAL, &tim, NULL);
-	switch(cpu) {			/* start CPU */
+	switch (cpu) {			/* start CPU */
 	case Z80:
 		cpu_z80();
 		s = "JP";

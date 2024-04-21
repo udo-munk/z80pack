@@ -160,7 +160,7 @@ void cromemco_88ccc_ctrl_c_out(BYTE data)
 BYTE cromemco_88ccc_ctrl_a_in(void)
 {
 	/* return flags along with state in the msb */
-	return(flags | (state << 7));
+	return (flags | (state << 7));
 }
 
 #endif /* HAS_CYCLOPS */

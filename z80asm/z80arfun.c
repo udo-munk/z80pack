@@ -37,7 +37,7 @@ WORD op_1b(BYTE b1, BYTE dummy)
 	UNUSED(dummy);
 
 	ops[0] = b1;
-	return(1);
+	return (1);
 }
 
 /*
@@ -47,7 +47,7 @@ WORD op_2b(BYTE b1, BYTE b2)
 {
 	ops[0] = b1;
 	ops[1] = b2;
-	return(2);
+	return (2);
 }
 
 /*
@@ -67,7 +67,7 @@ WORD op_im(BYTE base_op1, BYTE base_op2)
 		ops[0] = base_op1;
 		ops[1] = base_op2 + (op << 3);
 	}
-	return(2);
+	return (2);
 }
 
 /*
@@ -99,8 +99,9 @@ WORD op_pupo(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -125,6 +126,7 @@ WORD op_ex(BYTE base_ops, BYTE base_opd)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case REGAF:
@@ -138,6 +140,7 @@ WORD op_ex(BYTE base_ops, BYTE base_opd)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case REGISP:
@@ -157,6 +160,7 @@ WORD op_ex(BYTE base_ops, BYTE base_opd)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -164,8 +168,9 @@ WORD op_ex(BYTE base_ops, BYTE base_opd)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -185,7 +190,7 @@ WORD op_rst(BYTE base_op, BYTE dummy)
 		}
 		ops[0] = base_op + op;
 	}
-	return(1);
+	return (1);
 }
 
 /*
@@ -216,8 +221,9 @@ WORD op_ret(BYTE base_op, BYTE base_opc)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -286,8 +292,9 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -328,8 +335,9 @@ WORD op_jr(BYTE base_op, BYTE base_opc)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -343,7 +351,7 @@ WORD op_djnz(BYTE base_op, BYTE dummy)
 		ops[0] = base_op;
 		ops[1] = chk_sbyte(eval(operand) - pc - 2);
 	}
-	return(2);
+	return (2);
 }
 
 /*
@@ -390,6 +398,7 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case REGBC:			/* LD BC,? */
@@ -473,6 +482,7 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case REGIIX:			/* LD (IX),r */
@@ -494,8 +504,9 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 			len = ldinn(sec); /* LD (nn),? */
 		else			/* invalid operand */
 			asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -591,8 +602,9 @@ WORD ldreg(BYTE base_op, char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -628,8 +640,9 @@ WORD ldixhl(BYTE base_op, char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -665,8 +678,9 @@ WORD ldiyhl(BYTE base_op, char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -714,8 +728,9 @@ WORD ldsp(char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -749,8 +764,9 @@ WORD ldihl(BYTE base_op, char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -800,8 +816,9 @@ WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -860,8 +877,9 @@ WORD ldinn(char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -892,6 +910,7 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case REGIX:			/* ADD IX,? */
@@ -909,6 +928,7 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case REGIY:			/* ADD IY,? */
@@ -926,6 +946,7 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -933,8 +954,9 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -966,6 +988,7 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -973,8 +996,9 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1044,8 +1068,9 @@ WORD op_decinc(BYTE base_op, BYTE base_op16)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1055,7 +1080,7 @@ WORD op_alu(BYTE base_op, BYTE dummy)
 {
 	UNUSED(dummy);
 
-	return(aluop(base_op, operand));
+	return (aluop(base_op, operand));
 }
 
 /*
@@ -1117,8 +1142,9 @@ WORD aluop(BYTE base_op, char *sec)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1134,7 +1160,7 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 	if (operand[0] == '\0')		/* missing operand */
 		asmerr(E_MISOPE);
 	else if (strcmp(operand, "(C)") == 0) {
-		switch(op = get_reg(sec)) {
+		switch (op = get_reg(sec)) {
 		case REGA:		/* OUT (C),A */
 		case REGB:		/* OUT (C),B */
 		case REGC:		/* OUT (C),C */
@@ -1156,6 +1182,7 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 				ops[1] = op_basec + (REGIHL & OPMASK3);
 			} else		/* invalid operand */
 				asmerr(E_INVOPE);
+			break;
 		}
 	} else if (operand[0] == '(' && operand[strlen(operand) - 1] == ')') {
 		switch (get_reg(sec)) {
@@ -1171,10 +1198,11 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 	} else				/* invalid operand */
 		asmerr(E_INVOPE);
-	return(len);
+	return (len);
 }
 
 /*
@@ -1213,6 +1241,7 @@ WORD op_in(BYTE op_base, BYTE op_basec)
 				ops[1] = op_basec + (REGIHL & OPMASK3);
 			} else		/* invalid operand */
 				asmerr(E_INVOPE);
+			break;
 		}
 	} else if (*sec == '(' && *(sec + strlen(sec) - 1) == ')') {
 		switch (get_reg(operand)) {
@@ -1228,10 +1257,11 @@ WORD op_in(BYTE op_base, BYTE op_basec)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 	} else				/* invalid operand */
 		asmerr(E_INVOPE);
-	return(len);
+	return (len);
 }
 
 /*
@@ -1292,8 +1322,9 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1346,10 +1377,11 @@ WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 	} else				/* invalid operand */
 		asmerr(E_INVOPE);
-	return(len);
+	return (len);
 }
 
 /*
@@ -1395,6 +1427,7 @@ WORD op8080_mov(BYTE base_op, BYTE dummy)
 			break;
 		default:		/* invalid operand */
 			asmerr(E_INVOPE);
+			break;
 		}
 		break;
 	case NOOPERA:			/* missing operand */
@@ -1402,8 +1435,9 @@ WORD op8080_mov(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1433,8 +1467,9 @@ WORD op8080_alu(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1464,8 +1499,9 @@ WORD op8080_dcrinr(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1491,8 +1527,9 @@ WORD op8080_reg16(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1516,8 +1553,9 @@ WORD op8080_regbd(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1531,7 +1569,7 @@ WORD op8080_imm(BYTE base_op, BYTE dummy)
 		ops[0] = base_op;
 		ops[1] = chk_byte(eval(operand));
 	}
-	return(2);
+	return (2);
 }
 
 /*
@@ -1551,7 +1589,7 @@ WORD op8080_rst(BYTE base_op, BYTE dummy)
 		}
 		ops[0] = base_op + (op << 3);
 	}
-	return(1);
+	return (1);
 }
 /*
  *	8080 PUSH and POP
@@ -1576,8 +1614,9 @@ WORD op8080_pupo(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1597,7 +1636,7 @@ WORD op8080_addr(BYTE base_op, BYTE dummy)
 		ops[1] = n & 0xff;
 		ops[2] = n >> 8;
 	}
-	return(3);
+	return (3);
 }
 
 /*
@@ -1632,8 +1671,9 @@ WORD op8080_mvi(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }
 
 /*
@@ -1667,6 +1707,7 @@ WORD op8080_lxi(BYTE base_op, BYTE dummy)
 		break;
 	default:			/* invalid operand */
 		asmerr(E_INVOPE);
+		break;
 	}
-	return(len);
+	return (len);
 }

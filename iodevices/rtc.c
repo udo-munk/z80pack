@@ -52,7 +52,7 @@ static int get_date(struct tm *t)
 			val++;
 	}
 	val += t->tm_yday + 1;
-	return(val);
+	return (val);
 }
 
 /*
@@ -61,7 +61,7 @@ static int get_date(struct tm *t)
  */
 BYTE clkc_in(void)
 {
-	return(clkfmt);
+	return (clkfmt);
 }
 
 /*
@@ -98,7 +98,7 @@ BYTE clkd_in(void)
 
 	time(&Time);
 	t = localtime(&Time);
-	switch(clkcmd) {
+	switch (clkcmd) {
 	case 0:			/* seconds */
 		if (clkfmt)
 			val = t->tm_sec;
@@ -145,7 +145,7 @@ BYTE clkd_in(void)
 		val = 0;
 		break;
 	}
-	return((BYTE) val);
+	return ((BYTE) val);
 }
 
 /*

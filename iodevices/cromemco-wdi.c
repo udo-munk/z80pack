@@ -468,7 +468,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
 BYTE cromemco_wdi_pio0a_data_in(void)
 {
 	LOGW(TAG, "E0 IN:");
-	return((BYTE) 0xFF);
+	return ((BYTE) 0xFF);
 }
 BYTE cromemco_wdi_pio0b_data_in(void)
 {
@@ -495,17 +495,17 @@ BYTE cromemco_wdi_pio0b_data_in(void)
             break;
     }
     LOGD(TAG, "STATUS %d = %02x", bus, val);
-	return(val);
+	return (val);
 }
 BYTE cromemco_wdi_pio0a_cmd_in(void)
 {
 	LOGW(TAG, "E2 IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_pio0b_cmd_in(void)
 {
 	LOGW(TAG, "E3 IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_pio1a_data_in(void)
 {
@@ -527,7 +527,7 @@ BYTE cromemco_wdi_pio1a_data_in(void)
     val = (wdi.pio1.data_A & ~wdi.pio1.dir_A) | val;
 
     LOGD(TAG, "E4 IN: = %02x", val);
-	return(val);
+	return (val);
 }
 BYTE cromemco_wdi_pio1b_data_in(void)
 {
@@ -546,39 +546,39 @@ BYTE cromemco_wdi_pio1b_data_in(void)
     val = (wdi.pio1.data_B & ~wdi.pio1.dir_B) | val;
 
 	LOGD(TAG, "E5 IN: = %02x", val);
-	return(val);
+	return (val);
 }
 BYTE cromemco_wdi_pio1a_cmd_in(void)
 {
 	LOGW(TAG, "E6 IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_pio1b_cmd_in(void)
 {
 	LOGW(TAG, "E7 IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_dma0_in(void)
 {
     /* DMA READ STATUS NOT YET COMPLETE */
 	LOGE(TAG, "E8 IN: [%d]", wdi.dma.rr_state);
     if (wdi.dma.rr_state == RR_BASE) return wdi.dma.rr0.status;
-    else return((BYTE) 0xff);
+    else return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_dma1_in(void)
 {
 	LOGW(TAG, "E9 IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_dma2_in(void)
 {
 	LOGW(TAG, "EA IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_dma3_in(void)
 {
 	LOGW(TAG, "EB IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 BYTE cromemco_wdi_ctc0_in(void)
 {
@@ -596,7 +596,7 @@ BYTE cromemco_wdi_ctc0_in(void)
             wdi.ctc.T0 += index_ticks;
         }
     }
-	return(val);
+	return (val);
 }
 BYTE cromemco_wdi_ctc1_in(void)
 {
@@ -619,7 +619,7 @@ BYTE cromemco_wdi_ctc1_in(void)
         wdi.ctc.T1 = T;
     }
 
-	return(wdi.ctc.now1);
+	return (wdi.ctc.now1);
 }
 BYTE cromemco_wdi_ctc2_in(void)
 {
@@ -639,12 +639,12 @@ BYTE cromemco_wdi_ctc2_in(void)
     /* Only count seek complete if online */
     if (val > 0 && wdi.hd[wdi.unit].online) wdi.ctc.now2--;
 
-	return(val);
+	return (val);
 }
 BYTE cromemco_wdi_ctc3_in(void)
 {
 	LOGW(TAG, "EF IN:");
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 void command_bus_strobe(void)
@@ -1005,6 +1005,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                             break;
                         default:
                             cmd = "NOT IMPLEMENTED";
+			    break;
                     }
                     LOGD(TAG, "DMA WR6 = %02x - %s", data, cmd);
                 } else {

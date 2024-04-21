@@ -77,7 +77,7 @@ BYTE altair_sio1_status_in(void)
 	tdiff = time_diff(&sio1_t1, &sio1_t2);
 	if (sio1_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
-			return(sio1_stat);
+			return (sio1_stat);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
@@ -94,7 +94,7 @@ BYTE altair_sio1_status_in(void)
 
 	gettimeofday(&sio1_t1, NULL);
 
-	return(sio1_stat);
+	return (sio1_stat);
 }
 
 /*
@@ -124,7 +124,7 @@ again:
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
@@ -140,7 +140,7 @@ again:
 	if (sio1_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*
@@ -204,7 +204,7 @@ BYTE altair_sio2_status_in(void)
 	tdiff = time_diff(&sio2_t1, &sio2_t2);
 	if (sio2_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2_baud_rate))
-			return(sio2_stat);
+			return (sio2_stat);
 
 	/* if socket is connected check for I/O */
 	if (ucons[1].ssc != 0) {
@@ -220,7 +220,7 @@ BYTE altair_sio2_status_in(void)
 
 	gettimeofday(&sio2_t1, NULL);
 
-	return(sio2_stat);
+	return (sio2_stat);
 }
 
 /*
@@ -245,7 +245,7 @@ BYTE altair_sio2_data_in(void)
 
 	/* if not connected return last */
 	if (ucons[1].ssc == 0)
-		return(last);
+		return (last);
 
 	/* if no input waiting return last */
 	p[0].fd = ucons[1].ssc;
@@ -253,13 +253,13 @@ BYTE altair_sio2_data_in(void)
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(ucons[1].ssc, &data, 1) != 1) {
 		/* EOF, close socket and return last */
 		close(ucons[1].ssc);
 		ucons[1].ssc = 0;
-		return(last);
+		return (last);
 	}
 
 	gettimeofday(&sio2_t1, NULL);
@@ -269,7 +269,7 @@ BYTE altair_sio2_data_in(void)
 	if (sio2_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*

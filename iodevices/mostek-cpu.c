@@ -43,7 +43,7 @@ BYTE sio_status_in(void)
 	if (p[0].revents & POLLOUT)
 		status |= 0x80;
 
-	return(status);
+	return (status);
 }
 
 /*
@@ -70,7 +70,7 @@ again:
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
@@ -81,7 +81,7 @@ again:
 
 	/* process read data */
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*
@@ -114,7 +114,7 @@ BYTE sio_handshake_in(void)
 	static BYTE handshake_data = 3;		/* DSR and RTS asserted */
 
 	handshake_data ^= 0x80;			/* toggle serial line each call */
-	return(handshake_data);
+	return (handshake_data);
 }
 
 /*

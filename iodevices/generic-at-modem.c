@@ -303,11 +303,9 @@ int open_socket(void) {
                 */
                 LOGE(TAG, "Not expecting IPV6 addresses");
                 return 1;
-                break;
             default:
                 LOGE(TAG, "Not expecting address family type %d", rp->ai_family);
                 return 1;
-                break;
         }
 
         inet_ntop(rp->ai_family, addrptr, addr, 100);
@@ -742,7 +740,6 @@ int process_at_cmd(void) {
             }
             *at_err = 0;
             return 1; /* Not an error, just want to suppress the OK mesage */
-			break;
 		case 'S': /* ATSn */
             tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
 
@@ -1041,7 +1038,6 @@ int process_at_cmd(void) {
 		default:
 			strcpy(at_err, LF AT_ERROR CRLF);
 			return 1;
-			break;
 	}
   }
 
@@ -1332,7 +1328,7 @@ void modem_device_send(int i, char data) {
 			break;
 		default:
 			LOGE(TAG, "AT statemachine unknown [%d]", at_state);
-		break;
+			break;
 	}
 
     if (at_state == dat) gettimeofday(&at_t1, NULL);

@@ -119,7 +119,7 @@ void get_disk_filename(void)
  */
 BYTE fdcBoard_stat_in(void)
 {
-	return(board_stat);
+	return (board_stat);
 }
 
 /*
@@ -127,7 +127,7 @@ BYTE fdcBoard_stat_in(void)
  */
 BYTE fdcBoard_ctl_in(void)
 {
-	return(board_ctl);
+	return (board_ctl);
 }
 
 /*
@@ -150,7 +150,7 @@ void fdcBoard_ctl_out(BYTE data)
 BYTE fdc1771_stat_in(void)
 {
 	board_stat &= ~sINTERRUPT;		/* read clears INTRQ */
-	return(fdc_stat);
+	return (fdc_stat);
 }
 
 /*
@@ -255,7 +255,7 @@ void fdc1771_cmd_out(BYTE data)
  */
 BYTE fdc1771_track_in(void)
 {
-	return(fdc_track);
+	return (fdc_track);
 }
 
 /*
@@ -271,7 +271,7 @@ void fdc1771_track_out(BYTE data)
  */
 BYTE fdc1771_sec_in(void)
 {
-	return(fdc_sec);
+	return (fdc_sec);
 }
 
 /*
@@ -300,14 +300,14 @@ BYTE fdc1771_data_in(void)
 			if ((fdc_track >= TRK) || (fdc_sec > SPT)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sRECORD_NOT_FOUND;
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* check disk drive */
 			if ((disk < 0) || (disk > 3)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sNOT_READY;
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* try to open disk image */
@@ -315,7 +315,7 @@ BYTE fdc1771_data_in(void)
 			if ((fd = open(fn, O_RDONLY)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sNOT_READY;
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* seek to sector */
@@ -324,7 +324,7 @@ BYTE fdc1771_data_in(void)
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sRECORD_NOT_FOUND;
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* read the sector */
@@ -332,7 +332,7 @@ BYTE fdc1771_data_in(void)
 				state = FDC_IDLE;	/* abort read command */
 				fdc_stat = sRECORD_NOT_FOUND;
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			close(fd);
 			board_stat = sINPUT_READY + sINTERRUPT;
@@ -345,8 +345,7 @@ BYTE fdc1771_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	case FDC_READADR:	/* read disk address */
 
@@ -368,12 +367,10 @@ BYTE fdc1771_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	default:
-		return((BYTE) 0);
-		break;
+		return ((BYTE) 0);
 	}
 }
 

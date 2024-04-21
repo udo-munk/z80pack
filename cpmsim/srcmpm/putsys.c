@@ -53,5 +53,5 @@ int main(void)
 	write(drivea, (char *) sector, 128);
 	close(fd);
 	close(drivea);
-	return(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }

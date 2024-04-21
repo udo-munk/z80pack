@@ -128,14 +128,14 @@ static inline BYTE memrdr(WORD addr)
 	fp_sampleData();
 	wait_step();
 
-	return(fp_led_data);
+	return (fp_led_data);
 #else
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
-		return(*(fdc_banked_rom + addr - 0xC000));
+		return (*(fdc_banked_rom + addr - 0xC000));
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
-		return(*(memory[selbnk] + addr));
+		return (*(memory[selbnk] + addr));
 	} else {
-		return(0xff);
+		return (0xff);
 	}
 #endif
 }
@@ -146,11 +146,11 @@ static inline BYTE memrdr(WORD addr)
 static inline BYTE dma_read(WORD addr)
 {
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
-		return(*(fdc_banked_rom + addr - 0xC000));
+		return (*(fdc_banked_rom + addr - 0xC000));
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
-		return(*(memory[selbnk] + addr));
+		return (*(memory[selbnk] + addr));
 	} else {
-		return(0xff);
+		return (0xff);
 	}
 }
 
@@ -169,11 +169,11 @@ static inline void dma_write(WORD addr, BYTE data)
 static inline BYTE getmem(WORD addr)
 {
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
-		return(*(fdc_banked_rom + addr - 0xC000));
+		return (*(fdc_banked_rom + addr - 0xC000));
 	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
-		return(*(memory[selbnk] + addr));
+		return (*(memory[selbnk] + addr));
 	} else {
-		return(0xff);
+		return (0xff);
 	}
 }
 
