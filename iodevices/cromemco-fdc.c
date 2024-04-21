@@ -487,7 +487,6 @@ BYTE cromemco_fdc_data_in(void)
 		}
 		/* return next byte from buffer and increment counter */
 		return(buf[dcnt++]);
-		break;
 
 	case FDC_READADR:	/* read disk address */
 		/* first byte? */
@@ -508,11 +507,9 @@ BYTE cromemco_fdc_data_in(void)
 		}
 		/* return next byte from buffer and increment counter */
 		return(buf[dcnt++]);
-		break;
 
 	default:
 		return((BYTE) 0);
-		break;
 	}
 }
 

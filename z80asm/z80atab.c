@@ -139,7 +139,7 @@ struct sym *first_sym(int sort_mode)
 	if (symcnt == 0)
 		return(NULL);
 	symsort = sort_mode;
-	switch(sort_mode) {
+	switch (sort_mode) {
 	case SYM_UNSORT:
 		symidx = 0;
 		while ((symptr = symtab[symidx]) == NULL)
@@ -161,6 +161,7 @@ struct sym *first_sym(int sort_mode)
 		return(symarray[symidx]);
 	default:
 		fatal(F_INTERN, "unknown sort mode in first_sym");
+		break;
 	}
 }
 

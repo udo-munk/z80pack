@@ -383,6 +383,7 @@ void instrset(int is)
 		break;
 	default:
 		fatal(F_INTERN, "invalid instr. set for function instrset");
+		break;
 	}
 	if (opctab == NULL) {
 		i = no_opc_psd;

@@ -138,7 +138,7 @@ char *mac_first(int sort_mode, int *rp)
 	if (mac_count == 0)
 		return(NULL);
 	mac_sort = sort_mode;
-	switch(sort_mode) {
+	switch (sort_mode) {
 	case SYM_UNSORT:
 		for (m = mac_table; m->mac_next != NULL; m = m->mac_next)
 			;
@@ -160,6 +160,7 @@ char *mac_first(int sort_mode, int *rp)
 		return(mac_array[mac_index]->mac_name);
 	default:
 		fatal(F_INTERN, "unknown sort mode in mac_first");
+		break;
 	}
 }
 
@@ -997,7 +998,7 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 	iflevel++;
 	if (!gencode)
 		return(0);
-	switch(op_code) {
+	switch (op_code) {
 	case 1:				/* IFB */
 	case 2:				/* IFNB */
 		if ((s = mac_next_parm(operand)) != NULL) {
@@ -1035,6 +1036,7 @@ WORD op_mcond(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_mcond");
+		break;
 	}
 	if (!err) {
 		if ((op_code & 1) == 0)	/* negate for inverse IF */
@@ -1059,7 +1061,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
-	switch(op_code) {
+	switch (op_code) {
 	case 1:				/* IRP */
 		m = mac_new(NULL, mac_start_irp, mac_rept_irp);
 		break;
@@ -1068,6 +1070,7 @@ WORD op_irp(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_irp");
+		break;
 	}
 	s = operand;
 	t = tmp;

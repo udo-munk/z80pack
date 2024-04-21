@@ -286,7 +286,7 @@ int LibraryHandler(HttpdConnection_t *conn, void *unused) {
 
     *file_start = '\0';
 
-    switch(req->method) {
+    switch (req->method) {
     case HTTP_GET:
         DirectoryHandler(conn, path);
         break;
@@ -358,7 +358,7 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
     disk_err_t result;
     UNUSED(unused);
  
-    switch(req->method) {
+    switch (req->method) {
     case HTTP_GET:
         LOGD(TAG, "GET /disks");
         sendDisks(conn);
@@ -426,6 +426,7 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
     default:
         httpdStartResponse(conn, 405);  /* http error code 'Method Not Allowed' */
         httpdEndHeaders(conn);
+	break;
 	}
 
     return 1;   

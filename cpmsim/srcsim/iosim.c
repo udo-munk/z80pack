@@ -850,6 +850,7 @@ void init_io(void)
 	case -1:
 		LOGE(TAG, "can't fork");
 		exit(EXIT_FAILURE);
+		break;
 	case 0:
 		/* . might not be in path, so check that first */
 		if (access("./cpmrecv", X_OK) == 0)
@@ -863,6 +864,7 @@ void init_io(void)
 		LOGE(TAG, "can't exec cpmrecv process, compile/install the tools dude");
 		kill(0, SIGQUIT);
 		exit(EXIT_FAILURE);
+		break;
 	}
 	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NDELAY)) == -1) {
 		LOGE(TAG, "can't open pipe auxin");

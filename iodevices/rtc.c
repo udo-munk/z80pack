@@ -98,7 +98,7 @@ BYTE clkd_in(void)
 
 	time(&Time);
 	t = localtime(&Time);
-	switch(clkcmd) {
+	switch (clkcmd) {
 	case 0:			/* seconds */
 		if (clkfmt)
 			val = t->tm_sec;

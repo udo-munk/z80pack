@@ -453,6 +453,7 @@ static void get_opcodes(WORD addr, int len)
 		break;
 	default:
 		sprintf(Opcode_Str, "xx OW OW xx");
+		break;
 	}
 }
 

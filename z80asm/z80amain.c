@@ -237,6 +237,7 @@ void options(int argc, char *argv[])
 			default:
 				printf("unknown option %c\n", *s);
 				usage();
+				break;
 			}
 	if (argc == 0) {
 		puts("no input file");

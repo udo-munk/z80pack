@@ -392,7 +392,7 @@ void disk_io(int addr)
 do_format:
 
 	/* try wanted disk operation */
-	switch(cmd) {
+	switch (cmd) {
 	case WRITE_SEC:
 		if (track >= maxtrk) {
 			dma_write(addr + DD_RESULT, 0xc5);

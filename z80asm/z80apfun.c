@@ -57,6 +57,7 @@ WORD op_instrset(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_instrset");
+		break;
 	}
 	return(0);
 }
@@ -105,6 +106,7 @@ WORD op_org(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_org");
+		break;
 	}
 	return(0);
 }
@@ -234,6 +236,7 @@ WORD op_db(BYTE op_code, BYTE dummy)
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_db");
+		break;
 	}
 	return(i);
 }
@@ -286,7 +289,7 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
-	switch(op_code) {
+	switch (op_code) {
 	case 1:				/* EJECT and PAGE */
 		if (operand[0] != '\0') {
 			if ((pass == 1 && !page_done) || pass == 2) {
@@ -432,7 +435,7 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 		iflevel++;
 		if (!gencode)
 			return(0);
-		switch(op_code) {
+		switch (op_code) {
 		case 1:			/* IFDEF */
 		case 2:			/* IFNDEF */
 			if (get_sym(operand) == NULL)
@@ -472,7 +475,7 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 			asmerr(E_MISIFF);
 			return(0);
 		}
-		switch(op_code) {
+		switch (op_code) {
 		case 98:		/* ELSE */
 			if (iflevel == act_iflevel) {
 				if (iflevel == act_elselevel)
@@ -506,7 +509,7 @@ WORD op_glob(BYTE op_code, BYTE dummy)
 	UNUSED(dummy);
 
 	a_mode = A_NONE;
-	switch(op_code) {
+	switch (op_code) {
 	case 1:				/* EXTRN, EXTERNAL, EXT */
 		break;
 	case 2:				/* PUBLIC, ENT, ENTRY, GLOBAL */

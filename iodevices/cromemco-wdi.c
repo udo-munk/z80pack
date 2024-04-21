@@ -1005,6 +1005,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                             break;
                         default:
                             cmd = "NOT IMPLEMENTED";
+			    break;
                     }
                     LOGD(TAG, "DMA WR6 = %02x - %s", data, cmd);
                 } else {

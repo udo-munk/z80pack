@@ -53,7 +53,7 @@ void mon(void)
 	/* start CPU emulation */
 	cpu_state = CONTIN_RUN;
 	cpu_error = NONE;
-	switch(cpu) {
+	switch (cpu) {
 	case Z80:
 		cpu_z80();
 		break;

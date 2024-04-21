@@ -246,7 +246,7 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
 
 	const char *copyright = USR_CPR; /* a dirty fix to avoid the leading '\n' */
 
-    switch(req->method) {
+    switch (req->method) {
     case HTTP_GET:
 		LOGD(TAG, "Sending SYS: details.");
 
@@ -446,7 +446,7 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
     	showSize = true;
     }
 
-    switch(req->method) {
+    switch (req->method) {
     case HTTP_GET:
         pDir = opendir ((char *)path);
         if (pDir == NULL) {

@@ -346,7 +346,6 @@ BYTE fdc1771_data_in(void)
 
 		/* return byte from buffer and increment counter */
 		return(buf[dcnt++]);
-		break;
 
 	case FDC_READADR:	/* read disk address */
 
@@ -369,11 +368,9 @@ BYTE fdc1771_data_in(void)
 
 		/* return byte from buffer and increment counter */
 		return(buf[dcnt++]);
-		break;
 
 	default:
 		return((BYTE) 0);
-		break;
 	}
 }
 
