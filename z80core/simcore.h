@@ -1,11 +1,11 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2022 by Udo Munk
+ * Copyright (C) 1987-2024 by Udo Munk
  */
 
-#define COPYR	"Copyright (C) 1987-2022 by Udo Munk"
-#define RELEASE	"1.38-dev"
+#define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
+#define RELEASE	"1.38"
 
 #define MAX_LFN		4096		/* maximum long file name length */
 #define LENCMD		80		/* length of command buffers etc */
