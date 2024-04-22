@@ -1,6 +1,6 @@
 /*
  *	Z80/8080-Macro-Assembler
- *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 1987-2024 by Udo Munk
  *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
@@ -17,7 +17,7 @@
  */
 #define COPYR		"Copyright (C) 1987-2024 by Udo Munk" \
 			" & 2022-2024 by Thomas Eberhardt"
-#define RELEASE		"2.0-dev"
+#define RELEASE		"2.0"
 
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */

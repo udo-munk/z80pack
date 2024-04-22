@@ -56,7 +56,8 @@ extern void put_label(void);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	("usage: z80asm -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num>\n"
+	("z80asm version %s\n"
+	 "usage: z80asm -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num>\n"
 	 "              -x -8 -u -v -m -U -o<file> -l[<file>] "
 	 "-d<symbol> ... <file> ..."),	/* 1 */
 	"Assembly halted",		/* 2 */
@@ -256,7 +257,7 @@ void options(int argc, char *argv[])
  */
 void usage(void)
 {
-	fatal(F_USAGE, NULL);
+	fatal(F_USAGE, RELEASE);
 }
 
 /*
