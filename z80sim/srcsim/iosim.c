@@ -152,7 +152,7 @@ static void io_trap_out(BYTE data)
 static BYTE p000_in(void)
 {
 	struct pollfd p[1];
-	BYTE tty_stat = 0x01;
+	register BYTE tty_stat = 0x01;
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
