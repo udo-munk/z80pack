@@ -1,0 +1,5 @@
+This is work in progress and won't do anything yet, for developers only!
+
+Trying to get a z80pack system running on a Raspberry Pi Pico (W) board.
+What I can say so far is that the Z80 core cleanly compiles with the SDK
+and that the produced binary is small. More to come sometime ...
