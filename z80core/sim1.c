@@ -5,6 +5,7 @@
  */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include "sim.h"
@@ -102,6 +103,57 @@ static int op_rst00(void), op_rst08(void), op_rst10(void), op_rst18(void);
 static int op_rst20(void), op_rst28(void), op_rst30(void), op_rst38(void);
 extern int op_cb_handle(void), op_dd_handle(void);
 extern int op_ed_handle(void), op_fd_handle(void);
+
+/*
+ *	Initialize the CPU
+ */
+void init_cpu(void)
+{
+	/* same for i8080 and Z80 */
+	PC = 0;
+	SP = rand() % 65536;
+	A = rand() % 256;
+	B = rand() % 256;
+	C = rand() % 256;
+	D = rand() % 256;
+	E = rand() % 256;
+	H = rand() % 256;
+	L = rand() % 256;
+	F = rand() % 256;
+
+	if (cpu == I8080) {	/* i8080 specific */
+		F &= ~(N2_FLAG | N1_FLAG);
+		F |= N_FLAG;
+	} else {		/* Z80 specific */
+		I = 0;
+		A_ = rand() % 256;
+		B_ = rand() % 256;
+		C_ = rand() % 256;
+		D_ = rand() % 256;
+		E_ = rand() % 256;
+		H_ = rand() % 256;
+		L_ = rand() % 256;
+		F_ = rand() % 256;
+		IX = rand() % 65536;
+		IY = rand() % 65536;
+	}
+}
+
+/*
+ *	Reset the CPU
+ */
+void reset_cpu(void)
+{
+	IFF = int_int = int_nmi = int_protection = int_mode = 0;
+	int_data = -1;
+
+	PC = 0;
+
+	if (cpu == Z80) {
+		I = 0;
+		R_ = R = 0L;
+	}
+}
 
 /*
  *	This function builds the Z80 central processing unit.

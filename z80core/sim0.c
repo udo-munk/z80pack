@@ -31,9 +31,9 @@
 #endif
 #include "memory.h"
 
-static void init_cpu(void);
 static void save_core(void);
 int load_core(void);
+extern void init_cpu(void);
 extern int load_file(char *, WORD, int);
 extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
@@ -391,57 +391,6 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	int_off();		/* stop UNIX interrupts */
 
 	return (EXIT_SUCCESS);
-}
-
-/*
- *	Initialize the CPU
- */
-static void init_cpu(void)
-{
-	/* same for i8080 and Z80 */
-	PC = 0;
-	SP = rand() % 65536;
-	A = rand() % 256;
-	B = rand() % 256;
-	C = rand() % 256;
-	D = rand() % 256;
-	E = rand() % 256;
-	H = rand() % 256;
-	L = rand() % 256;
-	F = rand() % 256;
-
-	if (cpu == I8080) {	/* i8080 specific */
-		F &= ~(N2_FLAG | N1_FLAG);
-		F |= N_FLAG;
-	} else {		/* Z80 specific */
-		I = 0;
-		A_ = rand() % 256;
-		B_ = rand() % 256;
-		C_ = rand() % 256;
-		D_ = rand() % 256;
-		E_ = rand() % 256;
-		H_ = rand() % 256;
-		L_ = rand() % 256;
-		F_ = rand() % 256;
-		IX = rand() % 65536;
-		IY = rand() % 65536;
-	}
-}
-
-/*
- *	Reset the CPU
- */
-void reset_cpu(void)
-{
-	IFF = int_int = int_nmi = int_protection = int_mode = 0;
-	int_data = -1;
-
-	PC = 0;
-
-	if (cpu == Z80) {
-		I = 0;
-		R_ = R = 0L;
-	}
 }
 
 /*
