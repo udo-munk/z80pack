@@ -12,10 +12,9 @@
 #include "pico/stdlib.h"
 #include "sim.h"
 #include "simglb.h"
+#include "config.h"
 #include "memory.h"
 
-extern void config(void);
-extern void init_memory(void);
 extern void init_cpu(void);
 extern void cpu_z80(void);
 
