@@ -10,19 +10,19 @@
  */
 
 extern void init_memory(void);
-extern BYTE memory[];
+extern BYTE code[];
 
 /*
  * memory access for the CPU cores
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	memory[addr] = data;
+	code[addr] = data;
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	return (memory[addr]);
+	return (code[addr]);
 }
 
 /*
@@ -30,12 +30,12 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
-	memory[addr] = data;
+	code[addr] = data;
 }
 
 static inline BYTE dma_read(WORD addr)
 {
-	return (memory[addr]);
+	return (code[addr]);
 }
 
 /*
@@ -43,10 +43,10 @@ static inline BYTE dma_read(WORD addr)
  */
 static inline void putmem(WORD addr, BYTE data)
 {
-	memory[addr] = data;
+	code[addr] = data;
 }
 
 static inline BYTE getmem(WORD addr)
 {
-	return (memory[addr]);
+	return (code[addr]);
 }

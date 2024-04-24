@@ -15,13 +15,10 @@
 #include "memory.h"
 
 /* 64KB non banked memory */
-BYTE memory[65536];		/* 64KB RAM */
+#define MEMSIZE 65536
+#include "z80code.h"	/* pull in z80asm generated code */
 
+/* do nothing for now */
 void init_memory(void)
 {
-	register int i;
-
-	/* fill memory content with some initial value */
-	for (i = 0; i < 65536; i++)
-		putmem(i, (BYTE) (rand() % 256));
 }
