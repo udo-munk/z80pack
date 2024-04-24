@@ -20,6 +20,7 @@ add_executable(picosim
 	../z80core/sim6.c
 	../z80core/sim7.c
 	../z80core/simglb.c
+	config.c
 	memory.c
 	iosim.c
 )
