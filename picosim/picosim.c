@@ -49,7 +49,7 @@ int main(void)
 {
 	stdio_init_all();	/* initialize Pico stdio */
 
-	printf("Z80pack release %s, %s\n", RELEASE, COPYR);
+	printf("Z80pack release %s, %s\n\n", RELEASE, COPYR);
 
 	config();		/* read system configuration */
 	init_cpu();		/* initialise CPU */
@@ -58,6 +58,7 @@ int main(void)
 	cpu_state = CONTIN_RUN;
 	cpu_z80();		/* run the Z80 with whatever is in memory */
 
+	printf("\n");
 	switch (cpu_error) {
 	case NONE:
 		break;
@@ -72,7 +73,7 @@ int main(void)
 		printf("I/O output Trap at %04x, port %02x", PC, io_port);
 		break;
 	case IOHALT:
-		printf("System halted, bye.");
+		printf("System halted");
 		break;
 	case IOERROR:
 		printf("Fatal I/O Error at %04x", PC);
@@ -100,4 +101,5 @@ int main(void)
 		break;
 	}
 	printf("\nBye.\n\n");
+	stdio_flush();
 }

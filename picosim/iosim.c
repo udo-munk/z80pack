@@ -6,6 +6,8 @@
  * I/O simulation for picosim
  */
 
+#include <stdio.h>
+#include "pico/stdlib.h"
 #include "sim.h"
 #include "simglb.h"
 
@@ -13,6 +15,7 @@
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
+static void p001_out(BYTE);
 
 /*
  *	This array contains function pointers for every input
@@ -29,7 +32,7 @@ static BYTE (*port_in[256])(void) = {
  */
 static void (*port_out[256])(BYTE) = {
 	0,			/* port 0 */
-	0			/* port 1 */
+	p001_out		/* port 1 */
 };
 
 /*
@@ -67,9 +70,10 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 {
 	UNUSED(addrh);
 
-	io_port = addrl;
-	io_data = (*port_in[addrl])();
-	return (io_data);
+	if (*port_in[addrl] != 0) /* if port used */
+		return ((*port_in[addrl])());
+	else
+		return (0xff);	/* all other return 0xff */
 }
 
 /*
@@ -81,7 +85,15 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
 	UNUSED(addrh);
 
-	io_port = addrl;
-	io_data = data;
-	(*port_out[addrl])(data);
+	if (*port_out[addrl] != 0) /* if port used */
+		(*port_out[addrl])(data);
+}
+
+/*
+ *	I/O function port 1 write:
+ *	Write byte to Pico uart.
+ */
+static void p001_out(BYTE data)
+{
+	putchar_raw((int) data);
 }
