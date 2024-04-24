@@ -156,6 +156,28 @@ void reset_cpu(void)
 }
 
 /*
+ *	Start a bus request cycle
+ */
+void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack))
+{
+
+	bus_mode = mode;
+	dma_bus_master = bus_master;
+	bus_request = 1;
+}
+
+/*
+ *	End a bus request cycle
+ */
+void end_bus_request(void)
+{
+
+	bus_mode = BUS_DMA_NONE;
+	dma_bus_master = NULL;
+	bus_request = 0;
+}
+
+/*
  *	This function builds the Z80 central processing unit.
  *	The opcode where PC points to is fetched from the memory
  *	and PC incremented by one. The opcode is used as an
