@@ -23,6 +23,7 @@ cpmsim/srctools/ptp2bin
 cromemcosim/cromemcosim
 imsaisim/imsaisim
 mosteksim/mosteksim
+picosim/build
 z80asm/z80asm
 z80sim/*.hex
 z80sim/*.lis
