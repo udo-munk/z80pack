@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2022 Udo Munk
+ * Copyright (C) 1987-2024 Udo Munk
  * Copyright (C) 2021 David McNaughton
  * Copyright (C) 2022 Thomas Eberhardt
  */
@@ -12,6 +12,9 @@
  *	After initialisation of the UNIX interrupts ( int_on() )
  *	and initialisation of the I/O simulation ( init_io() )
  *	the user interface ( mon() ) is called.
+ *
+ *	Usable for UNIX workstations, for development and IoT boards
+ *	this should be substituted, see picosim for example.
  */
 
 #include <unistd.h>
