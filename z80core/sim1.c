@@ -57,31 +57,40 @@ static int op_ldhlin(void), op_ldinhl(void);
 static int op_incbc(void), op_incde(void), op_inchl(void), op_incsp(void);
 static int op_decbc(void), op_decde(void), op_dechl(void), op_decsp(void);
 static int op_adhlbc(void), op_adhlde(void), op_adhlhl(void), op_adhlsp(void);
-static int op_anda(void), op_andb(void), op_andc(void), op_andd(void), op_ande(void);
-static int op_andh(void), op_andl(void), op_andhl(void), op_andn(void);
-static int op_ora(void), op_orb(void), op_orc(void), op_ord(void), op_ore(void);
-static int op_orh(void), op_orl(void), op_orhl(void), op_orn(void);
-static int op_xora(void), op_xorb(void), op_xorc(void), op_xord(void), op_xore(void);
-static int op_xorh(void), op_xorl(void), op_xorhl(void), op_xorn(void);
-static int op_adda(void), op_addb(void), op_addc(void), op_addd(void), op_adde(void);
-static int op_addh(void), op_addl(void), op_addhl(void), op_addn(void);
-static int op_adca(void), op_adcb(void), op_adcc(void), op_adcd(void), op_adce(void);
-static int op_adch(void), op_adcl(void), op_adchl(void), op_adcn(void);
-static int op_suba(void), op_subb(void), op_subc(void), op_subd(void), op_sube(void);
-static int op_subh(void), op_subl(void), op_subhl(void), op_subn(void);
-static int op_sbca(void), op_sbcb(void), op_sbcc(void), op_sbcd(void), op_sbce(void);
-static int op_sbch(void), op_sbcl(void), op_sbchl(void), op_sbcn(void);
-static int op_cpa(void), op_cpb(void), op_cpc(void), op_cpd(void), op_cpe(void);
-static int op_cph(void), op_cplr(void), op_cphl(void), op_cpn(void);
-static int op_inca(void), op_incb(void), op_incc(void), op_incd(void), op_ince(void);
-static int op_inch(void), op_incl(void), op_incihl(void);
-static int op_deca(void), op_decb(void), op_decc(void), op_decd(void), op_dece(void);
-static int op_dech(void), op_decl(void), op_decihl(void);
-static int op_rlca(void), op_rrca(void),op_rla(void),op_rra(void);
+static int op_anda(void), op_andb(void), op_andc(void), op_andd(void);
+static int op_ande(void), op_andh(void), op_andl(void), op_andhl(void);
+static int op_andn(void);
+static int op_ora(void), op_orb(void), op_orc(void), op_ord(void);
+static int op_ore(void), op_orh(void), op_orl(void), op_orhl(void);
+static int op_orn(void);
+static int op_xora(void), op_xorb(void), op_xorc(void), op_xord(void);
+static int op_xore(void), op_xorh(void), op_xorl(void), op_xorhl(void);
+static int op_xorn(void);
+static int op_adda(void), op_addb(void), op_addc(void), op_addd(void);
+static int op_adde(void), op_addh(void), op_addl(void), op_addhl(void);
+static int op_addn(void);
+static int op_adca(void), op_adcb(void), op_adcc(void), op_adcd(void);
+static int op_adce(void), op_adch(void), op_adcl(void), op_adchl(void);
+static int op_adcn(void);
+static int op_suba(void), op_subb(void), op_subc(void), op_subd(void);
+static int op_sube(void), op_subh(void), op_subl(void), op_subhl(void);
+static int op_subn(void);
+static int op_sbca(void), op_sbcb(void), op_sbcc(void), op_sbcd(void);
+static int op_sbce(void), op_sbch(void), op_sbcl(void), op_sbchl(void);
+static int op_sbcn(void);
+static int op_cpa(void), op_cpb(void), op_cpc(void), op_cpd(void);
+static int op_cpe(void), op_cph(void), op_cplr(void), op_cphl(void);
+static int op_cpn(void);
+static int op_inca(void), op_incb(void), op_incc(void), op_incd(void);
+static int op_ince(void), op_inch(void), op_incl(void), op_incihl(void);
+static int op_deca(void), op_decb(void), op_decc(void), op_decd(void);
+static int op_dece(void), op_dech(void), op_decl(void), op_decihl(void);
+static int op_rlca(void), op_rrca(void), op_rla(void), op_rra(void);
 static int op_exdehl(void), op_exafaf(void), op_exx(void), op_exsphl(void);
 static int op_pushaf(void), op_pushbc(void), op_pushde(void), op_pushhl(void);
 static int op_popaf(void), op_popbc(void), op_popde(void), op_pophl(void);
-static int op_jp(void), op_jphl(void), op_jr(void), op_djnz(void), op_call(void), op_ret(void);
+static int op_jp(void), op_jphl(void), op_jr(void), op_djnz(void);
+static int op_call(void), op_ret(void);
 static int op_jpz(void), op_jpnz(void), op_jpc(void), op_jpnc(void);
 static int op_jppe(void), op_jppo(void), op_jpm(void), op_jpp(void);
 static int op_calz(void), op_calnz(void), op_calc(void), op_calnc(void);
@@ -105,7 +114,7 @@ void cpu_z80(void)
 {
 	extern int time_diff(struct timeval *, struct timeval *);
 
-	static int (*op_sim[256]) (void) = {
+	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
 		op_ldbcnn,			/* 0x01 */
 		op_ldbca,			/* 0x02 */
@@ -404,26 +413,32 @@ void cpu_z80(void)
 
 			if (!bus_request && (bus_mode != BUS_DMA_CONTINUOUS)) {
 				if (dma_bus_master) {
-					T += (*dma_bus_master)(0); /* hand control to the DMA bus master without BUS_ACK */
+					/* hand control to the DMA bus master
+					   without BUS_ACK */
+					T += (*dma_bus_master)(0);
 				}
 			}
 
 			if (bus_request) {		/* dma bus request */
-	#ifdef FRONTPANEL
+#ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_sampleData();
-	#endif
+#endif
 				if (dma_bus_master) {
-					T += (*dma_bus_master)(1); /* hand control to the DMA bus master with BUS_ACK */
+					/* hand control to the DMA bus master
+					   with BUS_ACK */
+					T += (*dma_bus_master)(1);
 				}
-				bus_request = 0; // FOR NOW - MAY BE NEED A PRIORITY SYSTEM LATER
+				/* FOR NOW -
+				   MAY BE NEED A PRIORITY SYSTEM LATER */
+				bus_request = 0;
 				if (bus_mode == BUS_DMA_CONTINUOUS)	{
 					end_bus_request();
 				}
-	#ifdef FRONTPANEL
+#ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_sampleData();
-	#endif
+#endif
 			}
 		}
 
@@ -453,7 +468,7 @@ void cpu_z80(void)
 #ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_led_data = (int_data != -1) ?
-						(BYTE) int_data : 0xff;
+					      (BYTE) int_data : 0xff;
 				fp_sampleData();
 				wait_int_step();
 				if (cpu_state & RESET)
@@ -547,7 +562,7 @@ leave:
 		R++;			/* increment refresh register */
 
 		int_protection = 0;
-		states = (*op_sim[memrdr(PC++)]) (); /* execute next opcode */
+		states = (*op_sim[memrdr(PC++)])(); /* execute next opcode */
 		t += states;
 
 		if (f_flag) {			/* adjust CPU speed */
@@ -609,12 +624,12 @@ static int op_halt(void)		/* HALT */
 #endif
 
 #ifndef FRONTPANEL
-	/* without a frontpanel DI + HALT stops the machine */
 	if (IFF == 0) {
+		/* without a frontpanel DI + HALT stops the machine */
 		cpu_error = OPHALT;
 		cpu_state = STOPPED;
 	} else {
-	/* else wait for INT, NMI or user interrupt */
+		/* else wait for INT, NMI or user interrupt */
 		while ((int_int == 0) && (int_nmi == 0) &&
 		       (cpu_state == CONTIN_RUN)) {
 			SLEEP_MS(1);
@@ -633,8 +648,9 @@ static int op_halt(void)		/* HALT */
 	fp_led_address = 0xffff;
 	fp_led_data = 0xff;
 
-	/* INT disabled, wait for NMI, frontpanel reset or user interrupt */
 	if (IFF == 0) {
+		/* INT disabled, wait for NMI,
+		   frontpanel reset or user interrupt */
 		while ((int_nmi == 0) && !(cpu_state & RESET)) {
 			fp_clock++;
 			fp_sampleData();
@@ -644,7 +660,8 @@ static int op_halt(void)		/* HALT */
 				break;
 		}
 	} else {
-	/* else wait for INT, NMI, frontpanel reset or user interrupt */
+		/* else wait for INT, NMI,
+		   frontpanel reset or user interrupt */
 		while ((int_int == 0) && (int_nmi == 0) &&
 		       !(cpu_state & RESET)) {
 			fp_clock++;
@@ -704,7 +721,8 @@ static int op_daa(void)			/* DAA */
 {
 	if (F & N_FLAG) {		/* subtractions */
 		if (((A & 0x0f) > 9) || (F & H_FLAG)) {
-			(((A & 0x0f) - 6) < 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+			(((A & 0x0f) - 6) < 0) ? (F |= H_FLAG)
+					       : (F &= ~H_FLAG);
 			A -= 6;
 		}
 		if (((A & 0xf0) > 0x90) || (F & C_FLAG)) {

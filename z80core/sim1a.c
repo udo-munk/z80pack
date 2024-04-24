@@ -118,7 +118,7 @@ void cpu_8080(void)
 {
 	extern int time_diff(struct timeval *, struct timeval *);
 
-	static int (*op_sim[256]) (void) = {
+	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
 		op_lxibnn,			/* 0x01 */
 		op_staxb,			/* 0x02 */
@@ -414,26 +414,32 @@ void cpu_8080(void)
 
 			if (!bus_request && (bus_mode != BUS_DMA_CONTINUOUS)) {
 				if (dma_bus_master) {
-					T += (*dma_bus_master)(0); /* hand control to the DMA bus master without BUS_ACK */
+					/* hand control to the DMA bus master
+					   without BUS_ACK */
+					T += (*dma_bus_master)(0);
 				}
 			}
 
 			if (bus_request) {		/* dma bus request */
-	#ifdef FRONTPANEL
+#ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_sampleData();
-	#endif
+#endif
 				if (dma_bus_master) {
-					T += (*dma_bus_master)(1); /* hand control to the DMA bus master with BUS_ACK */
+					/* hand control to the DMA bus master
+					   with BUS_ACK */
+					T += (*dma_bus_master)(1);
 				}
-				bus_request = 0; // FOR NOW - MAY BE NEED A PRIORITY SYSTEM LATER
+				/* FOR NOW -
+				   MAY BE NEED A PRIORITY SYSTEM LATER */
+				bus_request = 0;
 				if (bus_mode == BUS_DMA_CONTINUOUS)	{
 					end_bus_request();
 				}
-	#ifdef FRONTPANEL
+#ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_sampleData();
-	#endif
+#endif
 			}
 		}
 
@@ -453,7 +459,7 @@ void cpu_8080(void)
 #ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_led_data = (int_data != -1) ?
-						(BYTE) int_data : 0xff;
+					      (BYTE) int_data : 0xff;
 				fp_sampleData();
 				wait_int_step();
 				if (cpu_state & RESET)
@@ -524,7 +530,7 @@ leave:
 #endif
 
 		int_protection = 0;
-		states = (*op_sim[memrdr(PC++)]) (); /* execute next opcode */
+		states = (*op_sim[memrdr(PC++)])(); /* execute next opcode */
 		t += states;
 
 		if (f_flag) {			/* adjust CPU speed */
@@ -598,12 +604,12 @@ static int op_hlt(void)			/* HLT */
 #endif
 
 #ifndef FRONTPANEL
-	/* without a frontpanel DI + HALT stops the machine */
 	if (IFF == 0) {
+		/* without a frontpanel DI + HALT stops the machine */
 		cpu_error = OPHALT;
 		cpu_state = STOPPED;
 	} else {
-	/* else wait for INT or user interrupt */
+		/* else wait for INT or user interrupt */
 		while ((int_int == 0) && (cpu_state == CONTIN_RUN)) {
 			SLEEP_MS(1);
 			R += 9999;
@@ -621,8 +627,8 @@ static int op_hlt(void)			/* HLT */
 	fp_led_address = 0xffff;
 	fp_led_data = 0xff;
 
-	/* INT disabled, wait for frontpanel reset or user interrupt */
 	if (IFF == 0) {
+		/* INT disabled, wait for frontpanel reset or user interrupt */
 		while (!(cpu_state & RESET)) {
 			fp_clock++;
 			fp_sampleData();
@@ -632,7 +638,7 @@ static int op_hlt(void)			/* HLT */
 				break;
 		}
 	} else {
-	/* else wait for INT, frontpanel reset or user interrupt */
+		/* else wait for INT, frontpanel reset or user interrupt */
 		while ((int_int == 0) && !(cpu_state & RESET)) {
 			fp_clock++;
 			fp_sampleData();
@@ -2351,7 +2357,7 @@ static int op_dcrb(void)		/* DCR B */
 static int op_dcrc(void)		/* DCR C */
 {
 	C--;
-	((C & 0xf) == 0xf) ? (F &= ~H_FLAG): (F |= H_FLAG);
+	((C & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);

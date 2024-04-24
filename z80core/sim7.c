@@ -19,9 +19,9 @@
 #include "memory.h"
 
 #ifdef Z80_UNDOC
-	#define UNDOC(f) f
+#define UNDOC(f) f
 #else
-	#define UNDOC(f) trap_fdcb
+#define UNDOC(f) trap_fdcb
 #endif
 
 static int trap_fdcb(int);
@@ -108,7 +108,7 @@ static int op_undoc_srliydl(int);
 
 int op_fdcb_handle(void)
 {
-	static int (*op_fdcb[256]) (int) = {
+	static int (*op_fdcb[256])(int) = {
 		UNDOC(op_undoc_rlciydb),	/* 0x00 */
 		UNDOC(op_undoc_rlciydc),	/* 0x01 */
 		UNDOC(op_undoc_rlciydd),	/* 0x02 */
@@ -371,7 +371,7 @@ int op_fdcb_handle(void)
 	register int t;
 
 	d = (signed char) memrdr(PC++);
-	t = (*op_fdcb[memrdr(PC++)]) (d); /* execute next opcode */
+	t = (*op_fdcb[memrdr(PC++)])(d); /* execute next opcode */
 
 	return (t);
 }

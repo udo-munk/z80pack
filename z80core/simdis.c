@@ -34,7 +34,7 @@ static int ddfd(const char *, WORD);
  *	Op-code tables
  */
 struct opt {
-	int (*fun) (const char *, WORD);
+	int (*fun)(const char *, WORD);
 	const char *text;
 };
 
@@ -411,18 +411,18 @@ static struct opt optabi8080_67[64] = {
 static const char *reg[]     = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
 static const char *regix[]   = { "B", "C", "D", "E", "IXH", "IXL", "IX", "A" };
 static const char *regiy[]   = { "B", "C", "D", "E", "IYH", "IYL", "IY", "A" };
-static const char *aluins[]  = {"ADD\tA,", "ADC\tA,", "SUB\t", "SBC\tA,",
-				"AND\t", "XOR\t", "OR\t", "CP\t"};
-static const char *aluinsu[] = {"ADD*\tA,", "ADC*\tA,", "SUB*\t", "SBC*\tA,",
-				"AND*\t", "XOR*\t", "OR*\t", "CP*\t"};
-static const char *rsins[]   = {"RLC", "RRC", "RL", "RR",
-				"SLA", "SRA", "SLL*", "SRL"};
-static const char *rsinsu[]  = {"RLC*", "RRC*", "RL*", "RR*",
-				"SLA*", "SRA*", "SLL*", "SRL*"};
-static const char *bitins[]  = {"", "BIT", "RES", "SET"};
+static const char *aluins[]  = { "ADD\tA,", "ADC\tA,", "SUB\t", "SBC\tA,",
+				 "AND\t", "XOR\t", "OR\t", "CP\t" };
+static const char *aluinsu[] = { "ADD*\tA,", "ADC*\tA,", "SUB*\t", "SBC*\tA,",
+				 "AND*\t", "XOR*\t", "OR*\t", "CP*\t" };
+static const char *rsins[]   = { "RLC", "RRC", "RL", "RR",
+				 "SLA", "SRA", "SLL*", "SRL" };
+static const char *rsinsu[]  = { "RLC*", "RRC*", "RL*", "RR*",
+				 "SLA*", "SRA*", "SLL*", "SRL*" };
+static const char *bitins[]  = { "", "BIT", "RES", "SET" };
 static const char *regi8080[]	 = { "B", "C", "D", "E", "H", "L", "M", "A" };
-static const char *aluinsi8080[] = {"ADD", "ADC", "SUB", "SBB",
-				    "ANA", "XRA", "ORA", "CMP"};
+static const char *aluinsi8080[] = { "ADD", "ADC", "SUB", "SBB",
+				     "ANA", "XRA", "ORA", "CMP" };
 
 /* globals for passing disassembled code to anyone else who's interested */
 
