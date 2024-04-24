@@ -292,7 +292,7 @@ static void int_io(int);
  *	This array contains function pointers for every
  *	input port.
  */
-static BYTE (*port_in[256]) (void) = {
+static BYTE (*port_in[256])(void) = {
 	cons_in,		/* port 0 */
 	cond_in,		/* port 1 */
 	prts_in,		/* port 2 */
@@ -555,7 +555,7 @@ static BYTE (*port_in[256]) (void) = {
  *	This array contains function pointers for every
  *	output port.
  */
-static void (*port_out[256]) (BYTE) = {
+static void (*port_out[256])(BYTE) = {
 	cons_out,		/* port 0 */
 	cond_out,		/* port 1 */
 	prts_out,		/* port 2 */
@@ -855,11 +855,11 @@ void init_io(void)
 		/* . might not be in path, so check that first */
 		if (access("./cpmrecv", X_OK) == 0)
 			execlp("./cpmrecv", "cpmrecv", "auxiliaryout.txt",
-				(char *) NULL);
+			       (char *) NULL);
 		/* should be in path somewhere */
 		else
 			execlp("cpmrecv", "cpmrecv", "auxiliaryout.txt",
-				(char *) NULL);
+			       (char *) NULL);
 		/* if not cry and die */
 		LOGE(TAG, "can't exec cpmrecv process, compile/install the tools dude");
 		kill(0, SIGQUIT);
@@ -886,8 +886,8 @@ void init_io(void)
 			if ((stat("./disks", &sbuf) == 0) &&
 			    S_ISDIR(sbuf.st_mode)) {
 				strcpy(fn, "./disks");
-			/* nope, then DISKSDIR as set in Makefile */
 			} else {
+				/* nope, then DISKSDIR as set in Makefile */
 				strcpy(fn, DISKSDIR);
 			}
 		}
@@ -935,7 +935,7 @@ static void init_server_socket(int n)
 		exit(EXIT_FAILURE);
 	}
 	if (setsockopt(ss[n], SOL_SOCKET, SO_REUSEADDR, (void *) &on,
-	    sizeof(on)) == -1) {
+		       sizeof(on)) == -1) {
 		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
 		exit(EXIT_FAILURE);
 	}
@@ -986,14 +986,14 @@ static void net_server_config(void)
 				LOGW(TAG, "console %d not supported", i);
 				continue;
 			}
-			while((*s != ' ') && (*s != '\t'))
+			while ((*s != ' ') && (*s != '\t'))
 				s++;
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_telnet[i - 1] = atoi(s);
-			while((*s != ' ') && (*s != '\t'))
+			while ((*s != ' ') && (*s != '\t'))
 				s++;
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_port[i - 1] = atoi(s);
 			LOG(TAG, "console %d listening on port %d, telnet = %s\r\n",
@@ -1023,15 +1023,15 @@ static void net_client_config(void)
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
 				continue;
-			while((*s != ' ') && (*s != '\t'))
+			while ((*s != ' ') && (*s != '\t'))
 				s++;
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			d = &cs_host[0];
 			while ((*s != ' ') && (*s != '\t'))
 				*d++ = *s++;
 			*d = '\0';
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			cs_port = atoi(s);
 			LOG(TAG, "Connecting to %s at port %d\r\n", cs_host,
@@ -1116,7 +1116,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	UNUSED(addrh);
 
 	io_port = addrl;
-	io_data = (*port_in[addrl]) ();
+	io_data = (*port_in[addrl])();
 	return (io_data);
 }
 
@@ -1134,7 +1134,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	busy_loop_cnt[0] = 0;
 
-	(*port_out[addrl]) (data);
+	(*port_out[addrl])(data);
 }
 
 /*
@@ -1217,19 +1217,19 @@ static BYTE cons1_in(void)
 
 		if (ssc[0] != 0) {
 			go_away = accept(ss[0],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss0_done;
 		}
 
-		if ((ssc[0] = accept(ss[0], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[0] = accept(ss[0], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[0] = 0;
 		}
 
 		if (setsockopt(ssc[0], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1289,19 +1289,19 @@ static BYTE cons2_in(void)
 
 		if (ssc[1] != 0) {
 			go_away = accept(ss[1],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss1_done;
 		}
 
-		if ((ssc[1] = accept(ss[1], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[1] = accept(ss[1], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[1] = 0;
 		}
 
 		if (setsockopt(ssc[1], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1361,19 +1361,19 @@ static BYTE cons3_in(void)
 
 		if (ssc[2] != 0) {
 			go_away = accept(ss[2],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss2_done;
 		}
 
-		if ((ssc[2] = accept(ss[2], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[2] = accept(ss[2], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[2] = 0;
 		}
 
 		if (setsockopt(ssc[2], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1433,19 +1433,19 @@ static BYTE cons4_in(void)
 
 		if (ssc[3] != 0) {
 			go_away = accept(ss[3],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss3_done;
 		}
 
-		if ((ssc[3] = accept(ss[3], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[3] = accept(ss[3], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[3] = 0;
 		}
 
 		if (setsockopt(ssc[3], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1507,7 +1507,7 @@ static BYTE nets1_in(void)
 			return ((BYTE) 0);
 		}
 		if (setsockopt(cs, IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on client socket");
 		}
 	}
@@ -2021,7 +2021,7 @@ static BYTE auxd_in(void)
 	}
 #else
 	if (aux_in == 0) {
-		if ((aux_in = open("auxiliaryin.txt", O_RDONLY)) == -1){
+		if ((aux_in = open("auxiliaryin.txt", O_RDONLY)) == -1) {
 			LOGE(TAG, "can't open auxiliaryin.txt");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
@@ -2199,7 +2199,7 @@ static void fdco_out(BYTE data)
 		status = 3;
 		return;
 	}
-	pos = (((long)track) * ((long)disks[drive].sectors) + sector - 1) << 7;
+	pos = (((long) track) * ((long) disks[drive].sectors) + sector - 1) << 7;
 	if (lseek(*disks[drive].fd, pos, SEEK_SET) == -1L) {
 		status = 4;
 		return;
@@ -2580,13 +2580,13 @@ static void int_io(int sig)
 			}
 
 			if ((ssc[i] = accept(ss[i], (struct sockaddr *) &fsin,
-			    &alen)) == -1) {
+					     &alen)) == -1) {
 				LOGW(TAG, "can't accept on server socket");
 				ssc[i] = 0;
 			}
 
 			if (setsockopt(ssc[i], IPPROTO_TCP, TCP_NODELAY,
-			    (void *) &on, sizeof(on)) == -1) {
+				       (void *) &on, sizeof(on)) == -1) {
 				LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 			}
 

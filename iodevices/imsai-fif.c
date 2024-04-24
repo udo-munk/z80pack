@@ -97,7 +97,7 @@ static const char *disks[4] = {
 	"drived.dsk"
 };
 #endif
-#else 
+#else
 char *disks[4];
 #endif
 
@@ -108,7 +108,8 @@ static int fdstate = 0;		/* state of the fd */
 /*
  * find and set path for disk images
  */
-char *dsk_path(void) {
+char *dsk_path(void)
+{
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -118,8 +119,8 @@ char *dsk_path(void) {
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 		strncpy(diskd, fn, MAX_LFN);
@@ -161,7 +162,7 @@ void imsai_fif_out(BYTE data)
 			descno = data & 0xf;
 			fdstate++;
 			break;
-	
+
 		case 0x20:	/* reset drive(s) */
 			break;	/* no mechanical drives, so nothing to do */
 
@@ -330,7 +331,7 @@ void disk_io(int addr)
 	}
 
 	/* handle case when disk is ejected */
-	if(disks[disk] == NULL) {
+	if (disks[disk] == NULL) {
 		dma_write(addr + DD_RESULT, 0xa1);
 		return;
 	}
@@ -344,7 +345,7 @@ void disk_io(int addr)
 		if (disk <= 3) {
 			if (track == 0)
 				unlink(fn);
-			fd = open(fn, O_RDWR|O_CREAT, 0644);
+			fd = open(fn, O_RDWR | O_CREAT, 0644);
 		} else {
 			dma_write(addr + DD_RESULT, 0xa1);
 			return;
@@ -370,8 +371,8 @@ void disk_io(int addr)
 			if (fd != -1) {
 				close(fd);
 				dma_write(addr + DD_RESULT, 0xa2);
-			/* else no disk */
 			} else {
+				/* else no disk */
 				dma_write(addr + DD_RESULT, 0xa1);
 			}
 			return;
@@ -382,7 +383,7 @@ void disk_io(int addr)
 	if (fd != -1) {
 		fstat(fd, &s);
 		if (((disk <= 3) && (s.st_size != 256256)) ||
-		   ((disk == 8) && (s.st_size != 4177920))) {
+		    ((disk == 8) && (s.st_size != 4177920))) {
 			dma_write(addr + DD_RESULT, 0xa1);
 			close(fd);
 			return;

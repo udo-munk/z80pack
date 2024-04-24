@@ -81,7 +81,7 @@ BYTE altair_sio0_status_in(void)
 	gettimeofday(&sio0_t2, NULL);
 	tdiff = time_diff(&sio0_t1, &sio0_t2);
 	if (sio0_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio0_baud_rate))
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio0_baud_rate))
 			return (sio0_stat);
 
 	p[0].fd = fileno(stdin);
@@ -213,7 +213,7 @@ BYTE altair_sio3_status_in(void)
 		/* accept a new connection */
 		if (p[0].revents) {
 			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
-			    NULL)) == -1) {
+						   NULL)) == -1) {
 				LOGW(TAG, "can't accept server socket");
 				ucons[0].ssc = 0;
 			}
@@ -223,7 +223,7 @@ BYTE altair_sio3_status_in(void)
 	gettimeofday(&sio3_t2, NULL);
 	tdiff = time_diff(&sio3_t1, &sio3_t2);
 	if (sio3_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio3_baud_rate))
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio3_baud_rate))
 			return (sio3_stat);
 
 	/* if socket is connected check for I/O */

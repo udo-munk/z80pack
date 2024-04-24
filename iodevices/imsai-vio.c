@@ -89,7 +89,7 @@ static void open_display(void)
 	rootwindow = RootWindow(display, screen);
 	XGetWindowAttributes(display, rootwindow, &wa);
 	window = XCreateSimpleWindow(display, rootwindow, 0, 0,
-					xsize, ysize, 1, 0, 0);
+				     xsize, ysize, 1, 0, 0);
 	XStoreName(display, window, "IMSAI VIO");
 	size_hints->flags = PSize | PMinSize | PMaxSize;
 	size_hints->min_width = xsize;
@@ -150,14 +150,14 @@ static void dc1(BYTE c)
 		for (y = 0; y < 10; y++) {
 			if (charset[(c << 1) & 0xff][y][x] == 1) {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 				else
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 			} else {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 				else
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 			}
 			XDrawPoint(display, pixmap, gc, sx + (x * xscale),
 				   sy + (y * yscale * slf));
@@ -187,14 +187,14 @@ static void dc2(BYTE c)
 		for (y = 0; y < 10; y++) {
 			if (charset[c & 0x7f][y][x] == 1) {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 				else
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 			} else {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 				else
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 			}
 			XDrawPoint(display, pixmap, gc, sx + (x * xscale),
 				   sy + (y * yscale * slf));
@@ -223,14 +223,14 @@ static void dc3(BYTE c)
 		for (y = 0; y < 10; y++) {
 			if (charset[c][y][x] == 1) {
 				if (inv == 0)
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 				else
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 			} else {
 				if (inv == 0)
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 				else
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 			}
 			XDrawPoint(display, pixmap, gc, sx + (x * xscale),
 				   sy + (y * yscale * slf));
@@ -415,7 +415,7 @@ static void ws_refresh(void)
 	bool cont;
 	uint8_t val;
 
-	for (i = 0; i < len;i++) {
+	for (i = 0; i < len; i++) {
 		addr = i;
 		n = 0;
 		cont = true;

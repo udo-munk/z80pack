@@ -41,7 +41,8 @@
 
 static const char *TAG = "TU-ART";
 
-void lpt_reset(void) {
+void lpt_reset(void)
+{
 	extern int lpt1;
 
 	if (lpt1) {
@@ -483,7 +484,8 @@ void cromemco_tuart_reset(void)
 	uart0a_int_pending = 0;
 	uart0a_rda = 0;
 	uart0a_tbe = 1;
-	uart0a_timer1 = uart0a_timer2 = uart0a_timer3 = uart0a_timer4 = uart0a_timer5 = 0;
+	uart0a_timer1 = uart0a_timer2 = uart0a_timer3 = 0;
+	uart0a_timer4 = uart0a_timer5 = 0;
 	uart0a_rst7 = 0;
 
 	uart1a_int = 0xff;

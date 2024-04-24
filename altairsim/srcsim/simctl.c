@@ -122,7 +122,7 @@ void mon(void)
 	fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
 	fp_addSwitchCallback("SW_PROTECT", protect_clicked, 0);
 	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
-        fp_addSwitchCallback("SW_INT", int_clicked, 0);
+	fp_addSwitchCallback("SW_INT", int_clicked, 0);
 #endif
 
 	/* give threads a bit time and then empty buffer */
@@ -154,7 +154,7 @@ void mon(void)
 					fp_led_data = fp_read(PC);
 				else
 					fp_led_data = (int_data != -1) ?
-							(BYTE) int_data : 0xff;
+						      (BYTE) int_data : 0xff;
 			}
 		}
 
@@ -316,7 +316,7 @@ void step_clicked(int state, int val)
  */
 int wait_step(void)
 {
-	extern BYTE (*port_in[256]) (void);
+	extern BYTE (*port_in[256])(void);
 	int ret = 0;
 
 	if (cpu_state != SINGLE_STEP) {
@@ -335,7 +335,7 @@ int wait_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		/* when INP update data bus LEDs */
 		if (cpu_bus == (CPU_WO | CPU_INP))
-			fp_led_data = (*port_in[fp_led_address & 0xff]) ();
+			fp_led_data = (*port_in[fp_led_address & 0xff])();
 		fp_clock++;
 		fp_sampleData();
 		SLEEP_MS(1);

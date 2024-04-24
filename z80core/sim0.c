@@ -84,9 +84,9 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'm':	/* initialise memory */
-				if (*(s+1) != '\0') {
-					m_flag = exatoi(s+1);
-					s += strlen(s+1);
+				if (*(s + 1) != '\0') {
+					m_flag = exatoi(s + 1);
+					s += strlen(s + 1);
 				} else {
 					if (argc <= 1)
 						goto usage;
@@ -97,9 +97,9 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'f':	/* set emulation speed */
-				if (*(s+1) != '\0') {
-					f_flag = atoi(s+1);
-					s += strlen(s+1);
+				if (*(s + 1) != '\0') {
+					f_flag = atoi(s + 1);
+					s += strlen(s + 1);
 				} else {
 					if (argc <= 1)
 						goto usage;
@@ -189,9 +189,9 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'M': /* use memory map section nn */
-				if (*(s+1) != '\0') {
-					M_flag = atoi(s+1) - 1;
-					s += strlen(s+1);
+				if (*(s + 1) != '\0') {
+					M_flag = atoi(s + 1) - 1;
+					s += strlen(s + 1);
 				} else {
 					if (argc <= 1)
 						goto usage;
@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 					M_flag = atoi(argv[0]) - 1;
 				}
 				if (M_flag < 0 || M_flag > (MAXMEMSECT - 1))
-						goto usage;
+					goto usage;
 				break;
 #endif
 
@@ -248,7 +248,8 @@ usage:
 				puts("\t-s = save core and CPU");
 				puts("\t-l = load core and CPU");
 				puts("\t-i = trap on I/O to unused ports");
-				puts("\t-u = trap on undocumented instructions");
+				puts("\t-u = trap on "
+				     "undocumented instructions");
 #ifdef HAS_CONFIG
 				puts("\t-r = use ROM images at rompath");
 				puts("\t     default path for ROM images:");
@@ -345,8 +346,8 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	/* first try ./conf */
 	if ((stat("./conf", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 		strcpy(&confdir[0], "./conf");
-	/* then CONFDIR as set in Makefile */
 	} else {
+		/* then CONFDIR as set in Makefile */
 		strcpy(&confdir[0], CONFDIR);
 	}
 
@@ -355,8 +356,8 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 		/* if not first try ./roms */
 		if ((stat("./roms", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(rompath, "./roms");
-		/* then BOOTROM as set in Makefile */
 		} else {
+			/* then BOOTROM as set in Makefile */
 			strcpy(rompath, BOOTROM);
 		}
 	}

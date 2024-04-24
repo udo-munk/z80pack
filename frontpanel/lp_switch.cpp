@@ -23,7 +23,7 @@
 #include "lp_switch.h"
 #include "lp_utils.h"
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 
 // parse rules for switches defined in the user configuration file 

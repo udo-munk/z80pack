@@ -410,7 +410,7 @@ int factor(WORD *resultp)
 			return (err);
 		if ((erru = expr(&value)) > E_UNDSYM)
 			return (erru);
-		if (tok_type == T_RPAREN)
+		if (tok_type == T_RPAREN) {
 			if ((err = get_token()) != E_OK)
 				return (err);
 			else if (erru != E_OK)
@@ -418,8 +418,8 @@ int factor(WORD *resultp)
 			else {
 				*resultp = value;
 				return (E_OK);
- 			}
-		else
+			}
+		} else
 			return (E_MISPAR);
 	default:
 		return (E_INVEXP);

@@ -7,7 +7,7 @@
 
 #include "cdjpeg.h"            /* Common decls for cjpeg/djpeg applications */
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 unsigned char *pixels;
 int xsize, ysize, ncomps;

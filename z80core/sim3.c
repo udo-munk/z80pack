@@ -19,9 +19,9 @@
 #include "memory.h"
 
 #ifdef Z80_UNDOC
-	#define UNDOC(f) f
+#define UNDOC(f) f
 #else
-	#define UNDOC(f) trap_dd
+#define UNDOC(f) trap_dd
 #endif
 
 static int trap_dd(void);
@@ -73,7 +73,7 @@ int op_dd_handle(void)
 {
 	register int t;
 
-	static int (*op_dd[256]) (void) = {
+	static int (*op_dd[256])(void) = {
 		trap_dd,			/* 0x00 */
 		trap_dd,			/* 0x01 */
 		trap_dd,			/* 0x02 */
@@ -345,7 +345,7 @@ int op_dd_handle(void)
 
 	R++;				/* increment refresh register */
 
-	t = (*op_dd[memrdr(PC++)]) ();	/* execute next opcode */
+	t = (*op_dd[memrdr(PC++)])();	/* execute next opcode */
 
 	return (t);
 }

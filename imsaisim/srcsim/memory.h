@@ -146,7 +146,7 @@ static inline BYTE memrdr(WORD addr)
 	wait_step();
 #endif
 
-	if(cyclecount && --cyclecount == 0) 
+	if (cyclecount && --cyclecount == 0)
 		groupswap();
 
 	return (data);
@@ -189,7 +189,7 @@ static inline void dma_write(WORD addr, BYTE data)
 		if (p_tab[addr >> 8] == MEM_RW)
 			_MEMDIRECT(addr) = data;
 	} else {
-		 *(banks[selbnk] + addr) = data;
+		*(banks[selbnk] + addr) = data;
 	}
 }
 
@@ -226,6 +226,6 @@ static inline void fp_write(WORD addr, BYTE data)
 		if (p_tab[addr >> 8] == MEM_RW)
 			_MEMDIRECT(addr) = data;
 	} else {
-		 *(banks[selbnk] + addr) = data;
+		*(banks[selbnk] + addr) = data;
 	}
 }

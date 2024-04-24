@@ -105,8 +105,8 @@ static void dsk_path(void)
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 	}
@@ -207,8 +207,9 @@ void altair_dsk_select_out(BYTE data)
 	/* disable? */
 	if (data & 0x80) {
 		dsk_disable();
-	/* no, enable */
 	} else {
+		/* no, enable */
+
 		/* get disk no. */
 		disk = data & 0x0f;
 		/* check disk in drive */
@@ -228,7 +229,7 @@ void altair_dsk_select_out(BYTE data)
 		cnt_step = 0;
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, timing,
-			    (void *) NULL)) {
+					   (void *) NULL)) {
 				LOGE(TAG, "can't create timing thread");
 				exit(EXIT_FAILURE);
 			}

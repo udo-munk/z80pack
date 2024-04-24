@@ -45,8 +45,8 @@ extern void cromemco_tuart_0a_timer5_out(BYTE);
 extern void cromemco_tuart_reset(void);
 
 extern int uart0a_int_mask, uart0a_int, uart0a_int_pending, uart0a_rst7;
-extern int uart0a_timer1, uart0a_timer2, uart0a_timer3, uart0a_timer4,
-	   uart0a_timer5;
+extern int uart0a_timer1, uart0a_timer2, uart0a_timer3;
+extern int uart0a_timer4, uart0a_timer5;
 extern int uart0a_tbe, uart0a_rda;
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> */

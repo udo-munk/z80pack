@@ -10,8 +10,9 @@
  *	Declaration of variables in simglb.c
  */
 
-typedef unsigned long long Tstates_t;	/* 64 bit unsigned for counting T-states */
-typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE, BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
+typedef unsigned long long Tstates_t;	/* uint64 for counting T-states */
+typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
+	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
 
 void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack));
 void end_bus_request(void);

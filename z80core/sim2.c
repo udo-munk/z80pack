@@ -19,9 +19,9 @@
 #include "memory.h"
 
 #ifdef Z80_UNDOC
-	#define UNDOC(f) f
+#define UNDOC(f) f
 #else
-	#define UNDOC(f) trap_cb
+#define UNDOC(f) trap_cb
 #endif
 
 static int trap_cb(void);
@@ -106,7 +106,7 @@ int op_cb_handle(void)
 {
 	register int t;
 
-	static int (*op_cb[256]) (void) = {
+	static int (*op_cb[256])(void) = {
 		op_rlcb,			/* 0x00 */
 		op_rlcc,			/* 0x01 */
 		op_rlcd,			/* 0x02 */
@@ -378,7 +378,7 @@ int op_cb_handle(void)
 
 	R++;				/* increment refresh register */
 
-	t = (*op_cb[memrdr(PC++)]) ();	/* execute next opcode */
+	t = (*op_cb[memrdr(PC++)])();	/* execute next opcode */
 
 	return (t);
 }
@@ -445,7 +445,7 @@ static int op_srle(void)		/* SRL E */
 	F &= ~(H_FLAG | N_FLAG);
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[E]) ? (F &= ~P_FLAG) :(F |= P_FLAG);
+	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return (8);
 }
 
@@ -668,7 +668,7 @@ static int op_rlh(void)			/* RL H */
 	F &= ~(H_FLAG | N_FLAG);
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[H]) ? (F &= ~P_FLAG) :(F |= P_FLAG);
+	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return (8);
 }
 

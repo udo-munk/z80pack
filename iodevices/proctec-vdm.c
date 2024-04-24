@@ -80,7 +80,7 @@ static void open_display(void)
 	rootwindow = RootWindow(display, screen);
 	XGetWindowAttributes(display, rootwindow, &wa);
 	window = XCreateSimpleWindow(display, rootwindow, 0, 0,
-					xsize, ysize, 1, 0, 0);
+				     xsize, ysize, 1, 0, 0);
 	XStoreName(display, window, "Processor Technology VDM-1");
 	size_hints->flags = PSize | PMinSize | PMaxSize;
 	size_hints->min_width = xsize;

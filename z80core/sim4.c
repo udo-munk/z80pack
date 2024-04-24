@@ -20,9 +20,9 @@
 #include "memory.h"
 
 #ifdef Z80_UNDOC
-	#define UNDOC(f) f
+#define UNDOC(f) f
 #else
-	#define UNDOC(f) trap_ed
+#define UNDOC(f) trap_ed
 #endif
 
 static int trap_ed(void);
@@ -59,7 +59,7 @@ int op_ed_handle(void)
 {
 	register int t;
 
-	static int (*op_ed[256]) (void) = {
+	static int (*op_ed[256])(void) = {
 		UNDOC(op_undoc_nop),		/* 0x00 */
 		UNDOC(op_undoc_nop),		/* 0x01 */
 		UNDOC(op_undoc_nop),		/* 0x02 */
@@ -331,7 +331,7 @@ int op_ed_handle(void)
 
 	R++;				/* increment refresh register */
 
-	t = (*op_ed[memrdr(PC++)]) ();	/* execute next opcode */
+	t = (*op_ed[memrdr(PC++)])();	/* execute next opcode */
 
 	return (t);
 }

@@ -32,7 +32,7 @@
 
 #include "libtelnet.h"
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"

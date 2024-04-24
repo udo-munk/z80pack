@@ -81,7 +81,7 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*port_in[256]) (void) = {
+BYTE (*port_in[256])(void) = {
 	altair_sio0_status_in,	/* port 0 */ /* SIO 0 connected to console */
 	altair_sio0_data_in,	/* port 1 */ /*  "  */
 	lpt_status_in,		/* port 2 */ /* printer status */
@@ -344,7 +344,7 @@ BYTE (*port_in[256]) (void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-static void (*port_out[256]) (BYTE) = {
+static void (*port_out[256])(BYTE) = {
 	altair_sio0_status_out,	/* port 0 */ /* SIO 0 connected to console */
 	altair_sio0_data_out,	/* port 1 */ /*  "  */
 	lpt_status_out,		/* port 2 */ /* printer status */
@@ -666,7 +666,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #endif
 
 	io_port = addrl;
-	io_data = (*port_in[addrl]) ();
+	io_data = (*port_in[addrl])();
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
@@ -681,7 +681,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	/* when single stepped INP get last set value of port */
 	if (val)
-		io_data = (*port_in[io_port]) ();
+		io_data = (*port_in[io_port])();
 #endif
 
 	return (io_data);
@@ -699,7 +699,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #endif
 	io_port = addrl;
 	io_data = data;
-	(*port_out[addrl]) (data);
+	(*port_out[addrl])(data);
 
 #ifdef BUS_8080
 	cpu_bus = CPU_OUT;
@@ -832,7 +832,7 @@ static void hwctl_out(BYTE data)
 		hwctl_lock = 0;
 		return;
 	}
-	
+
 	/* process output to unlocked port */
 
 	if (data & 128) {	/* halt system */

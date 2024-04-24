@@ -98,12 +98,12 @@ void get_disk_filename(void)
 	if ((fp = fopen("conf/config.txt", "r")) != NULL) {
 
 		while (fgets(inbuf, 256, fp) != NULL) {
-			if ((inbuf[0]=='\n') || (inbuf[0]=='\r') ||
-			    (inbuf[0]=='#'))
+			if ((inbuf[0] == '\n') || (inbuf[0] == '\r') ||
+			    (inbuf[0] == '#'))
 				continue;
 			left = strtok(inbuf, "= \t\r\n");
 			if (0 == strncmp(left, "drive", 5)) {
-				if (left[5] == (char)disk + '0') { /* match drive? */
+				if (left[5] == (char) disk + '0') { /* match drive? */
 					right = strtok(NULL, "= \t\r\n");
 					strcpy(fn, right);
 					break;
@@ -168,8 +168,7 @@ void fdc1771_cmd_out(BYTE data)
 		if (fdc_data < TRK) {
 			fdc_track = fdc_data;
 			fdc_stat = 0;
-		}
-		else
+		} else
 			fdc_stat = sSEEK_ERROR;	/* assumes V bit set */
 
 		if (fdc_track == 0)		/* update track zero flag */
@@ -178,10 +177,10 @@ void fdc1771_cmd_out(BYTE data)
 	} else if ((data & 0xe0) == 0x20) {	/* step same direction */
 		printf("Mostek FLP-80: step not implemented\r\n");
 		fdc_stat = sSEEK_ERROR;
-		
+
 		if (fdc_track == 0)		/* check to set track 0 flag */
 			fdc_stat |= sTRACK0;
-			
+
 	} else if ((data & 0xe0) == 0x40) {	/* step in */
 		if (data & cUPDATE_TRACK)	/* update track register? */
 			fdc_track++;
@@ -190,7 +189,7 @@ void fdc1771_cmd_out(BYTE data)
 		else
 			fdc_stat = sSEEK_ERROR;	/* assumes V bit set */
 
-		if (fdc_track == 0)		/* udpate track zero flag */	
+		if (fdc_track == 0)		/* udpate track zero flag */
 			fdc_stat |= sTRACK0;
 
 	} else if ((data & 0xe0) == 0x60) {	/* step out */
@@ -201,7 +200,7 @@ void fdc1771_cmd_out(BYTE data)
 		else
 			fdc_stat = sSEEK_ERROR;	/* assumes V bit set */
 
-		if (fdc_track == 0)		/* update track zero flag */	
+		if (fdc_track == 0)		/* update track zero flag */
 			fdc_stat |= sTRACK0;
 
 	} else if ((data & 0xf0) == 0x80) {	/* read single sector */
@@ -433,7 +432,7 @@ void fdc1771_data_out(BYTE data)
 		/* last byte? */
 		if (dcnt == SEC_SZ) {
 			state = FDC_IDLE;
-			if (write(fd, &buf[0], SEC_SZ) == SEC_SZ) 
+			if (write(fd, &buf[0], SEC_SZ) == SEC_SZ)
 				fdc_stat = 0;
 			else
 				fdc_stat = sWRITE_FAULT;
@@ -450,7 +449,7 @@ void fdc1771_data_out(BYTE data)
 			if (fdc_track == 0)
 				unlink(fn);
 			/* try to create new disk image */
-			if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
+			if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sNOT_READY;
 				return;
@@ -487,7 +486,7 @@ void fdc1771_data_out(BYTE data)
 				if (write(fd, buf, bcnt) == bcnt)
 					fdc_stat = 0;
 				else
-					fdc_stat = sWRITE_FAULT; 
+					fdc_stat = sWRITE_FAULT;
 				wrtstat = 1;
 			}
 		}

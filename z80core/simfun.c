@@ -285,9 +285,8 @@ static int load_hex(char *fn, WORD start, int size)
 				     "HEX record %s", s0);
 				fclose(fp);
 				return (1);
-			}
-			else if (!(*s >= '0' && *s <= '9')
-				 && !(*s >= 'A' && *s <= 'F')) {
+			} else if (!(*s >= '0' && *s <= '9')
+				   && !(*s >= 'A' && *s <= 'F')) {
 				LOGE(TAG, "invalid character in "
 				     "HEX record %s", s0);
 				fclose(fp);
@@ -360,7 +359,8 @@ static int load_hex(char *fn, WORD start, int size)
 /*
  *	Start a bus request cycle
  */
-void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack)) {
+void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack))
+{
 
 	bus_mode = mode;
 	dma_bus_master = bus_master;
@@ -370,7 +370,8 @@ void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack)) {
 /*
  *	End a bus request cycle
  */
-void end_bus_request(void) {
+void end_bus_request(void)
+{
 
 	bus_mode = BUS_DMA_NONE;
 	dma_bus_master = NULL;

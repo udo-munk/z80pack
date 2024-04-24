@@ -691,7 +691,7 @@ static void do_break(char *s)
 		for (i = 0; i < SBSIZE; i++)
 			if (soft[i].sb_pass)
 				printf("%02d %04x %05d %05d\n", i,
-				       soft[i].sb_addr,soft[i].sb_pass,
+				       soft[i].sb_addr, soft[i].sb_pass,
 				       soft[i].sb_passcount);
 		return;
 	}
@@ -775,14 +775,14 @@ static void do_hist(char *s)
 			if (cpu == Z80) {
 				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 				       "IX=%04x IY=%04x SP=%04x\n",
-					his[i].h_addr, his[i].h_af, his[i].h_bc,
-					his[i].h_de, his[i].h_hl, his[i].h_ix,
-					his[i].h_iy, his[i].h_sp);
+				       his[i].h_addr, his[i].h_af, his[i].h_bc,
+				       his[i].h_de, his[i].h_hl, his[i].h_ix,
+				       his[i].h_iy, his[i].h_sp);
 			} else {
 				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 				       "SP=%04x\n",
-					his[i].h_addr, his[i].h_af, his[i].h_bc,
-					his[i].h_de, his[i].h_hl, his[i].h_sp);
+				       his[i].h_addr, his[i].h_af, his[i].h_bc,
+				       his[i].h_de, his[i].h_hl, his[i].h_sp);
 			}
 			l++;
 			if (l == 20) {
@@ -816,7 +816,7 @@ static void do_count(char *s)
 		puts("start  stop  status  T-states");
 		printf("%04x   %04x    %s   %lu\n",
 		       t_start, t_end,
-		       t_flag ? "on ": "off", t_states);
+		       t_flag ? "on " : "off", t_states);
 	} else {
 		t_start = exatoi(s);
 		while (*s != ',' && *s != '\0')
@@ -883,8 +883,10 @@ static void do_clock(void)
 	putmem(0x0001, save[1]);	/* 0000H - 0002H */
 	putmem(0x0002, save[2]);
 	if (cpu_error == NONE) {
-		printf("CPU executed %ld %s instructions in 3 seconds\n", R, s);
-		printf("clock frequency = %5.2f Mhz\n", ((float) R) / 300000.0);
+		printf("CPU executed %ld %s instructions in 3 seconds\n",
+		       R, s);
+		printf("clock frequency = %5.2f Mhz\n",
+		       ((float) R) / 300000.0);
 	} else
 		puts("Interrupted by user");
 }

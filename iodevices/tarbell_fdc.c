@@ -70,9 +70,10 @@ static const char *disks[4] = {
 /* bootstrap ROM */
 BYTE tarbell_rom[32] = {
 	0xdb, 0xfc, 0xaf, 0x6f, 0x67, 0x3c, 0xd3, 0xfa,
-        0x3e, 0x8c, 0xd3, 0xf8, 0xdb, 0xfc, 0xb7, 0xf2,
+	0x3e, 0x8c, 0xd3, 0xf8, 0xdb, 0xfc, 0xb7, 0xf2,
 	0x19, 0x00, 0xdb, 0xfb, 0x77, 0x23, 0xc3, 0x0c,
-	0x00, 0xdb, 0xf8, 0xb7, 0xca, 0x7d, 0x00, 0x76 };
+	0x00, 0xdb, 0xf8, 0xb7, 0xca, 0x7d, 0x00, 0x76
+};
 
 int tarbell_rom_enabled = 0;	/* ROM not enabled by default */
 int tarbell_rom_active = 1;	/* ROM is active at power on */
@@ -80,7 +81,8 @@ int tarbell_rom_active = 1;	/* ROM is active at power on */
 /*
  * find and set path for disk images
  */
-void dsk_path(void) {
+void dsk_path(void)
+{
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -90,8 +92,8 @@ void dsk_path(void) {
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 	}
@@ -416,7 +418,7 @@ void tarbell_data_out(BYTE data)
 			if (fdc_track == 0)
 				unlink(fn);
 			/* try to create new disk image */
-			if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
+			if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
 				return;

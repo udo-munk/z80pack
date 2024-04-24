@@ -59,7 +59,7 @@ typedef unsigned short WORD;
  */
 struct opc {
 	const char *op_name;	/* opcode name */
-	WORD (*op_fun) (BYTE, BYTE); /* function pointer code gen. */
+	WORD (*op_fun)(BYTE, BYTE); /* function pointer code gen. */
 	BYTE op_c1;		/* first base opcode */
 	BYTE op_c2;		/* second base opcode */
 	WORD op_flags;		/* opcode flags */
@@ -256,7 +256,7 @@ struct sym {
 /*
  *	macro for declaring unused function parameters
  */
-#define UNUSED(x)	(void)(x)
+#define UNUSED(x)	(void) (x)
 
 /*
  *	attribute for declaring that a function doesn't return

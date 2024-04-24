@@ -42,7 +42,7 @@
 #define min(a,b) (a) < (b) ? (a) : (b)
 #endif
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 
 /* ---------------------

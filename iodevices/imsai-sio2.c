@@ -90,9 +90,10 @@ static BYTE sio2b_stat = 0;
  */
 BYTE imsai_sio_nofun_in(void)
 {
-	LOGD(TAG,"INVALID SIO PORT"); /* suppress TAG and _log_write warnings */
-				      /* won't be seen unless */
-				      /* LOG_LOCAL_LEVEL = DEBUG */
+	/* suppress TAG and _log_write warnings */
+	/* won't be seen unless LOG_LOCAL_LEVEL = DEBUG */
+	LOGD(TAG, "INVALID SIO PORT");
+
 	return ((BYTE) 0);
 }
 
@@ -100,7 +101,7 @@ void imsai_sio_nofun_out(BYTE data)
 {
 	UNUSED(data);
 
-	LOGD(TAG,"INVALID SIO PORT");
+	LOGD(TAG, "INVALID SIO PORT");
 }
 
 /* -------------------- SIO 1 Channel A -------------------- */
@@ -119,7 +120,7 @@ BYTE imsai_sio1a_status_in(void)
 	gettimeofday(&sio1a_t2, NULL);
 	tdiff = time_diff(&sio1a_t1, &sio1a_t2);
 	if (sio1a_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1a_baud_rate))
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1a_baud_rate))
 			return (sio1a_stat);
 
 	hal_status_in(SIO1A, &sio1a_stat);
@@ -198,7 +199,7 @@ BYTE imsai_sio1b_status_in(void)
 	gettimeofday(&sio1b_t2, NULL);
 	tdiff = time_diff(&sio1b_t1, &sio1b_t2);
 	if (sio1b_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1b_baud_rate))
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1b_baud_rate))
 			return (sio1b_stat);
 
 	hal_status_in(SIO1B, &sio1b_stat);
@@ -251,7 +252,7 @@ void imsai_sio1b_data_out(BYTE data)
 	if (sio1b_drop_nulls)
 		if (data == 0)
 			return;
-			
+
 	hal_data_out(SIO1B, data);
 
 	gettimeofday(&sio1b_t1, NULL);
@@ -274,7 +275,7 @@ BYTE imsai_sio2a_status_in(void)
 	gettimeofday(&sio2a_t2, NULL);
 	tdiff = time_diff(&sio2a_t1, &sio2a_t2);
 	if (sio2a_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2a_baud_rate))
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2a_baud_rate))
 			return (sio2a_stat);
 
 	hal_status_in(SIO2A, &sio2a_stat);
@@ -356,7 +357,7 @@ BYTE imsai_sio2b_status_in(void)
 	gettimeofday(&sio2b_t2, NULL);
 	tdiff = time_diff(&sio2b_t1, &sio2b_t2);
 	if (sio2b_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2b_baud_rate))
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2b_baud_rate))
 			return (sio2b_stat);
 
 	hal_status_in(SIO2B, &sio2b_stat);
