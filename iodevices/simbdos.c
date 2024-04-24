@@ -12,7 +12,7 @@
  * file I/O is completed even if a file was only opened for reading.
  *
  * All requests come in through the host_bdos_out function. This
- * function is called via an OUT instruction mapped in iosim.c. 
+ * function is called via an OUT instruction mapped in iosim.c.
  *
  * Files written to the host are treated as binary files unless
  * the file extension is found in the "textExts" table below. A
@@ -54,9 +54,11 @@
 
 /* The following file types will be treated as text files */
 
-static const char *textExts[] = {"ASM", "MAC", "SRC", "TXT", "PRN", "LST",
-				 "SYM", "LIB", "C",   "PAS", "FOR", "RAT",
-				 "CBL", "PLM", "PLI", "HEX", "SUB", NULL};
+static const char *textExts[] = {
+	"ASM", "MAC", "SRC", "TXT", "PRN", "LST",
+	"SYM", "LIB", "C",   "PAS", "FOR", "RAT",
+	"CBL", "PLM", "PLI", "HEX", "SUB", NULL
+};
 
 /* Static variables */
 
@@ -86,23 +88,23 @@ void host_bdos_out(BYTE outByte)
 	if (outByte != C)	/*    for the compare to work */
 		return;
 
-/* OPEN or MAKE file */
+	/* OPEN or MAKE file */
 
 	A = 0xff;		/* assume error status */
 	fcbAddr = (D << 8) + E;	/* FCB address in simulator memory */
 
 	if ((C == OPENF) || (C == MAKEF)) {
-		for (i=0; i<8; i++) {		/* copy file name */
-			fname[i] = memrdr(fcbAddr+1+i);
+		for (i = 0; i < 8; i++) {	/* copy file name */
+			fname[i] = memrdr(fcbAddr + 1 + i);
 			if (fname[i] == ' ')
-				break;	
+				break;
 		}
 		fname[i] = 0;
 
-		for (i=0; i<3; i++) {		/* copy extension */
-			extension[i] = memrdr(fcbAddr+9+i);
+		for (i = 0; i < 3; i++) {	/* copy extension */
+			extension[i] = memrdr(fcbAddr + 9 + i);
 			if (extension[i] == ' ')
-				break;	
+				break;
 		}
 		extension[i] = 0;
 
@@ -121,21 +123,20 @@ void host_bdos_out(BYTE outByte)
 			}
 #endif
 			textFile = 0;		/* binary file is assumed */
-			for (i=0; textExts[i] != NULL; i++) 
+			for (i = 0; textExts[i] != NULL; i++)
 				if (strcmp(extension, textExts[i]) == 0) {
 					textFile = 1;	/* it's a text file */
 					break;
 				}
-		}
-		else
+		} else
 			strcpy(openFlags, "rb"); /* OPENF for reading */
 
 		if (openFlags[0] != 0)		/* don't open if null string */
-			if ((fp = fopen(fname, openFlags)) != NULL) 
+			if ((fp = fopen(fname, openFlags)) != NULL)
 				A = 0;		/* success */
 	}
-	
-/* CLOSE file */
+
+	/* CLOSE file */
 
 	else if (C == CLOSEF) {
 		if (fp != NULL)
@@ -143,39 +144,38 @@ void host_bdos_out(BYTE outByte)
 		A = 0;
 	}
 
-/* READ file */
+	/* READ file */
 
-	else if (C == READF) { 
+	else if (C == READF) {
 		if (fp != NULL) {
 			xferLen = fread(buf, 1, SECLEN, fp);
 			if (xferLen != 0) {
-				for (i=0; i<xferLen; i++) 
-					memwrt(dmaAddr+i, buf[i]);
-				for ( ; i<SECLEN; i++)
-					memwrt(dmaAddr+i, CTRL_Z);
+				for (i = 0; i < xferLen; i++)
+					memwrt(dmaAddr + i, buf[i]);
+				for (; i < SECLEN; i++)
+					memwrt(dmaAddr + i, CTRL_Z);
 				A = 0;
 			}
 		}
 	}
-	
-/* WRITE file */
 
-	else if (C == WRITEF) { 
+	/* WRITE file */
+
+	else if (C == WRITEF) {
 		if (fp != NULL) {
-			for (xferLen=0; xferLen<SECLEN; xferLen++) {
-				buf[xferLen] = memrdr(dmaAddr+xferLen);		
-				if ((buf[xferLen] == CTRL_Z) && textFile) 
+			for (xferLen = 0; xferLen < SECLEN; xferLen++) {
+				buf[xferLen] = memrdr(dmaAddr + xferLen);
+				if ((buf[xferLen] == CTRL_Z) && textFile)
 					break;	/* ctrl-z (EOF) found */
 			}
 			if (xferLen == 0)	/* record contains only ctrl-z */
 				A = 0;
-			else
-				if ((size_t)xferLen == fwrite(buf, 1, xferLen, fp))
-					A = 0;
+			else if ((size_t) xferLen == fwrite(buf, 1, xferLen, fp))
+				A = 0;
 		}
 	}
-	
-/* Set DMA Address */
+
+	/* Set DMA Address */
 
 	else if (C == SETDMA) {
 		dmaAddr = fcbAddr;

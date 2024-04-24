@@ -57,14 +57,14 @@ void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 	unlink(socket_path);
 
 	/* create the socket, bind it and listen */
-	memset((void *)&sun, 0, sizeof(sun));
+	memset((void *) &sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
 	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path));
 	if ((p->ss = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
 		exit(EXIT_FAILURE);
 	}
-	if (bind(p->ss, (struct sockaddr *)&sun, sizeof(sun)) == -1) {
+	if (bind(p->ss, (struct sockaddr *) &sun, sizeof(sun)) == -1) {
 		LOGE(TAG, "can't bind server socket");
 		exit(EXIT_FAILURE);
 	}
@@ -97,7 +97,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 
 	/* set socket options */
 	if (setsockopt(p->ss, SOL_SOCKET, SO_REUSEADDR, (void *) &on,
-	    sizeof(on)) == -1) {
+		       sizeof(on)) == -1) {
 		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
 		exit(EXIT_FAILURE);
 	}
@@ -165,14 +165,14 @@ void sigio_tcp_server_socket(int sig)
 			}
 
 			if ((ncons[i].ssc = accept(ncons[i].ss,
-						     (struct sockaddr *) &fsin,
-						     &alen)) == -1) {
+						   (struct sockaddr *) &fsin,
+						   &alen)) == -1) {
 				LOGW(TAG, "can't accept on server socket");
 				ncons[i].ssc = 0;
 			}
 
 			if (setsockopt(ncons[i].ssc, IPPROTO_TCP, TCP_NODELAY,
-			    (void *) &on, sizeof(on)) == -1) {
+				       (void *) &on, sizeof(on)) == -1) {
 				LOGW(TAG, "can't set sockopt TCP_NODELAY on server socket");
 			}
 

@@ -117,7 +117,8 @@ int fdc_rom_active = 0;
 /*
  * find and set path for disk images
  */
-char *dsk_path(void) {
+char *dsk_path(void)
+{
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -127,8 +128,8 @@ char *dsk_path(void) {
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 		strncpy(diskd, fn, MAX_LFN);
@@ -149,7 +150,7 @@ void config_disk(int fd)
 		disks[disk].disk_m = READWRITE;
 	else
 		disks[disk].disk_m = READONLY;
-	
+
 	switch (s.st_size) {
 	case 92160:		/* 5.25" SS SD */
 		disks[disk].disk_t = SMALL;
@@ -239,7 +240,7 @@ void config_disk(int fd)
 		disks[disk].sectors = SPT8DD;
 		disks[disk].sec0 = SPT8DD;
 		disks[disk].disk_d0 = DOUBLE;
- 		break;
+		break;
 
 	default:
 		LOGW(TAG, "disk image %s has unknown format", disks[disk].fn);
@@ -613,7 +614,7 @@ void cromemco_fdc_data_out(BYTE data)
 			if ((fdc_track == 0) && (side == 0))
 				unlink(fn);
 			/* try to create new disk image */
-			if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
+			if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
@@ -1003,7 +1004,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 		fdc_stat = 16;			/* not found */
 		fdc_flags |= 1;			/* set EOJ */
 
-	} else if ((data &0xf0) == 0xf0) {	/* write track */
+	} else if ((data & 0xf0) == 0xf0) {	/* write track */
 		state = FDC_WRTTRK;
 		dcnt = 0;
 		fdc_stat = 3;			/* set DRQ & busy */
@@ -1011,7 +1012,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 
 	} else {
 		LOGW(TAG, "unknown command %02x", data);
-		fdc_stat = 16|8;		/* not found & CRC error */
+		fdc_stat = 16 | 8;		/* not found & CRC error */
 		fdc_flags |= 1;			/* set EOJ */
 	}
 }
@@ -1037,7 +1038,7 @@ void cromemco_fdc_reset(void)
 	} else {
 		fdc_rom_active = 0;
 	}
-#endif 
+#endif
 
 #ifdef HAS_DISKMANAGER
 	extern void readDiskmap(char *);
