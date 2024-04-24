@@ -81,7 +81,7 @@ static WORD hex_cnt;			/* number of bytes in HEX buffer */
 static WORD cary_cnt;			/* number of bytes in C array */
 
 static BYTE hex_buf[MAXHEX];		/* buffer for one HEX record */
-static char hex_out[MAXHEX*2+13];	/* ASCII buffer for one HEX record */
+static char hex_out[MAXHEX * 2 + 13];	/* ASCII buffer for one HEX record */
 
 /*
  *	print error message to listfile and increase error counter
@@ -486,7 +486,7 @@ void obj_fill_value(WORD count, WORD value)
 					fill_bin();
 					while (n-- > 0)
 						fputc(value, objfp);
-				  }
+				}
 				bin_addr += count;
 			}
 			curr_addr += count;
