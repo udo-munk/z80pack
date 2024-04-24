@@ -35,7 +35,7 @@
 
 #include "lpanel_data.h"
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 extern pthread_mutex_t data_sample_lock;
 

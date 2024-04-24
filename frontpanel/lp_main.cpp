@@ -39,7 +39,7 @@
 #include "lp_main.h"
 #include "lp_utils.h"
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 
 //static pthread_mutex_t data_lock;

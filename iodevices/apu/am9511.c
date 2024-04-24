@@ -16,7 +16,7 @@
 #include "ova.h"
 #include "types.h"
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 /* Define fp_na() -- fp to native and
  *        na_fp() -- native to fp
