@@ -160,10 +160,11 @@ void init_memory(void)
 	strcat(fn, "/");
 	pfn = &fn[strlen(fn)];
 
-	LOG(TAG,"\r\n");
+	LOG(TAG, "\r\n");
 
 	if (!memconf[M_flag][0].size) {
-		LOGW(TAG, "The [MEMORY %d] section appears missing or empty, setting memory map to default", M_flag + 1);
+		LOGW(TAG, "The [MEMORY %d] section appears missing or empty, "
+		     "setting memory map to default", M_flag + 1);
 		M_flag = 0;
 	}
 
@@ -171,42 +172,44 @@ void init_memory(void)
 	for (i = 0; i < MAXPAGES; i++) {
 		p_tab[i] = MEM_NONE;
 		wrtvec[i] = &memory[i << 8];
-		rdrvec[i] = &memory[i << 8];		
+		rdrvec[i] = &memory[i << 8];
 	}
 
-	for (i=0; i < MAXMEMMAP; i++) {
+	for (i = 0; i < MAXMEMMAP; i++) {
 		if (memconf[M_flag][i].size) {
 			switch (memconf[M_flag][i].type) {
-				case MEM_RW:
-					/* set the pages to RAM */
-					for (j = 0; j < memconf[M_flag][i].size; j++)
-						MEM_RESERVE_RAM(memconf[M_flag][i].spage + j);
+			case MEM_RW:
+				/* set the pages to RAM */
+				for (j = 0; j < memconf[M_flag][i].size; j++)
+					MEM_RESERVE_RAM(memconf[M_flag][i].spage + j);
 
-					/* fill memory content of bank 0 with some initial value */
-					for (j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
-						if (m_flag >= 0) {
-							_MEMMAPPED(j) = m_flag;
-						} else {
-							_MEMMAPPED(j) = (BYTE) (rand() % 256);
-						}
+				/* fill memory content of bank 0 with some initial value */
+				for (j = memconf[M_flag][i].spage << 8;
+				     j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8;
+				     j++) {
+					if (m_flag >= 0) {
+						_MEMMAPPED(j) = m_flag;
+					} else {
+						_MEMMAPPED(j) = (BYTE) (rand() % 256);
 					}
+				}
 
-					LOG(TAG, "RAM %04XH - %04XH\r\n",
-					memconf[M_flag][i].spage << 8, 
-					(memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
-					break;
+				LOG(TAG, "RAM %04XH - %04XH\r\n",
+				    memconf[M_flag][i].spage << 8,
+				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1);
+				break;
 
-				case MEM_RO:
-					/* set the pages to ROM */
-					LOG(TAG, "ROM %04XH - %04XH %s\r\n",
-					memconf[M_flag][i].spage << 8, 
-					((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
-					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
-					/* for the IMSAI, ROM must be
-					   initialised after MPU-B banked ROM
-					   is intialised */
-					/* see below */
-					break;
+			case MEM_RO:
+				/* set the pages to ROM */
+				LOG(TAG, "ROM %04XH - %04XH %s\r\n",
+				    memconf[M_flag][i].spage << 8,
+				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
+				    memconf[M_flag][i].rom_file ? memconf[M_flag][i].rom_file : "");
+				/* for the IMSAI, ROM must be
+				   initialised after MPU-B banked ROM
+				   is intialised */
+				/* see below */
+				break;
 			}
 		}
 	}
@@ -231,36 +234,40 @@ void init_memory(void)
 	cyclecount = 0;
 #endif
 
-	LOG(TAG, "MMU has %d additional RAM banks of %d KB\r\n", num_banks, SEGSIZ >> 10);
+	LOG(TAG, "MMU has %d additional RAM banks of %d KB\r\n", num_banks,
+	    SEGSIZ >> 10);
 	LOG(TAG, "\r\n");
 
 	for (i = 0; i < MAXMEMMAP; i++) {
 		if (memconf[M_flag][i].size) {
 			switch (memconf[M_flag][i].type) {
-				case MEM_RW:
-					/* set the pages to RAM */
-					/* for the IMSAI, RAM must be
-					   initialised before MPU-B banked ROM
-					   is intialised */
-					/* see above */
-					break;
+			case MEM_RW:
+				/* set the pages to RAM */
+				/* for the IMSAI, RAM must be
+				   initialised before MPU-B banked ROM
+				   is intialised */
+				/* see above */
+				break;
 
-				case MEM_RO:
-					/* set the pages to ROM */
-					for (j = 0; j < memconf[M_flag][i].size; j++)
-						MEM_RESERVE_ROM(memconf[M_flag][i].spage + j);
+			case MEM_RO:
+				/* set the pages to ROM */
+				for (j = 0; j < memconf[M_flag][i].size; j++)
+					MEM_RESERVE_ROM(memconf[M_flag][i].spage + j);
 
-					/* fill the ROM's with 0xff in case no firmware loaded */
-					for (j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
-						_MEMMAPPED(j) = 0xff;
-					}
+				/* fill the ROM's with 0xff in case no firmware loaded */
+				for (j = memconf[M_flag][i].spage << 8;
+				     j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8;
+				     j++) {
+					_MEMMAPPED(j) = 0xff;
+				}
 
-					/* load firmware into ROM if specified */
-					if (memconf[M_flag][i].rom_file) {
-						strcpy(pfn, memconf[M_flag][i].rom_file);
-						load_file(fn, memconf[M_flag][i].spage << 8, memconf[M_flag][i].size << 8);
-					}
-					break;
+				/* load firmware into ROM if specified */
+				if (memconf[M_flag][i].rom_file) {
+					strcpy(pfn, memconf[M_flag][i].rom_file);
+					load_file(fn, memconf[M_flag][i].spage << 8,
+						  memconf[M_flag][i].size << 8);
+				}
+				break;
 			}
 		}
 	}

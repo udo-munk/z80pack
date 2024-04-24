@@ -18,16 +18,16 @@
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256]) (void) = {
-	 0,			/* port 0 */
-	 0			/* port 1 */
+static BYTE (*port_in[256])(void) = {
+	0,			/* port 0 */
+	0			/* port 1 */
 };
 
 /*
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-static void (*port_out[256]) (BYTE) = {
+static void (*port_out[256])(BYTE) = {
 	0,			/* port 0 */
 	0			/* port 1 */
 };
@@ -68,7 +68,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	UNUSED(addrh);
 
 	io_port = addrl;
-	io_data = (*port_in[addrl]) ();
+	io_data = (*port_in[addrl])();
 	return (io_data);
 }
 
@@ -83,6 +83,5 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	io_port = addrl;
 	io_data = data;
-	(*port_out[addrl]) (data);
+	(*port_out[addrl])(data);
 }
-

@@ -93,7 +93,7 @@ static inline void memwrt(WORD addr, BYTE data)
 
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return;
-	} else if(selbnk || p_tab[addr >> 8] == MEM_RW) {
+	} else if (selbnk || p_tab[addr >> 8] == MEM_RW) {
 
 		if (!common) {
 			*(memory[selbnk] + addr) = data;
@@ -120,7 +120,7 @@ static inline BYTE memrdr(WORD addr)
 
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		fp_led_data = *(fdc_banked_rom + addr - 0xC000);
-	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+	} else if (selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		fp_led_data = *(memory[selbnk] + addr);
 	} else {
 		fp_led_data = 0xff;
@@ -132,7 +132,7 @@ static inline BYTE memrdr(WORD addr)
 #else
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return (*(fdc_banked_rom + addr - 0xC000));
-	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+	} else if (selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		return (*(memory[selbnk] + addr));
 	} else {
 		return (0xff);
@@ -147,7 +147,7 @@ static inline BYTE dma_read(WORD addr)
 {
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return (*(fdc_banked_rom + addr - 0xC000));
-	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+	} else if (selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		return (*(memory[selbnk] + addr));
 	} else {
 		return (0xff);
@@ -158,7 +158,7 @@ static inline void dma_write(WORD addr, BYTE data)
 {
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return;
-	} else if(selbnk || p_tab[addr >> 8] == MEM_RW) {
+	} else if (selbnk || p_tab[addr >> 8] == MEM_RW) {
 		*(memory[selbnk] + addr) = data;
 	}
 }
@@ -170,7 +170,7 @@ static inline BYTE getmem(WORD addr)
 {
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
 		return (*(fdc_banked_rom + addr - 0xC000));
-	} else if(selbnk || p_tab[addr >> 8] != MEM_NONE) {
+	} else if (selbnk || p_tab[addr >> 8] != MEM_NONE) {
 		return (*(memory[selbnk] + addr));
 	} else {
 		return (0xff);

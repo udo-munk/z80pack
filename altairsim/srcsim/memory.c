@@ -59,7 +59,8 @@ void init_memory(void)
 	pfn = &fn[strlen(fn)];
 
 	if (!memconf[M_flag][0].size) {
-		LOGW(TAG, "The [MEMORY %d] section appears missing or empty, setting memory map to default", M_flag + 1);
+		LOGW(TAG, "The [MEMORY %d] section appears missing or empty, "
+		     "setting memory map to default", M_flag + 1);
 		M_flag = 0;
 	}
 
@@ -75,38 +76,43 @@ void init_memory(void)
 				p_tab[memconf[M_flag][i].spage + j] = memconf[M_flag][i].type;
 
 			switch (memconf[M_flag][i].type) {
-				case MEM_RW:
-					/* fill memory content with some initial value */
-					for (j = memconf[M_flag][i].spage << 8; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8; j++) {
-						if (m_flag >= 0) {
-							memory[j] = m_flag;
-						} else {
-							memory[j] = (BYTE) (rand() % 256);
-						}
+			case MEM_RW:
+				/* fill memory content with some initial value */
+				for (j = memconf[M_flag][i].spage << 8;
+				     j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8;
+				     j++) {
+					if (m_flag >= 0) {
+						memory[j] = m_flag;
+					} else {
+						memory[j] = (BYTE) (rand() % 256);
 					}
+				}
 
-					LOG(TAG, "RAM %04XH - %04XH\r\n",
-					memconf[M_flag][i].spage << 8, 
-					(memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
-					break;
+				LOG(TAG, "RAM %04XH - %04XH\r\n",
+				    memconf[M_flag][i].spage << 8,
+				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1);
+				break;
 
-				case MEM_RO:
-					/* fill the ROM's with 0xff in case no firmware loaded */
-					for (j = memconf[M_flag][i].spage; j < (memconf[M_flag][i].spage + memconf[M_flag][i].size); j++) {
-						memset(&memory[j << 8], 0xff, 256);
-					}
+			case MEM_RO:
+				/* fill the ROM's with 0xff in case no firmware loaded */
+				for (j = memconf[M_flag][i].spage;
+				     j < (memconf[M_flag][i].spage + memconf[M_flag][i].size);
+				     j++) {
+					memset(&memory[j << 8], 0xff, 256);
+				}
 
-					LOG(TAG, "ROM %04XH - %04XH %s\r\n\r\n",
-					memconf[M_flag][i].spage << 8, 
-					((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
-					memconf[M_flag][i].rom_file?memconf[M_flag][i].rom_file:"");
+				LOG(TAG, "ROM %04XH - %04XH %s\r\n\r\n",
+				    memconf[M_flag][i].spage << 8,
+				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
+				    memconf[M_flag][i].rom_file ? memconf[M_flag][i].rom_file : "");
 
-					/* load firmware into ROM if specified */
-					if (memconf[M_flag][i].rom_file) {
-						strcpy(pfn, memconf[M_flag][i].rom_file);
-						load_file(fn, memconf[M_flag][i].spage << 8, memconf[M_flag][i].size << 8);
-					}
-					break;
+				/* load firmware into ROM if specified */
+				if (memconf[M_flag][i].rom_file) {
+					strcpy(pfn, memconf[M_flag][i].rom_file);
+					load_file(fn, memconf[M_flag][i].spage << 8,
+						  memconf[M_flag][i].size << 8);
+				}
+				break;
 			}
 		}
 	}
@@ -122,8 +128,7 @@ void init_memory(void)
 
 	tarbell_rom_enabled = R_flag;
 	LOG(TAG, "Tarbell bootstrap ROM %s\r\n",
-		(tarbell_rom_enabled) ?
-		"enabled" : "disabled");
+	    (tarbell_rom_enabled) ? "enabled" : "disabled");
 
 	LOG(TAG, "\r\n");
 }

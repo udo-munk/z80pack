@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
-	if ((fdout = open(argv[2], O_WRONLY|O_CREAT, 0644)) == -1) {
+	if ((fdout = open(argv[2], O_WRONLY | O_CREAT, 0644)) == -1) {
 		perror(argv[2]);
 		return (EXIT_FAILURE);
 	}

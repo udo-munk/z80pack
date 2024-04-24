@@ -80,7 +80,7 @@ void mon(void)
 {
 	extern BYTE fdc_flags;
 #ifdef HAS_NETSERVER
-	extern int start_net_services (void);
+	extern int start_net_services(void);
 	start_net_services();
 #endif
 
@@ -152,7 +152,7 @@ void mon(void)
 					fp_led_data = getmem(PC);
 				else
 					fp_led_data = (int_data != -1) ?
-							(BYTE) int_data : 0xff;
+						      (BYTE) int_data : 0xff;
 			}
 		}
 
@@ -321,7 +321,7 @@ void step_clicked(int state, int val)
  */
 int wait_step(void)
 {
-	extern BYTE (*port_in[256]) (void);
+	extern BYTE (*port_in[256])(void);
 	int ret = 0;
 
 	if (cpu_state != SINGLE_STEP) {
@@ -340,7 +340,7 @@ int wait_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		/* when INP update data bus LEDs */
 		if (cpu_bus == (CPU_WO | CPU_INP))
-			fp_led_data = (*port_in[fp_led_address & 0xff]) ();
+			fp_led_data = (*port_in[fp_led_address & 0xff])();
 		fp_clock++;
 		fp_sampleData();
 		SLEEP_MS(10);

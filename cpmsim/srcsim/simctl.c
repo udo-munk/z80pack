@@ -103,8 +103,8 @@ int boot(int level)
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 	}

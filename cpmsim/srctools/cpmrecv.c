@@ -20,7 +20,7 @@
 #include <signal.h>
 #include <fcntl.h>
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void) (x)
 
 int signal_catched;
 

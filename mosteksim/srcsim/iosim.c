@@ -42,7 +42,7 @@ static void io_no_card_out(BYTE);
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256]) (void) = {
+static BYTE (*port_in[256])(void) = {
 	io_trap_in,			/* port 0 */
 	io_trap_in,			/* port 1 */
 	io_trap_in,			/* port 2 */
@@ -305,7 +305,7 @@ static BYTE (*port_in[256]) (void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-static void (*port_out[256]) (BYTE) = {
+static void (*port_out[256])(BYTE) = {
 	io_trap_out,		/* port 0 */
 	io_trap_out,		/* port 1 */
 	io_trap_out,		/* port 2 */
@@ -591,7 +591,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	UNUSED(addrh);
 
 	io_port = addrl;
-	io_data = (*port_in[addrl]) ();
+	io_data = (*port_in[addrl])();
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
 	return (io_data);
 }
@@ -607,7 +607,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	io_port = addrl;
 	io_data = data;
-	(*port_out[addrl]) (data);
+	(*port_out[addrl])(data);
 }
 
 /*
@@ -660,4 +660,3 @@ static void io_no_card_out(BYTE data)
 {
 	UNUSED(data);
 }
-

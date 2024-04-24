@@ -265,7 +265,7 @@ void config(void)
 				memconf[section][num_segs].spage = v1;
 				memconf[section][num_segs].size = v2;
 				LOGD(TAG, "RAM %04XH - %04XH",
-				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
+				     v1 << 8, (v1 << 8) + (v2 << 8) - 1);
 				num_segs++;
 			} else if (!strcmp(t1, "rom")) {
 				if (num_segs >= MAXMEMMAP) {
@@ -293,8 +293,8 @@ void config(void)
 					memconf[section][num_segs].rom_file = NULL;
 				}
 				LOGD(TAG, "ROM %04XH - %04XH %s",
-				    v1 << 8, (v1 << 8) + (v2 << 8) - 1,
-					(t4 == NULL ? "" : t4));
+				     v1 << 8, (v1 << 8) + (v2 << 8) - 1,
+				     (t4 == NULL ? "" : t4));
 				num_segs++;
 			} else if (!strcmp(t1, "boot")) {
 				_boot_switch[section] = strtol(t2, NULL, 0);
@@ -306,13 +306,13 @@ void config(void)
 					goto next;
 				}
 				LOGD(TAG, "MEMORY CONFIGURATION %d", v1);
-				section = v1 -1;
+				section = v1 - 1;
 				num_segs = 0;
 			} else {
 				LOGW(TAG, "system.conf unknown command: %s", s);
 			}
 
-			next:
+next:
 			;
 
 		}

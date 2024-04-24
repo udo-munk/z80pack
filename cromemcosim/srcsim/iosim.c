@@ -85,7 +85,7 @@ static void interrupt(int);
 static const char *TAG = "IO";
 
 static int rtc;			/* flag for 512ms RTC interrupt */
-       int lpt1, lpt2;		/* fds for lpt printer files */
+int lpt1, lpt2;		/* fds for lpt printer files */
 
 BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
@@ -98,7 +98,7 @@ static int th_suspend;		/* timing thread suspend flag */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*port_in[256]) (void) = {
+BYTE (*port_in[256])(void) = {
 	cromemco_tuart_0a_status_in,	/* port 0 */
 	cromemco_tuart_0a_data_in,	/* port 1 */
 	io_trap_in,			/* port 2 */
@@ -361,7 +361,7 @@ BYTE (*port_in[256]) (void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-static void (*port_out[256]) (BYTE) = {
+static void (*port_out[256])(BYTE) = {
 	cromemco_tuart_0a_baud_out,	/* port 0 */
 	cromemco_tuart_0a_data_out,	/* port 1 */
 	cromemco_tuart_0a_command_out,	/* port 2 */
@@ -740,7 +740,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #endif
 
 	io_port = addrl;
-	io_data = (*port_in[addrl]) ();
+	io_data = (*port_in[addrl])();
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
@@ -755,7 +755,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	/* when single stepped INP get last set value of port */
 	if (val)
-		io_data = (*port_in[io_port]) ();
+		io_data = (*port_in[io_port])();
 #endif
 
 	return (io_data);
@@ -773,7 +773,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #endif
 	io_port = addrl;
 	io_data = data;
-	(*port_out[addrl]) (data);
+	(*port_out[addrl])(data);
 
 #ifdef BUS_8080
 	cpu_bus = CPU_OUT;
@@ -871,7 +871,7 @@ static void hwctl_out(BYTE data)
 		hwctl_lock = 0;
 		return;
 	}
-	
+
 	/* process output to unlocked port */
 
 	if (data & 128) {	/* halt system */
@@ -1209,12 +1209,12 @@ static void interrupt(int sig)
 
 	/* if motor on generate disk index pulse */
 	if (motoron) {
-		/* 170ms ~ 360rpm for 8" drives */
 		if (dtype == LARGE) {
+			/* 170ms ~ 360rpm for 8" drives */
 			if ((counter % 17) == 0)
 				index_pulse = 1;
-		/* 200ms ~ 300rpm for 5.25" drives */
 		} else {
+			/* 200ms ~ 300rpm for 5.25" drives */
 			if ((counter % 20) == 0)
 				index_pulse = 1;
 		}
@@ -1223,7 +1223,7 @@ static void interrupt(int sig)
 	/* motor timeout timer */
 	if (motortimer > 0)
 		motortimer--;
-	
+
 	/* set RTC interrupt flag every 510ms */
 	if ((counter % 51) == 0)
 		rtc = 1;
