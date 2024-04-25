@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
