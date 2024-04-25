@@ -4,7 +4,7 @@
  * Copyright (C) 2024 by Udo Munk
  *
  * This is the main program for a Raspberry Pico (W) board,
- * substitutes z80core/sim0.c
+ * substitutes z80core/simmain.c
  */
 
 #include <stdio.h>
