@@ -7,8 +7,12 @@
  * substitutes z80core/simmain.c
  */
 
+/* Raspberry SDK includes */
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "tusb.h"
+
+/* Project includes */
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -21,6 +25,8 @@ extern void report_cpu_error(void);
 int main(void)
 {
 	stdio_init_all();	/* initialize Pico stdio */
+	while (!tud_cdc_connected())
+		sleep_ms(100);	/* wait until USB connected */
 
 	printf("Z80pack release %s, %s\n\n", RELEASE, COPYR);
 
