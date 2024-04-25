@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0	Wed Apr 24 20:29:01 2024
+Z80/8080-Macro-Assembler  Release 2.0	Thu Apr 25 20:15:55 2024
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -12,24 +12,30 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 000d  =                9      9 CR	EQU	13			; carriage return
 000a  =               10     10 LF	EQU	10			; line feed
                       11     11 
-0001  =               12     12 TTYDAT	EQU	1			; tty data port
-                      13     13 
-0000  31 00 f0        14     14 	LD	SP,0F000H		; setup stack in upper memory
-0003  21 10 00        15     15 	LD	HL,TEXT			; load HL with text to send
-0006  7e              16     16 LOOP:	LD	A,(HL)			; get next character
-0007  b7              17     17 	OR	A			; is it 0 termination?
-0008  28 05           18     18 	JR	Z,DONE			; if yes done
-000a  d3 01           19     19 	OUT	(TTYDAT),A		; output it to tty port
-000c  23              20     20 	INC	HL			; point to next character
-000d  18 f7           21     21 	JR	LOOP			; and again
-000f  76              22     22 DONE:	HALT				; done
-                      23     23 
-0010  48 65 6c 6c     24     24 TEXT:	DEFM	"Hello from the Z80 CPU"
-0014  6f 20 66 72     24     25
-0018  6f 6d 20 74     24     26
-001c  68 65 20 5a     24     27
-0020  38 30 20 43     24     28
-0024  50 55           24     29
-0026  0d 0a 00        25     30 	DEFB	CR,LF,0
-                      26     31 
-0029                  27     32 	END
+0000  =               12     12 TTYSTA	EQU	0			; tty status port
+0001  =               13     13 TTYDAT	EQU	1			; tty data port
+                      14     14 
+0000  31 00 f0        15     15 	LD	SP,0F000H		; setup stack in upper memory
+0003  21 17 00        16     16 	LD	HL,TEXT			; load HL with text to send
+0006  7e              17     17 LOOP:	LD	A,(HL)			; get next character
+0007  b7              18     18 	OR	A			; is it 0 termination?
+0008  28 0c           19     19 	JR	Z,DONE			; if yes done
+000a  f5              20     20 	PUSH	AF			; save character in A
+000b  db 00           21     21 LOOP1:	IN	A,(TTYSTA)		; get tty status
+000d  07              22     22 	RLCA
+000e  38 fb           23     23 	JR	C,LOOP1			; wait if not ready
+0010  f1              24     24 	POP	AF			; get back character into A
+0011  d3 01           25     25 	OUT	(TTYDAT),A		; output it to tty port
+0013  23              26     26 	INC	HL			; point to next character
+0014  18 f0           27     27 	JR	LOOP			; and again
+0016  76              28     28 DONE:	HALT				; done
+                      29     29 
+0017  48 65 6c 6c     30     30 TEXT:	DEFM	"Hello from the Z80 CPU"
+001b  6f 20 66 72     30     31
+001f  6f 6d 20 74     30     32
+0023  68 65 20 5a     30     33
+0027  38 30 20 43     30     34
+002b  50 55           30     35
+002d  0d 0a 00        31     36 	DEFB	CR,LF,0
+                      32     37 
+0030                  33     38 	END

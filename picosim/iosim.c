@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "hardware/uart.h"
+
 #include "sim.h"
 #include "simglb.h"
 
@@ -16,13 +18,14 @@
  *	for all port addresses.
  */
 static void p001_out(BYTE);
+static BYTE p000_in(void);
 
 /*
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
 static BYTE (*port_in[256])(void) = {
-	0,			/* port 0 */
+	p000_in,		/* port 0 */
 	0			/* port 1 */
 };
 
@@ -87,6 +90,24 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	if (*port_out[addrl] != 0) /* if port used */
 		(*port_out[addrl])(data);
+}
+
+/*
+ *	I/O function port 0 read:
+ *	read status of the Pico UART and return:
+ *	bit 0 = 0, character available for input from tty
+ *	bit 7 = 0, transmitter ready to write character to tty
+ */
+BYTE p000_in(void)
+{
+	register BYTE stat = 0b10000001; /* initially not ready */
+
+	if (uart_is_writable(uart0))	/* check if output to UART is possible */
+		stat &= 0b01111111;	/* if so flip status bit */
+	if (uart_is_readable(uart0))	/* check if there is input from UART */
+		stat &= 0b11111110;	/* if so flip status bit */
+
+	return (stat);
 }
 
 /*

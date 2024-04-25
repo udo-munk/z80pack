@@ -9,6 +9,7 @@
 CR	EQU	13			; carriage return
 LF	EQU	10			; line feed
 
+TTYSTA	EQU	0			; tty status port
 TTYDAT	EQU	1			; tty data port
 
 	LD	SP,0F000H		; setup stack in upper memory
@@ -16,6 +17,11 @@ TTYDAT	EQU	1			; tty data port
 LOOP:	LD	A,(HL)			; get next character
 	OR	A			; is it 0 termination?
 	JR	Z,DONE			; if yes done
+	PUSH	AF			; save character in A
+LOOP1:	IN	A,(TTYSTA)		; get tty status
+	RLCA
+	JR	C,LOOP1			; wait if not ready
+	POP	AF			; get back character into A
 	OUT	(TTYDAT),A		; output it to tty port
 	INC	HL			; point to next character
 	JR	LOOP			; and again
