@@ -81,9 +81,6 @@ struct softbreak {		/* structure of a breakpoint */
 };
 #endif
 
-extern void do_sleep_ms(int);
-#define SLEEP_MS(t)	do_sleep_ms(t)
-
 /*
  *	macro for declaring unused function parameters
  */

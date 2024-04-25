@@ -67,6 +67,9 @@
 #undef TCPASYNC
 #endif
 
+extern void do_sleep_ms(int);
+#define SLEEP_MS(t)	do_sleep_ms(t)
+
 /*
  *	The following defines may be modified and activated by
  *	user, to print her/his copyright for a simulated system,
