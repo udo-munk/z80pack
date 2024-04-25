@@ -32,14 +32,18 @@ int main(void)
 	stdio_init_all();	/* initialize Pico stdio */
 	while (!tud_cdc_connected())
 		sleep_ms(100);	/* wait until USB connected */
+
 #ifdef PICO_W			/* initialize Pico W cyw43 hardware */
 	if (cyw43_arch_init())
 	{
-		printf("Wi-Fi init failed\n");
+		printf("CYW43 init failed\n");
 		return -1;
 	}
-#else
-				/* initialize Pico hardware */
+#else				/* initialize Pico hardware */
+#define LED PICO_DEFAULT_LED_PIN	/* use builtin LED */
+//#define LED 15			/* or another one */
+	gpio_init(LED);		/* configure GPIO for LED output */
+	gpio_set_dir(LED, GPIO_OUT);
 #endif
 
 	printf("Z80pack release %s, %s\n\n", RELEASE, COPYR);
@@ -54,6 +58,7 @@ int main(void)
 #ifdef PICO_W
 	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 #else
+	gpio_put(LED, 1);
 #endif
 
 	putchar('\n');
