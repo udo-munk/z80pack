@@ -48,6 +48,9 @@
 #define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
 #define NUMUSOC 2	/* number of UNIX sockets for SIO connections */
 
+extern void do_sleep_ms(int);
+#define SLEEP_MS(t)	do_sleep_ms(t)
+
 /*
  *	The following defines may be modified and activated by
  *	user, to print her/his copyright for a simulated system,

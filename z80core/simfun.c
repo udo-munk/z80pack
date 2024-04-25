@@ -97,32 +97,6 @@ again:
 }
 
 /*
- *	Compute difference between two timeval in microseconds
- *
- *	Note: yes there are timersub() and friends, but not
- *	defined in POSIX.1 and implemented wrong on some
- *	systems. Some systems define tv_usec as unsigned int,
- *	here we assume that a long is longer than unsigned.
- *	If that is not the case cast to (long long).
- */
-int time_diff(struct timeval *t1, struct timeval *t2)
-{
-	long sec, usec;
-
-	sec = (long) t2->tv_sec - (long) t1->tv_sec;
-	usec = (long) t2->tv_usec - (long) t1->tv_usec;
-	/* normalize result */
-	if (usec < 0L) {
-		sec--;
-		usec += 1000000L;
-	}
-	if (sec != 0L)
-		return (-1); /* result is to large */
-	else
-		return ((int) usec);
-}
-
-/*
  *	Read a file into the memory of the emulated CPU.
  *	The following file formats are supported:
  *

@@ -38,6 +38,9 @@
 #undef TCPASYNC		/* SIGIO on BSD sockets not working */
 #endif
 
+extern void do_sleep_ms(int);
+#define SLEEP_MS(t)	do_sleep_ms(t)
+
 /*
  *	Structure for the disk images
  */
