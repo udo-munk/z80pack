@@ -16,7 +16,6 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <time.h>
-#include <sys/time.h>
 #include <errno.h>
 #include "sim.h"
 #include "simglb.h"
