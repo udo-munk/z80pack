@@ -20,6 +20,7 @@
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+#define CORE_LOG	/* use LOG() logging in core simulator */
 
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */

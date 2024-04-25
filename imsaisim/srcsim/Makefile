@@ -8,7 +8,9 @@ FRONTPANEL = YES
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
-IO_SRCS = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c imsai-fif.c imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c unix_network.c netsrv.c generic-at-modem.c libtelnet.c rtc.c simbdos.c am9511.c floatcnv.c ova.c
+IO_SRCS = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c imsai-fif.c \
+	imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c unix_network.c netsrv.c \
+	generic-at-modem.c libtelnet.c rtc.c simbdos.c am9511.c floatcnv.c ova.c
 # machine specifc libraries
 MACHINE_LIBS = -lcivetweb
 
@@ -118,7 +120,8 @@ LDFLAGS = -L$(FP_DIR) -L$(CIV_DIR) $(PLAT_LDFLAGS) $(MACHINE_LIBS) \
 	  $(FP_LDFLAGS) -lX11 $(PLAT_LIBS)
 
 # core system source files for the CPU simulation - only change if the core changes
-CORE_SRCS = sim0.c sim1.c sim1a.c sim2.c sim3.c sim4.c sim5.c sim6.c sim7.c simdis.c simfun.c simglb.c simice.c simint.c
+CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c simmain.c \
+	simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c simz80-fd.c simz80-fdcb.c
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 XXSRCS = $(FP_SRCS)
 OBJS = $(SRCS:.c=.o) $(XXSRCS:.cpp=.o)
