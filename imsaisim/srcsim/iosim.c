@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2021 by Udo Munk
+ * Copyright (C) 2008-2024 by Udo Munk
  * Copyright (C) 2021 David McNaughton
  *
  * This module of the simulator contains the I/O simulation
@@ -753,7 +753,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #ifdef FRONTPANEL
 	int val = 0;
 #else
-	UNUSED(addrl);
 	UNUSED(addrh);
 #endif
 
