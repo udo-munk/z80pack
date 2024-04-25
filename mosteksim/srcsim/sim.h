@@ -9,7 +9,8 @@
  * 15-SEP-19 (Mike Douglas) Created from sim.h from the z80sim source
  *		directory. Set start-up message for Mostek AID-80F and SYS-80FT
  *		computers.
- * 27_SEP-19 (Udo Munk) modified for integration into 1.37
+ * 27-SEP-19 (Udo Munk) modified for integration into 1.37
+ * 25-APR-24 (Udo Munk) this was a Z80 machine and we can exclude 8080 now
  */
 
 /*
@@ -21,6 +22,7 @@
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 #define CORE_LOG	/* use LOG() logging in core simulator */
+#define EXCLUDE_I8080	/* this was a Z80 machine */
 
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
