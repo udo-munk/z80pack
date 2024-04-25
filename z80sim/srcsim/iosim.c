@@ -86,7 +86,7 @@ void exit_io(void)
 /*
  *	This is the main handler for all IN op-codes,
  *	called by the simulator. It calls the input
- *	function for port addr.
+ *	function for port addrl.
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
@@ -100,7 +100,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 /*
  *	This is the main handler for all OUT op-codes,
  *	called by the simulator. It calls the output
- *	function for port addr.
+ *	function for port addrl.
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
