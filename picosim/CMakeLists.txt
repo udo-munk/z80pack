@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
-set (PICO_BOARD pico)
-#set(PICO_BOARD pico_w)
+#set (PICO_BOARD pico)
+set(PICO_BOARD pico_w)
 include(pico_sdk_import.cmake)
 
 project(picosim C CXX ASM)
@@ -27,9 +27,9 @@ add_executable(picosim
 )
 
 # for Pico
-target_link_libraries(picosim pico_stdlib)
+#target_link_libraries(picosim pico_stdlib)
 # for Pico W
-#target_link_libraries(picosim pico_stdlib pico_cyw43_arch_none)
+target_link_libraries(picosim pico_stdlib pico_cyw43_arch_none)
 pico_add_extra_outputs(picosim)
 
 # enable uart output, enable usb output

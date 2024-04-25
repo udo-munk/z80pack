@@ -1,3 +1,6 @@
+This can be used with Pico and Pico W boards, but you need to uncomment/comment
+some lines in CMakeLists.txt and sim.h properly for the board used.
+
 To build you need to have the SDK for RP2040-based devices installed and
 configured, then do:
 
