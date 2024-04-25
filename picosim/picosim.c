@@ -38,6 +38,6 @@ int main(void)
 
 	putchar('\n');
 	report_cpu_error();	/* check for CPU emulation errors and report */
-	puts("Bye.\n");
+	putchar('\n');
 	stdio_flush();
 }
