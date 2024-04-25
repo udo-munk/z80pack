@@ -12,6 +12,7 @@
 /*#define CORE_LOG*/	/* don't use LOG() logging in core simulator */
 #define EXCLUDE_I8080	/* don't include 8080 emulation support */
 
+extern void sleep_ms(unsigned);
 #define SLEEP_MS(t)	sleep_ms(t)
 
 #include "simcore.h"
