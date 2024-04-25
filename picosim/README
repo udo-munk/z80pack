@@ -1,6 +1,5 @@
-This is work in progress and won't do much yet, for developers only!
 To build you need to have the SDK for RP2040-based devices installed and
-configured.
+configured, then do:
 
 	cd z80pack/picosim
 	mkdir build
@@ -8,7 +7,7 @@ configured.
 	cmake ..
 	make
 
-Trying to get a z80pack system running on a Raspberry Pi Pico (W) board.
-What I can say so far is that the Z80 core cleanly compiles with the SDK
-and that the produced binary is small and that the CPU seems to execute
-instructions.
+To clean everything:
+
+	cd z80pack/picosim
+	rm -rf build
