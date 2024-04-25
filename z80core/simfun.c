@@ -71,7 +71,7 @@ int getkey(void)
 /*
  *	Sleep for time milliseconds, 999 max
  */
-void sleep_ms(int time)
+void do_sleep_ms(int time)
 {
 	struct timespec timer, rem;
 	int err;
@@ -89,7 +89,7 @@ again:
 			}
 		} else {
 			/* some error */
-			LOGD(TAG, "sleep_ms(%d) %s", time, strerror(err));
+			LOGD(TAG, "do_sleep_ms(%d) %s", time, strerror(err));
 			// cpu_error = IOERROR;
 			// cpu_state = STOPPED;
 		}
@@ -354,58 +354,4 @@ static int load_hex(char *fn, WORD start, int size)
 	LOG(TAG, "LOADED: %04XH (%d)\r\n\r\n", count & 0xffff, count & 0xffff);
 
 	return (0);
-}
-
-/*
- *	Report CPU error
- */
-void report_cpu_error(void)
-{
-	switch (cpu_error) {
-	case NONE:
-		break;
-	case OPHALT:
-		LOG(TAG, "INT disabled and HALT Op-Code reached at %04x\r\n",
-		    PC - 1);
-		break;
-	case IOTRAPIN:
-		LOGE(TAG, "I/O input Trap at %04x, port %02x", PC, io_port);
-		break;
-	case IOTRAPOUT:
-		LOGE(TAG, "I/O output Trap at %04x, port %02x", PC, io_port);
-		break;
-	case IOHALT:
-		LOG(TAG, "\r\nSystem halted, bye.\r\n");
-		break;
-	case IOERROR:
-		LOGE(TAG, "Fatal I/O Error at %04x", PC);
-		break;
-	case OPTRAP1:
-		LOGE(TAG, "Op-code trap at %04x %02x", PC - 1,
-		     getmem(PC - 1));
-		break;
-	case OPTRAP2:
-		LOGE(TAG, "Op-code trap at %04x %02x %02x",
-		     PC - 2, getmem(PC - 2),
-		     getmem(PC - 1));
-		break;
-	case OPTRAP4:
-		LOGE(TAG, "Op-code trap at %04x %02x %02x %02x %02x",
-		     PC - 4, getmem(PC - 4), getmem(PC - 3),
-		     getmem(PC - 2), getmem(PC - 1));
-		break;
-	case USERINT:
-		LOG(TAG, "User Interrupt at %04x\r\n", PC);
-		break;
-	case INTERROR:
-		LOGW(TAG, "Unsupported bus data during INT: %02x",
-		     int_data);
-		break;
-	case POWEROFF:
-		LOG(TAG, "\r\nSystem powered off, bye.\r\n");
-		break;
-	default:
-		LOGW(TAG, "Unknown error %d", cpu_error);
-		break;
-	}
 }

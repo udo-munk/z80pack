@@ -12,13 +12,14 @@ include_directories(
 )
 add_executable(picosim
 	picosim.c
-	../z80core/sim1.c
-	../z80core/sim2.c
-	../z80core/sim3.c
-	../z80core/sim4.c
-	../z80core/sim5.c
-	../z80core/sim6.c
-	../z80core/sim7.c
+	../z80core/simcore.c
+	../z80core/simz80.c
+	../z80core/simz80-cb.c
+	../z80core/simz80-dd.c
+	../z80core/simz80-ddcb.c
+	../z80core/simz80-ed.c
+	../z80core/simz80-fd.c
+	../z80core/simz80-fdcb.c
 	../z80core/simglb.c
 	config.c
 	memory.c

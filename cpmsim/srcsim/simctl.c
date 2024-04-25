@@ -16,6 +16,7 @@
 #include "../../iodevices/unix_terminal.h"
 #include "log.h"
 
+extern void run_cpu(void);
 extern void report_cpu_error(void);
 
 int boot(int);
@@ -46,23 +47,12 @@ void mon(void)
 
 	ice_cmd_loop(0);
 #else
-	extern void cpu_z80(void), cpu_8080(void);
-
 	/* initialise terminal */
 	set_unix_terminal();
 	atexit(reset_unix_terminal);
 
 	/* start CPU emulation */
-	cpu_state = CONTIN_RUN;
-	cpu_error = NONE;
-	switch (cpu) {
-	case Z80:
-		cpu_z80();
-		break;
-	case I8080:
-		cpu_8080();
-		break;
-	}
+	run_cpu();
 
 	/* reset terminal */
 	reset_unix_terminal();

@@ -81,9 +81,8 @@ struct softbreak {		/* structure of a breakpoint */
 };
 #endif
 
-//extern void sleep_ms(int);
-extern void sleep_ms();		/* above clashing with ARM SDK */
-#define SLEEP_MS(t)	sleep_ms(t)
+extern void do_sleep_ms(int);
+#define SLEEP_MS(t)	do_sleep_ms(t)
 
 /*
  *	macro for declaring unused function parameters

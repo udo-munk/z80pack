@@ -42,8 +42,8 @@
 #include "../../iodevices/unix_terminal.h"
 #include "log.h"
 
-extern void cpu_z80(void), cpu_8080(void);
 extern void reset_cpu(void), reset_io(void);
+extern void run_cpu(void), step_cpu(void);
 extern void report_cpu_error(void);
 
 static const char *TAG = "system";
@@ -56,11 +56,7 @@ static int reset;
 static int power;
 #endif
 
-#if defined(FRONTPANEL) || !defined(WANT_ICE)
-static void run_cpu(void);
-#endif
 #ifdef FRONTPANEL
-static void step_cpu(void);
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
 static void examine_clicked(int, int), deposit_clicked(int, int);
@@ -131,8 +127,8 @@ void mon(void)
 	SLEEP_MS(999);
 	fflush(stdout);
 
-	/* initialise terminal */
 #ifndef WANT_ICE
+	/* initialise terminal */
 	set_unix_terminal();
 #endif
 	atexit(reset_unix_terminal);
@@ -163,10 +159,11 @@ void mon(void)
 		fp_clock++;
 		fp_sampleData();
 
-		/* run CPU if not ideling */
+		/* run CPU if not idling */
 		switch (cpu_switch) {
 		case 1:
-			if (!reset) run_cpu();
+			if (!reset)
+				run_cpu();
 			break;
 		case 2:
 			step_cpu();
@@ -180,9 +177,12 @@ void mon(void)
 		fp_clock++;
 		fp_sampleData();
 
-		/* wait a bit, system is ideling */
+		/* wait a bit, system is idling */
 		SLEEP_MS(10);
 	}
+
+	/* check for CPU emulation errors and report */
+	report_cpu_error();
 #else
 	/* set FDC autoboot flag from fp switch */
 	if (fp_port & 1)
@@ -196,11 +196,14 @@ void mon(void)
 #else
 	/* run the CPU */
 	run_cpu();
+
+	/* check for CPU emulation errors and report */
+	report_cpu_error();
 #endif
 #endif
 
-	/* reset terminal */
 #ifndef WANT_ICE
+	/* reset terminal */
 	reset_unix_terminal();
 #endif
 	putchar('\n');
@@ -225,44 +228,7 @@ void mon(void)
 #endif
 }
 
-/*
- *	Run CPU
- */
-void run_cpu(void)
-{
-	cpu_state = CONTIN_RUN;
-	cpu_error = NONE;
-	switch (cpu) {
-	case Z80:
-		cpu_z80();
-		break;
-	case I8080:
-		cpu_8080();
-		break;
-	}
-	report_cpu_error();
-}
-
 #ifdef FRONTPANEL
-/*
- *	Step CPU
- */
-void step_cpu(void)
-{
-	cpu_state = SINGLE_STEP;
-	cpu_error = NONE;
-	switch (cpu) {
-	case Z80:
-		cpu_z80();
-		break;
-	case I8080:
-		cpu_8080();
-		break;
-	}
-	cpu_state = STOPPED;
-	report_cpu_error();
-}
-
 /*
  *	Callback for RUN/STOP switch
  */

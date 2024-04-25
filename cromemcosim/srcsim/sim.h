@@ -34,6 +34,7 @@
 #define CPU_SPEED 4	/* default CPU speed */
 #define Z80_UNDOC	/* compile undocumented Z80 instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+#define CORE_LOG	/* use LOG() logging in core simulator */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
 /*#define WANT_TIM*/	/* don't count t-states */

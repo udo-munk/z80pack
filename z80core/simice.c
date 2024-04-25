@@ -22,7 +22,7 @@
 #include "simglb.h"
 #include "memory.h"
 
-extern void cpu_z80(void), cpu_8080(void);
+extern void run_cpu(void), step_cpu(void);
 extern void disass(int, WORD *);
 extern int exatoi(char *);
 extern int getkey(void);
@@ -180,16 +180,7 @@ static void do_step(void)
 {
 	WORD a;
 
-	cpu_state = SINGLE_STEP;
-	cpu_error = NONE;
-	switch (cpu) {
-	case Z80:
-		cpu_z80();
-		break;
-	case I8080:
-		cpu_8080();
-		break;
-	}
+	step_cpu();
 	if (cpu_error == OPHALT)
 		handle_break();
 	report_cpu_error();
@@ -213,19 +204,10 @@ static void do_trace(char *s)
 		count = 20;
 	else
 		count = atoi(s);
-	cpu_state = SINGLE_STEP;
-	cpu_error = NONE;
 	print_head();
 	print_reg();
 	for (i = 0; i < count; i++) {
-		switch (cpu) {
-		case Z80:
-			cpu_z80();
-			break;
-		case I8080:
-			cpu_8080();
-			break;
-		}
+		step_cpu();
 		print_reg();
 		if (cpu_error) {
 			if (cpu_error == OPHALT) {
@@ -252,16 +234,7 @@ static void do_go(char *s)
 	if (ice_before_go)
 		(*ice_before_go)();
 cont:
-	cpu_state = CONTIN_RUN;
-	cpu_error = NONE;
-	switch (cpu) {
-	case Z80:
-		cpu_z80();
-		break;
-	case I8080:
-		cpu_8080();
-		break;
-	}
+	run_cpu();
 	if (cpu_error == OPHALT)
 		if (handle_break())
 			if (!cpu_error)
@@ -297,18 +270,9 @@ was_softbreak:
 		h_next = 0;
 #endif
 	break_address = PC - 1;		/* store addr of breakpoint */
-	cpu_error = NONE;		/* HALT was a breakpoint */
 	PC--;				/* substitute HALT opcode by */
 	putmem(PC, soft[i].sb_oldopc);	/* original opcode */
-	cpu_state = SINGLE_STEP;	/* and execute it */
-	switch (cpu) {
-	case Z80:
-		cpu_z80();
-		break;
-	case I8080:
-		cpu_8080();
-		break;
-	}
+	step_cpu();			/* and execute it */
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment passcounter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
@@ -846,7 +810,6 @@ static void do_clock(void)
 	BYTE save[3];
 	static struct sigaction newact;
 	static struct itimerval tim;
-	const char *s = NULL;
 
 	save[0] = getmem(0x0000);	/* save memory locations */
 	save[1] = getmem(0x0001);	/* 0000H - 0002H */
@@ -856,8 +819,6 @@ static void do_clock(void)
 	putmem(0x0002, 0x00);
 	PC = 0;				/* set PC to this code */
 	R = 0L;				/* clear refresh register */
-	cpu_state = CONTIN_RUN;		/* initialise CPU */
-	cpu_error = NONE;
 	newact.sa_handler = timeout;	/* set timer interrupt handler */
 	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
@@ -867,16 +828,7 @@ static void do_clock(void)
 	tim.it_interval.tv_sec = 0;
 	tim.it_interval.tv_usec = 0;
 	setitimer(ITIMER_REAL, &tim, NULL);
-	switch (cpu) {			/* start CPU */
-	case Z80:
-		cpu_z80();
-		s = "JP";
-		break;
-	case I8080:
-		cpu_8080();
-		s = "JMP";
-		break;
-	}
+	run_cpu();			/* start CPU */
 	newact.sa_handler = SIG_DFL;	/* reset timer interrupt handler */
 	sigaction(SIGALRM, &newact, NULL);
 	putmem(0x0000, save[0]);	/* restore memory locations */
@@ -884,7 +836,7 @@ static void do_clock(void)
 	putmem(0x0002, save[2]);
 	if (cpu_error == NONE) {
 		printf("CPU executed %ld %s instructions in 3 seconds\n",
-		       R, s);
+		       R, cpu == Z80 ? "JP" : "JMP");
 		printf("clock frequency = %5.2f Mhz\n",
 		       ((float) R) / 300000.0);
 	} else
