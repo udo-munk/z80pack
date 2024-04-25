@@ -11,15 +11,17 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "tusb.h"
-#ifdef PICO_W
-#include "pico/cyw43_arch.h"
-#endif
 
 /* Project includes */
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
 #include "memory.h"
+
+/* Pico W also needs this */
+#ifdef PICO_W
+#include "pico/cyw43_arch.h"
+#endif
 
 extern void init_cpu(void);
 extern void run_cpu(void);
