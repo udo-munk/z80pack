@@ -874,7 +874,7 @@ static void do_show(void)
 	i = 0;
 #endif
 	printf("No. of software breakpoints: %d\n", i);
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 	i = u_flag;
 #else
 	i = 1;

@@ -19,7 +19,7 @@
 #endif
 #include "memory.h"
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
 #define UNDOC(f) trap_ed
@@ -47,7 +47,7 @@ static int op_ldi(void), op_ldir(void), op_ldd(void), op_lddr(void);
 static int op_cpi(void), op_cpir(void), op_cpdop(void), op_cpdr(void);
 static int op_oprld(void), op_oprrd(void);
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 static int op_undoc_outc0(void), op_undoc_infic(void);
 static int op_undoc_nop(void);
 static int op_undoc_im0(void), op_undoc_im1(void), op_undoc_im2(void);
@@ -1347,7 +1347,7 @@ static int op_oprrd(void)		/* RRD (HL) */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 
 static int op_undoc_outc0(void)		/* OUT (C),0 */
 {

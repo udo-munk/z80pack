@@ -18,7 +18,7 @@
 #endif
 #include "memory.h"
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
 #define UNDOC(f) trap_ddcb
@@ -34,7 +34,7 @@ static int op_sb4ixd(int), op_sb5ixd(int), op_sb6ixd(int), op_sb7ixd(int);
 static int op_rlcixd(int), op_rrcixd(int), op_rlixd(int), op_rrixd(int);
 static int op_slaixd(int), op_sraixd(int), op_srlixd(int);
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 static int op_undoc_tb0ixd(int), op_undoc_tb1ixd(int), op_undoc_tb2ixd(int);
 static int op_undoc_tb3ixd(int), op_undoc_tb4ixd(int), op_undoc_tb5ixd(int);
 static int op_undoc_tb6ixd(int), op_undoc_tb7ixd(int);
@@ -701,7 +701,7 @@ static int op_srlixd(int data)		/* SRL (IX+d) */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 
 static int op_undoc_tb0ixd(int data)	/* BIT 0,(IX+d) */
 {

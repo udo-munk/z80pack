@@ -18,7 +18,7 @@
 #endif
 #include "memory.h"
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
 #define UNDOC(f) trap_cb
@@ -96,7 +96,7 @@ static int op_tb0hl(void), op_tb1hl(void), op_tb2hl(void), op_tb3hl(void);
 static int op_tb4hl(void), op_tb5hl(void), op_tb6hl(void), op_tb7hl(void);
 
 static int op_undoc_slla(void);
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 static int op_undoc_sllb(void), op_undoc_sllc(void), op_undoc_slld(void);
 static int op_undoc_slle(void), op_undoc_sllh(void), op_undoc_slll(void);
 static int op_undoc_sllhl(void);
@@ -2563,7 +2563,7 @@ static int op_undoc_slla(void)		/* SLL A */
 	return (8);
 }
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 
 static int op_undoc_sllb(void)		/* SLL B */
 {

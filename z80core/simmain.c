@@ -324,23 +324,14 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	else
 		printf("CPU speed is unlimited");
 
-	if (cpu == Z80) {
-#ifndef Z80_UNDOC
-		printf(", CPU doesn't execute undocumented instructions\n");
+#ifndef UNDOC_INST
+	printf(", CPU doesn't execute undocumented instructions\n");
 #else
-		if (u_flag)
-			printf(", CPU doesn't execute undocumented "
-			       "instructions\n");
-		else
-			printf(", CPU executes undocumented instructions\n");
+	if (u_flag)
+		printf(", CPU doesn't execute undocumented instructions\n");
+	else
+		printf(", CPU executes undocumented instructions\n");
 #endif
-	} else {
-		if (u_flag)
-			printf(", CPU doesn't execute undocumented "
-			       "instructions\n");
-		else
-			printf(", CPU executes undocumented instructions\n");
-	}
 
 	fflush(stdout);
 

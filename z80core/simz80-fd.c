@@ -18,7 +18,7 @@
 #endif
 #include "memory.h"
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
 #define UNDOC(f) trap_fd
@@ -43,7 +43,7 @@ static int op_ldydd(void), op_ldyde(void);
 static int op_ldydh(void), op_ldydl(void), op_ldydn(void);
 extern int op_fdcb_handle(void);
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 static int op_undoc_ldaiyl(void), op_undoc_ldaiyh(void);
 static int op_undoc_ldbiyl(void), op_undoc_ldbiyh(void);
 static int op_undoc_ldciyl(void), op_undoc_ldciyh(void);
@@ -356,7 +356,7 @@ int op_fd_handle(void)
  */
 static int trap_fd(void)
 {
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 	if (!u_flag) {
 		/* Treat 0xfd prefix as NOP on non IY-instructions */
 		PC--;
@@ -763,7 +763,7 @@ static int op_ldydn(void)		/* LD (IY+d),n */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 
 static int op_undoc_ldaiyl(void)	/* LD A,IYL */
 {

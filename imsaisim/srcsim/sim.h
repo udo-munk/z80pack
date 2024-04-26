@@ -31,7 +31,7 @@
  */
 #define DEF_CPU I8080	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 2	/* default CPU speed */
-#define Z80_UNDOC	/* compile undocumented Z80 instructions */
+#define UNDOC_INST	/* compile undocumented instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 #define CORE_LOG	/* use LOG() logging in core simulator */
 

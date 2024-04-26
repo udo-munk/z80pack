@@ -15,6 +15,12 @@
 #endif
 #include "memory.h"
 
+#ifdef UNDOC_INST
+#define UNDOC(f) f
+#else
+#define UNDOC(f) trap_undoc
+#endif
+
 #ifdef WANT_GUI
 extern void check_gui_break(void);
 #endif
@@ -89,8 +95,11 @@ static int op_rz(void), op_rnz(void), op_rc(void), op_rnc(void);
 static int op_rpe(void), op_rpo(void), op_rm(void), op_rp(void);
 static int op_rst0(void), op_rst1(void), op_rst2(void), op_rst3(void);
 static int op_rst4(void), op_rst5(void), op_rst6(void), op_rst7(void);
+
+#ifdef UNDOC_INST
 static int op_undoc_nop(void), op_undoc_jmp(void);
 static int op_undoc_ret(void), op_undoc_call(void);
+#endif
 
 /*
  * Function to update address bus LED's during execution of
@@ -127,7 +136,7 @@ void cpu_8080(void)
 		op_dcrb,			/* 0x05 */
 		op_mvibn,			/* 0x06 */
 		op_rlc,				/* 0x07 */
-		op_undoc_nop,			/* 0x08 */
+		UNDOC(op_undoc_nop),		/* 0x08 */
 		op_dadb,			/* 0x09 */
 		op_ldaxb,			/* 0x0a */
 		op_dcxb,			/* 0x0b */
@@ -135,7 +144,7 @@ void cpu_8080(void)
 		op_dcrc,			/* 0x0d */
 		op_mvicn,			/* 0x0e */
 		op_rrc,				/* 0x0f */
-		op_undoc_nop,			/* 0x10 */
+		UNDOC(op_undoc_nop),		/* 0x10 */
 		op_lxidnn,			/* 0x11 */
 		op_staxd,			/* 0x12 */
 		op_inxd,			/* 0x13 */
@@ -143,7 +152,7 @@ void cpu_8080(void)
 		op_dcrd,			/* 0x15 */
 		op_mvidn,			/* 0x16 */
 		op_ral,				/* 0x17 */
-		op_undoc_nop,			/* 0x18 */
+		UNDOC(op_undoc_nop),		/* 0x18 */
 		op_dadd,			/* 0x19 */
 		op_ldaxd,			/* 0x1a */
 		op_dcxd,			/* 0x1b */
@@ -151,7 +160,7 @@ void cpu_8080(void)
 		op_dcre,			/* 0x1d */
 		op_mvien,			/* 0x1e */
 		op_rar,				/* 0x1f */
-		op_undoc_nop,			/* 0x20 */
+		UNDOC(op_undoc_nop),		/* 0x20 */
 		op_lxihnn,			/* 0x21 */
 		op_shldnn,			/* 0x22 */
 		op_inxh,			/* 0x23 */
@@ -159,7 +168,7 @@ void cpu_8080(void)
 		op_dcrh,			/* 0x25 */
 		op_mvihn,			/* 0x26 */
 		op_daa,				/* 0x27 */
-		op_undoc_nop,			/* 0x28 */
+		UNDOC(op_undoc_nop),		/* 0x28 */
 		op_dadh,			/* 0x29 */
 		op_lhldnn,			/* 0x2a */
 		op_dcxh,			/* 0x2b */
@@ -167,7 +176,7 @@ void cpu_8080(void)
 		op_dcrl,			/* 0x2d */
 		op_mviln,			/* 0x2e */
 		op_cma,				/* 0x2f */
-		op_undoc_nop,			/* 0x30 */
+		UNDOC(op_undoc_nop),		/* 0x30 */
 		op_lxispnn,			/* 0x31 */
 		op_stann,			/* 0x32 */
 		op_inxsp,			/* 0x33 */
@@ -175,7 +184,7 @@ void cpu_8080(void)
 		op_dcrm,			/* 0x35 */
 		op_mvimn,			/* 0x36 */
 		op_stc,				/* 0x37 */
-		op_undoc_nop,			/* 0x38 */
+		UNDOC(op_undoc_nop),		/* 0x38 */
 		op_dadsp,			/* 0x39 */
 		op_ldann,			/* 0x3a */
 		op_dcxsp,			/* 0x3b */
@@ -322,7 +331,7 @@ void cpu_8080(void)
 		op_rz,				/* 0xc8 */
 		op_ret,				/* 0xc9 */
 		op_jz,				/* 0xca */
-		op_undoc_jmp,			/* 0xcb */
+		UNDOC(op_undoc_jmp),		/* 0xcb */
 		op_cz,				/* 0xcc */
 		op_call,			/* 0xcd */
 		op_acin,			/* 0xce */
@@ -336,11 +345,11 @@ void cpu_8080(void)
 		op_suin,			/* 0xd6 */
 		op_rst2,			/* 0xd7 */
 		op_rc,				/* 0xd8 */
-		op_undoc_ret,			/* 0xd9 */
+		UNDOC(op_undoc_ret),		/* 0xd9 */
 		op_jc,				/* 0xda */
 		op_in,				/* 0xdb */
 		op_cc,				/* 0xdc */
-		op_undoc_call,			/* 0xdd */
+		UNDOC(op_undoc_call),		/* 0xdd */
 		op_sbin,			/* 0xde */
 		op_rst3,			/* 0xdf */
 		op_rpo,				/* 0xe0 */
@@ -356,7 +365,7 @@ void cpu_8080(void)
 		op_jpe,				/* 0xea */
 		op_xchg,			/* 0xeb */
 		op_cpe,				/* 0xec */
-		op_undoc_call,			/* 0xed */
+		UNDOC(op_undoc_call),		/* 0xed */
 		op_xrin,			/* 0xee */
 		op_rst5,			/* 0xef */
 		op_rp,				/* 0xf0 */
@@ -372,7 +381,7 @@ void cpu_8080(void)
 		op_jm,				/* 0xfa */
 		op_ei,				/* 0xfb */
 		op_cm,				/* 0xfc */
-		op_undoc_call,			/* 0xfd */
+		UNDOC(op_undoc_call),		/* 0xfd */
 		op_cpin,			/* 0xfe */
 		op_rst7				/* 0xff */
 	};
@@ -581,20 +590,19 @@ leave:
 #endif
 }
 
+/*
+ *	This function traps undocumented opcodes.
+ */
+static int trap_undoc(void)
+{
+	cpu_error = OPTRAP1;
+	cpu_state = STOPPED;
+	return (0);
+}
+
 static int op_nop(void)			/* NOP */
 {
 	return (4);
-}
-
-static int op_undoc_nop(void)		/* Undocumented NOP */
-{
-	if (u_flag) {	/* trap with option -u */
-		cpu_error = OPTRAP1;
-		cpu_state = STOPPED;
-		return (0);
-	} else {	/* else NOP */
-		return (4);
-	}
 }
 
 static int op_hlt(void)			/* HLT */
@@ -2586,17 +2594,6 @@ static int op_jmp(void)			/* JMP */
 	return (10);
 }
 
-static int op_undoc_jmp(void)		/* Undocumented JMP */
-{
-	if (u_flag) {	/* trap with option -u */
-		cpu_error = OPTRAP1;
-		cpu_state = STOPPED;
-		return (0);
-	} else {	/* else JMP */
-		return (op_jmp());
-	}
-}
-
 static int op_pchl(void)		/* PCHL */
 {
 	PC = (H << 8) + L;
@@ -2618,17 +2615,6 @@ static int op_call(void)		/* CALL */
 	return (17);
 }
 
-static int op_undoc_call(void)		/* Undocumented CALL */
-{
-	if (u_flag) {	/* trap with option -u */
-		cpu_error = OPTRAP1;
-		cpu_state = STOPPED;
-		return (0);
-	} else {
-		return (op_call());
-	}
-}
-
 static int op_ret(void)			/* RET */
 {
 	register WORD i;
@@ -2640,17 +2626,6 @@ static int op_ret(void)			/* RET */
 	i += memrdr(SP++) << 8;
 	PC = i;
 	return (10);
-}
-
-static int op_undoc_ret(void)		/* Undocumented RET */
-{
-	if (u_flag) {	/* trap with option -u */
-		cpu_error = OPTRAP1;
-		cpu_state = STOPPED;
-		return (0);
-	} else {	/* else RET */
-		return (op_ret());
-	}
 }
 
 static int op_jz(void)			/* JZ nn */
@@ -3148,3 +3123,53 @@ static int op_rst7(void)		/* RST 7 */
 	PC = 0x38;
 	return (11);
 }
+
+/**********************************************************************/
+/**********************************************************************/
+/*********       UNDOCUMENTED 8080 INSTRUCTIONS, BEWARE!      *********/
+/**********************************************************************/
+/**********************************************************************/
+
+#ifdef UNDOC_INST
+
+static int op_undoc_nop(void)		/* NOP */
+{
+	if (u_flag) {
+		trap_undoc();
+		return (0);
+	}
+
+	return (4);
+}
+
+static int op_undoc_jmp(void)		/* JMP */
+{
+	if (u_flag) {
+		trap_undoc();
+		return (0);
+	}
+
+	return (op_jmp());
+}
+
+static int op_undoc_call(void)		/* CALL */
+{
+	if (u_flag) {
+		trap_undoc();
+		return (0);
+	}
+
+	return (op_call());
+}
+
+static int op_undoc_ret(void)		/* RET */
+{
+	if (u_flag) {
+		trap_undoc();
+		return (0);
+	}
+
+	return (op_ret());
+}
+
+#endif

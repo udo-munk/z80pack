@@ -19,7 +19,7 @@
  */
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
-#define Z80_UNDOC	/* compile undocumented Z80 instructions */
+#define UNDOC_INST	/* compile undocumented instructions */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 #define CORE_LOG	/* use LOG() logging in core simulator */
 #define EXCLUDE_I8080	/* this was a Z80 machine */
