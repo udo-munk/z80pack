@@ -2,7 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2021 by Udo Munk
- * Copyright (C) 2022 by Thomas Eberhardt
+ * Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -18,7 +18,9 @@
 #endif
 #include "memory.h"
 
-#ifdef Z80_UNDOC
+#ifndef EXCLUDE_Z80
+
+#ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
 #define UNDOC(f) trap_dd
@@ -43,7 +45,7 @@ static int op_ldxdd(void), op_ldxde(void);
 static int op_ldxdh(void), op_ldxdl(void), op_ldxdn(void);
 extern int op_ddcb_handle(void);
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 static int op_undoc_ldaixl(void), op_undoc_ldaixh(void);
 static int op_undoc_ldbixl(void), op_undoc_ldbixh(void);
 static int op_undoc_ldcixl(void), op_undoc_ldcixh(void);
@@ -356,7 +358,7 @@ int op_dd_handle(void)
  */
 static int trap_dd(void)
 {
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 	if (!u_flag) {
 		/* Treat 0xdd prefix as NOP on non IX-instructions */
 		PC--;
@@ -763,7 +765,7 @@ static int op_ldxdn(void)		/* LD (IX+d),n */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 
 static int op_undoc_ldaixl(void)	/* LD A,IXL */
 {
@@ -1434,5 +1436,7 @@ static int op_undoc_decixh(void)	/* DEC IXH */
 	F |= N_FLAG;
 	return (8);
 }
+
+#endif
 
 #endif

@@ -2,7 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2021 by Udo Munk
- * Copyright (C) 2022 by Thomas Eberhardt
+ * Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -19,7 +19,9 @@
 #endif
 #include "memory.h"
 
-#ifdef Z80_UNDOC
+#ifndef EXCLUDE_Z80
+
+#ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
 #define UNDOC(f) trap_ed
@@ -47,7 +49,7 @@ static int op_ldi(void), op_ldir(void), op_ldd(void), op_lddr(void);
 static int op_cpi(void), op_cpir(void), op_cpdop(void), op_cpdr(void);
 static int op_oprld(void), op_oprrd(void);
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 static int op_undoc_outc0(void), op_undoc_infic(void);
 static int op_undoc_nop(void);
 static int op_undoc_im0(void), op_undoc_im1(void), op_undoc_im2(void);
@@ -1347,7 +1349,7 @@ static int op_oprrd(void)		/* RRD (HL) */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 
 static int op_undoc_outc0(void)		/* OUT (C),0 */
 {
@@ -1449,5 +1451,7 @@ static int op_undoc_neg(void)		/* NEG */
 
 	return (op_neg());
 }
+
+#endif
 
 #endif

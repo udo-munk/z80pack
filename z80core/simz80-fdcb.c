@@ -2,7 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2021 by Udo Munk
- * Copyright (C) 2022 by Thomas Eberhardt
+ * Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
@@ -18,7 +18,9 @@
 #endif
 #include "memory.h"
 
-#ifdef Z80_UNDOC
+#ifndef EXCLUDE_Z80
+
+#ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
 #define UNDOC(f) trap_fdcb
@@ -34,7 +36,7 @@ static int op_sb4iyd(int), op_sb5iyd(int), op_sb6iyd(int), op_sb7iyd(int);
 static int op_rlciyd(int), op_rrciyd(int), op_rliyd(int), op_rriyd(int);
 static int op_slaiyd(int), op_sraiyd(int), op_srliyd(int);
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 static int op_undoc_tb0iyd(int), op_undoc_tb1iyd(int), op_undoc_tb2iyd(int);
 static int op_undoc_tb3iyd(int), op_undoc_tb4iyd(int), op_undoc_tb5iyd(int);
 static int op_undoc_tb6iyd(int), op_undoc_tb7iyd(int);
@@ -701,7 +703,7 @@ static int op_srliyd(int data)		/* SRL (IY+d) */
 /**********************************************************************/
 /**********************************************************************/
 
-#ifdef Z80_UNDOC
+#ifdef UNDOC_INST
 
 static int op_undoc_tb0iyd(int data)	/* BIT 0,(IY+d) */
 {
@@ -3422,5 +3424,7 @@ static int op_undoc_srliydl(int data)	/* SRL (IY+d),L */
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return (23);
 }
+
+#endif
 
 #endif

@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2024 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  */
 
 #include <unistd.h>
@@ -15,6 +16,8 @@
 #include "../../frontpanel/frontpanel.h"
 #endif
 #include "memory.h"
+
+#ifndef EXCLUDE_Z80
 
 #ifdef WANT_GUI
 extern void check_gui_break(void);
@@ -3266,3 +3269,5 @@ static int op_rst38(void)		/* RST 38 */
 	PC = 0x38;
 	return (11);
 }
+
+#endif

@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2024 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  */
 
 #define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
@@ -13,13 +14,23 @@
 #define Z80		1	/* simulated CPUs */
 #define I8080		2
 
+#if defined(EXCLUDE_I8080) && defined(EXCLUDE_Z80)
+#error "Only one of EXCLUDE_I8080 or EXCLUDE_Z80 can be used"
+#endif
+#if defined(EXCLUDE_I8080) && DEF_CPU == I8080
+#error "DEF_CPU=I8080 and no 8080 simulation included"
+#endif
+#if defined(EXCLUDE_Z80) && DEF_CPU == Z80
+#error "DEF_CPU=Z80 and no Z80 simulation included"
+#endif
+
 #define S_FLAG		128	/* bit definitions of CPU flags */
 #define Z_FLAG		64
 #define N2_FLAG		32
 #define H_FLAG		16
 #define N1_FLAG		8
 #define P_FLAG		4
-#define N_FLAG		2
+#define N_FLAG		2	/* not used by the 8080 */
 #define C_FLAG		1
 
 #define CPU_MEMR	128	/* bit definitions for CPU bus status */
@@ -66,8 +77,10 @@ struct history {		/* structure of a history entry */
 	WORD	h_bc;		/* register BC */
 	WORD	h_de;		/* register DE */
 	WORD	h_hl;		/* register HL */
+#ifndef EXCLUDE_Z80
 	WORD	h_ix;		/* register IX */
 	WORD	h_iy;		/* register IY */
+#endif
 	WORD	h_sp;		/* register SP */
 };
 #endif

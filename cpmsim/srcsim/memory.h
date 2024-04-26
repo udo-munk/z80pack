@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2019 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module implements banked memory management for cpmsim
  *
@@ -44,8 +45,10 @@ static inline void memwrt(WORD addr, BYTE data)
 {
 	if ((addr >= segsize) && (wp_common != 0)) {
 		wp_common |= 0x80;
+#ifndef EXCLUDE_Z80
 		if (wp_common & 0x40)
 			int_nmi = 1;
+#endif
 		return;
 	}
 

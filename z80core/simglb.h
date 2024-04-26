@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1987-2021 Udo Munk
  * Copyright (C) 2021 David McNaughton
- * Copyright (C) 2022 Thomas Eberhardt
+ * Copyright (C) 2022-2024 Thomas Eberhardt
  */
 
 /*
@@ -19,9 +19,15 @@ void end_bus_request(void);
 
 extern int	cpu;
 
-extern BYTE	A, B, C, D, E, H, L, A_, B_, C_, D_, E_, H_, L_, I, IFF, R_;
-extern WORD	PC, SP, IX, IY;
-extern int	F, F_;
+extern BYTE	A, B, C, D, E, H, L;
+extern int	F;
+#ifndef EXCLUDE_Z80
+extern WORD	IX, IY;
+extern BYTE	A_, B_, C_, D_, E_, H_, L_, I, R_;
+extern int	F_;
+#endif
+extern WORD	PC, SP;
+extern BYTE	IFF;
 extern long	R;
 extern Tstates_t T;
 extern BYTE	io_port, io_data;
@@ -38,8 +44,10 @@ extern int	int_data;
 
 extern int	s_flag, l_flag, m_flag, x_flag, break_flag, i_flag, f_flag,
 		u_flag, r_flag, c_flag, M_flag, R_flag,
-		cpu_error, int_nmi, int_int, int_mode, parity[], sb_next,
-		int_protection;
+		cpu_error, int_int, parity[], sb_next, int_protection;
+#ifndef EXCLUDE_Z80
+extern int	int_nmi, int_mode;
+#endif
 
 extern int	tmax, cpu_needed;
 extern int	busy_loop_cnt[];
