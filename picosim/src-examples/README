@@ -11,3 +11,4 @@ the application.
 The examples are:
 serial.c	- shows how to do serial I/O
 tb.c		- TINY BASIC
+micro80.c	- 8080 Microchess

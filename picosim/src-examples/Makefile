@@ -4,7 +4,7 @@ all :	serial.c tb.c
 	@echo
 
 clean :
-	rm -rf *.c
+	rm -rf serial.c tb.c
 
 serial.c :	serial.asm
 	z80asm -fc -l -sn -p0 $?
