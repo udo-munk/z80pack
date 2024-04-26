@@ -30,7 +30,7 @@
 #define H_FLAG		16
 #define N1_FLAG		8
 #define P_FLAG		4
-#define N_FLAG		2	/* not used by the 8080 */
+#define N_FLAG		2
 #define C_FLAG		1
 
 #define CPU_MEMR	128	/* bit definitions for CPU bus status */
