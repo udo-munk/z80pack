@@ -18,6 +18,8 @@
 #endif
 #include "memory.h"
 
+#ifndef EXCLUDE_Z80
+
 #ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
@@ -2682,5 +2684,7 @@ static int op_undoc_sllhl(void)		/* SLL (HL) */
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return (15);
 }
+
+#endif
 
 #endif

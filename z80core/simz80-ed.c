@@ -19,6 +19,8 @@
 #endif
 #include "memory.h"
 
+#ifndef EXCLUDE_Z80
+
 #ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
@@ -1449,5 +1451,7 @@ static int op_undoc_neg(void)		/* NEG */
 
 	return (op_neg());
 }
+
+#endif
 
 #endif

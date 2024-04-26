@@ -23,7 +23,7 @@
 #include "memory.h"
 
 extern void run_cpu(void), step_cpu(void);
-extern void disass(int, WORD *);
+extern void disass(WORD *);
 extern int exatoi(char *);
 extern int getkey(void);
 extern void int_on(void), int_off(void);
@@ -88,7 +88,7 @@ void ice_cmd_loop(int go_flag)
 		print_head();
 		print_reg();
 		a = PC;
-		disass(cpu, &a);
+		disass(&a);
 	}
 	wrk_addr = PC;
 
@@ -187,7 +187,7 @@ static void do_step(void)
 	print_head();
 	print_reg();
 	a = PC;
-	disass(cpu, &a);
+	disass(&a);
 	wrk_addr = PC;
 }
 
@@ -327,7 +327,7 @@ static void do_list(char *s)
 		wrk_addr = exatoi(s);
 	for (i = 0; i < 10; i++) {
 		printf("%04x - ", (unsigned int) wrk_addr);
-		disass(cpu, &wrk_addr);
+		disass(&wrk_addr);
 	}
 }
 
@@ -451,6 +451,7 @@ static void do_reg(char *s)
 		print_head();
 		print_reg();
 	} else {
+#ifndef EXCLUDE_Z80
 		if ((strncmp(s, "bc'", 3) == 0) && (cpu == Z80)) {
 			printf("BC' = %04x : ", B_ * 256 + C_);
 			fgets(nv, sizeof(nv), stdin);
@@ -466,7 +467,9 @@ static void do_reg(char *s)
 			fgets(nv, sizeof(nv), stdin);
 			H_ = (exatoi(nv) & 0xffff) / 256;
 			L_ = (exatoi(nv) & 0xffff) % 256;
-		} else if (strncmp(s, "pc", 2) == 0) {
+		} else
+#endif
+		if (strncmp(s, "pc", 2) == 0) {
 			printf("PC = %04x : ", PC);
 			fgets(nv, sizeof(nv), stdin);
 			PC = (exatoi(nv) & 0xffff);
@@ -485,6 +488,7 @@ static void do_reg(char *s)
 			fgets(nv, sizeof(nv), stdin);
 			H = (exatoi(nv) & 0xffff) / 256;
 			L = (exatoi(nv) & 0xffff) % 256;
+#ifndef EXCLUDE_Z80
 		} else if ((strncmp(s, "ix", 2) == 0) && (cpu == Z80)) {
 			printf("IX = %04x : ", IX);
 			fgets(nv, sizeof(nv), stdin);
@@ -493,6 +497,7 @@ static void do_reg(char *s)
 			printf("IY = %04x : ", IY);
 			fgets(nv, sizeof(nv), stdin);
 			IY = exatoi(nv) & 0xffff;
+#endif
 		} else if (strncmp(s, "sp", 2) == 0) {
 			printf("SP = %04x : ", SP);
 			fgets(nv, sizeof(nv), stdin);
@@ -513,19 +518,22 @@ static void do_reg(char *s)
 			printf("P-FLAG = %c : ", (F & P_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
 			F = (exatoi(nv)) ? (F | P_FLAG) : (F & ~P_FLAG);
+#ifndef EXCLUDE_Z80
 		} else if ((strncmp(s, "fn", 2) == 0) && (cpu == Z80)) {
 			printf("N-FLAG = %c : ", (F & N_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
 			F = (exatoi(nv)) ? (F | N_FLAG) : (F & ~N_FLAG);
+#endif
 		} else if (strncmp(s, "fc", 2) == 0) {
 			printf("C-FLAG = %c : ", (F & C_FLAG) ? '1' : '0');
 			fgets(nv, sizeof(nv), stdin);
 			F = (exatoi(nv)) ? (F | C_FLAG) : (F & ~C_FLAG);
-		} else if (strncmp(s, "a'", 2) == 0) {
+#ifndef EXCLUDE_Z80
+		} else if ((strncmp(s, "a'", 2) == 0) && (cpu == Z80)) {
 			printf("A' = %02x : ", A_);
 			fgets(nv, sizeof(nv), stdin);
 			A_ = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "f'", 2) == 0) {
+		} else if ((strncmp(s, "f'", 2) == 0) && (cpu == Z80)) {
 			printf("F' = %02x : ", F_);
 			fgets(nv, sizeof(nv), stdin);
 			F_ = exatoi(nv) & 0xff;
@@ -557,6 +565,7 @@ static void do_reg(char *s)
 			printf("I = %02x : ", I);
 			fgets(nv, sizeof(nv), stdin);
 			I = exatoi(nv) & 0xff;
+#endif
 		} else if (strncmp(s, "a", 1) == 0) {
 			printf("A = %02x : ", A);
 			fgets(nv, sizeof(nv), stdin);
@@ -601,11 +610,21 @@ static void do_reg(char *s)
  */
 static void print_head(void)
 {
-	if (cpu == Z80)
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
 		printf("\nPC   A  SZHPNC I  IFF BC   DE   HL   "
 		       "A'F' B'C' D'E' H'L' IX   IY   SP\n");
-	else
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
 		printf("\nPC   A  SZHPC BC   DE   HL   SP\n");
+		break;
+#endif
+	default:
+		break;
+	}
 }
 
 /*
@@ -618,22 +637,29 @@ static void print_reg(void)
 	printf("%c", F & Z_FLAG ? '1' : '0');
 	printf("%c", F & H_FLAG ? '1' : '0');
 	printf("%c", F & P_FLAG ? '1' : '0');
-	if (cpu == Z80)
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
 		printf("%c", F & N_FLAG ? '1' : '0');
-	printf("%c", F & C_FLAG ? '1' : '0');
-	if (cpu == Z80) {
+		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x ", I);
 		printf("%c", IFF & 1 ? '1' : '0');
 		printf("%c", IFF & 2 ? '1' : '0');
-	}
-	if (cpu == Z80) {
 		printf("  %02x%02x %02x%02x %02x%02x %02x%02x "
 		       "%02x%02x %02x%02x %02x%02x %04x %04x %04x\n",
 		       B, C, D, E, H, L, A_, F_,
 		       B_, C_, D_, E_, H_, L_, IX, IY, SP);
-	} else {
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x%02x %02x%02x %02x%02x %04x\n",
 		       B, C, D, E, H, L, SP);
+		break;
+#endif
+	default:
+		break;
 	}
 }
 
@@ -736,17 +762,26 @@ static void do_hist(char *s)
 				else
 					sa = -1;
 			}
-			if (cpu == Z80) {
+			switch (cpu) {
+#ifndef EXCLUDE_Z80
+			case Z80:
 				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 				       "IX=%04x IY=%04x SP=%04x\n",
 				       his[i].h_addr, his[i].h_af, his[i].h_bc,
 				       his[i].h_de, his[i].h_hl, his[i].h_ix,
 				       his[i].h_iy, his[i].h_sp);
-			} else {
+				break;
+#endif
+#ifndef EXCLUDE_I8080
+			case I8080:
 				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 				       "SP=%04x\n",
 				       his[i].h_addr, his[i].h_af, his[i].h_bc,
 				       his[i].h_de, his[i].h_hl, his[i].h_sp);
+				break;
+#endif
+			default:
+				break;
 			}
 			l++;
 			if (l == 20) {

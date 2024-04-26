@@ -18,6 +18,8 @@
 #endif
 #include "memory.h"
 
+#ifndef EXCLUDE_Z80
+
 #ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
@@ -3422,5 +3424,7 @@ static int op_undoc_srlixdl(int data)	/* SRL (IX+d),L */
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	return (23);
 }
+
+#endif
 
 #endif

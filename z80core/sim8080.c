@@ -15,6 +15,8 @@
 #endif
 #include "memory.h"
 
+#ifndef EXCLUDE_I8080
+
 #ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
@@ -3171,5 +3173,7 @@ static int op_undoc_ret(void)		/* RET */
 
 	return (op_ret());
 }
+
+#endif
 
 #endif

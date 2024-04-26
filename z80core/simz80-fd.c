@@ -18,6 +18,8 @@
 #endif
 #include "memory.h"
 
+#ifndef EXCLUDE_Z80
+
 #ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
@@ -1434,5 +1436,7 @@ static int op_undoc_deciyh(void)	/* DEC IYH */
 	F |= N_FLAG;
 	return (8);
 }
+
+#endif
 
 #endif

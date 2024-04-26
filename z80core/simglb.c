@@ -26,18 +26,20 @@ int cpu = DEF_CPU;
  */
 BYTE A, B, C, D, E, H, L;	/* primary registers */
 int  F;				/* normally 8-Bit, but int is faster */
+#ifndef EXCLUDE_Z80
 WORD IX, IY;			/* Z80 index registers */
 BYTE A_, B_, C_, D_, E_, H_, L_; /* Z80 alternate registers */
+BYTE I;				/* Z80 interrupt register */
 int  F_;
+BYTE R_;			/* BYTE copy of R for keeping the 7th bit */
+#endif
 WORD PC;			/* programm counter */
 WORD SP;			/* stackpointer */
-BYTE I;				/* Z80 interrupt register */
 BYTE IFF;			/* interrupt flags */
 long R;				/* Z80 refresh register */
 				/* is normally a 8 bit register */
 				/* the larger bits are used to measure the */
 				/* clock frequency */
-BYTE R_;			/* BYTE copy of R for keeping the 7th bit */
 Tstates_t T;			/* CPU clock */
 
 #ifdef BUS_8080
@@ -51,8 +53,10 @@ int busy_loop_cnt[MAXCHAN];	/* counters for I/O busy loop detection */
 
 BYTE cpu_state;			/* state of CPU emulation */
 int cpu_error;			/* error status of CPU emulation */
+#ifndef EXCLUDE_Z80
 int int_mode;			/* CPU interrupt mode (IM 0, IM 1, IM 2) */
 int int_nmi;			/* non maskable interrupt request */
+#endif
 int int_int;			/* interrupt request */
 int int_data = -1;		/* data from interrupting device on data bus */
 int int_protection;		/* to delay interrupts after EI */

@@ -22,13 +22,16 @@
  */
 static int opout(const char *, WORD);
 static int nout(const char *, WORD);
+static int nnout(const char *, WORD);
+
+#ifndef EXCLUDE_Z80
 static int iout(const char *, WORD);
 static int rout(const char *, WORD);
-static int nnout(const char *, WORD);
 static int inout(const char *, WORD);
 static int cbop(const char *, WORD);
 static int edop(const char *, WORD);
 static int ddfd(const char *, WORD);
+#endif
 
 /*
  *	Op-code tables
@@ -38,6 +41,7 @@ struct opt {
 	const char *text;
 };
 
+#ifndef EXCLUDE_Z80
 static struct opt optabz80_01[64] = {
 	{ opout,  "NOP"			},	/* 0x00 */
 	{ nnout,  "LD\tBC,"		},	/* 0x01 */
@@ -273,7 +277,9 @@ static struct opt optabed_5[32] = {
 	{ opout,  "NOP*"		},	/* 0xbe */ /* undocumented */
 	{ opout,  "NOP*"		}	/* 0xbf */ /* undocumented */
 };
+#endif
 
+#ifndef EXCLUDE_I8080
 static struct opt optabi8080_01[64] = {
 	{ opout,  "NOP"			},	/* 0x00 */
 	{ nnout,  "LXI\tB,"		},	/* 0x01 */
@@ -407,7 +413,9 @@ static struct opt optabi8080_67[64] = {
 	{ nout,   "CPI\t"		},	/* 0xfe */
 	{ opout,  "RST\t7"		}	/* 0xff */
 };
+#endif
 
+#ifndef EXCLUDE_Z80
 static const char *reg[]     = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
 static const char *regix[]   = { "B", "C", "D", "E", "IXH", "IXL", "IX", "A" };
 static const char *regiy[]   = { "B", "C", "D", "E", "IYH", "IYL", "IY", "A" };
@@ -420,9 +428,13 @@ static const char *rsins[]   = { "RLC", "RRC", "RL", "RR",
 static const char *rsinsu[]  = { "RLC*", "RRC*", "RL*", "RR*",
 				 "SLA*", "SRA*", "SLL*", "SRL*" };
 static const char *bitins[]  = { "", "BIT", "RES", "SET" };
+#endif
+
+#ifndef EXCLUDE_I8080
 static const char *regi8080[]	 = { "B", "C", "D", "E", "H", "L", "M", "A" };
 static const char *aluinsi8080[] = { "ADD", "ADC", "SUB", "SBB",
 				     "ANA", "XRA", "ORA", "CMP" };
+#endif
 
 /* globals for passing disassembled code to anyone else who's interested */
 
@@ -472,14 +484,16 @@ static void get_opcodes(WORD addr, int len)
  *	getmem().
  *
  */
-void disass(int cpu, WORD *addr)
+void disass(WORD *addr)
 {
 	register BYTE op;
 	register int len = 1;
 	struct opt *optp;
 
 	op = getmem(*addr);
-	if (cpu == Z80) {
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
 		if (op < 0x40) {
 			optp = &optabz80_01[op];
 			len = (*optp->fun)(optp->text, *addr);
@@ -496,7 +510,10 @@ void disass(int cpu, WORD *addr)
 			optp = &optabz80_67[op & 0x3f];
 			len = (*optp->fun)(optp->text, *addr);
 		}
-	} else {
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
 		if (op < 0x40) {
 			optp = &optabi8080_01[op];
 			len = (*optp->fun)(optp->text, *addr);
@@ -515,6 +532,10 @@ void disass(int cpu, WORD *addr)
 			optp = &optabi8080_67[op & 0x3f];
 			len = (*optp->fun)(optp->text, *addr);
 		}
+		break;
+#endif
+	default:
+		break;
 	}
 	strcat(Disass_Str, "\n");
 
@@ -549,6 +570,20 @@ static int nout(const char *s, WORD a)
 }
 
 /*
+ *	disassemble 3 byte op-codes of type "Op nn"
+ */
+static int nnout(const char *s, WORD a)
+{
+	register int i;
+
+	i = getmem(a + 1) + (getmem(a + 2) << 8);
+	sprintf(Disass_Str, "%s%04X", s, i);
+	return (3);
+}
+
+#ifndef EXCLUDE_Z80
+
+/*
  *	disassemble 2 byte op-codes with indirect addressing
  */
 static int iout(const char *s, WORD a)
@@ -564,18 +599,6 @@ static int rout(const char *s, WORD a)
 {
 	sprintf(Disass_Str, "%s%04X", s, a + (signed char) getmem(a + 1) + 2);
 	return (2);
-}
-
-/*
- *	disassemble 3 byte op-codes of type "Op nn"
- */
-static int nnout(const char *s, WORD a)
-{
-	register int i;
-
-	i = getmem(a + 1) + (getmem(a + 2) << 8);
-	sprintf(Disass_Str, "%s%04X", s, i);
-	return (3);
 }
 
 /*
@@ -869,3 +892,5 @@ static int ddfd(const char *s, WORD a)
 		}
 	}
 }
+
+#endif

@@ -42,10 +42,9 @@ void init_cpu(void)
 	L = rand() % 256;
 	F = rand() % 256;
 
-	if (cpu == I8080) {	/* i8080 specific */
-		F &= ~(N2_FLAG | N1_FLAG);
-		F |= N_FLAG;
-	} else {		/* Z80 specific */
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
 		I = 0;
 		A_ = rand() % 256;
 		B_ = rand() % 256;
@@ -57,6 +56,16 @@ void init_cpu(void)
 		F_ = rand() % 256;
 		IX = rand() % 65536;
 		IY = rand() % 65536;
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		F &= ~(N2_FLAG | N1_FLAG);
+		F |= N_FLAG;
+		break;
+#endif
+	default:
+		break;
 	}
 }
 
@@ -65,14 +74,25 @@ void init_cpu(void)
  */
 void reset_cpu(void)
 {
-	IFF = int_int = int_nmi = int_protection = int_mode = 0;
+	IFF = int_int = int_protection = 0;
 	int_data = -1;
 
 	PC = 0;
 
-	if (cpu == Z80) {
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
 		I = 0;
 		R_ = R = 0L;
+		int_nmi = int_mode = 0;
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		break;
+#endif
+	default:
+		break;
 	}
 }
 
@@ -84,15 +104,17 @@ void run_cpu(void)
 	cpu_state = CONTIN_RUN;
 	cpu_error = NONE;
 	switch (cpu) {
-	case Z80:
 #ifndef EXCLUDE_Z80
+	case Z80:
 		cpu_z80();
-#endif
 		break;
-	case I8080:
-#ifndef EXCLUDE_I8080
-		cpu_8080();
 #endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		cpu_8080();
+		break;
+#endif
+	default:
 		break;
 	}
 }
@@ -105,15 +127,17 @@ void step_cpu(void)
 	cpu_state = SINGLE_STEP;
 	cpu_error = NONE;
 	switch (cpu) {
-	case Z80:
 #ifndef EXCLUDE_Z80
+	case Z80:
 		cpu_z80();
-#endif
 		break;
-	case I8080:
-#ifndef EXCLUDE_I8080
-		cpu_8080();
 #endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		cpu_8080();
+		break;
+#endif
+	default:
 		break;
 	}
 	cpu_state = STOPPED;

@@ -35,7 +35,7 @@
 #include "memory.h"
 
 static void save_core(void);
-int load_core(void);
+static int load_core(void);
 extern void init_cpu(void);
 extern int load_file(char *, WORD, int);
 extern void int_on(void), int_off(void), mon(void);
@@ -214,13 +214,17 @@ int main(int argc, char *argv[])
 				break;
 #endif
 
+#ifndef EXCLUDE_I8080
 			case '8':
 				cpu = I8080;
 				break;
+#endif
 
+#ifndef EXCLUDE_Z80
 			case 'z':
 				cpu = Z80;
 				break;
+#endif
 
 			case '?':
 			case 'h':
@@ -231,8 +235,19 @@ int main(int argc, char *argv[])
 
 usage:
 
-				printf("usage:\t%s -z -8 -s -l -i -u %s-m val "
-				       "-f freq -x filename", pn, rom);
+				printf("usage:\t%s%s%s -s -l -i -u %s-m val "
+				       "-f freq -x filename", pn,
+#ifndef EXCLUDE_Z80
+				       " -z",
+#else
+				       "",
+#endif
+#ifndef EXCLUDE_I8080
+				       " -8",
+#else
+				       "",
+#endif
+				       rom);
 #ifdef HAS_DISKS
 				printf(" -d diskpath");
 #endif
@@ -246,8 +261,12 @@ usage:
 				printf(" -R");
 #endif
 				putchar('\n');
+#ifndef EXCLUDE_Z80
 				puts("\t-z = emulate Zilog Z80");
+#endif
+#ifndef EXCLUDE_I8080
 				puts("\t-8 = emulate Intel 8080");
+#endif
 				puts("\t-s = save core and CPU");
 				puts("\t-l = load core and CPU");
 				puts("\t-i = trap on I/O to unused ports");
@@ -291,7 +310,9 @@ usage:
 
 	putchar('\n');
 
-	if (cpu == Z80) {
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
 puts("#######  #####    ###            #####    ###   #     #");
 puts("     #  #     #  #   #          #     #    #    ##   ##");
 puts("    #   #     # #     #         #          #    # # # #");
@@ -299,9 +320,10 @@ puts("   #     #####  #     #  #####   #####     #    #  #  #");
 puts("  #     #     # #     #               #    #    #     #");
 puts(" #      #     #  #   #          #     #    #    #     #");
 puts("#######  #####    ###            #####    ###   #     #");
-
-	} else {
-
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
 puts(" #####    ###     #####    ###            #####    ###   #     #");
 puts("#     #  #   #   #     #  #   #          #     #    #    ##   ##");
 puts("#     # #     #  #     # #     #         #          #    # # # #");
@@ -309,6 +331,10 @@ puts(" #####  #     #   #####  #     #  #####   #####     #    #  #  #");
 puts("#     # #     #  #     # #     #               #    #    #     #");
 puts("#     #  #   #   #     #  #   #          #     #    #    #     #");
 puts(" #####    ###     #####    ###            #####    ###   #     #");
+		break;
+#endif
+	default:
+		break;
 	}
 
 	printf("\nRelease %s, %s\n", RELEASE, COPYR);
@@ -388,19 +414,35 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 }
 
 /*
- *	This function saves the CPU and the memory into the file core.z80
+ *	This function saves the CPU and the memory into the
+ *	file core.z80 or core.8080
  */
 static void save_core(void)
 {
 	register FILE *fp;
 	register int i;
 	int fd;
+	const char *fname;
 
-	if ((fd = open("core.z80", O_WRONLY | O_CREAT, 0600)) == -1
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
+		fname = "core.z80";
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		fname = "core.8080";
+		break;
+#endif
+	default:
+		return;
+	}
+	if ((fd = open(fname, O_WRONLY | O_CREAT, 0600)) == -1
 	    || (fp = fdopen(fd, "w")) == NULL) {
-		if (fd >= 0)
+		if (fd != -1)
 			close(fd);
-		puts("can't open file core.z80");
+		printf("can't open file %s\n", fname);
 		return;
 	}
 
@@ -412,44 +454,72 @@ static void save_core(void)
 	fwrite(&E, sizeof(E), 1, fp);
 	fwrite(&H, sizeof(H), 1, fp);
 	fwrite(&L, sizeof(L), 1, fp);
-	fwrite(&A_, sizeof(A_), 1, fp);
-	fwrite(&F_, sizeof(F_), 1, fp);
-	fwrite(&B_, sizeof(B_), 1, fp);
-	fwrite(&C_, sizeof(C_), 1, fp);
-	fwrite(&D_, sizeof(D_), 1, fp);
-	fwrite(&E_, sizeof(E_), 1, fp);
-	fwrite(&H_, sizeof(H_), 1, fp);
-	fwrite(&L_, sizeof(L_), 1, fp);
-	fwrite(&I, sizeof(I), 1, fp);
+#ifndef EXCLUDE_Z80
+	if (cpu == Z80) {
+		fwrite(&A_, sizeof(A_), 1, fp);
+		fwrite(&F_, sizeof(F_), 1, fp);
+		fwrite(&B_, sizeof(B_), 1, fp);
+		fwrite(&C_, sizeof(C_), 1, fp);
+		fwrite(&D_, sizeof(D_), 1, fp);
+		fwrite(&E_, sizeof(E_), 1, fp);
+		fwrite(&H_, sizeof(H_), 1, fp);
+		fwrite(&L_, sizeof(L_), 1, fp);
+		fwrite(&I, sizeof(I), 1, fp);
+	}
+#endif
 	fwrite(&IFF, sizeof(IFF), 1, fp);
-	fwrite(&R, sizeof(R), 1, fp);
-	fwrite(&R_, sizeof(R_), 1, fp);
+#ifndef EXCLUDE_Z80
+	if (cpu == Z80) {
+		fwrite(&R, sizeof(R), 1, fp);
+		fwrite(&R_, sizeof(R_), 1, fp);
+	}
+#endif
 	fwrite(&PC, sizeof(PC), 1, fp);
 	fwrite(&SP, sizeof(SP), 1, fp);
-	fwrite(&IX, sizeof(IX), 1, fp);
-	fwrite(&IY, sizeof(IY), 1, fp);
+#ifndef EXCLUDE_Z80
+	if (cpu == Z80) {
+		fwrite(&IX, sizeof(IX), 1, fp);
+		fwrite(&IY, sizeof(IY), 1, fp);
+	}
+#endif
 
 	for (i = 0; i < 65536; i++)
 		fputc(getmem(i), fp);
 
 	if (ferror(fp)) {
 		fclose(fp);
-		puts("error writing core.z80");
+		printf("error writing %s\n", fname);
 		return;
 	}
 	fclose(fp);
 }
 
 /*
- *	This function loads the CPU and memory from the file core.z80
+ *	This function loads the CPU and memory from the
+ *	file core.z80 or core.8080
  */
-int load_core(void)
+static int load_core(void)
 {
 	register FILE *fp;
 	register int i;
+	const char *fname;
 
-	if ((fp = fopen("core.z80", "r")) == NULL) {
-		puts("can't open file core.z80");
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
+		fname = "core.z80";
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		fname = "core.8080";
+		break;
+#endif
+	default:
+		return (1);
+	}
+	if ((fp = fopen(fname, "r")) == NULL) {
+		printf("can't open file %s\n", fname);
 		return (1);
 	}
 
@@ -461,29 +531,42 @@ int load_core(void)
 	fread(&E, sizeof(E), 1, fp);
 	fread(&H, sizeof(H), 1, fp);
 	fread(&L, sizeof(L), 1, fp);
-	fread(&A_, sizeof(A_), 1, fp);
-	fread(&F_, sizeof(F_), 1, fp);
-	fread(&B_, sizeof(B_), 1, fp);
-	fread(&C_, sizeof(C_), 1, fp);
-	fread(&D_, sizeof(D_), 1, fp);
-	fread(&E_, sizeof(E_), 1, fp);
-	fread(&H_, sizeof(H_), 1, fp);
-	fread(&L_, sizeof(L_), 1, fp);
-	fread(&I, sizeof(I), 1, fp);
+#ifndef EXCLUDE_Z80
+	if (cpu == Z80) {
+		fread(&A_, sizeof(A_), 1, fp);
+		fread(&F_, sizeof(F_), 1, fp);
+		fread(&B_, sizeof(B_), 1, fp);
+		fread(&C_, sizeof(C_), 1, fp);
+		fread(&D_, sizeof(D_), 1, fp);
+		fread(&E_, sizeof(E_), 1, fp);
+		fread(&H_, sizeof(H_), 1, fp);
+		fread(&L_, sizeof(L_), 1, fp);
+		fread(&I, sizeof(I), 1, fp);
+	}
+#endif
 	fread(&IFF, sizeof(IFF), 1, fp);
-	fread(&R, sizeof(R), 1, fp);
-	fread(&R_, sizeof(R_), 1, fp);
+#ifndef EXCLUDE_Z80
+	if (cpu == Z80) {
+		fread(&R, sizeof(R), 1, fp);
+		fread(&R_, sizeof(R_), 1, fp);
+	} else
+#endif
+		R = 0L;
 	fread(&PC, sizeof(PC), 1, fp);
 	fread(&SP, sizeof(SP), 1, fp);
-	fread(&IX, sizeof(IX), 1, fp);
-	fread(&IY, sizeof(IY), 1, fp);
+#ifndef EXCLUDE_Z80
+	if (cpu == Z80) {
+		fread(&IX, sizeof(IX), 1, fp);
+		fread(&IY, sizeof(IY), 1, fp);
+	}
+#endif
 
 	for (i = 0; i < 65536; i++)
 		putmem(i, getc(fp));
 
 	if (ferror(fp)) {
 		fclose(fp);
-		puts("error reading core.z80");
+		printf("error reading %s\n", fname);
 		return (1);
 	}
 	fclose(fp);
