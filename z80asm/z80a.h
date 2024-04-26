@@ -261,7 +261,7 @@ struct sym {
 /*
  *	attribute for declaring that a function doesn't return
  */
-#if __GNUC__ > 2 || __clang__
+#if __GNUC__ > 2 || defined(__clang__)
 #define NORETURN	__attribute__ ((noreturn))
 #else
 #define NORETURN
