@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2019 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module implements banked memory management for cpmsim
  *

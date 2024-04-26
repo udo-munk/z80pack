@@ -3,7 +3,7 @@
  *
  * Copyright (C) 1987-2021 Udo Munk
  * Copyright (C) 2021 David McNaughton
- * Copyright (C) 2022 Thomas Eberhardt
+ * Copyright (C) 2022-2024 Thomas Eberhardt
  */
 
 /*

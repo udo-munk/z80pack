@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 1987-2022 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  */
 
 /*
