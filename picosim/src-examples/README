@@ -1,8 +1,9 @@
 This directory contains Z80 code examples for the Pico Z80.
 I have assembled the sources with z80asm from z80pack, but you
-can use any Z80 assembler of course. Advantage of using z80asm
-is, that the latest version can output C code we can right use
-here, without the need to convert from binaries or hex dumps.
+can use any Z80/8080 assembler of course. Advantage of using
+z80asm is, that the latest version can output C code we can
+right use here, without the need to convert from binaries or
+hex dumps.
 
 Copy one of the "example".c files to ../z80code.h and rebuild
 the application.
