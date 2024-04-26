@@ -5,7 +5,7 @@
  *
  * Copyright (C) 2008-2017 by Udo Munk
  *
- * This module contains initialisation and reset functions for
+ * This module contains initialization and reset functions for
  * the POSIX/BSD line discipline, so that stdin/stdout can be used
  * as terminal for ancient machines.
  *

@@ -11,7 +11,7 @@
  * 14-MAR-14 added Tarbell SD FDC and printer port
  * 23-MAR-14 enabled interrupts, 10ms timer added to iosim
  * xx-JUN-14 added default CPU define
- * 19-JUL-14 added typedef for signed 16bit
+ * 19-JUL-14 added typedef for signed 16-bit
  * 29-APR-15 added Cromemco DAZZLER to the machine
  * 11-AUG-16 implemented memwrt as function to support ROM
  * 01-DEC-16 implemented memrdr to separate memory from CPU
@@ -20,7 +20,7 @@
  * 26-FEB-17 added Processor Technology VDM-1 to the machine
  * 27-MAR-17 added SIO's connected to UNIX domain sockets
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
- * 07-MAY-18 added memory configuratione needed by apple monitor
+ * 07-MAY-18 added memory configuration needed by apple monitor
  * 21-AUG-18 improved memory configuration
  * 29-AUG-21 new memory configuration sections
  */

@@ -7,7 +7,7 @@
  *
  * History:
  * 22-NOV-16 stuff moved to here for further improvements
- * 03-FEB-17 added ROM initialisation
+ * 03-FEB-17 added ROM initialization
  * 15-AUG-17 don't use macros, use inline functions that coerce appropriate
  * 04-NOV-19 add functions for direct memory access
  */

@@ -1,5 +1,5 @@
 /*
- * Write the MP/M 2 systemfiles to system tracks of drive A
+ * Write the MP/M 2 system files to system tracks of drive A
  *
  * Copyright (C) 2006-2016 by Udo Munk
  *

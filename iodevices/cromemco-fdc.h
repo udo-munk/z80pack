@@ -19,7 +19,7 @@
  * 02-FEB-2015 implemented DS/DD disk formats
  * 05-FEB-2015 implemented DS/SD disk formats
  * 06-FEB-2015 implemented write track for all formats
- * 12-FEB-2015 implemented motor control, so that a 16FDC is recogniced by CDOS
+ * 12-FEB-2015 implemented motor control, so that a 16FDC is recognized by CDOS
  * 20-FEB-2015 bug fixes for 1.25 release
  * 08-MAR-2016 support user path for disk images
  * 13-MAY-2016 find disk images at -d <path>, ./disks and DISKDIR

@@ -19,7 +19,7 @@
  * 02-FEB-2015 implemented DS/DD disk formats
  * 05-FEB-2015 implemented DS/SD disk formats
  * 06-FEB-2015 implemented write track for all formats
- * 12-FEB-2015 implemented motor control, so that a 16FDC is recogniced by CDOS
+ * 12-FEB-2015 implemented motor control, so that a 16FDC is recognized by CDOS
  * 20-FEB-2015 bug fixes for 1.25 release
  * 08-MAR-2016 support user path for disk images
  * 13-MAY-2016 find disk images at -d <path>, ./disks and DISKDIR
@@ -37,6 +37,7 @@
  * 29-JUL-2021 add boot config for machine without frontpanel
  * 02-SEP-2021 implement banked ROM
  */
+
 
 #include <unistd.h>
 #include <stdio.h>
@@ -73,7 +74,7 @@ static const char *TAG = "16FDC";
        BYTE fdc_flags = AUTOBOOT; /* FDC flag register, autoboot setting */
 static BYTE fdc_cmd;		/* FDC command last send */
 static BYTE fdc_stat;		/* FDC status register */
-static BYTE fdc_aux;		/* FDC auxiliar status */
+static BYTE fdc_aux;		/* FDC auxiliary status */
 static BYTE fdc_track = 0;	/* FDC track register */
 static BYTE fdc_sec = 1;	/* FDC sector register */
 static int step_dir = -1;	/* last stepping direction */
@@ -764,7 +765,7 @@ void cromemco_fdc_track_out(BYTE data)
  * D1	unassigned		!FP Sense Switch 7
  * D0	unassigned		!FP Sense Switch 8
  *
- * SEEK IN PROGESS is never set, we have no moving parts here.
+ * SEEK IN PROGRESS is never set, we have no moving parts here.
  */
 BYTE cromemco_fdc_aux_in(void)
 {
@@ -832,8 +833,8 @@ BYTE cromemco_fdc_aux_in(void)
  * D4	!FAST SEEK	!FAST SEEK
  * D3	!RESTORE	!RESTORE
  * D2	!CONTROL OUT	!CONTROL OUT
- * D1	unassigend	!SIDE SELECT
- * D0	unassigend	unassigned
+ * D1	unassigned	!SIDE SELECT
+ * D0	unassigned	unassigned
  */
 void cromemco_fdc_aux_out(BYTE data)
 {
@@ -1021,7 +1022,7 @@ void cromemco_fdc_cmd_out(BYTE data)
  * Reset FDC
  */
 
-extern void reset_fdc_rom_map(void); /* implemnted in memory.c */
+extern void reset_fdc_rom_map(void); /* implemented in memory.c */
 
 void cromemco_fdc_reset(void)
 {

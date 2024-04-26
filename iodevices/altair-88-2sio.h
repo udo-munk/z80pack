@@ -10,7 +10,7 @@
  * History:
  * 20-OCT-08 first version finished
  * 31-JAN-14 use correct name from the manual
- * 19-JUN-14 added config parameter for droping nulls after CR/LF
+ * 19-JUN-14 added config parameter for dropping nulls after CR/LF
  * 17-JUL-14 don't block on read from terminal
  * 09-OCT-14 modified to support 2 SIO's
  * 23-MAR-15 drop only null's

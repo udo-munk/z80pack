@@ -11,7 +11,7 @@
  * 20-OCT-08 first version finished
  * 19-JAN-14 unused I/O ports need to return 00 and not FF
  * 02-MAR-14 source cleanup and improvements
- * 23-MAR-14 added 10ms timer interrupt for Kildalls timekeeper PL/M program
+ * 23-MAR-14 added 10ms timer interrupt for Kildall's timekeeper PL/M program
  * 16-JUL-14 unused I/O ports need to return FF, see survey.mac
  * 14-OCT-14 support for SIO 2 added, parallel ports problem with ROM avoided
  * 31-JAN-15 took over some improvements made for the Z-1 emulation
@@ -20,7 +20,7 @@
  * 11-JAN-17 implemented X11 keyboard input for VIO
  * 24-APR-18 cleanup
  * 17-MAY-18 improved hardware control
- * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 08-JUN-18 moved hardware initialization and reset to iosim
  * 12-JUL-18 use logging
  * 14-JUL-18 integrate webfrontend
  * 12-JUL-19 implemented second SIO
@@ -675,7 +675,7 @@ static void (*port_out[256])(BYTE) = {
  */
 void init_io(void)
 {
-	/* initialise IMSAI VIO if firmware is loaded */
+	/* initialize IMSAI VIO if firmware is loaded */
 	if ((getmem(0xfffd) == 'V') && (getmem(0xfffe) == 'I') &&
 	    (getmem(0xffff) == '0')) {
 		imsai_vio_init();

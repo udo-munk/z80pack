@@ -13,7 +13,7 @@
  * 28-SEP-1987 Development on TARGON/35 with AT&T Unix System V.3
  * 19-MAY-1989 Additions for CP/M 3.0 and MP/M
  * 23-DEC-1990 Ported to COHERENT 3.0
- * 10-JUN-1992 Some optimisation done
+ * 10-JUN-1992 Some optimization done
  * 25-JUN-1992 Flush output of stdout only at every OUT to port 0
  * 25-JUN-1992 Comments in english and ported to COHERENT 4.0
  * 05-OCT-2006 modified to compile on modern POSIX OS's
@@ -85,7 +85,7 @@
  *
  *	17 - FDC sector high
  *
- *	20 - MMU initialisation
+ *	20 - MMU initialization
  *	21 - MMU bank select
  *	22 - MMU select segment size (in pages a 256 bytes)
  *	23 - MMU write protect/unprotect common memory segment
@@ -815,7 +815,7 @@ static void (*port_out[256])(BYTE) = {
 };
 
 /*
- *	This function initialises the I/O handlers:
+ *	This function initializes the I/O handlers:
  *	1. Creates the named pipes under /tmp/.z80pack, if they don't
  *	   exist.
  *	2. Fork the process for receiving from the auxiliary serial port.
@@ -918,7 +918,7 @@ void init_io(void)
 
 #ifdef NETWORKING
 /*
- * initialise a server socket
+ * initialize a server socket
  */
 static void init_server_socket(int n)
 {
@@ -2284,8 +2284,8 @@ static void dmah_out(BYTE data)
 }
 
 /*
- *	I/O handler for read MMU initialisation:
- *	return number of initialised MMU banks
+ *	I/O handler for read MMU initialization:
+ *	return number of initialized MMU banks
  */
 static BYTE mmui_in(void)
 {
@@ -2293,7 +2293,7 @@ static BYTE mmui_in(void)
 }
 
 /*
- *	I/O handler for write MMU initialisation:
+ *	I/O handler for write MMU initialization:
  *	for the FIRST call the memory for the wanted number of banks
  *	is allocated and pointers to the memory is stored in the MMU array
  *
@@ -2304,7 +2304,7 @@ static void mmui_out(BYTE data)
 {
 	register int i;
 
-	/* do nothing if MMU initialised already */
+	/* do nothing if MMU initialized already */
 	if (memory[1] != NULL)
 		return;
 

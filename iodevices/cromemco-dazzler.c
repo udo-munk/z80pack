@@ -731,7 +731,7 @@ static void *update_display(void *arg)
 
 	while (1) {	/* do forever or until canceled */
 
-		/* draw one frame dependend on graphics format */
+		/* draw one frame dependent on graphics format */
 		if (state == 1) {	/* draw frame if on */
 #ifndef HAS_NETSERVER
 			XLockDisplay(display);

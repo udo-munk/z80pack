@@ -408,7 +408,7 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
 #define BULLET  "\xE2\x80\xA2"
                         if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL)) 
                             t2 = BULLET BULLET BULLET BULLET BULLET BULLET BULLET BULLET;
-						/* Filter out only TERM and non-shell environment valiables of the form '*.*' ie. contain '.' */
+						/* Filter out only TERM and non-shell environment variables of the form '*.*' ie. contain '.' */
 						if(!strcmp(t1, "TERM") || index(t1, '.'))
                         	httpdPrintf(conn, "%s \"%s\": \"%s\" ", (o++)==0?"":",", t1, (t2==NULL)?"":t2);
                         i++;
@@ -652,7 +652,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 			break;
 		case DEV_PTR:
 			if (len != 1) {
-				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);
+				LOGW(TAG, "Websocket received too many [%d] characters", (int)len);
 				return 0;
 			}
             msg.mtype = 1L;
@@ -695,7 +695,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
         case DEV_TTY3:
         case DEV_VIO:
 			if (len != 1) {
-				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);
+				LOGW(TAG, "Websocket received too many [%d] characters", (int)len);
 				return 0;
 			}
             msg.mtype = 1L;

@@ -385,7 +385,7 @@ static void hal_init(void) {
     char *dev;
 
     /**
-     *  Initialise HAL with default configuration, as follows:
+     *  Initialize HAL with default configuration, as follows:
      * 
      *      SIO1.portA.device=WEBTTY,STDIO
      *      SIO1.portB.device=VIOKBD

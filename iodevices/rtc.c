@@ -5,7 +5,7 @@
  *
  * Copyright (C) 2019-2021 by Udo Munk
  *
- * Emulation of a RTC to provide date and time informations.
+ * Emulation of a RTC to provide date and time information.
  * This doesn't emulate a specific RTC card or chip, in 1980
  * there was no standard yet for such things.
  *
@@ -79,7 +79,7 @@ void clkc_out(BYTE data)
 /*
  *	I/O handler for read clock data:
  *	dependent on the last clock command the following
- *	informations are returned from the system clock:
+ *	information is returned from the system clock:
  *		0 - seconds in BCD or decimal
  *		1 - minutes in BCD or decimal
  *		2 - hours in BCD or decimal

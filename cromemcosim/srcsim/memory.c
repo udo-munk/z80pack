@@ -8,7 +8,7 @@
  *
  * History:
  * 22-NOV-16 stuff moved to here and implemented as inline functions
- * 03-FEB-17 added ROM initialisation
+ * 03-FEB-17 added ROM initialization
  * 18-MAY-18 optimization
  * 18-JUL-18 use logging
  * 01-OCT-19 optimization
@@ -63,7 +63,7 @@ void init_memory(void)
 		M_flag = 0;
 	}
 
-	/* initialise memory page table, no memory available */
+	/* initialize memory page table, no memory available */
 	for (i = 0; i < MAXPAGES; i++)
 		p_tab[i] = MEM_NONE;
 
@@ -106,8 +106,8 @@ void init_memory(void)
 				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
 				    memconf[M_flag][i].rom_file ? memconf[M_flag][i].rom_file : "");
 				/* for the CROMEMCO Z-1, ROM must be
-				   initialised after FDC banked ROM
-				   is intialised */
+				   initialized after FDC banked ROM
+				   is initialized */
 				/* see below */
 				break;
 			}
@@ -139,8 +139,8 @@ void init_memory(void)
 			case MEM_RW:
 				/* set the pages to RAM */
 				/* for the CROMEMCO Z-1, RAM must be
-				   initialised before FDC banked ROM
-				   is intialised */
+				   initialized before FDC banked ROM
+				   is initialized */
 				/* see above */
 				break;
 			case MEM_RO:

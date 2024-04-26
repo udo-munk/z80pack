@@ -589,7 +589,7 @@ BYTE cromemco_wdi_ctc0_in(void)
 
     if (wdi.hd[wdi.unit].online) { /* Only count indexes if online */
 
-        if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occured in T */
+        if (T < wdi.ctc.T0) wdi.ctc.T0 = T; /* clock rollover has occurred in T */
         else if ((T - wdi.ctc.T0) > index_ticks) {
             if (val > 0) wdi.ctc.now0--;
             wdi.hd[wdi.unit].sector = 0;

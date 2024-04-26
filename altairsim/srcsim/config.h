@@ -10,7 +10,7 @@
  * History:
  * 20-OCT-08 first version finished
  * 20-MAR-14 ignore carriage return too, necessary for the Windows port
- * 19-JUN-14 added config parameter for droping nulls after CR/LF
+ * 19-JUN-14 added config parameter for dropping nulls after CR/LF
  * 09-OCT-14 modified to support 2 SIO's
  * 09-MAY-16 added path for config file
  * 29-AUG-16 ROM and boot switch configuration for Altair emulation added
@@ -23,7 +23,7 @@
  * 23-FEB-17 added configuration options for VDM
  * 24-MAR-17 added configuration for SIO 0
  * 14-JUN-17 added config for Tarbell boot ROM
- * 07-MAY-18 added memory configuratione needed by apple monitor
+ * 07-MAY-18 added memory configuration needed by apple monitor
  * 03-JUL-18 added baud rate to terminal 2SIO
  * 17-JUL-18 use logging
  * 21-AUG-18 improved memory configuration

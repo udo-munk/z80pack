@@ -9,9 +9,9 @@
  * History:
  * 19-DEC-2016 stuff moved to here for better memory abstraction
  * 30-DEC-2016 implemented 1 KB page table and setup for that
- * 26-JAN-2017 initialise ROM with 0xff
+ * 26-JAN-2017 initialize ROM with 0xff
  * 04-JUL-2018 optimization
- * 07-JUL-2018 implemended banked ROM/RAM
+ * 07-JUL-2018 implemented banked ROM/RAM
  * 12-JUL-2018 use logging
  * 18-JUL-2019 bug fix so that fp shows mapped memory contents
  * 18-OCT-2019 add MMU and memory banks
@@ -168,7 +168,7 @@ void init_memory(void)
 		M_flag = 0;
 	}
 
-	/* initialise memory page table, no memory available */
+	/* initialize memory page table, no memory available */
 	for (i = 0; i < MAXPAGES; i++) {
 		p_tab[i] = MEM_NONE;
 		wrtvec[i] = &memory[i << 8];
@@ -206,8 +206,8 @@ void init_memory(void)
 				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
 				    memconf[M_flag][i].rom_file ? memconf[M_flag][i].rom_file : "");
 				/* for the IMSAI, ROM must be
-				   initialised after MPU-B banked ROM
-				   is intialised */
+				   initialized after MPU-B banked ROM
+				   is initialized */
 				/* see below */
 				break;
 			}
@@ -244,8 +244,8 @@ void init_memory(void)
 			case MEM_RW:
 				/* set the pages to RAM */
 				/* for the IMSAI, RAM must be
-				   initialised before MPU-B banked ROM
-				   is intialised */
+				   initialized before MPU-B banked ROM
+				   is initialized */
 				/* see above */
 				break;
 

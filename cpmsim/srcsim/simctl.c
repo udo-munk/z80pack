@@ -26,7 +26,7 @@ extern struct dskdef disks[];
 static const char *TAG = "system";
 
 /*
- *	This function initialises the terminal, loads boot code
+ *	This function initializes the terminal, loads boot code
  *	and then the Z80 CPU emulation is started.
  */
 void mon(void)
@@ -47,7 +47,7 @@ void mon(void)
 
 	ice_cmd_loop(0);
 #else
-	/* initialise terminal */
+	/* initialize terminal */
 	set_unix_terminal();
 	atexit(reset_unix_terminal);
 

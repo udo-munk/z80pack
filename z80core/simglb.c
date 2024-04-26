@@ -33,8 +33,8 @@ BYTE I;				/* Z80 interrupt register */
 int  F_;
 BYTE R_;			/* BYTE copy of R for keeping the 7th bit */
 #endif
-WORD PC;			/* programm counter */
-WORD SP;			/* stackpointer */
+WORD PC;			/* program counter */
+WORD SP;			/* stack pointer */
 BYTE IFF;			/* interrupt flags */
 long R;				/* Z80 refresh register */
 				/* is normally a 8 bit register */
@@ -55,7 +55,7 @@ BYTE cpu_state;			/* state of CPU emulation */
 int cpu_error;			/* error status of CPU emulation */
 #ifndef EXCLUDE_Z80
 int int_mode;			/* CPU interrupt mode (IM 0, IM 1, IM 2) */
-int int_nmi;			/* non maskable interrupt request */
+int int_nmi;			/* non-maskable interrupt request */
 #endif
 int int_int;			/* interrupt request */
 int int_data = -1;		/* data from interrupting device on data bus */
@@ -70,7 +70,7 @@ int cpu_needed;			/* don't adjust CPU freq if needed */
  *	Variables for history memory
  */
 #ifdef HISIZE
-struct history his[HISIZE];	/* memory to hold trace informations */
+struct history his[HISIZE];	/* memory to hold trace information */
 int h_next;			/* index into trace memory */
 int h_flag;			/* flag for trace memory overrun */
 #endif
@@ -79,7 +79,7 @@ int h_flag;			/* flag for trace memory overrun */
  *	Variables for breakpoint memory
  */
 #ifdef SBSIZE
-struct softbreak soft[SBSIZE];	/* memory to hold breakpoint informations */
+struct softbreak soft[SBSIZE];	/* memory to hold breakpoint information */
 int sb_next;			/* index into breakpoint memory */
 #endif
 

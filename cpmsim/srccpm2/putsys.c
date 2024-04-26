@@ -1,5 +1,5 @@
 /*
- * Write the CP/M systemfiles to system tracks of drive A
+ * Write the CP/M system files to system tracks of drive A
  *
  * Copyright (C) 1988-2016 by Udo Munk
  *

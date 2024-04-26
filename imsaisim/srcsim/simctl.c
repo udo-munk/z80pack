@@ -23,7 +23,7 @@
  * 29-JUN-17 system reset overworked
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 17-MAY-18 improved hardware control
- * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 08-JUN-18 moved hardware initialization and reset to iosim
  * 11-JUN-18 fixed reset so that cold and warm start works
  * 12-JUL-18 use logging
  * 04-NOV-19 eliminate usage of mem_base()
@@ -68,7 +68,7 @@ static void quit_callback(void);
 #endif
 
 /*
- *	This function initialises the front panel and terminal.
+ *	This function initializes the front panel and terminal.
  *	Then the machine waits to be operated from the front panel,
  *	until power switched OFF again.
  *
@@ -83,7 +83,7 @@ void mon(void)
 #endif
 
 #ifdef FRONTPANEL
-	/* initialise front panel */
+	/* initialize front panel */
 	XInitThreads();
 
 	putchar('\n');
@@ -124,7 +124,7 @@ void mon(void)
 	SLEEP_MS(999);
 	fflush(stdout);
 
-	/* initialise terminal */
+	/* initialize terminal */
 #ifndef WANT_ICE
 	set_unix_terminal();
 #endif

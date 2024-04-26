@@ -55,7 +55,7 @@ LEDS	EQU	0FFH		; programmed output LED's
 	JMP	SELMEM		;   select bank of memory
 	JMP	SETBNK		;   specify bank for DMA operation
 	JMP	XMOVE		;   set bank for memory DMA transfer
-	JMP	0		;   reserved for system implementor
+	JMP	0		;   reserved for system implementer
 	JMP	0		;   reserved for future use
 	JMP	0		;   reserved for future use
 ;

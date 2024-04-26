@@ -7,7 +7,7 @@
 /*
  *	This module contain the interrupt handlers for the OS:
  *
- *	int_on()	: initialise interrupt handlers
+ *	int_on()	: initialize interrupt handlers
  *	int_off()	: reset interrupts to default
  *	user_int()	: handler for user interrupt (CNTL-C)
  *	quit_int()	: handler for signal "quit" (CNTL-\)

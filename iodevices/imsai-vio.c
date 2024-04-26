@@ -280,7 +280,7 @@ static inline void event_handler(void)
 #endif
 }
 
-/* refresh the display buffer dependend on video mode */
+/* refresh the display buffer dependent on video mode */
 static void refresh(void)
 {
 	static int cols, rows;

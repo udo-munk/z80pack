@@ -408,7 +408,7 @@ void cpu_z80(void)
 		/* check for start address of runtime measurement */
 		if (PC == t_start && !t_flag) {
 			t_flag = 1;	/* switch measurement on */
-			t_states = 0L;	/* initialise counted T-states */
+			t_states = 0L;	/* initialize counted T-states */
 		}
 #endif
 
@@ -423,7 +423,7 @@ void cpu_z80(void)
 				}
 			}
 
-			if (bus_request) {		/* dma bus request */
+			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_sampleData();
@@ -447,7 +447,7 @@ void cpu_z80(void)
 		}
 
 		/* CPU interrupt handling */
-		if (int_nmi) {		/* non maskable interrupt */
+		if (int_nmi) {		/* non-maskable interrupt */
 			IFF <<= 1 & 3;
 			memwrt(--SP, PC >> 8);
 			memwrt(--SP, PC);

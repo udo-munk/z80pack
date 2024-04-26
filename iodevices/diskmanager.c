@@ -20,9 +20,9 @@
  * provided path.
  * 
  * The "disk.map" file is a simple text file with a line for each disk
- * starting at 'A' upto [LAST_DISK], typically 'D'.
+ * starting at 'A' up to [LAST_DISK], typically 'D'.
  *      - If a line is empty of starts with '#' the disk is "ejected"
- *      - If a disk image is "inserted" the line conatains only the file name
+ *      - If a disk image is "inserted" the line contains only the file name
  * 
  * The diskmanager provides functions to:
  *      - populate the array from the file
@@ -34,8 +34,8 @@
  *      - and some other support functions.
  * 
  * TODO:
- *      - fully support paths to allow a disk libabry hierarchy 
- *      - support more complex disk arrays that conatin structures e.g.
+ *      - fully support paths to allow a disk library hierarchy 
+ *      - support more complex disk arrays that contain structures e.g.
  *          * cpmsim::iosim.c
  *          * cromemco-fdc.c
  */

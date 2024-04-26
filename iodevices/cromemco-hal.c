@@ -340,7 +340,7 @@ static void hal_init(void) {
     char *dev;
 
     /**
-     *  Initialise HAL with default configuration, as follows:
+     *  Initialize HAL with default configuration, as follows:
      * 
      *      TUART0.deviceA.device=WEBTTY,STDIO
      *      TUART1.deviceA.device=SCKTSRV1,WEBTTY2

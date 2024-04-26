@@ -49,8 +49,8 @@ int main(void)
 	printf("Z80pack release %s, %s\n\n", RELEASE, COPYR);
 
 	config();		/* read system configuration */
-	init_cpu();		/* initialise CPU */
-	init_memory();		/* initialise memory configuration */
+	init_cpu();		/* initialize CPU */
+	init_memory();		/* initialize memory configuration */
 
 	run_cpu();		/* run the CPU with whatever is in memory */
 

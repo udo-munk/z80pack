@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2018 by David McNaughton
  *
- * NOTICE: This is a deriviative of a work that is can be found at and is itself:
+ * NOTICE: This is a derivative of a work that can be found at and is itself:
  * https://github.com/espressif/esp-idf/blob/master/components/log/include/esp_log.h
  * Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
  * Licensed under the Apache License, Version 2.0 (the "License");

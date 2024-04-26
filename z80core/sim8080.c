@@ -106,8 +106,8 @@ static int op_undoc_ret(void), op_undoc_call(void);
 
 /*
  * Function to update address bus LED's during execution of
- * instructions using the 16bit incrementer/decrementer
- * logic, as dicovered by Mike Douglas.
+ * instructions using the 16-bit incrementer/decrementer
+ * logic, as discovered by Mike Douglas.
  */
 #ifdef FRONTPANEL
 static inline void addr_leds(WORD data)
@@ -417,7 +417,7 @@ void cpu_8080(void)
 		/* check for start address of runtime measurement */
 		if (PC == t_start && !t_flag) {
 			t_flag = 1;	/* switch measurement on */
-			t_states = 0L;	/* initialise counted T-states */
+			t_states = 0L;	/* initialize counted T-states */
 		}
 #endif
 
@@ -432,7 +432,7 @@ void cpu_8080(void)
 				}
 			}
 
-			if (bus_request) {		/* dma bus request */
+			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				fp_clock += 1000;
 				fp_sampleData();

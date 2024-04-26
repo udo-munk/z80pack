@@ -34,7 +34,7 @@
 #define AM_ACOS     0x06 /* inverse cosine */
 #define AM_ATAN     0x07 /* inverse tangent */
 #define AM_LOG      0x08 /* common logarithm (base 10) */
-#define AM_LN       0x09 /* natural logairth (base e) */
+#define AM_LN       0x09 /* natural logarithm (base e) */
 #define AM_EXP      0x0a /* exponential (e^x) */
 #define AM_PWR      0x0b /* power nos^tos */
 #define AM_ADD      0x0c /* add */

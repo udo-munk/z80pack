@@ -81,7 +81,7 @@ static void *store_image(void *arg)
 			for (i = 0; i < msg.fields; i++) {
 				len = net_device_get_data(DEV_88ACC, (char *) buffer, FIELDSIZE);
 				if (len != FIELDSIZE) {
-					LOGW(TAG,"Error in frame length, recieved %d of %d bytes.", len, FIELDSIZE);
+					LOGW(TAG,"Error in frame length, received %d of %d bytes.", len, FIELDSIZE);
 				} else {
 					LOGD(TAG, "received frame %d, length %d, %d stored at %04x", i, len, (BYTE)*buffer, dma_addr + (i * FIELDSIZE));
 					for (j = 0; j < FIELDSIZE; j++) {
@@ -131,7 +131,7 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 					exit(EXIT_FAILURE);
 				}
 			} else {
-				LOGW(TAG, "Transfer with 88CCC already in progess.");
+				LOGW(TAG, "Transfer with 88CCC already in progress.");
 			}
 		} else {
 			/* No 88ACC camera attached */
@@ -141,7 +141,7 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 	} else {
 		if (state == 1) {
 			state = 0;
-			SLEEP_MS(50); /* Arbitraray 50ms timeout to let thread exit after state change, TODO: maybe should end thread? */
+			SLEEP_MS(50); /* Arbitrary 50ms timeout to let thread exit after state change, TODO: maybe should end thread? */
 		}
 	}
 }

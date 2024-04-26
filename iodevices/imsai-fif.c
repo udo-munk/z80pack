@@ -225,8 +225,8 @@ void imsai_fif_out(BYTE data)
  *	A1 - selected drive not ready
  *	A2 - selected drive is hardware write protected
  *	A3 - selected drive is software write protected
- *	A4 - sector lenght specified by byte 3 of command string does
- *	     not correspond to actual sector lenght found on disk
+ *	A4 - sector length specified by byte 3 of command string does
+ *	     not correspond to actual sector length found on disk
  *
  *	Class 3 - Bit 4 is set, status code has the form 9XH
  *	91 - selected drive not operable

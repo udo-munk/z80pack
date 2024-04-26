@@ -30,7 +30,7 @@ extern BYTE chk_sbyte(WORD);
 extern BYTE get_reg(char *);
 
 /*
- *	process 1byte opcodes without arguments
+ *	process 1-byte opcodes without arguments
  */
 WORD op_1b(BYTE b1, BYTE dummy)
 {
@@ -41,7 +41,7 @@ WORD op_1b(BYTE b1, BYTE dummy)
 }
 
 /*
- *	process 2byte opcodes without arguments
+ *	process 2-byte opcodes without arguments
  */
 WORD op_2b(BYTE b1, BYTE b2)
 {

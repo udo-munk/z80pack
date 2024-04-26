@@ -252,7 +252,7 @@ cont:
  *	Handling of software breakpoints (HALT opcode):
  *
  *	Output:	0 breakpoint or other HALT opcode reached (stop)
- *		1 breakpoint reached, passcounter not reached (continue)
+ *		1 breakpoint reached, pass counter not reached (continue)
  */
 static int handle_break(void)
 {
@@ -275,11 +275,11 @@ was_softbreak:
 	putmem(PC, soft[i].sb_oldopc);	/* original opcode */
 	step_cpu();			/* and execute it */
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
-	soft[i].sb_passcount++;		/* increment passcounter */
+	soft[i].sb_passcount++;		/* increment pass counter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
 		return (1);		/* pass not reached, continue */
 	printf("Software breakpoint %d reached at %04x\n", i, break_address);
-	soft[i].sb_passcount = 0;	/* reset passcounter */
+	soft[i].sb_passcount = 0;	/* reset pass counter */
 	return (0);			/* pass reached, stop */
 #else
 	return (0);
@@ -298,7 +298,7 @@ static void do_dump(char *s)
 		s++;
 	if (isxdigit((unsigned char) *s))
 		wrk_addr = exatoi(s) - exatoi(s) % 16;
-	printf("Adr    ");
+	printf("Addr   ");
 	for (i = 0; i < 16; i++)
 		printf("%02x ", i);
 	puts(" ASCII");
@@ -891,7 +891,7 @@ static void timeout(int sig)
 }
 
 /*
- *	Output informations about compiling options
+ *	Output information about compiling options
  */
 static void do_show(void)
 {

@@ -11,7 +11,7 @@ MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 IO_SRCS = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c imsai-fif.c \
 	imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c unix_network.c netsrv.c \
 	generic-at-modem.c libtelnet.c rtc.c simbdos.c am9511.c floatcnv.c ova.c
-# machine specifc libraries
+# machine specific libraries
 MACHINE_LIBS = -lcivetweb
 
 # Installation directories by convention
