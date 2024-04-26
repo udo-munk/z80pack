@@ -1,5 +1,6 @@
-This can be used with Pico and Pico W boards, but you need to uncomment/comment
-some lines in CMakeLists.txt and sim.h properly for the board used.
+This can be used with Pico and Pico W boards, but you might need to uncomment/comment
+some lines in CMakeLists.txt and sim.h properly for the board used. I'm using a Pico W,
+so everything setup for this one.
 
 To build you need to have the SDK for RP2040-based devices installed and
 configured, then do:
@@ -14,3 +15,7 @@ To clean everything:
 
 	cd z80pack/picosim
 	rm -rf build
+
+Terminal I/O is going to the pin 1/2 UART, so you need a debug probe or some TTL to USB
+adapter. I also tried using the USB UART, but didn't get it fully working, needs more
+research.

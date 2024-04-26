@@ -7,3 +7,6 @@ here, without the need to convert from binaries or hex dumps.
 Copy one of the "example".c files to ../z80code.h and rebuild
 the application.
 
+The examples are:
+serial.c	- shows how to do serial I/O
+tb.c		- TINY BASIC
