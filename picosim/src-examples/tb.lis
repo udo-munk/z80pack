@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0	Fri Apr 26 11:57:52 2024
+Z80/8080-Macro-Assembler  Release 2.0	Fri Apr 26 16:49:32 2024
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;*************************************************************
@@ -1383,278 +1383,279 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                     1378   1380 ;       LDA  OCSW                       ;CHECK SOFTWARE SWITCH
                     1379   1381 ;       ORA  A
 0645  32 00 08      1380   1382 INIT:   STA  OCSW
-0648  16 19         1381   1383         MVI  D,19H
-064a                1382   1384 PATLOP:
-064a  cd 0e 00      1383   1385         CALL CRLF
-064d  15            1384   1386         DCR  D
-064e  c2 4a 06      1385   1387         JNZ  PATLOP
-0651  97            1386   1388         SUB  A
-0652  11 9d 06      1387   1389         LXI  D,MSG1
-0655  cd 63 05      1388   1390         CALL PRTSTG
-0658  21 00 00      1389   1391         LXI  H,START
-065b  22 13 08      1390   1392         SHLD RANPNT
-065e  21 17 08      1391   1393         LXI  H,TXTBGN
-0661  22 15 08      1392   1394         SHLD TXTUNF
-0664  c3 ba 00      1393   1395         JMP  RSTART
-0667  c2 6c 06      1394   1396 OC2:    JNZ  OC3                        ;IT IS ON
-066a  f1            1395   1397         POP  PSW                        ;IT IS OFF
-066b  c9            1396   1398         RET                             ;RESTORE AF AND RETURN
-066c  db 00         1397   1399 OC3:    IN   0                          ;COME HERE TO DO OUTPUT
-066e  07            1398   1400         RLC                             ;STATUS BIT
-066f  da 6c 06      1399   1401         JC   OC3                        ;NOT READY, WAIT
-0672  f1            1400   1402         POP  PSW                        ;READY, GET OLD A BACK
-0673  d3 01         1401   1403         OUT  1                          ;AND SEND IT OUT
-0675  fe 0d         1402   1404         CPI  CR                         ;WAS IT CR?
-0677  c0            1403   1405         RNZ                             ;NO, FINISHED
-0678  3e 0a         1404   1406         MVI  A,LF                       ;YES, WE SEND LF TOO
-067a  d7            1405   1407         RST  2                          ;THIS IS RECURSIVE
-067b  3e 0d         1406   1408         MVI  A,CR                       ;GET CR BACK IN A
-067d  c9            1407   1409         RET
-                    1408   1410 ;
-067e  db 00         1409   1411 CHKIO:  IN   0                          ;*** CHKIO ***
-0680  2f            1410   1412         CMA                             ;STATUS BIT FLIPPED
-0681  e6 01         1411   1413         ANI  1H                         ;MASK STATUS BIT
-0683  c8            1412   1414         RZ                              ;NOT READY, RETURN "Z"
-0684  db 01         1413   1415         IN   1                          ;READY, READ DATA
-0686  e6 7f         1414   1416         ANI  7FH                        ;MASK BIT 7 OFF
-0688  fe 0f         1415   1417         CPI  0FH                        ;IS IT CONTROL-O?
-068a  c2 97 06      1416   1418         JNZ  CI1                        ;NO, MORE CHECKING
-068d  3a 00 08      1417   1419         LDA  OCSW                       ;CONTROL-O FLIPS OCSW
-0690  2f            1418   1420         CMA                             ;ON TO OFF, OFF TO ON
-0691  32 00 08      1419   1421         STA  OCSW
-0694  c3 7e 06      1420   1422         JMP  CHKIO                      ;GET ANOTHER INPUT
-0697  fe 03         1421   1423 CI1:    CPI  3H                         ;IS IT CONTROL-C?
-0699  c0            1422   1424         RNZ                             ;NO, RETURN "NZ"
-069a  c3 ba 00      1423   1425         JMP  RSTART                     ;YES, RESTART TBI
-                    1424   1426 ;
-069d  54 49 4e 59   1425   1427 MSG1:   DB   'TINY '
-06a1  20            1425   1428
-06a2  42 41 53 49   1426   1429         DB   'BASIC'
-06a6  43            1426   1430
-06a7  0d            1427   1431         DB   CR
-                    1428   1432 ;
-                    1429   1433 ;*************************************************************
-                    1430   1434 ;
-                    1431   1435 ; *** TABLES *** DIRECT *** & EXEC ***
-                    1432   1436 ;
-                    1433   1437 ; THIS SECTION OF THE CODE TESTS A STRING AGAINST A TABLE.
-                    1434   1438 ; WHEN A MATCH IS FOUND, CONTROL IS TRANSFERED TO THE SECTION
-                    1435   1439 ; OF CODE ACCORDING TO THE TABLE.
-                    1436   1440 ;
-                    1437   1441 ; AT 'EXEC', DE SHOULD POINT TO THE STRING AND HL SHOULD POINT
-                    1438   1442 ; TO THE TABLE-1.  AT 'DIRECT', DE SHOULD POINT TO THE STRING.
-                    1439   1443 ; HL WILL BE SET UP TO POINT TO TAB1-1, WHICH IS THE TABLE OF
-                    1440   1444 ; ALL DIRECT AND STATEMENT COMMANDS.
-                    1441   1445 ;
-                    1442   1446 ; A '.' IN THE STRING WILL TERMINATE THE TEST AND THE PARTIAL
-                    1443   1447 ; MATCH WILL BE CONSIDERED AS A MATCH.  E.G., 'P.', 'PR.',
-                    1444   1448 ; 'PRI.', 'PRIN.', OR 'PRINT' WILL ALL MATCH 'PRINT'.
-                    1445   1449 ;
-                    1446   1450 ; THE TABLE CONSISTS OF ANY NUMBER OF ITEMS.  EACH ITEM
-                    1447   1451 ; IS A STRING OF CHARACTERS WITH BIT 7 SET TO 0 AND
-                    1448   1452 ; A JUMP ADDRESS STORED HI-LOW WITH BIT 7 OF THE HIGH
-                    1449   1453 ; BYTE SET TO 1.
-                    1450   1454 ;
-                    1451   1455 ; END OF TABLE IS AN ITEM WITH A JUMP ADDRESS ONLY.  IF THE
-                    1452   1456 ; STRING DOES NOT MATCH ANY OF THE OTHER ITEMS, IT WILL
-                    1453   1457 ; MATCH THIS NULL ITEM AS DEFAULT.
-                    1454   1458 ;
-06a8                1455   1459 TAB1:                                   ;DIRECT COMMANDS
-06a8  4c 49 53 54   1456   1460         DB   'LIST'
-06ac                1457   1461         DWA  LIST
-06ac  81          + 1457   1462         DB   (LIST SHR 8) + 128
-06ad  6f          + 1457   1463         DB   LIST AND 0FFH
-06ae  52 55 4e      1458   1464         DB   'RUN'
-06b1                1459   1465         DWA  RUN
-06b1  81          + 1459   1466         DB   (RUN SHR 8) + 128
-06b2  41          + 1459   1467         DB   RUN AND 0FFH
-06b3  4e 45 57      1460   1468         DB   'NEW'
-06b6                1461   1469         DWA  NEW
-06b6  81          + 1461   1470         DB   (NEW SHR 8) + 128
-06b7  32          + 1461   1471         DB   NEW AND 0FFH
-                    1462   1472 ;
-06b8                1463   1473 TAB2:                                   ;DIRECT/STATEMENT
-06b8  4e 45 58 54   1464   1474         DB   'NEXT'
-06bc                1465   1475         DWA  NEXT
-06bc  82          + 1465   1476         DB   (NEXT SHR 8) + 128
-06bd  57          + 1465   1477         DB   NEXT AND 0FFH
-06be  4c 45 54      1466   1478         DB   'LET'
-06c1                1467   1479         DWA  LET
-06c1  83          + 1467   1480         DB   (LET SHR 8) + 128
-06c2  23          + 1467   1481         DB   LET AND 0FFH
-06c3  49 46         1468   1482         DB   'IF'
-06c5                1469   1483         DWA  IFF
-06c5  82          + 1469   1484         DB   (IFF SHR 8) + 128
-06c6  b4          + 1469   1485         DB   IFF AND 0FFH
-06c7  47 4f 54 4f   1470   1486         DB   'GOTO'
-06cb                1471   1487         DWA  GOTO
-06cb  81          + 1471   1488         DB   (GOTO SHR 8) + 128
-06cc  60          + 1471   1489         DB   GOTO AND 0FFH
-06cd  47 4f 53 55   1472   1490         DB   'GOSUB'
-06d1  42            1472   1491
-06d2                1473   1492         DWA  GOSUB
-06d2  81          + 1473   1493         DB   (GOSUB SHR 8) + 128
-06d3  bf          + 1473   1494         DB   GOSUB AND 0FFH
-06d4  52 45 54 55   1474   1495         DB   'RETURN'
-06d8  52 4e         1474   1496
-06da                1475   1497         DWA  RETURN
-06da  81          + 1475   1498         DB   (RETURN SHR 8) + 128
-06db  df          + 1475   1499         DB   RETURN AND 0FFH
-06dc  52 45 4d      1476   1500         DB   'REM'
-06df                1477   1501         DWA  REM
-06df  82          + 1477   1502         DB   (REM SHR 8) + 128
-06e0  b0          + 1477   1503         DB   REM AND 0FFH
-06e1  46 4f 52      1478   1504         DB   'FOR'
-06e4                1479   1505         DWA  FOR
-06e4  81          + 1479   1506         DB   (FOR SHR 8) + 128
-06e5  f8          + 1479   1507         DB   FOR AND 0FFH
-06e6  49 4e 50 55   1480   1508         DB   'INPUT'
-06ea  54            1480   1509
-06eb                1481   1510         DWA  INPUT
-06eb  82          + 1481   1511         DB   (INPUT SHR 8) + 128
-06ec  cd          + 1481   1512         DB   INPUT AND 0FFH
-06ed  50 52 49 4e   1482   1513         DB   'PRINT'
-06f1  54            1482   1514
-06f2                1483   1515         DWA  PRINT
-06f2  81          + 1483   1516         DB   (PRINT SHR 8) + 128
-06f3  87          + 1483   1517         DB   PRINT AND 0FFH
-06f4  53 54 4f 50   1484   1518         DB   'STOP'
-06f8                1485   1519         DWA  STOP
-06f8  81          + 1485   1520         DB   (STOP SHR 8) + 128
-06f9  3b          + 1485   1521         DB   STOP AND 0FFH
-06fa                1486   1522         DWA  DEFLT
-06fa  83          + 1486   1523         DB   (DEFLT SHR 8) + 128
-06fb  1d          + 1486   1524         DB   DEFLT AND 0FFH
-                    1487   1525 ;
-06fc                1488   1526 TAB4:                                   ;FUNCTIONS
-06fc  52 4e 44      1489   1527         DB   'RND'
-06ff                1490   1528         DWA  RND
-06ff  84          + 1490   1529         DB   (RND SHR 8) + 128
-0700  25          + 1490   1530         DB   RND AND 0FFH
-0701  41 42 53      1491   1531         DB   'ABS'
-0704                1492   1532         DWA  ABS
-0704  84          + 1492   1533         DB   (ABS SHR 8) + 128
-0705  50          + 1492   1534         DB   ABS AND 0FFH
-0706  53 49 5a 45   1493   1535         DB   'SIZE'
-070a                1494   1536         DWA  SIZE
-070a  84          + 1494   1537         DB   (SIZE SHR 8) + 128
-070b  59          + 1494   1538         DB   SIZE AND 0FFH
-070c                1495   1539         DWA  XP40
-070c  84          + 1495   1540         DB   (XP40 SHR 8) + 128
-070d  0b          + 1495   1541         DB   XP40 AND 0FFH
-                    1496   1542 ;
-070e                1497   1543 TAB5:                                   ;"TO" IN "FOR"
-070e  54 4f         1498   1544         DB   'TO'
-0710                1499   1545         DWA  FR1
-0710  82          + 1499   1546         DB   (FR1 SHR 8) + 128
-0711  08          + 1499   1547         DB   FR1 AND 0FFH
-0712                1500   1548         DWA  QWHAT
-0712  84          + 1500   1549         DB   (QWHAT SHR 8) + 128
-0713  c9          + 1500   1550         DB   QWHAT AND 0FFH
-                    1501   1551 ;
-0714                1502   1552 TAB6:                                   ;"STEP" IN "FOR"
-0714  53 54 45 50   1503   1553         DB   'STEP'
-0718                1504   1554         DWA  FR2
-0718  82          + 1504   1555         DB   (FR2 SHR 8) + 128
-0719  12          + 1504   1556         DB   FR2 AND 0FFH
-071a                1505   1557         DWA  FR3
-071a  82          + 1505   1558         DB   (FR3 SHR 8) + 128
-071b  16          + 1505   1559         DB   FR3 AND 0FFH
-                    1506   1560 ;
-071c                1507   1561 TAB8:                                   ;RELATION OPERATORS
-071c  3e 3d         1508   1562         DB   '>='
-071e                1509   1563         DWA  XP11
-071e  83          + 1509   1564         DB   (XP11 SHR 8) + 128
-071f  33          + 1509   1565         DB   XP11 AND 0FFH
-0720  23            1510   1566         DB   '#'
-0721                1511   1567         DWA  XP12
-0721  83          + 1511   1568         DB   (XP12 SHR 8) + 128
-0722  39          + 1511   1569         DB   XP12 AND 0FFH
-0723  3e            1512   1570         DB   '>'
-0724                1513   1571         DWA  XP13
-0724  83          + 1513   1572         DB   (XP13 SHR 8) + 128
-0725  3f          + 1513   1573         DB   XP13 AND 0FFH
-0726  3d            1514   1574         DB   '='
-0727                1515   1575         DWA  XP15
-0727  83          + 1515   1576         DB   (XP15 SHR 8) + 128
-0728  4e          + 1515   1577         DB   XP15 AND 0FFH
-0729  3c 3d         1516   1578         DB   '<='
-072b                1517   1579         DWA  XP14
-072b  83          + 1517   1580         DB   (XP14 SHR 8) + 128
-072c  46          + 1517   1581         DB   XP14 AND 0FFH
-072d  3c            1518   1582         DB   '<'
-072e                1519   1583         DWA  XP16
-072e  83          + 1519   1584         DB   (XP16 SHR 8) + 128
-072f  54          + 1519   1585         DB   XP16 AND 0FFH
-0730                1520   1586         DWA  XP17
-0730  83          + 1520   1587         DB   (XP17 SHR 8) + 128
-0731  5a          + 1520   1588         DB   XP17 AND 0FFH
-                    1521   1589 ;
-0732  21 a7 06      1522   1590 DIRECT: LXI  H,TAB1-1                   ;*** DIRECT ***
-                    1523   1591 ;
-0735                1524   1592 EXEC:                                   ;*** EXEC ***
-0735  ef            1525   1593 EX0:    RST  5                          ;IGNORE LEADING BLANKS
-0736  d5            1526   1594         PUSH D                          ;SAVE POINTER
-0737  1a            1527   1595 EX1:    LDAX D                          ;IF FOUND '.' IN STRING
-0738  13            1528   1596         INX  D                          ;BEFORE ANY MISMATCH
-0739  fe 2e         1529   1597         CPI  2EH                        ;WE DECLARE A MATCH
-073b  ca 54 07      1530   1598         JZ   EX3
-073e  23            1531   1599         INX  H                          ;HL->TABLE
-073f  be            1532   1600         CMP  M                          ;IF MATCH, TEST NEXT
-0740  ca 37 07      1533   1601         JZ   EX1
-0743  3e 7f         1534   1602         MVI  A,07FH                     ;ELSE SEE IF BIT 7
-0745  1b            1535   1603         DCX  D                          ;OF TABLE IS SET, WHICH
-0746  be            1536   1604         CMP  M                          ;IS THE JUMP ADDR. (HI)
-0747  da 5b 07      1537   1605         JC   EX5                        ;C:YES, MATCHED
-074a  23            1538   1606 EX2:    INX  H                          ;NC:NO, FIND JUMP ADDR.
-074b  be            1539   1607         CMP  M
-074c  d2 4a 07      1540   1608         JNC  EX2
-074f  23            1541   1609         INX  H                          ;BUMP TO NEXT TAB. ITEM
-0750  d1            1542   1610         POP  D                          ;RESTORE STRING POINTER
-0751  c3 35 07      1543   1611         JMP  EX0                        ;TEST AGAINST NEXT ITEM
-0754  3e 7f         1544   1612 EX3:    MVI  A,07FH                     ;PARTIAL MATCH, FIND
-0756  23            1545   1613 EX4:    INX  H                          ;JUMP ADDR., WHICH IS
-0757  be            1546   1614         CMP  M                          ;FLAGGED BY BIT 7
-0758  d2 56 07      1547   1615         JNC  EX4
-075b  7e            1548   1616 EX5:    MOV  A,M                        ;LOAD HL WITH THE JUMP
-075c  23            1549   1617         INX  H                          ;ADDRESS FROM THE TABLE
-075d  6e            1550   1618         MOV  L,M
-075e  e6 7f         1551   1619         ANI  7FH                        ;MASK OFF BIT 7
-0760  67            1552   1620         MOV  H,A
-0761  f1            1553   1621         POP  PSW                        ;CLEAN UP THE GABAGE
-0762  e9            1554   1622         PCHL                            ;AND WE GO DO IT
-                    1555   1623 ;
-0763                1556   1624 LSTROM:                                 ;ALL ABOVE CAN BE ROM
-                    1557   1625 ;       ORG  1000H                      ;HERE DOWN MUST BE RAM
-                    1558   1626         ORG  0800H
-0800                1559   1627 OCSW:   DS   1                          ;SWITCH FOR OUTPUT
-0801                1560   1628 CURRNT: DS   2                          ;POINTS TO CURRENT LINE
-0803                1561   1629 STKGOS: DS   2                          ;SAVES SP IN 'GOSUB'
-0805                1562   1630 VARNXT: DS   2                          ;TEMP STORAGE
-0807                1563   1631 STKINP: DS   2                          ;SAVES SP IN 'INPUT'
-0809                1564   1632 LOPVAR: DS   2                          ;'FOR' LOOP SAVE AREA
-080b                1565   1633 LOPINC: DS   2                          ;INCREMENT
-080d                1566   1634 LOPLMT: DS   2                          ;LIMIT
-080f                1567   1635 LOPLN:  DS   2                          ;LINE NUMBER
-0811                1568   1636 LOPPT:  DS   2                          ;TEXT POINTER
-0813                1569   1637 RANPNT: DS   2                          ;RANDOM NUMBER POINTER
-0815                1570   1638 TXTUNF: DS   2                          ;->UNFILLED TEXT AREA
-0817                1571   1639 TXTBGN: DS   2                          ;TEXT SAVE AREA BEGINS
-                    1572   1640 ;       ORG  1366H
-                    1573   1641         ORG  1F00H
-1f00                1574   1642 TXTEND: DS   0                          ;TEXT SAVE AREA ENDS
-1f00                1575   1643 VARBGN: DS   55                         ;VARIABLE @(0)
-1f37                1576   1644 BUFFER: DS   64                         ;INPUT BUFFER
-1f77                1577   1645 BUFEND: DS   1                          ;BUFFER ENDS
-1f78                1578   1646 STKLMT: DS   1                          ;TOP LIMIT FOR STACK
-                    1579   1647 ;       ORG  1400H
-                    1580   1648         ORG  2000H
-2000                1581   1649 STACK:  DS   0                          ;STACK STARTS HERE
-                    1582   1650 ;
-000d  =             1583   1651 CR      EQU  0DH
-000a  =             1584   1652 LF      EQU  0AH
-                    1585   1653 
-2000                1586   1654         END
+                    1381   1383 ;       MVI  D,19H
+0648  16 02         1382   1384         MVI  D,2
+064a                1383   1385 PATLOP:
+064a  cd 0e 00      1384   1386         CALL CRLF
+064d  15            1385   1387         DCR  D
+064e  c2 4a 06      1386   1388         JNZ  PATLOP
+0651  97            1387   1389         SUB  A
+0652  11 9d 06      1388   1390         LXI  D,MSG1
+0655  cd 63 05      1389   1391         CALL PRTSTG
+0658  21 00 00      1390   1392         LXI  H,START
+065b  22 13 08      1391   1393         SHLD RANPNT
+065e  21 17 08      1392   1394         LXI  H,TXTBGN
+0661  22 15 08      1393   1395         SHLD TXTUNF
+0664  c3 ba 00      1394   1396         JMP  RSTART
+0667  c2 6c 06      1395   1397 OC2:    JNZ  OC3                        ;IT IS ON
+066a  f1            1396   1398         POP  PSW                        ;IT IS OFF
+066b  c9            1397   1399         RET                             ;RESTORE AF AND RETURN
+066c  db 00         1398   1400 OC3:    IN   0                          ;COME HERE TO DO OUTPUT
+066e  07            1399   1401         RLC                             ;STATUS BIT
+066f  da 6c 06      1400   1402         JC   OC3                        ;NOT READY, WAIT
+0672  f1            1401   1403         POP  PSW                        ;READY, GET OLD A BACK
+0673  d3 01         1402   1404         OUT  1                          ;AND SEND IT OUT
+0675  fe 0d         1403   1405         CPI  CR                         ;WAS IT CR?
+0677  c0            1404   1406         RNZ                             ;NO, FINISHED
+0678  3e 0a         1405   1407         MVI  A,LF                       ;YES, WE SEND LF TOO
+067a  d7            1406   1408         RST  2                          ;THIS IS RECURSIVE
+067b  3e 0d         1407   1409         MVI  A,CR                       ;GET CR BACK IN A
+067d  c9            1408   1410         RET
+                    1409   1411 ;
+067e  db 00         1410   1412 CHKIO:  IN   0                          ;*** CHKIO ***
+0680  2f            1411   1413         CMA                             ;STATUS BIT FLIPPED
+0681  e6 01         1412   1414         ANI  1H                         ;MASK STATUS BIT
+0683  c8            1413   1415         RZ                              ;NOT READY, RETURN "Z"
+0684  db 01         1414   1416         IN   1                          ;READY, READ DATA
+0686  e6 7f         1415   1417         ANI  7FH                        ;MASK BIT 7 OFF
+0688  fe 0f         1416   1418         CPI  0FH                        ;IS IT CONTROL-O?
+068a  c2 97 06      1417   1419         JNZ  CI1                        ;NO, MORE CHECKING
+068d  3a 00 08      1418   1420         LDA  OCSW                       ;CONTROL-O FLIPS OCSW
+0690  2f            1419   1421         CMA                             ;ON TO OFF, OFF TO ON
+0691  32 00 08      1420   1422         STA  OCSW
+0694  c3 7e 06      1421   1423         JMP  CHKIO                      ;GET ANOTHER INPUT
+0697  fe 03         1422   1424 CI1:    CPI  3H                         ;IS IT CONTROL-C?
+0699  c0            1423   1425         RNZ                             ;NO, RETURN "NZ"
+069a  c3 ba 00      1424   1426         JMP  RSTART                     ;YES, RESTART TBI
+                    1425   1427 ;
+069d  54 49 4e 59   1426   1428 MSG1:   DB   'TINY '
+06a1  20            1426   1429
+06a2  42 41 53 49   1427   1430         DB   'BASIC'
+06a6  43            1427   1431
+06a7  0d            1428   1432         DB   CR
+                    1429   1433 ;
+                    1430   1434 ;*************************************************************
+                    1431   1435 ;
+                    1432   1436 ; *** TABLES *** DIRECT *** & EXEC ***
+                    1433   1437 ;
+                    1434   1438 ; THIS SECTION OF THE CODE TESTS A STRING AGAINST A TABLE.
+                    1435   1439 ; WHEN A MATCH IS FOUND, CONTROL IS TRANSFERED TO THE SECTION
+                    1436   1440 ; OF CODE ACCORDING TO THE TABLE.
+                    1437   1441 ;
+                    1438   1442 ; AT 'EXEC', DE SHOULD POINT TO THE STRING AND HL SHOULD POINT
+                    1439   1443 ; TO THE TABLE-1.  AT 'DIRECT', DE SHOULD POINT TO THE STRING.
+                    1440   1444 ; HL WILL BE SET UP TO POINT TO TAB1-1, WHICH IS THE TABLE OF
+                    1441   1445 ; ALL DIRECT AND STATEMENT COMMANDS.
+                    1442   1446 ;
+                    1443   1447 ; A '.' IN THE STRING WILL TERMINATE THE TEST AND THE PARTIAL
+                    1444   1448 ; MATCH WILL BE CONSIDERED AS A MATCH.  E.G., 'P.', 'PR.',
+                    1445   1449 ; 'PRI.', 'PRIN.', OR 'PRINT' WILL ALL MATCH 'PRINT'.
+                    1446   1450 ;
+                    1447   1451 ; THE TABLE CONSISTS OF ANY NUMBER OF ITEMS.  EACH ITEM
+                    1448   1452 ; IS A STRING OF CHARACTERS WITH BIT 7 SET TO 0 AND
+                    1449   1453 ; A JUMP ADDRESS STORED HI-LOW WITH BIT 7 OF THE HIGH
+                    1450   1454 ; BYTE SET TO 1.
+                    1451   1455 ;
+                    1452   1456 ; END OF TABLE IS AN ITEM WITH A JUMP ADDRESS ONLY.  IF THE
+                    1453   1457 ; STRING DOES NOT MATCH ANY OF THE OTHER ITEMS, IT WILL
+                    1454   1458 ; MATCH THIS NULL ITEM AS DEFAULT.
+                    1455   1459 ;
+06a8                1456   1460 TAB1:                                   ;DIRECT COMMANDS
+06a8  4c 49 53 54   1457   1461         DB   'LIST'
+06ac                1458   1462         DWA  LIST
+06ac  81          + 1458   1463         DB   (LIST SHR 8) + 128
+06ad  6f          + 1458   1464         DB   LIST AND 0FFH
+06ae  52 55 4e      1459   1465         DB   'RUN'
+06b1                1460   1466         DWA  RUN
+06b1  81          + 1460   1467         DB   (RUN SHR 8) + 128
+06b2  41          + 1460   1468         DB   RUN AND 0FFH
+06b3  4e 45 57      1461   1469         DB   'NEW'
+06b6                1462   1470         DWA  NEW
+06b6  81          + 1462   1471         DB   (NEW SHR 8) + 128
+06b7  32          + 1462   1472         DB   NEW AND 0FFH
+                    1463   1473 ;
+06b8                1464   1474 TAB2:                                   ;DIRECT/STATEMENT
+06b8  4e 45 58 54   1465   1475         DB   'NEXT'
+06bc                1466   1476         DWA  NEXT
+06bc  82          + 1466   1477         DB   (NEXT SHR 8) + 128
+06bd  57          + 1466   1478         DB   NEXT AND 0FFH
+06be  4c 45 54      1467   1479         DB   'LET'
+06c1                1468   1480         DWA  LET
+06c1  83          + 1468   1481         DB   (LET SHR 8) + 128
+06c2  23          + 1468   1482         DB   LET AND 0FFH
+06c3  49 46         1469   1483         DB   'IF'
+06c5                1470   1484         DWA  IFF
+06c5  82          + 1470   1485         DB   (IFF SHR 8) + 128
+06c6  b4          + 1470   1486         DB   IFF AND 0FFH
+06c7  47 4f 54 4f   1471   1487         DB   'GOTO'
+06cb                1472   1488         DWA  GOTO
+06cb  81          + 1472   1489         DB   (GOTO SHR 8) + 128
+06cc  60          + 1472   1490         DB   GOTO AND 0FFH
+06cd  47 4f 53 55   1473   1491         DB   'GOSUB'
+06d1  42            1473   1492
+06d2                1474   1493         DWA  GOSUB
+06d2  81          + 1474   1494         DB   (GOSUB SHR 8) + 128
+06d3  bf          + 1474   1495         DB   GOSUB AND 0FFH
+06d4  52 45 54 55   1475   1496         DB   'RETURN'
+06d8  52 4e         1475   1497
+06da                1476   1498         DWA  RETURN
+06da  81          + 1476   1499         DB   (RETURN SHR 8) + 128
+06db  df          + 1476   1500         DB   RETURN AND 0FFH
+06dc  52 45 4d      1477   1501         DB   'REM'
+06df                1478   1502         DWA  REM
+06df  82          + 1478   1503         DB   (REM SHR 8) + 128
+06e0  b0          + 1478   1504         DB   REM AND 0FFH
+06e1  46 4f 52      1479   1505         DB   'FOR'
+06e4                1480   1506         DWA  FOR
+06e4  81          + 1480   1507         DB   (FOR SHR 8) + 128
+06e5  f8          + 1480   1508         DB   FOR AND 0FFH
+06e6  49 4e 50 55   1481   1509         DB   'INPUT'
+06ea  54            1481   1510
+06eb                1482   1511         DWA  INPUT
+06eb  82          + 1482   1512         DB   (INPUT SHR 8) + 128
+06ec  cd          + 1482   1513         DB   INPUT AND 0FFH
+06ed  50 52 49 4e   1483   1514         DB   'PRINT'
+06f1  54            1483   1515
+06f2                1484   1516         DWA  PRINT
+06f2  81          + 1484   1517         DB   (PRINT SHR 8) + 128
+06f3  87          + 1484   1518         DB   PRINT AND 0FFH
+06f4  53 54 4f 50   1485   1519         DB   'STOP'
+06f8                1486   1520         DWA  STOP
+06f8  81          + 1486   1521         DB   (STOP SHR 8) + 128
+06f9  3b          + 1486   1522         DB   STOP AND 0FFH
+06fa                1487   1523         DWA  DEFLT
+06fa  83          + 1487   1524         DB   (DEFLT SHR 8) + 128
+06fb  1d          + 1487   1525         DB   DEFLT AND 0FFH
+                    1488   1526 ;
+06fc                1489   1527 TAB4:                                   ;FUNCTIONS
+06fc  52 4e 44      1490   1528         DB   'RND'
+06ff                1491   1529         DWA  RND
+06ff  84          + 1491   1530         DB   (RND SHR 8) + 128
+0700  25          + 1491   1531         DB   RND AND 0FFH
+0701  41 42 53      1492   1532         DB   'ABS'
+0704                1493   1533         DWA  ABS
+0704  84          + 1493   1534         DB   (ABS SHR 8) + 128
+0705  50          + 1493   1535         DB   ABS AND 0FFH
+0706  53 49 5a 45   1494   1536         DB   'SIZE'
+070a                1495   1537         DWA  SIZE
+070a  84          + 1495   1538         DB   (SIZE SHR 8) + 128
+070b  59          + 1495   1539         DB   SIZE AND 0FFH
+070c                1496   1540         DWA  XP40
+070c  84          + 1496   1541         DB   (XP40 SHR 8) + 128
+070d  0b          + 1496   1542         DB   XP40 AND 0FFH
+                    1497   1543 ;
+070e                1498   1544 TAB5:                                   ;"TO" IN "FOR"
+070e  54 4f         1499   1545         DB   'TO'
+0710                1500   1546         DWA  FR1
+0710  82          + 1500   1547         DB   (FR1 SHR 8) + 128
+0711  08          + 1500   1548         DB   FR1 AND 0FFH
+0712                1501   1549         DWA  QWHAT
+0712  84          + 1501   1550         DB   (QWHAT SHR 8) + 128
+0713  c9          + 1501   1551         DB   QWHAT AND 0FFH
+                    1502   1552 ;
+0714                1503   1553 TAB6:                                   ;"STEP" IN "FOR"
+0714  53 54 45 50   1504   1554         DB   'STEP'
+0718                1505   1555         DWA  FR2
+0718  82          + 1505   1556         DB   (FR2 SHR 8) + 128
+0719  12          + 1505   1557         DB   FR2 AND 0FFH
+071a                1506   1558         DWA  FR3
+071a  82          + 1506   1559         DB   (FR3 SHR 8) + 128
+071b  16          + 1506   1560         DB   FR3 AND 0FFH
+                    1507   1561 ;
+071c                1508   1562 TAB8:                                   ;RELATION OPERATORS
+071c  3e 3d         1509   1563         DB   '>='
+071e                1510   1564         DWA  XP11
+071e  83          + 1510   1565         DB   (XP11 SHR 8) + 128
+071f  33          + 1510   1566         DB   XP11 AND 0FFH
+0720  23            1511   1567         DB   '#'
+0721                1512   1568         DWA  XP12
+0721  83          + 1512   1569         DB   (XP12 SHR 8) + 128
+0722  39          + 1512   1570         DB   XP12 AND 0FFH
+0723  3e            1513   1571         DB   '>'
+0724                1514   1572         DWA  XP13
+0724  83          + 1514   1573         DB   (XP13 SHR 8) + 128
+0725  3f          + 1514   1574         DB   XP13 AND 0FFH
+0726  3d            1515   1575         DB   '='
+0727                1516   1576         DWA  XP15
+0727  83          + 1516   1577         DB   (XP15 SHR 8) + 128
+0728  4e          + 1516   1578         DB   XP15 AND 0FFH
+0729  3c 3d         1517   1579         DB   '<='
+072b                1518   1580         DWA  XP14
+072b  83          + 1518   1581         DB   (XP14 SHR 8) + 128
+072c  46          + 1518   1582         DB   XP14 AND 0FFH
+072d  3c            1519   1583         DB   '<'
+072e                1520   1584         DWA  XP16
+072e  83          + 1520   1585         DB   (XP16 SHR 8) + 128
+072f  54          + 1520   1586         DB   XP16 AND 0FFH
+0730                1521   1587         DWA  XP17
+0730  83          + 1521   1588         DB   (XP17 SHR 8) + 128
+0731  5a          + 1521   1589         DB   XP17 AND 0FFH
+                    1522   1590 ;
+0732  21 a7 06      1523   1591 DIRECT: LXI  H,TAB1-1                   ;*** DIRECT ***
+                    1524   1592 ;
+0735                1525   1593 EXEC:                                   ;*** EXEC ***
+0735  ef            1526   1594 EX0:    RST  5                          ;IGNORE LEADING BLANKS
+0736  d5            1527   1595         PUSH D                          ;SAVE POINTER
+0737  1a            1528   1596 EX1:    LDAX D                          ;IF FOUND '.' IN STRING
+0738  13            1529   1597         INX  D                          ;BEFORE ANY MISMATCH
+0739  fe 2e         1530   1598         CPI  2EH                        ;WE DECLARE A MATCH
+073b  ca 54 07      1531   1599         JZ   EX3
+073e  23            1532   1600         INX  H                          ;HL->TABLE
+073f  be            1533   1601         CMP  M                          ;IF MATCH, TEST NEXT
+0740  ca 37 07      1534   1602         JZ   EX1
+0743  3e 7f         1535   1603         MVI  A,07FH                     ;ELSE SEE IF BIT 7
+0745  1b            1536   1604         DCX  D                          ;OF TABLE IS SET, WHICH
+0746  be            1537   1605         CMP  M                          ;IS THE JUMP ADDR. (HI)
+0747  da 5b 07      1538   1606         JC   EX5                        ;C:YES, MATCHED
+074a  23            1539   1607 EX2:    INX  H                          ;NC:NO, FIND JUMP ADDR.
+074b  be            1540   1608         CMP  M
+074c  d2 4a 07      1541   1609         JNC  EX2
+074f  23            1542   1610         INX  H                          ;BUMP TO NEXT TAB. ITEM
+0750  d1            1543   1611         POP  D                          ;RESTORE STRING POINTER
+0751  c3 35 07      1544   1612         JMP  EX0                        ;TEST AGAINST NEXT ITEM
+0754  3e 7f         1545   1613 EX3:    MVI  A,07FH                     ;PARTIAL MATCH, FIND
+0756  23            1546   1614 EX4:    INX  H                          ;JUMP ADDR., WHICH IS
+0757  be            1547   1615         CMP  M                          ;FLAGGED BY BIT 7
+0758  d2 56 07      1548   1616         JNC  EX4
+075b  7e            1549   1617 EX5:    MOV  A,M                        ;LOAD HL WITH THE JUMP
+075c  23            1550   1618         INX  H                          ;ADDRESS FROM THE TABLE
+075d  6e            1551   1619         MOV  L,M
+075e  e6 7f         1552   1620         ANI  7FH                        ;MASK OFF BIT 7
+0760  67            1553   1621         MOV  H,A
+0761  f1            1554   1622         POP  PSW                        ;CLEAN UP THE GABAGE
+0762  e9            1555   1623         PCHL                            ;AND WE GO DO IT
+                    1556   1624 ;
+0763                1557   1625 LSTROM:                                 ;ALL ABOVE CAN BE ROM
+                    1558   1626 ;       ORG  1000H                      ;HERE DOWN MUST BE RAM
+                    1559   1627         ORG  0800H
+0800                1560   1628 OCSW:   DS   1                          ;SWITCH FOR OUTPUT
+0801                1561   1629 CURRNT: DS   2                          ;POINTS TO CURRENT LINE
+0803                1562   1630 STKGOS: DS   2                          ;SAVES SP IN 'GOSUB'
+0805                1563   1631 VARNXT: DS   2                          ;TEMP STORAGE
+0807                1564   1632 STKINP: DS   2                          ;SAVES SP IN 'INPUT'
+0809                1565   1633 LOPVAR: DS   2                          ;'FOR' LOOP SAVE AREA
+080b                1566   1634 LOPINC: DS   2                          ;INCREMENT
+080d                1567   1635 LOPLMT: DS   2                          ;LIMIT
+080f                1568   1636 LOPLN:  DS   2                          ;LINE NUMBER
+0811                1569   1637 LOPPT:  DS   2                          ;TEXT POINTER
+0813                1570   1638 RANPNT: DS   2                          ;RANDOM NUMBER POINTER
+0815                1571   1639 TXTUNF: DS   2                          ;->UNFILLED TEXT AREA
+0817                1572   1640 TXTBGN: DS   2                          ;TEXT SAVE AREA BEGINS
+                    1573   1641 ;       ORG  1366H
+                    1574   1642         ORG  1F00H
+1f00                1575   1643 TXTEND: DS   0                          ;TEXT SAVE AREA ENDS
+1f00                1576   1644 VARBGN: DS   55                         ;VARIABLE @(0)
+1f37                1577   1645 BUFFER: DS   64                         ;INPUT BUFFER
+1f77                1578   1646 BUFEND: DS   1                          ;BUFFER ENDS
+1f78                1579   1647 STKLMT: DS   1                          ;TOP LIMIT FOR STACK
+                    1580   1648 ;       ORG  1400H
+                    1581   1649         ORG  2000H
+2000                1582   1650 STACK:  DS   0                          ;STACK STARTS HERE
+                    1583   1651 ;
+000d  =             1584   1652 CR      EQU  0DH
+000a  =             1585   1653 LF      EQU  0AH
+                    1586   1654 
+2000                1587   1655         END
 
 Macro table
 

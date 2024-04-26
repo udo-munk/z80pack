@@ -1378,7 +1378,8 @@ PU1:    PUSH H
 ;       LDA  OCSW                       ;CHECK SOFTWARE SWITCH
 ;       ORA  A
 INIT:   STA  OCSW
-        MVI  D,19H
+;       MVI  D,19H
+        MVI  D,2
 PATLOP:
         CALL CRLF
         DCR  D
