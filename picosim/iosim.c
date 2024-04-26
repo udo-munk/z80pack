@@ -114,9 +114,7 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-	while (!uart_is_readable(uart0)) /* block until data available */
-		;			 /* compatible with z80sim */
-	return ((BYTE)getchar());	 /* read data */
+	return ((BYTE)getchar());
 }
 
 /*
