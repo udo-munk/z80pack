@@ -78,12 +78,13 @@ void reset_cpu(void)
 	int_data = -1;
 
 	PC = 0;
+	R = 0L;
 
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
 		I = 0;
-		R_ = R = 0L;
+		R_ = 0;
 		int_nmi = int_mode = 0;
 		break;
 #endif

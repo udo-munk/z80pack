@@ -389,7 +389,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	config();		/* read system configuration */
 	init_cpu();		/* initialize CPU */
-	init_memory();	/* initialize memory configuration */
+	init_memory();		/* initialize memory configuration */
 
 	if (l_flag) {		/* load core */
 		if (load_core())
@@ -549,9 +549,8 @@ static int load_core(void)
 	if (cpu == Z80) {
 		fread(&R, sizeof(R), 1, fp);
 		fread(&R_, sizeof(R_), 1, fp);
-	} else
+	}
 #endif
-		R = 0L;
 	fread(&PC, sizeof(PC), 1, fp);
 	fread(&SP, sizeof(SP), 1, fp);
 #ifndef EXCLUDE_Z80
