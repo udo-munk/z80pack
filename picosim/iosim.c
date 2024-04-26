@@ -6,10 +6,12 @@
  * I/O simulation for picosim
  */
 
+/* Raspberry SDK includes */
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 
+/* Project includes */
 #include "sim.h"
 #include "simglb.h"
 
@@ -18,7 +20,7 @@
  *	for all port addresses.
  */
 static void p001_out(BYTE);
-static BYTE p000_in(void);
+static BYTE p000_in(void), p001_in(void);
 
 /*
  *	This array contains function pointers for every input
@@ -26,7 +28,7 @@ static BYTE p000_in(void);
  */
 static BYTE (*port_in[256])(void) = {
 	p000_in,		/* port 0 */
-	0			/* port 1 */
+	p001_in			/* port 1 */
 };
 
 /*
@@ -56,9 +58,6 @@ void init_io(void)
 /*
  *	This function is to stop the I/O devices. It is
  *	called from the CPU simulation on exit.
- *
- *	Nothing to do here, see the I/O simulation
- *	of CP/M for a more complex example.
  */
 void exit_io(void)
 {
@@ -98,7 +97,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
  *	bit 0 = 0, character available for input from tty
  *	bit 7 = 0, transmitter ready to write character to tty
  */
-BYTE p000_in(void)
+static BYTE p000_in(void)
 {
 	register BYTE stat = 0b10000001; /* initially not ready */
 
@@ -110,9 +109,19 @@ BYTE p000_in(void)
 	return (stat);
 }
 
+/*	I/O function port 1 read:
+ *	Read byte from Pico UART.
+ */
+static BYTE p001_in(void)
+{
+	while (!uart_is_readable(uart0)) /* block until data available */
+		;			 /* compatible with z80sim */
+	return ((BYTE)getchar());	 /* read data */
+}
+
 /*
  *	I/O function port 1 write:
- *	Write byte to Pico uart.
+ *	Write byte to Pico UART.
  */
 static void p001_out(BYTE data)
 {
