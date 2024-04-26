@@ -10,7 +10,6 @@
 /* Raspberry SDK includes */
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "tusb.h"
 
 /* Project includes */
 #include "sim.h"
@@ -30,8 +29,6 @@ extern void report_cpu_error(void);
 int main(void)
 {
 	stdio_init_all();	/* initialize Pico stdio */
-	while (!tud_cdc_connected())
-		sleep_ms(100);	/* wait until USB connected */
 
 #ifdef PICO_W			/* initialize Pico W cyw43 hardware */
 	if (cyw43_arch_init())
