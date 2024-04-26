@@ -23,7 +23,7 @@ IMSAI MPU-B MONITOR    VERS 1.3
 
 The monitor has lots of commands, B will try to boot from disk, D dumps memory
 and so on. With R 0 1 it will read track 0 sector 1 into memory. The W command
-writes a sector to the disk! Become familar with this before trying,
+writes a sector to the disk! Become familiar with this before trying,
 because writing some random bytes to the boot disk will make it unusable.
 The manual for MPU-B has a detailed description of all monitor commands.
 For booting both version will work, the monitor commands might have

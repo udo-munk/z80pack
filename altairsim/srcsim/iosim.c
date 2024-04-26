@@ -12,7 +12,7 @@
  * 02-MAR-14 source cleanup and improvements
  * 14-MAR-14 added Tarbell SD FDC and printer port
  * 15-MAR-14 modified printer port for Tarbell CP/M 1.4 BIOS
- * 23-MAR-14 added 10ms timer interrupt for Kildalls timekeeper PL/M program
+ * 23-MAR-14 added 10ms timer interrupt for Kildall's timekeeper PL/M program
  * 16-JUL-14 unused I/O ports need to return FF, see survey.mac
  * 18-JUL-14 completed all ports used, so that survey would find them
  * 31-JAN-15 took over some improvements made for the Z-1 emulation
@@ -25,7 +25,7 @@
  * 27-MAR-17 connected SIO 3 to UNIX domain socket
  * 24-APR-18 cleanup
  * 17-MAY-18 improved hardware control
- * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 08-JUN-18 moved hardware initialization and reset to iosim
  * 15-JUL-18 use logging
  * 10-AUG-18 added MITS 88-DCDD floppy disk controller
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
@@ -780,7 +780,7 @@ static BYTE fp_in(void)
 }
 
 /*
- *	Ouput to front panel switch port won't do anything
+ *	Output to front panel switch port won't do anything
  */
 static void fp_out(BYTE data)
 {

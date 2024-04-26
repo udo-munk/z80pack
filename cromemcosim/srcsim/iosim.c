@@ -24,7 +24,7 @@
  * 22-APR-18 implemented TCP socket polling
  * 24-APR-18 cleanup
  * 17-MAY-18 implemented hardware control
- * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 08-JUN-18 moved hardware initialization and reset to iosim
  * 18-JUL-18 use logging
  * 08-SEP-19 bug fixes provided by Alan Cox
  * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
@@ -632,7 +632,7 @@ void init_io(void)
 	static struct itimerval tim;
 	static struct sigaction newact;
 
-	/* initialise TCP/IP networking */
+	/* initialize TCP/IP networking */
 #ifdef TCPASYNC
 	newact.sa_handler = sigio_tcp_server_socket;
 	sigemptyset(&newact.sa_mask);

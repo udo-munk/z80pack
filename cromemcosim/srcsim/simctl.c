@@ -15,12 +15,12 @@
  * 24-APR-15 added Cromemco DAZZLER to the machine
  * 01-MAR-16 added sleep for threads before switching tty to raw mode
  * 09-MAY-16 frontpanel configuration with path support
- * 06-DEZ-16 implemented status display and stepping for all machine cycles
+ * 06-DEC-16 implemented status display and stepping for all machine cycles
  * 13-MAR-17 can't examine/deposit if CPU running HALT instruction
  * 29-JUN-17 system reset overworked
  * 10-APR-18 trap CPU on unsupported bus data during interrupt
  * 17-MAY-18 implemented hardware control
- * 08-JUN-18 moved hardware initialisation and reset to iosim
+ * 08-JUN-18 moved hardware initialization and reset to iosim
  * 11-JUN-18 fixed reset so that cold and warm start works
  * 18-JUL-18 use logging
  * 04-NOV-19 eliminate usage of mem_base()
@@ -65,7 +65,7 @@ static void quit_callback(void);
 #endif
 
 /*
- *	This function initialises the front panel and terminal.
+ *	This function initializes the front panel and terminal.
  *	Then the machine waits to be operated from the front panel,
  *	until power switched OFF again.
  *
@@ -81,7 +81,7 @@ void mon(void)
 #endif
 
 #ifdef FRONTPANEL
-	/* initialise front panel */
+	/* initialize front panel */
 	XInitThreads();
 
 	if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
@@ -128,7 +128,7 @@ void mon(void)
 	fflush(stdout);
 
 #ifndef WANT_ICE
-	/* initialise terminal */
+	/* initialize terminal */
 	set_unix_terminal();
 #endif
 	atexit(reset_unix_terminal);

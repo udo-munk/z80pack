@@ -7,7 +7,7 @@ MACHINE = cpm
 MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
 IO_SRCS = unix_terminal.c rtc.c simbdos.c
-# machine specifc libraries
+# machine specific libraries
 MACHINE_LIBS =
 
 # Installation directories by convention

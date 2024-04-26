@@ -38,7 +38,7 @@ void telnet_negotiation(int);
 static const char *TAG = "net";
 
 /*
- * initialise a server UNIX domain socket
+ * initialize a server UNIX domain socket
  */
 void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 {
@@ -75,7 +75,7 @@ void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 }
 
 /*
- * initialise a server TCP/IP socket
+ * initialize a server TCP/IP socket
  */
 void init_tcp_server_socket(struct net_connectors *p)
 {

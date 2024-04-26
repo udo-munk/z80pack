@@ -11,7 +11,7 @@
  * 02-MAR-14 source cleanup and improvements
  * 23-MAR-14 enabled interrupts, 10ms timer added to iosim
  * xx-JUN-14 added default CPU define
- * 19-JUL-14 added typedef for signed 16bit
+ * 19-JUL-14 added typedef for signed 16-bit
  * 09-MAY-15 added Cromemco DAZZLER to the machine
  * 30-AUG-16 implemented memwrt as function to support ROM
  * 01-DEC-16 implemented memrdr to separate memory from CPU

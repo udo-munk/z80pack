@@ -510,7 +510,7 @@ SELDSK:
 	LD	H,(HL)
 	LD	L,A
 	LD	A,C
-	OUT	(FDCD),A	;selekt disk drive
+	OUT	(FDCD),A	;select disk drive
 	RET
 ;
 ;	set track given by register c

@@ -25,7 +25,7 @@
  *
  * History:
  * 22-NOV-16 stuff moved to here for further improvements
- * 03-FEB-17 added ROM initialisation
+ * 03-FEB-17 added ROM initialization
  * 09-APR-18 modified MMU write protect port as used by Alan Cox for FUZIX
  * 04-NOV-19 add functions for direct memory access
  */

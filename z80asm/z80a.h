@@ -5,10 +5,10 @@
  */
 
 /*
- *	OS dependant definitions
+ *	OS dependent definitions
  */
-#define READA		"r"	/* file open mode read ascii */
-#define WRITEA		"w"	/* file open mode write ascii */
+#define READA		"r"	/* file open mode read ASCII */
+#define WRITEA		"w"	/* file open mode write ASCII */
 #define WRITEB		"wb"	/* file open mode write binary */
 #define PATHSEP		'/'	/* directory separator in paths */
 

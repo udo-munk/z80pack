@@ -189,7 +189,7 @@ void fdc1771_cmd_out(BYTE data)
 		else
 			fdc_stat = sSEEK_ERROR;	/* assumes V bit set */
 
-		if (fdc_track == 0)		/* udpate track zero flag */
+		if (fdc_track == 0)		/* update track zero flag */
 			fdc_stat |= sTRACK0;
 
 	} else if ((data & 0xe0) == 0x60) {	/* step out */

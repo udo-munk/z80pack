@@ -4,7 +4,7 @@
  * Copyright (C) 1988-2017 by Udo Munk
  *
  * History:
- * 05-OKT-1988 Development on TARGON/35 with AT&T Unix System V.3
+ * 05-OCT-1988 Development on TARGON/35 with AT&T Unix System V.3
  * 11-MAR-1993 comments in english and ported to COHERENT 4.0
  * 01-OCT-2006 modified to compile on modern POSIX OS's
  * 09-MAR-2016 moved pipes to /tmp/.z80pack

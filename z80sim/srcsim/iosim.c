@@ -55,7 +55,7 @@ static void (*port_out[256])(BYTE) = {
  *	It will be called from the CPU simulation before
  *	any operation with the CPU is possible.
  *
- *	In this sample I/O simulation we initialise all
+ *	In this sample I/O simulation we initialize all
  *	unused port with an error trap handler, so that
  *	simulation stops at I/O on the unused ports.
  *

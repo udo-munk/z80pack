@@ -2,7 +2,7 @@
  *
  * First cut am9511 emulation. This version is NOT cycle accurate,
  * or even algorithm accurate. It should be a somewhat reasonable
- * stand-in, which should allow us to run base-line comparisions with
+ * stand-in, which should allow us to run base-line comparisons with
  * the real device.
  */
 
@@ -746,7 +746,7 @@ void am_command(void *amp, unsigned char op) {
     case AM_COS:  /* cosine */
     case AM_TAN:  /* tangent */
     case AM_LOG:  /* common logarithm (base 10) */
-    case AM_LN:   /* natural logarthm (base e) */
+    case AM_LN:   /* natural logarithm (base e) */
     case AM_ASIN: /* inverse sine */
     case AM_ACOS: /* inverse cosine */
     case AM_ATAN: /* inverse tangent */

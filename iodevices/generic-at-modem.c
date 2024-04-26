@@ -333,11 +333,11 @@ int open_socket(void) {
 	        return 1;
 	    }
 
-        /* Initialise Telnet session */
+        /* Initialize Telnet session */
         if (s_reg[SREG_TELNET]) {
             init_telnet_opts();
             if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
-                LOGE(TAG, "can't initialise telnet session");
+                LOGE(TAG, "can't initialize telnet session");
                 close_socket();
                 return 1;
             } else {
@@ -439,11 +439,11 @@ int answer(void) {
     	return 1;
     }
 
-    /* Initialise Telnet session */
+    /* Initialize Telnet session */
     if (s_reg[SREG_TELNET]) {
         init_telnet_opts();
         if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
-            LOGE(TAG, "can't initialise telnet server session");
+            LOGE(TAG, "can't initialize telnet server session");
             close_socket();
             return 1;
         } else {
@@ -549,15 +549,15 @@ static const char *at_help[] = {
 #ifdef MODEM_WIFI
 			"AT+W? - Query WiFi AP Join status" CRLF,
 			"AT+W=ssid,password - Join WiFI AP" CRLF,
-			"AT+W$ - Show WiFi IP adddress   ",
-			"| AT+W# - Show WiFi MAC adddress" CRLF,
+			"AT+W$ - Show WiFi IP address   ",
+			"| AT+W# - Show WiFi MAC address" CRLF,
 			"AT+W+ - Reconnect WiFI AP       ",
 			"| AT+W- - Quit WiFi AP" CRLF,
 			"AT+U? - Query OTA Update        ",
 			"| AT+U=url - Set custom URL for OTA update" CRLF,
 			"AT+U^ - Upgrade to OTA Update   ",
 			"| AT+U! - Force Upgrade to OTA Update" CRLF,
-			"AT+U$ - Show OTA Parition Status" CRLF,
+			"AT+U$ - Show OTA Partition Status" CRLF,
 #endif
 #ifdef MODEM_UART
 			"AT+B? - Query Baud Rate         ",
@@ -739,7 +739,7 @@ int process_at_cmd(void) {
                 at_cat_s(LF "CONNECT" CRLF);
             }
             *at_err = 0;
-            return 1; /* Not an error, just want to suppress the OK mesage */
+            return 1; /* Not an error, just want to suppress the OK message */
 		case 'S': /* ATSn */
             tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
 

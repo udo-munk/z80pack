@@ -8,10 +8,10 @@
  *
  * History:
  * 22-NOV-2016 stuff moved to here and implemented as inline functions
- * 02-FEB-2017 initialise ROM with 0xff
+ * 02-FEB-2017 initialize ROM with 0xff
  * 13-JUN-2017 added Tarbell bootstrap ROM
  * 16-AUG-2017 overworked memrdr()
- * 07-MAY-2018 added memory configuratione needed by apple monitor
+ * 07-MAY-2018 added memory configuration needed by apple monitor
  * 11-JUN-2018 fixed bug in Tarbell ROM mapping
  * 21-AUG-2018 improved memory configuration
  * 04-NOV-2019 add functions for direct memory access

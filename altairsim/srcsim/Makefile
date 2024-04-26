@@ -10,7 +10,7 @@ MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-dazzler.c proctec-vdm.c tarbell_fdc.c altair-88-dcdd.c altair-88-sio.c \
 	altair-88-2sio.c unix_terminal.c unix_network.c simbdos.c
-# machine specifc libraries
+# machine specific libraries
 MACHINE_LIBS =
 
 # Installation directories by convention

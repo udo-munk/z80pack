@@ -8,7 +8,7 @@
  *
  * History:
  * 22-NOV-16 stuff moved to here and implemented as inline functions
- * 03-FEB-17 added ROM initialisation
+ * 03-FEB-17 added ROM initialization
  * 18-MAY-18 optimization
  * 18-JUL-18 use logging
  * 01-OCT-19 optimization

@@ -5,7 +5,7 @@
  *
  * Copyright (C) 2019-2021 by Udo Munk
  *
- * Emulation of a RTC to provide date and time informations.
+ * Emulation of a RTC to provide date and time information.
  * This doesn't emulate a specific RTC card or chip, in 1980
  * there was no standard yet for such things.
  *

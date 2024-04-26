@@ -8,9 +8,9 @@
 
 /*
  *	This module contains the 'main()' function of the simulator,
- *	where the options are checked and variables are initialised.
- *	After initialisation of the UNIX interrupts ( int_on() )
- *	and initialisation of the I/O simulation ( init_io() )
+ *	where the options are checked and variables are initialized.
+ *	After initialization of the UNIX interrupts ( int_on() )
+ *	and initialization of the I/O simulation ( init_io() )
  *	the user interface ( mon() ) is called.
  *
  *	Usable for UNIX workstations, for development and IoT boards
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 				i_flag = 1;
 				break;
 
-			case 'm':	/* initialise memory */
+			case 'm':	/* initialize memory */
 				if (*(s + 1) != '\0') {
 					m_flag = exatoi(s + 1);
 					s += strlen(s + 1);
@@ -388,8 +388,8 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	srand(tv.tv_sec);
 
 	config();		/* read system configuration */
-	init_cpu();		/* initialise CPU */
-	init_memory();	/* initialise memory configuration */
+	init_cpu();		/* initialize CPU */
+	init_memory();	/* initialize memory configuration */
 
 	if (l_flag) {		/* load core */
 		if (load_core())

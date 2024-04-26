@@ -2,7 +2,7 @@
 AM9511 floating point chip emulator. Includes a library to allow conversion of 32 bit floating point formats. AM9511,
 Microsoft, IEEE, Hi-Tech C formats are supported.
 
-This is designed to run both on a Z80, or on a generic sytem with gcc (or tcc). floatcnv works on both Z80 and hosting
+This is designed to run both on a Z80, or on a generic system with gcc (or tcc). floatcnv works on both Z80 and hosting
 platforms. am9511 is primarily to be integrated into emulation platforms. howto.txt has some instructions for integrating
 into Zxc and RunCPM.
 
