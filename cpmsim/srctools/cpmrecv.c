@@ -12,6 +12,7 @@
  * 11-MAY-2016 delayed create outfile so that it is created if used
  * 20-MAR-2017 renamed pipe
  * 19-APR-2024 don't use exit() in signal handler and switch to sigaction()
+ * 27-APR-2024 improve error handling
  */
 
 #include <unistd.h>
@@ -19,6 +20,8 @@
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <string.h>
+#include <errno.h>
 
 #define UNUSED(x) (void) (x)
 
@@ -28,6 +31,7 @@ int main(int argc, char *argv[])
 {
 	char c;
 	int fdin, fdout;
+	ssize_t n;
 	static struct sigaction newact;
 	void int_handler(int);
 
@@ -38,7 +42,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	if ((fdin = open("/tmp/.z80pack/cpmsim.auxout", O_RDONLY)) == -1) {
-		perror("pipe auxout");
+		perror("auxout pipe");
 		exit(EXIT_FAILURE);
 	}
 
@@ -50,7 +54,7 @@ int main(int argc, char *argv[])
 	newact.sa_handler = int_handler;
 	sigaction(SIGHUP, &newact, NULL);
 
-	while (!signal_catched && read(fdin, &c, 1) == 1) {
+	while (!signal_catched && (n = read(fdin, &c, 1)) == 1) {
 		if (c != '\r') {
 			if (fdout == 0) {
 				if ((fdout = creat(argv[1], 0644)) == -1) {
@@ -58,8 +62,17 @@ int main(int argc, char *argv[])
 					exit(EXIT_FAILURE);
 				}
 			}
-			write(fdout, &c, 1);
+			if ((n = write(fdout, &c, 1)) != 1) {
+				fprintf(stderr, "%s: %s\n", argv[1],
+					n == -1 ? strerror(errno)
+						: "short write");
+				exit(EXIT_FAILURE);
+			}
 		}
+	}
+	if (!signal_catched && n == -1) {
+		perror("auxout pipe");
+		exit(EXIT_FAILURE);
 	}
 
 	close(fdin);
