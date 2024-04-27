@@ -101,10 +101,18 @@ void get_disk_filename(void)
 			if ((inbuf[0] == '\n') || (inbuf[0] == '\r') ||
 			    (inbuf[0] == '#'))
 				continue;
-			left = strtok(inbuf, "= \t\r\n");
+			if ((left = strtok(inbuf, "= \t\r\n")) == NULL) {
+				LOGW(TAG, "missing command");
+				continue;
+			}
 			if (0 == strncmp(left, "drive", 5)) {
 				if (left[5] == (char) disk + '0') { /* match drive? */
 					right = strtok(NULL, "= \t\r\n");
+					if (right == NULL) {
+						LOGW(TAG, "missing path for %s",
+						     left);
+						continue;
+					}
 					strcpy(fn, right);
 					break;
 				}

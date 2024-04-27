@@ -35,8 +35,14 @@ void config(void)
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
-			t1 = strtok(s, "= \t\r\n");
-			t2 = strtok(NULL, "= \t\r\n");
+			if ((t1 = strtok(s, "= \t\r\n")) == NULL) {
+				LOGW(TAG, "missing command");
+				continue;
+			}
+			if ((t2 = strtok(NULL, "= \t\r\n")) == NULL) {
+				LOGW(TAG, "missing parameter for %s", t1);
+				continue;
+			}
 
 			if (0 == strcmp(t1, "bootrom")) {
 				LOG(TAG, "\r\nBoot ROM: %s\r\n\r\n", t2);
@@ -51,7 +57,7 @@ void config(void)
 			} else if (0 == strcmp(t1, "drive3")) {
 				LOG(TAG, "Drive 3: %s\r\n", t2);
 			} else {
-				LOGW(TAG, "unknown command: %s", s);
+				LOGW(TAG, "unknown command: %s", t1);
 			}
 		}
 		fclose(fp);
