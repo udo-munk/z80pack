@@ -6,7 +6,7 @@ MACHINE = z80
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
-IO_SRCS =
+IO_SRCS = unix_terminal.c
 # machine specific libraries
 MACHINE_LIBS =
 
@@ -29,8 +29,9 @@ LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
 SIM = ../$(MACHINE)sim
 
 CORE_DIR = ../../z80core
+IO_DIR = ../../iodevices
 
-VPATH = $(CORE_DIR)
+VPATH = $(CORE_DIR) $(IO_DIR)
 
 ###
 ### START O/S PLATFORM DEPENDENT VARIABLES
