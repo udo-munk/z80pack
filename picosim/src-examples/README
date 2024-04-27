@@ -5,6 +5,10 @@ z80asm is, that the latest version can output C code we can
 right use here, without the need to convert from binaries or
 hex dumps.
 
+With z80pack z80sim examples like these can be debugged under
+control of an In Circuit Emulator (debug probe), the serial
+port implemented in the latest release is identical.
+
 Copy one of the "example".c files to ../z80code.h and rebuild
 the application.
 
