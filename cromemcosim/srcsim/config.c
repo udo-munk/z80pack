@@ -59,37 +59,42 @@ void config(void)
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
-			t1 = strtok(s, " \t");
-			t2 = strtok(NULL, " \t,");
+			if ((t1 = strtok(s, " \t")) == NULL) {
+				LOGW(TAG, "missing command");
+				continue;
+			}
+			if ((t2 = strtok(NULL, " \t,")) == NULL) {
+				LOGW(TAG, "missing parameter for %s", t1);
+				continue;
+			}
 			if (!strcmp(t1, "fp_port")) {
 				fp_port = (BYTE) exatoi(t2);
 			} else if (!strcmp(t1, "fp_fps")) {
 #ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
-#else
-				;
 #endif
 			} else if (!strcmp(t1, "fp_size")) {
 #ifdef FRONTPANEL
 				fp_size = atoi(t2);
-#else
-				;
 #endif
 			} else if (!strcmp(t1, "ram")) {
 				if (num_segs >= MAXMEMMAP) {
 					LOGW(TAG, "too many rom/ram statements");
-					goto next;
+					continue;
 				}
-				t3 = strtok(NULL, " \t,");
+				if ((t3 = strtok(NULL, " \t,")) == NULL) {
+					LOGW(TAG, "missing ram size");
+					continue;
+				}
 				v1 = strtol(t2, NULL, 0);
 				if (v1 < 0 || v1 > 255) {
 					LOGW(TAG, "invalid ram start address %d", v1);
-					goto next;
+					continue;
 				}
 				v2 = strtol(t3, NULL, 0);
 				if (v2 < 1 || v1 + v2 > 256) {
 					LOGW(TAG, "invalid ram size %d", v2);
-					goto next;
+					continue;
 				}
 				memconf[section][num_segs].type = MEM_RW;
 				memconf[section][num_segs].spage = v1;
@@ -100,19 +105,22 @@ void config(void)
 			} else if (!strcmp(t1, "rom")) {
 				if (num_segs >= MAXMEMMAP) {
 					LOGW(TAG, "too many rom/ram statements");
-					goto next;
+					continue;
 				}
-				t3 = strtok(NULL, " \t,");
+				if ((t3 = strtok(NULL, " \t,")) == NULL) {
+					LOGW(TAG, "missing rom size");
+					continue;
+				}
 				t4 = strtok(NULL, " \t\r\n");
 				v1 = strtol(t2, NULL, 0);
 				if (v1 < 0 || v1 > 255) {
 					LOGW(TAG, "invalid rom start address %d", v1);
-					goto next;
+					continue;
 				}
 				v2 = strtol(t3, NULL, 0);
 				if (v2 < 1 || v1 + v2 > 256) {
 					LOGW(TAG, "invalid rom size %d", v2);
-					goto next;
+					continue;
 				}
 				memconf[section][num_segs].type = MEM_RO;
 				memconf[section][num_segs].spage = v1;
@@ -133,18 +141,14 @@ void config(void)
 				v1 = strtol(t2, &t3, 10);
 				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {
 					LOGW(TAG, "invalid MEMORY section number %d", v1);
-					goto next;
+					continue;
 				}
 				LOGD(TAG, "MEMORY CONFIGURATION %d", v1);
 				section = v1 - 1;
 				num_segs = 0;
 			} else {
-				LOGW(TAG, "system.conf unknown command: %s", s);
+				LOGW(TAG, "unknown command: %s", t1);
 			}
-
-next:
-			;
-
 		}
 		fclose(fp);
 	}
