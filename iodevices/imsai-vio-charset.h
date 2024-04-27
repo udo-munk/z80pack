@@ -8,7 +8,7 @@
  * Emulation of an IMSAI VIO S100 board
  *
  * History:
- * 06-JAN-17 Character ROM implemented completely
+ * 06-JAN-2017 Character ROM implemented completely
  */
 
 /*

@@ -7,9 +7,9 @@
  * for a Mostek AID-80F or SYS-80FT
  *
  * History:
- * 15-SEP-19 (Mike Douglas) created from iosim.c for the Altair
- * 28-SEP-19 (Udo Munk) use logging
- * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 15-SEP-2019 (Mike Douglas) created from iosim.c for the Altair
+ * 28-SEP-2019 (Udo Munk) use logging
+ * 08-OCT-2019 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  */
 
 #include <unistd.h>

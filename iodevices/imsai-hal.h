@@ -6,7 +6,7 @@
  * IMSAI SIO-2 hardware abstraction layer
  *
  * History:
- * 1-JUL-2021    1.0     Initial Release 
+ * 1-JUL-2021	1.0	Initial Release
  *
  */
 

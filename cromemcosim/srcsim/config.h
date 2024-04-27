@@ -8,14 +8,14 @@
  * global variables, so that the system can be configured.
  *
  * History:
- * 20-DEC-16 dummy, no configuration implemented yet
- * 02-JAN-17 front panel framerate configurable
- * 27-JAN-17 initial window size of the front panel configurable
- * 18-JUL-18 use logging
- * 22-JAN-21 added option for config file
- * 17-JUN-21 allow building machine without frontpanel
- * 29-JUL-21 add boot config for machine without frontpanel
- * 30-AUG-21 new memory configuration sections
+ * 20-DEC-2016 dummy, no configuration implemented yet
+ * 02-JAN-2017 front panel framerate configurable
+ * 27-JAN-2017 initial window size of the front panel configurable
+ * 18-JUL-2018 use logging
+ * 22-JAN-2021 added option for config file
+ * 17-JUN-2021 allow building machine without frontpanel
+ * 29-JUL-2021 add boot config for machine without frontpanel
+ * 30-AUG-2021 new memory configuration sections
  */
 
 extern void config(void);

@@ -8,27 +8,27 @@
  * global variables, so that the system can be configured.
  *
  * History:
- * 20-OCT-08 first version finished
- * 20-MAR-14 ignore carriage return too, necessary for the Windows port
- * 19-JUN-14 added config parameter for dropping nulls after CR/LF
- * 09-OCT-14 modified to support 2 SIO's
- * 09-MAY-16 added path for config file
- * 29-AUG-16 ROM and boot switch configuration for Altair emulation added
- * 20-DEC-16 configuration moved local, will be different for each system
- * 04-JAN-17 front panel framerate configurable
- * 26-JAN-17 initial window size of the front panel configurable
- * 23-FEB-17 added configuration options for VDM
- * 24-MAR-17 added configuration for SIO 0
- * 14-JUN-17 added config for Tarbell boot ROM
- * 07-MAY-18 added memory configuratione needed by apple monitor
- * 03-JUL-18 added baud rate to terminal 2SIO
- * 04-JUL-18 added baud rate to terminal SIO
- * 17-JUL-18 use logging
- * 21-AUG-18 improved memory configuration
- * 24-NOV-19 configurable baud rate for second 2SIO channel
- * 22-JAN-21 added option for config file
- * 31-JUL-21 allow building machine without frontpanel
- * 29-AUG-21 new memory configuration sections
+ * 20-OCT-2008 first version finished
+ * 20-MAR-2014 ignore carriage return too, necessary for the Windows port
+ * 19-JUN-2014 added config parameter for dropping nulls after CR/LF
+ * 09-OCT-2014 modified to support 2 SIO's
+ * 09-MAY-2016 added path for config file
+ * 29-AUG-2016 ROM and boot switch configuration for Altair emulation added
+ * 20-DEC-2016 configuration moved local, will be different for each system
+ * 04-JAN-2017 front panel framerate configurable
+ * 26-JAN-2017 initial window size of the front panel configurable
+ * 23-FEB-2017 added configuration options for VDM
+ * 24-MAR-2017 added configuration for SIO 0
+ * 14-JUN-2017 added config for Tarbell boot ROM
+ * 07-MAY-2018 added memory configuratione needed by apple monitor
+ * 03-JUL-2018 added baud rate to terminal 2SIO
+ * 04-JUL-2018 added baud rate to terminal SIO
+ * 17-JUL-2018 use logging
+ * 21-AUG-2018 improved memory configuration
+ * 24-NOV-2019 configurable baud rate for second 2SIO channel
+ * 22-JAN-2021 added option for config file
+ * 31-JUL-2021 allow building machine without frontpanel
+ * 29-AUG-2021 new memory configuration sections
  */
 
 #include <stdlib.h>

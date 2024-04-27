@@ -4,7 +4,7 @@
  * Copyright (C) 2022 Thomas Eberhardt
  *
  * History:
- * 19-OCT-22 add C++ main() for linking with the C++ frontpanel library
+ * 19-OCT-2022 add C++ main() for linking with the C++ frontpanel library
  */
 
 extern "C" int sim_main(int, char *[]);

@@ -6,7 +6,7 @@
  * Cromemco TU-ART hardware abstraction layer
  *
  * History:
- * 9-JUL-2022    1.0     Initial Release 
+ * 9-JUL-2022	1.0	Initial Release
  *
  */
 

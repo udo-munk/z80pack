@@ -7,8 +7,8 @@
  *
  * History:
  * 22-DEC-2016 stuff moved to here for better memory abstraction
- * 03-FEB-17 added ROM initialization
- * 15-AUG-17 don't use macros, use inline functions that coerce appropriate
+ * 03-FEB-2017 added ROM initialization
+ * 15-AUG-2017 don't use macros, use inline functions that coerce appropriate
  */
 
 #include <stdlib.h>

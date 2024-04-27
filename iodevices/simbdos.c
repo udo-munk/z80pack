@@ -27,7 +27,7 @@
  * as used in CP/M.
  *
  * History:
- * 03-OCT-19 (Mike Douglas) Original
+ * 03-OCT-2019 (Mike Douglas) Original
  */
 
 #include <stdlib.h>

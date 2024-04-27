@@ -7,7 +7,7 @@
  * like interface.
  *
  * History:
- * 03-OCT-19 Original
+ * 03-OCT-2019 Original
  */
 
 extern void host_bdos_out(BYTE);

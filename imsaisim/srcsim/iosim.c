@@ -8,35 +8,35 @@
  * for an IMSAI 8080 system
  *
  * History:
- * 20-OCT-08 first version finished
- * 19-JAN-14 unused I/O ports need to return 00 and not FF
- * 02-MAR-14 source cleanup and improvements
- * 23-MAR-14 added 10ms timer interrupt for Kildall's timekeeper PL/M program
- * 16-JUL-14 unused I/O ports need to return FF, see survey.mac
- * 14-OCT-14 support for SIO 2 added, parallel ports problem with ROM avoided
- * 31-JAN-15 took over some improvements made for the Z-1 emulation
- * 09-MAY-15 added Cromemco DAZZLER to the machine
- * 06-DEC-16 implemented status display and stepping for all machine cycles
- * 11-JAN-17 implemented X11 keyboard input for VIO
- * 24-APR-18 cleanup
- * 17-MAY-18 improved hardware control
- * 08-JUN-18 moved hardware initialization and reset to iosim
- * 12-JUL-18 use logging
- * 14-JUL-18 integrate webfrontend
- * 12-JUL-19 implemented second SIO
- * 27-JUL-19 more correct emulation of IMSAI SIO-2
- * 17-SEP-19 more consistent SIO naming
- * 23-SEP-19 added AT-modem
- * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
- * 18-OCT-19 add MMU and memory banks
- * 24-OCT-19 add RTC
- * 04-NOV-19 eliminate usage of mem_base()
- * 12-NOV-19 implemented SIO control ports
- * 14-AUG-20 allow building machine without frontpanel
- * 15-JUL-21 refactor serial keyboard
- * 01-AUG-21 integrated HAL
- * 05-AUG-21 add boot config for machine without frontpanel
- * 07-AUG-21 add APU emulation
+ * 20-OCT-2008 first version finished
+ * 19-JAN-2014 unused I/O ports need to return 00 and not FF
+ * 02-MAR-2014 source cleanup and improvements
+ * 23-MAR-2014 added 10ms timer interrupt for Kildall's timekeeper PL/M program
+ * 16-JUL-2014 unused I/O ports need to return FF, see survey.mac
+ * 14-OCT-2014 support for SIO 2 added, parallel ports problem with ROM avoided
+ * 31-JAN-2015 took over some improvements made for the Z-1 emulation
+ * 09-MAY-2015 added Cromemco DAZZLER to the machine
+ * 06-DEC-2016 implemented status display and stepping for all machine cycles
+ * 11-JAN-2017 implemented X11 keyboard input for VIO
+ * 24-APR-2018 cleanup
+ * 17-MAY-2018 improved hardware control
+ * 08-JUN-2018 moved hardware initialization and reset to iosim
+ * 12-JUL-2018 use logging
+ * 14-JUL-2018 integrate webfrontend
+ * 12-JUL-2019 implemented second SIO
+ * 27-JUL-2019 more correct emulation of IMSAI SIO-2
+ * 17-SEP-2019 more consistent SIO naming
+ * 23-SEP-2019 added AT-modem
+ * 08-OCT-2019 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 18-OCT-2019 add MMU and memory banks
+ * 24-OCT-2019 add RTC
+ * 04-NOV-2019 eliminate usage of mem_base()
+ * 12-NOV-2019 implemented SIO control ports
+ * 14-AUG-2020 allow building machine without frontpanel
+ * 15-JUL-2021 refactor serial keyboard
+ * 01-AUG-2021 integrated HAL
+ * 05-AUG-2021 add boot config for machine without frontpanel
+ * 07-AUG-2021 add APU emulation
  */
 
 #include <unistd.h>

@@ -3,13 +3,13 @@
 ;	Copyright (C) 2019,2020 by Udo Munk
 ;
 ; History:
-; 23-OCT-19 first public release
-; 24-Oct-19 get time/date from RTC
-; 25-OCT-19 add character device table
-; 28-OCT-19 add all character devices with I/O redirection
-; 01-NOV-19 add more complete character device mode byte
-; 17-NOV-19 handle result codes from FIF FDC
-; 01-APR-20 moved RTC ports
+; 23-OCT-2019 first public release
+; 24-Oct-2019 get time/date from RTC
+; 25-OCT-2019 add character device table
+; 28-OCT-2019 add all character devices with I/O redirection
+; 01-NOV-2019 add more complete character device mode byte
+; 17-NOV-2019 handle result codes from FIF FDC
+; 01-APR-2020 moved RTC ports
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry

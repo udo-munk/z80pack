@@ -8,11 +8,11 @@
  * This module contains functions to implement networking connections.
  *
  * History:
- * 26-MAR-15 first version finished
- * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
- * 22-APR-18 implemented TCP socket polling
- * 14-JUL-18 use logging
- * 16-JUL-20 fix bug/warning detected by gcc 9
+ * 26-MAR-2015 first version finished
+ * 22-MAR-2017 implemented UNIX domain sockets and tested with Altair SIO/2SIO
+ * 22-APR-2018 implemented TCP socket polling
+ * 14-JUL-2018 use logging
+ * 16-JUL-2020 fix bug/warning detected by gcc 9
  */
 
 #include <unistd.h>

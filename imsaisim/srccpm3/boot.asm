@@ -3,7 +3,7 @@
 ;	Copyright (C) 2019 by Udo Munk
 ;
 ; History:
-; 23-OCT-19 first public release
+; 23-OCT-2019 first public release
 ;
 	ORG	0		; memory base of boot
 ;

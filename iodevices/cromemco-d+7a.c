@@ -6,7 +6,7 @@
  * Copyright (C) 2020 by David McNaughton
  * 
  * History:
- * 14-JAN-20    1.0     Initial Release
+ * 14-JAN-2020	1.0	Initial Release
  */
 #include <stdlib.h>
 #include <stdio.h>

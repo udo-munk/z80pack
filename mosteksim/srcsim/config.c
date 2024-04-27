@@ -7,10 +7,10 @@
  * global variables, so that the system can be configured.
  *
  * History:
- * 24-SEP-19 (Mike Douglas) created for Mostek AID-80F and SYS-80FT
- * 27-SEP-19 (Mike Douglas) include newline \n as config.txt delimiter
- * 28-SEP-19 (Udo Munk) use logging
- * 17-OCT-19 (Udo Munk) fix logging
+ * 24-SEP-2019 (Mike Douglas) created for Mostek AID-80F and SYS-80FT
+ * 27-SEP-2019 (Mike Douglas) include newline \n as config.txt delimiter
+ * 28-SEP-2019 (Udo Munk) use logging
+ * 17-OCT-2019 (Udo Munk) fix logging
  */
 
 #include <stdlib.h>

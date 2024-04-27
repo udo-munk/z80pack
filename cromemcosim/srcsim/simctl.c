@@ -6,25 +6,25 @@
  * Copyright (C) 2014-2022 by Udo Munk
  *
  * History:
- * 15-DEC-14 first version
- * 20-DEC-14 added 4FDC emulation and machine boots CP/M 2.2
- * 28-DEC-14 second version with 16FDC, CP/M 2.2 boots
- * 01-JAN-15 fixed 16FDC, machine now also boots CDOS 2.58 from 8" and 5.25"
- * 01-JAN-15 fixed frontpanel switch settings, added boot flag to fp switch
- * 12-JAN-15 fdc and tu-art improvements, implemented banked memory
- * 24-APR-15 added Cromemco DAZZLER to the machine
- * 01-MAR-16 added sleep for threads before switching tty to raw mode
- * 09-MAY-16 frontpanel configuration with path support
- * 06-DEC-16 implemented status display and stepping for all machine cycles
- * 13-MAR-17 can't examine/deposit if CPU running HALT instruction
- * 29-JUN-17 system reset overworked
- * 10-APR-18 trap CPU on unsupported bus data during interrupt
- * 17-MAY-18 implemented hardware control
- * 08-JUN-18 moved hardware initialization and reset to iosim
- * 11-JUN-18 fixed reset so that cold and warm start works
- * 18-JUL-18 use logging
- * 04-NOV-19 eliminate usage of mem_base()
- * 17-JUN-21 allow building machine without frontpanel
+ * 15-DEC-2014 first version
+ * 20-DEC-2014 added 4FDC emulation and machine boots CP/M 2.2
+ * 28-DEC-2014 second version with 16FDC, CP/M 2.2 boots
+ * 01-JAN-2015 fixed 16FDC, machine now also boots CDOS 2.58 from 8" and 5.25"
+ * 01-JAN-2015 fixed frontpanel switch settings, added boot flag to fp switch
+ * 12-JAN-2015 fdc and tu-art improvements, implemented banked memory
+ * 24-APR-2015 added Cromemco DAZZLER to the machine
+ * 01-MAR-2016 added sleep for threads before switching tty to raw mode
+ * 09-MAY-2016 frontpanel configuration with path support
+ * 06-DEC-2016 implemented status display and stepping for all machine cycles
+ * 13-MAR-2017 can't examine/deposit if CPU running HALT instruction
+ * 29-JUN-2017 system reset overworked
+ * 10-APR-2018 trap CPU on unsupported bus data during interrupt
+ * 17-MAY-2018 implemented hardware control
+ * 08-JUN-2018 moved hardware initialization and reset to iosim
+ * 11-JUN-2018 fixed reset so that cold and warm start works
+ * 18-JUL-2018 use logging
+ * 04-NOV-2019 eliminate usage of mem_base()
+ * 17-JUN-2021 allow building machine without frontpanel
  */
 
 #include <X11/Xlib.h>

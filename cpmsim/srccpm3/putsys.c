@@ -5,13 +5,13 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * History:
- * 29-APR-88 Development on TARGON/35 with AT&T Unix System V.3
- * 11-MAR-93 comments in english and ported to COHERENT 4.0
- * 02-OCT-06 modified to compile on modern POSIX OS's
- * 15-SEP-07 also write ccp to system tracks
- * 10-JAN-14 lseek POSIX conformance
- * 03-APR-16 disk drive name drivea.dsk
- * 27-APR-24 improve error handling
+ * 29-APR-1988 Development on TARGON/35 with AT&T Unix System V.3
+ * 11-MAR-1993 comments in english and ported to COHERENT 4.0
+ * 02-OCT-2006 modified to compile on modern POSIX OS's
+ * 15-SEP-2007 also write ccp to system tracks
+ * 10-JAN-2014 lseek POSIX conformance
+ * 03-APR-2016 disk drive name drivea.dsk
+ * 27-APR-2024 improve error handling
  */
 
 #include <unistd.h>

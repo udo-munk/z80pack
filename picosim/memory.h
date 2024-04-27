@@ -6,7 +6,7 @@
  * This module implements memory management for picosim
  *
  * History:
- * 23-APR-24 derived from z80sim
+ * 23-APR-2024 derived from z80sim
  */
 
 extern void init_memory(void);

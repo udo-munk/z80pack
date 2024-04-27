@@ -9,29 +9,29 @@
  * Emulation of IMSAI SIO-2 S100 boards
  *
  * History:
- * 20-OCT-08 first version finished
- * 19-JUN-14 added config parameter for dropping nulls after CR/LF
- * 18-JUL-14 don't block on read from terminal
- * 09-OCT-14 modified to support SIO 2
- * 23-MAR-15 drop only null's
- * 22-AUG-17 reopen tty at EOF from input redirection
- * 03-MAY-18 improved accuracy
- * 03-JUL-18 implemented baud rate for terminal SIO
- * 13-JUL-18 use logging
- * 14-JUL-18 integrate webfrontend
- * 12-JUL-19 implemented second SIO
- * 27-JUL-19 more correct emulation
- * 17-SEP-19 more consistent SIO naming
- * 23-SEP-19 added AT-modem
- * 06-OCT-19 started to implement telnet protocol for modem device
- * 07-OCT-19 implemented baud rate for modem device
- * 09-OCT-19 implement telnet binary transfer
- * 12-NOV-19 implemented SIO control ports
- * 19-JUL-20 avoid problems with some third party terminal emulations
- * 14-JUL-21 added all options for SIO 2B
- * 15-JUL-21 refactor serial keyboard
- * 16-JUL-21 added all options for SIO 1B
- * 01-AUG-21 integrated HAL
+ * 20-OCT-2008 first version finished
+ * 19-JUN-2014 added config parameter for dropping nulls after CR/LF
+ * 18-JUL-2014 don't block on read from terminal
+ * 09-OCT-2014 modified to support SIO 2
+ * 23-MAR-2015 drop only null's
+ * 22-AUG-2017 reopen tty at EOF from input redirection
+ * 03-MAY-2018 improved accuracy
+ * 03-JUL-2018 implemented baud rate for terminal SIO
+ * 13-JUL-2018 use logging
+ * 14-JUL-2018 integrate webfrontend
+ * 12-JUL-2019 implemented second SIO
+ * 27-JUL-2019 more correct emulation
+ * 17-SEP-2019 more consistent SIO naming
+ * 23-SEP-2019 added AT-modem
+ * 06-OCT-2019 started to implement telnet protocol for modem device
+ * 07-OCT-2019 implemented baud rate for modem device
+ * 09-OCT-2019 implement telnet binary transfer
+ * 12-NOV-2019 implemented SIO control ports
+ * 19-JUL-2020 avoid problems with some third party terminal emulations
+ * 14-JUL-2021 added all options for SIO 2B
+ * 15-JUL-2021 refactor serial keyboard
+ * 16-JUL-2021 added all options for SIO 1B
+ * 01-AUG-2021 integrated HAL
  */
 
 extern BYTE imsai_sio_nofun_in(void);

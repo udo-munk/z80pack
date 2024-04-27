@@ -6,23 +6,23 @@
  * Configuration for an Altair 8800 system
  *
  * History:
- * 20-OCT-08 first version finished
- * 02-MAR-14 source cleanup and improvements
- * 14-MAR-14 added Tarbell SD FDC and printer port
- * 23-MAR-14 enabled interrupts, 10ms timer added to iosim
- * xx-JUN-14 added default CPU define
- * 19-JUL-14 added typedef for signed 16-bit
- * 29-APR-15 added Cromemco DAZZLER to the machine
- * 11-AUG-16 implemented memwrt as function to support ROM
- * 01-DEC-16 implemented memrdr to separate memory from CPU
- * 06-DEC-16 implemented status display and stepping for all machine cycles
- * 12-JAN-17 improved configuration and front panel LED timing
- * 26-FEB-17 added Processor Technology VDM-1 to the machine
- * 27-MAR-17 added SIO's connected to UNIX domain sockets
- * 10-APR-18 trap CPU on unsupported bus data during interrupt
- * 07-MAY-18 added memory configuration needed by apple monitor
- * 21-AUG-18 improved memory configuration
- * 29-AUG-21 new memory configuration sections
+ * 20-OCT-2008 first version finished
+ * 02-MAR-2014 source cleanup and improvements
+ * 14-MAR-2014 added Tarbell SD FDC and printer port
+ * 23-MAR-2014 enabled interrupts, 10ms timer added to iosim
+ * xx-JUN-2014 added default CPU define
+ * 19-JUL-2014 added typedef for signed 16-bit
+ * 29-APR-2015 added Cromemco DAZZLER to the machine
+ * 11-AUG-2016 implemented memwrt as function to support ROM
+ * 01-DEC-2016 implemented memrdr to separate memory from CPU
+ * 06-DEC-2016 implemented status display and stepping for all machine cycles
+ * 12-JAN-2017 improved configuration and front panel LED timing
+ * 26-FEB-2017 added Processor Technology VDM-1 to the machine
+ * 27-MAR-2017 added SIO's connected to UNIX domain sockets
+ * 10-APR-2018 trap CPU on unsupported bus data during interrupt
+ * 07-MAY-2018 added memory configuration needed by apple monitor
+ * 21-AUG-2018 improved memory configuration
+ * 29-AUG-2021 new memory configuration sections
  */
 
 /*

@@ -7,30 +7,30 @@
  * for a Cromemco Z-1 system
  *
  * History:
- * 15-DEC-14 first version
- * 20-DEC-14 added 4FDC emulation and machine boots CP/M 2.2
- * 28-DEC-14 second version with 16FDC, CP/M 2.2 boots
- * 01-JAN-15 fixed 16FDC, machine now also boots CDOS 2.58 from 8" and 5.25"
- * 01-JAN-15 fixed frontpanel switch settings, added boot flag to fp switch
- * 12-JAN-15 fdc and tu-art improvements, implemented banked memory
- * 02-FEB-15 modified MMU, implemented timers and interrupts
- * 20-FEB-15 bug fix for release 1.25
- * 10-MAR-15 added support for two parallel port lpt devices on TU-ART
- * 26-MAR-15 added support for two serial port tty devices on TU-ART
- * 29-APR-15 added Cromemco DAZZLER to the machine
- * 06-DEC-16 implemented status display and stepping for all machine cycles
- * 22-DEC-16 moved MMU out to the new memory interface module
- * 15-AUG-17 modified index pulse handling
- * 22-APR-18 implemented TCP socket polling
- * 24-APR-18 cleanup
- * 17-MAY-18 implemented hardware control
- * 08-JUN-18 moved hardware initialization and reset to iosim
- * 18-JUL-18 use logging
- * 08-SEP-19 bug fixes provided by Alan Cox
- * 08-OCT-19 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
- * 19-JUL-20 avoid problems with some third party terminal emulations
- * 17-JUN-21 allow building machine without frontpanel
- * 29-JUL-21 add boot config for machine without frontpanel
+ * 15-DEC-2014 first version
+ * 20-DEC-2014 added 4FDC emulation and machine boots CP/M 2.2
+ * 28-DEC-2014 second version with 16FDC, CP/M 2.2 boots
+ * 01-JAN-2015 fixed 16FDC, machine now also boots CDOS 2.58 from 8" and 5.25"
+ * 01-JAN-2015 fixed frontpanel switch settings, added boot flag to fp switch
+ * 12-JAN-2015 fdc and tu-art improvements, implemented banked memory
+ * 02-FEB-2015 modified MMU, implemented timers and interrupts
+ * 20-FEB-2015 bug fix for release 1.25
+ * 10-MAR-2015 added support for two parallel port lpt devices on TU-ART
+ * 26-MAR-2015 added support for two serial port tty devices on TU-ART
+ * 29-APR-2015 added Cromemco DAZZLER to the machine
+ * 06-DEC-2016 implemented status display and stepping for all machine cycles
+ * 22-DEC-2016 moved MMU out to the new memory interface module
+ * 15-AUG-2017 modified index pulse handling
+ * 22-APR-2018 implemented TCP socket polling
+ * 24-APR-2018 cleanup
+ * 17-MAY-2018 implemented hardware control
+ * 08-JUN-2018 moved hardware initialization and reset to iosim
+ * 18-JUL-2018 use logging
+ * 08-SEP-2019 bug fixes provided by Alan Cox
+ * 08-OCT-2019 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
+ * 19-JUL-2020 avoid problems with some third party terminal emulations
+ * 17-JUN-2021 allow building machine without frontpanel
+ * 29-JUL-2021 add boot config for machine without frontpanel
  */
 
 #include <pthread.h>
