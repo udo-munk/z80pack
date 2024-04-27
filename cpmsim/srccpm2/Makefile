@@ -9,10 +9,10 @@ putsys: putsys.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
 
 bios.bin: bios.asm
-	z80asm -vl -sn -fm -x bios.asm
+	z80asm -vl -sn -fb -x bios.asm
 
 boot.bin: boot.asm
-	z80asm -vl -sn -fm boot.asm
+	z80asm -vl -sn -fb boot.asm
 
 clean:
 	rm -f *.lis bios.bin boot.bin putsys putsys.exe
