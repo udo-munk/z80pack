@@ -7,6 +7,7 @@
  * here we just call the ICE.
  */
 
+#include <stdlib.h>
 #include <unistd.h>
 #include <termios.h>
 #include "sim.h"
@@ -23,5 +24,6 @@ void mon(void)
 {
 	ice_before_go = set_unix_terminal;
 	ice_after_go = reset_unix_terminal;
+	atexit(reset_unix_terminal);
 	ice_cmd_loop(x_flag);
 }
