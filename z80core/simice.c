@@ -102,7 +102,10 @@ void ice_cmd_loop(int go_flag)
 			fflush(stdout);
 			if (fgets(cmd, LENCMD, stdin) == NULL) {
 				putchar('\n');
-				eoj = 0;
+				if (isatty(fileno(stdin)))
+					clearerr(stdin);
+				else
+					eoj = 0;
 				continue;
 			}
 		}
@@ -234,12 +237,17 @@ static void do_go(char *s)
 		PC = exatoi(s);
 	if (ice_before_go)
 		(*ice_before_go)();
-cont:
-	run_cpu();
-	if (cpu_error == OPHALT)
-		if (handle_break())
-			if (!cpu_error)
-				goto cont;
+	for (;;) {
+		run_cpu();
+		if (cpu_error) {
+			if (cpu_error == OPHALT) {
+				if (!handle_break()) {
+					break;
+				}
+			} else
+				break;
+		}
+	}
 	if (ice_after_go)
 		(*ice_after_go)();
 	report_cpu_error();
@@ -262,9 +270,9 @@ static int handle_break(void)
 
 	for (i = 0; i < SBSIZE; i++)	/* search for breakpoint */
 		if (soft[i].sb_addr == PC - 1)
-			goto was_softbreak;
-	return (0);
-was_softbreak:
+			break;
+	if (i == SBSIZE)		/* no breakpoint found */
+		return (0);
 #ifdef HISIZE
 	h_next--;			/* correct history */
 	if (h_next < 0)
@@ -346,7 +354,12 @@ static void do_modify(char *s)
 	for (;;) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
-		fgets(nv, sizeof(nv), stdin);
+		if (fgets(nv, sizeof(nv), stdin) == NULL) {
+			putchar('\n');
+			if (isatty(fileno(stdin)))
+				clearerr(stdin);
+			break;
+		}
 		if (nv[0] == '\n') {
 			wrk_addr++;
 			continue;
@@ -434,176 +447,158 @@ static void do_port(char *s)
 		s++;
 	port = exatoi(s);
 	printf("%02x = %02x : ", port, io_in(port, 0));
-	fgets(nv, sizeof(nv), stdin);
-	if (isxdigit((unsigned char) *nv))
+	if (fgets(nv, sizeof(nv), stdin) == NULL) {
+		putchar('\n');
+		if (isatty(fileno(stdin)))
+			clearerr(stdin);
+	} else if (isxdigit((unsigned char) *nv))
 		io_out(port, 0, (BYTE) exatoi(nv));
 }
+
+/*
+ *	definition of register types
+ */
+#define R_8	1		/* 8-bit register */
+#define R_88	2		/* 16-bit register pair */
+#define R_16	3		/* 16-bit register */
+#define R_F	4		/* F or F' register */
+#define R_FLG	5		/* status flag */
+
+/*
+ *	register definitions table (must be sorted by name length)
+ */
+static const struct reg_def {
+	const char *name;	/* register name */
+	char len;		/* register name length */
+	const char *prt;	/* print register name */
+	char z80;		/* Z80 only flag */
+	char type;		/* register type */
+	BYTE *r8h;		/* 8-bit register or pair high pointer */
+	BYTE *r8l;		/* 8-bit register pair low pointer */
+	WORD *r16;		/* 16-bit register pointer */
+	int *rf;		/* F or F' register pointer */
+	BYTE fmask;		/* status flag mask */
+} regs[] = {
+#ifndef EXCLUDE_Z80
+	{ "bc'", 3, "BC'", 1, R_88,  &B_,  &C_,  NULL, NULL, 0      },
+	{ "de'", 3, "DE'", 1, R_88,  &D_,  &E_,  NULL, NULL, 0      },
+	{ "hl'", 3, "HL'", 1, R_88,  &H_,  &L_,  NULL, NULL, 0      },
+#endif
+	{ "pc",  2, "PC",  0, R_16,  NULL, NULL, &PC,  NULL, 0      },
+	{ "bc",  2, "BC",  0, R_88,  &B,   &C,   NULL, NULL, 0      },
+	{ "de",  2, "DE",  0, R_88,  &D,   &E,   NULL, NULL, 0      },
+	{ "hl",  2, "HL",  0, R_88,  &H,   &L,   NULL, NULL, 0      },
+#ifndef EXCLUDE_Z80
+	{ "ix",  2, "IX",  1, R_16,  NULL, NULL, &IX,  NULL, 0      },
+	{ "iy",  2, "IY",  1, R_16,  NULL, NULL, &IY,  NULL, 0      },
+#endif
+	{ "sp",  2, "SP",  0, R_16,  NULL, NULL, &SP,  NULL, 0      },
+	{ "fs",  2, "S",   0, R_FLG, NULL, NULL, NULL, NULL, S_FLAG },
+	{ "fz",  2, "Z",   0, R_FLG, NULL, NULL, NULL, NULL, Z_FLAG },
+	{ "fh",  2, "H",   0, R_FLG, NULL, NULL, NULL, NULL, H_FLAG },
+	{ "fp",  2, "P",   0, R_FLG, NULL, NULL, NULL, NULL, P_FLAG },
+#ifndef EXCLUDE_Z80
+	{ "fn",  2, "N",   1, R_FLG, NULL, NULL, NULL, NULL, N_FLAG },
+#endif
+	{ "fc",  2, "C",   0, R_FLG, NULL, NULL, NULL, NULL, C_FLAG },
+#ifndef EXCLUDE_Z80
+	{ "a'",  2, "A'",  1, R_8,   &A_,  NULL, NULL, NULL, 0      },
+	{ "f'",  2, "F'",  1, R_F,   NULL, NULL, NULL, &F_,  0      },
+	{ "b'",  2, "B'",  1, R_8,   &B_,  NULL, NULL, NULL, 0      },
+	{ "c'",  2, "C'",  1, R_8,   &C_,  NULL, NULL, NULL, 0      },
+	{ "d'",  2, "D'",  1, R_8,   &D_,  NULL, NULL, NULL, 0      },
+	{ "e'",  2, "E'",  1, R_8,   &E_,  NULL, NULL, NULL, 0      },
+	{ "h'",  2, "H'",  1, R_8,   &H_,  NULL, NULL, NULL, 0      },
+	{ "l'",  2, "L'",  1, R_8,   &L_,  NULL, NULL, NULL, 0      },
+	{ "i",   1, "I",   1, R_8,   &I,   NULL, NULL, NULL, 0      },
+#endif
+	{ "a",   1, "A",   0, R_8,   &A,   NULL, NULL, NULL, 0      },
+	{ "f",   1, "F",   0, R_F,   NULL, NULL, NULL, &F,   0      },
+	{ "b",   1, "B",   0, R_8,   &B,   NULL, NULL, NULL, 0      },
+	{ "c",   1, "C",   0, R_8,   &C,   NULL, NULL, NULL, 0      },
+	{ "d",   1, "D",   0, R_8,   &D,   NULL, NULL, NULL, 0      },
+	{ "e",   1, "E",   0, R_8,   &E,   NULL, NULL, NULL, 0      },
+	{ "h",   1, "H",   0, R_8,   &H,   NULL, NULL, NULL, 0      },
+	{ "l",   1, "L",   0, R_8,   &L,   NULL, NULL, NULL, 0      }
+};
+static int nregs = sizeof(regs) / sizeof(struct reg_def);
 
 /*
  *	Register modify
  */
 static void do_reg(char *s)
 {
+	register int i;
+	register const struct reg_def *p;
+	WORD w;
 	static char nv[LENCMD];
 
 	while (isspace((unsigned char) *s))
 		s++;
-	if (*s == '\0') {
-		print_head();
-		print_reg();
-	} else {
+	if (*s) {
+		for (i = 0, p = regs; i < nregs; i++, p++) {
 #ifndef EXCLUDE_Z80
-		if ((strncmp(s, "bc'", 3) == 0) && (cpu == Z80)) {
-			printf("BC' = %04x : ", B_ * 256 + C_);
-			fgets(nv, sizeof(nv), stdin);
-			B_ = (exatoi(nv) & 0xffff) / 256;
-			C_ = (exatoi(nv) & 0xffff) % 256;
-		} else if ((strncmp(s, "de'", 3) == 0) && (cpu == Z80)) {
-			printf("DE' = %04x : ", D_ * 256 + E_);
-			fgets(nv, sizeof(nv), stdin);
-			D_ = (exatoi(nv) & 0xffff) / 256;
-			E_ = (exatoi(nv) & 0xffff) % 256;
-		} else if ((strncmp(s, "hl'", 3) == 0) && (cpu == Z80)) {
-			printf("HL' = %04x : ", H_ * 256 + L_);
-			fgets(nv, sizeof(nv), stdin);
-			H_ = (exatoi(nv) & 0xffff) / 256;
-			L_ = (exatoi(nv) & 0xffff) % 256;
+			if (p->z80 && cpu != Z80)
+				continue;
+#endif
+			if (strncmp(s, p->name, p->len) == 0)
+				break;
+		}
+		if (i < nregs) {
+			switch (p->type) {
+			case R_8:
+				printf("%s = %02x : ", p->prt, *(p->r8h));
+				break;
+			case R_88:
+				printf("%s = %04x : ", p->prt,
+				       (*(p->r8h) << 8) + *(p->r8l));
+				break;
+			case R_16:
+				printf("%s = %04x : ", p->prt, *(p->r16));
+				break;
+			case R_F:
+				printf("%s = %02x : ", p->prt, *(p->rf));
+				break;
+			case R_FLG:
+				printf("%s-FLAG = %c : ", p->prt,
+				       (F & p->fmask) ? '1' : '0');
+				break;
+			default:
+				break;
+			}
+			if (fgets(nv, sizeof(nv), stdin) == NULL) {
+				putchar('\n');
+				if (isatty(fileno(stdin)))
+					clearerr(stdin);
+			} else if (nv[0] != '\n') {
+				w = exatoi(nv);
+				switch (p->type) {
+				case R_8:
+					*(p->r8h) = w & 0xff;
+					break;
+				case R_88:
+					*(p->r8h) = (w >> 8) & 0xff;
+					*(p->r8l) = w & 0xff;
+					break;
+				case R_16:
+					*(p->r16) = w;
+					break;
+				case R_F:
+					*(p->rf) = w & 0xff;
+					break;
+				case R_FLG:
+					F = w ? (F | p->fmask)
+					      : (F & ~p->fmask);
+					break;
+				default:
+					break;
+				}
+			}
 		} else
-#endif
-		if (strncmp(s, "pc", 2) == 0) {
-			printf("PC = %04x : ", PC);
-			fgets(nv, sizeof(nv), stdin);
-			PC = (exatoi(nv) & 0xffff);
-		} else if (strncmp(s, "bc", 2) == 0) {
-			printf("BC = %04x : ", B * 256 + C);
-			fgets(nv, sizeof(nv), stdin);
-			B = (exatoi(nv) & 0xffff) / 256;
-			C = (exatoi(nv) & 0xffff) % 256;
-		} else if (strncmp(s, "de", 2) == 0) {
-			printf("DE = %04x : ", D * 256 + E);
-			fgets(nv, sizeof(nv), stdin);
-			D = (exatoi(nv) & 0xffff) / 256;
-			E = (exatoi(nv) & 0xffff) % 256;
-		} else if (strncmp(s, "hl", 2) == 0) {
-			printf("HL = %04x : ", H * 256 + L);
-			fgets(nv, sizeof(nv), stdin);
-			H = (exatoi(nv) & 0xffff) / 256;
-			L = (exatoi(nv) & 0xffff) % 256;
-#ifndef EXCLUDE_Z80
-		} else if ((strncmp(s, "ix", 2) == 0) && (cpu == Z80)) {
-			printf("IX = %04x : ", IX);
-			fgets(nv, sizeof(nv), stdin);
-			IX = exatoi(nv) & 0xffff;
-		} else if ((strncmp(s, "iy", 2) == 0) && (cpu == Z80)) {
-			printf("IY = %04x : ", IY);
-			fgets(nv, sizeof(nv), stdin);
-			IY = exatoi(nv) & 0xffff;
-#endif
-		} else if (strncmp(s, "sp", 2) == 0) {
-			printf("SP = %04x : ", SP);
-			fgets(nv, sizeof(nv), stdin);
-			SP = (exatoi(nv) & 0xffff);
-		} else if (strncmp(s, "fs", 2) == 0) {
-			printf("S-FLAG = %c : ", (F & S_FLAG) ? '1' : '0');
-			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F | S_FLAG) : (F & ~S_FLAG);
-		} else if (strncmp(s, "fz", 2) == 0) {
-			printf("Z-FLAG = %c : ", (F & Z_FLAG) ? '1' : '0');
-			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F | Z_FLAG) : (F & ~Z_FLAG);
-		} else if (strncmp(s, "fh", 2) == 0) {
-			printf("H-FLAG = %c : ", (F & H_FLAG) ? '1' : '0');
-			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F | H_FLAG) : (F & ~H_FLAG);
-		} else if (strncmp(s, "fp", 2) == 0) {
-			printf("P-FLAG = %c : ", (F & P_FLAG) ? '1' : '0');
-			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F | P_FLAG) : (F & ~P_FLAG);
-#ifndef EXCLUDE_Z80
-		} else if ((strncmp(s, "fn", 2) == 0) && (cpu == Z80)) {
-			printf("N-FLAG = %c : ", (F & N_FLAG) ? '1' : '0');
-			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F | N_FLAG) : (F & ~N_FLAG);
-#endif
-		} else if (strncmp(s, "fc", 2) == 0) {
-			printf("C-FLAG = %c : ", (F & C_FLAG) ? '1' : '0');
-			fgets(nv, sizeof(nv), stdin);
-			F = (exatoi(nv)) ? (F | C_FLAG) : (F & ~C_FLAG);
-#ifndef EXCLUDE_Z80
-		} else if ((strncmp(s, "a'", 2) == 0) && (cpu == Z80)) {
-			printf("A' = %02x : ", A_);
-			fgets(nv, sizeof(nv), stdin);
-			A_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "f'", 2) == 0) && (cpu == Z80)) {
-			printf("F' = %02x : ", F_);
-			fgets(nv, sizeof(nv), stdin);
-			F_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "b'", 2) == 0) && (cpu == Z80)) {
-			printf("B' = %02x : ", B_);
-			fgets(nv, sizeof(nv), stdin);
-			B_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "c'", 2) == 0) && (cpu == Z80)) {
-			printf("C' = %02x : ", C_);
-			fgets(nv, sizeof(nv), stdin);
-			C_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "d'", 2) == 0) && (cpu == Z80)) {
-			printf("D' = %02x : ", D_);
-			fgets(nv, sizeof(nv), stdin);
-			D_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "e'", 2) == 0) && (cpu == Z80)) {
-			printf("E' = %02x : ", E_);
-			fgets(nv, sizeof(nv), stdin);
-			E_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "h'", 2) == 0) && (cpu == Z80)) {
-			printf("H' = %02x : ", H_);
-			fgets(nv, sizeof(nv), stdin);
-			H_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "l'", 2) == 0) && (cpu == Z80)) {
-			printf("L' = %02x : ", L_);
-			fgets(nv, sizeof(nv), stdin);
-			L_ = exatoi(nv) & 0xff;
-		} else if ((strncmp(s, "i", 1) == 0) && (cpu == Z80)) {
-			printf("I = %02x : ", I);
-			fgets(nv, sizeof(nv), stdin);
-			I = exatoi(nv) & 0xff;
-#endif
-		} else if (strncmp(s, "a", 1) == 0) {
-			printf("A = %02x : ", A);
-			fgets(nv, sizeof(nv), stdin);
-			A = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "f", 1) == 0) {
-			printf("F = %02x : ", F);
-			fgets(nv, sizeof(nv), stdin);
-			F = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "b", 1) == 0) {
-			printf("B = %02x : ", B);
-			fgets(nv, sizeof(nv), stdin);
-			B = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "c", 1) == 0) {
-			printf("C = %02x : ", C);
-			fgets(nv, sizeof(nv), stdin);
-			C = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "d", 1) == 0) {
-			printf("D = %02x : ", D);
-			fgets(nv, sizeof(nv), stdin);
-			D = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "e", 1) == 0) {
-			printf("E = %02x : ", E);
-			fgets(nv, sizeof(nv), stdin);
-			E = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "h", 1) == 0) {
-			printf("H = %02x : ", H);
-			fgets(nv, sizeof(nv), stdin);
-			H = exatoi(nv) & 0xff;
-		} else if (strncmp(s, "l", 1) == 0) {
-			printf("L = %02x : ", L);
-			fgets(nv, sizeof(nv), stdin);
-			L = exatoi(nv) & 0xff;
-		} else
-			printf("can't change register %s\n", nv);
-		print_head();
-		print_reg();
+			printf("unknown register %s", s);
 	}
+	print_head();
+	print_reg();
 }
 
 /*
@@ -950,7 +945,8 @@ static void do_load(char *s)
 static void do_unix(char *s)
 {
 	int_off();
-	system(s);
+	if (system(s) == -1)
+		perror("external command");
 	int_on();
 }
 
@@ -980,7 +976,7 @@ static void do_help(void)
 	puts("z                         show t-state count");
 	puts("c                         measure clock frequency");
 	puts("s                         show settings");
-	puts("! command                 execute UNIX command");
+	puts("! command                 execute external command");
 	if (ice_cust_help)
 		(*ice_cust_help)();
 	puts("q                         quit");
