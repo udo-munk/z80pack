@@ -5,16 +5,16 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * History:
- * 29-APR-88 Development on TARGON/35 with AT&T Unix System V.3
- * 11-MAR-93 comments in english
- * 01-OCT-06 modified to compile on modern POSIX OS's
- * 18-NOV-06 added a second harddisk
- * 01-OCT-07 added a huge 512MB harddisk
- * 11-NOV-07 abort if file already exists
- * 09-FEB-14 name changed from format to mkdskimg
- * 14-JAN-16 make disk file in directory drives if exists, in cwd otherwise
- * 14-MAR-16 renamed the used disk images to drivex.dsk
- * 27-APR-24 improve error handling
+ * 29-APR-1988 Development on TARGON/35 with AT&T Unix System V.3
+ * 11-MAR-1993 comments in english
+ * 01-OCT-2006 modified to compile on modern POSIX OS's
+ * 18-NOV-2006 added a second harddisk
+ * 01-OCT-2007 added a huge 512MB harddisk
+ * 11-NOV-2007 abort if file already exists
+ * 09-FEB-2014 name changed from format to mkdskimg
+ * 14-JAN-2016 make disk file in directory drives if exists, in cwd otherwise
+ * 14-MAR-2016 renamed the used disk images to drivex.dsk
+ * 27-APR-2024 improve error handling
  */
 
 #include <unistd.h>

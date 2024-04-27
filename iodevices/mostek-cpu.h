@@ -8,7 +8,7 @@
  * Emulation of the console I/O ports on the Mostek SDB-80 CPU board
  *
  * History:
- * 15-SEP-19 (Mike Douglas) created from altair-88-2sio.h
+ * 15-SEP-2019 (Mike Douglas) created from altair-88-2sio.h
  */
 
 extern BYTE sio_status_in(void);

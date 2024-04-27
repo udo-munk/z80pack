@@ -8,18 +8,18 @@
  * Emulation of a Cromemco TU-ART S100 board
  *
  * History:
- *    DEC-14 first version
- *    JAN-15 better subdue of non printable characters in output
- * 02-FEB-15 implemented the timers and interrupt flag for TBE
- * 05-FEB-15 implemented interrupt flag for RDA
- * 14-FEB-15 improvements, so that the Cromix tty driver works
- * 10-MAR-15 lpt's implemented for CP/M, CDOS and Cromix
- * 23-MAR-15 drop only null's
- * 26-MAR-15 tty's implemented for CDOS and Cromix
- * 25-APR-18 cleanup
- * 03-MAY-18 improved accuracy
- * 15-JUL-18 use logging
- * 06-SEP-21 implement reset
+ *    DEC-2014 first version
+ *    JAN-2015 better subdue of non printable characters in output
+ * 02-FEB-2015 implemented the timers and interrupt flag for TBE
+ * 05-FEB-2015 implemented interrupt flag for RDA
+ * 14-FEB-2015 improvements, so that the Cromix tty driver works
+ * 10-MAR-2015 lpt's implemented for CP/M, CDOS and Cromix
+ * 23-MAR-2015 drop only null's
+ * 26-MAR-2015 tty's implemented for CDOS and Cromix
+ * 25-APR-2018 cleanup
+ * 03-MAY-2018 improved accuracy
+ * 15-JUL-2018 use logging
+ * 06-SEP-2021 implement reset
  */
 
 #include <unistd.h>

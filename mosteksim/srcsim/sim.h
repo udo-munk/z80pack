@@ -6,11 +6,11 @@
  * This is the configuration I'm using for software testing and debugging
  *
  * History:
- * 15-SEP-19 (Mike Douglas) Created from sim.h from the z80sim source
- *		directory. Set start-up message for Mostek AID-80F and SYS-80FT
- *		computers.
- * 27-SEP-19 (Udo Munk) modified for integration into 1.37
- * 25-APR-24 (Udo Munk) this was a Z80 machine and we can exclude 8080 now
+ * 15-SEP-2019 (Mike Douglas) Created from sim.h from the z80sim source
+ *	       directory. Set start-up message for Mostek AID-80F and SYS-80FT
+ *	       computers.
+ * 27-SEP-2019 (Udo Munk) modified for integration into 1.37
+ * 25-APR-2024 (Udo Munk) this was a Z80 machine and we can exclude 8080 now
  */
 
 /*

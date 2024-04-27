@@ -6,9 +6,9 @@
  * This module implements memory management for mosteksim
  *
  * History:
- * 15-SEP-19 (Mike Douglas) Created from memory.c in the z80sim
- * 		directory. Emulate memory of the Mostek AID-80F and SYS-80FT
- *		computers by treating 0xe000-0xefff as ROM.
+ * 15-SEP-2019 (Mike Douglas) Created from memory.c in the z80sim
+ *	       directory. Emulate memory of the Mostek AID-80F and SYS-80FT
+ *	       computers by treating 0xe000-0xefff as ROM.
  */
 
 #include <stdlib.h>

@@ -7,23 +7,23 @@
  * Configuration for a Cromemco Z-1 system
  *
  * History:
- * 15-DEC-14 first version
- * 20-DEC-14 added 4FDC emulation and machine boots CP/M 2.2
- * 28-DEC-14 second version with 16FDC, CP/M 2.2 boots
- * 01-JAN-15 fixed 16FDC, machine now also boots CDOS 2.58 from 8" and 5.25"
- * 01-JAN-15 fixed frontpanel switch settings, added boot flag to fp switch
- * 12-JAN-15 fdc and tu-art improvements, implemented banked memory
- * 10-MAR-15 TU-ART lpt's implemented for CP/M, CDOS and Cromix
- * 26-MAR-15 TU-ART tty's implemented for CDOS and Cromix
- * 11-AUG-16 implemented memwrt as function to support ROM
- * 01-DEC-16 implemented memrdr to separate memory from CPU
- * 06-DEC-16 implemented status display and stepping for all machine cycles
- * 12-JAN-17 improved configuration and front panel LED timing
- * 10-APR-18 trap CPU on unsupported bus data during interrupt
- * 22-APR-18 implemented TCP socket polling
- * 29-AUG-21 new memory configuration sections
- * 02-SEP-21 implement banked ROM
- * 14-JUL-22 added generic AT modem and HAL
+ * 15-DEC-2014 first version
+ * 20-DEC-2014 added 4FDC emulation and machine boots CP/M 2.2
+ * 28-DEC-2014 second version with 16FDC, CP/M 2.2 boots
+ * 01-JAN-2015 fixed 16FDC, machine now also boots CDOS 2.58 from 8" and 5.25"
+ * 01-JAN-2015 fixed frontpanel switch settings, added boot flag to fp switch
+ * 12-JAN-2015 fdc and tu-art improvements, implemented banked memory
+ * 10-MAR-2015 TU-ART lpt's implemented for CP/M, CDOS and Cromix
+ * 26-MAR-2015 TU-ART tty's implemented for CDOS and Cromix
+ * 11-AUG-2016 implemented memwrt as function to support ROM
+ * 01-DEC-2016 implemented memrdr to separate memory from CPU
+ * 06-DEC-2016 implemented status display and stepping for all machine cycles
+ * 12-JAN-2017 improved configuration and front panel LED timing
+ * 10-APR-2018 trap CPU on unsupported bus data during interrupt
+ * 22-APR-2018 implemented TCP socket polling
+ * 29-AUG-2021 new memory configuration sections
+ * 02-SEP-2021 implement banked ROM
+ * 14-JUL-2022 added generic AT modem and HAL
  */
 
 /*

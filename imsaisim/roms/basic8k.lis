@@ -1,14 +1,14 @@
-Z80/8080-Macro-Assembler  Release 2.0	Fri Apr 26 14:45:38 2024
+Z80/8080-Macro-Assembler  Release 2.0	Sat Apr 27 09:29:22 2024
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;EDITS:
-                       2      2 ;    30-JUN-08 KJL
+                       2      2 ;    30-JUN-2008 KJL
                        3      3 ;       - CREATED FROM IMSAI 8K BASIC VERSION 1.4 MANUAL
                        4      4 ;
-                       5      5 ;    07-FEB-14 UM
+                       5      5 ;    07-FEB-2014 UM
                        6      6 ;       - FIXED TYPOS, MATCHES MANUAL NOW
                        7      7 ;
-                       8      8 ;    19-JUN-19 UM
+                       8      8 ;    19-JUN-2019 UM
                        9      9 ;       - FIXED CHARACTER LITERALS NOT WORKING WITH MACRO-80
                       10     10 ;       - FIXED COMMENTS
                       11     11 ;---------------------------------------------------------

@@ -3,8 +3,8 @@
 ;	Copyright (C) 2019 by Udo Munk
 ;
 ; History:
-; 23-OCT-19 first public release
-; 25-OCT-19 initialize all character devices
+; 23-OCT-2019 first public release
+; 25-OCT-2019 initialize all character devices
 ;
 	CSEG
 ;

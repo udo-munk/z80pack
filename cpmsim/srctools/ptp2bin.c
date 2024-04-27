@@ -6,8 +6,8 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * History:
- * 04-APR-15 first version
- * 27-APR-24 improve error handling
+ * 04-APR-2015 first version
+ * 27-APR-2024 improve error handling
  */
 
 #include <unistd.h>

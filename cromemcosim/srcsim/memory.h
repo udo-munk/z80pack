@@ -7,15 +7,15 @@
  * This module implements memory management for a Cromemco Z-1 system
  *
  * History:
- * 22-NOV-16 stuff moved to here and implemented as inline functions
- * 03-FEB-17 added ROM initialization
- * 18-MAY-18 optimization
- * 18-JUL-18 use logging
- * 01-OCT-19 optimization
- * 04-NOV-19 add functions for direct memory access
- * 17-JUN-21 allow building machine without frontpanel
- * 30-AUG-21 new memory configuration sections
- * 02-SEP-21 implement banked ROM
+ * 22-NOV-2016 stuff moved to here and implemented as inline functions
+ * 03-FEB-2017 added ROM initialization
+ * 18-MAY-2018 optimization
+ * 18-JUL-2018 use logging
+ * 01-OCT-2019 optimization
+ * 04-NOV-2019 add functions for direct memory access
+ * 17-JUN-2021 allow building machine without frontpanel
+ * 30-AUG-2021 new memory configuration sections
+ * 02-SEP-2021 implement banked ROM
  */
 
 #ifdef FRONTPANEL

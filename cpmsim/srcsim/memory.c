@@ -23,9 +23,9 @@
  * before, to maintain compatibility.
  *
  * History:
- * 21-DEC-16 moved banked memory implementation to here
- * 03-FEB-17 added ROM initialization
- * 09-APR-18 modified MMU write protect port as used by Alan Cox for FUZIX
+ * 21-DEC-2016 moved banked memory implementation to here
+ * 03-FEB-2017 added ROM initialization
+ * 09-APR-2018 modified MMU write protect port as used by Alan Cox for FUZIX
  */
 
 #include <stdlib.h>

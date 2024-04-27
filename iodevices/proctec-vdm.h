@@ -8,10 +8,10 @@
  * Emulation of a Processor Technology VDM-1 S100 board
  *
  * History:
- * 28-FEB-17 first version, all software tested with working
- * 21-JUN-17 don't use dma_read(), switches Tarbell ROM off
- * 20-APR-18 avoid thread deadlock on Windows/Cygwin
- * 15-JUL-18 use logging
+ * 28-FEB-2017 first version, all software tested with working
+ * 21-JUN-2017 don't use dma_read(), switches Tarbell ROM off
+ * 20-APR-2018 avoid thread deadlock on Windows/Cygwin
+ * 15-JUL-2018 use logging
  */
 
 extern void proctec_vdm_out(BYTE);

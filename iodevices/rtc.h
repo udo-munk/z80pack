@@ -10,8 +10,8 @@
  * there was no standard yet for such things.
  *
  * History:
- * 24-OCT-19 moved out of the cpmsim machine
- * 30-JUN-21 clock read now returns time format instead of last command
+ * 24-OCT-2019 moved out of the cpmsim machine
+ * 30-JUN-2021 clock read now returns time format instead of last command
  */
 
 extern BYTE clkc_in(void), clkd_in(void);

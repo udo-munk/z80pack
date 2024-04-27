@@ -10,10 +10,10 @@
  * as terminal for ancient machines.
  *
  * History:
- * 24-SEP-08 first version finished
- * 16-JAN-14 discard input at reset
- * 15-APR-14 added some more c_cc's used on BSD systems
- * 24-FEB-17 set line discipline only if fd 0 is a tty
+ * 24-SEP-2008 first version finished
+ * 16-JAN-2014 discard input at reset
+ * 15-APR-2014 added some more c_cc's used on BSD systems
+ * 24-FEB-2017 set line discipline only if fd 0 is a tty
  */
 
 #include <termios.h>

@@ -7,11 +7,11 @@
  * here we just call the ICE.
  *
  * History:
- * 15-SEP-19 (Mike Douglas) Created from simctl.c in the z80sim
- *		source directory. Added unix_terminal code to emulate
- * 		console I/O for the Mostek AID-80F and SYS-80FT computers
- * 27-SEP-19 (Udo Munk) fix double loading of ROM
- * 30-SEP-19 (Mike Douglas) accept also upper case
+ * 15-SEP-2019 (Mike Douglas) Created from simctl.c in the z80sim
+ *	       source directory. Added unix_terminal code to emulate
+ *	       console I/O for the Mostek AID-80F and SYS-80FT computers
+ * 27-SEP-2019 (Udo Munk) fix double loading of ROM
+ * 30-SEP-2019 (Mike Douglas) accept also upper case
  */
 
 #include <stdlib.h>

@@ -6,30 +6,30 @@
  * Copyright (C) 2008-2022 by Udo Munk
  *
  * History:
- * 20-OCT-08 first version finished
- * 26-OCT-08 corrected LED status while RESET is hold in upper position
- * 27-JAN-14 set IFF=0 when powered off, so that LED goes off
- * 02-MAR-14 source cleanup and improvements
- * 14-MAR-14 added Tarbell SD FDC and printer port
- * 15-APR-14 added fflush() for teletype
- * 19-APR-14 moved CPU error report into a function
- * 06-JUN-14 forgot to disable timer interrupts when machine switched off
- * 10-JUN-14 increased fp operation timer from 1ms to 100ms
- * 29-APR-15 added Cromemco DAZZLER to the machine
- * 01-MAR-16 added sleep for threads before switching tty to raw mode
- * 08-MAY-16 frontpanel configuration with path support
- * 06-DEC-16 implemented status display and stepping for all machine cycles
- * 23-DEC-16 implemented memory protect/unprotect
- * 26-JAN-17 bugfix for DATA LED's not always showing correct bus data
- * 13-MAR-17 can't examine/deposit if CPU running HALT instruction
- * 29-JUN-17 system reset overworked
- * 10-APR-18 trap CPU on unsupported bus data during interrupt
- * 17-MAY-18 improved hardware control
- * 08-JUN-18 moved hardware initialization and reset to iosim
- * 11-JUN-18 fixed reset so that cold and warm start works
- * 17-JUL-18 use logging
- * 04-NOV-19 eliminate usage of mem_base()
- * 31-JUL-21 allow building machine without frontpanel
+ * 20-OCT-2008 first version finished
+ * 26-OCT-2008 corrected LED status while RESET is hold in upper position
+ * 27-JAN-2014 set IFF=0 when powered off, so that LED goes off
+ * 02-MAR-2014 source cleanup and improvements
+ * 14-MAR-2014 added Tarbell SD FDC and printer port
+ * 15-APR-2014 added fflush() for teletype
+ * 19-APR-2014 moved CPU error report into a function
+ * 06-JUN-2014 forgot to disable timer interrupts when machine switched off
+ * 10-JUN-2014 increased fp operation timer from 1ms to 100ms
+ * 29-APR-2015 added Cromemco DAZZLER to the machine
+ * 01-MAR-2016 added sleep for threads before switching tty to raw mode
+ * 08-MAY-2016 frontpanel configuration with path support
+ * 06-DEC-2016 implemented status display and stepping for all machine cycles
+ * 23-DEC-2016 implemented memory protect/unprotect
+ * 26-JAN-2017 bugfix for DATA LED's not always showing correct bus data
+ * 13-MAR-2017 can't examine/deposit if CPU running HALT instruction
+ * 29-JUN-2017 system reset overworked
+ * 10-APR-2018 trap CPU on unsupported bus data during interrupt
+ * 17-MAY-2018 improved hardware control
+ * 08-JUN-2018 moved hardware initialization and reset to iosim
+ * 11-JUN-2018 fixed reset so that cold and warm start works
+ * 17-JUL-2018 use logging
+ * 04-NOV-2019 eliminate usage of mem_base()
+ * 31-JUL-2021 allow building machine without frontpanel
  */
 
 #include <X11/Xlib.h>

@@ -5,9 +5,9 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * History:
- * 12-AUG-08 initial version
- * 03-APR-16 disk drive name drivea.dsk
- * 27-APR-24 improve error handling
+ * 12-AUG-2008 initial version
+ * 03-APR-2016 disk drive name drivea.dsk
+ * 27-APR-2024 improve error handling
  */
 
 #include <unistd.h>

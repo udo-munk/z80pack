@@ -6,10 +6,10 @@
  * This module implements memory management for z80sim
  *
  * History:
- * 22-NOV-16 stuff moved to here for further improvements
- * 03-FEB-17 added ROM initialization
- * 15-AUG-17 don't use macros, use inline functions that coerce appropriate
- * 04-NOV-19 add functions for direct memory access
+ * 22-NOV-2016 stuff moved to here for further improvements
+ * 03-FEB-2017 added ROM initialization
+ * 15-AUG-2017 don't use macros, use inline functions that coerce appropriate
+ * 04-NOV-2019 add functions for direct memory access
  */
 
 extern void init_memory(void);

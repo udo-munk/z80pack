@@ -24,10 +24,10 @@
  * before, to maintain compatibility.
  *
  * History:
- * 22-NOV-16 stuff moved to here for further improvements
- * 03-FEB-17 added ROM initialization
- * 09-APR-18 modified MMU write protect port as used by Alan Cox for FUZIX
- * 04-NOV-19 add functions for direct memory access
+ * 22-NOV-2016 stuff moved to here for further improvements
+ * 03-FEB-2017 added ROM initialization
+ * 09-APR-2018 modified MMU write protect port as used by Alan Cox for FUZIX
+ * 04-NOV-2019 add functions for direct memory access
  */
 
 #define MAXSEG 16		/* max. number of memory banks */

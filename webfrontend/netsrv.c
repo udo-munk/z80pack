@@ -4,7 +4,7 @@
  * Copyright (C) 2018 by David McNaughton
  * 
  * History:
- * 12-JUL-18    1.0     Initial Release
+ * 12-JUL-2018	1.0	Initial Release
  */
 
 /**

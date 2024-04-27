@@ -12,7 +12,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * History:
- * 12-JUL-18    1.0     Initial Release
+ * 12-JUL-2018	1.0	Initial Release
  *
  */
 #include <stdio.h>

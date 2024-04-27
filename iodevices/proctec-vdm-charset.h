@@ -8,7 +8,7 @@
  * Emulation of an Processor Technology VDM-1 S100 board
  *
  * History:
- * 24-FEB-17 Character ROM implemented completely
+ * 24-FEB-2017 Character ROM implemented completely
  */
 
 /*

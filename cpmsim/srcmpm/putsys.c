@@ -5,9 +5,9 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * History:
- * 08-DEC-06 cloned from the version for CP/M 3
- * 03-APR-16 disk drive name drivea.dsk
- * 27-APR-24 improve error handling
+ * 08-DEC-2006 cloned from the version for CP/M 3
+ * 03-APR-2016 disk drive name drivea.dsk
+ * 27-APR-2024 improve error handling
  */
 
 #include <unistd.h>

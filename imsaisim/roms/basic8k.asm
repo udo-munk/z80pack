@@ -1,11 +1,11 @@
 ;EDITS:
-;    30-JUN-08 KJL
+;    30-JUN-2008 KJL
 ;       - CREATED FROM IMSAI 8K BASIC VERSION 1.4 MANUAL
 ;
-;    07-FEB-14 UM
+;    07-FEB-2014 UM
 ;       - FIXED TYPOS, MATCHES MANUAL NOW
 ;
-;    19-JUN-19 UM
+;    19-JUN-2019 UM
 ;       - FIXED CHARACTER LITERALS NOT WORKING WITH MACRO-80
 ;       - FIXED COMMENTS
 ;---------------------------------------------------------

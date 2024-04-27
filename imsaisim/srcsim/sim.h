@@ -7,22 +7,22 @@
  * Configuration for an IMSAI 8080 system
  *
  * History:
- * 20-OCT-08 first version finished
- * 02-MAR-14 source cleanup and improvements
- * 23-MAR-14 enabled interrupts, 10ms timer added to iosim
- * xx-JUN-14 added default CPU define
- * 19-JUL-14 added typedef for signed 16-bit
- * 09-MAY-15 added Cromemco DAZZLER to the machine
- * 30-AUG-16 implemented memwrt as function to support ROM
- * 01-DEC-16 implemented memrdr to separate memory from CPU
- * 06-DEC-16 implemented status display and stepping for all machine cycles
- * 12-JAN-17 improved configuration and front panel LED timing, VIO emulation
- * 10-APR-18 trap CPU on unsupported bus data during interrupt
- * 14-JUL-18 integrate webfrontend
- * 12-JUL-19 implemented second SIO
- * 14-AUG-20 allow building machine without frontpanel
- * 07-AUG-21 add APU emulation
- * 29-AUG-21 new memory configuration sections
+ * 20-OCT-2008 first version finished
+ * 02-MAR-2014 source cleanup and improvements
+ * 23-MAR-2014 enabled interrupts, 10ms timer added to iosim
+ * xx-JUN-2014 added default CPU define
+ * 19-JUL-2014 added typedef for signed 16-bit
+ * 09-MAY-2015 added Cromemco DAZZLER to the machine
+ * 30-AUG-2016 implemented memwrt as function to support ROM
+ * 01-DEC-2016 implemented memrdr to separate memory from CPU
+ * 06-DEC-2016 implemented status display and stepping for all machine cycles
+ * 12-JAN-2017 improved configuration and front panel LED timing, VIO emulation
+ * 10-APR-2018 trap CPU on unsupported bus data during interrupt
+ * 14-JUL-2018 integrate webfrontend
+ * 12-JUL-2019 implemented second SIO
+ * 14-AUG-2020 allow building machine without frontpanel
+ * 07-AUG-2021 add APU emulation
+ * 29-AUG-2021 new memory configuration sections
  */
 
 /*

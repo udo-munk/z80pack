@@ -6,7 +6,7 @@
  * This module implements the memory for picosim
  *
  * History:
- * 23-APR-24 derived from z80sim
+ * 23-APR-2024 derived from z80sim
  */
 
 #include <stdlib.h>

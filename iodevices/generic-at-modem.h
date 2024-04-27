@@ -6,12 +6,12 @@
  * Copyright (C) 2019-2021 by David McNaughton
  * 
  * History:
- * 12-SEP-19    1.0     Initial Release
- * 29-SEP-19    1.1     Added Answer modes and registers
- * 20-OCT-19    1.2     Added Telnet handler
- * 23-OCT-19    1.3     Put Telnet protocol under modem register control
- * 16-JUL-20	1.4	    fix bug/warning detected with gcc 9
- * 17-JUL-20    1.5     Added/Updated AT$ help, ATE, ATQ, AT&A1 cmds, MODEM.init string
+ * 12-SEP-2019	1.0	Initial Release
+ * 29-SEP-2019	1.1	Added Answer modes and registers
+ * 20-OCT-2019	1.2	Added Telnet handler
+ * 23-OCT-2019	1.3	Put Telnet protocol under modem register control
+ * 16-JUL-2020	1.4	fix bug/warning detected with gcc 9
+ * 17-JUL-2020	1.5	Added/Updated AT$ help, ATE, ATQ, AT&A1 cmds, MODEM.init string
  */
 
 

@@ -7,7 +7,7 @@
  * global variables, so that the system can be configured.
  *
  * History:
- * 23-APR-24 dummy, no configuration implemented yet
+ * 23-APR-2024 dummy, no configuration implemented yet
  */
 
 extern void config(void);
