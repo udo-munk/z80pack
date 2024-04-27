@@ -173,7 +173,9 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-	return ((BYTE) getchar());
+	extern BYTE getkey(void);
+
+	return ((BYTE) getkey());
 }
 
 /*

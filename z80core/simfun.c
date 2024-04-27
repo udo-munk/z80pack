@@ -60,6 +60,9 @@ int getkey(void)
 	tcgetattr(0, &old_term);
 	new_term = old_term;
 	new_term.c_lflag &= ~(ICANON | ECHO);
+	new_term.c_iflag &= ~(IXON | IXANY | IXOFF);
+	new_term.c_iflag &= ~(IGNCR | ICRNL | INLCR);
+	new_term.c_oflag &= ~(ONLCR | OCRNL);
 	new_term.c_cc[VMIN] = 1;
 	tcsetattr(0, TCSADRAIN, &new_term);
 	c = getchar();
