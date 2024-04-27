@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	if (n == -1) {
+	if (!signal_catched && n == -1) {
 		perror("auxout pipe");
 		exit(EXIT_FAILURE);
 	}
