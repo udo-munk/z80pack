@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <sys/time.h>
+#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -128,7 +128,7 @@ static inline void addr_leds(WORD data)
  */
 void cpu_8080(void)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern int time_diff(struct timespec *, struct timespec *);
 
 	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
@@ -391,10 +391,10 @@ void cpu_8080(void)
 
 	register int t = 0;
 	register int states;
-	struct timeval t1, t2;
+	struct timespec t1, t2;
 	int tdiff;
 
-	gettimeofday(&t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &t1);
 
 	do {
 
@@ -547,7 +547,7 @@ leave:
 
 		if (f_flag) {			/* adjust CPU speed */
 			if (t >= tmax && !cpu_needed) {
-				gettimeofday(&t2, NULL);
+				clock_gettime(CLOCK_REALTIME, &t2);
 				tdiff = time_diff(&t1, &t2);
 #ifndef __CYGWIN__
 				if ((tdiff > 0) && (tdiff < 10000))
@@ -559,7 +559,7 @@ leave:
 				SLEEP_MS(10);
 #endif
 				t = 0;
-				gettimeofday(&t1, NULL);
+				clock_gettime(CLOCK_REALTIME, &t1);
 			}
 		}
 

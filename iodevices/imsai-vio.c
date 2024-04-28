@@ -27,7 +27,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
+#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "../../frontpanel/frontpanel.h"
@@ -458,14 +458,14 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern int time_diff(struct timespec *, struct timespec *);
 
-	struct timeval t1, t2;
+	struct timespec t1, t2;
 	int tdiff;
 
 	UNUSED(arg);
 
-	gettimeofday(&t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &t1);
 
 	while (state) {
 #ifndef HAS_NETSERVER
@@ -488,12 +488,12 @@ static void *update_display(void *arg)
 #endif
 
 		/* sleep rest to 33ms so that we get 30 fps */
-		gettimeofday(&t2, NULL);
+		clock_gettime(CLOCK_REALTIME, &t2);
 		tdiff = time_diff(&t1, &t2);
 		if ((tdiff > 0) && (tdiff < 33000))
 			SLEEP_MS(33 - (tdiff / 1000));
 
-		gettimeofday(&t1, NULL);
+		clock_gettime(CLOCK_REALTIME, &t1);
 	}
 
 	pthread_exit(NULL);

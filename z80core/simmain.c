@@ -25,7 +25,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/time.h>
+#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 {
 	register char *s, *p;
 	char *pn = basename(argv[0]);
-	struct timeval tv;
+	struct timespec ts;
 #ifdef HAS_CONFIG
 	struct stat sbuf;
 	const char *rom = "-r rompath ";
@@ -384,8 +384,8 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 #endif
 
 	/* seed random generator */
-	gettimeofday(&tv, NULL);
-	srand(tv.tv_sec);
+	clock_gettime(CLOCK_REALTIME, &ts);
+	srand(ts.tv_sec);
 
 	config();		/* read system configuration */
 	init_cpu();		/* initialize CPU */
