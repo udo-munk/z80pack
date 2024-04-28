@@ -52,6 +52,18 @@ int main(void)
 	printf("Z80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
 
+	f_flag = CPU_SPEED;	/* defined in sim.h */
+	if (f_flag > 0)
+		printf("CPU speed is %d MHz", f_flag);
+	else
+		printf("CPU speed is unlimited");
+#ifndef UNDOC_INST
+	printf(", CPU doesn't execute undocumented instructions\n");
+#else
+	printf(", CPU executes undocumented instructions\n");
+#endif
+	printf("\n");
+
 	config();		/* read system configuration */
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
