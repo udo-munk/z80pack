@@ -194,8 +194,10 @@ void telnet_negotiation(int fd)
 	BYTE c[3];
 
 	/* send the telnet options we need */
-	write(fd, &char_mode, 3);
-	write(fd, &will_echo, 3);
+	if (write(fd, &char_mode, 3) != 3)
+		LOGE(TAG, "can't send char_mode telnet option");
+	if (write(fd, &will_echo, 3) != 3)
+		LOGE(TAG, "can't send will_echo telnet option");
 
 	/* and reject all others offered */
 	p[0].fd = fd;
@@ -210,7 +212,8 @@ void telnet_negotiation(int fd)
 			break;
 
 		/* else read the option */
-		read(fd, &c, 3);
+		if (read(fd, &c, 3) != 3)
+			LOGE(TAG, "can't read telnet option");
 		LOGD(TAG, "telnet: %d %d %d", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
@@ -218,6 +221,7 @@ void telnet_negotiation(int fd)
 			c[1] = 254;
 		else if (c[1] == 253)
 			c[1] = 252;
-		write(fd, &c, 3);
+		if (write(fd, &c, 3) != 3)
+			LOGE(TAG, "can't write telnet option");
 	}
 }

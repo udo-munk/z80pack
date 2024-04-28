@@ -1593,7 +1593,8 @@ static BYTE cond_in(void)
 	char c;
 
 	busy_loop_cnt[0] = 0;
-	read(0, &c, 1);
+	if (read(fileno(stdin), &c, 1) != 1)
+		LOGE(TAG, "can't read console 0");
 	return ((BYTE) c);
 }
 
@@ -1619,7 +1620,8 @@ static BYTE cond1_in(void)
 		}
 	}
 	if (ss_telnet[0] && (c == '\r'))
-		read(ssc[0], &x, 1);
+		if (read(ssc[0], &x, 1) != 1)
+			LOGE(TAG, "can't read console 1");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -1655,7 +1657,8 @@ static BYTE cond2_in(void)
 		}
 	}
 	if (ss_telnet[1] && (c == '\r'))
-		read(ssc[1], &x, 1);
+		if (read(ssc[1], &x, 1) != 1)
+			LOGE(TAG, "can't read console 2");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -1691,7 +1694,8 @@ static BYTE cond3_in(void)
 		}
 	}
 	if (ss_telnet[2] && (c == '\r'))
-		read(ssc[2], &x, 1);
+		if (read(ssc[2], &x, 1) != 1)
+			LOGE(TAG, "can't read console 3");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -1727,7 +1731,8 @@ static BYTE cond4_in(void)
 		}
 	}
 	if (ss_telnet[3] && (c == '\r'))
-		read(ssc[3], &x, 1);
+		if (read(ssc[3], &x, 1) != 1)
+			LOGE(TAG, "can't read console 4");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -2060,7 +2065,8 @@ static void auxd_out(BYTE data)
 		return;
 
 	if (data != '\r')
-		write(auxout, (char *) &data, 1);
+		if (write(auxout, (char *) &data, 1) != 1)
+			LOGE(TAG, "can't write to auxout pipe");
 #else
 	if (data == 0)
 		return;
@@ -2081,7 +2087,8 @@ static void auxd_out(BYTE data)
 	}
 
 	if (data != '\r')
-		write(aux_out, (char *) &data, 1);
+		if (write(aux_out, (char *) &data, 1) != 1)
+			LOGE(TAG, "can't write to auxiliaryout.txt");
 #endif
 }
 
@@ -2609,8 +2616,10 @@ void telnet_negotiation(int fd)
 	BYTE c[3];
 
 	/* send the telnet options we need */
-	write(fd, &char_mode, 3);
-	write(fd, &will_echo, 3);
+	if (write(fd, &char_mode, 3) != 3)
+		LOGE(TAG, "can't send char_mode telnet option");
+	if (write(fd, &will_echo, 3) != 3)
+		LOGE(TAG, "can't send will_echo telnet option");
 
 	/* and reject all others offered */
 	p[0].fd = fd;
@@ -2625,7 +2634,8 @@ void telnet_negotiation(int fd)
 			break;
 
 		/* else read the option */
-		read(fd, &c, 3);
+		if (read(fd, &c, 3) != 3)
+			LOGE(TAG, "can't read telnet option");
 		LOGD(TAG, "telnet: %d %d %d", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
@@ -2633,7 +2643,8 @@ void telnet_negotiation(int fd)
 			c[1] = 254;
 		else if (c[1] == 253)
 			c[1] = 252;
-		write(fd, &c, 3);
+		if (write(fd, &c, 3) != 3)
+			LOGE(TAG, "can't write telnet option");
 	}
 }
 #endif

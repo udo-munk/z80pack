@@ -140,7 +140,8 @@ again:
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
+		if (freopen("/dev/tty", "r", stdin) == NULL)
+			LOGE(TAG, "can't reopen /dev/tty");
 		set_unix_terminal();
 		goto again;
 	}

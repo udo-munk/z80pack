@@ -421,8 +421,13 @@ void altair_dsk_data_out(BYTE data)
 		/* write sector */
 		fd = open(fn, O_RDWR);
 		pos = (track[disk] * SPT + rwsec) * SEC_SZ;
-		lseek(fd, pos, SEEK_SET);
-		write(fd, &buf[0], SEC_SZ);
+		if (lseek(fd, pos, SEEK_SET) != pos) {
+			LOGE(TAG, "can't seek to sector %d track %d",
+			     rwsec, track[disk]);
+		} else if (write(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+			LOGE(TAG, "can't write sector %d track %d",
+			     rwsec, track[disk]);
+		}
 		close(fd);
 		LOGD(TAG, "write sector %d track %d", rwsec, track[disk]);
 	}
@@ -446,8 +451,13 @@ BYTE altair_dsk_data_in(void)
 			/* read sector */
 			fd = open(fn, O_RDONLY);
 			pos = (track[disk] * SPT + rwsec) * SEC_SZ;
-			lseek(fd, pos, SEEK_SET);
-			read(fd, &buf[0], SEC_SZ);
+			if (lseek(fd, pos, SEEK_SET) != pos) {
+				LOGE(TAG, "can't seek to sector %d track %d",
+				     rwsec, track[disk]);
+			} else if (read(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+				LOGE(TAG, "can't read sector %d track %d",
+				     rwsec, track[disk]);
+			}
 			close(fd);
 			LOGD(TAG, "read sector %d track %d", rwsec, track[disk]);
 		}
