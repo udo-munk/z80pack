@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
-#include <time.h>
+#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -720,14 +720,14 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern int time_diff(struct timespec *, struct timespec *);
+	extern int time_diff(struct timeval *, struct timeval *);
 
-	struct timespec t1, t2;
+	struct timeval t1, t2;
 	int tdiff;
 
 	UNUSED(arg);
 
-	clock_gettime(CLOCK_REALTIME, &t1);
+	gettimeofday(&t1, NULL);
 
 	while (1) {	/* do forever or until canceled */
 
@@ -765,12 +765,12 @@ static void *update_display(void *arg)
 		flags = 64;
 
 		/* sleep rest to 33ms so that we get 30 fps */
-		clock_gettime(CLOCK_REALTIME, &t2);
+		gettimeofday(&t2, NULL);
 		tdiff = time_diff(&t1, &t2);
 		if ((tdiff > 0) && (tdiff < 33000))
 			SLEEP_MS(33 - (tdiff / 1000));
 
-		clock_gettime(CLOCK_REALTIME, &t1);
+		gettimeofday(&t1, NULL);
 	}
 
 	/* just in case it ever gets here */

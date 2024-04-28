@@ -271,22 +271,27 @@ void end_bus_request(void)
 }
 
 /*
- *	Compute difference between two timespec in microseconds
+ *	Compute difference between two timeval in microseconds
+ *
+ *	Note: yes there are timersub() and friends, but not
+ *	defined in POSIX.1 and implemented wrong on some
+ *	systems. Some systems define tv_usec as unsigned int,
+ *	here we assume that a long is longer than unsigned.
+ *	If that is not the case cast to (long long).
  */
-int time_diff(struct timespec *t1, struct timespec *t2)
+int time_diff(struct timeval *t1, struct timeval *t2)
 {
-	time_t sec;
-	long nsec;
+	long sec, usec;
 
-	sec = (time_t) t2->tv_sec - (time_t) t1->tv_sec;
-	nsec = (long) t2->tv_nsec - (long) t1->tv_nsec;
+	sec = (long) t2->tv_sec - (long) t1->tv_sec;
+	usec = (long) t2->tv_usec - (long) t1->tv_usec;
 	/* normalize result */
-	if (nsec < 0L) {
+	if (usec < 0L) {
 		sec--;
-		nsec += 1000000000L;
+		usec += 1000000L;
 	}
 	if (sec != 0L)
 		return (-1); /* result is to large */
 	else
-		return ((int) (nsec / 1000L));
+		return ((int) usec);
 }

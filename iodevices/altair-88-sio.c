@@ -27,7 +27,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <time.h>
+#include <sys/time.h>
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -39,7 +39,7 @@
 
 #define BAUDTIME 10000000
 
-extern int time_diff(struct timespec *, struct timespec *);
+extern int time_diff(struct timeval *, struct timeval *);
 
 static const char *TAG = "SIO";
 
@@ -49,12 +49,12 @@ int sio0_drop_nulls;
 int sio0_revision;
 int sio0_baud_rate = 115200;
 
-static struct timespec sio0_t1, sio0_t2;
+static struct timeval sio0_t1, sio0_t2;
 static BYTE sio0_stat;
 
 int sio3_baud_rate = 1200;
 
-static struct timespec sio3_t1, sio3_t2;
+static struct timeval sio3_t1, sio3_t2;
 static BYTE sio3_stat = 0x81;
 
 /*
@@ -78,7 +78,7 @@ BYTE altair_sio0_status_in(void)
 	else
 		sio0_stat = 0x81;
 
-	clock_gettime(CLOCK_REALTIME, &sio0_t2);
+	gettimeofday(&sio0_t2, NULL);
 	tdiff = time_diff(&sio0_t1, &sio0_t2);
 	if (sio0_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio0_baud_rate))
@@ -104,7 +104,7 @@ BYTE altair_sio0_status_in(void)
 	else
 		sio0_stat &= ~128;
 
-	clock_gettime(CLOCK_REALTIME, &sio0_t1);
+	gettimeofday(&sio0_t1, NULL);
 
 	return (sio0_stat);
 }
@@ -146,7 +146,7 @@ again:
 		goto again;
 	}
 
-	clock_gettime(CLOCK_REALTIME, &sio0_t1);
+	gettimeofday(&sio0_t1, NULL);
 	if (sio0_revision == 0)
 		sio0_stat &= 0b11011111;
 	else
@@ -185,7 +185,7 @@ again:
 		}
 	}
 
-	clock_gettime(CLOCK_REALTIME, &sio0_t1);
+	gettimeofday(&sio0_t1, NULL);
 	if (sio0_revision == 0)
 		sio0_stat &= 0b11111101;
 	else
@@ -221,7 +221,7 @@ BYTE altair_sio3_status_in(void)
 		}
 	}
 
-	clock_gettime(CLOCK_REALTIME, &sio3_t2);
+	gettimeofday(&sio3_t2, NULL);
 	tdiff = time_diff(&sio3_t1, &sio3_t2);
 	if (sio3_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio3_baud_rate))
@@ -239,7 +239,7 @@ BYTE altair_sio3_status_in(void)
 			sio3_stat &= ~128;
 	}
 
-	clock_gettime(CLOCK_REALTIME, &sio3_t1);
+	gettimeofday(&sio3_t1, NULL);
 
 	return (sio3_stat);
 }
@@ -280,7 +280,7 @@ BYTE altair_sio3_data_in(void)
 		return (last);
 	}
 
-	clock_gettime(CLOCK_REALTIME, &sio3_t1);
+	gettimeofday(&sio3_t1, NULL);
 	sio3_stat |= 0b00000001;
 
 	/* process read data */
@@ -320,6 +320,6 @@ again:
 		}
 	}
 
-	clock_gettime(CLOCK_REALTIME, &sio3_t1);
+	gettimeofday(&sio3_t1, NULL);
 	sio3_stat |= 0b10000000;
 }
