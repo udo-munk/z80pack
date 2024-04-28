@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <sys/time.h>
+#include <time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "imsai-hal.h"
@@ -56,7 +56,7 @@ int sio1a_strip_parity;
 int sio1a_drop_nulls;
 int sio1a_baud_rate = 115200;
 
-static struct timeval sio1a_t1, sio1a_t2;
+static struct timespec sio1a_t1, sio1a_t2;
 static BYTE sio1a_stat = 0;
 
 int sio1b_upper_case;
@@ -64,7 +64,7 @@ int sio1b_strip_parity;
 int sio1b_drop_nulls;
 int sio1b_baud_rate = 110;
 
-static struct timeval sio1b_t1, sio1b_t2;
+static struct timespec sio1b_t1, sio1b_t2;
 static BYTE sio1b_stat = 0;
 
 int sio2a_upper_case;
@@ -72,7 +72,7 @@ int sio2a_strip_parity;
 int sio2a_drop_nulls;
 int sio2a_baud_rate = 115200;
 
-static struct timeval sio2a_t1, sio2a_t2;
+static struct timespec sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat = 0;
 
 int sio2b_upper_case;
@@ -80,7 +80,7 @@ int sio2b_strip_parity;
 int sio2b_drop_nulls;
 int sio2b_baud_rate = 2400;
 
-static struct timeval sio2b_t1, sio2b_t2;
+static struct timespec sio2b_t1, sio2b_t2;
 static BYTE sio2b_stat = 0;
 
 /*
@@ -114,10 +114,10 @@ void imsai_sio_nofun_out(BYTE data)
  */
 BYTE imsai_sio1a_status_in(void)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern int time_diff(struct timespec *, struct timespec *);
 	int tdiff;
 
-	gettimeofday(&sio1a_t2, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1a_t2);
 	tdiff = time_diff(&sio1a_t1, &sio1a_t2);
 	if (sio1a_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1a_baud_rate))
@@ -125,7 +125,7 @@ BYTE imsai_sio1a_status_in(void)
 
 	hal_status_in(SIO1A, &sio1a_stat);
 
-	gettimeofday(&sio1a_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1a_t1);
 
 	return (sio1a_stat);
 }
@@ -155,7 +155,7 @@ BYTE imsai_sio1a_data_in(void)
 		return last;
 	}
 
-	gettimeofday(&sio1a_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1a_t1);
 	sio1a_stat &= 0b11111101;
 
 	/* process read data */
@@ -182,7 +182,7 @@ void imsai_sio1a_data_out(BYTE data)
 
 	hal_data_out(SIO1A, data);
 
-	gettimeofday(&sio1a_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1a_t1);
 	sio1a_stat &= 0b11111110;
 }
 
@@ -193,10 +193,10 @@ void imsai_sio1a_data_out(BYTE data)
  */
 BYTE imsai_sio1b_status_in(void)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern int time_diff(struct timespec *, struct timespec *);
 	int tdiff;
 
-	gettimeofday(&sio1b_t2, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1b_t2);
 	tdiff = time_diff(&sio1b_t1, &sio1b_t2);
 	if (sio1b_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1b_baud_rate))
@@ -204,7 +204,7 @@ BYTE imsai_sio1b_status_in(void)
 
 	hal_status_in(SIO1B, &sio1b_stat);
 
-	gettimeofday(&sio1b_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1b_t1);
 
 	return (sio1b_stat);
 }
@@ -231,7 +231,7 @@ BYTE imsai_sio1b_data_in(void)
 		return last;
 	}
 
-	gettimeofday(&sio1b_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1b_t1);
 	sio1b_stat &= 0b11111101;
 
 	/* process read data */
@@ -255,7 +255,7 @@ void imsai_sio1b_data_out(BYTE data)
 
 	hal_data_out(SIO1B, data);
 
-	gettimeofday(&sio1b_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio1b_t1);
 	sio1b_stat &= 0b11111110;
 }
 
@@ -269,10 +269,10 @@ void imsai_sio1b_data_out(BYTE data)
  */
 BYTE imsai_sio2a_status_in(void)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern int time_diff(struct timespec *, struct timespec *);
 	int tdiff;
 
-	gettimeofday(&sio2a_t2, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2a_t2);
 	tdiff = time_diff(&sio2a_t1, &sio2a_t2);
 	if (sio2a_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2a_baud_rate))
@@ -280,7 +280,7 @@ BYTE imsai_sio2a_status_in(void)
 
 	hal_status_in(SIO2A, &sio2a_stat);
 
-	gettimeofday(&sio2a_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2a_t1);
 
 	return (sio2a_stat);
 }
@@ -310,7 +310,7 @@ BYTE imsai_sio2a_data_in(void)
 		return last;
 	}
 
-	gettimeofday(&sio2a_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2a_t1);
 	sio2a_stat &= 0b11111101;
 
 	/* process read data */
@@ -337,7 +337,7 @@ void imsai_sio2a_data_out(BYTE data)
 
 	hal_data_out(SIO2A, data);
 
-	gettimeofday(&sio2a_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2a_t1);
 	sio2a_stat &= 0b11111110;
 }
 
@@ -351,10 +351,10 @@ void imsai_sio2a_data_out(BYTE data)
  */
 BYTE imsai_sio2b_status_in(void)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern int time_diff(struct timespec *, struct timespec *);
 	int tdiff;
 
-	gettimeofday(&sio2b_t2, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2b_t2);
 	tdiff = time_diff(&sio2b_t1, &sio2b_t2);
 	if (sio2b_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2b_baud_rate))
@@ -362,7 +362,7 @@ BYTE imsai_sio2b_status_in(void)
 
 	hal_status_in(SIO2B, &sio2b_stat);
 
-	gettimeofday(&sio2b_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2b_t1);
 
 	return (sio2b_stat);
 }
@@ -392,7 +392,7 @@ BYTE imsai_sio2b_data_in(void)
 		return last;
 	}
 
-	gettimeofday(&sio2b_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2b_t1);
 	sio2b_stat &= 0b11111101;
 
 	/* process read data */
@@ -419,7 +419,7 @@ void imsai_sio2b_data_out(BYTE data)
 
 	hal_data_out(SIO2B, data);
 
-	gettimeofday(&sio2b_t1, NULL);
+	clock_gettime(CLOCK_REALTIME, &sio2b_t1);
 	sio2b_stat &= 0b11111110;
 }
 
