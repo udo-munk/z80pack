@@ -90,7 +90,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 		return;
 
 	/* create TCP/IP socket */
-	if ((p->ss = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+	if ((p->ss = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
 		exit(EXIT_FAILURE);
 	}
@@ -106,8 +106,8 @@ void init_tcp_server_socket(struct net_connectors *p)
 	/* configure socket for async I/O */
 	fcntl(p->ss, F_SETOWN, getpid());
 	n = fcntl(p->ss, F_GETFL, 0);
-	if (fcntl(p->ss, F_SETFL, n | FASYNC) == -1) {
-		LOGE(TAG, "can't fcntl FASYNC on server socket");
+	if (fcntl(p->ss, F_SETFL, n | O_ASYNC) == -1) {
+		LOGE(TAG, "can't fcntl O_ASYNC on server socket");
 		exit(EXIT_FAILURE);
 	}
 #endif
