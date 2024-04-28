@@ -149,6 +149,15 @@ void step_cpu(void)
  */
 void report_cpu_error(void)
 {
+	/* always start on a new line */
+#ifdef CORE_LOG
+	const char *TAG = "";
+
+	LOG(TAG, "\r\n");
+#else
+	printf("\n");
+#endif
+
 	switch (cpu_error) {
 	case NONE:
 		break;
