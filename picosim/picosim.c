@@ -49,7 +49,8 @@ int main(void)
 	gpio_set_dir(LED, GPIO_OUT);
 #endif
 
-	printf("Z80pack release %s, %s\n\n", RELEASE, COPYR);
+	printf("Z80pack release %s, %s\n", RELEASE, COPYR);
+	printf("%s release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
 
 	config();		/* read system configuration */
 	init_cpu();		/* initialize CPU */

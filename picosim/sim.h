@@ -17,4 +17,8 @@
 extern void sleep_ms();
 #define SLEEP_MS(t)	sleep_ms(t)
 
+#define USR_COM "Raspberry Pi Pico Z80 Simulation"
+#define USR_REL "1.0"
+#define USR_CPR "Copyright (C) 2024 by Udo Munk"
+ 
 #include "simcore.h"
