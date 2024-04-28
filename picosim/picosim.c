@@ -5,6 +5,9 @@
  *
  * This is the main program for a Raspberry Pico (W) board,
  * substitutes z80core/simmain.c
+ *
+ * History:
+ * 28-APR-2024 implemented first release of Z80 emulation
  */
 
 /* Raspberry SDK includes */
