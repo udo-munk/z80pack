@@ -841,9 +841,9 @@ void init_io(void)
 		mkdir("/tmp/.z80pack", 0777);	/* no, create it */
 	/* and then the pipes */
 	if (stat("/tmp/.z80pack/cpmsim.auxin", &sbuf) != 0)
-		mknod("/tmp/.z80pack/cpmsim.auxin", 0666 | S_IFIFO, 0);
+		mkfifo("/tmp/.z80pack/cpmsim.auxin", 0666);
 	if (stat("/tmp/.z80pack/cpmsim.auxout", &sbuf) != 0)
-		mknod("/tmp/.z80pack/cpmsim.auxout", 0666 | S_IFIFO, 0);
+		mkfifo("/tmp/.z80pack/cpmsim.auxout", 0666);
 
 	pid_rec = fork();
 	switch (pid_rec) {
@@ -930,7 +930,7 @@ static void init_server_socket(int n)
 
 	if (ss_port[n] == 0)
 		return;
-	if ((ss[n] = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+	if ((ss[n] = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
 		exit(EXIT_FAILURE);
 	}
@@ -942,8 +942,8 @@ static void init_server_socket(int n)
 #ifdef TCPASYNC
 	fcntl(ss[n], F_SETOWN, getpid());
 	i = fcntl(ss[n], F_GETFL, 0);
-	if (fcntl(ss[n], F_SETFL, i | FASYNC) == -1) {
-		LOGE(TAG, "can't fcntl FASYNC on server socket");
+	if (fcntl(ss[n], F_SETFL, i | O_ASYNC) == -1) {
+		LOGE(TAG, "can't fcntl O_ASYNC on server socket");
 		exit(EXIT_FAILURE);
 	}
 #endif
@@ -1483,32 +1483,49 @@ static BYTE nets1_in(void)
 {
 	BYTE status = 0;
 #ifdef NETWORKING
-	struct sockaddr_in sin;
-	struct hostent *host;
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
 	struct pollfd p[1];
-	int on = 1;
+	int on = 1, s;
+	char service[6];
 
 	if ((cs == 0) && (cs_port != 0)) {
-		host = gethostbyname(&cs_host[0]);
-		if ((cs = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-			LOGE(TAG, "can't create client socket");
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_family = AF_INET;	/* Allow only IPv4 not IPv6 */
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = 0;
+		hints.ai_protocol = 0;		/* Any protocol */
+		snprintf(service, sizeof(service), "%d", cs_port);
+		if ((s = getaddrinfo(cs_host, service, &hints, &result)) != 0) {
+			LOGE(TAG, "getaddrinfo failed: %s", gai_strerror(s));
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return ((BYTE) 0);
 		}
-		memset((void *) &sin, 0, sizeof(sin));
-		memcpy((void *) &sin.sin_addr, (void *) host->h_addr, host->h_length);
-		sin.sin_family = AF_INET;
-		sin.sin_port = htons(cs_port);
-		if (connect(cs, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-			LOGE(TAG, "can't connect client socket");
+
+		for (rp = result; rp != NULL; rp = rp->ai_next) {
+			if ((cs = socket(rp->ai_family, rp->ai_socktype,
+					 rp->ai_protocol)) == -1)
+				continue;
+
+			if (connect(cs, rp->ai_addr, rp->ai_addrlen) != -1)
+				break;
+
+			close(cs);
+		}
+		freeaddrinfo(result);
+
+		if (rp == NULL) {
+			LOGE(TAG, "can't connect to host %s", cs_host);
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 			return ((BYTE) 0);
 		}
+
 		if (setsockopt(cs, IPPROTO_TCP, TCP_NODELAY,
 			       (void *) &on, sizeof(on)) == -1) {
-			LOGW(TAG, "can't setsockopt TCP_NODELAY on client socket");
+			LOGW(TAG,
+			     "can't setsockopt TCP_NODELAY on client socket");
 		}
 	}
 
