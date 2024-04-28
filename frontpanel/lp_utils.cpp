@@ -27,9 +27,9 @@
 #include <ctype.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <errno.h>
 #include "lp_utils.h"
 
 #define TRUE  1
@@ -616,7 +616,7 @@ int n = glGetError();
 */
 
 typedef struct {
-    struct timespec             bsdtime;
+    struct timeval              bsdtime;
     float                       dt;
     int                         stopped;
 } watch_t;
@@ -635,28 +635,29 @@ static watch_t syswatch;
 
 double frate_gettime(void)
 {
-   struct timespec     tp;
-    time_t              sec;
-    long                nsec;
+   struct timeval      tp;
+    struct timezone     tzp;
+    int                 sec;
+    int                 usec;
     watch_t             *t;
 
-    double	secf, nsecf, dt;
+    double	secf, usecf, dt;
 
     t = &syswatch;
 
-    clock_gettime(CLOCK_REALTIME, &tp);
+    gettimeofday(&tp, &tzp);
     sec = tp.tv_sec - t->bsdtime.tv_sec;
-    nsec = tp.tv_nsec - t->bsdtime.tv_nsec;
-    if (nsec < 0)
+    usec = tp.tv_usec - t->bsdtime.tv_usec;
+    if (usec < 0) 
      {
         sec--;
-        nsec += 1000000000L;
+        usec += 1000000;
      }
 
     secf = (double) sec;
-    nsecf = (double) nsec;
-    nsecf = nsecf / 1000000000.0;
-    dt = secf + nsecf;
+    usecf = (double) usec;
+    usecf = usecf / 1000000.0; 
+    dt = secf + usecf; 
     return (dt);
 }
 
@@ -675,7 +676,7 @@ void framerate_start_frame(void)
 
 void framerate_wait(void)
 {
- struct timespec ts, rem;
+ unsigned int usec;
  double delta;
  double t;
 
@@ -689,18 +690,9 @@ void framerate_wait(void)
 
  if( delta > 0.0 )
   {
-    delta = delta * 10e8;
-    ts.tv_sec = 0;
-    ts.tv_nsec = (long) delta;
-
-    for (;;)
-        if (nanosleep(&ts, &rem) == -1 && errno == EINTR && rem.tv_nsec > 0L)
-	 {
-	    memcpy(&ts, &rem, sizeof(struct timespec));
-	    continue;
-	 }
-	else
-	    break;
+    delta = delta * 10e5;
+    usec = (unsigned int) delta;
+    usleep(usec);
   }
 
 }

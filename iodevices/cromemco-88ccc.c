@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
-#include <time.h>
+#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 
@@ -45,9 +45,9 @@ static pthread_t thread = 0;
 /* thread for requesting, receiving & storing the camera image using DMA */
 static void *store_image(void *arg)
 {
-	extern int time_diff(struct timespec *, struct timespec *);
+	extern int time_diff(struct timeval *, struct timeval *);
 
-	struct timespec t1, t2;
+	struct timeval t1, t2;
 	int tdiff;
 	int i, j, len;
 	BYTE buffer[FIELDSIZE];
@@ -62,7 +62,7 @@ static void *store_image(void *arg)
 	UNUSED(arg);
 
 	memset(&msg, 0, sizeof(msg));
-	clock_gettime(CLOCK_REALTIME, &t1);
+	gettimeofday(&t1, NULL);
 
 	while (state) {	/* do until total frame is received */
 		if (net_device_alive(DEV_88ACC)) {
@@ -100,7 +100,7 @@ static void *store_image(void *arg)
 		/* SLEEP_MS(j); */
 
 		/* sleep rest of total frame time */
-		clock_gettime(CLOCK_REALTIME, &t2);
+		gettimeofday(&t2, NULL);
 		tdiff = time_diff(&t1, &t2);
 		if (tdiff < (j*1000)) 
 			SLEEP_MS(j - tdiff/1000);

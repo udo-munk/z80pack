@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
-#include <time.h>
+#include <sys/time.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -153,8 +153,8 @@ static telnet_t *telnet =  NULL;
 static unsigned char tn_recv;
 static int tn_len = 0;
 
-int time_diff_msec(struct timespec *, struct timespec *);
-int time_diff_sec(struct timespec *, struct timespec *);
+int time_diff_msec(struct timeval *, struct timeval *);
+int time_diff_sec(struct timeval *, struct timeval *);
 
 static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
 
@@ -353,18 +353,18 @@ int open_socket(void) {
 }
 
 int hangup_timeout(bool start) {
-    static struct timespec hup_t1, hup_t2;
+    static struct timeval hup_t1, hup_t2;
     static int waiting = 0;
     int tdiff;
 
     if (*active_sfd) {
 
          if (start) { 
-            clock_gettime(CLOCK_REALTIME, &hup_t1);
+            gettimeofday(&hup_t1, NULL);
             waiting = 1;
             LOGI(TAG, "Waiting to HUP");
         } else if (waiting) {
-            clock_gettime(CLOCK_REALTIME, &hup_t2);
+            gettimeofday(&hup_t2, NULL);
             tdiff = time_diff_msec(&hup_t1, &hup_t2) / 100; /* scale msec to 10ths of seconds */
             if (tdiff >=  (int)(s_reg[SREG_HUP_DELAY])) { /* SREG_HUP_DELAY is in 10ths of seconds */
                 waiting = 0;
@@ -461,13 +461,13 @@ int answer_check_ring(void) {
 
 	struct pollfd p[1];
     static int ringing = 0;
-    static struct timespec ring_t1, ring_t2;
+    static struct timeval ring_t1, ring_t2;
     int tdiff;
     
     if (answer_sfd) {
 
         if (ringing) {
-            clock_gettime(CLOCK_REALTIME, &ring_t2);
+            gettimeofday(&ring_t2, NULL);
             tdiff = time_diff_sec(&ring_t1, &ring_t2);
             if (tdiff < 3) {
                 return 0;
@@ -484,7 +484,7 @@ int answer_check_ring(void) {
         if (p[0].revents == POLLIN) {
 
             if (!ringing) {
-                clock_gettime(CLOCK_REALTIME, &ring_t1);
+                gettimeofday(&ring_t1, NULL);
                 ringing = 1;
                 LOGI(TAG, "Ringing");
             }
@@ -1045,37 +1045,35 @@ int process_at_cmd(void) {
 	return 0;
 }
 
-int time_diff_msec(struct timespec *t1, struct timespec *t2)
+int time_diff_msec(struct timeval *t1, struct timeval *t2)
 {
-	time_t sec;
-	long nsec;
+	long sec, usec;
 
-	sec = (time_t) t2->tv_sec - (time_t) t1->tv_sec;
-	nsec = (long) t2->tv_nsec - (long) t1->tv_nsec;
+	sec = (long) t2->tv_sec - (long) t1->tv_sec;
+	usec = (long) t2->tv_usec - (long) t1->tv_usec;
 	/* normalize result */
-	if (nsec < 0L) {
+	if (usec < 0L) {
 		sec--;
-		nsec += 1000000000L;
+		usec += 1000000L;
 	}
-    return (sec * 1000) + (nsec / 1000000L);
+    return (sec * 1000) + (usec / 1000);
 }
 
-int time_diff_sec(struct timespec *t1, struct timespec *t2)
+int time_diff_sec(struct timeval *t1, struct timeval *t2)
 {
-	time_t sec;
-	long nsec;
+	long sec, usec;
 
-	sec = (time_t) t2->tv_sec - (time_t) t1->tv_sec;
-	nsec = (long) t2->tv_nsec - (long) t1->tv_nsec;
+	sec = (long) t2->tv_sec - (long) t1->tv_sec;
+	usec = (long) t2->tv_usec - (long) t1->tv_usec;
 	/* normalize result */
-	if (nsec < 0L) {
+	if (usec < 0L) {
 		sec--;
-		/* nsec += 1000000000L; */
+		/* usec += 1000000L; */
 	}
     return sec;
 }
 
-static struct timespec at_t1, at_t2;
+static struct timeval at_t1, at_t2;
 int tdiff;
 
 int modem_device_poll(int i);
@@ -1136,7 +1134,7 @@ int modem_device_poll(int i) {
         return (strlen(at_out) > 0);
     } else if (at_state == intr) {
         if (strlen(at_buf) == 3) {
-        	clock_gettime(CLOCK_REALTIME, &at_t2);
+        	gettimeofday(&at_t2, NULL);
             tdiff = time_diff_sec(&at_t1, &at_t2);
             if (tdiff > 0) {
                 at_state = cmd;
@@ -1249,7 +1247,7 @@ void modem_device_send(int i, char data) {
             if (data == '+' && strlen(at_buf) < 3) {
                 at_buf[strlen(at_buf)+1] = 0;
                 at_buf[strlen(at_buf)] = data;
-        	    clock_gettime(CLOCK_REALTIME, &at_t1);
+        	    gettimeofday(&at_t1, NULL);
                 return;
             } else {
                 if (telnet != NULL) {
@@ -1267,7 +1265,7 @@ void modem_device_send(int i, char data) {
              */
         /* fall through */
         case dat:
-            clock_gettime(CLOCK_REALTIME, &at_t2);
+        	gettimeofday(&at_t2, NULL);
             tdiff = time_diff_sec(&at_t1, &at_t2);
 
             if (data == '+' && (tdiff > 0) && !daemon_f) {
@@ -1336,7 +1334,7 @@ void modem_device_send(int i, char data) {
 			break;
 	}
 
-    if (at_state == dat) clock_gettime(CLOCK_REALTIME, &at_t1);
+    if (at_state == dat) gettimeofday(&at_t1, NULL);
 }
 
 int modem_device_carrier(int i) {

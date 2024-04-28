@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -116,7 +116,7 @@ extern int op_ed_handle(void), op_fd_handle(void);
  */
 void cpu_z80(void)
 {
-	extern int time_diff(struct timespec *, struct timespec *);
+	extern int time_diff(struct timeval *, struct timeval *);
 
 	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
@@ -379,11 +379,11 @@ void cpu_z80(void)
 
 	register int t = 0;
 	register int states;
-	struct timespec t1, t2;
+	struct timeval t1, t2;
 	int tdiff;
 	WORD p;
 
-	clock_gettime(CLOCK_REALTIME, &t1);
+	gettimeofday(&t1, NULL);
 
 	do {
 
@@ -571,7 +571,7 @@ leave:
 
 		if (f_flag) {			/* adjust CPU speed */
 			if (t >= tmax && !cpu_needed) {
-				clock_gettime(CLOCK_REALTIME, &t2);
+				gettimeofday(&t2, NULL);
 				tdiff = time_diff(&t1, &t2);
 #ifndef __CYGWIN__
 				if ((tdiff > 0) && (tdiff < 10000))
@@ -583,7 +583,7 @@ leave:
 				SLEEP_MS(10);
 #endif
 				t = 0;
-				clock_gettime(CLOCK_REALTIME, &t1);
+				gettimeofday(&t1, NULL);
 			}
 		}
 
