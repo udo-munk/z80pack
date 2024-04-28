@@ -25,7 +25,7 @@
 
 static void user_int(int), quit_int(int), term_int(int);
 extern void exit_io(void);
-extern struct termios old_term;
+extern void reset_unix_terminal(void);
 
 void int_on(void)
 {
@@ -77,7 +77,7 @@ static void term_int(int sig)
 
 	exit_io();
 	int_off();
-	tcsetattr(0, TCSADRAIN, &old_term);
+	reset_unix_terminal();
 	puts("\nKilled by user");
 	exit(EXIT_SUCCESS);
 }
