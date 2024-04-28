@@ -171,7 +171,7 @@ void report_cpu_error(void)
 		LOGE(TAG, "I/O output Trap at 0x%04x, port 0x%02x", PC, io_port);
 		break;
 	case IOHALT:
-		LOG(TAG, "\r\nSystem halted\r\n");
+		LOG(TAG, "System halted\r\n");
 		break;
 	case IOERROR:
 		LOGE(TAG, "Fatal I/O Error at 0x%04x", PC);
@@ -198,7 +198,7 @@ void report_cpu_error(void)
 		     int_data);
 		break;
 	case POWEROFF:
-		LOG(TAG, "\r\nSystem powered off\r\n");
+		LOG(TAG, "System powered off\r\n");
 		break;
 	default:
 		LOGW(TAG, "Unknown error %d", cpu_error);
