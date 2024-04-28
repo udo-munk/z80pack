@@ -459,10 +459,10 @@ static void do_port(char *s)
  *	definition of register types
  */
 #define R_8	1		/* 8-bit register */
-#define R_88	2		/* 16-bit register pair */
+#define R_88	2		/* 8-bit register pair */
 #define R_16	3		/* 16-bit register */
 #define R_F	4		/* F or F' register */
-#define R_FLG	5		/* status flag */
+#define R_M	5		/* status register flag mask */
 
 /*
  *	register definitions table (must be sorted by name length)
@@ -470,56 +470,61 @@ static void do_port(char *s)
 static const struct reg_def {
 	const char *name;	/* register name */
 	char len;		/* register name length */
-	const char *prt;	/* print register name */
+	const char *prt;	/* printable register name */
 	char z80;		/* Z80 only flag */
 	char type;		/* register type */
-	BYTE *r8h;		/* 8-bit register or pair high pointer */
-	BYTE *r8l;		/* 8-bit register pair low pointer */
-	WORD *r16;		/* 16-bit register pointer */
-	int *rf;		/* F or F' register pointer */
-	BYTE fmask;		/* status flag mask */
+	union {
+		BYTE *r8;	/* 8-bit register pointer */
+		struct {	/* 8-bit register pair pointers */
+			BYTE *r8h;
+			BYTE *r8l;
+		};
+		WORD *r16;	/* 16-bit register pointer */
+		int *rf;	/* F or F' register pointer */
+		BYTE rm;	/* status register flag mask */
+	};
 } regs[] = {
 #ifndef EXCLUDE_Z80
-	{ "bc'", 3, "BC'", 1, R_88,  &B_,  &C_,  NULL, NULL, 0      },
-	{ "de'", 3, "DE'", 1, R_88,  &D_,  &E_,  NULL, NULL, 0      },
-	{ "hl'", 3, "HL'", 1, R_88,  &H_,  &L_,  NULL, NULL, 0      },
+	{ "bc'", 3, "BC'", 1, R_88, .r8h = &B_, .r8l = &C_ },
+	{ "de'", 3, "DE'", 1, R_88, .r8h = &D_, .r8l = &E_ },
+	{ "hl'", 3, "HL'", 1, R_88, .r8h = &H_, .r8l = &L_ },
 #endif
-	{ "pc",  2, "PC",  0, R_16,  NULL, NULL, &PC,  NULL, 0      },
-	{ "bc",  2, "BC",  0, R_88,  &B,   &C,   NULL, NULL, 0      },
-	{ "de",  2, "DE",  0, R_88,  &D,   &E,   NULL, NULL, 0      },
-	{ "hl",  2, "HL",  0, R_88,  &H,   &L,   NULL, NULL, 0      },
+	{ "pc",  2, "PC",  0, R_16, .r16 = &PC },
+	{ "bc",  2, "BC",  0, R_88, .r8h = &B, .r8l = &C },
+	{ "de",  2, "DE",  0, R_88, .r8h = &D, .r8l = &E },
+	{ "hl",  2, "HL",  0, R_88, .r8h = &H, .r8l = &L },
 #ifndef EXCLUDE_Z80
-	{ "ix",  2, "IX",  1, R_16,  NULL, NULL, &IX,  NULL, 0      },
-	{ "iy",  2, "IY",  1, R_16,  NULL, NULL, &IY,  NULL, 0      },
+	{ "ix",  2, "IX",  1, R_16, .r16 = &IX },
+	{ "iy",  2, "IY",  1, R_16, .r16 = &IY },
 #endif
-	{ "sp",  2, "SP",  0, R_16,  NULL, NULL, &SP,  NULL, 0      },
-	{ "fs",  2, "S",   0, R_FLG, NULL, NULL, NULL, NULL, S_FLAG },
-	{ "fz",  2, "Z",   0, R_FLG, NULL, NULL, NULL, NULL, Z_FLAG },
-	{ "fh",  2, "H",   0, R_FLG, NULL, NULL, NULL, NULL, H_FLAG },
-	{ "fp",  2, "P",   0, R_FLG, NULL, NULL, NULL, NULL, P_FLAG },
+	{ "sp",  2, "SP",  0, R_16, .r16 = &SP },
+	{ "fs",  2, "S",   0, R_M,  .rm = S_FLAG },
+	{ "fz",  2, "Z",   0, R_M,  .rm = Z_FLAG },
+	{ "fh",  2, "H",   0, R_M,  .rm = H_FLAG },
+	{ "fp",  2, "P",   0, R_M,  .rm = P_FLAG },
 #ifndef EXCLUDE_Z80
-	{ "fn",  2, "N",   1, R_FLG, NULL, NULL, NULL, NULL, N_FLAG },
+	{ "fn",  2, "N",   1, R_M,  .rm = N_FLAG },
 #endif
-	{ "fc",  2, "C",   0, R_FLG, NULL, NULL, NULL, NULL, C_FLAG },
+	{ "fc",  2, "C",   0, R_M,  .rm = C_FLAG },
 #ifndef EXCLUDE_Z80
-	{ "a'",  2, "A'",  1, R_8,   &A_,  NULL, NULL, NULL, 0      },
-	{ "f'",  2, "F'",  1, R_F,   NULL, NULL, NULL, &F_,  0      },
-	{ "b'",  2, "B'",  1, R_8,   &B_,  NULL, NULL, NULL, 0      },
-	{ "c'",  2, "C'",  1, R_8,   &C_,  NULL, NULL, NULL, 0      },
-	{ "d'",  2, "D'",  1, R_8,   &D_,  NULL, NULL, NULL, 0      },
-	{ "e'",  2, "E'",  1, R_8,   &E_,  NULL, NULL, NULL, 0      },
-	{ "h'",  2, "H'",  1, R_8,   &H_,  NULL, NULL, NULL, 0      },
-	{ "l'",  2, "L'",  1, R_8,   &L_,  NULL, NULL, NULL, 0      },
-	{ "i",   1, "I",   1, R_8,   &I,   NULL, NULL, NULL, 0      },
+	{ "a'",  2, "A'",  1, R_8,  .r8 = &A_ },
+	{ "f'",  2, "F'",  1, R_F,  .rf = &F_ },
+	{ "b'",  2, "B'",  1, R_8,  .r8 = &B_ },
+	{ "c'",  2, "C'",  1, R_8,  .r8 = &C_ },
+	{ "d'",  2, "D'",  1, R_8,  .r8 = &D_ },
+	{ "e'",  2, "E'",  1, R_8,  .r8 = &E_ },
+	{ "h'",  2, "H'",  1, R_8,  .r8 = &H_ },
+	{ "l'",  2, "L'",  1, R_8,  .r8 = &L_ },
+	{ "i",   1, "I",   1, R_8,  .r8 = &I },
 #endif
-	{ "a",   1, "A",   0, R_8,   &A,   NULL, NULL, NULL, 0      },
-	{ "f",   1, "F",   0, R_F,   NULL, NULL, NULL, &F,   0      },
-	{ "b",   1, "B",   0, R_8,   &B,   NULL, NULL, NULL, 0      },
-	{ "c",   1, "C",   0, R_8,   &C,   NULL, NULL, NULL, 0      },
-	{ "d",   1, "D",   0, R_8,   &D,   NULL, NULL, NULL, 0      },
-	{ "e",   1, "E",   0, R_8,   &E,   NULL, NULL, NULL, 0      },
-	{ "h",   1, "H",   0, R_8,   &H,   NULL, NULL, NULL, 0      },
-	{ "l",   1, "L",   0, R_8,   &L,   NULL, NULL, NULL, 0      }
+	{ "a",   1, "A",   0, R_8,  .r8 = &A },
+	{ "f",   1, "F",   0, R_F,  .rf = &F },
+	{ "b",   1, "B",   0, R_8,  .r8 = &B },
+	{ "c",   1, "C",   0, R_8,  .r8 = &C },
+	{ "d",   1, "D",   0, R_8,  .r8 = &D },
+	{ "e",   1, "E",   0, R_8,  .r8 = &E },
+	{ "h",   1, "H",   0, R_8,  .r8 = &H },
+	{ "l",   1, "L",   0, R_8,  .r8 = &L }
 };
 static int nregs = sizeof(regs) / sizeof(struct reg_def);
 
@@ -547,7 +552,7 @@ static void do_reg(char *s)
 		if (i < nregs) {
 			switch (p->type) {
 			case R_8:
-				printf("%s = %02x : ", p->prt, *(p->r8h));
+				printf("%s = %02x : ", p->prt, *(p->r8));
 				break;
 			case R_88:
 				printf("%s = %04x : ", p->prt,
@@ -559,9 +564,9 @@ static void do_reg(char *s)
 			case R_F:
 				printf("%s = %02x : ", p->prt, *(p->rf));
 				break;
-			case R_FLG:
+			case R_M:
 				printf("%s-FLAG = %c : ", p->prt,
-				       (F & p->fmask) ? '1' : '0');
+				       (F & p->rm) ? '1' : '0');
 				break;
 			default:
 				break;
@@ -574,7 +579,7 @@ static void do_reg(char *s)
 				w = exatoi(nv);
 				switch (p->type) {
 				case R_8:
-					*(p->r8h) = w & 0xff;
+					*(p->r8) = w & 0xff;
 					break;
 				case R_88:
 					*(p->r8h) = (w >> 8) & 0xff;
@@ -586,9 +591,8 @@ static void do_reg(char *s)
 				case R_F:
 					*(p->rf) = w & 0xff;
 					break;
-				case R_FLG:
-					F = w ? (F | p->fmask)
-					      : (F & ~p->fmask);
+				case R_M:
+					F = w ? (F | p->rm) : (F & ~p->rm);
 					break;
 				default:
 					break;
