@@ -130,7 +130,8 @@ again:
 
     if (read(fileno(stdin), &data, 1) == 0) {
         /* try to reopen tty, input redirection exhausted */
-        freopen("/dev/tty", "r", stdin);
+        if (freopen("/dev/tty", "r", stdin) == NULL)
+            LOGE(TAG, "can't reopen /dev/tty");
         set_unix_terminal();
         goto again;
     }
@@ -215,7 +216,9 @@ int scktsrv_in(int dev) {
 		/* process read data */
 		/* telnet client sends \r\n or \r\0, drop second character */
 		if (ncons[dev].telnet && (data == '\r'))
-			read(ncons[dev].ssc, &dummy, 1);
+			if (read(ncons[dev].ssc, &dummy, 1) != 1)
+				LOGE(TAG, "can't read tcpsocket %d data", dev);
+
 
     return data;
 }

@@ -21,7 +21,10 @@
 #include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "unix_terminal.h"
+
+static const char *TAG = "console";
 
 /*
  * read status register
@@ -74,7 +77,8 @@ again:
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
+		if (freopen("/dev/tty", "r", stdin) == NULL)
+			LOGE(TAG, "can't reopen /dev/tty");
 		set_unix_terminal();
 		goto again;
 	}

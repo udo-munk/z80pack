@@ -527,9 +527,7 @@ void power_clicked(int state, int val)
 		fp_led_address = PC;
 		fp_led_data = fp_read(PC);
 		fp_led_wait = 1;
-		if (isatty(1))
-			system("tput clear");
-		else
+		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
 			puts("\r\n\r\n\r\n");
 		break;
 	case FP_SW_UP:

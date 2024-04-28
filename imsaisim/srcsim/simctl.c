@@ -457,9 +457,7 @@ void power_clicked(int state, int val)
 		fp_led_wait = 1;
 		fp_led_output = 0;
 #ifdef UNIX_TERMINAL
-		if (isatty(1))
-			system("tput clear");
-		else
+		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
 			puts("\r\n\r\n\r\n");
 #endif
 		break;

@@ -16,6 +16,7 @@
  * 24-FEB-2017 set line discipline only if fd 0 is a tty
  */
 
+#include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
 
@@ -25,10 +26,10 @@ static int init_flag;
 
 void set_unix_terminal(void)
 {
-	if (init_flag || !isatty(0))
+	if (init_flag || !isatty(fileno(stdin)))
 		return;
 
-	tcgetattr(0, &old_term);
+	tcgetattr(fileno(stdin), &old_term);
 	new_term = old_term;
 
 	new_term.c_lflag &= ~(ICANON | ECHO);
@@ -52,17 +53,17 @@ void set_unix_terminal(void)
 	new_term.c_cc[VLNEXT] = 0;
 #endif
 
-	tcsetattr(0, TCSADRAIN, &new_term);
+	tcsetattr(fileno(stdin), TCSADRAIN, &new_term);
 
 	init_flag++;
 }
 
 void reset_unix_terminal(void)
 {
-	if (!init_flag || !isatty(0))
+	if (!init_flag || !isatty(fileno(stdin)))
 		return;
 
-	tcsetattr(0, TCSAFLUSH, &old_term);
+	tcsetattr(fileno(stdin), TCSAFLUSH, &old_term);
 
 	init_flag--;
 }

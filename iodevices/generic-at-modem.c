@@ -184,7 +184,8 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
             }
             LOGD(TAG, "Telnet OUT: %s[%lld]", buf, (long long) ev->data.size);
 		}
-		write(*active_sfd, ev->data.buffer, ev->data.size);
+		if (write(*active_sfd, ev->data.buffer, ev->data.size) != (ssize_t) ev->data.size)
+			LOGE(TAG, "Telnet OUT: can't send data");
 		break;
     case TELNET_EV_WILL:
         if (ev->neg.telopt == TELNET_TELOPT_SGA) {
@@ -1252,7 +1253,8 @@ void modem_device_send(int i, char data) {
                 if (telnet != NULL) {
                     telnet_send(telnet, at_buf, strlen(at_buf));
                 } else {
-                    write(*active_sfd, at_buf, strlen(at_buf));
+                    if (write(*active_sfd, at_buf, strlen(at_buf)) != (ssize_t) strlen(at_buf))
+                        LOGE(TAG, "can't send at_buf to active_sfd");
                 }
 
                 at_state = dat;
@@ -1276,7 +1278,8 @@ void modem_device_send(int i, char data) {
             if (telnet != NULL) {
                 telnet_send(telnet, (char *) &data, 1);
             } else {
-                write(*active_sfd, (char *) &data, 1);
+                if (write(*active_sfd, (char *) &data, 1) != 1)
+                    LOGE(TAG, "can't send data to active_sfd");
             }
             break;
 	/***
