@@ -3,7 +3,7 @@
  *
  * This module allows operation of the system from a Cromemco Z-1 front panel
  *
- * Copyright (C) 2014-2022 by Udo Munk
+ * Copyright (C) 2014-2024 by Udo Munk
  *
  * History:
  * 15-DEC-2014 first version
@@ -25,6 +25,7 @@
  * 18-JUL-2018 use logging
  * 04-NOV-2019 eliminate usage of mem_base()
  * 17-JUN-2021 allow building machine without frontpanel
+ * 29-APR-2024 added CPU execution statistics
  */
 
 #include <X11/Xlib.h>
@@ -44,7 +45,8 @@
 
 extern void reset_cpu(void), reset_io(void);
 extern void run_cpu(void), step_cpu(void);
-extern void report_cpu_error(void);
+extern void report_cpu_error(void), report_cpu_stats(void);
+extern unsigned long long get_millis(void);
 
 static const char *TAG = "system";
 
@@ -162,8 +164,11 @@ void mon(void)
 		/* run CPU if not idling */
 		switch (cpu_switch) {
 		case 1:
-			if (!reset)
+			if (!reset) {
+				cpu_start = get_millis();
 				run_cpu();
+				cpu_stop = get_millis();
+			}
 			break;
 		case 2:
 			step_cpu();
@@ -180,9 +185,6 @@ void mon(void)
 		/* wait a bit, system is idling */
 		SLEEP_MS(10);
 	}
-
-	/* check for CPU emulation errors and report */
-	report_cpu_error();
 #else
 	/* set FDC autoboot flag from fp switch */
 	if (fp_port & 1)
@@ -195,10 +197,9 @@ void mon(void)
 	ice_cmd_loop(0);
 #else
 	/* run the CPU */
+	cpu_start = get_millis();
 	run_cpu();
-
-	/* check for CPU emulation errors and report */
-	report_cpu_error();
+	cpu_stop = get_millis();
 #endif
 #endif
 
@@ -226,6 +227,10 @@ void mon(void)
 	/* shutdown frontpanel */
 	fp_quit();
 #endif
+
+	/* check for CPU emulation errors and report */
+	report_cpu_error();
+	report_cpu_stats();
 }
 
 #ifdef FRONTPANEL
