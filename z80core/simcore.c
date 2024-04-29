@@ -253,6 +253,20 @@ void report_cpu_error(void)
 }
 
 /*
+ * print some execution statistics
+ */
+void report_cpu_stats(void)
+{
+	if (cpu_stop > cpu_start)
+	{
+		printf("Z80 ran %ld ms ", cpu_stop - cpu_start);
+		printf("and executed %lld t-states\n", T);
+		printf("Clock frequency %2.2f MHz\n",
+			(float) (T) / (float) (cpu_stop - cpu_start) / 1000.0);
+	}
+}
+
+/*
  *	Start a bus request cycle
  */
 void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack))

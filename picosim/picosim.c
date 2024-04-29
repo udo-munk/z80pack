@@ -28,7 +28,7 @@
 
 extern void init_cpu(void);
 extern void run_cpu(void);
-extern void report_cpu_error(void);
+extern void report_cpu_error(void), report_cpu_stats(void);
 
 int main(void)
 {
@@ -79,13 +79,7 @@ int main(void)
 
 	putchar('\n');
 	report_cpu_error();	/* check for CPU emulation errors and report */
-
-				/* print some execution statistics */
-	printf("Z80 ran %ld ms ", cpu_stop - cpu_start);
-	printf("and executed %lld t-states\n", T);
-	printf("Clock frequency %2.2f MHz\n",
-		(float) (T) / (float) (cpu_stop - cpu_start) / 1000.0);
-
+	report_cpu_stats();	/* print some execution statistics */
 	putchar('\n');
 	stdio_flush();
 }
