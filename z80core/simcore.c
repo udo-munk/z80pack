@@ -10,8 +10,13 @@
  */
 
 #include <stdio.h>
+#ifndef PICO
 #include <stdlib.h>
 #include <sys/time.h>
+#else
+#include "pico/stdlib.h"
+#include "pico/time.h"
+#endif
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
