@@ -20,6 +20,7 @@
 #include <termios.h>
 #include <time.h>
 #include <errno.h>
+#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
@@ -99,6 +100,18 @@ again:
 			// cpu_state = STOPPED;
 		}
 	}
+}
+
+/*
+ *	returns time in milliseconds
+ */
+unsigned long long get_millis(void)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	return ((unsigned long long) (tv.tv_sec) * 1000 +
+		(unsigned long long) (tv.tv_usec) / 1000);
 }
 
 /*

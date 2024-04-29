@@ -17,7 +17,8 @@
 #include "log.h"
 
 extern void run_cpu(void);
-extern void report_cpu_error(void);
+extern unsigned long long get_millis(void);
+extern void report_cpu_error(void), report_cpu_stats(void);
 
 int boot(int);
 
@@ -52,13 +53,16 @@ void mon(void)
 	atexit(reset_unix_terminal);
 
 	/* start CPU emulation */
+	cpu_start = get_millis();
 	run_cpu();
+	cpu_stop = get_millis();
 
 	/* reset terminal */
 	reset_unix_terminal();
 
 	/* check for CPU emulation errors and report */
 	report_cpu_error();
+	report_cpu_stats();
 #endif
 }
 
