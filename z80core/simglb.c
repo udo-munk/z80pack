@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 Udo Munk
+ * Copyright (C) 1987-2024 Udo Munk
  * Copyright (C) 2021 David McNaughton
  * Copyright (C) 2022-2024 Thomas Eberhardt
  */
@@ -38,6 +38,7 @@ WORD PC;			/* program counter */
 WORD SP;			/* stack pointer */
 BYTE IFF;			/* interrupt flags */
 Tstates_t T;			/* CPU clock */
+unsigned long long cpu_start, cpu_stop; /* timestamps in ms */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */

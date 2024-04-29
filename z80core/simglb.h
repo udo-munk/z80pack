@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 Udo Munk
+ * Copyright (C) 1987-2024 Udo Munk
  * Copyright (C) 2021 David McNaughton
  * Copyright (C) 2022-2024 Thomas Eberhardt
  */
@@ -29,6 +29,7 @@ extern int	F_;
 extern WORD	PC, SP;
 extern BYTE	IFF;
 extern Tstates_t T;
+extern unsigned long long cpu_start, cpu_stop;
 extern BYTE	io_port, io_data;
 
 #ifdef BUS_8080
