@@ -563,7 +563,6 @@ leave:
 			}
 		}
 
-		R++;			/* increment refresh register */
 		T += states;	/* increment CPU clock */
 
 					/* do runtime measurement */
@@ -623,7 +622,6 @@ static int op_hlt(void)			/* HLT */
 		/* else wait for INT or user interrupt */
 		while ((int_int == 0) && (cpu_state == CONTIN_RUN)) {
 			SLEEP_MS(1);
-			R += 9999;
 		}
 	}
 #ifdef BUS_8080
@@ -644,7 +642,6 @@ static int op_hlt(void)			/* HLT */
 			fp_clock++;
 			fp_sampleData();
 			SLEEP_MS(1);
-			R += 9999;
 			if (cpu_error != NONE)
 				break;
 		}
@@ -654,7 +651,6 @@ static int op_hlt(void)			/* HLT */
 			fp_clock++;
 			fp_sampleData();
 			SLEEP_MS(1);
-			R += 9999;
 			if (cpu_error != NONE)
 				break;
 		}

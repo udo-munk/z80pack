@@ -23,12 +23,11 @@ extern BYTE	A, B, C, D, E, H, L;
 extern int	F;
 #ifndef EXCLUDE_Z80
 extern WORD	IX, IY;
-extern BYTE	A_, B_, C_, D_, E_, H_, L_, I, R_;
+extern BYTE	A_, B_, C_, D_, E_, H_, L_, I, R, R_;
 extern int	F_;
 #endif
 extern WORD	PC, SP;
 extern BYTE	IFF;
-extern long	R;
 extern Tstates_t T;
 extern BYTE	io_port, io_data;
 
