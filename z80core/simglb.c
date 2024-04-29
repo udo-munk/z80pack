@@ -30,16 +30,13 @@ int  F;				/* normally 8-Bit, but int is faster */
 WORD IX, IY;			/* Z80 index registers */
 BYTE A_, B_, C_, D_, E_, H_, L_; /* Z80 alternate registers */
 BYTE I;				/* Z80 interrupt register */
+BYTE R;				/* Z80 refresh register (7-bit counter) */
+BYTE R_;			/* 8th bit of R (can be loaded with LD R,A) */
 int  F_;
-BYTE R_;			/* BYTE copy of R for keeping the 7th bit */
 #endif
 WORD PC;			/* program counter */
 WORD SP;			/* stack pointer */
 BYTE IFF;			/* interrupt flags */
-long R;				/* Z80 refresh register */
-				/* is normally a 8 bit register */
-				/* the larger bits are used to measure the */
-				/* clock frequency */
 Tstates_t T;			/* CPU clock */
 
 #ifdef BUS_8080

@@ -637,7 +637,7 @@ static int op_halt(void)		/* HALT */
 		while ((int_int == 0) && (int_nmi == 0) &&
 		       (cpu_state == CONTIN_RUN)) {
 			SLEEP_MS(1);
-			R += 9999;
+			R += 99;
 		}
 	}
 #ifdef BUS_8080
@@ -659,7 +659,7 @@ static int op_halt(void)		/* HALT */
 			fp_clock++;
 			fp_sampleData();
 			SLEEP_MS(1);
-			R += 9999;
+			R += 99;
 			if (cpu_error != NONE)
 				break;
 		}
@@ -671,7 +671,7 @@ static int op_halt(void)		/* HALT */
 			fp_clock++;
 			fp_sampleData();
 			SLEEP_MS(1);
-			R += 9999;
+			R += 99;
 			if (cpu_error != NONE)
 				break;
 		}

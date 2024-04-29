@@ -461,8 +461,9 @@ static void do_port(char *s)
 #define R_8	1		/* 8-bit register */
 #define R_88	2		/* 8-bit register pair */
 #define R_16	3		/* 16-bit register */
-#define R_F	4		/* F or F' register */
-#define R_M	5		/* status register flag mask */
+#define R_R	4		/* R register */
+#define R_F	5		/* F or F' register */
+#define R_M	6		/* status register flag mask */
 
 /*
  *	register definitions table (must be sorted by name length)
@@ -516,6 +517,7 @@ static const struct reg_def {
 	{ "h'",  2, "H'",  1, R_8,  .r8 = &H_ },
 	{ "l'",  2, "L'",  1, R_8,  .r8 = &L_ },
 	{ "i",   1, "I",   1, R_8,  .r8 = &I },
+	{ "r",   1, "R",   1, R_R,  .r8h = &R_, .r8l = &R },
 #endif
 	{ "a",   1, "A",   0, R_8,  .r8 = &A },
 	{ "f",   1, "F",   0, R_F,  .rf = &F },
@@ -561,6 +563,11 @@ static void do_reg(char *s)
 			case R_16:
 				printf("%s = %04x : ", p->prt, *(p->r16));
 				break;
+			case R_R:
+				printf("%s = %02x : ", p->prt,
+				       (*(p->r8h) & 0x80) |
+				       (*(p->r8l) & 0x7f));
+				break;
 			case R_F:
 				printf("%s = %02x : ", p->prt, *(p->rf));
 				break;
@@ -588,6 +595,9 @@ static void do_reg(char *s)
 				case R_16:
 					*(p->r16) = w;
 					break;
+				case R_R:
+					*(p->r8h) = *(p->r8l) = w & 0xff;
+					break;
 				case R_F:
 					*(p->rf) = w & 0xff;
 					break;
@@ -613,7 +623,7 @@ static void print_head(void)
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
-		printf("\nPC   A  SZHPNC I  IFF BC   DE   HL   "
+		printf("\nPC   A  SZHPNC I  R  IFF BC   DE   HL   "
 		       "A'F' B'C' D'E' H'L' IX   IY   SP\n");
 		break;
 #endif
@@ -643,6 +653,7 @@ static void print_reg(void)
 		printf("%c", F & N_FLAG ? '1' : '0');
 		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x ", I);
+		printf("%02x ", (R_ & 0x80) | (R & 0x7f));
 		printf("%c", IFF & 1 ? '1' : '0');
 		printf("%c", IFF & 2 ? '1' : '0');
 		printf("  %02x%02x %02x%02x %02x%02x %02x%02x "
@@ -834,15 +845,16 @@ static void do_count(char *s)
  *	code will be stored:
  *		LOOP: JP LOOP
  *	It uses 10 T states for each execution. A 3 second
- *	timer is started and then the CPU. For every opcode
- *	fetch the R register is incremented by one and after
+ *	timer is started and then the CPU. For every JP the
+ *	T states counter is incremented by 10 and after
  *	the timer is down and stops the emulation, the clock
- *	speed of the CPU is calculated with:
- *		f = R / 300000
+ *	speed of the CPU in MHz is calculated with:
+ *		f = (T - T0) / 3000000
  */
 static void do_clock(void)
 {
 	BYTE save[3];
+	Tstates_t T0;
 	static struct sigaction newact;
 	static struct itimerval tim;
 
@@ -853,7 +865,7 @@ static void do_clock(void)
 	putmem(0x0001, 0x00);		/* 0000H */
 	putmem(0x0002, 0x00);
 	PC = 0;				/* set PC to this code */
-	R = 0L;				/* clear refresh register */
+	T0 = T;				/* remember start clock counter */
 	newact.sa_handler = timeout;	/* set timer interrupt handler */
 	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
@@ -870,10 +882,10 @@ static void do_clock(void)
 	putmem(0x0001, save[1]);	/* 0000H - 0002H */
 	putmem(0x0002, save[2]);
 	if (cpu_error == NONE) {
-		printf("CPU executed %ld %s instructions in 3 seconds\n",
-		       R, cpu == Z80 ? "JP" : "JMP");
-		printf("clock frequency = %5.2f Mhz\n",
-		       ((float) R) / 300000.0);
+		printf("CPU executed %lld %s instructions in 3 seconds\n",
+		       (T - T0) / 10, cpu == Z80 ? "JP" : "JMP");
+		printf("clock frequency = %5.2f MHz\n",
+		       ((float) (T - T0)) / 3000000.0);
 	} else
 		puts("Interrupted by user");
 }

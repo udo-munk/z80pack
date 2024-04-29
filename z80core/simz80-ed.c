@@ -765,7 +765,7 @@ static int op_ldai(void)		/* LD A,I */
 
 static int op_ldar(void)		/* LD A,R */
 {
-	A = ((BYTE) R & 0x7f) | (R_ & 0x80);
+	A = (R_ & 0x80) | (R & 0x7f);
 	F &= ~(N_FLAG | H_FLAG);
 	(IFF & 2) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
