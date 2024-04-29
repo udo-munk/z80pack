@@ -195,7 +195,9 @@ void mon(void)
 	ice_cmd_loop(0);
 #else
 	/* run the CPU */
+	cpu_start = get_millis();
 	run_cpu();
+	cpu_stop = get_millis();
 #endif
 #endif
 
