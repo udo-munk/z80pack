@@ -22,7 +22,7 @@
 #include "memory.h"
 
 /* Pico W also needs this */
-#ifdef PICO_W
+#if PICO == 1
 #include "pico/cyw43_arch.h"
 #endif
 
@@ -36,7 +36,7 @@ int main(void)
 
 	stdio_init_all();	/* initialize Pico stdio */
 
-#ifdef PICO_W			/* initialize Pico W cyw43 hardware */
+#if PICO == 1
 	if (cyw43_arch_init())
 	{
 		printf("CYW43 init failed\n");
@@ -73,7 +73,7 @@ int main(void)
 	stop = to_ms_since_boot(get_absolute_time());
 
 	/* switch builtin LED on */
-#ifdef PICO_W
+#if PICO == 1
 	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 #else
 	gpio_put(LED, 1);

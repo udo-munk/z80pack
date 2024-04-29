@@ -6,7 +6,7 @@
  * This is the configuration for a Raspberry Pico (W) board
  */
 
-#define PICO_W		/* board we use, comment for Pico */
+#define PICO 1		/* board we use, 0 for Pico 1 for Pico W */
 
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */

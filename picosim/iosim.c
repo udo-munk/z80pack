@@ -19,7 +19,7 @@
 #include "simglb.h"
 
 /* Pico W also needs this */
-#ifdef PICO_W
+#if PICO == 1
 #include "pico/cyw43_arch.h"
 #endif
 
@@ -133,14 +133,14 @@ static void p000_out(BYTE data)
 {
 	if (!data) {
 		/* 0 switches LED off */
-#ifdef PICO_W
+#if PICO == 1
 		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 #else
 		gpio_put(LED, 0);
 #endif
 	} else {
 		/* everything else on */
-#ifdef PICO_W
+#if PICO == 1
 		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 #else
 		gpio_put(LED, 1);
