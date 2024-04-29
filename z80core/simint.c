@@ -1,11 +1,11 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2021 by Udo Munk
+ * Copyright (C) 1987-2024 by Udo Munk
  */
 
 /*
- *	This module contain the interrupt handlers for the OS:
+ *	This module contain interrupt handlers for POSIX OS'S:
  *
  *	int_on()	: initialize interrupt handlers
  *	int_off()	: reset interrupts to default

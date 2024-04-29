@@ -6,7 +6,10 @@
  */
 
 /*
- *	This module contains some commonly used functions
+ *	This module contains some commonly used functions.
+ *	Some functions use the POSIX API available on workstations running
+ *	OSX, Linux, BSD, Windows and so on, it is not usable on bare metal
+ *	machines.
  */
 
 #include <unistd.h>
