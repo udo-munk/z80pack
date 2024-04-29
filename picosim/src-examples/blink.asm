@@ -14,7 +14,7 @@ LED	EQU	0		; builtin LED port
 	LD	SP,0F000H	; setup stack in upper memory
 
 	LD	B,20		; blink LED 20 times
-L1	LD	A,1		; switch LED on
+L1:	LD	A,1		; switch LED on
 	OUT	(LED),A
 	LD	HL,0		; wait a bit
 L2:	DEC	HL
