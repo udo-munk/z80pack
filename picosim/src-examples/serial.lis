@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0	Fri Apr 26 11:07:16 2024
+Z80/8080-Macro-Assembler  Release 2.0	Tue Apr 30 11:12:33 2024
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -73,3 +73,8 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0076  0d 0a 00        55     70 	DEFB	CR,LF,0
                       56     71 
 0079                  57     72 	END
+
+Symbol table
+
+CR     000d    DONE   002a    ECHO   0011    LF     000a    LOOP   0007 
+OUTCH  002b    OUTCH1 002c    TEXT   0035    TTYDAT 0001    TTYSTA 0000 

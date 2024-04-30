@@ -12,6 +12,6 @@ unsigned char code[MEMSIZE] = {
 	0x20, 0x58, 0x20, 0x69, 0x66, 0x20, 0x64, 0x6f, 0x6e, 0x65, 0x0d, 0x0a,
 	0x00
 };
-//unsigned short code_length = 121;
-//unsigned short code_load_addr = 0x0000;
-//unsigned short code_start_addr = 0x0000;
+unsigned short code_length = 121;
+unsigned short code_load_addr = 0x0000;
+unsigned short code_start_addr = 0x0000;
