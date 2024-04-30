@@ -261,7 +261,7 @@ void report_cpu_stats(void)
 	{
 		printf("CPU ran %lld ms ", cpu_stop - cpu_start);
 		printf("and executed %lld t-states\n", T);
-		printf("Clock frequency %2.2f MHz\n",
+		printf("Clock frequency %4.2f MHz\n",
 			(float) (T) / (float) (cpu_stop - cpu_start) / 1000.0);
 	}
 }
