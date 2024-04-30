@@ -52,6 +52,7 @@ int main(void)
 
 	f_flag = CPU_SPEED;
 	tmax = CPU_SPEED * 10000;
+	tmax += tmax / 20;
 
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);
