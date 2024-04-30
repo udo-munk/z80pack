@@ -50,7 +50,9 @@ int main(void)
 	printf("Z80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
 
-	f_flag = CPU_SPEED;	/* defined in sim.h */
+	f_flag = CPU_SPEED;
+	tmax = CPU_SPEED * 10000;
+
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);
 	else
