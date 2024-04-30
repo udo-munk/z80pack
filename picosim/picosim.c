@@ -51,8 +51,8 @@ int main(void)
 	printf("%s release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
 
 	f_flag = CPU_SPEED;
-	tmax = CPU_SPEED * 10000;
-	tmax += tmax / 20;
+	tmax = CPU_SPEED * 10000; /* theoretically */
+	tmax += tmax / 20;	  /* clock crystal tuning, skrew here */
 
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);

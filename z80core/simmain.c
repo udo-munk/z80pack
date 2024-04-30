@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 #endif
 #ifdef CPU_SPEED
 	f_flag = CPU_SPEED;
-	tmax = CPU_SPEED * 10000;
-	tmax += tmax / 10;
+	tmax = CPU_SPEED * 10000; /* theoretically */
+	tmax += tmax / 10;	  /* clock crystal tuning, skrew here */
 #endif
 
 	while (--argc > 0 && (*++argv)[0] == '-')
@@ -111,8 +111,9 @@ int main(int argc, char *argv[])
 					argv++;
 					f_flag = atoi(argv[0]);
 				}
-				tmax = f_flag * 10000;
-				tmax += tmax / 10;
+				tmax = f_flag * 10000; /* theoretically */
+				tmax += tmax / 10; /* clock crystal tuning, */
+			       			   /* skrew here */
 				break;
 
 			case 'x':	/* get filename with executable */
