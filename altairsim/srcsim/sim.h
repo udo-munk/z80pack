@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2022 by Udo Munk
+ * Copyright (C) 2008-2024 by Udo Munk
  *
  * Configuration for an Altair 8800 system
  *
@@ -59,6 +59,6 @@ extern void do_sleep_ms(int);
 
 #define USR_COM	"Altair 8800 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"Copyright (C) 2008-2022 by Udo Munk"
+#define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk"
 
 #include "simcore.h"
