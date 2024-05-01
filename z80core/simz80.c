@@ -412,6 +412,8 @@ void cpu_z80(void)
 		}
 #endif
 
+		states = 0;
+
 		/* CPU DMA bus request handling */
 		if (bus_mode) {
 
@@ -419,7 +421,7 @@ void cpu_z80(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
-					T += (*dma_bus_master)(0);
+					states += (*dma_bus_master)(0);
 				}
 			}
 
@@ -431,7 +433,7 @@ void cpu_z80(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
-					T += (*dma_bus_master)(1);
+					states += (*dma_bus_master)(1);
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -453,7 +455,7 @@ void cpu_z80(void)
 			memwrt(--SP, PC);
 			PC = 0x66;
 			int_nmi = 0;
-			t += 11;
+			states += 11;
 			R++;		/* increment refresh register */
 		}
 
@@ -524,7 +526,7 @@ void cpu_z80(void)
 					cpu_state = STOPPED;
 					continue;
 				}
-				t += 13;
+				states += 13;
 				break;
 			case 1:		/* IM 1 */
 				memwrt(--SP, PC >> 8);
@@ -534,7 +536,7 @@ void cpu_z80(void)
 					goto leave;
 #endif
 				PC = 0x38;
-				t += 13;
+				states += 13;
 				break;
 			case 2:		/* IM 2 */
 				memwrt(--SP, PC >> 8);
@@ -546,7 +548,7 @@ void cpu_z80(void)
 				p = (I << 8) + (int_data & 0xff);
 				PC = memrdr(p++);
 				PC += memrdr(p) << 8;
-				t += 19;
+				states += 19;
 				break;
 			}
 			int_int = 0;
@@ -563,13 +565,16 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 
+		t += states;		/* account for DMA/interrupt cycles */
+		T += states;
+
 		R++;			/* increment refresh register */
 
 		int_protection = 0;
 		states = (*op_sim[memrdr(PC++)])(); /* execute next opcode */
 		t += states;
 
-		if (f_flag) {			/* adjust CPU speed */
+		if (f_flag) {		/* adjust CPU speed */
 			if (t >= tmax && !cpu_needed) {
 				gettimeofday(&t2, NULL);
 				tdiff = time_diff(&t1, &t2);
@@ -587,7 +592,7 @@ leave:
 			}
 		}
 
-		T += states;	/* increment CPU clock */
+		T += states;		/* increment CPU clock */
 
 					/* do runtime measurement */
 #ifdef WANT_TIM
