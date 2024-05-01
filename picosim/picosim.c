@@ -34,7 +34,7 @@ int main(void)
 {
 	stdio_init_all();	/* initialize Pico stdio */
 
-#if PICO == 1
+#if PICO == 1			/* initialize Pico W hardware */
 	if (cyw43_arch_init())
 	{
 		printf("CYW43 init failed\n");
@@ -52,7 +52,7 @@ int main(void)
 
 	f_flag = CPU_SPEED;
 	tmax = CPU_SPEED * 10000; /* theoretically */
-	tmax += tmax / 20;	  /* clock crystal tuning, skrew here */
+	tmax += tmax / 20;	  /* clock crystal tuning, screw here */
 
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);
