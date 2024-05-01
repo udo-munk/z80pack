@@ -14,6 +14,7 @@ the application.
 
 The examples are:
 serial.c	- shows how to do serial I/O
+blink.c		- blink builtin LED with Z80 port output
+
 tb.c		- 8080 TINY BASIC
 micro80.c	- 8080 Microchess
-blink.c		- blink builtin LED with Z80 port output
