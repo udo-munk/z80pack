@@ -18,9 +18,12 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <termios.h>
+#if _POSIX_TIMERS > 0
 #include <time.h>
-#include <errno.h>
+#else
 #include <sys/time.h>
+#endif
+#include <errno.h>
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
@@ -107,11 +110,19 @@ again:
  */
 unsigned long long get_clock_us(void)
 {
+#if _POSIX_TIMERS > 0
 	struct timespec ts;
 
 	clock_gettime(CLOCK_REALTIME, &ts);
 	return ((unsigned long long) (ts.tv_sec) * 1000000ULL +
 		(unsigned long long) (ts.tv_nsec / 1000L));
+#else
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	return ((unsigned long long) (tv.tv_sec) * 1000000ULL +
+		(unsigned long long) (tv.tv_usec));
+#endif
 }
 
 /*
