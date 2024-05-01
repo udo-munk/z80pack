@@ -42,7 +42,7 @@ extern int	m1_step;
 #endif
 
 extern BYTE	io_port, io_data;
-extern int	busy_loop_cnt[];
+extern int	busy_loop_cnt;
 
 extern BYTE	cpu_state;
 extern int	cpu_error;

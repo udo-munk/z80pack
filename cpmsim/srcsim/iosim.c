@@ -142,6 +142,7 @@
 
 extern int boot(int);
 extern void reset_cpu(void);
+extern unsigned long long get_millis(void);
 
 static const char *TAG = "IO";
 
@@ -1132,7 +1133,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	io_port = addrl;
 	io_data = data;
 
-	busy_loop_cnt[0] = 0;
+	busy_loop_cnt = 0;
 
 	(*port_out[addrl])(data);
 }
@@ -1169,11 +1170,14 @@ static void io_trap_out(BYTE data)
  */
 static BYTE cons_in(void)
 {
+	unsigned long long t;
 	struct pollfd p[1];
 
-	if (++busy_loop_cnt[0] >= MAX_BUSY_COUNT) {
+	if (++busy_loop_cnt >= MAX_BUSY_COUNT) {
+		t = get_millis();
 		SLEEP_MS(1);
-		busy_loop_cnt[0] = 0;
+		busy_loop_cnt = 0;
+		cpu_start += (get_millis() - t);
 	}
 
 	p[0].fd = fileno(stdin);
@@ -1608,10 +1612,13 @@ static void nets1_out(BYTE data)
 static BYTE cond_in(void)
 {
 	char c;
+	unsigned long long t;
 
-	busy_loop_cnt[0] = 0;
+	busy_loop_cnt = 0;
+	t = get_millis();
 	if (read(fileno(stdin), &c, 1) != 1)
 		LOGE(TAG, "can't read console 0");
+	cpu_start += (get_millis() - t);
 	return ((BYTE) c);
 }
 

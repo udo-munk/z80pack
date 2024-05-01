@@ -14,8 +14,6 @@
 #include "sim.h"
 #include "simglb.h"
 
-#define MAXCHAN	5	/* max number of channels for I/O busy detect */
-
 /*
  *	Type of CPU, either Z80 or 8080
  */
@@ -47,7 +45,7 @@ int m1_step;			/* flag for waiting at M1 in single step */
 
 BYTE io_port;			/* I/O port used */
 BYTE io_data;			/* data on I/O port */
-int busy_loop_cnt[MAXCHAN];	/* counters for I/O busy loop detection */
+int busy_loop_cnt;		/* counter for I/O busy loop detection */
 
 BYTE cpu_state;			/* state of CPU emulation */
 int cpu_error;			/* error status of CPU emulation */
