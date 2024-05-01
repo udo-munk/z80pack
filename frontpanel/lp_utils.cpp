@@ -23,12 +23,9 @@
 #include <ctype.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <unistd.h>
-#if _POSIX_TIMERS > 0
-#include <time.h>
-#else
 #include <sys/time.h>
-#endif
+#include <time.h>
+#include <unistd.h>
 #include <errno.h>
 #include "lp_utils.h"
 
@@ -616,11 +613,7 @@ int n = glGetError();
 */
 
 typedef struct {
-#if _POSIX_TIMERS > 0
-    struct timespec             bsdtime;
-#else
     struct timeval              bsdtime;
-#endif
     float                       dt;
     int                         stopped;
 } watch_t;
@@ -639,42 +632,18 @@ static watch_t syswatch;
 
 double frate_gettime(void)
 {
-#if _POSIX_TIMERS > 0
-   struct timespec     tp;
-    time_t              sec;
-    long                nsec;
-    double	nsecf;
-#else
    struct timeval      tp;
     int                 sec;
     int                 usec;
-    double	usecf;
-#endif
     watch_t             *t;
-
-    double	secf, dt;
+    double	secf, usecf, dt;
 
     t = &syswatch;
 
-#if _POSIX_TIMERS > 0
-    clock_gettime(CLOCK_REALTIME, &tp);
-    sec = tp.tv_sec - t->bsdtime.tv_sec;
-    nsec = tp.tv_nsec - t->bsdtime.tv_nsec;
-    if (nsec < 0)
-     {
-        sec--;
-        nsec += 1000000000L;
-     }
-
-    secf = (double) sec;
-    nsecf = (double) nsec;
-    nsecf = nsecf / 1.0e9;
-    dt = secf + nsecf;
-#else
     gettimeofday(&tp, NULL);
     sec = tp.tv_sec - t->bsdtime.tv_sec;
     usec = tp.tv_usec - t->bsdtime.tv_usec;
-    if (usec < 0)
+    if (usec < 0) 
      {
         sec--;
         usec += 1000000;
@@ -682,9 +651,8 @@ double frate_gettime(void)
 
     secf = (double) sec;
     usecf = (double) usec;
-    usecf = usecf / 1000000.0;
-    dt = secf + usecf;
-#endif
+    usecf = usecf / 1000000.0; 
+    dt = secf + usecf; 
     return (dt);
 }
 
@@ -717,7 +685,7 @@ void framerate_wait(void)
 
  if( delta > 0.0 )
   {
-    delta = delta * 1.0e9;
+    delta = delta * 10e8;
     ts.tv_sec = 0;
     ts.tv_nsec = (long) delta;
 
