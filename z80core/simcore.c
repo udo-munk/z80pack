@@ -259,10 +259,10 @@ void report_cpu_stats(void)
 {
 	if (cpu_stop > cpu_start)
 	{
-		printf("CPU ran %lld ms ", cpu_stop - cpu_start);
+		printf("CPU ran %lld ms ", (cpu_stop - cpu_start) / 1000);
 		printf("and executed %lld t-states\n", T);
 		printf("Clock frequency %4.2f MHz\n",
-			(float) (T) / (float) (cpu_stop - cpu_start) / 1000.0);
+		       (float) (T) / (float) (cpu_stop - cpu_start));
 	}
 }
 
@@ -286,30 +286,4 @@ void end_bus_request(void)
 	bus_mode = BUS_DMA_NONE;
 	dma_bus_master = NULL;
 	bus_request = 0;
-}
-
-/*
- *	Compute difference between two timeval in microseconds
- *
- *	Note: yes there are timersub() and friends, but not
- *	defined in POSIX.1 and implemented wrong on some
- *	systems. Some systems define tv_usec as unsigned int,
- *	here we assume that a long is longer than unsigned.
- *	If that is not the case cast to (long long).
- */
-int time_diff(struct timeval *t1, struct timeval *t2)
-{
-	long sec, usec;
-
-	sec = (long) t2->tv_sec - (long) t1->tv_sec;
-	usec = (long) t2->tv_usec - (long) t1->tv_usec;
-	/* normalize result */
-	if (usec < 0L) {
-		sec--;
-		usec += 1000000L;
-	}
-	if (sec != 0L)
-		return (-1); /* result is to large */
-	else
-		return ((int) usec);
 }

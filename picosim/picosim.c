@@ -32,6 +32,8 @@ extern void report_cpu_error(void), report_cpu_stats(void);
 
 int main(void)
 {
+	extern unsigned long long get_clock_us(void);
+
 	stdio_init_all();	/* initialize Pico stdio */
 
 #if PICO == 1			/* initialize Pico W hardware */
@@ -69,9 +71,9 @@ int main(void)
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 
-	cpu_start = to_ms_since_boot(get_absolute_time());
+	cpu_start = get_clock_us();
 	run_cpu();		/* run the CPU with whatever is in memory */
-	cpu_stop = to_ms_since_boot(get_absolute_time());
+	cpu_stop = get_clock_us();
 
 	/* switch builtin LED on */
 #if PICO == 1
@@ -85,4 +87,9 @@ int main(void)
 	report_cpu_stats();	/* print some execution statistics */
 	putchar('\n');
 	stdio_flush();
+}
+
+unsigned long long get_clock_us(void)
+{
+	return to_us_since_boot(get_absolute_time());
 }
