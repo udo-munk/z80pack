@@ -1,5 +1,6 @@
+CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
 CWARNS= -Wall -Wextra -Wwrite-strings
-CFLAGS= -O $(CWARNS)
+CFLAGS= -O $(CSTDS) $(CWARNS)
 LDFLAGS= -s
 
 all: putsys boot.bin
