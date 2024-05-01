@@ -650,7 +650,7 @@ static int op_halt(void)		/* HALT */
 		cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
 #endif
 
-	busy_loop_cnt[0] = 0;
+	busy_loop_cnt = 0;
 
 #else
 
