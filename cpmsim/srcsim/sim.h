@@ -29,8 +29,8 @@
 /*#define CNETDEBUG*/	/* client network protocol debugger */
 /*#define SNETDEBUG*/	/* server network protocol debugger */
 
-extern void do_sleep_ms(int);
-#define SLEEP_MS(t)	do_sleep_ms(t)
+extern void sleep_ms(int);
+#define SLEEP_MS(t)	sleep_ms(t)
 
 /*
  *	Structure for the disk images

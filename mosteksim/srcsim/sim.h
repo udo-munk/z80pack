@@ -31,8 +31,8 @@
 /*#define HAS_DISKS*/	/* not using standard disk define */
 /*#define HAS_CONFIG*/  /* not using standard config define */
 
-extern void do_sleep_ms(int);
-#define SLEEP_MS(t)	do_sleep_ms(t)
+extern void sleep_ms(int);
+#define SLEEP_MS(t)	sleep_ms(t)
 
 /*
  *	The following defines may be modified and activated by

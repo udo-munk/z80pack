@@ -77,7 +77,7 @@ int getkey(void)
 /*
  *	Sleep for time milliseconds, 999 max
  */
-void do_sleep_ms(int time)
+void sleep_ms(int time)
 {
 	struct timespec timer, rem;
 	int err;
@@ -95,7 +95,7 @@ again:
 			}
 		} else {
 			/* some error */
-			LOGD(TAG, "do_sleep_ms(%d) %s", time, strerror(err));
+			LOGD(TAG, "sleep_ms(%d) %s", time, strerror(err));
 			// cpu_error = IOERROR;
 			// cpu_state = STOPPED;
 		}
@@ -103,15 +103,15 @@ again:
 }
 
 /*
- *	returns time in milliseconds
+ *	returns time in microseconds
  */
-unsigned long long get_millis(void)
+unsigned long long get_clock_us(void)
 {
-	struct timeval tv;
+	struct timespec ts;
 
-	gettimeofday(&tv, NULL);
-	return ((unsigned long long) (tv.tv_sec) * 1000 +
-		(unsigned long long) (tv.tv_usec) / 1000);
+	clock_gettime(CLOCK_REALTIME, &ts);
+	return ((unsigned long long) (ts.tv_sec) * 1000000ULL +
+		(unsigned long long) (ts.tv_nsec / 1000L));
 }
 
 /*

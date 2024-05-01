@@ -51,7 +51,7 @@
 extern void reset_cpu(void), reset_io(void);
 extern void run_cpu(void), step_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
-extern unsigned long long get_millis(void);
+extern unsigned long long get_clock_us(void);
 
 static const char *TAG = "system";
 
@@ -164,9 +164,9 @@ void mon(void)
 		switch (cpu_switch) {
 		case 1:
 			if (!reset) {
-				cpu_start = get_millis();
+				cpu_start = get_clock_us();
 				run_cpu();
-				cpu_stop = get_millis();
+				cpu_stop = get_clock_us();
 			}
 			break;
 		case 2:
@@ -195,9 +195,9 @@ void mon(void)
 	ice_cmd_loop(0);
 #else
 	/* run the CPU */
-	cpu_start = get_millis();
+	cpu_start = get_clock_us();
 	run_cpu();
-	cpu_stop = get_millis();
+	cpu_stop = get_clock_us();
 #endif
 #endif
 

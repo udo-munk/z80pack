@@ -30,7 +30,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -42,7 +41,7 @@
 
 #define BAUDTIME 10000000
 
-extern int time_diff(struct timeval *, struct timeval *);
+extern unsigned long long get_clock_us(void);
 
 static const char *TAG = "2SIO";
 
@@ -51,7 +50,7 @@ int sio1_strip_parity;
 int sio1_drop_nulls;
 int sio1_baud_rate = 115200;
 
-static struct timeval sio1_t1, sio1_t2;
+static unsigned long long sio1_t1, sio1_t2;
 static BYTE sio1_stat;
 
 int sio2_upper_case;
@@ -59,7 +58,7 @@ int sio2_strip_parity;
 int sio2_drop_nulls;
 int sio2_baud_rate = 115200;
 
-static struct timeval sio2_t1, sio2_t2;
+static unsigned long long sio2_t1, sio2_t2;
 static BYTE sio2_stat;
 
 /*
@@ -73,8 +72,8 @@ BYTE altair_sio1_status_in(void)
 	struct pollfd p[1];
 	int tdiff;
 
-	gettimeofday(&sio1_t2, NULL);
-	tdiff = time_diff(&sio1_t1, &sio1_t2);
+	sio1_t2 = get_clock_us();
+	tdiff = sio1_t2 - sio1_t1;
 	if (sio1_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1_baud_rate))
 			return (sio1_stat);
@@ -92,7 +91,7 @@ BYTE altair_sio1_status_in(void)
 	}
 	sio1_stat |= 2;
 
-	gettimeofday(&sio1_t1, NULL);
+	sio1_t1 = get_clock_us();
 
 	return (sio1_stat);
 }
@@ -134,7 +133,7 @@ again:
 		goto again;
 	}
 
-	gettimeofday(&sio1_t1, NULL);
+	sio1_t1 = get_clock_us();
 	sio1_stat &= 0b11111110;
 
 	/* process read data */
@@ -170,7 +169,7 @@ again:
 		}
 	}
 
-	gettimeofday(&sio1_t1, NULL);
+	sio1_t1 = get_clock_us();
 	sio1_stat &= 0b11111101;
 }
 
@@ -201,8 +200,8 @@ BYTE altair_sio2_status_in(void)
 		}
 	}
 
-	gettimeofday(&sio2_t2, NULL);
-	tdiff = time_diff(&sio2_t1, &sio2_t2);
+	sio2_t2 = get_clock_us();
+	tdiff = sio2_t2 - sio2_t1;
 	if (sio2_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2_baud_rate))
 			return (sio2_stat);
@@ -219,7 +218,7 @@ BYTE altair_sio2_status_in(void)
 			sio2_stat |= 2;
 	}
 
-	gettimeofday(&sio2_t1, NULL);
+	sio2_t1 = get_clock_us();
 
 	return (sio2_stat);
 }
@@ -263,7 +262,7 @@ BYTE altair_sio2_data_in(void)
 		return (last);
 	}
 
-	gettimeofday(&sio2_t1, NULL);
+	sio2_t1 = get_clock_us();
 	sio2_stat &= 0b11111110;
 
 	/* process read data */
@@ -315,6 +314,6 @@ again:
 		}
 	}
 
-	gettimeofday(&sio2_t1, NULL);
+	sio2_t1 = get_clock_us();
 	sio2_stat &= 0b11111101;
 }
