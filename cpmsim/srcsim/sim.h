@@ -29,15 +29,6 @@
 /*#define CNETDEBUG*/	/* client network protocol debugger */
 /*#define SNETDEBUG*/	/* server network protocol debugger */
 
-/*
- * forking and pipes are working now with Cygwin in 2014,
- * but SIGIO on BSD sockets is not
- */
-#ifdef __CYGWIN__
-/*#undef PIPES*/	/* forking and pipes was not working correct */
-#undef TCPASYNC		/* SIGIO on BSD sockets not working */
-#endif
-
 extern void do_sleep_ms(int);
 #define SLEEP_MS(t)	do_sleep_ms(t)
 

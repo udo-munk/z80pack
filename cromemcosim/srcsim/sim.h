@@ -60,13 +60,6 @@
 #define SERVERPORT 4010	/* first TCP/IP server port used */
 #define NUMUSOC 0	/* number of UNIX sockets */
 
-/*
- * SIGIO on BSD sockets not working with Cygwin
- */
-#ifdef __CYGWIN__
-#undef TCPASYNC
-#endif
-
 extern void do_sleep_ms(int);
 #define SLEEP_MS(t)	do_sleep_ms(t)
 
