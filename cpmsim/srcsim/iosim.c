@@ -866,7 +866,7 @@ void init_io(void)
 		exit(EXIT_FAILURE);
 		break;
 	}
-	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NDELAY)) == -1) {
+	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NONBLOCK)) == -1) {
 		LOGE(TAG, "can't open pipe auxin");
 		exit(EXIT_FAILURE);
 	}
