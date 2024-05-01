@@ -70,15 +70,10 @@ VPATH = $(CORE_DIR) $(IO_DIR) $(FP_DIR)
 ###
 include $(CORE_DIR)/Makefile.in-os
 
-EXEC = $(SIM)
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include
 PLAT_LDFLAGS = -L/usr/local/lib
 PLAT_LIBS = -lthr
-endif
-ifeq ($(TARGET_OS),WIN32)
-EXEC := $(EXEC:=.exe)
-PLAT_LDFLAGS = -lm -lpthread
 endif
 ifeq ($(TARGET_OS),LINUX)
 PLAT_LIBS = -lm -lpthread
@@ -160,7 +155,7 @@ _rm_deps:
 	rm -f *.d
 
 allclean: clean
-	rm -f $(EXEC)
+	rm -f $(SIM)
 	rm -f ../disks/drive*.dsk
 	rm -f ../disks/mits_*.dsk
 	rm -f ../printer.txt

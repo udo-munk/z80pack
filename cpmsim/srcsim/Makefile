@@ -44,11 +44,7 @@ VPATH = $(CORE_DIR) $(IO_DIR)
 ###
 include $(CORE_DIR)/Makefile.in-os
 
-EXEC = $(SIM)
 ifeq ($(TARGET_OS),BSD)
-endif
-ifeq ($(TARGET_OS),WIN32)
-EXEC := $(EXEC:=.exe)
 endif
 ifeq ($(TARGET_OS),LINUX)
 endif
@@ -125,7 +121,7 @@ _rm_deps:
 	rm -f *.d
 
 allclean: clean
-	rm -f $(EXEC)
+	rm -f $(SIM)
 	rm -f ../disks/drive*.dsk
 	rm -f ../auxiliaryin.txt ../auxiliaryout.txt ../printer.txt
 

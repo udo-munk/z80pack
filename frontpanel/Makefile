@@ -13,8 +13,6 @@ include $(CORE_DIR)/Makefile.in-os
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include
 endif
-ifeq ($(TARGET_OS),WIN32)
-endif
 ifeq ($(TARGET_OS),LINUX)
 endif
 ifeq ($(TARGET_OS),OSX)

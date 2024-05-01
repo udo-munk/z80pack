@@ -1,6 +1,4 @@
 *.[ado]
-*/*.exe
-*/*.dll
 */*/bios.bin
 */*/bios.lis
 */*/boot.bin
