@@ -30,6 +30,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include <errno.h>
 #include "lp_utils.h"
 
 #define TRUE  1
@@ -636,7 +637,6 @@ static watch_t syswatch;
 double frate_gettime(void)
 {
    struct timeval      tp;
-    struct timezone     tzp;
     int                 sec;
     int                 usec;
     watch_t             *t;
@@ -645,7 +645,7 @@ double frate_gettime(void)
 
     t = &syswatch;
 
-    gettimeofday(&tp, &tzp);
+    gettimeofday(&tp, NULL);
     sec = tp.tv_sec - t->bsdtime.tv_sec;
     usec = tp.tv_usec - t->bsdtime.tv_usec;
     if (usec < 0) 
@@ -676,7 +676,7 @@ void framerate_start_frame(void)
 
 void framerate_wait(void)
 {
- unsigned int usec;
+ struct timespec ts, rem;
  double delta;
  double t;
 
@@ -690,9 +690,18 @@ void framerate_wait(void)
 
  if( delta > 0.0 )
   {
-    delta = delta * 10e5;
-    usec = (unsigned int) delta;
-    usleep(usec);
+    delta = delta * 10e8;
+    ts.tv_sec = 0;
+    ts.tv_nsec = (long) delta;
+
+    for (;;)
+        if (nanosleep(&ts, &rem) == -1 && errno == EINTR && rem.tv_nsec > 0L)
+	 {
+	    memcpy(&ts, &rem, sizeof(struct timespec));
+	    continue;
+	 }
+	else
+	    break;
   }
 
 }
