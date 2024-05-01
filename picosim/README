@@ -1,6 +1,21 @@
-This can be used with Pico and Pico W boards, but you might need to uncomment/comment
-some lines in CMakeLists.txt and sim.h properly for the board used. I'm using a Pico W,
-so everything setup for this one.
+This is a research machine that contains:
+
+	Z80 or 8080 CPU
+	64 KB RAM
+	UART for serial communication with a terminal
+
+Not much compared to the other machines, it is used for:
+
+	better isolation of modules for usage on bare metal
+	memory optimizations for very small bare metal
+	overall perfomance analysis on very small hardware
+
+So this is a proof of concept to jump start other more usefull
+machines from here.
+
+This can be used with Pico and Pico W boards, but you might need to
+uncomment/comment/modify some lines in CMakeLists.txt and sim.h properly
+for the board used. I'm using a Pico W, so everything setup for this one.
 
 To build you need to have the SDK for RP2040-based devices installed and
 configured, then do:
@@ -16,6 +31,6 @@ To clean everything:
 	cd z80pack/picosim
 	rm -rf build
 
-Terminal I/O is going to the pin 1/2 UART, so you need a debug probe or some TTL to USB
-adapter. I also tried using the USB UART, but didn't get it fully working, needs more
-research.
+Terminal I/O is going to the pin 1/2 UART, so you need a debug probe or
+some TTL to USB adapter. I also tried using the USB UART, but didn't get
+it fully working, needs more research.
