@@ -24,19 +24,20 @@ endif
 ### END O/S DEPENDENT VARIABLES
 ###
 
+CXXSTDS = -std=c++03 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
 CXXWARNS = -Wall -Wextra
 
 # Production - the default
-CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE $(PLAT_INCS)
+CXXFLAGS = -O3 $(CXXSTDS) $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE $(PLAT_INCS)
 
 # Development - use `MODE=DEV make build`
 ifeq ($(MODE),DEV)
-CXXFLAGS = -O3 $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(PLAT_INCS)
+CXXFLAGS = -O3 $(CXXSTDS) $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(PLAT_INCS)
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
-CXXFLAGS = -O -g $(PLAT_CXXFLAGS) $(PLAT_INCS)
+CXXFLAGS = -O -g $(CXXSTDS) $(CXXWARNS) $(PLAT_CXXFLAGS) $(PLAT_INCS)
 endif
 
 OBJS = $(SRCS:.cpp=.o)

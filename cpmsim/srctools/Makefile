@@ -4,8 +4,9 @@
 DESTDIR=${HOME}/bin
 #DESTDIR=/usr/local/bin
 
+CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
 CWARNS= -Wall -Wextra -Wwrite-strings
-CFLAGS= -O3 $(CWARNS)
+CFLAGS= -O3 $(CSTDS) $(CWARNS)
 
 all: test mkdskimg bin2hex cpmsend cpmrecv ptp2bin
 	@echo

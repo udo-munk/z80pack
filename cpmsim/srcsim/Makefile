@@ -61,19 +61,20 @@ endif
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\"
 INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 
+CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
 CWARNS = -Wall -Wextra -Wwrite-strings
 
 # Production - the default
-CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
+CFLAGS = -O3 $(CSTDS) $(CWARNS) $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
 
 # Development - use `MODE=DEV make build`
 ifeq ($(MODE),DEV)
-CFLAGS = -O3 $(CWARNS) $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
+CFLAGS = -O3 $(CSTDS) $(CWARNS) $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
-CFLAGS = -O -g $(PLAT_CFLAGS) $(DEFS) $(INCS)
+CFLAGS = -O -g $(CSTDS) $(CWARNS) $(PLAT_CFLAGS) $(DEFS) $(INCS)
 endif
 
 LDFLAGS = $(PLAT_LDFLAGS) $(MACHINE_LIBS) \

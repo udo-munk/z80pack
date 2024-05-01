@@ -3,11 +3,13 @@
 # the alternative options are provided for old ANSI C89 systems
 #
 
+# Use these to compile on Coherent
 #CC = acc
-
-CWARNS = -Wall -Wextra -Wwrite-strings
-CFLAGS = -O3 $(CWARNS) -D_POSIX_C_SOURCE=200809L
 #CFLAGS = -O
+
+CSTDS = -std=c89 -D_POSIX_C_SOURCE=1
+CWARNS = -Wall -Wextra -Wwrite-strings
+CFLAGS = -O3 $(CSTDS) $(CWARNS)
 
 #
 # installation directory
