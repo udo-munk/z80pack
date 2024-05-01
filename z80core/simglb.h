@@ -44,7 +44,8 @@ extern int	int_data;
 
 extern int	s_flag, l_flag, m_flag, x_flag, break_flag, i_flag, f_flag,
 		u_flag, r_flag, c_flag, M_flag, R_flag,
-		cpu_error, int_int, parity[], sb_next, int_protection;
+		cpu_error, int_int, sb_next, int_protection;
+extern char	parity[];
 #ifndef EXCLUDE_Z80
 extern int	int_nmi, int_mode;
 #endif

@@ -129,7 +129,7 @@ char rompath[MAX_LFN];		/* path for boot ROM files */
 /*
  *	Precompiled table to get parity as fast as possible
  */
-int parity[256] = {
+char parity[256] = {
 	0 /* 00000000 */, 1 /* 00000001 */, 1 /* 00000010 */,
 	0 /* 00000011 */, 1 /* 00000100 */, 0 /* 00000101 */,
 	0 /* 00000110 */, 1 /* 00000111 */, 1 /* 00001000 */,
