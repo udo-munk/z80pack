@@ -8,7 +8,7 @@ Not much compared to the other machines, it is used for:
 
 	better isolation of modules for usage on bare metal
 	memory optimizations for very small bare metal
-	overall perfomance analysis on very small hardware
+	overall performance analysis on very small hardware
 
 So this is a proof of concept to jump start other more usefull
 machines from here.
