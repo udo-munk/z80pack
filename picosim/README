@@ -13,6 +13,8 @@ Not much compared to the other machines, it is used for:
 So this is a proof of concept to jump start other more usefull
 machines from here.
 
+A video showing it in action is available: https://youtu.be/aC35qt7zgg4
+
 This can be used with Pico and Pico W boards, but you might need to
 uncomment/comment/modify some lines in CMakeLists.txt and sim.h properly
 for the board used. I'm using a Pico W, so everything setup for this one.
