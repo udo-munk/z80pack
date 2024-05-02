@@ -909,10 +909,16 @@ static BYTE hwctl_in(void)
  *
  *	bit 0 = 1	start interrupt timer
  *	bit 0 = 0	stop interrupt timer
+ *	bit 4 = 1	switch CPU model to 8080
+ *	bit 5 = 1	switch CPU model to Z80
  *	bit 7 = 1	halt emulation via I/O
  */
 static void hwctl_out(BYTE data)
 {
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	extern void switch_cpu(int);
+#endif
+
 	static struct itimerval tim;
 	static struct sigaction newact;
 
@@ -932,6 +938,18 @@ static void hwctl_out(BYTE data)
 		cpu_error = IOHALT;
 		cpu_state = STOPPED;
 	}
+
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	if (data & 32) {	/* switch cpu model to Z80 */
+		switch_cpu(Z80);
+		return;
+	}
+
+	if (data & 16) {	/* switch cpu model to 8080 */
+		switch_cpu(I8080);
+		return;
+	}
+#endif
 
 	if (data & 1) {
 		newact.sa_handler = int_timer;

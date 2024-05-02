@@ -773,7 +773,7 @@ static void do_hist(char *s)
 				else
 					sa = -1;
 			}
-			switch (cpu) {
+			switch (his[i].h_cpu) {
 #ifndef EXCLUDE_Z80
 			case Z80:
 				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
@@ -857,6 +857,7 @@ static void do_clock(void)
 	Tstates_t T0;
 	static struct sigaction newact;
 	static struct itimerval tim;
+	const char *s = NULL;
 
 	save[0] = getmem(0x0000);	/* save memory locations */
 	save[1] = getmem(0x0001);	/* 0000H - 0002H */
@@ -881,9 +882,23 @@ static void do_clock(void)
 	putmem(0x0000, save[0]);	/* restore memory locations */
 	putmem(0x0001, save[1]);	/* 0000H - 0002H */
 	putmem(0x0002, save[2]);
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
+		s = "JP";
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		s = "JMP";
+		break;
+#endif
+	default:
+		break;
+	}
 	if (cpu_error == NONE) {
 		printf("CPU executed %lld %s instructions in 3 seconds\n",
-		       (T - T0) / 10, cpu == Z80 ? "JP" : "JMP");
+		       (T - T0) / 10, s);
 		printf("clock frequency = %5.2f MHz\n",
 		       ((float) (T - T0)) / 3000000.0);
 	} else
