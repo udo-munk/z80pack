@@ -30,10 +30,10 @@ extern void init_cpu(void);
 extern void run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
+unsigned long long get_clock_us(void);
+
 int main(void)
 {
-	extern unsigned long long get_clock_us(void);
-
 	stdio_init_all();	/* initialize Pico stdio */
 
 #if PICO == 1			/* initialize Pico W hardware */
