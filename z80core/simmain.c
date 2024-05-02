@@ -483,8 +483,10 @@ static void save_core(void)
 		cnt += fwrite(&IY, sizeof(IY), 1, fp);
 	}
 #endif
-	if (cpu != Z80)
+#ifndef EXCLUDE_I8080
+	if (cpu == I8080)
 		cnt += 13;	/* pretend we wrote the Z80 registers */
+#endif
 
 	for (i = 0; i < 65536; i++)
 		if (putc(getmem(i), fp) == -1)
@@ -562,8 +564,10 @@ static int load_core(void)
 		cnt += fread(&IY, sizeof(IY), 1, fp);
 	}
 #endif
-	if (cpu != Z80)
+#ifndef EXCLUDE_I8080
+	if (cpu == I8080)
 		cnt += 13;	/* pretend we read the Z80 registers */
+#endif
 
 	for (i = 0; i < 65536; i++)
 		if ((c = getc(fp)) == -1)

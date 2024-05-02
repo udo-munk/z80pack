@@ -2492,11 +2492,18 @@ static BYTE delay_in(void)
  *	Port is locked until magic number 0xaa is received!
  *
  *	I/O handler for write hardware control after unlocking:
+ *
+ *	bit 4 = 1	switch CPU model to 8080
+ *	bit 5 = 1	switch CPU model to Z80
  *	bit 6 = 1	reset CPU, MMU and reboot
  *	bit 7 = 1	halt emulation via I/O
  */
 static void hwctl_out(BYTE data)
 {
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	extern void switch_cpu(int);
+#endif
+
 	/* if port is locked do nothing */
 	if (hwctl_lock && (data != 0xaa))
 		return;
@@ -2519,6 +2526,18 @@ static void hwctl_out(BYTE data)
 		reset_system();
 		return;
 	}
+
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	if (data & 32) {	/* switch cpu model to Z80 */
+		switch_cpu(Z80);
+		return;
+	}
+
+	if (data & 16) {	/* switch cpu model to 8080 */
+		switch_cpu(I8080);
+		return;
+	}
+#endif
 }
 
 /*
