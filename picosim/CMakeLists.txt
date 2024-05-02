@@ -30,6 +30,7 @@ add_executable(picosim
 #target_link_libraries(picosim pico_stdlib)
 # for Pico W
 target_link_libraries(picosim pico_stdlib pico_cyw43_arch_none)
+
 pico_add_extra_outputs(picosim)
 
 # enable UART output, disable USB output
