@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "sim.h"
 #include "simglb.h"
 #ifdef FRONTPANEL
@@ -55,9 +56,9 @@
 /* The following file types will be treated as text files */
 
 static const char *textExts[] = {
-	"ASM", "MAC", "SRC", "TXT", "PRN", "LST",
-	"SYM", "LIB", "C",   "PAS", "FOR", "RAT",
-	"CBL", "PLM", "PLI", "HEX", "SUB", NULL
+	"asm", "mac", "src", "txt", "prn", "lst",
+	"sym", "lib", "c",   "pas", "for", "rat",
+	"cbl", "plm", "pli", "hex", "sub", NULL
 };
 
 /* Static variables */
@@ -95,14 +96,14 @@ void host_bdos_out(BYTE outByte)
 
 	if ((C == OPENF) || (C == MAKEF)) {
 		for (i = 0; i < 8; i++) {	/* copy file name */
-			fname[i] = memrdr(fcbAddr + 1 + i);
+			fname[i] = tolower(memrdr(fcbAddr + 1 + i));
 			if (fname[i] == ' ')
 				break;
 		}
 		fname[i] = 0;
 
 		for (i = 0; i < 3; i++) {	/* copy extension */
-			extension[i] = memrdr(fcbAddr + 9 + i);
+			extension[i] = tolower(memrdr(fcbAddr + 9 + i));
 			if (extension[i] == ' ')
 				break;
 		}
