@@ -1,4 +1,4 @@
-all: ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com
+all: ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com sw8080.com swz80.com
 	@echo "done"
 
 ex.com: ex.mac
@@ -19,8 +19,14 @@ zexdoc.com: zexdoc.mac
 test8080.com: test8080.asm
 	z80asm -8 -fb -l -sn -p0 -o$@ $<
 
+sw8080.com: sw8080.asm
+	z80asm -8 -fb -l -sn -p0 -o$@ $<
+
+swz80.com: swz80.asm
+	z80asm -8 -fb -l -sn -p0 -o$@ $<
+
 clean:
-	rm -f *.lis ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com
+	rm -f *.lis ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com sw8080.com swz80.com
 
 allclean: clean
 
