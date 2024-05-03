@@ -14,7 +14,7 @@ TOOLS = z80asm cpmsim/srctools
 LIBS = frontpanel webfrontend/civetweb
 BIOSES = cpmsim/srccpm2 cpmsim/srccpm3 cpmsim/srcmpm cpmsim/srcucsd-iv \
 	imsaisim/srcucsd-iv
-MISC = z80sim cpmsim/srccpu
+MISC = z80sim cpmtools
 MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
 
 Z80ASM_FLAGS = -fh -e16 -l -sn -p0
