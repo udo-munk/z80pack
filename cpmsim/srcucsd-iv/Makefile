@@ -4,13 +4,15 @@ CFLAGS= -O $(CSTDS) $(CWARNS)
 LDFLAGS= -s
 
 all: boot.bin bios.bin putsys
-	@echo "done"
+	@echo
+	@echo "Done."
+	@echo
 
 boot.bin: boot.asm
-	z80asm -fb -l -sn boot.asm
+	z80asm -fb -l -sn -p0 $<
 
 bios.bin: bios.asm
-	z80asm -fb -l -sn bios.asm
+	z80asm -fb -l -sn -p0 $<
 
 putsys: putsys.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
