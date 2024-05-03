@@ -1,5 +1,10 @@
-all: r.com w.com bye.com reset.com sw8080.com swz80.com \
-		ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com
+# CP/M tools
+TOOLS = r.com w.com bye.com reset.com sw8080.com swz80.com
+
+# CPU tests by various authors, modified for using the CPU switch feature
+CPUTESTS = ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com
+
+all: $(TOOLS) $(CPUTESTS)
 	@echo
 	@echo "Done."
 	@echo
@@ -41,8 +46,7 @@ test8080.com: test8080.asm
 	z80asm -8 -fb -l -sn -p0 -o$@ $<
 
 clean:
-	rm -f *.lis r.com w.com bye.com reset.com sw8080.com swz80.com \
-		ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com
+	rm -f *.lis $(TOOLS) $(CPUTESTS)
 
 allclean: clean
 
