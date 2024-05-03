@@ -53,6 +53,8 @@ isZ80	equ	1
 
 ; modifications by Peter Schorn, (C) 2008
 
+; 03-MAY-2024 Thomas Eberhardt  Modified for z80pack CPU switching
+
 	aseg
 	org	100h
 cr	equ	13
@@ -61,9 +63,10 @@ printst	equ	9
 conout	equ	2
 bdosO	equ	5
 wboot	equ	0
-simh	equ	0feh
-set8080	equ	20
-setz80	equ	19
+hwctl	equ	0a0h
+hwunlk	equ	0aah
+set8080	equ	16
+setz80	equ	32
 
 	jp	start
 
@@ -131,7 +134,14 @@ sw8080:	ld	a,set8080
 	jp	dosw
 swz80:	ld	a,setz80
 	ld	de,sz80
-dosw:	out	(simh),a
+dosw:	ld	c,a		; save cpu type
+	in	a,(hwctl)	; check if hardware control port is unlocked
+	or	a
+	jp	z,dosw1
+	ld	a,hwunlk	; unlock hardware control port
+	out	(hwctl),a
+dosw1:	ld	a,c		; switch cpu type
+	out	(hwctl),a
 	ld	(nsw),a
 	ld	c,printst
 	jp	bdos

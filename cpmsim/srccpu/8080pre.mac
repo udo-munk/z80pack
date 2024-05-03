@@ -39,11 +39,22 @@
 ;
 ;******************************************************************************
 
+; 03-MAY-2024 Thomas Eberhardt  Add z80pack CPU switching
+
 	.8080
 	aseg
 	org	100h
 
-start:	mvi	a,1		; test simple compares and z/nz jumps
+start:	xra	a
+	sta	swflag		; clear CPU switched flag
+	dcr	a
+	jpe	start1		; even parity -> is 8080
+	call	sw8080		; switch to 8080
+	mvi	a,13
+	call	conout
+	mvi	a,10
+	call	conout
+start1:	mvi	a,1		; test simple compares and z/nz jumps
 	cpi	2
 	jz	0
 	cpi	1
@@ -51,6 +62,27 @@ start:	mvi	a,1		; test simple compares and z/nz jumps
 	jmp	lab0
 	hlt			; emergency exit
 	db	0ffh
+
+sw8080:	mvi	a,16
+	lxi	d,s8080
+	jmp	dosw
+swz80:	mvi	a,32
+	lxi	d,sz80
+dosw:	mov	c,a		; save CPU type
+	in	0a0h		; check if hardware control port is unlocked
+	ora	a
+	jz	dosw1
+	mvi	a,0aah		; unlock hardware control port
+	out	0a0h
+dosw1:	mov	a,c		; switch CPU type
+	out	0a0h
+	sta	swflag		; set CPU switched flag
+	mvi	c,9
+	jmp	5
+
+swflag:	ds	1
+sz80:	db	'Switched to Z80 processor$'
+s8080:	db	'Switched to 8080 processor$'
 	
 lab0:	call	lab2		; does a simple call work?
 lab1:	jmp	0		; fail
@@ -216,6 +248,14 @@ lab10:	inx	h
 allok:	lxi	d,okmsg
 	mvi	c,9
 	call	5
+	lda	swflag		; check CPU switched flag
+	ora	a
+	jz	0
+	mvi	a,13
+	call	conout
+	mvi	a,10
+	call	conout
+	call	swz80		; switch back to Z80
 	jmp	0
 
 okmsg:	db	'8080 Preliminary tests complete$'

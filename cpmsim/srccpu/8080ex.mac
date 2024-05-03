@@ -48,6 +48,9 @@
 ;
 ;  Mike Douglas, May 2013
 ;
+
+; 03-MAY-2024 Thomas Eberhardt  Add z80pack CPU switching
+
 	.8080
 	aseg
 	org	100h
@@ -111,7 +114,15 @@ spbt:	ds	2
 
 start:	lhld	6
 	sphl
-	lxi	d,msg1
+	xra	a
+	sta	swflag		; clear CPU switched flag
+	dcr	a
+	jpe	start1		; even parity -> is 8080
+	call	sw8080		; switch to 8080
+	lxi	d,crlf
+	mvi	c,9
+	call	bdos
+start1:	lxi	d,msg1
 	mvi	c,9
 	call	bdos
 
@@ -127,7 +138,35 @@ loop:	mov	a,m		; end of list ?
 done:	lxi	d,msg2
 	mvi	c,9
 	call	bdos
+	lda	swflag		; check CPU switched flag
+	ora	a
+	jz	0
+	lxi	d,crlf
+	mvi	c,9
+	call	bdos
+	call	swz80		; switch back to Z80
 	jmp	0		; warm boot
+
+sw8080:	mvi	a,16
+	lxi	d,s8080
+	jmp	dosw
+swz80:	mvi	a,32
+	lxi	d,sz80
+dosw:	mov	c,a		; save CPU type
+	in	0a0h		; check if hardware control port is unlocked
+	ora	a
+	jz	dosw1
+	mvi	a,0aah		; unlock hardware control port
+	out	0a0h
+dosw1:	mov	a,c		; switch CPU type
+	out	0a0h
+	sta	swflag		; set CPU switched flag
+	mvi	c,9
+	jmp	5
+
+swflag:	ds	1
+sz80:	db	'Switched to Z80 processor$'
+s8080:	db	'Switched to 8080 processor$'
 
 tests:
 	dw	add16

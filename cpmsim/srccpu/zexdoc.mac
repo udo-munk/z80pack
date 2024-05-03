@@ -18,6 +18,8 @@
 ; along with this program; if not, write to the Free Software
 ; Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+; 03-MAY-2024 Thomas Eberhardt  Add z80pack CPU switching
+
 	aseg
 	org	100h
 
@@ -80,7 +82,15 @@ spbt:	ds	2
 
 start:	ld	hl,(6)
 	ld	sp,hl
-	ld	de,msg1
+	xor	a
+	ld	(swflag),a	; clear CPU switched flag
+	dec	a
+	jp	po,start1	; odd parity -> is Z80
+	call	swz80		; switch to Z80
+	ld	de,crlf
+	ld	c,9
+	call	bdos
+start1:	ld	de,msg1
 	ld	c,9
 	call	bdos
 
@@ -96,7 +106,35 @@ loop:	ld	a,(hl)		; end of list ?
 done:	ld	de,msg2
 	ld	c,9
 	call	bdos
+	ld	a,(swflag)	; check CPU switched flag
+	or	a
+	jp	z,0
+	ld	de,crlf
+	ld	c,9
+	call	bdos
+	call	sw8080		; switch back to 8080
 	jp	0		; warm boot
+
+sw8080:	ld	a,16
+	ld	de,s8080
+	jp	dosw
+swz80:	ld	a,32
+	ld	de,sz80
+dosw:	ld	c,a		; save CPU type
+	in	a,(0a0h)	; check if hardware control port is unlocked
+	or	a
+	jp	z,dosw1
+	ld	a,0aah		; unlock hardware control port
+	out	(0a0h),a
+dosw1:	ld	a,c		; switch CPU type
+	out	(0a0h),a
+	ld	(swflag),a	; set CPU switched flag
+	ld	c,9
+	jp	bdos
+
+swflag:	ds	1
+sz80:	db	'Switched to Z80 processor$'
+s8080:	db	'Switched to 8080 processor$'
 
 tests:
 	dw	adc16

@@ -31,13 +31,24 @@
 
 ; If the program runs to completion it displays a suitable message.
 
+; 03-MAY-2024 Thomas Eberhardt  Add z80pack CPU switching
+
 base	equ	80h
 
 	.Z80
 	aseg
 	org	100h
 
-start:	ld	a,1		; test simple compares and z/nz jumps
+start:	xor	a
+	ld	(swflag),a	; clear CPU switched flag
+	dec	a
+	jp	po,start1	; odd parity -> is Z80
+	call	swz80		; switch to Z80
+	ld	a,13
+	call	conout
+	ld	a,10
+	call	conout
+start1:	ld	a,1		; test simple compares and z/nz jumps
 	cp	2
 	jp	z,0
 	cp	1
@@ -45,6 +56,27 @@ start:	ld	a,1		; test simple compares and z/nz jumps
 	jp	lab0
 	halt			; emergency exit
 	db	0ffh
+
+sw8080:	ld	a,16
+	ld	de,s8080
+	jp	dosw
+swz80:	ld	a,32
+	ld	de,sz80
+dosw:	ld	c,a		; save CPU type
+	in	a,(0a0h)	; check if hardware control port is unlocked
+	or	a
+	jp	z,dosw1
+	ld	a,0aah		; unlock hardware control port
+	out	(0a0h),a
+dosw1:	ld	a,c		; switch CPU type
+	out	(0a0h),a
+	ld	(swflag),a	; set CPU switched flag
+	ld	c,9
+	jp	5
+
+swflag:	ds	1
+sz80:	db	'Switched to Z80 processor$'
+s8080:	db	'Switched to 8080 processor$'
 
 lab0:	call	lab2		; does a simple call work?
 lab1:	jp	0		; fail
@@ -283,6 +315,14 @@ reladr	macro	r
 allok:	ld	de,okmsg
 	ld	c,9
 	call	5
+	ld	a,(swflag)	; check CPU switched flag
+	or	a
+	jp	z,0
+	ld	a,13
+	call	conout
+	ld	a,10
+	call	conout
+	call	sw8080		; switch back to 8080
 	jp	0
 
 okmsg:	db	'Preliminary tests complete$'
