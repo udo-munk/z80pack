@@ -14,10 +14,10 @@ TOOLS = z80asm cpmsim/srctools
 LIBS = frontpanel webfrontend/civetweb
 BIOSES = cpmsim/srccpm2 cpmsim/srccpm3 cpmsim/srcmpm cpmsim/srcucsd-iv \
 	imsaisim/srcucsd-iv
-MISC = z80sim
+MISC = z80sim cpmsim/srccpu
 MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
 
-Z80ASM_FLAGS = -p0 -e16 -l -sn
+Z80ASM_FLAGS = -fh -e16 -l -sn -p0
 
 ALTAIR_8080 = \
 	altairsim/basic8k78.asm \

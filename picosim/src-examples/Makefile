@@ -1,16 +1,20 @@
-all :	serial.c tb.c blink.c
+all: serial.c tb.c blink.c
 	@echo
 	@echo "Done."
 	@echo
 
-clean :
-	rm -rf serial.c tb.c blink.c
+serial.c: serial.asm
+	z80asm -fc -l -sn -p0 $<
 
-serial.c :	serial.asm
-	z80asm -fc -l -sn -p0 $?
+tb.c: tb.asm
+	z80asm -8 -fc -l -sn -p0 -x $<
 
-tb.c :		tb.asm
-	z80asm -8 -fc -l -sn -p0 -x $?
+blink.c: blink.asm
+	z80asm -fc -l -sn -p0 $<
 
-blink.c :	blink.asm
-	z80asm -fc -l -sn -p0 $?
+clean:
+	rm -f serial.c tb.c blink.c
+
+allclean: clean
+
+.PHONY: all clean allclean

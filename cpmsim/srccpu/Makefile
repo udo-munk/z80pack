@@ -1,5 +1,7 @@
 all: ex.com prelim.com zexdoc.com 8080pre.com 8080ex.com test8080.com sw8080.com swz80.com
-	@echo "done"
+	@echo
+	@echo "Done."
+	@echo
 
 ex.com: ex.mac
 	z80asm -fb -l -sn -p0 -o$@ $<
