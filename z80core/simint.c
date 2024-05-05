@@ -14,10 +14,8 @@
  *	term_int()	: handler for signal SIGTERM when process is killed
  */
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <termios.h>
 #include <signal.h>
 #include "sim.h"

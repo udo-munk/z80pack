@@ -10,16 +10,16 @@
  *	on a host system.
  */
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <ctype.h>
+#include "sim.h"
+#ifndef ICE_BAREMETAL
+#include <unistd.h>
 #include <signal.h>
 #include <sys/time.h>
-#include "sim.h"
+#endif
 #include "simglb.h"
 #include "memory.h"
 
@@ -28,10 +28,16 @@
 extern void run_cpu(void), step_cpu(void);
 extern void disass(WORD *);
 extern int exatoi(char *);
-extern int getkey(void);
-extern void int_on(void), int_off(void);
-extern int load_file(char *, WORD, int);
 extern void report_cpu_error(void);
+#ifndef ICE_BAREMETAL
+extern int load_file(char *, WORD, int);
+#endif
+
+#ifdef ICE_BAREMETAL
+#define ISATTY(x) (1)
+#else
+#define ISATTY(x) isatty(x)
+#endif
 
 static void do_step(void);
 static void do_trace(char *);
@@ -49,12 +55,15 @@ static void print_reg(void);
 static void do_break(char *);
 static void do_hist(char *);
 static void do_count(char *);
+static void do_show(void);
+static void do_help(void);
+
+#ifndef ICE_BAREMETAL
 static void do_clock(void);
 static void timeout(int);
-static void do_show(void);
 static void do_load(char *);
 static void do_unix(char *);
-static void do_help(void);
+#endif
 
 static WORD wrk_addr;
 
@@ -104,7 +113,7 @@ void ice_cmd_loop(int go_flag)
 			fflush(stdout);
 			if (fgets(cmd, LENCMD, stdin) == NULL) {
 				putchar('\n');
-				if (isatty(fileno(stdin)))
+				if (ISATTY(fileno(stdin)))
 					clearerr(stdin);
 				else
 					eoj = 0;
@@ -151,14 +160,15 @@ void ice_cmd_loop(int go_flag)
 		case 'z':
 			do_count(cmd + 1);
 			break;
-		case 'c':
-			do_clock();
-			break;
 		case 's':
 			do_show();
 			break;
 		case '?':
 			do_help();
+			break;
+#ifndef ICE_BAREMETAL
+		case 'c':
+			do_clock();
 			break;
 		case 'r':
 			do_load(cmd + 1);
@@ -166,6 +176,7 @@ void ice_cmd_loop(int go_flag)
 		case '!':
 			do_unix(cmd + 1);
 			break;
+#endif
 		case 'q':
 			eoj = 0;
 			break;
@@ -358,7 +369,7 @@ static void do_modify(char *s)
 		       getmem(wrk_addr));
 		if (fgets(nv, sizeof(nv), stdin) == NULL) {
 			putchar('\n');
-			if (isatty(fileno(stdin)))
+			if (ISATTY(fileno(stdin)))
 				clearerr(stdin);
 			break;
 		}
@@ -451,7 +462,7 @@ static void do_port(char *s)
 	printf("%02x = %02x : ", port, io_in(port, 0));
 	if (fgets(nv, sizeof(nv), stdin) == NULL) {
 		putchar('\n');
-		if (isatty(fileno(stdin)))
+		if (ISATTY(fileno(stdin)))
 			clearerr(stdin);
 	} else if (isxdigit((unsigned char) *nv))
 		io_out(port, 0, (BYTE) exatoi(nv));
@@ -582,7 +593,7 @@ static void do_reg(char *s)
 			}
 			if (fgets(nv, sizeof(nv), stdin) == NULL) {
 				putchar('\n');
-				if (isatty(fileno(stdin)))
+				if (ISATTY(fileno(stdin)))
 					clearerr(stdin);
 			} else if (nv[0] != '\n') {
 				w = exatoi(nv);
@@ -742,7 +753,8 @@ static void do_hist(char *s)
 	puts("Sorry, no history available");
 	puts("Please recompile with HISIZE defined in sim.h");
 #else
-	int i, l, b, e, c, sa;
+	int i, l, b, e, sa;
+	static char nv[2];
 
 	while (isspace((unsigned char) *s))
 		s++;
@@ -796,15 +808,17 @@ static void do_hist(char *s)
 			default:
 				break;
 			}
-			l++;
-			if (l == 20) {
-				l = 0;
-				printf("q = quit, else continue: ");
-				c = getkey();
+			if (++l < 20)
+				continue;
+			l = 0;
+			printf("q = quit, else continue: ");
+			fflush(stdout);
+			if (fgets(nv, sizeof(nv), stdin) == NULL) {
 				putchar('\n');
-				if (toupper((unsigned char) c) == 'Q')
-					break;
-			}
+				if (ISATTY(fileno(stdin)))
+					clearerr(stdin);
+			} else if (toupper((unsigned char) nv[0]) == 'Q')
+				break;
 		}
 		break;
 	}
@@ -840,6 +854,76 @@ static void do_count(char *s)
 	}
 #endif
 }
+
+/*
+ *	Output information about compiling options
+ */
+static void do_show(void)
+{
+	register int i;
+
+	printf("Release: %s\n", RELEASE);
+#ifdef HISIZE
+	i = HISIZE;
+#else
+	i = 0;
+#endif
+	printf("No. of entries in history memory: %d\n", i);
+#ifdef SBSIZE
+	i = SBSIZE;
+#else
+	i = 0;
+#endif
+	printf("No. of software breakpoints: %d\n", i);
+#ifdef UNDOC_INST
+	i = u_flag;
+#else
+	i = 1;
+#endif
+	printf("Undocumented op-codes %sexecuted\n", i ? "not " : "");
+#ifdef WANT_TIM
+	i = 1;
+#else
+	i = 0;
+#endif
+	printf("T-State counting %spossible\n", i ? "" : "im");
+}
+
+/*
+ *	Output help text
+ */
+static void do_help(void)
+{
+	puts("d [address]               dump memory");
+	puts("l [address]               list memory");
+	puts("m [address]               modify memory");
+	puts("f address,count,value     fill memory");
+	puts("v from,to,count           move memory");
+	puts("p address                 show/modify port");
+	puts("g [address]               run program");
+	puts("t [count]                 trace program");
+	puts("return                    single step program");
+	puts("x [register]              show/modify register");
+	puts("x f<flag>                 modify flag");
+	puts("b[no] address[,pass]      set soft breakpoint");
+	puts("b                         show soft breakpoints");
+	puts("b[no] c                   clear soft breakpoint");
+	puts("h [address]               show history");
+	puts("h c                       clear history");
+	puts("z start,stop              set trigger addr for t-state count");
+	puts("z                         show t-state count");
+	puts("s                         show settings");
+#ifndef ICE_BAREMETAL
+	puts("c                         measure clock frequency");
+	puts("r filename[,address]      read object into memory");
+	puts("! command                 execute external command");
+#endif
+	if (ice_cust_help)
+		(*ice_cust_help)();
+	puts("q                         quit");
+}
+
+#ifndef ICE_BAREMETAL
 
 /*
  *	Calculate the clock frequency of the emulated CPU:
@@ -919,40 +1003,6 @@ static void timeout(int sig)
 }
 
 /*
- *	Output information about compiling options
- */
-static void do_show(void)
-{
-	register int i;
-
-	printf("Release: %s\n", RELEASE);
-#ifdef HISIZE
-	i = HISIZE;
-#else
-	i = 0;
-#endif
-	printf("No. of entries in history memory: %d\n", i);
-#ifdef SBSIZE
-	i = SBSIZE;
-#else
-	i = 0;
-#endif
-	printf("No. of software breakpoints: %d\n", i);
-#ifdef UNDOC_INST
-	i = u_flag;
-#else
-	i = 1;
-#endif
-	printf("Undocumented op-codes %sexecuted\n", i ? "not " : "");
-#ifdef WANT_TIM
-	i = 1;
-#else
-	i = 0;
-#endif
-	printf("T-State counting %spossible\n", i ? "" : "im");
-}
-
-/*
  *	Load a file into the memory of the emulated CPU
  */
 static void do_load(char *s)
@@ -977,42 +1027,14 @@ static void do_load(char *s)
  */
 static void do_unix(char *s)
 {
+	extern void int_on(void), int_off(void);
+
 	int_off();
 	if (system(s) == -1)
 		perror("external command");
 	int_on();
 }
 
-/*
- *	Output help text
- */
-static void do_help(void)
-{
-	puts("r filename[,address]      read object into memory");
-	puts("d [address]               dump memory");
-	puts("l [address]               list memory");
-	puts("m [address]               modify memory");
-	puts("f address,count,value     fill memory");
-	puts("v from,to,count           move memory");
-	puts("p address                 show/modify port");
-	puts("g [address]               run program");
-	puts("t [count]                 trace program");
-	puts("return                    single step program");
-	puts("x [register]              show/modify register");
-	puts("x f<flag>                 modify flag");
-	puts("b[no] address[,pass]      set soft breakpoint");
-	puts("b                         show soft breakpoints");
-	puts("b[no] c                   clear soft breakpoint");
-	puts("h [address]               show history");
-	puts("h c                       clear history");
-	puts("z start,stop              set trigger addr for t-state count");
-	puts("z                         show t-state count");
-	puts("c                         measure clock frequency");
-	puts("s                         show settings");
-	puts("! command                 execute external command");
-	if (ice_cust_help)
-		(*ice_cust_help)();
-	puts("q                         quit");
-}
+#endif
 
 #endif

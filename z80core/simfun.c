@@ -17,10 +17,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <termios.h>
 #include <time.h>
-#include <errno.h>
 #include <sys/time.h>
+#include <errno.h>
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
@@ -34,45 +33,6 @@ static const char *TAG = "func";
 int load_file(char *, WORD, int);
 static int load_mos(char *, WORD, int);
 static int load_hex(char *, WORD, int);
-
-/*
- *	atoi for hexadecimal numbers
- */
-int exatoi(char *str)
-{
-	register int num = 0;
-
-	while (isxdigit((unsigned char) *str)) {
-		num *= 16;
-		if (*str <= '9')
-			num += *str - '0';
-		else
-			num += toupper((unsigned char) *str) - '7';
-		str++;
-	}
-	return (num);
-}
-
-/*
- *	Wait for a single keystroke without echo
- */
-int getkey(void)
-{
-	register int c;
-	struct termios old_term, new_term;
-
-	tcgetattr(fileno(stdin), &old_term);
-	new_term = old_term;
-	new_term.c_lflag &= ~(ICANON | ECHO);
-	new_term.c_iflag &= ~(IXON | IXANY | IXOFF);
-	new_term.c_iflag &= ~(IGNCR | ICRNL | INLCR);
-	new_term.c_oflag &= ~(ONLCR | OCRNL);
-	new_term.c_cc[VMIN] = 1;
-	tcsetattr(fileno(stdin), TCSADRAIN, &new_term);
-	c = getchar();
-	tcsetattr(fileno(stdin), TCSADRAIN, &old_term);
-	return (c);
-}
 
 /*
  *	Sleep for time milliseconds, 999 max
