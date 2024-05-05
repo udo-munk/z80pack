@@ -14,7 +14,7 @@
 /*#define CORE_LOG*/	/* don't use LOG() logging in core simulator */
 #define EXCLUDE_I8080	/* don't include 8080 emulation support */
 
-#define WANT_ICE	/* attach ICE to headless machine */
+//#define WANT_ICE	/* attach ICE to headless machine */
 #define ICE_BAREMETAL	/* don't include commands that require an OS */
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
