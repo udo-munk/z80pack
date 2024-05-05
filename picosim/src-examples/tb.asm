@@ -13,7 +13,8 @@
 ;                 ADDED FIX FOR BUGGY CHGSGN
 ;                 UDO MUNK, 10 DECEMBER 2019
 ;
-;         THIS VERSION HAS I/O MODIFIED FOR PICOSIM
+;               THIS VERSION HAS I/O MODIFIED
+;                      Z80PACK MACHINES
 ;                  UDO MUNK, 26 APRIL 2024
 ;
 ;*************************************************************
