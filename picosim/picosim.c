@@ -87,6 +87,7 @@ int main(void)
 	report_cpu_stats();	/* print some execution statistics */
 	putchar('\n');
 	stdio_flush();
+	return 0;
 }
 
 unsigned long long get_clock_us(void)
