@@ -1463,10 +1463,8 @@ static int op_undoc_outc0(void)		/* OUT (C),0 */
 {
 	extern void io_out(BYTE, BYTE, BYTE);
 
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	io_out(C, B, 0); /* NMOS, CMOS outputs 0xff */
 	return (12);
@@ -1477,10 +1475,8 @@ static int op_undoc_infic(void)		/* IN F,(C) */
 	extern BYTE io_in(BYTE, BYTE);
 	BYTE tmp;
 
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	tmp = io_in(C, B);
 	F &= ~(N_FLAG | H_FLAG);
@@ -1492,70 +1488,56 @@ static int op_undoc_infic(void)		/* IN F,(C) */
 
 static int op_undoc_nop(void)		/* NOP */
 {
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	return (8);
 }
 
 static int op_undoc_im0(void)		/* IM 0 */
 {
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	return (op_im0());
 }
 
 static int op_undoc_im1(void)		/* IM 1 */
 {
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	return (op_im1());
 }
 
 static int op_undoc_im2(void)		/* IM 2 */
 {
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	return (op_im2());
 }
 
 static int op_undoc_reti(void)		/* RETI */
 {
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	return (op_reti());
 }
 
 static int op_undoc_retn(void)		/* RETN */
 {
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	return (op_retn());
 }
 
 static int op_undoc_neg(void)		/* NEG */
 {
-	if (u_flag) {
-		trap_ed();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_ed());
 
 	return (op_neg());
 }
