@@ -24,6 +24,7 @@
 #define CORE_LOG	/* use LOG() logging in core simulator */
 #define EXCLUDE_I8080	/* this was a Z80 machine */
 
+#define WANT_ICE	/* attach ICE to headless machine */
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
