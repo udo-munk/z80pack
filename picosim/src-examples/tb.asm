@@ -14,7 +14,7 @@
 ;                 UDO MUNK, 10 DECEMBER 2019
 ;
 ;               THIS VERSION HAS I/O MODIFIED
-;                      Z80PACK MACHINES
+;                    FOR Z80PACK MACHINES
 ;                  UDO MUNK, 26 APRIL 2024
 ;
 ;*************************************************************
