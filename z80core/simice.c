@@ -23,6 +23,8 @@
 #include "simglb.h"
 #include "memory.h"
 
+#ifdef WANT_ICE
+
 extern void run_cpu(void), step_cpu(void);
 extern void disass(WORD *);
 extern int exatoi(char *);
@@ -1012,3 +1014,5 @@ static void do_help(void)
 		(*ice_cust_help)();
 	puts("q                         quit");
 }
+
+#endif

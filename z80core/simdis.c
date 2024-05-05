@@ -17,6 +17,8 @@
 #include "simglb.h"
 #include "memory.h"
 
+#ifdef WANT_ICE
+
 /*
  *	Forward declarations
  */
@@ -892,5 +894,7 @@ static int ddfd(const char *s, WORD a)
 		}
 	}
 }
+
+#endif
 
 #endif
