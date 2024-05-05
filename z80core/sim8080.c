@@ -5,8 +5,6 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
-#include <unistd.h>
-#include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"

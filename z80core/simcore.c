@@ -10,13 +10,8 @@
  */
 
 #include <stdio.h>
-#ifndef PICO
+#include <ctype.h>
 #include <stdlib.h>
-#include <sys/time.h>
-#else
-#include "pico/stdlib.h"
-#include "pico/time.h"
-#endif
 #include "sim.h"
 #include "simglb.h"
 #include "memory.h"
@@ -301,4 +296,22 @@ void end_bus_request(void)
 	bus_mode = BUS_DMA_NONE;
 	dma_bus_master = NULL;
 	bus_request = 0;
+}
+
+/*
+ *	atoi for hexadecimal numbers
+ */
+int exatoi(char *str)
+{
+	register int num = 0;
+
+	while (isxdigit((unsigned char) *str)) {
+		num *= 16;
+		if (*str <= '9')
+			num += *str - '0';
+		else
+			num += toupper((unsigned char) *str) - '7';
+		str++;
+	}
+	return (num);
 }

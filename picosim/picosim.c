@@ -71,9 +71,15 @@ int main(void)
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 
+#ifdef WANT_ICE
+	extern void ice_cmd_loop(int);
+
+	ice_cmd_loop(0);
+#else
 	cpu_start = get_clock_us();
 	run_cpu();		/* run the CPU with whatever is in memory */
 	cpu_stop = get_clock_us();
+#endif
 
 	/* switch builtin LED on */
 #if PICO == 1
@@ -82,9 +88,11 @@ int main(void)
 	gpio_put(LED, 1);
 #endif
 
+#ifndef WANT_ICE
 	putchar('\n');
 	report_cpu_error();	/* check for CPU emulation errors and report */
 	report_cpu_stats();	/* print some execution statistics */
+#endif
 	putchar('\n');
 	stdio_flush();
 	return 0;
