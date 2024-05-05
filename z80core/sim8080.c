@@ -1392,7 +1392,11 @@ static int op_dadsp(void)		/* DAD SP */
 
 static int op_anaa(void)		/* ANA A */
 {
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	(A & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1402,7 +1406,11 @@ static int op_anaa(void)		/* ANA A */
 
 static int op_anab(void)		/* ANA B */
 {
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | B) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= B;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1413,7 +1421,11 @@ static int op_anab(void)		/* ANA B */
 
 static int op_anac(void)		/* ANA C */
 {
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | C) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= C;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1424,7 +1436,11 @@ static int op_anac(void)		/* ANA C */
 
 static int op_anad(void)		/* ANA D */
 {
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | D) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= D;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1435,7 +1451,11 @@ static int op_anad(void)		/* ANA D */
 
 static int op_anae(void)		/* ANA E */
 {
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | E) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= E;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1446,7 +1466,11 @@ static int op_anae(void)		/* ANA E */
 
 static int op_anah(void)		/* ANA H */
 {
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | H) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= H;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1457,7 +1481,11 @@ static int op_anah(void)		/* ANA H */
 
 static int op_anal(void)		/* ANA L */
 {
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | L) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= L;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1471,7 +1499,11 @@ static int op_anam(void)		/* ANA M */
 	register BYTE P;
 
 	P = memrdr((H << 8) + L);
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | P) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= P;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1485,7 +1517,11 @@ static int op_anin(void)		/* ANI n */
 	register BYTE P;
 
 	P = memrdr(PC++);
+#ifdef AMD8080
+	F &= ~H_FLAG;
+#else
 	((A | P) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+#endif
 	A &= P;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
