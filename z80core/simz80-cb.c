@@ -2569,10 +2569,8 @@ static int op_undoc_slla(void)		/* SLL A */
 
 static int op_undoc_sllb(void)		/* SLL B */
 {
-	if (u_flag) {
-		trap_cb();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_cb());
 
 	(B & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	B = B << 1 | 1;
@@ -2585,10 +2583,8 @@ static int op_undoc_sllb(void)		/* SLL B */
 
 static int op_undoc_sllc(void)		/* SLL C */
 {
-	if (u_flag) {
-		trap_cb();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_cb());
 
 	(C & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	C = C << 1 | 1;
@@ -2601,10 +2597,8 @@ static int op_undoc_sllc(void)		/* SLL C */
 
 static int op_undoc_slld(void)		/* SLL D */
 {
-	if (u_flag) {
-		trap_cb();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_cb());
 
 	(D & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	D = D << 1 | 1;
@@ -2617,10 +2611,8 @@ static int op_undoc_slld(void)		/* SLL D */
 
 static int op_undoc_slle(void)		/* SLL E */
 {
-	if (u_flag) {
-		trap_cb();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_cb());
 
 	(E & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	E = E << 1 | 1;
@@ -2633,10 +2625,8 @@ static int op_undoc_slle(void)		/* SLL E */
 
 static int op_undoc_sllh(void)		/* SLL H */
 {
-	if (u_flag) {
-		trap_cb();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_cb());
 
 	(H & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	H = H << 1 | 1;
@@ -2649,10 +2639,8 @@ static int op_undoc_sllh(void)		/* SLL H */
 
 static int op_undoc_slll(void)		/* SLL L */
 {
-	if (u_flag) {
-		trap_cb();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_cb());
 
 	(L & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	L = L << 1 | 1;
@@ -2668,10 +2656,8 @@ static int op_undoc_sllhl(void)		/* SLL (HL) */
 	register BYTE P;
 	WORD addr;
 
-	if (u_flag) {
-		trap_cb();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_cb());
 
 	addr = (H << 8) + L;
 	P = memrdr(addr);

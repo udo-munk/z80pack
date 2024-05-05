@@ -769,10 +769,8 @@ static int op_ldxdn(void)		/* LD (IX+d),n */
 
 static int op_undoc_ldaixl(void)	/* LD A,IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A = IX & 0xff;
 	return (8);
@@ -780,10 +778,8 @@ static int op_undoc_ldaixl(void)	/* LD A,IXL */
 
 static int op_undoc_ldaixh(void)	/* LD A,IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A = IX >> 8;
 	return (8);
@@ -791,10 +787,8 @@ static int op_undoc_ldaixh(void)	/* LD A,IXH */
 
 static int op_undoc_ldbixl(void)	/* LD B,IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	B = IX & 0xff;
 	return (8);
@@ -802,10 +796,8 @@ static int op_undoc_ldbixl(void)	/* LD B,IXL */
 
 static int op_undoc_ldbixh(void)	/* LD B,IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	B = IX >> 8;
 	return (8);
@@ -813,10 +805,8 @@ static int op_undoc_ldbixh(void)	/* LD B,IXH */
 
 static int op_undoc_ldcixl(void)	/* LD C,IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	C = IX & 0xff;
 	return (8);
@@ -824,10 +814,8 @@ static int op_undoc_ldcixl(void)	/* LD C,IXL */
 
 static int op_undoc_ldcixh(void)	/* LD C,IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	C = IX >> 8;
 	return (8);
@@ -835,10 +823,8 @@ static int op_undoc_ldcixh(void)	/* LD C,IXH */
 
 static int op_undoc_lddixl(void)	/* LD D,IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	D = IX & 0xff;
 	return (8);
@@ -846,10 +832,8 @@ static int op_undoc_lddixl(void)	/* LD D,IXL */
 
 static int op_undoc_lddixh(void)	/* LD D,IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	D = IX >> 8;
 	return (8);
@@ -857,10 +841,8 @@ static int op_undoc_lddixh(void)	/* LD D,IXH */
 
 static int op_undoc_ldeixl(void)	/* LD E,IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	E = IX & 0xff;
 	return (8);
@@ -868,10 +850,8 @@ static int op_undoc_ldeixl(void)	/* LD E,IXL */
 
 static int op_undoc_ldeixh(void)	/* LD E,IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	E = IX >> 8;
 	return (8);
@@ -879,10 +859,8 @@ static int op_undoc_ldeixh(void)	/* LD E,IXH */
 
 static int op_undoc_ldixla(void)	/* LD IXL,A */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0xff00) | A;
 	return (8);
@@ -890,10 +868,8 @@ static int op_undoc_ldixla(void)	/* LD IXL,A */
 
 static int op_undoc_ldixha(void)	/* LD IXH,A */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0x00ff) | (A << 8);
 	return (8);
@@ -901,10 +877,8 @@ static int op_undoc_ldixha(void)	/* LD IXH,A */
 
 static int op_undoc_ldixlb(void)	/* LD IXL,B */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0xff00) | B;
 	return (8);
@@ -912,10 +886,8 @@ static int op_undoc_ldixlb(void)	/* LD IXL,B */
 
 static int op_undoc_ldixhb(void)	/* LD IXH,B */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0x00ff) | (B << 8);
 	return (8);
@@ -923,10 +895,8 @@ static int op_undoc_ldixhb(void)	/* LD IXH,B */
 
 static int op_undoc_ldixlc(void)	/* LD IXL,C */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0xff00) | C;
 	return (8);
@@ -934,10 +904,8 @@ static int op_undoc_ldixlc(void)	/* LD IXL,C */
 
 static int op_undoc_ldixhc(void)	/* LD IXH,C */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0x00ff) | (C << 8);
 	return (8);
@@ -945,10 +913,8 @@ static int op_undoc_ldixhc(void)	/* LD IXH,C */
 
 static int op_undoc_ldixld(void)	/* LD IXL,D */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0xff00) | D;
 	return (8);
@@ -956,10 +922,8 @@ static int op_undoc_ldixld(void)	/* LD IXL,D */
 
 static int op_undoc_ldixhd(void)	/* LD IXH,D */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0x00ff) | (D << 8);
 	return (8);
@@ -967,10 +931,8 @@ static int op_undoc_ldixhd(void)	/* LD IXH,D */
 
 static int op_undoc_ldixle(void)	/* LD IXL,E */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0xff00) | E;
 	return (8);
@@ -978,10 +940,8 @@ static int op_undoc_ldixle(void)	/* LD IXL,E */
 
 static int op_undoc_ldixhe(void)	/* LD IXH,E */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0x00ff) | (E << 8);
 	return (8);
@@ -989,10 +949,8 @@ static int op_undoc_ldixhe(void)	/* LD IXH,E */
 
 static int op_undoc_ldixlixh(void)	/* LD IXL,IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0xff00) | (IX >> 8);
 	return (8);
@@ -1000,30 +958,24 @@ static int op_undoc_ldixlixh(void)	/* LD IXL,IXH */
 
 static int op_undoc_ldixhixh(void)	/* LD IXH,IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	return (8);
 }
 
 static int op_undoc_ldixlixl(void)	/* LD IXL,IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	return (8);
 }
 
 static int op_undoc_ldixhixl(void)	/* LD IXH,IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0x00ff) | (IX << 8);
 	return (8);
@@ -1031,10 +983,8 @@ static int op_undoc_ldixhixl(void)	/* LD IXH,IXL */
 
 static int op_undoc_ldixhn(void)	/* LD IXH,n */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0x00ff) | (memrdr(PC++) << 8);
 	return (11);
@@ -1042,10 +992,8 @@ static int op_undoc_ldixhn(void)	/* LD IXH,n */
 
 static int op_undoc_ldixln(void)	/* LD IXL,n */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	IX = (IX & 0xff00) | memrdr(PC++);
 	return (11);
@@ -1056,10 +1004,8 @@ static int op_undoc_cpixl(void)		/* CP IXL */
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX & 0xff;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1077,10 +1023,8 @@ static int op_undoc_cpixh(void)		/* CP IXH */
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX >> 8;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1098,10 +1042,8 @@ static int op_undoc_adaixl(void)	/* ADD A,IXL */
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX & 0xff;
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1119,10 +1061,8 @@ static int op_undoc_adaixh(void)	/* ADD A,IXH */
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX >> 8;
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1140,10 +1080,8 @@ static int op_undoc_acaixl(void)	/* ADC A,IXL */
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX & 0xff;
@@ -1162,10 +1100,8 @@ static int op_undoc_acaixh(void)	/* ADC A,IXH */
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX >> 8;
@@ -1184,10 +1120,8 @@ static int op_undoc_suaixl(void)	/* SUB A,IXL */
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX & 0xff;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1205,10 +1139,8 @@ static int op_undoc_suaixh(void)	/* SUB A,IXH */
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX >> 8;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1226,10 +1158,8 @@ static int op_undoc_scaixl(void)	/* SBC A,IXL */
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX & 0xff;
@@ -1248,10 +1178,8 @@ static int op_undoc_scaixh(void)	/* SBC A,IXH */
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IX >> 8;
@@ -1267,10 +1195,8 @@ static int op_undoc_scaixh(void)	/* SBC A,IXH */
 
 static int op_undoc_oraixl(void)	/* OR IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A |= IX & 0xff;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -1282,10 +1208,8 @@ static int op_undoc_oraixl(void)	/* OR IXL */
 
 static int op_undoc_oraixh(void)	/* OR IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A |= IX >> 8;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -1297,10 +1221,8 @@ static int op_undoc_oraixh(void)	/* OR IXH */
 
 static int op_undoc_xorixl(void)	/* XOR IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A ^= IX & 0xff;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -1312,10 +1234,8 @@ static int op_undoc_xorixl(void)	/* XOR IXL */
 
 static int op_undoc_xorixh(void)	/* XOR IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A ^= IX >> 8;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -1327,10 +1247,8 @@ static int op_undoc_xorixh(void)	/* XOR IXH */
 
 static int op_undoc_andixl(void)	/* AND IXL */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A &= IX & 0xff;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -1343,10 +1261,8 @@ static int op_undoc_andixl(void)	/* AND IXL */
 
 static int op_undoc_andixh(void)	/* AND IXH */
 {
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	A &= IX >> 8;
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -1361,10 +1277,8 @@ static int op_undoc_incixl(void)	/* INC IXL */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX & 0xff;
 	P++;
@@ -1381,10 +1295,8 @@ static int op_undoc_incixh(void)	/* INC IXH */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX >> 8;
 	P++;
@@ -1401,10 +1313,8 @@ static int op_undoc_decixl(void)	/* DEC IXL */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX & 0xff;
 	P--;
@@ -1421,10 +1331,8 @@ static int op_undoc_decixh(void)	/* DEC IXH */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		trap_dd();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_dd());
 
 	P = IX >> 8;
 	P--;

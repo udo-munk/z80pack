@@ -3167,40 +3167,32 @@ static int op_rst7(void)		/* RST 7 */
 
 static int op_undoc_nop(void)		/* NOP */
 {
-	if (u_flag) {
-		trap_undoc();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_undoc());
 
 	return (4);
 }
 
 static int op_undoc_jmp(void)		/* JMP */
 {
-	if (u_flag) {
-		trap_undoc();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_undoc());
 
 	return (op_jmp());
 }
 
 static int op_undoc_call(void)		/* CALL */
 {
-	if (u_flag) {
-		trap_undoc();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_undoc());
 
 	return (op_call());
 }
 
 static int op_undoc_ret(void)		/* RET */
 {
-	if (u_flag) {
-		trap_undoc();
-		return (0);
-	}
+	if (u_flag)
+		return (trap_undoc());
 
 	return (op_ret());
 }
