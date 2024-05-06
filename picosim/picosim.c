@@ -103,6 +103,7 @@ unsigned long long get_clock_us(void)
 	return to_us_since_boot(get_absolute_time());
 }
 
+#ifdef WANT_ICE
 /*
  * provide terminal input function that works like fgets()
  * on POSIX systems
@@ -129,3 +130,4 @@ char *term_in(char *buf, int len, FILE *stream)
 	buf[i] = '\0';
 	return &buf[0];
 }
+#endif
