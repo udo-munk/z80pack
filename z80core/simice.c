@@ -12,6 +12,7 @@
  *	Only feature missing is hardware breakpoint, because here in software
  *	we need to compare addresses at every memory access. This needs to be
  *	implemented with conditional compilimg sometime.
+ *	bh address,access mode, where access mode is r, w or x.
  */
 
 #include <stdlib.h>
