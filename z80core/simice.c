@@ -37,6 +37,7 @@ extern int load_file(char *, WORD, int);
 #define ISATTY(x) (1)
 #else
 #define ISATTY(x) isatty(x)
+#define term_in(buf, len, stream) fgets(buf, len, stream)
 #endif
 
 static void do_step(void);
@@ -111,7 +112,7 @@ void ice_cmd_loop(int go_flag)
 		} else {
 			printf(">>> ");
 			fflush(stdout);
-			if (fgets(cmd, LENCMD, stdin) == NULL) {
+			if (term_in(cmd, LENCMD, stdin) == NULL) {
 				putchar('\n');
 				if (ISATTY(fileno(stdin)))
 					clearerr(stdin);
@@ -367,7 +368,7 @@ static void do_modify(char *s)
 	for (;;) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
-		if (fgets(nv, sizeof(nv), stdin) == NULL) {
+		if (term_in(nv, sizeof(nv), stdin) == NULL) {
 			putchar('\n');
 			if (ISATTY(fileno(stdin)))
 				clearerr(stdin);
@@ -460,7 +461,7 @@ static void do_port(char *s)
 		s++;
 	port = exatoi(s);
 	printf("%02x = %02x : ", port, io_in(port, 0));
-	if (fgets(nv, sizeof(nv), stdin) == NULL) {
+	if (term_in(nv, sizeof(nv), stdin) == NULL) {
 		putchar('\n');
 		if (ISATTY(fileno(stdin)))
 			clearerr(stdin);
@@ -591,7 +592,7 @@ static void do_reg(char *s)
 			default:
 				break;
 			}
-			if (fgets(nv, sizeof(nv), stdin) == NULL) {
+			if (term_in(nv, sizeof(nv), stdin) == NULL) {
 				putchar('\n');
 				if (ISATTY(fileno(stdin)))
 					clearerr(stdin);
@@ -813,7 +814,7 @@ static void do_hist(char *s)
 			l = 0;
 			printf("q = quit, else continue: ");
 			fflush(stdout);
-			if (fgets(nv, sizeof(nv), stdin) == NULL) {
+			if (term_in(nv, sizeof(nv), stdin) == NULL) {
 				putchar('\n');
 				if (ISATTY(fileno(stdin)))
 					clearerr(stdin);
