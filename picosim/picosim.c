@@ -102,3 +102,26 @@ unsigned long long get_clock_us(void)
 {
 	return to_us_since_boot(get_absolute_time());
 }
+
+char *term_in(char *buf, int len, FILE *stream)
+{
+	register int i = 0;
+	char c;
+
+	while (i < len - 1) {
+		c = getchar();
+		if (c != '\r') {
+			buf[i] = c;
+			putchar(c);
+			i++;
+		} else {
+			buf[i] = '\n';
+			putchar('\r');
+			putchar('\n');
+			i++;
+			break;
+		}
+	}
+	buf[i] = '\0';
+	return &buf[0];
+}

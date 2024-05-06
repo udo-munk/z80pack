@@ -35,6 +35,7 @@ extern int load_file(char *, WORD, int);
 
 #ifdef ICE_BAREMETAL
 #define ISATTY(x) (1)
+extern char *term_in(char *, int, FILE *);
 #else
 #define ISATTY(x) isatty(x)
 #define term_in(buf, len, stream) fgets(buf, len, stream)
