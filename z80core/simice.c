@@ -7,7 +7,11 @@
 
 /*
  *	This module is an ICE type user interface to debug Z80/8080 programs
- *	on a host system.
+ *	on a host system. It emulates, as acurate as possible and practical,
+ *	the Mostek ICE we were using in the 80th and 90th.
+ *	Only feature missing is hardware breakpoint, because here in software
+ *	we need to compare addresses at every memory access. This needs to be
+ *	implemented with conditional compilimg sometime.
  */
 
 #include <stdlib.h>
