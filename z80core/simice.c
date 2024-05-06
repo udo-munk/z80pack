@@ -13,6 +13,9 @@
  *	we need to compare addresses at every memory access. This needs to be
  *	implemented with conditional compilimg sometime.
  *	bh address,access mode, where access mode is r, w or x.
+ *	If I remember right one could set access mode to combinations like
+ *	rw, so that it would break on every read or write access to an
+ *	address.
  */
 
 #include <stdlib.h>
