@@ -5,8 +5,15 @@
 ; exkind	equ	0	; for 8080 only, Z80 instructions are not tested, EX8080.COM
 ; exkind	equ	1	; for Z80 only, undefined status bits are NOT tested, EXZ80DOC.COM
 ; exkind	equ	2	; for Z80 only, undefined status bits ARE tested, EXZ80ALL.COM
-
+     ifdef ex8080
+exkind	equ	0
+     endif
+     ifdef exz80doc
 exkind	equ	1
+     endif
+     ifdef exz80all
+exkind	equ	2
+     endif
 
 ; trace defines whether verbose state information is sent to the console
 ; trace	equ	0		; no output of state information on console
@@ -53,7 +60,20 @@ isZ80	equ	1
 
 ; modifications by Peter Schorn, (C) 2008
 
-; 03-MAY-2024 Thomas Eberhardt  Modified for z80pack CPU switching
+; modified by Thomas Eberhardt, May 2024
+;
+; 8080 modifications come from
+; https://web.archive.org/web/20151108135453/http://www.idb.me.uk/sunhillow/8080.html
+;
+; Use flgmask of 0ffh
+; Preserve carry flag in ldnnsp macro
+; Push hl, not zero, in pushix and pushiy macros
+; Changed the 8080 checksums to the ones from the 8080/8085 CPU Exerciser site
+; Print 8080 instruction names
+;
+; Corrected checksums for Z80 inout test
+;
+; Use z80pack CPU switching
 
 	aseg
 	org	100h
@@ -88,7 +108,7 @@ spbt:	ds	2
 ; A test case is defined by a descriptor which consists of:
 ;	a flag mask byte,
 ;	the base case,
-;	the incement vector,
+;	the increment vector,
 ;	the shift vector,
 ;	the expected crc,
 ;	a short descriptive message.
@@ -113,7 +133,7 @@ spbt:	ds	2
 ; number of 1 bits in it.
 
 ; The total number of test cases is the product of those caused by the
-; counter and shift vectors and can easily become unweildy.  Each
+; counter and shift vectors and can easily become unwieldy.  Each
 ; individual test case can take a few milliseconds to execute, due to
 ; the overhead of test setup and crc calculation, so test design is a
 ; compromise between coverage and execution time.
@@ -346,7 +366,7 @@ lab1:	db	m
 	endm
 
      if	isz80 eq 0
-flgmask	equ 0d7h
+flgmask	equ 0ffh
 expcrc	macro	crc1,crc2,crc3
 	db	crc3
 	endm
@@ -378,8 +398,12 @@ add16:	db	flgmask		; flag mask
 	tstr	9,0c4a5h,0c4c7h,0d226h,0a050h,058eah,08566h,0c6h,0deh,09bc9h,0
 	tstr	030h,0,0,0,0f821h,0,0,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,-1,-1,-1,0d7h,0,-1,1		; (70 cycles)
-	expcrc	<0d9h,0a4h,0cah,005h>,<011h,065h,0fch,090h>,<026h,015h,08bh,0ebh>	; expected crc
+	expcrc	<0d9h,0a4h,0cah,005h>,<011h,065h,0fch,090h>,<014h,047h,04bh,0a6h>	; expected crc
+     if isZ80
 	tmsg	'add hl,<bc,de,hl,sp>',' 35,840'
+     else
+	tmsg	'dad <b,d,h,sp>',' 35,840'
+     endif
 
 ; add ix,<bc,de,ix,sp> (35,840 cycles)
 add16x:	db	flgmask		; flag mask
@@ -402,16 +426,24 @@ alu8i:	db	flgmask		; flag mask
 	tstr	0c6h,09140h,07e3ch,07a67h,0df6dh,05b61h,00b29h,010h,066h,085b2h,0
 	tstr	038h,0,0,0,0,0,0,0,0ffh,0,1		; (2,048 cycles)
 	tstr	<0,-1>,0,0,0,0,0,0,0d7h,0,0,1		; (22 cycles)
-	expcrc	<051h,0c1h,09ch,02eh>,<048h,079h,093h,060h>,<03fh,092h,0a2h,073h>	; expected crc
+	expcrc	<051h,0c1h,09ch,02eh>,<048h,079h,093h,060h>,<09eh,092h,02fh,09eh>	; expected crc
+     if isZ80
 	tmsg	'aluop a,nn',' 45,056'
+     else
+	tmsg	'aluop nn',' 45,056'
+     endif
 
 ; aluop a,<b,c,d,e,h,l,(hl),a> (753,664 cycles)
 alu8r:	db	flgmask		; flag mask
 	tstr	080h,0c53eh,0573ah,04c4dh,msbt,0e309h,0a666h,0d0h,03bh,0adbbh,0
 	tstr	03fh,0,0,0,0,0,0,0,0ffh,0,1		; (16,384 cycles)
 	tstr	0,0ffh,0,0,0,-1,-1,0d7h,0,0,1		; (46 cycles)
-	expcrc	<006h,0c7h,0aah,08eh>,<0feh,043h,0b0h,016h>,<0b8h,05bh,0e7h,04bh>	; expected crc
+	expcrc	<006h,0c7h,0aah,08eh>,<0feh,043h,0b0h,016h>,<0cfh,076h,02ch,086h>	; expected crc
+     if isZ80
 	tmsg	'aluop a,<b,c,d,e,h,l,(hl),a>','753,664'
+     else
+	tmsg	'aluop <b,c,d,e,h,l,m,a>','753,664'
+     endif
 
 ; aluop a,<ixh,ixl,iyh,iyl> (376,832 cycles)
 alu8rx:	db	flgmask		; flag mask
@@ -509,80 +541,120 @@ daa:	db	flgmask		; flag mask
 	tstr	027h,02141h,009fah,01d60h,0a559h,08d5bh,09079h,004h,08eh,0299dh,0
 	tstr	018h,0,0,0,0,0,0,0d7h,0ffh,0,1		; (65,536 cycles)
 	tstr	0,0,0,0,0,0,0,0,0,0,1			; (1 cycle)
-	expcrc	<06dh,02dh,0d2h,013h>,<09bh,04bh,0a6h,075h>,<090h,0d1h,064h,07fh>	; expected crc
+	expcrc	<06dh,02dh,0d2h,013h>,<09bh,04bh,0a6h,075h>,<0bbh,03fh,003h,00ch>	; expected crc
+     if isZ80
 	tmsg	'<daa,cpl,scf,ccf>',' 65,536'
+     else
+	tmsg	'<daa,cma,stc,cmc>',' 65,536'
+     endif
 
 ; <inc,dec> a (3,072 cycles)
 inca:	db	flgmask		; flag mask
 	tstr	03ch,04adfh,0d5d8h,0e598h,08a2bh,0a7b0h,0431bh,044h,05ah,0d030h,0
 	tstr	001h,0,0,0,0,0,0,0,0ffh,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<081h,0fah,081h,000h>,<0d1h,088h,015h,0a4h>,<037h,0b6h,01dh,0f1h>	; expected crc
+	expcrc	<081h,0fah,081h,000h>,<0d1h,088h,015h,0a4h>,<0adh,0b6h,046h,00eh>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> a','  3,072'
+     else
+	tmsg	'<inr,dcr> a','  3,072'
+     endif
 
 ; <inc,dec> b (3,072 cycles)
 incb:	db	flgmask		; flag mask
 	tstr	004h,0d623h,0432dh,07a61h,08180h,05a86h,01e85h,086h,058h,09bbbh,0
 	tstr	001h,0,0,0,0,0,0ff00h,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<077h,0f3h,05ah,073h>,<05fh,068h,022h,064h>,<028h,063h,050h,047h>	; expected crc
+	expcrc	<077h,0f3h,05ah,073h>,<05fh,068h,022h,064h>,<083h,0edh,013h,045h>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> b','  3,072'
+     else
+	tmsg	'<inr,dcr> b','  3,072'
+     endif
 
 ; <inc,dec> bc (1,536 cycles)
 incbc:	db	flgmask		; flag mask
 	tstr	003h,0cd97h,044abh,08dc9h,0e3e3h,011cch,0e8a4h,002h,049h,02a4dh,0
 	tstr	008h,0,0,0,0,0,0f821h,0,0,0,1		; (256 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<0d2h,0aeh,03bh,0ech>,<0d2h,0aeh,03bh,0ech>,<0aeh,08fh,0abh,065h>	; expected crc
+	expcrc	<0d2h,0aeh,03bh,0ech>,<0d2h,0aeh,03bh,0ech>,<0f7h,092h,087h,0cdh>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> bc','  1,536'
+     else
+	tmsg	'<inx,dcx> b','  1,536'
+     endif
 
 ; <inc,dec> c (3,072 cycles)
 incc:	db	flgmask		; flag mask
 	tstr	00ch,0d789h,00935h,0055bh,09f85h,08b27h,0d208h,095h,005h,00660h,0
 	tstr	001h,0,0,0,0,0,0ffh,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<01ah,0f6h,012h,0a7h>,<0c2h,084h,055h,04ch>,<02ah,069h,06eh,04bh>	; expected crc
+	expcrc	<01ah,0f6h,012h,0a7h>,<0c2h,084h,055h,04ch>,<0e5h,0f6h,072h,01bh>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> c','  3,072'
+     else
+	tmsg	'<inr,dcr> c','  3,072'
+     endif
 
 ; <inc,dec> d (3,072 cycles)
 incd:	db	flgmask		; flag mask
 	tstr	014h,0a0eah,05fbah,065fbh,0981ch,038cch,0debch,043h,05ch,003bdh,0
 	tstr	001h,0,0,0,0,0ff00h,0,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<0d1h,046h,0bfh,051h>,<045h,023h,0deh,010h>,<0b9h,078h,0deh,006h>	; expected crc
+	expcrc	<0d1h,046h,0bfh,051h>,<045h,023h,0deh,010h>,<015h,0b5h,057h,09ah>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> d','  3,072'
+     else
+	tmsg	'<inr,dcr> d','  3,072'
+     endif
 
 ; <inc,dec> de (1,536 cycles)
 incde:	db	flgmask		; flag mask
 	tstr	013h,0342eh,0131dh,028c9h,00acah,09967h,03a2eh,092h,0f6h,09d54h,0
 	tstr	008h,0,0,0,0,0f821h,0,0,0,0,1		; (256 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<0aeh,0c6h,0d4h,02ch>,<0aeh,0c6h,0d4h,02ch>,<0abh,0a9h,064h,0b1h>	; expected crc
+	expcrc	<0aeh,0c6h,0d4h,02ch>,<0aeh,0c6h,0d4h,02ch>,<07fh,04eh,025h,001h>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> de','  1,536'
+     else
+	tmsg	'<inx,dcx> d','  1,536'
+     endif
 
 ; <inc,dec> e (3,072 cycles)
 ince:	db	flgmask		; flag mask
 	tstr	01ch,0602fh,04c0dh,02402h,0e2f5h,0a0f4h,0a10ah,013h,032h,05925h,0
 	tstr	001h,0,0,0,0,0ffh,0,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<0cah,08ch,06ah,0c2h>,<0e1h,075h,0afh,0cch>,<0b5h,0fbh,083h,0abh>	; expected crc
+	expcrc	<0cah,08ch,06ah,0c2h>,<0e1h,075h,0afh,0cch>,<0cfh,02ah,0b3h,096h>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> e','  3,072'
+     else
+	tmsg	'<inr,dcr> e','  3,072'
+     endif
 
 ; <inc,dec> h (3,072 cycles)
 inch:	db	flgmask		; flag mask
 	tstr	024h,01506h,0f2ebh,0e8ddh,0262bh,011a6h,0bc1ah,017h,006h,02818h,0
 	tstr	001h,0,0,0,0ff00h,0,0,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<056h,00fh,095h,05eh>,<01ch,0edh,084h,07dh>,<097h,0bbh,07dh,04eh>	; expected crc
+	expcrc	<056h,00fh,095h,05eh>,<01ch,0edh,084h,07dh>,<012h,0b2h,095h,02ch>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> h','  3,072'
+     else
+	tmsg	'<inr,dcr> h','  3,072'
+     endif
 
 ; <inc,dec> hl (1,536 cycles)
 inchl:	db	flgmask		; flag mask
 	tstr	023h,0c3f4h,007a5h,01b6dh,04f04h,0e2c2h,0822ah,057h,0e0h,0c3e1h,0
 	tstr	008h,0,0,0,0f821h,0,0,0,0,0,1		; (256 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<0fch,00dh,06dh,04ah>,<0fch,00dh,06dh,04ah>,<089h,0b6h,06dh,0c8h>	; expected crc
+	expcrc	<0fch,00dh,06dh,04ah>,<0fch,00dh,06dh,04ah>,<09fh,02bh,023h,0c0h>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> hl','  1,536'
+     else
+	tmsg	'<inx,dcx> h','  1,536'
+     endif
 
 ; <inc,dec> ix (1,536 cycles)
 incix:	db	flgmask		; flag mask
@@ -605,24 +677,36 @@ incl:	db	flgmask		; flag mask
 	tstr	02ch,08031h,0a520h,04356h,0b409h,0f4c1h,0dfa2h,0d1h,03ch,03ea2h,0
 	tstr	001h,0,0,0,0ffh,0,0,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<0a0h,0a1h,0b4h,09fh>,<056h,0cdh,006h,0f3h>,<082h,04dh,035h,04dh>	; expected crc
+	expcrc	<0a0h,0a1h,0b4h,09fh>,<056h,0cdh,006h,0f3h>,<0ffh,057h,0d3h,056h>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> l','  3,072'
+     else
+	tmsg	'<inr,dcr> l','  3,072'
+     endif
 
 ; <inc,dec> (hl) (3,072 cycles)
 incm:	db	flgmask		; flag mask
 	tstr	034h,0b856h,00c7ch,0e53eh,msbt,0877eh,0da58h,015h,05ch,01f37h,0
 	tstr	001h,0ffh,0,0,0,0,0,0,0,0,1		; (512 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<028h,029h,05eh,0ceh>,<0b8h,03ah,0dch,0efh>,<092h,0ech,0d8h,0d4h>	; expected crc
+	expcrc	<028h,029h,05eh,0ceh>,<0b8h,03ah,0dch,0efh>,<092h,0e9h,063h,0bdh>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> (hl)','  3,072'
+     else
+	tmsg	'<inr,dcr> m','  3,072'
+     endif
 
 ; <inc,dec> sp (1,536 cycles)
 incsp:	db	flgmask		; flag mask
 	tstr	033h,0346fh,0d482h,0d169h,0deb6h,0a494h,0f476h,053h,002h,0855bh,0
 	tstr	008h,0,0,0,0,0,0,0,0,0f821h,1		; (256 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<05dh,0ach,0d5h,027h>,<05dh,0ach,0d5h,027h>,<053h,097h,03bh,09ch>	; expected crc
+	expcrc	<05dh,0ach,0d5h,027h>,<05dh,0ach,0d5h,027h>,<0d5h,070h,02fh,0abh>	; expected crc
+     if isZ80
 	tmsg	'<inc,dec> sp','  1,536'
+     else
+	tmsg	'<inx,dcx> sp','  1,536'
+     endif
 
 ; <inc,dec> (<ix,iy>+1) (6,144 cycles)
 incx:	db	flgmask		; flag mask
@@ -674,12 +758,12 @@ incyl:	db	flgmask		; flag mask
 
 ; <ini,outi,ind,outd><,r> (65,536 cycles)
 inout:	db	flgmask
-; make sure that <hl> points to memory area where +/- 256 bytes may be arbitrarliy changed
+; make sure that <hl> points to memory area where +/- 256 bytes may be arbitrarily changed
 ;               insn,       memop, iy,    ix,    hl,    de,    bc,    flags,acc,sp
 	tstr	<0edh,0a2h>,0deach,05d77h,0d325h,04000h,07c72h,0234ch,0b9h,017h,0725eh,0
 	tstr	<0,019h>,   0,     0,     0,     0,     0,     0ff11h,0,   0,   0,1	; (8,192 cycles)
 	tstr	0,          0,     0,     0,     0,     0,     0,     0ffh,0,   0,1	; (8 cycles)
-	expcrc	<047h,0ffh,0f4h,048h>,<0aah,0fbh,06dh,05ch>,<0,0,0,0>	; expected crc
+	expcrc	<098h,098h,094h,0ebh>,<075h,09ch,00dh,0ffh>,<0,0,0,0>	; expected crc
 	tmsg	'<ini,outi,ind,outd><,r>',' 65,536'
 
 ; ld <bc,de>,(nnnn) (32 cycles)
@@ -695,8 +779,12 @@ ld162:	db	flgmask		; flag mask
 	tstr	<02ah,low msbt,high msbt>,09863h,07830h,02077h,0b1feh,0b9fah,0abb8h,004h,006h,06015h,0
 	tstr	0,0,0,0,0,0,0,0,0,0,1			; (1 cycle)
 	tstr	0,-1,0,0,0,0,0,0,0,0,1			; (16 cycles)
-	expcrc	<05fh,097h,024h,087h>,<05fh,097h,024h,087h>,<032h,0c9h,06eh,011h>	; expected crc
+	expcrc	<05fh,097h,024h,087h>,<05fh,097h,024h,087h>,<0a9h,0c3h,0d5h,0cbh>	; expected crc
+     if isZ80
 	tmsg	'ld hl,(nnnn)','     16'
+     else
+	tmsg	'lhld nnnn','     16'
+     endif
 
 ; ld sp,(nnnn) (16 cycles)
 ld163:	db	flgmask		; flag mask
@@ -727,8 +815,12 @@ ld166:	db	flgmask		; flag mask
 	tstr	<022h,low msbt,high msbt>,0d003h,07772h,07f53h,03f72h,064eah,0e180h,010h,02dh,035e9h,0
 	tstr	0,0,0,0,0,0,0,0,0,0,1			; (1 cycle)
 	tstr	0,0,0,0,-1,0,0,0,0,0,1			; (16 cycles)
-	expcrc	<0a3h,060h,08bh,047h>,<0a3h,060h,08bh,047h>,<0eeh,02fh,081h,04eh>	; expected crc
+	expcrc	<0a3h,060h,08bh,047h>,<0a3h,060h,08bh,047h>,<0e8h,086h,04fh,026h>	; expected crc
+     if isZ80
 	tmsg	'ld (nnnn),hl','     16'
+     else
+	tmsg	'shld nnnn','     16'
+     endif
 
 ; ld (nnnn),sp (16 cycles)
 ld167:	db	flgmask		; flag mask
@@ -751,8 +843,12 @@ ld16im:	db	flgmask		; flag mask
 	tstr	1,05c1ch,02d46h,08eb9h,06078h,074b1h,0b30eh,046h,0d1h,030cch,0
 	tstr	030h,0,0,0,0,0,0,0,0,0,1		; (4 cycles)
 	tstr	<0,0ffh,0ffh>,0,0,0,0,0,0,0,0,0,1	; (16 cycles)
-	expcrc	<0deh,039h,019h,069h>,<0deh,039h,019h,069h>,<0d4h,016h,002h,072h>	; expected crc
+	expcrc	<0deh,039h,019h,069h>,<0deh,039h,019h,069h>,<0fch,0f4h,06eh,012h>	; expected crc
+     if isZ80
 	tmsg	'ld <bc,de,hl,sp>,nnnn','     64'
+     else
+	tmsg	'lxi <b,d,h,sp>,nnnn','     64'
+     endif
 
 ; ld <ix,iy>,nnnn (32 cycles)
 ld16ix:	db	flgmask		; flag mask
@@ -767,16 +863,24 @@ ld8bd:	db	flgmask		; flag mask
 	tstr	00ah,0b3a8h,01d2ah,07f8eh,042ach,msbt,msbt,0c6h,0b1h,0ef8eh,0
 	tstr	010h,0,0,0,0,0,0,0,0,0,1		; (2 cycles)
 	tstr	0,0ffh,0,0,0,0,0,0d7h,0ffh,0,1		; (22 cycles)
-	expcrc	<0b0h,081h,089h,035h>,<0b0h,081h,089h,035h>,<026h,09fh,0d4h,028h>	; expected crc
+	expcrc	<0b0h,081h,089h,035h>,<0b0h,081h,089h,035h>,<02bh,082h,01dh,05fh>	; expected crc
+     if isZ80
 	tmsg	'ld a,<(bc),(de)>','     44'
+     else
+	tmsg	'ldax <b,d>','     44'
+     endif
 
 ; ld <b,c,d,e,h,l,(hl),a>,nn (64 cycles)
 ld8im:	db	flgmask		; flag mask
 	tstr	6,0c407h,0f49dh,0d13dh,00339h,0de89h,07455h,053h,0c0h,05509h,0
 	tstr	038h,0,0,0,0,0,0,0,0,0,1		; (8 cycles)
 	tstr	0,0,0,0,0,0,0,0,0ffh,0,1		; (8 cycles)
-	expcrc	<0f1h,0dah,0b5h,056h>,<0f1h,0dah,0b5h,056h>,<0d1h,055h,074h,01bh>	; expected crc
+	expcrc	<0f1h,0dah,0b5h,056h>,<0f1h,0dah,0b5h,056h>,<0eah,0a7h,020h,044h>	; expected crc
+     if isZ80
 	tmsg	'ld <b,c,d,e,h,l,(hl),a>,nn','     64'
+     else
+	tmsg	'mvi <b,c,d,e,h,l,m,a>,nn','     64'
+     endif
 
 ; ld (<ix,iy>+1),nn (32 cycles)
 ld8imx:	db	flgmask		; flag mask
@@ -855,8 +959,12 @@ ld8rr:	db	flgmask		; flag mask
 	tstr	040h,072a4h,0a024h,061ach,msbt,082c7h,0718fh,097h,08fh,0ef8eh,0
 	tstr	03fh,0,0,0,0,0,0,0,0,0,1		; (64 cycles)
 	tstr	0,0ffh,0,0,0,-1,-1,0d7h,0ffh,0,1	; (54 cycles)
-	expcrc	<074h,04bh,001h,018h>,<074h,04bh,001h,018h>,<06eh,0ech,0a2h,036h>	; expected crc
+	expcrc	<074h,04bh,001h,018h>,<074h,04bh,001h,018h>,<010h,0b5h,08ch,0eeh>	; expected crc
+     if isZ80
 	tmsg	'ld <bcdehla>,<bcdehla>','  3,456'
+     else
+	tmsg	'mov <bcdehla>,<bcdehla>','  3,456'
+     endif
 
 ; ld <b,c,d,e,ixy,a>,<b,c,d,e,ixy,a> (6,912 cycles)
 ld8rrx:	db	flgmask		; flag mask
@@ -871,8 +979,12 @@ lda:	db	flgmask		; flag mask
 	tstr	<032h,low msbt,high msbt>,0fd68h,0f4ech,044a0h,0b543h,00653h,0cdbah,0d2h,04fh,01fd8h,0
 	tstr	008h,0,0,0,0,0,0,0,0,0,1		; (2 cycle)
 	tstr	0,0ffh,0,0,0,0,0,0d7h,0ffh,0,1		; (22 cycles)
-	expcrc	<0c9h,026h,02dh,0e5h>,<0c9h,026h,02dh,0e5h>,<012h,02fh,0d8h,062h>	; expected crc
+	expcrc	<0c9h,026h,02dh,0e5h>,<0c9h,026h,02dh,0e5h>,<0edh,057h,0afh,072h>	; expected crc
+     if isZ80
 	tmsg	'ld a,(nnnn) / ld (nnnn),a','     44'
+     else
+	tmsg	'sta nnnn / lda nnnn','     44'
+     endif
 
 ; ldd<r> (1) (44 cycles)
 ldd1:	db	flgmask		; flag mask
@@ -927,8 +1039,12 @@ rot8080: db	flgmask		; flag mask
 	tstr	7,0cb92h,06d43h,00a90h,0c284h,00c53h,0f50eh,091h,0ebh,040fch,0
 	tstr	018h,0,0,0,0,0,0,0,0ffh,0,1		; (1024 cycles)
 	tstr	0,0,0,0,0,0,0,0d7h,0,0,1		; (6 cycles)
-	expcrc	<09bh,0a3h,080h,07ch>,<025h,013h,030h,0aeh>,<05bh,041h,0e3h,034h>	; expected crc
+	expcrc	<09bh,0a3h,080h,07ch>,<025h,013h,030h,0aeh>,<0e0h,0d8h,092h,035h>	; expected crc
+     if isZ80
 	tmsg	'<rlca,rrca,rla,rra>','  6,144'
+     else
+	tmsg	'<rlc,rrc,ral,rar>','  6,144'
+     endif
 
 ; shift/rotate (<ix,iy>+1) (416 cycles)
 rotxy:	db	flgmask		; flag mask
@@ -1031,8 +1147,12 @@ stabd:	db	flgmask		; flag mask
 	tstr	2,00c3bh,0b592h,06cffh,0959eh,msbt,msbt+1,0c1h,021h,0bde7h,0
 	tstr	018h,0,0,0,0,0,0,0,0,0,1		; (4 cycles)
 	tstr	0,-1,0,0,0,0,0,0,0ffh,0,1		; (24 cycles)
-	expcrc	<07ah,04ch,011h,04fh>,<07ah,04ch,011h,04fh>,<008h,0d8h,0e7h,03eh>	; expected crc
+	expcrc	<07ah,04ch,011h,04fh>,<07ah,04ch,011h,04fh>,<02bh,004h,071h,0e9h>	; expected crc
+     if isZ80
 	tmsg	'ld (<bc,de>),a','     96'
+     else
+	tmsg	'stax <b,d>','     96'
+     endif
 
 ;destination pointer in de, origin pointer in HL, number of bytes in bc
 ldirX	macro
@@ -1089,7 +1209,7 @@ stt:	push	hl
 	call	initcrc		; initialise crc
 ; test loop
 tlp:	ld	a,(iut)
-	cp	076h		; pragmatically avoid halt intructions
+	cp	076h		; pragmatically avoid halt instructions
 	jp	z,tlp2
 	and	0dfh
 	cp	0ddh
@@ -1393,13 +1513,18 @@ ldspnn	macro	nn
 	endm
 
 ldnnsp	macro	nn
+	local	ldnsp1, ldnsp2
      if	isz80
-	ld	(nn),sp	; save stack pointer
+	ld	(nn),sp		; save stack pointer
      else
 	ld	(temphl),hl
 	ld	hl,0
+	jp	c,ldnsp1	; preserve carry flag
 	add	hl,sp
-	ld	(nn),hl	; save stack pointer
+	jp	ldnsp2
+ldnsp1:	add	hl,sp
+	scf
+ldnsp2:	ld	(nn),hl		; save stack pointer
 	ld	hl,(temphl)
      endif
 	endm
@@ -1424,10 +1549,7 @@ pushix	macro
      if	isz80
      	push	ix
      else
-	ld	(temphl),hl
-	ld	hl,0
      	push	hl
-	ld	hl,(temphl)
      endif
 	endm
 
@@ -1435,10 +1557,7 @@ pushiy	macro
      if	isz80
      	push	iy
      else
-	ld	(temphl),hl
-	ld	hl,0
      	push	hl
-	ld	hl,(temphl)
      endif
 	endm
 

@@ -546,7 +546,6 @@ static int op_ini(void)			/* INI */
 	extern BYTE io_in(BYTE, BYTE);
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 
@@ -562,7 +561,7 @@ static int op_ini(void)			/* INI */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) ((C + 1) & 0xff) + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 #endif
@@ -577,7 +576,6 @@ static int op_inir(void)		/* INIR */
 	WORD addr;
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 	register int t = -21;
@@ -599,7 +597,7 @@ static int op_inir(void)		/* INIR */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) ((C + 1) & 0xff) + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	F &= ~S_FLAG;
 #endif
@@ -626,7 +624,6 @@ static int op_ind(void)			/* IND */
 	extern BYTE io_in(BYTE, BYTE);
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 
@@ -642,7 +639,7 @@ static int op_ind(void)			/* IND */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) ((C - 1) & 0xff) + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 #endif
@@ -657,7 +654,6 @@ static int op_indr(void)		/* INDR */
 	WORD addr;
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 	register int t = -21;
@@ -679,7 +675,7 @@ static int op_indr(void)		/* INDR */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) ((C - 1) & 0xff) + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	F &= ~S_FLAG;
 #endif
@@ -706,7 +702,6 @@ static int op_outi(void)		/* OUTI */
 	extern void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 
@@ -722,7 +717,7 @@ static int op_outi(void)		/* OUTI */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) L + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 #endif
@@ -737,7 +732,6 @@ static int op_otir(void)		/* OTIR */
 	WORD addr;
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 	register int t = -21;
@@ -759,7 +753,7 @@ static int op_otir(void)		/* OTIR */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) L + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	F &= ~S_FLAG;
 #endif
@@ -786,7 +780,6 @@ static int op_outd(void)		/* OUTD */
 	extern void io_out(BYTE, BYTE, BYTE);
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 
@@ -802,7 +795,7 @@ static int op_outd(void)		/* OUTD */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) L + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 #endif
@@ -817,7 +810,6 @@ static int op_otdr(void)		/* OTDR */
 	WORD addr;
 	BYTE data;
 #ifndef Z80BLKIOF_DOC
-	BYTE B0 = B;
 	WORD k;
 #endif
 	register int t = -21;
@@ -839,7 +831,7 @@ static int op_otdr(void)		/* OTDR */
 	/* S,H,P,N,C flags according to "The Undocumented Z80 Documented" */
 	k = (WORD) L + (WORD) data;
 	(k > 255) ? (F |= (H_FLAG | C_FLAG)) : (F &= ~(H_FLAG | C_FLAG));
-	(parity[(k & 0x07) ^ B0]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+	(parity[(k & 0x07) ^ B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(data & 128) ? (F |= N_FLAG) : (F &= ~N_FLAG);
 	F &= ~S_FLAG;
 #endif
