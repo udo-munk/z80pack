@@ -1,6 +1,7 @@
 This is a research machine that contains:
 
 	Z80 or 8080 CPU
+	optional Z80/8080 ICE
 	64 KB RAM
 	UART for serial communication with a terminal
 
