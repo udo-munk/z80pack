@@ -103,9 +103,13 @@ unsigned long long get_clock_us(void)
 	return to_us_since_boot(get_absolute_time());
 }
 
+/*
+ * provide terminal input function that works like fgets()
+ * on POSIX systems
+ */
 char *term_in(char *buf, int len, FILE *stream)
 {
-	register int i = 0;
+	int i = 0;
 	char c;
 
 	while (i < len - 1) {
