@@ -49,7 +49,7 @@ int main(void)
 	gpio_set_dir(LED, GPIO_OUT);
 #endif
 
-	printf("Z80pack release %s, %s\n", RELEASE, COPYR);
+	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
 
 	f_flag = CPU_SPEED;
