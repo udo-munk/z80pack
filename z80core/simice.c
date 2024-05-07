@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2022 by Udo Munk
+ * Copyright (C) 1987-2024 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
@@ -11,7 +11,7 @@
  *	the Mostek ICE we were using in the 80th and 90th.
  *	Only feature missing is hardware breakpoint, because here in software
  *	we need to compare addresses at every memory access. This needs to be
- *	implemented with conditional compilimg sometime.
+ *	implemented with conditional compiling sometime.
  *	bh address,access mode, where access mode is r, w or x.
  *	If I remember right one could set access mode to combinations like
  *	rw, so that it would break on every read or write access to an
