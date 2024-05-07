@@ -113,6 +113,9 @@ char *term_in(char *buf, int len, FILE *stream)
 	int i = 0;
 	char c;
 
+	if (stream != stdin) /* we can only support stdin */
+		return NULL; /* if not return error */
+
 	while (i < len - 1) {
 		c = getchar();
 		if (c != '\r') {
