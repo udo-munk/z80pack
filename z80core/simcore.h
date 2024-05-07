@@ -5,6 +5,9 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
+#ifndef SIMCORE_INC
+#define SIMCORE_INC
+
 #define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
 #define RELEASE	"1.38"
 
@@ -105,3 +108,5 @@ struct softbreak {		/* structure of a breakpoint */
  *	macro for declaring unused function parameters
  */
 #define UNUSED(x)	(void) (x)
+
+#endif

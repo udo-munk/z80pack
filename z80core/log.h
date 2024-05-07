@@ -15,6 +15,10 @@
  * 12-JUL-2018	1.0	Initial Release
  *
  */
+
+#ifndef LOG_INC
+#define LOG_INC
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -90,3 +94,5 @@ static inline uint32_t _log_timestamp(void) {
 #define LOGI( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_INFO)    { _log_write(LOG_INFO,    tag, _LOG_FORMAT(I, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGD( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_DEBUG)   { _log_write(LOG_DEBUG,   tag, _LOG_FORMAT(D, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGV( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_VERBOSE) { _log_write(LOG_VERBOSE, tag, _LOG_FORMAT(V, format), _log_timestamp(), tag, ##__VA_ARGS__); }
+
+#endif

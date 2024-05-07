@@ -10,6 +10,9 @@
  *	Declaration of variables in simglb.c
  */
 
+#ifndef SIMGLB_INC
+#define SIMGLB_INC
+
 typedef unsigned long long Tstates_t;	/* uint64 for counting T-states */
 typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
 	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
@@ -87,3 +90,5 @@ extern char	confdir[], conffn[];
 extern char	rompath[];
 
 extern char	parity[];
+
+#endif
