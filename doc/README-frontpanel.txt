@@ -63,8 +63,8 @@ timings and some software won't run correct anymore.
 Some functions of I/O devices such as the emulated SIO boards can be
 configured in the configuration files:
 
-~/z80pack-x.y/imsaisim/conf/iodev.conf
-~/z80pack-x.y/altairsim/conf/iodev.conf
+~/z80pack-x.y/imsaisim/conf/system.conf
+~/z80pack-x.y/altairsim/conf/system.conf
 
 These configuration files include comments, usage of the options should
 be obvious.
