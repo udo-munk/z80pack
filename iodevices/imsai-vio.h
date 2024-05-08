@@ -21,4 +21,9 @@
  * 05-NOV-2019 use correct memory access function
  */
 
+#ifndef IMSAI_VIO_INC
+#define IMSAI_VIO_INC
+
 extern void imsai_vio_init(void), imsai_vio_off(void);
+
+#endif

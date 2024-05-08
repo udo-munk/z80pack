@@ -4,6 +4,9 @@
  *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
+#ifndef Z80A_INC
+#define Z80A_INC
+
 /*
  *	OS dependent definitions
  */
@@ -277,3 +280,5 @@ struct sym {
 #define IS_SPC(c)	(ctype[(BYTE) (c)] & C_SPC)
 /* don't use parameters with side-effects with this! */
 #define TO_UPP(c)	((ctype[(BYTE) (c)] & C_LOW) ? ((c) - 32) : (c))
+
+#endif

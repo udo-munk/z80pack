@@ -12,6 +12,9 @@
  * 04-NOV-2019 add functions for direct memory access
  */
 
+#ifndef MEMORY_INC
+#define MEMORY_INC
+
 extern void init_memory(void);
 extern BYTE memory[];
 
@@ -53,3 +56,5 @@ static inline BYTE getmem(WORD addr)
 {
 	return (memory[addr]);
 }
+
+#endif

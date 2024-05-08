@@ -25,6 +25,9 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
+#ifndef SIM_INC
+#define SIM_INC
+
 /*
  *	The following defines may be activated, commented or modified
  *	by user for her/his own purpose.
@@ -77,3 +80,5 @@ extern void sleep_ms(int);
 		"2018-2021 by David McNaughton"
 
 #include "simcore.h"
+
+#endif

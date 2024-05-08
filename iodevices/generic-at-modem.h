@@ -14,6 +14,8 @@
  * 17-JUL-2020	1.5	Added/Updated AT$ help, ATE, ATQ, AT&A1 cmds, MODEM.init string
  */
 
+#ifndef GENERIC_AT_MODEM_INC
+#define GENERIC_AT_MODEM_INC
 
 extern int modem_device_alive(int);
 extern int modem_device_poll(int);
@@ -23,3 +25,5 @@ extern int modem_device_carrier(int);
 extern void modem_device_init(void);
 
 #define DEV_SIO2B 0
+
+#endif

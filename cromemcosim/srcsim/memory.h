@@ -18,6 +18,9 @@
  * 02-SEP-2021 implement banked ROM
  */
 
+#ifndef MEMORY_INC
+#define MEMORY_INC
+
 #ifdef FRONTPANEL
 #include "../../frontpanel/frontpanel.h"
 #endif
@@ -185,3 +188,5 @@ static inline void putmem(WORD addr, BYTE data)
 		*(memory[selbnk] + addr) = data;
 	}
 }
+
+#endif

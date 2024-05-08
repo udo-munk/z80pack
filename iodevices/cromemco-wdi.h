@@ -10,6 +10,9 @@
  *
  */
 
+#ifndef CROMEMCO_WDI_INC
+#define CROMEMCO_WDI_INC
+
 void wdi_init(void);
 void wdi_exit(void);
 
@@ -46,3 +49,5 @@ void cromemco_wdi_ctc0_out(BYTE);
 void cromemco_wdi_ctc1_out(BYTE);
 void cromemco_wdi_ctc2_out(BYTE);
 void cromemco_wdi_ctc3_out(BYTE);
+
+#endif

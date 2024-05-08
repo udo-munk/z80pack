@@ -33,7 +33,12 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
+#ifndef CONFIG_INC
+#define CONFIG_INC
+
 extern void config(void);
 
 extern int  fp_size;
 extern BYTE fp_port;
+
+#endif

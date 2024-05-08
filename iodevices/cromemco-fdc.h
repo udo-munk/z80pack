@@ -38,6 +38,9 @@
  * 02-SEP-2021 implement banked ROM
  */
 
+#ifndef CROMEMCO_FDC_INC
+#define CROMEMCO_FDC_INC
+
 /*
  * disk definitions 5.25"/8" drives, single/double density,
  * single/double sided, write protected
@@ -90,3 +93,5 @@ extern BYTE cromemco_fdc_aux_in(void);
 extern void cromemco_fdc_aux_out(BYTE);
 
 extern void cromemco_fdc_reset(void);
+
+#endif

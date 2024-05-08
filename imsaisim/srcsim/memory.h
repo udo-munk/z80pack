@@ -22,6 +22,9 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
+#ifndef MEMORY_INC
+#define MEMORY_INC
+
 #ifdef FRONTPANEL
 #include "../../frontpanel/frontpanel.h"
 #endif
@@ -229,3 +232,5 @@ static inline void fp_write(WORD addr, BYTE data)
 		*(banks[selbnk] + addr) = data;
 	}
 }
+
+#endif

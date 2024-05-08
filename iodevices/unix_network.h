@@ -14,6 +14,9 @@
  * 14-JUL-2018 use logging
  */
 
+#ifndef UNIX_NETWORK_INC
+#define UNIX_NETWORK_INC
+
 #define TELNET_TIMEOUT 800	/* telnet negotiation timeout in milliseconds */
 
 /* structure for TCP/IP socket connections */
@@ -38,3 +41,5 @@ extern void sigio_tcp_server_socket(int);
 extern struct unix_connectors ucons[];
 
 extern void init_unix_server_socket(struct unix_connectors *, const char *);
+
+#endif

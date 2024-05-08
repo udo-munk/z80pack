@@ -19,6 +19,9 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
+#ifndef MEMORY_INC
+#define MEMORY_INC
+
 #ifdef FRONTPANEL
 #include "../../frontpanel/frontpanel.h"
 #endif
@@ -173,3 +176,5 @@ static inline BYTE fp_read(WORD addr)
 	else
 		return (0xff);
 }
+
+#endif

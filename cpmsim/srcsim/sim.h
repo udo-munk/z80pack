@@ -4,6 +4,9 @@
  * Copyright (C) 1987-2022 by Udo Munk
  */
 
+#ifndef SIM_INC
+#define SIM_INC
+
 /*
  *	The following defines may be activated, commented or modified
  *	by user for her/his own purpose.
@@ -55,3 +58,5 @@ struct dskdef {
 */
 
 #include "simcore.h"
+
+#endif

@@ -13,6 +13,9 @@
  * 25-APR-2024 (Udo Munk) this was a Z80 machine and we can exclude 8080 now
  */
 
+#ifndef SIM_INC
+#define SIM_INC
+
 /*
  *	The following defines may be activated, commented or modified
  *	by user for her/his own purpose.
@@ -47,3 +50,5 @@ extern void sleep_ms(int);
 #define USR_CPR	"by Mike Douglas"
 
 #include "simcore.h"
+
+#endif

@@ -10,6 +10,9 @@
  *
  */
 
+#ifndef CROMEMCO_HAL_INC
+#define CROMEMCO_HAL_INC
+
 enum tuart_port {
 	TUART0A,
 	TUART1A,
@@ -53,3 +56,5 @@ extern int hal_alive(tuart_port_t dev);
 
 extern const char *tuart_port_name[MAX_TUART_PORT];
 extern hal_device_t tuart[MAX_TUART_PORT][MAX_HAL_DEV];
+
+#endif

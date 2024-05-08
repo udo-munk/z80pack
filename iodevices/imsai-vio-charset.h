@@ -11,6 +11,9 @@
  * 06-JAN-2017 Character ROM implemented completely
  */
 
+#ifndef IMSAI_VIO_CHARSET_INC
+#define IMSAI_VIO_CHARSET_INC
+
 /*
  * IMSAI VIO character ROM taken from the manual, positive logic
  */
@@ -3089,3 +3092,5 @@ static char charset[256][10][7] = {
 		{ 1,0,0,1,0,0,0 }
 	}
 };
+
+#endif

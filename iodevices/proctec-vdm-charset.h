@@ -11,6 +11,9 @@
  * 24-FEB-2017 Character ROM implemented completely
  */
 
+#ifndef PROCTEC_VDM_CHARSET_INC
+#define PROCTEC_VDM_CHARSET_INC
+
 /*
  * Processor Technology VDM-1 character ROM 6574 taken from the manual
  */
@@ -1936,3 +1939,5 @@ char charset[128][13][9] = {
 		{ 0,0,0,0,0,0,0,0,0 }
 	}
 };
+
+#endif

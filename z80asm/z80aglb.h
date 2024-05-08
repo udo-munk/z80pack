@@ -4,6 +4,9 @@
  *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
+#ifndef Z80AGLB_INC
+#define Z80AGLB_INC
+
 /*
  *	global variable declarations
  */
@@ -67,3 +70,5 @@ extern FILE	*srcfp,
 		*objfp,
 		*lstfp,
 		*errfp;
+
+#endif

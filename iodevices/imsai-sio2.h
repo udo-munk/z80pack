@@ -34,6 +34,9 @@
  * 01-AUG-2021 integrated HAL
  */
 
+#ifndef IMSAI_SIO2_INC
+#define IMSAI_SIO2_INC
+
 extern BYTE imsai_sio_nofun_in(void);
 extern void imsai_sio_nofun_out(BYTE);
 
@@ -60,4 +63,6 @@ extern BYTE imsai_sio2b_status_in(void);
 extern void imsai_sio2b_status_out(BYTE);
 extern BYTE imsai_sio2b_data_in(void);
 extern void imsai_sio2b_data_out(BYTE);
+#endif
+
 #endif
