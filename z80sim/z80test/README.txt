@@ -3,7 +3,7 @@ https://github.com/raxoft/z80test, which was written for the
 ZX Spectrum, to run on z80sim.
 
 Unfortunately z80asm can't assemble the sources, because they
-use a completely different macro facility and other have syntactic
+use a completely different macro facility and have other syntactic
 differences from classic Z80 assembler.
 
 One needs to download sjasm from https://xl2s.tk/ .
