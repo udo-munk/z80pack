@@ -57,6 +57,7 @@ $(LIB): $(OBJS)
 build: _rm_obj all
 
 clean: _rm_obj _rm_deps
+	rm -f $(LIB)
 
 _rm_obj:
 	rm -f *.o
@@ -65,6 +66,5 @@ _rm_deps:
 	rm -f *.d
 
 allclean: clean
-	rm -f $(LIB)
 
 .PHONY: all build clean allclean
