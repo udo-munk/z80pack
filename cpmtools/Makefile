@@ -2,7 +2,7 @@
 TOOLS = r.com w.com bye.com reset.com sw8080.com swz80.com
 
 # CPU tests by various authors, modified for using the CPU switch feature
-CPUTESTS = ex8080.com exz80doc.com prelim.com zexdoc.com 8080pre.com test8080.com
+CPUTESTS = ex8080.com exz80doc.com exz80all.com prelim.com 8080pre.com test8080.com
 
 all: $(TOOLS) $(CPUTESTS)
 	@echo
@@ -33,10 +33,10 @@ ex8080.com: ex.mac
 exz80doc.com: ex.mac
 	z80asm -dexz80doc -fb -l$(@:.com=.lis) -sn -p0 -o$@ $<
 
-prelim.com: prelim.mac
-	z80asm -fb -l -sn -p0 -o$@ $<
+exz80all.com: ex.mac
+	z80asm -dexz80all -fb -l$(@:.com=.lis) -sn -p0 -o$@ $<
 
-zexdoc.com: zexdoc.mac
+prelim.com: prelim.mac
 	z80asm -fb -l -sn -p0 -o$@ $<
 
 8080pre.com: 8080pre.mac
