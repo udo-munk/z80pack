@@ -10,10 +10,7 @@ swz80.asm     Switch to Z80 mode
 The rest are CPU test tools by various authors modified for using the z80pack
 CPU switch feature.
 
-prelim.mac    Testing a Z80 CPU
-zexdoc.mac
-ex.mac
-
+prelim.mac    Testing a Z80 CPU for basic functionality
+ex.mac        More advanced Z80 or 8080 CPU testing
+8080pre.mac   Testing a 8080 CPU for basic functionality
 test8080.asm  Testing a 8080 CPU
-8080pre.mac
-8080ex.mac

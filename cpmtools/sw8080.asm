@@ -28,8 +28,7 @@ unlckd:	mvi	a,set8080	; switch to 8080 mode
 	jmp	domsg
 a8080:	lxi	d,is8080
 domsg:	mvi	c,9
-	call	bdos
-	jmp	wboot
+	jmp	bdos
 
 is8080:	db	'Already in 8080 mode$'
 sw8080:	db	'Switched to 8080 mode$'

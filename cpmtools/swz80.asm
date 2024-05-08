@@ -28,8 +28,7 @@ unlckd:	mvi	a,setz80	; switch to Z80 mode
 	jmp	domsg
 az80:	lxi	d,isz80
 domsg:	mvi	c,9
-	call	bdos
-	jmp	wboot
+	jmp	bdos
 
 isz80:	db	'Already in Z80 mode$'
 swz80:	db	'Switched to Z80 mode$'
