@@ -26,6 +26,9 @@
  * 14-JUL-2022 added generic AT modem and HAL
  */
 
+#ifndef SIM_INC
+#define SIM_INC
+
 /*
  *	The following defines may be activated, commented or modified
  *	by user for her/his own purpose.
@@ -76,3 +79,5 @@ extern void sleep_ms(int);
 		"2021-2022 by David McNaughton"
 
 #include "simcore.h"
+
+#endif

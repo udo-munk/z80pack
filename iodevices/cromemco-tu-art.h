@@ -22,6 +22,9 @@
  * 06-SEP-2021 implement reset
  */
 
+#ifndef CROMEMCO_TU_ART_INC
+#define CROMEMCO_TU_ART_INC
+
 extern BYTE cromemco_tuart_0a_status_in(void);
 extern void cromemco_tuart_0a_baud_out(BYTE);
 
@@ -88,3 +91,5 @@ extern void cromemco_tuart_1b_parallel_out(BYTE);
 extern int uart1b_int_mask, uart1b_int, uart1b_int_pending;
 extern int uart1b_sense, uart1b_lpt_busy;
 extern int uart1b_tbe, uart1b_rda;
+
+#endif

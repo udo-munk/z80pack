@@ -1,3 +1,6 @@
+#ifndef DISKS_INC
+#define DISKS_INC
+
 #include "cromemco-fdc.h"
 
 #ifdef HAS_DISKMANAGER
@@ -12,5 +15,7 @@
 extern Diskdef  disks[];
 
 #define DISKNAME(A) disks[A].fn
+
+#endif
 
 #endif

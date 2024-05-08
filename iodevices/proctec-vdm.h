@@ -14,5 +14,10 @@
  * 15-JUL-2018 use logging
  */
 
+#ifndef PROCTEC_VDM_INC
+#define PROCTEC_VDM_INC
+
 extern void proctec_vdm_out(BYTE);
 extern void proctec_vdm_off(void);
+
+#endif

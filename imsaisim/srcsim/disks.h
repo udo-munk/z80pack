@@ -1,3 +1,6 @@
+#ifndef DISKS_INC
+#define DISKS_INC
+
 #include "imsai-fif.h"
 
 #ifdef HAS_DISKMANAGER
@@ -12,5 +15,7 @@
 extern char *disks[];
 
 #define DISKNAME(A) disks[A]
+
+#endif
 
 #endif

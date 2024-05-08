@@ -10,6 +10,9 @@
  *
  */
 
+#ifndef IMSAI_HAL_INC
+#define IMSAI_HAL_INC
+
 enum sio_port {
 	SIO1A,
 	SIO1B,
@@ -52,3 +55,5 @@ extern int hal_carrier_detect(sio_port_t sio);
 
 extern const char *sio_port_name[MAX_SIO_PORT];
 extern hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];
+
+#endif

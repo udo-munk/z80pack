@@ -25,8 +25,13 @@
  * 04-NOV-2019 remove fake DMA bus request
  */
 
+#ifndef CROMEMCO_DAZZLER_INC
+#define CROMEMCO_DAZZLER_INC
+
 void cromemco_dazzler_ctl_out(BYTE);
 BYTE cromemco_dazzler_flags_in(void);
 void cromemco_dazzler_format_out(BYTE);
 
 void cromemco_dazzler_off(void);
+
+#endif

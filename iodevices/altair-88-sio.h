@@ -22,6 +22,9 @@
  * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
+#ifndef ALTAIR_88_SIO_INC
+#define ALTAIR_88_SIO_INC
+
 extern BYTE altair_sio0_status_in(void);
 extern void altair_sio0_status_out(BYTE);
 extern BYTE altair_sio0_data_in(void);
@@ -31,3 +34,5 @@ extern BYTE altair_sio3_status_in(void);
 extern void altair_sio3_status_out(BYTE);
 extern BYTE altair_sio3_data_in(void);
 extern void altair_sio3_data_out(BYTE);
+
+#endif

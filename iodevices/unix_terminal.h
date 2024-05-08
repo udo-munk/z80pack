@@ -16,9 +16,14 @@
  * 24-FEB-2017 set line discipline only if fd 0 is a tty
  */
 
+#ifndef UNIX_TERMINAL_INC
+#define UNIX_TERMINAL_INC
+
 #include <termios.h>
 
 extern struct termios old_term, new_term;
 
 extern void set_unix_terminal(void);
 extern void reset_unix_terminal(void);
+
+#endif

@@ -9,6 +9,9 @@
  * 14-JAN-2020	1.0	Initial Release
  */
 
+#ifndef CROMEMCO_DPLUS7A_INC
+#define CROMEMCO_DPLUS7A_INC
+
 extern void cromemco_d7a_init(void);
 
 extern void cromemco_d7a_D_out(BYTE);
@@ -28,3 +31,5 @@ extern BYTE cromemco_d7a_A4_in(void);
 extern BYTE cromemco_d7a_A5_in(void);
 extern BYTE cromemco_d7a_A6_in(void);
 extern BYTE cromemco_d7a_A7_in(void);
+
+#endif

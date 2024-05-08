@@ -9,6 +9,9 @@
  * 23-APR-2024 derived from z80sim
  */
 
+#ifndef MEMORY_INC
+#define MEMORY_INC
+
 extern void init_memory(void);
 extern BYTE code[];
 
@@ -50,3 +53,5 @@ static inline BYTE getmem(WORD addr)
 {
 	return (code[addr]);
 }
+
+#endif

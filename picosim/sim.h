@@ -6,6 +6,9 @@
  * This is the configuration for a Raspberry Pico (W) board
  */
 
+#ifndef SIM_INC
+#define SIM_INC
+
 #define PICO 1		/* board we use, 0 for Pico 1 for Pico W */
 
 #define DEF_CPU Z80	/* CPU (Z80 or I8080) */
@@ -30,3 +33,5 @@ extern void sleep_ms();
 #define USR_CPR "Copyright (C) 2024 by Udo Munk"
  
 #include "simcore.h"
+
+#endif

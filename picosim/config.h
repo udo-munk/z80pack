@@ -10,4 +10,9 @@
  * 23-APR-2024 dummy, no configuration implemented yet
  */
 
+#ifndef CONFIG_INC
+#define CONFIG_INC
+
 extern void config(void);
+
+#endif
