@@ -31,6 +31,10 @@ extern BYTE	A, B, C, D, E, H, L;
 extern int	F;
 #ifndef EXCLUDE_Z80
 extern WORD	IX, IY;
+#ifdef UNDOC_FLAGS
+extern WORD	WZ;
+extern int	modF, pmodF;
+#endif
 extern BYTE	A_, B_, C_, D_, E_, H_, L_, I, R, R_;
 extern int	F_;
 #endif

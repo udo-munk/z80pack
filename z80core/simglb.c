@@ -26,6 +26,10 @@ BYTE A, B, C, D, E, H, L;	/* primary registers */
 int  F;				/* normally 8-Bit, but int is faster */
 #ifndef EXCLUDE_Z80
 WORD IX, IY;			/* Z80 index registers */
+#ifdef UNDOC_FLAGS
+WORD WZ;			/* Z80 internal register */
+int  modF, pmodF;		/* current/previous instr manipulated F */
+#endif
 BYTE A_, B_, C_, D_, E_, H_, L_; /* Z80 alternate registers */
 BYTE I;				/* Z80 interrupt register */
 BYTE R;				/* Z80 refresh register (7-bit counter) */
