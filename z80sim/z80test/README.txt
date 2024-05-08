@@ -3,14 +3,14 @@ https://github.com/raxoft/z80test, which was written for the
 ZX Spectrum, to run on z80sim.
 
 Unfortunately z80asm can't assemble the sources, because they
-use a completely different macro facility and other syntactic
+use a completely different macro facility and other have syntactic
 differences from classic Z80 assembler.
 
 One needs to download sjasm from https://xl2s.tk/ .
 
 bin2hex from z80pack-x.x/cpmsim/srctools must also be installed.
 
-The patches contained here are:
+The patches are:
 
 z80sim.patch           adds an I/O port 254 that always reads 0xbf
 		       like on a ZX Spectrum
