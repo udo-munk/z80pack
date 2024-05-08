@@ -54,6 +54,9 @@ void init_cpu(void)
 	F_ = rand() % 256;
 	IX = rand() % 65536;
 	IY = rand() % 65536;
+#ifdef UNDOC_FLAGS
+	WZ = rand() % 65536;
+#endif
 #endif
 
 #ifndef EXCLUDE_I8080

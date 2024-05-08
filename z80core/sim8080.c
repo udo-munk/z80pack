@@ -2663,13 +2663,10 @@ static int op_jz(void)			/* JZ nn */
 {
 	register WORD i;
 
-	if (F & Z_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (F & Z_FLAG)
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
@@ -2677,13 +2674,10 @@ static int op_jnz(void)			/* JNZ nn */
 {
 	register WORD i;
 
-	if (!(F & Z_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (!(F & Z_FLAG))
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
@@ -2691,13 +2685,10 @@ static int op_jc(void)			/* JC nn */
 {
 	register WORD i;
 
-	if (F & C_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (F & C_FLAG)
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
@@ -2705,13 +2696,10 @@ static int op_jnc(void)			/* JNC nn */
 {
 	register WORD i;
 
-	if (!(F & C_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (!(F & C_FLAG))
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
@@ -2719,13 +2707,10 @@ static int op_jpe(void)			/* JPE nn */
 {
 	register WORD i;
 
-	if (F & P_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (F & P_FLAG)
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
@@ -2733,13 +2718,10 @@ static int op_jpo(void)			/* JPO nn */
 {
 	register WORD i;
 
-	if (!(F & P_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (!(F & P_FLAG))
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
@@ -2747,13 +2729,10 @@ static int op_jm(void)			/* JM nn */
 {
 	register WORD i;
 
-	if (F & S_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (F & S_FLAG)
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
@@ -2761,179 +2740,169 @@ static int op_jp(void)			/* JP nn */
 {
 	register WORD i;
 
-	if (!(F & S_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
+	if (!(F & S_FLAG))
 		PC = i;
-	} else {
-		PC += 2;
-	}
 	return (10);
 }
 
 static int op_cz(void)			/* CZ nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (F & Z_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_cnz(void)			/* CNZ nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (!(F & Z_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_cc(void)			/* CC nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (F & C_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_cnc(void)			/* CNC nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (!(F & C_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_cpe(void)			/* CPE nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (F & P_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_cpo(void)			/* CPO nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (!(F & P_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_cm(void)			/* CM nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (F & S_FLAG) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_cp(void)			/* CP nn */
 {
 	register WORD i;
+	register int t = 11;
 
+	i = memrdr(PC++);
+	i += memrdr(PC++) << 8;
 	if (!(F & S_FLAG)) {
-		i = memrdr(PC++);
-		i += memrdr(PC++) << 8;
 #ifdef BUS_8080
 		cpu_bus = CPU_STACK;
 #endif
 		memwrt(--SP, PC >> 8);
 		memwrt(--SP, PC);
 		PC = i;
-		return (17);
-	} else {
-		PC += 2;
-		return (11);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rz(void)			/* RZ */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (F & Z_FLAG) {
 #ifdef BUS_8080
@@ -2942,15 +2911,15 @@ static int op_rz(void)			/* RZ */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rnz(void)			/* RNZ */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (!(F & Z_FLAG)) {
 #ifdef BUS_8080
@@ -2959,15 +2928,15 @@ static int op_rnz(void)			/* RNZ */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rc(void)			/* RC */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (F & C_FLAG) {
 #ifdef BUS_8080
@@ -2976,15 +2945,15 @@ static int op_rc(void)			/* RC */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rnc(void)			/* RNC */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (!(F & C_FLAG)) {
 #ifdef BUS_8080
@@ -2993,15 +2962,15 @@ static int op_rnc(void)			/* RNC */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rpe(void)			/* RPE */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (F & P_FLAG) {
 #ifdef BUS_8080
@@ -3010,15 +2979,15 @@ static int op_rpe(void)			/* RPE */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rpo(void)			/* RPO */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (!(F & P_FLAG)) {
 #ifdef BUS_8080
@@ -3027,15 +2996,15 @@ static int op_rpo(void)			/* RPO */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rm(void)			/* RM */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (F & S_FLAG) {
 #ifdef BUS_8080
@@ -3044,15 +3013,15 @@ static int op_rm(void)			/* RM */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rp(void)			/* RP */
 {
 	register WORD i;
+	register int t = 5;
 
 	if (!(F & S_FLAG)) {
 #ifdef BUS_8080
@@ -3061,10 +3030,9 @@ static int op_rp(void)			/* RP */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
-		return (11);
-	} else {
-		return (5);
+		t += 6;
 	}
+	return (t);
 }
 
 static int op_rst0(void)		/* RST 0 */

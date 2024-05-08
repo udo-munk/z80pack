@@ -393,174 +393,342 @@ static int trap_ddcb(int data)
 
 static int op_tb0ixd(int data)		/* BIT 0,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IX + data) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb1ixd(int data)		/* BIT 1,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IX + data) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb2ixd(int data)		/* BIT 2,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IX + data) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb3ixd(int data)		/* BIT 3,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IX + data) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb4ixd(int data)		/* BIT 4,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IX + data) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
-				 : (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb5ixd(int data)		/* BIT 5,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IX + data) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
-				 : (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb6ixd(int data)		/* BIT 6,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IX + data) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
-				 : (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb7ixd(int data)		/* BIT 7,(IX+d) */
 {
+	WORD addr;
+
+	addr = IX + data;
 	F &= ~N_FLAG;
 	F |= H_FLAG;
-	if (memrdr(IX + data) & 128) {
+	if (memrdr(addr) & 128) {
 		F &= ~(Z_FLAG | P_FLAG);
 		F |= S_FLAG;
 	} else {
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_rb0ixd(int data)		/* RES 0,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~1);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~1);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb1ixd(int data)		/* RES 1,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~2);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~2);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb2ixd(int data)		/* RES 2,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~4);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~4);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb3ixd(int data)		/* RES 3,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~8);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~8);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb4ixd(int data)		/* RES 4,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~16);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~16);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb5ixd(int data)		/* RES 5,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~32);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~32);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb6ixd(int data)		/* RES 6,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~64);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~64);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb7ixd(int data)		/* RES 7,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) & ~128);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) & ~128);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb0ixd(int data)		/* SET 0,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 1);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 1);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb1ixd(int data)		/* SET 1,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 2);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 2);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb2ixd(int data)		/* SET 2,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 4);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 4);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb3ixd(int data)		/* SET 3,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 8);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 8);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb4ixd(int data)		/* SET 4,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 16);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 16);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb5ixd(int data)		/* SET 5,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 32);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 32);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb6ixd(int data)		/* SET 6,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 64);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 64);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb7ixd(int data)		/* SET 7,(IX+d) */
 {
-	memwrt(IX + data, memrdr(IX + data) | 128);
+	WORD addr;
+
+	addr = IX + data;
+	memwrt(addr, memrdr(addr) | 128);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
@@ -581,6 +749,12 @@ static int op_rlcixd(int data)		/* RLC (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -601,6 +775,12 @@ static int op_rrcixd(int data)		/* RRC (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -621,6 +801,12 @@ static int op_rlixd(int data)		/* RL (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -641,6 +827,12 @@ static int op_rrixd(int data)		/* RR (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -658,6 +850,12 @@ static int op_slaixd(int data)		/* SLA (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -677,6 +875,12 @@ static int op_sraixd(int data)		/* SRA (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -694,6 +898,12 @@ static int op_srlixd(int data)		/* SRL (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -771,1121 +981,1793 @@ static int op_undoc_tb7ixd(int data)	/* BIT 7,(IX+d) */
 
 static int op_undoc_rb0ixda(int data)	/* RES 0,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~1;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~1;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1ixda(int data)	/* RES 1,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~2;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~2;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2ixda(int data)	/* RES 2,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~4;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~4;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3ixda(int data)	/* RES 3,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~8;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~8;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4ixda(int data)	/* RES 4,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~16;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~16;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5ixda(int data)	/* RES 5,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~32;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~32;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6ixda(int data)	/* RES 6,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~64;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~64;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7ixda(int data)	/* RES 7,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) & ~128;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) & ~128;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0ixdb(int data)	/* RES 0,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~1;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~1;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1ixdb(int data)	/* RES 1,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~2;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~2;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2ixdb(int data)	/* RES 2,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~4;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~4;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3ixdb(int data)	/* RES 3,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~8;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~8;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4ixdb(int data)	/* RES 4,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~16;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~16;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5ixdb(int data)	/* RES 5,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~32;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~32;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6ixdb(int data)	/* RES 6,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~64;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~64;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7ixdb(int data)	/* RES 7,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) & ~128;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) & ~128;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0ixdc(int data)	/* RES 0,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~1;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~1;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1ixdc(int data)	/* RES 1,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~2;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~2;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2ixdc(int data)	/* RES 2,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~4;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~4;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3ixdc(int data)	/* RES 3,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~8;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~8;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4ixdc(int data)	/* RES 4,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~16;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~16;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5ixdc(int data)	/* RES 5,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~32;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~32;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6ixdc(int data)	/* RES 6,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~64;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~64;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7ixdc(int data)	/* RES 7,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) & ~128;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) & ~128;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0ixdd(int data)	/* RES 0,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~1;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~1;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1ixdd(int data)	/* RES 1,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~2;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~2;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2ixdd(int data)	/* RES 2,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~4;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~4;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3ixdd(int data)	/* RES 3,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~8;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~8;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4ixdd(int data)	/* RES 4,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~16;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~16;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5ixdd(int data)	/* RES 5,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~32;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~32;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6ixdd(int data)	/* RES 6,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~64;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~64;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7ixdd(int data)	/* RES 7,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) & ~128;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) & ~128;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0ixde(int data)	/* RES 0,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~1;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~1;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1ixde(int data)	/* RES 1,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~2;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~2;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2ixde(int data)	/* RES 2,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~4;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~4;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3ixde(int data)	/* RES 3,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~8;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~8;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4ixde(int data)	/* RES 4,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~16;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~16;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5ixde(int data)	/* RES 5,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~32;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~32;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6ixde(int data)	/* RES 6,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~64;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~64;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7ixde(int data)	/* RES 7,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) & ~128;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) & ~128;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0ixdh(int data)	/* RES 0,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~1;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~1;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1ixdh(int data)	/* RES 1,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~2;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~2;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2ixdh(int data)	/* RES 2,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~4;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~4;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3ixdh(int data)	/* RES 3,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~8;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~8;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4ixdh(int data)	/* RES 4,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~16;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~16;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5ixdh(int data)	/* RES 5,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~32;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~32;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6ixdh(int data)	/* RES 6,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~64;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~64;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7ixdh(int data)	/* RES 7,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) & ~128;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) & ~128;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0ixdl(int data)	/* RES 0,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~1;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~1;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1ixdl(int data)	/* RES 1,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~2;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~2;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2ixdl(int data)	/* RES 2,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~4;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~4;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3ixdl(int data)	/* RES 3,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~8;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~8;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4ixdl(int data)	/* RES 4,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~16;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~16;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5ixdl(int data)	/* RES 5,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~32;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~32;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6ixdl(int data)	/* RES 6,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~64;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~64;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7ixdl(int data)	/* RES 7,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) & ~128;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) & ~128;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0ixda(int data)	/* SET 0,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 1;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 1;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1ixda(int data)	/* SET 1,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 2;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 2;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2ixda(int data)	/* SET 2,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 4;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 4;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3ixda(int data)	/* SET 3,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 8;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 8;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4ixda(int data)	/* SET 4,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 16;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 16;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5ixda(int data)	/* SET 5,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 32;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 32;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6ixda(int data)	/* SET 6,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 64;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 64;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7ixda(int data)	/* SET 7,(IX+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	A = memrdr(IX + data) | 128;
-	memwrt(IX + data, A);
+	addr = IX + data;
+	A = memrdr(addr) | 128;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0ixdb(int data)	/* SET 0,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 1;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 1;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1ixdb(int data)	/* SET 1,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 2;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 2;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2ixdb(int data)	/* SET 2,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 4;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 4;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3ixdb(int data)	/* SET 3,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 8;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 8;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4ixdb(int data)	/* SET 4,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 16;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 16;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5ixdb(int data)	/* SET 5,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 32;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 32;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6ixdb(int data)	/* SET 6,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 64;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 64;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7ixdb(int data)	/* SET 7,(IX+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	B = memrdr(IX + data) | 128;
-	memwrt(IX + data, B);
+	addr = IX + data;
+	B = memrdr(addr) | 128;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0ixdc(int data)	/* SET 0,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 1;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 1;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1ixdc(int data)	/* SET 1,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 2;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 2;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2ixdc(int data)	/* SET 2,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 4;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 4;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3ixdc(int data)	/* SET 3,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 8;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 8;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4ixdc(int data)	/* SET 4,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 16;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 16;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5ixdc(int data)	/* SET 5,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 32;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 32;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6ixdc(int data)	/* SET 6,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 64;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 64;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7ixdc(int data)	/* SET 7,(IX+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	C = memrdr(IX + data) | 128;
-	memwrt(IX + data, C);
+	addr = IX + data;
+	C = memrdr(addr) | 128;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0ixdd(int data)	/* SET 0,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 1;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 1;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1ixdd(int data)	/* SET 1,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 2;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 2;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2ixdd(int data)	/* SET 2,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 4;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 4;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3ixdd(int data)	/* SET 3,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 8;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 8;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4ixdd(int data)	/* SET 4,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 16;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 16;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5ixdd(int data)	/* SET 5,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 32;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 32;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6ixdd(int data)	/* SET 6,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 64;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 64;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7ixdd(int data)	/* SET 7,(IX+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	D = memrdr(IX + data) | 128;
-	memwrt(IX + data, D);
+	addr = IX + data;
+	D = memrdr(addr) | 128;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0ixde(int data)	/* SET 0,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 1;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 1;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1ixde(int data)	/* SET 1,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 2;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 2;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2ixde(int data)	/* SET 2,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 4;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 4;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3ixde(int data)	/* SET 3,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 8;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 8;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4ixde(int data)	/* SET 4,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 16;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 16;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5ixde(int data)	/* SET 5,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 32;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 32;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6ixde(int data)	/* SET 6,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 64;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 64;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7ixde(int data)	/* SET 7,(IX+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	E = memrdr(IX + data) | 128;
-	memwrt(IX + data, E);
+	addr = IX + data;
+	E = memrdr(addr) | 128;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0ixdh(int data)	/* SET 0,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 1;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 1;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1ixdh(int data)	/* SET 1,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 2;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 2;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2ixdh(int data)	/* SET 2,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 4;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 4;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3ixdh(int data)	/* SET 3,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 8;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 8;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4ixdh(int data)	/* SET 4,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 16;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 16;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5ixdh(int data)	/* SET 5,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 32;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 32;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6ixdh(int data)	/* SET 6,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 64;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 64;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7ixdh(int data)	/* SET 7,(IX+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	H = memrdr(IX + data) | 128;
-	memwrt(IX + data, H);
+	addr = IX + data;
+	H = memrdr(addr) | 128;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0ixdl(int data)	/* SET 0,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 1;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 1;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1ixdl(int data)	/* SET 1,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 2;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 2;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2ixdl(int data)	/* SET 2,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 4;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 4;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3ixdl(int data)	/* SET 3,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 8;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 8;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4ixdl(int data)	/* SET 4,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 16;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 16;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5ixdl(int data)	/* SET 5,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 32;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 32;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6ixdl(int data)	/* SET 6,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 64;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 64;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7ixdl(int data)	/* SET 7,(IX+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_ddcb(0));
 
-	L = memrdr(IX + data) | 128;
-	memwrt(IX + data, L);
+	addr = IX + data;
+	L = memrdr(addr) | 128;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
@@ -1908,6 +2790,12 @@ static int op_undoc_rlcixda(int data)	/* RLC (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1930,6 +2818,12 @@ static int op_undoc_rlcixdb(int data)	/* RLC (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1952,6 +2846,12 @@ static int op_undoc_rlcixdc(int data)	/* RLC (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1974,6 +2874,12 @@ static int op_undoc_rlcixdd(int data)	/* RLC (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1996,6 +2902,12 @@ static int op_undoc_rlcixde(int data)	/* RLC (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2018,6 +2930,12 @@ static int op_undoc_rlcixdh(int data)	/* RLC (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2040,6 +2958,12 @@ static int op_undoc_rlcixdl(int data)	/* RLC (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2062,6 +2986,12 @@ static int op_undoc_rrcixda(int data)	/* RRC (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2084,6 +3014,12 @@ static int op_undoc_rrcixdb(int data)	/* RRC (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2106,6 +3042,12 @@ static int op_undoc_rrcixdc(int data)	/* RRC (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2128,6 +3070,12 @@ static int op_undoc_rrcixdd(int data)	/* RRC (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2150,6 +3098,12 @@ static int op_undoc_rrcixde(int data)	/* RRC (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2172,6 +3126,12 @@ static int op_undoc_rrcixdh(int data)	/* RRC (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2194,6 +3154,12 @@ static int op_undoc_rrcixdl(int data)	/* RRC (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2216,6 +3182,12 @@ static int op_undoc_rlixda(int data)	/* RL (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2238,6 +3210,12 @@ static int op_undoc_rlixdb(int data)	/* RL (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2260,6 +3238,12 @@ static int op_undoc_rlixdc(int data)	/* RL (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2282,6 +3266,12 @@ static int op_undoc_rlixdd(int data)	/* RL (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2304,6 +3294,12 @@ static int op_undoc_rlixde(int data)	/* RL (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2326,6 +3322,12 @@ static int op_undoc_rlixdh(int data)	/* RL (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2348,6 +3350,12 @@ static int op_undoc_rlixdl(int data)	/* RL (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2370,6 +3378,12 @@ static int op_undoc_rrixda(int data)	/* RR (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2392,6 +3406,12 @@ static int op_undoc_rrixdb(int data)	/* RR (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2414,6 +3434,12 @@ static int op_undoc_rrixdc(int data)	/* RR (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2436,6 +3462,12 @@ static int op_undoc_rrixdd(int data)	/* RR (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2458,6 +3490,12 @@ static int op_undoc_rrixde(int data)	/* RR (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2480,6 +3518,12 @@ static int op_undoc_rrixdh(int data)	/* RR (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2502,6 +3546,12 @@ static int op_undoc_rrixdl(int data)	/* RR (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2521,6 +3571,12 @@ static int op_undoc_slaixda(int data)	/* SLA (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2540,6 +3596,12 @@ static int op_undoc_slaixdb(int data)	/* SLA (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2559,6 +3621,12 @@ static int op_undoc_slaixdc(int data)	/* SLA (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2578,6 +3646,12 @@ static int op_undoc_slaixdd(int data)	/* SLA (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2597,6 +3671,12 @@ static int op_undoc_slaixde(int data)	/* SLA (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2616,6 +3696,12 @@ static int op_undoc_slaixdh(int data)	/* SLA (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2635,6 +3721,12 @@ static int op_undoc_slaixdl(int data)	/* SLA (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2656,6 +3748,12 @@ static int op_undoc_sraixda(int data)	/* SRA (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2677,6 +3775,12 @@ static int op_undoc_sraixdb(int data)	/* SRA (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2698,6 +3802,12 @@ static int op_undoc_sraixdc(int data)	/* SRA (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2719,6 +3829,12 @@ static int op_undoc_sraixdd(int data)	/* SRA (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2740,6 +3856,12 @@ static int op_undoc_sraixde(int data)	/* SRA (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2761,6 +3883,12 @@ static int op_undoc_sraixdh(int data)	/* SRA (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2782,6 +3910,12 @@ static int op_undoc_sraixdl(int data)	/* SRA (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2801,6 +3935,12 @@ static int op_undoc_sllixda(int data)	/* SLL (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2820,6 +3960,12 @@ static int op_undoc_sllixdb(int data)	/* SLL (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2839,6 +3985,12 @@ static int op_undoc_sllixdc(int data)	/* SLL (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2858,6 +4010,12 @@ static int op_undoc_sllixdd(int data)	/* SLL (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2877,6 +4035,12 @@ static int op_undoc_sllixde(int data)	/* SLL (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2896,6 +4060,12 @@ static int op_undoc_sllixdh(int data)	/* SLL (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2915,6 +4085,12 @@ static int op_undoc_sllixdl(int data)	/* SLL (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2935,6 +4111,12 @@ static int op_undoc_sllixd(int data)	/* SLL (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2954,6 +4136,12 @@ static int op_undoc_srlixda(int data)	/* SRL (IX+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2973,6 +4161,12 @@ static int op_undoc_srlixdb(int data)	/* SRL (IX+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2992,6 +4186,12 @@ static int op_undoc_srlixdc(int data)	/* SRL (IX+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3011,6 +4211,12 @@ static int op_undoc_srlixdd(int data)	/* SRL (IX+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3030,6 +4236,12 @@ static int op_undoc_srlixde(int data)	/* SRL (IX+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3049,6 +4261,12 @@ static int op_undoc_srlixdh(int data)	/* SRL (IX+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3068,6 +4286,12 @@ static int op_undoc_srlixdl(int data)	/* SRL (IX+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 

@@ -393,174 +393,342 @@ static int trap_fdcb(int data)
 
 static int op_tb0iyd(int data)		/* BIT 0,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IY + data) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb1iyd(int data)		/* BIT 1,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IY + data) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb2iyd(int data)		/* BIT 2,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IY + data) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb3iyd(int data)		/* BIT 3,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IY + data) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
-				: (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb4iyd(int data)		/* BIT 4,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IY + data) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
-				 : (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb5iyd(int data)		/* BIT 5,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IY + data) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
-				 : (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb6iyd(int data)		/* BIT 6,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
-	(memrdr(IY + data) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
-				 : (F |= (Z_FLAG | P_FLAG));
+	(memrdr(addr) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_tb7iyd(int data)		/* BIT 7,(IY+d) */
 {
+	WORD addr;
+
+	addr = IY + data;
 	F &= ~N_FLAG;
 	F |= H_FLAG;
-	if (memrdr(IY + data) & 128) {
+	if (memrdr(addr) & 128) {
 		F &= ~(Z_FLAG | P_FLAG);
 		F |= S_FLAG;
 	} else {
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (20);
 }
 
 static int op_rb0iyd(int data)		/* RES 0,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~1);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~1);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb1iyd(int data)		/* RES 1,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~2);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~2);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb2iyd(int data)		/* RES 2,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~4);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~4);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb3iyd(int data)		/* RES 3,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~8);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~8);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb4iyd(int data)		/* RES 4,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~16);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~16);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb5iyd(int data)		/* RES 5,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~32);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~32);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb6iyd(int data)		/* RES 6,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~64);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~64);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_rb7iyd(int data)		/* RES 7,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) & ~128);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) & ~128);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb0iyd(int data)		/* SET 0,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 1);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 1);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb1iyd(int data)		/* SET 1,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 2);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 2);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb2iyd(int data)		/* SET 2,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 4);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 4);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb3iyd(int data)		/* SET 3,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 8);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 8);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb4iyd(int data)		/* SET 4,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 16);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 16);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb5iyd(int data)		/* SET 5,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 32);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 32);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb6iyd(int data)		/* SET 6,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 64);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 64);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_sb7iyd(int data)		/* SET 7,(IY+d) */
 {
-	memwrt(IY + data, memrdr(IY + data) | 128);
+	WORD addr;
+
+	addr = IY + data;
+	memwrt(addr, memrdr(addr) | 128);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
@@ -581,6 +749,12 @@ static int op_rlciyd(int data)		/* RLC (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -601,6 +775,12 @@ static int op_rrciyd(int data)		/* RRC (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -621,6 +801,12 @@ static int op_rliyd(int data)		/* RL (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -641,6 +827,12 @@ static int op_rriyd(int data)		/* RR (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -658,6 +850,12 @@ static int op_slaiyd(int data)		/* SLA (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -677,6 +875,12 @@ static int op_sraiyd(int data)		/* SRA (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -694,6 +898,12 @@ static int op_srliyd(int data)		/* SRL (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -771,1121 +981,1793 @@ static int op_undoc_tb7iyd(int data)	/* BIT 7,(IY+d) */
 
 static int op_undoc_rb0iyda(int data)	/* RES 0,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~1;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~1;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1iyda(int data)	/* RES 1,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~2;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~2;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2iyda(int data)	/* RES 2,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~4;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~4;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3iyda(int data)	/* RES 3,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~8;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~8;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4iyda(int data)	/* RES 4,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~16;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~16;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5iyda(int data)	/* RES 5,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~32;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~32;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6iyda(int data)	/* RES 6,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~64;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~64;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7iyda(int data)	/* RES 7,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) & ~128;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) & ~128;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0iydb(int data)	/* RES 0,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~1;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~1;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1iydb(int data)	/* RES 1,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~2;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~2;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2iydb(int data)	/* RES 2,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~4;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~4;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3iydb(int data)	/* RES 3,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~8;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~8;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4iydb(int data)	/* RES 4,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~16;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~16;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5iydb(int data)	/* RES 5,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~32;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~32;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6iydb(int data)	/* RES 6,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~64;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~64;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7iydb(int data)	/* RES 7,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) & ~128;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) & ~128;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0iydc(int data)	/* RES 0,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~1;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~1;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1iydc(int data)	/* RES 1,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~2;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~2;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2iydc(int data)	/* RES 2,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~4;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~4;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3iydc(int data)	/* RES 3,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~8;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~8;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4iydc(int data)	/* RES 4,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~16;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~16;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5iydc(int data)	/* RES 5,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~32;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~32;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6iydc(int data)	/* RES 6,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~64;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~64;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7iydc(int data)	/* RES 7,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) & ~128;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) & ~128;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0iydd(int data)	/* RES 0,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~1;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~1;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1iydd(int data)	/* RES 1,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~2;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~2;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2iydd(int data)	/* RES 2,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~4;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~4;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3iydd(int data)	/* RES 3,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~8;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~8;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4iydd(int data)	/* RES 4,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~16;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~16;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5iydd(int data)	/* RES 5,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~32;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~32;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6iydd(int data)	/* RES 6,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~64;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~64;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7iydd(int data)	/* RES 7,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) & ~128;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) & ~128;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0iyde(int data)	/* RES 0,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~1;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~1;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1iyde(int data)	/* RES 1,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~2;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~2;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2iyde(int data)	/* RES 2,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~4;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~4;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3iyde(int data)	/* RES 3,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~8;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~8;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4iyde(int data)	/* RES 4,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~16;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~16;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5iyde(int data)	/* RES 5,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~32;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~32;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6iyde(int data)	/* RES 6,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~64;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~64;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7iyde(int data)	/* RES 7,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) & ~128;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) & ~128;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0iydh(int data)	/* RES 0,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~1;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~1;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1iydh(int data)	/* RES 1,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~2;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~2;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2iydh(int data)	/* RES 2,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~4;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~4;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3iydh(int data)	/* RES 3,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~8;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~8;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4iydh(int data)	/* RES 4,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~16;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~16;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5iydh(int data)	/* RES 5,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~32;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~32;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6iydh(int data)	/* RES 6,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~64;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~64;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7iydh(int data)	/* RES 7,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) & ~128;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) & ~128;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb0iydl(int data)	/* RES 0,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~1;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~1;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb1iydl(int data)	/* RES 1,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~2;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~2;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb2iydl(int data)	/* RES 2,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~4;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~4;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb3iydl(int data)	/* RES 3,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~8;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~8;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb4iydl(int data)	/* RES 4,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~16;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~16;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb5iydl(int data)	/* RES 5,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~32;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~32;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb6iydl(int data)	/* RES 6,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~64;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~64;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_rb7iydl(int data)	/* RES 7,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) & ~128;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) & ~128;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0iyda(int data)	/* SET 0,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 1;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 1;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1iyda(int data)	/* SET 1,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 2;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 2;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2iyda(int data)	/* SET 2,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 4;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 4;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3iyda(int data)	/* SET 3,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 8;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 8;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4iyda(int data)	/* SET 4,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 16;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 16;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5iyda(int data)	/* SET 5,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 32;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 32;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6iyda(int data)	/* SET 6,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 64;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 64;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7iyda(int data)	/* SET 7,(IY+d),A */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	A = memrdr(IY + data) | 128;
-	memwrt(IY + data, A);
+	addr = IY + data;
+	A = memrdr(addr) | 128;
+	memwrt(addr, A);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0iydb(int data)	/* SET 0,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 1;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 1;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1iydb(int data)	/* SET 1,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 2;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 2;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2iydb(int data)	/* SET 2,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 4;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 4;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3iydb(int data)	/* SET 3,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 8;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 8;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4iydb(int data)	/* SET 4,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 16;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 16;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5iydb(int data)	/* SET 5,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 32;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 32;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6iydb(int data)	/* SET 6,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 64;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 64;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7iydb(int data)	/* SET 7,(IY+d),B */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	B = memrdr(IY + data) | 128;
-	memwrt(IY + data, B);
+	addr = IY + data;
+	B = memrdr(addr) | 128;
+	memwrt(addr, B);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0iydc(int data)	/* SET 0,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 1;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 1;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1iydc(int data)	/* SET 1,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 2;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 2;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2iydc(int data)	/* SET 2,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 4;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 4;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3iydc(int data)	/* SET 3,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 8;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 8;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4iydc(int data)	/* SET 4,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 16;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 16;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5iydc(int data)	/* SET 5,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 32;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 32;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6iydc(int data)	/* SET 6,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 64;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 64;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7iydc(int data)	/* SET 7,(IY+d),C */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	C = memrdr(IY + data) | 128;
-	memwrt(IY + data, C);
+	addr = IY + data;
+	C = memrdr(addr) | 128;
+	memwrt(addr, C);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0iydd(int data)	/* SET 0,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 1;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 1;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1iydd(int data)	/* SET 1,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 2;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 2;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2iydd(int data)	/* SET 2,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 4;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 4;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3iydd(int data)	/* SET 3,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 8;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 8;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4iydd(int data)	/* SET 4,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 16;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 16;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5iydd(int data)	/* SET 5,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 32;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 32;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6iydd(int data)	/* SET 6,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 64;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 64;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7iydd(int data)	/* SET 7,(IY+d),D */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	D = memrdr(IY + data) | 128;
-	memwrt(IY + data, D);
+	addr = IY + data;
+	D = memrdr(addr) | 128;
+	memwrt(addr, D);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0iyde(int data)	/* SET 0,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 1;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 1;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1iyde(int data)	/* SET 1,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 2;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 2;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2iyde(int data)	/* SET 2,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 4;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 4;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3iyde(int data)	/* SET 3,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 8;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 8;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4iyde(int data)	/* SET 4,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 16;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 16;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5iyde(int data)	/* SET 5,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 32;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 32;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6iyde(int data)	/* SET 6,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 64;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 64;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7iyde(int data)	/* SET 7,(IY+d),E */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	E = memrdr(IY + data) | 128;
-	memwrt(IY + data, E);
+	addr = IY + data;
+	E = memrdr(addr) | 128;
+	memwrt(addr, E);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0iydh(int data)	/* SET 0,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 1;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 1;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1iydh(int data)	/* SET 1,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 2;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 2;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2iydh(int data)	/* SET 2,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 4;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 4;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3iydh(int data)	/* SET 3,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 8;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 8;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4iydh(int data)	/* SET 4,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 16;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 16;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5iydh(int data)	/* SET 5,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 32;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 32;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6iydh(int data)	/* SET 6,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 64;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 64;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7iydh(int data)	/* SET 7,(IY+d),H */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	H = memrdr(IY + data) | 128;
-	memwrt(IY + data, H);
+	addr = IY + data;
+	H = memrdr(addr) | 128;
+	memwrt(addr, H);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb0iydl(int data)	/* SET 0,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 1;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 1;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb1iydl(int data)	/* SET 1,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 2;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 2;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb2iydl(int data)	/* SET 2,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 4;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 4;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb3iydl(int data)	/* SET 3,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 8;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 8;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb4iydl(int data)	/* SET 4,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 16;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 16;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb5iydl(int data)	/* SET 5,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 32;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 32;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb6iydl(int data)	/* SET 6,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 64;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 64;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
 static int op_undoc_sb7iydl(int data)	/* SET 7,(IY+d),L */
 {
+	WORD addr;
+
 	if (u_flag)
 		return (trap_fdcb(0));
 
-	L = memrdr(IY + data) | 128;
-	memwrt(IY + data, L);
+	addr = IY + data;
+	L = memrdr(addr) | 128;
+	memwrt(addr, L);
+#ifdef UNDOC_FLAGS
+	WZ = addr;
+#endif
 	return (23);
 }
 
@@ -1908,6 +2790,12 @@ static int op_undoc_rlciyda(int data)	/* RLC (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1930,6 +2818,12 @@ static int op_undoc_rlciydb(int data)	/* RLC (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1952,6 +2846,12 @@ static int op_undoc_rlciydc(int data)	/* RLC (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1974,6 +2874,12 @@ static int op_undoc_rlciydd(int data)	/* RLC (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -1996,6 +2902,12 @@ static int op_undoc_rlciyde(int data)	/* RLC (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2018,6 +2930,12 @@ static int op_undoc_rlciydh(int data)	/* RLC (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2040,6 +2958,12 @@ static int op_undoc_rlciydl(int data)	/* RLC (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2062,6 +2986,12 @@ static int op_undoc_rrciyda(int data)	/* RRC (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2084,6 +3014,12 @@ static int op_undoc_rrciydb(int data)	/* RRC (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2106,6 +3042,12 @@ static int op_undoc_rrciydc(int data)	/* RRC (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2128,6 +3070,12 @@ static int op_undoc_rrciydd(int data)	/* RRC (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2150,6 +3098,12 @@ static int op_undoc_rrciyde(int data)	/* RRC (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2172,6 +3126,12 @@ static int op_undoc_rrciydh(int data)	/* RRC (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2194,6 +3154,12 @@ static int op_undoc_rrciydl(int data)	/* RRC (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2216,6 +3182,12 @@ static int op_undoc_rliyda(int data)	/* RL (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2238,6 +3210,12 @@ static int op_undoc_rliydb(int data)	/* RL (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2260,6 +3238,12 @@ static int op_undoc_rliydc(int data)	/* RL (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2282,6 +3266,12 @@ static int op_undoc_rliydd(int data)	/* RL (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2304,6 +3294,12 @@ static int op_undoc_rliyde(int data)	/* RL (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2326,6 +3322,12 @@ static int op_undoc_rliydh(int data)	/* RL (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2348,6 +3350,12 @@ static int op_undoc_rliydl(int data)	/* RL (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2370,6 +3378,12 @@ static int op_undoc_rriyda(int data)	/* RR (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2392,6 +3406,12 @@ static int op_undoc_rriydb(int data)	/* RR (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2414,6 +3434,12 @@ static int op_undoc_rriydc(int data)	/* RR (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2436,6 +3462,12 @@ static int op_undoc_rriydd(int data)	/* RR (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2458,6 +3490,12 @@ static int op_undoc_rriyde(int data)	/* RR (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2480,6 +3518,12 @@ static int op_undoc_rriydh(int data)	/* RR (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2502,6 +3546,12 @@ static int op_undoc_rriydl(int data)	/* RR (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2521,6 +3571,12 @@ static int op_undoc_slaiyda(int data)	/* SLA (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2540,6 +3596,12 @@ static int op_undoc_slaiydb(int data)	/* SLA (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2559,6 +3621,12 @@ static int op_undoc_slaiydc(int data)	/* SLA (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2578,6 +3646,12 @@ static int op_undoc_slaiydd(int data)	/* SLA (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2597,6 +3671,12 @@ static int op_undoc_slaiyde(int data)	/* SLA (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2616,6 +3696,12 @@ static int op_undoc_slaiydh(int data)	/* SLA (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2635,6 +3721,12 @@ static int op_undoc_slaiydl(int data)	/* SLA (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2656,6 +3748,12 @@ static int op_undoc_sraiyda(int data)	/* SRA (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2677,6 +3775,12 @@ static int op_undoc_sraiydb(int data)	/* SRA (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2698,6 +3802,12 @@ static int op_undoc_sraiydc(int data)	/* SRA (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2719,6 +3829,12 @@ static int op_undoc_sraiydd(int data)	/* SRA (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2740,6 +3856,12 @@ static int op_undoc_sraiyde(int data)	/* SRA (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2761,6 +3883,12 @@ static int op_undoc_sraiydh(int data)	/* SRA (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2782,6 +3910,12 @@ static int op_undoc_sraiydl(int data)	/* SRA (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2801,6 +3935,12 @@ static int op_undoc_slliyda(int data)	/* SLL (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2820,6 +3960,12 @@ static int op_undoc_slliydb(int data)	/* SLL (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2839,6 +3985,12 @@ static int op_undoc_slliydc(int data)	/* SLL (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2858,6 +4010,12 @@ static int op_undoc_slliydd(int data)	/* SLL (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2877,6 +4035,12 @@ static int op_undoc_slliyde(int data)	/* SLL (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2896,6 +4060,12 @@ static int op_undoc_slliydh(int data)	/* SLL (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2915,6 +4085,12 @@ static int op_undoc_slliydl(int data)	/* SLL (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2935,6 +4111,12 @@ static int op_undoc_slliyd(int data)	/* SLL (IY+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2954,6 +4136,12 @@ static int op_undoc_srliyda(int data)	/* SRL (IY+d),A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2973,6 +4161,12 @@ static int op_undoc_srliydb(int data)	/* SRL (IY+d),B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -2992,6 +4186,12 @@ static int op_undoc_srliydc(int data)	/* SRL (IY+d),C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3011,6 +4211,12 @@ static int op_undoc_srliydd(int data)	/* SRL (IY+d),D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3030,6 +4236,12 @@ static int op_undoc_srliyde(int data)	/* SRL (IY+d),E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3049,6 +4261,12 @@ static int op_undoc_srliydh(int data)	/* SRL (IY+d),H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
@@ -3068,6 +4286,12 @@ static int op_undoc_srliydl(int data)	/* SRL (IY+d),L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
+	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
 	return (23);
 }
 
