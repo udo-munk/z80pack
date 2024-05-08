@@ -15,7 +15,8 @@
 ;
 ;               THIS VERSION HAS I/O MODIFIED
 ;                    FOR Z80PACK MACHINES
-;                  UDO MUNK, 26 APRIL 2024
+;               ALSO MODIFIED TO HALT ON CTL-C
+;                    UDO MUNK, 8 MAY 2024
 ;
 ;*************************************************************
 ; 
@@ -1422,7 +1423,8 @@ CHKIO:  IN   0                          ;*** CHKIO ***
         JMP  CHKIO                      ;GET ANOTHER INPUT
 CI1:    CPI  3H                         ;IS IT CONTROL-C?
         RNZ                             ;NO, RETURN "NZ"
-        JMP  RSTART                     ;YES, RESTART TBI
+;       JMP  RSTART                     ;YES, RESTART TBI
+	HLT
 ;
 MSG1:   DB   'TINY '
         DB   'BASIC'
