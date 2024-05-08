@@ -1,0 +1,128 @@
+diff --git a/src/main.asm b/src/main.asm
+index 6fde005..f60fb03 100644
+--- a/src/main.asm
++++ b/src/main.asm
+@@ -7,6 +7,8 @@
+             org     0x8000
+ 
+ main:       di                                  ; disable interrupts
++            ld      hl,0xbfe0
++            ld      sp,hl
+             push    iy                          ; preserve stuff needed by BASIC
+             exx
+             push    hl
+@@ -17,7 +19,7 @@ main:       di                                  ; disable interrupts
+             db      "Z80 "
+             testname
+             db      " test"
+-            db      23,32-13,1,127," 2012 RAXOFT",13,13,0
++            db      " (C) 2012 RAXOFT",13,10,13,10,0
+ 
+             ld      bc,0                        ; setup for test loop
+             ld      hl,testtable
+@@ -44,7 +46,7 @@ main:       di                                  ; disable interrupts
+             jr      nz,.loop
+ 
+             call    print                       ; print result intro
+-            db      13,"Result: ",0
++            db      13,10,"Result: ",0
+ 
+             ld      a,b                         ; no failures means success
+             or      a
+@@ -59,17 +61,18 @@ main:       di                                  ; disable interrupts
+             call    printdeca
+ 
+             call    print
+-            db      " tests failed.",13,0
++            db      " tests failed.",13,10,0
+             jr      .done
+ 
+ .ok         call    print                       ; print success message
+-            db      "all tests passed.",13,0
++            db      "all tests passed.",13,10,0
+ 
+ .done       pop     hl                          ; return to BASIC
+             exx
+             pop     iy
+-            ei
+-            ret
++            ; ei
++            ; ret
++            halt
+ 
+ .test       push    bc                          ; preserve number of failures
+ 
+@@ -95,7 +98,7 @@ main:       di                                  ; disable interrupts
+             jr      nz,.pass
+ 
+             call    print                       ; print that the test was skipped
+-            db      23,32-7,1,"Skipped",13,0
++            db      " Skipped",13,10,0
+ 
+             ret                                 ; return success
+ 
+@@ -107,14 +110,14 @@ main:       di                                  ; disable interrupts
+             ld      e,a
+ 
+             call    print                       ; print the IN mismatch message
+-            db      23,32-6,1,"FAILED",13
++            db      " FAILED",13,10
+             db      "IN FE:",0
+ 
+             ld      a,e
+             call    printhexa
+ 
+             call    print
+-            db      23,32-11,1,"Expected:BF",13,0
++            db      " Expected:BF",13,10,0
+ 
+             inc     a                           ; return failure
+             ret
+@@ -145,12 +148,12 @@ main:       di                                  ; disable interrupts
+             jr      nz,.mismatch                ; check for mismatch
+ 
+             call    print                       ; print success
+-            db      23,32-2,1,"OK",13,0
++            db      " OK",13,10,0
+ 
+             ret                                 ; return success
+ 
+ .mismatch   call    print                       ; print mismatched and expected CRC
+-            db      23,32-6,1,"FAILED",13
++            db      " FAILED",13,10
+             db      "CRC:",0
+ 
+             call    printcrc
+@@ -163,6 +166,8 @@ main:       di                                  ; disable interrupts
+ 
+             ld      a,13
+             call    printchr
++            ld      a,10
++            call    printchr
+ 
+             ld      a,1                         ; return failure
+             ret
+diff --git a/src/print.asm b/src/print.asm
+index eb7d2fb..0d14d45 100644
+--- a/src/print.asm
++++ b/src/print.asm
+@@ -6,7 +6,8 @@
+ 
+ 
+ printinit:  ld      a,2
+-            jp      0x1601      ; CHAN-OPEN
++            ; jp      0x1601      ; CHAN-OPEN
++            ret
+ 
+ 
+ print:      ex      (sp),hl
+@@ -71,7 +72,8 @@ printchr:   push    iy
+             exx
+             ei
+             ; out     (0xff),a
+-            rst     0x10
++            ; rst     0x10
++            out     (0x01),a
+             di
+             exx
+             pop     bc

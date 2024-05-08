@@ -1,0 +1,34 @@
+diff --git a/z80sim/srcsim/iosim.c b/z80sim/srcsim/iosim.c
+index 983d881..fc54d88 100644
+--- a/z80sim/srcsim/iosim.c
++++ b/z80sim/srcsim/iosim.c
+@@ -29,7 +29,7 @@
+  */
+ static BYTE io_trap_in(void);
+ static void io_trap_out(BYTE);
+-static BYTE p000_in(void), p001_in(void);
++static BYTE p000_in(void), p001_in(void), p254_in(void);
+ static void p001_out(BYTE);
+ 
+ /*
+@@ -70,6 +70,7 @@ void init_io(void)
+ 		port_in[i] = io_trap_in;
+ 		port_out[i] = io_trap_out;
+ 	}
++	port_in[254] = p254_in;
+ }
+ 
+ /*
+@@ -185,3 +186,12 @@ static void p001_out(BYTE data)
+ 	putchar((int) data);
+ 	fflush(stdout);
+ }
++
++/*
++ *	I/O function port 254 read:
++ *	Return 0xbf as ZX Spectrum
++ */
++static BYTE p254_in(void)
++{
++	return ((BYTE) 0xbf);
++}
