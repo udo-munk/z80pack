@@ -58,7 +58,7 @@ z80aglb.o: z80aglb.c z80a.h
 	$(CC) $(CFLAGS) -c z80aglb.c
 
 clean:
-	rm -f core *.o z80asm
+	rm -f core $(OBJS) z80asm
 
 allclean: clean
 

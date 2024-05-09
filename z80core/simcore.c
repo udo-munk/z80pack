@@ -182,10 +182,12 @@ void report_cpu_error(void)
 		    PC - 1);
 		break;
 	case IOTRAPIN:
-		LOGE(TAG, "I/O input Trap at 0x%04x, port 0x%02x", PC, io_port);
+		LOGE(TAG, "I/O input Trap at 0x%04x, port 0x%02x",
+		     PC, io_port);
 		break;
 	case IOTRAPOUT:
-		LOGE(TAG, "I/O output Trap at 0x%04x, port 0x%02x", PC, io_port);
+		LOGE(TAG, "I/O output Trap at 0x%04x, port 0x%02x",
+		     PC, io_port);
 		break;
 	case IOHALT:
 		LOG(TAG, "System halted\r\n");
@@ -194,13 +196,12 @@ void report_cpu_error(void)
 		LOGE(TAG, "Fatal I/O Error at 0x%04x", PC);
 		break;
 	case OPTRAP1:
-		LOGE(TAG, "Op-code trap at 0x%04x 0x%02x", PC - 1,
-		     getmem(PC - 1));
+		LOGE(TAG, "Op-code trap at 0x%04x 0x%02x",
+		     PC - 1, getmem(PC - 1));
 		break;
 	case OPTRAP2:
 		LOGE(TAG, "Op-code trap at 0x%04x 0x%02x 0x%02x",
-		     PC - 2, getmem(PC - 2),
-		     getmem(PC - 1));
+		     PC - 2, getmem(PC - 2), getmem(PC - 1));
 		break;
 	case OPTRAP4:
 		LOGE(TAG, "Op-code trap at 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x",
@@ -211,8 +212,7 @@ void report_cpu_error(void)
 		LOG(TAG, "User Interrupt at 0x%04x\r\n", PC);
 		break;
 	case INTERROR:
-		LOGW(TAG, "Unsupported bus data during INT: 0x%02x",
-		     int_data);
+		LOGW(TAG, "Unsupported bus data during INT: 0x%02x", int_data);
 		break;
 	case POWEROFF:
 		LOG(TAG, "System powered off\r\n");
@@ -229,7 +229,8 @@ void report_cpu_error(void)
 		printf("I/O input Trap at 0x%04x, port 0x%02x\n", PC, io_port);
 		break;
 	case IOTRAPOUT:
-		printf("I/O output Trap at 0x%04x, port 0x%02x\n", PC, io_port);
+		printf("I/O output Trap at 0x%04x, port 0x%02x\n",
+		       PC, io_port);
 		break;
 	case IOHALT:
 		printf("System halted\n");
@@ -238,13 +239,12 @@ void report_cpu_error(void)
 		printf("Fatal I/O Error at 0x%04x\n", PC);
 		break;
 	case OPTRAP1:
-		printf("Op-code trap at 0x%04x 0x%02x\n", PC - 1,
-		       getmem(PC - 1));
+		printf("Op-code trap at 0x%04x 0x%02x\n",
+		       PC - 1, getmem(PC - 1));
 		break;
 	case OPTRAP2:
 		printf("Op-code trap at 0x%04x 0x%02x 0x%02x\n",
-		       PC - 2, getmem(PC - 2),
-		       getmem(PC - 1));
+		       PC - 2, getmem(PC - 2), getmem(PC - 1));
 		break;
 	case OPTRAP4:
 		printf("Op-code trap at 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
@@ -252,8 +252,7 @@ void report_cpu_error(void)
 		       getmem(PC - 2), getmem(PC - 1));
 		break;
 	case INTERROR:
-		printf("Unsupported bus data during INT: 0x%02x\n",
-		       int_data);
+		printf("Unsupported bus data during INT: 0x%02x\n", int_data);
 		break;
 	case POWEROFF:
 		printf("System powered off\n");

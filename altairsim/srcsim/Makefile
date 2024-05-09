@@ -149,10 +149,10 @@ install:
 clean: _rm_obj _rm_deps
 
 _rm_obj:
-	rm -f *.o
+	rm -f $(OBJS)
 
 _rm_deps:
-	rm -f *.d
+	rm -f $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
 
 allclean: clean
 	rm -f $(SIM)

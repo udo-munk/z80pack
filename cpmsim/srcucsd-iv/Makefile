@@ -3,10 +3,13 @@ CWARNS= -Wall -Wextra -Wwrite-strings
 CFLAGS= -O $(CSTDS) $(CWARNS)
 LDFLAGS= -s
 
-all: boot.bin bios.bin putsys
+all: putsys boot.bin bios.bin
 	@echo
 	@echo "Done."
 	@echo
+
+putsys: putsys.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
 
 boot.bin: boot.asm
 	z80asm -fb -l -sn -p0 $<
@@ -14,11 +17,8 @@ boot.bin: boot.asm
 bios.bin: bios.asm
 	z80asm -fb -l -sn -p0 $<
 
-putsys: putsys.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
-
 clean:
-	rm -f *.lis *.bin putsys putsys.exe
+	rm -f putsys boot.bin boot.lis bios.bin bios.lis
 
 allclean: clean
 

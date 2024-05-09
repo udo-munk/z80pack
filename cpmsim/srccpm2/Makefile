@@ -18,7 +18,7 @@ boot.bin: boot.asm
 	z80asm -fb -l -sn -p0 $<
 
 clean:
-	rm -f *.lis bios.bin boot.bin putsys putsys.exe
+	rm -f putsys bios.bin bios.lis boot.bin boot.lis
 
 allclean: clean
 

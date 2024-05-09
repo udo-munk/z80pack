@@ -13,7 +13,8 @@ z80opsall.hex: z80opsall.asm
 	z80asm -fh -l -sn -p0 $<
 
 clean:
-	rm -f *.hex *.lis
+	rm -f float.hex float.lis z80main.hex z80main.lis \
+		z80opsall.hex z80opsall.lis 8080opsall.hex 8080opsall.lis
 
 allclean: clean
 
