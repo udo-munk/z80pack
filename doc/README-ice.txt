@@ -32,4 +32,5 @@ operating system that provides signal handling for applications, we have
 no way to break a runnaway program with CTL-C, as it works with z80sim
 on workstations. This requires at least a switch connected to an
 interrupt pin and an interrupt handler, which signals the CPU emulation
-to stop. This is implemented in picosim.
+to stop. This is implemented in picosim, also see picture of breadboard
+wiring.
