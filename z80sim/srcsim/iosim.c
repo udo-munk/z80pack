@@ -12,6 +12,7 @@
  *
  *	Port 0 input:	reads status of stdin
  *	Port 1 input:	reads the next byte from stdin
+ *	Port 255 input:	returns 0 for software querying frontpanel
  *	Port 1 output:	writes the byte to stdout
  *
  *	All the other ports are connected to an I/O-trap handler,
@@ -29,7 +30,7 @@
  */
 static BYTE io_trap_in(void);
 static void io_trap_out(BYTE);
-static BYTE p000_in(void), p001_in(void);
+static BYTE p000_in(void), p001_in(void), p255_in(void);
 static void p001_out(BYTE);
 
 /*
@@ -70,6 +71,7 @@ void init_io(void)
 		port_in[i] = io_trap_in;
 		port_out[i] = io_trap_out;
 	}
+	port_in[255] = p255_in; /* for frontpanel */
 }
 
 /*
@@ -177,11 +179,20 @@ static BYTE p001_in(void)
 }
 
 /*
+ *	I/O function port 255 read:
+ *	used by frontpanel machines
+ */
+static BYTE p255_in(void)
+{
+	return 0;
+}
+
+/*
  *	I/O function port 1 write:
  *	Write byte to stdout and flush the output.
  */
 static void p001_out(BYTE data)
 {
-	putchar((int) data);
+	putchar((int) data & 0x7f); /* strip parity, some software won't */
 	fflush(stdout);
 }
