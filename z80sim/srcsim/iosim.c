@@ -33,6 +33,8 @@ static void io_trap_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 static void p001_out(BYTE);
 
+static BYTE sio_last;	/* last byte read from sio */
+
 /*
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
@@ -175,7 +177,18 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-	return ((BYTE) getchar());
+	struct pollfd p[1];
+
+	p[0].fd = fileno(stdin);
+	p[0].events = POLLIN;
+	p[0].revents = 0;
+	poll(p, 1, 0);
+	if (!(p[0].revents & POLLIN))
+		return sio_last; /* someone raeds without checking status */
+	else {
+		sio_last = getchar();
+		return sio_last;
+	}
 }
 
 /*
