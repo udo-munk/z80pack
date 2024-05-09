@@ -75,6 +75,7 @@ CORE_SRCS = simcore.c simdis.c simfun.c simglb.c simice.c simint.c simmain.c \
 	simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c simz80-fd.c simz80-fdcb.c
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.d)
 
 all: $(SIM)
 	@echo
@@ -87,7 +88,7 @@ $(SIM): $(OBJS) $(MACHINE_LIBS)
 %.d: %.c
 	@$(CC) -MM $(CFLAGS) $< > $@
 
--include $(SRCS:.c=.d)
+-include $(DEPS)
 
 build: _rm_obj all
 
@@ -102,7 +103,7 @@ _rm_obj:
 	rm -f $(OBJS)
 
 _rm_deps:
-	rm -f $(SRCS:.c=.d)
+	rm -f $(DEPS)
 
 allclean: clean
 	rm -f $(SIM)

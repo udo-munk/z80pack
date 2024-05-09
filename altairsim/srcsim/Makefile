@@ -119,6 +119,7 @@ CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c sim
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 XXSRCS = $(FP_SRCS)
 OBJS = $(SRCS:.c=.o) $(XXSRCS:.cpp=.o)
+DEPS = $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
 
 all: $(SIM)
 	@echo
@@ -134,7 +135,7 @@ $(SIM): $(OBJS) $(MACHINE_LIBS) $(FP_LIB)
 %.d: %.cpp
 	@$(CXX) -MM $(CXXFLAGS) $< > $@
 
--include $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
+-include $(DEPS)
 
 -lfrontpanel: $(FP_DIR:=/Makefile)
 	$(MAKE) -B -C $(FP_DIR)
@@ -152,7 +153,7 @@ _rm_obj:
 	rm -f $(OBJS)
 
 _rm_deps:
-	rm -f $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
+	rm -f $(DEPS)
 
 allclean: clean
 	rm -f $(SIM)

@@ -39,6 +39,7 @@ CXXFLAGS = -O -g $(CXXSTDS) $(CXXWARNS) $(PLAT_CXXFLAGS) $(PLAT_INCS)
 endif
 
 OBJS = $(SRCS:.cpp=.o)
+DEPS = $(SRCS:.cpp=.d)
 
 all: $(LIB)
 	@echo
@@ -52,7 +53,7 @@ $(LIB): $(OBJS)
 %.d: %.cpp
 	@$(CXX) -MM $(CXXFLAGS) $< > $@
 
--include $(SRCS:.cpp=.d)
+-include $(DEPS)
 
 build: _rm_obj all
 
@@ -63,7 +64,7 @@ _rm_obj:
 	rm -f $(OBJS)
 
 _rm_deps:
-	rm -f $(SRCS:.cpp=.d)
+	rm -f $(DEPS)
 
 allclean: clean
 
