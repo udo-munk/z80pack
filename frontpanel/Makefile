@@ -60,10 +60,10 @@ clean: _rm_obj _rm_deps
 	rm -f $(LIB)
 
 _rm_obj:
-	rm -f *.o
+	rm -f $(OBJS)
 
 _rm_deps:
-	rm -f *.d
+	rm -f $(SRCS:.cpp=.d)
 
 allclean: clean
 

@@ -44,8 +44,7 @@ install: all
 	@echo
 
 clean:
-	rm -f mkdskimg mkdskimg.exe bin2hex bin2hex.exe cpmrecv cpmrecv.exe \
-	cpmsend cpmsend.exe ptp2bin ptp2bin.exe
+	rm -f mkdskimg bin2hex cpmsend cpmrecv ptp2bin
 
 allclean: clean
 
