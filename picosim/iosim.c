@@ -31,6 +31,8 @@
 static void p000_out(BYTE), p001_out(BYTE);
 static BYTE p000_in(void), p001_in(void);
 
+static BYTE sio_last;	/* last character received */
+
 /*
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
@@ -127,7 +129,12 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-	return ((BYTE) getchar());
+	if (!uart_is_readable(uart0))	/* someone reading without checking */
+		return sio_last;	/* guess who does such things */
+	else {
+		sio_last = getchar();
+		return sio_last;
+	}
 }
 
 /*
