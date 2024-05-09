@@ -251,6 +251,9 @@ void report_cpu_error(void)
 		       PC - 4, getmem(PC - 4), getmem(PC - 3),
 		       getmem(PC - 2), getmem(PC - 1));
 		break;
+	case USERINT:
+		printf("User Interrupt at 0x%04x\n", PC);
+		break;
 	case INTERROR:
 		printf("Unsupported bus data during INT: 0x%02x\n", int_data);
 		break;
