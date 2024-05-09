@@ -27,3 +27,9 @@ The ICE also can be included when running on bare metal, if the device
 has enough memory. This is shown in picosim running on Raspberry Pi Pico.
 Because the bare metal is not running an operating system all
 commands that require one are disabled.
+Also watch out what code you are going to execute, because without an
+operating system that provides signal handling for applications, we have
+no way to break a runnaway program with CTL-C, as it works with z80sim
+on workstations. This requires at least a switch connected to an
+interrupt pin and an interrupt handler, which signals the CPU emulation
+to stop.
