@@ -26,11 +26,14 @@
 #include "pico/cyw43_arch.h"
 #endif
 
+#define SWITCH_BREAK 16 /* switch we use to interrupt the system */
+
 extern void init_cpu(void);
 extern void run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
 unsigned long long get_clock_us(void);
+void gpio_callback(uint, uint32_t);
 
 int main(void)
 {
@@ -48,6 +51,10 @@ int main(void)
 	gpio_init(LED);		/* configure GPIO for LED output */
 	gpio_set_dir(LED, GPIO_OUT);
 #endif
+	gpio_init(SWITCH_BREAK); /* setupt interrupt for break switch */
+	gpio_set_dir(SWITCH_BREAK, GPIO_IN);
+	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
+					   true, &gpio_callback);
 
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
@@ -101,6 +108,16 @@ int main(void)
 unsigned long long get_clock_us(void)
 {
 	return to_us_since_boot(get_absolute_time());
+}
+
+/*
+ * interrupt handler for break switch
+ * stops CPU
+ */
+void gpio_callback(uint gpio, uint32_t events)
+{
+	cpu_error = USERINT;
+	cpu_state = STOPPED;
 }
 
 #ifdef WANT_ICE
