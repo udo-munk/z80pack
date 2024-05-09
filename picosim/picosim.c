@@ -8,6 +8,7 @@
  *
  * History:
  * 28-APR-2024 implemented first release of Z80 emulation
+ * 09-MAY-2024 test 8080 emulation
  */
 
 /* Raspberry SDK includes */

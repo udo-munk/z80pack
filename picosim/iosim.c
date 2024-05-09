@@ -7,6 +7,7 @@
  *
  * History:
  * 28-APR-2024 all I/O implemented for a first release
+ * 09-MAY-2024 improved so that it can run some MITS Altair software
  */
 
 /* Raspberry SDK includes */
@@ -82,8 +83,12 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	if (*port_in[addrl] != 0) /* if port used */
 		return ((*port_in[addrl])());
-	else
-		return (0xff);	/* all other return 0xff */
+	else {
+		if (addrl = 255)
+			return 0; /* frontpanel port */
+		else
+			return (0xff);	/* all other return 0xff */
+	}
 }
 
 /*
@@ -154,5 +159,5 @@ static void p000_out(BYTE data)
  */
 static void p001_out(BYTE data)
 {
-	putchar_raw((int) data);
+	putchar_raw((int) data & 0x7f); /* strip parity, some software won't */
 }

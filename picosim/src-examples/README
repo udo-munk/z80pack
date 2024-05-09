@@ -18,3 +18,4 @@ blink.c		- blink builtin LED with Z80 port output
 
 tb.c		- 8080 TINY BASIC
 micro80.c	- 8080 Microchess
+basic4k32.c	- MITS Altair BASIC 4K V3.2, runs on 8080 only!
