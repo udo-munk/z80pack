@@ -166,6 +166,9 @@ void step_cpu(void)
  */
 void report_cpu_error(void)
 {
+	if (cpu_error == NONE)
+		return;
+
 	/* always start on a new line */
 #ifdef CORE_LOG
 	LOG(TAG, "\r\n");

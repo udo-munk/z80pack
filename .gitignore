@@ -18,6 +18,8 @@ cpmsim/srctools/cpmrecv
 cpmsim/srctools/cpmsend
 cpmsim/srctools/mkdskimg
 cpmsim/srctools/ptp2bin
+cpmtools/*.com
+cpmtools/*.lis
 cromemcosim/cromemcosim
 imsaisim/imsaisim
 mosteksim/mosteksim

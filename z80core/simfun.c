@@ -74,6 +74,28 @@ unsigned long long get_clock_us(void)
 		(unsigned long long) (tv.tv_usec));
 }
 
+#ifdef WANT_ICE
+/*
+ *	Read an ICE command line from stdin.
+ *	Returns empty string on EOF and signal interruptions.
+ */
+int get_cmdline(char *buf, int len)
+{
+	int err = 0;
+
+	if (fgets(buf, len, stdin) == NULL) {
+		putchar('\n');
+		if (isatty(fileno(stdin))) {
+			clearerr(stdin);
+			*buf = '\0';
+		} else
+			err = 1;
+	}
+	return (err);
+}
+#endif
+
+
 /*
  *	Read a file into the memory of the emulated CPU.
  *	The following file formats are supported:

@@ -122,16 +122,12 @@ void gpio_callback(uint gpio, uint32_t events)
 
 #ifdef WANT_ICE
 /*
- * provide terminal input function that works like fgets()
- * on POSIX systems
+ * read an ICE command line from the terminal line
  */
-char *term_in(char *buf, int len, FILE *stream)
+int get_cmdline(char *buf, int len)
 {
 	int i = 0;
 	char c;
-
-	if (stream != stdin) /* we can only support stdin */
-		return NULL; /* if not return error */
 
 	while (i < len - 1) {
 		c = getchar();
@@ -148,6 +144,6 @@ char *term_in(char *buf, int len, FILE *stream)
 		}
 	}
 	buf[i] = '\0';
-	return &buf[0];
+	return 0;
 }
 #endif

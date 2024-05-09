@@ -24,7 +24,6 @@
 #include <ctype.h>
 #include "sim.h"
 #ifndef ICE_BAREMETAL
-#include <unistd.h>
 #include <signal.h>
 #include <sys/time.h>
 #endif
@@ -40,14 +39,7 @@ extern void report_cpu_error(void);
 #ifndef ICE_BAREMETAL
 extern int load_file(char *, WORD, int);
 #endif
-
-#ifdef ICE_BAREMETAL
-#define ISATTY(x) (1)
-extern char *term_in(char *, int, FILE *);
-#else
-#define ISATTY(x) isatty(x)
-#define term_in(buf, len, stream) fgets(buf, len, stream)
-#endif
+extern int get_cmdline(char *, int);
 
 static void do_step(void);
 static void do_trace(char *);
@@ -75,6 +67,7 @@ static void do_load(char *);
 static void do_unix(char *);
 #endif
 
+static char arg[LENCMD];
 static WORD wrk_addr;
 
 void (*ice_before_go)(void);
@@ -121,12 +114,8 @@ void ice_cmd_loop(int go_flag)
 		} else {
 			printf(">>> ");
 			fflush(stdout);
-			if (term_in(cmd, LENCMD, stdin) == NULL) {
-				putchar('\n');
-				if (ISATTY(fileno(stdin)))
-					clearerr(stdin);
-				else
-					eoj = 0;
+			if (get_cmdline(cmd, LENCMD)) {
+				eoj = 0;
 				continue;
 			}
 		}
@@ -189,6 +178,8 @@ void ice_cmd_loop(int go_flag)
 #endif
 		case 'q':
 			eoj = 0;
+			break;
+		case '\0':
 			break;
 		default:
 			if (ice_cust_cmd)
@@ -368,8 +359,6 @@ static void do_list(char *s)
  */
 static void do_modify(char *s)
 {
-	static char nv[LENCMD];
-
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
@@ -377,19 +366,15 @@ static void do_modify(char *s)
 	for (;;) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
-		if (term_in(nv, sizeof(nv), stdin) == NULL) {
-			putchar('\n');
-			if (ISATTY(fileno(stdin)))
-				clearerr(stdin);
+		if (get_cmdline(arg, LENCMD) || arg[0] == '\0')
 			break;
-		}
-		if (nv[0] == '\n') {
+		if (arg[0] == '\n') {
 			wrk_addr++;
 			continue;
 		}
-		if (!isxdigit((unsigned char) nv[0]))
+		if (!isxdigit((unsigned char) arg[0]))
 			break;
-		putmem(wrk_addr++, exatoi(nv));
+		putmem(wrk_addr++, exatoi(arg));
 	}
 }
 
@@ -464,18 +449,14 @@ static void do_port(char *s)
 	extern BYTE io_in(BYTE, BYTE);
 	extern void io_out(BYTE, BYTE, BYTE);
 	register BYTE port;
-	static char nv[LENCMD];
 
 	while (isspace((unsigned char) *s))
 		s++;
 	port = exatoi(s);
 	printf("%02x = %02x : ", port, io_in(port, 0));
-	if (term_in(nv, sizeof(nv), stdin) == NULL) {
-		putchar('\n');
-		if (ISATTY(fileno(stdin)))
-			clearerr(stdin);
-	} else if (isxdigit((unsigned char) *nv))
-		io_out(port, 0, (BYTE) exatoi(nv));
+	if (!get_cmdline(arg, LENCMD) &&
+	    arg[0] != '\0' && (isxdigit((unsigned char) *arg)))
+		io_out(port, 0, (BYTE) exatoi(arg));
 }
 
 /*
@@ -561,7 +542,6 @@ static void do_reg(char *s)
 	register int i;
 	register const struct reg_def *p;
 	WORD w;
-	static char nv[LENCMD];
 
 	while (isspace((unsigned char) *s))
 		s++;
@@ -601,12 +581,9 @@ static void do_reg(char *s)
 			default:
 				break;
 			}
-			if (term_in(nv, sizeof(nv), stdin) == NULL) {
-				putchar('\n');
-				if (ISATTY(fileno(stdin)))
-					clearerr(stdin);
-			} else if (nv[0] != '\n') {
-				w = exatoi(nv);
+			if (!get_cmdline(arg, LENCMD) &&
+			    arg[0] != '\0' && arg[0] != '\n') {
+				w = exatoi(arg);
 				switch (p->type) {
 				case R_8:
 					*(p->r8) = w & 0xff;
@@ -764,7 +741,6 @@ static void do_hist(char *s)
 	puts("Please recompile with HISIZE defined in sim.h");
 #else
 	int i, l, b, e, sa;
-	static char nv[2];
 
 	while (isspace((unsigned char) *s))
 		s++;
@@ -821,13 +797,11 @@ static void do_hist(char *s)
 			if (++l < 20)
 				continue;
 			l = 0;
-			printf("q = quit, else continue: ");
+			fputs("q = quit, else continue: ", stdout);
 			fflush(stdout);
-			if (term_in(nv, sizeof(nv), stdin) == NULL) {
-				putchar('\n');
-				if (ISATTY(fileno(stdin)))
-					clearerr(stdin);
-			} else if (toupper((unsigned char) nv[0]) == 'Q')
+			if (!get_cmdline(arg, LENCMD) &&
+			    (arg[0] == '\0' ||
+			     tolower((unsigned char) arg[0]) == 'q'))
 				break;
 		}
 		break;
