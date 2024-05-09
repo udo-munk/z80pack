@@ -22,3 +22,8 @@ SBSIZE		to enable breakpoints and optionally change the size
 For cpmsim see "README-cpm.txt" on how to build it. The simulators
 which include a frontpanel (altairsim, cromemcosim, or imsaisim) need
 to be build without it, as described in "README-frontpanel.txt".
+
+The ICE also can be included when running on bare metal, if the device
+has enough memory. This is shown in picosim running on Raspberry Pi Pico.
+Because the bare metal is not running an operating system all
+commands that require one are disabled.
