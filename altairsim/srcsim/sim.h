@@ -23,6 +23,7 @@
  * 07-MAY-2018 added memory configuration needed by apple monitor
  * 21-AUG-2018 improved memory configuration
  * 29-AUG-2021 new memory configuration sections
+ * 09-MAY-2024 added more defines for conditional compiling components
  */
 
 #ifndef SIM_INC

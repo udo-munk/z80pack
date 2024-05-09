@@ -23,6 +23,7 @@
  * 14-AUG-2020 allow building machine without frontpanel
  * 07-AUG-2021 add APU emulation
  * 29-AUG-2021 new memory configuration sections
+ * 09-MAY-2024 added more defines for conditional compiling components
  */
 
 #ifndef SIM_INC

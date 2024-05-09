@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2022 by Udo Munk
+ * Copyright (C) 1987-2024 by Udo Munk
  */
 
 #ifndef SIM_INC

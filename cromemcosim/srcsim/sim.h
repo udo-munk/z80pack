@@ -24,6 +24,7 @@
  * 29-AUG-2021 new memory configuration sections
  * 02-SEP-2021 implement banked ROM
  * 14-JUL-2022 added generic AT modem and HAL
+ * 09-MAY-2024 added more defines for conditional compiling components
  */
 
 #ifndef SIM_INC
