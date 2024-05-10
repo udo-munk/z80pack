@@ -473,32 +473,29 @@ static void get_opcodes(WORD addr, int len)
 
 /*
  *	The function disass() is the only global function of
- *	this module. The first argument specifies the
- *	instruction set to use. The second argument is a
- *	pointer to a WORD, which hold the address of the
- *	op-code to disassemble. The output of the disassembly
- *	goes to stdout, terminated by a newline. After the
- *	disassembly the pointer to the address of the op-code
- *	will be increased by the size of the op-code, so that
- *	disass() can be called again.
+ *	this module. The argument is the address of the op-code
+ *	to disassemble. The output of the disassembly goes to
+ *	stdout, terminated by a newline. After the disassembly
+ *	the length in bytes of the disassembled instruction
+ *	is returned.
  *
  *	At most four bytes will be read from memory using
  *	getmem().
  *
  */
-void disass(WORD *addr)
+int disass(WORD addr)
 {
 	register BYTE op;
 	register int len = 1;
 	struct opt *optp;
 
-	op = getmem(*addr);
+	op = getmem(addr);
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
 		if (op < 0x40) {
 			optp = &optabz80_01[op];
-			len = (*optp->fun)(optp->text, *addr);
+			len = (*optp->fun)(optp->text, addr);
 		} else if (op < 0x80) {
 			if (op == 0x76)
 				strcpy(Disass_Str, "HALT");
@@ -510,7 +507,7 @@ void disass(WORD *addr)
 				aluins[(op >> 3) & 7], reg[op & 7]);
 		else {
 			optp = &optabz80_67[op & 0x3f];
-			len = (*optp->fun)(optp->text, *addr);
+			len = (*optp->fun)(optp->text, addr);
 		}
 		break;
 #endif
@@ -518,7 +515,7 @@ void disass(WORD *addr)
 	case I8080:
 		if (op < 0x40) {
 			optp = &optabi8080_01[op];
-			len = (*optp->fun)(optp->text, *addr);
+			len = (*optp->fun)(optp->text, addr);
 		} else if (op < 0x80) {
 			if (op == 0x76)
 				strcpy(Disass_Str, "HLT");
@@ -532,7 +529,7 @@ void disass(WORD *addr)
 				regi8080[op & 7]);
 		else {
 			optp = &optabi8080_67[op & 0x3f];
-			len = (*optp->fun)(optp->text, *addr);
+			len = (*optp->fun)(optp->text, addr);
 		}
 		break;
 #endif
@@ -541,14 +538,14 @@ void disass(WORD *addr)
 	}
 	strcat(Disass_Str, "\n");
 
-	get_opcodes(*addr, len);
+	get_opcodes(addr, len);
 #ifndef WANT_GUI
 	fputs(Opcode_Str, stdout);
 	putchar('\t');
 	fputs(Disass_Str, stdout);
 #endif
 
-	*addr += len;
+	return (len);
 }
 
 /*

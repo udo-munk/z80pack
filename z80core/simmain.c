@@ -251,16 +251,16 @@ usage:
 #endif
 				       rom);
 #ifdef HAS_DISKS
-				printf(" -d diskpath");
+				fputs(" -d diskpath", stdout);
 #endif
 #ifdef HAS_CONFIG
-				printf(" -c filename");
+				fputs(" -c filename", stdout);
 #if MAXMEMSECT > 0
-				printf(" -M val");
+				fputs(" -M val", stdout);
 #endif
 #endif
 #ifdef HAS_BANKED_ROM
-				printf(" -R");
+				fputs(" -R", stdout);
 #endif
 				putchar('\n');
 #ifndef EXCLUDE_Z80
@@ -350,17 +350,28 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);
 	else
-		printf("CPU speed is unlimited");
+		fputs("CPU speed is unlimited", stdout);
 
 #ifndef UNDOC_INST
-	printf(", CPU doesn't execute undocumented instructions\n");
+	puts(", CPU doesn't execute undocumented instructions");
 #else
 	if (u_flag)
-		printf(", CPU doesn't execute undocumented instructions\n");
+		fputs(", CPU doesn't execute undocumented instructions",
+		      stdout);
 	else
-		printf(", CPU executes undocumented instructions\n");
+		fputs(", CPU executes undocumented instructions", stdout);
 #endif
-
+#ifndef EXCLUDE_Z80
+	if (cpu == Z80)
+		printf(",\nCPU%s maintain%s undocumented flags",
+#ifdef UNDOC_FLAGS
+		       "", "s"
+#else
+		       " doesn't", ""
+#endif
+		       );
+#endif
+	putchar('\n');
 	fflush(stdout);
 
 	/* if the machine has configuration files try to find them */
