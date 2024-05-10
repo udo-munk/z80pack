@@ -33,13 +33,16 @@
 #ifdef WANT_ICE
 
 extern void run_cpu(void), step_cpu(void);
-extern void disass(WORD *);
+extern int disass(WORD);
 extern int exatoi(char *);
 extern void report_cpu_error(void);
+extern int get_cmdline(char *, int);
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+extern void switch_cpu(int);
+#endif
 #ifndef ICE_BAREMETAL
 extern int load_file(char *, WORD, int);
 #endif
-extern int get_cmdline(char *, int);
 
 static void do_step(void);
 static void do_trace(char *);
@@ -57,6 +60,9 @@ static void print_reg(void);
 static void do_break(char *);
 static void do_hist(char *);
 static void do_count(char *);
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+static void do_switch(char *);
+#endif
 static void do_show(void);
 static void do_help(void);
 
@@ -95,15 +101,13 @@ void (*ice_cust_help)(void);
 void ice_cmd_loop(int go_flag)
 {
 	register int eoj = 1;
-	WORD a;
 	static char cmd[LENCMD];
 
 	if (!go_flag) {
 		report_cpu_error();
 		print_head();
 		print_reg();
-		a = PC;
-		disass(&a);
+		(void) disass(PC);
 	}
 	wrk_addr = PC;
 
@@ -159,6 +163,11 @@ void ice_cmd_loop(int go_flag)
 		case 'z':
 			do_count(cmd + 1);
 			break;
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+		case '8':
+			do_switch(cmd + 1);
+			break;
+#endif
 		case 's':
 			do_show();
 			break;
@@ -196,16 +205,13 @@ void ice_cmd_loop(int go_flag)
  */
 static void do_step(void)
 {
-	WORD a;
-
 	step_cpu();
 	if (cpu_error == OPHALT)
 		handle_break();
 	report_cpu_error();
 	print_head();
 	print_reg();
-	a = PC;
-	disass(&a);
+	(void) disass(PC);
 	wrk_addr = PC;
 }
 
@@ -350,7 +356,7 @@ static void do_list(char *s)
 		wrk_addr = exatoi(s);
 	for (i = 0; i < 10; i++) {
 		printf("%04x - ", (unsigned int) wrk_addr);
-		disass(&wrk_addr);
+		wrk_addr += disass(wrk_addr);
 	}
 }
 
@@ -508,6 +514,10 @@ static const struct reg_def {
 	{ "fh",  2, "H",   0, R_M,  .rm = H_FLAG },
 	{ "fp",  2, "P",   0, R_M,  .rm = P_FLAG },
 #ifndef EXCLUDE_Z80
+#ifdef UNDOC_FLAGS
+	{ "fx",  2, "X",   1, R_M,  .rm = N1_FLAG },
+	{ "fy",  2, "Y",   1, R_M,  .rm = N2_FLAG },
+#endif
 	{ "fn",  2, "N",   1, R_M,  .rm = N_FLAG },
 #endif
 	{ "fc",  2, "C",   0, R_M,  .rm = C_FLAG },
@@ -623,13 +633,19 @@ static void print_head(void)
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
-		printf("\nPC   A  SZHPNC I  R  IFF BC   DE   HL   "
-		       "A'F' B'C' D'E' H'L' IX   IY   SP\n");
+		printf("\nPC   A  SZ%sH%sPNC I  R  IFF BC   DE   HL   "
+		       "A'F' B'C' D'E' H'L' IX   IY   SP\n",
+#ifdef UNDOC_FLAGS
+		       "Y", "X"
+#else
+		       "", ""
+#endif
+		       );
 		break;
 #endif
 #ifndef EXCLUDE_I8080
 	case I8080:
-		printf("\nPC   A  SZHPC BC   DE   HL   SP\n");
+		puts("\nPC   A  SZHPC BC   DE   HL   SP");
 		break;
 #endif
 	default:
@@ -645,11 +661,17 @@ static void print_reg(void)
 	printf("%04x %02x ", PC, A);
 	printf("%c", F & S_FLAG ? '1' : '0');
 	printf("%c", F & Z_FLAG ? '1' : '0');
-	printf("%c", F & H_FLAG ? '1' : '0');
-	printf("%c", F & P_FLAG ? '1' : '0');
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
+#ifdef UNDOC_FLAGS
+		printf("%c", F & N2_FLAG ? '1' : '0');
+#endif
+		printf("%c", F & H_FLAG ? '1' : '0');
+#ifdef UNDOC_FLAGS
+		printf("%c", F & N1_FLAG ? '1' : '0');
+#endif
+		printf("%c", F & P_FLAG ? '1' : '0');
 		printf("%c", F & N_FLAG ? '1' : '0');
 		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x ", I);
@@ -664,6 +686,8 @@ static void print_reg(void)
 #endif
 #ifndef EXCLUDE_I8080
 	case I8080:
+		printf("%c", F & H_FLAG ? '1' : '0');
+		printf("%c", F & P_FLAG ? '1' : '0');
 		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x%02x %02x%02x %02x%02x %04x\n",
 		       B, C, D, E, H, L, SP);
@@ -839,6 +863,47 @@ static void do_count(char *s)
 #endif
 }
 
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+/*
+ *	Switch between CPU modes
+ */
+static void do_switch(char *s)
+{
+	int old_cpu = cpu;
+
+	while (isspace((unsigned char) *s))
+		s++;
+	if (*s == '\0') {
+		if (cpu == Z80) {
+			switch_cpu(I8080);
+			puts("Switched to 8080 mode");
+		} else {
+			switch_cpu(Z80);
+			puts("Switched to Z80 mode");
+		}
+	} else if (tolower((unsigned char) *s) == 'z') {
+		if (cpu == Z80)
+			puts("Already in Z80 mode");
+		else {
+			switch_cpu(Z80);
+			puts("Switched to Z80 mode");
+		}
+	} else if (*s == '8') {
+		if (cpu == I8080)
+			puts("Already in 8080 mode");
+		else {
+			switch_cpu(I8080);
+			puts("Switched to 8080 mode");
+		}
+	} else
+		puts("Unsupported CPU mode");
+	if (old_cpu != cpu) {
+		print_head();
+		print_reg();
+	}
+}
+#endif
+
 /*
  *	Output information about compiling options
  */
@@ -846,7 +911,21 @@ static void do_show(void)
 {
 	register int i;
 
-	printf("Release: %s\n", RELEASE);
+	switch (cpu) {
+#ifndef EXCLUDE_Z80
+	case Z80:
+		fputs("Z80", stdout);
+		break;
+#endif
+#ifndef EXCLUDE_I8080
+	case I8080:
+		fputs("8080", stdout);
+		break;
+#endif
+	default:
+		break;
+	}
+	printf("-Sim Release: %s\n", RELEASE);
 #ifdef HISIZE
 	i = HISIZE;
 #else
@@ -864,7 +943,17 @@ static void do_show(void)
 #else
 	i = 1;
 #endif
-	printf("Undocumented op-codes %sexecuted\n", i ? "not " : "");
+	printf("Undocumented op-codes are %sexecuted\n", i ? "not " : "");
+#ifndef EXCLUDE_Z80
+#ifdef UNDOC_FLAGS
+	i = 0;
+#else
+	i = 1;
+#endif
+	if (cpu == Z80)
+		printf("Undocumented flags are %smaintained\n",
+		       i ? "not " : "");
+#endif
 #ifdef WANT_TIM
 	i = 1;
 #else
@@ -897,6 +986,10 @@ static void do_help(void)
 	puts("z start,stop              set trigger addr for t-state count");
 	puts("z                         show t-state count");
 	puts("s                         show settings");
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	puts("8                         toggle between Z80 & 8080 mode");
+	puts("8 [z|8]                   switch to Z80 or 8080 mode");
+#endif
 #ifndef ICE_BAREMETAL
 	puts("c                         measure clock frequency");
 	puts("r filename[,address]      read object into memory");

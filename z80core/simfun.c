@@ -77,7 +77,7 @@ unsigned long long get_clock_us(void)
 #ifdef WANT_ICE
 /*
  *	Read an ICE command line from stdin.
- *	Returns empty string on EOF and signal interruptions.
+ *	Sets buf to an empty string on EOF and signal interruptions.
  */
 int get_cmdline(char *buf, int len)
 {
@@ -94,7 +94,6 @@ int get_cmdline(char *buf, int len)
 	return (err);
 }
 #endif
-
 
 /*
  *	Read a file into the memory of the emulated CPU.
