@@ -9,7 +9,6 @@
 	org	100h
 
 bdos	equ	5
-wboot	equ	0
 hwctl	equ	0a0h
 hwunlk	equ	0aah
 setz80	equ	32
@@ -32,3 +31,5 @@ domsg:	mvi	c,9
 
 isz80:	db	'Already in Z80 mode$'
 swz80:	db	'Switched to Z80 mode$'
+
+	end
