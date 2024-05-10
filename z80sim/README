@@ -1,0 +1,6 @@
+The SIO port implemented is compatible with MITS SIO Rev. 1, so that
+all software using it runs on this machine.
+
+Also port 255, which is used by frontpanel machines for system
+configuration, can be set with the p command to any desired value,
+the default is 0.
