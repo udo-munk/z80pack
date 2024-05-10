@@ -184,7 +184,7 @@ static BYTE p001_in(void)
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return sio_last; /* someone raeds without checking status */
+		return sio_last; /* someone reads without checking status */
 	else {
 		sio_last = getchar();
 		return sio_last;
