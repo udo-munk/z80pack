@@ -9,7 +9,6 @@
 	org	100h
 
 bdos	equ	5
-wboot	equ	0
 hwctl	equ	0a0h
 hwunlk	equ	0aah
 set8080	equ	16
@@ -32,3 +31,5 @@ domsg:	mvi	c,9
 
 is8080:	db	'Already in 8080 mode$'
 sw8080:	db	'Switched to 8080 mode$'
+
+	end
