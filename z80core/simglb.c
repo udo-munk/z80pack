@@ -40,7 +40,7 @@ WORD PC;			/* program counter */
 WORD SP;			/* stack pointer */
 BYTE IFF;			/* interrupt flags */
 Tstates_t T;			/* CPU clock */
-unsigned long long cpu_start, cpu_stop; /* timestamps in ms */
+unsigned long long cpu_start, cpu_stop; /* timestamps in us */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
