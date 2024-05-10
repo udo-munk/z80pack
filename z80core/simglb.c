@@ -86,10 +86,13 @@ int sb_next;			/* index into breakpoint memory */
 /*
  *	Variables for runtime measurement
  */
-long t_states;			/* number of counted T states */
+#ifdef WANT_TIM
+Tstates_t t_states_s;		/* T states marker at start of measurement */
+Tstates_t t_states_e;		/* T states marker at end of measurement */
 int t_flag;			/* flag, 1 = on, 0 = off */
 WORD t_start = 65535;		/* start address for measurement */
 WORD t_end = 65535;		/* end address for measurement */
+#endif
 
 /*
  *	Variables for frontpanel emulation

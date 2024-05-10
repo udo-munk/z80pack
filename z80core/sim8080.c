@@ -386,11 +386,11 @@ void cpu_8080(void)
 		op_rst7				/* 0xff */
 	};
 
-	register int t = 0;
-	register int states;
+	Tstates_t T_max;
 	unsigned long long t1, t2;
 	int tdiff;
 
+	T_max = T + tmax;
 	t1 = get_clock_us();
 
 	do {
@@ -414,12 +414,10 @@ void cpu_8080(void)
 #ifdef WANT_TIM
 		/* check for start address of runtime measurement */
 		if (PC == t_start && !t_flag) {
-			t_flag = 1;	/* switch measurement on */
-			t_states = 0L;	/* initialize counted T-states */
+			t_flag = 1;		     /* turn measurement on */
+			t_states_s = t_states_e = T; /* initialize markers */
 		}
 #endif
-
-		states = 0;
 
 		/* CPU DMA bus request handling */
 		if (bus_mode) {
@@ -428,7 +426,7 @@ void cpu_8080(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
-					states += (*dma_bus_master)(0);
+					T += (*dma_bus_master)(0);
 				}
 			}
 
@@ -440,7 +438,7 @@ void cpu_8080(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
-					states += (*dma_bus_master)(1);
+					T += (*dma_bus_master)(1);
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -527,7 +525,7 @@ void cpu_8080(void)
 				cpu_state = STOPPED;
 				continue;
 			}
-			states += 11;
+			T += 11;
 			int_int = 0;
 			int_data = -1;
 #ifdef FRONTPANEL
@@ -541,30 +539,24 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 
-		t += states;		/* account for DMA/interrupt cycles */
-		T += states;
-
 		int_protection = 0;
-		states = (*op_sim[memrdr(PC++)])(); /* execute next opcode */
-		t += states;
+		T += (*op_sim[memrdr(PC++)])(); /* execute next opcode */
 
 		if (f_flag) {		/* adjust CPU speed */
-			if (t >= tmax && !cpu_needed) {
+			if (T >= T_max && !cpu_needed) {
 				t2 = get_clock_us();
 				tdiff = t2 - t1;
 				if ((tdiff > 0) && (tdiff < 10000))
 					SLEEP_MS(10 - (tdiff / 1000));
-				t = 0;
+				T_max = T + tmax;
 				t1 = get_clock_us();
 			}
 		}
 
-		T += states;		/* increment CPU clock */
-
-					/* do runtime measurement */
 #ifdef WANT_TIM
+					/* do runtime measurement */
 		if (t_flag) {
-			t_states += states; /* add T-states for this opcode */
+			t_states_e = T; /* set end marker for this opcode */
 			if (PC == t_end)	/* check for end address */
 				t_flag = 0;	/* if reached, switch off */
 		}
