@@ -8,12 +8,11 @@
  */
 
 /*
- *	Sample I/O-handler
- *
  *	Port 0 input:	reads status of stdin
  *	Port 1 input:	reads the next byte from stdin
- *	Port 255 input:	returns 0 for software querying frontpanel
+ *	Port 255 input:	returns a value for software querying frontpanel
  *	Port 1 output:	writes the byte to stdout
+ *	Port 255 output: set value for the port
  *
  *	All the other ports are connected to an I/O-trap handler,
  *	I/O to this ports stops the simulation with an I/O error.
