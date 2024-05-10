@@ -514,6 +514,10 @@ static const struct reg_def {
 	{ "fh",  2, "H",   0, R_M,  .rm = H_FLAG },
 	{ "fp",  2, "P",   0, R_M,  .rm = P_FLAG },
 #ifndef EXCLUDE_Z80
+#ifdef UNDOC_FLAGS
+	{ "fx",  2, "X",   1, R_M,  .rm = N1_FLAG },
+	{ "fy",  2, "Y",   1, R_M,  .rm = N2_FLAG },
+#endif
 	{ "fn",  2, "N",   1, R_M,  .rm = N_FLAG },
 #endif
 	{ "fc",  2, "C",   0, R_M,  .rm = C_FLAG },
