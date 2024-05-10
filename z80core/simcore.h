@@ -32,23 +32,25 @@
 #error "DEF_CPU=Z80 and no Z80 simulation included"
 #endif
 
-#define S_FLAG		128	/* bit definitions of CPU flags */
-#define Z_FLAG		64
-#define N2_FLAG		32
-#define H_FLAG		16
-#define N1_FLAG		8
-#define P_FLAG		4
-#define N_FLAG		2
-#define C_FLAG		1
+				/* bit definitions of CPU flags */
+#define S_FLAG		128	/* sign flag */
+#define Z_FLAG		64	/* zero flag */
+#define Y_FLAG		32	/* undocumented */
+#define H_FLAG		16	/* half carry flag */
+#define X_FLAG		8	/* undocumented */
+#define P_FLAG		4	/* parity/overflow flag */
+#define N_FLAG		2	/* add/subtract flag */
+#define C_FLAG		1	/* carry flag */
 
-#define CPU_MEMR	128	/* bit definitions for CPU bus status */
-#define CPU_INP		64
-#define CPU_M1		32
-#define CPU_OUT		16
-#define CPU_HLTA	8
-#define CPU_STACK	4
-#define CPU_WO		2
-#define CPU_INTA	1
+				/* bit definitions for CPU bus status */
+#define CPU_MEMR	128	/* memory read */
+#define CPU_INP		64	/* input device address */
+#define CPU_M1		32	/* machine cycle one */
+#define CPU_OUT		16	/* output device address */
+#define CPU_HLTA	8	/* halt acknowledge */
+#define CPU_STACK	4	/* pushdown stack address */
+#define CPU_WO		2	/* write or output (active low) */
+#define CPU_INTA	1	/* interrupt acknowledge */
 
 #ifdef FRONTPANEL
 #define BUS_8080		/* emulate 8080 bus status */

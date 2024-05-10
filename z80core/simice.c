@@ -515,8 +515,8 @@ static const struct reg_def {
 	{ "fp",  2, "P",   0, R_M,  .rm = P_FLAG },
 #ifndef EXCLUDE_Z80
 #ifdef UNDOC_FLAGS
-	{ "fx",  2, "X",   1, R_M,  .rm = N1_FLAG },
-	{ "fy",  2, "Y",   1, R_M,  .rm = N2_FLAG },
+	{ "fx",  2, "X",   1, R_M,  .rm = X_FLAG },
+	{ "fy",  2, "Y",   1, R_M,  .rm = Y_FLAG },
 #endif
 	{ "fn",  2, "N",   1, R_M,  .rm = N_FLAG },
 #endif
@@ -665,11 +665,11 @@ static void print_reg(void)
 #ifndef EXCLUDE_Z80
 	case Z80:
 #ifdef UNDOC_FLAGS
-		printf("%c", F & N2_FLAG ? '1' : '0');
+		printf("%c", F & Y_FLAG ? '1' : '0');
 #endif
 		printf("%c", F & H_FLAG ? '1' : '0');
 #ifdef UNDOC_FLAGS
-		printf("%c", F & N1_FLAG ? '1' : '0');
+		printf("%c", F & X_FLAG ? '1' : '0');
 #endif
 		printf("%c", F & P_FLAG ? '1' : '0');
 		printf("%c", F & N_FLAG ? '1' : '0');

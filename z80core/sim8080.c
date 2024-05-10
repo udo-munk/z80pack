@@ -2571,7 +2571,7 @@ static int op_poppsw(void)		/* POP PSW */
 	cpu_bus = CPU_STACK;
 #endif
 	F = memrdr(SP++);
-	F &= ~(N2_FLAG | N1_FLAG);
+	F &= ~(Y_FLAG | X_FLAG);
 	F |= N_FLAG;
 	A = memrdr(SP++);
 	return (10);
