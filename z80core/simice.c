@@ -824,16 +824,16 @@ static void do_count(char *s)
 		s++;
 	if (*s == '\0') {
 		puts("start  stop  status  T-states");
-		printf("%04x   %04x    %s   %lu\n",
+		printf("%04x   %04x    %s   %llu\n",
 		       t_start, t_end,
-		       t_flag ? "on " : "off", t_states);
+		       t_flag ? "on " : "off", t_states_e - t_states_s);
 	} else {
 		t_start = exatoi(s);
 		while (*s != ',' && *s != '\0')
 			s++;
 		if (*s)
 			t_end = exatoi(++s);
-		t_states = 0L;
+		t_states_s = t_states_e = T;
 		t_flag = 0;
 	}
 #endif

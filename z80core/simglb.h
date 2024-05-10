@@ -72,9 +72,11 @@ extern struct	softbreak soft[];
 extern int	sb_next;
 #endif
 
-extern long	t_states;
+#ifdef WANT_TIM
+extern Tstates_t t_states_s, t_states_e;
 extern int	t_flag;
 extern WORD	t_start, t_end;
+#endif
 
 #ifdef FRONTPANEL
 extern unsigned long long fp_clock;
