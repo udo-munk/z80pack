@@ -1,9 +1,3 @@
-For more downloads of operation manuals and other or updated software
-please check:
-
-	http://www.autometer.de/unix4fun/z80pack/ftp/imsai/
-
-
 The monitor/boot ROM's (mpu-a-rom.hex and mpu-b-rom.hex) are full featured
 monitor programs. They first check if there is a disk in drive A:. If a disk
 is present the boot code loads the first sector and executes it, which will
