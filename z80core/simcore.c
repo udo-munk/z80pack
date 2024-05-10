@@ -61,7 +61,7 @@ void init_cpu(void)
 
 #ifndef EXCLUDE_I8080
 	if (cpu == I8080) {
-		F &= ~(N2_FLAG | N1_FLAG);
+		F &= ~(Y_FLAG | X_FLAG);
 		F |= N_FLAG;
 	}
 #endif
@@ -95,7 +95,7 @@ void switch_cpu(int new_cpu)
 		case Z80:
 			break;
 		case I8080:
-			F &= ~(N2_FLAG | N1_FLAG);
+			F &= ~(Y_FLAG | X_FLAG);
 			F |= N_FLAG;
 			break;
 		default:

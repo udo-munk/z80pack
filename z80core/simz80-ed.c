@@ -405,8 +405,8 @@ static int op_neg(void)			/* NEG */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (8);
@@ -425,8 +425,8 @@ static int op_inaic(void)		/* IN A,(C) */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);
@@ -445,8 +445,8 @@ static int op_inbic(void)		/* IN B,(C) */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);
@@ -465,8 +465,8 @@ static int op_incic(void)		/* IN C,(C) */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);
@@ -485,8 +485,8 @@ static int op_indic(void)		/* IN D,(C) */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);
@@ -505,8 +505,8 @@ static int op_ineic(void)		/* IN E,(C) */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);
@@ -525,8 +525,8 @@ static int op_inhic(void)		/* IN H,(C) */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);
@@ -545,8 +545,8 @@ static int op_inlic(void)		/* IN L,(C) */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);
@@ -655,8 +655,8 @@ static int op_ini(void)			/* INI */
 #endif
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (16);
@@ -693,7 +693,7 @@ static int op_inir(void)		/* INIR */
 #endif
 	F |= Z_FLAG;
 #ifdef UNDOC_FLAGS
-	F &= ~(N2_FLAG | N1_FLAG);
+	F &= ~(Y_FLAG | X_FLAG);
 	WZ = ((1 << 8) + C) + 1;
 	modF = 1;
 #endif
@@ -711,8 +711,8 @@ static int op_inir(void)		/* INIR */
 #ifdef UNDOC_FLAGS
 		register int i;
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 		if (F & C_FLAG) {
 			if (F & N_FLAG) {
 				i = parity[(B - 1) & 0x07];
@@ -758,8 +758,8 @@ static int op_ind(void)			/* IND */
 #endif
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (16);
@@ -796,7 +796,7 @@ static int op_indr(void)		/* INDR */
 #endif
 	F |= Z_FLAG;
 #ifdef UNDOC_FLAGS
-	F &= ~(N2_FLAG | N1_FLAG);
+	F &= ~(Y_FLAG | X_FLAG);
 	WZ = ((1 << 8) + C) - 1;
 	modF = 1;
 #endif
@@ -814,8 +814,8 @@ static int op_indr(void)		/* INDR */
 #ifdef UNDOC_FLAGS
 		register int i;
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 		if (F & C_FLAG) {
 			if (F & N_FLAG) {
 				i = parity[(B - 1) & 0x07];
@@ -858,8 +858,8 @@ static int op_outi(void)		/* OUTI */
 #endif
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = ((B << 8) + C) + 1;
 	modF = 1;
 #endif
@@ -897,7 +897,7 @@ static int op_otir(void)		/* OTIR */
 #endif
 	F |= Z_FLAG;
 #ifdef UNDOC_FLAGS
-	F &= ~(N2_FLAG | N1_FLAG);
+	F &= ~(Y_FLAG | X_FLAG);
 	WZ = (WORD) C + (WORD) 1;
 	modF = 1;
 #endif
@@ -915,8 +915,8 @@ static int op_otir(void)		/* OTIR */
 #ifdef UNDOC_FLAGS
 		register int i;
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 		if (F & C_FLAG) {
 			if (F & N_FLAG) {
 				i = parity[(B - 1) & 0x07];
@@ -959,8 +959,8 @@ static int op_outd(void)		/* OUTD */
 #endif
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = ((B << 8) + C) - 1;
 	modF = 1;
 #endif
@@ -998,7 +998,7 @@ static int op_otdr(void)		/* OTDR */
 #endif
 	F |= Z_FLAG;
 #ifdef UNDOC_FLAGS
-	F &= ~(N2_FLAG | N1_FLAG);
+	F &= ~(Y_FLAG | X_FLAG);
 	WZ = (WORD) C - (WORD) 1;
 	modF = 1;
 #endif
@@ -1016,8 +1016,8 @@ static int op_otdr(void)		/* OTDR */
 #ifdef UNDOC_FLAGS
 		register int i;
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 		if (F & C_FLAG) {
 			if (F & N_FLAG) {
 				i = parity[(B - 1) & 0x07];
@@ -1045,8 +1045,8 @@ static int op_ldai(void)		/* LD A,I */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (9);
@@ -1060,8 +1060,8 @@ static int op_ldar(void)		/* LD A,R */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (9);
@@ -1216,8 +1216,8 @@ static int op_adchb(void)		/* ADC HL,BC */
 	L = i;
 	F &= ~N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1247,8 +1247,8 @@ static int op_adchd(void)		/* ADC HL,DE */
 	L = i;
 	F &= ~N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1276,8 +1276,8 @@ static int op_adchh(void)		/* ADC HL,HL */
 	L = i;
 	F &= ~N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1307,8 +1307,8 @@ static int op_adchs(void)		/* ADC HL,SP */
 	L = i;
 	F &= ~N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1338,8 +1338,8 @@ static int op_sbchb(void)		/* SBC HL,BC */
 	L = i;
 	F |= N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1369,8 +1369,8 @@ static int op_sbchd(void)		/* SBC HL,DE */
 	L = i;
 	F |= N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1398,8 +1398,8 @@ static int op_sbchh(void)		/* SBC HL,HL */
 	L = i;
 	F |= N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1429,8 +1429,8 @@ static int op_sbchs(void)		/* SBC HL,SP */
 	L = i;
 	F |= N_FLAG;
 #ifdef UNDOC_FLAGS
-	(i & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = hl + 1;
 	modF = 1;
 #endif
@@ -1456,8 +1456,8 @@ static int op_ldi(void)			/* LDI */
 	F &= ~(N_FLAG | H_FLAG);
 #ifdef UNDOC_FLAGS
 	tmp += A;
-	(tmp & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(tmp & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(tmp & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(tmp & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (16);
@@ -1493,8 +1493,8 @@ static int op_ldir(void)		/* LDIR */
 	F &= ~(N_FLAG | P_FLAG | H_FLAG);
 #ifdef UNDOC_FLAGS
 	tmp += A;
-	(tmp & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(tmp & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(tmp & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(tmp & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (t + 16);
@@ -1510,8 +1510,8 @@ static int op_ldir(void)		/* LDIR */
 		t += 5;
 #ifdef UNDOC_FLAGS
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
 	}
 	return (t);
@@ -1537,8 +1537,8 @@ static int op_ldd(void)			/* LDD */
 	F &= ~(N_FLAG | H_FLAG);
 #ifdef UNDOC_FLAGS
 	tmp += A;
-	(tmp & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(tmp & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(tmp & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(tmp & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (16);
@@ -1574,8 +1574,8 @@ static int op_lddr(void)		/* LDDR */
 	F &= ~(N_FLAG | P_FLAG | H_FLAG);
 #ifdef UNDOC_FLAGS
 	tmp += A;
-	(tmp & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(tmp & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(tmp & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(tmp & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (t + 16);
@@ -1591,8 +1591,8 @@ static int op_lddr(void)		/* LDDR */
 		PC -= 2;
 #ifdef UNDOC_FLAGS
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
 	} else
 		t = 16;
@@ -1620,8 +1620,8 @@ static int op_cpi(void)			/* CPI */
 #ifdef UNDOC_FLAGS
 	if (F & H_FLAG)
 		i--;
-	(i & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ++;
 	modF = 1;
 #endif
@@ -1664,8 +1664,8 @@ static int op_cpir(void)		/* CPIR */
 #ifdef UNDOC_FLAGS
 	if (F & H_FLAG)
 		d--;
-	(d & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(d & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(d & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(d & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (t + 16);
@@ -1681,8 +1681,8 @@ static int op_cpir(void)		/* CPIR */
 		t += 5;
 #ifdef UNDOC_FLAGS
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
 	}
 	return (t);
@@ -1709,8 +1709,8 @@ static int op_cpdop(void)		/* CPD */
 #ifdef UNDOC_FLAGS
 	if (F & H_FLAG)
 		i--;
-	(i & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(i & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(i & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ--;
 	modF = 1;
 #endif
@@ -1753,8 +1753,8 @@ static int op_cpdr(void)		/* CPDR */
 #ifdef UNDOC_FLAGS
 	if (F & H_FLAG)
 		d--;
-	(d & 2) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(d & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(d & 2) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(d & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (t + 16);
@@ -1770,8 +1770,8 @@ static int op_cpdr(void)		/* CPDR */
 		t += 5;
 #ifdef UNDOC_FLAGS
 		WZ = PC + 1;
-		(PC & 0x2000) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-		(PC & 0x0800) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+		(PC & 0x2000) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+		(PC & 0x0800) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
 	}
 	return (t);
@@ -1794,8 +1794,8 @@ static int op_oprld(void)		/* RLD (HL) */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr + 1;
 	modF = 1;
 #endif
@@ -1818,8 +1818,8 @@ static int op_oprrd(void)		/* RRD (HL) */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr + 1;
 	modF = 1;
 #endif
@@ -1865,8 +1865,8 @@ static int op_undoc_infic(void)		/* IN F,(C) */
 	(tmp & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[tmp]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(tmp & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(tmp & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(tmp & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(tmp & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	modF = 1;
 #endif
 	return (12);

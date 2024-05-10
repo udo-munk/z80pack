@@ -401,8 +401,8 @@ static int op_tb0iyd(int data)		/* BIT 0,(IY+d) */
 	(memrdr(addr) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
 			   : (F |= (Z_FLAG | P_FLAG));
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -419,8 +419,8 @@ static int op_tb1iyd(int data)		/* BIT 1,(IY+d) */
 	(memrdr(addr) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
 			   : (F |= (Z_FLAG | P_FLAG));
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -437,8 +437,8 @@ static int op_tb2iyd(int data)		/* BIT 2,(IY+d) */
 	(memrdr(addr) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
 			   : (F |= (Z_FLAG | P_FLAG));
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -455,8 +455,8 @@ static int op_tb3iyd(int data)		/* BIT 3,(IY+d) */
 	(memrdr(addr) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
 			   : (F |= (Z_FLAG | P_FLAG));
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -473,8 +473,8 @@ static int op_tb4iyd(int data)		/* BIT 4,(IY+d) */
 	(memrdr(addr) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
 			    : (F |= (Z_FLAG | P_FLAG));
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -491,8 +491,8 @@ static int op_tb5iyd(int data)		/* BIT 5,(IY+d) */
 	(memrdr(addr) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
 			    : (F |= (Z_FLAG | P_FLAG));
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -509,8 +509,8 @@ static int op_tb6iyd(int data)		/* BIT 6,(IY+d) */
 	(memrdr(addr) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
 			    : (F |= (Z_FLAG | P_FLAG));
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -532,8 +532,8 @@ static int op_tb7iyd(int data)		/* BIT 7,(IY+d) */
 		F &= ~S_FLAG;
 	}
 #ifdef UNDOC_FLAGS
-	(addr & (32 << 8)) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(addr & (8 << 8)) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -750,8 +750,8 @@ static int op_rlciyd(int data)		/* RLC (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -776,8 +776,8 @@ static int op_rrciyd(int data)		/* RRC (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -802,8 +802,8 @@ static int op_rliyd(int data)		/* RL (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -828,8 +828,8 @@ static int op_rriyd(int data)		/* RR (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -851,8 +851,8 @@ static int op_slaiyd(int data)		/* SLA (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -876,8 +876,8 @@ static int op_sraiyd(int data)		/* SRA (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -899,8 +899,8 @@ static int op_srliyd(int data)		/* SRL (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2791,8 +2791,8 @@ static int op_undoc_rlciyda(int data)	/* RLC (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2819,8 +2819,8 @@ static int op_undoc_rlciydb(int data)	/* RLC (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2847,8 +2847,8 @@ static int op_undoc_rlciydc(int data)	/* RLC (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2875,8 +2875,8 @@ static int op_undoc_rlciydd(int data)	/* RLC (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2903,8 +2903,8 @@ static int op_undoc_rlciyde(int data)	/* RLC (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2931,8 +2931,8 @@ static int op_undoc_rlciydh(int data)	/* RLC (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2959,8 +2959,8 @@ static int op_undoc_rlciydl(int data)	/* RLC (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -2987,8 +2987,8 @@ static int op_undoc_rrciyda(int data)	/* RRC (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3015,8 +3015,8 @@ static int op_undoc_rrciydb(int data)	/* RRC (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3043,8 +3043,8 @@ static int op_undoc_rrciydc(int data)	/* RRC (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3071,8 +3071,8 @@ static int op_undoc_rrciydd(int data)	/* RRC (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3099,8 +3099,8 @@ static int op_undoc_rrciyde(int data)	/* RRC (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3127,8 +3127,8 @@ static int op_undoc_rrciydh(int data)	/* RRC (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3155,8 +3155,8 @@ static int op_undoc_rrciydl(int data)	/* RRC (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3183,8 +3183,8 @@ static int op_undoc_rliyda(int data)	/* RL (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3211,8 +3211,8 @@ static int op_undoc_rliydb(int data)	/* RL (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3239,8 +3239,8 @@ static int op_undoc_rliydc(int data)	/* RL (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3267,8 +3267,8 @@ static int op_undoc_rliydd(int data)	/* RL (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3295,8 +3295,8 @@ static int op_undoc_rliyde(int data)	/* RL (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3323,8 +3323,8 @@ static int op_undoc_rliydh(int data)	/* RL (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3351,8 +3351,8 @@ static int op_undoc_rliydl(int data)	/* RL (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3379,8 +3379,8 @@ static int op_undoc_rriyda(int data)	/* RR (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3407,8 +3407,8 @@ static int op_undoc_rriydb(int data)	/* RR (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3435,8 +3435,8 @@ static int op_undoc_rriydc(int data)	/* RR (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3463,8 +3463,8 @@ static int op_undoc_rriydd(int data)	/* RR (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3491,8 +3491,8 @@ static int op_undoc_rriyde(int data)	/* RR (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3519,8 +3519,8 @@ static int op_undoc_rriydh(int data)	/* RR (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3547,8 +3547,8 @@ static int op_undoc_rriydl(int data)	/* RR (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3572,8 +3572,8 @@ static int op_undoc_slaiyda(int data)	/* SLA (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3597,8 +3597,8 @@ static int op_undoc_slaiydb(int data)	/* SLA (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3622,8 +3622,8 @@ static int op_undoc_slaiydc(int data)	/* SLA (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3647,8 +3647,8 @@ static int op_undoc_slaiydd(int data)	/* SLA (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3672,8 +3672,8 @@ static int op_undoc_slaiyde(int data)	/* SLA (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3697,8 +3697,8 @@ static int op_undoc_slaiydh(int data)	/* SLA (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3722,8 +3722,8 @@ static int op_undoc_slaiydl(int data)	/* SLA (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3749,8 +3749,8 @@ static int op_undoc_sraiyda(int data)	/* SRA (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3776,8 +3776,8 @@ static int op_undoc_sraiydb(int data)	/* SRA (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3803,8 +3803,8 @@ static int op_undoc_sraiydc(int data)	/* SRA (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3830,8 +3830,8 @@ static int op_undoc_sraiydd(int data)	/* SRA (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3857,8 +3857,8 @@ static int op_undoc_sraiyde(int data)	/* SRA (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3884,8 +3884,8 @@ static int op_undoc_sraiydh(int data)	/* SRA (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3911,8 +3911,8 @@ static int op_undoc_sraiydl(int data)	/* SRA (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3936,8 +3936,8 @@ static int op_undoc_slliyda(int data)	/* SLL (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3961,8 +3961,8 @@ static int op_undoc_slliydb(int data)	/* SLL (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -3986,8 +3986,8 @@ static int op_undoc_slliydc(int data)	/* SLL (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4011,8 +4011,8 @@ static int op_undoc_slliydd(int data)	/* SLL (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4036,8 +4036,8 @@ static int op_undoc_slliyde(int data)	/* SLL (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4061,8 +4061,8 @@ static int op_undoc_slliydh(int data)	/* SLL (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4086,8 +4086,8 @@ static int op_undoc_slliydl(int data)	/* SLL (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4112,8 +4112,8 @@ static int op_undoc_slliyd(int data)	/* SLL (IY+d) */
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(P & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4137,8 +4137,8 @@ static int op_undoc_srliyda(int data)	/* SRL (IY+d),A */
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(A & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4162,8 +4162,8 @@ static int op_undoc_srliydb(int data)	/* SRL (IY+d),B */
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(B & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(B & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4187,8 +4187,8 @@ static int op_undoc_srliydc(int data)	/* SRL (IY+d),C */
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(C & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(C & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4212,8 +4212,8 @@ static int op_undoc_srliydd(int data)	/* SRL (IY+d),D */
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(D & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(D & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4237,8 +4237,8 @@ static int op_undoc_srliyde(int data)	/* SRL (IY+d),E */
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(E & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(E & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4262,8 +4262,8 @@ static int op_undoc_srliydh(int data)	/* SRL (IY+d),H */
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(H & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(H & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
@@ -4287,8 +4287,8 @@ static int op_undoc_srliydl(int data)	/* SRL (IY+d),L */
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 #ifdef UNDOC_FLAGS
-	(L & 32) ? (F |= N2_FLAG) : (F &= ~N2_FLAG);
-	(L & 8) ? (F |= N1_FLAG) : (F &= ~N1_FLAG);
+	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 	WZ = addr;
 	modF = 1;
 #endif
