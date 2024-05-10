@@ -15,17 +15,25 @@
 extern void init_memory(void);
 extern BYTE code[];
 
+/* Last page in memory is ROM and write protected. Some software */
+/* expects a ROM in upper memory, if not it will wrap arround to */
+/* address 0, and destroys itself with testing RAM access. */
+
 /*
  * memory access for the CPU cores
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	code[addr] = data;
+	if (addr < 0xff00);
+		code[addr] = data;
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	return (code[addr]);
+	if (addr < 0xff00)
+		return code[addr];
+	else
+		return 0xff;
 }
 
 /*
@@ -33,12 +41,16 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
-	code[addr] = data;
+	if (addr < 0xff00)
+		code[addr] = data;
 }
 
 static inline BYTE dma_read(WORD addr)
 {
-	return (code[addr]);
+	if (addr < 0xff00)
+		return code[addr];
+	else
+		return 0xff;
 }
 
 /*
@@ -46,12 +58,16 @@ static inline BYTE dma_read(WORD addr)
  */
 static inline void putmem(WORD addr, BYTE data)
 {
-	code[addr] = data;
+	if (addr < 0xff00)
+		code[addr] = data;
 }
 
 static inline BYTE getmem(WORD addr)
 {
-	return (code[addr]);
+	if (addr < 0xff00)
+		return code[addr];
+	else
+		return 0xff;
 }
 
 #endif
