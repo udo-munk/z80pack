@@ -3,6 +3,10 @@ CWARNS= -Wall -Wextra -Wwrite-strings
 CFLAGS= -O $(CSTDS) $(CWARNS)
 LDFLAGS= -s
 
+Z80ASMDIR = ../../z80asm
+Z80ASM = $(Z80ASMDIR)/z80asm
+Z80ASMOPTS = -l -sn -p0
+
 all: putsys bios.bin boot.bin
 	@echo
 	@echo "Done."
@@ -11,11 +15,14 @@ all: putsys bios.bin boot.bin
 putsys: putsys.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
 
-bios.bin: bios.asm
-	z80asm -fb -l -sn -p0 -x $<
+bios.bin: bios.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMOPTS) -fb -x $<
 
-boot.bin: boot.asm
-	z80asm -fb -l -sn -p0 $<
+boot.bin: boot.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMOPTS) -fb $<
+
+$(Z80ASM):
+	$(MAKE) -C $(Z80ASMDIR) z80asm
 
 clean:
 	rm -f putsys bios.bin bios.lis boot.bin boot.lis

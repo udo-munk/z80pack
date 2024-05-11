@@ -27,6 +27,11 @@ OBJS =	z80amain.o \
 	z80aopc.o \
 	z80aglb.o
 
+all: z80asm
+	@echo
+	@echo "Done."
+	@echo
+
 z80asm: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o z80asm
 
@@ -63,7 +68,11 @@ clean:
 allclean: clean
 
 install: z80asm
+	install -d $(DESTDIR)
+	install -s z80asm $(DESTDIR)
+
+instcoh: z80asm
 	strip z80asm
 	cp z80asm ${DESTDIR}
 
-.PHONY: clean allclean install
+.PHONY: clean allclean install install-coh
