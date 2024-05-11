@@ -72,6 +72,6 @@ void config(void)
 		}
 		fclose(fp);
 	} else {
-		LOGW(TAG, "missing conf/config.txt file");
+		LOGW(TAG, "missing %s file", fn);
 	}
 }
