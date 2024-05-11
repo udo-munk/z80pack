@@ -1,16 +1,23 @@
+Z80ASMDIR = ../z80asm
+Z80ASM = $(Z80ASMDIR)/z80asm
+Z80ASMOPTS = -l -sn -p0
+
 all: float.hex z80main.hex z80opsall.hex 8080opsall.hex
 
-float.hex: float.asm
-	z80asm -fh -l -sn -p0 $<
+float.hex: float.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMOPTS) -fh $<
 
-z80main.hex: z80main.asm z80dis.asm z80ops.asm
-	z80asm -fh -l -sn -p0 $<
+z80main.hex: z80main.asm z80dis.asm z80ops.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMOPTS) -fh $<
 
-z80opsall.hex: z80opsall.asm
-	z80asm -u -fh -l -sn -p0 $<
+z80opsall.hex: z80opsall.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMOPTS) -u -fh $<
 
-8080opsall.hex: 8080opsall.asm
-	z80asm -fh -l -sn -p0 $<
+8080opsall.hex: 8080opsall.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMOPTS) -fh $<
+
+$(Z80ASM):
+	cd $(Z80ASMDIR) && $(MAKE)
 
 clean:
 	rm -f float.hex float.lis z80main.hex z80main.lis \

@@ -17,7 +17,9 @@ BIOSES = cpmsim/srccpm2 cpmsim/srccpm3 cpmsim/srcmpm cpmsim/srcucsd-iv \
 MISC = z80sim cpmtools
 MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
 
-Z80ASM_FLAGS = -fh -e16 -l -sn -p0
+Z80ASMDIR = z80asm
+Z80ASM = $(Z80ASMDIR)/z80asm
+Z80ASMOPTS = -l -sn -p0
 
 ALTAIR_8080 = \
 	altairsim/basic8k78.asm \
@@ -69,17 +71,12 @@ IMSAI_8080 = \
 IMSAI_Z80 = \
 	imsaisim/roms/basic4k.asm
 
-help:
-	@echo "This Makefile is primarily for developers."
-	@echo "Please consult the files in the doc directory."
+all: tools libs bioses misc machines
 
-all: z80asm cpmtools libs bioses misc machines
-
-z80asm:
-	$(MAKE) -C z80asm "DESTDIR=$(DESTDIR)" install
-
-cpmtools:
-	$(MAKE) -C cpmsim/srctools "DESTDIR=$(DESTDIR)" install
+tools:
+	@set -e; for subdir in $(TOOLS); do \
+		$(MAKE) -C $$subdir; \
+	done
 
 libs:
 	@set -e; for subdir in $(LIBS); do \
@@ -101,13 +98,16 @@ machines:
 		$(MAKE) -C $$subdir/srcsim; \
 	done
 
-reassemble: z80asm
+reassemble: $(Z80ASM)
 	@set -e; for file in $(ALTAIR_8080) $(CROMEMCO_8080) $(IMSAI_8080); do \
-		z80asm -8 $(Z80ASM_FLAGS) "$$file"; \
+		$(Z80ASM) $(Z80ASMOPTS) -8 -fh -e16 "$$file"; \
 	done
 	@set -e; for file in $(ALTAIR_Z80) $(CROMEMCO_Z80) $(IMSAI_Z80); do \
-		z80asm $(Z80ASM_FLAGS) "$$file"; \
+		$(Z80ASM) $(Z80ASMOPTS) -fh -e16 "$$file"; \
 	done
+
+$(Z80ASM):
+	$(MAKE) -C $(Z80ASMDIR) z80asm
 
 clean:
 	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
@@ -125,4 +125,4 @@ allclean:
 		$(MAKE) -C $$subdir/srcsim allclean; \
 	done
 
-.PHONY: all z80asm cpmtools libs bioses misc machines reassemble clean allclean
+.PHONY: all tools libs bioses misc machines reassemble clean allclean
