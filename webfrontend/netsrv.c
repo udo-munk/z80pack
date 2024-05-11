@@ -244,8 +244,6 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
 
 	UNUSED(unused);
 
-	const char *copyright = USR_CPR; /* a dirty fix to avoid the leading '\n' */
-
     switch (req->method) {
     case HTTP_GET:
 		LOGD(TAG, "Sending SYS: details.");
@@ -303,7 +301,7 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
             httpdPrintf(conn, "\"about\": { ");
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_COM", USR_COM);
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_REL", USR_REL);
-                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", &copyright[1]); 
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", USR_CPR); 
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "cpu", cpu==Z80?"Z80":"I8080");
                 if(x_flag) {
                     httpdPrintf(conn, "\"%s\": \"%s\", ", "bootrom", xfn);

@@ -77,7 +77,7 @@ extern void sleep_ms(int);
 
 #define USR_COM	"IMSAI 8080 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"\b\b \nCopyright (C) 2008-2024 by Udo Munk & " \
+#define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2018-2021 by David McNaughton"
 
 #include "simcore.h"

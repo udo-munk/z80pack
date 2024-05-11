@@ -342,7 +342,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	printf("\nRelease %s, %s\n", RELEASE, COPYR);
 
 #ifdef USR_COM
-	printf("%s Release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
+	printf("%s Release %s\n%s\n\n", USR_COM, USR_REL, USR_CPR);
 #else
 	putchar('\n');
 #endif
