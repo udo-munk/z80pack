@@ -78,6 +78,7 @@ int main(void)
 	config();		/* read system configuration */
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
+	init_io();		/* initialize I/O */
 
 #ifdef WANT_ICE
 	extern void ice_cmd_loop(int);

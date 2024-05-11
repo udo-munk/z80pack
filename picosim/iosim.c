@@ -8,6 +8,7 @@
  * History:
  * 28-APR-2024 all I/O implemented for a first release
  * 09-MAY-2024 improved so that it can run some MITS Altair software
+ * 11-MAY-2024 allow us to set the port 255 value from ICE p command e.g.
  */
 
 /* Raspberry SDK includes */
@@ -24,14 +25,17 @@
 #include "pico/cyw43_arch.h"
 #endif
 
+extern void init_io(void);
+
 /*
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p000_out(BYTE), p001_out(BYTE);
-static BYTE p000_in(void), p001_in(void);
+static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE);
+static BYTE p000_in(void), p001_in(void), p255_in(void);
 
 static BYTE sio_last;	/* last character received */
+static BYTE fp_value;	/* port 255 value, can be set with p command */
 
 /*
  *	This array contains function pointers for every input
@@ -60,10 +64,12 @@ void init_io(void)
 {
 	register int i;
 
-	for (i = 2; i <= 255; i++) {
+	for (i = 2; i <= 254; i++) {
 		port_in[i] = 0;
 		port_out[i] = 0;
 	}
+	port_in[255] = p255_in; /* for frontpanel */
+	port_out[255] = p255_out;
 }
 
 /*
@@ -83,14 +89,10 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 {
 	UNUSED(addrh);
 
-	if (*port_in[addrl] != 0) /* if port used */
+	if (*port_in[addrl] != 0)		/* if port used */
 		return ((*port_in[addrl])());
-	else {
-		if (addrl = 255)
-			return 0; /* frontpanel port */
-		else
-			return (0xff);	/* all other return 0xff */
-	}
+	else
+		return (0xff);			/* all other return 0xff */
 }
 
 /*
@@ -138,6 +140,15 @@ static BYTE p001_in(void)
 }
 
 /*
+ *	I/O function port 255 read:
+ *	used by frontpanel machines
+ */
+static BYTE p255_in(void)
+{
+	return fp_value;
+}
+
+/*
  * 	I/O function port 0 write:
  *	Switch builtin LED on/off.
  */
@@ -167,4 +178,12 @@ static void p000_out(BYTE data)
 static void p001_out(BYTE data)
 {
 	putchar_raw((int) data & 0x7f); /* strip parity, some software won't */
+}
+
+/*
+ *	This allows to set the frontpanel port with p command
+ */
+static void p255_out(BYTE data)
+{
+	fp_value = data;
 }
