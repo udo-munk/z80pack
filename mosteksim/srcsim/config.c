@@ -11,6 +11,7 @@
  * 27-SEP-2019 (Mike Douglas) include newline \n as config.txt delimiter
  * 28-SEP-2019 (Udo Munk) use logging
  * 17-OCT-2019 (Udo Munk) fix logging
+ * 11-MAY-2024 (Thomas Eberhardt) add confdir/rompath option support
  */
 
 #include <stdlib.h>
@@ -29,8 +30,16 @@ void config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2;
+	char fn[MAX_LFN - 1];
 
-	if ((fp = fopen("conf/config.txt", "r")) != NULL) {
+	if (c_flag) {
+		strcpy(fn, conffn);
+	} else {
+		strcpy(fn, confdir);
+		strcat(fn, "/config.txt");
+	}
+
+	if ((fp = fopen(fn, "r")) != NULL) {
 		s = buf;
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
@@ -46,7 +55,9 @@ void config(void)
 
 			if (0 == strcmp(t1, "bootrom")) {
 				LOG(TAG, "\r\nBoot ROM: %s\r\n\r\n", t2);
-				strcpy(xfn, t2);
+				strcpy(xfn, rompath);
+				strcat(xfn, "/");
+				strcat(xfn, t2);
 				x_flag = 1;
 			} else if (0 == strcmp(t1, "drive0")) {
 				LOG(TAG, "\r\nDrive 0: %s\r\n", t2);
@@ -62,6 +73,6 @@ void config(void)
 		}
 		fclose(fp);
 	} else {
-		LOGW(TAG, "missing conf/config.txt file");
+		LOGW(TAG, "missing %s file", fn);
 	}
 }

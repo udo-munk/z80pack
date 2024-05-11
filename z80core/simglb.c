@@ -118,18 +118,28 @@ int f_flag;			/* flag for -f option */
 int u_flag;			/* flag for -u option */
 int r_flag;			/* flag for -r option */
 int c_flag;			/* flag for -c option */
+#ifdef HAS_CONFIG
 int M_flag = 0;			/* flag for -M option */
+#endif
+#ifdef HAS_BANKED_ROM
 int R_flag = 0;			/* flag for -R option */
+#endif
 
 /*
  *	Variables for configuration and disk images
  */
 char xfn[MAX_LFN];		/* buffer for filename (option -x) */
+#ifdef HAS_DISKS
 char *diskdir = NULL;		/* path for disk images (option -d) */
 char diskd[MAX_LFN];		/* disk image directory in use */
+#endif
+#ifdef CONFDIR
 char confdir[MAX_LFN];		/* path for configuration files */
+#endif
+#ifdef HAS_CONFIG
 char conffn[MAX_LFN];		/* configuration file (option -c) */
 char rompath[MAX_LFN];		/* path for boot ROM files */
+#endif
 
 /*
  *	Precompiled table to get parity as fast as possible
