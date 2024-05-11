@@ -76,7 +76,7 @@ extern void sleep_ms(int);
 
 #define USR_COM	"Cromemco Z-1 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"\nCopyright (C) 2014-2024 by Udo Munk & " \
+#define USR_CPR	"Copyright (C) 2014-2024 by Udo Munk & " \
 		"2021-2022 by David McNaughton"
 
 #include "simcore.h"
