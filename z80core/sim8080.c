@@ -18,6 +18,7 @@
 #ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
+static int trap_undoc(void);
 #define UNDOC(f) trap_undoc
 #endif
 
