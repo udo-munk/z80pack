@@ -8,9 +8,6 @@ Z80ASM = $(Z80ASMDIR)/z80asm
 Z80ASMOPTS = -l -sn -p0
 
 all: putsys bios.bin boot.bin
-	@echo
-	@echo "Done."
-	@echo
 
 putsys: putsys.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
@@ -21,12 +18,18 @@ bios.bin: bios.asm $(Z80ASM)
 boot.bin: boot.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMOPTS) -fb $<
 
-$(Z80ASM):
-	$(MAKE) -C $(Z80ASMDIR) z80asm
+$(Z80ASM): FORCE
+	$(MAKE) -C $(Z80ASMDIR)
+
+FORCE:
+
+install:
+
+uninstall:
 
 clean:
 	rm -f putsys bios.bin bios.lis boot.bin boot.lis
 
-allclean: clean
+distclean: clean
 
-.PHONY: all clean allclean
+.PHONY: all FORCE install uninstall clean distclean

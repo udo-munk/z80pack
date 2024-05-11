@@ -1,33 +1,33 @@
 ###
 ### START MACHINE DEPENDENT VARIABLES
 ###
-# (simple) machine name - will be suffixed with 'sim' and the executable saved as '../machinesim'
+# (simple) machine name - will be suffixed with 'sim'
+# and the executable saved as '../machinesim'
 MACHINE = cpm
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memory.c simctl.c
 # machine specific I/O source files
 IO_SRCS = unix_terminal.c rtc.c simbdos.c
-# machine specific libraries
-MACHINE_LIBS =
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
+PACKAGE = z80pack
 CPROG = $(MACHINE)sim
 PREFIX ?= /usr/local
 EXEC_PREFIX = $(PREFIX)
 BINDIR = $(EXEC_PREFIX)/bin
 DATAROOTDIR = $(PREFIX)/share
-DOCDIR = $(DATAROOTDIR)/doc/$(CPROG)
+DATADIR = $(DATAROOTDIR)/$(PACKAGE)/$(CPROG)
 SYSCONFDIR = $(PREFIX)/etc
+INCLUDEDIR = $(PREFIX)/include
+DOCDIR = $(DATAROOTDIR)/doc/$(PACKAGE)/$(CPROG)
 HTMLDIR = $(DOCDIR)
-INCLUDEDIR = $(DESTDIR)$(PREFIX)/include
-LIBDIR = $(DESTDIR)$(EXEC_PREFIX)/lib
+LIBDIR = $(EXEC_PREFIX)/lib
 
-ROOT_DIR = $(DATAROOTDIR)/$(CPROG)
 # system wide location for machines configuration files
-CONF_DIR = $(ROOT_DIR)/conf
+CONF_DIR = $(DATADIR)/conf
 # system wide location for disk images
-DISKS_DIR = $(ROOT_DIR)/disks
+DISKS_DIR = $(DATADIR)/disks
 ###
 ### END MACHINE DEPENDENT VARIABLES
 ###
@@ -56,52 +56,60 @@ endif
 
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\"
 INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
+CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
 CWARNS = -Wall -Wextra -Wwrite-strings
 
 # Production - the default
-CFLAGS = -O3 $(CSTDS) $(CWARNS) $(PLAT_CFLAGS) -U_FORTIFY_SOURCE $(DEFS) $(INCS)
+COPTS = -O3 -U_FORTIFY_SOURCE
 
 # Development - use `MODE=DEV make build`
 ifeq ($(MODE),DEV)
-CFLAGS = -O3 $(CSTDS) $(CWARNS) $(PLAT_CFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(DEFS) $(INCS)
+COPTS = -O3 -fstack-protector-all -D_FORTIFY_SOURCE=2
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
-CFLAGS = -O -g $(CSTDS) $(CWARNS) $(PLAT_CFLAGS) $(DEFS) $(INCS)
+COPTS = -O -g
 endif
 
-LDFLAGS = $(PLAT_LDFLAGS) $(MACHINE_LIBS) \
-	  $(PLAT_LIBS)
+CFLAGS = $(CSTDS) $(COPTS) $(CWARNS) $(PLAT_CFLAGS)
+CXXFLAGS = $(CXXSTDS) $(CXXOPTS) $(CXXWARNS) $(PLAT_CXXFLAGS)
 
-# core system source files for the CPU simulation - only change if the core changes
-CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c simmain.c \
-	simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c simz80-fd.c simz80-fdcb.c
+LDFLAGS = $(PLAT_LDFLAGS)
+LDLIBS = $(PLAT_LDLIBS)
+
+INSTALL = install
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
+
+# core system source files for the CPU simulation
+CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c \
+	simmain.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c \
+	simz80-fd.c simz80-fdcb.c
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 
 all: $(SIM)
-	@echo
-	@echo "Done."
-	@echo
 
-$(SIM): $(OBJS) $(MACHINE_LIBS)
-	$(CC) $(OBJS) $(LDFLAGS) -o $@
+$(SIM): $(OBJS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
 %.d: %.c
-	@$(CC) -MM $(CFLAGS) $< > $@
+	@$(CC) -MM $(CFLAGS) $(CPPFLAGS) $< > $@
 
 -include $(DEPS)
 
 build: _rm_obj all
 
-install:
-	@echo
-	@echo Waiting to be written...
-	@echo
+install: $(SIM)
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
+
+uninstall:
+	cd $(DESTDIR)$(BINDIR) && rm -f $(SIM)
 
 clean: _rm_obj _rm_deps
 
@@ -111,9 +119,9 @@ _rm_obj:
 _rm_deps:
 	rm -f $(DEPS)
 
-allclean: clean
+distclean: clean
 	rm -f $(SIM)
 	rm -f ../disks/drive*.dsk
 	rm -f ../auxiliaryin.txt ../auxiliaryout.txt ../printer.txt
 
-.PHONY: all build install clean allclean
+.PHONY: all build install uninstall clean distclean

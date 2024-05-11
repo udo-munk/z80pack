@@ -3,9 +3,6 @@ Z80ASM = $(Z80ASMDIR)/z80asm
 Z80ASMOPTS = -l -sn -p0
 
 all: serial.c tb.c blink.c
-	@echo
-	@echo "Done."
-	@echo
 
 serial.c: serial.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMOPTS) -fc $<
@@ -16,12 +13,18 @@ tb.c: tb.asm $(Z80ASM)
 blink.c: blink.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMOPTS) -fc $<
 
-$(Z80ASM):
-	$(MAKE) -C $(Z80ASMDIR) z80asm
+$(Z80ASM): FORCE
+	$(MAKE) -C $(Z80ASMDIR)
+
+FORCE:
+
+install:
+
+uninstall:
 
 clean:
 	rm -f serial.c tb.c blink.c
 
-allclean: clean
+distclean: clean
 
-.PHONY: all clean allclean
+.PHONY: all FORCE install uninstall clean distclean

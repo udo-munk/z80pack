@@ -16,13 +16,19 @@ z80opsall.hex: z80opsall.asm $(Z80ASM)
 8080opsall.hex: 8080opsall.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMOPTS) -fh $<
 
-$(Z80ASM):
-	cd $(Z80ASMDIR) && $(MAKE)
+$(Z80ASM): FORCE
+	$(MAKE) -C $(Z80ASMDIR)
+
+FORCE:
+
+install:
+
+uninstall:
 
 clean:
 	rm -f float.hex float.lis z80main.hex z80main.lis \
 		z80opsall.hex z80opsall.lis 8080opsall.hex 8080opsall.lis
 
-allclean: clean
+distclean: clean
 
-.PHONY: all clean allclean
+.PHONY: all FORCE install uninstall clean distclean

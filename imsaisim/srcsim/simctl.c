@@ -45,23 +45,23 @@
 #ifdef UNIX_TERMINAL
 #include "../../iodevices/unix_terminal.h"
 #endif
+#ifdef FRONTPANEL
 #include "log.h"
+#endif
 
 extern void reset_cpu(void), reset_io(void);
 extern void run_cpu(void), step_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 extern unsigned long long get_clock_us(void);
 
+#ifdef FRONTPANEL
 static const char *TAG = "system";
 
-#ifdef FRONTPANEL
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;
 static int power;
-#endif
 
-#ifdef FRONTPANEL
 static void run_clicked(int, int), step_clicked(int, int);
 static void reset_clicked(int, int);
 static void examine_clicked(int, int), deposit_clicked(int, int);
