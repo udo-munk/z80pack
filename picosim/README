@@ -1,6 +1,6 @@
 This is a research machine that contains:
 
-	Z80 or 8080 CPU
+	Z80 and 8080 CPU
 	optional Z80/8080 ICE
 	64 KB RAM
 	UART for serial communication with a terminal
@@ -37,3 +37,9 @@ To clean everything:
 Terminal I/O is going to the pin 1/2 UART, so you need a debug probe or
 some TTL to USB adapter. I also tried using the USB UART, but didn't get
 it fully working, needs more research.
+
+When the optional ICE is attached we have some confíguration choices
+that help running software. CPU can be switched between Z80 and 8080,
+type ? at the prompt for command reference. Also port 255, used by
+frontpanel machines for the system configuration, can be set to any
+desired value with the p command.
