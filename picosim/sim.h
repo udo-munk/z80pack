@@ -11,10 +11,8 @@
 
 #define PICO 1		/* board we use, 0 for Pico 1 for Pico W */
 
-//#define DEF_CPU Z80	/* CPU (Z80 or I8080) */
-//#define EXCLUDE_I8080	/* don't include 8080 emulation support */
-#define DEF_CPU I8080
-#define EXCLUDE_Z80
+#define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
+//#define EXCLUDE_I8080	/* don't include 8080, for now we want both */
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
@@ -30,7 +28,7 @@
 extern void sleep_ms();
 #define SLEEP_MS(t)	sleep_ms(t)
 
-#define USR_COM "Raspberry Pi Pico Z80 Simulation"
+#define USR_COM "Raspberry Pi Pico Z80/8080 Simulation"
 #define USR_REL "1.0"
 #define USR_CPR "Copyright (C) 2024 by Udo Munk"
  

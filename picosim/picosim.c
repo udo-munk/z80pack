@@ -29,7 +29,7 @@
 
 #define SWITCH_BREAK 16 /* switch we use to interrupt the system */
 
-extern void init_cpu(void);
+extern void init_cpu(void), init_io(void);
 extern void run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
@@ -58,12 +58,14 @@ int main(void)
 					   true, &gpio_callback);
 
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
-	printf("%s release %s, %s\n\n", USR_COM, USR_REL, USR_CPR);
+	printf("%s release %s\n", USR_COM, USR_REL);
+	printf("%s\n\n", USR_CPR);
 
 	f_flag = CPU_SPEED;
 	tmax = CPU_SPEED * 10000; /* theoretically */
 	tmax += tmax / 20;	  /* clock crystal tuning, screw here */
 
+	printf("CPU is %s\n", cpu == Z80 ? "Z80" : "8080");
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);
 	else
