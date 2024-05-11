@@ -4,3 +4,6 @@ all software using it runs on this machine.
 Also port 255, which is used by frontpanel machines for system
 configuration, can be set with the p command to any desired value,
 the default is 0.
+
+For MITS BASIC Versions < 4.0 the port 255 value needs to be 0, for
+Versions >= 4.0 the correct setting is 22H.
