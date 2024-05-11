@@ -11,6 +11,7 @@
  * History:
  * 16-SEP-2019 (Mike Douglas) created from tarbell-fdc.c
  * 28-SEP-2019 (Udo Munk) use logging
+ * 11-MAY-2024 (Thomas Eberhardt) add diskdir option support
  */
 
 #include <unistd.h>

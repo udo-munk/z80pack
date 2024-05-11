@@ -11,6 +11,7 @@
  * 27-SEP-2019 (Mike Douglas) include newline \n as config.txt delimiter
  * 28-SEP-2019 (Udo Munk) use logging
  * 17-OCT-2019 (Udo Munk) fix logging
+ * 11-MAY-2024 (Thomas Eberhardt) add confdir/rompath option support
  */
 
 #include <stdlib.h>
