@@ -18,7 +18,6 @@
 #ifdef UNDOC_INST
 #define UNDOC(f) f
 #else
-static int trap_undoc(void);
 #define UNDOC(f) trap_undoc
 #endif
 
@@ -26,6 +25,7 @@ static int trap_undoc(void);
 extern void check_gui_break(void);
 #endif
 
+static int trap_undoc(void);
 static int op_nop(void), op_hlt(void), op_stc(void);
 static int op_cmc(void), op_cma(void), op_daa(void), op_ei(void), op_di(void);
 static int op_out(void), op_in(void);
