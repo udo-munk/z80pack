@@ -38,7 +38,6 @@
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
-#define CORE_LOG	/* use LOG() logging in core simulator */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
 /*#define WANT_TIM*/	/* don't count t-states */

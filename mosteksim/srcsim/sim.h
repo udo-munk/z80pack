@@ -25,7 +25,6 @@
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
-#define CORE_LOG	/* use LOG() logging in core simulator */
 #define EXCLUDE_I8080	/* this was a Z80 machine */
 
 #define WANT_ICE	/* attach ICE to headless machine */
@@ -45,7 +44,7 @@ extern void sleep_ms(int);
  *	which contains the Z80/8080 CPU emulations as a part.
  */
 
-#define USR_COM	"\nMostek AID-80F and SYS-80FT Emulator"
+#define USR_COM	"Mostek AID-80F and SYS-80FT Emulator"
 #define USR_REL	"1.1"
 #define USR_CPR	"by Mike Douglas"
 
