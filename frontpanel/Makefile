@@ -42,9 +42,6 @@ OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
 all: $(LIB)
-	@echo
-	@echo "Done."
-	@echo
 
 $(LIB): $(OBJS)
 	@rm -f $@
@@ -57,6 +54,10 @@ $(LIB): $(OBJS)
 
 build: _rm_obj all
 
+install:
+
+uninstall:
+
 clean: _rm_obj _rm_deps
 	rm -f $(LIB)
 
@@ -66,6 +67,6 @@ _rm_obj:
 _rm_deps:
 	rm -f $(DEPS)
 
-allclean: clean
+distclean: clean
 
-.PHONY: all build clean allclean
+.PHONY: all build install uninstall clean distclean

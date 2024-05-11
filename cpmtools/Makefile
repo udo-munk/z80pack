@@ -9,9 +9,6 @@ Z80ASM = $(Z80ASMDIR)/z80asm
 Z80ASMOPTS = -l -sn -p0
 
 all: $(TOOLS) $(CPUTESTS)
-	@echo
-	@echo "Done."
-	@echo
 
 r.com: r.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMOPTS) -8 -fb -o$@ $<
@@ -49,12 +46,18 @@ prelim.com: prelim.mac $(Z80ASM)
 test8080.com: test8080.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMOPTS) -8 -fb -o$@ $<
 
-$(Z80ASM):
-	$(MAKE) -C $(Z80ASMDIR) z80asm
+$(Z80ASM): FORCE
+	$(MAKE) -C $(Z80ASMDIR)
+
+FORCE:
+
+install:
+
+uninstall:
 
 clean:
 	rm -f $(TOOLS) $(TOOLS:.com=.lis) $(CPUTESTS) $(CPUTESTS:.com=.lis)
 
-allclean: clean
+distclean: clean
 
-.PHONY: all clean allclean
+.PHONY: all FORCE install uninstall clean distclean

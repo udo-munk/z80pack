@@ -1,14 +1,5 @@
-# Developer Makefile to easily build/clean everything.
-# Don't use indiscriminately, because "make all" will install files.
-#
-# Targets:
-#	all - build all tools and simulators
-#	reassemble - reassemble all ROMs and assembler programs
-#	clean
-#	allclean
-
-DESTDIR=${HOME}/bin
-#DESTDIR=/usr/local/bin
+PREFIX ?= $(HOME)
+#PREFIX ?= /usr/local
 
 TOOLS = z80asm cpmsim/srctools
 LIBS = frontpanel webfrontend/civetweb
@@ -106,8 +97,26 @@ reassemble: $(Z80ASM)
 		$(Z80ASM) $(Z80ASMOPTS) -fh -e16 "$$file"; \
 	done
 
-$(Z80ASM):
-	$(MAKE) -C $(Z80ASMDIR) z80asm
+$(Z80ASM): FORCE
+	$(MAKE) -C $(Z80ASMDIR)
+
+FORCE:
+
+install:
+	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
+		$(MAKE) -C $$subdir install; \
+	done
+	@set -e; for subdir in $(MACHINES); do \
+		$(MAKE) -C $$subdir/srcsim install; \
+	done
+
+uninstall:
+	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
+		$(MAKE) -C $$subdir uninstall; \
+	done
+	@set -e; for subdir in $(MACHINES); do \
+		$(MAKE) -C $$subdir/srcsim uinstall; \
+	done
 
 clean:
 	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
@@ -117,12 +126,13 @@ clean:
 		$(MAKE) -C $$subdir/srcsim clean; \
 	done
 
-allclean:
+distclean:
 	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
-		$(MAKE) -C $$subdir allclean; \
+		$(MAKE) -C $$subdir distclean; \
 	done
 	@set -e; for subdir in $(MACHINES); do \
-		$(MAKE) -C $$subdir/srcsim allclean; \
+		$(MAKE) -C $$subdir/srcsim distclean; \
 	done
 
-.PHONY: all tools libs bioses misc machines reassemble clean allclean
+.PHONY: all tools libs bioses misc machines reassemble FORCE \
+		install uninstall clean distclean

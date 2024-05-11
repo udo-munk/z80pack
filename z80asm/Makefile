@@ -14,8 +14,14 @@ CFLAGS = -O3 $(CSTDS) $(CWARNS)
 #
 # installation directory
 #
-DESTDIR = "${HOME}/bin"
-#DESTDIR = /usr/local/bin
+PREFIX ?= $(HOME)
+#PREFIX ?= /usr/local
+EXEC_PREFIX = $(PREFIX)
+BINDIR = $(EXEC_PREFIX)/bin
+
+INSTALL = install
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
 
 OBJS =	z80amain.o \
 	z80atab.o \
@@ -28,12 +34,9 @@ OBJS =	z80amain.o \
 	z80aglb.o
 
 all: z80asm
-	@echo
-	@echo "Done."
-	@echo
 
 z80asm: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o z80asm
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o z80asm
 
 z80amain.o: z80amain.c z80a.h z80aglb.h
 	$(CC) $(CFLAGS) -c z80amain.c
@@ -62,17 +65,20 @@ z80aopc.o: z80aopc.c z80a.h z80aglb.h
 z80aglb.o: z80aglb.c z80a.h
 	$(CC) $(CFLAGS) -c z80aglb.c
 
+instcoh: z80asm
+	strip z80asm
+	cp z80asm $(DESTDIR)$(BINDIR)
+
+install: z80asm
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL_PROGRAM) -s z80asm $(DESTDIR)$(BINDIR)
+
+uninstall:
+	rm $(DESTDIR)$(BINDIR)/z80asm
+
 clean:
 	rm -f core $(OBJS) z80asm
 
-allclean: clean
+distclean: clean
 
-install: z80asm
-	install -d $(DESTDIR)
-	install -s z80asm $(DESTDIR)
-
-instcoh: z80asm
-	strip z80asm
-	cp z80asm ${DESTDIR}
-
-.PHONY: clean allclean install install-coh
+.PHONY: all instcoh install uninstall clean distclean
