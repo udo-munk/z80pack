@@ -8,12 +8,11 @@
  */
 
 /*
- *	Sample I/O-handler
- *
  *	Port 0 input:	reads status of stdin
  *	Port 1 input:	reads the next byte from stdin
- *	Port 255 input:	returns 0 for software querying frontpanel
+ *	Port 255 input:	returns a value for software querying frontpanel
  *	Port 1 output:	writes the byte to stdout
+ *	Port 255 output: set value for the port
  *
  *	All the other ports are connected to an I/O-trap handler,
  *	I/O to this ports stops the simulation with an I/O error.
@@ -31,9 +30,10 @@
 static BYTE io_trap_in(void);
 static void io_trap_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
-static void p001_out(BYTE);
+static void p001_out(BYTE), p255_out(BYTE);
 
 static BYTE sio_last;	/* last byte read from sio */
+static BYTE fp_value;	/* port 255 value, can be set with p command */
 
 /*
  *	This array contains function pointers for every input
@@ -74,6 +74,7 @@ void init_io(void)
 		port_out[i] = io_trap_out;
 	}
 	port_in[255] = p255_in; /* for frontpanel */
+	port_out[255] = p255_out;
 }
 
 /*
@@ -197,7 +198,7 @@ static BYTE p001_in(void)
  */
 static BYTE p255_in(void)
 {
-	return 0;
+	return fp_value;
 }
 
 /*
@@ -208,4 +209,12 @@ static void p001_out(BYTE data)
 {
 	putchar((int) data & 0x7f); /* strip parity, some software won't */
 	fflush(stdout);
+}
+
+/*
+ *	This allows to set the frontpanel port with p command
+ */
+static void p255_out(BYTE data)
+{
+	fp_value = data;
 }
