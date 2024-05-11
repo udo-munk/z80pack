@@ -914,7 +914,7 @@ static void do_show(void)
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
-		fputs("Z80", stdout);
+		fputs("z80", stdout);
 		break;
 #endif
 #ifndef EXCLUDE_I8080
@@ -925,7 +925,7 @@ static void do_show(void)
 	default:
 		break;
 	}
-	printf("-Sim Release: %s\n", RELEASE);
+	printf("sim Release: %s\n", RELEASE);
 #ifdef HISIZE
 	i = HISIZE;
 #else
