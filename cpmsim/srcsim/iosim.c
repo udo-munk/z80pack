@@ -853,9 +853,8 @@ void init_io(void)
 		exit(EXIT_FAILURE);
 		break;
 	case 0:
-		/* . might not be in path, so check that first */
-		if (access("./cpmrecv", X_OK) == 0)
-			execlp("./cpmrecv", "cpmrecv", "auxiliaryout.txt",
+		if (access("./srctools/cpmrecv", X_OK) == 0)
+			execlp("./srctools/cpmrecv", "cpmrecv", "auxiliaryout.txt",
 			       (char *) NULL);
 		/* should be in path somewhere */
 		else

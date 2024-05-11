@@ -83,20 +83,10 @@ SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 
-all: /tmp/.z80pack/cpmsim.auxin /tmp/.z80pack/cpmsim.auxout $(SIM)
+all: $(SIM)
 	@echo
 	@echo "Done."
 	@echo
-
-/tmp/.z80pack/cpmsim.auxin:
-	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
-	test -f /tmp/.z80pack/cpmsim.auxin || \
-		mkfifo /tmp/.z80pack/cpmsim.auxin
-
-/tmp/.z80pack/cpmsim.auxout:
-	test -d /tmp/.z80pack || mkdir /tmp/.z80pack
-	test -f /tmp/.z80pack/cpmsim.auxout || \
-		mkfifo /tmp/.z80pack/cpmsim.auxout
 
 $(SIM): $(OBJS) $(MACHINE_LIBS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
