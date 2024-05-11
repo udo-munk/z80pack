@@ -23,6 +23,13 @@ INCLUDEDIR = $(PREFIX)/include
 DOCDIR = $(DATAROOTDIR)/doc/$(PACKAGE)/$(CPROG)
 HTMLDIR = $(DOCDIR)
 LIBDIR = $(EXEC_PREFIX)/lib
+
+# system wide location for machines configuration files
+CONF_DIR = $(DATADIR)/conf
+# system wide location for disk images
+DISKS_DIR = $(DATADIR)/disks
+# default boot ROM path
+ROMS_DIR = $(DATADIR)/roms
 ###
 ### END MACHINE DEPENDENT VARIABLES
 ###
@@ -49,7 +56,8 @@ endif
 ### END O/S DEPENDENT VARIABLES
 ###
 
-DEFS =
+DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
+	-DBOOTROM=\"$(ROMS_DIR)\"
 INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 

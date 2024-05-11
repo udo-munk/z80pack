@@ -77,7 +77,7 @@ static BYTE board_stat;		/* FLP80 board status register */
 static BYTE board_ctl;		/* FLP80 board control register */
 static int disk;		/* current disk # */
 static int state;		/* fdc state */
-static char fn[256];		/* path/filename for disk image */
+static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static int dcnt;		/* data counter read/write */
 static BYTE buf[SEC_SZ];	/* buffer for one sector */
@@ -92,10 +92,19 @@ void get_disk_filename(void)
 	FILE *fp;
 	char inbuf[256];
 	char *left, *right;
+	struct stat sbuf;
+
+	if (c_flag) {
+		strcpy(fn, conffn);
+	} else {
+		strcpy(fn, confdir);
+		strcat(fn, "/config.txt");
+	}
+	fp = fopen(fn, "r");
 
 	*fn = '\0';		/* init to null string */
 
-	if ((fp = fopen("conf/config.txt", "r")) != NULL) {
+	if (fp != NULL) {
 
 		while (fgets(inbuf, 256, fp) != NULL) {
 			if ((inbuf[0] == '\n') || (inbuf[0] == '\r') ||
@@ -113,7 +122,23 @@ void get_disk_filename(void)
 						     left);
 						continue;
 					}
-					strcpy(fn, right);
+					/* if option -d is used disks are there */
+					if (diskdir != NULL) {
+						strcpy(fn, diskd);
+					} else {
+						/* if not first try ./disks */
+						if ((stat("./disks", &sbuf) == 0) &&
+						    S_ISDIR(sbuf.st_mode)) {
+							strcpy(fn, "./disks");
+						} else {
+							/* nope, then DISKSDIR
+							   as set in Makefile */
+							strcpy(fn, DISKSDIR);
+						}
+					}
+
+					strcat(fn, "/");
+					strcat(fn, right);
 					break;
 				}
 			}

@@ -32,8 +32,8 @@
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
 
-/*#define HAS_DISKS*/	/* not using standard disk define */
-/*#define HAS_CONFIG*/  /* not using standard config define */
+#define HAS_DISKS	/* uses disk images */
+#define HAS_CONFIG	/* has configuration files somewhere */
 
 extern void sleep_ms(int);
 #define SLEEP_MS(t)	sleep_ms(t)
