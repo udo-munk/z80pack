@@ -23,7 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "sim.h"
-#ifndef ICE_BAREMETAL
+#ifndef BAREMETAL
 #include <signal.h>
 #include <sys/time.h>
 #endif
@@ -40,7 +40,7 @@ extern int get_cmdline(char *, int);
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
 extern void switch_cpu(int);
 #endif
-#ifndef ICE_BAREMETAL
+#ifndef BAREMETAL
 extern int load_file(char *, WORD, int);
 #endif
 
@@ -66,7 +66,7 @@ static void do_switch(char *);
 static void do_show(void);
 static void do_help(void);
 
-#ifndef ICE_BAREMETAL
+#ifndef BAREMETAL
 static void do_clock(void);
 static void timeout(int);
 static void do_load(char *);
@@ -174,7 +174,7 @@ void ice_cmd_loop(int go_flag)
 		case '?':
 			do_help();
 			break;
-#ifndef ICE_BAREMETAL
+#ifndef BAREMETAL
 		case 'c':
 			do_clock();
 			break;
@@ -990,7 +990,7 @@ static void do_help(void)
 	puts("8                         toggle between Z80 & 8080 mode");
 	puts("8 [z|8]                   switch to Z80 or 8080 mode");
 #endif
-#ifndef ICE_BAREMETAL
+#ifndef BAREMETAL
 	puts("c                         measure clock frequency");
 	puts("r filename[,address]      read object into memory");
 	puts("! command                 execute external command");
@@ -1000,7 +1000,7 @@ static void do_help(void)
 	puts("q                         quit");
 }
 
-#ifndef ICE_BAREMETAL
+#ifndef BAREMETAL
 
 /*
  *	Calculate the clock frequency of the emulated CPU:

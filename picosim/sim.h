@@ -17,10 +17,9 @@
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
-/*#define CORE_LOG*/	/* don't use LOG() logging in core simulator */
+#define BAREMETAL	/* set up the simulator core for bare metal use */
 
 #define WANT_ICE	/* attach ICE to headless machine */
-#define ICE_BAREMETAL	/* don't include commands that require an OS */
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
