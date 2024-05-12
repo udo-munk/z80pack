@@ -16,11 +16,12 @@
 #include "simglb.h"
 
 extern int get_cmdline(char *, int);
+extern void switch_cpu(int);
 extern unsigned char fp_value;
 
 void config(void)
 {
-	char buf[10];
+	char s[10];
 	int go_flag = 0;
 
 	while (!go_flag) {
@@ -29,9 +30,30 @@ void config(void)
 		printf("2 - set port 255 value, currently %02X\n", fp_value);
 		printf("3 - run machine\n\n");
 		printf("Command: ");
-		get_cmdline(buf, 2);
+		get_cmdline(s, 2);
 		printf("\n\n");
-		if (*buf == '3')
+
+		switch (*s) {
+		case '1':
+			if (cpu == Z80)
+				switch_cpu(I8080);
+			else
+				switch_cpu(Z80);
+			break;
+		case '2':
+			printf("Value in Hex: ");
+			get_cmdline(s, 3);
+			printf("\n");
+			/* TODO: plausi check */
+			fp_value = (*s <= '9' ? *s - '0' : *s - 'A' + 10) << 4;
+			fp_value += (*(s + 1) <= '9' ? *(s + 1) - '0' :
+				     *(s + 1) - 'A' + 10);
+			break;
+		case '3':
 			go_flag = 1;
+			break;
+		default:
+			break;
+		}
 	}
 }
