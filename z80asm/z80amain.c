@@ -57,8 +57,9 @@ extern void put_label(void);
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
 	("z80asm version %s\n"
-	 "usage: z80asm -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num>\n"
-	 "              -x -8 -u -v -m -U -o<file> -l[<file>] "
+	 "usage: z80asm -8 -u -f{b|m|h|c} -s[n|a] "
+	 "-p<num> -e<num> -h<num> -c<num>\n"
+	 "              -x -v -m -U -T -o<file> -l[<file>] "
 	 "-d<symbol> ... <file> ..."),	/* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
@@ -131,6 +132,9 @@ void options(int argc, char *argv[])
 					s += (strlen(s) - 1);
 				}
 				list_flag = TRUE;
+				break;
+			case 'T':
+				nodate_flag = TRUE;
 				break;
 			case 's':
 				if (*(s + 1) == '\0')

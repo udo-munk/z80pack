@@ -10,7 +10,7 @@ MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
 
 Z80ASMDIR = z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
-Z80ASMOPTS = -l -sn -p0
+Z80ASMOPTS = -l -T -sn -p0
 
 ALTAIR_8080 = \
 	altairsim/basic8k78.asm \

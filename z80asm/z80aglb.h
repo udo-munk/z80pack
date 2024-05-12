@@ -33,6 +33,7 @@ extern WORD	rpc,
 		carylen;
 
 extern int	list_flag,
+		nodate_flag,
 		sym_flag,
 		undoc_flag,
 		ver_flag,

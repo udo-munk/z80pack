@@ -6,7 +6,7 @@ CPUTESTS = ex8080.com exz80doc.com exz80all.com prelim.com 8080pre.com test8080.
 
 Z80ASMDIR = ../z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
-Z80ASMOPTS = -l -sn -p0
+Z80ASMOPTS = -l -T -sn -p0
 
 all: $(TOOLS) $(CPUTESTS)
 
