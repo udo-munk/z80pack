@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 #include "log.h"
 
 static const char *TAG = "memory";

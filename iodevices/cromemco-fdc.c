@@ -1022,7 +1022,7 @@ void cromemco_fdc_cmd_out(BYTE data)
  * Reset FDC
  */
 
-extern void reset_fdc_rom_map(void); /* implemented in memory.c */
+extern void reset_fdc_rom_map(void); /* implemented in memsim.c */
 
 void cromemco_fdc_reset(void)
 {

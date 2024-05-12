@@ -12,7 +12,7 @@
 #include <termios.h>
 #include "sim.h"
 #include "simglb.h"
-#include "../../iodevices/unix_terminal.h"
+#include "unix_terminal.h"
 
 extern void ice_cmd_loop(int);
 

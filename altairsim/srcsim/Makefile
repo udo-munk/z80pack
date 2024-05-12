@@ -7,7 +7,7 @@ MACHINE = altair
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memory.c simctl.c
+MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-dazzler.c proctec-vdm.c tarbell_fdc.c altair-88-dcdd.c \
 	altair-88-sio.c altair-88-2sio.c unix_terminal.c unix_network.c \
@@ -91,7 +91,7 @@ endif
 
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
 	-DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
-INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L

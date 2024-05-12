@@ -12,8 +12,8 @@
  * 04-NOV-2019 (Udo Munk) add functions for direct memory access
  */
 
-#ifndef MEMORY_INC
-#define MEMORY_INC
+#ifndef MEMSIM_INC
+#define MEMSIM_INC
 
 extern void init_memory(void);
 extern BYTE memory[];

@@ -19,11 +19,11 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
-#ifndef MEMORY_INC
-#define MEMORY_INC
+#ifndef MEMSIM_INC
+#define MEMSIM_INC
 
 #ifdef FRONTPANEL
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #endif
 
 extern void init_memory(void);

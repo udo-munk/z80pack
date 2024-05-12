@@ -15,7 +15,7 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 
 #ifdef WANT_ICE
 

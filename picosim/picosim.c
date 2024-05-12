@@ -20,7 +20,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
-#include "memory.h"
+#include "memsim.h"
 
 /* Pico W also needs this */
 #if PICO == 1
