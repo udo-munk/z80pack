@@ -30,8 +30,8 @@
  * 04-NOV-2019 add functions for direct memory access
  */
 
-#ifndef MEMORY_INC
-#define MEMORY_INC
+#ifndef MEMSIM_INC
+#define MEMSIM_INC
 
 #define MAXSEG 16		/* max. number of memory banks */
 #define SEGSIZ 49152		/* default size of one bank = 48 KBytes */

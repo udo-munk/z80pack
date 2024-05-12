@@ -18,8 +18,8 @@
  * 02-SEP-2021 implement banked ROM
  */
 
-#ifndef MEMORY_INC
-#define MEMORY_INC
+#ifndef MEMSIM_INC
+#define MEMSIM_INC
 
 #ifdef FRONTPANEL
 #include "frontpanel.h"

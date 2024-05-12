@@ -9,8 +9,8 @@
  * 23-APR-2024 derived from z80sim
  */
 
-#ifndef MEMORY_INC
-#define MEMORY_INC
+#ifndef MEMSIM_INC
+#define MEMSIM_INC
 
 extern void init_memory(void);
 extern BYTE code[];
