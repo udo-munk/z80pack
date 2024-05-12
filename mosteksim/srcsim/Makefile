@@ -112,7 +112,7 @@ install: $(SIM)
 	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
 
 uninstall:
-	cd $(DESTDIR)$(BINDIR) && rm -f $(SIM)
+	cd $(DESTDIR)$(BINDIR) && rm -f $(CPROG)
 
 clean: _rm_obj _rm_deps
 

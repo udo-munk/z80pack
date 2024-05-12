@@ -19,7 +19,7 @@ bios.bin: bios.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMOPTS) -fb $<
 
 $(Z80ASM): FORCE
-	$(MAKE) -C $(Z80ASMDIR) z80asm
+	$(MAKE) -C $(Z80ASMDIR)
 
 FORCE:
 

@@ -1,5 +1,5 @@
-PREFIX ?= $(HOME)
-#PREFIX ?= /usr/local
+PREFIX = $(HOME)
+#PREFIX = /usr/local
 
 TOOLS = z80asm cpmsim/srctools
 LIBS = frontpanel webfrontend/civetweb
@@ -104,18 +104,18 @@ FORCE:
 
 install:
 	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
-		$(MAKE) -C $$subdir install; \
+		$(MAKE) -C $$subdir "PREFIX=$(PREFIX)" install; \
 	done
 	@set -e; for subdir in $(MACHINES); do \
-		$(MAKE) -C $$subdir/srcsim install; \
+		$(MAKE) -C $$subdir/srcsim "PREFIX=$(PREFIX)" install; \
 	done
 
 uninstall:
 	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
-		$(MAKE) -C $$subdir uninstall; \
+		$(MAKE) -C $$subdir "PREFIX=$(PREFIX)" uninstall; \
 	done
 	@set -e; for subdir in $(MACHINES); do \
-		$(MAKE) -C $$subdir/srcsim uinstall; \
+		$(MAKE) -C $$subdir/srcsim "PREFIX=$(PREFIX)" uninstall; \
 	done
 
 clean:
