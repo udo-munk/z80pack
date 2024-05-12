@@ -1,8 +1,6 @@
 ;***********************************************************************
 ; MICROCOSM ASSOCIATES  8080/8085 CPU DIAGNOSTIC VERSION 1.0  (C) 1980
 ;***********************************************************************
-; Load into virtual altair with: ALTAIR L=TEST.HEX
-; Then press F2 to view screen, and 'G' to execute the test.
 ;
 ;DONATED TO THE "SIG/M" CP/M USER'S GROUP BY:
 ;KELLY SMITH, MICROCOSM ASSOCIATES
@@ -11,8 +9,8 @@
 ;(805) 527-9321 (MODEM, CP/M-NET (TM))
 ;(805) 527-0518 (VERBAL)
 ;
-
 ; 03-MAY-2024 Thomas Eberhardt  Add z80pack CPU switching
+;
 
 		ORG	00100H
 
