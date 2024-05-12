@@ -31,7 +31,7 @@ void config(void)
 	while (!go_flag) {
 		printf("1 - switch CPU, currently %s\n", (cpu == Z80) ?
 							  "Z80" : "8080");
-		printf("2 - set port 255 value, currently %02X\n", fp_value);
+		printf("2 - set port 255 value, currently %02XH\n", fp_value);
 		printf("3 - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
