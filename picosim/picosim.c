@@ -124,9 +124,8 @@ void gpio_callback(uint gpio, uint32_t events)
 	cpu_state = STOPPED;
 }
 
-#ifdef WANT_ICE
 /*
- * read an ICE command line from the terminal line
+ * read an ICE or config command line from the terminal line
  */
 int get_cmdline(char *buf, int len)
 {
@@ -150,4 +149,3 @@ int get_cmdline(char *buf, int len)
 	buf[i] = '\0';
 	return 0;
 }
-#endif

@@ -35,7 +35,7 @@ static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 
 static BYTE sio_last;	/* last character received */
-static BYTE fp_value;	/* port 255 value, can be set with p command */
+       BYTE fp_value;	/* port 255 value, can be set with p command */
 
 /*
  *	This array contains function pointers for every input
