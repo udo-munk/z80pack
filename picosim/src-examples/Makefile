@@ -1,6 +1,6 @@
 Z80ASMDIR = ../../z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
-Z80ASMOPTS = -l -sn -p0
+Z80ASMOPTS = -l -T -sn -p0
 
 all: serial.c tb.c blink.c
 

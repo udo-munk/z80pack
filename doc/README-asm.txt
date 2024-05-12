@@ -1,13 +1,19 @@
 Usage:
 
-z80asm -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num> -x -8 -u
-       -v -m -U -o<file> -l[<file>] -d<symbol> ... <file> ...
+z80asm -8 -u -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num>
+       -x -v -m -U -T -o<file> -l[<file>] -d<symbol> ... <file> ...
 
 If the file name of a source doesn't have an extension the default
 extension ".asm" will be appended.
 
 Source lines have a maximum length of 128 characters, excluding the
 new line character. Any characters after this limit are ignored.
+
+Option 8:
+Change default instruction set to 8080.
+
+Option u:
+Accept undocumented Z80 instructions.
 
 Option f:
 Format of the output file:
@@ -55,12 +61,6 @@ Useful to make CP/M BIOS's, where unallocated data doesn't need to be a
 part of the system image, fit on the system tracks.
 This option is a no-op for Intel HEX output.
 
-Option 8:
-Change default instruction set to 8080.
-
-Option u:
-Accept undocumented Z80 instructions.
-
 Option v:
 Verbose operation of the assembler.
 
@@ -71,6 +71,9 @@ The default is to list only macro expansions that produce object code.
 
 Option U:
 Convert everything to upper case for compatibility with old source code.
+
+Option T:
+Don't print time stamp in list file headers.
 
 Option o:
 To override the default name of the output file. The extension ".bin",
