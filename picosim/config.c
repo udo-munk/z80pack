@@ -8,10 +8,11 @@
  *
  * History:
  * 20-APR-2024 dummy, no configuration implemented yet
- * 12-MAY-2024 working on configuration dialog
+ * 12-MAY-2024 implemented configuration dialog
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include "sim.h"
 #include "simglb.h"
 
@@ -19,6 +20,9 @@ extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
 extern unsigned char fp_value;
 
+/*
+ * Configuration dialog for the machine
+ */
 void config(void)
 {
 	char s[10];
@@ -41,10 +45,14 @@ void config(void)
 				switch_cpu(Z80);
 			break;
 		case '2':
+again:
 			printf("Value in Hex: ");
 			get_cmdline(s, 3);
-			printf("\n");
-			/* TODO: plausi check */
+			printf("\n\n");
+			if (!isxdigit(*s) || !isxdigit(*s + 1)) {
+				printf("What?\n");
+				goto again;
+			}
 			fp_value = (*s <= '9' ? *s - '0' : *s - 'A' + 10) << 4;
 			fp_value += (*(s + 1) <= '9' ? *(s + 1) - '0' :
 				     *(s + 1) - 'A' + 10);

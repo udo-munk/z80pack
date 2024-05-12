@@ -8,7 +8,7 @@
  *
  * History:
  * 23-APR-2024 dummy, no configuration implemented yet
- * 12-MAY-2024 working on configuration dialog
+ * 12-MAY-2024 implemented configuration dialog
  */
 
 #ifndef CONFIG_INC
