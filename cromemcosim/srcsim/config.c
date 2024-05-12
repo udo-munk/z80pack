@@ -25,7 +25,7 @@
 #include "simglb.h"
 #include "log.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 

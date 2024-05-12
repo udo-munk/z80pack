@@ -65,7 +65,7 @@
 #endif /* HAS_CYCLOPS */
 #include "imsai-vio.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #include "config.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

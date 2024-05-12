@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 
 /* 64KB non banked memory */
 #define MEMSIZE 65536

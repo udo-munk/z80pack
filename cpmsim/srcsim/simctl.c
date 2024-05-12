@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 #include "unix_terminal.h"
 #include "log.h"
 

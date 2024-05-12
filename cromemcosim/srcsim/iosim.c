@@ -55,7 +55,7 @@
 #include "cromemco-dazzler.h"
 #include "cromemco-d+7a.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #include "config.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

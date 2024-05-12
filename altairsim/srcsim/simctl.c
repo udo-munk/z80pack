@@ -44,7 +44,7 @@
 #include "simglb.h"
 #include "config.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #include "unix_terminal.h"
 #ifdef FRONTPANEL
 #include "log.h"

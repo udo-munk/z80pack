@@ -21,7 +21,7 @@
 
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 
 #ifdef HAS_NETSERVER
 #include "civetweb.h"

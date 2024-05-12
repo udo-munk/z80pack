@@ -28,7 +28,7 @@
 #include <sys/time.h>
 #endif
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 
 #ifdef WANT_ICE
 

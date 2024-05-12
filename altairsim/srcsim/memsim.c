@@ -24,7 +24,7 @@
 #include "simglb.h"
 #include "config.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 

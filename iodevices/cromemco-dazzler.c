@@ -36,7 +36,7 @@
 #include "simglb.h"
 #include "config.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif

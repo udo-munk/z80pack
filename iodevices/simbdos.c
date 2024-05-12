@@ -39,7 +39,7 @@
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memory.h"
+#include "memsim.h"
 
 /* BDOS Equates */
 

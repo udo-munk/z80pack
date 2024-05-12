@@ -5,7 +5,7 @@
 # and the executable saved as '../machinesim'
 MACHINE = z80
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memory.c simctl.c
+MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files
 IO_SRCS = unix_terminal.c
 
@@ -50,7 +50,7 @@ endif
 ###
 
 DEFS =
-INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L

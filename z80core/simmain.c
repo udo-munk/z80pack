@@ -31,7 +31,7 @@
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memory.h"
+#include "memsim.h"
 
 static void save_core(void);
 static int load_core(void);

@@ -11,7 +11,7 @@
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memory.h"
+#include "memsim.h"
 
 #ifndef EXCLUDE_Z80
 

@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 
 #ifndef BAREMETAL
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */

@@ -7,7 +7,7 @@ MACHINE = cromemco
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memory.c simctl.c
+MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-wdi.c cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c \
 	cromemco-tu-art.c cromemco-hal.c unix_terminal.c unix_network.c \
@@ -96,7 +96,7 @@ endif
 
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
 	-DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
-INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) \
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) \
 	-I$(CIV_DIR)/include $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 

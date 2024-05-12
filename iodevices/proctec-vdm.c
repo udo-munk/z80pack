@@ -24,7 +24,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #include "log.h"
 #include "proctec-vdm-charset.h"
 

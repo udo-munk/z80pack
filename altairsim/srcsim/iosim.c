@@ -52,7 +52,7 @@
 #include "cromemco-dazzler.h"
 #include "proctec-vdm.h"
 #include "frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #include "config.h"
 
 /*
