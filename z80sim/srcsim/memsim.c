@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
+#include "memsim.h"
 
 /* 64KB non banked memory */
 BYTE memory[65536];		/* 64KB RAM */

@@ -7,7 +7,7 @@ MACHINE = imsai
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memory.c simctl.c
+MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c \
 	imsai-fif.c imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c \
@@ -97,7 +97,7 @@ endif
 
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
 	-DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
-INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) \
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) \
 	-I$(CIV_DIR)/include $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 

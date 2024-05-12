@@ -23,8 +23,8 @@
 #include "sim.h"
 #include "simglb.h"
 #include "simbdos.h"
-#include "../../iodevices/mostek-cpu.h"
-#include "../../iodevices/mostek-fdc.h"
+#include "mostek-cpu.h"
+#include "mostek-fdc.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 

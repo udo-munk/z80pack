@@ -25,8 +25,8 @@
 
 #ifdef HAS_NETSERVER
 
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
+#include "frontpanel.h"
+#include "memsim.h"
 #include "log.h"
 #include "netsrv.h"
 #include "civetweb.h"

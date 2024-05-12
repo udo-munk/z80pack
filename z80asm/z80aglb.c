@@ -34,6 +34,7 @@ WORD rpc,			/* real program counter */
      carylen = CARYLEN;		/* C array bytes per line */
 
 int  list_flag,			/* flag for option -l */
+     nodate_flag,		/* flag for option -T */
      sym_flag,			/* flag for option -s */
      undoc_flag,		/* flag for option -u */
      ver_flag,			/* flag for option -v */

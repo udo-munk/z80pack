@@ -37,9 +37,9 @@
 #include "sim.h"
 #include "simglb.h"
 #ifdef FRONTPANEL
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #endif
-#include "memory.h"
+#include "memsim.h"
 
 /* BDOS Equates */
 

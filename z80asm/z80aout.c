@@ -104,14 +104,21 @@ void asmerr(int i)
 void lst_header(void)
 {
 	static int header_done;
-	time_t tloc = time(&tloc);
+	time_t tloc;
 
 	if (header_done && ppl != 0)
 		fputc('\f', lstfp);
-	if (!header_done || ppl != 0)
-		fprintf(lstfp, "Z80/8080-Macro-Assembler  Release %s\t%.24s",
-			RELEASE, ctime(&tloc));
+	if (!header_done || ppl != 0) {
+		fprintf(lstfp, "Z80/8080-Macro-Assembler  Release %s",
+			RELEASE);
+		if (!nodate_flag) {
+			tloc = time(&tloc);
+			fprintf(lstfp, "\t%.24s", ctime(&tloc));
+		}
+	}
 	if (ppl != 0) {
+		if (nodate_flag)
+			fputs("\t\t\t\t", lstfp);
 		fprintf(lstfp, "\tPage %d\n", ++page);
 		fprintf(lstfp, "Source file: %s\n", srcfn);
 		fprintf(lstfp, "Title:       %s", title);

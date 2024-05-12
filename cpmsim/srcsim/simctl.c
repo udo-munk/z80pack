@@ -12,8 +12,8 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memory.h"
-#include "../../iodevices/unix_terminal.h"
+#include "memsim.h"
+#include "unix_terminal.h"
 #include "log.h"
 
 extern void run_cpu(void);
