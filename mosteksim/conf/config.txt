@@ -1,14 +1,15 @@
 
 # Drive assignment order does not matter. Path names must not contains spaces.
-# Relative path names are relative to the directory containing the emulator
 
 
-drive0 = disks/MOS-80/System_Disk_301_1.dsk
-drive1 = disks/MOS-80/MOS-80_COPY.dsk
-drive2 = disks/MOS-80/MOS-80.dsk
-drive3 = disks/CPM/WordStar_Install.dsk
+# relative to "disks" or diskdir directory
+drive0 = MOS-80/System_Disk_301_1.dsk
+drive1 = MOS-80/MOS-80_COPY.dsk
+drive2 = MOS-80/MOS-80.dsk
+drive3 = CPM/WordStar_Install.dsk
 
-bootrom = roms/MostekROM.bin
+# relative to "roms" or rompath directory
+bootrom = MostekROM.bin
 
 # MOS-80 System Disks
 

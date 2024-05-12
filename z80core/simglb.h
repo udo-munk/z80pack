@@ -88,12 +88,25 @@ extern BYTE 	fp_led_output;
 #endif
 
 extern int	s_flag, l_flag, m_flag, x_flag, i_flag, f_flag,
-		u_flag, r_flag, c_flag, M_flag, R_flag;
+		u_flag, r_flag, c_flag;
+#ifdef HAS_CONFIG
+extern int	M_flag;
+#endif
+#ifdef HAS_BANKED_ROM
+extern int	R_flag;
+#endif
 
 extern char	xfn[];
+#ifdef HAS_DISKS
 extern char	*diskdir, diskd[];
-extern char	confdir[], conffn[];
+#endif
+#ifdef CONFDIR
+extern char	confdir[];
+#endif
+#ifdef HAS_CONFIG
+extern char	conffn[];
 extern char	rompath[];
+#endif
 
 extern char	parity[];
 

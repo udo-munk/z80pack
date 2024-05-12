@@ -50,8 +50,10 @@ int main(int argc, char *argv[])
 {
 	register char *s, *p;
 	char *pn = basename(argv[0]);
-#ifdef HAS_CONFIG
+#ifdef CONFDIR
 	struct stat sbuf;
+#endif
+#ifdef HAS_CONFIG
 	const char *rom = "-r rompath ";
 #else
 #ifdef BOOTROM
@@ -193,6 +195,7 @@ int main(int argc, char *argv[])
 				s--;
 				break;
 
+#if MAXMEMSECT > 0
 			case 'M': /* use memory map section nn */
 				if (*(s + 1) != '\0') {
 					M_flag = atoi(s + 1) - 1;
@@ -207,6 +210,8 @@ int main(int argc, char *argv[])
 				if (M_flag < 0 || M_flag > (MAXMEMSECT - 1))
 					goto usage;
 				break;
+#endif
+
 #endif
 
 #ifdef HAS_BANKED_ROM
@@ -375,7 +380,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	fflush(stdout);
 
 	/* if the machine has configuration files try to find them */
-#ifdef HAS_CONFIG
+#ifdef CONFDIR
 	/* first try ./conf */
 	if ((stat("./conf", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 		strcpy(&confdir[0], "./conf");
@@ -383,7 +388,9 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 		/* then CONFDIR as set in Makefile */
 		strcpy(&confdir[0], CONFDIR);
 	}
+#endif
 
+#ifdef HAS_CONFIG
 	/* if option -r is used ROMS are there */
 	if (rompath[0] == 0) {
 		/* if not first try ./roms */

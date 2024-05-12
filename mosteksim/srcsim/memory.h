@@ -18,6 +18,8 @@
 extern void init_memory(void);
 extern BYTE memory[];
 
+#define MAXMEMSECT	0
+
 /*
  * memory access for the CPU cores
  */
