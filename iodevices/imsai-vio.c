@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #include "memory.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

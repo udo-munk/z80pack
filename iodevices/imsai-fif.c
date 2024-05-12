@@ -36,7 +36,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #include "memory.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"

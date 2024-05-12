@@ -50,7 +50,7 @@ endif
 ###
 
 DEFS =
-INCS = -iquote . -I$(CORE_DIR) $(PLAT_INCS)
+INCS = -iquote . -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L

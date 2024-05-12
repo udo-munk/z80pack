@@ -15,7 +15,7 @@
 #include "simglb.h"
 #include "config.h"
 #ifdef FRONTPANEL
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #endif
 #include "memory.h"
 

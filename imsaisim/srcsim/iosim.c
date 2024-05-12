@@ -50,31 +50,31 @@
 #include "sim.h"
 #include "simglb.h"
 #include "simbdos.h"
-#include "../../iodevices/unix_network.h"
-#include "../../iodevices/imsai-sio2.h"
-#include "../../iodevices/imsai-fif.h"
+#include "unix_network.h"
+#include "imsai-sio2.h"
+#include "imsai-fif.h"
 #ifdef HAS_MODEM
-#include "../../iodevices/generic-at-modem.h"
+#include "generic-at-modem.h"
 #endif /* HAS_MODEM */
 #ifdef HAS_DAZZLER
-#include "../../iodevices/cromemco-dazzler.h"
-#include "../../iodevices/cromemco-d+7a.h"
+#include "cromemco-dazzler.h"
+#include "cromemco-d+7a.h"
 #endif /* HAS_DAZZLER */
 #ifdef HAS_CYCLOPS
-#include "../../iodevices/cromemco-88ccc.h"
+#include "cromemco-88ccc.h"
 #endif /* HAS_CYCLOPS */
-#include "../../iodevices/imsai-vio.h"
-#include "../../frontpanel/frontpanel.h"
+#include "imsai-vio.h"
+#include "frontpanel.h"
 #include "memory.h"
 #include "config.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
 #include "log.h"
-#include "../../iodevices/rtc.h"
-#include "../../iodevices/imsai-hal.h"
+#include "rtc.h"
+#include "imsai-hal.h"
 #ifdef HAS_APU
-#include "../../iodevices/apu/am9511.h"
+#include "apu/am9511.h"
 #endif
 
 #define AM_DATA   0xA2	/* instantiate am9511 for these ports */

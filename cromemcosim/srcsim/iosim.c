@@ -46,15 +46,15 @@
 #include "sim.h"
 #include "simglb.h"
 #include "simbdos.h"
-#include "../../iodevices/unix_network.h"
-#include "../../iodevices/cromemco-tu-art.h"
+#include "unix_network.h"
+#include "cromemco-tu-art.h"
 #ifdef HAS_MODEM
-#include "../../iodevices/generic-at-modem.h"
+#include "generic-at-modem.h"
 #endif /* HAS_MODEM */
-#include "../../iodevices/cromemco-fdc.h"
-#include "../../iodevices/cromemco-dazzler.h"
-#include "../../iodevices/cromemco-d+7a.h"
-#include "../../frontpanel/frontpanel.h"
+#include "cromemco-fdc.h"
+#include "cromemco-dazzler.h"
+#include "cromemco-d+7a.h"
+#include "frontpanel.h"
 #include "memory.h"
 #include "config.h"
 #ifdef HAS_NETSERVER
@@ -62,9 +62,9 @@
 #endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-#include "../../iodevices/cromemco-hal.h"
-#include "../../iodevices/cromemco-wdi.h"
-#include "../../iodevices/unix_terminal.h"
+#include "cromemco-hal.h"
+#include "cromemco-wdi.h"
+#include "unix_terminal.h"
 
 /*
  *	Forward declarations for I/O functions

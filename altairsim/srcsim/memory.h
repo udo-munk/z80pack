@@ -23,7 +23,7 @@
 #define MEMORY_INC
 
 #ifdef FRONTPANEL
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #endif
 
 extern void init_memory(void);

@@ -21,7 +21,7 @@
 #ifdef HAS_CYCLOPS
 
 #include "config.h"
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #include "memory.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #include "memory.h"
 #include "log.h"
 #include "proctec-vdm-charset.h"

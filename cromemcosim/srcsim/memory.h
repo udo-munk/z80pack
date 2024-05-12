@@ -22,7 +22,7 @@
 #define MEMORY_INC
 
 #ifdef FRONTPANEL
-#include "../../frontpanel/frontpanel.h"
+#include "frontpanel.h"
 #endif
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */
