@@ -34,6 +34,7 @@
  *	by user for her/his own purpose.
  */
 #define DEF_CPU I8080	/* default CPU (Z80 or I8080) */
+/*#define AMD8080*/	/* AMD 8080 instead of Intel 8080 */
 #define CPU_SPEED 2	/* default CPU speed */
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
