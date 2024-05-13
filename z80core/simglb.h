@@ -79,18 +79,12 @@ extern WORD	t_start, t_end;
 #endif
 
 #ifdef FRONTPANEL
-extern int	fp_enabled;
 extern unsigned long long fp_clock;
 extern float	fp_fps;
 extern WORD 	fp_led_address;
 extern BYTE 	fp_led_data;
 extern WORD 	address_switch;
 extern BYTE 	fp_led_output;
-#endif
-
-#ifdef HAS_NETSERVER
-extern int	ns_enabled;
-extern int	ns_port;
 #endif
 
 extern int	s_flag, l_flag, m_flag, x_flag, i_flag, f_flag,
@@ -100,6 +94,12 @@ extern int	M_flag;
 #endif
 #ifdef HAS_BANKED_ROM
 extern int	R_flag;
+#endif
+#ifdef FRONTPANEL
+extern int	F_flag;
+#endif
+#ifdef HAS_NETSERVER
+extern int	n_flag;
 #endif
 
 extern char	xfn[];

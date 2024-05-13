@@ -82,12 +82,12 @@ void mon(void)
 #ifdef HAS_NETSERVER
 	extern int start_net_services(int);
 
-	if (ns_enabled)
+	if (n_flag)
 		start_net_services(ns_port);
 #endif
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		/* initialize front panel */
 		XInitThreads();
 
@@ -144,7 +144,7 @@ void mon(void)
 	atexit(reset_unix_terminal);
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		/* operate machine from front panel */
 		while (cpu_error == NONE) {
 			/* update frontpanel LED's */
@@ -223,7 +223,7 @@ void mon(void)
 	putchar('\n');
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		/* all LED's off and update front panel */
 		cpu_bus = 0;
 		bus_request = 0;

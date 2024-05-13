@@ -67,7 +67,7 @@ void null_out(int dev, BYTE data) {
 
 #ifdef HAS_NETSERVER
 int net_tty_alive(int dev) {
-    if (ns_enabled) {
+    if (n_flag) {
         // LOG(TAG, "WEBTTY %d: %d\r\n", dev, net_device_alive(dev));
         /* WEBTTY is only alive if websocket is connected */
         return net_device_alive((net_device_t) dev);
@@ -77,7 +77,7 @@ int net_tty_alive(int dev) {
 }
 void net_tty_status(int dev, BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (ns_enabled) {
+    if (n_flag) {
         if (net_device_poll((net_device_t) dev)) {
             *stat |= 2;
         }
@@ -85,14 +85,14 @@ void net_tty_status(int dev, BYTE *stat) {
     }
 }
 int net_tty_in(int dev) {
-    if (ns_enabled) {
+    if (n_flag) {
         return net_device_get((net_device_t) dev);
     } else {
         return -1;
     }
 }
 void net_tty_out(int dev, BYTE data) {
-    if (ns_enabled) {
+    if (n_flag) {
         net_device_send((net_device_t) dev, (char *)&data, 1);
     }
 }

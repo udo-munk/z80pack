@@ -779,7 +779,7 @@ BYTE cromemco_fdc_aux_in(void)
 	}
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		/* get front panel switch bits */
 		if ((address_switch >> 8) & 16)
 			fdc_aux &= ~8;

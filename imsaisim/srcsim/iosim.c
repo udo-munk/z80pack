@@ -766,7 +766,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #endif
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock += 3;
 		fp_led_address = (addrh << 8) + addrl;
 		fp_led_data = io_data;
@@ -801,7 +801,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #endif
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock += 6;
 		fp_led_address = (addrh << 8) + addrl;
 		fp_led_data = io_data;
@@ -868,7 +868,7 @@ static void io_no_card_out(BYTE data)
 static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		return (address_switch >> 8);
 	else {
 #endif
@@ -884,7 +884,7 @@ static BYTE fp_in(void)
 static void fp_out(BYTE data)
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		fp_led_output = data;
 	else {
 #endif
@@ -1003,7 +1003,7 @@ static void lpt_out(BYTE data)
 	if (data == 0x80) {
 		lpt_reset();
 #ifdef HAS_NETSERVER
-		if (ns_enabled)
+		if (n_flag)
 			net_device_send(DEV_LPT, (char *) &data, 1);
 #endif
 		return;
@@ -1022,7 +1022,7 @@ again:
 		}
 
 #ifdef HAS_NETSERVER
-		if (ns_enabled)
+		if (n_flag)
 			net_device_send(DEV_LPT, (char *) &data, 1);
 #endif
 	}

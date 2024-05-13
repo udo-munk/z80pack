@@ -433,7 +433,7 @@ void cpu_8080(void)
 
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
-				if (fp_enabled) {
+				if (F_flag) {
 					fp_clock += 1000;
 					fp_sampleData();
 				}
@@ -450,7 +450,7 @@ void cpu_8080(void)
 					end_bus_request();
 				}
 #ifdef FRONTPANEL
-				if (fp_enabled) {
+				if (F_flag) {
 					fp_clock += 1000;
 					fp_sampleData();
 				}
@@ -472,7 +472,7 @@ void cpu_8080(void)
 				cpu_bus = CPU_WO | CPU_M1 | CPU_INTA;
 #endif
 #ifdef FRONTPANEL
-				if (fp_enabled) {
+				if (F_flag) {
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
@@ -487,7 +487,7 @@ void cpu_8080(void)
 			cpu_bus = CPU_STACK;
 #endif
 #ifdef FRONTPANEL
-			if (fp_enabled) {
+			if (F_flag) {
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
 			}
@@ -497,7 +497,7 @@ void cpu_8080(void)
 			memwrt(--SP, PC);
 
 #ifdef FRONTPANEL
-			if (fp_enabled && (cpu_state & RESET))
+			if (F_flag && (cpu_state & RESET))
 				goto leave;
 #endif
 
@@ -538,7 +538,7 @@ void cpu_8080(void)
 			int_int = 0;
 			int_data = -1;
 #ifdef FRONTPANEL
-			if (fp_enabled)
+			if (F_flag)
 				m1_step = 1;
 #endif
 		}
@@ -583,7 +583,7 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
@@ -614,7 +614,7 @@ static int op_hlt(void)			/* HLT */
 #endif
 
 #ifdef FRONTPANEL
-	if (!fp_enabled) {
+	if (!F_flag) {
 #endif
 		if (IFF == 0) {
 			/* without a frontpanel DI + HALT stops the machine */
@@ -1238,7 +1238,7 @@ static int op_lxispnn(void)		/* LXI SP,nn */
 static int op_sphl(void)		/* SPHL */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(H << 8 | L);
 #endif
 	SP = (H << 8) + L;
@@ -1270,7 +1270,7 @@ static int op_shldnn(void)		/* SHLD nn */
 static int op_inxb(void)		/* INX B */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(B << 8 | C);
 #endif
 	C++;
@@ -1282,7 +1282,7 @@ static int op_inxb(void)		/* INX B */
 static int op_inxd(void)		/* INX D */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(D << 8 | E);
 #endif
 	E++;
@@ -1294,7 +1294,7 @@ static int op_inxd(void)		/* INX D */
 static int op_inxh(void)		/* INX H */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(H << 8 | L);
 #endif
 	L++;
@@ -1306,7 +1306,7 @@ static int op_inxh(void)		/* INX H */
 static int op_inxsp(void)		/* INX SP */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(SP);
 #endif
 	SP++;
@@ -1316,7 +1316,7 @@ static int op_inxsp(void)		/* INX SP */
 static int op_dcxb(void)		/* DCX B */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(B << 8 | C);
 #endif
 	C--;
@@ -1328,7 +1328,7 @@ static int op_dcxb(void)		/* DCX B */
 static int op_dcxd(void)		/* DCX D */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(D << 8 | E);
 #endif
 	E--;
@@ -1340,7 +1340,7 @@ static int op_dcxd(void)		/* DCX D */
 static int op_dcxh(void)		/* DCX H */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(H << 8 | L);
 #endif
 	L--;
@@ -1352,7 +1352,7 @@ static int op_dcxh(void)		/* DCX H */
 static int op_dcxsp(void)		/* DCX SP */
 {
 #ifdef FRONTPANEL
-	if (fp_enabled)
+	if (F_flag)
 		addr_leds(SP);
 #endif
 	SP--;

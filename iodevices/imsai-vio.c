@@ -270,7 +270,7 @@ static inline void event_handler(void)
 		}
 	}
 #ifdef HAS_NETSERVER
-	if (ns_enabled) {
+	if (n_flag) {
 		int res = net_device_get(DEV_VIO);
 		if (res >= 0) {
 			imsai_kbd_data =  res;
@@ -467,7 +467,7 @@ static void *update_display(void *arg)
 
 	while (state) {
 #ifdef HAS_NETSERVER
-		if (!ns_enabled) {
+		if (!n_flag) {
 #endif
 			/* lock display, don't cancel thread while locked */
 			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -503,7 +503,7 @@ static void *update_display(void *arg)
 void imsai_vio_init(void)
 {
 #ifdef HAS_NETSERVER
-	if (!ns_enabled)
+	if (!n_flag)
 #endif
 		open_display();
 

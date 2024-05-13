@@ -25,5 +25,6 @@ extern void config(void);
 
 extern int  fp_size;
 extern BYTE fp_port;
+extern int  ns_port;
 
 #endif
