@@ -100,6 +100,20 @@ extern int cyclecount;
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
+#ifdef BUS_8080
+	cpu_bus &= ~(CPU_WO | CPU_MEMR);
+#endif
+
+#ifdef FRONTPANEL
+	if (fp_enabled) {
+		fp_clock++;
+		fp_led_address = addr;
+		fp_led_data = data;
+		fp_sampleData();
+		wait_step();
+	}
+#endif
+
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 8] == MEM_RW)
 			_MEMWRTTHRU(addr) = data;
@@ -107,31 +121,11 @@ static inline void memwrt(WORD addr, BYTE data)
 		*(banks[selbnk] + addr) = data;
 	}
 
-#ifdef BUS_8080
-	cpu_bus &= ~(CPU_WO | CPU_MEMR);
-#endif
-
-#ifdef FRONTPANEL
-	fp_clock++;
-	fp_led_address = addr;
-	fp_led_data = data;
-	fp_sampleData();
-	wait_step();
-#endif
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	BYTE data;
-
-#ifdef BUS_8080
-	cpu_bus |= CPU_WO | CPU_MEMR;
-#endif
-
-#ifdef FRONTPANEL
-	fp_clock++;
-	fp_led_address = addr;
-#endif
+	register BYTE data;
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 8] != MEM_NONE) {
@@ -143,10 +137,18 @@ static inline BYTE memrdr(WORD addr)
 		data = *(banks[selbnk] + addr);
 	}
 
+#ifdef BUS_8080
+	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
+
 #ifdef FRONTPANEL
-	fp_led_data = data;
-	fp_sampleData();
-	wait_step();
+	if (fp_enabled) {
+		fp_clock++;
+		fp_led_address = addr;
+		fp_led_data = data;
+		fp_sampleData();
+		wait_step();
+	}
 #endif
 
 	if (cyclecount && --cyclecount == 0)
@@ -163,8 +165,10 @@ static inline BYTE dma_read(WORD addr)
 	bus_request = 1;
 #if 0
 	/* updating the LED's slows down too much */
-	fp_clock++;
-	fp_sampleData();
+	if (fp_enabled) {
+		fp_clock++;
+		fp_sampleData();
+	}
 #endif
 	bus_request = 0;
 
@@ -183,8 +187,10 @@ static inline void dma_write(WORD addr, BYTE data)
 	bus_request = 1;
 #if 0
 	/* updating the LED's slows down too much */
-	fp_clock++;
-	fp_sampleData();
+	if (fp_enabled) {
+		fp_clock++;
+		fp_sampleData();
+	}
 #endif
 	bus_request = 0;
 

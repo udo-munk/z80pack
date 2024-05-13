@@ -79,6 +79,7 @@ extern WORD	t_start, t_end;
 #endif
 
 #ifdef FRONTPANEL
+extern int	fp_enabled;
 extern unsigned long long fp_clock;
 extern float	fp_fps;
 extern WORD 	fp_led_address;

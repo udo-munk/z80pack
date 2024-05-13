@@ -54,7 +54,9 @@
 #include "cromemco-fdc.h"
 #include "cromemco-dazzler.h"
 #include "cromemco-d+7a.h"
+#ifdef FRONTPANEL
 #include "frontpanel.h"
+#endif
 #include "memsim.h"
 #include "config.h"
 #ifdef HAS_NETSERVER
@@ -747,15 +749,17 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock += 3;
-	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = io_data;
-	fp_sampleData();
-	val = wait_step();
+	if (fp_enabled) {
+		fp_clock += 3;
+		fp_led_address = (addrh << 8) + addrl;
+		fp_led_data = io_data;
+		fp_sampleData();
+		val = wait_step();
 
-	/* when single stepped INP get last set value of port */
-	if (val)
-		io_data = (*port_in[io_port])();
+		/* when single stepped INP get last set value of port */
+		if (val)
+			io_data = (*port_in[io_port])();
+	}
 #endif
 
 	return (io_data);
@@ -780,11 +784,13 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock += 6;
-	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = io_data;
-	fp_sampleData();
-	wait_step();
+	if (fp_enabled) {
+		fp_clock += 6;
+		fp_led_address = (addrh << 8) + addrl;
+		fp_led_data = io_data;
+		fp_sampleData();
+		wait_step();
+	}
 #endif
 }
 
@@ -825,9 +831,13 @@ static void io_trap_out(BYTE data)
 static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
-	return (address_switch >> 8);
-#else
-	return (fp_port);
+	if (fp_enabled)
+		return (address_switch >> 8);
+	else {
+#endif
+		return (fp_port);
+#ifdef FRONTPANEL
+	}
 #endif
 }
 
@@ -837,9 +847,13 @@ static BYTE fp_in(void)
 static void fp_out(BYTE data)
 {
 #ifdef FRONTPANEL
-	fp_led_output = data;
-#else
-	UNUSED(data);
+	if (fp_enabled)
+		fp_led_output = data;
+	else {
+#endif
+		UNUSED(data);
+#ifdef FRONTPANEL
+	}
 #endif
 }
 

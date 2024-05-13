@@ -36,9 +36,6 @@
 #include <ctype.h>
 #include "sim.h"
 #include "simglb.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#endif
 #include "memsim.h"
 
 /* BDOS Equates */

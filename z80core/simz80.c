@@ -422,8 +422,10 @@ void cpu_z80(void)
 
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
-				fp_clock += 1000;
-				fp_sampleData();
+				if (fp_enabled) {
+					fp_clock += 1000;
+					fp_sampleData();
+				}
 #endif
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
@@ -437,8 +439,10 @@ void cpu_z80(void)
 					end_bus_request();
 				}
 #ifdef FRONTPANEL
-				fp_clock += 1000;
-				fp_sampleData();
+				if (fp_enabled) {
+					fp_clock += 1000;
+					fp_sampleData();
+				}
 #endif
 			}
 		}
@@ -470,13 +474,15 @@ void cpu_z80(void)
 				cpu_bus = CPU_WO | CPU_M1 | CPU_INTA;
 #endif
 #ifdef FRONTPANEL
-				fp_clock += 1000;
-				fp_led_data = (int_data != -1) ?
-					      (BYTE) int_data : 0xff;
-				fp_sampleData();
-				wait_int_step();
-				if (cpu_state & RESET)
-					goto leave;
+				if (fp_enabled) {
+					fp_clock += 1000;
+					fp_led_data = (int_data != -1) ?
+						      (BYTE) int_data : 0xff;
+					fp_sampleData();
+					wait_int_step();
+					if (cpu_state & RESET)
+						goto leave;
+				}
 #endif
 #ifdef BUS_8080
 			}
@@ -488,7 +494,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (cpu_state & RESET)
+				if (fp_enabled && (cpu_state & RESET))
 					goto leave;
 #endif
 				switch (int_data) {
@@ -530,7 +536,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (cpu_state & RESET)
+				if (fp_enabled && (cpu_state & RESET))
 					goto leave;
 #endif
 				PC = 0x38;
@@ -540,7 +546,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (cpu_state & RESET)
+				if (fp_enabled && (cpu_state & RESET))
 					goto leave;
 #endif
 				p = (I << 8) + (int_data & 0xff);
@@ -555,7 +561,8 @@ void cpu_z80(void)
 			int_int = 0;
 			int_data = -1;
 #ifdef FRONTPANEL
-			m1_step = 1;
+			if (fp_enabled)
+				m1_step = 1;
 #endif
 			R++;		/* increment refresh register */
 		}
@@ -607,10 +614,12 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 #ifdef FRONTPANEL
-	fp_led_address = PC;
-	fp_led_data = getmem(PC);
-	fp_clock++;
-	fp_sampleData();
+	if (fp_enabled) {
+		fp_led_address = PC;
+		fp_led_data = getmem(PC);
+		fp_clock++;
+		fp_sampleData();
+	}
 #endif
 }
 
@@ -625,58 +634,62 @@ static int op_halt(void)		/* HALT */
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
 
-#ifndef FRONTPANEL
-	if (IFF == 0) {
-		/* without a frontpanel DI + HALT stops the machine */
-		cpu_error = OPHALT;
-		cpu_state = STOPPED;
-	} else {
-		/* else wait for INT, NMI or user interrupt */
-		while ((int_int == 0) && (int_nmi == 0) &&
-		       (cpu_state == CONTIN_RUN)) {
-			SLEEP_MS(1);
-			R += 99;
+#ifdef FRONTPANEL
+	if (!fp_enabled) {
+#endif
+		if (IFF == 0) {
+			/* without a frontpanel DI + HALT stops the machine */
+			cpu_error = OPHALT;
+			cpu_state = STOPPED;
+		} else {
+			/* else wait for INT, NMI or user interrupt */
+			while ((int_int == 0) && (int_nmi == 0) &&
+			       (cpu_state == CONTIN_RUN)) {
+				SLEEP_MS(1);
+				R += 99;
+			}
 		}
-	}
 #ifdef BUS_8080
-	if (int_int)
-		cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
+		if (int_int)
+			cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
 #endif
 
-	busy_loop_cnt = 0;
+		busy_loop_cnt = 0;
 
-#else
-
-	fp_led_address = 0xffff;
-	fp_led_data = 0xff;
-
-	if (IFF == 0) {
-		/* INT disabled, wait for NMI,
-		   frontpanel reset or user interrupt */
-		while ((int_nmi == 0) && !(cpu_state & RESET)) {
-			fp_clock++;
-			fp_sampleData();
-			SLEEP_MS(1);
-			R += 99;
-			if (cpu_error != NONE)
-				break;
-		}
+#ifdef FRONTPANEL
 	} else {
-		/* else wait for INT, NMI,
-		   frontpanel reset or user interrupt */
-		while ((int_int == 0) && (int_nmi == 0) &&
-		       !(cpu_state & RESET)) {
-			fp_clock++;
-			fp_sampleData();
-			SLEEP_MS(1);
-			R += 99;
-			if (cpu_error != NONE)
-				break;
-		}
-		if (int_int) {
-			cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
-			fp_clock++;
-			fp_sampleLightGroup(0, 0);
+		fp_led_address = 0xffff;
+		fp_led_data = 0xff;
+
+		if (IFF == 0) {
+			/* INT disabled, wait for NMI,
+			   frontpanel reset or user interrupt */
+			while ((int_nmi == 0) && !(cpu_state & RESET)) {
+				fp_clock++;
+				fp_sampleData();
+				SLEEP_MS(1);
+				R += 99;
+				if (cpu_error != NONE)
+					break;
+			}
+		} else {
+			/* else wait for INT, NMI,
+			   frontpanel reset or user interrupt */
+			while ((int_int == 0) && (int_nmi == 0) &&
+			       !(cpu_state & RESET)) {
+				fp_clock++;
+				fp_sampleData();
+				SLEEP_MS(1);
+				R += 99;
+				if (cpu_error != NONE)
+					break;
+			}
+			if (int_int) {
+				cpu_bus = CPU_INTA | CPU_WO |
+					  CPU_HLTA | CPU_M1;
+				fp_clock++;
+				fp_sampleLightGroup(0, 0);
+			}
 		}
 	}
 #endif

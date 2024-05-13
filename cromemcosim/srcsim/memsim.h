@@ -87,11 +87,13 @@ static inline void memwrt(WORD addr, BYTE data)
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock++;
-	fp_led_address = addr;
-	fp_led_data = data;
-	fp_sampleData();
-	wait_step();
+	if (fp_enabled) {
+		fp_clock++;
+		fp_led_address = addr;
+		fp_led_data = data;
+		fp_sampleData();
+		wait_step();
+	}
 #endif
 
 	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
@@ -113,34 +115,31 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
+	register BYTE data;
+
+	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
+		data = *(fdc_banked_rom + addr - 0xC000);
+	} else if (selbnk || p_tab[addr >> 8] != MEM_NONE) {
+		data = *(memory[selbnk] + addr);
+	} else {
+		data = 0xff;
+	}
+
 #ifdef BUS_8080
 	cpu_bus |= CPU_WO | CPU_MEMR;
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock++;
-	fp_led_address = addr;
-
-	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
-		fp_led_data = *(fdc_banked_rom + addr - 0xC000);
-	} else if (selbnk || p_tab[addr >> 8] != MEM_NONE) {
-		fp_led_data = *(memory[selbnk] + addr);
-	} else {
-		fp_led_data = 0xff;
-	}
-	fp_sampleData();
-	wait_step();
-
-	return (fp_led_data);
-#else
-	if (fdc_rom_active && (addr >> 13) == 0x6) { /* Covers C000 to DFFF */
-		return (*(fdc_banked_rom + addr - 0xC000));
-	} else if (selbnk || p_tab[addr >> 8] != MEM_NONE) {
-		return (*(memory[selbnk] + addr));
-	} else {
-		return (0xff);
+	if (fp_enabled) {
+		fp_clock++;
+		fp_led_address = addr;
+		fp_led_data = data;
+		fp_sampleData();
+		wait_step();
 	}
 #endif
+
+	return (data);
 }
 
 /*

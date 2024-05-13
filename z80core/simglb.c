@@ -98,6 +98,7 @@ WORD t_end = 65535;		/* end address for measurement */
  *	Variables for frontpanel emulation
  */
 #ifdef FRONTPANEL
+int fp_enabled = 1;		/* frontpanel enabled flag */
 unsigned long long fp_clock;	/* simulation clock */
 float fp_fps = 30.0;		/* frame rate, default 30 usually works */
 WORD fp_led_address;		/* lights for address bus */

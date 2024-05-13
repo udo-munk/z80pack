@@ -25,7 +25,6 @@
 
 #ifdef HAS_NETSERVER
 
-#include "frontpanel.h"
 #include "memsim.h"
 #include "log.h"
 #include "netsrv.h"
@@ -307,7 +306,9 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
                     httpdPrintf(conn, "\"%s\": \"%s\", ", "bootrom", xfn);
                 }
 #ifdef FRONTPANEL
-                    httpdPrintf(conn, "\"%s\": %d, ", "cpa", 1);
+                    if (fp_enabled) {
+                        httpdPrintf(conn, "\"%s\": %d, ", "cpa", 1);
+                    }
 #endif
                 httpdPrintf(conn, "\"%s\": %d ", "clock", f_flag);
             httpdPrintf(conn, "} ");

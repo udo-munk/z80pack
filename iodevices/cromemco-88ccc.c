@@ -21,7 +21,6 @@
 #ifdef HAS_CYCLOPS
 
 #include "config.h"
-#include "frontpanel.h"
 #include "memsim.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

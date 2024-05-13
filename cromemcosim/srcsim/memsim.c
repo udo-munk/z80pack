@@ -21,7 +21,6 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "frontpanel.h"
 #include "memsim.h"
 #include "log.h"
 

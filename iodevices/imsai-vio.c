@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "frontpanel.h"
 #include "memsim.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

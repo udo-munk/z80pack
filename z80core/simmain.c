@@ -28,9 +28,6 @@
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#endif
 #include "memsim.h"
 
 static void save_core(void);
@@ -232,6 +229,11 @@ int main(int argc, char *argv[])
 				cpu = Z80;
 				break;
 #endif
+#ifdef FRONTPANEL
+			case 'F':
+				fp_enabled = 0;
+				break;
+#endif
 
 			case '?':
 			case 'h':
@@ -243,7 +245,7 @@ int main(int argc, char *argv[])
 usage:
 
 				printf("usage:\t%s%s%s -s -l -i -u %s-m val "
-				       "-f freq -x filename", pn,
+				       "-f freq\n\t\t-x filename", pn,
 #ifndef EXCLUDE_Z80
 				       " -z",
 #else
@@ -267,7 +269,10 @@ usage:
 #ifdef HAS_BANKED_ROM
 				fputs(" -R", stdout);
 #endif
-				putchar('\n');
+#ifdef FRONTPANEL
+				fputs(" -F", stdout);
+#endif
+				fputs("\n\n", stdout);
 #ifndef EXCLUDE_Z80
 				puts("\t-z = emulate Zilog Z80");
 #endif
@@ -311,6 +316,9 @@ usage:
 #endif
 #ifdef HAS_BANKED_ROM
 				puts("\t-R = enable banked ROM");
+#endif
+#ifdef FRONTPANEL
+				puts("\t-F = disable front panel");
 #endif
 				exit(EXIT_FAILURE);
 			}
