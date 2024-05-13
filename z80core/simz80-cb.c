@@ -373,9 +373,11 @@ int op_cb_handle(void)
 	m1_step = 1;
 #endif
 #ifdef FRONTPANEL
-	/* update frontpanel */
-	fp_clock++;
-	fp_sampleLightGroup(0, 0);
+	if (fp_enabled) {
+		/* update frontpanel */
+		fp_clock++;
+		fp_sampleLightGroup(0, 0);
+	}
 #endif
 
 	R++;				/* increment refresh register */

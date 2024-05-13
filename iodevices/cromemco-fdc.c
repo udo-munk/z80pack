@@ -779,47 +779,51 @@ BYTE cromemco_fdc_aux_in(void)
 	}
 
 #ifdef FRONTPANEL
-	/* get front panel switch bits */
-	if ((address_switch >> 8) & 16)
-		fdc_aux &= ~8;
-	else
-		fdc_aux |= 8;
+	if (fp_enabled) {
+		/* get front panel switch bits */
+		if ((address_switch >> 8) & 16)
+			fdc_aux &= ~8;
+		else
+			fdc_aux |= 8;
 
-	if ((address_switch >> 8) & 32)
-		fdc_aux &= ~4;
-	else
-		fdc_aux |= 4;
+		if ((address_switch >> 8) & 32)
+			fdc_aux &= ~4;
+		else
+			fdc_aux |= 4;
 
-	if ((address_switch >> 8) & 64)
-		fdc_aux &= ~2;
-	else
-		fdc_aux |= 2;
+		if ((address_switch >> 8) & 64)
+			fdc_aux &= ~2;
+		else
+			fdc_aux |= 2;
 
-	if ((address_switch >> 8) & 128)
-		fdc_aux &= ~1;
-	else
-		fdc_aux |= 1;
-#else
-	/* get front panel switch bits */
-	if (fp_port & 16)
-		fdc_aux &= ~8;
-	else
-		fdc_aux |= 8;
+		if ((address_switch >> 8) & 128)
+			fdc_aux &= ~1;
+		else
+			fdc_aux |= 1;
+	} else {
+#endif
+		/* get front panel switch bits */
+		if (fp_port & 16)
+			fdc_aux &= ~8;
+		else
+			fdc_aux |= 8;
 
-	if (fp_port & 32)
-		fdc_aux &= ~4;
-	else
-		fdc_aux |= 4;
+		if (fp_port & 32)
+			fdc_aux &= ~4;
+		else
+			fdc_aux |= 4;
 
-	if (fp_port & 64)
-		fdc_aux &= ~2;
-	else
-		fdc_aux |= 2;
+		if (fp_port & 64)
+			fdc_aux &= ~2;
+		else
+			fdc_aux |= 2;
 
-	if (fp_port & 128)
-		fdc_aux &= ~1;
-	else
-		fdc_aux |= 1;
+		if (fp_port & 128)
+			fdc_aux &= ~1;
+		else
+			fdc_aux |= 1;
+#ifdef FRONTPANEL
+	}
 #endif
 
 	return (fdc_aux);

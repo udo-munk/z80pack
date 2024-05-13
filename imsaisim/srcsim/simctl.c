@@ -40,7 +40,9 @@
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
+#ifdef FRONTPANEL
 #include "frontpanel.h"
+#endif
 #include "memsim.h"
 #ifdef UNIX_TERMINAL
 #include "unix_terminal.h"
@@ -85,40 +87,44 @@ void mon(void)
 #endif
 
 #ifdef FRONTPANEL
-	/* initialize front panel */
-	XInitThreads();
+	if (fp_enabled) {
+		/* initialize front panel */
+		XInitThreads();
 
-	putchar('\n');
-	if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
-		LOGE(TAG, "frontpanel error");
-		exit(EXIT_FAILURE);
+		putchar('\n');
+		if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
+			LOGE(TAG, "frontpanel error");
+			exit(EXIT_FAILURE);
+		}
+
+		fp_addQuitCallback(quit_callback);
+		fp_framerate(fp_fps);
+		fp_bindSimclock(&fp_clock);
+		fp_bindRunFlag(&cpu_state);
+
+		/* bind frontpanel LED's to variables */
+		fp_bindLight16("LED_ADDR_{00-15}", &fp_led_address, 1);
+		fp_bindLight8("LED_DATA_{00-07}", &fp_led_data, 1);
+		fp_bindLight8("LED_STATUS_{00-07}", &cpu_bus, 1);
+		fp_bindLight8invert("LED_DATOUT_{00-07}",
+				    &fp_led_output, 1, 255);
+		fp_bindLight8("LED_RUN", &cpu_state, 1);
+		fp_bindLight8("LED_WAIT", &fp_led_wait, 1);
+		fp_bindLight8("LED_INTEN", &IFF, 1);
+		fp_bindLight8("LED_HOLD", &bus_request, 1);
+
+		/* bind frontpanel switches to variables */
+		fp_bindSwitch16("SW_{00-15}", &address_switch,
+				&address_switch, 1);
+
+		/* add callbacks for front panel switches */
+		fp_addSwitchCallback("SW_RUN", run_clicked, 0);
+		fp_addSwitchCallback("SW_STEP", step_clicked, 0);
+		fp_addSwitchCallback("SW_RESET", reset_clicked, 0);
+		fp_addSwitchCallback("SW_EXAMINE", examine_clicked, 0);
+		fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
+		fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 	}
-
-	fp_addQuitCallback(quit_callback);
-	fp_framerate(fp_fps);
-	fp_bindSimclock(&fp_clock);
-	fp_bindRunFlag(&cpu_state);
-
-	/* bind frontpanel LED's to variables */
-	fp_bindLight16("LED_ADDR_{00-15}", &fp_led_address, 1);
-	fp_bindLight8("LED_DATA_{00-07}", &fp_led_data, 1);
-	fp_bindLight8("LED_STATUS_{00-07}", &cpu_bus, 1);
-	fp_bindLight8invert("LED_DATOUT_{00-07}", &fp_led_output, 1, 255);
-	fp_bindLight8("LED_RUN", &cpu_state, 1);
-	fp_bindLight8("LED_WAIT", &fp_led_wait, 1);
-	fp_bindLight8("LED_INTEN", &IFF, 1);
-	fp_bindLight8("LED_HOLD", &bus_request, 1);
-
-	/* bind frontpanel switches to variables */
-	fp_bindSwitch16("SW_{00-15}", &address_switch, &address_switch, 1);
-
-	/* add callbacks for front panel switches */
-	fp_addSwitchCallback("SW_RUN", run_clicked, 0);
-	fp_addSwitchCallback("SW_STEP", step_clicked, 0);
-	fp_addSwitchCallback("SW_RESET", reset_clicked, 0);
-	fp_addSwitchCallback("SW_EXAMINE", examine_clicked, 0);
-	fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
-	fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 #endif
 
 #ifdef UNIX_TERMINAL
@@ -139,65 +145,70 @@ void mon(void)
 #endif
 
 #ifdef FRONTPANEL
-	/* operate machine from front panel */
-	while (cpu_error == NONE) {
-		/* update frontpanel LED's */
-		if (reset) {
-			cpu_bus = 0xff;
-			fp_led_address = 0xffff;
-			fp_led_data = 0xff;
-		} else {
-			if (power) {
-				fp_led_address = PC;
-				if (!(cpu_bus & CPU_INTA))
-					fp_led_data = getmem(PC);
-				else
-					fp_led_data = (int_data != -1) ?
-						      (BYTE) int_data : 0xff;
+	if (fp_enabled) {
+		/* operate machine from front panel */
+		while (cpu_error == NONE) {
+			/* update frontpanel LED's */
+			if (reset) {
+				cpu_bus = 0xff;
+				fp_led_address = 0xffff;
+				fp_led_data = 0xff;
+			} else {
+				if (power) {
+					fp_led_address = PC;
+					if (!(cpu_bus & CPU_INTA))
+						fp_led_data = getmem(PC);
+					else
+						fp_led_data = (int_data != -1)
+							      ? (BYTE) int_data
+							      : 0xff;
+				}
 			}
-		}
 
-		fp_clock++;
-		fp_sampleData();
+			fp_clock++;
+			fp_sampleData();
 
-		switch (cpu_switch) {
-		case 1:
-			if (!reset) {
-				cpu_start = get_clock_us();
-				run_cpu();
-				cpu_stop = get_clock_us();
+			switch (cpu_switch) {
+			case 1:
+				if (!reset) {
+					cpu_start = get_clock_us();
+					run_cpu();
+					cpu_stop = get_clock_us();
+				}
+				break;
+			case 2:
+				step_cpu();
+				if (cpu_switch == 2)
+					cpu_switch = 0;
+				break;
+			default:
+				break;
 			}
-			break;
-		case 2:
-			step_cpu();
-			if (cpu_switch == 2)
-				cpu_switch = 0;
-			break;
-		default:
-			break;
+
+			fp_clock++;
+			fp_sampleData();
+
+			/* wait a bit, system is idling */
+			SLEEP_MS(10);
 		}
-
-		fp_clock++;
-		fp_sampleData();
-
-		/* wait a bit, system is idling */
-		SLEEP_MS(10);
-	}
-#else
-#ifdef WANT_ICE
-	extern void ice_cmd_loop(int);
-
-	ice_before_go = set_unix_terminal;
-	ice_after_go = reset_unix_terminal;
-	atexit(reset_unix_terminal);
-
-	ice_cmd_loop(0);
-#else
-	/* run the CPU */
-	cpu_start = get_clock_us();
-	run_cpu();
-	cpu_stop = get_clock_us();
+	} else {
 #endif
+#ifdef WANT_ICE
+		extern void ice_cmd_loop(int);
+
+		ice_before_go = set_unix_terminal;
+		ice_after_go = reset_unix_terminal;
+		atexit(reset_unix_terminal);
+
+		ice_cmd_loop(0);
+#else
+		/* run the CPU */
+		cpu_start = get_clock_us();
+		run_cpu();
+		cpu_stop = get_clock_us();
+#endif
+#ifdef FRONTPANEL
+	}
 #endif
 
 #ifdef UNIX_TERMINAL
@@ -209,21 +220,23 @@ void mon(void)
 #endif
 
 #ifdef FRONTPANEL
-	/* all LED's off and update front panel */
-	cpu_bus = 0;
-	bus_request = 0;
-	IFF = 0;
-	fp_led_wait = 0;
-	fp_led_output = 0xff;
-	fp_led_address = 0;
-	fp_led_data = 0;
-	fp_sampleData();
+	if (fp_enabled) {
+		/* all LED's off and update front panel */
+		cpu_bus = 0;
+		bus_request = 0;
+		IFF = 0;
+		fp_led_wait = 0;
+		fp_led_output = 0xff;
+		fp_led_address = 0;
+		fp_led_data = 0;
+		fp_sampleData();
 
-	/* wait a bit before termination */
-	SLEEP_MS(999);
+		/* wait a bit before termination */
+		SLEEP_MS(999);
 
-	/* stop frontpanel */
-	fp_quit();
+		/* stop frontpanel */
+		fp_quit();
+	}
 #endif
 
 	/* check for CPU emulation errors and report */

@@ -51,7 +51,9 @@
 #include "altair-88-dcdd.h"
 #include "cromemco-dazzler.h"
 #include "proctec-vdm.h"
+#ifdef FRONTPANEL
 #include "frontpanel.h"
+#endif
 #include "memsim.h"
 #include "config.h"
 
@@ -673,15 +675,17 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock += 3;
-	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = io_data;
-	fp_sampleData();
-	val = wait_step();
+	if (fp_enabled) {
+		fp_clock += 3;
+		fp_led_address = (addrh << 8) + addrl;
+		fp_led_data = io_data;
+		fp_sampleData();
+		val = wait_step();
 
-	/* when single stepped INP get last set value of port */
-	if (val)
-		io_data = (*port_in[io_port])();
+		/* when single stepped INP get last set value of port */
+		if (val)
+			io_data = (*port_in[io_port])();
+	}
 #endif
 
 	return (io_data);
@@ -706,11 +710,13 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock += 6;
-	fp_led_address = (addrh << 8) + addrl;
-	fp_led_data = 0xff;
-	fp_sampleData();
-	wait_step();
+	if (fp_enabled) {
+		fp_clock += 6;
+		fp_led_address = (addrh << 8) + addrl;
+		fp_led_data = 0xff;
+		fp_sampleData();
+		wait_step();
+	}
 #endif
 }
 
@@ -773,9 +779,13 @@ static void io_no_card_out(BYTE data)
 static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
-	return (address_switch >> 8);
-#else
-	return (fp_port);
+	if (fp_enabled)
+		return (address_switch >> 8);
+	else {
+#endif
+		return (fp_port);
+#ifdef FRONTPANEL
+	}
 #endif
 }
 

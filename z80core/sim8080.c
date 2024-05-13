@@ -433,8 +433,10 @@ void cpu_8080(void)
 
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
-				fp_clock += 1000;
-				fp_sampleData();
+				if (fp_enabled) {
+					fp_clock += 1000;
+					fp_sampleData();
+				}
 #endif
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
@@ -448,8 +450,10 @@ void cpu_8080(void)
 					end_bus_request();
 				}
 #ifdef FRONTPANEL
-				fp_clock += 1000;
-				fp_sampleData();
+				if (fp_enabled) {
+					fp_clock += 1000;
+					fp_sampleData();
+				}
 #endif
 			}
 		}
@@ -468,28 +472,32 @@ void cpu_8080(void)
 				cpu_bus = CPU_WO | CPU_M1 | CPU_INTA;
 #endif
 #ifdef FRONTPANEL
-				fp_clock += 1000;
-				fp_led_data = (int_data != -1) ?
-					      (BYTE) int_data : 0xff;
-				fp_sampleData();
-				wait_int_step();
-				if (cpu_state & RESET)
-					goto leave;
+				if (fp_enabled) {
+					fp_clock += 1000;
+					fp_led_data = (int_data != -1) ?
+						      (BYTE) int_data : 0xff;
+					fp_sampleData();
+					wait_int_step();
+					if (cpu_state & RESET)
+						goto leave;
+				}
 #endif
 #ifdef BUS_8080
 			}
 			cpu_bus = CPU_STACK;
 #endif
 #ifdef FRONTPANEL
-			fp_clock++;
-			fp_sampleLightGroup(0, 0);
+			if (fp_enabled) {
+				fp_clock++;
+				fp_sampleLightGroup(0, 0);
+			}
 #endif
 
 			memwrt(--SP, PC >> 8);
 			memwrt(--SP, PC);
 
 #ifdef FRONTPANEL
-			if (cpu_state & RESET)
+			if (fp_enabled && (cpu_state & RESET))
 				goto leave;
 #endif
 
@@ -530,7 +538,8 @@ void cpu_8080(void)
 			int_int = 0;
 			int_data = -1;
 #ifdef FRONTPANEL
-			m1_step = 1;
+			if (fp_enabled)
+				m1_step = 1;
 #endif
 		}
 leave:
@@ -574,10 +583,12 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 #ifdef FRONTPANEL
-	fp_led_address = PC;
-	fp_led_data = getmem(PC);
-	fp_clock++;
-	fp_sampleData();
+	if (fp_enabled) {
+		fp_led_address = PC;
+		fp_led_data = getmem(PC);
+		fp_clock++;
+		fp_sampleData();
+	}
 #endif
 }
 
@@ -602,51 +613,56 @@ static int op_hlt(void)			/* HLT */
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
 
-#ifndef FRONTPANEL
-	if (IFF == 0) {
-		/* without a frontpanel DI + HALT stops the machine */
-		cpu_error = OPHALT;
-		cpu_state = STOPPED;
-	} else {
-		/* else wait for INT or user interrupt */
-		while ((int_int == 0) && (cpu_state == CONTIN_RUN)) {
-			SLEEP_MS(1);
+#ifdef FRONTPANEL
+	if (!fp_enabled) {
+#endif
+		if (IFF == 0) {
+			/* without a frontpanel DI + HALT stops the machine */
+			cpu_error = OPHALT;
+			cpu_state = STOPPED;
+		} else {
+			/* else wait for INT or user interrupt */
+			while ((int_int == 0) && (cpu_state == CONTIN_RUN)) {
+				SLEEP_MS(1);
+			}
 		}
-	}
 #ifdef BUS_8080
-	if (int_int)
-		cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
+		if (int_int)
+			cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
 #endif
 
-	busy_loop_cnt = 0;
+		busy_loop_cnt = 0;
 
-#else
-
-	fp_led_address = 0xffff;
-	fp_led_data = 0xff;
-
-	if (IFF == 0) {
-		/* INT disabled, wait for frontpanel reset or user interrupt */
-		while (!(cpu_state & RESET)) {
-			fp_clock++;
-			fp_sampleData();
-			SLEEP_MS(1);
-			if (cpu_error != NONE)
-				break;
-		}
+#ifdef FRONTPANEL
 	} else {
-		/* else wait for INT, frontpanel reset or user interrupt */
-		while ((int_int == 0) && !(cpu_state & RESET)) {
-			fp_clock++;
-			fp_sampleData();
-			SLEEP_MS(1);
-			if (cpu_error != NONE)
-				break;
-		}
-		if (int_int) {
-			cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
-			fp_clock++;
-			fp_sampleLightGroup(0, 0);
+		fp_led_address = 0xffff;
+		fp_led_data = 0xff;
+
+		if (IFF == 0) {
+			/* INT disabled, wait for frontpanel reset or user interrupt */
+			while (!(cpu_state & RESET)) {
+				fp_clock++;
+				fp_sampleData();
+				SLEEP_MS(1);
+				if (cpu_error != NONE)
+					break;
+			}
+		} else {
+			/* else wait for INT,
+			   frontpanel reset or user interrupt */
+			while ((int_int == 0) && !(cpu_state & RESET)) {
+				fp_clock++;
+				fp_sampleData();
+				SLEEP_MS(1);
+				if (cpu_error != NONE)
+					break;
+			}
+			if (int_int) {
+				cpu_bus = CPU_INTA | CPU_WO |
+					  CPU_HLTA | CPU_M1;
+				fp_clock++;
+				fp_sampleLightGroup(0, 0);
+			}
 		}
 	}
 #endif
@@ -1222,7 +1238,8 @@ static int op_lxispnn(void)		/* LXI SP,nn */
 static int op_sphl(void)		/* SPHL */
 {
 #ifdef FRONTPANEL
-	addr_leds(H << 8 | L);
+	if (fp_enabled)
+		addr_leds(H << 8 | L);
 #endif
 	SP = (H << 8) + L;
 	return (5);
@@ -1253,7 +1270,8 @@ static int op_shldnn(void)		/* SHLD nn */
 static int op_inxb(void)		/* INX B */
 {
 #ifdef FRONTPANEL
-	addr_leds(B << 8 | C);
+	if (fp_enabled)
+		addr_leds(B << 8 | C);
 #endif
 	C++;
 	if (!C)
@@ -1264,7 +1282,8 @@ static int op_inxb(void)		/* INX B */
 static int op_inxd(void)		/* INX D */
 {
 #ifdef FRONTPANEL
-	addr_leds(D << 8 | E);
+	if (fp_enabled)
+		addr_leds(D << 8 | E);
 #endif
 	E++;
 	if (!E)
@@ -1275,7 +1294,8 @@ static int op_inxd(void)		/* INX D */
 static int op_inxh(void)		/* INX H */
 {
 #ifdef FRONTPANEL
-	addr_leds(H << 8 | L);
+	if (fp_enabled)
+		addr_leds(H << 8 | L);
 #endif
 	L++;
 	if (!L)
@@ -1286,7 +1306,8 @@ static int op_inxh(void)		/* INX H */
 static int op_inxsp(void)		/* INX SP */
 {
 #ifdef FRONTPANEL
-	addr_leds(SP);
+	if (fp_enabled)
+		addr_leds(SP);
 #endif
 	SP++;
 	return (5);
@@ -1295,7 +1316,8 @@ static int op_inxsp(void)		/* INX SP */
 static int op_dcxb(void)		/* DCX B */
 {
 #ifdef FRONTPANEL
-	addr_leds(B << 8 | C);
+	if (fp_enabled)
+		addr_leds(B << 8 | C);
 #endif
 	C--;
 	if (C == 0xff)
@@ -1306,7 +1328,8 @@ static int op_dcxb(void)		/* DCX B */
 static int op_dcxd(void)		/* DCX D */
 {
 #ifdef FRONTPANEL
-	addr_leds(D << 8 | E);
+	if (fp_enabled)
+		addr_leds(D << 8 | E);
 #endif
 	E--;
 	if (E == 0xff)
@@ -1317,7 +1340,8 @@ static int op_dcxd(void)		/* DCX D */
 static int op_dcxh(void)		/* DCX H */
 {
 #ifdef FRONTPANEL
-	addr_leds(H << 8 | L);
+	if (fp_enabled)
+		addr_leds(H << 8 | L);
 #endif
 	L--;
 	if (L == 0xff)
@@ -1328,7 +1352,8 @@ static int op_dcxh(void)		/* DCX H */
 static int op_dcxsp(void)		/* DCX SP */
 {
 #ifdef FRONTPANEL
-	addr_leds(SP);
+	if (fp_enabled)
+		addr_leds(SP);
 #endif
 	SP--;
 	return (5);

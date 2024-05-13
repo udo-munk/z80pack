@@ -65,11 +65,13 @@ static inline void memwrt(WORD addr, BYTE data)
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock++;
-	fp_led_address = addr;
-	fp_led_data = 0xff;
-	fp_sampleData();
-	wait_step();
+	if (fp_enabled) {
+		fp_clock++;
+		fp_led_address = addr;
+		fp_led_data = 0xff;
+		fp_sampleData();
+		wait_step();
+	}
 #endif
 
 	if (p_tab[addr >> 8] == MEM_RW) {
@@ -104,11 +106,13 @@ static inline BYTE memrdr(WORD addr)
 #endif
 
 #ifdef FRONTPANEL
-	fp_clock++;
-	fp_led_address = addr;
-	fp_led_data = data;
-	fp_sampleData();
-	wait_step();
+	if (fp_enabled) {
+		fp_clock++;
+		fp_led_address = addr;
+		fp_led_data = data;
+		fp_sampleData();
+		wait_step();
+	}
 #endif
 
 	return (data);
