@@ -39,8 +39,6 @@
 #endif
 #endif 
 
-#define PORT "8080"
-
 #define MAX_WS_CLIENTS (_DEV_MAX)
 static const char *TAG = "netsrv";
 
@@ -753,15 +751,19 @@ void stop_net_services (void) {
 	}
 }
 
-int start_net_services (void) {
+int start_net_services (int port) {
+	//TODO: add config for DOCUMENT_ROOT
 
-	//TODO: add config for DOCUMENT_ROOT, PORT
+    char sport[6];
+#ifdef SYSDOCROOT
+	struct stat sbuf;
+#endif
 
 	const char *options[] = {
 	    "document_root",
 	    DOCUMENT_ROOT,
 	    "listening_ports",
-	    PORT,
+	    sport,
 	    "request_timeout_ms",
 	    "10000",
 	    "error_log_file",
@@ -784,6 +786,14 @@ int start_net_services (void) {
 #endif
 
 	atexit(stop_net_services);
+
+	snprintf(sport, sizeof(sport), "%d", port);
+
+#ifdef SYSDOCROOT
+	if (stat(DOCUMENT_ROOT, &sbuf) == -1 || !S_ISDIR(sbuf.st_mode)) {
+		options[1] = SYSDOCROOT;
+	}
+#endif
 
     /* Start CivetWeb web server */
 	memset(&callbacks, 0, sizeof(callbacks));

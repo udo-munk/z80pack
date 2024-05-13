@@ -88,6 +88,11 @@ extern WORD 	address_switch;
 extern BYTE 	fp_led_output;
 #endif
 
+#ifdef HAS_NETSERVER
+extern int	ns_enabled;
+extern int	ns_port;
+#endif
+
 extern int	s_flag, l_flag, m_flag, x_flag, i_flag, f_flag,
 		u_flag, r_flag, c_flag;
 #ifdef HAS_CONFIG

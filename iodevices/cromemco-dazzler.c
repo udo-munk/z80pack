@@ -229,7 +229,8 @@ void cromemco_dazzler_off(void)
 	}
 
 #ifdef HAS_NETSERVER
-	ws_clear();
+	if (ns_enabled)
+		ws_clear();
 #endif
 }
 
@@ -731,27 +732,29 @@ static void *update_display(void *arg)
 
 		/* draw one frame dependent on graphics format */
 		if (state == 1) {	/* draw frame if on */
-#ifndef HAS_NETSERVER
-			XLockDisplay(display);
-			XSetForeground(display, gc, colors[0].pixel);
-			XFillRectangle(display, pixmap, gc, 0, 0, size, size);
-			if (format & 64)
-				draw_hires();
-			else
-				draw_lowres();
-			XCopyArea(display, pixmap, window, gc, 0, 0,
-				  size, size, 0, 0);
-			XSync(display, True);
-			XUnlockDisplay(display);
-#else
-			UNUSED(draw_hires);
-			UNUSED(draw_lowres);
-			if (net_device_alive(DEV_DZLR)) {
-				ws_refresh();
+#ifdef HAS_NETSERVER
+			if (!ns_enabled) {
+#endif
+				XLockDisplay(display);
+				XSetForeground(display, gc, colors[0].pixel);
+				XFillRectangle(display, pixmap, gc, 0, 0, size, size);
+				if (format & 64)
+					draw_hires();
+				else
+					draw_lowres();
+				XCopyArea(display, pixmap, window, gc, 0, 0,
+					  size, size, 0, 0);
+				XSync(display, True);
+				XUnlockDisplay(display);
+#ifdef HAS_NETSERVER
 			} else {
-				if (msg.format) {
-					memset(dblbuf, 0, 2048);
-					msg.format = 0;
+				if (net_device_alive(DEV_DZLR)) {
+					ws_refresh();
+				} else {
+					if (msg.format) {
+						memset(dblbuf, 0, 2048);
+						msg.format = 0;
+					}
 				}
 			}
 #endif
@@ -782,16 +785,19 @@ void cromemco_dazzler_ctl_out(BYTE data)
 
 	/* switch DAZZLER on/off */
 	if (data & 128) {
-#ifndef HAS_NETSERVER
-		state = 1;
-		if (display == NULL) {
-			open_display();
+#ifdef HAS_NETSERVER
+		if (!ns_enabled) {
+#endif
+			state = 1;
+			if (display == NULL) {
+				open_display();
+			}
+#ifdef HAS_NETSERVER
+		} else {
+			if (state == 0)
+				ws_clear();
+			state = 1;
 		}
-#else
-		UNUSED(open_display);
-		if (state == 0)
-			ws_clear();
-		state = 1;
 #endif
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, update_display,
@@ -804,13 +810,16 @@ void cromemco_dazzler_ctl_out(BYTE data)
 		if (state == 1) {
 			state = 0;
 			SLEEP_MS(50);
-#ifndef HAS_NETSERVER
-			XLockDisplay(display);
-			XClearWindow(display, window);
-			XSync(display, True);
-			XUnlockDisplay(display);
-#else
-			ws_clear();
+#ifdef HAS_NETSERVER
+			if (!ns_enabled) {
+#endif
+				XLockDisplay(display);
+				XClearWindow(display, window);
+				XSync(display, True);
+				XUnlockDisplay(display);
+#ifdef HAS_NETSERVER
+			} else
+				ws_clear();
 #endif
 		}
 	}

@@ -219,19 +219,24 @@ int main(int argc, char *argv[])
 #endif
 
 #ifndef EXCLUDE_I8080
-			case '8':
+			case '8':	/* emulate Intel 8080 */
 				cpu = I8080;
 				break;
 #endif
 
 #ifndef EXCLUDE_Z80
-			case 'z':
+			case 'z':	/* emulate Zilog Z80 */
 				cpu = Z80;
 				break;
 #endif
 #ifdef FRONTPANEL
-			case 'F':
+			case 'F':	/* disable front panel emulation */
 				fp_enabled = 0;
+				break;
+#endif
+#ifdef HAS_NETSERVER
+			case 'n':	/* enable web-based frontend */
+				ns_enabled = 1;
 				break;
 #endif
 
@@ -271,6 +276,9 @@ usage:
 #endif
 #ifdef FRONTPANEL
 				fputs(" -F", stdout);
+#endif
+#ifdef HAS_NETSERVER
+				fputs(" -n", stdout);
 #endif
 				fputs("\n\n", stdout);
 #ifndef EXCLUDE_Z80
@@ -318,7 +326,10 @@ usage:
 				puts("\t-R = enable banked ROM");
 #endif
 #ifdef FRONTPANEL
-				puts("\t-F = disable front panel");
+				puts("\t-F = disable front panel emulation");
+#endif
+#ifdef HAS_NETSERVER
+				puts("\t-n = enable web-based frontend");
 #endif
 				exit(EXIT_FAILURE);
 			}

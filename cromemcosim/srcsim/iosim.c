@@ -59,9 +59,6 @@
 #endif
 #include "memsim.h"
 #include "config.h"
-#ifdef HAS_NETSERVER
-#include "netsrv.h"
-#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 #include "cromemco-hal.h"
