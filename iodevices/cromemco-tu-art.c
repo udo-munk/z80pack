@@ -469,7 +469,8 @@ again:
 		}
 
 #ifdef HAS_NETSERVER
-		net_device_send(DEV_LPT, (char *) &data, 1);
+		if (ns_enabled)
+			net_device_send(DEV_LPT, (char *) &data, 1);
 #endif
 	}
 }

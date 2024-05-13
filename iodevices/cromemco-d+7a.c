@@ -40,7 +40,9 @@ void cromemco_d7a_init(void) {
     inPort[0] = 0xFF;
 
 #ifdef HAS_NETSERVER
-    net_device_service(DEV_D7AIO, cromemco_d7a_callback);
+    if (ns_enabled) {
+        net_device_service(DEV_D7AIO, cromemco_d7a_callback);
+    }
 #endif
 
 }
@@ -52,9 +54,11 @@ void cromemco_d7a_out(BYTE port, BYTE data)
     LOGD(TAG, "Output %d on port %d", data, port);
 
 #ifdef HAS_NETSERVER
-    // if (net_device_alive(DEV_D7AIO)) {
-        net_device_send(DEV_D7AIO, (char *)&data, 1);
-    // }
+    if (ns_enabled) {
+        // if (net_device_alive(DEV_D7AIO)) {
+            net_device_send(DEV_D7AIO, (char *)&data, 1);
+        // }
+    }
 #endif
 }
 

@@ -54,7 +54,8 @@
 #define HAS_BANKED_ROM	/* emulate IMSAI MPU-B banked ROM & RAM */
 
 /*#define HAS_DISKMANAGER*/	/* uses file based disk map for disks[] */
-/*#define HAS_NETSERVER*/	/* uses civet webserver to present a web based frontend */
+#define HAS_NETSERVER		/* uses civet webserver to present a web based frontend */
+#define NS_DEF_PORT 8080	/* default port number for civet webserver */
 #define HAS_MODEM		/* has simulated 'AT' style modem over TCP/IP (telnet) */
 #define HAS_APU			/* has simulated AM9511 floating point maths coprocessor */
 #define HAS_HAL			/* implements a hardware abstraction layer (HAL) for SIO ports */

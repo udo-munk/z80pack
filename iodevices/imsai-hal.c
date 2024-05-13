@@ -62,9 +62,15 @@ int null_cd(void) {
 
 int vio_kbd_alive(void) {
 #ifdef HAS_NETSERVER
-    return net_device_alive(DEV_VIO); /* VIO (webUI) keyboard is only alive if websocket is connected */
-#else
-    return 1; /* VIO (xterm) keyboard is always alive */
+    if (ns_enabled) {
+        /* VIO (webUI) keyboard is only alive if websocket is connected */
+        return net_device_alive(DEV_VIO);
+    } else {
+#endif
+        /* VIO (xterm) keyboard is always alive */
+        return 1;
+#ifdef HAS_NETSERVER
+    }
 #endif
 
 }
@@ -96,20 +102,33 @@ void vio_kbd_out(BYTE data) {
 
 #ifdef HAS_NETSERVER
 int net_tty_alive(void) {
-    return net_device_alive(DEV_TTY); /* WEBTTY is only alive if websocket is connected */
+    if (ns_enabled) {
+        /* WEBTTY is only alive if websocket is connected */
+        return net_device_alive(DEV_TTY);
+    } else {
+        return 0;
+    }
 }
 void net_tty_status(BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (net_device_poll(DEV_TTY)) {
-        *stat |= 2;
+    if (ns_enabled) {
+        if (net_device_poll(DEV_TTY)) {
+            *stat |= 2;
+        }
+        *stat |= 1;
     }
-    *stat |= 1;
 }
 int net_tty_in(void) {
-    return net_device_get(DEV_TTY);
+    if (ns_enabled) {
+        return net_device_get(DEV_TTY);
+    } else {
+        return -1;
+    }
 }
 void net_tty_out(BYTE data) {
-    net_device_send(DEV_TTY, (char *)&data, 1);
+    if (ns_enabled) {
+        net_device_send(DEV_TTY, (char *)&data, 1);
+    }
 }
 #endif
 
@@ -117,20 +136,33 @@ void net_tty_out(BYTE data) {
 
 #ifdef HAS_NETSERVER
 int net_ptr_alive(void) {
-    return net_device_alive(DEV_PTR); /* WEBPTR is only alive if websocket is connected */
+    if (ns_enabled) {
+        /* WEBPTR is only alive if websocket is connected */
+        return net_device_alive(DEV_PTR);
+    } else {
+        return 0;
+    }
 }
 void net_ptr_status(BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (net_device_poll(DEV_PTR)) {
-        *stat |= 2;
+    if (ns_enabled) {
+        if (net_device_poll(DEV_PTR)) {
+            *stat |= 2;
+        }
+        *stat |= 1;
     }
-    *stat |= 1;
 }
 int net_ptr_in(void) {
-    return net_device_get(DEV_PTR);
+    if (ns_enabled) {
+        return net_device_get(DEV_PTR);
+    } else {
+        return -1;
+    }
 }
 void net_ptr_out(BYTE data) {
-    net_device_send(DEV_PTR, (char *)&data, 1);
+    if (ns_enabled) {
+        net_device_send(DEV_PTR, (char *)&data, 1);
+    }
 }
 #endif
 

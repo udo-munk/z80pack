@@ -18,13 +18,11 @@
 #include "sim.h"
 #include "simglb.h"
 
-#ifdef HAS_CYCLOPS
+#if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
 
 #include "config.h"
 #include "memsim.h"
-#ifdef HAS_NETSERVER
 #include "netsrv.h"
-#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
@@ -161,4 +159,4 @@ BYTE cromemco_88ccc_ctrl_a_in(void)
 	return (flags | (state << 7));
 }
 
-#endif /* HAS_CYCLOPS */
+#endif /* HAS_NETSERVER && HAS_CYCLOPS */

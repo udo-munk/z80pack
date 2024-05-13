@@ -37,6 +37,8 @@ CONF_DIR = $(DATADIR)/conf
 DISKS_DIR = $(DATADIR)/disks
 # default boot ROM path
 ROMS_DIR = $(DATADIR)/roms
+# web-based frontend document root
+DOCROOT_DIR = $(DATADIR)/www
 ###
 ### END MACHINE DEPENDENT VARIABLES
 ###
@@ -95,7 +97,7 @@ endif
 ###
 
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
-	-DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
+	-DBOOTROM=\"$(ROMS_DIR)\" -DSYSDOCROOT=\"$(DOCROOT_DIR)\" $(FP_DEFS)
 INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) \
 	-I$(CIV_DIR)/include $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)

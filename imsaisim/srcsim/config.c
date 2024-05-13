@@ -272,6 +272,15 @@ void config(void)
 #ifdef FRONTPANEL
 				fp_size = atoi(t2);
 #endif
+			} else if (!strcmp(t1, "ns_port")) {
+#ifdef HAS_NETSERVER
+				ns_port = atoi(t2);
+				if (ns_port < 1024 || ns_port > 65535) {
+					LOGW(TAG, "invalid port number %d",
+					     ns_port);
+					ns_port = NS_DEF_PORT;
+				}
+#endif
 			} else if (!strcmp(t1, "vio_bg")) {
 				strncpy(&bg_color[1], t2, 6);
 			} else if (!strcmp(t1, "vio_fg")) {
@@ -365,6 +374,11 @@ void config(void)
 #ifndef HAS_NETSERVER
 	LOG(TAG, "Web server not builtin\r\n");
 #else
-	LOG(TAG, "Web server builtin, URL is http://localhost:8080\r\n");
+	if (ns_enabled) {
+		LOG(TAG, "Web server builtin, URL is http://localhost:%d\r\n",
+		    ns_port);
+	} else {
+		LOG(TAG, "Web server builtin, but disabled\r\n");
+	}
 #endif
 }

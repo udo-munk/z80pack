@@ -1003,7 +1003,8 @@ static void lpt_out(BYTE data)
 	if (data == 0x80) {
 		lpt_reset();
 #ifdef HAS_NETSERVER
-		net_device_send(DEV_LPT, (char *) &data, 1);
+		if (ns_enabled)
+			net_device_send(DEV_LPT, (char *) &data, 1);
 #endif
 		return;
 	}
@@ -1021,7 +1022,8 @@ again:
 		}
 
 #ifdef HAS_NETSERVER
-		net_device_send(DEV_LPT, (char *) &data, 1);
+		if (ns_enabled)
+			net_device_send(DEV_LPT, (char *) &data, 1);
 #endif
 	}
 }

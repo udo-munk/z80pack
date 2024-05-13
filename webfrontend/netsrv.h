@@ -7,6 +7,9 @@
  * 12-JUL-2018	1.0	Initial Release
  */
 
+#ifndef NETSRV_INC
+#define NETSRV_INC
+
 /**
  * This web server module provides...
  */
@@ -84,3 +87,5 @@ struct request {
 typedef struct request request_t;
 
 extern request_t *get_request(const HttpdConnection_t *);
+
+#endif

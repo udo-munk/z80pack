@@ -108,6 +108,14 @@ BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
 #endif
 
 /*
+ *	Variables for web-based frontend
+ */
+#ifdef HAS_NETSERVER
+int ns_enabled;			/* web-based frontend enabled flag */
+int ns_port = NS_DEF_PORT;	/* port number to run server on */
+#endif
+
+/*
  *	Flags to control operation of simulation
  */
 int s_flag;			/* flag for -s option */

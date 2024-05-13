@@ -82,8 +82,10 @@ static void quit_callback(void);
 void mon(void)
 {
 #ifdef HAS_NETSERVER
-	extern int start_net_services(void);
-	start_net_services();
+	extern int start_net_services(int);
+
+	if (ns_enabled)
+		start_net_services(ns_port);
 #endif
 
 #ifdef FRONTPANEL

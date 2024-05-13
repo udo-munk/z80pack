@@ -270,10 +270,12 @@ static inline void event_handler(void)
 		}
 	}
 #ifdef HAS_NETSERVER
-	int res = net_device_get(DEV_VIO);
-	if (res >= 0) {
-		imsai_kbd_data =  res;
-		imsai_kbd_status = 2;
+	if (ns_enabled) {
+		int res = net_device_get(DEV_VIO);
+		if (res >= 0) {
+			imsai_kbd_data =  res;
+			imsai_kbd_status = 2;
+		}
 	}
 #endif
 }
@@ -377,9 +379,6 @@ static void ws_refresh(void)
 {
 	static int cols, rows;
 
-	UNUSED(vmode);
-	UNUSED(inv);
-
 	mode = getmem(0xf7ff);
 	if (mode != modebuf) {
 		modebuf = mode;
@@ -447,7 +446,8 @@ static void ws_refresh(void)
 			msg.addr = 0xf000 + addr;
 			msg.len = n;
 			net_device_send(DEV_VIO, (char *) &msg, msg.len + 4);
-			LOGD(__func__, "BUF update FROM %04X TO %04X", msg.addr, msg.addr + msg.len);
+			LOGD(__func__, "BUF update FROM %04X TO %04X",
+			     msg.addr, msg.addr + msg.len);
 		}
 	}
 }
@@ -466,23 +466,25 @@ static void *update_display(void *arg)
 	t1 = get_clock_us();
 
 	while (state) {
-#ifndef HAS_NETSERVER
-		/* lock display, don't cancel thread while locked */
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		XLockDisplay(display);
+#ifdef HAS_NETSERVER
+		if (!ns_enabled) {
+#endif
+			/* lock display, don't cancel thread while locked */
+			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+			XLockDisplay(display);
 
-		/* update display window */
-		refresh();
-		XCopyArea(display, pixmap, window, gc, 0, 0,
-			  xsize, ysize, 0, 0);
-		XSync(display, False);
+			/* update display window */
+			refresh();
+			XCopyArea(display, pixmap, window, gc, 0, 0,
+				  xsize, ysize, 0, 0);
+			XSync(display, False);
 
-		/* unlock display, thread can be canceled again */
-		XUnlockDisplay(display);
-		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-#else
-		UNUSED(refresh);
-		ws_refresh();
+			/* unlock display, thread can be canceled again */
+			XUnlockDisplay(display);
+			pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+#ifdef HAS_NETSERVER
+		} else
+			ws_refresh();
 #endif
 
 		/* sleep rest to 33ms so that we get 30 fps */
@@ -500,11 +502,10 @@ static void *update_display(void *arg)
 /* create the X11 window and start display refresh thread */
 void imsai_vio_init(void)
 {
-#ifndef HAS_NETSERVER
-	open_display();
-#else
-	UNUSED(open_display);
+#ifdef HAS_NETSERVER
+	if (!ns_enabled)
 #endif
+		open_display();
 
 	state = 1;
 	modebuf = -1;
