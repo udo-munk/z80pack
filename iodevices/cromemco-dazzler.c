@@ -229,7 +229,7 @@ void cromemco_dazzler_off(void)
 	}
 
 #ifdef HAS_NETSERVER
-	if (ns_enabled)
+	if (n_flag)
 		ws_clear();
 #endif
 }
@@ -733,7 +733,7 @@ static void *update_display(void *arg)
 		/* draw one frame dependent on graphics format */
 		if (state == 1) {	/* draw frame if on */
 #ifdef HAS_NETSERVER
-			if (!ns_enabled) {
+			if (!n_flag) {
 #endif
 				XLockDisplay(display);
 				XSetForeground(display, gc, colors[0].pixel);
@@ -786,7 +786,7 @@ void cromemco_dazzler_ctl_out(BYTE data)
 	/* switch DAZZLER on/off */
 	if (data & 128) {
 #ifdef HAS_NETSERVER
-		if (!ns_enabled) {
+		if (!n_flag) {
 #endif
 			state = 1;
 			if (display == NULL) {
@@ -811,7 +811,7 @@ void cromemco_dazzler_ctl_out(BYTE data)
 			state = 0;
 			SLEEP_MS(50);
 #ifdef HAS_NETSERVER
-			if (!ns_enabled) {
+			if (!n_flag) {
 #endif
 				XLockDisplay(display);
 				XClearWindow(display, window);

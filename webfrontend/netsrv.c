@@ -304,7 +304,7 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
                     httpdPrintf(conn, "\"%s\": \"%s\", ", "bootrom", xfn);
                 }
 #ifdef FRONTPANEL
-                    if (fp_enabled) {
+                    if (F_flag) {
                         httpdPrintf(conn, "\"%s\": %d, ", "cpa", 1);
                     }
 #endif

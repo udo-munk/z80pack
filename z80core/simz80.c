@@ -422,7 +422,7 @@ void cpu_z80(void)
 
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
-				if (fp_enabled) {
+				if (F_flag) {
 					fp_clock += 1000;
 					fp_sampleData();
 				}
@@ -439,7 +439,7 @@ void cpu_z80(void)
 					end_bus_request();
 				}
 #ifdef FRONTPANEL
-				if (fp_enabled) {
+				if (F_flag) {
 					fp_clock += 1000;
 					fp_sampleData();
 				}
@@ -474,7 +474,7 @@ void cpu_z80(void)
 				cpu_bus = CPU_WO | CPU_M1 | CPU_INTA;
 #endif
 #ifdef FRONTPANEL
-				if (fp_enabled) {
+				if (F_flag) {
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
@@ -494,7 +494,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (fp_enabled && (cpu_state & RESET))
+				if (F_flag && (cpu_state & RESET))
 					goto leave;
 #endif
 				switch (int_data) {
@@ -536,7 +536,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (fp_enabled && (cpu_state & RESET))
+				if (F_flag && (cpu_state & RESET))
 					goto leave;
 #endif
 				PC = 0x38;
@@ -546,7 +546,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (fp_enabled && (cpu_state & RESET))
+				if (F_flag && (cpu_state & RESET))
 					goto leave;
 #endif
 				p = (I << 8) + (int_data & 0xff);
@@ -561,7 +561,7 @@ void cpu_z80(void)
 			int_int = 0;
 			int_data = -1;
 #ifdef FRONTPANEL
-			if (fp_enabled)
+			if (F_flag)
 				m1_step = 1;
 #endif
 			R++;		/* increment refresh register */
@@ -614,7 +614,7 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
@@ -635,7 +635,7 @@ static int op_halt(void)		/* HALT */
 #endif
 
 #ifdef FRONTPANEL
-	if (!fp_enabled) {
+	if (!F_flag) {
 #endif
 		if (IFF == 0) {
 			/* without a frontpanel DI + HALT stops the machine */

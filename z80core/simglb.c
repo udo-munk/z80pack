@@ -98,21 +98,12 @@ WORD t_end = 65535;		/* end address for measurement */
  *	Variables for frontpanel emulation
  */
 #ifdef FRONTPANEL
-int fp_enabled = 1;		/* frontpanel enabled flag */
 unsigned long long fp_clock;	/* simulation clock */
 float fp_fps = 30.0;		/* frame rate, default 30 usually works */
 WORD fp_led_address;		/* lights for address bus */
 BYTE fp_led_data;		/* lights for data bus */
 WORD address_switch;		/* address and programmed input switches */
 BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
-#endif
-
-/*
- *	Variables for web-based frontend
- */
-#ifdef HAS_NETSERVER
-int ns_enabled;			/* web-based frontend enabled flag */
-int ns_port = NS_DEF_PORT;	/* port number to run server on */
 #endif
 
 /*
@@ -132,6 +123,12 @@ int M_flag = 0;			/* flag for -M option */
 #endif
 #ifdef HAS_BANKED_ROM
 int R_flag = 0;			/* flag for -R option */
+#endif
+#ifdef FRONTPANEL
+int F_flag = 1;			/* flag for -F option */
+#endif
+#ifdef HAS_NETSERVER
+int n_flag;			/* flag for -n option */
 #endif
 
 /*

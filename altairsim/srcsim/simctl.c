@@ -88,7 +88,7 @@ int  boot_switch;		/* boot address for switch */
 void mon(void)
 {
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		/* initialize frontpanel */
 		XInitThreads();
 
@@ -140,7 +140,7 @@ void mon(void)
 	atexit(reset_unix_terminal);
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		/* operate machine from front panel */
 		while (cpu_error == NONE) {
 			/* update frontpanel LED's */
@@ -219,7 +219,7 @@ void mon(void)
 	putchar('\n');
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		/* all LED's off and update front panel */
 		cpu_bus = 0;
 		bus_request = 0;

@@ -50,6 +50,7 @@ static const char *TAG = "config";
 
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0;		/* default fp input port value */
+int  ns_port = NS_DEF_PORT;	/* default port to run web server on */
 
 extern int num_banks;
 
@@ -374,7 +375,7 @@ void config(void)
 #ifndef HAS_NETSERVER
 	LOG(TAG, "Web server not builtin\r\n");
 #else
-	if (ns_enabled) {
+	if (n_flag) {
 		LOG(TAG, "Web server builtin, URL is http://localhost:%d\r\n",
 		    ns_port);
 	} else {

@@ -62,7 +62,7 @@ int null_cd(void) {
 
 int vio_kbd_alive(void) {
 #ifdef HAS_NETSERVER
-    if (ns_enabled) {
+    if (n_flag) {
         /* VIO (webUI) keyboard is only alive if websocket is connected */
         return net_device_alive(DEV_VIO);
     } else {
@@ -102,7 +102,7 @@ void vio_kbd_out(BYTE data) {
 
 #ifdef HAS_NETSERVER
 int net_tty_alive(void) {
-    if (ns_enabled) {
+    if (n_flag) {
         /* WEBTTY is only alive if websocket is connected */
         return net_device_alive(DEV_TTY);
     } else {
@@ -111,7 +111,7 @@ int net_tty_alive(void) {
 }
 void net_tty_status(BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (ns_enabled) {
+    if (n_flag) {
         if (net_device_poll(DEV_TTY)) {
             *stat |= 2;
         }
@@ -119,14 +119,14 @@ void net_tty_status(BYTE *stat) {
     }
 }
 int net_tty_in(void) {
-    if (ns_enabled) {
+    if (n_flag) {
         return net_device_get(DEV_TTY);
     } else {
         return -1;
     }
 }
 void net_tty_out(BYTE data) {
-    if (ns_enabled) {
+    if (n_flag) {
         net_device_send(DEV_TTY, (char *)&data, 1);
     }
 }
@@ -136,7 +136,7 @@ void net_tty_out(BYTE data) {
 
 #ifdef HAS_NETSERVER
 int net_ptr_alive(void) {
-    if (ns_enabled) {
+    if (n_flag) {
         /* WEBPTR is only alive if websocket is connected */
         return net_device_alive(DEV_PTR);
     } else {
@@ -145,7 +145,7 @@ int net_ptr_alive(void) {
 }
 void net_ptr_status(BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (ns_enabled) {
+    if (n_flag) {
         if (net_device_poll(DEV_PTR)) {
             *stat |= 2;
         }
@@ -153,14 +153,14 @@ void net_ptr_status(BYTE *stat) {
     }
 }
 int net_ptr_in(void) {
-    if (ns_enabled) {
+    if (n_flag) {
         return net_device_get(DEV_PTR);
     } else {
         return -1;
     }
 }
 void net_ptr_out(BYTE data) {
-    if (ns_enabled) {
+    if (n_flag) {
         net_device_send(DEV_PTR, (char *)&data, 1);
     }
 }

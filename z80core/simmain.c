@@ -231,12 +231,12 @@ int main(int argc, char *argv[])
 #endif
 #ifdef FRONTPANEL
 			case 'F':	/* disable front panel emulation */
-				fp_enabled = 0;
+				F_flag = 0;
 				break;
 #endif
 #ifdef HAS_NETSERVER
 			case 'n':	/* enable web-based frontend */
-				ns_enabled = 1;
+				n_flag = 1;
 				break;
 #endif
 

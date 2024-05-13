@@ -65,7 +65,7 @@ static inline void memwrt(WORD addr, BYTE data)
 #endif
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock++;
 		fp_led_address = addr;
 		fp_led_data = 0xff;
@@ -106,7 +106,7 @@ static inline BYTE memrdr(WORD addr)
 #endif
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock++;
 		fp_led_address = addr;
 		fp_led_data = data;

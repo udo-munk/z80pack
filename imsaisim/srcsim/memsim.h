@@ -105,7 +105,7 @@ static inline void memwrt(WORD addr, BYTE data)
 #endif
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock++;
 		fp_led_address = addr;
 		fp_led_data = data;
@@ -142,7 +142,7 @@ static inline BYTE memrdr(WORD addr)
 #endif
 
 #ifdef FRONTPANEL
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock++;
 		fp_led_address = addr;
 		fp_led_data = data;
@@ -165,7 +165,7 @@ static inline BYTE dma_read(WORD addr)
 	bus_request = 1;
 #if 0
 	/* updating the LED's slows down too much */
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock++;
 		fp_sampleData();
 	}
@@ -187,7 +187,7 @@ static inline void dma_write(WORD addr, BYTE data)
 	bus_request = 1;
 #if 0
 	/* updating the LED's slows down too much */
-	if (fp_enabled) {
+	if (F_flag) {
 		fp_clock++;
 		fp_sampleData();
 	}
