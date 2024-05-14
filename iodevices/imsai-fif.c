@@ -37,11 +37,12 @@
 #include "simglb.h"
 #include "config.h"
 #include "memsim.h"
+#ifdef HAS_NETSERVER
+#include "civetweb.h"
+#include "netsrv.h"
+#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
-/* support a z80pack 4 MB drive as unit 15 */
-#define LARGEDISK
 
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
@@ -66,39 +67,24 @@
 #define SPT8		26
 #define TRK8		77
 
-#ifdef LARGEDISK
 /* z80pack 4 MB drive */
 #define SPTHD		128
 #define TRKHD		255
-#endif
 
 static const char *TAG = "FIF";
 
 #ifndef HAS_DISKMANAGER
 /* these are our disk drives */
-#ifdef LARGEDISK
-static const char *disks[9] = {
-	"drivea.dsk",
-	"driveb.dsk",
-	"drivec.dsk",
-	"drived.dsk",
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	"drivei.dsk"
-};
-#else
 static const char *disks[4] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",
 	"drived.dsk"
 };
-#endif
 #else
 char *disks[4];
 #endif
+static const char *hddisk = "drivei.dsk";
 
 static int fdaddr[16];		/* address of disk descriptors */
 static char fn[MAX_LFN];	/* path/filename for disk image */
@@ -316,13 +302,11 @@ void disk_io(int addr)
 		disk = 3;
 		break;
 
-#ifdef LARGEDISK
 	case 15: /* z80pack 4 MB drive */
 		spt = SPTHD;
 		maxtrk = TRKHD;
 		disk = 8;
 		break;
-#endif
 
 	default: /* more than one drive selected */
 		dma_write(addr + DD_RESULT, 0xc3);
@@ -330,7 +314,7 @@ void disk_io(int addr)
 	}
 
 	/* handle case when disk is ejected */
-	if (disks[disk] == NULL) {
+	if ((disk <= 3) && (disks[disk] == NULL)) {
 		dma_write(addr + DD_RESULT, 0xa1);
 		return;
 	}
@@ -338,7 +322,7 @@ void disk_io(int addr)
 	/* try to open disk image */
 	dsk_path();
 	strcat(fn, "/");
-	strcat(fn, disks[disk]);
+	strcat(fn, (disk <= 3) ? disks[disk] : hddisk);
 	if (cmd == FMT_TRACK) {
 		/* can only format floppy disks */
 		if (disk <= 3) {
@@ -501,3 +485,19 @@ void imsai_fif_reset(void)
 	readDiskmap(dsk_path());
 #endif
 }
+
+#ifdef HAS_NETSERVER
+void sendHardDisks(struct mg_connection *conn)
+{
+	int fd;
+
+	dsk_path();
+	strcat(fn, "/");
+	strcat(fn, hddisk);
+	fd = open(fn, O_RDONLY);
+	httpdPrintf(conn, ",\"HD0\": { \"type\": \"Z80P\", \"file\": \"%s\"}",
+		    (fd == -1) ? "" : hddisk);
+	if (fd != -1)
+		close(fd);
+}
+#endif
