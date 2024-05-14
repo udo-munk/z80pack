@@ -3,8 +3,8 @@
  *
  * Copyright (C) 2024 by Udo Munk
  *
- * This module reads the system configuration file and sets
- * global variables, so that the system can be configured.
+ * This module configures the machine appropriate for the
+ * Z80/8080 software we want to run on it.
  *
  * History:
  * 23-APR-2024 dummy, no configuration implemented yet
