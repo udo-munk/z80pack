@@ -19,7 +19,7 @@ This compiles and installs additional support programs, see below.
    cp -p *.dsk ../backups
 
 4. Change to directory ~/z80pack-x.y/cpmsim
-   ./cpm2 - run CP/M 2.2
+   ./cpm22 - run CP/M 2.2
    ./cpm3 - run CP/M 3.0
    ./mpm  - this boots CP/M 2, run command mpmldr to boot MP/M 2
 
