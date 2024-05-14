@@ -77,7 +77,7 @@ int main(void)
 #endif
 	printf("\n");
 
-	config();		/* read system configuration */
+	config();		/* configure the machine */
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O */
@@ -106,12 +106,12 @@ int main(void)
 #endif
 	putchar('\n');
 	stdio_flush();
-	return 0;
+	return (0);
 }
 
 unsigned long long get_clock_us(void)
 {
-	return to_us_since_boot(get_absolute_time());
+	return (to_us_since_boot(get_absolute_time()));
 }
 
 /*
@@ -147,5 +147,5 @@ int get_cmdline(char *buf, int len)
 		}
 	}
 	buf[i] = '\0';
-	return 0;
+	return (0);
 }

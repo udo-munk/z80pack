@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2024 by Udo Munk
  *
- * This module implements memory management for picosim
+ * This module implements memory management for the Z80/8080 CPU
  *
  * History:
  * 23-APR-2024 derived from z80sim
@@ -31,9 +31,9 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	if (addr < 0xff00)
-		return code[addr];
+		return (code[addr]);
 	else
-		return 0xff;
+		return (0xff);
 }
 
 /*
@@ -48,9 +48,9 @@ static inline void dma_write(WORD addr, BYTE data)
 static inline BYTE dma_read(WORD addr)
 {
 	if (addr < 0xff00)
-		return code[addr];
+		return (code[addr]);
 	else
-		return 0xff;
+		return (0xff);
 }
 
 /*
@@ -65,9 +65,9 @@ static inline void putmem(WORD addr, BYTE data)
 static inline BYTE getmem(WORD addr)
 {
 	if (addr < 0xff00)
-		return code[addr];
+		return (code[addr]);
 	else
-		return 0xff;
+		return (0xff);
 }
 
 #endif

@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2024 by Udo Munk
  *
- * This module implements the memory for picosim
+ * This module implements the memory for the Z80/8080 CPU
  *
  * History:
  * 23-APR-2024 derived from z80sim

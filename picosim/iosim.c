@@ -8,7 +8,7 @@
  * History:
  * 28-APR-2024 all I/O implemented for a first release
  * 09-MAY-2024 improved so that it can run some MITS Altair software
- * 11-MAY-2024 allow us to set the port 255 value from ICE p command e.g.
+ * 11-MAY-2024 allow us to configure the port 255 value
  */
 
 /* Raspberry SDK includes */
@@ -35,7 +35,7 @@ static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 
 static BYTE sio_last;	/* last character received */
-       BYTE fp_value;	/* port 255 value, can be set with p command */
+       BYTE fp_value;	/* port 255 value, can be set from ICE or config() */
 
 /*
  *	This array contains function pointers for every input
@@ -64,11 +64,14 @@ void init_io(void)
 {
 	register int i;
 
+	/* fill all the unused ports with 0 */
 	for (i = 2; i <= 254; i++) {
 		port_in[i] = 0;
 		port_out[i] = 0;
 	}
-	port_in[255] = p255_in; /* for frontpanel */
+
+	/* port 255 for frontpanel */
+	port_in[255] = p255_in;
 	port_out[255] = p255_out;
 }
 
@@ -132,10 +135,10 @@ static BYTE p000_in(void)
 static BYTE p001_in(void)
 {
 	if (!uart_is_readable(uart0))	/* someone reading without checking */
-		return sio_last;	/* guess who does such things */
+		return (sio_last);	/* guess who does such things */
 	else {
 		sio_last = getchar();
-		return sio_last;
+		return (sio_last);
 	}
 }
 
@@ -145,7 +148,7 @@ static BYTE p001_in(void)
  */
 static BYTE p255_in(void)
 {
-	return fp_value;
+	return (fp_value);
 }
 
 /*
