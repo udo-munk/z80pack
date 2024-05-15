@@ -25,11 +25,7 @@ EXEC_PREFIX = $(PREFIX)
 BINDIR = $(EXEC_PREFIX)/bin
 DATAROOTDIR = $(PREFIX)/share
 DATADIR = $(DATAROOTDIR)/$(PACKAGE)/$(CPROG)
-SYSCONFDIR = $(PREFIX)/etc
-INCLUDEDIR = $(PREFIX)/include
 DOCDIR = $(DATAROOTDIR)/doc/$(PACKAGE)/$(CPROG)
-HTMLDIR = $(DOCDIR)
-LIBDIR = $(EXEC_PREFIX)/lib
 
 # system wide location for machines configuration files
 CONF_DIR = $(DATADIR)/conf
@@ -168,9 +164,14 @@ build: _rm_obj all
 install: $(SIM)
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
 	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -d $(DESTDIR)$(DOCROOT_DIR)
+	(cd $(NET_DIR)/www/$(MACHINE); \
+	find . -type d -exec $(INSTALL) -d $(DESTDIR)$(DOCROOT_DIR)/\{\} \;; \
+	find . -type f -exec $(INSTALL_DATA) \{\} $(DESTDIR)$(DOCROOT_DIR) \;)
 
 uninstall:
-	cd $(DESTDIR)$(BINDIR) && rm -f $(CPROG)
+	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
+	rm -rf $(DESTDIR)$(DATADIR)
 
 clean: _rm_obj _rm_deps
 

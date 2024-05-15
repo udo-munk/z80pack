@@ -1,5 +1,11 @@
+PACKAGE = z80pack
 PREFIX = $(HOME)
 #PREFIX = /usr/local
+EXEC_PREFIX = $(PREFIX)
+BINDIR = $(EXEC_PREFIX)/bin
+DATAROOTDIR = $(PREFIX)/share
+DATADIR = $(DATAROOTDIR)/$(PACKAGE)
+DOCDIR = $(DATAROOTDIR)/doc/$(PACKAGE)
 
 TOOLS = z80asm cpmsim/srctools
 LIBS = frontpanel webfrontend/civetweb
@@ -10,7 +16,7 @@ MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
 
 Z80ASMDIR = z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
-Z80ASMOPTS = -l -T -sn -p0
+Z80ASMFLAGS = -l -T -sn -p0
 
 ALTAIR_8080 = \
 	altairsim/basic8k78.asm \
@@ -91,10 +97,10 @@ machines:
 
 reassemble: $(Z80ASM)
 	@set -e; for file in $(ALTAIR_8080) $(CROMEMCO_8080) $(IMSAI_8080); do \
-		$(Z80ASM) $(Z80ASMOPTS) -8 -fh -e16 "$$file"; \
+		$(Z80ASM) $(Z80ASMFLAGS) -8 -fh -e16 "$$file"; \
 	done
 	@set -e; for file in $(ALTAIR_Z80) $(CROMEMCO_Z80) $(IMSAI_Z80); do \
-		$(Z80ASM) $(Z80ASMOPTS) -fh -e16 "$$file"; \
+		$(Z80ASM) $(Z80ASMFLAGS) -fh -e16 "$$file"; \
 	done
 
 $(Z80ASM): FORCE
@@ -117,6 +123,7 @@ uninstall:
 	@set -e; for subdir in $(MACHINES); do \
 		$(MAKE) -C $$subdir/srcsim "PREFIX=$(PREFIX)" uninstall; \
 	done
+	rmdir $(DESTDIR)$(DATADIR)
 
 clean:
 	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \

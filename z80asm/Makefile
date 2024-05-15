@@ -74,7 +74,7 @@ install: z80asm
 	$(INSTALL_PROGRAM) -s z80asm $(DESTDIR)$(BINDIR)
 
 uninstall:
-	rm $(DESTDIR)$(BINDIR)/z80asm
+	rm -f $(DESTDIR)$(BINDIR)/z80asm
 
 clean:
 	rm -f core $(OBJS) z80asm

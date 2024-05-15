@@ -18,11 +18,7 @@ EXEC_PREFIX = $(PREFIX)
 BINDIR = $(EXEC_PREFIX)/bin
 DATAROOTDIR = $(PREFIX)/share
 DATADIR = $(DATAROOTDIR)/$(PACKAGE)/$(CPROG)
-SYSCONFDIR = $(PREFIX)/etc
-INCLUDEDIR = $(PREFIX)/include
 DOCDIR = $(DATAROOTDIR)/doc/$(PACKAGE)/$(CPROG)
-HTMLDIR = $(DOCDIR)
-LIBDIR = $(EXEC_PREFIX)/lib
 
 # system wide location for machines configuration files
 CONF_DIR = $(DATADIR)/conf
@@ -109,7 +105,7 @@ install: $(SIM)
 	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
 
 uninstall:
-	cd $(DESTDIR)$(BINDIR) && rm -f $(CPROG)
+	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
 
 clean: _rm_obj _rm_deps
 
