@@ -114,6 +114,6 @@ extern char	conffn[];
 extern char	rompath[];
 #endif
 
-extern char	parity[];
+extern const char parity[];
 
 #endif
