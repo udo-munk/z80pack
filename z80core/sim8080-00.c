@@ -1,9 +1,9 @@
 #ifndef FAST_INSTR
 #define INSTR(opcode, func)	static int func(void)
-#define STATES(states)		return (states);
+#define STATES(states)		return (states)
 #else
 #define INSTR(opcode, func)	case opcode:
-#define STATES(states)		t = states; break;
+#define STATES(states)		t = states; break
 #endif
 
 INSTR(0x00, op_nop)			/* NOP */
