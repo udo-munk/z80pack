@@ -1,3 +1,10 @@
+/*
+ * Z80SIM  -  a Z80-CPU simulator
+ *
+ * Copyright (C) 1987-2024 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
+ */
+
 #ifndef FAST_INSTR
 #define INSTR(opcode, func)	static int func(void)
 #define STATES(states)		return (states)
