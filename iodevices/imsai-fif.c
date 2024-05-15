@@ -4,6 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2014-2019 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * Emulation of an IMSAI FIF S100 board
  *
@@ -26,6 +27,7 @@
  * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
  * 17-NOV-2019 return result codes as documented in manual
  * 18-NOV-2019 initialize command string address array
+ * 14-May-2024 remove large disk from disks[] for disk manager compatibility
  */
 
 #include <unistd.h>
