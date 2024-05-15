@@ -24,6 +24,7 @@
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
+/*#define FAST_INSTR*/	/* faster instructions, but less debuggable */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 #define EXCLUDE_I8080	/* this was a Z80 machine */
 

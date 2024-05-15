@@ -16,6 +16,7 @@
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
+/*#define FAST_INSTR*/	/* faster instructions, but less debuggable */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
 

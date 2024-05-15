@@ -39,6 +39,7 @@
 #define CPU_SPEED 2	/* default CPU speed */
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_FLAGS	/* compile undocumented flags */
+/*#define FAST_INSTR*/	/* faster instructions, but less debuggable */
 /*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
