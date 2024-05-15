@@ -48,8 +48,6 @@
 #include <sys/stat.h>
 #include "sim.h"
 
-#ifdef HAS_DISKMANAGER
-
 #define LOCAL_LOG_LEVEL LOG_DEBUG
 #include "log.h"
 #include "disks.h"
@@ -429,5 +427,4 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
 
     return 1;   
 }
-#endif
 #endif

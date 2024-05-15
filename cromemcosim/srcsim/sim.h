@@ -25,6 +25,7 @@
  * 02-SEP-2021 implement banked ROM
  * 14-JUL-2022 added generic AT modem and HAL
  * 09-MAY-2024 added more defines for conditional compiling components
+ * 15-MAY-2024 make disk manager standard
  */
 
 #ifndef SIM_INC
@@ -50,7 +51,6 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* has banked RDOS ROM */
 
-#define HAS_DISKMANAGER		/* uses file based disk map for disks[] */
 #define HAS_NETSERVER		/* uses civet webserver to present a web based frontend */
 #define NS_DEF_PORT 8080	/* default port number for civet webserver */
 #define HAS_MODEM		/* has simulated 'AT' style modem over TCP/IP (telnet) */

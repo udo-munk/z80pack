@@ -36,6 +36,7 @@
  * 17-JUN-2021 allow building machine without frontpanel
  * 29-JUL-2021 add boot config for machine without frontpanel
  * 02-SEP-2021 implement banked ROM
+ * 15-MAY-2024 make disk manager standard
  */
 
 
@@ -96,21 +97,12 @@ static int autowait;		/* autowait flag */
 static int headloaded;		/* head loaded flag */
 
 /* these are our disk drives, 8" SS SD initially */
-#ifndef HAS_DISKMANAGER
-static Diskdef disks[4] = {
-	{ "drivea.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
-	{ "driveb.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
-	{ "drivec.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
-	{ "drived.dsk", LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE }
-};
-#else
 Diskdef disks[4] = {
 	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
 	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
 	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
 	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE }
 };
-#endif
 
 BYTE fdc_banked_rom[8 << 10]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
 int fdc_rom_active = 0;
@@ -1030,6 +1022,8 @@ extern void reset_fdc_rom_map(void); /* implemented in memsim.c */
 
 void cromemco_fdc_reset(void)
 {
+	extern void readDiskmap(char *);
+
 	state = dcnt = mflag = index_pulse = disk = side = 0;
 	motoron = motortimer = headloaded = autowait = 0;
 	fdc_stat = fdc_aux = 0;
@@ -1045,8 +1039,5 @@ void cromemco_fdc_reset(void)
 	}
 #endif
 
-#ifdef HAS_DISKMANAGER
-	extern void readDiskmap(char *);
 	readDiskmap(dsk_path());
-#endif
 }

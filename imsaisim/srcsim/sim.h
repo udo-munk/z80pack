@@ -24,6 +24,7 @@
  * 07-AUG-2021 add APU emulation
  * 29-AUG-2021 new memory configuration sections
  * 09-MAY-2024 added more defines for conditional compiling components
+ * 15-MAY-2024 make disk manager standard
  */
 
 #ifndef SIM_INC
@@ -53,7 +54,6 @@
 #define HAS_CONFIG	/* has configuration files somewhere */
 #define HAS_BANKED_ROM	/* emulate IMSAI MPU-B banked ROM & RAM */
 
-#define HAS_DISKMANAGER		/* uses file based disk map for disks[] */
 #define HAS_NETSERVER		/* uses civet webserver to present a web based frontend */
 #define NS_DEF_PORT 8080	/* default port number for civet webserver */
 #define HAS_MODEM		/* has simulated 'AT' style modem over TCP/IP (telnet) */

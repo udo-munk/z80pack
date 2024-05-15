@@ -27,7 +27,8 @@
  * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
  * 17-NOV-2019 return result codes as documented in manual
  * 18-NOV-2019 initialize command string address array
- * 14-May-2024 remove large disk from disks[] for disk manager compatibility
+ * 14-May-2024 remove large disk from disks[] for disk manager, show it as HDD
+ * 15-MAY-2024 make disk manager standard
  */
 
 #include <unistd.h>
@@ -75,17 +76,7 @@
 
 static const char *TAG = "FIF";
 
-#ifndef HAS_DISKMANAGER
-/* these are our disk drives */
-static const char *disks[4] = {
-	"drivea.dsk",
-	"driveb.dsk",
-	"drivec.dsk",
-	"drived.dsk"
-};
-#else
 char *disks[4];
-#endif
 static const char *hddisk = "drivei.dsk";
 
 static int fdaddr[16];		/* address of disk descriptors */
@@ -463,6 +454,8 @@ done:
  */
 void imsai_fif_reset(void)
 {
+	extern void readDiskmap(char *);
+
 	fdstate = 0;
 
 	fdaddr[0] = 0x0080;
@@ -482,10 +475,7 @@ void imsai_fif_reset(void)
 	fdaddr[14] = 0xe000;
 	fdaddr[15] = 0xf000;
 
-#ifdef HAS_DISKMANAGER
-	extern void readDiskmap(char *);
 	readDiskmap(dsk_path());
-#endif
 }
 
 #ifdef HAS_NETSERVER
