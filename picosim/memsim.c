@@ -18,7 +18,11 @@
 #define MEMSIZE 65536
 #include "z80code.h"	/* pull in z80asm generated code */
 
-/* do nothing for now */
 void init_memory(void)
 {
+	register int i;
+
+	// fill top page of memory with 0xff, write protected ROM
+	for (i = 0xff00; i <= 0xffff; i++)
+		code[i] = 0xff;
 }

@@ -30,10 +30,7 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
-	if (addr < 0xff00)
-		return (code[addr]);
-	else
-		return (0xff);
+	return (code[addr]);
 }
 
 /*
@@ -47,10 +44,7 @@ static inline void dma_write(WORD addr, BYTE data)
 
 static inline BYTE dma_read(WORD addr)
 {
-	if (addr < 0xff00)
-		return (code[addr]);
-	else
-		return (0xff);
+	return (code[addr]);
 }
 
 /*
@@ -64,10 +58,7 @@ static inline void putmem(WORD addr, BYTE data)
 
 static inline BYTE getmem(WORD addr)
 {
-	if (addr < 0xff00)
-		return (code[addr]);
-	else
-		return (0xff);
+	return (code[addr]);
 }
 
 #endif
