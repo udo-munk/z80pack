@@ -3,8 +3,6 @@
 
 #include "imsai-fif.h"
 
-#ifdef HAS_DISKMANAGER
-
 #ifndef DISKMAP
 #define DISKMAP     "disk.map"
 #endif
@@ -15,7 +13,5 @@
 extern char *disks[];
 
 #define DISKNAME(A) disks[A]
-
-#endif
 
 #endif

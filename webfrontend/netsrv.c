@@ -78,10 +78,8 @@ extern void quit_callback(void);
 
 extern void lpt_reset(void);
 
-#ifdef HAS_DISKMANAGER
 extern int LibraryHandler(struct mg_connection *, void *);
 extern int DiskHandler(struct mg_connection *, void *);
-#endif
 
 /**
  * Check if a queue is provisioned
@@ -810,10 +808,8 @@ int start_net_services (int port) {
 	//TODO: sort out all the paths for the handlers
     mg_set_request_handler(ctx, "/system", 		SystemHandler, 		0);
     mg_set_request_handler(ctx, "/conf", 		ConfigHandler, 		(void *) "conf");
-#ifdef HAS_DISKMANAGER
     mg_set_request_handler(ctx, "/library", 	LibraryHandler, 	0);
     mg_set_request_handler(ctx, "/disks", 		DiskHandler, 		0);
-#endif
 
 	mg_set_websocket_handler(ctx, "/tty",
 	                         WebSocketConnectHandler,

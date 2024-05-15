@@ -36,6 +36,7 @@
  * 17-JUN-2021 allow building machine without frontpanel
  * 29-JUL-2021 add boot config for machine without frontpanel
  * 02-SEP-2021 implement banked ROM
+ * 15-MAY-2024 make disk manager standard
  */
 
 #ifndef CROMEMCO_FDC_INC
@@ -51,11 +52,7 @@ enum Disk_sides { ONE, TWO };
 enum Disk_mode { READWRITE, READONLY };
 
 typedef struct {
-#ifdef HAS_DISKMANAGER
 	char *fn;			/* filename of disk image */
-#else
-	const char *fn;			/* filename of disk image */
-#endif
 	enum Disk_type disk_t;		/* drive type 5.25" or 8" */
 	enum Disk_density disk_d;	/* disk density, single or double */
 	enum Disk_sides disk_s;		/* drive sides, 1 or 2 */
