@@ -30,9 +30,6 @@ static int trap_undoc(void);
 
 #ifndef FAST_INSTR
 
-#define INSTR(opcode, func)	static int func(void)
-#define STATES(states)		return (states)
-
 static int op_nop(void), op_hlt(void), op_stc(void);
 static int op_cmc(void), op_cma(void), op_daa(void), op_ei(void), op_di(void);
 static int op_out(void), op_in(void);
@@ -108,6 +105,9 @@ static int op_rst4(void), op_rst5(void), op_rst6(void), op_rst7(void);
 static int op_undoc_nop(void), op_undoc_jmp(void), op_undoc_ret(void);
 static int op_undoc_call(void);
 #endif
+
+#define INSTR(opcode, func)	static int func(void)
+#define STATES(states)		return (states)
 
 #else /* FAST_INSTR */
 

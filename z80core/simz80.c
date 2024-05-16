@@ -31,10 +31,6 @@ static int trap_ed(void), trap_fd(void), trap_fdcb(int);
 
 #ifndef FAST_INSTR
 
-#define INSTR(opcode, func)	static int func(void)
-#define INSTRD(opcode, func)	static int func(int data)
-#define STATES(states)		return (states)
-
 static int op_nop(void), op_halt(void), op_scf(void);
 static int op_ccf(void), op_cpl(void), op_daa(void);
 static int op_ei(void), op_di(void);
@@ -494,6 +490,10 @@ static int op_undoc_srliydd(int), op_undoc_srliyde(int), op_undoc_srliydh(int);
 static int op_undoc_srliydl(int);
 #endif /* UNDOC_IALL */
 #endif /* UNDOC_INST */
+
+#define INSTR(opcode, func)	static int func(void)
+#define INSTRD(opcode, func)	static int func(int data)
+#define STATES(states)		return (states)
 
 #else /* FAST_INSTR */
 
