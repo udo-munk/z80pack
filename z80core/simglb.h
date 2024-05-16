@@ -114,6 +114,11 @@ extern char	conffn[];
 extern char	rompath[];
 #endif
 
+#if !defined(FAST_INSTR) || !defined(EXCLUDE_Z80)
 extern const char parity[];
+#endif
+#ifdef FAST_INSTR
+extern const BYTE szp_flags[];
+#endif
 
 #endif

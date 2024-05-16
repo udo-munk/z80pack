@@ -222,7 +222,7 @@ void report_cpu_error(void)
 	default:
 		printf("Unknown error %d\n", cpu_error);
 		break;
-#else
+#else /* !BAREMETAL */
 	case OPHALT:
 		LOG(TAG, "INT disabled and HALT Op-Code reached at 0x%04x\r\n",
 		    PC - 1);
@@ -266,7 +266,7 @@ void report_cpu_error(void)
 	default:
 		LOGW(TAG, "Unknown error %d", cpu_error);
 		break;
-#endif
+#endif /* !BAREMETAL */
 	}
 }
 

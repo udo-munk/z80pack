@@ -38,9 +38,10 @@
 /*#define AMD8080*/	/* AMD 8080 instead of Intel 8080 */
 #define CPU_SPEED 2	/* default CPU speed */
 #define UNDOC_INST	/* compile undocumented instructions */
-#define UNDOC_FLAGS	/* compile undocumented flags */
-/*#define FAST_INSTR*/	/* faster instructions, but less debuggable */
-/*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+#define UNDOC_IALL	/* compile rarely used undoc'd Z80 instructions */
+#define UNDOC_FLAGS	/* compile undocumented Z80 flags */
+/*#define FAST_INSTR*/	/* faster instr. & smaller size, but less debuggable */
+/*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
 /*#define WANT_TIM*/	/* don't count t-states */

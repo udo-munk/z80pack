@@ -5,6 +5,13 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
+/*
+ *	This module contains the main 8080 instruction loop  ( cpu_8080() )
+ *	which handles interrupt requests, DMA bus requests and dispatches
+ *	all single byte instructions. It also contains the trap handler
+ *	for undocumented instructions.
+ */
+
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -15,12 +22,6 @@
 
 #ifndef EXCLUDE_I8080
 
-#ifdef UNDOC_INST
-#define UNDOC(f) f
-#else
-#define UNDOC(f) trap_undoc
-#endif
-
 #ifdef WANT_GUI
 extern void check_gui_break(void);
 #endif
@@ -28,6 +29,10 @@ extern void check_gui_break(void);
 static int trap_undoc(void);
 
 #ifndef FAST_INSTR
+
+#define INSTR(opcode, func)	static int func(void)
+#define STATES(states)		return (states)
+
 static int op_nop(void), op_hlt(void), op_stc(void);
 static int op_cmc(void), op_cma(void), op_daa(void), op_ei(void), op_di(void);
 static int op_out(void), op_in(void);
@@ -100,63 +105,16 @@ static int op_rst0(void), op_rst1(void), op_rst2(void), op_rst3(void);
 static int op_rst4(void), op_rst5(void), op_rst6(void), op_rst7(void);
 
 #ifdef UNDOC_INST
-static int op_undoc_nop1(void), op_undoc_nop2(void), op_undoc_nop3(void);
-static int op_undoc_nop4(void), op_undoc_nop5(void), op_undoc_nop6(void);
-static int op_undoc_nop7(void), op_undoc_jmp(void), op_undoc_ret(void);
-static int op_undoc_call1(void), op_undoc_call2(void), op_undoc_call3(void);
+static int op_undoc_nop(void), op_undoc_jmp(void), op_undoc_ret(void);
+static int op_undoc_call(void);
 #endif
 
-#else
+#else /* FAST_INSTR */
 
-/*
- * Precomputed table for fast sign, zero and parity flag calculation
- */
-#define _ 0
-#define S S_FLAG
-#define Z Z_FLAG
-#define P P_FLAG
-static const BYTE szp_flags[256] = {
-/*00*/	Z | P,	_,	_,	P,	_,	P,	P,	_,
-/*08*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*10*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*18*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*20*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*28*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*30*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*38*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*40*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*48*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*50*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*58*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*60*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*68*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*70*/	_,	P,	P,	_,	P,	_,	_,	P,
-/*78*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*80*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*88*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*90*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*98*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*a0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*a8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*b0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*b8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*c0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*c8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*d0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*d8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*e0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*e8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*f0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*f8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P
-};
-#undef _
-#undef S
-#undef Z
-#undef P
+#define INSTR(opcode, func)	case opcode:
+#define STATES(states)		t = states; break
 
-#define SZP_FLAGS (S_FLAG | Z_FLAG | P_FLAG)
-
-#endif
+#endif /* FAST_INSTR */
 
 /*
  * Function to update address bus LED's during execution of
@@ -185,6 +143,13 @@ void cpu_8080(void)
 	extern unsigned long long get_clock_us(void);
 
 #ifndef FAST_INSTR
+
+#ifdef UNDOC_INST
+#define UNDOC(f) f
+#else
+#define UNDOC(f) trap_undoc
+#endif
+
 	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
 		op_lxibnn,			/* 0x01 */
@@ -194,7 +159,7 @@ void cpu_8080(void)
 		op_dcrb,			/* 0x05 */
 		op_mvibn,			/* 0x06 */
 		op_rlc,				/* 0x07 */
-		UNDOC(op_undoc_nop1),		/* 0x08 */
+		UNDOC(op_undoc_nop),		/* 0x08 */
 		op_dadb,			/* 0x09 */
 		op_ldaxb,			/* 0x0a */
 		op_dcxb,			/* 0x0b */
@@ -202,7 +167,7 @@ void cpu_8080(void)
 		op_dcrc,			/* 0x0d */
 		op_mvicn,			/* 0x0e */
 		op_rrc,				/* 0x0f */
-		UNDOC(op_undoc_nop2),		/* 0x10 */
+		UNDOC(op_undoc_nop),		/* 0x10 */
 		op_lxidnn,			/* 0x11 */
 		op_staxd,			/* 0x12 */
 		op_inxd,			/* 0x13 */
@@ -210,7 +175,7 @@ void cpu_8080(void)
 		op_dcrd,			/* 0x15 */
 		op_mvidn,			/* 0x16 */
 		op_ral,				/* 0x17 */
-		UNDOC(op_undoc_nop3),		/* 0x18 */
+		UNDOC(op_undoc_nop),		/* 0x18 */
 		op_dadd,			/* 0x19 */
 		op_ldaxd,			/* 0x1a */
 		op_dcxd,			/* 0x1b */
@@ -218,7 +183,7 @@ void cpu_8080(void)
 		op_dcre,			/* 0x1d */
 		op_mvien,			/* 0x1e */
 		op_rar,				/* 0x1f */
-		UNDOC(op_undoc_nop4),		/* 0x20 */
+		UNDOC(op_undoc_nop),		/* 0x20 */
 		op_lxihnn,			/* 0x21 */
 		op_shldnn,			/* 0x22 */
 		op_inxh,			/* 0x23 */
@@ -226,7 +191,7 @@ void cpu_8080(void)
 		op_dcrh,			/* 0x25 */
 		op_mvihn,			/* 0x26 */
 		op_daa,				/* 0x27 */
-		UNDOC(op_undoc_nop5),		/* 0x28 */
+		UNDOC(op_undoc_nop),		/* 0x28 */
 		op_dadh,			/* 0x29 */
 		op_lhldnn,			/* 0x2a */
 		op_dcxh,			/* 0x2b */
@@ -234,7 +199,7 @@ void cpu_8080(void)
 		op_dcrl,			/* 0x2d */
 		op_mviln,			/* 0x2e */
 		op_cma,				/* 0x2f */
-		UNDOC(op_undoc_nop6),		/* 0x30 */
+		UNDOC(op_undoc_nop),		/* 0x30 */
 		op_lxispnn,			/* 0x31 */
 		op_stann,			/* 0x32 */
 		op_inxsp,			/* 0x33 */
@@ -242,7 +207,7 @@ void cpu_8080(void)
 		op_dcrm,			/* 0x35 */
 		op_mvimn,			/* 0x36 */
 		op_stc,				/* 0x37 */
-		UNDOC(op_undoc_nop7),		/* 0x38 */
+		UNDOC(op_undoc_nop),		/* 0x38 */
 		op_dadsp,			/* 0x39 */
 		op_ldann,			/* 0x3a */
 		op_dcxsp,			/* 0x3b */
@@ -407,7 +372,7 @@ void cpu_8080(void)
 		op_jc,				/* 0xda */
 		op_in,				/* 0xdb */
 		op_cc,				/* 0xdc */
-		UNDOC(op_undoc_call1),		/* 0xdd */
+		UNDOC(op_undoc_call),		/* 0xdd */
 		op_sbin,			/* 0xde */
 		op_rst3,			/* 0xdf */
 		op_rpo,				/* 0xe0 */
@@ -423,7 +388,7 @@ void cpu_8080(void)
 		op_jpe,				/* 0xea */
 		op_xchg,			/* 0xeb */
 		op_cpe,				/* 0xec */
-		UNDOC(op_undoc_call2),		/* 0xed */
+		UNDOC(op_undoc_call),		/* 0xed */
 		op_xrin,			/* 0xee */
 		op_rst5,			/* 0xef */
 		op_rp,				/* 0xf0 */
@@ -439,11 +404,14 @@ void cpu_8080(void)
 		op_jm,				/* 0xfa */
 		op_ei,				/* 0xfb */
 		op_cm,				/* 0xfc */
-		UNDOC(op_undoc_call3),		/* 0xfd */
+		UNDOC(op_undoc_call),		/* 0xfd */
 		op_cpin,			/* 0xfe */
 		op_rst7				/* 0xff */
 	};
-#endif
+
+#undef UNDOC
+
+#endif /* !FAST_INSTR */
 
 	Tstates_t T_max;
 	unsigned long long t1, t2;
@@ -677,4 +645,4 @@ static int trap_undoc(void)
 	return (0);
 }
 
-#endif
+#endif /* !EXCLUDE_I8080 */
