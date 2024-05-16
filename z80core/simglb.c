@@ -147,6 +147,7 @@ char conffn[MAX_LFN];		/* configuration file (option -c) */
 char rompath[MAX_LFN];		/* path for boot ROM files */
 #endif
 
+#if !defined(FAST_INSTR) || !defined(EXCLUDE_Z80)
 /*
  *	Precompiled table to get parity as fast as possible
  */
@@ -216,3 +217,52 @@ const char parity[256] = {
 	1 /* 11111000 */, 0 /* 11111001 */, 0 /* 11111010 */, 1 /* 11111011 */,
 	0 /* 11111100 */, 1 /* 11111101 */, 1 /* 11111110 */, 0 /* 11111111 */
 };
+#endif /* !FAST_INSTR && !EXCLUDE_Z80 */
+
+#ifdef FAST_INSTR
+/*
+ *	Precomputed table for fast sign, zero and parity flag calculation
+ */
+#define _ 0
+#define S S_FLAG
+#define Z Z_FLAG
+#define P P_FLAG
+const BYTE szp_flags[256] = {
+/*00*/	Z | P,	_,	_,	P,	_,	P,	P,	_,
+/*08*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*10*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*18*/	P,	_,	_,	P,	_,	P,	P,	_,
+/*20*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*28*/	P,	_,	_,	P,	_,	P,	P,	_,
+/*30*/	P,	_,	_,	P,	_,	P,	P,	_,
+/*38*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*40*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*48*/	P,	_,	_,	P,	_,	P,	P,	_,
+/*50*/	P,	_,	_,	P,	_,	P,	P,	_,
+/*58*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*60*/	P,	_,	_,	P,	_,	P,	P,	_,
+/*68*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*70*/	_,	P,	P,	_,	P,	_,	_,	P,
+/*78*/	P,	_,	_,	P,	_,	P,	P,	_,
+/*80*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
+/*88*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*90*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*98*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
+/*a0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*a8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
+/*b0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
+/*b8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*c0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*c8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
+/*d0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
+/*d8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*e0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
+/*e8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*f0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
+/*f8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P
+};
+#undef _
+#undef S
+#undef Z
+#undef P
+#endif /* FAST_INSTR */

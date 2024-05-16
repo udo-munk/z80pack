@@ -147,14 +147,14 @@ int main(int argc, char *argv[])
 				*p = '\0';
 				s--;
 				break;
-#else
+#else /* !HAS_CONFIG */
 #ifdef BOOTROM
 			case 'r':	/* load default boot ROM */
 				r_flag = 1;
 				x_flag = 1;
 				strcpy(xfn, BOOTROM);
 #endif
-#endif
+#endif /* !HAS_CONFIG */
 
 #ifdef HAS_DISKS
 			case 'd':	/* get path for disk images */
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 				break;
 #endif
 
-#endif
+#endif /* HAS_CONFIG */
 
 #ifdef HAS_BANKED_ROM
 			case 'R':	/* enable banked ROM for machines

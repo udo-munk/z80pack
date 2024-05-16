@@ -23,9 +23,10 @@
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
 #define UNDOC_INST	/* compile undocumented instructions */
-#define UNDOC_FLAGS	/* compile undocumented flags */
-/*#define FAST_INSTR*/	/* faster instructions, but less debuggable */
-/*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+#define UNDOC_IALL	/* compile rarely used undoc'd Z80 instructions */
+#define UNDOC_FLAGS	/* compile undocumented Z80 flags */
+/8#define FAST_INSTR*/	/* faster instr. & smaller size, but less debuggable */
+/*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define EXCLUDE_I8080	/* this was a Z80 machine */
 
 #define WANT_ICE	/* attach ICE to headless machine */

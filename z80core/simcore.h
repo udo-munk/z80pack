@@ -42,6 +42,10 @@
 #define N_FLAG		2	/* add/subtract flag */
 #define C_FLAG		1	/* carry flag */
 
+#ifdef FAST_INSTR
+#define SZP_FLAGS	(S_FLAG | Z_FLAG | P_FLAG)
+#endif
+
 				/* bit definitions for CPU bus status */
 #define CPU_MEMR	128	/* memory read */
 #define CPU_INP		64	/* input device address */

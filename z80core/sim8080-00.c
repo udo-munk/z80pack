@@ -5,13 +5,10 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
-#ifndef FAST_INSTR
-#define INSTR(opcode, func)	static int func(void)
-#define STATES(states)		return (states)
-#else
-#define INSTR(opcode, func)	case opcode:
-#define STATES(states)		t = states; break
-#endif
+/*
+ *	This module contains the implementation of all
+ *	8080 instructions
+ */
 
 INSTR(0x00, op_nop)			/* NOP */
 {
@@ -50,7 +47,8 @@ INSTR(0x76, op_hlt)			/* HLT */
 		fp_led_data = 0xff;
 
 		if (IFF == 0) {
-			/* INT disabled, wait for frontpanel reset or user interrupt */
+			/* INT disabled, wait for
+			   frontpanel reset or user interrupt */
 			while (!(cpu_state & RESET)) {
 				fp_clock++;
 				fp_sampleData();
@@ -2885,7 +2883,17 @@ INSTR(0xff, op_rst7)			/* RST 7 */
 
 #ifdef UNDOC_INST
 
-INSTR(0x08, op_undoc_nop1)		/* NOP* */
+#ifndef FAST_INSTR
+static int op_undoc_nop(void)		/* NOP */
+#else
+case 0x08:				/* NOP */
+case 0x10:				/* NOP */
+case 0x18:				/* NOP */
+case 0x20:				/* NOP */
+case 0x28:				/* NOP */
+case 0x30:				/* NOP */
+case 0x38:				/* NOP */
+#endif
 {
 	if (u_flag) {
 		STATES(trap_undoc());
@@ -2894,61 +2902,7 @@ INSTR(0x08, op_undoc_nop1)		/* NOP* */
 	STATES(4);
 }
 
-INSTR(0x10, op_undoc_nop2)		/* NOP* */
-{
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	STATES(4);
-}
-
-INSTR(0x18, op_undoc_nop3)		/* NOP* */
-{
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	STATES(4);
-}
-
-INSTR(0x20, op_undoc_nop4)		/* NOP* */
-{
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	STATES(4);
-}
-
-INSTR(0x28, op_undoc_nop5)		/* NOP* */
-{
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	STATES(4);
-}
-
-INSTR(0x30, op_undoc_nop6)		/* NOP* */
-{
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	STATES(4);
-}
-
-INSTR(0x38, op_undoc_nop7)		/* NOP* */
-{
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	STATES(4);
-}
-
-INSTR(0xcb, op_undoc_jmp)		/* JMP* nn */
+INSTR(0xcb, op_undoc_jmp)		/* JMP nn */
 {
 	register WORD i;
 
@@ -2962,45 +2916,13 @@ INSTR(0xcb, op_undoc_jmp)		/* JMP* nn */
 	STATES(10);
 }
 
-INSTR(0xdd, op_undoc_call1)		/* CALL* nn */
-{
-	register WORD i;
-
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	i = memrdr(PC++);
-	i += memrdr(PC++) << 8;
-#ifdef BUS_8080
-	cpu_bus = CPU_STACK;
+#ifndef FAST_INSTR
+static int op_undoc_call(void)		/* CALL nn */
+#else
+case 0xdd:				/* CALL nn */
+case 0xed:				/* CALL nn */
+case 0xfd:				/* CALL nn */
 #endif
-	memwrt(--SP, PC >> 8);
-	memwrt(--SP, PC);
-	PC = i;
-	STATES(17);
-}
-
-INSTR(0xed, op_undoc_call2)		/* CALL* nn */
-{
-	register WORD i;
-
-	if (u_flag) {
-		STATES(trap_undoc());
-	}
-
-	i = memrdr(PC++);
-	i += memrdr(PC++) << 8;
-#ifdef BUS_8080
-	cpu_bus = CPU_STACK;
-#endif
-	memwrt(--SP, PC >> 8);
-	memwrt(--SP, PC);
-	PC = i;
-	STATES(17);
-}
-
-INSTR(0xfd, op_undoc_call3)		/* CALL* nn */
 {
 	register WORD i;
 
@@ -3036,4 +2958,4 @@ INSTR(0xd9, op_undoc_ret)		/* RET */
 	STATES(10);
 }
 
-#endif
+#endif /* UNDOC_INST */

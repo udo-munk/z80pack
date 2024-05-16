@@ -15,9 +15,10 @@
 //#define EXCLUDE_I8080	/* don't include 8080, for now we want both */
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */
 #define UNDOC_INST	/* compile undocumented instructions */
-#define UNDOC_FLAGS	/* compile undocumented flags */
-/*#define FAST_INSTR*/	/* faster instructions, but less debuggable */
-/*#define WANT_FASTB*/	/* much faster but not accurate Z80 block instr. */
+#define UNDOC_IALL	/* compile rarely used undoc'd Z80 instructions */
+#define UNDOC_FLAGS	/* compile undocumented Z80 flags */
+/*#define FAST_INSTR*/	/* faster instr. & smaller size, but less debuggable */
+/*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */

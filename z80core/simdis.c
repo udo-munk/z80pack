@@ -279,7 +279,7 @@ static struct opt optabed_5[32] = {
 	{ opout,  "NOP*"		},	/* 0xbe */ /* undocumented */
 	{ opout,  "NOP*"		}	/* 0xbf */ /* undocumented */
 };
-#endif
+#endif /* !EXCLUDE_Z80 */
 
 #ifndef EXCLUDE_I8080
 static struct opt optabi8080_01[64] = {
@@ -415,7 +415,7 @@ static struct opt optabi8080_67[64] = {
 	{ nout,   "CPI\t"		},	/* 0xfe */
 	{ opout,  "RST\t7"		}	/* 0xff */
 };
-#endif
+#endif /* !EXCLUDE_I8080 */
 
 #ifndef EXCLUDE_Z80
 static const char *reg[]     = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
@@ -892,6 +892,6 @@ static int ddfd(const char *s, WORD a)
 	}
 }
 
-#endif
+#endif /* !EXCLUDE_Z80 */
 
-#endif
+#endif /* WANT_ICE */

@@ -708,7 +708,7 @@ static void do_break(char *s)
 
 	puts("Sorry, no breakpoints available");
 	puts("Please recompile with SBSIZE defined in sim.h");
-#else
+#else /* SBSIZE */
 	register int i;
 
 	if (*s == '\n') {
@@ -750,7 +750,7 @@ static void do_break(char *s)
 	else
 		soft[i].sb_pass = exatoi(++s);
 	soft[i].sb_passcount = 0;
-#endif
+#endif /* SBSIZE */
 }
 
 /*
@@ -763,7 +763,7 @@ static void do_hist(char *s)
 
 	puts("Sorry, no history available");
 	puts("Please recompile with HISIZE defined in sim.h");
-#else
+#else /* HISIZE */
 	int i, l, b, e, sa;
 
 	while (isspace((unsigned char) *s))
@@ -830,7 +830,7 @@ static void do_hist(char *s)
 		}
 		break;
 	}
-#endif
+#endif /* HISIZE */
 }
 
 /*
@@ -902,7 +902,7 @@ static void do_switch(char *s)
 		print_reg();
 	}
 }
-#endif
+#endif /* !EXCLUDE_I8080 && !EXCLUDE_Z80 */
 
 /*
  *	Output information about compiling options
@@ -1112,6 +1112,6 @@ static void do_unix(char *s)
 	int_on();
 }
 
-#endif
+#endif /* !BAREMETAL */
 
-#endif
+#endif /* WANT_ICE */

@@ -18,12 +18,6 @@ add_executable(picosim
 	../z80core/simice.c
 	../z80core/sim8080.c
 	../z80core/simz80.c
-	../z80core/simz80-cb.c
-	../z80core/simz80-dd.c
-	../z80core/simz80-ddcb.c
-	../z80core/simz80-ed.c
-	../z80core/simz80-fd.c
-	../z80core/simz80-fdcb.c
 	config.c
 	memsim.c
 	iosim.c

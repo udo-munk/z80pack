@@ -6,389 +6,11 @@
  */
 
 /*
- *	Like the function "cpu_z80()" this one emulates 4 byte opcodes
- *	starting with 0xfd 0xcb
+ *	This module contains the implementation of all Z80 instructions
+ *	beginning with the prefix 0xfd 0xcb
  */
 
-#include "sim.h"
-#include "simglb.h"
-#include "config.h"
-#include "memsim.h"
-
-#ifndef EXCLUDE_Z80
-
-#ifdef UNDOC_INST
-#define UNDOC(f) f
-#else
-#define UNDOC(f) trap_fdcb
-#endif
-
-static int trap_fdcb(int);
-static int op_tb0iyd(int), op_tb1iyd(int), op_tb2iyd(int), op_tb3iyd(int);
-static int op_tb4iyd(int), op_tb5iyd(int), op_tb6iyd(int), op_tb7iyd(int);
-static int op_rb0iyd(int), op_rb1iyd(int), op_rb2iyd(int), op_rb3iyd(int);
-static int op_rb4iyd(int), op_rb5iyd(int), op_rb6iyd(int), op_rb7iyd(int);
-static int op_sb0iyd(int), op_sb1iyd(int), op_sb2iyd(int), op_sb3iyd(int);
-static int op_sb4iyd(int), op_sb5iyd(int), op_sb6iyd(int), op_sb7iyd(int);
-static int op_rlciyd(int), op_rrciyd(int), op_rliyd(int), op_rriyd(int);
-static int op_slaiyd(int), op_sraiyd(int), op_srliyd(int);
-
-#ifdef UNDOC_INST
-static int op_undoc_tb0iyd(int), op_undoc_tb1iyd(int), op_undoc_tb2iyd(int);
-static int op_undoc_tb3iyd(int), op_undoc_tb4iyd(int), op_undoc_tb5iyd(int);
-static int op_undoc_tb6iyd(int), op_undoc_tb7iyd(int);
-static int op_undoc_rb0iyda(int), op_undoc_rb1iyda(int), op_undoc_rb2iyda(int);
-static int op_undoc_rb3iyda(int), op_undoc_rb4iyda(int), op_undoc_rb5iyda(int);
-static int op_undoc_rb6iyda(int), op_undoc_rb7iyda(int);
-static int op_undoc_rb0iydb(int), op_undoc_rb1iydb(int), op_undoc_rb2iydb(int);
-static int op_undoc_rb3iydb(int), op_undoc_rb4iydb(int), op_undoc_rb5iydb(int);
-static int op_undoc_rb6iydb(int), op_undoc_rb7iydb(int);
-static int op_undoc_rb0iydc(int), op_undoc_rb1iydc(int), op_undoc_rb2iydc(int);
-static int op_undoc_rb3iydc(int), op_undoc_rb4iydc(int), op_undoc_rb5iydc(int);
-static int op_undoc_rb6iydc(int), op_undoc_rb7iydc(int);
-static int op_undoc_rb0iydd(int), op_undoc_rb1iydd(int), op_undoc_rb2iydd(int);
-static int op_undoc_rb3iydd(int), op_undoc_rb4iydd(int), op_undoc_rb5iydd(int);
-static int op_undoc_rb6iydd(int), op_undoc_rb7iydd(int);
-static int op_undoc_rb0iyde(int), op_undoc_rb1iyde(int), op_undoc_rb2iyde(int);
-static int op_undoc_rb3iyde(int), op_undoc_rb4iyde(int), op_undoc_rb5iyde(int);
-static int op_undoc_rb6iyde(int), op_undoc_rb7iyde(int);
-static int op_undoc_rb0iydh(int), op_undoc_rb1iydh(int), op_undoc_rb2iydh(int);
-static int op_undoc_rb3iydh(int), op_undoc_rb4iydh(int), op_undoc_rb5iydh(int);
-static int op_undoc_rb6iydh(int), op_undoc_rb7iydh(int);
-static int op_undoc_rb0iydl(int), op_undoc_rb1iydl(int), op_undoc_rb2iydl(int);
-static int op_undoc_rb3iydl(int), op_undoc_rb4iydl(int), op_undoc_rb5iydl(int);
-static int op_undoc_rb6iydl(int), op_undoc_rb7iydl(int);
-static int op_undoc_sb0iyda(int), op_undoc_sb1iyda(int), op_undoc_sb2iyda(int);
-static int op_undoc_sb3iyda(int), op_undoc_sb4iyda(int), op_undoc_sb5iyda(int);
-static int op_undoc_sb6iyda(int), op_undoc_sb7iyda(int);
-static int op_undoc_sb0iydb(int), op_undoc_sb1iydb(int), op_undoc_sb2iydb(int);
-static int op_undoc_sb3iydb(int), op_undoc_sb4iydb(int), op_undoc_sb5iydb(int);
-static int op_undoc_sb6iydb(int), op_undoc_sb7iydb(int);
-static int op_undoc_sb0iydc(int), op_undoc_sb1iydc(int), op_undoc_sb2iydc(int);
-static int op_undoc_sb3iydc(int), op_undoc_sb4iydc(int), op_undoc_sb5iydc(int);
-static int op_undoc_sb6iydc(int), op_undoc_sb7iydc(int);
-static int op_undoc_sb0iydd(int), op_undoc_sb1iydd(int), op_undoc_sb2iydd(int);
-static int op_undoc_sb3iydd(int), op_undoc_sb4iydd(int), op_undoc_sb5iydd(int);
-static int op_undoc_sb6iydd(int), op_undoc_sb7iydd(int);
-static int op_undoc_sb0iyde(int), op_undoc_sb1iyde(int), op_undoc_sb2iyde(int);
-static int op_undoc_sb3iyde(int), op_undoc_sb4iyde(int), op_undoc_sb5iyde(int);
-static int op_undoc_sb6iyde(int), op_undoc_sb7iyde(int);
-static int op_undoc_sb0iydh(int), op_undoc_sb1iydh(int), op_undoc_sb2iydh(int);
-static int op_undoc_sb3iydh(int), op_undoc_sb4iydh(int), op_undoc_sb5iydh(int);
-static int op_undoc_sb6iydh(int), op_undoc_sb7iydh(int);
-static int op_undoc_sb0iydl(int), op_undoc_sb1iydl(int), op_undoc_sb2iydl(int);
-static int op_undoc_sb3iydl(int), op_undoc_sb4iydl(int), op_undoc_sb5iydl(int);
-static int op_undoc_sb6iydl(int), op_undoc_sb7iydl(int);
-static int op_undoc_rlciyda(int), op_undoc_rlciydb(int), op_undoc_rlciydc(int);
-static int op_undoc_rlciydd(int), op_undoc_rlciyde(int), op_undoc_rlciydh(int);
-static int op_undoc_rlciydl(int);
-static int op_undoc_rrciyda(int), op_undoc_rrciydb(int), op_undoc_rrciydc(int);
-static int op_undoc_rrciydd(int), op_undoc_rrciyde(int), op_undoc_rrciydh(int);
-static int op_undoc_rrciydl(int);
-static int op_undoc_rliyda(int), op_undoc_rliydb(int), op_undoc_rliydc(int);
-static int op_undoc_rliydd(int), op_undoc_rliyde(int), op_undoc_rliydh(int);
-static int op_undoc_rliydl(int);
-static int op_undoc_rriyda(int), op_undoc_rriydb(int), op_undoc_rriydc(int);
-static int op_undoc_rriydd(int), op_undoc_rriyde(int), op_undoc_rriydh(int);
-static int op_undoc_rriydl(int);
-static int op_undoc_slaiyda(int), op_undoc_slaiydb(int), op_undoc_slaiydc(int);
-static int op_undoc_slaiydd(int), op_undoc_slaiyde(int), op_undoc_slaiydh(int);
-static int op_undoc_slaiydl(int);
-static int op_undoc_sraiyda(int), op_undoc_sraiydb(int), op_undoc_sraiydc(int);
-static int op_undoc_sraiydd(int), op_undoc_sraiyde(int), op_undoc_sraiydh(int);
-static int op_undoc_sraiydl(int);
-static int op_undoc_slliyda(int), op_undoc_slliydb(int), op_undoc_slliydc(int);
-static int op_undoc_slliydd(int), op_undoc_slliyde(int), op_undoc_slliydh(int);
-static int op_undoc_slliydl(int), op_undoc_slliyd(int);
-static int op_undoc_srliyda(int), op_undoc_srliydb(int), op_undoc_srliydc(int);
-static int op_undoc_srliydd(int), op_undoc_srliyde(int), op_undoc_srliydh(int);
-static int op_undoc_srliydl(int);
-#endif
-
-int op_fdcb_handle(void)
-{
-	static int (*op_fdcb[256])(int) = {
-		UNDOC(op_undoc_rlciydb),	/* 0x00 */
-		UNDOC(op_undoc_rlciydc),	/* 0x01 */
-		UNDOC(op_undoc_rlciydd),	/* 0x02 */
-		UNDOC(op_undoc_rlciyde),	/* 0x03 */
-		UNDOC(op_undoc_rlciydh),	/* 0x04 */
-		UNDOC(op_undoc_rlciydl),	/* 0x05 */
-		op_rlciyd,			/* 0x06 */
-		UNDOC(op_undoc_rlciyda),	/* 0x07 */
-		UNDOC(op_undoc_rrciydb),	/* 0x08 */
-		UNDOC(op_undoc_rrciydc),	/* 0x09 */
-		UNDOC(op_undoc_rrciydd),	/* 0x0a */
-		UNDOC(op_undoc_rrciyde),	/* 0x0b */
-		UNDOC(op_undoc_rrciydh),	/* 0x0c */
-		UNDOC(op_undoc_rrciydl),	/* 0x0d */
-		op_rrciyd,			/* 0x0e */
-		UNDOC(op_undoc_rrciyda),	/* 0x0f */
-		UNDOC(op_undoc_rliydb),		/* 0x10 */
-		UNDOC(op_undoc_rliydc),		/* 0x11 */
-		UNDOC(op_undoc_rliydd),		/* 0x12 */
-		UNDOC(op_undoc_rliyde),		/* 0x13 */
-		UNDOC(op_undoc_rliydh),		/* 0x14 */
-		UNDOC(op_undoc_rliydl),		/* 0x15 */
-		op_rliyd,			/* 0x16 */
-		UNDOC(op_undoc_rliyda),		/* 0x17 */
-		UNDOC(op_undoc_rriydb),		/* 0x18 */
-		UNDOC(op_undoc_rriydc),		/* 0x19 */
-		UNDOC(op_undoc_rriydd),		/* 0x1a */
-		UNDOC(op_undoc_rriyde),		/* 0x1b */
-		UNDOC(op_undoc_rriydh),		/* 0x1c */
-		UNDOC(op_undoc_rriydl),		/* 0x1d */
-		op_rriyd,			/* 0x1e */
-		UNDOC(op_undoc_rriyda),		/* 0x1f */
-		UNDOC(op_undoc_slaiydb),	/* 0x20 */
-		UNDOC(op_undoc_slaiydc),	/* 0x21 */
-		UNDOC(op_undoc_slaiydd),	/* 0x22 */
-		UNDOC(op_undoc_slaiyde),	/* 0x23 */
-		UNDOC(op_undoc_slaiydh),	/* 0x24 */
-		UNDOC(op_undoc_slaiydl),	/* 0x25 */
-		op_slaiyd,			/* 0x26 */
-		UNDOC(op_undoc_slaiyda),	/* 0x27 */
-		UNDOC(op_undoc_sraiydb),	/* 0x28 */
-		UNDOC(op_undoc_sraiydc),	/* 0x29 */
-		UNDOC(op_undoc_sraiydd),	/* 0x2a */
-		UNDOC(op_undoc_sraiyde),	/* 0x2b */
-		UNDOC(op_undoc_sraiydh),	/* 0x2c */
-		UNDOC(op_undoc_sraiydl),	/* 0x2d */
-		op_sraiyd,			/* 0x2e */
-		UNDOC(op_undoc_sraiyda),	/* 0x2f */
-		UNDOC(op_undoc_slliydb),	/* 0x30 */
-		UNDOC(op_undoc_slliydc),	/* 0x31 */
-		UNDOC(op_undoc_slliydd),	/* 0x32 */
-		UNDOC(op_undoc_slliyde),	/* 0x33 */
-		UNDOC(op_undoc_slliydh),	/* 0x34 */
-		UNDOC(op_undoc_slliydl),	/* 0x35 */
-		UNDOC(op_undoc_slliyd),		/* 0x36 */
-		UNDOC(op_undoc_slliyda),	/* 0x37 */
-		UNDOC(op_undoc_srliydb),	/* 0x38 */
-		UNDOC(op_undoc_srliydc),	/* 0x39 */
-		UNDOC(op_undoc_srliydd),	/* 0x3a */
-		UNDOC(op_undoc_srliyde),	/* 0x3b */
-		UNDOC(op_undoc_srliydh),	/* 0x3c */
-		UNDOC(op_undoc_srliydl),	/* 0x3d */
-		op_srliyd,			/* 0x3e */
-		UNDOC(op_undoc_srliyda),	/* 0x3f */
-		UNDOC(op_undoc_tb0iyd),		/* 0x40 */
-		UNDOC(op_undoc_tb0iyd),		/* 0x41 */
-		UNDOC(op_undoc_tb0iyd),		/* 0x42 */
-		UNDOC(op_undoc_tb0iyd),		/* 0x43 */
-		UNDOC(op_undoc_tb0iyd),		/* 0x44 */
-		UNDOC(op_undoc_tb0iyd),		/* 0x45 */
-		op_tb0iyd,			/* 0x46 */
-		UNDOC(op_undoc_tb0iyd),		/* 0x47 */
-		UNDOC(op_undoc_tb1iyd),		/* 0x48 */
-		UNDOC(op_undoc_tb1iyd),		/* 0x49 */
-		UNDOC(op_undoc_tb1iyd),		/* 0x4a */
-		UNDOC(op_undoc_tb1iyd),		/* 0x4b */
-		UNDOC(op_undoc_tb1iyd),		/* 0x4c */
-		UNDOC(op_undoc_tb1iyd),		/* 0x4d */
-		op_tb1iyd,			/* 0x4e */
-		UNDOC(op_undoc_tb1iyd),		/* 0x4f */
-		UNDOC(op_undoc_tb2iyd),		/* 0x50 */
-		UNDOC(op_undoc_tb2iyd),		/* 0x51 */
-		UNDOC(op_undoc_tb2iyd),		/* 0x52 */
-		UNDOC(op_undoc_tb2iyd),		/* 0x53 */
-		UNDOC(op_undoc_tb2iyd),		/* 0x54 */
-		UNDOC(op_undoc_tb2iyd),		/* 0x55 */
-		op_tb2iyd,			/* 0x56 */
-		UNDOC(op_undoc_tb2iyd),		/* 0x57 */
-		UNDOC(op_undoc_tb3iyd),		/* 0x58 */
-		UNDOC(op_undoc_tb3iyd),		/* 0x59 */
-		UNDOC(op_undoc_tb3iyd),		/* 0x5a */
-		UNDOC(op_undoc_tb3iyd),		/* 0x5b */
-		UNDOC(op_undoc_tb3iyd),		/* 0x5c */
-		UNDOC(op_undoc_tb3iyd),		/* 0x5d */
-		op_tb3iyd,			/* 0x5e */
-		UNDOC(op_undoc_tb3iyd),		/* 0x5f */
-		UNDOC(op_undoc_tb4iyd),		/* 0x60 */
-		UNDOC(op_undoc_tb4iyd),		/* 0x61 */
-		UNDOC(op_undoc_tb4iyd),		/* 0x62 */
-		UNDOC(op_undoc_tb4iyd),		/* 0x63 */
-		UNDOC(op_undoc_tb4iyd),		/* 0x64 */
-		UNDOC(op_undoc_tb4iyd),		/* 0x65 */
-		op_tb4iyd,			/* 0x66 */
-		UNDOC(op_undoc_tb4iyd),		/* 0x67 */
-		UNDOC(op_undoc_tb5iyd),		/* 0x68 */
-		UNDOC(op_undoc_tb5iyd),		/* 0x69 */
-		UNDOC(op_undoc_tb5iyd),		/* 0x6a */
-		UNDOC(op_undoc_tb5iyd),		/* 0x6b */
-		UNDOC(op_undoc_tb5iyd),		/* 0x6c */
-		UNDOC(op_undoc_tb5iyd),		/* 0x6d */
-		op_tb5iyd,			/* 0x6e */
-		UNDOC(op_undoc_tb5iyd),		/* 0x6f */
-		UNDOC(op_undoc_tb6iyd),		/* 0x70 */
-		UNDOC(op_undoc_tb6iyd),		/* 0x71 */
-		UNDOC(op_undoc_tb6iyd),		/* 0x72 */
-		UNDOC(op_undoc_tb6iyd),		/* 0x73 */
-		UNDOC(op_undoc_tb6iyd),		/* 0x74 */
-		UNDOC(op_undoc_tb6iyd),		/* 0x75 */
-		op_tb6iyd,			/* 0x76 */
-		UNDOC(op_undoc_tb6iyd),		/* 0x77 */
-		UNDOC(op_undoc_tb7iyd),		/* 0x78 */
-		UNDOC(op_undoc_tb7iyd),		/* 0x79 */
-		UNDOC(op_undoc_tb7iyd),		/* 0x7a */
-		UNDOC(op_undoc_tb7iyd),		/* 0x7b */
-		UNDOC(op_undoc_tb7iyd),		/* 0x7c */
-		UNDOC(op_undoc_tb7iyd),		/* 0x7d */
-		op_tb7iyd,			/* 0x7e */
-		UNDOC(op_undoc_tb7iyd),		/* 0x7f */
-		UNDOC(op_undoc_rb0iydb),	/* 0x80 */
-		UNDOC(op_undoc_rb0iydc),	/* 0x81 */
-		UNDOC(op_undoc_rb0iydd),	/* 0x82 */
-		UNDOC(op_undoc_rb0iyde),	/* 0x83 */
-		UNDOC(op_undoc_rb0iydh),	/* 0x84 */
-		UNDOC(op_undoc_rb0iydl),	/* 0x85 */
-		op_rb0iyd,			/* 0x86 */
-		UNDOC(op_undoc_rb0iyda),	/* 0x87 */
-		UNDOC(op_undoc_rb1iydb),	/* 0x88 */
-		UNDOC(op_undoc_rb1iydc),	/* 0x89 */
-		UNDOC(op_undoc_rb1iydd),	/* 0x8a */
-		UNDOC(op_undoc_rb1iyde),	/* 0x8b */
-		UNDOC(op_undoc_rb1iydh),	/* 0x8c */
-		UNDOC(op_undoc_rb1iydl),	/* 0x8d */
-		op_rb1iyd,			/* 0x8e */
-		UNDOC(op_undoc_rb1iyda),	/* 0x8f */
-		UNDOC(op_undoc_rb2iydb),	/* 0x90 */
-		UNDOC(op_undoc_rb2iydc),	/* 0x91 */
-		UNDOC(op_undoc_rb2iydd),	/* 0x92 */
-		UNDOC(op_undoc_rb2iyde),	/* 0x93 */
-		UNDOC(op_undoc_rb2iydh),	/* 0x94 */
-		UNDOC(op_undoc_rb2iydl),	/* 0x95 */
-		op_rb2iyd,			/* 0x96 */
-		UNDOC(op_undoc_rb2iyda),	/* 0x97 */
-		UNDOC(op_undoc_rb3iydb),	/* 0x98 */
-		UNDOC(op_undoc_rb3iydc),	/* 0x99 */
-		UNDOC(op_undoc_rb3iydd),	/* 0x9a */
-		UNDOC(op_undoc_rb3iyde),	/* 0x9b */
-		UNDOC(op_undoc_rb3iydh),	/* 0x9c */
-		UNDOC(op_undoc_rb3iydl),	/* 0x9d */
-		op_rb3iyd,			/* 0x9e */
-		UNDOC(op_undoc_rb3iyda),	/* 0x9f */
-		UNDOC(op_undoc_rb4iydb),	/* 0xa0 */
-		UNDOC(op_undoc_rb4iydc),	/* 0xa1 */
-		UNDOC(op_undoc_rb4iydd),	/* 0xa2 */
-		UNDOC(op_undoc_rb4iyde),	/* 0xa3 */
-		UNDOC(op_undoc_rb4iydh),	/* 0xa4 */
-		UNDOC(op_undoc_rb4iydl),	/* 0xa5 */
-		op_rb4iyd,			/* 0xa6 */
-		UNDOC(op_undoc_rb4iyda),	/* 0xa7 */
-		UNDOC(op_undoc_rb5iydb),	/* 0xa8 */
-		UNDOC(op_undoc_rb5iydc),	/* 0xa9 */
-		UNDOC(op_undoc_rb5iydd),	/* 0xaa */
-		UNDOC(op_undoc_rb5iyde),	/* 0xab */
-		UNDOC(op_undoc_rb5iydh),	/* 0xac */
-		UNDOC(op_undoc_rb5iydl),	/* 0xad */
-		op_rb5iyd,			/* 0xae */
-		UNDOC(op_undoc_rb5iyda),	/* 0xaf */
-		UNDOC(op_undoc_rb6iydb),	/* 0xb0 */
-		UNDOC(op_undoc_rb6iydc),	/* 0xb1 */
-		UNDOC(op_undoc_rb6iydd),	/* 0xb2 */
-		UNDOC(op_undoc_rb6iyde),	/* 0xb3 */
-		UNDOC(op_undoc_rb6iydh),	/* 0xb4 */
-		UNDOC(op_undoc_rb6iydl),	/* 0xb5 */
-		op_rb6iyd,			/* 0xb6 */
-		UNDOC(op_undoc_rb6iyda),	/* 0xb7 */
-		UNDOC(op_undoc_rb7iydb),	/* 0xb8 */
-		UNDOC(op_undoc_rb7iydc),	/* 0xb9 */
-		UNDOC(op_undoc_rb7iydd),	/* 0xba */
-		UNDOC(op_undoc_rb7iyde),	/* 0xbb */
-		UNDOC(op_undoc_rb7iydh),	/* 0xbc */
-		UNDOC(op_undoc_rb7iydl),	/* 0xbd */
-		op_rb7iyd,			/* 0xbe */
-		UNDOC(op_undoc_rb7iyda),	/* 0xbf */
-		UNDOC(op_undoc_sb0iydb),	/* 0xc0 */
-		UNDOC(op_undoc_sb0iydc),	/* 0xc1 */
-		UNDOC(op_undoc_sb0iydd),	/* 0xc2 */
-		UNDOC(op_undoc_sb0iyde),	/* 0xc3 */
-		UNDOC(op_undoc_sb0iydh),	/* 0xc4 */
-		UNDOC(op_undoc_sb0iydl),	/* 0xc5 */
-		op_sb0iyd,			/* 0xc6 */
-		UNDOC(op_undoc_sb0iyda),	/* 0xc7 */
-		UNDOC(op_undoc_sb1iydb),	/* 0xc8 */
-		UNDOC(op_undoc_sb1iydc),	/* 0xc9 */
-		UNDOC(op_undoc_sb1iydd),	/* 0xca */
-		UNDOC(op_undoc_sb1iyde),	/* 0xcb */
-		UNDOC(op_undoc_sb1iydh),	/* 0xcc */
-		UNDOC(op_undoc_sb1iydl),	/* 0xcd */
-		op_sb1iyd,			/* 0xce */
-		UNDOC(op_undoc_sb1iyda),	/* 0xcf */
-		UNDOC(op_undoc_sb2iydb),	/* 0xd0 */
-		UNDOC(op_undoc_sb2iydc),	/* 0xd1 */
-		UNDOC(op_undoc_sb2iydd),	/* 0xd2 */
-		UNDOC(op_undoc_sb2iyde),	/* 0xd3 */
-		UNDOC(op_undoc_sb2iydh),	/* 0xd4 */
-		UNDOC(op_undoc_sb2iydl),	/* 0xd5 */
-		op_sb2iyd,			/* 0xd6 */
-		UNDOC(op_undoc_sb2iyda),	/* 0xd7 */
-		UNDOC(op_undoc_sb3iydb),	/* 0xd8 */
-		UNDOC(op_undoc_sb3iydc),	/* 0xd9 */
-		UNDOC(op_undoc_sb3iydd),	/* 0xda */
-		UNDOC(op_undoc_sb3iyde),	/* 0xdb */
-		UNDOC(op_undoc_sb3iydh),	/* 0xdc */
-		UNDOC(op_undoc_sb3iydl),	/* 0xdd */
-		op_sb3iyd,			/* 0xde */
-		UNDOC(op_undoc_sb3iyda),	/* 0xdf */
-		UNDOC(op_undoc_sb4iydb),	/* 0xe0 */
-		UNDOC(op_undoc_sb4iydc),	/* 0xe1 */
-		UNDOC(op_undoc_sb4iydd),	/* 0xe2 */
-		UNDOC(op_undoc_sb4iyde),	/* 0xe3 */
-		UNDOC(op_undoc_sb4iydh),	/* 0xe4 */
-		UNDOC(op_undoc_sb4iydl),	/* 0xe5 */
-		op_sb4iyd,			/* 0xe6 */
-		UNDOC(op_undoc_sb4iyda),	/* 0xe7 */
-		UNDOC(op_undoc_sb5iydb),	/* 0xe8 */
-		UNDOC(op_undoc_sb5iydc),	/* 0xe9 */
-		UNDOC(op_undoc_sb5iydd),	/* 0xea */
-		UNDOC(op_undoc_sb5iyde),	/* 0xeb */
-		UNDOC(op_undoc_sb5iydh),	/* 0xec */
-		UNDOC(op_undoc_sb5iydl),	/* 0xed */
-		op_sb5iyd,			/* 0xee */
-		UNDOC(op_undoc_sb5iyda),	/* 0xef */
-		UNDOC(op_undoc_sb6iydb),	/* 0xf0 */
-		UNDOC(op_undoc_sb6iydc),	/* 0xf1 */
-		UNDOC(op_undoc_sb6iydd),	/* 0xf2 */
-		UNDOC(op_undoc_sb6iyde),	/* 0xf3 */
-		UNDOC(op_undoc_sb6iydh),	/* 0xf4 */
-		UNDOC(op_undoc_sb6iydl),	/* 0xf5 */
-		op_sb6iyd,			/* 0xf6 */
-		UNDOC(op_undoc_sb6iyda),	/* 0xf7 */
-		UNDOC(op_undoc_sb7iydb),	/* 0xf8 */
-		UNDOC(op_undoc_sb7iydc),	/* 0xf9 */
-		UNDOC(op_undoc_sb7iydd),	/* 0xfa */
-		UNDOC(op_undoc_sb7iyde),	/* 0xfb */
-		UNDOC(op_undoc_sb7iydh),	/* 0xfc */
-		UNDOC(op_undoc_sb7iydl),	/* 0xfd */
-		op_sb7iyd,			/* 0xfe */
-		UNDOC(op_undoc_sb7iyda)		/* 0xff */
-	};
-
-	register int d;
-	register int t;
-
-	d = (signed char) memrdr(PC++);
-	t = (*op_fdcb[memrdr(PC++)])(d); /* execute next opcode */
-
-	return (t);
-}
-
-/*
- *	This function traps undocumented opcodes following the
- *	initial 0xfd 0xcb of a 4 byte opcode.
- */
-static int trap_fdcb(int data)
-{
-	UNUSED(data);
-
-	cpu_error = OPTRAP4;
-	cpu_state = STOPPED;
-	return (0);
-}
-
-static int op_tb0iyd(int data)		/* BIT 0,(IY+d) */
+INSTRD(0x46, op_tb0iyd)			/* BIT 0,(IY+d) */
 {
 	WORD addr;
 
@@ -403,10 +25,10 @@ static int op_tb0iyd(int data)		/* BIT 0,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_tb1iyd(int data)		/* BIT 1,(IY+d) */
+INSTRD(0x4e, op_tb1iyd)			/* BIT 1,(IY+d) */
 {
 	WORD addr;
 
@@ -421,10 +43,10 @@ static int op_tb1iyd(int data)		/* BIT 1,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_tb2iyd(int data)		/* BIT 2,(IY+d) */
+INSTRD(0x56, op_tb2iyd)			/* BIT 2,(IY+d) */
 {
 	WORD addr;
 
@@ -439,10 +61,10 @@ static int op_tb2iyd(int data)		/* BIT 2,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_tb3iyd(int data)		/* BIT 3,(IY+d) */
+INSTRD(0x5e, op_tb3iyd)			/* BIT 3,(IY+d) */
 {
 	WORD addr;
 
@@ -457,10 +79,10 @@ static int op_tb3iyd(int data)		/* BIT 3,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_tb4iyd(int data)		/* BIT 4,(IY+d) */
+INSTRD(0x66, op_tb4iyd)			/* BIT 4,(IY+d) */
 {
 	WORD addr;
 
@@ -475,10 +97,10 @@ static int op_tb4iyd(int data)		/* BIT 4,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_tb5iyd(int data)		/* BIT 5,(IY+d) */
+INSTRD(0x6e, op_tb5iyd)			/* BIT 5,(IY+d) */
 {
 	WORD addr;
 
@@ -493,10 +115,10 @@ static int op_tb5iyd(int data)		/* BIT 5,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_tb6iyd(int data)		/* BIT 6,(IY+d) */
+INSTRD(0x76, op_tb6iyd)			/* BIT 6,(IY+d) */
 {
 	WORD addr;
 
@@ -511,10 +133,10 @@ static int op_tb6iyd(int data)		/* BIT 6,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_tb7iyd(int data)		/* BIT 7,(IY+d) */
+INSTRD(0x7e, op_tb7iyd)			/* BIT 7,(IY+d) */
 {
 	WORD addr;
 
@@ -534,10 +156,10 @@ static int op_tb7iyd(int data)		/* BIT 7,(IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (20);
+	STATES(20);
 }
 
-static int op_rb0iyd(int data)		/* RES 0,(IY+d) */
+INSTRD(0x86, op_rb0iyd)			/* RES 0,(IY+d) */
 {
 	WORD addr;
 
@@ -546,10 +168,10 @@ static int op_rb0iyd(int data)		/* RES 0,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rb1iyd(int data)		/* RES 1,(IY+d) */
+INSTRD(0x8e, op_rb1iyd)			/* RES 1,(IY+d) */
 {
 	WORD addr;
 
@@ -558,10 +180,10 @@ static int op_rb1iyd(int data)		/* RES 1,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rb2iyd(int data)		/* RES 2,(IY+d) */
+INSTRD(0x96, op_rb2iyd)			/* RES 2,(IY+d) */
 {
 	WORD addr;
 
@@ -570,10 +192,10 @@ static int op_rb2iyd(int data)		/* RES 2,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rb3iyd(int data)		/* RES 3,(IY+d) */
+INSTRD(0x9e, op_rb3iyd)			/* RES 3,(IY+d) */
 {
 	WORD addr;
 
@@ -582,10 +204,10 @@ static int op_rb3iyd(int data)		/* RES 3,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rb4iyd(int data)		/* RES 4,(IY+d) */
+INSTRD(0xa6, op_rb4iyd)			/* RES 4,(IY+d) */
 {
 	WORD addr;
 
@@ -594,10 +216,10 @@ static int op_rb4iyd(int data)		/* RES 4,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rb5iyd(int data)		/* RES 5,(IY+d) */
+INSTRD(0xae, op_rb5iyd)			/* RES 5,(IY+d) */
 {
 	WORD addr;
 
@@ -606,10 +228,10 @@ static int op_rb5iyd(int data)		/* RES 5,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rb6iyd(int data)		/* RES 6,(IY+d) */
+INSTRD(0xb6, op_rb6iyd)			/* RES 6,(IY+d) */
 {
 	WORD addr;
 
@@ -618,10 +240,10 @@ static int op_rb6iyd(int data)		/* RES 6,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rb7iyd(int data)		/* RES 7,(IY+d) */
+INSTRD(0xbe, op_rb7iyd)			/* RES 7,(IY+d) */
 {
 	WORD addr;
 
@@ -630,10 +252,10 @@ static int op_rb7iyd(int data)		/* RES 7,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb0iyd(int data)		/* SET 0,(IY+d) */
+INSTRD(0xc6, op_sb0iyd)			/* SET 0,(IY+d) */
 {
 	WORD addr;
 
@@ -642,10 +264,10 @@ static int op_sb0iyd(int data)		/* SET 0,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb1iyd(int data)		/* SET 1,(IY+d) */
+INSTRD(0xce, op_sb1iyd)			/* SET 1,(IY+d) */
 {
 	WORD addr;
 
@@ -654,10 +276,10 @@ static int op_sb1iyd(int data)		/* SET 1,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb2iyd(int data)		/* SET 2,(IY+d) */
+INSTRD(0xd6, op_sb2iyd)			/* SET 2,(IY+d) */
 {
 	WORD addr;
 
@@ -666,10 +288,10 @@ static int op_sb2iyd(int data)		/* SET 2,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb3iyd(int data)		/* SET 3,(IY+d) */
+INSTRD(0xde, op_sb3iyd)			/* SET 3,(IY+d) */
 {
 	WORD addr;
 
@@ -678,10 +300,10 @@ static int op_sb3iyd(int data)		/* SET 3,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb4iyd(int data)		/* SET 4,(IY+d) */
+INSTRD(0xe6, op_sb4iyd)			/* SET 4,(IY+d) */
 {
 	WORD addr;
 
@@ -690,10 +312,10 @@ static int op_sb4iyd(int data)		/* SET 4,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb5iyd(int data)		/* SET 5,(IY+d) */
+INSTRD(0xee, op_sb5iyd)			/* SET 5,(IY+d) */
 {
 	WORD addr;
 
@@ -702,10 +324,10 @@ static int op_sb5iyd(int data)		/* SET 5,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb6iyd(int data)		/* SET 6,(IY+d) */
+INSTRD(0xf6, op_sb6iyd)			/* SET 6,(IY+d) */
 {
 	WORD addr;
 
@@ -714,10 +336,10 @@ static int op_sb6iyd(int data)		/* SET 6,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sb7iyd(int data)		/* SET 7,(IY+d) */
+INSTRD(0xfe, op_sb7iyd)			/* SET 7,(IY+d) */
 {
 	WORD addr;
 
@@ -726,10 +348,10 @@ static int op_sb7iyd(int data)		/* SET 7,(IY+d) */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rlciyd(int data)		/* RLC (IY+d) */
+INSTRD(0x06, op_rlciyd)			/* RLC (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -752,10 +374,10 @@ static int op_rlciyd(int data)		/* RLC (IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rrciyd(int data)		/* RRC (IY+d) */
+INSTRD(0x0e, op_rrciyd)			/* RRC (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -778,10 +400,10 @@ static int op_rrciyd(int data)		/* RRC (IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rliyd(int data)		/* RL (IY+d) */
+INSTRD(0x16, op_rliyd)			/* RL (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -804,10 +426,10 @@ static int op_rliyd(int data)		/* RL (IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_rriyd(int data)		/* RR (IY+d) */
+INSTRD(0x1e, op_rriyd)			/* RR (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -830,10 +452,10 @@ static int op_rriyd(int data)		/* RR (IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_slaiyd(int data)		/* SLA (IY+d) */
+INSTRD(0x26, op_slaiyd)			/* SLA (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -853,10 +475,10 @@ static int op_slaiyd(int data)		/* SLA (IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_sraiyd(int data)		/* SRA (IY+d) */
+INSTRD(0x2e, op_sraiyd)			/* SRA (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -878,10 +500,10 @@ static int op_sraiyd(int data)		/* SRA (IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_srliyd(int data)		/* SRL (IY+d) */
+INSTRD(0x3e, op_srliyd)			/* SRL (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -901,7 +523,7 @@ static int op_srliyd(int data)		/* SRL (IY+d) */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
 /**********************************************************************/
@@ -912,76 +534,303 @@ static int op_srliyd(int data)		/* SRL (IY+d) */
 
 #ifdef UNDOC_INST
 
+INSTRD(0x36, op_undoc_slliyd)		/* SLL (IY+d) */
+{
+	register BYTE P;
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
+
+	addr = IY + data;
+	P = memrdr(addr);
+	(P & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
+	P = (P << 1) | 1;
+	memwrt(addr, P);
+	F &= ~(H_FLAG | N_FLAG);
+	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
+#ifdef UNDOC_FLAGS
+	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(23);
+}
+
+#ifdef UNDOC_IALL
+
+#ifndef FAST_INSTR
 static int op_undoc_tb0iyd(int data)	/* BIT 0,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb0iyd(data));
-}
-
-static int op_undoc_tb1iyd(int data)	/* BIT 1,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb1iyd(data));
-}
-
-static int op_undoc_tb2iyd(int data)	/* BIT 2,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb2iyd(data));
-}
-
-static int op_undoc_tb3iyd(int data)	/* BIT 3,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb3iyd(data));
-}
-
-static int op_undoc_tb4iyd(int data)	/* BIT 4,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb4iyd(data));
-}
-
-static int op_undoc_tb5iyd(int data)	/* BIT 5,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb5iyd(data));
-}
-
-static int op_undoc_tb6iyd(int data)	/* BIT 6,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb6iyd(data));
-}
-
-static int op_undoc_tb7iyd(int data)	/* BIT 7,(IY+d) */
-{
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	return (op_tb7iyd(data));
-}
-
-static int op_undoc_rb0iyda(int data)	/* RES 0,(IY+d),A */
+#else
+case 0x40:				/* BIT 0,(IY+d) */
+case 0x41:				/* BIT 0,(IY+d) */
+case 0x42:				/* BIT 0,(IY+d) */
+case 0x43:				/* BIT 0,(IY+d) */
+case 0x44:				/* BIT 0,(IY+d) */
+case 0x45:				/* BIT 0,(IY+d) */
+case 0x47:				/* BIT 0,(IY+d) */
+#endif
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~(N_FLAG | S_FLAG);
+	F |= H_FLAG;
+	(memrdr(addr) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+#ifndef FAST_INSTR
+static int op_undoc_tb1iyd(int data)	/* BIT 1,(IY+d) */
+#else
+case 0x48:				/* BIT 1,(IY+d) */
+case 0x49:				/* BIT 1,(IY+d) */
+case 0x4a:				/* BIT 1,(IY+d) */
+case 0x4b:				/* BIT 1,(IY+d) */
+case 0x4c:				/* BIT 1,(IY+d) */
+case 0x4d:				/* BIT 1,(IY+d) */
+case 0x4f:				/* BIT 1,(IY+d) */
+#endif
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~(N_FLAG | S_FLAG);
+	F |= H_FLAG;
+	(memrdr(addr) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+#ifndef FAST_INSTR
+static int op_undoc_tb2iyd(int data)	/* BIT 2,(IY+d) */
+#else
+case 0x50:				/* BIT 2,(IY+d) */
+case 0x51:				/* BIT 2,(IY+d) */
+case 0x52:				/* BIT 2,(IY+d) */
+case 0x53:				/* BIT 2,(IY+d) */
+case 0x54:				/* BIT 2,(IY+d) */
+case 0x55:				/* BIT 2,(IY+d) */
+case 0x57:				/* BIT 2,(IY+d) */
+#endif
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~(N_FLAG | S_FLAG);
+	F |= H_FLAG;
+	(memrdr(addr) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+#ifndef FAST_INSTR
+static int op_undoc_tb3iyd(int data)	/* BIT 3,(IY+d) */
+#else
+case 0x58:				/* BIT 3,(IY+d) */
+case 0x59:				/* BIT 3,(IY+d) */
+case 0x5a:				/* BIT 3,(IY+d) */
+case 0x5b:				/* BIT 3,(IY+d) */
+case 0x5c:				/* BIT 3,(IY+d) */
+case 0x5d:				/* BIT 3,(IY+d) */
+case 0x5f:				/* BIT 3,(IY+d) */
+#endif
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~(N_FLAG | S_FLAG);
+	F |= H_FLAG;
+	(memrdr(addr) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
+			   : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+#ifndef FAST_INSTR
+static int op_undoc_tb4iyd(int data)	/* BIT 4,(IY+d) */
+#else
+case 0x60:				/* BIT 4,(IY+d) */
+case 0x61:				/* BIT 4,(IY+d) */
+case 0x62:				/* BIT 4,(IY+d) */
+case 0x63:				/* BIT 4,(IY+d) */
+case 0x64:				/* BIT 4,(IY+d) */
+case 0x65:				/* BIT 4,(IY+d) */
+case 0x67:				/* BIT 4,(IY+d) */
+#endif
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~(N_FLAG | S_FLAG);
+	F |= H_FLAG;
+	(memrdr(addr) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+#ifndef FAST_INSTR
+static int op_undoc_tb5iyd(int data)	/* BIT 5,(IY+d) */
+#else
+case 0x68:				/* BIT 5,(IY+d) */
+case 0x69:				/* BIT 5,(IY+d) */
+case 0x6a:				/* BIT 5,(IY+d) */
+case 0x6b:				/* BIT 5,(IY+d) */
+case 0x6c:				/* BIT 5,(IY+d) */
+case 0x6d:				/* BIT 5,(IY+d) */
+case 0x6f:				/* BIT 5,(IY+d) */
+#endif
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~(N_FLAG | S_FLAG);
+	F |= H_FLAG;
+	(memrdr(addr) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+#ifndef FAST_INSTR
+static int op_undoc_tb6iyd(int data)	/* BIT 6,(IY+d) */
+#else
+case 0x70:				/* BIT 6,(IY+d) */
+case 0x71:				/* BIT 6,(IY+d) */
+case 0x72:				/* BIT 6,(IY+d) */
+case 0x73:				/* BIT 6,(IY+d) */
+case 0x74:				/* BIT 6,(IY+d) */
+case 0x75:				/* BIT 6,(IY+d) */
+case 0x77:				/* BIT 6,(IY+d) */
+#endif
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~(N_FLAG | S_FLAG);
+	F |= H_FLAG;
+	(memrdr(addr) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
+			    : (F |= (Z_FLAG | P_FLAG));
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+#ifndef FAST_INSTR
+static int op_undoc_tb7iyd(int data)	/* BIT 7,(IY+d) */
+#else
+case 0x78:				/* BIT 7,(IY+d) */
+case 0x79:				/* BIT 7,(IY+d) */
+case 0x7a:				/* BIT 7,(IY+d) */
+case 0x7b:				/* BIT 7,(IY+d) */
+case 0x7c:				/* BIT 7,(IY+d) */
+case 0x7d:				/* BIT 7,(IY+d) */
+case 0x7f:				/* BIT 7,(IY+d) */
+#endif
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_ddcb(0));
+	}
+
+	addr = IY + data;
+	F &= ~N_FLAG;
+	F |= H_FLAG;
+	if (memrdr(addr) & 128) {
+		F &= ~(Z_FLAG | P_FLAG);
+		F |= S_FLAG;
+	} else {
+		F |= (Z_FLAG | P_FLAG);
+		F &= ~S_FLAG;
+	}
+#ifdef UNDOC_FLAGS
+	(addr & (32 << 8)) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
+	(addr & (8 << 8)) ? (F |= X_FLAG) : (F &= ~X_FLAG);
+	WZ = addr;
+	modF = 1;
+#endif
+	STATES(20);
+}
+
+INSTRD(0x87, op_undoc_rb0iyda)		/* RES 0,(IY+d),A */
+{
+	WORD addr;
+
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~1;
@@ -989,15 +838,16 @@ static int op_undoc_rb0iyda(int data)	/* RES 0,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb1iyda(int data)	/* RES 1,(IY+d),A */
+INSTRD(0x8f, op_undoc_rb1iyda)		/* RES 1,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~2;
@@ -1005,15 +855,16 @@ static int op_undoc_rb1iyda(int data)	/* RES 1,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb2iyda(int data)	/* RES 2,(IY+d),A */
+INSTRD(0x97, op_undoc_rb2iyda)		/* RES 2,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~4;
@@ -1021,15 +872,16 @@ static int op_undoc_rb2iyda(int data)	/* RES 2,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb3iyda(int data)	/* RES 3,(IY+d),A */
+INSTRD(0x9f, op_undoc_rb3iyda)		/* RES 3,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~8;
@@ -1037,15 +889,16 @@ static int op_undoc_rb3iyda(int data)	/* RES 3,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb4iyda(int data)	/* RES 4,(IY+d),A */
+INSTRD(0xa7, op_undoc_rb4iyda)		/* RES 4,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~16;
@@ -1053,15 +906,16 @@ static int op_undoc_rb4iyda(int data)	/* RES 4,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb5iyda(int data)	/* RES 5,(IY+d),A */
+INSTRD(0xaf, op_undoc_rb5iyda)		/* RES 5,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~32;
@@ -1069,15 +923,16 @@ static int op_undoc_rb5iyda(int data)	/* RES 5,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb6iyda(int data)	/* RES 6,(IY+d),A */
+INSTRD(0xb7, op_undoc_rb6iyda)		/* RES 6,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~64;
@@ -1085,15 +940,16 @@ static int op_undoc_rb6iyda(int data)	/* RES 6,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb7iyda(int data)	/* RES 7,(IY+d),A */
+INSTRD(0xbf, op_undoc_rb7iyda)		/* RES 7,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) & ~128;
@@ -1101,15 +957,16 @@ static int op_undoc_rb7iyda(int data)	/* RES 7,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb0iydb(int data)	/* RES 0,(IY+d),B */
+INSTRD(0x80, op_undoc_rb0iydb)		/* RES 0,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~1;
@@ -1117,15 +974,16 @@ static int op_undoc_rb0iydb(int data)	/* RES 0,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb1iydb(int data)	/* RES 1,(IY+d),B */
+INSTRD(0x88, op_undoc_rb1iydb)		/* RES 1,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~2;
@@ -1133,15 +991,16 @@ static int op_undoc_rb1iydb(int data)	/* RES 1,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb2iydb(int data)	/* RES 2,(IY+d),B */
+INSTRD(0x90, op_undoc_rb2iydb)		/* RES 2,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~4;
@@ -1149,15 +1008,16 @@ static int op_undoc_rb2iydb(int data)	/* RES 2,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb3iydb(int data)	/* RES 3,(IY+d),B */
+INSTRD(0x98, op_undoc_rb3iydb)		/* RES 3,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~8;
@@ -1165,15 +1025,16 @@ static int op_undoc_rb3iydb(int data)	/* RES 3,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb4iydb(int data)	/* RES 4,(IY+d),B */
+INSTRD(0xa0, op_undoc_rb4iydb)		/* RES 4,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~16;
@@ -1181,15 +1042,16 @@ static int op_undoc_rb4iydb(int data)	/* RES 4,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb5iydb(int data)	/* RES 5,(IY+d),B */
+INSTRD(0xa8, op_undoc_rb5iydb)		/* RES 5,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~32;
@@ -1197,15 +1059,16 @@ static int op_undoc_rb5iydb(int data)	/* RES 5,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb6iydb(int data)	/* RES 6,(IY+d),B */
+INSTRD(0xb0, op_undoc_rb6iydb)		/* RES 6,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~64;
@@ -1213,15 +1076,16 @@ static int op_undoc_rb6iydb(int data)	/* RES 6,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb7iydb(int data)	/* RES 7,(IY+d),B */
+INSTRD(0xb8, op_undoc_rb7iydb)		/* RES 7,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) & ~128;
@@ -1229,15 +1093,16 @@ static int op_undoc_rb7iydb(int data)	/* RES 7,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb0iydc(int data)	/* RES 0,(IY+d),C */
+INSTRD(0x81, op_undoc_rb0iydc)		/* RES 0,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~1;
@@ -1245,15 +1110,16 @@ static int op_undoc_rb0iydc(int data)	/* RES 0,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb1iydc(int data)	/* RES 1,(IY+d),C */
+INSTRD(0x89, op_undoc_rb1iydc)		/* RES 1,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~2;
@@ -1261,15 +1127,16 @@ static int op_undoc_rb1iydc(int data)	/* RES 1,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb2iydc(int data)	/* RES 2,(IY+d),C */
+INSTRD(0x91, op_undoc_rb2iydc)		/* RES 2,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~4;
@@ -1277,15 +1144,16 @@ static int op_undoc_rb2iydc(int data)	/* RES 2,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb3iydc(int data)	/* RES 3,(IY+d),C */
+INSTRD(0x99, op_undoc_rb3iydc)		/* RES 3,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~8;
@@ -1293,15 +1161,16 @@ static int op_undoc_rb3iydc(int data)	/* RES 3,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb4iydc(int data)	/* RES 4,(IY+d),C */
+INSTRD(0xa1, op_undoc_rb4iydc)		/* RES 4,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~16;
@@ -1309,15 +1178,16 @@ static int op_undoc_rb4iydc(int data)	/* RES 4,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb5iydc(int data)	/* RES 5,(IY+d),C */
+INSTRD(0xa9, op_undoc_rb5iydc)		/* RES 5,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~32;
@@ -1325,15 +1195,16 @@ static int op_undoc_rb5iydc(int data)	/* RES 5,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb6iydc(int data)	/* RES 6,(IY+d),C */
+INSTRD(0xb1, op_undoc_rb6iydc)		/* RES 6,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~64;
@@ -1341,15 +1212,16 @@ static int op_undoc_rb6iydc(int data)	/* RES 6,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb7iydc(int data)	/* RES 7,(IY+d),C */
+INSTRD(0xb9, op_undoc_rb7iydc)		/* RES 7,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) & ~128;
@@ -1357,15 +1229,16 @@ static int op_undoc_rb7iydc(int data)	/* RES 7,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb0iydd(int data)	/* RES 0,(IY+d),D */
+INSTRD(0x82, op_undoc_rb0iydd)		/* RES 0,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~1;
@@ -1373,15 +1246,16 @@ static int op_undoc_rb0iydd(int data)	/* RES 0,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb1iydd(int data)	/* RES 1,(IY+d),D */
+INSTRD(0x8a, op_undoc_rb1iydd)		/* RES 1,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~2;
@@ -1389,15 +1263,16 @@ static int op_undoc_rb1iydd(int data)	/* RES 1,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb2iydd(int data)	/* RES 2,(IY+d),D */
+INSTRD(0x92, op_undoc_rb2iydd)		/* RES 2,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~4;
@@ -1405,15 +1280,16 @@ static int op_undoc_rb2iydd(int data)	/* RES 2,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb3iydd(int data)	/* RES 3,(IY+d),D */
+INSTRD(0x9a, op_undoc_rb3iydd)		/* RES 3,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~8;
@@ -1421,15 +1297,16 @@ static int op_undoc_rb3iydd(int data)	/* RES 3,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb4iydd(int data)	/* RES 4,(IY+d),D */
+INSTRD(0xa2, op_undoc_rb4iydd)		/* RES 4,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~16;
@@ -1437,15 +1314,16 @@ static int op_undoc_rb4iydd(int data)	/* RES 4,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb5iydd(int data)	/* RES 5,(IY+d),D */
+INSTRD(0xaa, op_undoc_rb5iydd)		/* RES 5,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~32;
@@ -1453,15 +1331,16 @@ static int op_undoc_rb5iydd(int data)	/* RES 5,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb6iydd(int data)	/* RES 6,(IY+d),D */
+INSTRD(0xb2, op_undoc_rb6iydd)		/* RES 6,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~64;
@@ -1469,15 +1348,16 @@ static int op_undoc_rb6iydd(int data)	/* RES 6,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb7iydd(int data)	/* RES 7,(IY+d),D */
+INSTRD(0xba, op_undoc_rb7iydd)		/* RES 7,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) & ~128;
@@ -1485,15 +1365,16 @@ static int op_undoc_rb7iydd(int data)	/* RES 7,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb0iyde(int data)	/* RES 0,(IY+d),E */
+INSTRD(0x83, op_undoc_rb0iyde)		/* RES 0,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~1;
@@ -1501,15 +1382,16 @@ static int op_undoc_rb0iyde(int data)	/* RES 0,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb1iyde(int data)	/* RES 1,(IY+d),E */
+INSTRD(0x8b, op_undoc_rb1iyde)		/* RES 1,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~2;
@@ -1517,15 +1399,16 @@ static int op_undoc_rb1iyde(int data)	/* RES 1,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb2iyde(int data)	/* RES 2,(IY+d),E */
+INSTRD(0x93, op_undoc_rb2iyde)		/* RES 2,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~4;
@@ -1533,15 +1416,16 @@ static int op_undoc_rb2iyde(int data)	/* RES 2,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb3iyde(int data)	/* RES 3,(IY+d),E */
+INSTRD(0x9b, op_undoc_rb3iyde)		/* RES 3,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~8;
@@ -1549,15 +1433,16 @@ static int op_undoc_rb3iyde(int data)	/* RES 3,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb4iyde(int data)	/* RES 4,(IY+d),E */
+INSTRD(0xa3, op_undoc_rb4iyde)		/* RES 4,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~16;
@@ -1565,15 +1450,16 @@ static int op_undoc_rb4iyde(int data)	/* RES 4,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb5iyde(int data)	/* RES 5,(IY+d),E */
+INSTRD(0xab, op_undoc_rb5iyde)		/* RES 5,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~32;
@@ -1581,15 +1467,16 @@ static int op_undoc_rb5iyde(int data)	/* RES 5,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb6iyde(int data)	/* RES 6,(IY+d),E */
+INSTRD(0xb3, op_undoc_rb6iyde)		/* RES 6,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~64;
@@ -1597,15 +1484,16 @@ static int op_undoc_rb6iyde(int data)	/* RES 6,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb7iyde(int data)	/* RES 7,(IY+d),E */
+INSTRD(0xbb, op_undoc_rb7iyde)		/* RES 7,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) & ~128;
@@ -1613,15 +1501,16 @@ static int op_undoc_rb7iyde(int data)	/* RES 7,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb0iydh(int data)	/* RES 0,(IY+d),H */
+INSTRD(0x84, op_undoc_rb0iydh)		/* RES 0,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~1;
@@ -1629,15 +1518,16 @@ static int op_undoc_rb0iydh(int data)	/* RES 0,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb1iydh(int data)	/* RES 1,(IY+d),H */
+INSTRD(0x8c, op_undoc_rb1iydh)		/* RES 1,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~2;
@@ -1645,15 +1535,16 @@ static int op_undoc_rb1iydh(int data)	/* RES 1,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb2iydh(int data)	/* RES 2,(IY+d),H */
+INSTRD(0x94, op_undoc_rb2iydh)		/* RES 2,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~4;
@@ -1661,15 +1552,16 @@ static int op_undoc_rb2iydh(int data)	/* RES 2,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb3iydh(int data)	/* RES 3,(IY+d),H */
+INSTRD(0x9c, op_undoc_rb3iydh)		/* RES 3,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~8;
@@ -1677,15 +1569,16 @@ static int op_undoc_rb3iydh(int data)	/* RES 3,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb4iydh(int data)	/* RES 4,(IY+d),H */
+INSTRD(0xa4, op_undoc_rb4iydh)		/* RES 4,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~16;
@@ -1693,15 +1586,16 @@ static int op_undoc_rb4iydh(int data)	/* RES 4,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb5iydh(int data)	/* RES 5,(IY+d),H */
+INSTRD(0xac, op_undoc_rb5iydh)		/* RES 5,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~32;
@@ -1709,15 +1603,16 @@ static int op_undoc_rb5iydh(int data)	/* RES 5,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb6iydh(int data)	/* RES 6,(IY+d),H */
+INSTRD(0xb4, op_undoc_rb6iydh)		/* RES 6,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~64;
@@ -1725,15 +1620,16 @@ static int op_undoc_rb6iydh(int data)	/* RES 6,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb7iydh(int data)	/* RES 7,(IY+d),H */
+INSTRD(0xbc, op_undoc_rb7iydh)		/* RES 7,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) & ~128;
@@ -1741,15 +1637,16 @@ static int op_undoc_rb7iydh(int data)	/* RES 7,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb0iydl(int data)	/* RES 0,(IY+d),L */
+INSTRD(0x85, op_undoc_rb0iydl)		/* RES 0,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~1;
@@ -1757,15 +1654,16 @@ static int op_undoc_rb0iydl(int data)	/* RES 0,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb1iydl(int data)	/* RES 1,(IY+d),L */
+INSTRD(0x8d, op_undoc_rb1iydl)		/* RES 1,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~2;
@@ -1773,15 +1671,16 @@ static int op_undoc_rb1iydl(int data)	/* RES 1,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb2iydl(int data)	/* RES 2,(IY+d),L */
+INSTRD(0x95, op_undoc_rb2iydl)		/* RES 2,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~4;
@@ -1789,15 +1688,16 @@ static int op_undoc_rb2iydl(int data)	/* RES 2,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb3iydl(int data)	/* RES 3,(IY+d),L */
+INSTRD(0x9d, op_undoc_rb3iydl)		/* RES 3,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~8;
@@ -1805,15 +1705,16 @@ static int op_undoc_rb3iydl(int data)	/* RES 3,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb4iydl(int data)	/* RES 4,(IY+d),L */
+INSTRD(0xa5, op_undoc_rb4iydl)		/* RES 4,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~16;
@@ -1821,15 +1722,16 @@ static int op_undoc_rb4iydl(int data)	/* RES 4,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb5iydl(int data)	/* RES 5,(IY+d),L */
+INSTRD(0xad, op_undoc_rb5iydl)		/* RES 5,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~32;
@@ -1837,15 +1739,16 @@ static int op_undoc_rb5iydl(int data)	/* RES 5,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb6iydl(int data)	/* RES 6,(IY+d),L */
+INSTRD(0xb5, op_undoc_rb6iydl)		/* RES 6,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~64;
@@ -1853,15 +1756,16 @@ static int op_undoc_rb6iydl(int data)	/* RES 6,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rb7iydl(int data)	/* RES 7,(IY+d),L */
+INSTRD(0xbd, op_undoc_rb7iydl)		/* RES 7,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) & ~128;
@@ -1869,15 +1773,16 @@ static int op_undoc_rb7iydl(int data)	/* RES 7,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb0iyda(int data)	/* SET 0,(IY+d),A */
+INSTRD(0xc7, op_undoc_sb0iyda)		/* SET 0,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 1;
@@ -1885,15 +1790,16 @@ static int op_undoc_sb0iyda(int data)	/* SET 0,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb1iyda(int data)	/* SET 1,(IY+d),A */
+INSTRD(0xcf, op_undoc_sb1iyda)		/* SET 1,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 2;
@@ -1901,15 +1807,16 @@ static int op_undoc_sb1iyda(int data)	/* SET 1,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb2iyda(int data)	/* SET 2,(IY+d),A */
+INSTRD(0xd7, op_undoc_sb2iyda)		/* SET 2,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 4;
@@ -1917,15 +1824,16 @@ static int op_undoc_sb2iyda(int data)	/* SET 2,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb3iyda(int data)	/* SET 3,(IY+d),A */
+INSTRD(0xdf, op_undoc_sb3iyda)		/* SET 3,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 8;
@@ -1933,15 +1841,16 @@ static int op_undoc_sb3iyda(int data)	/* SET 3,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb4iyda(int data)	/* SET 4,(IY+d),A */
+INSTRD(0xe7, op_undoc_sb4iyda)		/* SET 4,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 16;
@@ -1949,15 +1858,16 @@ static int op_undoc_sb4iyda(int data)	/* SET 4,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb5iyda(int data)	/* SET 5,(IY+d),A */
+INSTRD(0xef, op_undoc_sb5iyda)		/* SET 5,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 32;
@@ -1965,15 +1875,16 @@ static int op_undoc_sb5iyda(int data)	/* SET 5,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb6iyda(int data)	/* SET 6,(IY+d),A */
+INSTRD(0xf7, op_undoc_sb6iyda)		/* SET 6,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 64;
@@ -1981,15 +1892,16 @@ static int op_undoc_sb6iyda(int data)	/* SET 6,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb7iyda(int data)	/* SET 7,(IY+d),A */
+INSTRD(0xff, op_undoc_sb7iyda)		/* SET 7,(IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr) | 128;
@@ -1997,15 +1909,16 @@ static int op_undoc_sb7iyda(int data)	/* SET 7,(IY+d),A */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb0iydb(int data)	/* SET 0,(IY+d),B */
+INSTRD(0xc0, op_undoc_sb0iydb)		/* SET 0,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 1;
@@ -2013,15 +1926,16 @@ static int op_undoc_sb0iydb(int data)	/* SET 0,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb1iydb(int data)	/* SET 1,(IY+d),B */
+INSTRD(0xc8, op_undoc_sb1iydb)		/* SET 1,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 2;
@@ -2029,15 +1943,16 @@ static int op_undoc_sb1iydb(int data)	/* SET 1,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb2iydb(int data)	/* SET 2,(IY+d),B */
+INSTRD(0xd0, op_undoc_sb2iydb)		/* SET 2,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 4;
@@ -2045,15 +1960,16 @@ static int op_undoc_sb2iydb(int data)	/* SET 2,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb3iydb(int data)	/* SET 3,(IY+d),B */
+INSTRD(0xd8, op_undoc_sb3iydb)		/* SET 3,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 8;
@@ -2061,15 +1977,16 @@ static int op_undoc_sb3iydb(int data)	/* SET 3,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb4iydb(int data)	/* SET 4,(IY+d),B */
+INSTRD(0xe0, op_undoc_sb4iydb)		/* SET 4,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 16;
@@ -2077,15 +1994,16 @@ static int op_undoc_sb4iydb(int data)	/* SET 4,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb5iydb(int data)	/* SET 5,(IY+d),B */
+INSTRD(0xe8, op_undoc_sb5iydb)		/* SET 5,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 32;
@@ -2093,15 +2011,16 @@ static int op_undoc_sb5iydb(int data)	/* SET 5,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb6iydb(int data)	/* SET 6,(IY+d),B */
+INSTRD(0xf0, op_undoc_sb6iydb)		/* SET 6,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 64;
@@ -2109,15 +2028,16 @@ static int op_undoc_sb6iydb(int data)	/* SET 6,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb7iydb(int data)	/* SET 7,(IY+d),B */
+INSTRD(0xf8, op_undoc_sb7iydb)		/* SET 7,(IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr) | 128;
@@ -2125,15 +2045,16 @@ static int op_undoc_sb7iydb(int data)	/* SET 7,(IY+d),B */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb0iydc(int data)	/* SET 0,(IY+d),C */
+INSTRD(0xc1, op_undoc_sb0iydc)		/* SET 0,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 1;
@@ -2141,15 +2062,16 @@ static int op_undoc_sb0iydc(int data)	/* SET 0,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb1iydc(int data)	/* SET 1,(IY+d),C */
+INSTRD(0xc9, op_undoc_sb1iydc)		/* SET 1,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 2;
@@ -2157,15 +2079,16 @@ static int op_undoc_sb1iydc(int data)	/* SET 1,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb2iydc(int data)	/* SET 2,(IY+d),C */
+INSTRD(0xd1, op_undoc_sb2iydc)		/* SET 2,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 4;
@@ -2173,15 +2096,16 @@ static int op_undoc_sb2iydc(int data)	/* SET 2,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb3iydc(int data)	/* SET 3,(IY+d),C */
+INSTRD(0xd9, op_undoc_sb3iydc)		/* SET 3,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 8;
@@ -2189,15 +2113,16 @@ static int op_undoc_sb3iydc(int data)	/* SET 3,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb4iydc(int data)	/* SET 4,(IY+d),C */
+INSTRD(0xe1, op_undoc_sb4iydc)		/* SET 4,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 16;
@@ -2205,15 +2130,16 @@ static int op_undoc_sb4iydc(int data)	/* SET 4,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb5iydc(int data)	/* SET 5,(IY+d),C */
+INSTRD(0xe9, op_undoc_sb5iydc)		/* SET 5,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 32;
@@ -2221,15 +2147,16 @@ static int op_undoc_sb5iydc(int data)	/* SET 5,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb6iydc(int data)	/* SET 6,(IY+d),C */
+INSTRD(0xf1, op_undoc_sb6iydc)		/* SET 6,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 64;
@@ -2237,15 +2164,16 @@ static int op_undoc_sb6iydc(int data)	/* SET 6,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb7iydc(int data)	/* SET 7,(IY+d),C */
+INSTRD(0xf9, op_undoc_sb7iydc)		/* SET 7,(IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr) | 128;
@@ -2253,15 +2181,16 @@ static int op_undoc_sb7iydc(int data)	/* SET 7,(IY+d),C */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb0iydd(int data)	/* SET 0,(IY+d),D */
+INSTRD(0xc2, op_undoc_sb0iydd)		/* SET 0,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 1;
@@ -2269,15 +2198,16 @@ static int op_undoc_sb0iydd(int data)	/* SET 0,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb1iydd(int data)	/* SET 1,(IY+d),D */
+INSTRD(0xca, op_undoc_sb1iydd)		/* SET 1,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 2;
@@ -2285,15 +2215,16 @@ static int op_undoc_sb1iydd(int data)	/* SET 1,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb2iydd(int data)	/* SET 2,(IY+d),D */
+INSTRD(0xd2, op_undoc_sb2iydd)		/* SET 2,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 4;
@@ -2301,15 +2232,16 @@ static int op_undoc_sb2iydd(int data)	/* SET 2,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb3iydd(int data)	/* SET 3,(IY+d),D */
+INSTRD(0xda, op_undoc_sb3iydd)		/* SET 3,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 8;
@@ -2317,15 +2249,16 @@ static int op_undoc_sb3iydd(int data)	/* SET 3,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb4iydd(int data)	/* SET 4,(IY+d),D */
+INSTRD(0xe2, op_undoc_sb4iydd)		/* SET 4,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 16;
@@ -2333,15 +2266,16 @@ static int op_undoc_sb4iydd(int data)	/* SET 4,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb5iydd(int data)	/* SET 5,(IY+d),D */
+INSTRD(0xea, op_undoc_sb5iydd)		/* SET 5,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 32;
@@ -2349,15 +2283,16 @@ static int op_undoc_sb5iydd(int data)	/* SET 5,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb6iydd(int data)	/* SET 6,(IY+d),D */
+INSTRD(0xf2, op_undoc_sb6iydd)		/* SET 6,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 64;
@@ -2365,15 +2300,16 @@ static int op_undoc_sb6iydd(int data)	/* SET 6,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb7iydd(int data)	/* SET 7,(IY+d),D */
+INSTRD(0xfa, op_undoc_sb7iydd)		/* SET 7,(IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr) | 128;
@@ -2381,15 +2317,16 @@ static int op_undoc_sb7iydd(int data)	/* SET 7,(IY+d),D */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb0iyde(int data)	/* SET 0,(IY+d),E */
+INSTRD(0xc3, op_undoc_sb0iyde)		/* SET 0,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 1;
@@ -2397,15 +2334,16 @@ static int op_undoc_sb0iyde(int data)	/* SET 0,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb1iyde(int data)	/* SET 1,(IY+d),E */
+INSTRD(0xcb, op_undoc_sb1iyde)		/* SET 1,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 2;
@@ -2413,15 +2351,16 @@ static int op_undoc_sb1iyde(int data)	/* SET 1,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb2iyde(int data)	/* SET 2,(IY+d),E */
+INSTRD(0xd3, op_undoc_sb2iyde)		/* SET 2,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 4;
@@ -2429,15 +2368,16 @@ static int op_undoc_sb2iyde(int data)	/* SET 2,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb3iyde(int data)	/* SET 3,(IY+d),E */
+INSTRD(0xdb, op_undoc_sb3iyde)		/* SET 3,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 8;
@@ -2445,15 +2385,16 @@ static int op_undoc_sb3iyde(int data)	/* SET 3,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb4iyde(int data)	/* SET 4,(IY+d),E */
+INSTRD(0xe3, op_undoc_sb4iyde)		/* SET 4,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 16;
@@ -2461,15 +2402,16 @@ static int op_undoc_sb4iyde(int data)	/* SET 4,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb5iyde(int data)	/* SET 5,(IY+d),E */
+INSTRD(0xeb, op_undoc_sb5iyde)		/* SET 5,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 32;
@@ -2477,15 +2419,16 @@ static int op_undoc_sb5iyde(int data)	/* SET 5,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb6iyde(int data)	/* SET 6,(IY+d),E */
+INSTRD(0xf3, op_undoc_sb6iyde)		/* SET 6,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 64;
@@ -2493,15 +2436,16 @@ static int op_undoc_sb6iyde(int data)	/* SET 6,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb7iyde(int data)	/* SET 7,(IY+d),E */
+INSTRD(0xfb, op_undoc_sb7iyde)		/* SET 7,(IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr) | 128;
@@ -2509,15 +2453,16 @@ static int op_undoc_sb7iyde(int data)	/* SET 7,(IY+d),E */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb0iydh(int data)	/* SET 0,(IY+d),H */
+INSTRD(0xc4, op_undoc_sb0iydh)		/* SET 0,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 1;
@@ -2525,15 +2470,16 @@ static int op_undoc_sb0iydh(int data)	/* SET 0,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb1iydh(int data)	/* SET 1,(IY+d),H */
+INSTRD(0xcc, op_undoc_sb1iydh)		/* SET 1,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 2;
@@ -2541,15 +2487,16 @@ static int op_undoc_sb1iydh(int data)	/* SET 1,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb2iydh(int data)	/* SET 2,(IY+d),H */
+INSTRD(0xd4, op_undoc_sb2iydh)		/* SET 2,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 4;
@@ -2557,15 +2504,16 @@ static int op_undoc_sb2iydh(int data)	/* SET 2,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb3iydh(int data)	/* SET 3,(IY+d),H */
+INSTRD(0xdc, op_undoc_sb3iydh)		/* SET 3,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 8;
@@ -2573,15 +2521,16 @@ static int op_undoc_sb3iydh(int data)	/* SET 3,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb4iydh(int data)	/* SET 4,(IY+d),H */
+INSTRD(0xe4, op_undoc_sb4iydh)		/* SET 4,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 16;
@@ -2589,15 +2538,16 @@ static int op_undoc_sb4iydh(int data)	/* SET 4,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb5iydh(int data)	/* SET 5,(IY+d),H */
+INSTRD(0xec, op_undoc_sb5iydh)		/* SET 5,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 32;
@@ -2605,15 +2555,16 @@ static int op_undoc_sb5iydh(int data)	/* SET 5,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb6iydh(int data)	/* SET 6,(IY+d),H */
+INSTRD(0xf4, op_undoc_sb6iydh)		/* SET 6,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 64;
@@ -2621,15 +2572,16 @@ static int op_undoc_sb6iydh(int data)	/* SET 6,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb7iydh(int data)	/* SET 7,(IY+d),H */
+INSTRD(0xfc, op_undoc_sb7iydh)		/* SET 7,(IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr) | 128;
@@ -2637,15 +2589,16 @@ static int op_undoc_sb7iydh(int data)	/* SET 7,(IY+d),H */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb0iydl(int data)	/* SET 0,(IY+d),L */
+INSTRD(0xc5, op_undoc_sb0iydl)		/* SET 0,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 1;
@@ -2653,15 +2606,16 @@ static int op_undoc_sb0iydl(int data)	/* SET 0,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb1iydl(int data)	/* SET 1,(IY+d),L */
+INSTRD(0xcd, op_undoc_sb1iydl)		/* SET 1,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 2;
@@ -2669,15 +2623,16 @@ static int op_undoc_sb1iydl(int data)	/* SET 1,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb2iydl(int data)	/* SET 2,(IY+d),L */
+INSTRD(0xd5, op_undoc_sb2iydl)		/* SET 2,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 4;
@@ -2685,15 +2640,16 @@ static int op_undoc_sb2iydl(int data)	/* SET 2,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb3iydl(int data)	/* SET 3,(IY+d),L */
+INSTRD(0xdd, op_undoc_sb3iydl)		/* SET 3,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 8;
@@ -2701,15 +2657,16 @@ static int op_undoc_sb3iydl(int data)	/* SET 3,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb4iydl(int data)	/* SET 4,(IY+d),L */
+INSTRD(0xe5, op_undoc_sb4iydl)		/* SET 4,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 16;
@@ -2717,15 +2674,16 @@ static int op_undoc_sb4iydl(int data)	/* SET 4,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb5iydl(int data)	/* SET 5,(IY+d),L */
+INSTRD(0xed, op_undoc_sb5iydl)		/* SET 5,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 32;
@@ -2733,15 +2691,16 @@ static int op_undoc_sb5iydl(int data)	/* SET 5,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb6iydl(int data)	/* SET 6,(IY+d),L */
+INSTRD(0xf5, op_undoc_sb6iydl)		/* SET 6,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 64;
@@ -2749,15 +2708,16 @@ static int op_undoc_sb6iydl(int data)	/* SET 6,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sb7iydl(int data)	/* SET 7,(IY+d),L */
+INSTRD(0xfd, op_undoc_sb7iydl)		/* SET 7,(IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr) | 128;
@@ -2765,16 +2725,17 @@ static int op_undoc_sb7iydl(int data)	/* SET 7,(IY+d),L */
 #ifdef UNDOC_FLAGS
 	WZ = addr;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rlciyda(int data)	/* RLC (IY+d),A */
+INSTRD(0x07, op_undoc_rlciyda)		/* RLC (IY+d),A */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -2793,16 +2754,17 @@ static int op_undoc_rlciyda(int data)	/* RLC (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rlciydb(int data)	/* RLC (IY+d),B */
+INSTRD(0x00, op_undoc_rlciydb)		/* RLC (IY+d),B */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -2821,16 +2783,17 @@ static int op_undoc_rlciydb(int data)	/* RLC (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rlciydc(int data)	/* RLC (IY+d),C */
+INSTRD(0x01, op_undoc_rlciydc)		/* RLC (IY+d),C */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -2849,16 +2812,17 @@ static int op_undoc_rlciydc(int data)	/* RLC (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rlciydd(int data)	/* RLC (IY+d),D */
+INSTRD(0x02, op_undoc_rlciydd)		/* RLC (IY+d),D */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -2877,16 +2841,17 @@ static int op_undoc_rlciydd(int data)	/* RLC (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rlciyde(int data)	/* RLC (IY+d),E */
+INSTRD(0x03, op_undoc_rlciyde)		/* RLC (IY+d),E */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -2905,16 +2870,17 @@ static int op_undoc_rlciyde(int data)	/* RLC (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rlciydh(int data)	/* RLC (IY+d),H */
+INSTRD(0x04, op_undoc_rlciydh)		/* RLC (IY+d),H */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -2933,16 +2899,17 @@ static int op_undoc_rlciydh(int data)	/* RLC (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rlciydl(int data)	/* RLC (IY+d),L */
+INSTRD(0x05, op_undoc_rlciydl)		/* RLC (IY+d),L */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -2961,16 +2928,17 @@ static int op_undoc_rlciydl(int data)	/* RLC (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rrciyda(int data)	/* RRC (IY+d),A */
+INSTRD(0x0f, op_undoc_rrciyda)		/* RRC (IY+d),A */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -2989,16 +2957,17 @@ static int op_undoc_rrciyda(int data)	/* RRC (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rrciydb(int data)	/* RRC (IY+d),B */
+INSTRD(0x08, op_undoc_rrciydb)		/* RRC (IY+d),B */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -3017,16 +2986,17 @@ static int op_undoc_rrciydb(int data)	/* RRC (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rrciydc(int data)	/* RRC (IY+d),C */
+INSTRD(0x09, op_undoc_rrciydc)		/* RRC (IY+d),C */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -3045,16 +3015,17 @@ static int op_undoc_rrciydc(int data)	/* RRC (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rrciydd(int data)	/* RRC (IY+d),D */
+INSTRD(0x0a, op_undoc_rrciydd)		/* RRC (IY+d),D */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -3073,16 +3044,17 @@ static int op_undoc_rrciydd(int data)	/* RRC (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rrciyde(int data)	/* RRC (IY+d),E */
+INSTRD(0x0b, op_undoc_rrciyde)		/* RRC (IY+d),E */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -3101,16 +3073,17 @@ static int op_undoc_rrciyde(int data)	/* RRC (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rrciydh(int data)	/* RRC (IY+d),H */
+INSTRD(0x0c, op_undoc_rrciydh)		/* RRC (IY+d),H */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -3129,16 +3102,17 @@ static int op_undoc_rrciydh(int data)	/* RRC (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rrciydl(int data)	/* RRC (IY+d),L */
+INSTRD(0x0d, op_undoc_rrciydl)		/* RRC (IY+d),L */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -3157,16 +3131,17 @@ static int op_undoc_rrciydl(int data)	/* RRC (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rliyda(int data)	/* RL (IY+d),A */
+INSTRD(0x17, op_undoc_rliyda)		/* RL (IY+d),A */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -3185,16 +3160,17 @@ static int op_undoc_rliyda(int data)	/* RL (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rliydb(int data)	/* RL (IY+d),B */
+INSTRD(0x10, op_undoc_rliydb)		/* RL (IY+d),B */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -3213,16 +3189,17 @@ static int op_undoc_rliydb(int data)	/* RL (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rliydc(int data)	/* RL (IY+d),C */
+INSTRD(0x11, op_undoc_rliydc)		/* RL (IY+d),C */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -3241,16 +3218,17 @@ static int op_undoc_rliydc(int data)	/* RL (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rliydd(int data)	/* RL (IY+d),D */
+INSTRD(0x12, op_undoc_rliydd)		/* RL (IY+d),D */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -3269,16 +3247,17 @@ static int op_undoc_rliydd(int data)	/* RL (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rliyde(int data)	/* RL (IY+d),E */
+INSTRD(0x13, op_undoc_rliyde)		/* RL (IY+d),E */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -3297,16 +3276,17 @@ static int op_undoc_rliyde(int data)	/* RL (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rliydh(int data)	/* RL (IY+d),H */
+INSTRD(0x14, op_undoc_rliydh)		/* RL (IY+d),H */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -3325,16 +3305,17 @@ static int op_undoc_rliydh(int data)	/* RL (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rliydl(int data)	/* RL (IY+d),L */
+INSTRD(0x15, op_undoc_rliydl)		/* RL (IY+d),L */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -3353,16 +3334,17 @@ static int op_undoc_rliydl(int data)	/* RL (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rriyda(int data)	/* RR (IY+d),A */
+INSTRD(0x1f, op_undoc_rriyda)		/* RR (IY+d),A */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -3381,16 +3363,17 @@ static int op_undoc_rriyda(int data)	/* RR (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rriydb(int data)	/* RR (IY+d),B */
+INSTRD(0x18, op_undoc_rriydb)		/* RR (IY+d),B */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -3409,16 +3392,17 @@ static int op_undoc_rriydb(int data)	/* RR (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rriydc(int data)	/* RR (IY+d),C */
+INSTRD(0x19, op_undoc_rriydc)		/* RR (IY+d),C */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -3437,16 +3421,17 @@ static int op_undoc_rriydc(int data)	/* RR (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rriydd(int data)	/* RR (IY+d),D */
+INSTRD(0x1a, op_undoc_rriydd)		/* RR (IY+d),D */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -3465,16 +3450,17 @@ static int op_undoc_rriydd(int data)	/* RR (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rriyde(int data)	/* RR (IY+d),E */
+INSTRD(0x1b, op_undoc_rriyde)		/* RR (IY+d),E */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -3493,16 +3479,17 @@ static int op_undoc_rriyde(int data)	/* RR (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rriydh(int data)	/* RR (IY+d),H */
+INSTRD(0x1c, op_undoc_rriydh)		/* RR (IY+d),H */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -3521,16 +3508,17 @@ static int op_undoc_rriydh(int data)	/* RR (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_rriydl(int data)	/* RR (IY+d),L */
+INSTRD(0x1d, op_undoc_rriydl)		/* RR (IY+d),L */
 {
 	WORD addr;
 	int old_c_flag;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -3549,15 +3537,16 @@ static int op_undoc_rriydl(int data)	/* RR (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slaiyda(int data)	/* SLA (IY+d),A */
+INSTRD(0x27, op_undoc_slaiyda)		/* SLA (IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -3574,15 +3563,16 @@ static int op_undoc_slaiyda(int data)	/* SLA (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slaiydb(int data)	/* SLA (IY+d),B */
+INSTRD(0x20, op_undoc_slaiydb)		/* SLA (IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -3599,15 +3589,16 @@ static int op_undoc_slaiydb(int data)	/* SLA (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slaiydc(int data)	/* SLA (IY+d),C */
+INSTRD(0x21, op_undoc_slaiydc)		/* SLA (IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -3624,15 +3615,16 @@ static int op_undoc_slaiydc(int data)	/* SLA (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slaiydd(int data)	/* SLA (IY+d),D */
+INSTRD(0x22, op_undoc_slaiydd)		/* SLA (IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -3649,15 +3641,16 @@ static int op_undoc_slaiydd(int data)	/* SLA (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slaiyde(int data)	/* SLA (IY+d),E */
+INSTRD(0x23, op_undoc_slaiyde)		/* SLA (IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -3674,15 +3667,16 @@ static int op_undoc_slaiyde(int data)	/* SLA (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slaiydh(int data)	/* SLA (IY+d),H */
+INSTRD(0x24, op_undoc_slaiydh)		/* SLA (IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -3699,15 +3693,16 @@ static int op_undoc_slaiydh(int data)	/* SLA (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slaiydl(int data)	/* SLA (IY+d),L */
+INSTRD(0x25, op_undoc_slaiydl)		/* SLA (IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -3724,16 +3719,17 @@ static int op_undoc_slaiydl(int data)	/* SLA (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sraiyda(int data)	/* SRA (IY+d),A */
+INSTRD(0x2f, op_undoc_sraiyda)		/* SRA (IY+d),A */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -3751,16 +3747,17 @@ static int op_undoc_sraiyda(int data)	/* SRA (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sraiydb(int data)	/* SRA (IY+d),B */
+INSTRD(0x28, op_undoc_sraiydb)		/* SRA (IY+d),B */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -3778,16 +3775,17 @@ static int op_undoc_sraiydb(int data)	/* SRA (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sraiydc(int data)	/* SRA (IY+d),C */
+INSTRD(0x29, op_undoc_sraiydc)		/* SRA (IY+d),C */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -3805,16 +3803,17 @@ static int op_undoc_sraiydc(int data)	/* SRA (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sraiydd(int data)	/* SRA (IY+d),D */
+INSTRD(0x2a, op_undoc_sraiydd)		/* SRA (IY+d),D */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -3832,16 +3831,17 @@ static int op_undoc_sraiydd(int data)	/* SRA (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sraiyde(int data)	/* SRA (IY+d),E */
+INSTRD(0x2b, op_undoc_sraiyde)		/* SRA (IY+d),E */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -3859,16 +3859,17 @@ static int op_undoc_sraiyde(int data)	/* SRA (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sraiydh(int data)	/* SRA (IY+d),H */
+INSTRD(0x2c, op_undoc_sraiydh)		/* SRA (IY+d),H */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -3886,16 +3887,17 @@ static int op_undoc_sraiydh(int data)	/* SRA (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_sraiydl(int data)	/* SRA (IY+d),L */
+INSTRD(0x2d, op_undoc_sraiydl)		/* SRA (IY+d),L */
 {
 	WORD addr;
 	int i;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -3913,15 +3915,16 @@ static int op_undoc_sraiydl(int data)	/* SRA (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliyda(int data)	/* SLL (IY+d),A */
+INSTRD(0x37, op_undoc_slliyda)		/* SLL (IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -3938,15 +3941,16 @@ static int op_undoc_slliyda(int data)	/* SLL (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliydb(int data)	/* SLL (IY+d),B */
+INSTRD(0x30, op_undoc_slliydb)		/* SLL (IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -3963,15 +3967,16 @@ static int op_undoc_slliydb(int data)	/* SLL (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliydc(int data)	/* SLL (IY+d),C */
+INSTRD(0x31, op_undoc_slliydc)		/* SLL (IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -3988,15 +3993,16 @@ static int op_undoc_slliydc(int data)	/* SLL (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliydd(int data)	/* SLL (IY+d),D */
+INSTRD(0x32, op_undoc_slliydd)		/* SLL (IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -4013,15 +4019,16 @@ static int op_undoc_slliydd(int data)	/* SLL (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliyde(int data)	/* SLL (IY+d),E */
+INSTRD(0x33, op_undoc_slliyde)		/* SLL (IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -4038,15 +4045,16 @@ static int op_undoc_slliyde(int data)	/* SLL (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliydh(int data)	/* SLL (IY+d),H */
+INSTRD(0x34, op_undoc_slliydh)		/* SLL (IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -4063,15 +4071,16 @@ static int op_undoc_slliydh(int data)	/* SLL (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliydl(int data)	/* SLL (IY+d),L */
+INSTRD(0x35, op_undoc_slliydl)		/* SLL (IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -4088,41 +4097,16 @@ static int op_undoc_slliydl(int data)	/* SLL (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_slliyd(int data)	/* SLL (IY+d) */
-{
-	register BYTE P;
-	WORD addr;
-
-	if (u_flag)
-		return (trap_fdcb(0));
-
-	addr = IY + data;
-	P = memrdr(addr);
-	(P & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	P = (P << 1) | 1;
-	memwrt(addr, P);
-	F &= ~(H_FLAG | N_FLAG);
-	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	WZ = addr;
-	modF = 1;
-#endif
-	return (23);
-}
-
-static int op_undoc_srliyda(int data)	/* SRL (IY+d),A */
+INSTRD(0x3f, op_undoc_srliyda)		/* SRL (IY+d),A */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	A = memrdr(addr);
@@ -4139,15 +4123,16 @@ static int op_undoc_srliyda(int data)	/* SRL (IY+d),A */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_srliydb(int data)	/* SRL (IY+d),B */
+INSTRD(0x38, op_undoc_srliydb)		/* SRL (IY+d),B */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	B = memrdr(addr);
@@ -4164,15 +4149,16 @@ static int op_undoc_srliydb(int data)	/* SRL (IY+d),B */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_srliydc(int data)	/* SRL (IY+d),C */
+INSTRD(0x39, op_undoc_srliydc)		/* SRL (IY+d),C */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	C = memrdr(addr);
@@ -4189,15 +4175,16 @@ static int op_undoc_srliydc(int data)	/* SRL (IY+d),C */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_srliydd(int data)	/* SRL (IY+d),D */
+INSTRD(0x3a, op_undoc_srliydd)		/* SRL (IY+d),D */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	D = memrdr(addr);
@@ -4214,15 +4201,16 @@ static int op_undoc_srliydd(int data)	/* SRL (IY+d),D */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_srliyde(int data)	/* SRL (IY+d),E */
+INSTRD(0x3b, op_undoc_srliyde)		/* SRL (IY+d),E */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	E = memrdr(addr);
@@ -4239,15 +4227,16 @@ static int op_undoc_srliyde(int data)	/* SRL (IY+d),E */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_srliydh(int data)	/* SRL (IY+d),H */
+INSTRD(0x3c, op_undoc_srliydh)		/* SRL (IY+d),H */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	H = memrdr(addr);
@@ -4264,15 +4253,16 @@ static int op_undoc_srliydh(int data)	/* SRL (IY+d),H */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-static int op_undoc_srliydl(int data)	/* SRL (IY+d),L */
+INSTRD(0x3d, op_undoc_srliydl)		/* SRL (IY+d),L */
 {
 	WORD addr;
 
-	if (u_flag)
-		return (trap_fdcb(0));
+	if (u_flag) {
+		STATES(trap_fdcb(0));
+	}
 
 	addr = IY + data;
 	L = memrdr(addr);
@@ -4289,9 +4279,9 @@ static int op_undoc_srliydl(int data)	/* SRL (IY+d),L */
 	WZ = addr;
 	modF = 1;
 #endif
-	return (23);
+	STATES(23);
 }
 
-#endif
+#endif /* UNDOC_IALL */
 
-#endif
+#endif /* UNDOC_INST */
