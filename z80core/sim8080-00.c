@@ -6,8 +6,7 @@
  */
 
 /*
- *	This module contains the implementation of all
- *	8080 instructions
+ *	This module contains the implementation of all 8080 instructions
  */
 
 INSTR(0x00, op_nop)			/* NOP */
@@ -114,7 +113,7 @@ INSTR(0x27, op_daa)			/* DAA */
 	if (tmp_a & 0x100)
 		(F |= C_FLAG);
 	A = tmp_a & 0xff;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -826,7 +825,7 @@ INSTR(0xa7, op_anaa)			/* ANA A */
 #else
 	(A & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -845,7 +844,7 @@ INSTR(0xa0, op_anab)			/* ANA B */
 	((A | B) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= B;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -864,7 +863,7 @@ INSTR(0xa1, op_anac)			/* ANA C */
 	((A | C) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= C;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -883,7 +882,7 @@ INSTR(0xa2, op_anad)			/* ANA D */
 	((A | D) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= D;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -902,7 +901,7 @@ INSTR(0xa3, op_anae)			/* ANA E */
 	((A | E) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= E;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -921,7 +920,7 @@ INSTR(0xa4, op_anah)			/* ANA H */
 	((A | H) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= H;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -940,7 +939,7 @@ INSTR(0xa5, op_anal)			/* ANA L */
 	((A | L) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= L;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -962,7 +961,7 @@ INSTR(0xa6, op_anam)			/* ANA M */
 	((A | P) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -984,7 +983,7 @@ INSTR(0xe6, op_anin)			/* ANI n */
 	((A | P) & 8) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 #endif
 	A &= P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -997,7 +996,7 @@ INSTR(0xe6, op_anin)			/* ANI n */
 
 INSTR(0xb7, op_oraa)			/* ORA A */
 {
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1011,7 +1010,7 @@ INSTR(0xb7, op_oraa)			/* ORA A */
 INSTR(0xb0, op_orab)			/* ORA B */
 {
 	A |= B;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1025,7 +1024,7 @@ INSTR(0xb0, op_orab)			/* ORA B */
 INSTR(0xb1, op_orac)			/* ORA C */
 {
 	A |= C;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1039,7 +1038,7 @@ INSTR(0xb1, op_orac)			/* ORA C */
 INSTR(0xb2, op_orad)			/* ORA D */
 {
 	A |= D;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1053,7 +1052,7 @@ INSTR(0xb2, op_orad)			/* ORA D */
 INSTR(0xb3, op_orae)			/* ORA E */
 {
 	A |= E;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1067,7 +1066,7 @@ INSTR(0xb3, op_orae)			/* ORA E */
 INSTR(0xb4, op_orah)			/* ORA H */
 {
 	A |= H;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1081,7 +1080,7 @@ INSTR(0xb4, op_orah)			/* ORA H */
 INSTR(0xb5, op_oral)			/* ORA L */
 {
 	A |= L;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1095,7 +1094,7 @@ INSTR(0xb5, op_oral)			/* ORA L */
 INSTR(0xb6, op_oram)			/* ORA M */
 {
 	A |= memrdr((H << 8) + L);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1109,7 +1108,7 @@ INSTR(0xb6, op_oram)			/* ORA M */
 INSTR(0xf6, op_orin)			/* ORI n */
 {
 	A |= memrdr(PC++);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1131,7 +1130,7 @@ INSTR(0xaf, op_xraa)			/* XRA A */
 INSTR(0xa8, op_xrab)			/* XRA B */
 {
 	A ^= B;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1145,7 +1144,7 @@ INSTR(0xa8, op_xrab)			/* XRA B */
 INSTR(0xa9, op_xrac)			/* XRA C */
 {
 	A ^= C;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1159,7 +1158,7 @@ INSTR(0xa9, op_xrac)			/* XRA C */
 INSTR(0xaa, op_xrad)			/* XRA D */
 {
 	A ^= D;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1173,7 +1172,7 @@ INSTR(0xaa, op_xrad)			/* XRA D */
 INSTR(0xab, op_xrae)			/* XRA E */
 {
 	A ^= E;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1187,7 +1186,7 @@ INSTR(0xab, op_xrae)			/* XRA E */
 INSTR(0xac, op_xrah)			/* XRA H */
 {
 	A ^= H;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1201,7 +1200,7 @@ INSTR(0xac, op_xrah)			/* XRA H */
 INSTR(0xad, op_xral)			/* XRA L */
 {
 	A ^= L;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1215,7 +1214,7 @@ INSTR(0xad, op_xral)			/* XRA L */
 INSTR(0xae, op_xram)			/* XRA M */
 {
 	A ^= memrdr((H << 8) + L);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1229,7 +1228,7 @@ INSTR(0xae, op_xram)			/* XRA M */
 INSTR(0xee, op_xrin)			/* XRI n */
 {
 	A ^= memrdr(PC++);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1245,7 +1244,7 @@ INSTR(0x87, op_adda)			/* ADD A */
 	((A & 0xf) + (A & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	((A << 1) > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A << 1;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1260,7 +1259,7 @@ INSTR(0x80, op_addb)			/* ADD B */
 	((A & 0xf) + (B & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + B > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + B;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1275,7 +1274,7 @@ INSTR(0x81, op_addc)			/* ADD C */
 	((A & 0xf) + (C & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + C > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + C;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1290,7 +1289,7 @@ INSTR(0x82, op_addd)			/* ADD D */
 	((A & 0xf) + (D & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + D > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + D;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1305,7 +1304,7 @@ INSTR(0x83, op_adde)			/* ADD E */
 	((A & 0xf) + (E & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + E > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + E;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1320,7 +1319,7 @@ INSTR(0x84, op_addh)			/* ADD H */
 	((A & 0xf) + (H & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + H > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + H;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1335,7 +1334,7 @@ INSTR(0x85, op_addl)			/* ADD L */
 	((A & 0xf) + (L & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + L > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + L;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1353,7 +1352,7 @@ INSTR(0x86, op_addm)			/* ADD M */
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1371,7 +1370,7 @@ INSTR(0xc6, op_adin)			/* ADI n */
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1389,7 +1388,7 @@ INSTR(0x8f, op_adca)			/* ADC A */
 	((A & 0xf) + (A & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	((A << 1) + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = (A << 1) + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1407,7 +1406,7 @@ INSTR(0x88, op_adcb)			/* ADC B */
 	((A & 0xf) + (B & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + B + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + B + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1425,7 +1424,7 @@ INSTR(0x89, op_adcc)			/* ADC C */
 	((A & 0xf) + (C & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + C + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + C + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1443,7 +1442,7 @@ INSTR(0x8a, op_adcd)			/* ADC D */
 	((A & 0xf) + (D & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + D + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + D + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1461,7 +1460,7 @@ INSTR(0x8b, op_adce)			/* ADC E */
 	((A & 0xf) + (E & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + E + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + E + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1479,7 +1478,7 @@ INSTR(0x8c, op_adch)			/* ADC H */
 	((A & 0xf) + (H & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + H + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + H + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1497,7 +1496,7 @@ INSTR(0x8d, op_adcl)			/* ADC L */
 	((A & 0xf) + (L & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + L + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + L + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1517,7 +1516,7 @@ INSTR(0x8e, op_adcm)			/* ADC M */
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + P + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1537,7 +1536,7 @@ INSTR(0xce, op_acin)			/* ACI n */
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A + P + carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1560,7 +1559,7 @@ INSTR(0x90, op_subb)			/* SUB B */
 	((B & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(B > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - B;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1575,7 +1574,7 @@ INSTR(0x91, op_subc)			/* SUB C */
 	((C & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(C > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - C;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1590,7 +1589,7 @@ INSTR(0x92, op_subd)			/* SUB D */
 	((D & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(D > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - D;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1605,7 +1604,7 @@ INSTR(0x93, op_sube)			/* SUB E */
 	((E & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(E > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - E;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1620,7 +1619,7 @@ INSTR(0x94, op_subh)			/* SUB H */
 	((H & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(H > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - H;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1635,7 +1634,7 @@ INSTR(0x95, op_subl)			/* SUB L */
 	((L & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(L > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - L;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1653,7 +1652,7 @@ INSTR(0x96, op_subm)			/* SUB M */
 	((P & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1671,7 +1670,7 @@ INSTR(0xd6, op_suin)			/* SUI n */
 	((P & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1703,7 +1702,7 @@ INSTR(0x98, op_sbbb)			/* SBB B */
 	((B & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(B + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - B - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1721,7 +1720,7 @@ INSTR(0x99, op_sbbc)			/* SBB C */
 	((C & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(C + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - C - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1739,7 +1738,7 @@ INSTR(0x9a, op_sbbd)			/* SBB D */
 	((D & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(D + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - D - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1757,7 +1756,7 @@ INSTR(0x9b, op_sbbe)			/* SBB E */
 	((E & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(E + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - E - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1775,7 +1774,7 @@ INSTR(0x9c, op_sbbh)			/* SBB H */
 	((H & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(H + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - H - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1793,7 +1792,7 @@ INSTR(0x9d, op_sbbl)			/* SBB L */
 	((L & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(L + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - L - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1813,7 +1812,7 @@ INSTR(0x9e, op_sbbm)			/* SBB M */
 	((P & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - P - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1833,7 +1832,7 @@ INSTR(0xde, op_sbin)			/* SBI n */
 	((P & 0xf) + carry > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A - P - carry;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1857,7 +1856,7 @@ INSTR(0xb8, op_cmpb)			/* CMP B */
 	((B & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(B > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - B;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1874,7 +1873,7 @@ INSTR(0xb9, op_cmpc)			/* CMP C */
 	((C & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(C > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - C;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1891,7 +1890,7 @@ INSTR(0xba, op_cmpd)			/* CMP D */
 	((D & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(D > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - D;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1908,7 +1907,7 @@ INSTR(0xbb, op_cmpe)			/* CMP E */
 	((E & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(E > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - E;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1925,7 +1924,7 @@ INSTR(0xbc, op_cmph)			/* CMP H */
 	((H & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(H > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - H;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1942,7 +1941,7 @@ INSTR(0xbd, op_cmpl)			/* CMP L */
 	((L & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(L > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - L;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1961,7 +1960,7 @@ INSTR(0xbe, op_cmpm)			/* CMP M */
 	((P & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1980,7 +1979,7 @@ INSTR(0xfe, op_cpin)			/* CPI n */
 	((P & 0xf) > (A & 0xf)) ? (F &= ~H_FLAG) : (F |= H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = A - P;
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[i]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1994,7 +1993,7 @@ INSTR(0x3c, op_inra)			/* INR A */
 {
 	A++;
 	((A & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2008,7 +2007,7 @@ INSTR(0x04, op_inrb)			/* INR B */
 {
 	B++;
 	((B & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2022,7 +2021,7 @@ INSTR(0x0c, op_inrc)			/* INR C */
 {
 	C++;
 	((C & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2036,7 +2035,7 @@ INSTR(0x14, op_inrd)			/* INR D */
 {
 	D++;
 	((D & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2050,7 +2049,7 @@ INSTR(0x1c, op_inre)			/* INR E */
 {
 	E++;
 	((E & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2064,7 +2063,7 @@ INSTR(0x24, op_inrh)			/* INR H */
 {
 	H++;
 	((H & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2078,7 +2077,7 @@ INSTR(0x2c, op_inrl)			/* INR L */
 {
 	L++;
 	((L & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2098,7 +2097,7 @@ INSTR(0x34, op_inrm)			/* INR M */
 	P++;
 	memwrt(addr, P);
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2112,7 +2111,7 @@ INSTR(0x3d, op_dcra)			/* DCR A */
 {
 	A--;
 	((A & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2126,7 +2125,7 @@ INSTR(0x05, op_dcrb)			/* DCR B */
 {
 	B--;
 	((B & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2140,7 +2139,7 @@ INSTR(0x0d, op_dcrc)			/* DCR C */
 {
 	C--;
 	((C & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2154,7 +2153,7 @@ INSTR(0x15, op_dcrd)			/* DCR D */
 {
 	D--;
 	((D & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2168,7 +2167,7 @@ INSTR(0x1d, op_dcre)			/* DCR E */
 {
 	E--;
 	((E & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2182,7 +2181,7 @@ INSTR(0x25, op_dcrh)			/* DCR H */
 {
 	H--;
 	((H & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2196,7 +2195,7 @@ INSTR(0x2d, op_dcrl)			/* DCR L */
 {
 	L--;
 	((L & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2216,7 +2215,7 @@ INSTR(0x35, op_dcrm)			/* DCR M */
 	P--;
 	memwrt(addr, P);
 	((P & 0xf) == 0xf) ? (F &= ~H_FLAG) : (F |= H_FLAG);
-#ifndef FAST_INSTR
+#ifndef FLAG_TABLES
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2883,7 +2882,7 @@ INSTR(0xff, op_rst7)			/* RST 7 */
 
 #ifdef UNDOC_INST
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 static int op_undoc_nop(void)		/* NOP */
 #else
 case 0x08:				/* NOP */
@@ -2916,7 +2915,7 @@ INSTR(0xcb, op_undoc_jmp)		/* JMP nn */
 	STATES(10);
 }
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 static int op_undoc_call(void)		/* CALL nn */
 #else
 case 0xdd:				/* CALL nn */

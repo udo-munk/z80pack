@@ -29,7 +29,7 @@ extern void check_gui_break(void);
 static int trap_cb(void), trap_dd(void), trap_ddcb(int);
 static int trap_ed(void), trap_fd(void), trap_fdcb(int);
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 
 static int op_nop(void), op_halt(void), op_scf(void);
 static int op_ccf(void), op_cpl(void), op_daa(void);
@@ -495,13 +495,13 @@ static int op_undoc_srliydl(int);
 #define INSTRD(opcode, func)	static int func(int data)
 #define STATES(states)		return (states)
 
-#else /* FAST_INSTR */
+#else /* INSTR_SWTCH */
 
 #define INSTR(opcode, func)	case opcode:
 #define INSTRD(opcode, func)	case opcode:
 #define STATES(states)		t = states; break
 
-#endif /* FAST_INSTR */
+#endif /* INSTR_SWTCH */
 
 /*
  *	This function builds the Z80 central processing unit.
@@ -514,7 +514,7 @@ void cpu_z80(void)
 {
 	extern unsigned long long get_clock_us(void);
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
 		op_ldbcnn,			/* 0x01 */
@@ -773,7 +773,7 @@ void cpu_z80(void)
 		op_cpn,				/* 0xfe */
 		op_rst38			/* 0xff */
 	};
-#endif /* !FAST_INSTR */
+#endif /* !INSTR_SWTCH */
 
 	Tstates_t T_max;
 	unsigned long long t1, t2;
@@ -984,7 +984,7 @@ leave:
 
 		int_protection = 0;
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 		t = (*op_sim[memrdr(PC++)])();	/* execute next opcode */
 #else
 		switch (memrdr(PC++)) {		/* execute next opcode */
@@ -1038,7 +1038,7 @@ leave:
 #endif
 }
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 #include "simz80-00.c"
 #endif
 
