@@ -114,11 +114,18 @@ extern char	conffn[];
 extern char	rompath[];
 #endif
 
-#if !defined(FAST_INSTR) || !defined(EXCLUDE_Z80)
+#if !defined(FLAG_TABLES) || !defined(EXCLUDE_Z80)
 extern const char parity[];
 #endif
-#ifdef FAST_INSTR
+#ifdef FLAG_TABLES
+#ifndef EXCLUDE_Z80
+extern const BYTE sz_flags[];
+#endif
 extern const BYTE szp_flags[];
+#ifdef UNDOC_FLAGS
+extern const BYTE szyx_flags[];
+extern const BYTE szyxp_flags[];
+#endif
 #endif
 
 #endif

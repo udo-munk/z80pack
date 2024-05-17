@@ -28,7 +28,7 @@ extern void check_gui_break(void);
 
 static int trap_undoc(void);
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 
 static int op_nop(void), op_hlt(void), op_stc(void);
 static int op_cmc(void), op_cma(void), op_daa(void), op_ei(void), op_di(void);
@@ -109,12 +109,12 @@ static int op_undoc_call(void);
 #define INSTR(opcode, func)	static int func(void)
 #define STATES(states)		return (states)
 
-#else /* FAST_INSTR */
+#else /* INSTR_SWTCH */
 
 #define INSTR(opcode, func)	case opcode:
 #define STATES(states)		t = states; break
 
-#endif /* FAST_INSTR */
+#endif /* INSTR_SWTCH */
 
 /*
  * Function to update address bus LED's during execution of
@@ -142,7 +142,7 @@ void cpu_8080(void)
 {
 	extern unsigned long long get_clock_us(void);
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 
 #ifdef UNDOC_INST
 #define UNDOC(f) f
@@ -411,7 +411,7 @@ void cpu_8080(void)
 
 #undef UNDOC
 
-#endif /* !FAST_INSTR */
+#endif /* !INSTR_SWTCH */
 
 	Tstates_t T_max;
 	unsigned long long t1, t2;
@@ -577,7 +577,7 @@ leave:
 
 		int_protection = 0;
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 		t = (*op_sim[memrdr(PC++)])();	/* execute next opcode */
 #else
 		switch (memrdr(PC++)) {		/* execute next opcode */
@@ -631,7 +631,7 @@ leave:
 #endif
 }
 
-#ifndef FAST_INSTR
+#ifndef INSTR_SWTCH
 #include "sim8080-00.c"
 #endif
 

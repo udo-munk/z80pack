@@ -31,6 +31,18 @@
 #if defined(EXCLUDE_Z80) && DEF_CPU != I8080
 #error "DEF_CPU=Z80 and no Z80 simulation included"
 #endif
+#if defined(EXCLUDE_Z80) && defined(UNDOC_IALL)
+#error "UNDOC_IALL makes only sense without EXCLUDE_Z80"
+#endif
+#if defined(EXCLUDE_Z80) && defined(UNDOC_FLAGS)
+#error "UNDOC_FLAGS makes only sense without EXCLUDE_Z80"
+#endif
+#if defined(EXCLUDE_Z80) && defined(FAST_BLOCK)
+#error "FAST_BLOCK makes only sense without EXCLUDE_Z80"
+#endif
+#if defined(UNDOC_IALL) && !defined(UNDOC_INST)
+#error "UNDOC_IALL makes only sense together with UNDOC_INST"
+#endif
 
 				/* bit definitions of CPU flags */
 #define S_FLAG		128	/* sign flag */
@@ -42,8 +54,15 @@
 #define N_FLAG		2	/* add/subtract flag */
 #define C_FLAG		1	/* carry flag */
 
-#ifdef FAST_INSTR
+#ifdef FLAG_TABLES
+#ifndef EXCLUDE_Z80
+#define SZ_FLAGS	(S_FLAG | Z_FLAG)
+#endif
 #define SZP_FLAGS	(S_FLAG | Z_FLAG | P_FLAG)
+#ifdef UNDOC_FLAGS
+#define SZYX_FLAGS	(S_FLAG | Z_FLAG | Y_FLAG | X_FLAG)
+#define SZYXP_FLAGS	(S_FLAG | Z_FLAG | Y_FLAG | X_FLAG | P_FLAG)
+#endif
 #endif
 
 				/* bit definitions for CPU bus status */

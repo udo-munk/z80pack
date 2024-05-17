@@ -147,7 +147,7 @@ char conffn[MAX_LFN];		/* configuration file (option -c) */
 char rompath[MAX_LFN];		/* path for boot ROM files */
 #endif
 
-#if !defined(FAST_INSTR) || !defined(EXCLUDE_Z80)
+#if !defined(FLAG_TABLES) || !defined(EXCLUDE_Z80)
 /*
  *	Precompiled table to get parity as fast as possible
  */
@@ -217,18 +217,62 @@ const char parity[256] = {
 	1 /* 11111000 */, 0 /* 11111001 */, 0 /* 11111010 */, 1 /* 11111011 */,
 	0 /* 11111100 */, 1 /* 11111101 */, 1 /* 11111110 */, 0 /* 11111111 */
 };
-#endif /* !FAST_INSTR && !EXCLUDE_Z80 */
+#endif /* !FLAG_TABLES || !EXCLUDE_Z80 */
 
-#ifdef FAST_INSTR
-/*
- *	Precomputed table for fast sign, zero and parity flag calculation
- */
+#ifdef FLAG_TABLES
+
 #define _ 0
 #define S S_FLAG
 #define Z Z_FLAG
+#define Y Y_FLAG
+#define X X_FLAG
 #define P P_FLAG
+
+#ifndef EXCLUDE_Z80
+/*
+ *	Precomputed table for fast sign, zero flag calculation
+ */
+const BYTE sz_flags[256] = {
+/*00*/	Z,	_,	_,	_,	_,	_,	_,	_,
+/*08*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*10*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*18*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*20*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*28*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*30*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*38*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*40*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*48*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*50*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*58*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*60*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*68*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*70*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*78*/	_,	_,	_,	_,	_,	_,	_,	_,
+/*80*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*88*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*90*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*98*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*a0*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*a8*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*b0*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*b8*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*c0*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*c8*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*d0*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*d8*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*e0*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*e8*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*f0*/	S,	S,	S,	S,	S,	S,	S,	S,
+/*f8*/	S,	S,	S,	S,	S,	S,	S,	S
+};
+#endif
+
+/*
+ *	Precomputed table for fast sign, zero and parity flag calculation
+ */
 const BYTE szp_flags[256] = {
-/*00*/	Z | P,	_,	_,	P,	_,	P,	P,	_,
+/*00*/	Z|P,	_,	_,	P,	_,	P,	P,	_,
 /*08*/	_,	P,	P,	_,	P,	_,	_,	P,
 /*10*/	_,	P,	P,	_,	P,	_,	_,	P,
 /*18*/	P,	_,	_,	P,	_,	P,	P,	_,
@@ -244,25 +288,109 @@ const BYTE szp_flags[256] = {
 /*68*/	_,	P,	P,	_,	P,	_,	_,	P,
 /*70*/	_,	P,	P,	_,	P,	_,	_,	P,
 /*78*/	P,	_,	_,	P,	_,	P,	P,	_,
-/*80*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*88*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*90*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*98*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*a0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*a8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*b0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*b8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*c0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*c8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*d0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*d8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*e0*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P,
-/*e8*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*f0*/	S | P,	S,	S,	S | P,	S,	S | P,	S | P,	S,
-/*f8*/	S,	S | P,	S | P,	S,	S | P,	S,	S,	S | P
+/*80*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P,
+/*88*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*90*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*98*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P,
+/*a0*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*a8*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P,
+/*b0*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P,
+/*b8*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*c0*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*c8*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P,
+/*d0*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P,
+/*d8*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*e0*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P,
+/*e8*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*f0*/	S|P,	S,	S,	S|P,	S,	S|P,	S|P,	S,
+/*f8*/	S,	S|P,	S|P,	S,	S|P,	S,	S,	S|P
 };
+
+#ifdef UNDOC_FLAGS
+
+/*
+ *	Precomputed table for fast sign, zero, Y, and X flag calculation
+ */
+const BYTE szyx_flags[256] = {
+/*00*/	Z,       _,       _,       _,       _,       _,       _,       _,
+/*08*/	X,       X,       X,       X,       X,       X,       X,       X,
+/*10*/	_,       _,       _,       _,       _,       _,       _,       _,
+/*18*/	X,       X,       X,       X,       X,       X,       X,       X,
+/*20*/	Y,       Y,       Y,       Y,       Y,       Y,       Y,       Y,
+/*28*/	Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,
+/*30*/	Y,       Y,       Y,       Y,       Y,       Y,       Y,       Y,
+/*38*/	Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,
+/*40*/	_,       _,       _,       _,       _,       _,       _,       _,
+/*48*/	X,       X,       X,       X,       X,       X,       X,       X,
+/*50*/	_,       _,       _,       _,       _,       _,       _,       _,
+/*58*/	X,       X,       X,       X,       X,       X,       X,       X,
+/*60*/	Y,       Y,       Y,       Y,       Y,       Y,       Y,       Y,
+/*68*/	Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,
+/*70*/	Y,       Y,       Y,       Y,       Y,       Y,       Y,       Y,
+/*78*/	Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,     Y|X,
+/*80*/	S,       S,       S,       S,       S,       S,       S,       S,
+/*88*/	S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,
+/*90*/	S,       S,       S,       S,       S,       S,       S,       S,
+/*98*/	S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,
+/*a0*/	S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,
+/*a8*/	S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,
+/*b0*/	S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,
+/*b8*/	S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,
+/*c0*/	S,       S,       S,       S,       S,       S,       S,       S,
+/*c8*/	S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,
+/*d0*/	S,       S,       S,       S,       S,       S,       S,       S,
+/*d8*/	S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,     S|X,
+/*e0*/	S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,
+/*e8*/	S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,
+/*f0*/	S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,     S|Y,
+/*f8*/	S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X,   S|Y|X
+};
+
+/*
+ *	Precomputed table for fast sign, zero, Y, X, & parity flag calculation
+ */
+const BYTE szyxp_flags[256] = {
+/*00*/	Z|P,     _,       _,       P,       _,       P,       P,       _,
+/*08*/	X,       X|P,     X|P,     X,       X|P,     X,       X,       X|P,
+/*10*/	_,       P,       P,       _,       P,       _,       _,       P,
+/*18*/	X|P,     X,       X,       X|P,     X,       X|P,     X|P,     X,
+/*20*/	Y,       Y|P,     Y|P,     Y,       Y|P,     Y,       Y,       Y|P,
+/*28*/	Y|X|P,   Y|X,     Y|X,     Y|X|P,   Y|X,     Y|X|P,   Y|X|P,   Y|X,
+/*30*/	Y|P,     Y,       Y,       Y|P,     Y,       Y|P,     Y|P,     Y,
+/*38*/	Y|X,     Y|X|P,   Y|X|P,   Y|X,     Y|X|P,   Y|X,     Y|X,     Y|X|P,
+/*40*/	_,       P,       P,       _,       P,       _,       _,       P,
+/*48*/	X|P,     X,       X,       X|P,     X,       X|P,     X|P,     X,
+/*50*/	P,       _,       _,       P,       _,       P,       P,       _,
+/*58*/	X,       X|P,     X|P,     X,       X|P,     X,       X,       X|P,
+/*60*/	Y|P,     Y,       Y,       Y|P,     Y,       Y|P,     Y|P,     Y,
+/*68*/	Y|X,     Y|X|P,   Y|X|P,   Y|X,     Y|X|P,   Y|X,     Y|X,     Y|X|P,
+/*70*/	Y,       Y|P,     Y|P,     Y,       Y|P,     Y,       Y,       Y|P,
+/*78*/	Y|X|P,   Y|X,     Y|X,     Y|X|P,   Y|X,     Y|X|P,   Y|X|P,   Y|X,
+/*80*/	S,       S|P,     S|P,     S,       S|P,     S,       S,       S|P,
+/*88*/	S|X|P,   S|X,     S|X,     S|X|P,   S|X,     S|X|P,   S|X|P,   S|X,
+/*90*/	S|P,     S,       S,       S|P,     S,       S|P,     S|P,     S,
+/*98*/	S|X,     S|X|P,   S|X|P,   S|X,     S|X|P,   S|X,     S|X,     S|X|P,
+/*a0*/	S|Y|P,   S|Y,     S|Y,     S|Y|P,   S|Y,     S|Y|P,   S|Y|P,   S|Y,
+/*a8*/	S|Y|X,   S|Y|X|P, S|Y|X|P, S|Y|X,   S|Y|X|P, S|Y|X,   S|Y|X,   S|Y|X|P,
+/*b0*/	S|Y,     S|Y|P,   S|Y|P,   S|Y,     S|Y|P,   S|Y,     S|Y,     S|Y|P,
+/*b8*/	S|Y|X|P, S|Y|X,   S|Y|X,   S|Y|X|P, S|Y|X,   S|Y|X|P, S|Y|X|P, S|Y|X,
+/*c0*/	S|P,     S,       S,       S|P,     S,       S|P,     S|P,     S,
+/*c8*/	S|X,     S|X|P,   S|X|P,   S|X,     S|X|P,   S|X,     S|X,     S|X|P,
+/*d0*/	S,       S|P,     S|P,     S,       S|P,     S,       S,       S|P,
+/*d8*/	S|X|P,   S|X,     S|X,     S|X|P,   S|X,     S|X|P,   S|X|P,   S|X,
+/*e0*/	S|Y,     S|Y|P,   S|Y|P,   S|Y,     S|Y|P,   S|Y,     S|Y,     S|Y|P,
+/*e8*/	S|Y|X|P, S|Y|X,   S|Y|X,   S|Y|X|P, S|Y|X,   S|Y|X|P, S|Y|X|P, S|Y|X,
+/*f0*/	S|Y|P,   S|Y,     S|Y,     S|Y|P,   S|Y,     S|Y|P,   S|Y|P,   S|Y,
+/*f8*/	S|Y|X,   S|Y|X|P, S|Y|X|P, S|Y|X,   S|Y|X|P, S|Y|X,   S|Y|X,   S|Y|X|P
+};
+
+#endif /* UNDOC_FLAGS */
+
 #undef _
 #undef S
 #undef Z
+#undef Y
+#undef X
 #undef P
-#endif /* FAST_INSTR */
+
+#endif /* FLAG_TABLES */

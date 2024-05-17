@@ -39,7 +39,8 @@
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_IALL	/* compile rarely used undoc'd Z80 instructions */
 #define UNDOC_FLAGS	/* compile undocumented Z80 flags */
-/*#define FAST_INSTR*/	/* faster instr. & smaller size, but less debuggable */
+/*#define INSTR_SWTCH*/	/* big switch instead of functions, less debuggable */
+/*#define FLAG_TABLES*/	/* use table lookups for flags */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
