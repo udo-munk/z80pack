@@ -17,7 +17,7 @@
 #define UNDOC_INST	/* compile undocumented instructions */
 #define UNDOC_IALL	/* compile rarely used undoc'd Z80 instructions */
 #define UNDOC_FLAGS	/* compile undocumented Z80 flags */
-/*#define FAST_INSTR*/	/* faster instr. & smaller size, but less debuggable */
+#define FAST_INSTR	/* faster instr. & smaller size, but less debuggable */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
 
