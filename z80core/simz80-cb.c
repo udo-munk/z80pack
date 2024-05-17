@@ -15,7 +15,7 @@ INSTR(0x3f, op_srla)			/* SRL A */
 	(A & 1) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A >>= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -23,13 +23,13 @@ INSTR(0x3f, op_srla)			/* SRL A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -41,7 +41,7 @@ INSTR(0x38, op_srlb)			/* SRL B */
 	(B & 1) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	B >>= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -49,13 +49,13 @@ INSTR(0x38, op_srlb)			/* SRL B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -67,7 +67,7 @@ INSTR(0x39, op_srlc)			/* SRL C */
 	(C & 1) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	C >>= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -75,13 +75,13 @@ INSTR(0x39, op_srlc)			/* SRL C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -93,7 +93,7 @@ INSTR(0x3a, op_srld)			/* SRL D */
 	(D & 1) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	D >>= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -101,13 +101,13 @@ INSTR(0x3a, op_srld)			/* SRL D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -119,7 +119,7 @@ INSTR(0x3b, op_srle)			/* SRL E */
 	(E & 1) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	E >>= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -127,13 +127,13 @@ INSTR(0x3b, op_srle)			/* SRL E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -145,7 +145,7 @@ INSTR(0x3c, op_srlh)			/* SRL H */
 	(H & 1) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	H >>= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -153,13 +153,13 @@ INSTR(0x3c, op_srlh)			/* SRL H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -171,7 +171,7 @@ INSTR(0x3d, op_srll)			/* SRL L */
 	(L & 1) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	L >>= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -179,13 +179,13 @@ INSTR(0x3d, op_srll)			/* SRL L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -203,7 +203,7 @@ INSTR(0x3e, op_srlhl)			/* SRL (HL) */
 	P >>= 1;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -211,13 +211,13 @@ INSTR(0x3e, op_srlhl)			/* SRL (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -229,7 +229,7 @@ INSTR(0x27, op_slaa)			/* SLA A */
 	(A & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A <<= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -237,13 +237,13 @@ INSTR(0x27, op_slaa)			/* SLA A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -255,7 +255,7 @@ INSTR(0x20, op_slab)			/* SLA B */
 	(B & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	B <<= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -263,13 +263,13 @@ INSTR(0x20, op_slab)			/* SLA B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -281,7 +281,7 @@ INSTR(0x21, op_slac)			/* SLA C */
 	(C & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	C <<= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -289,13 +289,13 @@ INSTR(0x21, op_slac)			/* SLA C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -307,7 +307,7 @@ INSTR(0x22, op_slad)			/* SLA D */
 	(D & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	D <<= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -315,13 +315,13 @@ INSTR(0x22, op_slad)			/* SLA D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -333,7 +333,7 @@ INSTR(0x23, op_slae)			/* SLA E */
 	(E & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	E <<= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -341,13 +341,13 @@ INSTR(0x23, op_slae)			/* SLA E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -359,7 +359,7 @@ INSTR(0x24, op_slah)			/* SLA H */
 	(H & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	H <<= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -367,13 +367,13 @@ INSTR(0x24, op_slah)			/* SLA H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -385,7 +385,7 @@ INSTR(0x25, op_slal)			/* SLA L */
 	(L & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	L <<= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -393,13 +393,13 @@ INSTR(0x25, op_slal)			/* SLA L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -417,7 +417,7 @@ INSTR(0x26, op_slahl)			/* SLA (HL) */
 	P <<= 1;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -425,13 +425,13 @@ INSTR(0x26, op_slahl)			/* SLA (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -447,7 +447,7 @@ INSTR(0x17, op_rlra)			/* RL A */
 	A <<= 1;
 	if (old_c_flag) A |= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -455,13 +455,13 @@ INSTR(0x17, op_rlra)			/* RL A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -477,7 +477,7 @@ INSTR(0x10, op_rlb)			/* RL B */
 	B <<= 1;
 	if (old_c_flag) B |= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -485,13 +485,13 @@ INSTR(0x10, op_rlb)			/* RL B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -507,7 +507,7 @@ INSTR(0x11, op_rlc)			/* RL C */
 	C <<= 1;
 	if (old_c_flag) C |= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -515,13 +515,13 @@ INSTR(0x11, op_rlc)			/* RL C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -537,7 +537,7 @@ INSTR(0x12, op_rld)			/* RL D */
 	D <<= 1;
 	if (old_c_flag) D |= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -545,13 +545,13 @@ INSTR(0x12, op_rld)			/* RL D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -567,7 +567,7 @@ INSTR(0x13, op_rle)			/* RL E */
 	E <<= 1;
 	if (old_c_flag) E |= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -575,13 +575,13 @@ INSTR(0x13, op_rle)			/* RL E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -597,7 +597,7 @@ INSTR(0x14, op_rlh)			/* RL H */
 	H <<= 1;
 	if (old_c_flag) H |= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -605,13 +605,13 @@ INSTR(0x14, op_rlh)			/* RL H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -627,7 +627,7 @@ INSTR(0x15, op_rll)			/* RL L */
 	L <<= 1;
 	if (old_c_flag) L |= 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -635,13 +635,13 @@ INSTR(0x15, op_rll)			/* RL L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -662,7 +662,7 @@ INSTR(0x16, op_rlhl)			/* RL (HL) */
 	if (old_c_flag) P |= 1;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -670,13 +670,13 @@ INSTR(0x16, op_rlhl)			/* RL (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -692,7 +692,7 @@ INSTR(0x1f, op_rrra)			/* RR A */
 	A >>= 1;
 	if (old_c_flag) A |= 128;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -700,13 +700,13 @@ INSTR(0x1f, op_rrra)			/* RR A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -722,7 +722,7 @@ INSTR(0x18, op_rrb)			/* RR B */
 	B >>= 1;
 	if (old_c_flag) B |= 128;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -730,13 +730,13 @@ INSTR(0x18, op_rrb)			/* RR B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -752,7 +752,7 @@ INSTR(0x19, op_rrc)			/* RR C */
 	C >>= 1;
 	if (old_c_flag) C |= 128;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -760,13 +760,13 @@ INSTR(0x19, op_rrc)			/* RR C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -782,7 +782,7 @@ INSTR(0x1a, op_rrd)			/* RR D */
 	D >>= 1;
 	if (old_c_flag) D |= 128;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -790,13 +790,13 @@ INSTR(0x1a, op_rrd)			/* RR D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -812,7 +812,7 @@ INSTR(0x1b, op_rre)			/* RR E */
 	E >>= 1;
 	if (old_c_flag) E |= 128;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -820,13 +820,13 @@ INSTR(0x1b, op_rre)			/* RR E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -842,7 +842,7 @@ INSTR(0x1c, op_rrh)			/* RR H */
 	H >>= 1;
 	if (old_c_flag) H |= 128;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -850,13 +850,13 @@ INSTR(0x1c, op_rrh)			/* RR H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -872,7 +872,7 @@ INSTR(0x1d, op_rrl)			/* RR L */
 	L >>= 1;
 	if (old_c_flag) L |= 128;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -880,13 +880,13 @@ INSTR(0x1d, op_rrl)			/* RR L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -907,7 +907,7 @@ INSTR(0x1e, op_rrhl)			/* RR (HL) */
 	if (old_c_flag) P |= 128;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -915,13 +915,13 @@ INSTR(0x1e, op_rrhl)			/* RR (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -937,7 +937,7 @@ INSTR(0x0f, op_rrcra)			/* RRC A */
 	F &= ~(H_FLAG | N_FLAG);
 	A >>= 1;
 	if (i) A |= 128;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -945,13 +945,13 @@ INSTR(0x0f, op_rrcra)			/* RRC A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -967,7 +967,7 @@ INSTR(0x08, op_rrcb)			/* RRC B */
 	F &= ~(H_FLAG | N_FLAG);
 	B >>= 1;
 	if (i) B |= 128;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -975,13 +975,13 @@ INSTR(0x08, op_rrcb)			/* RRC B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -997,7 +997,7 @@ INSTR(0x09, op_rrcc)			/* RRC C */
 	F &= ~(H_FLAG | N_FLAG);
 	C >>= 1;
 	if (i) C |= 128;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1005,13 +1005,13 @@ INSTR(0x09, op_rrcc)			/* RRC C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1027,7 +1027,7 @@ INSTR(0x0a, op_rrcd)			/* RRC D */
 	F &= ~(H_FLAG | N_FLAG);
 	D >>= 1;
 	if (i) D |= 128;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1035,13 +1035,13 @@ INSTR(0x0a, op_rrcd)			/* RRC D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1057,7 +1057,7 @@ INSTR(0x0b, op_rrce)			/* RRC E */
 	F &= ~(H_FLAG | N_FLAG);
 	E >>= 1;
 	if (i) E |= 128;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1065,13 +1065,13 @@ INSTR(0x0b, op_rrce)			/* RRC E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1087,7 +1087,7 @@ INSTR(0x0c, op_rrch)			/* RRC H */
 	F &= ~(H_FLAG | N_FLAG);
 	H >>= 1;
 	if (i) H |= 128;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1095,13 +1095,13 @@ INSTR(0x0c, op_rrch)			/* RRC H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1117,7 +1117,7 @@ INSTR(0x0d, op_rrcl)			/* RRC L */
 	F &= ~(H_FLAG | N_FLAG);
 	L >>= 1;
 	if (i) L |= 128;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1125,13 +1125,13 @@ INSTR(0x0d, op_rrcl)			/* RRC L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1152,7 +1152,7 @@ INSTR(0x0e, op_rrchl)			/* RRC (HL) */
 	if (i) P |= 128;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1160,13 +1160,13 @@ INSTR(0x0e, op_rrchl)			/* RRC (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1182,7 +1182,7 @@ INSTR(0x07, op_rlcra)			/* RLC A */
 	F &= ~(H_FLAG | N_FLAG);
 	A <<= 1;
 	if (i) A |= 1;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1190,13 +1190,13 @@ INSTR(0x07, op_rlcra)			/* RLC A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1212,7 +1212,7 @@ INSTR(0x00, op_rlcb)			/* RLC B */
 	F &= ~(H_FLAG | N_FLAG);
 	B <<= 1;
 	if (i) B |= 1;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1220,13 +1220,13 @@ INSTR(0x00, op_rlcb)			/* RLC B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1242,7 +1242,7 @@ INSTR(0x01, op_rlcc)			/* RLC C */
 	F &= ~(H_FLAG | N_FLAG);
 	C <<= 1;
 	if (i) C |= 1;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1250,13 +1250,13 @@ INSTR(0x01, op_rlcc)			/* RLC C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1272,7 +1272,7 @@ INSTR(0x02, op_rlcd)			/* RLC D */
 	F &= ~(H_FLAG | N_FLAG);
 	D <<= 1;
 	if (i) D |= 1;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1280,13 +1280,13 @@ INSTR(0x02, op_rlcd)			/* RLC D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1302,7 +1302,7 @@ INSTR(0x03, op_rlce)			/* RLC E */
 	F &= ~(H_FLAG | N_FLAG);
 	E <<= 1;
 	if (i) E |= 1;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1310,13 +1310,13 @@ INSTR(0x03, op_rlce)			/* RLC E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1332,7 +1332,7 @@ INSTR(0x04, op_rlch)			/* RLC H */
 	F &= ~(H_FLAG | N_FLAG);
 	H <<= 1;
 	if (i) H |= 1;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1340,13 +1340,13 @@ INSTR(0x04, op_rlch)			/* RLC H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1362,7 +1362,7 @@ INSTR(0x05, op_rlcl)			/* RLC L */
 	F &= ~(H_FLAG | N_FLAG);
 	L <<= 1;
 	if (i) L |= 1;
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1370,13 +1370,13 @@ INSTR(0x05, op_rlcl)			/* RLC L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1397,7 +1397,7 @@ INSTR(0x06, op_rlchl)			/* RLC (HL) */
 	if (i) P |= 1;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1405,13 +1405,13 @@ INSTR(0x06, op_rlchl)			/* RLC (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1427,7 +1427,7 @@ INSTR(0x2f, op_sraa)			/* SRA A */
 	A >>= 1;
 	A |= i;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1435,13 +1435,13 @@ INSTR(0x2f, op_sraa)			/* SRA A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1457,7 +1457,7 @@ INSTR(0x28, op_srab)			/* SRA B */
 	B >>= 1;
 	B |= i;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1465,13 +1465,13 @@ INSTR(0x28, op_srab)			/* SRA B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1487,7 +1487,7 @@ INSTR(0x29, op_srac)			/* SRA C */
 	C >>= 1;
 	C |= i;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1495,13 +1495,13 @@ INSTR(0x29, op_srac)			/* SRA C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1517,7 +1517,7 @@ INSTR(0x2a, op_srad)			/* SRA D */
 	D >>= 1;
 	D |= i;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1525,13 +1525,13 @@ INSTR(0x2a, op_srad)			/* SRA D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1547,7 +1547,7 @@ INSTR(0x2b, op_srae)			/* SRA E */
 	E >>= 1;
 	E |= i;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1555,13 +1555,13 @@ INSTR(0x2b, op_srae)			/* SRA E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1577,7 +1577,7 @@ INSTR(0x2c, op_srah)			/* SRA H */
 	H >>= 1;
 	H |= i;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1585,13 +1585,13 @@ INSTR(0x2c, op_srah)			/* SRA H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1607,7 +1607,7 @@ INSTR(0x2d, op_sral)			/* SRA L */
 	L >>= 1;
 	L |= i;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1615,13 +1615,13 @@ INSTR(0x2d, op_sral)			/* SRA L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -1641,7 +1641,7 @@ INSTR(0x2e, op_srahl)			/* SRA (HL) */
 	P = (P >> 1) | i;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -1649,13 +1649,13 @@ INSTR(0x2e, op_srahl)			/* SRA (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3333,7 +3333,7 @@ INSTR(0x37, op_undoc_slla)		/* SLL A */
 	(A & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = A << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3341,13 +3341,13 @@ INSTR(0x37, op_undoc_slla)		/* SLL A */
 	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[A];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3365,7 +3365,7 @@ INSTR(0x30, op_undoc_sllb)		/* SLL B */
 	(B & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	B = B << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3373,13 +3373,13 @@ INSTR(0x30, op_undoc_sllb)		/* SLL B */
 	(B & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(B & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[B];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[B];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3395,7 +3395,7 @@ INSTR(0x31, op_undoc_sllc)		/* SLL C */
 	(C & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	C = C << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3403,13 +3403,13 @@ INSTR(0x31, op_undoc_sllc)		/* SLL C */
 	(C & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(C & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[C];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[C];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3425,7 +3425,7 @@ INSTR(0x32, op_undoc_slld)		/* SLL D */
 	(D & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	D = D << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3433,13 +3433,13 @@ INSTR(0x32, op_undoc_slld)		/* SLL D */
 	(D & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(D & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[D];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[D];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3455,7 +3455,7 @@ INSTR(0x33, op_undoc_slle)		/* SLL E */
 	(E & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	E = E << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3463,13 +3463,13 @@ INSTR(0x33, op_undoc_slle)		/* SLL E */
 	(E & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(E & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[E];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[E];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3485,7 +3485,7 @@ INSTR(0x34, op_undoc_sllh)		/* SLL H */
 	(H & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	H = H << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3493,13 +3493,13 @@ INSTR(0x34, op_undoc_sllh)		/* SLL H */
 	(H & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(H & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[H];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[H];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3515,7 +3515,7 @@ INSTR(0x35, op_undoc_slll)		/* SLL L */
 	(L & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	L = L << 1 | 1;
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3523,13 +3523,13 @@ INSTR(0x35, op_undoc_slll)		/* SLL L */
 	(L & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(L & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[L];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[L];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -3551,7 +3551,7 @@ INSTR(0x36, op_undoc_sllhl)		/* SLL (HL) */
 	P = (P << 1) | 1;
 	memwrt(addr, P);
 	F &= ~(H_FLAG | N_FLAG);
-#ifndef FAST_FLAGS
+#ifndef FLAG_TABLES
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
@@ -3559,13 +3559,13 @@ INSTR(0x36, op_undoc_sllhl)		/* SLL (HL) */
 	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
 	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
 #endif
-#else /* FAST_FLAGS */
+#else /* FLAG_TABLES */
 #ifndef UNDOC_FLAGS
 	F = (F & ~SZP_FLAGS) | szp_flags[P];
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[P];
 #endif
-#endif /* FAST_FLAGS */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
