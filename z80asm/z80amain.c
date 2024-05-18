@@ -35,6 +35,9 @@ extern void obj_header(void);
 extern void obj_end(void);
 extern void obj_writeb(WORD);
 
+/* z80anum.c */
+extern WORD eval(char *);
+
 /* z80mfun.c */
 extern void mac_start_pass(void);
 extern void mac_end_pass(void);
@@ -56,11 +59,11 @@ extern void put_label(void);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
-	("z80asm version %s\n"
-	 "usage: z80asm -8 -u -f{b|m|h|c} -s[n|a] "
-	 "-p<num> -e<num> -h<num> -c<num>\n"
-	 "              -x -v -m -U -T -o<file> -l[<file>] "
-	 "-d<symbol> ... <file> ..."),	/* 1 */
+	("\nz80asm version %s\n"
+	 "usage: z80asm -8 -u -v -U -e<num> -f{b|m|h|c} -x "
+	 "-h<num> -c<num> -m -T -p<num>\n"
+	 "              -s[n|a] -o<file> -l[<file>] "
+	 "-d<symbol>[=<expr>] ... <file> ..."), /* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
 	"internal error: %s",		/* 4 */
@@ -114,6 +117,7 @@ void options(int argc, char *argv[])
 {
 	register char *s, *t;
 	register char **p;
+	WORD val;
 
 	while (--argc > 0 && (*++argv)[0] == '-')
 		for (s = argv[0] + 1; *s != '\0'; s++)
@@ -172,14 +176,21 @@ void options(int argc, char *argv[])
 					puts("name missing in option -d");
 					usage();
 				}
-				t = label;
-				while (*s) {
-					*t++ = TO_UPP(*s);
-					s++;
+				t = get_symbol(label, s, FALSE);
+				if (t == s) {
+					puts("invalid name in option -d");
+					usage();
 				}
-				s--;
-				*t = '\0';
-				put_sym(label, 0);
+				if (*t == '=') {
+					get_operand(operand, ++t, FALSE);
+					val = eval(operand);
+					if (errors)
+						usage();
+					t += strlen(t);
+				} else
+					val = 0;
+				put_sym(label, val);
+				s = t - 1;
 				break;
 			case '8':
 				i8080_flag = TRUE;
