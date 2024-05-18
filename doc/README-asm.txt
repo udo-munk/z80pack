@@ -1,7 +1,7 @@
 Usage:
 
-z80asm -8 -u -f{b|m|h|c} -s[n|a] -p<num> -e<num> -h<num> -c<num>
-       -x -v -m -U -T -o<file> -l[<file>] -d<symbol> ... <file> ...
+z80asm -8 -u -v -U -e<num> -f{b|m|h|c} -x -h<num> -c<num> -m -T -p<num>
+       -s[n|a] -o<file> -l[<file>] -d<symbol>[=<expr>] ... <file> ...
 
 If the file name of a source doesn't have an extension the default
 extension ".asm" will be appended.
@@ -14,6 +14,16 @@ Change default instruction set to 8080.
 
 Option u:
 Accept undocumented Z80 instructions.
+
+Option v:
+Verbose operation of the assembler.
+
+Option U:
+Convert everything to upper case for compatibility with old source code.
+
+Option e:
+Set the number of significant characters in symbols to <num>.
+The default is 8 and the allowed range is 6 to 32.
 
 Option f:
 Format of the output file:
@@ -28,21 +38,13 @@ but this format is not used much anymore.
 For z80sim use Mostek binary or Intel HEX files, it cannot load binary
 files that don't include the load address.
 
-Option s:
-This option prints the symbol table unsorted (-s), sorted by name (-sn)
-or sorted by address (-sa) into the list file. This option only works
-together with option -l.
-
-Option p:
-Set the page length for the list file.
-The default is 65 and the allowed range is 6 to 144 or 0.
-If page length is 0 the assembler only prints a single header at the
-start of the listing and inserts an empty line for PAGE/EJECT and
-INCLUDE/MACLIB instead of starting a new page.
-
-Option e:
-Set the number of significant characters in symbols to <num>.
-The default is 8 and the allowed range is 6 to 32.
+Option x:
+Don't fill binary files up to the last used logical address. This means,
+that single parameter DEFS's at the end of the source file won't fill up
+the output file with 0xff's.
+Useful to make CP/M BIOS's, where unallocated data doesn't need to be a
+part of the system image, fit on the system tracks.
+This option is a no-op for Intel HEX output.
 
 Option h:
 Set the maximum number of bytes per HEX record to <num>.
@@ -53,27 +55,25 @@ Set the maximum number of bytes per C array line to <num>.
 The default is 12 and the allowed range is 1 to 16.
 Values greater than 12 omit the space between bytes.
 
-Option x:
-Don't fill binary files up to the last used logical address. This means,
-that single parameter DEFS's at the end of the source file won't fill up
-the output file with 0xff's.
-Useful to make CP/M BIOS's, where unallocated data doesn't need to be a
-part of the system image, fit on the system tracks.
-This option is a no-op for Intel HEX output.
-
-Option v:
-Verbose operation of the assembler.
-
 Option m:
 Modify macro expansion listing. Use once to list all macro expansions,
 twice to list no macro expansions.
 The default is to list only macro expansions that produce object code.
 
-Option U:
-Convert everything to upper case for compatibility with old source code.
-
 Option T:
 Don't print time stamp in list file headers.
+
+Option p:
+Set the page length for the list file.
+The default is 65 and the allowed range is 6 to 144 or 0.
+If page length is 0 the assembler only prints a single header at the
+start of the listing and inserts an empty line for PAGE/EJECT and
+INCLUDE/MACLIB instead of starting a new page.
+
+Option s:
+This option prints the symbol table unsorted (-s), sorted by name (-sn)
+or sorted by address (-sa) into the list file. This option only works
+together with option -l.
 
 Option o:
 To override the default name of the output file. The extension ".bin",
@@ -88,8 +88,8 @@ generated. An optional file name path may be added to this option, which
 has the extension ".lis" appended when none is specified.
 
 Option d:
-This option predefines symbols with a value of 0 and may be used
-multiple times.
+This option predefines symbols with a value of 0 or the value of the
+expression and may be used multiple times.
 
 
 Pseudo Operations:

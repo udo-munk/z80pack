@@ -88,7 +88,11 @@ static char hex_out[MAXHEX * 2 + 13];	/* ASCII buffer for one HEX record */
  */
 void asmerr(int i)
 {
-	if (pass == 1) {
+	if (pass == 0) {
+		fputs("invalid expression in option -d: ", errfp);
+		fputs(errmsg[i], errfp);
+		fputc('\n', errfp);
+	} else if (pass == 1) {
 		fprintf(errfp, "Error in file: %s  Line: %ld\n",
 			srcfn, c_line);
 		fputs(errmsg[i], errfp);

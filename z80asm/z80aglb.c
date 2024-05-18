@@ -43,7 +43,7 @@ int  list_flag,			/* flag for option -l */
      mac_list_flag,		/* flag for option -m */
      i8080_flag,		/* flag for option -8 */
      nfiles,			/* number of input files */
-     radix,			/* current radix, set to 10 at start of pass */
+     radix = 10,		/* current radix, set to 10 at start of pass */
      phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
