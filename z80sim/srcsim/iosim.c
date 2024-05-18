@@ -10,8 +10,10 @@
 /*
  *	Port 0 input:	reads status of stdin
  *	Port 1 input:	reads the next byte from stdin
+ *	Port 160 input:	hardware control lock status
  *	Port 255 input:	returns a value for software querying frontpanel
  *	Port 1 output:	writes the byte to stdout
+ *	Port 160 output: hardware control
  *	Port 255 output: set value for the port
  *
  *	All the other ports are connected to an I/O-trap handler,
@@ -30,10 +32,13 @@
 static BYTE io_trap_in(void);
 static void io_trap_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
+static BYTE hwctl_in(void);
 static void p001_out(BYTE), p255_out(BYTE);
+static void hwctl_out(BYTE);
 
-static BYTE sio_last;	/* last byte read from sio */
-static BYTE fp_value;	/* port 255 value, can be set with p command */
+static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
+static BYTE sio_last;		/* last byte read from sio */
+static BYTE fp_value;		/* port 255 value, can be set with p command */
 
 /*
  *	This array contains function pointers for every input
@@ -73,7 +78,9 @@ void init_io(void)
 		port_in[i] = io_trap_in;
 		port_out[i] = io_trap_out;
 	}
-	port_in[255] = p255_in; /* for frontpanel */
+	port_in[160] = hwctl_in;	/* virtual hardware control */
+	port_out[160] = hwctl_out;	/* virtual hardware control */
+	port_in[255] = p255_in;		/* for frontpanel */
 	port_out[255] = p255_out;
 }
 
@@ -193,6 +200,15 @@ static BYTE p001_in(void)
 }
 
 /*
+ *	I/O handler for read hardware control
+ *	returns lock status of the port
+ */
+static BYTE hwctl_in(void)
+{
+	return (hwctl_lock);
+}
+
+/*
  *	I/O function port 255 read:
  *	used by frontpanel machines
  */
@@ -209,6 +225,60 @@ static void p001_out(BYTE data)
 {
 	putchar((int) data & 0x7f); /* strip parity, some software won't */
 	fflush(stdout);
+}
+
+/*
+ *	Port is locked until magic number 0xaa is received!
+ *
+ *	I/O handler for write hardware control after unlocking:
+ *
+ *	bit 4 = 1	switch CPU model to 8080
+ *	bit 5 = 1	switch CPU model to Z80
+ *	bit 6 = 1	reset CPU
+ *	bit 7 = 1	halt emulation via I/O
+ */
+static void hwctl_out(BYTE data)
+{
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	extern void switch_cpu(int);
+#endif
+	extern void reset_cpu(void);
+
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
+		cpu_error = IOHALT;
+		cpu_state = STOPPED;
+		return;
+	}
+
+	if (data & 64) {	/* reset system */
+		hwctl_lock = 0xff; /* lock hardware control port */
+		reset_cpu();	/* reset CPU */
+		return;
+	}
+
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	if (data & 32) {	/* switch cpu model to Z80 */
+		switch_cpu(Z80);
+		return;
+	}
+
+	if (data & 16) {	/* switch cpu model to 8080 */
+		switch_cpu(I8080);
+		return;
+	}
+#endif
 }
 
 /*
