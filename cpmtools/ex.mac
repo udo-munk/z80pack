@@ -25,6 +25,18 @@ trace	equ	0
 ; bitcnt	equ	1	; display the bit count
 bitcnt	equ	0
 
+; oncpm defines whether the exerciser runs on CP/M or a bare machine
+; oncpn	equ	0	; run on bare machine
+; oncpm	equ	1	; run on CP/M
+     ifndef oncpm
+oncpm	equ	1
+     endif
+
+     if oncpm eq 0
+iochar	equ	01h		; I/O port to output a character
+stack	equ	06000H		; Initial stack pointer value
+     endif
+
      if	exkind eq 0
 genz80	equ	1
 isZ80	equ	0
@@ -74,9 +86,12 @@ isZ80	equ	1
 ; Corrected checksums for Z80 inout test
 ;
 ; Use z80pack CPU switching
+;
+; Add option to run on bare emulators/machines.
+; Adapted from code by Goran Devic (https://baltazarstudios.com) for Z80Explorer.
 
 	aseg
-	org	100h
+
 cr	equ	13
 lf	equ	10
 printst	equ	9
@@ -88,7 +103,48 @@ hwunlk	equ	0aah
 set8080	equ	16
 setz80	equ	32
 
+     if oncpm
+	org	100h
+
 	jp	start
+     else
+	org	0h
+
+	jp	boot
+
+; Minimal BDOS for bare emulators/machines.
+; We implement subfunctions:
+;  C=2  Print a character given in E
+;  C=9  Print a string pointed to by DE; string ends with '$'
+
+	org	5h
+
+	ld	a,c
+	cp	2
+	jp	z,bdasc
+	cp	9
+	jp	z,bdmsg
+	ret
+
+bdasc:	ld a,e
+	out	(iochar),a
+	ret
+
+bdmsg:	push	de
+	pop	hl
+lp0:	ld	e,(hl)
+	ld	a,e
+	cp	'$'
+	ret	z
+	call	bdasc
+	inc	hl
+	jp	lp0
+
+boot:	ld	hl,stack
+	jp	start0
+
+	org	103h
+     endif
 
 ; machine state before test (needs to be at predictably constant address)
 msbt:	ds	14
@@ -166,7 +222,9 @@ dosw1:	ld	a,c		; switch cpu type
 	ld	c,printst
 	jp	bdos
 
-start:	xor	a
+start:	ld	hl,(bdosO+1)
+start0:	ld	sp,hl
+	xor	a
 	ld	(erfnd),a	; reset error flag
 	ld	(nsw),a		; = 0: does not need switch, <> 0: needs switch
 	dec	a		; parity even shows that we are running on an 8080
@@ -177,9 +235,7 @@ start:	xor	a
 	jp	pe,start1
 	call	sw8080
       endif
-start1:	ld	hl,(bdosO+1)
-	ld	sp,hl
-	ld	de,msg1
+start1:	ld	de,msg1
 	ld	c,printst
 	call	bdos
 
@@ -201,13 +257,19 @@ noerr:	ld	c,printst
 	call	bdos
 	ld	a,(nsw)
 	or	a
-	jp	z,wboot
+	jp	z,wboot0
       if isz80
       	call	sw8080
       else
       	call	swz80
       endif
+wboot0:
+     if oncpm
 	jp	wboot		; warm boot
+     else
+	di
+	halt
+     endif
 
 tests:
      if	isZ80
