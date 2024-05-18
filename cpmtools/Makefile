@@ -29,13 +29,13 @@ swz80.com: swz80.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 -fb -o$@ $<
 
 ex8080.com: ex.mac $(Z80ASM)
-	$(Z80ASM) $(Z80ASMFLAGS) -dex8080 -fb -l$(@:.com=.lis) -o$@ $<
+	$(Z80ASM) $(Z80ASMFLAGS) -dexkind=0 -fb -l$(@:.com=.lis) -o$@ $<
 
 exz80doc.com: ex.mac $(Z80ASM)
-	$(Z80ASM) $(Z80ASMFLAGS) -dexz80doc -fb -l$(@:.com=.lis) -o$@ $<
+	$(Z80ASM) $(Z80ASMFLAGS) -dexkind=1 -fb -l$(@:.com=.lis) -o$@ $<
 
 exz80all.com: ex.mac $(Z80ASM)
-	$(Z80ASM) $(Z80ASMFLAGS) -dexz80all -fb -l$(@:.com=.lis) -o$@ $<
+	$(Z80ASM) $(Z80ASMFLAGS) -dexkind=2 -fb -l$(@:.com=.lis) -o$@ $<
 
 prelim.com: prelim.mac $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -fb -o$@ $<
