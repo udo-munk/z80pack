@@ -5,14 +5,8 @@
 ; exkind	equ	0	; for 8080 only, Z80 instructions are not tested, EX8080.COM
 ; exkind	equ	1	; for Z80 only, undefined status bits are NOT tested, EXZ80DOC.COM
 ; exkind	equ	2	; for Z80 only, undefined status bits ARE tested, EXZ80ALL.COM
-     ifdef ex8080
-exkind	equ	0
-     endif
-     ifdef exz80doc
+     ifndef exkind
 exkind	equ	1
-     endif
-     ifdef exz80all
-exkind	equ	2
      endif
 
 ; trace defines whether verbose state information is sent to the console

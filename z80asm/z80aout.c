@@ -89,7 +89,7 @@ static char hex_out[MAXHEX * 2 + 13];	/* ASCII buffer for one HEX record */
 void asmerr(int i)
 {
 	if (pass == 0) {
-		fputs("invalid expression in option -d: ", errfp);
+		fputs("error in option -d: ", errfp);
 		fputs(errmsg[i], errfp);
 		fputc('\n', errfp);
 	} else if (pass == 1) {
