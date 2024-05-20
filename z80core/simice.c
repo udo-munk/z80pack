@@ -251,12 +251,25 @@ static void do_trace(char *s)
  */
 static void do_go(char *s)
 {
+	extern unsigned long long get_clock_us(void);
+	int timeit = 0;
+	unsigned long long start_time, stop_time;
+	Tstates_t T0;
+
 	while (isspace((unsigned char) *s))
 		s++;
+	if (*s == '*') {
+		timeit = 1;
+		s++;
+	}
 	if (isxdigit((unsigned char) *s))
 		PC = exatoi(s);
 	if (ice_before_go)
 		(*ice_before_go)();
+	if (timeit) {
+		T0 = T;
+		start_time = get_clock_us();
+	}
 	for (;;) {
 		run_cpu();
 		if (cpu_error) {
@@ -268,9 +281,17 @@ static void do_go(char *s)
 				break;
 		}
 	}
+	if (timeit)
+		stop_time = get_clock_us();
 	if (ice_after_go)
 		(*ice_after_go)();
 	report_cpu_error();
+	if (timeit) {
+		printf("CPU executed %lld t-states in %lld ms\n",
+		       T - T0, (stop_time - start_time) / 1000);
+		printf("clock frequency = %5.2f MHz\n",
+		       (float) (T - T0) / (float) (stop_time - start_time));
+	}
 	print_head();
 	print_reg();
 	wrk_addr = PC;
@@ -973,7 +994,7 @@ static void do_help(void)
 	puts("f address,count,value     fill memory");
 	puts("v from,to,count           move memory");
 	puts("p address                 show/modify port");
-	puts("g [address]               run program");
+	puts("g [*][address]            run program (* = with timimg)");
 	puts("t [count]                 trace program");
 	puts("return                    single step program");
 	puts("x [register]              show/modify register");
