@@ -99,20 +99,29 @@ INSTR(0x2f, op_cma)			/* CMA */
 	STATES(4);
 }
 
+/*
+ * Rewrote DAA after looking at
+ * https://zeptobars.com/en/read/KR580VM80A-intel-i8080-verilog-reverse-engineering
+ * in the verilog file.
+ * It is just a normal addition with a special operand setup and the carry flag
+ * is set to the same value as the condition of the second "if". That is what
+ * makes DAA a bit strange.
+ *
+ * Thomas Eberhardt
+ */
+
 INSTR(0x27, op_daa)			/* DAA */
 {
-	register int tmp_a = A;
+	register int adj = 0;
 
-	if (((A & 0xf) > 9) || (F & H_FLAG)) {
-		((A & 0xf) > 9) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-		tmp_a += 6;
+	if (((A & 0xf) > 9) || (F & H_FLAG))
+		adj += 6;
+	if ((A > 0x99) || (F & C_FLAG)) {
+		F |= C_FLAG;
+		adj += 0x60;
 	}
-	if (((tmp_a & 0x1f0) > 0x90) || (F & C_FLAG)) {
-		tmp_a += 0x60;
-	}
-	if (tmp_a & 0x100)
-		(F |= C_FLAG);
-	A = tmp_a & 0xff;
+	((A & 0xf) + (adj & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	A += adj;
 #ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
@@ -640,7 +649,7 @@ INSTR(0x21, op_lxihnn)			/* LXI H,nn */
 	STATES(10);
 }
 
-INSTR(0x31, op_lxispnn)		/* LXI SP,nn */
+INSTR(0x31, op_lxispnn)			/* LXI SP,nn */
 {
 	SP = memrdr(PC++);
 	SP += memrdr(PC++) << 8;
@@ -2299,7 +2308,7 @@ INSTR(0xe3, op_xthl)			/* XTHL */
 	STATES(18);
 }
 
-INSTR(0xf5, op_pushpsw)		/* PUSH PSW */
+INSTR(0xf5, op_pushpsw)			/* PUSH PSW */
 {
 #ifdef BUS_8080
 	cpu_bus = CPU_STACK;

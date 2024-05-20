@@ -580,6 +580,7 @@ leave:
 #ifndef INSTR_SWTCH
 		t = (*op_sim[memrdr(PC++)])();	/* execute next opcode */
 #else
+		t = 4;
 		switch (memrdr(PC++)) {		/* execute next opcode */
 
 #include "sim8080-00.c"
