@@ -176,7 +176,7 @@ INSTR(0x27, op_daa)			/* DAA */
 #else
 	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
 #endif
-#endif /*FLAG_TABLES */
+#endif /* FLAG_TABLES */
 #ifdef UNDOC_FLAGS
 	modF = 1;
 #endif
@@ -185,39 +185,35 @@ INSTR(0x27, op_daa)			/* DAA */
 #endif
 
 /*
- * This implementation was contributed by Mark Garlanger,
- * see http://heathkit.garlanger.com/
- * It passes the instruction exerciser test from ex.com
- * and is correct.
+ * Rewrote DAA after looking at
+ * https://zeptobars.com/en/read/KR580VM80A-intel-i8080-verilog-reverse-engineering
+ * in the verilog file.
+ * It is just a normal addition with a special operand setup and the carry flag
+ * is set to the same value as the condition of the second "if". That is what
+ * makes DAA a bit strange.
+ * Turns out the Z80 is exactly the same except it does a subtraction if the
+ * N flag is set.
+ *
+ * Thomas Eberhardt
  */
 INSTR(0x27, op_daa)			/* DAA */
 {
-	int tmp_a = A;
-	int low_nibble = A & 0x0f;
-	int carry = (F & C_FLAG);
+	register int adj = 0;
 
-	if (F & N_FLAG) {		/* subtraction */
-		int adjustment = (carry || (tmp_a > 0x99)) ? 0x160 : 0x00;
-
-		if ((F & H_FLAG) || (low_nibble > 9)) {
-			if (low_nibble > 5) {
-				F &= ~H_FLAG;
-			}
-			tmp_a = (tmp_a - 6) & 0xff;
-		}
-		tmp_a -= adjustment;
-	} else {			/* addition */
-		if ((low_nibble > 9) || (F & H_FLAG)) {
-			(low_nibble > 9) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-			tmp_a += 6;
-		}
-		if (((tmp_a & 0x1f0) > 0x90) || carry) {
-			tmp_a += 0x60;
-		}
+	if (((A & 0xf) > 9) || (F & H_FLAG))
+		adj += 6;
+	if ((A > 0x99) || (F & C_FLAG)) {
+		F |= C_FLAG;
+		adj += 0x60;
 	}
-
-	(carry || (tmp_a & 0x100)) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = (tmp_a & 0xff);
+	if (F & N_FLAG) {		/* subtractions */
+		((adj & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+		A -= adj;
+	} else {			/* additions */
+		((A & 0xf) + (adj & 0xf) > 0xf) ? (F |= H_FLAG)
+						: (F &= ~H_FLAG);
+		A += adj;
+	}
 #ifndef FLAG_TABLES
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
