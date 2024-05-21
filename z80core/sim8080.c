@@ -15,16 +15,11 @@
 
 #ifndef EXCLUDE_I8080
 
-#ifdef UNDOC_INST
-#define UNDOC(f) f
-#else
-#define UNDOC(f) trap_undoc
-#endif
-
 #ifdef WANT_GUI
 extern void check_gui_break(void);
 #endif
 
+#ifndef ALT_I8080
 static int trap_undoc(void);
 static int op_nop(void), op_hlt(void), op_stc(void);
 static int op_cmc(void), op_cma(void), op_daa(void), op_ei(void), op_di(void);
@@ -101,6 +96,7 @@ static int op_rst4(void), op_rst5(void), op_rst6(void), op_rst7(void);
 static int op_undoc_nop(void), op_undoc_jmp(void), op_undoc_ret(void);
 static int op_undoc_call(void);
 #endif
+#endif /* !ALT_I8080 */
 
 /*
  * Function to update address bus LED's during execution of
@@ -127,6 +123,14 @@ static inline void addr_leds(WORD data)
 void cpu_8080(void)
 {
 	extern unsigned long long get_clock_us(void);
+
+#ifndef ALT_I8080
+
+#ifdef UNDOC_INST
+#define UNDOC(f) f
+#else
+#define UNDOC(f) trap_undoc
+#endif
 
 	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
@@ -387,6 +391,10 @@ void cpu_8080(void)
 		op_rst7				/* 0xff */
 	};
 
+#undef UNDOC
+
+#endif /* !ALT_I8080 */
+
 	Tstates_t T_max;
 	unsigned long long t1, t2;
 	int tdiff;
@@ -550,7 +558,11 @@ leave:
 #endif
 
 		int_protection = 0;
+#ifndef ALT_I8080
 		T += (*op_sim[memrdr(PC++)])();	/* execute next opcode */
+#else
+#include "alt8080.h"
+#endif
 
 		if (f_flag) {		/* adjust CPU speed */
 			if (T >= T_max && !cpu_needed) {
@@ -591,6 +603,8 @@ leave:
 	}
 #endif
 }
+
+#ifndef ALT_I8080
 
 /*
  *	This function traps undocumented opcodes.
@@ -3176,5 +3190,7 @@ static int op_undoc_ret(void)		/* RET */
 }
 
 #endif /* UNDOC_INST */
+
+#endif /* !ALT_I8080 */
 
 #endif /* !EXCLUDE_I8080 */
