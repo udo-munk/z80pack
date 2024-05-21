@@ -59,7 +59,8 @@ For the AM9511 emulation and 8080/Z80 software to use it.
 Thomas Eberhardt <sneakywumpus@gmail.com>
 
 For completing the implementation of the undocumented Z80 instructions,
-in the simulator, disassembler and assembler.
+in the disassembler, assembler, and the I[XY][HL] instructions in the
+simulator.
 For some improvements to the simulator.
 For much work on the assembler: macros, new expression parser, 8080 mode,
 and various other improvements and bug fixes.

@@ -1,25 +1,25 @@
 diff --git a/z80sim/srcsim/iosim.c b/z80sim/srcsim/iosim.c
-index c60ec2f..8b778a9 100644
+index 0d4f4bf..adbc102 100644
 --- a/z80sim/srcsim/iosim.c
 +++ b/z80sim/srcsim/iosim.c
-@@ -30,6 +30,7 @@
- static BYTE io_trap_in(void);
+@@ -33,6 +33,7 @@ static BYTE io_trap_in(void);
  static void io_trap_out(BYTE);
  static BYTE p000_in(void), p001_in(void), p255_in(void);
+ static BYTE hwctl_in(void);
 +static BYTE p254_in(void);
  static void p001_out(BYTE), p255_out(BYTE);
+ static void hwctl_out(BYTE);
  
- static BYTE sio_last;	/* last byte read from sio */
-@@ -73,6 +74,7 @@ void init_io(void)
- 		port_in[i] = io_trap_in;
- 		port_out[i] = io_trap_out;
+@@ -80,6 +81,7 @@ void init_io(void)
  	}
-+	port_in[254] = p254_in; /* for z80test */
- 	port_in[255] = p255_in; /* for frontpanel */
+ 	port_in[160] = hwctl_in;	/* virtual hardware control */
+ 	port_out[160] = hwctl_out;	/* virtual hardware control */
++	port_in[254] = p254_in;		/* for z80test */
+ 	port_in[255] = p255_in;		/* for frontpanel */
  	port_out[255] = p255_out;
  }
-@@ -192,6 +194,15 @@ static BYTE p001_in(void)
- 	}
+@@ -208,6 +210,15 @@ static BYTE hwctl_in(void)
+ 	return (hwctl_lock);
  }
  
 +/*

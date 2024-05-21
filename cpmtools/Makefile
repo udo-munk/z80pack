@@ -2,7 +2,7 @@
 TOOLS = r.com w.com bye.com reset.com sw8080.com swz80.com
 
 # CPU tests by various authors, modified for using the CPU switch feature
-CPUTESTS = ex8080.com exz80doc.com exz80all.com prelim.com 8080pre.com test8080.com
+CPUTESTS = ex8080.com exz80doc.com prelim.com 8080pre.com test8080.com
 
 Z80ASMDIR = ../z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
@@ -33,9 +33,6 @@ ex8080.com: ex.mac $(Z80ASM)
 
 exz80doc.com: ex.mac $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -dexkind=1 -fb -l$(@:.com=.lis) -o$@ $<
-
-exz80all.com: ex.mac $(Z80ASM)
-	$(Z80ASM) $(Z80ASMFLAGS) -dexkind=2 -fb -l$(@:.com=.lis) -o$@ $<
 
 prelim.com: prelim.mac $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -fb -o$@ $<

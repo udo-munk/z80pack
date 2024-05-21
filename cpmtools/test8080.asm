@@ -13,6 +13,8 @@
 ; 18-MAY-2024 Thomas Eberhardt  Add bare emulator/machine support
 ;
 
+	ASEG
+
 	IFNDEF	ONCPM
 ONCPM	EQU	1	;1 = RUNS ON CPM, 0 = BARE EMULATOR/MACHINE
 	ENDIF
