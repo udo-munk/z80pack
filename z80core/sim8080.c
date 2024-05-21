@@ -697,8 +697,7 @@ static int op_cma(void)			/* CMA */
  * https://zeptobars.com/en/read/KR580VM80A-intel-i8080-verilog-reverse-engineering
  * in the verilog file.
  * It is just a normal addition with a special operand setup and the carry flag
- * is set to the same value as the condition of the second "if". That is what
- * makes DAA a bit strange.
+ * is set to "A > 0x99 or carry was set". That is what makes DAA a bit strange.
  *
  * Thomas Eberhardt
  */
@@ -712,7 +711,8 @@ static int op_daa(void)			/* DAA */
 	if ((A > 0x99) || (F & C_FLAG)) {
 		F |= C_FLAG;
 		adj += 0x60;
-	}
+	} else
+		F &= ~C_FLAG;
 	((A & 0xf) + (adj & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	A += adj;
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
