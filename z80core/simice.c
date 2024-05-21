@@ -965,7 +965,7 @@ static void do_help(void)
 	puts("f address,count,value     fill memory");
 	puts("v from,to,count           move memory");
 	puts("p address                 show/modify port");
-	puts("g [*][address]            run program (* = with timimg)");
+	puts("g [*][address]            run program (* = with timing)");
 	puts("t [count]                 trace program");
 	puts("return                    single step program");
 	puts("x [register]              show/modify register");
