@@ -33,7 +33,6 @@ static BYTE io_trap_in(void);
 static void io_trap_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 static BYTE hwctl_in(void);
-static BYTE p254_in(void);
 static void p001_out(BYTE), p255_out(BYTE);
 static void hwctl_out(BYTE);
 
@@ -81,7 +80,6 @@ void init_io(void)
 	}
 	port_in[160] = hwctl_in;	/* virtual hardware control */
 	port_out[160] = hwctl_out;	/* virtual hardware control */
-	port_in[254] = p254_in;		/* for z80test */
 	port_in[255] = p255_in;		/* for frontpanel */
 	port_out[255] = p255_out;
 }
@@ -208,15 +206,6 @@ static BYTE p001_in(void)
 static BYTE hwctl_in(void)
 {
 	return (hwctl_lock);
-}
-
-/*
- *	I/O function port 254 read:
- *	Return 0xbf as ZX Spectrum (used by z80test)
- */
-static BYTE p254_in(void)
-{
-	return ((BYTE) 0xbf);
 }
 
 /*
