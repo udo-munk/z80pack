@@ -6,32 +6,394 @@
  */
 
 /*
- *	This module contains the implementation of all Z80 instructions
- *	beginning with the prefix 0xfd and a dispatcher for the
- *	prefix 0xfd 0xcb
+ *	Like the function "cpu_z80()" this one emulates multi byte opcodes
+ *	starting with 0xfd
  */
 
-INSTR(0xe1, op_popiy)			/* POP IY */
+#include "sim.h"
+#include "simglb.h"
+#include "config.h"
+#ifdef FRONTPANEL
+#include "frontpanel.h"
+#endif
+#include "memsim.h"
+
+#ifndef EXCLUDE_Z80
+
+#ifdef UNDOC_INST
+#define UNDOC(f) f
+#else
+#define UNDOC(f) trap_fd
+#endif
+
+static int trap_fd(void);
+static int op_popiy(void), op_pusiy(void);
+static int op_jpiy(void);
+static int op_exspy(void);
+static int op_ldspy(void);
+static int op_ldiynn(void), op_ldiyinn(void), op_ldiny(void);
+static int op_adayd(void), op_acayd(void), op_suayd(void), op_scayd(void);
+static int op_andyd(void), op_xoryd(void), op_oryd(void), op_cpyd(void);
+static int op_decyd(void), op_incyd(void);
+static int op_addyb(void), op_addyd(void), op_addys(void), op_addyy(void);
+static int op_inciy(void), op_deciy(void);
+static int op_ldayd(void), op_ldbyd(void), op_ldcyd(void);
+static int op_lddyd(void), op_ldeyd(void);
+static int op_ldhyd(void), op_ldlyd(void);
+static int op_ldyda(void), op_ldydb(void), op_ldydc(void);
+static int op_ldydd(void), op_ldyde(void);
+static int op_ldydh(void), op_ldydl(void), op_ldydn(void);
+extern int op_fdcb_handle(void);
+
+#ifdef UNDOC_INST
+static int op_undoc_ldaiyl(void), op_undoc_ldaiyh(void);
+static int op_undoc_ldbiyl(void), op_undoc_ldbiyh(void);
+static int op_undoc_ldciyl(void), op_undoc_ldciyh(void);
+static int op_undoc_lddiyl(void), op_undoc_lddiyh(void);
+static int op_undoc_ldeiyl(void), op_undoc_ldeiyh(void);
+static int op_undoc_ldiyha(void), op_undoc_ldiyla(void);
+static int op_undoc_ldiyhb(void), op_undoc_ldiylb(void);
+static int op_undoc_ldiyhc(void), op_undoc_ldiylc(void);
+static int op_undoc_ldiyhd(void), op_undoc_ldiyld(void);
+static int op_undoc_ldiyhe(void), op_undoc_ldiyle(void);
+static int op_undoc_ldiyhiyh(void), op_undoc_ldiyliyh(void);
+static int op_undoc_ldiyhiyl(void), op_undoc_ldiyliyl(void);
+static int op_undoc_ldiyhn(void), op_undoc_ldiyln(void);
+static int op_undoc_cpiyl(void), op_undoc_cpiyh(void);
+static int op_undoc_adaiyl(void), op_undoc_adaiyh(void);
+static int op_undoc_acaiyl(void), op_undoc_acaiyh(void);
+static int op_undoc_suaiyl(void), op_undoc_suaiyh(void);
+static int op_undoc_scaiyl(void), op_undoc_scaiyh(void);
+static int op_undoc_oraiyl(void), op_undoc_oraiyh(void);
+static int op_undoc_andiyl(void), op_undoc_andiyh(void);
+static int op_undoc_xoriyl(void), op_undoc_xoriyh(void);
+static int op_undoc_inciyl(void), op_undoc_inciyh(void);
+static int op_undoc_deciyl(void), op_undoc_deciyh(void);
+#endif
+
+int op_fd_handle(void)
+{
+	static int (*op_fd[256])(void) = {
+		trap_fd,			/* 0x00 */
+		trap_fd,			/* 0x01 */
+		trap_fd,			/* 0x02 */
+		trap_fd,			/* 0x03 */
+		trap_fd,			/* 0x04 */
+		trap_fd,			/* 0x05 */
+		trap_fd,			/* 0x06 */
+		trap_fd,			/* 0x07 */
+		trap_fd,			/* 0x08 */
+		op_addyb,			/* 0x09 */
+		trap_fd,			/* 0x0a */
+		trap_fd,			/* 0x0b */
+		trap_fd,			/* 0x0c */
+		trap_fd,			/* 0x0d */
+		trap_fd,			/* 0x0e */
+		trap_fd,			/* 0x0f */
+		trap_fd,			/* 0x10 */
+		trap_fd,			/* 0x11 */
+		trap_fd,			/* 0x12 */
+		trap_fd,			/* 0x13 */
+		trap_fd,			/* 0x14 */
+		trap_fd,			/* 0x15 */
+		trap_fd,			/* 0x16 */
+		trap_fd,			/* 0x17 */
+		trap_fd,			/* 0x18 */
+		op_addyd,			/* 0x19 */
+		trap_fd,			/* 0x1a */
+		trap_fd,			/* 0x1b */
+		trap_fd,			/* 0x1c */
+		trap_fd,			/* 0x1d */
+		trap_fd,			/* 0x1e */
+		trap_fd,			/* 0x1f */
+		trap_fd,			/* 0x20 */
+		op_ldiynn,			/* 0x21 */
+		op_ldiny,			/* 0x22 */
+		op_inciy,			/* 0x23 */
+		UNDOC(op_undoc_inciyh),		/* 0x24 */
+		UNDOC(op_undoc_deciyh),		/* 0x25 */
+		UNDOC(op_undoc_ldiyhn),		/* 0x26 */
+		trap_fd,			/* 0x27 */
+		trap_fd,			/* 0x28 */
+		op_addyy,			/* 0x29 */
+		op_ldiyinn,			/* 0x2a */
+		op_deciy,			/* 0x2b */
+		UNDOC(op_undoc_inciyl),		/* 0x2c */
+		UNDOC(op_undoc_deciyl),		/* 0x2d */
+		UNDOC(op_undoc_ldiyln),		/* 0x2e */
+		trap_fd,			/* 0x2f */
+		trap_fd,			/* 0x30 */
+		trap_fd,			/* 0x31 */
+		trap_fd,			/* 0x32 */
+		trap_fd,			/* 0x33 */
+		op_incyd,			/* 0x34 */
+		op_decyd,			/* 0x35 */
+		op_ldydn,			/* 0x36 */
+		trap_fd,			/* 0x37 */
+		trap_fd,			/* 0x38 */
+		op_addys,			/* 0x39 */
+		trap_fd,			/* 0x3a */
+		trap_fd,			/* 0x3b */
+		trap_fd,			/* 0x3c */
+		trap_fd,			/* 0x3d */
+		trap_fd,			/* 0x3e */
+		trap_fd,			/* 0x3f */
+		trap_fd,			/* 0x40 */
+		trap_fd,			/* 0x41 */
+		trap_fd,			/* 0x42 */
+		trap_fd,			/* 0x43 */
+		UNDOC(op_undoc_ldbiyh),		/* 0x44 */
+		UNDOC(op_undoc_ldbiyl),		/* 0x45 */
+		op_ldbyd,			/* 0x46 */
+		trap_fd,			/* 0x47 */
+		trap_fd,			/* 0x48 */
+		trap_fd,			/* 0x49 */
+		trap_fd,			/* 0x4a */
+		trap_fd,			/* 0x4b */
+		UNDOC(op_undoc_ldciyh),		/* 0x4c */
+		UNDOC(op_undoc_ldciyl),		/* 0x4d */
+		op_ldcyd,			/* 0x4e */
+		trap_fd,			/* 0x4f */
+		trap_fd,			/* 0x50 */
+		trap_fd,			/* 0x51 */
+		trap_fd,			/* 0x52 */
+		trap_fd,			/* 0x53 */
+		UNDOC(op_undoc_lddiyh),		/* 0x54 */
+		UNDOC(op_undoc_lddiyl),		/* 0x55 */
+		op_lddyd,			/* 0x56 */
+		trap_fd,			/* 0x57 */
+		trap_fd,			/* 0x58 */
+		trap_fd,			/* 0x59 */
+		trap_fd,			/* 0x5a */
+		trap_fd,			/* 0x5b */
+		UNDOC(op_undoc_ldeiyh),		/* 0x5c */
+		UNDOC(op_undoc_ldeiyl),		/* 0x5d */
+		op_ldeyd,			/* 0x5e */
+		trap_fd,			/* 0x5f */
+		UNDOC(op_undoc_ldiyhb),		/* 0x60 */
+		UNDOC(op_undoc_ldiyhc),		/* 0x61 */
+		UNDOC(op_undoc_ldiyhd),		/* 0x62 */
+		UNDOC(op_undoc_ldiyhe),		/* 0x63 */
+		UNDOC(op_undoc_ldiyhiyh),	/* 0x64 */
+		UNDOC(op_undoc_ldiyhiyl),	/* 0x65 */
+		op_ldhyd,			/* 0x66 */
+		UNDOC(op_undoc_ldiyha),		/* 0x67 */
+		UNDOC(op_undoc_ldiylb),		/* 0x68 */
+		UNDOC(op_undoc_ldiylc),		/* 0x69 */
+		UNDOC(op_undoc_ldiyld),		/* 0x6a */
+		UNDOC(op_undoc_ldiyle),		/* 0x6b */
+		UNDOC(op_undoc_ldiyliyh),	/* 0x6c */
+		UNDOC(op_undoc_ldiyliyl),	/* 0x6d */
+		op_ldlyd,			/* 0x6e */
+		UNDOC(op_undoc_ldiyla),		/* 0x6f */
+		op_ldydb,			/* 0x70 */
+		op_ldydc,			/* 0x71 */
+		op_ldydd,			/* 0x72 */
+		op_ldyde,			/* 0x73 */
+		op_ldydh,			/* 0x74 */
+		op_ldydl,			/* 0x75 */
+		trap_fd,			/* 0x76 */
+		op_ldyda,			/* 0x77 */
+		trap_fd,			/* 0x78 */
+		trap_fd,			/* 0x79 */
+		trap_fd,			/* 0x7a */
+		trap_fd,			/* 0x7b */
+		UNDOC(op_undoc_ldaiyh),		/* 0x7c */
+		UNDOC(op_undoc_ldaiyl),		/* 0x7d */
+		op_ldayd,			/* 0x7e */
+		trap_fd,			/* 0x7f */
+		trap_fd,			/* 0x80 */
+		trap_fd,			/* 0x81 */
+		trap_fd,			/* 0x82 */
+		trap_fd,			/* 0x83 */
+		UNDOC(op_undoc_adaiyh),		/* 0x84 */
+		UNDOC(op_undoc_adaiyl),		/* 0x85 */
+		op_adayd,			/* 0x86 */
+		trap_fd,			/* 0x87 */
+		trap_fd,			/* 0x88 */
+		trap_fd,			/* 0x89 */
+		trap_fd,			/* 0x8a */
+		trap_fd,			/* 0x8b */
+		UNDOC(op_undoc_acaiyh),		/* 0x8c */
+		UNDOC(op_undoc_acaiyl),		/* 0x8d */
+		op_acayd,			/* 0x8e */
+		trap_fd,			/* 0x8f */
+		trap_fd,			/* 0x90 */
+		trap_fd,			/* 0x91 */
+		trap_fd,			/* 0x92 */
+		trap_fd,			/* 0x93 */
+		UNDOC(op_undoc_suaiyh),		/* 0x94 */
+		UNDOC(op_undoc_suaiyl),		/* 0x95 */
+		op_suayd,			/* 0x96 */
+		trap_fd,			/* 0x97 */
+		trap_fd,			/* 0x98 */
+		trap_fd,			/* 0x99 */
+		trap_fd,			/* 0x9a */
+		trap_fd,			/* 0x9b */
+		UNDOC(op_undoc_scaiyh),		/* 0x9c */
+		UNDOC(op_undoc_scaiyl),		/* 0x9d */
+		op_scayd,			/* 0x9e */
+		trap_fd,			/* 0x9f */
+		trap_fd,			/* 0xa0 */
+		trap_fd,			/* 0xa1 */
+		trap_fd,			/* 0xa2 */
+		trap_fd,			/* 0xa3 */
+		UNDOC(op_undoc_andiyh),		/* 0xa4 */
+		UNDOC(op_undoc_andiyl),		/* 0xa5 */
+		op_andyd,			/* 0xa6 */
+		trap_fd,			/* 0xa7 */
+		trap_fd,			/* 0xa8 */
+		trap_fd,			/* 0xa9 */
+		trap_fd,			/* 0xaa */
+		trap_fd,			/* 0xab */
+		UNDOC(op_undoc_xoriyh),		/* 0xac */
+		UNDOC(op_undoc_xoriyl),		/* 0xad */
+		op_xoryd,			/* 0xae */
+		trap_fd,			/* 0xaf */
+		trap_fd,			/* 0xb0 */
+		trap_fd,			/* 0xb1 */
+		trap_fd,			/* 0xb2 */
+		trap_fd,			/* 0xb3 */
+		UNDOC(op_undoc_oraiyh),		/* 0xb4 */
+		UNDOC(op_undoc_oraiyl),		/* 0xb5 */
+		op_oryd,			/* 0xb6 */
+		trap_fd,			/* 0xb7 */
+		trap_fd,			/* 0xb8 */
+		trap_fd,			/* 0xb9 */
+		trap_fd,			/* 0xba */
+		trap_fd,			/* 0xbb */
+		UNDOC(op_undoc_cpiyh),		/* 0xbc */
+		UNDOC(op_undoc_cpiyl),		/* 0xbd */
+		op_cpyd,			/* 0xbe */
+		trap_fd,			/* 0xbf */
+		trap_fd,			/* 0xc0 */
+		trap_fd,			/* 0xc1 */
+		trap_fd,			/* 0xc2 */
+		trap_fd,			/* 0xc3 */
+		trap_fd,			/* 0xc4 */
+		trap_fd,			/* 0xc5 */
+		trap_fd,			/* 0xc6 */
+		trap_fd,			/* 0xc7 */
+		trap_fd,			/* 0xc8 */
+		trap_fd,			/* 0xc9 */
+		trap_fd,			/* 0xca */
+		op_fdcb_handle,			/* 0xcb */
+		trap_fd,			/* 0xcc */
+		trap_fd,			/* 0xcd */
+		trap_fd,			/* 0xce */
+		trap_fd,			/* 0xcf */
+		trap_fd,			/* 0xd0 */
+		trap_fd,			/* 0xd1 */
+		trap_fd,			/* 0xd2 */
+		trap_fd,			/* 0xd3 */
+		trap_fd,			/* 0xd4 */
+		trap_fd,			/* 0xd5 */
+		trap_fd,			/* 0xd6 */
+		trap_fd,			/* 0xd7 */
+		trap_fd,			/* 0xd8 */
+		trap_fd,			/* 0xd9 */
+		trap_fd,			/* 0xda */
+		trap_fd,			/* 0xdb */
+		trap_fd,			/* 0xdc */
+		trap_fd,			/* 0xdd */
+		trap_fd,			/* 0xde */
+		trap_fd,			/* 0xdf */
+		trap_fd,			/* 0xe0 */
+		op_popiy,			/* 0xe1 */
+		trap_fd,			/* 0xe2 */
+		op_exspy,			/* 0xe3 */
+		trap_fd,			/* 0xe4 */
+		op_pusiy,			/* 0xe5 */
+		trap_fd,			/* 0xe6 */
+		trap_fd,			/* 0xe7 */
+		trap_fd,			/* 0xe8 */
+		op_jpiy,			/* 0xe9 */
+		trap_fd,			/* 0xea */
+		trap_fd,			/* 0xeb */
+		trap_fd,			/* 0xec */
+		trap_fd,			/* 0xed */
+		trap_fd,			/* 0xee */
+		trap_fd,			/* 0xef */
+		trap_fd,			/* 0xf0 */
+		trap_fd,			/* 0xf1 */
+		trap_fd,			/* 0xf2 */
+		trap_fd,			/* 0xf3 */
+		trap_fd,			/* 0xf4 */
+		trap_fd,			/* 0xf5 */
+		trap_fd,			/* 0xf6 */
+		trap_fd,			/* 0xf7 */
+		trap_fd,			/* 0xf8 */
+		op_ldspy,			/* 0xf9 */
+		trap_fd,			/* 0xfa */
+		trap_fd,			/* 0xfb */
+		trap_fd,			/* 0xfc */
+		trap_fd,			/* 0xfd */
+		trap_fd,			/* 0xfe */
+		trap_fd				/* 0xff */
+	};
+
+	register int t;
+
+#ifdef BUS_8080
+	/* M1 opcode fetch */
+	cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
+	m1_step = 1;
+#endif
+#ifdef FRONTPANEL
+	if (F_flag) {
+		/* update frontpanel */
+		fp_clock++;
+		fp_sampleLightGroup(0, 0);
+	}
+#endif
+
+	R++;				/* increment refresh register */
+
+	t = (*op_fd[memrdr(PC++)])();	/* execute next opcode */
+
+	return (t);
+}
+
+/*
+ *	This function traps undocumented opcodes following the
+ *	initial 0xfd of a multi byte opcode.
+ */
+static int trap_fd(void)
+{
+#ifdef UNDOC_INST
+	if (!u_flag) {
+		/* Treat 0xfd prefix as NOP on non IY-instructions */
+		PC--;
+		R--;
+		return (4);
+	}
+#endif
+	cpu_error = OPTRAP2;
+	cpu_state = STOPPED;
+	return (0);
+}
+
+static int op_popiy(void)		/* POP IY */
 {
 	IY = memrdr(SP++);
 	IY += memrdr(SP++) << 8;
-	STATES(14);
+	return (14);
 }
 
-INSTR(0xe5, op_pusiy)			/* PUSH IY */
+static int op_pusiy(void)		/* PUSH IY */
 {
 	memwrt(--SP, IY >> 8);
 	memwrt(--SP, IY);
-	STATES(15);
+	return (15);
 }
 
-INSTR(0xe9, op_jpiy)			/* JP (IY) */
+static int op_jpiy(void)		/* JP (IY) */
 {
 	PC = IY;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0xe3, op_exspy)			/* EX (SP),IY */
+static int op_exspy(void)		/* EX (SP),IY */
 {
 	register WORD i;
 
@@ -39,287 +401,147 @@ INSTR(0xe3, op_exspy)			/* EX (SP),IY */
 	memwrt(SP, IY);
 	memwrt(SP + 1, IY >> 8);
 	IY = i;
-#ifdef UNDOC_FLAGS
-	WZ = i;
-#endif
-	STATES(23);
+	return (23);
 }
 
-INSTR(0xf9, op_ldspy)			/* LD SP,IY */
+static int op_ldspy(void)		/* LD SP,IY */
 {
 	SP = IY;
-	STATES(10);
+	return (10);
 }
 
-INSTR(0x21, op_ldiynn)			/* LD IY,nn */
+static int op_ldiynn(void)		/* LD IY,nn */
 {
 	IY = memrdr(PC++);
 	IY += memrdr(PC++) << 8;
-	STATES(14);
+	return (14);
 }
 
-INSTR(0x2a, op_ldiyinn)			/* LD IY,(nn) */
+static int op_ldiyinn(void)		/* LD IY,(nn) */
 {
 	register WORD i;
 
 	i = memrdr(PC++);
 	i += memrdr(PC++) << 8;
-	IY = memrdr(i++);
-	IY += memrdr(i) << 8;
-#ifdef UNDOC_FLAGS
-	WZ = i;
-#endif
-	STATES(20);
+	IY = memrdr(i);
+	IY += memrdr(i + 1) << 8;
+	return (20);
 }
 
-INSTR(0x22, op_ldiny)			/* LD (nn),IY */
+static int op_ldiny(void)		/* LD (nn),IY */
 {
 	register WORD i;
 
 	i = memrdr(PC++);
 	i += memrdr(PC++) << 8;
-	memwrt(i++, IY);
-	memwrt(i, IY >> 8);
-#ifdef UNDOC_FLAGS
-	WZ = i;
-#endif
-	STATES(20);
+	memwrt(i, IY);
+	memwrt(i + 1, IY >> 8);
+	return (20);
 }
 
-INSTR(0x86, op_adayd)			/* ADD A,(IY+d) */
+static int op_adayd(void)		/* ADD A,(IY+d) */
 {
 	register int i;
 	register BYTE P;
-	WORD addr;
 
-	addr = IY + (signed char) memrdr(PC++);
-	P = memrdr(addr);
+	P = memrdr(IY + (signed char) memrdr(PC++));
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P;
-	F &= ~N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	F &= ~N_FLAG;
+	return (19);
 }
 
-INSTR(0x8e, op_acayd)			/* ADC A,(IY+d) */
+static int op_acayd(void)		/* ADC A,(IY+d) */
 {
 	register int i, carry;
 	register BYTE P;
-	WORD addr;
 
-	addr = IY + (signed char) memrdr(PC++);
 	carry = (F & C_FLAG) ? 1 : 0;
-	P = memrdr(addr);
+	P = memrdr(IY + (signed char) memrdr(PC++));
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P + carry;
-	F &= ~N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	F &= ~N_FLAG;
+	return (19);
 }
 
-INSTR(0x96, op_suayd)			/* SUB A,(IY+d) */
+static int op_suayd(void)		/* SUB A,(IY+d) */
 {
 	register int i;
 	register BYTE P;
-	WORD addr;
 
-	addr = IY + (signed char) memrdr(PC++);
-	P = memrdr(addr);
+	P = memrdr(IY + (signed char) memrdr(PC++));
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P;
-	F |= N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	F |= N_FLAG;
+	return (19);
 }
 
-INSTR(0x9e, op_scayd)			/* SBC A,(IY+d) */
+static int op_scayd(void)		/* SBC A,(IY+d) */
 {
 	register int i, carry;
 	register BYTE P;
-	WORD addr;
 
-	addr = IY + (signed char) memrdr(PC++);
 	carry = (F & C_FLAG) ? 1 : 0;
-	P = memrdr(addr);
+	P = memrdr(IY + (signed char) memrdr(PC++));
 	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P - carry;
-	F |= N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	F |= N_FLAG;
+	return (19);
 }
 
-INSTR(0xa6, op_andyd)			/* AND (IY+d) */
+static int op_andyd(void)		/* AND (IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	A &= memrdr(addr);
+	A &= memrdr(IY + (signed char) memrdr(PC++));
+	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F |= H_FLAG;
+	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
 	F &= ~(N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
-	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	return (19);
 }
 
-INSTR(0xae, op_xoryd)			/* XOR (IY+d) */
+static int op_xoryd(void)		/* XOR (IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	A ^= memrdr(addr);
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
+	A ^= memrdr(IY + (signed char) memrdr(PC++));
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return (19);
 }
 
-INSTR(0xb6, op_oryd)			/* OR (IY+d) */
+static int op_oryd(void)		/* OR (IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	A |= memrdr(addr);
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
+	A |= memrdr(IY + (signed char) memrdr(PC++));
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return (19);
 }
 
-INSTR(0xbe, op_cpyd)			/* CP (IY+d) */
+static int op_cpyd(void)		/* CP (IY+d) */
 {
 	register int i;
 	register BYTE P;
-	WORD addr;
 
-	addr = IY + (signed char) memrdr(PC++);
-	P = memrdr(addr);
+	P = memrdr(IY + (signed char) memrdr(PC++));
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	i = (signed char) A - (signed char) P;
@@ -327,16 +549,10 @@ INSTR(0xbe, op_cpyd)			/* CP (IY+d) */
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F |= N_FLAG;
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(19);
+	return (19);
 }
 
-INSTR(0x34, op_incyd)			/* INC (IY+d) */
+static int op_incyd(void)		/* INC (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -346,30 +562,14 @@ INSTR(0x34, op_incyd)			/* INC (IY+d) */
 	P++;
 	memwrt(addr, P);
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	F &= ~N_FLAG;
 	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[P];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[P];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(23);
+	F &= ~N_FLAG;
+	return (23);
 }
 
-INSTR(0x35, op_decyd)			/* DEC (IY+d) */
+static int op_decyd(void)		/* DEC (IY+d) */
 {
 	register BYTE P;
 	WORD addr;
@@ -379,38 +579,19 @@ INSTR(0x35, op_decyd)			/* DEC (IY+d) */
 	P--;
 	memwrt(addr, P);
 	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	F |= N_FLAG;
 	(P == 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[P];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[P];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-	modF = 1;
-#endif
-	STATES(23);
+	F |= N_FLAG;
+	return (23);
 }
 
-INSTR(0x09, op_addyb)			/* ADD IY,BC */
+static int op_addyb(void)		/* ADD IY,BC */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
 	BYTE iyh = IY >> 8;
 
-#ifdef UNDOC_FLAGS
-	WZ = IY + 1;
-#endif
 	carry = (iyl + C > 255) ? 1 : 0;
 	iyl += C;
 	((iyh & 0xf) + (B & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -419,23 +600,15 @@ INSTR(0x09, op_addyb)			/* ADD IY,BC */
 	iyh += B + carry;
 	IY = (iyh << 8) + iyl;
 	F &= ~N_FLAG;
-#ifdef UNDOC_FLAGS
-	(iyh & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(iyh & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	modF = 1;
-#endif
-	STATES(15);
+	return (15);
 }
 
-INSTR(0x19, op_addyd)			/* ADD IY,DE */
+static int op_addyd(void)		/* ADD IY,DE */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
 	BYTE iyh = IY >> 8;
 
-#ifdef UNDOC_FLAGS
-	WZ = IY + 1;
-#endif
 	carry = (iyl + E > 255) ? 1 : 0;
 	iyl += E;
 	((iyh & 0xf) + (D & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -444,15 +617,10 @@ INSTR(0x19, op_addyd)			/* ADD IY,DE */
 	iyh += D + carry;
 	IY = (iyh << 8) + iyl;
 	F &= ~N_FLAG;
-#ifdef UNDOC_FLAGS
-	(iyh & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(iyh & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	modF = 1;
-#endif
-	STATES(15);
+	return (15);
 }
 
-INSTR(0x39, op_addys)			/* ADD IY,SP */
+static int op_addys(void)		/* ADD IY,SP */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
@@ -460,9 +628,6 @@ INSTR(0x39, op_addys)			/* ADD IY,SP */
 	BYTE spl = SP & 0xff;
 	BYTE sph = SP >> 8;
 
-#ifdef UNDOC_FLAGS
-	WZ = IY + 1;
-#endif
 	carry = (iyl + spl > 255) ? 1 : 0;
 	iyl += spl;
 	((iyh & 0xf) + (sph & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -471,23 +636,15 @@ INSTR(0x39, op_addys)			/* ADD IY,SP */
 	iyh += sph + carry;
 	IY = (iyh << 8) + iyl;
 	F &= ~N_FLAG;
-#ifdef UNDOC_FLAGS
-	(iyh & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(iyh & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	modF = 1;
-#endif
-	STATES(15);
+	return (15);
 }
 
-INSTR(0x29, op_addyy)			/* ADD IY,IY */
+static int op_addyy(void)		/* ADD IY,IY */
 {
 	register int carry;
 	BYTE iyl = IY & 0xff;
 	BYTE iyh = IY >> 8;
 
-#ifdef UNDOC_FLAGS
-	WZ = IY + 1;
-#endif
 	carry = (iyl << 1 > 255) ? 1 : 0;
 	iyl <<= 1;
 	((iyh & 0xf) + (iyh & 0xf) + carry > 0xf) ? (F |= H_FLAG)
@@ -496,511 +653,113 @@ INSTR(0x29, op_addyy)			/* ADD IY,IY */
 	iyh += iyh + carry;
 	IY = (iyh << 8) + iyl;
 	F &= ~N_FLAG;
-#ifdef UNDOC_FLAGS
-	(iyh & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(iyh & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	modF = 1;
-#endif
-	STATES(15);
+	return (15);
 }
 
-INSTR(0x23, op_inciy)			/* INC IY */
+static int op_inciy(void)		/* INC IY */
 {
 	IY++;
-	STATES(10);
+	return (10);
 }
 
-INSTR(0x2b, op_deciy)			/* DEC IY */
+static int op_deciy(void)		/* DEC IY */
 {
 	IY--;
-	STATES(10);
+	return (10);
 }
 
-INSTR(0x7e, op_ldayd)			/* LD A,(IY+d) */
+static int op_ldayd(void)		/* LD A,(IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	A = memrdr(addr);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	A = memrdr(IY + (signed char) memrdr(PC++));
+	return (19);
 }
 
-INSTR(0x46, op_ldbyd)			/* LD B,(IY+d) */
+static int op_ldbyd(void)		/* LD B,(IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	B = memrdr(addr);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	B = memrdr(IY + (signed char) memrdr(PC++));
+	return (19);
 }
 
-INSTR(0x4e, op_ldcyd)			/* LD C,(IY+d) */
+static int op_ldcyd(void)		/* LD C,(IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	C = memrdr(addr);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	C = memrdr(IY + (signed char) memrdr(PC++));
+	return (19);
 }
 
-INSTR(0x56, op_lddyd)			/* LD D,(IY+d) */
+static int op_lddyd(void)		/* LD D,(IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	D = memrdr(addr);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	D = memrdr(IY + (signed char) memrdr(PC++));
+	return (19);
 }
 
-INSTR(0x5e, op_ldeyd)			/* LD E,(IY+d) */
+static int op_ldeyd(void)		/* LD E,(IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	E = memrdr(addr);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	E = memrdr(IY + (signed char) memrdr(PC++));
+	return (19);
 }
 
-INSTR(0x66, op_ldhyd)			/* LD H,(IY+d) */
+static int op_ldhyd(void)		/* LD H,(IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	H = memrdr(addr);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	H = memrdr(IY + (signed char) memrdr(PC++));
+	return (19);
 }
 
-INSTR(0x6e, op_ldlyd)			/* LD L,(IY+d) */
+static int op_ldlyd(void)		/* LD L,(IY+d) */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	L = memrdr(addr);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	L = memrdr(IY + (signed char) memrdr(PC++));
+	return (19);
 }
 
-INSTR(0x77, op_ldyda)			/* LD (IY+d),A */
+static int op_ldyda(void)		/* LD (IY+d),A */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, A);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	memwrt(IY + (signed char) memrdr(PC++), A);
+	return (19);
 }
 
-INSTR(0x70, op_ldydb)			/* LD (IY+d),B */
+static int op_ldydb(void)		/* LD (IY+d),B */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, B);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	memwrt(IY + (signed char) memrdr(PC++), B);
+	return (19);
 }
 
-INSTR(0x71, op_ldydc)			/* LD (IY+d),C */
+static int op_ldydc(void)		/* LD (IY+d),C */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, C);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	memwrt(IY + (signed char) memrdr(PC++), C);
+	return (19);
 }
 
-INSTR(0x72, op_ldydd)			/* LD (IY+d),D */
+static int op_ldydd(void)		/* LD (IY+d),D */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, D);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	memwrt(IY + (signed char) memrdr(PC++), D);
+	return (19);
 }
 
-INSTR(0x73, op_ldyde)			/* LD (IY+d),E */
+static int op_ldyde(void)		/* LD (IY+d),E */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, E);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	memwrt(IY + (signed char) memrdr(PC++), E);
+	return (19);
 }
 
-INSTR(0x74, op_ldydh)			/* LD (IY+d),H */
+static int op_ldydh(void)		/* LD (IY+d),H */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, H);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	memwrt(IY + (signed char) memrdr(PC++), H);
+	return (19);
 }
 
-INSTR(0x75, op_ldydl)			/* LD (IY+d),L */
+static int op_ldydl(void)		/* LD (IY+d),L */
 {
-	WORD addr;
-
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, L);
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	memwrt(IY + (signed char) memrdr(PC++), L);
+	return (19);
 }
 
-INSTR(0x36, op_ldydn)			/* LD (IY+d),n */
+static int op_ldydn(void)		/* LD (IY+d),n */
 {
-	WORD addr;
+	register signed char d;
 
-	addr = IY + (signed char) memrdr(PC++);
-	memwrt(addr, memrdr(PC++));
-#ifdef UNDOC_FLAGS
-	WZ = addr;
-#endif
-	STATES(19);
+	d = memrdr(PC++);
+	memwrt(IY + d, memrdr(PC++));
+	return (19);
 }
-
-INSTR(0xcb, op_fdcb_handle)		/* 0xfd 0xcb prefix */
-{
-#ifndef INSTR_SWTCH
-
-#ifdef UNDOC_INST
-#define UNDOC(f) f
-#ifdef UNDOC_IALL
-#define UNDOCA(f) f
-#else
-#define UNDOCA(f) trap_fdcb
-#endif
-#else
-#define UNDOC(f) trap_fdcb
-#define UNDOCA(f) trap_fdcb
-#endif
-
-	static int (*op_fdcb[256])(int) = {
-		UNDOCA(op_undoc_rlciydb),	/* 0x00 */
-		UNDOCA(op_undoc_rlciydc),	/* 0x01 */
-		UNDOCA(op_undoc_rlciydd),	/* 0x02 */
-		UNDOCA(op_undoc_rlciyde),	/* 0x03 */
-		UNDOCA(op_undoc_rlciydh),	/* 0x04 */
-		UNDOCA(op_undoc_rlciydl),	/* 0x05 */
-		op_rlciyd,			/* 0x06 */
-		UNDOCA(op_undoc_rlciyda),	/* 0x07 */
-		UNDOCA(op_undoc_rrciydb),	/* 0x08 */
-		UNDOCA(op_undoc_rrciydc),	/* 0x09 */
-		UNDOCA(op_undoc_rrciydd),	/* 0x0a */
-		UNDOCA(op_undoc_rrciyde),	/* 0x0b */
-		UNDOCA(op_undoc_rrciydh),	/* 0x0c */
-		UNDOCA(op_undoc_rrciydl),	/* 0x0d */
-		op_rrciyd,			/* 0x0e */
-		UNDOCA(op_undoc_rrciyda),	/* 0x0f */
-		UNDOCA(op_undoc_rliydb),	/* 0x10 */
-		UNDOCA(op_undoc_rliydc),	/* 0x11 */
-		UNDOCA(op_undoc_rliydd),	/* 0x12 */
-		UNDOCA(op_undoc_rliyde),	/* 0x13 */
-		UNDOCA(op_undoc_rliydh),	/* 0x14 */
-		UNDOCA(op_undoc_rliydl),	/* 0x15 */
-		op_rliyd,			/* 0x16 */
-		UNDOCA(op_undoc_rliyda),	/* 0x17 */
-		UNDOCA(op_undoc_rriydb),	/* 0x18 */
-		UNDOCA(op_undoc_rriydc),	/* 0x19 */
-		UNDOCA(op_undoc_rriydd),	/* 0x1a */
-		UNDOCA(op_undoc_rriyde),	/* 0x1b */
-		UNDOCA(op_undoc_rriydh),	/* 0x1c */
-		UNDOCA(op_undoc_rriydl),	/* 0x1d */
-		op_rriyd,			/* 0x1e */
-		UNDOCA(op_undoc_rriyda),	/* 0x1f */
-		UNDOCA(op_undoc_slaiydb),	/* 0x20 */
-		UNDOCA(op_undoc_slaiydc),	/* 0x21 */
-		UNDOCA(op_undoc_slaiydd),	/* 0x22 */
-		UNDOCA(op_undoc_slaiyde),	/* 0x23 */
-		UNDOCA(op_undoc_slaiydh),	/* 0x24 */
-		UNDOCA(op_undoc_slaiydl),	/* 0x25 */
-		op_slaiyd,			/* 0x26 */
-		UNDOCA(op_undoc_slaiyda),	/* 0x27 */
-		UNDOCA(op_undoc_sraiydb),	/* 0x28 */
-		UNDOCA(op_undoc_sraiydc),	/* 0x29 */
-		UNDOCA(op_undoc_sraiydd),	/* 0x2a */
-		UNDOCA(op_undoc_sraiyde),	/* 0x2b */
-		UNDOCA(op_undoc_sraiydh),	/* 0x2c */
-		UNDOCA(op_undoc_sraiydl),	/* 0x2d */
-		op_sraiyd,			/* 0x2e */
-		UNDOCA(op_undoc_sraiyda),	/* 0x2f */
-		UNDOCA(op_undoc_slliydb),	/* 0x30 */
-		UNDOCA(op_undoc_slliydc),	/* 0x31 */
-		UNDOCA(op_undoc_slliydd),	/* 0x32 */
-		UNDOCA(op_undoc_slliyde),	/* 0x33 */
-		UNDOCA(op_undoc_slliydh),	/* 0x34 */
-		UNDOCA(op_undoc_slliydl),	/* 0x35 */
-		UNDOC(op_undoc_slliyd),		/* 0x36 */
-		UNDOCA(op_undoc_slliyda),	/* 0x37 */
-		UNDOCA(op_undoc_srliydb),	/* 0x38 */
-		UNDOCA(op_undoc_srliydc),	/* 0x39 */
-		UNDOCA(op_undoc_srliydd),	/* 0x3a */
-		UNDOCA(op_undoc_srliyde),	/* 0x3b */
-		UNDOCA(op_undoc_srliydh),	/* 0x3c */
-		UNDOCA(op_undoc_srliydl),	/* 0x3d */
-		op_srliyd,			/* 0x3e */
-		UNDOCA(op_undoc_srliyda),	/* 0x3f */
-		UNDOCA(op_undoc_tb0iyd),	/* 0x40 */
-		UNDOCA(op_undoc_tb0iyd),	/* 0x41 */
-		UNDOCA(op_undoc_tb0iyd),	/* 0x42 */
-		UNDOCA(op_undoc_tb0iyd),	/* 0x43 */
-		UNDOCA(op_undoc_tb0iyd),	/* 0x44 */
-		UNDOCA(op_undoc_tb0iyd),	/* 0x45 */
-		op_tb0iyd,			/* 0x46 */
-		UNDOCA(op_undoc_tb0iyd),	/* 0x47 */
-		UNDOCA(op_undoc_tb1iyd),	/* 0x48 */
-		UNDOCA(op_undoc_tb1iyd),	/* 0x49 */
-		UNDOCA(op_undoc_tb1iyd),	/* 0x4a */
-		UNDOCA(op_undoc_tb1iyd),	/* 0x4b */
-		UNDOCA(op_undoc_tb1iyd),	/* 0x4c */
-		UNDOCA(op_undoc_tb1iyd),	/* 0x4d */
-		op_tb1iyd,			/* 0x4e */
-		UNDOCA(op_undoc_tb1iyd),	/* 0x4f */
-		UNDOCA(op_undoc_tb2iyd),	/* 0x50 */
-		UNDOCA(op_undoc_tb2iyd),	/* 0x51 */
-		UNDOCA(op_undoc_tb2iyd),	/* 0x52 */
-		UNDOCA(op_undoc_tb2iyd),	/* 0x53 */
-		UNDOCA(op_undoc_tb2iyd),	/* 0x54 */
-		UNDOCA(op_undoc_tb2iyd),	/* 0x55 */
-		op_tb2iyd,			/* 0x56 */
-		UNDOCA(op_undoc_tb2iyd),	/* 0x57 */
-		UNDOCA(op_undoc_tb3iyd),	/* 0x58 */
-		UNDOCA(op_undoc_tb3iyd),	/* 0x59 */
-		UNDOCA(op_undoc_tb3iyd),	/* 0x5a */
-		UNDOCA(op_undoc_tb3iyd),	/* 0x5b */
-		UNDOCA(op_undoc_tb3iyd),	/* 0x5c */
-		UNDOCA(op_undoc_tb3iyd),	/* 0x5d */
-		op_tb3iyd,			/* 0x5e */
-		UNDOCA(op_undoc_tb3iyd),	/* 0x5f */
-		UNDOCA(op_undoc_tb4iyd),	/* 0x60 */
-		UNDOCA(op_undoc_tb4iyd),	/* 0x61 */
-		UNDOCA(op_undoc_tb4iyd),	/* 0x62 */
-		UNDOCA(op_undoc_tb4iyd),	/* 0x63 */
-		UNDOCA(op_undoc_tb4iyd),	/* 0x64 */
-		UNDOCA(op_undoc_tb4iyd),	/* 0x65 */
-		op_tb4iyd,			/* 0x66 */
-		UNDOCA(op_undoc_tb4iyd),	/* 0x67 */
-		UNDOCA(op_undoc_tb5iyd),	/* 0x68 */
-		UNDOCA(op_undoc_tb5iyd),	/* 0x69 */
-		UNDOCA(op_undoc_tb5iyd),	/* 0x6a */
-		UNDOCA(op_undoc_tb5iyd),	/* 0x6b */
-		UNDOCA(op_undoc_tb5iyd),	/* 0x6c */
-		UNDOCA(op_undoc_tb5iyd),	/* 0x6d */
-		op_tb5iyd,			/* 0x6e */
-		UNDOCA(op_undoc_tb5iyd),	/* 0x6f */
-		UNDOCA(op_undoc_tb6iyd),	/* 0x70 */
-		UNDOCA(op_undoc_tb6iyd),	/* 0x71 */
-		UNDOCA(op_undoc_tb6iyd),	/* 0x72 */
-		UNDOCA(op_undoc_tb6iyd),	/* 0x73 */
-		UNDOCA(op_undoc_tb6iyd),	/* 0x74 */
-		UNDOCA(op_undoc_tb6iyd),	/* 0x75 */
-		op_tb6iyd,			/* 0x76 */
-		UNDOCA(op_undoc_tb6iyd),	/* 0x77 */
-		UNDOCA(op_undoc_tb7iyd),	/* 0x78 */
-		UNDOCA(op_undoc_tb7iyd),	/* 0x79 */
-		UNDOCA(op_undoc_tb7iyd),	/* 0x7a */
-		UNDOCA(op_undoc_tb7iyd),	/* 0x7b */
-		UNDOCA(op_undoc_tb7iyd),	/* 0x7c */
-		UNDOCA(op_undoc_tb7iyd),	/* 0x7d */
-		op_tb7iyd,			/* 0x7e */
-		UNDOCA(op_undoc_tb7iyd),	/* 0x7f */
-		UNDOCA(op_undoc_rb0iydb),	/* 0x80 */
-		UNDOCA(op_undoc_rb0iydc),	/* 0x81 */
-		UNDOCA(op_undoc_rb0iydd),	/* 0x82 */
-		UNDOCA(op_undoc_rb0iyde),	/* 0x83 */
-		UNDOCA(op_undoc_rb0iydh),	/* 0x84 */
-		UNDOCA(op_undoc_rb0iydl),	/* 0x85 */
-		op_rb0iyd,			/* 0x86 */
-		UNDOCA(op_undoc_rb0iyda),	/* 0x87 */
-		UNDOCA(op_undoc_rb1iydb),	/* 0x88 */
-		UNDOCA(op_undoc_rb1iydc),	/* 0x89 */
-		UNDOCA(op_undoc_rb1iydd),	/* 0x8a */
-		UNDOCA(op_undoc_rb1iyde),	/* 0x8b */
-		UNDOCA(op_undoc_rb1iydh),	/* 0x8c */
-		UNDOCA(op_undoc_rb1iydl),	/* 0x8d */
-		op_rb1iyd,			/* 0x8e */
-		UNDOCA(op_undoc_rb1iyda),	/* 0x8f */
-		UNDOCA(op_undoc_rb2iydb),	/* 0x90 */
-		UNDOCA(op_undoc_rb2iydc),	/* 0x91 */
-		UNDOCA(op_undoc_rb2iydd),	/* 0x92 */
-		UNDOCA(op_undoc_rb2iyde),	/* 0x93 */
-		UNDOCA(op_undoc_rb2iydh),	/* 0x94 */
-		UNDOCA(op_undoc_rb2iydl),	/* 0x95 */
-		op_rb2iyd,			/* 0x96 */
-		UNDOCA(op_undoc_rb2iyda),	/* 0x97 */
-		UNDOCA(op_undoc_rb3iydb),	/* 0x98 */
-		UNDOCA(op_undoc_rb3iydc),	/* 0x99 */
-		UNDOCA(op_undoc_rb3iydd),	/* 0x9a */
-		UNDOCA(op_undoc_rb3iyde),	/* 0x9b */
-		UNDOCA(op_undoc_rb3iydh),	/* 0x9c */
-		UNDOCA(op_undoc_rb3iydl),	/* 0x9d */
-		op_rb3iyd,			/* 0x9e */
-		UNDOCA(op_undoc_rb3iyda),	/* 0x9f */
-		UNDOCA(op_undoc_rb4iydb),	/* 0xa0 */
-		UNDOCA(op_undoc_rb4iydc),	/* 0xa1 */
-		UNDOCA(op_undoc_rb4iydd),	/* 0xa2 */
-		UNDOCA(op_undoc_rb4iyde),	/* 0xa3 */
-		UNDOCA(op_undoc_rb4iydh),	/* 0xa4 */
-		UNDOCA(op_undoc_rb4iydl),	/* 0xa5 */
-		op_rb4iyd,			/* 0xa6 */
-		UNDOCA(op_undoc_rb4iyda),	/* 0xa7 */
-		UNDOCA(op_undoc_rb5iydb),	/* 0xa8 */
-		UNDOCA(op_undoc_rb5iydc),	/* 0xa9 */
-		UNDOCA(op_undoc_rb5iydd),	/* 0xaa */
-		UNDOCA(op_undoc_rb5iyde),	/* 0xab */
-		UNDOCA(op_undoc_rb5iydh),	/* 0xac */
-		UNDOCA(op_undoc_rb5iydl),	/* 0xad */
-		op_rb5iyd,			/* 0xae */
-		UNDOCA(op_undoc_rb5iyda),	/* 0xaf */
-		UNDOCA(op_undoc_rb6iydb),	/* 0xb0 */
-		UNDOCA(op_undoc_rb6iydc),	/* 0xb1 */
-		UNDOCA(op_undoc_rb6iydd),	/* 0xb2 */
-		UNDOCA(op_undoc_rb6iyde),	/* 0xb3 */
-		UNDOCA(op_undoc_rb6iydh),	/* 0xb4 */
-		UNDOCA(op_undoc_rb6iydl),	/* 0xb5 */
-		op_rb6iyd,			/* 0xb6 */
-		UNDOCA(op_undoc_rb6iyda),	/* 0xb7 */
-		UNDOCA(op_undoc_rb7iydb),	/* 0xb8 */
-		UNDOCA(op_undoc_rb7iydc),	/* 0xb9 */
-		UNDOCA(op_undoc_rb7iydd),	/* 0xba */
-		UNDOCA(op_undoc_rb7iyde),	/* 0xbb */
-		UNDOCA(op_undoc_rb7iydh),	/* 0xbc */
-		UNDOCA(op_undoc_rb7iydl),	/* 0xbd */
-		op_rb7iyd,			/* 0xbe */
-		UNDOCA(op_undoc_rb7iyda),	/* 0xbf */
-		UNDOCA(op_undoc_sb0iydb),	/* 0xc0 */
-		UNDOCA(op_undoc_sb0iydc),	/* 0xc1 */
-		UNDOCA(op_undoc_sb0iydd),	/* 0xc2 */
-		UNDOCA(op_undoc_sb0iyde),	/* 0xc3 */
-		UNDOCA(op_undoc_sb0iydh),	/* 0xc4 */
-		UNDOCA(op_undoc_sb0iydl),	/* 0xc5 */
-		op_sb0iyd,			/* 0xc6 */
-		UNDOCA(op_undoc_sb0iyda),	/* 0xc7 */
-		UNDOCA(op_undoc_sb1iydb),	/* 0xc8 */
-		UNDOCA(op_undoc_sb1iydc),	/* 0xc9 */
-		UNDOCA(op_undoc_sb1iydd),	/* 0xca */
-		UNDOCA(op_undoc_sb1iyde),	/* 0xcb */
-		UNDOCA(op_undoc_sb1iydh),	/* 0xcc */
-		UNDOCA(op_undoc_sb1iydl),	/* 0xcd */
-		op_sb1iyd,			/* 0xce */
-		UNDOCA(op_undoc_sb1iyda),	/* 0xcf */
-		UNDOCA(op_undoc_sb2iydb),	/* 0xd0 */
-		UNDOCA(op_undoc_sb2iydc),	/* 0xd1 */
-		UNDOCA(op_undoc_sb2iydd),	/* 0xd2 */
-		UNDOCA(op_undoc_sb2iyde),	/* 0xd3 */
-		UNDOCA(op_undoc_sb2iydh),	/* 0xd4 */
-		UNDOCA(op_undoc_sb2iydl),	/* 0xd5 */
-		op_sb2iyd,			/* 0xd6 */
-		UNDOCA(op_undoc_sb2iyda),	/* 0xd7 */
-		UNDOCA(op_undoc_sb3iydb),	/* 0xd8 */
-		UNDOCA(op_undoc_sb3iydc),	/* 0xd9 */
-		UNDOCA(op_undoc_sb3iydd),	/* 0xda */
-		UNDOCA(op_undoc_sb3iyde),	/* 0xdb */
-		UNDOCA(op_undoc_sb3iydh),	/* 0xdc */
-		UNDOCA(op_undoc_sb3iydl),	/* 0xdd */
-		op_sb3iyd,			/* 0xde */
-		UNDOCA(op_undoc_sb3iyda),	/* 0xdf */
-		UNDOCA(op_undoc_sb4iydb),	/* 0xe0 */
-		UNDOCA(op_undoc_sb4iydc),	/* 0xe1 */
-		UNDOCA(op_undoc_sb4iydd),	/* 0xe2 */
-		UNDOCA(op_undoc_sb4iyde),	/* 0xe3 */
-		UNDOCA(op_undoc_sb4iydh),	/* 0xe4 */
-		UNDOCA(op_undoc_sb4iydl),	/* 0xe5 */
-		op_sb4iyd,			/* 0xe6 */
-		UNDOCA(op_undoc_sb4iyda),	/* 0xe7 */
-		UNDOCA(op_undoc_sb5iydb),	/* 0xe8 */
-		UNDOCA(op_undoc_sb5iydc),	/* 0xe9 */
-		UNDOCA(op_undoc_sb5iydd),	/* 0xea */
-		UNDOCA(op_undoc_sb5iyde),	/* 0xeb */
-		UNDOCA(op_undoc_sb5iydh),	/* 0xec */
-		UNDOCA(op_undoc_sb5iydl),	/* 0xed */
-		op_sb5iyd,			/* 0xee */
-		UNDOCA(op_undoc_sb5iyda),	/* 0xef */
-		UNDOCA(op_undoc_sb6iydb),	/* 0xf0 */
-		UNDOCA(op_undoc_sb6iydc),	/* 0xf1 */
-		UNDOCA(op_undoc_sb6iydd),	/* 0xf2 */
-		UNDOCA(op_undoc_sb6iyde),	/* 0xf3 */
-		UNDOCA(op_undoc_sb6iydh),	/* 0xf4 */
-		UNDOCA(op_undoc_sb6iydl),	/* 0xf5 */
-		op_sb6iyd,			/* 0xf6 */
-		UNDOCA(op_undoc_sb6iyda),	/* 0xf7 */
-		UNDOCA(op_undoc_sb7iydb),	/* 0xf8 */
-		UNDOCA(op_undoc_sb7iydc),	/* 0xf9 */
-		UNDOCA(op_undoc_sb7iydd),	/* 0xfa */
-		UNDOCA(op_undoc_sb7iyde),	/* 0xfb */
-		UNDOCA(op_undoc_sb7iydh),	/* 0xfc */
-		UNDOCA(op_undoc_sb7iydl),	/* 0xfd */
-		op_sb7iyd,			/* 0xfe */
-		UNDOCA(op_undoc_sb7iyda)	/* 0xff */
-	};
-
-#undef UNDOC
-#undef UNDOCA
-
-	register int t;
-
-#endif /* !INSTR_SWTCH */
-
-	register int data;
-
-	data = (signed char) memrdr(PC++);
-
-#ifndef INSTR_SWTCH
-	t = (*op_fdcb[memrdr(PC++)])(data); /* execute next opcode */
-#else
-	switch (memrdr(PC++)) {		/* execute next opcode */
-
-#include "simz80-fdcb.c"
-
-	default:
-		t = trap_fdcb(data);
-		break;
-	}
-#endif
-
-	STATES(t);
-}
-
-#ifndef INSTR_SWTCH
-#include "simz80-fdcb.c"
-#endif
 
 /**********************************************************************/
 /**********************************************************************/
@@ -1010,272 +769,245 @@ INSTR(0xcb, op_fdcb_handle)		/* 0xfd 0xcb prefix */
 
 #ifdef UNDOC_INST
 
-INSTR(0x7d, op_undoc_ldaiyl)		/* LD A,IYL */
+static int op_undoc_ldaiyl(void)	/* LD A,IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A = IY & 0xff;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x7c, op_undoc_ldaiyh)		/* LD A,IYH */
+static int op_undoc_ldaiyh(void)	/* LD A,IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A = IY >> 8;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x45, op_undoc_ldbiyl)		/* LD B,IYL */
+static int op_undoc_ldbiyl(void)	/* LD B,IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	B = IY & 0xff;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x44, op_undoc_ldbiyh)		/* LD B,IYH */
+static int op_undoc_ldbiyh(void)	/* LD B,IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	B = IY >> 8;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x4d, op_undoc_ldciyl)		/* LD C,IYL */
+static int op_undoc_ldciyl(void)	/* LD C,IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	C = IY & 0xff;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x4c, op_undoc_ldciyh)		/* LD C,IYH */
+static int op_undoc_ldciyh(void)	/* LD C,IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	C = IY >> 8;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x55, op_undoc_lddiyl)		/* LD D,IYL */
+static int op_undoc_lddiyl(void)	/* LD D,IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	D = IY & 0xff;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x54, op_undoc_lddiyh)		/* LD D,IYH */
+static int op_undoc_lddiyh(void)	/* LD D,IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	D = IY >> 8;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x5d, op_undoc_ldeiyl)		/* LD E,IYL */
+static int op_undoc_ldeiyl(void)	/* LD E,IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	E = IY & 0xff;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x5c, op_undoc_ldeiyh)		/* LD E,IYH */
+static int op_undoc_ldeiyh(void)	/* LD E,IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	E = IY >> 8;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x6f, op_undoc_ldiyla)		/* LD IYL,A */
+static int op_undoc_ldiyla(void)	/* LD IYL,A */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0xff00) | A;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x67, op_undoc_ldiyha)		/* LD IYH,A */
+static int op_undoc_ldiyha(void)	/* LD IYH,A */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0x00ff) | (A << 8);
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x68, op_undoc_ldiylb)		/* LD IYL,B */
+static int op_undoc_ldiylb(void)	/* LD IYL,B */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0xff00) | B;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x60, op_undoc_ldiyhb)		/* LD IYH,B */
+static int op_undoc_ldiyhb(void)	/* LD IYH,B */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0x00ff) | (B << 8);
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x69, op_undoc_ldiylc)		/* LD IYL,C */
+static int op_undoc_ldiylc(void)	/* LD IYL,C */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0xff00) | C;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x61, op_undoc_ldiyhc)		/* LD IYH,C */
+static int op_undoc_ldiyhc(void)	/* LD IYH,C */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0x00ff) | (C << 8);
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x6a, op_undoc_ldiyld)		/* LD IYL,D */
+static int op_undoc_ldiyld(void)	/* LD IYL,D */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0xff00) | D;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x62, op_undoc_ldiyhd)		/* LD IYH,D */
+static int op_undoc_ldiyhd(void)	/* LD IYH,D */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0x00ff) | (D << 8);
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x6b, op_undoc_ldiyle)		/* LD IYL,E */
+static int op_undoc_ldiyle(void)	/* LD IYL,E */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0xff00) | E;
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x63, op_undoc_ldiyhe)		/* LD IYH,E */
+static int op_undoc_ldiyhe(void)	/* LD IYH,E */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0x00ff) | (E << 8);
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x6c, op_undoc_ldiyliyh)		/* LD IYL,IYH */
+static int op_undoc_ldiyliyh(void)	/* LD IYL,IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0xff00) | (IY >> 8);
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x64, op_undoc_ldiyhiyh)		/* LD IYH,IYH */
+static int op_undoc_ldiyhiyh(void)	/* LD IYH,IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x6d, op_undoc_ldiyliyl)		/* LD IYL,IYL */
+static int op_undoc_ldiyliyl(void)	/* LD IYL,IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x65, op_undoc_ldiyhiyl)		/* LD IYH,IYL */
+static int op_undoc_ldiyhiyl(void)	/* LD IYH,IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0x00ff) | (IY << 8);
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x26, op_undoc_ldiyhn)		/* LD IYH,n */
+static int op_undoc_ldiyhn(void)	/* LD IYH,n */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0x00ff) | (memrdr(PC++) << 8);
-	STATES(11);
+	return (11);
 }
 
-INSTR(0x2e, op_undoc_ldiyln)		/* LD IYL,n */
+static int op_undoc_ldiyln(void)	/* LD IYL,n */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	IY = (IY & 0xff00) | memrdr(PC++);
-	STATES(11);
+	return (11);
 }
 
-INSTR(0xbd, op_undoc_cpiyl)		/* CP IYL */
+static int op_undoc_cpiyl(void)		/* CP IYL */
 {
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY & 0xff;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1285,22 +1017,16 @@ INSTR(0xbd, op_undoc_cpiyl)		/* CP IYL */
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F |= N_FLAG;
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	modF = 1;
-#endif
-	STATES(8);
+	return (8);
 }
 
-INSTR(0xbc, op_undoc_cpiyh)		/* CP IYH */
+static int op_undoc_cpiyh(void)		/* CP IYH */
 {
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY >> 8;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
@@ -1310,608 +1036,317 @@ INSTR(0xbc, op_undoc_cpiyh)		/* CP IYH */
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F |= N_FLAG;
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-	modF = 1;
-#endif
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x85, op_undoc_adaiyl)		/* ADD A,IYL */
+static int op_undoc_adaiyl(void)	/* ADD A,IYL */
 {
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY & 0xff;
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P;
-	F &= ~N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~N_FLAG;
+	return (8);
 }
 
-INSTR(0x84, op_undoc_adaiyh)		/* ADD A,IYH */
+static int op_undoc_adaiyh(void)	/* ADD A,IYH */
 {
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY >> 8;
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P;
-	F &= ~N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~N_FLAG;
+	return (8);
 }
 
-INSTR(0x8d, op_undoc_acaiyl)		/* ADC A,IYL */
+static int op_undoc_acaiyl(void)	/* ADC A,IYL */
 {
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IY & 0xff;
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P + carry;
-	F &= ~N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~N_FLAG;
+	return (8);
 }
 
-INSTR(0x8c, op_undoc_acaiyh)		/* ADC A,IYH */
+static int op_undoc_acaiyh(void)	/* ADC A,IYH */
 {
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IY >> 8;
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A + (signed char) P + carry;
+	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
+	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
+	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	F &= ~N_FLAG;
-	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
-	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
-	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	return (8);
 }
 
-INSTR(0x95, op_undoc_suaiyl)		/* SUB A,IYL */
+static int op_undoc_suaiyl(void)	/* SUB A,IYL */
 {
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY & 0xff;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P;
-	F |= N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F |= N_FLAG;
+	return (8);
 }
 
-INSTR(0x94, op_undoc_suaiyh)		/* SUB A,IYH */
+static int op_undoc_suaiyh(void)	/* SUB A,IYH */
 {
 	register int i;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY >> 8;
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P;
-	F |= N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F |= N_FLAG;
+	return (8);
 }
 
-INSTR(0x9d, op_undoc_scaiyl)		/* SBC A,IYL */
+static int op_undoc_scaiyl(void)	/* SBC A,IYL */
 {
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IY & 0xff;
 	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P - carry;
-	F |= N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F |= N_FLAG;
+	return (8);
 }
 
-INSTR(0x9c, op_undoc_scaiyh)		/* SBC A,IYH */
+static int op_undoc_scaiyh(void)	/* SBC A,IYH */
 {
 	register int i, carry;
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	carry = (F & C_FLAG) ? 1 : 0;
 	P = IY >> 8;
 	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	A = i = (signed char) A - (signed char) P - carry;
-	F |= N_FLAG;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(i & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(i & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[A];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F |= N_FLAG;
+	return (8);
 }
 
-INSTR(0xb5, op_undoc_oraiyl)		/* OR IYL */
+static int op_undoc_oraiyl(void)	/* OR IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A |= IY & 0xff;
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return (8);
 }
 
-INSTR(0xb4, op_undoc_oraiyh)		/* OR IYH */
+static int op_undoc_oraiyh(void)	/* OR IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A |= IY >> 8;
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return (8);
 }
 
-INSTR(0xad, op_undoc_xoriyl)		/* XOR IYL */
+static int op_undoc_xoriyl(void)	/* XOR IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A ^= IY & 0xff;
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return (8);
 }
 
-INSTR(0xac, op_undoc_xoriyh)		/* XOR IYH */
+static int op_undoc_xoriyh(void)	/* XOR IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A ^= IY >> 8;
-	F &= ~(H_FLAG | N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~(H_FLAG | N_FLAG | C_FLAG);
+	return (8);
 }
 
-INSTR(0xa5, op_undoc_andiyl)		/* AND IYL */
+static int op_undoc_andiyl(void)	/* AND IYL */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A &= IY & 0xff;
-	F |= H_FLAG;
-	F &= ~(N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= H_FLAG;
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~(N_FLAG | C_FLAG);
+	return (8);
 }
 
-INSTR(0xa4, op_undoc_andiyh)		/* AND IYH */
+static int op_undoc_andiyh(void)	/* AND IYH */
 {
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	A &= IY >> 8;
-	F |= H_FLAG;
-	F &= ~(N_FLAG | C_FLAG);
-#ifndef FLAG_TABLES
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
+	F |= H_FLAG;
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-#ifdef UNDOC_FLAGS
-	(A & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(A & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZP_FLAGS) | szp_flags[A];
-#else
-	F = (F & ~SZYXP_FLAGS) | szyxp_flags[A];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~(N_FLAG | C_FLAG);
+	return (8);
 }
 
-INSTR(0x2c, op_undoc_inciyl)		/* INC IYL */
+static int op_undoc_inciyl(void)	/* INC IYL */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY & 0xff;
 	P++;
 	IY = (IY & 0xff00) | P;
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	F &= ~N_FLAG;
 	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[P];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[P];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~N_FLAG;
+	return (8);
 }
 
-INSTR(0x24, op_undoc_inciyh)		/* INC IYH */
+static int op_undoc_inciyh(void)	/* INC IYH */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY >> 8;
 	P++;
 	IY = (IY & 0x00ff) | (P << 8);
 	((P & 0xf) == 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	F &= ~N_FLAG;
 	(P == 128) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[P];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[P];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F &= ~N_FLAG;
+	return (8);
 }
 
-INSTR(0x2d, op_undoc_deciyl)		/* DEC IYL */
+static int op_undoc_deciyl(void)	/* DEC IYL */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY & 0xff;
 	P--;
 	IY = (IY & 0xff00) | P;
 	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	F |= N_FLAG;
 	(P == 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[P];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[P];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F |= N_FLAG;
+	return (8);
 }
 
-INSTR(0x25, op_undoc_deciyh)		/* DEC IYH */
+static int op_undoc_deciyh(void)	/* DEC IYH */
 {
 	register BYTE P;
 
-	if (u_flag) {
-		STATES(trap_fd());
-	}
+	if (u_flag)
+		return (trap_fd());
 
 	P = IY >> 8;
 	P--;
 	IY = (IY & 0x00ff) | (P << 8);
 	((P & 0xf) == 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
-	F |= N_FLAG;
 	(P == 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-#ifndef FLAG_TABLES
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
-#ifdef UNDOC_FLAGS
-	(P & 32) ? (F |= Y_FLAG) : (F &= ~Y_FLAG);
-	(P & 8) ? (F |= X_FLAG) : (F &= ~X_FLAG);
-#endif
-#else /* FLAG_TABLES */
-#ifndef UNDOC_FLAGS
-	F = (F & ~SZ_FLAGS) | sz_flags[P];
-#else
-	F = (F & ~SZYX_FLAGS) | szyx_flags[P];
-#endif
-#endif /* FLAG_TABLES */
-#ifdef UNDOC_FLAGS
-	modF = 1;
-#endif
-	STATES(8);
+	F |= N_FLAG;
+	return (8);
 }
 
 #endif /* UNDOC_INST */
+
+#endif /* !EXCLUDE_Z80 */

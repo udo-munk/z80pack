@@ -15,10 +15,6 @@
 //#define EXCLUDE_I8080	/* don't include 8080, for now we want both */
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */
 #define UNDOC_INST	/* compile undocumented instructions */
-#define UNDOC_IALL	/* compile rarely used undoc'd Z80 instructions */
-#define UNDOC_FLAGS	/* compile undocumented Z80 flags */
-#define INSTR_SWTCH	/* big switch instead of functions, less debuggable */
-#define FLAG_TABLES	/* use table lookups for flags */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
 

@@ -380,22 +380,10 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	puts(", CPU doesn't execute undocumented instructions");
 #else
 	if (u_flag)
-		fputs(", CPU doesn't execute undocumented instructions",
-		      stdout);
+		puts(", CPU doesn't execute undocumented instructions");
 	else
-		fputs(", CPU executes undocumented instructions", stdout);
+		puts(", CPU executes undocumented instructions");
 #endif
-#ifndef EXCLUDE_Z80
-	if (cpu == Z80)
-		printf(",\nCPU%s maintain%s undocumented flags",
-#ifdef UNDOC_FLAGS
-		       "", "s"
-#else
-		       " doesn't", ""
-#endif
-		       );
-#endif
-	putchar('\n');
 	fflush(stdout);
 
 	/* if the machine has configuration files try to find them */
