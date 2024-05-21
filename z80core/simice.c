@@ -85,7 +85,8 @@ void (*ice_cust_help)(void);
  *	The function "ice_cmd_loop()" is the dialog user interface, called
  *	from the simulation when desired with go_flag set to 0, or, when
  *	no other user interface is needed, directly after any necessary
- *	initialization work at program start with go_flag set to 1.
+ *	initialization work at program start with go_flag set to 1 (or 2
+ *	with timing output).
  *
  *	There are also two function pointers "ice_before_go" and
  *	"ice_after_go" which can be set to a void function(void) to be
@@ -113,7 +114,7 @@ void ice_cmd_loop(int go_flag)
 
 	while (eoj) {
 		if (go_flag) {
-			strcpy(cmd, "g");
+			strcpy(cmd, (go_flag > 1) ? "g *" : "g");
 			go_flag = 0;
 		} else {
 			printf(">>> ");
@@ -254,7 +255,7 @@ static void do_go(char *s)
 	extern unsigned long long get_clock_us(void);
 	int timeit = 0;
 	unsigned long long start_time, stop_time;
-	Tstates_t T0;
+	Tstates_t T0 = T;
 
 	while (isspace((unsigned char) *s))
 		s++;
@@ -266,10 +267,8 @@ static void do_go(char *s)
 		PC = exatoi(s);
 	if (ice_before_go)
 		(*ice_before_go)();
-	if (timeit) {
-		T0 = T;
+	if (timeit)
 		start_time = get_clock_us();
-	}
 	for (;;) {
 		run_cpu();
 		if (cpu_error) {

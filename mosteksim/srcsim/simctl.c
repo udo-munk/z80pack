@@ -37,5 +37,5 @@ void mon(void)
 
 	fdc_reset();
 
-	ice_cmd_loop(x_flag);
+	ice_cmd_loop(x_flag ? 2 : 0);
 }
