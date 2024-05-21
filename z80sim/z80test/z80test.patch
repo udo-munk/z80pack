@@ -126,3 +126,86 @@ index eb7d2fb..0d14d45 100644
              di
              exx
              pop     bc
+diff --git a/src/tests.asm b/src/tests.asm
+index 80e8a60..3db211a 100644
+--- a/src/tests.asm
++++ b/src/tests.asm
+@@ -50,7 +50,7 @@ testtable:
+             dw      .daa
+             dw      .cpl
+             dw      .neg
+-            dw      .neg_
++;            dw      .neg_
+             
+             dw      .add_a_n
+             dw      .adc_a_n
+@@ -97,7 +97,7 @@ testtable:
+             dw      .srl_r
+             
+             dw      .sro_xyd
+-            dw      .sro_xyd_r
++;            dw      .sro_xyd_r
+             
+             dw      .inc_a
+             dw      .dec_a
+@@ -123,26 +123,26 @@ testtable:
+             dw      .bit_n_hl
+             dw      .bit_n_r
+             dw      .bit_n_xyd
+-            dw      .bit_n_xyd_
++;            dw      .bit_n_xyd_
+ 
+             dw      .set_n_a
+             dw      .set_n_hl
+             dw      .set_n_r
+             dw      .set_n_xyd
+-            dw      .set_n_xyd_
++;            dw      .set_n_xyd_
+             
+             dw      .res_n_a
+             dw      .res_n_hl
+             dw      .res_n_r
+             dw      .res_n_xyd
+-            dw      .res_n_xyd_
++;            dw      .res_n_xyd_
+             
+             dw      .ldi
+             dw      .ldd
+             dw      .ldir
+             dw      .lddr
+-            dw      .ldir_nop
+-            dw      .lddr_nop
++;            dw      .ldir_nop
++;            dw      .lddr_nop
+             
+             dw      .cpi
+             dw      .cpd
+@@ -156,8 +156,8 @@ testtable:
+             dw      .ind
+             dw      .inir
+             dw      .indr
+-            dw      .inir_nop
+-            dw      .indr_nop
++;            dw      .inir_nop
++;            dw      .indr_nop
+ 
+             dw      .out_n_a
+             dw      .out_c_r
+@@ -183,7 +183,7 @@ testtable:
+             dw      .ret_cc
+             dw      .retn
+             dw      .reti
+-            dw      .reti_retn
++;            dw      .reti_retn
+             
+             dw      .pushpop_rr
+             dw      .poppush_af
+@@ -224,7 +224,7 @@ testtable:
+             dw      .ld_a_r
+             
+             dw      .ei_di
+-            dw      .im_n
++;            dw      .im_n
+             
+             ; rst
+             ; halt
