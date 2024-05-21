@@ -758,8 +758,7 @@ static int op_daa(void)			/* DAA */
  * https://zeptobars.com/en/read/KR580VM80A-intel-i8080-verilog-reverse-engineering
  * in the verilog file.
  * It is just a normal addition with a special operand setup and the carry flag
- * is set to the same value as the condition of the second "if". That is what
- * makes DAA a bit strange.
+ * is set to "A > 0x99 or carry was set". That is what makes DAA a bit strange.
  * Turns out the Z80 is exactly the same except it does a subtraction if the
  * N flag is set.
  *
@@ -774,7 +773,8 @@ static int op_daa(void)			/* DAA */
 	if ((A > 0x99) || (F & C_FLAG)) {
 		F |= C_FLAG;
 		adj += 0x60;
-	}
+	} else
+		F &= ~C_FLAG;
 	if (F & N_FLAG) {		/* subtractions */
 		((adj & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 		A -= adj;
