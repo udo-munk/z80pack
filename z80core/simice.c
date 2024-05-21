@@ -535,10 +535,6 @@ static const struct reg_def {
 	{ "fh",  2, "H",   0, R_M,  .rm = H_FLAG },
 	{ "fp",  2, "P",   0, R_M,  .rm = P_FLAG },
 #ifndef EXCLUDE_Z80
-#ifdef UNDOC_FLAGS
-	{ "fx",  2, "X",   1, R_M,  .rm = X_FLAG },
-	{ "fy",  2, "Y",   1, R_M,  .rm = Y_FLAG },
-#endif
 	{ "fn",  2, "N",   1, R_M,  .rm = N_FLAG },
 #endif
 	{ "fc",  2, "C",   0, R_M,  .rm = C_FLAG },
@@ -654,14 +650,8 @@ static void print_head(void)
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
-		printf("\nPC   A  SZ%sH%sPNC I  R  IFF BC   DE   HL   "
-		       "A'F' B'C' D'E' H'L' IX   IY   SP\n",
-#ifdef UNDOC_FLAGS
-		       "Y", "X"
-#else
-		       "", ""
-#endif
-		       );
+		printf("\nPC   A  SZHPNC I  R  IFF BC   DE   HL   "
+		       "A'F' B'C' D'E' H'L' IX   IY   SP\n");
 		break;
 #endif
 #ifndef EXCLUDE_I8080
@@ -682,17 +672,11 @@ static void print_reg(void)
 	printf("%04x %02x ", PC, A);
 	printf("%c", F & S_FLAG ? '1' : '0');
 	printf("%c", F & Z_FLAG ? '1' : '0');
+	printf("%c", F & H_FLAG ? '1' : '0');
+	printf("%c", F & P_FLAG ? '1' : '0');
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
-#ifdef UNDOC_FLAGS
-		printf("%c", F & Y_FLAG ? '1' : '0');
-#endif
-		printf("%c", F & H_FLAG ? '1' : '0');
-#ifdef UNDOC_FLAGS
-		printf("%c", F & X_FLAG ? '1' : '0');
-#endif
-		printf("%c", F & P_FLAG ? '1' : '0');
 		printf("%c", F & N_FLAG ? '1' : '0');
 		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x ", I);
@@ -707,8 +691,6 @@ static void print_reg(void)
 #endif
 #ifndef EXCLUDE_I8080
 	case I8080:
-		printf("%c", F & H_FLAG ? '1' : '0');
-		printf("%c", F & P_FLAG ? '1' : '0');
 		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x%02x %02x%02x %02x%02x %04x\n",
 		       B, C, D, E, H, L, SP);
@@ -965,16 +947,6 @@ static void do_show(void)
 	i = 1;
 #endif
 	printf("Undocumented op-codes are %sexecuted\n", i ? "not " : "");
-#ifndef EXCLUDE_Z80
-#ifdef UNDOC_FLAGS
-	i = 0;
-#else
-	i = 1;
-#endif
-	if (cpu == Z80)
-		printf("Undocumented flags are %smaintained\n",
-		       i ? "not " : "");
-#endif
 #ifdef WANT_TIM
 	i = 1;
 #else

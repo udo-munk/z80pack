@@ -31,10 +31,6 @@ extern BYTE	A, B, C, D, E, H, L;
 extern int	F;
 #ifndef EXCLUDE_Z80
 extern WORD	IX, IY;
-#ifdef UNDOC_FLAGS
-extern WORD	WZ;
-extern int	modF, pmodF;
-#endif
 extern BYTE	A_, B_, C_, D_, E_, H_, L_, I, R, R_;
 extern int	F_;
 #endif
@@ -114,18 +110,6 @@ extern char	conffn[];
 extern char	rompath[];
 #endif
 
-#if !defined(FLAG_TABLES) || !defined(EXCLUDE_Z80)
 extern const char parity[];
-#endif
-#ifdef FLAG_TABLES
-#ifndef EXCLUDE_Z80
-extern const BYTE sz_flags[];
-#endif
-extern const BYTE szp_flags[];
-#ifdef UNDOC_FLAGS
-extern const BYTE szyx_flags[];
-extern const BYTE szyxp_flags[];
-#endif
-#endif
 
 #endif

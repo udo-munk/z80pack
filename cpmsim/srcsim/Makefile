@@ -82,7 +82,8 @@ INSTALL_DATA = $(INSTALL) -m 644
 
 # core system source files for the CPU simulation
 CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c \
-	simmain.c simz80.c
+	simmain.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c \
+	simz80-fd.c simz80-fdcb.c
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
