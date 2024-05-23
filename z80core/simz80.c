@@ -3044,6 +3044,7 @@ static int op_retc(void)		/* RET C */
 		i = memrdr(SP++);
 		i += memrdr(SP++) << 8;
 		PC = i;
+		return (11);
 	}
 	return (5);
 }
