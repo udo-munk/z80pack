@@ -71,18 +71,22 @@ isZ80	equ	1
 ; 8080 modifications come from
 ; https://web.archive.org/web/20151108135453/http://www.idb.me.uk/sunhillow/8080.html
 ;
-; Use flgmask of 0ffh
-; Preserve carry flag in ldnnsp macro
-; Push hl, not zero, in pushix and pushiy macros
-; Changed the 8080 checksums to the ones from the 8080/8085 CPU Exerciser site
-; Print 8080 instruction names
+; Use flgmask of 0ffh.
+; Preserve carry flag in ldnnsp macro.
+; Push hl, not zero, in pushix and pushiy macros.
+; Changed the 8080 checksums to the ones from the 8080/8085 CPU Exerciser site.
+; Print 8080 instruction names.
 ;
-; Corrected checksums for Z80 inout test
-;
-; Use z80pack CPU switching
+; Corrected checksums for Z80 inout test.
 ;
 ; Add option to run on bare emulators/machines.
 ; Adapted from code by Goran Devic (https://baltazarstudios.com) for Z80Explorer.
+;
+; Fixed a problem with the ld8im test. Changed initial HL value to msbt.
+; The old value 00339h was inside the exerciser and destroyed it.
+; Updated checksums.
+;
+; Use z80pack CPU switching.
 
 	aseg
 
@@ -107,7 +111,7 @@ setz80	equ	32
 	jp	boot
 
 ; Minimal BDOS for bare emulators/machines.
-; We implement subfunctions:
+; Subfunctions implemented:
 ;  C=2  Print a character given in E
 ;  C=9  Print a string pointed to by DE; string ends with '$'
 
@@ -928,10 +932,10 @@ ld8bd:	db	flgmask		; flag mask
 
 ; ld <b,c,d,e,h,l,(hl),a>,nn (64 cycles)
 ld8im:	db	flgmask		; flag mask
-	tstr	6,0c407h,0f49dh,0d13dh,00339h,0de89h,07455h,053h,0c0h,05509h,0
+	tstr	6,0c407h,0f49dh,0d13dh,msbt,0de89h,07455h,053h,0c0h,05509h,0
 	tstr	038h,0,0,0,0,0,0,0,0,0,1		; (8 cycles)
 	tstr	0,0,0,0,0,0,0,0,0ffh,0,1		; (8 cycles)
-	expcrc	<0f1h,0dah,0b5h,056h>,<0f1h,0dah,0b5h,056h>,<0eah,0a7h,020h,044h>	; expected crc
+	expcrc	<075h,006h,0c2h,001h>,<075h,006h,0c2h,001h>,<077h,070h,0f4h,043h>	; expected crc
      if isZ80
 	tmsg	'ld <b,c,d,e,h,l,(hl),a>,nn','     64'
      else
