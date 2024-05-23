@@ -1523,6 +1523,7 @@ finish_call:
 
 	case 0xfb:			/* EI */
 		IFF = 3;
+		int_protection = 1;	/* protect next instruction */
 		break;
 
 	case 0xfc:			/* CM nn */
