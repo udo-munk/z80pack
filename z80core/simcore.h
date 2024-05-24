@@ -34,6 +34,9 @@
 #if defined(EXCLUDE_Z80) && defined(FAST_BLOCK)
 #error "FAST_BLOCK makes only sense without EXCLUDE_Z80"
 #endif
+#if (defined(ALT_I8080) || defined(ALT_Z80)) && !defined(UNDOC_INST)
+#error "UNDOC_INST required for alternate simulators"
+#endif
 
 				/* bit definitions of CPU flags */
 #define S_FLAG		128	/* sign flag */
@@ -114,4 +117,4 @@ struct softbreak {		/* structure of a breakpoint */
  */
 #define UNUSED(x)	(void) (x)
 
-#endif
+#endif /* !SIMCORE_INC */

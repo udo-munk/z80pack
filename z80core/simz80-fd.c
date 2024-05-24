@@ -18,13 +18,7 @@
 #endif
 #include "memsim.h"
 
-#ifndef EXCLUDE_Z80
-
-#ifdef UNDOC_INST
-#define UNDOC(f) f
-#else
-#define UNDOC(f) trap_fd
-#endif
+#if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 
 static int trap_fd(void);
 static int op_popiy(void), op_pusiy(void);
@@ -73,6 +67,13 @@ static int op_undoc_deciyl(void), op_undoc_deciyh(void);
 
 int op_fd_handle(void)
 {
+
+#ifdef UNDOC_INST
+#define UNDOC(f) f
+#else
+#define UNDOC(f) trap_fd
+#endif
+
 	static int (*op_fd[256])(void) = {
 		trap_fd,			/* 0x00 */
 		trap_fd,			/* 0x01 */
@@ -331,6 +332,8 @@ int op_fd_handle(void)
 		trap_fd,			/* 0xfe */
 		trap_fd				/* 0xff */
 	};
+
+#undef UNDOC
 
 	register int t;
 
@@ -1349,4 +1352,4 @@ static int op_undoc_deciyh(void)	/* DEC IYH */
 
 #endif /* UNDOC_INST */
 
-#endif /* !EXCLUDE_Z80 */
+#endif /* !EXCLUDE_Z80 && !ALT_Z80 */

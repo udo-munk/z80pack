@@ -19,6 +19,7 @@
 extern void check_gui_break(void);
 #endif
 
+#ifndef ALT_Z80
 static int op_nop(void), op_halt(void), op_scf(void);
 static int op_ccf(void), op_cpl(void), op_daa(void);
 static int op_ei(void), op_di(void);
@@ -102,6 +103,7 @@ static int op_rst00(void), op_rst08(void), op_rst10(void), op_rst18(void);
 static int op_rst20(void), op_rst28(void), op_rst30(void), op_rst38(void);
 extern int op_cb_handle(void), op_dd_handle(void);
 extern int op_ed_handle(void), op_fd_handle(void);
+#endif /* !ALT_Z80 */
 
 /*
  *	This function builds the Z80 central processing unit.
@@ -114,6 +116,7 @@ void cpu_z80(void)
 {
 	extern unsigned long long get_clock_us(void);
 
+#ifndef ALT_Z80
 	static int (*op_sim[256])(void) = {
 		op_nop,				/* 0x00 */
 		op_ldbcnn,			/* 0x01 */
@@ -372,6 +375,7 @@ void cpu_z80(void)
 		op_cpn,				/* 0xfe */
 		op_rst38			/* 0xff */
 	};
+#endif /* !ALT_Z80 */
 
 	Tstates_t T_max;
 	unsigned long long t1, t2;
@@ -570,7 +574,11 @@ leave:
 		R++;			/* increment refresh register */
 
 		int_protection = 0;
+#ifndef ALT_Z80
 		T += (*op_sim[memrdr(PC++)])();	/* execute next opcode */
+#else
+#include "altz80.h"
+#endif
 
 		if (f_flag) {		/* adjust CPU speed */
 			if (T >= T_max && !cpu_needed) {
@@ -611,6 +619,8 @@ leave:
 	}
 #endif
 }
+
+#ifndef ALT_Z80
 
 static int op_nop(void)			/* NOP */
 {
@@ -3225,5 +3235,7 @@ static int op_rst38(void)		/* RST 38 */
 	PC = 0x38;
 	return (11);
 }
+
+#endif /* !ALT_Z80 */
 
 #endif /* !EXCLUDE_Z80 */

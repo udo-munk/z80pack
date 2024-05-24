@@ -110,8 +110,8 @@ extern char	conffn[];
 extern char	rompath[];
 #endif
 
-#if !defined(ALT_I8080) || !defined(EXCLUDE_Z80)
+#if !defined(ALT_I8080) || !defined(ALT_Z80)
 extern const char parity[];
 #endif
 
-#endif
+#endif /* !SIMGLB_INC */
