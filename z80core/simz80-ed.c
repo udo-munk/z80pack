@@ -19,13 +19,7 @@
 #endif
 #include "memsim.h"
 
-#ifndef EXCLUDE_Z80
-
-#ifdef UNDOC_INST
-#define UNDOC(f) f
-#else
-#define UNDOC(f) trap_ed
-#endif
+#if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 
 static int trap_ed(void);
 static int op_im0(void), op_im1(void), op_im2(void);
@@ -55,6 +49,13 @@ static int op_undoc_outc0(void), op_undoc_infic(void);
 
 int op_ed_handle(void)
 {
+
+#ifdef UNDOC_INST
+#define UNDOC(f) f
+#else
+#define UNDOC(f) trap_ed
+#endif
+
 	static int (*op_ed[256])(void) = {
 		trap_ed,			/* 0x00 */
 		trap_ed,			/* 0x01 */
@@ -313,6 +314,8 @@ int op_ed_handle(void)
 		trap_ed,			/* 0xfe */
 		trap_ed				/* 0xff */
 	};
+
+#undef UNDOC
 
 	register int t;
 
@@ -1438,4 +1441,4 @@ static int op_undoc_infic(void)		/* IN F,(C) */
 
 #endif /* UNDOC_INST */
 
-#endif /* !EXCLUDE_Z80 */
+#endif /* !EXCLUDE_Z80 && !ALT_Z80 */

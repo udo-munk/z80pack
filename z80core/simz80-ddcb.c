@@ -18,13 +18,7 @@
 #endif
 #include "memsim.h"
 
-#ifndef EXCLUDE_Z80
-
-#ifdef UNDOC_INST
-#define UNDOC(f) f
-#else
-#define UNDOC(f) trap_ddcb
-#endif
+#if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 
 static int trap_ddcb(int);
 static int op_tb0ixd(int), op_tb1ixd(int), op_tb2ixd(int), op_tb3ixd(int);
@@ -42,6 +36,13 @@ static int op_undoc_sllixd(int);
 
 int op_ddcb_handle(void)
 {
+
+#ifdef UNDOC_INST
+#define UNDOC(f) f
+#else
+#define UNDOC(f) trap_ddcb
+#endif
+
 	static int (*op_ddcb[256])(int) = {
 		trap_ddcb,			/* 0x00 */
 		trap_ddcb,			/* 0x01 */
@@ -300,6 +301,8 @@ int op_ddcb_handle(void)
 		op_sb7ixd,			/* 0xfe */
 		trap_ddcb			/* 0xff */
 	};
+
+#undef UNDOC
 
 	register int d;
 	register int t;
@@ -659,4 +662,4 @@ static int op_undoc_sllixd(int data)	/* SLL (IX+d) */
 
 #endif /* UNDOC_INST */
 
-#endif /* !EXCLUDE_Z80 */
+#endif /* !EXCLUDE_Z80 && !ALT_Z80 */

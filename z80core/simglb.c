@@ -143,7 +143,7 @@ char conffn[MAX_LFN];		/* configuration file (option -c) */
 char rompath[MAX_LFN];		/* path for boot ROM files */
 #endif
 
-#if !defined(ALT_I8080) || !defined(EXCLUDE_Z80)
+#if !defined(ALT_I8080) || !defined(ALT_Z80)
 /*
  *	Precompiled table to get parity as fast as possible
  */
@@ -213,4 +213,4 @@ const char parity[256] = {
 	1 /* 11111000 */, 0 /* 11111001 */, 0 /* 11111010 */, 1 /* 11111011 */,
 	0 /* 11111100 */, 1 /* 11111101 */, 1 /* 11111110 */, 0 /* 11111111 */
 };
-#endif /* !ALT_I8080 || !EXCLUDE_Z80 */
+#endif /* !ALT_I8080 || !ALT_Z80 */

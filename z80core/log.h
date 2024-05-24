@@ -95,4 +95,4 @@ static inline uint32_t _log_timestamp(void) {
 #define LOGD( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_DEBUG)   { _log_write(LOG_DEBUG,   tag, _LOG_FORMAT(D, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGV( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_VERBOSE) { _log_write(LOG_VERBOSE, tag, _LOG_FORMAT(V, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 
-#endif
+#endif /* !LOG_INC */

@@ -38,6 +38,7 @@
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 4	/* default CPU speed */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
+/*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
 #define UNDOC_INST	/* compile undocumented instructions */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 

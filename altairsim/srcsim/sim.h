@@ -37,6 +37,7 @@
 /*#define AMD8080*/	/* AMD 8080 instead of Intel 8080 */
 #define CPU_SPEED 2	/* default CPU speed */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
+/*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
 #define UNDOC_INST	/* compile undocumented instructions */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 

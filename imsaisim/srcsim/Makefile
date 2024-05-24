@@ -144,6 +144,8 @@ all: $(SIM)
 $(SIM): $(OBJS) $(CIV_LIB) $(FP_LIB)
 	$(LINK) $(LINKFLAGS) $(CPPFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
+$(DEPS): sim.h
+
 %.d: %.c
 	@$(CC) -MM $(CFLAGS) $(CPPFLAGS) $< > $@
 

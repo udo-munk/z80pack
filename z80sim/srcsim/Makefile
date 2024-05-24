@@ -88,6 +88,8 @@ all: $(SIM)
 $(SIM): $(OBJS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
+$(DEPS): sim.h
+
 %.d: %.c
 	@$(CC) -MM $(CFLAGS) $(CPPFLAGS) $< > $@
 

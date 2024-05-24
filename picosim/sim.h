@@ -15,6 +15,7 @@
 //#define EXCLUDE_I8080	/* don't include 8080, for now we want both */
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
+/*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
 #define UNDOC_INST	/* compile undocumented instructions */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 #define BAREMETAL	/* set up the simulator core for bare metal use */
