@@ -27,6 +27,7 @@ extern void (*ice_cust_help)(void);
 
 extern int	cpu;
 
+#if !defined(ALT_I8080) && !defined(ALT_Z80)
 extern BYTE	A, B, C, D, E, H, L;
 extern int	F;
 #ifndef EXCLUDE_Z80
@@ -36,6 +37,9 @@ extern int	F_;
 #endif
 extern WORD	PC, SP;
 extern BYTE	IFF;
+#else
+#include "altregs.h"
+#endif
 extern Tstates_t T;
 extern unsigned long long cpu_start, cpu_stop;
 

@@ -20,7 +20,7 @@
  *	For a description of how the arithmetic flags calculation works see:
  *	http://emulators.com/docs/lazyoverflowdetect_final.pdf
  *
- *	The formula for subtraction carry outs was determined by staring
+ *	The formula for subtraction carry outs was derived by staring
  *	intently at some truth tables.
  *
  *	cout contains the carry outs for every bit
@@ -82,26 +82,34 @@
 #undef P
 
 	BYTE t, res, cout, P, op, n, curr_ir;
-	WORD W;
-	WORD IR;	/* current index register(HL, IX, IY) */
 #ifdef FAST_BLOCK
 	WORD s, d;
-	long tl;	/* loops can run for 65535 * 21 + 16 cycles */
+	long tl;		/* loops can run for 65535 * 21 + 16 cycles */
 #endif
+	struct cpu_reg w;	/* working register */
+	struct cpu_reg ir;	/* current index register (HL, IX, IY) */
 
-#define IR_HL	0	/* values for curr_ir */
+#define W	w.w
+#define WH	w.h
+#define WL	w.l
+
+#define IR	ir.w
+#define IRH	ir.h
+#define IRL	ir.l
+
+#define IR_HL	0		/* values for curr_ir */
 #define IR_IX	1
 #define IR_IY	2
 
 	t = 0;
 	curr_ir = IR_HL;
-	IR = (H << 8) | L;
+	IR = HL;
 
 next_opcode:
 
 	t += 4;
 
-	switch (memrdr(PC++)) {	/* execute next opcode */
+	switch (memrdr(PC++)) {		/* execute next opcode */
 
 	case 0x00:			/* NOP */
 	case 0x40:			/* LD B,B */
@@ -120,14 +128,12 @@ next_opcode:
 		break;
 
 	case 0x02:			/* LD (BC),A */
-		memwrt((B << 8) | C, A);
+		memwrt(BC, A);
 		t += 3;
 		break;
 
 	case 0x03:			/* INC BC */
-		W = ((B << 8) | C) + 1;
-		B = W >> 8;
-		C = W & 0xff;
+		BC++;
 		t += 2;
 		break;
 
@@ -169,18 +175,15 @@ next_opcode:
 		break;
 
 	case 0x08:			/* EX AF,AF' */
-		P = A;
-		A = A_;
-		A_ = P;
-		P = F;
-		F = F_;
-		F_ = P;
+		W = AF;
+		AF = AF_;
+		AF_ = W;
 		break;
 
 	case 0x09:			/* ADD ir,BC */
-		W = IR + ((B << 8) | C);
-		cout = ((IR >> 8) & B) | (((IR >> 8) | B) & ~(W >> 8));
-	finish_addhl:
+		W = IR + BC;
+		cout = (IRH & B) | ((IRH | B) & ~WH);
+	finish_addir:
 		F = ((F & ~(H_FLAG | N_FLAG | C_FLAG)) |
 		     (((cout >> 3) & 1) << H_SHIFT) |
 		     (((cout >> 7) & 1) << C_SHIFT));
@@ -190,14 +193,12 @@ next_opcode:
 		break;
 
 	case 0x0a:			/* LD A,(BC) */
-		A = memrdr((B << 8) | C);
+		A = memrdr(BC);
 		t += 3;
 		break;
 
 	case 0x0b:			/* DEC BC */
-		W = ((B << 8) | C) - 1;
-		B = W >> 8;
-		C = W & 0xff;
+		BC--;
 		t += 2;
 		break;
 
@@ -239,14 +240,12 @@ next_opcode:
 		break;
 
 	case 0x12:			/* LD (DE),A */
-		memwrt((D << 8) | E, A);
+		memwrt(DE, A);
 		t += 3;
 		break;
 
 	case 0x13:			/* INC DE */
-		W = ((D << 8) | E) + 1;
-		D = W >> 8;
-		E = W & 0xff;
+		DE++;
 		t += 2;
 		break;
 
@@ -280,19 +279,17 @@ next_opcode:
 		break;
 
 	case 0x19:			/* ADD ir,DE */
-		W = IR + ((D << 8) | E);
-		cout = ((IR >> 8) & D) | (((IR >> 8) | D) & ~(W >> 8));
-		goto finish_addhl;
+		W = IR + DE;
+		cout = (IRH & D) | ((IRH | D) & ~WH);
+		goto finish_addir;
 
 	case 0x1a:			/* LD A,(DE) */
-		A = memrdr((D << 8) | E);
+		A = memrdr(DE);
 		t += 3;
 		break;
 
 	case 0x1b:			/* DEC DE */
-		W = ((D << 8) | E) - 1;
-		D = W >> 8;
-		E = W & 0xff;
+		DE--;
 		t += 2;
 		break;
 
@@ -330,16 +327,16 @@ next_opcode:
 		break;
 
 	case 0x21:			/* LD ir,nn */
-		IR = memrdr(PC++);
-		IR |= memrdr(PC++) << 8;
+		IRL = memrdr(PC++);
+		IRH = memrdr(PC++);
 		t += 6;
 		break;
 
 	case 0x22:			/* LD (nn),ir */
-		W = memrdr(PC++);
-		W |= memrdr(PC++) << 8;
-		memwrt(W, IR & 0xff);
-		memwrt(W + 1, IR >> 8);
+		WL = memrdr(PC++);
+		WH = memrdr(PC++);
+		memwrt(W, IRL);
+		memwrt(W + 1, IRH);
 		t += 12;
 		break;
 
@@ -349,19 +346,17 @@ next_opcode:
 		break;
 
 	case 0x24:			/* INC irh */
-		P = IR >> 8;
-		res = P + 1;
-		IR = (IR & 0xff) | (res << 8);
+		P = IRH;
+		res = ++IRH;
 		goto finish_inc;
 
 	case 0x25:			/* DEC irh */
-		P = IR >> 8;
-		res = P - 1;
-		IR = (IR & 0xff) | (res << 8);
+		P = IRH;
+		res = --IRH;
 		goto finish_dec;
 
 	case 0x26:			/* LD irh,n */
-		IR = (IR & 0xff) | (memrdr(PC++) << 8);
+		IRH = memrdr(PC++);
 		t += 3;
 		break;
 
@@ -393,14 +388,14 @@ next_opcode:
 
 	case 0x29:			/* ADD ir,ir */
 		W = IR << 1;
-		cout = (IR >> 8) | ((IR >> 8) & ~(W >> 8));
-		goto finish_addhl;
+		cout = IRH | (IRH & ~WH);
+		goto finish_addir;
 
 	case 0x2a:			/* LD ir,(nn) */
-		W = memrdr(PC++);
-		W |= memrdr(PC++) << 8;
-		IR = memrdr(W);
-		IR |= memrdr(W + 1) << 8;
+		WL = memrdr(PC++);
+		WH = memrdr(PC++);
+		IRL = memrdr(W);
+		IRH = memrdr(W + 1);
 		t += 12;
 		break;
 
@@ -410,19 +405,17 @@ next_opcode:
 		break;
 
 	case 0x2c:			/* INC irl */
-		P = IR & 0xff;
-		res = P + 1;
-		IR = (IR & ~0xff) | res;
+		P = IRL;
+		res = ++IRL;
 		goto finish_inc;
 
 	case 0x2d:			/* DEC irl */
-		P = IR & 0xff;
-		res = P - 1;
-		IR = (IR & ~0xff) | res;
+		P = IRL;
+		res = --IRL;
 		goto finish_dec;
 
 	case 0x2e:			/* LD irl,n */
-		IR = (IR & ~0xff) | memrdr(PC++);
+		IRL = memrdr(PC++);
 		t += 3;
 		break;
 
@@ -437,14 +430,14 @@ next_opcode:
 		goto finish_jrc;
 
 	case 0x31:			/* LD SP,nn */
-		SP = memrdr(PC++);
-		SP |= memrdr(PC++) << 8;
+		SPL = memrdr(PC++);
+		SPH = memrdr(PC++);
 		t += 6;
 		break;
 
 	case 0x32:			/* LD (nn),A */
-		W = memrdr(PC++);
-		W |= memrdr(PC++) << 8;
+		WL = memrdr(PC++);
+		WH = memrdr(PC++);
 		memwrt(W, A);
 		t += 9;
 		break;
@@ -500,13 +493,12 @@ next_opcode:
 
 	case 0x39:			/* ADD ir,SP */
 		W = IR + SP;
-		cout = (((IR >> 8) & (SP >> 8)) |
-			(((IR >> 8) | (SP >> 8)) & ~(W >> 8)));
-		goto finish_addhl;
+		cout = (IRH & SPH) | ((IRH | SPH) & ~WH);
+		goto finish_addir;
 
 	case 0x3a:			/* LD A,(nn) */
-		W = memrdr(PC++);
-		W |= memrdr(PC++) << 8;
+		WL = memrdr(PC++);
+		WH = memrdr(PC++);
 		A = memrdr(W);
 		t += 9;
 		break;
@@ -556,11 +548,11 @@ next_opcode:
 		break;
 
 	case 0x44:			/* LD B,irh */
-		B = IR >> 8;
+		B = IRH;
 		break;
 
 	case 0x45:			/* LD B,irl */
-		B = IR & 0xff;
+		B = IRL;
 		break;
 
 	case 0x46:			/* LD B,(ir) */
@@ -590,11 +582,11 @@ next_opcode:
 		break;
 
 	case 0x4c:			/* LD C,irh */
-		C = IR >> 8;
+		C = IRH;
 		break;
 
 	case 0x4d:			/* LD C,irl */
-		C = IR & 0xff;
+		C = IRL;
 		break;
 
 	case 0x4e:			/* LD C,(ir) */
@@ -624,11 +616,11 @@ next_opcode:
 		break;
 
 	case 0x54:			/* LD D,irh */
-		D = IR >> 8;
+		D = IRH;
 		break;
 
 	case 0x55:			/* LD D,irl */
-		D = IR & 0xff;
+		D = IRL;
 		break;
 
 	case 0x56:			/* LD D,(ir) */
@@ -658,11 +650,11 @@ next_opcode:
 		break;
 
 	case 0x5c:			/* LD E,irh */
-		E = IR >> 8;
+		E = IRH;
 		break;
 
 	case 0x5d:			/* LD E,irl */
-		E = IR & 0xff;
+		E = IRL;
 		break;
 
 	case 0x5e:			/* LD E,(ir) */
@@ -680,23 +672,23 @@ next_opcode:
 		break;
 
 	case 0x60:			/* LD irh,B */
-		IR = (IR & 0xff) | (B << 8);
+		IRH = B;
 		break;
 
 	case 0x61:			/* LD irh,C */
-		IR = (IR & 0xff) | (C << 8);
+		IRH = C;
 		break;
 
 	case 0x62:			/* LD irh,D */
-		IR = (IR & 0xff) | (D << 8);
+		IRH = D;
 		break;
 
 	case 0x63:			/* LD irh,E */
-		IR = (IR & 0xff) | (E << 8);
+		IRH = E;
 		break;
 
 	case 0x65:			/* LD irh,irl */
-		IR = (IR & 0xff) | ((IR & 0xff) << 8);
+		IRH = IRL;
 		break;
 
 	case 0x66:			/* LD H,(ir) */
@@ -706,32 +698,32 @@ next_opcode:
 			t += 8;
 			H = memrdr(W);
 		} else
-		IR = (IR & 0xff) | (memrdr(W) << 8);
+			IRH = memrdr(W);
 		t += 3;
 		break;
 
 	case 0x67:			/* LD irh,A */
-		IR = (IR & 0xff) | (A << 8);
+		IRH = A;
 		break;
 
 	case 0x68:			/* LD irl,B */
-		IR = (IR & ~0xff) | B;
+		IRL = B;
 		break;
 
 	case 0x69:			/* LD irl,C */
-		IR = (IR & ~0xff) | C;
+		IRL = C;
 		break;
 
 	case 0x6a:			/* LD irl,D */
-		IR = (IR & ~0xff) | D;
+		IRL = D;
 		break;
 
 	case 0x6b:			/* LD irl,E */
-		IR = (IR & ~0xff) | E;
+		IRL = E;
 		break;
 
 	case 0x6c:			/* LD irl,irh */
-		IR = (IR & ~0xff) | (IR >> 8);
+		IRL = IRH;
 		break;
 
 	case 0x6e:			/* LD L,(ir) */
@@ -741,12 +733,12 @@ next_opcode:
 			t += 8;
 			L = memrdr(W);
 		} else
-			IR = (IR & ~0xff) | memrdr(W);
+			IRL = memrdr(W);
 		t += 3;
 		break;
 
 	case 0x6f:			/* LD irl,A */
-		IR = (IR & ~0xff) | A;
+		IRL = A;
 		break;
 
 	case 0x70:			/* LD (ir),B */
@@ -796,7 +788,7 @@ next_opcode:
 			t += 8;
 			memwrt(W, H);
 		} else
-			memwrt(W, IR >> 8);
+			memwrt(W, IRH);
 		t += 3;
 		break;
 
@@ -807,7 +799,7 @@ next_opcode:
 			t += 8;
 			memwrt(W, L);
 		} else
-			memwrt(W, IR & 0xff);
+			memwrt(W, IRL);
 		t += 3;
 		break;
 
@@ -907,11 +899,11 @@ next_opcode:
 		break;
 
 	case 0x7c:			/* LD A,irh */
-		A = IR >> 8;
+		A = IRH;
 		break;
 
 	case 0x7d:			/* LD A,irl */
-		A = IR & 0xff;
+		A = IRL;
 		break;
 
 	case 0x7e:			/* LD A,(ir) */
@@ -926,8 +918,9 @@ next_opcode:
 
 	case 0x80:			/* ADD A,B */
 		P = B;
+		res = 0;
 	finish_add:
-		res = A + P;
+		res = A + P + res;
 		cout = (A & P) | ((A | P) & ~res);
 		F = ((((cout >> 7) & 1) << C_SHIFT) |
 		     ((((cout + 64) >> 7) & 1) << P_SHIFT) |
@@ -939,22 +932,27 @@ next_opcode:
 
 	case 0x81:			/* ADD A,C */
 		P = C;
+		res = 0;
 		goto finish_add;
 
 	case 0x82:			/* ADD A,D */
 		P = D;
+		res = 0;
 		goto finish_add;
 
 	case 0x83:			/* ADD A,E */
 		P = E;
+		res = 0;
 		goto finish_add;
 
 	case 0x84:			/* ADD A,irh */
-		P = IR >> 8;
+		P = IRH;
+		res = 0;
 		goto finish_add;
 
 	case 0x85:			/* ADD A,irl */
-		P = IR & 0xff;
+		P = IRL;
+		res = 0;
 		goto finish_add;
 
 	case 0x86:			/* ADD A,(ir) */
@@ -964,45 +962,44 @@ next_opcode:
 			t += 8;
 		}
 		P = memrdr(W);
+		res = 0;
 		t += 3;
 		goto finish_add;
 
 	case 0x87:			/* ADD A,A */
 		P = A;
+		res = 0;
 		goto finish_add;
 
 	case 0x88:			/* ADC A,B */
 		P = B;
-	finish_adc:
-		res = A + P + ((F >> C_SHIFT) & 1);
-		cout = (A & P) | ((A | P) & ~res);
-		F = ((((cout >> 7) & 1) << C_SHIFT) |
-		     ((((cout + 64) >> 7) & 1) << P_SHIFT) |
-		     (((cout >> 3) & 1) << H_SHIFT) |
-		     (szp_flags[res] & ~P_FLAG));
-		/* N_FLAG cleared */
-		A = res;
-		break;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_add;
 
 	case 0x89:			/* ADC A,C */
 		P = C;
-		goto finish_adc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_add;
 
 	case 0x8a:			/* ADC A,D */
 		P = D;
-		goto finish_adc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_add;
 
 	case 0x8b:			/* ADC A,E */
 		P = E;
-		goto finish_adc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_add;
 
 	case 0x8c:			/* ADC A,irh */
-		P = IR >> 8;
-		goto finish_adc;
+		P = IRH;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_add;
 
 	case 0x8d:			/* ADC A,irl */
-		P = IR & 0xff;
-		goto finish_adc;
+		P = IRL;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_add;
 
 	case 0x8e:			/* ADC A,(ir) */
 		W = IR;
@@ -1011,17 +1008,20 @@ next_opcode:
 			t += 8;
 		}
 		P = memrdr(W);
+		res = (F >> C_SHIFT) & 1;
 		t += 3;
-		goto finish_adc;
+		goto finish_add;
 
 	case 0x8f:			/* ADC A,A */
 		P = A;
-		goto finish_adc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_add;
 
 	case 0x90:			/* SUB A,B */
 		P = B;
+		res = 0;
 	finish_sub:
-		res = A - P;
+		res = A - P - res;
 		cout = (~A & P) | ((~A | P) & res);
 		F = ((((cout >> 7) & 1) << C_SHIFT) |
 		     ((((cout + 64) >> 7) & 1) << P_SHIFT) |
@@ -1033,22 +1033,27 @@ next_opcode:
 
 	case 0x91:			/* SUB A,C */
 		P = C;
+		res = 0;
 		goto finish_sub;
 
 	case 0x92:			/* SUB A,D */
 		P = D;
+		res = 0;
 		goto finish_sub;
 
 	case 0x93:			/* SUB A,E */
 		P = E;
+		res = 0;
 		goto finish_sub;
 
 	case 0x94:			/* SUB A,irh */
-		P = IR >> 8;
+		P = IRH;
+		res = 0;
 		goto finish_sub;
 
 	case 0x95:			/* SUB A,irl */
-		P = IR & 0xff;
+		P = IRL;
+		res = 0;
 		goto finish_sub;
 
 	case 0x96:			/* SUB A,(ir) */
@@ -1058,6 +1063,7 @@ next_opcode:
 			t += 8;
 		}
 		P = memrdr(W);
+		res = 0;
 		t += 3;
 		goto finish_sub;
 
@@ -1069,36 +1075,33 @@ next_opcode:
 
 	case 0x98:			/* SBC A,B */
 		P = B;
-	finish_sbc:
-		res = A - P - ((F >> C_SHIFT) & 1);
-		cout = (~A & P) | ((~A | P) & res);
-		F = ((((cout >> 7) & 1) << C_SHIFT) |
-		     ((((cout + 64) >> 7) & 1) << P_SHIFT) |
-		     (((cout >> 3) & 1) << H_SHIFT) |
-		     N_FLAG |
-		     (szp_flags[res] & ~P_FLAG));
-		A = res;
-		break;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_sub;
 
 	case 0x99:			/* SBC A,C */
 		P = C;
-		goto finish_sbc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_sub;
 
 	case 0x9a:			/* SBC A,D */
 		P = D;
-		goto finish_sbc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_sub;
 
 	case 0x9b:			/* SBC A,E */
 		P = E;
-		goto finish_sbc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_sub;
 
 	case 0x9c:			/* SBC A,irh */
-		P = IR >> 8;
-		goto finish_sbc;
+		P = IRH;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_sub;
 
 	case 0x9d:			/* SBC A,irl */
-		P = IR & 0xff;
-		goto finish_sbc;
+		P = IRL;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_sub;
 
 	case 0x9e:			/* SBC A,(ir) */
 		W = IR;
@@ -1107,12 +1110,14 @@ next_opcode:
 			t += 8;
 		}
 		P = memrdr(W);
+		res = (F >> C_SHIFT) & 1;
 		t += 3;
-		goto finish_sbc;
+		goto finish_sub;
 
 	case 0x9f:			/* SBC A,A */
 		P = A;
-		goto finish_sbc;
+		res = (F >> C_SHIFT) & 1;
+		goto finish_sub;
 
 	case 0xa0:			/* AND B */
 		P = B;
@@ -1136,11 +1141,11 @@ next_opcode:
 		goto finish_and;
 
 	case 0xa4:			/* AND irh */
-		P = IR >> 8;
+		P = IRH;
 		goto finish_and;
 
 	case 0xa5:			/* AND irl */
-		P = IR & 0xff;
+		P = IRL;
 		goto finish_and;
 
 	case 0xa6:			/* AND (ir) */
@@ -1179,11 +1184,11 @@ next_opcode:
 		goto finish_xor;
 
 	case 0xac:			/* XOR irh */
-		P = IR >> 8;
+		P = IRH;
 		goto finish_xor;
 
 	case 0xad:			/* XOR irl */
-		P = IR & 0xff;
+		P = IRL;
 		goto finish_xor;
 
 	case 0xae:			/* XOR (ir) */
@@ -1224,11 +1229,11 @@ next_opcode:
 		goto finish_or;
 
 	case 0xb4:			/* OR irh */
-		P = IR >> 8;
+		P = IRH;
 		goto finish_or;
 
 	case 0xb5:			/* OR irl */
-		P = IR & 0xff;
+		P = IRL;
 		goto finish_or;
 
 	case 0xb6:			/* OR (ir) */
@@ -1271,11 +1276,11 @@ next_opcode:
 		goto finish_cp;
 
 	case 0xbc:			/* CP irh */
-		P = IR >> 8;
+		P = IRH;
 		goto finish_cp;
 
 	case 0xbd:			/* CP irl */
-		P = IR & 0xff;
+		P = IRL;
 		goto finish_cp;
 
 	case 0xbe:			/* CP (ir) */
@@ -1310,16 +1315,16 @@ next_opcode:
 	case 0xc2:			/* JP NZ,nn */
 		res = !(F & Z_FLAG);
 	finish_jpc:
-		W = memrdr(PC++);
-		W |= memrdr(PC++) << 8;
+		WL = memrdr(PC++);
+		WH = memrdr(PC++);
 		t += 6;
 		if (res)
 			PC = W;
 		break;
 
 	case 0xc3:			/* JP nn */
-		W = memrdr(PC++);
-		W |= memrdr(PC) << 8;
+		WL = memrdr(PC++);
+		WH = memrdr(PC);
 		t += 6;
 		PC = W;
 		break;
@@ -1327,8 +1332,8 @@ next_opcode:
 	case 0xc4:			/* CALL NZ,nn */
 		res = !(F & Z_FLAG);
 	finish_callc:
-		W = memrdr(PC++);
-		W |= memrdr(PC++) << 8;
+		WL = memrdr(PC++);
+		WH = memrdr(PC++);
 		t += 6;
 		if (res)
 			goto finish_call;
@@ -1342,6 +1347,7 @@ next_opcode:
 
 	case 0xc6:			/* ADD A,n */
 		P = memrdr(PC++);
+		res = 0;
 		t += 3;
 		goto finish_add;
 
@@ -1355,8 +1361,8 @@ next_opcode:
 
 	case 0xc9:			/* RET */
 	finish_ret:
-		W = memrdr(SP++);
-		W |= memrdr(SP++) << 8;
+		WL = memrdr(SP++);
+		WH = memrdr(SP++);
 		t += 6;
 		PC = W;
 		break;
@@ -1410,10 +1416,10 @@ next_opcode:
 				P = E;
 				break;
 			case 4:
-				P = IR >> 8;
+				P = IRH;
 				break;
 			case 5:
-				P = IR & 0xff;
+				P = IRL;
 				break;
 			case 6:
 				P = memrdr(W);
@@ -1495,13 +1501,13 @@ next_opcode:
 			if (curr_ir != IR_HL)
 				H = res;
 			else
-				IR = (IR & 0xff) | (res << 8);
+				IRH = res;
 			break;
 		case 5:
 			if (curr_ir != IR_HL)
 				L = res;
 			else
-				IR = (IR & ~0xff) | res;
+				IRL = res;
 			break;
 		case 6:
 			if (curr_ir == IR_HL)
@@ -1520,20 +1526,21 @@ next_opcode:
 		goto finish_callc;
 
 	case 0xcd:			/* CALL nn */
-		W = memrdr(PC++);
-		W |= memrdr(PC++) << 8;
+		WL = memrdr(PC++);
+		WH = memrdr(PC++);
 		t += 6;
 	finish_call:
-		memwrt(--SP, PC >> 8);
-		memwrt(--SP, PC & 0xff);
+		memwrt(--SP, PCH);
+		memwrt(--SP, PCL);
 		t += 7;
 		PC = W;
 		break;
 
 	case 0xce:			/* ADC A,n */
 		P = memrdr(PC++);
+		res = (F >> C_SHIFT) & 1;
 		t += 3;
-		goto finish_adc;
+		goto finish_add;
 
 	case 0xcf:			/* RST 08 */
 		W = 0x08;
@@ -1571,6 +1578,7 @@ next_opcode:
 
 	case 0xd6:			/* SUB A,n */
 		P = memrdr(PC++);
+		res = 0;
 		t += 3;
 		goto finish_sub;
 
@@ -1583,26 +1591,17 @@ next_opcode:
 		goto finish_retc;
 
 	case 0xd9:			/* EXX */
-		P = B;
-		B = B_;
-		B_ = P;
-		P = C;
-		C = C_;
-		C_ = P;
-		P = D;
-		D = D_;
-		D_ = P;
-		P = E;
-		E = E_;
-		E_ = P;
-		P = H;
-		H = H_;
-		H_ = P;
-		P = L;
-		L = L_;
-		L_ = P;
+		W = BC;
+		BC = BC_;
+		BC_ = W;
+		W = DE;
+		DE = DE_;
+		DE_ = W;
+		W = HL;
+		HL = HL_;
+		HL_ = W;
 		curr_ir = IR_HL;
-		IR = (H << 8) | L;
+		IR = HL;
 		break;
 
 	case 0xda:			/* JP C,nn */
@@ -1641,8 +1640,9 @@ next_opcode:
 
 	case 0xde:			/* SBC A,n */
 		P = memrdr(PC++);
+		res = (F >> C_SHIFT) & 1;
 		t += 3;
-		goto finish_sbc;
+		goto finish_sub;
 
 	case 0xdf:			/* RST 18 */
 		W = 0x18;
@@ -1653,8 +1653,8 @@ next_opcode:
 		goto finish_retc;
 
 	case 0xe1:			/* POP ir */
-		IR = memrdr(SP++);
-		IR |= memrdr(SP++) << 8;
+		IRL = memrdr(SP++);
+		IRH = memrdr(SP++);
 		t += 6;
 		break;
 
@@ -1663,10 +1663,10 @@ next_opcode:
 		goto finish_jpc;
 
 	case 0xe3:			/* EX (SP),ir */
-		W = memrdr(SP);
-		W |= memrdr(SP + 1) << 8;
-		memwrt(SP, IR & 0xff);
-		memwrt(SP + 1, IR >> 8);
+		WL = memrdr(SP);
+		WH = memrdr(SP + 1);
+		memwrt(SP, IRL);
+		memwrt(SP + 1, IRH);
 		IR = W;
 		t += 15;
 		break;
@@ -1676,8 +1676,8 @@ next_opcode:
 		goto finish_callc;
 
 	case 0xe5:			/* PUSH ir */
-		memwrt(--SP, IR >> 8);
-		memwrt(--SP, IR & 0xff);
+		memwrt(--SP, IRH);
+		memwrt(--SP, IRL);
 		t += 7;
 		break;
 
@@ -1703,14 +1703,11 @@ next_opcode:
 		goto finish_jpc;
 
 	case 0xeb:			/* EX DE,HL */
-		P = D;
-		D = H;
-		H = P;
-		P = E;
-		E = L;
-		L = P;
+		W = DE;
+		DE = HL;
+		HL = W;
 	        curr_ir = IR_HL;
-		IR = (H << 8) | L;
+		IR = HL;
 		break;
 
 	case 0xec:			/* CALL PE,nn */
@@ -1749,24 +1746,22 @@ next_opcode:
 			break;
 
 		case 0x42:		/* SBC HL,BC */
-			W = (((H << 8) | L) - ((B << 8) | C)
-			     - ((F >> C_SHIFT) & 1));
-			cout = (~H & B) | ((~H | B) & (W >> 8));
-		finish_sbchl:
-			F = ((((cout >> 7) & 1) << C_SHIFT) |
-			     ((((cout + 64) >> 7) & 1) << P_SHIFT) |
-			     (((cout >> 3) & 1) << H_SHIFT) |
-			     N_FLAG |
-			     ((W == 0) << Z_SHIFT) |
-			     ((((W >> 8) & 0x80) >> 7) << S_SHIFT));
-			H = W >> 8;
-			L = W & 0xff;
+			W = HL - BC - ((F >> C_SHIFT) & 1);
+			cout = (~H & B) | ((~H | B) & WH);
+			F = N_FLAG;
+		finish_sachl:
+			F |= ((((cout >> 7) & 1) << C_SHIFT) |
+			      ((((cout + 64) >> 7) & 1) << P_SHIFT) |
+			      (((cout >> 3) & 1) << H_SHIFT) |
+			      ((W == 0) << Z_SHIFT) |
+			      (((WH & 0x80) >> 7) << S_SHIFT));
+			HL = W;
 			t += 7;
 			break;
 
 		case 0x43:		/* LD (nn),BC */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
 			memwrt(W, C);
 			memwrt(W + 1, B);
 			t += 12;
@@ -1780,22 +1775,16 @@ next_opcode:
 		case 0x6c:		/* NEG* */
 		case 0x74:		/* NEG* */
 		case 0x7c:		/* NEG* */
-			res = 0 - A;
-			cout = A | res;
-			F = ((((cout >> 7) & 1) << C_SHIFT) |
-			     ((((cout + 64) >> 7) & 1) << P_SHIFT) |
-			     (((cout >> 3) & 1) << H_SHIFT) |
-			     N_FLAG |
-			     (szp_flags[res] & ~P_FLAG));
-			A = res;
-			break;
+			P = A;
+			res = A = 0;
+			goto finish_sub;
 
 		case 0x45:		/* RETN */
 		case 0x55:		/* RETN* */
 		case 0x65:		/* RETN* */
 		case 0x75:		/* RETN* */
-			W = memrdr(SP++);
-			W |= memrdr(SP++) << 8;
+			WL = memrdr(SP++);
+			WH = memrdr(SP++);
 			t += 6;
 			PC = W;
 			if (IFF & 2)
@@ -1827,24 +1816,14 @@ next_opcode:
 			break;
 
 		case 0x4a:		/* ADC HL,BC */
-			W = (((H << 8) | L) + ((B << 8) | C) +
-			     ((F >> C_SHIFT) & 1));
-			cout = (H & B) | ((H | B) & ~(W >> 8));
-		finish_adchl:
-			F = ((((cout >> 7) & 1) << C_SHIFT) |
-			     ((((cout + 64) >> 7) & 1) << P_SHIFT) |
-			     (((cout >> 3) & 1) << H_SHIFT) |
-			     ((W == 0) << Z_SHIFT) |
-			     ((((W >> 8) & 0x80) >> 7) << S_SHIFT));
-			/* N_FLAG cleared */
-			H = W >> 8;
-			L = W & 0xff;
-			t += 7;
-			break;
+			W = HL + BC + ((F >> C_SHIFT) & 1);
+			cout = (H & B) | ((H | B) & ~WH);
+			F = 0;
+			goto finish_sachl;
 
 		case 0x4b:		/* LD BC,(nn) */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
 			C = memrdr(W);
 			B = memrdr(W + 1);
 			t += 12;
@@ -1854,8 +1833,8 @@ next_opcode:
 		case 0x5d:		/* RETI* */
 		case 0x6d:		/* RETI* */
 		case 0x7d:		/* RETI* */
-			W = memrdr(SP++);
-			W |= memrdr(SP++) << 8;
+			WL = memrdr(SP++);
+			WH = memrdr(SP++);
 			t += 6;
 			PC = W;
 			break;
@@ -1878,14 +1857,14 @@ next_opcode:
 			break;
 
 		case 0x52:		/* SBC HL,DE */
-			W = (((H << 8) | L) - ((D << 8) | E) -
-			     ((F >> C_SHIFT) & 1));
-			cout = (~H & D) | ((~H | D) & (W >> 8));
-			goto finish_sbchl;
+			W = HL - DE - ((F >> C_SHIFT) & 1);
+			cout = (~H & D) | ((~H | D) & WH);
+			F = N_FLAG;
+			goto finish_sachl;
 
 		case 0x53:		/* LD (nn),DE */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
 			memwrt(W, E);
 			memwrt(W + 1, D);
 			t += 12;
@@ -1898,6 +1877,7 @@ next_opcode:
 
 		case 0x57:		/* LD A,I */
 			A = I;
+		finish_ldair:
 			F = ((F & C_FLAG) |
 			     (((IFF >> 1) & 1) << P_SHIFT) |
 			     (szp_flags[A] & ~P_FLAG));
@@ -1918,14 +1898,14 @@ next_opcode:
 			break;
 
 		case 0x5a:		/* ADC HL,DE */
-			W = (((H << 8) | L) + ((D << 8) | E) +
-			     ((F >> C_SHIFT) & 1));
-			cout = (H & D) | ((H | D) & ~(W >> 8));
-			goto finish_adchl;
+			W = HL + DE + ((F >> C_SHIFT) & 1);
+			cout = (H & D) | ((H | D) & ~WH);
+			F = 0;
+			goto finish_sachl;
 
 		case 0x5b:		/* LD DE,(nn) */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
 			E = memrdr(W);
 			D = memrdr(W + 1);
 			t += 12;
@@ -1938,12 +1918,7 @@ next_opcode:
 
 		case 0x5f:		/* LD A,R */
 			A = (R_ & 0x80) | (R & 0x7f);
-			F = ((F & C_FLAG) |
-			     (((IFF >> 1) & 1) << P_SHIFT) |
-			     (szp_flags[A] & ~P_FLAG));
-			/* H_FLAG and N_FLAG cleared, C_FLAG unchanged */
-			t++;
-			break;
+			goto finish_ldair;
 
 		case 0x60:		/* IN H,(C) */
 			H = io_in(C, B);
@@ -1959,22 +1934,23 @@ next_opcode:
 
 		case 0x62:		/* SBC HL,HL */
 			W = -((F >> C_SHIFT) & 1);
-			cout = W >> 8;
-			goto finish_sbchl;
+			cout = WH;
+			F = N_FLAG;
+			goto finish_sachl;
 
 		case 0x63:		/* LD (nn),HL */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
 			memwrt(W, L);
 			memwrt(W + 1, H);
 			t += 12;
 			break;
 
 		case 0x67:		/* RRD (HL) */
-			P = memrdr((H << 8) | L);
+			P = memrdr(HL);
 			res = A & 0x0f;
 			A = (A & 0xf0) | (P & 0x0f);
-			memwrt((H << 8) | L, ((P >> 4) | (res << 4)));
+			memwrt(HL, ((P >> 4) | (res << 4)));
 			F = (F & C_FLAG) | szp_flags[A];
 			/* H_FLAG and N_FLAG cleared, C_FLAG unchanged */
 			t += 10;
@@ -1993,23 +1969,24 @@ next_opcode:
 			break;
 
 		case 0x6a:		/* ADC HL,HL */
-			W = (((H << 8) | L) << 1) + ((F >> C_SHIFT) & 1);
-			cout = H | (H & ~(W >> 8));
-			goto finish_adchl;
+			W = (HL << 1) + ((F >> C_SHIFT) & 1);
+			cout = H | (H & ~WH);
+			F = 0;
+			goto finish_sachl;
 
 		case 0x6b:		/* LD HL,(nn) */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
 			L = memrdr(W);
 			H = memrdr(W + 1);
 			t += 12;
 			break;
 
 		case 0x6f:		/* RLD (HL) */
-			P = memrdr((H << 8) | L);
+			P = memrdr(HL);
 			res = A & 0x0f;
 			A = (A & 0xf0) | (P >> 4);
-			memwrt((H << 8) | L, (P << 4) | res);
+			memwrt(HL, (P << 4) | res);
 			F = (F & C_FLAG) | szp_flags[A];
 			/* H_FLAG and N_FLAG cleared, C_FLAG unchanged */
 			t += 10;
@@ -2028,16 +2005,16 @@ next_opcode:
 			break;
 
 		case 0x72:		/* SBC HL,SP */
-			W = ((H << 8) | L) - SP - ((F >> C_SHIFT) & 1);
-			cout = ((~H & (SP >> 8)) |
-				((~H | (SP >> 8)) & (W >> 8)));
-			goto finish_sbchl;
+			W = HL - SP - ((F >> C_SHIFT) & 1);
+			cout = (~H & SPH) | ((~H | SPH) & WH);
+			F = N_FLAG;
+			goto finish_sachl;
 
 		case 0x73:		/* LD (nn),SP */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
-			memwrt(W, SP & 0xff);
-			memwrt(W + 1, SP >> 8);
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
+			memwrt(W, SPL);
+			memwrt(W + 1, SPH);
 			t += 12;
 			break;
 
@@ -2054,51 +2031,39 @@ next_opcode:
 			break;
 
 		case 0x7a:		/* ADC HL,SP */
-			W = ((H << 8) | L) + SP + ((F >> C_SHIFT) & 1);
-			cout = (H & (SP >> 8)) | ((H | (SP >> 8)) & ~(W >> 8));
-			goto finish_adchl;
+			W = HL + SP + ((F >> C_SHIFT) & 1);
+			cout = (H & SPH) | ((H | SPH) & ~WH);
+			F = 0;
+			goto finish_sachl;
 
 		case 0x7b:		/* LD SP,(nn) */
-			W = memrdr(PC++);
-			W |= memrdr(PC++) << 8;
-			SP = memrdr(W);
-			SP |= memrdr(W + 1) << 8;
+			WL = memrdr(PC++);
+			WH = memrdr(PC++);
+			SPL = memrdr(W);
+			SPH = memrdr(W + 1);
 			t += 12;
 			break;
 
 		case 0xa0:		/* LDI */
-			memwrt((D << 8) | E, memrdr((H << 8) | L));
-			W = ((D << 8) | E) + 1;
-			D = W >> 8;
-			E = W & 0xff;
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(DE++, memrdr(HL++));
 		finish_ldid:
-			W = ((B << 8) | C) - 1;
-			B = W >> 8;
-			C = W & 0xff;
+			BC--;
 			F = ((F & ~(H_FLAG | N_FLAG | P_FLAG)) |
-			     (((B | C) != 0) << P_SHIFT));
+			     ((BC != 0) << P_SHIFT));
 			/* S_FLAG, Z_FLAG, and C_FLAG unchanged */
 			t += 8;
 			break;
 
 		case 0xa1:		/* CPI */
-			P = memrdr((H << 8) | L);
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			P = memrdr(HL++);
 		finish_cpid:
-			W = ((B << 8) | C) - 1;
-			B = W >> 8;
-			C = W & 0xff;
+			BC--;
 			res = A - P;
 			cout = (~A & P) | ((~A | P) & res);
 			F = ((F & C_FLAG) |
 			     (((cout >> 3) & 1) << H_SHIFT) |
 			     N_FLAG |
-			     (((B | C) != 0) << P_SHIFT) |
+			     ((BC != 0) << P_SHIFT) |
 			     (szp_flags[res] & ~P_FLAG));
 			/* C_FLAG unchanged */
 			t += 8;
@@ -2106,14 +2071,11 @@ next_opcode:
 
 		case 0xa2:		/* INI */
 			res = io_in(C, B--);
-			memwrt((H << 8) | L, res);
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(HL++, res);
 			W = (C + 1) & 0xff;
 		finish_ioid:
 			W += res;
-			F = (((W >> 8) << H_SHIFT) | ((W >> 8) << C_SHIFT) |
+			F = ((WH << H_SHIFT) | (WH << C_SHIFT) |
 			     ((((res & 0x80) >> 7) & 1) << N_SHIFT) |
 			     (szp_flags[(W & 7) ^ B] & P_FLAG) |
 			     (szp_flags[B] & ~P_FLAG));
@@ -2121,54 +2083,36 @@ next_opcode:
 			break;
 
 		case 0xa3:		/* OUTI */
-			res = memrdr((H << 8) | L);
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			res = memrdr(HL++);
 			io_out(C, --B, res);
 			W = L;
 			goto finish_ioid;
 
 		case 0xa8:		/* LDD */
-			memwrt((D << 8) | E, memrdr((H << 8) | L));
-			W = ((D << 8) | E) - 1;
-			D = W >> 8;
-			E = W & 0xff;
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(DE--, memrdr(HL--));
 			goto finish_ldid;
 
 		case 0xa9:		/* CPD */
-			P = memrdr((H << 8) | L);
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			P = memrdr(HL--);
 			goto finish_cpid;
 
 		case 0xaa:		/* IND */
 			res = io_in(C, B--);
-			memwrt((H << 8) | L, res);
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(HL--, res);
 			W = (C - 1) & 0xff;
 			goto finish_ioid;
 
 		case 0xab:		/* OUTD */
-			res = memrdr((H << 8) | L);
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			res = memrdr(HL--);
 			io_out(C, --B, res);
 			W = L;
 			goto finish_ioid;
 
 #ifdef FAST_BLOCK
 		case 0xb0:		/* LDIR */
-			W = (B << 8) | C;
-			d = (D << 8) | E;
-			s = (H << 8) | L;
+			W = BC;
+			d = DE;
+			s = HL;
 			tl = -13L;
 			R -= 2;
 			do {
@@ -2177,19 +2121,17 @@ next_opcode:
 				R += 2;
 			} while (--W);
 		finish_ldidr:
-			B = C = 0;
-			D = d >> 8;
-			E = d & 0xff;
-			H = s >> 8;
-			L = s & 0xff;
+			BC = 0;
+			DE = d;
+			HL = s;
 			F &= ~(H_FLAG | N_FLAG | P_FLAG);
 			/* S_FLAG, Z_FLAG, and C_FLAG unchanged */
 			T += tl;
 			break;
 
 		case 0xb1:		/* CPIR */
-			W = (B << 8) | C;
-			s = (H << 8) | L;
+			W = BC;
+			s = HL;
 			tl = -13L;
 			R -= 2;
 			do {
@@ -2199,10 +2141,8 @@ next_opcode:
 				R += 2;
 			} while (--W && res);
 		finish_cpidr:
-			B = W >> 8;
-			C = W & 0xff;
-			H = s >> 8;
-			L = s & 0xff;
+			BC = W;
+			HL = s;
 			cout = (~A & P) | ((~A | P) & res);
 			F = ((F & C_FLAG) |
 			     (((cout >> 3) & 1) << H_SHIFT) |
@@ -2214,7 +2154,7 @@ next_opcode:
 			break;
 
 		case 0xb2:		/* INIR */
-			s = (H << 8) | L;
+			s = HL;
 			R -= 2;
 			tl = -13L;
 			do {
@@ -2225,10 +2165,9 @@ next_opcode:
 			} while (B);
 			W = (C + 1) & 0xff;
 		finish_ioidr:
-			H = s >> 8;
-			L = s & 0xff;
+			HL = s;
 			W += res;
-			F = (((W >> 8) << H_SHIFT) | ((W >> 8) << C_SHIFT) |
+			F = ((WH << H_SHIFT) | (WH << C_SHIFT) |
 			     ((((res & 0x80) >> 7) & 1) << N_SHIFT) |
 			     (szp_flags[W & 7] & P_FLAG) |
 			     Z_FLAG);
@@ -2237,7 +2176,7 @@ next_opcode:
 			break;
 
 		case 0xb3:		/* OTIR */
-			s = (H << 8) | L;
+			s = HL;
 			tl = -13L;
 			R -= 2;
 			do {
@@ -2250,9 +2189,9 @@ next_opcode:
 			goto finish_ioidr;
 
 		case 0xb8:		/* LDDR */
-			W = (B << 8) | C;
-			d = (D << 8) | E;
-			s = (H << 8) | L;
+			W = BC;
+			d = DE;
+			s = HL;
 			tl = -13L;
 			R -= 2;
 			do {
@@ -2263,8 +2202,8 @@ next_opcode:
 			goto finish_ldidr;
 
 		case 0xb9:		/* CPDR */
-			W = (B << 8) | C;
-			s = (H << 8) | L;
+			W = BC;
+			s = HL;
 			tl = -13L;
 			R -= 2;
 			do {
@@ -2276,7 +2215,7 @@ next_opcode:
 			goto finish_cpidr;
 
 		case 0xba:		/* INDR */
-			s = (H << 8) | L;
+			s = HL;
 			tl = -13L;
 			R -= 2;
 			do {
@@ -2289,7 +2228,7 @@ next_opcode:
 			goto finish_ioidr;
 
 		case 0xbb:		/* OTDR */
-			s = (H << 8) | L;
+			s = HL;
 			tl = -13L;
 			R -= 2;
 			do {
@@ -2302,19 +2241,11 @@ next_opcode:
 			goto finish_ioidr;
 #else /* !FAST_BLOCK */
 		case 0xb0:		/* LDIR */
-			memwrt((D << 8) | E, memrdr((H << 8) | L));
-			W = ((D << 8) | E) + 1;
-			D = W >> 8;
-			E = W & 0xff;
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(DE++, memrdr(HL++));
 		finish_ldidr:
-			W = ((B << 8) | C) - 1;
-			B = W >> 8;
-			C = W & 0xff;
+			BC--;
 			F = ((F & ~(H_FLAG | N_FLAG | P_FLAG)) |
-			     (((B | C) != 0) << P_SHIFT));
+			     ((BC != 0) << P_SHIFT));
 			/* S_FLAG, Z_FLAG, and C_FLAG unchanged */
 			t += 8;
 			if (F & P_FLAG) {
@@ -2324,20 +2255,15 @@ next_opcode:
 			break;
 
 		case 0xb1:		/* CPIR */
-			P = memrdr((H << 8) | L);
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			P = memrdr(HL++);
 		finish_cpidr:
-			W = ((B << 8) | C) - 1;
-			B = W >> 8;
-			C = W & 0xff;
+			BC--;
 			res = A - P;
 			cout = (~A & P) | ((~A | P) & res);
 			F = ((F & C_FLAG) |
 			     (((cout >> 3) & 1) << H_SHIFT) |
 			     N_FLAG |
-			     (((B | C) != 0) << P_SHIFT) |
+			     ((BC != 0) << P_SHIFT) |
 			     (szp_flags[res] & ~P_FLAG));
 			/* C_FLAG unchanged */
 			t += 8;
@@ -2349,14 +2275,11 @@ next_opcode:
 
 		case 0xb2:		/* INIR */
 			res = io_in(C, B--);
-			memwrt((H << 8) | L, res);
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(HL++, res);
 			W = (C + 1) & 0xff;
 		finish_ioidr:
 			W += res;
-			F = (((W >> 8) << H_SHIFT) | ((W >> 8) << C_SHIFT) |
+			F = ((WH << H_SHIFT) | (WH << C_SHIFT) |
 			     ((((res & 0x80) >> 7) & 1) << N_SHIFT) |
 			     (szp_flags[(W & 7) ^ B] & P_FLAG) |
 			     (szp_flags[B] & ~P_FLAG));
@@ -2368,45 +2291,27 @@ next_opcode:
 			break;
 
 		case 0xb3:		/* OTIR */
-			res = memrdr((H << 8) | L);
-			W = ((H << 8) | L) + 1;
-			H = W >> 8;
-			L = W & 0xff;
+			res = memrdr(HL++);
 			io_out(C, --B, res);
 			W = L;
 			goto finish_ioidr;
 
 		case 0xb8:		/* LDDR */
-			memwrt((D << 8) | E, memrdr((H << 8) | L));
-			W = ((D << 8) | E) - 1;
-			D = W >> 8;
-			E = W & 0xff;
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(DE--, memrdr(HL--));
 			goto finish_ldidr;
 
 		case 0xb9:		/* CPDR */
-			P = memrdr((H << 8) | L);
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			P = memrdr(HL--);
 			goto finish_cpidr;
 
 		case 0xba:		/* INDR */
 			res = io_in(C, B--);
-			memwrt((H << 8) | L, res);
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			memwrt(HL--, res);
 			W = (C - 1) & 0xff;
 			goto finish_ioidr;
 
 		case 0xbb:		/* OTDR */
-			res = memrdr((H << 8) | L);
-			W = ((H << 8) | L) - 1;
-			H = W >> 8;
-			L = W & 0xff;
+			res = memrdr(HL--);
 			io_out(C, --B, res);
 			W = L;
 			goto finish_ioidr;
@@ -2416,7 +2321,7 @@ next_opcode:
 			break;
 		}
 		curr_ir = IR_HL;
-		IR = (H << 8) | L;
+		IR = HL;
 		break;
 
 	case 0xee:			/* XOR n */
@@ -2517,15 +2422,22 @@ next_opcode:
 		goto finish_call;
 	}
 
-	if (curr_ir == IR_HL) {
-		H = IR >> 8;
-		L = IR & 0xff;
-	} else if (curr_ir == IR_IX)
+	if (curr_ir == IR_HL)
+		HL = IR;
+	else if (curr_ir == IR_IX)
 		IX = IR;
 	else
 		IY = IR;
 
 	T += t;
+
+#undef W
+#undef WH
+#undef WL
+
+#undef IR
+#undef IRH
+#undef IRL
 
 #undef IR_HL
 #undef IR_IX
