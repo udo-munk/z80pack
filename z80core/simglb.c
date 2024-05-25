@@ -22,6 +22,7 @@ int cpu = DEF_CPU;
 /*
  *	CPU Registers
  */
+#if !defined(ALT_I8080) && !defined(ALT_Z80)
 BYTE A, B, C, D, E, H, L;	/* primary registers */
 int  F;				/* normally 8-Bit, but int is faster */
 #ifndef EXCLUDE_Z80
@@ -35,6 +36,9 @@ int  F_;
 WORD PC;			/* program counter */
 WORD SP;			/* stack pointer */
 BYTE IFF;			/* interrupt flags */
+#else
+struct cpu_regs cpu_regs;	/* CPU registers */
+#endif
 Tstates_t T;			/* CPU clock */
 unsigned long long cpu_start, cpu_stop; /* timestamps in us */
 

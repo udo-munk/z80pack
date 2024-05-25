@@ -539,7 +539,11 @@ static const struct reg_def {
 	{ "fc",  2, "C",   0, R_M,  .rm = C_FLAG },
 #ifndef EXCLUDE_Z80
 	{ "a'",  2, "A'",  1, R_8,  .r8 = &A_ },
+#if !defined(ALT_I8080) && !defined(ALT_Z80)
 	{ "f'",  2, "F'",  1, R_F,  .rf = &F_ },
+#else
+	{ "f'",  2, "F'",  1, R_8,  .r8 = &F_ },
+#endif
 	{ "b'",  2, "B'",  1, R_8,  .r8 = &B_ },
 	{ "c'",  2, "C'",  1, R_8,  .r8 = &C_ },
 	{ "d'",  2, "D'",  1, R_8,  .r8 = &D_ },
@@ -550,7 +554,11 @@ static const struct reg_def {
 	{ "r",   1, "R",   1, R_R,  .r8h = &R_, .r8l = &R },
 #endif
 	{ "a",   1, "A",   0, R_8,  .r8 = &A },
+#if !defined(ALT_I8080) && !defined(ALT_Z80)
 	{ "f",   1, "F",   0, R_F,  .rf = &F },
+#else
+	{ "f",   1, "F",   0, R_8,  .r8 = &F },
+#endif
 	{ "b",   1, "B",   0, R_8,  .r8 = &B },
 	{ "c",   1, "C",   0, R_8,  .r8 = &C },
 	{ "d",   1, "D",   0, R_8,  .r8 = &D },
