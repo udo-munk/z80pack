@@ -1,4 +1,4 @@
-Let's first have a bief look at the hardware, I've setup the dev prototyp
+Let's first have a brief look at the hardware, I've setup the dev prototyp
 on breadboard, which is a good thing as you will see in a moment ;-)
 
 picoboard1:
