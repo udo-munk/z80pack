@@ -29,7 +29,9 @@ add_executable(picosim
 	memsim.c
 	iosim.c
 )
-add_subdirectory($ENV{PICO_SDK_PATH}/../lib/no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build)
+add_subdirectory(
+	$ENV{PICO_SDK_PATH}/../lib/no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
+)
 
 # for Pico
 #target_link_libraries(picosim pico_stdlib FatFs_SPI)
