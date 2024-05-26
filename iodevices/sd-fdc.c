@@ -1,7 +1,9 @@
 //
-// Intel 8080 CPU emulation on an Arduino Nano
-//            derived from Z80PACK
-// Copyright 2024, Udo Munk
+// Z80SIM  -  a Z80-CPU simulator
+//
+// Common I/O devices used by various simulated machines
+//
+// Copyright (C) 2024, by Udo Munk
 //
 // This FDC does not emulate any existing hardware,
 // special not these with some LSI chip, it is designed
