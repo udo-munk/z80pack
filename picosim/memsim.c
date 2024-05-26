@@ -26,3 +26,27 @@ void init_memory(void)
 	for (i = 0xff00; i <= 0xffff; i++)
 		code[i] = 0xff;
 }
+
+/*
+ * read from drive a sector on track into FRAM addr
+ * dummy, need to get SD working first
+ */
+BYTE read_sec(int drive, int track, int sector, WORD addr)
+{
+}
+
+/*
+ * write to drive a sector on track from FRAM addr
+ * dummy, need to get SD working first
+ */
+BYTE write_sec(int drive, int track, int sector, WORD addr)
+{
+}
+
+/*
+ * get FDC command from FRAM
+ * dummy, need to get SD working first
+ */
+void get_fdccmd(BYTE *cmd, WORD addr)
+{
+}

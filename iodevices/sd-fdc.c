@@ -18,6 +18,9 @@
 // 23-MAY-2024 implemented FDC, CP/M boot code & CBIOS
 //
 
+#include "simcore.h"
+#include "sd-fdc.h"
+
 // offsets in disk command descriptor
 #define DD_TRACK	0 // track number
 #define DD_SECTOR	1 // sector number

@@ -24,6 +24,7 @@ add_executable(picosim
 	../z80core/simz80-ed.c
 	../z80core/simz80-fd.c
 	../z80core/simz80-fdcb.c
+	../iodevices/sd-fdc.c
 	config.c
 	memsim.c
 	iosim.c
