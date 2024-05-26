@@ -20,8 +20,8 @@
 // 23-MAY-2024 implemented FDC, CP/M boot code & CBIOS
 //
 
-#ifndef IMSAI_SIO2_INC
-#define IMSAI_SIO2_INC
+#ifndef SD_FDC_INC
+#define SD_FDC_INC
 
 // floppy disk definition
 #define SEC_SZ    128   // sector size
