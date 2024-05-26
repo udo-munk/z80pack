@@ -27,7 +27,7 @@
 #include "pico/cyw43_arch.h"
 #endif
 
-#define SWITCH_BREAK 16 /* switch we use to interrupt the system */
+#define SWITCH_BREAK 15 /* switch we use to interrupt the system */
 
 extern void init_cpu(void), init_io(void);
 extern void run_cpu(void);
@@ -48,7 +48,7 @@ int main(void)
 	}
 #else				/* initialize Pico hardware */
 #define LED PICO_DEFAULT_LED_PIN	/* use builtin LED */
-//#define LED 15			/* or another one */
+//#define LED 14			/* or another one */
 	gpio_init(LED);		/* configure GPIO for LED output */
 	gpio_set_dir(LED, GPIO_OUT);
 #endif
