@@ -29,11 +29,12 @@ add_executable(picosim
 	memsim.c
 	iosim.c
 )
+add_subdirectory($ENV{PICO_SDK_PATH}/../lib/no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build)
 
 # for Pico
-#target_link_libraries(picosim pico_stdlib)
+#target_link_libraries(picosim pico_stdlib FatFs_SPI)
 # for Pico W
-target_link_libraries(picosim pico_stdlib pico_cyw43_arch_none)
+target_link_libraries(picosim pico_stdlib FatFs_SPI pico_cyw43_arch_none)
 
 pico_add_extra_outputs(picosim)
 

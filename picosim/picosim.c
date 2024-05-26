@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "sd_card.h"
+#include "ff.h"
 
 /* Project includes */
 #include "sim.h"
