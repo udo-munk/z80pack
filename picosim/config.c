@@ -24,7 +24,7 @@ extern void load_file(char *);
 extern unsigned char fp_value;
 
 /*
- * promt for a filename
+ * prompt for a filename
  */
 static void prompt_fn(char *s)
 {
