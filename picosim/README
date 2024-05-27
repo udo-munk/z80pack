@@ -1,27 +1,23 @@
-This is a research machine that contains:
-
-	Z80 and 8080 CPU
-	optional Z80/8080 ICE
-	64 KB RAM
-	UART for serial communication with a terminal
-
-Not much compared to the other machines, it is used for:
-
-	better isolation of modules for usage on bare metal
-	memory optimizations for very small bare metal
-	overall performance analysis on very small hardware
-
-So this is a proof of concept to jump start other more usefull
-machines from here.
-
-A video showing it in action is available: https://youtu.be/aC35qt7zgg4
-
-This can be used with Pico and Pico W boards, but you might need to
-uncomment/comment/modify some lines in CMakeLists.txt and sim.h properly
-for the board used. I'm using a Pico W, so everything setup for this one.
-
 To build you need to have the SDK for RP2040-based devices installed and
-configured, then do:
+configured. The SDK manual has detailed instructions how to install on
+all major PC platforms, it is available here:
+
+https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html
+
+We are going to use a MicroSD drive for 8080/Z80 code files, disk images
+and configration files. This requires an additional library to talk to
+such devices with SPI. The library is setup as submodule in z80pack,
+if you wish to build this here you need to download the lib. You can
+either clone z80pack with this command:
+
+	git clone --recursive https://github.com/udo-munk/z80pack.git
+
+or if you cloned already without pulling submodules you can add it with:
+
+	cd z80pack
+	git submodule update --init
+
+Now you can build picosim with these commands:
 
 	cd z80pack/picosim
 	mkdir build
@@ -33,6 +29,10 @@ To clean everything:
 
 	cd z80pack/picosim
 	rm -rf build
+
+This machine can be used with Pico and Pico W boards, but you might need to
+uncomment/comment/modify some lines in CMakeLists.txt and sim.h properly
+for the board used. I'm using a Pico W, so everything setup for this one.
 
 Terminal I/O is going to the pin 1/2 UART, so you need a debug probe or
 some TTL to USB adapter. I also tried using the USB UART, but didn't get
