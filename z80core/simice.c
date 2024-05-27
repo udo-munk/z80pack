@@ -252,7 +252,6 @@ static void do_trace(char *s)
  */
 static void do_go(char *s)
 {
-	extern unsigned long long get_clock_us(void);
 	int timeit = 0;
 	unsigned long long start_time, stop_time;
 	Tstates_t T0 = T;
@@ -268,7 +267,7 @@ static void do_go(char *s)
 	if (ice_before_go)
 		(*ice_before_go)();
 	if (timeit)
-		start_time = get_clock_us();
+		start_time = cpu_time;
 	for (;;) {
 		run_cpu();
 		if (cpu_error) {
@@ -281,7 +280,7 @@ static void do_go(char *s)
 		}
 	}
 	if (timeit)
-		stop_time = get_clock_us();
+		stop_time = cpu_time;
 	if (ice_after_go)
 		(*ice_after_go)();
 	report_cpu_error();

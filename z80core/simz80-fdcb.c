@@ -13,9 +13,6 @@
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#endif
 #include "memsim.h"
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)

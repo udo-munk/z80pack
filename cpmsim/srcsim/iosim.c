@@ -57,6 +57,7 @@
  * 30-MAR-2019 added two more 4MB HD's
  * 08-OCT-2019 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  * 24-OCT-2019 move RTC to I/O module for usage by any machine
+ * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
 /*
@@ -142,7 +143,6 @@
 
 extern int boot(int);
 extern void reset_cpu(void);
-extern unsigned long long get_clock_us(void);
 
 static const char *TAG = "IO";
 
@@ -229,8 +229,6 @@ struct dskdef disks[16] = {
 /*
  *	Forward declaration of the I/O handlers for all used ports
  */
-static BYTE io_trap_in(void);
-static void io_trap_out(BYTE);
 static BYTE cond_in(void), cons_in(void);
 static void cond_out(BYTE), cons_out(BYTE);
 static BYTE prtd_in(void), prts_in(void);
@@ -293,526 +291,85 @@ static void int_io(int);
  *	This array contains function pointers for every
  *	input port.
  */
-static BYTE (*port_in[256])(void) = {
-	cons_in,		/* port 0 */
-	cond_in,		/* port 1 */
-	prts_in,		/* port 2 */
-	prtd_in,		/* port 3 */
-	auxs_in,		/* port 4 */
-	auxd_in,		/* port 5 */
-	io_trap_in,		/* port 6 */
-	io_trap_in,		/* port 7 */
-	io_trap_in,		/* port 8 */
-	io_trap_in,		/* port 9 */
-	fdcd_in,		/* port 10 */
-	fdct_in,		/* port 11 */
-	fdcs_in,		/* port 12 */
-	fdco_in,		/* port 13 */
-	fdcx_in,		/* port 14 */
-	dmal_in,		/* port 15 */
-	dmah_in,		/* port 16 */
-	fdcsh_in,		/* port 17 */
-	io_trap_in,		/* port 18 */
-	io_trap_in,		/* port 19 */
-	mmui_in,		/* port 20 */
-	mmus_in,		/* port 21 */
-	mmuc_in,		/* port 22 */
-	mmup_in,		/* port 23 */
-	io_trap_in,		/* port 24 */
-	clkc_in,		/* port 25 */
-	clkd_in,		/* port 26 */
-	time_in,		/* port 27 */
-	delay_in,		/* port 28 */
-	io_trap_in,		/* port 29 */
-	speedl_in,		/* port 30 */
-	speedh_in,		/* port 31 */
-	io_trap_in,		/* port 32 */
-	io_trap_in,		/* port 33 */
-	io_trap_in,		/* port 34 */
-	io_trap_in,		/* port 35 */
-	io_trap_in,		/* port 36 */
-	io_trap_in,		/* port 37 */
-	io_trap_in,		/* port 38 */
-	io_trap_in,		/* port 39 */
-	cons1_in,		/* port 40 */
-	cond1_in,		/* port 41 */
-	cons2_in,		/* port 42 */
-	cond2_in,		/* port 43 */
-	cons3_in,		/* port 44 */
-	cond3_in,		/* port 45 */
-	cons4_in,		/* port 46 */
-	cond4_in,		/* port 47 */
-	io_trap_in,		/* port 48 */
-	io_trap_in,		/* port 49 */
-	nets1_in,		/* port 50 */
-	netd1_in,		/* port 51 */
-	io_trap_in,		/* port 52 */
-	io_trap_in,		/* port 53 */
-	io_trap_in,		/* port 54 */
-	io_trap_in,		/* port	55 */
-	io_trap_in,		/* port	56 */
-	io_trap_in,		/* port	57 */
-	io_trap_in,		/* port	58 */
-	io_trap_in,		/* port	59 */
-	io_trap_in,		/* port	60 */
-	io_trap_in,		/* port	61 */
-	io_trap_in,		/* port	62 */
-	io_trap_in,		/* port	63 */
-	io_trap_in,		/* port	64 */
-	io_trap_in,		/* port	65 */
-	io_trap_in,		/* port	66 */
-	io_trap_in,		/* port	67 */
-	io_trap_in,		/* port	68 */
-	io_trap_in,		/* port	69 */
-	io_trap_in,		/* port	70 */
-	io_trap_in,		/* port	71 */
-	io_trap_in,		/* port	72 */
-	io_trap_in,		/* port	73 */
-	io_trap_in,		/* port	74 */
-	io_trap_in,		/* port	75 */
-	io_trap_in,		/* port	76 */
-	io_trap_in,		/* port	77 */
-	io_trap_in,		/* port	78 */
-	io_trap_in,		/* port	79 */
-	io_trap_in,		/* port	80 */
-	io_trap_in,		/* port	81 */
-	io_trap_in,		/* port	82 */
-	io_trap_in,		/* port	83 */
-	io_trap_in,		/* port	84 */
-	io_trap_in,		/* port	85 */
-	io_trap_in,		/* port	86 */
-	io_trap_in,		/* port	87 */
-	io_trap_in,		/* port	88 */
-	io_trap_in,		/* port	89 */
-	io_trap_in,		/* port	90 */
-	io_trap_in,		/* port	91 */
-	io_trap_in,		/* port	92 */
-	io_trap_in,		/* port	93 */
-	io_trap_in,		/* port	94 */
-	io_trap_in,		/* port	95 */
-	io_trap_in,		/* port	96 */
-	io_trap_in,		/* port	97 */
-	io_trap_in,		/* port	98 */
-	io_trap_in,		/* port	99 */
-	io_trap_in,		/* port	100 */
-	io_trap_in,		/* port 101 */
-	io_trap_in,		/* port	102 */
-	io_trap_in,		/* port	103 */
-	io_trap_in,		/* port	104 */
-	io_trap_in,		/* port	105 */
-	io_trap_in,		/* port	106 */
-	io_trap_in,		/* port	107 */
-	io_trap_in,		/* port	108 */
-	io_trap_in,		/* port	109 */
-	io_trap_in,		/* port	110 */
-	io_trap_in,		/* port	111 */
-	io_trap_in,		/* port	112 */
-	io_trap_in,		/* port	113 */
-	io_trap_in,		/* port	114 */
-	io_trap_in,		/* port	115 */
-	io_trap_in,		/* port	116 */
-	io_trap_in,		/* port	117 */
-	io_trap_in,		/* port	118 */
-	io_trap_in,		/* port	119 */
-	io_trap_in,		/* port	120 */
-	io_trap_in,		/* port	121 */
-	io_trap_in,		/* port	122 */
-	io_trap_in,		/* port	123 */
-	io_trap_in,		/* port	124 */
-	io_trap_in,		/* port	125 */
-	io_trap_in,		/* port	126 */
-	io_trap_in,		/* port	127 */
-	io_trap_in,		/* port	128 */
-	io_trap_in,		/* port	129 */
-	io_trap_in,		/* port	130 */
-	io_trap_in,		/* port	131 */
-	io_trap_in,		/* port	132 */
-	io_trap_in,		/* port	133 */
-	io_trap_in,		/* port	134 */
-	io_trap_in,		/* port	135 */
-	io_trap_in,		/* port	136 */
-	io_trap_in,		/* port	137 */
-	io_trap_in,		/* port	138 */
-	io_trap_in,		/* port	139 */
-	io_trap_in,		/* port	140 */
-	io_trap_in,		/* port	141 */
-	io_trap_in,		/* port	142 */
-	io_trap_in,		/* port	143 */
-	io_trap_in,		/* port	144 */
-	io_trap_in,		/* port	145 */
-	io_trap_in,		/* port	146 */
-	io_trap_in,		/* port	147 */
-	io_trap_in,		/* port	148 */
-	io_trap_in,		/* port	149 */
-	io_trap_in,		/* port	150 */
-	io_trap_in,		/* port	151 */
-	io_trap_in,		/* port	152 */
-	io_trap_in,		/* port	153 */
-	io_trap_in,		/* port	154 */
-	io_trap_in,		/* port	155 */
-	io_trap_in,		/* port	156 */
-	io_trap_in,		/* port	157 */
-	io_trap_in,		/* port	158 */
-	io_trap_in,		/* port	159 */
-	hwctl_in,		/* port	160 */	/* virtual hardware control */
-	io_trap_in,		/* port	161 */
-	io_trap_in,		/* port	162 */
-	io_trap_in,		/* port	163 */
-	io_trap_in,		/* port	164 */
-	io_trap_in,		/* port	165 */
-	io_trap_in,		/* port	166 */
-	io_trap_in,		/* port	167 */
-	io_trap_in,		/* port	168 */
-	io_trap_in,		/* port	169 */
-	io_trap_in,		/* port	170 */
-	io_trap_in,		/* port	171 */
-	io_trap_in,		/* port	172 */
-	io_trap_in,		/* port	173 */
-	io_trap_in,		/* port	174 */
-	io_trap_in,		/* port	175 */
-	io_trap_in,		/* port	176 */
-	io_trap_in,		/* port	177 */
-	io_trap_in,		/* port	178 */
-	io_trap_in,		/* port	179 */
-	io_trap_in,		/* port	180 */
-	io_trap_in,		/* port	181 */
-	io_trap_in,		/* port	182 */
-	io_trap_in,		/* port	183 */
-	io_trap_in,		/* port	184 */
-	io_trap_in,		/* port	185 */
-	io_trap_in,		/* port	186 */
-	io_trap_in,		/* port	187 */
-	io_trap_in,		/* port	188 */
-	io_trap_in,		/* port	189 */
-	io_trap_in,		/* port	190 */
-	io_trap_in,		/* port	191 */
-	io_trap_in,		/* port	192 */
-	io_trap_in,		/* port	193 */
-	io_trap_in,		/* port	194 */
-	io_trap_in,		/* port	195 */
-	io_trap_in,		/* port	196 */
-	io_trap_in,		/* port	197 */
-	io_trap_in,		/* port	198 */
-	io_trap_in,		/* port	199 */
-	io_trap_in,		/* port	200 */
-	io_trap_in,		/* port 201 */
-	io_trap_in,		/* port	202 */
-	io_trap_in,		/* port	203 */
-	io_trap_in,		/* port	204 */
-	io_trap_in,		/* port	205 */
-	io_trap_in,		/* port	206 */
-	io_trap_in,		/* port	207 */
-	io_trap_in,		/* port	208 */
-	io_trap_in,		/* port	209 */
-	io_trap_in,		/* port	210 */
-	io_trap_in,		/* port	211 */
-	io_trap_in,		/* port	212 */
-	io_trap_in,		/* port	213 */
-	io_trap_in,		/* port	214 */
-	io_trap_in,		/* port	215 */
-	io_trap_in,		/* port	216 */
-	io_trap_in,		/* port	217 */
-	io_trap_in,		/* port	218 */
-	io_trap_in,		/* port	219 */
-	io_trap_in,		/* port	220 */
-	io_trap_in,		/* port	221 */
-	io_trap_in,		/* port	222 */
-	io_trap_in,		/* port	223 */
-	io_trap_in,		/* port	224 */
-	io_trap_in,		/* port	225 */
-	io_trap_in,		/* port	226 */
-	io_trap_in,		/* port	227 */
-	io_trap_in,		/* port	228 */
-	io_trap_in,		/* port	229 */
-	io_trap_in,		/* port	230 */
-	io_trap_in,		/* port	231 */
-	io_trap_in,		/* port	232 */
-	io_trap_in,		/* port	233 */
-	io_trap_in,		/* port	234 */
-	io_trap_in,		/* port	235 */
-	io_trap_in,		/* port	236 */
-	io_trap_in,		/* port	237 */
-	io_trap_in,		/* port	238 */
-	io_trap_in,		/* port	239 */
-	io_trap_in,		/* port	240 */
-	io_trap_in,		/* port	241 */
-	io_trap_in,		/* port	242 */
-	io_trap_in,		/* port	243 */
-	io_trap_in,		/* port	244 */
-	io_trap_in,		/* port	245 */
-	io_trap_in,		/* port	246 */
-	io_trap_in,		/* port	247 */
-	io_trap_in,		/* port	248 */
-	io_trap_in,		/* port	249 */
-	io_trap_in,		/* port	250 */
-	io_trap_in,		/* port	251 */
-	io_trap_in,		/* port	252 */
-	io_trap_in,		/* port	253 */
-	io_trap_in,		/* port	254 */
-	io_trap_in		/* port	255 */
+BYTE (*port_in[256])(void) = {
+	[  0] cons_in,
+	[  1] cond_in,
+	[  2] prts_in,
+	[  3] prtd_in,
+	[  4] auxs_in,
+	[  5] auxd_in,
+	[ 10] fdcd_in,
+	[ 11] fdct_in,
+	[ 12] fdcs_in,
+	[ 13] fdco_in,
+	[ 14] fdcx_in,
+	[ 15] dmal_in,
+	[ 16] dmah_in,
+	[ 17] fdcsh_in,
+	[ 20] mmui_in,
+	[ 21] mmus_in,
+	[ 22] mmuc_in,
+	[ 23] mmup_in,
+	[ 25] clkc_in,
+	[ 26] clkd_in,
+	[ 27] time_in,
+	[ 28] delay_in,
+	[ 30] speedl_in,
+	[ 31] speedh_in,
+	[ 40] cons1_in,
+	[ 41] cond1_in,
+	[ 42] cons2_in,
+	[ 43] cond2_in,
+	[ 44] cons3_in,
+	[ 45] cond3_in,
+	[ 46] cons4_in,
+	[ 47] cond4_in,
+	[ 50] nets1_in,
+	[ 51] netd1_in,
+	[160] hwctl_in		/* virtual hardware control */
 };
 
 /*
  *	This array contains function pointers for every
  *	output port.
  */
-static void (*port_out[256])(BYTE) = {
-	cons_out,		/* port 0 */
-	cond_out,		/* port 1 */
-	prts_out,		/* port 2 */
-	prtd_out,		/* port 3 */
-	auxs_out,		/* port 4 */
-	auxd_out,		/* port 5 */
-	io_trap_out,		/* port 6 */
-	io_trap_out,		/* port 7 */
-	io_trap_out,		/* port 8 */
-	io_trap_out,		/* port 9 */
-	fdcd_out,		/* port 10 */
-	fdct_out,		/* port 11 */
-	fdcs_out,		/* port 12 */
-	fdco_out,		/* port 13 */
-	fdcx_out,		/* port 14 */
-	dmal_out,		/* port 15 */
-	dmah_out,		/* port 16 */
-	fdcsh_out,		/* port 17 */
-	io_trap_out,		/* port 18 */
-	io_trap_out,		/* port 19 */
-	mmui_out,		/* port 20 */
-	mmus_out,		/* port 21 */
-	mmuc_out,		/* port 22 */
-	mmup_out,		/* port 23 */
-	io_trap_out,		/* port 24 */
-	clkc_out,		/* port 25 */
-	clkd_out,		/* port 26 */
-	time_out,		/* port 27 */
-	delay_out,		/* port 28 */
-	io_trap_out,		/* port 29 */
-	speedl_out,		/* port 30 */
-	speedh_out,		/* port 31 */
-	io_trap_out,		/* port 32 */
-	io_trap_out,		/* port 33 */
-	io_trap_out,		/* port 34 */
-	io_trap_out,		/* port 35 */
-	io_trap_out,		/* port 36 */
-	io_trap_out,		/* port 37 */
-	io_trap_out,		/* port 38 */
-	io_trap_out,		/* port 39 */
-	cons1_out,		/* port 40 */
-	cond1_out,		/* port 41 */
-	cons2_out,		/* port 42 */
-	cond2_out,		/* port 43 */
-	cons3_out,		/* port 44 */
-	cond3_out,		/* port 45 */
-	cons4_out,		/* port 46 */
-	cond4_out,		/* port 47 */
-	io_trap_out,		/* port 48 */
-	io_trap_out,		/* port 49 */
-	nets1_out,		/* port 50 */
-	netd1_out,		/* port 51 */
-	io_trap_out,		/* port 52 */
-	io_trap_out,		/* port 53 */
-	io_trap_out,		/* port 54 */
-	io_trap_out,		/* port	55 */
-	io_trap_out,		/* port	56 */
-	io_trap_out,		/* port	57 */
-	io_trap_out,		/* port	58 */
-	io_trap_out,		/* port	59 */
-	io_trap_out,		/* port	60 */
-	io_trap_out,		/* port	61 */
-	io_trap_out,		/* port	62 */
-	io_trap_out,		/* port	63 */
-	io_trap_out,		/* port	64 */
-	io_trap_out,		/* port	65 */
-	io_trap_out,		/* port	66 */
-	io_trap_out,		/* port	67 */
-	io_trap_out,		/* port	68 */
-	io_trap_out,		/* port	69 */
-	io_trap_out,		/* port	70 */
-	io_trap_out,		/* port	71 */
-	io_trap_out,		/* port	72 */
-	io_trap_out,		/* port	73 */
-	io_trap_out,		/* port	74 */
-	io_trap_out,		/* port	75 */
-	io_trap_out,		/* port	76 */
-	io_trap_out,		/* port	77 */
-	io_trap_out,		/* port	78 */
-	io_trap_out,		/* port	79 */
-	io_trap_out,		/* port	80 */
-	io_trap_out,		/* port	81 */
-	io_trap_out,		/* port	82 */
-	io_trap_out,		/* port	83 */
-	io_trap_out,		/* port	84 */
-	io_trap_out,		/* port	85 */
-	io_trap_out,		/* port	86 */
-	io_trap_out,		/* port	87 */
-	io_trap_out,		/* port	88 */
-	io_trap_out,		/* port	89 */
-	io_trap_out,		/* port	90 */
-	io_trap_out,		/* port	91 */
-	io_trap_out,		/* port	92 */
-	io_trap_out,		/* port	93 */
-	io_trap_out,		/* port	94 */
-	io_trap_out,		/* port	95 */
-	io_trap_out,		/* port	96 */
-	io_trap_out,		/* port	97 */
-	io_trap_out,		/* port	98 */
-	io_trap_out,		/* port	99 */
-	io_trap_out,		/* port	100 */
-	io_trap_out,		/* port 101 */
-	io_trap_out,		/* port	102 */
-	io_trap_out,		/* port	103 */
-	io_trap_out,		/* port	104 */
-	io_trap_out,		/* port	105 */
-	io_trap_out,		/* port	106 */
-	io_trap_out,		/* port	107 */
-	io_trap_out,		/* port	108 */
-	io_trap_out,		/* port	109 */
-	io_trap_out,		/* port	110 */
-	io_trap_out,		/* port	111 */
-	io_trap_out,		/* port	112 */
-	io_trap_out,		/* port	113 */
-	io_trap_out,		/* port	114 */
-	io_trap_out,		/* port	115 */
-	io_trap_out,		/* port	116 */
-	io_trap_out,		/* port	117 */
-	io_trap_out,		/* port	118 */
-	io_trap_out,		/* port	119 */
-	io_trap_out,		/* port	120 */
-	io_trap_out,		/* port	121 */
-	io_trap_out,		/* port	122 */
-	io_trap_out,		/* port	123 */
-	io_trap_out,		/* port	124 */
-	io_trap_out,		/* port	125 */
-	io_trap_out,		/* port	126 */
-	io_trap_out,		/* port	127 */
-	io_trap_out,		/* port	128 */
-	io_trap_out,		/* port	129 */
-	io_trap_out,		/* port	130 */
-	io_trap_out,		/* port	131 */
-	io_trap_out,		/* port	132 */
-	io_trap_out,		/* port	133 */
-	io_trap_out,		/* port	134 */
-	io_trap_out,		/* port	135 */
-	io_trap_out,		/* port	136 */
-	io_trap_out,		/* port	137 */
-	io_trap_out,		/* port	138 */
-	io_trap_out,		/* port	139 */
-	io_trap_out,		/* port	140 */
-	io_trap_out,		/* port	141 */
-	io_trap_out,		/* port	142 */
-	io_trap_out,		/* port	143 */
-	io_trap_out,		/* port	144 */
-	io_trap_out,		/* port	145 */
-	io_trap_out,		/* port	146 */
-	io_trap_out,		/* port	147 */
-	io_trap_out,		/* port	148 */
-	io_trap_out,		/* port	149 */
-	io_trap_out,		/* port	150 */
-	io_trap_out,		/* port	151 */
-	io_trap_out,		/* port	152 */
-	io_trap_out,		/* port	153 */
-	io_trap_out,		/* port	154 */
-	io_trap_out,		/* port	155 */
-	io_trap_out,		/* port	156 */
-	io_trap_out,		/* port	157 */
-	io_trap_out,		/* port	158 */
-	io_trap_out,		/* port	159 */
-	hwctl_out,		/* port	160 */	/* virtual hardware control */
-	host_bdos_out,		/* port 161 */  /* host file I/O hook */
-	io_trap_out,		/* port	162 */
-	io_trap_out,		/* port	163 */
-	io_trap_out,		/* port	164 */
-	io_trap_out,		/* port	165 */
-	io_trap_out,		/* port	166 */
-	io_trap_out,		/* port	167 */
-	io_trap_out,		/* port	168 */
-	io_trap_out,		/* port	169 */
-	io_trap_out,		/* port	170 */
-	io_trap_out,		/* port	171 */
-	io_trap_out,		/* port	172 */
-	io_trap_out,		/* port	173 */
-	io_trap_out,		/* port	174 */
-	io_trap_out,		/* port	175 */
-	io_trap_out,		/* port	176 */
-	io_trap_out,		/* port	177 */
-	io_trap_out,		/* port	178 */
-	io_trap_out,		/* port	179 */
-	io_trap_out,		/* port	180 */
-	io_trap_out,		/* port	181 */
-	io_trap_out,		/* port	182 */
-	io_trap_out,		/* port	183 */
-	io_trap_out,		/* port	184 */
-	io_trap_out,		/* port	185 */
-	io_trap_out,		/* port	186 */
-	io_trap_out,		/* port	187 */
-	io_trap_out,		/* port	188 */
-	io_trap_out,		/* port	189 */
-	io_trap_out,		/* port	190 */
-	io_trap_out,		/* port	191 */
-	io_trap_out,		/* port	192 */
-	io_trap_out,		/* port	193 */
-	io_trap_out,		/* port	194 */
-	io_trap_out,		/* port	195 */
-	io_trap_out,		/* port	196 */
-	io_trap_out,		/* port	197 */
-	io_trap_out,		/* port	198 */
-	io_trap_out,		/* port	199 */
-	io_trap_out,		/* port	200 */
-	io_trap_out,		/* port 201 */
-	io_trap_out,		/* port	202 */
-	io_trap_out,		/* port	203 */
-	io_trap_out,		/* port	204 */
-	io_trap_out,		/* port	205 */
-	io_trap_out,		/* port	206 */
-	io_trap_out,		/* port	207 */
-	io_trap_out,		/* port	208 */
-	io_trap_out,		/* port	209 */
-	io_trap_out,		/* port	210 */
-	io_trap_out,		/* port	211 */
-	io_trap_out,		/* port	212 */
-	io_trap_out,		/* port	213 */
-	io_trap_out,		/* port	214 */
-	io_trap_out,		/* port	215 */
-	io_trap_out,		/* port	216 */
-	io_trap_out,		/* port	217 */
-	io_trap_out,		/* port	218 */
-	io_trap_out,		/* port	219 */
-	io_trap_out,		/* port	220 */
-	io_trap_out,		/* port	221 */
-	io_trap_out,		/* port	222 */
-	io_trap_out,		/* port	223 */
-	io_trap_out,		/* port	224 */
-	io_trap_out,		/* port	225 */
-	io_trap_out,		/* port	226 */
-	io_trap_out,		/* port	227 */
-	io_trap_out,		/* port	228 */
-	io_trap_out,		/* port	229 */
-	io_trap_out,		/* port	230 */
-	io_trap_out,		/* port	231 */
-	io_trap_out,		/* port	232 */
-	io_trap_out,		/* port	233 */
-	io_trap_out,		/* port	234 */
-	io_trap_out,		/* port	235 */
-	io_trap_out,		/* port	236 */
-	io_trap_out,		/* port	237 */
-	io_trap_out,		/* port	238 */
-	io_trap_out,		/* port	239 */
-	io_trap_out,		/* port	240 */
-	io_trap_out,		/* port	241 */
-	io_trap_out,		/* port	242 */
-	io_trap_out,		/* port	243 */
-	io_trap_out,		/* port	244 */
-	io_trap_out,		/* port	245 */
-	io_trap_out,		/* port	246 */
-	io_trap_out,		/* port	247 */
-	io_trap_out,		/* port	248 */
-	io_trap_out,		/* port	249 */
-	io_trap_out,		/* port	250 */
-	io_trap_out,		/* port	251 */
-	io_trap_out,		/* port	252 */
-	io_trap_out,		/* port	253 */
-	io_trap_out,		/* port	254 */
-	io_trap_out		/* port	255 */
+void (*port_out[256])(BYTE) = {
+	[  0] cons_out,
+	[  1] cond_out,
+	[  2] prts_out,
+	[  3] prtd_out,
+	[  4] auxs_out,
+	[  5] auxd_out,
+	[ 10] fdcd_out,
+	[ 11] fdct_out,
+	[ 12] fdcs_out,
+	[ 13] fdco_out,
+	[ 14] fdcx_out,
+	[ 15] dmal_out,
+	[ 16] dmah_out,
+	[ 17] fdcsh_out,
+	[ 20] mmui_out,
+	[ 21] mmus_out,
+	[ 22] mmuc_out,
+	[ 23] mmup_out,
+	[ 25] clkc_out,
+	[ 26] clkd_out,
+	[ 27] time_out,
+	[ 28] delay_out,
+	[ 30] speedl_out,
+	[ 31] speedh_out,
+	[ 40] cons1_out,
+	[ 41] cond1_out,
+	[ 42] cons2_out,
+	[ 43] cond2_out,
+	[ 44] cons3_out,
+	[ 45] cond3_out,
+	[ 46] cons4_out,
+	[ 47] cond4_out,
+	[ 50] nets1_out,
+	[ 51] netd1_out,
+	[160] hwctl_out,	/* virtual hardware control */
+	[161] host_bdos_out	/* host file I/O hook */
 };
 
 /*
@@ -1107,76 +664,17 @@ void reset_system(void)
 }
 
 /*
- *	This function is called for every IN opcode from the
- *	CPU emulation. It calls the handler for the port,
- *	from which input is wanted.
- */
-BYTE io_in(BYTE addrl, BYTE addrh)
-{
-	UNUSED(addrh);
-
-	io_port = addrl;
-	io_data = (*port_in[addrl])();
-	return (io_data);
-}
-
-/*
- *	This function is called for every OUT opcode from the
- *	CPU emulation. It calls the handler for the port,
- *	to which output is wanted.
- */
-void io_out(BYTE addrl, BYTE addrh, BYTE data)
-{
-	UNUSED(addrh);
-
-	io_port = addrl;
-	io_data = data;
-
-	busy_loop_cnt = 0;
-
-	(*port_out[addrl])(data);
-}
-
-/*
- *	I/O input trap handler
- */
-static BYTE io_trap_in(void)
-{
-	if (i_flag) {
-		cpu_error = IOTRAPIN;
-		cpu_state = STOPPED;
-	}
-	return ((BYTE) 0xff);
-}
-
-/*
- *	I/O output trap handler
- */
-static void io_trap_out(BYTE data)
-{
-	UNUSED(data);
-
-	if (i_flag) {
-		cpu_error = IOTRAPOUT;
-		cpu_state = STOPPED;
-	}
-}
-
-/*
  *	I/O handler for read console 0 status:
  *	0xff : input available
  *	0x00 : no input available
  */
 static BYTE cons_in(void)
 {
-	unsigned long long t;
 	struct pollfd p[1];
 
 	if (++busy_loop_cnt >= MAX_BUSY_COUNT) {
-		t = get_clock_us();
 		SLEEP_MS(1);
 		busy_loop_cnt = 0;
-		cpu_start += (get_clock_us() - t);
 	}
 
 	p[0].fd = fileno(stdin);
@@ -1611,13 +1109,10 @@ static void nets1_out(BYTE data)
 static BYTE cond_in(void)
 {
 	char c;
-	unsigned long long t;
 
 	busy_loop_cnt = 0;
-	t = get_clock_us();
 	if (read(fileno(stdin), &c, 1) != 1)
 		LOGE(TAG, "can't read console 0");
-	cpu_start += (get_clock_us() - t);
 	return ((BYTE) c);
 }
 

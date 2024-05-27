@@ -66,6 +66,8 @@
 #define SERVERPORT 4010	/* first TCP/IP server port used */
 #define NUMUSOC 0	/* number of UNIX sockets */
 
+extern void sleep_us(long);
+#define SLEEP_US(t)	sleep_us(t)
 extern void sleep_ms(int);
 #define SLEEP_MS(t)	sleep_ms(t)
 

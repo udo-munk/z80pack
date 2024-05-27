@@ -9,6 +9,7 @@
  * 28-APR-2024 all I/O implemented for a first release
  * 09-MAY-2024 improved so that it can run some MITS Altair software
  * 11-MAY-2024 allow us to configure the port 255 value
+ * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
 /* Raspberry SDK includes */
@@ -41,18 +42,20 @@ static BYTE sio_last;	/* last character received */
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256])(void) = {
-	p000_in,		/* port 0 */
-	p001_in			/* port 1 */
+BYTE (*port_in[256])(void) = {
+	[  0] p000_in,
+	[  1] p001_in,
+	[255] p255_in		/* for frontpanel */
 };
 
 /*
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-static void (*port_out[256])(BYTE) = {
-	p000_out,		/* port 0 */
-	p001_out		/* port 1 */
+void (*port_out[256])(BYTE) = {
+	[  0] p000_out,
+	[  1] p001_out,
+	[255] p255_out		/* for frontpanel */
 };
 
 /*
@@ -62,17 +65,6 @@ static void (*port_out[256])(BYTE) = {
  */
 void init_io(void)
 {
-	register int i;
-
-	/* fill all the unused ports with 0 */
-	for (i = 2; i <= 254; i++) {
-		port_in[i] = 0;
-		port_out[i] = 0;
-	}
-
-	/* port 255 for frontpanel */
-	port_in[255] = p255_in;
-	port_out[255] = p255_out;
 }
 
 /*
@@ -81,34 +73,6 @@ void init_io(void)
  */
 void exit_io(void)
 {
-}
-
-/*
- *	This is the main handler for all IN op-codes,
- *	called by the simulator. It calls the input
- *	function for port addrl.
- */
-BYTE io_in(BYTE addrl, BYTE addrh)
-{
-	UNUSED(addrh);
-
-	if (*port_in[addrl] != 0)		/* if port used */
-		return ((*port_in[addrl])());
-	else
-		return (0xff);			/* all other return 0xff */
-}
-
-/*
- *	This is the main handler for all OUT op-codes,
- *	called by the simulator. It calls the output
- *	function for port addrl.
- */
-void io_out(BYTE addrl, BYTE addrh, BYTE data)
-{
-	UNUSED(addrh);
-
-	if (*port_out[addrl] != 0) /* if port used */
-		(*port_out[addrl])(data);
 }
 
 /*

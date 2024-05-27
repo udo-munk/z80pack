@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include "sim.h"
 #include "simglb.h"
+#ifdef FRONTPANEL
+#include "frontpanel.h"
+#endif
 #include "memsim.h"
 
 #ifndef BAREMETAL
@@ -23,6 +26,7 @@
 static const char *TAG = "core";
 #endif
 
+extern unsigned long long get_clock_us(void);
 extern void cpu_z80(void), cpu_8080(void);
 
 /*
@@ -109,8 +113,11 @@ void switch_cpu(int new_cpu)
  */
 void run_cpu(void)
 {
+	unsigned long long t;
+
 	cpu_state = CONTIN_RUN;
 	cpu_error = NONE;
+	t = get_clock_us();
 	for (;;) {
 		switch (cpu) {
 #ifndef EXCLUDE_Z80
@@ -132,6 +139,7 @@ void run_cpu(void)
 		} else
 			break;
 	}
+	cpu_time += get_clock_us() - t;
 }
 
 /*
@@ -139,8 +147,11 @@ void run_cpu(void)
  */
 void step_cpu(void)
 {
+	unsigned long long t;
+
 	cpu_state = SINGLE_STEP;
 	cpu_error = NONE;
+	t = get_clock_us();
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
@@ -155,6 +166,7 @@ void step_cpu(void)
 	default:
 		break;
 	}
+	cpu_time += get_clock_us() - t;
 	cpu_state = STOPPED;
 }
 
@@ -272,13 +284,116 @@ void report_cpu_error(void)
  */
 void report_cpu_stats(void)
 {
-	if (cpu_stop > cpu_start)
+	if (cpu_time)
 	{
-		printf("CPU ran %lld ms ", (cpu_stop - cpu_start) / 1000);
+		printf("CPU ran %lld ms ", cpu_time / 1000);
 		printf("and executed %lld t-states\n", T);
 		printf("Clock frequency %4.2f MHz\n",
-		       (float) (T) / (float) (cpu_stop - cpu_start));
+		       (float) (T) / (float) cpu_time);
 	}
+}
+
+/*
+ *	This function is called for every IN opcode from the
+ *	CPU emulation. It calls the handler for the port,
+ *	from which input is wanted.
+ */
+BYTE io_in(BYTE addrl, BYTE addrh)
+{
+	unsigned long long clk;
+#ifdef FRONTPANEL
+	int val;
+#else
+	UNUSED(addrh);
+#endif
+
+	clk = get_clock_us();
+
+	io_port = addrl;
+	if (port_in[addrl] != NULL)
+		io_data = (*port_in[addrl])();
+	else {
+		if (i_flag) {
+			cpu_error = IOTRAPIN;
+			cpu_state = STOPPED;
+		}
+		io_data = 0xff;
+	}
+
+#ifdef BUS_8080
+	cpu_bus = CPU_WO | CPU_INP;
+#endif
+
+#ifdef FRONTPANEL
+	if (F_flag) {
+		fp_clock += 3;
+		fp_led_address = (addrh << 8) + addrl;
+		fp_led_data = io_data;
+		fp_sampleData();
+		val = wait_step();
+
+		/* when single stepped INP get last set value of port */
+		if (val && port_in[addrl] != NULL)
+			io_data = (*port_in[addrl])();
+	}
+#endif
+
+#ifndef BAREMETAL
+	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
+#endif
+
+	cpu_time -= get_clock_us() - clk;
+
+	return (io_data);
+}
+
+/*
+ *	This function is called for every OUT opcode from the
+ *	CPU emulation. It calls the handler for the port,
+ *	to which output is wanted.
+ */
+void io_out(BYTE addrl, BYTE addrh, BYTE data)
+{
+	unsigned long long clk;
+#ifndef FRONTPANEL
+	UNUSED(addrh);
+#endif
+
+	clk = get_clock_us();
+
+	io_port = addrl;
+	io_data = data;
+
+#ifndef BAREMETAL
+	LOGD(TAG, "output %02x to port %02x", io_data, io_port);
+#endif
+
+	busy_loop_cnt = 0;
+
+	if (port_out[addrl] != NULL)
+		(*port_out[addrl])(data);
+	else {
+		if (i_flag) {
+			cpu_error = IOTRAPOUT;
+			cpu_state = STOPPED;
+		}
+	}
+
+#ifdef BUS_8080
+	cpu_bus = CPU_OUT;
+#endif
+
+#ifdef FRONTPANEL
+	if (F_flag) {
+		fp_clock += 6;
+		fp_led_address = (addrh << 8) + addrl;
+		fp_led_data = 0xff;
+		fp_sampleData();
+		wait_step();
+	}
+#endif
+
+	cpu_time -= get_clock_us() - clk;
 }
 
 /*

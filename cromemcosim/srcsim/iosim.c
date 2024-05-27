@@ -31,6 +31,7 @@
  * 19-JUL-2020 avoid problems with some third party terminal emulations
  * 17-JUN-2021 allow building machine without frontpanel
  * 29-JUL-2021 add boot config for machine without frontpanel
+ * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
 #include <pthread.h>
@@ -68,8 +69,6 @@
 /*
  *	Forward declarations for I/O functions
  */
-static BYTE io_trap_in(void);
-static void io_trap_out(BYTE);
 static BYTE fp_in(void), mmu_in(void);
 static void fp_out(BYTE), mmu_out(BYTE);
 static BYTE hwctl_in(void);
@@ -98,525 +97,113 @@ static int th_suspend;		/* timing thread suspend flag */
  *	input I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256])(void) = {
-	cromemco_tuart_0a_status_in,	/* port 0 */
-	cromemco_tuart_0a_data_in,	/* port 1 */
-	io_trap_in,			/* port 2 */
-	cromemco_tuart_0a_interrupt_in,	/* port 3 */
-	cromemco_fdc_aux_in,		/* port 4 */
-	io_trap_in,			/* port 5 */
-	io_trap_in,			/* port 6 */
-	io_trap_in,			/* port 7 */
-	io_trap_in,			/* port 8 */
-	io_trap_in,			/* port 9 */
-	io_trap_in,			/* port 10 */
-	io_trap_in,			/* port 11 */
-	io_trap_in,			/* port 12 */
-	io_trap_in,			/* port 13 */
-	cromemco_dazzler_flags_in,	/* port 14 */
-	io_trap_in,			/* port 15 */
-	io_trap_in,			/* port 16 */
-	io_trap_in,			/* port 17 */
-	io_trap_in,			/* port 18 */
-	io_trap_in,			/* port 19 */
-	io_trap_in,			/* port 20 */
-	io_trap_in,			/* port 21 */
-	io_trap_in,			/* port 22 */
-	io_trap_in,			/* port 23 */
-	cromemco_d7a_D_in,		/* port 24 */
-	cromemco_d7a_A1_in,		/* port 25 */
-	cromemco_d7a_A2_in,		/* port 26 */
-	cromemco_d7a_A3_in,		/* port 27 */
-	cromemco_d7a_A4_in,		/* port 28 */
-	cromemco_d7a_A5_in,		/* port 29 */
-	cromemco_d7a_A6_in,		/* port 30 */
-	cromemco_d7a_A7_in,		/* port 31 */
-	cromemco_tuart_1a_status_in,	/* port 32 */
-	cromemco_tuart_1a_data_in,	/* port 33 */
-	io_trap_in,			/* port 34 */
-	cromemco_tuart_1a_interrupt_in,	/* port 35 */
-	cromemco_tuart_1a_parallel_in,	/* port 36 */
-	io_trap_in,			/* port 37 */
-	io_trap_in,			/* port 38 */
-	io_trap_in,			/* port 39 */
-	io_trap_in,			/* port 40 */
-	io_trap_in,			/* port 41 */
-	io_trap_in,			/* port 42 */
-	io_trap_in,			/* port 43 */
-	io_trap_in,			/* port 44 */
-	io_trap_in,			/* port 45 */
-	io_trap_in,			/* port 46 */
-	io_trap_in,			/* port 47 */
-	cromemco_fdc_status_in,		/* port 48 */
-	cromemco_fdc_track_in,		/* port 49 */
-	cromemco_fdc_sector_in,		/* port 50 */
-	cromemco_fdc_data_in,		/* port 51 */
-	cromemco_fdc_diskflags_in,	/* port 52 */
-	io_trap_in,			/* port 53 */
-	io_trap_in,			/* port 54 */
-	io_trap_in,			/* port 55 */
-	io_trap_in,			/* port 56 */
-	io_trap_in,			/* port 57 */
-	io_trap_in,			/* port 58 */
-	io_trap_in,			/* port 59 */
-	io_trap_in,			/* port 60 */
-	io_trap_in,			/* port 61 */
-	io_trap_in,			/* port 62 */
-	io_trap_in,			/* port 63 */
-	mmu_in,				/* port 64 */
-	io_trap_in,			/* port 65 */
-	io_trap_in,			/* port 66 */
-	io_trap_in,			/* port 67 */
-	io_trap_in,			/* port 68 */
-	io_trap_in,			/* port 69 */
-	io_trap_in,			/* port 70 */
-	io_trap_in,			/* port 71 */
-	io_trap_in,			/* port 72 */
-	io_trap_in,			/* port 73 */
-	io_trap_in,			/* port 74 */
-	io_trap_in,			/* port 75 */
-	io_trap_in,			/* port 76 */
-	io_trap_in,			/* port 77 */
-	io_trap_in,			/* port 78 */
-	io_trap_in,			/* port 79 */
-	cromemco_tuart_1b_status_in,	/* port 80 */
-	cromemco_tuart_1b_data_in,	/* port 81 */
-	io_trap_in,			/* port 82 */
-	cromemco_tuart_1b_interrupt_in,	/* port 83 */
-	cromemco_tuart_1b_parallel_in,	/* port 84 */
-	io_trap_in,			/* port 85 */
-	io_trap_in,			/* port 86 */
-	io_trap_in,			/* port 87 */
-	io_trap_in,			/* port 88 */
-	io_trap_in,			/* port 89 */
-	io_trap_in,			/* port 90 */
-	io_trap_in,			/* port 91 */
-	io_trap_in,			/* port 92 */
-	io_trap_in,			/* port 93 */
-	io_trap_in,			/* port 94 */
-	io_trap_in,			/* port 95 */
-	io_trap_in,			/* port 96 */
-	io_trap_in,			/* port 97 */
-	io_trap_in,			/* port 98 */
-	io_trap_in,			/* port 99 */
-	io_trap_in,			/* port 100 */
-	io_trap_in,			/* port 101 */
-	io_trap_in,			/* port 102 */
-	io_trap_in,			/* port 103 */
-	io_trap_in,			/* port 104 */
-	io_trap_in,			/* port 105 */
-	io_trap_in,			/* port 106 */
-	io_trap_in,			/* port 107 */
-	io_trap_in,			/* port 108 */
-	io_trap_in,			/* port 109 */
-	io_trap_in,			/* port 110 */
-	io_trap_in,			/* port 111 */
-	io_trap_in,			/* port 112 */
-	io_trap_in,			/* port 113 */
-	io_trap_in,			/* port 114 */
-	io_trap_in,			/* port 115 */
-	io_trap_in,			/* port 116 */
-	io_trap_in,			/* port 117 */
-	io_trap_in,			/* port 118 */
-	io_trap_in,			/* port 119 */
-	io_trap_in,			/* port 120 */
-	io_trap_in,			/* port 121 */
-	io_trap_in,			/* port 122 */
-	io_trap_in,			/* port 123 */
-	io_trap_in,			/* port 124 */
-	io_trap_in,			/* port 125 */
-	io_trap_in,			/* port 126 */
-	io_trap_in,			/* port 127 */
-	io_trap_in,			/* port 128 */
-	io_trap_in,			/* port 129 */
-	io_trap_in,			/* port 130 */
-	io_trap_in,			/* port 131 */
-	io_trap_in,			/* port 132 */
-	io_trap_in,			/* port 133 */
-	io_trap_in,			/* port 134 */
-	io_trap_in,			/* port 135 */
-	io_trap_in,			/* port 136 */
-	io_trap_in,			/* port 137 */
-	io_trap_in,			/* port 138 */
-	io_trap_in,			/* port 139 */
-	io_trap_in,			/* port 140 */
-	io_trap_in,			/* port 141 */
-	io_trap_in,			/* port 142 */
-	io_trap_in,			/* port 143 */
-	io_trap_in,			/* port 144 */
-	io_trap_in,			/* port 145 */
-	io_trap_in,			/* port 146 */
-	io_trap_in,			/* port 147 */
-	io_trap_in,			/* port 148 */
-	io_trap_in,			/* port 149 */
-	io_trap_in,			/* port 150 */
-	io_trap_in,			/* port 151 */
-	io_trap_in,			/* port 152 */
-	io_trap_in,			/* port 153 */
-	io_trap_in,			/* port 154 */
-	io_trap_in,			/* port 155 */
-	io_trap_in,			/* port 156 */
-	io_trap_in,			/* port 157 */
-	io_trap_in,			/* port 158 */
-	io_trap_in,			/* port 159 */
-	hwctl_in,			/* port 160 */
-	io_trap_in,			/* port 161 */
-	io_trap_in,			/* port 162 */
-	io_trap_in,			/* port 163 */
-	io_trap_in,			/* port 164 */
-	io_trap_in,			/* port 165 */
-	io_trap_in,			/* port 166 */
-	io_trap_in,			/* port 167 */
-	io_trap_in,			/* port 168 */
-	io_trap_in,			/* port 169 */
-	io_trap_in,			/* port 170 */
-	io_trap_in,			/* port 171 */
-	io_trap_in,			/* port 172 */
-	io_trap_in,			/* port 173 */
-	io_trap_in,			/* port 174 */
-	io_trap_in,			/* port 175 */
-	io_trap_in,			/* port 176 */
-	io_trap_in,			/* port 177 */
-	io_trap_in,			/* port 178 */
-	io_trap_in,			/* port 179 */
-	io_trap_in,			/* port 180 */
-	io_trap_in,			/* port 181 */
-	io_trap_in,			/* port 182 */
-	io_trap_in,			/* port 183 */
-	io_trap_in,			/* port 184 */
-	io_trap_in,			/* port 185 */
-	io_trap_in,			/* port 186 */
-	io_trap_in,			/* port 187 */
-	io_trap_in,			/* port 188 */
-	io_trap_in,			/* port 189 */
-	io_trap_in,			/* port 190 */
-	io_trap_in,			/* port 191 */
-	io_trap_in,			/* port 192 */
-	io_trap_in,			/* port 193 */
-	io_trap_in,			/* port 194 */
-	io_trap_in,			/* port 195 */
-	io_trap_in,			/* port 196 */
-	io_trap_in,			/* port 197 */
-	io_trap_in,			/* port 198 */
-	io_trap_in,			/* port 199 */
-	io_trap_in,			/* port 200 */
-	io_trap_in,			/* port 201 */
-	io_trap_in,			/* port 202 */
-	io_trap_in,			/* port 203 */
-	io_trap_in,			/* port 204 */
-	io_trap_in,			/* port 205 */
-	io_trap_in,			/* port 206 */
-	io_trap_in,			/* port 207 */
-	io_trap_in,			/* port 208 */
-	io_trap_in,			/* port 209 */
-	io_trap_in,			/* port 210 */
-	io_trap_in,			/* port 211 */
-	io_trap_in,			/* port 212 */
-	io_trap_in,			/* port 213 */
-	io_trap_in,			/* port 214 */
-	io_trap_in,			/* port 215 */
-	io_trap_in,			/* port 216 */
-	io_trap_in,			/* port 217 */
-	io_trap_in,			/* port 218 */
-	io_trap_in,			/* port 219 */
-	io_trap_in,			/* port 220 */
-	io_trap_in,			/* port 221 */
-	io_trap_in,			/* port 222 */
-	io_trap_in,			/* port 223 */
-	cromemco_wdi_pio0a_data_in,	/* port 224 */
-	cromemco_wdi_pio0b_data_in,	/* port 225 */
-	cromemco_wdi_pio0a_cmd_in,	/* port 226 */
-	cromemco_wdi_pio0b_cmd_in,	/* port 227 */
-	cromemco_wdi_pio1a_data_in,	/* port 228 */
-	cromemco_wdi_pio1b_data_in,	/* port 229 */
-	cromemco_wdi_pio1a_cmd_in,	/* port 230 */
-	cromemco_wdi_pio1b_cmd_in,	/* port 231 */
-	cromemco_wdi_dma0_in,		/* port 232 */
-	cromemco_wdi_dma1_in,		/* port 233 */
-	cromemco_wdi_dma2_in,		/* port 234 */
-	cromemco_wdi_dma3_in,		/* port 235 */
-	cromemco_wdi_ctc0_in,		/* port 236 */
-	cromemco_wdi_ctc1_in,		/* port 237 */
-	cromemco_wdi_ctc2_in,		/* port 238 */
-	cromemco_wdi_ctc3_in,		/* port 239 */
-	io_trap_in,			/* port 240 */
-	io_trap_in,			/* port 241 */
-	io_trap_in,			/* port 242 */
-	io_trap_in,			/* port 243 */
-	io_trap_in,			/* port 244 */
-	io_trap_in,			/* port 245 */
-	io_trap_in,			/* port 246 */
-	io_trap_in,			/* port 247 */
-	io_trap_in,			/* port 248 */
-	io_trap_in,			/* port 249 */
-	io_trap_in,			/* port 250 */
-	io_trap_in,			/* port 251 */
-	io_trap_in,			/* port 252 */
-	io_trap_in,			/* port 253 */
-	io_trap_in,			/* port 254 */
-	fp_in				/* port 255 */ /* front panel */
+	[  0] cromemco_tuart_0a_status_in,
+	[  1] cromemco_tuart_0a_data_in,
+	[  3] cromemco_tuart_0a_interrupt_in,
+	[  4] cromemco_fdc_aux_in,
+	[ 14] cromemco_dazzler_flags_in,
+	[ 24] cromemco_d7a_D_in,
+	[ 25] cromemco_d7a_A1_in,
+	[ 26] cromemco_d7a_A2_in,
+	[ 27] cromemco_d7a_A3_in,
+	[ 28] cromemco_d7a_A4_in,
+	[ 29] cromemco_d7a_A5_in,
+	[ 30] cromemco_d7a_A6_in,
+	[ 31] cromemco_d7a_A7_in,
+	[ 32] cromemco_tuart_1a_status_in,
+	[ 33] cromemco_tuart_1a_data_in,
+	[ 35] cromemco_tuart_1a_interrupt_in,
+	[ 36] cromemco_tuart_1a_parallel_in,
+	[ 48] cromemco_fdc_status_in,
+	[ 49] cromemco_fdc_track_in,
+	[ 50] cromemco_fdc_sector_in,
+	[ 51] cromemco_fdc_data_in,
+	[ 52] cromemco_fdc_diskflags_in,
+	[ 64] mmu_in,
+	[ 80] cromemco_tuart_1b_status_in,
+	[ 81] cromemco_tuart_1b_data_in,
+	[ 83] cromemco_tuart_1b_interrupt_in,
+	[ 84] cromemco_tuart_1b_parallel_in,
+	[160] hwctl_in,
+	[224] cromemco_wdi_pio0a_data_in,
+	[225] cromemco_wdi_pio0b_data_in,
+	[226] cromemco_wdi_pio0a_cmd_in,
+	[227] cromemco_wdi_pio0b_cmd_in,
+	[228] cromemco_wdi_pio1a_data_in,
+	[229] cromemco_wdi_pio1b_data_in,
+	[230] cromemco_wdi_pio1a_cmd_in,
+	[231] cromemco_wdi_pio1b_cmd_in,
+	[232] cromemco_wdi_dma0_in,
+	[233] cromemco_wdi_dma1_in,
+	[234] cromemco_wdi_dma2_in,
+	[235] cromemco_wdi_dma3_in,
+	[236] cromemco_wdi_ctc0_in,
+	[237] cromemco_wdi_ctc1_in,
+	[238] cromemco_wdi_ctc2_in,
+	[239] cromemco_wdi_ctc3_in,
+	[255] fp_in				/* front panel */
 };
 
 /*
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-static void (*port_out[256])(BYTE) = {
-	cromemco_tuart_0a_baud_out,	/* port 0 */
-	cromemco_tuart_0a_data_out,	/* port 1 */
-	cromemco_tuart_0a_command_out,	/* port 2 */
-	cromemco_tuart_0a_interrupt_out,/* port 3 */
-	cromemco_fdc_aux_out,		/* port 4 */
-	cromemco_tuart_0a_timer1_out,	/* port 5 */
-	cromemco_tuart_0a_timer2_out,	/* port 6 */
-	cromemco_tuart_0a_timer3_out,	/* port 7 */
-	cromemco_tuart_0a_timer4_out,	/* port 8 */
-	cromemco_tuart_0a_timer5_out,	/* port 9 */
-	io_trap_out,			/* port 10 */
-	io_trap_out,			/* port 11 */
-	io_trap_out,			/* port 12 */
-	io_trap_out,			/* port 13 */
-	cromemco_dazzler_ctl_out,	/* port 14 */
-	cromemco_dazzler_format_out,	/* port 15 */
-	io_trap_out,			/* port 16 */
-	io_trap_out,			/* port 17 */
-	io_trap_out,			/* port 18 */
-	io_trap_out,			/* port 19 */
-	io_trap_out,			/* port 20 */
-	io_trap_out,			/* port 21 */
-	io_trap_out,			/* port 22 */
-	io_trap_out,			/* port 23 */
-	cromemco_d7a_D_out,		/* port 24 */
-	cromemco_d7a_A1_out,		/* port 25 */
-	cromemco_d7a_A2_out,		/* port 26 */
-	cromemco_d7a_A3_out,		/* port 27 */
-	cromemco_d7a_A4_out,		/* port 28 */
-	cromemco_d7a_A5_out,		/* port 29 */
-	cromemco_d7a_A6_out,		/* port 30 */
-	cromemco_d7a_A7_out,		/* port 31 */
-	cromemco_tuart_1a_baud_out,	/* port 32 */
-	cromemco_tuart_1a_data_out,	/* port 33 */
-	cromemco_tuart_1a_command_out,	/* port 34 */
-	cromemco_tuart_1a_interrupt_out,/* port 35 */
-	cromemco_tuart_1a_parallel_out,	/* port 36 */
-	io_trap_out,			/* port 37 */
-	io_trap_out,			/* port 38 */
-	io_trap_out,			/* port 39 */
-	io_trap_out,			/* port 40 */
-	io_trap_out,			/* port 41 */
-	io_trap_out,			/* port 42 */
-	io_trap_out,			/* port 43 */
-	io_trap_out,			/* port 44 */
-	io_trap_out,			/* port 45 */
-	io_trap_out,			/* port 46 */
-	io_trap_out,			/* port 47 */
-	cromemco_fdc_cmd_out,		/* port 48 */
-	cromemco_fdc_track_out,		/* port 49 */
-	cromemco_fdc_sector_out,	/* port 50 */
-	cromemco_fdc_data_out,		/* port 51 */
-	cromemco_fdc_diskctl_out,	/* port 52 */
-	io_trap_out,			/* port 53 */
-	io_trap_out,			/* port 54 */
-	io_trap_out,			/* port 55 */
-	io_trap_out,			/* port 56 */
-	io_trap_out,			/* port 57 */
-	io_trap_out,			/* port 58 */
-	io_trap_out,			/* port 59 */
-	io_trap_out,			/* port 60 */
-	io_trap_out,			/* port 61 */
-	io_trap_out,			/* port 62 */
-	io_trap_out,			/* port 63 */
-	mmu_out,			/* port 64 */
-	io_trap_out,			/* port 65 */
-	io_trap_out,			/* port 66 */
-	io_trap_out,			/* port 67 */
-	io_trap_out,			/* port 68 */
-	io_trap_out,			/* port 69 */
-	io_trap_out,			/* port 70 */
-	io_trap_out,			/* port 71 */
-	io_trap_out,			/* port 72 */
-	io_trap_out,			/* port 73 */
-	io_trap_out,			/* port 74 */
-	io_trap_out,			/* port 75 */
-	io_trap_out,			/* port 76 */
-	io_trap_out,			/* port 77 */
-	io_trap_out,			/* port 78 */
-	io_trap_out,			/* port 79 */
-	cromemco_tuart_1b_baud_out,	/* port 80 */
-	cromemco_tuart_1b_data_out,	/* port 81 */
-	cromemco_tuart_1b_command_out,	/* port 82 */
-	cromemco_tuart_1b_interrupt_out,/* port 83 */
-	cromemco_tuart_1b_parallel_out,	/* port 84 */
-	io_trap_out,			/* port 85 */
-	io_trap_out,			/* port 86 */
-	io_trap_out,			/* port 87 */
-	io_trap_out,			/* port 88 */
-	io_trap_out,			/* port 89 */
-	io_trap_out,			/* port 90 */
-	io_trap_out,			/* port 91 */
-	io_trap_out,			/* port 92 */
-	io_trap_out,			/* port 93 */
-	io_trap_out,			/* port 94 */
-	io_trap_out,			/* port 95 */
-	io_trap_out,			/* port 96 */
-	io_trap_out,			/* port 97 */
-	io_trap_out,			/* port 98 */
-	io_trap_out,			/* port 99 */
-	io_trap_out,			/* port 100 */
-	io_trap_out,			/* port 101 */
-	io_trap_out,			/* port 102 */
-	io_trap_out,			/* port 103 */
-	io_trap_out,			/* port 104 */
-	io_trap_out,			/* port 105 */
-	io_trap_out,			/* port 106 */
-	io_trap_out,			/* port 107 */
-	io_trap_out,			/* port 108 */
-	io_trap_out,			/* port 109 */
-	io_trap_out,			/* port 110 */
-	io_trap_out,			/* port 111 */
-	io_trap_out,			/* port 112 */
-	io_trap_out,			/* port 113 */
-	io_trap_out,			/* port 114 */
-	io_trap_out,			/* port 115 */
-	io_trap_out,			/* port 116 */
-	io_trap_out,			/* port 117 */
-	io_trap_out,			/* port 118 */
-	io_trap_out,			/* port 119 */
-	io_trap_out,			/* port 120 */
-	io_trap_out,			/* port 121 */
-	io_trap_out,			/* port 122 */
-	io_trap_out,			/* port 123 */
-	io_trap_out,			/* port 124 */
-	io_trap_out,			/* port 125 */
-	io_trap_out,			/* port 126 */
-	io_trap_out,			/* port 127 */
-	io_trap_out,			/* port 128 */
-	io_trap_out,			/* port 129 */
-	io_trap_out,			/* port 130 */
-	io_trap_out,			/* port 131 */
-	io_trap_out,			/* port 132 */
-	io_trap_out,			/* port 133 */
-	io_trap_out,			/* port 134 */
-	io_trap_out,			/* port 135 */
-	io_trap_out,			/* port 136 */
-	io_trap_out,			/* port 137 */
-	io_trap_out,			/* port 138 */
-	io_trap_out,			/* port 139 */
-	io_trap_out,			/* port 140 */
-	io_trap_out,			/* port 141 */
-	io_trap_out,			/* port 142 */
-	io_trap_out,			/* port 143 */
-	io_trap_out,			/* port 144 */
-	io_trap_out,			/* port 145 */
-	io_trap_out,			/* port 146 */
-	io_trap_out,			/* port 147 */
-	io_trap_out,			/* port 148 */
-	io_trap_out,			/* port 149 */
-	io_trap_out,			/* port 150 */
-	io_trap_out,			/* port 151 */
-	io_trap_out,			/* port 152 */
-	io_trap_out,			/* port 153 */
-	io_trap_out,			/* port 154 */
-	io_trap_out,			/* port 155 */
-	io_trap_out,			/* port 156 */
-	io_trap_out,			/* port 157 */
-	io_trap_out,			/* port 158 */
-	io_trap_out,			/* port 159 */
-	hwctl_out,			/* port 160 */
-	host_bdos_out,			/* port 161 */  /* host file I/O hook */
-	io_trap_out,			/* port 162 */
-	io_trap_out,			/* port 163 */
-	io_trap_out,			/* port 164 */
-	io_trap_out,			/* port 165 */
-	io_trap_out,			/* port 166 */
-	io_trap_out,			/* port 167 */
-	io_trap_out,			/* port 168 */
-	io_trap_out,			/* port 169 */
-	io_trap_out,			/* port 170 */
-	io_trap_out,			/* port 171 */
-	io_trap_out,			/* port 172 */
-	io_trap_out,			/* port 173 */
-	io_trap_out,			/* port 174 */
-	io_trap_out,			/* port 175 */
-	io_trap_out,			/* port 176 */
-	io_trap_out,			/* port 177 */
-	io_trap_out,			/* port 178 */
-	io_trap_out,			/* port 179 */
-	io_trap_out,			/* port 180 */
-	io_trap_out,			/* port 181 */
-	io_trap_out,			/* port 182 */
-	io_trap_out,			/* port 183 */
-	io_trap_out,			/* port 184 */
-	io_trap_out,			/* port 185 */
-	io_trap_out,			/* port 186 */
-	io_trap_out,			/* port 187 */
-	io_trap_out,			/* port 188 */
-	io_trap_out,			/* port 189 */
-	io_trap_out,			/* port 190 */
-	io_trap_out,			/* port 191 */
-	io_trap_out,			/* port 192 */
-	io_trap_out,			/* port 193 */
-	io_trap_out,			/* port 194 */
-	io_trap_out,			/* port 195 */
-	io_trap_out,			/* port 196 */
-	io_trap_out,			/* port 197 */
-	io_trap_out,			/* port 198 */
-	io_trap_out,			/* port 199 */
-	io_trap_out,			/* port 200 */
-	io_trap_out,			/* port 201 */
-	io_trap_out,			/* port 202 */
-	io_trap_out,			/* port 203 */
-	io_trap_out,			/* port 204 */
-	io_trap_out,			/* port 205 */
-	io_trap_out,			/* port 206 */
-	io_trap_out,			/* port 207 */
-	io_trap_out,			/* port 208 */
-	io_trap_out,			/* port 209 */
-	io_trap_out,			/* port 210 */
-	io_trap_out,			/* port 211 */
-	io_trap_out,			/* port 212 */
-	io_trap_out,			/* port 213 */
-	io_trap_out,			/* port 214 */
-	io_trap_out,			/* port 215 */
-	io_trap_out,			/* port 216 */
-	io_trap_out,			/* port 217 */
-	io_trap_out,			/* port 218 */
-	io_trap_out,			/* port 219 */
-	io_trap_out,			/* port 220 */
-	io_trap_out,			/* port 221 */
-	io_trap_out,			/* port 222 */
-	io_trap_out,			/* port 223 */
-	cromemco_wdi_pio0a_data_out,	/* port 224 */
-	cromemco_wdi_pio0b_data_out,	/* port 225 */
-	cromemco_wdi_pio0a_cmd_out,	/* port 226 */
-	cromemco_wdi_pio0b_cmd_out,	/* port 227 */
-	cromemco_wdi_pio1a_data_out,	/* port 228 */
-	cromemco_wdi_pio1b_data_out,	/* port 229 */
-	cromemco_wdi_pio1a_cmd_out,	/* port 230 */
-	cromemco_wdi_pio1b_cmd_out,	/* port 231 */
-	cromemco_wdi_dma0_out,		/* port 232 */
-	cromemco_wdi_dma1_out,		/* port 233 */
-	cromemco_wdi_dma2_out,		/* port 234 */
-	cromemco_wdi_dma3_out,		/* port 235 */
-	cromemco_wdi_ctc0_out,		/* port 236 */
-	cromemco_wdi_ctc1_out,		/* port 237 */
-	cromemco_wdi_ctc2_out,		/* port 238 */
-	cromemco_wdi_ctc3_out,		/* port 239 */
-	io_trap_out,			/* port 240 */
-	io_trap_out,			/* port 241 */
-	io_trap_out,			/* port 242 */
-	io_trap_out,			/* port 243 */
-	io_trap_out,			/* port 244 */
-	io_trap_out,			/* port 245 */
-	io_trap_out,			/* port 246 */
-	io_trap_out,			/* port 247 */
-	io_trap_out,			/* port 248 */
-	io_trap_out,			/* port 249 */
-	io_trap_out,			/* port 250 */
-	io_trap_out,			/* port 251 */
-	io_trap_out,			/* port 252 */
-	io_trap_out,			/* port 253 */
-	io_trap_out,			/* port 254 */
-	fp_out				/* port 255 */ /* front panel */
+void (*port_out[256])(BYTE) = {
+	[  0] cromemco_tuart_0a_baud_out,
+	[  1] cromemco_tuart_0a_data_out,
+	[  2] cromemco_tuart_0a_command_out,
+	[  3] cromemco_tuart_0a_interrupt_out,
+	[  4] cromemco_fdc_aux_out,
+	[  5] cromemco_tuart_0a_timer1_out,
+	[  6] cromemco_tuart_0a_timer2_out,
+	[  7] cromemco_tuart_0a_timer3_out,
+	[  8] cromemco_tuart_0a_timer4_out,
+	[  9] cromemco_tuart_0a_timer5_out,
+	[ 14] cromemco_dazzler_ctl_out,
+	[ 15] cromemco_dazzler_format_out,
+	[ 24] cromemco_d7a_D_out,
+	[ 25] cromemco_d7a_A1_out,
+	[ 26] cromemco_d7a_A2_out,
+	[ 27] cromemco_d7a_A3_out,
+	[ 28] cromemco_d7a_A4_out,
+	[ 29] cromemco_d7a_A5_out,
+	[ 30] cromemco_d7a_A6_out,
+	[ 31] cromemco_d7a_A7_out,
+	[ 32] cromemco_tuart_1a_baud_out,
+	[ 33] cromemco_tuart_1a_data_out,
+	[ 34] cromemco_tuart_1a_command_out,
+	[ 35] cromemco_tuart_1a_interrupt_out,
+	[ 36] cromemco_tuart_1a_parallel_out,
+	[ 48] cromemco_fdc_cmd_out,
+	[ 49] cromemco_fdc_track_out,
+	[ 50] cromemco_fdc_sector_out,
+	[ 51] cromemco_fdc_data_out,
+	[ 52] cromemco_fdc_diskctl_out,
+	[ 64] mmu_out,
+	[ 80] cromemco_tuart_1b_baud_out,
+	[ 81] cromemco_tuart_1b_data_out,
+	[ 82] cromemco_tuart_1b_command_out,
+	[ 83] cromemco_tuart_1b_interrupt_out,
+	[ 84] cromemco_tuart_1b_parallel_out,
+	[160] hwctl_out,
+	[161] host_bdos_out,			/* host file I/O hook */
+	[224] cromemco_wdi_pio0a_data_out,
+	[225] cromemco_wdi_pio0b_data_out,
+	[226] cromemco_wdi_pio0a_cmd_out,
+	[227] cromemco_wdi_pio0b_cmd_out,
+	[228] cromemco_wdi_pio1a_data_out,
+	[229] cromemco_wdi_pio1b_data_out,
+	[230] cromemco_wdi_pio1a_cmd_out,
+	[231] cromemco_wdi_pio1b_cmd_out,
+	[232] cromemco_wdi_dma0_out,
+	[233] cromemco_wdi_dma1_out,
+	[234] cromemco_wdi_dma2_out,
+	[235] cromemco_wdi_dma3_out,
+	[236] cromemco_wdi_ctc0_out,
+	[237] cromemco_wdi_ctc1_out,
+	[238] cromemco_wdi_ctc2_out,
+	[239] cromemco_wdi_ctc3_out,
+	[255] fp_out				/* front panel */
 };
 
 /*
@@ -723,103 +310,6 @@ void reset_io(void)
 	hwctl_lock = 0xff;
 	wdi_exit();
 	wdi_init();
-}
-
-/*
- *	This is the main handler for all IN op-codes,
- *	called by the simulator. It calls the input
- *	function for port addrl.
- */
-BYTE io_in(BYTE addrl, BYTE addrh)
-{
-#ifdef FRONTPANEL
-	int val;
-#else
-	UNUSED(addrh);
-#endif
-
-	io_port = addrl;
-	io_data = (*port_in[addrl])();
-
-#ifdef BUS_8080
-	cpu_bus = CPU_WO | CPU_INP;
-#endif
-
-#ifdef FRONTPANEL
-	if (F_flag) {
-		fp_clock += 3;
-		fp_led_address = (addrh << 8) + addrl;
-		fp_led_data = io_data;
-		fp_sampleData();
-		val = wait_step();
-
-		/* when single stepped INP get last set value of port */
-		if (val)
-			io_data = (*port_in[io_port])();
-	}
-#endif
-
-	return (io_data);
-}
-
-/*
- *	This is the main handler for all OUT op-codes,
- *	called by the simulator. It calls the output
- *	function for port addrl.
- */
-void io_out(BYTE addrl, BYTE addrh, BYTE data)
-{
-#ifndef FRONTPANEL
-	UNUSED(addrh);
-#endif
-	io_port = addrl;
-	io_data = data;
-	(*port_out[addrl])(data);
-
-#ifdef BUS_8080
-	cpu_bus = CPU_OUT;
-#endif
-
-#ifdef FRONTPANEL
-	if (F_flag) {
-		fp_clock += 6;
-		fp_led_address = (addrh << 8) + addrl;
-		fp_led_data = io_data;
-		fp_sampleData();
-		wait_step();
-	}
-#endif
-}
-
-/*
- *	I/O input trap function
- *	This function should be added into all unused
- *	entries of the input port array. It can stop the
- *	emulation with an I/O error.
- */
-static BYTE io_trap_in(void)
-{
-	if (i_flag) {
-		cpu_error = IOTRAPIN;
-		cpu_state = STOPPED;
-	}
-	return ((BYTE) 0xff);
-}
-
-/*
- *	I/O output trap function
- *	This function should be added into all unused
- *	entries of the output port array. It can stop the
- *	emulation with an I/O error.
- */
-static void io_trap_out(BYTE data)
-{
-	UNUSED(data);
-
-	if (i_flag) {
-		cpu_error = IOTRAPOUT;
-		cpu_state = STOPPED;
-	}
 }
 
 /*
