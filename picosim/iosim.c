@@ -43,9 +43,9 @@ static BYTE sio_last;	/* last character received */
  *	I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256])(void) = {
-	[  0] p000_in,
-	[  1] p001_in,
-	[255] p255_in		/* for frontpanel */
+	[  0] = p000_in,
+	[  1] = p001_in,
+	[255] = p255_in		/* for frontpanel */
 };
 
 /*
@@ -53,9 +53,9 @@ BYTE (*port_in[256])(void) = {
  *	I/O port (0 - 255), to do the required I/O.
  */
 void (*port_out[256])(BYTE) = {
-	[  0] p000_out,
-	[  1] p001_out,
-	[255] p255_out		/* for frontpanel */
+	[  0] = p000_out,
+	[  1] = p001_out,
+	[255] = p255_out	/* for frontpanel */
 };
 
 /*

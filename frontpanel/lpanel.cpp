@@ -110,7 +110,7 @@ void
 sampleData8(lpLight *p)
 {
   unsigned char bit;
-  uint8 *ptr = (uint8 *) p->dataptr;
+  uint8_t *ptr = (uint8_t *) p->dataptr;
 
   bit = (int) (*ptr >> p->bitnum) & 0x01;
 
@@ -129,7 +129,7 @@ void
 sampleData8invert(lpLight *p)
 {
   unsigned char bit;
-  uint8 *ptr = (uint8 *) p->dataptr;
+  uint8_t *ptr = (uint8_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -147,9 +147,9 @@ void
 sampleData16(lpLight *p)
 {
   unsigned char bit;
-  uint16 *ptr = (uint16 *) p->dataptr;
+  uint16_t *ptr = (uint16_t *) p->dataptr;
 #if 0
-  uint64 on_time_inc = 0;
+  uint64_t on_time_inc = 0;
 #endif
   // int logit = 0;
 
@@ -213,7 +213,7 @@ void
 sampleData16invert(lpLight *p)
 {
   unsigned char bit;
-  uint16 *ptr = (uint16 *) p->dataptr;
+  uint16_t *ptr = (uint16_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -231,7 +231,7 @@ void
 sampleData32(lpLight *p)
 {
   unsigned char bit;
-  uint32 *ptr = (uint32 *) p->dataptr;
+  uint32_t *ptr = (uint32_t *) p->dataptr;
 
   bit = (int) (*ptr >> p->bitnum) & 0x01;
 
@@ -250,7 +250,7 @@ void
 sampleData32invert(lpLight *p)
 {
   unsigned char bit;
-  uint32 *ptr = (uint32 *) p->dataptr;
+  uint32_t *ptr = (uint32_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -268,7 +268,7 @@ void
 sampleData64(lpLight *p)
 {
   unsigned char bit;
-  uint64 *ptr = (uint64 *) p->dataptr;
+  uint64_t *ptr = (uint64_t *) p->dataptr;
 
   bit = (int) (*ptr >> p->bitnum) & 0x01;
 
@@ -286,7 +286,7 @@ void
 sampleData64invert(lpLight *p)
 {
   unsigned char bit;
-  uint64 *ptr = (uint64 *) p->dataptr;
+  uint64_t *ptr = (uint64_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -610,7 +610,7 @@ Lpanel::bindLight8(const char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData8( (uint8 *) loc);
+        light->bindData8( (uint8_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -629,7 +629,7 @@ Lpanel::bindLight8(const char *name, void *loc, int start_bit_number)
 // bind light and invert logic according to mask
 
 int 
-Lpanel::bindLight8invert(const char *name, void *loc, int start_bit_number, uint8 mask)
+Lpanel::bindLight8invert(const char *name, void *loc, int start_bit_number, uint8_t mask)
 {
   char **namelist; 
   int num_names;
@@ -656,9 +656,9 @@ Lpanel::bindLight8invert(const char *name, void *loc, int start_bit_number, uint
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData8invert( (uint8 *) loc);
+         light->bindData8invert( (uint8_t *) loc);
         else
-         light->bindData8( (uint8 *) loc);
+         light->bindData8( (uint8_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -701,7 +701,7 @@ Lpanel::bindLight16(const char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData16( (uint16 *) loc);
+        light->bindData16( (uint16_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -758,7 +758,7 @@ Lpanel::bindLightfv(const char *name, void *loc)
 }
 
 int 
-Lpanel::bindLight16invert(const char *name, void *loc, int start_bit_number, uint16 mask)
+Lpanel::bindLight16invert(const char *name, void *loc, int start_bit_number, uint16_t mask)
 {
   char **namelist; 
   int num_names;
@@ -785,9 +785,9 @@ Lpanel::bindLight16invert(const char *name, void *loc, int start_bit_number, uin
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData16invert( (uint16 *) loc);
+         light->bindData16invert( (uint16_t *) loc);
         else
-         light->bindData16( (uint16 *) loc);
+         light->bindData16( (uint16_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -832,7 +832,7 @@ Lpanel::bindLight32(const char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData32( (uint32 *) loc);
+        light->bindData32( (uint32_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -849,7 +849,7 @@ Lpanel::bindLight32(const char *name, void *loc, int start_bit_number)
 }
 
 int 
-Lpanel::bindLight32invert(const char *name, void *loc, int start_bit_number, uint32 mask)
+Lpanel::bindLight32invert(const char *name, void *loc, int start_bit_number, uint32_t mask)
 {
   char **namelist; 
   int num_names;
@@ -876,9 +876,9 @@ Lpanel::bindLight32invert(const char *name, void *loc, int start_bit_number, uin
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData32invert( (uint32 *) loc);
+         light->bindData32invert( (uint32_t *) loc);
         else
-         light->bindData32( (uint32 *) loc);
+         light->bindData32( (uint32_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -922,7 +922,7 @@ Lpanel::bindLight64(const char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData64( (uint64 *) loc);
+        light->bindData64( (uint64_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -939,7 +939,7 @@ Lpanel::bindLight64(const char *name, void *loc, int start_bit_number)
 }
 
 int 
-Lpanel::bindLight64invert(const char *name, void *loc, int start_bit_number, uint64 mask)
+Lpanel::bindLight64invert(const char *name, void *loc, int start_bit_number, uint64_t mask)
 {
   char **namelist; 
   int num_names;
@@ -966,9 +966,9 @@ Lpanel::bindLight64invert(const char *name, void *loc, int start_bit_number, uin
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData64invert( (uint64 *) loc);
+         light->bindData64invert( (uint64_t *) loc);
         else
-         light->bindData64( (uint64 *) loc);
+         light->bindData64( (uint64_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -985,24 +985,24 @@ Lpanel::bindLight64invert(const char *name, void *loc, int start_bit_number, uin
 }
 
 void
-Lpanel::bindRunFlag(uint8 *addr)
+Lpanel::bindRunFlag(uint8_t *addr)
 {
  int i;
 
- runflag = (uint8 *) addr;
+ runflag = (uint8_t *) addr;
 
   for(i=0;i<num_lights;i++)
-   lights[i]->bindRunFlag((uint8 *)addr);
+   lights[i]->bindRunFlag((uint8_t *)addr);
 }
 
 void
-Lpanel::bindSimclock(uint64 *addr)
+Lpanel::bindSimclock(uint64_t *addr)
 {
  int i;
- simclock = (uint64 *) addr;
+ simclock = (uint64_t *) addr;
 
  for(i=0;i<num_lights;i++)
-   lights[i]->bindSimclock((uint64 *) addr, &clock_warp);
+   lights[i]->bindSimclock((uint64_t *) addr, &clock_warp);
 
 }
 
@@ -1124,7 +1124,7 @@ Lpanel::pick(int button, int state, int x, int y)
  int i,
      num_picked = 0,
      switch_dir;
- uint32 switch_num;
+ uint32_t switch_num;
 
  UNUSED(button);
 
@@ -1161,7 +1161,7 @@ Lpanel::pick(int button, int state, int x, int y)
 
  if( num_picked)
   {
-   uint32 n;
+   uint32_t n;
    ptr = (GLuint *) namebuf;
    n = ptr[3];
 
@@ -1808,7 +1808,7 @@ Lpanel::sampleData(void)
 
 if( *simclock < old_clock )
 {
-  fprintf(stderr,"libfrontpanel: Warning clock went backwards (current=%lld  previous=%lld.\n", *simclock, old_clock);
+  fprintf(stderr,"libfrontpanel: Warning clock went backwards (current=%" PRIu64 "  previous=%" PRIu64 ".\n", *simclock, old_clock);
     
 }
  old_clock = *simclock;
@@ -1899,13 +1899,13 @@ lpLight::~lpLight(void)
 }
 
 void
-lpLight::bindRunFlag(uint8 *addr)
+lpLight::bindRunFlag(uint8_t *addr)
 {
- runflag = (uint8 *) addr;
+ runflag = (uint8_t *) addr;
 }
 
 void
-lpLight::bindSimclock(uint64 *addr, int *clockwarp)
+lpLight::bindSimclock(uint64_t *addr, int *clockwarp)
 {
  
  simclock = addr;
@@ -2004,24 +2004,24 @@ lpLight::print(void)
 }
 
 void 
-lpLight::bindData8(uint8 *ptr)
+lpLight::bindData8(uint8_t *ptr)
 {
   sampleDataFunc = sampleData8;
-  dataptr = (uint8*) ptr;
+  dataptr = (uint8_t *) ptr;
 }
 void 
-lpLight::bindData8invert(uint8 *ptr)
+lpLight::bindData8invert(uint8_t *ptr)
 {
   sampleDataFunc = sampleData8invert;
-  dataptr = (uint8*) ptr;
+  dataptr = (uint8_t *) ptr;
 }
 
 void 
-lpLight::bindData16(uint16 *ptr)
+lpLight::bindData16(uint16_t *ptr)
 {
 // xyzzy
   sampleDataFunc = sampleData16;
-  dataptr = (uint16*) ptr;
+  dataptr = (uint16_t *) ptr;
 }
 
 void 
@@ -2033,38 +2033,38 @@ lpLight::bindDatafv(float *ptr)
 }
 
 void 
-lpLight::bindData16invert(uint16 *ptr)
+lpLight::bindData16invert(uint16_t *ptr)
 {
   sampleDataFunc = sampleData16invert;
-  dataptr = (uint16*) ptr;
+  dataptr = (uint16_t *) ptr;
 }
 
 void 
-lpLight::bindData32(uint32 *ptr)
+lpLight::bindData32(uint32_t *ptr)
 {
   sampleDataFunc = sampleData32;
-  dataptr = (uint32*) ptr;
+  dataptr = (uint32_t *) ptr;
 }
 
 void 
-lpLight::bindData32invert(uint32 *ptr)
+lpLight::bindData32invert(uint32_t *ptr)
 {
   sampleDataFunc = sampleData32invert;
-  dataptr = (uint32*) ptr;
+  dataptr = (uint32_t *) ptr;
 }
 
 void 
-lpLight::bindData64(uint64 *ptr)
+lpLight::bindData64(uint64_t *ptr)
 {
   sampleDataFunc = sampleData64;
-  dataptr = (uint64*) ptr;
+  dataptr = (uint64_t *) ptr;
 }
 
 void 
-lpLight::bindData64invert(uint64 *ptr)
+lpLight::bindData64invert(uint64_t *ptr)
 {
   sampleDataFunc = sampleData64invert;
-  dataptr = (uint64*) ptr;
+  dataptr = (uint64_t *) ptr;
 }
 
 
@@ -2073,7 +2073,7 @@ lpLight::calcIntensity(void)
 { 
   int i;
   // unsigned int dt;
-  uint64 clock_delta;
+  uint64_t clock_delta;
 
   // int logit = 0;
 

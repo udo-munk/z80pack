@@ -18,6 +18,8 @@
  *	address.
  */
 
+#include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -253,7 +255,7 @@ static void do_trace(char *s)
 static void do_go(char *s)
 {
 	int timeit = 0;
-	unsigned long long start_time, stop_time;
+	uint64_t start_time, stop_time;
 	Tstates_t T0 = T;
 
 	while (isspace((unsigned char) *s))
@@ -285,7 +287,7 @@ static void do_go(char *s)
 		(*ice_after_go)();
 	report_cpu_error();
 	if (timeit) {
-		printf("CPU executed %lld t-states in %lld ms\n",
+		printf("CPU executed %" PRIu64 " t-states in %" PRIu64 " ms\n",
 		       T - T0, (stop_time - start_time) / 1000);
 		printf("clock frequency = %5.2f MHz\n",
 		       (float) (T - T0) / (float) (stop_time - start_time));
@@ -857,7 +859,7 @@ static void do_count(char *s)
 		s++;
 	if (*s == '\0') {
 		puts("start  stop  status  T-states");
-		printf("%04x   %04x    %s   %llu\n",
+		printf("%04x   %04x    %s   %" PRIu64 "\n",
 		       t_start, t_end,
 		       t_flag ? "on " : "off", t_states_e - t_states_s);
 	} else {
@@ -1059,8 +1061,8 @@ static void do_clock(void)
 		break;
 	}
 	if (cpu_error == NONE) {
-		printf("CPU executed %lld %s instructions in 3 seconds\n",
-		       (T - T0) / 10, s);
+		printf("CPU executed %" PRIu64 " %s instructions "
+		       "in 3 seconds\n", (T - T0) / 10, s);
 		printf("clock frequency = %5.2f MHz\n",
 		       ((float) (T - T0)) / 3000000.0);
 	} else

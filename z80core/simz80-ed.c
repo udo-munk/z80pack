@@ -10,7 +10,7 @@
  *	starting with 0xed
  */
 
-#include <stdio.h>
+#include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -319,8 +319,8 @@ int op_ed_handle(void)
 
 	register int t;
 #ifdef FRONTPANEL
-	extern unsigned long long get_clock_us(void);
-	unsigned long long clk;
+	extern uint64_t get_clock_us(void);
+	uint64_t clk;
 #endif
 
 #ifdef BUS_8080

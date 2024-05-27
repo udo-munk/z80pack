@@ -4,6 +4,7 @@
  * Copyright (C) 1987-2024 by Udo Munk
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>

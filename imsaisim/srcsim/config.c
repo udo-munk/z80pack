@@ -35,6 +35,7 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

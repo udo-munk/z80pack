@@ -30,6 +30,7 @@
  * 03-OCT-2019 (Mike Douglas) Original
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

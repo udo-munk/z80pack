@@ -34,6 +34,7 @@
  * 01-AUG-2021 integrated HAL
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -55,7 +56,7 @@ int sio1a_strip_parity;
 int sio1a_drop_nulls;
 int sio1a_baud_rate = 115200;
 
-static unsigned long long sio1a_t1, sio1a_t2;
+static uint64_t sio1a_t1, sio1a_t2;
 static BYTE sio1a_stat = 0;
 
 int sio1b_upper_case;
@@ -63,7 +64,7 @@ int sio1b_strip_parity;
 int sio1b_drop_nulls;
 int sio1b_baud_rate = 110;
 
-static unsigned long long sio1b_t1, sio1b_t2;
+static uint64_t sio1b_t1, sio1b_t2;
 static BYTE sio1b_stat = 0;
 
 int sio2a_upper_case;
@@ -71,7 +72,7 @@ int sio2a_strip_parity;
 int sio2a_drop_nulls;
 int sio2a_baud_rate = 115200;
 
-static unsigned long long sio2a_t1, sio2a_t2;
+static uint64_t sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat = 0;
 
 int sio2b_upper_case;
@@ -79,10 +80,10 @@ int sio2b_strip_parity;
 int sio2b_drop_nulls;
 int sio2b_baud_rate = 2400;
 
-static unsigned long long sio2b_t1, sio2b_t2;
+static uint64_t sio2b_t1, sio2b_t2;
 static BYTE sio2b_stat = 0;
 
-extern unsigned long long get_clock_us(void);
+extern uint64_t get_clock_us(void);
 
 /*
  * the IMSAI SIO-2 occupies 16 I/O ports, from which only

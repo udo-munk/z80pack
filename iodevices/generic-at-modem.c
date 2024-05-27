@@ -152,7 +152,7 @@ static telnet_t *telnet =  NULL;
 static unsigned char tn_recv;
 static int tn_len = 0;
 
-extern unsigned long long get_clock_us(void);
+extern uint64_t get_clock_us(void);
 
 static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
 
@@ -166,12 +166,12 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     case TELNET_EV_DATA:
 		if (ev->data.size) {
             if (ev->data.size != 1) {
-                LOGW(TAG, "LONGER THAN EXPECTED [%lld]", (long long) ev->data.size);
+                LOGW(TAG, "LONGER THAN EXPECTED [%zd]", ev->data.size);
             } else {
                 tn_recv = *(ev->data.buffer);
                 tn_len = ev->data.size;
             }
-            LOGD(TAG, "Telnet IN: %c[%lld]", tn_recv, (long long) ev->data.size);
+            LOGD(TAG, "Telnet IN: %c[%zd]", tn_recv, ev->data.size);
 		}
 		break;
     case TELNET_EV_SEND:
@@ -180,7 +180,7 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
             for(i=0;i<(int)ev->data.size;i++) {
                 p += sprintf (p, "%d ", *(ev->data.buffer+i));
             }
-            LOGD(TAG, "Telnet OUT: %s[%lld]", buf, (long long) ev->data.size);
+            LOGD(TAG, "Telnet OUT: %s[%zd]", buf, ev->data.size);
 		}
 		if (write(*active_sfd, ev->data.buffer, ev->data.size) != (ssize_t) ev->data.size)
 			LOGE(TAG, "Telnet OUT: can't send data");
@@ -351,7 +351,7 @@ int open_socket(void) {
 }
 
 int hangup_timeout(bool start) {
-    static unsigned long long hup_t1, hup_t2;
+    static uint64_t hup_t1, hup_t2;
     static int waiting = 0;
     int tdiff;
 
@@ -459,7 +459,7 @@ int answer_check_ring(void) {
 
 	struct pollfd p[1];
     static int ringing = 0;
-    static unsigned long long ring_t1, ring_t2;
+    static uint64_t ring_t1, ring_t2;
     int tdiff;
     
     if (answer_sfd) {
@@ -1043,7 +1043,7 @@ int process_at_cmd(void) {
 	return 0;
 }
 
-static unsigned long long at_t1, at_t2;
+static uint64_t at_t1, at_t2;
 int tdiff;
 
 int modem_device_poll(int i);

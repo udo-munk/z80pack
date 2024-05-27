@@ -13,7 +13,7 @@
 #ifndef SIMGLB_INC
 #define SIMGLB_INC
 
-typedef unsigned long long Tstates_t;	/* uint64 for counting T-states */
+typedef uint64_t Tstates_t;	/* uint64 for counting T-states */
 typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
 	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
 
@@ -41,7 +41,7 @@ extern BYTE	IFF;
 #include "altregs.h"
 #endif
 extern Tstates_t T;
-extern unsigned long long cpu_time;
+extern uint64_t cpu_time;
 
 #ifdef BUS_8080
 extern BYTE	cpu_bus;
@@ -79,7 +79,7 @@ extern WORD	t_start, t_end;
 #endif
 
 #ifdef FRONTPANEL
-extern unsigned long long fp_clock;
+extern uint64_t fp_clock;
 extern float	fp_fps;
 extern WORD 	fp_led_address;
 extern BYTE 	fp_led_data;

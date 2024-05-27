@@ -32,11 +32,6 @@
 #endif
 
 
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef unsigned long long uint64;
-
 #define LP_MAX_LIGHT_GROUPS 10
 
 
@@ -168,12 +163,12 @@ class Lpanel
   Lpanel(void);
   ~Lpanel(void);
 
-  uint64	default_clock,
+  uint64_t	default_clock,
   		*simclock,
 		old_clock;
   int		clock_warp;
   int		ignore_bind_errors;
-  uint8		default_runflag,
+  uint8_t	default_runflag,
   		*runflag;
   lpSwitch	*mom_switch_pressed,
 		*findSwitchByName(char *name);
@@ -192,11 +187,11 @@ class Lpanel
   int addSwitchCallback(const char *name, void (*cbfunc)(int state, int val), int userval);
   void addQuitCallback(void (*cbfunc)(void));
 
-//  void bindSimclock(const uint64 *addr);
-//  void bindRunFlag(const uint8 *addr);
+//  void bindSimclock(const uint64_t *addr);
+//  void bindRunFlag(const uint8_t *addr);
 
-  void bindSimclock(uint64 *addr);
-  void bindRunFlag(uint8 *addr);
+  void bindSimclock(uint64_t *addr);
+  void bindRunFlag(uint8_t *addr);
 
   void draw(void);
   lpLight *findLightByName(char *name);
@@ -219,10 +214,10 @@ class Lpanel
   int bindLight32(const char *name, void *loc, int start_bit_number);
   int bindLight64(const char *name, void *loc, int start_bit_number);
 
-  int bindLight8invert(const char *name, void *loc, int start_bit_number, uint8 mask);
-  int bindLight16invert(const char *name, void *loc, int start_bit_number, uint16 mask);
-  int bindLight32invert(const char *name, void *loc, int start_bit_number, uint32 mask);
-  int bindLight64invert(const char *name, void *loc, int start_bit_number, uint64 mask);
+  int bindLight8invert(const char *name, void *loc, int start_bit_number, uint8_t mask);
+  int bindLight16invert(const char *name, void *loc, int start_bit_number, uint16_t mask);
+  int bindLight32invert(const char *name, void *loc, int start_bit_number, uint32_t mask);
+  int bindLight64invert(const char *name, void *loc, int start_bit_number, uint64_t mask);
 
   int bindSwitch8(const char *name, void *loc_down, void *loc_up, int start_bit_number);
   int bindSwitch16(const char *name, void *loc_down, void *loc_up, int start_bit_number);
@@ -308,13 +303,13 @@ class lpLight
 
   int	 smoothing;	// 0= no intensity transition smoothing, >0 = number of frames to transition.
 
-  uint64 *simclock;
+  uint64_t *simclock;
   int	 *clock_warp;
 
-  uint8  default_runflag,
+  uint8_t default_runflag,
   	 *runflag;
-  //void bindRunFlag(const uint8 *addr);
-  void bindRunFlag(uint8 *addr);
+  //void bindRunFlag(const uint8_t *addr);
+  void bindRunFlag(uint8_t *addr);
 
   char *name;
   void *dataptr;	// pointer to data to sample
@@ -328,11 +323,11 @@ class lpLight
   unsigned long t1, t2,
 		on_time;
 #endif
-  uint64	t1, t2,
+  uint64_t	t1, t2,
 		on_time;
 
 
-  uint64	start_clock,
+  uint64_t	start_clock,
 		old_clock;
 
   float		intensity,
@@ -348,19 +343,19 @@ class lpLight
 
   lp_obj_parm_t *parms;
 
-  void bindData8(uint8 *ptr);
-  void bindData8invert(uint8 *ptr);
+  void bindData8(uint8_t *ptr);
+  void bindData8invert(uint8_t *ptr);
 
-  void bindData16(uint16 *ptr);
+  void bindData16(uint16_t *ptr);
   void bindDatafv(float *ptr);
 
-  void bindData16invert(uint16 *ptr);
-  void bindData32(uint32 *ptr);
-  void bindData32invert(uint32 *ptr);
-  void bindData64(uint64 *ptr);
-  void bindData64invert(uint64 *ptr);
+  void bindData16invert(uint16_t *ptr);
+  void bindData32(uint32_t *ptr);
+  void bindData32invert(uint32_t *ptr);
+  void bindData64(uint64_t *ptr);
+  void bindData64invert(uint64_t *ptr);
 
-  void bindSimclock(uint64 *addr, int *clockwarp);
+  void bindSimclock(uint64_t *addr, int *clockwarp);
 
   void calcIntensity(void);
   void draw(void);

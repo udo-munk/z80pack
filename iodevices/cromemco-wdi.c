@@ -10,6 +10,8 @@
  *
  */
 
+#include <stdint.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -339,9 +341,9 @@ void sendHardDisks(struct mg_connection *conn)
     }
 }
 #endif
-long wdi_pos(BYTE *buf)
+off_t wdi_pos(BYTE *buf)
 {
-    unsigned long p;
+    off_t p;
     const int c = disk_param[wdi.hd[wdi.unit].type].cyl;
     const int s = WDI_SECTORS;
     const int b = WDI_BLOCK_SIZE;
@@ -396,7 +398,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
     else
         wdi.hd[wdi.unit].status.write_prot = 1;
 
-    long pos = wdi_pos(&buffer[1]);
+    off_t pos = wdi_pos(&buffer[1]);
 
     if (lseek(wdi.hd[wdi.unit].fd, pos, SEEK_SET) == -1L) {
         wdi.hd[wdi.unit]._fault = 0; /* write fault */
@@ -441,7 +443,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
     else
         wdi.hd[wdi.unit].status.write_prot = 1;
 
-    long pos = wdi_pos(buffer);
+    off_t pos = wdi_pos(buffer);
 
     if (lseek(wdi.hd[wdi.unit].fd, pos, SEEK_SET) == -1L) {
         wdi.hd[wdi.unit]._fault = 0; /* read fault */
@@ -585,7 +587,7 @@ BYTE cromemco_wdi_ctc0_in(void)
     BYTE val = wdi.ctc.now0;
     Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[wdi.unit].type].rpm;
 
-	LOGD(TAG, "IN: CTC #0 = %02x - Tdiff=%lld", val, T - wdi.ctc.T0);
+	LOGD(TAG, "IN: CTC #0 = %02x - Tdiff=%" PRIu64 "", val, T - wdi.ctc.T0);
 
     if (wdi.hd[wdi.unit].online) { /* Only count indexes if online */
 
@@ -604,7 +606,7 @@ BYTE cromemco_wdi_ctc1_in(void)
     Tstates_t index_ticks = INDEX_INT / disk_param[wdi.hd[wdi.unit].type].rpm;
     unsigned int sectors = (Tdiff * WDI_SECTORS + index_ticks / 10) / index_ticks; /* -10% on sector time */
 
-	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%lld = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
+	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%" PRIu64 " = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
     if (sectors && wdi.hd[wdi.unit].online) { /* Only count sectors if online */
         if (wdi.ctc.now1 > 0) { 

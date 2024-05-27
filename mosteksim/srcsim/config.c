@@ -14,6 +14,7 @@
  * 11-MAY-2024 (Thomas Eberhardt) add confdir/rompath option support
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

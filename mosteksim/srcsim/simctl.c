@@ -14,6 +14,7 @@
  * 30-SEP-2019 (Mike Douglas) accept also upper case
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "sim.h"

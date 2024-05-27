@@ -83,9 +83,9 @@
 #define INTERROR	10	/* unsupported bus data on interrupt */
 #define POWEROFF	255	/* CPU off, no error */
 
-typedef unsigned short WORD;	/* 16 bit unsigned */
-typedef signed short   SWORD;	/* 16 bit signed */
-typedef unsigned char  BYTE;	/* 8 bit unsigned */
+typedef uint16_t WORD;		/* 16 bit unsigned */
+typedef int16_t  SWORD;		/* 16 bit signed */
+typedef uint8_t  BYTE;		/* 8 bit unsigned */
 
 #ifdef HISIZE
 struct history {		/* structure of a history entry */

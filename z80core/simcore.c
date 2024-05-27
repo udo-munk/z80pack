@@ -9,6 +9,8 @@
  *	This module contains functions for CPU/Bus-handling
  */
 
+#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -26,7 +28,7 @@
 static const char *TAG = "core";
 #endif
 
-extern unsigned long long get_clock_us(void);
+extern uint64_t get_clock_us(void);
 extern void cpu_z80(void), cpu_8080(void);
 
 /*
@@ -113,7 +115,7 @@ void switch_cpu(int new_cpu)
  */
 void run_cpu(void)
 {
-	unsigned long long t;
+	uint64_t t;
 
 	cpu_state = CONTIN_RUN;
 	cpu_error = NONE;
@@ -147,7 +149,7 @@ void run_cpu(void)
  */
 void step_cpu(void)
 {
-	unsigned long long t;
+	uint64_t t;
 
 	cpu_state = SINGLE_STEP;
 	cpu_error = NONE;
@@ -286,8 +288,8 @@ void report_cpu_stats(void)
 {
 	if (cpu_time)
 	{
-		printf("CPU ran %lld ms ", cpu_time / 1000);
-		printf("and executed %lld t-states\n", T);
+		printf("CPU ran %" PRIu64 " ms ", cpu_time / 1000);
+		printf("and executed %" PRIu64 " t-states\n", T);
 		printf("Clock frequency %4.2f MHz\n",
 		       (float) (T) / (float) cpu_time);
 	}
@@ -301,7 +303,7 @@ void report_cpu_stats(void)
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
 	extern BYTE (*port_in[256])(void);
-	unsigned long long clk;
+	uint64_t clk;
 #ifdef FRONTPANEL
 	int val;
 #else
@@ -356,7 +358,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
 	extern void (*port_out[256])(BYTE);
-	unsigned long long clk;
+	uint64_t clk;
 #ifndef FRONTPANEL
 	UNUSED(addrh);
 #endif

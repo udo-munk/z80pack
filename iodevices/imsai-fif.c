@@ -31,6 +31,7 @@
  * 15-MAY-2024 make disk manager standard
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -220,7 +221,7 @@ void disk_io(int addr)
 {
 	register int i;
 	static int fd = -1;		/* fd for disk i/o */
-	static long pos;		/* seek position */
+	static off_t pos;		/* seek position */
 	static int unit;		/* disk unit number */
 	static int cmd;			/* disk command */
 	static int res;			/* result code */

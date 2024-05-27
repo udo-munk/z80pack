@@ -22,6 +22,7 @@
  * 06-SEP-2021 implement reset
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>

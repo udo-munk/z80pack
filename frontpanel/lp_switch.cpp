@@ -241,8 +241,8 @@ lpSwitch::action(int val)
 				   {
 				     case LP_SWITCH_DATATYPE_UINT8:
 					{
-					 uint8 *ptr, val;
-					 ptr = (uint8 *) dataptr[state];
+					 uint8_t *ptr, val;
+					 ptr = (uint8_t *) dataptr[state];
 					 val = 0x1 << bitnum;
 					 *ptr = *ptr | val;
 					}
@@ -250,16 +250,16 @@ lpSwitch::action(int val)
 
 				     case LP_SWITCH_DATATYPE_UINT16:
 					{
-					 uint16 *ptr, val;
-					 ptr = (uint16 *) dataptr[state];
+					 uint16_t *ptr, val;
+					 ptr = (uint16_t *) dataptr[state];
 					 val = 0x1 << bitnum;
 					 *ptr = *ptr | val;
 					}
 					break;
 				     case LP_SWITCH_DATATYPE_UINT32:
 					{
-					 uint32 *ptr, val;
-					 ptr = (uint32 *) dataptr[state];
+					 uint32_t *ptr, val;
+					 ptr = (uint32_t *) dataptr[state];
 					 val = 0x1 << bitnum;
 					 *ptr = *ptr | val;
 					}
@@ -273,24 +273,24 @@ lpSwitch::action(int val)
 				   {
 				     case LP_SWITCH_DATATYPE_UINT8:
 					{
-					  uint8 *ptr, val;
-					  ptr = (uint8 *) dataptr[state];
+					  uint8_t *ptr, val;
+					  ptr = (uint8_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr & (~val);
 					}
 					break;
 				     case LP_SWITCH_DATATYPE_UINT16:
 					{
-					  uint16 *ptr, val;
-					  ptr = (uint16 *) dataptr[state];
+					  uint16_t *ptr, val;
+					  ptr = (uint16_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr & (~val);
 					}
 					break;
 				     case LP_SWITCH_DATATYPE_UINT32:
 					{
-					  uint32 *ptr, val;
-					  ptr = (uint32 *) dataptr[state];
+					  uint32_t *ptr, val;
+					  ptr = (uint32_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr & (~val);
 					}
@@ -317,24 +317,24 @@ lpSwitch::action(int val)
 				   {
 				     case LP_SWITCH_DATATYPE_UINT8:
 					{
-					  uint8 *ptr, val;
-					  ptr = (uint8 *) dataptr[state];
+					  uint8_t *ptr, val;
+					  ptr = (uint8_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr | val;
 					}
 					break;
 				     case LP_SWITCH_DATATYPE_UINT16:
 					{
-					  uint16 *ptr, val;
-					  ptr = (uint16 *) dataptr[state];
+					  uint16_t *ptr, val;
+					  ptr = (uint16_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr | val;
 					}
 					break;
 				     case LP_SWITCH_DATATYPE_UINT32:
 					{
-					  uint32 *ptr, val;
-					  ptr = (uint32 *) dataptr[state];
+					  uint32_t *ptr, val;
+					  ptr = (uint32_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr | val;
 					}
@@ -355,24 +355,24 @@ lpSwitch::action(int val)
 				   {
 				     case LP_SWITCH_DATATYPE_UINT8:
 					{
-					  uint8 *ptr, val;
-					  ptr = (uint8 *) dataptr[state];
+					  uint8_t *ptr, val;
+					  ptr = (uint8_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr & (~val);
 					}
 					break;
 				     case LP_SWITCH_DATATYPE_UINT16:
 					{
-					  uint16 *ptr, val;
-					  ptr = (uint16 *) dataptr[state];
+					  uint16_t *ptr, val;
+					  ptr = (uint16_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr & (~val);
 					}
 					break;
 				     case LP_SWITCH_DATATYPE_UINT32:
 					{
-					  uint32 *ptr, val;
-					  ptr = (uint32 *) dataptr[state];
+					  uint32_t *ptr, val;
+					  ptr = (uint32_t *) dataptr[state];
 					  val = 0x1 << bitnum;
 					  *ptr = *ptr & (~val);
 					}
@@ -399,7 +399,7 @@ lpSwitch::addCallback( void (*cbfunc)(int state, int val), int userval )
 }
 
 void
-lpSwitch::bindData8(uint8 *ptr_down, uint8 *ptr_up, int bit_number)
+lpSwitch::bindData8(uint8_t *ptr_down, uint8_t *ptr_up, int bit_number)
 {
   dataptr[LP_SWITCH_DOWN] = ptr_down;
   dataptr[LP_SWITCH_UP] = ptr_up;
@@ -408,7 +408,7 @@ lpSwitch::bindData8(uint8 *ptr_down, uint8 *ptr_up, int bit_number)
 }
 
 void
-lpSwitch::bindData16(uint16 *ptr_down, uint16 *ptr_up, int bit_number)
+lpSwitch::bindData16(uint16_t *ptr_down, uint16_t *ptr_up, int bit_number)
 {
   dataptr[LP_SWITCH_DOWN] = ptr_down;
   dataptr[LP_SWITCH_UP] = ptr_up;
@@ -417,7 +417,7 @@ lpSwitch::bindData16(uint16 *ptr_down, uint16 *ptr_up, int bit_number)
 }
 
 void
-lpSwitch::bindData32(uint32 *ptr_down, uint32 *ptr_up, int bit_number)
+lpSwitch::bindData32(uint32_t *ptr_down, uint32_t *ptr_up, int bit_number)
 {
   dataptr[LP_SWITCH_DOWN] = ptr_down;
   dataptr[LP_SWITCH_UP] = ptr_up;
@@ -426,7 +426,7 @@ lpSwitch::bindData32(uint32 *ptr_down, uint32 *ptr_up, int bit_number)
 }
 
 void
-lpSwitch::bindData64(uint64 *ptr_down, uint64 *ptr_up, int bit_number)
+lpSwitch::bindData64(uint64_t *ptr_down, uint64_t *ptr_up, int bit_number)
 {
   dataptr[LP_SWITCH_DOWN] = ptr_down;
   dataptr[LP_SWITCH_UP] = ptr_up;
@@ -452,8 +452,8 @@ lpSwitch::sampleData(void)
  switch(datatype)
  {
    case LP_SWITCH_DATATYPE_UINT8:
-	 { uint8 *p, bit;
-	  p = (uint8 *) dataptr[0];
+	 { uint8_t *p, bit;
+	  p = (uint8_t *) dataptr[0];
 	  bit = ( 1 << bitnum) & *p;
 	  if(bit) state = 1;
 		else state = 0;
@@ -462,8 +462,8 @@ lpSwitch::sampleData(void)
 
    case LP_SWITCH_DATATYPE_UINT16:
 	 {
-	  uint16 *p, bit;
-	  p = (uint16 *) dataptr[0];
+	  uint16_t *p, bit;
+	  p = (uint16_t *) dataptr[0];
 	  bit = ( 1 << bitnum) & *p;
 	  if(bit) state = 1;
 		else state = 0;
@@ -472,8 +472,8 @@ lpSwitch::sampleData(void)
 
    case LP_SWITCH_DATATYPE_UINT32:
 	 {
-	  uint32 *p, bit;
-	  p = (uint32 *) dataptr[0];
+	  uint32_t *p, bit;
+	  p = (uint32_t *) dataptr[0];
 	  bit = ( 1 << bitnum) & *p;
 	  if(bit) state = 1;
 		else state = 0;
@@ -563,8 +563,8 @@ printf("setupData: invalid switch type %d\n", type);
 // the low order 31 bits are used to store the switch number (index within the array of
 // switches). The high order bit indicates the target (1=up 0=down).
 
-select_up_name = ((uint32) sw_num & LP_SW_PICK_IDMASK) | LP_SW_PICK_UP_BIT;
-select_dn_name = (uint32) sw_num & LP_SW_PICK_IDMASK;
+select_up_name = ((uint32_t) sw_num & LP_SW_PICK_IDMASK) | LP_SW_PICK_UP_BIT;
+select_dn_name = (uint32_t) sw_num & LP_SW_PICK_IDMASK;
 
   switch(type)
    {
@@ -755,7 +755,7 @@ Lpanel::bindSwitch8(const char *name, void *loc_down, void *loc_up, int start_bi
 
      if(sw)
       {
-        sw->bindData8( (uint8 *) loc_down, (uint8 *) loc_up, bitnum-1);
+        sw->bindData8( (uint8_t *) loc_down, (uint8_t *) loc_up, bitnum-1);
       }
      else
       {
@@ -800,7 +800,7 @@ Lpanel::bindSwitch16(const char *name, void *loc_down, void *loc_up, int start_b
 
      if(sw)
       {
-        sw->bindData16( (uint16 *) loc_down, (uint16 *) loc_up, bitnum-1);
+        sw->bindData16( (uint16_t *) loc_down, (uint16_t *) loc_up, bitnum-1);
       }
      else
       {
@@ -845,7 +845,7 @@ Lpanel::bindSwitch32(const char *name, void *loc_down, void *loc_up, int start_b
 
      if(sw)
       {
-        sw->bindData32( (uint32 *) loc_down, (uint32 *) loc_up, bitnum-1);
+        sw->bindData32( (uint32_t *) loc_down, (uint32_t *) loc_up, bitnum-1);
       }
      else
       {
@@ -889,7 +889,7 @@ Lpanel::bindSwitch64(const char *name, void *loc_down, void *loc_up, int start_b
 
      if(sw)
       {
-        sw->bindData64( (uint64 *) loc_down, (uint64 *) loc_up, bitnum-1);
+        sw->bindData64( (uint64_t *) loc_down, (uint64_t *) loc_up, bitnum-1);
       }
      else
       {

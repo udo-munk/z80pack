@@ -11,6 +11,7 @@
  * 15-SEP-2019 (Mike Douglas) created from altair-88-2sio.c
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>

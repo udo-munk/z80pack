@@ -30,7 +30,7 @@
 
 	extern BYTE io_in(BYTE, BYTE);
 	extern void io_out(BYTE, BYTE, BYTE);
-	extern unsigned long long get_clock_us(void);
+	extern uint64_t get_clock_us(void);
 
 #define H_SHIFT		4	/* H_FLAG shift */
 #define C_SHIFT		0	/* C_FLAG shift */
@@ -81,7 +81,7 @@
 
 	BYTE t, res, cout, P;
 	struct cpu_reg w;	/* working register */
-	unsigned long long clk;
+	uint64_t clk;
 
 #define W	w.w
 #define WH	w.h

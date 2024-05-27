@@ -136,20 +136,20 @@ int start_threads(void)
 
 // bind functions
 
-int fp_bindLight64(const char *name, uint64 *bits, int bitnum)
+int fp_bindLight64(const char *name, uint64_t *bits, int bitnum)
 {
 //printf("fp_bindLight64: name=%s *bits=%lx  bitnum=%d\n",name,*bits,bitnum);
  panel->bindLight64(name,bits,bitnum);
  return 1;
 }
 
-int fp_bindLight32(const char *name, uint32 *bits, int bitnum)
+int fp_bindLight32(const char *name, uint32_t *bits, int bitnum)
 {
  panel->bindLight32(name,bits,bitnum);
  return 1;
 }
 
-int fp_bindLight16(const char *name, uint16 *bits, int bitnum)
+int fp_bindLight16(const char *name, uint16_t *bits, int bitnum)
 {
  panel->bindLight16(name,bits,bitnum);
  return 1;
@@ -161,31 +161,31 @@ int fp_bindLightfv(const char *name, float *bits)
  return 1;
 }
 
-int fp_bindLight8(const char *name, uint8 *bits, int bitnum)
+int fp_bindLight8(const char *name, uint8_t *bits, int bitnum)
 {
  panel->bindLight8(name,bits,bitnum);
  return 1;
 }
 
-int fp_bindLight8invert(const char *name, uint8 *bits, int bitnum, uint8 mask)
+int fp_bindLight8invert(const char *name, uint8_t *bits, int bitnum, uint8_t mask)
 {
  panel->bindLight8invert(name,bits,bitnum, mask);
  return 1;
 }
 
-int fp_bindLight16invert(const char *name, uint16 *bits, int bitnum, uint16 mask)
+int fp_bindLight16invert(const char *name, uint16_t *bits, int bitnum, uint16_t mask)
 {
  panel->bindLight16invert(name,bits,bitnum, mask);
  return 1;
 }
 
-int fp_bindLight32invert(const char *name, uint32 *bits, int bitnum, uint32 mask)
+int fp_bindLight32invert(const char *name, uint32_t *bits, int bitnum, uint32_t mask)
 {
  panel->bindLight32invert(name,bits,bitnum, mask);
  return 1;
 }
 
-int fp_bindLight64invert(const char *name, uint64 *bits, int bitnum, uint64 mask)
+int fp_bindLight64invert(const char *name, uint64_t *bits, int bitnum, uint64_t mask)
 {
  panel->bindLight64invert(name,bits,bitnum, mask);
  return 1;
@@ -197,34 +197,34 @@ int fp_smoothLight(const char *name, int nframes)
  return 1;
 }
 
-void fp_bindRunFlag(uint8 *addr)
+void fp_bindRunFlag(uint8_t *addr)
 {
  panel->bindRunFlag(addr);
 }
 
-void fp_bindSimclock( uint64 *addr)
+void fp_bindSimclock( uint64_t *addr)
 {
  panel->bindSimclock(addr);
 }
 
-int fp_bindSwitch8(const char *name, uint8 *loc_down, uint8 *loc_up, int bitnum)
+int fp_bindSwitch8(const char *name, uint8_t *loc_down, uint8_t *loc_up, int bitnum)
 {
  panel->bindSwitch8(name, loc_down, loc_up, bitnum);
  return 1;
 }
 
-int fp_bindSwitch16(const char *name, uint16 *loc_down, uint16 *loc_up, int bitnum)
+int fp_bindSwitch16(const char *name, uint16_t *loc_down, uint16_t *loc_up, int bitnum)
 {
  panel->bindSwitch16(name, loc_down, loc_up, bitnum);
  return 1;
 }
 
-int fp_bindSwitch32(const char *name, uint32 *loc_down, uint32 *loc_up, int bitnum)
+int fp_bindSwitch32(const char *name, uint32_t *loc_down, uint32_t *loc_up, int bitnum)
 {
  panel->bindSwitch32(name, loc_down, loc_up, bitnum);
  return 1;
 }
-int fp_bindSwitch64(const char *name, uint64 *loc_down, uint64 *loc_up, int bitnum)
+int fp_bindSwitch64(const char *name, uint64_t *loc_down, uint64_t *loc_up, int bitnum)
 {
  panel->bindSwitch64(name, loc_down, loc_up, bitnum);
  return 1;

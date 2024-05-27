@@ -32,6 +32,7 @@
  * 29-APR-2024 added CPU execution statistics
  */
 
+#include <stdint.h>
 #include <X11/Xlib.h>
 #include <unistd.h>
 #include <stdlib.h>

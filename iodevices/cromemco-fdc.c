@@ -40,6 +40,7 @@
  */
 
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -245,9 +246,9 @@ void config_disk(int fd)
 /*
  * calculate disk image seek position for track/sector/side
  */
-long get_pos(void)
+off_t get_pos(void)
 {
-	long pos = -1L;
+	off_t pos = -1L;
 
 	if (disks[disk].disk_s == ONE)
 		if (disks[disk].disk_d == SINGLE)
@@ -383,7 +384,7 @@ void cromemco_fdc_diskctl_out(BYTE data)
  */
 BYTE cromemco_fdc_data_in(void)
 {
-	long pos;		/* seek position */
+	off_t pos;		/* seek position */
 	int lastsec;		/* last sector of a track */
 
 	switch (state) {
@@ -512,7 +513,7 @@ BYTE cromemco_fdc_data_in(void)
  */
 void cromemco_fdc_data_out(BYTE data)
 {
-	long pos;		/* seek position */
+	off_t pos;		/* seek position */
 	int lastsec;		/* last sector of a track */
 	static int wrtstat;	/* state while writing (formatting) tracks */
 	static int bcnt;	/* byte counter for sector data */

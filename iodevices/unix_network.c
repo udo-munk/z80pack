@@ -15,6 +15,7 @@
  * 16-JUL-2020 fix bug/warning detected by gcc 9
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>

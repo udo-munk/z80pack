@@ -11,6 +11,7 @@
  * This web server module provides...
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -608,7 +609,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 	UNUSED(conn); 
 
 #ifdef DEBUG
-	fprintf(stdout, "Websocket [%d] got %lu bytes of ", (int)device, (unsigned long)len);
+	fprintf(stdout, "Websocket [%d] got %z bytes of ", (int)device, len);
 	switch (((unsigned char)bits) & 0x0F) {
 	case MG_WEBSOCKET_OPCODE_CONTINUATION:
 		fprintf(stdout, "continuation");
