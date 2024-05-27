@@ -30,7 +30,7 @@ add_executable(picosim
 	iosim.c
 )
 add_subdirectory(
-	$ENV{PICO_SDK_PATH}/../lib/no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
+	no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
 )
 
 # for Pico
