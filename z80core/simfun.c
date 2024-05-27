@@ -12,6 +12,7 @@
  *	machines.
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -93,13 +94,12 @@ again:
 /*
  *	returns time in microseconds
  */
-unsigned long long get_clock_us(void)
+uint64_t get_clock_us(void)
 {
 	struct timeval tv;
 
 	gettimeofday(&tv, NULL);
-	return ((unsigned long long) (tv.tv_sec) * 1000000ULL +
-		(unsigned long long) (tv.tv_usec));
+	return ((uint64_t) (tv.tv_sec) * 1000000ULL + (uint64_t) (tv.tv_usec));
 }
 
 #ifdef WANT_ICE

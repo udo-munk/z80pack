@@ -12,6 +12,7 @@
  * 02-DEC-2019 use disk names different from Tarbell controller
  */
 
+#include <stdint.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -401,7 +402,7 @@ BYTE altair_dsk_sec_in(void)
  */
 void altair_dsk_data_out(BYTE data)
 {
-	long pos;
+	off_t pos;
 
 	/* don't write past buffer */
 	if (dcnt >= SEC_SZ)
@@ -439,7 +440,7 @@ void altair_dsk_data_out(BYTE data)
 BYTE altair_dsk_data_in(void)
 {
 	BYTE data;
-	long pos;
+	off_t pos;
 
 	/* first byte? */
 	if (dcnt == 0) {

@@ -10,6 +10,7 @@
  * 04-NOV-2019		remove fake DMA bus request
  */
 
+#include <stdint.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,9 +42,9 @@ static pthread_t thread = 0;
 /* thread for requesting, receiving & storing the camera image using DMA */
 static void *store_image(void *arg)
 {
-	extern unsigned long long get_clock_us(void);
+	extern uint64_t get_clock_us(void);
 
-	unsigned long long t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 	int i, j, len;
 	BYTE buffer[FIELDSIZE];

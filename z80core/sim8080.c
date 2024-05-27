@@ -5,6 +5,7 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
+#include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -106,8 +107,8 @@ static int op_undoc_call(void);
 #ifdef FRONTPANEL
 static inline void addr_leds(WORD data)
 {
-	extern unsigned long long get_clock_us(void);
-	unsigned long long clk;
+	extern uint64_t get_clock_us(void);
+	uint64_t clk;
 
 	clk = get_clock_us();
 	fp_led_address = data;
@@ -127,7 +128,7 @@ static inline void addr_leds(WORD data)
  */
 void cpu_8080(void)
 {
-	extern unsigned long long get_clock_us(void);
+	extern uint64_t get_clock_us(void);
 
 #ifndef ALT_I8080
 
@@ -401,10 +402,10 @@ void cpu_8080(void)
 #endif /* !ALT_I8080 */
 
 	Tstates_t T_max, T_dma;
-	unsigned long long t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 #ifdef FRONTPANEL
-	unsigned long long clk;
+	uint64_t clk;
 #endif
 
 	T_max = T + tmax;
@@ -650,8 +651,8 @@ static int op_nop(void)			/* NOP */
 
 static int op_hlt(void)			/* HLT */
 {
-	extern unsigned long long get_clock_us(void);
-	unsigned long long clk;
+	extern uint64_t get_clock_us(void);
+	uint64_t clk;
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;

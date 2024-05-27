@@ -25,6 +25,7 @@
  * 24-SEP-2019 restore and seek also affect step direction
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -236,7 +237,7 @@ void tarbell_sec_out(BYTE data)
  */
 BYTE tarbell_data_in(void)
 {
-	long pos;		/* seek position */
+	off_t pos;		/* seek position */
 	struct stat s;
 
 	switch (state) {
@@ -337,7 +338,7 @@ BYTE tarbell_data_in(void)
  */
 void tarbell_data_out(BYTE data)
 {
-	long pos;			/* seek position */
+	off_t pos;			/* seek position */
 	static int wrtstat;		/* state while formatting track */
 	static int bcnt;		/* byte counter for sector data */
 	static int secs;		/* # of sectors written so far */

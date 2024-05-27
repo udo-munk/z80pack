@@ -11,6 +11,7 @@
  *	       computers by treating 0xe000-0xefff as ROM.
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include "sim.h"
 #include "simglb.h"

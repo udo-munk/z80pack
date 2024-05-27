@@ -10,6 +10,7 @@
  * 27-MAY-2024 implemented load file
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

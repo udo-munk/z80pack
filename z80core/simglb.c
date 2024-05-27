@@ -10,6 +10,7 @@
  *	This module contains the global variables other than memory management
  */
 
+#include <stdint.h>
 #include <stddef.h>
 #include "sim.h"
 #include "simglb.h"
@@ -40,7 +41,7 @@ BYTE IFF;			/* interrupt flags */
 struct cpu_regs cpu_regs;	/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
-unsigned long long cpu_time;	/* time spent running CPU in us */
+uint64_t cpu_time;		/* time spent running CPU in us */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
@@ -98,7 +99,7 @@ WORD t_end = 65535;		/* end address for measurement */
  *	Variables for frontpanel emulation
  */
 #ifdef FRONTPANEL
-unsigned long long fp_clock;	/* simulation clock */
+uint64_t fp_clock;		/* simulation clock */
 float fp_fps = 30.0;		/* frame rate, default 30 usually works */
 WORD fp_led_address;		/* lights for address bus */
 BYTE fp_led_data;		/* lights for data bus */

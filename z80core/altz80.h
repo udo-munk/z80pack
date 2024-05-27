@@ -29,7 +29,7 @@
 {
 	extern BYTE io_in(BYTE, BYTE);
 	extern void io_out(BYTE, BYTE, BYTE);
-	extern unsigned long long get_clock_us(void);
+	extern uint64_t get_clock_us(void);
 
 #define S_SHIFT		7	/* S_FLAG shift */
 #define Z_SHIFT		6	/* Z_FLAG shift */
@@ -85,11 +85,11 @@
 	BYTE t, res, cout, P, op, n, curr_ir;
 #ifdef FAST_BLOCK
 	WORD s, d;
-	long tl;		/* loops can run for 65535 * 21 + 16 cycles */
+	int32_t tl;		/* loops can run for 65535 * 21 + 16 cycles */
 #endif
 	struct cpu_reg w;	/* working register */
 	struct cpu_reg ir;	/* current index register (HL, IX, IY) */
-	unsigned long long clk;
+	uint64_t clk;
 
 #define W	w.w
 #define WH	w.h

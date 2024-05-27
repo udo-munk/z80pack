@@ -8,6 +8,7 @@
  * History:
  * 14-JAN-2020	1.0	Initial Release
  */
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "sim.h"

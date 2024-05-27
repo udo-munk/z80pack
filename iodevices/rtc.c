@@ -14,6 +14,7 @@
  * 30-JUN-2021 clock read now returns time format instead of last command
  */
 
+#include <stdint.h>
 #include <time.h>
 #include "sim.h"
 

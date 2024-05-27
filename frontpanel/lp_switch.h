@@ -70,7 +70,7 @@ class lpSwitch
   char *name;
 
   int   type;			// toggle/paddle/object_ref
-  uint8	state,			// 0=off 1=on 2=center(for mom-off-mom switches)
+  uint8_t state,		// 0=off 1=on 2=center(for mom-off-mom switches)
 	gfx_mode,		// one of lp_switch_gfx_modes
 	operation,		// one of lp_switch_operation
 	num_object_refs;	// number of object references
@@ -99,10 +99,10 @@ class lpSwitch
 
   void action(int val);
   void addCallback( void (*cbfunc)(int state, int val), int userval );
-  void bindData64(uint64 *ptr_down, uint64 *ptr_up, int bit_number);
-  void bindData32(uint32 *ptr_down, uint32 *ptr_up, int bit_number);
-  void bindData16(uint16 *ptr_down, uint16 *ptr_up, int bit_number);
-  void bindData8(uint8 *ptr_down, uint8 *ptr_up, int bit_number);
+  void bindData64(uint64_t *ptr_down, uint64_t *ptr_up, int bit_number);
+  void bindData32(uint32_t *ptr_down, uint32_t *ptr_up, int bit_number);
+  void bindData16(uint16_t *ptr_down, uint16_t *ptr_up, int bit_number);
+  void bindData8(uint8_t *ptr_down, uint8_t *ptr_up, int bit_number);
   void (*drawFunc)(Lpanel *p, lpSwitch *lpswitch);
   void draw(void);
   void drawForPick(void);

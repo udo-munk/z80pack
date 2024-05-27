@@ -17,6 +17,7 @@
  *	this should be substituted, see picosim for example.
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,7 +38,7 @@ extern int load_file(char *, WORD, int);
 extern void int_on(void), int_off(void), mon(void);
 extern void init_io(void), exit_io(void);
 extern int exatoi(char *);
-extern unsigned long long get_clock_us(void);
+extern uint64_t get_clock_us(void);
 
 #ifdef FRONTPANEL
 int sim_main(int argc, char *argv[])

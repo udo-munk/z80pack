@@ -7,6 +7,7 @@
  * here we just call the ICE.
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <termios.h>

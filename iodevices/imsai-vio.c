@@ -21,6 +21,7 @@
  * 05-NOV-2019 use correct memory access function
  */
 
+#include <stdint.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -456,9 +457,9 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern unsigned long long get_clock_us(void);
+	extern uint64_t get_clock_us(void);
 
-	unsigned long long t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 
 	UNUSED(arg);

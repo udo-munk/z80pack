@@ -25,9 +25,9 @@
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
 
-extern void sleep_us(unsigned long long);
+extern void sleep_us(uint64_t);
 #define SLEEP_US(t)	sleep_us(t)
-extern void sleep_ms(unsigned long);
+extern void sleep_ms(uint32_t);
 #define SLEEP_MS(t)	sleep_ms(t)
 
 #define USR_COM "Raspberry Pi Pico Z80/8080 emulator"

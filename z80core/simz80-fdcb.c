@@ -10,6 +10,7 @@
  *	starting with 0xfd 0xcb
  */
 
+#include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"

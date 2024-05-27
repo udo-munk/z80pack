@@ -20,6 +20,7 @@
 // 23-MAY-2024 implemented FDC, CP/M boot code & CBIOS
 //
 
+#include <stdint.h>
 #include "simcore.h"
 #include "sd-fdc.h"
 

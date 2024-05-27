@@ -14,6 +14,7 @@
  * 11-MAY-2024 (Thomas Eberhardt) add diskdir option support
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -320,7 +321,7 @@ void fdc1771_sec_out(BYTE data)
  */
 BYTE fdc1771_data_in(void)
 {
-	long pos;		/* seek position */
+	off_t pos;		/* seek position */
 
 	switch (state) {
 	case FDC_READ:		/* read data from disk sector */
@@ -412,7 +413,7 @@ BYTE fdc1771_data_in(void)
  */
 void fdc1771_data_out(BYTE data)
 {
-	long pos;			/* seek position */
+	off_t pos;			/* seek position */
 	static int wrtstat;		/* state while formatting track */
 	static int bcnt;		/* byte counter for sector data */
 	static int secs;		/* # of sectors written so far */

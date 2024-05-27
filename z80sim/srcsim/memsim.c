@@ -11,6 +11,7 @@
  * 15-AUG-2017 don't use macros, use inline functions that coerce appropriate
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include "sim.h"
 #include "simglb.h"

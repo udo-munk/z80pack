@@ -33,6 +33,7 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -83,29 +84,29 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	input I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256])(void) = {
-	[  0] altair_sio0_status_in,	/* SIO 0 connected to console */
-	[  1] altair_sio0_data_in,	/*  "  */
-	[  2] lpt_status_in,		/* printer status */
-	[  3] lpt_data_in,		/* printer data */
-	[  4] kbd_status_in,		/* status VDM keyboard */
-	[  5] kbd_data_in,		/* data VDM keyboard */
-	[  6] altair_sio3_status_in,	/* SIO 3 connected to socket */
-	[  7] altair_sio3_data_in,	/*  "  */
-	[  8] altair_dsk_status_in,	/* MITS 88-DCDD status */
-	[  9] altair_dsk_sec_in,	/* MITS 88-DCDD sector position */
-	[ 10] altair_dsk_data_in,	/* MITS 88-DCDD read data */
-	[ 14] cromemco_dazzler_flags_in, /* Cromemco Dazzler */
-	[ 16] altair_sio1_status_in,	/* SIO 1 connected to console */
-	[ 17] altair_sio1_data_in,	/*  "  */
-	[ 18] altair_sio2_status_in,	/* SIO 2 connected to socket */
-	[ 19] altair_sio2_data_in,	/*  "  */
-	[160] hwctl_in,			/* virtual hardware control */
-	[248] tarbell_stat_in,		/* Tarbell 1011D status */
-	[249] tarbell_track_in,		/* Tarbell 1011D track */
-	[250] tarbell_sec_in,		/* Tarbell 1011D sector */
-	[251] tarbell_data_in,		/* Tarbell 1011D data */
-	[252] tarbell_wait_in,		/* Tarbell 1011D wait */
-	[255] fp_in			/* frontpanel */
+	[  0] = altair_sio0_status_in,	/* SIO 0 connected to console */
+	[  1] = altair_sio0_data_in,	/*  "  */
+	[  2] = lpt_status_in,		/* printer status */
+	[  3] = lpt_data_in,		/* printer data */
+	[  4] = kbd_status_in,		/* status VDM keyboard */
+	[  5] = kbd_data_in,		/* data VDM keyboard */
+	[  6] = altair_sio3_status_in,	/* SIO 3 connected to socket */
+	[  7] = altair_sio3_data_in,	/*  "  */
+	[  8] = altair_dsk_status_in,	/* MITS 88-DCDD status */
+	[  9] = altair_dsk_sec_in,	/* MITS 88-DCDD sector position */
+	[ 10] = altair_dsk_data_in,	/* MITS 88-DCDD read data */
+	[ 14] = cromemco_dazzler_flags_in, /* Cromemco Dazzler */
+	[ 16] = altair_sio1_status_in,	/* SIO 1 connected to console */
+	[ 17] = altair_sio1_data_in,	/*  "  */
+	[ 18] = altair_sio2_status_in,	/* SIO 2 connected to socket */
+	[ 19] = altair_sio2_data_in,	/*  "  */
+	[160] = hwctl_in,		/* virtual hardware control */
+	[248] = tarbell_stat_in,	/* Tarbell 1011D status */
+	[249] = tarbell_track_in,	/* Tarbell 1011D track */
+	[250] = tarbell_sec_in,		/* Tarbell 1011D sector */
+	[251] = tarbell_data_in,	/* Tarbell 1011D data */
+	[252] = tarbell_wait_in,	/* Tarbell 1011D wait */
+	[255] = fp_in			/* frontpanel */
 };
 
 /*
@@ -113,32 +114,32 @@ BYTE (*port_in[256])(void) = {
  *	output I/O port (0 - 255), to do the required I/O.
  */
 void (*port_out[256])(BYTE) = {
-	[  0] altair_sio0_status_out,	/* SIO 0 connected to console */
-	[  1] altair_sio0_data_out,	/*  "  */
-	[  2] lpt_status_out,		/* printer status */
-	[  3] lpt_data_out,		/* printer data */
-	[  4] io_no_card_out,		/* status VDM keyboard */
-	[  5] io_no_card_out,		/* data VDM keyboard */
-	[  6] altair_sio3_status_out,	/* SIO 3 connected to socket */
-	[  7] altair_sio3_data_out,	/*  "  */
-	[  8] altair_dsk_select_out,	/* MITS 88-DCDD disk select */
-	[  9] altair_dsk_control_out,	/* MITS 88-DCDD control disk */
-	[ 10] altair_dsk_data_out,	/* MITS 88-DCDD write data */
-	[ 14] cromemco_dazzler_ctl_out,	/* Cromemco Dazzler */
-	[ 15] cromemco_dazzler_format_out, /*  "  */
-	[ 16] altair_sio1_status_out,	/* SIO 1 connected to console */
-	[ 17] altair_sio1_data_out,	/*  "  */
-	[ 18] altair_sio2_status_out,	/* SIO 2 connected to socket */
-	[ 19] altair_sio2_data_out,	/*  "  */
-	[160] hwctl_out,		/* virtual hardware control */
-	[161] host_bdos_out,		/* host file I/O hook */
-	[200] proctec_vdm_out,		/* Processor Technology VDM */
-	[248] tarbell_cmd_out,		/* Tarbell 1011D command */
-	[249] tarbell_track_out,	/* Tarbell 1011D track */
-	[250] tarbell_sec_out,		/* Tarbell 1011D sector */
-	[251] tarbell_data_out,		/* Tarbell 1011D data */
-	[252] tarbell_ext_out,		/* Tarbell 1011D extended cmd */
-	[255] fp_out			/* front panel */
+	[  0] = altair_sio0_status_out,	/* SIO 0 connected to console */
+	[  1] = altair_sio0_data_out,	/*  "  */
+	[  2] = lpt_status_out,		/* printer status */
+	[  3] = lpt_data_out,		/* printer data */
+	[  4] = io_no_card_out,		/* status VDM keyboard */
+	[  5] = io_no_card_out,		/* data VDM keyboard */
+	[  6] = altair_sio3_status_out,	/* SIO 3 connected to socket */
+	[  7] = altair_sio3_data_out,	/*  "  */
+	[  8] = altair_dsk_select_out,	/* MITS 88-DCDD disk select */
+	[  9] = altair_dsk_control_out,	/* MITS 88-DCDD control disk */
+	[ 10] = altair_dsk_data_out,	/* MITS 88-DCDD write data */
+	[ 14] = cromemco_dazzler_ctl_out, /* Cromemco Dazzler */
+	[ 15] = cromemco_dazzler_format_out, /*  "  */
+	[ 16] = altair_sio1_status_out,	/* SIO 1 connected to console */
+	[ 17] = altair_sio1_data_out,	/*  "  */
+	[ 18] = altair_sio2_status_out,	/* SIO 2 connected to socket */
+	[ 19] = altair_sio2_data_out,	/*  "  */
+	[160] = hwctl_out,		/* virtual hardware control */
+	[161] = host_bdos_out,		/* host file I/O hook */
+	[200] = proctec_vdm_out,	/* Processor Technology VDM */
+	[248] = tarbell_cmd_out,	/* Tarbell 1011D command */
+	[249] = tarbell_track_out,	/* Tarbell 1011D track */
+	[250] = tarbell_sec_out,	/* Tarbell 1011D sector */
+	[251] = tarbell_data_out,	/* Tarbell 1011D data */
+	[252] = tarbell_ext_out,	/* Tarbell 1011D extended cmd */
+	[255] = fp_out			/* front panel */
 };
 
 /*

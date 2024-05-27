@@ -23,6 +23,7 @@
  *	I/O to this ports stops the simulation with an I/O error.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/poll.h>
 #include "sim.h"
@@ -46,10 +47,10 @@ static BYTE fp_value;		/* port 255 value, can be set with p command */
  *	I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256])(void) = {
-	[  0] p000_in,
-	[  1] p001_in,
-	[160] hwctl_in,		/* virtual hardware control */
-	[255] p255_in		/* for frontpanel */
+	[  0] = p000_in,
+	[  1] = p001_in,
+	[160] = hwctl_in,	/* virtual hardware control */
+	[255] = p255_in		/* for frontpanel */
 };
 
 /*
@@ -57,9 +58,9 @@ BYTE (*port_in[256])(void) = {
  *	I/O port (0 - 255), to do the required I/O.
  */
 void (*port_out[256])(BYTE) = {
-	[  1] p001_out,
-	[160] hwctl_out,	/* virtual hardware control */
-	[255] p255_out		/* for frontpanel */
+	[  1] = p001_out,
+	[160] = hwctl_out,	/* virtual hardware control */
+	[255] = p255_out	/* for frontpanel */
 };
 
 /*

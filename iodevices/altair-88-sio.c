@@ -22,6 +22,7 @@
  * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -38,7 +39,7 @@
 
 #define BAUDTIME 10000000
 
-extern unsigned long long get_clock_us(void);
+extern uint64_t get_clock_us(void);
 
 static const char *TAG = "SIO";
 
@@ -48,12 +49,12 @@ int sio0_drop_nulls;
 int sio0_revision;
 int sio0_baud_rate = 115200;
 
-static unsigned long long sio0_t1, sio0_t2;
+static uint64_t sio0_t1, sio0_t2;
 static BYTE sio0_stat;
 
 int sio3_baud_rate = 1200;
 
-static unsigned long long sio3_t1, sio3_t2;
+static uint64_t sio3_t1, sio3_t2;
 static BYTE sio3_stat = 0x81;
 
 /*

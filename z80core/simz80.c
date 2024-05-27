@@ -5,6 +5,7 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
+#include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
@@ -114,7 +115,7 @@ extern int op_ed_handle(void), op_fd_handle(void);
  */
 void cpu_z80(void)
 {
-	extern unsigned long long get_clock_us(void);
+	extern uint64_t get_clock_us(void);
 
 #ifndef ALT_Z80
 	static int (*op_sim[256])(void) = {
@@ -378,11 +379,11 @@ void cpu_z80(void)
 #endif /* !ALT_Z80 */
 
 	Tstates_t T_max, T_dma;
-	unsigned long long t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 	WORD p;
 #ifdef FRONTPANEL
-	unsigned long long clk;
+	uint64_t clk;
 #endif
 
 	T_max = T + tmax;
@@ -649,8 +650,8 @@ static int op_nop(void)			/* NOP */
 
 static int op_halt(void)		/* HALT */
 {
-	extern unsigned long long get_clock_us(void);
-	unsigned long long clk;
+	extern uint64_t get_clock_us(void);
+	uint64_t clk;
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;

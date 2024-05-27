@@ -13,6 +13,7 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,28 +45,28 @@ static void io_no_card_out(BYTE);
  *	input I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256])(void) = {
-	[208] io_no_card_in,		/* (d0) PIO1 Data A */
-	[209] io_no_card_in,		/* (d1) PIO1 Control A */
-	[210] io_no_card_in,		/* (d2) PIO1 Data B */
-	[211] io_no_card_in,		/* (d3) PIO1 Control B */
-	[212] io_no_card_in,		/* (d4) PIO2 Data A */
-	[213] io_no_card_in,		/* (d5) PIO2 Control A */
-	[214] io_no_card_in,		/* (d6) PIO2 Data B */
-	[215] io_no_card_in,		/* (d7) PIO2 Control B */
-	[216] io_no_card_in,		/* (d8) CTC 0 (baud rate) */
-	[217] io_no_card_in,		/* (d9) CTC 1 */
-	[218] io_no_card_in,		/* (da) CTC 2 */
-	[219] io_no_card_in,		/* (db) CTC 3 */
-	[220] sio_data_in,		/* (dc) SIO Data */
-	[221] sio_status_in,		/* (dd) SIO Status */
-	[222] sio_handshake_in,		/* (de) Sys Control (handshake lines in) */
-	[223] io_no_card_in,		/* (df) Debug Control */
-	[226] fdcBoard_stat_in,		/* (e2) FDC board status */
-	[227] fdcBoard_ctl_in,		/* (e3) FDC board control */
-	[228] fdc1771_stat_in,		/* (e4) WD1771 Command/Status */
-	[229] fdc1771_track_in,		/* (e5) WD1771 Track */
-	[230] fdc1771_sec_in,		/* (e6) WD1771 Sector */
-	[231] fdc1771_data_in		/* (e7) WD1771 Data */
+	[208] = io_no_card_in,		/* (d0) PIO1 Data A */
+	[209] = io_no_card_in,		/* (d1) PIO1 Control A */
+	[210] = io_no_card_in,		/* (d2) PIO1 Data B */
+	[211] = io_no_card_in,		/* (d3) PIO1 Control B */
+	[212] = io_no_card_in,		/* (d4) PIO2 Data A */
+	[213] = io_no_card_in,		/* (d5) PIO2 Control A */
+	[214] = io_no_card_in,		/* (d6) PIO2 Data B */
+	[215] = io_no_card_in,		/* (d7) PIO2 Control B */
+	[216] = io_no_card_in,		/* (d8) CTC 0 (baud rate) */
+	[217] = io_no_card_in,		/* (d9) CTC 1 */
+	[218] = io_no_card_in,		/* (da) CTC 2 */
+	[219] = io_no_card_in,		/* (db) CTC 3 */
+	[220] = sio_data_in,		/* (dc) SIO Data */
+	[221] = sio_status_in,		/* (dd) SIO Status */
+	[222] = sio_handshake_in,	/* (de) Sys Control (handshake lines in) */
+	[223] = io_no_card_in,		/* (df) Debug Control */
+	[226] = fdcBoard_stat_in,	/* (e2) FDC board status */
+	[227] = fdcBoard_ctl_in,	/* (e3) FDC board control */
+	[228] = fdc1771_stat_in,	/* (e4) WD1771 Command/Status */
+	[229] = fdc1771_track_in,	/* (e5) WD1771 Track */
+	[230] = fdc1771_sec_in,		/* (e6) WD1771 Sector */
+	[231] = fdc1771_data_in		/* (e7) WD1771 Data */
 };
 
 /*
@@ -73,29 +74,29 @@ BYTE (*port_in[256])(void) = {
  *	output I/O port (0 - 255), to do the required I/O.
  */
 void (*port_out[256])(BYTE) = {
-	[161] host_bdos_out,		/* host file I/O hook */
-	[208] io_no_card_out,		/* (d0) PIO1 Data A */
-	[209] io_no_card_out,		/* (d1) PIO1 Control A */
-	[210] io_no_card_out,		/* (d2) PIO1 Data B */
-	[211] io_no_card_out,		/* (d3) PIO1 Control B */
-	[212] io_no_card_out,		/* (d4) PIO2 Data A */
-	[213] io_no_card_out,		/* (d5) PIO2 Control A */
-	[214] io_no_card_out,		/* (d6) PIO2 Data B */
-	[215] io_no_card_out,		/* (d7) PIO2 Control B */
-	[216] io_no_card_out,		/* (d8) CTC 0 (baud rate) */
-	[217] io_no_card_out,		/* (d9) CTC 1 */
-	[218] io_no_card_out,		/* (da) CTC 2 */
-	[219] io_no_card_out,		/* (db) CTC 3 */
-	[220] sio_data_out,		/* (dc) SIO Data */
-	[221] sio_control_out,		/* (dd) SIO Control */
-	[222] sio_handshake_out,	/* (de) Sys Control (handshake lines out) */
-	[223] io_no_card_out,		/* (df) Debug Control */
-	[226] io_no_card_out,		/* (e2) FDC board status */
-	[227] fdcBoard_ctl_out,		/* (e3) FDC board control */
-	[228] fdc1771_cmd_out,		/* (e4) WD1771 Command/Status */
-	[229] fdc1771_track_out,	/* (e5) WD1771 Track */
-	[230] fdc1771_sec_out,		/* (e6) WD1771 Sector */
-	[231] fdc1771_data_out		/* (e7) WD1771 Data */
+	[161] = host_bdos_out,		/* host file I/O hook */
+	[208] = io_no_card_out,		/* (d0) PIO1 Data A */
+	[209] = io_no_card_out,		/* (d1) PIO1 Control A */
+	[210] = io_no_card_out,		/* (d2) PIO1 Data B */
+	[211] = io_no_card_out,		/* (d3) PIO1 Control B */
+	[212] = io_no_card_out,		/* (d4) PIO2 Data A */
+	[213] = io_no_card_out,		/* (d5) PIO2 Control A */
+	[214] = io_no_card_out,		/* (d6) PIO2 Data B */
+	[215] = io_no_card_out,		/* (d7) PIO2 Control B */
+	[216] = io_no_card_out,		/* (d8) CTC 0 (baud rate) */
+	[217] = io_no_card_out,		/* (d9) CTC 1 */
+	[218] = io_no_card_out,		/* (da) CTC 2 */
+	[219] = io_no_card_out,		/* (db) CTC 3 */
+	[220] = sio_data_out,		/* (dc) SIO Data */
+	[221] = sio_control_out,	/* (dd) SIO Control */
+	[222] = sio_handshake_out,	/* (de) Sys Control (handshake lines out) */
+	[223] = io_no_card_out,		/* (df) Debug Control */
+	[226] = io_no_card_out,		/* (e2) FDC board status */
+	[227] = fdcBoard_ctl_out,	/* (e3) FDC board control */
+	[228] = fdc1771_cmd_out,	/* (e4) WD1771 Command/Status */
+	[229] = fdc1771_track_out,	/* (e5) WD1771 Track */
+	[230] = fdc1771_sec_out,	/* (e6) WD1771 Sector */
+	[231] = fdc1771_data_out	/* (e7) WD1771 Data */
 };
 
 /*

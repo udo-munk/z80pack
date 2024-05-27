@@ -292,41 +292,41 @@ static void int_io(int);
  *	input port.
  */
 BYTE (*port_in[256])(void) = {
-	[  0] cons_in,
-	[  1] cond_in,
-	[  2] prts_in,
-	[  3] prtd_in,
-	[  4] auxs_in,
-	[  5] auxd_in,
-	[ 10] fdcd_in,
-	[ 11] fdct_in,
-	[ 12] fdcs_in,
-	[ 13] fdco_in,
-	[ 14] fdcx_in,
-	[ 15] dmal_in,
-	[ 16] dmah_in,
-	[ 17] fdcsh_in,
-	[ 20] mmui_in,
-	[ 21] mmus_in,
-	[ 22] mmuc_in,
-	[ 23] mmup_in,
-	[ 25] clkc_in,
-	[ 26] clkd_in,
-	[ 27] time_in,
-	[ 28] delay_in,
-	[ 30] speedl_in,
-	[ 31] speedh_in,
-	[ 40] cons1_in,
-	[ 41] cond1_in,
-	[ 42] cons2_in,
-	[ 43] cond2_in,
-	[ 44] cons3_in,
-	[ 45] cond3_in,
-	[ 46] cons4_in,
-	[ 47] cond4_in,
-	[ 50] nets1_in,
-	[ 51] netd1_in,
-	[160] hwctl_in		/* virtual hardware control */
+	[  0] = cons_in,
+	[  1] = cond_in,
+	[  2] = prts_in,
+	[  3] = prtd_in,
+	[  4] = auxs_in,
+	[  5] = auxd_in,
+	[ 10] = fdcd_in,
+	[ 11] = fdct_in,
+	[ 12] = fdcs_in,
+	[ 13] = fdco_in,
+	[ 14] = fdcx_in,
+	[ 15] = dmal_in,
+	[ 16] = dmah_in,
+	[ 17] = fdcsh_in,
+	[ 20] = mmui_in,
+	[ 21] = mmus_in,
+	[ 22] = mmuc_in,
+	[ 23] = mmup_in,
+	[ 25] = clkc_in,
+	[ 26] = clkd_in,
+	[ 27] = time_in,
+	[ 28] = delay_in,
+	[ 30] = speedl_in,
+	[ 31] = speedh_in,
+	[ 40] = cons1_in,
+	[ 41] = cond1_in,
+	[ 42] = cons2_in,
+	[ 43] = cond2_in,
+	[ 44] = cons3_in,
+	[ 45] = cond3_in,
+	[ 46] = cons4_in,
+	[ 47] = cond4_in,
+	[ 50] = nets1_in,
+	[ 51] = netd1_in,
+	[160] = hwctl_in	/* virtual hardware control */
 };
 
 /*
@@ -334,42 +334,42 @@ BYTE (*port_in[256])(void) = {
  *	output port.
  */
 void (*port_out[256])(BYTE) = {
-	[  0] cons_out,
-	[  1] cond_out,
-	[  2] prts_out,
-	[  3] prtd_out,
-	[  4] auxs_out,
-	[  5] auxd_out,
-	[ 10] fdcd_out,
-	[ 11] fdct_out,
-	[ 12] fdcs_out,
-	[ 13] fdco_out,
-	[ 14] fdcx_out,
-	[ 15] dmal_out,
-	[ 16] dmah_out,
-	[ 17] fdcsh_out,
-	[ 20] mmui_out,
-	[ 21] mmus_out,
-	[ 22] mmuc_out,
-	[ 23] mmup_out,
-	[ 25] clkc_out,
-	[ 26] clkd_out,
-	[ 27] time_out,
-	[ 28] delay_out,
-	[ 30] speedl_out,
-	[ 31] speedh_out,
-	[ 40] cons1_out,
-	[ 41] cond1_out,
-	[ 42] cons2_out,
-	[ 43] cond2_out,
-	[ 44] cons3_out,
-	[ 45] cond3_out,
-	[ 46] cons4_out,
-	[ 47] cond4_out,
-	[ 50] nets1_out,
-	[ 51] netd1_out,
-	[160] hwctl_out,	/* virtual hardware control */
-	[161] host_bdos_out	/* host file I/O hook */
+	[  0] = cons_out,
+	[  1] = cond_out,
+	[  2] = prts_out,
+	[  3] = prtd_out,
+	[  4] = auxs_out,
+	[  5] = auxd_out,
+	[ 10] = fdcd_out,
+	[ 11] = fdct_out,
+	[ 12] = fdcs_out,
+	[ 13] = fdco_out,
+	[ 14] = fdcx_out,
+	[ 15] = dmal_out,
+	[ 16] = dmah_out,
+	[ 17] = fdcsh_out,
+	[ 20] = mmui_out,
+	[ 21] = mmus_out,
+	[ 22] = mmuc_out,
+	[ 23] = mmup_out,
+	[ 25] = clkc_out,
+	[ 26] = clkd_out,
+	[ 27] = time_out,
+	[ 28] = delay_out,
+	[ 30] = speedl_out,
+	[ 31] = speedh_out,
+	[ 40] = cons1_out,
+	[ 41] = cond1_out,
+	[ 42] = cons2_out,
+	[ 43] = cond2_out,
+	[ 44] = cons3_out,
+	[ 45] = cond3_out,
+	[ 46] = cons4_out,
+	[ 47] = cond4_out,
+	[ 50] = nets1_out,
+	[ 51] = netd1_out,
+	[160] = hwctl_out,	/* virtual hardware control */
+	[161] = host_bdos_out	/* host file I/O hook */
 };
 
 /*
@@ -1709,7 +1709,7 @@ static BYTE fdco_in(void)
 static void fdco_out(BYTE data)
 {
 	register int i;
-	unsigned long pos;
+	off_t pos;
 	static char buf[128];
 
 	if (disks[drive].fd == NULL) {
@@ -1724,7 +1724,7 @@ static void fdco_out(BYTE data)
 		status = 3;
 		return;
 	}
-	pos = (((long) track) * ((long) disks[drive].sectors) + sector - 1) << 7;
+	pos = (((off_t) track) * ((off_t) disks[drive].sectors) + sector - 1) << 7;
 	if (lseek(*disks[drive].fd, pos, SEEK_SET) == -1L) {
 		status = 4;
 		return;

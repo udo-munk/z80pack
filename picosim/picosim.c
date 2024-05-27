@@ -46,7 +46,7 @@ extern void init_cpu(void), init_io(void);
 extern void run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
-unsigned long long get_clock_us(void);
+uint64_t get_clock_us(void);
 void gpio_callback(uint, uint32_t);
 
 int main(void)
@@ -129,7 +129,7 @@ int main(void)
 	return (0);
 }
 
-unsigned long long get_clock_us(void)
+uint64_t get_clock_us(void)
 {
 	return (to_us_since_boot(get_absolute_time()));
 }

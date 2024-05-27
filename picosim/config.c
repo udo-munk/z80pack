@@ -12,6 +12,7 @@
  * 27-MAY-2024 implemented load file
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "sim.h"
