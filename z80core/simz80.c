@@ -597,8 +597,13 @@ leave:
 			if (T >= T_max && !cpu_needed) {
 				t2 = get_clock_us();
 				tdiff = t2 - t1;
+#ifdef SLEEP_US
+				if ((tdiff > 0) && (tdiff < 10000))
+					SLEEP_US(10000 - tdiff);
+#else
 				if ((tdiff > 0) && (tdiff < 10000))
 					SLEEP_MS(10 - (tdiff / 1000));
+#endif
 				T_max = T + tmax;
 				t1 = get_clock_us();
 			}
