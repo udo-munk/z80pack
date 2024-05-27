@@ -20,7 +20,6 @@
 #include "simglb.h"
 #include "memsim.h"
 
-//extern sd_card_t *SD;
 extern FIL sd_file;
 extern FRESULT sd_res;
 
@@ -49,7 +48,6 @@ void load_file(char *name)
 {
 	int i = 0;
 	unsigned int br;
-	unsigned char c;
 	char SFN[25];
 
 	strcpy(SFN, "/CODE80/");

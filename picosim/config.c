@@ -30,7 +30,6 @@ static void prompt_fn(char *s)
 {
       printf("Filename: ");
       get_cmdline(s, 9);
-      load_file(s);
       printf("\n");
 }
 
@@ -75,6 +74,7 @@ again:
 
 		case '3':
 			prompt_fn(s);
+			load_file(s);
 			break;
 
 		case '4':
