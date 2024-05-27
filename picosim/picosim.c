@@ -16,6 +16,7 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "sd_card.h"
+#include "f_util.h"
 #include "ff.h"
 
 /* Project includes */
@@ -30,6 +31,10 @@
 #endif
 
 #define SWITCH_BREAK 15 /* switch we use to interrupt the system */
+
+/* global variables for access to SPI MicroSD drive */
+sd_card_t *SD;
+FRESULT sd_res;
 
 extern void init_cpu(void), init_io(void);
 extern void run_cpu(void);
@@ -58,6 +63,11 @@ int main(void)
 	gpio_set_dir(SWITCH_BREAK, GPIO_IN);
 	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
 					   true, &gpio_callback);
+
+	/* try to mount SD card */
+	sd_res = f_mount(&SD->fatfs, SD->pcName, 1);
+	if (sd_res != FR_OK)
+		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s\n", USR_COM, USR_REL);
@@ -93,6 +103,9 @@ int main(void)
 	run_cpu();		/* run the CPU with whatever is in memory */
 	cpu_stop = get_clock_us();
 #endif
+
+	/* unmount SD card */
+	f_unmount(SD->pcName);
 
 	/* switch builtin LED on */
 #if PICO == 1
