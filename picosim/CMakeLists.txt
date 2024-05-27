@@ -42,7 +42,7 @@ target_link_libraries(picosim pico_stdlib FatFs_SPI pico_cyw43_arch_none)
 pico_add_extra_outputs(picosim)
 
 pico_set_program_name(picosim "z80pack picosim")
-pico_set_program_version(picosim "1.0")
+pico_set_program_version(picosim "1.1")
 
 # enable UART output, disable USB output
 pico_enable_stdio_uart(picosim 1)
