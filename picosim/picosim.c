@@ -33,6 +33,9 @@
 
 #define SWITCH_BREAK 15 /* switch we use to interrupt the system */
 
+#define BS  0x08 /* backspace */
+#define DEL 0x7f /* delete */
+
 /* global variables for access to SPI MicroSD drive */
 sd_card_t *SD;
 FRESULT sd_res;
@@ -151,15 +154,18 @@ int get_cmdline(char *buf, int len)
 
 	while (i < len - 1) {
 		c = getchar();
-		if (c != '\r') {
+		if ((c == BS) || (c == DEL)) {
+			if (i >= 1) {
+				putchar(BS);
+				putchar(' ');
+				putchar(BS);
+				i--;
+			}
+		} else if (c != '\r') {
 			buf[i] = c;
 			putchar(c);
 			i++;
 		} else {
-			buf[i] = '\n';
-			putchar('\r');
-			putchar('\n');
-			i++;
 			break;
 		}
 	}
