@@ -26,6 +26,18 @@
 static const char *TAG = "core";
 #endif
 
+/*
+ *	This array contains function pointers for every
+ *	input I/O port (0 - 255), to do the required I/O.
+ */
+extern BYTE (*port_in[256])(void);
+
+/*
+ *	This array contains function pointers for every
+ *	output I/O port (0 - 255), to do the required I/O.
+ */
+extern void (*port_out[256])(BYTE);
+
 extern unsigned long long get_clock_us(void);
 extern void cpu_z80(void), cpu_8080(void);
 
