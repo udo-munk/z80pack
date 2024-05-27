@@ -1,4 +1,4 @@
-Let's first have a brief look at the hardware, I've setup the dev prototyp
+Let's have a brief look at the hardware, I've setup the dev prototyp
 on breadboard, which is a good thing as you will see in a moment ;-)
 
 picoboard1:
@@ -19,3 +19,5 @@ more carefully next time, but thanks to breadboard this is easy to fix, I
 connected the break switch to a different port.
 The MicroSD drive is a 3.3V one and it supports SPI and SDIO, I'll first
 use SPI, that should be fast enough for what I want.
+
+How to build the application for this board is explained in picosim/README.
