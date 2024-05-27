@@ -40,7 +40,7 @@ BYTE IFF;			/* interrupt flags */
 struct cpu_regs cpu_regs;	/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
-unsigned long long cpu_start, cpu_stop; /* timestamps in us */
+unsigned long long cpu_time;	/* time spent running CPU in us */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */

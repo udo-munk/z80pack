@@ -33,6 +33,8 @@
 /*#define CNETDEBUG*/	/* client network protocol debugger */
 /*#define SNETDEBUG*/	/* server network protocol debugger */
 
+extern void sleep_us(long);
+#define SLEEP_US(t)	sleep_us(t)
 extern void sleep_ms(int);
 #define SLEEP_MS(t)	sleep_ms(t)
 

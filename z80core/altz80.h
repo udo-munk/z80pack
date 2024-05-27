@@ -29,6 +29,7 @@
 {
 	extern BYTE io_in(BYTE, BYTE);
 	extern void io_out(BYTE, BYTE, BYTE);
+	extern unsigned long long get_clock_us(void);
 
 #define S_SHIFT		7	/* S_FLAG shift */
 #define Z_SHIFT		6	/* Z_FLAG shift */
@@ -88,6 +89,7 @@
 #endif
 	struct cpu_reg w;	/* working register */
 	struct cpu_reg ir;	/* current index register (HL, IX, IY) */
+	unsigned long long clk;
 
 #define W	w.w
 #define WH	w.h
@@ -808,6 +810,7 @@ next_opcode:
 		cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
 
+		clk = get_clock_us();
 #ifdef FRONTPANEL
 		if (!F_flag) {
 #endif
@@ -870,6 +873,7 @@ next_opcode:
 			}
 		}
 #endif
+		cpu_time -= get_clock_us() - clk;
 		break;
 
 	case 0x77:			/* LD (ir),A */
@@ -1384,9 +1388,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
+				clk = get_clock_us();
 				/* update frontpanel */
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
+				cpu_time -= get_clock_us() - clk;
 			}
 #endif
 
@@ -1626,9 +1632,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
+			clk = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
+			cpu_time -= get_clock_us() - clk;
 		}
 #endif
 
@@ -1722,9 +1730,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
+			clk = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
+			cpu_time -= get_clock_us() - clk;
 		}
 #endif
 
@@ -2400,9 +2410,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
+			clk = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
+			cpu_time -= get_clock_us() - clk;
 		}
 #endif
 

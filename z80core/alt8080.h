@@ -30,6 +30,7 @@
 
 	extern BYTE io_in(BYTE, BYTE);
 	extern void io_out(BYTE, BYTE, BYTE);
+	extern unsigned long long get_clock_us(void);
 
 #define H_SHIFT		4	/* H_FLAG shift */
 #define C_SHIFT		0	/* C_FLAG shift */
@@ -80,6 +81,7 @@
 
 	BYTE t, res, cout, P;
 	struct cpu_reg w;	/* working register */
+	unsigned long long clk;
 
 #define W	w.w
 #define WH	w.h
@@ -723,6 +725,7 @@
 		cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
 
+		clk = get_clock_us();
 #ifdef FRONTPANEL
 		if (!F_flag) {
 #endif
@@ -781,6 +784,7 @@
 			}
 		}
 #endif
+		cpu_time -= get_clock_us() - clk;
 		t += 3;
 		break;
 

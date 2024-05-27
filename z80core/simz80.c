@@ -377,10 +377,13 @@ void cpu_z80(void)
 	};
 #endif /* !ALT_Z80 */
 
-	Tstates_t T_max;
+	Tstates_t T_max, T_dma;
 	unsigned long long t1, t2;
 	int tdiff;
 	WORD p;
+#ifdef FRONTPANEL
+	unsigned long long clk;
+#endif
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
@@ -420,32 +423,40 @@ void cpu_z80(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
-					T += (*dma_bus_master)(0);
+					T += (T_dma = (*dma_bus_master)(0));
+					if (f_flag)
+						cpu_time += T_dma / f_flag;
 				}
 			}
 
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				if (F_flag) {
+					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
+					cpu_time -= get_clock_us() - clk;
 				}
 #endif
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
-					T += (*dma_bus_master)(1);
+					T += (T_dma = (*dma_bus_master)(1));
+					if (f_flag)
+						cpu_time += T_dma / f_flag;
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
 				bus_request = 0;
-				if (bus_mode == BUS_DMA_CONTINUOUS)	{
+				if (bus_mode == BUS_DMA_CONTINUOUS) {
 					end_bus_request();
 				}
 #ifdef FRONTPANEL
 				if (F_flag) {
+					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
+					cpu_time -= get_clock_us() - clk;
 				}
 #endif
 			}
@@ -476,11 +487,13 @@ void cpu_z80(void)
 #endif
 #ifdef FRONTPANEL
 				if (F_flag) {
+					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
 					fp_sampleData();
 					wait_int_step();
+					cpu_time -= get_clock_us() - clk;
 					if (cpu_state & RESET)
 						goto leave;
 				}
@@ -612,10 +625,12 @@ leave:
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
+		clk = get_clock_us();
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
 		fp_sampleData();
+		cpu_time -= get_clock_us() - clk;
 	}
 #endif
 }
@@ -629,10 +644,14 @@ static int op_nop(void)			/* NOP */
 
 static int op_halt(void)		/* HALT */
 {
+	extern unsigned long long get_clock_us(void);
+	unsigned long long clk;
+
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
 
+	clk = get_clock_us();
 #ifdef FRONTPANEL
 	if (!F_flag) {
 #endif
@@ -692,6 +711,7 @@ static int op_halt(void)		/* HALT */
 		}
 	}
 #endif
+	cpu_time -= get_clock_us() - clk;
 
 	return (4);
 }

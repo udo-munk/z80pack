@@ -17,7 +17,6 @@
 #include "log.h"
 
 extern void run_cpu(void);
-extern unsigned long long get_clock_us(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
 int boot(int);
@@ -53,9 +52,7 @@ void mon(void)
 	atexit(reset_unix_terminal);
 
 	/* start CPU emulation */
-	cpu_start = get_clock_us();
 	run_cpu();
-	cpu_stop = get_clock_us();
 
 	/* reset terminal */
 	reset_unix_terminal();

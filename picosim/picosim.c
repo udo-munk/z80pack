@@ -82,7 +82,6 @@ int main(void)
 
 	f_flag = CPU_SPEED;
 	tmax = CPU_SPEED * 10000; /* theoretically */
-	tmax += tmax / 20;	  /* clock crystal tuning, screw here */
 
 	printf("CPU is %s\n", cpu == Z80 ? "Z80" : "8080");
 	if (f_flag > 0)
@@ -106,9 +105,7 @@ int main(void)
 
 	ice_cmd_loop(0);
 #else
-	cpu_start = get_clock_us();
 	run_cpu();		/* run the CPU with whatever is in memory */
-	cpu_stop = get_clock_us();
 #endif
 
 	/* unmount SD card */

@@ -5,6 +5,9 @@
  *
  * This module of the simulator contains a simple terminal I/O
  * simulation as an example.
+ *
+ * History:
+ * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
 /*
@@ -29,8 +32,6 @@
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static BYTE io_trap_in(void);
-static void io_trap_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 static BYTE hwctl_in(void);
 static void p001_out(BYTE), p255_out(BYTE);
@@ -44,18 +45,21 @@ static BYTE fp_value;		/* port 255 value, can be set with p command */
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-static BYTE (*port_in[256])(void) = {
-	p000_in,		/* port 0 */
-	p001_in			/* port 1 */
+BYTE (*port_in[256])(void) = {
+	[  0] p000_in,
+	[  1] p001_in,
+	[160] hwctl_in,		/* virtual hardware control */
+	[255] p255_in		/* for frontpanel */
 };
 
 /*
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-static void (*port_out[256])(BYTE) = {
-	io_trap_out,		/* port 0 */
-	p001_out		/* port 1 */
+void (*port_out[256])(BYTE) = {
+	[  1] p001_out,
+	[160] hwctl_out,	/* virtual hardware control */
+	[255] p255_out		/* for frontpanel */
 };
 
 /*
@@ -63,25 +67,11 @@ static void (*port_out[256])(BYTE) = {
  *	It will be called from the CPU simulation before
  *	any operation with the CPU is possible.
  *
- *	In this sample I/O simulation we initialize all
- *	unused port with an error trap handler, so that
- *	simulation stops at I/O on the unused ports.
- *
  *	See the I/O simulation of of the other systems
  *	for more complex examples.
  */
 void init_io(void)
 {
-	register int i;
-
-	for (i = 2; i <= 255; i++) {
-		port_in[i] = io_trap_in;
-		port_out[i] = io_trap_out;
-	}
-	port_in[160] = hwctl_in;	/* virtual hardware control */
-	port_out[160] = hwctl_out;	/* virtual hardware control */
-	port_in[255] = p255_in;		/* for frontpanel */
-	port_out[255] = p255_out;
 }
 
 /*
@@ -93,65 +83,6 @@ void init_io(void)
  */
 void exit_io(void)
 {
-}
-
-/*
- *	This is the main handler for all IN op-codes,
- *	called by the simulator. It calls the input
- *	function for port addrl.
- */
-BYTE io_in(BYTE addrl, BYTE addrh)
-{
-	UNUSED(addrh);
-
-	io_port = addrl;
-	io_data = (*port_in[addrl])();
-	return (io_data);
-}
-
-/*
- *	This is the main handler for all OUT op-codes,
- *	called by the simulator. It calls the output
- *	function for port addrl.
- */
-void io_out(BYTE addrl, BYTE addrh, BYTE data)
-{
-	UNUSED(addrh);
-
-	io_port = addrl;
-	io_data = data;
-	(*port_out[addrl])(data);
-}
-
-/*
- *	I/O input trap function
- *	This function should be added into all unused
- *	entries of the input port array. It can stop the
- *	emulation with an I/O error.
- */
-static BYTE io_trap_in(void)
-{
-	if (i_flag) {
-		cpu_error = IOTRAPIN;
-		cpu_state = STOPPED;
-	}
-	return ((BYTE) 0xff);
-}
-
-/*
- *	I/O trap function
- *	This function should be added into all unused
- *	entries of the output port array. It can stop the
- *	emulation with an I/O error.
- */
-static void io_trap_out(BYTE data)
-{
-	UNUSED(data);
-
-	if (i_flag) {
-		cpu_error = IOTRAPOUT;
-		cpu_state = STOPPED;
-	}
 }
 
 /*
