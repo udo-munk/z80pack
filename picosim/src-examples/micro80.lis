@@ -1,0 +1,1891 @@
+Z80/8080-Macro-Assembler  Release 2.0	Mon May 27 21:05:52 2024
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1         TITLE '8080 MICROCHESS'
+                       2      2 
+                       3      3 ; 8080 MICROCHESS
+                       4      4 ; (C) COPYRIGHT 1977, MICRO-WARE LIMITED
+                       5      5 ; WRITTEN BY P. JENNINGS & T. O'BRIEN
+                       6      6 ;
+                       7      7 ; TYPED IN HEXDUMP FROM THE MANUAL AND APPLIED PATCHES
+                       8      8 ; FROM THE OCTOBER 1977 MICROCHESS NOTES.
+                       9      9 ;
+                      10     10 ; BY DEFAULT THE PROGRAM USES TERMINAL I/O FOR
+                      11     11 ; A CROMEMCO TU-ART. BY SETTING ONE OF MITS
+                      12     12 ; OR IMSAI TO 1, THE TERMINAL I/O ROUTINES ARE
+                      13     13 ; PATCHED FOR A MITS 2SIO OR IMSAI SIO2.
+                      14     14 ;
+                      15     15 ; ADDED THE DOCUMENTED PATCHES FOR DISPLAY OPTIONS.
+                      16     16 ; ADDED PATCHES TO MAKE IT WORKING UNDER CP/M.
+                      17     17 ;
+                      18     18 ; UDO MUNK, OCTOBER 2016
+                      19     19 ;
+                      20     20 ; ADDED PATCH TO DISPLAY A SMALL BOARD WITH COORDINATES.
+                      21     21 ; ADDED DAZZLER OUPUT USING 8080 INSTRUCTIONS ONLY.
+                      22     22 ; MADE PATCH FOR BOARD WITH COORDINATES RELOCATABLE.
+                      23     23 ; FIRST SWITCH DAZZLER ON AND THEN DRAW BOARD, SO THAT
+                      24     24 ; IT ALSO WORKS WITH DAZZLER II.
+                      25     25 ; IMPROVED CP/M PATCH, NOW ALSO SAVES IOBYTE, SOME BIOS'S
+                      26     26 ; NEED IT.
+                      27     27 ;
+                      28     28 ; UDO MUNK, NOVEMBER 2016
+                      29     29 ;
+                      30     30 ; ASSEMBLE WITH INTEL 8080 CROSSASSEMBLER OR DRI MAC UNDER CP/M.
+                      31     31 ; UNDER CP/M DRI LOAD WILL NOT WORK, USE MLOAD.
+                      32     32 ;
+                      33     33 ; IN THIS VERSION THE MITS TERMINAL I/O IS PATCHED FOR PICOSIM.
+                      34     34 ;
+                      35     35 ; UDO MUNK, APRIL 2024
+                      36     36 
+                      37     37 
+0000  #               38     38 OFFSET  SET  0
+                      39     39 
+                      40     40 ;
+                      41     41 ; BUILD STANDALONE OR CP/M VERSION
+                      42     42 ;
+0000  #               43     43 CPM     SET  0
+                      44     44 
+                      45     45         IF   CPM
+                      46     46 OFFSET  SET  0100H
+                      47     47         ENDIF
+                      48     48 
+                      49     49 ;
+                      50     50 ; ADDITIONAL DAZZLER GRAPHICS OUTPUT
+                      51     51 ;
+0000  #               52     52 DAZZLER SET  0
+                      53     53 
+                      54     54 ;
+                      55     55 ; TERMINAL I/O PATCH OPTIONS FOR STANDALONE
+                      56     56 ;
+0001  #               57     57 MITS    SET  1
+0000  #               58     58 IMSAI   SET  0
+                      59     59 
+                      60     60 ;
+                      61     61 ; DISPLAY OPTIONS
+                      62     62 ;
+0000  #               63     63 SMALLD  SET  0          ;SMALL BOARD DISPLAY
+0001  #               64     64 COORD   SET  1          ;DISPLAY SMALL BOARD WITH COORDINATES
+0001  #               65     65 MAUTO   SET  1          ;AUTO DISPLAY AFTER MICROCHESS MOVES
+0001  #               66     66 CAUTO   SET  1          ;AUTO DISPLAY AFTER CHALLENGER MOVES
+                      67     67 
+                      68     68         ORG  OFFSET
+                      69     69 
+0000  31 82 0d cd     70     70 L000:   DB 031H,082H,00DH,0CDH,0ACH,009H,021H,06DH
+0004  ac 09 21 6d     70     71
+0008  0b cd da 01     71     72         DB 00BH,0CDH,0DAH,001H,021H,093H,00BH,0CDH
+000c  21 93 0b cd     71     73
+                      72     74 
+0010  da 01 21 b9     73     75 L010:   DB 0DAH,001H,021H,0B9H,00BH,0CDH,0DAH,001H
+0014  0b cd da 01     73     76
+0018  cd ac 09 cd     74     77         DB 0CDH,0ACH,009H,0CDH,0AFH,005H,021H,095H
+001c  af 05 21 95     74     78
+                      75     79 
+0020  0a 22 7d 0a     76     80 L020:   DB 00AH,022H,07DH,00AH,021H,0CBH,00AH,022H
+0024  21 cb 0a 22     76     81
+0028  7f 0a 21 01     77     82         DB 07FH,00AH,021H,001H,00BH,022H,079H,00AH
+002c  0b 22 79 0a     77     83
+                      78     84 
+0030  21 37 0b 22     79     85 L030:   DB 021H,037H,00BH,022H,07BH,00AH,0AFH,032H
+0034  7b 0a af 32     79     86
+0038  74 0a 32 78     80     87         DB 074H,00AH,032H,078H,00AH,032H,082H,00AH
+003c  0a 32 82 0a     80     88
+                      81     89 
+0040  32 81 0a 32     82     90 L040:   DB 032H,081H,00AH,032H,075H,00AH,032H,076H
+0044  75 0a 32 76     82     91
+0048  0a 3e 10 32     83     92         DB 00AH,03EH,010H,032H,077H,00AH,03EH,0EEH
+004c  77 0a 3e ee     83     93
+                      84     94 
+0050  32 4d 0a 32     85     95 L050:   DB 032H,04DH,00AH,032H,04EH,00AH,021H,0F5H
+0054  4e 0a 21 f5     85     96
+0058  0b cd 5c 01     86     97         DB 00BH,0CDH,05CH,001H,0CDH,0C9H,009H,0CDH
+005c  cd c9 09 cd     86     98
+                      87     99 
+0060  bf 09 78 0f     88    100 L060:   DB 0BFH,009H,078H,00FH,0D2H,06FH,000H,03EH
+0064  d2 6f 00 3e     88    101
+0068  01 32 82 0a     89    102         DB 001H,032H,082H,00AH,0CDH,0C3H,005H,0CDH
+006c  cd c3 05 cd     89    103
+                      90    104 
+0070  42 02 cd ac     91    105 L070:   DB 042H,002H,0CDH,0ACH,009H,031H,082H,00DH
+0074  09 31 82 0d     91    106
+0078  21 e6 0d 22     92    107         DB 021H,0E6H,00DH,022H,059H,00AH,021H,020H
+007c  59 0a 21 20     92    108
+                      93    109 
+0080  20 22 20 0c     94    110 L080:   DB 020H,022H,020H,00CH,021H,010H,00CH,0CDH
+0084  21 10 0c cd     94    111
+0088  5c 01 cd 20     95    112         DB 05CH,001H,0CDH,020H,003H,0CDH,0ACH,009H
+008c  03 cd ac 09     95    113
+                      96    114 
+0090  21 0a 0d 7e     97    115 L090:   DB 021H,00AH,00DH,07EH,0FEH,047H,0CAH,0D7H
+0094  fe 47 ca d7     97    116
+0098  00 fe 44 ca     98    117         DB 000H,0FEH,044H,0CAH,042H,003H,0FEH,045H
+009c  42 03 fe 45     98    118
+                      99    119 
+00a0  ca 2c 02 fe    100    120 L0A0:   DB 0CAH,02CH,002H,0FEH,053H,0CAH,0E1H,001H
+00a4  53 ca e1 01    100    121
+00a8  fe 4f ca d1    101    122         DB 0FEH,04FH,0CAH,0D1H,003H,0FEH,052H,0CAH
+00ac  03 fe 52 ca    101    123
+                     102    124 
+00b0  20 02 fe 41    103    125 L0B0:   DB 020H,002H,0FEH,041H,0CAH,0F1H,002H,0FEH
+00b4  ca f1 02 fe    103    126
+00b8  4e ca 05 03    104    127         DB 04EH,0CAH,005H,003H,0CDH,068H,001H,03AH
+00bc  cd 68 01 3a    104    128
+                     105    129 
+00c0  0f 0d fe 4d    106    130 L0C0:   DB 00FH,00DH,0FEH,04DH,0CAH,026H,001H,0FEH
+00c4  ca 26 01 fe    106    131
+00c8  3d ca 48 03    107    132         DB 03DH,0CAH,048H,003H,0FEH,00DH,0C2H,02CH
+00cc  fe 0d c2 2c    107    133
+                     108    134 
+00d0  01 cd 6d 08    109    135 L0D0:   DB 001H,0CDH,06DH,008H,000H,000H,000H,0CDH
+00d4  00 00 00 cd    109    136
+00d8  7d 04 3a 78    110    137         DB 07DH,004H,03AH,078H,00AH,0B7H,0CAH,0F4H
+00dc  0a b7 ca f4    110    138
+                     111    139 
+00e0  00 21 4f 20    112    140 L0E0:   DB 000H,021H,04FH,020H,022H,01EH,00CH,021H
+00e4  22 1e 0c 21    112    141
+00e8  20 4f 22 1b    113    142         DB 020H,04FH,022H,01BH,00CH,0AFH,032H,078H
+00ec  0c af 32 78    113    143
+                     114    144 
+00f0  0a c3 02 01    115    145 L0F0:   DB 00AH,0C3H,002H,001H,0CDH,0ADH,001H,0CDH
+00f4  cd ad 01 cd    115    146
+00f8  97 03 3a 4f    116    147         DB 097H,003H,03AH,04FH,00AH,0FEH,0FFH,0CAH
+00fc  0a fe ff ca    116    148
+                     117    149 
+0100  38 01 21 16    118    150 L100:   DB 038H,001H,021H,016H,00CH,0CDH,05CH,001H
+0104  0c cd 5c 01    118    151
+0108  3a 81 0a fe    119    152         DB 03AH,081H,00AH,0FEH,0FFH,0CAH,017H,003H
+010c  ff ca 17 03    119    153
+                     120    154 
+0110  3a 74 0a b7    121    155 L110:   DB 03AH,074H,00AH,0B7H,0CAH,01DH,001H,021H
+0114  ca 1d 01 21    121    156
+0118  ae 0c cd 5c    122    157         DB 0AEH,00CH,0CDH,05CH,001H,0CDH,0ACH,009H
+011c  01 cd ac 09    122    158
+                     123    159 
+0120  00 00 00 c3    124    160 L120:   DB 000H,000H,000H,0C3H,075H,000H,0CDH,06DH
+0124  75 00 cd 6d    124    161
+0128  08 c3 75 00    125    162         DB 008H,0C3H,075H,000H,021H,023H,00CH,0CDH
+012c  21 23 0c cd    125    163
+                     126    164 
+0130  5c 01 cd ac    127    165 L130:   DB 05CH,001H,0CDH,0ACH,009H,0C3H,075H,000H
+0134  09 c3 75 00    127    166
+0138  21 30 0c cd    128    167         DB 021H,030H,00CH,0CDH,0DAH,001H,0CDH,042H
+013c  da 01 cd 42    128    168
+                     129    169 
+0140  02 cd ac 09    130    170 L140:   DB 002H,0CDH,0ACH,009H,021H,047H,00CH,0CDH
+0144  21 47 0c cd    130    171
+0148  5c 01 cd c9    131    172         DB 05CH,001H,0CDH,0C9H,009H,0CDH,0BFH,009H
+014c  09 cd bf 09    131    173
+                     132    174 
+0150  78 fe 59 c2    133    175 L150:   DB 078H,0FEH,059H,0C2H,0C8H,001H,0CDH,0ACH
+0154  c8 01 cd ac    133    176
+0158  09 c3 18 00    134    177         DB 009H,0C3H,018H,000H,07EH,0FEH,00DH,0C8H
+015c  7e fe 0d c8    134    178
+                     135    179 
+0160  47 cd bf 09    136    180 L160:   DB 047H,0CDH,0BFH,009H,023H,0C3H,05CH,001H
+0164  23 c3 5c 01    136    181
+0168  2a 0a 0d cd    137    182         DB 02AH,00AH,00DH,0CDH,099H,001H,032H,050H
+016c  99 01 32 50    137    183
+                     138    184 
+0170  0a 2a 0d 0d    139    185 L170:   DB 00AH,02AH,00DH,00DH,0CDH,099H,001H,032H
+0174  cd 99 01 32    139    186
+0178  51 0a 32 4e    140    187         DB 051H,00AH,032H,04EH,00AH,03AH,050H,00AH
+017c  0a 3a 50 0a    140    188
+                     141    189 
+0180  21 0c 0a 0e    142    190 L180:   DB 021H,00CH,00AH,00EH,01FH,0BEH,0CAH,091H
+0184  1f be ca 91    142    191
+0188  01 2b 0d f2    143    192         DB 001H,02BH,00DH,0F2H,085H,001H,0C3H,02CH
+018c  85 01 c3 2c    143    193
+                     144    194 
+0190  01 79 32 4d    145    195 L190:   DB 001H,079H,032H,04DH,00AH,032H,04FH,00AH
+0194  0a 32 4f 0a    145    196
+0198  c9 7d e6 0f    146    197         DB 0C9H,07DH,0E6H,00FH,017H,017H,017H,017H
+019c  17 17 17 17    146    198
+                     147    199 
+01a0  47 7c e6 0f    148    200 L1A0:   DB 047H,07CH,0E6H,00FH,0B0H,047H,0E6H,088H
+01a4  b0 47 e6 88    148    201
+01a8  c2 2c 01 78    149    202         DB 0C2H,02CH,001H,078H,0C9H,03AH,050H,00AH
+01ac  c9 3a 50 0a    149    203
+                     150    204 
+01b0  47 cd 8f 09    151    205 L1B0:   DB 047H,0CDH,08FH,009H,02AH,0DDH,009H,022H
+01b4  2a dd 09 22    151    206
+01b8  1b 0c 3a 51    152    207         DB 01BH,00CH,03AH,051H,00AH,047H,0CDH,08FH
+01bc  0a 47 cd 8f    152    208
+                     153    209 
+01c0  09 2a dd 09    154    210 L1C0:   DB 009H,02AH,0DDH,009H,022H,01EH,00CH,0C9H
+01c4  22 1e 0c c9    154    211
+01c8  cd ac 09 cd    155    212         DB 0CDH,0ACH,009H,0CDH,0ACH,009H,021H,05BH
+01cc  ac 09 21 5b    155    213
+                     156    214 
+01d0  0c cd 5c 01    157    215 L1D0:   DB 00CH,0CDH,05CH,001H,0CDH,0ACH,009H,076H
+01d4  cd ac 09 76    157    216
+01d8  00 00 cd 5c    158    217         DB 000H,000H,0CDH,05CH,001H,0CDH,0ACH,009H
+01dc  01 cd ac 09    158    218
+                     159    219 
+01e0  c9 cd ac 09    160    220 L1E0:   DB 0C9H,0CDH,0ACH,009H,021H,0DFH,00BH,0CDH
+01e4  21 df 0b cd    160    221
+01e8  5c 01 cd c9    161    222         DB 05CH,001H,0CDH,0C9H,009H,0CDH,0BFH,009H
+01ec  09 cd bf 09    161    223
+                     162    224 
+01f0  78 fe 53 ca    163    225 L1F0:   DB 078H,0FEH,053H,0CAH,003H,002H,0FEH,042H
+01f4  03 02 fe 42    163    226
+01f8  ca 0a 02 fe    164    227         DB 0CAH,00AH,002H,0FEH,04EH,0CAH,011H,002H
+01fc  4e ca 11 02    164    228
+                     165    229 
+0200  c3 2c 01 06    166    230 L200:   DB 0C3H,02CH,001H,006H,000H,00EH,0FFH,0C3H
+0204  00 0e ff c3    166    231
+0208  15 02 06 00    167    232         DB 015H,002H,006H,000H,00EH,0FBH,0C3H,015H
+020c  0e fb c3 15    167    233
+                     168    234 
+0210  02 06 08 0e    169    235 L210:   DB 002H,006H,008H,00EH,0FBH,078H,032H,01EH
+0214  fb 78 32 1e    169    236
+0218  07 79 32 61    170    237         DB 007H,079H,032H,061H,008H,0C3H,072H,000H
+021c  08 c3 72 00    170    238
+                     171    239 
+0220  cd ac 09 21    172    240 L220:   DB 0CDH,0ACH,009H,021H,07EH,00CH,0CDH,05CH
+0224  7e 0c cd 5c    172    241
+0228  01 c3 3e 01    173    242         DB 001H,0C3H,03EH,001H,0CDH,0C3H,005H,03AH
+022c  cd c3 05 3a    173    243
+                     174    244 
+0230  82 0a b7 ca    175    245 L230:   DB 082H,00AH,0B7H,0CAH,03AH,002H,0AFH,0C3H
+0234  3a 02 af c3    175    246
+0238  3c 02 3e 01    176    247         DB 03CH,002H,03EH,001H,032H,082H,00AH,0C3H
+023c  32 82 0a c3    176    248
+                     177    249 
+0240  75 00 cd ac    178    250 L240:   DB 075H,000H,0CDH,0ACH,009H,0CDH,0ACH,009H
+0244  09 cd ac 09    178    251
+0248  16 00 21 b6    179    252         DB 016H,000H,021H,0B6H,00CH,0CDH,0DAH,001H
+024c  0c cd da 01    179    253
+                     180    254 
+0250  7a b7 ca 5b    181    255 L250:   DB 07AH,0B7H,0CAH,05BH,002H,021H,0D2H,00CH
+0254  02 21 d2 0c    181    256
+0258  cd da 01 06    182    257         DB 0CDH,0DAH,001H,006H,021H,0CDH,0BFH,009H
+025c  21 cd bf 09    182    258
+                     183    259 
+0260  06 20 cd bf    184    260 L260:   DB 006H,020H,0CDH,0BFH,009H,021H,00CH,00AH
+0264  09 21 0c 0a    184    261
+0268  0e 1f 7e ba    185    262         DB 00EH,01FH,07EH,0BAH,0CAH,0B8H,002H,02BH
+026c  ca b8 02 2b    185    263
+                     186    264 
+0270  0d f2 6a 02    187    265 L270:   DB 00DH,0F2H,06AH,002H,07AH,0E6H,00FH,05FH
+0274  7a e6 0f 5f    187    266
+0278  7a e6 f0 0f    188    267         DB 07AH,0E6H,0F0H,00FH,00FH,00FH,00FH,083H
+027c  0f 0f 0f 83    188    268
+                     189    269 
+0280  1f da 89 02    190    270 L280:   DB 01FH,0DAH,089H,002H,006H,020H,0C3H,08BH
+0284  06 20 c3 8b    190    271
+0288  02 06 3a cd    191    272         DB 002H,006H,03AH,0CDH,0BFH,009H,0CDH,0BFH
+028c  bf 09 cd bf    191    273
+                     192    274 
+0290  09 06 20 cd    193    275 L290:   DB 009H,006H,020H,0CDH,0BFH,009H,014H,07AH
+0294  bf 09 14 7a    193    276
+0298  e6 0f fe 08    194    277         DB 0E6H,00FH,0FEH,008H,0C2H,065H,002H,006H
+029c  c2 65 02 06    194    278
+                     195    279 
+02a0  21 cd bf 09    196    280 L2A0:   DB 021H,0CDH,0BFH,009H,0CDH,0ACH,009H,07AH
+02a4  cd ac 09 7a    196    281
+02a8  c6 08 57 f2    197    282         DB 0C6H,008H,057H,0F2H,050H,002H,021H,0EEH
+02ac  50 02 21 ee    197    283
+                     198    284 
+02b0  0c cd da 01    199    285 L2B0:   DB 00CH,0CDH,0DAH,001H,0CDH,0ACH,009H,0C9H
+02b4  cd ac 09 c9    199    286
+02b8  79 fe 10 d2    200    287         DB 079H,0FEH,010H,0D2H,0D3H,002H,03AH,082H
+02bc  d3 02 3a 82    200    288
+                     201    289 
+02c0  0a b7 c2 cc    202    290 L2C0:   DB 00AH,0B7H,0C2H,0CCH,002H,03AH,083H,00AH
+02c4  02 3a 83 0a    202    291
+02c8  47 c3 dd 02    203    292         DB 047H,0C3H,0DDH,002H,03AH,084H,00AH,047H
+02cc  3a 84 0a 47    203    293
+                     204    294 
+02d0  c3 dd 02 3a    205    295 L2D0:   DB 0C3H,0DDH,002H,03AH,082H,00AH,0B7H,0C2H
+02d4  82 0a b7 c2    205    296
+02d8  c5 02 c3 cc    206    297         DB 0C5H,002H,0C3H,0CCH,002H,0CDH,0BFH,009H
+02dc  02 cd bf 09    206    298
+                     207    299 
+02e0  79 e6 0f 4f    208    300 L2E0:   DB 079H,0E6H,00FH,04FH,006H,000H,021H,085H
+02e4  06 00 21 85    208    301
+02e8  0a 09 46 cd    209    302         DB 00AH,009H,046H,0CDH,0BFH,009H,0C3H,091H
+02ec  bf 09 c3 91    209    303
+                     210    304 
+02f0  02 3e cd 32    211    305 L2F0:   DB 002H,03EH,0CDH,032H,0D4H,000H,032H,020H
+02f4  d4 00 32 20    211    306
+02f8  01 21 42 02    212    307         DB 001H,021H,042H,002H,022H,0D5H,000H,022H
+02fc  22 d5 00 22    212    308
+                     213    309 
+0300  21 01 c3 72    214    310 L300:   DB 021H,001H,0C3H,072H,000H,021H,000H,000H
+0304  00 21 00 00    214    311
+0308  22 d4 00 22    215    312         DB 022H,0D4H,000H,022H,0D5H,000H,022H,020H
+030c  d5 00 22 20    215    313
+                     216    314 
+0310  01 22 21 01    217    315 L310:   DB 001H,022H,021H,001H,0C3H,072H,000H,021H
+0314  c3 72 00 21    217    316
+0318  96 0c cd 5c    218    317         DB 096H,00CH,0CDH,05CH,001H,0C3H,03EH,001H
+031c  01 c3 3e 01    218    318
+                     219    319 
+0320  21 0a 0d 0e    220    320 L320:   DB 021H,00AH,00DH,00EH,000H,0CDH,0C9H,009H
+0324  00 cd c9 09    220    321
+0328  78 77 fe 0d    221    322         DB 078H,077H,0FEH,00DH,0CAH,03CH,003H,0FEH
+032c  ca 3c 03 fe    221    323
+                     222    324 
+0330  18 ca 72 00    223    325 L330:   DB 018H,0CAH,072H,000H,0CDH,0BFH,009H,023H
+0334  cd bf 09 23    223    326
+0338  0c c3 25 03    224    327         DB 00CH,0C3H,025H,003H,0AFH,0B9H,0CAH,025H
+033c  af b9 ca 25    224    328
+                     225    329 
+0340  03 c9 cd 42    226    330 L340:   DB 003H,0C9H,0CDH,042H,002H,0C3H,075H,000H
+0344  02 c3 75 00    226    331
+0348  cd 68 01 21    227    332         DB 0CDH,068H,001H,021H,00CH,00AH,00EH,00FH
+034c  0c 0a 0e 0f    227    333
+                     228    334 
+0350  3a 50 0a be    229    335 L350:   DB 03AH,050H,00AH,0BEH,0CAH,05CH,003H,02BH
+0354  ca 5c 03 2b    229    336
+0358  0d f2 53 03    230    337         DB 00DH,0F2H,053H,003H,036H,0CCH,021H,08CH
+035c  36 cc 21 8c    230    338
+                     231    339 
+0360  0a 0e 07 3a    232    340 L360:   DB 00AH,00EH,007H,03AH,010H,00DH,0BEH,0CAH
+0364  10 0d be ca    232    341
+0368  72 03 2b 0d    233    342         DB 072H,003H,02BH,00DH,0F2H,066H,003H,0C3H
+036c  f2 66 03 c3    233    343
+                     234    344 
+0370  2c 01 21 fd    235    345 L370:   DB 02CH,001H,021H,0FDH,009H,006H,000H,009H
+0374  09 06 00 09    235    346
+0378  3e cc be ca    236    347         DB 03EH,0CCH,0BEH,0CAH,083H,003H,02BH,0BEH
+037c  83 03 2b be    236    348
+                     237    349 
+0380  c2 2c 01 3a    238    350 L380:   DB 0C2H,02CH,001H,03AH,051H,00AH,077H,03AH
+0384  51 0a 77 3a    238    351
+0388  11 0d fe 4d    239    352         DB 011H,00DH,0FEH,04DH,0CAH,072H,000H,0FEH
+038c  ca 72 00 fe    239    353
+                     240    354 
+0390  0d ca d4 00    241    355 L390:   DB 00DH,0CAH,0D4H,000H,0C3H,02CH,001H,03AH
+0394  c3 2c 01 3a    241    356
+0398  51 0a e6 f0    242    357         DB 051H,00AH,0E6H,0F0H,0FEH,070H,0C0H,03AH
+039c  fe 70 c0 3a    242    358
+                     243    359 
+03a0  4f 0a 4f e6    244    360 L3A0:   DB 04FH,00AH,04FH,0E6H,008H,0C8H,021H,0EDH
+03a4  08 c8 21 ed    244    361
+03a8  09 06 00 09    245    362         DB 009H,006H,000H,009H,03EH,0CCH,077H,021H
+03ac  3e cc 77 21    245    363
+                     246    364 
+03b0  ee 09 1e 00    247    365 L3B0:   DB 0EEH,009H,01EH,000H,0BEH,0CAH,0BDH,003H
+03b4  be ca bd 03    247    366
+03b8  23 1c c3 b4    248    367         DB 023H,01CH,0C3H,0B4H,003H,03AH,051H,00AH
+03bc  03 3a 51 0a    248    368
+                     249    369 
+03c0  77 3e 3d 32    250    370 L3C0:   DB 077H,03EH,03DH,032H,020H,00CH,021H,086H
+03c4  20 0c 21 86    250    371
+03c8  0a 16 00 19    251    372         DB 00AH,016H,000H,019H,07EH,032H,021H,00CH
+03cc  7e 32 21 0c    251    373
+                     252    374 
+03d0  c9 3a 0c 0d    253    375 L3D0:   DB 0C9H,03AH,00CH,00DH,0FEH,04FH,0C2H,02CH
+03d4  fe 4f c2 2c    253    376
+03d8  01 3a 0e 0d    254    377         DB 001H,03AH,00EH,00DH,0FEH,04FH,0C2H,02FH
+03dc  fe 4f c2 2f    254    378
+                     255    379 
+03e0  04 3a 82 0a    256    380 L3E0:   DB 004H,03AH,082H,00AH,0B7H,0CAH,005H,004H
+03e4  b7 ca 05 04    256    381
+03e8  3a fd 09 fe    257    382         DB 03AH,0FDH,009H,0FEH,074H,0C2H,02CH,001H
+03ec  74 c2 2c 01    257    383
+                     258    384 
+03f0  3e 72 32 fd    259    385 L3F0:   DB 03EH,072H,032H,0FDH,009H,03EH,073H,032H
+03f4  09 3e 73 32    259    386
+03f8  00 0a 32 4e    260    387         DB 000H,00AH,032H,04EH,00AH,03EH,013H,032H
+03fc  0a 3e 13 32    260    388
+                     261    389 
+0400  4d 0a c3 1f    262    390 L400:   DB 04DH,00AH,0C3H,01FH,004H,03AH,0FDH,009H
+0404  04 3a fd 09    262    391
+0408  fe 73 c2 2c    263    392         DB 0FEH,073H,0C2H,02CH,001H,03EH,075H,032H
+040c  01 3e 75 32    263    393
+                     264    394 
+0410  fd 09 3e 74    265    395 L410:   DB 0FDH,009H,03EH,074H,032H,000H,00AH,032H
+0414  32 00 0a 32    265    396
+0418  4e 0a 3e 13    266    397         DB 04EH,00AH,03EH,013H,032H,04DH,00AH,03AH
+041c  32 4d 0a 3a    266    398
+                     267    399 
+0420  0f 0d fe 4d    268    400 L420:   DB 00FH,00DH,0FEH,04DH,0CAH,072H,000H,0FEH
+0424  ca 72 00 fe    268    401
+0428  0d ca d4 00    269    402         DB 00DH,0CAH,0D4H,000H,0C3H,02CH,001H,03AH
+042c  c3 2c 01 3a    269    403
+                     270    404 
+0430  82 0a b7 ca    271    405 L430:   DB 082H,00AH,0B7H,0CAH,053H,004H,03AH,0FDH
+0434  53 04 3a fd    271    406
+0438  09 fe 74 c2    272    407         DB 009H,0FEH,074H,0C2H,02CH,001H,03EH,076H
+043c  2c 01 3e 76    272    408
+                     273    409 
+0440  32 fd 09 3e    274    410 L440:   DB 032H,0FDH,009H,03EH,075H,032H,0FFH,009H
+0444  75 32 ff 09    274    411
+0448  32 4e 0a 3e    275    412         DB 032H,04EH,00AH,03EH,012H,032H,04DH,00AH
+044c  12 32 4d 0a    275    413
+                     276    414 
+0450  c3 6d 04 3a    277    415 L450:   DB 0C3H,06DH,004H,03AH,0FDH,009H,0FEH,073H
+0454  fd 09 fe 73    277    416
+0458  c2 2c 01 3e    278    417         DB 0C2H,02CH,001H,03EH,071H,032H,0FDH,009H
+045c  71 32 fd 09    278    418
+                     279    419 
+0460  3e 72 32 ff    280    420 L460:   DB 03EH,072H,032H,0FFH,009H,032H,04EH,00AH
+0464  09 32 4e 0a    280    421
+0468  3e 12 32 4d    281    422         DB 03EH,012H,032H,04DH,00AH,03AH,00DH,00DH
+046c  0a 3a 0d 0d    281    423
+                     282    424 
+0470  fe 4d ca 72    283    425 L470:   DB 0FEH,04DH,0CAH,072H,000H,0FEH,00DH,0CAH
+0474  00 fe 0d ca    283    426
+0478  d4 00 c3 2c    284    427         DB 0D4H,000H,0C3H,02CH,001H,02AH,075H,00AH
+047c  01 2a 75 0a    284    428
+                     285    429 
+0480  7d fe 36 d2    286    430 L480:   DB 07DH,0FEH,036H,0D2H,06BH,005H,0CDH,0CFH
+0484  6b 05 cd cf    286    431
+0488  04 f5 2a 75    287    432         DB 004H,0F5H,02AH,075H,00AH,023H,022H,075H
+048c  0a 23 22 75    287    433
+                     288    434 
+0490  0a f1 d2 6b    289    435 L490:   DB 00AH,0F1H,0D2H,06BH,005H,0CDH,04FH,005H
+0494  05 cd 4f 05    289    436
+0498  cd b7 04 cd    290    437         DB 0CDH,0B7H,004H,0CDH,06DH,008H,03AH,04DH
+049c  6d 08 3a 4d    290    438
+                     291    439 
+04a0  0a fe 00 c0    292    440 L4A0:   DB 00AH,0FEH,000H,0C0H,03EH,002H,032H,04DH
+04a4  3e 02 32 4d    292    441
+04a8  0a 3a 4e 0a    293    442         DB 00AH,03AH,04EH,00AH,0EEH,003H,032H,04EH
+04ac  ee 03 32 4e    293    443
+                     294    444 
+04b0  0a 32 78 0a    295    445 L4B0:   DB 00AH,032H,078H,00AH,0C3H,098H,004H,021H
+04b4  c3 98 04 21    295    446
+04b8  ed 09 3a 4d    296    447         DB 0EDH,009H,03AH,04DH,00AH,032H,04FH,00AH
+04bc  0a 32 4f 0a    296    448
+                     297    449 
+04c0  4f 06 00 09    298    450 L4C0:   DB 04FH,006H,000H,009H,07EH,032H,050H,00AH
+04c4  7e 32 50 0a    298    451
+04c8  3a 4e 0a 32    299    452         DB 03AH,04EH,00AH,032H,051H,00AH,0C9H,0CDH
+04cc  51 0a c9 cd    299    453
+                     300    454 
+04d0  04 05 ca eb    301    455 L4D0:   DB 004H,005H,0CAH,0EBH,004H,0CDH,01CH,005H
+04d4  04 cd 1c 05    301    456
+04d8  21 77 0a 35    302    457         DB 021H,077H,00AH,035H,0F2H,0E7H,004H,0AFH
+04dc  f2 e7 04 af    302    458
+                     303    459 
+04e0  26 00 2e f0    304    460 L4E0:   DB 026H,000H,02EH,0F0H,022H,075H,00AH,0DAH
+04e4  22 75 0a da    304    461
+04e8  cf 04 c9 cd    305    462         DB 0CFH,004H,0C9H,0CDH,029H,005H,02AH,075H
+04ec  29 05 2a 75    305    463
+                     306    464 
+04f0  0a eb 2a 79    307    465 L4F0:   DB 00AH,0EBH,02AH,079H,00AH,019H,07EH,032H
+04f4  0a 19 7e 32    307    466
+04f8  4d 0a 2a 7b    308    467         DB 04DH,00AH,02AH,07BH,00AH,019H,07EH,032H
+04fc  0a 19 7e 32    308    468
+                     309    469 
+0500  4e 0a 37 c9    310    470 L500:   DB 04EH,00AH,037H,0C9H,02AH,075H,00AH,0EBH
+0504  2a 75 0a eb    310    471
+0508  2a 7d 0a 19    311    472         DB 02AH,07DH,00AH,019H,03AH,04DH,00AH,0BEH
+050c  3a 4d 0a be    311    473
+                     312    474 
+0510  c2 1b 05 2a    313    475 L510:   DB 0C2H,01BH,005H,02AH,07FH,00AH,019H,03AH
+0514  7f 0a 19 3a    313    476
+0518  4e 0a be c9    314    477         DB 04EH,00AH,0BEH,0C9H,02AH,075H,00AH,07DH
+051c  2a 75 0a 7d    314    478
+                     315    479 
+0520  c6 09 6f 22    316    480 L520:   DB 0C6H,009H,06FH,022H,075H,00AH,0FEH,036H
+0524  75 0a fe 36    316    481
+0528  c9 2a 75 0a    317    482         DB 0C9H,02AH,075H,00AH,0E5H,03AH,077H,00AH
+052c  e5 3a 77 0a    317    483
+                     318    484 
+0530  4f 3e ff 32    319    485 L530:   DB 04FH,03EH,0FFH,032H,077H,00AH,0CDH,01CH
+0534  77 0a cd 1c    319    486
+0538  05 21 77 0a    320    487         DB 005H,021H,077H,00AH,034H,0D2H,04AH,005H
+053c  34 d2 4a 05    320    488
+                     321    489 
+0540  0d fa 4a 05    322    490 L540:   DB 00DH,0FAH,04AH,005H,0CDH,004H,005H,0CAH
+0544  cd 04 05 ca    322    491
+0548  36 05 e1 22    323    492         DB 036H,005H,0E1H,022H,075H,00AH,0C9H,03AH
+054c  75 0a c9 3a    323    493
+                     324    494 
+0550  1e 07 3c 57    325    495 L550:   DB 01EH,007H,03CH,057H,006H,005H,00EH,0FFH
+0554  06 05 0e ff    325    496
+0558  3e ff 3d c2    326    497         DB 03EH,0FFH,03DH,0C2H,05AH,005H,00DH,0C2H
+055c  5a 05 0d c2    326    498
+                     327    499 
+0560  58 05 05 c2    328    500 L560:   DB 058H,005H,005H,0C2H,056H,005H,015H,0C2H
+0564  56 05 15 c2    328    501
+0568  54 05 c9 3e    329    502         DB 054H,005H,0C9H,03EH,00CH,032H,054H,00AH
+056c  0c 32 54 0a    329    503
+                     330    504 
+0570  32 50 0a 0e    331    505 L570:   DB 032H,050H,00AH,00EH,014H,0CDH,0DFH,005H
+0574  14 cd df 05    331    506
+0578  3e 04 32 54    332    507         DB 03EH,004H,032H,054H,00AH,0CDH,0DDH,005H
+057c  0a cd dd 05    332    508
+                     333    509 
+0580  3a 50 0a fe    334    510 L580:   DB 03AH,050H,00AH,0FEH,00FH,0DAH,0A3H,005H
+0584  0f da a3 05    334    511
+0588  21 ed 09 06    335    512         DB 021H,0EDH,009H,006H,000H,03AH,04FH,00AH
+058c  00 3a 4f 0a    335    513
+                     336    514 
+0590  32 4d 0a 4f    337    515 L590:   DB 032H,04DH,00AH,04FH,009H,07EH,032H,050H
+0594  09 7e 32 50    337    516
+0598  0a 3a 51 0a    338    517         DB 00AH,03AH,051H,00AH,032H,04EH,00AH,0CDH
+059c  32 4e 0a cd    338    518
+                     339    519 
+05a0  6d 08 c9 3e    340    520 L5A0:   DB 06DH,008H,0C9H,03EH,0FFH,032H,04FH,00AH
+05a4  ff 32 4f 0a    340    521
+05a8  32 50 0a 32    341    522         DB 032H,050H,00AH,032H,051H,00AH,0C9H,021H
+05ac  51 0a c9 21    341    523
+                     342    524 
+05b0  0d 0a 11 ed    343    525 L5B0:   DB 00DH,00AH,011H,0EDH,009H,00EH,020H,07EH
+05b4  09 0e 20 7e    343    526
+05b8  12 23 13 0d    344    527         DB 012H,023H,013H,00DH,0C2H,0B7H,005H,0C9H
+05bc  c2 b7 05 c9    344    528
+                     345    529 
+05c0  cd af 05 21    346    530 L5C0:   DB 0CDH,0AFH,005H,021H,0EDH,009H,011H,0FDH
+05c4  ed 09 11 fd    346    531
+05c8  09 0e 10 3e    347    532         DB 009H,00EH,010H,03EH,077H,096H,047H,0EBH
+05cc  77 96 47 eb    347    533
+                     348    534 
+05d0  3e 77 96 70    349    535 L5D0:   DB 03EH,077H,096H,070H,0EBH,077H,023H,013H
+05d4  eb 77 23 13    349    536
+05d8  0d c2 cb 05    350    537         DB 00DH,0C2H,0CBH,005H,0C9H,00EH,010H,021H
+05dc  c9 0e 10 21    350    538
+                     351    539 
+05e0  5d 0a af 77    352    540 L5E0:   DB 05DH,00AH,0AFH,077H,023H,00DH,0F2H,0E3H
+05e4  23 0d f2 e3    352    541
+05e8  05 3e 10 32    353    542         DB 005H,03EH,010H,032H,04DH,00AH,021H,04DH
+05ec  4d 0a 21 4d    353    543
+                     354    544 
+05f0  0a 35 f8 cd    355    545 L5F0:   DB 00AH,035H,0F8H,0CDH,058H,007H,03EH,008H
+05f4  58 07 3e 08    355    546
+05f8  32 55 0a 3a    356    547         DB 032H,055H,00AH,03AH,04DH,00AH,0FEH,008H
+05fc  4d 0a fe 08    356    548
+                     357    549 
+0600  f2 56 06 fe    358    550 L600:   DB 0F2H,056H,006H,0FEH,006H,0F2H,043H,006H
+0604  06 f2 43 06    358    551
+0608  fe 04 f2 35    359    552         DB 0FEH,004H,0F2H,035H,006H,0FEH,001H,0CAH
+060c  06 fe 01 ca    359    553
+                     360    554 
+0610  1e 06 f2 27    361    555 L610:   DB 01EH,006H,0F2H,027H,006H,0CDH,098H,006H
+0614  06 cd 98 06    361    556
+0618  c2 15 06 c3    362    557         DB 0C2H,015H,006H,0C3H,0EEH,005H,0CDH,0A9H
+061c  ee 05 cd a9    362    558
+                     363    559 
+0620  06 c2 1e 06    364    560 L620:   DB 006H,0C2H,01EH,006H,0C3H,0EEH,005H,03EH
+0624  c3 ee 05 3e    364    561
+0628  04 32 55 0a    365    562         DB 004H,032H,055H,00AH,0CDH,0A9H,006H,0C2H
+062c  cd a9 06 c2    365    563
+                     366    564 
+0630  2c 06 c3 ee    367    565 L630:   DB 02CH,006H,0C3H,0EEH,005H,0CDH,0A9H,006H
+0634  05 cd a9 06    367    566
+0638  3a 55 0a fe    368    567         DB 03AH,055H,00AH,0FEH,004H,0C2H,035H,006H
+063c  04 c2 35 06    368    568
+                     369    569 
+0640  c3 ee 05 3e    370    570 L640:   DB 0C3H,0EEH,005H,03EH,010H,032H,055H,00AH
+0644  10 32 55 0a    370    571
+0648  cd 98 06 3a    371    572         DB 0CDH,098H,006H,03AH,055H,00AH,0FEH,008H
+064c  55 0a fe 08    371    573
+                     372    574 
+0650  c2 48 06 c3    373    575 L650:   DB 0C2H,048H,006H,0C3H,0EEH,005H,03EH,006H
+0654  ee 05 3e 06    373    576
+0658  32 55 0a cd    374    577         DB 032H,055H,00AH,0CDH,0DAH,006H,0FAH,06BH
+065c  da 06 fa 6b    374    578
+                     375    579 
+0660  06 3a 52 0a    376    580 L660:   DB 006H,03AH,052H,00AH,0B7H,0CAH,06BH,006H
+0664  b7 ca 6b 06    376    581
+0668  cd 93 07 cd    377    582         DB 0CDH,093H,007H,0CDH,058H,007H,021H,055H
+066c  58 07 21 55    377    583
+                     378    584 
+0670  0a 35 7e fe    379    585 L670:   DB 00AH,035H,07EH,0FEH,005H,0CAH,05BH,006H
+0674  05 ca 5b 06    379    586
+0678  cd da 06 da    380    587         DB 0CDH,0DAH,006H,0DAH,08BH,006H,0FAH,0EEH
+067c  8b 06 fa ee    380    588
+                     381    589 
+0680  05 3a 52 0a    382    590 L680:   DB 005H,03AH,052H,00AH,0B7H,0C2H,0EEH,005H
+0684  b7 c2 ee 05    382    591
+0688  cd 93 07 3a    383    592         DB 0CDH,093H,007H,03AH,04EH,00AH,0E6H,0F0H
+068c  4e 0a e6 f0    383    593
+                     384    594 
+0690  fe 20 ca 78    385    595 L690:   DB 0FEH,020H,0CAH,078H,006H,0C3H,0EEH,005H
+0694  06 c3 ee 05    385    596
+0698  cd da 06 fa    386    597         DB 0CDH,0DAH,006H,0FAH,0A1H,006H,0CDH,093H
+069c  a1 06 cd 93    386    598
+                     387    599 
+06a0  07 cd 58 07    388    600 L6A0:   DB 007H,0CDH,058H,007H,021H,055H,00AH,035H
+06a4  21 55 0a 35    388    601
+06a8  c9 cd da 06    389    602         DB 0C9H,0CDH,0DAH,006H,0D2H,0C0H,006H,0F5H
+06ac  d2 c0 06 f5    389    603
+                     390    604 
+06b0  e1 22 72 0a    391    605 L6B0:   DB 0E1H,022H,072H,00AH,03AH,052H,00AH,0B7H
+06b4  3a 52 0a b7    391    606
+06b8  ca a9 06 2a    392    607         DB 0CAH,0A9H,006H,02AH,072H,00AH,0E5H,0F1H
+06bc  72 0a e5 f1    392    608
+                     393    609 
+06c0  fa d2 06 3a    394    610 L6C0:   DB 0FAH,0D2H,006H,03AH,052H,00AH,0F5H,0CDH
+06c4  52 0a f5 cd    394    611
+06c8  93 07 f1 32    395    612         DB 093H,007H,0F1H,032H,052H,00AH,0B7H,0CAH
+06cc  52 0a b7 ca    395    613
+                     396    614 
+06d0  a9 06 cd 58    397    615 L6D0:   DB 0A9H,006H,0CDH,058H,007H,021H,055H,00AH
+06d4  07 21 55 0a    397    616
+06d8  35 c9 3a 55    398    617         DB 035H,0C9H,03AH,055H,00AH,006H,000H,021H
+06dc  0a 06 00 21    398    618
+                     399    619 
+06e0  2c 0a 4f 09    400    620 L6E0:   DB 02CH,00AH,04FH,009H,03AH,04EH,00AH,086H
+06e4  3a 4e 0a 86    400    621
+06e8  32 4e 0a e6    401    622         DB 032H,04EH,00AH,0E6H,088H,0C2H,051H,007H
+06ec  88 c2 51 07    401    623
+                     402    624 
+06f0  3a 4e 0a 0e    403    625 L6F0:   DB 03AH,04EH,00AH,00EH,01FH,021H,00CH,00AH
+06f4  1f 21 0c 0a    403    626
+06f8  be ca 04 07    404    627         DB 0BEH,0CAH,004H,007H,02BH,00DH,0F2H,0F8H
+06fc  2b 0d f2 f8    404    628
+                     405    629 
+0700  06 c3 12 07    406    630 L700:   DB 006H,0C3H,012H,007H,079H,0FEH,010H,0DAH
+0704  79 fe 10 da    406    631
+0708  51 07 3e 01    407    632         DB 051H,007H,03EH,001H,032H,052H,00AH,0C3H
+070c  32 52 0a c3    407    633
+                     408    634 
+0710  16 07 af 32    409    635 L710:   DB 016H,007H,0AFH,032H,052H,00AH,03AH,054H
+0714  52 0a 3a 54    409    636
+0718  0a b7 fa 4f    410    637         DB 00AH,0B7H,0FAH,04FH,007H,0FEH,000H,0F2H
+071c  07 fe 00 f2    410    638
+                     411    639 
+0720  4f 07 f5 3a    412    640 L720:   DB 04FH,007H,0F5H,03AH,052H,00AH,0F5H,03EH
+0724  52 0a f5 3e    412    641
+0728  f9 32 54 0a    413    642         DB 0F9H,032H,054H,00AH,032H,053H,00AH,0CDH
+072c  32 53 0a cd    413    643
+                     414    644 
+0730  6d 08 cd c3    415    645 L730:   DB 06DH,008H,0CDH,0C3H,005H,0CDH,0E9H,005H
+0734  05 cd e9 05    415    646
+0738  cd 70 07 f1    416    647         DB 0CDH,070H,007H,0F1H,032H,052H,00AH,0F1H
+073c  32 52 0a f1    416    648
+                     417    649 
+0740  32 54 0a 3a    418    650 L740:   DB 032H,054H,00AH,03AH,053H,00AH,0B7H,0FAH
+0744  53 0a b7 fa    418    651
+0748  4f 07 3e 80    419    652         DB 04FH,007H,03EH,080H,0B7H,037H,0C9H,0AFH
+074c  b7 37 c9 af    419    653
+                     420    654 
+0750  c9 af 32 52    421    655 L750:   DB 0C9H,0AFH,032H,052H,00AH,02FH,0B7H,0C9H
+0754  0a 2f b7 c9    421    656
+0758  21 ed 09 06    422    657         DB 021H,0EDH,009H,006H,000H,03AH,04DH,00AH
+075c  00 3a 4d 0a    422    658
+                     423    659 
+0760  4f 09 7e 32    424    660 L760:   DB 04FH,009H,07EH,032H,04EH,00AH,0C9H,0CDH
+0764  4e 0a c9 cd    424    661
+0768  6d 08 cd c3    425    662         DB 06DH,008H,0CDH,0C3H,005H,0CDH,0E9H,005H
+076c  05 cd e9 05    425    663
+                     426    664 
+0770  cd c3 05 21    427    665 L770:   DB 0CDH,0C3H,005H,021H,000H,000H,039H,022H
+0774  00 00 39 22    427    666
+0778  57 0a 2a 59    428    667         DB 057H,00AH,02AH,059H,00AH,0F9H,0D1H,021H
+077c  0a f9 d1 21    428    668
+                     429    669 
+0780  55 0a 72 21    430    670 L780:   DB 055H,00AH,072H,021H,04DH,00AH,073H,0C1H
+0784  4d 0a 73 c1    430    671
+0788  e1 71 e1 70    431    672         DB 0E1H,071H,0E1H,070H,078H,032H,04EH,00AH
+078c  78 32 4e 0a    431    673
+                     432    674 
+0790  c3 a0 08 3a    433    675 L790:   DB 0C3H,0A0H,008H,03AH,054H,00AH,0B7H,016H
+0794  54 0a b7 16    433    676
+0798  00 5f fa 20    434    677         DB 000H,05FH,0FAH,020H,008H,03AH,04DH,00AH
+079c  08 3a 4d 0a    434    678
+                     435    679 
+07a0  b7 ca b2 07    436    680 L7A0:   DB 0B7H,0CAH,0B2H,007H,047H,03EH,008H,0BBH
+07a4  47 3e 08 bb    436    681
+07a8  c2 b2 07 3a    437    682         DB 0C2H,0B2H,007H,03AH,065H,00AH,0B8H,0CAH
+07ac  65 0a b8 ca    437    683
+                     438    684 
+07b0  fb 07 21 62    439    685 L7B0:   DB 0FBH,007H,021H,062H,00AH,019H,034H,03EH
+07b4  0a 19 34 3e    439    686
+07b8  01 b8 c2 be    440    687         DB 001H,0B8H,0C2H,0BEH,007H,034H,03AH,052H
+07bc  07 34 3a 52    440    688
+                     441    689 
+07c0  0a b7 ca f2    442    690 L7C0:   DB 00AH,0B7H,0CAH,0F2H,007H,00EH,00FH,021H
+07c4  07 0e 0f 21    442    691
+07c8  0c 0a 3a 4e    443    692         DB 00CH,00AH,03AH,04EH,00AH,0BEH,0CAH,0D7H
+07cc  0a be ca d7    443    693
+                     444    694 
+07d0  07 2b 0d f2    445    695 L7D0:   DB 007H,02BH,00DH,0F2H,0CDH,007H,076H,021H
+07d4  cd 07 76 21    445    696
+07d8  3d 0a 06 00    446    697         DB 03DH,00AH,006H,000H,009H,07EH,021H,063H
+07dc  09 7e 21 63    446    698
+                     447    699 
+07e0  0a 19 be da    448    700 L7E0:   DB 00AH,019H,0BEH,0DAH,0ECH,007H,077H,021H
+07e4  ec 07 77 21    448    701
+07e8  65 0a 19 71    449    702         DB 065H,00AH,019H,071H,021H,064H,00AH,019H
+07ec  21 64 0a 19    449    703
+                     450    704 
+07f0  86 77 7b fe    451    705 L7F0:   DB 086H,077H,07BH,0FEH,004H,0CAH,0FCH,007H
+07f4  04 ca fc 07    451    706
+07f8  fa 34 08 c9    452    707         DB 0FAH,034H,008H,0C9H,03AH,067H,00AH,032H
+07fc  3a 67 0a 32    452    708
+                     453    709 
+0800  5c 0a af 32    454    710 L800:   DB 05CH,00AH,0AFH,032H,054H,00AH,0CDH,06DH
+0804  54 0a cd 6d    454    711
+0808  08 cd c3 05    455    712         DB 008H,0CDH,0C3H,005H,0CDH,0DDH,005H,0CDH
+080c  cd dd 05 cd    455    713
+                     456    714 
+0810  c3 05 3e 08    457    715 L810:   DB 0C3H,005H,03EH,008H,032H,054H,00AH,0CDH
+0814  32 54 0a cd    457    716
+0818  e9 05 cd 73    458    717         DB 0E9H,005H,0CDH,073H,007H,0C3H,0ACH,008H
+081c  07 c3 ac 08    458    718
+                     459    719 
+0820  16 ff fe f9    460    720 L820:   DB 016H,0FFH,0FEH,0F9H,0C2H,034H,008H,03AH
+0824  c2 34 08 3a    460    721
+0828  fd 09 21 4e    461    722         DB 0FDH,009H,021H,04EH,00AH,0BEH,0C0H,0AFH
+082c  0a be c0 af    461    723
+                     462    724 
+0830  32 53 0a c9    463    725 L830:   DB 032H,053H,00AH,0C9H,03AH,052H,00AH,0B7H
+0834  3a 52 0a b7    463    726
+0838  c8 3a 4e 0a    464    727         DB 0C8H,03AH,04EH,00AH,00EH,007H,021H,004H
+083c  0e 07 21 04    464    728
+                     465    729 
+0840  0a be ca 4b    466    730 L840:   DB 00AH,0BEH,0CAH,04BH,008H,02BH,00DH,0C2H
+0844  08 2b 0d c2    466    731
+0848  41 08 c9 21    467    732         DB 041H,008H,0C9H,021H,03DH,00AH,006H,000H
+084c  3d 0a 06 00    467    733
+                     468    734 
+0850  09 7e 21 61    469    735 L850:   DB 009H,07EH,021H,061H,00AH,019H,0BEH,0DAH
+0854  0a 19 be da    469    736
+0858  5b 08 77 1b    470    737         DB 05BH,008H,077H,01BH,07BH,032H,054H,00AH
+085c  7b 32 54 0a    470    738
+                     471    739 
+0860  fe ff ca 68    472    740 L860:   DB 0FEH,0FFH,0CAH,068H,008H,0CDH,067H,007H
+0864  08 cd 67 07    472    741
+0868  21 54 0a 34    473    742         DB 021H,054H,00AH,034H,0C9H,021H,000H,000H
+086c  c9 21 00 00    473    743
+                     474    744 
+0870  39 22 57 0a    475    745 L870:   DB 039H,022H,057H,00AH,02AH,059H,00AH,0F9H
+0874  2a 59 0a f9    475    746
+0878  3a 4e 0a 47    476    747         DB 03AH,04EH,00AH,047H,00EH,01FH,021H,00CH
+087c  0e 1f 21 0c    476    748
+                     477    749 
+0880  0a be ca 8a    478    750 L880:   DB 00AH,0BEH,0CAH,08AH,008H,02BH,00DH,0F2H
+0884  08 2b 0d f2    478    751
+0888  81 08 36 cc    479    752         DB 081H,008H,036H,0CCH,0E5H,021H,0EDH,009H
+088c  e5 21 ed 09    479    753
+                     480    754 
+0890  16 00 3a 4d    481    755 L890:   DB 016H,000H,03AH,04DH,00AH,05FH,019H,0E5H
+0894  0a 5f 19 e5    481    756
+0898  4e 70 c5 21    482    757         DB 04EH,070H,0C5H,021H,055H,00AH,056H,0D5H
+089c  55 0a 56 d5    482    758
+                     483    759 
+08a0  21 00 00 39    484    760 L8A0:   DB 021H,000H,000H,039H,022H,059H,00AH,02AH
+08a4  22 59 0a 2a    484    761
+08a8  57 0a f9 c9    485    762         DB 057H,00AH,0F9H,0C9H,097H,03EH,080H,021H
+08ac  97 3e 80 21    485    763
+                     486    764 
+08b0  6a 0a 86 23    487    765 L8B0:   DB 06AH,00AH,086H,023H,086H,023H,086H,021H
+08b4  86 23 86 21    487    766
+08b8  60 0a 86 21    488    767         DB 060H,00AH,086H,021H,05EH,00AH,086H,021H
+08bc  5e 0a 86 21    488    768
+                     489    769 
+08c0  6f 0a 96 23    490    770 L8C0:   DB 06FH,00AH,096H,023H,096H,021H,061H,00AH
+08c4  96 21 61 0a    490    771
+08c8  96 21 5f 0a    491    772         DB 096H,021H,05FH,00AH,096H,021H,05DH,00AH
+08cc  96 21 5d 0a    491    773
+                     492    774 
+08d0  96 21 6e 0a    493    775 L8D0:   DB 096H,021H,06EH,00AH,096H,021H,062H,00AH
+08d4  96 21 62 0a    493    776
+08d8  96 d2 dd 08    494    777         DB 096H,0D2H,0DDH,008H,097H,01FH,0C6H,040H
+08dc  97 1f c6 40    494    778
+                     495    779 
+08e0  21 6b 0a 86    496    780 L8E0:   DB 021H,06BH,00AH,086H,023H,086H,021H,063H
+08e4  23 86 21 63    496    781
+08e8  0a 96 1f c6    497    782         DB 00AH,096H,01FH,0C6H,090H,021H,05CH,00AH
+08ec  90 21 5c 0a    497    783
+                     498    784 
+08f0  86 86 86 86    499    785 L8F0:   DB 086H,086H,086H,086H,021H,060H,00AH,086H
+08f4  21 60 0a 86    499    786
+08f8  21 63 0a 96    500    787         DB 021H,063H,00AH,096H,096H,023H,096H,096H
+08fc  96 23 96 96    500    788
+                     501    789 
+0900  21 5f 0a 96    502    790 L900:   DB 021H,05FH,00AH,096H,0F5H,03AH,04EH,00AH
+0904  f5 3a 4e 0a    502    791
+0908  fe 33 ca 30    503    792         DB 0FEH,033H,0CAH,030H,009H,0FEH,034H,0CAH
+090c  09 fe 34 ca    503    793
+                     504    794 
+0910  30 09 fe 22    505    795 L910:   DB 030H,009H,0FEH,022H,0CAH,030H,009H,0FEH
+0914  ca 30 09 fe    505    796
+0918  25 ca 30 09    506    797         DB 025H,0CAH,030H,009H,03AH,04DH,00AH,0B7H
+091c  3a 4d 0a b7    506    798
+                     507    799 
+0920  ca 34 09 21    508    800 L920:   DB 0CAH,034H,009H,021H,0EDH,009H,006H,000H
+0924  ed 09 06 00    508    801
+0928  4f 09 7e fe    509    802         DB 04FH,009H,07EH,0FEH,010H,0F2H,034H,009H
+092c  10 f2 34 09    509    803
+                     510    804 
+0930  f1 c6 02 f5    511    805 L930:   DB 0F1H,0C6H,002H,0F5H,03AH,063H,00AH,021H
+0934  3a 63 0a 21    511    806
+0938  3d 0a be c2    512    807         DB 03DH,00AH,0BEH,0C2H,043H,009H,0F1H,097H
+093c  43 09 f1 97    512    808
+                     513    809 
+0940  c3 5b 09 3a    514    810 L940:   DB 0C3H,05BH,009H,03AH,062H,00AH,0B7H,0C2H
+0944  62 0a b7 c2    514    811
+0948  5a 09 3a 6d    515    812         DB 05AH,009H,03AH,06DH,00AH,0B7H,0C2H,05AH
+094c  0a b7 c2 5a    515    813
+                     516    814 
+0950  09 f1 3e ff    517    815 L950:   DB 009H,0F1H,03EH,0FFH,032H,081H,00AH,0C3H
+0954  32 81 0a c3    517    816
+0958  5b 09 f1 0e    518    817         DB 05BH,009H,0F1H,00EH,004H,021H,054H,00AH
+095c  04 21 54 0a    518    818
+                     519    819 
+0960  71 21 50 0a    520    820 L960:   DB 071H,021H,050H,00AH,032H,05BH,00AH,0BEH
+0964  32 5b 0a be    520    821
+0968  da 8e 09 ca    521    822         DB 0DAH,08EH,009H,0CAH,08EH,009H,032H,050H
+096c  8e 09 32 50    521    823
+                     522    824 
+0970  0a 3a 4d 0a    523    825 L970:   DB 00AH,03AH,04DH,00AH,032H,04FH,00AH,03AH
+0974  32 4f 0a 3a    523    826
+0978  4e 0a 32 51    524    827         DB 04EH,00AH,032H,051H,00AH,0AFH,032H,074H
+097c  0a af 32 74    524    828
+                     525    829 
+0980  0a 3a 6b 0a    526    830 L980:   DB 00AH,03AH,06BH,00AH,021H,03DH,00AH,0BEH
+0984  21 3d 0a be    526    831
+0988  c2 8e 09 32    527    832         DB 0C2H,08EH,009H,032H,074H,00AH,0C9H,021H
+098c  74 0a c9 21    527    833
+                     528    834 
+0990  dd 09 47 1f    529    835 L990:   DB 0DDH,009H,047H,01FH,01FH,01FH,01FH,0CDH
+0994  1f 1f 1f cd    529    836
+0998  a2 09 77 23    530    837         DB 0A2H,009H,077H,023H,078H,0CDH,0A2H,009H
+099c  78 cd a2 09    530    838
+                     531    839 
+09a0  77 c9 e6 0f    532    840 L9A0:   DB 077H,0C9H,0E6H,00FH,0C6H,030H,0FEH,03AH
+09a4  c6 30 fe 3a    532    841
+09a8  d8 c6 07 c9    533    842         DB 0D8H,0C6H,007H,0C9H,006H,00DH,0CDH,0BFH
+09ac  06 0d cd bf    533    843
+                     534    844 
+09b0  09 06 0a cd    535    845 L9B0:   DB 009H,006H,00AH,0CDH,0BFH,009H,006H,07FH
+09b4  bf 09 06 7f    535    846
+09b8  cd bf 09 cd    536    847         DB 0CDH,0BFH,009H,0CDH,0BFH,009H,0C9H,0E5H
+09bc  bf 09 c9 e5    536    848
+                     537    849 
+09c0  c5 d5 cd d7    538    850 L9C0:   DB 0C5H,0D5H,0CDH,0D7H,009H,0D1H,0C1H,0E1H
+09c4  09 d1 c1 e1    538    851
+09c8  c9 e5 d5 c5    539    852         DB 0C9H,0E5H,0D5H,0C5H,0CDH,0DAH,009H,078H
+09cc  cd da 09 78    539    853
+                     540    854 
+09d0  c1 d1 e1 e6    541    855 L9D0:   DB 0C1H,0D1H,0E1H,0E6H,07FH,047H,0C9H,0C3H
+09d4  7f 47 c9 c3    541    856
+09d8  e6 0d c3 f1    542    857         DB 0E6H,00DH,0C3H,0F1H,00DH,000H,000H,000H
+09dc  0d 00 00 00    542    858
+                     543    859 
+09e0  00 00 00 00    544    860 L9E0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+09e4  00 00 00 00    544    861
+09e8  00 00 00 00    545    862         DB 000H,000H,000H,000H,000H,003H,004H,000H
+09ec  00 03 04 00    545    863
+                     546    864 
+09f0  07 02 05 01    547    865 L9F0:   DB 007H,002H,005H,001H,006H,010H,017H,011H
+09f4  06 10 17 11    547    866
+09f8  16 12 15 14    548    867         DB 016H,012H,015H,014H,013H,073H,074H,070H
+09fc  13 73 74 70    548    868
+                     549    869 
+0a00  77 72 75 71    550    870 LA00:   DB 077H,072H,075H,071H,076H,060H,067H,061H
+0a04  76 60 67 61    550    871
+0a08  66 62 65 64    551    872         DB 066H,062H,065H,064H,063H,003H,004H,000H
+0a0c  63 03 04 00    551    873
+                     552    874 
+0a10  07 02 05 01    553    875 LA10:   DB 007H,002H,005H,001H,006H,010H,017H,011H
+0a14  06 10 17 11    553    876
+0a18  16 12 15 14    554    877         DB 016H,012H,015H,014H,013H,073H,074H,070H
+0a1c  13 73 74 70    554    878
+                     555    879 
+0a20  77 72 75 71    556    880 LA20:   DB 077H,072H,075H,071H,076H,060H,067H,061H
+0a24  76 60 67 61    556    881
+0a28  66 62 65 64    557    882         DB 066H,062H,065H,064H,063H,0F0H,0FFH,001H
+0a2c  63 f0 ff 01    557    883
+                     558    884 
+0a30  10 11 0f ef    559    885 LA30:   DB 010H,011H,00FH,0EFH,0F1H,0DFH,0E1H,0EEH
+0a34  f1 df e1 ee    559    886
+0a38  f2 12 0e 1f    560    887         DB 0F2H,012H,00EH,01FH,021H,00BH,00AH,006H
+0a3c  21 0b 0a 06    560    888
+                     561    889 
+0a40  06 04 04 04    562    890 LA40:   DB 006H,004H,004H,004H,004H,002H,002H,002H
+0a44  04 02 02 02    562    891
+0a48  02 02 02 02    563    892         DB 002H,002H,002H,002H,002H,0EEH,0EEH,000H
+0a4c  02 ee ee 00    563    893
+                     564    894 
+0a50  00 00 00 00    565    895 LA50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0a54  00 00 00 00    565    896
+0a58  00 e6 0d 00    566    897         DB 000H,0E6H,00DH,000H,000H,000H,000H,000H
+0a5c  00 00 00 00    566    898
+                     567    899 
+0a60  00 00 00 00    568    900 LA60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0a64  00 00 00 00    568    901
+0a68  00 00 00 00    569    902         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0a6c  00 00 00 00    569    903
+                     570    904 
+0a70  00 00 00 00    571    905 LA70:   DB 000H,000H,000H,000H,000H,000H,000H,010H
+0a74  00 00 00 10    571    906
+0a78  00 01 0b 37    572    907         DB 000H,001H,00BH,037H,00BH,095H,00AH,0CBH
+0a7c  0b 95 0a cb    572    908
+                     573    909 
+0a80  0a 00 00 57    574    910 LA80:   DB 00AH,000H,000H,057H,042H,04BH,051H,052H
+0a84  42 4b 51 52    574    911
+0a88  52 42 42 4e    575    912         DB 052H,042H,042H,04EH,04EH,050H,050H,050H
+0a8c  4e 50 50 50    575    913
+                     576    914 
+0a90  50 50 50 50    577    915 LA90:   DB 050H,050H,050H,050H,050H,0EEH,01FH,017H
+0a94  50 ee 1f 17    577    916
+0a98  16 16 14 16    578    917         DB 016H,016H,014H,016H,01BH,016H,0EEH,01FH
+0a9c  1b 16 ee 1f    578    918
+                     579    919 
+0aa0  1e 16 14 16    580    920 LAA0:   DB 01EH,016H,014H,016H,011H,010H,01DH,01EH
+0aa4  11 10 1d 1e    580    921
+0aa8  1d 16 1a 14    581    922         DB 01DH,016H,01AH,014H,012H,017H,011H,011H
+0aac  12 17 11 11    581    923
+                     582    924 
+0ab0  1f 16 17 14    583    925 LAB0:   DB 01FH,016H,017H,014H,012H,01EH,015H,01BH
+0ab4  12 1e 15 1b    583    926
+0ab8  12 1f 16 14    584    927         DB 012H,01FH,016H,014H,012H,01EH,011H,014H
+0abc  12 1e 11 14    584    928
+                     585    929 
+0ac0  1e 17 1f 16    586    930 LAC0:   DB 01EH,017H,01FH,016H,014H,01DH,01EH,01DH
+0ac4  14 1d 1e 1d    586    931
+0ac8  17 12 1b ee    587    932         DB 017H,012H,01BH,0EEH,043H,055H,052H,033H
+0acc  43 55 52 33    587    933
+                     588    934 
+0ad0  63 54 55 66    589    935 LAD0:   DB 063H,054H,055H,066H,0EEH,053H,044H,052H
+0ad4  ee 53 44 52    589    936
+0ad8  63 64 63 72    590    937         DB 063H,064H,063H,072H,045H,043H,042H,055H
+0adc  45 43 42 55    590    938
+                     591    939 
+0ae0  56 66 75 52    592    940 LAE0:   DB 056H,066H,075H,052H,062H,052H,044H,055H
+0ae4  62 52 44 55    592    941
+0ae8  52 31 75 53    593    942         DB 052H,031H,075H,053H,036H,052H,074H,044H
+0aec  36 52 74 44    593    943
+                     594    944 
+0af0  55 31 75 43    595    945 LAF0:   DB 055H,031H,075H,043H,064H,022H,034H,052H
+0af4  64 22 34 52    595    946
+0af8  44 55 42 52    596    947         DB 044H,055H,042H,052H,043H,043H,052H,075H
+0afc  43 43 52 75    596    948
+                     597    949 
+0b00  52 0f 06 04    598    950 LB00:   DB 052H,00FH,006H,004H,000H,00EH,001H,004H
+0b04  00 0e 01 04    598    951
+0b08  0e 07 0f 0e    599    952         DB 00EH,007H,00FH,00EH,007H,005H,00FH,005H
+0b0c  07 05 0f 05    599    953
+                     600    954 
+0b10  01 0c 06 06    601    955 LB10:   DB 001H,00CH,006H,006H,00FH,00BH,005H,004H
+0b14  0f 0b 05 04    601    956
+0b18  00 06 06 0c    602    957         DB 000H,006H,006H,00CH,00FH,007H,006H,004H
+0b1c  0f 07 06 04    602    958
+                     603    959 
+0b20  00 0e 04 01    604    960 LB20:   DB 000H,00EH,004H,001H,007H,00FH,007H,006H
+0b24  07 0f 07 06    604    961
+0b28  06 04 06 0b    605    962         DB 006H,004H,006H,00BH,006H,000H,00FH,007H
+0b2c  06 00 0f 07    605    963
+                     606    964 
+0b30  04 06 0f 04    607    965 LB30:   DB 004H,006H,00FH,004H,006H,006H,004H,033H
+0b34  06 06 04 33    607    966
+0b38  22 46 01 34    608    967         DB 022H,046H,001H,034H,013H,055H,043H,025H
+0b3c  13 55 43 25    608    968
+                     609    969 
+0b40  33 34 25 41    610    970 LB40:   DB 033H,034H,025H,041H,043H,063H,014H,032H
+0b44  43 63 14 32    610    971
+0b48  22 25 24 21    611    972         DB 022H,025H,024H,021H,011H,014H,006H,044H
+0b4c  11 14 06 44    611    973
+                     612    974 
+0b50  52 35 34 22    613    975 LB50:   DB 052H,035H,034H,022H,025H,041H,006H,023H
+0b54  25 41 06 23    613    976
+0b58  52 14 03 34    614    977         DB 052H,014H,003H,034H,022H,025H,044H,014H
+0b5c  22 25 44 14    614    978
+                     615    979 
+0b60  23 22 11 06    616    980 LB60:   DB 023H,022H,011H,006H,034H,022H,032H,025H
+0b64  34 22 32 25    616    981
+0b68  43 41 44 52    617    982         DB 043H,041H,044H,052H,052H,04DH,049H,043H
+0b6c  52 4d 49 43    617    983
+                     618    984 
+0b70  52 4f 43 48    619    985 LB70:   DB 052H,04FH,043H,048H,045H,053H,053H,020H
+0b74  45 53 53 20    619    986
+0b78  20 20 20 20    620    987         DB 020H,020H,020H,020H,020H,020H,020H,020H
+0b7c  20 20 20 20    620    988
+                     621    989 
+0b80  20 20 20 20    622    990 LB80:   DB 020H,020H,020H,020H,020H,020H,020H,020H
+0b84  20 20 20 20    622    991
+0b88  20 28 43 29    623    992         DB 020H,028H,043H,029H,020H,031H,039H,037H
+0b8c  20 31 39 37    623    993
+                     624    994 
+0b90  37 2e 0d 57    625    995 LB90:   DB 037H,02EH,00DH,057H,052H,049H,054H,054H
+0b94  52 49 54 54    625    996
+0b98  45 4e 20 42    626    997         DB 045H,04EH,020H,042H,059H,03AH,020H,050H
+0b9c  59 3a 20 50    626    998
+                     627    999 
+0ba0  2e 20 4a 45    628   1000 LBA0:   DB 02EH,020H,04AH,045H,04EH,04EH,049H,04EH
+0ba4  4e 4e 49 4e    628   1001
+0ba8  47 53 20 26    629   1002         DB 047H,053H,020H,026H,020H,054H,02EH,020H
+0bac  20 54 2e 20    629   1003
+                     630   1004 
+0bb0  4f 27 42 52    631   1005 LBB0:   DB 04FH,027H,042H,052H,049H,045H,04EH,02EH
+0bb4  49 45 4e 2e    631   1006
+0bb8  0d 2d 2d 2d    632   1007         DB 00DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bbc  2d 2d 2d 2d    632   1008
+                     633   1009 
+0bc0  2d 2d 2d 2d    634   1010 LBC0:   DB 02DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bc4  2d 2d 2d 2d    634   1011
+0bc8  2d 2d 2d 2d    635   1012         DB 02DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bcc  2d 2d 2d 2d    635   1013
+                     636   1014 
+0bd0  2d 2d 2d 2d    637   1015 LBD0:   DB 02DH,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0bd4  2d 2d 2d 2d    637   1016
+0bd8  2d 2d 2d 2d    638   1017         DB 02DH,02DH,02DH,02DH,02DH,02DH,00DH,057H
+0bdc  2d 2d 0d 57    638   1018
+                     639   1019 
+0be0  48 49 43 48    640   1020 LBE0:   DB 048H,049H,043H,048H,020H,04DH,04FH,044H
+0be4  20 4d 4f 44    640   1021
+0be8  45 20 3f 20    641   1022         DB 045H,020H,03FH,020H,028H,053H,02CH,042H
+0bec  28 53 2c 42    641   1023
+                     642   1024 
+0bf0  2c 4e 29 20    643   1025 LBF0:   DB 02CH,04EH,029H,020H,00DH,044H,04FH,020H
+0bf4  0d 44 4f 20    643   1026
+0bf8  59 4f 55 20    644   1027         DB 059H,04FH,055H,020H,057H,041H,04EH,054H
+0bfc  57 41 4e 54    644   1028
+                     645   1029 
+0c00  20 57 48 49    646   1030 LC00:   DB 020H,057H,048H,049H,054H,045H,020H,03FH
+0c04  54 45 20 3f    646   1031
+0c08  20 28 59 2c    647   1032         DB 020H,028H,059H,02CH,04EH,029H,020H,00DH
+0c0c  4e 29 20 0d    647   1033
+                     648   1034 
+0c10  3a 20 20 20    649   1035 LC10:   DB 03AH,020H,020H,020H,020H,00DH,04DH,043H
+0c14  20 0d 4d 43    649   1036
+0c18  20 3a 20 00    650   1037         DB 020H,03AH,020H,000H,000H,02DH,000H,000H
+0c1c  00 2d 00 00    650   1038
+                     651   1039 
+0c20  20 20 0d 49    652   1040 LC20:   DB 020H,020H,00DH,049H,04EH,050H,055H,054H
+0c24  4e 50 55 54    652   1041
+0c28  20 45 52 52    653   1042         DB 020H,045H,052H,052H,04FH,052H,02EH,00DH
+0c2c  4f 52 2e 0d    653   1043
+                     654   1044 
+0c30  43 48 45 43    655   1045 LC30:   DB 043H,048H,045H,043H,04BH,04DH,041H,054H
+0c34  4b 4d 41 54    655   1046
+0c38  45 20 2d 20    656   1047         DB 045H,020H,02DH,020H,059H,04FH,055H,020H
+0c3c  59 4f 55 20    656   1048
+                     657   1049 
+0c40  57 49 4e 21    658   1050 LC40:   DB 057H,049H,04EH,021H,021H,021H,00DH,050H
+0c44  21 21 0d 50    658   1051
+0c48  4c 41 59 20    659   1052         DB 04CH,041H,059H,020H,041H,047H,041H,049H
+0c4c  41 47 41 49    659   1053
+                     660   1054 
+0c50  4e 20 3f 20    661   1055 LC50:   DB 04EH,020H,03FH,020H,028H,059H,02CH,04EH
+0c54  28 59 2c 4e    661   1056
+0c58  29 20 0d 54    662   1057         DB 029H,020H,00DH,054H,048H,041H,04EH,04BH
+0c5c  48 41 4e 4b    662   1058
+                     663   1059 
+0c60  53 20 46 4f    664   1060 LC60:   DB 053H,020H,046H,04FH,052H,020H,054H,048H
+0c64  52 20 54 48    664   1061
+0c68  45 20 47 41    665   1062         DB 045H,020H,047H,041H,04DH,045H,02EH,02EH
+0c6c  4d 45 2e 2e    665   1063
+                     666   1064 
+0c70  2e 20 4d 49    667   1065 LC70:   DB 02EH,020H,04DH,049H,043H,052H,04FH,043H
+0c74  43 52 4f 43    667   1066
+0c78  48 45 53 53    668   1067         DB 048H,045H,053H,053H,02EH,00DH,059H,04FH
+0c7c  2e 0d 59 4f    668   1068
+                     669   1069 
+0c80  55 20 52 45    670   1070 LC80:   DB 055H,020H,052H,045H,053H,049H,047H,04EH
+0c84  53 49 47 4e    670   1071
+0c88  45 44 20 2d    671   1072         DB 045H,044H,020H,02DH,020H,049H,020H,057H
+0c8c  20 49 20 57    671   1073
+                     672   1074 
+0c90  49 4e 21 21    673   1075 LC90:   DB 049H,04EH,021H,021H,021H,00DH,020H,020H
+0c94  21 0d 20 20    673   1076
+0c98  43 48 45 43    674   1077         DB 043H,048H,045H,043H,04BH,04DH,041H,054H
+0c9c  4b 4d 41 54    674   1078
+                     675   1079 
+0ca0  45 20 2d 20    676   1080 LCA0:   DB 045H,020H,02DH,020H,049H,020H,057H,049H
+0ca4  49 20 57 49    676   1081
+0ca8  4e 21 21 21    677   1082         DB 04EH,021H,021H,021H,021H,00DH,020H,043H
+0cac  21 0d 20 43    677   1083
+                     678   1084 
+0cb0  48 45 43 4b    679   1085 LCB0:   DB 048H,045H,043H,04BH,021H,00DH,02BH,02DH
+0cb4  21 0d 2b 2d    679   1086
+0cb8  2d 2d 2d 2d    680   1087         DB 02DH,02DH,02DH,02DH,02DH,020H,04DH,049H
+0cbc  2d 20 4d 49    680   1088
+                     681   1089 
+0cc0  43 52 4f 43    682   1090 LCC0:   DB 043H,052H,04FH,043H,048H,045H,053H,053H
+0cc4  48 45 53 53    682   1091
+0cc8  20 2d 2d 2d    683   1092         DB 020H,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0ccc  2d 2d 2d 2d    683   1093
+                     684   1094 
+0cd0  2b 0d 21 20    685   1095 LCDO:   DB 02BH,00DH,021H,020H,020H,020H,020H,020H
+0cd4  20 20 20 20    685   1096
+0cd8  20 20 20 20    686   1097         DB 020H,020H,020H,020H,020H,020H,020H,020H
+0cdc  20 20 20 20    686   1098
+                     687   1099 
+0ce0  20 20 20 20    688   1100 LCE0:   DB 020H,020H,020H,020H,020H,020H,020H,020H
+0ce4  20 20 20 20    688   1101
+0ce8  20 20 20 20    689   1102         DB 020H,020H,020H,020H,021H,00DH,02BH,02DH
+0cec  21 0d 2b 2d    689   1103
+                     690   1104 
+0cf0  2d 2d 2d 2d    691   1105 LCF0:   DB 02DH,02DH,02DH,02DH,02DH,020H,043H,048H
+0cf4  2d 20 43 48    691   1106
+0cf8  41 4c 4c 45    692   1107         DB 041H,04CH,04CH,045H,04EH,047H,045H,052H
+0cfc  4e 47 45 52    692   1108
+                     693   1109 
+0d00  20 2d 2d 2d    694   1110 LD00:   DB 020H,02DH,02DH,02DH,02DH,02DH,02DH,02DH
+0d04  2d 2d 2d 2d    694   1111
+0d08  2b 0d 00 00    695   1112         DB 02BH,00DH,000H,000H,000H,000H,000H,000H
+0d0c  00 00 00 00    695   1113
+                     696   1114 
+0d10  00 00 00 00    697   1115 LD10:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d14  00 00 00 00    697   1116
+0d18  00 00 00 00    698   1117         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d1c  00 00 00 00    698   1118
+                     699   1119 
+0d20  00 00 00 00    700   1120 LD20:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d24  00 00 00 00    700   1121
+0d28  00 00 00 00    701   1122         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d2c  00 00 00 00    701   1123
+                     702   1124 
+0d30  00 00 00 00    703   1125 LD30:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d34  00 00 00 00    703   1126
+0d38  00 00 00 00    704   1127         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d3c  00 00 00 00    704   1128
+                     705   1129 
+0d40  00 00 00 00    706   1130 LD40:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d44  00 00 00 00    706   1131
+0d48  00 00 00 00    707   1132         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d4c  00 00 00 00    707   1133
+                     708   1134 
+0d50  00 00 00 00    709   1135 LD50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d54  00 00 00 00    709   1136
+0d58  00 00 00 00    710   1137         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d5c  00 00 00 00    710   1138
+                     711   1139 
+0d60  00 00 00 00    712   1140 LD60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d64  00 00 00 00    712   1141
+0d68  00 00 00 00    713   1142         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d6c  00 00 00 00    713   1143
+                     714   1144 
+0d70  00 00 15 d7    715   1145 LD70:   DB 000H,000H,015H,0D7H,01FH,0D0H,0CFH,009H
+0d74  1f d0 cf 09    715   1146
+0d78  00 20 07 80    716   1147         DB 000H,020H,007H,080H,00AH,00DH,028H,003H
+0d7c  0a 0d 28 03    716   1148
+                     717   1149 
+0d80  8d 00 00 00    718   1150 LD80:   DB 08DH,000H,000H,000H,000H,000H,000H,000H
+0d84  00 00 00 00    718   1151
+0d88  00 00 00 00    719   1152         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d8c  00 00 00 00    719   1153
+                     720   1154 
+0d90  00 00 00 00    721   1155 LD90:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d94  00 00 00 00    721   1156
+0d98  00 00 00 00    722   1157         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0d9c  00 00 00 00    722   1158
+                     723   1159 
+0da0  00 00 00 00    724   1160 LDA0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0da4  00 00 00 00    724   1161
+0da8  00 00 00 00    725   1162         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dac  00 00 00 00    725   1163
+                     726   1164 
+0db0  00 00 00 00    727   1165 LDB0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0db4  00 00 00 00    727   1166
+0db8  00 00 00 00    728   1167         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dbc  00 00 00 00    728   1168
+                     729   1169 
+0dc0  00 00 00 00    730   1170 LDC0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dc4  00 00 00 00    730   1171
+0dc8  00 00 00 00    731   1172         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dcc  00 00 00 00    731   1173
+                     732   1174 
+0dd0  00 00 00 00    733   1175 LDD0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0dd4  00 00 00 00    733   1176
+0dd8  00 00 00 00    734   1177         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ddc  00 00 00 00    734   1178
+                     735   1179 
+0de0  00 00 00 00    736   1180 LDE0:   DB 000H,000H,000H,000H,000H,000H,0DBH,000H
+0de4  00 00 db 00    736   1181
+0de8  e6 80 ca e6    737   1182         DB 0E6H,080H,0CAH,0E6H,00DH,078H,0D3H,001H
+0dec  0d 78 d3 01    737   1183
+                     738   1184 
+0df0  c9 db 00 e6    739   1185 LDF0:   DB 0C9H,0DBH,000H,0E6H,040H,0CAH,0F1H,00DH
+0df4  40 ca f1 0d    739   1186
+0df8  db 01 e6 7f    740   1187         DB 0DBH,001H,0E6H,07FH,047H,0C9H,000H,000H
+0dfc  47 c9 00 00    740   1188
+                     741   1189 
+0e00  00 00 00 00    742   1190 LE00:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e04  00 00 00 00    742   1191
+0e08  00 00 00 00    743   1192         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e0c  00 00 00 00    743   1193
+                     744   1194 
+0e10  00 00 00 00    745   1195 LE10:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e14  00 00 00 00    745   1196
+0e18  00 00 00 00    746   1197         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e1c  00 00 00 00    746   1198
+                     747   1199 
+0e20  00 00 00 00    748   1200 LE20:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e24  00 00 00 00    748   1201
+0e28  00 00 00 00    749   1202         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e2c  00 00 00 00    749   1203
+                     750   1204 
+0e30  00 00 00 00    751   1205 LE30:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e34  00 00 00 00    751   1206
+0e38  00 00 00 00    752   1207         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e3c  00 00 00 00    752   1208
+                     753   1209 
+0e40  00 00 00 00    754   1210 LE40:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e44  00 00 00 00    754   1211
+0e48  00 00 00 00    755   1212         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e4c  00 00 00 00    755   1213
+                     756   1214 
+0e50  00 00 00 00    757   1215 LE50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e54  00 00 00 00    757   1216
+0e58  00 00 00 00    758   1217         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e5c  00 00 00 00    758   1218
+                     759   1219 
+0e60  00 00 00 00    760   1220 LE60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e64  00 00 00 00    760   1221
+0e68  00 00 00 00    761   1222         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e6c  00 00 00 00    761   1223
+                     762   1224 
+0e70  00 00 00 00    763   1225 LE70:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e74  00 00 00 00    763   1226
+0e78  00 00 00 00    764   1227         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e7c  00 00 00 00    764   1228
+                     765   1229 
+0e80  00 00 00 00    766   1230 LE80:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e84  00 00 00 00    766   1231
+0e88  00 00 00 00    767   1232         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e8c  00 00 00 00    767   1233
+                     768   1234 
+0e90  00 00 00 00    769   1235 LE90:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e94  00 00 00 00    769   1236
+0e98  00 00 00 00    770   1237         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0e9c  00 00 00 00    770   1238
+                     771   1239 
+0ea0  00 00 00 00    772   1240 LEA0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ea4  00 00 00 00    772   1241
+0ea8  00 00 00 00    773   1242         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0eac  00 00 00 00    773   1243
+                     774   1244 
+0eb0  00 00 00 00    775   1245 LEB0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0eb4  00 00 00 00    775   1246
+0eb8  00 00 00 00    776   1247         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ebc  00 00 00 00    776   1248
+                     777   1249 
+0ec0  00 00 00 00    778   1250 LEC0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ec4  00 00 00 00    778   1251
+0ec8  00 00 00 00    779   1252         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ecc  00 00 00 00    779   1253
+                     780   1254 
+0ed0  00 00 00 00    781   1255 LED0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ed4  00 00 00 00    781   1256
+0ed8  00 00 00 00    782   1257         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0edc  00 00 00 00    782   1258
+                     783   1259 
+0ee0  00 00 00 00    784   1260 LEE0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ee4  00 00 00 00    784   1261
+0ee8  00 00 00 00    785   1262         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0eec  00 00 00 00    785   1263
+                     786   1264 
+0ef0  00 00 00 00    787   1265 LEF0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ef4  00 00 00 00    787   1266
+0ef8  00 00 00 00    788   1267         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0efc  00 00 00 00    788   1268
+                     789   1269 
+0f00  00 00 00 00    790   1270 LF00:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f04  00 00 00 00    790   1271
+0f08  00 00 00 00    791   1272         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f0c  00 00 00 00    791   1273
+                     792   1274 
+0f10  00 00 00 00    793   1275 LF10:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f14  00 00 00 00    793   1276
+0f18  00 00 00 00    794   1277         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f1c  00 00 00 00    794   1278
+                     795   1279 
+0f20  00 00 00 00    796   1280 LF20:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f24  00 00 00 00    796   1281
+0f28  00 00 00 00    797   1282         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f2c  00 00 00 00    797   1283
+                     798   1284 
+0f30  00 00 00 00    799   1285 LF30:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f34  00 00 00 00    799   1286
+0f38  00 00 00 00    800   1287         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f3c  00 00 00 00    800   1288
+                     801   1289 
+0f40  00 00 00 00    802   1290 LF40:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f44  00 00 00 00    802   1291
+0f48  00 00 00 00    803   1292         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f4c  00 00 00 00    803   1293
+                     804   1294 
+0f50  00 00 00 00    805   1295 LF50:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f54  00 00 00 00    805   1296
+0f58  00 00 00 00    806   1297         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f5c  00 00 00 00    806   1298
+                     807   1299 
+0f60  00 00 00 00    808   1300 LF60:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f64  00 00 00 00    808   1301
+0f68  00 00 00 00    809   1302         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f6c  00 00 00 00    809   1303
+                     810   1304 
+0f70  00 00 00 00    811   1305 LF70:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f74  00 00 00 00    811   1306
+0f78  00 00 00 00    812   1307         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f7c  00 00 00 00    812   1308
+                     813   1309 
+0f80  00 00 00 00    814   1310 LF80:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f84  00 00 00 00    814   1311
+0f88  00 00 00 00    815   1312         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f8c  00 00 00 00    815   1313
+                     816   1314 
+0f90  00 00 00 00    817   1315 LF90:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f94  00 00 00 00    817   1316
+0f98  00 00 00 00    818   1317         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0f9c  00 00 00 00    818   1318
+                     819   1319 
+0fa0  00 00 00 00    820   1320 LFA0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fa4  00 00 00 00    820   1321
+0fa8  00 00 00 00    821   1322         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fac  00 00 00 00    821   1323
+                     822   1324 
+0fb0  00 00 00 00    823   1325 LFB0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fb4  00 00 00 00    823   1326
+0fb8  00 00 00 00    824   1327         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fbc  00 00 00 00    824   1328
+                     825   1329 
+0fc0  00 00 00 00    826   1330 LFC0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fc4  00 00 00 00    826   1331
+0fc8  00 00 00 00    827   1332         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fcc  00 00 00 00    827   1333
+                     828   1334 
+0fd0  00 00 00 00    829   1335 LFD0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fd4  00 00 00 00    829   1336
+0fd8  00 00 00 00    830   1337         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fdc  00 00 00 00    830   1338
+                     831   1339 
+0fe0  00 00 00 00    832   1340 LFE0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fe4  00 00 00 00    832   1341
+0fe8  00 00 00 00    833   1342         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0fec  00 00 00 00    833   1343
+                     834   1344 
+0ff0  00 00 00 00    835   1345 LFF0:   DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ff4  00 00 00 00    835   1346
+0ff8  00 00 00 00    836   1347         DB 000H,000H,000H,000H,000H,000H,000H,000H
+0ffc  00 00 00 00    836   1348
+                     837   1349 
+                     838   1350 ;
+                     839   1351 ; PATCH TERMINAL I/O FOR MITS SIO REV. 1 = PICOSIM
+                     840   1352 ;
+                     841   1353         IF   MITS
+                     842   1354         ORG  0DE6H + OFFSET
+0de6  db 00          843   1355 TTYO:   IN   0
+0de8  e6 80          844   1356         ANI  80H
+0dea  c2 e6 0d       845   1357         JNZ  TTYO - OFFSET
+0ded  78             846   1358         MOV  A,B
+0dee  d3 01          847   1359         OUT  1
+0df0  c9             848   1360         RET
+0df1  db 00          849   1361 TTYI:   IN   0
+0df3  e6 01          850   1362         ANI  1
+0df5  c2 f1 0d       851   1363         JNZ  TTYI - OFFSET
+0df8  db 01          852   1364         IN   1
+0dfa  e6 7f          853   1365         ANI  7FH
+0dfc  47             854   1366         MOV  B,A
+0dfd  c9             855   1367         RET
+                     856   1368         ENDIF
+                     857   1369 
+                     858   1370 ;
+                     859   1371 ; PATCH TERMINAL I/O FOR IMSAI SIO2
+                     860   1372 ;
+                     861   1373         IF   IMSAI
+                     862   1374         ORG  0DE6H + OFFSET
+                     863   1375 TTYO:   IN   3
+                     864   1376         ANI  1
+                     865   1377         JZ   TTYO - OFFSET
+                     866   1378         MOV  A,B
+                     867   1379         OUT  2
+                     868   1380         RET
+                     869   1381 TTYI:   IN   3
+                     870   1382         ANI  2
+                     871   1383         JZ   TTYI - OFFSET
+                     872   1384         IN   2
+                     873   1385         ANI  7FH
+                     874   1386         MOV  B,A
+                     875   1387         RET
+                     876   1388         ENDIF
+                     877   1389 
+                     878   1390 ;
+                     879   1391 ; PATCH FOR SMALL BOARD DISPLAY
+                     880   1392 ;
+                     881   1393         IF   SMALLD
+                     882   1394         ORG  0258H + OFFSET
+                     883   1395         DB   0,0,0
+                     884   1396         ENDIF
+                     885   1397 
+                     886   1398 ;
+                     887   1399 ; PATCH FOR AUTO DISPLAY AFTER MICROCHESS MOVES
+                     888   1400 ;
+                     889   1401         IF   MAUTO
+                     890   1402         ORG  0120H + OFFSET
+0120  cd 42 02       891   1403         DB   0CDH,042H,002H
+                     892   1404         ENDIF
+                     893   1405 
+                     894   1406 ;
+                     895   1407 ; PATCH FOR AUTO DISPLAY AFTER CHALLENGER MOVES
+                     896   1408 ;
+                     897   1409         IF   CAUTO
+                     898   1410         ORG  00D4H + OFFSET
+00d4  cd 42 02       899   1411         DB   0CDH,042H,002H
+                     900   1412         ENDIF
+                     901   1413 
+                     902   1414 ;
+                     903   1415 ; ORIGINAL PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
+                     904   1416 ; DO NOT ACTIVATE TOGETHER WITH DAZZLER OUTPUT, USES SAME MEMORY
+                     905   1417 ; PATCH AREA
+                     906   1418 ; REPLACED WITH A RELOCATABLE PATCH FOR THIS BELOW
+                     907   1419 ;
+                     908   1420         IF   0
+                     909   1421         ORG  024AH + OFFSET
+                     910   1422         DB   021H,040H,00EH,0CDH,078H,00EH,03AH,02FH
+                     911   1423         DB   00EH,0C6H,030H,047H,0CDH,060H,00EH,000H
+                     912   1424         DB   000H
+                     913   1425         ORG  02B1H + OFFSET
+                     914   1426         DB   0CDH,084H,00EH
+                     915   1427         ORG  0E40H + OFFSET
+                     916   1428         DB   020H,020H,020H,020H,020H,030H,020H,020H
+                     917   1429         DB   031H,020H,020H,032H,020H,020H,033H,020H
+                     918   1430         DB   020H,034H,020H,020H,035H,020H,020H,036H
+                     919   1431         DB   020H,020H,037H,00DH,000H,000H,000H,000H
+                     920   1432         DB   0CDH,0BFH,009H,004H,078H,0E6H,007H,032H
+                     921   1433         DB   02FH,00EH,006H,020H,0C3H,0BFH,009H,00EH
+                     922   1434         DB   006H,020H,0CDH,0BFH,009H,0C3H,0BFH,009H
+                     923   1435         DB   0CDH,0DAH,001H,0CDH,070H,00EH,021H,0B6H
+                     924   1436         DB   00CH,0C3H,0DAH,001H,0CDH,070H,00EH,0C3H
+                     925   1437         DB   0DAH,001H
+                     926   1438         ENDIF
+                     927   1439 
+                     928   1440 ;
+                     929   1441 ; RELOCATABLE PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
+                     930   1442 ;
+                     931   1443         IF   COORD
+                     932   1444         ORG  024AH + OFFSET     ;PATCH IN ROUTINES FOR BOARD COORDINATES
+024a  21 2a 0e       933   1445         LXI  H,CTEXT - OFFSET
+024d  cd 00 0e       934   1446         CALL DISP1 - OFFSET
+0250  3a 29 0e       935   1447         LDA  DDAT - OFFSET
+0253  c6 30          936   1448         ADI  30H
+0255  47             937   1449         MOV  B,A
+0256  cd 14 0e       938   1450         CALL DISP3 - OFFSET
+0259  00             939   1451         NOP
+025a  00             940   1452         NOP
+                     941   1453         ORG  02B1H + OFFSET
+02b1  cd 23 0e       942   1454         CALL DISP4 - OFFSET
+                     943   1455         ENDIF
+                     944   1456 
+                     945   1457 ;
+                     946   1458 ; MAKE SURE THAT PATCHES BELOW GO INTO THE PATCH AREA, IF
+                     947   1459 ; NOT ORG'ED OTHERWISE
+                     948   1460 ;
+                     949   1461         ORG  0E00H + OFFSET
+                     950   1462 
+                     951   1463 ;
+                     952   1464 ; THE DAZZLER OUPUT ROUTINES FROM CROMEMCO DAZZLECHESS REWRITTEN WITH
+                     953   1465 ; 8080 INSTRUCTIONS, SO THAT IT WORKS WITH ANY 8080/8085/Z80 SYSTEM
+                     954   1466 ;
+                     955   1467 
+                     956   1468         IF   DAZZLER
+                     957   1469 
+                     958   1470         ORG  6 + OFFSET         ;PATCH THIRD INSTRUCTION TO CALL
+                     959   1471         CALL DINIT - OFFSET     ;THE DAZZLER INITIALISATION
+                     960   1472 
+                     961   1473         ORG  0059H + OFFSET     ;PATCH IN DATA INITALISATION
+                     962   1474         CALL IDATA - OFFSET
+                     963   1475 
+                     964   1476         ORG  0242H + OFFSET     ;PATCH CALL TO CUSTOM BOARD DISPLAY
+                     965   1477         CALL DDISP - OFFSET
+                     966   1478 
+                     967   1479         ORG  05C3H + OFFSET     ;PATCH IN SUBROUTINE TO SWITCH PIECE COLOR
+                     968   1480         CALL SWC - OFFSET
+                     969   1481 
+                     970   1482         ORG  0E00H + OFFSET     ;DAZZLER OUTPUT ROUTINES GO HERE
+                     971   1483 
+                     972   1484 SWC:    PUSH PSW                ;SWITCH PIECE COLOR
+                     973   1485         LDA  DAT1 - OFFSET
+                     974   1486         CMA
+                     975   1487         STA  DAT1 - OFFSET
+                     976   1488         POP  PSW
+                     977   1489         LXI  H,09EDH
+                     978   1490         RET
+                     979   1491 
+                     980   1492 DINIT:                          ;INITIALISE DAZZLER
+                     981   1493         MVI  A,8CH              ;DAZZLER ON, VIDEO MEMORY @ 1800H
+                     982   1494         OUT  0EH
+                     983   1495         MVI  A,30H              ;NORMAL COLOR MODE, 64X64
+                     984   1496         OUT  0FH
+                     985   1497         CALL DBOARD - OFFSET    ;DRAW CHESS BOARD
+                     986   1498         LXI  H,0B6DH
+                     987   1499         RET
+                     988   1500 
+                     989   1501 IDATA:                          ;INITIALISE DATA
+                     990   1502         MVI  A,0FFH             ;PIECE COLOR BLACK
+                     991   1503         STA  DAT1 - OFFSET
+                     992   1504         CALL 015CH
+                     993   1505         RET
+                     994   1506 
+                     995   1507 DDISP:                          ;CUSTOM BOARD DISPLAY
+                     996   1508         CALL DBOARD - OFFSET    ;DRAW CHESS BOAD
+                     997   1509         CALL DPIECE - OFFSET    ;DRAW CHESS PIECES
+                     998   1510         RET
+                     999   1511 
+                    1000   1512 DBOARD: MVI  B,10H              ;DRAW CHESS BOARD
+                    1001   1513         LXI  D,1801H
+                    1002   1514         LXI  H,1800H            ;DAZZLER VIDEO MEMORY @ 1800H
+                    1003   1515 DB1:    PUSH B
+                    1004   1516         MVI  A,03H
+                    1005   1517         MVI  B,10H
+                    1006   1518 DB2:    PUSH B
+                    1007   1519         MVI  B,0                ;DRAW FIELDS
+                    1008   1520 DBP1:   MVI  M,33H              ;WHITE FIELD AS GREEN
+                    1009   1521         MOV  C,A
+                    1010   1522         CALL LDIR
+                    1011   1523         INX  D
+                    1012   1524         INX  H
+                    1013   1525 DBP2:   MVI  M,99H              ;BLACK FIELD AS RED
+                    1014   1526         MOV  C,A
+                    1015   1527         CALL LDIR
+                    1016   1528         INX  D
+                    1017   1529         INX  H
+                    1018   1530         POP  B
+                    1019   1531         DCR  B
+                    1020   1532         JNZ  DB2 - OFFSET
+                    1021   1533         LDA  DBP1 + 1 - OFFSET  ;FLIP COLORS AND DRAW NEXT ROW OF FIELDS
+                    1022   1534         MOV  B,A
+                    1023   1535         LDA  DBP2 + 1 - OFFSET
+                    1024   1536         STA  DBP1 + 1 - OFFSET
+                    1025   1537         MOV  A,B
+                    1026   1538         STA  DBP2 + 1 - OFFSET
+                    1027   1539         POP  B
+                    1028   1540         DCR  B
+                    1029   1541         JNZ  DB1 - OFFSET
+                    1030   1542         RET
+                    1031   1543 
+                    1032   1544 DPIECE:                         ;DRAW CHESS PIECES
+                    1033   1545         LXI  D,09ECH            ;PIECE ADDRESS TABLE - 1
+                    1034   1546         MVI  B,02H
+                    1035   1547 DPIE0:  PUSH B
+                    1036   1548         LXI  H,PTAB - 6 - OFFSET ;PIECE GRAPHICS TABLE - 1 ENTRY
+                    1037   1549         SHLD DAT2 - OFFSET
+                    1038   1550         MVI  B,08H
+                    1039   1551 DPIE1:  PUSH B
+                    1040   1552         CALL DONEP - OFFSET
+                    1041   1553         POP  B
+                    1042   1554         DCR  B
+                    1043   1555         JNZ  DPIE1 - OFFSET
+                    1044   1556         MVI  B,08H
+                    1045   1557 DPIE2:  PUSH B
+                    1046   1558         CALL DONEP - OFFSET
+                    1047   1559         LXI  B,0FFFAH           ;BC = -6
+                    1048   1560         LHLD DAT2 - OFFSET
+                    1049   1561         DAD  B
+                    1050   1562         SHLD DAT2 - OFFSET
+                    1051   1563         POP  B
+                    1052   1564         DCR  B
+                    1053   1565         JNZ  DPIE2 - OFFSET
+                    1054   1566         LDA  DAT1 - OFFSET
+                    1055   1567         CMA
+                    1056   1568         STA  DAT1 - OFFSET
+                    1057   1569         POP  B
+                    1058   1570         DCR  B
+                    1059   1571         JNZ  DPIE0 - OFFSET
+                    1060   1572         RET
+                    1061   1573 
+                    1062   1574 DONEP:                          ;DRAW ONE PIECE
+                    1063   1575         INX  D                  ;DE -> NEXT PIECE IN TABLE
+                    1064   1576         PUSH D
+                    1065   1577         CALL SUB1 - OFFSET
+                    1066   1578         LXI  B,6                ;6 BYTES PER PIECE GRAPHICS
+                    1067   1579         LHLD DAT2 - OFFSET
+                    1068   1580         DAD  B
+                    1069   1581         SHLD DAT2 - OFFSET
+                    1070   1582         CALL SUB2 - OFFSET
+                    1071   1583         POP  D
+                    1072   1584         RET
+                    1073   1585 
+                    1074   1586 SUB1:   XCHG                    ;BIT FIDDLING TO GET PIECE GRAPHICS ON BOARD
+                    1075   1587         MOV  A,M
+                    1076   1588         ANI  80H
+                    1077   1589         MOV  A,M
+                    1078   1590         JZ   SUB11 - OFFSET
+                    1079   1591         POP  D
+                    1080   1592         LXI  B,6
+                    1081   1593         LHLD DAT2 - OFFSET
+                    1082   1594         DAD  B
+                    1083   1595         SHLD DAT2 - OFFSET
+                    1084   1596         POP  D
+                    1085   1597         RET
+                    1086   1598 SUB11:  RRC
+                    1087   1599         MOV  B,A
+                    1088   1600         RLC
+                    1089   1601         RLC
+                    1090   1602         RLC
+                    1091   1603         MOV  C,A
+                    1092   1604         RLC
+                    1093   1605         MOV  E,A
+                    1094   1606         RLC
+                    1095   1607         ANI  4
+                    1096   1608         MOV  D,A
+                    1097   1609         MOV  A,E
+                    1098   1610         ANI  1
+                    1099   1611         ORA  D
+                    1100   1612         MOV  D,A
+                    1101   1613         MOV  A,B
+                    1102   1614         ANI  2
+                    1103   1615         ORA  D
+                    1104   1616         MOV  D,A
+                    1105   1617         MVI  A,18H
+                    1106   1618         ORA  D
+                    1107   1619         MOV  D,A
+                    1108   1620         MOV  A,E
+                    1109   1621         ANI  80H
+                    1110   1622         MOV  E,A
+                    1111   1623         MOV  A,C
+                    1112   1624         ANI  0CH
+                    1113   1625         ORA  E
+                    1114   1626         PUSH PSW
+                    1115   1627         ORI  16
+                    1116   1628         MOV  E,A
+                    1117   1629         POP  PSW
+                    1118   1630         RET
+                    1119   1631 
+                    1120   1632 SUB2:   MOV  B,C
+                    1121   1633 SUB22:  MOV  A,M
+                    1122   1634         ANI  32
+                    1123   1635         CNZ  SUB4 - OFFSET
+                    1124   1636         INX  D
+                    1125   1637         MOV  A,M
+                    1126   1638         ANI  16
+                    1127   1639         CNZ  SUB3 - OFFSET
+                    1128   1640         MOV  A,M
+                    1129   1641         ANI  8
+                    1130   1642         CNZ  SUB4 - OFFSET
+                    1131   1643         INX  D
+                    1132   1644         MOV  A,M
+                    1133   1645         ANI  4
+                    1134   1646         CNZ  SUB3 - OFFSET
+                    1135   1647         MOV  A,M
+                    1136   1648         ANI  2
+                    1137   1649         CNZ  SUB4 - OFFSET
+                    1138   1650         INX  D
+                    1139   1651         MOV  A,M
+                    1140   1652         ANI  1
+                    1141   1653         CNZ  SUB3 - OFFSET
+                    1142   1654         PUSH H
+                    1143   1655         LXI  H,000DH
+                    1144   1656         DAD  D
+                    1145   1657         XCHG
+                    1146   1658         POP  H
+                    1147   1659         INX  H
+                    1148   1660         DCR  B
+                    1149   1661         JNZ  SUB22 - OFFSET
+                    1150   1662         RET
+                    1151   1663 
+                    1152   1664 SUB3:   XCHG
+                    1153   1665         MOV  A,M
+                    1154   1666         ANI  0F0H
+                    1155   1667         MOV  C,A
+                    1156   1668         LDA  DAT1 - OFFSET
+                    1157   1669         ANI  00FH
+                    1158   1670         ORA  C
+                    1159   1671         MOV  M,A
+                    1160   1672         XCHG
+                    1161   1673         RET
+                    1162   1674 
+                    1163   1675 SUB4:   XCHG
+                    1164   1676         MOV  A,M
+                    1165   1677         ANI  00FH
+                    1166   1678         MOV  C,A
+                    1167   1679         LDA  DAT1 - OFFSET
+                    1168   1680         ANI  0F0H
+                    1169   1681         ORA  C
+                    1170   1682         MOV  M,A
+                    1171   1683         XCHG
+                    1172   1684         RET
+                    1173   1685 
+                    1174   1686 DAT1:   DB   0FFH                       ;PIECE COLOR
+                    1175   1687 DAT2:   DW   0                          ;PIECE LOCATION
+                    1176   1688 
+                    1177   1689 PTAB:   DB   0CH,3FH,33H,21H,33H,1EH    ;PIECE GRAPHICS
+                    1178   1690         DB   00H,2DH,3FH,2DH,3FH,3FH
+                    1179   1691         DB   2DH,3FH,1EH,1EH,1EH,1EH
+                    1180   1692         DB   2DH,3FH,1EH,1EH,1EH,1EH
+                    1181   1693         DB   0CH,1CH,3FH,1EH,0CH,3FH
+                    1182   1694         DB   0CH,1CH,3FH,1EH,0CH,3FH
+                    1183   1695         DB   08H,1EH,3FH,37H,07H,0FH
+                    1184   1696         DB   08H,1EH,3FH,37H,07H,0FH
+                    1185   1697         DB   00H,0CH,0CH,1EH,3FH,3FH
+                    1186   1698 
+                    1187   1699         ENDIF
+                    1188   1700 
+                    1189   1701 ;
+                    1190   1702 ; RELOCATABLE PATCH TO DISPLAY SMALL BOARD WITH COORDINATES
+                    1191   1703 ;
+                    1192   1704         IF   COORD
+                    1193   1705 
+0e00  cd da 01      1194   1706 DISP1:  CALL 01DAH
+0e03  cd 0c 0e      1195   1707         CALL DISP2 - OFFSET
+0e06  21 b6 0c      1196   1708         LXI  H,0CB6H
+0e09  c3 da 01      1197   1709         JMP  01DAH
+                    1198   1710 
+0e0c  06 20         1199   1711 DISP2:  MVI  B,20H
+0e0e  cd bf 09      1200   1712         CALL 09BFH
+0e11  c3 bf 09      1201   1713         JMP  09BFH
+                    1202   1714 
+0e14  cd bf 09      1203   1715 DISP3:  CALL 09BFH
+0e17  04            1204   1716         INR  B
+0e18  78            1205   1717         MOV  A,B
+0e19  e6 07         1206   1718         ANI  07H
+0e1b  32 29 0e      1207   1719         STA  DDAT - OFFSET
+0e1e  06 20         1208   1720         MVI  B,20H
+0e20  c3 bf 09      1209   1721         JMP  09BFH
+                    1210   1722 
+0e23  cd 0c 0e      1211   1723 DISP4:  CALL DISP2 - OFFSET
+0e26  c3 da 01      1212   1724         JMP  01DAH
+                    1213   1725 
+0e29  00            1214   1726 DDAT:   DB   0
+0e2a  20 20 20 20   1215   1727 CTEXT:  DB   '     0  1  2  3  4  5  6  7',0DH
+0e2e  20 30 20 20   1215   1728
+0e32  31 20 20 32   1215   1729
+0e36  20 20 33 20   1215   1730
+0e3a  20 34 20 20   1215   1731
+0e3e  35 20 20 36   1215   1732
+0e42  20 20 37 0d   1215   1733
+                    1216   1734 
+                    1217   1735         ENDIF
+                    1218   1736 
+                    1219   1737 ;
+                    1220   1738 ; PATCH TO RUN IT UNDER CP/M
+                    1221   1739 ;
+                    1222   1740         IF   CPM
+                    1223   1741 
+                    1224   1742         ORG  0 + OFFSET         ;PATCH FIRST INSTRUCTION TO JUMP
+                    1225   1743         JMP  CPMIN              ;TO THE CP/M PATCH
+                    1226   1744 
+                    1227   1745         ORG  01D7H + OFFSET     ;PATCH HLT FOR STANDALONE TO
+                    1228   1746         JMP  CPMOUT             ;RETURN TO CP/M
+                    1229   1747 
+                    1230   1748         ORG  0DE6H + OFFSET     ;PATCH TERMINAL OUT FOR CP/M
+                    1231   1749         MOV  C,B
+                    1232   1750         CALL CONOUT
+                    1233   1751         RET
+                    1234   1752 
+                    1235   1753         ORG  0DF1H + OFFSET     ;PATCH TERMINAL IN FOR CP/M
+                    1236   1754         CALL CONIN
+                    1237   1755         ANI  7FH
+                    1238   1756         MOV  B,A
+                    1239   1757         RET
+                    1240   1758 
+                    1241   1759         ORG  1000H + OFFSET     ;CP/M PATCH AREA
+                    1242   1760 CPMIN:  LHLD 1                  ;BIOS WARM BOOT -> HL
+                    1243   1761         LXI  B,6                ;BIOS CONIN -> HL
+                    1244   1762         DAD  B
+                    1245   1763         INX  H
+                    1246   1764         MOV  A,M                ;STORE ADR. FOR CONIN
+                    1247   1765         STA  CONIN + 1
+                    1248   1766         INX  H
+                    1249   1767         MOV  A,M
+                    1250   1768         STA  CONIN + 2
+                    1251   1769         LHLD 1                  ;BIOS WARM BOOT -> HL
+                    1252   1770         LXI  B,9                ;BIOS CONOUT -> HL
+                    1253   1771         DAD  B
+                    1254   1772         INX  H
+                    1255   1773         MOV  A,M                ;STORE ADR. FOR CONOUT
+                    1256   1774         STA  CONOUT + 1
+                    1257   1775         INX  H
+                    1258   1776         MOV  A,M
+                    1259   1777         STA  CONOUT + 2
+                    1260   1778         LDA  3                  ;GET THE IOBYTE
+                    1261   1779         LXI  SP,STACK
+                    1262   1780         LXI  H,0                ;FOR CP/M WE NEED TO SAVE 00-7FH
+                    1263   1781         LXI  D,SAVE
+                    1264   1782         LXI  B,0080H
+                    1265   1783         CALL LDIR
+                    1266   1784         LXI  H,OFFSET           ;NOW MOVE THE PROGRAM DOWN TO 0
+                    1267   1785         LXI  D,0
+                    1268   1786         LXI  B,0FFFH
+                    1269   1787         CALL LDIR
+                    1270   1788         STA  3                  ;RESTORE THE IOBYTE, BIOS MIGHT NEED IT
+                    1271   1789         LXI  SP,0D82H           ;FIRST INSTRUCTION JUST PATCHED ABOVE
+                    1272   1790         CALL 09ACH              ;SECOND INSTRUCTION DESTROYED BY IOBYTE
+                    1273   1791         JMP  6                  ;GO TO MICROCHESS
+                    1274   1792 
+                    1275   1793 CPMOUT: LXI  SP,STACK
+                    1276   1794         LXI  H,SAVE             ;RESTORE 00-7FH FOR CP/M
+                    1277   1795         LXI  D,0
+                    1278   1796         LXI  B,0080H
+                    1279   1797         CALL LDIR
+                    1280   1798         IF   DAZZLER
+                    1281   1799         XRA  A                  ;SWITCH DAZZLER OFF
+                    1282   1800         OUT  0EH
+                    1283   1801         ENDIF
+                    1284   1802         RST  0                  ;AND THEN RETURN TO CP/M
+                    1285   1803 
+                    1286   1804 CONIN:  JMP  0                  ;CALL BIOS CONSOLE IN
+                    1287   1805 CONOUT: JMP  0                  ;CALL BIOS CONSOLE OUT
+                    1288   1806 
+                    1289   1807 SAVE:   DS   80H
+                    1290   1808         DS   16
+                    1291   1809 STACK:
+                    1292   1810 
+                    1293   1811         ENDIF
+                    1294   1812 
+                    1295   1813 ;
+                    1296   1814 ; SUPPORT ROUTINE TO AVOID USING Z80 LDIR INSTRUCTION
+                    1297   1815 ;
+                    1298   1816         IF   CPM OR DAZZLER
+                    1299   1817 LDIR:   PUSH PSW
+                    1300   1818 LDIR1:  MOV  A,M
+                    1301   1819         STAX D
+                    1302   1820         INX  H
+                    1303   1821         INX  D
+                    1304   1822         DCX  B
+                    1305   1823         MOV  A,B
+                    1306   1824         ORA  C
+                    1307   1825         JNZ  LDIR1
+                    1308   1826         POP  PSW
+                    1309   1827         RET
+                    1310   1828         ENDIF
+                    1311   1829 
+0e46                1312   1830         END
+
+Symbol table
+
+CAUTO   0001    COORD   0001    CPM     0000    CTEXT   0e2a    DAZZLER 0000 
+DDAT    0e29    DISP1   0e00    DISP2   0e0c    DISP3   0e14    DISP4   0e23 
+IMSAI   0000    L000    0000*   L010    0010*   L020    0020*   L030    0030*
+L040    0040*   L050    0050*   L060    0060*   L070    0070*   L080    0080*
+L090    0090*   L0A0    00a0*   L0B0    00b0*   L0C0    00c0*   L0D0    00d0*
+L0E0    00e0*   L0F0    00f0*   L100    0100*   L110    0110*   L120    0120*
+L130    0130*   L140    0140*   L150    0150*   L160    0160*   L170    0170*
+L180    0180*   L190    0190*   L1A0    01a0*   L1B0    01b0*   L1C0    01c0*
+L1D0    01d0*   L1E0    01e0*   L1F0    01f0*   L200    0200*   L210    0210*
+L220    0220*   L230    0230*   L240    0240*   L250    0250*   L260    0260*
+L270    0270*   L280    0280*   L290    0290*   L2A0    02a0*   L2B0    02b0*
+L2C0    02c0*   L2D0    02d0*   L2E0    02e0*   L2F0    02f0*   L300    0300*
+L310    0310*   L320    0320*   L330    0330*   L340    0340*   L350    0350*
+L360    0360*   L370    0370*   L380    0380*   L390    0390*   L3A0    03a0*
+L3B0    03b0*   L3C0    03c0*   L3D0    03d0*   L3E0    03e0*   L3F0    03f0*
+L400    0400*   L410    0410*   L420    0420*   L430    0430*   L440    0440*
+L450    0450*   L460    0460*   L470    0470*   L480    0480*   L490    0490*
+L4A0    04a0*   L4B0    04b0*   L4C0    04c0*   L4D0    04d0*   L4E0    04e0*
+L4F0    04f0*   L500    0500*   L510    0510*   L520    0520*   L530    0530*
+L540    0540*   L550    0550*   L560    0560*   L570    0570*   L580    0580*
+L590    0590*   L5A0    05a0*   L5B0    05b0*   L5C0    05c0*   L5D0    05d0*
+L5E0    05e0*   L5F0    05f0*   L600    0600*   L610    0610*   L620    0620*
+L630    0630*   L640    0640*   L650    0650*   L660    0660*   L670    0670*
+L680    0680*   L690    0690*   L6A0    06a0*   L6B0    06b0*   L6C0    06c0*
+L6D0    06d0*   L6E0    06e0*   L6F0    06f0*   L700    0700*   L710    0710*
+L720    0720*   L730    0730*   L740    0740*   L750    0750*   L760    0760*
+L770    0770*   L780    0780*   L790    0790*   L7A0    07a0*   L7B0    07b0*
+L7C0    07c0*   L7D0    07d0*   L7E0    07e0*   L7F0    07f0*   L800    0800*
+L810    0810*   L820    0820*   L830    0830*   L840    0840*   L850    0850*
+L860    0860*   L870    0870*   L880    0880*   L890    0890*   L8A0    08a0*
+L8B0    08b0*   L8C0    08c0*   L8D0    08d0*   L8E0    08e0*   L8F0    08f0*
+L900    0900*   L910    0910*   L920    0920*   L930    0930*   L940    0940*
+L950    0950*   L960    0960*   L970    0970*   L980    0980*   L990    0990*
+L9A0    09a0*   L9B0    09b0*   L9C0    09c0*   L9D0    09d0*   L9E0    09e0*
+L9F0    09f0*   LA00    0a00*   LA10    0a10*   LA20    0a20*   LA30    0a30*
+LA40    0a40*   LA50    0a50*   LA60    0a60*   LA70    0a70*   LA80    0a80*
+LA90    0a90*   LAA0    0aa0*   LAB0    0ab0*   LAC0    0ac0*   LAD0    0ad0*
+LAE0    0ae0*   LAF0    0af0*   LB00    0b00*   LB10    0b10*   LB20    0b20*
+LB30    0b30*   LB40    0b40*   LB50    0b50*   LB60    0b60*   LB70    0b70*
+LB80    0b80*   LB90    0b90*   LBA0    0ba0*   LBB0    0bb0*   LBC0    0bc0*
+LBD0    0bd0*   LBE0    0be0*   LBF0    0bf0*   LC00    0c00*   LC10    0c10*
+LC20    0c20*   LC30    0c30*   LC40    0c40*   LC50    0c50*   LC60    0c60*
+LC70    0c70*   LC80    0c80*   LC90    0c90*   LCA0    0ca0*   LCB0    0cb0*
+LCC0    0cc0*   LCDO    0cd0*   LCE0    0ce0*   LCF0    0cf0*   LD00    0d00*
+LD10    0d10*   LD20    0d20*   LD30    0d30*   LD40    0d40*   LD50    0d50*
+LD60    0d60*   LD70    0d70*   LD80    0d80*   LD90    0d90*   LDA0    0da0*
+LDB0    0db0*   LDC0    0dc0*   LDD0    0dd0*   LDE0    0de0*   LDF0    0df0*
+LE00    0e00*   LE10    0e10*   LE20    0e20*   LE30    0e30*   LE40    0e40*
+LE50    0e50*   LE60    0e60*   LE70    0e70*   LE80    0e80*   LE90    0e90*
+LEA0    0ea0*   LEB0    0eb0*   LEC0    0ec0*   LED0    0ed0*   LEE0    0ee0*
+LEF0    0ef0*   LF00    0f00*   LF10    0f10*   LF20    0f20*   LF30    0f30*
+LF40    0f40*   LF50    0f50*   LF60    0f60*   LF70    0f70*   LF80    0f80*
+LF90    0f90*   LFA0    0fa0*   LFB0    0fb0*   LFC0    0fc0*   LFD0    0fd0*
+LFE0    0fe0*   LFF0    0ff0*   MAUTO   0001    MITS    0001    OFFSET  0000 
+SMALLD  0000    TTYI    0df1    TTYO    0de6    
