@@ -12,7 +12,7 @@
  * 27-MAY-2024 add access to files on MicroSD
  */
 
-/* Raspberry SDK includes */
+/* Raspberry SDK and FatFS includes */
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/time.h"
