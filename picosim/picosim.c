@@ -9,6 +9,7 @@
  * History:
  * 28-APR-2024 implemented first release of Z80 emulation
  * 09-MAY-2024 test 8080 emulation
+ * 27-MAY-2024 add access to files on MicroSD
  */
 
 /* Raspberry SDK includes */
@@ -68,15 +69,16 @@ int main(void)
 	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
 					   true, &gpio_callback);
 
+	/* print banner */
+	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
+	printf("%s release %s\n", USR_COM, USR_REL);
+	printf("%s\n\n", USR_CPR);
+
 	/* try to mount SD card */
 	SD = sd_get_by_num(0);
 	sd_res = f_mount(&SD->fatfs, SD->pcName, 1);
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
-
-	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
-	printf("%s release %s\n", USR_COM, USR_REL);
-	printf("%s\n\n", USR_CPR);
 
 	f_flag = CPU_SPEED;
 	tmax = CPU_SPEED * 10000; /* theoretically */
