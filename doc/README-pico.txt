@@ -20,4 +20,11 @@ connected the break switch to a different port.
 The MicroSD drive is a 3.3V one and it supports SPI and SDIO, I'll first
 use SPI, that should be fast enough for what I want.
 
+picoboard3:
+And here the MicroSD drive is wired and I can read/write files on the card.
+I have connected four of the GND pins of the Pico board with the GND lines
+on the breadbaord. The card drives can draw 100 mA, so better provide
+sufficient GND. Also please note the two blocking capacitors, these are
+to keep radio emissions low.
+
 How to build the application for this board is explained in picosim/README.
