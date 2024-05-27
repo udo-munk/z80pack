@@ -300,6 +300,7 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
+	extern BYTE (*port_in[256])(void);
 	unsigned long long clk;
 #ifdef FRONTPANEL
 	int val;
@@ -354,6 +355,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
+	extern void (*port_out[256])(BYTE);
 	unsigned long long clk;
 #ifndef FRONTPANEL
 	UNUSED(addrh);
