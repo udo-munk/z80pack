@@ -26,18 +26,6 @@
 static const char *TAG = "core";
 #endif
 
-/*
- *	This array contains function pointers for every
- *	input I/O port (0 - 255), to do the required I/O.
- */
-extern BYTE (*port_in[256])(void);
-
-/*
- *	This array contains function pointers for every
- *	output I/O port (0 - 255), to do the required I/O.
- */
-extern void (*port_out[256])(BYTE);
-
 extern unsigned long long get_clock_us(void);
 extern void cpu_z80(void), cpu_8080(void);
 
@@ -312,6 +300,7 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
+	extern BYTE (*port_in[256])(void);
 	unsigned long long clk;
 #ifdef FRONTPANEL
 	int val;
@@ -366,6 +355,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
+	extern void (*port_out[256])(BYTE);
 	unsigned long long clk;
 #ifndef FRONTPANEL
 	UNUSED(addrh);
