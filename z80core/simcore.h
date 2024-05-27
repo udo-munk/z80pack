@@ -87,18 +87,6 @@ typedef unsigned short WORD;	/* 16 bit unsigned */
 typedef signed short   SWORD;	/* 16 bit signed */
 typedef unsigned char  BYTE;	/* 8 bit unsigned */
 
-/*
- *	This array contains function pointers for every
- *	input I/O port (0 - 255), to do the required I/O.
- */
-extern BYTE (*port_in[256])(void);
-
-/*
- *	This array contains function pointers for every
- *	output I/O port (0 - 255), to do the required I/O.
- */
-extern void (*port_out[256])(BYTE);
-
 #ifdef HISIZE
 struct history {		/* structure of a history entry */
 	int	h_cpu;		/* CPU type */
