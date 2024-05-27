@@ -18,6 +18,7 @@
 #include "sd_card.h"
 #include "f_util.h"
 #include "ff.h"
+#include "hw_config.h"
 
 /* Project includes */
 #include "sim.h"
@@ -65,6 +66,7 @@ int main(void)
 					   true, &gpio_callback);
 
 	/* try to mount SD card */
+	SD = sd_get_by_num(0);
 	sd_res = f_mount(&SD->fatfs, SD->pcName, 1);
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
