@@ -35,6 +35,11 @@
 #define FDC_READ	0x20  // read sector from disk
 #define FDC_WRITE	0x40  // write sector to disk
 
+// extern functions that the platform must provide
+extern BYTE read_sec(int, int, int, WORD);
+extern BYTE write_sec(int, int, int, WORD);
+void get_fdccmd(BYTE *, WORD);
+
 static BYTE fdc_cmd[4];    // FDC command
 static BYTE fdc_state;     // state of the FDC state machine
 static BYTE fdc_stat;      // status of last FDC command
