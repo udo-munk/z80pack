@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "f_util.h"
 #include "ff.h"
 #include "sim.h"
 #include "simglb.h"
@@ -67,6 +68,8 @@ void load_file(char *name)
 			break;
 		i += 128;
 	}
+	if (sd_res != FR_OK)
+		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
 	f_close(&sd_file);
 }
