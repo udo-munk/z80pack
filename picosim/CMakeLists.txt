@@ -28,6 +28,7 @@ add_executable(picosim
 	config.c
 	memsim.c
 	iosim.c
+	hw_config.c
 )
 add_subdirectory(
 	no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
@@ -39,6 +40,9 @@ add_subdirectory(
 target_link_libraries(picosim pico_stdlib FatFs_SPI pico_cyw43_arch_none)
 
 pico_add_extra_outputs(picosim)
+
+pico_set_program_name(picosim "z80pack picosim")
+pico_set_program_version(picosim "1.0")
 
 # enable UART output, disable USB output
 pico_enable_stdio_uart(picosim 1)
