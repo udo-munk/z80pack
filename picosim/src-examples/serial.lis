@@ -16,7 +16,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0001  =               13     13 TTYDAT	EQU	1			; tty data port
                       14     14 
 0000  f3              15     15 	DI				; disable interrupts
-0001  31 00 f0        16     16 	LD	SP,0F000H		; setup stack in upper memory
+0001  31 8d 00        16     16 	LD	SP,STACK		; setup stack in upper memory
                       17     17 
                       18     18 					; print instructions
 0004  21 35 00        19     19 	LD	HL,TEXT			; HL points to text to send
@@ -72,9 +72,13 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0075  65              54     69
 0076  0d 0a 00        55     70 	DEFB	CR,LF,0
                       56     71 
-0079                  57     72 	END
+0079                  57     72 	DS	20			; spave for the stack
+008d                  58     73 STACK:
+                      59     74 
+008d                  60     75 	END				; of program
 
 Symbol table
 
 CR     000d    DONE   002a    ECHO   0011    LF     000a    LOOP   0007 
-OUTCH  002b    OUTCH1 002c    TEXT   0035    TTYDAT 0001    TTYSTA 0000 
+OUTCH  002b    OUTCH1 002c    STACK  008d    TEXT   0035    TTYDAT 0001 
+TTYSTA 0000    

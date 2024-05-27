@@ -11,14 +11,11 @@ port implemented in the latest release is identical.
 You also can attach the ICE to this machine for debugging,
 see sim.h for compiling options.
 
-Copy one of the "example".c files to ../z80code.h and rebuild
-the application.
-
 The examples are:
-serial.c	- shows how to do serial I/O
-blink.c		- blink builtin LED with Z80 port output
+serial.bin	- shows how to do serial I/O
+blink.bin		- blink builtin LED with Z80 port output
 
-tb.c		- 8080 TINY BASIC
-micro80.c	- 8080 Microchess
-basic4k32.c	- MITS Altair BASIC 4K V3.2, runs on 8080 only! p ff = 0
-basic8k40.c	- MITS Altair BASIC 8K V4.0, runs on 8080 only! p ff = 22
+tb.bin		- 8080 TINY BASIC
+micro80.bin	- 8080 Microchess
+basic4k32.bin	- MITS Altair BASIC 4K V3.2, runs on 8080 only! p ff = 0
+basic8k40.bin	- MITS Altair BASIC 8K V4.0, runs on 8080 only! p ff = 22

@@ -39,6 +39,7 @@
 
 /* global variables for access to SPI MicroSD drive */
 sd_card_t *SD;
+FIL sd_file;
 FRESULT sd_res;
 
 extern void init_cpu(void), init_io(void);

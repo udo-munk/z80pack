@@ -9,6 +9,7 @@
  * History:
  * 20-APR-2024 dummy, no configuration implemented yet
  * 12-MAY-2024 implemented configuration dialog
+ * 27-MAY-2024 implemented load file
  */
 
 #include <stdio.h>
@@ -18,7 +19,19 @@
 
 extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
+extern void load_file(char *);
 extern unsigned char fp_value;
+
+/*
+ * promt for a filename
+ */
+static void prompt_fn(char *s)
+{
+      printf("Filename: ");
+      get_cmdline(s, 9);
+      load_file(s);
+      printf("\n");
+}
 
 /*
  * Configuration dialog for the machine
@@ -32,7 +45,8 @@ void config(void)
 		printf("1 - switch CPU, currently %s\n", (cpu == Z80) ?
 							  "Z80" : "8080");
 		printf("2 - set port 255 value, currently %02XH\n", fp_value);
-		printf("3 - run machine\n\n");
+		printf("3 - load file\n");
+		printf("4 - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
 		printf("\n\n");
@@ -57,9 +71,15 @@ again:
 			fp_value += (*(s + 1) <= '9' ? *(s + 1) - '0' :
 				     *(s + 1) - 'A' + 10);
 			break;
+
 		case '3':
+			prompt_fn(s);
+			break;
+
+		case '4':
 			go_flag = 1;
 			break;
+
 		default:
 			break;
 		}

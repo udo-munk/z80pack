@@ -13,7 +13,7 @@ TTYSTA	EQU	0			; tty status port
 TTYDAT	EQU	1			; tty data port
 
 	DI				; disable interrupts
-	LD	SP,0F000H		; setup stack in upper memory
+	LD	SP,STACK		; setup stack in upper memory
 
 					; print instructions
 	LD	HL,TEXT			; HL points to text to send
@@ -54,4 +54,7 @@ TEXT:	DEFM	"Hello from the Z80 CPU"
 	DEFM	"I will echo what you type, type X if done"
 	DEFB	CR,LF,0
 
-	END
+	DS	20			; spave for the stack
+STACK:
+
+	END				; of program

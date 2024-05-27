@@ -11,7 +11,7 @@
 LED	EQU	0		; builtin LED port
 
 	DI			; disable interrupts
-	LD	SP,0F000H	; setup stack in upper memory
+	LD	SP,STACK	; setup stack in upper memory
 
 	LD	B,20		; blink LED 20 times
 L1:	LD	A,1		; switch LED on
@@ -30,5 +30,8 @@ L3:	DEC	HL
 	JR	NZ,L3
 	DJNZ	L1		; again if not done
 	HALT			; done, halt CPU
+
+	DS	20		; space for the stack
+STACK:
 
 	END			; of program
