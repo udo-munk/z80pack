@@ -305,7 +305,7 @@ int op_fdcb_handle(void)
 	register int d;
 	register int t;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	t = (*op_fdcb[memrdr(PC++)])(d); /* execute next opcode */
 
 	return (t);

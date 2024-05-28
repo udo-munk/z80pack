@@ -230,7 +230,7 @@ next_opcode:
 		P = memrdr(PC++);
 		t++;
 		if (--B) {
-			PC += (signed char) P;
+			PC += (SBYTE) P;
 			t += 8;
 		}
 		break;
@@ -276,7 +276,7 @@ next_opcode:
 
 	case 0x18:			/* JR n */
 		P = memrdr(PC++);
-		PC += (signed char) P;
+		PC += (SBYTE) P;
 		t += 8;
 		break;
 
@@ -323,7 +323,7 @@ next_opcode:
 		P = memrdr(PC++);
 		t += 3;
 		if (res) {
-			PC += (signed char) P;
+			PC += (SBYTE) P;
 			t += 5;
 		}
 		break;
@@ -452,7 +452,7 @@ next_opcode:
 	case 0x34:			/* INC (ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -464,7 +464,7 @@ next_opcode:
 	case 0x35:			/* DEC (ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -476,7 +476,7 @@ next_opcode:
 	case 0x36:			/* LD (ir),n */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 5;
 		}
 		memwrt(W, memrdr(PC++));
@@ -560,7 +560,7 @@ next_opcode:
 	case 0x46:			/* LD B,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		B = memrdr(W);
@@ -594,7 +594,7 @@ next_opcode:
 	case 0x4e:			/* LD C,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		C = memrdr(W);
@@ -628,7 +628,7 @@ next_opcode:
 	case 0x56:			/* LD D,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		D = memrdr(W);
@@ -662,7 +662,7 @@ next_opcode:
 	case 0x5e:			/* LD E,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		E = memrdr(W);
@@ -696,7 +696,7 @@ next_opcode:
 	case 0x66:			/* LD H,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 			H = memrdr(W);
 		} else
@@ -731,7 +731,7 @@ next_opcode:
 	case 0x6e:			/* LD L,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 			L = memrdr(W);
 		} else
@@ -746,7 +746,7 @@ next_opcode:
 	case 0x70:			/* LD (ir),B */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		memwrt(W, B);
@@ -756,7 +756,7 @@ next_opcode:
 	case 0x71:			/* LD (ir),C */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		memwrt(W, C);
@@ -766,7 +766,7 @@ next_opcode:
 	case 0x72:			/* LD (ir),D */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		memwrt(W, D);
@@ -776,7 +776,7 @@ next_opcode:
 	case 0x73:			/* LD (ir),E */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		memwrt(W, E);
@@ -786,7 +786,7 @@ next_opcode:
 	case 0x74:			/* LD (ir),H */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 			memwrt(W, H);
 		} else
@@ -797,7 +797,7 @@ next_opcode:
 	case 0x75:			/* LD (ir),L */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 			memwrt(W, L);
 		} else
@@ -879,7 +879,7 @@ next_opcode:
 	case 0x77:			/* LD (ir),A */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		memwrt(W, A);
@@ -913,7 +913,7 @@ next_opcode:
 	case 0x7e:			/* LD A,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		A = memrdr(W);
@@ -962,7 +962,7 @@ next_opcode:
 	case 0x86:			/* ADD A,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1008,7 +1008,7 @@ next_opcode:
 	case 0x8e:			/* ADC A,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1063,7 +1063,7 @@ next_opcode:
 	case 0x96:			/* SUB A,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1110,7 +1110,7 @@ next_opcode:
 	case 0x9e:			/* SBC A,(ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1155,7 +1155,7 @@ next_opcode:
 	case 0xa6:			/* AND (ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1198,7 +1198,7 @@ next_opcode:
 	case 0xae:			/* XOR (ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1243,7 +1243,7 @@ next_opcode:
 	case 0xb6:			/* OR (ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1290,7 +1290,7 @@ next_opcode:
 	case 0xbe:			/* CP (ir) */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		}
 		P = memrdr(W);
@@ -1378,7 +1378,7 @@ next_opcode:
 	case 0xcb:			/* 0xcb prefix */
 		W = IR;
 		if (curr_ir != IR_HL) {
-			W += (signed char) memrdr(PC++);
+			W += (SBYTE) memrdr(PC++);
 			t += 8;
 		} else {
 #ifdef BUS_8080

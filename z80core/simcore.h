@@ -86,6 +86,7 @@
 typedef uint16_t WORD;		/* 16 bit unsigned */
 typedef int16_t  SWORD;		/* 16 bit signed */
 typedef uint8_t  BYTE;		/* 8 bit unsigned */
+typedef int8_t   SBYTE;		/* 8 bit signed */
 
 #ifdef HISIZE
 struct history {		/* structure of a history entry */
