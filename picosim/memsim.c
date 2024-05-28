@@ -21,6 +21,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memsim.h"
+#include "sd-fdc.h"
 
 extern FIL sd_file;
 extern FRESULT sd_res;
@@ -39,7 +40,7 @@ void init_memory(void)
 		code[i] = 0xff;
 }
 
-void complain(void)
+static void complain(void)
 {
 	printf("File not found\n\n");
 }
@@ -100,19 +101,99 @@ void mount_disk(int drive, char *name)
 }
 
 /*
- * read from drive a sector on track into FRAM addr
- * dummy, need to get SD working first
+ * prepare I/O for sector read and write routines
  */
-BYTE read_sec(int drive, int track, int sector, WORD addr)
+static BYTE prep_io(int drive, int track, int sector, WORD addr)
 {
+	FSIZE_t pos;
+
+	/* check if drive in range */
+	if ((drive < 0) || (drive > 1))
+		return FDC_STAT_DISK;
+  
+	/* check if track and sector in range */
+	if (track > TRK)
+		return FDC_STAT_TRACK;
+	if ((sector < 1) || (sector > SPT))
+		return FDC_STAT_SEC;
+
+	/* check if DMA address in range */
+	if (addr > 0xff7f)
+		return FDC_STAT_DMAADR;
+
+	/* check if disk in drive */
+	if (!strlen(disks[drive])) {
+		return FDC_STAT_NODISK;
+	}
+
+	/* open file with the disk image */
+	sd_res = f_open(&sd_file, disks[drive], FA_READ | FA_WRITE);
+	if (sd_res != FR_OK)
+		return FDC_STAT_NODISK;
+
+	/* seek to track/sector */
+	pos = (((FSIZE_t) track * (FSIZE_t) SPT) + sector - 1) * SEC_SZ;
+	if (f_lseek(&sd_file, pos) != FR_OK) {
+		f_close(&sd_file);
+		return FDC_STAT_SEEK;
+	}
+	return FDC_STAT_OK;
 }
 
 /*
- * write to drive a sector on track from FRAM addr
- * dummy, need to get SD working first
+ * read from drive a sector on track into memory @ addr
+ */
+BYTE read_sec(int drive, int track, int sector, WORD addr)
+{
+	BYTE stat;
+	unsigned int br;
+
+	/* prepare for sector read */
+	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
+		return stat;
+
+	/* read sector into memory */
+	sd_res = f_read(&sd_file, &code[addr], 128, &br);
+	if (sd_res == FR_OK) {
+		if (br < 128) {	/* UH OH */
+			f_close(&sd_file);
+			return FDC_STAT_READ;
+		} else {
+			f_close(&sd_file);
+			return FDC_STAT_OK;
+		}
+	} else {
+			f_close(&sd_file);
+			return FDC_STAT_READ;
+	}
+}
+
+/*
+ * write to drive a sector on track from memory @ addr
  */
 BYTE write_sec(int drive, int track, int sector, WORD addr)
 {
+	BYTE stat;
+	unsigned int br;
+
+	/* prepare for sector read */
+	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
+		return stat;
+
+	/* write sector to disk image */
+	sd_res = f_write(&sd_file, &code[addr], 128, &br);
+	if (sd_res == FR_OK) {
+		if (br < 128) {	/* UH OH */
+			f_close(&sd_file);
+			return FDC_STAT_WRITE;
+		} else {
+			f_close(&sd_file);
+			return FDC_STAT_OK;
+		}
+	} else {
+			f_close(&sd_file);
+			return FDC_STAT_WRITE;
+	}
 }
 
 /*

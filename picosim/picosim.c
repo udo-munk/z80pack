@@ -26,6 +26,7 @@
 #include "simglb.h"
 #include "config.h"
 #include "memsim.h"
+#include "sd-fdc.h"
 
 /* Pico W also needs this */
 #if PICO == 1
@@ -46,12 +47,15 @@ char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
 
 extern void init_cpu(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
+extern BYTE read_sec(int, int, int, WORD);
 
 uint64_t get_clock_us(void);
 void gpio_callback(uint, uint32_t);
 
 int main(void)
 {
+	BYTE stat;
+
 	stdio_init_all();	/* initialize Pico stdio */
 
 #if PICO == 1			/* initialize Pico W hardware */
@@ -101,7 +105,23 @@ int main(void)
 
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
-	config();		/* configure the machine */
+NOPE:	config();		/* configure the machine */
+
+	/* if there is a disk in drive 0 try to boot from it */
+	if (strlen(disks[0]) != 0) {
+		/* they will try this for sure, so ... */
+		if (!strcmp(disks[0], disks[1])) {
+			printf("Not with this config dude\n");
+			goto NOPE;
+		}
+		stat = read_sec(0, 0, 1, 0); /* read track 0 sector 1 */
+		if (stat != FDC_STAT_OK) {
+			printf("Disk 0 read error: %d\n", stat);
+			f_unmount(SD->pcName);
+			stdio_flush();
+			return (0);
+		}
+	}
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE

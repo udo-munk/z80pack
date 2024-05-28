@@ -9,6 +9,7 @@ pico_sdk_init()
 include_directories(
 	.
 	../z80core
+	../iodevices
 )
 add_executable(picosim
 	picosim.c
