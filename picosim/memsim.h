@@ -24,7 +24,7 @@ extern BYTE code[];
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	if (addr < 0xff00);
+	if (addr < 0xff00)
 		code[addr] = data;
 }
 
