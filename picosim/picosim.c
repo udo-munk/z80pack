@@ -92,7 +92,6 @@ int main(void)
 	tmax = CPU_SPEED * 10000; /* theoretically */
 
 	/* tell us what we are using */
-	printf("CPU is %s\n", cpu == Z80 ? "Z80" : "8080");
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);
 	else
@@ -192,6 +191,8 @@ int get_cmdline(char *buf, int len)
 		} else {
 			putchar('\r');
 			putchar('\n');
+			buf[i] = '\n';
+			i++;
 			break;
 		}
 	}
