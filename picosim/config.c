@@ -10,6 +10,7 @@
  * 20-APR-2024 dummy, no configuration implemented yet
  * 12-MAY-2024 implemented configuration dialog
  * 27-MAY-2024 implemented load file
+ * 28-MAY-2024 implemented mount/unmount of disk images
  */
 
 #include <stdint.h>
