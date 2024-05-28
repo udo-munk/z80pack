@@ -214,10 +214,21 @@ void (*port_out[256])(BYTE) = {
  */
 void init_io(void)
 {
+	extern BYTE io_trap_in(void);
+	extern void io_trap_out(BYTE);
+
 	register int i;
 	pthread_t thread;
 	static struct itimerval tim;
 	static struct sigaction newact;
+
+	/* initialize unused ports to trap handlers */
+	for (i = 0; i <= 255; i++) {
+		if (port_in[i] == NULL)
+			port_in[i] = io_trap_in;
+		if (port_out[i] == NULL)
+			port_out[i] = io_trap_out;
+	}
 
 	/* initialize TCP/IP networking */
 #ifdef TCPASYNC

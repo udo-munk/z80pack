@@ -313,15 +313,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	clk = get_clock_us();
 
 	io_port = addrl;
-	if (port_in[addrl] != NULL)
-		io_data = (*port_in[addrl])();
-	else {
-		if (i_flag) {
-			cpu_error = IOTRAPIN;
-			cpu_state = STOPPED;
-		}
-		io_data = 0xff;
-	}
+	io_data = (*port_in[addrl])();
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
@@ -336,7 +328,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		val = wait_step();
 
 		/* when single stepped INP get last set value of port */
-		if (val && port_in[addrl] != NULL)
+		if (val)
 			io_data = (*port_in[addrl])();
 	}
 #endif
@@ -374,14 +366,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	busy_loop_cnt = 0;
 
-	if (port_out[addrl] != NULL)
-		(*port_out[addrl])(data);
-	else {
-		if (i_flag) {
-			cpu_error = IOTRAPOUT;
-			cpu_state = STOPPED;
-		}
-	}
+	(*port_out[addrl])(data);
 
 #ifdef BUS_8080
 	cpu_bus = CPU_OUT;
@@ -398,6 +383,37 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #endif
 
 	cpu_time -= get_clock_us() - clk;
+}
+
+/*
+ *	I/O input trap function
+ *	This function should be added into all unused
+ *	entries of the input port array. It can stop the
+ *	emulation with an I/O error.
+ */
+BYTE io_trap_in(void)
+{
+	if (i_flag) {
+		cpu_error = IOTRAPIN;
+		cpu_state = STOPPED;
+	}
+	return ((BYTE) 0xff);
+}
+
+/*
+ *      I/O output trap function
+ *      This function should be added into all unused
+ *      entries of the output port array. It can stop the
+ *      emulation with an I/O error.
+ */
+void io_trap_out(BYTE data)
+{
+	UNUSED(data);
+
+	if (i_flag) {
+		cpu_error = IOTRAPOUT;
+		cpu_state = STOPPED;
+	}
 }
 
 /*

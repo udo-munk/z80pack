@@ -61,6 +61,27 @@ void (*port_out[256])(BYTE) = {
 };
 
 /*
+ *	This function is to initiate the I/O devices.
+ *	It will be called from the CPU simulation before
+ *	any operation with the CPU is possible.
+ */
+void init_io(void)
+{
+	extern BYTE io_trap_in(void);
+	extern void io_trap_out(BYTE);
+
+	register int i;
+
+	/* initialize unused ports to trap handlers */
+	for (i = 0; i <= 255; i++) {
+		if (port_in[i] == NULL)
+			port_in[i] = io_trap_in;
+		if (port_out[i] == NULL)
+			port_out[i] = io_trap_out;
+	}
+}
+
+/*
  *	I/O function port 0 read:
  *	read status of the Pico UART and return:
  *	bit 0 = 0, character available for input from tty

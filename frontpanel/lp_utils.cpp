@@ -692,7 +692,7 @@ void framerate_wait(void)
     for (;;)
         if (nanosleep(&ts, &rem) == -1 && errno == EINTR && rem.tv_nsec > 0L)
 	 {
-	    memcpy(&ts, &rem, sizeof(struct timespec));
+	    ts = rem;
 	    continue;
 	 }
 	else

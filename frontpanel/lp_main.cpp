@@ -19,6 +19,7 @@
 /* Fixed portability problems, March 2014, Udo Munk */
 
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
