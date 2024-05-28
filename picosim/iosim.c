@@ -32,6 +32,8 @@
  */
 static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE);
 static BYTE p000_in(void), p001_in(void), p255_in(void);
+extern void fdc_out(BYTE);
+extern BYTE fdc_in(void);
 
 static BYTE sio_last;	/* last character received */
        BYTE fp_value;	/* port 255 value, can be set from ICE or config() */
@@ -41,8 +43,9 @@ static BYTE sio_last;	/* last character received */
  *	I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256])(void) = {
-	[  0] = p000_in,
-	[  1] = p001_in,
+	[  0] = p000_in,	/* SIO status */
+	[  1] = p001_in,	/* SIO data */
+	[  4] = fdc_in,		/* FDC command */
 	[255] = p255_in		/* for frontpanel */
 };
 
@@ -51,8 +54,9 @@ BYTE (*port_in[256])(void) = {
  *	I/O port (0 - 255), to do the required I/O.
  */
 void (*port_out[256])(BYTE) = {
-	[  0] = p000_out,
-	[  1] = p001_out,
+	[  0] = p000_out,	/* internal LED */
+	[  1] = p001_out,	/* SIO data */
+	[  4] = fdc_out,	/* FDC status */
 	[255] = p255_out	/* for frontpanel */
 };
 
