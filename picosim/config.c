@@ -65,6 +65,7 @@ void config(void)
 			else
 				switch_cpu(Z80);
 			break;
+
 		case '2':
 again:
 			printf("Value in Hex: ");
