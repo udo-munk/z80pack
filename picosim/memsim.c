@@ -4,6 +4,8 @@
  * Copyright (C) 2024 by Udo Munk
  *
  * This module implements the memory for the Z80/8080 CPU
+ * and the low level access functions for SPI MicroSD, needed
+ * by the FDC.
  *
  * History:
  * 23-APR-2024 derived from z80sim
