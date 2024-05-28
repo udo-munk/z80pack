@@ -10,6 +10,7 @@
  * 28-APR-2024 implemented first release of Z80 emulation
  * 09-MAY-2024 test 8080 emulation
  * 27-MAY-2024 add access to files on MicroSD
+ * 28-MAY-2024 implemented boot from disk images with some OS
  */
 
 /* Raspberry SDK and FatFS includes */

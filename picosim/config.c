@@ -10,6 +10,7 @@
  * 20-APR-2024 dummy, no configuration implemented yet
  * 12-MAY-2024 implemented configuration dialog
  * 27-MAY-2024 implemented load file
+ * 28-MAY-2024 implemented mount/unmount of disk images
  */
 
 #include <stdint.h>
@@ -64,6 +65,7 @@ void config(void)
 			else
 				switch_cpu(Z80);
 			break;
+
 		case '2':
 again:
 			printf("Value in Hex: ");
