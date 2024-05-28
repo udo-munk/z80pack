@@ -106,6 +106,7 @@ again:
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[0][0] = 0x0;
+				printf("\n");
 			} else {
 				mount_disk(0, s);
 			}
@@ -115,6 +116,7 @@ again:
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[1][0] = 0x0;
+				printf("\n");
 			} else {
 				mount_disk(1, s);
 			}
