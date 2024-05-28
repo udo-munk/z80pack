@@ -376,10 +376,10 @@ void (*port_out[256])(BYTE) = {
  *	This function initializes the I/O handlers:
  *	1. Creates the named pipes under /tmp/.z80pack, if they don't
  *	   exist.
- *	2. Initialize unused ports to trap handlers.
- *	3. Fork the process for receiving from the auxiliary serial port.
- *	4. Open the named pipes "auxin" and "auxout" for simulation
+ *	2. Fork the process for receiving from the auxiliary serial port.
+ *	3. Open the named pipes "auxin" and "auxout" for simulation
  *	   of the auxiliary serial port.
+ *	4. Initialize unused ports to trap handlers.
  *	5. Open the files which emulate the disk drives.
  *	   Errors for opening one of the drives results
  *	   in a NULL pointer for fd in the dskdef structure,
