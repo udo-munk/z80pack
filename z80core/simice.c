@@ -128,6 +128,7 @@ void ice_cmd_loop(int go_flag)
 		}
 		switch (tolower((unsigned char) *cmd)) {
 		case '\n':
+		case '\0':
 			do_step();
 			break;
 		case 't':
@@ -190,8 +191,6 @@ void ice_cmd_loop(int go_flag)
 #endif
 		case 'q':
 			eoj = 0;
-			break;
-		case '\0':
 			break;
 		default:
 			if (ice_cust_cmd)
