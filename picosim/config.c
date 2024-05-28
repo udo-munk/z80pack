@@ -17,10 +17,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include "f_util.h"
+#include "ff.h"
 #include "sim.h"
 #include "simglb.h"
 
+extern FIL sd_file;
+extern FRESULT sd_res;
 extern char disks[2][22];
+extern BYTE fp_value;
 
 extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
@@ -43,8 +48,20 @@ static void prompt_fn(char *s)
  */
 void config(void)
 {
+	const char *cfg = "/CONF80/CFG.TXT";
 	char s[10];
+	unsigned int br;
 	int go_flag = 0;
+
+	/* try to read config file */
+	sd_res = f_open(&sd_file, cfg, FA_READ);
+	if (sd_res == FR_OK) {
+		f_read(&sd_file, &cpu, 1, &br);
+		f_read(&sd_file, &fp_value, 1, &br);
+		f_read(&sd_file, &disks[0], 22, &br);
+		f_read(&sd_file, &disks[1], 22, &br);
+		f_close(&sd_file);
+	}
 
 	while (!go_flag) {
 		printf("1 - switch CPU, currently %s\n", (cpu == Z80) ?
@@ -110,5 +127,15 @@ again:
 		default:
 			break;
 		}
+	}
+
+	/* try to save config file */
+	sd_res = f_open(&sd_file, cfg, FA_WRITE);
+	if (sd_res == FR_OK) {
+		f_write(&sd_file, &cpu, 1, &br);
+		f_write(&sd_file, &fp_value, 1, &br);
+		f_write(&sd_file, &disks[0], 22, &br);
+		f_write(&sd_file, &disks[1], 22, &br);
+		f_close(&sd_file);
 	}
 }
