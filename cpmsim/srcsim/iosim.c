@@ -376,17 +376,21 @@ void (*port_out[256])(BYTE) = {
  *	This function initializes the I/O handlers:
  *	1. Creates the named pipes under /tmp/.z80pack, if they don't
  *	   exist.
- *	2. Fork the process for receiving from the auxiliary serial port.
- *	3. Open the named pipes "auxin" and "auxout" for simulation
+ *	2. Initialize unused ports to trap handlers.
+ *	3. Fork the process for receiving from the auxiliary serial port.
+ *	4. Open the named pipes "auxin" and "auxout" for simulation
  *	   of the auxiliary serial port.
- *	4. Open the files which emulate the disk drives.
+ *	5. Open the files which emulate the disk drives.
  *	   Errors for opening one of the drives results
  *	   in a NULL pointer for fd in the dskdef structure,
  *	   so that this drive can't be used.
- *	5. Prepare TCP/IP sockets for serial port simulation
+ *	6. Prepare TCP/IP sockets for serial port simulation
  */
 void init_io(void)
 {
+	extern BYTE io_trap_in(void);
+	extern void io_trap_out(BYTE);
+
 	register int i;
 	struct stat sbuf;
 #if defined(NETWORKING) && defined(TCPASYNC)
@@ -432,6 +436,13 @@ void init_io(void)
 		exit(EXIT_FAILURE);
 	}
 #endif
+
+	for (i = 0; i <= 255; i++) {
+		if (port_in[i] == NULL)
+			port_in[i] = io_trap_in;
+		if (port_out[i] == NULL)
+			port_out[i] = io_trap_out;
+	}
 
 	for (i = 0; i <= 15; i++) {
 

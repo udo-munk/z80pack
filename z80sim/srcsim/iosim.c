@@ -68,11 +68,26 @@ void (*port_out[256])(BYTE) = {
  *	It will be called from the CPU simulation before
  *	any operation with the CPU is possible.
  *
+ *	In this sample I/O simulation we initialize all
+ *	unused port with an error trap handler, so that
+ *	simulation stops at I/O on the unused ports.
+ *
  *	See the I/O simulation of of the other systems
  *	for more complex examples.
  */
 void init_io(void)
 {
+	extern BYTE io_trap_in(void);
+	extern void io_trap_out(BYTE);
+
+	register int i;
+
+	for (i = 0; i <= 255; i++) {
+		if (port_in[i] == NULL)
+			port_in[i] = io_trap_in;
+		if (port_out[i] == NULL)
+			port_out[i] = io_trap_out;
+	}
 }
 
 /*

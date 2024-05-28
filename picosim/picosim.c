@@ -46,7 +46,7 @@ FRESULT sd_res;	/* result code from FatFS */
 char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
 
 
-extern void init_cpu(void), run_cpu(void);
+extern void init_cpu(void), init_io(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 extern BYTE read_sec(int, int, int, WORD);
 
@@ -105,6 +105,7 @@ int main(void)
 
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
+	init_io();		/* initialize I/O devices */
 NOPE:	config();		/* configure the machine */
 
 	/* if there is a disk in drive 0 try to boot from it */
