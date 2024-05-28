@@ -26,8 +26,6 @@
 #include "pico/cyw43_arch.h"
 #endif
 
-extern void init_io(void);
-
 /*
  *	Forward declarations of the I/O functions
  *	for all port addresses.
@@ -57,23 +55,6 @@ void (*port_out[256])(BYTE) = {
 	[  1] = p001_out,
 	[255] = p255_out	/* for frontpanel */
 };
-
-/*
- *	This function is to initiate the I/O devices.
- *	It will be called from the CPU simulation before
- *	any operation with the CPU is possible.
- */
-void init_io(void)
-{
-}
-
-/*
- *	This function is to stop the I/O devices. It is
- *	called from the CPU simulation on exit.
- */
-void exit_io(void)
-{
-}
 
 /*
  *	I/O function port 0 read:

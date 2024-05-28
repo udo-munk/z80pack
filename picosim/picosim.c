@@ -38,12 +38,11 @@
 #define DEL 0x7f /* delete */
 
 /* global variables for access to SPI MicroSD drive */
-sd_card_t *SD;
-FIL sd_file;
-FRESULT sd_res;
+sd_card_t *SD;	/* one MicroSD drive */
+FIL sd_file;	/* at any time we have only one file open */
+FRESULT sd_res;	/* result code from FatFS */
 
-extern void init_cpu(void), init_io(void);
-extern void run_cpu(void);
+extern void init_cpu(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
 uint64_t get_clock_us(void);
@@ -81,9 +80,11 @@ int main(void)
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
+	/* setup speed of the CPU */
 	f_flag = CPU_SPEED;
 	tmax = CPU_SPEED * 10000; /* theoretically */
 
+	/* tell us what we are using */
 	printf("CPU is %s\n", cpu == Z80 ? "Z80" : "8080");
 	if (f_flag > 0)
 		printf("CPU speed is %d MHz", f_flag);
@@ -96,17 +97,17 @@ int main(void)
 #endif
 	printf("\n");
 
-	config();		/* configure the machine */
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
-	init_io();		/* initialize I/O */
+	config();		/* configure the machine */
 
+	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
 	extern void ice_cmd_loop(int);
 
 	ice_cmd_loop(0);
 #else
-	run_cpu();		/* run the CPU with whatever is in memory */
+	run_cpu();
 #endif
 
 	/* unmount SD card */
@@ -145,7 +146,7 @@ void gpio_callback(uint gpio, uint32_t events)
 }
 
 /*
- * read an ICE or config command line from the terminal line
+ * read an ICE or config command line from the terminal
  */
 int get_cmdline(char *buf, int len)
 {
