@@ -14,13 +14,17 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 #include "sim.h"
 #include "simglb.h"
 
+extern char disks[2][22];
+
 extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
 extern void load_file(char *);
+extern void mount_disk(int, char *);
 extern unsigned char fp_value;
 
 /*
@@ -46,7 +50,9 @@ void config(void)
 							  "Z80" : "8080");
 		printf("2 - set port 255 value, currently %02XH\n", fp_value);
 		printf("3 - load file\n");
-		printf("4 - run machine\n\n");
+		printf("4 - Disk 0: %s\n", disks[0]);
+		printf("5 - Disk 1: %s\n", disks[1]);
+		printf("6 - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
 		printf("\n\n");
@@ -78,6 +84,24 @@ again:
 			break;
 
 		case '4':
+			prompt_fn(s);
+			if (strlen(s) == 0) {
+				disks[0][0] = 0x0;
+			} else {
+				mount_disk(0, s);
+			}
+			break;
+
+		case '5':
+			prompt_fn(s);
+			if (strlen(s) == 0) {
+				disks[1][0] = 0x0;
+			} else {
+				mount_disk(1, s);
+			}
+			break;
+
+		case '6':
 			go_flag = 1;
 			break;
 

@@ -41,6 +41,8 @@
 sd_card_t *SD;	/* one MicroSD drive */
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
+char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
+
 
 extern void init_cpu(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);

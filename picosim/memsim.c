@@ -24,6 +24,7 @@
 
 extern FIL sd_file;
 extern FRESULT sd_res;
+extern char disks[2][22];
 
 /* 64KB non banked memory */
 #define MEMSIZE 65536
@@ -40,7 +41,7 @@ void init_memory(void)
 
 void complain(void)
 {
-	printf("File not found\n");
+	printf("File not found\n\n");
 }
 
 /*
@@ -76,6 +77,29 @@ void load_file(char *name)
 }
 
 /*
+ * mount a disk image 'name' on disk 'drive'
+ */
+void mount_disk(int drive, char *name)
+{
+	char SFN[22];
+
+	strcpy(SFN, "/DISKS80/");
+	strcat(SFN, name);
+	strcat(SFN, ".DSK");
+
+	/* try to open file */
+	sd_res = f_open(&sd_file, SFN, FA_READ);
+	if (sd_res != FR_OK) {
+		complain();
+		return;
+	}
+
+	f_close(&sd_file);
+	strcpy(disks[drive], SFN);
+	printf("\n");
+}
+
+/*
  * read from drive a sector on track into FRAM addr
  * dummy, need to get SD working first
  */
@@ -92,9 +116,9 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 }
 
 /*
- * get FDC command from FRAM
- * dummy, need to get SD working first
+ * get FDC command from CPU memory
  */
 void get_fdccmd(BYTE *cmd, WORD addr)
 {
+	memcpy(cmd, &code[addr], 4);
 }
