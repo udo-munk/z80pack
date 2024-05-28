@@ -129,7 +129,7 @@ static void p001_out(BYTE data)
 }
 
 /*
- *	This allows to set the frontpanel port with p command
+ *	This allows to set the frontpanel port with ICE p command
  */
 static void p255_out(BYTE data)
 {
