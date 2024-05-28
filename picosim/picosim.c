@@ -189,10 +189,6 @@ int get_cmdline(char *buf, int len)
 			putchar(c);
 			i++;
 		} else {
-			putchar('\r');
-			putchar('\n');
-			buf[i] = '\n';
-			i++;
 			break;
 		}
 	}
