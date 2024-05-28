@@ -305,7 +305,7 @@ int op_ddcb_handle(void)
 	register int d;
 	register int t;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	t = (*op_ddcb[memrdr(PC++)])(d); /* execute next opcode */
 
 	return (t);

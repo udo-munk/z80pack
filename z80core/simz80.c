@@ -1774,7 +1774,7 @@ static int op_adda(void)		/* ADD A,A */
 
 	((A & 0xf) + (A & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	((A << 1) > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) A;
+	A = i = (SBYTE) A + (SBYTE) A;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1788,7 +1788,7 @@ static int op_addb(void)		/* ADD A,B */
 
 	((A & 0xf) + (B & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + B > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) B;
+	A = i = (SBYTE) A + (SBYTE) B;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1802,7 +1802,7 @@ static int op_addc(void)		/* ADD A,C */
 
 	((A & 0xf) + (C & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + C > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) C;
+	A = i = (SBYTE) A + (SBYTE) C;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1816,7 +1816,7 @@ static int op_addd(void)		/* ADD A,D */
 
 	((A & 0xf) + (D & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + D > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) D;
+	A = i = (SBYTE) A + (SBYTE) D;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1830,7 +1830,7 @@ static int op_adde(void)		/* ADD A,E */
 
 	((A & 0xf) + (E & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + E > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) E;
+	A = i = (SBYTE) A + (SBYTE) E;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1844,7 +1844,7 @@ static int op_addh(void)		/* ADD A,H */
 
 	((A & 0xf) + (H & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + H > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) H;
+	A = i = (SBYTE) A + (SBYTE) H;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1858,7 +1858,7 @@ static int op_addl(void)		/* ADD A,L */
 
 	((A & 0xf) + (L & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + L > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) L;
+	A = i = (SBYTE) A + (SBYTE) L;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1874,7 +1874,7 @@ static int op_addhl(void)		/* ADD A,(HL) */
 	P = memrdr((H << 8) + L);
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) P;
+	A = i = (SBYTE) A + (SBYTE) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1890,7 +1890,7 @@ static int op_addn(void)		/* ADD A,n */
 	P = memrdr(PC++);
 	((A & 0xf) + (P & 0xf) > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) P;
+	A = i = (SBYTE) A + (SBYTE) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1905,7 +1905,7 @@ static int op_adca(void)		/* ADC A,A */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (A & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	((A << 1) + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) A + carry;
+	A = i = (SBYTE) A + (SBYTE) A + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1920,7 +1920,7 @@ static int op_adcb(void)		/* ADC A,B */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (B & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + B + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) B + carry;
+	A = i = (SBYTE) A + (SBYTE) B + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1935,7 +1935,7 @@ static int op_adcc(void)		/* ADC A,C */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (C & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + C + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) C + carry;
+	A = i = (SBYTE) A + (SBYTE) C + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1950,7 +1950,7 @@ static int op_adcd(void)		/* ADC A,D */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (D & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + D + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) D + carry;
+	A = i = (SBYTE) A + (SBYTE) D + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1965,7 +1965,7 @@ static int op_adce(void)		/* ADC A,E */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (E & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + E + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) E + carry;
+	A = i = (SBYTE) A + (SBYTE) E + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1980,7 +1980,7 @@ static int op_adch(void)		/* ADC A,H */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (H & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + H + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) H + carry;
+	A = i = (SBYTE) A + (SBYTE) H + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -1995,7 +1995,7 @@ static int op_adcl(void)		/* ADC A,L */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (L & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + L + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) L + carry;
+	A = i = (SBYTE) A + (SBYTE) L + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2012,7 +2012,7 @@ static int op_adchl(void)		/* ADC A,(HL) */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) P + carry;
+	A = i = (SBYTE) A + (SBYTE) P + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2029,7 +2029,7 @@ static int op_adcn(void)		/* ADC A,n */
 	P = memrdr(PC++);
 	((A & 0xf) + (P & 0xf) + carry > 0xf) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(A + P + carry > 255) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A + (signed char) P + carry;
+	A = i = (SBYTE) A + (SBYTE) P + carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2051,7 +2051,7 @@ static int op_subb(void)		/* SUB A,B */
 
 	((B & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(B > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) B;
+	A = i = (SBYTE) A - (SBYTE) B;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2065,7 +2065,7 @@ static int op_subc(void)		/* SUB A,C */
 
 	((C & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(C > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) C;
+	A = i = (SBYTE) A - (SBYTE) C;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2079,7 +2079,7 @@ static int op_subd(void)		/* SUB A,D */
 
 	((D & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(D > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) D;
+	A = i = (SBYTE) A - (SBYTE) D;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2093,7 +2093,7 @@ static int op_sube(void)		/* SUB A,E */
 
 	((E & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(E > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) E;
+	A = i = (SBYTE) A - (SBYTE) E;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2107,7 +2107,7 @@ static int op_subh(void)		/* SUB A,H */
 
 	((H & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(H > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) H;
+	A = i = (SBYTE) A - (SBYTE) H;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2121,7 +2121,7 @@ static int op_subl(void)		/* SUB A,L */
 
 	((L & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(L > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) L;
+	A = i = (SBYTE) A - (SBYTE) L;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2137,7 +2137,7 @@ static int op_subhl(void)		/* SUB A,(HL) */
 	P = memrdr((H << 8) + L);
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) P;
+	A = i = (SBYTE) A - (SBYTE) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2153,7 +2153,7 @@ static int op_subn(void)		/* SUB A,n */
 	P = memrdr(PC++);
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) P;
+	A = i = (SBYTE) A - (SBYTE) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2182,7 +2182,7 @@ static int op_sbcb(void)		/* SBC A,B */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((B & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(B + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) B - carry;
+	A = i = (SBYTE) A - (SBYTE) B - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2197,7 +2197,7 @@ static int op_sbcc(void)		/* SBC A,C */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((C & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(C + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) C - carry;
+	A = i = (SBYTE) A - (SBYTE) C - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2212,7 +2212,7 @@ static int op_sbcd(void)		/* SBC A,D */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((D & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(D + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) D - carry;
+	A = i = (SBYTE) A - (SBYTE) D - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2227,7 +2227,7 @@ static int op_sbce(void)		/* SBC A,E */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((E & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(E + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) E - carry;
+	A = i = (SBYTE) A - (SBYTE) E - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2242,7 +2242,7 @@ static int op_sbch(void)		/* SBC A,H */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((H & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(H + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) H - carry;
+	A = i = (SBYTE) A - (SBYTE) H - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2257,7 +2257,7 @@ static int op_sbcl(void)		/* SBC A,L */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((L & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(L + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) L - carry;
+	A = i = (SBYTE) A - (SBYTE) L - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2274,7 +2274,7 @@ static int op_sbchl(void)		/* SBC A,(HL) */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) P - carry;
+	A = i = (SBYTE) A - (SBYTE) P - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2291,7 +2291,7 @@ static int op_sbcn(void)		/* SBC A,n */
 	carry = (F & C_FLAG) ? 1 : 0;
 	((P & 0xf) + carry > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P + carry > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	A = i = (signed char) A - (signed char) P - carry;
+	A = i = (SBYTE) A - (SBYTE) P - carry;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2312,7 +2312,7 @@ static int op_cpb(void)			/* CP B */
 
 	((B & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(B > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) B;
+	i = (SBYTE) A - (SBYTE) B;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2326,7 +2326,7 @@ static int op_cpc(void)			/* CP C */
 
 	((C & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(C > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) C;
+	i = (SBYTE) A - (SBYTE) C;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2340,7 +2340,7 @@ static int op_cpd(void)			/* CP D */
 
 	((D & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(D > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) D;
+	i = (SBYTE) A - (SBYTE) D;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2354,7 +2354,7 @@ static int op_cpe(void)			/* CP E */
 
 	((E & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(E > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) E;
+	i = (SBYTE) A - (SBYTE) E;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2368,7 +2368,7 @@ static int op_cph(void)			/* CP H */
 
 	((H & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(H > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) H;
+	i = (SBYTE) A - (SBYTE) H;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2382,7 +2382,7 @@ static int op_cplr(void)		/* CP L */
 
 	((L & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(L > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) L;
+	i = (SBYTE) A - (SBYTE) L;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2398,7 +2398,7 @@ static int op_cphl(void)		/* CP (HL) */
 	P = memrdr((H << 8) + L);
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) P;
+	i = (SBYTE) A - (SBYTE) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2414,7 +2414,7 @@ static int op_cpn(void)			/* CP n */
 	P = memrdr(PC++);
 	((P & 0xf) > (A & 0xf)) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	(P > A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
-	i = (signed char) A - (signed char) P;
+	i = (SBYTE) A - (SBYTE) P;
 	(i < -128 || i > 127) ? (F |= P_FLAG) : (F &= ~P_FLAG);
 	(i & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(i) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
@@ -2799,7 +2799,7 @@ static int op_jr(void)			/* JR n */
 {
 	register int d;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	PC += d;
 	return (12);
 }
@@ -2808,7 +2808,7 @@ static int op_djnz(void)		/* DJNZ n */
 {
 	register int d;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	if (--B) {
 		PC += d;
 		return (13);
@@ -3154,7 +3154,7 @@ static int op_jrz(void)			/* JR Z,n */
 {
 	register int d;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	if (F & Z_FLAG) {
 		PC += d;
 		return (12);
@@ -3166,7 +3166,7 @@ static int op_jrnz(void)		/* JR NZ,n */
 {
 	register int d;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	if (!(F & Z_FLAG)) {
 		PC += d;
 		return (12);
@@ -3178,7 +3178,7 @@ static int op_jrc(void)			/* JR C,n */
 {
 	register int d;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	if (F & C_FLAG) {
 		PC += d;
 		return (12);
@@ -3190,7 +3190,7 @@ static int op_jrnc(void)		/* JR NC,n */
 {
 	register int d;
 
-	d = (signed char) memrdr(PC++);
+	d = (SBYTE) memrdr(PC++);
 	if (!(F & C_FLAG)) {
 		PC += d;
 		return (12);

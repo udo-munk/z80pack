@@ -400,7 +400,7 @@ static int op_neg(void)			/* NEG */
 {
 	(A) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	(A == 0x80) ? (F |= P_FLAG) : (F &= ~P_FLAG);
-	(0 - ((signed char) A & 0xf) < 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
+	(0 - ((SBYTE) A & 0xf) < 0) ? (F |= H_FLAG) : (F &= ~H_FLAG);
 	A = 0 - A;
 	F |= N_FLAG;
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
