@@ -37,3 +37,14 @@ for the board used. I'm using a Pico W, so everything setup for this one.
 Terminal I/O is going to the pin 1/2 UART, so you need a debug probe or
 some TTL to USB adapter. I also tried using the USB UART, but didn't get
 it fully working, needs more research.
+
+
+Preparing a MicroSD card:
+In the root directory of the card create these directories:
+CONF80
+CODE80
+DISKS80
+
+Into the CODE80 directory copy all the .bin files from src-examples.
+Into the DISKS80 directory copy the CP/M disk images from disks.
+In CONF80 create an empty text file CFG.TXT.
