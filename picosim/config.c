@@ -91,7 +91,7 @@ void config(void)
 			printf("Value in MHz, 0=unlimited: ");
 			get_cmdline(s, 2);
 			printf("\n\n");
-			speed = atoi(&s);
+			speed = atoi((const char *) &s);
 			break;
 
 		case '3':

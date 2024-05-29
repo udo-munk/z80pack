@@ -176,9 +176,8 @@ int get_cmdline(char *buf, int len)
 				i--;
 			}
 		} else if (c != '\r') {
-			buf[i] = c;
+			buf[i++] = c;
 			putchar(c);
-			i++;
 		} else {
 			break;
 		}
