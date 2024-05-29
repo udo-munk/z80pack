@@ -16,5 +16,6 @@ blink.bin	- blink builtin LED with Z80 port output
 
 tb.bin		- 8080 TINY BASIC
 micro80.bin	- 8080 Microchess
-bas4k32.bin	- MITS Altair BASIC 4K V3.2, runs on 8080 only! p ff = 0
-bas8k40.bin	- MITS Altair BASIC 8K V4.0, runs on 8080 only! p ff = 22
+bas4k32.bin	- MITS Altair BASIC 4K V3.2, runs on 8080 only!    p ff = 0
+bas8k40.bin	- MITS Altair BASIC 8K V4.0, runs on 8080 only!    p ff = 22
+bas16k40.bin	- Extended MITS Altair BASIC 16K V4.0, runs on Z80 p ff = 22
