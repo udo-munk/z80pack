@@ -45,6 +45,8 @@ FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
 char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
 
+/* CPU speed */
+int speed = CPU_SPEED;
 
 extern void init_cpu(void), init_io(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
@@ -87,26 +89,14 @@ int main(void)
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
-	/* setup speed of the CPU */
-	f_flag = CPU_SPEED;
-	tmax = CPU_SPEED * 10000; /* theoretically */
-
-	/* tell us what we are using */
-	if (f_flag > 0)
-		printf("CPU speed is %d MHz", f_flag);
-	else
-		printf("CPU speed is unlimited");
-#ifndef UNDOC_INST
-	printf(", CPU doesn't execute undocumented instructions\n");
-#else
-	printf(", CPU executes undocumented instructions\n");
-#endif
-	printf("\n");
-
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
 NOPE:	config();		/* configure the machine */
+
+	/* setup speed of the CPU */
+	f_flag = speed;
+	tmax = speed * 10000; /* theoretically */
 
 	/* if there is a disk in drive 0 try to boot from it */
 	if (strlen(disks[0]) != 0) {

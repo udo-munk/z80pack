@@ -14,6 +14,7 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -25,6 +26,7 @@
 extern FIL sd_file;
 extern FRESULT sd_res;
 extern char disks[2][22];
+extern int speed;
 extern BYTE fp_value;
 
 extern int get_cmdline(char *, int);
@@ -57,6 +59,7 @@ void config(void)
 	sd_res = f_open(&sd_file, cfg, FA_READ);
 	if (sd_res == FR_OK) {
 		f_read(&sd_file, &cpu, 1, &br);
+		f_read(&sd_file, &speed, sizeof(int), &br);
 		f_read(&sd_file, &fp_value, 1, &br);
 		f_read(&sd_file, &disks[0], 22, &br);
 		f_read(&sd_file, &disks[1], 22, &br);
@@ -66,11 +69,12 @@ void config(void)
 	while (!go_flag) {
 		printf("1 - switch CPU, currently %s\n", (cpu == Z80) ?
 							  "Z80" : "8080");
-		printf("2 - set port 255 value, currently %02XH\n", fp_value);
-		printf("3 - load file\n");
-		printf("4 - Disk 0: %s\n", disks[0]);
-		printf("5 - Disk 1: %s\n", disks[1]);
-		printf("6 - run machine\n\n");
+		printf("2 - CPU speed: %d MHz\n", speed);
+		printf("3 - Port 255 value: %02XH\n", fp_value);
+		printf("4 - load file\n");
+		printf("5 - Disk 0: %s\n", disks[0]);
+		printf("6 - Disk 1: %s\n", disks[1]);
+		printf("7 - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
 		printf("\n\n");
@@ -84,6 +88,13 @@ void config(void)
 			break;
 
 		case '2':
+			printf("Value in MHz, 0=unlimited: ");
+			get_cmdline(s, 2);
+			printf("\n\n");
+			speed = atoi(&s);
+			break;
+
+		case '3':
 again:
 			printf("Value in Hex: ");
 			get_cmdline(s, 3);
@@ -97,12 +108,12 @@ again:
 				     *(s + 1) - 'A' + 10);
 			break;
 
-		case '3':
+		case '4':
 			prompt_fn(s);
 			load_file(s);
 			break;
 
-		case '4':
+		case '5':
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[0][0] = 0x0;
@@ -112,7 +123,7 @@ again:
 			}
 			break;
 
-		case '5':
+		case '6':
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[1][0] = 0x0;
@@ -122,7 +133,7 @@ again:
 			}
 			break;
 
-		case '6':
+		case '7':
 			go_flag = 1;
 			break;
 
@@ -135,6 +146,7 @@ again:
 	sd_res = f_open(&sd_file, cfg, FA_WRITE);
 	if (sd_res == FR_OK) {
 		f_write(&sd_file, &cpu, 1, &br);
+		f_write(&sd_file, &speed, sizeof(int), &br);
 		f_write(&sd_file, &fp_value, 1, &br);
 		f_write(&sd_file, &disks[0], 22, &br);
 		f_write(&sd_file, &disks[1], 22, &br);
