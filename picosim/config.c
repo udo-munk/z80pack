@@ -42,7 +42,7 @@ static void prompt_fn(char *s)
 {
       printf("Filename: ");
       get_cmdline(s, 9);
-      printf("\n");
+      putchar('\n');
 }
 
 /*
@@ -91,7 +91,7 @@ void config(void)
 			printf("Value in MHz, 0=unlimited: ");
 			get_cmdline(s, 2);
 			printf("\n\n");
-			speed = atoi(&s);
+			speed = atoi((const char *) &s);
 			break;
 
 		case '3':
@@ -111,13 +111,14 @@ again:
 		case '4':
 			prompt_fn(s);
 			load_file(s);
+			putchar('\n');
 			break;
 
 		case '5':
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[0][0] = 0x0;
-				printf("\n");
+				putchar('\n');
 			} else {
 				mount_disk(0, s);
 			}
@@ -127,7 +128,7 @@ again:
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[1][0] = 0x0;
-				printf("\n");
+				putchar('\n');
 			} else {
 				mount_disk(1, s);
 			}

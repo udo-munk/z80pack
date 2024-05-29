@@ -98,7 +98,7 @@ void mount_disk(int drive, char *name)
 
 	f_close(&sd_file);
 	strcpy(disks[drive], SFN);
-	printf("\n");
+	putchar('\n');
 }
 
 /*
