@@ -183,6 +183,6 @@ int get_cmdline(char *buf, int len)
 			break;
 		}
 	}
-	buf[i] = '\0';
+	buf[i++] = '\0';
 	return (0);
 }
