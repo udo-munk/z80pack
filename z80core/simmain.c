@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
 				r_flag = 1;
 				x_flag = 1;
 				strcpy(xfn, BOOTROM);
+				break;
 #endif
 #endif /* !HAS_CONFIG */
 
