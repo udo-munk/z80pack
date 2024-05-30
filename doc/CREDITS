@@ -65,4 +65,5 @@ For some improvements to the simulator.
 For much work on the assembler: macros, new expression parser, 8080 mode,
 and various other improvements and bug fixes.
 For refactoring the ICE so that it can be better attached to systems.
+For code size optimized implementations of 8080 and Z80 CPU's
 For code analysis and improving overall code quality and readability
