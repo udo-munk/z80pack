@@ -177,7 +177,7 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 	BYTE stat;
 	unsigned int br;
 
-	/* prepare for sector read */
+	/* prepare for sector write */
 	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
 		return stat;
 
