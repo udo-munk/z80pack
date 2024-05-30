@@ -103,7 +103,7 @@ static BYTE p000_in(void)
 	stat &= 0b01111111;		/* output always possible */
 #endif
 
-	return (stat);
+	return stat;
 }
 
 /*	I/O function port 1 read:
@@ -117,7 +117,7 @@ static BYTE p001_in(void)
 #if LIB_PICO_STDIO_USB
 	if (!tud_cdc_available())
 #endif
-		return (sio_last);	/* guess who does such things */
+		return sio_last;	/* guess who does such things */
 	else {
 		sio_last = getchar();
 		return sio_last;
@@ -130,7 +130,7 @@ static BYTE p001_in(void)
  */
 static BYTE p255_in(void)
 {
-	return (fp_value);
+	return fp_value;
 }
 
 /*
