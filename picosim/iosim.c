@@ -14,6 +14,9 @@
 
 /* Raspberry SDK includes */
 #include <stdio.h>
+#if LIB_PICO_STDIO_USB
+#include <tusb.h>
+#endif
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 
