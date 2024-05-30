@@ -97,6 +97,11 @@ static BYTE p000_in(void)
 	if (uart_is_readable(uart0))	/* check if there is input from UART */
 		stat &= 0b11111110;	/* if so flip status bit */
 #endif
+#if LIB_PICO_STDIO_USB
+	if (tud_cdc_available())	/* check if there is input from UART */
+		stat &= 0b11111110;	/* if so flip status bit */
+	stat &= 0b01111111;		/* output always possible */
+#endif
 
 	return (stat);
 }
@@ -106,11 +111,16 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
+#if LIB_PICO_STDIO_UART
 	if (!uart_is_readable(uart0))	/* someone reading without checking */
+#endif
+#if LIB_PICO_STDIO_USB
+	if (!tud_cdc_available())
+#endif
 		return (sio_last);	/* guess who does such things */
 	else {
 		sio_last = getchar();
-		return (sio_last);
+		return sio_last;
 	}
 }
 
