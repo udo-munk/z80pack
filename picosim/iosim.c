@@ -91,10 +91,12 @@ static BYTE p000_in(void)
 {
 	register BYTE stat = 0b10000001; /* initially not ready */
 
+#if LIB_PICO_STDIO_UART
 	if (uart_is_writable(uart0))	/* check if output to UART is possible */
 		stat &= 0b01111111;	/* if so flip status bit */
 	if (uart_is_readable(uart0))	/* check if there is input from UART */
 		stat &= 0b11111110;	/* if so flip status bit */
+#endif
 
 	return (stat);
 }

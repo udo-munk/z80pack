@@ -15,6 +15,9 @@
 
 /* Raspberry SDK and FatFS includes */
 #include <stdio.h>
+#if LIB_PICO_STDIO_USB
+#include <tusb.h>
+#endif
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "sd_card.h"
@@ -78,6 +81,12 @@ int main(void)
 	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
 					   true, &gpio_callback);
 
+	/* when using USB UART wait until it is connected */
+#if LIB_PICO_STDIO_USB
+	while (!tud_cdc_connected())
+		sleep_ms(100);
+#endif
+
 	/* print banner */
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s\n", USR_COM, USR_REL);
@@ -88,6 +97,11 @@ int main(void)
 	sd_res = f_mount(&SD->fatfs, SD->pcName, 1);
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
+
+#if LIB_PICO_STDIO_USB
+	/* if USB UART enabled we don't get here, why? */
+	printf("after f_mount\n");
+#endif
 
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
