@@ -1,0 +1,932 @@
+Z80/8080-Macro-Assembler  Release 2.0	Sat May 18 14:29:37 2024
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;***********************************************************************
+                       2      2 ; MICROCOSM ASSOCIATES  8080/8085 CPU DIAGNOSTIC VERSION 1.0  (C) 1980
+                       3      3 ;***********************************************************************
+                       4      4 ;
+                       5      5 ;DONATED TO THE "SIG/M" CP/M USER'S GROUP BY:
+                       6      6 ;KELLY SMITH, MICROCOSM ASSOCIATES
+                       7      7 ;3055 WACO AVENUE
+                       8      8 ;SIMI VALLEY, CALIFORNIA, 93065
+                       9      9 ;(805) 527-9321 (MODEM, CP/M-NET (TM))
+                      10     10 ;(805) 527-0518 (VERBAL)
+                      11     11 ;
+                      12     12 ; 03-MAY-2024 Thomas Eberhardt  Add z80pack CPU switching
+                      13     13 ; 18-MAY-2024 Thomas Eberhardt  Add bare emulator/machine support
+                      14     14 ;
+                      15     15 
+                      16     16 	IFNDEF	ONCPM
+                      17     17 ONCPM	EQU	1	;1 = RUNS ON CPM, 0 = BARE EMULATOR/MACHINE
+                      18     18 	ENDIF
+0001  =               19     19 IOCHAR	EQU	01H	;I/O PORT FOR CHARACTER OUTPUT (BARE)
+                      20     20 
+                      21     21 	IF	ONCPM
+                      22     22 		ORG	00100H
+                      23     23 	ELSE
+                      24     24 		ORG	0H
+                      25     25 	ENDIF
+                      26     26 
+0000  af              27     27 START:	XRA	A
+0001  32 a5 00        28     28 		STA	SWFLAG		; CLEAR CPU SWITCHED FLAG
+0004  3d              29     29 		DCR	A
+0005  ea 15 00        30     30 		JPE	START1		; EVEN PARITY -> IS 8080
+0008  cd 84 00        31     31 		CALL	SW8080		; SWITCH TO 8080
+000b  3e 0d           32     32 		MVI	A,0DH
+000d  cd e6 00        33     33 		CALL	PCHAR
+0010  3e 0a           34     34 		MVI	A,0AH
+0012  cd e6 00        35     35 		CALL	PCHAR
+                      36     36 
+0015  21 1e 00        37     37 START1:	LXI		H, LOLZ
+0018  cd db 00        38     38 		CALL	MSG
+001b  c3 46 01        39     39 		JMP		CPU	;JUMP TO 8080 CPU DIAGNOSTIC
+                      40     40 ;
+001e  4d 49 43 52     41     41 LOLZ:	DB	'MICROCOSM ASSOCIATES 8080/8085'
+0022  4f 43 4f 53     41     42
+0026  4d 20 41 53     41     43
+002a  53 4f 43 49     41     44
+002e  41 54 45 53     41     45
+0032  20 38 30 38     41     46
+0036  30 2f 38 30     41     47
+003a  38 35           41     48
+003c  20 43 50 55     42     49 	DB	' CPU DIAGNOSTIC VERSION 1.0  (C) 1980'
+0040  20 44 49 41     42     50
+0044  47 4e 4f 53     42     51
+0048  54 49 43 20     42     52
+004c  56 45 52 53     42     53
+0050  49 4f 4e 20     42     54
+0054  31 2e 30 20     42     55
+0058  20 28 43 29     42     56
+005c  20 31 39 38     42     57
+0060  30              42     58
+0061  0d 0a 24        43     59 	DB	0dh, 0ah, 24h
+                      44     60 ;
+0005  =               45     61 BDOS	EQU		00005H	;BDOS ENTRY TO CP/M
+0064  3a a5 00        46     62 WBOOT:	LDA	SWFLAG	; CHECK CPU SWITCHED FLAG
+0067  b7              47     63 		ORA	A
+0068  ca 78 00        48     64 		JZ	WBOOT1
+006b  3e 0d           49     65 		MVI	A,0DH
+006d  cd e6 00        50     66 		CALL	PCHAR
+0070  3e 0a           51     67 		MVI	A,0AH
+0072  cd e6 00        52     68 		CALL	PCHAR
+0075  cd 8c 00        53     69 		CALL	SWZ80	; SWITCH BACK TO Z80
+0078                  54     70 WBOOT1:
+                      55     71 	IF	ONCPM
+                      56     72 		JMP	0
+                      57     73 	ELSE
+0078  3e 0d           58     74 		MVI	A,0DH
+007a  cd e6 00        59     75 		CALL	PCHAR
+007d  3e 0a           60     76 		MVI	A,0AH
+007f  cd e6 00        61     77 		CALL	PCHAR
+0082  f3              62     78 		DI
+0083  76              63     79 		HLT
+                      64     80 	ENDIF
+                      65     81 
+                      66     82 ;
+                      67     83 ;Z80PACK CPU SWITCHING ROUTINE
+                      68     84 ;
+0084  3e 10           69     85 SW8080:	MVI	A,16
+0086  21 c0 00        70     86 		LXI	H,S8080
+0089  c3 91 00        71     87 		JMP	DOSW
+008c  3e 20           72     88 SWZ80:	MVI	A,32
+008e  21 a6 00        73     89 		LXI	H,SZ80
+0091  4f              74     90 DOSW:	MOV	C,A	; SAVE CPU TYPE
+0092  db a0           75     91 		IN	0A0H	; CHECK IF HARDWARE CONTROL PORT IS UNLOCKED
+0094  b7              76     92 		ORA	A
+0095  ca 9c 00        77     93 		JZ	DOSW1
+0098  3e aa           78     94 		MVI	A,0AAH	; UNLOCK HARDWARE CONTROL PORT
+009a  d3 a0           79     95 		OUT	0A0H
+009c  79              80     96 DOSW1:	MOV	A,C		; SWITCH CPU TYPE
+009d  d3 a0           81     97 		OUT	0A0H
+009f  32 a5 00        82     98 		STA	SWFLAG	; SET CPU SWITCHED FLAG
+00a2  c3 db 00        83     99 		JMP	MSG
+                      84    100 
+00a5                  85    101 SWFLAG:	DS	1
+00a6  53 77 69 74     86    102 SZ80:	DB	'Switched to Z80 processor$'
+00aa  63 68 65 64     86    103
+00ae  20 74 6f 20     86    104
+00b2  5a 38 30 20     86    105
+00b6  70 72 6f 63     86    106
+00ba  65 73 73 6f     86    107
+00be  72 24           86    108
+00c0  53 77 69 74     87    109 S8080:	DB	'Switched to 8080 processor$'
+00c4  63 68 65 64     87    110
+00c8  20 74 6f 20     87    111
+00cc  38 30 38 30     87    112
+00d0  20 70 72 6f     87    113
+00d4  63 65 73 73     87    114
+00d8  6f 72 24        87    115
+                      88    116 
+                      89    117 ;
+                      90    118 ;MESSAGE OUTPUT ROUTINE
+                      91    119 ;
+00db  7e              92    120 MSG:	MOV	A,M	; Get data
+00dc  fe 24           93    121 		CPI	'$'	; End?
+00de  c8              94    122 		RZ
+00df  cd e6 00        95    123 		CALL	PCHAR	; Output
+00e2  23              96    124 		INX	H	; Next
+00e3  c3 db 00        97    125 		JMP	MSG	; Do all
+                      98    126 ;
+                      99    127 ;
+                     100    128 ;CHARACTER OUTPUT ROUTINE
+                     101    129 ;
+00e6  f5             102    130 PCHAR:	PUSH	PSW
+00e7  d5             103    131 		PUSH	D
+00e8  e5             104    132 		PUSH	H
+                     105    133 	IF ONCPM
+                     106    134 		MOV	E,A
+                     107    135 		MVI	C,2
+                     108    136 		CALL	BDOS
+                     109    137 	ELSE
+00e9  d3 01          110    138 		OUT	IOCHAR
+                     111    139 	ENDIF
+00eb  e1             112    140 		POP 	H
+00ec  d1             113    141 		POP	D
+00ed  f1             114    142 		POP	PSW
+00ee  c9             115    143 		RET
+                     116    144 ;
+                     117    145 ;
+                     118    146 ;
+00ef  f5             119    147 BYTEO:	PUSH	PSW
+00f0  cd ff 00       120    148 		CALL	BYTO1
+00f3  5f             121    149 		MOV	E,A
+00f4  cd e6 00       122    150 		CALL	PCHAR
+00f7  f1             123    151 		POP	PSW
+00f8  cd 03 01       124    152 		CALL	BYTO2
+00fb  5f             125    153 		MOV	E,A
+00fc  c3 e6 00       126    154 		JMP	PCHAR
+00ff  0f             127    155 BYTO1:	RRC
+0100  0f             128    156 		RRC
+0101  0f             129    157 		RRC
+0102  0f             130    158 		RRC
+0103  e6 0f          131    159 BYTO2:	ANI	0FH
+0105  fe 0a          132    160 		CPI	0AH
+0107  fa 0c 01       133    161 		JM	BYTO3
+010a  c6 07          134    162 		ADI	7
+010c  c6 30          135    163 BYTO3:	ADI	30H
+010e  c9             136    164 		RET
+                     137    165 ;
+                     138    166 ;
+                     139    167 ;
+                     140    168 ;************************************************************
+                     141    169 ;           MESSAGE TABLE FOR OPERATIONAL CPU TEST
+                     142    170 ;************************************************************
+                     143    171 ;
+010f  0d 0a          144    172 OKCPU:	DB	0DH,0AH
+0111  43 50 55 20    145    173 		DB	'CPU IS OPERATIONAL$'
+0115  49 53 20 4f    145    174
+0119  50 45 52 41    145    175
+011d  54 49 4f 4e    145    176
+0121  41 4c 24       145    177
+                     146    178 ;
+0124  0d 0a          147    179 NGCPU:	DB	0DH,0AH
+0126  20 43 50 55    148    180 		DB	' CPU HAS FAILED!    ERROR EXIT=$'
+012a  20 48 41 53    148    181
+012e  20 46 41 49    148    182
+0132  4c 45 44 21    148    183
+0136  20 20 20 20    148    184
+013a  45 52 52 4f    148    185
+013e  52 20 45 58    148    186
+0142  49 54 3d 24    148    187
+                     149    188 ;
+                     150    189 ;
+                     151    190 ;
+                     152    191 ;************************************************************
+                     153    192 ;                8080/8085 CPU TEST/DIAGNOSTIC
+                     154    193 ;************************************************************
+                     155    194 ;
+                     156    195 ;NOTE: (1) PROGRAM ASSUMES "CALL",AND "LXI SP" INSTRUCTIONS WORK!
+                     157    196 ;
+                     158    197 ;      (2) INSTRUCTIONS NOT TESTED ARE "HLT","DI","EI",
+                     159    198 ;          AND "RST 0" THRU "RST 7"
+                     160    199 ;
+                     161    200 ;
+                     162    201 ;
+                     163    202 ;TEST JUMP INSTRUCTIONS AND FLAGS
+                     164    203 ;
+0146  31 3f 07       165    204 CPU:	LXI	SP,STACK	;SET THE STACK POINTER
+0149  e6 00          166    205 		ANI	0	;INITIALIZE A REG. AND CLEAR ALL FLAGS
+014b  ca 51 01       167    206 		JZ	J010	;TEST "JZ"
+014e  cd 24 06       168    207 		CALL	CPUER
+0151  d2 57 01       169    208 J010:	JNC	J020	;TEST "JNC"
+0154  cd 24 06       170    209 		CALL	CPUER
+0157  ea 5d 01       171    210 J020:	JPE	J030	;TEST "JPE"
+015a  cd 24 06       172    211 		CALL	CPUER
+015d  f2 63 01       173    212 J030:	JP	J040	;TEST "JP"
+0160  cd 24 06       174    213 		CALL	CPUER
+0163  c2 72 01       175    214 J040:	JNZ	J050	;TEST "JNZ"
+0166  da 72 01       176    215 		JC	J050	;TEST "JC"
+0169  e2 72 01       177    216 		JPO	J050	;TEST "JPO"
+016c  fa 72 01       178    217 		JM	J050	;TEST "JM"
+016f  c3 75 01       179    218 		JMP	J060	;TEST "JMP" (IT'S A LITTLE LATE,BUT WHAT THE HELL!
+0172  cd 24 06       180    219 J050:	CALL	CPUER
+0175  c6 06          181    220 J060:	ADI	6	;A=6,C=0,P=1,S=0,Z=0
+0177  c2 7d 01       182    221 		JNZ	J070	;TEST "JNZ"
+017a  cd 24 06       183    222 		CALL	CPUER
+017d  da 86 01       184    223 J070:	JC	J080	;TEST "JC"
+0180  e2 86 01       185    224 		JPO	J080	;TEST "JPO"
+0183  f2 89 01       186    225 		JP	J090	;TEST "JP"
+0186  cd 24 06       187    226 J080:	CALL	CPUER
+0189  c6 70          188    227 J090:	ADI	070H	;A=76H,C=0,P=0,S=0,Z=0
+018b  e2 91 01       189    228 		JPO	J100	;TEST "JPO"
+018e  cd 24 06       190    229 		CALL	CPUER
+0191  fa 9a 01       191    230 J100:	JM	J110	;TEST "JM"
+0194  ca 9a 01       192    231 		JZ	J110	;TEST "JZ"
+0197  d2 9d 01       193    232 		JNC	J120	;TEST "JNC"
+019a  cd 24 06       194    233 J110:	CALL	CPUER
+019d  c6 81          195    234 J120:	ADI	081H	;A=F7H,C=0,P=0,S=1,Z=0
+019f  fa a5 01       196    235 		JM	J130	;TEST "JM"
+01a2  cd 24 06       197    236 		CALL	CPUER
+01a5  ca ae 01       198    237 J130:	JZ	J140	;TEST "JZ"
+01a8  da ae 01       199    238 		JC	J140	;TEST "JC"
+01ab  e2 b1 01       200    239 		JPO	J150	;TEST "JPO"
+01ae  cd 24 06       201    240 J140:	CALL	CPUER
+01b1  c6 fe          202    241 J150:	ADI	0FEH	;A=F5H,C=1,P=1,S=1,Z=0
+01b3  da b9 01       203    242 		JC	J160	;TEST "JC"
+01b6  cd 24 06       204    243 		CALL	CPUER
+01b9  ca c2 01       205    244 J160:	JZ	J170	;TEST "JZ"
+01bc  e2 c2 01       206    245 		JPO	J170	;TEST "JPO"
+01bf  fa c5 01       207    246 		JM	AIMM	;TEST "JM"
+01c2  cd 24 06       208    247 J170:	CALL	CPUER
+                     209    248 ;
+                     210    249 ;
+                     211    250 ;
+                     212    251 ;TEST ACCUMULATOR IMMEDIATE INSTRUCTIONS
+                     213    252 ;
+01c5  fe 00          214    253 AIMM:	CPI	0	;A=F5H,C=0,Z=0
+01c7  da dd 01       215    254 		JC	CPIE	;TEST "CPI" FOR RE-SET CARRY
+01ca  ca dd 01       216    255 		JZ	CPIE	;TEST "CPI" FOR RE-SET ZERO
+01cd  fe f5          217    256 		CPI	0F5H	;A=F5H,C=0,Z=1
+01cf  da dd 01       218    257 		JC	CPIE	;TEST "CPI" FOR RE-SET CARRY ("ADI")
+01d2  c2 dd 01       219    258 		JNZ	CPIE	;TEST "CPI" FOR RE-SET ZERO
+01d5  fe ff          220    259 		CPI	0FFH	;A=F5H,C=1,Z=0
+01d7  ca dd 01       221    260 		JZ	CPIE	;TEST "CPI" FOR RE-SET ZERO
+01da  da e0 01       222    261 		JC	ACII	;TEST "CPI" FOR SET CARRY
+01dd  cd 24 06       223    262 CPIE:	CALL	CPUER
+01e0  ce 0a          224    263 ACII:	ACI	00AH	;A=F5H+0AH+CARRY(1)=0,C=1
+01e2  ce 0a          225    264 		ACI	00AH	;A=0+0AH+CARRY(0)=0BH,C=0
+01e4  fe 0b          226    265 		CPI	00BH
+01e6  ca ec 01       227    266 		JZ	SUII	;TEST "ACI"
+01e9  cd 24 06       228    267 		CALL	CPUER
+01ec  d6 0c          229    268 SUII:	SUI	00CH	;A=FFH,C=0
+01ee  d6 0f          230    269 		SUI	00FH	;A=F0H,C=1
+01f0  fe f0          231    270 		CPI	0F0H
+01f2  ca f8 01       232    271 		JZ	SBII	;TEST "SUI"
+01f5  cd 24 06       233    272 		CALL	CPUER
+01f8  de f1          234    273 SBII:	SBI	0F1H	;A=F0H-0F1H-CARRY(0)=FFH,C=1
+01fa  de 0e          235    274 		SBI	00EH	;A=FFH-OEH-CARRY(1)=F0H,C=0
+01fc  fe f0          236    275 		CPI	0F0H
+01fe  ca 04 02       237    276 		JZ	ANII	;TEST "SBI"
+0201  cd 24 06       238    277 		CALL	CPUER
+0204  e6 55          239    278 ANII:	ANI	055H	;A=F0H<AND>55H=50H,C=0,P=1,S=0,Z=0
+0206  fe 50          240    279 		CPI	050H
+0208  ca 0e 02       241    280 		JZ	ORII	;TEST "ANI"
+020b  cd 24 06       242    281 		CALL	CPUER
+020e  f6 3a          243    282 ORII:	ORI	03AH	;A=50H<OR>3AH=7AH,C=0,P=0,S=0,Z=0
+0210  fe 7a          244    283 		CPI	07AH
+0212  ca 18 02       245    284 		JZ	XRII	;TEST "ORI"
+0215  cd 24 06       246    285 		CALL	CPUER
+0218  ee 0f          247    286 XRII:	XRI	00FH	;A=7AH<XOR>0FH=75H,C=0,P=0,S=0,Z=0
+021a  fe 75          248    287 		CPI	075H
+021c  ca 22 02       249    288 		JZ	C010	;TEST "XRI"
+021f  cd 24 06       250    289 		CALL	CPUER
+                     251    290 ;
+                     252    291 ;
+                     253    292 ;
+                     254    293 ;TEST CALLS AND RETURNS
+                     255    294 ;
+0222  e6 00          256    295 C010:	ANI	000H	;A=0,C=0,P=1,S=0,Z=1
+0224  dc 24 06       257    296 		CC	CPUER	;TEST "CC"
+0227  e4 24 06       258    297 		CPO	CPUER	;TEST "CPO"
+022a  fc 24 06       259    298 		CM	CPUER	;TEST "CM"
+022d  c4 24 06       260    299 		CNZ	CPUER	;TEST "CNZ"
+0230  fe 00          261    300 		CPI	000H
+0232  ca 38 02       262    301 		JZ	C020	;A=0,C=0,P=0,S=0,Z=1
+0235  cd 24 06       263    302 		CALL	CPUER
+0238  d6 77          264    303 C020:	SUI	077H	;A=89H,C=1,P=0,S=1,Z=0
+023a  d4 24 06       265    304 		CNC	CPUER	;TEST "CNC"
+023d  ec 24 06       266    305 		CPE	CPUER	;TEST "CPE"
+0240  f4 24 06       267    306 		CP	CPUER	;TEST "CP"
+0243  cc 24 06       268    307 		CZ	CPUER	;TEST "CZ"
+0246  fe 89          269    308 		CPI	089H
+0248  ca 4e 02       270    309 		JZ	C030	;TEST FOR "CALLS" TAKING BRANCH
+024b  cd 24 06       271    310 		CALL	CPUER
+024e  e6 ff          272    311 C030:	ANI	0FFH	;SET FLAGS BACK!
+0250  e4 5b 02       273    312 		CPO	CPOI	;TEST "CPO"
+0253  fe d9          274    313 		CPI	0D9H
+0255  ca b8 02       275    314 		JZ	MOVI	;TEST "CALL" SEQUENCE SUCCESS
+0258  cd 24 06       276    315 		CALL	CPUER
+025b  e8             277    316 CPOI:	RPE		;TEST "RPE"
+025c  c6 10          278    317 		ADI	010H	;A=99H,C=0,P=0,S=1,Z=0
+025e  ec 67 02       279    318 		CPE	CPEI	;TEST "CPE"
+0261  c6 02          280    319 		ADI	002H	;A=D9H,C=0,P=0,S=1,Z=0
+0263  e0             281    320 		RPO		;TEST "RPO"
+0264  cd 24 06       282    321 		CALL	CPUER
+0267  e0             283    322 CPEI:	RPO		;TEST "RPO"
+0268  c6 20          284    323 		ADI	020H	;A=B9H,C=0,P=0,S=1,Z=0
+026a  fc 73 02       285    324 		CM	CMI	;TEST "CM"
+026d  c6 04          286    325 		ADI	004H	;A=D7H,C=0,P=1,S=1,Z=0
+026f  e8             287    326 		RPE		;TEST "RPE"
+0270  cd 24 06       288    327 		CALL	CPUER
+0273  f0             289    328 CMI:	RP		;TEST "RP"
+0274  c6 80          290    329 		ADI	080H	;A=39H,C=1,P=1,S=0,Z=0
+0276  f4 7f 02       291    330 		CP	TCPI	;TEST "CP"
+0279  c6 80          292    331 		ADI	080H	;A=D3H,C=0,P=0,S=1,Z=0
+027b  f8             293    332 		RM		;TEST "RM"
+027c  cd 24 06       294    333 		CALL	CPUER
+027f  f8             295    334 TCPI:	RM		;TEST "RM"
+0280  c6 40          296    335 		ADI	040H	;A=79H,C=0,P=0,S=0,Z=0
+0282  d4 8b 02       297    336 		CNC	CNCI	;TEST "CNC"
+0285  c6 40          298    337 		ADI	040H	;A=53H,C=0,P=1,S=0,Z=0
+0287  f0             299    338 		RP		;TEST "RP"
+0288  cd 24 06       300    339 		CALL	CPUER
+028b  d8             301    340 CNCI:	RC		;TEST "RC"
+028c  c6 8f          302    341 		ADI	08FH	;A=08H,C=1,P=0,S=0,Z=0
+028e  dc 97 02       303    342 		CC	CCI	;TEST "CC"
+0291  d6 02          304    343 		SUI	002H	;A=13H,C=0,P=0,S=0,Z=0
+0293  d0             305    344 		RNC		;TEST "RNC"
+0294  cd 24 06       306    345 		CALL	CPUER
+0297  d0             307    346 CCI:	RNC		;TEST "RNC"
+0298  c6 f7          308    347 		ADI	0F7H	;A=FFH,C=0,P=1,S=1,Z=0
+029a  c4 a3 02       309    348 		CNZ	CNZI	;TEST "CNZ"
+029d  c6 fe          310    349 		ADI	0FEH	;A=15H,C=1,P=0,S=0,Z=0
+029f  d8             311    350 		RC		;TEST "RC"
+02a0  cd 24 06       312    351 		CALL	CPUER
+02a3  c8             313    352 CNZI:	RZ		;TEST "RZ"
+02a4  c6 01          314    353 		ADI	001H	;A=00H,C=1,P=1,S=0,Z=1
+02a6  cc af 02       315    354 		CZ	CZI	;TEST "CZ"
+02a9  c6 d0          316    355 		ADI	0D0H	;A=17H,C=1,P=1,S=0,Z=0
+02ab  c0             317    356 		RNZ		;TEST "RNZ"
+02ac  cd 24 06       318    357 		CALL	CPUER
+02af  c0             319    358 CZI:	RNZ		;TEST "RNZ"
+02b0  c6 47          320    359 		ADI	047H	;A=47H,C=0,P=1,S=0,Z=0
+02b2  fe 47          321    360 		CPI	047H	;A=47H,C=0,P=1,S=0,Z=1
+02b4  c8             322    361 		RZ		;TEST "RZ"
+02b5  cd 24 06       323    362 		CALL	CPUER
+                     324    363 ;
+                     325    364 ;
+                     326    365 ;
+                     327    366 ;TEST "MOV","INR",AND "DCR" INSTRUCTIONS
+                     328    367 ;
+02b8  3e 77          329    368 MOVI:	MVI	A,077H
+02ba  3c             330    369 		INR	A
+02bb  47             331    370 		MOV	B,A
+02bc  04             332    371 		INR	B
+02bd  48             333    372 		MOV	C,B
+02be  0d             334    373 		DCR	C
+02bf  51             335    374 		MOV	D,C
+02c0  5a             336    375 		MOV	E,D
+02c1  63             337    376 		MOV	H,E
+02c2  6c             338    377 		MOV	L,H
+02c3  7d             339    378 		MOV	A,L	;TEST "MOV" A,L,H,E,D,C,B,A
+02c4  3d             340    379 		DCR	A
+02c5  4f             341    380 		MOV	C,A
+02c6  59             342    381 		MOV	E,C
+02c7  6b             343    382 		MOV	L,E
+02c8  45             344    383 		MOV	B,L
+02c9  50             345    384 		MOV	D,B
+02ca  62             346    385 		MOV	H,D
+02cb  7c             347    386 		MOV	A,H	;TEST "MOV" A,H,D,B,L,E,C,A
+02cc  57             348    387 		MOV	D,A
+02cd  14             349    388 		INR	D
+02ce  6a             350    389 		MOV	L,D
+02cf  4d             351    390 		MOV	C,L
+02d0  0c             352    391 		INR	C
+02d1  61             353    392 		MOV	H,C
+02d2  44             354    393 		MOV	B,H
+02d3  05             355    394 		DCR	B
+02d4  58             356    395 		MOV	E,B
+02d5  7b             357    396 		MOV	A,E	;TEST "MOV" A,E,B,H,C,L,D,A
+02d6  5f             358    397 		MOV	E,A
+02d7  1c             359    398 		INR	E
+02d8  43             360    399 		MOV	B,E
+02d9  60             361    400 		MOV	H,B
+02da  24             362    401 		INR	H
+02db  4c             363    402 		MOV	C,H
+02dc  69             364    403 		MOV	L,C
+02dd  55             365    404 		MOV	D,L
+02de  15             366    405 		DCR	D
+02df  7a             367    406 		MOV	A,D	;TEST "MOV" A,D,L,C,H,B,E,A
+02e0  67             368    407 		MOV	H,A
+02e1  25             369    408 		DCR	H
+02e2  54             370    409 		MOV	D,H
+02e3  42             371    410 		MOV	B,D
+02e4  68             372    411 		MOV	L,B
+02e5  2c             373    412 		INR	L
+02e6  5d             374    413 		MOV	E,L
+02e7  1d             375    414 		DCR	E
+02e8  4b             376    415 		MOV	C,E
+02e9  79             377    416 		MOV	A,C	;TEST "MOV" A,C,E,L,B,D,H,A
+02ea  6f             378    417 		MOV	L,A
+02eb  2d             379    418 		DCR	L
+02ec  65             380    419 		MOV	H,L
+02ed  5c             381    420 		MOV	E,H
+02ee  53             382    421 		MOV	D,E
+02ef  4a             383    422 		MOV	C,D
+02f0  41             384    423 		MOV	B,C
+02f1  78             385    424 		MOV	A,B
+02f2  fe 77          386    425 		CPI	077H
+02f4  c4 24 06       387    426 		CNZ	CPUER	;TEST "MOV" A,B,C,D,E,H,L,A
+                     388    427 ;
+                     389    428 ;
+                     390    429 ;
+                     391    430 ;TEST ARITHMETIC AND LOGIC INSTRUCTIONS
+                     392    431 ;
+02f7  af             393    432 		XRA	A
+02f8  06 01          394    433 		MVI	B,001H
+02fa  0e 03          395    434 		MVI	C,003H
+02fc  16 07          396    435 		MVI	D,007H
+02fe  1e 0f          397    436 		MVI	E,00FH
+0300  26 1f          398    437 		MVI	H,01FH
+0302  2e 3f          399    438 		MVI	L,03FH
+0304  80             400    439 		ADD	B
+0305  81             401    440 		ADD	C
+0306  82             402    441 		ADD	D
+0307  83             403    442 		ADD	E
+0308  84             404    443 		ADD	H
+0309  85             405    444 		ADD	L
+030a  87             406    445 		ADD	A
+030b  fe f0          407    446 		CPI	0F0H
+030d  c4 24 06       408    447 		CNZ	CPUER	;TEST "ADD" B,C,D,E,H,L,A
+0310  90             409    448 		SUB	B
+0311  91             410    449 		SUB	C
+0312  92             411    450 		SUB	D
+0313  93             412    451 		SUB	E
+0314  94             413    452 		SUB	H
+0315  95             414    453 		SUB	L
+0316  fe 78          415    454 		CPI	078H
+0318  c4 24 06       416    455 		CNZ	CPUER	;TEST "SUB" B,C,D,E,H,L
+031b  97             417    456 		SUB	A
+031c  c4 24 06       418    457 		CNZ	CPUER	;TEST "SUB" A
+031f  3e 80          419    458 		MVI	A,080H
+0321  87             420    459 		ADD	A
+0322  06 01          421    460 		MVI	B,001H
+0324  0e 02          422    461 		MVI	C,002H
+0326  16 03          423    462 		MVI	D,003H
+0328  1e 04          424    463 		MVI	E,004H
+032a  26 05          425    464 		MVI	H,005H
+032c  2e 06          426    465 		MVI	L,006H
+032e  88             427    466 		ADC	B
+032f  06 80          428    467 		MVI	B,080H
+0331  80             429    468 		ADD	B
+0332  80             430    469 		ADD	B
+0333  89             431    470 		ADC	C
+0334  80             432    471 		ADD	B
+0335  80             433    472 		ADD	B
+0336  8a             434    473 		ADC	D
+0337  80             435    474 		ADD	B
+0338  80             436    475 		ADD	B
+0339  8b             437    476 		ADC	E
+033a  80             438    477 		ADD	B
+033b  80             439    478 		ADD	B
+033c  8c             440    479 		ADC	H
+033d  80             441    480 		ADD	B
+033e  80             442    481 		ADD	B
+033f  8d             443    482 		ADC	L
+0340  80             444    483 		ADD	B
+0341  80             445    484 		ADD	B
+0342  8f             446    485 		ADC	A
+0343  fe 37          447    486 		CPI	037H
+0345  c4 24 06       448    487 		CNZ	CPUER	;TEST "ADC" B,C,D,E,H,L,A
+0348  3e 80          449    488 		MVI	A,080H
+034a  87             450    489 		ADD	A
+034b  06 01          451    490 		MVI	B,001H
+034d  98             452    491 		SBB	B
+034e  06 ff          453    492 		MVI	B,0FFH
+0350  80             454    493 		ADD	B
+0351  99             455    494 		SBB	C
+0352  80             456    495 		ADD	B
+0353  9a             457    496 		SBB	D
+0354  80             458    497 		ADD	B
+0355  9b             459    498 		SBB	E
+0356  80             460    499 		ADD	B
+0357  9c             461    500 		SBB	H
+0358  80             462    501 		ADD	B
+0359  9d             463    502 		SBB	L
+035a  fe e0          464    503 		CPI	0E0H
+035c  c4 24 06       465    504 		CNZ	CPUER	;TEST "SBB" B,C,D,E,H,L
+035f  3e 80          466    505 		MVI	A,080H
+0361  87             467    506 		ADD	A
+0362  9f             468    507 		SBB	A
+0363  fe ff          469    508 		CPI	0FFH
+0365  c4 24 06       470    509 		CNZ	CPUER	;TEST "SBB" A
+0368  3e ff          471    510 		MVI	A,0FFH
+036a  06 fe          472    511 		MVI	B,0FEH
+036c  0e fc          473    512 		MVI	C,0FCH
+036e  16 ef          474    513 		MVI	D,0EFH
+0370  1e 7f          475    514 		MVI	E,07FH
+0372  26 f4          476    515 		MVI	H,0F4H
+0374  2e bf          477    516 		MVI	L,0BFH
+0376  a7             478    517 		ANA	A
+0377  a1             479    518 		ANA	C
+0378  a2             480    519 		ANA	D
+0379  a3             481    520 		ANA	E
+037a  a4             482    521 		ANA	H
+037b  a5             483    522 		ANA	L
+037c  a7             484    523 		ANA	A
+037d  fe 24          485    524 		CPI	024H
+037f  c4 24 06       486    525 		CNZ	CPUER	;TEST "ANA" B,C,D,E,H,L,A
+0382  af             487    526 		XRA	A
+0383  06 01          488    527 		MVI	B,001H
+0385  0e 02          489    528 		MVI	C,002H
+0387  16 04          490    529 		MVI	D,004H
+0389  1e 08          491    530 		MVI	E,008H
+038b  26 10          492    531 		MVI	H,010H
+038d  2e 20          493    532 		MVI	L,020H
+038f  b0             494    533 		ORA	B
+0390  b1             495    534 		ORA	C
+0391  b2             496    535 		ORA	D
+0392  b3             497    536 		ORA	E
+0393  b4             498    537 		ORA	H
+0394  b5             499    538 		ORA	L
+0395  b7             500    539 		ORA	A
+0396  fe 3f          501    540 		CPI	03FH
+0398  c4 24 06       502    541 		CNZ	CPUER	;TEST "ORA" B,C,D,E,H,L,A
+039b  3e 00          503    542 		MVI	A,000H
+039d  26 8f          504    543 		MVI	H,08FH
+039f  2e 4f          505    544 		MVI	L,04FH
+03a1  a8             506    545 		XRA	B
+03a2  a9             507    546 		XRA	C
+03a3  aa             508    547 		XRA	D
+03a4  ab             509    548 		XRA	E
+03a5  ac             510    549 		XRA	H
+03a6  ad             511    550 		XRA	L
+03a7  fe cf          512    551 		CPI	0CFH
+03a9  c4 24 06       513    552 		CNZ	CPUER	;TEST "XRA" B,C,D,E,H,L
+03ac  af             514    553 		XRA	A
+03ad  c4 24 06       515    554 		CNZ	CPUER	;TEST "XRA" A
+03b0  06 44          516    555 		MVI	B,044H
+03b2  0e 45          517    556 		MVI	C,045H
+03b4  16 46          518    557 		MVI	D,046H
+03b6  1e 47          519    558 		MVI	E,047H
+03b8  26 06          520    559 		MVI	H,HIGH TEMP0	;HIGH BYTE OF TEST MEMORY LOCATION
+03ba  2e 41          521    560 		MVI	L,LOW TEMP0	;LOW BYTE OF TEST MEMORY LOCATION
+03bc  70             522    561 		MOV	M,B
+03bd  06 00          523    562 		MVI	B,000H
+03bf  46             524    563 		MOV	B,M
+03c0  3e 44          525    564 		MVI	A,044H
+03c2  b8             526    565 		CMP	B
+03c3  c4 24 06       527    566 		CNZ	CPUER	;TEST "MOV" M,B AND B,M
+03c6  72             528    567 		MOV	M,D
+03c7  16 00          529    568 		MVI	D,000H
+03c9  56             530    569 		MOV	D,M
+03ca  3e 46          531    570 		MVI	A,046H
+03cc  ba             532    571 		CMP	D
+03cd  c4 24 06       533    572 		CNZ	CPUER	;TEST "MOV" M,D AND D,M
+03d0  73             534    573 		MOV	M,E
+03d1  1e 00          535    574 		MVI	E,000H
+03d3  5e             536    575 		MOV	E,M
+03d4  3e 47          537    576 		MVI	A,047H
+03d6  bb             538    577 		CMP	E
+03d7  c4 24 06       539    578 		CNZ	CPUER	;TEST "MOV" M,E AND E,M
+03da  74             540    579 		MOV	M,H
+03db  26 06          541    580 		MVI	H,HIGH TEMP0
+03dd  2e 41          542    581 		MVI	L,LOW TEMP0
+03df  66             543    582 		MOV	H,M
+03e0  3e 06          544    583 		MVI	A,HIGH TEMP0
+03e2  bc             545    584 		CMP	H
+03e3  c4 24 06       546    585 		CNZ	CPUER	;TEST "MOV" M,H AND H,M
+03e6  75             547    586 		MOV	M,L
+03e7  26 06          548    587 		MVI	H,HIGH TEMP0
+03e9  2e 41          549    588 		MVI	L,LOW TEMP0
+03eb  6e             550    589 		MOV	L,M
+03ec  3e 41          551    590 		MVI	A,LOW TEMP0
+03ee  bd             552    591 		CMP	L
+03ef  c4 24 06       553    592 		CNZ	CPUER	;TEST "MOV" M,L AND L,M
+03f2  26 06          554    593 		MVI	H,HIGH TEMP0
+03f4  2e 41          555    594 		MVI	L,LOW TEMP0
+03f6  3e 32          556    595 		MVI	A,032H
+03f8  77             557    596 		MOV	M,A
+03f9  be             558    597 		CMP	M
+03fa  c4 24 06       559    598 		CNZ	CPUER	;TEST "MOV" M,A
+03fd  86             560    599 		ADD	M
+03fe  fe 64          561    600 		CPI	064H
+0400  c4 24 06       562    601 		CNZ	CPUER	;TEST "ADD" M
+0403  af             563    602 		XRA	A
+0404  7e             564    603 		MOV	A,M
+0405  fe 32          565    604 		CPI	032H
+0407  c4 24 06       566    605 		CNZ	CPUER	;TEST "MOV" A,M
+040a  26 06          567    606 		MVI	H,HIGH TEMP0
+040c  2e 41          568    607 		MVI	L,LOW TEMP0
+040e  7e             569    608 		MOV	A,M
+040f  96             570    609 		SUB	M
+0410  c4 24 06       571    610 		CNZ	CPUER	;TEST "SUB" M
+0413  3e 80          572    611 		MVI	A,080H
+0415  87             573    612 		ADD	A
+0416  8e             574    613 		ADC	M
+0417  fe 33          575    614 		CPI	033H
+0419  c4 24 06       576    615 		CNZ	CPUER	;TEST "ADC" M
+041c  3e 80          577    616 		MVI	A,080H
+041e  87             578    617 		ADD	A
+041f  9e             579    618 		SBB	M
+0420  fe cd          580    619 		CPI	0CDH
+0422  c4 24 06       581    620 		CNZ	CPUER	;TEST "SBB" M
+0425  a6             582    621 		ANA	M
+0426  c4 24 06       583    622 		CNZ	CPUER	;TEST "ANA" M
+0429  3e 25          584    623 		MVI	A,025H
+042b  b6             585    624 		ORA	M
+042c  fe 37          586    625 		CPI	037H
+042e  c4 24 06       587    626 		CNZ	CPUER	;TEST "ORA" M
+0431  ae             588    627 		XRA	M
+0432  fe 05          589    628 		CPI	005H
+0434  c4 24 06       590    629 		CNZ	CPUER	;TEST "XRA" M
+0437  36 55          591    630 		MVI	M,055H
+0439  34             592    631 		INR	M
+043a  35             593    632 		DCR	M
+043b  86             594    633 		ADD	M
+043c  fe 5a          595    634 		CPI	05AH
+043e  c4 24 06       596    635 		CNZ	CPUER	;TEST "INR","DCR",AND "MVI" M
+0441  01 ff 12       597    636 		LXI	B,12FFH
+0444  11 ff 12       598    637 		LXI	D,12FFH
+0447  21 ff 12       599    638 		LXI	H,12FFH
+044a  03             600    639 		INX	B
+044b  13             601    640 		INX	D
+044c  23             602    641 		INX	H
+044d  3e 13          603    642 		MVI	A,013H
+044f  b8             604    643 		CMP	B
+0450  c4 24 06       605    644 		CNZ	CPUER	;TEST "LXI" AND "INX" B
+0453  ba             606    645 		CMP	D
+0454  c4 24 06       607    646 		CNZ	CPUER	;TEST "LXI" AND "INX" D
+0457  bc             608    647 		CMP	H
+0458  c4 24 06       609    648 		CNZ	CPUER	;TEST "LXI" AND "INX" H
+045b  3e 00          610    649 		MVI	A,000H
+045d  b9             611    650 		CMP	C
+045e  c4 24 06       612    651 		CNZ	CPUER	;TEST "LXI" AND "INX" B
+0461  bb             613    652 		CMP	E
+0462  c4 24 06       614    653 		CNZ	CPUER	;TEST "LXI" AND "INX" D
+0465  bd             615    654 		CMP	L
+0466  c4 24 06       616    655 		CNZ	CPUER	;TEST "LXI" AND "INX" H
+0469  0b             617    656 		DCX	B
+046a  1b             618    657 		DCX	D
+046b  2b             619    658 		DCX	H
+046c  3e 12          620    659 		MVI	A,012H
+046e  b8             621    660 		CMP	B
+046f  c4 24 06       622    661 		CNZ	CPUER	;TEST "DCX" B
+0472  ba             623    662 		CMP	D
+0473  c4 24 06       624    663 		CNZ	CPUER	;TEST "DCX" D
+0476  bc             625    664 		CMP	H
+0477  c4 24 06       626    665 		CNZ	CPUER	;TEST "DCX" H
+047a  3e ff          627    666 		MVI	A,0FFH
+047c  b9             628    667 		CMP	C
+047d  c4 24 06       629    668 		CNZ	CPUER	;TEST "DCX" B
+0480  bb             630    669 		CMP	E
+0481  c4 24 06       631    670 		CNZ	CPUER	;TEST "DCX" D
+0484  bd             632    671 		CMP	L
+0485  c4 24 06       633    672 		CNZ	CPUER	;TEST "DCX" H
+0488  32 41 06       634    673 		STA	TEMP0
+048b  af             635    674 		XRA	A
+048c  3a 41 06       636    675 		LDA	TEMP0
+048f  fe ff          637    676 		CPI	0FFH
+0491  c4 24 06       638    677 		CNZ	CPUER	;TEST "LDA" AND "STA"
+0494  2a 3f 06       639    678 		LHLD	TEMPP
+0497  22 41 06       640    679 		SHLD	TEMP0
+049a  3a 3f 06       641    680 		LDA	TEMPP
+049d  47             642    681 		MOV	B,A
+049e  3a 41 06       643    682 		LDA	TEMP0
+04a1  b8             644    683 		CMP	B
+04a2  c4 24 06       645    684 		CNZ	CPUER	;TEST "LHLD" AND "SHLD"
+04a5  3a 40 06       646    685 		LDA	TEMPP+1
+04a8  47             647    686 		MOV	B,A
+04a9  3a 42 06       648    687 		LDA	TEMP0+1
+04ac  b8             649    688 		CMP	B
+04ad  c4 24 06       650    689 		CNZ	CPUER	;TEST "LHLD" AND "SHLD"
+04b0  3e aa          651    690 		MVI	A,0AAH
+04b2  32 41 06       652    691 		STA	TEMP0
+04b5  44             653    692 		MOV	B,H
+04b6  4d             654    693 		MOV	C,L
+04b7  af             655    694 		XRA	A
+04b8  0a             656    695 		LDAX	B
+04b9  fe aa          657    696 		CPI	0AAH
+04bb  c4 24 06       658    697 		CNZ	CPUER	;TEST "LDAX" B
+04be  3c             659    698 		INR	A
+04bf  02             660    699 		STAX	B
+04c0  3a 41 06       661    700 		LDA	TEMP0
+04c3  fe ab          662    701 		CPI	0ABH
+04c5  c4 24 06       663    702 		CNZ	CPUER	;TEST "STAX" B
+04c8  3e 77          664    703 		MVI	A,077H
+04ca  32 41 06       665    704 		STA	TEMP0
+04cd  2a 3f 06       666    705 		LHLD	TEMPP
+04d0  11 00 00       667    706 		LXI	D,00000H
+04d3  eb             668    707 		XCHG
+04d4  af             669    708 		XRA	A
+04d5  1a             670    709 		LDAX	D
+04d6  fe 77          671    710 		CPI	077H
+04d8  c4 24 06       672    711 		CNZ	CPUER	;TEST "LDAX" D AND "XCHG"
+04db  af             673    712 		XRA	A
+04dc  84             674    713 		ADD	H
+04dd  85             675    714 		ADD	L
+04de  c4 24 06       676    715 		CNZ	CPUER	;TEST "XCHG"
+04e1  3e cc          677    716 		MVI	A,0CCH
+04e3  12             678    717 		STAX	D
+04e4  3a 41 06       679    718 		LDA	TEMP0
+04e7  fe cc          680    719 		CPI	0CCH
+04e9  12             681    720 		STAX	D
+04ea  3a 41 06       682    721 		LDA	TEMP0
+04ed  fe cc          683    722 		CPI	0CCH
+04ef  c4 24 06       684    723 		CNZ	CPUER	;TEST "STAX" D
+04f2  21 77 77       685    724 		LXI	H,07777H
+04f5  29             686    725 		DAD	H
+04f6  3e ee          687    726 		MVI	A,0EEH
+04f8  bc             688    727 		CMP	H
+04f9  c4 24 06       689    728 		CNZ	CPUER	;TEST "DAD" H
+04fc  bd             690    729 		CMP	L
+04fd  c4 24 06       691    730 		CNZ	CPUER	;TEST "DAD" H
+0500  21 55 55       692    731 		LXI	H,05555H
+0503  01 ff ff       693    732 		LXI	B,0FFFFH
+0506  09             694    733 		DAD	B
+0507  3e 55          695    734 		MVI	A,055H
+0509  d4 24 06       696    735 		CNC	CPUER	;TEST "DAD" B
+050c  bc             697    736 		CMP	H
+050d  c4 24 06       698    737 		CNZ	CPUER	;TEST "DAD" B
+0510  3e 54          699    738 		MVI	A,054H
+0512  bd             700    739 		CMP	L
+0513  c4 24 06       701    740 		CNZ	CPUER	;TEST "DAD" B
+0516  21 aa aa       702    741 		LXI	H,0AAAAH
+0519  11 33 33       703    742 		LXI	D,03333H
+051c  19             704    743 		DAD	D
+051d  3e dd          705    744 		MVI	A,0DDH
+051f  bc             706    745 		CMP	H
+0520  c4 24 06       707    746 		CNZ	CPUER	;TEST "DAD" D
+0523  bd             708    747 		CMP	L
+0524  c4 24 06       709    748 		CNZ	CPUER	;TEST "DAD" B
+0527  37             710    749 		STC
+0528  d4 24 06       711    750 		CNC	CPUER	;TEST "STC"
+052b  3f             712    751 		CMC
+052c  dc 24 06       713    752 		CC	CPUER	;TEST "CMC
+052f  3e aa          714    753 		MVI	A,0AAH
+0531  2f             715    754 		CMA	
+0532  fe 55          716    755 		CPI	055H
+0534  c4 24 06       717    756 		CNZ	CPUER	;TEST "CMA"
+0537  b7             718    757 		ORA	A	;RE-SET AUXILIARY CARRY
+0538  27             719    758 		DAA
+0539  fe 55          720    759 		CPI	055H
+053b  c4 24 06       721    760 		CNZ	CPUER	;TEST "DAA"
+053e  3e 88          722    761 		MVI	A,088H
+0540  87             723    762 		ADD	A
+0541  27             724    763 		DAA
+0542  fe 76          725    764 		CPI	076H
+0544  c4 24 06       726    765 		CNZ	CPUER	;TEST "DAA"
+0547  af             727    766 		XRA	A
+0548  3e aa          728    767 		MVI	A,0AAH
+054a  27             729    768 		DAA
+054b  d4 24 06       730    769 		CNC	CPUER	;TEST "DAA"
+054e  fe 10          731    770 		CPI	010H
+0550  c4 24 06       732    771 		CNZ	CPUER	;TEST "DAA"
+0553  af             733    772 		XRA	A
+0554  3e 9a          734    773 		MVI	A,09AH
+0556  27             735    774 		DAA
+0557  d4 24 06       736    775 		CNC	CPUER	;TEST "DAA"
+055a  c4 24 06       737    776 		CNZ	CPUER	;TEST "DAA"
+055d  37             738    777 		STC
+055e  3e 42          739    778 		MVI	A,042H
+0560  07             740    779 		RLC
+0561  dc 24 06       741    780 		CC	CPUER	;TEST "RLC" FOR RE-SET CARRY
+0564  07             742    781 		RLC
+0565  d4 24 06       743    782 		CNC	CPUER	;TEST "RLC" FOR SET CARRY
+0568  fe 09          744    783 		CPI	009H
+056a  c4 24 06       745    784 		CNZ	CPUER	;TEST "RLC" FOR ROTATION
+056d  0f             746    785 		RRC
+056e  d4 24 06       747    786 		CNC	CPUER	;TEST "RRC" FOR SET CARRY
+0571  0f             748    787 		RRC
+0572  fe 42          749    788 		CPI	042H
+0574  c4 24 06       750    789 		CNZ	CPUER	;TEST "RRC" FOR ROTATION
+0577  17             751    790 		RAL
+0578  17             752    791 		RAL
+0579  d4 24 06       753    792 		CNC	CPUER	;TEST "RAL" FOR SET CARRY
+057c  fe 08          754    793 		CPI	008H
+057e  c4 24 06       755    794 		CNZ	CPUER	;TEST "RAL" FOR ROTATION
+0581  1f             756    795 		RAR
+0582  1f             757    796 		RAR
+0583  dc 24 06       758    797 		CC	CPUER	;TEST "RAR" FOR RE-SET CARRY
+0586  fe 02          759    798 		CPI	002H
+0588  c4 24 06       760    799 		CNZ	CPUER	;TEST "RAR" FOR ROTATION
+058b  01 34 12       761    800 		LXI	B,01234H
+058e  11 aa aa       762    801 		LXI	D,0AAAAH
+0591  21 55 55       763    802 		LXI	H,05555H
+0594  af             764    803 		XRA	A
+0595  c5             765    804 		PUSH	B
+0596  d5             766    805 		PUSH	D
+0597  e5             767    806 		PUSH	H
+0598  f5             768    807 		PUSH	PSW
+0599  01 00 00       769    808 		LXI	B,00000H
+059c  11 00 00       770    809 		LXI	D,00000H
+059f  21 00 00       771    810 		LXI	H,00000H
+05a2  3e c0          772    811 		MVI	A,0C0H
+05a4  c6 f0          773    812 		ADI	0F0H
+05a6  f1             774    813 		POP	PSW
+05a7  e1             775    814 		POP	H
+05a8  d1             776    815 		POP	D
+05a9  c1             777    816 		POP	B
+05aa  dc 24 06       778    817 		CC	CPUER	;TEST "PUSH PSW" AND "POP PSW"
+05ad  c4 24 06       779    818 		CNZ	CPUER	;TEST "PUSH PSW" AND "POP PSW"
+05b0  e4 24 06       780    819 		CPO	CPUER	;TEST "PUSH PSW" AND "POP PSW"
+05b3  fc 24 06       781    820 		CM	CPUER	;TEST "PUSH PSW" AND "POP PSW"
+05b6  3e 12          782    821 		MVI	A,012H
+05b8  b8             783    822 		CMP	B
+05b9  c4 24 06       784    823 		CNZ	CPUER	;TEST "PUSH B" AND "POP B"
+05bc  3e 34          785    824 		MVI	A,034H
+05be  b9             786    825 		CMP	C
+05bf  c4 24 06       787    826 		CNZ	CPUER	;TEST "PUSH B" AND "POP B"
+05c2  3e aa          788    827 		MVI	A,0AAH
+05c4  ba             789    828 		CMP	D
+05c5  c4 24 06       790    829 		CNZ	CPUER	;TEST "PUSH D" AND "POP D"
+05c8  bb             791    830 		CMP	E
+05c9  c4 24 06       792    831 		CNZ	CPUER	;TEST "PUSH D" AND "POP D"
+05cc  3e 55          793    832 		MVI	A,055H
+05ce  bc             794    833 		CMP	H
+05cf  c4 24 06       795    834 		CNZ	CPUER	;TEST "PUSH H" AND "POP H"
+05d2  bd             796    835 		CMP	L
+05d3  c4 24 06       797    836 		CNZ	CPUER	;TEST "PUSH H" AND "POP H"
+05d6  21 00 00       798    837 		LXI	H,00000H
+05d9  39             799    838 		DAD	SP
+05da  22 46 06       800    839 		SHLD	SAVSTK	;SAVE THE "OLD" STACK-POINTER!
+05dd  31 45 06       801    840 		LXI	SP,TEMP4
+05e0  3b             802    841 		DCX	SP
+05e1  3b             803    842 		DCX	SP
+05e2  33             804    843 		INX	SP
+05e3  3b             805    844 		DCX	SP
+05e4  3e 55          806    845 		MVI	A,055H
+05e6  32 43 06       807    846 		STA	TEMP2
+05e9  2f             808    847 		CMA
+05ea  32 44 06       809    848 		STA	TEMP3
+05ed  c1             810    849 		POP	B
+05ee  b8             811    850 		CMP	B
+05ef  c4 24 06       812    851 		CNZ	CPUER	;TEST "LXI","DAD","INX",AND "DCX" SP
+05f2  2f             813    852 		CMA
+05f3  b9             814    853 		CMP	C
+05f4  c4 24 06       815    854 		CNZ	CPUER	;TEST "LXI","DAD","INX", AND "DCX" SP
+05f7  21 45 06       816    855 		LXI	H,TEMP4
+05fa  f9             817    856 		SPHL
+05fb  21 33 77       818    857 		LXI	H,07733H
+05fe  3b             819    858 		DCX	SP
+05ff  3b             820    859 		DCX	SP
+0600  e3             821    860 		XTHL
+0601  3a 44 06       822    861 		LDA	TEMP3
+0604  fe 77          823    862 		CPI	077H
+0606  c4 24 06       824    863 		CNZ	CPUER	;TEST "SPHL" AND "XTHL"
+0609  3a 43 06       825    864 		LDA	TEMP2
+060c  fe 33          826    865 		CPI	033H
+060e  c4 24 06       827    866 		CNZ	CPUER	;TEST "SPHL" AND "XTHL"
+0611  3e 55          828    867 		MVI	A,055H
+0613  bd             829    868 		CMP	L
+0614  c4 24 06       830    869 		CNZ	CPUER	;TEST "SPHL" AND "XTHL"
+0617  2f             831    870 		CMA
+0618  bc             832    871 		CMP	H
+0619  c4 24 06       833    872 		CNZ	CPUER	;TEST "SPHL" AND "XTHL"
+061c  2a 46 06       834    873 		LHLD	SAVSTK	;RESTORE THE "OLD" STACK-POINTER
+061f  f9             835    874 		SPHL
+0620  21 36 06       836    875 		LXI	H,CPUOK
+0623  e9             837    876 		PCHL		;TEST "PCHL"
+                     838    877 ;
+                     839    878 ;
+                     840    879 ;
+0624  21 24 01       841    880 CPUER:	LXI	H,NGCPU	;OUTPUT "CPU HAS FAILED    ERROR EXIT=" TO CONSOLE
+0627  cd db 00       842    881 		CALL	MSG
+062a  e3             843    882 		XTHL
+062b  7c             844    883 		MOV	A,H
+062c  cd ef 00       845    884 		CALL	BYTEO	;SHOW ERROR EXIT ADDRESS HIGH BYTE
+062f  7d             846    885 		MOV	A,L
+0630  cd ef 00       847    886 		CALL	BYTEO	;SHOW ERROR EXIT ADDRESS LOW BYTE
+0633  c3 64 00       848    887 		JMP	WBOOT	;EXIT TO CP/M WARM BOOT
+                     849    888 ;
+                     850    889 ;
+                     851    890 ;
+0636  21 0f 01       852    891 CPUOK:	LXI	H,OKCPU	;OUTPUT "CPU IS OPERATIONAL" TO CONSOLE
+0639  cd db 00       853    892 		CALL	MSG
+063c  c3 64 00       854    893 		JMP	WBOOT	;EXIT TO CP/M WARM BOOT
+                     855    894 ;
+                     856    895 ;
+                     857    896 ;
+063f  41 06          858    897 TEMPP:	DW	TEMP0	;POINTER USED TO TEST "LHLD","SHLD",
+                     859    898 			; AND "LDAX" INSTRUCTIONS
+                     860    899 ;
+0641                 861    900 TEMP0:	DS	1	;TEMPORARY STORAGE FOR CPU TEST MEMORY LOCATIONS
+0642                 862    901 TEMP1:	DS	1	;TEMPORARY STORAGE FOR CPU TEST MEMORY LOCATIONS
+0643                 863    902 TEMP2:	DS	1	;TEMPORARY STORAGE FOR CPU TEST MEMORY LOCATIONS
+0644                 864    903 TEMP3:	DS	1	;TEMPORARY STORAGE FOR CPU TEST MEMORY LOCATIONS
+0645                 865    904 TEMP4:	DS	1	;TEMPORARY STORAGE FOR CPU TEST MEMORY LOCATIONS
+0646                 866    905 SAVSTK:	DS	2	;TEMPORARY STACK-POINTER STORAGE LOCATION
+                     867    906 ;
+                     868    907 ;
+                     869    908 ;
+073f  =              870    909 STACK	EQU	TEMPP+256	;DE-BUG STACK POINTER STORAGE AREA
+                     871    910 ;
+0648                 872    911 		END
+
+Symbol table
+
+ACII   01e0    AIMM   01c5    ANII   0204    BDOS   0005*   BYTEO  00ef 
+BYTO1  00ff    BYTO2  0103    BYTO3  010c    C010   0222    C020   0238 
+C030   024e    CCI    0297    CMI    0273    CNCI   028b    CNZI   02a3 
+CPEI   0267    CPIE   01dd    CPOI   025b    CPU    0146    CPUER  0624 
+CPUOK  0636    CZI    02af    DOSW   0091    DOSW1  009c    IOCHAR 0001 
+J010   0151    J020   0157    J030   015d    J040   0163    J050   0172 
+J060   0175    J070   017d    J080   0186    J090   0189    J100   0191 
+J110   019a    J120   019d    J130   01a5    J140   01ae    J150   01b1 
+J160   01b9    J170   01c2    LOLZ   001e    MOVI   02b8    MSG    00db 
+NGCPU  0124    OKCPU  010f    ONCPM  0000    ORII   020e    PCHAR  00e6 
+S8080  00c0    SAVSTK 0646    SBII   01f8    STACK  073f    START  0000*
+START1 0015    SUII   01ec    SW8080 0084    SWFLAG 00a5    SWZ80  008c 
+SZ80   00a6    TCPI   027f    TEMP0  0641    TEMP1  0642*   TEMP2  0643 
+TEMP3  0644    TEMP4  0645    TEMPP  063f    WBOOT  0064    WBOOT1 0078 
+XRII   0218    
