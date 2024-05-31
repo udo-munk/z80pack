@@ -5,7 +5,7 @@
 # and the executable saved as '../machinesim'
 MACHINE = intelmds
 # emulate a machine's frontpanel
-FRONTPANEL = NO
+FRONTPANEL = YES
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files

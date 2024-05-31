@@ -1,6 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
+ * Copyright (C) 2008-2024 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module of the simulator contains the I/O simulation
@@ -58,5 +59,13 @@ void init_io(void)
  *	called from the CPU simulation on exit.
  */
 void exit_io(void)
+{
+}
+
+/*
+ *	This function is to reset the I/O devices. It is
+ *	called from the CPU simulation when an External Clear is performed.
+ */
+void reset_io(void)
 {
 }

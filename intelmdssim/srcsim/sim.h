@@ -1,6 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
+ * Copyright (C) 2008-2024 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * Configuration for an Intel MDS-800 system
@@ -29,7 +30,7 @@
 #define SBSIZE	4	/* number of software breakpoints */
 
 /*#define HAS_DISKS*/	/* has no disk drives */
-/*#define HAS_CONFIG*/	/* has no configuration files */
+#define HAS_CONFIG	/* has configuration files somewhere */
 
 extern void sleep_us(long);
 #define SLEEP_US(t)	sleep_us(t)
@@ -48,4 +49,4 @@ extern void sleep_ms(int);
 
 #include "simcore.h"
 
-#endif
+#endif /* !SIM_INC */
