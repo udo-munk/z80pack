@@ -1,0 +1,74 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ;	CP/M 2.2 boot-loader for z80pack machines using SD-FDC
+                       3      3 ;
+                       4      4 ;	Copyright (C) 2024 by Udo Munk
+                       5      5 ;
+                       6      6 	ORG	0		;mem base of boot
+                       7      7 ;
+0040  =                8      8 MSIZE	EQU	64		;mem size in kbytes
+                       9      9 ;
+b000  =               10     10 BIAS	EQU	(MSIZE-20)*1024	;offset from 20k system
+e400  =               11     11 CCP	EQU	3400H+BIAS	;base of the ccp
+e400  =               12     12 CPMB	EQU	BIAS+3400H	;start of CP/M
+fa00  =               13     13 BOOTE	EQU	CPMB+1600H	;cold boot entry point
+0033  =               14     14 SECTS	EQU	51		;# of sectors to load (26 * 2 - 1)
+                      15     15 ;
+                      16     16 ;	I/O ports
+                      17     17 ;
+0004  =               18     18 FDC	EQU	4		;FDC port
+                      19     19 ;
+0000  f3              20     20 	DI			;disable interrupts
+0001  31 ff 00        21     21 	LXI	SP,0FFH		;some space for stack
+0004  3e 10           22     22 	MVI	A,10H		;setup command for FDC
+0006  d3 04           23     23 	OUT	FDC
+0008  3e 45           24     24 	MVI	A,CMD AND 0FFH
+000a  d3 04           25     25 	OUT	FDC
+000c  3e 00           26     26 	MVI	A,CMD SHR 8
+000e  d3 04           27     27 	OUT	FDC
+0010  01 02 00        28     28 	LXI	B,2		;B=track 0, C=sector 2
+0013  16 33           29     29 	MVI	D,SECTS		;D=# sectors to load
+                      30     30 ;
+                      31     31 ; load the next sector
+                      32     32 ;
+0015  3e 20           33     33 LSECT	MVI	A,20H		;tell FDC to read sector on drive 0
+0017  d3 04           34     34 	OUT	FDC
+0019  db 04           35     35 	IN	FDC		;get result from FDC
+001b  b7              36     36 	ORA	A
+001c  ca 20 00        37     37 	JZ	BOOT1
+001f  76              38     38 	HLT			;read error, halt CPU
+0020  15              39     39 BOOT1	DCR	D		;SECTS=SECTS-1
+0021  ca 00 fa        40     40 	JZ	BOOTE		;go to CP/M if all sectors done
+0024  0c              41     41 	INR	C		;sector = sector + 1
+0025  79              42     42 	MOV	A,C
+0026  fe 1b           43     43 	CPI	27		;last sector of track?
+0028  da 2e 00        44     44 	JC	BOOT2		;no, do next sector
+002b  0e 01           45     45 	MVI	C,1		;sector = 1
+002d  04              46     46 	INR	B		;track = track + 1
+002e  78              47     47 BOOT2	MOV	A,B		;setup command
+002f  32 45 00        48     48 	STA	CMD+0		;save track
+0032  79              49     49 	MOV	A,C
+0033  32 46 00        50     50 	STA	CMD+1		;save sector
+0036  d5              51     51 	PUSH	D
+0037  2a 47 00        52     52 	LHLD	CMD+2		;get DMA address
+003a  11 80 00        53     53 	LXI	D,80H		;and increase it by 128
+003d  19              54     54 	DAD	D
+003e  d1              55     55 	POP	D
+003f  22 47 00        56     56 	SHLD	CMD+2		;set new dma address
+0042  c3 15 00        57     57 	JMP	LSECT		;for next sector
+                      58     58 ;
+                      59     59 ; command bytes for the FDC
+0045  00              60     60 CMD	DB	00H		;track 0
+0046  02              61     61 	DB	02H		;sector 2
+0047  00              62     62 	DB	CPMB AND 0FFH	;DMA address low
+0048  e4              63     63 	DB	CPMB SHR 8	;DMA address high
+                      64     64 
+0049                  65     65 	END			;of boot loader
+
+Symbol table
+
+BIAS  b000    BOOT1 0020    BOOT2 002e    BOOTE fa00    CCP   e400*
+CMD   0045    CPMB  e400    FDC   0004    LSECT 0015    MSIZE 0040 
+SECTS 0033    
