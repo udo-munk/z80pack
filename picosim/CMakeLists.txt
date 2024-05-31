@@ -47,6 +47,6 @@ pico_add_extra_outputs(picosim)
 pico_set_program_name(picosim "z80pack picosim")
 pico_set_program_version(picosim "1.1")
 
-# disable UART output, enable USB output
+# disable UART in/out, enable USB in/out. Enabling both will cause problems.
 pico_enable_stdio_uart(picosim 0)
 pico_enable_stdio_usb(picosim 1)
