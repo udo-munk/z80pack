@@ -48,5 +48,5 @@ pico_set_program_name(picosim "z80pack picosim")
 pico_set_program_version(picosim "1.1")
 
 # enable UART output, disable USB output, USB output not working yet!
-pico_enable_stdio_uart(picosim 0)
-pico_enable_stdio_usb(picosim 1)
+pico_enable_stdio_uart(picosim 1)
+pico_enable_stdio_usb(picosim 0)
