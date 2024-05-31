@@ -4,7 +4,8 @@
  * Copyright (C) 2016-2021 Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * This module implements memory management for an Intel MDS-800 system
+ * This module implements memory management for an Intel Intellec MDS-800
+ * system
  *
  * History:
  */
@@ -21,14 +22,14 @@ extern void wait_int_step(void);
 
 extern BYTE memory[], boot_rom[];
 extern BYTE boot_switch;
-extern int mon_is_ram;
+extern int mon_enabled;
 
 /*
  * memory access for the CPU cores
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	if (mon_is_ram || addr < 65536 - MON_SIZE)
+	if (mon_enabled && addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 
@@ -45,7 +46,7 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
-	if (mon_is_ram || addr < 65536 - MON_SIZE)
+	if (mon_enabled && addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 
@@ -62,7 +63,7 @@ static inline BYTE dma_read(WORD addr)
  */
 static inline void putmem(WORD addr, BYTE data)
 {
-	if (mon_is_ram || addr < 65536 - MON_SIZE)
+	if (mon_enabled && addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 

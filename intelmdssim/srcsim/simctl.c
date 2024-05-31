@@ -4,8 +4,7 @@
  * Copyright (C) 2008-2024 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * This module contains the user interface an Intel MDS-800 system,
- * for now we just call the ICE.
+ * This module contains the user interface an Intel Intellec MDS-800 system
  *
  * History:
  */

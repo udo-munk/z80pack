@@ -4,7 +4,7 @@
  * Copyright (C) 2008-2024 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * Configuration for an Intel MDS-800 system
+ * Configuration for an Intel Intellec MDS-800 system
  *
  * History:
  */
@@ -18,7 +18,7 @@
  */
 #define DEF_CPU I8080	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 2	/* default CPU speed 0=unlimited */
-#define EXCLUDE_Z80	/* Intel MDS-800 was an 8080 machine */
+#define EXCLUDE_Z80	/* Intel Intellect MDS-800 was an 8080 machine */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
 /*#define UNDOC_INST*/	/* compile undocumented instructions */
@@ -45,7 +45,8 @@ extern void sleep_ms(int);
 
 #define USR_COM	"Intel MDS-800 Simulation"
 #define USR_REL	"0.0"
-#define USR_CPR	"Copyright (C) 2024 by Thomas Eberhardt"
+#define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
+		"2024 by Thomas Eberhardt"
 
 #include "simcore.h"
 

@@ -8,7 +8,6 @@
  * global variables, so that the system can be configured.
  *
  * History:
- * 29-MAY-2024 dummy, no configuration implemented yet
  */
 
 #include <stdint.h>
@@ -71,6 +70,8 @@ void config(void)
 				boot_rom_file = strdup(t2);
 			} else if (!strcmp(t1, "mon_rom")) {
 				mon_rom_file = strdup(t2);
+			} else if (!strcmp(t1, "mon_enabled")) {
+				mon_enabled = atoi(t2) != 0;
 			} else {
 				LOGW(TAG, "unknown command: %s", t1);
 			}

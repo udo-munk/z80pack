@@ -4,7 +4,7 @@
  * Copyright (C) 2016-2022 Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * This module implements the memory for an Intel MDS-800 system
+ * This module implements the memory for an Intel Intellec MDS-800 system
  *
  * History:
  */
@@ -28,7 +28,7 @@ BYTE boot_rom[BOOT_SIZE];	/* bootstrap ROM */
 
 char *boot_rom_file;		/* bootstrap ROM file path */
 char *mon_rom_file;		/* monitor ROM file path */
-int mon_is_ram;			/* monitor address space is RAM flag */
+int mon_enabled;		/* monitor ROM enabled flag */
 
 void init_memory(void)
 {
@@ -48,27 +48,30 @@ void init_memory(void)
 		LOGE(TAG, "no monitor ROM file specified in config file");
 		exit(EXIT_FAILURE);
 	}
+
 	strcpy(pfn, boot_rom_file);
 	if (load_file(fn, 0, BOOT_SIZE)) {
 		LOGE(TAG, "couldn't load bootstrap ROM");
 		exit(EXIT_FAILURE);
 	}
-	mon_is_ram = 1;
-	strcpy(pfn, mon_rom_file);
-	if (load_file(fn, 65536 - MON_SIZE, MON_SIZE)) {
-		LOGE(TAG, "couldn't load monitor ROM");
-		exit(EXIT_FAILURE);
-	}
-	mon_is_ram = 0;
-
 	memcpy(boot_rom, memory, BOOT_SIZE);
+
+	if (mon_enabled) {
+		mon_enabled = 0;
+		strcpy(pfn, mon_rom_file);
+		if (load_file(fn, 65536 - MON_SIZE, MON_SIZE)) {
+			LOGE(TAG, "couldn't load monitor ROM");
+			exit(EXIT_FAILURE);
+		}
+		mon_enabled = 1;
+	}
 
 	/* fill memory content with some initial value */
 	if (m_flag >= 0) {
-		for (i = 0; i < 65536 - MON_SIZE; i++)
+		for (i = 0; i < 65536; i++)
 			putmem(i, m_flag);
 	} else {
-		for (i = 0; i < 65536 - MON_SIZE; i++)
+		for (i = 0; i < 65536; i++)
 			putmem(i, (BYTE) (rand() % 256));
 	}
 
