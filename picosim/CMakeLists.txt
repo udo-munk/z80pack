@@ -35,7 +35,7 @@ add_subdirectory(
 	no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPICO_STACK_SIZE=4096 -DPICO_HEAP_SIZEPICO_HEAP_SIZE=8192")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPICO_STACK_SIZE=4096 -DPICO_HEAP_SIZE=8192")
 
 # for Pico
 #target_link_libraries(picosim pico_stdlib FatFs_SPI)
@@ -48,5 +48,5 @@ pico_set_program_name(picosim "z80pack picosim")
 pico_set_program_version(picosim "1.1")
 
 # enable UART output, disable USB output, USB output not working yet!
-pico_enable_stdio_uart(picosim 1)
-pico_enable_stdio_usb(picosim 0)
+pico_enable_stdio_uart(picosim 0)
+pico_enable_stdio_usb(picosim 1)
