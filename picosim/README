@@ -30,13 +30,16 @@ To clean everything:
 	cd z80pack/picosim
 	rm -rf build
 
-This machine can be used with Pico and Pico W boards, but you might need to
-uncomment/comment/modify some lines in CMakeLists.txt and sim.h properly
-for the board used. I'm using a Pico W, so everything setup for this one.
+This machine can be used with Pico and Pico W boards. However, it is setup
+for a Pico board, because with the additional CYW43 library + SPI + FatFS
++ TinyUSB the system runs out of stack.
+To setup for a Pico W comment/uncomment the lines in CMakeLists.txt
+and change the board type in sim.h. This will only work when using
+the GPIO UART.
 
-Terminal I/O is going to the pin 1/2 UART, so you need a debug probe or
-some TTL to USB adapter. I also tried using the USB UART, but didn't get
-it fully working, needs more research.
+This is configured now for USB UART to that no additional parts are needed
+to hook up a terminal. If configured for GPIO UART uart0 at pins1/2 will
+be used, so connect a terminal with TTL/USB adapter or a pico probe there.
 
 
 Preparing a MicroSD card:

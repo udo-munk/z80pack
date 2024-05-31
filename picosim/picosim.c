@@ -11,10 +11,12 @@
  * 09-MAY-2024 test 8080 emulation
  * 27-MAY-2024 add access to files on MicroSD
  * 28-MAY-2024 implemented boot from disk images with some OS
+ * 31-MAY-2024 use USB UART
  */
 
 /* Raspberry SDK and FatFS includes */
 #include <stdio.h>
+#include <string.h>
 #if LIB_PICO_STDIO_USB
 #include <tusb.h>
 #endif
@@ -71,8 +73,6 @@ int main(void)
 		return -1;
 	}
 #else				/* initialize Pico hardware */
-#define LED PICO_DEFAULT_LED_PIN	/* use builtin LED */
-//#define LED 14			/* or another one */
 	gpio_init(LED);		/* configure GPIO for LED output */
 	gpio_set_dir(LED, GPIO_OUT);
 #endif
@@ -98,11 +98,6 @@ int main(void)
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
-#if LIB_PICO_STDIO_USB
-	/* if USB UART enabled we don't get here, why? */
-	printf("after f_mount\n");
-#endif
-
 	init_cpu();		/* initialize CPU */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
@@ -124,7 +119,7 @@ NOPE:	config();		/* configure the machine */
 			printf("Disk 0 read error: %d\n", stat);
 			f_unmount(SD->pcName);
 			stdio_flush();
-			return (0);
+			return 0;
 		}
 	}
 
@@ -154,12 +149,12 @@ NOPE:	config();		/* configure the machine */
 #endif
 	putchar('\n');
 	stdio_flush();
-	return (0);
+	return 0;
 }
 
 uint64_t get_clock_us(void)
 {
-	return (to_us_since_boot(get_absolute_time()));
+	return to_us_since_boot(get_absolute_time());
 }
 
 /*
@@ -197,5 +192,5 @@ int get_cmdline(char *buf, int len)
 		}
 	}
 	buf[i++] = '\0';
-	return (0);
+	return 0;
 }

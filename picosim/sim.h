@@ -9,7 +9,9 @@
 #ifndef SIM_INC
 #define SIM_INC
 
-#define PICO 1		/* board we use, 0 for Pico 1 for Pico W */
+#define PICO 0		/* board we use, 0 for Pico 1 for Pico W */
+//#define LED PICO_DEFAULT_LED_PIN	/* use builtin LED */
+#define LED 14			/* or another one */
 
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 //#define EXCLUDE_I8080	/* don't include 8080, for now we want both */

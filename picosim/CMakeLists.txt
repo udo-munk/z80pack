@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
-#set (PICO_BOARD pico)
-set(PICO_BOARD pico_w)
+set (PICO_BOARD pico)
+#set(PICO_BOARD pico_w)
 include(pico_sdk_import.cmake)
 
 project(picosim C CXX ASM)
@@ -35,20 +35,18 @@ add_subdirectory(
 	no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
 )
 
-# If one builds with USB UART the system crashes with panic hard assertion.
-# Thought it might run out of stack/heap, so added this, but doesn't help it.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPICO_STACK_SIZE=4096 -DPICO_HEAP_SIZE=8192")
 
 # for Pico
-#target_link_libraries(picosim pico_stdlib FatFs_SPI)
+target_link_libraries(picosim pico_stdlib FatFs_SPI)
 # for Pico W
-target_link_libraries(picosim pico_stdlib FatFs_SPI pico_cyw43_arch_none)
+#target_link_libraries(picosim pico_stdlib FatFs_SPI pico_cyw43_arch_none)
 
 pico_add_extra_outputs(picosim)
 
 pico_set_program_name(picosim "z80pack picosim")
 pico_set_program_version(picosim "1.1")
 
-# enable UART output, disable USB output, USB output not working yet!
-pico_enable_stdio_uart(picosim 1)
-pico_enable_stdio_usb(picosim 0)
+# disable UART output, enable USB output
+pico_enable_stdio_uart(picosim 0)
+pico_enable_stdio_usb(picosim 1)
