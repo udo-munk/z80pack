@@ -14,6 +14,7 @@ The examples are:
 serial.bin	- shows how to do serial I/O
 blink.bin	- blink builtin LED with Z80 port output
 
+test8080.bin	- Kelly Smith 8080 CPU test program
 tb.bin		- 8080 TINY BASIC
 micro80.bin	- 8080 Microchess
 bas4k32.bin	- MITS Altair BASIC 4K V3.2, runs on 8080 only!    p ff = 0

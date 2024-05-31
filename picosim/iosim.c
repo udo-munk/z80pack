@@ -10,6 +10,7 @@
  * 09-MAY-2024 improved so that it can run some MITS Altair software
  * 11-MAY-2024 allow us to configure the port 255 value
  * 27-MAY-2024 moved io_in & io_out to simcore
+ * 31-MAY-2024 added hardware control port for z80pack machines
  */
 
 /* Raspberry SDK includes */
@@ -33,13 +34,14 @@
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE);
-static BYTE p000_in(void), p001_in(void), p255_in(void);
+static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE), hwctl_out(BYTE);
+static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
 extern void fdc_out(BYTE);
 extern BYTE fdc_in(void);
 
 static BYTE sio_last;	/* last character received */
        BYTE fp_value;	/* port 255 value, can be set from ICE or config() */
+static BYTE hwctl_lock = 0xff; /* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every input
@@ -49,6 +51,7 @@ BYTE (*port_in[256])(void) = {
 	[  0] = p000_in,	/* SIO status */
 	[  1] = p001_in,	/* SIO data */
 	[  4] = fdc_in,		/* FDC command */
+	[160] = hwctl_in,	/* virtual hardware control */
 	[255] = p255_in		/* for frontpanel */
 };
 
@@ -60,6 +63,7 @@ void (*port_out[256])(BYTE) = {
 	[  0] = p000_out,	/* internal LED */
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC status */
+	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
 };
 
@@ -129,6 +133,15 @@ static BYTE p001_in(void)
 }
 
 /*
+ *	Input from virtual hardware control port
+ *	returns lock status of the port
+ */
+static BYTE hwctl_in(void)
+{
+	return hwctl_lock;
+}
+
+/*
  *	I/O function port 255 read:
  *	used by frontpanel machines
  */
@@ -167,6 +180,52 @@ static void p000_out(BYTE data)
 static void p001_out(BYTE data)
 {
 	putchar_raw((int) data & 0x7f); /* strip parity, some software won't */
+}
+
+/*
+ *	Port is locked until magic number 0xaa is received!
+ *
+ *	Virtual hardware control output.
+ *	Used to shutdown and switch CPU's.
+ *
+ *	bit 4 = 1	switch CPU model to 8080
+ *	bit 5 = 1	switch CPU model to Z80
+ *	bit 7 = 1	halt emulation via I/O
+ */
+static void hwctl_out(BYTE data)
+{
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	extern void switch_cpu(int);
+#endif
+
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+
+	/* process output to unlocked port */
+
+	if (data & 128) {
+		cpu_error = IOHALT;
+		cpu_state = STOPPED;
+	}
+
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	if (data & 32) {	/* switch cpu model to Z80 */
+		switch_cpu(Z80);
+		return;
+	}
+
+	if (data & 16) {	/* switch cpu model to 8080 */
+		switch_cpu(I8080);
+		return;
+	}
+#endif
 }
 
 /*
