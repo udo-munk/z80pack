@@ -35,6 +35,8 @@ add_subdirectory(
 	no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
 )
 
+# If one builds with USB UART the system crashes with panic hard assertion.
+# Thought it might run out of stack/heap, so added this, but doesn't help it.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPICO_STACK_SIZE=4096 -DPICO_HEAP_SIZE=8192")
 
 # for Pico
