@@ -109,7 +109,8 @@ static BYTE p000_in(void)
 	return stat;
 }
 
-/*	I/O function port 1 read:
+/*
+ *	I/O function port 1 read:
  *	Read byte from Pico UART.
  */
 static BYTE p001_in(void)
