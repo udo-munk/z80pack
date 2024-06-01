@@ -105,9 +105,10 @@ static BYTE p000_in(void)
 		stat &= 0b11111110;	/* if so flip status bit */
 #endif
 #if LIB_PICO_STDIO_USB
+	if (tud_cdc_write_available())	/* check if output to UART is possible */
+		stat &= 0b01111111;	/* if so flip status bit */
 	if (tud_cdc_available())	/* check if there is input from UART */
 		stat &= 0b11111110;	/* if so flip status bit */
-	stat &= 0b01111111;		/* output always possible */
 #endif
 
 	return stat;
