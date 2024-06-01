@@ -109,21 +109,21 @@ $(Z80ASM): FORCE
 FORCE:
 
 install:
-	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
-		$(MAKE) -C $$subdir "PREFIX=$(PREFIX)" install; \
-	done
-	@set -e; for subdir in $(MACHINES); do \
-		$(MAKE) -C $$subdir/srcsim "PREFIX=$(PREFIX)" install; \
-	done
+#	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
+#		$(MAKE) -C $$subdir "PREFIX=$(PREFIX)" install; \
+#	done
+#	@set -e; for subdir in $(MACHINES); do \
+#		$(MAKE) -C $$subdir/srcsim "PREFIX=$(PREFIX)" install; \
+#	done
 
 uninstall:
-	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
-		$(MAKE) -C $$subdir "PREFIX=$(PREFIX)" uninstall; \
-	done
-	@set -e; for subdir in $(MACHINES); do \
-		$(MAKE) -C $$subdir/srcsim "PREFIX=$(PREFIX)" uninstall; \
-	done
-	rmdir $(DESTDIR)$(DATADIR)
+#	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \
+#		$(MAKE) -C $$subdir "PREFIX=$(PREFIX)" uninstall; \
+#	done
+#	@set -e; for subdir in $(MACHINES); do \
+#		$(MAKE) -C $$subdir/srcsim "PREFIX=$(PREFIX)" uninstall; \
+#	done
+#	rmdir $(DESTDIR)$(DATADIR)
 
 clean:
 	@set -e; for subdir in $(TOOLS) $(LIBS) $(BIOSES) $(MISC); do \

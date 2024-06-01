@@ -98,11 +98,11 @@ $(DEPS): sim.h
 build: _rm_obj all
 
 install: $(SIM)
-	$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
+#	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+#	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
+#	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
 
 clean: _rm_obj _rm_deps
 
