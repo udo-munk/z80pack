@@ -9,7 +9,7 @@
 #define SIMCORE_INC
 
 #define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
-#define RELEASE	"1.38"
+#define RELEASE	"1.39"
 
 #define MAX_LFN		4096	/* maximum long file name length */
 #define LENCMD		80	/* length of command buffers etc */
