@@ -4,7 +4,8 @@
  * Copyright (C) 2016-2022 Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * This module implements the memory for an Intel Intellec MDS-800 system
+ * This module implements the memory for an Intel Intellec MDS-800 system.
+ * We are fully loaded with 4 16K RAM modules.
  *
  * History:
  */
@@ -15,6 +16,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memsim.h"
+#include "config.h"
 #include "log.h"
 
 static const char *TAG = "memory";

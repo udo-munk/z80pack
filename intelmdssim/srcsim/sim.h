@@ -43,7 +43,7 @@ extern void sleep_ms(int);
  *	which contains the Z80/8080 CPU emulations as a part.
  */
 
-#define USR_COM	"Intel MDS-800 Simulation"
+#define USR_COM	"Intel Intellec MDS-800 Simulation"
 #define USR_REL	"0.0"
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2024 by Thomas Eberhardt"
