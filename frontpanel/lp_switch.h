@@ -30,8 +30,7 @@ enum lp_switch_states
 
 enum lp_switch_operation 
  { LP_SWITCH_OP_ON_OFF = 0,	// on/off operation 
-   LP_SWITCH_OP_MOM_OFF_MOM = 1, // momentary down, centered, momentary up
-   LP_SWITCH_OP_OFF_MOM = 2	// centered (down), momentary up
+   LP_SWITCH_OP_MOM_OFF_MOM = 1	// momentary down, centered, momentary up
  };
 
 enum lp_switch_gfx_modes
