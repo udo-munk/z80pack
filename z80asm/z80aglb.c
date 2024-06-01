@@ -1,77 +1,74 @@
 /*
- *	Z80 - Assembler
- *	Copyright (C) 1987-2021 by Udo Munk
- *
- *	History:
- *	17-SEP-1987 Development under Digital Research CP/M 2.2
- *	28-JUN-1988 Switched to Unix System V.3
- *	21-OCT-2006 changed to ANSI C for modern POSIX OS's
- *	03-FEB-2007 more ANSI C conformance and reduced compiler warnings
- *	18-MAR-2007 use default output file extension dependent on format
- *	04-OCT-2008 fixed comment bug, ';' string argument now working
- *	22-FEB-2014 fixed is...() compiler warnings
- *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
- *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
- *	15-MAY-2018 mark unreferenced symbols in listing
- *	30-JUL-2021 fix verbose option
+ *	Z80/8080-Macro-Assembler
+ *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
- *	this module contains all global variables other
- *	than CPU specific tables
+ *	this module contains all global variables
  */
 
 #include <stdio.h>
 #include "z80a.h"
 
-char *infiles[MAXFN],		/* source filenames */
-     objfn[LENFN + 1],		/* object filename */
-     lstfn[LENFN + 1],		/* listing filename */
+char **infiles,			/* source filenames */
      *srcfn,			/* filename of current processed source file */
-     line[MAXLINE],		/* buffer for one line source */
-     tmp[MAXLINE],		/* temporary buffer */
-     label[MAXLINE],		/* buffer for label */
-     opcode[MAXLINE],		/* buffer for opcode */
-     operand[MAXLINE],		/* buffer for operand */
-     ops[OPCARRAY],		/* buffer for generated object code */
-     title[MAXLINE];		/* buffer for title of source */
+     *objfn,			/* object filename */
+     *lstfn,			/* listing filename */
+     line[MAXLINE + 2],		/* buffer for one line of source */
+     label[MAXLINE + 1],	/* buffer for label */
+     opcode[MAXLINE + 1],	/* buffer for opcode */
+     operand[MAXLINE + 1],	/* buffer for working with operand */
+     title[MAXLINE + 1];	/* buffer for title of source */
+
+BYTE ops[OPCARRAY],		/* buffer for generated object code */
+     ctype[256];		/* table for character classification */
+
+WORD rpc,			/* real program counter */
+     pc,			/* logical program counter, normally equal */
+				/* to rpc, except when inside a .PHASE block */
+     a_addr,			/* output value for A_ADDR/A_VALUE mode */
+     load_addr,			/* load address of program */
+     start_addr,		/* start address of program */
+     hexlen = MAXHEX,		/* HEX record length */
+     carylen = CARYLEN;		/* C array bytes per line */
 
 int  list_flag,			/* flag for option -l */
+     nodate_flag,		/* flag for option -T */
      sym_flag,			/* flag for option -s */
+     undoc_flag,		/* flag for option -u */
      ver_flag,			/* flag for option -v */
-     dump_flag,			/* flag for option -x */
-     pc,			/* program counter */
+     nofill_flag,		/* flag for option -x */
+     upcase_flag,		/* flag for option -U */
+     mac_list_flag,		/* flag for option -m */
+     i8080_flag,		/* flag for option -8 */
+     nfiles,			/* number of input files */
+     radix = 10,		/* current radix, set to 10 at start of pass */
+     phs_flag,			/* flag for being inside a .PHASE block */
      pass,			/* processed pass */
      iflevel,			/* IF nesting level */
-     gencode = 1,		/* flag for conditional object code */
+     act_iflevel,		/* active IF nesting level */
+     act_elselevel,		/* active ELSE nesting level */
+     gencode = TRUE,		/* flag for conditional code */
+     nofalselist,		/* flag for false conditional listing */
+     mac_def_nest,		/* macro definition nesting level */
+     mac_exp_nest,		/* macro expansion nesting level */
+     mac_symmax,		/* max. macro symbol length encountered */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
-     sd_flag,			/* list flag for PSEUDO opcodes */
-				/* = 0: address from <val>, data from <ops> */
-				/* = 1: address from <sd_val>, data from <ops>*/
-				/* = 2: no address, data from <ops> */
-				/* = 3: address from <sd_val>, no data */
-				/* = 4: suppress whole line */
-     sd_val,			/* output value for PSEUDO opcodes */
-     prg_adr,			/* start address of program */
-     prg_flag,			/* flag for prg_adr valid */
-     out_form = OUTDEF,		/* format of object file */
-     symlen = SYMLEN,			/* max. symbol length */
-     symsize;			/* size of symarray */
+     a_mode,			/* address output mode for pseudo ops */
+     load_flag,			/* flag for load_addr valid */
+     obj_fmt = OBJ_HEX,		/* format of object file (default Intel HEX) */
+     symlen = SYMLEN,		/* significant characters in symbols */
+     symmax,			/* max. symbol name length encountered */
+     p_line,			/* no. printed lines on page (can be < 0) */
+     ppl = PLENGTH,		/* page length */
+     page;			/* no. of pages for listing */
+
+unsigned long
+     c_line;			/* current line no. in current source */
 
 FILE *srcfp,			/* file pointer for current source */
      *objfp,			/* file pointer for object code */
      *lstfp,			/* file pointer for listing */
      *errfp;			/* file pointer for error output */
-
-unsigned
-      c_line,			/* current line no. in current source */
-      s_line,			/* line no. counter for listing */
-      p_line,			/* no. printed lines on page */
-      ppl = PLENGTH,		/* page length */
-      page;			/* no. of pages for listing */
-
-struct sym
-     *symtab[HASHSIZE],		/* symbol table */
-     **symarray;		/* sorted symbol table */

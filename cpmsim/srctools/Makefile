@@ -1,22 +1,22 @@
 #
 # some places where the tools usually are installed
 #
-INSTALLDIR=${HOME}/bin
-#INSTALLDIR=/usr/local/bin
+PREFIX ?= $(HOME)
+#PREFIX ?= /usr/local
+EXEC_PREFIX = $(PREFIX)
+BINDIR = $(EXEC_PREFIX)/bin
 
-#CC = cc
-CC = gcc
+INSTALL = install
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
 
-CFLAGS= -O3 -Wall
+CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
+CWARNS= -Wall -Wextra -Wwrite-strings
+CFLAGS= -O3 $(CSTDS) $(CWARNS)
 
-all: test mkdskimg bin2hex send receive ptp2bin
-	@echo
-	@echo "Done."
-	@echo "Now run make install"
-	@echo
+TOOLS = mkdskimg bin2hex cpmsend cpmrecv ptp2bin
 
-test:
-	@test -d ${INSTALLDIR} || (echo "${INSTALLDIR} doesn't exist, fix INSTALLDIR"; exit 1)
+all: $(TOOLS)
 
 mkdskimg: mkdskimg.c
 	$(CC) $(CFLAGS) -o mkdskimg mkdskimg.c
@@ -24,26 +24,25 @@ mkdskimg: mkdskimg.c
 bin2hex: bin2hex.c
 	$(CC) $(CFLAGS) -o bin2hex bin2hex.c
 
-send: send.c
-	$(CC) $(CFLAGS) -o send send.c
+cpmsend: cpmsend.c
+	$(CC) $(CFLAGS) -o cpmsend cpmsend.c
 
-receive: receive.c
-	$(CC) $(CFLAGS) -o receive receive.c
+cpmrecv: cpmrecv.c
+	$(CC) $(CFLAGS) -o cpmrecv cpmrecv.c
 
 ptp2bin: ptp2bin.c
 	$(CC) $(CFLAGS) -o ptp2bin ptp2bin.c
 
-install:
-	cp mkdskimg ${INSTALLDIR}
-	cp bin2hex ${INSTALLDIR}
-	cp send ${INSTALLDIR}
-	cp receive ${INSTALLDIR}
-	cp ptp2bin ${INSTALLDIR}
-	@echo
-	@echo "Tools installed in ${INSTALLDIR}, make sure it is"
-	@echo "included in the systems search PATH"
-	@echo
+install: $(TOOLS)
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL_PROGRAM) -s $(TOOLS) $(DESTDIR)$(BINDIR)
+
+uninstall:
+	cd $(DESTDIR)$(BINDIR) && rm -f $(TOOLS)
 
 clean:
-	rm -f mkdskimg mkdskimg.exe bin2hex bin2hex.exe receive receive.exe \
-	send send.exe ptp2bin ptp2bin.exe
+	rm -f $(TOOLS)
+
+distclean: clean
+
+.PHONY: all test install uninstall clean distclean

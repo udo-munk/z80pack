@@ -7,7 +7,12 @@
  * like interface.
  *
  * History:
- * 03-OCT-19 Original
+ * 03-OCT-2019 Original
  */
 
+#ifndef SIMBDOS_INC
+#define SIMBDOS_INC
+
 extern void host_bdos_out(BYTE);
+
+#endif

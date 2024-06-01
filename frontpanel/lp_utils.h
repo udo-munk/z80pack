@@ -32,7 +32,7 @@ int freadlin(FILE *funit,char *buffer,int bufsize);
 int strindex(char s[], char t[]);
 
 int GetPowerOf2i(int n);
-int xpand(char *s, char ***namelist);
+int xpand(const char *s, char ***namelist);
 
 int check_glerror(void);
 

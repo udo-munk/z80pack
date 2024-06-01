@@ -190,15 +190,14 @@ LIB_OBJECTS = $(filter-out $(MAIN_OBJECTS), $(BUILD_OBJECTS))
 
 ifeq ($(TARGET_OS),LINUX)
   LIBS += -lrt -ldl
-  CAN_INSTALL = 1
+  CAN_INSTALL = 0
 endif
 
-# CYGWIN defines WIN32 but has no del command because using bash
-# ifeq ($(TARGET_OS),WIN32)
-#   MKDIR = mkdir
-#   RMF = del /q
-#   RMRF = rmdir /s /q
-# endif
+ifeq ($(TARGET_OS),WIN32)
+  MKDIR = mkdir
+  RMF = del /q
+  RMRF = rmdir /s /q
+endif
 
 ifdef WITH_LUAJIT_SHARED
   LIBS += -lluajit-5.1
@@ -311,10 +310,12 @@ $(SYSCONFDIR)/civetweb.conf:
 
 else
 install:
-	@echo "Target not flagged for installation.  Use CAN_INSTALL=1 to force"
-	@echo "As a precaution only LINUX targets are set as installable."
-	@echo "If the target is linux-like, use CAN_INSTALL=1 option."
+#	@echo "Target not flagged for installation.  Use CAN_INSTALL=1 to force"
+#	@echo "As a precaution only LINUX targets are set as installable."
+#	@echo "If the target is linux-like, use CAN_INSTALL=1 option."
 endif
+
+uninstall:
 
 lib: lib$(CPROG).a
 
@@ -384,5 +385,5 @@ $(BUILD_RESOURCES) : $(WINDOWS_RESOURCES)
 indent:
 	astyle --suffix=none --style=linux --indent=spaces=4 --lineend=linux  include/*.h src/*.c src/*.cpp src/*.inl examples/*/*.c  examples/*/*.cpp
 
-.PHONY: all help build install clean lib so
+.PHONY: all help build install uninstall clean lib so
 

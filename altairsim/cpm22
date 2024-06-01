@@ -1,6 +1,8 @@
 #!/bin/sh
 
+# boot from Tarbell FDC with external boot ROM
+
 rm -f disks/drivea.dsk
 ln disks/library/cpm22.dsk disks/drivea.dsk
 
-./altairsim -x bootromt.hex $*
+./altairsim $*

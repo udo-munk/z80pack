@@ -8,29 +8,29 @@
  * Partial emulation of an Altair 88-2SIO S100 board
  *
  * History:
- * 20-OCT-08 first version finished
- * 31-JAN-14 use correct name from the manual
- * 19-JUN-14 added config parameter for droping nulls after CR/LF
- * 17-JUL-14 don't block on read from terminal
- * 09-OCT-14 modified to support 2 SIO's
- * 23-MAR-15 drop only null's
- * 02-SEP-16 reopen tty at EOF from input redirection
- * 24-FEB-17 improved tty reopen
- * 22-MAR-17 connected SIO 2 to UNIX domain socket
- * 23-OCT-17 improved UNIX domain socket connections
- * 03-MAY-18 improved accuracy
- * 03-JUL-18 added baud rate to terminal 2SIO
- * 15-JUL-18 use logging
- * 24-NOV-19 configurable baud rate for second channel
- * 19-JUL-20 avoid problems with some third party terminal emulations
+ * 20-OCT-2008 first version finished
+ * 31-JAN-2014 use correct name from the manual
+ * 19-JUN-2014 added config parameter for dropping nulls after CR/LF
+ * 17-JUL-2014 don't block on read from terminal
+ * 09-OCT-2014 modified to support 2 SIO's
+ * 23-MAR-2015 drop only null's
+ * 02-SEP-2016 reopen tty at EOF from input redirection
+ * 24-FEB-2017 improved tty reopen
+ * 22-MAR-2017 connected SIO 2 to UNIX domain socket
+ * 23-OCT-2017 improved UNIX domain socket connections
+ * 03-MAY-2018 improved accuracy
+ * 03-JUL-2018 added baud rate to terminal 2SIO
+ * 15-JUL-2018 use logging
+ * 24-NOV-2019 configurable baud rate for second channel
+ * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -42,7 +42,7 @@
 
 #define BAUDTIME 10000000
 
-extern int time_diff(struct timeval *, struct timeval *);
+extern uint64_t get_clock_us(void);
 
 static const char *TAG = "2SIO";
 
@@ -51,7 +51,7 @@ int sio1_strip_parity;
 int sio1_drop_nulls;
 int sio1_baud_rate = 115200;
 
-static struct timeval sio1_t1, sio1_t2;
+static uint64_t sio1_t1, sio1_t2;
 static BYTE sio1_stat;
 
 int sio2_upper_case;
@@ -59,7 +59,7 @@ int sio2_strip_parity;
 int sio2_drop_nulls;
 int sio2_baud_rate = 115200;
 
-static struct timeval sio2_t1, sio2_t2;
+static uint64_t sio2_t1, sio2_t2;
 static BYTE sio2_stat;
 
 /*
@@ -73,11 +73,11 @@ BYTE altair_sio1_status_in(void)
 	struct pollfd p[1];
 	int tdiff;
 
-	gettimeofday(&sio1_t2, NULL);
-	tdiff = time_diff(&sio1_t1, &sio1_t2);
+	sio1_t2 = get_clock_us();
+	tdiff = sio1_t2 - sio1_t1;
 	if (sio1_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio1_baud_rate))
-			return(sio1_stat);
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1_baud_rate))
+			return (sio1_stat);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
@@ -92,9 +92,9 @@ BYTE altair_sio1_status_in(void)
 	}
 	sio1_stat |= 2;
 
-	gettimeofday(&sio1_t1, NULL);
+	sio1_t1 = get_clock_us();
 
-	return(sio1_stat);
+	return (sio1_stat);
 }
 
 /*
@@ -102,7 +102,7 @@ BYTE altair_sio1_status_in(void)
  */
 void altair_sio1_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -124,23 +124,24 @@ again:
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
+		if (freopen("/dev/tty", "r", stdin) == NULL)
+			LOGE(TAG, "can't reopen /dev/tty");
 		set_unix_terminal();
 		goto again;
 	}
 
-	gettimeofday(&sio1_t1, NULL);
+	sio1_t1 = get_clock_us();
 	sio1_stat &= 0b11111110;
 
 	/* process read data */
 	if (sio1_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*
@@ -169,7 +170,7 @@ again:
 		}
 	}
 
-	gettimeofday(&sio1_t1, NULL);
+	sio1_t1 = get_clock_us();
 	sio1_stat &= 0b11111101;
 }
 
@@ -193,18 +194,18 @@ BYTE altair_sio2_status_in(void)
 		/* accept a new connection */
 		if (p[0].revents) {
 			if ((ucons[1].ssc = accept(ucons[1].ss, NULL,
-			     NULL)) == -1) {
+						   NULL)) == -1) {
 				LOGW(TAG, "can't accept server socket");
 				ucons[1].ssc = 0;
 			}
 		}
 	}
 
-	gettimeofday(&sio2_t2, NULL);
-	tdiff = time_diff(&sio2_t1, &sio2_t2);
+	sio2_t2 = get_clock_us();
+	tdiff = sio2_t2 - sio2_t1;
 	if (sio2_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio2_baud_rate))
-			return(sio2_stat);
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2_baud_rate))
+			return (sio2_stat);
 
 	/* if socket is connected check for I/O */
 	if (ucons[1].ssc != 0) {
@@ -218,9 +219,9 @@ BYTE altair_sio2_status_in(void)
 			sio2_stat |= 2;
 	}
 
-	gettimeofday(&sio2_t1, NULL);
+	sio2_t1 = get_clock_us();
 
-	return(sio2_stat);
+	return (sio2_stat);
 }
 
 /*
@@ -228,7 +229,7 @@ BYTE altair_sio2_status_in(void)
  */
 void altair_sio2_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -245,7 +246,7 @@ BYTE altair_sio2_data_in(void)
 
 	/* if not connected return last */
 	if (ucons[1].ssc == 0)
-		return(last);
+		return (last);
 
 	/* if no input waiting return last */
 	p[0].fd = ucons[1].ssc;
@@ -253,23 +254,23 @@ BYTE altair_sio2_data_in(void)
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(ucons[1].ssc, &data, 1) != 1) {
 		/* EOF, close socket and return last */
 		close(ucons[1].ssc);
 		ucons[1].ssc = 0;
-		return(last);
+		return (last);
 	}
 
-	gettimeofday(&sio2_t1, NULL);
+	sio2_t1 = get_clock_us();
 	sio2_stat &= 0b11111110;
 
 	/* process read data */
 	if (sio2_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*
@@ -314,6 +315,6 @@ again:
 		}
 	}
 
-	gettimeofday(&sio2_t1, NULL);
+	sio2_t1 = get_clock_us();
 	sio2_stat &= 0b11111101;
 }

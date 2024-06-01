@@ -8,24 +8,23 @@
  * Emulation of a Processor Technology VDM-1 S100 board
  *
  * History:
- * 28-FEB-17 first version, all software tested with working
- * 21-JUN-17 don't use dma_read(), switches Tarbell ROM off
- * 20-APR-18 avoid thread deadlock on Windows/Cygwin
- * 15-JUL-18 use logging
- * 04-NOV-19 eliminate usage of mem_base()
+ * 28-FEB-2017 first version, all software tested with working
+ * 21-JUN-2017 don't use dma_read(), switches Tarbell ROM off
+ * 20-APR-2018 avoid thread deadlock on Windows/Cygwin
+ * 15-JUL-2018 use logging
+ * 04-NOV-2019 eliminate usage of mem_base()
  */
 
+#include <stdint.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #include "log.h"
 #include "proctec-vdm-charset.h"
 
@@ -80,7 +79,7 @@ static void open_display(void)
 	rootwindow = RootWindow(display, screen);
 	XGetWindowAttributes(display, rootwindow, &wa);
 	window = XCreateSimpleWindow(display, rootwindow, 0, 0,
-					xsize, ysize, 1, 0, 0);
+				     xsize, ysize, 1, 0, 0);
 	XStoreName(display, window, "Processor Technology VDM-1");
 	size_hints->flags = PSize | PMinSize | PMaxSize;
 	size_hints->min_width = xsize;
@@ -211,13 +210,14 @@ static void refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern uint64_t get_clock_us(void);
 
-	struct timeval t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 
-	arg = arg;	/* to avoid compiler warning */
-	gettimeofday(&t1, NULL);
+	UNUSED(arg);
+
+	t1 = get_clock_us();
 
 	while (state) {
 
@@ -236,12 +236,12 @@ static void *update_display(void *arg)
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 		/* sleep rest to 33ms so that we get 30 fps */
-		gettimeofday(&t2, NULL);
-		tdiff = time_diff(&t1, &t2);
+		t2 = get_clock_us();
+		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
 			SLEEP_MS(33 - (tdiff / 1000));
 
-		gettimeofday(&t1, NULL);
+		t1 = get_clock_us();
 	}
 
 	pthread_exit(NULL);
@@ -256,7 +256,7 @@ static void vdm_init(void)
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
 		LOGE(TAG, "can't create thread");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 

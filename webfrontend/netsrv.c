@@ -4,13 +4,14 @@
  * Copyright (C) 2018 by David McNaughton
  * 
  * History:
- * 12-JUL-18    1.0     Initial Release
+ * 12-JUL-2018	1.0	Initial Release
  */
 
 /**
  * This web server module provides...
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,20 +20,27 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include "sim.h"
 #include "simglb.h"
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
+
+#ifdef HAS_NETSERVER
+
+#include "memsim.h"
 #include "log.h"
 #include "netsrv.h"
 #include "civetweb.h"
 
-#ifdef HAS_NETSERVER
+#ifdef HAS_HAL
+#ifdef IMSAISIM
+#include "imsai-hal.h"
+#endif
+#ifdef CROMEMCOSIM
+#include "cromemco-hal.h"
+#endif
+#endif 
 
-#define DOCUMENT_ROOT "../webfrontend/www/imsai"
-#define PORT "8080"
-
-#define MAX_WS_CLIENTS (8)
+#define MAX_WS_CLIENTS (_DEV_MAX)
 static const char *TAG = "netsrv";
 
 static msgbuf_t msg;
@@ -43,8 +51,16 @@ struct {
     void (*cbfunc)(BYTE *);
 } dev[MAX_WS_CLIENTS];
 
-char *dev_name[] = {
-	"SIO1",
+net_device_t net_device_a[_DEV_MAX] = { 
+	DEV_TTY, DEV_TTY2, DEV_TTY3, 
+	DEV_LPT, DEV_VIO, DEV_CPA, 
+	DEV_DZLR, DEV_88ACC, DEV_D7AIO, DEV_PTR 
+};
+
+const char *dev_name[] = {
+	"TTY",
+	"TTY2",
+	"TTY3",
 	"LPT",
 	"VIO",
 	"CPA",
@@ -63,10 +79,8 @@ extern void quit_callback(void);
 
 extern void lpt_reset(void);
 
-#ifdef HAS_DISKMANAGER
 extern int LibraryHandler(struct mg_connection *, void *);
 extern int DiskHandler(struct mg_connection *, void *);
-#endif
 
 /**
  * Check if a queue is provisioned
@@ -83,14 +97,16 @@ void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data)) {
  * Assumes the data is:
  * 		TEXT	if only a single byte
  * 		BINARY	if there are multiple bytes
- * 		SIO1 & LPT are always BINARY now
+ * 		TTY & LPT are always BINARY now
  */
 void net_device_send(net_device_t device, char* msg, int len) {
 
 	int op_code;
 
 	switch (device) {
-		case DEV_SIO1:
+		case DEV_TTY:
+		case DEV_TTY2:
+		case DEV_TTY3:
 		case DEV_PTR:
 		case DEV_LPT:
 			op_code = MG_WEBSOCKET_OPCODE_BINARY;
@@ -119,7 +135,7 @@ int net_device_get(net_device_t device) {
 
 	if (dev[device].queue) {
 		res = msgrcv(dev[device].queue, &msg, 2, 1L, IPC_NOWAIT);
-		LOGD(TAG, "GET: device[%d] res[%ld] msg[%ld, %s]\r\n", device, res, msg.mtype, msg.mtext);
+		LOGD(TAG, "GET: device[%d] res[%ld] msg[%ld, %s]", device, res, msg.mtype, msg.mtext);
 		if (res == 2) {
 			return msg.mtext[0];
 		}
@@ -176,7 +192,7 @@ request_t *get_request(const HttpdConnection_t *conn) {
     } else if (!strcmp(req.mg->request_method, "DELETE")) {
 		req.method = HTTP_DELETE;
     } else {
-		req.method = UNKNOWN;
+		req.method = HTTP_UNKNOWN;
 	}
 
 	//TODO: split query_string on '&' into args[] - for now its all jammed into args[0]
@@ -217,22 +233,55 @@ void InformWebsockets(struct mg_context *ctx)
 	mg_unlock_context(ctx);
 }
 
+struct utsname uts;
+
 int SystemHandler(HttpdConnection_t *conn, void *unused) {
     request_t *req = get_request(conn);
+
 	UNUSED(unused);
 
-	char *copyright = USR_CPR; /* a dirty fix to avoid the leading '\n' */
-
-    switch(req->method) {
+    switch (req->method) {
     case HTTP_GET:
 		LOGD(TAG, "Sending SYS: details.");
+
+		if (req->args[0] && *req->args[0] == 'm') {
+            
+            httpdStartResponse(conn, 200); 
+            httpdHeader(conn, "Content-Type", "application/json");
+            httpdEndHeaders(conn);
+
+            httpdPrintf(conn, "{ \"machine\": \"" MACHINE "\" }");
+            
+            return 1;
+        }
+
         httpdStartResponse(conn, 200); 
         httpdHeader(conn, "Content-Type", "application/json");
         httpdEndHeaders(conn);
+		
+		uname(&uts);
 
         httpdPrintf(conn, "{");
-                 
+
+            httpdPrintf(conn, "\"machine\": \"" MACHINE "\", ");
+
+            httpdPrintf(conn, "\"platform\": \"%s\", ", uts.sysname);
+            
+            httpdPrintf(conn, "\"network\": { ");
+
+                httpdPrintf(conn, "\"hostname\": \"%s\" ", uts.nodename);
+
+            httpdPrintf(conn, "}, ");
+
+            httpdPrintf(conn, "\"paths\": { ");
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "CONFDIR", confdir);
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "DISKSDIR", diskdir);
+                httpdPrintf(conn, "\"%s\": \"%s\" ", "BOOTROM", rompath);
+            httpdPrintf(conn, "}, ");
+
             httpdPrintf(conn, "\"system\": { ");
+                httpdPrintf(conn, "\"%s\": \"%s\",", "VER", uts.version);
+                httpdPrintf(conn, "\"%s\": \"%s\",", "MACHINE", uts.machine);
                 httpdPrintf(conn, "\"free_mem\": %d, ", 0);
                 httpdPrintf(conn, "\"time\": %ld, ", time(NULL));
                 httpdPrintf(conn, "\"uptime\": %d ", 0);
@@ -248,36 +297,120 @@ int SystemHandler(HttpdConnection_t *conn, void *unused) {
             httpdPrintf(conn, "\"about\": { ");
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_COM", USR_COM);
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_REL", USR_REL);
-                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", &copyright[1]); 
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", USR_CPR); 
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "cpu", cpu==Z80?"Z80":"I8080");
                 if(x_flag) {
                     httpdPrintf(conn, "\"%s\": \"%s\", ", "bootrom", xfn);
                 }
 #ifdef FRONTPANEL
-                    httpdPrintf(conn, "\"%s\": %d, ", "cpa", 1);
+                    if (F_flag) {
+                        httpdPrintf(conn, "\"%s\": %d, ", "cpa", 1);
+                    }
 #endif
                 httpdPrintf(conn, "\"%s\": %d ", "clock", f_flag);
             httpdPrintf(conn, "} ");
 
-			int i=0, o=0;
-            char *t1, *t2;
-			extern char **environ;
-			char buf[2048];
+#ifdef HAS_HAL
+#ifdef IMSAISIM
+            httpdPrintf(conn, ", \"hal\": \"SIO Ports\"");
+            httpdPrintf(conn, ", \"hal_ports\": [ ");
+            for(int i = 0; i < MAX_SIO_PORT; i++) {
+                httpdPrintf(conn, "{ ");
+                    httpdPrintf(conn, "\"%s\": \"%s\", ", "name", sio_port_name[i]);
+                    int j = 0;
+                    httpdPrintf(conn, "\"%s\": [ ", "devices");
+                    while (sio[i][j].name && j < MAX_HAL_DEV) {
+                        if (*sio[i][j].name) 
+							httpdPrintf(conn, "%s\"%s%s\"", 
+								(j==0)?"":", ", 
+								sio[i][j].name, 
+								sio[i][j].fallthrough?"+":""
+							);
+                        j++;
+                    }
+                httpdPrintf(conn, "] }%s ", (i < (MAX_SIO_PORT-1))?",":"");
+            }
+            httpdPrintf(conn, "]");
+#endif
+#ifdef CROMEMCOSIM
+            httpdPrintf(conn, ", \"hal\": \"TU-ART Devices\"");
+            httpdPrintf(conn, ", \"hal_ports\": [ ");
+            for(int i = 0; i < MAX_TUART_PORT; i++) {
+                httpdPrintf(conn, "{ ");
+                    httpdPrintf(conn, "\"%s\": \"%s\", ", "name", tuart_port_name[i]);
+                    int j = 0;
+                    httpdPrintf(conn, "\"%s\": [ ", "devices");
+                    while (tuart[i][j].name && j < MAX_HAL_DEV) {
+                        if (*tuart[i][j].name) 
+							httpdPrintf(conn, "%s\"%s%s\"", 
+								(j==0)?"":", ", 
+								tuart[i][j].name, 
+								tuart[i][j].fallthrough?"+":""
+							);
+                        j++;
+                    }
+                httpdPrintf(conn, "] }%s ", (i < (MAX_TUART_PORT-1))?",":"");
+            }
+            httpdPrintf(conn, "]");
+#endif
+#endif 
 
-            httpdPrintf(conn, ", \"env\": { ");
-                while(environ[i] != NULL) {
-                    strcpy(buf, environ[i]);
-                    t1 = strtok(buf, "=");
-                    t2 = strtok(NULL, "\0");
+#ifdef HAS_CONFIG
+            httpdPrintf(conn, ", \"memmap\": [ ");
+
+				for (int i=0; i < MAXMEMMAP; i++) {
+					if (memconf[M_flag][i].size) {
+
+
+						if (i > 0) httpdPrintf(conn, ", ");
+						httpdPrintf(conn, "{ \"type\": \"%s\"", (memconf[M_flag][i].type==MEM_RW)?"RAM":"ROM");
+						httpdPrintf(conn, ", \"from\": %d", memconf[M_flag][i].spage << 8);
+						httpdPrintf(conn, ", \"to\": %d", (memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
+						if (memconf[M_flag][i].type==MEM_RO && memconf[M_flag][i].rom_file) 
+							httpdPrintf(conn, ", \"file\": \"%s\"", memconf[M_flag][i].rom_file);
+						httpdPrintf(conn, "}");
+					}
+				}
+
+            httpdPrintf(conn, "]");
+
+            httpdPrintf(conn, ", \"memextra\": [ ");
+
+			if (boot_switch[M_flag]) {
+            	httpdPrintf(conn, "\"Power-on jump address %04XH\", ", boot_switch[M_flag]);
+			}
+			if (R_flag) {
+            	httpdPrintf(conn, "\"%s\", ", BANKED_ROM_MSG);
+			}
+
+			extern int num_banks;
+			if (num_banks) {
+            	httpdPrintf(conn, "\"MMU has %d additional RAM banks of %d KB\",", num_banks, SEGSIZ >> 10);
+			}
+
+            httpdPrintf(conn, " \"\" ]");
+#endif
+            {
+				int i=0, o=0;
+                const char *t1, *t2;
+				extern char **environ;
+				char buf[2048];
+
+                httpdPrintf(conn, ", \"env\": { ");
+                    while(environ[i] != NULL) {
+                        strcpy(buf, environ[i]);
+                        t1 = strtok(buf, "=");
+                        t2 = strtok(NULL, "\0");
 #define BULLET  "\xE2\x80\xA2"
-                    if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL)) 
-                        t2 = BULLET BULLET BULLET BULLET BULLET BULLET BULLET BULLET;
-					/* Filter out only TERM and non-shell environment valiables of the form '*.*' ie. contain '.' */
-					if(!strcmp(t1, "TERM") || index(t1, '.'))
-                    	httpdPrintf(conn, "%s \"%s\": \"%s\" ", (o++)==0?"":",", t1, (t2==NULL)?"":t2);
-                    i++;
-                }
-            httpdPrintf(conn, "} ");
+                        if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL)) 
+                            t2 = BULLET BULLET BULLET BULLET BULLET BULLET BULLET BULLET;
+						/* Filter out only TERM and non-shell environment variables of the form '*.*' ie. contain '.' */
+						if(!strcmp(t1, "TERM") || index(t1, '.'))
+                        	httpdPrintf(conn, "%s \"%s\": \"%s\" ", (o++)==0?"":",", t1, (t2==NULL)?"":t2);
+                        i++;
+                    }
+                httpdPrintf(conn, "} ");
+            }
 
         httpdPrintf(conn, "}");
 		break;
@@ -303,8 +436,13 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
     int i = 0;
     struct stat sb;
     char fullpath[MAX_LFN];
+    bool showSize = false;
+			
+    if (req->args[0] && *req->args[0] == 'S') {
+    	showSize = true;
+    }
 
-    switch(req->method) {
+    switch (req->method) {
     case HTTP_GET:
         pDir = opendir ((char *)path);
         if (pDir == NULL) {
@@ -325,7 +463,12 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
                  * if (pDirent->d_type==DT_REG) {
 		 */
 		if (stat(fullpath, &sb) != -1 && S_ISREG(sb.st_mode)) {
-			httpdPrintf(conn, "%c\"%s\"", (i++ > 0)?',':' ', pDirent->d_name);
+			if (showSize) {
+				httpdPrintf(conn, "%c{ \"%s\":\"%s\",", (i++ > 0)?',':' ', "filename",pDirent->d_name);
+				httpdPrintf(conn, "\"%s\":%lld}", "size", (long long) sb.st_size);
+			} else {
+				httpdPrintf(conn, "%c\"%s\"", (i++ > 0)?',':' ', pDirent->d_name);
+			}
                 }
             }
             closedir (pDir);
@@ -347,14 +490,15 @@ int UploadHandler(HttpdConnection_t *conn, void *path) {
 
     switch (req->method) {
     case HTTP_PUT:
-		strncpy(output, path, MAX_LFN);
+		strncpy(output, (char *) path, MAX_LFN - 1);
+		output[MAX_LFN - 1] = '\0';
 
 		if (output[strlen(output)-1] != '/')
 			strncat(output, "/", MAX_LFN - strlen(output));
 
 		strncat(output, req->args[0], MAX_LFN - strlen(output));
 
-		filelen = 0;
+		//filelen = 0;
 		filelen = mg_store_body(conn, output);
 
         LOGI(TAG, "%d bytes written to %s, received %d", filelen, output, (int) req->len);
@@ -396,16 +540,19 @@ int ConfigHandler(HttpdConnection_t *conn, void *path) {
 int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 	struct mg_context *ctx = mg_get_context(conn);
 	int reject = 1;
-    int res;
+	int res;
+	net_device_t d = *(net_device_t *) device;
 
 	mg_lock_context(ctx);
-		if (dev[(net_device_t)device].ws_client.conn == NULL) {
-			dev[(net_device_t)device].ws_client.conn = (struct mg_connection *)conn;
-			dev[(net_device_t)device].ws_client.state = 1;
-			mg_set_user_connection_data(dev[(net_device_t)device].ws_client.conn, (void *)(&(dev[(net_device_t)device].ws_client)));
+		if (dev[d].ws_client.conn == NULL) {
+			dev[d].ws_client.conn = (struct mg_connection *)conn;
+			dev[d].ws_client.state = 1;
+			mg_set_user_connection_data(dev[d].ws_client.conn, (void *)(&(dev[d].ws_client)));
 
-			switch ((net_device_t)device) {
-			case DEV_SIO1:
+			switch (d) {
+			case DEV_TTY:
+			case DEV_TTY2:
+			case DEV_TTY3:
 			case DEV_PTR:
 			case DEV_VIO:
 			case DEV_LPT:
@@ -414,7 +561,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 			case DEV_D7AIO:
 				res = msgget(IPC_PRIVATE, 0644 | IPC_CREAT); //TODO: check flags
 				if (res > 0) {
-					dev[(net_device_t)device].queue = res;
+					dev[d].queue = res;
 				} else {
 					perror("msgget()");
 				}
@@ -433,19 +580,20 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 
 void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	const char *text = "\r\nConnected to the OSX port of Z80PACK\r\n";
-	ws_client_t *client = mg_get_user_connection_data(conn);
+	ws_client_t *client = (ws_client_t *) mg_get_user_connection_data(conn);
+	net_device_t d = *(net_device_t *) device;
 
-	if ((net_device_t) device == DEV_SIO1) 
+	if (d == DEV_TTY || d == DEV_TTY2 || d == DEV_TTY3) 
 		mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
 	
-	if ((net_device_t) device == DEV_VIO) {
+	if (d == DEV_VIO) {
 		BYTE mode = dma_read(0xf7ff);
 		dma_write(0xf7ff, 0x00);
 		SLEEP_MS(100);
 		dma_write(0xf7ff, mode);
 	}
 
-	LOGI(TAG, "WS CLIENT CONNECTED to %s", dev_name[(net_device_t) device]);
+	LOGI(TAG, "WS CLIENT CONNECTED to %s", dev_name[d]);
 
 	client->state = 2;
 }
@@ -456,10 +604,12 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
                      size_t len,
                      void *device) {
 
+	net_device_t d = *(net_device_t *) device;
+
 	UNUSED(conn); 
 
 #ifdef DEBUG
-	fprintf(stdout, "Websocket [%d] got %lu bytes of ", (int)device, (unsigned long)len);
+	fprintf(stdout, "Websocket [%d] got %z bytes of ", (int)device, len);
 	switch (((unsigned char)bits) & 0x0F) {
 	case MG_WEBSOCKET_OPCODE_CONTINUATION:
 		fprintf(stdout, "continuation");
@@ -490,7 +640,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 
     if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_BINARY) {
 
-        switch ((net_device_t)device) {
+        switch (d) {
 		case DEV_D7AIO:
 			if (dev[DEV_D7AIO].cbfunc != NULL && (len == 8)) {
                 (*(dev[DEV_D7AIO].cbfunc))((BYTE *)data);
@@ -498,15 +648,15 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 			break;
 		case DEV_PTR:
 			if (len != 1) {
-				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);
+				LOGW(TAG, "Websocket received too many [%d] characters", (int)len);
 				return 0;
 			}
             msg.mtype = 1L;
             msg.mtext[0] = data[0];
             msg.mtext[1] = '\0';
-            if (msgsnd(dev[(net_device_t)device].queue, &msg, 2, IPC_NOWAIT)) {
+            if (msgsnd(dev[d].queue, &msg, 2, IPC_NOWAIT)) {
                 if (errno == EAGAIN) {
-					LOGW(TAG, "%s Overflow", dev_name[(net_device_t)device]);
+					LOGW(TAG, "%s Overflow", dev_name[d]);
 				} else {
 					perror("msgsnd()");
 				}
@@ -517,9 +667,9 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 			// LOGI(TAG, "rec: %d, %d", (int)len, (BYTE)*data);
             msg.mtype = 1L;
             memcpy(msg.mtext, data, len);
-			if (msgsnd(dev[(net_device_t)device].queue, &msg, len, IPC_NOWAIT)) {
+			if (msgsnd(dev[d].queue, &msg, len, IPC_NOWAIT)) {
                 if (errno == EAGAIN) {
-					LOGW(TAG, "%s Overflow", dev_name[(net_device_t)device]);
+					LOGW(TAG, "%s Overflow", dev_name[d]);
 				} else {
 					perror("msgsnd()");
 				}
@@ -532,22 +682,24 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 	}
     if ((((unsigned char)bits) & 0x0F) == MG_WEBSOCKET_OPCODE_TEXT) {
 
-        switch ((net_device_t)device) {
+        switch (d) {
 		case DEV_LPT:
 			if (len == 1 && *data == 'R') lpt_reset();
 			break;
-        case DEV_SIO1:
+        case DEV_TTY:
+        case DEV_TTY2:
+        case DEV_TTY3:
         case DEV_VIO:
 			if (len != 1) {
-				LOGW(TAG, "Websocket recieved too many [%d] characters", (int)len);
+				LOGW(TAG, "Websocket received too many [%d] characters", (int)len);
 				return 0;
 			}
             msg.mtype = 1L;
             msg.mtext[0] = data[0];
             msg.mtext[1] = '\0';
-            if (msgsnd(dev[(net_device_t)device].queue, &msg, 2, IPC_NOWAIT)) {
+            if (msgsnd(dev[d].queue, &msg, 2, IPC_NOWAIT)) {
                 if (errno == EAGAIN) {
-					LOGW(TAG, "%s Overflow", dev_name[(net_device_t)device]);
+					LOGW(TAG, "%s Overflow", dev_name[d]);
 				} else {
 					perror("msgsnd()");
 				}
@@ -564,21 +716,22 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 
 void WebSocketCloseHandler(const HttpdConnection_t *conn, void *device) {
 	struct mg_context *ctx = mg_get_context(conn);
-	ws_client_t *client = mg_get_user_connection_data(conn);
+	ws_client_t *client = (ws_client_t *) mg_get_user_connection_data(conn);
+	net_device_t d = *(net_device_t *) device;
 
 	mg_lock_context(ctx);
 	client->state = 0;
 	client->conn = NULL;
 	mg_unlock_context(ctx);
 	
-	LOGI(TAG, "WS CLIENT CLOSED %s", dev_name[(net_device_t) device]);
+	LOGI(TAG, "WS CLIENT CLOSED %s", dev_name[d]);
 
-	if (dev[(net_device_t) device].queue && msgctl(dev[(net_device_t) device].queue, IPC_RMID, NULL) == -1) {
+	if (dev[d].queue && msgctl(dev[d].queue, IPC_RMID, NULL) == -1) {
 		perror("msgctl()");
 	}
-	dev[(net_device_t) device].queue = 0;
+	dev[d].queue = 0;
 
-	LOGD(TAG, "Message queue closed (%d) [%08X]", (net_device_t) device, dev[(net_device_t) device].queue);
+	LOGD(TAG, "Message queue closed (%d) [%08X]", d, dev[d].queue);
 }
 
 static struct mg_context *ctx = NULL;
@@ -597,15 +750,19 @@ void stop_net_services (void) {
 	}
 }
 
-int start_net_services (void) {
+int start_net_services (int port) {
+	//TODO: add config for DOCUMENT_ROOT
 
-	//TODO: add config for DOCUMENT_ROOT, PORT
+    char sport[6];
+#ifdef SYSDOCROOT
+	struct stat sbuf;
+#endif
 
 	const char *options[] = {
 	    "document_root",
 	    DOCUMENT_ROOT,
 	    "listening_ports",
-	    PORT,
+	    sport,
 	    "request_timeout_ms",
 	    "10000",
 	    "error_log_file",
@@ -615,7 +772,7 @@ int start_net_services (void) {
 	    "enable_auth_domain_check",
 	    "no",
 		"url_rewrite_patterns",
-		"/imsai/disks/=./disks/, /imsai/conf/=./conf/, /imsai/printer.txt=./printer.txt",
+		"/" MACHINE "/disks/=./disks/, /" MACHINE "/conf/=./conf/, /" MACHINE "/printer.txt=./printer.txt",
 	    0};
 
 	struct mg_callbacks callbacks;
@@ -628,6 +785,14 @@ int start_net_services (void) {
 #endif
 
 	atexit(stop_net_services);
+
+	snprintf(sport, sizeof(sport), "%d", port);
+
+#ifdef SYSDOCROOT
+	if (stat(DOCUMENT_ROOT, &sbuf) == -1 || !S_ISDIR(sbuf.st_mode)) {
+		options[1] = SYSDOCROOT;
+	}
+#endif
 
     /* Start CivetWeb web server */
 	memset(&callbacks, 0, sizeof(callbacks));
@@ -643,67 +808,79 @@ int start_net_services (void) {
 
 	//TODO: sort out all the paths for the handlers
     mg_set_request_handler(ctx, "/system", 		SystemHandler, 		0);
-    mg_set_request_handler(ctx, "/conf", 		ConfigHandler, 		"conf");
-#ifdef HAS_DISKMANAGER
+    mg_set_request_handler(ctx, "/conf", 		ConfigHandler, 		(void *) "conf");
     mg_set_request_handler(ctx, "/library", 	LibraryHandler, 	0);
     mg_set_request_handler(ctx, "/disks", 		DiskHandler, 		0);
-#endif
 
-	mg_set_websocket_handler(ctx, "/sio1",
+	mg_set_websocket_handler(ctx, "/tty",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_SIO1);
+	                         (void *) &net_device_a[DEV_TTY]);
+
+	mg_set_websocket_handler(ctx, "/tty2",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         (void *) &net_device_a[DEV_TTY2]);
+
+	mg_set_websocket_handler(ctx, "/tty3",
+	                         WebSocketConnectHandler,
+	                         WebSocketReadyHandler,
+	                         WebsocketDataHandler,
+	                         WebSocketCloseHandler,
+	                         (void *) &net_device_a[DEV_TTY3]);
 
 	mg_set_websocket_handler(ctx, "/ptr",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_PTR);
+	                         (void *) &net_device_a[DEV_PTR]);
 							 
 	mg_set_websocket_handler(ctx, "/lpt",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_LPT);
+	                         (void *) &net_device_a[DEV_LPT]);
 	
 	mg_set_websocket_handler(ctx, "/vio",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_VIO);
+	                         (void *) &net_device_a[DEV_VIO]);
 	
 	mg_set_websocket_handler(ctx, "/dazzler",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_DZLR);
+	                         (void *) &net_device_a[DEV_DZLR]);
 	
 	mg_set_websocket_handler(ctx, "/cpa",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_CPA);
+	                         (void *) &net_device_a[DEV_CPA]);
 
 	mg_set_websocket_handler(ctx, "/acc",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_88ACC);
+	                         (void *) &net_device_a[DEV_88ACC]);
 
 	mg_set_websocket_handler(ctx, "/d7aio",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
-	                         (void *) DEV_D7AIO);
+	                         (void *) &net_device_a[DEV_D7AIO]);
 
 #ifdef DEBUG
 	/* List all listening ports */

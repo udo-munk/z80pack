@@ -18,10 +18,8 @@
 
 */
 
-#ifdef __CYGWIN__
-#include <windef.h>
-#endif
-
+#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,6 +32,8 @@
 #include "lpanel.h"
 
 #include "lpanel_data.h"
+
+#define UNUSED(x) (void) (x)
 
 extern pthread_mutex_t data_sample_lock;
 
@@ -96,6 +96,8 @@ for(i=0;i<3;i++)
 void 
 sampleData8_error(lpLight *p)
 { 
+ UNUSED(p);
+
 #if 0
 static int flag = 0;
  if(!flag)
@@ -110,7 +112,7 @@ void
 sampleData8(lpLight *p)
 {
   unsigned char bit;
-  uint8 *ptr = (uint8 *) p->dataptr;
+  uint8_t *ptr = (uint8_t *) p->dataptr;
 
   bit = (int) (*ptr >> p->bitnum) & 0x01;
 
@@ -129,7 +131,7 @@ void
 sampleData8invert(lpLight *p)
 {
   unsigned char bit;
-  uint8 *ptr = (uint8 *) p->dataptr;
+  uint8_t *ptr = (uint8_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -147,9 +149,11 @@ void
 sampleData16(lpLight *p)
 {
   unsigned char bit;
-  uint16 *ptr = (uint16 *) p->dataptr;
-  uint64 on_time_inc = 0;
-  int logit = 0;
+  uint16_t *ptr = (uint16_t *) p->dataptr;
+#if 0
+  uint64_t on_time_inc = 0;
+#endif
+  // int logit = 0;
 
   bit = (int) (*ptr >> p->bitnum) & 0x01;
 
@@ -186,7 +190,7 @@ void
 sampleDatafv(lpLight *p)
 {
   float *ptr = (float *) p->dataptr;
-  int logit = 0;
+  // int logit = 0;
 
   if(p->smoothing > 0)
   {
@@ -211,7 +215,7 @@ void
 sampleData16invert(lpLight *p)
 {
   unsigned char bit;
-  uint16 *ptr = (uint16 *) p->dataptr;
+  uint16_t *ptr = (uint16_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -229,7 +233,7 @@ void
 sampleData32(lpLight *p)
 {
   unsigned char bit;
-  uint32 *ptr = (uint32 *) p->dataptr;
+  uint32_t *ptr = (uint32_t *) p->dataptr;
 
   bit = (int) (*ptr >> p->bitnum) & 0x01;
 
@@ -248,7 +252,7 @@ void
 sampleData32invert(lpLight *p)
 {
   unsigned char bit;
-  uint32 *ptr = (uint32 *) p->dataptr;
+  uint32_t *ptr = (uint32_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -266,7 +270,7 @@ void
 sampleData64(lpLight *p)
 {
   unsigned char bit;
-  uint64 *ptr = (uint64 *) p->dataptr;
+  uint64_t *ptr = (uint64_t *) p->dataptr;
 
   bit = (int) (*ptr >> p->bitnum) & 0x01;
 
@@ -284,7 +288,7 @@ void
 sampleData64invert(lpLight *p)
 {
   unsigned char bit;
-  uint64 *ptr = (uint64 *) p->dataptr;
+  uint64_t *ptr = (uint64_t *) p->dataptr;
 
   bit = (int) ~(*ptr >> p->bitnum) & 0x01;
 
@@ -306,6 +310,7 @@ Lpanel::Lpanel(void)		 // constructor
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
 #else
  window = 0;
+ vi = NULL;
  cx = 0;
  dpy = 0;
 #endif
@@ -352,6 +357,7 @@ Lpanel::Lpanel(void)		 // constructor
 
  // init config root path
 
+ config_root_path = NULL;
  setConfigRootPath(".");
 
  // init graphics objects
@@ -461,7 +467,7 @@ Lpanel::Quit(void)
  for(i=0;i<LP_MAX_LIGHT_GROUPS;i++)
  {
    if(light_groups[i].list) 
-    { delete light_groups[i].list;
+    { delete[] light_groups[i].list;
       light_groups[i].list = NULL;
     }
    light_groups[i].num_items = 0;
@@ -569,7 +575,7 @@ Lpanel::addLightToGroup( int lightnum, int groupnum)
     if(light_groups[groupnum].list) 
      { for(i=0; i < light_groups[groupnum].max_items;i++)
 		new_list[i] = light_groups[groupnum].list[i];
-       delete light_groups[groupnum].list;
+       delete[] light_groups[groupnum].list;
      }
     light_groups[groupnum].list = new_list;
   }
@@ -580,7 +586,7 @@ Lpanel::addLightToGroup( int lightnum, int groupnum)
 }
 
 int 
-Lpanel::bindLight8(char *name, void *loc, int start_bit_number)
+Lpanel::bindLight8(const char *name, void *loc, int start_bit_number)
 {
   char **namelist; 
   int num_names;
@@ -606,7 +612,7 @@ Lpanel::bindLight8(char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData8( (uint8 *) loc);
+        light->bindData8( (uint8_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -614,9 +620,10 @@ Lpanel::bindLight8(char *name, void *loc, int start_bit_number)
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight8: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -624,12 +631,12 @@ Lpanel::bindLight8(char *name, void *loc, int start_bit_number)
 // bind light and invert logic according to mask
 
 int 
-Lpanel::bindLight8invert(char *name, void *loc, int start_bit_number, uint8 mask)
+Lpanel::bindLight8invert(const char *name, void *loc, int start_bit_number, uint8_t mask)
 {
   char **namelist; 
   int num_names;
   int i, status = 1;
-  int bitnum, bit_inc, bit_inv;
+  int bitnum, bit_inc; // bit_inv;
   lpLight *light;
 
   num_names = xpand(name, &namelist);
@@ -651,9 +658,9 @@ Lpanel::bindLight8invert(char *name, void *loc, int start_bit_number, uint8 mask
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData8invert( (uint8 *) loc);
+         light->bindData8invert( (uint8_t *) loc);
         else
-         light->bindData8( (uint8 *) loc);
+         light->bindData8( (uint8_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -661,15 +668,16 @@ Lpanel::bindLight8invert(char *name, void *loc, int start_bit_number, uint8 mask
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight8invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
 
 int
-Lpanel::bindLight16(char *name, void *loc, int start_bit_number)
+Lpanel::bindLight16(const char *name, void *loc, int start_bit_number)
 {
   char **namelist;
   int num_names;
@@ -695,7 +703,7 @@ Lpanel::bindLight16(char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData16( (uint16 *) loc);
+        light->bindData16( (uint16_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -703,9 +711,10 @@ Lpanel::bindLight16(char *name, void *loc, int start_bit_number)
         if(!ignore_bind_errors) fprintf(stderr, "bindLight16: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -717,12 +726,12 @@ Lpanel::bindLight16(char *name, void *loc, int start_bit_number)
 // instead of a single bit
 
 int
-Lpanel::bindLightfv(char *name, void *loc)
+Lpanel::bindLightfv(const char *name, void *loc)
 {
   char **namelist;
   int num_names;
   int i, status = 1;
-  int bitnum, bit_inc;
+  // int bitnum, bit_inc;
   lpLight *light;
 
   num_names = xpand(name, &namelist);
@@ -742,20 +751,21 @@ Lpanel::bindLightfv(char *name, void *loc)
         if(!ignore_bind_errors) fprintf(stderr, "bindLightfv: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
-    bitnum += bit_inc;
+    if(namelist[i]) delete[] namelist[i];
+    // bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
 
 int 
-Lpanel::bindLight16invert(char *name, void *loc, int start_bit_number, uint16 mask)
+Lpanel::bindLight16invert(const char *name, void *loc, int start_bit_number, uint16_t mask)
 {
   char **namelist; 
   int num_names;
   int i, status = 1;
-  int bitnum, bit_inc, bit_inv;
+  int bitnum, bit_inc; // bit_inv;
   lpLight *light;
 
   num_names = xpand(name, &namelist);
@@ -777,9 +787,9 @@ Lpanel::bindLight16invert(char *name, void *loc, int start_bit_number, uint16 ma
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData16invert( (uint16 *) loc);
+         light->bindData16invert( (uint16_t *) loc);
         else
-         light->bindData16( (uint16 *) loc);
+         light->bindData16( (uint16_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -787,9 +797,10 @@ Lpanel::bindLight16invert(char *name, void *loc, int start_bit_number, uint16 ma
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight16invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
@@ -797,7 +808,7 @@ Lpanel::bindLight16invert(char *name, void *loc, int start_bit_number, uint16 ma
 
 
 int
-Lpanel::bindLight32(char *name, void *loc, int start_bit_number)
+Lpanel::bindLight32(const char *name, void *loc, int start_bit_number)
 {
   char **namelist;
   int num_names;
@@ -823,7 +834,7 @@ Lpanel::bindLight32(char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData32( (uint32 *) loc);
+        light->bindData32( (uint32_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -831,20 +842,21 @@ Lpanel::bindLight32(char *name, void *loc, int start_bit_number)
         if(!ignore_bind_errors) fprintf(stderr, "bindLight32: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
 
 int 
-Lpanel::bindLight32invert(char *name, void *loc, int start_bit_number, uint32 mask)
+Lpanel::bindLight32invert(const char *name, void *loc, int start_bit_number, uint32_t mask)
 {
   char **namelist; 
   int num_names;
   int i, status = 1;
-  int bitnum, bit_inc, bit_inv;
+  int bitnum, bit_inc; // bit_inv;
   lpLight *light;
 
   num_names = xpand(name, &namelist);
@@ -866,9 +878,9 @@ Lpanel::bindLight32invert(char *name, void *loc, int start_bit_number, uint32 ma
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData32invert( (uint32 *) loc);
+         light->bindData32invert( (uint32_t *) loc);
         else
-         light->bindData32( (uint32 *) loc);
+         light->bindData32( (uint32_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -876,16 +888,17 @@ Lpanel::bindLight32invert(char *name, void *loc, int start_bit_number, uint32 ma
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight32invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
 
 
 int
-Lpanel::bindLight64(char *name, void *loc, int start_bit_number)
+Lpanel::bindLight64(const char *name, void *loc, int start_bit_number)
 {
   char **namelist;
   int num_names;
@@ -911,7 +924,7 @@ Lpanel::bindLight64(char *name, void *loc, int start_bit_number)
 
      if(light)
       {
-        light->bindData64( (uint64 *) loc);
+        light->bindData64( (uint64_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -919,20 +932,21 @@ Lpanel::bindLight64(char *name, void *loc, int start_bit_number)
         if(!ignore_bind_errors) fprintf(stderr, "bindLight64: light %s not found\n", namelist[i]);
         status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
 
 int 
-Lpanel::bindLight64invert(char *name, void *loc, int start_bit_number, uint64 mask)
+Lpanel::bindLight64invert(const char *name, void *loc, int start_bit_number, uint64_t mask)
 {
   char **namelist; 
   int num_names;
   int i, status = 1;
-  int bitnum, bit_inc, bit_inv;
+  int bitnum, bit_inc; // bit_inv;
   lpLight *light;
 
   num_names = xpand(name, &namelist);
@@ -954,9 +968,9 @@ Lpanel::bindLight64invert(char *name, void *loc, int start_bit_number, uint64 ma
      if(light)
       {
 	if( mask & (0x1 << (bitnum-1)))
-         light->bindData64invert( (uint64 *) loc);
+         light->bindData64invert( (uint64_t *) loc);
         else
-         light->bindData64( (uint64 *) loc);
+         light->bindData64( (uint64_t *) loc);
         light->setBitNumber(bitnum-1);
       }
      else
@@ -964,32 +978,33 @@ Lpanel::bindLight64invert(char *name, void *loc, int start_bit_number, uint64 ma
 	if(!ignore_bind_errors) fprintf(stderr, "bindLight64invert: light %s not found\n", namelist[i]);
 	status = 0;
       }
-    if(namelist[i]) delete namelist[i];
+    if(namelist[i]) delete[] namelist[i];
     bitnum += bit_inc;
    }
+  delete[] namelist;
 
   return status;
 }
 
 void
-Lpanel::bindRunFlag(uint8 *addr)
+Lpanel::bindRunFlag(uint8_t *addr)
 {
  int i;
 
- runflag = (uint8 *) addr;
+ runflag = (uint8_t *) addr;
 
   for(i=0;i<num_lights;i++)
-   lights[i]->bindRunFlag((uint8 *)addr);
+   lights[i]->bindRunFlag((uint8_t *)addr);
 }
 
 void
-Lpanel::bindSimclock(uint64 *addr)
+Lpanel::bindSimclock(uint64_t *addr)
 {
  int i;
- simclock = (uint64 *) addr;
+ simclock = (uint64_t *) addr;
 
  for(i=0;i<num_lights;i++)
-   lights[i]->bindSimclock((uint64 *) addr, &clock_warp);
+   lights[i]->bindSimclock((uint64_t *) addr, &clock_warp);
 
 }
 
@@ -1085,7 +1100,7 @@ Lpanel::growLights(void)
     new_lights[i] = lights[i];
 
   max_lights += 8;
-  delete lights;
+  delete[] lights;
   lights = new_lights;
 }
 
@@ -1100,7 +1115,7 @@ Lpanel::growSwitches(void)
     new_switches[i] = switches[i];
 
   max_switches += 1;
-  delete switches;
+  delete[] switches;
   switches = new_switches;
 }
 
@@ -1111,7 +1126,9 @@ Lpanel::pick(int button, int state, int x, int y)
  int i,
      num_picked = 0,
      switch_dir;
- uint32 switch_num;
+ uint32_t switch_num;
+
+ UNUSED(button);
 
  if(state == 0) 
   {
@@ -1146,7 +1163,7 @@ Lpanel::pick(int button, int state, int x, int y)
 
  if( num_picked)
   {
-   uint32 n;
+   uint32_t n;
    ptr = (GLuint *) namebuf;
    n = ptr[3];
 
@@ -1184,7 +1201,7 @@ Lpanel::readConfig(const char *_fname)
 
  char *fname;
 
- fname = new char[strlen(config_root_path) + strlen(_fname) + 1];
+ fname = new char[strlen(config_root_path) + 1 + strlen(_fname) + 1];
  strcpy(fname, config_root_path);
  strcat(fname, "/");
  strcat(fname, _fname);
@@ -1192,6 +1209,7 @@ Lpanel::readConfig(const char *_fname)
  if( (fd=fopen(fname,"r")) == 0)
   {
     fprintf(stderr,"readFile: could not open file %s\n",fname);
+    delete[] fname;
     return 0;
   }
 
@@ -1585,7 +1603,7 @@ Lpanel::readConfig(const char *_fname)
 	 break;
        }
 
-     delete texture_path;
+     delete[] texture_path;
 
    }
   else if(!strcmp(token, "texture_scale"))
@@ -1705,7 +1723,7 @@ Lpanel::readConfig(const char *_fname)
    }
  } // end while(!feof)
 
- delete fname;
+ delete[] fname;
  fclose(fd);
 
  if(!bailout)
@@ -1792,7 +1810,7 @@ Lpanel::sampleData(void)
 
 if( *simclock < old_clock )
 {
-  fprintf(stderr,"libfrontpanel: Warning clock went backwards (current=%lld  previous=%lld.\n", *simclock, old_clock);
+  fprintf(stderr,"libfrontpanel: Warning clock went backwards (current=%" PRIu64 "  previous=%" PRIu64 ".\n", *simclock, old_clock);
     
 }
  old_clock = *simclock;
@@ -1837,7 +1855,7 @@ Lpanel::sampleLightGroup(int groupnum, int clockval)
 void
 Lpanel::setConfigRootPath(const char *path)
 {
- if(config_root_path) delete config_root_path;
+ if(config_root_path) delete[] config_root_path;
  config_root_path = new char [strlen(path) + 1];
  strcpy(config_root_path,path);
 
@@ -1857,6 +1875,7 @@ lpLight::lpLight(void)
   sampleDataFunc = sampleData8_error;
   drawFunc = drawLightGraphics;
   t1 = t2 = on_time = 1;
+  start_clock = 0;
   old_clock = 0;
   dirty = 0;
   state = 0;
@@ -1876,19 +1895,19 @@ lpLight::lpLight(void)
 
 lpLight::~lpLight(void)
 {
- if(name) delete name;
- if(obj_refname) delete obj_refname;
+ if(name) delete[] name;
+ if(obj_refname) delete[] obj_refname;
  if(parms) delete parms;
 }
 
 void
-lpLight::bindRunFlag(uint8 *addr)
+lpLight::bindRunFlag(uint8_t *addr)
 {
- runflag = (uint8 *) addr;
+ runflag = (uint8_t *) addr;
 }
 
 void
-lpLight::bindSimclock(uint64 *addr, int *clockwarp)
+lpLight::bindSimclock(uint64_t *addr, int *clockwarp)
 {
  
  simclock = addr;
@@ -1900,7 +1919,7 @@ void
 lpLight::draw(void)
 {
   int i;
-  float *fp;
+  // float *fp;
 
  switch(bindtype)
  {
@@ -1921,7 +1940,7 @@ lpLight::draw(void)
 
   case LBINDTYPE_FLOATV:
 
-	fp = (float *) dataptr;
+	// fp = (float *) dataptr;
 
 	//intensity = fp[bitnum];
 
@@ -1987,24 +2006,24 @@ lpLight::print(void)
 }
 
 void 
-lpLight::bindData8(uint8 *ptr)
+lpLight::bindData8(uint8_t *ptr)
 {
   sampleDataFunc = sampleData8;
-  dataptr = (uint8*) ptr;
+  dataptr = (uint8_t *) ptr;
 }
 void 
-lpLight::bindData8invert(uint8 *ptr)
+lpLight::bindData8invert(uint8_t *ptr)
 {
   sampleDataFunc = sampleData8invert;
-  dataptr = (uint8*) ptr;
+  dataptr = (uint8_t *) ptr;
 }
 
 void 
-lpLight::bindData16(uint16 *ptr)
+lpLight::bindData16(uint16_t *ptr)
 {
 // xyzzy
   sampleDataFunc = sampleData16;
-  dataptr = (uint16*) ptr;
+  dataptr = (uint16_t *) ptr;
 }
 
 void 
@@ -2016,38 +2035,38 @@ lpLight::bindDatafv(float *ptr)
 }
 
 void 
-lpLight::bindData16invert(uint16 *ptr)
+lpLight::bindData16invert(uint16_t *ptr)
 {
   sampleDataFunc = sampleData16invert;
-  dataptr = (uint16*) ptr;
+  dataptr = (uint16_t *) ptr;
 }
 
 void 
-lpLight::bindData32(uint32 *ptr)
+lpLight::bindData32(uint32_t *ptr)
 {
   sampleDataFunc = sampleData32;
-  dataptr = (uint32*) ptr;
+  dataptr = (uint32_t *) ptr;
 }
 
 void 
-lpLight::bindData32invert(uint32 *ptr)
+lpLight::bindData32invert(uint32_t *ptr)
 {
   sampleDataFunc = sampleData32invert;
-  dataptr = (uint32*) ptr;
+  dataptr = (uint32_t *) ptr;
 }
 
 void 
-lpLight::bindData64(uint64 *ptr)
+lpLight::bindData64(uint64_t *ptr)
 {
   sampleDataFunc = sampleData64;
-  dataptr = (uint64*) ptr;
+  dataptr = (uint64_t *) ptr;
 }
 
 void 
-lpLight::bindData64invert(uint64 *ptr)
+lpLight::bindData64invert(uint64_t *ptr)
 {
   sampleDataFunc = sampleData64invert;
-  dataptr = (uint64*) ptr;
+  dataptr = (uint64_t *) ptr;
 }
 
 
@@ -2055,10 +2074,10 @@ void
 lpLight::calcIntensity(void)
 { 
   int i;
-  unsigned int dt;
-  uint64 clock_delta;
+  // unsigned int dt;
+  uint64_t clock_delta;
 
-  int logit = 0;
+  // int logit = 0;
 
   clock_delta = old_clock - start_clock;
   if(clock_delta == 0)
@@ -2131,7 +2150,7 @@ lpLight::setName(const char *_name)
 
 
 int 
-Lpanel::smoothLight(char *name, int nframes)
+Lpanel::smoothLight(const char *name, int nframes)
 {
   char **namelist; 
   int num_names;
@@ -2140,7 +2159,7 @@ Lpanel::smoothLight(char *name, int nframes)
 
   if( nframes <0)
    {
-    fprintf(stderr, "smoothLight: light %s error. nframes = %d  must be >=0 \n", namelist[i], nframes);
+    fprintf(stderr, "smoothLight: light %s error. nframes = %d  must be >=0 \n", name, nframes);
     return 0;
    }
 
@@ -2162,6 +2181,7 @@ Lpanel::smoothLight(char *name, int nframes)
       }
     if(namelist[i]) delete namelist[i];
    }
+  delete[] namelist;
 
   return status;
 }

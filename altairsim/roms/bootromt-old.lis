@@ -1,0 +1,288 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;******************************************************************
+                       2      2 ;       PROM BASED BOOT ROUTINE FOR TARBELL SINGLE DENSITY CP/M
+                       3      3 ;******************************************************************
+                       4      4 ;
+                       5      5 ;       THIS PROGRAM IS DESIGNED TO BOOT SECTOR 1 OF TRACK 0
+                       6      6 ;       ON A TARBELL DISK USING THE TARBELL SINGLE DENSITY
+                       7      7 ;       DISK CONTROLLER BOARD. TRACK 0 IS FORMATTED SINGLE
+                       8      8 ;       DENSITY SO THE CPU CAN DO THE DATA TRANSFER. THE BOOT
+                       9      9 ;       ROUTINE LOADS A PROGRAM FROM DISK INTO MEMORY AND THEN
+                      10     10 ;       JUMPS TO THAT ROUTINE. THE PROGRAM LOADED STARTS AT
+                      11     11 ;       MEMORY ADDRESS 0000H.
+                      12     12 ;               THE PART OF THIS PROGRAM THAT ACTUALLY DOES THE
+                      13     13 ;       THE BOOT OPERATION IS MOVED FROM A DATA AREA IN THE 1702A
+                      14     14 ;       TURNKEY PROMS AT ADDRESS 0FE00H TO BE EXECUTED FROM WITHIN
+                      15     15 ;       CPU RAM AT ADDRESS 01000H. THIS IS NECESSARY DUE TO THE
+                      16     16 ;       EXTENDED WAITSTATE TIME AFFORDED BY THE TURNKEY MODULE
+                      17     17 ;       WHICH COULD RESULT IN DATA LOST ERRORS AT THE DISK CONTROLLER
+                      18     18 ;       BOARD. THE FIRST PROM ONLY CONTAINS A BLOCK MOVE ROUTINE
+                      19     19 ;       TO TRANSFER THE DATA TO THE EXECUTION AREA AT 01000H.
+                      20     20 ;
+                      21     21 ;               MICHAEL J. KARAS
+                      22     22 ;               MICRO RESOURCES
+                      23     23 ; THESE DAYS MIKE CAN BE REACHED AT MKARAS@CAROUSEL-DESIGN.COM (MARCH 23, 2009)
+                      24     24 ;
+                      25     25 ; MODIFIED SO THAT THE BOOT CODE CAN BE MOVED TO RAM @ 1000H
+                      26     26 ; UDO MUNK, AUGUST 2016
+                      27     27 ;
+                      28     28 ;******************************************************************
+                      29     29 ;
+1000  =               30     30 RUNLOC  EQU    1000H            ;RELOCATE LOADER HERE
+                      31     31 ;
+                      32     32 ;MAKE A BLOCK MOVE ROUTINE TO SEND EXECUTABLE CODE INTO
+                      33     33 ;SYSTEM RAM AT 1000H
+                      34     34  
+                      35     35         ORG     0FE00H          ;PUT THE MOVE ROUTINE HERE
+                      36     36  
+fe00  f3              37     37         DI                      ;NO INTERRUPTS
+fe01  21 17 fe        38     38         LXI     H,RCODE         ;POINT TO BLOCK TO BE MOVED
+fe04  01 80 01        39     39         LXI     B,0180H         ;SET COUNT FOR ONE AND A HALF 1702'S
+fe07  11 00 10        40     40         LXI     D,RUNLOC        ;POINT TO DESTINATION OF MOVE
+fe0a                  41     41 MOVE:
+fe0a  7e              42     42         MOV     A,M             ;GET A BYTE OF CODE FROM PROM
+fe0b  12              43     43         STAX    D               ;STORE IT INTO RAM
+fe0c  23              44     44         INX     H               ;INCREMENT PROM POINTER
+fe0d  13              45     45         INX     D               ;INCREMENT RAM POINTER
+fe0e  0b              46     46         DCX     B               ;DECREMENT BYTE COUNT
+fe0f  79              47     47         MOV     A,C             ;CHECK IF DONE
+fe10  b0              48     48         ORA     B
+fe11  c2 0a fe        49     49         JNZ     MOVE            ;IF NOT DONE GO DO IT AGAIN
+                      50     50 ;
+fe14  c3 00 10        51     51         JMP     RUNLOC          ;TRANSFER CONTROL TO ROUTINE
+                      52     52                                 ;JUST MOVED TO RAM
+                      53     53 ;
+                      54     54 ;
+                      55     55 ;BASE THIS ROUTINE INTO SYSTEM RAM AT 1000H
+                      56     56 ;
+                      57     57 ;       ORG     01000H
+                      58     58 ;
+fe17  f3              59     59 RCODE:  DI                      ;DISABLE INTERRUPTS
+                      60     60 ;
+ee17  =               61     61 OFFSET  EQU     RCODE-RUNLOC    ;CALCULATE CODE ADDRESS OFFSET FOR RELOCATION
+                      62     62 ;
+fe18  31 56 11        63     63         LXI     SP,STACK-OFFSET ;SET THE STACK DUMMY?
+fe1b  c3 42 10        64     64         JMP     INIT-OFFSET     ;GO INITIALIZE THIS BUGGER 
+                      65     65 ;
+                      66     66 ;
+                      67     67 ;SYSTEM EQUATES FOR TARBELL CONTROLLER
+                      68     68 ;
+00fc  =               69     69 DWAIT   EQU     0FCH            ;WAIT FOR DISK PORT
+00f8  =               70     70 DCOM    EQU     0F8H            ;DISK COMMAND PORT
+00fb  =               71     71 DDATA   EQU     0FBH            ;DISK DATA PORT
+00f8  =               72     72 DSTAT   EQU     0F8H            ;DISK STATUS PORT
+00fa  =               73     73 DSEC    EQU     0FAH            ;DISK SECTOR PORT
+00f9  =               74     74 DTRK    EQU     0F9H            ;DISK TRACK PORT
+00fc  =               75     75 DSEL    EQU     0FCH            ;DISK SELECT PORT
+                      76     76 ;
+                      77     77 ;
+                      78     78 ;SYSTEM VARIABLES AND ADDRESS POINTERS
+                      79     79 ;
+007d  =               80     80 SBOOT   EQU     007DH           ;SINGLE DENSITY BOOT ENTRY
+008c  =               81     81 RDCMD   EQU     008CH           ;READ COMMAND FOR 1791 CONTROLLER
+                      82     82 ;
+                      83     83 ;
+                      84     84 ;DEFINE SI/O RS-232 CONSOLE I/O PARAMETERS
+                      85     85 ;
+0010  =               86     86 CCTRL   EQU     010H            ;CONSOLE COMMAND/STATUS PORT
+0011  =               87     87 CDATA   EQU     011H            ;CONSOLE DATA PORT
+0001  =               88     88 CRRDY   EQU     001H            ;RECEIVER READY BIT
+0002  =               89     89 CTRDY   EQU     002H            ;TRANSMITTER READY BIT
+                      90     90 ;
+                      91     91 ;
+                      92     92 ;COLD BOOT LOADER CONSOLE I/O INTERFACE ROUTINES
+                      93     93 ;
+                      94     94 ;
+                      95     95 ;       CONSOLE  OUTPUT ROUTINE
+                      96     96 ;
+fe1e                  97     97 CO:
+fe1e  db 10           98     98         IN      CCTRL
+fe20  e6 02           99     99         ANI     CTRDY
+fe22  ca 07 10       100    100         JZ      CO-OFFSET
+fe25  79             101    101         MOV     A,C
+fe26  d3 11          102    102         OUT     CDATA
+fe28  c9             103    103         RET
+                     104    104 ;
+                     105    105 ;       BYTE PRINT CONVERSION ROUTINE
+                     106    106 ;
+fe29                 107    107 BYTEO:
+fe29  f5             108    108         PUSH    PSW
+fe2a  cd 22 10       109    109         CALL    BYTO1-OFFSET
+fe2d  4f             110    110         MOV     C,A
+fe2e  cd 07 10       111    111         CALL    CO-OFFSET
+fe31  f1             112    112         POP     PSW
+fe32  cd 26 10       113    113         CALL    BYTO2-OFFSET
+fe35  4f             114    114         MOV     C,A
+fe36  c3 07 10       115    115         JMP     CO-OFFSET
+                     116    116 ;
+                     117    117 ;
+                     118    118 ;
+fe39                 119    119 BYTO1:
+fe39  0f             120    120         RRC
+fe3a  0f             121    121         RRC
+fe3b  0f             122    122         RRC
+fe3c  0f             123    123         RRC
+fe3d                 124    124 BYTO2:
+fe3d  e6 0f          125    125         ANI     0FH
+fe3f  fe 0a          126    126         CPI     0AH
+fe41  fa 2f 10       127    127         JM      BYTO3-OFFSET
+fe44  c6 07          128    128         ADI     7
+fe46                 129    129 BYTO3:
+fe46  c6 30          130    130         ADI     30H
+fe48  c9             131    131         RET
+                     132    132 ;
+                     133    133 ;       MESSAGE PRINTING ROUTINE
+                     134    134 ;
+fe49                 135    135 MSG:
+fe49  f5             136    136         PUSH    PSW             ;FOLLOWING OUTPUTS MESSAGES
+fe4a  c5             137    137         PUSH    B               ;  TO CONSOLE
+fe4b  46             138    138         MOV     B,M
+fe4c  23             139    139         INX     H
+fe4d                 140    140 MSGA:
+fe4d  4e             141    141         MOV     C,M
+fe4e  cd 07 10       142    142         CALL    CO-OFFSET
+fe51  23             143    143         INX     H
+fe52  05             144    144         DCR     B
+fe53  c2 36 10       145    145         JNZ     MSGA-OFFSET
+fe56  c1             146    146         POP     B
+fe57  f1             147    147         POP     PSW
+fe58  c9             148    148         RET
+                     149    149 ;
+                     150    150 ;
+                     151    151 ;INITIALIZE
+                     152    152 ;
+fe59                 153    153 INIT:
+fe59  21 ff 0f       154    154         LXI     H,00FFFH        ;DELAY SI/O INIT FOR
+                     155    155                                 ; MESSAGE IN PROGRESS
+fe5c                 156    156 LOOP:
+fe5c  2b             157    157         DCX     H
+fe5d  7c             158    158         MOV     A,H
+fe5e  b5             159    159         ORA     L
+fe5f  c2 45 10       160    160         JNZ     LOOP-OFFSET
+fe62  3e 03          161    161         MVI     A,003H          ;INITIALIZE SI/O WITH RESET
+fe64  d3 10          162    162         OUT     CCTRL
+fe66  3e 11          163    163         MVI     A,011H          ;INITIALIZE SIO WITH 16X,8 BITS, NO PAR
+                     164    164                                 ;2 STOP BITS
+fe68  d3 10          165    165         OUT     CCTRL
+                     166    166 ;
+                     167    167 ;
+                     168    168 ;START OF COLD BOOT LOADER CODE
+                     169    169 ;
+fe6a                 170    170 START:
+fe6a  21 c5 10       171    171         LXI     H,CBMSG-OFFSET  ;OUTPUT "CP/M COLD BOOT" TO THE CONSOLE
+fe6d  cd 32 10       172    172         CALL    MSG-OFFSET
+fe70  3e f2          173    173         MVI     A,0F2H          ;SELECT DISK A: AT SINGLE DENSITY
+fe72  d3 fc          174    174         OUT     DSEL
+fe74  3e d0          175    175         MVI     A,0D0H          ;CLEAR ANY PENDING COMMAND
+fe76  d3 f8          176    176         OUT     DCOM
+fe78  00             177    177         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
+fe79  00             178    178         NOP
+fe7a  00             179    179         NOP
+fe7b  00             180    180         NOP
+fe7c                 181    181 HOME:
+fe7c  db f8          182    182         IN      DSTAT           ;GET STATUS
+fe7e  0f             183    183         RRC
+fe7f  da 65 10       184    184         JC      HOME-OFFSET     ;WAIT FOR NOT BUSY COMPLETION
+fe82  3e 02          185    185         MVI     A,002H          ;ISSUE RESTORE CMND (10 MSEC. STEP RATE)
+fe84  d3 f8          186    186         OUT     DCOM
+fe86  00             187    187         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
+fe87  00             188    188         NOP
+fe88  00             189    189         NOP
+fe89  00             190    190         NOP
+fe8a  db fc          191    191         IN      DWAIT           ;WAIT FOR COMPLETION
+fe8c  b7             192    192         ORA     A               ;SET FLAGS FOR ERROR ON "DRQ",NOT "INTRQ"
+fe8d  fa a8 10       193    193         JM      DRQER-OFFSET
+fe90  db f8          194    194         IN      DSTAT           ;GET DISK STATUS
+fe92  e6 04          195    195         ANI     004H            ;MASK FOR TRACK 00 STATUS BIT
+fe94  ca af 10       196    196         JZ      TK0ER-OFFSET
+fe97  af             197    197         XRA     A               ;ZERO ACCUMULATOR
+fe98  6f             198    198         MOV     L,A             ;SETUP MEMORY LOAD ADDRESS 0000H
+fe99  67             199    199         MOV     H,A
+fe9a  3c             200    200         INR     A               ;SETUP FOR SECTOR 01
+fe9b  d3 fa          201    201         OUT     DSEC
+fe9d  3e 8c          202    202         MVI     A,RDCMD         ;SETUP READ COMMAND
+fe9f  d3 f8          203    203         OUT     DCOM
+fea1  00             204    204         NOP                     ;ALLOW TIME FOR COMMAND SETTLING
+fea2  00             205    205         NOP
+fea3  00             206    206         NOP
+fea4  00             207    207         NOP
+fea5                 208    208 RLOOP:
+fea5  db fc          209    209         IN      DWAIT           ;WAIT FOR DISK CONTROLLER
+fea7  b7             210    210         ORA     A               ;SET FLAGS
+fea8  f2 9b 10       211    211         JP      RDONE-OFFSET    ;ARE WE DONE YET
+feab  db fb          212    212         IN      DDATA           ;GET DATA FROM DISK
+fead  77             213    213         MOV     M,A             ;MOVE IT INTO MEMORY
+feae  23             214    214         INX     H               ;INCREMENT MEMORY POINTER
+feaf  c3 8e 10       215    215         JMP     RLOOP-OFFSET    ;GO GET NEXT BYTE
+feb2                 216    216 RDONE:
+feb2  db f8          217    217         IN      DSTAT           ;GET DISK READ STATUS
+feb4  b7             218    218         ORA     A               ;CHECK FOR ERRORS
+feb5  ca 7d 00       219    219         JZ      SBOOT           ;NO ERRORS?
+                     220    220                                 ;THEN GO BOOT SINGLE DENSITY CP/M
+feb8  f5             221    221         PUSH    PSW             ;OOPS...GOT AN ERROR,SAVE STATUS
+feb9  21 d6 10       222    222         LXI     H,LEMSG-OFFSET  ;OUTPUT "BOOT LOAD ERROR=" TO CONSOLE
+febc  c3 b3 10       223    223         JMP     LERR-OFFSET
+febf  f5             224    224 DRQER:  PUSH    PSW             ;SAVE ERROR STATUS
+fec0  21 e9 10       225    225         LXI     H,RQMSG-OFFSET  ;OUTPUT "COMMAND COMPLETION ERROR=" TO CONSOLE
+fec3  c3 b3 10       226    226         JMP     LERR-OFFSET
+fec6  f5             227    227 TK0ER:  PUSH    PSW             ;SAVE ERROR STATUS
+fec7  21 05 11       228    228         LXI     H,REMSG-OFFSET  ;OUTPUT "RESTORE ERROR=" TO CONSOLE
+feca  cd 32 10       229    229 LERR:   CALL    MSG-OFFSET
+fecd  f1             230    230         POP     PSW             ;GET ERROR STATUS BACK
+fece  cd 12 10       231    231         CALL    BYTEO-OFFSET    ;INDICATE ERROR AND DO CRLF
+fed1  0e 0a          232    232         MVI     C,0AH
+fed3  cd 07 10       233    233         CALL    CO-OFFSET
+fed6  0e 0d          234    234         MVI     C,0DH
+fed8  cd 07 10       235    235         CALL    CO-OFFSET
+                     236    236 ;
+fedb                 237    237 HERE:
+                     238    238 ;       JMP     START           ;GO TRY BOOTING AGAIN
+fedb  76             239    239         HLT                     ;OR HALT SYSTEM
+                     240    240 ;
+                     241    241 ;
+                     242    242 ;COLD BOOT ROUTINE MESSAGES
+                     243    243 ;
+                     244    244 ;
+fedc  10 43 50 2f    245    245 CBMSG:  DB      16,'CP/M COLD BOOT',0AH,0DH
+fee0  4d 20 43 4f    245    246
+fee4  4c 44 20 42    245    247
+fee8  4f 4f 54 0a    245    248
+feec  0d             245    249
+                     246    250 ;
+feed  12 0d 0a 42    247    251 LEMSG:  DB      18,0DH,0AH,'BOOT LOAD ERROR='
+fef1  4f 4f 54 20    247    252
+fef5  4c 4f 41 44    247    253
+fef9  20 45 52 52    247    254
+fefd  4f 52 3d       247    255
+                     248    256 ;
+ff00  1b 0d 0a 43    249    257 RQMSG:  DB      27,0DH,0AH,'COMMAND COMPLETION ERROR='
+ff04  4f 4d 4d 41    249    258
+ff08  4e 44 20 43    249    259
+ff0c  4f 4d 50 4c    249    260
+ff10  45 54 49 4f    249    261
+ff14  4e 20 45 52    249    262
+ff18  52 4f 52 3d    249    263
+                     250    264 ;
+ff1c  10 0d 0a 52    251    265 REMSG:  DB      16,0DH,0AH,'RESTORE ERROR='
+ff20  45 53 54 4f    251    266
+ff24  52 45 20 45    251    267
+ff28  52 52 4f 52    251    268
+ff2c  3d             251    269
+                     252    270 ;
+ff2d                 253    271         DS      64      ;SETUP STORAGE FOR A RAM BASED STACK
+ff6d  =              254    272 STACK   EQU     $
+                     255    273 ;
+ff6d                 256    274         END
+
+Symbol table
+
+BYTEO  fe29    BYTO1  fe39    BYTO2  fe3d    BYTO3  fe46    CBMSG  fedc 
+CCTRL  0010    CDATA  0011    CO     fe1e    CRRDY  0001*   CTRDY  0002 
+DCOM   00f8    DDATA  00fb    DRQER  febf    DSEC   00fa    DSEL   00fc 
+DSTAT  00f8    DTRK   00f9*   DWAIT  00fc    HERE   fedb*   HOME   fe7c 
+INIT   fe59    LEMSG  feed    LERR   feca    LOOP   fe5c    MOVE   fe0a 
+MSG    fe49    MSGA   fe4d    OFFSET ee17    RCODE  fe17    RDCMD  008c 
+RDONE  feb2    REMSG  ff1c    RLOOP  fea5    RQMSG  ff00    RUNLOC 1000 
+SBOOT  007d    STACK  ff6d    START  fe6a*   TK0ER  fec6    

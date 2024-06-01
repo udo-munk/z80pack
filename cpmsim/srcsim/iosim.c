@@ -13,7 +13,7 @@
  * 28-SEP-1987 Development on TARGON/35 with AT&T Unix System V.3
  * 19-MAY-1989 Additions for CP/M 3.0 and MP/M
  * 23-DEC-1990 Ported to COHERENT 3.0
- * 10-JUN-1992 Some optimisation done
+ * 10-JUN-1992 Some optimization done
  * 25-JUN-1992 Flush output of stdout only at every OUT to port 0
  * 25-JUN-1992 Comments in english and ported to COHERENT 4.0
  * 05-OCT-2006 modified to compile on modern POSIX OS's
@@ -57,6 +57,7 @@
  * 30-MAR-2019 added two more 4MB HD's
  * 08-OCT-2019 (Mike Douglas) added OUT 161 trap to simbdos.c for host file I/O
  * 24-OCT-2019 move RTC to I/O module for usage by any machine
+ * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
 /*
@@ -85,7 +86,7 @@
  *
  *	17 - FDC sector high
  *
- *	20 - MMU initialisation
+ *	20 - MMU initialization
  *	21 - MMU bank select
  *	22 - MMU select segment size (in pages a 256 bytes)
  *	23 - MMU write protect/unprotect common memory segment
@@ -131,10 +132,10 @@
 #include "sim.h"
 #include "simglb.h"
 #include "simbdos.h"
-#include "memory.h"
+#include "memsim.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-#include "../../iodevices/rtc.h"
+#include "rtc.h"
 
 #define BUFSIZE 256		/* max line length of command buffer */
 #define MAX_BUSY_COUNT 10	/* max counter to detect I/O busy waiting
@@ -211,25 +212,23 @@ struct dskdef disks[16] = {
 	{ "driveb.dsk", &driveb, 77, 26 },
 	{ "drivec.dsk", &drivec, 77, 26 },
 	{ "drived.dsk", &drived, 77, 26 },
-	{ "drivee.dsk", &drivee, -1, -1 },
-	{ "drivef.dsk", &drivef, -1, -1 },
-	{ "driveg.dsk", &driveg, -1, -1 },
-	{ "driveh.dsk", &driveh, -1, -1 },
+	{ "drivee.dsk", &drivee,  0,  0 },
+	{ "drivef.dsk", &drivef,  0,  0 },
+	{ "driveg.dsk", &driveg,  0,  0 },
+	{ "driveh.dsk", &driveh,  0,  0 },
 	{ "drivei.dsk", &drivei, 255, 128 },
 	{ "drivej.dsk", &drivej, 255, 128 },
 	{ "drivek.dsk", &drivek, 255, 128 },
 	{ "drivel.dsk", &drivel, 255, 128 },
-	{ "drivem.dsk", &drivem, -1, -1 },
-	{ "driven.dsk", &driven, -1, -1 },
-	{ "driveo.dsk", &driveo, -1, -1 },
+	{ "drivem.dsk", &drivem,  0,  0 },
+	{ "driven.dsk", &driven,  0,  0 },
+	{ "driveo.dsk", &driveo,  0,  0 },
 	{ "drivep.dsk", &drivep, 256, 16384 }
 };
 
 /*
  *	Forward declaration of the I/O handlers for all used ports
  */
-static BYTE io_trap_in(void);
-static void io_trap_out(BYTE);
 static BYTE cond_in(void), cons_in(void);
 static void cond_out(BYTE), cons_out(BYTE);
 static BYTE prtd_in(void), prts_in(void);
@@ -292,548 +291,158 @@ static void int_io(int);
  *	This array contains function pointers for every
  *	input port.
  */
-static BYTE (*port_in[256]) (void) = {
-	cons_in,		/* port 0 */
-	cond_in,		/* port 1 */
-	prts_in,		/* port 2 */
-	prtd_in,		/* port 3 */
-	auxs_in,		/* port 4 */
-	auxd_in,		/* port 5 */
-	io_trap_in,		/* port 6 */
-	io_trap_in,		/* port 7 */
-	io_trap_in,		/* port 8 */
-	io_trap_in,		/* port 9 */
-	fdcd_in,		/* port 10 */
-	fdct_in,		/* port 11 */
-	fdcs_in,		/* port 12 */
-	fdco_in,		/* port 13 */
-	fdcx_in,		/* port 14 */
-	dmal_in,		/* port 15 */
-	dmah_in,		/* port 16 */
-	fdcsh_in,		/* port 17 */
-	io_trap_in,		/* port 18 */
-	io_trap_in,		/* port 19 */
-	mmui_in,		/* port 20 */
-	mmus_in,		/* port 21 */
-	mmuc_in,		/* port 22 */
-	mmup_in,		/* port 23 */
-	io_trap_in,		/* port 24 */
-	clkc_in,		/* port 25 */
-	clkd_in,		/* port 26 */
-	time_in,		/* port 27 */
-	delay_in,		/* port 28 */
-	io_trap_in,		/* port 29 */
-	speedl_in,		/* port 30 */
-	speedh_in,		/* port 31 */
-	io_trap_in,		/* port 32 */
-	io_trap_in,		/* port 33 */
-	io_trap_in,		/* port 34 */
-	io_trap_in,		/* port 35 */
-	io_trap_in,		/* port 36 */
-	io_trap_in,		/* port 37 */
-	io_trap_in,		/* port 38 */
-	io_trap_in,		/* port 39 */
-	cons1_in,		/* port 40 */
-	cond1_in,		/* port 41 */
-	cons2_in,		/* port 42 */
-	cond2_in,		/* port 43 */
-	cons3_in,		/* port 44 */
-	cond3_in,		/* port 45 */
-	cons4_in,		/* port 46 */
-	cond4_in,		/* port 47 */
-	io_trap_in,		/* port 48 */
-	io_trap_in,		/* port 49 */
-	nets1_in,		/* port 50 */
-	netd1_in,		/* port 51 */
-	io_trap_in,		/* port 52 */
-	io_trap_in,		/* port 53 */
-	io_trap_in,		/* port 54 */
-	io_trap_in,		/* port	55 */
-	io_trap_in,		/* port	56 */
-	io_trap_in,		/* port	57 */
-	io_trap_in,		/* port	58 */
-	io_trap_in,		/* port	59 */
-	io_trap_in,		/* port	60 */
-	io_trap_in,		/* port	61 */
-	io_trap_in,		/* port	62 */
-	io_trap_in,		/* port	63 */
-	io_trap_in,		/* port	64 */
-	io_trap_in,		/* port	65 */
-	io_trap_in,		/* port	66 */
-	io_trap_in,		/* port	67 */
-	io_trap_in,		/* port	68 */
-	io_trap_in,		/* port	69 */
-	io_trap_in,		/* port	70 */
-	io_trap_in,		/* port	71 */
-	io_trap_in,		/* port	72 */
-	io_trap_in,		/* port	73 */
-	io_trap_in,		/* port	74 */
-	io_trap_in,		/* port	75 */
-	io_trap_in,		/* port	76 */
-	io_trap_in,		/* port	77 */
-	io_trap_in,		/* port	78 */
-	io_trap_in,		/* port	79 */
-	io_trap_in,		/* port	80 */
-	io_trap_in,		/* port	81 */
-	io_trap_in,		/* port	82 */
-	io_trap_in,		/* port	83 */
-	io_trap_in,		/* port	84 */
-	io_trap_in,		/* port	85 */
-	io_trap_in,		/* port	86 */
-	io_trap_in,		/* port	87 */
-	io_trap_in,		/* port	88 */
-	io_trap_in,		/* port	89 */
-	io_trap_in,		/* port	90 */
-	io_trap_in,		/* port	91 */
-	io_trap_in,		/* port	92 */
-	io_trap_in,		/* port	93 */
-	io_trap_in,		/* port	94 */
-	io_trap_in,		/* port	95 */
-	io_trap_in,		/* port	96 */
-	io_trap_in,		/* port	97 */
-	io_trap_in,		/* port	98 */
-	io_trap_in,		/* port	99 */
-	io_trap_in,		/* port	100 */
-	io_trap_in,		/* port 101 */
-	io_trap_in,		/* port	102 */
-	io_trap_in,		/* port	103 */
-	io_trap_in,		/* port	104 */
-	io_trap_in,		/* port	105 */
-	io_trap_in,		/* port	106 */
-	io_trap_in,		/* port	107 */
-	io_trap_in,		/* port	108 */
-	io_trap_in,		/* port	109 */
-	io_trap_in,		/* port	110 */
-	io_trap_in,		/* port	111 */
-	io_trap_in,		/* port	112 */
-	io_trap_in,		/* port	113 */
-	io_trap_in,		/* port	114 */
-	io_trap_in,		/* port	115 */
-	io_trap_in,		/* port	116 */
-	io_trap_in,		/* port	117 */
-	io_trap_in,		/* port	118 */
-	io_trap_in,		/* port	119 */
-	io_trap_in,		/* port	120 */
-	io_trap_in,		/* port	121 */
-	io_trap_in,		/* port	122 */
-	io_trap_in,		/* port	123 */
-	io_trap_in,		/* port	124 */
-	io_trap_in,		/* port	125 */
-	io_trap_in,		/* port	126 */
-	io_trap_in,		/* port	127 */
-	io_trap_in,		/* port	128 */
-	io_trap_in,		/* port	129 */
-	io_trap_in,		/* port	130 */
-	io_trap_in,		/* port	131 */
-	io_trap_in,		/* port	132 */
-	io_trap_in,		/* port	133 */
-	io_trap_in,		/* port	134 */
-	io_trap_in,		/* port	135 */
-	io_trap_in,		/* port	136 */
-	io_trap_in,		/* port	137 */
-	io_trap_in,		/* port	138 */
-	io_trap_in,		/* port	139 */
-	io_trap_in,		/* port	140 */
-	io_trap_in,		/* port	141 */
-	io_trap_in,		/* port	142 */
-	io_trap_in,		/* port	143 */
-	io_trap_in,		/* port	144 */
-	io_trap_in,		/* port	145 */
-	io_trap_in,		/* port	146 */
-	io_trap_in,		/* port	147 */
-	io_trap_in,		/* port	148 */
-	io_trap_in,		/* port	149 */
-	io_trap_in,		/* port	150 */
-	io_trap_in,		/* port	151 */
-	io_trap_in,		/* port	152 */
-	io_trap_in,		/* port	153 */
-	io_trap_in,		/* port	154 */
-	io_trap_in,		/* port	155 */
-	io_trap_in,		/* port	156 */
-	io_trap_in,		/* port	157 */
-	io_trap_in,		/* port	158 */
-	io_trap_in,		/* port	159 */
-	hwctl_in,		/* port	160 */	/* virtual hardware control */
-	io_trap_in,		/* port	161 */
-	io_trap_in,		/* port	162 */
-	io_trap_in,		/* port	163 */
-	io_trap_in,		/* port	164 */
-	io_trap_in,		/* port	165 */
-	io_trap_in,		/* port	166 */
-	io_trap_in,		/* port	167 */
-	io_trap_in,		/* port	168 */
-	io_trap_in,		/* port	169 */
-	io_trap_in,		/* port	170 */
-	io_trap_in,		/* port	171 */
-	io_trap_in,		/* port	172 */
-	io_trap_in,		/* port	173 */
-	io_trap_in,		/* port	174 */
-	io_trap_in,		/* port	175 */
-	io_trap_in,		/* port	176 */
-	io_trap_in,		/* port	177 */
-	io_trap_in,		/* port	178 */
-	io_trap_in,		/* port	179 */
-	io_trap_in,		/* port	180 */
-	io_trap_in,		/* port	181 */
-	io_trap_in,		/* port	182 */
-	io_trap_in,		/* port	183 */
-	io_trap_in,		/* port	184 */
-	io_trap_in,		/* port	185 */
-	io_trap_in,		/* port	186 */
-	io_trap_in,		/* port	187 */
-	io_trap_in,		/* port	188 */
-	io_trap_in,		/* port	189 */
-	io_trap_in,		/* port	190 */
-	io_trap_in,		/* port	191 */
-	io_trap_in,		/* port	192 */
-	io_trap_in,		/* port	193 */
-	io_trap_in,		/* port	194 */
-	io_trap_in,		/* port	195 */
-	io_trap_in,		/* port	196 */
-	io_trap_in,		/* port	197 */
-	io_trap_in,		/* port	198 */
-	io_trap_in,		/* port	199 */
-	io_trap_in,		/* port	200 */
-	io_trap_in,		/* port 201 */
-	io_trap_in,		/* port	202 */
-	io_trap_in,		/* port	203 */
-	io_trap_in,		/* port	204 */
-	io_trap_in,		/* port	205 */
-	io_trap_in,		/* port	206 */
-	io_trap_in,		/* port	207 */
-	io_trap_in,		/* port	208 */
-	io_trap_in,		/* port	209 */
-	io_trap_in,		/* port	210 */
-	io_trap_in,		/* port	211 */
-	io_trap_in,		/* port	212 */
-	io_trap_in,		/* port	213 */
-	io_trap_in,		/* port	214 */
-	io_trap_in,		/* port	215 */
-	io_trap_in,		/* port	216 */
-	io_trap_in,		/* port	217 */
-	io_trap_in,		/* port	218 */
-	io_trap_in,		/* port	219 */
-	io_trap_in,		/* port	220 */
-	io_trap_in,		/* port	221 */
-	io_trap_in,		/* port	222 */
-	io_trap_in,		/* port	223 */
-	io_trap_in,		/* port	224 */
-	io_trap_in,		/* port	225 */
-	io_trap_in,		/* port	226 */
-	io_trap_in,		/* port	227 */
-	io_trap_in,		/* port	228 */
-	io_trap_in,		/* port	229 */
-	io_trap_in,		/* port	230 */
-	io_trap_in,		/* port	231 */
-	io_trap_in,		/* port	232 */
-	io_trap_in,		/* port	233 */
-	io_trap_in,		/* port	234 */
-	io_trap_in,		/* port	235 */
-	io_trap_in,		/* port	236 */
-	io_trap_in,		/* port	237 */
-	io_trap_in,		/* port	238 */
-	io_trap_in,		/* port	239 */
-	io_trap_in,		/* port	240 */
-	io_trap_in,		/* port	241 */
-	io_trap_in,		/* port	242 */
-	io_trap_in,		/* port	243 */
-	io_trap_in,		/* port	244 */
-	io_trap_in,		/* port	245 */
-	io_trap_in,		/* port	246 */
-	io_trap_in,		/* port	247 */
-	io_trap_in,		/* port	248 */
-	io_trap_in,		/* port	249 */
-	io_trap_in,		/* port	250 */
-	io_trap_in,		/* port	251 */
-	io_trap_in,		/* port	252 */
-	io_trap_in,		/* port	253 */
-	io_trap_in,		/* port	254 */
-	io_trap_in		/* port	255 */
+BYTE (*port_in[256])(void) = {
+	[  0] = cons_in,
+	[  1] = cond_in,
+	[  2] = prts_in,
+	[  3] = prtd_in,
+	[  4] = auxs_in,
+	[  5] = auxd_in,
+	[ 10] = fdcd_in,
+	[ 11] = fdct_in,
+	[ 12] = fdcs_in,
+	[ 13] = fdco_in,
+	[ 14] = fdcx_in,
+	[ 15] = dmal_in,
+	[ 16] = dmah_in,
+	[ 17] = fdcsh_in,
+	[ 20] = mmui_in,
+	[ 21] = mmus_in,
+	[ 22] = mmuc_in,
+	[ 23] = mmup_in,
+	[ 25] = clkc_in,
+	[ 26] = clkd_in,
+	[ 27] = time_in,
+	[ 28] = delay_in,
+	[ 30] = speedl_in,
+	[ 31] = speedh_in,
+	[ 40] = cons1_in,
+	[ 41] = cond1_in,
+	[ 42] = cons2_in,
+	[ 43] = cond2_in,
+	[ 44] = cons3_in,
+	[ 45] = cond3_in,
+	[ 46] = cons4_in,
+	[ 47] = cond4_in,
+	[ 50] = nets1_in,
+	[ 51] = netd1_in,
+	[160] = hwctl_in	/* virtual hardware control */
 };
 
 /*
  *	This array contains function pointers for every
  *	output port.
  */
-static void (*port_out[256]) (BYTE) = {
-	cons_out,		/* port 0 */
-	cond_out,		/* port 1 */
-	prts_out,		/* port 2 */
-	prtd_out,		/* port 3 */
-	auxs_out,		/* port 4 */
-	auxd_out,		/* port 5 */
-	io_trap_out,		/* port 6 */
-	io_trap_out,		/* port 7 */
-	io_trap_out,		/* port 8 */
-	io_trap_out,		/* port 9 */
-	fdcd_out,		/* port 10 */
-	fdct_out,		/* port 11 */
-	fdcs_out,		/* port 12 */
-	fdco_out,		/* port 13 */
-	fdcx_out,		/* port 14 */
-	dmal_out,		/* port 15 */
-	dmah_out,		/* port 16 */
-	fdcsh_out,		/* port 17 */
-	io_trap_out,		/* port 18 */
-	io_trap_out,		/* port 19 */
-	mmui_out,		/* port 20 */
-	mmus_out,		/* port 21 */
-	mmuc_out,		/* port 22 */
-	mmup_out,		/* port 23 */
-	io_trap_out,		/* port 24 */
-	clkc_out,		/* port 25 */
-	clkd_out,		/* port 26 */
-	time_out,		/* port 27 */
-	delay_out,		/* port 28 */
-	io_trap_out,		/* port 29 */
-	speedl_out,		/* port 30 */
-	speedh_out,		/* port 31 */
-	io_trap_out,		/* port 32 */
-	io_trap_out,		/* port 33 */
-	io_trap_out,		/* port 34 */
-	io_trap_out,		/* port 35 */
-	io_trap_out,		/* port 36 */
-	io_trap_out,		/* port 37 */
-	io_trap_out,		/* port 38 */
-	io_trap_out,		/* port 39 */
-	cons1_out,		/* port 40 */
-	cond1_out,		/* port 41 */
-	cons2_out,		/* port 42 */
-	cond2_out,		/* port 43 */
-	cons3_out,		/* port 44 */
-	cond3_out,		/* port 45 */
-	cons4_out,		/* port 46 */
-	cond4_out,		/* port 47 */
-	io_trap_out,		/* port 48 */
-	io_trap_out,		/* port 49 */
-	nets1_out,		/* port 50 */
-	netd1_out,		/* port 51 */
-	io_trap_out,		/* port 52 */
-	io_trap_out,		/* port 53 */
-	io_trap_out,		/* port 54 */
-	io_trap_out,		/* port	55 */
-	io_trap_out,		/* port	56 */
-	io_trap_out,		/* port	57 */
-	io_trap_out,		/* port	58 */
-	io_trap_out,		/* port	59 */
-	io_trap_out,		/* port	60 */
-	io_trap_out,		/* port	61 */
-	io_trap_out,		/* port	62 */
-	io_trap_out,		/* port	63 */
-	io_trap_out,		/* port	64 */
-	io_trap_out,		/* port	65 */
-	io_trap_out,		/* port	66 */
-	io_trap_out,		/* port	67 */
-	io_trap_out,		/* port	68 */
-	io_trap_out,		/* port	69 */
-	io_trap_out,		/* port	70 */
-	io_trap_out,		/* port	71 */
-	io_trap_out,		/* port	72 */
-	io_trap_out,		/* port	73 */
-	io_trap_out,		/* port	74 */
-	io_trap_out,		/* port	75 */
-	io_trap_out,		/* port	76 */
-	io_trap_out,		/* port	77 */
-	io_trap_out,		/* port	78 */
-	io_trap_out,		/* port	79 */
-	io_trap_out,		/* port	80 */
-	io_trap_out,		/* port	81 */
-	io_trap_out,		/* port	82 */
-	io_trap_out,		/* port	83 */
-	io_trap_out,		/* port	84 */
-	io_trap_out,		/* port	85 */
-	io_trap_out,		/* port	86 */
-	io_trap_out,		/* port	87 */
-	io_trap_out,		/* port	88 */
-	io_trap_out,		/* port	89 */
-	io_trap_out,		/* port	90 */
-	io_trap_out,		/* port	91 */
-	io_trap_out,		/* port	92 */
-	io_trap_out,		/* port	93 */
-	io_trap_out,		/* port	94 */
-	io_trap_out,		/* port	95 */
-	io_trap_out,		/* port	96 */
-	io_trap_out,		/* port	97 */
-	io_trap_out,		/* port	98 */
-	io_trap_out,		/* port	99 */
-	io_trap_out,		/* port	100 */
-	io_trap_out,		/* port 101 */
-	io_trap_out,		/* port	102 */
-	io_trap_out,		/* port	103 */
-	io_trap_out,		/* port	104 */
-	io_trap_out,		/* port	105 */
-	io_trap_out,		/* port	106 */
-	io_trap_out,		/* port	107 */
-	io_trap_out,		/* port	108 */
-	io_trap_out,		/* port	109 */
-	io_trap_out,		/* port	110 */
-	io_trap_out,		/* port	111 */
-	io_trap_out,		/* port	112 */
-	io_trap_out,		/* port	113 */
-	io_trap_out,		/* port	114 */
-	io_trap_out,		/* port	115 */
-	io_trap_out,		/* port	116 */
-	io_trap_out,		/* port	117 */
-	io_trap_out,		/* port	118 */
-	io_trap_out,		/* port	119 */
-	io_trap_out,		/* port	120 */
-	io_trap_out,		/* port	121 */
-	io_trap_out,		/* port	122 */
-	io_trap_out,		/* port	123 */
-	io_trap_out,		/* port	124 */
-	io_trap_out,		/* port	125 */
-	io_trap_out,		/* port	126 */
-	io_trap_out,		/* port	127 */
-	io_trap_out,		/* port	128 */
-	io_trap_out,		/* port	129 */
-	io_trap_out,		/* port	130 */
-	io_trap_out,		/* port	131 */
-	io_trap_out,		/* port	132 */
-	io_trap_out,		/* port	133 */
-	io_trap_out,		/* port	134 */
-	io_trap_out,		/* port	135 */
-	io_trap_out,		/* port	136 */
-	io_trap_out,		/* port	137 */
-	io_trap_out,		/* port	138 */
-	io_trap_out,		/* port	139 */
-	io_trap_out,		/* port	140 */
-	io_trap_out,		/* port	141 */
-	io_trap_out,		/* port	142 */
-	io_trap_out,		/* port	143 */
-	io_trap_out,		/* port	144 */
-	io_trap_out,		/* port	145 */
-	io_trap_out,		/* port	146 */
-	io_trap_out,		/* port	147 */
-	io_trap_out,		/* port	148 */
-	io_trap_out,		/* port	149 */
-	io_trap_out,		/* port	150 */
-	io_trap_out,		/* port	151 */
-	io_trap_out,		/* port	152 */
-	io_trap_out,		/* port	153 */
-	io_trap_out,		/* port	154 */
-	io_trap_out,		/* port	155 */
-	io_trap_out,		/* port	156 */
-	io_trap_out,		/* port	157 */
-	io_trap_out,		/* port	158 */
-	io_trap_out,		/* port	159 */
-	hwctl_out,		/* port	160 */	/* virtual hardware control */
-	host_bdos_out,		/* port 161 */  /* host file I/O hook */
-	io_trap_out,		/* port	162 */
-	io_trap_out,		/* port	163 */
-	io_trap_out,		/* port	164 */
-	io_trap_out,		/* port	165 */
-	io_trap_out,		/* port	166 */
-	io_trap_out,		/* port	167 */
-	io_trap_out,		/* port	168 */
-	io_trap_out,		/* port	169 */
-	io_trap_out,		/* port	170 */
-	io_trap_out,		/* port	171 */
-	io_trap_out,		/* port	172 */
-	io_trap_out,		/* port	173 */
-	io_trap_out,		/* port	174 */
-	io_trap_out,		/* port	175 */
-	io_trap_out,		/* port	176 */
-	io_trap_out,		/* port	177 */
-	io_trap_out,		/* port	178 */
-	io_trap_out,		/* port	179 */
-	io_trap_out,		/* port	180 */
-	io_trap_out,		/* port	181 */
-	io_trap_out,		/* port	182 */
-	io_trap_out,		/* port	183 */
-	io_trap_out,		/* port	184 */
-	io_trap_out,		/* port	185 */
-	io_trap_out,		/* port	186 */
-	io_trap_out,		/* port	187 */
-	io_trap_out,		/* port	188 */
-	io_trap_out,		/* port	189 */
-	io_trap_out,		/* port	190 */
-	io_trap_out,		/* port	191 */
-	io_trap_out,		/* port	192 */
-	io_trap_out,		/* port	193 */
-	io_trap_out,		/* port	194 */
-	io_trap_out,		/* port	195 */
-	io_trap_out,		/* port	196 */
-	io_trap_out,		/* port	197 */
-	io_trap_out,		/* port	198 */
-	io_trap_out,		/* port	199 */
-	io_trap_out,		/* port	200 */
-	io_trap_out,		/* port 201 */
-	io_trap_out,		/* port	202 */
-	io_trap_out,		/* port	203 */
-	io_trap_out,		/* port	204 */
-	io_trap_out,		/* port	205 */
-	io_trap_out,		/* port	206 */
-	io_trap_out,		/* port	207 */
-	io_trap_out,		/* port	208 */
-	io_trap_out,		/* port	209 */
-	io_trap_out,		/* port	210 */
-	io_trap_out,		/* port	211 */
-	io_trap_out,		/* port	212 */
-	io_trap_out,		/* port	213 */
-	io_trap_out,		/* port	214 */
-	io_trap_out,		/* port	215 */
-	io_trap_out,		/* port	216 */
-	io_trap_out,		/* port	217 */
-	io_trap_out,		/* port	218 */
-	io_trap_out,		/* port	219 */
-	io_trap_out,		/* port	220 */
-	io_trap_out,		/* port	221 */
-	io_trap_out,		/* port	222 */
-	io_trap_out,		/* port	223 */
-	io_trap_out,		/* port	224 */
-	io_trap_out,		/* port	225 */
-	io_trap_out,		/* port	226 */
-	io_trap_out,		/* port	227 */
-	io_trap_out,		/* port	228 */
-	io_trap_out,		/* port	229 */
-	io_trap_out,		/* port	230 */
-	io_trap_out,		/* port	231 */
-	io_trap_out,		/* port	232 */
-	io_trap_out,		/* port	233 */
-	io_trap_out,		/* port	234 */
-	io_trap_out,		/* port	235 */
-	io_trap_out,		/* port	236 */
-	io_trap_out,		/* port	237 */
-	io_trap_out,		/* port	238 */
-	io_trap_out,		/* port	239 */
-	io_trap_out,		/* port	240 */
-	io_trap_out,		/* port	241 */
-	io_trap_out,		/* port	242 */
-	io_trap_out,		/* port	243 */
-	io_trap_out,		/* port	244 */
-	io_trap_out,		/* port	245 */
-	io_trap_out,		/* port	246 */
-	io_trap_out,		/* port	247 */
-	io_trap_out,		/* port	248 */
-	io_trap_out,		/* port	249 */
-	io_trap_out,		/* port	250 */
-	io_trap_out,		/* port	251 */
-	io_trap_out,		/* port	252 */
-	io_trap_out,		/* port	253 */
-	io_trap_out,		/* port	254 */
-	io_trap_out		/* port	255 */
+void (*port_out[256])(BYTE) = {
+	[  0] = cons_out,
+	[  1] = cond_out,
+	[  2] = prts_out,
+	[  3] = prtd_out,
+	[  4] = auxs_out,
+	[  5] = auxd_out,
+	[ 10] = fdcd_out,
+	[ 11] = fdct_out,
+	[ 12] = fdcs_out,
+	[ 13] = fdco_out,
+	[ 14] = fdcx_out,
+	[ 15] = dmal_out,
+	[ 16] = dmah_out,
+	[ 17] = fdcsh_out,
+	[ 20] = mmui_out,
+	[ 21] = mmus_out,
+	[ 22] = mmuc_out,
+	[ 23] = mmup_out,
+	[ 25] = clkc_out,
+	[ 26] = clkd_out,
+	[ 27] = time_out,
+	[ 28] = delay_out,
+	[ 30] = speedl_out,
+	[ 31] = speedh_out,
+	[ 40] = cons1_out,
+	[ 41] = cond1_out,
+	[ 42] = cons2_out,
+	[ 43] = cond2_out,
+	[ 44] = cons3_out,
+	[ 45] = cond3_out,
+	[ 46] = cons4_out,
+	[ 47] = cond4_out,
+	[ 50] = nets1_out,
+	[ 51] = netd1_out,
+	[160] = hwctl_out,	/* virtual hardware control */
+	[161] = host_bdos_out	/* host file I/O hook */
 };
 
 /*
- *	This function initialises the I/O handlers:
- *	1. Open the files which emulate the disk drives.
+ *	This function initializes the I/O handlers:
+ *	1. Creates the named pipes under /tmp/.z80pack, if they don't
+ *	   exist.
+ *	2. Fork the process for receiving from the auxiliary serial port.
+ *	3. Open the named pipes "auxin" and "auxout" for simulation
+ *	   of the auxiliary serial port.
+ *	4. Initialize unused ports to trap handlers.
+ *	5. Open the files which emulate the disk drives.
  *	   Errors for opening one of the drives results
  *	   in a NULL pointer for fd in the dskdef structure,
  *	   so that this drive can't be used.
- *	2. Creates the named pipes under /tmp/.z80pack, if they don't
- *	   exist.
- *	3. Fork the process for receiving from the auxiliary serial port.
- *	4. Open the named pipes "auxin" and "auxout" for simulation
- *	   of the auxiliary serial port.
- *	5. Prepare TCP/IP sockets for serial port simulation
+ *	6. Prepare TCP/IP sockets for serial port simulation
  */
 void init_io(void)
 {
+	extern BYTE io_trap_in(void);
+	extern void io_trap_out(BYTE);
+
 	register int i;
 	struct stat sbuf;
 #if defined(NETWORKING) && defined(TCPASYNC)
 	static struct sigaction newact;
 #endif
+
+#ifdef PIPES
+	/* check if /tmp/.z80pack exists */
+	if (stat("/tmp/.z80pack", &sbuf) != 0)
+		mkdir("/tmp/.z80pack", 0777);	/* no, create it */
+	/* and then the pipes */
+	if (stat("/tmp/.z80pack/cpmsim.auxin", &sbuf) != 0)
+		mkfifo("/tmp/.z80pack/cpmsim.auxin", 0666);
+	if (stat("/tmp/.z80pack/cpmsim.auxout", &sbuf) != 0)
+		mkfifo("/tmp/.z80pack/cpmsim.auxout", 0666);
+
+	pid_rec = fork();
+	switch (pid_rec) {
+	case -1:
+		LOGE(TAG, "can't fork");
+		exit(EXIT_FAILURE);
+		break;
+	case 0:
+		if (access("./srctools/cpmrecv", X_OK) == 0)
+			execlp("./srctools/cpmrecv", "cpmrecv", "auxiliaryout.txt",
+			       (char *) NULL);
+		/* should be in path somewhere */
+		else
+			execlp("cpmrecv", "cpmrecv", "auxiliaryout.txt",
+			       (char *) NULL);
+		/* if not cry and die */
+		LOGE(TAG, "can't exec cpmrecv process, compile/install the tools dude");
+		kill(0, SIGQUIT);
+		exit(EXIT_FAILURE);
+		break;
+	}
+	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NONBLOCK)) == -1) {
+		LOGE(TAG, "can't open pipe auxin");
+		exit(EXIT_FAILURE);
+	}
+	if ((auxout = open("/tmp/.z80pack/cpmsim.auxout", O_WRONLY)) == -1) {
+		LOGE(TAG, "can't open pipe auxout");
+		exit(EXIT_FAILURE);
+	}
+#endif
+
+	for (i = 0; i <= 255; i++) {
+		if (port_in[i] == NULL)
+			port_in[i] = io_trap_in;
+		if (port_out[i] == NULL)
+			port_out[i] = io_trap_out;
+	}
 
 	for (i = 0; i <= 15; i++) {
 
@@ -842,11 +451,11 @@ void init_io(void)
 			strcpy(fn, diskd);
 		} else {
 			/* if not first try ./disks */
-			if ((stat("./disks", &sbuf) == 0) && 
+			if ((stat("./disks", &sbuf) == 0) &&
 			    S_ISDIR(sbuf.st_mode)) {
 				strcpy(fn, "./disks");
-			/* nope, then DISKSDIR as set in Makefile */
 			} else {
+				/* nope, then DISKSDIR as set in Makefile */
 				strcpy(fn, DISKSDIR);
 			}
 		}
@@ -859,52 +468,13 @@ void init_io(void)
 				disks[i].fd = NULL;
 	}
 
-#ifdef PIPES
-	/* check if /tmp/.z80pack exists */
-	if (stat("/tmp/.z80pack", &sbuf) != 0)
-		mkdir("/tmp/.z80pack", 0777);	/* no, create it */
-	/* and then the pipes */
-	if (stat("/tmp/.z80pack/cpmsim.auxin", &sbuf) != 0)
-		mknod("/tmp/.z80pack/cpmsim.auxin", 0666 | S_IFIFO, 0);
-	if (stat("/tmp/.z80pack/cpmsim.auxout", &sbuf) != 0)
-		mknod("/tmp/.z80pack/cpmsim.auxout", 0666 | S_IFIFO, 0);
-
-	pid_rec = fork();
-	switch (pid_rec) {
-	case -1:
-		LOGE(TAG, "can't fork");
-		exit(1);
-	case 0:
-		/* . might not be in path, so check that first */
-		if (access("./receive", X_OK) == 0)
-			execlp("./receive", "receive", "auxiliaryout.txt",
-				(char *) NULL);
-		/* should be in path somewhere */
-		else
-			execlp("receive", "receive", "auxiliaryout.txt",
-				(char *) NULL);
-		/* if not cry and die */
-		LOGE(TAG, "can't exec receive process, compile/install the tools dude");
-		kill(0, SIGQUIT);
-		exit(1);
-	}
-	if ((auxin = open("/tmp/.z80pack/cpmsim.auxin", O_RDONLY | O_NDELAY)) == -1) {
-		LOGE(TAG, "can't open pipe auxin");
-		exit(1);
-	}
-	if ((auxout = open("/tmp/.z80pack/cpmsim.auxout", O_WRONLY)) == -1) {
-		LOGE(TAG, "can't open pipe auxout");
-		exit(1);
-	}
-#endif
-
 #ifdef NETWORKING
 	net_server_config();
 	net_client_config();
 
 #ifdef TCPASYNC
 	newact.sa_handler = int_io;
-	memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGIO, &newact, NULL);
 #endif
@@ -916,7 +486,7 @@ void init_io(void)
 
 #ifdef NETWORKING
 /*
- * initialise a server socket
+ * initialize a server socket
  */
 static void init_server_socket(int n)
 {
@@ -928,21 +498,21 @@ static void init_server_socket(int n)
 
 	if (ss_port[n] == 0)
 		return;
-	if ((ss[n] = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+	if ((ss[n] = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (setsockopt(ss[n], SOL_SOCKET, SO_REUSEADDR, (void *) &on,
-	    sizeof(on)) == -1) {
+		       sizeof(on)) == -1) {
 		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #ifdef TCPASYNC
 	fcntl(ss[n], F_SETOWN, getpid());
 	i = fcntl(ss[n], F_GETFL, 0);
-	if (fcntl(ss[n], F_SETFL, i | FASYNC) == -1) {
-		LOGE(TAG, "can't fcntl FASYNC on server socket");
-		exit(1);
+	if (fcntl(ss[n], F_SETFL, i | O_ASYNC) == -1) {
+		LOGE(TAG, "can't fcntl O_ASYNC on server socket");
+		exit(EXIT_FAILURE);
 	}
 #endif
 	memset((void *) &sin, 0, sizeof(sin));
@@ -951,11 +521,11 @@ static void init_server_socket(int n)
 	sin.sin_port = htons(ss_port[n]);
 	if (bind(ss[n], (struct sockaddr *) &sin, sizeof(sin)) == -1) {
 		LOGE(TAG, "can't bind server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (listen(ss[n], 0) == -1) {
 		LOGE(TAG, "can't listen on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -974,7 +544,7 @@ static void net_server_config(void)
 	strcat(&fn[0], "/net_server.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		LOG(TAG, "Server network configuration:\n");
+		LOG(TAG, "Server network configuration:\r\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
@@ -984,17 +554,17 @@ static void net_server_config(void)
 				LOGW(TAG, "console %d not supported", i);
 				continue;
 			}
-			while((*s != ' ') && (*s != '\t'))
+			while ((*s != ' ') && (*s != '\t'))
 				s++;
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_telnet[i - 1] = atoi(s);
-			while((*s != ' ') && (*s != '\t'))
+			while ((*s != ' ') && (*s != '\t'))
 				s++;
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			ss_port[i - 1] = atoi(s);
-			LOG(TAG, "console %d listening on port %d, telnet = %s\n",
+			LOG(TAG, "console %d listening on port %d, telnet = %s\r\n",
 			    i, ss_port[i - 1],
 			    ((ss_telnet[i - 1] > 0) ? "on" : "off"));
 		}
@@ -1016,23 +586,23 @@ static void net_client_config(void)
 	strcat(&fn[0], "/net_client.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		LOG(TAG, "Client network configuration:\n");
+		LOG(TAG, "Client network configuration:\r\n");
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '#'))
 				continue;
-			while((*s != ' ') && (*s != '\t'))
+			while ((*s != ' ') && (*s != '\t'))
 				s++;
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			d = &cs_host[0];
 			while ((*s != ' ') && (*s != '\t'))
 				*d++ = *s++;
 			*d = '\0';
-			while((*s == ' ') || (*s == '\t'))
+			while ((*s == ' ') || (*s == '\t'))
 				s++;
 			cs_port = atoi(s);
-			LOG(TAG, "Connecting to %s at port %d\n", cs_host,
+			LOG(TAG, "Connecting to %s at port %d\r\n", cs_host,
 			    cs_port);
 		}
 		fclose(fp);
@@ -1046,8 +616,8 @@ static void net_client_config(void)
  *	1. The files emulating the disk drives are closed.
  *	2. The file "printer.txt" emulating a printer is closed.
  *	3. The named pipes "auxin" and "auxout" are closed.
- *	4. All connected sockets are closed
- *	5. The receiving process for the aux serial port is stopped.
+ *	4. The receiving process for the aux serial port is stopped.
+ *	5. All connected sockets are closed
  */
 void exit_io(void)
 {
@@ -1080,7 +650,6 @@ void exit_io(void)
  */
 void reset_system(void)
 {
-	extern BYTE *wrk_ram;
 	register int i;
 
 	/* reset hardware */
@@ -1100,66 +669,9 @@ void reset_system(void)
 
 	/* reset CPU */
 	reset_cpu();
-	wrk_ram	= mem_base();
 
 	/* reboot */
 	boot(1);
-}
-
-/*
- *	This function is called for every IN opcode from the
- *	CPU emulation. It calls the handler for the port,
- *	from which input is wanted.
- */
-BYTE io_in(BYTE addrl, BYTE addrh)
-{
-	addrh = addrh;	/* to avoid compiler warning */
-
-	io_port = addrl;
-	io_data = (*port_in[addrl]) ();
-	return(io_data);
-}
-
-/*
- *	This function is called for every OUT opcode from the
- *	CPU emulation. It calls the handler for the port,
- *	to which output is wanted.
- */
-void io_out(BYTE addrl, BYTE addrh, BYTE data)
-{
-	addrh = addrh;	/* to avoid compiler warning */
-
-	io_port = addrl;
-	io_data = data;
-
-	busy_loop_cnt[0] = 0;
-
-	(*port_out[addrl]) (data);
-}
-
-/*
- *	I/O input trap handler
- */
-static BYTE io_trap_in(void)
-{
-	if (i_flag) {
-		cpu_error = IOTRAPIN;
-		cpu_state = STOPPED;
-	}
-	return((BYTE) 0xff);
-}
-
-/*
- *	I/O output trap handler
- */
-static void io_trap_out(BYTE data)
-{
-	data = data;	/* to avoid compiler warning */
-
-	if (i_flag) {
-		cpu_error = IOTRAPOUT;
-		cpu_state = STOPPED;
-	}
 }
 
 /*
@@ -1171,9 +683,9 @@ static BYTE cons_in(void)
 {
 	struct pollfd p[1];
 
-	if (++busy_loop_cnt[0] >= MAX_BUSY_COUNT) {
+	if (++busy_loop_cnt >= MAX_BUSY_COUNT) {
 		SLEEP_MS(1);
-		busy_loop_cnt[0] = 0;
+		busy_loop_cnt = 0;
 	}
 
 	p[0].fd = fileno(stdin);
@@ -1181,9 +693,9 @@ static BYTE cons_in(void)
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (p[0].revents & POLLIN)
-		return((BYTE) 0xff);
+		return ((BYTE) 0xff);
 	else
-		return((BYTE) 0x00);
+		return ((BYTE) 0x00);
 }
 
 /*
@@ -1204,7 +716,7 @@ static BYTE cons1_in(void)
 	int on = 1;
 
 	if (ss[0] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[0];
 	p[0].events = POLLIN;
@@ -1217,19 +729,19 @@ static BYTE cons1_in(void)
 
 		if (ssc[0] != 0) {
 			go_away = accept(ss[0],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss0_done;
 		}
 
-		if ((ssc[0] = accept(ss[0], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[0] = accept(ss[0], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[0] = 0;
 		}
 
 		if (setsockopt(ssc[0], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1247,7 +759,7 @@ ss0_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[0]);
 			ssc[0] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1255,7 +767,7 @@ ss0_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1276,7 +788,7 @@ static BYTE cons2_in(void)
 	int on = 1;
 
 	if (ss[1] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[1];
 	p[0].events = POLLIN;
@@ -1289,19 +801,19 @@ static BYTE cons2_in(void)
 
 		if (ssc[1] != 0) {
 			go_away = accept(ss[1],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss1_done;
 		}
 
-		if ((ssc[1] = accept(ss[1], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[1] = accept(ss[1], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[1] = 0;
 		}
 
 		if (setsockopt(ssc[1], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1319,7 +831,7 @@ ss1_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[1]);
 			ssc[1] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1327,7 +839,7 @@ ss1_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1348,7 +860,7 @@ static BYTE cons3_in(void)
 	int on = 1;
 
 	if (ss[2] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[2];
 	p[0].events = POLLIN;
@@ -1361,19 +873,19 @@ static BYTE cons3_in(void)
 
 		if (ssc[2] != 0) {
 			go_away = accept(ss[2],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss2_done;
 		}
 
-		if ((ssc[2] = accept(ss[2], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[2] = accept(ss[2], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[2] = 0;
 		}
 
 		if (setsockopt(ssc[2], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1391,7 +903,7 @@ ss2_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[2]);
 			ssc[2] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1399,7 +911,7 @@ ss2_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1420,7 +932,7 @@ static BYTE cons4_in(void)
 	int on = 1;
 
 	if (ss[3] == 0)
-		return(status);
+		return (status);
 
 	p[0].fd = ss[3];
 	p[0].events = POLLIN;
@@ -1433,19 +945,19 @@ static BYTE cons4_in(void)
 
 		if (ssc[3] != 0) {
 			go_away = accept(ss[3],
-					 (struct sockaddr *)&fsin, &alen);
+					 (struct sockaddr *) &fsin, &alen);
 			close(go_away);
 			goto ss3_done;
 		}
 
-		if ((ssc[3] = accept(ss[3], (struct sockaddr *)&fsin,
-		    &alen)) == -1) {
+		if ((ssc[3] = accept(ss[3], (struct sockaddr *) &fsin,
+				     &alen)) == -1) {
 			LOGW(TAG, "can't accept server socket");
 			ssc[3] = 0;
 		}
 
 		if (setsockopt(ssc[3], IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
+			       (void *) &on, sizeof(on)) == -1) {
 			LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 		}
 
@@ -1463,7 +975,7 @@ ss3_done:
 		if (p[0].revents & POLLHUP) {
 			close(ssc[3]);
 			ssc[3] = 0;
-			return(0);
+			return (0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1471,7 +983,7 @@ ss3_done:
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1483,32 +995,49 @@ static BYTE nets1_in(void)
 {
 	BYTE status = 0;
 #ifdef NETWORKING
-	struct sockaddr_in sin;
-	struct hostent *host;
+	struct addrinfo hints;
+	struct addrinfo *result, *rp;
 	struct pollfd p[1];
-	int on = 1;
+	int on = 1, s;
+	char service[6];
 
 	if ((cs == 0) && (cs_port != 0)) {
-		host = gethostbyname(&cs_host[0]);
-		if ((cs = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-			LOGE(TAG, "can't create client socket");
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_family = AF_INET;	/* Allow only IPv4 not IPv6 */
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = 0;
+		hints.ai_protocol = 0;		/* Any protocol */
+		snprintf(service, sizeof(service), "%d", cs_port);
+		if ((s = getaddrinfo(cs_host, service, &hints, &result)) != 0) {
+			LOGE(TAG, "getaddrinfo failed: %s", gai_strerror(s));
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
-		memset((void *) &sin, 0, sizeof(sin));
-		memcpy((void *) &sin.sin_addr, (void *) host->h_addr, host->h_length);
-		sin.sin_family = AF_INET;
-		sin.sin_port = htons(cs_port);
-		if (connect(cs, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
-			LOGE(TAG, "can't connect client socket");
+
+		for (rp = result; rp != NULL; rp = rp->ai_next) {
+			if ((cs = socket(rp->ai_family, rp->ai_socktype,
+					 rp->ai_protocol)) == -1)
+				continue;
+
+			if (connect(cs, rp->ai_addr, rp->ai_addrlen) != -1)
+				break;
+
+			close(cs);
+		}
+		freeaddrinfo(result);
+
+		if (rp == NULL) {
+			LOGE(TAG, "can't connect to host %s", cs_host);
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
+
 		if (setsockopt(cs, IPPROTO_TCP, TCP_NODELAY,
-		    (void *)&on, sizeof(on)) == -1) {
-			LOGW(TAG, "can't setsockopt TCP_NODELAY on client socket");
+			       (void *) &on, sizeof(on)) == -1) {
+			LOGW(TAG,
+			     "can't setsockopt TCP_NODELAY on client socket");
 		}
 	}
 
@@ -1520,7 +1049,7 @@ static BYTE nets1_in(void)
 		if (p[0].revents & POLLHUP) {
 			close(cs);
 			cs = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 		if (p[0].revents & POLLIN)
 			status |= 1;
@@ -1528,7 +1057,7 @@ static BYTE nets1_in(void)
 			status |= 2;
 	}
 #endif
-	return(status);
+	return (status);
 }
 
 /*
@@ -1537,7 +1066,7 @@ static BYTE nets1_in(void)
  */
 static void cons_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1546,7 +1075,7 @@ static void cons_out(BYTE data)
  */
 static void cons1_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1555,7 +1084,7 @@ static void cons1_out(BYTE data)
  */
 static void cons2_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1564,7 +1093,7 @@ static void cons2_out(BYTE data)
  */
 static void cons3_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1573,7 +1102,7 @@ static void cons3_out(BYTE data)
  */
 static void cons4_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1582,7 +1111,7 @@ static void cons4_out(BYTE data)
  */
 static void nets1_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1592,9 +1121,10 @@ static BYTE cond_in(void)
 {
 	char c;
 
-	busy_loop_cnt[0] = 0;
-	read(0, &c, 1);
-	return((BYTE) c);
+	busy_loop_cnt = 0;
+	if (read(fileno(stdin), &c, 1) != 1)
+		LOGE(TAG, "can't read console 0");
+	return ((BYTE) c);
 }
 
 /*
@@ -1610,16 +1140,17 @@ static BYTE cond1_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[0]);
 			ssc[0] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 1");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[0] && (c == '\r'))
-		read(ssc[0], &x, 1);
+		if (read(ssc[0], &x, 1) != 1)
+			LOGE(TAG, "can't read console 1");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -1630,7 +1161,7 @@ static BYTE cond1_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1646,16 +1177,17 @@ static BYTE cond2_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[1]);
 			ssc[1] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 2");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[1] && (c == '\r'))
-		read(ssc[1], &x, 1);
+		if (read(ssc[1], &x, 1) != 1)
+			LOGE(TAG, "can't read console 2");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -1666,7 +1198,7 @@ static BYTE cond2_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1682,16 +1214,17 @@ static BYTE cond3_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[2]);
 			ssc[2] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 3");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[2] && (c == '\r'))
-		read(ssc[2], &x, 1);
+		if (read(ssc[2], &x, 1) != 1)
+			LOGE(TAG, "can't read console 3");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -1702,7 +1235,7 @@ static BYTE cond3_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1718,16 +1251,17 @@ static BYTE cond4_in(void)
 		if ((errno == EAGAIN) || (errno == EINTR)) {
 			close(ssc[3]);
 			ssc[3] = 0;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		} else {
 			LOGE(TAG, "can't read console 4");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 	if (ss_telnet[3] && (c == '\r'))
-		read(ssc[3], &x, 1);
+		if (read(ssc[3], &x, 1) != 1)
+			LOGE(TAG, "can't read console 4");
 #ifdef SNETDEBUG
 	if (sdirection != 1) {
 		printf("\n<- ");
@@ -1738,7 +1272,7 @@ static BYTE cond4_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1753,7 +1287,7 @@ static BYTE netd1_in(void)
 		LOGE(TAG, "can't read client socket");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
-		return((BYTE) 0);
+		return ((BYTE) 0);
 	}
 #ifdef CNETDEBUG
 	if (cdirection != 1) {
@@ -1765,7 +1299,7 @@ static BYTE netd1_in(void)
 #else
 	c = 0;
 #endif
-	return((BYTE) c);
+	return ((BYTE) c);
 }
 
 /*
@@ -1927,7 +1461,7 @@ again:
  */
 static BYTE prts_in(void)
 {
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 }
 
 /*
@@ -1936,7 +1470,7 @@ static BYTE prts_in(void)
  */
 static void prts_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -1945,7 +1479,7 @@ static void prts_out(BYTE data)
  */
 static BYTE prtd_in(void)
 {
-	return((BYTE) 0x1a);	/* CP/M EOF */
+	return ((BYTE) 0x1a);	/* CP/M EOF */
 }
 
 /*
@@ -1954,8 +1488,15 @@ static BYTE prtd_in(void)
  */
 static void prtd_out(BYTE data)
 {
-	if (printer == 0)
-		printer = creat("printer.txt", 0664);
+	if (printer == 0) {
+		if ((printer = creat("printer.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create printer.txt");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			printer = 0;
+			return;
+		}
+	}
 
 	if (data != '\r') {
 again:
@@ -1963,7 +1504,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				LOGE(TAG, "can't write printer");
+				LOGE(TAG, "can't write to printer.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
@@ -1978,9 +1519,9 @@ again:
 static BYTE auxs_in(void)
 {
 #ifdef PIPES
-	return((BYTE) aux_in_eof);
+	return ((BYTE) aux_in_eof);
 #else
-	return((BYTE) 0xff);
+	return ((BYTE) 0xff);
 #endif
 }
 
@@ -1993,7 +1534,7 @@ static void auxs_out(BYTE data)
 #ifdef PIPES
 	aux_in_eof = data;
 #else
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 #endif
 }
 
@@ -2007,38 +1548,38 @@ static BYTE auxd_in(void)
 
 #ifdef PIPES
 	if (read(auxin, &c, 1) == 1)
-		return((BYTE) c);
+		return ((BYTE) c);
 	else {
 		aux_in_eof = 0xff;
-		return((BYTE) 0x1a);	/* CP/M EOF */
+		return ((BYTE) 0x1a);	/* CP/M EOF */
 	}
 #else
 	if (aux_in == 0) {
-		if ((aux_in = open("auxiliaryin.txt", O_RDONLY)) == -1){
+		if ((aux_in = open("auxiliaryin.txt", O_RDONLY)) == -1) {
 			LOGE(TAG, "can't open auxiliaryin.txt");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
-			return((BYTE) 0);
+			return ((BYTE) 0);
 		}
 	}
 
 	if (aux_in_lf) {
 		aux_in_lf = 0;
-		return((BYTE) '\n');
+		return ((BYTE) '\n');
 	}
 
 	if (read(aux_in, &c, 1) != 1) {
 		close(aux_in);
 		aux_in = 0;
-		return((BYTE) 0x1a);
+		return ((BYTE) 0x1a);
 	}
 
 	if (c == '\n') {
 		aux_in_lf = 1;
-		return((BYTE) '\r');
+		return ((BYTE) '\r');
 	}
 
-	return((BYTE) c);
+	return ((BYTE) c);
 #endif
 }
 
@@ -2053,7 +1594,8 @@ static void auxd_out(BYTE data)
 		return;
 
 	if (data != '\r')
-		write(auxout, (char *) &data, 1);
+		if (write(auxout, (char *) &data, 1) != 1)
+			LOGE(TAG, "can't write to auxout pipe");
 #else
 	if (data == 0)
 		return;
@@ -2074,7 +1616,8 @@ static void auxd_out(BYTE data)
 	}
 
 	if (data != '\r')
-		write(aux_out, (char *) &data, 1);
+		if (write(aux_out, (char *) &data, 1) != 1)
+			LOGE(TAG, "can't write to auxiliaryout.txt");
 #endif
 }
 
@@ -2084,7 +1627,7 @@ static void auxd_out(BYTE data)
  */
 static BYTE fdcd_in(void)
 {
-	return((BYTE) drive);
+	return ((BYTE) drive);
 }
 
 /*
@@ -2102,7 +1645,7 @@ static void fdcd_out(BYTE data)
  */
 static BYTE fdct_in(void)
 {
-	return((BYTE) track);
+	return ((BYTE) track);
 }
 
 /*
@@ -2120,7 +1663,7 @@ static void fdct_out(BYTE data)
  */
 static BYTE fdcs_in(void)
 {
-	return((BYTE) sector & 0xff);
+	return ((BYTE) sector & 0xff);
 }
 
 /*
@@ -2138,7 +1681,7 @@ static void fdcs_out(BYTE data)
  */
 static BYTE fdcsh_in(void)
 {
-	return((BYTE) (sector >> 8));
+	return ((BYTE) (sector >> 8));
 }
 
 /*
@@ -2156,7 +1699,7 @@ static void fdcsh_out(BYTE data)
  */
 static BYTE fdco_in(void)
 {
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 /*
@@ -2177,7 +1720,7 @@ static BYTE fdco_in(void)
 static void fdco_out(BYTE data)
 {
 	register int i;
-	unsigned long pos;
+	off_t pos;
 	static char buf[128];
 
 	if (disks[drive].fd == NULL) {
@@ -2192,7 +1735,7 @@ static void fdco_out(BYTE data)
 		status = 3;
 		return;
 	}
-	pos = (((long)track) * ((long)disks[drive].sectors) + sector - 1) << 7;
+	pos = (((off_t) track) * ((off_t) disks[drive].sectors) + sector - 1) << 7;
 	if (lseek(*disks[drive].fd, pos, SEEK_SET) == -1L) {
 		status = 4;
 		return;
@@ -2228,7 +1771,7 @@ static void fdco_out(BYTE data)
  */
 static BYTE fdcx_in(void)
 {
-	return((BYTE) status);
+	return ((BYTE) status);
 }
 
 /*
@@ -2237,7 +1780,7 @@ static BYTE fdcx_in(void)
  */
 static void fdcx_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -2246,7 +1789,7 @@ static void fdcx_out(BYTE data)
  */
 static BYTE dmal_in(void)
 {
-	return((BYTE) dmadl);
+	return ((BYTE) dmadl);
 }
 
 /*
@@ -2264,7 +1807,7 @@ static void dmal_out(BYTE data)
  */
 static BYTE dmah_in(void)
 {
-	return((BYTE) dmadh);
+	return ((BYTE) dmadh);
 }
 
 /*
@@ -2277,16 +1820,16 @@ static void dmah_out(BYTE data)
 }
 
 /*
- *	I/O handler for read MMU initialisation:
- *	return number of initialised MMU banks
+ *	I/O handler for read MMU initialization:
+ *	return number of initialized MMU banks
  */
 static BYTE mmui_in(void)
 {
-	return((BYTE) maxbnk);
+	return ((BYTE) maxbnk);
 }
 
 /*
- *	I/O handler for write MMU initialisation:
+ *	I/O handler for write MMU initialization:
  *	for the FIRST call the memory for the wanted number of banks
  *	is allocated and pointers to the memory is stored in the MMU array
  *
@@ -2297,7 +1840,7 @@ static void mmui_out(BYTE data)
 {
 	register int i;
 
-	/* do nothing if MMU initialised already */
+	/* do nothing if MMU initialized already */
 	if (memory[1] != NULL)
 		return;
 
@@ -2310,7 +1853,7 @@ static void mmui_out(BYTE data)
 	}
 
 	for (i = 1; i < data; i++) {
-		if ((memory[i] = malloc(segsize)) == NULL) {
+		if ((memory[i] = (BYTE *) malloc(segsize)) == NULL) {
 			LOGE(TAG, "can't allocate memory for bank %d", i);
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
@@ -2327,7 +1870,7 @@ static void mmui_out(BYTE data)
  */
 static BYTE mmus_in(void)
 {
-	return((BYTE) selbnk);
+	return ((BYTE) selbnk);
 }
 
 /*
@@ -2351,7 +1894,7 @@ static void mmus_out(BYTE data)
  */
 static BYTE mmuc_in(void)
 {
-	return((BYTE) (segsize >> 8));
+	return ((BYTE) (segsize >> 8));
 }
 
 /*
@@ -2375,7 +1918,7 @@ static void mmuc_out(BYTE data)
  */
 static BYTE mmup_in(void)
 {
-	return(wp_common);
+	return (wp_common);
 }
 
 /*
@@ -2398,7 +1941,7 @@ static void time_out(BYTE data)
 	if (data == 1) {
 		timer = 1;
 		newact.sa_handler = int_timer;
-		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+		sigemptyset(&newact.sa_mask);
 		newact.sa_flags = 0;
 		sigaction(SIGALRM, &newact, NULL);
 		tim.it_value.tv_sec = 0;
@@ -2409,7 +1952,7 @@ static void time_out(BYTE data)
 	} else {
 		timer = 0;
 		newact.sa_handler = SIG_IGN;
-		memset((void *) &newact.sa_mask, 0, sizeof(newact.sa_mask));
+		sigemptyset(&newact.sa_mask);
 		newact.sa_flags = 0;
 		sigaction(SIGALRM, &newact, NULL);
 		tim.it_value.tv_sec = 0;
@@ -2425,7 +1968,7 @@ static void time_out(BYTE data)
  */
 static BYTE time_in(void)
 {
-	return(timer);
+	return (timer);
 }
 
 /*
@@ -2447,18 +1990,25 @@ static void delay_out(BYTE data)
  */
 static BYTE delay_in(void)
 {
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 /*
  *	Port is locked until magic number 0xaa is received!
  *
  *	I/O handler for write hardware control after unlocking:
+ *
+ *	bit 4 = 1	switch CPU model to 8080
+ *	bit 5 = 1	switch CPU model to Z80
  *	bit 6 = 1	reset CPU, MMU and reboot
  *	bit 7 = 1	halt emulation via I/O
  */
 static void hwctl_out(BYTE data)
 {
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	extern void switch_cpu(int);
+#endif
+
 	/* if port is locked do nothing */
 	if (hwctl_lock && (data != 0xaa))
 		return;
@@ -2468,7 +2018,7 @@ static void hwctl_out(BYTE data)
 		hwctl_lock = 0;
 		return;
 	}
-	
+
 	/* process output to unlocked port */
 
 	if (data & 128) {	/* halt system */
@@ -2481,6 +2031,18 @@ static void hwctl_out(BYTE data)
 		reset_system();
 		return;
 	}
+
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+	if (data & 32) {	/* switch cpu model to Z80 */
+		switch_cpu(Z80);
+		return;
+	}
+
+	if (data & 16) {	/* switch cpu model to 8080 */
+		switch_cpu(I8080);
+		return;
+	}
+#endif
 }
 
 /*
@@ -2489,7 +2051,7 @@ static void hwctl_out(BYTE data)
  */
 static BYTE hwctl_in(void)
 {
-	return(hwctl_lock);
+	return (hwctl_lock);
 }
 
 /*
@@ -2505,7 +2067,7 @@ static void speedl_out(BYTE data)
  */
 static BYTE speedl_in(void)
 {
-	return(f_flag & 0xff);
+	return (f_flag & 0xff);
 }
 
 /*
@@ -2523,7 +2085,7 @@ static void speedh_out(BYTE data)
  */
 static BYTE speedh_in(void)
 {
-	return(f_flag  >> 8);
+	return (f_flag  >> 8);
 }
 
 /*
@@ -2531,7 +2093,7 @@ static BYTE speedh_in(void)
  */
 static void int_timer(int sig)
 {
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	int_int = 1;
 	int_data = 0xff;	/* RST 38H for IM 0, 0FFH for IM 2 */
@@ -2550,7 +2112,7 @@ static void int_io(int sig)
 	int go_away;
 	int on = 1;
 
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	for (i = 0; i < NUMSOC; i++) {
 		p[i].fd = ss[i];
@@ -2573,13 +2135,13 @@ static void int_io(int sig)
 			}
 
 			if ((ssc[i] = accept(ss[i], (struct sockaddr *) &fsin,
-			    &alen)) == -1) {
+					     &alen)) == -1) {
 				LOGW(TAG, "can't accept on server socket");
 				ssc[i] = 0;
 			}
 
 			if (setsockopt(ssc[i], IPPROTO_TCP, TCP_NODELAY,
-			    (void *) &on, sizeof(on)) == -1) {
+				       (void *) &on, sizeof(on)) == -1) {
 				LOGW(TAG, "can't setsockopt TCP_NODELAY on server socket");
 			}
 
@@ -2596,14 +2158,16 @@ static void int_io(int sig)
  */
 void telnet_negotiation(int fd)
 {
-	static char will_echo[3] = {255, 251, 1};
-	static char char_mode[3] = {255, 251, 3};
+	static unsigned char will_echo[3] = {255, 251, 1};
+	static unsigned char char_mode[3] = {255, 251, 3};
 	struct pollfd p[1];
 	BYTE c[3];
 
 	/* send the telnet options we need */
-	write(fd, &char_mode, 3);
-	write(fd, &will_echo, 3);
+	if (write(fd, &char_mode, 3) != 3)
+		LOGE(TAG, "can't send char_mode telnet option");
+	if (write(fd, &will_echo, 3) != 3)
+		LOGE(TAG, "can't send will_echo telnet option");
 
 	/* and reject all others offered */
 	p[0].fd = fd;
@@ -2618,15 +2182,17 @@ void telnet_negotiation(int fd)
 			break;
 
 		/* else read the option */
-		read(fd, &c, 3);
-		LOGD(TAG, "telnet: %d %d %d\r\n", c[0], c[1], c[2]);
+		if (read(fd, &c, 3) != 3)
+			LOGE(TAG, "can't read telnet option");
+		LOGD(TAG, "telnet: %d %d %d", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
 		if (c[1] == 251)	/* and reject other options */
 			c[1] = 254;
 		else if (c[1] == 253)
 			c[1] = 252;
-		write(fd, &c, 3);
+		if (write(fd, &c, 3) != 3)
+			LOGE(TAG, "can't write telnet option");
 	}
 }
 #endif

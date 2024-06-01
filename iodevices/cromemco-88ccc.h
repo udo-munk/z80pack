@@ -6,11 +6,16 @@
  * Copyright (C) 2018 by David McNaughton
  * 
  * History:
- * 14-AUG-18    1.0     Initial Release
- * 04-NOV-19		remove fake DMA bus request
+ * 14-AUG-2018	1.0	Initial Release
+ * 04-NOV-2019		remove fake DMA bus request
  */
+
+#ifndef CROMEMCO_88CCC_INC
+#define CROMEMCO_88CCC_INC
 
 extern void cromemco_88ccc_ctrl_a_out(BYTE);
 extern void cromemco_88ccc_ctrl_b_out(BYTE);
 extern void cromemco_88ccc_ctrl_c_out(BYTE);
 extern BYTE cromemco_88ccc_ctrl_a_in(void);
+
+#endif

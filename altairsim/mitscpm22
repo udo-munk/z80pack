@@ -1,7 +1,9 @@
 #!/bin/sh
 
+# boot from MITS FDC with external DBL boot ROM
+
 rm -f disks/mits_a.dsk disks/mits_b.dsk
-ln disks/library/mits-cpm22-56k.dsk disks/mits_a.dsk
+ln disks/library/mits-cpm22-burcon-56k.dsk disks/mits_a.dsk
 ln disks/library/mits-cpm-tools.dsk disks/mits_b.dsk
 
-./altairsim -x dbl.hex $*
+./altairsim -M 3 $*

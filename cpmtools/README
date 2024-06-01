@@ -1,0 +1,16 @@
+This directory contains various tools for CP/M running on a z80pack simulator.
+
+r.asm         Read a file from the host PC into the CP/M file system
+w.asm         Write a file from the CP/M file system to the host PC file system
+bye.asm       Shutdown z80pack systems via hardware control port
+reset.asm     Reset z80pack systems via hardware control port
+sw8080.asm    Switch to 8080 mode
+swz80.asm     Switch to Z80 mode
+
+The rest are CPU test tools by various authors modified for using the z80pack
+CPU switch feature.
+
+prelim.mac    Testing a Z80 CPU for basic functionality
+ex.mac        More advanced Z80 or 8080 CPU testing
+8080pre.mac   Testing a 8080 CPU for basic functionality
+test8080.asm  Testing a 8080 CPU

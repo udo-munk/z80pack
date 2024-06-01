@@ -1,18 +1,35 @@
-CC = gcc
+CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
+CWARNS= -Wall -Wextra -Wwrite-strings
+CFLAGS= -O $(CSTDS) $(CWARNS)
+LDFLAGS= -s
 
-CFLAGS= -O -s -Wall
+Z80ASMDIR = ../../z80asm
+Z80ASM = $(Z80ASMDIR)/z80asm
+Z80ASMFLAGS = -l -T -sn -p0
 
-all: boot.bin bios.bin putsys
-	@echo "done"
-
-boot.bin: boot.asm
-	z80asm -fb -l -sn boot.asm
-
-bios.bin: bios.asm
-	z80asm -fb -l -sn bios.asm
+all: putsys boot.bin bios.bin
 
 putsys: putsys.c
-	$(CC) $(CFLAGS) -o putsys putsys.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o putsys putsys.c
+
+boot.bin: boot.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) -fb $<
+
+bios.bin: bios.asm
+	$(Z80ASM) $(Z80ASMFLAGS) -fb $<
+
+$(Z80ASM): FORCE
+	$(MAKE) -C $(Z80ASMDIR)
+
+FORCE:
+
+install:
+
+uninstall:
 
 clean:
-	rm -f *.lis *.bin putsys putsys.exe
+	rm -f putsys boot.bin boot.lis bios.bin bios.lis
+
+distclean: clean
+
+.PHONY: all FORCE install uninstall clean distclean

@@ -25,6 +25,9 @@
  * 24-SEP-2019 restore and seek also affect step direction
  */
 
+#ifndef TARBELL_FDC_INC
+#define TARBELL_FDC_INC
+
 extern BYTE tarbell_stat_in(void), tarbell_track_in(void);
 extern BYTE tarbell_sec_in(void), tarbell_data_in(void);
 extern BYTE tarbell_wait_in(void);
@@ -32,3 +35,5 @@ extern void tarbell_cmd_out(BYTE), tarbell_track_out(BYTE);
 extern void tarbell_sec_out(BYTE), tarbell_data_out(BYTE);
 extern void tarbell_ext_out(BYTE);
 extern void tarbell_reset(void);
+
+#endif

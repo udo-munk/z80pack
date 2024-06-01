@@ -5,15 +5,16 @@
  *
  * Copyright (C) 2019-2021 by Udo Munk
  *
- * Emulation of a RTC to provide date and time informations.
+ * Emulation of a RTC to provide date and time information.
  * This doesn't emulate a specific RTC card or chip, in 1980
  * there was no standard yet for such things.
  *
  * History:
- * 24-OCT-19 moved out of the cpmsim machine
- * 30-JUN-21 clock read now returns time format instead of last command
+ * 24-OCT-2019 moved out of the cpmsim machine
+ * 30-JUN-2021 clock read now returns time format instead of last command
  */
 
+#include <stdint.h>
 #include <time.h>
 #include "sim.h"
 
@@ -52,7 +53,7 @@ static int get_date(struct tm *t)
 			val++;
 	}
 	val += t->tm_yday + 1;
-	return(val);
+	return (val);
 }
 
 /*
@@ -61,7 +62,7 @@ static int get_date(struct tm *t)
  */
 BYTE clkc_in(void)
 {
-	return(clkfmt);
+	return (clkfmt);
 }
 
 /*
@@ -79,7 +80,7 @@ void clkc_out(BYTE data)
 /*
  *	I/O handler for read clock data:
  *	dependent on the last clock command the following
- *	informations are returned from the system clock:
+ *	information is returned from the system clock:
  *		0 - seconds in BCD or decimal
  *		1 - minutes in BCD or decimal
  *		2 - hours in BCD or decimal
@@ -98,7 +99,7 @@ BYTE clkd_in(void)
 
 	time(&Time);
 	t = localtime(&Time);
-	switch(clkcmd) {
+	switch (clkcmd) {
 	case 0:			/* seconds */
 		if (clkfmt)
 			val = t->tm_sec;
@@ -145,7 +146,7 @@ BYTE clkd_in(void)
 		val = 0;
 		break;
 	}
-	return((BYTE) val);
+	return ((BYTE) val);
 }
 
 /*
@@ -155,5 +156,5 @@ BYTE clkd_in(void)
  */
 void clkd_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }

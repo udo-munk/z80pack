@@ -9,25 +9,25 @@
  * and 88-SIO Rev. 1 for tape I/O
  *
  * History:
- * 12-JUL-16 first version
- * 02-SEP-16 reopen tty at EOF from input redirection
- * 24-FEB-17 improved tty reopen
- * 24-MAR-17 added configuration
- * 27-MAR-17 added SIO 3 for tape connected to UNIX domain socket
- * 23-OCT-17 improved UNIX domain socket connections
- * 03-MAY-18 improved accuracy
- * 04-JUL-18 added baud rate to terminal SIO
- * 15-JUL-18 use logging
- * 24-NOV-19 configurable baud rate for tape SIO
- * 19-JUL-20 avoid problems with some third party terminal emulations
+ * 12-JUL-2016 first version
+ * 02-SEP-2016 reopen tty at EOF from input redirection
+ * 24-FEB-2017 improved tty reopen
+ * 24-MAR-2017 added configuration
+ * 27-MAR-2017 added SIO 3 for tape connected to UNIX domain socket
+ * 23-OCT-2017 improved UNIX domain socket connections
+ * 03-MAY-2018 improved accuracy
+ * 04-JUL-2018 added baud rate to terminal SIO
+ * 15-JUL-2018 use logging
+ * 24-NOV-2019 configurable baud rate for tape SIO
+ * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -39,7 +39,7 @@
 
 #define BAUDTIME 10000000
 
-extern int time_diff(struct timeval *, struct timeval *);
+extern uint64_t get_clock_us(void);
 
 static const char *TAG = "SIO";
 
@@ -49,12 +49,12 @@ int sio0_drop_nulls;
 int sio0_revision;
 int sio0_baud_rate = 115200;
 
-static struct timeval sio0_t1, sio0_t2;
+static uint64_t sio0_t1, sio0_t2;
 static BYTE sio0_stat;
 
 int sio3_baud_rate = 1200;
 
-static struct timeval sio3_t1, sio3_t2;
+static uint64_t sio3_t1, sio3_t2;
 static BYTE sio3_stat = 0x81;
 
 /*
@@ -78,11 +78,11 @@ BYTE altair_sio0_status_in(void)
 	else
 		sio0_stat = 0x81;
 
-	gettimeofday(&sio0_t2, NULL);
-	tdiff = time_diff(&sio0_t1, &sio0_t2);
+	sio0_t2 = get_clock_us();
+	tdiff = sio0_t2 - sio0_t1;
 	if (sio0_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio0_baud_rate))
-			return(sio0_stat);
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio0_baud_rate))
+			return (sio0_stat);
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
@@ -104,9 +104,9 @@ BYTE altair_sio0_status_in(void)
 	else
 		sio0_stat &= ~128;
 
-	gettimeofday(&sio0_t1, NULL);
+	sio0_t1 = get_clock_us();
 
-	return(sio0_stat);
+	return (sio0_stat);
 }
 
 /*
@@ -114,7 +114,7 @@ BYTE altair_sio0_status_in(void)
  */
 void altair_sio0_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -136,16 +136,17 @@ again:
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
+		if (freopen("/dev/tty", "r", stdin) == NULL)
+			LOGE(TAG, "can't reopen /dev/tty");
 		set_unix_terminal();
 		goto again;
 	}
 
-	gettimeofday(&sio0_t1, NULL);
+	sio0_t1 = get_clock_us();
 	if (sio0_revision == 0)
 		sio0_stat &= 0b11011111;
 	else
@@ -155,7 +156,7 @@ again:
 	if (sio0_upper_case)
 		data = toupper(data);
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*
@@ -184,7 +185,7 @@ again:
 		}
 	}
 
-	gettimeofday(&sio0_t1, NULL);
+	sio0_t1 = get_clock_us();
 	if (sio0_revision == 0)
 		sio0_stat &= 0b11111101;
 	else
@@ -213,18 +214,18 @@ BYTE altair_sio3_status_in(void)
 		/* accept a new connection */
 		if (p[0].revents) {
 			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
-			    NULL)) == -1) {
+						   NULL)) == -1) {
 				LOGW(TAG, "can't accept server socket");
 				ucons[0].ssc = 0;
 			}
 		}
 	}
 
-	gettimeofday(&sio3_t2, NULL);
-	tdiff = time_diff(&sio3_t1, &sio3_t2);
+	sio3_t2 = get_clock_us();
+	tdiff = sio3_t2 - sio3_t1;
 	if (sio3_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME/sio3_baud_rate))
-			return(sio3_stat);
+		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio3_baud_rate))
+			return (sio3_stat);
 
 	/* if socket is connected check for I/O */
 	if (ucons[0].ssc != 0) {
@@ -238,9 +239,9 @@ BYTE altair_sio3_status_in(void)
 			sio3_stat &= ~128;
 	}
 
-	gettimeofday(&sio3_t1, NULL);
+	sio3_t1 = get_clock_us();
 
-	return(sio3_stat);
+	return (sio3_stat);
 }
 
 /*
@@ -248,7 +249,7 @@ BYTE altair_sio3_status_in(void)
  */
 void altair_sio3_status_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -262,7 +263,7 @@ BYTE altair_sio3_data_in(void)
 
 	/* if not connected return last */
 	if (ucons[0].ssc == 0)
-		return(last);
+		return (last);
 
 	/* if no input waiting return last */
 	p[0].fd = ucons[0].ssc;
@@ -270,21 +271,21 @@ BYTE altair_sio3_data_in(void)
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(ucons[0].ssc, &data, 1) != 1) {
 		/* EOF, close socket and return last */
 		close(ucons[0].ssc);
 		ucons[0].ssc = 0;
-		return(last);
+		return (last);
 	}
 
-	gettimeofday(&sio3_t1, NULL);
+	sio3_t1 = get_clock_us();
 	sio3_stat |= 0b00000001;
 
 	/* process read data */
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*
@@ -319,6 +320,6 @@ again:
 		}
 	}
 
-	gettimeofday(&sio3_t1, NULL);
+	sio3_t1 = get_clock_us();
 	sio3_stat |= 0b10000000;
 }

@@ -291,7 +291,7 @@ SELDSK: LD	HL,0000H	;error return code
 	RET			;no, error
 ;	disk number is in the proper range
 ;	compute proper disk parameter header address
-SELFD:	OUT	(FDCD),A	;selekt disk drive
+SELFD:	OUT	(FDCD),A	;select disk drive
 	LD	L,A		;L=disk number 0,1,2,3
 	ADD	HL,HL		;*2
 	ADD	HL,HL		;*4

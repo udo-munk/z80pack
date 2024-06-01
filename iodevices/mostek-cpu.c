@@ -8,9 +8,10 @@
  * Emulation of the console I/O ports on the Mostek SDB-80 CPU board
  *
  * History:
- * 15-SEP-19 (Mike Douglas) created from altair-88-2sio.c
+ * 15-SEP-2019 (Mike Douglas) created from altair-88-2sio.c
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -21,7 +22,10 @@
 #include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
+#include "log.h"
 #include "unix_terminal.h"
+
+static const char *TAG = "console";
 
 /*
  * read status register
@@ -43,7 +47,7 @@ BYTE sio_status_in(void)
 	if (p[0].revents & POLLOUT)
 		status |= 0x80;
 
-	return(status);
+	return (status);
 }
 
 /*
@@ -51,7 +55,7 @@ BYTE sio_status_in(void)
  */
 void sio_control_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }
 
 /*
@@ -70,18 +74,19 @@ again:
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(last);
+		return (last);
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
+		if (freopen("/dev/tty", "r", stdin) == NULL)
+			LOGE(TAG, "can't reopen /dev/tty");
 		set_unix_terminal();
 		goto again;
 	}
 
 	/* process read data */
 	last = data;
-	return(data);
+	return (data);
 }
 
 /*
@@ -114,7 +119,7 @@ BYTE sio_handshake_in(void)
 	static BYTE handshake_data = 3;		/* DSR and RTS asserted */
 
 	handshake_data ^= 0x80;			/* toggle serial line each call */
-	return(handshake_data);
+	return (handshake_data);
 }
 
 /*
@@ -122,5 +127,5 @@ BYTE sio_handshake_in(void)
  */
 void sio_handshake_out(BYTE data)
 {
-	data = data; /* to avoid compiler warning */
+	UNUSED(data);
 }

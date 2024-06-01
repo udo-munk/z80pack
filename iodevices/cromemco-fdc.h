@@ -3,7 +3,8 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2021 by Udo Munk
+ * Copyright (C) 2014-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * Emulation of a Cromemco 4FDC/16FDC S100 board
  *
@@ -18,7 +19,7 @@
  * 02-FEB-2015 implemented DS/DD disk formats
  * 05-FEB-2015 implemented DS/SD disk formats
  * 06-FEB-2015 implemented write track for all formats
- * 12-FEB-2015 implemented motor control, so that a 16FDC is recogniced by CDOS
+ * 12-FEB-2015 implemented motor control, so that a 16FDC is recognized by CDOS
  * 20-FEB-2015 bug fixes for 1.25 release
  * 08-MAR-2016 support user path for disk images
  * 13-MAY-2016 find disk images at -d <path>, ./disks and DISKDIR
@@ -34,7 +35,12 @@
  * 24-SEP-2019 restore and seek also affect step direction
  * 17-JUN-2021 allow building machine without frontpanel
  * 29-JUL-2021 add boot config for machine without frontpanel
+ * 02-SEP-2021 implement banked ROM
+ * 15-MAY-2024 make disk manager standard
  */
+
+#ifndef CROMEMCO_FDC_INC
+#define CROMEMCO_FDC_INC
 
 /*
  * disk definitions 5.25"/8" drives, single/double density,
@@ -62,6 +68,9 @@ extern int index_pulse;
 extern int motoron, motortimer;
 extern enum Disk_type dtype;
 
+extern BYTE fdc_banked_rom[]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
+extern int fdc_rom_active;
+
 extern BYTE cromemco_fdc_status_in(void);
 extern void cromemco_fdc_cmd_out(BYTE);
 
@@ -81,3 +90,5 @@ extern BYTE cromemco_fdc_aux_in(void);
 extern void cromemco_fdc_aux_out(BYTE);
 
 extern void cromemco_fdc_reset(void);
+
+#endif

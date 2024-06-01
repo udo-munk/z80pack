@@ -9,22 +9,23 @@
  * Emulation of a Cromemco DAZZLER S100 board
  *
  * History:
- * 24-APR-15 first version
- * 25-APR-15 fixed a few things, good enough for a BETA release now
- * 27-APR-15 fixed logic bugs with on/off state and thread handling
- * 08-MAY-15 fixed Xlib multithreading problems
- * 26-AUG-15 implemented double buffering to prevent flicker
- * 27-AUG-15 more bug fixes
- * 15-NOV-16 fixed logic bug, display wasn't always clear after
- *           the device is switched off
- * 06-DEC-16 added bus request for the DMA
- * 16-DEC-16 use DMA function for memory access
- * 26-JAN-17 optimization
- * 15-JUL-18 use logging
- * 19-JUL-18 integrate webfrontend
- * 04-NOV-19 remove fake DMA bus request
+ * 24-APR-2015 first version
+ * 25-APR-2015 fixed a few things, good enough for a BETA release now
+ * 27-APR-2015 fixed logic bugs with on/off state and thread handling
+ * 08-MAY-2015 fixed Xlib multithreading problems
+ * 26-AUG-2015 implemented double buffering to prevent flicker
+ * 27-AUG-2015 more bug fixes
+ * 15-NOV-2016 fixed logic bug, display wasn't always clear after
+ *	       the device is switched off
+ * 06-DEC-2016 added bus request for the DMA
+ * 16-DEC-2016 use DMA function for memory access
+ * 26-JAN-2017 optimization
+ * 15-JUL-2018 use logging
+ * 19-JUL-2018 integrate webfrontend
+ * 04-NOV-2019 remove fake DMA bus request
  */
 
+#include <stdint.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -32,12 +33,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
-#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -120,7 +119,7 @@ static void open_display(void)
 	rootwindow = RootWindow(display, screen);
 	XGetWindowAttributes(display, rootwindow, &wa);
 	window = XCreateSimpleWindow(display, rootwindow, 0, 0,
-					size, size, 1, 0, 0);
+				     size, size, 1, 0, 0);
 	XStoreName(display, window, "Cromemco DAzzLER");
 	size_hints->flags = PSize | PMinSize | PMaxSize;
 	size_hints->min_width = size;
@@ -137,7 +136,7 @@ static void open_display(void)
 	gc = XCreateGC(display, window, 0, NULL);
 	XSetFillStyle(display, gc, FillSolid);
 	pixmap = XCreatePixmap(display, rootwindow, size, size,
-		 wa.depth);
+			       wa.depth);
 
 	XParseColor(display, colormap, color0, &colors[0]);
 	XAllocColor(display, colormap, &colors[0]);
@@ -231,7 +230,8 @@ void cromemco_dazzler_off(void)
 	}
 
 #ifdef HAS_NETSERVER
-	ws_clear();
+	if (n_flag)
+		ws_clear();
 #endif
 }
 
@@ -243,7 +243,7 @@ static void draw_hires(void)
 
 	/* set color or grayscale from lower nibble in graphics format */
 	i = format & 0x0f;
-	if (format & 16) 
+	if (format & 16)
 		XSetForeground(display, gc, colors[i].pixel);
 	else
 		XSetForeground(display, gc, grays[i].pixel);
@@ -255,36 +255,44 @@ static void draw_hires(void)
 				i = dma_read(addr);
 				if (i & 1)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, y * psize,
-						psize, psize);
+						       x * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 2)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, y * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 4)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, (y+1) * psize,
-						psize, psize);
+						       x * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 8)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 16)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, y * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 32)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, y * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 64)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 128)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				x += 4;
 				addr++;
 			}
@@ -294,36 +302,44 @@ static void draw_hires(void)
 				i = dma_read(addr);
 				if (i & 1)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, y * psize,
-						psize, psize);
+						       x * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 2)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, y * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 4)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, (y+1) * psize,
-						psize, psize);
+						       x * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 8)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 16)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, y * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 32)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, y * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 64)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 128)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				x += 4;
 				addr++;
 			}
@@ -333,36 +349,44 @@ static void draw_hires(void)
 				i = dma_read(addr);
 				if (i & 1)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, y * psize,
-						psize, psize);
+						       x * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 2)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, y * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 4)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, (y+1) * psize,
-						psize, psize);
+						       x * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 8)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 16)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, y * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 32)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, y * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 64)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 128)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				x += 4;
 				addr++;
 			}
@@ -372,36 +396,44 @@ static void draw_hires(void)
 				i = dma_read(addr);
 				if (i & 1)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, y * psize,
-						psize, psize);
+						       x * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 2)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, y * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 4)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, (y+1) * psize,
-						psize, psize);
+						       x * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 8)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 16)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, y * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 32)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, y * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 64)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 128)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				x += 4;
 				addr++;
 			}
@@ -413,36 +445,44 @@ static void draw_hires(void)
 				i = dma_read(addr);
 				if (i & 1)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, y * psize,
-						psize, psize);
+						       x * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 2)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, y * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 4)
 					XFillRectangle(display, pixmap, gc,
-						x * psize, (y+1) * psize,
-						psize, psize);
+						       x * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 8)
 					XFillRectangle(display, pixmap, gc,
-						(x+1) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 1) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 16)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, y * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 32)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, y * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       y * psize,
+						       psize, psize);
 				if (i & 64)
 					XFillRectangle(display, pixmap, gc,
-						(x+2) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 2) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				if (i & 128)
 					XFillRectangle(display, pixmap, gc,
-						(x+3) * psize, (y+1) * psize,
-						psize, psize);
+						       (x + 3) * psize,
+						       (y + 1) * psize,
+						       psize, psize);
 				x += 4;
 				addr++;
 			}
@@ -464,24 +504,24 @@ static void draw_lowres(void)
 				i = dma_read(addr) & 0x0f;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				i = (dma_read(addr) & 0xf0) >> 4;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				addr++;
 			}
@@ -491,24 +531,24 @@ static void draw_lowres(void)
 				i = dma_read(addr) & 0x0f;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				i = (dma_read(addr) & 0xf0) >> 4;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				addr++;
 			}
@@ -518,24 +558,24 @@ static void draw_lowres(void)
 				i = dma_read(addr) & 0x0f;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				i = (dma_read(addr) & 0xf0) >> 4;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				addr++;
 			}
@@ -545,24 +585,24 @@ static void draw_lowres(void)
 				i = dma_read(addr) & 0x0f;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				i = (dma_read(addr) & 0xf0) >> 4;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				addr++;
 			}
@@ -574,24 +614,24 @@ static void draw_lowres(void)
 				i = dma_read(addr) & 0x0f;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				i = (dma_read(addr) & 0xf0) >> 4;
 				if (format & 16)
 					XSetForeground(display, gc,
-							colors[i].pixel);
+						       colors[i].pixel);
 				else
 					XSetForeground(display, gc,
-							grays[i].pixel);
+						       grays[i].pixel);
 				XFillRectangle(display, pixmap, gc,
-					x * psize, y * psize,
-					psize, psize);
+					       x * psize, y * psize,
+					       psize, psize);
 				x++;
 				addr++;
 			}
@@ -668,8 +708,10 @@ static void ws_refresh(void)
 			msg.addr = addr;
 			msg.len = n;
 			net_device_send(DEV_DZLR, (char *) &msg, msg.len + 6);
-			LOGD(TAG, "BUF update 0x%04X-0x%04X len: %d format: 0x%02X l/a: %d", 
-			     msg.addr, msg.addr + msg.len, msg.len, msg.format, la_count);
+			LOGD(TAG, "BUF update 0x%04X-0x%04X "
+			     "len: %d format: 0x%02X l/a: %d",
+			     msg.addr, msg.addr + msg.len,
+			     msg.len, msg.format, la_count);
 		}
 	}
 }
@@ -678,39 +720,42 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern uint64_t get_clock_us(void);
 
-	struct timeval t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 
-	arg = arg;	/* to avoid compiler warning */
-	gettimeofday(&t1, NULL);
+	UNUSED(arg);
+
+	t1 = get_clock_us();
 
 	while (1) {	/* do forever or until canceled */
 
-		/* draw one frame dependend on graphics format */
+		/* draw one frame dependent on graphics format */
 		if (state == 1) {	/* draw frame if on */
-#ifndef HAS_NETSERVER
-			XLockDisplay(display);
-			XSetForeground(display, gc, colors[0].pixel);
-			XFillRectangle(display, pixmap, gc, 0, 0, size, size);
-			if (format & 64)
-				draw_hires();
-			else
-				draw_lowres();
-			XCopyArea(display, pixmap, window, gc, 0, 0,
-				  size, size, 0, 0);
-			XSync(display, True);
-			XUnlockDisplay(display);
-#else 
-			UNUSED(draw_hires);
-			UNUSED(draw_lowres);
-			if (net_device_alive(DEV_DZLR)) {
-				ws_refresh();
+#ifdef HAS_NETSERVER
+			if (!n_flag) {
+#endif
+				XLockDisplay(display);
+				XSetForeground(display, gc, colors[0].pixel);
+				XFillRectangle(display, pixmap, gc, 0, 0, size, size);
+				if (format & 64)
+					draw_hires();
+				else
+					draw_lowres();
+				XCopyArea(display, pixmap, window, gc, 0, 0,
+					  size, size, 0, 0);
+				XSync(display, True);
+				XUnlockDisplay(display);
+#ifdef HAS_NETSERVER
 			} else {
-				if (msg.format) { 
-					memset(dblbuf, 0, 2048);
-					msg.format = 0;
+				if (net_device_alive(DEV_DZLR)) {
+					ws_refresh();
+				} else {
+					if (msg.format) {
+						memset(dblbuf, 0, 2048);
+						msg.format = 0;
+					}
 				}
 			}
 #endif
@@ -722,12 +767,12 @@ static void *update_display(void *arg)
 		flags = 64;
 
 		/* sleep rest to 33ms so that we get 30 fps */
-		gettimeofday(&t2, NULL);
-		tdiff = time_diff(&t1, &t2);
+		t2 = get_clock_us();
+		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
 			SLEEP_MS(33 - (tdiff / 1000));
 
-		gettimeofday(&t1, NULL);
+		t1 = get_clock_us();
 	}
 
 	/* just in case it ever gets here */
@@ -741,35 +786,41 @@ void cromemco_dazzler_ctl_out(BYTE data)
 
 	/* switch DAZZLER on/off */
 	if (data & 128) {
-#ifndef HAS_NETSERVER
-		state = 1;
-		if (display == NULL) {
-			open_display();
+#ifdef HAS_NETSERVER
+		if (!n_flag) {
+#endif
+			state = 1;
+			if (display == NULL) {
+				open_display();
+			}
+#ifdef HAS_NETSERVER
+		} else {
+			if (state == 0)
+				ws_clear();
+			state = 1;
 		}
-#else
-		UNUSED(open_display);
-		if (state == 0) 
-			ws_clear();
-		state = 1;
 #endif
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, update_display,
-			    (void *) NULL)) {
+					   (void *) NULL)) {
 				LOGE(TAG, "can't create thread");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 		}
 	} else {
 		if (state == 1) {
 			state = 0;
 			SLEEP_MS(50);
-#ifndef HAS_NETSERVER
-			XLockDisplay(display);
-			XClearWindow(display, window);
-			XSync(display, True);
-			XUnlockDisplay(display);
-#else
-			ws_clear();
+#ifdef HAS_NETSERVER
+			if (!n_flag) {
+#endif
+				XLockDisplay(display);
+				XClearWindow(display, window);
+				XSync(display, True);
+				XUnlockDisplay(display);
+#ifdef HAS_NETSERVER
+			} else
+				ws_clear();
 #endif
 		}
 	}
@@ -778,9 +829,9 @@ void cromemco_dazzler_ctl_out(BYTE data)
 BYTE cromemco_dazzler_flags_in(void)
 {
 	if (thread != 0)
-		return(flags);
+		return (flags);
 	else
-		return((BYTE) 0xff);
+		return ((BYTE) 0xff);
 }
 
 void cromemco_dazzler_format_out(BYTE data)

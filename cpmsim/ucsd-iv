@@ -1,0 +1,8 @@
+#!/bin/sh
+
+rm -f disks/drive[ab].dsk
+ln disks/library/ucsd-iv-1.dsk disks/drivea.dsk
+ln disks/library/ucsd-iv-2.dsk disks/driveb.dsk
+ln disks/library/ucsd-iv-interp.dsk disks/drivec.dsk
+
+./cpmsim $*

@@ -1,0 +1,1077 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ;       CROMEMCO Z-1 MONITOR SOURCE
+                       3      3 ;
+                       4      4 ;       RETYPED FROM MANUAL AND MODIFIED TO ASSEMBLE WITH INTEL MACRO-80
+                       5      5 ;       DECEMBER 2014, UDO MUNK
+                       6      6 ;
+                       7      7 ;PPAGE   EQU     0E1H            ;MUST BE THE HIGHER OF A PAIR OF NON-RAM PAGES.
+00ff  =                8      8 PPAGE   EQU     0FFH            ;PROM CAN'T BE DETECTED YET!
+                       9      9 ;PSW    EQU     6               ;DEFINED BY INTEL ASSEMBLER ALREADY
+                      10     10 ;SP     EQU     6
+0080  =               11     11 PF      EQU     80H             ;PRIME-ABLE REG FLAG
+0040  =               12     12 R2F     EQU     40H             ;2-BYTE REG FLAG
+0007  =               13     13 BELL    EQU     07
+001b  =               14     14 ESC     EQU     1BH
+000d  =               15     15 CR      EQU     0DH
+000a  =               16     16 LF      EQU     0AH
+0000  =               17     17 STAT    EQU     0
+0040  =               18     18 DAV     EQU     40H
+0080  =               19     19 TBE     EQU     80H
+0001  =               20     20 DATA    EQU     1
+0016  =               21     21 TEMPS   EQU     16H             ;ROOM FOR TEMP STORAGE
+0030  =               22     22 RSTLC   EQU     30H             ;RST LOCATION
+0020  =               23     23 CASE    EQU     20H             ;DIFF BETW LOWER & UPPER CA
+                      24     24 ;
+                      25     25 ; Z80 OP-CODES
+0018  =               26     26 JR      EQU     18H
+0038  =               27     27 JRC     EQU     38H
+0030  =               28     28 JRNC    EQU     30H
+0028  =               29     29 JRZ     EQU     28H
+0020  =               30     30 JRNZ    EQU     20H
+0010  =               31     31 DJNZ    EQU     10H
+0008  =               32     32 EXAF    EQU     08              ;EX AF,AF'
+00d9  =               33     33 EXX     EQU     0D9H
+00ed  =               34     34 RLD     EQU     0EDH
+006f  =               35     35 RLD1    EQU     6FH
+00ed  =               36     36 CPI0    EQU     0EDH
+00a1  =               37     37 CPI1    EQU     0A1H
+00ed  =               38     38 CPIR    EQU     0EDH
+00b1  =               39     39 CPIR1   EQU     0B1H
+00ed  =               40     40 LDI     EQU     0EDH
+00a0  =               41     41 LDI1    EQU     0A0H
+00ed  =               42     42 LDIR    EQU     0EDH
+00b0  =               43     43 LDIR1   EQU     0B0H
+00ed  =               44     44 LDD     EQU     0EDH
+00a8  =               45     45 LDD1    EQU     0A8H
+00ed  =               46     46 LDDR    EQU     0EDH
+00b8  =               47     47 LDDR1   EQU     0B8H
+00cb  =               48     48 SET5A   EQU     0CBH
+00ef  =               49     49 ST5A1   EQU     0EFH
+                      50     50 ;
+00dd  =               51     51 IX      EQU     0DDH
+00fd  =               52     52 IY      EQU     0FDH
+                      53     53 ;
+                      54     54 ; DISPLACEMENTS FROM IX OF HI BYTE OF REG PAIRS
+0000  =               55     55 DUPC    EQU     0
+fffe  =               56     56 DUSP    EQU     -2
+fffc  =               57     57 DUAF    EQU     -4
+fffa  =               58     58 DUBC    EQU     -6
+fff8  =               59     59 DUDE    EQU     -8
+fff6  =               60     60 DUHL    EQU     -10
+fff4  =               61     61 DUIT    EQU     -12             ;USER I & INTERRUPT ENABLE
+fff2  =               62     62 DUIX    EQU     -14
+fff0  =               63     63 DUIY    EQU     -16
+ffee  =               64     64 DUAF2   EQU     -18
+ffec  =               65     65 DUBC2   EQU     -20
+ffea  =               66     66 DUDE2   EQU     -22
+ffe8  =               67     67 DUHL2   EQU     -24
+                      68     68 
+                      69     69         ORG     0E000H
+e000                  70     70 START:
+                      71     71 ;
+                      72     72 ; ENTER MONITOR FROM RESET
+                      73     73 ;
+e000  3e 01           74     74         MVI     A,1
+e002  d3 40           75     75         OUT     40H             ;SELECT BANK 0
+                      76     76 ;
+                      77     77 ; PLACE SYS STACK AT HIGHEST PAGE OF AVAILABLE RAM.
+                      78     78 ; ALLOW ROOM FOR TEMP STORAGE.
+                      79     79 ;
+e004  21 eb 00        80     80         LXI     H,00FFH-TEMPS+2
+e007  25              81     81 INIT:   DCR     H
+e008  7e              82     82         MOV     A,M
+e009  34              83     83         INR     M
+e00a  be              84     84         CMP     M               ;DID IT CHANGE?
+e00b  28              85     85         DB      JRZ
+e00c  fa              86     86         DB      INIT-$-1
+e00d  35              87     87         DCR     M               ;YES. RESTORE IT.
+                      88     88 ;
+                      89     89 ; HL NOW POINTS TO BP STACK END
+                      90     90 ;
+e00e  36 00           91     91         MVI     M,0             ;BP STACK END MARK
+e010  7d              92     92         MOV     A,L             ;SAVE
+e011  2b              93     93         DCX     H               ;STORAGE FOR BPSP,LO
+e012  77              94     94         MOV     M,A             ;STORE BPSP,LO
+e013  11 e6 ff        95     95         LXI     D,DUHL2-2
+e016  19              96     96         DAD     D               ;TO END OF REG STORAGE
+e017  f9              97     97         SPHL                    ;SYS SP
+                      98     98 ;
+e018  ed              99     99         DB      0EDH            ;SBC HL,DE: BACK TO UPC;HI
+e019  52             100    100         DB      52H             ;(CY WAS SET BY 'DAD D')
+e01a  e5             101    101         PUSH    H
+e01b  dd             102    102         DB      IX
+e01c  e1             103    103         POP     H               ;POP IX: STORAGE PNTR
+                     104    104 ;
+e01d  16 ff          105    105         MVI     D,PPAGE         ;FORCE USER SP TO
+e01f  2b             106    106         DCX     H
+e020  2b             107    107         DCX     H
+e021  72             108    108         MOV     M,D             ;POINT TO PROM
+                     109    109 ;
+                     110    110 ; SET BAUD RATE
+                     111    111 ;
+e022  3e d8          112    112 INIT1:  MVI     A,0D8H          ;300 BAUD
+e024  cd 36 e0       113    113         CALL    BAUD
+e027  3e f4          114    114         MVI     A,0F4H          ;110 BAUD
+e029  c4 36 e0       115    115         CNZ     BAUD
+e02c  20             116    116         DB      JRNZ
+e02d  f4             117    117         DB      INIT1-$-1
+                     118    118 ;
+e02e  21 94 e3       119    119         LXI     H,HEAD          ;HEADING
+e031  cd 0c e2       120    120         CALL    PMSG
+                     121    121 ;
+e034  18             122    122         DB      JR
+e035  66             123    123         DB      CMND-$-1
+                     124    124 ;
+e036  d3 00          125    125 BAUD:   OUT     STAT            ;SET BAUD RATE
+e038  cd 41 e1       126    126         CALL    GBYTE
+e03b  cd 41 e1       127    127         CALL    GBYTE           ;CAN WE
+e03e  e6 7f          128    128         ANI     7FH             ;READ
+e040  fe 0d          129    129         CPI     CR              ;A CR?
+e042  c9             130    130         RET
+                     131    131 ;
+                     132    132 ; ENTER MONITOR FROM BRKPT
+                     133    133 ;
+                     134    134 ; SAVE MACHINE STATE. SAVES ALL REGS INCLUDING
+                     135    135 ; SP, FINDS THE TOP OF RAM INSTALLED IN MACHINE
+                     136    136 ; & SWITCHES THE STACK THERE.
+                     137    137 ;
+e043  e3             138    138 SVMS:   XTHL                    ;ADJUST BRKPT RET ADDR
+e044  2b             139    139         DCX     H
+e045  e3             140    140         XTHL
+                     141    141 ;
+e046  e5             142    142         PUSH    H               ;SAVE
+e047  21 04 00       143    143         LXI     H,4
+e04a  39             144    144         DAD     SP              ;USP (USER-SP)
+e04b  e3             145    145         XTHL                    ;TO STACK
+                     146    146 ;
+e04c  f5             147    147         PUSH    PSW             ;UAF
+e04d  c5             148    148         PUSH    B               ;UBC
+e04e  d5             149    149         PUSH    D               ;UDE
+e04f  e5             150    150         PUSH    H               ;UHL
+                     151    151 ;
+                     152    152 ; FIND SYS STACK AGAIN
+                     153    153 ;
+e050  21 e9 00       154    154         LXI     H,00FFH-TEMPS
+e053  25             155    155 SVMS1:  DCR     H               ;DECRM MEM PAGE
+e054  7e             156    156         MOV     A,M
+e055  34             157    157         INR     M
+e056  be             158    158         CMP     M               ;DID IT CHANGE?
+e057  28             159    159         DB      JRZ
+e058  fa             160    160         DB      SVMS1-$-1
+e059  35             161    161         DCR     M               ;YES. RESTORE IT.
+                     162    162 ;
+e05a  eb             163    163         XCHG
+e05b  21 0b 00       164    164         LXI     H,11
+e05e  39             165    165         DAD     SP              ;PNTS TO BPRA, HI BYTE
+e05f  01 0c 00       166    166         LXI     B,12
+e062  ed             167    167         DB      LDDR            ;TRANSFER TO SYS STACK
+e063  b8             168    168         DB      LDDR1
+e064  13             169    169         INX     D               ;DE HAS CURRENT VALUE OF SYS SP AND POINTS TO UR
+e065  23             170    170         INX     H               ;HL HAS CURRENT VALUE OF USER SP AND ALSO POINTS
+                     171    171                                 ;TO UR
+e066  eb             172    172         XCHG
+e067  f9             173    173         SPHL                    ;SYS SP
+                     174    174 ;
+e068  ed             175    175         DB      0EDH            ;LD A,I
+e069  57             176    176         DB      57H
+e06a  0e 00          177    177         MVI     C,0
+e06c  e2 70 e0       178    178        	JPO     SVMS3           ;IFF?
+e06f  0c             179    179         INR     C               ;C NOW HOLDS USER-IFF
+e070  47             180    180 SVMS3:  MOV     B,A
+e071  c5             181    181         PUSH    B               ;UIF (USER-I & USER-IFF)
+                     182    182 ;
+e072  dd             183    183         DB      IX
+e073  e5             184    184         PUSH    H               ;PUSH IX: UIX
+e074  fd             185    185         DB      IY
+e075  e5             186    186         PUSH    H               ;PUSH IY: UIY
+e076  01 0b 00       187    187         LXI     B,DUPC-DUHL+1
+e079  09             188    188         DAD     B               ;PNTS TO UPC, HI BYTE
+e07a  e5             189    189         PUSH    H
+e07b  dd             190    190         DB      IX
+e07c  e1             191    191         POP     H               ;TO IX (POINTS TO UPC)
+                     192    192 ;
+e07d  08             193    193         DB      EXAF
+e07e  f5             194    194         PUSH    PSW
+e07f  d9             195    195         DB      EXX
+e080  c5             196    196         PUSH    B               ;UBC2
+e081  d5             197    197         PUSH    D               ;UDE2
+e082  e5             198    198         PUSH    H               ;UHL2
+                     199    199 ;
+e083  dd             200    200         DB      IX
+e084  e5             201    201         PUSH    H               ;PUSH IX
+e085  e1             202    202         POP     H
+e086  23             203    203         INX     H               ;POINTS TO BPSP,LO
+e087  6e             204    204         MOV     L,M             ;BPSP NOW IN HL
+                     205    205 ;
+                     206    206 ; CLEAR ALL BRKPTS
+                     207    207 ;
+e088  7e             208    208 CLBP1:  MOV     A,M             ;BP STK EMPTY?
+e089  b7             209    209         ORA     A
+e08a  28             210    210         DB      JRZ
+e08b  0a             211    211         DB      CLBP2-$-1
+                     212    212 ;
+e08c  2b             213    213         DCX     H
+e08d  56             214    214         MOV     D,M
+e08e  2b             215    215         DCX     H
+e08f  5e             216    216         MOV     E,M
+e090  2b             217    217         DCX     H
+e091  7e             218    218         MOV     A,M
+e092  12             219    219         STAX    D               ;RESTORE CONTENTS TO MEM
+e093  2b             220    220         DCX     H
+e094  18             221    221         DB      JR
+e095  f2             222    222         DB      CLBP1-$-1
+                     223    223 ;
+e096  7d             224    224 CLBP2:  MOV     A,L
+e097  2b             225    225         DCX     H
+e098  77             226    226         MOV     M,A             ;ADJUST BPSP
+                     227    227 ;
+e099  cd f5 e0       228    228         CALL    DSPR            ;DISPLAY USER REGISTERS
+                     229    229 ;
+                     230    230 ; GET 1-BYTE COMMAND.
+                     231    231 ; RETURNS VALUE IN HL & JUMPS TO THAT ADDR.
+                     232    232 ;
+e09c  cd 0c e1       233    233 CMND:   CALL    CRLF
+e09f  21 b3 e3       234    234 CMND1:  LXI     H,PRMPT
+e0a2  cd 0c e2       235    235         CALL    PMSG
+                     236    236 ; HL NOW PNTS TO TBL ADDR
+e0a5  cd 1a e2       237    237         CALL    GCMND           ;DE GETS LETTER - 'A'
+e0a8  eb             238    238         XCHG
+e0a9  29             239    239         DAD     H               ;TIMES 2
+e0aa  19             240    240         DAD     D               ; + TBL ADDR
+e0ab  5e             241    241         MOV     E,M
+e0ac  23             242    242         INX     H
+e0ad  56             243    243         MOV     D,M
+e0ae  eb             244    244         XCHG
+e0af  11 9f e0       245    245         LXI     D,CMND1         ;SET UP RETURN
+e0b2  d5             246    246         PUSH    D               ;TO CMND
+e0b3  79             247    247         MOV     A,C             ;A & C HAVE CMND DELIMITER
+e0b4  e9             248    248         PCHL
+                     249    249 ;
+                     250    250 ; REJECTS ALL BUT ALPHABETIC CHARACTERS.
+                     251    251 ; RETURNS THE CHAR LESS THE ASCII VALUE OF 'A'.
+                     252    252 ;
+e0b5  d6 61          253    253 ABCYZ:  SUI     'A'+CASE        ;'A' OR ABOVE?
+e0b7  38             254    254         DB      JRC
+e0b8  03             255    255         DB      ERROR-$-1
+e0b9  fe 19          256    256         CPI     25D             ;'Y' OR BELOW?
+e0bb  d8             257    257         RC                      ;IF NOT, CONTINUE BELOW
+                     258    258 ;
+                     259    259 ; ERROR & ESCAPE. RETURNS TO CMND WITH SP
+                     260    260 ; POINTING TO SAVED-REG AREA (UHL2).
+                     261    261 ;
+e0bc  cd 09 e2       262    262 ERROR:  CALL    PSQS            ;PRINT '? <BELL>'
+e0bf  dd             263    263 ESCPE:  DB      IX
+e0c0  e5             264    264         PUSH    H               ;PUSH IX
+e0c1  e1             265    265         POP     H
+e0c2  11 e7 ff       266    266         LXI     D,DUHL2-1-DUPC
+e0c5  19             267    267         DAD     D
+e0c6  f9             268    268         SPHL
+e0c7  18             269    269         DB      JR
+e0c8  d3             270    270         DB      CMND-$-1        ;GET NEW CMND
+                     271    271 ;
+                     272    272 ; PROGRAM PROMS. ABORTS IF DESTINATION
+                     273    273 ; IS NOT ON A 1K (400H) BOUNDARY, SWATH
+                     274    274 ; WIDTH IS NOT A MULTIPLE OF 1K.
+                     275    275 ;
+e0c9  06 b5          276    276 PROG:   MVI     B,181           ;360 ITERATION
+e0cb  c5             277    277 PROG1:  PUSH    B               ;SAVE # OF ITERATIONS
+e0cc  cd 70 e1       278    278         CALL    LD2N            ;SOURCE TO DE,INCRM TO BC,
+e0cf  f5             279    279         PUSH    PSW             ;SAVE LATEST DELIMITER
+e0d0  78             280    280         MOV     A,B             ;IS INCRM A MULT OF 1024?
+e0d1  e6 03          281    281         ANI     3
+e0d3  b1             282    282         ORA     C
+e0d4  20             283    283         DB      JRNZ
+e0d5  e6             284    284         DB      ERROR-$-1
+e0d6  f1             285    285         POP     PSW             ;LAST DELIMITER
+e0d7  cd 8e e1       286    286         CALL    LINCR           ;SOURCE TO HL, DEST TO DE
+e0da  7a             287    287         MOV     A,D             ;IS DEST A MULT OF 1024?
+e0db  e6 03          288    288         ANI     3
+e0dd  b3             289    289         ORA     E
+e0de  20             290    290         DB      JRNZ
+e0df  dc             291    291         DB      ERROR-$-1
+                     292    292 ;
+e0e0  f1             293    293 PROG3:  POP     PSW             ;ITERATION
+e0e1  f5             294    294         PUSH    PSW
+e0e2  c5             295    295         PUSH    B               ;INCREMENT
+e0e3  01 00 04       296    296         LXI     B,1024
+e0e6  c5             297    297         PUSH    B               ;SAVE
+e0e7  cd 50 e2       298    298         CALL    MVE             ;MOVE IT
+e0ea  c1             299    299         POP     B               ;RETRIEVE
+e0eb  e3             300    300         XTHL                    ;INCRM TO HL
+e0ec  b7             301    301         ORA     A               ;RESET CY
+e0ed  ed             302    302         DB      0EDH            ;SBC HL,BC
+e0ee  42             303    303         DB      42H
+e0ef  e3             304    304         XTHL                    ;SOURCE BACK TO HL
+e0f0  c1             305    305         POP     B               ;NEW INCRM
+e0f1  20             306    306         DB      JRNZ
+e0f2  ed             307    307         DB      PROG3-$-1       ;LOOP IF INCRM NOT 0
+e0f3  f1             308    308         POP     PSW             ;CLEAN UP
+e0f4  c9             309    309         RET                     ;BACK TO CMND
+                     310    310 ;
+                     311    311 ; COMMAND
+                     312    312 ;
+                     313    313 ; DISPLAY THE USER REGISTERS.
+                     314    314 ;
+e0f5  cd 0c e1       315    315 DSPR:   CALL    CRLF
+e0f8  dd             316    316         DB      IX
+e0f9  e5             317    317         PUSH    H               ;PUSH IX
+e0fa  e1             318    318         POP     H               ;POINTS TO UPC
+e0fb  06 02          319    319         MVI     B,2             ;UPC & USP
+e0fd  cd 07 e1       320    320         CALL    PREGS
+e100  06 07          321    321         MVI     B,7             ;UAF THRU UIY
+e102  cd 07 e1       322    322         CALL    PREGS
+e105  06 04          323    323         MVI     B,4             ;UAF2 THRU UHL2
+e107  cd 4a e1       324    324 PREGS:  CALL    P2BMS           ;PRINT 2 BYTES PNTED TO B
+e10a  10             325    325         DB      DJNZ
+e10b  fb             326    326         DB      PREGS-$-1
+                     327    327 ; (CONTINUE BELOW)
+                     328    328 ;
+                     329    329 ; PRINT CR & LF. PRESERVES ALL REGS BUT A.
+                     330    330 ;
+e10c  3e 0d          331    331 CRLF:   MVI     A,CR
+                     332    332 ; (CONTINUE BELOW)
+                     333    333 ;
+                     334    334 ; PRINT THE CHARACTER IN THE A-REGISTER. (CHECKS
+                     335    335 ; INPUT FOR ESCAPE.) PRESERVES ALL REGS.
+e10e  f5             336    336 PCHR:   PUSH    PSW             ;SAVE THE CHAR
+e10f  db 00          337    337         IN      STAT
+e111  e6 40          338    338         ANI     DAV
+e113  28             339    339         DB      JRZ
+e114  08             340    340         DB      PCHR2-$-1
+e115  db 01          341    341         IN      DATA
+e117  e6 7f          342    342         ANI     7FH
+                     343    343 ;
+e119  fe 1b          344    344 PCHR1:  CPI     ESC
+e11b  28             345    345         DB      JRZ
+e11c  a2             346    346         DB      ESCPE-$-1
+                     347    347 ;
+e11d  db 00          348    348 PCHR2:  IN      STAT
+e11f  e6 80          349    349         ANI     TBE
+e121  28             350    350         DB      JRZ
+e122  fa             351    351         DB      PCHR2-$-1
+e123  f1             352    352         POP     PSW
+e124  d3 01          353    353         OUT     DATA
+e126  f5             354    354         PUSH    PSW
+e127  e5             355    355         PUSH    H
+e128  21 b0 e3       356    356         LXI     H,LFNN
+e12b  fe 0d          357    357         CPI     CR
+e12d  cc 0c e2       358    358         CZ      PMSG
+e130  e1             359    359         POP     H
+e131  f1             360    360         POP     PSW
+e132  c9             361    361         RET
+                     362    362 ;
+                     363    363 ; GET CHARATER. RETURNS IT IN A. CONVERTS
+                     364    364 ; ALPHA CHARS TO LOWER-CASE. ALTERS F.
+                     365    365 ;
+e133  cd 41 e1       366    366 GCHR:   CALL    GBYTE
+e136  e6 7f          367    367         ANI     7FH
+e138  fe 41          368    368         CPI     'A'
+e13a  38             369    369         DB      JRC
+e13b  02             370    370         DB      GCHR1-$-1
+e13c  f6 20          371    371         ORI     20H             ;CONVERT TO LOWER-CASE
+e13e  f5             372    372 GCHR1:  PUSH    PSW             ;SAVE THE CHAR
+e13f  18             373    373         DB      JR
+e140  d8             374    374         DB      PCHR1-$-1       ;PRINT IT
+                     375    375 ;
+e141  db 00          376    376 GBYTE:  IN      STAT
+e143  e6 40          377    377         ANI     DAV
+e145  28             378    378         DB      JRZ
+e146  fa             379    379         DB      GBYTE-$-1
+e147  db 01          380    380         IN      DATA
+e149  c9             381    381         RET
+                     382    382 ;
+                     383    383 ; PRINT 2 BYTES IN (HL) & (HL - 1).
+                     384    384 ; DECREMENTS HL BY 2. ALTERS A. PRESERVES OTHERS
+                     385    385 ;
+e14a  cd e5 e1       386    386 P2BMS:  CALL    PNM
+e14d  2b             387    387         DCX     H
+e14e  cd e5 e1       388    388         CALL    PNM
+e151  2b             389    389         DCX     H
+                     390    390 ;
+                     391    391 ; PRINTS SPACE. PRESERVES ALL REGS BUT A.
+                     392    392 ;
+e152  3e 20          393    393 SPACE:  MVI     A,20H
+e154  18             394    394         DB      JR
+e155  b8             395    395         DB      PCHR-$-1
+                     396    396 ;
+                     397    397 ; IF HL IS A MULTIPLE OF 16, DO PADDR.
+                     398    398 ;
+e156  3e 0f          399    399 CK16B:  MVI     A,15
+                     400    400 ;
+                     401    401 ; ENTER WITH A CONTAINING N. IF HL IS A MULTIPLE
+                     402    402 ; OF N+1, DO PADDR.
+                     403    403 ;
+e158  a5             404    404 CKBND:  ANA     L
+e159  c0             405    405         RNZ
+                     406    406 ;
+                     407    407 ; PRINT THE NUMBER IN HL, FOLLOWED BY A COLON.
+                     408    408 ; PRESERVES ALL REGS EXCEPT A.
+                     409    409 ;
+e15a  cd 0c e1       410    410 PADDR:  CALL    CRLF
+e15d  cd da e1       411    411 PADR1:  CALL    PNHL
+e160  3e 3a          412    412         MVI     A,':'
+e162  18             413    413         DB      JR
+e163  aa             414    414         DB      PCHR-$-1
+                     415    415 ;
+                     416    416 ; LOAD TWO NUMBERS. FOLLOW WITH A CRLF.
+                     417    417 ;
+e164  cd 70 e1       418    418 L2NCR:  CALL    LD2N
+                     419    419 ;
+                     420    420 ; SKIP INITIAL SPACES.
+                     421    421 ; IF DELIMITER NOT A CR, ERROR
+                     422    422 ;
+e167  cd d1 e1       423    423 SKSGC:  CALL    SKSG            ;LOOK FOR A NON-SPACE
+e16a  fe 0d          424    424         CPI     CR              ;CR?
+e16c  c2 bc e0       425    425         JNZ     ERROR
+e16f  c9             426    426         RET
+                     427    427 ;
+                     428    428 ; LOAD TWO NUMBERS. LOADS DE WITH THE BEGINNING
+                     429    429 ; ADDR, N1. LOADS BC & HL WITH THE INCREMENT
+                     430    430 ; N2-N1+1 (OR WITH N2 IF THE OPR IS 'S').
+                     431    431 ; RETURN WITH LAST DELIMITER IN A.
+                     432    432 ;
+e170  cd 97 e1       433    433 LD2N:   CALL    GNHL            ;N1 TO HL, DELIMITER TO A
+e173  eb             434    434         XCHG                    ;SAVE N1 IN DE
+e174  cd d1 e1       435    435         CALL    SKSG            ;GET NEXT NON-SPACE CHAR
+e177  fe 73          436    436         CPI     'S'+CASE        ;SWATH?
+e179  20             437    437         DB      JRNZ
+e17a  06             438    438         DB      LD2N1-$-1
+                     439    439 ;
+e17b  af             440    440         XRA     A               ;YES
+e17c  cd 97 e1       441    441         CALL    GNHL            ;INCREMENT TO HL
+e17f  18             442    442         DB      JR
+e180  07             443    443         DB      LD2N2-$-1
+                     444    444 ;
+e181  cd 97 e1       445    445 LD2N1:  CALL    GNHL            ;INCREMENT
+e184  b7             446    446         ORA     A               ;CLEAR CY
+e185  ed             447    447         DB      0EDH            ;SBC HL,DE
+e186  52             448    448         DB      52H             ;N2-N1
+e187  23             449    449         INX     H               ;INCLUDE END POINT
+e188  44             450    450 LD2N2:  MOV     B,H
+e189  4d             451    451         MOV     C,L             ;BC GETS THE INCRM
+e18a  c9             452    452         RET
+                     453    453 ;
+                     454    454 ; LOAD 3 OPERANDS. HL GETS SOURCE, DE THE
+                     455    455 ; 3RD OPERAND, BC THE INCREMENT & A THE
+                     456    456 ; LOW BYTE OF THE 3RD OPERAND.
+                     457    457 ;
+e18b  cd 70 e1       458    458 LD3N:   CALL    LD2N
+                     459    459 ; (CONTINUE BELOW)
+                     460    460 ;
+                     461    461 ; TRANSFER DE TO HL. ENTER WITH SPACE OR
+                     462    462 ; 1ST DIGIT OF NUMBER IN A. GET NUMBER
+                     463    463 ; INTO DE WITH LOW BYTE ALSO TO A.
+                     464    464 ; FINISHES WITH A CRLF.
+                     465    465 ;
+e18e  cd 97 e1       466    466 LINCR:  CALL    GNHL            ;SKIP SPACES, LOAD HL
+e191  cd 67 e1       467    467         CALL    SKSGC           ;WAIT FOR A CR
+e194  7d             468    468         MOV     A,L
+e195  eb             469    469         XCHG
+e196  c9             470    470         RET
+                     471    471 ;
+                     472    472 ; CLEARS HL. IF ENTERED WITH HEX CHAR IN A,
+                     473    473 ; SHIFTS IT INTO HL. O/W, IGNORES LEADING
+                     474    474 ; SPACES. FIRST CAHR MUST BE HEX. CONTINUES
+                     475    475 ; SHIFT UNTIL A NON-HEX CHAR RECEIVED & THEN
+                     476    476 ; RETURNS WITH THE LETTER IN A.
+                     477    477 ; PRESERVES B,C,D,E.
+                     478    478 ;
+e197  c5             479    479 GNHL:   PUSH    B               ;SAVE
+e198  21 00 00       480    480 GNHL1:  LXI     H,0             ;CLEAR BUFFER
+                     481    481 ; STRIP LEADING SPACES & GET CHAR
+e19b  cd d1 e1       482    482         CALL    SKSG
+                     483    483 ; FIRST CHAR MUST BE HEX
+e19e  cd af e1       484    484         CALL    HEXSH           ;IF HEX, SHIFT INTO HL
+e1a1  da bc e0       485    485         JC      ERROR           ;O/W,RETRY
+e1a4  cd 33 e1       486    486 GNHL3:  CALL    GCHR
+e1a7  cd af e1       487    487 GNHL5:  CALL    HEXSH           ;IF HEX SHIFT INTO HL
+e1aa  78             488    488         MOV     A,B             ;RESTORE CHAR
+e1ab  30             489    489         DB      JRNC
+e1ac  f7             490    490         DB      GNHL3-$-1       ;IF HEX, CONTINUE
+e1ad  c1             491    491         POP     B               ;IF NON-HEX, DONE
+e1ae  c9             492    492         RET
+                     493    493 ;
+                     494    494 ; IF A CONTAINS HEX CHAR, SHIFTS BINARY EQUIVALE
+                     495    495 ; INTO HL. IF NOT HEX, RET WITH CY SET. SAVES
+                     496    496 ; ORIGINAL CHAR IN B
+                     497    497 ;
+e1af  47             498    498 HEXSH:  MOV     B,A
+e1b0  d6 30          499    499         SUI     '0'             ;< '0'?
+e1b2  d8             500    500         RC
+e1b3  c6 c9          501    501         ADI     '0'-'G'-CASE
+e1b5  d8             502    502         RC
+e1b6  d6 fa          503    503         SUI     'A'-'G'
+e1b8  30             504    504         DB      JRNC            ;OK IF >= 'A'
+e1b9  03             505    505         DB      HXSH0-$-1
+e1ba  c6 27          506    506         ADI     'A'-'9'-1+CASE
+e1bc  d8             507    507         RC
+e1bd  c6 0a          508    508 HXSH0:  DW      0AC6H           ;ADI '9'+1-'0'
+                     509    509 ; THE A-REG NOW CONTAINS THE HEX DIGIT IN BINARY
+                     510    510 ; (THE HIGH-ORDER NIBBLE OF A IS 0.)
+e1bf  cd c8 e1       511    511 HXSH4:  CALL    HXSH1           ;SHIFT 4 BITS INTO HL
+e1c2  cd c8 e1       512    512         CALL    HXSH1
+e1c5  cd c8 e1       513    513         CALL    HXSH1
+                     514    514 ;
+e1c8  07             515    515 HXSH1:  RLC                     ;SHIFT INTO BIT 4
+e1c9  29             516    516         DAD     H               ;SHIFT LEFT
+                     517    517 ; CLEAR CY IN CASE OF RET FROM HEXSH
+e1ca  b7             518    518         ORA     A
+e1cb  cb             519    519         DB      0CBH            ;BIT 4,A
+e1cc  67             520    520         DB      67H             ;IS IT 0?
+e1cd  c8             521    521         RZ
+e1ce  23             522    522         INX     H
+e1cf  c9             523    523         RET
+                     524    524 ;
+                     525    525 ; RETURNS WITH A NON-SPACE IN THE A-REG.
+                     526    526 ; IF ENTERED WITH A-REG CONTAINING A NULL
+                     527    527 ; OR A SPACE, GETS NEW CHARS UNTIL FIRST
+                     528    528 ; NON-SPACE OCCURS. ALTERS AF.
+                     529    529 ;
+e1d0  af             530    530 SKSG0:  XRA     A               ;START WITH A NULL
+                     531    531 ;
+e1d1  b7             532    532 SKSG:   ORA     A               ;DOES A CONTAIN NULL?
+e1d2  cc 33 e1       533    533 SKSG1:  CZ      GCHR
+e1d5  fe 20          534    534         CPI     20H             ;SPACE?
+e1d7  28             535    535         DB      JRZ
+e1d8  f9             536    536         DB      SKSG1-$-1
+e1d9  c9             537    537         RET
+                     538    538 ;
+                     539    539 ; PRINT THE NUMBER IN HL. PRESERVES ALL REGS.
+                     540    540 ;
+e1da  f5             541    541 PNHL:   PUSH    PSW
+e1db  e5             542    542         PUSH    H               ;TO STACK
+e1dc  cd eb e1       543    543         CALL    P4HEX
+e1df  e1             544    544         POP     H
+e1e0  f1             545    545         POP     PSW
+e1e1  c9             546    546         RET
+                     547    547 ;
+                     548    548 ; PRINT SPACE FOLLOWED BY THE NUMBER POINTED
+                     549    549 ; TO BY HL. ALTERS A ONLY.
+                     550    550 ;
+e1e2  cd 52 e1       551    551 PSNM:   CALL    SPACE
+                     552    552 ; (CONTINUE BELOW)
+                     553    553 ;
+                     554    554 ; PRINTS THE NUMBER POINTED TO BY HL.
+                     555    555 ; PRESERVES ALL REGISTERS.
+                     556    556 ;
+e1e5  f5             557    557 PNM:    PUSH    PSW
+e1e6  cd f3 e1       558    558         CALL    P2HEX
+e1e9  f1             559    559         POP     PSW
+e1ea  c9             560    560         RET
+                     561    561 ;
+                     562    562 ; PRINTS 4 HEX CHARS FROM TOP OF STACK.
+                     563    563 ; ALTERS F,H,L.
+                     564    564 ;
+e1eb  21 03 00       565    565 P4HEX:  LXI     H,3
+e1ee  39             566    566         DAD     SP              ;HL = SP
+e1ef  cd f3 e1       567    567         CALL    P2HEX           ;HIGH BYTE
+e1f2  2b             568    568         DCX     H               ;LOW BYTE
+                     569    569 ;
+                     570    570 ; PRINT THE NUMBER POINTED TO BY HL.
+                     571    571 ; PRESERVES ALL REGS EXCEPT AF.
+e1f3  7e             572    572 P2HEX:  MOV     A,M             ;GET THE NUMBER
+e1f4  0f             573    573         RRC
+e1f5  0f             574    574         RRC
+e1f6  0f             575    575         RRC
+e1f7  0f             576    576         RRC
+e1f8  cd fc e1       577    577         CALL    P1HEX           ;LEFT NIBBLE
+e1fb  7e             578    578         MOV     A,M             ;NOW DO THE RIGHT NIBBLE
+e1fc  e6 0f          579    579 P1HEX:  ANI     0FH             ;MASK
+e1fe  fe 0a          580    580         CPI     10              ;<= 9?
+e200  38             581    581         DB      JRC
+e201  02             582    582         DB      P1HX1-$-1
+e202  c6 07          583    583         ADI     7               ;A THRU F
+e204  c6 30          584    584 P1HX1:  ADI     30H             ;ASCII BIAS
+e206  c3 0e e1       585    585         JMP     PCHR            ;PRINT IT
+                     586    586 ;
+                     587    587 ; PRINT MESSAGE. ENTER WITH ADDR OF MSG
+                     588    588 ; IN HL. MSG IS TERMINATED BY 00 THRU 07.
+                     589    589 ; PRESERVES FLAGS, CLEARS A, INCRM HL.
+                     590    590 ;
+                     591    591 ; PRINT '? <BELL>'
+                     592    592 ;
+e209  21 ad e3       593    593 PSQS:   LXI     H,SQS
+                     594    594 ;
+e20c  3e 00          595    595 PMSG:   MVI     A,0             ;CLEAR A (FOR GNHL)
+e20e  f5             596    596         PUSH    PSW             ;SAVE FLAGS
+e20f  7e             597    597 PMSG1:  MOV     A,M
+e210  23             598    598         INX     H
+e211  cd 0e e1       599    599         CALL    PCHR
+e214  e6 f8          600    600         ANI     0F8H            ;<NULL> THRU <BELL>?
+e216  20             601    601         DB      JRNZ
+e217  f7             602    602         DB      PMSG1-$-1
+e218  f1             603    603         POP     PSW
+e219  c9             604    604         RET
+                     605    605 ;
+                     606    606 ; DE GETS THE FIRST ALPHA CHAR - 'A'.
+                     607    607 ; C GETS THE FIRST DELIMITER.
+                     608    608 ; B IS INITIALIZED TO '0' & RETURNS
+                     609    609 ; THE LAST CMND CHARACTER.
+                     610    610 ;
+e21a  cd d0 e1       611    611 GCMND:  CALL    SKSG0           ;GET NON-SPACE
+e21d  cd b5 e0       612    612         CALL    ABCYZ           ;ALPHA CHECK
+e220  5f             613    613         MOV     E,A
+e221  16 00          614    614         MVI     D,0             ;DE HAS TBL DISPLACEMENT
+e223  06 6f          615    615         MVI     B,'O'+CASE      ;INITIALIZE FOR GO CMND
+e225  cd 33 e1       616    616 GCMN1:  CALL    GCHR            ;GET CHAR
+e228  fe 30          617    617         CPI     30H             ;DELIMITER?
+e22a  4f             618    618         MOV     C,A             ;DELIM STORE
+e22b  d8             619    619         RC                      ;IF SO, DONE
+e22c  47             620    620         MOV     B,A             ;LAST CHAR STORE
+e22d  18             621    621         DB      JR
+e22e  f6             622    622         DB      GCMN1-$-1
+                     623    623 ;
+                     624    624 ; COMMAND
+                     625    625 ;
+e22f  cd 8b e1       626    626 VERIF:  CALL    LD3N            ;GET 3 OPERANDS
+                     627    627 ;
+                     628    628 ; COMPARES TWO AREAS OF MEMORY. ENTER WITH
+                     629    629 ; SOURCE IN HL. DESTINATION IN DE & COUNT
+                     630    630 ; IN BC. ALTERS ALL REGISTERS.
+                     631    631 ;
+e232  1a             632    632 VRFY:   LDAX    D               ;DESTINATION
+e233  ed             633    633         DB      CPI0            ;COMPARE TO SOURCE
+e234  a1             634    634         DB      CPI1
+e235  c4 0c e1       635    635         CNZ     CRLF            ;IF NOT SAME, CRLF
+e238  2b             636    636         DCX     H               ;(CPI INCRMS HL)
+e239  c4 da e1       637    637         CNZ     PNHL            ; & PRINT SOURCE ADDR
+e23c  c4 e2 e1       638    638         CNZ     PSNM            ; & SOURCE CONTENTS
+e23f  eb             639    639         XCHG
+e240  c4 e2 e1       640    640         CNZ     PSNM            ; & DEST CONTENTS
+e243  eb             641    641         XCHG
+e244  23             642    642         INX     H               ;RESTORE HL FOR CPI
+e245  13             643    643         INX     D               ;NEXT DEST
+e246  e2 0c e1       644    644         JPO     CRLF            ;IF BC = 0, DONE
+e249  18             645    645         DB      JR
+e24a  e7             646    646         DB      VRFY-$-1
+                     647    647 ;
+                     648    648 ; COMMAND
+                     649    649 ;
+e24b  cd 8b e1       650    650 MOVE:   CALL    LD3N            ;OPERANDS
+e24e  3e 01          651    651         MVI     A,1             ;# OF ITERATION
+                     652    652 ;
+                     653    653 ; MOVE FROM ONE LOCATION TO ANOTHER. ENTER
+                     654    654 ; WITH SOURCE ADDR IN HL, DEST IN DE, BYTE
+                     655    655 ; COUNT IN BC. THE MOVE IS ITERATED N TIMES,
+                     656    656 ; WHERE N = TWICE THE CONTENTS OF A, LESS ONE.
+                     657    657 ; INCREMENTS HL & DE BY BC. CHECKS RESULT
+                     658    658 ; & PRINTS THE ERRORS FOUND.
+e250  37             659    659 MVE:    STC                     ;CY IS USED IN ITERATION COUNT
+e251  e5             660    660 MVE1:   PUSH    H               ;SOURCE
+e252  d5             661    661         PUSH    D               ;DEST
+e253  c5             662    662         PUSH    B               ;BYTE COUNT
+e254  f3             663    663         DI                      ;FOR PROM PROGRAMMING
+e255  ed             664    664         DB      LDIR            ;ONE ITERATION
+e256  b0             665    665         DB      LDIR1
+e257  fb             666    666         EI
+e258  c1             667    667         POP     B
+e259  d1             668    668         POP     D
+e25a  e1             669    669         POP     H
+                     670    670 ; ITERATION CALCULATIONS
+e25b  3f             671    671         CMC
+e25c  38             672    672         DB      JRC
+e25d  f3             673    673         DB      MVE1-$-1
+e25e  3d             674    674         DCR     A
+e25f  20             675    675         DB      JRNZ
+e260  f0             676    676         DB      MVE1-$-1
+                     677    677 ; CHECK RESULT
+e261  18             678    678         DB      JR
+e262  cf             679    679         DB      VRFY-$-1
+                     680    680 ;
+                     681    681 ; COMMAND
+                     682    682 ;
+                     683    683 ; GO <CR>     EXECUTION BEGINS AT USER PC.
+                     684    684 ;
+                     685    685 ; COMMAND
+                     686    686 ;
+                     687    687 ; GO <ADDR1>/<ADDR2> ... >ADDRN>
+                     688    688 ; EXECUTION BEGINS AT ADDR1 WITH BREAKPOINTS SET
+                     689    689 ; AT ADDR2,...,ADDRN.
+                     690    690 ;
+e263  78             691    691 GO:     MOV     A,B             ;CHECK THAT THE LAST
+e264  fe 6f          692    692         CPI     'O'+CASE        ;CMND CHAR IS 'O'
+e266  c2 bc e0       693    693         JNZ     ERROR
+e269  79             694    694         MOV     A,C             ;CMND DELIMITER
+e26a  0e 00          695    695         MVI     C,0             ;BP FLAG
+e26c  cd d1 e1       696    696 GO1:    CALL    SKSG            ;WAIT FOR NON-SPACE
+e26f  fe 0d          697    697         CPI     CR
+e271  28             698    698         DB      JRZ
+e272  3a             699    699         DB      RETN-$-1        ;RETN IF CR
+e273  fe 2f          700    700         CPI     '/'             ;BP?
+e275  20             701    701         DB      JRNZ
+e276  0e             702    702         DB      GO3-$-1
+e277  0e 01          703    703         MVI     C,1             ;SET BRKPT FLAG
+e279  21 30 00       704    704         LXI     H,RSTLC         ;TRANSFER
+e27c  36 c3          705    705         MVI     M,0C3H          ;'JMP SVMS' TO
+e27e  21 43 e0       706    706         LXI     H,SVMS
+e281  22 31 00       707    707         SHLD    RSTLC+1         ;RST LOC
+e284  af             708    708         XRA     A
+e285  cd 97 e1       709    709 GO3:    CALL    GNHL            ;GET ADDR
+e288  cb 41          710    710         DW      41CBH           ;BIT 0,C: FLAG SET?
+e28a  eb             711    711         XCHG
+e28b  28             712    712         DB      JRZ
+e28c  18             713    713         DB      GO5-$-1         ;JMP IF NO BP
+e28d  dd             714    714         DB      IX
+e28e  e5             715    715         PUSH    H               ;PUSH IX
+e28f  e1             716    716         POP     H
+e290  23             717    717         INX     H
+e291  6e             718    718         MOV     L,M             ;HL = BPSP
+                     719    719 ;
+e292  23             720    720         INX     H               ;BUMP BPSP
+e293  eb             721    721         XCHG                    ;DE=BPSP, HL= BP ADDR
+e294  46             722    722         MOV     B,M             ;CONTENTS
+e295  36 f7          723    723         MVI     M,0C7H+RSTLC    ;RST INSTRUCTION
+e297  eb             724    724         XCHG                    ;HL=BPSP
+e298  70             725    725         MOV     M,B             ;TO BP STACK
+e299  23             726    726         INX     H               ;BUMP BPSP
+e29a  73             727    727         MOV     M,E             ;BP ADDR TO STACK
+e29b  23             728    728         INX     H
+e29c  72             729    729         MOV     M,D
+e29d  23             730    730         INX     H
+e29e  36 01          731    731         MVI     M,01            ;PUNCTUATION (BP SET)
+e2a0  dd             732    732         DB      IX
+e2a1  75             733    733         MOV     M,L             ;LD (IX+1),L
+e2a2  01             734    734         DB      1
+e2a3  18             735    735         DB      JR
+e2a4  c7             736    736         DB      GO1-$-1
+                     737    737 ; CHANGE USER PC
+e2a5  dd             738    738 GO5:    DB      IX
+e2a6  72             739    739         MOV     M,D             ;LD (IX+DUPC),D
+e2a7  00             740    740         DB      DUPC
+e2a8  dd             741    741         DB      IX
+e2a9  73             742    742         MOV     M,E             ;LD (IX+DUPC-1),E
+e2aa  ff             743    743         DB      DUPC-1
+e2ab  18             744    744         DB      JR
+e2ac  bf             745    745         DB      GO1-$-1         ;BACK FOR MORE
+                     746    746 ;
+e2ad  e1             747    747 RETN:   POP     H               ;STRIP CMND ADDR FROM STK
+e2ae  e1             748    748         POP     H               ;UHL2
+e2af  d1             749    749         POP     D               ;UDE2
+e2b0  c1             750    750         POP     B               ;UBC2
+e2b1  f1             751    751         POP     PSW             ;UAF2
+e2b2  d9             752    752         DB      EXX
+e2b3  08             753    753         DB      EXAF
+e2b4  fd             754    754         DB      IY
+e2b5  e1             755    755         POP     H               ;POP IY: UIY
+e2b6  dd             756    756         DB      IX
+e2b7  e1             757    757         POP     H               ;POP IX: UIX
+                     758    758 ;
+e2b8  f1             759    759         POP     PSW             ;UIF
+e2b9  ed             760    760         DB      0EDH
+e2ba  47             761    761         DB      47H             ;LD I,A: UI
+e2bb  f3             762    762         DI
+e2bc  30             763    763         DB      JRNC
+e2bd  01             764    764         DB      RETN1-$-1
+e2be  fb             765    765         EI
+                     766    766 ; IFF NOW RESTORED
+e2bf  e1             767    767 RETN1:  POP     H               ;UHL
+e2c0  d1             768    768         POP     D               ;UDE
+e2c1  c1             769    769         POP     B               ;UBC
+e2c2  f1             770    770         POP     PSW             ;UAF
+e2c3  e3             771    771         XTHL                    ;USP TO HL, UHL TO (SP)
+e2c4  f5             772    772         PUSH    PSW
+e2c5  c5             773    773         PUSH    B
+e2c6  d5             774    774         PUSH    D
+e2c7  01 0a 00       775    775         LXI     B,10
+e2ca  eb             776    776         XCHG                    ;USP TO DE
+e2cb  1b             777    777         DCX     D
+e2cc  21 09 00       778    778         LXI     H,9
+e2cf  39             779    779         DAD     SP
+e2d0  ed             780    780         DB      LDDR            ;TRANSFER UPC THRU UHL, L
+e2d1  b8             781    781         DB      LDDR1           ;TO USER STACK
+e2d2  eb             782    782         XCHG                    ;IS (USER SP - 1) RAM?
+e2d3  7e             783    783         MOV     A,M
+e2d4  34             784    784         INR     M
+e2d5  be             785    785         CMP     M               ;DID IT CHANGE?
+e2d6  28             786    786         DB      JRZ
+e2d7  03             787    787         DB      RETN2-$-1
+                     788    788 ;
+e2d8  35             789    789         DCR     M               ;YES, RESTORE IT.
+e2d9  f9             790    790         SPHL                    ;CHABGE TO USER STACK
+e2da  33             791    791         INX     SP              ;CORRECT FOR LDDR EXTRA DCR
+                     792    792 ;
+e2db  d1             793    793 RETN2:  POP     D               ;OTHERWISE, CONTINUE SYS
+e2dc  c1             794    794         POP     B
+e2dd  f1             795    795         POP     PSW
+e2de  e1             796    796         POP     H
+e2df  c9             797    797         RET
+                     798    798 ;
+                     799    799 ; ENTER WITH HL POINTING TO MEMORY & B CONTAINING
+                     800    800 ; THE 2-BYTE REG FLAG.
+                     801    801 ; PRINTS SPACE, CONTENTS OF (HL) & ALSO (HL-1) FOR
+                     802    802 ; 2-BYTE REGS, GETS SUBSTITUTION VALUE INTO DE,
+                     803    803 ; WRITES E INTO (HL) OR (HL-1) FOR 2-BYTE REGS.
+                     804    804 ; RETURNS WITH Z-FLAG RESET IFF A CHANGE IS INDICATED
+                     805    805 ; (BY A LACK OF '.') FOR A 2-BYTE REG.
+                     806    806 ; PRESERVES BC,HL.
+                     807    807 ;
+e2e0  cd e2 e1       808    808 GSUBV:  CALL    PSNM            ;PRINT (HL)
+e2e3  cb             809    809         DB      0CBH            ;BIT 6,B
+e2e4  70             810    810         DB      70H             ;2-BYTE REG?
+e2e5  28             811    811         DB      JRZ
+e2e6  04             812    812         DB      GSBV1-$-1
+e2e7  2b             813    813         DCX     H               ;YES, PRINT
+e2e8  cd e5 e1       814    814         CALL    PNM             ;  LO BYTE
+e2eb  3e 2e          815    815 GSBV1:  MVI     A,'.'
+e2ed  cd 0e e1       816    816         CALL    PCHR
+e2f0  cd 33 e1       817    817         CALL    GCHR
+e2f3  fe 2e          818    818         CPI     '.'             ;SUSTITUTION?
+e2f5  cc 0e e1       819    819         CZ      PCHR            ;IF NOT, PRINT ANOTHER
+e2f8  28             820    820         DB      JRZ
+e2f9  08             821    821         DB      GSBV2-$-1
+e2fa  eb             822    822         XCHG
+e2fb  cd 97 e1       823    823         CALL    GNHL            ;NEW VALUE
+e2fe  eb             824    824         XCHG                    ;TO DE
+e2ff  73             825    825         MOV     M,E             ;LOAD MEM
+                     826    826 ; THE FOLLOWING TEST IS FOR SBSR
+e300  cb             827    827         DB      0CBH            ;BIT 6,B
+e301  70             828    828         DB      70H             ;2-BYTE REG?
+e302  23             829    829 GSBV2:  INX     H
+e303  c9             830    830         RET
+                     831    831 ;
+                     832    832 ; COMMAND
+                     833    833 ;
+                     834    834 ; SM <ADDR>    SUBSTITUTE MEMORY LOCATION.
+                     835    835 ;
+                     836    836 ; COMMAND
+                     837    837 ;
+                     838    838 ; SR <REGISTER NAME>    SUBSTITUTE USER REGISTER
+                     839    839 ;
+                     840    840 ; REGISTER NAMES: P (PC), S (SP),
+                     841    841 ;                 A, F, B, C, D, E, H, L,
+                     842    842 ;                 I, T (IFF), X (IX), Y (IY),
+                     843    843 ;                 A',F',B',C',D',E',H',L'.
+                     844    844 ;
+e304  78             845    845 SUBST:  MOV     A,B             ;LAST CMND CHAR
+e305  fe 72          846    846         CPI     'R'+CASE        ;SR?
+e307  79             847    847         MOV     A,C             ;DELIMITER
+e308  28             848    848         DB      JRZ
+e309  0f             849    849         DB      SBSR-$-1
+                     850    850 ;
+e30a  cd 97 e1       851    851 SBSM:   CALL    GNHL            ;HL GETS ADDR
+e30d  06 00          852    852 SBSM1:  MVI     B,0             ;REG FLAGS
+                     853    853 ; PRINT CURRENT VALUE, REQUEST NEW VALUE &
+                     854    854 ; PRINT IT IF GIVEN
+e30f  cd e0 e2       855    855         CALL    GSUBV
+e312  3e 07          856    856         MVI     A,7             ;8 ENTRIES PER LINE
+e314  cd 58 e1       857    857         CALL    CKBND
+e317  18             858    858         DB      JR
+e318  f4             859    859         DB      SBSM1-$-1
+                     860    860 ;
+e319  cd 1a e2       861    861 SBSR:   CALL    GCMND           ;DE GETS LETTER - 'A'
+e31c  21 e7 e3       862    862         LXI     H,RGTBL
+e31f  19             863    863         DAD     D               ;PNTS TO REG DISPLACEMENT
+e320  42             864    864         MOV     B,D             ;D = 0
+e321  cb             865    865         DB      0CBH            ;BIT 7,(HL)
+e322  7e             866    866         DB      7EH             ;A THRU L?
+e323  28             867    867         DB      JRZ
+e324  0c             868    868         DB      SBSR1-$-1
+e325  79             869    869         MOV     A,C             ;LAST CMND DELIMITER
+e326  fe 20          870    870         CPI     20H             ;SPACE?
+e328  28             871    871         DB      JRZ
+e329  07             872    872         DB      SBSR1-$-1
+e32a  fe 27          873    873         CPI     ''''            ;PRIMED?
+e32c  c2 bc e0       874    874         JNZ     ERROR
+e32f  06 0e          875    875         MVI     B,DUAF-DUAF2    ;YES
+                     876    876 ;
+e331  7e             877    877 SBSR1:  MOV     A,M             ;DISPLACEMENT & FLAGS
+e332  b7             878    878         ORA     A               ;IF 0, ILLEGAL CMND
+e333  ca bc e0       879    879         JZ      ERROR
+e336  e6 1f          880    880         ANI     1FH             ;STRIP FLAGS OFF
+e338  80             881    881         ADD     B               ;ADJUST FOR PRIMES
+e339  5f             882    882         MOV     E,A             ;DE GETS DISPL (D=0)
+e33a  46             883    883         MOV     B,M             ;SAVE ORIG ENTRY
+e33b  dd             884    884         DB      IX
+e33c  e5             885    885         PUSH    H               ;PUSH IX
+e33d  e1             886    886         POP     H               ;STACK FRAME
+e33e  ed             887    887         DB      0EDH            ;SBC HL,DE
+e33f  52             888    888         DB      52H             ;PNTS TO USER REG
+                     889    889 ; PRINT CURRENT VALUE, DE GETS SUBSTITUTION
+                     890    890 ; VALUE, IF ANY, & (HL) OR (HL-1) GETS E.
+                     891    891 ; Z-FLAG RESET IFF CHANGE FOR A 2-BYTE REG.
+e340  cd e0 e2       892    892         CALL    GSUBV
+e343  28             893    893         DB      JRZ
+e344  01             894    894         DB      SBSR3-$-1
+e345  72             895    895         MOV     M,D             ;NO. HI BYTE
+e346  cd 52 e1       896    896 SBSR3:  CALL    SPACE
+e349  18             897    897         DB      JR
+e34a  ce             898    898         DB      SBSR-$-1
+                     899    899 ;
+e34b  78             900    900 DISPL:  MOV     A,B             ;LAST CMND CHAR
+e34c  fe 72          901    901         CPI     'R'+CASE        ;DR?
+e34e  79             902    902         MOV     A,C             ;CMND DELIMITER
+e34f  ca f5 e0       903    903         JZ      DSPR
+                     904    904 ;
+                     905    905 ; COMMAND
+                     906    906 ;
+                     907    907 ; DISPLAY MEMORY.
+                     908    908 ;
+e352  cd 64 e1       909    909 DSPM:   CALL    L2NCR           ;INTO DE, INCRM TO BC,
+                     910    910                                 ;DELIMITER TO A
+e355  eb             911    911         XCHG                    ;N1 TO HL
+e356  cd 5d e1       912    912 DSPM1:  CALL    PADR1           ;PRINT ADDR, ':'
+e359  cd e2 e1       913    913 DSPM2:  CALL    PSNM            ;PRINT CONTENTS OF MEM
+e35c  23             914    914         INX     H
+e35d  0b             915    915         DCX     B
+e35e  78             916    916         MOV     A,B
+e35f  b1             917    917         ORA     C               ;DONE?
+e360  ca 0c e1       918    918         JZ      CRLF
+e363  cd 56 e1       919    919         CALL    CK16B           ;CHECK FOR 16 COUNT
+e366  18             920    920         DB      JR
+e367  f1             921    921         DB DSPM2-$-1
+                     922    922 ;
+                     923    923 ; COMMAND
+                     924    924 ; READ BINARY INPUT FROM DATA PORT
+                     925    925 ;
+e368  cd 64 e1       926    926 READB:  CALL    L2NCR           ;GET MEM ADDRS
+e36b  cd 41 e1       927    927 RDB1:   CALL    GBYTE           ;GET INPUT
+e36e  12             928    928         STAX    D               ;TO MEM
+e36f  13             929    929         INX     D
+e370  0b             930    930         DCX     B               ;COUNT
+e371  78             931    931         MOV     A,B
+e372  b1             932    932         ORA     C               ;BC = 0?
+e373  20             933    933         DB      JRNZ
+e374  f6             934    934         DB      RDB1-$-1
+e375  c9             935    935         RET
+                     936    936 ;
+                     937    937 ; COMMAND
+                     938    938 ; WRITE BINARY OUTPUT TO DATA PORT
+                     939    939 ;
+e376  cd 64 e1       940    940 WRITB:  CALL    L2NCR           ;GET MEM ADDRS
+e379  db 00          941    941 WRTB1:  IN      STAT
+e37b  e6 80          942    942         ANI     TBE
+e37d  28             943    943         DB      JRZ
+e37e  fa             944    944         DB      WRTB1-$-1
+e37f  1a             945    945         LDAX    D
+e380  d3 01          946    946         OUT     DATA
+e382  13             947    947         INX     D
+e383  0b             948    948         DCX     B
+e384  78             949    949         MOV     A,B
+e385  b1             950    950         ORA     C
+e386  20             951    951         DB      JRNZ
+e387  f1             952    952         DB      WRTB1-$-1
+e388  c9             953    953         RET
+                     954    954 ;
+                     955    955 ; COMMAND
+                     956    956 ; OUT <DATA-BYTE> <PORT NUMBER>
+                     957    957 ;
+e389  cd 97 e1       958    958 OUTP:   CALL    GNHL
+e38c  eb             959    959         XCHG                    ;E GETS DATA
+e38d  cd 97 e1       960    960         CALL    GNHL            ;GET PORT NUMBER
+                     961    961 ;
+e390  4d             962    962         MOV     C,L             ;TO C
+e391  ed 59          963    963         DW      59EDH           ;OUT (C),E
+e393  c9             964    964         RET
+                     965    965 ;
+e394  0d             966    966 HEAD:   DB      CR
+e395  0d             967    967         DB      CR
+e396  43 52 4f 4d    968    968         DB      'CROMEMCO MON1.0 C.1976'
+e39a  45 4d 43 4f    968    969
+e39e  20 4d 4f 4e    968    970
+e3a2  31 2e 30 20    968    971
+e3a6  43 2e 31 39    968    972
+e3aa  37 36          968    973
+e3ac  00             969    974         DB      0
+                     970    975 ;
+e3ad  20 3f          971    976 SQS:    DB      ' ?'
+e3af  07             972    977         DB      BELL
+                     973    978 ;
+e3b0  0a             974    979 LFNN:   DB      LF
+e3b1  7f             975    980         DB      7FH             ;NULL
+e3b2  00             976    981         DB      0
+                     977    982 ;
+e3b3  3a             978    983 PRMPT:  DB      ':'
+e3b4  00             979    984         DB      0
+                     980    985 ; THE COMMAND TBL MUST IMMEDIATELY FOLLOW
+                     981    986 ; THE PROMT MESSAGE
+e3b5  bc e0          982    987         DW      ERROR           ;A
+e3b7  bc e0          983    988         DW      ERROR           ;BANK
+e3b9  bc e0          984    989         DW      ERROR           ;C
+e3bb  4b e3          985    990         DW      DISPL           ;DISPLAY
+e3bd  bc e0          986    991         DW      ERROR           ;ENTER
+e3bf  bc e0          987    992         DW      ERROR           ;FILE
+e3c1  63 e2          988    993         DW      GO
+e3c3  bc e0          989    994         DW      ERROR           ;H
+e3c5  bc e0          990    995         DW      ERROR           ;INPUT
+e3c7  bc e0          991    996         DW      ERROR           ;J
+e3c9  bc e0          992    997         DW      ERROR           ;K
+e3cb  bc e0          993    998         DW      ERROR           ;LIST
+e3cd  4b e2          994    999         DW      MOVE
+e3cf  bc e0          995   1000         DW      ERROR           ;NUMBER
+e3d1  89 e3          996   1001         DW      OUTP            ;OUTPUT
+e3d3  c9 e0          997   1002         DW      PROG            ;PROGRAM
+e3d5  bc e0          998   1003         DW      ERROR           ;Q
+e3d7  68 e3          999   1004         DW      READB           ;READ BINARY OR ASCII
+e3d9  04 e3         1000   1005         DW      SUBST           ;SUBSTITUTE
+e3db  bc e0         1001   1006         DW      ERROR           ;TRAP
+e3dd  bc e0         1002   1007         DW      ERROR           ;UNEQUAL
+e3df  2f e2         1003   1008         DW      VERIF           ;VERIFY
+e3e1  76 e3         1004   1009         DW      WRITB           ;WRITE BINARY OR ASCII
+e3e3  bc e0         1005   1010         DW      ERROR           ;X
+e3e5  bc e0         1006   1011         DW      ERROR           ;Y
+                    1007   1012 ;
+e3e7  84            1008   1013 RGTBL:  DB      -DUAF+PF        ;A
+e3e8  86            1009   1014         DB      -DUBC+PF        ;B
+e3e9  87            1010   1015         DB      -DUBC+1+PF      ;C
+e3ea  88            1011   1016         DB      -DUDE+PF        ;D
+e3eb  89            1012   1017         DB      -DUDE+1+PF      ;E
+e3ec  85            1013   1018         DB      -DUAF+1+PF      ;F
+e3ed  00            1014   1019         DB      0
+e3ee  8a            1015   1020         DB      -DUHL+PF        ;H
+e3ef  0c            1016   1021         DB      -DUIT           ;I
+e3f0  00            1017   1022         DB      0
+e3f1  00            1018   1023         DB      0
+e3f2  8b            1019   1024         DB      -DUHL+1+PF      ;L
+e3f3  00            1020   1025         DB      0
+e3f4  00            1021   1026         DB      0
+e3f5  00            1022   1027         DB      0
+                    1023   1028 ; INTEL MACRO-80 FLAGS A VALUE ERROR, BUT CORRECT VALUE 40 IS COMPUTED
+                    1024   1029 ;        DB      -DUPC+R2F       ;PC
+e3f6  40            1025   1030 	DB	40H
+e3f7  00            1026   1031         DB      0
+e3f8  00            1027   1032         DB      0
+e3f9  42            1028   1033         DB      -DUSP+R2F       ;SP
+e3fa  0d            1029   1034         DB      -DUIT+1         ;T (INTERRUPT ENABLE)
+e3fb  00            1030   1035         DB      0
+e3fc  00            1031   1036         DB      0
+e3fd  00            1032   1037         DB      0
+e3fe  4e            1033   1038         DB      -DUIX+R2F       ;X (IX)
+e3ff  50            1034   1039         DB      -DUIY+R2F       ;Y (IY)
+                    1035   1040 
+e400                1036   1041         END
+
+Symbol table
+
+ABCYZ e0b5    BAUD  e036    BELL  0007    CASE  0020    CK16B e156 
+CKBND e158    CLBP1 e088    CLBP2 e096    CMND  e09c    CMND1 e09f 
+CPI0  00ed    CPI1  00a1    CPIR  00ed*   CPIR1 00b1*   CR    000d 
+CRLF  e10c    DATA  0001    DAV   0040    DISPL e34b    DJNZ  0010 
+DSPM  e352*   DSPM1 e356*   DSPM2 e359    DSPR  e0f5    DUAF  fffc 
+DUAF2 ffee    DUBC  fffa    DUBC2 ffec*   DUDE  fff8    DUDE2 ffea*
+DUHL  fff6    DUHL2 ffe8    DUIT  fff4    DUIX  fff2    DUIY  fff0 
+DUPC  0000    DUSP  fffe    ERROR e0bc    ESC   001b    ESCPE e0bf 
+EXAF  0008    EXX   00d9    GBYTE e141    GCHR  e133    GCHR1 e13e 
+GCMN1 e225    GCMND e21a    GNHL  e197    GNHL1 e198*   GNHL3 e1a4 
+GNHL5 e1a7*   GO    e263    GO1   e26c    GO3   e285    GO5   e2a5 
+GSBV1 e2eb    GSBV2 e302    GSUBV e2e0    HEAD  e394    HEXSH e1af 
+HXSH0 e1bd    HXSH1 e1c8    HXSH4 e1bf*   INIT  e007    INIT1 e022 
+IX    00dd    IY    00fd    JR    0018    JRC   0038    JRNC  0030 
+JRNZ  0020    JRZ   0028    L2NCR e164    LD2N  e170    LD2N1 e181 
+LD2N2 e188    LD3N  e18b    LDD   00ed*   LDD1  00a8*   LDDR  00ed 
+LDDR1 00b8    LDI   00ed*   LDI1  00a0*   LDIR  00ed    LDIR1 00b0 
+LF    000a    LFNN  e3b0    LINCR e18e    MOVE  e24b    MVE   e250 
+MVE1  e251    OUTP  e389    P1HEX e1fc    P1HX1 e204    P2BMS e14a 
+P2HEX e1f3    P4HEX e1eb    PADDR e15a*   PADR1 e15d    PCHR  e10e 
+PCHR1 e119    PCHR2 e11d    PF    0080    PMSG  e20c    PMSG1 e20f 
+PNHL  e1da    PNM   e1e5    PPAGE 00ff    PREGS e107    PRMPT e3b3 
+PROG  e0c9    PROG1 e0cb*   PROG3 e0e0    PSNM  e1e2    PSQS  e209 
+R2F   0040    RDB1  e36b    READB e368    RETN  e2ad    RETN1 e2bf 
+RETN2 e2db    RGTBL e3e7    RLD   00ed*   RLD1  006f*   RSTLC 0030 
+SBSM  e30a*   SBSM1 e30d    SBSR  e319    SBSR1 e331    SBSR3 e346 
+SET5A 00cb*   SKSG  e1d1    SKSG0 e1d0    SKSG1 e1d2    SKSGC e167 
+SPACE e152    SQS   e3ad    ST5A1 00ef*   START e000*   STAT  0000 
+SUBST e304    SVMS  e043    SVMS1 e053    SVMS3 e070    TBE   0080 
+TEMPS 0016    VERIF e22f    VRFY  e232    WRITB e376    WRTB1 e379 

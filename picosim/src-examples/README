@@ -1,0 +1,22 @@
+This directory contains Z80/8080 code examples for the Pico Z80.
+I have assembled the sources with z80asm from z80pack, but you
+can use any Z80/8080 assembler of course.
+
+With z80pack z80sim examples like these can be debugged under
+control of an In Circuit Emulator (debug probe), the serial
+port implemented in the latest release is identical.
+You also can attach the ICE to this machine for debugging,
+see sim.h for compiling options.
+
+Copy the "example".bin files into a directory CODE80 on MicroSD card.
+
+The examples are:
+serial.bin	- shows how to do serial I/O
+blink.bin	- blink builtin LED with Z80 port output
+
+test8080.bin	- Kelly Smith 8080 CPU test program
+tb.bin		- 8080 TINY BASIC
+micro80.bin	- 8080 Microchess
+bas4k32.bin	- MITS Altair BASIC 4K V3.2, runs on 8080 only!    p ff = 0
+bas8k40.bin	- MITS Altair BASIC 8K V4.0, runs on 8080 only!    p ff = 22
+bas16k40.bin	- Extended MITS Altair BASIC 16K V4.0, runs on Z80 p ff = 22

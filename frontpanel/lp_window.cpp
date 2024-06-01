@@ -17,12 +17,7 @@
 
 */
 
-#ifdef __CYGWIN__
-#include <windef.h>
-#endif
-
 #include <GL/glu.h>
-
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
 #include <windows.h>
 #include <Commctrl.h>
@@ -33,7 +28,6 @@
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #endif
-
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +35,8 @@
 #include "lpanel.h"
 #include "lp_materials.h"
 #include "lp_font.h"
+
+#define UNUSED(x) (void) (x)
 
 
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
@@ -61,7 +57,7 @@ static int RGBA_DB_attributes[] = {
 // OpenGL Light source
 
 static GLfloat light_pos0[] = { 0.,0.5,1.,0.};
-static GLfloat light_pos1[] = { 0.,-0.5,-1.,0.};
+// static GLfloat light_pos1[] = { 0.,-0.5,-1.,0.};
 static GLfloat light_diffuse[] = { 1.,1.,1.,1.};
 static GLfloat light_specular[] = { 1.,1.,1.,1.};
 
@@ -71,7 +67,7 @@ static GLfloat mtl_spec[] = { 0.0, 0.0, 0.0, 1.0 };
 static GLfloat mtl_shine[] = { 0.0 };
 static GLfloat mtl_emission[] = { 0.0, 0.0, 0.0, 1.0 };
 
-static int mousex, mousey, omx, omy, lmouse, mmouse, rmouse;
+static int mousex, mousey, omx, omy, lmouse; // mmouse, rmouse;
 
 
 #if defined (__MINGW32__) || defined (_WIN32) || defined (_WIN32_) || defined (__WIN32__)
@@ -177,7 +173,7 @@ Lpanel::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		switch (kcode) 
 		{
 		  case VK_ESCAPE:
-			//exit(0);
+			//exit(EXIT_SUCCESS);
 			break;
 		  case 'c':
 		  case 'C':
@@ -321,7 +317,7 @@ Lpanel::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			   if(quit_callbackfunc) 
 				(*quit_callbackfunc)();
 			   else
-				  exit(0);
+				  exit(EXIT_SUCCESS);
 			return 0;  
 		   break;
 
@@ -334,6 +330,8 @@ Lpanel::WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 #else
 static Bool WaitForMapNotify(Display *d, XEvent *e, char *arg)
 {
+  UNUSED(d);
+
   if ((e->type == MapNotify) && (e->xmap.window == (Window)arg)) {
     return GL_TRUE;
   }
@@ -374,7 +372,7 @@ MSG msg;
 		resizeWindow();
 		break;
 	case ClientMessage:
-		if(event.xclient.data.l[0] == wmDeleteMessage)
+		if((Atom)event.xclient.data.l[0] == wmDeleteMessage)
 		 {
 		   // call user quit callback if exists
 		   if(quit_callbackfunc) 
@@ -382,7 +380,7 @@ MSG msg;
 		    }
 		   else
 		    { XCloseDisplay(dpy);
-		      exit(0);
+		      exit(EXIT_SUCCESS);
 		    }
 		 }
 		break;
@@ -435,7 +433,7 @@ MSG msg;
 		switch (key) 
 		{
 		  case XK_Escape:
-			//exit(0);
+			//exit(EXIT_SUCCESS);
 			break;
 		  case XK_Shift_L:
 		  case XK_Shift_R:
@@ -553,6 +551,7 @@ MSG msg;
 		  default:
 		  break;
 		}
+		/* fallthrough */
 
 	case MotionNotify:
 
@@ -692,7 +691,6 @@ Lpanel::openWindow(const char *title)
 
   int status;
   
-  XVisualInfo *vi = NULL;
   XSetWindowAttributes swa;
   XSizeHints hints;
   XEvent ev;
@@ -793,9 +791,11 @@ Lpanel::destroyWindow(void)
 
  glXDestroyContext(dpy,cx);
  XDestroyWindow(dpy, window);
+ XFree(vi);
  XCloseDisplay(dpy);
  dpy = 0;
  cx = 0;
+ vi = NULL;
  window = 0;
 
 #endif
@@ -982,7 +982,7 @@ Lpanel::draw_stats(void)
   glDisable(GL_DEPTH_TEST);
 
   glColor3f(1.,1.,0.);
-  sprintf(perf_txt,"fps:%d sps:%d",frames_per_second, samples_per_second);
+  snprintf(perf_txt,sizeof(perf_txt),"fps:%d sps:%d",frames_per_second, samples_per_second);
   printStringAt(perf_txt, bbox.xyz_min[0] + .2, bbox.xyz_min[1] + .2);
 
   glMatrixMode(GL_PROJECTION);
@@ -1044,6 +1044,6 @@ Lpanel::make_cursor_text(void)
 {
  cursor_textpos[0] = (bbox.xyz_max[0] + bbox.xyz_min[0]) * .5;
  cursor_textpos[1] = bbox.xyz_min[1] + .1;
- sprintf(cursor_txt,"cursor position=%7.3f,%7.3f", cursor[0], cursor[1]);
+ snprintf(cursor_txt,sizeof(cursor_txt),"cursor position=%7.3f,%7.3f", cursor[0], cursor[1]);
 }
 

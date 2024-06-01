@@ -4,8 +4,11 @@
  * Copyright (C) 2018 by David McNaughton
  * 
  * History:
- * 12-JUL-18    1.0     Initial Release
+ * 12-JUL-2018	1.0	Initial Release
  */
+
+#ifndef NETSRV_INC
+#define NETSRV_INC
 
 /**
  * This web server module provides...
@@ -15,27 +18,28 @@
 #include <sys/msg.h>
 #include <string.h>
 
-#define UNUSED(x) (void)(x)
-
 enum net_device {
-	DEV_SIO1,
+	DEV_TTY,
+	DEV_TTY2,
+	DEV_TTY3,
 	DEV_LPT,
 	DEV_VIO,
 	DEV_CPA,
 	DEV_DZLR,
 	DEV_88ACC,
 	DEV_D7AIO,
-	DEV_PTR
+	DEV_PTR,
+	_DEV_MAX
 };
 
 typedef enum net_device net_device_t;
 
-struct msgbuf {
+struct msgbuf_s {
 	long			mtype;
 	unsigned char	mtext[128];
 };
 
-typedef struct msgbuf msgbuf_t;
+typedef struct msgbuf_s msgbuf_t;
 
 struct ws_client {
 	struct mg_connection *conn;
@@ -68,7 +72,7 @@ enum http_method {
 	HTTP_POST,
 	HTTP_PUT,
 	HTTP_DELETE,
-	UNKNOWN
+	HTTP_UNKNOWN
 };
 
 typedef enum http_method http_method_t;
@@ -83,3 +87,5 @@ struct request {
 typedef struct request request_t;
 
 extern request_t *get_request(const HttpdConnection_t *);
+
+#endif

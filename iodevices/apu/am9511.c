@@ -2,7 +2,7 @@
  *
  * First cut am9511 emulation. This version is NOT cycle accurate,
  * or even algorithm accurate. It should be a somewhat reasonable
- * stand-in, which should allow us to run base-line comparisions with
+ * stand-in, which should allow us to run base-line comparisons with
  * the real device.
  */
 
@@ -16,6 +16,7 @@
 #include "ova.h"
 #include "types.h"
 
+#define UNUSED(x) (void) (x)
 
 /* Define fp_na() -- fp to native and
  *        na_fp() -- native to fp
@@ -745,7 +746,7 @@ void am_command(void *amp, unsigned char op) {
     case AM_COS:  /* cosine */
     case AM_TAN:  /* tangent */
     case AM_LOG:  /* common logarithm (base 10) */
-    case AM_LN:   /* natural logarthm (base e) */
+    case AM_LN:   /* natural logarithm (base e) */
     case AM_ASIN: /* inverse sine */
     case AM_ACOS: /* inverse cosine */
     case AM_ATAN: /* inverse tangent */
@@ -784,12 +785,16 @@ void am_reset(void *amp) {
 void *am_create(int status, int data) {
     struct am_context *p;
     void *fpp;
+    UNUSED(status);
+    UNUSED(data);
     fpp = malloc(apu_fp_size());
     if (fpp == NULL)
 	return NULL;
-    p = malloc(sizeof (struct am_context));
-    if (p == NULL)
+    p = (struct am_context *)malloc(sizeof (struct am_context));
+    if (p == NULL) {
+	free(fpp);
 	return NULL;
+    }
     p->fptmp = fpp;
     am_reset(p);
     return (void *)p;
@@ -807,7 +812,7 @@ void am_dump(void *amp, unsigned char op) {
     float x;
     unsigned char t = ctx->status;
     int b;
-    static char *opnames[] = {
+    static const char *opnames[] = {
         "NOP",  "SQRT", "SIN",  "COS",
         "TAN",  "ASIN", "ACOS", "ATAN",
         "LOG",  "LN",   "EXP",  "PWR",

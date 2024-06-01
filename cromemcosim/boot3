@@ -1,7 +1,9 @@
 #!/bin/sh
 
+BOOTENV=`sed '/^#/d;s/#.*$//;' conf/boot.conf | xargs`
+
 if [ -f disks/drivea.dsk ]; then
-	./cromemcosim -x rdos0312.hex $*
+	env $BOOTENV ./cromemcosim -M1 -R $*
 else
 	echo "no boot disk in drive a:"
 fi

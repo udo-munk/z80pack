@@ -6,10 +6,11 @@
  * IMSAI SIO-2 hardware abstraction layer
  *
  * History:
- * 1-JUL-2021    1.0     Initial Release 
+ * 1-JUL-2021	1.0	Initial Release
  *
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,24 +36,26 @@ static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
 
-int null_alive() {
+int null_alive(void) {
     return 1; /* NULL is always alive */
 }
-int null_dead() {
+int null_dead(void) {
     return 0; /* NULL is always dead */
 }
 void null_status(BYTE *stat) {
-    stat = stat;
+    UNUSED(stat);
+
     return;
 }
-int null_in() {
+int null_in(void) {
     return -1;
 }
 void null_out(BYTE data) {
-    data = data;
+    UNUSED(data);
+
     return;
 }
-int null_cd() {
+int null_cd(void) {
     return 0;
 }
 
@@ -60,9 +63,15 @@ int null_cd() {
 
 int vio_kbd_alive(void) {
 #ifdef HAS_NETSERVER
-    return net_device_alive(DEV_VIO); /* VIO (webUI) keyboard is only alive if websocket is connected */
-#else
-    return 1; /* VIO (xterm) keyboard is always alive */
+    if (n_flag) {
+        /* VIO (webUI) keyboard is only alive if websocket is connected */
+        return net_device_alive(DEV_VIO);
+    } else {
+#endif
+        /* VIO (xterm) keyboard is always alive */
+        return 1;
+#ifdef HAS_NETSERVER
+    }
 #endif
 
 }
@@ -77,64 +86,90 @@ int vio_kbd_in(void)
 	int data;
 
 	if (imsai_kbd_data == -1)
-		return(-1);
+		return (-1);
 
 	/* take over data and reset */
 	data = imsai_kbd_data;
 	imsai_kbd_data = -1;
 	imsai_kbd_status = 0;
 
-	return(data);
+	return (data);
 }
 void vio_kbd_out(BYTE data) {
-    data = data;
+    UNUSED(data);
 }
 
 /* -------------------- WEBTTY HAL -------------------- */
 
 #ifdef HAS_NETSERVER
-int net_tty_alive() {
-    return net_device_alive(DEV_SIO1); /* WEBTTY is only alive if websocket is connected */
+int net_tty_alive(void) {
+    if (n_flag) {
+        /* WEBTTY is only alive if websocket is connected */
+        return net_device_alive(DEV_TTY);
+    } else {
+        return 0;
+    }
 }
 void net_tty_status(BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (net_device_poll(DEV_SIO1)) {
-        *stat |= 2;
+    if (n_flag) {
+        if (net_device_poll(DEV_TTY)) {
+            *stat |= 2;
+        }
+        *stat |= 1;
     }
-    *stat |= 1;
 }
-int net_tty_in() {
-    return net_device_get(DEV_SIO1);
+int net_tty_in(void) {
+    if (n_flag) {
+        return net_device_get(DEV_TTY);
+    } else {
+        return -1;
+    }
 }
 void net_tty_out(BYTE data) {
-    net_device_send(DEV_SIO1, (char *)&data, 1);
+    if (n_flag) {
+        net_device_send(DEV_TTY, (char *)&data, 1);
+    }
 }
 #endif
 
 /* -------------------- WEBPTR HAL -------------------- */
 
 #ifdef HAS_NETSERVER
-int net_ptr_alive() {
-    return net_device_alive(DEV_PTR); /* WEBPTR is only alive if websocket is connected */
+int net_ptr_alive(void) {
+    if (n_flag) {
+        /* WEBPTR is only alive if websocket is connected */
+        return net_device_alive(DEV_PTR);
+    } else {
+        return 0;
+    }
 }
 void net_ptr_status(BYTE *stat) {
     *stat &= (BYTE)(~3);
-    if (net_device_poll(DEV_PTR)) {
-        *stat |= 2;
+    if (n_flag) {
+        if (net_device_poll(DEV_PTR)) {
+            *stat |= 2;
+        }
+        *stat |= 1;
     }
-    *stat |= 1;
 }
-int net_ptr_in() {
-    return net_device_get(DEV_PTR);
+int net_ptr_in(void) {
+    if (n_flag) {
+        return net_device_get(DEV_PTR);
+    } else {
+        return -1;
+    }
 }
 void net_ptr_out(BYTE data) {
-    net_device_send(DEV_PTR, (char *)&data, 1);
+    if (n_flag) {
+        net_device_send(DEV_PTR, (char *)&data, 1);
+    }
 }
 #endif
 
 /* -------------------- STDIO HAL -------------------- */
 
-int stdio_alive() {
+int stdio_alive(void) {
     return 1; /* STDIO is always alive */
 }
 void stdio_status(BYTE *stat) {
@@ -155,7 +190,7 @@ void stdio_status(BYTE *stat) {
     *stat |= 1;
 
 }
-int stdio_in() {
+int stdio_in(void) {
     int data;
 	struct pollfd p[1];
 
@@ -166,11 +201,12 @@ again:
     p[0].revents = 0;
     poll(p, 1, 0);
     if (!(p[0].revents & POLLIN))
-        return(-1);
+        return (-1);
 
     if (read(fileno(stdin), &data, 1) == 0) {
         /* try to reopen tty, input redirection exhausted */
-        freopen("/dev/tty", "r", stdin);
+        if (freopen("/dev/tty", "r", stdin) == NULL)
+            LOGE(TAG, "can't reopen /dev/tty");
         set_unix_terminal();
         goto again;
     }
@@ -193,7 +229,7 @@ again:
 
 /* -------------------- SOCKET SERVER HAL -------------------- */
 
-int scktsrv_alive() {
+int scktsrv_alive(void) {
 
     struct pollfd p[1];
 
@@ -234,13 +270,13 @@ void scktsrv_status(BYTE *stat) {
 		*stat = 0;
 	}
 }
-int scktsrv_in() {
+int scktsrv_in(void) {
     BYTE data;
 	struct pollfd p[1];
 
 	/* if not connected return last */
 	if (ucons[0].ssc == 0)
-		return(-1);
+		return (-1);
 
 	/* if no input waiting return last */
 	p[0].fd = ucons[0].ssc;
@@ -248,13 +284,13 @@ int scktsrv_in() {
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return(-1);
+		return (-1);
 
 	if (read(ucons[0].ssc, &data, 1) != 1) {
 		/* EOF, close socket and return last */
 		close(ucons[0].ssc);
 		ucons[0].ssc = 0;
-		return(-1);
+		return (-1);
 	}
 
     return data;
@@ -294,7 +330,7 @@ again:
 #ifdef HAS_MODEM
 #include "generic-at-modem.h"
 
-int modem_alive() {
+int modem_alive(void) {
     return modem_device_alive(0);
 }
 void modem_status(BYTE *stat) {
@@ -304,13 +340,13 @@ void modem_status(BYTE *stat) {
     }
     *stat |= 1;
 }
-int modem_in() {
+int modem_in(void) {
     return modem_device_get(0);
 }
 void modem_out(BYTE data){
     modem_device_send(0, (char) data);
 }
-int modem_cd() {
+int modem_cd(void) {
     return modem_device_carrier(0);
 }
 #endif /*HAS_MODEM*/
@@ -342,7 +378,7 @@ hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];
 
 /* -------------------- HAL utility functions -------------------- */
 
-static void hal_report() {
+static void hal_report(void) {
 
     int i, j;
 
@@ -375,7 +411,7 @@ static int hal_find_device(char *dev) {
     return -1;
 }
 
-static void hal_init() {
+static void hal_init(void) {
 
     int i, j, d;
     char *setting;
@@ -383,7 +419,7 @@ static void hal_init() {
     char *dev;
 
     /**
-     *  Initialise HAL with default configuration, as follows:
+     *  Initialize HAL with default configuration, as follows:
      * 
      *      SIO1.portA.device=WEBTTY,STDIO
      *      SIO1.portB.device=VIOKBD
@@ -444,7 +480,7 @@ static void hal_init() {
     }
 }
 
-void hal_reset() {
+void hal_reset(void) {
     hal_init();
     hal_report();
 }

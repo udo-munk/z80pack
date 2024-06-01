@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# CPM with VDM-1 console
+# boot from Tarbell FDC with internal boot ROM
+# needs Cuter for terminal functions!
+# eigther enter or load boot code with Cuter, or
+# CLR from front panel to boot
+
+rm -f disks/drivea.dsk
+ln disks/library/cpm22-vdm.dsk disks/drivea.dsk
+
+./altairsim -R -M 10 $*

@@ -3,8 +3,8 @@
 ;	Copyright (C) 2019 by Udo Munk
 ;
 ; History:
-; 23-OCT-19 first public release
-; 25-OCT-19 initialize all character devices
+; 23-OCT-2019 first public release
+; 25-OCT-2019 initialize all character devices
 ;
 	CSEG
 ;
@@ -55,7 +55,7 @@ LEDS	EQU	0FFH		; programmed output LED's
 	JMP	SELMEM		;   select bank of memory
 	JMP	SETBNK		;   specify bank for DMA operation
 	JMP	XMOVE		;   set bank for memory DMA transfer
-	JMP	0		;   reserved for system implementor
+	JMP	0		;   reserved for system implementer
 	JMP	0		;   reserved for future use
 	JMP	0		;   reserved for future use
 ;

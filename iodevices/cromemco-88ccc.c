@@ -6,27 +6,26 @@
  * Copyright (C) 2018 by David McNaughton
  * 
  * History:
- * 14-AUG-18    1.0     Initial Release
- * 04-NOV-19		remove fake DMA bus request
+ * 14-AUG-2018	1.0	Initial Release
+ * 04-NOV-2019		remove fake DMA bus request
  */
 
+#include <stdint.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <signal.h>
-#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+
+#if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
+
 #include "config.h"
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
-#ifdef HAS_NETSERVER
+#include "memsim.h"
 #include "netsrv.h"
-#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
-#ifdef HAS_CYCLOPS
 
 static const char *TAG = "88CCC";
 
@@ -43,9 +42,9 @@ static pthread_t thread = 0;
 /* thread for requesting, receiving & storing the camera image using DMA */
 static void *store_image(void *arg)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern uint64_t get_clock_us(void);
 
-	struct timeval t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 	int i, j, len;
 	BYTE buffer[FIELDSIZE];
@@ -57,9 +56,10 @@ static void *store_image(void *arg)
 	} msg;
 	BYTE msgB;
 
-	UNUSED(arg);	/* to avoid compiler warning */
+	UNUSED(arg);
+
 	memset(&msg, 0, sizeof(msg));
-	gettimeofday(&t1, NULL);
+	t1 = get_clock_us();
 
 	while (state) {	/* do until total frame is received */
 		if (net_device_alive(DEV_88ACC)) {
@@ -78,13 +78,12 @@ static void *store_image(void *arg)
 			for (i = 0; i < msg.fields; i++) {
 				len = net_device_get_data(DEV_88ACC, (char *) buffer, FIELDSIZE);
 				if (len != FIELDSIZE) {
-					LOGW(TAG,"Error in frame length, recieved %d of %d bytes.", len, FIELDSIZE);
+					LOGW(TAG,"Error in frame length, received %d of %d bytes.", len, FIELDSIZE);
 				} else {
 					LOGD(TAG, "received frame %d, length %d, %d stored at %04x", i, len, (BYTE)*buffer, dma_addr + (i * FIELDSIZE));
 					for (j = 0; j < FIELDSIZE; j++) {
 						dma_write(dma_addr + (i * FIELDSIZE) + j, buffer[j]);
 					}
-					/* memcpy(mem_base() + dma_addr + (i * FIELDSIZE), buffer, len); */
 				}
 			}
 		} else {
@@ -98,8 +97,8 @@ static void *store_image(void *arg)
 		/* SLEEP_MS(j); */
 
 		/* sleep rest of total frame time */
-		gettimeofday(&t2, NULL);
-		tdiff = time_diff(&t1, &t2);
+		t2 = get_clock_us();
+		tdiff = t2 - t1;
 		if (tdiff < (j*1000)) 
 			SLEEP_MS(j - tdiff/1000);
 
@@ -126,10 +125,10 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 			if (thread == 0) {
 				if (pthread_create(&thread, NULL, store_image, (void *) NULL)) {
 					LOGE(TAG, "can't create thread");
-					exit(1);
+					exit(EXIT_FAILURE);
 				}
 			} else {
-				LOGW(TAG, "Transfer with 88CCC already in progess.");
+				LOGW(TAG, "Transfer with 88CCC already in progress.");
 			}
 		} else {
 			/* No 88ACC camera attached */
@@ -139,7 +138,7 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 	} else {
 		if (state == 1) {
 			state = 0;
-			SLEEP_MS(50); /* Arbitraray 50ms timeout to let thread exit after state change, TODO: maybe should end thread? */
+			SLEEP_MS(50); /* Arbitrary 50ms timeout to let thread exit after state change, TODO: maybe should end thread? */
 		}
 	}
 }
@@ -158,7 +157,7 @@ void cromemco_88ccc_ctrl_c_out(BYTE data)
 BYTE cromemco_88ccc_ctrl_a_in(void)
 {
 	/* return flags along with state in the msb */
-	return(flags | (state << 7));
+	return (flags | (state << 7));
 }
 
-#endif /* HAS_CYCLOPS */
+#endif /* HAS_NETSERVER && HAS_CYCLOPS */

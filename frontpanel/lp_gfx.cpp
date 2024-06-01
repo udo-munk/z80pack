@@ -27,11 +27,11 @@
 #include "lp_materials.h"
 #include "jpeg.h"
 
-static GLfloat mtl2_amb[] = { 0.2, 0.2, 0.2, 1.0 };
-static GLfloat mtl2_dif[] = { 1.0, 1.0, 1.0, 1.0 };
-static GLfloat mtl2_spec[] = { 0.0, 0.0, 0.0, 1.0 };
-static GLfloat mtl2_shine[] = { 0.0 };
-static GLfloat mtl2_emission[] = { 0.0, 0.0, 0.0, 1.0 };
+// static GLfloat mtl2_amb[] = { 0.2, 0.2, 0.2, 1.0 };
+// static GLfloat mtl2_dif[] = { 1.0, 1.0, 1.0, 1.0 };
+// static GLfloat mtl2_spec[] = { 0.0, 0.0, 0.0, 1.0 };
+// static GLfloat mtl2_shine[] = { 0.0 };
+// static GLfloat mtl2_emission[] = { 0.0, 0.0, 0.0, 1.0 };
 
 
 
@@ -136,7 +136,7 @@ Lpanel::growObjects(void)
     new_objects[i] = objects[i];
 
   max_objects += 1;
-  if(objects) delete objects;
+  if(objects) delete[] objects;
   objects = new_objects;
 }
 
@@ -151,7 +151,7 @@ Lpanel::growAlphaObjects(void)
     new_alpha_objects[i] = alpha_objects[i];
 
   max_alpha_objects += 1;
-  if(alpha_objects) delete objects;
+  if(alpha_objects) delete[] alpha_objects;
   alpha_objects = new_alpha_objects;
 }
 
@@ -194,8 +194,9 @@ lpObject::~lpObject(void)
    for(i=0;i<num_elements;i++)
     if(elements[i]) delete elements[i];
 
-   delete elements;
+   delete[] elements;
   } 
+ if(name) delete[] name;
 }
 
 
@@ -247,7 +248,9 @@ lpObject::draw(void)
      }
   }
  else
-  glDisable(GL_TEXTURE_2D);
+  {
+   glDisable(GL_TEXTURE_2D);
+  }
 
   glPushMatrix();
 
@@ -309,7 +312,9 @@ lpObject::draw(int referenced)
      }
   }
  else
-  glDisable(GL_TEXTURE_2D);
+  {
+    glDisable(GL_TEXTURE_2D);
+  }
 
   if(have_normals) 
    {
@@ -413,7 +418,7 @@ lpObject::growElements(void)
     new_elements[i] = elements[i];
 
   max_elements += 1;
-  if(elements) delete elements;
+  if(elements) delete[] elements;
   elements = new_elements;
 }
 
@@ -421,7 +426,7 @@ lpObject::growElements(void)
 void
 lpObject::setName(char *s)
 {
-  if(name) delete name;
+  if(name) delete[] name;
   name = new char[ strlen(s)+1];
   strcpy(name,s);
 }
@@ -429,7 +434,7 @@ void
 
 lpObject::setInstanceName(char *s)
 {
-  if(instance_name) delete instance_name;
+  if(instance_name) delete[] instance_name;
   instance_name = new char[ strlen(s)+1];
   strcpy(instance_name,s);
 }
@@ -453,7 +458,7 @@ lpElement::~lpElement(void)
      for(i=0;i<num_verts;i++)
 	if(verts[i]) delete verts[i];
 
-     delete verts;
+     delete[] verts;
    }
 }
 
@@ -614,7 +619,7 @@ lpElement::growVerts(void)
     new_verts[i] = verts[i];
 
    max_verts += 4;
-   if(verts) delete verts;
+   if(verts) delete[] verts;
    verts = new_verts;
   }
 }
@@ -647,7 +652,7 @@ lpTextures::~lpTextures(void)
 	   delete tex[i]; 
 	 }
 
-  delete tex;
+  delete[] tex;
  }
 
 }
@@ -691,7 +696,7 @@ int
 lpTextures::downloadTextures(void)
 {
  int texnum;
- int n;
+ // int n;
 
 for(texnum = 1; texnum < num_textures; texnum++)
  if(tex[texnum]->pixels)
@@ -778,7 +783,7 @@ for(texnum = 1; texnum < num_textures; texnum++)
 
  // get a bind id from OpenGL
 
- n = glGetError(); /* clear any gl errors */
+ /* n = */ (void)glGetError(); /* clear any gl errors */
 
  glGenTextures(1,(GLuint *)&tex[texnum]->bind_id);
  glBindTexture( GL_TEXTURE_2D, tex[texnum]->bind_id );
@@ -835,7 +840,7 @@ lpTextures::growTextures(void)
 
    max_textures += n;
 
-   if(tex) delete tex;
+   if(tex) delete[] tex;
 
    tex = new_tex;
   }

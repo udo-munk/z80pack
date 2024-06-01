@@ -1,0 +1,84 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ; Example program for the Pico Z80
+                       3      3 ; Do some serial I/O.
+                       4      4 ;
+                       5      5 ; Udo Munk, April 2024
+                       6      6 ;
+                       7      7 	ORG	0000H			; starting at memory location 0
+                       8      8 
+000d  =                9      9 CR	EQU	13			; carriage return
+000a  =               10     10 LF	EQU	10			; line feed
+                      11     11 
+0000  =               12     12 TTYSTA	EQU	0			; tty status port
+0001  =               13     13 TTYDAT	EQU	1			; tty data port
+                      14     14 
+0000  f3              15     15 	DI				; disable interrupts
+0001  31 8d 00        16     16 	LD	SP,STACK		; setup stack in upper memory
+                      17     17 
+                      18     18 					; print instructions
+0004  21 35 00        19     19 	LD	HL,TEXT			; HL points to text to send
+0007  7e              20     20 LOOP:	LD	A,(HL)			; get next character into A
+0008  b7              21     21 	OR	A			; is it 0 termination?
+0009  28 06           22     22 	JR	Z,ECHO			; if yes done
+000b  cd 2b 00        23     23 	CALL	OUTCH			; output character to tty
+000e  23              24     24 	INC	HL			; point to next character
+000f  18 f6           25     25 	JR	LOOP			; and again
+                      26     26 
+                      27     27 					; now echo what is typed
+0011  db 00           28     28 ECHO:	IN	A,(TTYSTA)		; get tty status
+0013  0f              29     29 	RRCA
+0014  38 fb           30     30 	JR	C,ECHO			; wait if not ready
+0016  db 01           31     31 	IN	A,(TTYDAT)		; get character from tty into A
+0018  cd 2b 00        32     32 	CALL	OUTCH			; echo it
+001b  fe 58           33     33 	CP	'X'			; is it a X?
+001d  28 0b           34     34 	JR	Z,DONE			; done if so
+001f  fe 0d           35     35 	CP	CR			; is it a carriage return?
+0021  20 ee           36     36 	JR	NZ,ECHO			; no, go on
+0023  3e 0a           37     37 	LD	A,LF			; else also send line feed
+0025  cd 2b 00        38     38 	CALL	OUTCH
+0028  18 e7           39     39 	JR	ECHO			; repeat
+                      40     40 
+002a  76              41     41 DONE:	HALT				; done
+                      42     42 
+                      43     43 					; output character in A to tty
+002b  f5              44     44 OUTCH:	PUSH	AF			; save character in A
+002c  db 00           45     45 OUTCH1:	IN	A,(TTYSTA)		; get tty status
+002e  07              46     46 	RLCA
+002f  38 fb           47     47 	JR	C,OUTCH1		; wait if not ready
+0031  f1              48     48 	POP	AF			; get character back into A
+0032  d3 01           49     49 	OUT	(TTYDAT),A		; send character to tty
+0034  c9              50     50 	RET
+                      51     51 
+0035  48 65 6c 6c     52     52 TEXT:	DEFM	"Hello from the Z80 CPU"
+0039  6f 20 66 72     52     53
+003d  6f 6d 20 74     52     54
+0041  68 65 20 5a     52     55
+0045  38 30 20 43     52     56
+0049  50 55           52     57
+004b  0d 0a           53     58 	DEFB	CR,LF
+004d  49 20 77 69     54     59 	DEFM	"I will echo what you type, type X if done"
+0051  6c 6c 20 65     54     60
+0055  63 68 6f 20     54     61
+0059  77 68 61 74     54     62
+005d  20 79 6f 75     54     63
+0061  20 74 79 70     54     64
+0065  65 2c 20 74     54     65
+0069  79 70 65 20     54     66
+006d  58 20 69 66     54     67
+0071  20 64 6f 6e     54     68
+0075  65              54     69
+0076  0d 0a 00        55     70 	DEFB	CR,LF,0
+                      56     71 
+0079                  57     72 	DS	20			; spave for the stack
+008d                  58     73 STACK:
+                      59     74 
+008d                  60     75 	END				; of program
+
+Symbol table
+
+CR     000d    DONE   002a    ECHO   0011    LF     000a    LOOP   0007 
+OUTCH  002b    OUTCH1 002c    STACK  008d    TEXT   0035    TTYDAT 0001 
+TTYSTA 0000    

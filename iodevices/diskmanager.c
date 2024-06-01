@@ -4,7 +4,7 @@
  * Copyright (C) 2018 by David McNaughton
  * 
  * History:
- * 12-JUL-18    1.0     Initial Release
+ * 12-JUL-2018	1.0	Initial Release
  */
 
 /**
@@ -20,9 +20,9 @@
  * provided path.
  * 
  * The "disk.map" file is a simple text file with a line for each disk
- * starting at 'A' upto [LAST_DISK], typically 'D'.
+ * starting at 'A' up to [LAST_DISK], typically 'D'.
  *      - If a line is empty of starts with '#' the disk is "ejected"
- *      - If a disk image is "inserted" the line conatains only the file name
+ *      - If a disk image is "inserted" the line contains only the file name
  * 
  * The diskmanager provides functions to:
  *      - populate the array from the file
@@ -34,43 +34,30 @@
  *      - and some other support functions.
  * 
  * TODO:
- *      - fully support paths to allow a disk libabry hierarchy 
- *      - support more complex disk arrays that conatin structures e.g.
+ *      - fully support paths to allow a disk library hierarchy 
+ *      - support more complex disk arrays that contain structures e.g.
  *          * cpmsim::iosim.c
  *          * cromemco-fdc.c
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include "sim.h"
+
 #define LOCAL_LOG_LEVEL LOG_DEBUG
 #include "log.h"
-#include "sim.h"
+#include "disks.h"
 #ifdef HAS_NETSERVER
 #include "civetweb.h"
 #include "netsrv.h"
 #endif
 
-
-#ifdef HAS_DISKMANAGER
-#ifndef UNUSED
-#define UNUSED(x) (void)(x)
-#endif
-
-#ifndef DISKMAP
-#define DISKMAP     "disk.map"
-#endif
-
-#define LAST_DISK   'D'
-#define _MAX_DISK   (LAST_DISK - '@')
-
 static const char *TAG = "diskmanager";
-
-char *disks[_MAX_DISK];
-extern char *disks[];
 
 static char path[MAX_LFN+1];		/* path/filename for disk image */
 static char *file_start;
@@ -92,8 +79,8 @@ int findDiskImage(const char *image) {
     int i;
 
     for (i = 0; i < _MAX_DISK; i++) {
-        if (disks[i] != NULL) {
-            if (strcmp(image, disks[i]) == 0) {
+        if (DISKNAME(i) != NULL) {
+            if (strcmp(image, DISKNAME(i)) == 0) {
                 return 1;                  
             }
         }   
@@ -127,14 +114,14 @@ disk_err_t insertDisk(int disk, const char *image) {
 
     if (disk >= 0 && disk < _MAX_DISK) {
 
-        if (disks[disk] != NULL) {
+        if (DISKNAME(disk) != NULL) {
             return DRIVE_NOT_EMPTY;
         }
 
         if (image != NULL && strlen(image) < MAX_LFN) {
 
             for (i = 0; i < _MAX_DISK; i++) {
-                if (disks[i] != NULL && strcmp(image, disks[i]) == 0) {
+                if (DISKNAME(i) != NULL && strcmp(image, DISKNAME(i)) == 0) {
                     return IMAGE_ALREADY_INSERTED;
                 }
             }
@@ -149,7 +136,7 @@ disk_err_t insertDisk(int disk, const char *image) {
                         return FAILURE;
                     } else {
                         /* Everything is OK, we can insert the disk */
-                        disks[disk] = name;
+                        DISKNAME(disk) = name;
                         return SUCCESS;
                     }
                 } else {
@@ -173,12 +160,12 @@ disk_err_t ejectDisk(int disk) {
 
     if (disk >= 0 || disk < _MAX_DISK) {
 
-        if (disks[disk] == NULL) {
+        if (DISKNAME(disk) == NULL) {
             return DRIVE_EMPTY;
         }
 
-        name = disks[disk];
-        disks[disk] = NULL;
+        name = DISKNAME(disk);
+        DISKNAME(disk) = NULL;
         free(name);
         
         return SUCCESS;
@@ -205,7 +192,7 @@ void writeDiskmap(void) {
     }
 
     for (i = 0; i < _MAX_DISK; i++) {
-        fprintf(map, "%s\n", disks[i]==NULL?"#":disks[i]);
+        fprintf(map, "%s\n", DISKNAME(i)==NULL?"#":DISKNAME(i));
     }
     fclose(map);  
 }
@@ -220,7 +207,7 @@ void readDiskmap(char *path_name) {
     disk_err_t insert;
 
     for (i = 0; i < _MAX_DISK; i++) {
-        disks[i] = NULL;
+        DISKNAME(i) = NULL;
     }
 
     strncpy(path, path_name, MAX_LFN);
@@ -259,7 +246,7 @@ again:
 
                 switch (insert) {
                     case SUCCESS :
-                        LOG(TAG, "%c:DSK:='%s'\r\n", i+'A', disks[i]);
+                        LOG(TAG, "%c:DSK:='%s'\r\n", i+'A', DISKNAME(i));
                         break;
                     case IMAGE_ALREADY_INSERTED :
                         LOGW(TAG, "%c:DSK: Image file '%s' already in use", i+'A', name);
@@ -268,7 +255,7 @@ again:
                         LOGW(TAG, "%c:DSK: Image file '%s' is invalid", i+'A', name);
                         break;
                     default:
-                        LOGW(TAG, "%c:DSK: Failed to insert disk, error: %d", i+'A', insert)
+                        LOGW(TAG, "%c:DSK: Failed to insert disk, error: %d", i+'A', insert);
                         break;
                 }
             } 
@@ -291,14 +278,14 @@ int LibraryHandler(HttpdConnection_t *conn, void *unused) {
 	int i = 0;
     UNUSED(unused);
 
-    *file_start = '\0';
-
     if (*path == '\0') {
          LOGW(TAG, "Path to disk map not set. Call readDiskmap(path) first.");
         return 0;      
     }
 
-    switch(req->method) {
+    *file_start = '\0';
+
+    switch (req->method) {
     case HTTP_GET:
         DirectoryHandler(conn, path);
         break;
@@ -351,9 +338,12 @@ static void sendDisks(struct mg_connection *conn) {
     httpdPrintf(conn, "{");
 
     for (i = 0; i < _MAX_DISK; i++) {
-        httpdPrintf(conn, "\"%c\": \"%s\"", i+'A', disks[i]==NULL?"":disks[i]);
+        httpdPrintf(conn, "\"%c\": \"%s\"", i+'A', DISKNAME(i)==NULL?"":DISKNAME(i));
         if (i < (_MAX_DISK - 1)) httpdPrintf(conn, ",");
     }
+
+    extern void sendHardDisks(struct mg_connection *conn);
+    sendHardDisks(conn);
 
     httpdPrintf(conn, "}");          
 }
@@ -365,7 +355,7 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
     disk_err_t result;
     UNUSED(unused);
  
-    switch(req->method) {
+    switch (req->method) {
     case HTTP_GET:
         LOGD(TAG, "GET /disks");
         sendDisks(conn);
@@ -401,7 +391,7 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
                 httpdEndHeaders(conn);   
                 break;
             default:
-                LOGW(TAG, "PUT image: %s, failed to insert disk: %d, error: %d", image, disk, result)
+                LOGW(TAG, "PUT image: %s, failed to insert disk: %d, error: %d", image, disk, result);
                 httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 break;
@@ -424,7 +414,7 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
                 httpdEndHeaders(conn);    
                 break;
             default:
-                LOGW(TAG, "DELETE /disks failed to eject disk: %d, error: %d", disk, result)
+                LOGW(TAG, "DELETE /disks failed to eject disk: %d, error: %d", disk, result);
                 httpdStartResponse(conn, 404);  /* http error code 'Not Found' */
                 httpdEndHeaders(conn);   
                 break;
@@ -433,9 +423,9 @@ int DiskHandler(HttpdConnection_t *conn, void *unused) {
     default:
         httpdStartResponse(conn, 405);  /* http error code 'Method Not Allowed' */
         httpdEndHeaders(conn);
+	break;
 	}
 
     return 1;   
 }
-#endif
 #endif

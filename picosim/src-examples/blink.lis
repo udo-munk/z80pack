@@ -1,0 +1,44 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ; Example program for the Pico Z80
+                       3      3 ; Blink builtin LED for a bit
+                       4      4 ;
+                       5      5 ; Udo Munk, April 2024
+                       6      6 ;
+                       7      7 
+                       8      8 
+                       9      9 	ORG	0000H		; starting at memory location 0
+                      10     10 
+0000  =               11     11 LED	EQU	0		; builtin LED port
+                      12     12 
+0000  f3              13     13 	DI			; disable interrupts
+0001  31 35 00        14     14 	LD	SP,STACK	; setup stack in upper memory
+                      15     15 
+0004  06 14           16     16 	LD	B,20		; blink LED 20 times
+0006  3e 01           17     17 L1:	LD	A,1		; switch LED on
+0008  d3 00           18     18 	OUT	(LED),A
+000a  21 00 00        19     19 	LD	HL,0		; wait a bit
+000d  2b              20     20 L2:	DEC	HL
+000e  7c              21     21 	LD	A,H
+000f  b5              22     22 	OR	L
+0010  20 fb           23     23 	JR	NZ,L2
+0012  3e 00           24     24 	LD	A,0		; switch LED off
+0014  d3 00           25     25 	OUT	(LED),A
+0016  21 00 00        26     26 	LD	HL,0		; wait a bit
+0019  2b              27     27 L3:	DEC	HL
+001a  7c              28     28 	LD	A,H
+001b  b5              29     29 	OR	L
+001c  20 fb           30     30 	JR	NZ,L3
+001e  10 e6           31     31 	DJNZ	L1		; again if not done
+0020  76              32     32 	HALT			; done, halt CPU
+                      33     33 
+0021                  34     34 	DS	20		; space for the stack
+0035                  35     35 STACK:
+                      36     36 
+0035                  37     37 	END			; of program
+
+Symbol table
+
+L1    0006    L2    000d    L3    0019    LED   0000    STACK 0035 

@@ -4,6 +4,7 @@
  * Common I/O devices used by various simulated machines
  *
  * Copyright (C) 2014-2019 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * Emulation of an IMSAI FIF S100 board
  *
@@ -26,8 +27,11 @@
  * 04-NOV-2019 eliminate usage of mem_base() & remove fake bus_request
  * 17-NOV-2019 return result codes as documented in manual
  * 18-NOV-2019 initialize command string address array
+ * 14-May-2024 remove large disk from disks[] for disk manager, show it as HDD
+ * 15-MAY-2024 make disk manager standard
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,13 +40,13 @@
 #include "sim.h"
 #include "simglb.h"
 #include "config.h"
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
+#ifdef HAS_NETSERVER
+#include "civetweb.h"
+#include "netsrv.h"
+#endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
-/* support a z80pack 4 MB drive as unit 15 */
-#define LARGEDISK
 
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
@@ -67,39 +71,14 @@
 #define SPT8		26
 #define TRK8		77
 
-#ifdef LARGEDISK
 /* z80pack 4 MB drive */
 #define SPTHD		128
 #define TRKHD		255
-#endif
 
 static const char *TAG = "FIF";
 
-#ifdef HAS_DISKMANAGER
-extern char *disks[];
-#else
-/* these are our disk drives */
-#ifdef LARGEDISK
-static char *disks[9] = {
-	"drivea.dsk",
-	"driveb.dsk",
-	"drivec.dsk",
-	"drived.dsk",
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	"drivei.dsk"
-};
-#else
-static char *disks[4] = {
-	"drivea.dsk",
-	"driveb.dsk",
-	"drivec.dsk",
-	"drived.dsk"
-};
-#endif
-#endif
+char *disks[4];
+static const char *hddisk = "drivei.dsk";
 
 static int fdaddr[16];		/* address of disk descriptors */
 static char fn[MAX_LFN];	/* path/filename for disk image */
@@ -108,7 +87,8 @@ static int fdstate = 0;		/* state of the fd */
 /*
  * find and set path for disk images
  */
-char *dsk_path(void) {
+char *dsk_path(void)
+{
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -118,8 +98,8 @@ char *dsk_path(void) {
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 		strncpy(diskd, fn, MAX_LFN);
@@ -129,7 +109,7 @@ char *dsk_path(void) {
 
 BYTE imsai_fif_in(void)
 {
-	return(0);
+	return (0);
 }
 
 void imsai_fif_out(BYTE data)
@@ -161,7 +141,7 @@ void imsai_fif_out(BYTE data)
 			descno = data & 0xf;
 			fdstate++;
 			break;
-	
+
 		case 0x20:	/* reset drive(s) */
 			break;	/* no mechanical drives, so nothing to do */
 
@@ -224,8 +204,8 @@ void imsai_fif_out(BYTE data)
  *	A1 - selected drive not ready
  *	A2 - selected drive is hardware write protected
  *	A3 - selected drive is software write protected
- *	A4 - sector lenght specified by byte 3 of command string does
- *	     not correspond to actual sector lenght found on disk
+ *	A4 - sector length specified by byte 3 of command string does
+ *	     not correspond to actual sector length found on disk
  *
  *	Class 3 - Bit 4 is set, status code has the form 9XH
  *	91 - selected drive not operable
@@ -241,7 +221,7 @@ void disk_io(int addr)
 {
 	register int i;
 	static int fd = -1;		/* fd for disk i/o */
-	static long pos;		/* seek position */
+	static off_t pos;		/* seek position */
 	static int unit;		/* disk unit number */
 	static int cmd;			/* disk command */
 	static int res;			/* result code */
@@ -316,13 +296,11 @@ void disk_io(int addr)
 		disk = 3;
 		break;
 
-#ifdef LARGEDISK
 	case 15: /* z80pack 4 MB drive */
 		spt = SPTHD;
 		maxtrk = TRKHD;
 		disk = 8;
 		break;
-#endif
 
 	default: /* more than one drive selected */
 		dma_write(addr + DD_RESULT, 0xc3);
@@ -330,7 +308,7 @@ void disk_io(int addr)
 	}
 
 	/* handle case when disk is ejected */
-	if(disks[disk] == NULL) {
+	if ((disk <= 3) && (disks[disk] == NULL)) {
 		dma_write(addr + DD_RESULT, 0xa1);
 		return;
 	}
@@ -338,13 +316,13 @@ void disk_io(int addr)
 	/* try to open disk image */
 	dsk_path();
 	strcat(fn, "/");
-	strcat(fn, disks[disk]);
+	strcat(fn, (disk <= 3) ? disks[disk] : hddisk);
 	if (cmd == FMT_TRACK) {
 		/* can only format floppy disks */
 		if (disk <= 3) {
 			if (track == 0)
 				unlink(fn);
-			fd = open(fn, O_RDWR|O_CREAT, 0644);
+			fd = open(fn, O_RDWR | O_CREAT, 0644);
 		} else {
 			dma_write(addr + DD_RESULT, 0xa1);
 			return;
@@ -370,8 +348,8 @@ void disk_io(int addr)
 			if (fd != -1) {
 				close(fd);
 				dma_write(addr + DD_RESULT, 0xa2);
-			/* else no disk */
 			} else {
+				/* else no disk */
 				dma_write(addr + DD_RESULT, 0xa1);
 			}
 			return;
@@ -382,7 +360,7 @@ void disk_io(int addr)
 	if (fd != -1) {
 		fstat(fd, &s);
 		if (((disk <= 3) && (s.st_size != 256256)) ||
-		   ((disk == 8) && (s.st_size != 4177920))) {
+		    ((disk == 8) && (s.st_size != 4177920))) {
 			dma_write(addr + DD_RESULT, 0xa1);
 			close(fd);
 			return;
@@ -392,7 +370,7 @@ void disk_io(int addr)
 do_format:
 
 	/* try wanted disk operation */
-	switch(cmd) {
+	switch (cmd) {
 	case WRITE_SEC:
 		if (track >= maxtrk) {
 			dma_write(addr + DD_RESULT, 0xc5);
@@ -477,6 +455,8 @@ done:
  */
 void imsai_fif_reset(void)
 {
+	extern void readDiskmap(char *);
+
 	fdstate = 0;
 
 	fdaddr[0] = 0x0080;
@@ -496,8 +476,21 @@ void imsai_fif_reset(void)
 	fdaddr[14] = 0xe000;
 	fdaddr[15] = 0xf000;
 
-#ifdef HAS_DISKMANAGER
-	extern void readDiskmap(char *);
 	readDiskmap(dsk_path());
-#endif
 }
+
+#ifdef HAS_NETSERVER
+void sendHardDisks(struct mg_connection *conn)
+{
+	int fd;
+
+	dsk_path();
+	strcat(fn, "/");
+	strcat(fn, hddisk);
+	fd = open(fn, O_RDONLY);
+	httpdPrintf(conn, ",\"HD0\": { \"type\": \"Z80P\", \"file\": \"%s\"}",
+		    (fd == -1) ? "" : hddisk);
+	if (fd != -1)
+		close(fd);
+}
+#endif

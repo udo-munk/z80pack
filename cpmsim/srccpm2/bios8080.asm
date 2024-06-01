@@ -292,7 +292,7 @@ SELDSK: LXI	H,0000H		;error return code
 	RET			;no, error
 ;	disk number is in the proper range
 ;	compute proper disk parameter header address
-SELFD:	OUT	FDCD		;selekt disk drive
+SELFD:	OUT	FDCD		;select disk drive
 	MOV	L,A		;L=disk number 0,1,2,3
 	DAD	H		;*2
 	DAD	H		;*4

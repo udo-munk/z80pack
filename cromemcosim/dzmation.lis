@@ -1,0 +1,942 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ; HAND DISASSEMBLY OF THE DAZZLEMATION MEMORY IMAGE PROVIDED IN THE
+                       2      2 ; ORIGINAL 14 PAGE DAZZLEMATION MANUAL.
+                       3      3 ;
+                       4      4 ; THIS CODE WAS ORIGINALLY CONCEIVED AND COMPOSED BY:
+                       5      5 ;
+                       6      6 ; --------------------------------------------------------------------
+                       7      7 ; -----------------------STEVE DOMPIER--------------------------------
+                       8      8 ; --------------------------------------------------------------------
+                       9      9 ;
+                      10     10 ; THIS DISASSEMBLY, ANALYSIS AND DOCUMATION OF THE MEMORY IMAGE WAS
+                      11     11 ; PRODUCED BY BILL SUDBRINK IN APRIL 2016.
+                      12     12 ;
+                      13     13 ; WHEN ASSEMBLED WITH THE CP/M 2.2 ASSEMBLER PROGRAM, THIS FILE WILL
+                      14     14 ; PRODUCE THE MEMORY IMAGE PRINTED IN THE MANUAL.
+                      15     15 ;
+                      16     16 ; MINOR MODIFICATIONS TO ASSEMBLE WITH INTEL MACRO 80
+                      17     17 ; UDO MUNK MAY 2016
+                      18     18 
+                      19     19 ; PORT TO READ THE FRONT PANEL SWITCHES
+00ff  =               20     20 SWITPORT        EQU     0FFH
+                      21     21 
+                      22     22 ; THESE VALUES ARE ORIGINAL AND WORK WITH THE CONSOLE PORT ON A CROMEMCO
+                      23     23 ; FDC SERIES FLOPPY CONTROLLER:
+                      24     24 ; PORT TO READ AND WRITE BYTES TO AND FROM THE CONSOLE SERIAL PORT
+0001  =               25     25 DATAPORT        EQU     01H
+                      26     26 ; PORT TO CHECK THE STATUS OF THE CONSOLE SERIAL PORT
+0000  =               27     27 STATPORT        EQU     00H
+0040  =               28     28 STATRXOK        EQU     40H
+0080  =               29     29 STATTXOK        EQU     80H
+                      30     30 
+                      31     31 ; THESE VALUES WORK WITH A MITS 2-SIO SERIAL CARD CONFIGURED FOR MITS
+                      32     32 ; PROM MONITOR
+                      33     33 ; DATAPORT      EQU     11H
+                      34     34 ; STATPORT      EQU     10H
+                      35     35 ; STATRXOK      EQU     01H
+                      36     36 ; STATTXOK      EQU     02H
+                      37     37 
+                      38     38 ; THESE VALUES WORK WITH A IMSAI SIO-2 SETUP FROM SOME MONITOR BEFORE
+                      39     39 ; DATAPORT      EQU     02H
+                      40     40 ; STATPORT      EQU     03H
+                      41     41 ; STATRXOK      EQU     01H
+                      42     42 ; STATTXOK      EQU     02H
+                      43     43 
+                      44     44 ; THE ORIGINAL CONSOLE DEVICE WAS APPARENTLY INTENDED TO BE A TELETYPE
+                      45     45 ; WITH AN EVEN PARITY KEYBOARD.  IN THAT CASE, CRTL-Z COMES IN AS:
+                      46     46 ; CTRLZ   EQU     9AH
+                      47     47 ; IF YOU WANT THE ORIGINAL IMAGE, USE THE ABOVE.  IF YOU WANT CONTROL Z
+                      48     48 ; TO WORK, USE:
+001a  =               49     49 CTRLZ EQU     1AH
+                      50     50 
+                      51     51 
+                      52     52         ORG     0
+                      53     53 
+0000  c3 00 02        54     54         JMP     START
+                      55     55 
+                      56     56 ; DATA
+                      57     57 
+0003                  58     58 COORDS:                         ; CURSOR X,Y COORDINATES
+0003  1f              59     59         DB      1FH             ; INITIALIZED TO (0X1F, 0X1F) AND SET AGAIN IN START TO POSITION
+0004  1f              60     60         DB      1FH             ;   THE CURSOR AT THE MIDDLE OF THE SCREEN
+0005                  61     61 CUSORDAT:                       ; TWO BYTE DATA INITIALIZED TO 0X00AA AND SET AGAIN IN START
+0005  00              62     62         DB      00H             ; THIS BYTE APPARENTLY UNUSED
+0006                  63     63 CURONSCR:                       ; ROTATED TO INDICATE CURSOR STATUS.
+0006  aa              64     64         DB      0AAH            ; WHEN LOW BIT IS SET, CURSOR IS ON SCREEN.  BINARY VALUE 10101010
+0007                  65     65 COLOR:
+0007  05              66     66         DB      05H             ; COLOR VALUE TO PAINT, COMBINED WITH INTENSITY
+0008                  67     67 INTENS:
+0008  08              68     68         DB      08H             ; INTENSITY CONTROL BYTE, COMBINED WITH COLOR
+0009                  69     69 YCURMOT:
+0009  00              70     70         DB      00H             ; Y CURSOR MOTION
+000a                  71     71 XCURMOT:
+000a  00              72     72         DB      00H             ; X CURSOR MOTION
+000b                  73     73 CFLSHFLG:
+000b  00              74     74         DB      00H             ; STOP CURSOR FLASH FLAG... NON-SERO IF CURSOR NOT FLASHING
+000c                  75     75 CUROFFFLG:
+000c  00              76     76         DB      00H             ; CURSOR OFF FLAG (NON-ZERO IF CURSOR IS OFF)
+000d                  77     77 RUNFLG:
+000d  00              78     78         DB      00H             ; ANIMATION RUN FLAG... ONE - RUN, ANYTHING ELSE - STOP
+000e                  79     79 CMDBUFP:                        ; COMMAND BUFFER POINTER
+000e  00              80     80         DB      00H             ; POINTER TO 0X1800.  COMMAND CHARACTERS STORED THERE
+000f  18              81     81         DB      18H             ; INCREMENTED AS CHARACTERS ARE STORED.
+                      82     82 
+                      83     83 ; FUNCTIONS
+                      84     84 
+                      85     85 ; JUMPED TO BY DOT AND COMMA FUNCTIONS
+0010                  86     86 XSETMOTION:
+0010  2e 00           87     87         MVI     L,00H           ; NO Y
+0012  67              88     88         MOV     H,A             ; ONLY X
+0013  c3 19 00        89     89         JMP     STORMOTNMOV     ; JUMP TO STORE MOTION AND MOVE THE CURSOR
+                      90     90 
+                      91     91 ; JUMPED TO BY M AND N FUNCTIONS
+0016                  92     92 YSETMOTION:
+0016  26 00           93     93         MVI     H,00H           ; NO X
+0018  6f              94     94         MOV     L,A             ; ONLY Y
+                      95     95 
+                      96     96 ; STORE THE NEW MOTION AND MOVE THE CURSOR
+0019                  97     97 STORMOTNMOV:
+0019  22 09 00        98     98         SHLD    YCURMOT         ; STORE CURSOR MOTION
+001c                  99     99 MOVNOSTORE:                     ; JUMP HERE FROM SEMI-COLON FUNCTION
+001c  2a 03 00       100    100         LHLD    COORDS          ; CURSOR COORDINATES IN HL
+001f  44             101    101         MOV     B,H             ; MOVE TO BC
+0020  4d             102    102         MOV     C,L
+0021  c3 d2 01       103    103         JMP     ADJCUR
+                     104    104 
+                     105    105 ; SEEMS DEAD
+0024  00 00 00 00    106    106         DB      00H, 00H, 00H, 00H
+                     107    107 
+                     108    108 ; POINT HL TO 0X0001 (CALLED VIA RST 5)
+0028  21 01 00       109    109         LXI     H,0001H
+002b  c9             110    110         RET
+                     111    111 
+                     112    112 ; SEEMS DEAD
+002c  00 00 00 00    113    113         DB      00H, 00H, 00H, 00H
+                     114    114 
+                     115    115 ; SET RUN FLAG (CALLED VIA RST 6)
+0030  3e 01          116    116         MVI     A,01H
+0032  32 0d 00       117    117         STA     RUNFLG
+0035  c3 e4 01       118    118         JMP     SWTDLY
+                     119    119 
+                     120    120 ; GO INTO TIGHT LOOP (CALLED VIA RST 7) SEEMS DEAD
+0038                 121    121 TGHTLOOP:
+0038  c3 38 00       122    122         JMP     TGHTLOOP
+                     123    123 
+                     124    124 ; SEEMS DEAD
+003b  00 00 00 00    125    125         DB      00H, 00H, 00H, 00H, 00H
+003f  00             125    126
+                     126    127 
+                     127    128 ; TOGGLE CURSOR WHILE PRESERVE HL... SEEMS TO BE DEAD (NEVER CALLED)
+0040  e5             128    129         PUSH    H
+0041  cd 80 00       129    130         CALL    TGLCURSOR
+0044  e1             130    131         POP     H
+0045  c9             131    132         RET
+                     132    133 
+                     133    134 ; SEEMS DEAD
+0046  00 00 00 00    134    135         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+004a  00 00 00 00    134    136
+004e  00 00 00 00    135    137         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+0052  00 00 00 00    135    138
+0056  00 00          136    139         DB      00H, 00H
+                     137    140 
+0058                 138    141 PROCESS:
+0058  c3 c1 00       139    142         JMP     RUNCHECK
+005b                 140    143 NOTRUNNING:
+005b  fe 00          141    144         CPI     00H             ; WE JUMP BACK HERE IF THE RUN FLAG (RUNFLG) IS NOT 1...
+                     142    145                                 ; REGISTER A CONTAINS CURSOR OFF FLAG (CUROFFFLG)
+005d  c2 63 00       143    146         JNZ     SKIPCUR         ; SKIP CURSOR CALL IF CURSOR OFF FLAG IS NON-ZERO
+0060  cd 80 00       144    147         CALL    TGLCURSOR
+0063                 145    148 SKIPCUR:
+0063  11 00 c8       146    149         LXI     D,0C800H        ; DE USED AS LOOP COUNT.  LOOP UNTIL WRAP TO ZERO, 37FF TIMES
+0066                 147    150 NOFLSHLOOP:
+0066  db 00          148    151         IN      STATPORT        ; CHECK DATA PORT STATUS
+0068  e6 40          149    152         ANI     STATRXOK        ; IS A BYTE AVAILABLE?
+006a  c2 80 01       150    153         JNZ     GETKEY          ; JUMP IF BYTE AVAILABLE
+006d  3a 0b 00       151    154         LDA     CFLSHFLG        ; TEST CURSOR FLASH FLAG
+0070  fe 00          152    155         CPI     00H             ; FOR ZERO
+0072  c2 66 00       153    156         JNZ     NOFLSHLOOP      ; TIGHT LOOP IF NOT FLASHING (NOFLSHLOOP)
+0075  13             154    157         INX     D               ; INCREMENT COUNTER
+0076  7a             155    158         MOV     A,D             ; SEE IF WE WRAPPED
+0077  fe 00          156    159         CPI     00H
+0079  c2 66 00       157    160         JNZ     NOFLSHLOOP      ; LOOP BACK TO TEST FOR BYTE AVAILABLE
+007c  c3 58 00       158    161         JMP     PROCESS         ; LOOP BACK TO START WHICH FLASHES CURSOR
+                     159    162 
+                     160    163 ; SEEMS DEAD
+007f  00             161    164         DB      00H
+                     162    165 
+                     163    166 ; TOGGLE CURSOR ROUTINE... PUT A 'T' AROUND THE CURSOR POSITION...
+                     164    167 ; USES XOR SO EVERY OTHER CALL "TURNS OFF" THE CURSOR
+0080                 165    168 TGLCURSOR:
+0080  2a 03 00       166    169         LHLD    COORDS          ; CURSOR X,Y INTO HL
+0083  7d             167    170         MOV     A,L             ; Y IN A
+0084  d6 02          168    171         SUI     02H             ; DECREMENT BY 2
+0086  00             169    172         NOP
+0087  00             170    173         NOP
+0088  00             171    174         NOP
+0089  4f             172    175         MOV     C,A             ; MOVE TO C 
+008a  44             173    176         MOV     B,H             ; X TO B ... BC CURSOR X,Y WITH Y ADJUSTED BY TWO
+008b  cd b8 00       174    177         CALL    XORPIXVAL
+008e  79             175    178         MOV     A,C
+008f  c6 04          176    179         ADI     04H             ; ADJUST Y AGAIN - LINE 383
+0091  00             177    180         NOP
+0092  00             178    181         NOP
+0093  00             179    182         NOP
+0094  4f             180    183         MOV     C,A
+0095  cd b8 00       181    184         CALL    XORPIXVAL
+0098  2a 03 00       182    185         LHLD    COORDS          ; GET ORIGINAL CURSOR AGAIN
+009b  7c             183    186         MOV     A,H
+009c  d6 02          184    187         SUI     02H             ; ADJUST X
+009e  00             185    188         NOP
+009f  00             186    189         NOP
+00a0  00             187    190         NOP
+00a1  47             188    191         MOV     B,A
+00a2  4d             189    192         MOV     C,L             ; RELOAD Y
+00a3  cd b8 00       190    193         CALL    XORPIXVAL
+00a6  78             191    194         MOV     A,B
+00a7  c6 04          192    195         ADI     04H             ; ADJUST X AGAIN
+00a9  00             193    196         NOP
+00aa  00             194    197         NOP
+00ab  00             195    198         NOP
+00ac  47             196    199         MOV     B,A
+00ad  cd b8 00       197    200         CALL    XORPIXVAL
+00b0  3a 06 00       198    201         LDA     CURONSCR        ; ROTATE CURSOR STATUS BYTE
+00b3  0f             199    202         RRC
+00b4  32 06 00       200    203         STA     CURONSCR
+00b7  c9             201    204         RET
+                     202    205 
+                     203    206 ; XOR A PIXEL WITH 0X0F
+00b8                 204    207 XORPIXVAL:
+00b8  cd e8 00       205    208         CALL    GETPVAL
+00bb  ee 0f          206    209         XRI     0FH             ; XOR IT WITH 0X0F TO MAKE IT FLASH
+00bd  cd 38 01       207    210         CALL    SETPIXVAL
+00c0  c9             208    211         RET
+                     209    212 
+                     210    213 ; TEST RUN FLAG AND RETURN CURSOR FLAG IN A IF NOT RUNNING
+00c1                 211    214 RUNCHECK:
+00c1  3a 0d 00       212    215         LDA     RUNFLG          ; GET THE RUN FLAG
+00c4  fe 01          213    216         CPI     01H             ; TEST AGAINST ONE
+00c6  ca b5 03       214    217         JZ      RUNNING         ; IF ONE, WE'RE RUNNING
+00c9  3a 0c 00       215    218         LDA     CUROFFFLG       ; GET THE CURSOR FLAG
+00cc  c3 5b 00       216    219         JMP     NOTRUNNING
+                     217    220 
+                     218    221 ; SEEMS DEAD
+00cf  00 00 00 00    219    222         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+00d3  00 00 00 00    219    223
+00d7  00 00 00 00    220    224         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+00db  00 00 00 00    220    225
+00df  00 00 00 00    221    226         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+00e3  00 00 00 00    221    227
+00e7  00             222    228         DB      00H
+                     223    229 
+                     224    230 ; GET PIXEL VALUE AT X,Y INTO A, COORDINATES COME IN IN BC
+00e8                 225    231 GETPVAL:
+00e8  cd 00 01       226    232         CALL    GETPADDR        ; CONVERT PIXEL COORDINATE IN BC TO HL POINTER INTO DAZZLER BUFFER
+                     227    233                                 ; CARRY BIT INDICATES WHICH FOUR BITS OF BYTE TO USE
+00eb  7e             228    234         MOV     A,M             ; GET BOTH PIXELS
+00ec  da f2 00       229    235         JC      GETHIGH         ; IF CARRY, GET THE HIGH BITS
+00ef  e6 0f          230    236         ANI     0FH             ; MASK OFF HIGH BITS
+00f1  c9             231    237         RET
+00f2                 232    238 GETHIGH:
+00f2  e6 f0          233    239         ANI     0F0H            ; MASK OFF LOW BITS
+00f4  07             234    240         RLC                     ; ROTATE THE HIGH BITS LOW
+00f5  07             235    241         RLC
+00f6  07             236    242         RLC
+00f7  07             237    243         RLC
+00f8  c9             238    244         RET
+                     239    245 
+                     240    246 ; SEVEN BYTES OF 0X01 SEEMS DEAD
+00f9  01 01 01 01    241    247         DB      01H, 01H, 01H, 01H, 01H, 01H, 01H
+00fd  01 01 01       241    248
+                     242    249 
+                     243    250 ; CONVERT X,Y COORDINATES IN BC TO HL POINTER INTO DAZZLER BUFFER AT 0X1000
+                     244    251 ; CARRY BIT INDICATES WHICH HALF-BYTE TO USE
+                     245    252 ; DOES NOT CHANGE B OR C
+0100                 246    253 GETPADDR:
+0100  21 00 10       247    254         LXI     H,1000H         ; HL POINT TO START OF BUFFER
+0103  78             248    255         MOV     A,B             ; GET X
+0104  17             249    256         RAL
+0105  17             250    257         RAL
+0106  17             251    258         RAL
+0107  d2 0e 01       252    259         JNC     SKP200          ; SEE IF X IS 20 OR GREATER
+010a  11 00 02       253    260         LXI     D,0200H         ; IF IT IS...
+010d  19             254    261         DAD     D               ; INCREMENT HL BY 0X0200
+010e                 255    262 SKP200:
+010e  79             256    263         MOV     A,C             ; GET Y
+010f  17             257    264         RAL
+0110  17             258    265         RAL
+0111  17             259    266         RAL
+0112  d2 19 01       260    267         JNC     SKP400          ; SEE IF Y IS 20 OR GREATER
+0115  11 00 04       261    268         LXI     D,0400H         ; IF IT IS...
+0118  19             262    269         DAD     D               ; INCREMENT HL BY 0X0400
+0119                 263    270 SKP400:
+0119  79             264    271         MOV     A,C             ; GET Y AGAIN
+011a  e6 1f          265    272         ANI     1FH             ; CLEAR OUT HIGH THREE BITS
+011c  07             266    273         RLC
+011d  07             267    274         RLC
+011e  07             268    275         RLC                     ; LOW THREE BITS ARE NOW ZERO
+011f  17             269    276         RAL                     ; ALL FOUR LOW BITS ARE NOW ZERO
+0120  5f             270    277         MOV     E,A             ; STORE Y IN E
+0121  3e 00          271    278         MVI     A,00H           ; PRESERVED CARRY BIT SO THAT ...
+0123  17             272    279         RAL                     ; A IS NOW ONE
+0124  57             273    280         MOV     D,A             ; DE IS NOW 0X01?0 WITH ? BEING THE FOUR BITS PRESERVED FROM C ABOVE
+0125  19             274    281         DAD     D               ; ADD IT TO HL - CARRY SHOULD ALWAYS BE CLEAR
+0126  78             275    282         MOV     A,B             ; GET X AGAIN
+0127  1f             276    283         RAR                     ; DIVIDE BY TWO WITH EVEN/ODD BIT IN CARRY (HIGH OR LOW HALF-BYTE)
+0128  f5             277    284         PUSH    PSW
+0129  00             278    285         NOP
+012a  e6 0f          279    286         ANI     0FH             ; LOW FOUR BITS OF X/2
+012c  5f             280    287         MOV     E,A
+012d  16 00          281    288         MVI     D,00H
+012f  19             282    289         DAD     D               ; I'M SURE THIS MUST WORK, BUT I NEED TO SIT DOWN WITH PENCIL AND PAPER...
+0130  f1             283    290         POP     PSW
+0131  c9             284    291         RET
+                     285    292 
+                     286    293 ; SEEMS DEAD
+0132  00 00 00 00    287    294         DB      00H, 00H, 00H, 00H, 00H, 00H
+0136  00 00          287    295
+                     288    296 
+                     289    297 ; SETPIXVAL ... PIXEL VALUE IN A AND COORDINATES IN BC
+0138                 290    298 SETPIXVAL:
+0138  e6 0f          291    299         ANI     0FH             ; EVERYBODY DOES THIS... BUT JUST TO BE SURE, I GUESS
+013a  f5             292    300         PUSH    PSW             ; PUSHES A AND FLAGS
+013b  cd 00 01       293    301         CALL    GETPADDR
+013e  d1             294    302         POP     D               ; POPS D AND E (PRESUMABLY A IS NOW IN D)
+013f  da 48 01       295    303         JC      SPTOP4          ; IF CARRY, SET THE TOP FOUR BITS
+                     296    304 ; PIXEL VALUE IN LOW FOUR BITS...
+0142  7e             297    305         MOV     A,M             ; GET CURRENT VALUE (TWO PIXELS)
+0143  e6 f0          298    306         ANI     0F0H            ; CLEAR OLD VALUE
+0145  82             299    307         ADD     D               ; ADD NEW VALUE
+0146  77             300    308         MOV     M,A             ; SET NEW VALUE
+0147  c9             301    309         RET
+                     302    310 ; PIXEL VALUE IN TOP FOUR BITS...
+0148                 303    311 SPTOP4:
+0148  7a             304    312         MOV     A,D             ; SHIFT NEW VALUE WHERE WE NEED IT
+0149  07             305    313         RLC
+014a  07             306    314         RLC
+014b  07             307    315         RLC
+014c  07             308    316         RLC
+014d  57             309    317         MOV     D,A
+014e  7e             310    318         MOV     A,M             ; GET CURRENT VALUE (TWO PIXELS)
+014f  e6 0f          311    319         ANI     0FH             ; CLEAR OLD VALUE - LINE 575 OK
+0151  82             312    320         ADD     D               ; ADD NEW VALUE
+0152  77             313    321         MOV     M,A             ; SET NEW VALUE
+0153  c9             314    322         RET
+                     315    323 
+                     316    324 ; SEEMS DEAD
+0154  00 00 00 00    317    325         DB      00H, 00H, 00H, 00H
+                     318    326 
+                     319    327 ; L FUNCTION CONTINUED
+0158                 320    328 LOWINT:
+0158  3e 00          321    329         MVI     A,00H           ; CLEAR INTENSITY
+015a  32 08 00       322    330         STA     INTENS
+015d  c3 c0 01       323    331         JMP     DOCURRENT
+                     324    332 
+                     325    333 ; H FUNCTION CONTINUED
+0160                 326    334 HIGHINT:
+0160  3e 08          327    335         MVI     A,08H           ; SET INTENSITY
+0162  32 08 00       328    336         STA     INTENS
+0165  c3 c0 01       329    337         JMP     DOCURRENT
+                     330    338 
+                     331    339 ; SEEMS DEAD
+0168  21 00 10       332    340         LXI     H,1000H
+016b  af             333    341         XRA     A
+016c  77             334    342         MOV     M,A
+016d  23             335    343         INX     H
+016e  7c             336    344         MOV     A,H
+016f  fe 18          337    345         CPI     18H
+0171  c2             338    346         DB      0C2H
+                     339    347 
+                     340    348 ; COLOR KEY DECODE TABLE, REFERENCED BELOW
+0172                 341    349 CLRKEYTBL:
+0172  7f             342    350         DB      7FH             ; <DEL>, <RUBOUT> - BLACK
+0173  52             343    351         DB      52H             ; R               - RED
+0174  47             344    352         DB      47H             ; G               - GREEN
+0175  59             345    353         DB      59H             ; Y               - YELLOW (RED AND GREEN)
+0176  42             346    354         DB      42H             ; B               - BLUE
+0177  50             347    355         DB      50H             ; P               - PURPLE (RED AND BLUE)
+0178  43             348    356         DB      43H             ; C               - CYAN (GREEN AND BLUE)
+0179  57             349    357         DB      57H             ; W               - WHITE (RED, GREEN AND BLUE)
+017a  ff             350    358         DB      0FFH            ; END OF TABLE
+                     351    359 
+                     352    360 ; SEEMS DEAD
+017b  00 00 00 00    353    361         DB      00H, 00H, 00H, 00H, 00H
+017f  00             353    362
+                     354    363 
+                     355    364 ; CALLED IF RX DATA IS AVAILABLE ON THE CONSOLE PORT
+0180                 356    365 GETKEY:
+0180  3a 06 00       357    366         LDA     CURONSCR
+0183  0f             358    367         RRC
+0184  dc 80 00       359    368         CC      TGLCURSOR       ; IF THE CURSOR IS ON SCREEN, CLEAR IT
+0187  cd d1 03       360    369         CALL    GETPORTBYTE     ; GET THE KEYSTROKE AND STORE IT IF NOT "SPECIAL"
+                     361    370 
+                     362    371 ; THE RECORDING RUNNER JUMPS IN HERE WITH A RECORDED CHARACTER
+018a                 363    372 PROCCHAR:
+018a  78             364    373         MOV     A,B             ; INCOMING KEYSTROKE IN B, MOVE IT TO A
+018b  fe 20          365    374         CPI     20H             ; CHECK FOR SPACE CHARACTER
+018d  ca c0 01       366    375         JZ      DOCURRENT       ; IF SPACE KEY, REPEAT LAST ACTION
+0190  21 72 01       367    376         LXI     H,CLRKEYTBL     ; SEE IF THE INCOMING CHARACTER IS A COLOR KEY
+0193  00             368    377         NOP
+0194  11 ff ff       369    378         LXI     D,0FFFFH
+0197                 370    379 PCLOOP1:
+0197  1c             371    380         INR     E               ; FIRST TIME, E TO 0X00
+0198  78             372    381         MOV     A,B             ; GET KEYSTROKE INTO A
+0199  00             373    382         NOP
+019a  00             374    383         NOP
+019b  00             375    384         NOP
+019c  be             376    385         CMP     M               ; CHECK IF IT IS IN THE COLOR TABLE
+019d  ca aa 01       377    386         JZ      KEYCOLOR        ; IF IT IS IN THE TABLE, DECODE THE COLOR
+01a0  7e             378    387         MOV     A,M
+01a1  fe ff          379    388         CPI     0FFH            ; CHECK FOR END OF TABLE
+01a3  ca 40 02       380    389         JZ      FUNCCHAR        ; IF END OF TABLE, DID NOT FIND THE KEY, CHECK FOR FUNCTION KEY
+01a6  23             381    390         INX     H               ; NOT END OF TABLE, CHECK NEXT
+01a7  c3 97 01       382    391         JMP     PCLOOP1
+                     383    392 
+                     384    393 ; KEYSTROKE INTERPRETED AS COLOR
+01aa                 385    394 KEYCOLOR:
+01aa  7b             386    395         MOV     A,E             ; GET TABLE INDEX IN A
+01ab  00             387    396         NOP                     ; NO OPS FOR TIMING MAYBE?
+01ac  00             388    397         NOP
+01ad  00             389    398         NOP
+01ae  00             390    399         NOP
+01af  00             391    400         NOP
+01b0  32 07 00       392    401         STA     COLOR           ; STORE TABLE INDEX IN COLOR
+01b3  00             393    402         NOP                     ; MORE NOP TIMING?
+01b4  00             394    403         NOP
+01b5  00             395    404         NOP
+01b6  00             396    405         NOP
+01b7  00             397    406         NOP
+01b8  00             398    407         NOP
+01b9  00             399    408         NOP
+01ba  00             400    409         NOP
+01bb  00             401    410         NOP
+01bc  00             402    411         NOP
+01bd  00             403    412         NOP
+01be  00             404    413         NOP
+01bf  00             405    414         NOP
+                     406    415 ; DROP INTO DOCURRENT, BELOW
+                     407    416 
+                     408    417 ; CALLED AFTER <H KEY>, <L KEY> AND </ KEY> PROCESSING
+                     409    418 ; OR IF KEYSTROKE DETECTED AVAILABLE ON PORT
+                     410    419 ; SET THE CURRENT COLOR AT THE CURRENT CURSOR COORDINATES AND FALL
+                     411    420 ; THROUGH TO MOVE THE CURSOR COORDINATES USING THE CURRENT MOTION
+                     412    421 ; XY (LOTSA CURRENT)
+01c0                 413    422 DOCURRENT:
+01c0  2a 03 00       414    423         LHLD    COORDS          ; CURSOR X,Y IN HL
+01c3  44             415    424         MOV     B,H             ; CURSOR X,Y IN BC
+01c4  4d             416    425         MOV     C,L
+01c5  00             417    426         NOP
+01c6  2a 07 00       418    427         LHLD    COLOR           ; COLOR AND INTENSITY IN HL
+01c9  7c             419    428         MOV     A,H             ; COMBINE
+01ca  85             420    429         ADD     L
+01cb  00             421    430         NOP                     ; MORE TIMING?
+01cc  00             422    431         NOP
+01cd  00             423    432         NOP
+01ce  00             424    433         NOP
+01cf  cd 38 01       425    434         CALL    SETPIXVAL
+                     426    435 ; DROP INTO ADJCUR, BELOW
+                     427    436 
+                     428    437 ; MOTION FUNCTIONS (N, M, DOT AND COMMA) JUMP HERE
+                     429    438 ; ADJUST THE CURSOR POSITION CURRENTLY IN BC WITH THE CURRENT MOTION VALUES AND THEN STORE IT
+01d2                 430    439 ADJCUR:
+01d2  2a 09 00       431    440         LHLD    YCURMOT         ; LOAD THE CURRENT X AND Y MOTION VALUES
+01d5  7c             432    441         MOV     A,H             ; ADJUST CURSOR COORDINATES
+01d6  80             433    442         ADD     B
+01d7  67             434    443         MOV     H,A
+01d8  7d             435    444         MOV     A,L
+01d9  81             436    445         ADD     C
+01da  6f             437    446         MOV     L,A
+01db  22 03 00       438    447         SHLD    COORDS          ; STORE NEW CURSOR POSITION
+01de  cd c3 02       439    448         CALL    CHKCURPOS       ; CHECK FOR COORDINATES OUT OF BOUNDS, WRAP THEM
+01e1  c3 58 00       440    449         JMP     PROCESS         ; GO BACK FOR ANOTHER RX BYTE OR COMMAND BUFFER BYTE
+                     441    450 
+                     442    451 ; JUMPED TO BY RST 6 (SET RUN FLAG)
+                     443    452 ; DELAYS VIA SENSE SWITCHES
+01e4                 444    453 SWTDLY:
+01e4  11 00 00       445    454         LXI     D,0000H
+01e7  db ff          446    455         IN      SWITPORT        ; GET SENSE SWITCHES
+01e9  57             447    456         MOV     D,A             ; THE MORE SWITCHES, THE SHORTER THE DELAY (OR DO SENSE SWITCHES GIVE ZERO BITS WHEN ON?)
+01ea                 448    457 DLYLOOP1:
+01ea  13             449    458         INX     D
+01eb  7a             450    459         MOV     A,D
+01ec  fe ff          451    460         CPI     0FFH            ; TEST FOR END OF DELAY
+01ee  c8             452    461         RZ                      ; RETURN IF END OF DELAY (RETURNING FROM RST 6)
+01ef  c3 ea 01       453    462         JMP     DLYLOOP1
+                     454    463 
+                     455    464 ; LOOKS LIKE ANOTHER KEYSTROKE DECODE TABLE, BUT SEEMS DEAD
+01f2  7f             456    465         DB      7FH
+01f3  52             457    466         DB      52H
+01f4  47             458    467         DB      47H
+01f5  59             459    468         DB      59H
+01f6  42             460    469         DB      42H
+01f7  50             461    470         DB      50H
+01f8  43             462    471         DB      43H
+01f9  57             463    472         DB      57H
+01fa  2e             464    473         DB      2EH
+01fb  2c             465    474         DB      2CH
+01fc  4d             466    475         DB      4DH
+01fd  4e             467    476         DB      4EH
+01fe  2f             468    477         DB      2FH
+01ff  1b             469    478         DB      1BH
+                     470    479 
+                     471    480 ; INITIALIZE THINGS AND THEN JUMP TO KEYSTROKE PROCESSING
+0200                 472    481 START:
+0200  31 ff 0f       473    482         LXI     SP,0FFFH        ; STACK DOWN FROM 0X0FFF
+0203  3e 88          474    483         MVI     A,88H           ; DAZZLER SETUP, ON, START ADDRESS 0X1000
+0205  d3 0e          475    484         OUT     0EH
+0207  3e 30          476    485         MVI     A,30H           ; DAZZLER SETUP, FORMAT 2K COLOR (64X64)
+0209  d3 0f          477    486         OUT     0FH
+020b  21 1f 1f       478    487         LXI     H,1F1FH         ; SET CURSOR TO MIDDLE OF THE SCREEN (0X1F,0X1F)
+020e  22 03 00       479    488         SHLD    COORDS
+0211  21 00 aa       480    489         LXI     H,0AA00H        ; SET BLINK CONTROL
+0214  22 05 00       481    490         SHLD    CUSORDAT
+0217  21 00 18       482    491         LXI     H,1800H         ; INITIALIZE COMMAND BUFFER POINTER TO 0X1800
+021a  22 0e 00       483    492         SHLD    CMDBUFP
+021d  21 09 00       484    493         LXI     H,YCURMOT       ; ZERO BYTES FROM YCURMOT TO CUROFFFLG
+0220                 485    494 STCLRLOOP:
+0220  af             486    495         XRA     A               ; ZERO A
+0221  77             487    496         MOV     M,A             ; PUT A ZERO AT HL
+0222  23             488    497         INX     H               ; INCREMENT HL
+0223  7d             489    498         MOV     A,L             ; TEST L FOR...
+0224  fe 0d          490    499         CPI     0DH             ; 0X0D (RUNFLG) ... DOESN'T ACTUALLY CLEAR RUNFLG, WHY NOT?
+0226  c2 20 02       491    500         JNZ     STCLRLOOP
+0229  cd 30 02       492    501         CALL    CLEARBUF
+022c  c3 58 00       493    502         JMP     PROCESS         ; START LOOKING FOR KEYSTROKES
+022f  00             494    503         NOP
+                     495    504 
+                     496    505 ; CLEAR THE BUFFER STARTING AT 0X1000... MAY CLEAR ALL THE WAY UP
+                     497    506 ; TO 0X1FFF OR MAY BE HACKED TO STOP AT 0X17FF
+0230                 498    507 CLEARBUF:
+0230  21 00 10       499    508         LXI     H,1000H
+0233                 500    509 CLRBLOOP:
+0233  af             501    510         XRA     A               ; ZERO OUT A
+0234  77             502    511         MOV     M,A             ; MOVE ZERO TO [HL]
+0235  23             503    512         INX     H               ; INCREMENT HL
+0236  7c             504    513         MOV     A,H             ; COMPARE HIGH ADDRESS...
+0237                 505    514 CLRBCMP:                        ; NOTE: THIS LABEL IS USED TO HACK END POINT BY THE CODE BELOW
+0237  fe 20          506    515         CPI     20H             ; COMPARE HIGH ADDRESS TO 0X20 (OR MAY BE HACKED TO 0X18
+0239  c2 33 02       507    516         JNZ     CLRBLOOP
+023c  c9             508    517         RET
+                     509    518 
+                     510    519 ; SEEMS DEAD
+023d  00 00 00       511    520         DB      00H, 00H, 00H
+                     512    521 
+                     513    522 ; INTERPRET CHARACTER IN B, NOT COLOR KEY, LOOK FOR FUNCTION CHARACTERS
+0240                 514    523 FUNCCHAR:
+0240  21 68 02       515    524         LXI     H,JUMPMTCHTBL   ; POINT TO CHARACTER MATCH TABLE
+0243  11 80 15       516    525         LXI     D,1580H         ; DE SET TO 0X1580 D IS THE TABLE LENGTH
+                     517    526                                 ; E IS ADDRESS TABLE LOW ADDRESS BYTE
+0246                 518    527 CHKNXT:
+0246  78             519    528         MOV     A,B             ; GET CHARACTER
+0247  be             520    529         CMP     M               ; COMPARE TO TABLE
+0248  ca 54 02       521    530         JZ      TBLMATCH        ; GOT A MATCH? YES? JUMP TO TBLMATCH
+024b  23             522    531         INX     H               ; NO? TRY THE NEXT ONE
+024c  15             523    532         DCR     D               ; KEEP TRACK OF THE COUNT
+024d  ca 58 00       524    533         JZ      PROCESS         ; OUT OF TABLE ENTRIES? JUMP BACK TO GET ANOTHER KEY
+0250  1c             525    534         INR     E               ; INCREMENT ADDRESS TABLE LOW ADDRESS BYTE
+0251  c3 46 02       526    535         JMP     CHKNXT          ; CHECK NEXT ENTRY
+                     527    536 
+0254                 528    537 TBLMATCH:
+0254  6b             529    538         MOV     L,E             ; GET LOW BYTE OF FUNCTION ADDRESS
+0255  6e             530    539         MOV     L,M
+0256  24             531    540         INR     H               ; FUNCTION ADDRESS HIGH BYTE IS ALWAYS 0X03
+0257  e9             532    541         PCHL                    ; JUMP TO FUNCTION
+                     533    542 
+                     534    543 ; SEEMS DEAD
+0258  00             535    544         NOP
+0259  2a 03 00       536    545         LHLD    COORDS
+025c  44             537    546         MOV     B,H
+025d  4d             538    547         MOV     C,L
+025e  c3 d2 01       539    548         JMP     ADJCUR
+                     540    549 
+                     541    550 ; SEEMS DEAD
+0261  c3 00 01       542    551         JMP     GETPADDR
+0264  00             543    552         NOP
+0265  00             544    553         NOP
+0266  00             545    554         NOP
+0267  00             546    555         NOP
+                     547    556 
+                     548    557 ; START OF JUMP TABLE COMPARE TARGETS. 0X15 IN LENGTH (21 DECIMAL)
+0268                 549    558 JUMPMTCHTBL:
+0268  2e             550    559         DB      2EH             ; DOT, PERIOD
+0269  2c             551    560         DB      2CH             ; COMMA
+026a  4d             552    561         DB      4DH             ; M
+026b  4e             553    562         DB      4EH             ; N
+026c  2f             554    563         DB      2FH             ; /
+026d  11             555    564         DB      11H             ; <DC1><CTRL-Q>
+026e  3b             556    565         DB      3BH             ; <SEMI-COLON>
+026f  3e             557    566         DB      3EH             ; <GREATER THAN>
+0270  3c             558    567         DB      3CH             ; <LESS THAN>
+0271  5d             559    568         DB      5DH             ; <RIGHT SQUARE BRACKET>
+0272  5e             560    569         DB      5EH             ; <CARET>
+0273  4c             561    570         DB      4CH             ; L
+0274  48             562    571         DB      48H             ; H
+0275  03             563    572         DB      03H             ; <ETX><CTRL-C>
+0276  02             564    573         DB      02H             ; <STX><CTRL-B>
+0277  10             565    574         DB      10H             ; <DLE><CTRL-P>
+0278  40             566    575         DB      40H             ; <AT SIGN>
+0279  1b             567    576         DB      1BH             ; <ESCAPE>
+027a  12             568    577         DB      12H             ; <DC2><CTRL-R>
+027b  13             569    578         DB      13H             ; <DC3><CTRL-S>
+027c  00             570    579         DB      00H             ; <NUL> ?? TEST AGAINST NULL ??
+                     571    580 ; LEFT OVER/UNUSED
+027d  00 00 00       572    581         DB      00H, 00H, 00H
+                     573    582 
+                     574    583 ; LOW BYTES FOR TARGET FUNCTION ADDRESSES
+0280                 575    584 FUNCLADDR: ; LABEL IS NEVER DIRECTLY ADDRESSED, ACCESSED BY MATH ABOVE
+0280  00             576    585         DB      00H             ; DOT FUNCTION AT 0X0300
+0281  05             577    586         DB      05H             ; COMMA FUNCTION AT 0X0305
+0282  0a             578    587         DB      0AH             ; M FUNCTION AT 0X030A
+0283  0f             579    588         DB      0FH             ; N FUNCTION AT 0X030F
+0284  14             580    589         DB      14H             ; / FUNCTION AT 0X0314
+0285  1d             581    590         DB      1DH             ; <DC1><CTRL-Q> FUNCTION AT 0X031D
+0286  ed             582    591         DB      0EDH            ; <SEMI-COLON> FUNCTION AT 0X03ED
+0287  23             583    592         DB      23H             ; <GREATER THAN> FUNCTION AT 0X0323
+0288  2b             584    593         DB      2BH             ; <LESS THAN> FUNCTION AT 0X032B
+0289  33             585    594         DB      33H             ; <RIGHT SQUARE BRACKET> FUNCTION AT 0X0333
+028a  3b             586    595         DB      3BH             ; <CARET> FUNCTION AT 0X033B
+028b  43             587    596         DB      43H             ; L FUNCTION AT 0X0343
+028c  46             588    597         DB      46H             ; H FUNCTION AT 0X0346
+028d  50             589    598         DB      50H             ; <ETX><CTRL-C> FUNCTION AT 0X0350
+028e  5a             590    599         DB      5AH             ; <STX><CTRL-B> FUNCTION AT 0X035A
+028f  c0             591    600         DB      0C0H            ; <DLE><CTRL-P> FUNCTION AT 0X03C0
+0290  8b             592    601         DB      8BH             ; <AT SIGN> FUNCTION AT 0X038B
+0291  98             593    602         DB      98H             ; <ESCAPE> FUNCTION AT 0X0398
+0292                 594    603 RUNTBLENT:                      ; THIS BYTE IS MODIFIED BY CODE BELOW
+0292  af             595    604         DB      0AFH            ; <DC2><CTRL-R> FUNCTION AT 0X03AF
+0293  a8             596    605         DB      0A8H            ; <DC3><CTRL-S> FUNCTION AT 0X03A8
+0294  a5             597    606         DB      0A5H            ; <NUL> FUNCTION AT 0X03A5
+                     598    607 ; LEFT OVER/UNUSED... SEEMS DEAD
+0295  00 00 00 00    599    608         DB      00H, 00H, 00H, 00H, 07H, 00H, 00H, 00H
+0299  07 00 00 00    599    609
+029d  00 00 00 00    600    610         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+02a1  00 00 00 00    600    611
+02a5  00 00 00 70    601    612         DB      00H, 00H, 00H, 70H, 01H, 50H, 00H, 50H
+02a9  01 50 00 50    601    613
+02ad  00 30 01 08    602    614         DB      00H, 30H, 01H, 08H, 00H, 90H, 00H, 00H
+02b1  00 90 00 00    602    615
+02b5  09 00 00 30    603    616         DB      09H, 00H, 00H, 30H, 05H, 00H, 05H, 00H
+02b9  05 00 05 00    603    617
+02bd  05 30 01 00    604    618         DB      05H, 30H, 01H, 00H, 00H, 60H
+02c1  00 60          604    619
+                     605    620 
+                     606    621 ; CHECK THE CURSOR POSITION FOR WRAPPING
+                     607    622 ; CALLED FROM ADJCUR
+02c3                 608    623 CHKCURPOS:
+02c3  2a 03 00       609    624         LHLD    COORDS          ; LOAD CURSOR X,Y INTO HL
+02c6                 610    625 RECHECK:                        ; JUMPS HERE TO RECHECK AFTER A TOP/BOTTOM WRAP
+02c6  7c             611    626         MOV     A,H             ; GET X
+02c7  e6 c0          612    627         ANI     0C0H            ; SEE IF X WRAPPED (RANGE IS 0 TO 63... 0X00 TO 0X3F)
+02c9  ca dc 02       613    628         JZ      CHKY            ; NO WRAP? THEN JUMP TO CHECK Y
+02cc  17             614    629         RAL                     ; SEE IF WE WRAPPED LEFT OR RIGHT
+02cd  d2 d6 02       615    630         JNC     WRPRIGHT        ; DID WE WRAP LEFT? NO? THEN JUMP TO WRAP RIGHT HANDLING
+02d0  26 3f          616    631         MVI     H,3FH           ; WE WRAPPED OFF OF THE LEFT SO GO TO RIGHT (63 OR 0X3F)
+02d2  2d             617    632         DCR     L               ; DECREASE Y (GO UP A LINE)
+02d3  c3 dc 02       618    633         JMP     CHKY
+02d6                 619    634 WRPRIGHT:                       ; WE SRAPPED OFF OF THE RIGHT SIDE SO...
+02d6  26 00          620    635         MVI     H,00H           ; MOVE TO LEFT SIDE, X=0
+02d8  2c             621    636         INR     L               ; DOWN A LINE, INCREASE Y
+02d9  00             622    637         NOP
+02da  00             623    638         NOP
+02db  00             624    639         NOP
+02dc                 625    640 CHKY:                           ; X IS CORRECT WHEN WE GET HERE, CHECK Y NOW
+02dc  7d             626    641         MOV     A,L             ; GET Y
+02dd  e6 c0          627    642         ANI     0C0H            ; SEE IF Y WRAPPED (RANGE IS 0 TO 63... 0X00 TO 0X3F)
+02df  ca f2 02       628    643         JZ      CHKDONE         ; NO WRAP? STORE IT AND DONE
+02e2  17             629    644         RAL                     ; SEE IF WE WRAPPED TOP OR BOTTOM
+02e3  d2 ec 02       630    645         JNC     WRPBTM          ; DID WE WRAP TOP? NO? THEN JUMP TO BOTTOM WRAP HANDLING
+02e6  2e 3f          631    646         MVI     L,3FH           ; WE WRAPPED OFF OF THE TOP, SO GO TO THE BOTTOM
+02e8  25             632    647         DCR     H               ; AND MOVE ONE LEFT
+02e9  c3 c6 02       633    648         JMP     RECHECK
+02ec                 634    649 WRPBTM:
+02ec  2e 00          635    650         MVI     L,00H           ; WE WRAPPED OFF OF THE BOTTOM, SO GO TO THE TOP
+02ee  24             636    651         INR     H               ; AND MOVE ONE RIGHT
+02ef  c3 c6 02       637    652         JMP     RECHECK
+02f2                 638    653 CHKDONE:
+02f2  22 03 00       639    654         SHLD    COORDS          ; COORDINATES OK, STORE THEM AND...
+02f5  c9             640    655         RET                     ; RETURN
+                     641    656 
+                     642    657 ; SEEMS DEAD
+02f6  c6 02          643    658         ADI     02H
+02f8  2e 3f          644    659         MVI     L,3FH
+02fa  25             645    660         DCR     H
+02fb  c3 c6 02       646    661         JMP     RECHECK
+02fe  00             647    662         NOP
+02ff  00             648    663         NOP
+                     649    664 
+                     650    665 ; FUNCTION TABLE TARGETS
+                     651    666 ; NOTE THAT THE ADDRESSES THAT THESE FUNCTIONS END UP AT MUST MATCH THE
+                     652    667 ; JUMP TABLE ABOVE.  GOTTA FIGURE OUT HOW TO FILL THAT TABLE FROM LABELS...
+                     653    668 
+                     654    669 ; DOT FUNCTION
+0300  3e 01          655    670         MVI     A,01H
+0302  c3 10 00       656    671         JMP     XSETMOTION
+                     657    672 
+                     658    673 ; COMMA FUNCTION
+0305  3e ff          659    674         MVI     A,0FFH
+0307  c3 10 00       660    675         JMP     XSETMOTION
+                     661    676 
+                     662    677 ; M FUNCTION
+030a  3e 01          663    678         MVI     A,01H
+030c  c3 16 00       664    679         JMP     YSETMOTION
+                     665    680 
+                     666    681 ; N FUNCTION
+030f  3e ff          667    682         MVI     A,0FFH
+0311  c3 16 00       668    683         JMP     YSETMOTION
+                     669    684 
+                     670    685 ; / FUNCTION (CLEARS CURSOR MOTION)
+0314  21 00 00       671    686         LXI     H,0000H
+0317  22 09 00       672    687         SHLD    YCURMOT         ; ZERO OUT X AND Y MOTION
+031a  c3 c0 01       673    688         JMP     DOCURRENT
+                     674    689 
+                     675    690 ; <DC1><CTRL-Q> FUNCTION
+031d  c3 00 00       676    691         JMP     0000H           ; RESTART THE WHOLE THING
+                     677    692 
+                     678    693 ; SEEMS DEAD
+0320  00 00 00       679    694         DB      00H, 00H, 00H
+                     680    695 
+                     681    696 ; THE "STORE" FUNCTIONS, WHEN COMBINED WITH ANOTHER MOTION
+                     682    697 ; KEY, RESULT IN DIAGONAL MOTION.
+                     683    698 
+                     684    699 ; <GREATER THAN> FUNCTION (STORE RIGHT)
+0323  3e 01          685    700         MVI     A,01H
+0325  32 0a 00       686    701         STA     XCURMOT
+0328  c3 58 00       687    702         JMP     PROCESS
+                     688    703 
+                     689    704 ; <LESS THAN> FUNCTION (STORE LEFT)
+032b  3e ff          690    705         MVI     A,0FFH
+032d  32 0a 00       691    706         STA     XCURMOT
+0330  c3 58 00       692    707         JMP     PROCESS
+                     693    708 
+                     694    709 ; <RIGHT SQUARE BRACKET> (<SHIFT-M ON TTY) FUNCTION (STORE DOWN)
+0333  3e 01          695    710         MVI     A,01H
+0335  32 09 00       696    711         STA     YCURMOT
+0338  c3 58 00       697    712         JMP     PROCESS
+                     698    713 
+                     699    714 ; <CARET> (<SHIFT-N> ON TTY) FUNCTION (STORE UP)
+033b  3e ff          700    715         MVI     A,0FFH
+033d  32 09 00       701    716         STA     YCURMOT
+0340  c3 58 00       702    717         JMP     PROCESS
+                     703    718 
+                     704    719 ; L FUNCTION (LOW INTENSITY)
+0343  c3 58 01       705    720         JMP     LOWINT
+                     706    721 
+                     707    722 ; H FUNCTION (HIGH INTENSITY)
+0346  c3 60 01       708    723         JMP     HIGHINT
+                     709    724 
+                     710    725 ; SEEMS DEAD
+0349  00 00 00 00    711    726         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H
+034d  00 00 00       711    727
+                     712    728 
+                     713    729 ; <ETX><CTRL-C> FUNCTION (TOGGLE HIDE CURSOR)
+0350  3a 0c 00       714    730         LDA     CUROFFFLG
+0353  2f             715    731         CMA
+0354  32 0c 00       716    732         STA     CUROFFFLG
+0357  c3 58 00       717    733         JMP     PROCESS
+                     718    734 
+                     719    735 ; <STX><CTRL-B> FUNCTION (TOGGLE CURSOR FLASHING)
+035a  3a 0b 00       720    736         LDA     CFLSHFLG
+035d  2f             721    737         CMA
+035e  32 0b 00       722    738         STA     CFLSHFLG
+0361  c3 58 00       723    739         JMP     PROCESS
+                     724    740 
+                     725    741 ; OUTPUT 0X20 CHARACTERS STORED AT 0X0001 (ZERO OR NUL BYTES)
+                     726    742 ; USED BY <AT SIGN><SHIFT-P> (PUNCH ANIMATION)
+0364                 727    743 NULOUT:
+0364  16 20          728    744         MVI     D,20H
+0366  ef             729    745         RST     5               ; SETS HL TO 0X0001
+0367                 730    746 NOLOOP:
+0367  cd 80 03       731    747         CALL    CHAROUT
+036a  15             732    748         DCR     D
+036b  c2 67 03       733    749         JNZ     NOLOOP
+036e  00             734    750         NOP
+036f  c9             735    751         RET
+                     736    752 
+                     737    753 ; CONTINUATION OF <AT SIGN>
+0370                 738    754 BUFOUT:
+0370  21 00 18       739    755         LXI     H,1800H         ; OUTPUT CHARACTERS STORED AT 0X1800 UNTIL...
+0373                 740    756 BOLOOP1:
+0373  00             741    757         NOP
+0374  cd 80 03       742    758         CALL    CHAROUT
+0377  fe 13          743    759         CPI     13H
+0379  ca 91 03       744    760         JZ      OUTDONE         ; YOU HIT 0X13, THE STOP CHARACTER <CTRL-S>
+037c  23             745    761         INX     H
+037d  c3 73 03       746    762         JMP     BOLOOP1
+                     747    763 
+                     748    764 ; OUTPUT ONE CHARACTER POINTED TO BY HL WHEN THE PORT IS READY
+                     749    765 ; CHARACTER IS LEFT IN A, HL NOT MODIFIED
+                     750    766 ; USED BY <AT SIGN>
+0380                 751    767 CHAROUT:
+0380  db 00          752    768         IN      STATPORT        ; PORT STATUS
+0382  e6 80          753    769         ANI     STATTXOK        ; READY BIT
+0384  ca 80 03       754    770         JZ      CHAROUT         ; LOOP UNTIL PORT IS READY
+0387  7e             755    771         MOV     A,M             ; GET THE CHARACTER
+0388  d3 01          756    772         OUT     DATAPORT
+038a  c9             757    773         RET
+                     758    774 
+                     759    775 ; <AT SIGN> (OR <SHIFT-P> ON A TELETYPE) FUNCTION ENTRY POINT (PUNCH ANIMATION)
+038b  cd 64 03       760    776         CALL    NULOUT
+038e  c3 70 03       761    777         JMP     BUFOUT
+                     762    778 
+                     763    779 ; FINISH UP OF <AT SIGN>
+0391                 764    780 OUTDONE:
+0391  cd 64 03       765    781         CALL    NULOUT
+0394  c3 58 00       766    782         JMP     PROCESS
+0397  00             767    783         NOP
+                     768    784 
+                     769    785 ; <ESCAPE> FUNCTION (CLEAR THE SCREEN ONLY)
+                     770    786 ; NOTE: THIS HACKS THE END TEST IN THE CLEARBUF FUNCTION TO MAKE IT STOP BEFORE THE COMMAND BUFFER
+0398  3e 18          771    787         MVI     A,18H           ; STOP AT HIGH ADDRESS 0X18 INSTEAD OF 0X20
+039a  32 38 02       772    788         STA     CLRBCMP+1
+039d  cd 30 02       773    789         CALL    CLEARBUF
+03a0  3e 20          774    790         MVI     A,20H           ; RESTORE TO 0X20
+03a2  32 38 02       775    791         STA     CLRBCMP+1
+                     776    792 ; <ESCAPE> DROPS INTO <NUL> (OR <NUL> JUMPS INTO <ESCAPE>)
+                     777    793 ; <NUL> FUNCTION
+03a5  c3 58 00       778    794         JMP     PROCESS
+                     779    795 
+                     780    796 ; <DC3><CTRL-S> FUNCTION (STOP ANIMATION)
+03a8  af             781    797         XRA     A               ; CLEAR RUN FLAG
+03a9  32 0d 00       782    798         STA     RUNFLG
+03ac  c3 32 04       783    799         JMP     JTBLUNHACK
+                     784    800 
+                     785    801 ; <DC2><CTRL-R> FUNCTION (START ANIMATION)
+03af  21 ff 17       786    802         LXI     H,17FFH         ; ONE BEFORE THE COMMAND BUFFER START
+03b2  22 0e 00       787    803         SHLD    CMDBUFP
+                     788    804 
+                     789    805 ; IF RUN FLAG (0X000D) IS ONE, WE COME HERE
+03b5                 790    806 RUNNING:
+03b5  f7             791    807         RST     6               ; CALL SET RUN FLAG AND DELAY VIA SENSE SWITCHES
+03b6  00             792    808         NOP
+03b7  00             793    809         NOP
+03b8  c3 06 04       794    810         JMP     MORERUN
+                     795    811 
+03bb                 796    812 RUN2:
+03bb  23             797    813         INX     H               ; INCREMENT COMMAND POINTER IN HL
+03bc  46             798    814         MOV     B,M             ; PUT RECORDED CHARACTER IN B
+03bd  c3 00 04       799    815         JMP     INSRT1
+                     800    816 
+                     801    817 ; <DLE><CTRL-P> FUNCTION (OUTPUT EVERYTHING STARTING AT ZERO  --LOOK OUT-- GET READY TO RESET)
+03c0  21 00 00       802    818         LXI     H,0000H
+03c3                 803    819 CPWAIT:
+03c3  db 00          804    820         IN      STATPORT        ; PORT STATUS
+03c5  e6 80          805    821         ANI     STATTXOK        ; READY BIT
+03c7  ca c3 03       806    822         JZ      CPWAIT
+03ca  7e             807    823         MOV     A,M
+03cb  d3 01          808    824         OUT     DATAPORT
+03cd  23             809    825         INX     H
+03ce  c3 c3 03       810    826         JMP     CPWAIT
+                     811    827 
+                     812    828 ; GET A CHARACTER
+03d1                 813    829 GETPORTBYTE:
+03d1  21 f0 03       814    830         LXI     H,GPBTABLE      ; DATA AREA BELOW...
+03d4  db 01          815    831         IN      DATAPORT        ; GET THE CHARACTER
+03d6  e6 7f          816    832         ANI     7FH             ; CLEAR THE HIGH BIT
+03d8  47             817    833         MOV     B,A             ; MOVE IT TO B
+03d9                 818    834 GPBLOOP:
+03d9  23             819    835         INX     H               ; INCREMENT THE DATA POINTER
+03da  78             820    836         MOV     A,B
+03db  be             821    837         CMP     M
+03dc  c8             822    838         RZ                      ; IF IT IS A CHARACTER IN OUR TABLE, RETURN RIGHT HERE DON'T STORE IT
+03dd  7e             823    839         MOV     A,M             ; GET THE TABLE VALUE SO WE CAN... - LINE 1229 OK
+03de  fe ff          824    840         CPI     0FFH            ; CHECK FOR THE END OF THE TABLE
+03e0  c2 d9 03       825    841         JNZ     GPBLOOP         ; NOT THE END? LOOP BACK AND CHECK THE NEXT VALUE
+03e3  78             826    842         MOV     A,B             ; IF WE'RE HERE, IT'S NOT IN THE TABLE...
+03e4  2a 0e 00       827    843         LHLD    CMDBUFP         ; STORE IT TO THE COMMAND BUFFER POINTER
+03e7  77             828    844         MOV     M,A
+03e8  23             829    845         INX     H               ; INCREMENT THE POINTER
+03e9  22 0e 00       830    846         SHLD    CMDBUFP         ; STORE THE INCREMENTED POINTER (CMDBUFP)
+03ec  c9             831    847         RET
+                     832    848 
+                     833    849 ; <SEMI-COLON> FUNCTION (JUST MOVE IN THE SAME DIRECTION, NO PIXEL CHANGE)
+03ed  c3 1c 00       834    850         JMP     MOVNOSTORE
+                     835    851 
+                     836    852 ; COMPARE TABLE (DON'T STORE THESE BYTES)
+03f0                 837    853 GPBTABLE:
+03f0  03             838    854         DB      03H
+03f1  02             839    855         DB      02H
+03f2  10             840    856         DB      10H
+03f3  40             841    857         DB      40H
+03f4  11             842    858         DB      11H
+03f5  00             843    859         DB      00H
+03f6  ff             844    860         DB      0FFH            ; END OF TABLE MARKER (SEE ABOVE)
+                     845    861 
+                     846    862 ; SEEMS DEAD
+03f7  00 00 00 00    847    863         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+03fb  00 00 00 00    847    864
+03ff  00             848    865         DB      00H
+                     849    866 
+0400                 850    867 INSRT1:
+0400  22 0e 00       851    868         SHLD    CMDBUFP         ; STORE HL TO CMDBUFP
+0403  c3 8a 01       852    869         JMP     PROCCHAR
+                     853    870 
+0406                 854    871 MORERUN:
+0406  2a 0e 00       855    872         LHLD    CMDBUFP         ; COMMAND BUFFER POINTER IN HL (CMDBUFP)
+0409  db 01          856    873         IN      DATAPORT        ; JUST GET A CHARACTER, REGARDLESS OF PORT STATUS
+040b  fe 11          857    874         CPI     11H             ; SEE IF WE GOT A <DC1><CTRL-Q>
+040d  c2 18 04       858    875         JNZ     CHKCZ           ; NO? CHECK FOR NEXT SPECIAL CHARACTER
+0410  3e 00          859    876         MVI     A,00H           ; CLEAR THE RUN FLAG
+0412  32 0d 00       860    877         STA     RUNFLG
+0415  c3 00 00       861    878         JMP     0000H           ; RESET EVERYTHING AND START OVER
+0418                 862    879 CHKCZ:
+0418  fe 1a          863    880         CPI     CTRLZ           ; SEE IF WE GOT A 0X1A <CTRL-Z>?
+                     864    881                                 ; WRITTEN ASSUMING AN EVEN PARITY TTY SO HIGH BIT IS SET
+041a  c2 25 04       865    882         JNZ     CHK18           ; NO, JUMP TO CHECK18
+041d  3e 00          866    883         MVI     A,00H           ; CLEAR THE RUN FLAG
+041f  32 0d 00       867    884         STA     RUNFLG
+0422  c3 58 00       868    885         JMP     PROCESS         ; JUMP BACK TO KEYSTROKE LOOP
+0425                 869    886 CHK18:
+0425  fe 18          870    887         CPI     18H             ; SEE IF WE GOT A <CAN> (CANCEL) <CTRL-X>
+0427  c2 bb 03       871    888         JNZ     RUN2            ; NO? KEEP GOING
+                     872    889 ; MAKE <CTRL-R> ACTION FUNCTION SAME AS <CTRL-S>
+042a                 873    890 JTBLHACK:
+042a  3e a8          874    891         MVI     A,0A8H          ; CHANGE RUN FUNCTION TO STOP FUNCTION
+042c  32 92 02       875    892         STA     RUNTBLENT       ; MODIFY JUMP TABLE FOR <CTRL-R>
+042f  c3 bb 03       876    893         JMP     RUN2
+                     877    894 
+                     878    895 ; RESTORE <CTRL-R> ACTION FUNCTION
+0432                 879    896 JTBLUNHACK:
+0432  3e af          880    897         MVI     A,0AFH          ; CHANGE RUN FUNCTION BACK TO RUN FUNCTION
+0434  32 92 02       881    898         STA     RUNTBLENT       ; MODIFY JUMP TABLE FOR <CTRL-R>
+0437  c3 58 00       882    899         JMP     PROCESS         ; GO BACK TO KEYSTROKE LOOP
+                     883    900 
+                     884    901 ; SEEMS DEAD
+043a  07 07 07 07    885    902         DB      07H, 07H, 07H, 07H, 07H, 07H
+043e  07 07          885    903
+0440  00 00 00 00    886    904         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+0444  00 00 00 00    886    905
+0448  00 00 00 00    887    906         DB      00H, 00H, 00H, 00H, 00H, 00H, 00H, 00H
+044c  00 00 00 00    887    907
+0450  00 00 00 00    888    908         DB      00H, 00H, 00H, 00H, 00H
+0454  00             888    909
+0455  0d 0d 0d 0d    889    910         DB      0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH
+0459  0d 0d 0d 0d    889    911
+045d  0d 0d 0d 0d    890    912         DB      0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH, 0DH
+0461  0d 0d 0d 0d    890    913
+                     891    914 
+0465                 892    915         END
+
+Symbol table
+
+ADJCUR      01d2    BOLOOP1     0373    BUFOUT      0370    CFLSHFLG    000b 
+CHAROUT     0380    CHK18       0425    CHKCURPOS   02c3    CHKCZ       0418 
+CHKDONE     02f2    CHKNXT      0246    CHKY        02dc    CLEARBUF    0230 
+CLRBCMP     0237    CLRBLOOP    0233    CLRKEYTBL   0172    CMDBUFP     000e 
+COLOR       0007    COORDS      0003    CPWAIT      03c3    CTRLZ       001a 
+CUROFFFLG   000c    CURONSCR    0006    CUSORDAT    0005    DATAPORT    0001 
+DLYLOOP1    01ea    DOCURRENT   01c0    FUNCCHAR    0240    FUNCLADDR   0280*
+GETHIGH     00f2    GETKEY      0180    GETPADDR    0100    GETPORTBYTE 03d1 
+GETPVAL     00e8    GPBLOOP     03d9    GPBTABLE    03f0    HIGHINT     0160 
+INSRT1      0400    INTENS      0008    JTBLHACK    042a*   JTBLUNHACK  0432 
+JUMPMTCHTBL 0268    KEYCOLOR    01aa    LOWINT      0158    MORERUN     0406 
+MOVNOSTORE  001c    NOFLSHLOOP  0066    NOLOOP      0367    NOTRUNNING  005b 
+NULOUT      0364    OUTDONE     0391    PCLOOP1     0197    PROCCHAR    018a 
+PROCESS     0058    RECHECK     02c6    RUN2        03bb    RUNCHECK    00c1 
+RUNFLG      000d    RUNNING     03b5    RUNTBLENT   0292    SETPIXVAL   0138 
+SKIPCUR     0063    SKP200      010e    SKP400      0119    SPTOP4      0148 
+START       0200    STATPORT    0000    STATRXOK    0040    STATTXOK    0080 
+STCLRLOOP   0220    STORMOTNMOV 0019    SWITPORT    00ff    SWTDLY      01e4 
+TBLMATCH    0254    TGHTLOOP    0038    TGLCURSOR   0080    WRPBTM      02ec 
+WRPRIGHT    02d6    XCURMOT     000a    XORPIXVAL   00b8    XSETMOTION  0010 
+YCURMOT     0009    YSETMOTION  0016    

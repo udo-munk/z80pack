@@ -17,10 +17,6 @@
 
 */
 
-#ifdef __CYGWIN__
-#include <windef.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,9 +24,9 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <sys/time.h>
-#include <sys/timeb.h>
 #include <time.h>
 #include <unistd.h>
+#include <errno.h>
 #include "lp_utils.h"
 
 #define TRUE  1
@@ -42,6 +38,8 @@
 #ifndef min
 #define min(a,b) (a) < (b) ? (a) : (b)
 #endif
+
+#define UNUSED(x) (void) (x)
 
 
 /* ---------------------
@@ -277,21 +275,22 @@ enum xpnd_states  { XPN_START, XPN_PREFIX, XPN_FRMVAL, XPN_TOVAL, XPN_INC, XPN_S
 #endif
 
 
-//int xpand(char *s, int (*func)(char *m) )
+//int xpand(const char *s, int (*func)(char *m) )
 
-//int xpand(char *s, char ***namelist )
-int xpand(char *s, char **namelist[] )
+//int xpand(const char *s, char ***namelist )
+int xpand(const char *s, char **namelist[] )
 {
 
- char *cp = s,
-	c, *cp1 = NULL,
+ const char *cp = s,
+	*cp1 = NULL;
+ char	c,
 	*prefix = NULL,
 	*suffix = NULL,
 	*from	= NULL,
 	*to	= NULL,
 	*inc	= NULL;
  int	n, 
-	error	= 0,
+	// error	= 0,
 	state 	= XPN_START;
 
  int	ival,
@@ -376,7 +375,7 @@ int xpand(char *s, char **namelist[] )
 		 }
 		else if( c == '+' )
 		 {
-			error = 1;
+			// error = 1;
 		 }
 	
 		cp++;
@@ -516,7 +515,7 @@ int xpand(char *s, char **namelist[] )
 
     ival = from_ival;
 
-    sprintf(format, "%%0%dd",ndigits);
+    snprintf(format, sizeof(format), "%%0%dd",ndigits);
 
    max_names = ( (max(ival, to_ival)) - (min(ival,to_ival))) / abs(inc_ival) + 1;
 
@@ -527,7 +526,7 @@ int xpand(char *s, char **namelist[] )
    do
     {
      obuf[0]=0;
-     sprintf(dbuf,format,ival);
+     snprintf(dbuf,sizeof(dbuf),format,ival);
      if(prefix) strcpy(obuf,prefix);
      strcat(obuf,dbuf);
      if(suffix) strcat(obuf,suffix);
@@ -538,7 +537,7 @@ int xpand(char *s, char **namelist[] )
      ival += inc_ival;
     } while (ival != to_ival);
 
-     sprintf(dbuf,format,ival);
+     snprintf(dbuf,sizeof(dbuf),format,ival);
      obuf[0]=0;
      if(prefix) strcpy(obuf,prefix);
      strcat(obuf,dbuf);
@@ -564,11 +563,11 @@ int xpand(char *s, char **namelist[] )
      num_names++;
   }
 
-  if(prefix) delete prefix;
-  if(from)  delete from;
-  if(to) delete to;
-  if(inc) delete inc;
-  if(suffix) delete(suffix);
+  if(prefix) delete[] prefix;
+  if(from)  delete[] from;
+  if(to) delete[] to;
+  if(inc) delete[] inc;
+  if(suffix) delete[] suffix;
 
   return(num_names);
 
@@ -634,16 +633,14 @@ static watch_t syswatch;
 double frate_gettime(void)
 {
    struct timeval      tp;
-    struct timezone     tzp;
     int                 sec;
     int                 usec;
     watch_t             *t;
-
     double	secf, usecf, dt;
 
     t = &syswatch;
 
-    gettimeofday(&tp, &tzp);
+    gettimeofday(&tp, NULL);
     sec = tp.tv_sec - t->bsdtime.tv_sec;
     usec = tp.tv_usec - t->bsdtime.tv_usec;
     if (usec < 0) 
@@ -674,7 +671,7 @@ void framerate_start_frame(void)
 
 void framerate_wait(void)
 {
- unsigned int usec;
+ struct timespec ts, rem;
  double delta;
  double t;
 
@@ -688,9 +685,18 @@ void framerate_wait(void)
 
  if( delta > 0.0 )
   {
-    delta = delta * 10e5;
-    usec = (unsigned int) delta;
-    usleep(usec);
+    delta = delta * 10e8;
+    ts.tv_sec = 0;
+    ts.tv_nsec = (long) delta;
+
+    for (;;)
+        if (nanosleep(&ts, &rem) == -1 && errno == EINTR && rem.tv_nsec > 0L)
+	 {
+	    ts = rem;
+	    continue;
+	 }
+	else
+	    break;
   }
 
 }
@@ -735,13 +741,13 @@ Parser::~Parser(void)
  if(results.strings)
   {
     for(i=0;i<results.max_args;i++)
-       if(results.strings[i]) delete results.strings[i];
+       if(results.strings[i]) delete[] results.strings[i];
   }
 
- if(results.strings) delete results.strings;
- if(results.stringlengths) delete results.stringlengths;
- if(results.floats) delete results.floats;
- if(results.ints) delete results.ints;
+ if(results.strings) delete[] results.strings;
+ if(results.stringlengths) delete[] results.stringlengths;
+ if(results.floats) delete[] results.floats;
+ if(results.ints) delete[] results.ints;
 }
 
 int
@@ -751,6 +757,8 @@ Parser::addArg(const char *s, const char *cpos1, const char *cpos2)
  float fval;
  char *endptr;
 
+ UNUSED(s);
+
  if(results.num_args + 1 > results.max_args)
    growArgs(4);
 
@@ -759,9 +767,14 @@ Parser::addArg(const char *s, const char *cpos1, const char *cpos2)
 
     if(results.stringlengths[results.num_args] < len+1)
      {
-	if(results.strings[results.num_args]) delete results.strings[results.num_args];
+       if(results.strings[results.num_args])
+	{
+	 delete[] results.strings[results.num_args];
+	 results.strings[results.num_args] = NULL;
+	}
      }
-    results.strings[results.num_args] = new char[ len + 1];
+    if (results.strings[results.num_args] == NULL)
+      results.strings[results.num_args] = new char[ len + 1];
     results.stringlengths[results.num_args] = len + 1;
     strncpy(results.strings[results.num_args], cpos1,len);
     results.strings[results.num_args][len] = 0;
@@ -851,10 +864,10 @@ void Parser:: growArgs(int n)
    new_stringlengths[i] = 0;
   }
 
- if(results.strings) delete results.strings;
- if(results.stringlengths) delete results.stringlengths;
- if(results.floats) delete results.floats;
- if(results.ints) delete results.ints;
+ if(results.strings) delete[] results.strings;
+ if(results.stringlengths) delete[] results.stringlengths;
+ if(results.floats) delete[] results.floats;
+ if(results.ints) delete[] results.ints;
  results.strings = new_strings;
  results.stringlengths = new_stringlengths;
  results.floats = new_floats;
@@ -942,7 +955,7 @@ Parser::parse(parser_result_t **returned_result)
 			 strncpy(var,cp1,n);
 			 var[n]=0;
 			 curr_rule= results.cmd_idx = findCmd(var);
-			 delete var;
+			 delete[] var;
 			 if(curr_rule < 0) 
 			  {
   		  	    error = PARSER_ERR_VAR_NOT_FOUND;
@@ -979,14 +992,14 @@ Parser::parse(parser_result_t **returned_result)
 			 strncpy(var,cp1,n);
 			 var[n]=0;
 			 curr_rule= results.cmd_idx = findCmd(var);
-			 delete var;
+			 delete[] var;
 			 if(curr_rule < 0) 
 			  {
   		  	    error = PARSER_ERR_VAR_NOT_FOUND;
 			    return (cp1-buff);
 			  }
 
-			   leadspace = 1;
+			   // leadspace = 1;
 			   if(results.num_args < rules[curr_rule].minvals)
 			    {
 				error=PARSER_ERR_TOO_FEW_VALS;
@@ -1039,7 +1052,7 @@ Parser::parse(parser_result_t **returned_result)
 		   cp1 = cp+1;
 
 		    state = PARSER_GETVAR;
-		    leadspace = 1;
+		    // leadspace = 1;
 		    cp1 = cp+1;
 		    cp2 = cp;
 		    return PARSER_OK;

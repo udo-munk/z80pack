@@ -1,0 +1,41 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ;  KILL THE BIT GAME BY DEAN MCDANIEL, MAY 15, 1975
+                       3      3 ;
+                       4      4 ;  OBJECT: KILL THE ROTATING BIT. IF YOU MISS THE LIT BIT, ANOTHER
+                       5      5 ;          BIT TURNS ON LEAVING TWO BITS TO DESTROY. QUICKLY 
+                       6      6 ;          TOGGLE THE SWITCH, DON'T LEAVE THE SWITCH IN THE UP
+                       7      7 ;          POSITION. BEFORE STARTING, MAKE SURE ALL THE SWITCHES
+                       8      8 ;          ARE IN THE DOWN POSITION.
+                       9      9 ;
+                      10     10 ;  MODIFIED BY MIKE DOUGLAS, JULY 2019, TO DEMONSTRATE USE OF THE
+                      11     11 ;  INCREMENTER/DECREMENTER IN THE 8080, WHICH AS A SIDE EFFECT,
+                      12     12 ;  DRIVES THE ADDRESS BUS, AND HENCE, THE FRONT PANEL LEDS, DURING
+                      13     13 ;  THE EXECUTE CYCLE OF 16 BIT INCREMENT AND DECREMENT INSTRUCTIONS.
+                      14     14 ;
+                      15     15         ORG     0
+                      16     16 
+0000  21 00 00        17     17         LXI     H,0             ;INITIALIZE COUNTER
+0003  16 80           18     18         MVI     D,080H          ;SET UP INITIAL DISPLAY BIT
+0005  01 0e 00        19     19         LXI     B,0EH           ;HIGHER VALUE = FASTER
+0008  13              20     20 BEG:    INX     D               ;DISPLAY BIT PATTERN ON
+0009  13              21     21         INX     D               ;...UPPER 8 ADDRESS LIGHTS
+000a  13              22     22         INX     D
+000b  1b              23     23         DCX     D
+000c  1b              24     24         DCX     D
+000d  1b              25     25         DCX     D
+000e  09              26     26         DAD     B               ;INCREMENT DISPLAY COUNTER
+000f  d2 08 00        27     27         JNC     BEG
+0012  db ff           28     28         IN      0FFH            ;INPUT DATA FROM SENSE SWITCHES
+0014  aa              29     29         XRA     D               ;EXCLUSIVE OR WITH A
+0015  0f              30     30         RRC                     ;ROTATE DISPLAY RIGHT ONE BIT
+0016  57              31     31         MOV     D,A             ;MOVE DATA TO DISPLAY REG
+0017  c3 08 00        32     32         JMP     BEG             ;REPEAT SEQUENCE
+                      33     33 
+001a                  34     34         END
+
+Symbol table
+
+BEG 0008    

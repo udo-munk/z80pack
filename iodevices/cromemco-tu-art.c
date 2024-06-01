@@ -3,24 +3,26 @@
  *
  * Common I/O devices used by various simulated machines
  *
- * Copyright (C) 2014-2018 by Udo Munk
+ * Copyright (C) 2014-2021 Udo Munk
  *
  * Emulation of a Cromemco TU-ART S100 board
  *
  * History:
- *    DEC-14 first version
- *    JAN-15 better subdue of non printable characters in output
- * 02-FEB-15 implemented the timers and interrupt flag for TBE
- * 05-FEB-15 implemented interrupt flag for RDA
- * 14-FEB-15 improvements, so that the Cromix tty driver works
- * 10-MAR-15 lpt's implemented for CP/M, CDOS and Cromix
- * 23-MAR-15 drop only null's
- * 26-MAR-15 tty's implemented for CDOS and Cromix
- * 25-APR-18 cleanup
- * 03-MAY-18 improved accuracy
- * 15-JUL-18 use logging
+ *    DEC-2014 first version
+ *    JAN-2015 better subdue of non printable characters in output
+ * 02-FEB-2015 implemented the timers and interrupt flag for TBE
+ * 05-FEB-2015 implemented interrupt flag for RDA
+ * 14-FEB-2015 improvements, so that the Cromix tty driver works
+ * 10-MAR-2015 lpt's implemented for CP/M, CDOS and Cromix
+ * 23-MAR-2015 drop only null's
+ * 26-MAR-2015 tty's implemented for CDOS and Cromix
+ * 25-APR-2018 cleanup
+ * 03-MAY-2018 improved accuracy
+ * 15-JUL-2018 use logging
+ * 06-SEP-2021 implement reset
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -32,8 +34,28 @@
 #include "log.h"
 #include "unix_terminal.h"
 #include "unix_network.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+
+#include "cromemco-hal.h"
 
 static const char *TAG = "TU-ART";
+
+void lpt_reset(void)
+{
+	extern int lpt1;
+
+	if (lpt1) {
+		close(lpt1);
+	}
+	if ((lpt1 = creat("lpt1.txt", 0664)) == -1) {
+		LOGE(TAG, "can't create lpt1.txt");
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+		lpt1 = 0;
+	}
+}
 
 /************************/
 /*	Device 0A	*/
@@ -66,7 +88,7 @@ BYTE cromemco_tuart_0a_status_in(void)
 	if (uart0a_int_pending)
 		status |= 32;
 
-	return(status);
+	return (status);
 }
 
 /*
@@ -81,36 +103,25 @@ BYTE cromemco_tuart_0a_status_in(void)
  */
 void cromemco_tuart_0a_baud_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 BYTE cromemco_tuart_0a_data_in(void)
 {
-	BYTE data;
+	int data;
 	static BYTE last;
-	struct pollfd p[1];
 
 	uart0a_rda = 0;
 
-again:
-	/* if no input waiting return last */
-	p[0].fd = fileno(stdin);
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
-
-	if (read(fileno(stdin), &data, 1) == 0) {
-		/* try to reopen tty, input redirection exhausted */
-		freopen("/dev/tty", "r", stdin);
-		set_unix_terminal();
-		goto again;
+	data = hal_data_in(TUART0A);
+	/* if no new data available return last */
+	if (data < 0) {
+		return last;
 	}
 
 	/* process read data */
 	last = data;
-	return(data);
+	return ((BYTE) data);
 }
 
 void cromemco_tuart_0a_data_out(BYTE data)
@@ -120,16 +131,7 @@ void cromemco_tuart_0a_data_out(BYTE data)
 	if (data == 0x00)
 		return;
 
-again:
-	if (write(fileno(stdout), (char *) &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			LOGE(TAG, "can't write tu-art 0a data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-		}
-	}
+	hal_data_out(TUART0A, data);
 }
 
 /*
@@ -170,7 +172,7 @@ void cromemco_tuart_0a_command_out(BYTE data)
  */
 BYTE cromemco_tuart_0a_interrupt_in(void)
 {
-	return((BYTE) uart0a_int);
+	return ((BYTE) uart0a_int);
 }
 
 /*
@@ -196,12 +198,12 @@ void cromemco_tuart_0a_interrupt_out(BYTE data)
 
 BYTE cromemco_tuart_0a_parallel_in(void)
 {
-	return((BYTE) 0);
+	return ((BYTE) 0);
 }
 
 void cromemco_tuart_0a_parallel_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 void cromemco_tuart_0a_timer1_out(BYTE data)
@@ -233,14 +235,15 @@ void cromemco_tuart_0a_timer5_out(BYTE data)
 /*	Device 1A	*/
 /************************/
 
-int uart1a_int_mask;
 int uart1a_int_mask, uart1a_int, uart1a_int_pending;
 int uart1a_sense, uart1a_lpt_busy;
 int uart1a_tbe, uart1a_rda;
 
 BYTE cromemco_tuart_1a_status_in(void)
 {
-	BYTE status = (ncons[0].ssc) ? 4 : 0;
+	BYTE status = 0;
+
+	status = (hal_alive(TUART1A)) ? 4 : 0;
 
 	if (uart1a_tbe)
 		status |= 128;
@@ -251,75 +254,39 @@ BYTE cromemco_tuart_1a_status_in(void)
 	if (uart1a_int_pending)
 		status |= 32;
 
-	return(status);
+	return (status);
 }
 
 void cromemco_tuart_1a_baud_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 BYTE cromemco_tuart_1a_data_in(void)
 {
-	BYTE data, dummy;
+	int data;
 	static BYTE last;
-	struct pollfd p[1];
 
 	uart1a_rda = 0;
 
-	/* if not connected return last */
-	if (ncons[0].ssc == 0)
-		return(last);
-
-	/* if no input waiting return last */
-	p[0].fd = ncons[0].ssc;
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
-
-	if (read(ncons[0].ssc, &data, 1) != 1) {
-		if ((errno == EAGAIN) || (errno == EINTR)) {
-			/* EOF, close socket and return last */
-			close(ncons[0].ssc);
-			ncons[0].ssc = 0;
-			return(last);
-		} else {
-			LOGE(TAG, "can't read tu-art 1a data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-			return(0);
-		}
+	data = hal_data_in(TUART1A);
+	/* if no new data available return last */
+	if (data < 0) {
+		return last;
 	}
 
-	/* process read data */
-	/* telnet client sends \r\n or \r\0, drop second character */
-	if (ncons[0].telnet && (data == '\r'))
-		read(ncons[0].ssc, &dummy, 1);
 	last = data;
-	return(data);
+	return ((BYTE) data);
 }
 
 void cromemco_tuart_1a_data_out(BYTE data)
 {
 	uart1a_tbe = 0;
-	if (ncons[0].ssc == 0)
-		return;
 	data &= 0x7f;
 	if (data == 0x00)
 		return;
 
-again:
-	if (write(ncons[0].ssc, (char *) &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			LOGE(TAG, "can't write tu-art 1a data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-		}
-	}
+	hal_data_out(TUART1A, data);
 }
 
 void cromemco_tuart_1a_command_out(BYTE data)
@@ -333,7 +300,7 @@ void cromemco_tuart_1a_command_out(BYTE data)
 
 BYTE cromemco_tuart_1a_interrupt_in(void)
 {
-	return((BYTE) uart1a_int);
+	return ((BYTE) uart1a_int);
 }
 
 void cromemco_tuart_1a_interrupt_out(BYTE data)
@@ -344,17 +311,24 @@ void cromemco_tuart_1a_interrupt_out(BYTE data)
 BYTE cromemco_tuart_1a_parallel_in(void)
 {
 	if (uart1a_lpt_busy == 0)
-		return((BYTE) ~0x20);
+		return ((BYTE) ~0x20);
 	else
-		return((BYTE) 0xff);
+		return ((BYTE) 0xff);
 }
 
 void cromemco_tuart_1a_parallel_out(BYTE data)
 {
 	extern int lpt2;
 
-	if (lpt2 == 0)
-		lpt2 = creat("lpt2.txt", 0664);
+	if (lpt2 == 0) {
+		if ((lpt2 = creat("lpt2.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create lpt2.txt");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			lpt2 = 0;
+			return;
+		}
+	}
 
 	uart1a_sense = 1;
 	uart1a_lpt_busy = 1;
@@ -369,7 +343,7 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				LOGE(TAG, "can't write lpt2.txt");
+				LOGE(TAG, "can't write to lpt2.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
@@ -387,7 +361,9 @@ int uart1b_tbe, uart1b_rda;
 
 BYTE cromemco_tuart_1b_status_in(void)
 {
-	BYTE status = (ncons[1].ssc) ? 4 : 0;
+	BYTE status = 0;
+
+	status = (hal_alive(TUART1B)) ? 4 : 0;
 
 	if (uart1b_tbe)
 		status |= 128;
@@ -398,75 +374,39 @@ BYTE cromemco_tuart_1b_status_in(void)
 	if (uart1b_int_pending)
 		status |= 32;
 
-	return(status);
+	return (status);
 }
 
 void cromemco_tuart_1b_baud_out(BYTE data)
 {
-	data = data;	/* to avoid compiler warning */
+	UNUSED(data);
 }
 
 BYTE cromemco_tuart_1b_data_in(void)
 {
-	BYTE data, dummy;
+	int data;
 	static BYTE last;
-	struct pollfd p[1];
 
 	uart1b_rda = 0;
 
-	/* if not connected return last */
-	if (ncons[1].ssc == 0)
-		return(last);
-
-	/* if no input waiting return last */
-	p[0].fd = ncons[1].ssc;
-	p[0].events = POLLIN;
-	p[0].revents = 0;
-	poll(p, 1, 0);
-	if (!(p[0].revents & POLLIN))
-		return(last);
-
-	if (read(ncons[1].ssc, &data, 1) != 1) {
-		if ((errno == EAGAIN) || (errno == EINTR)) {
-			/* EOF, close socket and return last */
-			close(ncons[1].ssc);
-			ncons[1].ssc = 0;
-			return(last);
-		} else {
-			LOGE(TAG, "can't read tu-art 1b data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-			return(0);
-		}
+	data = hal_data_in(TUART1B);
+	/* if no new data available return last */
+	if (data < 0) {
+		return last;
 	}
 
-	/* process read data */
-	/* telnet client sends \r\n or \r\0, drop second character */
-	if (ncons[1].telnet && (data == '\r'))
-		read(ncons[1].ssc, &dummy, 1);
 	last = data;
-	return(data);
+	return ((BYTE) data);
 }
 
 void cromemco_tuart_1b_data_out(BYTE data)
 {
 	uart1b_tbe = 0;
-	if (ncons[1].ssc == 0)
-		return;
 	data &= 0x7f;
 	if (data == 0x00)
 		return;
 
-again:
-	if (write(ncons[1].ssc, (char *) &data, 1) != 1) {
-		if (errno == EINTR) {
-			goto again;
-		} else {
-			LOGE(TAG, "can't write tu-art 1b data");
-			cpu_error = IOERROR;
-			cpu_state = STOPPED;
-		}
-	}
+	hal_data_out(TUART1B, data);
 }
 
 void cromemco_tuart_1b_command_out(BYTE data)
@@ -480,7 +420,7 @@ void cromemco_tuart_1b_command_out(BYTE data)
 
 BYTE cromemco_tuart_1b_interrupt_in(void)
 {
-	return((BYTE) uart1b_int);
+	return ((BYTE) uart1b_int);
 }
 
 void cromemco_tuart_1b_interrupt_out(BYTE data)
@@ -491,17 +431,24 @@ void cromemco_tuart_1b_interrupt_out(BYTE data)
 BYTE cromemco_tuart_1b_parallel_in(void)
 {
 	if (uart1b_lpt_busy == 0)
-		return((BYTE) ~0x20);
+		return ((BYTE) ~0x20);
 	else
-		return((BYTE) 0xff);
+		return ((BYTE) 0xff);
 }
 
 void cromemco_tuart_1b_parallel_out(BYTE data)
 {
 	extern int lpt1;
 
-	if (lpt1 == 0)
-		lpt1 = creat("lpt1.txt", 0664);
+	if (lpt1 == 0) {
+		if ((lpt1 = creat("lpt1.txt", 0664)) == -1) {
+			LOGE(TAG, "can't create lpt1.txt");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+			lpt1 = 0;
+			return;
+		}
+	}
 
 	uart1b_sense = 1;
 	uart1b_lpt_busy = 1;
@@ -516,10 +463,42 @@ again:
 			if (errno == EINTR) {
 				goto again;
 			} else {
-				LOGE(TAG, "can't write lpt1.txt");
+				LOGE(TAG, "can't write to lpt1.txt");
 				cpu_error = IOERROR;
 				cpu_state = STOPPED;
 			}
 		}
+
+#ifdef HAS_NETSERVER
+		if (n_flag)
+			net_device_send(DEV_LPT, (char *) &data, 1);
+#endif
 	}
+}
+
+/*
+ * reset all TU-ART
+ */
+void cromemco_tuart_reset(void)
+{
+	uart0a_int = 0xff;
+	uart0a_int_mask = 0;
+	uart0a_int_pending = 0;
+	uart0a_rda = 0;
+	uart0a_tbe = 1;
+	uart0a_timer1 = uart0a_timer2 = uart0a_timer3 = 0;
+	uart0a_timer4 = uart0a_timer5 = 0;
+	uart0a_rst7 = 0;
+
+	uart1a_int = 0xff;
+	uart1a_int_mask = 0;
+	uart1a_int_pending = 0;
+	uart1a_rda = 0;
+	uart1a_tbe = 1;
+
+	uart1b_int = 0xff;
+	uart1b_int_mask = 0;
+	uart1b_int_pending = 0;
+	uart1b_rda = 0;
+	uart1b_tbe = 1;
 }

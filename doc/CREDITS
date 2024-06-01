@@ -36,8 +36,12 @@ improvements and helpful feedback.
 
 David McNaughton <dave@mackeneight.net>
 
-For building the IMSAI 8080esp replica kit and numerous
-additions and improvements.
+For building the IMSAI 8080 and Cromemco Z-1 8080esp replica kits.
+For adding a web based GUI to the IMSAI and Cromemco emulations.
+For adding diskmanager, HAL, generic AT modem emulation to the
+IMSAI and Cromemco emulations.
+For implementation of the Cromemco 88 CCC Cyclops Camera Controller.
+For implementation of the Cromemco WDI-II hard disk controller.
 
 
 Mike Douglas <deramp5113@yahoo.com>
@@ -50,3 +54,16 @@ For implementation of a BDOS-like interface for host file I/O.
 Fred Weigel <fred_weigel@hotmail.com>
 
 For the AM9511 emulation and 8080/Z80 software to use it.
+
+
+Thomas Eberhardt <sneakywumpus@gmail.com>
+
+For completing the implementation of the undocumented Z80 instructions,
+in the disassembler, assembler, and the I[XY][HL] instructions in the
+simulator.
+For some improvements to the simulator.
+For much work on the assembler: macros, new expression parser, 8080 mode,
+and various other improvements and bug fixes.
+For refactoring the ICE so that it can be better attached to systems.
+For code size optimized implementations of 8080 and Z80 CPU's
+For code analysis and improving overall code quality and readability

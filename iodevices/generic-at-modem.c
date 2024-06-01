@@ -6,12 +6,12 @@
  * Copyright (C) 2019-2021 by David McNaughton
  * 
  * History:
- * 12-SEP-19    1.0     Initial Release
- * 29-SEP-19    1.1     Added Answer modes and registers
- * 20-OCT-19    1.2     Added Telnet handler
- * 23-OCT-19    1.3     Put Telnet protocol under modem register control
- * 16-JUL-20	1.4	    fix bug/warning detected with gcc 9
- * 17-JUL-20    1.5     Added/Update AT$ help, ATE, ATQ, AT&A1 cmds, MODEM.init string
+ * 12-SEP-2019	1.0	Initial Release
+ * 29-SEP-2019	1.1	Added Answer modes and registers
+ * 20-OCT-2019	1.2	Added Telnet handler
+ * 23-OCT-2019	1.3	Put Telnet protocol under modem register control
+ * 16-JUL-2020	1.4	fix bug/warning detected with gcc 9
+ * 17-JUL-2020	1.5	Added/Update AT$ help, ATE, ATQ, AT&A1 cmds, MODEM.init string
  */
 
 #include <unistd.h>
@@ -24,12 +24,14 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
-#include <sys/time.h>
 #include <netdb.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 
 #include "libtelnet.h"
+
+#define UNUSED(x) (void) (x)
 
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
@@ -94,7 +96,7 @@ static const char* TAG = "at-modem";
 #define OPT_ECHO    0x1
 #define OPT_QUIET   0x2
 
-void modem_device_init();
+void modem_device_init(void);
 
 static bool daemon_f = false;
 
@@ -150,8 +152,7 @@ static telnet_t *telnet =  NULL;
 static unsigned char tn_recv;
 static int tn_len = 0;
 
-int time_diff_msec(struct timeval *, struct timeval *);
-int time_diff_sec(struct timeval *, struct timeval *);
+extern uint64_t get_clock_us(void);
 
 static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
 
@@ -159,18 +160,18 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
     char * p;
     int i;
 
-    user_data = user_data;
+    UNUSED(user_data);
 
     switch (ev->type) {
     case TELNET_EV_DATA:
 		if (ev->data.size) {
             if (ev->data.size != 1) {
-                LOGW(TAG, "LONGER THAN EXPECTED [%ld]", ev->data.size);
+                LOGW(TAG, "LONGER THAN EXPECTED [%zd]", ev->data.size);
             } else {
                 tn_recv = *(ev->data.buffer);
                 tn_len = ev->data.size;
             }
-            LOGD(TAG, "Telnet IN: %c[%ld]", tn_recv, ev->data.size);
+            LOGD(TAG, "Telnet IN: %c[%zd]", tn_recv, ev->data.size);
 		}
 		break;
     case TELNET_EV_SEND:
@@ -179,9 +180,10 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
             for(i=0;i<(int)ev->data.size;i++) {
                 p += sprintf (p, "%d ", *(ev->data.buffer+i));
             }
-            LOGD(TAG, "Telnet OUT: %s[%ld]", buf, ev->data.size);
+            LOGD(TAG, "Telnet OUT: %s[%zd]", buf, ev->data.size);
 		}
-		write(*active_sfd, ev->data.buffer, ev->data.size);
+		if (write(*active_sfd, ev->data.buffer, ev->data.size) != (ssize_t) ev->data.size)
+			LOGE(TAG, "Telnet OUT: can't send data");
 		break;
     case TELNET_EV_WILL:
         if (ev->neg.telopt == TELNET_TELOPT_SGA) {
@@ -221,7 +223,7 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
         break;
     case TELNET_EV_TTYPE:
 		LOGI(TAG, "TTYPE negotiation cmd:%d", ev->ttype.cmd);
-        char *ttype;
+        const char *ttype;
         if (((ttype = getenv("TERM")) == NULL) || (s_reg[SREG_TN_TTYPE] & 4)) {
             ttype = TELNET_TTYPE;
         }
@@ -268,7 +270,7 @@ int open_socket(void) {
     void *addrptr = NULL;
     uint16_t port = 0;
     struct sockaddr_in *sktv4 = NULL;
-    struct sockaddr_in6 *sktv6 = NULL;
+    /* struct sockaddr_in6 *sktv6 = NULL; */
     int on = 1;
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -279,7 +281,7 @@ int open_socket(void) {
 
     s = getaddrinfo(addr, port_num, &hints, &result);
     if (s != 0) {
-        LOGI(TAG, "getaddrinfo: %s\n", "failed");
+        LOGI(TAG, "getaddrinfo: %s", "failed");
         return 1;
     }
 
@@ -293,16 +295,16 @@ int open_socket(void) {
                 addrptr = &sktv4->sin_addr;
                 break;
             case AF_INET6:
+                /*
                 sktv6 = (struct sockaddr_in6 *)rp->ai_addr;
                 port = sktv6->sin6_port;
                 addrptr = &sktv6->sin6_addr;
+                */
                 LOGE(TAG, "Not expecting IPV6 addresses");
                 return 1;
-                break;
             default:
                 LOGE(TAG, "Not expecting address family type %d", rp->ai_family);
                 return 1;
-                break;
         }
 
         inet_ntop(rp->ai_family, addrptr, addr, 100);
@@ -330,11 +332,11 @@ int open_socket(void) {
 	        return 1;
 	    }
 
-        /* Initialise Telnet session */
+        /* Initialize Telnet session */
         if (s_reg[SREG_TELNET]) {
             init_telnet_opts();
             if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
-                LOGE(TAG, "can't initialise telnet session");
+                LOGE(TAG, "can't initialize telnet session");
                 close_socket();
                 return 1;
             } else {
@@ -349,19 +351,19 @@ int open_socket(void) {
 }
 
 int hangup_timeout(bool start) {
-    static struct timeval hup_t1, hup_t2;
+    static uint64_t hup_t1, hup_t2;
     static int waiting = 0;
     int tdiff;
 
     if (*active_sfd) {
 
          if (start) { 
-            gettimeofday(&hup_t1, NULL);
+            hup_t1 = get_clock_us();
             waiting = 1;
             LOGI(TAG, "Waiting to HUP");
         } else if (waiting) {
-            gettimeofday(&hup_t2, NULL);
-            tdiff = time_diff_msec(&hup_t1, &hup_t2) / 100; /* scale msec to 10ths of seconds */
+            hup_t2 = get_clock_us();
+            tdiff = (hup_t2 - hup_t1) / 100000; /* scale usec to 10ths of seconds */
             if (tdiff >=  (int)(s_reg[SREG_HUP_DELAY])) { /* SREG_HUP_DELAY is in 10ths of seconds */
                 waiting = 0;
                 s_reg[SREG_RINGS] = 0;
@@ -436,11 +438,11 @@ int answer(void) {
     	return 1;
     }
 
-    /* Initialise Telnet session */
+    /* Initialize Telnet session */
     if (s_reg[SREG_TELNET]) {
         init_telnet_opts();
         if ((telnet = telnet_init(telnet_opts, telnet_hdlr, 0, NULL)) == 0) {
-            LOGE(TAG, "can't initialise telnet server session");
+            LOGE(TAG, "can't initialize telnet server session");
             close_socket();
             return 1;
         } else {
@@ -457,14 +459,14 @@ int answer_check_ring(void) {
 
 	struct pollfd p[1];
     static int ringing = 0;
-    static struct timeval ring_t1, ring_t2;
+    static uint64_t ring_t1, ring_t2;
     int tdiff;
     
     if (answer_sfd) {
 
         if (ringing) {
-            gettimeofday(&ring_t2, NULL);
-            tdiff = time_diff_sec(&ring_t1, &ring_t2);
+            ring_t2 = get_clock_us();
+            tdiff = (ring_t2 - ring_t1) / 1000000;
             if (tdiff < 3) {
                 return 0;
             } else {
@@ -480,7 +482,7 @@ int answer_check_ring(void) {
         if (p[0].revents == POLLIN) {
 
             if (!ringing) {
-                gettimeofday(&ring_t1, NULL);
+                ring_t1 = get_clock_us();
                 ringing = 1;
                 LOGI(TAG, "Ringing");
             }
@@ -546,15 +548,15 @@ static const char *at_help[] = {
 #ifdef MODEM_WIFI
 			"AT+W? - Query WiFi AP Join status" CRLF,
 			"AT+W=ssid,password - Join WiFI AP" CRLF,
-			"AT+W$ - Show WiFi IP adddress   ",
-			"| AT+W# - Show WiFi MAC adddress" CRLF,
+			"AT+W$ - Show WiFi IP address   ",
+			"| AT+W# - Show WiFi MAC address" CRLF,
 			"AT+W+ - Reconnect WiFI AP       ",
 			"| AT+W- - Quit WiFi AP" CRLF,
 			"AT+U? - Query OTA Update        ",
 			"| AT+U=url - Set custom URL for OTA update" CRLF,
 			"AT+U^ - Upgrade to OTA Update   ",
 			"| AT+U! - Force Upgrade to OTA Update" CRLF,
-			"AT+U$ - Show OTA Parition Status" CRLF,
+			"AT+U$ - Show OTA Partition Status" CRLF,
 #endif
 #ifdef MODEM_UART
 			"AT+B? - Query Baud Rate         ",
@@ -736,8 +738,7 @@ int process_at_cmd(void) {
                 at_cat_s(LF "CONNECT" CRLF);
             }
             *at_err = 0;
-            return 1; /* Not an error, just want to suppress the OK mesage */
-			break;
+            return 1; /* Not an error, just want to suppress the OK message */
 		case 'S': /* ATSn */
             tmp_reg = strtol(at_ptr, &arg_ptr, BASE_DECIMAL);
 
@@ -862,7 +863,7 @@ int process_at_cmd(void) {
             break;
         case '+': 
             if (*at_ptr == 'T' && *(at_ptr+1) == '?') {
-                char *ttype;
+                const char *ttype;
                 if ((ttype = getenv("TERM")) == NULL) {
                     ttype = TELNET_TTYPE;
                 }
@@ -1036,49 +1037,21 @@ int process_at_cmd(void) {
 		default:
 			strcpy(at_err, LF AT_ERROR CRLF);
 			return 1;
-			break;
 	}
   }
 
 	return 0;
 }
 
-int time_diff_msec(struct timeval *t1, struct timeval *t2)
-{
-	long sec, usec;
-
-	sec = (long) t2->tv_sec - (long) t1->tv_sec;
-	usec = (long) t2->tv_usec - (long) t1->tv_usec;
-	/* normalize result */
-	if (usec < 0L) {
-		sec--;
-		usec += 1000000L;
-	}
-    return (sec * 1000) + (usec / 1000);
-}
-
-int time_diff_sec(struct timeval *t1, struct timeval *t2)
-{
-	long sec, usec;
-
-	sec = (long) t2->tv_sec - (long) t1->tv_sec;
-	usec = (long) t2->tv_usec - (long) t1->tv_usec;
-	/* normalize result */
-	if (usec < 0L) {
-		sec--;
-		usec += 1000000L;
-	}
-    return sec;
-}
-
-static struct timeval at_t1, at_t2;
+static uint64_t at_t1, at_t2;
 int tdiff;
 
 int modem_device_poll(int i);
 
 int modem_device_alive(int i) {
 
-    i = i;
+    UNUSED(i);
+
     if (!daemon_f) return 1;
 
     if (answer_sfd) {
@@ -1094,7 +1067,7 @@ int modem_device_alive(int i) {
     return 0;
 }
 
-static int _read() {
+static int _read(void) {
 
     unsigned char data;
 
@@ -1116,9 +1089,9 @@ static int _read() {
 
 int modem_device_poll(int i) {
 
-	struct pollfd p[1];
+    UNUSED(i);
 
-    i = i;
+    struct pollfd p[1];
 
     if (at_state == help) {
         if (strlen(at_buf) == 0) {
@@ -1131,8 +1104,8 @@ int modem_device_poll(int i) {
         return (strlen(at_out) > 0);
     } else if (at_state == intr) {
         if (strlen(at_buf) == 3) {
-        	gettimeofday(&at_t2, NULL);
-            tdiff = time_diff_sec(&at_t1, &at_t2);
+        	at_t2 = get_clock_us();
+            tdiff = (at_t2 - at_t1) / 1000000;
             if (tdiff > 0) {
                 at_state = cmd;
                 LOGI(TAG, "+++ Returning to CMD mode");
@@ -1190,10 +1163,10 @@ int modem_device_poll(int i) {
 
 int modem_device_get(int i) {
 
-	struct pollfd p[1];
-    unsigned char data;
+    UNUSED(i);
 
-    i = i;
+    struct pollfd p[1];
+    unsigned char data;
 
     if (at_state == dat && strlen(at_out) == 0) {
 
@@ -1234,7 +1207,7 @@ int modem_device_get(int i) {
 
 void modem_device_send(int i, char data) {
 
-    i = i;
+    UNUSED(i);
 
 	switch (at_state) {
     /***
@@ -1244,13 +1217,14 @@ void modem_device_send(int i, char data) {
             if (data == '+' && strlen(at_buf) < 3) {
                 at_buf[strlen(at_buf)+1] = 0;
                 at_buf[strlen(at_buf)] = data;
-        	    gettimeofday(&at_t1, NULL);
+        	    at_t1 = get_clock_us();
                 return;
             } else {
                 if (telnet != NULL) {
                     telnet_send(telnet, at_buf, strlen(at_buf));
                 } else {
-                    write(*active_sfd, at_buf, strlen(at_buf));
+                    if (write(*active_sfd, at_buf, strlen(at_buf)) != (ssize_t) strlen(at_buf))
+                        LOGE(TAG, "can't send at_buf to active_sfd");
                 }
 
                 at_state = dat;
@@ -1261,8 +1235,8 @@ void modem_device_send(int i, char data) {
              */
         /* fall through */
         case dat:
-        	gettimeofday(&at_t2, NULL);
-            tdiff = time_diff_sec(&at_t1, &at_t2);
+        	at_t2 = get_clock_us();
+            tdiff = (at_t2 - at_t1) / 1000000;
 
             if (data == '+' && (tdiff > 0) && !daemon_f) {
                 at_buf[0] = data;
@@ -1274,7 +1248,8 @@ void modem_device_send(int i, char data) {
             if (telnet != NULL) {
                 telnet_send(telnet, (char *) &data, 1);
             } else {
-                write(*active_sfd, (char *) &data, 1);
+                if (write(*active_sfd, (char *) &data, 1) != 1)
+                    LOGE(TAG, "can't send data to active_sfd");
             }
             break;
 	/***
@@ -1326,19 +1301,19 @@ void modem_device_send(int i, char data) {
 			break;
 		default:
 			LOGE(TAG, "AT statemachine unknown [%d]", at_state);
-		break;
+			break;
 	}
 
-    if (at_state == dat) gettimeofday(&at_t1, NULL);
+    if (at_state == dat) at_t1 = get_clock_us();
 }
 
 int modem_device_carrier(int i) {
-    i = i;
+    UNUSED(i);
     
     return carrier_detect;
 }
 
-void modem_device_init() {
+void modem_device_init(void) {
     if (*active_sfd) {
         close_socket();
     }
@@ -1362,7 +1337,7 @@ void modem_device_init() {
 #endif
     char *modem_init_string;
     if ((modem_init_string = getenv("MODEM.init")) != NULL) {
-        LOG(TAG, "MODEM.init string: %s\n", modem_init_string);
+        LOG(TAG, "MODEM.init string: %s\r\n", modem_init_string);
         while (*modem_init_string) {
             modem_device_send(0, *modem_init_string++);
         }

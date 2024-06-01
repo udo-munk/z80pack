@@ -9,29 +9,28 @@
  * Emulation of an IMSAI VIO S100 board
  *
  * History:
- * 10-JAN-17 80x24 display output tested and working
- * 11-JAN-17 implemented keyboard input for the X11 key events
- * 12-JAN-17 all resolutions in all video modes tested and working
- * 04-FEB-17 added function to terminate thread and close window
- * 21-FEB-17 added scanlines to monitor
- * 20-APR-18 avoid thread deadlock on Windows/Cygwin
- * 07-JUL-18 optimization
- * 12-JUL-18 use logging
- * 14-JUL-18 integrate webfrontend
- * 05-NOV-19 use correct memory access function
+ * 10-JAN-2017 80x24 display output tested and working
+ * 11-JAN-2017 implemented keyboard input for the X11 key events
+ * 12-JAN-2017 all resolutions in all video modes tested and working
+ * 04-FEB-2017 added function to terminate thread and close window
+ * 21-FEB-2017 added scanlines to monitor
+ * 20-APR-2018 avoid thread deadlock on Windows/Cygwin
+ * 07-JUL-2018 optimization
+ * 12-JUL-2018 use logging
+ * 14-JUL-2018 integrate webfrontend
+ * 05-NOV-2019 use correct memory access function
  */
 
+#include <stdint.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -89,7 +88,7 @@ static void open_display(void)
 	rootwindow = RootWindow(display, screen);
 	XGetWindowAttributes(display, rootwindow, &wa);
 	window = XCreateSimpleWindow(display, rootwindow, 0, 0,
-					xsize, ysize, 1, 0, 0);
+				     xsize, ysize, 1, 0, 0);
 	XStoreName(display, window, "IMSAI VIO");
 	size_hints->flags = PSize | PMinSize | PMaxSize;
 	size_hints->min_width = xsize;
@@ -150,14 +149,14 @@ static void dc1(BYTE c)
 		for (y = 0; y < 10; y++) {
 			if (charset[(c << 1) & 0xff][y][x] == 1) {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 				else
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 			} else {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 				else
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 			}
 			XDrawPoint(display, pixmap, gc, sx + (x * xscale),
 				   sy + (y * yscale * slf));
@@ -187,14 +186,14 @@ static void dc2(BYTE c)
 		for (y = 0; y < 10; y++) {
 			if (charset[c & 0x7f][y][x] == 1) {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 				else
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 			} else {
 				if ((cinv ^ inv) == 0)
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 				else
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 			}
 			XDrawPoint(display, pixmap, gc, sx + (x * xscale),
 				   sy + (y * yscale * slf));
@@ -223,14 +222,14 @@ static void dc3(BYTE c)
 		for (y = 0; y < 10; y++) {
 			if (charset[c][y][x] == 1) {
 				if (inv == 0)
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 				else
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 			} else {
 				if (inv == 0)
-				    XSetForeground(display, gc, bg.pixel);
+					XSetForeground(display, gc, bg.pixel);
 				else
-				    XSetForeground(display, gc, fg.pixel);
+					XSetForeground(display, gc, fg.pixel);
 			}
 			XDrawPoint(display, pixmap, gc, sx + (x * xscale),
 				   sy + (y * yscale * slf));
@@ -272,15 +271,17 @@ static inline void event_handler(void)
 		}
 	}
 #ifdef HAS_NETSERVER
-	int res = net_device_get(DEV_VIO);
-	if (res >= 0) {
-		imsai_kbd_data =  res;
-		imsai_kbd_status = 2;
+	if (n_flag) {
+		int res = net_device_get(DEV_VIO);
+		if (res >= 0) {
+			imsai_kbd_data =  res;
+			imsai_kbd_status = 2;
+		}
 	}
 #endif
 }
 
-/* refresh the display buffer dependend on video mode */
+/* refresh the display buffer dependent on video mode */
 static void refresh(void)
 {
 	static int cols, rows;
@@ -379,9 +380,6 @@ static void ws_refresh(void)
 {
 	static int cols, rows;
 
-	UNUSED(vmode);
-	UNUSED(inv);
-
 	mode = getmem(0xf7ff);
 	if (mode != modebuf) {
 		modebuf = mode;
@@ -415,7 +413,7 @@ static void ws_refresh(void)
 	bool cont;
 	uint8_t val;
 
-	for (i = 0; i < len;i++) {
+	for (i = 0; i < len; i++) {
 		addr = i;
 		n = 0;
 		cont = true;
@@ -449,7 +447,8 @@ static void ws_refresh(void)
 			msg.addr = 0xf000 + addr;
 			msg.len = n;
 			net_device_send(DEV_VIO, (char *) &msg, msg.len + 4);
-			LOGD(__func__, "BUF update FROM %04X TO %04X", msg.addr, msg.addr + msg.len);
+			LOGD(__func__, "BUF update FROM %04X TO %04X",
+			     msg.addr, msg.addr + msg.len);
 		}
 	}
 }
@@ -458,41 +457,44 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern int time_diff(struct timeval *, struct timeval *);
+	extern uint64_t get_clock_us(void);
 
-	struct timeval t1, t2;
+	uint64_t t1, t2;
 	int tdiff;
 
-	arg = arg;	/* to avoid compiler warning */
-	gettimeofday(&t1, NULL);
+	UNUSED(arg);
+
+	t1 = get_clock_us();
 
 	while (state) {
-#ifndef HAS_NETSERVER
-		/* lock display, don't cancel thread while locked */
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		XLockDisplay(display);
+#ifdef HAS_NETSERVER
+		if (!n_flag) {
+#endif
+			/* lock display, don't cancel thread while locked */
+			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+			XLockDisplay(display);
 
-		/* update display window */
-		refresh();
-		XCopyArea(display, pixmap, window, gc, 0, 0,
-			  xsize, ysize, 0, 0);
-		XSync(display, False);
+			/* update display window */
+			refresh();
+			XCopyArea(display, pixmap, window, gc, 0, 0,
+				  xsize, ysize, 0, 0);
+			XSync(display, False);
 
-		/* unlock display, thread can be canceled again */
-		XUnlockDisplay(display);
-		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-#else
-		UNUSED(refresh);
-		ws_refresh();
+			/* unlock display, thread can be canceled again */
+			XUnlockDisplay(display);
+			pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+#ifdef HAS_NETSERVER
+		} else
+			ws_refresh();
 #endif
 
 		/* sleep rest to 33ms so that we get 30 fps */
-		gettimeofday(&t2, NULL);
-		tdiff = time_diff(&t1, &t2);
+		t2 = get_clock_us();
+		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
 			SLEEP_MS(33 - (tdiff / 1000));
 
-		gettimeofday(&t1, NULL);
+		t1 = get_clock_us();
 	}
 
 	pthread_exit(NULL);
@@ -501,11 +503,10 @@ static void *update_display(void *arg)
 /* create the X11 window and start display refresh thread */
 void imsai_vio_init(void)
 {
-#ifndef HAS_NETSERVER
-	open_display();
-#else
-	UNUSED(open_display);
+#ifdef HAS_NETSERVER
+	if (!n_flag)
 #endif
+		open_display();
 
 	state = 1;
 	modebuf = -1;
@@ -513,6 +514,6 @@ void imsai_vio_init(void)
 
 	if (pthread_create(&thread, NULL, update_display, (void *) NULL)) {
 		LOGE(TAG, "can't create thread");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }

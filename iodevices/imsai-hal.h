@@ -6,9 +6,12 @@
  * IMSAI SIO-2 hardware abstraction layer
  *
  * History:
- * 1-JUL-2021    1.0     Initial Release 
+ * 1-JUL-2021	1.0	Initial Release
  *
  */
+
+#ifndef IMSAI_HAL_INC
+#define IMSAI_HAL_INC
 
 enum sio_port {
 	SIO1A,
@@ -32,20 +35,25 @@ enum hal_dev {
 };
 
 struct hal_device {
-    char *name;
+    const char *name;
     int fallthrough;
-	int	(*alive)();
+	int	(*alive)(void);
 	void (*status)(BYTE *stat);
-	int (*in)();
+	int (*in)(void);
 	void (*out)(BYTE);
-    int (*cd)();
+    int (*cd)(void);
 };
 
 typedef struct hal_device hal_device_t;
 
-extern void hal_reset();
+extern void hal_reset(void);
 
 extern void hal_status_in(sio_port_t sio, BYTE *stat);
 extern int hal_data_in(sio_port_t sio);
 extern void hal_data_out(sio_port_t sio, BYTE data);
 extern int hal_carrier_detect(sio_port_t sio);
+
+extern const char *sio_port_name[MAX_SIO_PORT];
+extern hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];
+
+#endif

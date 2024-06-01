@@ -1,7 +1,7 @@
 ;
 ;       CP/M 2.2 CBIOS FOR IMSAI 8080 WITH FIF FDC AND VIO VIDEO
 ;
-;       COPYRIGHT (C) 2017,2019 BY UDO MUNK
+;       COPYRIGHT (C) 2017,2019,2022 BY UDO MUNK
 ;
 ;       CAN BE ASSEMBLED WITH INTEL MACRO 8080 ASSEMBLER
 ;       OR DRI 8080 ASSEMBLER, SO ALL UPPERCASE, NO TABS
@@ -87,7 +87,7 @@ WBE:    JMP     WBOOT           ;WARM START
 ;       DATA TABLES
 ;
 SIGNON: DB      MSIZE / 10 + '0',MSIZE MOD 10 + '0'
-        DB      'K CP/M 2.2 VERS B02',13,10,0
+        DB      'K CP/M 2.2 VERS B03',13,10,0
 VIOERR: DB      13,10,'NO VIO',13,10,0
 
 ;       BYTES FOR SIO INITIALIZATION
@@ -220,6 +220,8 @@ BO2:    IN      PRINTER         ;GET STATUS PRINTER PORT, F4 IS OK
         OUT     PRINTER
 BO3:    LXI     H,SIGNON        ;PRINT MESSAGE
         CALL    PRTMSG
+        STC                     ;FLAG FOR COLD START
+        CMC
         JMP     GOCPM           ;INITIALIZE AND GO TO CP/M
 
 ;
@@ -251,6 +253,7 @@ LOAD2:  POP     H               ;RECALL DMA ADDRESS
         POP     D               ;RECALL SECTOR ADDRESS
         POP     B               ;RECALL # OF SECTORS REMAINING
         DCR     B               ;SECTORS = SECTORS - 1
+        STC                     ;FLAG FOR WARM START
         JZ      GOCPM           ;TRANSFER TO CP/M IF ALL LOADED
         INR     D               ;NEXT SECTOR
         MOV     A,D             ;SECTOR = 27 ?
@@ -271,7 +274,8 @@ GOCPM:  MVI     A,0C3H          ;C3 IS A JMP INSTRUCTION
         CALL    SETDMA
         LDA     CDISK           ;GET CURRENT DISK NUMBER
         MOV     C,A             ;SEND TO THE CCP
-        JMP     CCP             ;GO TO CP/M FOR FURTHER PROCESSING
+        JC      CCP+3           ;GO TO CCP WARM START
+        JMP     CCP             ;GO TO CCP COLD START
 
 ;***************************************************************************
 ;       LOGICAL DEVICE ROUTINES
@@ -668,7 +672,7 @@ SECT1:  XCHG                    ;HL=.TRANS
 ;
 ;       THE REMAINDER OF THE CBIOS IS RESERVED UNINITIALIZED
 ;       DATA AREA, AND DOES NOT NEED TO BE PART OF THE SYSTEM
-;       MEMORY IMAGE. THE SPACE MUST BE AVAILABE, HOWEVER,
+;       MEMORY IMAGE. THE SPACE MUST BE AVAILABLE, HOWEVER,
 ;       BETWEEN "BEGDAT" AND "ENDDAT".
 ;
 BEGDAT  EQU     $               ;BEGIN OF DATA AREA

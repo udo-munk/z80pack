@@ -118,7 +118,7 @@ HOME:	LD	C,0		;select track 0
 ;
 SELDSK: LD	HL,0000H	;return code
 	LD	A,C
-	OUT	(FDCD),A	;selekt disk drive
+	OUT	(FDCD),A	;select disk drive
 	RET
 ;
 ;	set track given by register c

@@ -1,0 +1,41 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ; MINIMAL BOOTSTRAP PROGRAM FOR TARBELL SD CONTROLLER
+                       3      3 ; SUITABLE FOR FAST 82S123 ROM OR ENTERING PER FRONT PANEL
+                       4      4 ;
+00fc  =                5      5 WAIT    EQU  0FCH
+00f8  =                6      6 DCOM    EQU  0F8H
+00fb  =                7      7 DDATA   EQU  0FBH
+00f8  =                8      8 STAT    EQU  0F8H
+00fa  =                9      9 SECT    EQU  0FAH
+                      10     10 
+                      11     11         ORG  0FE00H             ;FOR EXTERNAL BOOT ROM, 0 FOR ONBOARD ROM
+                      12     12 
+fe00  db fc           13     13         IN   WAIT               ;WAIT FOR HOME
+fe02  af              14     14         XRA  A                  ;SETS A TO 0
+fe03  6f              15     15         MOV  L,A                ;START LOCATION IN RAM = 0
+fe04  67              16     16         MOV  H,A
+fe05  3c              17     17         INR  A                  ;SETS A TO 1
+fe06  d3 fa           18     18         OUT  SECT               ;SET SECTOR REGISTER
+fe08  3e 8c           19     19         MVI  A,08CH             ;GET READ COMMAND
+fe0a  d3 f8           20     20         OUT  DCOM               ;ISSUE COMMAND TO 1771
+fe0c  db fc           21     21 NEXT:   IN   WAIT               ;WAIT FOR INTRQ OR DRQ
+fe0e  b7              22     22         ORA  A                  ;SET FLAGS
+fe0f  f2 19 fe        23     23         JP   DONE               ;DONE IF INTRQ
+fe12  db fb           24     24         IN   DDATA              ;READ BYTE FROM CONTROLLER
+fe14  77              25     25         MOV  M,A                ;MOVE IT TO RAM
+fe15  23              26     26         INX  H                  ;ADVANCE ONE BYTE
+fe16  c3 0c fe        27     27         JMP  NEXT               ;READ NEXT BYTE
+fe19  db f8           28     28 DONE:   IN   STAT               ;READ DISK STATUS
+fe1b  b7              29     29         ORA  A                  ;SET FLAGS
+fe1c  ca 7d 00        30     30         JZ   7DH                ;GO TO SBOOT IF ZERO
+fe1f  76              31     31         HLT                     ;ERROR - HALT
+                      32     32 
+fe20                  33     33         END
+
+Symbol table
+
+DCOM  00f8    DDATA 00fb    DONE  fe19    NEXT  fe0c    SECT  00fa 
+STAT  00f8    WAIT  00fc    

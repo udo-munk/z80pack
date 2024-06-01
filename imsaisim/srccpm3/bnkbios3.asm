@@ -3,13 +3,13 @@
 ;	Copyright (C) 2019,2020 by Udo Munk
 ;
 ; History:
-; 23-OCT-19 first public release
-; 24-Oct-19 get time/date from RTC
-; 25-OCT-19 add character device table
-; 28-OCT-19 add all character devices with I/O redirection
-; 01-NOV-19 add more complete character device mode byte
-; 17-NOV-19 handle result codes from FIF FDC
-; 01-APR-20 moved RTC ports
+; 23-OCT-2019 first public release
+; 24-Oct-2019 get time/date from RTC
+; 25-OCT-2019 add character device table
+; 28-OCT-2019 add all character devices with I/O redirection
+; 01-NOV-2019 add more complete character device mode byte
+; 17-NOV-2019 handle result codes from FIF FDC
+; 01-APR-2020 moved RTC ports
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -33,7 +33,7 @@ GETDAH	EQU	4		; get days high from RTC
 ;	character devices mode byte
 ;
 mb$in	EQU	00000001B	; device may do input
-mb$out	EQU	00000010B	; device may do ouput
+mb$out	EQU	00000010B	; device may do output
 mb$inou	EQU	mb$in+mb$out	; device may do both
 mb$soft	EQU	00000100B	; software selectable baud rate
 mb$ser	EQU	00001000B	; device may use protocol
@@ -108,7 +108,7 @@ WBOOTE:	JMP	WBOOT		; perform warm start initialization
 	JMP	SELMEM		; select bank of memory
 	JMP	SETBNK		; specify bank for DMA operation
 	JMP	XMOVE		; set bank for memory DMA transfer
-	JMP	0		; reserved for system implementor
+	JMP	0		; reserved for system implementer
 	JMP	0		; reserved for future use
 	JMP	0		; reserved for future use
 ;
@@ -354,6 +354,7 @@ WBOOT:	LXI	SP,STACK
 	CALL	SELMEM
 ;
 	MVI	A,0C3H		; JMP instruction
+
 	STA	WARM
 	LXI	H,WBOOTE	; warm boot entry point
 	SHLD	WARM+1
@@ -459,7 +460,7 @@ CONOST:	LHLD	@covec		; get console out vector
 CONOS1:	MVI	A,40H		; test for device 1
 	ANA	H
 	JNZ	CONOS2		; if not set try next
-	CALL	TTY2OS		; test tty 2 ouput status
+	CALL	TTY2OS		; test tty 2 output status
 	JZ	DEVNRY		; if device not ready
 CONOS2:	MVI	A,10H		; test for device 3
 	ANA	H
@@ -505,7 +506,7 @@ LISTST:	LHLD	@lovec		; get list out vector
 LISTS1:	MVI	A,40H		; test for device 1
 	ANA	H
 	JNZ	LISTS2		; if not set try next
-	CALL	TTY2OS		; test tty 2 ouput status
+	CALL	TTY2OS		; test tty 2 output status
 	JZ	DEVNRY		; if device not ready
 LISTS2:	MVI	A,10H		; test for device 3
 	ANA	H
@@ -602,7 +603,7 @@ AUXOST:	LHLD	@aovec		; get auxiliary  out vector
 AUXOS1:	MVI	A,40H		; test for device 1
 	ANA	H
 	JNZ	AUXOS2		; if not set try next
-	CALL	TTY2OS		; test tty 2 ouput status
+	CALL	TTY2OS		; test tty 2 output status
 	JZ	DEVNRY		; if device not ready
 AUXOS2:	MVI	A,10H		; test for device 3
 	ANA	H
@@ -648,7 +649,7 @@ TTY1IS:	IN	TTY1S		; get status
 TTY1IN:	IN	TTY1		; get character
 	RET
 ;
-;	tty 1 ouput status
+;	tty 1 output status
 ;
 TTY1OS:	IN	TTY1S		; get status
 	ANI	01H		; mask bit
@@ -674,7 +675,7 @@ TTY2IS:	IN	TTY2S		; get status
 TTY2IN:	IN	TTY2		; get character
 	RET
 ;
-;	tty 2 ouput status
+;	tty 2 output status
 ;
 TTY2OS:	IN	TTY2S		; get status
 	ANI	01H		; mask bit
@@ -780,7 +781,7 @@ HOME:	MVI	C,0		; select track 0
 ;
 ;	select disk given by register C
 ;
-SELDSK: LXI	H,0		; HL = error retun code
+SELDSK: LXI	H,0		; HL = error return code
 	MOV	A,C		; get disk # to A
 	CPI	0		; disk 0 ?
 	JZ	SEL0		; select disk 0

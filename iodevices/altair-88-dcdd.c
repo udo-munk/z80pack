@@ -12,6 +12,7 @@
  * 02-DEC-2019 use disk names different from Tarbell controller
  */
 
+#include <stdint.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -72,7 +73,7 @@ static int cnt_step;		/* counter for stepping track */
 static pthread_t thread;	/* thread for timing */
 
 /* these are our disk drives */
-static char *disks[16] = {
+static const char *disks[16] = {
 	"mits_a.dsk",
 	"mits_b.dsk",
 	"mits_c.dsk",
@@ -105,8 +106,8 @@ static void dsk_path(void)
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 	}
@@ -124,15 +125,15 @@ static int dsk_check(void)
 	strcat(fn, "/");
 	strcat(fn, disks[disk]);
 	if ((fd = open(fn, O_RDONLY)) == -1)
-		return(0);
+		return (0);
 
 	/* check for correct image size */
 	fstat(fd, &s);
 	close(fd);
 	if (s.st_size != 337568)
-		return(0);
+		return (0);
 	else
-		return(1);
+		return (1);
 }
 
 /*
@@ -161,7 +162,7 @@ static void dsk_disable(void)
  */
 static void *timing(void *arg)
 {
-	arg = arg;	/* to avoid compiler warning */
+	UNUSED(arg);
 
 	/* 1 msec per loop iteration */
 	while (1) {
@@ -207,8 +208,9 @@ void altair_dsk_select_out(BYTE data)
 	/* disable? */
 	if (data & 0x80) {
 		dsk_disable();
-	/* no, enable */
 	} else {
+		/* no, enable */
+
 		/* get disk no. */
 		disk = data & 0x0f;
 		/* check disk in drive */
@@ -228,9 +230,9 @@ void altair_dsk_select_out(BYTE data)
 		cnt_step = 0;
 		if (thread == 0) {
 			if (pthread_create(&thread, NULL, timing,
-			    (void *) NULL)) {
+					   (void *) NULL)) {
 				LOGE(TAG, "can't create timing thread");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 		}
 		LOGD(TAG, "enabled, disk = %d", disk);
@@ -276,7 +278,7 @@ BYTE altair_dsk_status_in(void)
 		}
 	}
 
-	return(status);
+	return (status);
 }
 
 /*
@@ -377,7 +379,7 @@ BYTE altair_dsk_sec_in(void)
 		status |= NRDA;
 		status |= ENWD;
 		pthread_mutex_unlock(&mustatus);
-		return(0xff);
+		return (0xff);
 	} else {
 		if (sec != rwsec) {
 			rwsec = sec;
@@ -392,7 +394,7 @@ BYTE altair_dsk_sec_in(void)
 		}
 	}
 
-	return(sectrue + (rwsec << 1));
+	return (sectrue + (rwsec << 1));
 }
 
 /*
@@ -400,7 +402,7 @@ BYTE altair_dsk_sec_in(void)
  */
 void altair_dsk_data_out(BYTE data)
 {
-	long pos;
+	off_t pos;
 
 	/* don't write past buffer */
 	if (dcnt >= SEC_SZ)
@@ -420,8 +422,13 @@ void altair_dsk_data_out(BYTE data)
 		/* write sector */
 		fd = open(fn, O_RDWR);
 		pos = (track[disk] * SPT + rwsec) * SEC_SZ;
-		lseek(fd, pos, SEEK_SET);
-		write(fd, &buf[0], SEC_SZ);
+		if (lseek(fd, pos, SEEK_SET) != pos) {
+			LOGE(TAG, "can't seek to sector %d track %d",
+			     rwsec, track[disk]);
+		} else if (write(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+			LOGE(TAG, "can't write sector %d track %d",
+			     rwsec, track[disk]);
+		}
 		close(fd);
 		LOGD(TAG, "write sector %d track %d", rwsec, track[disk]);
 	}
@@ -433,7 +440,7 @@ void altair_dsk_data_out(BYTE data)
 BYTE altair_dsk_data_in(void)
 {
 	BYTE data;
-	long pos;
+	off_t pos;
 
 	/* first byte? */
 	if (dcnt == 0) {
@@ -445,8 +452,13 @@ BYTE altair_dsk_data_in(void)
 			/* read sector */
 			fd = open(fn, O_RDONLY);
 			pos = (track[disk] * SPT + rwsec) * SEC_SZ;
-			lseek(fd, pos, SEEK_SET);
-			read(fd, &buf[0], SEC_SZ);
+			if (lseek(fd, pos, SEEK_SET) != pos) {
+				LOGE(TAG, "can't seek to sector %d track %d",
+				     rwsec, track[disk]);
+			} else if (read(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+				LOGE(TAG, "can't read sector %d track %d",
+				     rwsec, track[disk]);
+			}
 			close(fd);
 			LOGD(TAG, "read sector %d track %d", rwsec, track[disk]);
 		}
@@ -454,7 +466,7 @@ BYTE altair_dsk_data_in(void)
 
 	/* no more data? */
 	if (dcnt == SEC_SZ)
-		return(0xff);
+		return (0xff);
 
 	/* return byte from buffer and increment counter */
 	data = buf[dcnt++];
@@ -463,7 +475,7 @@ BYTE altair_dsk_data_in(void)
 		status |= NRDA;	/* no more data to read */
 		pthread_mutex_unlock(&mustatus);
 	}
-	return(data);
+	return (data);
 }
 
 /*

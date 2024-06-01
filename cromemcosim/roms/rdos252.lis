@@ -1,0 +1,2250 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ;  Disassembly of Cromemco's RDOS 2.52 ROM for the 16FDC Disk Controller
+                       3      3 ;      it normally resides at C000H to CFFFH
+                       4      4 ;
+                       5      5         ORG     0C000H
+                       6      6 ;
+000d  =                7      7 CR	EQU	0DH
+0020  =                8      8 SPACE	EQU	20H
+0008  =                9      9 BS	EQU	08H
+001b  =               10     10 ESC	EQU	1BH
+0027  =               11     11 squote	equ	27h
+0080  =               12     12 msbon	EQU	80H
+                      13     13 ;
+c000  f3              14     14 start:	DI
+c001  18 3c           15     15 	JR	cldst
+                      16     16 ;
+c003  c3 30 c0        17     17 C003:	JP	C030
+c006  c3 04 c5        18     18 	JP	C504
+c009  c3 37 c0        19     19 	JP	C037
+c00c  c3 3b c0        20     20 	JP	C03B
+c00f  c3 9e cb        21     21 	JP	CB9E
+c012  c3 37 cd        22     22 	JP	CD37
+c015  c3 d4 c4        23     23 	JP	C4D4
+c018  c3 52 cd        24     24 	JP	CD52
+c01b  c3 ab c5        25     25 	JP	C5AB
+c01e  c3 4b c2        26     26 	JP	seturt	; set up UART
+c021  c3 6c cc        27     27 	JP	inchr	; input
+c024  c3 76 cc        28     28 	JP	ckinst	; inp. status
+c027  c3 ea cb        29     29 	JP	CBEA
+c02a  c3 fe c7        30     30 	JP	pt7ba	; output
+c02d  c3 97 cc        31     31 	JP	crlf
+                      32     32 ;
+c030  32 77 00        33     33 C030:	LD	(77H),A
+c033  78              34     34 	LD	A,B
+c034  c3 87 c3        35     35 	JP	C387
+                      36     36 ;
+c037  32 75 00        37     37 C037:	LD	(75H),A
+c03a  c9              38     38 	RET
+                      39     39 ;
+c03b  32 76 00        40     40 C03B:	LD	(76H),A
+c03e  c9              41     41 	RET
+                      42     42 ;
+c03f  af              43     43 cldst:	XOR	A	;inhibit 5501 interrupts
+c040  d3 03           44     44 	OUT	(3),A
+c042  47              45     45 	LD	B,A
+c043  d9              46     46 	EXX
+c044  2f              47     47 	CPL		;turn off PerSci and voice
+c045  d3 04           48     48 	OUT	(4),A	;    coil options
+c047  3e d0           49     49 	LD	A,0D0H
+c049  d3 30           50     50 	OUT	(30H),A	;force interrupt on FDC
+c04b  21 2e 00        51     51 	LD	HL,2EH
+c04e  f9              52     52 	LD	SP,HL
+c04f  25              53     53 clp1:	DEC	H
+c050  20 fd           54     54 	JR	NZ,clp1
+c052  74              55     55 clp2:	LD	(HL),H
+c053  2c              56     56 	INC	L
+c054  20 fc           57     57 	JR	NZ,clp2
+c056  24              58     58 	INC	H
+c057  22 62 00        59     59 	LD	(62H),HL
+c05a  22 64 00        60     60 	LD	(64H),HL
+c05d  cd 4b c2        61     61 	CALL	seturt
+c060  db 34           62     62 	IN	A,(34H)	; sw 3 set for autoboot?
+c062  e6 40           63     63 	AND	40H
+c064  c2 39 c1        64     64 	JP	NZ,gomon ; no
+c067  db 04           65     65 getsw:	IN	A,(04H)	;read sense switches
+c069  2f              66     66 	CPL		;on = 1
+c06a  e6 03           67     67 	AND	3	;bits 7 & 8 (unused??)
+c06c  32 77 00        68     68 boot:	LD	(77H),A
+c06f  cd 06 c8        69     69 	CALL	ptfol
+c072  50 72 65 70     70     70         DEFB    'Preparing to boot, ESC to abort'
+c076  61 72 69 6e     70     71
+c07a  67 20 74 6f     70     72
+c07e  20 62 6f 6f     70     73
+c082  74 2c 20 45     70     74
+c086  53 43 20 74     70     75
+c08a  6f 20 61 62     70     76
+c08e  6f 72 74        70     77
+c091  8d              71     78         DEFB    CR+msbon
+c092  cd a8 cf        72     79 	CALL	setsel
+c095  57              73     80 	LD	D,A
+c096  d3 34           74     81 	OUT	(34H),A
+c098  06 64           75     82 	LD	B,64H
+c09a  cd 28 c1        76     83 esclp:	CALL	ckesc	; look for escape
+c09d  21 64 00        77     84 	LD	HL,64H
+c0a0  cd f1 cf        78     85 	CALL	dela1
+c0a3  10 f5           79     86 	DJNZ	esclp
+c0a5  32 75 00        80     87 	LD	(75H),A
+c0a8  32 7d 00        81     88 	LD	(7DH),A
+c0ab  32 78 00        82     89 	LD	(78H),A
+c0ae  3c              83     90 	INC	A
+c0af  32 76 00        84     91 	LD	(76H),A
+c0b2  cd f7 c1        85     92 	CALL	C1F7
+c0b5  32 7e 00        86     93 	LD	(7EH),A
+c0b8  21 80 00        87     94 	LD	HL,80H
+c0bb  22 7b 00        88     95 	LD	(7BH),HL
+c0be  22 79 00        89     96 	LD	(79H),HL
+c0c1  3e 42           90     97 	LD	A,'B'
+c0c3  32 70 00        91     98 	LD	(70H),A
+c0c6  06 02           92     99 	LD	B,2
+c0c8  c5              93    100 C0C8:	PUSH	BC
+c0c9  cd 37 cd        94    101 	CALL	CD37
+c0cc  d4 cb cd        95    102 	CALL	NC,CDCB
+c0cf  d4 52 cd        96    103 	CALL	NC,CD52
+c0d2  c1              97    104 	POP	BC
+c0d3  30 13           98    105 	JR	NC,C0E8
+c0d5  cd 28 c1        99    106 	CALL	ckesc	; look for escape
+c0d8  10 ee          100    107 	DJNZ	C0C8
+c0da  cd 06 c8       101    108 	CALL	ptfol
+c0dd  0d 55 6e 61    102    109 	DEFB    CR,'Unable ','t'+msbon
+c0e1  62 6c 65 20    102    110
+c0e5  f4             102    111
+c0e6  18 2d          103    112 	JR	C115
+                     104    113 ;
+c0e8  3a 80 00       105    114 C0E8:	LD	A,(80H)
+c0eb  fe 40          106    115 	CP	40H
+c0ed  28 04          107    116 	JR	Z,C0F3
+c0ef  fe e5          108    117 	CP	0E5H
+c0f1  20 07          109    118 	JR	NZ,C0FA
+c0f3  cd 06 c8       110    119 C0F3:	CALL	ptfol
+c0f6  0d ce          111    120         DEFB    CR,'N'+msbon
+c0f8  18 1b          112    121     	JR      C115
+                     113    122 ;
+c0fa  cd 28 c1       114    123 C0FA:	CALL	ckesc	; look for escape
+c0fd  cd a8 cf       115    124 	CALL	setsel
+c100  57             116    125 	LD	D,A
+c101  3a 77 00       117    126 	LD	A,(77H)
+c104  08             118    127 	EX	AF,AF'
+c105  cd 06 c8       119    128 	CALL	ptfol
+c108  0d 53 74 61    120    129 	DEFB    CR,'Standby',CR+msbon
+c10c  6e 64 62 79    120    130
+c110  8d             120    131
+c111  37             121    132 	SCF
+c112  c3 80 00       122    133 	JP	80H
+                     123    134 ;
+c115  cd 06 c8       124    135 C115:	CALL	ptfol
+c118  6f 20 62 6f    125    136 	DEFB    'o boot',CR+msbon
+c11c  6f 74 8d       125    137
+c11f  3a 71 00       126    138 	LD	A,(71H)
+c122  b7             127    139 	OR	A
+c123  c4 59 c3       128    140 	CALL	NZ,C359
+c126  18 09          129    141 	JR	C131
+                     130    142 ;
+c128  cd 76 cc       131    143 ckesc:	CALL	ckinst
+c12b  c4 6c cc       132    144 	CALL	NZ,inchr
+c12e  fe 1b          133    145 	CP	esc
+c130  c0             134    146 	RET	NZ
+c131  3e d0          135    147 C131:	LD	A,0D0H	;force FDC interrupt
+c133  d3 30          136    148 	OUT	(30H),A
+c135  3e 7c          137    149 	LD	A,7CH	;select side 1
+c137  d3 04          138    150 	OUT	(4),A
+c139  cd 06 c8       139    151 gomon:	CALL	ptfol
+c13c  0d 43 72 6f    140    152 	DEFB    CR,'Cromemco RDOS 02.52',CR+msbon
+c140  6d 65 6d 63    140    153
+c144  6f 20 52 44    140    154
+c148  4f 53 20 30    140    155
+c14c  32 2e 35 32    140    156
+c150  8d             140    157
+c151  af             141    158 C151:	XOR     A
+c152  32 6c 00       142    159 	LD	(6CH),A
+c155  3a 7e 00       143    160 inlp:	LD	A,(7EH)
+c158  47             144    161 	LD	B,A
+c159  cd e2 c1       145    162 	CALL	C1E2
+c15c  31 2e 00       146    163 	LD	SP,2EH
+c15f  cd 06 c8       147    164 	CALL	ptfol
+c162  bb             148    165         DEFB    ';'+msbon
+c163  cd a3 c7       149    166 	CALL	C7A3
+c166  cd 14 c8       150    167 	CALL	loctok
+c169  a7             151    168 	AND	A
+c16a  28 e5          152    169 	JR	Z,C151
+c16c  cd c1 c2       153    170 	CALL	C2C1
+c16f  28 e4          154    171 	JR	Z,inlp
+c171  78             155    172 	LD	A,B
+c172  fe 17          156    173 	CP	17H
+c174  30 47          157    174 	JR	NC,inper
+c176  87             158    175 	ADD	A,A
+c177  21 8b c1       159    176 	LD	HL,table
+c17a  cd 86 c1       160    177 	CALL	C186
+c17d  7e             161    178 	LD	A,(HL)
+c17e  23             162    179 	INC	HL
+c17f  66             163    180 	LD	H,(HL)
+c180  6f             164    181 	LD	L,A
+c181  cd c7 c1       165    182 	CALL	C1C7   ; go there
+c184  18 cf          166    183 	JR	inlp
+                     167    184 ;
+c186  85             168    185 C186:	ADD	A,L
+c187  6f             169    186 	LD	L,A
+c188  d0             170    187 	RET	NC
+c189  24             171    188 	INC	H
+c18a  c9             172    189 	RET
+                     173    190 ;
+c18b  fd cc          174    191 table:  DEFW	CCFD	; Align
+c18d  c8 c1          175    192 	DEFW	C1C8	; Boot
+c18f  bd c1          176    193 	DEFW	inper	; ?
+c191  2b c7          177    194 	DEFW	C72B	; Display
+c193  2a c6          178    195 	DEFW	C62A	; Examine
+c195  bd c1          179    196 	DEFW	inper	; ?
+c197  c4 c1          180    197 	DEFW	C1C4	; Go
+c199  bd c1          181    198 	DEFW	inper	; ?
+c19b  45 c2          182    199 	DEFW	C245	; Init
+c19d  bd c1          183    200 	DEFW	inper	; ?
+c19f  bd c1          184    201 	DEFW	inper	; ?
+c1a1  39 c4          185    202 	DEFW	C439	; Logged disks
+c1a3  45 c6          186    203 	DEFW	C645	; Move
+c1a5  bd c1          187    204 	DEFW	inper	; ?
+c1a7  36 c6          188    205 	DEFW	C636	; Output
+c1a9  bd c1          189    206 	DEFW	inper	; ?
+c1ab  c2 c6          190    207 	DEFW	C6C2	; Query
+c1ad  16 c5          191    208 	DEFW	C516	; Read disk
+c1af  7a c6          192    209 	DEFW	C67A	; Set
+c1b1  41 c9          193    210 	DEFW	C941	; Test
+c1b3  bd c1          194    211 	DEFW	inper	; ?
+c1b5  52 c6          195    212 	DEFW	C652	; Verify
+c1b7  1a c5          196    213 	DEFW	C51A	; Write disk
+                     197    214 ;
+c1b9  af             198    215 C1B9:	XOR	A
+c1ba  32 6c 00       199    216 	LD	(6CH),A
+c1bd  cd 06 c8       200    217 inper:	CALL	ptfol
+c1c0  3f 8d          201    218 	DEFB    '?',CR+msbon
+c1c2  18 91          202    219 	JR	inlp
+                     203    220 ;
+c1c4  cd 53 c8       204    221 C1C4:	CALL	C853
+c1c7  e9             205    222 C1C7:	JP	(HL)
+                     206    223 ;
+c1c8  cd 14 c8       207    224 C1C8:	CALL	loctok
+c1cb  b7             208    225 	OR	A
+c1cc  ca 67 c0       209    226 	JP	Z,getsw
+c1cf  fe 45          210    227 	CP	'E'
+c1d1  d2 2a c4       211    228 	JP	NC,C42A
+c1d4  d6 41          212    229 	SUB	'A'
+c1d6  da 2a c4       213    230 	JP	C,C42A
+c1d9  f5             214    231 	PUSH	AF
+c1da  13             215    232 	INC	DE
+c1db  cd 27 c8       216    233 	CALL	fndeol
+c1de  f1             217    234 	POP	AF
+c1df  c3 6c c0       218    235 	JP	boot
+                     219    236 ;
+c1e2  3a 6c 00       220    237 C1E2:	LD	A,(6CH)
+c1e5  b7             221    238 	OR	A
+c1e6  c8             222    239 	RET	Z
+c1e7  cd fe c7       223    240 	CALL	pt7ba
+c1ea  cb 58          224    241 	BIT	3,B
+c1ec  c0             225    242 	RET	NZ
+c1ed  cb 78          226    243 	BIT	7,B
+c1ef  3e 3b          227    244 	LD	A,';'
+c1f1  c4 fe c7       228    245 	CALL	NZ,pt7ba
+c1f4  c3 fe c7       229    246 	JP	pt7ba
+                     230    247 ;
+c1f7  7a             231    248 C1F7:	LD	A,D
+c1f8  d3 34          232    249 	OUT	(34H),A
+c1fa  3e df          233    250 	LD	A,0DFH
+c1fc  d3 04          234    251 	OUT	(4),A
+c1fe  3e d4          235    252 	LD	A,0D4H
+c200  d3 30          236    253 	OUT	(30H),A
+c202  db 34          237    254 C202:	IN	A,(34H)
+c204  0f             238    255 	RRCA
+c205  30 fb          239    256 	JR	NC,C202
+c207  db 30          240    257 	IN	A,(30H)
+c209  01 00 02       241    258 	LD	BC,200H
+c20c  cd 3b c2       242    259 	CALL	C23B
+c20f  3e d4          243    260 C20F:	LD	A,0D4H
+c211  d3 30          244    261 	OUT	(30H),A
+c213  cd 34 c2       245    262 C213:	CALL	C234
+c216  28 df          246    263 	JR	Z,C1F7
+c218  db 34          247    264 	IN	A,(34H)
+c21a  0f             248    265 	RRCA
+c21b  30 f6          249    266 	JR	NC,C213
+c21d  db 30          250    267 	IN	A,(30H)
+c21f  10 ee          251    268 	DJNZ	C20F
+c221  af             252    269 	XOR	A
+c222  d3 03          253    270 	OUT	(3),A
+c224  79             254    271 	LD	A,C
+c225  fe 5a          255    272 	CP	'Z'
+c227  30 03          256    273 	JR	NC,C22C
+c229  87             257    274 	ADD	A,A
+c22a  87             258    275 	ADD	A,A
+c22b  87             259    276 	ADD	A,A
+c22c  fe b7          260    277 C22C:	CP	0B7H
+c22e  3e 80          261    278 	LD	A,80H
+c230  d0             262    279 	RET	NC
+c231  3e 04          263    280 	LD	A,4
+c233  c9             264    281 	RET
+                     265    282 ;
+c234  db 03          266    283 C234:	IN	A,(3)
+c236  fe c7          267    284 	CP	0C7H
+c238  c0             268    285 	RET	NZ
+c239  0c             269    286 	INC	C
+c23a  c8             270    287 	RET	Z
+c23b  3e 01          271    288 C23B:	LD	A,1
+c23d  d3 03          272    289 	OUT	(3),A
+c23f  3e fa          273    290 	LD	A,0FAH
+c241  d3 05          274    291 	OUT	(5),A
+c243  18 ef          275    292 	JR	C234
+                     276    293 ;
+c245  cd 27 c8       277    294 C245:	CALL	fndeol
+c248  cd 97 cc       278    295 	CALL	crlf
+c24b  db 04          279    296 seturt:	IN	A,(4)	; aux. disk status
+c24d  e6 08          280    297 	AND	8
+c24f  28 5d          281    298 	JR	Z,C2AE	; baud rate preset
+c251  3e 0a          282    299 C251:	LD	A,0AH
+c253  d3 02          283    300 	OUT	(2),A	; UART command register
+c255  21 d0 07       284    301 	LD	HL,7D0H
+c258  cd f1 cf       285    302 	CALL	dela1
+c25b  3e 08          286    303 	LD	A,8
+c25d  d3 02          287    304 	OUT	(2),A
+c25f  16 64          288    305 	LD	D,64H
+c261  15             289    306 C261:	DEC	D
+c262  28 ed          290    307 	JR	Z,C251
+c264  21 b9 c2       291    308 C264:	LD	HL,0C2B9H
+c267  0e 00          292    309 	LD	C,0
+c269  3e 19          293    310 	LD	A,19H
+c26b  06 09          294    311 	LD	B,9
+c26d  d3 02          295    312 C26D:	OUT	(2),A
+c26f  ed a3          296    313 	OUTI
+c271  28 ee          297    314 	JR	Z,C261
+c273  cd 98 c2       298    315 	CALL	C298
+c276  cd 98 c2       299    316 	CALL	C298
+c279  38 e9          300    317 	JR	C,C264
+c27b  fe 0d          301    318 	CP	0DH
+c27d  3e 09          302    319 	LD	A,9
+c27f  20 ec          303    320 	JR	NZ,C26D
+c281  3e 0d          304    321 C281:	LD	A,0DH
+c283  d3 01          305    322 	OUT	(1),A
+c285  21 a0 0f       306    323 	LD	HL,0FA0H
+c288  cd f1 cf       307    324 	CALL	dela1
+c28b  cd 76 cc       308    325 	CALL	ckinst
+c28e  c4 6c cc       309    326 	CALL	NZ,inchr
+c291  fe 0d          310    327 	CP	0DH
+c293  28 ec          311    328 	JR	Z,C281
+c295  c3 97 cc       312    329 	JP	crlf
+                     313    330 ;
+c298  d5             314    331 C298:	PUSH	DE
+c299  11 a0 8c       315    332 	LD	DE,8CA0H
+c29c  cd 76 cc       316    333 C29C:	CALL	ckinst
+c29f  28 05          317    334 	JR	Z,C2A6
+c2a1  cd 6c cc       318    335 	CALL	inchr
+c2a4  18 06          319    336 	JR	C2AC
+                     320    337 ;
+c2a6  1b             321    338 C2A6:	DEC	DE
+c2a7  7a             322    339 	LD	A,D
+c2a8  b3             323    340 	OR	E
+c2a9  20 f1          324    341 	JR	NZ,C29C
+c2ab  37             325    342 	SCF
+c2ac  d1             326    343 C2AC:	POP	DE
+c2ad  c9             327    344 	RET
+                     328    345 ;
+c2ae  3e 09          329    346 C2AE:	LD	A,9
+c2b0  d3 02          330    347 	OUT	(2),A
+c2b2  3e 84          331    348 	LD	A,84H
+c2b4  d3 00          332    349 	OUT	(0),A
+c2b6  c3 97 cc       333    350 	JP	crlf
+                     334    351 ;
+c2b9  90 c0 a0 90    335    352 C2B9:	DEFB	90H,0C0H,0A0H,90H
+c2bd  88 84 82 01    336    353 	DEFB	88H,84H,82H,1
+                     337    354 ;
+c2c1  d6 41          338    355 C2C1:	SUB	'A'
+c2c3  da bd c1       339    356 	JP	C,inper
+c2c6  47             340    357 	LD	B,A
+c2c7  13             341    358 	INC	DE
+c2c8  1a             342    359 	LD	A,(DE)
+c2c9  fe 3b          343    360 	CP	';'
+c2cb  c0             344    361 	RET	NZ
+c2cc  78             345    362 	LD	A,B
+c2cd  fe 04          346    363 	CP	4
+c2cf  d2 2a c4       347    364 	JP	NC,C42A
+c2d2  c6 41          348    365 	ADD	A,'A'
+c2d4  32 6c 00       349    366 	LD	(6CH),A
+c2d7  cd f6 c3       350    367 	CALL	C3F6
+c2da  13             351    368 	INC	DE
+c2db  1a             352    369 	LD	A,(DE)
+c2dc  fe 3b          353    370 	CP	';'
+c2de  06 0c          354    371 	LD	B,0CH
+c2e0  20 0b          355    372 	JR	NZ,C2ED
+c2e2  13             356    373 	INC	DE
+c2e3  1a             357    374 	LD	A,(DE)
+c2e4  fe 3b          358    375 	CP	';'
+c2e6  06 04          359    376 	LD	B,4
+c2e8  20 03          360    377 	JR	NZ,C2ED
+c2ea  06 80          361    378 	LD	B,80H
+c2ec  13             362    379 	INC	DE
+c2ed  c5             363    380 C2ED:	PUSH	BC
+c2ee  cd b7 c3       364    381 	CALL	C3B7
+c2f1  c1             365    382 	POP	BC
+c2f2  70             366    383 	LD	(HL),B
+c2f3  30 06          367    384 	JR	NC,C2FB
+c2f5  3a 6d 00       368    385 	LD	A,(6DH)
+c2f8  b0             369    386 	OR	B
+c2f9  77             370    387 	LD	(HL),A
+c2fa  37             371    388 	SCF
+c2fb  f5             372    389 C2FB:	PUSH	AF
+c2fc  cd 84 c3       373    390 	CALL	C384
+c2ff  32 78 00       374    391 	LD	(78H),A
+c302  32 7d 00       375    392 	LD	(7DH),A
+c305  3c             376    393 	INC	A
+c306  32 76 00       377    394 	LD	(76H),A
+c309  cd 04 c6       378    395 	CALL	C604
+c30c  3e 48          379    396 	LD	A,'H'
+c30e  32 70 00       380    397 	LD	(70H),A
+c311  cd 37 cd       381    398 	CALL	CD37
+c314  f5             382    399 	PUSH	AF
+c315  cd 1e c6       383    400 	CALL	C61E
+c318  f1             384    401 	POP	AF
+c319  da 0d c4       385    402 	JP	C,C40D
+c31c  f1             386    403 	POP	AF
+c31d  da b5 c3       387    404 	JP	C,C3B5
+c320  cd 04 c6       388    405 C320:	CALL	C604
+c323  21 00 01       389    406 	LD	HL,100H
+c326  22 7b 00       390    407 	LD	(7BH),HL
+c329  cd cb cd       391    408 	CALL	CDCB
+c32c  cd 52 cd       392    409 	CALL	CD52
+c32f  f5             393    410 	PUSH	AF
+c330  cd 1e c6       394    411 	CALL	C61E
+c333  f1             395    412 	POP	AF
+c334  30 2d          396    413 	JR	NC,C363
+c336  3a 71 00       397    414 	LD	A,(71H)
+c339  b7             398    415 	OR	A
+c33a  f2 45 c3       399    416 	JP	P,C345
+c33d  21 64 00       400    417 	LD	HL,64H
+c340  cd f1 cf       401    418 	CALL	dela1
+c343  18 db          402    419 	JR	C320
+                     403    420 ;
+c345  cd 06 c8       404    421 C345:	CALL	ptfol
+c348  43 61 6e 27    405    422 	DEFB    'Can',squote
+c34c  74 20 72 65    406    423 	DEFB	't read Label',CR+msbon
+c350  61 64 20 4c    406    424
+c354  61 62 65 6c    406    425
+c358  8d             406    426
+c359  1e 01          407    427 C359:	LD	E,1
+c35b  cd f2 c5       408    428 	CALL	C5F2
+c35e  cd 13 c4       409    429 	CALL	C413
+c361  af             410    430 	XOR	A
+c362  c9             411    431 	RET
+                     412    432 ;
+c363  01 10 00       413    433 C363:	LD	BC,10H
+c366  11 7a 01       414    434 	LD	DE,17AH
+c369  cd ee c3       415    435 	CALL	C3EE
+c36c  0e 01          416    436 	LD	C,1
+c36e  cd ee c3       417    437 	CALL	C3EE
+c371  3a 78 01       418    438 	LD	A,(178H)
+c374  fe 43          419    439 	CP	'C'
+c376  20 02          420    440 	JR	NZ,C37A
+c378  cb c8          421    441 	SET	1,B
+c37a  3a 7e 00       422    442 C37A:	LD	A,(7EH)
+c37d  e6 cc          423    443 	AND	0CCH
+c37f  b0             424    444 	OR	B
+c380  2a 6a 00       425    445 	LD	HL,(6AH)
+c383  77             426    446 	LD	(HL),A
+c384  cd f6 c3       427    447 C384:	CALL	C3F6
+c387  32 7e 00       428    448 C387:	LD	(7EH),A
+c38a  cb 47          429    449 	BIT	0,A
+c38c  11 0a 10       430    450 	LD	DE,100AH
+c38f  21 00 02       431    451 	LD	HL,200H
+c392  20 0d          432    452 	JR	NZ,C3A1
+c394  cb 4f          433    453 	BIT	1,A
+c396  11 05 08       434    454 	LD	DE,805H
+c399  20 06          435    455 	JR	NZ,C3A1
+c39b  11 12 1a       436    456 C39B:	LD	DE,1A12H
+c39e  21 80 00       437    457 	LD	HL,80H
+c3a1  22 79 00       438    458 C3A1:	LD	(79H),HL
+c3a4  cb 7f          439    459 	BIT	7,A
+c3a6  3e 4c          440    460 	LD	A,'L'
+c3a8  42             441    461 	LD	B,D
+c3a9  28 03          442    462 	JR	Z,C3AE
+c3ab  3e 27          443    463 	LD	A,squote
+c3ad  43             444    464 	LD	B,E
+c3ae  32 6f 00       445    465 C3AE:	LD	(6FH),A
+c3b1  78             446    466 	LD	A,B
+c3b2  32 6e 00       447    467 	LD	(6EH),A
+c3b5  af             448    468 C3B5:	XOR	A
+c3b6  c9             449    469 	RET
+                     450    470 ;
+c3b7  cd 14 c8       451    471 C3B7:	CALL	loctok
+c3ba  b7             452    472 	OR	A
+c3bb  c8             453    473 	RET	Z
+c3bc  01 10 00       454    474 	LD	BC,10H
+c3bf  cd de c3       455    475 	CALL	C3DE
+c3c2  0e 01          456    476 	LD	C,1
+c3c4  cd de c3       457    477 	CALL	C3DE
+c3c7  cd 14 c8       458    478 	CALL	loctok
+c3ca  fe 43          459    479 	CP	'C'
+c3cc  20 06          460    480 	JR	NZ,C3D4
+c3ce  cb c8          461    481 	SET	1,B
+c3d0  13             462    482 	INC	DE
+c3d1  cd 14 c8       463    483 	CALL	loctok
+c3d4  b7             464    484 C3D4:	OR	A
+c3d5  c2 b9 c1       465    485 	JP	NZ,C1B9
+c3d8  78             466    486 	LD	A,B
+c3d9  32 6d 00       467    487 	LD	(6DH),A
+c3dc  37             468    488 	SCF
+c3dd  c9             469    489 	RET
+                     470    490 ;
+c3de  cd 14 c8       471    491 C3DE:	CALL	loctok
+c3e1  13             472    492 	INC	DE
+c3e2  fe 53          473    493 	CP	'S'
+c3e4  c8             474    494 	RET	Z
+c3e5  fe 44          475    495 	CP	'D'
+c3e7  c2 b9 c1       476    496 	JP	NZ,C1B9
+c3ea  78             477    497 C3EA:	LD	A,B
+c3eb  b1             478    498 	OR	C
+c3ec  47             479    499 	LD	B,A
+c3ed  c9             480    500 	RET
+                     481    501 ;
+c3ee  1a             482    502 C3EE:	LD	A,(DE)
+c3ef  13             483    503 	INC	DE
+c3f0  13             484    504 	INC	DE
+c3f1  fe 44          485    505 	CP	'D'
+c3f3  c0             486    506 	RET	NZ
+c3f4  18 f4          487    507 	JR	C3EA
+                     488    508 ;
+c3f6  3a 6c 00       489    509 C3F6:	LD	A,(6CH)
+c3f9  d6 41          490    510 	SUB	'A'
+c3fb  32 77 00       491    511 	LD	(77H),A
+c3fe  21 66 00       492    512 	LD	HL,66H
+c401  cd 86 c1       493    513 	CALL	C186
+c404  22 6a 00       494    514 	LD	(6AH),HL
+c407  7e             495    515 	LD	A,(HL)
+c408  b7             496    516 	OR	A
+c409  c9             497    517 	RET
+                     498    518 ;
+c40a  cd f2 c5       499    519 C40A:	CALL	C5F2
+c40d  cd 13 c4       500    520 C40D:	CALL	C413
+c410  c3 55 c1       501    521 	JP	inlp
+                     502    522 ;
+c413  cd 06 c8       503    523 C413:	CALL	ptfol
+c416  20 45 72 72    504    524 	DEFB    ' Err','-'+msbon
+c41a  ad             504    525
+c41b  3a 70 00       505    526 	LD	A,(70H)
+c41e  cd fe c7       506    527 	CALL	pt7ba
+c421  3a 71 00       507    528 	LD	A,(71H)
+c424  cd db c7       508    529 	CALL	pspa
+c427  c3 97 cc       509    530 	JP	crlf
+                     510    531 ;
+c42a  cd 06 c8       511    532 C42A:	CALL	ptfol
+c42d  41 2d 44 20    512    533 	DEFB    'A-D only',CR+msbon
+c431  6f 6e 6c 79    512    534
+c435  8d             512    535
+c436  c3 55 c1       513    536 	JP	inlp
+                     514    537 ;
+c439  cd 27 c8       515    538 C439:	CALL	fndeol
+c43c  3a 77 00       516    539 	LD	A,(77H)
+c43f  f5             517    540 	PUSH	AF
+c440  3a 6c 00       518    541 	LD	A,(6CH)
+c443  f5             519    542 	PUSH	AF
+c444  3e 41          520    543 	LD	A,'A'
+c446  f5             521    544 C446:	PUSH	AF
+c447  32 6c 00       522    545 	LD	(6CH),A
+c44a  cd f6 c3       523    546 	CALL	C3F6
+c44d  2a 6a 00       524    547 	LD	HL,(6AH)
+c450  46             525    548 	LD	B,(HL)
+c451  c4 63 c4       526    549 	CALL	NZ,C463
+c454  f1             527    550 	POP	AF
+c455  3c             528    551 	INC	A
+c456  fe 45          529    552 	CP	'E'
+c458  38 ec          530    553 	JR	C,C446
+c45a  f1             531    554 	POP	AF
+c45b  32 6c 00       532    555 	LD	(6CH),A
+c45e  f1             533    556 	POP	AF
+c45f  32 77 00       534    557 	LD	(77H),A
+c462  c9             535    558 	RET
+                     536    559 ;
+c463  cd 06 c8       537    560 C463:	CALL	ptfol
+c466  20 a0          538    561 	DEFB	' ',SPACE+msbon
+c468  cd e2 c1       539    562 	CALL	C1E2
+c46b  cd 06 c8       540    563 	CALL	ptfol
+c46e  3b a0          541    564 	DEFB	';',SPACE+msbon
+c470  cb 58          542    565 	BIT	3,B
+c472  c4 fc c7       543    566 	CALL	NZ,ptspc
+c475  cb 78          544    567 	BIT	7,B
+c477  cc fc c7       545    568 	CALL	Z,ptspc
+c47a  cb 60          546    569 	BIT	4,B
+c47c  cd 98 c4       547    570 	CALL	C498
+c47f  cd fc c7       548    571 	CALL	ptspc
+c482  cb 40          549    572 	BIT	0,B
+c484  cd 98 c4       550    573 	CALL	C498
+c487  cb 48          551    574 	BIT	1,B
+c489  28 0a          552    575 	JR	Z,C495
+c48b  cd 06 c8       553    576 	CALL	ptfol
+c48e  20 43 72 6f    554    577 	DEFB	' Cromi','x'+msbon
+c492  6d 69 f8       554    578
+c495  c3 97 cc       555    579 C495:	JP	crlf
+                     556    580 ;
+c498  3e 44          557    581 C498:	LD	A,'D'
+c49a  20 02          558    582 	JR	NZ,C49E
+c49c  3e 53          559    583 	LD	A,'S'
+c49e  c3 fe c7       560    584 C49E:	JP	pt7ba
+c4a1  47             561    585 C4A1:	LD	B,A
+c4a2  3a 6c 00       562    586 	LD	A,(6CH)
+c4a5  b7             563    587 	OR	A
+c4a6  ca bd c1       564    588 	JP	Z,inper
+c4a9  78             565    589 	LD	A,B
+c4aa  fe 53          566    590 	CP	'S'
+c4ac  28 2c          567    591 	JR	Z,C4DA
+c4ae  cd b0 c8       568    592 	CALL	C8B0
+c4b1  da bd c1       569    593 C4B1:	JP	C,inper
+c4b4  e5             570    594 	PUSH	HL
+c4b5  cd e1 c4       571    595 	CALL	C4E1
+c4b8  3e 53          572    596 	LD	A,'S'
+c4ba  32 70 00       573    597 	LD	(70H),A
+c4bd  e1             574    598 	POP	HL
+c4be  af             575    599 	XOR	A
+c4bf  b4             576    600 	OR	H
+c4c0  c2 bd c1       577    601 	JP	NZ,inper
+c4c3  3a 6f 00       578    602 	LD	A,(6FH)
+c4c6  bd             579    603 	CP	L
+c4c7  38 e8          580    604 	JR	C,C4B1
+c4c9  7d             581    605 	LD	A,L
+c4ca  32 75 00       582    606 	LD	(75H),A
+c4cd  cd d4 c4       583    607 	CALL	C4D4
+c4d0  d0             584    608 	RET	NC
+c4d1  c3 0d c4       585    609 	JP	C40D
+                     586    610 ;
+c4d4  cd f8 c5       587    611 C4D4:	CALL	C5F8
+c4d7  c3 cb cd       588    612 	JP	CDCB
+                     589    613 ;
+c4da  13             590    614 C4DA:	INC	DE
+c4db  cd e1 c4       591    615 	CALL	C4E1
+c4de  c3 cb cd       592    616 	JP	CDCB
+                     593    617 ;
+c4e1  3a 75 00       594    618 C4E1:	LD	A,(75H)
+c4e4  32 7d 00       595    619 	LD	(7DH),A
+c4e7  cd ad c8       596    620 	CALL	C8AD
+c4ea  d8             597    621 	RET	C
+c4eb  af             598    622 	XOR	A
+c4ec  b4             599    623 	OR	H
+c4ed  c2 bd c1       600    624 C4ED:	JP	NZ,inper
+c4f0  7d             601    625 	LD	A,L
+c4f1  b7             602    626 	OR	A
+c4f2  20 04          603    627 	JR	NZ,C4F8
+c4f4  32 78 00       604    628 	LD	(78H),A
+c4f7  c9             605    629 	RET
+                     606    630 ;
+c4f8  3d             607    631 C4F8:	DEC	A
+c4f9  20 f2          608    632 	JR	NZ,C4ED
+c4fb  cd f6 c3       609    633 	CALL	C3F6
+c4fe  cb 67          610    634 	BIT	4,A
+c500  28 06          611    635 	JR	Z,C508
+c502  3e 01          612    636 	LD	A,1
+c504  32 78 00       613    637 C504:	LD	(78H),A
+c507  c9             614    638 	RET
+                     615    639 ;
+c508  cd 06 c8       616    640 C508:	CALL	ptfol
+c50b  53 2e 53 69    617    641 	DEFB	'S.Sided',CR+msbon
+c50f  64 65 64 8d    617    642
+c513  c3 55 c1       618    643 	JP	inlp
+                     619    644 ;
+c516  06 52          620    645 C516:	LD	B,'R'
+c518  18 02          621    646 	JR	C51C
+                     622    647 ;
+c51a  06 57          623    648 C51A:	LD	B,'W'
+c51c  1a             624    649 C51C:	LD	A,(DE)
+c51d  fe 44          625    650 	CP	'D'
+c51f  c2 bd c1       626    651 	JP	NZ,inper
+c522  78             627    652 	LD	A,B
+c523  32 70 00       628    653 	LD	(70H),A
+c526  cd bb c5       629    654 	CALL	C5BB
+c529  e5             630    655 	PUSH	HL
+c52a  fd e1          631    656 	POP	IY
+c52c  60             632    657 	LD	H,B
+c52d  69             633    658 	LD	L,C
+c52e  d5             634    659 C52E:	PUSH	DE
+c52f  e5             635    660 	PUSH	HL
+c530  7b             636    661 	LD	A,E
+c531  32 76 00       637    662 	LD	(76H),A
+c534  fd 22 7b 00    638    663 	LD	(7BH),IY
+c538  cd d4 c4       639    664 	CALL	C4D4
+c53b  3a 70 00       640    665 	LD	A,(70H)
+c53e  fe 57          641    666 	CP	'W'
+c540  37             642    667 	SCF
+c541  3f             643    668 	CCF
+c542  cc ab c5       644    669 	CALL	Z,C5AB
+c545  38 08          645    670 	JR	C,C54F
+c547  3a 70 00       646    671 	LD	A,(70H)
+c54a  fe 52          647    672 	CP	'R'
+c54c  cc 52 cd       648    673 	CALL	Z,CD52
+c54f  e1             649    674 C54F:	POP	HL
+c550  d1             650    675 	POP	DE
+c551  da 0a c4       651    676 	JP	C,C40A
+c554  ed 4b 79 00    652    677 	LD	BC,(79H)
+c558  fd 09          653    678 	ADD	IY,BC
+c55a  03             654    679 	INC	BC
+c55b  ed 42          655    680 	SBC	HL,BC
+c55d  23             656    681 	INC	HL
+c55e  da f2 c5       657    682 	JP	C,C5F2
+c561  1c             658    683 	INC	E
+c562  3a 6e 00       659    684 	LD	A,(6EH)
+c565  bb             660    685 	CP	E
+c566  30 c6          661    686 	JR	NC,C52E
+c568  3a 75 00       662    687 	LD	A,(75H)
+c56b  32 7d 00       663    688 	LD	(7DH),A
+c56e  3c             664    689 	INC	A
+c56f  47             665    690 	LD	B,A
+c570  3a 6f 00       666    691 	LD	A,(6FH)
+c573  b8             667    692 	CP	B
+c574  38 08          668    693 	JR	C,C57E
+c576  78             669    694 	LD	A,B
+c577  32 75 00       670    695 	LD	(75H),A
+c57a  1e 01          671    696 	LD	E,1
+c57c  18 b0          672    697 	JR	C52E
+                     673    698 ;
+c57e  1d             674    699 C57E:	DEC	E
+c57f  cd f2 c5       675    700 	CALL	C5F2
+c582  cd 06 c8       676    701 	CALL	ptfol
+c585  4e 65 78 74    677    702 	DEFB	'Next memory:',SPACE+msbon
+c589  20 6d 65 6d    677    703
+c58d  6f 72 79 3a    677    704
+c591  a0             677    705
+c592  fd e5          678    706 	PUSH	IY
+c594  e1             679    707 	POP	HL
+c595  cd e2 c7       680    708 	CALL	hxphl
+c598  cd 06 c8       681    709 	CALL	ptfol
+c59b  0d 45 6e 64    682    710 	DEFB	CR,'End of Disk',CR+msbon
+c59f  20 6f 66 20    682    711
+c5a3  44 69 73 6b    682    712
+c5a7  8d             682    713
+c5a8  c3 55 c1       683    714 	JP	inlp
+                     684    715 ;
+c5ab  21 7e 00       685    716 C5AB:	LD	HL,7EH
+c5ae  46             686    717 	LD	B,(HL)
+c5af  c5             687    718 	PUSH	BC
+c5b0  cb ce          688    719 	SET	1,(HL)
+c5b2  cd 5f cd       689    720 	CALL	CD5F
+c5b5  c1             690    721 	POP	BC
+c5b6  78             691    722 	LD	A,B
+c5b7  32 7e 00       692    723 	LD	(7EH),A
+c5ba  c9             693    724 	RET
+                     694    725 ;
+c5bb  3a 6c 00       695    726 C5BB:	LD	A,(6CH)
+c5be  b7             696    727 	OR	A
+c5bf  ca bd c1       697    728 	JP	Z,inper
+c5c2  13             698    729 	INC	DE
+c5c3  cd 2f c8       699    730 	CALL	C82F
+c5c6  af             700    731 	XOR	A
+c5c7  b2             701    732 	OR	D
+c5c8  c2 bd c1       702    733 C5C8:	JP	NZ,inper
+c5cb  b3             703    734 	OR	E
+c5cc  ca bd c1       704    735 	JP	Z,inper
+c5cf  c5             705    736 	PUSH	BC
+c5d0  d5             706    737 	PUSH	DE
+c5d1  e5             707    738 	PUSH	HL
+c5d2  cd f8 c5       708    739 	CALL	C5F8
+c5d5  e1             709    740 	POP	HL
+c5d6  d1             710    741 	POP	DE
+c5d7  c1             711    742 	POP	BC
+c5d8  3a 6e 00       712    743 	LD	A,(6EH)
+c5db  bb             713    744 	CP	E
+c5dc  38 ea          714    745 	JR	C,C5C8
+c5de  db 31          715    746 C5DE:	IN	A,(31H)
+c5e0  57             716    747 	LD	D,A
+c5e1  eb             717    748 	EX	DE,HL
+c5e2  cd fc c7       718    749 	CALL	ptspc
+c5e5  cd e2 c7       719    750 	CALL	hxphl
+c5e8  eb             720    751 	EX	DE,HL
+c5e9  cd fc c7       721    752 	CALL	ptspc
+c5ec  3a 78 00       722    753 	LD	A,(78H)
+c5ef  c3 f0 c7       723    754 	JP	ptchr
+                     724    755 ;
+c5f2  cd de c5       725    756 C5F2:	CALL	C5DE
+c5f5  c3 97 cc       726    757 	JP	crlf
+                     727    758 ;
+c5f8  3a 75 00       728    759 C5F8:	LD	A,(75H)
+c5fb  b7             729    760 	OR	A
+c5fc  20 20          730    761 	JR	NZ,C61E
+c5fe  3a 78 00       731    762 	LD	A,(78H)
+c601  b7             732    763 	OR	A
+c602  20 1a          733    764 	JR	NZ,C61E
+c604  3a 7e 00       734    765 C604:	LD	A,(7EH)
+c607  cb 6f          735    766 	BIT	5,A
+c609  c0             736    767 	RET	NZ
+c60a  cb 4f          737    768 	BIT	1,A
+c60c  20 03          738    769 	JR	NZ,C611
+c60e  cb 47          739    770 	BIT	0,A
+c610  c8             740    771 	RET	Z
+c611  32 7f 00       741    772 C611:	LD	(7FH),A
+c614  cb ef          742    773 	SET	5,A
+c616  cb 87          743    774 	RES	0,A
+c618  32 7e 00       744    775 	LD	(7EH),A
+c61b  c3 9b c3       745    776 	JP	C39B
+                     746    777 ;
+c61e  3a 7e 00       747    778 C61E:	LD	A,(7EH)
+c621  cb 6f          748    779 	BIT	5,A
+c623  c8             749    780 	RET	Z
+c624  3a 7f 00       750    781 	LD	A,(7FH)
+c627  c3 87 c3       751    782 	JP	C387
+                     752    783 ;
+c62a  cd 53 c8       753    784 C62A:	CALL	C853
+c62d  4d             754    785 	LD	C,L
+c62e  ed 78          755    786 	IN	A,(C)
+c630  cd e7 c7       756    787 	CALL	hxpa
+c633  c3 97 cc       757    788 	JP	crlf
+                     758    789 ;
+c636  cd ad c8       759    790 C636:	CALL	C8AD
+c639  e5             760    791 	PUSH	HL
+c63a  cd 1b c8       761    792 	CALL	rmcom
+c63d  cd 53 c8       762    793 	CALL	C853
+c640  d1             763    794 	POP	DE
+c641  4d             764    795 	LD	C,L
+c642  ed 59          765    796 	OUT	(C),E
+c644  c9             766    797 	RET
+                     767    798 ;
+c645  cd 2f c8       768    799 C645:	CALL	C82F
+c648  c5             769    800 	PUSH	BC
+c649  d5             770    801 	PUSH	DE
+c64a  e5             771    802 	PUSH	HL
+c64b  ed b0          772    803 	LDIR
+c64d  e1             773    804 	POP	HL
+c64e  d1             774    805 	POP	DE
+c64f  c1             775    806 	POP	BC
+c650  18 03          776    807 	JR	C655
+                     777    808 ;
+c652  cd 2f c8       778    809 C652:	CALL	C82F
+c655  1a             779    810 C655:	LD	A,(DE)
+c656  be             780    811 	CP	(HL)
+c657  28 19          781    812 	JR	Z,C672
+c659  cd e2 c7       782    813 	CALL	hxphl
+c65c  7e             783    814 	LD	A,(HL)
+c65d  cd db c7       784    815 	CALL	pspa
+c660  cd fc c7       785    816 	CALL	ptspc
+c663  1a             786    817 	LD	A,(DE)
+c664  cd db c7       787    818 	CALL	pspa
+c667  cd fc c7       788    819 	CALL	ptspc
+c66a  eb             789    820 	EX	DE,HL
+c66b  cd e2 c7       790    821 	CALL	hxphl
+c66e  eb             791    822 	EX	DE,HL
+c66f  cd 97 cc       792    823 	CALL	crlf
+c672  13             793    824 C672:	INC	DE
+c673  23             794    825 	INC	HL
+c674  0b             795    826 	DEC	BC
+c675  78             796    827 	LD	A,B
+c676  b1             797    828 	OR	C
+c677  20 dc          798    829 	JR	NZ,C655
+c679  c9             799    830 	RET
+                     800    831 ;
+c67a  cd 14 c8       801    832 C67A:	CALL	loctok
+c67d  fe 4d          802    833 	CP	'M'
+c67f  c2 a1 c4       803    834 	JP	NZ,C4A1
+c682  13             804    835 	INC	DE
+c683  2a 64 00       805    836 	LD	HL,(64H)
+c686  cd 5b c8       806    837 	CALL	C85B
+c689  cd e2 c7       807    838 C689:	CALL	hxphl
+c68c  7e             808    839 	LD	A,(HL)
+c68d  cd db c7       809    840 	CALL	pspa
+c690  cd fc c7       810    841 	CALL	ptspc
+c693  cd a3 c7       811    842 	CALL	C7A3
+c696  cd 14 c8       812    843 	CALL	loctok
+c699  fe 2e          813    844 	CP	'.'
+c69b  c8             814    845 	RET	Z
+c69c  fe 2d          815    846 	CP	'-'
+c69e  20 03          816    847 	JR	NZ,C6A3
+c6a0  2b             817    848 	DEC	HL
+c6a1  18 1a          818    849 	JR	C6BD
+                     819    850 ;
+c6a3  cd f1 c6       820    851 C6A3:	CALL	C6F1
+c6a6  30 07          821    852 	JR	NC,C6AF
+c6a8  cd 06 c8       822    853 	CALL	ptfol
+c6ab  3f 8d          823    854 	DEFB	'?',CR+msbon
+c6ad  18 da          824    855 	JR	C689
+                     825    856 ;
+c6af  af             826    857 C6AF:	XOR	A
+c6b0  80             827    858 	ADD	A,B
+c6b1  20 03          828    859 	JR	NZ,C6B6
+c6b3  23             829    860 	INC	HL
+c6b4  18 07          830    861 	JR	C6BD
+                     831    862 ;
+c6b6  48             832    863 C6B6:	LD	C,B
+c6b7  06 00          833    864 	LD	B,0
+c6b9  eb             834    865 	EX	DE,HL
+c6ba  ed b0          835    866 	LDIR
+c6bc  eb             836    867 	EX	DE,HL
+c6bd  22 64 00       837    868 C6BD:	LD	(64H),HL
+c6c0  18 c7          838    869 	JR	C689
+                     839    870 ;
+c6c2  cd 65 c8       840    871 C6C2:	CALL	C865
+c6c5  c5             841    872 	PUSH	BC
+c6c6  cd f1 c6       842    873 	CALL	C6F1
+c6c9  d1             843    874 	POP	DE
+c6ca  da bd c1       844    875 	JP	C,inper
+c6cd  af             845    876 	XOR	A
+c6ce  80             846    877 	ADD	A,B
+c6cf  ca bd c1       847    878 	JP	Z,inper
+c6d2  c5             848    879 C6D2:	PUSH	BC
+c6d3  d5             849    880 	PUSH	DE
+c6d4  e5             850    881 	PUSH	HL
+c6d5  11 2e 00       851    882 	LD	DE,2EH
+c6d8  1a             852    883 C6D8:	LD	A,(DE)
+c6d9  be             853    884 	CP	(HL)
+c6da  20 04          854    885 	JR	NZ,C6E0
+c6dc  13             855    886 	INC	DE
+c6dd  23             856    887 	INC	HL
+c6de  10 f8          857    888 	DJNZ	C6D8
+c6e0  e1             858    889 C6E0:	POP	HL
+c6e1  e5             859    890 	PUSH	HL
+c6e2  06 10          860    891 	LD	B,10H
+c6e4  cc 60 c7       861    892 	CALL	Z,C760
+c6e7  e1             862    893 	POP	HL
+c6e8  d1             863    894 	POP	DE
+c6e9  c1             864    895 	POP	BC
+c6ea  23             865    896 	INC	HL
+c6eb  1b             866    897 	DEC	DE
+c6ec  7a             867    898 	LD	A,D
+c6ed  b3             868    899 	OR	E
+c6ee  20 e2          869    900 	JR	NZ,C6D2
+c6f0  c9             870    901 	RET
+                     871    902 ;
+c6f1  e5             872    903 C6F1:	PUSH	HL
+c6f2  06 00          873    904 	LD	B,0
+c6f4  21 2e 00       874    905 	LD	HL,2EH
+c6f7  cd 14 c8       875    906 C6F7:	CALL	loctok
+c6fa  b7             876    907 	OR	A
+c6fb  28 29          877    908 	JR	Z,C726
+c6fd  fe 2c          878    909 	CP	','
+c6ff  13             879    910 	INC	DE
+c700  28 f5          880    911 	JR	Z,C6F7
+c702  4f             881    912 	LD	C,A
+c703  fe 27          882    913 	CP	squote
+c705  28 12          883    914 	JR	Z,C719
+c707  fe 22          884    915 	CP	'"'
+c709  28 0e          885    916 	JR	Z,C719
+c70b  1b             886    917 	DEC	DE
+c70c  e5             887    918 	PUSH	HL
+c70d  cd ad c8       888    919 	CALL	C8AD
+c710  7d             889    920 	LD	A,L
+c711  e1             890    921 	POP	HL
+c712  38 12          891    922 	JR	C,C726
+c714  77             892    923 	LD	(HL),A
+c715  23             893    924 	INC	HL
+c716  04             894    925 	INC	B
+c717  18 de          895    926 	JR	C6F7
+c719  1a             896    927 C719:	LD	A,(DE)
+c71a  13             897    928 	INC	DE
+c71b  b7             898    929 	OR	A
+c71c  28 08          899    930 	JR	Z,C726
+c71e  b9             900    931 	CP	C
+c71f  28 d6          901    932 	JR	Z,C6F7
+c721  77             902    933 	LD	(HL),A
+c722  23             903    934 	INC	HL
+c723  04             904    935 	INC	B
+c724  18 f3          905    936 	JR	C719
+                     906    937 ;
+c726  11 2e 00       907    938 C726:	LD	DE,2EH
+c729  e1             908    939 	POP	HL
+c72a  c9             909    940 	RET
+                     910    941 ;
+c72b  cd 14 c8       911    942 C72B:	CALL	loctok
+c72e  fe 4d          912    943 	CP	'M'
+c730  20 01          913    944 	JR	NZ,C733
+c732  13             914    945 	INC	DE
+c733  01 80 00       915    946 C733:	LD	BC,80H
+c736  2a 62 00       916    947 	LD	HL,(62H)
+c739  cd 4e c8       917    948 	CALL	C84E
+c73c  1e 10          918    949 C73C:	LD	E,10H
+c73e  af             919    950 	XOR	A
+c73f  b0             920    951 	OR	B
+c740  20 0a          921    952 	JR	NZ,C74C
+c742  3e 0f          922    953 	LD	A,0FH
+c744  b9             923    954 	CP	C
+c745  38 05          924    955 	JR	C,C74C
+c747  af             925    956 	XOR	A
+c748  b1             926    957 	OR	C
+c749  28 01          927    958 	JR	Z,C74C
+c74b  59             928    959 	LD	E,C
+c74c  c5             929    960 C74C:	PUSH	BC
+c74d  43             930    961 	LD	B,E
+c74e  cd 60 c7       931    962 	CALL	C760
+c751  22 62 00       932    963 	LD	(62H),HL
+c754  c1             933    964 	POP	BC
+c755  79             934    965 	LD	A,C
+c756  93             935    966 	SUB	E
+c757  4f             936    967 	LD	C,A
+c758  30 01          937    968 	JR	NC,C75B
+c75a  05             938    969 	DEC	B
+c75b  78             939    970 C75B:	LD	A,B
+c75c  b1             940    971 	OR	C
+c75d  20 dd          941    972 	JR	NZ,C73C
+c75f  c9             942    973 	RET
+                     943    974 ;
+c760  cd e2 c7       944    975 C760:	CALL	hxphl
+c763  c5             945    976 	PUSH	BC
+c764  e5             946    977 	PUSH	HL
+c765  d5             947    978 	PUSH	DE
+c766  0e 00          948    979 	LD	C,0
+c768  1e 04          949    980 	LD	E,4
+c76a  3e 03          950    981 C76A:	LD	A,3
+c76c  a1             951    982 	AND	C
+c76d  cc a0 c7       952    983 	CALL	Z,C7A0
+c770  cd a0 c7       953    984 	CALL	C7A0
+c773  7e             954    985 	LD	A,(HL)
+c774  cd e7 c7       955    986 	CALL	hxpa
+c777  1c             956    987 	INC	E
+c778  1c             957    988 	INC	E
+c779  23             958    989 	INC	HL
+c77a  0c             959    990 	INC	C
+c77b  10 ed          960    991 	DJNZ	C76A
+c77d  cd a0 c7       961    992 C77D:	CALL	C7A0
+c780  3e 3a          962    993 	LD	A,':'
+c782  bb             963    994 	CP	E
+c783  20 f8          964    995 	JR	NZ,C77D
+c785  d1             965    996 	POP	DE
+c786  e1             966    997 	POP	HL
+c787  c1             967    998 	POP	BC
+c788  7e             968    999 C788:	LD	A,(HL)
+c789  23             969   1000 	INC	HL
+c78a  cd 92 c7       970   1001 	CALL	C792
+c78d  10 f9          971   1002 	DJNZ	C788
+c78f  c3 97 cc       972   1003 	JP	crlf
+                     973   1004 ;
+c792  e6 7f          974   1005 C792:	AND	7FH
+c794  fe 7f          975   1006 	CP	7FH
+c796  28 04          976   1007 	JR	Z,C79C
+c798  fe 20          977   1008 	CP	' '
+c79a  30 62          978   1009 	JR	NC,pt7ba
+c79c  3e 2e          979   1010 C79C:	LD	A,'.'
+c79e  18 5e          980   1011 	JR	pt7ba
+c7a0  1c             981   1012 C7A0:	INC	E
+c7a1  18 59          982   1013 	JR	ptspc
+c7a3  3e 31          983   1014 C7A3:	LD	A,'1'
+c7a5  11 2e 00       984   1015 	LD	DE,2EH
+c7a8  12             985   1016 	LD	(DE),A
+c7a9  d5             986   1017 	PUSH	DE
+c7aa  cd ea cb       987   1018 	CALL	CBEA
+c7ad  e3             988   1019 	EX	(SP),HL
+c7ae  23             989   1020 	INC	HL
+c7af  46             990   1021 	LD	B,(HL)
+c7b0  04             991   1022 	INC	B
+c7b1  23             992   1023 	INC	HL
+c7b2  e5             993   1024 	PUSH	HL
+c7b3  05             994   1025 C7B3:	DEC	B
+c7b4  28 17          995   1026 	JR	Z,C7CD
+c7b6  7e             996   1027 	LD	A,(HL)
+c7b7  cd d2 c7       997   1028 	CALL	lc2uc
+c7ba  77             998   1029 	LD	(HL),A
+c7bb  23             999   1030 	INC	HL
+c7bc  fe 22         1000   1031 	CP	'"'
+c7be  28 04         1001   1032 	JR	Z,C7C4
+c7c0  fe 27         1002   1033 	CP	squote
+c7c2  20 ef         1003   1034 	JR	NZ,C7B3
+c7c4  05            1004   1035 C7C4:	DEC	B
+c7c5  28 06         1005   1036 	JR	Z,C7CD
+c7c7  be            1006   1037 	CP	(HL)
+c7c8  23            1007   1038 	INC	HL
+c7c9  20 f9         1008   1039 	JR	NZ,C7C4
+c7cb  18 e6         1009   1040 	JR	C7B3
+                    1010   1041 ;
+c7cd  36 00         1011   1042 C7CD:	LD	(HL),0
+c7cf  d1            1012   1043 	POP	DE
+c7d0  e1            1013   1044 	POP	HL
+c7d1  c9            1014   1045 	RET
+                    1015   1046 ;
+c7d2  fe 61         1016   1047 lc2uc:	CP	'a'	;switch low. case to u.c.
+c7d4  d8            1017   1048 	RET	C
+c7d5  fe 7b         1018   1049 	CP	'z'+1
+c7d7  d0            1019   1050 	RET	NC
+c7d8  d6 20         1020   1051 	SUB	' '
+c7da  c9            1021   1052 	RET
+                    1022   1053 ;
+c7db  f5            1023   1054 pspa:	PUSH	AF	;print space, c(A)
+c7dc  cd fc c7      1024   1055 	CALL	ptspc
+c7df  f1            1025   1056 	POP	AF
+c7e0  18 05         1026   1057 	JR	hxpa
+                    1027   1058 ;
+c7e2  7c            1028   1059 hxphl:	LD	A,H	;hex print c(HL)
+c7e3  cd e7 c7      1029   1060 	CALL	hxpa
+c7e6  7d            1030   1061 	LD	A,L
+c7e7  f5            1031   1062 hxpa:	PUSH	AF	;hex print c(A)
+c7e8  1f            1032   1063 	RRA
+c7e9  1f            1033   1064 	RRA
+c7ea  1f            1034   1065 	RRA
+c7eb  1f            1035   1066 	RRA
+c7ec  cd f0 c7      1036   1067 	CALL	ptchr
+c7ef  f1            1037   1068 	POP	AF
+c7f0  e6 0f         1038   1069 ptchr:	AND	0FH
+c7f2  fe 0a         1039   1070 	CP	0AH
+c7f4  38 02         1040   1071 	JR	C,ptnum
+c7f6  c6 07         1041   1072 	ADD	A,7
+c7f8  c6 30         1042   1073 ptnum:	ADD	A,'0'
+c7fa  18 02         1043   1074 	JR	pt7ba
+                    1044   1075 
+c7fc  3e 20         1045   1076 ptspc:	LD	A,' '
+c7fe  f5            1046   1077 pt7ba:	PUSH	AF	; print 7-bit char.
+c7ff  e6 7f         1047   1078 	AND	7FH
+c801  cd 99 cc      1048   1079 	CALL	CC99
+c804  f1            1049   1080 	POP	AF
+c805  c9            1050   1081 	RET
+                    1051   1082 ;
+c806  e3            1052   1083 ptfol:	EX	(SP),HL	; print string
+c807  7e            1053   1084 ptchl:	LD	A,(HL)
+c808  23            1054   1085 	INC	HL
+c809  b7            1055   1086 	OR	A
+c80a  28 06         1056   1087 	JR	Z,endpts
+c80c  cd fe c7      1057   1088 	CALL	pt7ba
+c80f  f2 07 c8      1058   1089 	JP	P,ptchl
+c812  e3            1059   1090 endpts:	EX	(SP),HL
+c813  c9            1060   1091 	RET
+                    1061   1092 ;
+c814  1a            1062   1093 loctok:	LD	A,(DE)	; locate next non-blank (DE)
+c815  fe 20         1063   1094 	CP	' '
+c817  c0            1064   1095 	RET	NZ
+c818  13            1065   1096 	INC	DE
+c819  18 f9         1066   1097 	JR	loctok
+                    1067   1098 ;
+c81b  cd 14 c8      1068   1099 rmcom:	CALL	loctok	; remove comma & spaces (DE)
+c81e  fe 2c         1069   1100 	CP	','
+c820  c0            1070   1101 	RET	NZ
+c821  13            1071   1102 	INC	DE
+c822  cd 14 c8      1072   1103 	CALL	loctok
+c825  af            1073   1104 	XOR	A
+c826  c9            1074   1105 	RET
+                    1075   1106 ;
+c827  cd 14 c8      1076   1107 fndeol:	CALL	loctok
+c82a  b7            1077   1108 	OR	A
+c82b  c8            1078   1109 	RET	Z
+c82c  c3 bd c1      1079   1110 	JP	inper
+                    1080   1111 ;
+c82f  21 80 00      1081   1112 C82F:	LD	HL,80H
+c832  44            1082   1113 	LD	B,H
+c833  4d            1083   1114 	LD	C,L
+c834  cd 68 c8      1084   1115 	CALL	C868
+c837  e5            1085   1116 	PUSH	HL
+c838  c5            1086   1117 	PUSH	BC
+c839  cd 1b c8      1087   1118 	CALL	rmcom
+c83c  cd ad c8      1088   1119 	CALL	C8AD
+c83f  da bd c1      1089   1120 	JP	C,inper
+c842  cd 27 c8      1090   1121 	CALL	fndeol
+c845  eb            1091   1122 	EX	DE,HL
+c846  c1            1092   1123 	POP	BC
+c847  e1            1093   1124 	POP	HL
+c848  c9            1094   1125 	RET
+                    1095   1126 ;
+c849  cd 65 c8      1096   1127 	CALL	C865
+c84c  18 d9         1097   1128 	JR	fndeol
+                    1098   1129 ;
+c84e  cd 68 c8      1099   1130 C84E:	CALL	C868
+c851  18 d4         1100   1131 	JR	fndeol
+                    1101   1132 ;
+c853  cd ad c8      1102   1133 C853:	CALL	C8AD
+c856  da bd c1      1103   1134 	JP	C,inper
+c859  18 cc         1104   1135 	JR	fndeol
+                    1105   1136 ;
+c85b  e5            1106   1137 C85B:	PUSH	HL
+c85c  cd ad c8      1107   1138 	CALL	C8AD
+c85f  38 01         1108   1139 	JR	C,C862
+c861  e3            1109   1140 	EX	(SP),HL
+c862  e1            1110   1141 C862:	POP	HL
+c863  18 c2         1111   1142 	JR	fndeol
+                    1112   1143 ;
+c865  37            1113   1144 C865:	SCF
+c866  18 01         1114   1145 	JR	C869
+c868  b7            1115   1146 C868:	OR	A
+c869  08            1116   1147 C869:	EX	AF,AF'
+c86a  c5            1117   1148 	PUSH	BC
+c86b  e5            1118   1149 	PUSH	HL
+c86c  cd ad c8      1119   1150 	CALL	C8AD
+c86f  30 08         1120   1151 	JR	NC,C879
+c871  08            1121   1152 	EX	AF,AF'
+c872  da bd c1      1122   1153 	JP	C,inper
+c875  08            1123   1154 	EX	AF,AF'
+c876  e1            1124   1155 	POP	HL
+c877  18 01         1125   1156 	JR	C87A
+                    1126   1157 ;
+c879  f1            1127   1158 C879:	POP	AF
+c87a  cd 87 c8      1128   1159 C87A:	CALL	C887
+c87d  30 06         1129   1160 	JR	NC,C885
+c87f  08            1130   1161 	EX	AF,AF'
+c880  c1            1131   1162 	POP	BC
+c881  d0            1132   1163 	RET	NC
+c882  c3 bd c1      1133   1164 	JP	inper
+                    1134   1165 ;
+c885  f1            1135   1166 C885:	POP	AF
+c886  c9            1136   1167 	RET
+                    1137   1168 ;
+c887  cd 1b c8      1138   1169 C887:	CALL	rmcom
+c88a  1a            1139   1170 	LD	A,(DE)
+c88b  fe 53         1140   1171 	CP	'S'
+c88d  20 01         1141   1172 	JR	NZ,C890
+c88f  13            1142   1173 	INC	DE
+c890  e5            1143   1174 C890:	PUSH	HL
+c891  f5            1144   1175 	PUSH	AF
+c892  cd ad c8      1145   1176 	CALL	C8AD
+c895  38 0f         1146   1177 	JR	C,C8A6
+c897  44            1147   1178 	LD	B,H
+c898  4d            1148   1179 	LD	C,L
+c899  f1            1149   1180 	POP	AF
+c89a  e1            1150   1181 	POP	HL
+c89b  28 07         1151   1182 	JR	Z,C8A4
+c89d  79            1152   1183 	LD	A,C
+c89e  95            1153   1184 	SUB	L
+c89f  4f            1154   1185 	LD	C,A
+c8a0  78            1155   1186 	LD	A,B
+c8a1  9c            1156   1187 	SBC	A,H
+c8a2  47            1157   1188 	LD	B,A
+c8a3  03            1158   1189 	INC	BC
+c8a4  b7            1159   1190 C8A4:	OR	A
+c8a5  c9            1160   1191 	RET
+                    1161   1192 ;
+c8a6  f1            1162   1193 C8A6:	POP	AF
+c8a7  e1            1163   1194 	POP	HL
+c8a8  ca bd c1      1164   1195 	JP	Z,inper
+c8ab  37            1165   1196 	SCF
+c8ac  c9            1166   1197 	RET
+                    1167   1198 ;
+c8ad  cd 14 c8      1168   1199 C8AD:	CALL	loctok
+c8b0  cd e0 c8      1169   1200 C8B0:	CALL	C8E0
+c8b3  d8            1170   1201 	RET	C
+c8b4  d5            1171   1202 	PUSH	DE
+c8b5  13            1172   1203 C8B5:	INC	DE
+c8b6  cd e0 c8      1173   1204 	CALL	C8E0
+c8b9  30 fa         1174   1205 	JR	NC,C8B5
+c8bb  d1            1175   1206 	POP	DE
+c8bc  fe 2e         1176   1207 	CP	'.'
+c8be  28 05         1177   1208 	JR	Z,C8C5
+c8c0  cd ca c8      1178   1209 	CALL	C8CA
+c8c3  a7            1179   1210 	AND	A
+c8c4  c9            1180   1211 	RET
+                    1181   1212 ;
+c8c5  cd f4 c8      1182   1213 C8C5:	CALL	C8F4
+c8c8  a7            1183   1214 	AND	A
+c8c9  c9            1184   1215 	RET
+                    1185   1216 ;
+c8ca  21 00 00      1186   1217 C8CA:	LD	HL,0
+c8cd  cd e0 c8      1187   1218 C8CD:	CALL	C8E0
+c8d0  38 09         1188   1219 	JR	C,C8DB
+c8d2  29            1189   1220 	ADD	HL,HL
+c8d3  29            1190   1221 	ADD	HL,HL
+c8d4  29            1191   1222 	ADD	HL,HL
+c8d5  29            1192   1223 	ADD	HL,HL
+c8d6  85            1193   1224 	ADD	A,L
+c8d7  6f            1194   1225 	LD	L,A
+c8d8  13            1195   1226 	INC	DE
+c8d9  18 f2         1196   1227 	JR	C8CD
+c8db  fe 48         1197   1228 C8DB:	CP	'H'
+c8dd  c0            1198   1229 	RET	NZ
+c8de  13            1199   1230 	INC	DE
+c8df  c9            1200   1231 	RET
+                    1201   1232 ;
+c8e0  1a            1202   1233 C8E0:	LD	A,(DE)
+c8e1  fe 30         1203   1234 	CP	'0'
+c8e3  d8            1204   1235 	RET	C
+c8e4  fe 3a         1205   1236 	CP	':'
+c8e6  38 09         1206   1237 	JR	C,C8F1
+c8e8  fe 41         1207   1238 	CP	'A'
+c8ea  d8            1208   1239 	RET	C
+c8eb  fe 47         1209   1240 	CP	'G'
+c8ed  3f            1210   1241 	CCF
+c8ee  d8            1211   1242 	RET	C
+c8ef  d6 07         1212   1243 	SUB	7
+c8f1  d6 30         1213   1244 C8F1:	SUB	'0'
+c8f3  c9            1214   1245 	RET
+                    1215   1246 ;
+c8f4  21 00 00      1216   1247 C8F4:	LD	HL,0
+c8f7  cd 10 c9      1217   1248 C8F7:	CALL	C910
+c8fa  13            1218   1249 	INC	DE
+c8fb  38 0d         1219   1250 	JR	C,C90A
+c8fd  c5            1220   1251 	PUSH	BC
+c8fe  29            1221   1252 	ADD	HL,HL
+c8ff  44            1222   1253 	LD	B,H
+c900  4d            1223   1254 	LD	C,L
+c901  29            1224   1255 	ADD	HL,HL
+c902  29            1225   1256 	ADD	HL,HL
+c903  09            1226   1257 	ADD	HL,BC
+c904  c1            1227   1258 	POP	BC
+c905  cd 86 c1      1228   1259 	CALL	C186
+c908  18 ed         1229   1260 	JR	C8F7
+                    1230   1261 ;
+c90a  fe 2e         1231   1262 C90A:	CP	'.'
+c90c  c8            1232   1263 	RET	Z
+c90d  c3 bd c1      1233   1264 	JP	inper
+c910  1a            1234   1265 C910:	LD	A,(DE)
+c911  fe 30         1235   1266 	CP	'0'
+c913  d8            1236   1267 	RET	C
+c914  fe 3a         1237   1268 	CP	':'
+c916  3f            1238   1269 	CCF
+c917  d8            1239   1270 	RET	C
+c918  d6 30         1240   1271 	SUB	'0'
+c91a  c9            1241   1272 	RET
+                    1242   1273 ;
+c91b  01 18 00      1243   1274 C91B:	LD	BC,18H
+c91e  11 00 01      1244   1275 	LD	DE,100H
+c921  21 29 c9      1245   1276 	LD	HL,0C929H
+c924  ed b0         1246   1277 	LDIR
+c926  c3 00 01      1247   1278 	JP	0100H
+                    1248   1279 ;
+c929  01 00 10      1249   1280 C929:	LD	BC,1000H
+c92c  11 00 10      1250   1281 	LD	DE,1000H
+c92f  21 00 c0      1251   1282 	LD	HL,start
+c932  c5            1252   1283 	PUSH	BC
+c933  d5            1253   1284 	PUSH	DE
+c934  e5            1254   1285 	PUSH	HL
+c935  ed b0         1255   1286 	LDIR
+c937  3e 01         1256   1287 	LD	A,1
+c939  d3 40         1257   1288 	OUT	(40H),A
+c93b  d1            1258   1289 	POP	DE
+c93c  e1            1259   1290 	POP	HL
+c93d  c1            1260   1291 	POP	BC
+c93e  ed b0         1261   1292 	LDIR
+c940  c9            1262   1293 	RET
+                    1263   1294 ;
+c941  cd 14 c8      1264   1295 C941:	CALL	loctok	; "T"est
+c944  fe 5a         1265   1296 	CP	'Z'
+c946  f5            1266   1297 	PUSH	AF
+c947  20 01         1267   1298 	JR	NZ,C94A
+c949  13            1268   1299 	INC	DE
+c94a  cd 27 c8      1269   1300 C94A:	CALL	fndeol
+c94d  f1            1270   1301 	POP	AF
+c94e  c4 1b c9      1271   1302 	CALL	NZ,C91B
+c951  cd 06 c8      1272   1303 	CALL	ptfol
+c954  0d 4d 65 6d   1273   1304 	DEFB	CR,'Memory',':'+msbon
+c958  6f 72 79 ba   1273   1305
+c95c  01 00 10      1274   1306 	LD	BC,1000H
+c95f  cd fc c7      1275   1307 C95F:	CALL	ptspc
+c962  79            1276   1308 	LD	A,C
+c963  cd f0 c7      1277   1309 	CALL	ptchr
+c966  0c            1278   1310 	INC	C
+c967  10 f6         1279   1311 	DJNZ	C95F
+c969  cd 97 cc      1280   1312 	CALL	crlf
+c96c  06 07         1281   1313 	LD	B,7
+c96e  cd fc c7      1282   1314 C96E:	CALL	ptspc
+c971  10 fb         1283   1315 	DJNZ	C96E
+c973  60            1284   1316 	LD	H,B
+c974  68            1285   1317 	LD	L,B
+c975  cd fc c7      1286   1318 C975:	CALL	ptspc
+c978  e5            1287   1319 	PUSH	HL
+c979  11 00 10      1288   1320 	LD	DE,1000H
+c97c  7c            1289   1321 C97C:	LD	A,H
+c97d  fe c9         1290   1322 	CP	0C9H
+c97f  20 09         1291   1323 	JR	NZ,C98A
+c981  7d            1292   1324 	LD	A,L
+c982  fe 8d         1293   1325 	CP	8DH
+c984  38 04         1294   1326 	JR	C,C98A
+c986  fe 9c         1295   1327 	CP	9CH
+c988  38 12         1296   1328 	JR	C,C99C
+c98a  46            1297   1329 C98A:	LD	B,(HL)
+c98b  3e 55         1298   1330 	LD	A,'U'
+c98d  77            1299   1331 	LD	(HL),A
+c98e  be            1300   1332 	CP	(HL)
+c98f  20 05         1301   1333 	JR	NZ,C996
+c991  2f            1302   1334 	CPL
+c992  77            1303   1335 	LD	(HL),A
+c993  be            1304   1336 	CP	(HL)
+c994  28 05         1305   1337 	JR	Z,C99B
+c996  70            1306   1338 C996:	LD	(HL),B
+c997  3e 58         1307   1339 	LD	A,'X'
+c999  18 09         1308   1340 	JR	C9A4
+                    1309   1341 ;
+c99b  70            1310   1342 C99B:	LD	(HL),B
+c99c  23            1311   1343 C99C:	INC	HL
+c99d  1b            1312   1344 	DEC	DE
+c99e  7a            1313   1345 	LD	A,D
+c99f  b3            1314   1346 	OR	E
+c9a0  20 da         1315   1347 	JR	NZ,C97C
+c9a2  3e 5e         1316   1348 	LD	A,'^'
+c9a4  cd fe c7      1317   1349 C9A4:	CALL	pt7ba
+c9a7  e1            1318   1350 	POP	HL
+c9a8  3e 10         1319   1351 	LD	A,10H
+c9aa  84            1320   1352 	ADD	A,H
+c9ab  67            1321   1353 	LD	H,A
+c9ac  20 c7         1322   1354 	JR	NZ,C975
+c9ae  cd 06 c8      1323   1355 	CALL	ptfol
+c9b1  0d 53 70 65   1324   1356 	DEFB	CR,'Specify disk (eg, A; or A;; or A;;;)',SPACE+msbon
+c9b5  63 69 66 79   1324   1357
+c9b9  20 64 69 73   1324   1358
+c9bd  6b 20 28 65   1324   1359
+c9c1  67 2c 20 41   1324   1360
+c9c5  3b 20 6f 72   1324   1361
+c9c9  20 41 3b 3b   1324   1362
+c9cd  20 6f 72 20   1324   1363
+c9d1  41 3b 3b 3b   1324   1364
+c9d5  29 a0         1324   1365
+c9d7  cd a3 c7      1325   1366 	CALL	C7A3
+c9da  cd 14 c8      1326   1367 	CALL	loctok
+c9dd  b7            1327   1368 	OR	A
+c9de  ca 97 cc      1328   1369 	JP	Z,crlf
+c9e1  cd c1 c2      1329   1370 	CALL	C2C1
+c9e4  c2 b9 c1      1330   1371 	JP	NZ,C1B9
+c9e7  cd 06 c8      1331   1372 	CALL	ptfol
+c9ea  53 65 65 6b   1332   1373 	DEFB	'Seek tests:',CR+msbon
+c9ee  20 74 65 73   1332   1374
+c9f2  74 73 3a 8d   1332   1375
+c9f6  06 15         1333   1376 	LD	B,15H
+c9f8  21 20 ca      1334   1377 	LD	HL,sektab
+c9fb  db 31         1335   1378 seklp:	IN	A,(31H)
+c9fd  32 7d 00      1336   1379 	LD	(7DH),A
+ca00  7e            1337   1380 	LD	A,(HL)
+ca01  c5            1338   1381 	PUSH	BC
+ca02  e5            1339   1382 	PUSH	HL
+ca03  fe ff         1340   1383 	CP	0FFH
+ca05  20 2e         1341   1384 	JR	NZ,CA35
+ca07  cd 06 c8      1342   1385 	CALL	ptfol
+ca0a  20 52 65 73   1343   1386 	DEFB	SPACE,'Restore',':'+msbon
+ca0e  74 6f 72 65   1343   1387
+ca12  ba            1343   1388
+ca13  cd 04 c6      1344   1389 	CALL	C604
+ca16  cd 37 cd      1345   1390 	CALL	CD37
+ca19  08            1346   1391 	EX	AF,AF'
+ca1a  cd 1e c6      1347   1392 	CALL	C61E
+ca1d  08            1348   1393 	EX	AF,AF'
+ca1e  18 2c         1349   1394 	JR	CA4C
+                    1350   1395 ;
+                    1351   1396 ; seek test targets
+                    1352   1397 ;
+ca20  01 02 03 04   1353   1398 sektab:	DEFB	1,2,3,4,5,0feh
+ca24  05 fe         1353   1399
+ca26  06 07 08 09   1354   1400 	DEFB	6,7,8,9,0,0feh
+ca2a  00 fe         1354   1401
+ca2c  27 00 15 00   1355   1402 	DEFB	27h,0,15h,0,1,0feh
+ca30  01 fe         1355   1403
+ca32  ff fe         1356   1404 	DEFB	0ffh,0feh
+ca34  27            1357   1405 	DEFB	27h
+                    1358   1406 ;
+ca35  fe fe         1359   1407 CA35:	CP	0FEH
+ca37  20 06         1360   1408 	JR	NZ,CA3F
+ca39  cd 97 cc      1361   1409 	CALL	crlf
+ca3c  b7            1362   1410 	OR	A
+ca3d  18 12         1363   1411 	JR	CA51
+                    1364   1412 ;
+ca3f  32 75 00      1365   1413 CA3F:	LD	(75H),A
+ca42  cd db c7      1366   1414 	CALL	pspa
+ca45  cd 06 c8      1367   1415 	CALL	ptfol
+ca48  ba            1368   1416 	DEFB	':'+msbon
+ca49  cd d4 c4      1369   1417 	CALL	C4D4
+ca4c  f5            1370   1418 CA4C:	PUSH	AF
+ca4d  cd 7a cb      1371   1419 	CALL	ckcry
+ca50  f1            1372   1420 	POP	AF
+ca51  e1            1373   1421 CA51:	POP	HL
+ca52  c1            1374   1422 	POP	BC
+ca53  da 97 cc      1375   1423 	JP	C,crlf
+ca56  23            1376   1424 	INC	HL
+ca57  10 a2         1377   1425 	DJNZ	seklp
+ca59  cd 06 c8      1378   1426 	CALL	ptfol
+ca5c  0d 52 65 61   1379   1427 	DEFB	CR,'Read/Write tests',CR+msbon
+ca60  64 2f 57 72   1379   1428
+ca64  69 74 65 20   1379   1429
+ca68  74 65 73 74   1379   1430
+ca6c  73 8d         1379   1431
+ca6e  cd 94 cb      1380   1432 	CALL	CB94
+ca71  cd b0 cb      1381   1433 	CALL	CBB0
+ca74  da 97 cc      1382   1434 	JP	C,crlf
+ca77  cd 06 c8      1383   1435 	CALL	ptfol
+ca7a  57 72 69 74   1384   1436 	DEFB	'Write test MAY DESTROY data'
+ca7e  65 20 74 65   1384   1437
+ca82  73 74 20 4d   1384   1438
+ca86  41 59 20 44   1384   1439
+ca8a  45 53 54 52   1384   1440
+ca8e  4f 59 20 64   1384   1441
+ca92  61 74 61      1384   1442
+ca95  0d 45 53 43   1385   1443 	DEFB	CR,'ESC=abort RETURN=proceed',SPACE+msbon
+ca99  3d 61 62 6f   1385   1444
+ca9d  72 74 20 52   1385   1445
+caa1  45 54 55 52   1385   1446
+caa5  4e 3d 70 72   1385   1447
+caa9  6f 63 65 65   1385   1448
+caad  64 a0         1385   1449
+caaf  cd a3 c7      1386   1450 	CALL	C7A3
+cab2  21 00 09      1387   1451 	LD	HL,900H
+cab5  cd a2 cb      1388   1452 	CALL	setpat
+cab8  01 00 02      1389   1453 	LD	BC,200H
+cabb  75            1390   1454 CABB:	LD	(HL),L
+cabc  23            1391   1455 	INC	HL
+cabd  0b            1392   1456 	DEC	BC
+cabe  78            1393   1457 	LD	A,B
+cabf  b1            1394   1458 	OR	C
+cac0  20 f9         1395   1459 	JR	NZ,CABB
+cac2  cd c1 cb      1396   1460 	CALL	CBC1
+cac5  30 6e         1397   1461 	JR	NC,CB35
+cac7  cd 06 c8      1398   1462 CAC7:	CALL	ptfol
+caca  54 65 73 74   1399   1463 	DEFB	'Test failed!',CR
+cace  20 66 61 69   1399   1464
+cad2  6c 65 64 21   1399   1465
+cad6  0d            1399   1466
+cad7  44 69 73 6b   1400   1467 	DEFB    'Disk data a','t'+msbon
+cadb  20 64 61 74   1400   1468
+cadf  61 20 61 f4   1400   1469
+cae3  1e 01         1401   1470 	LD	E,1
+cae5  cd de c5      1402   1471 	CALL	C5DE
+cae8  cd 06 c8      1403   1472 	CALL	ptfol
+caeb  20 6d 61 79   1404   1473 	DEFB	' may have been destroyed'
+caef  20 68 61 76   1404   1474
+caf3  65 20 62 65   1404   1475
+caf7  65 6e 20 64   1404   1476
+cafb  65 73 74 72   1404   1477
+caff  6f 79 65 64   1404   1478
+cb03  0d 4f 72 69   1405   1479 	DEFB	CR,'Original is located at 0D00','s'+msbon
+cb07  67 69 6e 61   1405   1480
+cb0b  6c 20 69 73   1405   1481
+cb0f  20 6c 6f 63   1405   1482
+cb13  61 74 65 64   1405   1483
+cb17  20 61 74 20   1405   1484
+cb1b  30 44 30 30   1405   1485
+cb1f  f3            1405   1486
+cb20  2a 79 00      1406   1487 	LD	HL,(79H)
+cb23  cd e2 c7      1407   1488 	CALL	hxphl
+cb26  cd 06 c8      1408   1489 	CALL	ptfol
+cb29  20 69 6e 20   1409   1490 	DEFB	' in memory',CR+msbon
+cb2d  6d 65 6d 6f   1409   1491
+cb31  72 79 8d      1409   1492
+cb34  c9            1410   1493 	RET
+                    1411   1494 ;
+cb35  21 00 0b      1412   1495 CB35:	LD	HL,0B00H
+cb38  cd a2 cb      1413   1496 	CALL	setpat
+cb3b  cd b0 cb      1414   1497 	CALL	CBB0
+cb3e  38 87         1415   1498 	JR	C,CAC7
+cb40  cd 06 c8      1416   1499 	CALL	ptfol
+cb43  50 61 74 74   1417   1500 	DEFB	'Pattern compare',SPACE+msbon
+cb47  65 72 6e 20   1417   1501
+cb4b  63 6f 6d 70   1417   1502
+cb4f  61 72 65 a0   1417   1503
+cb53  ed 4b 79 00   1418   1504 	LD	BC,(79H)
+cb57  11 00 09      1419   1505 	LD	DE,900H
+cb5a  21 00 0b      1420   1506 	LD	HL,0B00H
+cb5d  1a            1421   1507 CB5D:	LD	A,(DE)
+cb5e  be            1422   1508 	CP	(HL)
+cb5f  20 09         1423   1509 	JR	NZ,CB6A
+cb61  13            1424   1510 	INC	DE
+cb62  23            1425   1511 	INC	HL
+cb63  0b            1426   1512 	DEC	BC
+cb64  78            1427   1513 	LD	A,B
+cb65  b1            1428   1514 	OR	C
+cb66  20 f5         1429   1515 	JR	NZ,CB5D
+cb68  18 01         1430   1516 	JR	CB6B
+                    1431   1517 ;
+cb6a  37            1432   1518 CB6A:	SCF
+cb6b  cd d1 cb      1433   1519 CB6B:	CALL	CBD1
+cb6e  cd 94 cb      1434   1520 	CALL	CB94
+cb71  cd c1 cb      1435   1521 	CALL	CBC1
+cb74  da c7 ca      1436   1522 	JP	C,CAC7
+cb77  c3 97 cc      1437   1523 	JP	crlf
+                    1438   1524 ;
+cb7a  38 06         1439   1525 ckcry:	JR	C,ng
+cb7c  cd 06 c8      1440   1526 	CALL	ptfol
+cb7f  4f cb         1441   1527 	DEFB	'O','K'+msbon
+cb81  c9            1442   1528 	RET
+                    1443   1529 ;
+cb82  cd 06 c8      1444   1530 ng:	CALL	ptfol
+cb85  65 72 72 6f   1445   1531 	DEFB	'error',SPACE+msbon
+cb89  72 a0         1445   1532
+cb8b  3a 71 00      1446   1533 	LD	A,(71H)
+cb8e  cd e7 c7      1447   1534 	CALL	hxpa
+cb91  c3 97 cc      1448   1535 	JP	crlf
+                    1449   1536 ;
+cb94  cd 06 c8      1450   1537 CB94:	CALL	ptfol
+cb97  44 61 74 e1   1451   1538 	DEFB	'Dat','a'+msbon
+cb9b  21 00 0d      1452   1539 	LD	HL,0D00H
+cb9e  22 7b 00      1453   1540 CB9E:	LD	(7BH),HL
+cba1  c9            1454   1541 	RET
+                    1455   1542 ;
+cba2  22 7b 00      1456   1543 setpat:	LD	(7BH),HL
+cba5  cd 06 c8      1457   1544 	CALL	ptfol
+cba8  50 61 74 74   1458   1545 	DEFB	'Patter','n'+msbon
+cbac  65 72 ee      1458   1546
+cbaf  c9            1459   1547 	RET
+                    1460   1548 ;
+cbb0  cd da cb      1461   1549 CBB0:	CALL	CBDA
+cbb3  cd 06 c8      1462   1550 	CALL	ptfol
+cbb6  20 72 65 61   1463   1551 	DEFB	' read',SPACE+msbon
+cbba  64 a0         1463   1552
+cbbc  cd 52 cd      1464   1553 	CALL	CD52
+cbbf  18 10         1465   1554 	JR	CBD1
+                    1466   1555 ;
+cbc1  cd da cb      1467   1556 CBC1:	CALL	CBDA
+cbc4  cd 06 c8      1468   1557 	CALL	ptfol
+cbc7  20 77 72 69   1469   1558 	DEFB	' write',SPACE+msbon
+cbcb  74 65 a0      1469   1559
+cbce  cd ab c5      1470   1560 	CALL	C5AB
+cbd1  f5            1471   1561 CBD1:	PUSH	AF
+cbd2  cd 7a cb      1472   1562 	CALL	ckcry
+cbd5  cd 97 cc      1473   1563 	CALL	crlf
+cbd8  f1            1474   1564 	POP	AF
+cbd9  c9            1475   1565 	RET
+                    1476   1566 ;
+cbda  3e 27         1477   1567 CBDA:	LD	A,squote
+cbdc  32 75 00      1478   1568 	LD	(75H),A
+cbdf  32 7d 00      1479   1569 	LD	(7DH),A
+cbe2  3e 01         1480   1570 	LD	A,1
+cbe4  32 76 00      1481   1571 	LD	(76H),A
+cbe7  c3 cb cd      1482   1572 	JP	CDCB
+cbea  c5            1483   1573 CBEA:	PUSH	BC
+cbeb  e5            1484   1574 	PUSH	HL
+cbec  06 00         1485   1575 CBEC:	LD	B,0
+cbee  21 02 00      1486   1576 	LD	HL,2
+cbf1  19            1487   1577 	ADD	HL,DE
+cbf2  cd 64 cc      1488   1578 CBF2:	CALL	CC64
+cbf5  fe 10         1489   1579 	CP	10H
+cbf7  cc bb cc      1490   1580 	CALL	Z,CCBB
+cbfa  28 f6         1491   1581 	JR	Z,CBF2
+cbfc  fe 1b         1492   1582 	CP	esc
+cbfe  ca 8e cc      1493   1583 	JP	Z,CC8E
+cc01  fe 08         1494   1584 	CP	8
+cc03  28 04         1495   1585 	JR	Z,CC09
+cc05  fe 7f         1496   1586 	CP	7FH
+cc07  20 11         1497   1587 	JR	NZ,CC1A
+cc09  af            1498   1588 CC09:	XOR	A
+cc0a  b0            1499   1589 	OR	B
+cc0b  28 e5         1500   1590 	JR	Z,CBF2
+cc0d  2b            1501   1591 	DEC	HL
+cc0e  05            1502   1592 	DEC	B
+cc0f  cd 4b cc      1503   1593 	CALL	CC4B
+cc12  7e            1504   1594 	LD	A,(HL)
+cc13  fe 20         1505   1595 	CP	' '
+cc15  dc 4b cc      1506   1596 	CALL	C,CC4B
+cc18  18 d8         1507   1597 	JR	CBF2
+                    1508   1598 ;
+cc1a  fe 0d         1509   1599 CC1A:	CP	0DH
+cc1c  cc 45 cc      1510   1600 	CALL	Z,CC45
+cc1f  28 1b         1511   1601 	JR	Z,CC3C
+cc21  fe 15         1512   1602 	CP	15H
+cc23  20 08         1513   1603 	JR	NZ,CC2D
+cc25  cd 45 cc      1514   1604 	CALL	CC45
+cc28  cd 97 cc      1515   1605 	CALL	crlf
+cc2b  18 bf         1516   1606 	JR	CBEC
+cc2d  4f            1517   1607 CC2D:	LD	C,A
+cc2e  1a            1518   1608 	LD	A,(DE)
+cc2f  3d            1519   1609 	DEC	A
+cc30  b8            1520   1610 	CP	B
+cc31  28 bf         1521   1611 	JR	Z,CBF2
+cc33  79            1522   1612 	LD	A,C
+cc34  cd 45 cc      1523   1613 	CALL	CC45
+cc37  77            1524   1614 	LD	(HL),A
+cc38  23            1525   1615 	INC	HL
+cc39  04            1526   1616 	INC	B
+cc3a  18 b6         1527   1617 	JR	CBF2
+cc3c  36 00         1528   1618 CC3C:	LD	(HL),0
+cc3e  78            1529   1619 	LD	A,B
+cc3f  13            1530   1620 	INC	DE
+cc40  12            1531   1621 	LD	(DE),A
+cc41  1b            1532   1622 	DEC	DE
+cc42  e1            1533   1623 	POP	HL
+cc43  c1            1534   1624 	POP	BC
+cc44  c9            1535   1625 	RET
+                    1536   1626 ;
+cc45  f5            1537   1627 CC45:	PUSH	AF
+cc46  cd 52 cc      1538   1628 	CALL	CC52
+cc49  f1            1539   1629 	POP	AF
+cc4a  c9            1540   1630 	RET
+                    1541   1631 ;
+cc4b  cd 06 c8      1542   1632 CC4B:	CALL	ptfol
+cc4e  08 20 88      1543   1633 	DEFB	BS,' ',BS+msbon
+cc51  c9            1544   1634 	RET
+                    1545   1635 ;
+cc52  fe 20         1546   1636 CC52:	CP	' '
+cc54  30 43         1547   1637 	JR	NC,CC99
+cc56  fe 0d         1548   1638 	CP	0DH
+cc58  28 3f         1549   1639 	JR	Z,CC99
+cc5a  f5            1550   1640 	PUSH	AF
+cc5b  cd 06 c8      1551   1641 	CALL	ptfol
+cc5e  de            1552   1642 	DEFB	'^'+msbon
+cc5f  f1            1553   1643 	POP	AF
+cc60  c6 40         1554   1644 	ADD	A,'@'
+cc62  18 35         1555   1645 	JR	CC99
+                    1556   1646 ;
+cc64  cd 23 cd      1557   1647 CC64:	CALL	CD23
+cc67  cd 76 cc      1558   1648 	CALL	ckinst
+cc6a  28 f8         1559   1649 	JR	Z,CC64
+cc6c  cd 76 cc      1560   1650 inchr:	CALL	ckinst
+cc6f  28 fb         1561   1651 	JR	Z,inchr
+cc71  db 01         1562   1652 	IN	A,(1)
+cc73  e6 7f         1563   1653 	AND	7FH
+cc75  c9            1564   1654 	RET
+                    1565   1655 ;
+cc76  db 00         1566   1656 ckinst:	IN	A,(0)
+cc78  e6 40         1567   1657 	AND	'@'
+cc7a  c9            1568   1658 	RET
+                    1569   1659 ;
+cc7b  cd 76 cc      1570   1660 CC7B:	CALL	ckinst
+cc7e  c8            1571   1661 	RET	Z
+cc7f  cd 6c cc      1572   1662 	CALL	inchr
+cc82  fe 13         1573   1663 	CP	13H
+cc84  cc 6c cc      1574   1664 	CALL	Z,inchr
+cc87  fe 0d         1575   1665 	CP	0DH
+cc89  28 03         1576   1666 	JR	Z,CC8E
+cc8b  fe 1b         1577   1667 	CP	ESC
+cc8d  c0            1578   1668 	RET	NZ
+cc8e  31 2e 00      1579   1669 CC8E:	LD	SP,2EH
+cc91  cd 97 cc      1580   1670 	CALL	crlf
+cc94  c3 55 c1      1581   1671 	JP	inlp
+                    1582   1672 ;
+cc97  3e 0d         1583   1673 crlf:	LD	A,0DH
+cc99  f5            1584   1674 CC99:	PUSH	AF
+cc9a  d9            1585   1675 	EXX
+cc9b  cb 78         1586   1676 	BIT	7,B
+cc9d  d9            1587   1677 	EXX
+cc9e  c4 cb cc      1588   1678 	CALL	NZ,CCCB
+cca1  cd 23 cd      1589   1679 	CALL	CD23
+cca4  db 00         1590   1680 CCA4:	IN	A,(0)	;check cons. status
+cca6  e6 80         1591   1681 	AND	80H
+cca8  28 fa         1592   1682 	JR	Z,CCA4
+ccaa  f1            1593   1683 	POP	AF
+ccab  d3 01         1594   1684 	OUT	(1),A	;print to cons.
+ccad  fe 0d         1595   1685 	CP	0DH
+ccaf  c0            1596   1686 	RET	NZ
+ccb0  3e 0a         1597   1687 	LD	A,0AH
+ccb2  cd 99 cc      1598   1688 	CALL	CC99
+ccb5  cd 7b cc      1599   1689 	CALL	CC7B
+ccb8  fe 10         1600   1690 	CP	10H
+ccba  c0            1601   1691 	RET	NZ
+ccbb  f5            1602   1692 CCBB:	PUSH	AF
+ccbc  d9            1603   1693 	EXX
+ccbd  3e 80         1604   1694 	LD	A,80H
+ccbf  a8            1605   1695 	XOR	B
+ccc0  47            1606   1696 	LD	B,A
+ccc1  cb 78         1607   1697 	BIT	7,B
+ccc3  d9            1608   1698 	EXX
+ccc4  c4 c9 cc      1609   1699 	CALL	NZ,CCC9
+ccc7  f1            1610   1700 	POP	AF
+ccc8  c9            1611   1701 	RET
+                    1612   1702 ;
+ccc9  3e 11         1613   1703 CCC9:	LD	A,11H
+cccb  f5            1614   1704 CCCB:	PUSH	AF
+cccc  e5            1615   1705 	PUSH	HL
+cccd  21 08 00      1616   1706 	LD	HL,8
+ccd0  cd f1 cf      1617   1707 	CALL	dela1
+ccd3  e1            1618   1708 	POP	HL
+ccd4  f1            1619   1709 	POP	AF
+ccd5  f5            1620   1710 	PUSH	AF
+ccd6  fe 11         1621   1711 	CP	11H
+ccd8  28 13         1622   1712 	JR	Z,CCED
+ccda  cd 7b cc      1623   1713 CCDA:	CALL	CC7B
+ccdd  fe 10         1624   1714 	CP	10H
+ccdf  20 05         1625   1715 	JR	NZ,CCE6
+cce1  cd bb cc      1626   1716 	CALL	CCBB
+cce4  f1            1627   1717 	POP	AF
+cce5  c9            1628   1718 	RET
+                    1629   1719 ;
+cce6  db 54         1630   1720 CCE6:	IN	A,(54H)
+cce8  2f            1631   1721 	CPL
+cce9  e6 20         1632   1722 	AND	' '
+cceb  28 ed         1633   1723 	JR	Z,CCDA
+cced  f1            1634   1724 CCED:	POP	AF
+ccee  cb ff         1635   1725 	SET	7,A
+ccf0  d3 54         1636   1726 	OUT	(54H),A
+ccf2  cb bf         1637   1727 	RES	7,A
+ccf4  d3 54         1638   1728 	OUT	(54H),A
+ccf6  cb ff         1639   1729 	SET	7,A
+ccf8  d3 54         1640   1730 	OUT	(54H),A
+ccfa  cb bf         1641   1731 	RES	7,A
+ccfc  c9            1642   1732 	RET
+                    1643   1733 ;
+ccfd  cd 14 c8      1644   1734 CCFD:	CALL	loctok
+cd00  fe 4f         1645   1735 	CP	'O'
+cd02  c2 bd c1      1646   1736 	JP	NZ,inper
+cd05  13            1647   1737 	INC	DE
+cd06  1a            1648   1738 	LD	A,(DE)
+cd07  fe 4e         1649   1739 	CP	'N'
+cd09  28 0e         1650   1740 	JR	Z,CD19
+cd0b  fe 46         1651   1741 	CP	'F'
+cd0d  c2 bd c1      1652   1742 	JP	NZ,inper
+cd10  d9            1653   1743 	EXX
+cd11  cb a8         1654   1744 	RES	5,B
+cd13  d9            1655   1745 	EXX
+cd14  3e ff         1656   1746 	LD	A,0FFH
+cd16  d3 04         1657   1747 	OUT	(4),A
+cd18  c9            1658   1748 	RET
+                    1659   1749 ;
+cd19  d9            1660   1750 CD19:	EXX
+cd1a  cb e8         1661   1751 	SET	5,B
+cd1c  d9            1662   1752 	EXX
+cd1d  3e 01         1663   1753 	LD	A,1
+cd1f  32 72 00      1664   1754 	LD	(72H),A
+cd22  c9            1665   1755 	RET
+                    1666   1756 ;
+cd23  d9            1667   1757 CD23:	EXX
+cd24  cb 68         1668   1758 	BIT	5,B
+cd26  d9            1669   1759 	EXX
+cd27  c8            1670   1760 	RET	Z
+cd28  c5            1671   1761 	PUSH	BC
+cd29  cd a8 cf      1672   1762 	CALL	setsel
+cd2c  c1            1673   1763 	POP	BC
+cd2d  d3 34         1674   1764 	OUT	(34H),A
+cd2f  cd d6 cf      1675   1765 	CALL	CFD6
+cd32  ee a0         1676   1766 	XOR	0A0H
+cd34  d3 04         1677   1767 	OUT	(4),A
+cd36  c9            1678   1768 	RET
+                    1679   1769 ;
+cd37  16 02         1680   1770 CD37:	LD	D,2
+cd39  d5            1681   1771 CD39:	PUSH	DE
+cd3a  cd 70 cd      1682   1772 	CALL	CD70
+cd3d  d1            1683   1773 	POP	DE
+cd3e  d0            1684   1774 	RET	NC
+cd3f  d5            1685   1775 	PUSH	DE
+cd40  3e 0a         1686   1776 	LD	A,0AH
+cd42  32 75 00      1687   1777 	LD	(75H),A
+cd45  cd cb cd      1688   1778 	CALL	CDCB
+cd48  cd 70 cd      1689   1779 	CALL	CD70
+cd4b  d1            1690   1780 	POP	DE
+cd4c  d0            1691   1781 	RET	NC
+cd4d  15            1692   1782 	DEC	D
+cd4e  20 e9         1693   1783 	JR	NZ,CD39
+cd50  18 18         1694   1784 	JR	CD6A
+                    1695   1785 ;
+cd52  16 0a         1696   1786 CD52:	LD	D,0AH
+cd54  d5            1697   1787 CD54:	PUSH	DE
+cd55  cd 58 ce      1698   1788 	CALL	CE58
+cd58  d1            1699   1789 	POP	DE
+cd59  d0            1700   1790 	RET	NC
+cd5a  15            1701   1791 	DEC	D
+cd5b  20 f7         1702   1792 	JR	NZ,CD54
+cd5d  18 0b         1703   1793 	JR	CD6A
+                    1704   1794 ;
+cd5f  16 04         1705   1795 CD5F:	LD	D,4
+cd61  d5            1706   1796 CD61:	PUSH	DE
+cd62  cd 9f ce      1707   1797 	CALL	CE9F
+cd65  d1            1708   1798 	POP	DE
+cd66  d0            1709   1799 	RET	NC
+cd67  15            1710   1800 	DEC	D
+cd68  20 f7         1711   1801 	JR	NZ,CD61
+cd6a  3a 71 00      1712   1802 CD6A:	LD	A,(71H)
+cd6d  4f            1713   1803 	LD	C,A
+cd6e  37            1714   1804 	SCF
+cd6f  c9            1715   1805 	RET
+                    1716   1806 ;
+cd70  97            1717   1807 CD70:	SUB	A	; restore for
+cd71  32 75 00      1718   1808 	LD	(75H),A	; seek tests
+cd74  32 78 00      1719   1809 	LD	(78H),A
+cd77  cd 55 cf      1720   1810 	CALL	CF55
+cd7a  d3 34         1721   1811 	OUT	(34H),A
+cd7c  cd 25 ce      1722   1812 	CALL	CE25
+cd7f  38 0e         1723   1813 	JR	C,CD8F
+cd81  d3 30         1724   1814 	OUT	(30H),A
+cd83  db 34         1725   1815 CD83:	IN	A,(34H)
+cd85  cb 57         1726   1816 	BIT	2,A	; motor timeout
+cd87  20 3b         1727   1817 	JR	NZ,CDC4
+cd89  1f            1728   1818 	RRA		; EOJ?
+cd8a  30 f7         1729   1819 	JR	NC,CD83	; no
+cd8c  c3 3e ce      1730   1820 	JP	CE3E	; yes
+                    1731   1821 ;
+cd8f  3e c4         1732   1822 CD8F:	LD	A,0C4H	; read address
+cd91  d3 30         1733   1823 	OUT	(30H),A
+cd93  cd d6 cf      1734   1824 	CALL	CFD6	; side select
+cd96  e6 57         1735   1825 	AND	'W'
+cd98  d3 04         1736   1826 	OUT	(4),A
+cd9a  cd e4 cf      1737   1827 	CALL	dela	; delay??
+cd9d  db 04         1738   1828 CD9D:	IN	A,(4)
+cd9f  e6 40         1739   1829 	AND	'@'	; seek in progress?
+cda1  20 16         1740   1830 	JR	NZ,CDB9
+cda3  cd cf cf      1741   1831 	CALL	CFCF
+cda6  db 34         1742   1832 CDA6:	IN	A,(34H)
+cda8  cb 57         1743   1833 	BIT	2,A
+cdaa  20 18         1744   1834 	JR	NZ,CDC4
+cdac  1f            1745   1835 	RRA
+cdad  30 f7         1746   1836 	JR	NC,CDA6
+cdaf  3e d0         1747   1837 	LD	A,0D0H	; force interrupt
+cdb1  d3 30         1748   1838 	OUT	(30H),A
+cdb3  97            1749   1839 	SUB	A
+cdb4  d3 31         1750   1840 	OUT	(31H),A	; track reg.
+cdb6  c3 50 ce      1751   1841 	JP	CE50
+                    1752   1842 ;
+cdb9  db 34         1753   1843 CDB9:	IN	A,(34H)
+cdbb  cb 57         1754   1844 	BIT	2,A
+cdbd  20 05         1755   1845 	JR	NZ,CDC4
+cdbf  1f            1756   1846 	RRA
+cdc0  30 db         1757   1847 	JR	NC,CD9D
+cdc2  18 cb         1758   1848 	JR	CD8F
+                    1759   1849 ;
+cdc4  3e 80         1760   1850 CDC4:	LD	A,80H
+cdc6  32 71 00      1761   1851 	LD	(71H),A
+cdc9  37            1762   1852 	SCF
+cdca  c9            1763   1853 	RET
+                    1764   1854 ;
+cdcb  97            1765   1855 CDCB:	SUB	A	; seek?
+cdcc  cd 55 cf      1766   1856 	CALL	CF55
+cdcf  d3 34         1767   1857 	OUT	(34H),A
+cdd1  3a 75 00      1768   1858 	LD	A,(75H)
+cdd4  d3 33         1769   1859 	OUT	(33H),A
+cdd6  4f            1770   1860 	LD	C,A
+cdd7  3a 76 00      1771   1861 	LD	A,(76H)
+cdda  d3 32         1772   1862 	OUT	(32H),A
+cddc  3a 7d 00      1773   1863 	LD	A,(7DH)
+cddf  d3 31         1774   1864 	OUT	(31H),A
+cde1  91            1775   1865 	SUB	C
+cde2  ca cf cf      1776   1866 	JP	Z,CFCF
+cde5  cd 25 ce      1777   1867 	CALL	CE25
+cde8  38 0f         1778   1868 	JR	C,CDF9
+cdea  f6 10         1779   1869 	OR	10H
+cdec  d3 30         1780   1870 	OUT	(30H),A
+cdee  db 34         1781   1871 CDEE:	IN	A,(34H)
+cdf0  cb 57         1782   1872 	BIT	2,A
+cdf2  20 d0         1783   1873 	JR	NZ,CDC4
+cdf4  1f            1784   1874 	RRA
+cdf5  30 f7         1785   1875 	JR	NC,CDEE
+cdf7  18 45         1786   1876 	JR	CE3E
+                    1787   1877 ;
+cdf9  cd d6 cf      1788   1878 CDF9:	CALL	CFD6	;side???
+cdfc  e6 4f         1789   1879 	AND	'O'	;4fh?
+cdfe  d3 04         1790   1880 	OUT	(4),A
+ce00  3e 18         1791   1881 	LD	A,18H	;FDC seek command
+ce02  d3 30         1792   1882 	OUT	(30H),A
+ce04  db 34         1793   1883 CE04:	IN	A,(34H)
+ce06  cb 57         1794   1884 	BIT	2,A	;motor timeout?
+ce08  20 ba         1795   1885 	JR	NZ,CDC4
+ce0a  1f            1796   1886 	RRA
+ce0b  30 f7         1797   1887 	JR	NC,CE04
+ce0d  db 30         1798   1888 	IN	A,(30H)	;read disk status
+ce0f  2e 32         1799   1889 	LD	L,'2'
+ce11  db 04         1800   1890 CE11:	IN	A,(4)	;read aux disk status
+ce13  e6 40         1801   1891 	AND	40h	;seek in progress? PerSci only
+ce15  20 fa         1802   1892 	JR	NZ,CE11
+ce17  2d            1803   1893 	DEC	L
+ce18  20 f7         1804   1894 	JR	NZ,CE11
+ce1a  db 04         1805   1895 CE1A:	IN	A,(4)
+ce1c  e6 40         1806   1896 	AND	40h
+ce1e  20 fa         1807   1897 	JR	NZ,CE1A
+ce20  cd cf cf      1808   1898 	CALL	CFCF
+ce23  18 2b         1809   1899 	JR	CE50
+                    1810   1900 ;
+ce25  3a 7e 00      1811   1901 CE25:	LD	A,(7EH)
+ce28  cb 57         1812   1902 	BIT	2,A
+ce2a  20 0a         1813   1903 	JR	NZ,CE36
+ce2c  cb 5f         1814   1904 	BIT	3,A
+ce2e  3e 0e         1815   1905 	LD	A,0EH
+ce30  28 02         1816   1906 	JR	Z,CE34
+ce32  3e 0c         1817   1907 	LD	A,0CH
+ce34  a7            1818   1908 CE34:	AND	A
+ce35  c9            1819   1909 	RET
+                    1820   1910 ;
+ce36  cb 5f         1821   1911 CE36:	BIT	3,A
+ce38  3e 0f         1822   1912 	LD	A,0FH
+ce3a  28 f8         1823   1913 	JR	Z,CE34
+ce3c  37            1824   1914 	SCF
+ce3d  c9            1825   1915 	RET
+                    1826   1916 ;
+ce3e  cd cf cf      1827   1917 CE3E:	CALL	CFCF
+ce41  21 64 00      1828   1918 	LD	HL,64H
+ce44  cd f1 cf      1829   1919 	CALL	dela1
+ce47  db 30         1830   1920 	IN	A,(30H)
+ce49  32 71 00      1831   1921 	LD	(71H),A
+ce4c  e6 98         1832   1922 	AND	98H
+ce4e  37            1833   1923 	SCF
+ce4f  c0            1834   1924 	RET	NZ
+ce50  3a 75 00      1835   1925 CE50:	LD	A,(75H)
+ce53  32 7d 00      1836   1926 	LD	(7DH),A
+ce56  a7            1837   1927 	AND	A
+ce57  c9            1838   1928 	RET
+                    1839   1929 ;
+ce58  cd 8f ce      1840   1930 CE58:	CALL	CE8F	; READ
+ce5b  d3 30         1841   1931 	OUT	(30H),A
+ce5d  db 34         1842   1932 CE5D:	IN	A,(34H)	; disk flags
+ce5f  1f            1843   1933 	RRA
+ce60  38 16         1844   1934 	JR	C,CE78	; finished
+ce62  ed a2         1845   1935 	INI
+ce64  04            1846   1936 	INC	B
+ce65  db 34         1847   1937 	IN	A,(34H)	; disk flags
+ce67  1f            1848   1938 	RRA
+ce68  38 0e         1849   1939 	JR	C,CE78	; finished
+ce6a  ed a2         1850   1940 	INI
+ce6c  c2 5d ce      1851   1941 	JP	NZ,CE5D
+ce6f  db 34         1852   1942 CE6F:	IN	A,(34H)	; disk flags
+ce71  cb 4f         1853   1943 	BIT	1,A
+ce73  20 10         1854   1944 	JR	NZ,CE85	; autowait timed out
+ce75  1f            1855   1945 	RRA
+ce76  30 f7         1856   1946 	JR	NC,CE6F
+ce78  cd cf cf      1857   1947 CE78:	CALL	CFCF
+ce7b  db 30         1858   1948 	IN	A,(30H)	; disk status
+ce7d  32 71 00      1859   1949 	LD	(71H),A
+ce80  e6 9c         1860   1950 	AND	9CH	; errors
+ce82  c8            1861   1951 	RET	Z
+ce83  18 08         1862   1952 	JR	CE8D
+                    1863   1953 ;
+ce85  cd cf cf      1864   1954 CE85:	CALL	CFCF	; chg. side if (78)#0
+ce88  3e 80         1865   1955 	LD	A,80H
+ce8a  32 71 00      1866   1956 	LD	(71H),A
+ce8d  37            1867   1957 CE8D:	SCF
+ce8e  c9            1868   1958 	RET
+                    1869   1959 ;
+ce8f  cd 40 cf      1870   1960 CE8F:	CALL	CF40
+ce92  57            1871   1961 	LD	D,A
+ce93  f3            1872   1962 	DI
+ce94  cd c6 cf      1873   1963 	CALL	CFC6
+ce97  c6 88         1874   1964 	ADD	A,88H
+ce99  5f            1875   1965 	LD	E,A
+ce9a  7a            1876   1966 	LD	A,D
+ce9b  d3 34         1877   1967 	OUT	(34H),A	; disk control
+ce9d  7b            1878   1968 	LD	A,E
+ce9e  c9            1879   1969 	RET
+                    1880   1970 ;
+ce9f  cd e4 cf      1881   1971 CE9F:	CALL	dela	; WRITE
+cea2  cd 40 cf      1882   1972 	CALL	CF40
+cea5  57            1883   1973 	LD	D,A
+cea6  f3            1884   1974 	DI
+cea7  cd c6 cf      1885   1975 	CALL	CFC6
+ceaa  c6 a8         1886   1976 	ADD	A,0A8H
+ceac  5f            1887   1977 	LD	E,A
+cead  7a            1888   1978 	LD	A,D
+ceae  d3 34         1889   1979 	OUT	(34H),A
+ceb0  7b            1890   1980 	LD	A,E
+ceb1  d3 30         1891   1981 	OUT	(30H),A
+ceb3  db 34         1892   1982 CEB3:	IN	A,(34H)
+ceb5  1f            1893   1983 	RRA
+ceb6  38 12         1894   1984 	JR	C,CECA
+ceb8  ed a3         1895   1985 	OUTI
+ceba  04            1896   1986 	INC	B
+cebb  db 34         1897   1987 	IN	A,(34H)
+cebd  1f            1898   1988 	RRA
+cebe  38 0a         1899   1989 	JR	C,CECA
+cec0  ed a3         1900   1990 	OUTI
+cec2  c2 b3 ce      1901   1991 	JP	NZ,CEB3
+cec5  db 34         1902   1992 CEC5:	IN	A,(34H)
+cec7  1f            1903   1993 	RRA
+cec8  30 fb         1904   1994 	JR	NC,CEC5
+ceca  cd cf cf      1905   1995 CECA:	CALL	CFCF
+cecd  cd e4 cf      1906   1996 	CALL	dela
+ced0  db 30         1907   1997 	IN	A,(30H)
+ced2  32 71 00      1908   1998 	LD	(71H),A
+ced5  e6 fc         1909   1999 	AND	0FCH
+ced7  37            1910   2000 	SCF
+ced8  c0            1911   2001 	RET	NZ
+ced9  a7            1912   2002 	AND	A
+ceda  3a 7e 00      1913   2003 	LD	A,(7EH)
+cedd  cb 4f         1914   2004 	BIT	1,A
+cedf  c8            1915   2005 	RET	Z
+cee0  cd 00 cf      1916   2006 	CALL	CF00
+cee3  38 0a         1917   2007 	JR	C,CEEF
+cee5  db 34         1918   2008 CEE5:	IN	A,(34H)
+cee7  1f            1919   2009 	RRA
+cee8  38 04         1920   2010 	JR	C,CEEE
+ceea  db 33         1921   2011 	IN	A,(33H)
+ceec  18 f7         1922   2012 	JR	CEE5
+ceee  1c            1923   2013 CEEE:	INC	E
+ceef  cd cf cf      1924   2014 CEEF:	CALL	CFCF
+cef2  db 30         1925   2015 	IN	A,(30H)
+cef4  32 71 00      1926   2016 	LD	(71H),A
+cef7  e6 9c         1927   2017 	AND	9CH
+cef9  37            1928   2018 	SCF
+cefa  c0            1929   2019 	RET	NZ
+cefb  7b            1930   2020 	LD	A,E
+cefc  a7            1931   2021 	AND	A
+cefd  c8            1932   2022 	RET	Z
+cefe  37            1933   2023 	SCF
+ceff  c9            1934   2024 	RET
+                    1935   2025 ;
+cf00  cd 8f ce      1936   2026 CF00:	CALL	CE8F
+cf03  ed 4b 79 00   1937   2027 	LD	BC,(79H)
+cf07  cb 38         1938   2028 	SRL	B
+cf09  cb 19         1939   2029 	RR	C
+cf0b  cb 38         1940   2030 	SRL	B
+cf0d  cb 19         1941   2031 	RR	C
+cf0f  41            1942   2032 	LD	B,C
+cf10  1e 00         1943   2033 	LD	E,0
+cf12  d3 30         1944   2034 	OUT	(30H),A
+cf14  db 34         1945   2035 CF14:	IN	A,(34H)
+cf16  1f            1946   2036 	RRA
+cf17  d8            1947   2037 	RET	C
+cf18  db 33         1948   2038 	IN	A,(33H)
+cf1a  ae            1949   2039 	XOR	(HL)
+cf1b  c0            1950   2040 	RET	NZ
+cf1c  23            1951   2041 	INC	HL
+cf1d  db 34         1952   2042 	IN	A,(34H)
+cf1f  1f            1953   2043 	RRA
+cf20  d8            1954   2044 	RET	C
+cf21  db 33         1955   2045 	IN	A,(33H)
+cf23  ae            1956   2046 	XOR	(HL)
+cf24  c0            1957   2047 	RET	NZ
+cf25  23            1958   2048 	INC	HL
+cf26  db 34         1959   2049 	IN	A,(34H)
+cf28  1f            1960   2050 	RRA
+cf29  d8            1961   2051 	RET	C
+cf2a  db 33         1962   2052 	IN	A,(33H)
+cf2c  ae            1963   2053 	XOR	(HL)
+cf2d  c0            1964   2054 	RET	NZ
+cf2e  23            1965   2055 	INC	HL
+cf2f  db 34         1966   2056 	IN	A,(34H)
+cf31  1f            1967   2057 	RRA
+cf32  d8            1968   2058 	RET	C
+cf33  db 33         1969   2059 	IN	A,(33H)
+cf35  ae            1970   2060 	XOR	(HL)
+cf36  c0            1971   2061 	RET	NZ
+cf37  23            1972   2062 	INC	HL
+cf38  10 da         1973   2063 	DJNZ	CF14
+cf3a  db 34         1974   2064 CF3A:	IN	A,(34H)
+cf3c  1f            1975   2065 	RRA
+cf3d  30 fb         1976   2066 	JR	NC,CF3A
+cf3f  c9            1977   2067 	RET
+                    1978   2068 ;
+cf40  db 33         1979   2069 CF40:	IN	A,(33H)
+cf42  3e 80         1980   2070 	LD	A,80H
+cf44  cd 55 cf      1981   2071 	CALL	CF55
+cf47  2a 79 00      1982   2072 	LD	HL,(79H)
+cf4a  cb 1c         1983   2073 	RR	H
+cf4c  cb 1d         1984   2074 	RR	L
+cf4e  45            1985   2075 	LD	B,L
+cf4f  0e 33         1986   2076 	LD	C,'3'
+cf51  2a 7b 00      1987   2077 	LD	HL,(7BH)
+cf54  c9            1988   2078 	RET
+                    1989   2079 ;
+cf55  4f            1990   2080 CF55:	LD	C,A
+cf56  db 34         1991   2081 	IN	A,(34H)
+cf58  e6 04         1992   2082 	AND	4	; motor timeout
+cf5a  28 04         1993   2083 	JR	Z,CF60	; motor on
+cf5c  97            1994   2084 	SUB	A	; motor off
+cf5d  32 72 00      1995   2085 	LD	(72H),A
+cf60  cd a8 cf      1996   2086 CF60:	CALL	setsel
+cf63  d3 34         1997   2087 	OUT	(34H),A
+cf65  f5            1998   2088 	PUSH	AF
+cf66  e5            1999   2089 	PUSH	HL
+cf67  cd d6 cf      2000   2090 	CALL	CFD6
+cf6a  e6 5f         2001   2091 	AND	5FH
+cf6c  d3 04         2002   2092 	OUT	(4),A
+cf6e  3a 72 00      2003   2093 	LD	A,(72H)
+cf71  a7            2004   2094 	AND	A
+cf72  28 21         2005   2095 	JR	Z,CF95
+cf74  21 90 01      2006   2096 	LD	HL,190H
+cf77  3a 73 00      2007   2097 	LD	A,(73H)
+cf7a  b8            2008   2098 	CP	B
+cf7b  20 1b         2009   2099 	JR	NZ,CF98
+cf7d  3a 74 00      2010   2100 	LD	A,(74H)
+cf80  67            2011   2101 	LD	H,A
+cf81  3a 78 00      2012   2102 	LD	A,(78H)
+cf84  32 74 00      2013   2103 	LD	(74H),A
+cf87  bc            2014   2104 	CP	H
+cf88  20 06         2015   2105 	JR	NZ,CF90
+cf8a  db 34         2016   2106 	IN	A,(34H)
+cf8c  e6 20         2017   2107 	AND	' '
+cf8e  20 0b         2018   2108 	JR	NZ,CF9B
+cf90  cd e4 cf      2019   2109 CF90:	CALL	dela
+cf93  18 06         2020   2110 	JR	CF9B
+                    2021   2111 ;
+cf95  21 20 4e      2022   2112 CF95:	LD	HL,4E20H
+cf98  cd f1 cf      2023   2113 CF98:	CALL	dela1
+cf9b  e1            2024   2114 CF9B:	POP	HL
+cf9c  78            2025   2115 	LD	A,B
+cf9d  32 73 00      2026   2116 	LD	(73H),A
+cfa0  3e 01         2027   2117 	LD	A,1
+cfa2  32 72 00      2028   2118 	LD	(72H),A
+cfa5  f1            2029   2119 	POP	AF
+cfa6  b1            2030   2120 	OR	C
+cfa7  c9            2031   2121 	RET
+                    2032   2122 ;
+cfa8  3a 77 00      2033   2123 setsel:	LD	A,(77H)
+cfab  47            2034   2124 	LD	B,A
+cfac  04            2035   2125 	INC	B
+cfad  97            2036   2126 	SUB	A
+cfae  37            2037   2127 	SCF
+cfaf  17            2038   2128 rotlp:	RLA
+cfb0  10 fd         2039   2129 	DJNZ	rotlp
+cfb2  47            2040   2130 	LD	B,A
+cfb3  3a 7e 00      2041   2131 	LD	A,(7EH)
+cfb6  cb 57         2042   2132 	BIT	2,A
+cfb8  28 02         2043   2133 	JR	Z,notmx
+cfba  cb e0         2044   2134 	SET	4,B	;set 'maxi'
+cfbc  cb 47         2045   2135 notmx:	BIT	0,A
+cfbe  28 02         2046   2136 	JR	Z,notdd
+cfc0  cb f0         2047   2137 	SET	6,B	;set 'double density'
+cfc2  78            2048   2138 notdd:	LD	A,B
+cfc3  f6 20         2049   2139 	OR	20H	;set 'motor on'
+cfc5  c9            2050   2140 	RET
+                    2051   2141 ;
+cfc6  db 34         2052   2142 CFC6:	IN	A,(34H)
+cfc8  2f            2053   2143 	CPL
+cfc9  e6 20         2054   2144 	AND	' '
+cfcb  c8            2055   2145 	RET	Z
+cfcc  3e 04         2056   2146 	LD	A,4
+cfce  c9            2057   2147 	RET
+                    2058   2148 ;
+cfcf  cd d6 cf      2059   2149 CFCF:	CALL	CFD6
+cfd2  d3 04         2060   2150 	OUT	(4),A	; aux. disk cmd.
+cfd4  af            2061   2151 	XOR	A
+cfd5  c9            2062   2152 	RET
+                    2063   2153 ;
+cfd6  c5            2064   2154 CFD6:	PUSH	BC
+cfd7  06 7f         2065   2155 	LD	B,7FH	; no action
+cfd9  3a 78 00      2066   2156 	LD	A,(78H)
+cfdc  a7            2067   2157 	AND	A
+cfdd  28 02         2068   2158 	JR	Z,CFE1
+cfdf  06 7d         2069   2159 	LD	B,7DH	; opposite side
+cfe1  78            2070   2160 CFE1:	LD	A,B
+cfe2  c1            2071   2161 	POP	BC
+cfe3  c9            2072   2162 	RET
+                    2073   2163 ;
+cfe4  21 08 00      2074   2164 dela:	LD	HL,8
+cfe7  3a 7e 00      2075   2165 	LD	A,(7EH)
+cfea  cb 57         2076   2166 	BIT	2,A
+cfec  20 03         2077   2167 	JR	NZ,dela1
+cfee  21 0c 00      2078   2168 	LD	HL,0CH
+cff1  c5            2079   2169 dela1:	PUSH	BC
+cff2  2b            2080   2170 dela2:	DEC	HL
+cff3  06 1c         2081   2171 	LD	B,1CH
+cff5  10 fe         2082   2172 dela3:	DJNZ	dela3
+cff7  00            2083   2173 	NOP
+cff8  00            2084   2174 	NOP
+cff9  7d            2085   2175 	LD	A,L
+cffa  b4            2086   2176 	OR	H
+cffb  20 f5         2087   2177 	JR	NZ,dela2
+cffd  c1            2088   2178 	POP	BC
+cffe  c9            2089   2179 	RET
+                    2090   2180 ;
+cfff  ff            2091   2181 	DEFB	0FFH
+d000                2092   2182 	END
+
+Symbol table
+
+BOOT   c06c    BS     0008    C003   c003*   C030   c030    C037   c037 
+C03B   c03b    C0C8   c0c8    C0E8   c0e8    C0F3   c0f3    C0FA   c0fa 
+C115   c115    C131   c131    C151   c151    C186   c186    C1B9   c1b9 
+C1C4   c1c4    C1C7   c1c7    C1C8   c1c8    C1E2   c1e2    C1F7   c1f7 
+C202   c202    C20F   c20f    C213   c213    C22C   c22c    C234   c234 
+C23B   c23b    C245   c245    C251   c251    C261   c261    C264   c264 
+C26D   c26d    C281   c281    C298   c298    C29C   c29c    C2A6   c2a6 
+C2AC   c2ac    C2AE   c2ae    C2B9   c2b9*   C2C1   c2c1    C2ED   c2ed 
+C2FB   c2fb    C320   c320    C345   c345    C359   c359    C363   c363 
+C37A   c37a    C384   c384    C387   c387    C39B   c39b    C3A1   c3a1 
+C3AE   c3ae    C3B5   c3b5    C3B7   c3b7    C3D4   c3d4    C3DE   c3de 
+C3EA   c3ea    C3EE   c3ee    C3F6   c3f6    C40A   c40a    C40D   c40d 
+C413   c413    C42A   c42a    C439   c439    C446   c446    C463   c463 
+C495   c495    C498   c498    C49E   c49e    C4A1   c4a1    C4B1   c4b1 
+C4D4   c4d4    C4DA   c4da    C4E1   c4e1    C4ED   c4ed    C4F8   c4f8 
+C504   c504    C508   c508    C516   c516    C51A   c51a    C51C   c51c 
+C52E   c52e    C54F   c54f    C57E   c57e    C5AB   c5ab    C5BB   c5bb 
+C5C8   c5c8    C5DE   c5de    C5F2   c5f2    C5F8   c5f8    C604   c604 
+C611   c611    C61E   c61e    C62A   c62a    C636   c636    C645   c645 
+C652   c652    C655   c655    C672   c672    C67A   c67a    C689   c689 
+C6A3   c6a3    C6AF   c6af    C6B6   c6b6    C6BD   c6bd    C6C2   c6c2 
+C6D2   c6d2    C6D8   c6d8    C6E0   c6e0    C6F1   c6f1    C6F7   c6f7 
+C719   c719    C726   c726    C72B   c72b    C733   c733    C73C   c73c 
+C74C   c74c    C75B   c75b    C760   c760    C76A   c76a    C77D   c77d 
+C788   c788    C792   c792    C79C   c79c    C7A0   c7a0    C7A3   c7a3 
+C7B3   c7b3    C7C4   c7c4    C7CD   c7cd    C82F   c82f    C84E   c84e 
+C853   c853    C85B   c85b    C862   c862    C865   c865    C868   c868 
+C869   c869    C879   c879    C87A   c87a    C885   c885    C887   c887 
+C890   c890    C8A4   c8a4    C8A6   c8a6    C8AD   c8ad    C8B0   c8b0 
+C8B5   c8b5    C8C5   c8c5    C8CA   c8ca    C8CD   c8cd    C8DB   c8db 
+C8E0   c8e0    C8F1   c8f1    C8F4   c8f4    C8F7   c8f7    C90A   c90a 
+C910   c910    C91B   c91b    C929   c929*   C941   c941    C94A   c94a 
+C95F   c95f    C96E   c96e    C975   c975    C97C   c97c    C98A   c98a 
+C996   c996    C99B   c99b    C99C   c99c    C9A4   c9a4    CA35   ca35 
+CA3F   ca3f    CA4C   ca4c    CA51   ca51    CABB   cabb    CAC7   cac7 
+CB35   cb35    CB5D   cb5d    CB6A   cb6a    CB6B   cb6b    CB94   cb94 
+CB9E   cb9e    CBB0   cbb0    CBC1   cbc1    CBD1   cbd1    CBDA   cbda 
+CBEA   cbea    CBEC   cbec    CBF2   cbf2    CC09   cc09    CC1A   cc1a 
+CC2D   cc2d    CC3C   cc3c    CC45   cc45    CC4B   cc4b    CC52   cc52 
+CC64   cc64    CC7B   cc7b    CC8E   cc8e    CC99   cc99    CCA4   cca4 
+CCBB   ccbb    CCC9   ccc9    CCCB   cccb    CCDA   ccda    CCE6   cce6 
+CCED   cced    CCFD   ccfd    CD19   cd19    CD23   cd23    CD37   cd37 
+CD39   cd39    CD52   cd52    CD54   cd54    CD5F   cd5f    CD61   cd61 
+CD6A   cd6a    CD70   cd70    CD83   cd83    CD8F   cd8f    CD9D   cd9d 
+CDA6   cda6    CDB9   cdb9    CDC4   cdc4    CDCB   cdcb    CDEE   cdee 
+CDF9   cdf9    CE04   ce04    CE11   ce11    CE1A   ce1a    CE25   ce25 
+CE34   ce34    CE36   ce36    CE3E   ce3e    CE50   ce50    CE58   ce58 
+CE5D   ce5d    CE6F   ce6f    CE78   ce78    CE85   ce85    CE8D   ce8d 
+CE8F   ce8f    CE9F   ce9f    CEB3   ceb3    CEC5   cec5    CECA   ceca 
+CEE5   cee5    CEEE   ceee    CEEF   ceef    CF00   cf00    CF14   cf14 
+CF3A   cf3a    CF40   cf40    CF55   cf55    CF60   cf60    CF90   cf90 
+CF95   cf95    CF98   cf98    CF9B   cf9b    CFC6   cfc6    CFCF   cfcf 
+CFD6   cfd6    CFE1   cfe1    CKCRY  cb7a    CKESC  c128    CKINST cc76 
+CLDST  c03f    CLP1   c04f    CLP2   c052    CR     000d    CRLF   cc97 
+DELA   cfe4    DELA1  cff1    DELA2  cff2    DELA3  cff5    ENDPTS c812 
+ESC    001b    ESCLP  c09a    FNDEOL c827    GETSW  c067    GOMON  c139 
+HXPA   c7e7    HXPHL  c7e2    INCHR  cc6c    INLP   c155    INPER  c1bd 
+LC2UC  c7d2    LOCTOK c814    MSBON  0080    NG     cb82    NOTDD  cfc2 
+NOTMX  cfbc    PSPA   c7db    PT7BA  c7fe    PTCHL  c807    PTCHR  c7f0 
+PTFOL  c806    PTNUM  c7f8    PTSPC  c7fc    RMCOM  c81b    ROTLP  cfaf 
+SEKLP  c9fb    SEKTAB ca20    SETPAT cba2    SETSEL cfa8    SETURT c24b 
+SPACE  0020    SQUOTE 0027    START  c000    TABLE  c18b    

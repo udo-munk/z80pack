@@ -1,0 +1,2022 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;	<< ZAPPLE 2-K MONITOR SYSTEM >>
+                       2      2 ;		by
+                       3      3 ;
+                       4      4 ;	TECHNICAL DESIGN LABS, INC.
+                       5      5 ;	RESEARCH PARK
+                       6      6 ;	PRINCETON, NEW JERSEY  08540
+                       7      7 ;
+                       8      8 ;	COPYRIGHT JULY 1976 BY TDL INC.
+                       9      9 ;
+                      10     10 ;	ASSEMBLED BY ROGER AMIDON
+                      11     11 ;
+                      12     12 ; SEPTEMBER 2017 BY UDO MUNK:
+                      13     13 ;	MODIFIED TO ZILOG/MOSTEK SYNTAX TO ASSEMBLE WITH Z80ASM
+                      14     14 ;	FIXED TYPOS AND BUGS
+                      15     15 ;	CHANGED TYPEWRITER I/O TO MITS 2SIO CHANNEL A
+                      16     16 ;	CHANGED CASSETTE I/O TO MITS ACR SIO
+                      17     17 ;
+                      18     18 ; USE Z80ASM VERSION 1.8, WON'T ASSEMBLE CORRECT WITH VERSIONS BEFORE!
+                      19     19 ;
+                      20     20 ;
+f000  =               21     21 BASE	EQU	0F000H
+f800  =               22     22 USER	EQU	BASE+800H
+                      23     23 ;
+                      24     24 	TITLE	<Zapple Monitor, Version 1.11, Dec. 18, 1976>
+                      25     25 ;
+0038  =               26     26 RST7	EQU	38H	     ;RST 7 (LOCATION FOR TRAP)
+                      27     27 ;IOBYT	EQU	2	     ;R/W PORT FOR TEMP. STORAGE
+efff  =               28     28 IOBYT	EQU	0EFFFH	     ;MEMORY LOCATION FOR TEMP. STORAGE
+                      29     29 ;SENSE	EQU	3	     ;PORT FOR INITIAL I/O CONFIGURATION (IN)
+00ff  =               30     30 SWITCH	EQU	0FFH	     ;FRONT PANEL SENSE SWITCHES
+                      31     31 ;RCP	EQU	SENSE	     ;READER CONTROL PORT (OUT)
+0000  =               32     32 NN	EQU	0	     ;"I" REGISTER INITIAL VALUE
+                      33     33 ;
+                      34     34 ;	EXTERNAL EQUATES
+                      35     35 ;
+                      36     36 ;	NAME	ZAPPLE
+                      37     37 ;	EXT	COLOC
+                      38     38 ;	EXT	LNLOC
+                      39     39 ;	EXT	LULOC
+                      40     40 ;	EXT	PTPL
+                      41     41 ;	EXT	PULOC
+                      42     42 ;	EXT	CSLOC
+                      43     43 ;	EXT	CILOC
+                      44     44 ;	EXT	RPTPL
+                      45     45 ;	EXT	RULOC
+                      46     46 ;
+                      47     47 ;
+                      48     48 ;	<I/O DEVICES>
+                      49     49 ;
+                      50     50 ;-TELEPRINTER
+                      51     51 ;
+0011  =               52     52 TTI	EQU	11H	     ;DATA IN PORT
+0011  =               53     53 TTO	EQU	11H	     ;DATA OUT PORT
+0010  =               54     54 TTS	EQU	10H	     ;STATUS PORT (IN)
+0012  =               55     55 TTS2	EQU	12H	     ;STATUS PORT MITS 2SIO B
+0001  =               56     56 TTYDA	EQU	01H	     ;DATA AVAILABLE MASK BIT
+0002  =               57     57 TTYBE	EQU	02H	     ;XMTR BUFFER EMPTY MASK
+                      58     58 ;
+                      59     59 ;-C.R.T. SYSTEM
+                      60     60 ;
+0051  =               61     61 CRTI	EQU	51H	     ;DATA PORT (IN)
+0050  =               62     62 CRTS	EQU	50H	     ;STATUS PORT (IN)
+0051  =               63     63 CRTO	EQU	51H	     ;DATA PORT (OUT)
+0040  =               64     64 CRTDA	EQU	40H	     ;DATA AVAILABLE MASK
+0080  =               65     65 CRTBE	EQU	80H	     ;XMTR BUFFER EMPTY MASK
+                      66     66 ;
+                      67     67 ;-CASSETTE SYSTEM
+                      68     68 ;
+0007  =               69     69 RCSD	EQU	07H	     ;DATA IN PORT
+0006  =               70     70 RCSS	EQU	06H	     ;STATUS PORT (IN)
+0001  =               71     71 RCSDA	EQU	01H	     ;DATA AVAILABLE MASK
+0007  =               72     72 PCASO	EQU	07H	     ;DATA PORT (OUT)
+0006  =               73     73 PCASS	EQU	06H	     ;CONTROL PORT (OUT)
+0080  =               74     74 PCSBE	EQU	80H	     ;XMTR BUFFER EMPTY MASK
+                      75     75 ;
+                      76     76 ;	<CONSTANTS>
+                      77     77 ;
+0000  =               78     78 FALSE	EQU	0	     ;ISN'T SO
+ffff  =               79     79 TRUE	EQU	~FALSE       ;IT IS SO
+000d  =               80     80 CR	EQU	0DH	     ;ASCII CARRIAGE RETURN
+000a  =               81     81 LF	EQU	0AH	     ;ASCII LINE FEED
+0007  =               82     82 BELL	EQU	7	     ;DING
+00ff  =               83     83 RUB	EQU	0FFH	     ;RUB OUT
+0000  =               84     84 FIL	EQU	00	     ;FILL CHARACTER AFTER CRLF
+0007  =               85     85 MAX	EQU	7	     ;NUMBER OF QUES IN EOF
+                      86     86 ;
+                      87     87 ;	<I/O CONFIGURATION MASKS>
+                      88     88 ;
+00fc  =               89     89 CMSK	EQU	11111100B    ;CONSOLE DEVICE
+00f3  =               90     90 RMSK	EQU	11110011B    ;STORAGE DEVICE (IN)
+00cf  =               91     91 PMSK	EQU	11001111B    ;STORAGE DEVICE (OUT)
+003f  =               92     92 LMSK	EQU	00111111B    ;LIST DEVICE
+                      93     93 ;
+                      94     94 ;
+                      95     95 ;-CONSOLE CONFIGURATION
+0000  =               96     96 CTTY	EQU	0	     ;TELEPRINTER
+0001  =               97     97 CCRT	EQU	1	     ;C.R.T.
+0002  =               98     98 BATCH	EQU	2	     ;READER FOR INPUT, LIST FOR OUTPUT
+0003  =               99     99 CUSE	EQU	3	     ;USER DEFINED
+                     100    100 ;
+                     101    101 ;-STORAGE INPUT CONFIGURATION
+0000  =              102    102 RTTY	EQU	0	     ;TELEPRINTER READER
+0004  =              103    103 RPTR	EQU	4	     ;HIGH-SPEED RDR (EXTERNAL ROUTINE)
+0008  =              104    104 RCAS	EQU	8	     ;CASSETTE
+000c  =              105    105 RUSER	EQU	0CH	     ;USER DEFINED
+                     106    106 ;
+                     107    107 ;-STORAGE OUTPUT CONFIGURATION
+0000  =              108    108 PTTY	EQU	0	     ;TELEPRINTER PUNCH
+0010  =              109    109 PPTP	EQU	10H	     ;HIGH-SPEED PUNCH (EXTERNAL ROUTINE)
+0020  =              110    110 PCAS	EQU	20H	     ;CASSETTE
+0030  =              111    111 PUSER	EQU	30H	     ;USER DEFINED
+                     112    112 ;
+                     113    113 ;-LIST DEVICE CONFIGURATION
+0000  =              114    114 LTTY	EQU	0	     ;TELEPRINTER PRINTER
+0040  =              115    115 LCRT	EQU	40H	     ;C.R.T. SCREEN
+0080  =              116    116 LINE	EQU	80H	     ;LINE PRINTER (EXTERNAL ROUTINE)
+00c0  =              117    117 LUSER	EQU	0C0H	     ;USER DEFINED
+                     118    118 ;
+                     119    119 ;
+                     120    120 ;	VECTOR FOR USER DEFINED ROUTINES
+                     121    121 ;
+f800  =              122    122 CILOC	EQU	USER	     ;CONSOLE INPUT
+f803  =              123    123 COLOC	EQU	CILOC+3	     ;CONSOLE OUTPUT
+f806  =              124    124 RPTPL	EQU	COLOC+3	     ;HIGH-SPEED READER
+f809  =              125    125 RULOC	EQU	RPTPL+3	     ;USER DEFINED STORAGE (INPUT)
+f80c  =              126    126 PTPL	EQU	RULOC+3	     ;HIGH-SPEED PUNCH
+f80f  =              127    127 PULOC	EQU	PTPL+3	     ;USER DEFINED STORAGE (OUTPUT)
+f812  =              128    128 LNLOC	EQU	PULOC+3	     ;LINE PRINTER
+f815  =              129    129 LULOC	EQU	LNLOC+3	     ;USER DEFINED PRINTER
+f818  =              130    130 CSLOC	EQU	LULOC+3	     ;CONSOLE INPUT STATUS ROUTINE
+f81b  =              131    131 J	EQU	CSLOC+3
+                     132    132 ;
+                     133    133 ;	PROGRAM CODE BEGINS HERE
+                     134    134 ;
+                     135    135 ;
+                     136    136 	ORG	BASE
+f000  c3 31 f0       137    137 	JP	BEGIN	     ;GO AROUND VECTORS
+                     138    138 ;
+                     139    139 ;	<VECTOR FOR CALLING PROGRAMS>
+                     140    140 ;
+                     141    141 ; THESE VECTORS MAY BE USED BY USER WRITTEN
+                     142    142 ; PROGRAMS TO SIMPLIFY THE HANDLING OF I/O
+                     143    143 ; FROM SYSTEM TO SYSTEM.  WHATEVER THE CURRENT
+                     144    144 ; ASSIGNED DEVICE, THESE VECTORS WILL PERFORM
+                     145    145 ; THE REQUIRED I/O OPERATION, AND RETURN TO
+                     146    146 ; THE CALLING PROGRAM.  (RET)
+                     147    147 ;
+                     148    148 ; THE REGISTER CONVENTION USED FOLLOWS-
+                     149    149 ;
+                     150    150 ; ANY INPUT OR OUTPUT DEVICE
+                     151    151 ;	CHARACTER TO BE OUTPUT IN 'C' REGISTER.
+                     152    152 ;	CHARACTER WILL BE IN 'A' REGISTER UPON
+                     153    153 ;	RETURNING FROM AN INPUT OR OUTPUT.
+                     154    154 ; 'CSTS'-
+                     155    155 ;	RETURNS TRUE (0FFH IN 'A' REG.) IF THERE IS
+                     156    156 ;	SOMETHING WAITING, AND ZERO (00) IF NOT.
+                     157    157 ; 'IOCHK'-
+                     158    158 ;	RETURNS WITH THE CURRENT I/O CONFIGURATION
+                     159    159 ;	BYTE IN 'A' REGISTER.
+                     160    160 ; 'IOSET'-
+                     161    161 ;	ALLOWS A PROGRAM TO DYNAMICALLY ALTER THE
+                     162    162 ;	CURRENT I/O CONFIGURATION, AND REQUIRES
+                     163    163 ;	THE NEW BYTE IN 'C' REGISTER.
+                     164    164 ; 'MEMCK'-
+                     165    165 ;	RETURNS WITH THE HIGHEST ALLOWED USER
+                     166    166 ;	MEMORY LOCATION. 'B'=HIGH BYTE, 'A'=LOW.
+                     167    167 ; 'TRAP'-
+                     168    168 ;	THIS IS THE 'BREAKPOINT' ENTRY POINT,
+                     169    169 ;	BUT MAY BE 'CALLED'. IT WILL SAVE
+                     170    170 ;	THE MACHINE STATE. RETURN CAN BE MADE WITH
+                     171    171 ;	A SIMPLE 'G[CR]' ON THE CONSOLE.
+                     172    172 ;
+f003  c3 18 f6       173    173 	JP	CI	     ;CONSOLE INPUT
+f006  c3 38 f6       174    174 	JP	RI	     ;READER INPUT
+f009  c3 7d f4       175    175 	JP	CO	     ;CONSOLE OUTPUT
+f00c  c3 b9 f4       176    176 	JP	PUO	     ;PUNCH OUTPUT
+f00f  c3 9f f4       177    177 	JP	LO	     ;LIST OUTPUT
+f012  c3 11 f5       178    178 	JP	CSTS	     ;CONSOLE STATUS
+f015  c3 10 f1       179    179 	JP	IOCHK	     ;I/O CHECK
+f018  c3 0b f1       180    180 	JP	IOSET	     ;I/O SET
+f01b  c3 a4 f5       181    181 	JP	MEMCK	     ;MEMORY LIMIT CHECK
+f01e  c3 bd f6       182    182 TRAP:	JP	RESTART	     ;BREAKPOINT
+                     183    183 ;
+                     184    184 ;	ANNOUNCEMENT OF MONITOR NAME & VERSION
+f021  0d 0a 00 00    185    185 MSG:	DEFB	CR,LF,FIL,FIL,FIL
+f025  00             185    186
+f026  5a 61 70 70    186    187 	DEFB	'Zapple V'
+f02a  6c 65 20 56    186    188
+f02e  31 2e 31       187    189 	DEFB	'1.1'
+0010  =              188    190 MSGL	EQU	$-MSG
+                     189    191 ;
+                     190    192 ;	LET US BEGIN
+                     191    193 ;
+                     192    194 ; *NOTE- THE CODE UP TO THE 'IN SENSE' MAY
+                     193    195 ; BE REPLACED BY ENOUGH CODE TO INITIALIZE
+                     194    196 ; AN ACIA OR SIO DEVICE. ADDITIONAL DEVICES
+                     195    197 ; MAY BE INITIALIZED USING THE 'Q' COMMAND.
+                     196    198 ; (OR STANDARD ROUTINES FOR INITILIZATION
+                     197    199 ; MAY BE LOADED & EXECUTED IN THE USER AREA).
+                     198    200 ;
+f031                 199    201 BEGIN:
+f031  3e 03          200    202 	LD	A,3	     ;RESET BOTH MITS 2SIO ACIA
+f033  d3 10          201    203 	OUT	(TTS),A
+f035  d3 12          202    204 	OUT	(TTS2),A
+f037  3e 15          203    205 	LD	A,15H	     ;SET BOTH MITS 2SIO ACIA TO 8N1
+f039  d3 10          204    206 	OUT	(TTS),A
+f03b  d3 12          205    207 	OUT	(TTS2),A
+                     206    208 ;
+                     207    209 ;	LD	A,NN	     ;FOR 'I' REG. IF NEEDED.
+                     208    210 ;	LD	I,A
+                     209    211 ;	NOP		     ;SPARE BYTE
+                     210    212 ;	XOR	A	     ;CLEAR READER CONTROL PORT
+                     211    213 ;	OUT	(RCP),A
+                     212    214 ;	IN	A,(SENSE)    ;INITIALIZE I/O CONFIGURARTION
+                     213    215 ;	OUT	(IOBYT),A
+                     214    216 ;
+f03d  db ff          215    217 	IN	A,(SWITCH)   ;INITALIZE I/O CONFIGURATION
+f03f  32 ff ef       216    218 	LD	(IOBYT),A    ;  FROM FRONT PANEL SENSE SWITCHES
+                     217    219 ;
+f042  31 46 f0       218    220 	LD	SP,AHEAD-4   ;SET UP A FAKE STACK
+f045  c3 b2 f5       219    221 	JP	MEMSIZ+1     ;GET MEMORY SIZE
+f048  4a f0          220    222 	DEFW	AHEAD
+f04a  f9             221    223 AHEAD:	LD	SP,HL	     ;SET TRUE STACK
+f04b  eb             222    224 	EX	DE,HL
+f04c  01 23 00       223    225 	LD	BC,ENDX-EXIT
+f04f  21 a7 f7       224    226 	LD	HL,EXIT
+f052  ed b0          225    227 	LDIR		     ;MOVE TO RAM
+f054  eb             226    228 	EX	DE,HL
+f055  01 a1 ff       227    229 	LD	BC,-5FH	     ;SET UP A USER'S STACK VALUE
+f058  09             228    230 	ADD	HL,BC
+f059  e5             229    231 	PUSH	HL	     ;PRE-LOAD USER'S STACK VALUE
+f05a  21 00 00       230    232 	LD	HL,0	     ;INITIALIZE OTHER REGISTERS
+f05d  06 0a          231    233 	LD	B,10	     ; (16 OF THEM)
+f05f  e5             232    234 STKIT:	PUSH	HL	     ; TO ZERO
+f060  10 fd          233    235 	DJNZ	STKIT
+f062  06 10          234    236 HELLO:	LD	B,MSGL	     ;SAY HELLO TO THE FOLKS
+f064  cd 42 f4       235    237 	CALL	TOM	     ;OUTPUT SIGN-ON MSG
+f067  11 67 f0       236    238 START:	LD	DE,START     ;MAIN 'WORK' LOOP
+f06a  d5             237    239 	PUSH	DE	     ;SET UP A RETURN TO HERE
+f06b  cd 09 f5       238    240 	CALL	CRLF
+f06e  0e 3e          239    241 	LD	C,'>'
+f070  cd 7d f4       240    242 	CALL	CO
+f073  cd 35 f7       241    243 STARO:	CALL	TI	     ;GET A CONSOLE CHARACTER
+f076  e6 7f          242    244 	AND	7FH	     ;IGNORE NULLS
+f078  28 f9          243    245 	JR	Z,STARO	     ;GET ANOTHER
+f07a  d6 41          244    246 	SUB	'A'	     ;QUALIFY THE CHARACTER
+f07c  f8             245    247 	RET	M	     ;<A
+f07d  fe 1a          246    248 	CP	'Z'-'A'+1
+f07f  d0             247    249 	RET	NC	     ;>Z
+f080  87             248    250 	ADD	A,A	     ;A*2
+f081  06 00          249    251 	LD	B,0
+f083  4f             250    252 	LD	C,A	     ;POINT TO PLACE ON TABLE
+f084  21 8f f0       251    253 	LD	HL,TBL	     ;POINT TO COMMAND TABLE
+f087  09             252    254 	ADD	HL,BC	     ;ADD IN DISPLACEMENT
+f088  5e             253    255 	LD	E,(HL)
+f089  23             254    256 	INC	HL
+f08a  56             255    257 	LD	D,(HL)
+f08b  eb             256    258 	EX	DE,HL	     ;D&E=ROUTINE ADDRESS
+f08c  0e 02          257    259 	LD	C,2	     ;SET C UP
+f08e  e9             258    260 	JP	(HL)	     ;GO EXECUTE COMMAND
+                     259    261 ;
+                     260    262 ;		<COMMAND BRANCH TABLE>
+                     261    263 ;
+f08f                 262    264 TBL:	
+f08f  c3 f0          263    265 	DEFW	ASSIGN	    ;A - ASSIGN I/O
+f091  14 f1          264    266 	DEFW	BYE	    ;B - SYSTEM SHUT-DOWN
+f093  41 f1          265    267 	DEFW	COMP	    ;C - COMPARE MEMORY VS. READER INPUT
+f095  62 f1          266    268 	DEFW	DISP	    ;D - DISPLAY MEMORY ON CONS. IN HEX
+f097  79 f1          267    269 	DEFW	EOF	    ;E - END OF FILE TAG FOR HEX DUMPS
+f099  95 f1          268    270 	DEFW	FILL	    ;F - FILL MEMORY WITH A CONSTANT
+f09b  a2 f1          269    271 	DEFW	GOTO	    ;G - GOTO [ADDR]<,>BREAKPOINTS (2)
+f09d  76 f5          270    272 	DEFW	HEXN	    ;H - HEX MATH. <SUM>,<DIFFERENCE>
+                     271    273 ;	DEFW	J	    ;I * USER DEFINED, INSERT VECTOR
+f09f  57 f4          272    274 	DEFW	ERROR
+f0a1  f0 f1          273    275 	DEFW	TEST	    ;J - NON-DESTRUCTIVE MEMORY TEST
+                     274    276 ;	DEFW	J+3	    ;K * USER DEFINED, INSERT VECTOR
+f0a3  57 f4          275    277 	DEFW	ERROR
+f0a5  80 f6          276    278 	DEFW	LOAD	    ;L - MOVE A BINARY FORMAT FILE
+f0a7  0e f2          277    279 	DEFW	MOVE	    ;M - MOVE BLOCKS OF MEMORY
+f0a9  ee f4          278    280 	DEFW	NULL	    ;N - PUNCH NULLS ON PUNCH DEVICE
+                     279    281 ;	DEFW	J+6	    ;O * USER DEFINED, INSERT VECTOR
+f0ab  57 f4          280    282 	DEFW	ERROR
+f0ad  22 f1          281    283 	DEFW	PUTA	    ;P - 'PUT' ASCII INTO MEMORY.
+f0af  56 f7          282    284 	DEFW	QUERY	    ;Q - QI(N)=DISP. N; QO(N,V)=OUT N,V
+f0b1  19 f2          283    285 	DEFW	READ	    ;R - READ A HEX FILE (W/CHECKSUMS)
+f0b3  d2 f2          284    286 	DEFW	SUBS	    ;S - SUBSTITUTE &/OR EXAMINE MEMORY
+f0b5  fb f2          285    287 	DEFW	TYPE	    ;T - TYPE MEMORY IN ASCII
+f0b7  d6 f4          286    288 	DEFW	UNLD	    ;U - MEMORY TO PUNCH (BINARY FORMAT)
+f0b9  81 f7          287    289 	DEFW	VERIFY	    ;V - COMPARE MEMORY AGAINST MEMORY
+f0bb  63 f3          288    290 	DEFW	WRITE	    ;W - MEMORY TO PUNCH (HEX FORMAT)
+f0bd  a3 f3          289    291 	DEFW	XAM	    ;X - EXAMINE & MODIFY CPU REGISTERS
+f0bf  1b f3          290    292 	DEFW	WHERE	    ;Y - FIND SEQUENCE OF BYTES IN RAM
+f0c1  6e f4          291    293 	DEFW	SIZE	    ;Z - ADDRESS OF LAST R/W LOCATION
+                     292    294 ;
+                     293    295 ;
+                     294    296 ;
+                     295    297 ;	THIS ROUTINE CONTROLS THE CONFIGURATION
+                     296    298 ; OF THE VARIOUS I/O DRIVERS & DEVICES. THIS IS
+                     297    299 ; ACCOMPLISHED VIA A HARDWARE READ/WRITE PORT.
+                     298    300 ;	THIS PORT IS INITIALIZED UPON SIGN-ON
+                     299    301 ; BY THE VALUE READ ON PORT 'SENSE'.  IT MAY BE
+                     300    302 ; DYNAMICALLY MODIFIED THROUGH CONSOLE COMMANDS.
+                     301    303 ;
+                     302    304 ; THE VALUE ON THE 'IOBYT' PORT REPRESENTS THE
+                     303    305 ; CURRENT CONFIGURATION.  IT IS STURCTURED THUSLY:
+                     304    306 ;
+                     305    307 ; 000000XX - WHERE XX REPRESENTS THE CURRENT CONSOLE
+                     306    308 ; 0000XX00 - WHERE XX REPRESENTS THE CURRENT READER
+                     307    309 ; 00XX0000 - WHERE XX REPRESENTS THE CURRENT PUNCH
+                     308    310 ; XX000000 - WHERE XX REPRESENTS THE CURRENT LISTER
+                     309    311 ;
+                     310    312 ; WHEN USING A MEMORY LOCATION FOR IOBYT, THE
+                     311    313 ; POLARITY IS REVERSED.  FOR AN I/O PORT,
+                     312    314 ; WHEN XX = 11, THE DEVICE IS ALWAYS THE
+                     313    315 ; TELEPRINTER.  WHEN XX = 00, THE DEVICE IS ALWAYS
+                     314    316 ; USER DEFINED.  SEE OPERATOR'S MANUAL FOR FURTHER
+                     315    317 ; DETAILS.
+                     316    318 ;
+f0c3  cd 35 f7       317    319 ASSIGN:	CALL	TI	     ;GET DEVICE NAME
+f0c6  21 93 f7       318    320 	LD	HL,LTBL	     ;POINT TO DEVICE TABLE
+f0c9  01 00 04       319    321 	LD	BC,400H	     ;4 DEVICES TO LOOK FOR
+f0cc  11 05 00       320    322 	LD	DE,5	     ;4 DEV. + IDENT.
+f0cf  be             321    323 ASS0:	CP	(HL)	     ;LOOK FOR MATCH
+f0d0  28 06          322    324 	JR	Z,ASS1
+f0d2  19             323    325 	ADD	HL,DE	     ;GO THRU TABLE
+f0d3  0c             324    326 	INC	C	     ;KEEP TRACK OF DEVICE
+f0d4  10 f9          325    327 	DJNZ	ASS0
+f0d6  18 15          326    328 	JR	ASERR	     ;WRONG IDENTIFIER
+f0d8  59             327    329 ASS1:	LD	E,C	     ;SAVE DEVICE NUMBER
+f0d9  cd 35 f7       328    330 ASS2:	CALL	TI	     ;SCAN PAST '='
+f0dc  fe 3d          329    331 	CP	'='
+f0de  20 f9          330    332 	JR	NZ,ASS2
+f0e0  cd 35 f7       331    333 	CALL	TI	     ;GET NEW ASSIGNMENT
+f0e3  01 00 04       332    334 	LD	BC,400H	     ;4 POSSIBLE ASSIGNMENTS
+f0e6  23             333    335 ASS3:	INC	HL	     ;POINT TO ASSIGNMENT NAME
+f0e7  be             334    336 	CP	(HL)	     ;LOOK FOR PROPER MATCH
+f0e8  28 06          335    337 	JR	Z,ASS4	     ;MATCH FOUND
+f0ea  0c             336    338 	INC	C	     ;KEEP TRACK OF ASSIGNMENT NMBR
+f0eb  10 f9          337    339 	DJNZ	ASS3
+f0ed  c3 57 f4       338    340 ASERR:	JP	ERROR	     ;NO MATCH, ERROR
+f0f0  3e 03          339    341 ASS4:	LD	A,3	     ;SET UP A MASK
+f0f2  1c             340    342 	INC	E
+f0f3  1d             341    343 ASS5:	DEC	E	     ;DEVICE IN E
+f0f4  28 08          342    344 	JR	Z,ASS6	     ;GOT IT
+f0f6  cb 21          343    345 	SLA	C	     ;ELSE MOVE MASKS
+f0f8  cb 21          344    346 	SLA	C
+f0fa  17             345    347 	RLA	
+f0fb  17             346    348 	RLA		     ;A=DEVICE MASK
+f0fc  18 f5          347    349 	JR	ASS5
+f0fe  2f             348    350 ASS6:	CPL		     ;INVERT FOR AND'ING
+f0ff  57             349    351 	LD	D,A	     ;SAVE IN D
+f100  cd 09 f6       350    352 ASS7:	CALL	PCHK	     ;WAIT FOR [CR]
+f103  30 fb          351    353 	JR	NC,ASS7
+f105  cd 10 f1       352    354 	CALL	IOCHK	     ;GET PRESENT CONFIGURATION
+f108  a2             353    355 	AND	D	     ;MODIFY ONLY SELECTED DEVICE
+f109  b1             354    356 	OR	C	     ;'OR' NEW BIT PATTERN
+f10a  4f             355    357 	LD	C,A	     ;NEW CONFIGURATION
+                     356    358 ;
+                     357    359 ; THIS ALLOWS USER PROGRAMS TO MODIFY
+                     358    360 ; THE I/O CONFIGURATIMN DYNAMICALLY
+                     359    361 ; DURING EXECUTION.
+                     360    362 ;
+f10b  79             361    363 IOSET:	LD	A,C	     ;NEW I/O BYTE PASSED IN C REG
+                     362    364 ;	CPL		     ;WE SAVE THE INVERTED BYTE
+                     363    365 ;	OUT	(IOBYT),A    ;IN AN I/O PORT LATCH
+f10c  32 ff ef       364    366 	LD	(IOBYT),A    ;SAVE NEW I/O BYTE IN MEMORY
+f10f  c9             365    367 	RET	
+                     366    368 ;
+                     367    369 ; THIS RETURNS THE CURRENT I/O
+                     368    370 ; CONFIGURATION IN THE A REG.
+                     369    371 ;
+f110                 370    372 IOCHK:	;IN	A,(IOBYT)    ;GET SAVED VALUE
+                     371    373 ;	CPL		     ;AND INVERT IT AGAIN
+f110  3a ff ef       372    374 	LD	A,(IOBYT)    ;GET SAVED VALUE
+f113  c9             373    375 	RET	
+                     374    376 ;
+                     375    377 ; THIS ROUTINE IS USED AS A SIMPLE MEANS TO PREVENT
+                     376    378 ; UNAUTHORIZED SYSTEM OPERATION. THE SYSTEM LOCKS UP,
+                     377    379 ; MONITORING FOR A 'CONT.-SHIFT-N', AT WHICH TIME IT
+                     378    380 ; WILL SIGN-ON AGAIN. NO REGISTER ASSIGNMENTS OR I/O
+                     379    381 ; CONFIGURATIONS WILL BE ALTERED.
+                     380    382 ;
+f114  cd 09 f5       381    383 BYE:	CALL	CRLF
+f117  cd 2f f7       382    384 BY1:	CALL	KI
+f11a  fe 1e          383    385 	CP	1EH	     ;CONTROL-SHIFT-N
+f11c  20 f9          384    386 	JR	NZ,BY1
+f11e  d1             385    387 	POP	DE	     ;REMOVE THE RETURN
+f11f  c3 62 f0       386    388 	JP	HELLO	     ;AND SIGN-ON AGAIN
+                     387    389 ;
+                     388    390 ; THIS ALLOWS ENTERING OF ASCII TEXT INTO MEMORY
+                     389    391 ; FROM THE CONSOLE DEVICE. THE PARITY BIT IS CLEARED,
+                     390    392 ; AND ALL WILL BE STORED EXCEPT THE BACK-ARROR [_]
+                     391    393 ; WHICH DELETES THE PREVIOUS CHARACTER, AND
+                     392    394 ; CONTROL-D, WHICH RETURNS CONTROL TO THE MONITOR.
+                     393    395 ; THIS COMMAND, COMBINED WITH THE 'Y' COMMAND,
+                     394    396 ; PROVIDES A RUDIMENTARY TEXT PROCESSING ABILITY.
+                     395    397 ;
+f122  cd 38 f5       396    398 PUTA:	CALL	EXPR1	     ;GET THE STARTING ADDR.
+f125  cd 09 f5       397    399 	CALL	CRLF
+f128  e1             398    400 	POP	HL
+f129  cd 2f f7       399    401 PUTA1:	CALL	KI	     ;GET A CHARACTER
+f12c  fe 04          400    402 	CP	4	     ;CONTROL-D? (EOT)
+f12e  ca 75 f4       401    403 	JP	Z,LFADR	     ;YES, STOP & PRINT
+f131  fe 5f          402    404 	CP	'_'	     ;ERASE MISTAKE?
+f133  28 08          403    405 	JR	Z,PUTA3	     ; YES.
+f135  77             404    406 	LD	(HL),A	     ;ELSE STORE IT IN MEMORY
+f136  4f             405    407 	LD	C,A
+f137  23             406    408 	INC	HL
+f138  cd 7d f4       407    409 PUTA2:	CALL	CO	     ;ECHO ON CONSOLE
+f13b  18 ec          408    410 	JR	PUTA1
+f13d  2b             409    411 PUTA3:	DEC	HL
+f13e  4e             410    412 	LD	C,(HL)
+f13f  18 f7          411    413 	JR	PUTA2	     ;ECHO & CONTINUE
+                     412    414 ;
+                     413    415 ; THIS ROUTINE COMPARES THE READER INPUT
+                     414    416 ; DEVICE WITH THE MEMORY BLOCK SPECIFIED.
+                     415    417 ; IT TESTS ALL EIGHT BITS, AND ANY DISCREPENCIES
+                     416    418 ; WILL BE OUTPUT TO THE CONSOLE. THIS IS USEFUL
+                     417    419 ; WHEN USED WITH THE BINARY DUMP FORMAT TO BOTH
+                     418    420 ; VERIFY PROPER READING & STORAGE, OR TO DETECT
+                     419    421 ; PROGRAM CHANGES SINCE IT WAS LAST LOADED.
+                     420    422 ;
+f141  cd 04 f5       421    423 COMP:	CALL	EXLF	     ;GET START ' STOP ADDR.
+f144  cd 67 f4       422    424 COM1:	CALL	RIFF	     ;GET A FULL READER BYTE
+f147  be             423    425 	CP	(HL)	     ;8 BIT COMPARE
+f148  c4 50 f1       424    426 	CALL	NZ,CERR	     ;CALL IF INVALID COMPARE
+f14b  cd 66 f5       425    427 	CALL	HILOX	     ;SEE IF RANGE SATISFIED
+f14e  18 f4          426    428 	JR	COM1
+                     427    429 ;
+                     428    430 ; THIS SUBROUTINE IS USED TO DISPLAY THE
+                     429    431 ; CURRENT LOCATION OF THE 'M' REGISTER POINTER (HL),
+                     430    432 ; AND THE VALUE AT THE LOCATION, AND THE CONTENTS
+                     431    433 ; OF THE ACCUMULATOR. USED BY TWO ROUTINES.
+                     432    434 ;
+f150  47             433    435 CERR:	LD	B,A	     ;SAVE ACC.
+f151  cd 78 f4       434    436 	CALL	HLSP	     ;DISPLAY H&L
+f154  7e             435    437 	LD	A,(HL)
+f155  cd 87 f5       436    438 	CALL	LBYTE	     ;PRINT 'M'
+f158  cd 7b f4       437    439 	CALL	BLK	     ;SPACE OVER
+f15b  78             438    440 	LD	A,B
+f15c  cd 87 f5       439    441 	CALL	LBYTE	     ;PRINT ACC.
+f15f  c3 09 f5       440    442 	JP	CRLF	     ;CRLF & RETURN
+                     441    443 ;
+                     442    444 ; THIS DISPLAYS THE CONTENTS OF MEMORY IN BASE HEX
+                     443    445 ; WITH THE STARTING LOCATION ON EACH LINE. (BETWEEN
+                     444    446 ; THE TWO PARAMETERS GIVEN). 16 BYTES PER LINE MAX.
+                     445    447 ;
+f162  cd 04 f5       446    448 DISP:	CALL	EXLF	     ;GET DISPLAY RANGE
+f165  cd 75 f4       447    449 DIS0:	CALL	LFADR	     ;CRLF & PRINT ADDR.
+f168  cd 7b f4       448    450 DIS1:	CALL	BLK	     ;SPACE OVER
+f16b  7e             449    451 	LD	A,(HL)
+f16c  cd 87 f5       450    452 	CALL	LBYTE
+f16f  cd 66 f5       451    453 	CALL	HILOX	     ;RANGE CHECK
+f172  7d             452    454 	LD	A,L
+f173  e6 0f          453    455 	AND	0FH	     ;SEE IF TIME TO CRLF
+f175  20 f1          454    456 	JR	NZ,DIS1
+f177  18 ec          455    457 	JR	DIS0
+                     456    458 ;
+                     457    459 ; THIS OUTPUTS THE END OF FILE (EOF) PATTERN
+                     458    460 ; FOR THE CHECKSUM LOADER.  IT IS USED AFTER
+                     459    461 ; PUNCHING A BLOCK OF MEMORY WITH THE 'W'
+                     460    462 ; COMMAND.  AN ADDRESS PARAMETER MAY BE GIVEN,
+                     461    463 ; AND UPON READING, THIS ADDRESS WILL BE
+                     462    464 ; AUTOMATICALLY PLACED IN THE 'P' COUNTER. THE
+                     463    465 ; PROGRAM CAN THEN BE RUN WITH A SIMPLE 'G[CR]'
+                     464    466 ; COMMAND.
+                     465    467 ;
+f179  cd 38 f5       466    468 EOF:	CALL	EXPR1	     ;GET OPTIONAL ADDR.
+f17c  cd b2 f4       467    469 	CALL	PEOL	     ;CRLF TO PUNCH
+f17f  0e 3a          468    470 	LD	C,':'	     ;FILE MARKER CUE
+f181  cd b9 f4       469    471 	CALL	PUO
+f184  af             470    472 	XOR	A	     ;ZERO LENGTH
+f185  cd ed f5       471    473 	CALL	PBYTE
+f188  e1             472    474 	POP	HL
+f189  cd e8 f5       473    475 	CALL	PADR	     ;PUNCH OPTIONAL ADDR.
+f18c  21 00 00       474    476 	LD	HL,0	     ;FILE TYPE=0
+f18f  cd e8 f5       475    477 	CALL	PADR	     ;PUNCH IT
+f192  c3 ee f4       476    478 	JP	NULL	     ;TRAILER & RETURN
+                     477    479 ;
+                     478    480 ; THIS COMMAND WILL FILL A BLOCK OF MEMORY
+                     479    481 ; WITH A VALUE. IE: FO,1FFF,0 FILLS FROM
+                     480    482 ; <1> TO <2> WITH THE BYTE <3>. HANDY FOR
+                     481    483 ; INITIALIZING A BLOCK TO A SPECIFIC VALUE, OR
+                     482    484 ; MEMORY TO A CONSTANT VALUE BEFOR LOADING
+                     483    485 ; A PROGRAM.  (ZERO IS ESPECIALLY USEFUL.)
+                     484    486 ;
+f195  cd 2d f5       485    487 FILL:	CALL	EXPR3	     ;GET 3 PARAMETERS
+f198  71             486    488 FI1:	LD	(HL),C	     ;STORE THE BYTE
+f199  cd 6c f5       487    489 	CALL	HILO
+f19c  30 fa          488    490 	JR	NC,FI1
+f19e  d1             489    491 	POP	DE	     ;RESTORE STACK
+f19f  c3 67 f0       490    492 	JP	START	     ; IN CASE OF ACCIDENTS
+                     491    493 ;
+                     492    494 ; THIS COMMAND ALLOWS EXECUTION OF ANOTHER
+                     493    495 ; PROGRAM WHILE RETAINING SOME MONITOR
+                     494    496 ; CONTROL BY SETTING BREAKPOINTS.
+                     495    497 ;
+                     496    498 ; TO SIMPLY EXECUTE, TYPE 'G<ADDR>[CR]'. TO SET
+                     497    499 ; A BREAKPOINT TRAP, ADD THE ADDRESS(ES) TO THE
+                     498    500 ; COMMAND. IE: G<ADDR>,<BKPT>[CR]. TWO BREAKPOINTS
+                     499    501 ; ARE ALLOWED, ENOUGH TO SATISFY MOST REQUIREMENTS.
+                     500    502 ; ONCE A BREAKPOINT HAS BEEN REACHED, THE
+                     501    503 ; REGISTERS MAY BE EXAMINED OR MODIFIED. THE
+                     502    504 ; PROGRAM CAN THEN BE CONTINUED BY TYPING ONLY
+                     503    505 ; A 'G[CR]'. OR ANOTHER BREAKPOINT COULD BE
+                     504    506 ; IMPLEMENTED AT THAT TIME BY TYPING 'G,<BKPT>[CR]'.
+                     505    507 ;
+                     506    508 ; *NOTE: THIS IS SOFTWARE CONTROLLED, AND THE
+                     507    509 ; BREAKPOINT MUST OCCUR ON AN INSTRUCTION
+                     508    510 ; BYTE.
+                     509    511 ;
+f1a2  cd 09 f6       510    512 GOTO:	CALL	PCHK	     ;GET A POSSIBLE ADDRESS
+f1a5  38 40          511    513 	JR	C,GOT3	     ;CR ENTERED
+f1a7  28 10          512    514 	JR	Z,GOT0	     ;DELIMITER ENTERED
+f1a9  cd 5f f5       513    515 	CALL	EXF	     ;GET ONE EXPRESSION
+f1ac  d1             514    516 	POP	DE
+f1ad  21 34 00       515    517 	LD	HL,PLOC	     ;PLACE ADDRESS IN 'P' LOCATION
+f1b0  39             516    518 	ADD	HL,SP
+f1b1  72             517    519 	LD	(HL),D	     ;HIGH BYTE
+f1b2  2b             518    520 	DEC	HL
+f1b3  73             519    521 	LD	(HL),E	     ;LOW BYTE
+f1b4  78             520    522 	LD	A,B
+f1b5  fe 0d          521    523 	CP	CR	     ;SEE IF LAST CHARACTER WAS A CR
+f1b7  28 2e          522    524 	JR	Z,GOT3	     ;YES, LEAVE
+f1b9  16 02          523    525 GOT0:	LD	D,2	     ;TWO BREAKPOINTS MAX
+f1bb  21 35 00       524    526 	LD	HL,TLOC	     ;POINT TO TRAP STORAGE
+f1be  39             525    527 	ADD	HL,SP
+f1bf  e5             526    528 GOT1:	PUSH	HL	     ;SAVE STORAGE POINTER
+f1c0  cd 38 f5       527    529 	CALL	EXPR1	     ;GET A TRAP ADDRESS
+f1c3  58             528    530 	LD	E,B	     ;SAVE DELIMITER
+f1c4  c1             529    531 	POP	BC	     ;TRAP ADDR.
+f1c5  e1             530    532 	POP	HL	     ;STORAGE
+f1c6  78             531    533 	LD	A,B	     ;LOOK AT TRAP ADDR
+f1c7  b1             532    534 	OR	C
+f1c8  28 0a          533    535 	JR	Z,GOT2	     ;DON'T SET A TRAP AT 0
+f1ca  71             534    536 	LD	(HL),C	     ;SAVE BKPT ADDR
+f1cb  23             535    537 	INC	HL
+f1cc  70             536    538 	LD	(HL),B
+f1cd  23             537    539 	INC	HL
+f1ce  0a             538    540 	LD	A,(BC)	     ;PICK UP INST. BYTE
+f1cf  77             539    541 	LD	(HL),A	     ;SAVE THAT TOO
+f1d0  23             540    542 	INC	HL
+f1d1  3e ff          541    543 	LD	A,0FFH	     ;RST 7
+f1d3  02             542    544 	LD	(BC),A	     ;SOFTWARE INTERUPT
+f1d4  7b             543    545 GOT2:	LD	A,E	     ;LOOK AT DELIMITER
+f1d5  fe 0d          544    546 	CP	CR
+f1d7  28 03          545    547 	JR	Z,GOT2A
+f1d9  15             546    548 	DEC	D	     ;COUNT BKPTS
+f1da  20 e3          547    549 	JR	NZ,GOT1	     ;GET ONE MORE
+f1dc  3e c3          548    550 GOT2A:	LD	A,0C3H	     ;SET UP JUMP INSTRUCTION
+f1de  32 38 00       549    551 	LD	(RST7),A     ; AT RESTART TRAP LOC.
+f1e1  21 1e f0       550    552 	LD	HL,TRAP	     ; TO MONITOR VECTOR
+f1e4  22 39 00       551    553 	LD	(RST7+1),HL
+f1e7  cd 09 f5       552    554 GOT3:	CALL	CRLF
+f1ea  d1             553    555 	POP	DE	     ;CLEAR SYSTEM RETURN
+f1eb  21 16 00       554    556 	LD	HL,22	     ;FIND 'EXIT' ROUTINE
+f1ee  39             555    557 	ADD	HL,SP	     ;UP IN STACK
+f1ef  e9             556    558 	JP	(HL)	     ;GO SOMPLACE
+                     557    559 ;
+                     558    560 ; THIS IS A 'QUICKIE' MEMORY TEST TO SPOT
+                     559    561 ; HARD MEMORY FAILURES, OR ACCIDENTLY
+                     560    562 ; PROTECTED MEMORY LOCATIONS. IT IS NOT
+                     561    563 ; MEANT TO BE THE DEFINITIVE MEMORY DIAGNOSTIC.
+                     562    564 ; IT IS, HOWEVER, NON-DESTRUCTIVE. ERRORS ARE
+                     563    565 ; PRINTED ON THE CONSOLE AS FOLLOWS-
+                     564    566 ; <ADDR> 00000100 WHERE <1> IS THE BAD BIT.
+                     565    567 ; BIT LOCATION OF THE FAILURE IS EASILY
+                     566    568 ; DETERMINED. NON-R/W MEMORY WILL RETURN
+                     567    569 ; WITH- 11111111
+                     568    570 ;
+f1f0  cd 04 f5       569    571 TEST:	CALL	EXLF	     ;GET TWO PARAMS
+f1f3  7e             570    572 TEST1:	LD	A,(HL)	     ;READ A BYTE
+f1f4  47             571    573 	LD	B,A	     ;SAVE IN B REG.
+f1f5  2f             572    574 	CPL	
+f1f6  77             573    575 	LD	(HL),A	     ;READ/COMPLIMENT/WRITE
+f1f7  ae             574    576 	XOR	(HL)	     ; & COMPARE
+f1f8  28 0e          575    577 	JR	Z,TEST2	     ;SKIP IF ZERO (OK)
+f1fa  d5             576    578 	PUSH	DE	     ;SAVE END POINTER
+f1fb  50             577    579 	LD	D,B	     ;SAVE BYTE
+f1fc  5f             578    580 	LD	E,A	     ;SET-UP TO DISPLAY
+f1fd  cd 78 f4       579    581 	CALL	HLSP	     ;PRINT BAD ADDR
+f200  cd 68 f7       580    582 	CALL	BITS	     ;PRINT BAD BIT LOC.
+f203  cd 09 f5       581    583 	CALL	CRLF
+f206  42             582    584 	LD	B,D	     ;RESTORE BYTE
+f207  d1             583    585 	POP	DE	     ;RESTORE DE
+f208  70             584    586 TEST2:	LD	(HL),B	     ;REPLACE BYTE
+f209  cd 66 f5       585    587 	CALL	HILOX	     ;RANGE TEST
+f20c  18 e5          586    588 	JR	TEST1
+                     587    589 ;
+                     588    590 ; THIS COMMAND MOVES MASS AMOUNTS OF MEMORY
+                     589    591 ; FROM <1> THRU <2> TO THE ADDRESS STARTING
+                     590    592 ; AT <3>.  THIS ROUTINE SHOULD BE USED WITH
+                     591    593 ; SOME CAUTION, AS IT COULD SMASH MEMORY IF
+                     592    594 ; CARLESSLY IMPLEMENTED.
+                     593    595 ;
+                     594    596 ;	M<1>,<2>,<3>
+                     595    597 ;
+f20e  cd 2d f5       596    598 MOVE:	CALL	EXPR3	     ;GET 3 PARAMETERS
+f211  7e             597    599 MO1:	LD	A,(HL)	     ;PICK UP
+f212  02             598    600 	LD	(BC),A	     ;PUT DOWN
+f213  03             599    601 	INC	BC	     ;MOVE UP
+f214  cd 66 f5       600    602 	CALL	HILOX	     ;CHECK IF DONE
+f217  18 f8          601    603 	JR	MO1
+                     602    604 ;
+                     603    605 ; THIS COMMAND READS THE CHECK-SUMMED HEX FILES
+                     604    606 ; FOR BOTH THE NORMAL INTEL FORMAT AND THE TDL
+                     605    607 ; RELOCATING FORMAT. ON BOTH FILES, A 'BIAS' MAY
+                     606    608 ; BE ADDED, WHICH WILL CAUSE THE OBJECT CODE TO
+                     607    609 ; BE PLACED IN A LOCATION OTHER THAN ITS
+                     608    610 ; INTENDED EXECUTION LOCATION. THE BIAS IS ADDED
+                     609    611 ; TO WHAT WOULD HAVE BEEN THE NORMAL LOADING
+                     610    612 ; LOCATION, AND WILL WRAP AROUND TO ENABLE
+                     611    613 ; LOADING ANY PROGRAM ANYWHERE IN MEMORY.
+                     612    614 ;
+                     613    615 ; WHEN LOADING A RELOCATABLE FILE, AN ADDITIONAL
+                     614    616 ; PARAMETER MAY BE ADDED, WHICH REPRESENTS THE
+                     615    617 ; ACTUAL EXECUTION ADDRESS DESIRED. THIS ALSO MAY
+                     616    618 ; BE ANY LOCATION IN MEMORY.
+                     617    619 ;
+                     618    620 ; EXAMPLES:
+                     619    621 ;
+                     620    622 ; R[CR] =0 BIAS, 0 EXECUTION ADDR.
+                     621    623 ; R<ADDR1>[CR] =<1>BIAS, 0 EXECUTION ADDR.
+                     622    624 ; R,<ADDR1>[CR] =0 BIAS, <1> EXECUTION ADDR.
+                     623    625 ; R<ADDR1>,<ADDR2>[CR] =<1>BIAS, <2>EXECUTION ADDR.
+                     624    626 ;
+f219  cd 38 f5       625    627 READ:	CALL	EXPR1	     ;GET BIAS, IF ANY
+f21c  78             626    628 	LD	A,B	     ;LOOK AT DELIMITER
+f21d  d6 0d          627    629 	SUB	CR	     ;ALL DONE?
+f21f  47             628    630 	LD	B,A	     ;SET UP RELOCATION OF 0
+f220  4f             629    631 	LD	C,A	     ; IF CR ENTERED
+f221  d1             630    632 	POP	DE	     ;BIAS AMOUNT
+f222  28 04          631    633 	JR	Z,REA0	     ;CR ENTERED
+f224  cd 38 f5       632    634 	CALL	EXPR1	     ;GET RELOCATION
+f227  c1             633    635 	POP	BC	     ;ACTUAL RELOCATION VALUE
+f228  eb             634    636 REA0:	EX	DE,HL
+f229  d9             635    637 	EXX		     ;HL'=BIAS, BC'=RELOCATION
+f22a  cd 09 f5       636    638 	CALL	CRLF
+f22d  cd 7a f6       637    639 LOD0:	CALL	RIX	     ;GET A CHARACTER
+f230  d6 3a          638    640 	SUB	':'	     ;ABSOLUTE FILE CUE?
+f232  47             639    641 	LD	B,A	     ;SAVE CUE CLUE
+f233  e6 fe          640    642 	AND	0FEH	     ;KILL BIT 0
+f235  20 f6          641    643 	JR	NZ,LOD0	     ; NO, KEEP LOOKING
+f237  57             642    644 	LD	D,A	     ;ZERO CHECKSUM
+f238  cd b3 f2       643    645 	CALL	SBYTE	     ;GET FILE LENGTH
+f23b  5f             644    646 	LD	E,A	     ;SAVE IN E REG.
+f23c  cd b3 f2       645    647 	CALL	SBYTE	     ;GET LOAD MSB
+f23f  f5             646    648 	PUSH	AF	     ;SAVE IT
+f240  cd b3 f2       647    649 	CALL	SBYTE	     ;GET LOAD LSB
+f243  d9             648    650 	EXX		     ;CHANGE GEARS
+f244  d1             649    651 	POP	DE	     ;RECOVER MSB
+f245  5f             650    652 	LD	E,A	     ;FULL LOAD ADDR
+f246  c5             651    653 	PUSH	BC	     ;BC'=RELOCATION
+f247  d5             652    654 	PUSH	DE	     ;DE'=LOAD ADDR
+f248  e5             653    655 	PUSH	HL	     ;HL'=BIAS
+f249  19             654    656 	ADD	HL,DE	     ; BIAS+LOAD
+f24a  e3             655    657 	EX	(SP),HL	     ;RESTORE HL'
+f24b  dd e1          656    658 	POP	IX	     ; X=BIAS+LOAD
+f24d  d9             657    659 	EXX		     ;DOWNSHIFT
+f24e  e1             658    660 	POP	HL	     ;HL=LOAD ADDR
+f24f  cd b3 f2       659    661 	CALL	SBYTE	     ;GET FILE TYPE
+f252  3d             660    662 	DEC	A	     ;1=REL. FILE, 0=ABS.
+f253  78             661    663 	LD	A,B	     ;SAVE CUE BIT
+f254  c1             662    664 	POP	BC	     ;BC=RELOCATION
+f255  20 03          663    665 	JR	NZ,ABS0      ;ABSOLUTE FILE
+f257  09             664    666 	ADD	HL,BC	     ;ELSE RELOCATE
+f258  dd 09          665    667 	ADD	IX,BC	     ;BOTH X & HL
+f25a  1c             666    668 ABS0:	INC	E	     ;TEST LENGHT
+f25b  1d             667    669 	DEC	E	     ;0=DONE
+f25c  28 19          668    670 	JR	Z,DONE
+f25e  3d             669    671 	DEC	A	     ;TEST CUE
+f25f  28 22          670    672 	JR	Z,LODR	     ;RELATIVE
+f261  cd b3 f2       671    673 LLO1:	CALL	SBYTE	     ;NEXT
+f264  cd c6 f2       672    674 	CALL	STORE	     ;STORE IT
+f267  20 f8          673    675 	JR	NZ,LLO1	     ;MORE COMING
+f269  cd b3 f2       674    676 LOD4:	CALL	SBYTE	     ;GET CHECKSUM
+f26c  28 bf          675    677 	JR	Z,LOD0	     ;GOOD CHECKSUM
+f26e  dd e5          676    678 ERR3:	PUSH	IX
+f270  e1             677    679 	POP	HL	     ;TRANSFER
+f271  cd 82 f5       678    680 	CALL	LADR	     ;PRINT CURRENT LOAD ADDR
+f274  c3 57 f4       679    681 ERR2:	JP	ERROR	     ;ABORT
+f277  7c             680    682 DONE:	LD	A,H	     ;DON'T MODIFY IF ZERO
+f278  b5             681    683 	OR	L
+f279  c8             682    684 	RET	Z
+f27a  eb             683    685 	EX	DE,HL	     ;ELSE STORE IN PC
+f27b  21 34 00       684    686 	LD	HL,PLOC
+f27e  39             685    687 	ADD	HL,SP
+f27f  72             686    688 	LD	(HL),D	     ;IN STACK AREA
+f280  2b             687    689 	DEC	HL
+f281  73             688    690 	LD	(HL),E
+f282  c9             689    691 	RET	
+f283  2e 01          690    692 LODR:	LD	L,1	     ;SET-UP BIT COUNTER
+f285  cd a3 f2       691    693 LOD1:	CALL	LODCB	     ;GET THE BIT
+f288  38 07          692    694 	JR	C,LOD3	     ;DOUBLE BIT
+f28a  cd c6 f2       693    695 LOD5:	CALL	STORE	     ;WRITE IT
+f28d  20 f6          694    696 	JR	NZ,LOD1
+f28f  18 d8          695    697 	JR	LOD4	     ;TEST CHECKSUM
+f291  4f             696    698 LOD3:	LD	C,A	     ;SAVE LOW BYTE
+f292  cd a3 f2       697    699 	CALL	LODCB	     ;NEXT CONTROL BIT
+f295  47             698    700 	LD	B,A	     ;SAVE HIGH BYTE
+f296  d9             699    701 	EXX	
+f297  c5             700    702 	PUSH	BC	     ;GET RELOCATION
+f298  d9             701    703 	EXX	
+f299  e3             702    704 	EX	(SP),HL	     ;INTO HL
+f29a  09             703    705 	ADD	HL,BC	     ;RELOCATE
+f29b  7d             704    706 	LD	A,L	     ;LOW BYTE
+f29c  cd c6 f2       705    707 	CALL	STORE	     ;STORE IT
+f29f  7c             706    708 	LD	A,H	     ;HIGH BYTE
+f2a0  e1             707    709 	POP	HL	     ;RESTORE HL
+f2a1  18 e7          708    710 	JR	LOD5	     ;DO THIS AGAIN
+f2a3  2d             709    711 LODCB:	DEC	L	     ;COUNT BITS
+f2a4  20 07          710    712 	JR	NZ,LC1	     ;MORE LEFT
+f2a6  cd b3 f2       711    713 	CALL	SBYTE	     ;GET NEXT
+f2a9  1d             712    714 	DEC	E	     ;COUNT BYTES
+f2aa  67             713    715 	LD	H,A	     ;SAVE THE BITS
+f2ab  2e 08          714    716 	LD	L,8	     ;8 BITS/BYTE
+f2ad  cd b3 f2       715    717 LC1:	CALL	SBYTE	     ;GET A DATA BYTE
+f2b0  cb 24          716    718 	SLA	H	     ;TEST NEXT BIT
+f2b2  c9             717    719 	RET	
+f2b3  c5             718    720 SBYTE:	PUSH	BC	     ;PRESERVE BC
+f2b4  cd d5 f5       719    721 	CALL	RIBBLE	     ;GET A CONVERTED ASCII CHAR.
+f2b7  07             720    722 	RLCA	
+f2b8  07             721    723 	RLCA	
+f2b9  07             722    724 	RLCA	
+f2ba  07             723    725 	RLCA		     ;MOVE IT TO HIGH NIBBLE
+f2bb  4f             724    726 	LD	C,A	     ;SAVE IT
+f2bc  cd d5 f5       725    727 	CALL	RIBBLE	     ;GET OTHER HALF
+f2bf  b1             726    728 	OR	C	     ;MAKE WHOLE
+f2c0  4f             727    729 	LD	C,A	     ;SAVE AGAIN IN C
+f2c1  82             728    730 	ADD	A,D	     ;UPDATE CHECKSUM
+f2c2  57             729    731 	LD	D,A	     ;NEW CHECKSUM
+f2c3  79             730    732 	LD	A,C	     ;CONVERTED BYTE
+f2c4  c1             731    733 	POP	BC
+f2c5  c9             732    734 	RET	
+f2c6  dd 77 00       733    735 STORE:	LD	(IX+0),A     ;WRITE TO MEMORY
+f2c9  dd be 00       734    736 	CP	(IX+0)	     ;VALID WRITE?
+f2cc  20 a0          735    737 	JR	NZ,ERR3	     ; NO.
+f2ce  dd 23          736    738 	INC	IX	     ;ADVANCE POINTER
+f2d0  1d             737    739 	DEC	E	     ;COUNT DOWN
+f2d1  c9             738    740 	RET	
+                     739    741 ;
+                     740    742 ; THIS ROUTINE ALLOWS BOTH INSPECTION OF &
+                     741    743 ; MODIFICATION OF MEMORY ON A BYTE BY BYTE
+                     742    744 ; BASIS. IT TAKES ONE ADDRESS PARAMETER,
+                     743    745 ; FOLLOWED BY A SPACE.  THE DATA AT THAT
+                     744    746 ; LOCATION WILL BE DISPLAYED. IF IT IS
+                     745    747 ; DESIRED TO CHANGE IT, THE VALUE IS THEN
+                     746    748 ; ENTERED.  A FOLLOWING SPACE WILL DISPLAY
+                     747    749 ; THE NEXT BYTE.  A CARRIAGE RETURN [CR]
+                     748    750 ; WILL TERMINATE THE COMMAND.  THE SYSTEM
+                     749    751 ; ADDS A CRLF AT LOCATIONS ENDING WITH EITHER
+                     750    752 ; XXX0 OR XXX8. TO AID IN DETERMINING THE
+                     751    753 ; PRESENT ADDRESS, IT IS PRINTED AFTER
+                     752    754 ; EACH CRLF.  A BACKARROW [_] WILL BACK
+                     753    755 ; UP THE POINTER AND DISPLAY THE
+                     754    756 ; PREVIOUS LOCATION.
+                     755    757 ;
+f2d2  cd 38 f5       756    758 SUBS:	CALL	EXPR1	     ;GET STARTING ADDR
+f2d5  e1             757    759 	POP	HL
+f2d6  7e             758    760 SUB0:	LD	A,(HL)
+f2d7  cd 87 f5       759    761 	CALL	LBYTE	     ;DISPLAY THE BYTE
+f2da  cd 04 f6       760    762 	CALL	COPCK	     ;MODIFY?
+f2dd  d8             761    763 	RET	C	     ; NO, ALL DONE
+f2de  28 0f          762    764 	JR	Z,SUB1	     ;DON'T MODIFY
+f2e0  fe 5f          763    765 	CP	05FH	     ;BACKUP?
+f2e2  28 14          764    766 	JR	Z,SUB2
+f2e4  e5             765    767 	PUSH	HL	     ;SAVE POINTER
+f2e5  cd 5f f5       766    768 	CALL	EXF	     ;GET NEW VALUE
+f2e8  d1             767    769 	POP	DE	     ;VALUE IN E
+f2e9  e1             768    770 	POP	HL
+f2ea  73             769    771 	LD	(HL),E	     ;MODIFY
+f2eb  78             770    772 	LD	A,B	     ;TEST DELIMITER
+f2ec  fe 0d          771    773 	CP	CR
+f2ee  c8             772    774 	RET	Z	     ;DONE
+f2ef  23             773    775 SUB1:	INC	HL
+f2f0  7d             774    776 SUB3:	LD	A,L	     ;SEE IF TIME TO CRLF
+f2f1  e6 07          775    777 	AND	7
+f2f3  cc 75 f4       776    778 	CALL	Z,LFADR	     ;TIME TO CRLF
+f2f6  18 de          777    779 	JR	SUB0
+f2f8  2b             778    780 SUB2:	DEC	HL	     ;DECREMENT POINTER
+f2f9  18 f5          779    781 	JR	SUB3	     ;AND PRINT DATA THERE.
+                     780    782 ;
+                     781    783 ; THIS ROUTINE TRANSLATES THE DATA IN
+                     782    784 ; MEMORY TO AN ASCII FORMAT.  ALL NON-
+                     783    785 ; PRINTING CHARACTERS ARE CONVERTED TO
+                     784    786 ; PERIODS. [.]
+                     785    787 ; THERE ARE 64 CHARACTERS PER LINE.
+                     786    788 ;
+f2fb  cd 04 f5       787    789 TYPE:	CALL	EXLF	     ;DISPLAY RANGE
+f2fe  cd 75 f4       788    790 TYP0:	CALL	LFADR	     ;DISPLAY ADDRESS
+f301  06 40          789    791 	LD	B,64	     ;CHARACTERS PER LINE
+f303  7e             790    792 TYP1:	LD	A,(HL)
+f304  e6 7f          791    793 	AND	7FH	     ;KILL PARITY BIT
+f306  fe 20          792    794 	CP	' '	     ;RANGE TEST
+f308  30 02          793    795 	JR	NC,TYP3	     ;=>SPACE
+f30a  3e 2e          794    796 TYP2:	LD	A,'.'	     ;REPLACE NON-PRINTING
+f30c  fe 7c          795    797 TYP3:	CP	07CH	     ;ABOVE LOWER CASE Z
+f30e  30 fa          796    798 	JR	NC,TYP2
+f310  4f             797    799 	LD	C,A	     ;SEND IT
+f311  cd 7d f4       798    800 	CALL	CO
+f314  cd 66 f5       799    801 	CALL	HILOX	     ;MORE TO GO?
+f317  10 ea          800    802 	DJNZ	TYP1	     ;SEE IF TIME TO CRLF
+f319  18 e3          801    803 	JR	TYP0	     ;YES
+                     802    804 ;
+                     803    805 ; THIS IS A HEXADECIMAL SEARCH ROUTINE. IT
+                     804    806 ; TAKES NO ADDRESS PARAMETERS. AS MANY
+                     805    807 ; BYTES MAY BE ENTERED, SEPARATED BY A COMMA,
+                     806    808 ; AS DESIRED.  THE MAXIMUM IS 255, BUT 3-4 IS
+                     807    809 ; TYPICAL, AND MORE THAN 12 WOULD BE UNUSUAL.
+                     808    810 ; THE ENTIRE MEMORY IS SEARCHED STARTING
+                     809    811 ; FROM ZERO, AND ALL STARTING ADDRESSES OF EACH
+                     810    812 ; OCCURANCE OF THE SEARCH STRING ARE PRINTED
+                     811    813 ; ON THE CONSOLE DEVICE.
+                     812    814 ;
+f31b  16 00          813    815 WHERE:	LD	D,0	     ;COUNT SEARCH STRING
+f31d  cd 38 f5       814    816 WHER0:	CALL	EXPR1	     ;GET ONE BYTE
+f320  e1             815    817 	POP	HL	     ;PICK IT UP
+f321  65             816    818 	LD	H,L	     ;STICK IN HIGH BYTE
+f322  e5             817    819 	PUSH	HL	     ;PUT IT IN STACK
+f323  33             818    820 	INC	SP	     ;ADJUST STACK
+f324  14             819    821 	INC	D	     ;COUNT UP
+f325  78             820    822 	LD	A,B	     ;TEST DELIMITER
+f326  d6 0d          821    823 	SUB	CR
+f328  20 f3          822    824 	JR	NZ,WHER0     ;MORE TO GO
+f32a  47             823    825 	LD	B,A	     ;CHEAP ZEROS
+f32b  4f             824    826 	LD	C,A
+f32c  67             825    827 	LD	H,A
+f32d  6a             826    828 	LD	L,D	     ;GET BYTE COUNT IN L
+f32e  2d             827    829 	DEC	L	     ;-1
+f32f  39             828    830 	ADD	HL,SP	     ;BYTES STORED IN STACK
+f330  e5             829    831 	PUSH	HL
+f331  c5             830    832 	PUSH	BC
+f332  c5             831    833 FINDC:	PUSH	BC	     ;SAVE THAT POINTER
+f333  cd 09 f5       832    834 	CALL	CRLF
+f336  c1             833    835 	POP	BC	     ;RESTORE
+f337  e1             834    836 FIND:	POP	HL	     ;HL=SEARCH ADDR
+f338  dd e1          835    837 	POP	IX	     ;X=SEARCH BYTE POINTER
+f33a  5a             836    838 	LD	E,D	     ;RESET COUNTER
+f33b  dd 7e 00       837    839 	LD	A,(IX+0)     ;GET THE FIRST SEARCH BYTE
+f33e  ed b1          838    840 	CPIR		     ;COMPARE, INCR., & REPEAT
+f340  e2 77 f2       839    841 	JP	PO,DONE	     ;ODD PARITY=DONE
+f343  dd e5          840    842 	PUSH	IX	     ;SAVE POINTERS
+f345  e5             841    843 	PUSH	HL
+f346  1d             842    844 FOUND:	DEC	E
+f347  28 0b          843    845 	JR	Z,TELL	     ;FOUND ALL
+f349  dd 7e ff       844    846 	LD	A,(IX+-1)    ;LOOK AT NEXT MATCH
+f34c  be             845    847 	CP	(HL)	     ;TEST NEXT
+f34d  20 e8          846    848 	JR	NZ,FIND	     ;NO MATCH
+f34f  23             847    849 	INC	HL	     ;BUMP POINTERS
+f350  dd 2b          848    850 	DEC	IX
+f352  18 f2          849    851 	JR	FOUND	     ;TEST NEXT MATCH
+f354  e1             850    852 TELL:	POP	HL
+f355  e5             851    853 	PUSH	HL
+f356  2b             852    854 	DEC	HL
+f357  c5             853    855 	PUSH	BC	     ;SAVE SEARCH COUNT LIMIT
+f358  cd 82 f5       854    856 	CALL	LADR	     ;TELL CONSOLE
+f35b  c1             855    857 	POP	BC	     ;RESTORE
+f35c  18 d4          856    858 	JR	FINDC
+f35e  33             857    859 DONE2:	INC	SP
+f35f  1d             858    860 	DEC	E	     ;RESET STACK
+f360  20 fc          859    861 	JR	NZ,DONE2
+f362  c9             860    862 	RET	
+                     861    863 ;
+                     862    864 ; THIS ROUTINE DUMPS MEMORY IN THE STANDARD
+                     863    865 ; INTEL HEX-FILE FORMAT.  A START & END
+                     864    866 ; PARAMETER IS REQUIRED. AT THE CONCLUSION
+                     865    867 ; OF THE DUMP, AN "END OF FILE" SHOULD BE
+                     866    868 ; GENERATED WITH THE "E" COMMAND.
+                     867    869 ;
+f363  cd 04 f5       868    870 WRITE:	CALL	EXLF	     ;GET TWO PARAMETERS
+f366  cd f1 f4       869    871 	CALL	WAIT	     ;PAUSE IF TTY CONFIGURATION
+f369  cd b2 f4       870    872 WRT0:	CALL	PEOL	     ;CRLF TO PUNCH
+f36c  01 3a 00       871    873 	LD	BC,':'	     ;START OF FILE
+f36f  cd b9 f4       872    874 	CALL	PUO	     ;PUNCH IT
+f372  d5             873    875 	PUSH	DE	     ;SAVE
+f373  e5             874    876 	PUSH	HL	     ;POINTERS
+f374  04             875    877 WRT1:	INC	B	     ;CALCULATE FILE LENGTH
+f375  cd 6c f5       876    878 	CALL	HILO
+f378  38 24          877    879 	JR	C,WRT4	     ;SHORT FILE
+f37a  3e 18          878    880 	LD	A,24	     ;24 BYTES PER FILE
+f37c  90             879    881 	SUB	B	     ;ENOUGH YET?
+f37d  20 f5          880    882 	JR	NZ,WRT1	     ; NO.
+f37f  e1             881    883 	POP	HL	     ;GET START ADDR BACK.
+f380  cd 86 f3       882    884 	CALL	WRT2	     ;SEND THE BLOCK
+f383  d1             883    885 	POP	DE	     ;RESTORE END OF FILE POINTER
+f384  18 e3          884    886 	JR	WRT0	     ;KEEP GOING
+f386  57             885    887 WRT2:	LD	D,A	     ;INITIALIZE CHECKSUM
+f387  78             886    888 	LD	A,B	     ;FILE LENGTH
+f388  cd ed f5       887    889 	CALL	PBYTE	     ;PUNCH IT
+f38b  cd e8 f5       888    890 	CALL	PADR	     ;PUNCH ADDRESS
+f38e  af             889    891 	XOR	A	     ;FILE TYPE=0
+f38f  cd ed f5       890    892 	CALL	PBYTE	     ;PUNCH IT
+f392  7e             891    893 WRT3:	LD	A,(HL)	     ;GET A DATA BYTE
+f393  cd ed f5       892    894 	CALL	PBYTE	     ;PUNCH IT
+f396  23             893    895 	INC	HL	     ;POINT TO NEXT BYTE
+f397  10 f9          894    896 	DJNZ	WRT3	     ;DECREMENT FILE COUNT
+f399  af             895    897 	XOR	A
+f39a  92             896    898 	SUB	D	     ;CALCULATE CHECKSUM
+f39b  c3 ed f5       897    899 	JP	PBYTE	     ;PUNCH IT, RETURN
+f39e  e1             898    900 WRT4:	POP	HL	     ;CLEAR STACK
+f39f  d1             899    901 	POP	DE	     ; OF POINTERS
+f3a0  af             900    902 	XOR	A	     ;SET UP A
+f3a1  18 e3          901    903 	JR	WRT2	     ;FINISH UP & RETURN
+                     902    904 ;
+                     903    905 ;
+                     904    906 ;	THIS ROUTINE ALLOWS DISPLAYING THE
+                     905    907 ; USER'S CPU REGISTERS. THEY ALSO MAY BE 
+                     906    908 ; USING THE REGISTER NAME AFTER TYPEING THE "X".
+                     907    909 ; I.E. XA 00-
+                     908    910 ; THE REGISTER MAY BE SKIPPED OVER, OR MODIFIED,
+                     909    911 ; SIMILARLY TO THE "S" COMMAND.
+                     910    912 ;
+                     911    913 ; TO DISPLAY THE "NORMAL" SYSTEM STATUS,
+                     912    914 ; SIMPLY TYPE "X[CR]".  TO DISPLAY THE
+                     913    915 ; ADDITIONAL Z-80 REGISTERS, FOLLOW
+                     914    916 ; THE "X" WITH AN APOSTROPHE.  I.E. "X'[CR]",
+                     915    917 ; OR TO EXAMINE A SINGLE "PRIME" REGISTER,
+                     916    918 ; TYPE THE REGISTER IDENTIFIER AFTER THE
+                     917    919 ; APOSTROPHE.  I.E.  X'X 0000-
+                     918    920 ;
+                     919    921 ; THESE REGISTER VALUES ARE PLACED INTO THE CPU
+                     920    922 ; UPON EXECUTING ANY "GO" COMMAND. [G]
+                     921    923 ;
+f3a3  cd 35 f7       922    924 XAM:	CALL	TI
+f3a6  21 ca f7       923    925 	LD	HL,ACTBL
+f3a9  fe 0d          924    926 	CP	CR	     ;FULL REG. DISPLAY
+f3ab  28 5a          925    927 	JR	Z,XAM6
+f3ad  fe 27          926    928 	CP	27H	     ;SEE IF PRIMES WANTED
+f3af  20 0a          927    929 	JR	NZ,XAM0
+f3b1  21 e3 f7       928    930 	LD	HL,PRMTB
+f3b4  cd 35 f7       929    931 	CALL	TI
+f3b7  fe 0d          930    932 	CP	CR	     ;FULL REG. DISPLAY
+f3b9  28 4c          931    933 	JR	Z,XAM6
+f3bb  be             932    934 XAM0:	CP	(HL)	     ;TEST FOR REGISTER NAME
+f3bc  28 09          933    935 	JR	Z,XAM1
+f3be  cb 7e          934    936 	BIT	7,(HL)	     ;SEE IF END OF TABLE
+f3c0  c2 57 f4       935    937 	JP	NZ,ERROR
+f3c3  23             936    938 	INC	HL
+f3c4  23             937    939 	INC	HL
+f3c5  18 f4          938    940 	JR	XAM0
+f3c7  cd 7b f4       939    941 XAM1:	CALL	BLK
+f3ca  23             940    942 XAM2:	INC	HL
+f3cb  7e             941    943 	LD	A,(HL)
+f3cc  47             942    944 	LD	B,A	     ;SAVE FOR FLAGS
+f3cd  e6 3f          943    945 	AND	3FH	     ;CLEAR FLAGS FOR BIAS
+f3cf  eb             944    946 	EX	DE,HL
+f3d0  6f             945    947 	LD	L,A	     ;DISPLACEMENT FROM STACK
+f3d1  26 00          946    948 	LD	H,0
+f3d3  39             947    949 	ADD	HL,SP
+f3d4  eb             948    950 	EX	DE,HL	
+f3d5  23             949    951 	INC	HL
+f3d6  1a             950    952 	LD	A,(DE)	     ;PICK UP REG. VALUE
+f3d7  cd 87 f5       951    953 	CALL	LBYTE	     ;PRINT IT
+f3da  cb 78          952    954 	BIT	7,B
+f3dc  28 05          953    955 	JR	Z,XAM3
+f3de  1b             954    956 	DEC	DE
+f3df  1a             955    957 	LD	A,(DE)
+f3e0  cd 87 f5       956    958 	CALL	LBYTE
+f3e3  cd 04 f6       957    959 XAM3:	CALL	COPCK	     ;MODIFY
+f3e6  d8             958    960 	RET	C	     ;CR ENTERED, ALL DONE
+f3e7  28 19          959    961 	JR	Z,XAM5	     ;SKIP TO NEXT REG.
+f3e9  e5             960    962 	PUSH	HL
+f3ea  c5             961    963 	PUSH	BC
+f3eb  cd 5f f5       962    964 	CALL	EXF	     ;GET NEW VALUE
+f3ee  e1             963    965 	POP	HL
+f3ef  f1             964    966 	POP	AF
+f3f0  c5             965    967 	PUSH	BC
+f3f1  f5             966    968 	PUSH	AF
+f3f2  7d             967    969 	LD	A,L
+f3f3  12             968    970 	LD	(DE),A
+f3f4  c1             969    971 	POP	BC
+f3f5  cb 78          970    972 	BIT	7,B	     ;SEE IF 8 BIT OR 16 BIT REG.
+f3f7  28 03          971    973 	JR	Z,XAM4	     ;8 BIT
+f3f9  13             972    974 	INC	DE
+f3fa  7c             973    975 	LD	A,H	     ;HIGH BYTE OF 16 BIT REG.
+f3fb  12             974    976 	LD	(DE),A
+f3fc  c1             975    977 XAM4:	POP	BC
+f3fd  e1             976    978 	POP	HL
+f3fe  78             977    979 	LD	A,B	     ;TEST DELIMITER
+f3ff  fe 0d          978    980 	CP	CR
+f401  c8             979    981 	RET	Z	     ;CR ENTERED, ALL DONE
+f402  cb 7e          980    982 XAM5:	BIT	7,(HL)	     ;SEE IF END OF TABLE
+f404  c0             981    983 	RET	NZ	     ;RETURN IF SO
+f405  18 c3          982    984 	JR	XAM2
+f407  cd 09 f5       983    985 XAM6:	CALL	CRLF
+f40a  cd 7b f4       984    986 XAM7:	CALL	BLK
+f40d  7e             985    987 	LD	A,(HL)
+f40e  23             986    988 	INC	HL
+f40f  b7             987    989 	OR	A
+f410  f8             988    990 	RET	M
+f411  4f             989    991 	LD	C,A
+f412  cd 7d f4       990    992 	CALL	CO
+f415  0e 3d          991    993 	LD	C,'='
+f417  cd 7d f4       992    994 	CALL	CO
+f41a  7e             993    995 	LD	A,(HL)
+f41b  47             994    996 	LD	B,A	     ;SAVE FLAGS
+f41c  e6 3f          995    997 	AND	3FH	     ;CLEAR UP FOR OFFSET
+f41e  23             996    998 	INC	HL
+f41f  eb             997    999 	EX	DE,HL
+f420  6f             998   1000 	LD	L,A
+f421  26 00          999   1001 	LD	H,0
+f423  39            1000   1002 	ADD	HL,SP
+f424  eb            1001   1003 	EX	DE,HL
+f425  cb 70         1002   1004 	BIT	6,B	     ;TEST FOR SPECIAL "M"
+f427  20 0f         1003   1005 	JR	NZ,XAM9	     ;PRINT OUT ACTUAL "M"
+f429  1a            1004   1006 	LD	A,(DE)
+f42a  cd 87 f5      1005   1007 	CALL	LBYTE	     ;PRINT REG. VALUE
+f42d  cb 78         1006   1008 	BIT	7,B	     ;SINGLE OR DOUBLE?
+f42f  28 d9         1007   1009 	JR	Z,XAM7	     ;SINGLE.
+f431  1b            1008   1010 	DEC	DE
+f432  1a            1009   1011 	LD	A,(DE)
+f433  cd 87 f5      1010   1012 XAM8:	CALL	LBYTE
+f436  18 d2         1011   1013 	JR	XAM7
+f438  e5            1012   1014 XAM9:	PUSH	HL	     ;SAVE HL
+f439  1a            1013   1015 	LD	A,(DE)	     ;GET REG. POINTER
+f43a  67            1014   1016 	LD	H,A	     ;HIGH BYTE
+f43b  1b            1015   1017 	DEC	DE
+f43c  1a            1016   1018 	LD	A,(DE)
+f43d  6f            1017   1019 	LD	L,A	     ;LOW BYTE
+f43e  7e            1018   1020 	LD	A,(HL)	     ;GET VALUE
+f43f  e1            1019   1021 	POP	HL	     ;RESTORE HL
+f440  18 f1         1020   1022 	JR	XAM8	     ;PRINT VALUE & CONTINUE
+                    1021   1023 ;
+                    1022   1024 ; THIS IS A MESSAGE OUTPUT ROUTINE.
+                    1023   1025 ; IT IS USED BY THE SIGN-ON AND THE CRLF.
+                    1024   1026 ; POINTER IS IN HL (WHEN ENTERED AT
+                    1025   1027 ; TOM1) AND LENGTH IN B REG.
+                    1026   1028 ;
+f442  21 21 f0      1027   1029 TOM:	LD	HL,MSG
+f445  4e            1028   1030 TOM1:	LD	C,(HL)	     ;GET A CHARACTER
+f446  23            1029   1031 	INC	HL	     ;MOVE POINTER
+f447  cd 7d f4      1030   1032 	CALL	CO	     ;OUTPUT IT
+f44a  10 f9         1031   1033 	DJNZ	TOM1	     ;KEEP GOING TILL B=0
+f44c  cd 11 f5      1032   1034 	CALL	CSTS	     ;SEE IF AN ABORT REQUEST
+f44f  b7            1033   1035 	OR	A	     ; WAITING
+f450  c8            1034   1036 	RET	Z	     ;NO.
+                    1035   1037 ;
+                    1036   1038 ; SEE IF CONTROL-C IS WAITING
+                    1037   1039 ; ABORT IF SO.
+                    1038   1040 ;
+f451  cd 2f f7      1039   1041 CCHK:	CALL	KI
+f454  fe 03         1040   1042 	CP	3	     ;CONTROL-C?
+f456  c0            1041   1043 	RET	NZ
+                    1042   1044 ;
+                    1043   1045 ; SYSTEM ERROR ROUTINE. THIS
+                    1044   1046 ; WILL RESTORE THE SYTEM AFTER
+                    1045   1047 ; A SYSTEM ERROR HAS BEEN TAKEN.
+                    1046   1048 ; THE I/O CONFIGURATION IS NOT
+                    1047   1049 ; AFFECTED.
+                    1048   1050 ;
+f457  cd b1 f5      1049   1051 ERROR:	CALL	MEMSIZ
+f45a  11 ea ff      1050   1052 	LD	DE,-22	     ;STACK POINTER OFFSET
+f45d  19            1051   1053 	ADD	HL,DE
+f45e  f9            1052   1054 	LD	SP,HL
+f45f  0e 2a         1053   1055 	LD	C,'*'	     ;ANNOUNCE ERROR
+f461  cd 7d f4      1054   1056 	CALL	CO
+f464  c3 67 f0      1055   1057 	JP	START	     ;BACK TO WORK
+                    1056   1058 ;
+                    1057   1059 ; THIS GETS A READER CHARACTER,
+                    1058   1060 ; AND COMPARES IT WITH THE 'D' REG.
+                    1059   1061 ; IT ABORTS ON AN 'OUT-OF-DATA'
+                    1060   1062 ; CONDITION.
+                    1061   1063 ;
+f467  cd 38 f6      1062   1064 RIFF:	CALL	RI	     ;GET READER CHARACTER
+f46a  38 eb         1063   1065 	JR	C,ERROR	     ;ABORT ON CARRY
+f46c  ba            1064   1066 	CP	D	     ;TEST D
+f46d  c9            1065   1067 	RET	
+                    1066   1068 ;
+                    1067   1069 ; THIS ROUTINE WILL RETURN THE
+                    1068   1070 ; CURRENT VALUE OF THE HIGHEST
+                    1069   1071 ; READ/WRITE MEMORY LOCATION THAT
+                    1070   1072 ; IS AVAILABLE ON THE SYSTEM.
+                    1071   1073 ; IT WILL "SEARCH" FOR MEMORY
+                    1072   1074 ; STARTING AT THE BOTTOM OF MEMORY
+                    1073   1075 ; AND GO UPWARDS UNTIL NON-R/W MEMORY
+                    1074   1076 ; IS FOUND.
+                    1075   1077 ;
+f46e  cd b1 f5      1076   1078 SIZE:	CALL	MEMSIZ	     ;GET THE VALUE
+f471  01 23 00      1077   1079 	LD	BC,ENDX-EXIT
+f474  09            1078   1080 	ADD	HL,BC	     ;ADJUST IT
+                    1079   1081 ;
+                    1080   1082 ;
+                    1081   1083 ; CRLF BEFORE HLSP ROUTINE
+                    1082   1084 ;
+f475  cd 09 f5      1083   1085 LFADR:	CALL	CRLF
+                    1084   1086 ;
+                    1085   1087 ; PRINT THE CURRENT VALUE OF H&L,
+                    1086   1088 ; AND A SPACE.
+                    1087   1089 ;
+f478  cd 82 f5      1088   1090 HLSP:	CALL	LADR
+                    1089   1091 ;
+                    1090   1092 ; PRINT A SPACE ON THE CONSOLE
+                    1091   1093 ;
+f47b  0e 20         1092   1094 BLK:	LD	C,' '
+                    1093   1095 ;
+                    1094   1096 ; THIS IS THE MAIN CONSOLE
+                    1095   1097 ; OUTPUT ROUTINE
+                    1096   1098 ;
+f47d  cd 10 f1      1097   1099 CO:	CALL	IOCHK
+f480  e6 03         1098   1100 	AND	~CMSK
+f482  20 0a         1099   1101 	JR	NZ,CO0
+                    1100   1102 ;
+                    1101   1103 ; TELEPRINTER CONFIGURATION
+                    1102   1104 ; I/O DRIVER.
+                    1103   1105 ;
+f484  db 10         1104   1106 TTYOUT:	IN	A,(TTS)
+f486  e6 02         1105   1107 	AND	TTYBE
+f488  28 fa         1106   1108 	JR	Z,TTYOUT
+f48a  79            1107   1109 	LD	A,C
+f48b  d3 11         1108   1110 	OUT	(TTO),A
+f48d  c9            1109   1111 	RET	
+f48e  3d            1110   1112 CO0:	DEC	A	     ;CCRT?
+f48f  20 0a         1111   1113 	JR	NZ,CO1	     ; NO.
+                    1112   1114 ;
+                    1113   1115 ; C.R.T. CONFIGURATION DRIVER.
+                    1114   1116 ;
+f491  db 50         1115   1117 CRTOUT:	IN	A,(CRTS)
+f493  e6 80         1116   1118 	AND	CRTBE
+f495  20 fa         1117   1119 	JR	NZ,CRTOUT
+f497  79            1118   1120 	LD	A,C
+f498  d3 51         1119   1121 	OUT	(CRTO),A
+f49a  c9            1120   1122 	RET	
+                    1121   1123 ;
+f49b  3d            1122   1124 CO1:	DEC	A	     ;BATCH
+f49c  c2 03 f8      1123   1125 	JP	NZ,COLOC     ; NO, MUST BE USER
+                    1124   1126 ;
+                    1125   1127 ; LIST OUTPUT DRIVER ROUTINE
+                    1126   1128 ; -A USER VECTORED ROUTINE, USED
+                    1127   1129 ; BY THE ASSEMBLER, ETC. ALSO,
+                    1128   1130 ; WHEN THE ASSIGNED MODE IS "BATCH",
+                    1129   1131 ; THIS IS THE ROUTINE USED FOR THE
+                    1130   1132 ; MONITOR OUTPUT THAT WOULD NORMALLY
+                    1131   1133 ; GO TO THE "CONSOLE".
+                    1132   1134 ;
+f49f  cd 10 f1      1133   1135 LO:	CALL	IOCHK
+f4a2  e6 c0         1134   1136 	AND	~LMSK
+f4a4  28 de         1135   1137 	JR	Z,TTYOUT
+f4a6  fe 40         1136   1138 	CP	LCRT
+f4a8  28 e7         1137   1139 	JR	Z,CRTOUT
+f4aa  fe 80         1138   1140 	CP	LINE
+f4ac  ca 12 f8      1139   1141 	JP	Z,LNLOC	     ;EXTERNAL VECTOR
+f4af  c3 15 f8      1140   1142 	JP	LULOC	     ;USER DEFINED VECTOR
+                    1141   1143 ;
+                    1142   1144 ; SEND CRLF TO PUNCH DEVICE
+                    1143   1145 ;
+f4b2  0e 0d         1144   1146 PEOL:	LD	C,CR
+f4b4  cd b9 f4      1145   1147 	CALL	PUO
+f4b7  0e 0a         1146   1148 	LD	C,LF
+                    1147   1149 ;
+                    1148   1150 ; PUNCH OUTPUT DRIVER ROUTINE
+                    1149   1151 ;
+f4b9  cd 10 f1      1150   1152 PUO:	CALL	IOCHK
+f4bc  e6 30         1151   1153 	AND	~PMSK
+f4be  28 c4         1152   1154 	JR	Z,TTYOUT     ;PUNCH=TELEPRINTER
+f4c0  fe 20         1153   1155 	CP	PCAS	     ;CASSETTE?
+f4c2  20 0a         1154   1156 	JR	NZ,PO1	     ; NO.
+                    1155   1157 ;
+f4c4  db 06         1156   1158 PO0:	IN	A,(PCASS)    ;CASSETTE DRIVER
+f4c6  e6 80         1157   1159 	AND	PCSBE
+f4c8  20 fa         1158   1160 	JR	NZ,PO0
+f4ca  79            1159   1161 	LD	A,C
+f4cb  d3 07         1160   1162 	OUT	(PCASO),A
+f4cd  c9            1161   1163 	RET	
+                    1162   1164 ;
+f4ce  fe 10         1163   1165 PO1:	CP	PPTP
+f4d0  ca 0c f8      1164   1166 	JP	Z,PTPL	     ;EXTERNAL VECTOR
+f4d3  c3 0f f8      1165   1167 	JP	PULOC	     ;USER VECTOR
+                    1166   1168 ;
+                    1167   1169 ;
+                    1168   1170 ; THIS IS A BINARY DUMP ROUTINE THAT MAY BE
+                    1169   1171 ; USED WITH BOTH PAPER-TAPE AND/OR CASSETTE
+                    1170   1172 ; SYSTEMS.  IT PUNCHES A START-OF-FILE MARK
+                    1171   1173 ; AND THEN PUNCHES IN FULL 8-BITS DIRECTLY
+                    1172   1174 ; FROM MEMORY.  IT IS FOLLOWED BY AN END-OF-
+                    1173   1175 ; FILE MARKER. THESE DUMPS MAY BE LOADED
+                    1174   1176 ; USING THE "L" COMMAND. THEY ARE USEFUL
+                    1175   1177 ; FOR FAST LOADING, AND MAY BE VERIFIED
+                    1176   1178 ; USING THE "C" (COMPARE) COMMAND.
+                    1177   1179 ;
+                    1178   1180 ; U<A1>,<A2>[CR]
+                    1179   1181 ; PUNCHES FROM <A1> THRU <A2>
+                    1180   1182 ;
+f4d6  cd 04 f5      1181   1183 UNLD:	CALL	EXLF	     ;GET TWO PARAMETERS
+f4d9  cd f1 f4      1182   1184 	CALL	WAIT	     ;PAUSE FOR PUNCH-ON (TTY)
+f4dc  cd 9b f5      1183   1185 	CALL	LEAD	     ;PUNCH LEADER
+f4df  cd 96 f5      1184   1186 	CALL	MARK	     ;PUNCH FILE MARKER
+f4e2  4e            1185   1187 UNL:	LD	C,(HL)	     ;GET MEMORY BYTE
+f4e3  cd b9 f4      1186   1188 	CALL	PUO	     ;PUNCH IT
+f4e6  cd 6c f5      1187   1189 	CALL	HILO	     ;SEE IF DONE
+f4e9  30 f7         1188   1190 	JR	NC,UNL
+f4eb  cd 96 f5      1189   1191 	CALL	MARK	     ;PUNCH END OF FILE MARKER
+                    1190   1192 ;
+                    1191   1193 ; THIS PUNCHES NULLS (LEADER/TRAILER).
+                    1192   1194 ; IT RETURNS "QUIET" IN CASE THE PUNCH
+                    1193   1195 ; AND CONSOLE ARE THE SAME.
+                    1194   1196 ;
+f4ee  cd 9b f5      1195   1197 NULL:	CALL	LEAD	     ;PUNCH NULLS
+                    1196   1198 ;
+                    1197   1199 ; THIS ROUTINE WILL PAUSE FOR
+                    1198   1200 ; A KEYBOARD CHARACTER. IT IS
+                    1199   1201 ; USED AS A DELAY TO GIVE THE
+                    1200   1202 ; OPERATOR TIME TO TURN ON THE
+                    1201   1203 ; TELEPRINTER PUNCH BEFORE SENDING
+                    1202   1204 ; A HEX FILE OR BINARY FILE TO
+                    1203   1205 ; THE PUNCH.  IT WILL SIMPLY
+                    1204   1206 ; RETURN IF THE PUNCH & CONSOLE
+                    1205   1207 ; ARE NOT BOTH ASSIGNED TO THE
+                    1206   1208 ; DEFAULT. (TELEPRINTER)
+                    1207   1209 ;
+f4f1  cd 10 f1      1208   1210 WAIT:	CALL	IOCHK
+f4f4  e6 33         1209   1211 	AND	~CMSK | ~PMSK
+f4f6  c0            1210   1212 	RET	NZ
+f4f7  c3 73 f0      1211   1213 	JP	STARO	     ;RETURN "QUIET"
+                    1212   1214 ;
+                    1213   1215 ; CONVERT HEX TO ASCII
+                    1214   1216 ;
+f4fa  e6 0f         1215   1217 CONV:	AND	0FH	     ;LOW NIBBLE ONLY
+f4fc  c6 90         1216   1218 	ADD	A,90H
+f4fe  27            1217   1219 	DAA	
+f4ff  ce 40         1218   1220 	ADC	A,40H
+f501  27            1219   1221 	DAA	
+f502  4f            1220   1222 	LD	C,A
+f503  c9            1221   1223 	RET	
+                    1222   1224 ;
+                    1223   1225 ; GET TWO PARAMETERS, PLACE
+                    1224   1226 ; THEM IN DE & HL, AND THEN
+                    1225   1227 ; CRLF.
+                    1226   1228 ;
+f504  cd 3a f5      1227   1229 EXLF:	CALL	EXPR
+f507  d1            1228   1230 	POP	DE
+f508  e1            1229   1231 	POP	HL
+                    1230   1232 ;
+                    1231   1233 ; CONSOLE CARRIAGE RETURN &
+                    1232   1234 ; LINE FEED ROUTINE.
+                    1233   1235 ;
+                    1234   1236 ; THE NUMBER OF FILL CHARACTERS
+                    1235   1237 ; MAY BE ADJUSTED TO 0-3 BY THE 
+                    1236   1238 ; VALUE PLACED IN THE B REG. MINIMUM
+                    1237   1239 ; VALUE FOR "B" IS TWO (2). MAXIMUM
+                    1238   1240 ; IS FIVE (5).
+                    1239   1241 ;
+f509  e5            1240   1242 CRLF:	PUSH	HL	     ;SAVE HL
+f50a  06 04         1241   1243 	LD	B,4	     ;CRLF LENGTH (SET FOR 2 FILLS)
+f50c  cd 42 f4      1242   1244 	CALL	TOM	     ;SEND CRLF
+f50f  e1            1243   1245 	POP	HL
+f510  c9            1244   1246 	RET	
+                    1245   1247 ;
+                    1246   1248 ; TEST THE CURRENT CONSOLES
+                    1247   1249 ; KEYBOARD FOR A KEY-PRESS.
+                    1248   1250 ; RETURN TRUE (0FFH IN A REG)
+                    1249   1251 ; IF THERE IS A CHARACTER
+                    1250   1252 ; WAITING IN THE UART.
+                    1251   1253 ;
+f511  cd 10 f1      1252   1254 CSTS:	CALL	IOCHK
+f514  e6 03         1253   1255 	AND	~CMSK
+f516  20 04         1254   1256 	JR	NZ,CS0
+f518  db 10         1255   1257 	IN	A,(TTS)
+f51a  18 05         1256   1258 	JR	CS1
+f51c  3d            1257   1259 CS0:	DEC	A	     ;CCRT
+f51d  20 09         1258   1260 	JR	NZ,CS3
+f51f  db 50         1259   1261 	IN	A,(CRTS)
+f521  e6 01         1260   1262 CS1:	AND	TTYDA
+f523  3e 00         1261   1263 	LD	A,FALSE
+f525  c8            1262   1264 CS2:	RET	Z
+f526  2f            1263   1265 	CPL	
+f527  c9            1264   1266 	RET	
+f528  3d            1265   1267 CS3:	DEC	A	     ;BATCH
+f529  c8            1266   1268 	RET	Z
+f52a  c3 18 f8      1267   1269 	JP	CSLOC	     ;USER DEFINED FUNCTION
+                    1268   1270 ;
+                    1269   1271 ; GET THREE PARAMETERS AND
+                    1270   1272 ; CRLF.
+                    1271   1273 ;
+f52d  0c            1272   1274 EXPR3:	INC	C
+f52e  cd 3a f5      1273   1275 	CALL	EXPR
+f531  cd 09 f5      1274   1276 	CALL	CRLF
+f534  c1            1275   1277 	POP	BC
+f535  d1            1276   1278 	POP	DE
+f536  e1            1277   1279 	POP	HL
+f537  c9            1278   1280 	RET	
+                    1279   1281 ;
+                    1280   1282 ; GET ONE PARAMETER.
+                    1281   1283 ; NO CRLF.
+                    1282   1284 ;
+f538  0e 01         1283   1285 EXPR1:	LD	C,1
+                    1284   1286 ;
+                    1285   1287 ; THIS IS THE MAIN "PARAMETER-GETTING" ROUTINE.
+                    1286   1288 ; THIS ROUTINE WILL ABORT ON A NON-HEX CHARACTER.
+                    1287   1289 ; IT TAKES THE MOST RECENTELY TYPED FOUR VALID
+                    1288   1290 ; HEX CHARACTERS, AND PLACES THEM UP ON THE STACK.
+                    1289   1291 ; (AS ONE 16 BIT VALUE, CONTAINED IN TWO
+                    1290   1292 ; 8-BIT BYTES.)  IF A CARRIAGE RETURN IS ENTERED,
+                    1291   1293 ; IT WILL PLACE THE VALUE OF "0000" IN THE STACK.
+                    1292   1294 ;
+f53a  21 00 00      1293   1295 EXPR:	LD	HL,0	     ;INITIALIZE HL TO ZERO
+f53d  cd 35 f7      1294   1296 EX0:	CALL	TI	     ;GET SOMETHING FROM CONSOLE
+f540  47            1295   1297 EX1:	LD	B,A	     ;SAVE IT
+f541  cd d8 f5      1296   1298 	CALL	NIBBLE	     ;CONVERT ASCII TO HEX
+f544  38 08         1297   1299 	JR	C,EX2	     ;ILLEGAL CHARACTER DECTECTED
+f546  29            1298   1300 	ADD	HL,HL	     ;MULTIPLY BY 16
+f547  29            1299   1301 	ADD	HL,HL
+f548  29            1300   1302 	ADD	HL,HL
+f549  29            1301   1303 	ADD	HL,HL
+f54a  b5            1302   1304 	OR	L	     ;OR IN THE SINGLE NIBBLE
+f54b  6f            1303   1305 	LD	L,A
+f54c  18 ef         1304   1306 	JR	EX0	     ;GET SOME MORE
+f54e  e3            1305   1307 EX2:	EX	(SP),HL	     ;SAVE UP IN STACK
+f54f  e5            1306   1308 	PUSH	HL	     ;REPLACE THE RETURN
+f550  78            1307   1309 	LD	A,B	     ;TEST THE DELIMITER
+f551  cd 0c f6      1308   1310 	CALL	QCHK
+f554  30 02         1309   1311 	JR	NC,EX3	     ;CR ENTERED
+f556  0d            1310   1312 	DEC	C	     ;SHOULD GO TO ZERO
+f557  c8            1311   1313 	RET	Z	     ; RETURN IF IT DOES
+f558  c2 57 f4      1312   1314 EX3:	JP	NZ,ERROR     ;SOMETHING WRONG
+f55b  0d            1313   1315 	DEC	C	     ;DO THIS AGAIN?
+f55c  20 dc         1314   1316 	JR	NZ,EXPR	     ; YES.
+f55e  c9            1315   1317 	RET		     ;ELSE RETURN
+f55f  0e 01         1316   1318 EXF:	LD	C,1
+f561  21 00 00      1317   1319 	LD	HL,0
+f564  18 da         1318   1320 	JR	EX1
+                    1319   1321 ;
+                    1320   1322 ; RANGE TESTING ROUTINES.
+                    1321   1323 ; CARRY SET INDICATES RANGE EXCEEDED.
+                    1322   1324 ;
+f566  cd 6c f5      1323   1325 HILOX:	CALL	HILO
+f569  d0            1324   1326 	RET	NC	     ;OK
+f56a  d1            1325   1327 	POP	DE	     ;RETURN ONE LEVEL BACK
+f56b  c9            1326   1328 	RET	
+                    1327   1329 ;
+f56c  23            1328   1330 HILO:	INC	HL	     ;INCREMENT HL
+f56d  7c            1329   1331 	LD	A,H	     ;TEST FOR CROSSING 64K BORDER
+f56e  b5            1330   1332 	OR	L
+f56f  37            1331   1333 	SCF		     ;CARRY SET=STOP
+f570  c8            1332   1334 	RET	Z	     ;YES, BORDER CROSSED
+f571  7b            1333   1335 	LD	A,E	     ;NOW, TEST HL VS. DE
+f572  95            1334   1336 	SUB	L
+f573  7a            1335   1337 	LD	A,D
+f574  9c            1336   1338 	SBC	A,H
+f575  c9            1337   1339 	RET		     ;IF CARRY WAS SET, THEN STOP
+                    1338   1340 ;
+                    1339   1341 ;	HEXADECIMAL MATH ROUTINE
+                    1340   1342 ;
+                    1341   1343 ; THIS ROUTINE IS USEFUL FOR
+                    1342   1344 ; DETERMINING RELATIVE JUMP
+                    1343   1345 ; OFFSETS.  IT RETURNS THE SUM
+                    1344   1346 ; & DIFFERENCE OF TWO PARAMETERS.
+                    1345   1347 ;
+                    1346   1348 ;  H<X>,<Y>
+                    1347   1349 ;
+                    1348   1350 ; X+Y   X-Y
+                    1349   1351 ;
+f576  cd 04 f5      1350   1352 HEXN:	CALL	EXLF
+f579  e5            1351   1353 	PUSH	HL	     ;SAVE HL FOR LATER
+f57a  19            1352   1354 	ADD	HL,DE	     ;GET SUM
+f57b  cd 78 f4      1353   1355 	CALL	HLSP	     ;PRINT IT
+f57e  e1            1354   1356 	POP	HL	     ;THIS IS LATER
+f57f  b7            1355   1357 	OR	A	     ;CLEAR CARRY
+f580  ed 52         1356   1358 	SBC	HL,DE	     ;GET DIFFERENCE & PRINT IT
+                    1357   1359 ;
+                    1358   1360 ; PRINT H&L ON CONSOLE
+                    1359   1361 ;
+f582  7c            1360   1362 LADR:	LD	A,H
+f583  cd 87 f5      1361   1363 	CALL	LBYTE
+f586  7d            1362   1364 	LD	A,L
+f587  f5            1363   1365 LBYTE:	PUSH	AF
+f588  0f            1364   1366 	RRCA	
+f589  0f            1365   1367 	RRCA	
+f58a  0f            1366   1368 	RRCA	
+f58b  0f            1367   1369 	RRCA	
+f58c  cd 90 f5      1368   1370 	CALL	LAD
+f58f  f1            1369   1371 	POP	AF
+f590  cd fa f4      1370   1372 LAD:	CALL	CONV
+f593  c3 7d f4      1371   1373 	JP	CO
+                    1372   1374 ; THIS ROUTINE SENDS EIGHT RUBOUTS
+                    1373   1375 ; TO THE PUNCH DEVICE.
+                    1374   1376 ;
+f596  01 ff 08      1375   1377 MARK:	LD	BC,08FFH     ;SET-UP B&C
+f599  18 03         1376   1378 	JR	LE0
+                    1377   1379 ;
+                    1378   1380 ; THIS ROUTINE SENDS BLANKS TO THE
+                    1379   1381 ; PUNCH DEVICE.
+                    1380   1382 ;
+f59b  01 00 48      1381   1383 LEAD:	LD	BC,4800H     ;PRESET SOME NULLS
+f59e  cd b9 f4      1382   1384 LE0:	CALL	PUO
+f5a1  10 fb         1383   1385 	DJNZ	LE0
+f5a3  c9            1384   1386 	RET	
+                    1385   1387 ;
+                    1386   1388 ; THIS ROUTINE RETURNS TO A USER
+                    1387   1389 ; PROGRAM THE CURRENT TOP OF
+                    1388   1390 ; MEMORY VALUE MINUS WORKSPACE
+                    1389   1391 ; AREA USED BY THE MONITOR.
+                    1390   1392 ;
+f5a4  e5            1391   1393 MEMCK:	PUSH	HL
+f5a5  cd b1 f5      1392   1394 	CALL	MEMSIZ
+f5a8  7d            1393   1395 	LD	A,L
+f5a9  d6 2c         1394   1396 	SUB	2CH
+f5ab  30 01         1395   1397 	JR	NC,MEMC
+f5ad  25            1396   1398 	DEC	H
+f5ae  44            1397   1399 MEMC:	LD	B,H
+f5af  e1            1398   1400 	POP	HL
+f5b0  c9            1399   1401 	RET	
+                    1400   1402 ;
+                    1401   1403 ; THIS IS A CALLED ROUTINE USED
+                    1402   1404 ; TO CALCULATE THE TOP OF MEMORY
+                    1403   1405 ; STARTING FROM THE BOTTOM OF
+                    1404   1406 ; MEMORY, AND SEARCHING UPWARD UNTIL
+                    1405   1407 ; FIRST R/W MEMORY IS FOUND, AND THEN
+                    1406   1408 ; CONTINUING UNTIL THE END OF THE R/W
+                    1407   1409 ; MEMORY. THIS ALLOWS R.O.M. AT ZERO,
+                    1408   1410 ; AND INSURES A CONTINUOUS MEMORY BLOCK
+                    1409   1411 ; HAS BEEN FOUND.
+                    1410   1412 ; IT IS USED BY THE ERROR ROUTINE TO
+                    1411   1413 ; RESET THE STACK POINTER AS WELL.
+                    1412   1414 ;
+f5b1  c5            1413   1415 MEMSIZ:	PUSH	BC
+f5b2  01 00 f0      1414   1416 	LD	BC,BASE	     ;POINT TO START OF MONITOR
+f5b5  21 ff ff      1415   1417 	LD	HL,-1	     ;RAM SEARCH STARTING PT.
+f5b8  24            1416   1418 MEM0:	INC	H	     ;FIRST FIND R/W MEMORY
+f5b9  7e            1417   1419 	LD	A,(HL)
+f5ba  2f            1418   1420 	CPL	
+f5bb  77            1419   1421 	LD	(HL),A
+f5bc  be            1420   1422 	CP	(HL)
+f5bd  2f            1421   1423 	CPL	
+f5be  77            1422   1424 	LD	(HL),A
+f5bf  20 f7         1423   1425 	JR	NZ,MEM0
+f5c1  24            1424   1426 MEM1:	INC	H	     ;R/W FOUND, NOW FIND END
+f5c2  7e            1425   1427 	LD	A,(HL)
+f5c3  2f            1426   1428 	CPL	
+f5c4  77            1427   1429 	LD	(HL),A
+f5c5  be            1428   1430 	CP	(HL)
+f5c6  2f            1429   1431 	CPL	
+f5c7  77            1430   1432 	LD	(HL),A
+f5c8  20 04         1431   1433 	JR	NZ,MEM2
+f5ca  7c            1432   1434 	LD	A,H	     ;TEST FOR MONITOR BORDER
+f5cb  b8            1433   1435 	CP	B
+f5cc  20 f3         1434   1436 	JR	NZ,MEM1	     ;NOT THERE YET
+f5ce  25            1435   1437 MEM2:	DEC	H	     ;BACK UP, SUBTRACT WORKSPACE
+f5cf  01 dd ff      1436   1438 	LD	BC,EXIT-ENDX
+f5d2  09            1437   1439 	ADD	HL,BC
+f5d3  c1            1438   1440 	POP	BC	     ;RESTORE BC
+f5d4  c9            1439   1441 	RET		     ;VALUE IN HL
+                    1440   1442 ;
+                    1441   1443 ;
+f5d5  cd 7a f6      1442   1444 RIBBLE:	CALL	RIX
+f5d8  d6 30         1443   1445 NIBBLE:	SUB	'0'	     ;QUALIFY & CONVERT
+f5da  d8            1444   1446 	RET	C	     ;<0
+f5db  fe 17         1445   1447 	CP	'G'-'0'	     ;>F?
+f5dd  3f            1446   1448 	CCF		     ;PERVERT CARRY
+f5de  d8            1447   1449 	RET	C
+f5df  fe 0a         1448   1450 	CP	10	     ;NMBR?
+f5e1  3f            1449   1451 	CCF		     ;PERVERT AGAIN
+f5e2  d0            1450   1452 	RET	NC	     ;RETURN CLEAN
+f5e3  d6 07         1451   1453 	SUB	'A'-'9'-1    ;ADJUST
+f5e5  fe 0a         1452   1454 	CP	0AH	     ;FILTER ":" THRU "@"
+f5e7  c9            1453   1455 	RET	
+                    1454   1456 ;
+                    1455   1457 ; SEND H&L VALUE TO PUNCH DEVICE
+                    1456   1458 ;
+f5e8  7c            1457   1459 PADR:	LD	A,H
+f5e9  cd ed f5      1458   1460 	CALL	PBYTE
+f5ec  7d            1459   1461 	LD	A,L
+                    1460   1462 ;
+                    1461   1463 ; PUNCH A SINGLE BYTE
+                    1462   1464 ;
+f5ed  f5            1463   1465 PBYTE:	PUSH	AF	     ;NIBBLE AT A TIME
+f5ee  0f            1464   1466 	RRCA	
+f5ef  0f            1465   1467 	RRCA	
+f5f0  0f            1466   1468 	RRCA	
+f5f1  0f            1467   1469 	RRCA	
+f5f2  cd fa f4      1468   1470 	CALL	CONV
+f5f5  cd b9 f4      1469   1471 	CALL	PUO
+f5f8  f1            1470   1472 	POP	AF	     ;NEXT NIBBLE
+f5f9  f5            1471   1473 	PUSH	AF	     ;SAVE FOR CHECKSUM
+f5fa  cd fa f4      1472   1474 	CALL	CONV
+f5fd  cd b9 f4      1473   1475 	CALL	PUO
+f600  f1            1474   1476 	POP	AF	     ;ORIGINAL BYTE HERE
+f601  82            1475   1477 	ADD	A,D	     ;ADDED TO CHECKSUM
+f602  57            1476   1478 	LD	D,A	     ;UPDATE CHECKSUM
+f603  c9            1477   1479 	RET	
+                    1478   1480 ;
+                    1479   1481 ;
+f604  0e 2d         1480   1482 COPCK:	LD	C,'-'	     ;PROMPT FOR CONSOLE
+f606  cd 7d f4      1481   1483 	CALL	CO
+                    1482   1484 ;
+f609  cd 35 f7      1483   1485 PCHK:	CALL	TI
+                    1484   1486 ;
+                    1485   1487 ; TEST FOR DELIMITERS
+                    1486   1488 ;
+f60c  fe 20         1487   1489 QCHK:	CP	' '	     ;RETURN ZERO IF DELIMITER
+f60e  c8            1488   1490 	RET	Z
+f60f  fe 2c         1489   1491 	CP	','
+f611  c8            1490   1492 	RET	Z
+f612  fe 0d         1491   1493 	CP	CR	     ;RETURN W/CARRY SET IF CR
+f614  37            1492   1494 	SCF	
+f615  c8            1493   1495 	RET	Z
+f616  3f            1494   1496 	CCF		     ;ELSE NON-ZERO, NO CARRY
+f617  c9            1495   1497 	RET	
+                    1496   1498 ;
+                    1497   1499 ; MAIN CONSOLE INPUT ROUTINE
+                    1498   1500 ;
+f618  cd 10 f1      1499   1501 CI:	CALL	IOCHK
+f61b  e6 03         1500   1502 	AND	~CMSK
+f61d  20 09         1501   1503 	JR	NZ,CI1
+                    1502   1504 ;
+                    1503   1505 ; TELEPRINTER ROUTINE
+                    1504   1506 ;
+f61f  db 10         1505   1507 TTYIN:	IN	A,(TTS)
+f621  e6 01         1506   1508 	AND	TTYDA
+f623  28 fa         1507   1509 	JR	Z,TTYIN
+f625  db 11         1508   1510 	IN	A,(TTI)
+f627  c9            1509   1511 	RET	
+                    1510   1512 ;
+f628  3d            1511   1513 CI1:	DEC	A	     ;CONSOLE=CRT?
+f629  20 09         1512   1514 	JR	NZ,CI2
+                    1513   1515 ;
+                    1514   1516 ; C.R.T. INPUT ROUTINE
+                    1515   1517 ;
+f62b  db 50         1516   1518 CRTIN:	IN	A,(CRTS)
+f62d  e6 40         1517   1519 	AND	CRTDA
+f62f  28 fa         1518   1520 	JR	Z,CRTIN
+f631  db 51         1519   1521 	IN	A,(CRTI)
+f633  c9            1520   1522 	RET	
+                    1521   1523 ;
+f634  3d            1522   1524 CI2:	DEC	A	     ;BATCH?
+f635  c2 00 f8      1523   1525 	JP	NZ,CILOC     ;NO, MUST BE USER DEFINED
+                    1524   1526 ;
+                    1525   1527 ;
+                    1526   1528 ; READER INPUT ROUTINE, WITH
+                    1527   1529 ; TIME-OUT DELAY. INCLUDES
+                    1528   1530 ; PULSING OF HARDWARE PORT
+                    1529   1531 ; TO INDICATE REQUEST FOR
+                    1530   1532 ; READER DATA.
+                    1531   1533 ;
+f638  e5            1532   1534 RI:	PUSH	HL
+f639  cd 10 f1      1533   1535 	CALL	IOCHK
+f63c  e6 0c         1534   1536 	AND	~RMSK
+                    1535   1537 ;	CPL	
+                    1536   1538 ;	OUT	(RCP),A	     ;PULSE READER CONTROL PORT
+                    1537   1539 ;	CPL		     ;CLEAR IT
+                    1538   1540 ;	OUT	(RCP),A
+f63e  20 1b         1539   1541 	JR	NZ,RI3	     ;NOT TTY
+f640  67            1540   1542 	LD	H,A	     ;CLEAR FOR-TIME OUT TEST
+f641  db 10         1541   1543 RI0:	IN	A,(TTS)
+f643  e6 01         1542   1544 	AND	TTYDA
+f645  20 0f         1543   1545 	JR	NZ,RI2
+f647  c5            1544   1546 	PUSH	BC
+f648  06 00         1545   1547 	LD	B,0
+f64a  e3            1546   1548 DL0:	EX	(SP),HL	     ;WASTE TIME
+f64b  e3            1547   1549 	EX	(SP),HL	     ;FOR DELAY
+f64c  10 fc         1548   1550 	DJNZ	DL0
+f64e  c1            1549   1551 	POP	BC
+f64f  25            1550   1552 	DEC	H
+f650  20 ef         1551   1553 	JR	NZ,RI0
+f652  af            1552   1554 RI1:	XOR	A
+f653  37            1553   1555 	SCF	
+f654  e1            1554   1556 	POP	HL
+f655  c9            1555   1557 	RET	
+f656  db 11         1556   1558 RI2:	IN	A,(TTI)
+f658  b7            1557   1559 RID:	OR	A
+f659  e1            1558   1560 	POP	HL
+f65a  c9            1559   1561 	RET	
+f65b  fe 08         1560   1562 RI3:	CP	RCAS
+f65d  20 12         1561   1563 	JR	NZ,RI6
+f65f  db ff         1562   1564 	IN	A,(SWITCH)   ;READ INITIAL SENSE CONDX.
+f661  6f            1563   1565 	LD	L,A
+f662  db ff         1564   1566 RI4:	IN	A,(SWITCH)   ;SEE IF SW. ALTERED
+f664  bd            1565   1567 	CP	L
+f665  20 eb         1566   1568 	JR	NZ,RI1	     ;ABORT IF SO
+f667  db 06         1567   1569 	IN	A,(RCSS)     ;CASSETTE INPUT DRIVER
+f669  e6 01         1568   1570 	AND	RCSDA	     ;DATA YET?
+f66b  20 f5         1569   1571 	JR	NZ,RI4	     ;KEEP LOOKING
+f66d  db 07         1570   1572 RI5:	IN	A,(RCSD)
+f66f  18 e7         1571   1573 	JR	RID
+f671  e1            1572   1574 RI6:	POP	HL
+f672  fe 04         1573   1575 	CP	RPTR
+f674  ca 06 f8      1574   1576 	JP	Z,RPTPL	     ;EXTERNAL ROUTINE
+f677  c3 09 f8      1575   1577 	JP	RULOC	     ;USER VECTOR
+                    1576   1578 ;
+                    1577   1579 ; THIS ROUTINE GETS READER INPUT
+                    1578   1580 ; AND KILLS THE PARITY BIT.
+                    1579   1581 ;
+f67a  cd 67 f4      1580   1582 RIX:	CALL	RIFF
+f67d  e6 7f         1581   1583 	AND	7FH
+f67f  c9            1582   1584 	RET	
+                    1583   1585 ;
+                    1584   1586 ; THIS ROUTINE READS A BINARY FILE
+                    1585   1587 ; IMAGE, IN THE FORM AS PUNCHED IN
+                    1586   1588 ; THE "U" (UNLOAD) COMMAND.  IT TAKES
+                    1587   1589 ; ONE PARAMETER, WHICH IS THE STARTING
+                    1588   1590 ; ADDRESS OF THE LOAD, AND WILL PRINT
+                    1589   1591 ; THE LAST ADDRESS (+1) LOADED ON THE
+                    1590   1592 ; CONSOLE DEVICE.
+                    1591   1593 ;
+f680  cd 38 f5      1592   1594 LOAD:	CALL	EXPR1	     ;INITIAL LOAD ADDRESS
+f683  e1            1593   1595 	POP	HL
+f684  cd 09 f5      1594   1596 	CALL	CRLF
+f687  16 ff         1595   1597 	LD	D,0FFH	     ;START-OF-FILE TAG
+f689  06 04         1596   1598 LOAD0:	LD	B,4	     ;FIND AT LEAST FOUR 0FFH'S
+f68b  cd 67 f4      1597   1599 LOAD1:	CALL	RIFF
+f68e  20 f9         1598   1600 	JR	NZ,LOAD0
+f690  10 f9         1599   1601 	DJNZ	LOAD1
+f692  cd 67 f4      1600   1602 LOAD2:	CALL	RIFF	     ;4 FOUND, NOW WAIT FOR NON-0FFH
+f695  28 fb         1601   1603 	JR	Z,LOAD2
+f697  77            1602   1604 	LD	(HL),A	     ;FIRST REAL DATA BYTE
+f698  3e 07         1603   1605 	LD	A,BELL	     ;TELL TTY
+f69a  d3 11         1604   1606 	OUT	(TTO),A
+f69c  23            1605   1607 LOAD3:	INC	HL
+f69d  cd 67 f4      1606   1608 	CALL	RIFF
+f6a0  28 03         1607   1609 	JR	Z,ELOA	     ;POSSIBLE END OF FILE
+f6a2  77            1608   1610 	LD	(HL),A
+f6a3  18 f7         1609   1611 	JR	LOAD3
+f6a5  1e 01         1610   1612 ELOA:	LD	E,1	     ;INITIALIZE
+f6a7  cd 67 f4      1611   1613 ELOA0:	CALL	RIFF
+f6aa  20 09         1612   1614 	JR	NZ,ELOA1
+f6ac  1c            1613   1615 	INC	E	     ;COUNT QUES
+f6ad  3e 07         1614   1616 	LD	A,MAX	     ;LOOK FOR EOF
+f6af  bb            1615   1617 	CP	E	     ;FOUND MAX?
+f6b0  20 f5         1616   1618 	JR	NZ,ELOA0     ;NOPE
+f6b2  c3 82 f5      1617   1619 	JP	LADR	     ;YEP, PRINT END ADDR
+f6b5  72            1618   1620 ELOA1:	LD	(HL),D
+f6b6  23            1619   1621 	INC	HL
+f6b7  1d            1620   1622 	DEC	E	     ;RESTORE
+f6b8  20 fb         1621   1623 	JR	NZ,ELOA1
+f6ba  77            1622   1624 	LD	(HL),A	     ;REAL BYTE
+f6bb  18 df         1623   1625 	JR	LOAD3
+                    1624   1626 ;
+                    1625   1627 ; THIS IS THE BREAKPOINT "TRAP" HANDLING
+                    1626   1628 ; ROUTINE.  ALL USER REGISTERS ARE SAVED
+                    1627   1629 ; FOR DISPLAY PURPOSES, AND THE CONTENTS
+                    1628   1630 ; ARE RESTORED WHEN EXECUTING A "GO" (G)
+                    1629   1631 ; COMMAND.
+                    1630   1632 ;
+f6bd                1631   1633 RESTART:
+f6bd  e5            1632   1634 	PUSH	HL	     ;PUSH ALL REGISTERS
+f6be  d5            1633   1635 	PUSH	DE
+f6bf  c5            1634   1636 	PUSH	BC
+f6c0  f5            1635   1637 	PUSH	AF
+f6c1  cd b1 f5      1636   1638 	CALL	MEMSIZ	     ;GET MONITOR'S STACK VALUE
+f6c4  eb            1637   1639 	EX	DE,HL
+f6c5  21 0a 00      1638   1640 	LD	HL,10	     ;GO UP 10 BYTES IN STACK
+f6c8  39            1639   1641 	ADD	HL,SP
+f6c9  06 04         1640   1642 	LD	B,4	     ;PICK OFF REG.
+f6cb  eb            1641   1643 	EX	DE,HL
+f6cc  2b            1642   1644 RES0:	DEC	HL
+f6cd  72            1643   1645 	LD	(HL),D	     ;SAVE IN WORKAREA
+f6ce  2b            1644   1646 	DEC	HL
+f6cf  73            1645   1647 	LD	(HL),E
+f6d0  d1            1646   1648 	POP	DE
+f6d1  10 f9         1647   1649 	DJNZ	RES0
+f6d3  c1            1648   1650 	POP	BC
+f6d4  0b            1649   1651 	DEC	BC	     ;ADJUST P.C. VALUE
+f6d5  f9            1650   1652 	LD	SP,HL	     ;SET MONITOR STACK
+f6d6  21 25 00      1651   1653 	LD	HL,TLOCX
+f6d9  39            1652   1654 	ADD	HL,SP
+f6da  7e            1653   1655 	LD	A,(HL)
+f6db  91            1654   1656 	SUB	C	     ;LOOK FOR A TRAP/MATCH
+f6dc  23            1655   1657 	INC	HL
+f6dd  20 04         1656   1658 	JR	NZ,RES1
+f6df  7e            1657   1659 	LD	A,(HL)
+f6e0  90            1658   1660 	SUB	B
+f6e1  28 0c         1659   1661 	JR	Z,RES3	     ;NO TRAP HERE
+f6e3  23            1660   1662 RES1:	INC	HL
+f6e4  23            1661   1663 	INC	HL
+f6e5  7e            1662   1664 	LD	A,(HL)
+f6e6  91            1663   1665 	SUB	C	     ;TEST FOR SECOND TRAP
+f6e7  20 05         1664   1666 	JR	NZ,RES2
+f6e9  23            1665   1667 	INC	HL
+f6ea  7e            1666   1668 	LD	A,(HL)
+f6eb  90            1667   1669 	SUB	B
+f6ec  28 01         1668   1670 	JR	Z,RES3
+f6ee  03            1669   1671 RES2:	INC	BC	     ;NO TRAPS SET, RE-ADJUST P.C.
+f6ef  21 20 00      1670   1672 RES3:	LD	HL,LLOCX
+f6f2  39            1671   1673 	ADD	HL,SP
+f6f3  73            1672   1674 	LD	(HL),E	     ;STORE USER H&L
+f6f4  23            1673   1675 	INC	HL
+f6f5  72            1674   1676 	LD	(HL),D
+f6f6  23            1675   1677 	INC	HL
+f6f7  23            1676   1678 	INC	HL
+f6f8  71            1677   1679 	LD	(HL),C	     ;AND USER P.C.
+f6f9  23            1678   1680 	INC	HL
+f6fa  70            1679   1681 	LD	(HL),B
+f6fb  c5            1680   1682 	PUSH	BC
+f6fc  0e 40         1681   1683 	LD	C,'@'	     ;DISPLAY BREAK ADDRESS.
+f6fe  cd 7d f4      1682   1684 	CALL	CO
+f701  e1            1683   1685 	POP	HL
+f702  cd 82 f5      1684   1686 	CALL	LADR
+f705  21 25 00      1685   1687 	LD	HL,TLOCX
+f708  39            1686   1688 	ADD	HL,SP
+f709  01 00 02      1687   1689 	LD	BC,200H
+f70c  5e            1688   1690 RES4:	LD	E,(HL)	     ;REPLACE BYTES TAKEN FOR TRAP
+f70d  71            1689   1691 	LD	(HL),C	     ;ZERO OUT STORAGE AREA
+f70e  23            1690   1692 	INC	HL
+f70f  56            1691   1693 	LD	D,(HL)
+f710  71            1692   1694 	LD	(HL),C
+f711  23            1693   1695 	INC	HL
+f712  7b            1694   1696 	LD	A,E
+f713  b2            1695   1697 	OR	D	     ;DO NOTHING IF ZERO
+f714  28 02         1696   1698 	JR	Z,RES5
+f716  7e            1697   1699 	LD	A,(HL)
+f717  12            1698   1700 	LD	(DE),A	     ;STORE BYTE
+f718  23            1699   1701 RES5:	INC	HL	     ;SAME THING
+f719  10 f1         1700   1702 	DJNZ	RES4	     ;FOR OTHER BREAKPOINT
+f71b  08            1701   1703 	EX	AF,AF'	     ;GET ALTERNATE SET OF REG.'S
+f71c  d9            1702   1704 	EXX	
+f71d  e5            1703   1705 	PUSH	HL	     ;AND STORE IN WORKSPACE
+f71e  d5            1704   1706 	PUSH	DE
+f71f  c5            1705   1707 	PUSH	BC
+f720  f5            1706   1708 	PUSH	AF
+f721  dd e5         1707   1709 	PUSH	IX
+f723  fd e5         1708   1710 	PUSH	IY
+f725  ed 57         1709   1711 	LD	A,I	     ;GET INTERUPT VECTOR BYTE
+f727  47            1710   1712 	LD	B,A
+f728  ed 5f         1711   1713 	LD	A,R	     ;GET REFRESH BYTE
+f72a  4f            1712   1714 	LD	C,A
+f72b  c5            1713   1715 	PUSH	BC	     ;SAVE
+f72c  c3 67 f0      1714   1716 	JP	START	     ;BACK TO START
+                    1715   1717 ;
+                    1716   1718 ; THIS IS THE INTERNAL KEYBOARD
+                    1717   1719 ; HANDLING ROUTINE. IT WILL IGNORE
+                    1718   1720 ; RUBOUTS (0FFH) AND BLANKS (00),
+                    1719   1721 ; AND IT WILL NOT ECHO CR'S & N'S.
+                    1720   1722 ; (NO N'S FOR THE "NULL" COMMAND).
+                    1721   1723 ; IT CONVERTS LOWER CASE TO UPPER
+                    1722   1724 ; CASE FOR THE LOOK-UP OF COMMANDS.
+                    1723   1725 ;
+                    1724   1726 ; OTHER CHARACTERS ARE ECHOED AS THEY
+                    1725   1727 ; ARE RECEIVED.
+                    1726   1728 ;
+f72f  cd 18 f6      1727   1729 KI:	CALL	CI	     ;GET CHARACTER FROM CONSOLE
+f732  e6 7f         1728   1730 	AND	7FH	     ;CLEAR PARITY BIT
+f734  c9            1729   1731 	RET	
+                    1730   1732 ;
+f735  cd 2f f7      1731   1733 TI:	CALL	KI
+f738  3c            1732   1734 	INC	A	     ;IGNORE RUBOUTS
+f739  f8            1733   1735 	RET	M
+f73a  3d            1734   1736 	DEC	A	     ;IGNORE NULLS
+f73b  c8            1735   1737 	RET	Z
+f73c  fe 4e         1736   1738 	CP	'N'	     ;IGNORE N'S FOR NULL CMND
+f73e  c8            1737   1739 	RET	Z
+f73f  fe 6e         1738   1740 	CP	'n'
+f741  28 10         1739   1741 	JR	Z,TI0
+f743  fe 0d         1740   1742 	CP	CR	     ;IGNORE CR'S
+f745  c8            1741   1743 	RET	Z
+f746  c5            1742   1744 	PUSH	BC
+f747  4f            1743   1745 	LD	C,A
+f748  cd 7d f4      1744   1746 	CALL	CO
+f74b  79            1745   1747 	LD	A,C
+f74c  c1            1746   1748 	POP	BC
+f74d  fe 40         1747   1749 	CP	'A'-1	     ;CONVERT TO UPPER CASE
+f74f  d8            1748   1750 	RET	C
+f750  fe 7b         1749   1751 	CP	'z'+1
+f752  d0            1750   1752 	RET	NC
+f753  e6 5f         1751   1753 TI0:	AND	05FH
+f755  c9            1752   1754 	RET	
+                    1753   1755 ;
+                    1754   1756 ; THIS ROUTINE ALLOWS EXAMINATION OF
+                    1755   1757 ; ANY INPUT PORT, OR THE SENDING OF
+                    1756   1758 ; ANY VALUE TO ANY PORT.
+                    1757   1759 ;
+                    1758   1760 ; QO<N>,<V>[CR]
+                    1759   1761 ;	OUTPUT TO PORT <N>, THE VALUE <V>
+                    1760   1762 ;
+                    1761   1763 ; QI<N>[CR]
+                    1762   1764 ;	DISPLAY THE PORT <N>
+                    1763   1765 ;
+f756  cd 35 f7      1764   1766 QUERY:	CALL	TI
+f759  fe 4f         1765   1767 	CP	'O'
+f75b  28 1c         1766   1768 	JR	Z,QUO
+f75d  fe 49         1767   1769 	CP	'I'
+f75f  c2 57 f4      1768   1770 	JP	NZ,ERROR
+f762  cd 38 f5      1769   1771 	CALL	EXPR1
+f765  c1            1770   1772 	POP	BC
+f766  ed 58         1771   1773 	IN	E,(C)
+f768  06 08         1772   1774 BITS:	LD	B,8	     ;DISPLAY 8 BITS
+f76a  cd 7b f4      1773   1775 	CALL	BLK
+f76d  cb 23         1774   1776 QUE2:	SLA	E
+f76f  3e 18         1775   1777 	LD	A,'0'>>1
+f771  8f            1776   1778 	ADC	A,A	     ;MAKE "0" OR "1"
+f772  4f            1777   1779 	LD	C,A
+f773  cd 7d f4      1778   1780 	CALL	CO
+f776  10 f5         1779   1781 	DJNZ	QUE2
+f778  c9            1780   1782 	RET	
+f779  cd 3a f5      1781   1783 QUO:	CALL	EXPR
+f77c  d1            1782   1784 	POP	DE
+f77d  c1            1783   1785 	POP	BC
+f77e  ed 59         1784   1786 	OUT	(C),E
+f780  c9            1785   1787 	RET	
+                    1786   1788 ;
+                    1787   1789 ; THIS ROUTINE VERIFIES THE CONTENTS
+                    1788   1790 ; OF ONE MEMORY BLOCK WITH ANOTHER.
+                    1789   1791 ;
+                    1790   1792 ; V<ADDR1>,<ADDR2>,<ADDR3>
+                    1791   1793 ;	VERIFY FROM <1> THRU <2> WITH
+                    1792   1794 ; THE CONTENTS OF MEMORY BEGINNING AT <3>
+                    1793   1795 ;
+f781  cd 2d f5      1794   1796 VERIFY:	CALL	EXPR3	     ;GET 3 PARAMETERS
+f784  0a            1795   1797 VERI0:	LD	A,(BC)
+f785  be            1796   1798 	CP	(HL)
+f786  28 05         1797   1799 	JR	Z,VERI1
+f788  c5            1798   1800 	PUSH	BC
+f789  cd 50 f1      1799   1801 	CALL	CERR	     ;DISPLAY ERRORS
+f78c  c1            1800   1802 	POP	BC
+f78d  03            1801   1803 VERI1:	INC	BC
+f78e  cd 66 f5      1802   1804 	CALL	HILOX
+f791  18 f1         1803   1805 	JR	VERI0
+                    1804   1806 ;
+                    1805   1807 ; <SYSTEM I/O LOOK-UP TABLE>
+                    1806   1808 ;
+                    1807   1809 ; THE FIRST CHARACTER IS THE DEVICE NAME
+                    1808   1810 ; (ONE LETTER) AND THE NEXT FOUR ARE THE
+                    1809   1811 ; NAMES OF THE FOUR POSSIBLE DRIVERS TO BE
+                    1810   1812 ; ASSIGNED.
+                    1811   1813 ;
+f793                1812   1814 LTBL:	
+f793  43            1813   1815 	DEFB	'C'	     ;CONSOLE ASSIGNMENTS
+f794  54            1814   1816 	DEFB	'T'	     ;CTTY	T=TELEPRINTER
+f795  43            1815   1817 	DEFB	'C'	     ;CCRT	C=CRT (VIDEO MONITOR)
+f796  42            1816   1818 	DEFB	'B'	     ;BATCH= COMMANDS FROM READER
+f797  55            1817   1819 	DEFB	'U'	     ;CUSE	USER
+                    1818   1820 ;
+f798  52            1819   1821 	DEFB	'R'	     ;READER ASSIGNMENTS
+f799  54            1820   1822 	DEFB	'T'	     ;RTTY
+f79a  50            1821   1823 	DEFB	'P'	     ;RPTR	P=PAPER TAPE
+f79b  43            1822   1824 	DEFB	'C'	     ;RCAS	C=CASSETTE
+f79c  55            1823   1825 	DEFB	'U'	     ;RUSER	USER
+                    1824   1826 ;
+f79d  50            1825   1827 	DEFB	'P'	     ;PUNCH ASSIGNMENTS
+f79e  54            1826   1828 	DEFB	'T'	     ;PTTY
+f79f  50            1827   1829 	DEFB	'P'	     ;PPTP
+f7a0  43            1828   1830 	DEFB	'C'	     ;PCAS	C=CASSETTE
+f7a1  55            1829   1831 	DEFB	'U'	     ;PUSER	USER
+                    1830   1832 ;
+f7a2  4c            1831   1833 	DEFB	'L'	     ;LIST ASSIGNMENTS
+f7a3  54            1832   1834 	DEFB	'T'	     ;LTTY	LIST=TELEPRINTER
+f7a4  43            1833   1835 	DEFB	'C'	     ;LCRT	LIST=CRT
+f7a5  4c            1834   1836 	DEFB	'L'	     ;LINE PRINTER
+f7a6  55            1835   1837 	DEFB	'U'	     ;LUSER	USER
+                    1836   1838 ;
+                    1837   1839 ;
+                    1838   1840 ; THIS IS A SHORT PROGRAM, EXECUTED
+                    1839   1841 ; UPON EXECUTING A "GO" COMMAND. IT
+                    1840   1842 ; IS PLACED IN THE WORK AREA WHEN
+                    1841   1843 ; THE MONITOR IS INITIALIZED, AS IT
+                    1842   1844 ; REQUIRES RAM FOR PROPER OPERATION.
+                    1843   1845 ;
+f7a7                1844   1846 EXIT:			     ;EXIT ROUTINE (LOADS ALL REGISTERS)
+f7a7  c1            1845   1847 	POP	BC
+f7a8  79            1846   1848 	LD	A,C
+f7a9  ed 4f         1847   1849 	LD	R,A
+f7ab  78            1848   1850 	LD	A,B
+f7ac  ed 47         1849   1851 	LD	I,A	
+f7ae  fd e1         1850   1852 	POP	IY
+f7b0  dd e1         1851   1853 	POP	IX
+f7b2  f1            1852   1854 	POP	AF
+f7b3  c1            1853   1855 	POP	BC
+f7b4  d1            1854   1856 	POP	DE
+f7b5  e1            1855   1857 	POP	HL
+f7b6  08            1856   1858 	EX	AF,AF'	
+f7b7  d9            1857   1859 	EXX	
+f7b8  d1            1858   1860 	POP	DE
+f7b9  c1            1859   1861 	POP	BC
+f7ba  f1            1860   1862 	POP	AF
+f7bb  e1            1861   1863 	POP	HL
+f7bc  f9            1862   1864 	LD	SP,HL
+f7bd  00            1863   1865 	NOP		     ;RESERVED FOR ENABLE INTERUPTS
+f7be  21 00 00      1864   1866 	LD	HL,0
+f7c1  c3 00 00      1865   1867 	JP	0
+                    1866   1868 ;
+f7c4  00 00         1867   1869 	DEFW	0	     ;STORAGE AREA FOR TRAP DATA
+f7c6  00            1868   1870 	DEFB	0
+f7c7  00 00         1869   1871 	DEFW	0
+f7c9  00            1870   1872 	DEFB	0
+                    1871   1873 ;
+                    1872   1874 ; DISPLACEMENTS OF REGISTER
+                    1873   1875 ; STORAGE FROM NORMAL STACK
+                    1874   1876 ; LOCATION.
+                    1875   1877 ;
+f7ca                1876   1878 ENDX:	
+                    1877   1879 ;
+0015  =             1878   1880 ALOC	EQU	15H
+0013  =             1879   1881 BLOC	EQU	13H
+0012  =             1880   1882 CLOC	EQU	12H
+0011  =             1881   1883 DLOC	EQU	11H
+0010  =             1882   1884 ELOC	EQU	10H
+0014  =             1883   1885 FLOC	EQU	14H
+0031  =             1884   1886 HLOC	EQU	31H
+0030  =             1885   1887 LLOC	EQU	30H
+0034  =             1886   1888 PLOC	EQU	34H
+0017  =             1887   1889 SLOC	EQU	17H
+0035  =             1888   1890 TLOC	EQU	35H
+0025  =             1889   1891 TLOCX	EQU	25H
+0020  =             1890   1892 LLOCX	EQU	20H
+                    1891   1893 ;
+0009  =             1892   1894 APLOC	EQU	09H
+000b  =             1893   1895 BPLOC	EQU	0BH
+000a  =             1894   1896 CPLOC	EQU	0AH
+000d  =             1895   1897 DPLOC	EQU	0DH
+000c  =             1896   1898 EPLOC	EQU	0CH
+0008  =             1897   1899 FPLOC	EQU	08H
+000f  =             1898   1900 HPLOC	EQU	0FH
+000e  =             1899   1901 LPLOC	EQU	0EH
+0007  =             1900   1902 XLOC	EQU	07
+0005  =             1901   1903 YLOC	EQU	05
+0002  =             1902   1904 RLOC	EQU	02
+0003  =             1903   1905 ILOC	EQU	03
+                    1904   1906 ;
+                    1905   1907 ;
+                    1906   1908 ; THIS IS THE TABLE USED TO DETERMINE
+                    1907   1909 ; A VALID REGISTER IDENTIFIER, AND IT'S
+                    1908   1910 ; DISPLACEMENT FROM THE STACK POINTER.
+                    1909   1911 ;
+                    1910   1912 ; POSITION ONE= REGISTER NAME, WITH BIT 7 INDICATING
+                    1911   1913 ; END OF TABLE.
+                    1912   1914 ;
+                    1913   1915 ; POSITION TWO=	BIAS FROM CURRENT STACK LEVEL OR'ED
+                    1914   1916 ; WITH A TWO-BIT FLAG.	00XXXXXX=BYTE
+                    1915   1917 ;			10XXXXXX=WORD
+                    1916   1918 ;			11XXXXXX=SPECIAL FOR "M" REG.
+                    1917   1919 ;
+f7ca                1918   1920 ACTBL:		;NORMAL SET OF REGISTERS (8080)
+                    1919   1921 ;		;PLUS THE INTERUPT REGISTER ("I")
+                    1920   1922 ;
+f7ca  41 15         1921   1923 	DEFB	'A',ALOC | 0
+f7cc  42 13         1922   1924 	DEFB	'B',BLOC | 0
+f7ce  43 12         1923   1925 	DEFB	'C',CLOC | 0
+f7d0  44 11         1924   1926 	DEFB	'D',DLOC | 0
+f7d2  45 10         1925   1927 	DEFB	'E',ELOC | 0
+f7d4  46 14         1926   1928 	DEFB	'F',FLOC | 0
+f7d6  48 31         1927   1929 	DEFB	'H',HLOC | 0
+f7d8  4c 30         1928   1930 	DEFB	'L',LLOC | 0
+f7da  4d f1         1929   1931 	DEFB	'M',HLOC | 0C0H
+f7dc  50 b4         1930   1932 	DEFB	'P',PLOC | 080H
+f7de  53 97         1931   1933 	DEFB	'S',SLOC | 080H
+f7e0  49 03         1932   1934 	DEFB	'I',ILOC | 0
+f7e2  80            1933   1935 	DEFB	80H
+                    1934   1936 ;
+f7e3                1935   1937 PRMTB:		;ADDITIONAL SET OF REGISTERS (Z-80)
+                    1936   1938 ;
+f7e3  41 09         1937   1939 	DEFB	'A',APLOC | 0
+f7e5  42 0b         1938   1940 	DEFB	'B',BPLOC | 0
+f7e7  43 0a         1939   1941 	DEFB	'C',CPLOC | 0
+f7e9  44 0d         1940   1942 	DEFB	'D',DPLOC | 0
+f7eb  45 0c         1941   1943 	DEFB	'E',EPLOC | 0
+f7ed  46 08         1942   1944 	DEFB	'F',FPLOC | 0
+f7ef  48 0f         1943   1945 	DEFB	'H',HPLOC | 0
+f7f1  4c 0e         1944   1946 	DEFB	'L',LPLOC | 0
+f7f3  4d cf         1945   1947 	DEFB	'M',HPLOC | 0C0H
+f7f5  58 87         1946   1948 	DEFB	'X',XLOC | 080H
+f7f7  59 85         1947   1949 	DEFB	'Y',YLOC | 080H
+f7f9  52 02         1948   1950 	DEFB	'R',RLOC | 0
+f7fb  80            1949   1951 	DEFB	80H
+                    1950   1952 ;
+f7fc                1951   1953 Z:	
+                    1952   1954 		;END OF PROGRAM
+                    1953   1955 ;
+                    1954   1956 ;
+f7fc                1955   1957 	END
+
+Symbol table
+
+ABS0    f25a    ACTBL   f7ca    AHEAD   f04a    ALOC    0015    APLOC   0009 
+ASERR   f0ed    ASS0    f0cf    ASS1    f0d8    ASS2    f0d9    ASS3    f0e6 
+ASS4    f0f0    ASS5    f0f3    ASS6    f0fe    ASS7    f100    ASSIGN  f0c3 
+BASE    f000    BATCH   0002*   BEGIN   f031    BELL    0007    BITS    f768 
+BLK     f47b    BLOC    0013    BPLOC   000b    BY1     f117    BYE     f114 
+CCHK    f451*   CCRT    0001*   CERR    f150    CI      f618    CI1     f628 
+CI2     f634    CILOC   f800    CLOC    0012    CMSK    00fc    CO      f47d 
+CO0     f48e    CO1     f49b    COLOC   f803    COM1    f144    COMP    f141 
+CONV    f4fa    COPCK   f604    CPLOC   000a    CR      000d    CRLF    f509 
+CRTBE   0080    CRTDA   0040    CRTI    0051    CRTIN   f62b    CRTO    0051 
+CRTOUT  f491    CRTS    0050    CS0     f51c    CS1     f521    CS2     f525*
+CS3     f528    CSLOC   f818    CSTS    f511    CTTY    0000*   CUSE    0003*
+DIS0    f165    DIS1    f168    DISP    f162    DL0     f64a    DLOC    0011 
+DONE    f277    DONE2   f35e    DPLOC   000d    ELOA    f6a5    ELOA0   f6a7 
+ELOA1   f6b5    ELOC    0010    ENDX    f7ca    EOF     f179    EPLOC   000c 
+ERR2    f274*   ERR3    f26e    ERROR   f457    EX0     f53d    EX1     f540 
+EX2     f54e    EX3     f558    EXF     f55f    EXIT    f7a7    EXLF    f504 
+EXPR    f53a    EXPR1   f538    EXPR3   f52d    FALSE   0000    FI1     f198 
+FIL     0000    FILL    f195    FIND    f337    FINDC   f332    FLOC    0014 
+FOUND   f346    FPLOC   0008    GOT0    f1b9    GOT1    f1bf    GOT2    f1d4 
+GOT2A   f1dc    GOT3    f1e7    GOTO    f1a2    HELLO   f062    HEXN    f576 
+HILO    f56c    HILOX   f566    HLOC    0031    HLSP    f478    HPLOC   000f 
+ILOC    0003    IOBYT   efff    IOCHK   f110    IOSET   f10b    J       f81b*
+KI      f72f    LAD     f590    LADR    f582    LBYTE   f587    LC1     f2ad 
+LCRT    0040    LE0     f59e    LEAD    f59b    LF      000a    LFADR   f475 
+LINE    0080    LLO1    f261    LLOC    0030    LLOCX   0020    LMSK    003f 
+LNLOC   f812    LO      f49f    LOAD    f680    LOAD0   f689    LOAD1   f68b 
+LOAD2   f692    LOAD3   f69c    LOD0    f22d    LOD1    f285    LOD3    f291 
+LOD4    f269    LOD5    f28a    LODCB   f2a3    LODR    f283    LPLOC   000e 
+LTBL    f793    LTTY    0000*   LULOC   f815    LUSER   00c0*   MARK    f596 
+MAX     0007    MEM0    f5b8    MEM1    f5c1    MEM2    f5ce    MEMC    f5ae 
+MEMCK   f5a4    MEMSIZ  f5b1    MO1     f211    MOVE    f20e    MSG     f021 
+MSGL    0010    NIBBLE  f5d8    NN      0000*   NULL    f4ee    PADR    f5e8 
+PBYTE   f5ed    PCAS    0020    PCASO   0007    PCASS   0006    PCHK    f609 
+PCSBE   0080    PEOL    f4b2    PLOC    0034    PMSK    00cf    PO0     f4c4 
+PO1     f4ce    PPTP    0010    PRMTB   f7e3    PTPL    f80c    PTTY    0000*
+PULOC   f80f    PUO     f4b9    PUSER   0030*   PUTA    f122    PUTA1   f129 
+PUTA2   f138    PUTA3   f13d    QCHK    f60c    QUE2    f76d    QUERY   f756 
+QUO     f779    RCAS    0008    RCSD    0007    RCSDA   0001    RCSS    0006 
+REA0    f228    READ    f219    RES0    f6cc    RES1    f6e3    RES2    f6ee 
+RES3    f6ef    RES4    f70c    RES5    f718    RESTART f6bd    RI      f638 
+RI0     f641    RI1     f652    RI2     f656    RI3     f65b    RI4     f662 
+RI5     f66d*   RI6     f671    RIBBLE  f5d5    RID     f658    RIFF    f467 
+RIX     f67a    RLOC    0002    RMSK    00f3    RPTPL   f806    RPTR    0004 
+RST7    0038    RTTY    0000*   RUB     00ff*   RULOC   f809    RUSER   000c*
+SBYTE   f2b3    SIZE    f46e    SLOC    0017    STARO   f073    START   f067 
+STKIT   f05f    STORE   f2c6    SUB0    f2d6    SUB1    f2ef    SUB2    f2f8 
+SUB3    f2f0    SUBS    f2d2    SWITCH  00ff    TBL     f08f    TELL    f354 
+TEST    f1f0    TEST1   f1f3    TEST2   f208    TI      f735    TI0     f753 
+TLOC    0035    TLOCX   0025    TOM     f442    TOM1    f445    TRAP    f01e 
+TRUE    ffff*   TTI     0011    TTO     0011    TTS     0010    TTS2    0012 
+TTYBE   0002    TTYDA   0001    TTYIN   f61f    TTYOUT  f484    TYP0    f2fe 
+TYP1    f303    TYP2    f30a    TYP3    f30c    TYPE    f2fb    UNL     f4e2 
+UNLD    f4d6    USER    f800    VERI0   f784    VERI1   f78d    VERIFY  f781 
+WAIT    f4f1    WHER0   f31d    WHERE   f31b    WRITE   f363    WRT0    f369 
+WRT1    f374    WRT2    f386    WRT3    f392    WRT4    f39e    XAM     f3a3 
+XAM0    f3bb    XAM1    f3c7    XAM2    f3ca    XAM3    f3e3    XAM4    f3fc 
+XAM5    f402    XAM6    f407    XAM7    f40a    XAM8    f433    XAM9    f438 
+XLOC    0007    YLOC    0005    Z       f7fc*   

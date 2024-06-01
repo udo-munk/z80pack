@@ -231,8 +231,8 @@ Z80OPS:
 	JP	PE,NN
 	JP	PO,NN
 	JP	Z,NN
-	JR	C,$+DIS
 	JR	$+DIS
+	JR	C,$+DIS
 	JR	NC,$+DIS
 	JR	NZ,$+DIS
 	JR	Z,$+DIS

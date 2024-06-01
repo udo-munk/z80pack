@@ -1,0 +1,8 @@
+	title	'Z80 instruction set exerciser (doc)'
+	.z80
+
+exkind	equ	1
+
+	include	EX.MAC
+
+	end

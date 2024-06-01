@@ -1,72 +1,75 @@
 /*
- *	Z80 - Assembler
- *	Copyright (C) 1987-2021 by Udo Munk
- *
- *	History:
- *	17-SEP-1987 Development under Digital Research CP/M 2.2
- *	28-JUN-1988 Switched to Unix System V.3
- *	21-OCT-2006 changed to ANSI C for modern POSIX OS's
- *	03-FEB-2007 more ANSI C conformance and reduced compiler warnings
- *	18-MAR-2007 use default output file extension dependent on format
- *	04-OCT-2008 fixed comment bug, ';' string argument now working
- *	22-FEB-2014 fixed is...() compiler warnings
- *	13-JAN-2016 fixed buffer overflow, new expression parser from Didier
- *	02-OCT-2017 bug fixes in expression parser from Didier
- *	28-OCT-2017 added variable symbol lenght and other improvements
- *	15-MAY-2018 mark unreferenced symbols in listing
- *	30-JUL-2021 fix verbose option
+ *	Z80/8080-Macro-Assembler
+ *	Copyright (C) 1987-2022 by Udo Munk
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
+
+#ifndef Z80AGLB_INC
+#define Z80AGLB_INC
 
 /*
  *	global variable declarations
  */
 
-extern char	*infiles[],
-		objfn[],
-		lstfn[],
+extern char	**infiles,
 		*srcfn,
+		*objfn,
+		*lstfn,
 		line[],
-		tmp[],
 		label[],
 		opcode[],
 		operand[],
-		ops[],
 		title[];
 
-extern int	list_flag,
-		sym_flag,
-		ver_flag,
-		dump_flag,
+extern BYTE	ops[],
+		ctype[];
+
+extern WORD	rpc,
 		pc,
+		a_addr,
+		load_addr,
+		start_addr,
+		hexlen,
+		carylen;
+
+extern int	list_flag,
+		nodate_flag,
+		sym_flag,
+		undoc_flag,
+		ver_flag,
+		nofill_flag,
+		upcase_flag,
+		mac_list_flag,
+		i8080_flag,
+		nfiles,
+		radix,
+		phs_flag,
 		pass,
 		iflevel,
+		act_iflevel,
+		act_elselevel,
 		gencode,
+		nofalselist,
+		mac_def_nest,
+		mac_exp_nest,
+		mac_symmax,
 		errors,
 		errnum,
-		sd_flag,
-		sd_val,
-		prg_adr,
-		prg_flag,
-		out_form,
+		a_mode,
+		load_flag,
+		obj_fmt,
 		symlen,
-		symsize,
-		no_opcodes,
-		no_operands;
+		symmax,
+		p_line,
+		ppl,
+		page;
+
+extern unsigned long
+		c_line;
 
 extern FILE	*srcfp,
 		*objfp,
 		*lstfp,
 		*errfp;
 
-extern unsigned	c_line,
-		s_line,
-		p_line,
-		ppl,
-		page;
-
-extern struct sym *symtab[],
-		  **symarray;
-
-extern struct opc opctab[];
-
-extern struct ope opetab[];
+#endif

@@ -11,8 +11,10 @@
  * History:
  * 16-SEP-2019 (Mike Douglas) created from tarbell-fdc.c
  * 28-SEP-2019 (Udo Munk) use logging
+ * 11-MAY-2024 (Thomas Eberhardt) add diskdir option support
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -77,7 +79,7 @@ static BYTE board_stat;		/* FLP80 board status register */
 static BYTE board_ctl;		/* FLP80 board control register */
 static int disk;		/* current disk # */
 static int state;		/* fdc state */
-static char fn[256];		/* path/filename for disk image */
+static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static int dcnt;		/* data counter read/write */
 static BYTE buf[SEC_SZ];	/* buffer for one sector */
@@ -92,25 +94,58 @@ void get_disk_filename(void)
 	FILE *fp;
 	char inbuf[256];
 	char *left, *right;
+	struct stat sbuf;
 
-	*fn = (char)0;		/* init to null string */	
+	if (c_flag) {
+		strcpy(fn, conffn);
+	} else {
+		strcpy(fn, confdir);
+		strcat(fn, "/config.txt");
+	}
+	fp = fopen(fn, "r");
 
-	if ((fp = fopen("conf/config.txt", "r")) != NULL) {
+	*fn = '\0';		/* init to null string */
+
+	if (fp != NULL) {
 
 		while (fgets(inbuf, 256, fp) != NULL) {
-			if ((inbuf[0]=='\n') || (inbuf[0]=='\r') ||
-			    (inbuf[0]=='#'))
+			if ((inbuf[0] == '\n') || (inbuf[0] == '\r') ||
+			    (inbuf[0] == '#'))
 				continue;
-			left = strtok(inbuf, "= \t\r\n");
+			if ((left = strtok(inbuf, "= \t\r\n")) == NULL) {
+				LOGW(TAG, "missing command");
+				continue;
+			}
 			if (0 == strncmp(left, "drive", 5)) {
-				if (left[5] == (char)disk + '0') { /* match drive? */
+				if (left[5] == (char) disk + '0') { /* match drive? */
 					right = strtok(NULL, "= \t\r\n");
-					strcpy(fn, right);
-					fclose(fp);
+					if (right == NULL) {
+						LOGW(TAG, "missing path for %s",
+						     left);
+						continue;
+					}
+					/* if option -d is used disks are there */
+					if (diskdir != NULL) {
+						strcpy(fn, diskd);
+					} else {
+						/* if not first try ./disks */
+						if ((stat("./disks", &sbuf) == 0) &&
+						    S_ISDIR(sbuf.st_mode)) {
+							strcpy(fn, "./disks");
+						} else {
+							/* nope, then DISKSDIR
+							   as set in Makefile */
+							strcpy(fn, DISKSDIR);
+						}
+					}
+
+					strcat(fn, "/");
+					strcat(fn, right);
 					break;
 				}
 			}
 		} 	/* end while */
+		fclose(fp);
 	}
 }
 
@@ -119,7 +154,7 @@ void get_disk_filename(void)
  */
 BYTE fdcBoard_stat_in(void)
 {
-	return(board_stat);
+	return (board_stat);
 }
 
 /*
@@ -127,7 +162,7 @@ BYTE fdcBoard_stat_in(void)
  */
 BYTE fdcBoard_ctl_in(void)
 {
-	return(board_ctl);
+	return (board_ctl);
 }
 
 /*
@@ -150,7 +185,7 @@ void fdcBoard_ctl_out(BYTE data)
 BYTE fdc1771_stat_in(void)
 {
 	board_stat &= ~sINTERRUPT;		/* read clears INTRQ */
-	return(fdc_stat);
+	return (fdc_stat);
 }
 
 /*
@@ -168,8 +203,7 @@ void fdc1771_cmd_out(BYTE data)
 		if (fdc_data < TRK) {
 			fdc_track = fdc_data;
 			fdc_stat = 0;
-		}
-		else
+		} else
 			fdc_stat = sSEEK_ERROR;	/* assumes V bit set */
 
 		if (fdc_track == 0)		/* update track zero flag */
@@ -178,10 +212,10 @@ void fdc1771_cmd_out(BYTE data)
 	} else if ((data & 0xe0) == 0x20) {	/* step same direction */
 		printf("Mostek FLP-80: step not implemented\r\n");
 		fdc_stat = sSEEK_ERROR;
-		
+
 		if (fdc_track == 0)		/* check to set track 0 flag */
 			fdc_stat |= sTRACK0;
-			
+
 	} else if ((data & 0xe0) == 0x40) {	/* step in */
 		if (data & cUPDATE_TRACK)	/* update track register? */
 			fdc_track++;
@@ -190,7 +224,7 @@ void fdc1771_cmd_out(BYTE data)
 		else
 			fdc_stat = sSEEK_ERROR;	/* assumes V bit set */
 
-		if (fdc_track == 0)		/* udpate track zero flag */	
+		if (fdc_track == 0)		/* update track zero flag */
 			fdc_stat |= sTRACK0;
 
 	} else if ((data & 0xe0) == 0x60) {	/* step out */
@@ -201,7 +235,7 @@ void fdc1771_cmd_out(BYTE data)
 		else
 			fdc_stat = sSEEK_ERROR;	/* assumes V bit set */
 
-		if (fdc_track == 0)		/* update track zero flag */	
+		if (fdc_track == 0)		/* update track zero flag */
 			fdc_stat |= sTRACK0;
 
 	} else if ((data & 0xf0) == 0x80) {	/* read single sector */
@@ -255,7 +289,7 @@ void fdc1771_cmd_out(BYTE data)
  */
 BYTE fdc1771_track_in(void)
 {
-	return(fdc_track);
+	return (fdc_track);
 }
 
 /*
@@ -271,7 +305,7 @@ void fdc1771_track_out(BYTE data)
  */
 BYTE fdc1771_sec_in(void)
 {
-	return(fdc_sec);
+	return (fdc_sec);
 }
 
 /*
@@ -287,7 +321,7 @@ void fdc1771_sec_out(BYTE data)
  */
 BYTE fdc1771_data_in(void)
 {
-	long pos;		/* seek position */
+	off_t pos;		/* seek position */
 
 	switch (state) {
 	case FDC_READ:		/* read data from disk sector */
@@ -300,14 +334,14 @@ BYTE fdc1771_data_in(void)
 			if ((fdc_track >= TRK) || (fdc_sec > SPT)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sRECORD_NOT_FOUND;
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* check disk drive */
 			if ((disk < 0) || (disk > 3)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sNOT_READY;
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* try to open disk image */
@@ -315,7 +349,7 @@ BYTE fdc1771_data_in(void)
 			if ((fd = open(fn, O_RDONLY)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sNOT_READY;
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* seek to sector */
@@ -324,7 +358,7 @@ BYTE fdc1771_data_in(void)
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sRECORD_NOT_FOUND;
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* read the sector */
@@ -332,7 +366,7 @@ BYTE fdc1771_data_in(void)
 				state = FDC_IDLE;	/* abort read command */
 				fdc_stat = sRECORD_NOT_FOUND;
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			close(fd);
 			board_stat = sINPUT_READY + sINTERRUPT;
@@ -345,8 +379,7 @@ BYTE fdc1771_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	case FDC_READADR:	/* read disk address */
 
@@ -368,12 +401,10 @@ BYTE fdc1771_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	default:
-		return((BYTE) 0);
-		break;
+		return ((BYTE) 0);
 	}
 }
 
@@ -382,7 +413,7 @@ BYTE fdc1771_data_in(void)
  */
 void fdc1771_data_out(BYTE data)
 {
-	long pos;			/* seek position */
+	off_t pos;			/* seek position */
 	static int wrtstat;		/* state while formatting track */
 	static int bcnt;		/* byte counter for sector data */
 	static int secs;		/* # of sectors written so far */
@@ -436,7 +467,7 @@ void fdc1771_data_out(BYTE data)
 		/* last byte? */
 		if (dcnt == SEC_SZ) {
 			state = FDC_IDLE;
-			if (write(fd, &buf[0], SEC_SZ) == SEC_SZ) 
+			if (write(fd, &buf[0], SEC_SZ) == SEC_SZ)
 				fdc_stat = 0;
 			else
 				fdc_stat = sWRITE_FAULT;
@@ -453,7 +484,7 @@ void fdc1771_data_out(BYTE data)
 			if (fdc_track == 0)
 				unlink(fn);
 			/* try to create new disk image */
-			if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
+			if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = sNOT_READY;
 				return;
@@ -490,7 +521,7 @@ void fdc1771_data_out(BYTE data)
 				if (write(fd, buf, bcnt) == bcnt)
 					fdc_stat = 0;
 				else
-					fdc_stat = sWRITE_FAULT; 
+					fdc_stat = sWRITE_FAULT;
 				wrtstat = 1;
 			}
 		}

@@ -1,110 +1,126 @@
-CC = gcc
+###
+### START MACHINE DEPENDENT VARIABLES
+###
+# (simple) machine name - will be suffixed with 'sim'
+# and the executable saved as '../machinesim'
+MACHINE = mostek
+# machine specific system source files
+MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
+# machine specific I/O source files
+IO_SRCS = simbdos.c unix_terminal.c mostek-cpu.c mostek-fdc.c
 
-# Development
-#CFLAGS = -O3 -c -Wall -Wextra -fstack-protector-all -D_FORTIFY_SOURCE=2 
+# Installation directories by convention
+# http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
+PACKAGE = z80pack
+CPROG = $(MACHINE)sim
+PREFIX ?= /usr/local
+EXEC_PREFIX = $(PREFIX)
+BINDIR = $(EXEC_PREFIX)/bin
+DATAROOTDIR = $(PREFIX)/share
+DATADIR = $(DATAROOTDIR)/$(PACKAGE)/$(CPROG)
+DOCDIR = $(DATAROOTDIR)/doc/$(PACKAGE)/$(CPROG)
 
-# Production
-CFLAGS = -O3 -c -Wall -Wextra -U_FORTIFY_SOURCE 
+# system wide location for machines configuration files
+CONF_DIR = $(DATADIR)/conf
+# system wide location for disk images
+DISKS_DIR = $(DATADIR)/disks
+# default boot ROM path
+ROMS_DIR = $(DATADIR)/roms
+###
+### END MACHINE DEPENDENT VARIABLES
+###
 
-LFLAGS =
+SIM = ../$(MACHINE)sim
 
-OBJ =	sim0.o \
-	sim1.o \
-	sim1a.o \
-	sim2.o \
-	sim3.o \
-	sim4.o \
-	sim5.o \
-	sim6.o \
-	sim7.o \
-	simctl.o \
-	disas.o	\
-	simint.o \
-	memory.o \
-	iosim.o	\
-	simfun.o \
-	simglb.o \
-	simbdos.o \
-	config.o \
-	unix_terminal.o \
-	mostek-cpu.o \
-	mostek-fdc.o
+CORE_DIR = ../../z80core
+IO_DIR = ../../iodevices
 
-../sim : $(OBJ)
-	$(CC) $(OBJ) $(LFLAGS) -o ../sim
+VPATH = $(CORE_DIR) $(IO_DIR)
 
-sim0.c:
-	./lnsrc
+###
+### START O/S PLATFORM DEPENDENT VARIABLES
+###
+include $(CORE_DIR)/Makefile.in-os
 
-sim0.o : sim0.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim0.c
+ifeq ($(TARGET_OS),BSD)
+endif
+ifeq ($(TARGET_OS),LINUX)
+endif
+ifeq ($(TARGET_OS),OSX)
+endif
+###
+### END O/S DEPENDENT VARIABLES
+###
 
-sim1.o : sim1.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1.c
+DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
+	-DBOOTROM=\"$(ROMS_DIR)\"
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
+CPPFLAGS = $(DEFS) $(INCS)
 
-sim1a.o : sim1a.c sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim1a.c
+CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
+CWARNS = -Wall -Wextra -Wwrite-strings
 
-sim2.o : sim2.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim2.c
+# Production - the default
+COPTS = -O3 -U_FORTIFY_SOURCE
 
-sim3.o : sim3.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim3.c
+# Development - use `MODE=DEV make build`
+ifeq ($(MODE),DEV)
+COPTS = -O3 -fstack-protector-all -D_FORTIFY_SOURCE=2
+endif
 
-sim4.o : sim4.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim4.c
+# Debug - use `DEBUG=1 make build`
+ifneq ($(DEBUG),)
+COPTS = -O -g
+endif
 
-sim5.o : sim5.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim5.c
+CFLAGS = $(CSTDS) $(COPTS) $(CWARNS) $(PLAT_CFLAGS)
+CXXFLAGS = $(CXXSTDS) $(CXXOPTS) $(CXXWARNS) $(PLAT_CXXFLAGS)
 
-sim6.o : sim6.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim6.c
+LDFLAGS = $(PLAT_LDFLAGS)
+LDLIBS = $(PLAT_LDLIBS)
 
-sim7.o : sim7.c	sim.h simglb.h config.h memory.h
-	$(CC) $(CFLAGS) sim7.c
+INSTALL = install
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
 
-simctl.o : simctl.c sim.h simglb.h memory.h ../../iodevices/mostek-fdc.h \
-	   ../../iodevices/unix_terminal.h
-	$(CC) $(CFLAGS) simctl.c
+# core system source files for the CPU simulation
+CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c \
+	simmain.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c \
+	simz80-fd.c simz80-fdcb.c
+SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.d)
 
-disas.o	: disas.c
-	$(CC) $(CFLAGS) disas.c
+all: $(SIM)
 
-simint.o : simint.c sim.h simglb.h
-	$(CC) $(CFLAGS) simint.c
+$(SIM): $(OBJS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
-memory.o : memory.c sim.h
-	$(CC) $(CFLAGS) memory.c
+$(DEPS): sim.h
 
-iosim.o	: iosim.c sim.h	simglb.h ../../iodevices/simbdos.h \
-	  ../../iodevices/mostek-cpu.h ../../iodevices/mostek-fdc.h
-	$(CC) $(CFLAGS) -I../../iodevices iosim.c
+%.d: %.c
+	@$(CC) -MM $(CFLAGS) $(CPPFLAGS) $< > $@
 
-simfun.o : simfun.c sim.h
-	$(CC) $(CFLAGS) simfun.c
+-include $(DEPS)
 
-simglb.o : simglb.c sim.h
-	$(CC) $(CFLAGS) simglb.c
+build: _rm_obj all
 
-simbdos.o : ../../iodevices/simbdos.c sim.h simglb.h memory.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/simbdos.c
+install: $(SIM)
+#	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+#	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
 
-config.o : config.c simglb.h sim.h
-	$(CC) $(CFLAGS) config.c
+uninstall:
+#	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
 
-unix_terminal.o : ../../iodevices/unix_terminal.c
-	$(CC) $(CFLAGS) ../../iodevices/unix_terminal.c
+clean: _rm_obj _rm_deps
 
-mostek-cpu.o: ../../iodevices/mostek-cpu.c ../../iodevices/unix_terminal.h sim.h simglb.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/mostek-cpu.c
+_rm_obj:
+	rm -f $(OBJS)
 
-mostek-fdc.o: ../../iodevices/mostek-fdc.c sim.h simglb.h
-	$(CC) $(CFLAGS) -I./ ../../iodevices/mostek-fdc.c
+_rm_deps:
+	rm -f $(DEPS)
 
-clean:
-	rm -f *.o
-	./ulnsrc
+distclean: clean
+	rm -f $(SIM)
 
-allclean:
-	make clean
-	rm -f ../sim
+.PHONY: all build install uninstall clean distclean

@@ -1,20 +1,24 @@
 /**
  * log.h
- * 
+ *
  * Copyright (C) 2018 by David McNaughton
- * 
- * NOTICE: This is a deriviative of a work that is can be found at and is itself:
+ *
+ * NOTICE: This is a derivative of a work that can be found at and is itself:
  * https://github.com/espressif/esp-idf/blob/master/components/log/include/esp_log.h
  * Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * History:
- * 12-JUL-18    1.0     Initial Release
- * 
+ * 12-JUL-2018	1.0	Initial Release
+ *
  */
+
+#ifndef LOG_INC
+#define LOG_INC
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -43,9 +47,10 @@ static void _log_write(log_level_t level, const char* tag, const char* format, .
     (void)(level);
     (void)(tag);
 
-    va_list(args);
+    va_list args;
     va_start(args, format);
     vprintf(format, args);
+    va_end(args);
 }
 
 static inline uint32_t _log_timestamp(void) {
@@ -83,9 +88,11 @@ static inline uint32_t _log_timestamp(void) {
 #define LOG_LOCAL_LEVEL  ((log_level_t) LOG_DEFAULT_LEVEL)
 #endif
 
-#define LOG( tag, format, ... )  _log_write(0, NULL, format, ##__VA_ARGS__);
+#define LOG( tag, format, ... )  _log_write(LOG_NONE, NULL, format, ##__VA_ARGS__);
 #define LOGE( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_ERROR)   { _log_write(LOG_ERROR,   tag, _LOG_FORMAT(E, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGW( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_WARN)    { _log_write(LOG_WARN,    tag, _LOG_FORMAT(W, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGI( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_INFO)    { _log_write(LOG_INFO,    tag, _LOG_FORMAT(I, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGD( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_DEBUG)   { _log_write(LOG_DEBUG,   tag, _LOG_FORMAT(D, format), _log_timestamp(), tag, ##__VA_ARGS__); }
 #define LOGV( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_VERBOSE) { _log_write(LOG_VERBOSE, tag, _LOG_FORMAT(V, format), _log_timestamp(), tag, ##__VA_ARGS__); }
+
+#endif /* !LOG_INC */

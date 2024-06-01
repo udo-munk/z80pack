@@ -1,42 +1,44 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2021 by Udo Munk
+ * Copyright (C) 2008-2021 Udo Munk
+ * Copyright (C) 2021 David McNaughton
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
  *
  * History:
- * 20-OCT-08 first version finished
- * 20-MAR-14 ignore carriage return too, necessary for the Windows port
- * 19-JUN-14 added config parameter for droping nulls after CR/LF
- * 09-OCT-14 modified to support 2 SIO's
- * 09-MAY-16 added path for config file
- * 29-AUG-16 ROM and boot switch configuration for Altair emulation added
- * 20-DEC-16 configuration moved local, will be different for each system
- * 04-JAN-17 front panel framerate configurable
- * 26-JAN-17 initial window size of the front panel configurable
- * 23-FEB-17 added configuration options for VDM
- * 24-MAR-17 added configuration for SIO 0
- * 14-JUN-17 added config for Tarbell boot ROM
- * 07-MAY-18 added memory configuratione needed by apple monitor
- * 03-JUL-18 added baud rate to terminal 2SIO
- * 04-JUL-18 added baud rate to terminal SIO
- * 17-JUL-18 use logging
- * 21-AUG-18 improved memory configuration
- * 24-NOV-19 configurable baud rate for second 2SIO channel
- * 22-JAN-21 added option for config file
- * 31-JUL-21 allow building machine without frontpanel
+ * 20-OCT-2008 first version finished
+ * 20-MAR-2014 ignore carriage return too, necessary for the Windows port
+ * 19-JUN-2014 added config parameter for dropping nulls after CR/LF
+ * 09-OCT-2014 modified to support 2 SIO's
+ * 09-MAY-2016 added path for config file
+ * 29-AUG-2016 ROM and boot switch configuration for Altair emulation added
+ * 20-DEC-2016 configuration moved local, will be different for each system
+ * 04-JAN-2017 front panel framerate configurable
+ * 26-JAN-2017 initial window size of the front panel configurable
+ * 23-FEB-2017 added configuration options for VDM
+ * 24-MAR-2017 added configuration for SIO 0
+ * 14-JUN-2017 added config for Tarbell boot ROM
+ * 07-MAY-2018 added memory configuratione needed by apple monitor
+ * 03-JUL-2018 added baud rate to terminal 2SIO
+ * 04-JUL-2018 added baud rate to terminal SIO
+ * 17-JUL-2018 use logging
+ * 21-AUG-2018 improved memory configuration
+ * 24-NOV-2019 configurable baud rate for second 2SIO channel
+ * 22-JAN-2021 added option for config file
+ * 31-JUL-2021 allow building machine without frontpanel
+ * 29-AUG-2021 new memory configuration sections
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
 #include "log.h"
-#include "../../frontpanel/frontpanel.h"
-#include "memory.h"
+#include "memsim.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
@@ -44,14 +46,8 @@ extern int exatoi(char *);
 
 static const char *TAG = "config";
 
-struct memmap memconf[MAXSEG];	/* memory map */
-static int num_segs;
-
-int  boot_switch;		/* boot address for switch */
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0;		/* default fp input port value */
-
-extern int tarbell_rom_enabled;	/* Tarbell bootstrap ROM enable/disable */
 
 extern int sio0_upper_case;	/* SIO 0 translate input to upper case */
 extern int sio0_strip_parity;	/* SIO 0 strip parity from output */
@@ -77,14 +73,14 @@ extern int slf;                 /* VDM scanlines factor */
 
 void config(void)
 {
-	int i, v1, v2;
 	FILE *fp;
-	char *s, *t1, *t2, *t3;
 	char buf[BUFSIZE];
-	char fn[4095];
+	char *s, *t1, *t2, *t3, *t4;
+	int v1, v2;
+	char fn[MAX_LFN - 1];
 
-	for (i = 0; i < MAXSEG; i++)
-		memconf[i].type = -1;
+	int num_segs = 0;
+	int section = 0;
 
 	if (c_flag) {
 		strcpy(&fn[0], &conffn[0]);
@@ -98,8 +94,14 @@ void config(void)
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
-			t1 = strtok(s, " \t");
-			t2 = strtok(NULL, " \t,");
+			if ((t1 = strtok(s, " \t")) == NULL) {
+				LOGW(TAG, "missing command");
+				continue;
+			}
+			if ((t2 = strtok(NULL, " \t,")) == NULL) {
+				LOGW(TAG, "missing parameter for %s", t1);
+				continue;
+			}
 			if (!strcmp(t1, "sio0_upper_case")) {
 				switch (*t2) {
 				case '0':
@@ -109,7 +111,7 @@ void config(void)
 					sio0_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_upper_case")) {
@@ -121,7 +123,7 @@ void config(void)
 					sio1_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_upper_case")) {
@@ -133,7 +135,7 @@ void config(void)
 					sio2_upper_case = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_strip_parity")) {
@@ -145,7 +147,7 @@ void config(void)
 					sio0_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_strip_parity")) {
@@ -157,7 +159,7 @@ void config(void)
 					sio1_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_strip_parity")) {
@@ -169,7 +171,7 @@ void config(void)
 					sio2_strip_parity = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_drop_nulls")) {
@@ -181,7 +183,7 @@ void config(void)
 					sio0_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio1_drop_nulls")) {
@@ -193,7 +195,7 @@ void config(void)
 					sio1_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio2_drop_nulls")) {
@@ -205,7 +207,7 @@ void config(void)
 					sio2_drop_nulls = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_revision")) {
@@ -217,7 +219,7 @@ void config(void)
 					sio0_revision = 1;
 					break;
 				default:
-					LOGW(TAG, "system.conf: invalid value for %s: %s", t1, t2);
+					LOGW(TAG, "invalid value for %s: %s", t1, t2);
 					break;
 				}
 			} else if (!strcmp(t1, "sio0_baud_rate")) {
@@ -233,14 +235,10 @@ void config(void)
 			} else if (!strcmp(t1, "fp_fps")) {
 #ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
-#else
-				;
 #endif
 			} else if (!strcmp(t1, "fp_size")) {
 #ifdef FRONTPANEL
 				fp_size = atoi(t2);
-#else
-				;
 #endif
 			} else if (!strcmp(t1, "vdm_bg")) {
 				strncpy(&bg_color[1], t2, 6);
@@ -250,65 +248,79 @@ void config(void)
 				if (*t2 != '0')
 					slf = 2;
 			} else if (!strcmp(t1, "ram")) {
-				if (num_segs >= MAXSEG) {
+				if (num_segs >= MAXMEMMAP) {
 					LOGW(TAG, "too many rom/ram statements");
-					goto next;
+					continue;
 				}
-				t3 = strtok(NULL, " \t,");
-				v1 = atoi(t2);
+				if ((t3 = strtok(NULL, " \t,")) == NULL) {
+					LOGW(TAG, "missing ram size");
+					continue;
+				}
+				v1 = strtol(t2, NULL, 0);
 				if (v1 < 0 || v1 > 255) {
 					LOGW(TAG, "invalid ram start address %d", v1);
-					goto next;
+					continue;
 				}
-				v2 = atoi(t3);
+				v2 = strtol(t3, NULL, 0);
 				if (v2 < 1 || v1 + v2 > 256) {
 					LOGW(TAG, "invalid ram size %d", v2);
-					goto next;
+					continue;
 				}
-				memconf[num_segs].type = MEM_RW;
-				memconf[num_segs].spage = v1;
-				memconf[num_segs].size = v2;
-				LOG(TAG, "RAM %04XH - %04XH\r\n",
-				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
+				memconf[section][num_segs].type = MEM_RW;
+				memconf[section][num_segs].spage = v1;
+				memconf[section][num_segs].size = v2;
+				LOGD(TAG, "RAM %04XH - %04XH",
+				     v1 << 8, (v1 << 8) + (v2 << 8) - 1);
 				num_segs++;
 			} else if (!strcmp(t1, "rom")) {
-				if (num_segs >= MAXSEG) {
+				if (num_segs >= MAXMEMMAP) {
 					LOGW(TAG, "too many rom/ram statements");
-					goto next;
+					continue;
 				}
-				t3 = strtok(NULL, " \t,");
-				v1 = atoi(t2);
+				if ((t3 = strtok(NULL, " \t,")) == NULL) {
+					LOGW(TAG, "missing rom size");
+					continue;
+				}
+				t4 = strtok(NULL, " \t\r\n");
+				v1 = strtol(t2, NULL, 0);
 				if (v1 < 0 || v1 > 255) {
 					LOGW(TAG, "invalid rom start address %d", v1);
-					goto next;
+					continue;
 				}
-				v2 = atoi(t3);
+				v2 = strtol(t3, NULL, 0);
 				if (v2 < 1 || v1 + v2 > 256) {
 					LOGW(TAG, "invalid rom size %d", v2);
-					goto next;
+					continue;
 				}
-				memconf[num_segs].type = MEM_RO;
-				memconf[num_segs].spage = v1;
-				memconf[num_segs].size = v2;
-				LOG(TAG, "ROM %04XH - %04XH\r\n",
-				    v1 << 8, (v1 << 8) + (v2 << 8) - 1);
+				memconf[section][num_segs].type = MEM_RO;
+				memconf[section][num_segs].spage = v1;
+				memconf[section][num_segs].size = v2;
+				if (t4 != NULL) {
+					memconf[section][num_segs].rom_file = strdup(t4);
+				} else {
+					memconf[section][num_segs].rom_file = NULL;
+				}
+				LOGD(TAG, "ROM %04XH - %04XH %s",
+				     v1 << 8, (v1 << 8) + (v2 << 8) - 1,
+				     (t4 == NULL ? "" : t4));
 				num_segs++;
 			} else if (!strcmp(t1, "boot")) {
-				boot_switch = exatoi(t2);
-				LOG(TAG, "Boot switch address at %04XH\r\n", boot_switch);
-			} else if (!strcmp(t1, "tarbell_rom_enabled")) {
-				tarbell_rom_enabled = atoi(t2);
-				LOG(TAG, "Tarbell bootstrap ROM %s\r\n",
-				    (tarbell_rom_enabled) ?
-				    "enabled" : "disabled");
+				_boot_switch[section] = strtol(t2, NULL, 0);
+				LOGD(TAG, "Boot switch address at %04XH", _boot_switch[section]);
+			} else if (!strcmp(t1, "[MEMORY")) {
+				v1 = strtol(t2, &t3, 10);
+				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {
+					LOGW(TAG, "invalid MEMORY section number %d", v1);
+					continue;
+				}
+				LOGD(TAG, "MEMORY CONFIGURATION %d", v1);
+				section = v1 - 1;
+				num_segs = 0;
 			} else {
-				LOGW(TAG, "system.conf unknown command: %s", s);
+				LOGW(TAG, "unknown command: %s", t1);
 			}
-
-			next:
-			;
-
 		}
+		fclose(fp);
 	}
 
 	LOG(TAG, "SIO 0 running at %d baud\r\n", sio0_baud_rate);

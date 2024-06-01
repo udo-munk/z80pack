@@ -1,0 +1,34 @@
+Z80/8080-Macro-Assembler  Release 2.0
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ;  KILL THE BIT GAME BY DEAN MCDANIEL, MAY 15, 1975
+                       3      3 ;
+                       4      4 ;  OBJECT: KILL THE ROTATING BIT. IF YOU MISS THE LIT BIT, ANOTHER
+                       5      5 ;          BIT TURNS ON LEAVING TWO BITS TO DESTROY. QUICKLY 
+                       6      6 ;          TOGGLE THE SWITCH, DON'T LEAVE THE SWITCH IN THE UP
+                       7      7 ;          POSITION. BEFORE STARTING, MAKE SURE ALL THE SWITCHES
+                       8      8 ;          ARE IN THE DOWN POSITION.
+                       9      9 ;
+                      10     10         ORG     0
+                      11     11 
+0000  21 00 00        12     12         LXI     H,0             ;INITIALIZE COUNTER
+0003  16 80           13     13         MVI     D,080H          ;SET UP INITIAL DISPLAY BIT
+0005  01 0e 00        14     14         LXI     B,0EH           ;HIGHER VALUE = FASTER
+0008  1a              15     15 BEG:    LDAX    D               ;DISPLAY BIT PATTERN ON
+0009  1a              16     16         LDAX    D               ;...UPPER 8 ADDRESS LIGHTS
+000a  1a              17     17         LDAX    D
+000b  1a              18     18         LDAX    D
+000c  09              19     19         DAD     B               ;INCREMENT DISPLAY COUNTER
+000d  d2 08 00        20     20         JNC     BEG
+0010  db ff           21     21         IN      0FFH            ;INPUT DATA FROM SENSE SWITCHES
+0012  aa              22     22         XRA     D               ;EXCLUSIVE OR WITH A
+0013  0f              23     23         RRC                     ;ROTATE DISPLAY RIGHT ONE BIT
+0014  57              24     24         MOV     D,A             ;MOVE DATA TO DISPLAY REG
+0015  c3 08 00        25     25         JMP     BEG             ;REPEAT SEQUENCE
+                      26     26 
+0018                  27     27         END
+
+Symbol table
+
+BEG 0008    

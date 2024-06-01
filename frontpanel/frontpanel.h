@@ -25,22 +25,14 @@
 #endif
 
 
-#ifndef _SIM_DEFS_H_
-#define _SIM_DEFS_H_
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-#endif
-typedef unsigned long long uint64;
-
 #define FP_SW_DOWN	0
 #define FP_SW_UP	1
 #define FP_SW_CENTER	2
 
 int	fp_test(int n);
-int     fp_init2(char *cfg_root_path, char *cfg_fname, int size);
-int     fp_init(char *cfg_fname);
-int	fp_openWindow(char *title);
+int     fp_init2(const char *cfg_root_path, const char *cfg_fname, int size);
+int     fp_init(const char *cfg_fname);
+int	fp_openWindow(const char *title);
 void	fp_framerate(float f);
 void	fp_sampleData(void);
 void	fp_sampleDataWarp(int clockwarp);
@@ -50,33 +42,33 @@ void	fp_quit(void);
 
 /* data binding functions */
 
-//void 	fp_bindSimclock(const uint64 *addr);
-////void	fp_bindRunFlag(const uint8 *addr);
+//void 	fp_bindSimclock(const uint64_t *addr);
+////void	fp_bindRunFlag(const uint8_t *addr);
 
-void 	fp_bindSimclock(uint64 *addr);
-void	fp_bindRunFlag(uint8 *addr);
+void 	fp_bindSimclock(uint64_t *addr);
+void	fp_bindRunFlag(uint8_t *addr);
 
-int	fp_bindLight64(char *name, uint64 *bits, int bitnum);
-int	fp_bindLight32(char *name, uint32 *bits, int bitnum);
-int	fp_bindLight16(char *name, uint16 *bits, int bitnum);
-int	fp_bindLightfv(char *name, float *bits);
-int	fp_bindLight8(char *name, uint8 *bits, int bitnum);
-int	fp_bindLight8invert(char *name, uint8 *bits, int bitnum, uint8 mask);
-int	fp_bindLight16invert(char *name, uint16 *bits, int bitnum, uint16 mask);
-int	fp_bindLight32invert(char *name, uint32 *bits, int bitnum, uint32 mask);
-int	fp_bindLight64invert(char *name, uint64 *bits, int bitnum, uint64 mask);
+int	fp_bindLight64(const char *name, uint64_t *bits, int bitnum);
+int	fp_bindLight32(const char *name, uint32_t *bits, int bitnum);
+int	fp_bindLight16(const char *name, uint16_t *bits, int bitnum);
+int	fp_bindLightfv(const char *name, float *bits);
+int	fp_bindLight8(const char *name, uint8_t *bits, int bitnum);
+int	fp_bindLight8invert(const char *name, uint8_t *bits, int bitnum, uint8_t mask);
+int	fp_bindLight16invert(const char *name, uint16_t *bits, int bitnum, uint16_t mask);
+int	fp_bindLight32invert(const char *name, uint32_t *bits, int bitnum, uint32_t mask);
+int	fp_bindLight64invert(const char *name, uint64_t *bits, int bitnum, uint64_t mask);
 
-int	fp_bindSwitch64(char *name, uint64 *loc_down, uint64*loc_up, int bitnum);
-int	fp_bindSwitch32(char *name, uint32 *loc_down, uint32 *loc_up, int bitnum);
-int	fp_bindSwitch16(char *name, uint16 *loc_down, uint16 *loc_up, int bitnum);
-int	fp_bindSwitch8(char *name, uint8 *loc_down, uint8 *loc_up, int bitnum);
+int	fp_bindSwitch64(const char *name, uint64_t *loc_down, uint64_t *loc_up, int bitnum);
+int	fp_bindSwitch32(const char *name, uint32_t *loc_down, uint32_t *loc_up, int bitnum);
+int	fp_bindSwitch16(const char *name, uint16_t *loc_down, uint16_t *loc_up, int bitnum);
+int	fp_bindSwitch8(const char *name, uint8_t *loc_down, uint8_t *loc_up, int bitnum);
 
 
-int	fp_smoothLight(char *name, int nframes);
+int	fp_smoothLight(const char *name, int nframes);
 
 /* callbacks */
 
-int	fp_addSwitchCallback(char *name, void (*cbfunc)(int state, int val), int userval);
+int	fp_addSwitchCallback(const char *name, void (*cbfunc)(int state, int val), int userval);
 void	fp_addQuitCallback(void (*cbfunc)(void));
 
 /* error reporting */

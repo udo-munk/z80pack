@@ -8,13 +8,14 @@
  * This module contains functions to implement networking connections.
  *
  * History:
- * 26-MAR-15 first version finished
- * 22-MAR-17 implemented UNIX domain sockets and tested with Altair SIO/2SIO
- * 22-APR-18 implemented TCP socket polling
- * 14-JUL-18 use logging
- * 16-JUL-20 fix bug/warning detected by gcc 9
+ * 26-MAR-2015 first version finished
+ * 22-MAR-2017 implemented UNIX domain sockets and tested with Altair SIO/2SIO
+ * 22-APR-2018 implemented TCP socket polling
+ * 14-JUL-2018 use logging
+ * 16-JUL-2020 fix bug/warning detected by gcc 9
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,13 +39,13 @@ void telnet_negotiation(int);
 static const char *TAG = "net";
 
 /*
- * initialise a server UNIX domain socket
+ * initialize a server UNIX domain socket
  */
-void init_unix_server_socket(struct unix_connectors *p, char *fn)
+void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 {
 	struct sockaddr_un sun;
 	struct stat sbuf;
-	static char *path = "/tmp/.z80pack/";
+	static const char *path = "/tmp/.z80pack/";
 	static char socket_path[sizeof(sun.sun_path)];
 
 	/* check if /tmp/.z80pack exists */
@@ -57,25 +58,25 @@ void init_unix_server_socket(struct unix_connectors *p, char *fn)
 	unlink(socket_path);
 
 	/* create the socket, bind it and listen */
-	memset((void *)&sun, 0, sizeof(sun));
+	memset((void *) &sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
 	strncpy(sun.sun_path, socket_path, sizeof(sun.sun_path));
 	if ((p->ss = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
-	if (bind(p->ss, (struct sockaddr *)&sun, sizeof(sun)) == -1) {
+	if (bind(p->ss, (struct sockaddr *) &sun, sizeof(sun)) == -1) {
 		LOGE(TAG, "can't bind server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (listen(p->ss, 0) == -1) {
 		LOGE(TAG, "can't listen on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 
 /*
- * initialise a server TCP/IP socket
+ * initialize a server TCP/IP socket
  */
 void init_tcp_server_socket(struct net_connectors *p)
 {
@@ -90,25 +91,25 @@ void init_tcp_server_socket(struct net_connectors *p)
 		return;
 
 	/* create TCP/IP socket */
-	if ((p->ss = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+	if ((p->ss = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		LOGE(TAG, "can't create server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/* set socket options */
 	if (setsockopt(p->ss, SOL_SOCKET, SO_REUSEADDR, (void *) &on,
-	    sizeof(on)) == -1) {
+		       sizeof(on)) == -1) {
 		LOGE(TAG, "can't setsockopt SO_REUSEADDR on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 #ifdef TCPASYNC
 	/* configure socket for async I/O */
 	fcntl(p->ss, F_SETOWN, getpid());
 	n = fcntl(p->ss, F_GETFL, 0);
-	if (fcntl(p->ss, F_SETFL, n | FASYNC) == -1) {
-		LOGE(TAG, "can't fcntl FASYNC on server socket");
-		exit(1);
+	if (fcntl(p->ss, F_SETFL, n | O_ASYNC) == -1) {
+		LOGE(TAG, "can't fcntl O_ASYNC on server socket");
+		exit(EXIT_FAILURE);
 	}
 #endif
 
@@ -119,11 +120,11 @@ void init_tcp_server_socket(struct net_connectors *p)
 	sin.sin_port = htons(p->port);
 	if (bind(p->ss, (struct sockaddr *) &sin, sizeof(sin)) == -1) {
 		LOGE(TAG, "can't bind server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	if (listen(p->ss, 0) == -1) {
 		LOGE(TAG, "can't listen on server socket");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	LOG(TAG, "telnet console listening on port %d\r\n", p->port);
@@ -142,7 +143,7 @@ void sigio_tcp_server_socket(int sig)
 	int go_away;
 	int on = 1;
 
-	sig = sig;	/* to avoid compiler warning */
+	UNUSED(sig);
 
 	for (i = 0; i < NUMNSOC; i++) {
 		p[i].fd = ncons[i].ss;
@@ -165,14 +166,14 @@ void sigio_tcp_server_socket(int sig)
 			}
 
 			if ((ncons[i].ssc = accept(ncons[i].ss,
-						     (struct sockaddr *) &fsin,
-						     &alen)) == -1) {
+						   (struct sockaddr *) &fsin,
+						   &alen)) == -1) {
 				LOGW(TAG, "can't accept on server socket");
 				ncons[i].ssc = 0;
 			}
 
 			if (setsockopt(ncons[i].ssc, IPPROTO_TCP, TCP_NODELAY,
-			    (void *) &on, sizeof(on)) == -1) {
+				       (void *) &on, sizeof(on)) == -1) {
 				LOGW(TAG, "can't set sockopt TCP_NODELAY on server socket");
 			}
 
@@ -188,14 +189,16 @@ void sigio_tcp_server_socket(int sig)
  */
 void telnet_negotiation(int fd)
 {
-	static char will_echo[3] = {255, 251, 1};
-	static char char_mode[3] = {255, 251, 3};
+	static unsigned char will_echo[3] = {255, 251, 1};
+	static unsigned char char_mode[3] = {255, 251, 3};
 	struct pollfd p[1];
 	BYTE c[3];
 
 	/* send the telnet options we need */
-	write(fd, &char_mode, 3);
-	write(fd, &will_echo, 3);
+	if (write(fd, &char_mode, 3) != 3)
+		LOGE(TAG, "can't send char_mode telnet option");
+	if (write(fd, &will_echo, 3) != 3)
+		LOGE(TAG, "can't send will_echo telnet option");
 
 	/* and reject all others offered */
 	p[0].fd = fd;
@@ -210,7 +213,8 @@ void telnet_negotiation(int fd)
 			break;
 
 		/* else read the option */
-		read(fd, &c, 3);
+		if (read(fd, &c, 3) != 3)
+			LOGE(TAG, "can't read telnet option");
 		LOGD(TAG, "telnet: %d %d %d", c[0], c[1], c[2]);
 		if (c[2] == 1 || c[2] == 3)
 			continue;	/* ignore answers to our requests */
@@ -218,6 +222,7 @@ void telnet_negotiation(int fd)
 			c[1] = 254;
 		else if (c[1] == 253)
 			c[1] = 252;
-		write(fd, &c, 3);
+		if (write(fd, &c, 3) != 3)
+			LOGE(TAG, "can't write telnet option");
 	}
 }

@@ -28,7 +28,12 @@
  * 18-NOV-2019 initialize command string address array
  */
 
+#ifndef IMSAI_FIF_INC
+#define IMSAI_FIF_INC
+
 extern BYTE imsai_fif_in(void);
 extern void imsai_fif_out(BYTE);
 
 extern void imsai_fif_reset(void);
+
+#endif

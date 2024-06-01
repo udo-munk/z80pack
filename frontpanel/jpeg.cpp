@@ -7,6 +7,8 @@
 
 #include "cdjpeg.h"            /* Common decls for cjpeg/djpeg applications */
 
+#define UNUSED(x) (void) (x)
+
 unsigned char *pixels;
 int xsize, ysize, ncomps;
 
@@ -44,9 +46,11 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 {
   bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
   JSAMPARRAY image_ptr;
-  register JSAMPROW inptr, outptr;
-  register JDIMENSION col;
+  JSAMPROW inptr, outptr;
+  JDIMENSION col;
   /* int pad; */
+
+  UNUSED(rows_supplied);
 
   /* Access next row in virtual array */
   image_ptr = (*cinfo->mem->access_virt_sarray)
@@ -74,9 +78,11 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 //printf("put gray rows\n");
   bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
   JSAMPARRAY image_ptr;
-  register JSAMPROW inptr, outptr;
-  register JDIMENSION col;
+  JSAMPROW inptr, outptr;
+  JDIMENSION col;
   /* int pad; */
+
+  UNUSED(rows_supplied);
 
   /* Access next row in virtual array */
   image_ptr = (*cinfo->mem->access_virt_sarray)
@@ -102,6 +108,9 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 METHODDEF(void)
 start_output_pixels (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
+  UNUSED(cinfo);
+  UNUSED(dinfo);
+
 //printf("start output\n");
   /* no work here */
 }
@@ -116,9 +125,9 @@ finish_output_pixels (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
 
   JSAMPARRAY image_ptr;
-  register JSAMPROW data_ptr;
+  JSAMPROW data_ptr;
   JDIMENSION row;
-  register JDIMENSION col;
+  JDIMENSION col;
   cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;
 
     p = pixels;	// final output

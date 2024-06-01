@@ -6,8 +6,9 @@
  * Copyright (C) 2020 by David McNaughton
  * 
  * History:
- * 14-JAN-20    1.0     Initial Release
+ * 14-JAN-2020	1.0	Initial Release
  */
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "sim.h"
@@ -40,7 +41,9 @@ void cromemco_d7a_init(void) {
     inPort[0] = 0xFF;
 
 #ifdef HAS_NETSERVER
-    net_device_service(DEV_D7AIO, cromemco_d7a_callback);
+    if (n_flag) {
+        net_device_service(DEV_D7AIO, cromemco_d7a_callback);
+    }
 #endif
 
 }
@@ -52,9 +55,11 @@ void cromemco_d7a_out(BYTE port, BYTE data)
     LOGD(TAG, "Output %d on port %d", data, port);
 
 #ifdef HAS_NETSERVER
-    // if (net_device_alive(DEV_D7AIO)) {
-        net_device_send(DEV_D7AIO, (char *)&data, 1);
-    // }
+    if (n_flag) {
+        // if (net_device_alive(DEV_D7AIO)) {
+            net_device_send(DEV_D7AIO, (char *)&data, 1);
+        // }
+    }
 #endif
 }
 

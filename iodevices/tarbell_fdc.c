@@ -25,6 +25,7 @@
  * 24-SEP-2019 restore and seek also affect step direction
  */
 
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,7 +61,7 @@ static BYTE buf[SEC_SZ];	/* buffer for one sector */
 static int stepdir = -1;	/* stepping direction */
 
 /* these are our disk drives */
-static char *disks[4] = {
+static const char *disks[4] = {
 	"drivea.dsk",
 	"driveb.dsk",
 	"drivec.dsk",
@@ -70,9 +71,10 @@ static char *disks[4] = {
 /* bootstrap ROM */
 BYTE tarbell_rom[32] = {
 	0xdb, 0xfc, 0xaf, 0x6f, 0x67, 0x3c, 0xd3, 0xfa,
-        0x3e, 0x8c, 0xd3, 0xf8, 0xdb, 0xfc, 0xb7, 0xf2,
+	0x3e, 0x8c, 0xd3, 0xf8, 0xdb, 0xfc, 0xb7, 0xf2,
 	0x19, 0x00, 0xdb, 0xfb, 0x77, 0x23, 0xc3, 0x0c,
-	0x00, 0xdb, 0xf8, 0xb7, 0xca, 0x7d, 0x00, 0x76 };
+	0x00, 0xdb, 0xf8, 0xb7, 0xca, 0x7d, 0x00, 0x76
+};
 
 int tarbell_rom_enabled = 0;	/* ROM not enabled by default */
 int tarbell_rom_active = 1;	/* ROM is active at power on */
@@ -80,7 +82,8 @@ int tarbell_rom_active = 1;	/* ROM is active at power on */
 /*
  * find and set path for disk images
  */
-void dsk_path(void) {
+void dsk_path(void)
+{
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
@@ -90,8 +93,8 @@ void dsk_path(void) {
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(fn, "./disks");
-		/* nope, then DISKSDIR as set in Makefile */
 		} else {
+			/* nope, then DISKSDIR as set in Makefile */
 			strcpy(fn, DISKSDIR);
 		}
 	}
@@ -102,7 +105,7 @@ void dsk_path(void) {
  */
 BYTE tarbell_stat_in(void)
 {
-	return(fdc_stat);
+	return (fdc_stat);
 }
 
 /*
@@ -202,7 +205,7 @@ void tarbell_cmd_out(BYTE data)
  */
 BYTE tarbell_track_in(void)
 {
-	return(fdc_track);
+	return (fdc_track);
 }
 
 /*
@@ -218,7 +221,7 @@ void tarbell_track_out(BYTE data)
  */
 BYTE tarbell_sec_in(void)
 {
-	return(fdc_sec);
+	return (fdc_sec);
 }
 
 /*
@@ -234,7 +237,7 @@ void tarbell_sec_out(BYTE data)
  */
 BYTE tarbell_data_in(void)
 {
-	long pos;		/* seek position */
+	off_t pos;		/* seek position */
 	struct stat s;
 
 	switch (state) {
@@ -247,14 +250,14 @@ BYTE tarbell_data_in(void)
 			if ((fdc_track >= TRK) || (fdc_sec > SPT)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x10;	/* record not found */
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* check disk drive */
 			if ((disk < 0) || (disk > 3)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* try to open disk image */
@@ -264,7 +267,7 @@ BYTE tarbell_data_in(void)
 			if ((fd = open(fn, O_RDONLY)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* check for correct image size */
@@ -273,7 +276,7 @@ BYTE tarbell_data_in(void)
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* seek to sector */
@@ -282,7 +285,7 @@ BYTE tarbell_data_in(void)
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x10;	/* record not found */
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 
 			/* read the sector */
@@ -290,7 +293,7 @@ BYTE tarbell_data_in(void)
 				state = FDC_IDLE;	/* abort read command */
 				fdc_stat = 0x10;	/* record not found */
 				close(fd);
-				return((BYTE) 0);
+				return ((BYTE) 0);
 			}
 			close(fd);
 		}
@@ -302,8 +305,7 @@ BYTE tarbell_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	case FDC_READADR:	/* read disk address */
 
@@ -324,12 +326,10 @@ BYTE tarbell_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return(buf[dcnt++]);
-		break;
+		return (buf[dcnt++]);
 
 	default:
-		return((BYTE) 0);
-		break;
+		return ((BYTE) 0);
 	}
 }
 
@@ -338,7 +338,7 @@ BYTE tarbell_data_in(void)
  */
 void tarbell_data_out(BYTE data)
 {
-	long pos;			/* seek position */
+	off_t pos;			/* seek position */
 	static int wrtstat;		/* state while formatting track */
 	static int bcnt;		/* byte counter for sector data */
 	static int secs;		/* # of sectors written so far */
@@ -419,7 +419,7 @@ void tarbell_data_out(BYTE data)
 			if (fdc_track == 0)
 				unlink(fn);
 			/* try to create new disk image */
-			if ((fd = open(fn, O_RDWR|O_CREAT, 0644)) == -1) {
+			if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
 				return;
@@ -480,9 +480,9 @@ void tarbell_data_out(BYTE data)
 BYTE tarbell_wait_in(void)
 {
 	if (state == FDC_IDLE)
-		return((BYTE) 0);	/* don't wait for drive mechanics */
+		return ((BYTE) 0);	/* don't wait for drive mechanics */
 	else
-		return((BYTE) 0x80);	/* but wait on DRQ */
+		return ((BYTE) 0x80);	/* but wait on DRQ */
 }
 
 /*

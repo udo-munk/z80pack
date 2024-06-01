@@ -23,7 +23,7 @@
  *
  * Function naming conventions:
  *
- * As a matter of interest, since the conversion code is targetted to
+ * As a matter of interest, since the conversion code is targeted to
  * z80 native, possibly using Microsoft REL format, identifiers are kept
  * to 6 characters significance. Since Hi-Tech C prepends an '_' to names,
  * this only gives us 5 characters. Therefore, Microsoft 32 to internal is

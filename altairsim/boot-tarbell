@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# boot from Tarbell FDC with external boot ROM
+# use -M 2 -R for the internal ROM on the FDC
+
+if [ -f disks/drivea.dsk ]; then
+	./altairsim -M 1 $*
+else
+	echo "no boot disk in drive a:"
+fi
