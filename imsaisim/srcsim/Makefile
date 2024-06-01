@@ -165,16 +165,16 @@ FORCE:
 build: _rm_obj all
 
 install: $(SIM)
-	$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -d $(DESTDIR)$(DOCROOT_DIR)
-	(cd $(NET_DIR)/www/$(MACHINE); \
-	find . -type d -exec $(INSTALL) -d $(DESTDIR)$(DOCROOT_DIR)/\{\} \;; \
-	find . -type f -exec $(INSTALL_DATA) \{\} $(DESTDIR)$(DOCROOT_DIR) \;)
+#	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+#	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
+#	$(INSTALL) -d $(DESTDIR)$(DOCROOT_DIR)
+#	(cd $(NET_DIR)/www/$(MACHINE); \
+#	find . -type d -exec $(INSTALL) -d $(DESTDIR)$(DOCROOT_DIR)/\{\} \;; \
+#	find . -type f -exec $(INSTALL_DATA) \{\} $(DESTDIR)$(DOCROOT_DIR) \;)
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
-	rm -rf $(DESTDIR)$(DATADIR)
+#	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
+#	rm -rf $(DESTDIR)$(DATADIR)
 
 clean: _rm_obj _rm_deps
 

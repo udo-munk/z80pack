@@ -229,9 +229,6 @@ lpSwitch::action(int val)
    {
 	case 0:		// down
 
-		if (operation == LP_SWITCH_OP_OFF_MOM)
-		  break;
-
 		state = LP_SWITCH_DOWN;
 
 		switch(operation)
@@ -312,7 +309,6 @@ lpSwitch::action(int val)
 		switch(operation)
 		 {	
 		  	case LP_SWITCH_OP_MOM_OFF_MOM:
-		  	case LP_SWITCH_OP_OFF_MOM:
 				panel->mom_switch_pressed = this;
 				/* fallthrough */
 
@@ -355,7 +351,6 @@ lpSwitch::action(int val)
 		switch(operation)
 		 {
 		  	case LP_SWITCH_OP_MOM_OFF_MOM:
-		  	case LP_SWITCH_OP_OFF_MOM:
 				if(dataptr[state])
 				  switch(datatype)
 				   {
@@ -575,7 +570,6 @@ select_dn_name = (uint32_t) sw_num & LP_SW_PICK_IDMASK;
   switch(type)
    {
 	case LP_SWITCH_OP_MOM_OFF_MOM:
-	case LP_SWITCH_OP_OFF_MOM:
 		break;
    }
 }
@@ -637,7 +631,7 @@ Lpanel::addSwitch(const char *name, lp_obj_parm_t *obj, const char *buff, Lpanel
 	if(!strcmp(result->strings[0], "toggle"))
 	{
 	  sw->operation = LP_SWITCH_OP_ON_OFF;
-	  sw->state = LP_SWITCH_DOWN;		// set to down
+	  sw->state = LP_SWITCH_DOWN;		// set to center
 	}
 	else
 	if(!strcmp(result->strings[0], "mom_off_mom"))
@@ -646,14 +640,8 @@ Lpanel::addSwitch(const char *name, lp_obj_parm_t *obj, const char *buff, Lpanel
 	  sw->state = LP_SWITCH_CENTER;		// set to center
 	}
 	else
-	if(!strcmp(result->strings[0], "off_mom"))
 	{
-	  sw->operation = LP_SWITCH_OP_OFF_MOM;
-	  sw->state = LP_SWITCH_CENTER;		// set to center (down)
-	}
-	else
-	{
-	  printf("Invalid switch 'operation'. Should be one of 'toggle' or 'mom_off_mom' or 'off_mom'\n");
+	  printf("Invalid switch 'operation'. Should be one of 'toggle' or 'mom_off_mom'\n");
 	  return result->var_pos;
 	}
    }
