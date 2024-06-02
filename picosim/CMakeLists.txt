@@ -36,6 +36,7 @@ add_subdirectory(
 )
 target_compile_definitions(picosim PRIVATE
 	PICO_STACK_SIZE=4096
+	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
 )
 
