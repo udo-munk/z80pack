@@ -67,10 +67,10 @@ void load_file(char *name)
 	}
 
 	/* read file into memory */
-	while ((sd_res = f_read(&sd_file, &code[i], 128, &br)) == FR_OK) {
-		if (br < 128)	/* last record reached */
+	while ((sd_res = f_read(&sd_file, &code[i], SEC_SZ, &br)) == FR_OK) {
+		if (br < SEC_SZ)	/* last record reached */
 			break;
-		i += 128;
+		i += SEC_SZ;
 	}
 	if (sd_res != FR_OK)
 		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
@@ -154,9 +154,9 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 		return stat;
 
 	/* read sector into memory */
-	sd_res = f_read(&sd_file, &code[addr], 128, &br);
+	sd_res = f_read(&sd_file, &code[addr], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
-		if (br < 128) {	/* UH OH */
+		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
 			return FDC_STAT_READ;
 		} else {
@@ -182,9 +182,9 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 		return stat;
 
 	/* write sector to disk image */
-	sd_res = f_write(&sd_file, &code[addr], 128, &br);
+	sd_res = f_write(&sd_file, &code[addr], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
-		if (br < 128) {	/* UH OH */
+		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
 			return FDC_STAT_WRITE;
 		} else {
