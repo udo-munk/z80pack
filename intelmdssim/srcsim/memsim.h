@@ -21,8 +21,10 @@ extern int wait_step(void);
 extern void wait_int_step(void);
 
 extern BYTE memory[], boot_rom[];
-extern BYTE boot_switch;
+extern char *boot_rom_file, *mon_rom_file;
 extern int mon_enabled;
+
+extern BYTE boot_switch;
 
 /*
  * memory access for the CPU cores

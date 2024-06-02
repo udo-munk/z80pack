@@ -5,7 +5,8 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module of the simulator contains the I/O simulation
- * for an Intel Intellec MDS-800 system
+ * for an Intel Intellec MDS-800 system.
+ * It maintains the real time clock and interrupt facility.
  *
  * History:
  */
@@ -22,6 +23,12 @@
 #include "mds-isbc202.h"
 #include "log.h"
 
+#define RTC_IRQ		1	/* Real time clock interrupt */
+
+#ifdef FRONTPANEL
+extern BYTE int_sw_requests;
+#endif
+
 extern BYTE boot_switch;
 
 /*
@@ -36,7 +43,7 @@ static void bus_ovrrd_out(BYTE), rtc_out(BYTE);
 /*
  *	Forward declarations for support functions
  */
-static void *timing(void *);
+static void *rtc_int_thread(void *);
 
 static const char *TAG = "IO";
 
@@ -47,14 +54,14 @@ static const char *TAG = "IO";
  *	INT 3 = Monitor module
  */
 
-static BYTE int_mask;
+static BYTE int_mask;			/* interrupt mask */
+static BYTE int_requests;		/* interrupt requests */
+static BYTE int_in_service;		/* interrupts in service */
 
-static int bus_override;
 static int rtc_int_enabled;
-static int rtc_int_req;			/* RTC interrupt request */
 static int rtc_status1, rtc_status0;	/* RTC status flip-flops */
 
-static int th_suspend;			/* timing thread suspend flag */
+static int th_suspend;			/* RTC/interrupt thread suspend flag */
 
 /*
  *	This array contains function pointers for every input
@@ -124,7 +131,7 @@ void init_io(void)
 	}
 
 	/* create the thread for timer and interrupt handling */
-	if (pthread_create(&thread, NULL, timing, (void *) NULL)) {
+	if (pthread_create(&thread, NULL, rtc_int_thread, (void *) NULL)) {
 		LOGE(TAG, "can't create timing thread");
 		exit(EXIT_FAILURE);
 	}
@@ -146,11 +153,15 @@ void reset_io(void)
 {
 	th_suspend = 1;		/* suspend timing thread */
 	SLEEP_MS(20);		/* give it enough time to suspend */
-	int_mask = 0;
-	bus_override = 0;
-	rtc_int_enabled = 0;
-	rtc_int_req = 0;
-	rtc_status1 = rtc_status0 = 0;
+
+	int_mask = 0;		/* reset interrupt facility */
+	int_requests = 0;
+	int_in_service = 0;
+
+	rtc_int_enabled = 0;	/* reset real time clock */
+	rtc_status0 = 0;
+	rtc_status1 = 0;
+
 	th_suspend = 0;		/* resume timing thread */
 }
 
@@ -159,6 +170,7 @@ void reset_io(void)
  *	This function should be added into all unused
  *	entries of the input port array. It can stop the
  *	emulation with an I/O error.
+ *	It returns 0x00 instead of io_trap_in()'s 0xff.
  */
 static BYTE io_trap_in_00(void)
 {
@@ -170,11 +182,102 @@ static BYTE io_trap_in_00(void)
 }
 
 /*
+ *	Get highest priority interrupt from mask
+ */
+static int int_highest(int mask)
+{
+	int irq, irq_mask;
+
+	if (mask == 0)
+		return 8;
+	irq = 0;
+	irq_mask = 0x01;
+	while ((mask & irq_mask) == 0) {
+		irq++;
+		irq_mask <<= 1;
+	}
+	return (irq);
+}
+
+/*
+ *	Check for pending interrupts
+ */
+static void int_pending(void)
+{
+	int irq, mask;
+
+	if (int_int == 0 && (mask = (int_requests & ~int_mask)) != 0) {
+		irq = int_highest(mask);
+		if (irq < int_highest(int_in_service)) {
+#ifdef FRONTPANEL
+			if (F_flag)
+				int_sw_requests &= ~(1 << irq);
+#endif
+			int_in_service |= 1 << irq;
+			int_requests &= ~(1 << irq);
+			int_int = 1;
+			int_data = 0xc7 /* RST0 */ + (irq << 3);
+		}
+	}
+}
+
+/*
+ *	Request an interrupt
+ */
+void int_request(int irq)
+{
+	int_requests |= 1 << irq;
+	int_pending();
+}
+
+/*
+ *	Cancel an interrupt
+ */
+void int_cancel(int irq)
+{
+	int_requests &= ~(1 << irq);
+	int_pending();
+}
+
+/*
  *	Read the interrupt mask
  */
 static BYTE int_mask_in(void)
 {
 	return (int_mask);
+}
+
+/*
+ *	Define and store interrupt mask
+ */
+static void int_mask_out(BYTE data)
+{
+	int_mask = data;
+	int_pending();
+}
+
+/*
+ *	Restore interrupt priority level
+ */
+static void int_revert_out(BYTE data)
+{
+	int irq;
+	UNUSED(data);
+
+	if (int_in_service != 0) {
+		irq = int_highest(int_in_service);
+		int_in_service &= ~(1 << irq);
+		int_pending();
+	}
+}
+
+/*
+ *	Override loss of the bus
+ *	(Not implemented)
+ */
+static void bus_ovrrd_out(BYTE data)
+{
+	UNUSED(data);
 }
 
 /*
@@ -194,82 +297,59 @@ static BYTE rtc_in(void)
 }
 
 /*
- *	Define and store interrupt mask
- */
-static void int_mask_out(BYTE data)
-{
-	int_mask = data;
-}
-
-/*
- *	Restore interrupt priority level
- */
-static void int_revert_out(BYTE data)
-{
-	UNUSED(data);
-}
-
-/*
- *	Override loss of the bus
- */
-static void bus_ovrrd_out(BYTE data)
-{
-	bus_override = data & 1;
-}
-
-/*
  *	Set RTC interrupt enabled and request bits
  */
 static void rtc_out(BYTE data)
 {
 	rtc_int_enabled = ((data & 0x01) == 0);
 	if (data & 0x02)
-		rtc_int_req = 0;
+		int_cancel(RTC_IRQ);
 }
 
 /*
- *	Request an interrupt at level int_level
+ *	Thread for real time clock and interrupts
  */
-void int_request(int int_level)
-{
-	if (int_mask & (1 << int_level))
-		return;
-}
-
-/*
- *	Acknowledge last interrupt
- */
-void int_acknowledge(void)
-{
-}
-
-/*
- *	Thread for timing and interrupts
- */
-static void *timing(void *arg)
+static void *rtc_int_thread(void *arg)
 {
 	UNUSED(arg);
 
 	while (1) {	/* 1 msec per loop iteration */
 
-		/* do nothing if thread is suspended */
+		/* Do nothing if thread is suspended */
 		if (th_suspend)
 			goto next;
 
-		/* if last interrupt not acknowledged by CPU no new one yet */
+		/* If last interrupt not acknowledged by CPU no new one yet */
 		if (int_int)
 			goto next;
+
+		int_pending();
 
 		/* 1ms RTC */
 		rtc_status0 = 1;
 		if (rtc_int_enabled)
-			rtc_int_req = 1;
+			int_request(RTC_IRQ);
+
+#ifdef FRONTPANEL
+		if (!F_flag) {
+#endif
+			/*
+			 * HACK ALERT! Turn off boot switch if in
+			 * "bootstrap mode disabled check" loop.
+			 */
+			if (boot_switch) {
+				if (0xf830 <= PC && PC <= 0xf836)
+					boot_switch = 0;
+			}
+#ifdef FRONTPANEL
+		}
+#endif
 
 next:
-		/* sleep for 1 millisecond */
+		/* Sleep for 1 millisecond */
 		SLEEP_MS(1);
 	}
 
-	/* never reached, this thread is running endless */
+	/* Never reached, this thread is running endless */
 	pthread_exit(NULL);
 }

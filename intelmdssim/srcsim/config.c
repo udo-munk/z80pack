@@ -16,12 +16,11 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "log.h"
 #include "memsim.h"
+#include "log.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
-extern char *boot_rom_file, *mon_rom_file;
 extern int exatoi(char *);
 
 static const char *TAG = "config";

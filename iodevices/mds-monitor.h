@@ -15,17 +15,19 @@
 #ifndef MDS_MONITOR_INC
 #define MDS_MONITOR_INC
 
-				/* interrupt status and control bits */
-#define MDS_MON_ITTYO	0x01	/* output TTY */
-#define MDS_MON_ITTYI	0x02	/* input TTY */
+				/* Interrupt status and control bits */
+#define MDS_MON_ITTYO	0x01	/* Output TTY */
+#define MDS_MON_ITTYI	0x02	/* Input TTY */
 #define MDS_MON_IPTP	0x04	/* PTP */
 #define MDS_MON_IPTR	0x08	/* PTR */
-#define MDS_MON_ICRTO	0x10	/* output CRT */
-#define MDS_MON_ICRTI	0x20	/* input CRT */
+#define MDS_MON_ICRTO	0x10	/* Output CRT */
+#define MDS_MON_ICRTI	0x20	/* Input CRT */
 #define MDS_MON_ILPT	0x40	/* LPT */
-#define MDS_MON_MENB	0x80	/* enable monitor interrupts */
+#define MDS_MON_MENB	0x80	/* Enable monitor interrupts */
 
-extern BYTE mds_mon_int;	/* interrupts enabled & signals */
+#define MDS_MON_IRQ	3	/* Monitor module interrupt */
+
+extern BYTE mds_mon_int;
 
 extern BYTE mds_prom_data_in(void), mds_prom_status_in(void);
 extern void mds_prom_data_out(BYTE);

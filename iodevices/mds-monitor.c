@@ -18,61 +18,62 @@
 #include "memsim.h"
 #include "mds-monitor.h"
 
-				/* TTY and CRT status bits */
-#define MDS_MON_TRDY	0x01	/* transmit ready */
-#define MDS_MON_RBR	0x02	/* receive buffer ready */
-#define MDS_MON_TBE	0x04	/* transmit empty */
-#define MDS_MON_RPAR	0x08	/* receive parity error */
-#define MDS_MON_ROV	0x10	/* receive overrun error */
-#define MDS_MON_RFR	0x20	/* receive framing error */
-#define MDS_MON_DSR	0x80	/* data set ready */
+			/* TTY and CRT status bits */
+#define TRDY	0x01	/* transmit ready */
+#define RBR	0x02	/* receive buffer ready */
+#define TBE	0x04	/* transmit empty */
+#define RPAR	0x08	/* receive parity error */
+#define ROV	0x10	/* receive overrun error */
+#define RFR	0x20	/* receive framing error */
+#define DSR	0x80	/* data set ready */
 
-				/* TTY and CRT initialization controls */
-#define MDS_MON_R48_1	0x02	/* 4800 baud @ jumper 1 */
-#define MDS_MON_R96_1	0x01	/* 9600 baud @ jumper 1 */
-#define MDS_MON_R24_1	0x03	/* 2400 baud @ jumper 1 */
-#define MDS_MON_R6_2	0x02	/* 600 baud @ jumper 2 */
-#define MDS_MON_R12_2	0x01	/* 1200 baud @ jumper 2 */
-#define MDS_MON_R3_2	0x03	/* 300 baud @ jumper 2 */
-#define MDS_MON_R110	0x02	/* 110 baud @ jumper 3 */
-#define MDS_MON_CL7	0x08	/* character length = 7 */
-#define MDS_MON_CL8	0x0c	/* character length = 8 */
-#define MDS_MON_CL6	0x04	/* character length = 6 */
-#define MDS_MON_CL5	0x00	/* character length = 5 */
-#define MDS_MON_ST1	0x40	/* 1 stop bit */
-#define MDS_MON_ST15	0x80	/* 1.5 stop bits */
-#define MDS_MON_ST2	0xc0	/* 2 stop bits */
-#define MDS_MON_PENB	0x10	/* parity enable */
-#define MDS_MON_PEVEN	0x20	/* even parity */
-#define MDS_MON_TXEN	0x01	/* transmit enable */
-#define MDS_MON_DTR	0x02	/* data terminal ready */
-#define MDS_MON_RXEN	0x04	/* receive enable */
-#define MDS_MON_CLERR	0x10	/* clear error */
-#define MDS_MON_USRST	0x40	/* usart reset */
-#define MDS_MON_RTS	0x20	/* request to send */
+			/* TTY and CRT initialization controls */
+#define R48_1	0x02	/* 4800 baud @ jumper 1 */
+#define R96_1	0x01	/* 9600 baud @ jumper 1 */
+#define R24_1	0x03	/* 2400 baud @ jumper 1 */
+#define R6_2	0x02	/* 600 baud @ jumper 2 */
+#define R12_2	0x01	/* 1200 baud @ jumper 2 */
+#define R3_2	0x03	/* 300 baud @ jumper 2 */
+#define R110	0x02	/* 110 baud @ jumper 3 */
+#define CL7	0x08	/* character length = 7 */
+#define CL8	0x0c	/* character length = 8 */
+#define CL6	0x04	/* character length = 6 */
+#define CL5	0x00	/* character length = 5 */
+#define ST1	0x40	/* 1 stop bit */
+#define ST15	0x80	/* 1.5 stop bits */
+#define ST2	0xc0	/* 2 stop bits */
+#define PENB	0x10	/* parity enable */
+#define PEVEN	0x20	/* even parity */
+#define TXEN	0x01	/* transmit enable */
+#define DTR	0x02	/* data terminal ready */
+#define RXEN	0x04	/* receive enable */
+#define CLERR	0x10	/* clear error */
+#define USRST	0x40	/* usart reset */
+#define RTS	0x20	/* request to send */
 
-				/* PTR, PTP, and TTY reader controls */
-#define MDS_MON_PTPREV	0x10	/* punch reverse direction */
-#define MDS_MON_PTPADV	0x20	/* punch advance */
-#define MDS_MON_PTRREV	0x04	/* read reverse direction */
-#define MDS_MON_PTRADV	0x08	/* reader advance */
-#define MDS_MON_TTYADV	0x02	/* TTY advance */
+			/* PTR, PTP, and TTY reader controls */
+#define PTPREV	0x10	/* punch reverse direction */
+#define PTPADV	0x20	/* punch advance */
+#define PTRREV	0x04	/* read reverse direction */
+#define PTRADV	0x08	/* reader advance */
+#define TTYADV	0x02	/* TTY advance */
 
-				/* LPT, PTR, and PTP status bits */
-#define MDS_MON_LPTRY	0x01	/* LPT ready */
-#define MDS_MON_PTRDY	0x01	/* PTR ready with data */
-#define MDS_MON_PTPRY	0x04	/* PTP ready for data */
+			/* LPT, PTR, and PTP status bits */
+#define LPTRY	0x01	/* LPT ready */
+#define PTRDY	0x01	/* PTR ready with data */
+#define PTPRY	0x04	/* PTP ready for data */
 
-				/* Programmer I/O constants */
-#define MDS_MON_PCOMP	0x02	/* Programming complete */
-#define MDS_MON_PGRDY	0x01	/* PROM ready */
-#define MDS_MON_PSOCK	0x20	/* 16 pin socket selected */
-#define MDS_MON_PNIB	0x10	/* Select upper nibble */
+			/* Programmer I/O constants */
+#define PCOMP	0x02	/* Programming complete */
+#define PGRDY	0x01	/* PROM ready */
+#define PSOCK	0x20	/* 16 pin socket selected */
+#define PNIB	0x10	/* Select upper nibble */
 
-BYTE mds_mon_int;	/* interrupts enabled & signals */
+BYTE mds_mon_int;	/* Interrupts enabled & signals */
 
 /*
  *	PROM programmer interface data input
+ *	(Not implemented)
  */
 BYTE mds_prom_data_in(void)
 {
@@ -81,6 +82,7 @@ BYTE mds_prom_data_in(void)
 
 /*
  *	PROM programmer interface status input
+ *	(Not implemented)
  */
 BYTE mds_prom_status_in(void)
 {
@@ -89,6 +91,7 @@ BYTE mds_prom_status_in(void)
 
 /*
  *	PROM programmer interface data output
+ *	(Not implemented)
  */
 void mds_prom_data_out(BYTE data)
 {
@@ -97,6 +100,7 @@ void mds_prom_data_out(BYTE data)
 
 /*
  *	PROM programmer interface MSB address and control output
+ *	(Not implemented)
  */
 void mds_prom_high_ctl_out(BYTE data)
 {
@@ -105,6 +109,7 @@ void mds_prom_high_ctl_out(BYTE data)
 
 /*
  *	PROM programmer interface LSB address output
+ *	(Not implemented)
  */
 void mds_prom_low_out(BYTE data)
 {
@@ -177,6 +182,7 @@ void mds_crt_ctl_out(BYTE data)
 
 /*
  *	PTR port data input
+ *	(Currently not implemented)
  */
 BYTE mds_ptr_data_in(void)
 {
@@ -185,6 +191,7 @@ BYTE mds_ptr_data_in(void)
 
 /*
  *	PTR/PTP port status input
+ *	(Currently not implemented)
  */
 BYTE mds_pt_status_in(void)
 {
@@ -193,6 +200,7 @@ BYTE mds_pt_status_in(void)
 
 /*
  *	PTP port data output
+ *	(Currently not implemented)
  */
 void mds_ptp_data_out(BYTE data)
 {
@@ -201,6 +209,7 @@ void mds_ptp_data_out(BYTE data)
 
 /*
  *	PTR/PTP port control output
+ *	(Currently not implemented)
  */
 void mds_pt_ctl_out(BYTE data)
 {
