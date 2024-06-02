@@ -40,8 +40,8 @@ target_compile_definitions(picosim PRIVATE
 	PICO_HEAP_SIZE=8192
 )
 target_compile_definitions(picosim INTERFACE
-    PICO_DEFAULT_UART=0
- )
+	PICO_DEFAULT_UART=0
+)
 
 # for Pico
 target_link_libraries(picosim pico_stdlib FatFs_SPI)
