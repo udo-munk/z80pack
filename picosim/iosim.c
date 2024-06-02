@@ -99,9 +99,14 @@ static BYTE p000_in(void)
 	register BYTE stat = 0b10000001; /* initially not ready */
 
 #if LIB_PICO_STDIO_UART
-	if (uart_is_writable(uart0))	/* check if output to UART is possible */
+	uart_inst_t *my_uart;
+	my_uart = uart_get_instance(PICO_DEFAULT_UART_INSTANCE);
+#endif
+
+#if LIB_PICO_STDIO_UART
+	if (uart_is_writable(my_uart))	/* check if output to UART is possible */
 		stat &= 0b01111111;	/* if so flip status bit */
-	if (uart_is_readable(uart0))	/* check if there is input from UART */
+	if (uart_is_readable(my_uart))	/* check if there is input from UART */
 		stat &= 0b11111110;	/* if so flip status bit */
 #endif
 #if LIB_PICO_STDIO_USB
@@ -121,7 +126,12 @@ static BYTE p000_in(void)
 static BYTE p001_in(void)
 {
 #if LIB_PICO_STDIO_UART
-	if (!uart_is_readable(uart0))	/* someone reading without checking */
+	uart_inst_t *my_uart;
+	my_uart = uart_get_instance(PICO_DEFAULT_UART_INSTANCE);
+#endif
+
+#if LIB_PICO_STDIO_UART
+	if (!uart_is_readable(my_uart))	/* someone reading without checking */
 #endif
 #if LIB_PICO_STDIO_USB
 	if (!tud_cdc_available())

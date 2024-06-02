@@ -38,8 +38,9 @@ and change the board type in sim.h. This will only work when using
 the GPIO UART.
 
 This is configured now for USB UART to that no additional parts are needed
-to hook up a terminal. If configured for GPIO UART uart0 at pins 1/2 will
-be used, so connect a terminal with TTL/USB adapter or a pico probe there.
+to hook up a terminal. If configured for GPIO UART connect a TTL/USB
+adatpter or a pico probe to the UART pins for the one configured in
+CMakeLists.txt.
 
 
 Preparing a MicroSD card:
