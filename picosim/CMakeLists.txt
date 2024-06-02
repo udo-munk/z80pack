@@ -34,8 +34,10 @@ add_executable(picosim
 add_subdirectory(
 	no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build
 )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPICO_STACK_SIZE=4096 -DPICO_HEAP_SIZE=8192")
+target_compile_definitions(picosim PRIVATE
+	PICO_STACK_SIZE=4096
+	PICO_HEAP_SIZE=8192
+)
 
 # for Pico
 target_link_libraries(picosim pico_stdlib FatFs_SPI)
@@ -47,6 +49,7 @@ pico_add_extra_outputs(picosim)
 pico_set_program_name(picosim "z80pack picosim")
 pico_set_program_version(picosim "1.1")
 
-# disable UART in/out, enable USB in/out. Enabling both will cause problems.
+# disable UART in/out, enable USB in/out
+# enable one, enabling both will cause problems
 pico_enable_stdio_uart(picosim 0)
 pico_enable_stdio_usb(picosim 1)
