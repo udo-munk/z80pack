@@ -17,17 +17,18 @@
  *	by user for her/his own purpose.
  */
 #define DEF_CPU I8080	/* default CPU (Z80 or I8080) */
+/*#define AMD8080*/	/* AMD 8080 instead of Intel 8080 */
 #define CPU_SPEED 2	/* default CPU speed 0=unlimited */
 #define EXCLUDE_Z80	/* Intel Intellect MDS-800 was an 8080 machine */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
-/*#define UNDOC_INST*/	/* compile undocumented instructions */
+#define UNDOC_INST	/* compile undocumented instructions */
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 
-#define WANT_ICE	/* attach ICE to headless machine */
-#define WANT_TIM	/* count t-states */
-#define HISIZE	100	/* number of entries in history */
-#define SBSIZE	4	/* number of software breakpoints */
+/*#define WANT_ICE*/	/* attach ICE to headless machine */
+/*#define WANT_TIM*/	/* don't count t-states */
+/*#define HISIZE  1000*//* no history */
+/*#define SBSIZE  10*/	/* no breakpoints */
 
 /*#define HAS_DISKS*/	/* has no disk drives */
 #define HAS_CONFIG	/* has configuration files somewhere */

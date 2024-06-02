@@ -75,7 +75,7 @@ void mon(void)
 		/* bind frontpanel LED's to variables */
 		fp_bindLight8("LED_INT_{0-7}", &int_sw_requests, 1);
 		fp_bindLight8("LED_PWR", &power, 1);
-		fp_bindLight8("LED_RUN", &cpu_state, 2 /* CONTIN_RUN */);
+		fp_bindLight8("LED_RUN", &cpu_state, 1 /* CONTIN_RUN */);
 		fp_bindLight8("LED_HALT", &cpu_bus, 4 /* CPU_HLTA */) ;
 
 		/* bind frontpanel switches to variables */
@@ -119,7 +119,7 @@ void mon(void)
 			fp_sampleData();
 
 			/* run CPU if not idling */
-			if (0)
+			if (power)
 				run_cpu();
 
 			fp_clock++;

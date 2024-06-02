@@ -21,6 +21,7 @@
 #include "config.h"
 #include "mds-monitor.h"
 #include "mds-isbc202.h"
+#include "unix_network.h"
 #include "log.h"
 
 #define RTC_IRQ		1	/* Real time clock interrupt */
@@ -151,16 +152,20 @@ void exit_io(void)
  */
 void reset_io(void)
 {
-	th_suspend = 1;		/* suspend timing thread */
-	SLEEP_MS(20);		/* give it enough time to suspend */
+	th_suspend = 1;		/* Suspend timing thread */
+	SLEEP_MS(20);		/* Give it enough time to suspend */
 
-	int_mask = 0;		/* reset interrupt facility */
+	int_mask = 0;		/* Reset interrupt facility */
 	int_requests = 0;
 	int_in_service = 0;
 
-	rtc_int_enabled = 0;	/* reset real time clock */
+	rtc_int_enabled = 0;	/* Reset real time clock */
 	rtc_status0 = 0;
 	rtc_status1 = 0;
+
+	mds_mon_int = 0;	/* Monitor module reset */
+	mds_tty_reset();
+	mds_crt_reset();
 
 	th_suspend = 0;		/* resume timing thread */
 }
@@ -323,6 +328,7 @@ static void *rtc_int_thread(void *arg)
 		if (int_int)
 			goto next;
 
+		/* Check for pending interrupts */
 		int_pending();
 
 		/* 1ms RTC */

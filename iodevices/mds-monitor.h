@@ -33,9 +33,11 @@ extern BYTE mds_prom_data_in(void), mds_prom_status_in(void);
 extern void mds_prom_data_out(BYTE);
 extern void mds_prom_high_ctl_out(BYTE), mds_prom_low_out(BYTE);
 
+extern void mds_tty_reset(void);
 extern BYTE mds_tty_data_in(void), mds_tty_status_in(void);
 extern void mds_tty_data_out(BYTE), mds_tty_ctl_out(BYTE);
 
+extern void mds_crt_reset(void);
 extern BYTE mds_crt_data_in(void), mds_crt_status_in(void);
 extern void mds_crt_data_out(BYTE), mds_crt_ctl_out(BYTE);
 

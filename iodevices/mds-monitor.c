@@ -13,10 +13,17 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/poll.h>
 #include "sim.h"
 #include "simglb.h"
 #include "memsim.h"
 #include "mds-monitor.h"
+#include "unix_terminal.h"
+#define LOG_LOCAL_LEVEL LOG_DEBUG
+#include "log.h"
 
 			/* TTY and CRT status bits */
 #define TRDY	0x01	/* transmit ready */
@@ -27,29 +34,13 @@
 #define RFR	0x20	/* receive framing error */
 #define DSR	0x80	/* data set ready */
 
-			/* TTY and CRT initialization controls */
-#define R48_1	0x02	/* 4800 baud @ jumper 1 */
-#define R96_1	0x01	/* 9600 baud @ jumper 1 */
-#define R24_1	0x03	/* 2400 baud @ jumper 1 */
-#define R6_2	0x02	/* 600 baud @ jumper 2 */
-#define R12_2	0x01	/* 1200 baud @ jumper 2 */
-#define R3_2	0x03	/* 300 baud @ jumper 2 */
-#define R110	0x02	/* 110 baud @ jumper 3 */
-#define CL7	0x08	/* character length = 7 */
-#define CL8	0x0c	/* character length = 8 */
-#define CL6	0x04	/* character length = 6 */
-#define CL5	0x00	/* character length = 5 */
-#define ST1	0x40	/* 1 stop bit */
-#define ST15	0x80	/* 1.5 stop bits */
-#define ST2	0xc0	/* 2 stop bits */
-#define PENB	0x10	/* parity enable */
-#define PEVEN	0x20	/* even parity */
+			/* TTY and CRT command controls */
 #define TXEN	0x01	/* transmit enable */
 #define DTR	0x02	/* data terminal ready */
 #define RXEN	0x04	/* receive enable */
 #define CLERR	0x10	/* clear error */
-#define USRST	0x40	/* usart reset */
 #define RTS	0x20	/* request to send */
+#define USRST	0x40	/* usart reset */
 
 			/* PTR, PTP, and TTY reader controls */
 #define PTPREV	0x10	/* punch reverse direction */
@@ -63,13 +54,17 @@
 #define PTRDY	0x01	/* PTR ready with data */
 #define PTPRY	0x04	/* PTP ready for data */
 
-			/* Programmer I/O constants */
-#define PCOMP	0x02	/* Programming complete */
-#define PGRDY	0x01	/* PROM ready */
-#define PSOCK	0x20	/* 16 pin socket selected */
-#define PNIB	0x10	/* Select upper nibble */
+static const char *TAG = "MONITOR";
 
 BYTE mds_mon_int;	/* Interrupts enabled & signals */
+
+static int tty_init;	/* TTY initialized flag */
+static BYTE tty_cmd;	/* TTY command byte */
+static BYTE tty_stat;	/* TTY status byte */
+
+static int crt_init;	/* CRT initialized flag */
+static BYTE crt_cmd;	/* TTY command byte */
+static BYTE crt_stat;	/* TTY status byte */
 
 /*
  *	PROM programmer interface data input
@@ -117,6 +112,16 @@ void mds_prom_low_out(BYTE data)
 }
 
 /*
+ *	TTY port reset
+ */
+void mds_tty_reset(void)
+{
+	tty_init = 0;
+	tty_cmd = 0;
+	tty_stat = 0;
+}
+
+/*
  *	TTY port data input
  */
 BYTE mds_tty_data_in(void)
@@ -145,7 +150,24 @@ void mds_tty_data_out(BYTE data)
  */
 void mds_tty_ctl_out(BYTE data)
 {
-	UNUSED(data);
+	if (!tty_init) {
+		/* Ignore baud rate, character length, parity and stop bits */
+		tty_init = 1;
+		tty_stat = DSR | TBE | TRDY;
+		return;
+	}
+	if (data & USRST)
+		tty_init = 0;
+}
+
+/*
+ *	CRT port reset
+ */
+void mds_crt_reset(void)
+{
+	crt_init = 0;
+	crt_cmd = 0;
+	crt_stat = 0;
 }
 
 /*
@@ -153,7 +175,30 @@ void mds_tty_ctl_out(BYTE data)
  */
 BYTE mds_crt_data_in(void)
 {
-	return (0x00);
+	BYTE data;
+	static BYTE last;
+	struct pollfd p[1];
+
+again:
+	/* if no input waiting return last */
+	p[0].fd = fileno(stdin);
+	p[0].events = POLLIN;
+	p[0].revents = 0;
+	poll(p, 1, 0);
+	if (!(p[0].revents & POLLIN))
+		return (last);
+
+	if (read(fileno(stdin), &data, 1) == 0) {
+		/* try to reopen tty, input redirection exhausted */
+		if (freopen("/dev/tty", "r", stdin) == NULL)
+			LOGE(TAG, "can't reopen /dev/tty");
+		set_unix_terminal();
+		goto again;
+	}
+	crt_stat &= ~RBR;
+
+	last = data;
+	return (data);
 }
 
 /*
@@ -161,7 +206,20 @@ BYTE mds_crt_data_in(void)
  */
 BYTE mds_crt_status_in(void)
 {
-	return (0x00);
+	struct pollfd p[1];
+
+	p[0].fd = fileno(stdin);
+	p[0].events = POLLIN;
+	p[0].revents = 0;
+	poll(p, 1, 0);
+	if (p[0].revents & POLLIN)
+		crt_stat |= RBR;
+	if (p[0].revents & POLLNVAL) {
+		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
+		cpu_error = IOERROR;
+		cpu_state = STOPPED;
+	}
+	return (crt_stat);
 }
 
 /*
@@ -169,7 +227,16 @@ BYTE mds_crt_status_in(void)
  */
 void mds_crt_data_out(BYTE data)
 {
-	UNUSED(data);
+again:
+	if (write(fileno(stdout), &data, 1) != 1) {
+		if (errno == EINTR) {
+			goto again;
+		} else {
+			LOGE(TAG, "can't write CRT data");
+			cpu_error = IOERROR;
+			cpu_state = STOPPED;
+		}
+	}
 }
 
 /*
@@ -177,7 +244,14 @@ void mds_crt_data_out(BYTE data)
  */
 void mds_crt_ctl_out(BYTE data)
 {
-	UNUSED(data);
+	if (!crt_init) {
+		/* Ignore baud rate, character length, parity and stop bits */
+		crt_init = 1;
+		crt_stat = DSR | TBE | TRDY;
+		return;
+	}
+	if (data & USRST)
+		crt_init = 0;
 }
 
 /*

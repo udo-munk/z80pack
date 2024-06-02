@@ -31,7 +31,7 @@ extern BYTE boot_switch;
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	if (mon_enabled && addr < 65536 - MON_SIZE)
+	if (!mon_enabled || addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 
@@ -48,7 +48,7 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
-	if (mon_enabled && addr < 65536 - MON_SIZE)
+	if (!mon_enabled || addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 
@@ -65,7 +65,7 @@ static inline BYTE dma_read(WORD addr)
  */
 static inline void putmem(WORD addr, BYTE data)
 {
-	if (mon_enabled && addr < 65536 - MON_SIZE)
+	if (!mon_enabled || addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 
