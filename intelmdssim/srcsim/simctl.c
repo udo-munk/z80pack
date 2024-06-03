@@ -39,9 +39,11 @@ static void power_clicked(int, int);
 static void quit_callback(void);
 #endif
 
-BYTE boot_switch;	/* status of boot switch */
-BYTE halt_state;
-BYTE int_requests;
+BYTE boot_switch;	/* Status of boot switch */
+
+#ifdef FRONTPANEL
+BYTE int_sw_requests;	/* Switch interrupt requests */
+#endif
 
 extern void ice_cmd_loop(int);
 
@@ -71,10 +73,10 @@ void mon(void)
 		fp_bindRunFlag(&cpu_state);
 
 		/* bind frontpanel LED's to variables */
-		fp_bindLight8("LED_INT_{0-7}", &int_requests, 1);
+		fp_bindLight8("LED_INT_{0-7}", &int_sw_requests, 1);
 		fp_bindLight8("LED_PWR", &power, 1);
-		fp_bindLight8("LED_RUN", &cpu_state, 1);
-		fp_bindLight8("LED_HALT", &halt_state, 1);
+		fp_bindLight8("LED_RUN", &cpu_state, 1 /* CONTIN_RUN */);
+		fp_bindLight8("LED_HALT", &cpu_bus, 4 /* CPU_HLTA */) ;
 
 		/* bind frontpanel switches to variables */
 		fp_bindSwitch8("SW_BOOT", &boot_switch, &boot_switch, 1);
@@ -91,6 +93,10 @@ void mon(void)
 		fp_addSwitchCallback("SW_INT_0", int_clicked, 0);
 		fp_addSwitchCallback("SW_RESET", reset_clicked, 0);
 		fp_addSwitchCallback("SW_PWR", power_clicked, 0);
+	} else {
+#endif
+		boot_switch = 1;
+#ifdef FRONTPANEL
 	}
 #endif
 
@@ -113,7 +119,7 @@ void mon(void)
 			fp_sampleData();
 
 			/* run CPU if not idling */
-			if (0)
+			if (power)
 				run_cpu();
 
 			fp_clock++;
@@ -173,6 +179,8 @@ void mon(void)
  */
 void int_clicked(int state, int val)
 {
+	extern void int_request(int);
+
 	if (!power)
 		return;
 
@@ -180,7 +188,8 @@ void int_clicked(int state, int val)
 	case FP_SW_CENTER:
 		break;
 	case FP_SW_UP:
-		int_requests |= 1 << val;
+		int_sw_requests |= 1 << val;
+		int_request(val);
 		break;
 	default:
 		break;
@@ -222,7 +231,7 @@ void reset_clicked(int state, int val)
 		cpu_bus = 0;
 		m1_step = 0;
 		IFF = 0;
-		int_requests = 0;
+		int_sw_requests = 0;
 		reset_io();
 		reset_cpu();
 		cpu_state &= ~RESET;

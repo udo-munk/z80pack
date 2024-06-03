@@ -21,15 +21,17 @@ extern int wait_step(void);
 extern void wait_int_step(void);
 
 extern BYTE memory[], boot_rom[];
-extern BYTE boot_switch;
+extern char *boot_rom_file, *mon_rom_file;
 extern int mon_enabled;
+
+extern BYTE boot_switch;
 
 /*
  * memory access for the CPU cores
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
-	if (mon_enabled && addr < 65536 - MON_SIZE)
+	if (!mon_enabled || addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 
@@ -46,7 +48,7 @@ static inline BYTE memrdr(WORD addr)
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
-	if (mon_enabled && addr < 65536 - MON_SIZE)
+	if (!mon_enabled || addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 
@@ -63,7 +65,7 @@ static inline BYTE dma_read(WORD addr)
  */
 static inline void putmem(WORD addr, BYTE data)
 {
-	if (mon_enabled && addr < 65536 - MON_SIZE)
+	if (!mon_enabled || addr < 65536 - MON_SIZE)
 		memory[addr] = data;
 }
 

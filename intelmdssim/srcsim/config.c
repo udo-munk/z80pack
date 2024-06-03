@@ -16,18 +16,16 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "log.h"
 #include "memsim.h"
+#include "log.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
-extern char *boot_rom_file, *mon_rom_file;
 extern int exatoi(char *);
 
 static const char *TAG = "config";
 
-int  fp_size = 800;		/* default frontpanel size */
-BYTE fp_port = 0;		/* default fp input port value */
+int fp_size = 800;		/* default frontpanel size */
 
 void config(void)
 {
@@ -56,9 +54,7 @@ void config(void)
 				LOGW(TAG, "missing parameter for %s", t1);
 				continue;
 			}
-			if (!strcmp(t1, "fp_port")) {
-				fp_port = (BYTE) exatoi(t2);
-			} else if (!strcmp(t1, "fp_fps")) {
+			if (!strcmp(t1, "fp_fps")) {
 #ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
 #endif

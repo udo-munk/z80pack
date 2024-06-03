@@ -9,7 +9,7 @@ FRONTPANEL = YES
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files
-IO_SRCS = unix_terminal.c
+IO_SRCS = mds-monitor.c mds-isbc202.c unix_terminal.c
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
@@ -151,11 +151,11 @@ FORCE:
 build: _rm_obj all
 
 install: $(SIM)
-	$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
+#	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+#	$(INSTALL_PROGRAM) -s $(SIM) $(DESTDIR)$(BINDIR)
 
 uninstall:
-	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
+#	rm -f $(DESTDIR)$(BINDIR)/$(CPROG)
 
 clean: _rm_obj _rm_deps
 

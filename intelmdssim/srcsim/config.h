@@ -15,7 +15,6 @@
 
 extern void config(void);
 
-extern int  fp_size;
-extern BYTE fp_port;
+extern int fp_size;
 
 #endif /* !CONFIG_INC */
