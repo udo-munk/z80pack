@@ -72,16 +72,16 @@ BYTE (*port_in[256])(void) = {
 	[120] = isbc202_status_in,	/* iSBC 202 subsystem status input */
 	[121] = isbc202_res_type_in,	/* iSBC 202 result type input */
 	[123] = isbc202_res_byte_in,	/* iSBC 202 result byte input */
-	[240] = mds_prom_data_in,	/* PROM interface data input */
-	[241] = mds_prom_status_in,	/* PROM interface status input */
-	[244] = mds_tty_data_in,	/* TTY port data input */
-	[245] = mds_tty_status_in,	/* TTY port status input */
-	[246] = mds_crt_data_in,	/* CRT port data input */
-	[247] = mds_crt_status_in,	/* CRT port status input */
-	[248] = mds_ptr_data_in,	/* PTR port data input */
-	[249] = mds_pt_status_in,	/* PTR/PTP port status input */
-	[250] = mds_int_status_in,	/* Interrupt status input */
-	[251] = mds_lpt_status_in,	/* LPT port status input */
+	[240] = mon_prom_data_in,	/* PROM interface data input */
+	[241] = mon_prom_status_in,	/* PROM interface status input */
+	[244] = mon_tty_data_in,	/* TTY port data input */
+	[245] = mon_tty_status_in,	/* TTY port status input */
+	[246] = mon_crt_data_in,	/* CRT port data input */
+	[247] = mon_crt_status_in,	/* CRT port status input */
+	[248] = mon_ptr_data_in,	/* PTR port data input */
+	[249] = mon_pt_status_in,	/* PTR/PTP port status input */
+	[250] = mon_int_status_in,	/* Interrupt status input */
+	[251] = mon_lpt_status_in,	/* LPT port status input */
 	[252] = int_mask_in,		/* Read the interrupt mask */
 	[255] = rtc_in			/* Read boot switch and RTC status */
 };
@@ -94,18 +94,18 @@ void (*port_out[256])(BYTE) = {
 	[121] = isbc202_iopbl_out,	/* iSBC 202 IOPB address LSB output */
 	[122] = isbc202_iopbh_out,	/* iSBC 202 IOPB address MSB output */
 	[127] = isbc202_reset_out,	/* iSBC 202 reset disk system output */
-	[240] = mds_prom_data_out,	/* PROM interface data output */
-	[241] = mds_prom_high_ctl_out,	/* PROM intf MSB addr and ctl output */
-	[242] = mds_prom_low_out,	/* PROM interface LSB addr output */
-	[243] = mds_int_ctl_out,	/* Interrupt control output */
-	[244] = mds_tty_data_out,	/* TTY port data output */
-	[245] = mds_tty_ctl_out,	/* TTY port control output */
-	[246] = mds_crt_data_out,	/* CRT port data output */
-	[247] = mds_crt_ctl_out,	/* CRT port control output */
-	[248] = mds_ptp_data_out,	/* PTP port data output */
-	[249] = mds_pt_ctl_out,		/* PTR/PTP port control output */
-	[250] = mds_lpt_data_out,	/* LPT port data output */
-	[251] = mds_lpt_ctl_out,	/* LPT port control output */
+	[240] = mon_prom_data_out,	/* PROM interface data output */
+	[241] = mon_prom_high_ctl_out,	/* PROM intf MSB addr and ctl output */
+	[242] = mon_prom_low_out,	/* PROM interface LSB addr output */
+	[243] = mon_int_ctl_out,	/* Interrupt control output */
+	[244] = mon_tty_data_out,	/* TTY port data output */
+	[245] = mon_tty_ctl_out,	/* TTY port control output */
+	[246] = mon_crt_data_out,	/* CRT port data output */
+	[247] = mon_crt_ctl_out,	/* CRT port control output */
+	[248] = mon_ptp_data_out,	/* PTP port data output */
+	[249] = mon_pt_ctl_out,		/* PTR/PTP port control output */
+	[250] = mon_lpt_data_out,	/* LPT port data output */
+	[251] = mon_lpt_ctl_out,	/* LPT port control output */
 	[252] = int_mask_out,		/* Define and store interrupt mask */
 	[253] = int_revert_out,		/* Restore interrupt priority level */
 	[254] = bus_ovrrd_out,		/* Override loss of the bus */
@@ -163,9 +163,7 @@ void reset_io(void)
 	rtc_status0 = 0;
 	rtc_status1 = 0;
 
-	mds_mon_int = 0;	/* Monitor module reset */
-	mds_tty_reset();
-	mds_crt_reset();
+	mon_reset();
 
 	th_suspend = 0;		/* resume timing thread */
 }
@@ -335,6 +333,9 @@ static void *rtc_int_thread(void *arg)
 		rtc_status0 = 1;
 		if (rtc_int_enabled)
 			int_request(RTC_IRQ);
+
+		/* Check monitor interrupts */
+		mon_int_check();
 
 #ifdef FRONTPANEL
 		if (!F_flag) {

@@ -54,9 +54,21 @@
 #define PTRDY	0x01	/* PTR ready with data */
 #define PTPRY	0x04	/* PTP ready for data */
 
+			/* Interrupt status and control bits */
+#define ITTYO	0x01	/* Output TTY */
+#define ITTYI	0x02	/* Input TTY */
+#define IPTP	0x04	/* PTP */
+#define IPTR	0x08	/* PTR */
+#define ICRTO	0x10	/* Output CRT */
+#define ICRTI	0x20	/* Input CRT */
+#define ILPT	0x40	/* LPT */
+#define MENB	0x80	/* Enable monitor interrupts */
+
+#define MON_IRQ	3	/* Monitor module interrupt */
+
 static const char *TAG = "MONITOR";
 
-BYTE mds_mon_int;	/* Interrupts enabled & signals */
+static BYTE mon_int;	/* Interrupts enabled & signals */
 
 static int tty_init;	/* TTY initialized flag */
 static BYTE tty_cmd;	/* TTY command byte */
@@ -66,11 +78,15 @@ static int crt_init;	/* CRT initialized flag */
 static BYTE crt_cmd;	/* TTY command byte */
 static BYTE crt_stat;	/* TTY status byte */
 
+static BYTE pt_stat;	/* PTR/PTP status byte */
+
+static int lpt_stat;	/* LPT status byte */
+
 /*
  *	PROM programmer interface data input
  *	(Not implemented)
  */
-BYTE mds_prom_data_in(void)
+BYTE mon_prom_data_in(void)
 {
 	return (0x00);
 }
@@ -79,7 +95,7 @@ BYTE mds_prom_data_in(void)
  *	PROM programmer interface status input
  *	(Not implemented)
  */
-BYTE mds_prom_status_in(void)
+BYTE mon_prom_status_in(void)
 {
 	return (0x00);
 }
@@ -88,7 +104,7 @@ BYTE mds_prom_status_in(void)
  *	PROM programmer interface data output
  *	(Not implemented)
  */
-void mds_prom_data_out(BYTE data)
+void mon_prom_data_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -97,7 +113,7 @@ void mds_prom_data_out(BYTE data)
  *	PROM programmer interface MSB address and control output
  *	(Not implemented)
  */
-void mds_prom_high_ctl_out(BYTE data)
+void mon_prom_high_ctl_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -106,7 +122,7 @@ void mds_prom_high_ctl_out(BYTE data)
  *	PROM programmer interface LSB address output
  *	(Not implemented)
  */
-void mds_prom_low_out(BYTE data)
+void mon_prom_low_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -114,7 +130,7 @@ void mds_prom_low_out(BYTE data)
 /*
  *	TTY port reset
  */
-void mds_tty_reset(void)
+void mon_tty_reset(void)
 {
 	tty_init = 0;
 	tty_cmd = 0;
@@ -124,7 +140,7 @@ void mds_tty_reset(void)
 /*
  *	TTY port data input
  */
-BYTE mds_tty_data_in(void)
+BYTE mon_tty_data_in(void)
 {
 	return (0x00);
 }
@@ -132,7 +148,7 @@ BYTE mds_tty_data_in(void)
 /*
  *	TTY port status input
  */
-BYTE mds_tty_status_in(void)
+BYTE mon_tty_status_in(void)
 {
 	return (0x00);
 }
@@ -140,7 +156,7 @@ BYTE mds_tty_status_in(void)
 /*
  *	TTY port data output
  */
-void mds_tty_data_out(BYTE data)
+void mon_tty_data_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -148,7 +164,7 @@ void mds_tty_data_out(BYTE data)
 /*
  *	TTY port control output
  */
-void mds_tty_ctl_out(BYTE data)
+void mon_tty_ctl_out(BYTE data)
 {
 	if (!tty_init) {
 		/* Ignore baud rate, character length, parity and stop bits */
@@ -163,7 +179,7 @@ void mds_tty_ctl_out(BYTE data)
 /*
  *	CRT port reset
  */
-void mds_crt_reset(void)
+void mon_crt_reset(void)
 {
 	crt_init = 0;
 	crt_cmd = 0;
@@ -173,7 +189,7 @@ void mds_crt_reset(void)
 /*
  *	CRT port data input
  */
-BYTE mds_crt_data_in(void)
+BYTE mon_crt_data_in(void)
 {
 	BYTE data;
 	static BYTE last;
@@ -204,7 +220,7 @@ again:
 /*
  *	CRT port status input
  */
-BYTE mds_crt_status_in(void)
+BYTE mon_crt_status_in(void)
 {
 	struct pollfd p[1];
 
@@ -225,7 +241,7 @@ BYTE mds_crt_status_in(void)
 /*
  *	CRT port data output
  */
-void mds_crt_data_out(BYTE data)
+void mon_crt_data_out(BYTE data)
 {
 again:
 	if (write(fileno(stdout), &data, 1) != 1) {
@@ -242,7 +258,7 @@ again:
 /*
  *	CRT port control output
  */
-void mds_crt_ctl_out(BYTE data)
+void mon_crt_ctl_out(BYTE data)
 {
 	if (!crt_init) {
 		/* Ignore baud rate, character length, parity and stop bits */
@@ -255,10 +271,17 @@ void mds_crt_ctl_out(BYTE data)
 }
 
 /*
+ *	PTR/PTP port reset
+ */
+void mon_pt_reset(void)
+{
+}
+
+/*
  *	PTR port data input
  *	(Currently not implemented)
  */
-BYTE mds_ptr_data_in(void)
+BYTE mon_ptr_data_in(void)
 {
 	return (0x00);
 }
@@ -267,7 +290,7 @@ BYTE mds_ptr_data_in(void)
  *	PTR/PTP port status input
  *	(Currently not implemented)
  */
-BYTE mds_pt_status_in(void)
+BYTE mon_pt_status_in(void)
 {
 	return (0x00);
 }
@@ -276,7 +299,7 @@ BYTE mds_pt_status_in(void)
  *	PTP port data output
  *	(Currently not implemented)
  */
-void mds_ptp_data_out(BYTE data)
+void mon_ptp_data_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -285,7 +308,7 @@ void mds_ptp_data_out(BYTE data)
  *	PTR/PTP port control output
  *	(Currently not implemented)
  */
-void mds_pt_ctl_out(BYTE data)
+void mon_pt_ctl_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -293,15 +316,22 @@ void mds_pt_ctl_out(BYTE data)
 /*
  *	LPT port status input
  */
-BYTE mds_lpt_status_in(void)
+BYTE mon_lpt_status_in(void)
 {
 	return (0x00);
 }
 
 /*
+ *	LPT port reset
+ */
+void mon_lpt_reset(void)
+{
+}
+
+/*
  *	LPT port data output
  */
-void mds_lpt_data_out(BYTE data)
+void mon_lpt_data_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -309,7 +339,7 @@ void mds_lpt_data_out(BYTE data)
 /*
  *	LPT port control output
  */
-void mds_lpt_ctl_out(BYTE data)
+void mon_lpt_ctl_out(BYTE data)
 {
 	UNUSED(data);
 }
@@ -317,15 +347,48 @@ void mds_lpt_ctl_out(BYTE data)
 /*
  *	Interrupt control output
  */
-void mds_int_ctl_out(BYTE data)
+void mon_int_ctl_out(BYTE data)
 {
-	mds_mon_int = (data & 0x80) | (mds_mon_int & (~data & 0x7f));
+	mon_int = (data & 0x80) | (mon_int & (~data & 0x7f));
 }
 
 /*
  *	Interrupt status input
  */
-BYTE mds_int_status_in(void)
+BYTE mon_int_status_in(void)
 {
-	return (mds_mon_int & 0x7f);
+	return (mon_int & 0x7f);
+}
+
+/*
+ *	Check for interrupts
+ */
+void mon_int_check(void)
+{
+	extern void int_request(int);
+
+	if ((mon_int & MENB) == 0)
+		return;
+
+	if (((mon_int & ITTYO) && (tty_stat & TBE) && (tty_cmd & TXEN)) ||
+	    ((mon_int & ITTYI) && (tty_stat & RBR) && (tty_cmd & RXEN)) ||
+	    ((mon_int & IPTP) && (pt_stat & PTPRY)) ||
+	    ((mon_int & IPTR) && (pt_stat & PTRDY)) ||
+	    ((mon_int & ICRTO) && (crt_stat & TBE) && (tty_cmd & TXEN)) ||
+	    ((mon_int & ICRTI) && (crt_stat & RBR) && (tty_cmd & RXEN)) ||
+	    ((mon_int & ILPT) && (lpt_stat & LPTRY)))
+		int_request(MON_IRQ);
+}
+
+/*
+ *	Monitor module reset
+ */
+void mon_reset(void)
+{
+	mon_int = 0;
+
+	mon_tty_reset();
+	mon_crt_reset();
+	mon_pt_reset();
+	mon_lpt_reset();
 }

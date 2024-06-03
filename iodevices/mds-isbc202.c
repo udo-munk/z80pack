@@ -44,13 +44,13 @@
 #define CW_RFS		0x40	/* Random format sequence */
 
 				/* Diskette instruction */
-#define I_OPMSK		0x07	/* Op code mask */
-#define I_DWLEN		0x08	/* Data word length (0 = 8, 1 = 16) */
-#define I_USMSK		0x30	/* Unit select mask */
-#define I_UNIT0		0x00	/* Drive 0 */
-#define I_UNIT1		0x10	/* Drive 1 */
-#define I_UNIT2		0x20	/* Drive 2 */
-#define I_UNIT3		0x30	/* Drive 3 */
+#define DI_OPMSK	0x07	/* Op code mask */
+#define DI_DWLEN	0x08	/* Data word length (0 = 8, 1 = 16) */
+#define DI_USMSK	0x30	/* Unit select mask */
+#define DI_UNIT0	0x00	/* Drive 0 */
+#define DI_UNIT1	0x10	/* Drive 1 */
+
+#define DI_UNIT3	0x30	/* Drive 3 */
 
 				/* Diskette operations */
 #define OP_NOP		0x00	/* No operation */
