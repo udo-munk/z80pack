@@ -11,6 +11,7 @@
  * 12-MAY-2024 implemented configuration dialog
  * 27-MAY-2024 implemented load file
  * 28-MAY-2024 implemented mount/unmount of disk images
+ * 03-JUN-2024 added directory list for code files and disk images
  */
 
 #include <stdint.h>
@@ -54,6 +55,8 @@ void config(void)
 	const char *cfg = "/CONF80/CFG.TXT";
 	const char *cpath = "/CODE80";
 	const char *cext = "*.BIN";
+	const char *dpath = "/DISKS80";
+	const char *dext = "*.DSK";
 	char s[10];
 	unsigned int br;
 	int go_flag = 0;
@@ -125,7 +128,7 @@ again:
 			break;
 
 		case '6':
-			ls("/DISKS80", "*.DSK");
+			ls(dpath, dext);
 			printf("\n\n");
 			break;
 
