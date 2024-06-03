@@ -47,7 +47,7 @@ static void complain(void)
 }
 
 /*
- * list directory 'name'
+ * list files with pattern 'ext' in directory 'dir'
  */
 void ls(const char *dir, const char *ext)
 {
