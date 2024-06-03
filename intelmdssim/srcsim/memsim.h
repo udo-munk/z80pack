@@ -8,6 +8,7 @@
  * system
  *
  * History:
+ * 03-JUN-2024 first version
  */
 
 #ifndef MEMSIM_INC
@@ -27,7 +28,7 @@ extern int mon_enabled;
 extern BYTE boot_switch;
 
 /*
- * memory access for the CPU cores
+ *	Memory access for the CPU cores
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
@@ -44,7 +45,7 @@ static inline BYTE memrdr(WORD addr)
 }
 
 /*
- * memory access for DMA devices which request bus from CPU
+ *	Memory access for DMA devices which request bus from CPU
  */
 static inline void dma_write(WORD addr, BYTE data)
 {
@@ -61,7 +62,7 @@ static inline BYTE dma_read(WORD addr)
 }
 
 /*
- * direct memory access for simulation frame, video logic, etc.
+ *	Direct memory access for simulation frame, video logic, etc.
  */
 static inline void putmem(WORD addr, BYTE data)
 {

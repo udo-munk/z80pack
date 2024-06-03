@@ -8,6 +8,7 @@
  * global variables, so that the system can be configured.
  *
  * History:
+ * 03-JUN-2024 first version
  */
 
 #ifndef CONFIG_INC

@@ -7,6 +7,7 @@
  * This module contains the user interface an Intel Intellec MDS-800 system
  *
  * History:
+ * 03-JUN-2024 first version
  */
 
 #include <stdint.h>
@@ -39,10 +40,11 @@ static void power_clicked(int, int);
 static void quit_callback(void);
 #endif
 
-BYTE boot_switch;	/* Status of boot switch */
+BYTE boot_switch;	/* status of boot switch */
+int cpu_idle;		/* CPU idle flag */
 
 #ifdef FRONTPANEL
-BYTE int_sw_requests;	/* Switch interrupt requests */
+BYTE int_sw_requests;	/* switch interrupt requests */
 #endif
 
 extern void ice_cmd_loop(int);
@@ -119,7 +121,7 @@ void mon(void)
 			fp_sampleData();
 
 			/* run CPU if not idling */
-			if (power)
+			if (power && !cpu_idle)
 				run_cpu();
 
 			fp_clock++;
@@ -131,12 +133,10 @@ void mon(void)
 	} else {
 #endif
 #ifdef WANT_ICE
-		extern void ice_cmd_loop(int);
+		extern void ice_cmd_loop(int), ice_go(void), ice_break(void);
 
-		ice_before_go = set_unix_terminal;
-		ice_after_go = reset_unix_terminal;
-		atexit(reset_unix_terminal);
-
+		ice_before_go = ice_go;
+		ice_after_go = ice_break;
 		ice_cmd_loop(0);
 #else
 		/* run the CPU */
@@ -158,6 +158,8 @@ void mon(void)
 		cpu_bus = 0;
 		bus_request = 0;
 		IFF = 0;
+		power = 0;
+		int_sw_requests = 0;
 		fp_sampleData();
 
 		/* wait a bit before termination */
@@ -189,6 +191,7 @@ void int_clicked(int state, int val)
 		break;
 	case FP_SW_UP:
 		int_sw_requests |= 1 << val;
+		fp_sampleData();
 		int_request(val);
 		break;
 	default:
@@ -197,7 +200,7 @@ void int_clicked(int state, int val)
 }
 
 /*
- * Single step through the machine cycles after M1
+ *	Single step through the machine cycles after M1
  */
 int wait_step(void)
 {
@@ -207,7 +210,7 @@ int wait_step(void)
 }
 
 /*
- * Single step through interrupt machine cycles
+ *	Single step through interrupt machine cycles
  */
 void wait_int_step(void)
 {
@@ -227,14 +230,12 @@ void reset_clicked(int state, int val)
 	case FP_SW_UP:
 		break;
 	case FP_SW_CENTER:
-		cpu_state |= RESET;
-		cpu_bus = 0;
 		m1_step = 0;
 		IFF = 0;
 		int_sw_requests = 0;
 		reset_io();
 		reset_cpu();
-		cpu_state &= ~RESET;
+		cpu_idle = 0;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		break;
 	default:
@@ -261,7 +262,7 @@ void power_clicked(int state, int val)
 		if (power)
 			break;
 		power++;
-		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
+		cpu_idle = 1;
 		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
 			puts("\r\n\r\n\r\n");
 		break;
@@ -271,7 +272,7 @@ void power_clicked(int state, int val)
 }
 
 /*
- * Callback for quit (graphics window closed)
+ *	Callback for quit (graphics window closed)
  */
 void quit_callback(void)
 {
