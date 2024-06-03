@@ -114,7 +114,7 @@ again:
 			break;
 
 		case '4':
-			ls("/CODE80", "*.BIN");
+			ls(cpath, cext);
 			printf("\n\n");
 			break;
 

@@ -1,0 +1,7 @@
+**/build
+*.html
+*.png
+*.zip
+*.xlsx
+*.bak
+**/.vscode
