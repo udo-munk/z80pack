@@ -30,6 +30,12 @@ To clean everything:
 	cd z80pack/picosim
 	rm -rf build
 
+The FatFS filesystem can be configured in many ways and not everything
+included is needed here. I have added the file ffconf.h-z80pack with my
+configuration, copy it to:
+	no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI/ff15/source/ffconf.h
+This saves memory in code space and on stack/heap.
+
 This machine can be used with Pico and Pico W boards. However, it is setup
 for a Pico board, because with the additional CYW43 library + SPI + FatFS
 + TinyUSB the system runs out of stack.
