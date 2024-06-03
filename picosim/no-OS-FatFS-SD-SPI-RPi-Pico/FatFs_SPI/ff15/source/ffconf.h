@@ -3,7 +3,7 @@
 /---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------/
-/ Mofified June 2024 Udo Munk
+/ Modified June 2024 Udo Munk
 / Original configuration lines are left commented, so that it is easy
 / to see here, what I changed
 /---------------------------------------------------------------------------*/
