@@ -9,12 +9,16 @@
  * It maintains the real time clock and interrupt facility.
  *
  * History:
+ * 03-JUN-2024 first version
  */
 
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <pthread.h>
+#include <signal.h>
+#include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
 #include "memsim.h"
@@ -22,9 +26,12 @@
 #include "mds-monitor.h"
 #include "mds-isbc202.h"
 #include "unix_network.h"
+#ifdef FRONTPANEL
+#include "frontpanel.h"
+#endif
 #include "log.h"
 
-#define RTC_IRQ		1	/* Real time clock interrupt */
+#define RTC_IRQ		1	/* real time clock interrupt */
 
 #ifdef FRONTPANEL
 extern BYTE int_sw_requests;
@@ -44,25 +51,24 @@ static void bus_ovrrd_out(BYTE), rtc_out(BYTE);
 /*
  *	Forward declarations for support functions
  */
-static void *rtc_int_thread(void *);
+static void *timing(void *);
+static void interrupt(int);
 
 static const char *TAG = "IO";
-
-/*
- *	Interrupt assignments:
- *	INT 1 = Real time clock
- *	INT 2 = iSBC-202 diskette controller
- *	INT 3 = Monitor module
- */
 
 static BYTE int_mask;			/* interrupt mask */
 static BYTE int_requests;		/* interrupt requests */
 static BYTE int_in_service;		/* interrupts in service */
+static pthread_mutex_t int_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int rtc_int_enabled;
 static int rtc_status1, rtc_status0;	/* RTC status flip-flops */
 
 static int th_suspend;			/* RTC/interrupt thread suspend flag */
+
+int lpt_fd;				/* fd for file "printer.txt" */
+struct net_connectors ncons[NUMNSOC];	/* network connection for TTY */
+struct unix_connectors ucons[NUMUSOC];	/* socket connection for PTR/PTP */
 
 /*
  *	This array contains function pointers for every input
@@ -80,10 +86,10 @@ BYTE (*port_in[256])(void) = {
 	[247] = mon_crt_status_in,	/* CRT port status input */
 	[248] = mon_ptr_data_in,	/* PTR port data input */
 	[249] = mon_pt_status_in,	/* PTR/PTP port status input */
-	[250] = mon_int_status_in,	/* Interrupt status input */
+	[250] = mon_int_status_in,	/* interrupt status input */
 	[251] = mon_lpt_status_in,	/* LPT port status input */
-	[252] = int_mask_in,		/* Read the interrupt mask */
-	[255] = rtc_in			/* Read boot switch and RTC status */
+	[252] = int_mask_in,		/* read the interrupt mask */
+	[255] = rtc_in			/* read boot switch and RTC status */
 };
 
 /*
@@ -97,7 +103,7 @@ void (*port_out[256])(BYTE) = {
 	[240] = mon_prom_data_out,	/* PROM interface data output */
 	[241] = mon_prom_high_ctl_out,	/* PROM intf MSB addr and ctl output */
 	[242] = mon_prom_low_out,	/* PROM interface LSB addr output */
-	[243] = mon_int_ctl_out,	/* Interrupt control output */
+	[243] = mon_int_ctl_out,	/* interrupt control output */
 	[244] = mon_tty_data_out,	/* TTY port data output */
 	[245] = mon_tty_ctl_out,	/* TTY port control output */
 	[246] = mon_crt_data_out,	/* CRT port data output */
@@ -106,10 +112,10 @@ void (*port_out[256])(BYTE) = {
 	[249] = mon_pt_ctl_out,		/* PTR/PTP port control output */
 	[250] = mon_lpt_data_out,	/* LPT port data output */
 	[251] = mon_lpt_ctl_out,	/* LPT port control output */
-	[252] = int_mask_out,		/* Define and store interrupt mask */
-	[253] = int_revert_out,		/* Restore interrupt priority level */
-	[254] = bus_ovrrd_out,		/* Override loss of the bus */
-	[255] = rtc_out			/* Set RTC interrupt enabled/request */
+	[252] = int_mask_out,		/* define and store interrupt mask */
+	[253] = int_revert_out,		/* restore interrupt priority level */
+	[254] = bus_ovrrd_out,		/* override loss of the bus */
+	[255] = rtc_out			/* set RTC interrupt enabled/request */
 };
 
 /*
@@ -123,6 +129,8 @@ void init_io(void)
 
 	register int i;
 	pthread_t thread;
+	static struct itimerval tim;
+	static struct sigaction newact;
 
 	for (i = 0; i <= 255; i++) {
 		if (port_in[i] == NULL)
@@ -131,11 +139,56 @@ void init_io(void)
 			port_out[i] = io_trap_out;
 	}
 
+	int_mask = 0;		/* reset interrupt facility */
+	int_requests = 0;
+	int_in_service = 0;
+
+	rtc_int_enabled = 0;	/* reset real time clock */
+	rtc_status0 = 0;
+	rtc_status1 = 0;
+
+	mon_reset();		/* reset monitor module */
+
+	isbc202_reset();	/* reset iSBC 202 disk controller */
+
+
+	/* initialize TCP/IP networking */
+#ifdef TCPASYNC
+	newact.sa_handler = sigio_tcp_server_socket;
+	sigemptyset(&newact.sa_mask);
+	newact.sa_flags = 0;
+	sigaction(SIGIO, &newact, NULL);
+#endif
+
+	for (i = 0; i < NUMNSOC; i++) {
+		ncons[i].port = SERVERPORT + i;
+		ncons[i].telnet = 1;
+		init_tcp_server_socket(&ncons[i]);
+	}
+
+	/* create local socket for PTR/PTP */
+	init_unix_server_socket(&ucons[0], "intelmdssim.pt");
+
 	/* create the thread for timer and interrupt handling */
-	if (pthread_create(&thread, NULL, rtc_int_thread, (void *) NULL)) {
+	if (pthread_create(&thread, NULL, timing, (void *) NULL)) {
 		LOGE(TAG, "can't create timing thread");
 		exit(EXIT_FAILURE);
 	}
+
+	/* start 10ms interrupt timer, delayed! */
+#ifndef WANT_ICE
+	newact.sa_handler = interrupt;
+#else
+	newact.sa_handler = SIG_IGN;
+#endif
+	sigemptyset(&newact.sa_mask);
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+	tim.it_value.tv_sec = 5;
+	tim.it_value.tv_usec = 0;
+	tim.it_interval.tv_sec = 0;
+	tim.it_interval.tv_usec = 10000;
+	setitimer(ITIMER_REAL, &tim, NULL);
 }
 
 /*
@@ -144,6 +197,21 @@ void init_io(void)
  */
 void exit_io(void)
 {
+	register int i;
+
+	/* close line printer file */
+	if (lpt_fd != 0)
+		close(lpt_fd);
+
+	/* close network connections */
+	for (i = 0; i < NUMNSOC; i++) {
+		if (ncons[i].ssc)
+			close(ncons[i].ssc);
+	}
+	for (i = 0; i < NUMUSOC; i++) {
+		if (ucons[i].ssc)
+			close(ucons[i].ssc);
+	}
 }
 
 /*
@@ -152,18 +220,20 @@ void exit_io(void)
  */
 void reset_io(void)
 {
-	th_suspend = 1;		/* Suspend timing thread */
-	SLEEP_MS(20);		/* Give it enough time to suspend */
+	th_suspend = 1;		/* suspend timing thread */
+	SLEEP_MS(20);		/* give it enough time to suspend */
 
-	int_mask = 0;		/* Reset interrupt facility */
+	int_mask = 0;		/* reset interrupt facility */
 	int_requests = 0;
 	int_in_service = 0;
 
-	rtc_int_enabled = 0;	/* Reset real time clock */
+	rtc_int_enabled = 0;	/* reset real time clock */
 	rtc_status0 = 0;
 	rtc_status1 = 0;
 
-	mon_reset();
+	mon_reset();		/* reset monitor module */
+
+	isbc202_reset();	/* reset iSBC 202 disk controller */
 
 	th_suspend = 0;		/* resume timing thread */
 }
@@ -213,11 +283,15 @@ static void int_pending(void)
 		irq = int_highest(mask);
 		if (irq < int_highest(int_in_service)) {
 #ifdef FRONTPANEL
-			if (F_flag)
+			if (F_flag) {
 				int_sw_requests &= ~(1 << irq);
+				fp_sampleData();
+			}
 #endif
+			pthread_mutex_lock(&int_mutex);
 			int_in_service |= 1 << irq;
 			int_requests &= ~(1 << irq);
+			pthread_mutex_unlock(&int_mutex);
 			int_int = 1;
 			int_data = 0xc7 /* RST0 */ + (irq << 3);
 		}
@@ -229,7 +303,9 @@ static void int_pending(void)
  */
 void int_request(int irq)
 {
+	pthread_mutex_lock(&int_mutex);
 	int_requests |= 1 << irq;
+	pthread_mutex_unlock(&int_mutex);
 	int_pending();
 }
 
@@ -238,7 +314,9 @@ void int_request(int irq)
  */
 void int_cancel(int irq)
 {
+	pthread_mutex_lock(&int_mutex);
 	int_requests &= ~(1 << irq);
+	pthread_mutex_unlock(&int_mutex);
 	int_pending();
 }
 
@@ -269,7 +347,9 @@ static void int_revert_out(BYTE data)
 
 	if (int_in_service != 0) {
 		irq = int_highest(int_in_service);
+		pthread_mutex_lock(&int_mutex);
 		int_in_service &= ~(1 << irq);
+		pthread_mutex_unlock(&int_mutex);
 		int_pending();
 	}
 }
@@ -310,53 +390,104 @@ static void rtc_out(BYTE data)
 }
 
 /*
- *	Thread for real time clock and interrupts
+ *	Thread for timing and interrupts
  */
-static void *rtc_int_thread(void *arg)
+static void *timing(void *arg)
 {
 	UNUSED(arg);
 
 	while (1) {	/* 1 msec per loop iteration */
 
-		/* Do nothing if thread is suspended */
+		/* do nothing if thread is suspended */
 		if (th_suspend)
 			goto next;
 
-		/* If last interrupt not acknowledged by CPU no new one yet */
+		/* if last interrupt not acknowledged by CPU no new one yet */
 		if (int_int)
 			goto next;
 
-		/* Check for pending interrupts */
+		/* check for pending interrupts */
 		int_pending();
+
+		/* check for monitor port interrupts */
+		mon_int_check();
 
 		/* 1ms RTC */
 		rtc_status0 = 1;
 		if (rtc_int_enabled)
 			int_request(RTC_IRQ);
 
-		/* Check monitor interrupts */
-		mon_int_check();
-
-#ifdef FRONTPANEL
-		if (!F_flag) {
-#endif
-			/*
-			 * HACK ALERT! Turn off boot switch if in
-			 * "bootstrap mode disabled check" loop.
-			 */
-			if (boot_switch) {
-				if (0xf830 <= PC && PC <= 0xf836)
-					boot_switch = 0;
-			}
-#ifdef FRONTPANEL
-		}
-#endif
-
 next:
-		/* Sleep for 1 millisecond */
+		/* sleep for 1 millisecond */
 		SLEEP_MS(1);
 	}
 
-	/* Never reached, this thread is running endless */
+	/* never reached, this thread is running endless */
 	pthread_exit(NULL);
 }
+
+/*
+ *	10ms interrupt handler
+ */
+static void interrupt(int sig)
+{
+	UNUSED(sig);
+
+#ifndef TCPASYNC
+	/* poll TCP sockets if SIGIO not working */
+	sigio_tcp_server_socket(0);
+#endif
+
+	/* update monitor ports status bits */
+	(void) mon_tty_status_in();
+	(void) mon_crt_status_in();
+	(void) mon_pt_status_in();
+	(void) mon_lpt_status_in();
+
+#ifdef FRONTPANEL
+	if (!F_flag) {
+#endif
+		/*
+		 * HACK ALERT! Turn off boot switch if
+		 * PC is outside bootstrap ROM and TTYOUT/CRTOUT
+		 */
+		if (boot_switch) {
+			if (0xa9 < PC && PC < 0xfd25)
+				boot_switch = 0;
+		}
+#ifdef FRONTPANEL
+	}
+#endif
+}
+
+#ifdef WANT_ICE
+/*
+ *	Setup and start terminal I/O for the machine
+ */
+void ice_go(void)
+{
+	static struct sigaction newact;
+
+	set_unix_terminal();
+
+	newact.sa_handler = interrupt;
+	sigemptyset(&newact.sa_mask);
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+}
+
+/*
+ *	Give terminal I/O back to ICE
+ */
+void ice_break(void)
+{
+	static struct sigaction newact;
+
+	newact.sa_handler = SIG_IGN;
+	sigemptyset(&newact.sa_mask);
+	newact.sa_flags = 0;
+	sigaction(SIGALRM, &newact, NULL);
+
+	reset_unix_terminal();
+}
+#endif

@@ -7,6 +7,7 @@
  * Configuration for an Intel Intellec MDS-800 system
  *
  * History:
+ * 03-JUN-2024 first version
  */
 
 #ifndef SIM_INC
@@ -19,7 +20,7 @@
 #define DEF_CPU I8080	/* default CPU (Z80 or I8080) */
 /*#define AMD8080*/	/* AMD 8080 instead of Intel 8080 */
 #define CPU_SPEED 2	/* default CPU speed 0=unlimited */
-#define EXCLUDE_Z80	/* Intel Intellect MDS-800 was an 8080 machine */
+#define EXCLUDE_Z80	/* Intel Intellec MDS-800 was an 8080 machine */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
 #define UNDOC_INST	/* compile undocumented instructions */
@@ -33,6 +34,11 @@
 /*#define HAS_DISKS*/	/* has no disk drives */
 #define HAS_CONFIG	/* has configuration files somewhere */
 
+#define NUMNSOC 1	/* one TCP/IP socket for TTY */
+#define TCPASYNC	/* use async I/O if possible */
+#define SERVERPORT 4010	/* first TCP/IP server port used */
+#define NUMUSOC 1	/* one UNIX socket for PTR/PTP */
+
 extern void sleep_us(long);
 #define SLEEP_US(t)	sleep_us(t)
 extern void sleep_ms(int);
@@ -45,7 +51,7 @@ extern void sleep_ms(int);
  */
 
 #define USR_COM	"Intel Intellec MDS-800 Simulation"
-#define USR_REL	"0.0"
+#define USR_REL	"0.1"
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2024 by Thomas Eberhardt"
 

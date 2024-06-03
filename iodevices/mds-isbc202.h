@@ -19,4 +19,6 @@ extern BYTE isbc202_res_byte_in(void);
 extern void isbc202_iopbl_out(BYTE), isbc202_iopbh_out(BYTE);
 extern void isbc202_reset_out(BYTE);
 
+extern void isbc202_reset(void);
+
 #endif /* !MDS_ISBC202_INC */
