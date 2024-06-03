@@ -2,6 +2,12 @@
 /  Configurations of FatFs Module
 /---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------/
+/ Mofified June 2024 Udo Munk
+/ Original configuration lines are left commented, so that it is easy
+/ to see here, what I changed
+/---------------------------------------------------------------------------*/
+
 #define FFCONF_DEF	80286	/* Revision ID */
 
 /*---------------------------------------------------------------------------/
@@ -15,7 +21,8 @@
 /  and optional writing functions as well. */
 
 
-#define FF_FS_MINIMIZE	0
+//#define FF_FS_MINIMIZE	0
+#define FF_FS_MINIMIZE	1
 /* This option defines minimization level to remove some basic API functions.
 /
 /   0: Basic functions are fully enabled.
@@ -30,11 +37,13 @@
 /  f_findnext(). (0:Disable, 1:Enable 2:Enable with matching altname[] too) */
 
 
-#define FF_USE_MKFS		1
+//#define FF_USE_MKFS		1
+#define FF_USE_MKFS		0
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
 
-#define FF_USE_FASTSEEK	1
+//#define FF_USE_FASTSEEK	1
+#define FF_USE_FASTSEEK	0
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
 
@@ -113,7 +122,8 @@
 */
 
 
-#define FF_USE_LFN		3
+//#define FF_USE_LFN		3
+#define FF_USE_LFN		0
 #define FF_MAX_LFN		255
 /* The FF_USE_LFN switches the support for LFN (long file name).
 /
@@ -203,7 +213,8 @@
 /  GET_SECTOR_SIZE command. */
 
 
-#define FF_LBA64		1
+//#define FF_LBA64		1
+#define FF_LBA64		0
 /* This option switches support for 64-bit LBA. (0:Disable or 1:Enable)
 /  To enable the 64-bit LBA, also exFAT needs to be enabled. (FF_FS_EXFAT == 1) */
 
@@ -224,14 +235,16 @@
 / System Configurations
 /---------------------------------------------------------------------------*/
 
-#define FF_FS_TINY		0
+//#define FF_FS_TINY		0
+#define FF_FS_TINY		1
 /* This option switches tiny buffer configuration. (0:Normal or 1:Tiny)
 /  At the tiny configuration, size of file object (FIL) is shrinked FF_MAX_SS bytes.
 /  Instead of private sector buffer eliminated from the file object, common sector
 /  buffer in the filesystem object (FATFS) is used for the file data transfer. */
 
 
-#define FF_FS_EXFAT		1
+//#define FF_FS_EXFAT		1
+#define FF_FS_EXFAT		0
 /* This option switches support for exFAT filesystem. (0:Disable or 1:Enable)
 /  To enable exFAT, also LFN needs to be enabled. (FF_USE_LFN >= 1)
 /  Note that enabling exFAT discards ANSI C (C89) compatibility. */
