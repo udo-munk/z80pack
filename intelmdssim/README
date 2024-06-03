@@ -1,0 +1,9 @@
+This will be a simulator for the Intel Intellec MDS-800 system.
+
+The front panel picture (conf/intelmds.jpg) comes from the front page
+of https://www.facebook.com/groups/IntellecMDS .
+
+The LED graphics are unfortunately hard coded in the front panel library,
+and don't look like the real thing.
+
+Currently you can play with the switches. More to come.
