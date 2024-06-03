@@ -47,6 +47,32 @@ static void complain(void)
 }
 
 /*
+ * list directory 'name'
+ */
+void ls(const char *dir, const char *ext)
+{
+	DIR dp;
+	FILINFO fno;
+	FRESULT res;
+	register int i = 0;
+
+	res = f_findfirst(&dp, &fno, dir, ext);
+	if (res == FR_OK) {
+		while (1) {
+			printf("%s\t", fno.fname);
+			i++;
+			if (i > 4) {
+				putchar('\n');
+				i = 0;
+			}
+			res = f_findnext(&dp, &fno);
+			if (!strlen(fno.fname))
+				break;
+		}
+	}
+}
+
+/*
  * load a file 'name' into memory
  */
 void load_file(char *name)

@@ -51,7 +51,7 @@ target_link_libraries(picosim pico_stdlib FatFs_SPI)
 pico_add_extra_outputs(picosim)
 
 pico_set_program_name(picosim "z80pack picosim")
-pico_set_program_version(picosim "1.1")
+pico_set_program_version(picosim "1.2")
 
 # disable UART in/out, enable USB in/out
 # enable one, enabling both will cause problems

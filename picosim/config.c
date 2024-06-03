@@ -33,6 +33,7 @@ extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
 extern void load_file(char *);
 extern void mount_disk(int, char *);
+extern void ls(const char *, const char *);
 extern unsigned char fp_value;
 
 /*
@@ -51,6 +52,8 @@ static void prompt_fn(char *s)
 void config(void)
 {
 	const char *cfg = "/CONF80/CFG.TXT";
+	const char *cpath = "/CODE80";
+	const char *cext = "*.BIN";
 	char s[10];
 	unsigned int br;
 	int go_flag = 0;
@@ -71,10 +74,12 @@ void config(void)
 							  "Z80" : "8080");
 		printf("2 - CPU speed: %d MHz\n", speed);
 		printf("3 - Port 255 value: %02XH\n", fp_value);
-		printf("4 - load file\n");
-		printf("5 - Disk 0: %s\n", disks[0]);
-		printf("6 - Disk 1: %s\n", disks[1]);
-		printf("7 - run machine\n\n");
+		printf("4 - list files\n");
+		printf("5 - load file\n");
+		printf("6 - list disks\n");
+		printf("7 - Disk 0: %s\n", disks[0]);
+		printf("8 - Disk 1: %s\n", disks[1]);
+		printf("9 - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
 		printf("\n\n");
@@ -109,12 +114,22 @@ again:
 			break;
 
 		case '4':
+			ls("/CODE80", "*.BIN");
+			printf("\n\n");
+			break;
+
+		case '5':
 			prompt_fn(s);
 			load_file(s);
 			putchar('\n');
 			break;
 
-		case '5':
+		case '6':
+			ls("/DISKS80", "*.DSK");
+			printf("\n\n");
+			break;
+
+		case '7':
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[0][0] = 0x0;
@@ -124,7 +139,7 @@ again:
 			}
 			break;
 
-		case '6':
+		case '8':
 			prompt_fn(s);
 			if (strlen(s) == 0) {
 				disks[1][0] = 0x0;
@@ -134,7 +149,7 @@ again:
 			}
 			break;
 
-		case '7':
+		case '9':
 			go_flag = 1;
 			break;
 
