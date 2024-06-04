@@ -3,6 +3,7 @@
  *
  * Common I/O devices used by various simulated machines
  *
+ * Copyright (C) 2014-2021 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * Simulation of an Intel Intellec iSBC 202 double density disk controller

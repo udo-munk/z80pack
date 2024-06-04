@@ -71,10 +71,10 @@ void init_memory(void)
 
 	/* fill memory content with some initial value */
 	if (m_flag >= 0) {
-		for (i = BOOT_SIZE; i < 65536; i++)
+		for (i = 0; i < 65536; i++)
 			putmem(i, m_flag);
 	} else {
-		for (i = BOOT_SIZE; i < 65536; i++)
+		for (i = 0; i < 65536; i++)
 			putmem(i, (BYTE) (rand() % 256));
 	}
 

@@ -29,6 +29,8 @@ extern void reset_cpu(void), reset_io(void);
 extern void run_cpu(void), step_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
 
+extern BYTE int_requests;
+
 #ifdef FRONTPANEL
 static const char *TAG = "system";
 
@@ -41,11 +43,7 @@ static void quit_callback(void);
 #endif
 
 BYTE boot_switch;	/* status of boot switch */
-int cpu_idle;		/* CPU idle flag */
-
-#ifdef FRONTPANEL
-BYTE int_sw_requests;	/* switch interrupt requests */
-#endif
+int cpu_wait;		/* CPU wait flag */
 
 extern void ice_cmd_loop(int);
 
@@ -75,7 +73,7 @@ void mon(void)
 		fp_bindRunFlag(&cpu_state);
 
 		/* bind frontpanel LED's to variables */
-		fp_bindLight8("LED_INT_{0-7}", &int_sw_requests, 1);
+		fp_bindLight8("LED_INT_{0-7}", &int_requests, 1);
 		fp_bindLight8("LED_PWR", &power, 1);
 		fp_bindLight8("LED_RUN", &cpu_state, 1 /* CONTIN_RUN */);
 		fp_bindLight8("LED_HALT", &cpu_bus, 4 /* CPU_HLTA */) ;
@@ -121,7 +119,7 @@ void mon(void)
 			fp_sampleData();
 
 			/* run CPU if not idling */
-			if (power && !cpu_idle)
+			if (power && !cpu_wait)
 				run_cpu();
 
 			fp_clock++;
@@ -159,7 +157,6 @@ void mon(void)
 		bus_request = 0;
 		IFF = 0;
 		power = 0;
-		int_sw_requests = 0;
 		fp_sampleData();
 
 		/* wait a bit before termination */
@@ -190,9 +187,8 @@ void int_clicked(int state, int val)
 	case FP_SW_CENTER:
 		break;
 	case FP_SW_UP:
-		int_sw_requests |= 1 << val;
-		fp_sampleData();
-		int_request(val);
+		if (!cpu_wait)
+			int_request(val);
 		break;
 	default:
 		break;
@@ -227,15 +223,16 @@ void reset_clicked(int state, int val)
 		return;
 
 	switch (state) {
-	case FP_SW_UP:
-		break;
 	case FP_SW_CENTER:
+		break;
+	case FP_SW_UP:
+		cpu_state |= RESET;
 		m1_step = 0;
 		IFF = 0;
-		int_sw_requests = 0;
-		reset_io();
 		reset_cpu();
-		cpu_idle = 0;
+		reset_io();
+		cpu_state &= ~RESET;
+		cpu_wait = 0;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		break;
 	default:
@@ -262,7 +259,7 @@ void power_clicked(int state, int val)
 		if (power)
 			break;
 		power++;
-		cpu_idle = 1;
+		cpu_wait = 1;
 		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
 			puts("\r\n\r\n\r\n");
 		break;
