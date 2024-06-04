@@ -33,10 +33,6 @@
 
 #define RTC_IRQ		1	/* real time clock interrupt */
 
-#ifdef FRONTPANEL
-extern BYTE int_sw_requests;
-#endif
-
 extern BYTE boot_switch;
 
 /*
@@ -56,8 +52,8 @@ static void interrupt(int);
 
 static const char *TAG = "IO";
 
+BYTE int_requests;			/* interrupt requests */
 static BYTE int_mask;			/* interrupt mask */
-static BYTE int_requests;		/* interrupt requests */
 static BYTE int_in_service;		/* interrupts in service */
 static pthread_mutex_t int_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -282,18 +278,12 @@ static void int_pending(void)
 	if (int_int == 0 && (mask = (int_requests & ~int_mask)) != 0) {
 		irq = int_highest(mask);
 		if (irq < int_highest(int_in_service)) {
-#ifdef FRONTPANEL
-			if (F_flag) {
-				int_sw_requests &= ~(1 << irq);
-				fp_sampleData();
-			}
-#endif
 			pthread_mutex_lock(&int_mutex);
 			int_in_service |= 1 << irq;
 			int_requests &= ~(1 << irq);
-			pthread_mutex_unlock(&int_mutex);
 			int_int = 1;
 			int_data = 0xc7 /* RST0 */ + (irq << 3);
+			pthread_mutex_unlock(&int_mutex);
 		}
 	}
 }

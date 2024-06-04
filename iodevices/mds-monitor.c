@@ -6,7 +6,7 @@
  * Copyright (C) 2008-2021 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * Simulation of an Intel Intellec MDS-800 monitor module.
+ * Emulation of an Intel Intellec MDS-800 monitor module.
  * It includes the TTY, CRT, PTR, PTP, line printer, and
  * PROM programmer interface.
  *
@@ -28,7 +28,6 @@
 #include "mds-monitor.h"
 #include "unix_network.h"
 #include "unix_terminal.h"
-#define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
 
 			/* TTY and CRT status bits */

@@ -31,7 +31,7 @@
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
 
-/*#define HAS_DISKS*/	/* has no disk drives */
+#define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
 
 #define NUMNSOC 1	/* one TCP/IP socket for TTY */
@@ -51,7 +51,7 @@ extern void sleep_ms(int);
  */
 
 #define USR_COM	"Intel Intellec MDS-800 Simulation"
-#define USR_REL	"0.1"
+#define USR_REL	"0.9"
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2024 by Thomas Eberhardt"
 
