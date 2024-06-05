@@ -26,6 +26,9 @@
 #include "mds-monitor.h"
 #include "mds-isbc202.h"
 #include "unix_network.h"
+#ifdef WANT_ICE
+#include "unix_terminal.h"
+#endif
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
@@ -56,6 +59,7 @@ BYTE int_requests;			/* interrupt requests */
 static BYTE int_mask;			/* interrupt mask */
 static BYTE int_in_service;		/* interrupts in service */
 static pthread_mutex_t int_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t rtc_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int rtc_int_enabled;
 static int rtc_status1, rtc_status0;	/* RTC status flip-flops */
@@ -219,13 +223,17 @@ void reset_io(void)
 	th_suspend = 1;		/* suspend timing thread */
 	SLEEP_MS(20);		/* give it enough time to suspend */
 
-	int_mask = 0;		/* reset interrupt facility */
-	int_requests = 0;
-	int_in_service = 0;
-
+	pthread_mutex_lock(&rtc_mutex);
 	rtc_int_enabled = 0;	/* reset real time clock */
 	rtc_status0 = 0;
 	rtc_status1 = 0;
+	pthread_mutex_unlock(&rtc_mutex);
+
+	pthread_mutex_lock(&int_mutex);
+	int_mask = 0;		/* reset interrupt facility */
+	int_requests = 0;
+	int_in_service = 0;
+	pthread_mutex_unlock(&int_mutex);
 
 	mon_reset();		/* reset monitor module */
 
@@ -358,15 +366,17 @@ static void bus_ovrrd_out(BYTE data)
  */
 static BYTE rtc_in(void)
 {
-	BYTE val = 0;
+	BYTE data = 0;
 
 	if (boot_switch)
-		val |= 0x02;
+		data |= 0x02;
 	if (rtc_status1)
-		val |= 0x01;
+		data |= 0x01;
+	pthread_mutex_lock(&rtc_mutex);
 	rtc_status1 = rtc_status0;
 	rtc_status0 = 0;
-	return (val);
+	pthread_mutex_unlock(&rtc_mutex);
+	return (data);
 }
 
 /*
@@ -403,7 +413,9 @@ static void *timing(void *arg)
 		mon_int_check();
 
 		/* 1ms RTC */
+		pthread_mutex_lock(&rtc_mutex);
 		rtc_status0 = 1;
+		pthread_mutex_unlock(&rtc_mutex);
 		if (rtc_int_enabled)
 			int_request(RTC_IRQ);
 

@@ -155,6 +155,7 @@ void mon(void)
 		/* all LED's off and update front panel */
 		cpu_bus = 0;
 		bus_request = 0;
+		int_requests = 0;
 		IFF = 0;
 		power = 0;
 		fp_sampleData();

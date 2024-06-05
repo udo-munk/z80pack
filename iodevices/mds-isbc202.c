@@ -106,6 +106,9 @@ static const char *disks[4] = {
 	"drived.dsk"
 };
 
+/* unit ready status bits */
+static BYTE uready[4] = { ST_U0RDY, ST_U1RDY, ST_U2RDY, ST_U3RDY };
+
 /*
  * find and set path for disk images
  */
@@ -136,9 +139,13 @@ BYTE isbc202_res_type_in(void)
 {
 	extern void int_cancel(int);
 
-	res_type = rdy_change ? RT_DSKRD : RT_IOERR;
-	status &= ~ST_IPEND;
-	int_cancel(ISBC202_IRQ);
+	if (rdy_change)
+		res_type = RT_DSKRD;
+	else {
+		res_type = RT_IOERR;
+		status &= ~ST_IPEND;
+		int_cancel(ISBC202_IRQ);
+	}
 	return (res_type);
 }
 
@@ -316,7 +323,8 @@ void isbc202_iopbh_out(BYTE data)
 		}
 
 		/* check for correct image size */
-		if (fstat(fd, &s) == -1 || s.st_size != DISK_SIZE) {
+		if (fstat(fd, &s) == -1 || !S_ISREG(s.st_mode)
+					|| s.st_size != DISK_SIZE) {
 			io_comperr = IO_NRDY;
 			goto rdone;
 		}
@@ -369,7 +377,8 @@ void isbc202_iopbh_out(BYTE data)
 		}
 
 		/* check for correct image size */
-		if (fstat(fd, &s) == -1 || s.st_size != DISK_SIZE) {
+		if (fstat(fd, &s) == -1 || !S_ISREG(s.st_mode)
+					|| s.st_size != DISK_SIZE) {
 			io_comperr = IO_NRDY;
 			goto wdone;
 		}
@@ -414,7 +423,26 @@ void isbc202_reset_out(BYTE data)
 
 void isbc202_reset(void)
 {
-	status = ST_PRES | ST_DD | ST_U0RDY | ST_U1RDY | ST_U2RDY | ST_U3RDY;
+	int i;
+	char *pfn;
+	struct stat s;
+
+	status = ST_PRES | ST_DD;
+
+	/* check disk ready status */
+	dsk_path();
+	strcat(fn, "/");
+	pfn = fn + strlen(fn);
+	for (i = 0; i <= 3; i++) {
+		strcat(pfn, disks[i]);
+		if ((fd = open(fn, O_RDONLY)) == -1)
+			continue;
+		if (fstat(fd, &s) == 0 && S_ISREG(s.st_mode)
+				       && s.st_size == DISK_SIZE)
+			status |= uready[i];
+		close(fd);
+	}
+
 	rdy_change = 0;
 	io_comperr = 0;
 }
