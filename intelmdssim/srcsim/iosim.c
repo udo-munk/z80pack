@@ -433,7 +433,11 @@ next:
  */
 static void interrupt(int sig)
 {
+	static unsigned long counter = 0L;
+
 	UNUSED(sig);
+
+	counter++;
 
 #ifndef TCPASYNC
 	/* poll TCP sockets if SIGIO not working */
@@ -445,6 +449,10 @@ static void interrupt(int sig)
 	(void) mon_crt_status_in();
 	(void) mon_pt_status_in();
 	(void) mon_lpt_status_in();
+
+	/* check disk image files each second */
+	if ((counter % 100) == 0)
+		isbc202_disk_check();
 
 #ifdef FRONTPANEL
 	if (!F_flag) {

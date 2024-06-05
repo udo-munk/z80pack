@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "sim.h"
@@ -31,6 +32,7 @@
 #define ST_DD		0x10	/* double density present */
 #define ST_U2RDY	0x20	/* unit 2 ready */
 #define ST_U3RDY	0x40	/* unit 3 ready */
+#define ST_UNITS	(ST_U0RDY | ST_U1RDY | ST_U2RDY | ST_U3RDY)
 
 				/* result types */
 #define RT_IOERR	0x00	/* I/O complete error bits */
@@ -91,12 +93,13 @@ static const char *TAG = "ISBC202";
 
 static WORD iopb_addr;		/* address of I/O parameter block */
 static BYTE status;		/* status byte */
-static int rdy_change;		/* unit readiness change flag */
 static int res_type;		/* result type */
-static BYTE io_comperr;		/* I/O complete error bits */
+static BYTE ioerr;		/* I/O complete error bits */
+static char fndir[MAX_LFN];	/* directory path for disk image */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk file i/o */
 static BYTE buf[SEC_SZ];	/* buffer for one sector */
+static pthread_mutex_t status_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* these are our disk drives */
 static const char *disks[4] = {
@@ -112,22 +115,23 @@ static BYTE uready[4] = { ST_U0RDY, ST_U1RDY, ST_U2RDY, ST_U3RDY };
 /*
  * find and set path for disk images
  */
-void dsk_path(void)
+static void dsk_path(void)
 {
 	struct stat sbuf;
 
 	/* if option -d is used disks are there */
 	if (diskdir != NULL) {
-		strcpy(fn, diskd);
+		strcpy(fndir, diskd);
 	} else {
 		/* if not first try ./disks */
 		if ((stat("./disks", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
-			strcpy(fn, "./disks");
+			strcpy(fndir, "./disks");
 		} else {
 			/* nope, then DISKSDIR as set in Makefile */
-			strcpy(fn, DISKSDIR);
+			strcpy(fndir, DISKSDIR);
 		}
 	}
+	strcat(fndir, "/");
 }
 
 BYTE isbc202_status_in(void)
@@ -139,13 +143,10 @@ BYTE isbc202_res_type_in(void)
 {
 	extern void int_cancel(int);
 
-	if (rdy_change)
-		res_type = RT_DSKRD;
-	else {
-		res_type = RT_IOERR;
-		status &= ~ST_IPEND;
-		int_cancel(ISBC202_IRQ);
-	}
+	pthread_mutex_lock(&status_mutex);
+	status &= ~ST_IPEND;
+	pthread_mutex_unlock(&status_mutex);
+	int_cancel(ISBC202_IRQ);
 	return (res_type);
 }
 
@@ -163,8 +164,9 @@ BYTE isbc202_res_byte_in(void)
 			data |= DR_UNIT2;
 		if (status & ST_U3RDY)
 			data |= DR_UNIT3;
+		res_type = RT_IOERR;
 	} else
-		data = io_comperr;
+		data = ioerr;
 	return (data);
 }
 
@@ -179,30 +181,42 @@ void isbc202_iopbh_out(BYTE data)
 
 	BYTE iocw, ioins, nsec, taddr, saddr, b;
 	WORD addr;
-	int i;
+	int i, drive, op;
 	off_t pos;
 	struct stat s;
 
 	iopb_addr |= data << 8;
 
-	io_comperr = 0;
+	ioerr = 0;
 
 	/* DMA read I/O parameter block from memory */
 	iocw = dma_read(iopb_addr);
 	if (iocw & CW_DWLEN) {
-		LOGW(TAG, "data word length is not 8-bit");
+		LOGW(TAG, "control data word length is not 8-bit");
 	}
+
 	ioins = dma_read(iopb_addr + 1);
 	if (ioins & DI_DWLEN) {
-		LOGW(TAG, "data word length is not 8-bit");
+		LOGW(TAG, "instruction data word length is not 8-bit");
 	}
+
+	op = ioins & DI_OPMSK;
+	drive = (ioins & DI_USMSK) >> DI_USSHF;
+	if ((status & uready[drive]) == 0) {
+		ioerr = IO_NRDY;
+		goto done;
+	}
+
 	nsec = dma_read(iopb_addr + 2);
 	taddr = dma_read(iopb_addr + 3);
 	saddr = dma_read(iopb_addr + 4);
 	addr = dma_read(iopb_addr + 5);
 	addr |= dma_read(iopb_addr + 6) << 8;
 
-	switch (ioins & DI_OPMSK) {
+	strcpy(fn, fndir);
+	strcat(fn, disks[drive]);
+
+	switch (op) {
 
 	case OP_NOP:	/* no operation */
 		break;
@@ -210,7 +224,7 @@ void isbc202_iopbh_out(BYTE data)
 	case OP_SEEK:	/* seek */
 		/* check track */
 		if (taddr >= TRK) {
-			io_comperr = IO_ADDR;
+			ioerr = IO_ADDR;
 			break;
 		}
 		break;
@@ -218,20 +232,17 @@ void isbc202_iopbh_out(BYTE data)
 	case OP_FMT:	/* format */
 		/* check track */
 		if (taddr >= TRK) {
-			io_comperr = IO_ADDR;
+			ioerr = IO_ADDR;
 			break;
 		}
 
 		/* unlink disk image */
-		dsk_path();
-		strcat(fn, "/");
-		strcat(fn, disks[(ioins & DI_USMSK) >> DI_USSHF]);
 		if (taddr == 0)
 			unlink(fn);
 
 		/* try to create new disk image */
 		if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1) {
-			io_comperr = IO_NRDY;
+			ioerr = IO_NRDY;
 			break;
 		}
 
@@ -248,7 +259,7 @@ void isbc202_iopbh_out(BYTE data)
 				/* get next (sector, data) pair and check sector */
 				saddr = dma_read(addr++);
 				if (saddr == 0 || saddr > SPT) {
-					io_comperr = IO_ADDR;
+					ioerr = IO_ADDR;
 					goto fdone;
 				}
 				b = dma_read(addr++);
@@ -256,7 +267,7 @@ void isbc202_iopbh_out(BYTE data)
 				/* seek to sector */
 				pos = (taddr * SPT + saddr - 1) * SEC_SZ;
 				if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
-					io_comperr = IO_SEEK;
+					ioerr = IO_SEEK;
 					goto fdone;
 				}
 
@@ -265,7 +276,7 @@ void isbc202_iopbh_out(BYTE data)
 
 				/* write sector */
 				if (write(fd, buf, SEC_SZ) != SEC_SZ) {
-					io_comperr = IO_OURUN;
+					ioerr = IO_OURUN;
 					goto fdone;
 				}
 			}
@@ -279,7 +290,7 @@ void isbc202_iopbh_out(BYTE data)
 			/* seek to track */
 			pos = taddr * SPT * SEC_SZ;
 			if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
-				io_comperr = IO_SEEK;
+				ioerr = IO_SEEK;
 				goto fdone;
 			}
 
@@ -290,7 +301,7 @@ void isbc202_iopbh_out(BYTE data)
 			/* write a track of sectors */
 			for (i = 0; i < SPT; i++) {
 				if (write(fd, buf, SEC_SZ) != SEC_SZ) {
-					io_comperr = IO_OURUN;
+					ioerr = IO_OURUN;
 					goto fdone;
 				}
 			}
@@ -309,40 +320,37 @@ void isbc202_iopbh_out(BYTE data)
 		/* check track/sector/nsec */
 		if (taddr >= TRK || saddr == 0 || saddr > SPT || nsec > SPT
 				 || saddr + nsec - 1 > SPT) {
-			io_comperr = IO_ADDR;
+			ioerr = IO_ADDR;
 			break;
 		}
 
 		/* try to open disk image */
-		dsk_path();
-		strcat(fn, "/");
-		strcat(fn, disks[(ioins & DI_USMSK) >> DI_USSHF]);
 		if ((fd = open(fn, O_RDONLY)) == -1) {
-			io_comperr = IO_NRDY;
+			ioerr = IO_NRDY;
 			break;
 		}
 
 		/* check for correct image size */
 		if (fstat(fd, &s) == -1 || !S_ISREG(s.st_mode)
 					|| s.st_size != DISK_SIZE) {
-			io_comperr = IO_NRDY;
+			ioerr = IO_NRDY;
 			goto rdone;
 		}
 
 		/* seek to sector */
 		pos = (taddr * SPT + saddr - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
-			io_comperr = IO_SEEK;
+			ioerr = IO_SEEK;
 			goto rdone;
 		}
 
 		/* read the sectors */
 		for (; nsec > 0; nsec--) {
 			if (read(fd, buf, SEC_SZ) != SEC_SZ) {
-				io_comperr = IO_OURUN;
+				ioerr = IO_OURUN;
 				goto rdone;
 			}
-			if ((ioins & DI_OPMSK) == OP_READ) {
+			if (op == OP_READ) {
 				for (i = 0; i < SEC_SZ; i++)
 					dma_write(addr++, buf[i]);
 			}
@@ -358,20 +366,17 @@ void isbc202_iopbh_out(BYTE data)
 		/* check track/sector/nsec */
 		if (taddr >= TRK || saddr == 0 || saddr > SPT || nsec > SPT
 				 || saddr + nsec > SPT + 1) {
-			io_comperr = IO_ADDR;
+			ioerr = IO_ADDR;
 			break;
 		}
 
 		/* try to open disk image */
-		dsk_path();
-		strcat(fn, "/");
-		strcat(fn, disks[(ioins & DI_USMSK) >> DI_USSHF]);
 		if ((fd = open(fn, O_RDWR)) == -1) {
 			if ((fd = open(fn, O_RDONLY)) != -1) {
-				io_comperr = IO_WPROT;
+				ioerr = IO_WPROT;
 				goto wdone;
 			} else {
-				io_comperr = IO_NRDY;
+				ioerr = IO_NRDY;
 				break;
 			}
 		}
@@ -379,14 +384,14 @@ void isbc202_iopbh_out(BYTE data)
 		/* check for correct image size */
 		if (fstat(fd, &s) == -1 || !S_ISREG(s.st_mode)
 					|| s.st_size != DISK_SIZE) {
-			io_comperr = IO_NRDY;
+			ioerr = IO_NRDY;
 			goto wdone;
 		}
 
 		/* seek to sector */
 		pos = (taddr * SPT + saddr - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
-			io_comperr = IO_SEEK;
+			ioerr = IO_SEEK;
 			goto wdone;
 		}
 
@@ -395,7 +400,7 @@ void isbc202_iopbh_out(BYTE data)
 			for (i = 0; i < SEC_SZ; i++)
 				buf[i] = dma_read(addr++);
 			if (write(fd, buf, SEC_SZ) != SEC_SZ) {
-				io_comperr = IO_OURUN;
+				ioerr = IO_OURUN;
 				goto wdone;
 			}
 		}
@@ -409,9 +414,13 @@ void isbc202_iopbh_out(BYTE data)
 
 	}
 
-	status |= ST_IPEND;
-	if ((iocw & CW_ICMSK) == CW_IEN)
+done:
+	if ((iocw & CW_ICMSK) == CW_IEN) {
+		pthread_mutex_lock(&status_mutex);
+		status |= ST_IPEND;
+		pthread_mutex_unlock(&status_mutex);
 		int_request(ISBC202_IRQ);
+	}
 }
 
 void isbc202_reset_out(BYTE data)
@@ -421,28 +430,59 @@ void isbc202_reset_out(BYTE data)
 	isbc202_reset();
 }
 
+void isbc202_disk_check(void)
+{
+	extern void int_request(int);
+
+	int i;
+	BYTE nstatus;
+	char *pfn;
+	struct stat s;
+	static char fn_[MAX_LFN];
+
+	nstatus = 0;
+
+	/* check disk ready status */
+	strcpy(fn_, fndir);
+	pfn = fn_ + strlen(fn_);
+	for (i = 0; i <= 3; i++) {
+		strcpy(pfn, disks[i]);
+		if (stat(fn_, &s) == 0 && S_ISREG(s.st_mode))
+			nstatus |= uready[i];
+	}
+
+	if ((status & ST_UNITS) != nstatus) {
+		res_type = RT_DSKRD;
+		pthread_mutex_lock(&status_mutex);
+		status &= ~ST_UNITS;
+		status |= nstatus | ST_IPEND;
+		pthread_mutex_unlock(&status_mutex);
+		int_request(ISBC202_IRQ);
+	}
+}
+
 void isbc202_reset(void)
 {
 	int i;
 	char *pfn;
+	BYTE nstatus;
 	struct stat s;
 
-	status = ST_PRES | ST_DD;
+	/* set disk directory path */
+	dsk_path();
+
+	res_type = RT_IOERR;
+	ioerr = 0;
+
+	nstatus = ST_PRES | ST_DD;
 
 	/* check disk ready status */
-	dsk_path();
-	strcat(fn, "/");
+	strcpy(fn, fndir);
 	pfn = fn + strlen(fn);
 	for (i = 0; i <= 3; i++) {
-		strcat(pfn, disks[i]);
-		if ((fd = open(fn, O_RDONLY)) == -1)
-			continue;
-		if (fstat(fd, &s) == 0 && S_ISREG(s.st_mode)
-				       && s.st_size == DISK_SIZE)
-			status |= uready[i];
-		close(fd);
+		strcpy(pfn, disks[i]);
+		if (stat(fn, &s) == 0 && S_ISREG(s.st_mode))
+			nstatus |= uready[i];
 	}
-
-	rdy_change = 0;
-	io_comperr = 0;
+	status = nstatus;
 }
