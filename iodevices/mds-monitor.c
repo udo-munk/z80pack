@@ -246,7 +246,6 @@ BYTE mon_tty_status_in(void)
 			tty_stat |= RBR;
 			if (mon_int & (MENB | ITTYI))
 				int_request(MON_IRQ);
-			LOG(TAG, "tty input ready\r\n");
 		} else {
 			tty_stat |= TRDY | TBE;
 			if (mon_int & (MENB | ITTYO))
