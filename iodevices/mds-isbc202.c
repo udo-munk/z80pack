@@ -87,14 +87,6 @@
 
 #define ISBC202_IRQ	2
 
-/*
- * Parameter constraints:
- *
- * Number of records 0 - 52 and on same track
- * Track address 0 - 76
- * Sector address 1 - 52
- */
-
 static const char *TAG = "ISBC202";
 
 static WORD iopb_addr;		/* address of I/O parameter block */
@@ -204,57 +196,91 @@ void isbc202_iopbh_out(BYTE data)
 	addr |= dma_read(iopb_addr + 6) << 8;
 
 	switch (ioins & DI_OPMSK) {
-	case OP_NOP:
+
+	case OP_NOP:	/* no operation */
 		break;
-	case OP_SEEK:
+
+	case OP_SEEK:	/* seek */
+		/* check track */
 		if (taddr >= TRK) {
 			io_comperr = IO_ADDR;
 			break;
 		}
 		break;
-	case OP_FMT:
+
+	case OP_FMT:	/* format */
+		/* check track */
 		if (taddr >= TRK) {
 			io_comperr = IO_ADDR;
 			break;
 		}
+
 		/* unlink disk image */
 		dsk_path();
 		strcat(fn, "/");
 		strcat(fn, disks[(ioins & DI_USMSK) >> DI_USSHF]);
 		if (taddr == 0)
 			unlink(fn);
+
 		/* try to create new disk image */
 		if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1) {
 			io_comperr = IO_NRDY;
 			break;
 		}
-		if (iocw & CW_RFS) {
+
+		if (iocw & CW_RFS) {	/* random format sequence */
+			/*
+			 * Reads a table of (sector, data) pairs from the IOPB
+			 * buffer address and formats a track where the sectors
+			 * are ordered in the table sequence and filled with
+			 * the corresponding data value. In the disk image file
+			 * the sectors are always in sequential order.
+			 */
 			for (i = 0; i < SPT; i++) {
+
+				/* get next (sector, data) pair and check sector */
 				saddr = dma_read(addr++);
 				if (saddr == 0 || saddr > SPT) {
 					io_comperr = IO_ADDR;
 					goto fdone;
 				}
 				b = dma_read(addr++);
+
+				/* seek to sector */
 				pos = (taddr * SPT + saddr - 1) * SEC_SZ;
 				if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
 					io_comperr = IO_SEEK;
 					goto fdone;
 				}
+
+				/* fill buffer with data byte */
 				memset(buf, b, SEC_SZ);
+
+				/* write sector */
 				if (write(fd, buf, SEC_SZ) != SEC_SZ) {
 					io_comperr = IO_OURUN;
 					goto fdone;
 				}
 			}
 		} else {
+			/*
+			 * Sequential track format, where the sectors are in
+			 * order and filled with the data byte read from the
+			 * IOPB buffer address.
+			 */
+
+			/* seek to track */
 			pos = taddr * SPT * SEC_SZ;
 			if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
 				io_comperr = IO_SEEK;
 				goto fdone;
 			}
+
+			/* fill buffer with data byte */
 			b = dma_read(addr);
 			memset(buf, b, SEC_SZ);
+
+			/* write a track of sectors */
 			for (i = 0; i < SPT; i++) {
 				if (write(fd, buf, SEC_SZ) != SEC_SZ) {
 					io_comperr = IO_OURUN;
@@ -262,18 +288,25 @@ void isbc202_iopbh_out(BYTE data)
 				}
 			}
 		}
+
 	fdone:
 		close(fd);
 		break;
-	case OP_REC:
+
+	case OP_REC:	/* recalibrate */
 		break;
-	case OP_READ:
-	case OP_VERF:
+
+	case OP_READ:	/* read data */
+	case OP_VERF:	/* verify CRC, same as read with no memory write */
+
+		/* check track/sector/nsec */
 		if (taddr >= TRK || saddr == 0 || saddr > SPT || nsec > SPT
 				 || saddr + nsec - 1 > SPT) {
 			io_comperr = IO_ADDR;
 			break;
 		}
+
+		/* try to open disk image */
 		dsk_path();
 		strcat(fn, "/");
 		strcat(fn, disks[(ioins & DI_USMSK) >> DI_USSHF]);
@@ -281,15 +314,21 @@ void isbc202_iopbh_out(BYTE data)
 			io_comperr = IO_NRDY;
 			break;
 		}
+
+		/* check for correct image size */
 		if (fstat(fd, &s) == -1 || s.st_size != DISK_SIZE) {
 			io_comperr = IO_NRDY;
 			goto rdone;
 		}
+
+		/* seek to sector */
 		pos = (taddr * SPT + saddr - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
 			io_comperr = IO_SEEK;
 			goto rdone;
 		}
+
+		/* read the sectors */
 		for (; nsec > 0; nsec--) {
 			if (read(fd, buf, SEC_SZ) != SEC_SZ) {
 				io_comperr = IO_OURUN;
@@ -300,16 +339,22 @@ void isbc202_iopbh_out(BYTE data)
 					dma_write(addr++, buf[i]);
 			}
 		}
+
 	rdone:
 		close(fd);
 		break;
-	case OP_WT:
-	case OP_WDEL:
+
+	case OP_WT:	/* write data */
+	case OP_WDEL:	/* write 'deleted' data */
+
+		/* check track/sector/nsec */
 		if (taddr >= TRK || saddr == 0 || saddr > SPT || nsec > SPT
 				 || saddr + nsec > SPT + 1) {
 			io_comperr = IO_ADDR;
 			break;
 		}
+
+		/* try to open disk image */
 		dsk_path();
 		strcat(fn, "/");
 		strcat(fn, disks[(ioins & DI_USMSK) >> DI_USSHF]);
@@ -322,15 +367,21 @@ void isbc202_iopbh_out(BYTE data)
 				break;
 			}
 		}
+
+		/* check for correct image size */
 		if (fstat(fd, &s) == -1 || s.st_size != DISK_SIZE) {
 			io_comperr = IO_NRDY;
 			goto wdone;
 		}
+
+		/* seek to sector */
 		pos = (taddr * SPT + saddr - 1) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) == (off_t) -1) {
 			io_comperr = IO_SEEK;
 			goto wdone;
 		}
+
+		/* write sectors */
 		for (; nsec > 0; nsec--) {
 			for (i = 0; i < SEC_SZ; i++)
 				buf[i] = dma_read(addr++);
@@ -339,11 +390,14 @@ void isbc202_iopbh_out(BYTE data)
 				goto wdone;
 			}
 		}
+
 	wdone:
 		close(fd);
 		break;
+
 	default:
 		break;
+
 	}
 
 	status |= ST_IPEND;
