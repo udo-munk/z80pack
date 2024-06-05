@@ -218,6 +218,8 @@ BYTE mon_tty_data_in(void)
  */
 BYTE mon_tty_status_in(void)
 {
+	extern void int_request(int);
+
 	struct pollfd p[1];
 	int tdiff;
 
@@ -240,10 +242,16 @@ BYTE mon_tty_status_in(void)
 		if (p[0].revents & POLLHUP) {
 			close(ncons[0].ssc);
 			ncons[0].ssc = 0;
-		} else if (p[0].revents & POLLIN)
+		} else if (p[0].revents & POLLIN) {
 			tty_stat |= RBR;
-		else
+			if (mon_int & (MENB | ITTYI))
+				int_request(MON_IRQ);
+			LOG(TAG, "tty input ready\r\n");
+		} else {
 			tty_stat |= TRDY | TBE;
+			if (mon_int & (MENB | ITTYO))
+				int_request(MON_IRQ);
+		}
 	} else
 		tty_stat &= ~(TRDY | TBE | RBR);
 
@@ -357,6 +365,8 @@ again:
  */
 BYTE mon_crt_status_in(void)
 {
+	extern void int_request(int);
+
 	struct pollfd p[1];
 	int tdiff;
 
@@ -373,14 +383,19 @@ BYTE mon_crt_status_in(void)
 	p[0].events = POLLIN;
 	p[0].revents = 0;
 	poll(p, 1, 0);
-	if (p[0].revents & POLLIN)
+	if (p[0].revents & POLLIN) {
 		crt_stat |= RBR;
+		if (mon_int & (MENB | ICRTI))
+			int_request(MON_IRQ);
+	}
 	if (p[0].revents & POLLNVAL) {
 		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 	}
 	crt_stat |= TBE | TRDY;
+	if (mon_int & (MENB | ICRTO))
+		int_request(MON_IRQ);
 
 	crt_t1 = get_clock_us();
 
@@ -425,7 +440,7 @@ void mon_crt_ctl_out(BYTE data)
 	if (!crt_init) {
 		/* ignore baud rate, character length, parity and stop bits */
 		crt_init = 1;
-		crt_stat = DSR;
+		crt_stat = DSR | TBE | TRDY;
 		return;
 	}
 	if (data & USRST)
