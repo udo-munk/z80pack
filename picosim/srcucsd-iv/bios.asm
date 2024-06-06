@@ -138,8 +138,8 @@ SELDSK:
 	LD	HL,0000H	;return code
 	LD	A,C		;get drive #
 	CP	2		;< 2 ?
-	JP	C,SEL
-	RET
+	JP	C,SEL		;if yes take it
+	RET			;no thanks
 SEL:
 	LD	(DISKNO),A
 	RET
@@ -148,14 +148,14 @@ SEL:
 ;
 SETTRK:
 	LD	A,C		;get to accumulator
-	LD	(FDTRK),A	;set in FIF DD
+	LD	(FDTRK),A	;set in FDC command
 	RET
 ;
 ;	set sector given by register c
 ;
 SETSEC:
 	LD	A,C		;get to accumulator
-	LD	(FDSEC),A	;set in FIF DD
+	LD	(FDSEC),A	;set in FDC command
 	RET
 ;
 ;	translate the sector given by BC using the
