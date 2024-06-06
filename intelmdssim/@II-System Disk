@@ -1,0 +1,64 @@
+# II-System Disk
+label: SYSTEM
+version: 42
+format: ISIS II DD
+os: ISIS II 4.3
+Files:
+#
+# from @II-970003-08-DB ISIS-II Operating System V4.3
+#
+ISIS.DIR,FI,,AUTO
+ISIS.MAP,FI,,AUTO
+ISIS.T0,FI,1O9K/j3qEK4lshxIavwfyrhboc0,^Intel80/isis_ii/4.3/isis.t0
+ISIS.LAB,FI,,AUTO
+ISIS.BIN,FSI,IT/NSStKstpz2wMCcHbGrEj0GJM,^Intel80/isis_ii/4.3/isis.bin
+ISIS.CLI,FSI,ZWIO9fhl111e2DNU26vGp/iDXXU,^Intel80/isis_ii/4.3/isis.cli
+ISIS.OV0,FSI,h9Ytpzl8j4/YOIk7L0eKzSEbtKw,^Intel80/isis_ii/4.3/isis.ov0
+ATTRIB,WSI,B+e4cI5pJ1rv3kNEOnjyC8nKt2k,^Intel80/isis_ii/4.3/attrib
+COPY,WSI,i8w8JLY+50OQlc19NfpTaaeTnK8,^Intel80/isis_ii/4.3/copy
+DELETE,WSI,R/ir8/RfteebaeiEHnkC6TVPO8g,^Intel80/isis_ii/4.3/delete
+DIR,WSI,quxf+6z2Q6Hwo7YCHmCcsHBIh0k,^Intel80/isis_ii/4.3/dir
+EDIT,WSI,X5+qO7xL2m1Q2EC6/c9MyDQLxjE,^Intel80/isis_ii/4.3/edit
+# FIXMAP,WSI,E7LMj+HoQyVdqABTIgdw6aQw0T0,^Intel80/isis_ii/4.3/fixmap
+FORMAT,WSI,ugrwuBx7DXePfIXuK86azJEV3kU,^Intel80/isis_ii/4.3/format
+# HDCOPY,WSI,rIpYYgFYTRwPiEsgFD17u6eLGNo,^Intel80/isis_ii/4.3/hdcopy
+HEXOBJ,WSI,tabXH4TfDILIOxpV3l+PGP3aG8I,^Intel80/isis_ii/4.3/hexobj
+# IDISK,WSI,16TJZXvkdPgSWoarthY7tAxvyXI,^Intel80/isis_ii/4.3/idisk
+LIB,WSI,+A/gKnD3mVWJ1WKASVJdBJ4bctQ,^Intel80/lib80/2.1/lib
+LINK,WSI,sscDXCcYmZRAOjr0kbGGb2dxYJg,^Intel80/link80/3.0/link
+LINK.OVL,WSI,suf8GPPBtgxw9GBPk1uf8hwU7/U,^Intel80/link80/3.0/link.ovl
+LOCATE,WSI,uASMmrLcZGR8+sv3wo1pmpcvAYQ,^Intel80/loc80/3.0/locate
+OBJHEX,WSI,xoT4YN2F5wfJt+o4o5fnBHsMnwk,^Intel80/isis_ii/4.3/objhex
+RENAME,WSI,DMLkK81ahD/wVNqTuhkDTaEy5JU,^Intel80/isis_ii/4.3/rename
+SUBMIT,WSI,YKS0jmIo1bVgWiqDrdCR38MMhY4,^Intel80/isis_ii/4.3/submit
+VERS,WSI,jvNMGM+03sRmuuFliu2GXCcpkwo,^Intel80/isis_ii/4.3/vers
+SYSTEM.LIB,WS,c6OLSPBHkwSiokXEvwT3GkQNsMM,^Intel80/libraries/system.lib/isis_4.2/system.lib
+PLM80.LIB,W,wleqzJgIExeRAxomsbs+qRQECZI,^Intel80/libraries/plm80.lib
+FPAL.LIB,W,WqqwJni7D/5+4AA7wjPByUQvSho,^Intel80/libraries/fpal.lib/2.1/fpal.lib
+#
+# from @II-950001-03-SBU 8080 PLM Compiler V4.0 (+ ICE-49)
+#
+PLM80,W,7cWHvHEPsHMkjQUrYP7W4FIjnAk,^Intel80/plm80/4.0/plm80
+PLM80.OV0,WI,XqReXzrPqRIMytIhB0ye1hT0ONA,^Intel80/plm80/4.0/plm80.ov0
+PLM80.OV1,WI,ieQmUuHoBZwvvLk8Di3oXcgoGVU,^Intel80/plm80/4.0/plm80.ov1
+PLM80.OV2,WI,BcT3v0rtCkC2XT+TRzTy9o1vheM,^Intel80/plm80/4.0/plm80.ov2
+PLM80.OV3,WI,vfFX+duE+bz0ClhrhGkdv1Bf9bA,^Intel80/plm80/4.0/plm80.ov3
+PLM80.OV4,WI,gHIeUcLO6HFVdtZCeU/vJE0gTe8,^Intel80/plm80/4.0/plm80.ov4
+PLM80.OV5,WI,o4yT+YJgMTH/VNekjT4c91nDgzY,^Intel80/plm80/3.1/plm80.ov5
+PLM80.OV6,WI,HqzLz/mOyxixELwDe0r4aui2CZc,^Intel80/plm80/3.1/plm80.ov6
+IXREF,W,1c1QgTRX5rfxbEANE7LkDxxKZCQ,^Intel80/ixref/1.3/ixref
+AEDIT,W,dGQY4MZtzxwaC9PKaPdXViWJTrU,^Intel80/aedit/2.0/aedit
+AEDIT.MAC,,rkPgatRjHcvzYoA2ACw4xgOdX50,^Intel80/aedit/2.0/vt100.mac
+#
+# from @II-123471-002-S ISIS-II 8080_8085 Macro Assembler v4.1
+#
+ASM80,W,9Hc8MJEHDiOicioxXuDAZJpBiIc,^Intel80/asm80/4.1/asm80
+ASM80.OV0,WI,NUrZF5f1gup2EtbOWCSnttF/Irc,^Intel80/asm80/4.1/asm80.ov0
+ASM80.OV1,WI,//1A7P7eRTkOQMtR3iiNzIVKArI,^Intel80/asm80/4.1/asm80.ov1
+ASM80.OV2,WI,amXuzTy8fGq32z5Xr71IsBFPAZg,^Intel80/asm80/4.1/asm80.ov2
+ASM80.OV3,WI,g5PfwIhDMTs3ydRoNYtRlJww54I,^Intel80/asm80/4.1/asm80.ov3
+ASM80.OV4,WI,76/z47uJilihCF337s6g3fx3wJc,^Intel80/asm80/4.1/asm80.ov4
+ASM80.OV5,WI,Xri2H62PRUi+xQ8CWFRvCFjl2kc,^Intel80/asm80/4.1/asm80.ov5
+ASXREF,WI,/zVybTf2GIdM1MgqoguHn1540/s,^Intel80/asxref/2.1/asxref~3.1_c
+#
+BASIC,W,JUqXySCsvU+D+PHmUIg7peDrAKA,^Intel80/basic/1.1/basic
