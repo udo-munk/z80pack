@@ -12,5 +12,9 @@ and corrected (lots of OCR errors in the comments) and produces the same code
 (except for filler bytes) as the files in
 http://bitsavers.informatik.uni-stuttgart.de/pdf/intel/MDS800/firmware/ .
 
-The disk images were downloaded from
+The CP/M disk image was downloaded from
 https://www.nj7p.info/Computers/Old%20Software/software.html .
+
+The ISIS II 4.3 system disk image was created with Mark Ogden's disk tools and his
+incredible ISIS file and disk recipe repository.
+The file "@II-System Disk" contains the custom disk image recipe that was used.
