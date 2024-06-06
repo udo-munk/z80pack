@@ -1,0 +1,11 @@
+On your MicroSD card create a directory DISKS80 and copy the *.dsk files
+into it. When you run the picosim machine and you want to boot an OS,
+put a bootable disk image into drive 0. The disk images are:
+
+cpm22.dsk	- Yeah well, good old CP/M 2.2 for 8080 (bootable)
+empty.dsk	- empty CP/M disk, we often need one (NOT bootable)
+
+ucsd1.dsk	- UCSD p-System system disk 1 for 8080 (bootable)
+ucsd2.dsk	- UCSD p-System system disk 2 for 8080 (NOT bootable)
+ucsdint.dsk	- UCSD p-System interpreter, used to reconfigure system
+		  (NOT bootable)
