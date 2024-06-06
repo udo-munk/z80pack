@@ -7,6 +7,10 @@ reset.asm     Reset z80pack systems via hardware control port
 sw8080.asm    Switch to 8080 mode
 swz80.asm     Switch to Z80 mode
 
+survey.mac    shows system survey with memory map, ports used and so on
+memmap.asm    shows memory map
+
+
 The rest are CPU test tools by various authors modified for using the z80pack
 CPU switch feature.
 
@@ -14,3 +18,4 @@ prelim.mac    Testing a Z80 CPU for basic functionality
 ex.mac        More advanced Z80 or 8080 CPU testing
 8080pre.mac   Testing a 8080 CPU for basic functionality
 test8080.asm  Testing a 8080 CPU
+
