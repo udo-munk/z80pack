@@ -18,3 +18,17 @@ https://www.nj7p.info/Computers/Old%20Software/software.html .
 The ISIS II 4.3 system disk image was created with Mark Ogden's disk tools and his
 incredible ISIS file and disk recipe repository.
 The file "@II-System Disk" contains the custom disk image recipe that was used.
+
+
+The cpmtools disk definition for CP/M 2.2 disks is:
+
+diskdef mds-800
+  seclen 128
+  tracks 77
+  sectrk 52
+  blocksize 2048
+  maxdir 128
+  skew 0
+  boottrk 2
+  os 2.2
+end
