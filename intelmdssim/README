@@ -32,3 +32,8 @@ diskdef mds-800
   boottrk 2
   os 2.2
 end
+
+To create a disk image for the machine:
+
+dd if=/dev/zero of=name.dsk bs=128 count=4004
+mkfs.cpm -f mds-800 name.dsk
