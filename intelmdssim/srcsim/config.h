@@ -9,6 +9,7 @@
  *
  * History:
  * 03-JUN-2024 first version
+ * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
 #ifndef CONFIG_INC

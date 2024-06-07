@@ -1,0 +1,4 @@
+This directory contains recipes and files to generate the ISIS II disk images.
+
+They are created with Mark Ogden's disk tools and his incredible ISIS file
+and disk recipe repository (https://mark-ogden.uk/disktools.html).

@@ -8,6 +8,7 @@
  *
  * History:
  * 03-JUN-2024 first version
+ * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
 #include <stdint.h>
@@ -155,9 +156,9 @@ void mon(void)
 		/* all LED's off and update front panel */
 		cpu_bus = 0;
 		bus_request = 0;
-		int_requests = 0;
 		IFF = 0;
 		power = 0;
+		int_requests = 0;
 		fp_sampleData();
 
 		/* wait a bit before termination */

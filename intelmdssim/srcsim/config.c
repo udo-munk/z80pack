@@ -9,6 +9,7 @@
  *
  * History:
  * 03-JUN-2024 first version
+ * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
 #include <stdint.h>
@@ -31,14 +32,16 @@ int fp_size = 800;		/* default frontpanel size */
 extern int tty_upper_case;	/* TTY translate input to upper case */
 extern int tty_strip_parity;	/* TTY strip parity from output */
 extern int tty_drop_nulls;	/* TTY drop nulls after CR/LF */
-extern int tty_baud_rate;	/* TTY baud rate */
+extern int tty_clock_div;	/* TTY clock divisor */
 
 extern int crt_upper_case;	/* CRT translate input to upper case */
 extern int crt_strip_parity;	/* CRT strip parity from output */
 extern int crt_drop_nulls;	/* CRT drop nulls after CR/LF */
-extern int crt_baud_rate;	/* CRT baud rate */
+extern int crt_clock_div;	/* CRT clock divisor */
 
-extern int pt_baud_rate;	/* PTR/PTP baud rate */
+extern int pt_clock_div;	/* PTR/PTP clock divisor */
+
+extern int lpt_clock_div;	/* LPT clock divisor */
 
 void config(void)
 {
@@ -140,11 +143,21 @@ void config(void)
 					break;
 				}
 			} else if (!strcmp(t1, "tty_baud_rate")) {
-				tty_baud_rate = atoi(t2);
+				tty_clock_div = 38400 / atoi(t2);
+				if (tty_clock_div == 0)
+					tty_clock_div = 1;
 			} else if (!strcmp(t1, "crt_baud_rate")) {
-				crt_baud_rate = atoi(t2);
+				crt_clock_div = 38400 / atoi(t2);
+				if (crt_clock_div == 0)
+					crt_clock_div = 1;
 			} else if (!strcmp(t1, "pt_baud_rate")) {
-				pt_baud_rate = atoi(t2);
+				pt_clock_div = 38400 / atoi(t2);
+				if (pt_clock_div == 0)
+					pt_clock_div = 1;
+			} else if (!strcmp(t1, "lpt_baud_rate")) {
+				lpt_clock_div = 38400 / atoi(t2);
+				if (lpt_clock_div == 0)
+					lpt_clock_div = 1;
 			} else if (!strcmp(t1, "fp_fps")) {
 #ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
