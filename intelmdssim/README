@@ -16,3 +16,22 @@ http://bitsavers.informatik.uni-stuttgart.de/pdf/intel/MDS800/firmware/ .
 
 The CP/M disk image was downloaded from
 https://www.nj7p.info/Computers/Old%20Software/software.html .
+
+
+The cpmtools disk definition for CP/M 2.2 disks is:
+
+diskdef mds-800
+  seclen 128
+  tracks 77
+  sectrk 52
+  blocksize 2048
+  maxdir 128
+  skew 0
+  boottrk 2
+  os 2.2
+end
+
+To create a disk image for the machine:
+
+dd if=/dev/zero of=name.dsk bs=128 count=4004
+mkfs.cpm -f mds-800 name.dsk
