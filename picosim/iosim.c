@@ -11,6 +11,7 @@
  * 11-MAY-2024 allow us to configure the port 255 value
  * 27-MAY-2024 moved io_in & io_out to simcore
  * 31-MAY-2024 added hardware control port for z80pack machines
+ * 08-JUN-2024 implemented system reset
  */
 
 /* Raspberry SDK includes */
@@ -201,6 +202,7 @@ static void p001_out(BYTE data)
  *
  *	bit 4 = 1	switch CPU model to 8080
  *	bit 5 = 1	switch CPU model to Z80
+ *	bit 6 = 1	reset system
  *	bit 7 = 1	halt emulation via I/O
  */
 static void hwctl_out(BYTE data)
@@ -208,6 +210,7 @@ static void hwctl_out(BYTE data)
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
 	extern void switch_cpu(int);
 #endif
+	extern void reset_cpu(void);
 
 	/* if port is locked do nothing */
 	if (hwctl_lock && (data != 0xaa))
@@ -224,6 +227,12 @@ static void hwctl_out(BYTE data)
 	if (data & 128) {
 		cpu_error = IOHALT;
 		cpu_state = STOPPED;
+		return;
+	}
+
+	if (data & 64) {
+		reset_cpu();
+		return;
 	}
 
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
