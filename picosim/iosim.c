@@ -100,11 +100,8 @@ static BYTE p000_in(void)
 	register BYTE stat = 0b10000001; /* initially not ready */
 
 #if LIB_PICO_STDIO_UART
-	uart_inst_t *my_uart;
-	my_uart = uart_get_instance(PICO_DEFAULT_UART_INSTANCE);
-#endif
+	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
-#if LIB_PICO_STDIO_UART
 	if (uart_is_writable(my_uart))	/* check if output to UART is possible */
 		stat &= 0b01111111;	/* if so flip status bit */
 	if (uart_is_readable(my_uart))	/* check if there is input from UART */
@@ -126,18 +123,15 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-#if LIB_PICO_STDIO_UART
-	uart_inst_t *my_uart;
-	my_uart = uart_get_instance(PICO_DEFAULT_UART_INSTANCE);
-#endif
+#if LIB_PICO_STDIO_UART && !LIB_PICO_STDIO_USB
+	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
-#if LIB_PICO_STDIO_UART
-	if (!uart_is_readable(my_uart))	/* someone reading without checking */
+	if (!uart_is_readable(my_uart))
 #endif
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB && !LIB_PICO_STDIO_UART
 	if (!tud_cdc_available())
 #endif
-		return sio_last;	/* guess who does such things */
+		return sio_last;
 	else {
 		sio_last = getchar();
 		return sio_last;
