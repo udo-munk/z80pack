@@ -48,7 +48,6 @@ PLM80.OV5,WI,o4yT+YJgMTH/VNekjT4c91nDgzY,^Intel80/plm80/3.1/plm80.ov5
 PLM80.OV6,WI,HqzLz/mOyxixELwDe0r4aui2CZc,^Intel80/plm80/3.1/plm80.ov6
 IXREF,W,1c1QgTRX5rfxbEANE7LkDxxKZCQ,^Intel80/ixref/1.3/ixref
 AEDIT,W,dGQY4MZtzxwaC9PKaPdXViWJTrU,^Intel80/aedit/2.0/aedit
-AEDIT.MAC,,rkPgatRjHcvzYoA2ACw4xgOdX50,^Intel80/aedit/2.0/vt100.mac
 #
 # from @II-123471-002-S ISIS-II 8080_8085 Macro Assembler v4.1
 #
@@ -62,3 +61,5 @@ ASM80.OV5,WI,Xri2H62PRUi+xQ8CWFRvCFjl2kc,^Intel80/asm80/4.1/asm80.ov5
 ASXREF,WI,/zVybTf2GIdM1MgqoguHn1540/s,^Intel80/asxref/2.1/asxref~3.1_c
 #
 BASIC,W,JUqXySCsvU+D+PHmUIg7peDrAKA,^Intel80/basic/1.1/basic
+#
+AEDIT.MAC,,rkPgatRjHcvzYoA2ACw4xgOdX50,aedit.mac

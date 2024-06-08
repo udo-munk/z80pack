@@ -1,23 +1,11 @@
-This is a simulator for the Intel Intellec MDS-800 system.
+This is a simulator for the Intel Intellec MDS-800 system with
+64K RAM and an iSBC-202 double density diskette controller.
 
 The front panel picture (conf/intelmds.jpg) comes from the front page
 of https://www.facebook.com/groups/IntellecMDS .
 
-The monitor ROM source code comes from the files
-monitors/MDS-I/{b1v12.asm,m1v20.asm} out of
-Bill Beech's https://www.nj7p.info/Computers/work/Intel-run.7z .
-It was compared to
-https://mark-ogden.uk/files/intel/publications/9800155D%20Intellec%20MDS%20Monitor%20V2.0-SEP75.pdf
-and corrected (lots of OCR errors in the comments) and produces the same code
-(except for filler bytes) as the files in
-http://bitsavers.informatik.uni-stuttgart.de/pdf/intel/MDS800/firmware/ .
-
 The CP/M disk image was downloaded from
 https://www.nj7p.info/Computers/Old%20Software/software.html .
-
-The ISIS II 4.3 system disk image was created with Mark Ogden's disk tools and his
-incredible ISIS file and disk recipe repository.
-The file "@II-System Disk" contains the custom disk image recipe that was used.
 
 
 The cpmtools disk definition for CP/M 2.2 disks is:

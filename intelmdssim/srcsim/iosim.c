@@ -10,6 +10,7 @@
  *
  * History:
  * 03-JUN-2024 first version
+ * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
 #include <stdint.h>
@@ -394,34 +395,52 @@ static void rtc_out(BYTE data)
  */
 static void *timing(void *arg)
 {
+	extern uint64_t get_clock_us(void);
+	extern int tty_clock_div, crt_clock_div, pt_clock_div, lpt_clock_div;
+
+	uint64_t t, tick;
+	int64_t tdiff;
+
 	UNUSED(arg);
 
-	while (1) {	/* 1 msec per loop iteration */
+	tick = 0;
+
+	while (1) {	/* 260 usec per loop iteration */
+
+		t = get_clock_us();
 
 		/* do nothing if thread is suspended */
 		if (th_suspend)
 			goto next;
 
-		/* if last interrupt not acknowledged by CPU no new one yet */
-		if (int_int)
-			goto next;
+		/* check monitor ports */
+		if (tick % tty_clock_div == 0)
+			mon_tty_periodic();
+		if (tick % crt_clock_div == 0)
+			mon_crt_periodic();
+		if (tick % pt_clock_div == 0)
+			mon_pt_periodic();
+		if (tick % lpt_clock_div == 0)
+			mon_lpt_periodic();
+
+		/* 0.9765ms RTC (here 1.04 ms) */
+		if (tick % 4 == 0) {
+			pthread_mutex_lock(&rtc_mutex);
+			rtc_status0 = 1;
+			pthread_mutex_unlock(&rtc_mutex);
+			if (rtc_int_enabled)
+				int_request(RTC_IRQ);
+		}
 
 		/* check for pending interrupts */
 		int_pending();
 
-		/* check for monitor port interrupts */
-		mon_int_check();
-
-		/* 1ms RTC */
-		pthread_mutex_lock(&rtc_mutex);
-		rtc_status0 = 1;
-		pthread_mutex_unlock(&rtc_mutex);
-		if (rtc_int_enabled)
-			int_request(RTC_IRQ);
-
 next:
-		/* sleep for 1 millisecond */
-		SLEEP_MS(1);
+		tdiff = 260L - (get_clock_us() - t);
+		if (tdiff > 0)
+			SLEEP_US(tdiff);
+
+		tick++;
 	}
 
 	/* never reached, this thread is running endless */
@@ -443,12 +462,6 @@ static void interrupt(int sig)
 	/* poll TCP sockets if SIGIO not working */
 	sigio_tcp_server_socket(0);
 #endif
-
-	/* update monitor ports status bits */
-	(void) mon_tty_status_in();
-	(void) mon_crt_status_in();
-	(void) mon_pt_status_in();
-	(void) mon_lpt_status_in();
 
 	/* check disk image files each second */
 	if ((counter % 100) == 0)
@@ -500,4 +513,4 @@ void ice_break(void)
 
 	reset_unix_terminal();
 }
-#endif
+#endif /* WANT_ICE */
