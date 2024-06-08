@@ -131,6 +131,11 @@ static BYTE p001_in(void)
 #if LIB_PICO_STDIO_USB && !LIB_PICO_STDIO_UART
 	if (!tud_cdc_available())
 #endif
+#if LIB_PICO_STDIO_USB && LIB_PICO_STDIO_UART
+	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
+
+	if (!uart_is_readable(my_uart) && !tud_cdc_available())
+#endif
 		return sio_last;
 	else {
 		sio_last = getchar();
