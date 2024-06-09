@@ -5,13 +5,13 @@
 ;
 ;	Copyright (C) 2024 by Udo Munk
 ;
-	ORG	0FF80H		;ROM in upper most memory page
+	ORG	0FF00H		;ROM in upper most memory page
 ;
 ;	I/O ports
 ;
 FDC	EQU	4		;FDC port
 ;
-FDCMD	EQU	0FF00H		;command bytes for the FDC
+FDCMD	EQU	0F000H		;command bytes for the FDC
 ;
 	DI			;disable interrupts
 ;

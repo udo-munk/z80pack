@@ -231,6 +231,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 64) {
 		reset_cpu();
+		PC = 0xff00;	/* power on jump */
 		return;
 	}
 

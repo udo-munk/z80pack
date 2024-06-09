@@ -34,16 +34,16 @@ extern char disks[2][22];
 unsigned char memory[MEMSIZE];
 /* boot ROM code */
 #undef MEMSIZE
-#define MEMSIZE 128
+#define MEMSIZE 256
 #include "bootrom.c"
 
 void init_memory(void)
 {
 	register int i;
 
-	// fill top page of memory with 0xff, write protected ROM
-	for (i = 0xff00; i <= 0xffff; i++)
-		memory[i] = 0xff;
+	/* copy boot ROM into write protected top memory page */
+	for (i = 0; i < 256; i++)
+		memory[0xff00 + i] = code[i];
 }
 
 static void complain(void)

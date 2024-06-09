@@ -114,13 +114,7 @@ NOPE:	config();		/* configure the machine */
 			printf("Not with this config dude\n");
 			goto NOPE;
 		}
-		stat = read_sec(0, 0, 1, 0); /* read track 0 sector 1 */
-		if (stat != FDC_STAT_OK) {
-			printf("Disk 0 read error: %d\n", stat);
-			f_unmount(SD->pcName);
-			stdio_flush();
-			return 0;
-		}
+		PC = 0xff00; /* power on jump into boot ROM */
 	}
 
 	/* run the CPU with whatever is in memory */
