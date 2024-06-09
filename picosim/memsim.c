@@ -44,6 +44,10 @@ void init_memory(void)
 	/* copy boot ROM into write protected top memory page */
 	for (i = 0; i < 256; i++)
 		memory[0xff00 + i] = code[i];
+
+	/* trash memory like in a real machine after power on */
+	for (i = 0; i < 0xff00; i++)
+		memory[i] = rand() % 256;
 }
 
 static void complain(void)
