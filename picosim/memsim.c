@@ -31,7 +31,11 @@ extern char disks[2][22];
 
 /* 64KB non banked memory */
 #define MEMSIZE 65536
-unsigned char code[MEMSIZE];
+unsigned char memory[MEMSIZE];
+/* boot ROM code */
+#undef MEMSIZE
+#define MEMSIZE 128
+#include "bootrom.c"
 
 void init_memory(void)
 {
@@ -39,7 +43,7 @@ void init_memory(void)
 
 	// fill top page of memory with 0xff, write protected ROM
 	for (i = 0xff00; i <= 0xffff; i++)
-		code[i] = 0xff;
+		memory[i] = 0xff;
 }
 
 static void complain(void)
@@ -94,7 +98,7 @@ void load_file(char *name)
 	}
 
 	/* read file into memory */
-	while ((sd_res = f_read(&sd_file, &code[i], SEC_SZ, &br)) == FR_OK) {
+	while ((sd_res = f_read(&sd_file, &memory[i], SEC_SZ, &br)) == FR_OK) {
 		if (br < SEC_SZ)	/* last record reached */
 			break;
 		i += SEC_SZ;
@@ -181,7 +185,7 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 		return stat;
 
 	/* read sector into memory */
-	sd_res = f_read(&sd_file, &code[addr], SEC_SZ, &br);
+	sd_res = f_read(&sd_file, &memory[addr], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
@@ -209,7 +213,7 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 		return stat;
 
 	/* write sector to disk image */
-	sd_res = f_write(&sd_file, &code[addr], SEC_SZ, &br);
+	sd_res = f_write(&sd_file, &memory[addr], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
@@ -229,5 +233,5 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
  */
 void get_fdccmd(BYTE *cmd, WORD addr)
 {
-	memcpy(cmd, &code[addr], 4);
+	memcpy(cmd, &memory[addr], 4);
 }

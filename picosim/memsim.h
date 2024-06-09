@@ -13,7 +13,7 @@
 #define MEMSIM_INC
 
 extern void init_memory(void);
-extern BYTE code[];
+extern BYTE memory[];
 
 /* Last page in memory is ROM and write protected. Some software */
 /* expects a ROM in upper memory, if not it will wrap arround to */
@@ -25,12 +25,12 @@ extern BYTE code[];
 static inline void memwrt(WORD addr, BYTE data)
 {
 	if (addr < 0xff00)
-		code[addr] = data;
+		memory[addr] = data;
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	return (code[addr]);
+	return (memory[addr]);
 }
 
 /*
@@ -39,12 +39,12 @@ static inline BYTE memrdr(WORD addr)
 static inline void dma_write(WORD addr, BYTE data)
 {
 	if (addr < 0xff00)
-		code[addr] = data;
+		memory[addr] = data;
 }
 
 static inline BYTE dma_read(WORD addr)
 {
-	return (code[addr]);
+	return (memory[addr]);
 }
 
 /*
@@ -53,12 +53,12 @@ static inline BYTE dma_read(WORD addr)
 static inline void putmem(WORD addr, BYTE data)
 {
 	if (addr < 0xff00)
-		code[addr] = data;
+		memory[addr] = data;
 }
 
 static inline BYTE getmem(WORD addr)
 {
-	return (code[addr]);
+	return (memory[addr]);
 }
 
 #endif
