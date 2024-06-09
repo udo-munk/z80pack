@@ -177,10 +177,10 @@ static void mon_int_update(BYTE ints_cleared, BYTE ints_set)
 void mon_int_ctl_out(BYTE data)
 {
 	pthread_mutex_lock(&mon_int_mutex);
-	mon_int = (data & 0x80) | (mon_int & 0x7f);
+	mon_int = (data & 0x80) | (mon_int & (~data & 0x7f));
 	pthread_mutex_unlock(&mon_int_mutex);
 
-	mon_int_update(data & 0x7f, 0);
+	mon_int_update(0, 0);
 }
 
 /*
@@ -197,33 +197,30 @@ BYTE mon_int_status_in(void)
 void mon_tty_periodic(void)
 {
 	struct pollfd p[1];
+	BYTE iset;
 
-	if (!(tty_cmd & RXEN))
-		return;
-
-	/* if socket is connected check for I/O */
-	if (ncons[0].ssc != 0) {
-		if (!tty_rbr) {
-			p[0].fd = ncons[0].ssc;
-			p[0].events = POLLIN;
-			p[0].revents = 0;
-			poll(p, 1, 0);
-			if (p[0].revents & POLLHUP) {
-				close(ncons[0].ssc);
-				ncons[0].ssc = 0;
-			} else if (p[0].revents & POLLIN) {
-				tty_rbr = 1;
-				mon_int_update(0, ITTYI);
-			}
+	iset = 0;
+	/* if socket is connected and receiver is enabled check for input */
+	if (ncons[0].ssc != 0 && (tty_cmd & RXEN) && !tty_rbr) {
+		p[0].fd = ncons[0].ssc;
+		p[0].events = POLLIN;
+		p[0].revents = 0;
+		poll(p, 1, 0);
+		if (p[0].revents & POLLHUP) {
+			close(ncons[0].ssc);
+			ncons[0].ssc = 0;
+		} else if (p[0].revents & POLLIN) {
+			tty_rbr = 1;
+			iset |= ITTYI;
 		}
-		if (!tty_trdy) {
-			tty_trdy = 1;
-			mon_int_update(0, ITTYO);
-		}
-	} else {
-		tty_trdy = tty_rbr = 0;
-		mon_int_update(ITTYI | ITTYO, 0);
 	}
+	/* if socket is connected and transceiver is enabled output is ready */
+	if (ncons[0].ssc != 0 && (tty_cmd & TXEN) && !tty_trdy) {
+		tty_trdy = 1;
+		iset |= ITTYO;
+	}
+	if (iset)
+		mon_int_update(0, iset);
 }
 
 /*
@@ -281,15 +278,11 @@ BYTE mon_tty_status_in(void)
 {
 	BYTE data;
 
-	if (!(tty_cmd & RXEN))
-		return (0);
-
 	data = DSR;
-	if (tty_trdy)
+	if ((tty_cmd & TXEN) && tty_trdy)
 		data |= TBE | TRDY;
-	if (tty_rbr)
+	if ((tty_cmd & RXEN) && tty_rbr)
 		data |= RBR;
-
 	return (data);
 }
 
@@ -332,17 +325,28 @@ done:
  */
 void mon_tty_ctl_out(BYTE data)
 {
+	BYTE iclr;
+
 	if (!tty_init) {
 		/* ignore baud rate, character length, parity and stop bits */
 		tty_init = 1;
 		return;
 	}
-	if (data & USRST) {
+	if (data & USRST)
 		tty_init = tty_cmd = 0;
-		tty_rbr = tty_trdy = 0;
-		mon_int_update(ITTYI | ITTYO, 0);
-	} else
+	else
 		tty_cmd = data & (RTS | CLERR | RXEN | DTR | TXEN);
+	iclr = 0;
+	if (!(tty_cmd & RXEN) && tty_rbr) {
+		tty_rbr = 0;
+		iclr |= ITTYI;
+	}
+	if (!(tty_cmd & TXEN) && tty_trdy) {
+		tty_trdy = 0;
+		iclr |= ITTYO;
+	}
+	if (iclr)
+		mon_int_update(iclr, 0);
 }
 
 /*
@@ -351,18 +355,17 @@ void mon_tty_ctl_out(BYTE data)
 void mon_crt_periodic(void)
 {
 	struct pollfd p[1];
+	BYTE iset;
 
-	if (!(crt_cmd & RXEN))
-		return;
-
-	if (!crt_rbr) {
+	iset = 0;
+	if ((tty_cmd & RXEN) && !crt_rbr) {
 		p[0].fd = fileno(stdin);
 		p[0].events = POLLIN;
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN) {
 			crt_rbr = 1;
-			mon_int_update(0, ICRTI);
+			iset |= ICRTI;
 		}
 		if (p[0].revents & POLLNVAL) {
 			LOGE(TAG, "can't use terminal, "
@@ -371,10 +374,12 @@ void mon_crt_periodic(void)
 			cpu_state = STOPPED;
 		}
 	}
-	if (!crt_trdy) {
+	if ((tty_cmd & TXEN) && !crt_trdy) {
 		crt_trdy = 1;
-		mon_int_update(0, ICRTO);
+		iset |= ICRTO;
 	}
+	if (iset)
+		mon_int_update(0, iset);
 }
 
 /*
@@ -415,15 +420,11 @@ BYTE mon_crt_status_in(void)
 {
 	BYTE data;
 
-	if (!(crt_cmd & RXEN))
-		return (0);
-
 	data = DSR;
-	if (crt_trdy)
+	if ((crt_cmd & TXEN) && crt_trdy)
 		data |= TBE | TRDY;
-	if (crt_rbr)
+	if ((crt_cmd & RXEN) && crt_rbr)
 		data |= RBR;
-
 	return (data);
 }
 
@@ -446,7 +447,7 @@ again:
 		if (errno == EINTR) {
 			goto again;
 		} else {
-			LOGE(TAG, "can't write CRT data");
+			LOGE(TAG, "can't write stdout data");
 			cpu_error = IOERROR;
 			cpu_state = STOPPED;
 		}
@@ -462,17 +463,28 @@ done:
  */
 void mon_crt_ctl_out(BYTE data)
 {
+	BYTE iclr;
+
 	if (!crt_init) {
 		/* ignore baud rate, character length, parity and stop bits */
 		crt_init = 1;
 		return;
 	}
-	if (data & USRST) {
+	if (data & USRST)
 		crt_init = crt_cmd = 0;
-		crt_rbr = crt_trdy = 0;
-		mon_int_update(ICRTI | ICRTO, 0);
-	} else
+	else
 		crt_cmd = data & (RTS | CLERR | RXEN | DTR | TXEN);
+	iclr = 0;
+	if (!(crt_cmd & RXEN) && crt_rbr) {
+		crt_rbr = 0;
+		iclr |= ICRTI;
+	}
+	if (!(crt_cmd & TXEN) && crt_trdy) {
+		crt_trdy = 0;
+		iclr |= ICRTO;
+	}
+	if (iclr)
+		mon_int_update(iclr, 0);
 }
 
 /*
@@ -481,22 +493,35 @@ void mon_crt_ctl_out(BYTE data)
 void mon_pt_periodic(void)
 {
 	struct pollfd p[1];
+	BYTE iclr, iset;
 
+	iclr = iset = 0;
 	/* if socket is connected check for I/O */
 	if (ucons[0].ssc != 0) {
 		p[0].fd = ucons[0].ssc;
 		p[0].events = POLLIN | POLLOUT;
 		p[0].revents = 0;
 		poll(p, 1, 0);
-		if (!ptr_rdy && (p[0].revents & POLLIN)) {
+		if ((p[0].revents & POLLIN) && !ptr_rdy) {
 			ptr_rdy = 1;
-			mon_int_update(0, IPTR);
+			iset |= IPTR;
 		}
-		if (!ptp_rdy && (p[0].revents & POLLOUT)) {
+		if ((p[0].revents & POLLOUT) && !ptp_rdy) {
 			ptp_rdy = 1;
-			mon_int_update(0, IPTP);
+			iset |= IPTP;
+		}
+	} else {
+		if (ptr_rdy) {
+			ptr_rdy = 0;
+			iclr |= IPTR;
+		}
+		if (ptp_rdy) {
+			ptp_rdy = 0;
+			iclr |= IPTP;
 		}
 	}
+	if (iclr || iset)
+		mon_int_update(iclr, iset);
 }
 
 /*
@@ -607,8 +632,10 @@ void mon_pt_ctl_out(BYTE data)
  */
 void mon_lpt_periodic(void)
 {
-	lpt_rdy = 1;
-	mon_int_update(0, ILPT);
+	if (!lpt_rdy) {
+		lpt_rdy = 1;
+		mon_int_update(0, ILPT);
+	}
 }
 
 /*

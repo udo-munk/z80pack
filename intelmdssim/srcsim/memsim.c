@@ -5,7 +5,7 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module implements the memory for an Intel Intellec MDS-800 system.
- * We are fully loaded with 4 16K RAM modules.
+ * We are fully loaded with 64K RAM.
  *
  * History:
  * 03-JUN-2024 first version

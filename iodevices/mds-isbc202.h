@@ -6,9 +6,10 @@
  * Copyright (C) 2014-2021 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * Simulation of an Intel Intellec iSBC 202 double density disk controller
+ * Emulation of an Intel Intellec iSBC 202 double density disk controller
  *
  * History:
+ * 04-JUN-2024 first version
  */
 
 #ifndef MDS_ISBC202_INC

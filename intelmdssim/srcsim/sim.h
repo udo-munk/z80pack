@@ -34,6 +34,10 @@
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
 
+#define HAS_ISBC201	/* has iSBC 201 single density diskette controller */
+#define HAS_ISBC202	/* has iSBC 202 double density diskette controller */
+#define HAS_ISBC206	/* has iSBC 206 hard disk controller */
+
 #define NUMNSOC 1	/* one TCP/IP socket for TTY */
 #define TCPASYNC	/* use async I/O if possible */
 #define SERVERPORT 4010	/* first TCP/IP server port used */
@@ -51,7 +55,7 @@ extern void sleep_ms(int);
  */
 
 #define USR_COM	"Intel Intellec MDS-800 Simulation"
-#define USR_REL	"0.9"
+#define USR_REL	"0.99"
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2024 by Thomas Eberhardt"
 

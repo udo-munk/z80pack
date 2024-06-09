@@ -19,11 +19,11 @@ COPY,WSI,i8w8JLY+50OQlc19NfpTaaeTnK8,^Intel80/isis_ii/4.3/copy
 DELETE,WSI,R/ir8/RfteebaeiEHnkC6TVPO8g,^Intel80/isis_ii/4.3/delete
 DIR,WSI,quxf+6z2Q6Hwo7YCHmCcsHBIh0k,^Intel80/isis_ii/4.3/dir
 EDIT,WSI,X5+qO7xL2m1Q2EC6/c9MyDQLxjE,^Intel80/isis_ii/4.3/edit
-# FIXMAP,WSI,E7LMj+HoQyVdqABTIgdw6aQw0T0,^Intel80/isis_ii/4.3/fixmap
+FIXMAP,WSI,E7LMj+HoQyVdqABTIgdw6aQw0T0,^Intel80/isis_ii/4.3/fixmap
 FORMAT,WSI,ugrwuBx7DXePfIXuK86azJEV3kU,^Intel80/isis_ii/4.3/format
-# HDCOPY,WSI,rIpYYgFYTRwPiEsgFD17u6eLGNo,^Intel80/isis_ii/4.3/hdcopy
+HDCOPY,WSI,rIpYYgFYTRwPiEsgFD17u6eLGNo,^Intel80/isis_ii/4.3/hdcopy
 HEXOBJ,WSI,tabXH4TfDILIOxpV3l+PGP3aG8I,^Intel80/isis_ii/4.3/hexobj
-# IDISK,WSI,16TJZXvkdPgSWoarthY7tAxvyXI,^Intel80/isis_ii/4.3/idisk
+IDISK,WSI,16TJZXvkdPgSWoarthY7tAxvyXI,^Intel80/isis_ii/4.3/idisk
 LIB,WSI,+A/gKnD3mVWJ1WKASVJdBJ4bctQ,^Intel80/lib80/2.1/lib
 LINK,WSI,sscDXCcYmZRAOjr0kbGGb2dxYJg,^Intel80/link80/3.0/link
 LINK.OVL,WSI,suf8GPPBtgxw9GBPk1uf8hwU7/U,^Intel80/link80/3.0/link.ovl

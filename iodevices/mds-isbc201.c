@@ -6,10 +6,10 @@
  * Copyright (C) 2014-2021 by Udo Munk
  * Copyright (C) 2024 by Thomas Eberhardt
  *
- * Emulation of an Intel Intellec iSBC 202 double density disk controller
+ * Emulation of an Intel Intellec iSBC 201 single density disk controller
  *
  * History:
- * 04-JUN-2024 first version
+ * 09-JUN-2024 first version
  */
 
 #include <stdint.h>
@@ -22,23 +22,22 @@
 #include "sim.h"
 #include "simglb.h"
 #include "memsim.h"
-#include "mds-isbc202.h"
+#include "mds-isbc201.h"
 #include "log.h"
 
-#ifdef HAS_ISBC202
+#ifdef HAS_ISBC201
 
 				/* status input bits */
 #define ST_U0RDY	0x01	/* unit 0 ready */
 #define ST_U1RDY	0x02	/* unit 1 ready */
 #define ST_IPEND	0x04	/* interrupt pending */
 #define ST_PRES		0x08	/* controller present */
-#define ST_DD		0x10	/* double density present */
-#define ST_U2RDY	0x20	/* unit 2 ready */
-#define ST_U3RDY	0x40	/* unit 3 ready */
-#define ST_UNITS	(ST_U0RDY | ST_U1RDY | ST_U2RDY | ST_U3RDY)
+#define ST_UNITS	(ST_U0RDY | ST_U1RDY)
 
 				/* result types */
 #define RT_IOERR	0x00	/* I/O complete error bits */
+#define RT_IOERRL	0x01	/* I/O complete error bits (linked),
+				   top 6 bits are block number */
 #define RT_DSKRD	0x02	/* diskette ready status */
 
 				/* I/O complete error bits */
@@ -52,17 +51,19 @@
 #define IO_NRDY		0x80	/* not ready */
 
 				/* diskette ready status bits */
-#define DR_UNIT2	0x10	/* unit 2 ready */
-#define DR_UNIT3	0x20	/* unit 3 ready */
 #define DR_UNIT0	0x40	/* unit 0 ready */
 #define DR_UNIT1	0x80	/* unit 1 ready */
 
 				/* channel word definitions */
+#define CW_WAIT		0x01	/* wait */
+#define CW_BRCHW	0x02	/* branch on wait */
+#define CW_SUCC		0x04	/* successor */
 #define CW_DWLEN	0x08	/* data word length (0 = 8, 1 = 16) */
 #define CW_ICMSK	0x30	/* interrupt control mask */
 #define CW_IEN		0x00	/* interrupt on completion/error */
 #define CW_IDIS		0x10	/* all I/O interrupts disabled */
 #define CW_RFS		0x40	/* random format sequence */
+#define CW_LCKOV	0x80	/* lock override */
 
 				/* diskette instruction */
 #define DI_OPMSK	0x07	/* op code mask */
@@ -70,9 +71,7 @@
 #define DI_USMSK	0x30	/* unit select mask */
 #define DI_USSHF	4	/* unit select shift */
 #define DI_UNIT0	0x00	/* drive 0 */
-#define DI_UNIT1	0x10	/* drive 1 */
-#define DI_UNIT2	0x20	/* drive 2 */
-#define DI_UNIT3	0x30	/* drive 3 */
+#define DI_UNIT1	0x30	/* drive 1 */
 
 				/* diskette operations */
 #define OP_NOP		0x00	/* no operation */
@@ -84,15 +83,15 @@
 #define OP_WT		0x06	/* write data */
 #define OP_WDEL		0x07	/* write 'deleted' data */
 
-/* 8" M2FM double density disks */
+/* 8" single density disks */
 #define SEC_SZ		128
-#define SPT		52
+#define SPT		26
 #define TRK		77
 #define DISK_SIZE	(TRK * SPT * SEC_SZ)
 
-#define ISBC202_IRQ	2
+#define ISBC201_IRQ	2
 
-static const char *TAG = "ISBC202";
+static const char *TAG = "ISBC201";
 
 static WORD iopb_addr;		/* address of I/O parameter block */
 static BYTE status;		/* status byte */
@@ -105,15 +104,13 @@ static BYTE buf[SEC_SZ];	/* buffer for one sector */
 static pthread_mutex_t status_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* these are our disk drives */
-static const char *disks[4] = {
-	"drivea.dsk",
-	"driveb.dsk",
-	"drivec.dsk",
-	"drived.dsk"
+static const char *disks[2] = {
+	"drivee.dsk",
+	"drivef.dsk",
 };
 
 /* unit ready status bits */
-static BYTE uready[4] = { ST_U0RDY, ST_U1RDY, ST_U2RDY, ST_U3RDY };
+static BYTE uready[2] = { ST_U0RDY, ST_U1RDY };
 
 /*
  * find and set path for disk images
@@ -137,23 +134,23 @@ static void dsk_path(void)
 	strcat(fndir, "/");
 }
 
-BYTE isbc202_status_in(void)
+BYTE isbc201_status_in(void)
 {
 	return (status);
 }
 
-BYTE isbc202_res_type_in(void)
+BYTE isbc201_res_type_in(void)
 {
 	extern void int_cancel(int);
 
 	pthread_mutex_lock(&status_mutex);
 	status &= ~ST_IPEND;
 	pthread_mutex_unlock(&status_mutex);
-	int_cancel(ISBC202_IRQ);
+	int_cancel(ISBC201_IRQ);
 	return (res_type);
 }
 
-BYTE isbc202_res_byte_in(void)
+BYTE isbc201_res_byte_in(void)
 {
 	BYTE data;
 
@@ -163,10 +160,6 @@ BYTE isbc202_res_byte_in(void)
 			data |= DR_UNIT0;
 		if (status & ST_U1RDY)
 			data |= DR_UNIT1;
-		if (status & ST_U2RDY)
-			data |= DR_UNIT2;
-		if (status & ST_U3RDY)
-			data |= DR_UNIT3;
 	} else {
 		data = ioerr;
 		res_type = RT_DSKRD;
@@ -174,17 +167,21 @@ BYTE isbc202_res_byte_in(void)
 	return (data);
 }
 
-void isbc202_iopbl_out(BYTE data)
+void isbc201_iopbl_out(BYTE data)
 {
 	iopb_addr = data;
 }
 
-void isbc202_iopbh_out(BYTE data)
+void isbc201_iopbh_out(BYTE data)
 {
 	extern void int_request(int);
 
 	BYTE iocw, ioins, nsec, taddr, saddr, b;
 	WORD addr;
+#if 0
+	BYTE blknr;
+	WORD niopb;
+#endif
 	int i, drive, op;
 	off_t pos;
 	struct stat s;
@@ -199,6 +196,9 @@ void isbc202_iopbh_out(BYTE data)
 	if (iocw & CW_DWLEN) {
 		LOGW(TAG, "control data word length is not 8-bit");
 	}
+	if (iocw & (CW_SUCC | CW_BRCHW | CW_WAIT)) {
+		LOGW(TAG, "unsupported channel word bits set 0x%02x", iocw);
+	}
 
 	ioins = dma_read(iopb_addr + 1);
 	if (ioins & DI_DWLEN) {
@@ -206,7 +206,7 @@ void isbc202_iopbh_out(BYTE data)
 	}
 
 	op = ioins & DI_OPMSK;
-	drive = (ioins & DI_USMSK) >> DI_USSHF;
+	drive = ((ioins & DI_USMSK) >> DI_USSHF) & 1;
 	if ((status & uready[drive]) == 0) {
 		ioerr = IO_NRDY;
 		goto done;
@@ -214,9 +214,14 @@ void isbc202_iopbh_out(BYTE data)
 
 	nsec = dma_read(iopb_addr + 2);
 	taddr = dma_read(iopb_addr + 3);
-	saddr = dma_read(iopb_addr + 4);
+	saddr = dma_read(iopb_addr + 4) & 0x1f; /* without bank/fddnum */
 	addr = dma_read(iopb_addr + 5);
 	addr |= dma_read(iopb_addr + 6) << 8;
+#if 0
+	blknr = dma_read(iopb_addr + 7);
+	niopb = dma_read(iopb_addr + 8);
+	niopb |= dma_read(iopb_addr + 9) << 8;
+#endif
 
 	strcpy(fn, fndir);
 	strcat(fn, disks[drive]);
@@ -424,18 +429,18 @@ done:
 		pthread_mutex_lock(&status_mutex);
 		status |= ST_IPEND;
 		pthread_mutex_unlock(&status_mutex);
-		int_request(ISBC202_IRQ);
+		int_request(ISBC201_IRQ);
 	}
 }
 
-void isbc202_reset_out(BYTE data)
+void isbc201_reset_out(BYTE data)
 {
 	UNUSED(data);
 
-	isbc202_reset();
+	isbc201_reset();
 }
 
-void isbc202_disk_check(void)
+void isbc201_disk_check(void)
 {
 	extern void int_request(int);
 
@@ -453,7 +458,7 @@ void isbc202_disk_check(void)
 	/* check disk ready status */
 	strcpy(fn_, fndir);
 	pfn = fn_ + strlen(fn_);
-	for (i = 0; i <= 3; i++) {
+	for (i = 0; i <= 1; i++) {
 		strcpy(pfn, disks[i]);
 		if (stat(fn_, &s) == -1 || !S_ISREG(s.st_mode))
 			nstatus &= ~uready[i];
@@ -464,11 +469,11 @@ void isbc202_disk_check(void)
 		status &= ~ST_UNITS;
 		status |= nstatus | ST_IPEND;
 		pthread_mutex_unlock(&status_mutex);
-		int_request(ISBC202_IRQ);
+		int_request(ISBC201_IRQ);
 	}
 }
 
-void isbc202_reset(void)
+void isbc201_reset(void)
 {
 	int i;
 	char *pfn;
@@ -481,12 +486,12 @@ void isbc202_reset(void)
 	res_type = RT_DSKRD;
 	ioerr = 0;
 
-	nstatus = ST_PRES | ST_DD | ST_UNITS;
+	nstatus = ST_PRES | ST_UNITS;
 
 	/* check disk ready status */
 	strcpy(fn, fndir);
 	pfn = fn + strlen(fn);
-	for (i = 0; i <= 3; i++) {
+	for (i = 0; i <= 1; i++) {
 		strcpy(pfn, disks[i]);
 		if (stat(fn, &s) == -1 || !S_ISREG(s.st_mode))
 			nstatus &= ~uready[i];
@@ -494,4 +499,4 @@ void isbc202_reset(void)
 	status = nstatus;
 }
 
-#endif /* HAS_ISBC202 */
+#endif /* HAS_ISBC201 */

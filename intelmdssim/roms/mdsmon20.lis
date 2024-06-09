@@ -204,8 +204,8 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      201    201 ;
                      202    202 ; FDCC CONSTANTS
                      203    203 ;
-0079  =              204    204 LOW	EQU	79H		; LOW(IOPB)
-007a  =              205    205 HI	EQU	7AH		; HIGH(IOPB)
+0079  =              204    204 LIOPB	EQU	79H		; LOW(IOPB)
+007a  =              205    205 HIOPB	EQU	7AH		; HIGH(IOPB)
 0078  =              206    206 DSTAT	EQU	78H		; DISK STATUS
 3000  =              207    207 TRK0	EQU	3000H		; FIRST ADDRESS OF DISK BOOTSTRAP
                      208    208 ;
@@ -454,9 +454,9 @@ ffff  =              212    212 TRUE	EQU	NOT FALSE
 0056  0f             440    451 	RRC
 0057  d2 68 00       441    452 	JNC	SH3
 005a  3e aa          442    453 	MVI	A,IOPB
-005c  d3 79          443    454 	OUT	LOW		; LOW(IOPB)
+005c  d3 79          443    454 	OUT	LIOPB		; LOW(IOPB)
 005e  af             444    455 	XRA	A
-005f  d3 7a          445    456 	OUT	HI		; HIGH(IOPB), START DISK I/O
+005f  d3 7a          445    456 	OUT	HIOPB		; HIGH(IOPB), START DISK I/O
 0061  db 78          446    457 SH2:	IN	DSTAT		; WAIT FOR FDCC TO COMPLETE
 0063  e6 04          447    458 	ANI	4
 0065  ca 61 00       448    459 	JZ	SH2
@@ -1535,18 +1535,18 @@ fc5d  c3 4c fc      1480   1527 	JMP	X6		; CONTINUE
                     1485   1532 ;	(2) LOCATION ON STORAGE PAGE
                     1486   1533 ;	(3) PRECISION
                     1487   1534 ;
-fc60  41 cf 00      1488   1535 ACTBL:	DB	'A',	ALOC,	0
-fc63  42 cb 00      1489   1536 	DB	'B',	BLOC,	0
-fc66  43 ca 00      1490   1537 	DB	'C',	CLOC,	0
-fc69  44 c9 00      1491   1538 	DB	'D',	DLOC,	0
-fc6c  45 c8 00      1492   1539 	DB	'E',	ELOC,	0
-fc6f  46 ce 00      1493   1540 	DB	'F',	FLOC,	0
-fc72  48 dd 00      1494   1541 	DB	'H',	HLOC,	0
-fc75  49 cd 00      1495   1542 	DB	'I',	ILOC,	0
-fc78  4c dc 00      1496   1543 	DB	'L',	LLOC,	0
-fc7b  4d dd 01      1497   1544 	DB	'M',	HLOC,	1
-fc7e  50 e1 01      1498   1545 	DB	'P',	PLOC,	1
-fc81  53 d1 01      1499   1546 	DB	'S',	SLOC,	1
+fc60  41 cf 00      1488   1535 ACTBL:	DB	'A',	ALOC AND 0FFH,	0
+fc63  42 cb 00      1489   1536 	DB	'B',	BLOC AND 0FFH,	0
+fc66  43 ca 00      1490   1537 	DB	'C',	CLOC AND 0FFH,	0
+fc69  44 c9 00      1491   1538 	DB	'D',	DLOC AND 0FFH,	0
+fc6c  45 c8 00      1492   1539 	DB	'E',	ELOC AND 0FFH,	0
+fc6f  46 ce 00      1493   1540 	DB	'F',	FLOC AND 0FFH,	0
+fc72  48 dd 00      1494   1541 	DB	'H',	HLOC AND 0FFH,	0
+fc75  49 cd 00      1495   1542 	DB	'I',	ILOC AND 0FFH,	0
+fc78  4c dc 00      1496   1543 	DB	'L',	LLOC AND 0FFH,	0
+fc7b  4d dd 01      1497   1544 	DB	'M',	HLOC AND 0FFH,	1
+fc7e  50 e1 01      1498   1545 	DB	'P',	PLOC AND 0FFH,	1
+fc81  53 d1 01      1499   1546 	DB	'S',	SLOC AND 0FFH,	1
 fc84  ff            1500   1547 	DB	-1
 000c  =             1501   1548 NREGS	EQU	($-ACTBL)/3	; LENGTH OF ACCESS TABLE
                     1502   1549 ;
@@ -1579,7 +1579,7 @@ fca3  db f6         1528   1575 	IN	CRTI		; READ THE CHARACTER
 fca5  c9            1529   1576 	RET
 fca6  fe 02         1530   1577 CI1:	CPI	BATCH
 fca8  ca b8 fc      1531   1578 	JZ	RI		; BATCH MODE, INPUT = READER
-fcab  3e e8         1532   1579 	MVI	A,CILOC		; USER DEFINE CONSOLE INPUT
+fcab  3e e8         1532   1579 	MVI	A,CILOC AND 0FFH ; USER DEFINE CONSOLE INPUT
 fcad  c3 0a fd      1533   1580 	JMP	@USER
                     1534   1581 ;
                     1535   1582 ; TEST FOR OPERATOR INTERRUPTION OF COMMAND
@@ -1651,9 +1651,9 @@ fcfe  e1            1600   1647 	POP	H
 fcff  c9            1601   1648 	RET			; RETURN
 fd00  e1            1602   1649 RI6:	POP	H
 fd01  fe 08         1603   1650 	CPI	RUSE1
-fd03  3e ee         1604   1651 	MVI	A,R1LOC
+fd03  3e ee         1604   1651 	MVI	A,R1LOC AND 0FFH
 fd05  ca 0a fd      1605   1652 	JZ	@USER
-fd08  3e f1         1606   1653 	MVI	A,R2LOC
+fd08  3e f1         1606   1653 	MVI	A,R2LOC AND 0FFH
                     1607   1654 ;
                     1608   1655 ; USER DEFINED I/O ENTRY POINT TRANSFER LOGIC
                     1609   1656 ;
@@ -1686,7 +1686,7 @@ fd2f  c9            1635   1682 	RET			; RETURN
 fd30  fe 02         1636   1683 CO0:	CPI	BATCH
 fd32  ca 84 fd      1637   1684 	JZ	LO
 fd35  fe 01         1638   1685 	CPI	CCRT		; CONSOLE = CRT?
-fd37  3e eb         1639   1686 	MVI	A,COLOC
+fd37  3e eb         1639   1686 	MVI	A,COLOC AND 0FFH
 fd39  c2 0a fd      1640   1687 	JNZ	@USER		; USER DEFINED CONSOLE OUTPUT
 fd3c  db f7         1641   1688 CRTOUT:	IN	CRTS		; CONSOLE = CRT
 fd3e  e6 01         1642   1689 	ANI	TRDY
@@ -1728,9 +1728,9 @@ fd69  3e 20         1677   1724 	MVI	A,PTPADV	; START PUNCH
 fd6b  d3 f9         1678   1725 	OUT	PTRC
 fd6d  c9            1679   1726 	RET
 fd6e  fe 20         1680   1727 PO1:	CPI	PUSE1
-fd70  3e f4         1681   1728 	MVI	A,P1LOC
+fd70  3e f4         1681   1728 	MVI	A,P1LOC AND 0FFH
 fd72  ca 0a fd      1682   1729 	JZ	@USER		; USER DEFINED PUNCH 1
-fd75  3e f7         1683   1730 	MVI	A,P2LOC
+fd75  3e f7         1683   1730 	MVI	A,P2LOC AND 0FFH
 fd77  c3 0a fd      1684   1731 	JMP	@USER		; USER DEFINED PUNCH 2
                     1685   1732 ;
                     1686   1733 ; EXTERNALLY REFERENCED ROUTINE
@@ -1749,7 +1749,7 @@ fd89  ca 25 fd      1698   1745 	JZ	TTYOUT		; LIST = TTY
 fd8c  fe 40         1699   1746 	CPI	LCRT
 fd8e  ca 3c fd      1700   1747 	JZ	CRTOUT		; LIST = CRT
 fd91  fe c0         1701   1748 	CPI	LUSE		; TEST FOR USER DEFINED LIST DEVICE
-fd93  3e fa         1702   1749 	MVI	A,L1LOC
+fd93  3e fa         1702   1749 	MVI	A,L1LOC AND 0FFH
 fd95  ca 0a fd      1703   1750 	JZ	@USER		; USER DEFINED LIST
 fd98  db fb         1704   1751 LP0:	IN	LPTS
 fd9a  e6 01         1705   1752 	ANI	LPTRY
@@ -1809,7 +1809,7 @@ fdd3  c9            1752   1799 	RET			; RETURN
 fdd4  3a 05 00      1759   1806 MEMCK:	LDA	MEMTOP+1
 fdd7  3d            1760   1807 	DCR	A
 fdd8  47            1761   1808 	MOV	B,A
-fdd9  3e c0         1762   1809 	MVI	A,USER
+fdd9  3e c0         1762   1809 	MVI	A,USER AND 0FFH
 fddb  c9            1763   1810 	RET
                     1764   1811 ;
                     1765   1812 ; EXTERNALLY REFERENCED ROUTINE
@@ -2394,7 +2394,7 @@ ff5b  2e dc       + 2333   2390 	MVI	L,LLOC AND 0FFH
 ff5d  73            2334   2391 	MOV	M,E
 ff5e  23            2335   2392 	INX	H
 ff5f  72            2336   2393 	MOV	M,D		; SAVE OLD HL
-ff60  2e e0         2337   2394 	MVI	L,PLOC-1
+ff60  2e e0         2337   2394 	MVI	L,(PLOC AND 0FFH)-1
 ff62  71            2338   2395 	MOV	M,C		; SAVE OLD PC
 ff63  23            2339   2396 	INX	H
 ff64  70            2340   2397 	MOV	M,B
@@ -2564,17 +2564,17 @@ DREG    fe43    DSR     0080*   DSTAT   0078    DTR     0002    ELOC    00c8
 ENDX    0100*   EOF     f9bc    EOI     0020    ERROR   f826    ETX     0003 
 EX0     fe64    EXIT    00d2    EXPR    fe57    FALSE   0000    FI0     f9e1 
 FILL    f9da    FLOC    00ce    GO0     fa01    GO1     fa07    GO2     fa17 
-GO3     fa1f    GO4     fa2e    GOTO    f9e9    HEXN    fa32    HI      007a 
-HILO    fe6a    HLOC    00dd    HXD     fe74    ICON    00f3    ICRTI   0020*
+GO3     fa1f    GO4     fa2e    GOTO    f9e9    HEXN    fa32    HILO    fe6a 
+HIOPB   007a    HLOC    00dd    HXD     fe74    ICON    00f3    ICRTI   0020*
 ICRTO   0010*   ILOC    00cd    ILPT    0040*   INIT    0003*   INITIO  0006 
 INT0    0001    INT1    0002*   INT2    0004*   INT3    0008*   INT4    0010*
 INT5    0020*   INT6    0040*   INT7    0080*   IOBYT   0003    IOCHK   fdcb 
 IODEF   fddc    IOPB    00aa    IOSET   fdcf    IPTP    0004*   IPTR    0008*
 ISTAT   00fa*   ITTYI   0002*   ITTYO   0001*   L1LOC   00fa    LADR    fe7a 
 LBYTE   fe82    LCRLF   fe8e    LCRT    0040    LCT     0018    LE0     fe9a 
-LEAD    fe98    LF      000a    LLOC    00dc    LLPT    0080    LMSK    003f 
-LO      fd84    LO0     fa52    LO1     fa5c    LO2     fa69    LOAD    fa4d 
-LOCK    00fe*   LOM     fd7a    LOW     0079    LP0     fd98    LPTC    00fb*
+LEAD    fe98    LF      000a    LIOPB   0079    LLOC    00dc    LLPT    0080 
+LMSK    003f    LO      fd84    LO0     fa52    LO1     fa5c    LO2     fa69 
+LOAD    fa4d    LOCK    00fe*   LOM     fd7a    LP0     fd98    LPTC    00fb*
 LPTO    00fa    LPTRY   0001    LPTS    00fb    LTBL    f8dc    LTTY    0000 
 LUSE    00c0    LVER    0015    MASK    00fc    MEMCK   fdd4    MEMTOP  0004 
 MENB    0080*   MOVE    fa7e    MSK     0004    MV0     fa85    NI0     fed5 
