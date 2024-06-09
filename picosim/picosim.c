@@ -12,6 +12,7 @@
  * 27-MAY-2024 add access to files on MicroSD
  * 28-MAY-2024 implemented boot from disk images with some OS
  * 31-MAY-2024 use USB UART
+ * 09-JUN-2024 implemented boot ROM
  */
 
 /* Raspberry SDK and FatFS includes */

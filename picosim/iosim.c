@@ -12,6 +12,7 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  * 31-MAY-2024 added hardware control port for z80pack machines
  * 08-JUN-2024 implemented system reset
+ * 09-JUN-2024 implemented boot ROM
  */
 
 /* Raspberry SDK includes */
