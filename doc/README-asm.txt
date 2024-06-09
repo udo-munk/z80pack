@@ -195,6 +195,6 @@ unary + - ~ NOT HIGH LOW NUL TYPE
 EQ = == NE <> != LT < LE <= GT > GE >=
 AND & XOR ^ OR |
 
-Usage of the %, ^, >>, <<, <>, <, <=, >, and >= operators in macros
-and macro parameters is not possible, since they clash with the
+Usage of the %, ^, >>, <<, <>, <, <=, >, and >= operators in macro
+parameters and ^ in macros is not possible, since they clash with the
 literalize character ^, the pass by value % and <> bracket lists.

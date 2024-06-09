@@ -525,14 +525,13 @@ void mac_subst(char *t, char *s, struct expn *e,
 	register int m;
 	register int cat_flag;
 	char *s1, *t0, *t1, c;
-	int n, lit_flag;
+	int lit_flag;
 
 	if (*s == LINCOM || (*s == LINOPT && !IS_SYM(*(s + 1)))) {
 		strcpy(t, s);
 		return;
 	}
 	t0 = t;
-	n = 0;		/* angle brackets nesting level */
 	cat_flag = NO_CONCAT;
 	lit_flag = NO_LITERAL;
 	while (*s != '\0') {
@@ -589,9 +588,9 @@ void mac_subst(char *t, char *s, struct expn *e,
 			cat_flag = NO_CONCAT;
 			while (TRUE) {
 				if (*s == '\0') {
-					asmerr(E_MISDEL);
-					*t = '\0';
-					return;
+					/* undelimited, don't complain here,
+					   could be EX AF,AF' */
+					break;
 				} else if (*s == c) {
 					cat_flag = NO_CONCAT;
 					*t++ = *s++;
@@ -646,7 +645,7 @@ void mac_subst(char *t, char *s, struct expn *e,
 				}
 			}
 			lit_flag = NO_LITERAL;
-		} else if (*s == COMMENT && n == 0) {
+		} else if (*s == COMMENT) {
 			/* don't copy double COMMENT comments */
 			if (*(s + 1) == COMMENT)
 				*t = '\0';
@@ -656,24 +655,13 @@ void mac_subst(char *t, char *s, struct expn *e,
 		} else {
 			cat_flag = NO_CONCAT;
 			lit_flag = NO_LITERAL;
-			if (*s == LBRACK)
-				n++;
-			else if (*s == RBRACK) {
-				if (n == 0) {
-					asmerr(E_INVOPE);
-					*t = '\0';
-					return;
-				} else
-					n--;
-			} else if (*s == CONCAT)
+			if (*s == CONCAT)
 				cat_flag = CAT_BEFORE;
 			else if (*s == LITERAL)
 				lit_flag = LIT_BEFORE;
 			*t++ = *s++;
 		}
 	}
-	if (n > 0)
-		asmerr(E_INVOPE);
 	*t = '\0';
 }
 
