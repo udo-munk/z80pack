@@ -107,15 +107,17 @@ NOPE:	config();		/* configure the machine */
 	f_flag = speed;
 	tmax = speed * 10000; /* theoretically */
 
-	/* if there is a disk in drive 0 try to boot from it */
+	/* check if there are disks in the drives */
 	if (strlen(disks[0]) != 0) {
 		/* they will try this for sure, so ... */
 		if (!strcmp(disks[0], disks[1])) {
 			printf("Not with this config dude\n");
 			goto NOPE;
 		}
-		PC = 0xff00; /* power on jump into boot ROM */
 	}
+
+	/* power on jump into the boot ROM */
+	PC = 0xff00;
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE

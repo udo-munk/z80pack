@@ -35,6 +35,8 @@ FDCMD	EQU	0F000H		;command bytes for the FDC
 	OR	A		;zero ?
 	JP	Z,0		;if yes jump to boot code loaded @ 0
 ;
-	HALT			;some problem, reason still in A
+	CP	2		;some problem, lets see, no disk in drive?
+	JP	Z,0		;yes, so hopefully they loaded some code
+	HALT			;if not there is some serious problem
 ;
 	END			;of ROM

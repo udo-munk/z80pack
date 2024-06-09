@@ -38,9 +38,11 @@ ff20  db 04           34     34 	IN	A,(FDC)		;get FDC result
 ff22  b7              35     35 	OR	A		;zero ?
 ff23  ca 00 00        36     36 	JP	Z,0		;if yes jump to boot code loaded @ 0
                       37     37 ;
-ff26  76              38     38 	HALT			;some problem, reason still in A
-                      39     39 ;
-ff27                  40     40 	END			;of ROM
+ff26  fe 02           38     38 	CP	2		;some problem, lets see, no disk in drive?
+ff28  ca 00 00        39     39 	JP	Z,0		;yes, so hopefully they loaded some code
+ff2b  76              40     40 	HALT			;if not there is some serious problem
+                      41     41 ;
+ff2c                  42     42 	END			;of ROM
 
 Symbol table
 
