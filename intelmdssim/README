@@ -7,6 +7,21 @@ of https://www.facebook.com/groups/IntellecMDS .
 The CP/M disk image was downloaded from
 https://www.nj7p.info/Computers/Old%20Software/software.html .
 
+Disk image files are mapped as follows:
+drivea.dsk	Unit 0 of iSBC-202 (DD diskette) (CP/M drive A)
+driveb.dsk	Unit 1 of iSBC-202 (DD diskette) (CP/M drive B)
+drivec.dsk	Unit 2 of iSBC-202 (DD diskette)
+drived.dsk	Unit 3 of iSBC-202 (DD diskette)
+drivee.dsk	Unit 0 of iSBC-201 (SD diskette) (CP/M drive C)
+drivef.dsk	Unit 1 of iSBC-201 (SD diskette) (CP/M drive D)
+drivei.dsk	Unit 0 of iSBC-206 (fixed HD)
+drivej.dsk	Unit 0 of iSBC-206 (removable HD)
+drivek.dsk	Unit 1 of iSBC-206 (fixed HD)
+drivel.dsk	Unit 1 of iSBC-206 (removable HD)
+
+For a hard drive unit to be ready both (fixed & removable) disk image
+files must exist.
+
 
 The cpmtools disk definition for CP/M 2.2 disks is:
 

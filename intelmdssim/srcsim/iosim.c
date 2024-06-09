@@ -11,6 +11,7 @@
  * History:
  * 03-JUN-2024 first version
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
+ * 09-JUN-2024 add hwctl and simbdos ports
  */
 
 #include <stdint.h>
@@ -25,7 +26,10 @@
 #include "memsim.h"
 #include "config.h"
 #include "mds-monitor.h"
+#include "mds-isbc201.h"
 #include "mds-isbc202.h"
+#include "mds-isbc206.h"
+#include "simbdos.h"
 #include "unix_network.h"
 #ifdef WANT_ICE
 #include "unix_terminal.h"
@@ -44,9 +48,9 @@ extern BYTE boot_switch;
  *	for all port addresses.
  */
 static BYTE io_trap_in_00(void);
-static BYTE int_mask_in(void), rtc_in(void);
+static BYTE int_mask_in(void), rtc_in(void), hwctl_in(void);
 static void int_mask_out(BYTE), int_revert_out(BYTE);
-static void bus_ovrrd_out(BYTE), rtc_out(BYTE);
+static void bus_ovrrd_out(BYTE), rtc_out(BYTE), hwctl_out(BYTE);
 
 /*
  *	Forward declarations for support functions
@@ -70,15 +74,29 @@ static int th_suspend;			/* RTC/interrupt thread suspend flag */
 int lpt_fd;				/* fd for file "printer.txt" */
 struct net_connectors ncons[NUMNSOC];	/* network connection for TTY */
 struct unix_connectors ucons[NUMUSOC];	/* socket connection for PTR/PTP */
+BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
 BYTE (*port_in[256])(void) = {
+#ifdef HAS_ISBC206
+	[104] = isbc206_status_in,	/* iSBC 206 subsystem status input */
+	[105] = isbc206_res_type_in,	/* iSBC 206 result type input */
+	[107] = isbc206_res_byte_in,	/* iSBC 206 result byte input */
+#endif
+#ifdef HAS_ISBC202
 	[120] = isbc202_status_in,	/* iSBC 202 subsystem status input */
 	[121] = isbc202_res_type_in,	/* iSBC 202 result type input */
 	[123] = isbc202_res_byte_in,	/* iSBC 202 result byte input */
+#endif
+#ifdef HAS_ISBC201
+	[136] = isbc201_status_in,	/* iSBC 201 subsystem status input */
+	[137] = isbc201_res_type_in,	/* iSBC 201 result type input */
+	[139] = isbc201_res_byte_in,	/* iSBC 201 result byte input */
+#endif
+	[160] = hwctl_in,		/* virtual hardware control */
 	[240] = mon_prom_data_in,	/* PROM interface data input */
 	[241] = mon_prom_status_in,	/* PROM interface status input */
 	[244] = mon_tty_data_in,	/* TTY port data input */
@@ -98,9 +116,23 @@ BYTE (*port_in[256])(void) = {
  *	I/O port (0 - 255), to do the required I/O.
  */
 void (*port_out[256])(BYTE) = {
+#ifdef HAS_ISBC206
+	[105] = isbc206_iopbl_out,	/* iSBC 206 IOPB address LSB output */
+	[106] = isbc206_iopbh_out,	/* iSBC 206 IOPB address MSB output */
+	[111] = isbc206_reset_out,	/* iSBC 206 reset disk system output */
+#endif
+#ifdef HAS_ISBC202
 	[121] = isbc202_iopbl_out,	/* iSBC 202 IOPB address LSB output */
 	[122] = isbc202_iopbh_out,	/* iSBC 202 IOPB address MSB output */
 	[127] = isbc202_reset_out,	/* iSBC 202 reset disk system output */
+#endif
+#ifdef HAS_ISBC201
+	[137] = isbc201_iopbl_out,	/* iSBC 201 IOPB address LSB output */
+	[138] = isbc201_iopbh_out,	/* iSBC 201 IOPB address MSB output */
+	[143] = isbc201_reset_out,	/* iSBC 201 reset disk system output */
+#endif
+	[160] = hwctl_out,		/* virtual hardware control */
+	[161] = host_bdos_out,		/* host file I/O hook */
 	[240] = mon_prom_data_out,	/* PROM interface data output */
 	[241] = mon_prom_high_ctl_out,	/* PROM intf MSB addr and ctl output */
 	[242] = mon_prom_low_out,	/* PROM interface LSB addr output */
@@ -149,9 +181,15 @@ void init_io(void)
 	rtc_status1 = 0;
 
 	mon_reset();		/* reset monitor module */
-
+#ifdef HAS_ISBC201
+	isbc201_reset();	/* reset iSBC 201 disk controller */
+#endif
+#ifdef HAS_ISBC202
 	isbc202_reset();	/* reset iSBC 202 disk controller */
-
+#endif
+#ifdef HAS_ISBC206
+	isbc206_reset();	/* reset iSBC 206 disk controller */
+#endif
 
 	/* initialize TCP/IP networking */
 #ifdef TCPASYNC
@@ -185,7 +223,7 @@ void init_io(void)
 	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
-	tim.it_value.tv_sec = 5;
+	tim.it_value.tv_sec = 2;
 	tim.it_value.tv_usec = 0;
 	tim.it_interval.tv_sec = 0;
 	tim.it_interval.tv_usec = 10000;
@@ -237,8 +275,17 @@ void reset_io(void)
 	pthread_mutex_unlock(&int_mutex);
 
 	mon_reset();		/* reset monitor module */
-
+#ifdef HAS_ISBC201
+	isbc201_reset();	/* reset iSBC 201 disk controller */
+#endif
+#ifdef HAS_ISBC202
 	isbc202_reset();	/* reset iSBC 202 disk controller */
+#endif
+#ifdef HAS_ISBC206
+	isbc206_reset();	/* reset iSBC 206 disk controller */
+#endif
+
+	hwctl_lock = 0xff;
 
 	th_suspend = 0;		/* resume timing thread */
 }
@@ -391,6 +438,43 @@ static void rtc_out(BYTE data)
 }
 
 /*
+ *	Input from virtual hardware control port
+ *	returns lock status of the port
+ */
+static BYTE hwctl_in(void)
+{
+	return (hwctl_lock);
+}
+
+/*
+ *	Port is locked until magic number 0xaa is received!
+ *
+ *	Virtual hardware control output.
+ *	Doesn't exist in the real machine, used to shutdown.
+ *
+ *	bit 7 = 1       halt emulation via I/O
+ */
+static void hwctl_out(BYTE data)
+{
+	/* if port is locked do nothing */
+	if (hwctl_lock && (data != 0xaa))
+		return;
+
+	/* unlock port ? */
+	if (hwctl_lock && (data == 0xaa)) {
+		hwctl_lock = 0;
+		return;
+	}
+
+	/* process output to unlocked port */
+
+	if (data & 128) {	/* halt system */
+		cpu_error = IOHALT;
+		cpu_state = STOPPED;
+	}
+}
+
+/*
  *	Thread for timing and interrupts
  */
 static void *timing(void *arg)
@@ -464,8 +548,18 @@ static void interrupt(int sig)
 #endif
 
 	/* check disk image files each second */
+#ifdef HAS_ISBC201
 	if ((counter % 100) == 0)
+		isbc201_disk_check();
+#endif
+#ifdef HAS_ISBC202
+	if ((counter % 100) == 33)
 		isbc202_disk_check();
+#endif
+#ifdef HAS_ISBC206
+	if ((counter % 100) == 66)
+		isbc206_disk_check();
+#endif
 
 #ifdef FRONTPANEL
 	if (!F_flag) {
