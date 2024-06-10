@@ -27,7 +27,7 @@ For a hard drive unit to be ready both (fixed & removable) disk image
 files must exist.
 
 
-The cpmtools disk definition for CP/M 2.2 disks is:
+The cpmtools disk definition for CP/M 2.2 DD disks is:
 
 diskdef mds-800
   seclen 128
