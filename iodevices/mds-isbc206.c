@@ -270,7 +270,7 @@ void isbc206_iopbh_out(BYTE data)
 			ioerr = IO_NRDY;
 			break;
 		}
-		if (taddr == 0 && ftruncate(fd, DISK_SIZE) == -1) {
+		if (taddr == 0 && ftruncate(fd, (off_t) DISK_SIZE) == -1) {
 			ioerr = IO_NRDY;
 			break;
 		}
