@@ -31,7 +31,7 @@
 #include "simglb.h"
 #include "memsim.h"
 #include "mds-isbc206.h"
-#define LOG_LOCAL_LEVEL	LOG_DEBUG
+/* #define LOG_LOCAL_LEVEL	LOG_DEBUG */
 #include "log.h"
 
 #ifdef HAS_ISBC206
