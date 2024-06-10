@@ -251,6 +251,12 @@ void isbc202_iopbh_out(BYTE data)
 			break;
 		}
 
+		/* expand new disk image to full size */
+		if (taddr == 0 && ftruncate(fd, (off_t) DISK_SIZE) == -1) {
+			ioerr = IO_NRDY;
+			break;
+		}
+
 		if (iocw & CW_RFS) {	/* random format sequence */
 			/*
 			 * Reads a table of (sector, data) pairs from the IOPB
