@@ -1,5 +1,9 @@
 This is a simulator for the Intel Intellec MDS-800 system with
-64K RAM and an iSBC-202 double density diskette controller.
+64K RAM, an iSBC-202 double density diskette controller with 4 drives
+attached, an iSBC-201 single density diskette controller with 2 drives
+attached, and an iSBC-206 hard disk controller with 2 MDS-740 hard disk
+units attached. Each MDS-740 unit contains a fixed platter and a removable
+IBM-5440 type platter.
 
 The front panel picture (conf/intelmds.jpg) comes from the front page
 of https://www.facebook.com/groups/IntellecMDS .
