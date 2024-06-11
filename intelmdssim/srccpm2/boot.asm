@@ -12,11 +12,11 @@ testing	equ	false	;if true, then go to mon80 on errors
 bias	equ	03400h
 	endif
 	if	not testing
-bias	equ	0000h
+bias	equ	0da00h		;for 62k system
 	endif
 cpmb	equ	bias		;base of dos load
 bdos	equ	806h+bias	;entry to dos for calls
-bdose	equ	1880h+bias	;end of dos load
+bdose	equ	1880h+500h+bias	;end of dos load (incl. bios)
 boot	equ	1600h+bias	;cold start entry point
 rboot	equ	boot+3		;warm start entry point
 ;
@@ -25,7 +25,7 @@ rboot	equ	boot+3		;warm start entry point
 bdosl	equ	bdose-cpmb
 ntrks	equ	2	;number of tracks to read
 bdoss	equ	bdosl/128	;number of sectors in dos
-bdos0	equ	25	;number of bdos sectors on track 0
+bdos0	equ	51	;number of bdos sectors on track 0
 bdos1	equ	bdoss-bdos0	;number of sectors on track 1
 ;
 mon80	equ	0f800h	;intel monitor base
