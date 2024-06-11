@@ -75,7 +75,7 @@
 #include "netsrv.h"
 #endif
 #include "log.h"
-#include "rtc.h"
+#include "rtc80.h"
 #include "imsai-hal.h"
 #ifdef HAS_APU
 #include "apu/am9511.h"
