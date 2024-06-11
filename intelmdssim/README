@@ -1,9 +1,9 @@
-This is a simulator for the Intel Intellec MDS-800 system with
-64K RAM, an iSBC-202 double density diskette controller with 4 drives
+This is a simulator for the Intel Intellec MDS-800 system with 64K
+RAM, an iSBC-202 double density diskette controller with 4 drives
 attached, an iSBC-201 single density diskette controller with 2 drives
-attached, and an iSBC-206 hard disk controller with 2 MDS-740 hard disk
-units attached. Each MDS-740 unit contains a fixed platter and a removable
-IBM-5440 type platter.
+attached, and an iSBC-206 hard disk controller with 2 MDS-740 hard
+disk units attached. Each MDS-740 unit contains a fixed platter and a
+removable IBM-5440 type platter.
 
 The front panel picture (conf/intelmds.jpg) comes from the front page
 of https://www.facebook.com/groups/IntellecMDS .
@@ -12,35 +12,47 @@ The CP/M disk image was downloaded from
 https://www.nj7p.info/Computers/Old%20Software/software.html .
 
 Disk image files are mapped as follows:
-drivea.dsk	Unit 0 of iSBC-202 (DD diskette) (CP/M drive A)
-driveb.dsk	Unit 1 of iSBC-202 (DD diskette) (CP/M drive B)
+drivea.dsk	Unit 0 of iSBC-202 (DD diskette)
+driveb.dsk	Unit 1 of iSBC-202 (DD diskette)
 drivec.dsk	Unit 2 of iSBC-202 (DD diskette)
 drived.dsk	Unit 3 of iSBC-202 (DD diskette)
-drivee.dsk	Unit 0 of iSBC-201 (SD diskette) (CP/M drive C)
-drivef.dsk	Unit 1 of iSBC-201 (SD diskette) (CP/M drive D)
+drivee.dsk	Unit 0 of iSBC-201 (SD diskette)
+drivef.dsk	Unit 1 of iSBC-201 (SD diskette)
 drivei.dsk	Unit 0 of iSBC-206 (fixed HD)
 drivej.dsk	Unit 0 of iSBC-206 (removable HD)
 drivek.dsk	Unit 1 of iSBC-206 (fixed HD)
 drivel.dsk	Unit 1 of iSBC-206 (removable HD)
 
+Drive letters in CP/M correspond to the image names.
+
 For a hard drive unit to be ready both (fixed & removable) disk image
 files must exist.
 
+For cpmtools use the usual default "ibm-3740" for SD disk images,
+"mds-dd" for DD disk images and the following definition for hard disk
+images:
 
-The cpmtools disk definition for CP/M 2.2 DD disks is:
-
-diskdef mds-800
+diskdef mds-hd
   seclen 128
-  tracks 77
-  sectrk 52
-  blocksize 2048
-  maxdir 128
+  tracks 200
+  sectrk 144
+  blocksize 4096
+  maxdir 1024
   skew 0
-  boottrk 2
+  boottrk 0
   os 2.2
 end
 
-To create a disk image for the machine:
+For added convenience there is a "diskdefs" file in the disks
+directory, since cpmtools looks in the current directory first for its
+disk definitions file.
+
+To create a DD disk image for the machine:
 
 dd if=/dev/zero of=name.dsk bs=128 count=4004
-mkfs.cpm -f mds-800 name.dsk
+mkfs.cpm -f mds-dd name.dsk
+
+for a hard disk image use:
+
+dd if=/dev/zero of=name.dsk bs=128 count=28800
+mkfs.cpm -f mds-hd name.dsk
