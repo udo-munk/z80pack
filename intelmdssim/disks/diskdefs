@@ -1,0 +1,32 @@
+diskdef ibm-3740
+  seclen 128
+  tracks 77
+  sectrk 26
+  blocksize 1024
+  maxdir 64
+  skew 6
+  boottrk 2
+  os 2.2
+end
+
+diskdef mds-dd
+  seclen 128
+  tracks 77
+  sectrk 52
+  blocksize 2048
+  maxdir 128
+  skew 0
+  boottrk 2
+  os 2.2
+end
+
+diskdef mds-hd
+  seclen 128
+  tracks 200
+  sectrk 144
+  blocksize 4096
+  maxdir 1024
+  skew 0
+  boottrk 0
+  os 2.2
+end

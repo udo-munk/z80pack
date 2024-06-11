@@ -223,7 +223,7 @@ void init_io(void)
 	sigemptyset(&newact.sa_mask);
 	newact.sa_flags = 0;
 	sigaction(SIGALRM, &newact, NULL);
-	tim.it_value.tv_sec = 2;
+	tim.it_value.tv_sec = 5;
 	tim.it_value.tv_usec = 0;
 	tim.it_interval.tv_sec = 0;
 	tim.it_interval.tv_usec = 10000;
