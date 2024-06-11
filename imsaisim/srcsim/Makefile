@@ -11,7 +11,7 @@ MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c \
 	imsai-fif.c imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c \
-	unix_network.c netsrv.c generic-at-modem.c libtelnet.c rtc.c \
+	unix_network.c netsrv.c generic-at-modem.c libtelnet.c rtc80.c \
 	simbdos.c am9511.c floatcnv.c ova.c
 # machine specific libraries
 CIV_LIB = $(CIV_DIR)/libcivetweb.a

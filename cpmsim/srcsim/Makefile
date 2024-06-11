@@ -7,7 +7,7 @@ MACHINE = cpm
 # machine specific system source files
 MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
 # machine specific I/O source files
-IO_SRCS = unix_terminal.c rtc.c simbdos.c
+IO_SRCS = unix_terminal.c rtc80.c simbdos.c
 
 # Installation directories by convention
 # http://www.gnu.org/prep/standards/html_node/Directory-Variables.html
