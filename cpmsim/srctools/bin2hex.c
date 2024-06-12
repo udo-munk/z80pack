@@ -22,7 +22,7 @@ int main(int argc,char *argv[])/*Main routine*/
 {
   char *ifile = NULL;
   char *ofile = NULL;
-  char c;
+  int c;
   FILE *inp, *outp;
   int ch,csum;
   int ofsa = 0;
