@@ -23,7 +23,6 @@
 #endif
 #include "pico/stdlib.h"
 #include "pico/time.h"
-#include "sd_card.h"
 #include "f_util.h"
 #include "ff.h"
 #include "hw_config.h"
@@ -56,15 +55,12 @@ int speed = CPU_SPEED;
 
 extern void init_cpu(void), init_io(void), run_cpu(void);
 extern void report_cpu_error(void), report_cpu_stats(void);
-extern BYTE read_sec(int, int, int, WORD);
 
 uint64_t get_clock_us(void);
 void gpio_callback(uint, uint32_t);
 
 int main(void)
 {
-	BYTE stat;
-
 	stdio_init_all();	/* initialize Pico stdio */
 
 #if PICO == 1			/* initialize Pico W hardware */
@@ -77,6 +73,7 @@ int main(void)
 	gpio_init(LED);		/* configure GPIO for LED output */
 	gpio_set_dir(LED, GPIO_OUT);
 #endif
+
 	gpio_init(SWITCH_BREAK); /* setupt interrupt for break switch */
 	gpio_set_dir(SWITCH_BREAK, GPIO_IN);
 	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
