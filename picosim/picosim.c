@@ -143,6 +143,7 @@ NOPE:	config();		/* configure the machine */
 #endif
 	putchar('\n');
 	stdio_flush();
+	sleep_ms(500);
 	return 0;
 }
 
