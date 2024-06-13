@@ -47,7 +47,7 @@ void init_memory(void)
 		LOGE(TAG, "no bootstrap ROM file specified in config file");
 		exit(EXIT_FAILURE);
 	}
-	if (mon_rom_file == NULL) {
+	if (mon_enabled && mon_rom_file == NULL) {
 		LOGE(TAG, "no monitor ROM file specified in config file");
 		exit(EXIT_FAILURE);
 	}
