@@ -55,7 +55,7 @@ extern void sleep_ms(int);
  */
 
 #define USR_COM	"Intel Intellec MDS-800 Simulation"
-#define USR_REL	"0.99"
+#define USR_REL	"1.0"
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2024 by Thomas Eberhardt"
 

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+rm -f disks/drive[aij].dsk
+ln disks/library/isis-ii-43.dsk disks/drivea.dsk
+ln disks/library/hd-isis-sys.dsk disks/drivei.dsk
+ln disks/library/hd-isis-usr.dsk disks/drivej.dsk
+
+./intelmdssim $*
