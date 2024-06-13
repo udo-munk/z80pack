@@ -231,11 +231,11 @@ void reset_clicked(int state, int val)
 		cpu_state |= RESET;
 		m1_step = 0;
 		IFF = 0;
-		reset_cpu();
 		reset_io();
+		reset_cpu();
 		cpu_state &= ~RESET;
-		cpu_wait = 0;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
+		cpu_wait = 0;
 		break;
 	default:
 		break;

@@ -31,7 +31,6 @@
 #include "simglb.h"
 #include "memsim.h"
 #include "mds-isbc206.h"
-/* #define LOG_LOCAL_LEVEL	LOG_DEBUG */
 #include "log.h"
 
 #ifdef HAS_ISBC206
@@ -223,8 +222,6 @@ void isbc206_iopbh_out(BYTE data)
 	saddr = dma_read(iopb_addr + 4);
 	addr = dma_read(iopb_addr + 5);
 	addr |= dma_read(iopb_addr + 6) << 8;
-	LOGD(TAG, "iopb(cw=%02X op=%02X n=%02X trk=%02X sec=%02X addr=%04X)",
-	     iocw, ioins, nsec, taddr, saddr, addr);
 
 	/* undo ISIS logical to physical mapping */
 	track = taddr;
