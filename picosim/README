@@ -1,12 +1,15 @@
-This is a Raspberry RP2040 reseach machine I have build on a breadboard.
+This is a Raspberry RP2040 research machine I have build on a breadboard.
 For hardware description read:
 
 	z80pack/doc/README-pico.txt
 
 If you don't want to build a machine your self, there are ready fabricated
-systems on PCB available, which also can run the software. For these see:
+systems on PCB available, which also can run the software. I have implemented
+picosim on these:
 
 	https://github.com/udo-munk/Pico-Eval-Board-80
+	https://github.com/udo-munk/RP2040-GEEK-80
+
 
 To build the software you need to have the SDK for RP2040-based devices
 installed and configured. The SDK manual has detailed instructions how
