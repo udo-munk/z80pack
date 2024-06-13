@@ -44,9 +44,16 @@ target_compile_definitions(picosim INTERFACE
 )
 
 # for Pico
-target_link_libraries(picosim pico_stdlib no-OS-FatFS-SD-SDIO-SPI-RPi-Pico)
+target_link_libraries(picosim
+	pico_stdlib
+	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
+)
 # for Pico W
-#target_link_libraries(picosim pico_stdlib no-OS-FatFS-SD-SDIO-SPI-RPi-Pico pico_cyw43_arch_none)
+#target_link_libraries(picosim
+#	pico_stdlib
+#	pico_cyw43_arch_none
+#	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
+#)
 
 pico_add_extra_outputs(picosim)
 
