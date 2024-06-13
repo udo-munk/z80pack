@@ -45,7 +45,7 @@
 #define DEL 0x7f /* delete */
 
 /* global variables for access to SPI MicroSD drive */
-sd_card_t *SD;	/* one MicroSD drive */
+FATFS fs;       /* FatFs on SDIO MicroSD */
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
 char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
@@ -91,8 +91,7 @@ int main(void)
 	printf("%s\n\n", USR_CPR);
 
 	/* try to mount SD card */
-	SD = sd_get_by_num(0);
-	sd_res = f_mount(&SD->fatfs, SD->pcName, 1);
+	sd_res = f_mount(&fs, "", 1);
 	if (sd_res != FR_OK)
 		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
 
@@ -127,7 +126,7 @@ NOPE:	config();		/* configure the machine */
 #endif
 
 	/* unmount SD card */
-	f_unmount(SD->pcName);
+	f_unmount("");
 
 	/* switch builtin LED on */
 #if PICO == 1

@@ -34,7 +34,7 @@ extern int get_cmdline(char *, int);
 extern void switch_cpu(int);
 extern void load_file(char *);
 extern void mount_disk(int, char *);
-extern void ls(const char *, const char *);
+extern void my_ls(const char *, const char *);
 extern unsigned char fp_value;
 
 /*
@@ -117,7 +117,7 @@ again:
 			break;
 
 		case '4':
-			ls(cpath, cext);
+			my_ls(cpath, cext);
 			printf("\n\n");
 			break;
 
@@ -128,7 +128,7 @@ again:
 			break;
 
 		case '6':
-			ls(dpath, dext);
+			my_ls(dpath, dext);
 			printf("\n\n");
 			break;
 

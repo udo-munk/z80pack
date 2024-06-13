@@ -59,7 +59,7 @@ static void complain(void)
 /*
  * list files with pattern 'ext' in directory 'dir'
  */
-void ls(const char *dir, const char *ext)
+void my_ls(const char *dir, const char *ext)
 {
 	DIR dp;
 	FILINFO fno;
