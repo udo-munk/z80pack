@@ -35,3 +35,8 @@ end
 
 If you label disks with CDOS stat/l and use anything different than
 64 directory entries, the definition needs to be changed appropriate.
+
+-------------
+
+The login credentials for Cromix are system, user1, and user2 all
+without a password.
