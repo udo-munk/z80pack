@@ -37,7 +37,7 @@ To setup for a Pico W comment/uncomment the lines in CMakeLists.txt
 and change the board type in sim.h. This will only work when using
 the GPIO UART.
 
-This is configured now for USB UART to that no additional parts are needed
+This is configured now for USB UART so that no additional parts are needed
 to hook up a terminal. If configured for GPIO UART connect a TTL/USB
 adatpter or a pico probe to the UART pins for the one configured in
 CMakeLists.txt.
