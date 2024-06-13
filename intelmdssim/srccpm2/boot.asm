@@ -4,6 +4,9 @@
 ;
 ;	Version 2.0 August, 1979
 ;
+;	Modified Jun-2024 by Thomas Eberhardt
+;	Adjust BIOS size, make reading of track 1 depend on load size
+;
 false	equ	0
 true	equ	not false
 testing	equ	false	;if true, then go to mon80 on errors

@@ -49,7 +49,7 @@
 #define RT_DSKRD	0x01	/* hard drive ready status */
 
 				/* I/O complete error bits */
-#define IO_DELR		0x01	/* deleted record */
+#define IO_IDCMP	0x01	/* ID field miscompare */
 #define IO_CRC		0x02	/* CRC error */
 #define IO_SEEK		0x04	/* seek error */
 #define IO_ADDR		0x08	/* address error */
