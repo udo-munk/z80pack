@@ -67,7 +67,7 @@ static sd_card_t sd_card = {
 	.spi_if_p = &spi_if  // Pointer to the SPI interface driving this card
 };
 
-FATFS fs;       /* FatFs on SDIO MicroSD */
+FATFS fs;       /* FatFs on MicroSD */
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
 char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
