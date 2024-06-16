@@ -44,7 +44,7 @@
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
 
-/* global variables for access to SPI MicroSD drive */
+/* global variables for access to MicroSD card */
 
 /* Configuration of RP2040 hardware SPI object */
 static spi_t spi = {  
