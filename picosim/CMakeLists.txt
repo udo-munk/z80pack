@@ -31,7 +31,7 @@ add_executable(picosim
 	iosim.c
 )
 add_subdirectory(
-	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src build
+	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs
 )
 target_compile_definitions(picosim PRIVATE
 	PICO_STACK_SIZE=4096
