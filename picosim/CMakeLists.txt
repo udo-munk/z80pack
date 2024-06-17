@@ -11,6 +11,7 @@ include_directories(
 	../z80core
 	../iodevices
 )
+
 add_executable(picosim
 	picosim.c
 	../z80core/simcore.c
@@ -30,14 +31,17 @@ add_executable(picosim
 	memsim.c
 	iosim.c
 )
+
 add_subdirectory(
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs
 )
+
 target_compile_definitions(picosim PRIVATE
 	PICO_STACK_SIZE=4096
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
 )
+
 target_compile_definitions(picosim INTERFACE
 	PICO_DEFAULT_UART=0
 )
