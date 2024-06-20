@@ -48,7 +48,7 @@ static WORD fdc_cmd_addr;  // address of the disk command
 static WORD fdc_dma_addr;  // address for a DMA transfer
 
 // I/O out interface to the 8080 CPU
-const void fdc_out(BYTE data)
+void fdc_out(BYTE data)
 {
   fdc_stat = FDC_STAT_OK;
 
@@ -97,7 +97,7 @@ const void fdc_out(BYTE data)
 }
 
 // I/O in interface to the 8080 CPU
-const BYTE fdc_in(void)
+BYTE fdc_in(void)
 {
   return fdc_stat;
 }
