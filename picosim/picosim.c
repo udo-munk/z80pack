@@ -133,10 +133,6 @@ int main(void)
 	init_io();		/* initialize I/O devices */
 NOPE:	config();		/* configure the machine */
 
-	/* setup speed of the CPU */
-	f_flag = speed;
-	tmax = speed * 10000; /* theoretically */
-
 	/* check if there are disks in the drives */
 	if (strlen(disks[0]) != 0) {
 		/* they will try this for sure, so ... */
@@ -145,6 +141,10 @@ NOPE:	config();		/* configure the machine */
 			goto NOPE;
 		}
 	}
+
+	/* setup speed of the CPU */
+	f_flag = speed;
+	tmax = speed * 10000; /* theoretically */
 
 	/* power on jump into the boot ROM */
 	PC = 0xff00;
