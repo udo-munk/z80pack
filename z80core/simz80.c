@@ -465,7 +465,7 @@ void cpu_z80(void)
 
 		/* CPU interrupt handling */
 		if (int_nmi) {		/* non-maskable interrupt */
-			IFF <<= 1 & 3;
+			IFF = (IFF << 1) & 3;
 			memwrt(--SP, PC >> 8);
 			memwrt(--SP, PC);
 			PC = 0x66;
