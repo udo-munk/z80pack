@@ -255,7 +255,7 @@ c0b4  18 b6          242    242 	JR	EXCCHK		;WAIT FOR INTREQ
                      252    252 ;	  A CONTAINS HEAD LOAD FLAG
                      253    253 ;	  B CONTAINS 128 (# OF BYTES)
                      254    254 ;	  C CONTAINS DATA PORT
-                     255    255 
+                     255    255
                      256    256 ;REGISTERS A,F,B,C,D ARE CHANGED
                      257    257 ;
                      258    258 ;
@@ -1068,49 +1068,49 @@ c400                1059   1064 	END
 
 Symbol table
 
-ALT           007d    BAUD          0000    BAUDRS        c3ca 
-BOOTDK        c018    BOOTMC        c015    BOOTSW        0040 
-BOT200        c01c    BOT300        c024    BOT500        c03a 
-CASE          0000    CHKIN         c0db    CHKNO         c3b2 
-CHKSECNO      c3ae    CLEANSTACK    c123    CLEANV        c1b9 
-CM6           c143    CMND          c128    CMNDTBL       c3d2 
-CN2           c3b7    COMMND        0002    CR            000d 
-CRLF          c1a9    DATA          0001    DAV           0040 
-DCOMMND       0030    DCONTR        0034    DDATA         0033 
-DERCKV        c338*   DERRCK        c197    DFLAGS        0034 
-DHOME         c03f    DISKMODE      0005    DISKSELECT    c162 
-DM2           c30d    DRD250        c095    DREAD         c08c 
-DS2           c18c    DSEC          0032    DSEEK         c054 
-DSK500        c076    DSK540        c07f    DSPM          c303 
-DSPM1         c308    DSTAT         0030    DTRACK        0031 
-DWR250        c0aa    DWRITE        c0a1    EREXIT        c071 
-ERROR         c1b5    ERRORV        c33b    ESC           001b 
-ESCAPE        c1b9    EXCCHK        c06c    EXECUTE       c06a 
-EXMINPUT      c1ad    FASTSEEK      0007    GBYTE         c0e3 
-GCHR          c219    GN1           c298    GNHL          c28b 
-GNHLO         c28a    GO            c2fd    HDLDM         0020 
+ALT           007d    BAUD          0000    BAUDRS        c3ca
+BOOTDK        c018    BOOTMC        c015    BOOTSW        0040
+BOT200        c01c    BOT300        c024    BOT500        c03a
+CASE          0000    CHKIN         c0db    CHKNO         c3b2
+CHKSECNO      c3ae    CLEANSTACK    c123    CLEANV        c1b9
+CM6           c143    CMND          c128    CMNDTBL       c3d2
+CN2           c3b7    COMMND        0002    CR            000d
+CRLF          c1a9    DATA          0001    DAV           0040
+DCOMMND       0030    DCONTR        0034    DDATA         0033
+DERCKV        c338*   DERRCK        c197    DFLAGS        0034
+DHOME         c03f    DISKMODE      0005    DISKSELECT    c162
+DM2           c30d    DRD250        c095    DREAD         c08c
+DS2           c18c    DSEC          0032    DSEEK         c054
+DSK500        c076    DSK540        c07f    DSPM          c303
+DSPM1         c308    DSTAT         0030    DTRACK        0031
+DWR250        c0aa    DWRITE        c0a1    EREXIT        c071
+ERROR         c1b5    ERRORV        c33b    ESC           001b
+ESCAPE        c1b9    EXCCHK        c06c    EXECUTE       c06a
+EXMINPUT      c1ad    FASTSEEK      0007    GBYTE         c0e3
+GCHR          c219    GN1           c298    GNHL          c28b
+GNHLO         c28a    GO            c2fd    HDLDM         0020
 HEXSH         c2a3    HX1           c2b1    HXSH4         c2b3*
-IMASK         0003    INITBAUD      c0ee    INITBR        c0eb 
-IT1           c0f5    KICKSTK       c106    L1NCR         c285 
+IMASK         0003    INITBAUD      c0ee    INITBR        c0eb
+IT1           c0f5    KICKSTK       c106    L1NCR         c285
 L2N1          c274    L2N2          c27b    L2NCR         c226*
-L2NCR0        c225    L3NCR         c282    L3NCR0        c281 
-LASTBYTE      c3ff*   LD2N          c264    LF            000a 
-LOADIX        c11e    MAXI          0004    MAXIM         0010 
-MONITR        c10b    MOVE          c257    NDRIVES       0004 
-NEXTSC        c1bc    NS2           c1c7    NS4           c1d1 
-OUTP          c3bf    P1HEX         c2d8    P2HEX         c2d4 
-P2HXCLEAN     c1a4    PADDR         c233*   PARLEL        0004 
-PC1           c1f2    PC2           c201    PC3           c217 
-PCADDR        c230    PCHR          c1f1    PERRMSG       c198 
-PH1           c2e5    PMSG          c2ec    PMSGFOLLOWING c2f7 
-PNHL          c2cf    PNM           c2c9    PS1           c2ed 
-PSNHL         c2cc    PSNM          c2c6    PTRKSC        c3a2 
-RD2           c373    READDR        c370*   RHANDLER      c36c 
+L2NCR0        c225    L3NCR         c282    L3NCR0        c281
+LASTBYTE      c3ff*   LD2N          c264    LF            000a
+LOADIX        c11e    MAXI          0004    MAXIM         0010
+MONITR        c10b    MOVE          c257    NDRIVES       0004
+NEXTSC        c1bc    NS2           c1c7    NS4           c1d1
+OUTP          c3bf    P1HEX         c2d8    P2HEX         c2d4
+P2HXCLEAN     c1a4    PADDR         c233*   PARLEL        0004
+PC1           c1f2    PC2           c201    PC3           c217
+PCADDR        c230    PCHR          c1f1    PERRMSG       c198
+PH1           c2e5    PMSG          c2ec    PMSGFOLLOWING c2f7
+PNHL          c2cf    PNM           c2c9    PS1           c2ed
+PSNHL         c2cc    PSNM          c2c6    PTRKSC        c3a2
+RD2           c373    READDR        c370*   RHANDLER      c36c
 SECSETUP      c394    SEEKNXT       c329    SEEKR         c322*
-SEL300        c0d1    SELECT        c0cb    SETUP         c0b6 
-SHANDLER      c320    SK1           c2bc    SKSG          c2bb 
-SKSGCR        c229    SKSGO         c2ba    SM1           c343 
-SM2           c360    SPACE         c1ef    STACK         007c 
-START         c000*   STAT          0000    SUBSM         c33e 
-TBE           0080    VERIF         c23a    VRFY          c23d 
+SEL300        c0d1    SELECT        c0cb    SETUP         c0b6
+SHANDLER      c320    SK1           c2bc    SKSG          c2bb
+SKSGCR        c229    SKSGO         c2ba    SM1           c343
+SM2           c360    SPACE         c1ef    STACK         007c
+START         c000*   STAT          0000    SUBSM         c33e
+TBE           0080    VERIF         c23a    VRFY          c23d
 WD2           c387    WHANDLER      c380    WRITDR        c384*

@@ -1674,51 +1674,51 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 1fa7  =             1550   1671 STKLMT  EQU  $                          ;TOP LIMIT FOR STACK
                     1551   1672         ORG  2000H
 2000  =             1552   1673 STACK   EQU  $                          ;STACK STARTS HERE
-                    1553   1674 
+                    1553   1674
 2000                1554   1675         END
 
 Macro table
 
-ITEM    
+ITEM
 
 Symbol table
 
-ABS    0531    AHOW   00a0    ASORRY 05d0    AWHAT  05a5    BKA    005f 
-BKS    005c    BUFEND 1f7f    BUFFER 1f37    CHGSGN 056a    CHKIO  0732 
-CHKSGN 0567    CI1    074b    CK1    057c    CKHLDE 0576    CNTLC  0003 
-CNTLO  000f    CNTLU  0015    CR     000d    CRLF   000e    CURRNT 0801 
+ABS    0531    AHOW   00a0    ASORRY 05d0    AWHAT  05a5    BKA    005f
+BKS    005c    BUFEND 1f7f    BUFFER 1f37    CHGSGN 056a    CHKIO  0732
+CHKSGN 0567    CI1    074b    CK1    057c    CKHLDE 0576    CNTLC  0003
+CNTLO  000f    CNTLU  0015    CR     000d    CRLF   000e    CURRNT 0801
 DEFLT  0401    DEL    007f    DIRECT 01f5    DIVIDE 054a    DLLN   007d*
-DV1    0555    DV2    0557    ENDCHK 05a0    ERROR  05a8    EX0    01f8 
-EX1    01fa    EX2    020d    EX3    0217    EX4    0219    EX5    021e 
-EXEC   01f8    EXPR1  0411    EXPR2  0455    EXPR3  0489    EXPR4  04e6 
-FDLNP  061c    FI1    0598    FI2    059f    FIN    0591    FL1    061c 
-FL2    0631    FNDLN  0614    FNDNXT 0630    FNDSKP 0632    FOR    02ea 
+DV1    0555    DV2    0557    ENDCHK 05a0    ERROR  05a8    EX0    01f8
+EX1    01fa    EX2    020d    EX3    0217    EX4    0219    EX5    021e
+EXEC   01f8    EXPR1  0411    EXPR2  0455    EXPR3  0489    EXPR4  04e6
+FDLNP  061c    FI1    0598    FI2    059f    FIN    0591    FL1    061c
+FL2    0631    FNDLN  0614    FNDNXT 0630    FNDSKP 0632    FOR    02ea
 FR1    02fa    FR2    0304    FR3    0308    FR4    030b    FR5    030e*
-FR7    0323    FR8    0344    GETLN  05d6    GL1    05da    GL3    05ff 
-GL4    060c    GOSUB  02b1    GOTO   0252    HOW    00a6    IFF    039a 
-INPERR 03a7    INPUT  03b1    IP1    03b1    IP2    03bf    IP3    03cf 
-IP4    03f9    IP5    0400    LET    0407    LF     000a    LIST   0261 
-LOPINC 0809    LOPLMT 080b    LOPLN  080d    LOPPT  080f    LOPVAR 0807 
-LS1    026a    LSTROM 07ff    LT1    0410    MD1    06ce    MVDOWN 06c6 
-MVUP   06bd    NEW    0226    NEXT   0349    NX0    0350    NX1    0380 
-NX2    0392    NX3    0368    OC2    071a    OC3    071f    OCSW   0800 
-OK     00ab    PARN   04fb    PN1    067e    PN2    067f    PN3    068f 
-PN4    0690    PN5    069c    PN6    069f    POPA   06d5    PP1    06ef 
-PR0    028d    PR1    0295    PR2    0284    PR3    029b    PR6    02a4 
-PR8    02a8    PRINT  0279    PRTLN  06aa    PRTNUM 066e    PRTSTG 063c 
-PS1    063d    PU1    0717    PUSHA  06f1    QHOW   009f    QSORRY 05cf 
-QT     0027    QT1    064d    QT2    0656    QT3    065a    QT4    0662 
-QT5    066d    QTSTG  0648    QWHAT  05a4    RA1    0521    RANPNT 0811 
-REM    0396    RETURN 02d1    RND    0506    RUN    0233    RUNNXL 0239 
-RUNSML 0249    RUNTSL 0242    SETVAL 057e    SIZE   053d    SORRY  00b4 
-SS1    0028    ST1    00ba    ST2    00ca    ST3    00d3    ST4    0108 
-STACK  2000    START  0000    STKGOS 0803    STKINP 0805    STKLMT 1fa7 
-STOP   022f    SUBDE  0560    SV1    058e    TAB1   012f    TAB2   013f 
-TAB4   01a1    TAB5   01d1    TAB6   01d7    TAB8   01df    TC1    0068 
-TC2    0073    TN1    007c    TSTNUM 0077    TV1    0058    TXTBGN 0815 
-TXTEND 1f00    TXTUNF 0813    UPA    005e    VARBGN 1f00    VARNXT 0805 
-WHAT   00ae    XP11   0417    XP12   041d    XP13   0423    XP14   042a 
-XP15   0432    XP16   0438    XP17   043e    XP18   0440    XP21   045e 
-XP22   0461    XP23   0464    XP24   046b    XP25   047c    XP26   047f 
-XP31   048c    XP32   04a8    XP33   04b0    XP34   04bb    XP35   04d8 
-XP40   04ec    XP41   04f5    XP42   0502    XP43   0503    
+FR7    0323    FR8    0344    GETLN  05d6    GL1    05da    GL3    05ff
+GL4    060c    GOSUB  02b1    GOTO   0252    HOW    00a6    IFF    039a
+INPERR 03a7    INPUT  03b1    IP1    03b1    IP2    03bf    IP3    03cf
+IP4    03f9    IP5    0400    LET    0407    LF     000a    LIST   0261
+LOPINC 0809    LOPLMT 080b    LOPLN  080d    LOPPT  080f    LOPVAR 0807
+LS1    026a    LSTROM 07ff    LT1    0410    MD1    06ce    MVDOWN 06c6
+MVUP   06bd    NEW    0226    NEXT   0349    NX0    0350    NX1    0380
+NX2    0392    NX3    0368    OC2    071a    OC3    071f    OCSW   0800
+OK     00ab    PARN   04fb    PN1    067e    PN2    067f    PN3    068f
+PN4    0690    PN5    069c    PN6    069f    POPA   06d5    PP1    06ef
+PR0    028d    PR1    0295    PR2    0284    PR3    029b    PR6    02a4
+PR8    02a8    PRINT  0279    PRTLN  06aa    PRTNUM 066e    PRTSTG 063c
+PS1    063d    PU1    0717    PUSHA  06f1    QHOW   009f    QSORRY 05cf
+QT     0027    QT1    064d    QT2    0656    QT3    065a    QT4    0662
+QT5    066d    QTSTG  0648    QWHAT  05a4    RA1    0521    RANPNT 0811
+REM    0396    RETURN 02d1    RND    0506    RUN    0233    RUNNXL 0239
+RUNSML 0249    RUNTSL 0242    SETVAL 057e    SIZE   053d    SORRY  00b4
+SS1    0028    ST1    00ba    ST2    00ca    ST3    00d3    ST4    0108
+STACK  2000    START  0000    STKGOS 0803    STKINP 0805    STKLMT 1fa7
+STOP   022f    SUBDE  0560    SV1    058e    TAB1   012f    TAB2   013f
+TAB4   01a1    TAB5   01d1    TAB6   01d7    TAB8   01df    TC1    0068
+TC2    0073    TN1    007c    TSTNUM 0077    TV1    0058    TXTBGN 0815
+TXTEND 1f00    TXTUNF 0813    UPA    005e    VARBGN 1f00    VARNXT 0805
+WHAT   00ae    XP11   0417    XP12   041d    XP13   0423    XP14   042a
+XP15   0432    XP16   0438    XP17   043e    XP18   0440    XP21   045e
+XP22   0461    XP23   0464    XP24   046b    XP25   047c    XP26   047f
+XP31   048c    XP32   04a8    XP33   04b0    XP34   04bb    XP35   04d8
+XP40   04ec    XP41   04f5    XP42   0502    XP43   0503

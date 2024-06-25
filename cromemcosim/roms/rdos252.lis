@@ -1075,7 +1075,7 @@ c7f4  38 02         1040   1071 	JR	C,ptnum
 c7f6  c6 07         1041   1072 	ADD	A,7
 c7f8  c6 30         1042   1073 ptnum:	ADD	A,'0'
 c7fa  18 02         1043   1074 	JR	pt7ba
-                    1044   1075 
+                    1044   1075
 c7fc  3e 20         1045   1076 ptspc:	LD	A,' '
 c7fe  f5            1046   1077 pt7ba:	PUSH	AF	; print 7-bit char.
 c7ff  e6 7f         1047   1078 	AND	7FH
@@ -2186,65 +2186,65 @@ d000                2092   2182 	END
 
 Symbol table
 
-BOOT   c06c    BS     0008    C003   c003*   C030   c030    C037   c037 
-C03B   c03b    C0C8   c0c8    C0E8   c0e8    C0F3   c0f3    C0FA   c0fa 
-C115   c115    C131   c131    C151   c151    C186   c186    C1B9   c1b9 
-C1C4   c1c4    C1C7   c1c7    C1C8   c1c8    C1E2   c1e2    C1F7   c1f7 
-C202   c202    C20F   c20f    C213   c213    C22C   c22c    C234   c234 
-C23B   c23b    C245   c245    C251   c251    C261   c261    C264   c264 
-C26D   c26d    C281   c281    C298   c298    C29C   c29c    C2A6   c2a6 
-C2AC   c2ac    C2AE   c2ae    C2B9   c2b9*   C2C1   c2c1    C2ED   c2ed 
-C2FB   c2fb    C320   c320    C345   c345    C359   c359    C363   c363 
-C37A   c37a    C384   c384    C387   c387    C39B   c39b    C3A1   c3a1 
-C3AE   c3ae    C3B5   c3b5    C3B7   c3b7    C3D4   c3d4    C3DE   c3de 
-C3EA   c3ea    C3EE   c3ee    C3F6   c3f6    C40A   c40a    C40D   c40d 
-C413   c413    C42A   c42a    C439   c439    C446   c446    C463   c463 
-C495   c495    C498   c498    C49E   c49e    C4A1   c4a1    C4B1   c4b1 
-C4D4   c4d4    C4DA   c4da    C4E1   c4e1    C4ED   c4ed    C4F8   c4f8 
-C504   c504    C508   c508    C516   c516    C51A   c51a    C51C   c51c 
-C52E   c52e    C54F   c54f    C57E   c57e    C5AB   c5ab    C5BB   c5bb 
-C5C8   c5c8    C5DE   c5de    C5F2   c5f2    C5F8   c5f8    C604   c604 
-C611   c611    C61E   c61e    C62A   c62a    C636   c636    C645   c645 
-C652   c652    C655   c655    C672   c672    C67A   c67a    C689   c689 
-C6A3   c6a3    C6AF   c6af    C6B6   c6b6    C6BD   c6bd    C6C2   c6c2 
-C6D2   c6d2    C6D8   c6d8    C6E0   c6e0    C6F1   c6f1    C6F7   c6f7 
-C719   c719    C726   c726    C72B   c72b    C733   c733    C73C   c73c 
-C74C   c74c    C75B   c75b    C760   c760    C76A   c76a    C77D   c77d 
-C788   c788    C792   c792    C79C   c79c    C7A0   c7a0    C7A3   c7a3 
-C7B3   c7b3    C7C4   c7c4    C7CD   c7cd    C82F   c82f    C84E   c84e 
-C853   c853    C85B   c85b    C862   c862    C865   c865    C868   c868 
-C869   c869    C879   c879    C87A   c87a    C885   c885    C887   c887 
-C890   c890    C8A4   c8a4    C8A6   c8a6    C8AD   c8ad    C8B0   c8b0 
-C8B5   c8b5    C8C5   c8c5    C8CA   c8ca    C8CD   c8cd    C8DB   c8db 
-C8E0   c8e0    C8F1   c8f1    C8F4   c8f4    C8F7   c8f7    C90A   c90a 
-C910   c910    C91B   c91b    C929   c929*   C941   c941    C94A   c94a 
-C95F   c95f    C96E   c96e    C975   c975    C97C   c97c    C98A   c98a 
-C996   c996    C99B   c99b    C99C   c99c    C9A4   c9a4    CA35   ca35 
-CA3F   ca3f    CA4C   ca4c    CA51   ca51    CABB   cabb    CAC7   cac7 
-CB35   cb35    CB5D   cb5d    CB6A   cb6a    CB6B   cb6b    CB94   cb94 
-CB9E   cb9e    CBB0   cbb0    CBC1   cbc1    CBD1   cbd1    CBDA   cbda 
-CBEA   cbea    CBEC   cbec    CBF2   cbf2    CC09   cc09    CC1A   cc1a 
-CC2D   cc2d    CC3C   cc3c    CC45   cc45    CC4B   cc4b    CC52   cc52 
-CC64   cc64    CC7B   cc7b    CC8E   cc8e    CC99   cc99    CCA4   cca4 
-CCBB   ccbb    CCC9   ccc9    CCCB   cccb    CCDA   ccda    CCE6   cce6 
-CCED   cced    CCFD   ccfd    CD19   cd19    CD23   cd23    CD37   cd37 
-CD39   cd39    CD52   cd52    CD54   cd54    CD5F   cd5f    CD61   cd61 
-CD6A   cd6a    CD70   cd70    CD83   cd83    CD8F   cd8f    CD9D   cd9d 
-CDA6   cda6    CDB9   cdb9    CDC4   cdc4    CDCB   cdcb    CDEE   cdee 
-CDF9   cdf9    CE04   ce04    CE11   ce11    CE1A   ce1a    CE25   ce25 
-CE34   ce34    CE36   ce36    CE3E   ce3e    CE50   ce50    CE58   ce58 
-CE5D   ce5d    CE6F   ce6f    CE78   ce78    CE85   ce85    CE8D   ce8d 
-CE8F   ce8f    CE9F   ce9f    CEB3   ceb3    CEC5   cec5    CECA   ceca 
-CEE5   cee5    CEEE   ceee    CEEF   ceef    CF00   cf00    CF14   cf14 
-CF3A   cf3a    CF40   cf40    CF55   cf55    CF60   cf60    CF90   cf90 
-CF95   cf95    CF98   cf98    CF9B   cf9b    CFC6   cfc6    CFCF   cfcf 
-CFD6   cfd6    CFE1   cfe1    CKCRY  cb7a    CKESC  c128    CKINST cc76 
-CLDST  c03f    CLP1   c04f    CLP2   c052    CR     000d    CRLF   cc97 
-DELA   cfe4    DELA1  cff1    DELA2  cff2    DELA3  cff5    ENDPTS c812 
-ESC    001b    ESCLP  c09a    FNDEOL c827    GETSW  c067    GOMON  c139 
-HXPA   c7e7    HXPHL  c7e2    INCHR  cc6c    INLP   c155    INPER  c1bd 
-LC2UC  c7d2    LOCTOK c814    MSBON  0080    NG     cb82    NOTDD  cfc2 
-NOTMX  cfbc    PSPA   c7db    PT7BA  c7fe    PTCHL  c807    PTCHR  c7f0 
-PTFOL  c806    PTNUM  c7f8    PTSPC  c7fc    RMCOM  c81b    ROTLP  cfaf 
-SEKLP  c9fb    SEKTAB ca20    SETPAT cba2    SETSEL cfa8    SETURT c24b 
-SPACE  0020    SQUOTE 0027    START  c000    TABLE  c18b    
+BOOT   c06c    BS     0008    C003   c003*   C030   c030    C037   c037
+C03B   c03b    C0C8   c0c8    C0E8   c0e8    C0F3   c0f3    C0FA   c0fa
+C115   c115    C131   c131    C151   c151    C186   c186    C1B9   c1b9
+C1C4   c1c4    C1C7   c1c7    C1C8   c1c8    C1E2   c1e2    C1F7   c1f7
+C202   c202    C20F   c20f    C213   c213    C22C   c22c    C234   c234
+C23B   c23b    C245   c245    C251   c251    C261   c261    C264   c264
+C26D   c26d    C281   c281    C298   c298    C29C   c29c    C2A6   c2a6
+C2AC   c2ac    C2AE   c2ae    C2B9   c2b9*   C2C1   c2c1    C2ED   c2ed
+C2FB   c2fb    C320   c320    C345   c345    C359   c359    C363   c363
+C37A   c37a    C384   c384    C387   c387    C39B   c39b    C3A1   c3a1
+C3AE   c3ae    C3B5   c3b5    C3B7   c3b7    C3D4   c3d4    C3DE   c3de
+C3EA   c3ea    C3EE   c3ee    C3F6   c3f6    C40A   c40a    C40D   c40d
+C413   c413    C42A   c42a    C439   c439    C446   c446    C463   c463
+C495   c495    C498   c498    C49E   c49e    C4A1   c4a1    C4B1   c4b1
+C4D4   c4d4    C4DA   c4da    C4E1   c4e1    C4ED   c4ed    C4F8   c4f8
+C504   c504    C508   c508    C516   c516    C51A   c51a    C51C   c51c
+C52E   c52e    C54F   c54f    C57E   c57e    C5AB   c5ab    C5BB   c5bb
+C5C8   c5c8    C5DE   c5de    C5F2   c5f2    C5F8   c5f8    C604   c604
+C611   c611    C61E   c61e    C62A   c62a    C636   c636    C645   c645
+C652   c652    C655   c655    C672   c672    C67A   c67a    C689   c689
+C6A3   c6a3    C6AF   c6af    C6B6   c6b6    C6BD   c6bd    C6C2   c6c2
+C6D2   c6d2    C6D8   c6d8    C6E0   c6e0    C6F1   c6f1    C6F7   c6f7
+C719   c719    C726   c726    C72B   c72b    C733   c733    C73C   c73c
+C74C   c74c    C75B   c75b    C760   c760    C76A   c76a    C77D   c77d
+C788   c788    C792   c792    C79C   c79c    C7A0   c7a0    C7A3   c7a3
+C7B3   c7b3    C7C4   c7c4    C7CD   c7cd    C82F   c82f    C84E   c84e
+C853   c853    C85B   c85b    C862   c862    C865   c865    C868   c868
+C869   c869    C879   c879    C87A   c87a    C885   c885    C887   c887
+C890   c890    C8A4   c8a4    C8A6   c8a6    C8AD   c8ad    C8B0   c8b0
+C8B5   c8b5    C8C5   c8c5    C8CA   c8ca    C8CD   c8cd    C8DB   c8db
+C8E0   c8e0    C8F1   c8f1    C8F4   c8f4    C8F7   c8f7    C90A   c90a
+C910   c910    C91B   c91b    C929   c929*   C941   c941    C94A   c94a
+C95F   c95f    C96E   c96e    C975   c975    C97C   c97c    C98A   c98a
+C996   c996    C99B   c99b    C99C   c99c    C9A4   c9a4    CA35   ca35
+CA3F   ca3f    CA4C   ca4c    CA51   ca51    CABB   cabb    CAC7   cac7
+CB35   cb35    CB5D   cb5d    CB6A   cb6a    CB6B   cb6b    CB94   cb94
+CB9E   cb9e    CBB0   cbb0    CBC1   cbc1    CBD1   cbd1    CBDA   cbda
+CBEA   cbea    CBEC   cbec    CBF2   cbf2    CC09   cc09    CC1A   cc1a
+CC2D   cc2d    CC3C   cc3c    CC45   cc45    CC4B   cc4b    CC52   cc52
+CC64   cc64    CC7B   cc7b    CC8E   cc8e    CC99   cc99    CCA4   cca4
+CCBB   ccbb    CCC9   ccc9    CCCB   cccb    CCDA   ccda    CCE6   cce6
+CCED   cced    CCFD   ccfd    CD19   cd19    CD23   cd23    CD37   cd37
+CD39   cd39    CD52   cd52    CD54   cd54    CD5F   cd5f    CD61   cd61
+CD6A   cd6a    CD70   cd70    CD83   cd83    CD8F   cd8f    CD9D   cd9d
+CDA6   cda6    CDB9   cdb9    CDC4   cdc4    CDCB   cdcb    CDEE   cdee
+CDF9   cdf9    CE04   ce04    CE11   ce11    CE1A   ce1a    CE25   ce25
+CE34   ce34    CE36   ce36    CE3E   ce3e    CE50   ce50    CE58   ce58
+CE5D   ce5d    CE6F   ce6f    CE78   ce78    CE85   ce85    CE8D   ce8d
+CE8F   ce8f    CE9F   ce9f    CEB3   ceb3    CEC5   cec5    CECA   ceca
+CEE5   cee5    CEEE   ceee    CEEF   ceef    CF00   cf00    CF14   cf14
+CF3A   cf3a    CF40   cf40    CF55   cf55    CF60   cf60    CF90   cf90
+CF95   cf95    CF98   cf98    CF9B   cf9b    CFC6   cfc6    CFCF   cfcf
+CFD6   cfd6    CFE1   cfe1    CKCRY  cb7a    CKESC  c128    CKINST cc76
+CLDST  c03f    CLP1   c04f    CLP2   c052    CR     000d    CRLF   cc97
+DELA   cfe4    DELA1  cff1    DELA2  cff2    DELA3  cff5    ENDPTS c812
+ESC    001b    ESCLP  c09a    FNDEOL c827    GETSW  c067    GOMON  c139
+HXPA   c7e7    HXPHL  c7e2    INCHR  cc6c    INLP   c155    INPER  c1bd
+LC2UC  c7d2    LOCTOK c814    MSBON  0080    NG     cb82    NOTDD  cfc2
+NOTMX  cfbc    PSPA   c7db    PT7BA  c7fe    PTCHL  c807    PTCHR  c7f0
+PTFOL  c806    PTNUM  c7f8    PTSPC  c7fc    RMCOM  c81b    ROTLP  cfaf
+SEKLP  c9fb    SEKTAB ca20    SETPAT cba2    SETSEL cfa8    SETURT c24b
+SPACE  0020    SQUOTE 0027    START  c000    TABLE  c18b

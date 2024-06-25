@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -1346,7 +1346,7 @@ fb5f  12            1297   1342 	STAX	D		; PUT DATA IN DESIGNATED ADDRESS
 fb60  0d            1298   1343 	DCR	C		; UNTIL COUNT IS EXHAUSTED
 fb61  c2 5c fb      1299   1344 	JNZ	RED2
 fb64  c3 22 fb      1300   1345 	JMP	RED0		; GET ANOTHER RECORD
-                    1301   1346 
+                    1301   1346
 fb67                1302   1347 RED3:	GET	PLOC		; POINT HL AT PC UPPER
 fb67  2a 04 00    + 1302   1348 	LHLD	MEMTOP
 fb6a  2e e1       + 1302   1349 	MVI	L,PLOC AND 0FFH
@@ -2541,73 +2541,73 @@ ffe5                2477   2536 	DS	800H-($-BASE),0
 
 Macro table
 
-CASE     FETCH    GET      SIZE     UNTIL    WHILE    
+CASE     FETCH    GET      SIZE     UNTIL    WHILE
 
 Symbol table
 
-??0000  001a    ??0001  f8ac    ??0002  f8b4    ??0003  f8cb    @USER   fd0a 
-ACT     f8ec    ACTBL   fc60    ALOC    00cf    ALT     f904    APT     f8fc 
-ART     f8f4    AS0     f897    AS1     f8a6    AS2     f8be    AS3     f8cb 
-ASSIGN  f88f    BASE    f800    BATCH   0002    BEGIN   f800    BLK     fd11 
-BLOC    00cb    BN0     f917    BN1     f91e    BNPF    f90c    BOOT    0002 
-BREAK   fcb0    BYTE    fdf5    CCRT    0001    CI      fc85    CI0     fc97 
+??0000  001a    ??0001  f8ac    ??0002  f8b4    ??0003  f8cb    @USER   fd0a
+ACT     f8ec    ACTBL   fc60    ALOC    00cf    ALT     f904    APT     f8fc
+ART     f8f4    AS0     f897    AS1     f8a6    AS2     f8be    AS3     f8cb
+ASSIGN  f88f    BASE    f800    BATCH   0002    BEGIN   f800    BLK     fd11
+BLOC    00cb    BN0     f917    BN1     f91e    BNPF    f90c    BOOT    0002
+BREAK   fcb0    BYTE    fdf5    CCRT    0001    CI      fc85    CI0     fc97
 CI1     fca6    CILOC   00e8    CL5     0000*   CL6     0004*   CL7     0008*
-CL8     000c    CLERR   0010*   CLOC    00ca    CM0     f954    CM1     f987 
-CMSK    00fc    CO      fd1d    CO0     fd30    COLOC   00eb    COM     fd13 
-COMC    fd47    COMP    f945    CONV    fe0e    CR      000d    CRLF    fe18 
-CRTC    00f7    CRTI    00f6    CRTIN   fc9c    CRTO    00f6    CRTOUT  fd3c 
-CRTS    00f7    CS0     fdb1    CS1     fdb8    CS2     fdbc    CS3     fdbf 
-CSLOC   00fd    CSTS    fda4    CTBL    f85f    CTTY    0000    CUSE    0003 
-DADR    fe21    DATE    1509    DBYTE   fe29    DEBUG   0000    DELAY   fe3b 
-DI0     f995    DI1     f99b    DI2     f9b3    DISP    f990    DLOC    00c9 
-DREG    fe43    DSR     0080*   DSTAT   0078    DTR     0002    ELOC    00c8 
-ENDX    0100*   EOF     f9bc    EOI     0020    ERROR   f826    ETX     0003 
-EX0     fe64    EXIT    00d2    EXPR    fe57    FALSE   0000    FI0     f9e1 
-FILL    f9da    FLOC    00ce    GO0     fa01    GO1     fa07    GO2     fa17 
-GO3     fa1f    GO4     fa2e    GOTO    f9e9    HEXN    fa32    HILO    fe6a 
+CL8     000c    CLERR   0010*   CLOC    00ca    CM0     f954    CM1     f987
+CMSK    00fc    CO      fd1d    CO0     fd30    COLOC   00eb    COM     fd13
+COMC    fd47    COMP    f945    CONV    fe0e    CR      000d    CRLF    fe18
+CRTC    00f7    CRTI    00f6    CRTIN   fc9c    CRTO    00f6    CRTOUT  fd3c
+CRTS    00f7    CS0     fdb1    CS1     fdb8    CS2     fdbc    CS3     fdbf
+CSLOC   00fd    CSTS    fda4    CTBL    f85f    CTTY    0000    CUSE    0003
+DADR    fe21    DATE    1509    DBYTE   fe29    DEBUG   0000    DELAY   fe3b
+DI0     f995    DI1     f99b    DI2     f9b3    DISP    f990    DLOC    00c9
+DREG    fe43    DSR     0080*   DSTAT   0078    DTR     0002    ELOC    00c8
+ENDX    0100*   EOF     f9bc    EOI     0020    ERROR   f826    ETX     0003
+EX0     fe64    EXIT    00d2    EXPR    fe57    FALSE   0000    FI0     f9e1
+FILL    f9da    FLOC    00ce    GO0     fa01    GO1     fa07    GO2     fa17
+GO3     fa1f    GO4     fa2e    GOTO    f9e9    HEXN    fa32    HILO    fe6a
 HIOPB   007a    HLOC    00dd    HXD     fe74    ICON    00f3    ICRTI   0020*
-ICRTO   0010*   ILOC    00cd    ILPT    0040*   INIT    0003*   INITIO  0006 
+ICRTO   0010*   ILOC    00cd    ILPT    0040*   INIT    0003*   INITIO  0006
 INT0    0001    INT1    0002*   INT2    0004*   INT3    0008*   INT4    0010*
-INT5    0020*   INT6    0040*   INT7    0080*   IOBYT   0003    IOCHK   fdcb 
+INT5    0020*   INT6    0040*   INT7    0080*   IOBYT   0003    IOCHK   fdcb
 IODEF   fddc    IOPB    00aa    IOSET   fdcf    IPTP    0004*   IPTR    0008*
-ISTAT   00fa*   ITTYI   0002*   ITTYO   0001*   L1LOC   00fa    LADR    fe7a 
-LBYTE   fe82    LCRLF   fe8e    LCRT    0040    LCT     0018    LE0     fe9a 
-LEAD    fe98    LF      000a    LIOPB   0079    LLOC    00dc    LLPT    0080 
-LMSK    003f    LO      fd84    LO0     fa52    LO1     fa5c    LO2     fa69 
+ISTAT   00fa*   ITTYI   0002*   ITTYO   0001*   L1LOC   00fa    LADR    fe7a
+LBYTE   fe82    LCRLF   fe8e    LCRT    0040    LCT     0018    LE0     fe9a
+LEAD    fe98    LF      000a    LIOPB   0079    LLOC    00dc    LLPT    0080
+LMSK    003f    LO      fd84    LO0     fa52    LO1     fa5c    LO2     fa69
 LOAD    fa4d    LOCK    00fe*   LOM     fd7a    LP0     fd98    LPTC    00fb*
-LPTO    00fa    LPTRY   0001    LPTS    00fb    LTBL    f8dc    LTTY    0000 
-LUSE    00c0    LVER    0015    MASK    00fc    MEMCK   fdd4    MEMTOP  0004 
-MENB    0080*   MOVE    fa7e    MSK     0004    MV0     fa85    NI0     fed5 
-NIBBLE  fec7    NREGS   000c    NU0     fa97    NULL    fa8f    P1LOC   00f4 
-P2C     fefa    P2LOC   00f7    PA0     fea9    PA1     feac    PA2     febf 
-PADR    fed9    PARAM   fea3    PBYTE   fee1    PCHK    fef7    PCOMP   0002 
-PDATA   00f0    PENB    0010*   PEOL    ff06    PEVEN   0020*   PGRDY   0001 
-PHI     00f1    PLO     00f2    PLOC    00e1    PMSK    00cf    PNIB    0010 
-PO      fd52    PO0     fd5f    PO1     fd6e    POC     fd4e    PPTP    0010 
-PR0     fab5    PR1     fac2    PR2     fad7    PROG    fa9f    PSOCK   0020 
+LPTO    00fa    LPTRY   0001    LPTS    00fb    LTBL    f8dc    LTTY    0000
+LUSE    00c0    LVER    0015    MASK    00fc    MEMCK   fdd4    MEMTOP  0004
+MENB    0080*   MOVE    fa7e    MSK     0004    MV0     fa85    NI0     fed5
+NIBBLE  fec7    NREGS   000c    NU0     fa97    NULL    fa8f    P1LOC   00f4
+P2C     fefa    P2LOC   00f7    PA0     fea9    PA1     feac    PA2     febf
+PADR    fed9    PARAM   fea3    PBYTE   fee1    PCHK    fef7    PCOMP   0002
+PDATA   00f0    PENB    0010*   PEOL    ff06    PEVEN   0020*   PGRDY   0001
+PHI     00f1    PLO     00f2    PLOC    00e1    PMSK    00cf    PNIB    0010
+PO      fd52    PO0     fd5f    PO1     fd6e    POC     fd4e    PPTP    0010
+PR0     fab5    PR1     fac2    PR2     fad7    PROG    fa9f    PSOCK   0020
 PSTAT   00f1    PTPADV  0020    PTPC    00f9*   PTPO    00f8    PTPREV  0010*
-PTPRY   0004    PTPS    00f9    PTRADV  0008    PTRC    00f9    PTRDY   0001 
-PTRI    00f8    PTRREV  0004*   PTRS    00f9    PTTY    0000    PUSE1   0020 
-PUSE2   0030    Q0      faea    Q1      fb06    Q2      fb11    QUERY   fadd 
-R110    0002    R12@2   0001*   R1LOC   00ee    R24@1   0003    R2LOC   00f1 
-R3@2    0003*   R48@1   0002*   R6@2    0002*   R96@1   0001*   RBR     0002 
-READ    fb1b    RED0    fb22    RED1    fb44    RED2    fb5c    RED3    fb67 
-RESET   0000    RESTART ff0f    REVRT   00fd    RFR     0020*   RI      fcb8 
-RI0     fcc8    RI1     fcd6    RI2     fcda    RI3     fcdf    RI4     fcea 
+PTPRY   0004    PTPS    00f9    PTRADV  0008    PTRC    00f9    PTRDY   0001
+PTRI    00f8    PTRREV  0004*   PTRS    00f9    PTTY    0000    PUSE1   0020
+PUSE2   0030    Q0      faea    Q1      fb06    Q2      fb11    QUERY   fadd
+R110    0002    R12@2   0001*   R1LOC   00ee    R24@1   0003    R2LOC   00f1
+R3@2    0003*   R48@1   0002*   R6@2    0002*   R96@1   0001*   RBR     0002
+READ    fb1b    RED0    fb22    RED1    fb44    RED2    fb5c    RED3    fb67
+RESET   0000    RESTART ff0f    REVRT   00fd    RFR     0020*   RI      fcb8
+RI0     fcc8    RI1     fcd6    RI2     fcda    RI3     fcdf    RI4     fcea
 RI5     fcfb    RI6     fd00    RIX     ff8b    RMSK    00f3    ROV     0010*
-RPAR    0008*   RPTR    0004    RST0    ff2a    RST1    ff58    RST2    ff75 
-RST3    ff83    RSTA    ff46    RSTB    ff53    RTC     00ff    RTCS    0001 
-RTS     0020    RTTY    0000    RUSE1   0008    RUSE2   000c    RXEN    0004 
-SBASE   0000    SE0     ffa6    SE1     ffad    SELECT  ff94    SH0     0006 
-SH1     002d    SH2     0061    SH3     0068    SH4     0078    SH5     0082 
+RPAR    0008*   RPTR    0004    RST0    ff2a    RST1    ff58    RST2    ff75
+RST3    ff83    RSTA    ff46    RSTB    ff53    RTC     00ff    RTCS    0001
+RTS     0020    RTTY    0000    RUSE1   0008    RUSE2   000c    RXEN    0004
+SBASE   0000    SE0     ffa6    SE1     ffad    SELECT  ff94    SH0     0006
+SH1     002d    SH2     0061    SH3     0068    SH4     0078    SH5     0082
 SH6     0097    SLOC    00d1    SPCL    ffc6    ST1     0040    ST15    0080*
-ST2     00c0    START   f830    SU0     fb7b    SU1     fb91    SUBS    fb77 
-TBE     0004*   TI      ffc7    TLOC    00e2    TOS     00c8    TOUT    00fa 
-TR0     fba3    TRAN    fb95    TRDY    0001    TRK0    3000    TRUE    ffff 
-TTC     00f5    TTI     00f4    TTO     00f4    TTS     00f5    TTYADV  0002 
+ST2     00c0    START   f830    SU0     fb7b    SU1     fb91    SUBS    fb77
+TBE     0004*   TI      ffc7    TLOC    00e2    TOS     00c8    TOUT    00fa
+TR0     fba3    TRAN    fb95    TRDY    0001    TRK0    3000    TRUE    ffff
+TTC     00f5    TTI     00f4    TTO     00f4    TTS     00f5    TTYADV  0002
 TTYIN   fc8d    TTYOUT  fd25    TXEN    0001    UC      ffdc    UCI     0000*
 UCO     0001*   UCS     0007    UL1     0006*   UP1     0004*   UP2     0005*
-UR1     0002*   UR2     0003*   USER    00c0    USRST   0040*   VER     0014 
-VERS    00b1    WR0     fbc9    WR1     fbd1    WR2     fbdc    WR3     fbeb 
-WRITE   fbc1    X       fc05    X0      fc10    X1      fc1e    X2      fc21 
-X3      fc3e    X4      fc3f    X5      fc49    X6      fc4c    XTBL    00e8 
+UR1     0002*   UR2     0003*   USER    00c0    USRST   0040*   VER     0014
+VERS    00b1    WR0     fbc9    WR1     fbd1    WR2     fbdc    WR3     fbeb
+WRITE   fbc1    X       fc05    X0      fc10    X1      fc1e    X2      fc21
+X3      fc3e    X4      fc3f    X5      fc49    X6      fc4c    XTBL    00e8

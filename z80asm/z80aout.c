@@ -125,7 +125,8 @@ void lst_header(void)
 			fputs("\t\t\t\t", lstfp);
 		fprintf(lstfp, "\tPage %d\n", ++page);
 		fprintf(lstfp, "Source file: %s\n", srcfn);
-		fprintf(lstfp, "Title:       %s", title);
+		if (title[0])
+			fprintf(lstfp, "Title:       %s", title);
 		p_line = 3;
 	} else
 		p_line = 0;
@@ -206,8 +207,13 @@ void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
 			fputs("  ", lstfp);
 		fputc(' ', lstfp);
 	}
-	fprintf(lstfp, "%c%5lu %6lu %s\n", expn_flag ? '+' : ' ',
-		c_line, s_line, l);
+	fprintf(lstfp, "%c%5lu %6lu", expn_flag ? '+' : ' ',
+		c_line, s_line);
+	if (*l) {
+		fputc(' ', lstfp);
+		fputs(l, lstfp);
+	}
+	fputc('\n', lstfp);
 	if (errnum != E_OK) {
 		fprintf(errfp, "=> %s\n", errmsg[errnum]);
 		errnum = E_OK;
@@ -249,13 +255,27 @@ void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
  */
 void lst_mac(int sort_mode)
 {
-	register int i, j;
+	register int col, prev_len;
 	register char *p;
-	int rf;
+	int prev_rf, rf;
 
-	p_line = i = 0;
+	p_line = col = prev_len = 0;
+	prev_rf = TRUE;
 	strcpy(title, "Macro table");
 	for (p = mac_first(sort_mode, &rf); p != NULL; p = mac_next(&rf)) {
+		if (col + mac_symmax + 1 >= 80) {
+			if (!prev_rf)
+				fputc('*', lstfp);
+			fputc('\n', lstfp);
+			if (ppl != 0 && ++p_line >= ppl)
+				p_line = 0;
+			col = 0;
+		} else if (col > 0) {
+			fputc(prev_rf? ' ' : '*', lstfp);
+			while (prev_len++ < mac_symmax)
+				fputc(' ', lstfp);
+			fputs("   ", lstfp);
+		}
 		if (p_line == 0) {
 			lst_header();
 			if (ppl == 0) {
@@ -265,21 +285,16 @@ void lst_mac(int sort_mode)
 			fputc('\n', lstfp);
 			p_line++;
 		}
-		j = strlen(p);
-		fprintf(lstfp, "%s%c", p, rf ? ' ' : '*');
-		while (j++ < mac_symmax)
-			fputc(' ', lstfp);
-		i += mac_symmax + 4;
-		if (i + mac_symmax + 1 >= 80) {
-			fputc('\n', lstfp);
-			if (ppl != 0 && ++p_line >= ppl)
-				p_line = 0;
-			i = 0;
-		} else
-			fputs("   ", lstfp);
+		prev_len = strlen(p);
+		fprintf(lstfp, "%s", p);
+		prev_rf = rf;
+		col += mac_symmax + 4;
 	}
-	if (i > 0)
+	if (col > 0) {
+		if (!prev_rf)
+			fputc('*', lstfp);
 		fputc('\n', lstfp);
+	}
 }
 
 /*
@@ -287,15 +302,28 @@ void lst_mac(int sort_mode)
  */
 void lst_sym(int sort_mode)
 {
-	register int i;
+	register int col;
 	register struct sym *sp;
+	int prev_rf;
 
-	p_line = i = 0;
+	p_line = col = 0;
+	prev_rf = TRUE;
 	strcpy(title, "Symbol table");
 	for (sp = first_sym(sort_mode); sp != NULL; sp = next_sym()) {
+		if (col + symmax + 6 >= 80) {
+			if (!prev_rf)
+				fputc('*', lstfp);
+			fputc('\n', lstfp);
+			if (ppl != 0 && ++p_line >= ppl)
+				p_line = 0;
+			col = 0;
+		} else if (col > 0) {
+			fputc(prev_rf ? ' ' : '*', lstfp);
+			fputs("   ", lstfp);
+		}
 		if (p_line == 0) {
 			lst_header();
-			if (ppl == 0) {
+			if (ppl == 0 && title[0]) {
 				fputs(title, lstfp);
 				fputc('\n', lstfp);
 			}
@@ -305,18 +333,14 @@ void lst_sym(int sort_mode)
 		fprintf(lstfp, "%*s ", -symmax, sp->sym_name);
 		lst_byte(sp->sym_val >> 8);
 		lst_byte(sp->sym_val & 0xff);
-		fputc(sp->sym_refflg ? ' ' : '*', lstfp);
-		i += symmax + 9;
-		if (i + symmax + 6 >= 80) {
-			fputc('\n', lstfp);
-			if (ppl != 0 && ++p_line >= ppl)
-				p_line = 0;
-			i = 0;
-		} else
-			fputs("   ", lstfp);
+		prev_rf = sp->sym_refflg;
+		col += symmax + 9;
 	}
-	if (i > 0)
+	if (col > 0) {
+		if (!prev_rf)
+			fputc('*', lstfp);
 		fputc('\n', lstfp);
+	}
 }
 
 /*

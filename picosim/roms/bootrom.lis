@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -46,4 +46,4 @@ ff2c                  42     42 	END			;of ROM
 
 Symbol table
 
-FDC   0004    FDCMD f000    
+FDC   0004    FDCMD f000
