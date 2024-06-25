@@ -20,7 +20,7 @@
  */
 #define COPYR		"Copyright (C) 1987-2024 by Udo Munk" \
 			" & 2022-2024 by Thomas Eberhardt"
-#define RELEASE		"2.0"
+#define RELEASE		"2.1"
 
 #define SRCEXT		".asm"	/* filename extension source */
 #define OBJEXTBIN	".bin"	/* filename extension object */
@@ -42,6 +42,8 @@
 #define MAXHEX		32	/* max. no bytes per HEX record */
 #define MACNEST		50	/* max. expansion nesting */
 #define CARYLEN		12	/* default number of bytes per C array line */
+#define CARYSPC		12	/* max number of bytes per C array line that
+				   are followed by a space character */
 
 #ifndef FALSE
 #define FALSE		0
@@ -222,26 +224,24 @@ struct sym {
 #define E_VALOUT	6	/* value out of range */
 #define E_MISPAR	7	/* missing right parenthesis */
 #define E_MISDEL	8	/* missing string delimiter */
-#define E_NSQWRT	9	/* non-sequential object code (binary) */
-#define E_MISIFF	10	/* missing IF at ELSE or ENDIF */
-#define E_IFNEST	11	/* IF nested too deep */
-#define E_MISEIF	12	/* missing ENDIF */
-#define E_INCNST	13	/* INCLUDE nested too deep */
-#define E_PHSNST	14	/* invalid .PHASE nesting */
-#define E_ORGPHS	15	/* invalid ORG in .PHASE block */
-#define E_MISPHS	16	/* missing .PHASE at .DEPHASE */
-#define E_DIVBY0	17	/* division by zero */
-#define E_INVEXP	18	/* invalid expression */
-#define E_BFRORG	19	/* object code before ORG (binary) */
-#define E_INVLBL	20	/* invalid label */
-#define E_MISDPH	21	/* missing .DEPHASE */
-#define E_NIMDEF	22	/* not in macro definition */
-#define E_MISEMA	23	/* missing ENDM */
-#define E_NIMEXP	24	/* not in macro expansion */
-#define E_MACNST	25	/* macro expansion nested too deep */
-#define E_OUTLCL	26	/* too many local labels */
-#define E_LBLDIF	27	/* label address differs between passes */
-#define E_MACOVF	28	/* macro buffer overflow */
+#define E_MISIFF	9	/* missing IF at ELSE or ENDIF */
+#define E_IFNEST	10	/* IF nested too deep */
+#define E_MISEIF	11	/* missing ENDIF */
+#define E_INCNST	12	/* INCLUDE nested too deep */
+#define E_PHSNST	13	/* invalid .PHASE nesting */
+#define E_ORGPHS	14	/* invalid ORG in .PHASE block */
+#define E_MISPHS	15	/* missing .PHASE at .DEPHASE */
+#define E_DIVBY0	16	/* division by zero */
+#define E_INVEXP	17	/* invalid expression */
+#define E_INVLBL	18	/* invalid label */
+#define E_MISDPH	19	/* missing .DEPHASE */
+#define E_NIMDEF	20	/* not in macro definition */
+#define E_MISEMA	21	/* missing ENDM */
+#define E_NIMEXP	22	/* not in macro expansion */
+#define E_MACNST	23	/* macro expansion nested too deep */
+#define E_OUTLCL	24	/* too many local labels */
+#define E_LBLDIF	25	/* label address differs between passes */
+#define E_MACOVF	26	/* macro buffer overflow */
 
 /*
  *	definition of fatal errors
@@ -250,11 +250,12 @@ struct sym {
 #define F_USAGE		1	/* usage: .... */
 #define F_HALT		2	/* assembly halted */
 #define F_FOPEN		3	/* can't open file */
-#define F_INTERN	4	/* internal error */
-#define F_PAGLEN	5	/* page length out of range */
-#define F_SYMLEN	6	/* symbol length out of range */
-#define F_CARYLEN	7	/* C array bytes per line out of range */
-#define F_HEXLEN	8	/* HEX record length out of range */
+#define F_OBJFILE	4	/* writing object file */
+#define F_INTERN	5	/* internal error */
+#define F_PAGLEN	6	/* page length out of range */
+#define F_SYMLEN	7	/* symbol length out of range */
+#define F_CARYLEN	8	/* C array bytes per line out of range */
+#define F_HEXLEN	9	/* HEX record length out of range */
 
 /*
  *	macro for declaring unused function parameters

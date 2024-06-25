@@ -10,7 +10,7 @@ DOCDIR = $(DATAROOTDIR)/doc/$(PACKAGE)
 TOOLS = z80asm cpmsim/srctools
 LIBS = frontpanel webfrontend/civetweb
 BIOSES = cpmsim/srccpm2 cpmsim/srccpm3 cpmsim/srcmpm cpmsim/srcucsd-iv \
-	imsaisim/srcucsd-iv
+	intelmdssim/srccpm2 imsaisim/srcucsd-iv
 MISC = z80sim cpmtools
 MACHINES = altairsim cpmsim cromemcosim intelmdssim imsaisim mosteksim z80sim
 

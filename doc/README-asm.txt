@@ -3,6 +3,9 @@ Usage:
 z80asm -8 -u -v -U -e<num> -f{b|m|h|c} -x -h<num> -c<num> -m -T -p<num>
        -s[n|a] -o<file> -l[<file>] -d<symbol>[=<expr>] ... <file> ...
 
+Note: z80asm can only process ASCII text files and only works reliable
+on systems where stdio prints '\n' as a single character.
+
 If the file name of a source doesn't have an extension the default
 extension ".asm" will be appended.
 
