@@ -75,7 +75,7 @@ static WORD curr_addr;			/* current logical file address */
 static WORD eof_addr;			/* address at binary/C end of file */
 static WORD hex_addr;			/* current address in HEX record */
 static WORD hex_cnt;			/* number of bytes in HEX buffer */
-static long cary_start;			/* file position where code begins */
+static long code_start;			/* file position where code begins */
 static int  neof_flag;			/* not at EOF flag */
 
 static BYTE hex_buf[MAXHEX];		/* buffer for one HEX record */
@@ -338,6 +338,7 @@ void obj_header(void)
 {
 	switch (obj_fmt) {
 	case OBJ_BIN:
+		code_start = 0L;
 		eof_addr = load_addr;
 		break;
 	case OBJ_MOS:
@@ -345,6 +346,7 @@ void obj_header(void)
 		    fputc(load_addr & 0xff, objfp) == EOF ||
 		    fputc(load_addr >> 8, objfp) == EOF)
 			fatal(F_OBJFILE, objfn);
+		code_start = 3L;
 		eof_addr = load_addr;
 		break;
 	case OBJ_HEX:
@@ -354,7 +356,7 @@ void obj_header(void)
 			    srcfn) < 0 ||
 		    fputs("unsigned char code[MEMSIZE] = {", objfp) == EOF)
 			fatal(F_OBJFILE, objfn);
-		cary_start = ftell(objfp);
+		code_start = ftell(objfp);
 		eof_addr = load_addr;
 		break;
 	default:
@@ -519,7 +521,7 @@ void pos_fill_bin(void)
 
 	if (curr_addr < eof_addr) {
 		addr = curr_addr - load_addr;
-		if (fseek(objfp, (long) addr, SEEK_SET) < 0)
+		if (fseek(objfp, code_start + addr, SEEK_SET) < 0)
 			fatal(F_OBJFILE, objfn);
 		neof_flag = TRUE;
 	} else {
@@ -548,7 +550,7 @@ void pos_fill_cary(void)
 	if (curr_addr < eof_addr) {
 		/* calculate position of byte at curr_addr in C file */
 		addr = curr_addr - load_addr;
-		pos = cary_start;
+		pos = code_start;
 		if (addr > 0) {
 			/* "\n\t" */
 			pos += 2L;
