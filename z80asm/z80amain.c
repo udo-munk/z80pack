@@ -66,11 +66,12 @@ static const char *errmsg[] = {		/* error messages for fatal() */
 	 "-d<symbol>[=<expr>] ... <file> ..."), /* 1 */
 	"Assembly halted",		/* 2 */
 	"can't open file %s",		/* 3 */
-	"internal error: %s",		/* 4 */
-	"invalid page length: %s",	/* 5 */
-	"invalid symbol length: %s",	/* 6 */
-	"invalid C bytes per line: %s",	/* 7 */
-	"invalid HEX record length: %s"	/* 8 */
+	"error writing object file %s",	/* 4 */
+	"internal error: %s",		/* 5 */
+	"invalid page length: %s",	/* 6 */
+	"invalid symbol length: %s",	/* 7 */
+	"invalid C bytes per line: %s",	/* 8 */
+	"invalid HEX record length: %s"	/* 9 */
 };
 
 static const struct {
@@ -397,10 +398,12 @@ int process_line(char *l)
 		p = get_symbol(opcode, p, FALSE);
 		lbl_flag = (gencode && label[0] != '\0');
 		if (mac_def_nest > 0) {
+			/* inside macro definition, add line to macro */
 			if (opcode[0] != '\0')
 				op = search_op(opcode);
 			mac_add_line(op, l);
 		} else if (opcode[0] == '\0') {
+			/* no op-code line */
 			a_mode = A_NONE;
 			if (gencode) {
 				if (lbl_flag) {
@@ -409,6 +412,7 @@ int process_line(char *l)
 				}
 			}
 		} else if (mac_lookup(opcode)) {
+			/* macro call, start macro expansion */
 			if (gencode) {
 				if (lbl_flag)
 					put_label();
@@ -419,6 +423,7 @@ int process_line(char *l)
 			} else
 				a_mode = A_NONE;
 		} else if ((op = search_op(opcode)) != NULL) {
+			/* normal line with op-code */
 			if (lbl_flag) {
 				if (op->op_flags & OP_NOLBL)
 					asmerr(E_INVLBL);

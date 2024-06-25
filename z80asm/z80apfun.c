@@ -81,6 +81,8 @@ WORD op_org(BYTE op_code, BYTE dummy)
 		n = eval(operand);
 		if (pass == 1) {	/* PASS 1 */
 			if (!load_flag) {
+				/* first ORG sets load address,
+				   without any ORG it defaults to 0 */
 				load_addr = n;
 				load_flag = TRUE;
 			}

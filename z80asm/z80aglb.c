@@ -29,7 +29,7 @@ WORD rpc,			/* real program counter */
 				/* to rpc, except when inside a .PHASE block */
      a_addr,			/* output value for A_ADDR/A_VALUE mode */
      load_addr,			/* load address of program */
-     start_addr,		/* start address of program */
+     start_addr,		/* execution start address of program */
      hexlen = MAXHEX,		/* HEX record length */
      carylen = CARYLEN;		/* C array bytes per line */
 
@@ -57,7 +57,7 @@ int  list_flag,			/* flag for option -l */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
      a_mode,			/* address output mode for pseudo ops */
-     load_flag,			/* flag for load_addr valid */
+     load_flag,			/* flag for load_addr already set */
      obj_fmt = OBJ_HEX,		/* format of object file (default Intel HEX) */
      symlen = SYMLEN,		/* significant characters in symbols */
      symmax,			/* max. symbol name length encountered */
