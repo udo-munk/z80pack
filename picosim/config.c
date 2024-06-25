@@ -51,7 +51,7 @@ static void prompt_fn(char *s)
  */
 void config(void)
 {
-	const char *cfg = "/CONF80/CFG.TXT";
+	const char *cfg = "/CONF80/CFG.DAT";
 	const char *cpath = "/CODE80";
 	const char *cext = "*.BIN";
 	const char *dpath = "/DISKS80";
@@ -161,7 +161,7 @@ again:
 	}
 
 	/* try to save config file */
-	sd_res = f_open(&sd_file, cfg, FA_WRITE);
+	sd_res = f_open(&sd_file, cfg, FA_WRITE | FA_CREATE_ALWAYS);
 	if (sd_res == FR_OK) {
 		f_write(&sd_file, &cpu, sizeof(cpu), &br);
 		f_write(&sd_file, &speed, sizeof(speed), &br);
