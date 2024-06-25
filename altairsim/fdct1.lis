@@ -6,16 +6,16 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        3      3 ; SINGLE STEP TO WATCH ROTATING DISK ON DATA BUS LEDS
                        4      4 ;
                        5      5         ORG 100H
-                       6      6 
+                       6      6
 0100  3e 00            7      7         MVI  A,0        ;ENABLE CONTROLLER, SELECT DISK 0
 0102  d3 08            8      8         OUT  8
-                       9      9 
+                       9      9
 0104  3e 04           10     10         MVI  A,4        ;LOAD HEAD
 0106  d3 09           11     11         OUT  9
-                      12     12 
+                      12     12
 0108  db 09           13     13         IN   9          ;LOOK AT SECTOR POSITION
 010a  db 08           14     14         IN   8          ;LOOK AT STATUS
-                      15     15 
+                      15     15
 010c  76              16     16         HLT
-                      17     17 
+                      17     17
 010d                  18     18         END

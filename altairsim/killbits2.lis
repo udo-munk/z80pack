@@ -16,7 +16,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       13     13 ;  THE EXECUTE CYCLE OF 16 BIT INCREMENT AND DECREMENT INSTRUCTIONS.
                       14     14 ;
                       15     15         ORG     0
-                      16     16 
+                      16     16
 0000  21 00 00        17     17         LXI     H,0             ;INITIALIZE COUNTER
 0003  16 80           18     18         MVI     D,080H          ;SET UP INITIAL DISPLAY BIT
 0005  01 0e 00        19     19         LXI     B,0EH           ;HIGHER VALUE = FASTER
@@ -33,9 +33,9 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0015  0f              30     30         RRC                     ;ROTATE DISPLAY RIGHT ONE BIT
 0016  57              31     31         MOV     D,A             ;MOVE DATA TO DISPLAY REG
 0017  c3 08 00        32     32         JMP     BEG             ;REPEAT SEQUENCE
-                      33     33 
+                      33     33
 001a                  34     34         END
 
 Symbol table
 
-BEG 0008    
+BEG 0008

@@ -18,7 +18,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       15     15 ; EVOLUTION OF THE CELLS THE LETTER F ON YOUR KEYBOARD
                       16     16 ; CAN BE USED TO FREEZE THE PICTURE. HIT THE LETTER G TO
                       17     17 ; GO AND THE LETTER S TO STOP.
-                      18     18 
+                      18     18
 0009  =               19     19 RED     EQU  9
 000a  =               20     20 GREEN   EQU  10
 000c  =               21     21 BLUE    EQU  12
@@ -30,7 +30,7 @@ d800  =               24     24 TIME    EQU  0D800H
 0040  =               27     27 DAV     EQU  64                 ; FOR CROMEMCO TU-ART
 0080  =               28     28 TBE     EQU  128
 0000  =               29     29 DELAY   EQU  0
-                      30     30 
+                      30     30
 0000  c3 03 00        31     31         JMP  START
 0003  31 00 08        32     32 START:  LXI  SP,STACK
 0006  cd 6a 01        33     33         CALL INIT
@@ -365,22 +365,22 @@ d800  =               24     24 TIME    EQU  0D800H
 0252  54 41          362    362         DW   'AT'
 0254  0d 0a          363    363         DW   0A0DH
 0256  00 00          364    364         DW   0
-                     365    365 
+                     365    365
 0258                 366    366         END
 
 Symbol table
 
-BACK   01f7    BLUE   000c    BOTH   01eb    CDISP  006e    CHANGE 0042 
+BACK   01f7    BLUE   000c    BOTH   01eb    CDISP  006e    CHANGE 0042
 CHECK  0145    CHN15  0045    CHN20  0055    CHN30  005f    CLEAR  0074*
-DAV    0040    DELAY  0000    DISPLY 0800    DOWN   01e7    ENTER  024a 
-FILL   0076*   FLL12  0078    FLL20  007e    FND20  0123    FND30  012d 
-FNDCOL 0116    FRZE   000f    FWD    01ee    GEN    002d    GEN20  0030 
-GREEN  000a    GT20   00f3    GTC20  01fd    GTC30  021d    GTC40  0226 
-GTCHR  01f9    GTCOL  00e9    HOME   01e1    IDENT  022e    INDEX  01bf 
-INIT   016a    INST   0248    INT20  017b*   MAN20  0009    MAN30  000c 
-MAN40  0020    OFF    01f0    ON     01e9    PTC20  010a    PTCOL  00fa 
-RED    0009    RETURN 01e5    ROWA   022a    ROWB   022c    SETUP  018f 
-STACK  0800    START  0003    STP    0019*   STP20  019b    STP30  01a4 
+DAV    0040    DELAY  0000    DISPLY 0800    DOWN   01e7    ENTER  024a
+FILL   0076*   FLL12  0078    FLL20  007e    FND20  0123    FND30  012d
+FNDCOL 0116    FRZE   000f    FWD    01ee    GEN    002d    GEN20  0030
+GREEN  000a    GT20   00f3    GTC20  01fd    GTC30  021d    GTC40  0226
+GTCHR  01f9    GTCOL  00e9    HOME   01e1    IDENT  022e    INDEX  01bf
+INIT   016a    INST   0248    INT20  017b*   MAN20  0009    MAN30  000c
+MAN40  0020    OFF    01f0    ON     01e9    PTC20  010a    PTCOL  00fa
+RED    0009    RETURN 01e5    ROWA   022a    ROWB   022c    SETUP  018f
+STACK  0800    START  0003    STP    0019*   STP20  019b    STP30  01a4
 STP40  01b4    TAB    01c0    TBE    0080    THRU   01df    TIME   d800*
-TTYONE 0153    TTYOUT 015e    UP     01f5    UPD10  009c    UPD20  00c3 
-UPDATE 0084    UPONE  00dc    UPROW  00cc    
+TTYONE 0153    TTYOUT 015e    UP     01f5    UPD10  009c    UPD20  00c3
+UPDATE 0084    UPONE  00dc    UPROW  00cc

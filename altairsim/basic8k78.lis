@@ -4,19 +4,19 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
                        2      2 ; Page 1
                        3      3 ;
-                       4      4 
+                       4      4
                        5      5 ;
                        6      6 ;
                        7      7 ;  SYSTEM INTERFACE
                        8      8 ;
                        9      9 ;	file	'8k Basic'
-                      10     10 
+                      10     10
 0000                  11     11 BASIC:				;FULL RESTART INITIALIZATION
 0000                  12     12 SYSINITJ:
 0000  c3 9b 20        13     13 	JMP	INITIALZ
 0003                  14     14 REENTERBASIC:			;REENTER AFTER PAUSE
 0003  c3 61 06        15     15 	JMP	cmndrstr
-                      16     16 
+                      16     16
                       17     17 ;
                       18     18 ;  Monitor Routines
                       19     19 ;
@@ -24,34 +24,34 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       21     21 ;cinb	equ	409h	;keyboard -> ac, carry set if any
                       22     22 ;dclr	equ	538h	;clear screen
                       23     23 ;xco	equ	4f4h	;c -> printer (blocking)
-                      24     24 
+                      24     24
                       25     25 ;
                       26     26 ; I don't know which monitor was used here. So instead the i/o functions
                       27     27 ; are added for the Altair 88-SIO2.
                       28     28 ;
                       29     29 ; July 2014, Udo Munk
                       30     30 ;
-                      31     31 
+                      31     31
 0006  db 10           32     32 co:	in	10h		;read console status
 0008  e6 02           33     33 	ani	2		;if not ready
 000a  ca 06 00        34     34 	jz	co		;keep waiting
 000d  79              35     35 	mov	a,c		;get character
 000e  d3 11           36     36 	out	11h		;and print it
 0010  c9              37     37 	ret
-                      38     38 
+                      38     38
 0011  db 10           39     39 cinb:	in	10h		;read console status
 0013  e6 01           40     40 	ani	1		;check if character available
 0015  c8              41     41 	rz			;return if not with carry clear
 0016  db 11           42     42 	in	11h		;get character
 0018  37              43     43 	stc			;and set carry flag
 0019  c9              44     44 	ret
-                      45     45 
+                      45     45
 001a                  46     46 dclr:				;not implemented yet
 001a  c9              47     47 	ret
-                      48     48 
+                      48     48
 001b                  49     49 xco:				;not implemented yet
 001b  c9              50     50 	ret
-                      51     51 
+                      51     51
                       52     52 ;
                       53     53 ;  NON-BLOCKING INPUT
                       54     54 ;   CHAR IN AC IF NOT ZERO
@@ -89,11 +89,11 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0040  f5              86     86 	push	psw
 0041  c5              87     87 	push	b
 0042  d5              88     88 	push	d
-                      89     89 
+                      89     89
                       90     90 ;
                       91     91 ; Page 2
                       92     92 ;
-                      93     93 
+                      93     93
 0043  e5              94     94 	push	h
 0044  4f              95     95 	mov	c,a
 0045  cd 06 00        96     96 	call	co	;c to screen
@@ -129,11 +129,11 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 b400  =              126    126 MONITOR	EQU	0B400H
 0061                 127    127 SYSQUIT:
 0061  c3 00 b4       128    128 	JMP	MONITOR
-                     129    129 
+                     129    129
                      130    130 ;
                      131    131 ;  Page 3
                      132    132 ;
-                     133    133 
+                     133    133
 000d  =              134    134 CR	EQU	0DH
 000a  =              135    135 LF	EQU	0AH
 0007  =              136    136 BEL	EQU	07H
@@ -146,11 +146,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 0003  =              143    143 ETX	EQU	03H
 000c  =              144    144 FF	EQU	0CH
 0018  =              145    145 ESC	EQU	18H
-                     146    146 
+                     146    146
                      147    147 ;
                      148    148 ;  Page 4
                      149    149 ;
-                     150    150 
+                     150    150
 0080  =              151    151 KEYSTM	EQU	80H		;STATEMENT CODES
 0080  =              152    152 KEYDAT	EQU	KEYSTM
 0081  =              153    153 KEYREM	EQU	KEYDAT+1
@@ -207,11 +207,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 00ad  =              204    204 KEYDIV	EQU	KEYMUL+1
 00ae  =              205    205 KEYMOD	EQU	KEYDIV+1
 00af  =              206    206 KEYEXPT	EQU	KEYMOD+1
-                     207    207 
+                     207    207
                      208    208 ;
                      209    209 ;  Page 5
                      210    210 ;
-                     211    211 
+                     211    211
 00b0  =              212    212 KEYAND	EQU	KEYEXPT+1
 00b1  =              213    213 KEYOR	EQU	KEYAND+1
 00b2  =              214    214 KEYMAX	EQU	KEYOR+1
@@ -253,11 +253,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 00d2  =              250    250 KEYINS	EQU	KEYMID+1
                      251    251 ;
 00d3  =              252    252 KEYS	EQU	KEYINS+1	;LAST ENTRY
-                     253    253 
+                     253    253
                      254    254 ;
                      255    255 ;  Page 6
                      256    256 ;
-                     257    257 
+                     257    257
 0064                 258    258 STMTABL:			;STATEMENT ROUTINES
 0064  7f 0b          259    259 	DW	DATSTM
 0066  84 0b          260    260 	DW	REMSTM
@@ -292,11 +292,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 009e  90 18          289    289 	DW	CSVSTM
 00a0  0c 05          290    290 	DW	NEWSTM
 00a2  df 07          291    291 	DW	SETSTM
-                     292    292 
+                     292    292
                      293    293 ;
                      294    294 ;  Page 7
                      295    295 ;
-                     296    296 
+                     296    296
 00a4                 297    297 OPRTABL:			;OPERATORS AND PRECEDENCE
 00a4  79             298    298 	DB	79H
 00a5  6c 1d          299    299 	DW	ADDOPR
@@ -318,11 +318,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 00bd  9e 19          315    315 	DW	MAXOPR
 00bf  76             316    316 	DB	76H
 00c0  aa 19          317    317 	DW	MINOPR
-                     318    318 
+                     318    318
                      319    319 ;
                      320    320 ;  Page 8
                      321    321 ;
-                     322    322 
+                     322    322
 00c2                 323    323 FCTTABL:				;FUNCTION ROUTINES
 00c2  94 1c          324    324 	DW	SGNFCT
 00c4  b6 1c          325    325 	DW	INTFCT
@@ -352,11 +352,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 00f4  4a 17          349    349 	DW	RIGFCT
 00f6  54 17          350    350 	DW	MIDFCT
 00f8  7d 17          351    351 	DW	INSFCT
-                     352    352 
+                     352    352
                      353    353 ;
                      354    354 ;  Page 9
                      355    355 ;
-                     356    356 
+                     356    356
 00fa                 357    357 KEYWADDS:			;POINTERS TO KEYWORD GROUPS
 00fa  1a 01 35 01    358    358 	DW	KEYWRD0, KEYWRD1, KEYWRD2, KEYWRD3
 00fe  4a 01 71 01    358    359
@@ -397,11 +397,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 016a  50 52 49 47    382    394 	DB	KEYRIG-80H, 'RIGHT', '$'+128
 016e  48 54 a4       382    395
 0171                 383    396 KEYWRD3:
-                     384    397 
+                     384    397
                      385    398 ;
                      386    399 ;  Page 10
                      387    400 ;
-                     388    401 
+                     388    401
 0171  90 53 54 4f    389    402 	DB	KEYSTOP, 'STO', 'P'+128
 0175  d0             389    403
 0176  98 43 4f 4e    390    404 	DB	KEYCON, 'CON', 'T'+128
@@ -444,11 +444,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 01e3  c2 55 53 d2    416    441 	DB	KEYUSR, 'US', 'R'+128
 01e7  4e 55 50 50    417    442 	DB	KEYUPR-80H, 'UPPER', '$'+128
 01eb  45 52 a4       417    443
-                     418    444 
+                     418    444
                      419    445 ;
                      420    446 ;  Page 11
                      421    447 ;
-                     422    448 
+                     422    448
 01ee                 423    449 KEYWRD6:
 01ee  83 46 4f d2    424    450 	DB	KEYFOR, 'FO', 'R'+128
 01f2  a7 46 ce       425    451 	DB	KEYFN, 'F', 'N'+128
@@ -495,11 +495,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 0253  ae 4d 4f c4    455    492 	DB	KEYMOD, 'MO', 'D'+128
 0257  b2 4d 41 d8    456    493 	DB	KEYMAX, 'MA', 'X'+128
 025b  b3 4d 49 ce    457    494 	DB	KEYMIN, 'MI', 'N'+128
-                     458    495 
+                     458    495
                      459    496 ;
                      460    497 ;  Page 12
                      461    498 ;
-                     462    499 
+                     462    499
 025f  b5 bd          463    500 	DB	KEYEQ, '='+128
 0261  c6 4d 45 cd    464    501 	DB	KEYMEM, 'ME', 'M'+128
 0265  51 4d 49 44    465    502 	DB	KEYMID-80H, 'MID', '$'+128
@@ -517,10 +517,10 @@ b400  =              126    126 MONITOR	EQU	0B400H
 0280  a9 4f 46 c6    475    514 	DB	KEYOFF, 'OF', 'F'+128
 0284  ad af          476    515 	DB	KEYDIV, '/'+128
 0286  31 4f d2       477    516 	DB	KEYOR-80H, 'O', 'R'+128
-                     478    517 
+                     478    517
                      479    518 ;
                      480    519 ;  Page 13
-                     481    520 
+                     481    520
 0289                 482    521 ERRN:					;ERROR CODES
 0289                 483    522 ERRNCN:
 0289  43 4f 4e 54    484    523 	DB	'CONTINUE',0		;CONTINUE ERROR
@@ -568,11 +568,11 @@ b400  =              126    126 MONITOR	EQU	0B400H
 02fa  46 4c 4f 57    504    565
 02fe  00             504    566
 02ff                 505    567 ERRNRG:
-                     506    568 
+                     506    568
                      507    569 ;
                      508    570 ;  Page 14
                      509    571 ;
-                     510    572 
+                     510    572
 02ff  52 45 54 4e    511    573 	DB	'RETN W/O GOSUB',0	;RETURN WITHOUT GOSUB
 0303  20 57 2f 4f    511    574
 0307  20 47 4f 53    511    575
@@ -616,19 +616,19 @@ b400  =              126    126 MONITOR	EQU	0B400H
 036e  20 6e 6f 74    529    613
 0372  20 53 61 76    529    614
 0376  65 64 00       529    615
-                     530    616 
+                     530    616
                      531    617 ;
                      532    618 ;  Page 15
                      533    619 ;
-                     534    620 
+                     534    620
                      535    621 ;
                      536    622 ;  INTERPRETER VARIABLES
                      537    623 ;
                      538    624 ;            VARIABLES MARKED WITH SAME CHARACTER IN COLUMN 71
                      539    625 ;               ARE FIXED IN THAT ORDER.
                      540    626 ;
-                     541    627 
-                     542    628 
+                     541    627
+                     542    628
 0379  01             543    629 p3010:	    db	1		;0 to print on 3010	
 037a  00             544    630 REAINPFL:   DB	0		;READ/INPUT FLAG	
 037b  00             545    631 PRINTFLG:   DB	0		;PRINT/NO PRINT FLAG	
@@ -644,8 +644,8 @@ b400  =              126    126 MONITOR	EQU	0B400H
 0004  =              555    641 TYPESING    EQU	4		;TYPE OF SINGLE FLOATING POINT
 0008  =              556    642 TYPEDUBL    EQU	8		;TYPE OF DOUBLE FLOATING POINT
 0020  =              557    643 TYPEDEF     EQU	080H/4		;MARKING BIT FOR USER-FUNCTION
-                     558    644 
-                     559    645 
+                     558    644
+                     559    645
 0382  00             560    646 STRGTMPL:   DB	0		;TEMP STRING DESCRIPTR, LEN  S
 0383  00 00          561    647 STRGTMPA:   DW	0		;TEMP STRING DESCRIPTR, ADDR S
 0385  00 00          562    648 SCANPTR1:   DW	0		;SCAN POINTER
@@ -664,16 +664,16 @@ b400  =              126    126 MONITOR	EQU	0B400H
 007d  =              575    661 PREDUMIN    EQU	07DH		;PRECEDENCE OF UNARY MINUS
 009d  =              576    662 LINESYZE    EQU	79+78		;DEFAULT LINESYZE
 000e  =              577    663 ITEMSIZE    EQU	14		;DEFAULT WIDTH OF PRINT ITEM
-                     578    664 
+                     578    664
                      579    665 ;
                      580    666 ;  Page 16
                      581    667 ;
-                     582    668 
+                     582    668
                      583    669 ;
                      584    670 ;  MEMORY ALLOCATIN POINTERS
                      585    671 ;
-                     586    672 
-                     587    673 
+                     586    672
+                     587    673
                      588    674 ;
 8000  =              589    675 LIMLOWER   EQU	08000H
 af00  =              590    676 LIMUPPER   EQU	0AF00H
@@ -699,33 +699,33 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 03a3  10 22          610    696 STRGBASE:    DW	INITSTCK+10	;BASE OF STRING SPACE
 03a5  11 22          611    697 STRGTMPP:    DW	INITSTCK+11	;STRING TEMPORARY ALLOC PTR
 03a7  16 22          612    698 STRGTLIM:    DW	INITSTCK+10+2*3	;STRING TEMPORARY LIMIT
-                     613    699 
-                     614    700 
+                     613    699
+                     614    700
 03a9  00 00          615    701 ACCUMLTR:    DB	0,0		;ACCUMULATOR			A
 03ab  00             616    702 FLACCMSB:    DB	0		;SIGN-BIT/HIGH-ORDER MANTISSA	A
 03ac  00             617    703 FLACCEXP:    DB	0		;EXPONENT			A
 03ad  00             618    704 FLACCSSV:    DB	0		;SAVED SIGN			A
-                     619    705 
+                     619    705
 03ae  01             620    706 NULLCNT:     DB 1		;# OF NULLS TO INSERT AFTER (CR)
 03af  01             621    707 CURSPOS:     DB	1		;CHARACTER CURSOR POSITION	C
 03b0  63             622    708 CURSLIM:     DB 256-LINESYZE	;OUTPUT CURSOR LIMIT		C
-                     623    709 
+                     623    709
 03b1  00             624    710 FLSCR0:      DB	0		;FLOATING POINT SCRATCH AREA
 03b2  01             625    711 FLSCR1:      DB 1
 03b3  02             626    712 FLSCR2:      DB	2
 03b4  03             627    713 FLSCR3:      DB	3
-                     628    714 
+                     628    714
 03b1  =              629    715 INOTINS      EQU FLSCR0		;INPUT/OUTPUT INSTRUCTIONS
 00db  =              630    716 OPCINP       EQU 0DBH		;INPUT INSTRUCTION
 00d3  =              631    717 OPCOUT       EQU 0D3H		;OUTPUT INSTRUCTION
 00c9  =              632    718 OPCRET       EQU 0C9H		;RETURN INSTRUCTION
-                     633    719 
+                     633    719
 03b5  52 c7 4f 80    634    720 RNDFCTSD:    DB  052h, 0c7h, 04fh, 080h   ;RANDOM SEED
-                     635    721 
+                     635    721
                      636    722 ;
                      637    723 ; Page 17
                      638    724 ;
-                     639    725 
+                     639    725
                      640    726 ;
                      641    727 ;
                      642    728 ;  GENERAL USE SUBROUTINES
@@ -752,11 +752,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 03ce  3c             663    749 	INR	A
 03cf  3d             664    750 	DCR	A
 03d0  c9             665    751 	RET
-                     666    752 
+                     666    752
                      667    753 ;
                      668    754 ;  Page 18
                      669    755 ;
-                     670    756 
+                     670    756
                      671    757 ;
                      672    758 ;  TEST FOR ALPHABETIC CHARACTER
                      673    759 ;
@@ -775,7 +775,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 03e1                 686    772 ALPHACHL:
 03e1  c6 e0          687    773 	ADI	'A'-'a'		;CONVERT LOWER TO UPPER
 03e3  c9             688    774 	RET
-                     689    775 
+                     689    775
                      690    776 ;
                      691    777 ;  MATCH CHARACTER OF BUFFER AGAINST CHARACTER IN A
                      692    778 ;
@@ -788,7 +788,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 03ec  9f             699    785 	SBB	A
 03ed  3c             700    786 	INR	A		;Z=C,S=0
 03ee  c9             701    787 	RET
-                     702    788 
+                     702    788
                      703    789 ;
                      704    790 ;  CHECK TYPE OF EXPRESSION	       LEN     CHAR
                      705    791 ;            RETURNS:  S => INTEGER	2	%
@@ -805,11 +805,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 03f7  b7             716    802 	ORA	A
 03f8  37             717    803 	STC
 03f9  c9             718    804 	RET
-                     719    805 
+                     719    805
                      720    806 ;
                      721    807 ;  Page 19
                      722    808 ;
-                     723    809 
+                     723    809
                      724    810 ;
                      725    811 ;  SCAN A PAIR OF LINE NUMBER PARAMETERS
                      726    812 ;
@@ -841,7 +841,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 041a  11 ff ff       752    838 	LXI	D,0FFFFH	;EMPTY SECOND OPERAND = END
 041d  cd c1 03       753    839 	CALL	SCANNXT		;bscan ,
 0420  c8             754    840 	RZ
-                     755    841 
+                     755    841
                      756    842 ;
                      757    843 ;  SCAN A LINE NUMBER
                      758    844 ;
@@ -865,22 +865,22 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0439  29             776    862 	DAD	H
 043a  f1             777    863 	POP	PSW
 043b  d6 30          778    864 	SUI	'0'		;GET VALUE OF NEXT DIGIT
-                     779    865 
+                     779    865
                      780    866 ;
                      781    867 ;  Page 20
                      782    868 ;
-                     783    869 
+                     783    869
 043d  5f             784    870 	MOV	E,A
 043e  16 00          785    871 	MVI	D,000H
 0440  19             786    872 	DAD	D		;AND ADD IT ON
 0441  eb             787    873 	XCHG
 0442  e1             788    874 	POP	H
 0443  c3 25 04       789    875 	JMP	SCANLINL
-                     790    876 
+                     790    876
                      791    877 ;
                      792    878 ;  Page 21
                      793    879 ;
-                     794    880 
+                     794    880
                      795    881 ;
                      796    882 ;  SEARCH FOR A GIVEN LINE NUMBER
                      797    883 ;
@@ -905,7 +905,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0460  69             816    902 	MOV	L,C
 0461  3f             817    903 	CMC
 0462  c9             818    904 	RET
-                     819    905 
+                     819    905
                      820    906 ;
                      821    907 ;  LINK TO NEXT LINE
                      822    908 ;
@@ -922,11 +922,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 046c  b1             833    919 	ORA	C
 046d  c1             834    920 	POP	B
 046e  c9             835    921 	RET
-                     836    922 
+                     836    922
                      837    923 ;
                      838    924 ;  Page 22
                      839    925 ;
-                     840    926 
+                     840    926
                      841    927 ;
                      842    928 ;  INSERT/REPLACE LINE OF PROGRAM
                      843    929 ;
@@ -972,12 +972,12 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 04a2  b7             883    969 	ORA	A
 04a3  c2 9e 04       884    970 	JNZ	LINEINSL
 04a6  c3 bf 04       885    971 	JMP	LINEDELU
-                     886    972 
-                     887    973 
+                     886    972
+                     887    973
                      888    974 ;
                      889    975 ;  Page 23
                      890    976 ;
-                     891    977 
+                     891    977
                      892    978 ;
                      893    979 ;  DELETE TEXT FROM PROGRAM
                      894    980 ;
@@ -1010,7 +1010,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 04d0  09             921   1007 	DAD	B
 04d1  22 99 03       922   1008 	SHLD	VARTABLE
 04d4  c3 51 05       923   1009 	JMP	CLEARPCN
-                     924   1010 
+                     924   1010
                      925   1011 ;
                      926   1012 ;  MAKE SIXTEEN BIT COMPARISON
                      927   1013 ;
@@ -1021,11 +1021,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 04da  7d             932   1018 	MOV	A,L
 04db  93             933   1019 	SUB	E
 04dc  c9             934   1020 	RET
-                     935   1021 
+                     935   1021
                      936   1022 ;
                      937   1023 ;  Page 24
                      938   1024 ;
-                     939   1025 
+                     939   1025
                      940   1026 ;
                      941   1027 ;  MOVE LONG TO HIGHER ADDRESS
                      942   1028 ;
@@ -1043,7 +1043,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 04e9  0b             954   1040 	DCX	B
 04ea  2b             955   1041 	DCX	H
 04eb  c3 e3 04       956   1042 	JMP	COPYTXTL
-                     957   1043 
+                     957   1043
                      958   1044 ;
                      959   1045 ;  CHECK SPACE FOR STACK ALLOCATION
                      960   1046 ;
@@ -1056,7 +1056,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 04f6  cd fb 04       967   1053 	CALL	SPACECHK
 04f9  e1             968   1054 	POP	H
 04fa  c9             969   1055 	RET
-                     970   1056 
+                     970   1056
                      971   1057 ;
                      972   1058 ;  CHECK SPACE FOR PROGRAM OR VARIABLE ALLOCATION
                      973   1059 ;
@@ -1072,11 +1072,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0507                 983   1069 ERRAOM:
 0507  1e 47          984   1070 	MVI	E,ERRNOM-ERRN
 0509  c3 07 06       985   1071 	JMP	ERRMSG
-                     986   1072 
+                     986   1072
                      987   1073 ;
                      988   1074 ;  Page 25
                      989   1075 ;
-                     990   1076 
+                     990   1076
                      991   1077 ;
                      992   1078 ;  RE-INITIALIZATION ROUTINES
                      993   1079 ;
@@ -1113,7 +1113,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 053c  2a 8d 03      1024   1110 	LHLD	PROGCNTR
 053f  c5            1025   1111 	PUSH	B
 0540  c9            1026   1112 	RET
-                    1027   1113 
+                    1027   1113
 0541                1028   1114 CLEARVAR:
 0541  2a 99 03      1029   1115 	LHLD	VARTABLE	;CLEAR ALL VARIABLES
 0544  22 9b 03      1030   1116 	SHLD	MATTABLE
@@ -1121,7 +1121,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 054a  2a a3 03      1032   1118 	LHLD	STRGBASE
 054d  22 a1 03      1033   1119 	SHLD	STRGFREE
 0550  c9            1034   1120 	RET
-                    1035   1121 
+                    1035   1121
 0551                1036   1122 CLEARPCN:
 0551  21 00 00      1037   1123 	LXI	H,0		;CLEAR PROGRAM POINTERS
 0554  22 8f 03      1038   1124 	SHLD	PROGCNTS
@@ -1130,11 +1130,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 055b  36 00         1041   1127 	MVI	M,0		;END OF LINE -1
 055d  22 8d 03      1042   1128 	SHLD	PROGCNTR
 0560  af            1043   1129 	XRA	A
-                    1044   1130 
+                    1044   1130
                     1045   1131 ;
                     1046   1132 ;  Page 26
                     1047   1133 ;
-                    1048   1134 
+                    1048   1134
                     1049   1135 ;
                     1050   1136 ;  RESTORE:  REWIND DATA STATEMENTS
                     1051   1137 ;
@@ -1156,7 +1156,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0578  22 93 03      1067   1153 	SHLD	CURDATAP	;SET DATA POINTER
 057b  eb            1068   1154 	XCHG
 057c  c9            1069   1155 	RET
-                    1070   1156 
+                    1070   1156
                     1071   1157 ;
                     1072   1158 ;  CLEAR:  CLEAR VARIABLES, REALLOCATE STRING SPACE
                     1073   1159 ;
@@ -1184,11 +1184,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 05a3  22 9f 03      1095   1181 	SHLD	STCKBASE
 05a6  e1            1096   1182 	POP	H
 05a7  c3 1b 05      1097   1183 	JMP	CLEARVST
-                    1098   1184 
+                    1098   1184
                     1099   1185 ;
                     1100   1186 ;  Page 27
                     1101   1187 ;
-                    1102   1188 
+                    1102   1188
                     1103   1189 ;
                     1104   1190 ;  LOW-LEVEL CHARACTER I/O ROUTINES
                     1105   1191 ;
@@ -1219,7 +1219,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 05cc  f1            1130   1216 	POP	PSW		;SEND CHARACTER
 05cd  cd 40 00      1131   1217 	CALL	SYSDISPL
 05d0  c9            1132   1218 	RET
-                    1133   1219 
+                    1133   1219
 05d1                1134   1220 INPTCHAR:
 05d1  cd 1c 00      1135   1221 	CALL	SYSKEYIN	;RECEIVE A CHARACTER
 05d4  ca d1 05      1136   1222 	JZ	INPTCHAR	;WAIT FOR ONE
@@ -1229,11 +1229,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 05dd  2f            1140   1226 	CMA
 05de  32 7b 03      1141   1227 	STA	PRINTFLG
 05e1  c3 d1 05      1142   1228 	JMP	INPTCHAR
-                    1143   1229 
+                    1143   1229
                     1144   1230 ;
                     1145   1231 ;  Page 28
                     1146   1232 ;
-                    1147   1233 
+                    1147   1233
                     1148   1234 ;
                     1149   1235 ;  ERROR PROCESSING
                     1150   1236 ;
@@ -1249,7 +1249,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 05f7                1157   1246 MSGBREAK:
 05f7  0d 0a 42 52   1158   1247 	DB	CR,LF,'BREAK',0
 05fb  45 41 4b 00   1158   1248
-                    1159   1249 
+                    1159   1249
 05ff                1160   1250 ERRDATA:
 05ff  2a 91 03      1161   1251 	LHLD	CURLDATA
 0602  22 89 03      1162   1252 	SHLD	CURLINE
@@ -1275,11 +1275,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 062a  a5            1182   1272 	ANA	L
 062b  3c            1183   1273 	INR	A
 062c  c4 71 1d      1184   1274 	CNZ	ERRMSGIN
-                    1185   1275 
+                    1185   1275
                     1186   1276 ;
                     1187   1277 ;  Page 29
                     1188   1278 ;
-                    1189   1279 
+                    1189   1279
                     1190   1280 ;
                     1191   1281 ;  COMMAND/LINE INPUT
                     1192   1282 ;
@@ -1305,17 +1305,17 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0658  d2 ba 0a      1212   1302 	JNC	EXECUTE		;DIRECT IF NO LINE NUMBER
 065b  cd 6f 04      1213   1303 	CALL	LINEINS		;INSERT LINE AS REQUESTED
 065e  c3 42 06      1214   1304 	JMP	CMNDINPT
-                    1215   1305 
+                    1215   1305
 0661                1216   1306 CMNDRSTR:
 0661  cd 21 05      1217   1307 	CALL	CLEARSTK	;ENTRY FOR RESTARTING
 0664  cd 5f 0d      1218   1308 	CALL	PRNTCRLF
 0667  21 19 0e      1219   1309 	LXI	H,MSGREDO+11	;TELL HIM WE'RE STARTING
 066a  c3 23 06      1220   1310 	JMP	ERRMSGPR
-                    1221   1311 
+                    1221   1311
                     1222   1312 ;
                     1223   1313 ;  Page 30
                     1224   1314 ;
-                    1225   1315 
+                    1225   1315
                     1226   1316 ;
                     1227   1317 ;  AUTOMATIC LINE-NUMBERED INPUT
                     1228   1318 ;
@@ -1352,11 +1352,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 06a0  d1            1259   1349 	POP	D		;TAKE A BREAK
 06a1  da 2f 06      1260   1350 	JC	CMNDSTRT	;END OF AUTO
 06a4  c3 7b 06      1261   1351 	JMP	AUTSTMS		;GET NEW LINE NUMBER, INCREMENT
-                    1262   1352 
+                    1262   1352
                     1263   1353 ;
                     1264   1354 ;  Page 31
                     1265   1355 ;
-                    1266   1356 
+                    1266   1356
                     1267   1357 ;
                     1268   1358 ;  LEXICAL SCANNER / KEYWORD RECOGNITION
                     1269   1359 ;
@@ -1395,7 +1395,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 06d9  56            1302   1392 	MOV	D,M
 06da  eb            1303   1393 	XCHG
 06db  c3 09 07      1304   1394 	JMP	KEYSCANB
-                    1305   1395 
+                    1305   1395
 06de                1306   1396 KEYSCANZ:
 06de  1a            1307   1397 	LDAX	D
 06df  b7            1308   1398 	ORA	A
@@ -1412,16 +1412,16 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 06ec  1a            1319   1409 	LDAX	D		;COMPARE LINE WITH KEYWORD
 06ed  e6 7f         1320   1410 	ANI	07FH
 06ef  cd e4 03      1321   1411 	CALL	CHARMTCH	;COMPARE CHARACTERS
-                    1322   1412 
+                    1322   1412
                     1323   1413 ;
                     1324   1414 ;  Page 32
                     1325   1415 ;
-                    1326   1416 
+                    1326   1416
 06f2  ca de 06      1327   1417 	JZ	KEYSCANZ
 06f5  79            1328   1418 	MOV	A,C		;MATCH ENOUGH YET?
 06f6  fe 03         1329   1419 	CPI	3
 06f8  da 02 07      1330   1420 	JC	KEYSCANA
-                    1331   1421 
+                    1331   1421
 06fb  cd d1 03      1332   1422 	CALL	ALPHACHK	;STOP ON BREAK CHAR OK
 06fe  2b            1333   1423 	DCX	H
 06ff  d2 e3 06      1334   1424 	JNC	KEYSCANM
@@ -1473,11 +1473,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0740                1380   1470 KEYSCANH:
 0740  23            1381   1471 	INX	H
 0741  c3 b0 06      1382   1472 	JMP	KEYSCANL
-                    1383   1473 
+                    1383   1473
                     1384   1474 ;
                     1385   1475 ;  Page 33
                     1386   1476 ;
-                    1387   1477 
+                    1387   1477
 0744                1388   1478 KEYSCANX:
 0744  e1            1389   1479 	POP	H		;EXIT KEYWORD TRANSLATION
 0745  12            1390   1480 	STAX	D		;END OF STATEMENT
@@ -1487,7 +1487,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0749  12            1394   1484 	STAX	D
 074a  47            1395   1485 	MOV	B,A		;LENGTHIN BC
 074b  c9            1396   1486 	RET
-                    1397   1487 
+                    1397   1487
                     1398   1488 ;
                     1399   1489 ;  COPY BUFFER TEXT WITHOUT PROCESSING
                     1400   1490 ;
@@ -1512,11 +1512,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0762  b7            1419   1509 	ORA	A		;STRING TERMINATE ON END OF LINE?
 0763  c8            1420   1510 	RZ
 0764  c3 4c 07      1421   1511 	JMP	KEYSCANV
-                    1422   1512 
+                    1422   1512
                     1423   1513 ;
                     1424   1514 ;  Page 34
                     1425   1515 ;
-                    1426   1516 
+                    1426   1516
                     1427   1517 ;
                     1428   1518 ;  LINE INPUT ROUTINE
                     1429   1519 ;
@@ -1533,7 +1533,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0777  cd c2 0d      1440   1530 	CALL	PRNTMSG		;TELL HIM WE GOT IT
 077a  05            1441   1531 	DCR	B		;BREAK AT BEGINNING MEANS BREAK
 077b  ca d0 07      1442   1532 	JZ	INPTEXIT
-                    1443   1533 
+                    1443   1533
 077e                1444   1534 INPTCRLF:
 077e  cd 5f 0d      1445   1535 	CALL	PRNTCRLF	;ON THE NEXT LINE
 0781                1446   1536 INPTRQST:
@@ -1560,11 +1560,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 07ab  ca c6 07      1467   1557 	JZ	INPTLNEC
 07ae  fe 20         1468   1558 	CPI	' '
 07b0  da 90 07      1469   1559 	JC	INPTLINL	;IGNORE OTHER CONTROL CHARS
-                    1470   1560 
+                    1470   1560
                     1471   1561 ;
                     1472   1562 ;  Page 35
                     1473   1563 ;
-                    1474   1564 
+                    1474   1564
 07b3                1475   1565 INPTLNST:
 07b3  77            1476   1566 	MOV	M,A		;STORE THE CHARACTER
 07b4  78            1477   1567 	MOV	A,B
@@ -1592,14 +1592,14 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 07d8  3f            1499   1589 	CMC
 07d9  9f            1500   1590 	SBB	A		;NS=NC=Z = NON-EMPTY LINE
 07da  c9            1501   1591 	RET
-                    1502   1592 
+                    1502   1592
 07db                1503   1593 MSGSTARS:
 07db  2a 2a 2a 00   1504   1594 	DB	'***',0
-                    1505   1595 
+                    1505   1595
                     1506   1596 ;
                     1507   1597 ;  Page 36
                     1508   1598 ;
-                    1509   1599 
+                    1509   1599
                     1510   1600 ;
                     1511   1601 ;  SET OPTIONS COMMAND
                     1512   1602 ;
@@ -1633,7 +1633,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 080e  3c            1540   1630 	INR	A
 080f  32 b0 03      1541   1631 	STA	CURSLIM
 0812  c9            1542   1632 	RET
-                    1543   1633 
+                    1543   1633
                     1544   1634 ;
                     1545   1635 ;  DELETE COMMAND PROCESSOR
                     1546   1636 ;
@@ -1653,11 +1653,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 082b  cd a9 04      1560   1650 	CALL	LINEDEL
 082e  e1            1561   1651 	POP	H
 082f  c9            1562   1652 	RET
-                    1563   1653 
+                    1563   1653
                     1564   1654 ;
                     1565   1655 ; Page 37
                     1566   1656 ;
-                    1567   1657 
+                    1567   1657
                     1568   1658 ;
                     1569   1659 ;  LIST COMMAND PROCESSOR
                     1570   1660 ;
@@ -1707,7 +1707,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 087e  39            1614   1704 	DAD 	SP
 087f  f9            1615   1705 	SPHL			;DEALLOCATE EXPANDED TEXT
 0880  c3 49 08      1616   1706 	JMP	LISSTMLP
-                    1617   1707 
+                    1617   1707
                     1618   1708 ;
                     1619   1709 ;  Page 38
                     1620   1710 ;
@@ -1719,8 +1719,8 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0886                1626   1716 POPHLRET:
 0886  e1            1627   1717 	POP	H
 0887  c9            1628   1718 	RET
-                    1629   1719 
-                    1630   1720 
+                    1629   1719
+                    1630   1720
                     1631   1721 ;
                     1632   1722 ;  EXPAND KEYWORDS IN LINE / INVERSE OF KEYSCAN
                     1633   1723 ;
@@ -1761,11 +1761,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 08ba  e5            1668   1758 	PUSH	H
 08bb  f2 a3 08      1669   1759 	JP	LISEDISC
 08be  4f            1670   1760 	MOV	C,A
-                    1671   1761 
+                    1671   1761
                     1672   1762 ;
                     1673   1763 ;  Page 39
                     1674   1764 ;
-                    1675   1765 
+                    1675   1765
 08bf  21 a0 a3      1676   1766 	LXI	H,KEYLSBH*256+KEYLSBL
 08c2  cd ed 08      1677   1767 	CALL	LISEDISB	;OPTIONAL BLANK BEFORE KEYWORD
 08c5  21 1a 01      1678   1768 	LXI	H,KEYWORDS	;SEARCH FOR KEYWORD
@@ -1792,7 +1792,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 08e4  21 82 a5      1699   1789 	LXI	H,KEYLSAH*256+KEYLSAL
 08e7  cd ed 08      1700   1790 	CALL	LISEDISB	;OPTIONAL BLANK AFTER KEYWORD
 08ea  c3 a6 08      1701   1791 	JMP	LISEDIKD
-                    1702   1792 
+                    1702   1792
 08ed                1703   1793 LISEDISB:
 08ed  bd            1704   1794 	CMP	L		;INSERT BLANK IN LINE IF
 08ee  d8            1705   1795 	RC			;L <= A < H
@@ -1807,7 +1807,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 08f7  04            1714   1804 	INR	B
 08f8  2b            1715   1805 	DCX	H
 08f9  c9            1716   1806 	RET
-                    1717   1807 
+                    1717   1807
 08fa                1718   1808 LISEDIXT:
 08fa  12            1719   1809 	STAX	D
 08fb  3e 9e         1720   1810 	MVI	A,LINESYZE+1	;COMPUTE LENGTH OF OUTPUT
@@ -1816,11 +1816,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 08ff  21 02 00      1723   1813 	LXI	H,2		;CREATE POINTER TO EXPAND TEXT
 0902  39            1724   1814 	DAD	SP
 0903  c9            1725   1815 	RET			;AND RETURN
-                    1726   1816 
+                    1726   1816
                     1727   1817 ;
                     1728   1818 ;  Page 40
                     1729   1819 ;
-                    1730   1820 
+                    1730   1820
                     1731   1821 ;
                     1732   1822 ;  EDIT COMMAND PROCESSOR
                     1733   1823 ;
@@ -1859,7 +1859,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0946                1766   1856 EDISTMEC:
 0946  cd ae 05      1767   1857 	CALL	PRNTCHRA	;ac -> screen
 0949  c3 2a 09      1768   1858 	JMP	EDISTMNX
-                    1769   1859 
+                    1769   1859
                     1770   1860 ;  ADVANCE
                     1771   1861 ;
 094c                1772   1862 EDISTMAD:
@@ -1870,11 +1870,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0952  7e            1777   1867 	MOV	A,M
 0953  23            1778   1868 	INX	H		;PRINT CHARACTER PASSED OVER
 0954  c3 46 09      1779   1869 	JMP	EDISTMEC
-                    1780   1870 
+                    1780   1870
                     1781   1871 ;
                     1782   1872 ;  Page 41
                     1783   1873 ;
-                    1784   1874 
+                    1784   1874
                     1785   1875 ;  DELETE
                     1786   1876 ;
 0957                1787   1877 EDISTMDL:
@@ -1896,7 +1896,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0969  c2 64 09      1803   1893 	JNZ	EDISTMDM
 096c  e1            1804   1894 	POP	H
 096d  c3 2a 09      1805   1895 	JMP	EDISTMNX
-                    1806   1896 
+                    1806   1896
                     1807   1897 ;  INSERT
                     1808   1898 ;
 0970                1809   1899 EDISTMIN:
@@ -1921,11 +1921,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0989  e1            1828   1918 	POP	H
 098a  23            1829   1919 	INX	H
 098b  c3 70 09      1830   1920 	JMP	EDISTMIN
-                    1831   1921 
+                    1831   1921
                     1832   1922 ;
                     1833   1923 ;  Page 42
                     1834   1924 ;
-                    1835   1925 
+                    1835   1925
                     1836   1926 ;  REPLACE
                     1837   1927 ;
 098e                1838   1928 EDISTMRP:
@@ -1940,7 +1940,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 099a  7a            1847   1937 	MOV	A,D
 099b  cd ae 05      1848   1938 	CALL	PRNTCHRA	;ac -> screen  ;PRINT NEWCOMER
 099e  c3 8e 09      1849   1939 	JMP	EDISTMRP
-                    1850   1940 
+                    1850   1940
                     1851   1941 ;  SEARCH
                     1852   1942 ;
 09a1                1853   1943 EDISTMSR:
@@ -1960,11 +1960,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 09ba  23            1867   1957 	INX	H
 09bb  5a            1868   1958 	MOV	E,D
 09bc  c3 aa 09      1869   1959 	JMP	EDISTMSL	;AND KEEP LOOKING
-                    1870   1960 
+                    1870   1960
                     1871   1961 ;
                     1872   1962 ; Page 43
                     1873   1963 ;
-                    1874   1964 
+                    1874   1964
 09bf                1875   1965 EDISTMXT:
 09bf  0d            1876   1966 	DCR	C		;BEGINNING CR MEANS DONE, UPDATE
 09c0  c2 1f 09      1877   1967 	JNZ	EDISTMLS	;OTHERWISE, LIST, MORE EDITS
@@ -1978,7 +1978,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 09cf  f9            1885   1975 	SPHL			;DEALLOCATE TEXT BUFFER
 09d0  e1            1886   1976 	POP	H		;RECOVER SCAN POINTER
 09d1  c9            1887   1977 	RET			;AND RETURN
-                    1888   1978 
+                    1888   1978
                     1889   1979 ;  LIST LINE, PREPARE FOR UPDATES
                     1890   1980 ;
 09d2                1891   1981 EDISTMCR:
@@ -1995,7 +1995,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 09e4  39            1902   1992 	DAD	SP		;CREATE POINTER TO TEXT BUFFER
 09e5  c1            1903   1993 	POP	B
 09e6  c9            1904   1994 	RET
-                    1905   1995 
+                    1905   1995
                     1906   1996 ;  GET OPTION CHARACTER
                     1907   1997 ;
 09e7                1908   1998 EDISTMCH:
@@ -2017,16 +2017,16 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0a08  cd c2 0d      1924   2014 	CALL	PRNTMSG
 0a0b  d1            1925   2015 	POP	D
 0a0c  c3 cb 09      1926   2016 	JMP	EDISTMQT
-                    1927   2017 
+                    1927   2017
                     1928   2018 ;
                     1929   2019 ;  Page 44
                     1930   2020 ;
-                    1931   2021 
+                    1931   2021
                     1932   2022 ;
                     1933   2023 ;  SCAN STACK FOR 'FOR' LOOP
                     1934   2024 ;
 0010  =             1935   2025 FORBLCK	EQU	16		;SIZE OF 'FOR' STACK ENTRY
-                    1936   2026 
+                    1936   2026
 0a0f                1937   2027 FORCHK:
 0a0f  21 04 00      1938   2028 	LXI	H,4		;LOOK FOR MARK ON STACK
 0a12  39            1939   2029 	DAD	SP
@@ -2056,7 +2056,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0a32  c8            1963   2053 	RZ
 0a33  09            1964   2054 	DAD	B
 0a34  c3 13 0a      1965   2055 	JMP	FORCHKL
-                    1966   2056 
+                    1966   2056
                     1967   2057 ;
                     1968   2058 ;  FOR STATEMENT PROCESSOR
                     1969   2059 ;
@@ -2078,13 +2078,13 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0a54                1985   2075 FORSTMNF:
 0a54  eb            1986   2076 	XCHG
 0a55  0e 08         1987   2077 	MVI	C,(FORBLCK+1)/2
-                    1988   2078 
+                    1988   2078
                     1989   2079 ;
                     1990   2080 ;  Page 45
                     1991   2081 ;
-                    1992   2082 
+                    1992   2082
 0a57  cd ee 04      1993   2083 	CALL	SPACESTK
-                    1994   2084 
+                    1994   2084
 0a5a  e5            1995   2085 	PUSH	H
 0a5b  cd 7f 0b      1996   2086 	CALL	DATSTM		;FIND FIRST STATEMENT IN FOR LOOP
 0a5e  e3            1997   2087 	XTHL			;AND SAVE
@@ -2124,11 +2124,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0a96  06 83         2031   2121 	MVI	B,KEYFOR	;MARK STACK WITH 'FOR'
 0a98  c5            2032   2122 	PUSH	B
 0a99  33            2033   2123 	INX	SP
-                    2034   2124 
+                    2034   2124
                     2035   2125 ;
                     2036   2126 ;  Page 46
                     2037   2127 ;
-                    2038   2128 
+                    2038   2128
                     2039   2129 ;
                     2040   2130 ;  INTERPRETER EXECUTIVE
                     2041   2131 ;
@@ -2175,11 +2175,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0ad8  c5            2082   2172 	PUSH	B
 0ad9  eb            2083   2173 	XCHG
 0ada  c3 c1 03      2084   2174 	JMP	SCANNXT
-                    2085   2175 
+                    2085   2175
                     2086   2176 ;
                     2087   2177 ;  Page 47
                     2088   2178 ;
-                    2089   2179 
+                    2089   2179
 0add                2090   2180 BREAKCHK:
 0add  cd 54 00      2091   2181 	CALL	SYSBREAK	;TIME TO TAKE A BREAK?
 0ae0                2092   2182 STPSTM:
@@ -2206,7 +2206,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0afe  21 f7 05      2113   2203 	LXI	H,MSGBREAK
 0b01  c2 23 06      2114   2204 	JNZ	ERRMSGPR
 0b04  c3 2f 06      2115   2205 	JMP	CMNDSTRT
-                    2116   2206 
+                    2116   2206
 0b07                2117   2207 CONSTM:
 0b07  c0            2118   2208 	RNZ			;CONT COMMAND
 0b08  1e 00         2119   2209 	MVI	E,ERRNCN-ERRN
@@ -2219,23 +2219,23 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0b16  22 89 03      2126   2216 	SHLD	CURLINE
 0b19  eb            2127   2217 	XCHG
 0b1a  c9            2128   2218 	RET
-                    2129   2219 
+                    2129   2219
 0b1b                2130   2220 RUNSTM:
 0b1b  ca 18 05      2131   2221 	JZ	CLEARSET	;RUN COMMAND
 0b1e  cd 1b 05      2132   2222 	CALL	CLEARVST
 0b21  01 9a 0a      2133   2223 	LXI	B,EXECUTEL
 0b24  c3 41 0b      2134   2224 	JMP	RUNSTMC
-                    2135   2225 
+                    2135   2225
 0b27                2136   2226 ENDSTM:
 0b27  ca e2 0a      2137   2227 	JZ	EXECUTEB	;END STATEMENT
 0b2a  cd b9 03      2138   2228 	CALL	SCANNXTV	;bscan (val)
 0b2d  8a            2139   2229 	DB	KEYRUN
 0b2e  c3 61 00      2140   2230 	JMP	SYSQUIT
-                    2141   2231 
+                    2141   2231
                     2142   2232 ;
                     2143   2233 ;  Page 48
                     2144   2234 ;
-                    2145   2235 
+                    2145   2235
                     2146   2236 ;
                     2147   2237 ;  GOSUB/GOTO STATEMENTS
                     2148   2238 ;
@@ -2272,7 +2272,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0b60                2179   2269 ERRAUS:
 0b60  1e c5         2180   2270 	MVI	E,ERRNUS-ERRN
 0b62  c3 07 06      2181   2271 	JMP	ERRMSG
-                    2182   2272 
+                    2182   2272
                     2183   2273 ;
                     2184   2274 ;  RETURN STATEMENT
                     2185   2275 ;
@@ -2291,11 +2291,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0b7b  21 9a 0a      2198   2288 	LXI	H,EXECUTEL
 0b7e  e3            2199   2289 	XTHL
                     2200   2290 ;	JMP	DATSTM
-                    2201   2291 
+                    2201   2291
                     2202   2292 ;
                     2203   2293 ;  Page 49
                     2204   2294 ;
-                    2205   2295 
+                    2205   2295
                     2206   2296 ;
                     2207   2297 ;  DATA/ELSE/REM STATEMENTS
                     2208   2298 ;
@@ -2303,7 +2303,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0b7f  0e 3a         2210   2300 	MVI	C,':'		;DATA STATEMENT
 0b81  c3 86 0b      2211   2301 	JMP	SCAN2KEY
 0b84                2212   2302 ELSSTM:
-                    2213   2303 
+                    2213   2303
 0b84                2214   2304 REMSTM:
 0b84  0e 00         2215   2305 	MVI	C,000H		;REM STATEMENT
 0b86                2216   2306 SCAN2KEY:
@@ -2325,7 +2325,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0b98  c2 8b 0b      2232   2322 	JNZ	DATRSKIP
 0b9b  14            2233   2323 	INR	D		;COUNT NUMBER OF IFS WE SKIP
 0b9c  c3 8b 0b      2234   2324 	JMP	DATRSKIP
-                    2235   2325 
+                    2235   2325
                     2236   2326 ;
                     2237   2327 ;  PROGRAM BRANCH TRACING
                     2238   2328 ;
@@ -2350,11 +2350,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0bbd  d1            2257   2347 	POP	D
 0bbe  c1            2258   2348 	POP	B
 0bbf  c9            2259   2349 	RET
-                    2260   2350 
+                    2260   2350
                     2261   2351 ;
                     2262   2352 ;  Page 50
                     2263   2353 ;
-                    2264   2354 
+                    2264   2354
                     2265   2355 ;
                     2266   2356 ;  ASSIGNMENT STATEMENT PROCESSOR
                     2267   2357 ;
@@ -2381,13 +2381,13 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0be1  cd ed 1b      2288   2378 	CALL	COPYVAL
 0be4  e1            2289   2379 	POP	H
 0be5  c9            2290   2380 	RET
-                    2291   2381 
+                    2291   2381
 0be6                2292   2382 LETSTMNM:
 0be6  cd ea 1b      2293   2383 	CALL	LDMMAC		;MAKE NUMERIC ASSIGNMENT
 0be9  d1            2294   2384 	POP	D
 0bea  e1            2295   2385 	POP	H
 0beb  c9            2296   2386 	RET
-                    2297   2387 
+                    2297   2387
 0bec                2298   2388 STRGUNIQ:
 0bec  2a a9 03      2299   2389 	LHLD	ACCUMLTR	;GET STRING DESCRIPTOR
 0bef  eb            2300   2390 	XCHG			;IS STRING IN STRING SPACE?
@@ -2396,11 +2396,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0bf4  cd d7 04      2303   2393 	CALL	CMHLLTDE	;VARIABLE REFERENCE?
 0bf7  d4 7d 16      2304   2394 	CNC	STRGSTOR	;IF SO, MAKE NEW COPY
 0bfa  c9            2305   2395 	RET
-                    2306   2396 
+                    2306   2396
                     2307   2397 ;
                     2308   2398 ;  Page 51
                     2309   2399 ;
-                    2310   2400 
+                    2310   2400
                     2311   2401 ;
                     2312   2402 ;  COERCE ACCUMULATOR TO TYPE IN A
                     2313   2403 ;
@@ -2410,23 +2410,23 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0bfe  e2 0a 0c      2317   2407 	JPO	CSINGLE
 0c01  ca 11 0c      2318   2408 	JZ	CSTRING
 0c04  c3 18 0c      2319   2409 	JMP	ERRATM
-                    2320   2410 
+                    2320   2410
 0c07                2321   2411 VALNUMBR:
 0c07  cd a9 0f      2322   2412 	CALL	VALEXPR		;bscan expr
 0c0a                2323   2413 CSINGLE:
 0c0a  cd ef 03      2324   2414 	CALL	TYPECHK
 0c0d  e0            2325   2415 	RPO
 0c0e  c3 18 0c      2326   2416 	JMP	ERRATM
-                    2327   2417 
+                    2327   2417
 0c11                2328   2418 CSTRING:
 0c11  cd ef 03      2329   2419 	CALL	TYPECHK
 0c14  c8            2330   2420 	RZ
 0c15  c3 18 0c      2331   2421 	JMP	ERRATM
-                    2332   2422 
+                    2332   2422
 0c18                2333   2423 ERRATM:
 0c18  1e b0         2334   2424 	MVI	E,ERRNTM-ERRN
 0c1a  c3 07 06      2335   2425 	JMP	ERRMSG
-                    2336   2426 
+                    2336   2426
 0c1d                2337   2427 VALINTDE:
 0c1d  cd 07 0c      2338   2428 	CALL	VALNUMBR	;bscan numbr EVAL POSITIVE INTEGER EXPR
 0c20                2339   2429 CINTPOS:
@@ -2441,11 +2441,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0c34  cd 0f 1c      2348   2438 	CALL	FLCMP
 0c37  51            2349   2439 	MOV	D,C
 0c38  c8            2350   2440 	RZ
-                    2351   2441 
+                    2351   2441
 0c39                2352   2442 ERRAFC:
 0c39  1e 2d         2353   2443 	MVI	E,ERRNFC-ERRN
 0c3b  c3 07 06      2354   2444 	JMP	ERRMSG
-                    2355   2445 
+                    2355   2445
 0c3e                2356   2446 VALBYTE2:
 0c3e  cd b9 03      2357   2447 	CALL	SCANNXTV	;bscan (val)
 0c41  2c            2358   2448 	DB	','		;EVAL LATER BYTE ARGUMENTS
@@ -2456,22 +2456,22 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0c48  7a            2363   2453 	MOV	A,D
 0c49  b7            2364   2454 	ORA	A
 0c4a  c2 39 0c      2365   2455 	JNZ	ERRAFC
-                    2366   2456 
+                    2366   2456
                     2367   2457 ;
                     2368   2458 ;  Page 52
                     2369   2459 ;
-                    2370   2460 
+                    2370   2460
 0c4d  2b            2371   2461 	DCX	H
 0c4e  cd c1 03      2372   2462 	CALL	SCANNXT		;bscan ,
 0c51  7b            2373   2463 	MOV	A,E
 0c52  c9            2374   2464 	RET
-                    2375   2465 
+                    2375   2465
 0c53                2376   2466 EXECUTE2:
 0c53  fe c4         2377   2467 	CPI	KEYPORT		;PORT OUTPUT?
 0c55  ca 2f 18      2378   2468 	JZ	PORSTM
 0c58  fe c6         2379   2469 	CPI	KEYMEM		;MEMORY ALTERATION?
 0c5a  ca 0d 18      2380   2470 	JZ	MEMSTM
-                    2381   2471 
+                    2381   2471
                     2382   2472 ;
                     2383   2473 ;  MID-STRING ASSIGNMENT STATEMENT
                     2384   2474 ;
@@ -2517,20 +2517,20 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0ca5  5f            2424   2514 	MOV	E,A
 0ca6                2425   2515 MIDSTMLN:
 0ca6  e1            2426   2516 	POP	H		;RECOVER DESTINATION DESCRIPTOR
-                    2427   2517 
+                    2427   2517
                     2428   2518 ;
                     2429   2519 ;  Page 53
                     2430   2520 ;
-                    2431   2521 
+                    2431   2521
 0ca7  7e            2432   2522 	MOV	A,M		;GET ITS LENGTH
 0ca8  15            2433   2523 	DCR	D
 0ca9  92            2434   2524 	SUB	D		;SUBTRACT STARTING POSITION
 0caa  da bf 0c      2435   2525 	JC	MIDSTMXT	;NOTHING TO DO IF BEYOND
-                    2436   2526 
+                    2436   2526
                     2437   2527 ;
                     2438   2528 ;  Page 54
                     2439   2529 ;
-                    2440   2530 
+                    2440   2530
 0cad  bb            2441   2531 	CMP	E
 0cae  d2 b2 0c      2442   2532 	JNC	MIDSTMLM
 0cb1  5f            2443   2533 	MOV	E,A
@@ -2546,7 +2546,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0cbf                2453   2543 MIDSTMXT:
 0cbf  2a 85 03      2454   2544 	LHLD	SCANPTR1
 0cc2  c9            2455   2545 	RET
-                    2456   2546 
+                    2456   2546
                     2457   2547 ;
                     2458   2548 ;  LOCATE STRING REFERENCE BY DE
                     2459   2549 ;
@@ -2561,11 +2561,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0ccc  cd d7 04      2468   2558 	CALL	CMHLLTDE	;NC = STRING IN PROGRAM
 0ccf  d1            2469   2559 	POP	D		;C = STRIN IN BUFFER
 0cd0  c9            2470   2560 	RET			;OR STRING SPACE
-                    2471   2561 
+                    2471   2561
                     2472   2562 ;
                     2473   2563 ;  Page 55
                     2474   2564 ;
-                    2475   2565 
+                    2475   2565
                     2476   2566 ;
                     2477   2567 ;  CASE/CONDITINAL STATEMENT PROCESSORS
                     2478   2568 ;
@@ -2588,9 +2588,9 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0ce9  fe 2c         2495   2585 	CPI	','
 0ceb  c0            2496   2586 	RNZ
 0cec  c3 e1 0c      2497   2587 	JMP	ONNSTMSL
-                    2498   2588 
-                    2499   2589 
-                    2500   2590 
+                    2498   2588
+                    2499   2589
+                    2500   2590
 0cef                2501   2591 IFSTM:
 0cef  cd 07 0c      2502   2592 	CALL	VALNUMBR	;bscan numbr  ;IF STATEMENT
 0cf2  7e            2503   2593 	MOV	A,M
@@ -2615,11 +2615,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0d13  cd c1 03      2522   2612 	CALL	SCANNXT		;bscan ,  ;CHOICE MADE
 0d16  da 42 0b      2523   2613 	JC	GTOSTM		;GOTO A LABEL,
 0d19  c3 c1 0a      2524   2614 	JMP	EXECUTEC	;OR EXECUTE A STATEMENT
-                    2525   2615 
+                    2525   2615
                     2526   2616 ;
                     2527   2617 ; Page 56
                     2528   2618 ;
-                    2529   2619 
+                    2529   2619
                     2530   2620 ;
                     2531   2621 ;  PRINT STATEMENT PROCESSOR
                     2532   2622 ;
@@ -2673,11 +2673,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0d71  cd ae 05      2580   2670 	CALL	PRNTCHRA	;ac -> screen
 0d74  f1            2581   2671 	POP	PSW
 0d75  c3 6a 0d      2582   2672 	JMP	PRNTNULL
-                    2583   2673 
+                    2583   2673
                     2584   2674 ;
                     2585   2675 ;  Page 57
                     2586   2676 ;
-                    2587   2677 
+                    2587   2677
 0d78                2588   2678 PRNTCOMA:
 0d78  3a af 03      2589   2679 	LDA	CURSPOS		;COMMA SEPARATOR
 0d7b  fe 8c         2590   2680 	CPI	((LINESYZE/ITEMSIZE)-1)*ITEMSIZE
@@ -2688,7 +2688,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0d85  d2 83 0d      2595   2685 	JNC	PRNTCOML
 0d88  2f            2596   2686 	CMA
 0d89  c3 aa 0d      2597   2687 	JMP	PRNTCOMC
-                    2598   2688 
+                    2598   2688
 0d8c                2599   2689 PRNTOPTN:
 0d8c  f5            2600   2690 	PUSH	PSW
 0d8d  cd c1 03      2601   2691 	CALL	SCANNXT		;bscan +
@@ -2721,11 +2721,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0dba  cd c1 03      2628   2718 	CALL	SCANNXT		;bscan ,
 0dbd  c8            2629   2719 	RZ
 0dbe  c3 1c 0d      2630   2720 	JMP	PRTSTMN
-                    2631   2721 
+                    2631   2721
                     2632   2722 ;
                     2633   2723 ;  Page 58
                     2634   2724 ;
-                    2635   2725 
+                    2635   2725
 0dc1                2636   2726 PRNTNUMS:
 0dc1  23            2637   2727 	INX	H		;SEND STRING TO TRANSMITTER
 0dc2                2638   2728 PRNTMSG:
@@ -2747,7 +2747,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0dda  cc 67 0d      2654   2744 	CZ	PRNTNULS
 0ddd  03            2655   2745 	INX	B
 0dde  c3 d2 0d      2656   2746 	JMP	PRNTSTRL
-                    2657   2747 
+                    2657   2747
                     2658   2748 ;
                     2659   2749 ;  RETURN CURRENT POTITION ON OUTPUT LINE
                     2660   2750 ;
@@ -2757,7 +2757,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0de4  47            2664   2754 	MOV	B,A		;RETURN BYTE ANSWER
 0de5  af            2665   2755 	XRA	A
 0de6  c3 e4 17      2666   2756 	JMP	FLOATAB
-                    2667   2757 
+                    2667   2757
                     2668   2758 ;
                     2669   2759 ;  PLOT STATEMENT
                     2670   2760 ;
@@ -2781,11 +2781,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
                     2688   2778 ;	CALL	SYSPLOT
 0e09  e1            2689   2779 	POP	H
 0e0a  c9            2690   2780 	RET
-                    2691   2781 
+                    2691   2781
                     2692   2782 ;
                     2693   2783 ;  Page 59
                     2694   2784 ;
-                    2695   2785 
+                    2695   2785
                     2696   2786 ;
                     2697   2787 ;  INPUT/READ STATEMENT PROCESSORS
                     2698   2788 ;
@@ -2803,7 +2803,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0e29  47 4e 4f 52   2704   2800
 0e2d  45 44 0d 0a   2704   2801
 0e31  00            2704   2802
-                    2705   2803 
+                    2705   2803
                     2706   2804 ;  INPUT
                     2707   2805 ;
 0e32                2708   2806 INPSTM:
@@ -2840,13 +2840,13 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0e6d                2739   2837 INPSTMIN:
 0e6d  e5            2740   2838 	PUSH	H
 0e6e  cd 1c 0f      2741   2839 	CALL	DATAINPT
-                    2742   2840 
+                    2742   2840
                     2743   2841 ;
                     2744   2842 ;  Page 60
                     2745   2843 ;
-                    2746   2844 
+                    2746   2844
 0e71  c3 7d 0e      2747   2845 	JMP	REAINPFS
-                    2748   2846 
+                    2748   2846
                     2749   2847 ;  READ
                     2750   2848 ;
 0e74                2751   2849 REASTM:
@@ -2855,7 +2855,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0e78  7e            2754   2852 	MOV	A,M
 0e79  b7            2755   2853 	ORA	A
 0e7a  cc fa 0e      2756   2854 	CZ	DATASRCH	;GET DATA IF NECESSARY
-                    2757   2855 
+                    2757   2855
 0e7d                2758   2856 REAINPFS:
 0e7d  32 7a 03      2759   2857 	STA	REAINPFL
 0e80  c3 8e 0e      2760   2858 	JMP	REAINPLQ
@@ -2901,18 +2901,18 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0ec5  b6            2800   2898 	ORA	M
 0ec6  21 21 0e      2801   2899 	LXI	H,MSGEXTRA
 0ec9                2802   2900 INPSTMER:
-                    2803   2901 
+                    2803   2901
                     2804   2902 ;
                     2805   2903 ;  Page 61
                     2806   2904 ;
-                    2807   2905 
+                    2807   2905
 0ec9  c4 c2 0d      2808   2906 	CNZ	PRNTMSG
 0ecc  f1            2809   2907 	POP	PSW
-                    2810   2908 
+                    2810   2908
                     2811   2909 ;
                     2812   2910 ;  Page 62
                     2813   2911 ;
-                    2814   2912 
+                    2814   2912
 0ecd                2815   2913 INPSTMXT:
 0ecd  d1            2816   2914 	POP	D		;RECOVER SCAN POINTER
 0ece  21 a0 00      2817   2915 	LXI	H,0+LINESYZE+3
@@ -2926,7 +2926,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0eda  fa e5 0a      2825   2923 	JM	INPSTMBR	;BREAK TIME...
 0edd  eb            2826   2924 	XCHG
 0ede  c3 36 0e      2827   2925 	JMP	INPSTMRD	;OR REDO THE INPUT
-                    2828   2926 
+                    2828   2926
 0ee1                2829   2927 REAINPER:
 0ee1  3a 7a 03      2830   2928 	LDA	REAINPFL
 0ee4  b7            2831   2929 	ORA	A
@@ -2935,7 +2935,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0eeb  3c            2834   2932 	INR	A
 0eec  f5            2835   2933 	PUSH	PSW
 0eed  c3 c9 0e      2836   2934 	JMP	INPSTMER
-                    2837   2935 
+                    2837   2935
                     2838   2936 ;
                     2839   2937 ;  SEARCH FOR DATA STATEMENT
                     2840   2938 ;
@@ -2966,18 +2966,18 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0f16  fe 80         2865   2963 	CPI	KEYDAT
 0f18  c2 fa 0e      2866   2964 	JNZ	DATASRCH
 0f1b  c9            2867   2965 	RET
-                    2868   2966 
+                    2868   2966
 0f1c                2869   2967 DATAINPT:
-                    2870   2968 
+                    2870   2968
                     2871   2969 ;
                     2872   2970 ;  PAGE 63
                     2873   2971 ;
-                    2874   2972 
+                    2874   2972
 0f1c  cd 81 07      2875   2973 	CALL	INPTRQST
 0f1f  c8            2876   2974 	RZ			;INPUT OK, RETURN
 0f20  c1            2877   2975 	POP	B		;BREAK ***
 0f21  c3 cd 0e      2878   2976 	JMP	INPSTMXT
-                    2879   2977 
+                    2879   2977
 0f24                2880   2978 REAINPDC:
 0f24  cd c1 03      2881   2979 	CALL	SCANNXT		;bscan ,
 0f27  cd ef 03      2882   2980 	CALL	TYPECHK
@@ -2989,7 +2989,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0f35  06 2c         2888   2986 	MVI	B,','
 0f37  2b            2889   2987 	DCX	H
 0f38  c3 6b 11      2890   2988 	JMP	VALSTRGS	;READ/INPUT A STRING
-                    2891   2989 
+                    2891   2989
 0f3b                2892   2990 INPSTMLN:
 0f3b  3a 7a 03      2893   2991 	LDA	REAINPFL	;LINE OPTION VALID ONLY
 0f3e  b7            2894   2992 	ORA	A		;FOR INPUT STATEMENT
@@ -3003,11 +3003,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0f4e  06 00         2902   3000 	MVI	B,0
 0f50  cd 6a 11      2903   3001 	CALL	VALSTRGY	;SWALOW REST OF INPUT LINE
 0f53  c3 a1 0e      2904   3002 	JMP	REAINPLA	;AND ASSIGN TO STRING VARIABLE
-                    2905   3003 
+                    2905   3003
                     2906   3004 ;
                     2907   3005 ;  Page 64
                     2908   3006 ;
-                    2909   3007 
+                    2909   3007
                     2910   3008 ;
                     2911   3009 ;  NEXT STATEMENT PROCESSOR
                     2912   3010 ;
@@ -3045,11 +3045,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0f8f  60            2944   3042 	MOV	H,B
 0f90  69            2945   3043 	MOV	L,C
 0f91  c3 96 0a      2946   3044 	JMP	FORMARK
-                    2947   3045 
+                    2947   3045
 0f94                2948   3046 ERRANF:
 0f94  1e 54         2949   3047 	MVI	E,ERRNNF-ERRN
 0f96  c3 07 06      2950   3048 	JMP	ERRMSG
-                    2951   3049 
+                    2951   3049
 0f99                2952   3050 NEXSTMC:
 0f99  f9            2953   3051 	SPHL			;END OF LOOP...
 0f9a  2a 8d 03      2954   3052 	LHLD	PROGCNTR
@@ -3058,11 +3058,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0fa0  c2 9a 0a      2957   3055 	JNZ	EXECUTEL	;MORE INDICES?
 0fa3  cd c1 03      2958   3056 	CALL	SCANNXT		;bscan	,
 0fa6  cd 59 0f      2959   3057 	CALL	NEXSTML
-                    2960   3058 
+                    2960   3058
                     2961   3059 ;
                     2962   3060 ;  Page 65
                     2963   3061 ;
-                    2964   3062 
+                    2964   3062
                     2965   3063 ;
                     2966   3064 ;  EVALUTATE AN EXPRESSION
                     2967   3065 ;
@@ -3098,7 +3098,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0fd8  22 85 03      2997   3095 	SHLD	SCANPTR1
 0fdb  cd c1 03      2998   3096 	CALL	SCANNXT		;bscan ,
 0fde  c3 c5 0f      2999   3097 	JMP	VALEXPRR
-                    3000   3098 
+                    3000   3098
 0fe1                3001   3099 VALEXPRO:
 0fe1  7a            3002   3100 	MOV	A,D
 0fe2  b7            3003   3101 	ORA	A
@@ -3118,11 +3118,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 0ffa  83            3017   3115 	ADD	E
 0ffb  5f            3018   3116 	MOV	E,A
 0ffc  21 a4 00      3019   3117 	LXI	H,OPRTABL
-                    3020   3118 
+                    3020   3118
                     3021   3119 ;
                     3022   3120 ;  Page 66
                     3023   3121 ;
-                    3024   3122 
+                    3024   3122
 0fff  19            3025   3123 	DAD	D
 1000  78            3026   3124 	MOV	A,B
 1001  56            3027   3125 	MOV	D,M
@@ -3145,7 +3145,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1017  c5            3044   3142 	PUSH	B
 1018  2a 85 03      3045   3143 	LHLD	SCANPTR1
 101b  c3 ac 0f      3046   3144 	JMP	VALEXPRL
-                    3047   3145 
+                    3047   3145
                     3048   3146 ;
                     3049   3147 ;  EVALUATE A RELATION
                     3050   3148 ;
@@ -3162,7 +3162,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 102c  ba            3061   3159 	CMP	D
 102d  d0            3062   3160 	RNC
 102e  c3 08 10      3063   3161 	JMP	VALEXPR2
-                    3064   3162 
+                    3064   3162
 1031                3065   3163 RELOPRXT:
 1031  3c            3066   3164 	INR	A		;MATCH RESULF OF COMPARISON
 1032  8f            3067   3165 	ADC	A		;-1,0,1 TO 1,2,4
@@ -3171,11 +3171,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1035  c6 ff         3070   3168 	ADI	-1
 1037  9f            3071   3169 	SBB	A
 1038  c3 97 1c      3072   3170 	JMP	FLOATBYT
-                    3073   3171 
+                    3073   3171
                     3074   3172 ;
                     3075   3173 ;  Page 67
                     3076   3174 ;
-                    3077   3175 
+                    3077   3175
 103b                3078   3176 RELOPR:
 103b  3d 10         3079   3177 	DW	RELOPRC		;COMPUTE RELATION
 103d                3080   3178 RELOPRC:
@@ -3229,11 +3229,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 107c  ca 6b 10      3128   3226 	JZ	RELOPRSL
 107f  3f            3129   3227 	CMC
 1080  c3 8b 1c      3130   3228 	JMP	CMPXT
-                    3131   3229 
+                    3131   3229
                     3132   3230 ;
                     3133   3231 ;  Page 68
                     3134   3232 ;
-                    3135   3233 
+                    3135   3233
                     3136   3234 ;
                     3137   3235 ;  EVALUATE A PRIMARY
                     3138   3236 ;
@@ -3268,7 +3268,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 10c3  cd b9 03      3167   3265 	CALL	SCANNXTV	;bscan (val)
 10c6  29            3168   3266 	DB	')'
 10c7  c9            3169   3267 	RET
-                    3170   3268 
+                    3170   3268
 10c8                3171   3269 VALUMINS:
 10c8  16 7d         3172   3270 	MVI	D,PREDUMIN	;EVALUATE UNARY MINUS
 10ca  cd ac 0f      3173   3271 	CALL	VALEXPRL
@@ -3279,11 +3279,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 10d4  cd 0a 0c      3178   3276 	CALL	CSINGLE
 10d7  e1            3179   3277 	POP	H
 10d8  c9            3180   3278 	RET
-                    3181   3279 
+                    3181   3279
                     3182   3280 ;
                     3183   3281 ;  Page 69
                     3184   3282 ;
-                    3185   3283 
+                    3185   3283
                     3186   3284 ;
                     3187   3285 ;  EVALUATE A VARIABLE
                     3188   3286 ;
@@ -3302,7 +3302,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 10f1  d1            3201   3299 	POP	D
 10f2  e1            3202   3300 	POP	H
 10f3  c9            3203   3301 	RET
-                    3204   3302 
+                    3204   3302
                     3205   3303 ;
                     3206   3304 ;  EVALUATE CONDITIONAL EXPRESSION
                     3207   3305 ;
@@ -3323,7 +3323,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1112  15            3222   3320 	DCR	D
 1113  c2 09 11      3223   3321 	JNZ	VALCNDTL
 1116  c9            3224   3322 	RET
-                    3225   3323 
+                    3225   3323
 1117                3226   3324 VALCONDF:
 1117  16 01         3227   3325 	MVI	D,1
 1119                3228   3326 VALCNDFL:
@@ -3337,11 +3337,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1129  cd b9 03      3236   3334 	CALL	SCANNXTV	;bscan (val)
 112c  82            3237   3335 	DB	KEYEND
 112d  c9            3238   3336 	RET
-                    3239   3337 
+                    3239   3337
                     3240   3338 ;
                     3241   3339 ;  Page 70
                     3242   3340 ;
-                    3243   3341 
+                    3243   3341
                     3244   3342 ;
                     3245   3343 ;  EVALUATE INSTRINSIC FUNCTION
                     3246   3344 ;
@@ -3362,7 +3362,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1147  2a a9 03      3261   3359 	LHLD	ACCUMLTR
 114a  e3            3262   3360 	XTHL			;PUSH STRING ONTO STACK
 114b  c3 56 11      3263   3361 	JMP	VALFCTLK
-                    3264   3362 
+                    3264   3362
 114e                3265   3363 VALFCTAR:
 114e  cd bc 10      3266   3364 	CALL	VALPARNS	;EVALUATE ARGUMENT TO FUNCTION
 1151  e3            3267   3365 	XTHL
@@ -3376,11 +3376,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 115c  66            3275   3373 	MOV	H,M
 115d  69            3276   3374 	MOV	L,C
 115e  e9            3277   3375 	PCHL			;CALL FUNCTION
-                    3278   3376 
+                    3278   3376
                     3279   3377 ;
                     3280   3378 ;  Page 71
                     3281   3379 ;
-                    3282   3380 
+                    3282   3380
                     3283   3381 ;
                     3284   3382 ;  PROCESS STRING CONSTANT
                     3285   3383 ;
@@ -3390,7 +3390,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1162  06 80         3289   3387 	MVI	B,080H
 1164  2b            3290   3388 	DCX	H
 1165  c3 6a 11      3291   3389 	JMP	VALSTRGY
-                    3292   3390 
+                    3292   3390
 1168                3293   3391 VALSTRGC:
 1168  06 22         3294   3392 	MVI	B,'"'		;SCAN & DECODE A STRING CONSTANT
 116a                3295   3393 VALSTRGY:
@@ -3422,11 +3422,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 118e  1f            3321   3419 	RAR
 118f  b0            3322   3420 	ORA	B
 1190  f4 7d 16      3323   3421 	CP	STRGSTOR	;MAKE COPY OF CERTAIN BUFFERS
-                    3324   3422 
+                    3324   3422
                     3325   3423 ;
                     3326   3424 ;  Page 72
                     3327   3425 ;
-                    3328   3426 
+                    3328   3426
                     3329   3427 ;
                     3330   3428 ;  ALLOCATE STRING TEMPORARY
                     3331   3429 ;
@@ -3448,19 +3448,19 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 11b1  22 a5 03      3347   3445 	SHLD	STRGTMPP
 11b4  e1            3348   3446 	POP	H
 11b5  c9            3349   3447 	RET
-                    3350   3448 
+                    3350   3448
 11b6                3351   3449 STRGALOV:
 11b6  e5            3352   3450 	PUSH	H
 11b7  c3 96 11      3353   3451 	JMP	STRGALOU
-                    3354   3452 
+                    3354   3452
 11ba                3355   3453 ERRAST:
 11ba  1e 92         3356   3454 	MVI	E,ERRNST-ERRN
 11bc  c3 07 06      3357   3455 	JMP	ERRMSG
-                    3358   3456 
+                    3358   3456
                     3359   3457 ;
                     3360   3458 ;  Page 73
                     3361   3459 ;
-                    3362   3460 
+                    3362   3460
                     3363   3461 ;
                     3364   3462 ;  RELEASE STRING RESOURCES
                     3365   3463 ;
@@ -3485,7 +3485,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 11d8  22 a1 03      3384   3482 	SHLD	STRGFREE
 11db  e1            3385   3483 	POP	H
 11dc  c9            3386   3484 	RET
-                    3387   3485 
+                    3387   3485
                     3388   3486 ;
                     3389   3487 ;  RELEASE STRING TEMPORARY
                     3390   3488 ;
@@ -3500,11 +3500,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 11e8  c0            3399   3497 	RNZ
 11e9  22 a5 03      3400   3498 	SHLD	STRGTMPP	;RELEASE STRING TEMPORARY
 11ec  c9            3401   3499 	RET
-                    3402   3500 
+                    3402   3500
                     3403   3501 ;
                     3404   3502 ;  Page 74
                     3405   3503 ;
-                    3406   3504 
+                    3406   3504
                     3407   3505 ;
                     3408   3506 ;  EVALUATE A CATENATION
                     3409   3507 ;
@@ -3537,7 +3537,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 121f  e3            3436   3534 	XTHL
 1220  e5            3437   3535 	PUSH	H
 1221  c3 93 11      3438   3536 	JMP	STRGALOT
-                    3439   3537 
+                    3439   3537
 1224                3440   3538 VALCONCP:
 1224  e1            3441   3539 	POP	H		;COPY STRING FOR CATENATION
 1225  e3            3442   3540 	XTHL
@@ -3547,7 +3547,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1229  23            3446   3544 	INX	H
 122a  46            3447   3545 	MOV	B,M
 122b  6f            3448   3546 	MOV	L,A
-                    3449   3547 
+                    3449   3547
 122c                3450   3548 COPYSTRG:
 122c  2c            3451   3549 	INR	L		;COPY A STRING OF LENGTH L
 122d                3452   3550 COPYSTRL:
@@ -3558,11 +3558,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1231  03            3457   3555 	INX	B
 1232  13            3458   3556 	INX	D
 1233  c3 2d 12      3459   3557 	JMP	COPYSTRL
-                    3460   3558 
+                    3460   3558
                     3461   3559 ;
                     3462   3560 ;  Page 75
                     3463   3561 ;
-                    3464   3562 
+                    3464   3562
                     3465   3563 ;
                     3466   3564 ;  DIMENSION STATEMENT PROCESSING
                     3467   3565 ;
@@ -3577,7 +3577,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1242  c5            3476   3574 	PUSH	B
 1243  3e 80         3477   3575 	MVI	A,080H
 1245  c3 49 12      3478   3576 	JMP	VARSCANI
-                    3479   3577 
+                    3479   3577
                     3480   3578 ;
                     3481   3579 ;  SCAN A VARIABLE NAME
                     3482   3580 ;
@@ -3609,7 +3609,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1275  c2 7d 12      3508   3606 	JNZ	VARNAME
 1278  16 03         3509   3607 	MVI	D,TYPESTRG	;YES
 127a  cd c1 03      3510   3608 	CALL	SCANNXT		;bscan ,
-                    3511   3609 
+                    3511   3609
 127d                3512   3610 VARNAME:
 127d  78            3513   3611 	MOV	A,B		;TRANSLATE IDENT OT INTERNAL FORM
 127e  d6 40         3514   3612 	SUI	'@'		;DEF/VARIABLE IS FIRST BIT
@@ -3618,11 +3618,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1282  47            3517   3615 	MOV	B,A
 1283  79            3518   3616 	MOV	A,C		;SECOND CHAR IS NEXT SIX BITS
 1284  d6 30         3519   3617 	SUI	'0'
-                    3520   3618 
+                    3520   3618
                     3521   3619 ;
                     3522   3620 ;  Page 76
                     3523   3621 ;
-                    3524   3622 
+                    3524   3622
 1286  0f            3525   3623 	RRC
 1287  0f            3526   3624 	RRC
 1288  0f            3527   3625 	RRC
@@ -3638,7 +3638,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1295  e6 0f         3537   3635 	ANI	00FH
 1297  a9            3538   3636 	XRA	C
 1298  4f            3539   3637 	MOV	C,A
-                    3540   3638 
+                    3540   3638
 1299  3a 7d 03      3541   3639 	LDA	SCANPFLG
 129c  86            3542   3640 	ADD	M
 129d  fe 28         3543   3641 	CPI	'('		;SUBSCRIPTED?
@@ -3648,7 +3648,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 12a7  af            3547   3645 	XRA	A
 12a8  32 7d 03      3548   3646 	STA	SCANPFLG
 12ab  e5            3549   3647 	PUSH	H
-                    3550   3648 
+                    3550   3648
                     3551   3649 ;
                     3552   3650 ;  LOOK UP VARIABLE IN TABLE
                     3553   3651 ;
@@ -3674,16 +3674,16 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 12ca  26 00         3573   3671 	MVI	H,0
 12cc  19            3574   3672 	DAD	D
 12cd  c3 af 12      3575   3673 	JMP	VARSCANT
-                    3576   3674 
+                    3576   3674
 12d0                3577   3675 VARSCANF:
 12d0  c5            3578   3676 	PUSH	B		;NOT FOUND, CREATE ENTRY
 12d1  79            3579   3677 	MOV	A,C
 12d2  e6 0f         3580   3678 	ANI	00FH
-                    3581   3679 
+                    3581   3679
                     3582   3680 ;
                     3583   3681 ;  Page 77
                     3584   3682 ;
-                    3585   3683 
+                    3585   3683
 12d4  c6 02         3586   3684 	ADI	2
 12d6  4f            3587   3685 	MOV	C,A
 12d7  06 00         3588   3686 	MVI	B,0
@@ -3714,7 +3714,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 12fd                3613   3711 VARSCANX:
 12fd  e1            3614   3712 	POP	H		;HL=SCAN POINTER
 12fe  c9            3615   3713 	RET
-                    3616   3714 
+                    3616   3714
                     3617   3715 ;
                     3618   3716 ;  LOOK UP ARRAY IN TABLE
                     3619   3717 ;
@@ -3740,11 +3740,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1318  e5            3639   3737 	PUSH	H
 1319  eb            3640   3738 	XCHG
 131a  3c            3641   3739 	INR	A		;COUNT NUMBER OF SUBSCRIPTS
-                    3642   3740 
+                    3642   3740
                     3643   3741 ;
                     3644   3742 ;  Page 78
                     3645   3743 ;
-                    3646   3744 
+                    3646   3744
 131b  57            3647   3745 	MOV	D,A
 131c  7e            3648   3746 	MOV	A,M
 131d  fe 2c         3649   3747 	CPI	','
@@ -3791,7 +3791,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1361                3690   3788 ERRABS:
 1361  1e 9f         3691   3789 	MVI	E,ERRNBS-ERRN
 1363  c3 07 06      3692   3790 	JMP	ERRMSG
-                    3693   3791 
+                    3693   3791
 1366                3694   3792 MATSCANC:
 1366  79            3695   3793 	MOV	A,C		;NAME NOT FOUND, CREATE NEW ENTRY
 1367  e6 0f         3696   3794 	ANI	00FH
@@ -3801,11 +3801,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 136d  23            3700   3798 	INX	H
 136e  70            3701   3799 	MOV	M,B
 136f  23            3702   3800 	INX	H
-                    3703   3801 
+                    3703   3801
                     3704   3802 ;
                     3705   3803 ;  Page 79
                     3706   3804 ;
-                    3707   3805 
+                    3707   3805
 1370  f1            3708   3806 	POP	PSW
 1371  32 7f 03      3709   3807 	STA	MATSCCNT
 1374  4f            3710   3808 	MOV	C,A
@@ -3862,11 +3862,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 13c3  73            3761   3859 	MOV	M,E
 13c4  23            3762   3860 	INX	H
 13c5  72            3763   3861 	MOV	M,D
-                    3764   3862 
+                    3764   3862
                     3765   3863 ;
                     3766   3864 ;  Page 80
                     3767   3865 ;
-                    3768   3866 
+                    3768   3866
 13c6  23            3769   3867 	INX	H
 13c7  fa f7 13      3770   3868 	JM	MATSCANX	;DIM ONLY?
 13ca                3771   3869 MATSCANI:
@@ -3905,7 +3905,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 13fa  cd c1 03      3804   3902 	CALL	SCANNXT		;bscan ,
 13fd  bf            3805   3903 	CMP	A
 13fe  c9            3806   3904 	RET
-                    3807   3905 
+                    3807   3905
 13ff                3808   3906 MUL16:
 13ff  21 00 00      3809   3907 	LXI	H,0		;MULTIPLY BC*DE GIVING HL
 1402  78            3810   3908 	MOV	A,B
@@ -3923,18 +3923,18 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1412  da 61 13      3822   3920 	JC	ERRABS
 1415                3823   3921 MUL16XT:
 1415  3d            3824   3922 	DCR	A
-                    3825   3923 
+                    3825   3923
                     3826   3924 ;
                     3827   3925 ;  Page 81
                     3828   3926 ;
-                    3829   3927 
+                    3829   3927
 1416  c2 07 14      3830   3928 	JNZ	MUL16LP
 1419  c9            3831   3929 	RET
-                    3832   3930 
+                    3832   3930
                     3833   3931 ;
                     3834   3932 ;  Page 82
                     3835   3933 ;
-                    3836   3934 
+                    3836   3934
                     3837   3935 ;
                     3838   3936 ;  USER-DEFINED FUNCTION DEFINITION
                     3839   3937 ;
@@ -3961,7 +3961,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1439  7e            3860   3958 	MOV	A,M
 143a  fe 2c         3861   3959 	CPI	','
 143c  c3 30 14      3862   3960 	JMP	DEFSTML
-                    3863   3961 
+                    3863   3961
                     3864   3962 ;  USER-DEFINED FUNCTION EVALUATION
                     3865   3963 ;
 143f                3866   3964 VALFCTD:
@@ -3978,11 +3978,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 144d  b4            3877   3975 	ORA	H
 144e  1e b5         3878   3976 	MVI	E,ERRNUF-ERRN
 1450  ca 07 06      3879   3977 	JZ	ERRMSG		;MUST BE DEFINED ...
-                    3880   3978 
+                    3880   3978
                     3881   3979 ;
                     3882   3980 ;  Page 83
                     3883   3981 ;
-                    3884   3982 
+                    3884   3982
 1453  7e            3885   3983 	MOV	A,M
 1454  fe 28         3886   3984 	CPI	'('		;PARAMETERS NEEDED?
 1456  c2 bb 14      3887   3985 	JNZ	VALFCTNA	;APPARENTLY NOT
@@ -3992,7 +3992,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1460  28            3891   3989 	DB	'('		;MUST BE PARAMETERS IN CALL
 1461  e3            3892   3990 	XTHL
 1462  c3 6e 14      3893   3991 	JMP	VALFCTDM
-                    3894   3992 
+                    3894   3992
                     3895   3993 ;  ARGUMENT SCANNING
                     3896   3994 ;
 1465                3897   3995 VALFCTDL:
@@ -4025,7 +4025,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1497  2a a9 03      3924   4022 	LHLD	ACCUMLTR	;GET ADDRESS OF DESCRIPTOR
 149a  e5            3925   4023 	PUSH	H
 149b  d5            3926   4024 	PUSH	D		;PUT IT BACK HERE LATER
-                    3927   4025 
+                    3927   4025
                     3928   4026 ;
                     3929   4027 ;  Page 84
                     3930   4028 ;
@@ -4046,7 +4046,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 14b6  e3            3945   4043 	XTHL
 14b7  cd b9 03      3946   4044 	CALL	SCANNXTV	;bcscan (val)
 14ba  29            3947   4045 	DB	')'		;MUST BE END OF PARAMETERS TOO
-                    3948   4046 
+                    3948   4046
                     3949   4047 ;  EVALUATE EXPRESSION
                     3950   4048 ;
 14bb                3951   4049 VALFCTNA:
@@ -4063,11 +4063,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 14d3  cd ec 0b      3962   4060 	CALL	STRGUNIQ
 14d6  eb            3963   4061 	XCHG
 14d7  22 a9 03      3964   4062 	SHLD	ACCUMLTR
-                    3965   4063 
+                    3965   4063
                     3966   4064 ;
                     3967   4065 ;  Page 85
                     3968   4066 ;
-                    3969   4067 
+                    3969   4067
                     3970   4068 ;  RESTORE PARAMETERS
                     3971   4069 ;
 14da                3972   4070 VALFCTRL:
@@ -4094,7 +4094,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 14f7  06 03         3993   4091 	MVI	B,TYPESTRG
 14f9  cd f1 1b      3994   4092 	CALL	COPYVALL
 14fc  c3 da 14      3995   4093 	JMP	VALFCTRL
-                    3996   4094 
+                    3996   4094
 14ff                3997   4095 VALFCTCR:
 14ff  2a 85 03      3998   4096 	LHLD	SCANPTR1	;COERCE RESULT TO CORRECT TYPE
 1502  cd f2 03      3999   4097 	CALL	TYPECHKA	
@@ -4105,11 +4105,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 150f  eb            4004   4102 	XCHG
 1510  cd dd 11      4005   4103 	CALL	STRGRELT
 1513  c3 96 11      4006   4104 	JMP	STRGALOU
-                    4007   4105 
+                    4007   4105
 1516                4008   4106 ERRAID:
 1516  1e 1a         4009   4107 	MVI	E,ERRNID-ERRN
 1518  c3 07 06      4010   4108 	JMP	ERRMSG
-                    4011   4109 
+                    4011   4109
 151b                4012   4110 SCANFNN:
 151b  cd b9 03      4013   4111 	CALL	SCANNXTV	;bscan (val)
 151e  a7            4014   4112 	DB	KEYFN
@@ -4117,11 +4117,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1521  32 7d 03      4016   4114 	STA	SCANPFLG
 1524  06 20         4017   4115 	MVI	B,TYPEDEF
 1526  c3 4e 12      4018   4116 	JMP	VARSCNDF
-                    4019   4117 
+                    4019   4117
                     4020   4118 ;
                     4021   4119 ;  Page 86
                     4022   4120 ;
-                    4023   4121 
+                    4023   4121
                     4024   4122 ;
                     4025   4123 ;  GENERATE A NEW CURRENT STRING
                     4026   4124 ;
@@ -4137,7 +4137,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1534  72            4036   4134 	MOV	M,D
 1535  e1            4037   4135 	POP	H
 1536  c9            4038   4136 	RET
-                    4039   4137 
+                    4039   4137
                     4040   4138 ;
                     4041   4139 ;  ALLOCATE STORAGE IN STRING SPACE
                     4042   4140 ;
@@ -4164,7 +4164,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1555                4063   4161 POPAFRET:
 1555  f1            4064   4162 	POP	PSW
 1556  c9            4065   4163 	RET
-                    4066   4164 
+                    4066   4164
 1557                4067   4165 STRGALGC:
 1557  f1            4068   4166 	POP	PSW		;COLLECT GARBAGE IN STRING SPACE
 1558  1e 85         4069   4167 	MVI	E,ERRNOS-ERRN
@@ -4173,11 +4173,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 155e  f5            4072   4170 	PUSH	PSW
 155f  01 3b 15      4073   4171 	LXI	B,STRGALAG	;THEN TRY ALLOCATION
 1562  c5            4074   4172 	PUSH	B
-                    4075   4173 
+                    4075   4173
                     4076   4174 ;
                     4077   4175 ;  Page 87
                     4078   4176 ;
-                    4079   4177 
+                    4079   4177
                     4080   4178 ;
                     4081   4179 ;  COLLECT GARBAGE IN STRING SPACE
                     4082   4180 ;
@@ -4219,7 +4219,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 159f  b3            4118   4216 	ORA	E
 15a0  cd d9 15      4119   4217 	CALL	STRGGBHV
 15a3  c3 86 15      4120   4218 	JMP	STRGGBVR
-                    4121   4219 
+                    4121   4219
 15a6                4122   4220 STRGGBAL:
 15a6  c1            4123   4221 	POP	B
 15a7                4124   4222 STRGGNAV:
@@ -4233,11 +4233,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 15b6  e5            4132   4230 	PUSH	H
 15b7  09            4133   4231 	DAD	B
 15b8  e6 0f         4134   4232 	ANI	00FH
-                    4135   4233 
+                    4135   4233
                     4136   4234 ;
                     4137   4235 ;  Page 88
                     4138   4236 ;
-                    4139   4237 
+                    4139   4237
 15ba  fe 03         4140   4238 	CPI	TYPESTRG
 15bc  c2 a6 15      4141   4239 	JNZ	STRGGBAL
 15bf  22 85 03      4142   4240 	SHLD	SCANPTR1
@@ -4290,11 +4290,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 15fc  d5            4189   4287 	PUSH	D
 15fd  c5            4190   4288 	PUSH	B
 15fe  c9            4191   4289 	RET
-                    4192   4290 
+                    4192   4290
                     4193   4291 ;
                     4194   4292 ;  Page 89
                     4195   4293 ;
-                    4196   4294 
+                    4196   4294
 15ff                4197   4295 STRGGBMV:
 15ff  d1            4198   4296 	POP	D		;MAKE HIGHEST UNSAFE SAFE
 1600  e1            4199   4297 	POP	H
@@ -4325,15 +4325,15 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 161e  69            4224   4322 	MOV	L,C
 161f  2b            4225   4323 	DCX	H
 1620  c3 66 15      4226   4324 	JMP	STRGGBLP	;EXTEND SAFE AREA
-                    4227   4325 
+                    4227   4325
                     4228   4326 ;
                     4229   4327 ;  Page 90
                     4230   4328 ;
-                    4231   4329 
+                    4231   4329
                     4232   4330 ;
                     4233   4331 ;  VARIOUS NUMERIC/STRING CONVERSION FUNCTIONS
                     4234   4332 ;
-                    4235   4333 
+                    4235   4333
                     4236   4334 ;
                     4237   4335 ;  FIND LENGTH OF STRING
                     4238   4336 ;
@@ -4349,7 +4349,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1633  b7            4248   4346 	ORA	A
 1634  23            4249   4347 	INX	H
 1635  c9            4250   4348 	RET
-                    4251   4349 
+                    4251   4349
                     4252   4350 ;
                     4253   4351 ;  CONVERT CHARACTER TO BYTE
                     4254   4352 ;
@@ -4361,7 +4361,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 163e  46            4260   4358 	MOV	B,M
 163f  0a            4261   4359 	LDAX	B		;THEN THE FIRST CHARACTER
 1640  c3 e4 0d      4262   4360 	JMP	FLOATA
-                    4263   4361 
+                    4263   4361
                     4264   4362 ;
                     4265   4363 ;  CONVERT BYTE TO CHARACTER
                     4266   4364 ;
@@ -4374,11 +4374,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 164f                4273   4371 VALRETST:
 164f  c1            4274   4372 	POP	B		;STRING FUNCTION, REMOVE CSINGLE
 1650  c3 93 11      4275   4373 	JMP	STRGALOT
-                    4276   4374 
+                    4276   4374
                     4277   4375 ;
                     4278   4376 ;  Page 91
                     4279   4377 ;
-                    4280   4378 
+                    4280   4378
                     4281   4379 ;
                     4282   4380 ;  DECODE NUMBER FROM STRING
                     4283   4381 ;
@@ -4404,7 +4404,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 166c  e1            4303   4401 	POP	H
 166d  70            4304   4402 	MOV	M,B
 166e  c9            4305   4403 	RET
-                    4306   4404 
+                    4306   4404
                     4307   4405 ;
                     4308   4406 ;  ENCODE NUMBER IN STRING
                     4309   4407 ;
@@ -4429,11 +4429,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 168f                4328   4426 POPDERET:
 168f  d1            4329   4427 	POP	D
 1690  c9            4330   4428 	RET
-                    4331   4429 
+                    4331   4429
                     4332   4430 ;
                     4333   4431 ;  Page 92
                     4334   4432 ;
-                    4335   4433 
+                    4335   4433
                     4336   4434 ;
                     4337   4435 ;  CONVERT HEX STRING TO NUMBER
                     4338   4436 ;
@@ -4465,18 +4465,18 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 16b7  7c            4364   4462 	MOV	A,H		;CONVERT INTEGER IN HL TO FLOAT
 16b8  45            4365   4463 	MOV	B,L
 16b9  c3 e4 17      4366   4464 	JMP	FLOATAB
-                    4367   4465 
+                    4367   4465
 16bc                4368   4466 HXVFCTCH:
 16bc  cd d2 03      4369   4467 	CALL	ALPHACHA	;CONVERT ANY ALPHA TO UPPER
 16bf  d0            4370   4468 	RNC
 16c0  d6 07         4371   4469 	SUI	'A'-'9'-1	;MOVE ALPHA TO AFTER DIGITS
 16c2  fe 40         4372   4470 	CPI	'0'+16		;SET FLAGS CORRECTLY
 16c4  c9            4373   4471 	RET
-                    4374   4472 
+                    4374   4472
                     4375   4473 ;
                     4376   4474 ;  Page 93
                     4377   4475 ;
-                    4378   4476 
+                    4378   4476
                     4379   4477 ;
                     4380   4478 ;  CONVERT BYTE TO TWO HEX CHARACTERS
                     4381   4479 ;
@@ -4504,7 +4504,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 16e8  77            4403   4501 	MOV	M,A
 16e9  23            4404   4502 	INX	H
 16ea  c9            4405   4503 	RET
-                    4406   4504 
+                    4406   4504
                     4407   4505 ;
                     4408   4506 ;  TRANSLATE STRING TO UPPER CASE
                     4409   4507 ;
@@ -4528,11 +4528,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 170a  03            4427   4525 	INX	B
 170b  23            4428   4526 	INX	H
 170c  c3 01 17      4429   4527 	JMP	UPRFCTL
-                    4430   4528 
+                    4430   4528
                     4431   4529 ;
                     4432   4530 ;  Page 94
                     4433   4531 ;
-                    4434   4532 
+                    4434   4532
                     4435   4533 ;
                     4436   4534 ;  SUBSTRING FUNCTIONS
                     4437   4535 ;
@@ -4549,7 +4549,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1718  da 29 17      4448   4546 	JC	LEFRIGMC
 171b  78            4449   4547 	MOV	A,B
 171c  c3 2b 17      4450   4548 	JMP	LEFRIGMB
-                    4451   4549 
+                    4451   4549
 171f                4452   4550 LEFRIGAR:
 171f  eb            4453   4551 	XCHG			;INITIAL COMMON PROCESSING
 1720  cd 3e 0c      4454   4552 	CALL	VALBYTE2	;FOR LEFT$, RIGHT$
@@ -4557,7 +4557,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1724  cd b9 03      4456   4554 	CALL	SCANNXTV	;bscan (val)
 1727  29            4457   4555 	DB	')'
 1728  c9            4458   4556 	RET
-                    4459   4557 
+                    4459   4557
 1729                4460   4558 LEFRIGMC:
 1729  0e 00         4461   4559 	MVI	C,0
 172b                4462   4560 LEFRIGMB:
@@ -4581,11 +4581,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1743  d1            4480   4578 	POP	D
 1744  cd c3 11      4481   4579 	CALL	STRGRELD
 1747  c3 93 11      4482   4580 	JMP	STRGALOT
-                    4483   4581 
+                    4483   4581
                     4484   4582 ;
                     4485   4583 ;  Page 95
                     4486   4584 ;
-                    4487   4585 
+                    4487   4585
 174a                4488   4586 RIGFCT:
 174a  cd 1f 17      4489   4587 	CALL	LEFRIGAR	;RIGHT$ FUNCTION
 174d  d1            4490   4588 	POP	D
@@ -4593,7 +4593,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 174f  1a            4492   4590 	LDAX	D
 1750  90            4493   4591 	SUB	B		;RIGHT(X,N)=MID(X,LEN(X)-N+1,N)
 1751  c3 13 17      4494   4592 	JMP	LEFRIGMR
-                    4495   4593 
+                    4495   4593
 1754                4496   4594 MIDFCT:
 1754  eb            4497   4595 	XCHG			;MID$ FUNCTION
 1755  cd 3e 0c      4498   4596 	CALL	VALBYTE2	;SCAN STARTING POSITION
@@ -4623,11 +4623,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 177a  d8            4522   4620 	RC			;LEN0 = MIN(LENI-START,LENR)
 177b  43            4523   4621 	MOV	B,E
 177c  c9            4524   4622 	RET
-                    4525   4623 
+                    4525   4623
                     4526   4624 ;
                     4527   4625 ;  Page 96
                     4528   4626 ;
-                    4529   4627 
+                    4529   4627
                     4530   4628 ;
                     4531   4629 ;  INDEX OF STRING FUNCTION
                     4532   4630 ;
@@ -4680,11 +4680,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 17bd  1d            4579   4677 	DCR	E		;COUNT ATTEMPTS
 17be  c2 ab 17      4580   4678 	JNZ	INSFCTSL	;KEEP TRYING
 17c1  c3 30 1a      4581   4679 	JMP	ZEROAC		;OR NOMATCH
-                    4582   4680 
+                    4582   4680
                     4583   4681 ;
                     4584   4682 ;  Page 97
                     4585   4683 ;
-                    4586   4684 
+                    4586   4684
                     4587   4685 ;
                     4588   4686 ;  FUNCTION RETURNING AMOUNT OF REMAINING FREE SPACE
                     4589   4687 ;
@@ -4713,7 +4713,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 17ea  36 04         4612   4710 	MVI	M,TYPESING
 17ec  06 90         4613   4711 	MVI	B,090H
 17ee  c3 9c 1c      4614   4712 	JMP	FLOATINT
-                    4615   4713 
+                    4615   4713
                     4616   4714 ;
                     4617   4715 ;  MEMORY DIDDLING FACILITIES
                     4618   4716 ;
@@ -4729,7 +4729,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1804  ca b7 16      4628   4726 	JZ	FLOATHL		;ZERO LENGTH STRING=PROGBASE
 1807  2a a7 03      4629   4727 	LHLD	STRGTLIM
 180a  c3 b7 16      4630   4728 	JMP	FLOATHL		;OTHERWISE=UPPER LIMIT
-                    4631   4729 
+                    4631   4729
 180d                4632   4730 MEMSTM:
 180d  cd c1 03      4633   4731 	CALL	SCANNXT		;bscan +  ;MEM STATEMENT
 1810  cd bc 10      4634   4732 	CALL	VALPARNS
@@ -4740,28 +4740,28 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 181b  cd 42 0c      4639   4737 	CALL	VALBYTE
 181e  d1            4640   4738 	POP	D
 181f  12            4641   4739 	STAX	D
-                    4642   4740 
+                    4642   4740
                     4643   4741 ;
                     4644   4742 ;  Page 98
                     4645   4743 ;
-                    4646   4744 
+                    4646   4744
 1820  c9            4647   4745 	RET
-                    4648   4746 
+                    4648   4746
                     4649   4747 ;
                     4650   4748 ;  Page 99
                     4651   4749 ;
-                    4652   4750 
+                    4652   4750
                     4653   4751 ;
                     4654   4752 ;  DIRECT I/O FACILITIES
                     4655   4753 ;
-                    4656   4754 
+                    4656   4754
 1821                4657   4755 PORFCT:
 1821  cd 45 0c      4658   4756 	CALL	CBYTE		;PORT FUNCTION
 1824  16 db         4659   4757 	MVI	D,OPCINP
 1826  cd 6a 18      4660   4758 	CALL	INOTGEN
 1829  cd b1 03      4661   4759 	CALL	INOTINS
 182c  c3 e4 0d      4662   4760 	JMP	FLOATA
-                    4663   4761 
+                    4663   4761
 182f                4664   4762 PORSTM:
 182f  cd c1 03      4665   4763 	CALL	SCANNXT		;bscan +  ;PORT STATEMENT
 1832  cd bc 10      4666   4764 	CALL	VALPARNS
@@ -4774,7 +4774,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1841  16 d3         4673   4771 	MVI	D,OPCOUT
 1843  cd 6a 18      4674   4772 	CALL	INOTGEN
 1846  c3 b1 03      4675   4773 	JMP	INOTINS
-                    4676   4774 
+                    4676   4774
 1849                4677   4775 WAISTM:
 1849  cd 42 0c      4678   4776 	CALL	VALBYTE		;WAIT STATEMENT
 184c  d5            4679   4777 	PUSH	D
@@ -4794,7 +4794,7 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1865  a0            4693   4791 	ANA	B
 1866  ca 5e 18      4694   4792 	JZ	WAISTMIN
 1869  c9            4695   4793 	RET
-                    4696   4794 
+                    4696   4794
 186a                4697   4795 INOTGEN:
 186a  e5            4698   4796 	PUSH	H		;GENERATE INPUT/OUTPUT FOLLOWED
 186b  21 b1 03      4699   4797 	LXI	H,INOTINS	;BY RETURN
@@ -4805,11 +4805,11 @@ af00  =              590    676 LIMUPPER   EQU	0AF00H
 1872  36 c9         4704   4802 	MVI	M,OPCRET
 1874  e1            4705   4803 	POP	H
 1875  c9            4706   4804 	RET
-                    4707   4805 
+                    4707   4805
                     4708   4806 ;
                     4709   4807 ;  Page 100
                     4710   4808 ;
-                    4711   4809 
+                    4711   4809
                     4712   4810 ;
                     4713   4811 ;  CSAVE/CLOAD ROCESSORS
                     4714   4812 ;    save filename - save on diskette
@@ -4836,8 +4836,8 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 188b                4735   4833 namenotfound:
 188b  1e e1         4736   4834 	mvi	e,errnfi-errn	;file not saved
 188d  c3 07 06      4737   4835 	jmp	errmsg
-                    4738   4836 
-                    4739   4837 
+                    4738   4836
+                    4739   4837
 1890                4740   4838 csvstm:
 1890  cd cd 18      4741   4839 	call	setfilename
 1893  06 02         4742   4840 	mvi	b,2		;write enable
@@ -4865,17 +4865,17 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 18be  bb            4764   4862 	cmp	e
 18bf  c2 b3 18      4765   4863 	jnz	saveloop
 18c2  cd 2d b8      4766   4864 	call	closes		;yes
-                    4767   4865 
+                    4767   4865
                     4768   4866 ;
                     4769   4867 ;  Page 101
                     4770   4868 ;
-                    4771   4869 
+                    4771   4869
 18c5  c3 2f 06      4772   4870 	jmp	cmndstrt
 18c8                4773   4871 cannotopen:
 18c8  1e 09         4774   4872 	mvi	e,errnsl-errn
 18ca  c3 07 06      4775   4873 	jmp	errmsg
-                    4776   4874 
-                    4777   4875 
+                    4776   4874
+                    4777   4875
                     4778   4876 ;  setfilename
                     4779   4877 ;    returns hl set to a filename string
                     4780   4878 ;
@@ -4900,8 +4900,8 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 18e9  ca 05 06      4799   4897 	jz	errasn		;yes
 18ec  77            4800   4898 	mov	m,a		;store count
 18ed  c9            4801   4899 	ret
-                    4802   4900 
-                    4803   4901 
+                    4802   4900
+                    4803   4901
                     4804   4902 ;  checkprogram
                     4805   4903 ;    walk over the program looking for the end
                     4806   4904 ;    return last byte+1 in hl
@@ -4925,16 +4925,16 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1903                4824   4922 cprogok:
 1903  c9            4825   4923 	ret
 1904                4826   4924 filename:  ds	60
-                    4827   4925 
+                    4827   4925
                     4828   4926 ;
                     4829   4927 ;  Page 102
                     4830   4928 ;
-                    4831   4929 
+                    4831   4929
                     4832   4930 ;
                     4833   4931 ;  LOGICAL OPERATORS
                     4834   4932 ;
-                    4835   4933 
-                    4836   4934 
+                    4835   4933
+                    4836   4934
 1940                4837   4935 ORNOPR:
 1940  b7            4838   4936 	ORA	A		;OR OPERATOR
 1941  c3 45 19      4839   4937 	JMP	LOGOPRIC
@@ -4961,7 +4961,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1960  78            4860   4958 	MOV	A,B
 1961  a2            4861   4959 	ANA	D
 1962  c3 69 19      4862   4960 	JMP	LOGOPRXT	;RETURN FROM AND
-                    4863   4961 
+                    4863   4961
 1965                4864   4962 ORNOPRFN:
 1965  b3            4865   4963 	ORA	E
 1966  4f            4866   4964 	MOV	C,A
@@ -4970,7 +4970,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1969                4869   4967 LOGOPRXT:
 1969  41            4870   4968 	MOV	B,C
 196a  c3 e4 17      4871   4969 	JMP	FLOATAB		;RETURN FROM OR
-                    4872   4970 
+                    4872   4970
 196d                4873   4971 VALUNOT:
 196d  16 5a         4874   4972 	MVI	D,PREDNOT	;EVALUATE UNARY NOT
 196f  cd ac 0f      4875   4973 	CALL	VALEXPRL
@@ -4984,16 +4984,16 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 197d  cd 69 19      4883   4981 	CALL	LOGOPRXT
 1980  c1            4884   4982 	POP	B
 1981  c3 b8 0f      4885   4983 	JMP	VALEXPRC
-                    4886   4984 
+                    4886   4984
                     4887   4985 ;
                     4888   4986 ;  Page 103
                     4889   4987 ;
-                    4890   4988 
+                    4890   4988
                     4891   4989 ;
                     4892   4990 ;  MOD, MAXIMUM, MINIMUM OPERATORS
                     4893   4991 ;
-                    4894   4992 
-                    4895   4993 
+                    4894   4992
+                    4895   4993
 1984                4896   4994 MODOPR:
 1984  c1            4897   4995 	POP	B		;MODULO FUNCTION
 1985  d1            4898   4996 	POP	D		;X MOD Y =
@@ -5009,7 +5009,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1997  d1            4908   5006 	POP	D
 1998  cd b7 1a      4909   5007 	CALL	FLMUL
 199b  c3 c5 19      4910   5008 	JMP	SUBOPR
-                    4911   5009 
+                    4911   5009
 199e                4912   5010 MAXOPR:
 199e  c1            4913   5011 	POP	B
 199f  d1            4914   5012 	POP	D
@@ -5017,7 +5017,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 19a3  c8            4916   5014 	RZ			;NO DIFFERENCE
 19a4  da d3 1b      4917   5015 	JC	LDACRG		;REGISTERS LARGER
 19a7  c3 de 1b      4918   5016 	JMP	LDRGAC		;ACUMULATOR LARGER
-                    4919   5017 
+                    4919   5017
 19aa                4920   5018 MINOPR:
 19aa  c1            4921   5019 	POP	B
 19ab  d1            4922   5020 	POP	D
@@ -5025,26 +5025,26 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 19af  c8            4924   5022 	RZ			;NO DIFFERENCE
 19b0  d2 d3 1b      4925   5023 	JNC	LDACRG		;REGISTERS SMALLER
 19b3  c3 de 1b      4926   5024 	JMP	LDRGAC		;ACCUMULATOR SMALLER
-                    4927   5025 
+                    4927   5025
                     4928   5026 ;
                     4929   5027 ;  Page 104
                     4930   5028 ;
-                    4931   5029 
+                    4931   5029
                     4932   5030 ;
                     4933   5031 ;  FLOATING POINT ADD/SUBTRACT ROUTINES
                     4934   5032 ;
-                    4935   5033 
-                    4936   5034 
+                    4935   5033
+                    4936   5034
 19b6                4937   5035 FLADDHLF:
 19b6  21 56 1e      4938   5036 	LXI	H,FLHALF
 19b9                4939   5037 FLADDM:
 19b9  cd e1 1b      4940   5038 	CALL	LDRGMM
 19bc  c3 ca 19      4941   5039 	JMP	FLADD
-                    4942   5040 
+                    4942   5040
 19bf                4943   5041 FLMMMAC:
 19bf  cd e1 1b      4944   5042 	CALL	LDRGMM		;COMPUTE MM-AC
 19c2  c3 c7 19      4945   5043 	JMP	FLSUB
-                    4946   5044 
+                    4946   5044
 19c5                4947   5045 SUBOPR:
 19c5  c1            4948   5046 	POP	B
 19c6  d1            4949   5047 	POP	D
@@ -5086,11 +5086,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1a02  2e 01         4985   5083 	MVI	L,001H
 1a04  cd a7 1a      4986   5084 	CALL	SHIFTRLB
 1a07  c3 50 1a      4987   5085 	JMP	FLROUND
-                    4988   5086 
+                    4988   5086
                     4989   5087 ;
                     4990   5088 ;  Page 105
                     4991   5089 ;
-                    4992   5090 
+                    4992   5090
 1a0a                4993   5091 FLADDIFF:
 1a0a  af            4994   5092 	XRA	A		;FIND DIFFERENCE
 1a0b  90            4995   5093 	SUB	B
@@ -5130,7 +5130,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1a31                5029   5127 LDACCE:
 1a31  32 ac 03      5030   5128 	STA	FLACCEXP
 1a34  c9            5031   5129 	RET
-                    5032   5130 
+                    5032   5130
 1a35                5033   5131 NORMAL1L:
 1a35  05            5034   5132 	DCR	B		;NORMALIZE BY BITS
 1a36  29            5035   5133 	DAD	H
@@ -5146,11 +5146,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1a41  5c            5045   5143 	MOV	E,H
 1a42  45            5046   5144 	MOV	B,L
 1a43  b7            5047   5145 	ORA	A
-                    5048   5146 
+                    5048   5146
                     5049   5147 ;
                     5050   5148 ;  Page 106
                     5051   5149 ;
-                    5052   5150 
+                    5052   5150
 1a44  ca 50 1a      5053   5151 	JZ	FLROUND
 1a47  21 ac 03      5054   5152 	LXI	H,FLACCEXP
 1a4a  86            5055   5153 	ADD	M
@@ -5170,7 +5170,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1a5d  a9            5069   5167 	XRA	C
 1a5e  4f            5070   5168 	MOV	C,A
 1a5f  c3 d3 1b      5071   5169 	JMP	LDACRG
-                    5072   5170 
+                    5072   5170
 1a62                5073   5171 INCCDE:
 1a62  1c            5074   5172 	INR	E		;INCREMENT CDE
 1a63  c0            5075   5173 	RNZ
@@ -5184,7 +5184,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1a6c                5083   5181 ERRAOV:
 1a6c  1e 6d         5084   5182 	MVI	E,ERRNOV-ERRN
 1a6e  c3 07 06      5085   5183 	JMP	ERRMSG
-                    5086   5184 
+                    5086   5184
 1a71                5087   5185 ADDM2CDE:
 1a71  7e            5088   5186 	MOV	A,M		;ADD MEMORY TO CDE
 1a72  83            5089   5187 	ADD	E
@@ -5198,11 +5198,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1a7a  89            5097   5195 	ADC	C
 1a7b  4f            5098   5196 	MOV	C,A
 1a7c  c9            5099   5197 	RET
-                    5100   5198 
+                    5100   5198
                     5101   5199 ;
                     5102   5200 ;  Page 107
                     5103   5201 ;
-                    5104   5202 
+                    5104   5202
 1a7d                5105   5203 CMREGS:
 1a7d  21 ad 03      5106   5204 	LXI	H,FLACCSSV	;COMPLEMENT SAVED SIGN, CDEB
 1a80  7e            5107   5205 	MOV	A,M
@@ -5222,7 +5222,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1a8e  99            5121   5219 	SBB	C
 1a8f  4f            5122   5220 	MOV	C,A
 1a90  c9            5123   5221 	RET
-                    5124   5222 
+                    5124   5222
 1a91                5125   5223 SHIFTR0:
 1a91  06 00         5126   5224 	MVI	B,000H
 1a93                5127   5225 SHIFTR:
@@ -5254,15 +5254,15 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1ab0  1f            5153   5251 	RAR
 1ab1  47            5154   5252 	MOV	B,A
 1ab2  c3 a3 1a      5155   5253 	JMP	SHIFTRBL
-                    5156   5254 
+                    5156   5254
                     5157   5255 ;
                     5158   5256 ;  Page 108
                     5159   5257 ;
-                    5160   5258 
+                    5160   5258
                     5161   5259 ;
                     5162   5260 ;  FLOATING POINT MULTIPLY ROUTINE
                     5163   5261 ;
-                    5164   5262 
+                    5164   5262
 1ab5                5165   5263 MULOPR:
 1ab5  c1            5166   5264 	POP	B
 1ab6  d1            5167   5265 	POP	D
@@ -5314,25 +5314,25 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1afa  5f            5213   5311 	MOV	E,A
 1afb  78            5214   5312 	MOV	A,B
 1afc  1f            5215   5313 	RAR
-                    5216   5314 
+                    5216   5314
                     5217   5315 ;
                     5218   5316 ;  Page 109
                     5219   5317 ;
-                    5220   5318 
+                    5220   5318
 1afd  47            5221   5319 	MOV	B,A
 1afe  2d            5222   5320 	DCR	L
 1aff  7c            5223   5321 	MOV	A,H
 1b00  c2 e2 1a      5224   5322 	JNZ	FLMULLQ
 1b03  e1            5225   5323 	POP	H
 1b04  c9            5226   5324 	RET
-                    5227   5325 
+                    5227   5325
 1b05                5228   5326 FLMULXT:
 1b05  43            5229   5327 	MOV	B,E
 1b06  5a            5230   5328 	MOV	E,D
 1b07  51            5231   5329 	MOV	D,C
 1b08  4f            5232   5330 	MOV	C,A
 1b09  c9            5233   5331 	RET
-                    5234   5332 
+                    5234   5332
 1b0a                5235   5333 FLMLDVEX:
 1b0a  78            5236   5334 	MOV	A,B		;COMPUTE EXP FOR MULTIPLY/DIVIDE
 1b0b  b7            5237   5335 	ORA	A
@@ -5353,7 +5353,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1b25  77            5252   5350 	MOV	M,A
 1b26  2b            5253   5351 	DCX	H
 1b27  c9            5254   5352 	RET
-                    5255   5353 
+                    5255   5353
 1b28                5256   5354 EXPRNEXC:
 1b28  cd 7e 1c      5257   5355 	CALL	SIGNACC		;RANGE EXECEEDED FOR EXP FUNCTION
 1b2b  2f            5258   5356 	CMA			;RESULT DETERMINED BY SGN(X)
@@ -5364,16 +5364,16 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1b2e  e1            5263   5361 	POP	H
 1b2f  f2 30 1a      5264   5362 	JP	ZEROAC
 1b32  c3 6c 1a      5265   5363 	JMP	ERRAOV
-                    5266   5364 
+                    5266   5364
                     5267   5365 ;
                     5268   5366 ;  Page 110
                     5269   5367 ;
-                    5270   5368 
+                    5270   5368
                     5271   5369 ;
                     5272   5370 ;  FLOATING POINT DIVIDE ROUTINE
                     5273   5371 ;
-                    5274   5372 
-                    5275   5373 
+                    5274   5372
+                    5275   5373
 1b35                5276   5374 FLDIVB10:
 1b35  cd c3 1b      5277   5375 	CALL	PUSHAC		;COMPUTE AC/10
 1b38  01 20 84      5278   5376 	LXI	B,08420H
@@ -5425,11 +5425,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1b80  ce ff         5324   5422 	ACI	0FFH
 1b82  d2 8e 1b      5325   5423 	JNC	FLDIVSF
 1b85  32 b4 03      5326   5424 	STA	FLSCR3
-                    5327   5425 
+                    5327   5425
                     5328   5426 ;
                     5329   5427 ;  Page 111
                     5330   5428 ;
-                    5331   5429 
+                    5331   5429
 1b88  f1            5332   5430 	POP	PSW		;TRIAL SUBRACT SUCCEEDED,
 1b89  f1            5333   5431 	POP	PSW		;THROW AWAY SAVED DIVIDEND
 1b8a  37            5334   5432 	STC
@@ -5470,20 +5470,20 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1bb7  e1            5369   5467 	POP	H
 1bb8  c2 6b 1b      5370   5468 	JNZ	FLDIVLP	
 1bbb  c3 6c 1a      5371   5469 	JMP	ERRAOV
-                    5372   5470 
+                    5372   5470
 1bbe                5373   5471 ERRAD0:
 1bbe  1e 21         5374   5472 	MVI	E,ERRND0-ERRN
 1bc0  c3 07 06      5375   5473 	JMP	ERRMSG
-                    5376   5474 
+                    5376   5474
                     5377   5475 ;
                     5378   5476 ;  Page 112
                     5379   5477 ;
-                    5380   5478 
+                    5380   5478
                     5381   5479 ;
                     5382   5480 ;  MISCELLANEOUS AUXILIARY ROUTINES
                     5383   5481 ;
-                    5384   5482 
-                    5385   5483 
+                    5384   5482
+                    5385   5483
                     5386   5484 ;
                     5387   5485 ;  CPY ACCUMULATOR TO STACK
                     5388   5486 ;
@@ -5498,7 +5498,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1bcd  e5            5397   5495 	PUSH	H
 1bce  eb            5398   5496 	XCHG
 1bcf  c9            5399   5497 	RET
-                    5400   5498 
+                    5400   5498
                     5401   5499 ;
                     5402   5500 ;  LOAD ACCUMULATOR
                     5403   5501 ;
@@ -5512,7 +5512,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1bd9  22 ab 03      5411   5509 	SHLD	FLACCMSB
 1bdc  eb            5412   5510 	XCHG
 1bdd  c9            5413   5511 	RET
-                    5414   5512 
+                    5414   5512
                     5415   5513 ;
                     5416   5514 ;  LOAD REGISTERS
                     5417   5515 ;
@@ -5531,11 +5531,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1be8                5430   5528 INCHLRET:
 1be8  23            5431   5529 	INX	H
 1be9  c9            5432   5530 	RET
-                    5433   5531 
+                    5433   5531
                     5434   5532 ;
                     5435   5533 ;  Page 113
                     5436   5534 ;
-                    5437   5535 
+                    5437   5535
                     5438   5536 ;
                     5439   5537 ;  STORE ACCUMULATOR / COPY A VALUE
                     5440   5538 ;
@@ -5552,7 +5552,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1bf5  05            5451   5549 	DCR	B
 1bf6  c2 f1 1b      5452   5550 	JNZ	COPYVALL
 1bf9  c9            5453   5551 	RET
-                    5454   5552 
+                    5454   5552
                     5455   5553 ;
                     5456   5554 ;  TURN ON HIGH ORDER MANTISSA BITS OF ACCUMULATOR/REGISTERS
                     5457   5555 ;
@@ -5576,11 +5576,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1c0c  1f            5475   5573 	RAR
 1c0d  ae            5476   5574 	XRA	M
 1c0e  c9            5477   5575 	RET
-                    5478   5576 
+                    5478   5576
                     5479   5577 ;
                     5480   5578 ;  Page 114
                     5481   5579 ;
-                    5482   5580 
+                    5482   5580
                     5483   5581 ;
                     5484   5582 ;  FLOATING POINT COMPARISON:  REGISTERS VS ACCUMULATOR
                     5485   5583 ;
@@ -5601,7 +5601,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1c26  1f            5500   5598 	RAR
 1c27  a9            5501   5599 	XRA	C
 1c28  c9            5502   5600 	RET
-                    5503   5601 
+                    5503   5601
 1c29                5504   5602 FLCMPM:
 1c29  23            5505   5603 	INX	H		;COMPARE MANTISSAS
 1c2a  78            5506   5604 	MOV	A,B
@@ -5622,11 +5622,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1c39  e1            5521   5619 	POP	H
 1c3a  e1            5522   5620 	POP	H
 1c3b  c9            5523   5621 	RET
-                    5524   5622 
+                    5524   5622
                     5525   5623 ;
                     5526   5624 ;  Page 115
                     5527   5625 ;
-                    5528   5626 
+                    5528   5626
                     5529   5627 ;
                     5530   5628 ;  COMPUTER INTEGER PART OF ACCUMULATOR
                     5531   5629 ;
@@ -5653,7 +5653,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1c5b  dc 7d 1a      5552   5650 	CC	CMREGS
 1c5e  e1            5553   5651 	POP	H
 1c5f  c9            5554   5652 	RET
-                    5555   5653 
+                    5555   5653
 1c60                5556   5654 DECCDE:
 1c60  1b            5557   5655 	DCX	D		;DECREMENT CDE
 1c61  7a            5558   5656 	MOV	A,D
@@ -5662,7 +5662,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1c64  c0            5561   5659 	RNZ
 1c65  0d            5562   5660 	DCR	C
 1c66  c9            5563   5661 	RET
-                    5564   5662 
+                    5564   5662
 1c67                5565   5663 FLMULB10:
 1c67  cd de 1b      5566   5664 	CALL	LDRGAC		;MULTIPLY CONTENTS OF AC BY 10
 1c6a  78            5567   5665 	MOV	A,B
@@ -5676,17 +5676,17 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1c79  34            5575   5673 	INR	M		;AC=2*AC
 1c7a  c0            5576   5674 	RNZ
 1c7b  c3 6c 1a      5577   5675 	JMP	ERRAOV
-                    5578   5676 
+                    5578   5676
 1c7e                5579   5677 SIGNACC:
 1c7e  3a ac 03      5580   5678 	LDA	FLACCEXP	;FIND SIGN OF ACCUMULATOR
 1c81  b7            5581   5679 	ORA	A
 1c82  c8            5582   5680 	RZ
 1c83  3a ab 03      5583   5681 	LDA	FLACCMSB
-                    5584   5682 
+                    5584   5682
                     5585   5683 ;
                     5586   5684 ;  Page 116
                     5587   5685 ;
-                    5588   5686 
+                    5588   5686
 1c86  c3 8a 1c      5589   5687 	JMP	SIGNXTND
 1c89                5590   5688 FLCMPXT:
 1c89  2f            5591   5689 	CMA
@@ -5697,12 +5697,12 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1c8c  c0            5596   5694 	RNZ
 1c8d  3c            5597   5695 	INR	A
 1c8e  c9            5598   5696 	RET
-                    5599   5697 
+                    5599   5697
 1c8f                5600   5698 CMANSWR:
 1c8f  21 ae 1c      5601   5699 	LXI	H,CMACCS	;F(X)=-F(0)
 1c92  e3            5602   5700 	XTHL
 1c93  e9            5603   5701 	PCHL
-                    5604   5702 
+                    5604   5702
 1c94                5605   5703 SGNFCT:
 1c94  cd 7e 1c      5606   5704 	CALL	SIGNACC
 1c97                5607   5705 FLOATBYT:
@@ -5717,7 +5717,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1ca4  36 80         5616   5714 	MVI	M,080H
 1ca6  17            5617   5715 	RAL
 1ca7  c3 18 1a      5618   5716 	JMP	NORMALZI
-                    5619   5717 
+                    5619   5717
                     5620   5718 ;
                     5621   5719 ;  COMPUTE ABSOLUTE VALUE OF ACCUMULATOR
                     5622   5720 ;
@@ -5730,7 +5730,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1cb2  ee 80         5629   5727 	XRI	080H
 1cb4  77            5630   5728 	MOV	M,A
 1cb5  c9            5631   5729 	RET
-                    5632   5730 
+                    5632   5730
 1cb6                5633   5731 INTFCT:
 1cb6  21 ac 03      5634   5732 	LXI	H,FLACCEXP	;INT FUNCTION
 1cb9  7e            5635   5733 	MOV	A,M
@@ -5743,25 +5743,25 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1cc6  7b            5642   5740 	MOV	A,E
 1cc7  f5            5643   5741 	PUSH	PSW
 1cc8  79            5644   5742 	MOV	A,C
-                    5645   5743 
+                    5645   5743
                     5646   5744 ;
                     5647   5745 ;  Page 117
                     5648   5746 ;
-                    5649   5747 
+                    5649   5747
 1cc9  17            5650   5748 	RAL
 1cca  cd 18 1a      5651   5749 	CALL	NORMALZI
 1ccd  f1            5652   5750 	POP	PSW
 1cce  c9            5653   5751 	RET
-                    5654   5752 
+                    5654   5752
                     5655   5753 ;
                     5656   5754 ;  Page 118
                     5657   5755 ;
-                    5658   5756 
+                    5658   5756
                     5659   5757 ;
                     5660   5758 ;  FLOATING POINT DECODE ROUTINE
                     5661   5759 ;
-                    5662   5760 
-                    5663   5761 
+                    5662   5760
+                    5663   5761
 1ccf                5664   5762 DECODE:
 1ccf  fe 2d         5665   5763 	CPI	'-'		;DECODE EXTERNAL FORM OF NUMBER
 1cd1  f5            5666   5764 	PUSH	PSW
@@ -5813,11 +5813,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1d1b  86            5712   5810 	ADD	M
 1d1c  d6 30         5713   5811 	SUI	'0'
 1d1e  5f            5714   5812 	MOV	E,A
-                    5715   5813 
+                    5715   5813
                     5716   5814 ;
                     5717   5815 ;  Page 119
                     5718   5816 ;
-                    5719   5817 
+                    5719   5817
 1d1f  c3 10 1d      5720   5818 	JMP	DECODEXL
 1d22                5721   5819 DECODEXQ:
 1d22  14            5722   5820 	INR	D
@@ -5847,11 +5847,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1d42  cc ae 1c      5746   5844 	CZ	CMACCS
 1d45  eb            5747   5845 	XCHG
 1d46  c9            5748   5846 	RET
-                    5749   5847 
+                    5749   5847
                     5750   5848 ;
                     5751   5849 ;  Page 120
                     5752   5850 ;
-                    5753   5851 
+                    5753   5851
 1d47                5754   5852 DECMULUP:
 1d47  c8            5755   5853 	RZ
 1d48                5756   5854 FLMLB10C:
@@ -5860,7 +5860,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1d4c  f1            5759   5857 	POP	PSW
 1d4d  3d            5760   5858 	DCR	A
 1d4e  c9            5761   5859 	RET
-                    5762   5860 
+                    5762   5860
 1d4f                5763   5861 DECDIGIT:
 1d4f  d5            5764   5862 	PUSH	D		;DECODE DIGIT OF NUMBER
 1d50  57            5765   5863 	MOV	D,A
@@ -5878,7 +5878,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1d61  c1            5777   5875 	POP	B
 1d62  d1            5778   5876 	POP	D
 1d63  c3 e3 1c      5779   5877 	JMP	DECODELP
-                    5780   5878 
+                    5780   5878
 1d66                5781   5879 DECDGADD:
 1d66  cd c3 1b      5782   5880 	CALL	PUSHAC
 1d69  cd 97 1c      5783   5881 	CALL	FLOATBYT
@@ -5886,11 +5886,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1d6c  c1            5785   5883 	POP	B
 1d6d  d1            5786   5884 	POP	D
 1d6e  c3 ca 19      5787   5885 	JMP	FLADD
-                    5788   5886 
+                    5788   5886
                     5789   5887 ;
                     5790   5888 ;  Page 121
                     5791   5889 ;
-                    5792   5890 
+                    5792   5890
                     5793   5891 ;
                     5794   5892 ;  FLOATING POINT ENCODE ROUTINE
                     5795   5893 ;
@@ -5936,7 +5936,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1db4  cd 48 1d      5835   5933 	CALL	FLMLB10C
 1db7  f5            5836   5934 	PUSH	PSW
 1db8  c3 a6 1d      5837   5935 	JMP	ENCODUPL
-                    5838   5936 
+                    5838   5936
 1dbb                5839   5937 ENCODDNL:
 1dbb  cd 35 1b      5840   5938 	CALL	FLDIVB10	;FORCE NUMBER TO RANGE
 1dbe  f1            5841   5939 	POP	PSW		;AC < 10**6 BY DIVISION
@@ -5946,11 +5946,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1dc4                5845   5943 ENCODRND:
 1dc4  cd b6 19      5846   5944 	CALL	FLADDHLF	;ROUND UP RESULT
 1dc7  3c            5847   5945 	INR A
-                    5848   5946 
+                    5848   5946
                     5849   5947 ;
                     5850   5948 ;  Page 122
                     5851   5949 ;
-                    5852   5950 
+                    5852   5950
 1dc8  cd 3c 1c      5853   5951 	CALL	FIXAC
 1dcb  cd d3 1b      5854   5952 	CALL	LDACRG
 1dce  01 06 02      5855   5953 	LXI	B,00206H	;D.DDDDD
@@ -6007,11 +6007,11 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1e16  ca 25 1e      5906   6004 	JZ	ENCODEXP
 1e19                5907   6005 ENCDRTZR:
 1e19  2b            5908   6006 	DCX	H		;REMOVE TRAILING ZEROES
-                    5909   6007 
+                    5909   6007
                     5910   6008 ;
                     5911   6009 ;  Page 123
                     5912   6010 ;
-                    5913   6011 
+                    5913   6011
 1e1a  7e            5914   6012 	MOV	A,M
 1e1b  fe 30         5915   6013 	CPI	'0'
 1e1d  ca 19 1e      5916   6014 	JZ	ENCDRTZR
@@ -6044,7 +6044,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1e44  71            5943   6041 	MOV	M,C
 1e45  e1            5944   6042 	POP	H
 1e46  c9            5945   6043 	RET
-                    5946   6044 
+                    5946   6044
 1e47                5947   6045 ENCODCMP:
 1e47  01 74 94      5948   6046 	LXI	B,09474H	;10**6
 1e4a  11 f7 23      5949   6047 	LXI	D,023F7H
@@ -6053,10 +6053,10 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1e51  3d            5952   6050 	DCR	A
 1e52  f2 bb 1d      5953   6051 	JP	ENCODDNL
 1e55  e9            5954   6052 	PCHL
-                    5955   6053 
+                    5955   6053
 1e56                5956   6054 FLHALF:
 1e56  00 00 00 80   5957   6055 	DB	000h, 000h, 000h, 080h	;1/2
-                    5958   6056 
+                    5958   6056
 1e5a                5959   6057 ENCDCOEF:
 1e5a  a0 86 01      5960   6058 	db	0a0h, 086h, 001h	;10**5
 1e5d  10 27 00      5961   6059 	db	010h, 027h, 000h	;10**4
@@ -6064,15 +6064,15 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1e63  64 00 00      5963   6061 	db	064h, 000h, 000h	;10**2
 1e66  0a 00 00      5964   6062 	db	00ah, 000h, 000h	;10**1
 1e69  01 00 00      5965   6063 	db	001h, 000h, 000h	;10**0
-                    5966   6064 
+                    5966   6064
                     5967   6065 ;
                     5968   6066 ;  Page 124
                     5969   6067 ;
-                    5970   6068 
+                    5970   6068
                     5971   6069 ;
                     5972   6070 ;  FLOATING POINT LOGARITHM ROUTINE
                     5973   6071 ;
-                    5974   6072 
+                    5974   6072
 1e6c                5975   6073 LOGCOEF:
 1e6c  03            5976   6074 	DB	3
 1e6d  aa 56 19 80   5977   6075 	db	0aah, 056h, 019h, 080h
@@ -6111,15 +6111,15 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1eb5  01 31 80      6010   6108 	LXI	B,08031H	;LN(2)=0.6931472
 1eb8  11 18 72      6011   6109 	LXI	D,07218H
 1ebb  c3 b7 1a      6012   6110 	JMP	FLMUL
-                    6013   6111 
+                    6013   6111
                     6014   6112 ;
                     6015   6113 ;  Page 125
                     6016   6114 ;
-                    6017   6115 
+                    6017   6115
                     6018   6116 ;
                     6019   6117 ;  FLOATING POINT SQUARE ROOT/EXPONENTIATION ROUTINE
                     6020   6118 ;
-                    6021   6119 
+                    6021   6119
 1ebe                6022   6120 SQRFCT:
 1ebe  cd c3 1b      6023   6121 	CALL	PUSHAC		;SQR FUNCTION
 1ec1  21 56 1e      6024   6122 	LXI	H,FLHALF	;SQR(X)=X**1/2
@@ -6161,16 +6161,16 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1f00  c1            6060   6158 	POP	B
 1f01  d1            6061   6159 	POP	D
 1f02  cd b7 1a      6062   6160 	CALL	FLMUL
-                    6063   6161 
+                    6063   6161
                     6064   6162 ;
                     6065   6163 ;  Page 126
                     6066   6164 ;
-                    6067   6165 
+                    6067   6165
                     6068   6166 ;
                     6069   6167 ;  EXPONENTIAL FUNCTION ROUTINE
                     6070   6168 ;
-                    6071   6169 
-                    6072   6170 
+                    6071   6169
+                    6072   6170
 1f05                6073   6171 EXPFCT:
 1f05  cd c3 1b      6074   6172 	CALL	PUSHAC		;EXP FUNCTION
 1f08  01 38 81      6075   6173 	LXI	B,08138H	;LOG(2)E=1.442695
@@ -6199,7 +6199,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1f40  c1            6098   6196 	POP	B
 1f41  4a            6099   6197 	MOV	C,D
 1f42  c3 b7 1a      6100   6198 	JMP	FLMUL
-                    6101   6199 
+                    6101   6199
 1f45                6102   6200 EXPCOEF:
 1f45  08            6103   6201 	DB	8
 1f46  40 2e 94 74   6104   6202 	db	040h, 02eh, 094h, 074h
@@ -6210,16 +6210,16 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1f5a  ff ff 7f 7f   6109   6207 	db	0ffh, 0ffh, 07fh, 07fh
 1f5e  00 00 80 81   6110   6208 	db	000h, 000h, 080h, 081h
 1f62  00 00 00 81   6111   6209 	db	000h, 000h, 000h, 081h
-                    6112   6210 
+                    6112   6210
                     6113   6211 ;
                     6114   6212 ;  Page 127
                     6115   6213 ;
-                    6116   6214 
+                    6116   6214
                     6117   6215 ;
                     6118   6216 ;  FLOATING POINT POLYNOMINAL EVALUATORS
                     6119   6217 ;
-                    6120   6218 
-                    6121   6219 
+                    6120   6218
+                    6121   6219
 1f66                6122   6220 FCTPOLY2:
 1f66  cd c3 1b      6123   6221 	CALL	PUSHAC		;POLYNOMIAL EVALUATOR
 1f69  11 b5 1a      6124   6222 	LXI	D,MULOPR	;EVALUATE P(X**2)*X
@@ -6250,16 +6250,16 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1f90  e1            6149   6247 	POP	H
 1f91  f1            6150   6248 	POP	PSW
 1f92  c3 7d 1f      6151   6249 	JMP	FCTPOLYL
-                    6152   6250 
+                    6152   6250
                     6153   6251 ;
                     6154   6252 ;  Page 128
                     6155   6253 ;
-                    6156   6254 
+                    6156   6254
                     6157   6255 ;
                     6158   6256 ;  RANDOM NUMBER GENERATOR
                     6159   6257 ;
-                    6160   6258 
-                    6161   6259 
+                    6160   6258
+                    6161   6259
 1f95                6162   6260 RNDFCT:
 1f95  cd 7e 1c      6163   6261 	CALL	SIGNACC		;RND FUNCTION
 1f98  fa b4 1f      6164   6262 	JM	RNDFCTUS	;<0 - INITIALIZE SEED
@@ -6284,16 +6284,16 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 1fc0  cd 1b 1a      6183   6281 	CALL	NORMALIZ
 1fc3  21 b5 03      6184   6282 	LXI	H,RNDFCTSD
 1fc6  c3 ea 1b      6185   6283 	JMP	LDMMAC
-                    6186   6284 
+                    6186   6284
                     6187   6285 ;
                     6188   6286 ;  Page 129
                     6189   6287 ;
-                    6190   6288 
+                    6190   6288
                     6191   6289 ;
                     6192   6290 ;  FLOATING POINT SINE/COSINE ROUTINES
                     6193   6291 ;
-                    6194   6292 
-                    6195   6293 
+                    6194   6292
+                    6195   6293
 1fc9                6196   6294 COSFCT:
 1fc9  21 13 20      6197   6295 	LXI	H,PIOVER2	;COS FUNCTION
 1fcc  cd b9 19      6198   6296 	CALL	FLADDM
@@ -6327,36 +6327,36 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 200a  d4 ae 1c      6226   6324 	CNC	CMACCS
 200d  21 1b 20      6227   6325 	LXI	H,COSCOEF
 2010  c3 66 1f      6228   6326 	JMP	FCTPOLY2
-                    6229   6327 
+                    6229   6327
 2013                6230   6328 PIOVER2:
 2013  db 0f 49 81   6231   6329 	db	0dbh, 00fh, 049h, 081h	;PI/2
-                    6232   6330 
-                    6233   6331 
+                    6232   6330
+                    6233   6331
 2017                6234   6332 FLQUART:
 2017  00 00 00 7f   6235   6333 	db	000h, 000h, 000h, 07fh	;1/4
-                    6236   6334 
+                    6236   6334
 201b                6237   6335 COSCOEF:
 201b  05            6238   6336 	DB	5
 201c  ba d7 1e 86   6239   6337 	db	0bah, 0d7h, 01eh, 086h
 2020  64 26 99 87   6240   6338 	db	064h, 026h, 099h, 087h
 2024  58 34 23 87   6241   6339 	db	058h, 034h, 023h, 087h
 2028  e0 5d a5 86   6242   6340 	db	0e0h, 05dh, 0a5h, 086h
-                    6243   6341 
+                    6243   6341
                     6244   6342 ;
                     6245   6343 ;  Page 130
                     6246   6344 ;
-                    6247   6345 
+                    6247   6345
 202c  da 0f 49 83   6248   6346 	db	0dah, 00fh, 049h, 083h
-                    6249   6347 
+                    6249   6347
                     6250   6348 ;
                     6251   6349 ;  Page 131
                     6252   6350 ;
-                    6253   6351 
+                    6253   6351
                     6254   6352 ;
                     6255   6353 ;  FLOATING POINT TANGENT/ARCTANGENT ROUTINES
                     6256   6354 ;
-                    6257   6355 
-                    6258   6356 
+                    6257   6355
+                    6258   6356
 2030                6259   6357 TANFCT:
 2030  cd c3 1b      6260   6358 	CALL	PUSHAC		;TAN FUNCTION
 2033  cd cf 1f      6261   6359 	CALL	SINFCT
@@ -6367,7 +6367,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 203c  cd d3 1b      6266   6364 	CALL	LDACRG
 203f  cd c9 1f      6267   6365 	CALL	COSFCT
 2042  c3 41 1b      6268   6366 	JMP	DIVOPR
-                    6269   6367 
+                    6269   6367
 2045                6270   6368 ATNFCT:
 2045  cd 7e 1c      6271   6369 	CALL	SIGNACC
 2048  fc 8f 1c      6272   6370 	CM	CMANSWR
@@ -6386,7 +6386,7 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 2065  cd 66 1f      6285   6383 	CALL	FCTPOLY2
 2068  21 13 20      6286   6384 	LXI	H,PIOVER2
 206b  c9            6287   6385 	RET
-                    6288   6386 
+                    6288   6386
 206c                6289   6387 ATNCOEF:
 206c  09            6290   6388 	DB	9
 206d  4a d7 3b 78   6291   6389 	db	04ah, 0d7h, 03bh, 078h
@@ -6398,30 +6398,30 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 2085  e4 bb 4c 7e   6297   6395 	db	0e4h, 0bbh, 04ch, 07eh
 2089  6c aa aa 7f   6298   6396 	db	06ch, 0aah, 0aah, 07fh
 208d  00 00 00 81   6299   6397 	db	000h, 000h, 000h, 081h
-                    6300   6398 
+                    6300   6398
                     6301   6399 ;
                     6302   6400 ;  Page 132
                     6303   6401 ;
-                    6304   6402 
+                    6304   6402
 2091                6305   6403 VERSNDAT:
 2091  30 32 2f 30   6306   6404 	DB	'02/03/78',0
 2095  33 2f 37 38   6306   6405
 2099  00            6306   6406
-                    6307   6407 
-                    6308   6408 
+                    6307   6407
+                    6308   6408
 209a                6309   6409 ENDINTRP:
 209a  00            6310   6410 	DB	0		;END OF INTERPRETER
-                    6311   6411 
+                    6311   6411
                     6312   6412 ;
                     6313   6413 ;  Page 133
                     6314   6414 ;
-                    6315   6415 
+                    6315   6415
                     6316   6416 ;
                     6317   6417 ;  INITIALIZATION
                     6318   6418 ;
-                    6319   6419 
+                    6319   6419
 209b                6320   6420 INITIALZ:
-                    6321   6421 
+                    6321   6421
 209b  21 ff ff      6322   6422 	LXI	H,0FFFFH
 209e  22 89 03      6323   6423 	SHLD	CURLINE
 20a1  21 06 22      6324   6424 	LXI	H,INITSTCK
@@ -6472,15 +6472,15 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 20ff  cd c2 0d      6369   6469 	CALL	PRNTMSG
 2102  cd 0d 05      6370   6470 	CALL	CLEARPGM
 2105  21 61 06      6371   6471 	LXI	H,CMNDRSTR
-                    6372   6472 
+                    6372   6472
                     6373   6473 ;
                     6374   6474 ;  Page 134
                     6375   6475 ;
-                    6376   6476 
+                    6376   6476
 2108  22 01 00      6377   6477 	SHLD	SYSINITJ+1
 210b  e9            6378   6478 	PCHL
-                    6379   6479 
-                    6380   6480 
+                    6379   6479
+                    6380   6480
 210c                6381   6481 INITMFRE:
 210c  20 42 59 54   6382   6482 	DB	' BYTES FREE'
 2110  45 53 20 46   6382   6483
@@ -6495,270 +6495,270 @@ b82d  =             4725   4823 closes	equ	d14base+42dh	;close stream
 212d                6386   6492 	DS	30*2+LINESYZE	;INITIALIZE STACK SPACE
 2206                6387   6493 INITSTCK:
 2206                6388   6494 	DS	20
-                    6389   6495 
-                    6390   6496 
-                    6391   6497 
+                    6389   6495
+                    6390   6496
+                    6391   6497
 221a                6392   6498 	END
 
 Symbol table
 
-ABSFCT          1caa    ACCUMLTR        03a9    ADDM2CDE        1a71 
-ADDOPR          1d6c    ALPHACHA        03d2    ALPHACHK        03d1 
-ALPHACHL        03e1    ANDOPR          1944    ASCFCT          1636 
-ASSIGN          0bd1    ASSIGNVL        0bc7    ATNCOEF         206c 
-ATNFCT          2045    ATNFCTC         2062    AUTSTM          067a 
-AUTSTMBR        06a0    AUTSTMIN        066d    AUTSTMN         068b 
-AUTSTMS         067b    BASIC           0000*   BEL             0007 
-BOOTSTART       b39b    BREAKCHK        0add    BS              0008 
+ABSFCT          1caa    ACCUMLTR        03a9    ADDM2CDE        1a71
+ADDOPR          1d6c    ALPHACHA        03d2    ALPHACHK        03d1
+ALPHACHL        03e1    ANDOPR          1944    ASCFCT          1636
+ASSIGN          0bd1    ASSIGNVL        0bc7    ATNCOEF         206c
+ATNFCT          2045    ATNFCTC         2062    AUTSTM          067a
+AUTSTMBR        06a0    AUTSTMIN        066d    AUTSTMN         068b
+AUTSTMS         067b    BASIC           0000*   BEL             0007
+BOOTSTART       b39b    BREAKCHK        0add    BS              0008
 CANNOTOPEN      18c8    CBYTE           0c45    CD1             0011*
-CHARMTCH        03e4    CHECKPROGRAM    18ee    CHRFCT          1643 
-CINB            0011    CINTEGER        0c26    CINTPOS         0c20 
-CLDSTM          1876    CLEARPCN        0551    CLEARPGM        050d 
-CLEARSCREEN     0037    CLEARSET        0518    CLEARSTK        0521 
-CLEARVAR        0541    CLEARVST        051b    CLOSES          b82d 
-CLRSTM          057d    CMACCS          1cae    CMANSWR         1c8f 
-CMHLLTDE        04d7    CMNDINPT        0642    CMNDRSTR        0661 
-CMNDSTRT        062f    CMPXT           1c8b    CMREGS          1a7d 
-CO              0006    COERCE          0bfb    COERCEF         0bfe 
-CONSTM          0b07    COPYCHK         04dd    COPYSTRG        122c 
-COPYSTRL        122d    COPYTEXT        04e0    COPYTXTL        04e3 
-COPYVAL         1bed    COPYVALL        1bf1    COSCOEF         201b 
-COSFCT          1fc9    CPROGLOOP       18f1    CPROGLOOP2      18fa 
-CPROGOK         1903    CR              000d    CSINGLE         0c0a 
-CSTRING         0c11    CSVSTM          1890    CURDATAP        0393 
-CURLDATA        0391    CURLINE         0389    CURLINES        038b 
-CURSLIM         03b0    CURSPOS         03af    D14BASE         b400 
-DATAGET         0ef0    DATAINPT        0f1c    DATASRCH        0efa 
-DATASRCK        0f13    DATRSKIP        0b8b    DATRSKST        0b88 
-DATSTM          0b7f    DCLR            001a    DECCDE          1c60 
-DECDEXAL        1d3d    DECDEXPA        1d31    DECDGADD        1d66 
-DECDIGIT        1d4f    DECMULUP        1d47    DECODE          1ccf 
-DECODEIN        1cdb    DECODELP        1ce3    DECODEPT        1d2a 
-DECODEXL        1d10    DECODEXP        1cf8    DECODEXQ        1d22 
-DECODVAL        1d2e    DEFSTM          141a    DEFSTML         1430 
-DEL             007f*   DELSTM          0813    DIMSTM          123f 
-DIMSTML         1236    DIRECTORYLOOKUP b8e0    DIVOPR          1b41 
-EDISTM          0904    EDISTMAD        094c    EDISTMCH        09e7 
-EDISTMCR        09d2    EDISTMDL        0957    EDISTMDM        0964 
-EDISTMEC        0946    EDISTMER        0944    EDISTMIM        0981 
-EDISTMIN        0970    EDISTMLS        091f    EDISTMNX        092a 
-EDISTMQT        09cb    EDISTMRI        0974    EDISTMRP        098e 
-EDISTMSL        09aa    EDISTMSR        09a1    EDISTMXT        09bf 
-ELSSTM          0b84    ENCDCOEF        1e5a    ENCDEXPL        1e37 
-ENCDEXPP        1e35    ENCDEXPS        1ddf    ENCDRTZR        1e19 
-ENCODCMP        1e47    ENCODDGL        1de5    ENCODDNL        1dbb 
-ENCODE          1d85    ENCODEHL        1d7e    ENCODEXP        1e25 
-ENCODEXT        1e44    ENCODFRS        1d97    ENCODRND        1dc4 
-ENCODSBL        1df4    ENCODUPL        1da6    ENCODZXT        1e41 
-ENDINTRP        209a    ENDPROGM        0ae6    ENDSTM          0b27 
-ENDSTMC         0af9    ERRABS          1361    ERRAD0          1bbe 
-ERRAFC          0c39    ERRAID          1516    ERRANF          0f94 
-ERRAOM          0507    ERRAOV          1a6c    ERRASN          0605 
-ERRAST          11ba    ERRATM          0c18    ERRAUS          0b60 
-ERRDATA         05ff    ERRMSG          0607    ERRMSGIN        1d71 
-ERRMSGPR        0623    ERRN            0289    ERRNBS          0328 
-ERRNCN          0289    ERRND0          02aa    ERRNDD          0299 
-ERRNFC          02b6    ERRNFI          036a    ERRNID          02a3 
-ERRNLS          02c4    ERRNNF          02dd    ERRNOD          02ea 
-ERRNOM          02d0    ERRNOS          030e    ERRNOV          02f6 
-ERRNRG          02ff    ERRNSL          0292    ERRNSN          0332 
-ERRNST          031b    ERRNTM          0339    ERRNUF          033e 
-ERRNUS          034e    ERRNUV          035a    ESC             0018 
-ETX             0003    EXECUTE         0aba    EXECUTE2        0c53 
-EXECUTEB        0ae2    EXECUTEC        0ac1    EXECUTEL        0a9a 
-EXECUTES        0ac2    EXPCOEF         1f45    EXPEXPOS        1eed 
-EXPFCT          1f05    EXPOPR          1ec7    EXPRNEXC        1b28 
-FCTPOLY1        1f75    FCTPOLY2        1f66    FCTPOLYL        1f7d 
-FCTTABL         00c2    FF              000c    FILENAME        1904 
-FIXAC           1c3c    FLACCEXP        03ac    FLACCMSB        03ab 
-FLACCSSV        03ad    FLADD           19ca    FLADDHLF        19b6 
-FLADDIFF        1a0a    FLADDM          19b9    FLADDMGC        19e4 
-FLCMP           1c0f    FLCMPM          1c29    FLCMPXT         1c89 
-FLDIV           1b43    FLDIVB10        1b35    FLDIVLP         1b6b 
-FLDIVSF         1b8e    FLDIVSS         1b90    FLHALF          1e56 
-FLMLB10C        1d48    FLMLDVEX        1b0a    FLMLDVEY        1b2d 
-FLMLDVEZ        1b2e    FLMMMAC         19bf    FLMUL           1ab7 
-FLMULB10        1c67    FLMULLN2        1eb5    FLMULLP         1ad9 
-FLMULLQ         1ae2    FLMULNA         1af3    FLMULXT         1b05 
-FLOATA          0de4    FLOATAB         17e4    FLOATBYT        1c97 
-FLOATHL         16b7    FLOATINT        1c9c    FLONE           1e79 
-FLQUART         2017    FLROUND         1a50    FLROUNDV        1a51 
-FLSCR0          03b1    FLSCR1          03b2    FLSCR2          03b3 
-FLSCR3          03b4    FLSUB           19c7    FORBLCK         0010 
-FORCHK          0a0f    FORCHKL         0a13    FORCHKXT        0a2e 
-FORMARK         0a96    FORSTM          0a37    FORSTMNF        0a54 
-FORSTMST        0a8d    FREELIMT        039d    FREFCT          17c4 
-FREFCTNS        17df    FSPROM          b000    GOMONITOR       003d 
-GSBSTM          0b31    GTOSTM          0b42    HEXFCT          16c5 
-HEXFCTL         16da    HT              0009    HXVFCT          1691 
-HXVFCTCH        16bc    HXVFCTL         169e    IFNSTMC         0cfc 
-IFNSTMCH        0d12    IFNSTMSK        0d04    IFSTM           0cef 
-INCCDE          1a62    INCHLRET        1be8    INITIALZ        209b 
-INITMFRE        210c    INITSTCK        2206    INITSTSP        212d 
-INOTGEN         186a    INOTINS         03b1    INPSTM          0e32 
-INPSTMBR        0ae5    INPSTMER        0ec9    INPSTMIN        0e6d 
-INPSTMLN        0f3b    INPSTMPR        0e5b    INPSTMRD        0e36 
-INPSTMXT        0ecd    INPTBUFR        0395    INPTCHAR        05d1 
-INPTCRLF        077e    INPTCRTN        07cc    INPTEXIT        07d0 
-INPTLINC        0795*   INPTLINL        0790    INPTLNBS        0767 
-INPTLNEC        07c6    INPTLNRD        0774    INPTLNST        07b3 
-INPTRQST        0781    INSFCT          177d    INSFCTSL        17ab 
-INSFCTXT        17b5    INTFCT          1cb6    ITEMSIZE        000e 
-KEYABS          00b9    KEYADD          00aa    KEYAND          00b0 
-KEYASC          00ca    KEYATA          00c1    KEYAUT          0092 
-KEYCHR          00cb    KEYCLD          009c    KEYCLR          009b 
-KEYCON          0098    KEYCOS          00be    KEYCSV          009d 
-KEYDAT          0080    KEYDEF          0097    KEYDEL          0093 
-KEYDIM          0086    KEYDIV          00ad    KEYEDI          009a 
-KEYELS          008c    KEYEND          0082    KEYEQ           00b5 
-KEYEXP          00bd    KEYEXPT         00af    KEYFCT          00b7 
-KEYFN           00a7    KEYFOR          0083    KEYFRE          00c3 
-KEYGSB          008e    KEYGT           00b4    KEYGTO          0089 
-KEYHEX          00cc    KEYHXV          00cd    KEYIF           008b 
-KEYINPT         0085    KEYINS          00d2    KEYINT          00b8 
-KEYLEN          00c7    KEYLET          0088    KEYLFT          00cf 
-KEYLINE         00a4    KEYLIS          0099    KEYLOG          00bc 
-KEYLSAH         00a5    KEYLSAL         0082    KEYLSBH         00a3 
-KEYLSBL         00a0    KEYLT           00b6    KEYMAX          00b2 
-KEYMEM          00c6    KEYMID          00d1    KEYMIN          00b3 
-KEYMOD          00ae    KEYMUL          00ac    KEYNEW          009e 
-KEYNEX          0084    KEYNOT          00a8    KEYOFF          00a9 
-KEYON           0091    KEYOPR          00aa    KEYOR           00b1 
-KEYPLT          0094    KEYPORT         00c4    KEYPOS          00c5 
-KEYPRM          00a3    KEYPRT          0096    KEYREA          0087 
-KEYREL          00b4    KEYREM          0081    KEYRES          008d 
-KEYRET          008f    KEYRIG          00d0    KEYRND          00bb 
-KEYRUN          008a    KEYS            00d3    KEYSCAN         06a7 
-KEYSCANA        0702    KEYSCANB        0709    KEYSCANC        06ec 
-KEYSCAND        0723    KEYSCANF        0714    KEYSCANH        0740 
-KEYSCANI        0736    KEYSCANK        06ca    KEYSCANL        06b0 
-KEYSCANM        06e3    KEYSCANN        06e9    KEYSCANP        073d 
-KEYSCANV        074c    KEYSCANW        0703    KEYSCANX        0744 
-KEYSCANZ        06de    KEYSET          009f    KEYSGN          00b7 
-KEYSIN          00bf    KEYSPC          00a6    KEYSQR          00ba 
-KEYSTEP         00a2    KEYSTM          0080    KEYSTOP         0090 
-KEYSTR          00c8    KEYSUB          00ab    KEYSUGR         00a0 
-KEYTAB          00a5    KEYTAN          00c0    KEYTHEN         00a0 
-KEYTO           00a1    KEYUPR          00ce    KEYUSR          00c2 
-KEYVAL          00c9    KEYWADDS        00fa    KEYWAI          0095 
-KEYWORDS        011a    KEYWRD0         011a    KEYWRD1         0135 
-KEYWRD2         014a    KEYWRD3         0171    KEYWRD4         01ad 
-KEYWRD5         01d1    KEYWRD6         01ee    KEYWRD7         01fd 
-KEYWRD8         020d    KEYWRD9         0217    KEYWRDA         022a 
-KEYWRDB         022c    KEYWRDC         022e    KEYWRDD         0251 
-KEYWRDE         026a    KEYWRDF         027b    LDACCE          1a31 
-LDACRG          1bd3    LDDCBMM         1be3    LDICBMM         1be4 
-LDMMAC          1bea    LDRGAC          1bde    LDRGACMM        1bd0 
-LDRGMM          1be1    LEFRIGAR        171f    LEFRIGMB        172b 
-LEFRIGMC        1729    LEFRIGMD        1715    LEFRIGMR        1713 
-LENFCT          1623    LENFCTC         1627    LETSTM          0bc0 
-LETSTMNM        0be6    LF              000a    LFTFCT          170f 
-LIMLOWER        8000    LIMUPPER        af00    LINEDEL         04a9 
-LINEDELL        04b4    LINEDELU        04bf    LINEINS         046f 
-LINEINSL        049e    LINELINK        0463    LINESRCH        0446 
-LINESRCL        0449    LINESYZE        009d    LISEDIKD        08a6 
-LISEDIKL        08cb    LISEDIKS        08d0    LISEDIKT        08b6 
-LISEDIKY        08d8    LISEDINC        08a8    LISEDISB        08ed 
-LISEDISC        08a3    LISEDIST        08f3    LISEDIXP        0888 
-LISEDIXT        08fa    LISSTM          0830    LISSTMLP        0849 
-LISSTMSC        083c    LISSTMXT        0883    LOGCOEF         1e6c 
-LOGFCT          1e7d    LOGOPRIC        1945    LOGOPRXT        1969 
-MATDMFLG        0380    MATSCANB        12ff    MATSCANC        1366 
-MATSCANI        13ca    MATSCANL        130c    MATSCANM        134b 
-MATSCANN        1337    MATSCANO        1338    MATSCANP        1301 
-MATSCANR        13d1    MATSCANS        13d2    MATSCANX        13f7 
-MATSCANZ        13aa    MATSCCNT        037f    MATSCNSB        1380 
-MATSCNSD        138d    MATTABLE        039b    MAXOPR          199e 
-MEMFCT          17f1    MEMFCTC         17fe    MEMSTM          180d 
-MIDFCT          1754    MIDSTM          0c5d*   MIDSTMLM        0cb2 
-MIDSTMLN        0ca6    MIDSTMXT        0cbf    MINOPR          19aa 
-MODOPR          1984    MONITOR         b400    MSGBREAK        05f7 
-MSGERROR        05e4    MSGEXTRA        0e21    MSGIN           05eb 
-MSGOK           05f0    MSGQUES         0e0b    MSGREDO         0e0e 
-MSGSTARS        07db    MUL16           13ff    MUL16LP         1407 
-MUL16XT         1415    MULOPR          1ab5    NAMENOTFOUND    188b 
-NEWLOAD         0515    NEWSTM          050c    NEXSTM          0f56 
-NEXSTMC         0f99    NEXSTML         0f59    NOBREAK         005c 
-NORMAL1         1a3d    NORMAL1L        1a35    NORMAL8         1a1e 
-NORMALIZ        1a1b    NORMALZI        1a18    NULLCNT         03ae 
-ONNSTMC         0ce0    ONNSTMSL        0ce1    ONSTM           0cd1 
-OPCINP          00db    OPCOUT          00d3    OPCRET          00c9 
-OPENS           b796    OPRTABL         00a4    ORNOPR          1940 
-ORNOPRFN        1965    P3010           0379    PIOVER2         2013 
-PLTSTM          0de9    POPAFRET        1555    POPDEBCR        0bbd 
-POPDERET        168f*   POPHL3RT        0884    POPHLRET        0886 
-PORFCT          1821    PORSTM          182f    POSFCT          0de1 
-PREDNOT         005a    PREDNUM         0070    PREDREL         0064 
-PREDUMIN        007d    PRINTFLG        037b    PRINTINT        1d79 
-PRNTBLNK        0dab    PRNTBLNL        0db2    PRNTCHRA        05ae 
-PRNTCHRI        05aa    PRNTCHRW        05cc    PRNTCOMA        0d78 
-PRNTCOMC        0daa    PRNTCOML        0d83    PRNTCRLF        0d5f 
-PRNTMSG         0dc2    PRNTNULL        0d6a    PRNTNULS        0d67 
-PRNTNUMS        0dc1    PRNTOPTN        0d8c    PRNTSEMI        0db9 
-PRNTSTRL        0dd2    PRNTSTRT        0dcb    PROGBASE        0397 
-PROGCNTR        038d    PROGCNTS        038f    PRTSTM          0d5c 
-PRTSTMN         0d1c    PRTSTRNG        0d55    PUSHAC          1bc3 
-PUSHAC1         1bc4    PUTS            b7dc    REAINPCM        0eb2 
-REAINPDC        0f24    REAINPER        0ee1    REAINPFL        037a 
-REAINPFS        0e7d    REAINPLA        0ea1    REAINPLP        0e83 
+CHARMTCH        03e4    CHECKPROGRAM    18ee    CHRFCT          1643
+CINB            0011    CINTEGER        0c26    CINTPOS         0c20
+CLDSTM          1876    CLEARPCN        0551    CLEARPGM        050d
+CLEARSCREEN     0037    CLEARSET        0518    CLEARSTK        0521
+CLEARVAR        0541    CLEARVST        051b    CLOSES          b82d
+CLRSTM          057d    CMACCS          1cae    CMANSWR         1c8f
+CMHLLTDE        04d7    CMNDINPT        0642    CMNDRSTR        0661
+CMNDSTRT        062f    CMPXT           1c8b    CMREGS          1a7d
+CO              0006    COERCE          0bfb    COERCEF         0bfe
+CONSTM          0b07    COPYCHK         04dd    COPYSTRG        122c
+COPYSTRL        122d    COPYTEXT        04e0    COPYTXTL        04e3
+COPYVAL         1bed    COPYVALL        1bf1    COSCOEF         201b
+COSFCT          1fc9    CPROGLOOP       18f1    CPROGLOOP2      18fa
+CPROGOK         1903    CR              000d    CSINGLE         0c0a
+CSTRING         0c11    CSVSTM          1890    CURDATAP        0393
+CURLDATA        0391    CURLINE         0389    CURLINES        038b
+CURSLIM         03b0    CURSPOS         03af    D14BASE         b400
+DATAGET         0ef0    DATAINPT        0f1c    DATASRCH        0efa
+DATASRCK        0f13    DATRSKIP        0b8b    DATRSKST        0b88
+DATSTM          0b7f    DCLR            001a    DECCDE          1c60
+DECDEXAL        1d3d    DECDEXPA        1d31    DECDGADD        1d66
+DECDIGIT        1d4f    DECMULUP        1d47    DECODE          1ccf
+DECODEIN        1cdb    DECODELP        1ce3    DECODEPT        1d2a
+DECODEXL        1d10    DECODEXP        1cf8    DECODEXQ        1d22
+DECODVAL        1d2e    DEFSTM          141a    DEFSTML         1430
+DEL             007f*   DELSTM          0813    DIMSTM          123f
+DIMSTML         1236    DIRECTORYLOOKUP b8e0    DIVOPR          1b41
+EDISTM          0904    EDISTMAD        094c    EDISTMCH        09e7
+EDISTMCR        09d2    EDISTMDL        0957    EDISTMDM        0964
+EDISTMEC        0946    EDISTMER        0944    EDISTMIM        0981
+EDISTMIN        0970    EDISTMLS        091f    EDISTMNX        092a
+EDISTMQT        09cb    EDISTMRI        0974    EDISTMRP        098e
+EDISTMSL        09aa    EDISTMSR        09a1    EDISTMXT        09bf
+ELSSTM          0b84    ENCDCOEF        1e5a    ENCDEXPL        1e37
+ENCDEXPP        1e35    ENCDEXPS        1ddf    ENCDRTZR        1e19
+ENCODCMP        1e47    ENCODDGL        1de5    ENCODDNL        1dbb
+ENCODE          1d85    ENCODEHL        1d7e    ENCODEXP        1e25
+ENCODEXT        1e44    ENCODFRS        1d97    ENCODRND        1dc4
+ENCODSBL        1df4    ENCODUPL        1da6    ENCODZXT        1e41
+ENDINTRP        209a    ENDPROGM        0ae6    ENDSTM          0b27
+ENDSTMC         0af9    ERRABS          1361    ERRAD0          1bbe
+ERRAFC          0c39    ERRAID          1516    ERRANF          0f94
+ERRAOM          0507    ERRAOV          1a6c    ERRASN          0605
+ERRAST          11ba    ERRATM          0c18    ERRAUS          0b60
+ERRDATA         05ff    ERRMSG          0607    ERRMSGIN        1d71
+ERRMSGPR        0623    ERRN            0289    ERRNBS          0328
+ERRNCN          0289    ERRND0          02aa    ERRNDD          0299
+ERRNFC          02b6    ERRNFI          036a    ERRNID          02a3
+ERRNLS          02c4    ERRNNF          02dd    ERRNOD          02ea
+ERRNOM          02d0    ERRNOS          030e    ERRNOV          02f6
+ERRNRG          02ff    ERRNSL          0292    ERRNSN          0332
+ERRNST          031b    ERRNTM          0339    ERRNUF          033e
+ERRNUS          034e    ERRNUV          035a    ESC             0018
+ETX             0003    EXECUTE         0aba    EXECUTE2        0c53
+EXECUTEB        0ae2    EXECUTEC        0ac1    EXECUTEL        0a9a
+EXECUTES        0ac2    EXPCOEF         1f45    EXPEXPOS        1eed
+EXPFCT          1f05    EXPOPR          1ec7    EXPRNEXC        1b28
+FCTPOLY1        1f75    FCTPOLY2        1f66    FCTPOLYL        1f7d
+FCTTABL         00c2    FF              000c    FILENAME        1904
+FIXAC           1c3c    FLACCEXP        03ac    FLACCMSB        03ab
+FLACCSSV        03ad    FLADD           19ca    FLADDHLF        19b6
+FLADDIFF        1a0a    FLADDM          19b9    FLADDMGC        19e4
+FLCMP           1c0f    FLCMPM          1c29    FLCMPXT         1c89
+FLDIV           1b43    FLDIVB10        1b35    FLDIVLP         1b6b
+FLDIVSF         1b8e    FLDIVSS         1b90    FLHALF          1e56
+FLMLB10C        1d48    FLMLDVEX        1b0a    FLMLDVEY        1b2d
+FLMLDVEZ        1b2e    FLMMMAC         19bf    FLMUL           1ab7
+FLMULB10        1c67    FLMULLN2        1eb5    FLMULLP         1ad9
+FLMULLQ         1ae2    FLMULNA         1af3    FLMULXT         1b05
+FLOATA          0de4    FLOATAB         17e4    FLOATBYT        1c97
+FLOATHL         16b7    FLOATINT        1c9c    FLONE           1e79
+FLQUART         2017    FLROUND         1a50    FLROUNDV        1a51
+FLSCR0          03b1    FLSCR1          03b2    FLSCR2          03b3
+FLSCR3          03b4    FLSUB           19c7    FORBLCK         0010
+FORCHK          0a0f    FORCHKL         0a13    FORCHKXT        0a2e
+FORMARK         0a96    FORSTM          0a37    FORSTMNF        0a54
+FORSTMST        0a8d    FREELIMT        039d    FREFCT          17c4
+FREFCTNS        17df    FSPROM          b000    GOMONITOR       003d
+GSBSTM          0b31    GTOSTM          0b42    HEXFCT          16c5
+HEXFCTL         16da    HT              0009    HXVFCT          1691
+HXVFCTCH        16bc    HXVFCTL         169e    IFNSTMC         0cfc
+IFNSTMCH        0d12    IFNSTMSK        0d04    IFSTM           0cef
+INCCDE          1a62    INCHLRET        1be8    INITIALZ        209b
+INITMFRE        210c    INITSTCK        2206    INITSTSP        212d
+INOTGEN         186a    INOTINS         03b1    INPSTM          0e32
+INPSTMBR        0ae5    INPSTMER        0ec9    INPSTMIN        0e6d
+INPSTMLN        0f3b    INPSTMPR        0e5b    INPSTMRD        0e36
+INPSTMXT        0ecd    INPTBUFR        0395    INPTCHAR        05d1
+INPTCRLF        077e    INPTCRTN        07cc    INPTEXIT        07d0
+INPTLINC        0795*   INPTLINL        0790    INPTLNBS        0767
+INPTLNEC        07c6    INPTLNRD        0774    INPTLNST        07b3
+INPTRQST        0781    INSFCT          177d    INSFCTSL        17ab
+INSFCTXT        17b5    INTFCT          1cb6    ITEMSIZE        000e
+KEYABS          00b9    KEYADD          00aa    KEYAND          00b0
+KEYASC          00ca    KEYATA          00c1    KEYAUT          0092
+KEYCHR          00cb    KEYCLD          009c    KEYCLR          009b
+KEYCON          0098    KEYCOS          00be    KEYCSV          009d
+KEYDAT          0080    KEYDEF          0097    KEYDEL          0093
+KEYDIM          0086    KEYDIV          00ad    KEYEDI          009a
+KEYELS          008c    KEYEND          0082    KEYEQ           00b5
+KEYEXP          00bd    KEYEXPT         00af    KEYFCT          00b7
+KEYFN           00a7    KEYFOR          0083    KEYFRE          00c3
+KEYGSB          008e    KEYGT           00b4    KEYGTO          0089
+KEYHEX          00cc    KEYHXV          00cd    KEYIF           008b
+KEYINPT         0085    KEYINS          00d2    KEYINT          00b8
+KEYLEN          00c7    KEYLET          0088    KEYLFT          00cf
+KEYLINE         00a4    KEYLIS          0099    KEYLOG          00bc
+KEYLSAH         00a5    KEYLSAL         0082    KEYLSBH         00a3
+KEYLSBL         00a0    KEYLT           00b6    KEYMAX          00b2
+KEYMEM          00c6    KEYMID          00d1    KEYMIN          00b3
+KEYMOD          00ae    KEYMUL          00ac    KEYNEW          009e
+KEYNEX          0084    KEYNOT          00a8    KEYOFF          00a9
+KEYON           0091    KEYOPR          00aa    KEYOR           00b1
+KEYPLT          0094    KEYPORT         00c4    KEYPOS          00c5
+KEYPRM          00a3    KEYPRT          0096    KEYREA          0087
+KEYREL          00b4    KEYREM          0081    KEYRES          008d
+KEYRET          008f    KEYRIG          00d0    KEYRND          00bb
+KEYRUN          008a    KEYS            00d3    KEYSCAN         06a7
+KEYSCANA        0702    KEYSCANB        0709    KEYSCANC        06ec
+KEYSCAND        0723    KEYSCANF        0714    KEYSCANH        0740
+KEYSCANI        0736    KEYSCANK        06ca    KEYSCANL        06b0
+KEYSCANM        06e3    KEYSCANN        06e9    KEYSCANP        073d
+KEYSCANV        074c    KEYSCANW        0703    KEYSCANX        0744
+KEYSCANZ        06de    KEYSET          009f    KEYSGN          00b7
+KEYSIN          00bf    KEYSPC          00a6    KEYSQR          00ba
+KEYSTEP         00a2    KEYSTM          0080    KEYSTOP         0090
+KEYSTR          00c8    KEYSUB          00ab    KEYSUGR         00a0
+KEYTAB          00a5    KEYTAN          00c0    KEYTHEN         00a0
+KEYTO           00a1    KEYUPR          00ce    KEYUSR          00c2
+KEYVAL          00c9    KEYWADDS        00fa    KEYWAI          0095
+KEYWORDS        011a    KEYWRD0         011a    KEYWRD1         0135
+KEYWRD2         014a    KEYWRD3         0171    KEYWRD4         01ad
+KEYWRD5         01d1    KEYWRD6         01ee    KEYWRD7         01fd
+KEYWRD8         020d    KEYWRD9         0217    KEYWRDA         022a
+KEYWRDB         022c    KEYWRDC         022e    KEYWRDD         0251
+KEYWRDE         026a    KEYWRDF         027b    LDACCE          1a31
+LDACRG          1bd3    LDDCBMM         1be3    LDICBMM         1be4
+LDMMAC          1bea    LDRGAC          1bde    LDRGACMM        1bd0
+LDRGMM          1be1    LEFRIGAR        171f    LEFRIGMB        172b
+LEFRIGMC        1729    LEFRIGMD        1715    LEFRIGMR        1713
+LENFCT          1623    LENFCTC         1627    LETSTM          0bc0
+LETSTMNM        0be6    LF              000a    LFTFCT          170f
+LIMLOWER        8000    LIMUPPER        af00    LINEDEL         04a9
+LINEDELL        04b4    LINEDELU        04bf    LINEINS         046f
+LINEINSL        049e    LINELINK        0463    LINESRCH        0446
+LINESRCL        0449    LINESYZE        009d    LISEDIKD        08a6
+LISEDIKL        08cb    LISEDIKS        08d0    LISEDIKT        08b6
+LISEDIKY        08d8    LISEDINC        08a8    LISEDISB        08ed
+LISEDISC        08a3    LISEDIST        08f3    LISEDIXP        0888
+LISEDIXT        08fa    LISSTM          0830    LISSTMLP        0849
+LISSTMSC        083c    LISSTMXT        0883    LOGCOEF         1e6c
+LOGFCT          1e7d    LOGOPRIC        1945    LOGOPRXT        1969
+MATDMFLG        0380    MATSCANB        12ff    MATSCANC        1366
+MATSCANI        13ca    MATSCANL        130c    MATSCANM        134b
+MATSCANN        1337    MATSCANO        1338    MATSCANP        1301
+MATSCANR        13d1    MATSCANS        13d2    MATSCANX        13f7
+MATSCANZ        13aa    MATSCCNT        037f    MATSCNSB        1380
+MATSCNSD        138d    MATTABLE        039b    MAXOPR          199e
+MEMFCT          17f1    MEMFCTC         17fe    MEMSTM          180d
+MIDFCT          1754    MIDSTM          0c5d*   MIDSTMLM        0cb2
+MIDSTMLN        0ca6    MIDSTMXT        0cbf    MINOPR          19aa
+MODOPR          1984    MONITOR         b400    MSGBREAK        05f7
+MSGERROR        05e4    MSGEXTRA        0e21    MSGIN           05eb
+MSGOK           05f0    MSGQUES         0e0b    MSGREDO         0e0e
+MSGSTARS        07db    MUL16           13ff    MUL16LP         1407
+MUL16XT         1415    MULOPR          1ab5    NAMENOTFOUND    188b
+NEWLOAD         0515    NEWSTM          050c    NEXSTM          0f56
+NEXSTMC         0f99    NEXSTML         0f59    NOBREAK         005c
+NORMAL1         1a3d    NORMAL1L        1a35    NORMAL8         1a1e
+NORMALIZ        1a1b    NORMALZI        1a18    NULLCNT         03ae
+ONNSTMC         0ce0    ONNSTMSL        0ce1    ONSTM           0cd1
+OPCINP          00db    OPCOUT          00d3    OPCRET          00c9
+OPENS           b796    OPRTABL         00a4    ORNOPR          1940
+ORNOPRFN        1965    P3010           0379    PIOVER2         2013
+PLTSTM          0de9    POPAFRET        1555    POPDEBCR        0bbd
+POPDERET        168f*   POPHL3RT        0884    POPHLRET        0886
+PORFCT          1821    PORSTM          182f    POSFCT          0de1
+PREDNOT         005a    PREDNUM         0070    PREDREL         0064
+PREDUMIN        007d    PRINTFLG        037b    PRINTINT        1d79
+PRNTBLNK        0dab    PRNTBLNL        0db2    PRNTCHRA        05ae
+PRNTCHRI        05aa    PRNTCHRW        05cc    PRNTCOMA        0d78
+PRNTCOMC        0daa    PRNTCOML        0d83    PRNTCRLF        0d5f
+PRNTMSG         0dc2    PRNTNULL        0d6a    PRNTNULS        0d67
+PRNTNUMS        0dc1    PRNTOPTN        0d8c    PRNTSEMI        0db9
+PRNTSTRL        0dd2    PRNTSTRT        0dcb    PROGBASE        0397
+PROGCNTR        038d    PROGCNTS        038f    PRTSTM          0d5c
+PRTSTMN         0d1c    PRTSTRNG        0d55    PUSHAC          1bc3
+PUSHAC1         1bc4    PUTS            b7dc    REAINPCM        0eb2
+REAINPDC        0f24    REAINPER        0ee1    REAINPFL        037a
+REAINPFS        0e7d    REAINPLA        0ea1    REAINPLP        0e83
 REAINPLQ        0e8e    REASTM          0e74    REENTERBASIC    0003*
-RELOPR          103b    RELOPRC         103d    RELOPRSL        106b 
-RELOPRXT        1031    REMSTM          0b84    RESDTPTR        0578 
-RESSTM          0561    RESSTMBU        0577    RESSTMDF        0573 
-RETSTM          0b65    RIGFCT          174a    RNDFCT          1f95 
-RNDFCTSD        03b5    RNDFCTUS        1fb4    RUNSTM          0b1b 
-RUNSTMC         0b41    SAVELOOP        18b3    SCAN2KEY        0b86 
-SCANFNN         151b    SCANLINL        0425    SCANLINN        0421 
-SCANLINR        0422    SCANLPR1        0408    SCANLPR2        041a 
-SCANLPRM        03fd    SCANLPRZ        03fa    SCANNXT         03c1 
+RELOPR          103b    RELOPRC         103d    RELOPRSL        106b
+RELOPRXT        1031    REMSTM          0b84    RESDTPTR        0578
+RESSTM          0561    RESSTMBU        0577    RESSTMDF        0573
+RETSTM          0b65    RIGFCT          174a    RNDFCT          1f95
+RNDFCTSD        03b5    RNDFCTUS        1fb4    RUNSTM          0b1b
+RUNSTMC         0b41    SAVELOOP        18b3    SCAN2KEY        0b86
+SCANFNN         151b    SCANLINL        0425    SCANLINN        0421
+SCANLINR        0422    SCANLPR1        0408    SCANLPR2        041a
+SCANLPRM        03fd    SCANLPRZ        03fa    SCANNXT         03c1
 SCANNXTV        03b9    SCANPFLD        00ab    SCANPFLE        037e*
-SCANPFLG        037d    SCANPTR1        0385    SCANPTR2        0387 
-SETFILENAME     18cd    SETSTM          07df    SETSTMGT        0804 
-SETSTMLS        0809    SETSTMPR        07ff*   SFNDONE         18e4 
-SFNLOOP         18d2    SGNFCT          1c94    SHIFTR          1a93 
-SHIFTR0         1a91    SHIFTRB         1aa0    SHIFTRBL        1aa3 
-SHIFTRLB        1aa7    SI              000f    SIGNACC         1c7e 
-SIGNIFY         1bfa    SIGNXTND        1c8a    SINFCT          1fcf 
-SINFCTC         1fff    SPACECHK        04fb    SPACESTK        04ee 
-SQRFCT          1ebe    STCKBASE        039f    STMTABL         0064 
-STPSTM          0ae0    STRFCT          166f    STRGALAG        153b 
-STRGALAH        153c    STRGALGC        1557    STRGALOC        1537 
-STRGALOT        1193    STRGALOU        1196    STRGALOV        11b6 
-STRGBASE        03a3    STRGFREE        03a1    STRGGBAL        15a6 
-STRGGBAS        15c9    STRGGBCL        1563    STRGGBHI        15d7 
-STRGGBHV        15d9    STRGGBLP        1566    STRGGBMV        15ff 
-STRGGBTL        1575    STRGGBVR        1586    STRGGNAV        15a7 
-STRGRELA        11bf    STRGRELD        11c3    STRGRELH        11c2 
-STRGRELT        11dd    STRGSTOR        167d    STRGTEST        0cc3 
-STRGTLIM        03a7    STRGTMPA        0383    STRGTMPL        0382 
-STRGTMPP        03a5    STRGUNIQ        0bec    STRNGEN         1529 
-STRSTCDS        152c    SUBOPR          19c5    SYSBREAK        0054 
-SYSDISPL        0040    SYSINITJ        0000    SYSKEYIN        001c 
-SYSKEYINRET     002f    SYSKEYNONE      0033    SYSQUIT         0061 
-SYSWAIT         0060    TAB             0009*   TANFCT          2030 
-TRACE           0b9f    TRACEFLG        037c    TYPECHK         03ef 
+SCANPFLG        037d    SCANPTR1        0385    SCANPTR2        0387
+SETFILENAME     18cd    SETSTM          07df    SETSTMGT        0804
+SETSTMLS        0809    SETSTMPR        07ff*   SFNDONE         18e4
+SFNLOOP         18d2    SGNFCT          1c94    SHIFTR          1a93
+SHIFTR0         1a91    SHIFTRB         1aa0    SHIFTRBL        1aa3
+SHIFTRLB        1aa7    SI              000f    SIGNACC         1c7e
+SIGNIFY         1bfa    SIGNXTND        1c8a    SINFCT          1fcf
+SINFCTC         1fff    SPACECHK        04fb    SPACESTK        04ee
+SQRFCT          1ebe    STCKBASE        039f    STMTABL         0064
+STPSTM          0ae0    STRFCT          166f    STRGALAG        153b
+STRGALAH        153c    STRGALGC        1557    STRGALOC        1537
+STRGALOT        1193    STRGALOU        1196    STRGALOV        11b6
+STRGBASE        03a3    STRGFREE        03a1    STRGGBAL        15a6
+STRGGBAS        15c9    STRGGBCL        1563    STRGGBHI        15d7
+STRGGBHV        15d9    STRGGBLP        1566    STRGGBMV        15ff
+STRGGBTL        1575    STRGGBVR        1586    STRGGNAV        15a7
+STRGRELA        11bf    STRGRELD        11c3    STRGRELH        11c2
+STRGRELT        11dd    STRGSTOR        167d    STRGTEST        0cc3
+STRGTLIM        03a7    STRGTMPA        0383    STRGTMPL        0382
+STRGTMPP        03a5    STRGUNIQ        0bec    STRNGEN         1529
+STRSTCDS        152c    SUBOPR          19c5    SYSBREAK        0054
+SYSDISPL        0040    SYSINITJ        0000    SYSKEYIN        001c
+SYSKEYINRET     002f    SYSKEYNONE      0033    SYSQUIT         0061
+SYSWAIT         0060    TAB             0009*   TANFCT          2030
+TRACE           0b9f    TRACEFLG        037c    TYPECHK         03ef
 TYPECHKA        03f2    TYPEDEF         0020    TYPEDUBL        0008*
-TYPEFLG         0381    TYPEINTG        0002*   TYPESING        0004 
-TYPESTRG        0003    UPRFCT          16eb    UPRFCTL         1701 
-VALBYTE         0c42    VALBYTE2        0c3e    VALCNDFL        1119 
-VALCNDTL        1109    VALCONCP        1224    VALCONCT        11ed 
-VALCOND         10f4    VALCONDF        1117    VALEXPR         0fa9 
-VALEXPR2        1008    VALEXPRC        0fb8    VALEXPRD        0fbb 
-VALEXPRL        0fac    VALEXPRO        0fe1    VALEXPRR        0fc5 
-VALFCT          1653    VALFCTAR        114e    VALFCTCR        14ff 
-VALFCTD         143f    VALFCTDL        1465    VALFCTDM        146e 
-VALFCTLK        1156    VALFCTN         112e    VALFCTNA        14bb 
-VALFCTPS        148f    VALFCTPT        149c    VALFCTRL        14da 
-VALFCTRS        14f1    VALINTDE        0c1d    VALNUMBR        0c07 
-VALPARN2        10c0    VALPARNS        10bc    VALPRMRY        1083 
-VALREL          101e    VALRETNM        10d4    VALRETST        164f 
-VALSTRGC        1168    VALSTRGE        117d    VALSTRGL        116e 
-VALSTRGN        115f    VALSTRGS        116b    VALSTRGY        116a 
-VALSTRGZ        1162    VALUMINS        10c8    VALUNOT         196d 
-VALVAR          10d9    VARALLOC        12ed    VARINDEX        038d 
-VARNAME         127d    VARSCAN         1248    VARSCAND        1266 
-VARSCANF        12d0    VARSCANI        1249    VARSCANM        12c2 
-VARSCANS        1273    VARSCANT        12af    VARSCANX        12fd 
-VARSCNDF        124e    VARSKIPL        1267    VARTABLE        0399 
-VERSNDAT        2091    WAISTM          1849    WAISTMIN        185e 
-XCO             001b    ZEROAC          1a30    
+TYPEFLG         0381    TYPEINTG        0002*   TYPESING        0004
+TYPESTRG        0003    UPRFCT          16eb    UPRFCTL         1701
+VALBYTE         0c42    VALBYTE2        0c3e    VALCNDFL        1119
+VALCNDTL        1109    VALCONCP        1224    VALCONCT        11ed
+VALCOND         10f4    VALCONDF        1117    VALEXPR         0fa9
+VALEXPR2        1008    VALEXPRC        0fb8    VALEXPRD        0fbb
+VALEXPRL        0fac    VALEXPRO        0fe1    VALEXPRR        0fc5
+VALFCT          1653    VALFCTAR        114e    VALFCTCR        14ff
+VALFCTD         143f    VALFCTDL        1465    VALFCTDM        146e
+VALFCTLK        1156    VALFCTN         112e    VALFCTNA        14bb
+VALFCTPS        148f    VALFCTPT        149c    VALFCTRL        14da
+VALFCTRS        14f1    VALINTDE        0c1d    VALNUMBR        0c07
+VALPARN2        10c0    VALPARNS        10bc    VALPRMRY        1083
+VALREL          101e    VALRETNM        10d4    VALRETST        164f
+VALSTRGC        1168    VALSTRGE        117d    VALSTRGL        116e
+VALSTRGN        115f    VALSTRGS        116b    VALSTRGY        116a
+VALSTRGZ        1162    VALUMINS        10c8    VALUNOT         196d
+VALVAR          10d9    VARALLOC        12ed    VARINDEX        038d
+VARNAME         127d    VARSCAN         1248    VARSCAND        1266
+VARSCANF        12d0    VARSCANI        1249    VARSCANM        12c2
+VARSCANS        1273    VARSCANT        12af    VARSCANX        12fd
+VARSCNDF        124e    VARSKIPL        1267    VARTABLE        0399
+VERSNDAT        2091    WAISTM          1849    WAISTMIN        185e
+XCO             001b    ZEROAC          1a30
