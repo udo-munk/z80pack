@@ -77,6 +77,7 @@ static WORD hex_addr;			/* current address in HEX record */
 static WORD hex_cnt;			/* number of bytes in HEX buffer */
 static long code_start;			/* file position where code begins */
 static int  neof_flag;			/* not at EOF flag */
+static int  nl_size;			/* size of newline in text files */
 
 static BYTE hex_buf[MAXHEX];		/* buffer for one HEX record */
 static char hex_out[MAXHEX * 2 + 13];	/* ASCII buffer for one HEX record */
@@ -336,6 +337,8 @@ void lst_byte(BYTE b)
  */
 void obj_header(void)
 {
+	long before_nl, after_nl;
+
 	switch (obj_fmt) {
 	case OBJ_BIN:
 		code_start = 0L;
@@ -352,11 +355,15 @@ void obj_header(void)
 	case OBJ_HEX:
 		break;
 	case OBJ_CARY:
-		if (fprintf(objfp, "// build from source file %s\n",
+		if (fprintf(objfp, "// build from source file %s",
 			    srcfn) < 0 ||
-		    fputs("unsigned char code[MEMSIZE] = {", objfp) == EOF)
+		    (before_nl = ftell(objfp)) < 0L ||
+		    fputc('\n', objfp) == EOF ||
+		    (after_nl = ftell(objfp)) < 0L ||
+		    fputs("unsigned char code[MEMSIZE] = {", objfp) == EOF ||
+		    (code_start = ftell(objfp)) < 0L)
 			fatal(F_OBJFILE, objfn);
-		code_start = ftell(objfp);
+		nl_size = after_nl - before_nl;
 		eof_addr = load_addr;
 		break;
 	default:
@@ -553,7 +560,7 @@ void pos_fill_cary(void)
 		pos = code_start;
 		if (addr > 0) {
 			/* "\n\t" */
-			pos += 2L;
+			pos += nl_size + 1L;
 			/* "0x%02x" */
 			pos += 4L * addr;
 			/* don't include "," and formatting for addr,
@@ -568,7 +575,7 @@ void pos_fill_cary(void)
 				pos -= addr / carylen;
 			}
 			/* "\n\t" */
-			pos += 2L * (addr / carylen);
+			pos += (nl_size + 1L) * (addr / carylen);
 		}
 		if (fseek(objfp, pos, SEEK_SET) < 0)
 			fatal(F_OBJFILE, objfn);
