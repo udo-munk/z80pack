@@ -52,7 +52,7 @@ static BYTE hwctl_lock = 0xff; /* lock status hardware control port */
 BYTE (*port_in[256])(void) = {
 	[  0] = p000_in,	/* SIO status */
 	[  1] = p001_in,	/* SIO data */
-	[  4] = fdc_in,		/* FDC command */
+	[  4] = fdc_in,		/* FDC status */
 	[160] = hwctl_in,	/* virtual hardware control */
 	[255] = p255_in		/* for frontpanel */
 };
@@ -64,7 +64,7 @@ BYTE (*port_in[256])(void) = {
 void (*port_out[256])(BYTE) = {
 	[  0] = p000_out,	/* internal LED */
 	[  1] = p001_out,	/* SIO data */
-	[  4] = fdc_out,	/* FDC status */
+	[  4] = fdc_out,	/* FDC command */
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
 };
