@@ -72,7 +72,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0075  65              54     69
 0076  0d 0a 00        55     70 	DEFB	CR,LF,0
                       56     71
-0079                  57     72 	DS	20			; spave for the stack
+0079                  57     72 	DS	20			; space for the stack
 008d                  58     73 STACK:
                       59     74
 008d                  60     75 	END				; of program
