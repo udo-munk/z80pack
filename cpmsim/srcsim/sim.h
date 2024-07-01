@@ -59,6 +59,6 @@ struct dskdef {
 #define USR_CPR	"Copyright (C) 20xx by XYZ"
 */
 
-#include "simcore.h"
+#include "simdefs.h"
 
 #endif

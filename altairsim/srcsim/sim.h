@@ -69,6 +69,6 @@ extern void sleep_ms(int);
 #define USR_REL	"1.19"
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk"
 
-#include "simcore.h"
+#include "simdefs.h"
 
 #endif

@@ -84,6 +84,6 @@ extern void sleep_ms(int);
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2018-2021 by David McNaughton"
 
-#include "simcore.h"
+#include "simdefs.h"
 
 #endif

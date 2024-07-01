@@ -21,7 +21,7 @@
 //
 
 #include <stdint.h>
-#include "simcore.h"
+#include "sim.h"
 #include "sd-fdc.h"
 
 // offsets in disk command descriptor
