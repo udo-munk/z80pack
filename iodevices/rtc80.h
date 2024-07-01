@@ -14,10 +14,10 @@
  * 30-JUN-2021 clock read now returns time format instead of last command
  */
 
-#ifndef RTC_INC
-#define RTC_INC
+#ifndef RTC80_INC
+#define RTC80_INC
 
 extern BYTE clkc_in(void), clkd_in(void);
 extern void clkc_out(BYTE data), clkd_out(BYTE data);
 
-#endif /* !RTC_INC */
+#endif /* !RTC80_INC */

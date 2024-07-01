@@ -5,7 +5,7 @@
 # and the executable saved as '../machinesim'
 MACHINE = mostek
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
+MACHINE_SRCS = simcfg.c simio.c simmem.c simctl.c
 # machine specific I/O source files
 IO_SRCS = simbdos.c unix_terminal.c mostek-cpu.c mostek-fdc.c
 

@@ -35,15 +35,7 @@ struct net_connectors {
 	int telnet;	/* telnet protocol flag for TCP/IP server socket */
 };
 
-#ifdef NUMUSOC
-extern struct unix_connectors ucons[NUMUSOC];
-#endif
-
 extern void init_unix_server_socket(struct unix_connectors *p, const char *fn);
-
-#ifdef NUMNSOC
-extern struct net_connectors ncons[NUMNSOC];
-#endif
 
 extern void init_tcp_server_socket(struct net_connectors *p);
 extern void sigio_tcp_server_socket(int sig);

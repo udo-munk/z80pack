@@ -40,4 +40,4 @@
 #define FDC_STAT_TRACK   8 // track # > TRK
 #define FDC_STAT_SEC     9 // sector # < 1 or > SPT
 
-#endif
+#endif /* !SD_FDC_INC */

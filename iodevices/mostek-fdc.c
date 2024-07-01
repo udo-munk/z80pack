@@ -89,7 +89,7 @@ static BYTE buf[SEC_SZ];	/* buffer for one sector */
  *     Returns filename of the current disk (disk) by searching the
  *     config file. Filename is placed in static variable fn;
  */
-void get_disk_filename(void)
+static void get_disk_filename(void)
 {
 	FILE *fp;
 	char inbuf[256];

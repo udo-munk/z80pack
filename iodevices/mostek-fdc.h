@@ -20,10 +20,10 @@ extern BYTE fdcBoard_stat_in(void), fdcBoard_ctl_in(void);
 extern BYTE fdc1771_stat_in(void), fdc1771_track_in(void);
 extern BYTE fdc1771_sec_in(void), fdc1771_data_in(void);
 
-extern void fdcBoard_ctl_out(BYTE);
-extern void fdc1771_cmd_out(BYTE), fdc1771_track_out(BYTE);
-extern void fdc1771_sec_out(BYTE), fdc1771_data_out(BYTE);
+extern void fdcBoard_ctl_out(BYTE data);
+extern void fdc1771_cmd_out(BYTE data), fdc1771_track_out(BYTE data);
+extern void fdc1771_sec_out(BYTE data), fdc1771_data_out(BYTE data);
 
 extern void fdc_reset(void);
 
-#endif
+#endif /* !MOSTEK_FDC_INC */

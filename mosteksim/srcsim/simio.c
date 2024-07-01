@@ -24,8 +24,9 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
 #include "simbdos.h"
+#include "simio.h"
 #include "mostek-cpu.h"
 #include "mostek-fdc.h"
 #if 0
@@ -39,7 +40,7 @@ static const char *TAG = "I/O";
  *	Forward declarations for I/O functions
  */
 static BYTE io_no_card_in(void);
-static void io_no_card_out(BYTE);
+static void io_no_card_out(BYTE data);
 
 /*
  *	This array contains function pointers for every
@@ -74,7 +75,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE data) = {
 	[161] = host_bdos_out,		/* host file I/O hook */
 	[208] = io_no_card_out,		/* (d0) PIO1 Data A */
 	[209] = io_no_card_out,		/* (d1) PIO1 Control A */
@@ -124,7 +125,7 @@ void exit_io(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return ((BYTE) IO_DATA_UNUSED);
+	return (BYTE) IO_DATA_UNUSED;
 }
 
 /*

@@ -48,4 +48,4 @@ extern void altair_sio2_status_out(BYTE);
 extern BYTE altair_sio2_data_in(void);
 extern void altair_sio2_data_out(BYTE);
 
-#endif
+#endif /* !ALTAIR_88_2SIO_INC */

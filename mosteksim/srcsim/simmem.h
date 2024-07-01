@@ -12,15 +12,14 @@
  * 04-NOV-2019 (Udo Munk) add functions for direct memory access
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
-
-extern void init_memory(void);
-extern BYTE memory[];
-
-#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
 #define MAXMEMSECT	0
+
+extern BYTE memory[65536];
+
+extern void init_memory(void);
 
 /*
  * memory access for the CPU cores
@@ -33,7 +32,7 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
-	return (memory[addr]);
+	return memory[addr];
 }
 
 /*
@@ -47,7 +46,7 @@ static inline void dma_write(WORD addr, BYTE data)
 
 static inline BYTE dma_read(WORD addr)
 {
-	return (memory[addr]);
+	return memory[addr];
 }
 
 /*
@@ -60,7 +59,7 @@ static inline void putmem(WORD addr, BYTE data)
 
 static inline BYTE getmem(WORD addr)
 {
-	return (memory[addr]);
+	return memory[addr];
 }
 
-#endif
+#endif /* !SIMMEM_INC */
