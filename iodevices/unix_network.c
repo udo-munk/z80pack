@@ -34,8 +34,6 @@
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
-void telnet_negotiation(int);
-
 static const char *TAG = "net";
 
 /*

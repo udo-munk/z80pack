@@ -63,4 +63,4 @@ struct dskdef {
 
 #include "simdefs.h"
 
-#endif
+#endif /* !SIM_INC */

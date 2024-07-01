@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
 #include "log.h"
 
 static const char *TAG = "memory";

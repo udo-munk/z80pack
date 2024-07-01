@@ -13,16 +13,15 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simctl.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+#include "simcore.h"
+#include "simio.h"
 #include "unix_terminal.h"
 #include "log.h"
-
-extern void run_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
-
-int boot(int);
-
-extern struct dskdef disks[];
 
 static const char *TAG = "system";
 
@@ -40,8 +39,6 @@ void mon(void)
 	fflush(stdout);
 
 #ifdef WANT_ICE
-	extern void ice_cmd_loop(int);
-
 	ice_before_go = set_unix_terminal;
 	ice_after_go = reset_unix_terminal;
 	atexit(reset_unix_terminal);

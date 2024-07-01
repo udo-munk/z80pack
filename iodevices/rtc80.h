@@ -18,6 +18,6 @@
 #define RTC_INC
 
 extern BYTE clkc_in(void), clkd_in(void);
-extern void clkc_out(BYTE), clkd_out(BYTE data);
+extern void clkc_out(BYTE data), clkd_out(BYTE data);
 
-#endif
+#endif /* !RTC_INC */

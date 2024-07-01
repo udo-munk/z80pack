@@ -30,17 +30,15 @@
  * 04-NOV-2019 add functions for direct memory access
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
-
-#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
 #define MAXSEG 16		/* max. number of memory banks */
 #define SEGSIZ 49152		/* default size of one bank = 48 KBytes */
 
 extern void init_memory(void);
 
-extern BYTE *memory[];
+extern BYTE *memory[MAXSEG];
 extern int selbnk, maxbnk, segsize, wp_common;
 
 /*
@@ -70,12 +68,12 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	if (selbnk == 0)
-		return (*(memory[0] + addr));
+		return *(memory[0] + addr);
 
 	if (addr >= segsize)
-		return (*(memory[0] + addr));
+		return *(memory[0] + addr);
 	else
-		return (*(memory[selbnk] + addr));
+		return *(memory[selbnk] + addr);
 }
 
 /*
@@ -101,12 +99,12 @@ static inline void dma_write(WORD addr, BYTE data)
 static inline BYTE dma_read(WORD addr)
 {
 	if (selbnk == 0)
-		return (*(memory[0] + addr));
+		return *(memory[0] + addr);
 
 	if (addr >= segsize)
-		return (*(memory[0] + addr));
+		return *(memory[0] + addr);
 	else
-		return (*(memory[selbnk] + addr));
+		return *(memory[selbnk] + addr);
 }
 
 /*
@@ -127,12 +125,12 @@ static inline void putmem(WORD addr, BYTE data)
 static inline BYTE getmem(WORD addr)
 {
 	if (selbnk == 0)
-		return (*(memory[0] + addr));
+		return *(memory[0] + addr);
 
 	if (addr >= segsize)
-		return (*(memory[0] + addr));
+		return *(memory[0] + addr);
 	else
-		return (*(memory[selbnk] + addr));
+		return *(memory[selbnk] + addr);
 }
 
-#endif
+#endif /* !SIMMEM_INC */

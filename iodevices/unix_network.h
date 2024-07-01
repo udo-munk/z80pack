@@ -19,6 +19,12 @@
 
 #define TELNET_TIMEOUT 800	/* telnet negotiation timeout in milliseconds */
 
+/* structure for UNIX socket connections */
+struct unix_connectors {
+	int ss;		/* server socket descriptor */
+	int ssc;	/* connected server socket descriptor */
+};
+
 /* structure for TCP/IP socket connections */
 struct net_connectors {
 	int ss;		/* server socket descriptor */
@@ -27,19 +33,15 @@ struct net_connectors {
 	int telnet;	/* telnet protocol flag for TCP/IP server socket */
 };
 
-/* structure for UNIX socket connections */
-struct unix_connectors {
-	int ss;		/* server socket descriptor */
-	int ssc;	/* connected server socket descriptor */
-};
+extern struct unix_connectors ucons[];
+
+extern void init_unix_server_socket(struct unix_connectors *p, const char *fn);
 
 extern struct net_connectors ncons[];
 
-extern void init_tcp_server_socket(struct net_connectors *);
-extern void sigio_tcp_server_socket(int);
+extern void init_tcp_server_socket(struct net_connectors *p);
+extern void sigio_tcp_server_socket(int sig);
 
-extern struct unix_connectors ucons[];
+extern void telnet_negotiation(int fd);
 
-extern void init_unix_server_socket(struct unix_connectors *, const char *);
-
-#endif
+#endif /* !UNIX_NETWORK_INC */

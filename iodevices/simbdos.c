@@ -37,7 +37,7 @@
 #include <ctype.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
 
 /* BDOS Equates */
 
