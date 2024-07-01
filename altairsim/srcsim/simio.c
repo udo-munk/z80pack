@@ -56,19 +56,20 @@
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memsim.h"
-#include "config.h"
+#include "simmem.h"
+#include "simcfg.h"
+#include "simcore.h"
 
 /*
  *	Forward declarations for I/O functions
  */
 static BYTE hwctl_in(void), fp_in(void);
-static void hwctl_out(BYTE), fp_out(BYTE);
+static void hwctl_out(BYTE), fp_out(BYTE data);
 static BYTE lpt_status_in(void), lpt_data_in(void);
-static void lpt_status_out(BYTE), lpt_data_out(BYTE);
+static void lpt_status_out(BYTE), lpt_data_out(BYTE data);
 static BYTE kbd_status_in(void), kbd_data_in(void);
 
-static void io_no_card_out(BYTE);
+static void io_no_card_out(BYTE data);
 #if 0	/* currently not used */
 static BYTE io_no_card_in(void);
 #endif
@@ -76,8 +77,9 @@ static BYTE io_no_card_in(void);
 static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
+static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
+
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
-BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every
@@ -113,7 +115,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE data) = {
 	[  0] = altair_sio0_status_out,	/* SIO 0 connected to console */
 	[  1] = altair_sio0_data_out,	/*  "  */
 	[  2] = lpt_status_out,		/* printer status */
@@ -199,7 +201,7 @@ void reset_io(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return ((BYTE) IO_DATA_UNUSED);
+	return (BYTE) IO_DATA_UNUSED;
 }
 #endif
 
@@ -220,10 +222,10 @@ static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
 	if (F_flag)
-		return (address_switch >> 8);
+		return address_switch >> 8;
 	else {
 #endif
-		return (fp_port);
+		return fp_port;
 #ifdef FRONTPANEL
 	}
 #endif
@@ -254,7 +256,7 @@ static void int_timer(int sig)
  */
 static BYTE hwctl_in(void)
 {
-	return (hwctl_lock);
+	return hwctl_lock;
 }
 
 /*
@@ -272,10 +274,6 @@ static BYTE hwctl_in(void)
  */
 static void hwctl_out(BYTE data)
 {
-#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-	extern void switch_cpu(int);
-#endif
-
 	static struct itimerval tim;
 	static struct sigaction newact;
 
@@ -334,7 +332,7 @@ static void hwctl_out(BYTE data)
  */
 static BYTE lpt_data_in(void)
 {
-	return ((BYTE) 0);
+	return (BYTE) 0;
 }
 
 /*
@@ -372,7 +370,7 @@ again:
  */
 static BYTE lpt_status_in(void)
 {
-	return ((BYTE) 3);
+	return (BYTE) 3;
 }
 
 /*
@@ -390,7 +388,7 @@ static BYTE kbd_status_in(void)
 {
 	extern int proctec_kbd_status;
 
-	return ((BYTE) proctec_kbd_status);
+	return (BYTE) proctec_kbd_status;
 }
 
 /*
@@ -398,16 +396,15 @@ static BYTE kbd_status_in(void)
  */
 static BYTE kbd_data_in(void)
 {
-	extern int proctec_kbd_status, proctec_kbd_data;
 	int data;
 
 	if (proctec_kbd_data == -1)
-		return ((BYTE) 0);
+		return (BYTE) 0;
 
 	/* take over data and reset status */
 	data = proctec_kbd_data;
 	proctec_kbd_data = -1;
 	proctec_kbd_status = 1;
 
-	return ((BYTE) data);
+	return (BYTE) data;
 }

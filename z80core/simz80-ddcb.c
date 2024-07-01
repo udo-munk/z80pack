@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
-#include "simconf.h"
+#include "simcfg.h"
 #include "simmem.h"
 #include "simz80-ddcb.h"
 

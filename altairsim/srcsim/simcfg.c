@@ -38,11 +38,11 @@
 #include "sim.h"
 #include "simglb.h"
 #include "log.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simcfg.h"
+#include "simcore.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
-
-extern int exatoi(char *);
 
 static const char *TAG = "config";
 

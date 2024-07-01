@@ -33,6 +33,7 @@
 #include "sim.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+#include "simio.h"
 
 static const char *TAG = "net";
 

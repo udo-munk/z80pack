@@ -19,22 +19,22 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
+#include "sim.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
+#include "tarbell_fdc.h"
+#include "simctl.h"
+
+#define MAXPAGES 256
+
+extern BYTE memory[65536], mem_wp;
+extern int p_tab[MAXPAGES];
 
 extern void init_memory(void);
-extern int wait_step(void);
-extern void wait_int_step(void);
-extern BYTE memory[], mem_wp;
-extern int p_tab[];
-extern BYTE tarbell_rom[];
-extern int tarbell_rom_enabled, tarbell_rom_active;
-
-#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
@@ -183,4 +183,4 @@ static inline BYTE fp_read(WORD addr)
 		return (0xff);
 }
 
-#endif
+#endif /* !SIMMEM_INC */

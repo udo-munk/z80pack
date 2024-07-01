@@ -28,7 +28,7 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
-#include "simconf.h"
+#include "simcfg.h"
 #include "simmem.h"
 #include "simcore.h"
 #include "simfun.h"

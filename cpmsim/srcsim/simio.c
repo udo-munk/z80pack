@@ -277,7 +277,7 @@ static void netd1_out(BYTE data), nets1_out(BYTE data);
 /*
  *	Forward declaration of support functions
  */
-static void int_timer(int);
+static void int_timer(int sig);
 
 #ifdef NETWORKING
 static void net_server_config(void), net_client_config(void);

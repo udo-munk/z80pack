@@ -23,25 +23,23 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simfun.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
 static const char *TAG = "memory";
 
-extern int load_file(char *, WORD, int);
-
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
 WORD _boot_switch[MAXMEMSECT];			/* boot address for switch */
 
-extern int  boot_switch;			/* boot address for switch */
+extern int boot_switch;				/* boot address for switch */
 
 /* 64KB non banked memory */
 BYTE memory[65536];
 
-#define MAXPAGES 256
 /* page table with memory configuration/state */
 int p_tab[MAXPAGES];		/* 256 pages a 256 bytes */
 

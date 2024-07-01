@@ -10,9 +10,9 @@
  * 20-DEC-2016 dummy, no configuration implemented yet
  */
 
-#ifndef SIMCONF_INC
-#define SIMCONF_INC
+#ifndef SIMCFG_INC
+#define SIMCFG_INC
 
 extern void config(void);
 
-#endif /* !SIMCONF_INC */
+#endif /* !SIMCFG_INC */

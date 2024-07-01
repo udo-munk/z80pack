@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
-#include "simconf.h"
+#include "simcfg.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif

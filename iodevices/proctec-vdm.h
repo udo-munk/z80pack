@@ -17,7 +17,10 @@
 #ifndef PROCTEC_VDM_INC
 #define PROCTEC_VDM_INC
 
-extern void proctec_vdm_out(BYTE);
-extern void proctec_vdm_off(void);
+extern int proctec_kbd_status;
+extern int proctec_kbd_data;
 
-#endif
+extern void proctec_vdm_off(void);
+extern void proctec_vdm_out(BYTE data);
+
+#endif /* !PROTEC_VDM_INC */
