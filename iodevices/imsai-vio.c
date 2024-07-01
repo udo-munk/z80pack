@@ -30,7 +30,8 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simfun.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -457,8 +458,6 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-
 	uint64_t t1, t2;
 	int tdiff;
 

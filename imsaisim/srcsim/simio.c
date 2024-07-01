@@ -69,8 +69,8 @@
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memsim.h"
-#include "config.h"
+#include "simmem.h"
+#include "simcfg.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -80,6 +80,8 @@
 #ifdef HAS_APU
 #include "apu/am9511.h"
 #endif
+#include "simcore.h"
+#include "simio.h"
 
 #define AM_DATA   0xA2	/* instantiate am9511 for these ports */
 #define AM_STATUS 0xA3
@@ -88,33 +90,31 @@
  *	Forward declarations for I/O functions
  */
 static BYTE io_no_card_in(void);
-static void io_no_card_out(BYTE);
+static void io_no_card_out(BYTE data);
 static BYTE fp_in(void);
-static void fp_out(BYTE);
+static void fp_out(BYTE data);
 static BYTE hwctl_in(void);
-static void hwctl_out(BYTE);
+static void hwctl_out(BYTE data);
 void lpt_reset(void);
 static BYTE lpt_in(void);
-static void lpt_out(BYTE);
+static void lpt_out(BYTE data);
 static BYTE io_pport_in(void);
 static BYTE mmu_in(void);
-static void mmu_out(BYTE);
-extern void ctrl_port_out(BYTE);
-extern BYTE ctrl_port_in(void);
+static void mmu_out(BYTE data);
 #ifdef HAS_APU
 static BYTE apu_data_in(void);
 static BYTE apu_status_in(void);
-static void apu_data_out(BYTE);
-static void apu_status_out(BYTE);
+static void apu_data_out(BYTE data);
+static void apu_status_out(BYTE data);
 #endif
 
 static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
-BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
+static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 #ifdef HAS_APU
-void *am9511 = NULL;		/* am9511 instantiation */
+static void *am9511 = NULL;	/* am9511 instantiation */
 #endif
 
 /*
@@ -192,7 +192,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE data) = {
 	[  0] = imsai_sio_nofun_out,	/* IMSAI SIO-2 */
 	[  1] = imsai_sio_nofun_out,
 	[  2] = imsai_sio1a_data_out,	/* Channel A, console */
@@ -345,7 +345,7 @@ void reset_io(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return ((BYTE) IO_DATA_UNUSED);
+	return (BYTE) IO_DATA_UNUSED;
 }
 
 /*
@@ -365,10 +365,10 @@ static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
 	if (F_flag)
-		return (address_switch >> 8);
+		return address_switch >> 8;
 	else {
 #endif
-		return (fp_port);
+		return fp_port;
 #ifdef FRONTPANEL
 	}
 #endif
@@ -407,7 +407,7 @@ static void int_timer(int sig)
  */
 static BYTE hwctl_in(void)
 {
-	return (hwctl_lock);
+	return hwctl_lock;
 }
 
 /*
@@ -425,10 +425,6 @@ static BYTE hwctl_in(void)
  */
 static void hwctl_out(BYTE data)
 {
-#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-	extern void switch_cpu(int);
-#endif
-
 	static struct itimerval tim;
 	static struct sigaction newact;
 
@@ -531,7 +527,7 @@ again:
  */
 static BYTE lpt_in(void)
 {
-	return ((BYTE) 0xf4);
+	return (BYTE) 0xf4;
 }
 
 /*
@@ -541,7 +537,7 @@ static BYTE lpt_in(void)
  */
 static BYTE io_pport_in(void)
 {
-	return ((BYTE) 0);
+	return (BYTE) 0;
 }
 
 /*
@@ -549,7 +545,7 @@ static BYTE io_pport_in(void)
  */
 static BYTE mmu_in(void)
 {
-	return (selbnk);
+	return selbnk;
 }
 
 /*

@@ -1940,4 +1940,4 @@ char charset[128][13][9] = {
 	}
 };
 
-#endif
+#endif /* !PROCTEC_VDM_CHARSET_INC */

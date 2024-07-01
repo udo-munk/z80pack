@@ -41,6 +41,9 @@
 #include "simmem.h"
 #include "simcfg.h"
 #include "simcore.h"
+#include "altair-88-sio.h"
+#include "altair-88-2sio.h"
+#include "proctec-vdm.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
@@ -48,28 +51,6 @@ static const char *TAG = "config";
 
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0;		/* default fp input port value */
-
-extern int sio0_upper_case;	/* SIO 0 translate input to upper case */
-extern int sio0_strip_parity;	/* SIO 0 strip parity from output */
-extern int sio0_drop_nulls;	/* SIO 0 drop nulls after CR/LF */
-extern int sio0_revision;	/* SIO 0 Rev 0 or Rev 1 */
-extern int sio0_baud_rate;	/* SIO 0 baud rate */
-
-extern int sio1_upper_case;	/* SIO 1 translate input to upper case */
-extern int sio1_strip_parity;	/* SIO 1 strip parity from output */
-extern int sio1_drop_nulls;	/* SIO 1 drop nulls after CR/LF */
-extern int sio1_baud_rate;	/* SIO 1 baud rate */
-
-extern int sio2_upper_case;	/* SIO 2 translate input to upper case */
-extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
-extern int sio2_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
-extern int sio2_baud_rate;	/* SIO 2 baud rate */
-
-extern int sio3_baud_rate;	/* SIO 3 baud rate */
-
-extern char bg_color[];         /* VDM background color */
-extern char fg_color[];         /* VDM foreground color */
-extern int slf;                 /* VDM scanlines factor */
 
 void config(void)
 {

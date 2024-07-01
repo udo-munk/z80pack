@@ -14,7 +14,6 @@
 #define CROMEMCO_WDI_INC
 
 #ifdef HAS_NETSERVER
-#include "civetweb.h"
 #include "netsrv.h"
 #endif
 

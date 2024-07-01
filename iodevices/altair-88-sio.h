@@ -25,14 +25,22 @@
 #ifndef ALTAIR_88_SIO_INC
 #define ALTAIR_88_SIO_INC
 
+extern int sio0_upper_case;	/* SIO 0 translate input to upper case */
+extern int sio0_strip_parity;	/* SIO 0 strip parity from output */
+extern int sio0_drop_nulls;	/* SIO 0 drop nulls after CR/LF */
+extern int sio0_revision;	/* SIO 0 Rev 0 or Rev 1 */
+extern int sio0_baud_rate;	/* SIO 0 baud rate */
+
+extern int sio3_baud_rate;	/* SIO 3 baud rate */
+
 extern BYTE altair_sio0_status_in(void);
-extern void altair_sio0_status_out(BYTE);
+extern void altair_sio0_status_out(BYTE data);
 extern BYTE altair_sio0_data_in(void);
-extern void altair_sio0_data_out(BYTE);
+extern void altair_sio0_data_out(BYTE data);
 
 extern BYTE altair_sio3_status_in(void);
-extern void altair_sio3_status_out(BYTE);
+extern void altair_sio3_status_out(BYTE data);
 extern BYTE altair_sio3_data_in(void);
-extern void altair_sio3_data_out(BYTE);
+extern void altair_sio3_data_out(BYTE data);
 
-#endif
+#endif /* !ALTAIR_88_SIO_INC */

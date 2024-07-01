@@ -41,9 +41,13 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simcfg.h"
+#include "simcore.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+#include "imsai-sio2.h"
+#include "imsai-vio.h"
 
 #define BUFSIZE 256		/* max line length of command buffer */
 
@@ -52,34 +56,6 @@ static const char *TAG = "config";
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0;		/* default fp input port value */
 int  ns_port = NS_DEF_PORT;	/* default port to run web server on */
-
-extern int num_banks;
-
-extern int exatoi(char *);
-
-extern int sio1a_upper_case;	/* SIO 1 A translate input to upper case */
-extern int sio1a_strip_parity;	/* SIO 1 A strip parity from output */
-extern int sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */
-extern int sio1a_baud_rate;	/* SIO 1 A simulated baud rate */
-
-extern int sio1b_upper_case;	/* SIO 1 B translate input to upper case */
-extern int sio1b_strip_parity;	/* SIO 1 B strip parity from output */
-extern int sio1b_drop_nulls;	/* SIO 1 B drop nulls after CR/LF */
-extern int sio1b_baud_rate;	/* SIO 1 B simulated baud rate */
-
-extern int sio2a_upper_case;	/* SIO 2 A translate input to upper case */
-extern int sio2a_strip_parity;	/* SIO 2 A strip parity from output */
-extern int sio2a_drop_nulls;	/* SIO 2 A drop nulls after CR/LF */
-extern int sio2a_baud_rate;	/* SIO 2 A simulated baud rate */
-
-extern int sio2b_upper_case;	/* SIO 2 B translate input to upper case */
-extern int sio2b_strip_parity;	/* SIO 2 B strip parity from output */
-extern int sio2b_drop_nulls;	/* SIO 2 B drop nulls after CR/LF */
-extern int sio2b_baud_rate;	/* SIO 2 B simulated baud rate */
-
-extern char bg_color[];		/* VIO background color */
-extern char fg_color[];		/* VIO foreground color */
-extern int slf;			/* VIO scanlines factor */
 
 void config(void)
 {

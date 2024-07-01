@@ -27,6 +27,7 @@
 #include "log.h"
 #include "simmem.h"
 #include "simcore.h"
+#include "simcfg.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 

@@ -44,7 +44,6 @@
 #include "frontpanel.h"
 #endif
 #ifdef HAS_NETSERVER
-#include "civetweb.h"
 #include "netsrv.h"
 #endif
 #include "simmem.h"

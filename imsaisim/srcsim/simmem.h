@@ -22,23 +22,26 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
+#include "sim.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
+#include "simctl.h"
 
 extern void init_memory(void), reset_memory(void);
 extern void groupswap(void);
-extern int wait_step(void);
-extern void wait_int_step(void);
-extern BYTE memory[], *banks[];
-extern int p_tab[];
-extern int _p_tab[];
-extern int selbnk;
 
-#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+#define MAXPAGES	256
+#define MAXSEG		8	/* max number of memory segments */
+#define SEGSIZ		49152	/* size of the memory segments, 48 KBytes */
+
+extern BYTE memory[64 << 10], *banks[MAXSEG];
+extern int p_tab[MAXPAGES];
+extern int _p_tab[MAXPAGES];
+extern int selbnk;
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
@@ -63,14 +66,11 @@ struct memmap {
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
-#define MAXSEG		8	/* max number of memory segments */
-#define SEGSIZ		49152	/* size of the memory segments, 48 KBytes */
-
-extern void ctrl_port_out(BYTE);
+extern void ctrl_port_out(BYTE data);
 extern BYTE ctrl_port_in(void);
 
-extern BYTE *rdrvec[];
-extern BYTE *wrtvec[];
+extern BYTE *rdrvec[MAXPAGES];
+extern BYTE *wrtvec[MAXPAGES];
 
 extern int cyclecount;
 
@@ -156,7 +156,7 @@ static inline BYTE memrdr(WORD addr)
 	if (cyclecount && --cyclecount == 0)
 		groupswap();
 
-	return (data);
+	return data;
 }
 
 /*
@@ -176,11 +176,11 @@ static inline BYTE dma_read(WORD addr)
 
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 8] != MEM_NONE)
-			return (_MEMMAPPED(addr));
+			return _MEMMAPPED(addr);
 		else
-			return (0xff);
+			return 0xff;
 	} else {
-		return (*(banks[selbnk] + addr));
+		return *(banks[selbnk] + addr);
 	}
 }
 
@@ -211,11 +211,11 @@ static inline BYTE getmem(WORD addr)
 {
 	if ((selbnk == 0) || (addr >= SEGSIZ)) {
 		if (p_tab[addr >> 8] != MEM_NONE)
-			return (_MEMMAPPED(addr));
+			return _MEMMAPPED(addr);
 		else
-			return (0xff);
+			return 0xff;
 	} else {
-		return (*(banks[selbnk] + addr));
+		return *(banks[selbnk] + addr);
 	}
 }
 
@@ -241,4 +241,4 @@ static inline void fp_write(WORD addr, BYTE data)
 	}
 }
 
-#endif
+#endif /* !SIMMEM_INC */

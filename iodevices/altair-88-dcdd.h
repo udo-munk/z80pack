@@ -23,4 +23,4 @@ extern BYTE altair_dsk_sec_in(void);
 extern BYTE altair_dsk_data_in(void);
 extern void altair_dsk_reset(void);
 
-#endif
+#endif /* !ALTAIR_88_DCDD_INC */

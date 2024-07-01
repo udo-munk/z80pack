@@ -37,32 +37,52 @@
 #ifndef IMSAI_SIO2_INC
 #define IMSAI_SIO2_INC
 
+extern int sio1a_upper_case;	/* SIO 1 A translate input to upper case */
+extern int sio1a_strip_parity;	/* SIO 1 A strip parity from output */
+extern int sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */
+extern int sio1a_baud_rate;	/* SIO 1 A simulated baud rate */
+
+extern int sio1b_upper_case;	/* SIO 1 B translate input to upper case */
+extern int sio1b_strip_parity;	/* SIO 1 B strip parity from output */
+extern int sio1b_drop_nulls;	/* SIO 1 B drop nulls after CR/LF */
+extern int sio1b_baud_rate;	/* SIO 1 B simulated baud rate */
+
+extern int sio2a_upper_case;	/* SIO 2 A translate input to upper case */
+extern int sio2a_strip_parity;	/* SIO 2 A strip parity from output */
+extern int sio2a_drop_nulls;	/* SIO 2 A drop nulls after CR/LF */
+extern int sio2a_baud_rate;	/* SIO 2 A simulated baud rate */
+
+extern int sio2b_upper_case;	/* SIO 2 B translate input to upper case */
+extern int sio2b_strip_parity;	/* SIO 2 B strip parity from output */
+extern int sio2b_drop_nulls;	/* SIO 2 B drop nulls after CR/LF */
+extern int sio2b_baud_rate;	/* SIO 2 B simulated baud rate */
+
 extern BYTE imsai_sio_nofun_in(void);
-extern void imsai_sio_nofun_out(BYTE);
+extern void imsai_sio_nofun_out(BYTE data);
 
 extern BYTE imsai_sio1_ctl_in(void), imsai_sio2_ctl_in(void);
-extern void imsai_sio1_ctl_out(BYTE), imsai_sio2_ctl_out(BYTE);
+extern void imsai_sio1_ctl_out(BYTE data), imsai_sio2_ctl_out(BYTE data);
 
 extern BYTE imsai_sio1a_status_in(void);
-extern void imsai_sio1a_status_out(BYTE);
+extern void imsai_sio1a_status_out(BYTE data);
 extern BYTE imsai_sio1a_data_in(void);
-extern void imsai_sio1a_data_out(BYTE);
+extern void imsai_sio1a_data_out(BYTE data);
 
 extern BYTE imsai_sio1b_status_in(void);
-extern void imsai_sio1b_status_out(BYTE);
+extern void imsai_sio1b_status_out(BYTE data);
 extern BYTE imsai_sio1b_data_in(void);
-extern void imsai_sio1b_data_out(BYTE);
+extern void imsai_sio1b_data_out(BYTE data);
 
 extern BYTE imsai_sio2a_status_in(void);
-extern void imsai_sio2a_status_out(BYTE);
+extern void imsai_sio2a_status_out(BYTE data);
 extern BYTE imsai_sio2a_data_in(void);
-extern void imsai_sio2a_data_out(BYTE);
+extern void imsai_sio2a_data_out(BYTE data);
 
 #ifdef HAS_MODEM
 extern BYTE imsai_sio2b_status_in(void);
-extern void imsai_sio2b_status_out(BYTE);
+extern void imsai_sio2b_status_out(BYTE data);
 extern BYTE imsai_sio2b_data_in(void);
-extern void imsai_sio2b_data_out(BYTE);
+extern void imsai_sio2b_data_out(BYTE data);
 #endif
 
-#endif
+#endif /* !IMSAI_SIO2_INC */

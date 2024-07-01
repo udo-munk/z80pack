@@ -25,8 +25,8 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 
@@ -44,7 +44,6 @@ BYTE memory[64 << 10];
 BYTE mpubrom[2 << 10];
 BYTE mpubram[2 << 10];
 
-#define MAXPAGES 256
 /* Memory access read and write vector tables system bank 0 */
 BYTE *rdrvec[MAXPAGES];
 BYTE *wrtvec[MAXPAGES];
@@ -315,5 +314,5 @@ BYTE ctrl_port_in(void)
 		cyclecount = 3;
 	}
 #endif
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }

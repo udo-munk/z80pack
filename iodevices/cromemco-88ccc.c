@@ -21,8 +21,9 @@
 
 #if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
 
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simfun.h"
 #include "netsrv.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
@@ -42,8 +43,6 @@ static pthread_t thread = 0;
 /* thread for requesting, receiving & storing the camera image using DMA */
 static void *store_image(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-
 	uint64_t t1, t2;
 	int tdiff;
 	int i, j, len;
@@ -157,7 +156,7 @@ void cromemco_88ccc_ctrl_c_out(BYTE data)
 BYTE cromemco_88ccc_ctrl_a_in(void)
 {
 	/* return flags along with state in the msb */
-	return (flags | (state << 7));
+	return flags | (state << 7);
 }
 
 #endif /* HAS_NETSERVER && HAS_CYCLOPS */

@@ -24,10 +24,10 @@ static const char *TAG = "D+7AIO";
 
 #define PORT_COUNT  8
 
-BYTE inPort[PORT_COUNT];
-BYTE outPort[PORT_COUNT];
+static BYTE inPort[PORT_COUNT];
+static BYTE outPort[PORT_COUNT];
 
-void cromemco_d7a_callback(BYTE *data) {
+static void cromemco_d7a_callback(BYTE *data) {
     
     int i;
     inPort[0] = *data++;
@@ -48,7 +48,7 @@ void cromemco_d7a_init(void) {
 
 }
 
-void cromemco_d7a_out(BYTE port, BYTE data)
+static void cromemco_d7a_out(BYTE port, BYTE data)
 {
     outPort[port] = data;
 
@@ -72,7 +72,7 @@ void cromemco_d7a_A5_out(BYTE data) { cromemco_d7a_out(5, data); }
 void cromemco_d7a_A6_out(BYTE data) { cromemco_d7a_out(6, data); }
 void cromemco_d7a_A7_out(BYTE data) { cromemco_d7a_out(7, data); }
 
-BYTE cromemco_d7a_in(BYTE port)
+static BYTE cromemco_d7a_in(BYTE port)
 {
 	return inPort[port];
 }

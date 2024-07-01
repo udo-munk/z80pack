@@ -46,8 +46,6 @@ static const char *TAG = "TU-ART";
 
 void lpt_reset(void)
 {
-	extern int lpt1;
-
 	if (lpt1) {
 		close(lpt1);
 	}
@@ -90,7 +88,7 @@ BYTE cromemco_tuart_0a_status_in(void)
 	if (uart0a_int_pending)
 		status |= 32;
 
-	return (status);
+	return status;
 }
 
 /*
@@ -123,7 +121,7 @@ BYTE cromemco_tuart_0a_data_in(void)
 
 	/* process read data */
 	last = data;
-	return ((BYTE) data);
+	return (BYTE) data;
 }
 
 void cromemco_tuart_0a_data_out(BYTE data)
@@ -174,7 +172,7 @@ void cromemco_tuart_0a_command_out(BYTE data)
  */
 BYTE cromemco_tuart_0a_interrupt_in(void)
 {
-	return ((BYTE) uart0a_int);
+	return (BYTE) uart0a_int;
 }
 
 /*
@@ -200,7 +198,7 @@ void cromemco_tuart_0a_interrupt_out(BYTE data)
 
 BYTE cromemco_tuart_0a_parallel_in(void)
 {
-	return ((BYTE) 0);
+	return (BYTE) 0;
 }
 
 void cromemco_tuart_0a_parallel_out(BYTE data)
@@ -256,7 +254,7 @@ BYTE cromemco_tuart_1a_status_in(void)
 	if (uart1a_int_pending)
 		status |= 32;
 
-	return (status);
+	return status;
 }
 
 void cromemco_tuart_1a_baud_out(BYTE data)
@@ -278,7 +276,7 @@ BYTE cromemco_tuart_1a_data_in(void)
 	}
 
 	last = data;
-	return ((BYTE) data);
+	return (BYTE) data;
 }
 
 void cromemco_tuart_1a_data_out(BYTE data)
@@ -302,7 +300,7 @@ void cromemco_tuart_1a_command_out(BYTE data)
 
 BYTE cromemco_tuart_1a_interrupt_in(void)
 {
-	return ((BYTE) uart1a_int);
+	return (BYTE) uart1a_int;
 }
 
 void cromemco_tuart_1a_interrupt_out(BYTE data)
@@ -313,15 +311,13 @@ void cromemco_tuart_1a_interrupt_out(BYTE data)
 BYTE cromemco_tuart_1a_parallel_in(void)
 {
 	if (uart1a_lpt_busy == 0)
-		return ((BYTE) ~0x20);
+		return (BYTE) ~0x20;
 	else
-		return ((BYTE) 0xff);
+		return (BYTE) 0xff;
 }
 
 void cromemco_tuart_1a_parallel_out(BYTE data)
 {
-	extern int lpt2;
-
 	if (lpt2 == 0) {
 		if ((lpt2 = creat("lpt2.txt", 0664)) == -1) {
 			LOGE(TAG, "can't create lpt2.txt");
@@ -376,7 +372,7 @@ BYTE cromemco_tuart_1b_status_in(void)
 	if (uart1b_int_pending)
 		status |= 32;
 
-	return (status);
+	return status;
 }
 
 void cromemco_tuart_1b_baud_out(BYTE data)
@@ -398,7 +394,7 @@ BYTE cromemco_tuart_1b_data_in(void)
 	}
 
 	last = data;
-	return ((BYTE) data);
+	return (BYTE) data;
 }
 
 void cromemco_tuart_1b_data_out(BYTE data)
@@ -422,7 +418,7 @@ void cromemco_tuart_1b_command_out(BYTE data)
 
 BYTE cromemco_tuart_1b_interrupt_in(void)
 {
-	return ((BYTE) uart1b_int);
+	return (BYTE) uart1b_int;
 }
 
 void cromemco_tuart_1b_interrupt_out(BYTE data)
@@ -433,15 +429,13 @@ void cromemco_tuart_1b_interrupt_out(BYTE data)
 BYTE cromemco_tuart_1b_parallel_in(void)
 {
 	if (uart1b_lpt_busy == 0)
-		return ((BYTE) ~0x20);
+		return (BYTE) ~0x20;
 	else
-		return ((BYTE) 0xff);
+		return (BYTE) 0xff;
 }
 
 void cromemco_tuart_1b_parallel_out(BYTE data)
 {
-	extern int lpt1;
-
 	if (lpt1 == 0) {
 		if ((lpt1 = creat("lpt1.txt", 0664)) == -1) {
 			LOGE(TAG, "can't create lpt1.txt");

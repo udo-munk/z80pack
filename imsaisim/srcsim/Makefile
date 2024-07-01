@@ -7,7 +7,7 @@ MACHINE = imsai
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
+MACHINE_SRCS = simcfg.c simio.c simmem.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-dazzler.c cromemco-88ccc.c cromemco-d+7a.c diskmanager.c \
 	imsai-fif.c imsai-sio2.c imsai-hal.c imsai-vio.c unix_terminal.c \

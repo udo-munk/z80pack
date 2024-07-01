@@ -28,6 +28,16 @@
 #ifndef ALTAIR_88_2SIO_INC
 #define ALTAIR_88_2SIO_INC
 
+extern int sio1_upper_case;	/* SIO 1 translate input to upper case */
+extern int sio1_strip_parity;	/* SIO 1 strip parity from output */
+extern int sio1_drop_nulls;	/* SIO 1 drop nulls after CR/LF */
+extern int sio1_baud_rate;	/* SIO 1 baud rate */
+
+extern int sio2_upper_case;	/* SIO 2 translate input to upper case */
+extern int sio2_strip_parity;	/* SIO 2 strip parity from output */
+extern int sio2_drop_nulls;	/* SIO 2 drop nulls after CR/LF */
+extern int sio2_baud_rate;	/* SIO 2 baud rate */
+
 extern BYTE altair_sio1_status_in(void);
 extern void altair_sio1_status_out(BYTE);
 extern BYTE altair_sio1_data_in(void);
