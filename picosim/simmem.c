@@ -23,7 +23,7 @@
 #include "ff.h"
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
 #include "sd-fdc.h"
 
 extern FIL sd_file;
@@ -31,10 +31,9 @@ extern FRESULT sd_res;
 extern char disks[2][22];
 
 /* 64KB non banked memory */
-#define MEMSIZE 65536
-unsigned char memory[MEMSIZE];
+unsigned char memory[65536];
+
 /* boot ROM code */
-#undef MEMSIZE
 #define MEMSIZE 256
 #include "bootrom.c"
 

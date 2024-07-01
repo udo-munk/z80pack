@@ -30,8 +30,13 @@
 /* Project includes */
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simio.h"
+#include "simcore.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
 #include "sd-fdc.h"
 
 /* Pico W also needs this */
@@ -75,16 +80,16 @@ char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.DSK */
 /* CPU speed */
 int speed = CPU_SPEED;
 
-extern void init_cpu(void), init_io(void), run_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
-
-uint64_t get_clock_us(void);
-void gpio_callback(uint, uint32_t);
+static void gpio_callback(uint gpio, uint32_t events);
 
 /* Callbacks used by the SD library */
-size_t sd_get_num() { return 1; }
+size_t sd_get_num(void)
+{
+	return 1;
+}
 
-sd_card_t *sd_get_by_num(size_t num) {
+sd_card_t *sd_get_by_num(size_t num)
+{
 	if (num == 0) {
 		return &sd_card;
 	} else {
@@ -151,8 +156,6 @@ NOPE:	config();		/* configure the machine */
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
-	extern void ice_cmd_loop(int);
-
 	ice_cmd_loop(0);
 #else
 	run_cpu();
@@ -188,7 +191,7 @@ uint64_t get_clock_us(void)
  * interrupt handler for break switch
  * stops CPU
  */
-void gpio_callback(uint gpio, uint32_t events)
+static void gpio_callback(uint gpio, uint32_t events)
 {
 	cpu_error = USERINT;
 	cpu_state = STOPPED;

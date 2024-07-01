@@ -26,6 +26,8 @@
 /* Project includes */
 #include "sim.h"
 #include "simglb.h"
+#include "simcore.h"
+#include "sd-fdc.h"
 
 /* Pico W also needs this */
 #if PICO == 1
@@ -36,10 +38,9 @@
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p000_out(BYTE), p001_out(BYTE), p255_out(BYTE), hwctl_out(BYTE);
+static void p000_out(BYTE data), p001_out(BYTE data), p255_out(BYTE data);
+static void hwctl_out(BYTE data);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
-extern void fdc_out(BYTE);
-extern BYTE fdc_in(void);
 
 static BYTE sio_last;	/* last character received */
        BYTE fp_value;	/* port 255 value, can be set from ICE or config() */
@@ -61,7 +62,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE data) = {
 	[  0] = p000_out,	/* internal LED */
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC command */
@@ -195,11 +196,6 @@ static void p001_out(BYTE data)
  */
 static void hwctl_out(BYTE data)
 {
-#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-	extern void switch_cpu(int);
-#endif
-	extern void reset_cpu(void);
-
 	/* if port is locked do nothing */
 	if (hwctl_lock && (data != 0xaa))
 		return;

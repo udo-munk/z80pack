@@ -12,9 +12,9 @@
  * 28-MAY-2024 implemented mount/unmount of disk images
  */
 
-#ifndef CONFIG_INC
-#define CONFIG_INC
+#ifndef SIMCFG_INC
+#define SIMCFG_INC
 
 extern void config(void);
 
-#endif
+#endif /* !SIMCFG_INC */

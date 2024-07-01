@@ -9,13 +9,12 @@
  * 23-APR-2024 derived from z80sim
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
-#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+extern BYTE memory[65536];
 
 extern void init_memory(void);
-extern BYTE memory[];
 
 /* Last page in memory is ROM and write protected. Some software */
 /* expects a ROM in upper memory, if not it will wrap arround to */
@@ -63,4 +62,4 @@ static inline BYTE getmem(WORD addr)
 	return memory[addr];
 }
 
-#endif
+#endif /* !SIMMEM_INC */
