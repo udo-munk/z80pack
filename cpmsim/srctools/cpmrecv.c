@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 	close(fdin);
 	if (fdout)
 		close(fdout);
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
 void int_handler(int sig)

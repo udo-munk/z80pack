@@ -7,7 +7,7 @@ MACHINE = intelmds
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
+MACHINE_SRCS = simcfg.c simio.c simmem.c simctl.c
 # machine specific I/O source files
 IO_SRCS = mds-monitor.c mds-isbc201.c mds-isbc202.c mds-isbc206.c \
 	simbdos.c unix_network.c unix_terminal.c

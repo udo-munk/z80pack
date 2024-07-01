@@ -16,13 +16,11 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
-#include "config.h"
+#include "simmem.h"
+#include "simcfg.h"
 #include "log.h"
 
 static const char *TAG = "memory";
-
-extern int load_file(char *, WORD, int);
 
 /* 64KB non banked memory */
 BYTE memory[65536];		/* 64KB RAM */

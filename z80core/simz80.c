@@ -11,6 +11,7 @@
 #include "simcfg.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
+#include "simctl.h"
 #endif
 #include "simmem.h"
 #include "simcore.h"

@@ -29,7 +29,8 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simio.h"
 #include "mds-isbc206.h"
 #include "log.h"
 
@@ -146,18 +147,16 @@ static void dsk_path(void)
 
 BYTE isbc206_status_in(void)
 {
-	return (status);
+	return status;
 }
 
 BYTE isbc206_res_type_in(void)
 {
-	extern void int_cancel(int);
-
 	pthread_mutex_lock(&status_mutex);
 	status &= ~(ST_IPEND | ST_HD);
 	pthread_mutex_unlock(&status_mutex);
 	int_cancel(ISBC206_IRQ);
-	return (res_type);
+	return res_type;
 }
 
 BYTE isbc206_res_byte_in(void)
@@ -174,7 +173,7 @@ BYTE isbc206_res_byte_in(void)
 		data = ioerr;
 		res_type = RT_DSKRD;
 	}
-	return (data);
+	return data;
 }
 
 void isbc206_iopbl_out(BYTE data)
@@ -184,8 +183,6 @@ void isbc206_iopbl_out(BYTE data)
 
 void isbc206_iopbh_out(BYTE data)
 {
-	extern void int_request(int);
-
 	BYTE iocw, ioins, nsec, taddr, saddr, sec, b;
 	WORD addr, track;
 	int i, drive, op;
@@ -460,8 +457,6 @@ void isbc206_reset_out(BYTE data)
 
 void isbc206_disk_check(void)
 {
-	extern void int_request(int);
-
 	int i;
 	BYTE nstatus;
 	char *pfn;

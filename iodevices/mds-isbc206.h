@@ -18,8 +18,8 @@
 extern BYTE isbc206_status_in(void), isbc206_res_type_in(void);
 extern BYTE isbc206_res_byte_in(void);
 
-extern void isbc206_iopbl_out(BYTE), isbc206_iopbh_out(BYTE);
-extern void isbc206_reset_out(BYTE);
+extern void isbc206_iopbl_out(BYTE data), isbc206_iopbh_out(BYTE data);
+extern void isbc206_reset_out(BYTE data);
 
 extern void isbc206_disk_check(void);
 extern void isbc206_reset(void);

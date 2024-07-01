@@ -32,7 +32,7 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
-	return (memory[addr]);
+	return memory[addr];
 }
 
 /*
@@ -46,7 +46,7 @@ static inline void dma_write(WORD addr, BYTE data)
 
 static inline BYTE dma_read(WORD addr)
 {
-	return (memory[addr]);
+	return memory[addr];
 }
 
 /*
@@ -60,7 +60,7 @@ static inline void putmem(WORD addr, BYTE data)
 
 static inline BYTE getmem(WORD addr)
 {
-	return (memory[addr]);
+	return memory[addr];
 }
 
 #endif

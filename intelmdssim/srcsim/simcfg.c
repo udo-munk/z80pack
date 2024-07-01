@@ -18,30 +18,15 @@
 #include <string.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "mds-monitor.h"
 #include "log.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
-extern int exatoi(char *);
-
 static const char *TAG = "config";
 
 int fp_size = 800;		/* default frontpanel size */
-
-extern int tty_upper_case;	/* TTY translate input to upper case */
-extern int tty_strip_parity;	/* TTY strip parity from output */
-extern int tty_drop_nulls;	/* TTY drop nulls after CR/LF */
-extern int tty_clock_div;	/* TTY clock divisor */
-
-extern int crt_upper_case;	/* CRT translate input to upper case */
-extern int crt_strip_parity;	/* CRT strip parity from output */
-extern int crt_drop_nulls;	/* CRT drop nulls after CR/LF */
-extern int crt_clock_div;	/* CRT clock divisor */
-
-extern int pt_clock_div;	/* PTR/PTP clock divisor */
-
-extern int lpt_clock_div;	/* LPT clock divisor */
 
 void config(void)
 {

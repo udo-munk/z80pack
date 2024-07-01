@@ -12,11 +12,11 @@
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
-#ifndef CONFIG_INC
-#define CONFIG_INC
-
-extern void config(void);
+#ifndef SIMCFG_INC
+#define SIMCFG_INC
 
 extern int fp_size;
 
-#endif /* !CONFIG_INC */
+extern void config(void);
+
+#endif /* !SIMCFG_INC */

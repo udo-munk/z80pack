@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 		sendbuf(n);
 	close(fdin);
 	close(fdout);
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
 void sendbuf(ssize_t size)

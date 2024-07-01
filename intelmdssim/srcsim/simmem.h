@@ -11,23 +11,21 @@
  * 03-JUN-2024 first version
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
-#define IO_DATA_UNUSED	0x00	/* data returned on unused ports */
+#include "sim.h"
+#include "simctl.h"
+#include "simfun.h"
 
 #define BOOT_SIZE	256	/* bootstrap ROM size */
 #define MON_SIZE	2048	/* monitor ROM size */
 
 extern void init_memory(void);
-extern int wait_step(void);
-extern void wait_int_step(void);
 
-extern BYTE memory[], boot_rom[];
+extern BYTE memory[65536], boot_rom[BOOT_SIZE];
 extern char *boot_rom_file, *mon_rom_file;
 extern int mon_enabled;
-
-extern BYTE boot_switch;
 
 /*
  *	Memory access for the CPU cores
@@ -41,9 +39,9 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	if (boot_switch && addr < BOOT_SIZE)
-		return (boot_rom[addr]);
+		return boot_rom[addr];
 	else
-		return (memory[addr]);
+		return memory[addr];
 }
 
 /*
@@ -58,9 +56,9 @@ static inline void dma_write(WORD addr, BYTE data)
 static inline BYTE dma_read(WORD addr)
 {
 	if (boot_switch && addr < BOOT_SIZE)
-		return (boot_rom[addr]);
+		return boot_rom[addr];
 	else
-		return (memory[addr]);
+		return memory[addr];
 }
 
 /*
@@ -75,9 +73,9 @@ static inline void putmem(WORD addr, BYTE data)
 static inline BYTE getmem(WORD addr)
 {
 	if (boot_switch && addr < BOOT_SIZE)
-		return (boot_rom[addr]);
+		return boot_rom[addr];
 	else
-		return (memory[addr]);
+		return memory[addr];
 }
 
-#endif /* !MEMSIM_INC */
+#endif /* !SIMMEM_INC */

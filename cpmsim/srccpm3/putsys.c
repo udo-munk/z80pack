@@ -121,5 +121,5 @@ int main(void)
 	close(fd);
 
 	close(drivea);
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }

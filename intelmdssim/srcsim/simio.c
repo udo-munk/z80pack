@@ -23,8 +23,10 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
-#include "config.h"
+#include "simmem.h"
+#include "simcfg.h"
+#include "simctl.h"
+#include "simio.h"
 #include "mds-monitor.h"
 #include "mds-isbc201.h"
 #include "mds-isbc202.h"
@@ -41,21 +43,19 @@
 
 #define RTC_IRQ		1	/* real time clock interrupt */
 
-extern BYTE boot_switch;
-
 /*
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
 static BYTE int_mask_in(void), rtc_in(void), hwctl_in(void);
-static void int_mask_out(BYTE), int_revert_out(BYTE);
-static void bus_ovrrd_out(BYTE), rtc_out(BYTE), hwctl_out(BYTE);
+static void int_mask_out(BYTE data), int_revert_out(BYTE data);
+static void bus_ovrrd_out(BYTE data), rtc_out(BYTE data), hwctl_out(BYTE data);
 
 /*
  *	Forward declarations for support functions
  */
-static void *timing(void *);
-static void interrupt(int);
+static void *timing(void *arg);
+static void interrupt(int sig);
 
 static const char *TAG = "IO";
 
@@ -73,7 +73,7 @@ static int th_suspend;			/* RTC/interrupt thread suspend flag */
 int lpt_fd;				/* fd for file "printer.txt" */
 struct net_connectors ncons[NUMNSOC];	/* network connection for TTY */
 struct unix_connectors ucons[NUMUSOC];	/* socket connection for PTR/PTP */
-BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
+static BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every input
@@ -114,7 +114,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE data) = {
 #ifdef HAS_ISBC206
 	[105] = isbc206_iopbl_out,	/* iSBC 206 IOPB address LSB output */
 	[106] = isbc206_iopbh_out,	/* iSBC 206 IOPB address MSB output */
@@ -295,7 +295,7 @@ static int int_highest(int mask)
 		irq++;
 		irq_mask <<= 1;
 	}
-	return (irq);
+	return irq;
 }
 
 /*
@@ -345,7 +345,7 @@ void int_cancel(int irq)
  */
 static BYTE int_mask_in(void)
 {
-	return (int_mask);
+	return int_mask;
 }
 
 /*
@@ -398,7 +398,7 @@ static BYTE rtc_in(void)
 	rtc_status1 = rtc_status0;
 	rtc_status0 = 0;
 	pthread_mutex_unlock(&rtc_mutex);
-	return (data);
+	return data;
 }
 
 /*
@@ -417,7 +417,7 @@ static void rtc_out(BYTE data)
  */
 static BYTE hwctl_in(void)
 {
-	return (hwctl_lock);
+	return hwctl_lock;
 }
 
 /*

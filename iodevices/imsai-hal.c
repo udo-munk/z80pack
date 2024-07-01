@@ -87,14 +87,14 @@ static int vio_kbd_in(void)
 	int data;
 
 	if (imsai_kbd_data == -1)
-		return (-1);
+		return -1;
 
 	/* take over data and reset */
 	data = imsai_kbd_data;
 	imsai_kbd_data = -1;
 	imsai_kbd_status = 0;
 
-	return (data);
+	return data;
 }
 static void vio_kbd_out(BYTE data) {
     UNUSED(data);
@@ -202,7 +202,7 @@ again:
     p[0].revents = 0;
     poll(p, 1, 0);
     if (!(p[0].revents & POLLIN))
-        return (-1);
+        return -1;
 
     if (read(fileno(stdin), &data, 1) == 0) {
         /* try to reopen tty, input redirection exhausted */
@@ -250,7 +250,7 @@ static int scktsrv_alive(void) {
 		}
 	}
 
-	return (ucons[0].ssc); /* SCKTSRV is alive if there is an open socket */
+	return ucons[0].ssc; /* SCKTSRV is alive if there is an open socket */
 }
 static void scktsrv_status(BYTE *stat) {
 
@@ -277,7 +277,7 @@ static int scktsrv_in(void) {
 
 	/* if not connected return last */
 	if (ucons[0].ssc == 0)
-		return (-1);
+		return -1;
 
 	/* if no input waiting return last */
 	p[0].fd = ucons[0].ssc;
@@ -285,13 +285,13 @@ static int scktsrv_in(void) {
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return (-1);
+		return -1;
 
 	if (read(ucons[0].ssc, &data, 1) != 1) {
 		/* EOF, close socket and return last */
 		close(ucons[0].ssc);
 		ucons[0].ssc = 0;
-		return (-1);
+		return -1;
 	}
 
     return data;
