@@ -13,9 +13,8 @@
 #include <termios.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simice.h"
 #include "unix_terminal.h"
-
-extern void ice_cmd_loop(int);
 
 /*
  *	The function "mon()" is the user interface, called

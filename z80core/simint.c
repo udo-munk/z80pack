@@ -21,10 +21,13 @@
 #include <signal.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simint.h"
+#include "simio.h"
+#include "unix_terminal.h"
 
-static void user_int(int), quit_int(int), term_int(int);
-extern void exit_io(void);
-extern void reset_unix_terminal(void);
+static void user_int(int sig);
+static void quit_int(int sig);
+static void term_int(int sig);
 
 void int_on(void)
 {

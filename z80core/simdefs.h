@@ -5,8 +5,10 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
-#ifndef SIMCORE_INC
-#define SIMCORE_INC
+#ifndef SIMDEFS_INC
+#define SIMDEFS_INC
+
+#include <stdint.h>
 
 #define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
 #define RELEASE	"1.39"
@@ -88,34 +90,13 @@ typedef int16_t  SWORD;		/* 16 bit signed */
 typedef uint8_t  BYTE;		/* 8 bit unsigned */
 typedef int8_t   SBYTE;		/* 8 bit signed */
 
-#ifdef HISIZE
-struct history {		/* structure of a history entry */
-	int	h_cpu;		/* CPU type */
-	WORD	h_addr;		/* address of execution */
-	WORD	h_af;		/* register AF */
-	WORD	h_bc;		/* register BC */
-	WORD	h_de;		/* register DE */
-	WORD	h_hl;		/* register HL */
-#ifndef EXCLUDE_Z80
-	WORD	h_ix;		/* register IX */
-	WORD	h_iy;		/* register IY */
-#endif
-	WORD	h_sp;		/* register SP */
-};
-#endif
-
-#ifdef SBSIZE
-struct softbreak {		/* structure of a breakpoint */
-	WORD	sb_addr;	/* address of breakpoint */
-	BYTE	sb_oldopc;	/* op-code at address of breakpoint */
-	int	sb_passcount;	/* pass counter of breakpoint */
-	int	sb_pass;	/* no. of pass to break */
-};
-#endif
+typedef uint64_t Tstates_t;	/* uint64 for counting T-states */
+typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
+	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
 
 /*
  *	macro for declaring unused function parameters
  */
 #define UNUSED(x)	(void) (x)
 
-#endif /* !SIMCORE_INC */
+#endif /* !SIMDEFS_INC */

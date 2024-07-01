@@ -19,9 +19,11 @@
 #define FAST_BLOCK	/* much faster but not accurate Z80 block instr. */
 
 /*#define WANT_ICE*/	/* attach ICE to machine */
+#ifdef WANT_ICE
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
+#endif
 
 #define HAS_DISKS	/* uses disk images */
 /*#define HAS_CONFIG*/	/* has no configuration file */
@@ -61,4 +63,4 @@ struct dskdef {
 
 #include "simdefs.h"
 
-#endif
+#endif /* !SIM_INC */

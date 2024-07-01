@@ -24,9 +24,10 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
 #include "log.h"
 #include "proctec-vdm-charset.h"
+#include "simfun.h"
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
@@ -210,8 +211,6 @@ static void refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-
 	uint64_t t1, t2;
 	int tdiff;
 

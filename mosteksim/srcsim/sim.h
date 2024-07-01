@@ -29,9 +29,11 @@
 #define EXCLUDE_I8080	/* this was a Z80 machine */
 
 #define WANT_ICE	/* attach ICE to headless machine */
+#ifdef WANT_ICE
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
+#endif
 
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */

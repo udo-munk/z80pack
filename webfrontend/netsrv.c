@@ -26,7 +26,7 @@
 
 #ifdef HAS_NETSERVER
 
-#include "memsim.h"
+#include "simmem.h"
 #include "log.h"
 #include "netsrv.h"
 #include "civetweb.h"
@@ -99,7 +99,7 @@ void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data)) {
  * 		BINARY	if there are multiple bytes
  * 		TTY & LPT are always BINARY now
  */
-void net_device_send(net_device_t device, char* msg, int len) {
+void net_device_send(net_device_t device, char *msg, int len) {
 
 	int op_code;
 
@@ -202,7 +202,7 @@ request_t *get_request(const HttpdConnection_t *conn) {
 	return &req;
 }
 
-int log_message(const HttpdConnection_t *conn, const char *message)
+static int log_message(const HttpdConnection_t *conn, const char *message)
 {
 	UNUSED(conn);
 
@@ -210,7 +210,7 @@ int log_message(const HttpdConnection_t *conn, const char *message)
 	return 1;
 }
 
-void InformWebsockets(struct mg_context *ctx)
+static void InformWebsockets(struct mg_context *ctx)
 {
 	static unsigned long cnt = 0;
 	char text[32];
@@ -235,7 +235,7 @@ void InformWebsockets(struct mg_context *ctx)
 
 struct utsname uts;
 
-int SystemHandler(HttpdConnection_t *conn, void *unused) {
+static int SystemHandler(HttpdConnection_t *conn, void *unused) {
     request_t *req = get_request(conn);
 
 	UNUSED(unused);
@@ -519,7 +519,7 @@ int UploadHandler(HttpdConnection_t *conn, void *path) {
 	return 1;
 }
 
-int ConfigHandler(HttpdConnection_t *conn, void *path) {
+static int ConfigHandler(HttpdConnection_t *conn, void *path) {
     request_t *req = get_request(conn);
 
     switch (req->method) {
@@ -537,7 +537,7 @@ int ConfigHandler(HttpdConnection_t *conn, void *path) {
 	return 1;
 }
 
-int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
+static int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 	struct mg_context *ctx = mg_get_context(conn);
 	int reject = 1;
 	int res;
@@ -578,7 +578,7 @@ int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device) {
 	return reject;
 }
 
-void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
+static void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	const char *text = "\r\nConnected to the OSX port of Z80PACK\r\n";
 	ws_client_t *client = (ws_client_t *) mg_get_user_connection_data(conn);
 	net_device_t d = *(net_device_t *) device;
@@ -598,7 +598,7 @@ void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	client->state = 2;
 }
 
-int WebsocketDataHandler(HttpdConnection_t *conn,
+static int WebsocketDataHandler(HttpdConnection_t *conn,
                      int bits,
                      char *data,
                      size_t len,
@@ -714,7 +714,7 @@ int WebsocketDataHandler(HttpdConnection_t *conn,
 	return 1;
 }
 
-void WebSocketCloseHandler(const HttpdConnection_t *conn, void *device) {
+static void WebSocketCloseHandler(const HttpdConnection_t *conn, void *device) {
 	struct mg_context *ctx = mg_get_context(conn);
 	ws_client_t *client = (ws_client_t *) mg_get_user_connection_data(conn);
 	net_device_t d = *(net_device_t *) device;

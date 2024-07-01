@@ -10,8 +10,6 @@
 #define LAST_DISK   'D'
 #define _MAX_DISK   (LAST_DISK - '@')
 
-extern Diskdef  disks[];
-
 #define DISKNAME(A) disks[A].fn
 
-#endif
+#endif /* !DISKS_INC */

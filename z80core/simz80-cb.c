@@ -13,11 +13,13 @@
 #include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
+#include "simcfg.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
+#include "simfun.h"
 #endif
-#include "memsim.h"
+#include "simmem.h"
+#include "simz80-cb.h"
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 
@@ -371,7 +373,6 @@ int op_cb_handle(void)
 
 	register int t;
 #ifdef FRONTPANEL
-	extern uint64_t get_clock_us(void);
 	uint64_t clk;
 #endif
 
@@ -394,7 +395,7 @@ int op_cb_handle(void)
 
 	t = (*op_cb[memrdr(PC++)])();	/* execute next opcode */
 
-	return (t);
+	return t;
 }
 
 /*
@@ -405,7 +406,7 @@ static int trap_cb(void)
 {
 	cpu_error = OPTRAP2;
 	cpu_state = STOPPED;
-	return (0);
+	return 0;
 }
 
 static int op_srla(void)		/* SRL A */
@@ -416,7 +417,7 @@ static int op_srla(void)		/* SRL A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srlb(void)		/* SRL B */
@@ -427,7 +428,7 @@ static int op_srlb(void)		/* SRL B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srlc(void)		/* SRL C */
@@ -438,7 +439,7 @@ static int op_srlc(void)		/* SRL C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srld(void)		/* SRL D */
@@ -449,7 +450,7 @@ static int op_srld(void)		/* SRL D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srle(void)		/* SRL E */
@@ -460,7 +461,7 @@ static int op_srle(void)		/* SRL E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srlh(void)		/* SRL H */
@@ -471,7 +472,7 @@ static int op_srlh(void)		/* SRL H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srll(void)		/* SRL L */
@@ -482,7 +483,7 @@ static int op_srll(void)		/* SRL L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srlhl(void)		/* SRL (HL) */
@@ -499,7 +500,7 @@ static int op_srlhl(void)		/* SRL (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 static int op_slaa(void)		/* SLA A */
@@ -510,7 +511,7 @@ static int op_slaa(void)		/* SLA A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_slab(void)		/* SLA B */
@@ -521,7 +522,7 @@ static int op_slab(void)		/* SLA B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_slac(void)		/* SLA C */
@@ -532,7 +533,7 @@ static int op_slac(void)		/* SLA C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_slad(void)		/* SLA D */
@@ -543,7 +544,7 @@ static int op_slad(void)		/* SLA D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_slae(void)		/* SLA E */
@@ -554,7 +555,7 @@ static int op_slae(void)		/* SLA E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_slah(void)		/* SLA H */
@@ -565,7 +566,7 @@ static int op_slah(void)		/* SLA H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_slal(void)		/* SLA L */
@@ -576,7 +577,7 @@ static int op_slal(void)		/* SLA L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_slahl(void)		/* SLA (HL) */
@@ -593,7 +594,7 @@ static int op_slahl(void)		/* SLA (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 static int op_rlra(void)		/* RL A */
@@ -608,7 +609,7 @@ static int op_rlra(void)		/* RL A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlb(void)			/* RL B */
@@ -623,7 +624,7 @@ static int op_rlb(void)			/* RL B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlc(void)			/* RL C */
@@ -638,7 +639,7 @@ static int op_rlc(void)			/* RL C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rld(void)			/* RL D */
@@ -653,7 +654,7 @@ static int op_rld(void)			/* RL D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rle(void)			/* RL E */
@@ -668,7 +669,7 @@ static int op_rle(void)			/* RL E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlh(void)			/* RL H */
@@ -683,7 +684,7 @@ static int op_rlh(void)			/* RL H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rll(void)			/* RL L */
@@ -698,7 +699,7 @@ static int op_rll(void)			/* RL L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlhl(void)		/* RL (HL) */
@@ -718,7 +719,7 @@ static int op_rlhl(void)		/* RL (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 static int op_rrra(void)		/* RR A */
@@ -733,7 +734,7 @@ static int op_rrra(void)		/* RR A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrb(void)			/* RR B */
@@ -748,7 +749,7 @@ static int op_rrb(void)			/* RR B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrc(void)			/* RR C */
@@ -763,7 +764,7 @@ static int op_rrc(void)			/* RR C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrd(void)			/* RR D */
@@ -778,7 +779,7 @@ static int op_rrd(void)			/* RR D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rre(void)			/* RR E */
@@ -793,7 +794,7 @@ static int op_rre(void)			/* RR E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrh(void)			/* RR H */
@@ -808,7 +809,7 @@ static int op_rrh(void)			/* RR H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrl(void)			/* RR L */
@@ -823,7 +824,7 @@ static int op_rrl(void)			/* RR L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrhl(void)		/* RR (HL) */
@@ -843,7 +844,7 @@ static int op_rrhl(void)		/* RR (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 static int op_rrcra(void)		/* RRC A */
@@ -858,7 +859,7 @@ static int op_rrcra(void)		/* RRC A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrcb(void)		/* RRC B */
@@ -873,7 +874,7 @@ static int op_rrcb(void)		/* RRC B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrcc(void)		/* RRC C */
@@ -888,7 +889,7 @@ static int op_rrcc(void)		/* RRC C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrcd(void)		/* RRC D */
@@ -903,7 +904,7 @@ static int op_rrcd(void)		/* RRC D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrce(void)		/* RRC E */
@@ -918,7 +919,7 @@ static int op_rrce(void)		/* RRC E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrch(void)		/* RRC H */
@@ -933,7 +934,7 @@ static int op_rrch(void)		/* RRC H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrcl(void)		/* RRC L */
@@ -948,7 +949,7 @@ static int op_rrcl(void)		/* RRC L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rrchl(void)		/* RRC (HL) */
@@ -968,7 +969,7 @@ static int op_rrchl(void)		/* RRC (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 static int op_rlcra(void)		/* RLC A */
@@ -983,7 +984,7 @@ static int op_rlcra(void)		/* RLC A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlcb(void)		/* RLC B */
@@ -998,7 +999,7 @@ static int op_rlcb(void)		/* RLC B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlcc(void)		/* RLC C */
@@ -1013,7 +1014,7 @@ static int op_rlcc(void)		/* RLC C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlcd(void)		/* RLC D */
@@ -1028,7 +1029,7 @@ static int op_rlcd(void)		/* RLC D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlce(void)		/* RLC E */
@@ -1043,7 +1044,7 @@ static int op_rlce(void)		/* RLC E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlch(void)		/* RLC H */
@@ -1058,7 +1059,7 @@ static int op_rlch(void)		/* RLC H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlcl(void)		/* RLC L */
@@ -1073,7 +1074,7 @@ static int op_rlcl(void)		/* RLC L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_rlchl(void)		/* RLC (HL) */
@@ -1093,7 +1094,7 @@ static int op_rlchl(void)		/* RLC (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 static int op_sraa(void)		/* SRA A */
@@ -1108,7 +1109,7 @@ static int op_sraa(void)		/* SRA A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srab(void)		/* SRA B */
@@ -1123,7 +1124,7 @@ static int op_srab(void)		/* SRA B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srac(void)		/* SRA C */
@@ -1138,7 +1139,7 @@ static int op_srac(void)		/* SRA C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srad(void)		/* SRA D */
@@ -1153,7 +1154,7 @@ static int op_srad(void)		/* SRA D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srae(void)		/* SRA E */
@@ -1168,7 +1169,7 @@ static int op_srae(void)		/* SRA E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srah(void)		/* SRA H */
@@ -1183,7 +1184,7 @@ static int op_srah(void)		/* SRA H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_sral(void)		/* SRA L */
@@ -1198,7 +1199,7 @@ static int op_sral(void)		/* SRA L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_srahl(void)		/* SRA (HL) */
@@ -1217,775 +1218,775 @@ static int op_srahl(void)		/* SRA (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 static int op_sb0a(void)		/* SET 0,A */
 {
 	A |= 1;
-	return (8);
+	return 8;
 }
 
 static int op_sb1a(void)		/* SET 1,A */
 {
 	A |= 2;
-	return (8);
+	return 8;
 }
 
 static int op_sb2a(void)		/* SET 2,A */
 {
 	A |= 4;
-	return (8);
+	return 8;
 }
 
 static int op_sb3a(void)		/* SET 3,A */
 {
 	A |= 8;
-	return (8);
+	return 8;
 }
 
 static int op_sb4a(void)		/* SET 4,A */
 {
 	A |= 16;
-	return (8);
+	return 8;
 }
 
 static int op_sb5a(void)		/* SET 5,A */
 {
 	A |= 32;
-	return (8);
+	return 8;
 }
 
 static int op_sb6a(void)		/* SET 6,A */
 {
 	A |= 64;
-	return (8);
+	return 8;
 }
 
 static int op_sb7a(void)		/* SET 7,A */
 {
 	A |= 128;
-	return (8);
+	return 8;
 }
 
 static int op_sb0b(void)		/* SET 0,B */
 {
 	B |= 1;
-	return (8);
+	return 8;
 }
 
 static int op_sb1b(void)		/* SET 1,B */
 {
 	B |= 2;
-	return (8);
+	return 8;
 }
 
 static int op_sb2b(void)		/* SET 2,B */
 {
 	B |= 4;
-	return (8);
+	return 8;
 }
 
 static int op_sb3b(void)		/* SET 3,B */
 {
 	B |= 8;
-	return (8);
+	return 8;
 }
 
 static int op_sb4b(void)		/* SET 4,B */
 {
 	B |= 16;
-	return (8);
+	return 8;
 }
 
 static int op_sb5b(void)		/* SET 5,B */
 {
 	B |= 32;
-	return (8);
+	return 8;
 }
 
 static int op_sb6b(void)		/* SET 6,B */
 {
 	B |= 64;
-	return (8);
+	return 8;
 }
 
 static int op_sb7b(void)		/* SET 7,B */
 {
 	B |= 128;
-	return (8);
+	return 8;
 }
 
 static int op_sb0c(void)		/* SET 0,C */
 {
 	C |= 1;
-	return (8);
+	return 8;
 }
 
 static int op_sb1c(void)		/* SET 1,C */
 {
 	C |= 2;
-	return (8);
+	return 8;
 }
 
 static int op_sb2c(void)		/* SET 2,C */
 {
 	C |= 4;
-	return (8);
+	return 8;
 }
 
 static int op_sb3c(void)		/* SET 3,C */
 {
 	C |= 8;
-	return (8);
+	return 8;
 }
 
 static int op_sb4c(void)		/* SET 4,C */
 {
 	C |= 16;
-	return (8);
+	return 8;
 }
 
 static int op_sb5c(void)		/* SET 5,C */
 {
 	C |= 32;
-	return (8);
+	return 8;
 }
 
 static int op_sb6c(void)		/* SET 6,C */
 {
 	C |= 64;
-	return (8);
+	return 8;
 }
 
 static int op_sb7c(void)		/* SET 7,C */
 {
 	C |= 128;
-	return (8);
+	return 8;
 }
 
 static int op_sb0d(void)		/* SET 0,D */
 {
 	D |= 1;
-	return (8);
+	return 8;
 }
 
 static int op_sb1d(void)		/* SET 1,D */
 {
 	D |= 2;
-	return (8);
+	return 8;
 }
 
 static int op_sb2d(void)		/* SET 2,D */
 {
 	D |= 4;
-	return (8);
+	return 8;
 }
 
 static int op_sb3d(void)		/* SET 3,D */
 {
 	D |= 8;
-	return (8);
+	return 8;
 }
 
 static int op_sb4d(void)		/* SET 4,D */
 {
 	D |= 16;
-	return (8);
+	return 8;
 }
 
 static int op_sb5d(void)		/* SET 5,D */
 {
 	D |= 32;
-	return (8);
+	return 8;
 }
 
 static int op_sb6d(void)		/* SET 6,D */
 {
 	D |= 64;
-	return (8);
+	return 8;
 }
 
 static int op_sb7d(void)		/* SET 7,D */
 {
 	D |= 128;
-	return (8);
+	return 8;
 }
 
 static int op_sb0e(void)		/* SET 0,E */
 {
 	E |= 1;
-	return (8);
+	return 8;
 }
 
 static int op_sb1e(void)		/* SET 1,E */
 {
 	E |= 2;
-	return (8);
+	return 8;
 }
 
 static int op_sb2e(void)		/* SET 2,E */
 {
 	E |= 4;
-	return (8);
+	return 8;
 }
 
 static int op_sb3e(void)		/* SET 3,E */
 {
 	E |= 8;
-	return (8);
+	return 8;
 }
 
 static int op_sb4e(void)		/* SET 4,E */
 {
 	E |= 16;
-	return (8);
+	return 8;
 }
 
 static int op_sb5e(void)		/* SET 5,E */
 {
 	E |= 32;
-	return (8);
+	return 8;
 }
 
 static int op_sb6e(void)		/* SET 6,E */
 {
 	E |= 64;
-	return (8);
+	return 8;
 }
 
 static int op_sb7e(void)		/* SET 7,E */
 {
 	E |= 128;
-	return (8);
+	return 8;
 }
 
 static int op_sb0h(void)		/* SET 0,H */
 {
 	H |= 1;
-	return (8);
+	return 8;
 }
 
 static int op_sb1h(void)		/* SET 1,H */
 {
 	H |= 2;
-	return (8);
+	return 8;
 }
 
 static int op_sb2h(void)		/* SET 2,H */
 {
 	H |= 4;
-	return (8);
+	return 8;
 }
 
 static int op_sb3h(void)		/* SET 3,H */
 {
 	H |= 8;
-	return (8);
+	return 8;
 }
 
 static int op_sb4h(void)		/* SET 4,H */
 {
 	H |= 16;
-	return (8);
+	return 8;
 }
 
 static int op_sb5h(void)		/* SET 5,H */
 {
 	H |= 32;
-	return (8);
+	return 8;
 }
 
 static int op_sb6h(void)		/* SET 6,H */
 {
 	H |= 64;
-	return (8);
+	return 8;
 }
 
 static int op_sb7h(void)		/* SET 7,H */
 {
 	H |= 128;
-	return (8);
+	return 8;
 }
 
 static int op_sb0l(void)		/* SET 0,L */
 {
 	L |= 1;
-	return (8);
+	return 8;
 }
 
 static int op_sb1l(void)		/* SET 1,L */
 {
 	L |= 2;
-	return (8);
+	return 8;
 }
 
 static int op_sb2l(void)		/* SET 2,L */
 {
 	L |= 4;
-	return (8);
+	return 8;
 }
 
 static int op_sb3l(void)		/* SET 3,L */
 {
 	L |= 8;
-	return (8);
+	return 8;
 }
 
 static int op_sb4l(void)		/* SET 4,L */
 {
 	L |= 16;
-	return (8);
+	return 8;
 }
 
 static int op_sb5l(void)		/* SET 5,L */
 {
 	L |= 32;
-	return (8);
+	return 8;
 }
 
 static int op_sb6l(void)		/* SET 6,L */
 {
 	L |= 64;
-	return (8);
+	return 8;
 }
 
 static int op_sb7l(void)		/* SET 7,L */
 {
 	L |= 128;
-	return (8);
+	return 8;
 }
 
 static int op_sb0hl(void)		/* SET 0,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 1);
-	return (15);
+	return 15;
 }
 
 static int op_sb1hl(void)		/* SET 1,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 2);
-	return (15);
+	return 15;
 }
 
 static int op_sb2hl(void)		/* SET 2,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 4);
-	return (15);
+	return 15;
 }
 
 static int op_sb3hl(void)		/* SET 3,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 8);
-	return (15);
+	return 15;
 }
 
 static int op_sb4hl(void)		/* SET 4,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 16);
-	return (15);
+	return 15;
 }
 
 static int op_sb5hl(void)		/* SET 5,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 32);
-	return (15);
+	return 15;
 }
 
 static int op_sb6hl(void)		/* SET 6,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 64);
-	return (15);
+	return 15;
 }
 
 static int op_sb7hl(void)		/* SET 7,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) | 128);
-	return (15);
+	return 15;
 }
 
 static int op_rb0a(void)		/* RES 0,A */
 {
 	A &= ~1;
-	return (8);
+	return 8;
 }
 
 static int op_rb1a(void)		/* RES 1,A */
 {
 	A &= ~2;
-	return (8);
+	return 8;
 }
 
 static int op_rb2a(void)		/* RES 2,A */
 {
 	A &= ~4;
-	return (8);
+	return 8;
 }
 
 static int op_rb3a(void)		/* RES 3,A */
 {
 	A &= ~8;
-	return (8);
+	return 8;
 }
 
 static int op_rb4a(void)		/* RES 4,A */
 {
 	A &= ~16;
-	return (8);
+	return 8;
 }
 
 static int op_rb5a(void)		/* RES 5,A */
 {
 	A &= ~32;
-	return (8);
+	return 8;
 }
 
 static int op_rb6a(void)		/* RES 6,A */
 {
 	A &= ~64;
-	return (8);
+	return 8;
 }
 
 static int op_rb7a(void)		/* RES 7,A */
 {
 	A &= ~128;
-	return (8);
+	return 8;
 }
 
 static int op_rb0b(void)		/* RES 0,B */
 {
 	B &= ~1;
-	return (8);
+	return 8;
 }
 
 static int op_rb1b(void)		/* RES 1,B */
 {
 	B &= ~2;
-	return (8);
+	return 8;
 }
 
 static int op_rb2b(void)		/* RES 2,B */
 {
 	B &= ~4;
-	return (8);
+	return 8;
 }
 
 static int op_rb3b(void)		/* RES 3,B */
 {
 	B &= ~8;
-	return (8);
+	return 8;
 }
 
 static int op_rb4b(void)		/* RES 4,B */
 {
 	B &= ~16;
-	return (8);
+	return 8;
 }
 
 static int op_rb5b(void)		/* RES 5,B */
 {
 	B &= ~32;
-	return (8);
+	return 8;
 }
 
 static int op_rb6b(void)		/* RES 6,B */
 {
 	B &= ~64;
-	return (8);
+	return 8;
 }
 
 static int op_rb7b(void)		/* RES 7,B */
 {
 	B &= ~128;
-	return (8);
+	return 8;
 }
 
 static int op_rb0c(void)		/* RES 0,C */
 {
 	C &= ~1;
-	return (8);
+	return 8;
 }
 
 static int op_rb1c(void)		/* RES 1,C */
 {
 	C &= ~2;
-	return (8);
+	return 8;
 }
 
 static int op_rb2c(void)		/* RES 2,C */
 {
 	C &= ~4;
-	return (8);
+	return 8;
 }
 
 static int op_rb3c(void)		/* RES 3,C */
 {
 	C &= ~8;
-	return (8);
+	return 8;
 }
 
 static int op_rb4c(void)		/* RES 4,C */
 {
 	C &= ~16;
-	return (8);
+	return 8;
 }
 
 static int op_rb5c(void)		/* RES 5,C */
 {
 	C &= ~32;
-	return (8);
+	return 8;
 }
 
 static int op_rb6c(void)		/* RES 6,C */
 {
 	C &= ~64;
-	return (8);
+	return 8;
 }
 
 static int op_rb7c(void)		/* RES 7,C */
 {
 	C &= ~128;
-	return (8);
+	return 8;
 }
 
 static int op_rb0d(void)		/* RES 0,D */
 {
 	D &= ~1;
-	return (8);
+	return 8;
 }
 
 static int op_rb1d(void)		/* RES 1,D */
 {
 	D &= ~2;
-	return (8);
+	return 8;
 }
 
 static int op_rb2d(void)		/* RES 2,D */
 {
 	D &= ~4;
-	return (8);
+	return 8;
 }
 
 static int op_rb3d(void)		/* RES 3,D */
 {
 	D &= ~8;
-	return (8);
+	return 8;
 }
 
 static int op_rb4d(void)		/* RES 4,D */
 {
 	D &= ~16;
-	return (8);
+	return 8;
 }
 
 static int op_rb5d(void)		/* RES 5,D */
 {
 	D &= ~32;
-	return (8);
+	return 8;
 }
 
 static int op_rb6d(void)		/* RES 6,D */
 {
 	D &= ~64;
-	return (8);
+	return 8;
 }
 
 static int op_rb7d(void)		/* RES 7,D */
 {
 	D &= ~128;
-	return (8);
+	return 8;
 }
 
 static int op_rb0e(void)		/* RES 0,E */
 {
 	E &= ~1;
-	return (8);
+	return 8;
 }
 
 static int op_rb1e(void)		/* RES 1,E */
 {
 	E &= ~2;
-	return (8);
+	return 8;
 }
 
 static int op_rb2e(void)		/* RES 2,E */
 {
 	E &= ~4;
-	return (8);
+	return 8;
 }
 
 static int op_rb3e(void)		/* RES 3,E */
 {
 	E &= ~8;
-	return (8);
+	return 8;
 }
 
 static int op_rb4e(void)		/* RES 4,E */
 {
 	E &= ~16;
-	return (8);
+	return 8;
 }
 
 static int op_rb5e(void)		/* RES 5,E */
 {
 	E &= ~32;
-	return (8);
+	return 8;
 }
 
 static int op_rb6e(void)		/* RES 6,E */
 {
 	E &= ~64;
-	return (8);
+	return 8;
 }
 
 static int op_rb7e(void)		/* RES 7,E */
 {
 	E &= ~128;
-	return (8);
+	return 8;
 }
 
 static int op_rb0h(void)		/* RES 0,H */
 {
 	H &= ~1;
-	return (8);
+	return 8;
 }
 
 static int op_rb1h(void)		/* RES 1,H */
 {
 	H &= ~2;
-	return (8);
+	return 8;
 }
 
 static int op_rb2h(void)		/* RES 2,H */
 {
 	H &= ~4;
-	return (8);
+	return 8;
 }
 
 static int op_rb3h(void)		/* RES 3,H */
 {
 	H &= ~8;
-	return (8);
+	return 8;
 }
 
 static int op_rb4h(void)		/* RES 4,H */
 {
 	H &= ~16;
-	return (8);
+	return 8;
 }
 
 static int op_rb5h(void)		/* RES 5,H */
 {
 	H &= ~32;
-	return (8);
+	return 8;
 }
 
 static int op_rb6h(void)		/* RES 6,H */
 {
 	H &= ~64;
-	return (8);
+	return 8;
 }
 
 static int op_rb7h(void)		/* RES 7,H */
 {
 	H &= ~128;
-	return (8);
+	return 8;
 }
 
 static int op_rb0l(void)		/* RES 0,L */
 {
 	L &= ~1;
-	return (8);
+	return 8;
 }
 
 static int op_rb1l(void)		/* RES 1,L */
 {
 	L &= ~2;
-	return (8);
+	return 8;
 }
 
 static int op_rb2l(void)		/* RES 2,L */
 {
 	L &= ~4;
-	return (8);
+	return 8;
 }
 
 static int op_rb3l(void)		/* RES 3,L */
 {
 	L &= ~8;
-	return (8);
+	return 8;
 }
 
 static int op_rb4l(void)		/* RES 4,L */
 {
 	L &= ~16;
-	return (8);
+	return 8;
 }
 
 static int op_rb5l(void)		/* RES 5,L */
 {
 	L &= ~32;
-	return (8);
+	return 8;
 }
 
 static int op_rb6l(void)		/* RES 6,L */
 {
 	L &= ~64;
-	return (8);
+	return 8;
 }
 
 static int op_rb7l(void)		/* RES 7,L */
 {
 	L &= ~128;
-	return (8);
+	return 8;
 }
 
 static int op_rb0hl(void)		/* RES 0,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~1);
-	return (15);
+	return 15;
 }
 
 static int op_rb1hl(void)		/* RES 1,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~2);
-	return (15);
+	return 15;
 }
 
 static int op_rb2hl(void)		/* RES 2,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~4);
-	return (15);
+	return 15;
 }
 
 static int op_rb3hl(void)		/* RES 3,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~8);
-	return (15);
+	return 15;
 }
 
 static int op_rb4hl(void)		/* RES 4,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~16);
-	return (15);
+	return 15;
 }
 
 static int op_rb5hl(void)		/* RES 5,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~32);
-	return (15);
+	return 15;
 }
 
 static int op_rb6hl(void)		/* RES 6,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~64);
-	return (15);
+	return 15;
 }
 
 static int op_rb7hl(void)		/* RES 7,(HL) */
 {
 	memwrt((H << 8) + L, memrdr((H << 8) + L) & ~128);
-	return (15);
+	return 15;
 }
 
 static int op_tb0a(void)		/* BIT 0,A */
@@ -1993,7 +1994,7 @@ static int op_tb0a(void)		/* BIT 0,A */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(A & 1) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb1a(void)		/* BIT 1,A */
@@ -2001,7 +2002,7 @@ static int op_tb1a(void)		/* BIT 1,A */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(A & 2) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb2a(void)		/* BIT 2,A */
@@ -2009,7 +2010,7 @@ static int op_tb2a(void)		/* BIT 2,A */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(A & 4) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb3a(void)		/* BIT 3,A */
@@ -2017,7 +2018,7 @@ static int op_tb3a(void)		/* BIT 3,A */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(A & 8) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb4a(void)		/* BIT 4,A */
@@ -2025,7 +2026,7 @@ static int op_tb4a(void)		/* BIT 4,A */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(A & 16) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb5a(void)		/* BIT 5,A */
@@ -2033,7 +2034,7 @@ static int op_tb5a(void)		/* BIT 5,A */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(A & 32) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb6a(void)		/* BIT 6,A */
@@ -2041,7 +2042,7 @@ static int op_tb6a(void)		/* BIT 6,A */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(A & 64) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb7a(void)		/* BIT 7,A */
@@ -2055,7 +2056,7 @@ static int op_tb7a(void)		/* BIT 7,A */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (8);
+	return 8;
 }
 
 static int op_tb0b(void)		/* BIT 0,B */
@@ -2063,7 +2064,7 @@ static int op_tb0b(void)		/* BIT 0,B */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(B & 1) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb1b(void)		/* BIT 1,B */
@@ -2071,7 +2072,7 @@ static int op_tb1b(void)		/* BIT 1,B */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(B & 2) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb2b(void)		/* BIT 2,B */
@@ -2079,7 +2080,7 @@ static int op_tb2b(void)		/* BIT 2,B */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(B & 4) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb3b(void)		/* BIT 3,B */
@@ -2087,7 +2088,7 @@ static int op_tb3b(void)		/* BIT 3,B */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(B & 8) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb4b(void)		/* BIT 4,B */
@@ -2095,7 +2096,7 @@ static int op_tb4b(void)		/* BIT 4,B */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(B & 16) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb5b(void)		/* BIT 5,B */
@@ -2103,7 +2104,7 @@ static int op_tb5b(void)		/* BIT 5,B */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(B & 32) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb6b(void)		/* BIT 6,B */
@@ -2111,7 +2112,7 @@ static int op_tb6b(void)		/* BIT 6,B */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(B & 64) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb7b(void)		/* BIT 7,B */
@@ -2125,7 +2126,7 @@ static int op_tb7b(void)		/* BIT 7,B */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (8);
+	return 8;
 }
 
 static int op_tb0c(void)		/* BIT 0,C */
@@ -2133,7 +2134,7 @@ static int op_tb0c(void)		/* BIT 0,C */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(C & 1) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb1c(void)		/* BIT 1,C */
@@ -2141,7 +2142,7 @@ static int op_tb1c(void)		/* BIT 1,C */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(C & 2) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb2c(void)		/* BIT 2,C */
@@ -2149,7 +2150,7 @@ static int op_tb2c(void)		/* BIT 2,C */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(C & 4) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb3c(void)		/* BIT 3,C */
@@ -2157,7 +2158,7 @@ static int op_tb3c(void)		/* BIT 3,C */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(C & 8) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb4c(void)		/* BIT 4,C */
@@ -2165,7 +2166,7 @@ static int op_tb4c(void)		/* BIT 4,C */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(C & 16) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb5c(void)		/* BIT 5,C */
@@ -2173,7 +2174,7 @@ static int op_tb5c(void)		/* BIT 5,C */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(C & 32) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb6c(void)		/* BIT 6,C */
@@ -2181,7 +2182,7 @@ static int op_tb6c(void)		/* BIT 6,C */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(C & 64) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb7c(void)		/* BIT 7,C */
@@ -2195,7 +2196,7 @@ static int op_tb7c(void)		/* BIT 7,C */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (8);
+	return 8;
 }
 
 static int op_tb0d(void)		/* BIT 0,D */
@@ -2203,7 +2204,7 @@ static int op_tb0d(void)		/* BIT 0,D */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(D & 1) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb1d(void)		/* BIT 1,D */
@@ -2211,7 +2212,7 @@ static int op_tb1d(void)		/* BIT 1,D */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(D & 2) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb2d(void)		/* BIT 2,D */
@@ -2219,7 +2220,7 @@ static int op_tb2d(void)		/* BIT 2,D */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(D & 4) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb3d(void)		/* BIT 3,D */
@@ -2227,7 +2228,7 @@ static int op_tb3d(void)		/* BIT 3,D */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(D & 8) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb4d(void)		/* BIT 4,D */
@@ -2235,7 +2236,7 @@ static int op_tb4d(void)		/* BIT 4,D */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(D & 16) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb5d(void)		/* BIT 5,D */
@@ -2243,7 +2244,7 @@ static int op_tb5d(void)		/* BIT 5,D */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(D & 32) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb6d(void)		/* BIT 6,D */
@@ -2251,7 +2252,7 @@ static int op_tb6d(void)		/* BIT 6,D */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(D & 64) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb7d(void)		/* BIT 7,D */
@@ -2265,7 +2266,7 @@ static int op_tb7d(void)		/* BIT 7,D */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (8);
+	return 8;
 }
 
 static int op_tb0e(void)		/* BIT 0,E */
@@ -2273,7 +2274,7 @@ static int op_tb0e(void)		/* BIT 0,E */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(E & 1) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb1e(void)		/* BIT 1,E */
@@ -2281,7 +2282,7 @@ static int op_tb1e(void)		/* BIT 1,E */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(E & 2) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb2e(void)		/* BIT 2,E */
@@ -2289,7 +2290,7 @@ static int op_tb2e(void)		/* BIT 2,E */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(E & 4) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb3e(void)		/* BIT 3,E */
@@ -2297,7 +2298,7 @@ static int op_tb3e(void)		/* BIT 3,E */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(E & 8) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb4e(void)		/* BIT 4,E */
@@ -2305,7 +2306,7 @@ static int op_tb4e(void)		/* BIT 4,E */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(E & 16) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb5e(void)		/* BIT 5,E */
@@ -2313,7 +2314,7 @@ static int op_tb5e(void)		/* BIT 5,E */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(E & 32) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb6e(void)		/* BIT 6,E */
@@ -2321,7 +2322,7 @@ static int op_tb6e(void)		/* BIT 6,E */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(E & 64) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb7e(void)		/* BIT 7,E */
@@ -2335,7 +2336,7 @@ static int op_tb7e(void)		/* BIT 7,E */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (8);
+	return 8;
 }
 
 static int op_tb0h(void)		/* BIT 0,H */
@@ -2343,7 +2344,7 @@ static int op_tb0h(void)		/* BIT 0,H */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(H & 1) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb1h(void)		/* BIT 1,H */
@@ -2351,7 +2352,7 @@ static int op_tb1h(void)		/* BIT 1,H */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(H & 2) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb2h(void)		/* BIT 2,H */
@@ -2359,7 +2360,7 @@ static int op_tb2h(void)		/* BIT 2,H */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(H & 4) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb3h(void)		/* BIT 3,H */
@@ -2367,7 +2368,7 @@ static int op_tb3h(void)		/* BIT 3,H */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(H & 8) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb4h(void)		/* BIT 4,H */
@@ -2375,7 +2376,7 @@ static int op_tb4h(void)		/* BIT 4,H */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(H & 16) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb5h(void)		/* BIT 5,H */
@@ -2383,7 +2384,7 @@ static int op_tb5h(void)		/* BIT 5,H */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(H & 32) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb6h(void)		/* BIT 6,H */
@@ -2391,7 +2392,7 @@ static int op_tb6h(void)		/* BIT 6,H */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(H & 64) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb7h(void)		/* BIT 7,H */
@@ -2405,7 +2406,7 @@ static int op_tb7h(void)		/* BIT 7,H */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (8);
+	return 8;
 }
 
 static int op_tb0l(void)		/* BIT 0,L */
@@ -2413,7 +2414,7 @@ static int op_tb0l(void)		/* BIT 0,L */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(L & 1) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb1l(void)		/* BIT 1,L */
@@ -2421,7 +2422,7 @@ static int op_tb1l(void)		/* BIT 1,L */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(L & 2) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb2l(void)		/* BIT 2,L */
@@ -2429,7 +2430,7 @@ static int op_tb2l(void)		/* BIT 2,L */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(L & 4) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb3l(void)		/* BIT 3,L */
@@ -2437,7 +2438,7 @@ static int op_tb3l(void)		/* BIT 3,L */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(L & 8) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb4l(void)		/* BIT 4,L */
@@ -2445,7 +2446,7 @@ static int op_tb4l(void)		/* BIT 4,L */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(L & 16) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb5l(void)		/* BIT 5,L */
@@ -2453,7 +2454,7 @@ static int op_tb5l(void)		/* BIT 5,L */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(L & 32) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb6l(void)		/* BIT 6,L */
@@ -2461,7 +2462,7 @@ static int op_tb6l(void)		/* BIT 6,L */
 	F &= ~(N_FLAG | S_FLAG);
 	F |= H_FLAG;
 	(L & 64) ? (F &= ~(Z_FLAG | P_FLAG)) : (F |= (Z_FLAG | P_FLAG));
-	return (8);
+	return 8;
 }
 
 static int op_tb7l(void)		/* BIT 7,L */
@@ -2475,7 +2476,7 @@ static int op_tb7l(void)		/* BIT 7,L */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (8);
+	return 8;
 }
 
 static int op_tb0hl(void)		/* BIT 0,(HL) */
@@ -2484,7 +2485,7 @@ static int op_tb0hl(void)		/* BIT 0,(HL) */
 	F |= H_FLAG;
 	(memrdr((H << 8) + L) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
 				   : (F |= (Z_FLAG | P_FLAG));
-	return (12);
+	return 12;
 }
 
 static int op_tb1hl(void)		/* BIT 1,(HL) */
@@ -2493,7 +2494,7 @@ static int op_tb1hl(void)		/* BIT 1,(HL) */
 	F |= H_FLAG;
 	(memrdr((H << 8) + L) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
 				   : (F |= (Z_FLAG | P_FLAG));
-	return (12);
+	return 12;
 }
 
 static int op_tb2hl(void)		/* BIT 2,(HL) */
@@ -2502,7 +2503,7 @@ static int op_tb2hl(void)		/* BIT 2,(HL) */
 	F |= H_FLAG;
 	(memrdr((H << 8) + L) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
 				   : (F |= (Z_FLAG | P_FLAG));
-	return (12);
+	return 12;
 }
 
 static int op_tb3hl(void)		/* BIT 3,(HL) */
@@ -2511,7 +2512,7 @@ static int op_tb3hl(void)		/* BIT 3,(HL) */
 	F |= H_FLAG;
 	(memrdr((H << 8) + L) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
 				   : (F |= (Z_FLAG | P_FLAG));
-	return (12);
+	return 12;
 }
 
 static int op_tb4hl(void)		/* BIT 4,(HL) */
@@ -2520,7 +2521,7 @@ static int op_tb4hl(void)		/* BIT 4,(HL) */
 	F |= H_FLAG;
 	(memrdr((H << 8) + L) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
 				    : (F |= (Z_FLAG | P_FLAG));
-	return (12);
+	return 12;
 }
 
 static int op_tb5hl(void)		/* BIT 5,(HL) */
@@ -2529,7 +2530,7 @@ static int op_tb5hl(void)		/* BIT 5,(HL) */
 	F |= H_FLAG;
 	(memrdr((H << 8) + L) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
 				    : (F |= (Z_FLAG | P_FLAG));
-	return (12);
+	return 12;
 }
 
 static int op_tb6hl(void)		/* BIT 6,(HL) */
@@ -2538,7 +2539,7 @@ static int op_tb6hl(void)		/* BIT 6,(HL) */
 	F |= H_FLAG;
 	(memrdr((H << 8) + L) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
 				    : (F |= (Z_FLAG | P_FLAG));
-	return (12);
+	return 12;
 }
 
 static int op_tb7hl(void)		/* BIT 7,(HL) */
@@ -2552,7 +2553,7 @@ static int op_tb7hl(void)		/* BIT 7,(HL) */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (12);
+	return 12;
 }
 
 /**********************************************************************/
@@ -2574,7 +2575,7 @@ static int op_undoc_slla(void)		/* SLL A */
 	(A) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(A & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[A]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 #ifdef UNDOC_INST
@@ -2582,7 +2583,7 @@ static int op_undoc_slla(void)		/* SLL A */
 static int op_undoc_sllb(void)		/* SLL B */
 {
 	if (u_flag)
-		return (trap_cb());
+		return trap_cb();
 
 	(B & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	B = B << 1 | 1;
@@ -2590,13 +2591,13 @@ static int op_undoc_sllb(void)		/* SLL B */
 	(B) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(B & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[B]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_undoc_sllc(void)		/* SLL C */
 {
 	if (u_flag)
-		return (trap_cb());
+		return trap_cb();
 
 	(C & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	C = C << 1 | 1;
@@ -2604,13 +2605,13 @@ static int op_undoc_sllc(void)		/* SLL C */
 	(C) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(C & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[C]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_undoc_slld(void)		/* SLL D */
 {
 	if (u_flag)
-		return (trap_cb());
+		return trap_cb();
 
 	(D & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	D = D << 1 | 1;
@@ -2618,13 +2619,13 @@ static int op_undoc_slld(void)		/* SLL D */
 	(D) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(D & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[D]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_undoc_slle(void)		/* SLL E */
 {
 	if (u_flag)
-		return (trap_cb());
+		return trap_cb();
 
 	(E & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	E = E << 1 | 1;
@@ -2632,13 +2633,13 @@ static int op_undoc_slle(void)		/* SLL E */
 	(E) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(E & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[E]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_undoc_sllh(void)		/* SLL H */
 {
 	if (u_flag)
-		return (trap_cb());
+		return trap_cb();
 
 	(H & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	H = H << 1 | 1;
@@ -2646,13 +2647,13 @@ static int op_undoc_sllh(void)		/* SLL H */
 	(H) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(H & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[H]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_undoc_slll(void)		/* SLL L */
 {
 	if (u_flag)
-		return (trap_cb());
+		return trap_cb();
 
 	(L & 128) ? (F |= C_FLAG) : (F &= ~C_FLAG);
 	L = L << 1 | 1;
@@ -2660,7 +2661,7 @@ static int op_undoc_slll(void)		/* SLL L */
 	(L) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(L & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[L]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (8);
+	return 8;
 }
 
 static int op_undoc_sllhl(void)		/* SLL (HL) */
@@ -2669,7 +2670,7 @@ static int op_undoc_sllhl(void)		/* SLL (HL) */
 	WORD addr;
 
 	if (u_flag)
-		return (trap_cb());
+		return trap_cb();
 
 	addr = (H << 8) + L;
 	P = memrdr(addr);
@@ -2680,7 +2681,7 @@ static int op_undoc_sllhl(void)		/* SLL (HL) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (15);
+	return 15;
 }
 
 #endif /* UNDOC_INST */

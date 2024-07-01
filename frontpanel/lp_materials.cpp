@@ -53,7 +53,7 @@ void lp_init_materials_dlist(void )
 
 int lp_is_material_alpha(int n)
 {
-     return(material_alpha_flag[n]);
+     return material_alpha_flag[n];
 
 }
 void lp_init_materials(void )

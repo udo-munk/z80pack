@@ -14,14 +14,14 @@
 
 extern void cromemco_d7a_init(void);
 
-extern void cromemco_d7a_D_out(BYTE);
-extern void cromemco_d7a_A1_out(BYTE);
-extern void cromemco_d7a_A2_out(BYTE);
-extern void cromemco_d7a_A3_out(BYTE);
-extern void cromemco_d7a_A4_out(BYTE);
-extern void cromemco_d7a_A5_out(BYTE);
-extern void cromemco_d7a_A6_out(BYTE);
-extern void cromemco_d7a_A7_out(BYTE);
+extern void cromemco_d7a_D_out(BYTE data);
+extern void cromemco_d7a_A1_out(BYTE data);
+extern void cromemco_d7a_A2_out(BYTE data);
+extern void cromemco_d7a_A3_out(BYTE data);
+extern void cromemco_d7a_A4_out(BYTE data);
+extern void cromemco_d7a_A5_out(BYTE data);
+extern void cromemco_d7a_A6_out(BYTE data);
+extern void cromemco_d7a_A7_out(BYTE data);
 
 extern BYTE cromemco_d7a_D_in(void);
 extern BYTE cromemco_d7a_A1_in(void);
@@ -32,4 +32,4 @@ extern BYTE cromemco_d7a_A5_in(void);
 extern BYTE cromemco_d7a_A6_in(void);
 extern BYTE cromemco_d7a_A7_in(void);
 
-#endif
+#endif /* !CROMEMCO_DPLUS7A_INC */

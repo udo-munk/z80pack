@@ -26,7 +26,8 @@
 #include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simio.h"
 #include "mds-monitor.h"
 #include "unix_network.h"
 #include "unix_terminal.h"
@@ -113,7 +114,7 @@ static int lpt_rdy;	/* LPT ready */
  */
 BYTE mon_prom_data_in(void)
 {
-	return (0x00);
+	return 0x00;
 }
 
 /*
@@ -122,7 +123,7 @@ BYTE mon_prom_data_in(void)
  */
 BYTE mon_prom_status_in(void)
 {
-	return (0x00);
+	return 0x00;
 }
 
 /*
@@ -157,8 +158,6 @@ void mon_prom_low_out(BYTE data)
  */
 static void mon_int_update(BYTE ints_cleared, BYTE ints_set)
 {
-	extern void int_request(int), int_cancel(int);
-
 	pthread_mutex_lock(&mon_int_mutex);
 	mon_int &= ~ints_cleared;
 	mon_int |= ints_set;
@@ -188,7 +187,7 @@ void mon_int_ctl_out(BYTE data)
  */
 BYTE mon_int_status_in(void)
 {
-	return (mon_int & 0x7f);
+	return mon_int & 0x7f;
 }
 
 /*
@@ -232,7 +231,7 @@ BYTE mon_tty_data_in(void)
 	static BYTE last;
 
 	if (!(tty_cmd & RXEN) || !tty_rbr)
-		return (last);
+		return last;
 
 	if (ncons[0].ssc == 0) {
 		data = last;
@@ -268,7 +267,7 @@ done:
 	tty_rbr = 0;
 	mon_int_update(ITTYI, 0);
 
-	return (data);
+	return data;
 }
 
 /*
@@ -283,7 +282,7 @@ BYTE mon_tty_status_in(void)
 		data |= TBE | TRDY;
 	if ((tty_cmd & RXEN) && tty_rbr)
 		data |= RBR;
-	return (data);
+	return data;
 }
 
 /*
@@ -391,7 +390,7 @@ BYTE mon_crt_data_in(void)
 	static BYTE last;
 
 	if (!(crt_cmd & RXEN) || !crt_rbr)
-		return (last);
+		return last;
 
 again:
 	if (read(fileno(stdin), &data, 1) == 0) {
@@ -410,7 +409,7 @@ again:
 	crt_rbr = 0;
 	mon_int_update(ICRTI, 0);
 
-	return (data);
+	return data;
 }
 
 /*
@@ -425,7 +424,7 @@ BYTE mon_crt_status_in(void)
 		data |= TBE | TRDY;
 	if ((crt_cmd & RXEN) && crt_rbr)
 		data |= RBR;
-	return (data);
+	return data;
 }
 
 /*
@@ -533,7 +532,7 @@ BYTE mon_ptr_data_in(void)
 	static BYTE last;
 
 	if (!ptr_rdy)
-		return (last);
+		return last;
 
 	/* if not connected return last */
 	if (ucons[0].ssc == 0) {
@@ -556,7 +555,7 @@ done:
 	ptr_rdy = 0;
 	mon_int_update(IPTR, 0);
 
-	return (data);
+	return data;
 }
 
 /*
@@ -589,7 +588,7 @@ BYTE mon_pt_status_in(void)
 	if (ptp_rdy)
 		data |= PTPRY;
 
-	return (data);
+	return data;
 }
 
 /*
@@ -643,7 +642,7 @@ void mon_lpt_periodic(void)
  */
 BYTE mon_lpt_status_in(void)
 {
-	return (lpt_rdy ? LPTRY : 0);
+	return lpt_rdy ? LPTRY : 0;
 }
 
 /*
@@ -651,8 +650,6 @@ BYTE mon_lpt_status_in(void)
  */
 void mon_lpt_data_out(BYTE data)
 {
-	extern int lpt_fd;
-
 	if (!lpt_rdy)
 		return;
 

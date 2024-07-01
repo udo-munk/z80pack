@@ -18,35 +18,34 @@
 #include <stdio.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simctl.h"
+#include "simio.h"
+#include "simcore.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
 #include "unix_terminal.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #include "log.h"
 #endif
 
-extern void reset_cpu(void), reset_io(void);
-extern void run_cpu(void), step_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
-
-extern BYTE int_requests;
-
 #ifdef FRONTPANEL
 static const char *TAG = "system";
 
 static BYTE power;
 
-static void int_clicked(int, int);
-static void reset_clicked(int, int);
-static void power_clicked(int, int);
+static void int_clicked(int state, int val);
+static void reset_clicked(int state, int val);
+static void power_clicked(int state, int val);
 static void quit_callback(void);
 #endif
 
-BYTE boot_switch;	/* status of boot switch */
-int cpu_wait;		/* CPU wait flag */
+static int cpu_wait;	/* CPU wait flag */
 
-extern void ice_cmd_loop(int);
+BYTE boot_switch;	/* status of boot switch */
 
 /*
  *	This function initializes the front panel and terminal.
@@ -132,8 +131,6 @@ void mon(void)
 	} else {
 #endif
 #ifdef WANT_ICE
-		extern void ice_cmd_loop(int), ice_go(void), ice_break(void);
-
 		ice_before_go = ice_go;
 		ice_after_go = ice_break;
 		ice_cmd_loop(0);
@@ -178,10 +175,8 @@ void mon(void)
 /*
  *	Callback for INT_7-0 switches
  */
-void int_clicked(int state, int val)
+static void int_clicked(int state, int val)
 {
-	extern void int_request(int);
-
 	if (!power)
 		return;
 
@@ -204,7 +199,7 @@ int wait_step(void)
 {
 	cpu_bus &= ~CPU_M1;
 	m1_step = 0;
-	return (0);
+	return 0;
 }
 
 /*
@@ -217,7 +212,7 @@ void wait_int_step(void)
 /*
  *	Callback for RESET switch
  */
-void reset_clicked(int state, int val)
+static void reset_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -245,7 +240,7 @@ void reset_clicked(int state, int val)
 /*
  *	Callback for POWER switch
  */
-void power_clicked(int state, int val)
+static void power_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -273,7 +268,7 @@ void power_clicked(int state, int val)
 /*
  *	Callback for quit (graphics window closed)
  */
-void quit_callback(void)
+static void quit_callback(void)
 {
 	power = 0;
 	cpu_state = STOPPED;

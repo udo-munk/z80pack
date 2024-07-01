@@ -5,7 +5,7 @@
 # and the executable saved as '../machinesim'
 MACHINE = z80
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
+MACHINE_SRCS = simcfg.c simio.c simmem.c simctl.c
 # machine specific I/O source files
 IO_SRCS = unix_terminal.c
 

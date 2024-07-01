@@ -702,7 +702,7 @@ Lpanel::addSwitch(const char *name, lp_obj_parm_t *obj, const char *buff, Lpanel
      parser.printError();
      return n;
    }
-   return(n);
+   return n;
 
 }
 

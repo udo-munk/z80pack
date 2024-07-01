@@ -27,10 +27,6 @@
  */
 
 {
-	extern BYTE io_in(BYTE, BYTE);
-	extern void io_out(BYTE, BYTE, BYTE);
-	extern uint64_t get_clock_us(void);
-
 #define S_SHIFT		7	/* S_FLAG shift */
 #define Z_SHIFT		6	/* Z_FLAG shift */
 #define H_SHIFT		4	/* H_FLAG shift */

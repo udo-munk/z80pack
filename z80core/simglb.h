@@ -6,24 +6,14 @@
  * Copyright (C) 2022-2024 Thomas Eberhardt
  */
 
+#ifndef SIMGLB_INC
+#define SIMGLB_INC
+
 /*
  *	Declaration of variables in simglb.c
  */
 
-#ifndef SIMGLB_INC
-#define SIMGLB_INC
-
-typedef uint64_t Tstates_t;	/* uint64 for counting T-states */
-typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
-	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
-
-extern void start_bus_request(BusDMA_t, Tstates_t (*)(BYTE));
-extern void end_bus_request(void);
-
-extern void (*ice_before_go)(void);
-extern void (*ice_after_go)(void);
-extern void (*ice_cust_cmd)(char *, WORD *);
-extern void (*ice_cust_help)(void);
+#include "sim.h"
 
 extern int	cpu;
 
@@ -61,22 +51,6 @@ extern BYTE	bus_request;
 extern BusDMA_t bus_mode;
 extern Tstates_t (*dma_bus_master)(BYTE);
 extern int	tmax, cpu_needed;
-
-#ifdef HISIZE
-extern struct	history his[];
-extern int	h_next, h_flag;
-#endif
-
-#ifdef SBSIZE
-extern struct	softbreak soft[];
-extern int	sb_next;
-#endif
-
-#ifdef WANT_TIM
-extern Tstates_t t_states_s, t_states_e;
-extern int	t_flag;
-extern WORD	t_start, t_end;
-#endif
 
 #ifdef FRONTPANEL
 extern uint64_t fp_clock;

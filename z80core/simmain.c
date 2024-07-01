@@ -28,22 +28,22 @@
 #include <sys/stat.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simcore.h"
+#include "simfun.h"
+#include "simint.h"
+#include "simio.h"
+#include "simctl.h"
+#include "simmain.h"
 
 static void save_core(void);
 static int load_core(void);
-extern void init_cpu(void);
-extern int load_file(char *, WORD, int);
-extern void int_on(void), int_off(void), mon(void);
-extern void init_io(void), exit_io(void);
-extern int exatoi(char *);
-extern uint64_t get_clock_us(void);
 
 #ifdef FRONTPANEL
-int sim_main(int argc, char *argv[])
+int sim_main(int argc, char **argv)
 #else
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 #endif
 {
 	register char *s, *p;
@@ -418,10 +418,10 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	if (l_flag) {		/* load core */
 		if (load_core())
-			return (EXIT_FAILURE);
+			return EXIT_FAILURE;
 	} else if (x_flag) { 	/* OR load memory from file */
 		if (load_file(xfn, 0, 0)) /* don't care where it loads */
-			return (EXIT_FAILURE);
+			return EXIT_FAILURE;
 	}
 
 	int_on();		/* initialize UNIX interrupts */
@@ -435,7 +435,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	exit_io();		/* stop I/O devices */
 	int_off();		/* stop UNIX interrupts */
 
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
 /*
@@ -545,11 +545,11 @@ static int load_core(void)
 		break;
 #endif
 	default:
-		return (1);
+		return 1;
 	}
 	if ((fp = fopen(fname, "r")) == NULL) {
 		printf("can't open file %s\n", fname);
-		return (1);
+		return 1;
 	}
 
 	cnt = fread(&A, sizeof(A), 1, fp);
@@ -603,7 +603,7 @@ static int load_core(void)
 
 	if (cnt != 24 || i != 65536) {
 		printf("error reading %s\n", fname);
-		return (1);
+		return 1;
 	} else
-		return (0);
+		return 0;
 }

@@ -43,19 +43,21 @@
 #include <fcntl.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
+#include "simcfg.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memsim.h"
+#include "simmem.h"
 #include "unix_terminal.h"
 #ifdef FRONTPANEL
 #include "log.h"
 #endif
-
-extern void reset_cpu(void), reset_io(void);
-extern void run_cpu(void), step_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+#include "simcore.h"
+#include "simio.h"
+#include "simctl.h"
 
 #ifdef FRONTPANEL
 static const char *TAG = "system";
@@ -66,12 +68,13 @@ static int reset;
 static BYTE power_switch = 1;
 static int power;
 
-static void run_clicked(int, int), step_clicked(int, int);
-static void reset_clicked(int, int);
-static void examine_clicked(int, int), deposit_clicked(int, int);
-static void protect_clicked(int, int);
-static void power_clicked(int, int);
-static void int_clicked(int, int);
+static void run_clicked(int state, int val), step_clicked(int state, int val);
+static void reset_clicked(int state, int val);
+static void examine_clicked(int state, int val);
+static void deposit_clicked(int state, int val);
+static void protect_clicked(int state, int val);
+static void int_clicked(int state, int val);
+static void power_clicked(int state, int val);
 static void quit_callback(void);
 #endif
 
@@ -192,8 +195,6 @@ void mon(void)
 	} else {
 #endif
 #ifdef WANT_ICE
-		extern void ice_cmd_loop(int);
-
 		ice_before_go = set_unix_terminal;
 		ice_after_go = reset_unix_terminal;
 		atexit(reset_unix_terminal);
@@ -241,7 +242,7 @@ void mon(void)
 /*
  *	Callback for RUN/STOP switch
  */
-void run_clicked(int state, int val)
+static void run_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -271,7 +272,7 @@ void run_clicked(int state, int val)
 /*
  *	Callback for STEP switch
  */
-void step_clicked(int state, int val)
+static void step_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -297,18 +298,17 @@ void step_clicked(int state, int val)
  */
 int wait_step(void)
 {
-	extern BYTE (*const port_in[256])(void);
 	int ret = 0;
 
 	if (cpu_state != SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
-		return (ret);
+		return ret;
 	}
 
 	if ((cpu_bus & CPU_M1) && !m1_step) {
 		cpu_bus &= ~CPU_M1;
-		return (ret);
+		return ret;
 	}
 
 	cpu_switch = 3;
@@ -328,7 +328,7 @@ int wait_step(void)
 
 	cpu_bus &= ~CPU_M1;
 	m1_step = 0;
-	return (ret);
+	return ret;
 }
 
 /*
@@ -351,7 +351,7 @@ void wait_int_step(void)
 /*
  *	Callback for RESET switch
  */
-void reset_clicked(int state, int val)
+static void reset_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -402,7 +402,7 @@ void reset_clicked(int state, int val)
 /*
  *	Callback for EXAMINE/EXAMINE NEXT switch
  */
-void examine_clicked(int state, int val)
+static void examine_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -439,7 +439,7 @@ void examine_clicked(int state, int val)
 /*
  *	Callback for DEPOSIT/DEPOSIT NEXT switch
  */
-void deposit_clicked(int state, int val)
+static void deposit_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -475,7 +475,7 @@ void deposit_clicked(int state, int val)
 /*
  *	Callback for PROTECT/UNPROTECT switch
  */
-void protect_clicked(int state, int val)
+static void protect_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -506,7 +506,7 @@ void protect_clicked(int state, int val)
 /*
  *	Callback for INT/BOOT switch
  */
-void int_clicked(int state, int val)
+static void int_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -530,7 +530,7 @@ void int_clicked(int state, int val)
 /*
  *	Callback for POWER switch
  */
-void power_clicked(int state, int val)
+static void power_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -562,7 +562,7 @@ void power_clicked(int state, int val)
 /*
  * Callback for quit (graphics window closed)
  */
-void quit_callback(void)
+static void quit_callback(void)
 {
 	power--;
 	cpu_switch = 0;

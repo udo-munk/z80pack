@@ -110,5 +110,5 @@ int main(int argc, char *argv[])
 			}
 	}
 	close(fd);
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }

@@ -3093,4 +3093,4 @@ static char charset[256][10][7] = {
 	}
 };
 
-#endif
+#endif /* !IMSAI_VIO_CHARSET_INC */

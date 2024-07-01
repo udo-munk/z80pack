@@ -62,5 +62,5 @@ int main(int argc, char *argv[])
 	close(fdin);
 	close(fdout);
 
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }

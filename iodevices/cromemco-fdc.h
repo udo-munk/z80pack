@@ -64,31 +64,35 @@ typedef struct {
 } Diskdef;
 
 extern BYTE fdc_flags;
+extern enum Disk_type dtype;
 extern int index_pulse;
 extern int motoron, motortimer;
-extern enum Disk_type dtype;
 
-extern BYTE fdc_banked_rom[]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
+extern Diskdef disks[4];
+
+extern BYTE fdc_banked_rom[8 << 10]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
 extern int fdc_rom_active;
 
-extern BYTE cromemco_fdc_status_in(void);
-extern void cromemco_fdc_cmd_out(BYTE);
-
-extern BYTE cromemco_fdc_track_in(void);
-extern void cromemco_fdc_track_out(BYTE);
-
-extern BYTE cromemco_fdc_sector_in(void);
-extern void cromemco_fdc_sector_out(BYTE);
-
-extern BYTE cromemco_fdc_data_in(void);
-extern void cromemco_fdc_data_out(BYTE);
+extern char *dsk_path(void);
 
 extern BYTE cromemco_fdc_diskflags_in(void);
-extern void cromemco_fdc_diskctl_out(BYTE);
+extern void cromemco_fdc_diskctl_out(BYTE data);
+
+extern BYTE cromemco_fdc_data_in(void);
+extern void cromemco_fdc_data_out(BYTE data);
+
+extern BYTE cromemco_fdc_sector_in(void);
+extern void cromemco_fdc_sector_out(BYTE data);
+
+extern BYTE cromemco_fdc_track_in(void);
+extern void cromemco_fdc_track_out(BYTE data);
 
 extern BYTE cromemco_fdc_aux_in(void);
-extern void cromemco_fdc_aux_out(BYTE);
+extern void cromemco_fdc_aux_out(BYTE data);
+
+extern BYTE cromemco_fdc_status_in(void);
+extern void cromemco_fdc_cmd_out(BYTE data);
 
 extern void cromemco_fdc_reset(void);
 
-#endif
+#endif /* !CROMEMCO_FDC_INC */

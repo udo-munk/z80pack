@@ -15,10 +15,10 @@
 #define MOSTEK_CPU_INC
 
 extern BYTE sio_status_in(void);
-extern void sio_control_out(BYTE);
+extern void sio_control_out(BYTE data);
 extern BYTE sio_data_in(void);
-extern void sio_data_out(BYTE);
+extern void sio_data_out(BYTE data);
 extern BYTE sio_handshake_in(void);
-extern void sio_handshake_out(BYTE);
+extern void sio_handshake_out(BYTE data);
 
-#endif
+#endif /* !MOSTEK_CPU_INC */

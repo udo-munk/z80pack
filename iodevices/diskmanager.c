@@ -75,7 +75,7 @@ enum disk_err {
 
 typedef enum disk_err disk_err_t;
 
-int findDiskImage(const char *image) {
+static int findDiskImage(const char *image) {
     int i;
 
     for (i = 0; i < _MAX_DISK; i++) {
@@ -88,7 +88,7 @@ int findDiskImage(const char *image) {
     return 0;
 }
 
-int getDiskNumByID(const char *id) {
+static int getDiskNumByID(const char *id) {
     int disk = -1;
  
     /* id is in the form X:DSK: making it 6 characters long */
@@ -106,7 +106,7 @@ int getDiskNumByID(const char *id) {
     return disk;
 }
 
-disk_err_t insertDisk(int disk, const char *image) {
+static disk_err_t insertDisk(int disk, const char *image) {
 
     char *name;
     struct stat image_status;
@@ -154,7 +154,7 @@ disk_err_t insertDisk(int disk, const char *image) {
     return INVALID_DISK_NUM;
 }
 
-disk_err_t ejectDisk(int disk) {
+static disk_err_t ejectDisk(int disk) {
 
     char *name;
 
@@ -174,7 +174,7 @@ disk_err_t ejectDisk(int disk) {
     return INVALID_DISK_NUM;
 }
 
-void writeDiskmap(void) {
+static void writeDiskmap(void) {
     FILE *map;
     int i;
 
@@ -270,9 +270,6 @@ again:
  * Web Server handlers for LIB: and X:DSK:
  * 
  */
-extern int DirectoryHandler(struct mg_connection *, void *);
-extern int UploadHandler(struct mg_connection *, void *);
-
 int LibraryHandler(HttpdConnection_t *conn, void *unused) {
     request_t *req = get_request(conn);
 	int i = 0;

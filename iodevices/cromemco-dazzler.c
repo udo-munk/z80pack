@@ -35,13 +35,14 @@
 #include <signal.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+#include "simfun.h"
 
 #ifdef HAS_DAZZLER
 
@@ -649,7 +650,7 @@ static struct {
 	uint8_t buf[2048];
 } msg;
 
-void ws_clear(void)
+static void ws_clear(void)
 {
 	memset(dblbuf, 0, 2048);
 
@@ -720,8 +721,6 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-
 	uint64_t t1, t2;
 	int tdiff;
 
@@ -829,9 +828,9 @@ void cromemco_dazzler_ctl_out(BYTE data)
 BYTE cromemco_dazzler_flags_in(void)
 {
 	if (thread != 0)
-		return (flags);
+		return flags;
 	else
-		return ((BYTE) 0xff);
+		return (BYTE) 0xff;
 }
 
 void cromemco_dazzler_format_out(BYTE data)
