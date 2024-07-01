@@ -243,7 +243,7 @@ void fp_framerate(float v)
 
 int fp_init(const char *cfg_fname)
 {
-  return (fp_init2(NULL, cfg_fname, 800));
+  return fp_init2(NULL, cfg_fname, 800);
 }
 
 
@@ -349,6 +349,6 @@ void fp_quit(void)
 int 
 fp_test(int n)
 {
- return(panel->test(n));
+ return panel->test(n);
 }
 

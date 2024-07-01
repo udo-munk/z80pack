@@ -17,8 +17,6 @@
 #ifndef UNIX_NETWORK_INC
 #define UNIX_NETWORK_INC
 
-#include "sim.h"
-
 #define TELNET_TIMEOUT 800	/* telnet negotiation timeout in milliseconds */
 
 /* structure for UNIX socket connections */

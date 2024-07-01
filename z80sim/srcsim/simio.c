@@ -14,6 +14,7 @@
  *	Port 0 input:	reads status of stdin
  *	Port 1 input:	reads the next byte from stdin
  *	Port 160 input:	hardware control lock status
+ *	Port 254 input:	returns 0xbf as ZX Spectrum (used by z80test)
  *	Port 255 input:	returns a value for software querying frontpanel
  *	Port 1 output:	writes the byte to stdout
  *	Port 160 output: hardware control
@@ -37,6 +38,7 @@
  */
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 static BYTE hwctl_in(void);
+static BYTE p254_in(void);
 static void p001_out(BYTE data), p255_out(BYTE data);
 static void hwctl_out(BYTE data);
 
@@ -52,6 +54,7 @@ BYTE (*const port_in[256])(void) = {
 	[  0] = p000_in,
 	[  1] = p001_in,
 	[160] = hwctl_in,	/* virtual hardware control */
+	[254] = p254_in,	/* for z80test */
 	[255] = p255_in		/* for frontpanel */
 };
 
@@ -140,6 +143,15 @@ static BYTE p001_in(void)
 static BYTE hwctl_in(void)
 {
 	return hwctl_lock;
+}
+
+/*
+ *	I/O function port 254 read:
+ *	Return 0xbf as ZX Spectrum (used by z80test)
+ */
+static BYTE p254_in(void)
+{
+	return ((BYTE) 0xbf);
 }
 
 /*

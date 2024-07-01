@@ -34,6 +34,7 @@
 #include "sim.h"
 #include "simglb.h"
 #include "simfun.h"
+#include "simio.h"
 #include "log.h"
 #include "unix_terminal.h"
 #include "unix_network.h"

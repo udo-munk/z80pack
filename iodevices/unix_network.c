@@ -31,9 +31,9 @@
 #include <netinet/tcp.h>
 #include "unix_network.h"
 #include "sim.h"
+#include "simio.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-#include "simio.h"
 
 static const char *TAG = "net";
 
@@ -129,6 +129,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 	LOG(TAG, "telnet console listening on port %d\r\n", p->port);
 }
 
+#if NUMNSOC > 0
 /*
  * SIGIO interrupt handler for TCP/IP server sockets
  * if SIGIO not working (Cygwin e.g.) call from appropriate I/O thread
@@ -182,6 +183,7 @@ void sigio_tcp_server_socket(int sig)
 		}
 	}
 }
+#endif
 
 /*
  *	telnet option negotiation on TCP/IP server sockets

@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 		}
 		fclose(lstfp);
 	}
-	return (errors);
+	return errors;
 }
 
 /*
@@ -477,9 +477,9 @@ int process_line(char *l)
 	if (gencode) {
 		pc += op_count;
 		rpc += op_count;
-		return (op == NULL || !(op->op_flags & OP_END));
+		return op == NULL || !(op->op_flags & OP_END);
 	} else
-		return (TRUE);
+		return TRUE;
 }
 
 /*
@@ -532,7 +532,7 @@ char *get_fn(char *src, const char *ext, int replace)
 		strncpy(dp, src, m);
 		strcpy(dp + m, (replace ? ext : ep));
 	}
-	return (dp);
+	return dp;
 }
 
 /*
@@ -544,7 +544,7 @@ char *strsave(char *s)
 
 	if ((p = (char *) malloc(strlen(s) + 1)) == NULL)
 		fatal(F_OUTMEM, "strsave");
-	return (strcpy(p, s));
+	return strcpy(p, s);
 }
 
 /*
@@ -573,7 +573,7 @@ char *get_symbol(char *s, char *l, int lbl_flag)
 			l++;
 	}
 	*s = '\0';
-	return (l);
+	return l;
 }
 
 /*
@@ -675,7 +675,7 @@ char *next_arg(char *p, int *str_flag)
 	}
 	if (*p == ',') {
 		*p++ = '\0';			/* terminate previous arg */
-		return (p);
+		return p;
 	} else
-		return (NULL);
+		return NULL;
 }

@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simio.h"
 #include "unix_terminal.h"
 #include "unix_network.h"
 #include "imsai-vio.h"

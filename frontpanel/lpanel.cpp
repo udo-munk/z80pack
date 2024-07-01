@@ -551,7 +551,7 @@ Lpanel::addLight(const char *name, lp_obj_parm_t *obj, const char *buff)
 
   num_lights++;
 
-  return(-1);
+  return -1;
   
 }
 
@@ -1134,7 +1134,7 @@ Lpanel::pick(int button, int state, int x, int y)
   {
     if( mom_switch_pressed )
        mom_switch_pressed->action(2);
-    return(num_picked);
+    return num_picked;
   }
 
 
@@ -1181,7 +1181,7 @@ Lpanel::pick(int button, int state, int x, int y)
  glPopMatrix();
  glRenderMode(GL_RENDER);
 
- return(num_picked);
+ return num_picked;
 
 }
 
@@ -1737,7 +1737,7 @@ Lpanel::readConfig(const char *_fname)
     for(i=0;i<num_switches;i++)
       switches[i]->setupData(i);
   }
- return(!bailout);
+ return !bailout;
 } // end readConfig()
 
 lpLight *

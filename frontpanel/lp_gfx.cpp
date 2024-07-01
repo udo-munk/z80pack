@@ -76,7 +76,7 @@ Lpanel::findObjectByName(char *name)
 
  for(i=0;i<num_objects;i++)
   if(objects[i]->name)
-   if(!strcmp(name, objects[i]->name)) return(objects[i]);
+   if(!strcmp(name, objects[i]->name)) return objects[i];
 
  return NULL;
 }
@@ -674,7 +674,7 @@ lpTextures::addTexture(char *fname)
 #if 0
  if((tex[texnum]->pixels = read_jpeg(fname, &tex[texnum]->imgXsize,
 			  &tex[texnum]->imgYsize,
-			  &tex[texnum]->imgZsize)) == 0) return(0);
+			  &tex[texnum]->imgZsize)) == 0) return 0;
 #endif
 
  p = read_jpeg(fname, &tex[texnum]->imgXsize,
@@ -688,7 +688,7 @@ lpTextures::addTexture(char *fname)
 //       tex[texnum]->imgYsize, tex[texnum]->imgZsize,texnum);
 
  last_accessed = texnum;
- return(texnum);
+ return texnum;
 }
 
 
@@ -723,7 +723,7 @@ for(texnum = 1; texnum < num_textures; texnum++)
 	break;
    default:
 	fprintf(stderr,"addTexture: Invalid # texture components.\n");
-	return(0);
+	return 0;
 	break;
 
  return 1;

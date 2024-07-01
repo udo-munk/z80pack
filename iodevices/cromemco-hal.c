@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simio.h"
 #include "unix_terminal.h"
 #include "unix_network.h"
 #ifdef HAS_NETSERVER
@@ -41,11 +42,13 @@ static int null_alive(int dev) {
 
     return 1; /* NULL is always alive */
 }
+#if !defined(HAS_NETSERVER) || !defined(HAS_MODEM)
 static int null_dead(int dev) {
     UNUSED(dev);
 
     return 0; /* NULL is always dead */
 }
+#endif
 static void null_status(int dev, BYTE *stat) {
     UNUSED(dev);
     UNUSED(stat);
