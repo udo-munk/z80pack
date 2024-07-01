@@ -83,7 +83,7 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*port_in[256])(void) = {
+BYTE (*const port_in[256])(void) = {
 	[  0] = altair_sio0_status_in,	/* SIO 0 connected to console */
 	[  1] = altair_sio0_data_in,	/*  "  */
 	[  2] = lpt_status_in,		/* printer status */
@@ -113,7 +113,7 @@ BYTE (*port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE) = {
 	[  0] = altair_sio0_status_out,	/* SIO 0 connected to console */
 	[  1] = altair_sio0_data_out,	/*  "  */
 	[  2] = lpt_status_out,		/* printer status */
@@ -149,19 +149,6 @@ void (*port_out[256])(BYTE) = {
  */
 void init_io(void)
 {
-	extern BYTE io_trap_in(void);
-	extern void io_trap_out(BYTE);
-
-	register int i;
-
-	/* initialize unused ports to trap handlers */
-	for (i = 0; i <= 255; i++) {
-		if (port_in[i] == NULL)
-			port_in[i] = io_trap_in;
-		if (port_out[i] == NULL)
-			port_out[i] = io_trap_out;
-	}
-
 	/* create local sockets */
 	init_unix_server_socket(&ucons[0], "altairsim.tape");
 	init_unix_server_socket(&ucons[1], "altairsim.sio2");
@@ -212,7 +199,7 @@ void reset_io(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return ((BYTE) 0xff);
+	return ((BYTE) IO_DATA_UNUSED);
 }
 #endif
 

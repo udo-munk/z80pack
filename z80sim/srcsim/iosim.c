@@ -46,7 +46,7 @@ static BYTE fp_value;		/* port 255 value, can be set with p command */
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*port_in[256])(void) = {
+BYTE (*const port_in[256])(void) = {
 	[  0] = p000_in,
 	[  1] = p001_in,
 	[160] = hwctl_in,	/* virtual hardware control */
@@ -57,7 +57,7 @@ BYTE (*port_in[256])(void) = {
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE) = {
 	[  1] = p001_out,
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
@@ -68,26 +68,11 @@ void (*port_out[256])(BYTE) = {
  *	It will be called from the CPU simulation before
  *	any operation with the CPU is possible.
  *
- *	In this sample I/O simulation we initialize all
- *	unused port with an error trap handler, so that
- *	simulation stops at I/O on the unused ports.
- *
  *	See the I/O simulation of of the other systems
  *	for more complex examples.
  */
 void init_io(void)
 {
-	extern BYTE io_trap_in(void);
-	extern void io_trap_out(BYTE);
-
-	register int i;
-
-	for (i = 0; i <= 255; i++) {
-		if (port_in[i] == NULL)
-			port_in[i] = io_trap_in;
-		if (port_out[i] == NULL)
-			port_out[i] = io_trap_out;
-	}
 }
 
 /*

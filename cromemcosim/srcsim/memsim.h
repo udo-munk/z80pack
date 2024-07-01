@@ -25,6 +25,8 @@
 #include "frontpanel.h"
 #endif
 
+#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+
 #define MAXSEG 7		/* max. number of 64KB memory banks */
 #define SEGSIZ 65536	/* size of the memory segments, 64 KBytes */
 

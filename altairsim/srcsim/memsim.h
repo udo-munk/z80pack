@@ -34,6 +34,8 @@ extern int p_tab[];
 extern BYTE tarbell_rom[];
 extern int tarbell_rom_enabled, tarbell_rom_active;
 
+#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
 #define MEM_WPROT	2	/* memory is write protected */
