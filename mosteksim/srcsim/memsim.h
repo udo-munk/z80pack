@@ -18,6 +18,8 @@
 extern void init_memory(void);
 extern BYTE memory[];
 
+#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+
 #define MAXMEMSECT	0
 
 /*

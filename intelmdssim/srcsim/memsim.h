@@ -14,6 +14,8 @@
 #ifndef MEMSIM_INC
 #define MEMSIM_INC
 
+#define IO_DATA_UNUSED	0x00	/* data returned on unused ports */
+
 #define BOOT_SIZE	256	/* bootstrap ROM size */
 #define MON_SIZE	2048	/* monitor ROM size */
 

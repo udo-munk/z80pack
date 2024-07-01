@@ -302,7 +302,7 @@ void step_clicked(int state, int val)
  */
 int wait_step(void)
 {
-	extern BYTE (*port_in[256])(void);
+	extern BYTE (*const port_in[256])(void);
 	int ret = 0;
 
 	if (cpu_state != SINGLE_STEP) {
@@ -320,8 +320,11 @@ int wait_step(void)
 
 	while ((cpu_switch == 3) && !reset) {
 		/* when INP update data bus LEDs */
-		if (cpu_bus == (CPU_WO | CPU_INP))
-			fp_led_data = (*port_in[fp_led_address & 0xff])();
+		if (cpu_bus == (CPU_WO | CPU_INP)) {
+			if (port_in[fp_led_address & 0xff])
+				fp_led_data =
+					(*port_in[fp_led_address & 0xff])();
+		}
 		fp_clock++;
 		fp_sampleData();
 		SLEEP_MS(10);

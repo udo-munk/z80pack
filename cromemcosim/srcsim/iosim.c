@@ -97,7 +97,7 @@ static int th_suspend;		/* timing thread suspend flag */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*port_in[256])(void) = {
+BYTE (*const port_in[256])(void) = {
 	[  0] = cromemco_tuart_0a_status_in,
 	[  1] = cromemco_tuart_0a_data_in,
 	[  3] = cromemco_tuart_0a_interrupt_in,
@@ -149,7 +149,7 @@ BYTE (*port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE) = {
 	[  0] = cromemco_tuart_0a_baud_out,
 	[  1] = cromemco_tuart_0a_data_out,
 	[  2] = cromemco_tuart_0a_command_out,
@@ -214,21 +214,10 @@ void (*port_out[256])(BYTE) = {
  */
 void init_io(void)
 {
-	extern BYTE io_trap_in(void);
-	extern void io_trap_out(BYTE);
-
 	register int i;
 	pthread_t thread;
 	static struct itimerval tim;
 	static struct sigaction newact;
-
-	/* initialize unused ports to trap handlers */
-	for (i = 0; i <= 255; i++) {
-		if (port_in[i] == NULL)
-			port_in[i] = io_trap_in;
-		if (port_out[i] == NULL)
-			port_out[i] = io_trap_out;
-	}
 
 	/* initialize TCP/IP networking */
 #ifdef TCPASYNC

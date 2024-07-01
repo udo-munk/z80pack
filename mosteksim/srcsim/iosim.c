@@ -24,6 +24,7 @@
 #include <sys/time.h>
 #include "sim.h"
 #include "simglb.h"
+#include "memsim.h"
 #include "simbdos.h"
 #include "mostek-cpu.h"
 #include "mostek-fdc.h"
@@ -44,7 +45,7 @@ static void io_no_card_out(BYTE);
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*port_in[256])(void) = {
+BYTE (*const port_in[256])(void) = {
 	[208] = io_no_card_in,		/* (d0) PIO1 Data A */
 	[209] = io_no_card_in,		/* (d1) PIO1 Control A */
 	[210] = io_no_card_in,		/* (d2) PIO1 Data B */
@@ -73,7 +74,7 @@ BYTE (*port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE) = {
 	[161] = host_bdos_out,		/* host file I/O hook */
 	[208] = io_no_card_out,		/* (d0) PIO1 Data A */
 	[209] = io_no_card_out,		/* (d1) PIO1 Control A */
@@ -106,18 +107,6 @@ void (*port_out[256])(BYTE) = {
  */
 void init_io(void)
 {
-	extern BYTE io_trap_in(void);
-	extern void io_trap_out(BYTE);
-
-	register int i;
-
-	/* initialize unused ports to trap handlers */
-	for (i = 0; i <= 255; i++) {
-		if (port_in[i] == NULL)
-			port_in[i] = io_trap_in;
-		if (port_out[i] == NULL)
-			port_out[i] = io_trap_out;
-	}
 }
 
 /*
@@ -135,7 +124,7 @@ void exit_io(void)
  */
 static BYTE io_no_card_in(void)
 {
-	return ((BYTE) 0xff);
+	return ((BYTE) IO_DATA_UNUSED);
 }
 
 /*

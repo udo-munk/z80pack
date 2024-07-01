@@ -33,6 +33,8 @@
 #ifndef MEMSIM_INC
 #define MEMSIM_INC
 
+#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+
 #define MAXSEG 16		/* max. number of memory banks */
 #define SEGSIZ 49152		/* default size of one bank = 48 KBytes */
 

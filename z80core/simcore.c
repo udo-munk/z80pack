@@ -302,7 +302,7 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern BYTE (*port_in[256])(void);
+	extern BYTE (*const port_in[256])(void);
 	uint64_t clk;
 #ifdef FRONTPANEL
 	int val;
@@ -313,7 +313,15 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	clk = get_clock_us();
 
 	io_port = addrl;
-	io_data = (*port_in[addrl])();
+	if (port_in[addrl])
+		io_data = (*port_in[addrl])();
+	else {
+		if (i_flag) {
+			cpu_error = IOTRAPIN;
+			cpu_state = STOPPED;
+		}
+		io_data = IO_DATA_UNUSED;
+	}
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
@@ -328,7 +336,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		val = wait_step();
 
 		/* when single stepped INP get last set value of port */
-		if (val)
+		if (val && port_in[addrl])
 			io_data = (*port_in[addrl])();
 	}
 #endif
@@ -349,7 +357,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void (*port_out[256])(BYTE);
+	extern void (*const port_out[256])(BYTE);
 	uint64_t clk;
 #ifndef FRONTPANEL
 	UNUSED(addrh);
@@ -366,7 +374,14 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	busy_loop_cnt = 0;
 
-	(*port_out[addrl])(data);
+	if (port_out[addrl])
+		(*port_out[addrl])(data);
+	else {
+		if (i_flag) {
+			cpu_error = IOTRAPOUT;
+			cpu_state = STOPPED;
+		}
+	}
 
 #ifdef BUS_8080
 	cpu_bus = CPU_OUT;
@@ -376,44 +391,13 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	if (F_flag) {
 		fp_clock += 6;
 		fp_led_address = (addrh << 8) + addrl;
-		fp_led_data = 0xff;
+		fp_led_data = IO_DATA_UNUSED;
 		fp_sampleData();
 		wait_step();
 	}
 #endif
 
 	cpu_time -= get_clock_us() - clk;
-}
-
-/*
- *	I/O input trap function
- *	This function should be added into all unused
- *	entries of the input port array. It can stop the
- *	emulation with an I/O error.
- */
-BYTE io_trap_in(void)
-{
-	if (i_flag) {
-		cpu_error = IOTRAPIN;
-		cpu_state = STOPPED;
-	}
-	return ((BYTE) 0xff);
-}
-
-/*
- *      I/O output trap function
- *      This function should be added into all unused
- *      entries of the output port array. It can stop the
- *      emulation with an I/O error.
- */
-void io_trap_out(BYTE data)
-{
-	UNUSED(data);
-
-	if (i_flag) {
-		cpu_error = IOTRAPOUT;
-		cpu_state = STOPPED;
-	}
 }
 
 /*

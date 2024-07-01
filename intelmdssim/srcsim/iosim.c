@@ -47,7 +47,6 @@ extern BYTE boot_switch;
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static BYTE io_trap_in_00(void);
 static BYTE int_mask_in(void), rtc_in(void), hwctl_in(void);
 static void int_mask_out(BYTE), int_revert_out(BYTE);
 static void bus_ovrrd_out(BYTE), rtc_out(BYTE), hwctl_out(BYTE);
@@ -80,7 +79,7 @@ BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*port_in[256])(void) = {
+BYTE (*const port_in[256])(void) = {
 #ifdef HAS_ISBC206
 	[104] = isbc206_status_in,	/* iSBC 206 subsystem status input */
 	[105] = isbc206_res_type_in,	/* iSBC 206 result type input */
@@ -158,19 +157,10 @@ void (*port_out[256])(BYTE) = {
  */
 void init_io(void)
 {
-	extern void io_trap_out(BYTE);
-
 	register int i;
 	pthread_t thread;
 	static struct itimerval tim;
 	static struct sigaction newact;
-
-	for (i = 0; i <= 255; i++) {
-		if (port_in[i] == NULL)
-			port_in[i] = io_trap_in_00;
-		if (port_out[i] == NULL)
-			port_out[i] = io_trap_out;
-	}
 
 	int_mask = 0;		/* reset interrupt facility */
 	int_requests = 0;
@@ -288,22 +278,6 @@ void reset_io(void)
 	hwctl_lock = 0xff;
 
 	th_suspend = 0;		/* resume timing thread */
-}
-
-/*
- *	I/O input trap function
- *	This function should be added into all unused
- *	entries of the input port array. It can stop the
- *	emulation with an I/O error.
- *	It returns 0x00 instead of io_trap_in()'s 0xff.
- */
-static BYTE io_trap_in_00(void)
-{
-	if (i_flag) {
-		cpu_error = IOTRAPIN;
-		cpu_state = STOPPED;
-	}
-	return ((BYTE) 0x00);
 }
 
 /*
