@@ -18,14 +18,15 @@
  * 02-SEP-2021 implement banked ROM
  */
 
-#ifndef MEMSIM_INC
-#define MEMSIM_INC
+#ifndef SIMMEM_INC
+#define SIMMEM_INC
 
+#include "sim.h"
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-
-#define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+#include "cromemco-fdc.h"
+#include "simctl.h"
 
 #define MAXSEG 7		/* max. number of 64KB memory banks */
 #define SEGSIZ 65536	/* size of the memory segments, 64 KBytes */
@@ -55,8 +56,6 @@ extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
 extern void init_memory(void);
-extern int wait_step(void);
-extern void wait_int_step(void);
 
 extern BYTE *memory[MAXSEG];
 extern int selbnk, common, bankio;
@@ -190,4 +189,4 @@ static inline void putmem(WORD addr, BYTE data)
 	}
 }
 
-#endif
+#endif /* !SIMMEM_INC */

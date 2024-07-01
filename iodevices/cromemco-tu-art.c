@@ -35,8 +35,10 @@
 #include "unix_terminal.h"
 #include "unix_network.h"
 #ifdef HAS_NETSERVER
+#include "civetweb.h"
 #include "netsrv.h"
 #endif
+#include "simio.h"
 
 #include "cromemco-hal.h"
 

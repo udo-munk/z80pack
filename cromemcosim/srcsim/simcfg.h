@@ -18,13 +18,13 @@
  * 30-AUG-2021 new memory configuration sections
  */
 
-#ifndef CONFIG_INC
-#define CONFIG_INC
-
-extern void config(void);
+#ifndef SIMCFG_INC
+#define SIMCFG_INC
 
 extern int  fp_size;
 extern BYTE fp_port;
 extern int  ns_port;
 
-#endif
+extern void config(void);
+
+#endif /* !SIMCFG_INC */

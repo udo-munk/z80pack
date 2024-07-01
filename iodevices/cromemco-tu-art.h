@@ -92,4 +92,4 @@ extern int uart1b_int_mask, uart1b_int, uart1b_int_pending;
 extern int uart1b_sense, uart1b_lpt_busy;
 extern int uart1b_tbe, uart1b_rda;
 
-#endif
+#endif /* !CROMEMCO_TU_ART_INC */

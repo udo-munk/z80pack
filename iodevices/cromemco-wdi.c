@@ -23,7 +23,8 @@
 
 #include "sim.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simcore.h"
 
 #ifdef HAS_NETSERVER
 #include "civetweb.h"
@@ -43,7 +44,6 @@ static const char *TAG = "wdi";
 static BYTE buffer[WDI_MAX_BUFFER];
 
 static const char *images[WDI_UNITS] = { "hd0.hdd", "hd1.hdd", "hd2.hdd" }; //, "hd3.hdd" };
-extern char *dsk_path(void);
 
 #define MAX_DISK_PARAM 3
 static struct {
@@ -341,7 +341,7 @@ void sendHardDisks(struct mg_connection *conn)
     }
 }
 #endif
-off_t wdi_pos(BYTE *buf)
+static off_t wdi_pos(BYTE *buf)
 {
     off_t p;
     const int c = disk_param[wdi.hd[wdi.unit].type].cyl;
@@ -356,7 +356,7 @@ off_t wdi_pos(BYTE *buf)
 
     return p;
 }
-Tstates_t wdi_dma_write(BYTE bus_ack)
+static Tstates_t wdi_dma_write(BYTE bus_ack)
 {
     int i;
 
@@ -417,7 +417,7 @@ Tstates_t wdi_dma_write(BYTE bus_ack)
 
     return wdi.dma.wr0.len * 3; /* 3 t-states per byte of DMA */
 }
-Tstates_t wdi_dma_read(BYTE bus_ack)
+static Tstates_t wdi_dma_read(BYTE bus_ack)
 {
     register int v;
     int i;
@@ -470,7 +470,7 @@ Tstates_t wdi_dma_read(BYTE bus_ack)
 BYTE cromemco_wdi_pio0a_data_in(void)
 {
 	LOGW(TAG, "E0 IN:");
-	return ((BYTE) 0xFF);
+	return (BYTE) 0xFF;
 }
 BYTE cromemco_wdi_pio0b_data_in(void)
 {
@@ -497,17 +497,17 @@ BYTE cromemco_wdi_pio0b_data_in(void)
             break;
     }
     LOGD(TAG, "STATUS %d = %02x", bus, val);
-	return (val);
+	return val;
 }
 BYTE cromemco_wdi_pio0a_cmd_in(void)
 {
 	LOGW(TAG, "E2 IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_pio0b_cmd_in(void)
 {
 	LOGW(TAG, "E3 IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_pio1a_data_in(void)
 {
@@ -529,7 +529,7 @@ BYTE cromemco_wdi_pio1a_data_in(void)
     val = (wdi.pio1.data_A & ~wdi.pio1.dir_A) | val;
 
     LOGD(TAG, "E4 IN: = %02x", val);
-	return (val);
+	return val;
 }
 BYTE cromemco_wdi_pio1b_data_in(void)
 {
@@ -548,39 +548,39 @@ BYTE cromemco_wdi_pio1b_data_in(void)
     val = (wdi.pio1.data_B & ~wdi.pio1.dir_B) | val;
 
 	LOGD(TAG, "E5 IN: = %02x", val);
-	return (val);
+	return val;
 }
 BYTE cromemco_wdi_pio1a_cmd_in(void)
 {
 	LOGW(TAG, "E6 IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_pio1b_cmd_in(void)
 {
 	LOGW(TAG, "E7 IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_dma0_in(void)
 {
     /* DMA READ STATUS NOT YET COMPLETE */
 	LOGE(TAG, "E8 IN: [%d]", wdi.dma.rr_state);
     if (wdi.dma.rr_state == RR_BASE) return wdi.dma.rr0.status;
-    else return ((BYTE) 0xff);
+    else return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_dma1_in(void)
 {
 	LOGW(TAG, "E9 IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_dma2_in(void)
 {
 	LOGW(TAG, "EA IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_dma3_in(void)
 {
 	LOGW(TAG, "EB IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 BYTE cromemco_wdi_ctc0_in(void)
 {
@@ -598,7 +598,7 @@ BYTE cromemco_wdi_ctc0_in(void)
             wdi.ctc.T0 += index_ticks;
         }
     }
-	return (val);
+	return val;
 }
 BYTE cromemco_wdi_ctc1_in(void)
 {
@@ -621,7 +621,7 @@ BYTE cromemco_wdi_ctc1_in(void)
         wdi.ctc.T1 = T;
     }
 
-	return (wdi.ctc.now1);
+	return wdi.ctc.now1;
 }
 BYTE cromemco_wdi_ctc2_in(void)
 {
@@ -641,15 +641,15 @@ BYTE cromemco_wdi_ctc2_in(void)
     /* Only count seek complete if online */
     if (val > 0 && wdi.hd[wdi.unit].online) wdi.ctc.now2--;
 
-	return (val);
+	return val;
 }
 BYTE cromemco_wdi_ctc3_in(void)
 {
 	LOGW(TAG, "EF IN:");
-	return ((BYTE) 0xff);
+	return (BYTE) 0xff;
 }
 
-void command_bus_strobe(void)
+static void command_bus_strobe(void)
 {
 
     int bus = wdi.pio1.bus_addr;
@@ -907,7 +907,7 @@ void cromemco_wdi_pio1b_cmd_out(BYTE data)
             break;
     }
 }
-Tstates_t wdi_dma_mem_to_mem(BYTE bus_ack)
+static Tstates_t wdi_dma_mem_to_mem(BYTE bus_ack)
 {
     register int v;
     int i;

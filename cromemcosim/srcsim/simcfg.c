@@ -25,7 +25,8 @@
 #include "sim.h"
 #include "simglb.h"
 #include "log.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simcore.h"
 
 #define BUFSIZE 256	/* max line length of command buffer */
 
@@ -34,8 +35,6 @@ static const char *TAG = "config";
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0x10;		/* default fp input port value */
 int  ns_port = NS_DEF_PORT;	/* default port to run web server on */
-
-extern int exatoi(char *);
 
 void config(void)
 {

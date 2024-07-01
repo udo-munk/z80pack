@@ -73,4 +73,4 @@ extern void sleep_ms(int);
 
 #include "simdefs.h"
 
-#endif
+#endif /* !SIM_INC */

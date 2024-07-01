@@ -59,8 +59,8 @@
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memsim.h"
-#include "config.h"
+#include "simmem.h"
+#include "simcfg.h"
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 #include "cromemco-hal.h"
@@ -71,9 +71,9 @@
  *	Forward declarations for I/O functions
  */
 static BYTE fp_in(void), mmu_in(void);
-static void fp_out(BYTE), mmu_out(BYTE);
+static void fp_out(BYTE data), mmu_out(BYTE data);
 static BYTE hwctl_in(void);
-static void hwctl_out(BYTE);
+static void hwctl_out(BYTE data);
 
 /*
  *	Forward declarations for support functions
@@ -84,9 +84,9 @@ static void interrupt(int);
 static const char *TAG = "IO";
 
 static int rtc;			/* flag for 512ms RTC interrupt */
-int lpt1, lpt2;		/* fds for lpt printer files */
+int lpt1, lpt2;			/* fds for lpt printer files */
 
-BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
+static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 
 /* network connections for serial ports on the TU-ART's */
 struct net_connectors ncons[NUMNSOC];
@@ -149,7 +149,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE data) = {
 	[  0] = cromemco_tuart_0a_baud_out,
 	[  1] = cromemco_tuart_0a_data_out,
 	[  2] = cromemco_tuart_0a_command_out,
@@ -320,10 +320,10 @@ static BYTE fp_in(void)
 {
 #ifdef FRONTPANEL
 	if (F_flag)
-		return (address_switch >> 8);
+		return address_switch >> 8;
 	else {
 #endif
-		return (fp_port);
+		return fp_port;
 #ifdef FRONTPANEL
 	}
 #endif
@@ -351,7 +351,7 @@ static void fp_out(BYTE data)
  */
 static BYTE hwctl_in(void)
 {
-	return (hwctl_lock);
+	return hwctl_lock;
 }
 
 /*
@@ -405,7 +405,7 @@ static void hwctl_out(BYTE data)
  */
 static BYTE mmu_in(void)
 {
-	return (bankio);
+	return bankio;
 }
 
 /*

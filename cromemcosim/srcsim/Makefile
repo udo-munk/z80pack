@@ -7,7 +7,7 @@ MACHINE = cromemco
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
+MACHINE_SRCS = simcfg.c simio.c simmem.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-wdi.c cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c \
 	cromemco-tu-art.c cromemco-hal.c unix_terminal.c unix_network.c \

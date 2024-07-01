@@ -14,4 +14,4 @@ extern Diskdef  disks[];
 
 #define DISKNAME(A) disks[A].fn
 
-#endif
+#endif /* !DISKS_INC */
