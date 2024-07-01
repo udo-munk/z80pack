@@ -26,4 +26,4 @@ extern struct termios old_term, new_term;
 extern void set_unix_terminal(void);
 extern void reset_unix_terminal(void);
 
-#endif
+#endif /* !UNIX_TERMINAL_INC */

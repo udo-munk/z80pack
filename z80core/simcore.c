@@ -19,7 +19,16 @@
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "memsim.h"
+#include "simmem.h"
+#ifndef EXCLUDE_I8080
+#include "sim8080.h"
+#endif
+#ifndef EXCLUDE_Z80
+#include "simz80.h"
+#endif
+#include "simfun.h"
+#include "simcore.h"
+#include "simio.h"
 
 #ifndef BAREMETAL
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
@@ -27,9 +36,6 @@
 
 static const char *TAG = "core";
 #endif
-
-extern uint64_t get_clock_us(void);
-extern void cpu_z80(void), cpu_8080(void);
 
 /*
  *	Initialize the CPU
@@ -302,7 +308,6 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern BYTE (*const port_in[256])(void);
 	uint64_t clk;
 #ifdef FRONTPANEL
 	int val;
@@ -347,7 +352,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	cpu_time -= get_clock_us() - clk;
 
-	return (io_data);
+	return io_data;
 }
 
 /*
@@ -357,7 +362,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void (*const port_out[256])(BYTE);
 	uint64_t clk;
 #ifndef FRONTPANEL
 	UNUSED(addrh);
@@ -437,5 +441,5 @@ int exatoi(char *str)
 			num += toupper((unsigned char) *str) - '7';
 		str++;
 	}
-	return (num);
+	return num;
 }

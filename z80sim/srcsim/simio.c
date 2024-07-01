@@ -28,6 +28,8 @@
 #include <sys/poll.h>
 #include "sim.h"
 #include "simglb.h"
+#include "simcore.h"
+#include "simio.h"
 
 /*
  *	Forward declarations of the I/O functions
@@ -35,8 +37,8 @@
  */
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 static BYTE hwctl_in(void);
-static void p001_out(BYTE), p255_out(BYTE);
-static void hwctl_out(BYTE);
+static void p001_out(BYTE data), p255_out(BYTE data);
+static void hwctl_out(BYTE data);
 
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 static BYTE sio_last;		/* last byte read from sio */
@@ -57,7 +59,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE) = {
+void (*const port_out[256])(BYTE data) = {
 	[  1] = p001_out,
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
@@ -108,7 +110,7 @@ static BYTE p000_in(void)
 		cpu_error = IOERROR;
 		cpu_state = STOPPED;
 	}
-	return (tty_stat);
+	return tty_stat;
 }
 
 /*
@@ -137,7 +139,7 @@ static BYTE p001_in(void)
  */
 static BYTE hwctl_in(void)
 {
-	return (hwctl_lock);
+	return hwctl_lock;
 }
 
 /*
@@ -171,11 +173,6 @@ static void p001_out(BYTE data)
  */
 static void hwctl_out(BYTE data)
 {
-#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-	extern void switch_cpu(int);
-#endif
-	extern void reset_cpu(void);
-
 	/* if port is locked do nothing */
 	if (hwctl_lock && (data != 0xaa))
 		return;

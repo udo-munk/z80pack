@@ -7,9 +7,9 @@
  * 19-OCT-2022 add C++ main() for linking with the C++ frontpanel library
  */
 
-extern "C" int sim_main(int, char *[]);
+#include "simmain.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
-	return (sim_main(argc, argv));
+	return sim_main(argc, argv);
 }

@@ -13,23 +13,28 @@
 #include <stdint.h>
 #include "sim.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simconf.h"
+#include "simmem.h"
+#include "simz80-ddcb.h"
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 
-static int trap_ddcb(int);
-static int op_tb0ixd(int), op_tb1ixd(int), op_tb2ixd(int), op_tb3ixd(int);
-static int op_tb4ixd(int), op_tb5ixd(int), op_tb6ixd(int), op_tb7ixd(int);
-static int op_rb0ixd(int), op_rb1ixd(int), op_rb2ixd(int), op_rb3ixd(int);
-static int op_rb4ixd(int), op_rb5ixd(int), op_rb6ixd(int), op_rb7ixd(int);
-static int op_sb0ixd(int), op_sb1ixd(int), op_sb2ixd(int), op_sb3ixd(int);
-static int op_sb4ixd(int), op_sb5ixd(int), op_sb6ixd(int), op_sb7ixd(int);
-static int op_rlcixd(int), op_rrcixd(int), op_rlixd(int), op_rrixd(int);
-static int op_slaixd(int), op_sraixd(int), op_srlixd(int);
+static int trap_ddcb(int data);
+static int op_tb0ixd(int data), op_tb1ixd(int data), op_tb2ixd(int data);
+static int op_tb3ixd(int data), op_tb4ixd(int data), op_tb5ixd(int data);
+static int op_tb6ixd(int data), op_tb7ixd(int data);
+static int op_rb0ixd(int data), op_rb1ixd(int data), op_rb2ixd(int data);
+static int op_rb3ixd(int data), op_rb4ixd(int data), op_rb5ixd(int data);
+static int op_rb6ixd(int data), op_rb7ixd(int data);
+static int op_sb0ixd(int data), op_sb1ixd(int data), op_sb2ixd(int data);
+static int op_sb3ixd(int data), op_sb4ixd(int data), op_sb5ixd(int data);
+static int op_sb6ixd(int data), op_sb7ixd(int data);
+static int op_rlcixd(int data), op_rrcixd(int data), op_rlixd(int data);
+static int op_rrixd(int data), op_slaixd(int data), op_sraixd(int data);
+static int op_srlixd(int data);
 
 #ifdef UNDOC_INST
-static int op_undoc_sllixd(int);
+static int op_undoc_sllixd(int data);
 #endif /* UNDOC_INST */
 
 int op_ddcb_handle(void)
@@ -308,7 +313,7 @@ int op_ddcb_handle(void)
 	d = (SBYTE) memrdr(PC++);
 	t = (*op_ddcb[memrdr(PC++)])(d); /* execute next opcode */
 
-	return (t);
+	return t;
 }
 
 /*
@@ -321,7 +326,7 @@ static int trap_ddcb(int data)
 
 	cpu_error = OPTRAP4;
 	cpu_state = STOPPED;
-	return (0);
+	return 0;
 }
 
 static int op_tb0ixd(int data)		/* BIT 0,(IX+d) */
@@ -330,7 +335,7 @@ static int op_tb0ixd(int data)		/* BIT 0,(IX+d) */
 	F |= H_FLAG;
 	(memrdr(IX + data) & 1) ? (F &= ~(Z_FLAG | P_FLAG))
 				: (F |= (Z_FLAG | P_FLAG));
-	return (20);
+	return 20;
 }
 
 static int op_tb1ixd(int data)		/* BIT 1,(IX+d) */
@@ -339,7 +344,7 @@ static int op_tb1ixd(int data)		/* BIT 1,(IX+d) */
 	F |= H_FLAG;
 	(memrdr(IX + data) & 2) ? (F &= ~(Z_FLAG | P_FLAG))
 				: (F |= (Z_FLAG | P_FLAG));
-	return (20);
+	return 20;
 }
 
 static int op_tb2ixd(int data)		/* BIT 2,(IX+d) */
@@ -348,7 +353,7 @@ static int op_tb2ixd(int data)		/* BIT 2,(IX+d) */
 	F |= H_FLAG;
 	(memrdr(IX + data) & 4) ? (F &= ~(Z_FLAG | P_FLAG))
 				: (F |= (Z_FLAG | P_FLAG));
-	return (20);
+	return 20;
 }
 
 static int op_tb3ixd(int data)		/* BIT 3,(IX+d) */
@@ -357,7 +362,7 @@ static int op_tb3ixd(int data)		/* BIT 3,(IX+d) */
 	F |= H_FLAG;
 	(memrdr(IX + data) & 8) ? (F &= ~(Z_FLAG | P_FLAG))
 				: (F |= (Z_FLAG | P_FLAG));
-	return (20);
+	return 20;
 }
 
 static int op_tb4ixd(int data)		/* BIT 4,(IX+d) */
@@ -366,7 +371,7 @@ static int op_tb4ixd(int data)		/* BIT 4,(IX+d) */
 	F |= H_FLAG;
 	(memrdr(IX + data) & 16) ? (F &= ~(Z_FLAG | P_FLAG))
 				 : (F |= (Z_FLAG | P_FLAG));
-	return (20);
+	return 20;
 }
 
 static int op_tb5ixd(int data)		/* BIT 5,(IX+d) */
@@ -375,7 +380,7 @@ static int op_tb5ixd(int data)		/* BIT 5,(IX+d) */
 	F |= H_FLAG;
 	(memrdr(IX + data) & 32) ? (F &= ~(Z_FLAG | P_FLAG))
 				 : (F |= (Z_FLAG | P_FLAG));
-	return (20);
+	return 20;
 }
 
 static int op_tb6ixd(int data)		/* BIT 6,(IX+d) */
@@ -384,7 +389,7 @@ static int op_tb6ixd(int data)		/* BIT 6,(IX+d) */
 	F |= H_FLAG;
 	(memrdr(IX + data) & 64) ? (F &= ~(Z_FLAG | P_FLAG))
 				 : (F |= (Z_FLAG | P_FLAG));
-	return (20);
+	return 20;
 }
 
 static int op_tb7ixd(int data)		/* BIT 7,(IX+d) */
@@ -398,103 +403,103 @@ static int op_tb7ixd(int data)		/* BIT 7,(IX+d) */
 		F |= (Z_FLAG | P_FLAG);
 		F &= ~S_FLAG;
 	}
-	return (20);
+	return 20;
 }
 
 static int op_rb0ixd(int data)		/* RES 0,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~1);
-	return (23);
+	return 23;
 }
 
 static int op_rb1ixd(int data)		/* RES 1,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~2);
-	return (23);
+	return 23;
 }
 
 static int op_rb2ixd(int data)		/* RES 2,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~4);
-	return (23);
+	return 23;
 }
 
 static int op_rb3ixd(int data)		/* RES 3,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~8);
-	return (23);
+	return 23;
 }
 
 static int op_rb4ixd(int data)		/* RES 4,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~16);
-	return (23);
+	return 23;
 }
 
 static int op_rb5ixd(int data)		/* RES 5,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~32);
-	return (23);
+	return 23;
 }
 
 static int op_rb6ixd(int data)		/* RES 6,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~64);
-	return (23);
+	return 23;
 }
 
 static int op_rb7ixd(int data)		/* RES 7,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) & ~128);
-	return (23);
+	return 23;
 }
 
 static int op_sb0ixd(int data)		/* SET 0,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 1);
-	return (23);
+	return 23;
 }
 
 static int op_sb1ixd(int data)		/* SET 1,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 2);
-	return (23);
+	return 23;
 }
 
 static int op_sb2ixd(int data)		/* SET 2,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 4);
-	return (23);
+	return 23;
 }
 
 static int op_sb3ixd(int data)		/* SET 3,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 8);
-	return (23);
+	return 23;
 }
 
 static int op_sb4ixd(int data)		/* SET 4,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 16);
-	return (23);
+	return 23;
 }
 
 static int op_sb5ixd(int data)		/* SET 5,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 32);
-	return (23);
+	return 23;
 }
 
 static int op_sb6ixd(int data)		/* SET 6,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 64);
-	return (23);
+	return 23;
 }
 
 static int op_sb7ixd(int data)		/* SET 7,(IX+d) */
 {
 	memwrt(IX + data, memrdr(IX + data) | 128);
-	return (23);
+	return 23;
 }
 
 static int op_rlcixd(int data)		/* RLC (IX+d) */
@@ -514,7 +519,7 @@ static int op_rlcixd(int data)		/* RLC (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 static int op_rrcixd(int data)		/* RRC (IX+d) */
@@ -534,7 +539,7 @@ static int op_rrcixd(int data)		/* RRC (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 static int op_rlixd(int data)		/* RL (IX+d) */
@@ -554,7 +559,7 @@ static int op_rlixd(int data)		/* RL (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 static int op_rrixd(int data)		/* RR (IX+d) */
@@ -574,7 +579,7 @@ static int op_rrixd(int data)		/* RR (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 static int op_slaixd(int data)		/* SLA (IX+d) */
@@ -591,7 +596,7 @@ static int op_slaixd(int data)		/* SLA (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 static int op_sraixd(int data)		/* SRA (IX+d) */
@@ -610,7 +615,7 @@ static int op_sraixd(int data)		/* SRA (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 static int op_srlixd(int data)		/* SRL (IX+d) */
@@ -627,7 +632,7 @@ static int op_srlixd(int data)		/* SRL (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 /**********************************************************************/
@@ -644,7 +649,7 @@ static int op_undoc_sllixd(int data)	/* SLL (IX+d) */
 	WORD addr;
 
 	if (u_flag)
-		return (trap_ddcb(0));
+		return trap_ddcb(0);
 
 	addr = IX + data;
 	P = memrdr(addr);
@@ -655,7 +660,7 @@ static int op_undoc_sllixd(int data)	/* SLL (IX+d) */
 	(P) ? (F &= ~Z_FLAG) : (F |= Z_FLAG);
 	(P & 128) ? (F |= S_FLAG) : (F &= ~S_FLAG);
 	(parity[P]) ? (F &= ~P_FLAG) : (F |= P_FLAG);
-	return (23);
+	return 23;
 }
 
 #endif /* UNDOC_INST */

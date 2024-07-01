@@ -30,49 +30,70 @@
 #include <sys/time.h>
 #endif
 #include "simglb.h"
-#include "memsim.h"
+#include "simcore.h"
+#include "simfun.h"
+#include "simdis.h"
+#include "simint.h"
+#include "simmem.h"
+#include "simice.h"
 
 #ifdef WANT_ICE
 
-extern void run_cpu(void), step_cpu(void);
-extern int disass(WORD);
-extern int exatoi(char *);
-extern void report_cpu_error(void);
-extern int get_cmdline(char *, int);
-#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-extern void switch_cpu(int);
+/*
+ *	Variables for history memory
+ */
+#ifdef HISIZE
+struct history his[HISIZE];	/* memory to hold trace information */
+int h_next;			/* index into trace memory */
+int h_flag;			/* flag for trace memory overrun */
 #endif
-#ifndef BAREMETAL
-extern int load_file(char *, WORD, int);
+
+/*
+ *	Variables for breakpoint memory
+ */
+#ifdef SBSIZE
+struct softbreak soft[SBSIZE];	/* memory to hold breakpoint information */
+int sb_next;			/* index into breakpoint memory */
+#endif
+
+/*
+ *	Variables for runtime measurement
+ */
+#ifdef WANT_TIM
+Tstates_t t_states_s;		/* T states marker at start of measurement */
+Tstates_t t_states_e;		/* T states marker at end of measurement */
+int t_flag;			/* flag, 1 = on, 0 = off */
+WORD t_start = 65535;		/* start address for measurement */
+WORD t_end = 65535;		/* end address for measurement */
 #endif
 
 static void do_step(void);
-static void do_trace(char *);
-static void do_go(char *);
+static void do_trace(char *s);
+static void do_go(char *s);
 static int handle_break(void);
-static void do_dump(char *);
-static void do_list(char *);
-static void do_modify(char *);
-static void do_fill(char *);
-static void do_move(char *);
-static void do_port(char *);
-static void do_reg(char *);
+static void do_dump(char *s);
+static void do_list(char *s);
+static void do_modify(char *s);
+static void do_fill(char *s);
+static void do_move(char *s);
+static void do_port(char *s);
+static void do_reg(char *s);
 static void print_head(void);
 static void print_reg(void);
-static void do_break(char *);
-static void do_hist(char *);
-static void do_count(char *);
+static void do_break(char *s);
+static void do_hist(char *s);
+static void do_count(char *s);
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-static void do_switch(char *);
+static void do_switch(char *s);
 #endif
 static void do_show(void);
 static void do_help(void);
 
 #ifndef BAREMETAL
 static void do_clock(void);
-static void timeout(int);
-static void do_load(char *);
-static void do_unix(char *);
+static void timeout(int sig);
+static void do_load(char *s);
+static void do_unix(char *s);
 #endif
 
 static char arg[LENCMD];
@@ -80,7 +101,7 @@ static WORD wrk_addr;
 
 void (*ice_before_go)(void);
 void (*ice_after_go)(void);
-void (*ice_cust_cmd)(char *, WORD *);
+void (*ice_cust_cmd)(char *cmd, WORD *wrk_addr);
 void (*ice_cust_help)(void);
 
 /*
@@ -310,7 +331,7 @@ static int handle_break(void)
 		if (soft[i].sb_addr == PC - 1)
 			break;
 	if (i == SBSIZE)		/* no breakpoint found */
-		return (0);
+		return 0;
 #ifdef HISIZE
 	h_next--;			/* correct history */
 	if (h_next < 0)
@@ -323,12 +344,12 @@ static int handle_break(void)
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment pass counter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
-		return (1);		/* pass not reached, continue */
+		return 1;		/* pass not reached, continue */
 	printf("Software breakpoint %d reached at %04x\n", i, break_address);
 	soft[i].sb_passcount = 0;	/* reset pass counter */
-	return (0);			/* pass reached, stop */
+	return 0;			/* pass reached, stop */
 #else
-	return (0);
+	return 0;
 #endif
 }
 
@@ -470,8 +491,6 @@ static void do_move(char *s)
  */
 static void do_port(char *s)
 {
-	extern BYTE io_in(BYTE, BYTE);
-	extern void io_out(BYTE, BYTE, BYTE);
 	register BYTE port;
 
 	while (isspace((unsigned char) *s))
@@ -1102,8 +1121,6 @@ static void do_load(char *s)
  */
 static void do_unix(char *s)
 {
-	extern void int_on(void), int_off(void);
-
 	int_off();
 	if (system(s) == -1)
 		perror("external command");
