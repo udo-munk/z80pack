@@ -1,8 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1987-2024 Udo Munk
- * Copyright (C) 2021 David McNaughton
+ * Copyright (C) 2024 Thomas Eberhardt
  */
 
 #ifndef SIMPORT_INC
