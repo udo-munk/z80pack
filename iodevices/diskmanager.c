@@ -341,7 +341,6 @@ static void sendDisks(HttpdConnection_t *conn) {
         if (i < (_MAX_DISK - 1)) httpdPrintf(conn, ",");
     }
 
-    extern void sendHardDisks(HttpdConnection_t *conn);
     sendHardDisks(conn);
 
     httpdPrintf(conn, "}");

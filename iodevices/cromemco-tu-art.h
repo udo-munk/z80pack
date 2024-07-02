@@ -28,6 +28,8 @@
 #include "sim.h"
 #include "simdefs.h"
 
+extern void lpt_reset(void);
+
 extern BYTE cromemco_tuart_0a_status_in(void);
 extern void cromemco_tuart_0a_baud_out(BYTE data);
 

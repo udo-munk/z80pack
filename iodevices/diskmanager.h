@@ -19,8 +19,8 @@
 extern void readDiskmap(char *path_name);
 
 #ifdef HAS_NETSERVER
-int LibraryHandler(HttpdConnection_t *conn, void *unused);
-int DiskHandler(HttpdConnection_t *conn, void *unused);
+extern int LibraryHandler(HttpdConnection_t *conn, void *unused);
+extern int DiskHandler(HttpdConnection_t *conn, void *unused);
 #endif
 
 #endif /* !DISKMANAGER_INC */
