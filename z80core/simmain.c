@@ -34,6 +34,7 @@
 #include "simctl.h"
 #include "simmem.h"
 #include "simio.h"
+#include "simport.h"
 #include "simfun.h"
 #include "simint.h"
 #include "simutil.h"

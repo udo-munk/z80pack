@@ -28,7 +28,7 @@
 #include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
-#include "simfun.h"
+#include "simport.h"
 
 #include "proctec-vdm-charset.h"
 #include "proctec-vdm.h"
@@ -121,7 +121,7 @@ static void open_display(void)
 void proctec_vdm_off(void)
 {
 	state = 0;		/* tell refresh thread to stop */
-	SLEEP_MS(50);		/* and wait a bit */
+	sleep_for_ms(50);	/* and wait a bit */
 
 	/* works if X11 with posix threads implemented correct, but ... */
 	if (thread != 0) {
@@ -243,7 +243,7 @@ static void *update_display(void *arg)
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
-			SLEEP_MS(33 - (tdiff / 1000));
+			sleep_for_ms(33 - (tdiff / 1000));
 
 		t1 = get_clock_us();
 	}

@@ -39,7 +39,7 @@
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
-#include "simfun.h"
+#include "simport.h"
 #include "simio.h"
 
 #include "unix_terminal.h"

@@ -18,7 +18,7 @@
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
-#include "simfun.h"
+#include "simport.h"
 #include "simmem.h"
 #include "simio.h"
 #ifndef EXCLUDE_I8080

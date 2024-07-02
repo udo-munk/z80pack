@@ -42,7 +42,7 @@
 #include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
-#include "simfun.h"
+#include "simport.h"
 
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
@@ -218,7 +218,7 @@ static void open_display(void)
 void cromemco_dazzler_off(void)
 {
 	state = 0;
-	SLEEP_MS(50);
+	sleep_for_ms(50);
 
 	if (thread != 0) {
 		pthread_cancel(thread);
@@ -767,14 +767,14 @@ static void *update_display(void *arg)
 
 		/* frame done, set frame flag for 4ms */
 		flags = 0;
-		SLEEP_MS(4);
+		sleep_for_ms(4);
 		flags = 64;
 
 		/* sleep rest to 33ms so that we get 30 fps */
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
-			SLEEP_MS(33 - (tdiff / 1000));
+			sleep_for_ms(33 - (tdiff / 1000));
 
 		t1 = get_clock_us();
 	}
@@ -814,7 +814,7 @@ void cromemco_dazzler_ctl_out(BYTE data)
 	} else {
 		if (state == 1) {
 			state = 0;
-			SLEEP_MS(50);
+			sleep_for_ms(50);
 #ifdef HAS_NETSERVER
 			if (!n_flag) {
 #endif

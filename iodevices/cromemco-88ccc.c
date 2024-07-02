@@ -26,7 +26,7 @@
 #include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
-#include "simfun.h"
+#include "simport.h"
 
 #include "netsrv.h"
 #include "cromemco-88ccc.h"
@@ -98,13 +98,13 @@ static void *store_image(void *arg)
 		/* frame done, calculate total frame time */
 		j = msg.fields * (msg.interval +1) * 2;
 
-		/* SLEEP_MS(j); */
+		/* sleep_for_ms(j); */
 
 		/* sleep rest of total frame time */
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
 		if (tdiff < (j*1000))
-			SLEEP_MS(j - tdiff/1000);
+			sleep_for_ms(j - tdiff/1000);
 
 		LOGD(TAG, "Time: %d", tdiff);
 
@@ -142,7 +142,9 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 	} else {
 		if (state == 1) {
 			state = 0;
-			SLEEP_MS(50); /* Arbitrary 50ms timeout to let thread exit after state change, TODO: maybe should end thread? */
+			sleep_for_ms(50); /* Arbitrary 50ms timeout to let
+					     thread exit after state change,
+					     TODO: maybe should end thread? */
 		}
 	}
 }

@@ -19,7 +19,7 @@
 #ifdef FRONTPANEL
 #include <stdint.h>
 #include "frontpanel.h"
-#include "simfun.h"
+#include "simport.h"
 #endif
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)

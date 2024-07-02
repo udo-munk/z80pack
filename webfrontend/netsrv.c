@@ -29,6 +29,7 @@
 #include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
+#include "simport.h"
 
 #include "civetweb.h"
 #include "netsrv.h"
@@ -593,7 +594,7 @@ static void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	if (d == DEV_VIO) {
 		BYTE mode = dma_read(0xf7ff);
 		dma_write(0xf7ff, 0x00);
-		SLEEP_MS(100);
+		sleep_for_ms(100);
 		dma_write(0xf7ff, mode);
 	}
 
