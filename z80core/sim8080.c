@@ -12,7 +12,7 @@
 #include "simglb.h"
 #include "simmem.h"
 #include "simcore.h"
-#include "simfun.h"
+#include "simport.h"
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
@@ -599,13 +599,8 @@ leave:
 			if (T >= T_max && !cpu_needed) {
 				t2 = get_clock_us();
 				tdiff = t2 - t1;
-#ifdef SLEEP_US
 				if ((tdiff > 0) && (tdiff < 10000))
-					SLEEP_US(10000 - tdiff);
-#else
-				if ((tdiff > 0) && (tdiff < 10000))
-					SLEEP_MS(10 - (tdiff / 1000));
-#endif
+					sleep_for_us(10000 - tdiff);
 				T_max = T + tmax;
 				t1 = get_clock_us();
 			}
@@ -678,7 +673,7 @@ static int op_hlt(void)			/* HLT */
 		} else {
 			/* else wait for INT or user interrupt */
 			while ((int_int == 0) && (cpu_state == CONTIN_RUN)) {
-				SLEEP_MS(1);
+				sleep_for_ms(1);
 			}
 		}
 #ifdef BUS_8080
@@ -699,7 +694,7 @@ static int op_hlt(void)			/* HLT */
 			while (!(cpu_state & RESET)) {
 				fp_clock++;
 				fp_sampleData();
-				SLEEP_MS(1);
+				sleep_for_ms(1);
 				if (cpu_error != NONE)
 					break;
 			}
@@ -709,7 +704,7 @@ static int op_hlt(void)			/* HLT */
 			while ((int_int == 0) && !(cpu_state & RESET)) {
 				fp_clock++;
 				fp_sampleData();
-				SLEEP_MS(1);
+				sleep_for_ms(1);
 				if (cpu_error != NONE)
 					break;
 			}

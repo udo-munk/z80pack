@@ -130,6 +130,7 @@
 #include "simcore.h"
 #include "simmem.h"
 #include "simctl.h"
+#include "simport.h"
 #include "simio.h"
 
 #include "rtc80.h"
@@ -679,7 +680,7 @@ static BYTE cons_in(void)
 	struct pollfd p[1];
 
 	if (++busy_loop_cnt >= MAX_BUSY_COUNT) {
-		SLEEP_MS(1);
+		sleep_for_ms(1);
 		busy_loop_cnt = 0;
 	}
 
@@ -1982,7 +1983,7 @@ static BYTE time_in(void)
  */
 static void delay_out(BYTE data)
 {
-	SLEEP_MS(data * 10);
+	sleep_for_ms(data * 10);
 
 #ifdef CNETDEBUG
 	printf(". ");

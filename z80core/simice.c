@@ -32,13 +32,14 @@
 #include "simcore.h"
 #include "simmem.h"
 #include "simdis.h"
-#include "simfun.h"
+#include "simport.h"
 #include "simutil.h"
 #include "simice.h"
 
 #ifndef BAREMETAL
 #include <signal.h>
 #include <sys/time.h>
+#include "simfun.h"
 #include "simint.h"
 #endif
 

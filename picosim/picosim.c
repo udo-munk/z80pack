@@ -182,11 +182,6 @@ NOPE:	config();		/* configure the machine */
 	return 0;
 }
 
-uint64_t get_clock_us(void)
-{
-	return to_us_since_boot(get_absolute_time());
-}
-
 /*
  * interrupt handler for break switch
  * stops CPU

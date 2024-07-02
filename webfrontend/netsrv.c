@@ -29,18 +29,24 @@
 #include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
+#include "simport.h"
 
 #include "civetweb.h"
 #include "netsrv.h"
 
-#ifdef HAS_HAL
 #ifdef IMSAISIM
+#ifdef HAS_HAL
 #include "imsai-hal.h"
 #endif
+#include "simio.h"
+#endif
 #ifdef CROMEMCOSIM
+#ifdef HAS_HAL
 #include "cromemco-hal.h"
 #endif
+#include "cromemco-tu-art.h"
 #endif
+#include "diskmanager.h"
 
 #include "log.h"
 static const char *TAG = "netsrv";
@@ -80,11 +86,6 @@ extern int reset;
 extern int power;
 extern void quit_callback(void);
 */
-
-extern void lpt_reset(void);
-
-extern int LibraryHandler(HttpdConnection_t *conn, void *unused);
-extern int DiskHandler(HttpdConnection_t *conn, void *unused);
 
 /**
  * Check if a queue is provisioned
@@ -387,7 +388,6 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
             	httpdPrintf(conn, "\"%s\", ", BANKED_ROM_MSG);
 			}
 
-			extern int num_banks;
 			if (num_banks) {
             	httpdPrintf(conn, "\"MMU has %d additional RAM banks of %d KB\",", num_banks, SEGSIZ >> 10);
 			}
@@ -593,7 +593,7 @@ static void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	if (d == DEV_VIO) {
 		BYTE mode = dma_read(0xf7ff);
 		dma_write(0xf7ff, 0x00);
-		SLEEP_MS(100);
+		sleep_for_ms(100);
 		dma_write(0xf7ff, mode);
 	}
 

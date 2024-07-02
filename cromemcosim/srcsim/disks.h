@@ -2,6 +2,7 @@
 #define DISKS_INC
 
 #include "cromemco-fdc.h"
+#include "cromemco-wdi.h"
 
 #ifndef DISKMAP
 #define DISKMAP     "disk.map"

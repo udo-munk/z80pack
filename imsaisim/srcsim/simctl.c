@@ -43,6 +43,7 @@
 #include "simcfg.h"
 #include "simmem.h"
 #include "simio.h"
+#include "simport.h"
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
@@ -132,7 +133,7 @@ void mon(void)
 
 #ifdef UNIX_TERMINAL
 	/* give threads a bit time and then empty buffer */
-	SLEEP_MS(999);
+	sleep_for_ms(999);
 	fflush(stdout);
 
 	/* initialize terminal */
@@ -189,7 +190,7 @@ void mon(void)
 			fp_sampleData();
 
 			/* wait a bit, system is idling */
-			SLEEP_MS(10);
+			sleep_for_ms(10);
 		}
 	} else {
 #endif /* FRONTPANEL */
@@ -228,7 +229,7 @@ void mon(void)
 		fp_sampleData();
 
 		/* wait a bit before termination */
-		SLEEP_MS(999);
+		sleep_for_ms(999);
 
 		/* stop frontpanel */
 		fp_quit();
@@ -323,7 +324,7 @@ int wait_step(void)
 		}
 		fp_clock++;
 		fp_sampleData();
-		SLEEP_MS(10);
+		sleep_for_ms(10);
 		ret = 1;
 	}
 
@@ -346,7 +347,7 @@ void wait_int_step(void)
 		fp_clock++;
 		fp_sampleData();
 
-		SLEEP_MS(10);
+		sleep_for_ms(10);
 	}
 }
 

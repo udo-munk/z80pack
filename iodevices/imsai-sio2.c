@@ -42,7 +42,7 @@
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
-#include "simfun.h"
+#include "simport.h"
 
 #include "imsai-hal.h"
 #include "imsai-sio2.h"

@@ -33,7 +33,7 @@
 
 #include "sim.h"
 #include "simdefs.h"
-#include "simfun.h"
+#include "simport.h"
 
 #include "libtelnet.h"
 

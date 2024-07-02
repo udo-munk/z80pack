@@ -5,10 +5,6 @@
  * Copyright (C) 2021 David McNaughton
  */
 
-#include "sim.h"
-
-#ifndef BAREMETAL
-
 /*
  *	This module contains some commonly used functions.
  *	Some functions use the POSIX API available on workstations running
@@ -27,9 +23,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
+#include "simport.h"
 #include "simfun.h"
 
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
@@ -44,7 +42,7 @@ static int load_hex(char *fn, WORD start, int size);
 /*
  *	Sleep for time microseconds, 999999 max
  */
-void sleep_us(long time)
+void sleep_for_us(long time)
 {
 	struct timespec timer, rem;
 	int err;
@@ -72,7 +70,7 @@ again:
 /*
  *	Sleep for time milliseconds, 999 max
  */
-void sleep_ms(int time)
+void sleep_for_ms(int time)
 {
 	struct timespec timer, rem;
 	int err;
@@ -362,5 +360,3 @@ static int load_hex(char *fn, WORD start, int size)
 
 	return 0;
 }
-
-#endif /* !BAREMETAL */

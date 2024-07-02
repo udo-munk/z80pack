@@ -52,6 +52,7 @@
 #include "simcfg.h"
 #include "simmem.h"
 #include "simio.h"
+#include "simport.h"
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
 #include "simcore.h"
 #endif
@@ -310,7 +311,7 @@ void exit_io(void)
 void reset_io(void)
 {
 	th_suspend = 1;		/* suspend timing thread */
-	SLEEP_MS(20);		/* give it enough time to suspend */
+	sleep_for_ms(20);		/* give it enough time to suspend */
 	cromemco_tuart_reset();
 	cromemco_fdc_reset();
 	th_suspend = 0;		/* resume timing thread */
@@ -709,7 +710,7 @@ static void *timing(void *arg)
 
 next:
 		/* sleep for 1 millisecond */
-		SLEEP_MS(1);
+		sleep_for_ms(1);
 
 		/* reset disk index pulse */
 		if (index_pulse > 2)

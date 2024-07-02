@@ -819,7 +819,7 @@ next_opcode:
 				/* else wait for INT, NMI or user interrupt */
 				while ((int_int == 0) && (int_nmi == 0) &&
 				       (cpu_state == CONTIN_RUN)) {
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					R += 99;
 				}
 			}
@@ -843,7 +843,7 @@ next_opcode:
 				       !(cpu_state & RESET)) {
 					fp_clock++;
 					fp_sampleData();
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					R += 99;
 					if (cpu_error != NONE)
 						break;
@@ -855,7 +855,7 @@ next_opcode:
 				       !(cpu_state & RESET)) {
 					fp_clock++;
 					fp_sampleData();
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					R += 99;
 					if (cpu_error != NONE)
 						break;

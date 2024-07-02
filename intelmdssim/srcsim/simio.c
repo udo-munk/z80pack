@@ -29,6 +29,7 @@
 #include "simfun.h"
 #include "simmem.h"
 #include "simctl.h"
+#include "simport.h"
 #include "simio.h"
 
 #include "mds-monitor.h"
@@ -255,7 +256,7 @@ void exit_io(void)
 void reset_io(void)
 {
 	th_suspend = 1;		/* suspend timing thread */
-	SLEEP_MS(20);		/* give it enough time to suspend */
+	sleep_for_ms(20);	/* give it enough time to suspend */
 
 	pthread_mutex_lock(&rtc_mutex);
 	rtc_int_enabled = 0;	/* reset real time clock */
@@ -498,7 +499,7 @@ static void *timing(void *arg)
 next:
 		tdiff = 260L - (get_clock_us() - t);
 		if (tdiff > 0)
-			SLEEP_US(tdiff);
+			sleep_for_us(tdiff);
 
 		tick++;
 	}

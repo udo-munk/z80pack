@@ -104,7 +104,6 @@ static BYTE fp_in(void);
 static void fp_out(BYTE data);
 static BYTE hwctl_in(void);
 static void hwctl_out(BYTE data);
-void lpt_reset(void);
 static BYTE lpt_in(void);
 static void lpt_out(BYTE data);
 static BYTE io_pport_in(void);

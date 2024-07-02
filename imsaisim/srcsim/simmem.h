@@ -64,7 +64,7 @@ extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 extern BYTE memory[64 << 10], *banks[MAXSEG];
 extern int p_tab[MAXPAGES];
 extern int _p_tab[MAXPAGES];
-extern int selbnk;
+extern int selbnk, num_banks;
 
 extern void ctrl_port_out(BYTE data);
 extern BYTE ctrl_port_in(void);

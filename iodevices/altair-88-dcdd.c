@@ -24,6 +24,7 @@
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
+#include "simport.h"
 
 #include "altair-88-dcdd.h"
 
@@ -198,7 +199,7 @@ static void *timing(void *arg)
 		}
 
 		/* sleep for 1 millisecond */
-		SLEEP_MS(1);
+		sleep_for_ms(1);
 	}
 
 	pthread_exit(NULL);

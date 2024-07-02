@@ -22,6 +22,7 @@
 #include "simcfg.h"
 #include "simmem.h"
 #include "simio.h"
+#include "simport.h"
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
@@ -101,7 +102,7 @@ void mon(void)
 #endif
 
 	/* give threads a bit time and then empty buffer */
-	SLEEP_MS(999);
+	sleep_for_ms(999);
 	fflush(stdout);
 
 #ifndef WANT_ICE
@@ -126,7 +127,7 @@ void mon(void)
 			fp_sampleData();
 
 			/* wait a bit, system is idling */
-			SLEEP_MS(10);
+			sleep_for_ms(10);
 		}
 	} else {
 #endif
@@ -159,7 +160,7 @@ void mon(void)
 		fp_sampleData();
 
 		/* wait a bit before termination */
-		SLEEP_MS(999);
+		sleep_for_ms(999);
 
 		/* shutdown frontpanel */
 		fp_quit();

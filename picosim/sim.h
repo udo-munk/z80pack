@@ -29,13 +29,6 @@
 #define SBSIZE	4	/* number of software breakpoints */
 #endif
 
-#include <stdint.h>
-
-extern void sleep_us(uint64_t);
-#define SLEEP_US(t)	sleep_us(t)
-extern void sleep_ms(uint32_t);
-#define SLEEP_MS(t)	sleep_ms(t)
-
 #define USR_COM "Raspberry Pi Pico Z80/8080 emulator"
 #define USR_REL "1.2"
 #define USR_CPR "Copyright (C) 2024 by Udo Munk & Thomas Eberhardt"
