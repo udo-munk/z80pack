@@ -12,19 +12,23 @@
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
+#include "simcfg.h"
+
 #include "mds-monitor.h"
+
 #include "log.h"
+static const char *TAG = "config";
 
 #define BUFSIZE 256	/* max line length of command buffer */
-
-static const char *TAG = "config";
 
 int fp_size = 800;		/* default frontpanel size */
 
@@ -36,14 +40,14 @@ void config(void)
 	char fn[MAX_LFN - 1];
 
 	if (c_flag) {
-		strcpy(&fn[0], &conffn[0]);
+		strcpy(fn, conffn);
 	} else {
-		strcpy(&fn[0], &confdir[0]);
-		strcat(&fn[0], "/system.conf");
+		strcpy(fn, confdir);
+		strcat(fn, "/system.conf");
 	}
 
-	if ((fp = fopen(&fn[0], "r")) != NULL) {
-		s = &buf[0];
+	if ((fp = fopen(fn, "r")) != NULL) {
+		s = buf;
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;

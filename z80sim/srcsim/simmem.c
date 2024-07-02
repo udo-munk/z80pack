@@ -11,9 +11,10 @@
  * 15-AUG-2017 don't use macros, use inline functions that coerce appropriate
  */
 
-#include <stdint.h>
 #include <stdlib.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
 

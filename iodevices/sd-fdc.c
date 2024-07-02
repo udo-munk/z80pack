@@ -20,8 +20,9 @@
  * 23-MAY-2024 implemented FDC, CP/M boot code & CBIOS
  */
 
-#include <stdint.h>
 #include "sim.h"
+#include "simdefs.h"
+
 #include "sd-fdc.h"
 
 /* offsets in disk command descriptor */

@@ -14,15 +14,17 @@
  *	term_int()	: handler for signal SIGTERM when process is killed
  */
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <termios.h>
 #include <signal.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simint.h"
 #include "simio.h"
+#include "simint.h"
+
 #include "unix_terminal.h"
 
 static void user_int(int sig);

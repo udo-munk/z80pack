@@ -28,20 +28,24 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
 #include "simfun.h"
+
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
-#include "log.h"
 #include "imsai-vio-charset.h"
+#include "imsai-vio.h"
+
+#include "log.h"
+static const char *TAG = "VIO";
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
-
-static const char *TAG = "VIO";
 
 /* X11 stuff */
        int slf = 1;			/* scanlines factor, default no lines */

@@ -17,6 +17,9 @@
 #ifndef RTC80_INC
 #define RTC80_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern BYTE clkc_in(void), clkd_in(void);
 extern void clkc_out(BYTE data), clkd_out(BYTE data);
 

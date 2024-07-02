@@ -8,8 +8,15 @@
 #ifndef SIMFUN_INC
 #define SIMFUN_INC
 
+#include <stdint.h>
+
 #include "sim.h"
 
+#ifndef BAREMETAL
+#include "simdefs.h"
+#endif
+
+/* must be implemented in bare metal simulator */
 #ifndef BAREMETAL
 extern void sleep_us(long time);
 extern void sleep_ms(int time);

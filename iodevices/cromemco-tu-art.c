@@ -22,26 +22,27 @@
  * 06-SEP-2021 implement reset
  */
 
-#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/poll.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "log.h"
-#include "unix_terminal.h"
-#include "unix_network.h"
-#ifdef HAS_NETSERVER
-#include "civetweb.h"
-#include "netsrv.h"
-#endif
 #include "simio.h"
 
+#include "unix_terminal.h"
+#include "unix_network.h"
 #include "cromemco-hal.h"
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+#include "cromemco-tu-art.h"
 
+#include "log.h"
 static const char *TAG = "TU-ART";
 
 void lpt_reset(void)

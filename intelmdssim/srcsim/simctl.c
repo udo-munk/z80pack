@@ -11,28 +11,28 @@
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
-#include <stdint.h>
-#include <X11/Xlib.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simcore.h"
 #include "simcfg.h"
 #include "simmem.h"
-#include "simctl.h"
 #include "simio.h"
-#include "simcore.h"
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
+#include "simctl.h"
+
 #include "unix_terminal.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#include "log.h"
-#endif
 
 #ifdef FRONTPANEL
+#include <X11/Xlib.h>
+#include "frontpanel.h"
+#include "log.h"
 static const char *TAG = "system";
 
 static BYTE power;
@@ -41,9 +41,9 @@ static void int_clicked(int state, int val);
 static void reset_clicked(int state, int val);
 static void power_clicked(int state, int val);
 static void quit_callback(void);
-#endif
 
 static int cpu_wait;	/* CPU wait flag */
+#endif /* FRONTPANEL */
 
 BYTE boot_switch;	/* status of boot switch */
 
@@ -94,7 +94,7 @@ void mon(void)
 		fp_addSwitchCallback("SW_RESET", reset_clicked, 0);
 		fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 	} else {
-#endif
+#endif /* FRONTPANEL */
 		boot_switch = 1;
 #ifdef FRONTPANEL
 	}

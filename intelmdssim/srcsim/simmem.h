@@ -15,17 +15,17 @@
 #define SIMMEM_INC
 
 #include "sim.h"
+#include "simdefs.h"
 #include "simctl.h"
-#include "simfun.h"
 
 #define BOOT_SIZE	256	/* bootstrap ROM size */
 #define MON_SIZE	2048	/* monitor ROM size */
 
-extern void init_memory(void);
-
 extern BYTE memory[65536], boot_rom[BOOT_SIZE];
 extern char *boot_rom_file, *mon_rom_file;
 extern int mon_enabled;
+
+extern void init_memory(void);
 
 /*
  *	Memory access for the CPU cores

@@ -22,14 +22,19 @@
 #define SIMMEM_INC
 
 #include "sim.h"
+#include "simdefs.h"
+
+#include "cromemco-fdc.h"
+
 #ifdef FRONTPANEL
+#include "simglb.h"
+#include "simctl.h"
 #include "frontpanel.h"
 #endif
-#include "cromemco-fdc.h"
-#include "simctl.h"
 
-#define MAXSEG 7		/* max. number of 64KB memory banks */
-#define SEGSIZ 65536	/* size of the memory segments, 64 KBytes */
+#define MAXPAGES	256
+#define MAXSEG		7	/* max. number of 64KB memory banks */
+#define SEGSIZ		65536	/* size of the memory segments, 64 KBytes */
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
@@ -41,7 +46,6 @@
  */
 #define MAXMEMMAP	6
 #define MAXMEMSECT	15
-#define MAXPAGES 256
 
 #define BANKED_ROM_MSG "FDC Banked ROM enabled"
 
@@ -55,13 +59,8 @@ struct memmap {
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
-extern void init_memory(void);
-
 extern BYTE *memory[MAXSEG];
 extern int selbnk, common, bankio;
-
-extern BYTE fdc_banked_rom[]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
-extern int fdc_rom_active;
 
 extern int p_tab[MAXPAGES];		/* 256 pages of 256 bytes */
 
@@ -74,6 +73,7 @@ extern int p_tab[MAXPAGES];		/* 256 pages of 256 bytes */
 /* reserve page as ROM */
 #define MEM_RESERVE_ROM(page)	p_tab[(page)] = MEM_RO
 
+extern void init_memory(void);
 extern void reset_fdc_rom_map(void);
 
 /*

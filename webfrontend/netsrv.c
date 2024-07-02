@@ -2,7 +2,7 @@
  * netsrv.c
  *
  * Copyright (C) 2018 by David McNaughton
- * 
+ *
  * History:
  * 12-JUL-2018	1.0	Initial Release
  */
@@ -11,7 +11,7 @@
  * This web server module provides...
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,15 +21,17 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
+
 #include "sim.h"
-#include "simglb.h"
 
 #ifdef HAS_NETSERVER
 
+#include "simdefs.h"
+#include "simglb.h"
 #include "simmem.h"
-#include "log.h"
-#include "netsrv.h"
+
 #include "civetweb.h"
+#include "netsrv.h"
 
 #ifdef HAS_HAL
 #ifdef IMSAISIM
@@ -38,10 +40,12 @@
 #ifdef CROMEMCOSIM
 #include "cromemco-hal.h"
 #endif
-#endif 
+#endif
+
+#include "log.h"
+static const char *TAG = "netsrv";
 
 #define MAX_WS_CLIENTS (_DEV_MAX)
-static const char *TAG = "netsrv";
 
 static msgbuf_t msg;
 
@@ -51,10 +55,10 @@ struct {
     void (*cbfunc)(BYTE *);
 } dev[MAX_WS_CLIENTS];
 
-net_device_t net_device_a[_DEV_MAX] = { 
-	DEV_TTY, DEV_TTY2, DEV_TTY3, 
-	DEV_LPT, DEV_VIO, DEV_CPA, 
-	DEV_DZLR, DEV_88ACC, DEV_D7AIO, DEV_PTR 
+net_device_t net_device_a[_DEV_MAX] = {
+	DEV_TTY, DEV_TTY2, DEV_TTY3,
+	DEV_LPT, DEV_VIO, DEV_CPA,
+	DEV_DZLR, DEV_88ACC, DEV_D7AIO, DEV_PTR
 };
 
 const char *dev_name[] = {
@@ -79,8 +83,8 @@ extern void quit_callback(void);
 
 extern void lpt_reset(void);
 
-extern int LibraryHandler(struct mg_connection *, void *);
-extern int DiskHandler(struct mg_connection *, void *);
+extern int LibraryHandler(HttpdConnection_t *conn, void *unused);
+extern int DiskHandler(HttpdConnection_t *conn, void *unused);
 
 /**
  * Check if a queue is provisioned
@@ -245,20 +249,20 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
 		LOGD(TAG, "Sending SYS: details.");
 
 		if (req->args[0] && *req->args[0] == 'm') {
-            
-            httpdStartResponse(conn, 200); 
+
+            httpdStartResponse(conn, 200);
             httpdHeader(conn, "Content-Type", "application/json");
             httpdEndHeaders(conn);
 
             httpdPrintf(conn, "{ \"machine\": \"" MACHINE "\" }");
-            
+
             return 1;
         }
 
-        httpdStartResponse(conn, 200); 
+        httpdStartResponse(conn, 200);
         httpdHeader(conn, "Content-Type", "application/json");
         httpdEndHeaders(conn);
-		
+
 		uname(&uts);
 
         httpdPrintf(conn, "{");
@@ -266,7 +270,7 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
             httpdPrintf(conn, "\"machine\": \"" MACHINE "\", ");
 
             httpdPrintf(conn, "\"platform\": \"%s\", ", uts.sysname);
-            
+
             httpdPrintf(conn, "\"network\": { ");
 
                 httpdPrintf(conn, "\"hostname\": \"%s\" ", uts.nodename);
@@ -297,7 +301,7 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
             httpdPrintf(conn, "\"about\": { ");
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_COM", USR_COM);
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_REL", USR_REL);
-                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", USR_CPR); 
+                httpdPrintf(conn, "\"%s\": \"%s\", ", "USR_CPR", USR_CPR);
                 httpdPrintf(conn, "\"%s\": \"%s\", ", "cpu", cpu==Z80?"Z80":"I8080");
                 if(x_flag) {
                     httpdPrintf(conn, "\"%s\": \"%s\", ", "bootrom", xfn);
@@ -320,10 +324,10 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
                     int j = 0;
                     httpdPrintf(conn, "\"%s\": [ ", "devices");
                     while (sio[i][j].name && j < MAX_HAL_DEV) {
-                        if (*sio[i][j].name) 
-							httpdPrintf(conn, "%s\"%s%s\"", 
-								(j==0)?"":", ", 
-								sio[i][j].name, 
+                        if (*sio[i][j].name)
+							httpdPrintf(conn, "%s\"%s%s\"",
+								(j==0)?"":", ",
+								sio[i][j].name,
 								sio[i][j].fallthrough?"+":""
 							);
                         j++;
@@ -341,10 +345,10 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
                     int j = 0;
                     httpdPrintf(conn, "\"%s\": [ ", "devices");
                     while (tuart[i][j].name && j < MAX_HAL_DEV) {
-                        if (*tuart[i][j].name) 
-							httpdPrintf(conn, "%s\"%s%s\"", 
-								(j==0)?"":", ", 
-								tuart[i][j].name, 
+                        if (*tuart[i][j].name)
+							httpdPrintf(conn, "%s\"%s%s\"",
+								(j==0)?"":", ",
+								tuart[i][j].name,
 								tuart[i][j].fallthrough?"+":""
 							);
                         j++;
@@ -353,7 +357,7 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
             }
             httpdPrintf(conn, "]");
 #endif
-#endif 
+#endif
 
 #ifdef HAS_CONFIG
             httpdPrintf(conn, ", \"memmap\": [ ");
@@ -366,7 +370,7 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
 						httpdPrintf(conn, "{ \"type\": \"%s\"", (memconf[M_flag][i].type==MEM_RW)?"RAM":"ROM");
 						httpdPrintf(conn, ", \"from\": %d", memconf[M_flag][i].spage << 8);
 						httpdPrintf(conn, ", \"to\": %d", (memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
-						if (memconf[M_flag][i].type==MEM_RO && memconf[M_flag][i].rom_file) 
+						if (memconf[M_flag][i].type==MEM_RO && memconf[M_flag][i].rom_file)
 							httpdPrintf(conn, ", \"file\": \"%s\"", memconf[M_flag][i].rom_file);
 						httpdPrintf(conn, "}");
 					}
@@ -402,7 +406,7 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
                         t1 = strtok(buf, "=");
                         t2 = strtok(NULL, "\0");
 #define BULLET  "\xE2\x80\xA2"
-                        if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL)) 
+                        if(!strcmp(t1, "PASSWORD") && (getenv("WIFI.password.hide") != NULL))
                             t2 = BULLET BULLET BULLET BULLET BULLET BULLET BULLET BULLET;
 						/* Filter out only TERM and non-shell environment variables of the form '*.*' ie. contain '.' */
 						if(!strcmp(t1, "TERM") || index(t1, '.'))
@@ -437,7 +441,7 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
     struct stat sb;
     char fullpath[MAX_LFN];
     bool showSize = false;
-			
+
     if (req->args[0] && *req->args[0] == 'S') {
     	showSize = true;
     }
@@ -449,10 +453,10 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
             httpdStartResponse(conn, 404);  //http error code 'Not Found'
             httpdEndHeaders(conn);
         } else {
-            httpdStartResponse(conn, 200); 
+            httpdStartResponse(conn, 200);
             httpdHeader(conn, "Content-Type", "application/json");
             httpdEndHeaders(conn);
-    
+
             httpdPrintf(conn, "[");
 
             while ((pDirent = readdir(pDir)) != NULL) {
@@ -502,7 +506,7 @@ int UploadHandler(HttpdConnection_t *conn, void *path) {
 		filelen = mg_store_body(conn, output);
 
         LOGI(TAG, "%d bytes written to %s, received %d", filelen, output, (int) req->len);
-        httpdStartResponse(conn, 200); 
+        httpdStartResponse(conn, 200);
         httpdHeader(conn, "Content-Type", "application/json");
         httpdEndHeaders(conn);
 
@@ -583,9 +587,9 @@ static void WebSocketReadyHandler(HttpdConnection_t *conn, void *device) {
 	ws_client_t *client = (ws_client_t *) mg_get_user_connection_data(conn);
 	net_device_t d = *(net_device_t *) device;
 
-	if (d == DEV_TTY || d == DEV_TTY2 || d == DEV_TTY3) 
+	if (d == DEV_TTY || d == DEV_TTY2 || d == DEV_TTY3)
 		mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
-	
+
 	if (d == DEV_VIO) {
 		BYTE mode = dma_read(0xf7ff);
 		dma_write(0xf7ff, 0x00);
@@ -606,7 +610,7 @@ static int WebsocketDataHandler(HttpdConnection_t *conn,
 
 	net_device_t d = *(net_device_t *) device;
 
-	UNUSED(conn); 
+	UNUSED(conn);
 
 #ifdef DEBUG
 	fprintf(stdout, "Websocket [%d] got %z bytes of ", (int)device, len);
@@ -662,7 +666,7 @@ static int WebsocketDataHandler(HttpdConnection_t *conn,
 				}
 				return 0;
             };
-            break;	
+            break;
 		case DEV_88ACC:
 			// LOGI(TAG, "rec: %d, %d", (int)len, (BYTE)*data);
             msg.mtype = 1L;
@@ -723,7 +727,7 @@ static void WebSocketCloseHandler(const HttpdConnection_t *conn, void *device) {
 	client->state = 0;
 	client->conn = NULL;
 	mg_unlock_context(ctx);
-	
+
 	LOGI(TAG, "WS CLIENT CLOSED %s", dev_name[d]);
 
 	if (dev[d].queue && msgctl(dev[d].queue, IPC_RMID, NULL) == -1) {
@@ -839,28 +843,28 @@ int start_net_services (int port) {
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) &net_device_a[DEV_PTR]);
-							 
+
 	mg_set_websocket_handler(ctx, "/lpt",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) &net_device_a[DEV_LPT]);
-	
+
 	mg_set_websocket_handler(ctx, "/vio",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) &net_device_a[DEV_VIO]);
-	
+
 	mg_set_websocket_handler(ctx, "/dazzler",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
 	                         WebsocketDataHandler,
 	                         WebSocketCloseHandler,
 	                         (void *) &net_device_a[DEV_DZLR]);
-	
+
 	mg_set_websocket_handler(ctx, "/cpa",
 	                         WebSocketConnectHandler,
 	                         WebSocketReadyHandler,
@@ -891,4 +895,4 @@ int start_net_services (int port) {
 
 	return EXIT_SUCCESS;
 }
-#endif
+#endif /* HAS_NETSERVER */

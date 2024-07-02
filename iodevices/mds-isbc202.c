@@ -12,21 +12,26 @@
  * 04-JUN-2024 first version
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
 #include "simio.h"
-#include "mds-isbc202.h"
-#include "log.h"
 
 #ifdef HAS_ISBC202
+
+#include "mds-isbc202.h"
+
+#include "log.h"
+static const char *TAG = "ISBC202";
 
 				/* status input bits */
 #define ST_U0RDY	0x01	/* unit 0 ready */
@@ -92,8 +97,6 @@
 #define DISK_SIZE	(TRK * SPT * SEC_SZ)
 
 #define ISBC202_IRQ	2
-
-static const char *TAG = "ISBC202";
 
 static WORD iopb_addr;		/* address of I/O parameter block */
 static BYTE status;		/* status byte */

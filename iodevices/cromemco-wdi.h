@@ -13,6 +13,9 @@
 #ifndef CROMEMCO_WDI_INC
 #define CROMEMCO_WDI_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -21,7 +24,7 @@ void wdi_exit(void);
 void wdi_init(void);
 
 #ifdef HAS_NETSERVER
-extern void sendHardDisks(struct mg_connection *conn);
+extern void sendHardDisks(HttpdConnection_t *conn);
 #endif
 
 BYTE cromemco_wdi_pio0a_data_in(void);

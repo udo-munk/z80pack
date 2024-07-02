@@ -11,15 +11,17 @@
  * 03-JUN-2024 first version
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include "sim.h"
-#include "simglb.h"
-#include "simmem.h"
-#include "simcfg.h"
-#include "log.h"
 
+#include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+#include "simfun.h"
+#include "simmem.h"
+
+#include "log.h"
 static const char *TAG = "memory";
 
 /* 64KB non banked memory */

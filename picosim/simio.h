@@ -7,6 +7,9 @@
 #ifndef SIMIO_INC
 #define SIMIO_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 #define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
 
 extern BYTE fp_value;

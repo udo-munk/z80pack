@@ -113,38 +113,44 @@
  *	160 - hardware control
  */
 
+#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <netdb.h>
 #include <sys/stat.h>
-#include <sys/file.h>
 #include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/poll.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simbdos.h"
-#include "simmem.h"
-/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
-#include "log.h"
 #include "simcore.h"
+#include "simmem.h"
 #include "simctl.h"
 #include "simio.h"
+
 #include "rtc80.h"
+#include "simbdos.h"
+
+#ifdef NETWORKING
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <netdb.h>
+#endif
+
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
+static const char *TAG = "IO";
 
 #define BUFSIZE 256		/* max line length of command buffer */
 #define MAX_BUSY_COUNT 10	/* max counter to detect I/O busy waiting
 				   on the console status port */
-
-static const char *TAG = "IO";
 
 static BYTE drive;		/* current drive A..P (0..15) */
 static BYTE track;		/* current track (0..255) */
@@ -205,7 +211,7 @@ static int cdirection = -1; /* protocol direction, 0 = send, 1 = receive */
 static int sdirection = -1; /* protocol direction, 0 = send 1 = receive */
 #endif
 
-#endif
+#endif /* NETWORKING */
 
 struct dskdef disks[16] = {
 	{ "drivea.dsk", &drivea, 77, 26 },
@@ -470,7 +476,7 @@ void init_io(void)
 
 	for (i = 0; i < NUMSOC; i++)
 		init_server_socket(i);
-#endif
+#endif /* NETWORKING */
 }
 
 #ifdef NETWORKING
@@ -597,7 +603,7 @@ static void net_client_config(void)
 		fclose(fp);
 	}
 }
-#endif
+#endif /* NETWORKING */
 
 /*
  *	This function stops the I/O handlers:
@@ -738,7 +744,7 @@ static BYTE cons1_in(void)
 			telnet_negotiation(ssc[0]);
 	}
 ss0_done:
-#endif
+#endif /* !TCPASYNC */
 
 	if (ssc[0] != 0) {
 		p[0].fd = ssc[0];
@@ -755,7 +761,7 @@ ss0_done:
 		if (p[0].revents & POLLOUT)
 			status |= 2;
 	}
-#endif
+#endif /* NETWORKING */
 	return status;
 }
 
@@ -810,7 +816,7 @@ static BYTE cons2_in(void)
 			telnet_negotiation(ssc[1]);
 	}
 ss1_done:
-#endif
+#endif /* !TCPASYNC */
 
 	if (ssc[1] != 0) {
 		p[0].fd = ssc[1];
@@ -827,7 +833,7 @@ ss1_done:
 		if (p[0].revents & POLLOUT)
 			status |= 2;
 	}
-#endif
+#endif /* NETWORKING */
 	return status;
 }
 
@@ -882,7 +888,7 @@ static BYTE cons3_in(void)
 			telnet_negotiation(ssc[2]);
 	}
 ss2_done:
-#endif
+#endif /* !TCPASYNC */
 
 	if (ssc[2] != 0) {
 		p[0].fd = ssc[2];
@@ -899,7 +905,7 @@ ss2_done:
 		if (p[0].revents & POLLOUT)
 			status |= 2;
 	}
-#endif
+#endif /* NETWORKING */
 	return status;
 }
 
@@ -954,7 +960,7 @@ static BYTE cons4_in(void)
 			telnet_negotiation(ssc[3]);
 	}
 ss3_done:
-#endif
+#endif /* !TCPASYNC */
 
 	if (ssc[3] != 0) {
 		p[0].fd = ssc[3];
@@ -971,7 +977,7 @@ ss3_done:
 		if (p[0].revents & POLLOUT)
 			status |= 2;
 	}
-#endif
+#endif /* NETWORKING */
 	return status;
 }
 
@@ -1045,7 +1051,7 @@ static BYTE nets1_in(void)
 		if (p[0].revents & POLLOUT)
 			status |= 2;
 	}
-#endif
+#endif /* NETWORKING */
 	return status;
 }
 
@@ -1147,7 +1153,7 @@ static BYTE cond1_in(void)
 	}
 	printf("%02x ", (BYTE) c);
 #endif
-#else
+#else /* !NETWORKING */
 	c = 0;
 #endif
 	return (BYTE) c;
@@ -1184,7 +1190,7 @@ static BYTE cond2_in(void)
 	}
 	printf("%02x ", (BYTE) c);
 #endif
-#else
+#else /* !NETWORKING */
 	c = 0;
 #endif
 	return (BYTE) c;
@@ -1221,7 +1227,7 @@ static BYTE cond3_in(void)
 	}
 	printf("%02x ", (BYTE) c);
 #endif
-#else
+#else /* !NETWORKING */
 	c = 0;
 #endif
 	return (BYTE) c;
@@ -1258,7 +1264,7 @@ static BYTE cond4_in(void)
 	}
 	printf("%02x ", (BYTE) c);
 #endif
-#else
+#else /* !NETWORKING */
 	c = 0;
 #endif
 	return (BYTE) c;
@@ -1285,7 +1291,7 @@ static BYTE netd1_in(void)
 	}
 	printf("%02x ", (BYTE) c);
 #endif
-#else
+#else /* !NETWORKING */
 	c = 0;
 #endif
 	return (BYTE) c;
@@ -1333,6 +1339,8 @@ again:
 			cpu_state = STOPPED;
 		}
 	}
+#else /* !NETWORKING */
+	UNUSED(data);
 #endif
 }
 
@@ -1360,6 +1368,8 @@ again:
 			cpu_state = STOPPED;
 		}
 	}
+#else /* !NETWORKING */
+	UNUSED(data);
 #endif
 }
 
@@ -1387,6 +1397,8 @@ again:
 			cpu_state = STOPPED;
 		}
 	}
+#else /* !NETWORKING */
+	UNUSED(data);
 #endif
 }
 
@@ -1414,6 +1426,8 @@ again:
 			cpu_state = STOPPED;
 		}
 	}
+#else /* !NETWORKING */
+	UNUSED(data);
 #endif
 }
 
@@ -1441,6 +1455,8 @@ again:
 			cpu_state = STOPPED;
 		}
 	}
+#else /* !NETWORKING */
+	UNUSED(data);
 #endif
 }
 
@@ -2135,7 +2151,7 @@ static void int_io(int sig)
 		}
 	}
 }
-#endif
+#endif /* NETWORKING && TCPASYNC */
 
 #ifdef NETWORKING
 /*
@@ -2180,4 +2196,4 @@ void telnet_negotiation(int fd)
 			LOGE(TAG, "can't write telnet option");
 	}
 }
-#endif
+#endif /* NETWORKING */

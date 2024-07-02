@@ -10,7 +10,6 @@
  *
  */
 
-#include <stdint.h>
 #include <inttypes.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -22,18 +21,18 @@
 #include <sys/time.h>
 
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
 #include "simcore.h"
 
 #ifdef HAS_NETSERVER
-#include "civetweb.h"
 #include "netsrv.h"
 #endif
+#include "cromemco-wdi.h"
 
 #define LOG_LOCAL_LEVEL LOG_ERROR
 #include "log.h"
-
 static const char *TAG = "wdi";
 
 #define WDI_UNITS       3
@@ -205,7 +204,7 @@ static struct {
             BYTE illegal_address;
         } status;
     } hd[8]; /* always allow for the maximum number of units */
-    
+
     int unit;                /* current selected hard disk unit*/
 } wdi;
 
@@ -295,13 +294,13 @@ again:
         }
 
         if (got_eintr) LOGW(TAG, "INIT: GOT EINTR: total %d", got_eintr);
-        
+
         wdi.hd[unit].online = 1;
         wdi.hd[unit].fd = fd;
-        
+
         struct stat s;
         fstat(fd, &s);
-        
+
         wdi.hd[unit].type = -1;
 
         for (i = 0; i < MAX_DISK_PARAM; i++) {
@@ -316,7 +315,7 @@ again:
                 } else {
                     wdi.hd[unit]._fault = 0; /* read fault */
                 }
-            } 
+            }
         }
         if (wdi.hd[unit].type < 0) {
             wdi.hd[unit]._fault = 0;
@@ -333,7 +332,7 @@ again:
     wdi.unit = 0;
 }
 #ifdef HAS_NETSERVER
-void sendHardDisks(struct mg_connection *conn)
+void sendHardDisks(HttpdConnection_t *conn)
 {
     int i;
     for (i = 0; i < WDI_UNITS; i++) {
@@ -452,7 +451,7 @@ static Tstates_t wdi_dma_read(BYTE bus_ack)
 
     /* read the sector */
     if (read(wdi.hd[wdi.unit].fd, &buffer[4], WDI_BLOCK_SIZE) == WDI_BLOCK_SIZE) {
-        wdi.hd[wdi.unit]._fault = 1; 
+        wdi.hd[wdi.unit]._fault = 1;
     } else {
         wdi.hd[wdi.unit]._fault = 0; /* read fault */
         return 0;
@@ -609,7 +608,7 @@ BYTE cromemco_wdi_ctc1_in(void)
 	LOGD(TAG, "IN: CTC #1 = %02x - Tdiff=%" PRIu64 " = %d sectors", wdi.ctc.now1, T - wdi.ctc.T1, sectors);
 
     if (sectors && wdi.hd[wdi.unit].online) { /* Only count sectors if online */
-        if (wdi.ctc.now1 > 0) { 
+        if (wdi.ctc.now1 > 0) {
             int r = (int)wdi.ctc.now1 - sectors;
             if (r < 0) r = 0;
             wdi.ctc.now1 = r;
@@ -629,12 +628,12 @@ BYTE cromemco_wdi_ctc2_in(void)
 	LOGD(TAG, "IN: CTC #2 = %d", val);
 
 /**
- * COULD SIMULATE HEAD SEEK TIME HERE 
+ * COULD SIMULATE HEAD SEEK TIME HERE
  * IMI-7710 spec gives:
  *   single track access time   10 ms
  *   average access time        50 ms
  *   maximum access time        100 ms
- * 
+ *
  * For now, seek is complete the first time this counter is checked
  */
 
@@ -704,7 +703,7 @@ static void command_bus_strobe(void)
                 wdi.hd[wdi.unit].status.illegal_address = 1;
                 wdi.hd[wdi.unit].status.unit_rdy = 0;
                 wdi.hd[wdi.unit]._fault = 0;
-            /* 
+            /*
              * Illegal cylinder should only be checked on COMMAND 1
              * when a full cylinder address is received (COMMAND 0 followed by COMMAND 1)
              * otherwise there can be a false negative (illegal address)
@@ -739,7 +738,7 @@ static void command_bus_strobe(void)
                 LOGI(TAG, "DISK COMMAND 1 - CYL: %03x", wdi.hd[wdi.unit].status.cav);
             }
             break;
-        case 2:           
+        case 2:
             if (data & 0xfc) {
                 LOGE(TAG, "DISK COMMAND 2 - %d NOT IMPLEMENTED - %02x", bus, data);
             }
@@ -751,7 +750,7 @@ static void command_bus_strobe(void)
             }
             if (data & 2) {
                 LOGI(TAG, "DISK COMMAND 3 - REZERO");
-                
+
                 wdi.hd[wdi.unit].status.rezeroing = 1;
                 wdi.hd[wdi.unit].status.on_cyl = 0;
                 wdi.hd[wdi.unit].status.unit_rdy = 0;
@@ -928,7 +927,7 @@ void cromemco_wdi_dma0_out(BYTE data)
 
 	LOGD(TAG, "E8 OUT: %02x", data);
 
-    switch (wdi.dma.wr_state) 
+    switch (wdi.dma.wr_state)
     {
         case WR_BASE:
 
@@ -945,7 +944,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                 } else if ((data & 0x03) == 3) { /* WR6 */
                     wdi.dma.wr6.base = data;
 
-                    switch (data) 
+                    switch (data)
                     {
                         case 0x83:
                             cmd = "DISABLE DMA";
@@ -955,12 +954,12 @@ void cromemco_wdi_dma0_out(BYTE data)
                             cmd = "ENABLE DMA";
                             wdi.dma.enable_dma = 1;
 
-                            if (wdi.dma.force_ready 
+                            if (wdi.dma.force_ready
                                     && wdi.dma.wr0.dest
                                     && (wdi.dma.wr0.mode == 3) /* TRANSFER/SEARCH */
                                     && (wdi.dma.wr1.a_device == MREQ)) {
-                                
-                                LOGD(TAG, "DMA: MEMORY-TO-MEMORY from: %04x to: %04x length: %04x", 
+
+                                LOGD(TAG, "DMA: MEMORY-TO-MEMORY from: %04x to: %04x length: %04x",
                                     wdi.dma.wr0.a_addr_counter,
                                     wdi.dma.wr4.b_addr_counter,
                                     wdi.dma.wr0.len
@@ -973,7 +972,7 @@ void cromemco_wdi_dma0_out(BYTE data)
                                     && (wdi.dma.wr0.mode == 2) /* SEARCH */
                                     && (wdi.dma.wr1.a_device == MREQ)) {
 
-                                LOGD(TAG, "DMA: R/W-TO/FROM-DISK addr: %04x length: %04x", 
+                                LOGD(TAG, "DMA: R/W-TO/FROM-DISK addr: %04x length: %04x",
                                     wdi.dma.wr4.b_addr_counter,
                                     wdi.dma.wr0.len
                                 );
@@ -1063,7 +1062,7 @@ void cromemco_wdi_dma0_out(BYTE data)
             } else if (wdi.dma.wr0.base & 0x40) {
                 wdi.dma.wr0.len = (wdi.dma.wr0.len & 0xff) | (data << 8);
                 wdi.dma.wr0.base &= ~0x40;
-            }  
+            }
 
             if (!(wdi.dma.wr0.base & 0x78)) {
                 wdi.dma.wr_state = WR_BASE;
@@ -1119,7 +1118,7 @@ void cromemco_wdi_ctc0_out(BYTE data)
 {
 	LOGD(TAG, "OUT: CTC #0 - %02x", data);
 
-    switch (wdi.ctc.state0) 
+    switch (wdi.ctc.state0)
     {
         case 0:
             wdi.ctc.mode0 = data;
@@ -1146,7 +1145,7 @@ void cromemco_wdi_ctc1_out(BYTE data)
 {
     LOGD(TAG, "OUT: CTC #1 - %02x", data);
 
-    switch (wdi.ctc.state1) 
+    switch (wdi.ctc.state1)
     {
         case 0:
             wdi.ctc.mode1 = data;
@@ -1186,7 +1185,7 @@ void cromemco_wdi_ctc2_out(BYTE data)
 {
 	LOGD(TAG, "OUT: CTC #2 - %02x", data);
 
-    switch (wdi.ctc.state2) 
+    switch (wdi.ctc.state2)
     {
         case 0:
             wdi.ctc.mode2 = data;

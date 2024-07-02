@@ -14,15 +14,17 @@
  * 03-JUN-2024 added directory list for code files and disk images
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+
+#include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+
 #include "f_util.h"
 #include "ff.h"
-#include "sim.h"
-#include "simglb.h"
 
 extern FIL sd_file;
 extern FRESULT sd_res;

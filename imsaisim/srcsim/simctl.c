@@ -32,32 +32,33 @@
  * 29-APR-2024 added CPU execution statistics
  */
 
-#include <stdint.h>
-#include <X11/Xlib.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simcore.h"
 #include "simcfg.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#endif
 #include "simmem.h"
+#include "simio.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+#include "simctl.h"
+
 #ifdef UNIX_TERMINAL
 #include "unix_terminal.h"
-#endif
-#ifdef FRONTPANEL
-#include "log.h"
 #endif
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
-#include "simcore.h"
-#include "simio.h"
 
 #ifdef FRONTPANEL
+#include <X11/Xlib.h>
+#include "frontpanel.h"
+#include "log.h"
 static const char *TAG = "system";
 
 static BYTE fp_led_wait;
@@ -71,7 +72,7 @@ static void examine_clicked(int state, int val);
 static void deposit_clicked(int state, int val);
 static void power_clicked(int state, int val);
 static void quit_callback(void);
-#endif
+#endif /* FRONTPANEL */
 
 /*
  *	This function initializes the front panel and terminal.
@@ -127,7 +128,7 @@ void mon(void)
 		fp_addSwitchCallback("SW_DEPOSIT", deposit_clicked, 0);
 		fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 	}
-#endif
+#endif /* FRONTPANEL */
 
 #ifdef UNIX_TERMINAL
 	/* give threads a bit time and then empty buffer */
@@ -139,7 +140,7 @@ void mon(void)
 	set_unix_terminal();
 #endif
 	atexit(reset_unix_terminal);
-#endif
+#endif /* UNIT_TERMINAL */
 
 #ifdef HAS_BANKED_ROM
 	if (R_flag)
@@ -191,7 +192,7 @@ void mon(void)
 			SLEEP_MS(10);
 		}
 	} else {
-#endif
+#endif /* FRONTPANEL */
 #ifdef WANT_ICE
 		ice_before_go = set_unix_terminal;
 		ice_after_go = reset_unix_terminal;
@@ -499,4 +500,4 @@ static void quit_callback(void)
 	cpu_state = STOPPED;
 	cpu_error = POWEROFF;
 }
-#endif
+#endif /* FRONTPANEL */

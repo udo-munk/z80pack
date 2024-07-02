@@ -15,6 +15,9 @@
 #ifndef SIMMEM_INC
 #define SIMMEM_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern BYTE memory[65536];
 
 extern void init_memory(void);

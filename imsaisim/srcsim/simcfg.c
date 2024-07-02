@@ -35,23 +35,26 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
+#include "simutil.h"
 #include "simcfg.h"
-#include "simcore.h"
-/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
-#include "log.h"
+
 #include "imsai-sio2.h"
 #include "imsai-vio.h"
 
-#define BUFSIZE 256		/* max line length of command buffer */
-
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
 static const char *TAG = "config";
+
+#define BUFSIZE 256		/* max line length of command buffer */
 
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0;		/* default fp input port value */
@@ -69,14 +72,14 @@ void config(void)
 	int section = 0;
 
 	if (c_flag) {
-		strcpy(&fn[0], &conffn[0]);
+		strcpy(fn, conffn);
 	} else {
-		strcpy(&fn[0], &confdir[0]);
-		strcat(&fn[0], "/system.conf");
+		strcpy(fn, confdir);
+		strcat(fn, "/system.conf");
 	}
 
-	if ((fp = fopen(&fn[0], "r")) != NULL) {
-		s = &buf[0];
+	if ((fp = fopen(fn, "r")) != NULL) {
+		s = buf;
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
@@ -328,7 +331,7 @@ void config(void)
 				LOGD(TAG, "Power-on-jump address at %04XH", boot_switch[section]);
 			} else if (!strcmp(t1, "[MEMORY")) {
 				v1 = strtol(t2, &t3, 10);
-				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {
+				if (*t3 != ']' || v1 < 1 || v1 > MAXMEMSECT) {
 					LOGW(TAG, "invalid MEMORY section number %d", v1);
 					continue;
 				}

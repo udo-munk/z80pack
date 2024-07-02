@@ -33,6 +33,9 @@
 #ifndef SIMMEM_INC
 #define SIMMEM_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 #define MAXSEG 16		/* max. number of memory banks */
 #define SEGSIZ 49152		/* default size of one bank = 48 KBytes */
 

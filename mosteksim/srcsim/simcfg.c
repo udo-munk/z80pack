@@ -14,17 +14,18 @@
  * 11-MAY-2024 (Thomas Eberhardt) add confdir/rompath option support
  */
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+
 #include "log.h"
+static const char *TAG = "config";
 
 #define BUFSIZE 256	/* max line length of command buffer */
-
-static const char *TAG = "config";
 
 void config(void)
 {

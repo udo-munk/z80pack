@@ -15,7 +15,7 @@
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -24,14 +24,19 @@
 #include <fcntl.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
 #include "simio.h"
+
 #include "mds-monitor.h"
 #include "unix_network.h"
 #include "unix_terminal.h"
+
 #include "log.h"
+static const char *TAG = "MONITOR";
 
 			/* TTY and CRT status bits */
 #define TRDY	0x01	/* transmit ready */
@@ -73,8 +78,6 @@
 #define MENB	0x80	/* enable monitor interrupts */
 
 #define MON_IRQ	3	/* monitor module interrupt */
-
-static const char *TAG = "MONITOR";
 
 static BYTE mon_int;	/* Interrupts enabled & signals */
 static pthread_mutex_t mon_int_mutex = PTHREAD_MUTEX_INITIALIZER;

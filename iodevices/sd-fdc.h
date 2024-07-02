@@ -23,6 +23,9 @@
 #ifndef SD_FDC_INC
 #define SD_FDC_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 /* floppy disk definitions */
 #define SEC_SZ		128	/* sector size */
 #define SPT		26	/* sectors per track */

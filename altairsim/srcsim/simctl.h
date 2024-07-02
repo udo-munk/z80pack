@@ -7,7 +7,7 @@
 #ifndef SIMCTL_INC
 #define SIMCTL_INC
 
-extern int boot_switch;
+extern int boot_switch;			/* boot address for switch */
 
 extern void mon(void);
 

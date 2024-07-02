@@ -17,6 +17,9 @@
 #ifndef MDS_MONITOR_INC
 #define MDS_MONITOR_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern int tty_upper_case;	/* TTY translate input to upper case */
 extern int tty_strip_parity;	/* TTY strip parity from output */
 extern int tty_drop_nulls;	/* TTY drop nulls after CR/LF */

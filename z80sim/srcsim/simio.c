@@ -23,10 +23,11 @@
  *	I/O to this ports stops the simulation with an I/O error.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <sys/poll.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simcore.h"
 #include "simio.h"

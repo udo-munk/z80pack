@@ -2,7 +2,7 @@
  * diskmanager.h
  *
  * Copyright (C) 2018 by David McNaughton
- * 
+ *
  * History:
  * 12-JUL-2018	1.0	Initial Release
  */
@@ -10,8 +10,9 @@
 #ifndef DISKMANAGER_INC
 #define DISKMANAGER_INC
 
+#include "sim.h"
+
 #ifdef HAS_NETSERVER
-#include "civetweb.h"
 #include "netsrv.h"
 #endif
 

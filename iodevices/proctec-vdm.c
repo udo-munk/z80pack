@@ -15,6 +15,7 @@
  * 04-NOV-2019 eliminate usage of mem_base()
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -22,17 +23,21 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
-#include "log.h"
-#include "proctec-vdm-charset.h"
 #include "simfun.h"
+
+#include "proctec-vdm-charset.h"
+#include "proctec-vdm.h"
+
+#include "log.h"
+static const char *TAG = "VDM";
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
-
-static const char *TAG = "VDM";
 
 /* X11 stuff */
        int slf = 1;			/* scanlines factor, default no lines */

@@ -1,33 +1,38 @@
 /**
  * cromemco-88ccc.c
- * 
+ *
  * Emulation of the Cromemco 88 CCC - Cyclops Camera Controller
  *
  * Copyright (C) 2018 by David McNaughton
- * 
+ *
  * History:
  * 14-AUG-2018	1.0	Initial Release
  * 04-NOV-2019		remove fake DMA bus request
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+
 #include "sim.h"
-#include "simglb.h"
 
 #if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
 
+#include "simdefs.h"
+#include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
 #include "simfun.h"
+
 #include "netsrv.h"
+#include "cromemco-88ccc.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
 static const char *TAG = "88CCC";
 
 /* 88CCC stuff */
@@ -67,7 +72,7 @@ static void *store_image(void *arg)
 			msg.bias = (flags & 0x20) >> 5;
 			msg.fields = format & 0x0f;
 			msg.interval = (format & 0x30) >> 4;
- 
+
 			msgB = format | (msg.bias << 6);
 
 			LOGD(TAG, "CCC/ACC Capture: to addr %04x, fields: %d, interval %d", dma_addr, msg.fields, msg.interval);
@@ -98,7 +103,7 @@ static void *store_image(void *arg)
 		/* sleep rest of total frame time */
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
-		if (tdiff < (j*1000)) 
+		if (tdiff < (j*1000))
 			SLEEP_MS(j - tdiff/1000);
 
 		LOGD(TAG, "Time: %d", tdiff);

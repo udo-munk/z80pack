@@ -37,6 +37,9 @@
 #ifndef IMSAI_SIO2_INC
 #define IMSAI_SIO2_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern int sio1a_upper_case;	/* SIO 1 A translate input to upper case */
 extern int sio1a_strip_parity;	/* SIO 1 A strip parity from output */
 extern int sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */

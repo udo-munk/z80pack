@@ -28,6 +28,9 @@
 #ifndef CROMEMCO_DAZZLER_INC
 #define CROMEMCO_DAZZLER_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 void cromemco_dazzler_off(void);
 
 void cromemco_dazzler_ctl_out(BYTE data);

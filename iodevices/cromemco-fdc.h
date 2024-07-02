@@ -42,6 +42,9 @@
 #ifndef CROMEMCO_FDC_INC
 #define CROMEMCO_FDC_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 /*
  * disk definitions 5.25"/8" drives, single/double density,
  * single/double sided, write protected

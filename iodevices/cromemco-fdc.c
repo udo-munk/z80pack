@@ -39,21 +39,25 @@
  * 15-MAY-2024 make disk manager standard
  */
 
-
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "log.h"
 #include "simcfg.h"
 #include "simmem.h"
-#include "cromemco-fdc.h"
+
 #include "diskmanager.h"
+#include "cromemco-fdc.h"
+
+#include "log.h"
+static const char *TAG = "16FDC";
 
 /* internal state of the fdc */
 #define FDC_IDLE	0	/* idle state */
@@ -72,8 +76,6 @@
 #define SPT5DD		10	/* # of sectors per track 5.25" DD */
 
 #define AUTOBOOT	16	/* FDC autoboot jumper, 16|64 = off */
-
-static const char *TAG = "16FDC";
 
        BYTE fdc_flags = AUTOBOOT; /* FDC flag register, autoboot setting */
 static BYTE fdc_cmd;		/* FDC command last send */

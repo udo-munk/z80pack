@@ -18,6 +18,8 @@
 #include <sys/msg.h>
 #include <string.h>
 
+#include "civetweb.h"
+
 enum net_device {
 	DEV_TTY,
 	DEV_TTY2,

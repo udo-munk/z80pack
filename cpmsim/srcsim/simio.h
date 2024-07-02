@@ -8,8 +8,19 @@
 #define SIMIO_INC
 
 #include "sim.h"
+#include "simdefs.h"
 
 #define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
+
+/*
+ *	Structure for the disk images
+ */
+struct dskdef {
+	const char *fn;			/* filename */
+	int *fd;			/* file descriptor */
+	unsigned int tracks;		/* number of tracks */
+	unsigned int sectors;		/* number of sectors */
+};
 
 extern struct dskdef disks[16];
 

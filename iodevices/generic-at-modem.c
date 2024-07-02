@@ -1,10 +1,10 @@
 /**
  * generic-at-modem.c
- * 
+ *
  * Emulation of generic 'AT' modem over TCP/IP sockets (telnet)
  *
  * Copyright (C) 2019-2021 by David McNaughton
- * 
+ *
  * History:
  * 12-SEP-2019	1.0	Initial Release
  * 29-SEP-2019	1.1	Added Answer modes and registers
@@ -15,6 +15,8 @@
  */
 
 #include <unistd.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -30,13 +32,16 @@
 #include <arpa/inet.h>
 
 #include "sim.h"
+#include "simdefs.h"
 #include "simfun.h"
-#include "generic-at-modem.h"
 
 #include "libtelnet.h"
 
+#include "generic-at-modem.h"
+
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
+static const char* TAG = "at-modem";
 
 #define MODEM_ID "'AT' Modem"
 
@@ -46,8 +51,6 @@
 #define DEFAULT_LISTENER_PORT   8023
 #define _QUOTE(arg)      #arg
 #define STR_VALUE(arg)    _QUOTE(arg)
-
-static const char* TAG = "at-modem";
 
 #define SREG_AA     0
 #define SREG_RINGS  1
@@ -205,10 +208,10 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
             LOGI(TAG, "Telnet DO TTYPE");
         } else if (ev->neg.telopt == TELNET_TELOPT_NAWS) {
             telnet_begin_sb(telnet, TELNET_TELOPT_NAWS);
-            buf[0] = 0; 
-            buf[1] = s_reg[SREG_COLS]; 
-            buf[2] = 0; 
-            buf[3] = s_reg[SREG_ROWS]; 
+            buf[0] = 0;
+            buf[1] = s_reg[SREG_COLS];
+            buf[2] = 0;
+            buf[3] = s_reg[SREG_ROWS];
             telnet_send(telnet, buf, 4);
             telnet_finish_sb(telnet);
             LOGI(TAG, "Telnet DO NAWS [%d x %d]", (buf[0]<<8) + buf[1], (buf[2]<<8) + buf[3]);
@@ -273,7 +276,7 @@ static int open_socket(void) {
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;    /* Allow only IPv4 not IPv6 */
-    hints.ai_socktype = SOCK_STREAM; 
+    hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
@@ -317,7 +320,7 @@ static int open_socket(void) {
         carrier_detect = 1;
         LOGI(TAG, "Socket created");
 
-        if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) { 
+        if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) {
             LOGW(TAG, "Failed to connect to socket: %d", errno);
             close_socket();
             return 1;
@@ -355,7 +358,7 @@ static int hangup_timeout(bool start) {
 
     if (*active_sfd) {
 
-         if (start) { 
+         if (start) {
             hup_t1 = get_clock_us();
             waiting = 1;
             LOGI(TAG, "Waiting to HUP");
@@ -459,7 +462,7 @@ static int answer_check_ring(void) {
     static int ringing = 0;
     static uint64_t ring_t1, ring_t2;
     int tdiff;
-    
+
     if (answer_sfd) {
 
         if (ringing) {
@@ -486,7 +489,7 @@ static int answer_check_ring(void) {
             }
             return 1;
         }
-    } 
+    }
     return 0;
 }
 
@@ -781,7 +784,7 @@ static int process_at_cmd(void) {
                 strcpy(at_err, LF AT_ERROR CRLF);
                 return 1;
             }
-            if (tmp_reg) { 
+            if (tmp_reg) {
                 s_reg[SREG_OPT] |= OPT_ECHO;
             } else {
                 s_reg[SREG_OPT] &= ~OPT_ECHO;
@@ -794,13 +797,13 @@ static int process_at_cmd(void) {
                 strcpy(at_err, LF AT_ERROR CRLF);
                 return 1;
             }
-            if (tmp_reg) { 
+            if (tmp_reg) {
                 s_reg[SREG_OPT] |= OPT_QUIET;
             } else {
                 s_reg[SREG_OPT] &= ~OPT_QUIET;
             }
             break;
-        case '&': 
+        case '&':
             if (*at_ptr == 'A') { /* AT&A - enable answer - listen */
                 tmp_reg = strtol(++at_ptr, &arg_ptr, BASE_DECIMAL);
                 AT_NEXT_CMD_ARGS;
@@ -859,7 +862,7 @@ static int process_at_cmd(void) {
                 return 1;
             }
             break;
-        case '+': 
+        case '+':
             if (*at_ptr == 'T' && *(at_ptr+1) == '?') {
                 const char *ttype;
                 if ((ttype = getenv("TERM")) == NULL) {
@@ -886,7 +889,7 @@ static int process_at_cmd(void) {
 #ifdef MODEM_WIFI
 /**
  *  WIFI CONFIG HANDLING
- */ 
+ */
             } else if (*at_ptr == 'W' && *(at_ptr+1) == '=') {
 
                 char ssid[MAX_SSID + 1] = "";
@@ -959,7 +962,7 @@ static int process_at_cmd(void) {
                     return 1;
                 }
 
-                at_err[0] = *(at_ptr+2); 
+                at_err[0] = *(at_ptr+2);
 
                 if (ota_start(at_err)) {
                     return 1;
@@ -995,7 +998,7 @@ static int process_at_cmd(void) {
 #ifdef MODEM_UART
 /**
  *  SERIAL CONFIG HANDLING
- */ 
+ */
             } else if (*at_ptr == 'B' && *(at_ptr+1) == '=') {
                 tmp_reg = strtol(at_ptr+2, &arg_ptr, BASE_DECIMAL);
 
@@ -1014,7 +1017,7 @@ static int process_at_cmd(void) {
                 AT_NEXT_CMD2;
 #endif
 /**
- * 
+ *
  */
             } else {
                 strcpy(at_err, LF AT_ERROR CRLF);
@@ -1061,7 +1064,7 @@ int modem_device_alive(int i) {
                 return 0;
             }
         }
-    } 
+    }
     return 0;
 }
 
@@ -1115,7 +1118,7 @@ int modem_device_poll(int i) {
     } else if (at_state == dat  && strlen(at_out) == 0) {
 
         /**
-         * In telnet mode this "clocks" the inbound connection into telnet_recv() 
+         * In telnet mode this "clocks" the inbound connection into telnet_recv()
          * and lets the event handler buffer the input (1 character)
          * then it can check the buffer and report on available data in the buffer
          */
@@ -1138,7 +1141,7 @@ int modem_device_poll(int i) {
                 telnet_recv(telnet, (char *) &data, 1);
             }
             if (tn_len) return POLLIN;
-        } 
+        }
 
         return 0;
 
@@ -1149,7 +1152,7 @@ int modem_device_poll(int i) {
             if ((s_reg[SREG_AA] > 0) && (s_reg[SREG_RINGS] >= s_reg[SREG_AA])) {
                 if (!answer()) {
                     at_state = dat;
-                } 
+                }
             }
         } else if(hangup_timeout(false)) {
             at_cat_s(CRLF "HANGUP" CRLF);
@@ -1187,7 +1190,7 @@ int modem_device_get(int i) {
             return _read();
         }
     } else {
-    
+
         if (strlen(at_out) > 0) {
             data = *at_out;
             at_out++;
@@ -1307,7 +1310,7 @@ void modem_device_send(int i, char data) {
 
 int modem_device_carrier(int i) {
     UNUSED(i);
-    
+
     return carrier_detect;
 }
 

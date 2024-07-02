@@ -6,24 +6,26 @@
  */
 
 #include <stdint.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#include "simctl.h"
-#endif
 #include "simmem.h"
 #include "simcore.h"
+#include "simfun.h"
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
-#include "simfun.h"
 #include "simz80.h"
 #include "simz80-cb.h"
 #include "simz80-dd.h"
 #include "simz80-ed.h"
 #include "simz80-fd.h"
+
+#ifdef FRONTPANEL
+#include "frontpanel.h"
+#include "simctl.h"
+#endif
 
 #ifndef EXCLUDE_Z80
 

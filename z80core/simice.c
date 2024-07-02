@@ -18,24 +18,29 @@
  *	address.
  */
 
-#include <stdint.h>
-#include <inttypes.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <ctype.h>
+#include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+#include "simcore.h"
+#include "simmem.h"
+#include "simdis.h"
+#include "simfun.h"
+#include "simutil.h"
+#include "simice.h"
+
 #ifndef BAREMETAL
 #include <signal.h>
 #include <sys/time.h>
-#endif
-#include "simglb.h"
-#include "simcore.h"
-#include "simfun.h"
-#include "simdis.h"
 #include "simint.h"
-#include "simmem.h"
-#include "simice.h"
+#endif
 
 #ifdef WANT_ICE
 

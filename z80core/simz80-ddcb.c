@@ -10,10 +10,9 @@
  *	starting with 0xdd 0xcb
  */
 
-#include <stdint.h>
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
 #include "simmem.h"
 #include "simz80-ddcb.h"
 

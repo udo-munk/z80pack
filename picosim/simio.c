@@ -25,8 +25,10 @@
 
 /* Project includes */
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simcore.h"
+
 #include "sd-fdc.h"
 
 /* Pico W also needs this */

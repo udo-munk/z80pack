@@ -25,15 +25,21 @@
  * 24-SEP-2019 restore and seek also affect step direction
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+
+#include "tarbell_fdc.h"
+
 #include "log.h"
+static const char *TAG = "Tarbell";
 
 /* internal state of the fdc */
 #define FDC_IDLE	0	/* idle state */
@@ -46,8 +52,6 @@
 #define SEC_SZ		128
 #define SPT		26
 #define TRK		77
-
-static const char *TAG = "Tarbell";
 
 static BYTE fdc_stat;		/* status register */
 static BYTE fdc_track;		/* track register */

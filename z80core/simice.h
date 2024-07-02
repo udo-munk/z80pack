@@ -27,7 +27,7 @@ struct history {		/* structure of a history entry */
 	WORD	h_sp;		/* register SP */
 };
 
-extern struct	history his[];
+extern struct	history his[HISIZE];
 extern int	h_next, h_flag;
 #endif
 
@@ -39,7 +39,7 @@ struct softbreak {		/* structure of a breakpoint */
 	int	sb_pass;	/* no. of pass to break */
 };
 
-extern struct	softbreak soft[];
+extern struct	softbreak soft[SBSIZE];
 extern int	sb_next;
 #endif
 

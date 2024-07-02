@@ -31,23 +31,28 @@
  * 15-MAY-2024 make disk manager standard
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
+
+#include "diskmanager.h"
 #ifdef HAS_NETSERVER
-#include "civetweb.h"
 #include "netsrv.h"
 #endif
+#include "imsai-fif.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-#include "diskmanager.h"
+static const char *TAG = "FIF";
 
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
@@ -75,8 +80,6 @@
 /* z80pack 4 MB drive */
 #define SPTHD		128
 #define TRKHD		255
-
-static const char *TAG = "FIF";
 
 char *disks[4];
 static const char *hddisk = "drivei.dsk";
@@ -479,7 +482,7 @@ void imsai_fif_reset(void)
 }
 
 #ifdef HAS_NETSERVER
-void sendHardDisks(struct mg_connection *conn)
+void sendHardDisks(HttpdConnection_t *conn)
 {
 	int fd;
 

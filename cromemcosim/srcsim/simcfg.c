@@ -18,20 +18,22 @@
  * 30-AUG-2021 new memory configuration sections
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "log.h"
 #include "simmem.h"
-#include "simcore.h"
+#include "simutil.h"
 #include "simcfg.h"
 
-#define BUFSIZE 256	/* max line length of command buffer */
-
+#include "log.h"
 static const char *TAG = "config";
+
+#define BUFSIZE 256	/* max line length of command buffer */
 
 int  fp_size = 800;		/* default frontpanel size */
 BYTE fp_port = 0x10;		/* default fp input port value */
@@ -49,13 +51,13 @@ void config(void)
 	int section = 0;
 
 	if (c_flag) {
-		strcpy(&fn[0], &conffn[0]);
+		strcpy(fn, &conffn[0]);
 	} else {
-		strcpy(&fn[0], &confdir[0]);
-		strcat(&fn[0], "/system.conf");
+		strcpy(fn, &confdir[0]);
+		strcat(fn, "/system.conf");
 	}
 
-	if ((fp = fopen(&fn[0], "r")) != NULL) {
+	if ((fp = fopen(fn, "r")) != NULL) {
 		s = &buf[0];
 		while (fgets(s, BUFSIZE, fp) != NULL) {
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
@@ -149,7 +151,7 @@ void config(void)
 				LOGD(TAG, "Boot switch address at %04XH", boot_switch[section]);
 			} else if (!strcmp(t1, "[MEMORY")) {
 				v1 = strtol(t2, &t3, 10);
-				if (t3[0] != ']' || v1 < 1 || v1 > MAXMEMSECT) {
+				if (*t3 != ']' || v1 < 1 || v1 > MAXMEMSECT) {
 					LOGW(TAG, "invalid MEMORY section number %d", v1);
 					continue;
 				}

@@ -13,6 +13,9 @@
 #ifndef IMSAI_HAL_INC
 #define IMSAI_HAL_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 enum sio_port {
 	SIO1A,
 	SIO1B,

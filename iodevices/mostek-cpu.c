@@ -11,7 +11,7 @@
  * 15-SEP-2019 (Mike Douglas) created from altair-88-2sio.c
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -20,11 +20,15 @@
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "sim.h"
-#include "simglb.h"
-#include "log.h"
-#include "unix_terminal.h"
 
+#include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+
+#include "unix_terminal.h"
+#include "mostek-cpu.h"
+
+#include "log.h"
 static const char *TAG = "console";
 
 /*

@@ -17,25 +17,26 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
-#include <stdint.h>
-#include <unistd.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
-#include "simmem.h"
+#include "simctl.h"
 #include "simfun.h"
+#include "simmem.h"
+
+#include "tarbell_fdc.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
 static const char *TAG = "memory";
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
 WORD _boot_switch[MAXMEMSECT];			/* boot address for switch */
-
-extern int boot_switch;				/* boot address for switch */
 
 /* 64KB non banked memory */
 BYTE memory[65536];

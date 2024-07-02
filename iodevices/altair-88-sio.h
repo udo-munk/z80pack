@@ -25,6 +25,9 @@
 #ifndef ALTAIR_88_SIO_INC
 #define ALTAIR_88_SIO_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern int sio0_upper_case;	/* SIO 0 translate input to upper case */
 extern int sio0_strip_parity;	/* SIO 0 strip parity from output */
 extern int sio0_drop_nulls;	/* SIO 0 drop nulls after CR/LF */
