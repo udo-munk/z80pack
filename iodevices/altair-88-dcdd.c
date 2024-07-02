@@ -12,7 +12,7 @@
  * 02-DEC-2019 use disk names different from Tarbell controller
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -20,10 +20,16 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+
+#include "altair-88-dcdd.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+static const char *TAG = "88DCDD";
 
 /*
  * Time in milliseconds for the disk mechanics. Can be tuned
@@ -49,8 +55,6 @@
 #define SEC_SZ		137
 #define SPT		32
 #define TRK		77
-
-static const char *TAG = "88DCDD";
 
 static int track[16];		/* current track of the disks */
 static int sec;			/* current sector position */

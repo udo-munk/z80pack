@@ -17,24 +17,26 @@
  *	this should be substituted, see picosim for example.
  */
 
-#include <stdint.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <libgen.h>
-#include <ctype.h>
 #include <fcntl.h>
+#include <libgen.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
-#include "simmem.h"
 #include "simcore.h"
+#include "simcfg.h"
+#include "simctl.h"
+#include "simmem.h"
+#include "simio.h"
 #include "simfun.h"
 #include "simint.h"
-#include "simio.h"
-#include "simctl.h"
+#include "simutil.h"
 #include "simmain.h"
 
 static void save_core(void);
@@ -389,16 +391,16 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 #ifdef CONFDIR
 	/* first try ./conf */
 	if ((stat("./conf", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
-		strcpy(&confdir[0], "./conf");
+		strcpy(confdir, "./conf");
 	} else {
 		/* then CONFDIR as set in Makefile */
-		strcpy(&confdir[0], CONFDIR);
+		strcpy(confdir, CONFDIR);
 	}
 #endif
 
 #ifdef HAS_CONFIG
 	/* if option -r is used ROMS are there */
-	if (rompath[0] == 0) {
+	if (rompath[0] == '\0') {
 		/* if not first try ./roms */
 		if ((stat("./roms", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(rompath, "./roms");

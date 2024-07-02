@@ -15,9 +15,12 @@
 #ifndef ALTAIR_88_DCDD_INC
 #define ALTAIR_88_DCDD_INC
 
-extern void altair_dsk_select_out(BYTE);
-extern void altair_dsk_control_out(BYTE);
-extern void altair_dsk_data_out(BYTE);
+#include "sim.h"
+#include "simdefs.h"
+
+extern void altair_dsk_select_out(BYTE data);
+extern void altair_dsk_control_out(BYTE data);
+extern void altair_dsk_data_out(BYTE data);
 extern BYTE altair_dsk_status_in(void);
 extern BYTE altair_dsk_sec_in(void);
 extern BYTE altair_dsk_data_in(void);

@@ -10,17 +10,18 @@
  *	starting with 0xed
  */
 
-#include <stdint.h>
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
+#include "simcore.h"
+#include "simmem.h"
+#include "simz80-ed.h"
+
 #ifdef FRONTPANEL
+#include <stdint.h>
 #include "frontpanel.h"
 #include "simfun.h"
 #endif
-#include "simmem.h"
-#include "simcore.h"
-#include "simz80-ed.h"
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 

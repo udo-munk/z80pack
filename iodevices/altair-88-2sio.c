@@ -25,6 +25,7 @@
  * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -34,17 +35,21 @@
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simfun.h"
 #include "simio.h"
-#include "log.h"
+
 #include "unix_terminal.h"
 #include "unix_network.h"
+#include "altair-88-2sio.h"
+
+#include "log.h"
+static const char *TAG = "2SIO";
 
 #define BAUDTIME 10000000
-
-static const char *TAG = "2SIO";
 
 int sio1_upper_case;
 int sio1_strip_parity;

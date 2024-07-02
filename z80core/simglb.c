@@ -12,7 +12,9 @@
 
 #include <stdint.h>
 #include <stddef.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 
 /*

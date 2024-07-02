@@ -23,18 +23,17 @@
 #define SIMMEM_INC
 
 #include "sim.h"
+#include "simdefs.h"
+
+#include "tarbell_fdc.h"
+
 #ifdef FRONTPANEL
+#include "simglb.h"
+#include "simctl.h"
 #include "frontpanel.h"
 #endif
-#include "tarbell_fdc.h"
-#include "simctl.h"
 
-#define MAXPAGES 256
-
-extern BYTE memory[65536], mem_wp;
-extern int p_tab[MAXPAGES];
-
-extern void init_memory(void);
+#define MAXPAGES	256
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
@@ -56,6 +55,11 @@ struct memmap {
 
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD _boot_switch[MAXMEMSECT];	/* boot address */
+
+extern BYTE memory[65536], mem_wp;
+extern int p_tab[MAXPAGES];
+
+extern void init_memory(void);
 
 /*
  * memory access for the CPU cores

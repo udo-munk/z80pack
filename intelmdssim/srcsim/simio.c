@@ -21,12 +21,16 @@
 #include <pthread.h>
 #include <signal.h>
 #include <sys/time.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simmem.h"
 #include "simcfg.h"
+#include "simfun.h"
+#include "simmem.h"
 #include "simctl.h"
 #include "simio.h"
+
 #include "mds-monitor.h"
 #include "mds-isbc201.h"
 #include "mds-isbc202.h"
@@ -36,10 +40,13 @@
 #ifdef WANT_ICE
 #include "unix_terminal.h"
 #endif
+
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
+
 #include "log.h"
+static const char *TAG = "IO";
 
 #define RTC_IRQ		1	/* real time clock interrupt */
 
@@ -56,8 +63,6 @@ static void bus_ovrrd_out(BYTE data), rtc_out(BYTE data), hwctl_out(BYTE data);
  */
 static void *timing(void *arg);
 static void interrupt(int sig);
-
-static const char *TAG = "IO";
 
 BYTE int_requests;			/* interrupt requests */
 static BYTE int_mask;			/* interrupt mask */
@@ -453,9 +458,6 @@ static void hwctl_out(BYTE data)
  */
 static void *timing(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-	extern int tty_clock_div, crt_clock_div, pt_clock_div, lpt_clock_div;
-
 	uint64_t t, tick;
 	int64_t tdiff;
 

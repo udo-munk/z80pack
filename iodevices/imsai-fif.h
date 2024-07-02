@@ -31,6 +31,9 @@
 #ifndef IMSAI_FIF_INC
 #define IMSAI_FIF_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
@@ -45,7 +48,7 @@ extern void imsai_fif_out(BYTE data);
 extern void imsai_fif_reset(void);
 
 #ifdef HAS_NETSERVER
-void sendHardDisks(struct mg_connection *conn);
+extern void sendHardDisks(HttpdConnection_t *conn);
 #endif
 
 #endif /* !IMSAI_FIF_INC */

@@ -33,19 +33,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+
 #include "sim.h"
-#include "simglb.h"
-#include "simcfg.h"
-#include "simmem.h"
-#ifdef HAS_NETSERVER
-#include "netsrv.h"
-#endif
-/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
-#include "log.h"
-#include "simfun.h"
 
 #ifdef HAS_DAZZLER
 
+#include "simdefs.h"
+#include "simglb.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simfun.h"
+
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+#include "cromemco-dazzler.h"
+
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
 static const char *TAG = "DAZZLER";
 
 /* X11 stuff */

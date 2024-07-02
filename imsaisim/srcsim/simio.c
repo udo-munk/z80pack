@@ -40,7 +40,7 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,39 +49,48 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/time.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simbdos.h"
-#include "unix_network.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simio.h"
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+#include "simcore.h"
+#endif
+
 #include "imsai-sio2.h"
 #include "imsai-fif.h"
-#ifdef HAS_MODEM
-#include "generic-at-modem.h"
-#endif /* HAS_MODEM */
+#include "imsai-vio.h"
+#include "imsai-hal.h"
+#include "rtc80.h"
+#include "simbdos.h"
+#include "unix_network.h"
+#ifdef HAS_CYCLOPS
+#include "cromemco-88ccc.h"
+#endif
 #ifdef HAS_DAZZLER
 #include "cromemco-dazzler.h"
 #include "cromemco-d+7a.h"
-#endif /* HAS_DAZZLER */
-#ifdef HAS_CYCLOPS
-#include "cromemco-88ccc.h"
-#endif /* HAS_CYCLOPS */
-#include "imsai-vio.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
 #endif
-#include "simmem.h"
-#include "simcfg.h"
-#ifdef HAS_NETSERVER
-#include "netsrv.h"
+#ifdef HAS_MODEM
+#include "generic-at-modem.h"
 #endif
-#include "log.h"
-#include "rtc80.h"
-#include "imsai-hal.h"
 #ifdef HAS_APU
 #include "apu/am9511.h"
 #endif
-#include "simcore.h"
-#include "simio.h"
+
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+
+#ifdef FRONTPANEL
+#include "frontpanel.h"
+#endif
+
+#include "log.h"
+static const char *TAG = "IO";
 
 #define AM_DATA   0xA2	/* instantiate am9511 for these ports */
 #define AM_STATUS 0xA3
@@ -107,8 +116,6 @@ static BYTE apu_status_in(void);
 static void apu_data_out(BYTE data);
 static void apu_status_out(BYTE data);
 #endif
-
-static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
 struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
@@ -147,6 +154,7 @@ BYTE (*const port_in[256])(void) = {
 #endif
 	[ 20] = io_pport_in,		/* parallel port */
 	[ 21] = io_pport_in,		/*       "       */
+#ifdef HAS_DAZZLER
 	[ 24] = cromemco_d7a_D_in,
 	[ 25] = cromemco_d7a_A1_in,
 	[ 26] = cromemco_d7a_A2_in,
@@ -155,6 +163,7 @@ BYTE (*const port_in[256])(void) = {
 	[ 29] = cromemco_d7a_A5_in,
 	[ 30] = cromemco_d7a_A6_in,
 	[ 31] = cromemco_d7a_A7_in,
+#endif
 	[ 32] = imsai_sio_nofun_in,	/* IMSAI SIO-2 */
 	[ 33] = imsai_sio_nofun_in,
 	[ 34] = imsai_sio2a_data_in,	/* Channel A, UNIX socket */
@@ -221,6 +230,7 @@ void (*const port_out[256])(BYTE data) = {
 #endif
 	[ 20] = io_no_card_out,		/* parallel port */
 	[ 21] = io_no_card_out,		/*       "       */
+#ifdef HAS_DAZZLER
 	[ 24] = cromemco_d7a_D_out,
 	[ 25] = cromemco_d7a_A1_out,
 	[ 26] = cromemco_d7a_A2_out,
@@ -229,6 +239,7 @@ void (*const port_out[256])(BYTE data) = {
 	[ 29] = cromemco_d7a_A5_out,
 	[ 30] = cromemco_d7a_A6_out,
 	[ 31] = cromemco_d7a_A7_out,
+#endif
 	[ 32] = imsai_sio_nofun_out,	/* IMSAI SIO-2 */
 	[ 33] = imsai_sio_nofun_out,
 	[ 34] = imsai_sio2a_data_out,	/* Channel A, UNIX socket */

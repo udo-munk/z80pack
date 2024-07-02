@@ -9,31 +9,34 @@
  *	This module contains functions for CPU/Bus-handling
  */
 
-#include <stdint.h>
 #include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#endif
+#include "simfun.h"
 #include "simmem.h"
+#include "simio.h"
 #ifndef EXCLUDE_I8080
 #include "sim8080.h"
 #endif
 #ifndef EXCLUDE_Z80
 #include "simz80.h"
 #endif
-#include "simfun.h"
 #include "simcore.h"
-#include "simio.h"
+
+#ifdef FRONTPANEL
+#include "frontpanel.h"
+#include "simctl.h"
+#endif
 
 #ifndef BAREMETAL
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
 static const char *TAG = "core";
 #endif
 
@@ -424,22 +427,4 @@ void end_bus_request(void)
 	bus_mode = BUS_DMA_NONE;
 	dma_bus_master = NULL;
 	bus_request = 0;
-}
-
-/*
- *	atoi for hexadecimal numbers
- */
-int exatoi(char *str)
-{
-	register int num = 0;
-
-	while (isxdigit((unsigned char) *str)) {
-		num *= 16;
-		if (*str <= '9')
-			num += *str - '0';
-		else
-			num += toupper((unsigned char) *str) - '7';
-		str++;
-	}
-	return num;
 }

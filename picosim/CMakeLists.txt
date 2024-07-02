@@ -27,6 +27,7 @@ add_executable(picosim
 	../z80core/simglb.c
 	../z80core/simdis.c
 	../z80core/simice.c
+	../z80core/simutil.c
 	../z80core/sim8080.c
 	../z80core/simz80.c
 	../z80core/simz80-cb.c

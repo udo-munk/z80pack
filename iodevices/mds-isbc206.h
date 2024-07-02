@@ -15,6 +15,9 @@
 #ifndef MDS_ISBC206_INC
 #define MDS_ISBC206_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern BYTE isbc206_status_in(void), isbc206_res_type_in(void);
 extern BYTE isbc206_res_byte_in(void);
 

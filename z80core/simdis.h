@@ -11,6 +11,7 @@
 #define SIMDIS_INC
 
 #include "sim.h"
+#include "simdefs.h"
 
 #ifdef WANT_ICE
 

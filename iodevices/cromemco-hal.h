@@ -13,6 +13,9 @@
 #ifndef CROMEMCO_HAL_INC
 #define CROMEMCO_HAL_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 enum tuart_port {
 	TUART0A,
 	TUART1A,

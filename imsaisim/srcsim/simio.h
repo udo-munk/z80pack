@@ -9,6 +9,8 @@
 #define SIMIO_INC
 
 #include "sim.h"
+#include "simdefs.h"
+
 #include "unix_network.h"
 
 #define IO_DATA_UNUSED	0xff	/* data returned on unused ports */

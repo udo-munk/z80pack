@@ -10,16 +10,17 @@
  *	starting with 0xcb
  */
 
-#include <stdint.h>
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
+#include "simmem.h"
+#include "simz80-cb.h"
+
 #ifdef FRONTPANEL
+#include <stdint.h>
 #include "frontpanel.h"
 #include "simfun.h"
 #endif
-#include "simmem.h"
-#include "simz80-cb.h"
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 

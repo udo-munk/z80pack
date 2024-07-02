@@ -26,22 +26,17 @@
 #define SIMMEM_INC
 
 #include "sim.h"
+#include "simdefs.h"
+
 #ifdef FRONTPANEL
+#include "simglb.h"
+#include "simctl.h"
 #include "frontpanel.h"
 #endif
-#include "simctl.h"
-
-extern void init_memory(void), reset_memory(void);
-extern void groupswap(void);
 
 #define MAXPAGES	256
 #define MAXSEG		8	/* max number of memory segments */
 #define SEGSIZ		49152	/* size of the memory segments, 48 KBytes */
-
-extern BYTE memory[64 << 10], *banks[MAXSEG];
-extern int p_tab[MAXPAGES];
-extern int _p_tab[MAXPAGES];
-extern int selbnk;
 
 #define MEM_RW		0	/* memory is readable and writeable */
 #define MEM_RO		1	/* memory is read-only */
@@ -65,6 +60,11 @@ struct memmap {
 
 extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD boot_switch[MAXMEMSECT];	/* boot address */
+
+extern BYTE memory[64 << 10], *banks[MAXSEG];
+extern int p_tab[MAXPAGES];
+extern int _p_tab[MAXPAGES];
+extern int selbnk;
 
 extern void ctrl_port_out(BYTE data);
 extern BYTE ctrl_port_in(void);
@@ -96,6 +96,9 @@ extern int cyclecount;
 #define MEM_RESERVE_RAM(page)	p_tab[(page)] = MEM_RW
 /* reserve page as ROM */
 #define MEM_RESERVE_ROM(page)	p_tab[(page)] = MEM_RO
+
+extern void init_memory(void), reset_memory(void);
+extern void groupswap(void);
 
 /*
  * memory access for the CPU cores

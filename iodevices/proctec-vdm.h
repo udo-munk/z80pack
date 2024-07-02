@@ -17,6 +17,9 @@
 #ifndef PROCTEC_VDM_INC
 #define PROCTEC_VDM_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern int slf;			/* VDM scanlines factor */
 extern char bg_color[];		/* VDM background color */
 extern char fg_color[];		/* VDM foreground color */

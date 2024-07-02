@@ -20,21 +20,26 @@
  * 08-JUN-2024 first version
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
 #include "simio.h"
-#include "mds-isbc206.h"
-#include "log.h"
 
 #ifdef HAS_ISBC206
+
+#include "mds-isbc206.h"
+
+#include "log.h"
+static const char *TAG = "ISBC206";
 
 #define ST_U0RDY	0x01	/* unit 0 ready */
 #define ST_U1RDY	0x02	/* unit 1 ready */
@@ -96,8 +101,6 @@
 #define DISK_SIZE	(TRK * SPT * SEC_SZ)
 
 #define ISBC206_IRQ	2
-
-static const char *TAG = "ISBC206";
 
 static WORD iopb_addr;		/* address of I/O parameter block */
 static BYTE status;		/* status byte */

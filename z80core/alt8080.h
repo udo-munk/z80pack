@@ -27,7 +27,6 @@
  */
 
 {
-
 #define H_SHIFT		4	/* H_FLAG shift */
 #define C_SHIFT		0	/* C_FLAG shift */
 

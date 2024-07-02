@@ -33,33 +33,28 @@
  * 29-APR-2024 print CPU execution statistics
  */
 
-#include <stdint.h>
-#include <X11/Xlib.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <termios.h>
-#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simcore.h"
 #include "simcfg.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#endif
 #include "simmem.h"
-#include "unix_terminal.h"
-#ifdef FRONTPANEL
-#include "log.h"
-#endif
+#include "simio.h"
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
-#include "simcore.h"
-#include "simio.h"
 #include "simctl.h"
 
+#include "unix_terminal.h"
+
 #ifdef FRONTPANEL
+#include <X11/Xlib.h>
+#include "frontpanel.h"
+#include "log.h"
 static const char *TAG = "system";
 
 static BYTE fp_led_wait;
@@ -76,9 +71,9 @@ static void protect_clicked(int state, int val);
 static void int_clicked(int state, int val);
 static void power_clicked(int state, int val);
 static void quit_callback(void);
-#endif
+#endif /* FRONTPANEL */
 
-int  boot_switch;		/* boot address for switch */
+int boot_switch;		/* boot address for switch */
 
 /*
  *	This function initializes the front panel and terminal.
@@ -95,7 +90,7 @@ void mon(void)
 		/* initialize frontpanel */
 		XInitThreads();
 
-		if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
+		if (!fp_init2(confdir, "panel.conf", fp_size)) {
 			LOGE(TAG, "frontpanel error");
 			exit(EXIT_FAILURE);
 		}
@@ -130,7 +125,7 @@ void mon(void)
 		fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 		fp_addSwitchCallback("SW_INT", int_clicked, 0);
 	}
-#endif
+#endif /* FRONTPANEL */
 
 	/* give threads a bit time and then empty buffer */
 	SLEEP_MS(999);
@@ -193,7 +188,7 @@ void mon(void)
 			SLEEP_MS(10);
 		}
 	} else {
-#endif
+#endif /* FRONTPANEL */
 #ifdef WANT_ICE
 		ice_before_go = set_unix_terminal;
 		ice_after_go = reset_unix_terminal;
@@ -569,4 +564,4 @@ static void quit_callback(void)
 	cpu_state = STOPPED;
 	cpu_error = POWEROFF;
 }
-#endif
+#endif /* FRONTPANEL */

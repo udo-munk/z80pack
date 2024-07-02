@@ -13,6 +13,9 @@
 #ifndef SIMBDOS_INC
 #define SIMBDOS_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern void host_bdos_out(BYTE outByte);
 
 #endif /* !SIMBDOS_INC */

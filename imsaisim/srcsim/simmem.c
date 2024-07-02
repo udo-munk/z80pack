@@ -19,20 +19,20 @@
  * 29-AUG-2021 new memory configuration sections
  */
 
-#include <stdint.h>
-#include <unistd.h>
+#include <stddef.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
+#include "simfun.h"
 #include "simmem.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
 static const char *TAG = "memory";
-
-extern int load_file(char *, WORD, int);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */

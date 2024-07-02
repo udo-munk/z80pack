@@ -6,13 +6,10 @@
  */
 
 #include <stdint.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simcfg.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
-#include "simctl.h"
-#endif
 #include "simmem.h"
 #include "simcore.h"
 #include "simfun.h"
@@ -20,6 +17,11 @@
 #include "simice.h"
 #endif
 #include "sim8080.h"
+
+#ifdef FRONTPANEL
+#include "frontpanel.h"
+#include "simctl.h"
+#endif
 
 #ifndef EXCLUDE_I8080
 

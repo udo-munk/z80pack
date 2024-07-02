@@ -15,16 +15,19 @@
  * 09-JUN-2024 implemented boot ROM
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "f_util.h"
-#include "ff.h"
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
+
 #include "sd-fdc.h"
+
+#include "f_util.h"
+#include "ff.h"
 
 extern FIL sd_file;
 extern FRESULT sd_res;

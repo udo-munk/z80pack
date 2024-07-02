@@ -12,6 +12,9 @@
 #ifndef CROMEMCO_DPLUS7A_INC
 #define CROMEMCO_DPLUS7A_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern void cromemco_d7a_init(void);
 
 extern void cromemco_d7a_D_out(BYTE data);

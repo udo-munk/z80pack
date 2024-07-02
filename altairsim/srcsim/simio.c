@@ -33,32 +33,37 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
-#include <stdint.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <errno.h>
-#include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <stddef.h>
 #include <sys/time.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "simbdos.h"
-#include "log.h"
-#include "unix_network.h"
-#include "altair-88-sio.h"
+#include "simcfg.h"
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+#include "simcore.h"
+#endif
+#include "simio.h"
+
 #include "altair-88-2sio.h"
-#include "tarbell_fdc.h"
 #include "altair-88-dcdd.h"
+#include "altair-88-sio.h"
 #include "cromemco-dazzler.h"
 #include "proctec-vdm.h"
+#include "simbdos.h"
+#include "tarbell_fdc.h"
+#include "unix_network.h"
+
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "simmem.h"
-#include "simcfg.h"
-#include "simcore.h"
+
+#include "log.h"
+static const char *TAG = "IO";
 
 /*
  *	Forward declarations for I/O functions
@@ -73,8 +78,6 @@ static void io_no_card_out(BYTE data);
 #if 0	/* currently not used */
 static BYTE io_no_card_in(void);
 #endif
-
-static const char *TAG = "IO";
 
 static int printer;		/* fd for file "printer.txt" */
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
@@ -386,8 +389,6 @@ static void lpt_status_out(BYTE data)
  */
 static BYTE kbd_status_in(void)
 {
-	extern int proctec_kbd_status;
-
 	return (BYTE) proctec_kbd_status;
 }
 

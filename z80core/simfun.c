@@ -16,21 +16,24 @@
  *	machines.
  */
 
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <time.h>
 #include <sys/time.h>
-#include <errno.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
-/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
-#include "log.h"
 #include "simfun.h"
 
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
 static const char *TAG = "func";
 
 #define BUFSIZE	256		/* buffer size for file I/O */

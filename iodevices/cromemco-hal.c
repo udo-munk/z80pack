@@ -10,7 +10,7 @@
  *
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,20 +19,22 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simio.h"
+
 #include "unix_terminal.h"
 #include "unix_network.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
+#include "cromemco-hal.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
-
-#include "cromemco-hal.h"
-
 static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
@@ -157,7 +159,7 @@ again:
 }
 static void stdio_out(int dev, BYTE data) {
     UNUSED(dev);
-    
+
 again:
     if (write(fileno(stdout), (char *) &data, 1) != 1) {
         if (errno == EINTR) {
@@ -361,12 +363,12 @@ static void hal_init(void) {
 
     /**
      *  Initialize HAL with default configuration, as follows:
-     * 
+     *
      *      TUART0.deviceA.device=WEBTTY,STDIO
      *      TUART1.deviceA.device=SCKTSRV1,WEBTTY2
      *      TUART1.deviceB.device=SCKTSRV2,WEBTTY3
-     * 
-     * Notes: 
+     *
+     * Notes:
      *      - all ports end with NULL and that is always alive
      *      - the first HAL device in the list that is alive will service the request
      */
@@ -377,7 +379,7 @@ static void hal_init(void) {
     tuart[1][0] = devices[SCKTSRV1DEV];
     tuart[1][1] = devices[WEBTTY2DEV];
     tuart[1][2] = devices[NULLDEV];
-    
+
     tuart[2][0] = devices[SCKTSRV2DEV];
     tuart[2][1] = devices[WEBTTY3DEV];
     tuart[2][2] = devices[NULLDEV];
@@ -478,7 +480,7 @@ next:
     if (tuart[dev][p].fallthrough) {
         p++;
         goto next;
-    }        
+    }
 }
 
 int hal_alive(tuart_port_t dev) {
@@ -487,6 +489,6 @@ int hal_alive(tuart_port_t dev) {
     while(!tuart[dev][p].alive(tuart[dev][p].device_id)) { /* Find the first device that is alive */
         p++;
     }
-	
+
 	return tuart[dev][p].name?1:0; /* return "alive" (true) when not the NULL device */
 }

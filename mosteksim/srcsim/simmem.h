@@ -15,6 +15,10 @@
 #ifndef SIMMEM_INC
 #define SIMMEM_INC
 
+#include "sim.h"
+#include "simdefs.h"
+#include "simmem.h"
+
 #define MAXMEMSECT	0
 
 extern BYTE memory[65536];

@@ -47,6 +47,4 @@ extern void sleep_ms(int);
 #define USR_CPR	"Copyright (C) 20xx by XYZ"
 */
 
-#include "simdefs.h"
-
 #endif /* !SIM_INC */

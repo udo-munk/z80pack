@@ -16,19 +16,21 @@
  * 02-SEP-2021 implement banked ROM
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simfun.h"
 #include "simmem.h"
+
+#include "cromemco-fdc.h"
+
 #include "log.h"
-
 static const char *TAG = "memory";
-
-extern int load_file(char *, WORD, int);
-extern void cromemco_fdc_reset(void);
 
 struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */

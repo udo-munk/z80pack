@@ -14,9 +14,12 @@
  * 30-JUN-2021 clock read now returns time format instead of last command
  */
 
-#include <stdint.h>
 #include <time.h>
+
 #include "sim.h"
+#include "simdefs.h"
+
+#include "rtc80.h"
 
 static BYTE clkcmd;		/* clock command */
 static BYTE clkfmt;		/* clock format, 0 = BCD, 1 = decimal */

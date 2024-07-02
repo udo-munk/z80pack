@@ -13,26 +13,17 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
-#include <stdint.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/time.h>
 #include "sim.h"
-#include "simglb.h"
-#include "simmem.h"
-#include "simbdos.h"
+#include "simdefs.h"
 #include "simio.h"
+
 #include "mostek-cpu.h"
 #include "mostek-fdc.h"
+#include "simbdos.h"
+
 #if 0
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
 static const char *TAG = "I/O";
 #endif
 

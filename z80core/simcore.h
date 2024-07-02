@@ -9,6 +9,7 @@
 #define SIMCORE_INC
 
 #include "sim.h"
+#include "simdefs.h"
 
 extern void init_cpu(void);
 extern void reset_cpu(void);
@@ -27,7 +28,5 @@ extern void io_out(BYTE addrl, BYTE addrh, BYTE data);
 extern void start_bus_request(BusDMA_t mode,
 			      Tstates_t (*bus_master)(BYTE bus_ack));
 extern void end_bus_request(void);
-
-extern int exatoi(char *str);
 
 #endif /* !SIMCORE_INC */

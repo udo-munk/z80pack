@@ -14,6 +14,7 @@
  */
 
 #include "sim.h"
+#include "simdefs.h"
 
 extern int	cpu;
 
@@ -76,20 +77,20 @@ extern int	F_flag;
 extern int	n_flag;
 #endif
 
-extern char	xfn[];
+extern char	xfn[MAX_LFN];
 #ifdef HAS_DISKS
-extern char	*diskdir, diskd[];
+extern char	*diskdir, diskd[MAX_LFN];
 #endif
 #ifdef CONFDIR
-extern char	confdir[];
+extern char	confdir[MAX_LFN];
 #endif
 #ifdef HAS_CONFIG
-extern char	conffn[];
-extern char	rompath[];
+extern char	conffn[MAX_LFN];
+extern char	rompath[MAX_LFN];
 #endif
 
 #if !defined(ALT_I8080) || !defined(ALT_Z80)
-extern const char parity[];
+extern const char parity[256];
 #endif
 
 #endif /* !SIMGLB_INC */

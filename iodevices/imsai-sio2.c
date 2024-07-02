@@ -38,17 +38,21 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simfun.h"
+
 #include "imsai-hal.h"
+#include "imsai-sio2.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
+static const char *TAG = "SIO";
 
 #define BAUDTIME 10000000
-
-static const char *TAG = "SIO";
 
 static BYTE sio1_ctl, sio2_ctl;
 

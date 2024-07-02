@@ -34,38 +34,48 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
-#include <poll.h>
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/poll.h>
 #include <sys/time.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simio.h"
+#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
+#include "simcore.h"
+#endif
+
+#include "cromemco-d+7a.h"
+#include "cromemco-dazzler.h"
+#include "cromemco-fdc.h"
+#include "cromemco-hal.h"
+#include "cromemco-tu-art.h"
+#include "cromemco-wdi.h"
 #include "simbdos.h"
 #include "unix_network.h"
-#include "cromemco-tu-art.h"
+#include "unix_terminal.h"
 #ifdef HAS_MODEM
 #include "generic-at-modem.h"
-#endif /* HAS_MODEM */
-#include "cromemco-fdc.h"
-#include "cromemco-dazzler.h"
-#include "cromemco-d+7a.h"
+#endif
+
 #ifdef FRONTPANEL
 #include "frontpanel.h"
 #endif
-#include "simmem.h"
-#include "simcfg.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-#include "cromemco-hal.h"
-#include "cromemco-wdi.h"
-#include "unix_terminal.h"
+static const char *TAG = "IO";
 
 /*
  *	Forward declarations for I/O functions
@@ -78,10 +88,8 @@ static void hwctl_out(BYTE data);
 /*
  *	Forward declarations for support functions
  */
-static void *timing(void *);
-static void interrupt(int);
-
-static const char *TAG = "IO";
+static void *timing(void *arg);
+static void interrupt(int sig);
 
 static int rtc;			/* flag for 512ms RTC interrupt */
 int lpt1, lpt2;			/* fds for lpt printer files */
@@ -366,10 +374,6 @@ static BYTE hwctl_in(void)
  */
 static void hwctl_out(BYTE data)
 {
-#if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-	extern void switch_cpu(int);
-#endif
-
 	/* if port is locked do nothing */
 	if (hwctl_lock && (data != 0xaa))
 		return;

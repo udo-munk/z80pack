@@ -14,6 +14,9 @@
 #ifndef MOSTEK_CPU_INC
 #define MOSTEK_CPU_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern BYTE sio_status_in(void);
 extern void sio_control_out(BYTE data);
 extern BYTE sio_data_in(void);

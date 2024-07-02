@@ -14,15 +14,19 @@
  * 11-MAY-2024 (Thomas Eberhardt) add diskdir option support
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+
 #include "log.h"
+static const char *TAG = "FLP-80";
 
 /* internal state of the fdc */
 
@@ -68,8 +72,6 @@
 #define	cUPDATE_TRACK	0x10	/* STEP updates track register */
 
 /*  Static variable definitions  */
-
-static const char *TAG = "FLP-80";
 
 static BYTE fdc_stat;		/* status register */
 static BYTE fdc_track;		/* track register */

@@ -10,7 +10,7 @@
  *
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,21 +19,23 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 #include "simio.h"
+
 #include "unix_terminal.h"
 #include "unix_network.h"
 #include "imsai-vio.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
+#include "imsai-hal.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
-
-#include "imsai-hal.h"
-
 static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
@@ -216,7 +218,7 @@ again:
     return data;
 }
 static void stdio_out(BYTE data) {
-    
+
 again:
     if (write(fileno(stdout), (char *) &data, 1) != 1) {
         if (errno == EINTR) {
@@ -422,13 +424,13 @@ static void hal_init(void) {
 
     /**
      *  Initialize HAL with default configuration, as follows:
-     * 
+     *
      *      SIO1.portA.device=WEBTTY,STDIO
      *      SIO1.portB.device=VIOKBD
      *      SIO2.portA.device=SCKTSRV
      *      SIO2.portB.device=MODEM
-     * 
-     * Notes: 
+     *
+     * Notes:
      *      - all ports end with NULL and that is always alive
      *      - the first HAL device in the list that is alive will service the request
      */
@@ -442,7 +444,7 @@ static void hal_init(void) {
     sio[2][0] = devices[WEBPTRDEV];
     sio[2][1] = devices[SCKTSRVDEV];
     sio[2][2] = devices[NULLDEV];
-    
+
     sio[3][0] = devices[MODEMDEV];
     sio[3][1] = devices[NULLDEV];
 
@@ -540,7 +542,7 @@ next:
     if (sio[dev][p].fallthrough) {
         p++;
         goto next;
-    }        
+    }
 }
 
 int hal_carrier_detect(sio_port_t dev) {
@@ -549,6 +551,6 @@ int hal_carrier_detect(sio_port_t dev) {
     while(!sio[dev][p].alive()) { /* Find the first device that is alive */
         p++;
     }
-	
+
 	return sio[dev][p].cd();
 }

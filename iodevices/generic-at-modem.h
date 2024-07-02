@@ -1,10 +1,10 @@
 /**
  * generic-at-modem.h
- * 
+ *
  * Emulation of generic 'AT' modem over TCP/IP sockets (telnet)
  *
  * Copyright (C) 2019-2021 by David McNaughton
- * 
+ *
  * History:
  * 12-SEP-2019	1.0	Initial Release
  * 29-SEP-2019	1.1	Added Answer modes and registers
