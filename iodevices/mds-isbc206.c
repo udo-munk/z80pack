@@ -104,7 +104,7 @@ static const char *TAG = "ISBC206";
 
 static WORD iopb_addr;		/* address of I/O parameter block */
 static BYTE status;		/* status byte */
-static int res_type;		/* result type */
+static BYTE res_type;		/* result type */
 static BYTE ioerr;		/* I/O complete error bits */
 static char fndir[MAX_LFN];	/* directory path for disk image */
 static char fn[MAX_LFN];	/* path/filename for disk image */
@@ -469,11 +469,10 @@ void isbc206_disk_check(void)
 	if (res_type == RT_IOERR)
 		return;
 
-	nstatus = ST_UNITS;
-
 	/* check disk ready status */
 	strcpy(fn_, fndir);
 	pfn = fn_ + strlen(fn_);
+	nstatus = ST_UNITS;
 	for (i = 0; i <= 3; i++) {
 		strcpy(pfn, disks[i]);
 		if (stat(fn_, &s) == -1 || !S_ISREG(s.st_mode))
@@ -502,16 +501,18 @@ void isbc206_reset(void)
 	res_type = RT_DSKRD;
 	ioerr = 0;
 
-	nstatus = ST_PRES | ST_HD | ST_UNITS;
-
 	/* check disk ready status */
 	strcpy(fn, fndir);
 	pfn = fn + strlen(fn);
+	nstatus = ST_UNITS;
 	for (i = 0; i <= 3; i++) {
 		strcpy(pfn, disks[i]);
 		if (stat(fn, &s) == -1 || !S_ISREG(s.st_mode))
 			nstatus &= ~uready[i];
 	}
+	if (nstatus)
+		nstatus |= ST_PRES | ST_HD;
+
 	status = nstatus;
 }
 
