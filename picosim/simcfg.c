@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
  *
  * This module configures the machine appropriate for the
  * Z80/8080 software we want to run on it.
@@ -18,34 +18,62 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-
-#include "sim.h"
-#include "simdefs.h"
-#include "simglb.h"
+#include "hardware/rtc.h"
+#include "pico/stdlib.h"
+#include "pico/time.h"
 
 #include "f_util.h"
 #include "ff.h"
 
-extern FIL sd_file;
-extern FRESULT sd_res;
-extern char disks[2][22];
-extern int speed;
-extern BYTE fp_value;
+#include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+#include "simcore.h"
+#include "simutil.h"
+#include "simport.h"
+#include "simio.h"
+#include "simcfg.h"
 
-extern int get_cmdline(char *, int);
-extern void switch_cpu(int);
-extern void load_file(char *);
-extern void mount_disk(int, char *);
-extern void my_ls(const char *, const char *);
-extern unsigned char fp_value;
+#include "disks.h"
+#include "picosim.h"
+#if LIB_STDIO_MSC_USB
+#include "msc_usb.h"
+#endif
 
 /*
  * prompt for a filename
  */
 static void prompt_fn(char *s)
 {
-      printf("Filename: ");
-      get_cmdline(s, 9);
+	printf("Filename: ");
+	get_cmdline(s, 9);
+	while (*s) {
+		*s = toupper((unsigned char) *s);
+		s++;
+	}
+}
+
+/*
+ * get an integer with range check
+ */
+static int get_int(const char *prompt, const char *hint,
+		   int min_val, int max_val)
+{
+	int i;
+	char s[6];
+
+	for (;;) {
+		printf("Enter %s%s: ", prompt, hint);
+		get_cmdline(s, 5);
+		if (s[0] == '\0')
+			return -1;
+		i = atoi(s);
+		if (i < min_val || i > max_val) {
+			printf("Invalid %s: range %d - %d\n",
+			       prompt, min_val, max_val);
+		} else
+			return i;
+	}
 }
 
 /*
@@ -61,6 +89,10 @@ void config(void)
 	char s[10];
 	unsigned int br;
 	int go_flag = 0;
+	int i, n;
+	datetime_t t;
+	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
+				       "Thu", "Fri", "Sat" };
 
 	/* try to read config file */
 	sd_res = f_open(&sd_file, cfg, FA_READ);
@@ -68,92 +100,173 @@ void config(void)
 		f_read(&sd_file, &cpu, sizeof(cpu), &br);
 		f_read(&sd_file, &speed, sizeof(speed), &br);
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_read(&sd_file, &disks[0], 22, &br);
-		f_read(&sd_file, &disks[1], 22, &br);
+		f_read(&sd_file, &t, sizeof(datetime_t), &br);
+		f_read(&sd_file, &disks[0], DISKLEN, &br);
+		f_read(&sd_file, &disks[1], DISKLEN, &br);
+		f_read(&sd_file, &disks[2], DISKLEN, &br);
+		f_read(&sd_file, &disks[3], DISKLEN, &br);
 		f_close(&sd_file);
 	}
+	rtc_set_datetime(&t);
+	sleep_us(64);
 
 	while (!go_flag) {
-		printf("1 - switch CPU, currently %s\n", (cpu == Z80) ?
-							  "Z80" : "8080");
-		printf("2 - CPU speed: %d MHz\n", speed);
-		printf("3 - Port 255 value: %02XH\n", fp_value);
-		printf("4 - list files\n");
-		printf("5 - load file\n");
-		printf("6 - list disks\n");
-		printf("7 - Disk 0: %s\n", disks[0]);
-		printf("8 - Disk 1: %s\n", disks[1]);
-		printf("9 - run machine\n\n");
+		if (rtc_get_datetime(&t)) {
+			printf("Current time: %s %04d-%02d-%02d "
+			       "%02d:%02d:%02d\n", dotw[t.dotw],
+			       t.year, t.month, t.day, t.hour, t.min, t.sec);
+		}
+		printf("a - set date\n");
+		printf("t - set time\n");
+#if LIB_STDIO_MSC_USB
+		printf("u - enable USB mass storage access\n");
+#endif
+		printf("c - switch CPU, currently %s\n",
+		       (cpu == Z80) ? "Z80" : "8080");
+		printf("s - CPU speed: ");
+		if (speed == 0)
+			puts("unlimited");
+		else
+			printf("%d MHz\n", speed);
+		printf("p - Port 255 value: %02XH\n", fp_value);
+		printf("f - list files\n");
+		printf("r - load file\n");
+		printf("d - list disks\n");
+		printf("0 - Disk 0: %s\n", disks[0]);
+		printf("1 - Disk 1: %s\n", disks[1]);
+		printf("2 - Disk 2: %s\n", disks[2]);
+		printf("3 - Disk 3: %s\n", disks[3]);
+		printf("g - run machine\n\n");
 		printf("Command: ");
 		get_cmdline(s, 2);
 		putchar('\n');
 
-		switch (*s) {
-		case '1':
+		switch (tolower((unsigned char) s[0])) {
+		case 'a':
+			n = 0;
+			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
+				t.dotw = i;
+				n++;
+			}
+			if ((i = get_int("year", "", 0, 4095)) >= 0) {
+				t.year = i;
+				n++;
+			}
+			if ((i = get_int("month", "", 1, 12)) >= 0) {
+				t.month = i;
+				n++;
+			}
+			if ((i = get_int("day", "", 1, 31)) >= 0) {
+				t.day = i;
+				n++;
+			}
+			if (n > 0) {
+				rtc_set_datetime(&t);
+				sleep_us(64);
+			}
+			putchar('\n');
+			break;
+
+		case 't':
+			n = 0;
+			if ((i = get_int("hour", "", 0, 23)) >= 0) {
+				t.hour = i;
+				n++;
+			}
+			if ((i = get_int("minute", "", 0, 59)) >= 0) {
+				t.min = i;
+				n++;
+			}
+			if ((i = get_int("second", "", 0, 59)) >= 0) {
+				t.sec = i;
+				n++;
+			}
+			if (n > 0) {
+				rtc_set_datetime(&t);
+				sleep_us(64);
+			}
+			putchar('\n');
+			break;
+
+#if LIB_STDIO_MSC_USB
+		case 'u':
+			exit_disks();
+			puts("Waiting for disk to be ejected");
+			msc_ejected = false;
+			while (!msc_ejected)
+				sleep_ms(500);
+			puts("Disk ejected\n");
+			init_disks();
+			check_disks();
+			break;
+#endif
+
+		case 'c':
 			if (cpu == Z80)
 				switch_cpu(I8080);
 			else
 				switch_cpu(Z80);
 			break;
 
-		case '2':
-			printf("Value in MHz, 0=unlimited: ");
-			get_cmdline(s, 2);
+		case 's':
+			i = get_int("speed", " in MHz (0=unlimited)", 0, 40);
 			putchar('\n');
-			speed = atoi((const char *) &s);
+			if (i >= 0)
+				speed = i;
 			break;
 
-		case '3':
+		case 'p':
 again:
-			printf("Value in Hex: ");
+			printf("Enter value in Hex: ");
 			get_cmdline(s, 3);
-			putchar('\n');
-			if (!isxdigit(*s) || !isxdigit(*(s + 1))) {
-				printf("What?\n");
-				goto again;
+			if (s[0]) {
+				if (!isxdigit((unsigned char) s[0]) ||
+				    !isxdigit((unsigned char) s[1])) {
+					puts("Invalid value: range 00 - FF");
+					goto again;
+				}
+				fp_value = (s[0] <= '9' ? s[0] - '0' :
+					    toupper((unsigned char) s[0]) -
+					    'A' + 10) << 4;
+				fp_value += (s[1] <= '9' ? s[1] - '0' :
+					     toupper((unsigned char) s[1]) -
+					     'A' + 10);
 			}
-			fp_value = (*s <= '9' ? *s - '0' : *s - 'A' + 10) << 4;
-			fp_value += (*(s + 1) <= '9' ? *(s + 1) - '0' :
-				     *(s + 1) - 'A' + 10);
-			break;
-
-		case '4':
-			my_ls(cpath, cext);
-			printf("\n\n");
-			break;
-
-		case '5':
-			prompt_fn(s);
-			load_file(s);
 			putchar('\n');
 			break;
 
-		case '6':
-			my_ls(dpath, dext);
-			printf("\n\n");
+		case 'f':
+			list_files(cpath, cext);
+			putchar('\n');
 			break;
 
-		case '7':
+		case 'r':
 			prompt_fn(s);
-			if (strlen(s) == 0) {
-				disks[0][0] = 0x0;
+			if (s[0])
+				load_file(s);
+			putchar('\n');
+			break;
+
+		case 'd':
+			list_files(dpath, dext);
+			putchar('\n');
+			break;
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+			i = s[0] - '0';
+			prompt_fn(s);
+			if (s[0])
+				mount_disk(i, s);
+			else {
+				disks[i][0] = '\0';
 				putchar('\n');
-			} else {
-				mount_disk(0, s);
 			}
 			break;
 
-		case '8':
-			prompt_fn(s);
-			if (strlen(s) == 0) {
-				disks[1][0] = 0x0;
-				putchar('\n');
-			} else {
-				mount_disk(1, s);
-			}
-			break;
-
-		case '9':
+		case 'g':
 			go_flag = 1;
 			break;
 
@@ -168,8 +281,11 @@ again:
 		f_write(&sd_file, &cpu, sizeof(cpu), &br);
 		f_write(&sd_file, &speed, sizeof(speed), &br);
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_write(&sd_file, &disks[0], 22, &br);
-		f_write(&sd_file, &disks[1], 22, &br);
+		f_write(&sd_file, &t, sizeof(datetime_t), &br);
+		f_write(&sd_file, &disks[0], DISKLEN, &br);
+		f_write(&sd_file, &disks[1], DISKLEN, &br);
+		f_write(&sd_file, &disks[2], DISKLEN, &br);
+		f_write(&sd_file, &disks[3], DISKLEN, &br);
 		f_close(&sd_file);
 	}
 }
