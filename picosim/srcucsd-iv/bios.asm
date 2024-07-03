@@ -137,7 +137,7 @@ HOME:
 SELDSK:
 	LD	HL,0000H	;return code
 	LD	A,C		;get drive #
-	CP	2		;< 2 ?
+	CP	4		;< 4 ?
 	JP	C,SEL		;if yes take it
 	RET			;no thanks
 SEL:
