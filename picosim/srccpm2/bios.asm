@@ -64,6 +64,16 @@ DPBASE	DW	TRANS,0000H
 	DW	0000H,0000H
 	DW	DIRBF,DPBLK
 	DW	CHK01,ALL01
+;	disk parameter header for disk 2
+	DW	TRANS,0000H
+	DW	0000H,0000H
+	DW	DIRBF,DPBLK
+	DW	CHK02,ALL02
+;	disk parameter header for disk 3
+	DW	TRANS,0000H
+	DW	0000H,0000H
+	DW	DIRBF,DPBLK
+	DW	CHK03,ALL03
 ;
 ;	sector translate table for IBM 8" SD disks
 TRANS	DB	1,7,13,19	;sectors 1,2,3,4
@@ -224,7 +234,7 @@ HOME	MVI	C,0		;select track 0
 ;
 SELDSK	LXI	H,0		;error return code
 	MOV	A,C		;get disk # to accumulator
-	CPI	2		;disk drive < 2 ?
+	CPI	4		;disk drive < 4 ?
 	JC	SEL1
 	RET			;no, return with error
 SEL1	STA	DSKNO		;save disk #
@@ -298,8 +308,12 @@ DSKNO	DS	1		;selected disk
 DIRBF	DS	128		;scratch directory area
 ALL00	DS	31		;allocation vector 0
 ALL01	DS	31		;allocation vector 1
+ALL02	DS	31		;allocation vector 2
+ALL03	DS	31		;allocation vector 3
 CHK00	DS	16		;check vector 0
 CHK01	DS	16		;check vector 1
+CHK02	DS	16		;check vector 2
+CHK03	DS	16		;check vector 3
 ;
 ENDDAT	EQU	$		;end of data area
 DATSIZ	EQU	$-BEGDAT	;size of data area
