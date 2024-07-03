@@ -13,28 +13,30 @@
  * 31-MAY-2024 added hardware control port for z80pack machines
  * 08-JUN-2024 implemented system reset
  * 09-JUN-2024 implemented boot ROM
+ * 29-JUN-2024 implemented banked memory
  */
 
 /* Raspberry SDK includes */
 #include <stdio.h>
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 #include <tusb.h>
 #endif
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
+/* Pico W also needs this */
+#if PICO == 1
+#include "pico/cyw43_arch.h"
+#endif
 
 /* Project includes */
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
+#include "simmem.h"
 #include "simcore.h"
+#include "simio.h"
 
 #include "sd-fdc.h"
-
-/* Pico W also needs this */
-#if PICO == 1
-#include "pico/cyw43_arch.h"
-#endif
 
 /*
  *	Forward declarations of the I/O functions
@@ -43,6 +45,8 @@
 static void p000_out(BYTE data), p001_out(BYTE data), p255_out(BYTE data);
 static void hwctl_out(BYTE data);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
+static void mmu_out(BYTE data);
+static BYTE mmu_in(void);
 
 static BYTE sio_last;	/* last character received */
        BYTE fp_value;	/* port 255 value, can be set from ICE or config() */
@@ -56,6 +60,7 @@ BYTE (*const port_in[256])(void) = {
 	[  0] = p000_in,	/* SIO status */
 	[  1] = p001_in,	/* SIO data */
 	[  4] = fdc_in,		/* FDC status */
+	[ 64] = mmu_in,		/* MMU */
 	[160] = hwctl_in,	/* virtual hardware control */
 	[255] = p255_in		/* for frontpanel */
 };
@@ -68,6 +73,7 @@ void (*const port_out[256])(BYTE data) = {
 	[  0] = p000_out,	/* internal LED */
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC command */
+	[ 64] = mmu_out,	/* MMU */
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
 };
@@ -99,7 +105,7 @@ static BYTE p000_in(void)
 	if (uart_is_readable(my_uart))	/* check if there is input from UART */
 		stat &= 0b11111110;	/* if so flip status bit */
 #endif
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	if (tud_cdc_write_available())	/* check if output to UART is possible */
 		stat &= 0b01111111;	/* if so flip status bit */
 	if (tud_cdc_available())	/* check if there is input from UART */
@@ -115,15 +121,15 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-#if LIB_PICO_STDIO_UART && !LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_UART && !(LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB)
 	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
 	if (!uart_is_readable(my_uart))
 #endif
-#if LIB_PICO_STDIO_USB && !LIB_PICO_STDIO_UART
+#if (LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB) && !LIB_PICO_STDIO_UART
 	if (!tud_cdc_available())
 #endif
-#if LIB_PICO_STDIO_USB && LIB_PICO_STDIO_UART
+#if (LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB) && LIB_PICO_STDIO_UART
 	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
 	if (!uart_is_readable(my_uart) && !tud_cdc_available())
@@ -142,6 +148,14 @@ static BYTE p001_in(void)
 static BYTE hwctl_in(void)
 {
 	return hwctl_lock;
+}
+
+/*
+ *	read MMU register
+ */
+static BYTE mmu_in(void)
+{
+	return selbnk;
 }
 
 /*
@@ -217,8 +231,8 @@ static void hwctl_out(BYTE data)
 	}
 
 	if (data & 64) {
-		reset_cpu();
-		PC = 0xff00;	/* power on jump */
+		reset_cpu();		/* reset CPU */
+		PC = 0xff00;		/* power on jump to boot ROM */
 		return;
 	}
 
@@ -233,6 +247,14 @@ static void hwctl_out(BYTE data)
 		return;
 	}
 #endif
+}
+
+/*
+ *	write MMU register
+ */
+static void mmu_out(BYTE data)
+{
+	selbnk = data;
 }
 
 /*
