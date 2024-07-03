@@ -3,4 +3,4 @@
 rm -f disks/drivea.dsk
 ln disks/library/isis-ii-43.dsk disks/drivea.dsk
 
-./intelmdssim $*
+ISBC206_OFF=1 ./intelmdssim $*
