@@ -58,10 +58,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_HEAP_SIZE=8192
 )
 
-target_compile_definitions(${PROJECT_NAME} INTERFACE
-	PICO_DEFAULT_UART=0
-)
-
 # compiler diagnostic options
 if (PICO_C_COMPILER_IS_GNU)
 	target_compile_options(${PROJECT_NAME} PUBLIC -fdiagnostics-color=always)
