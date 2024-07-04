@@ -39,12 +39,11 @@ static bool msc_ejected = true;
 
 void stdio_msc_usb_do_msc(void)
 {
-	if (stdio_msc_usb_disable_stdio()) {
-		msc_ejected = false;
-		while (!msc_ejected)
-			tud_task();
-		stdio_msc_usb_enable_stdio();
-	}
+	stdio_msc_usb_disable_irq_tud_task();
+	msc_ejected = false;
+	while (!msc_ejected)
+		tud_task();
+	stdio_msc_usb_enable_irq_tud_task();
 }
 
 // Invoked when received SCSI_CMD_INQUIRY
@@ -197,25 +196,21 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16],
 
 	switch (scsi_cmd[0]) {
 	case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-		{
-			scsi_prevent_allow_medium_removal_t const *
-				prevent_allow =
-				(scsi_prevent_allow_medium_removal_t const *)
-				scsi_cmd;
-
-			if ((prevent_allow->prohibit_removal & 3) == 0)
-				resplen = 0;	// allow succeeds
-			else
-				resplen = -1;	// any prevents unsupported
-		}
+		resplen = 0;			// report success
 		break;
 
 	case SCSI_CMD_VERIFY_10:
-		resplen = 0;		// report success
+		if (msc_ejected)
+			resplen = -1;
+		else
+			resplen = 0;		// report success
 		break;
 
 	case SCSI_CMD_SYNCHRONIZE_CACHE_10:
-		resplen = 0;		// report success
+		if (msc_ejected)
+			resplen = -1;
+		else
+			resplen = 0;		// report success
 		break;
 
 	default:

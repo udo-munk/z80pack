@@ -34,6 +34,20 @@ static_assert(STDIO_MSC_USB_LOW_PRIORITY_IRQ >= NUM_IRQS - NUM_USER_IRQS, "");
 static uint8_t low_priority_irq_num;
 #endif
 
+static volatile bool irq_tud_task_enabled;
+
+void stdio_msc_usb_enable_irq_tud_task(void) {
+    irq_tud_task_enabled = true;
+}
+
+void stdio_msc_usb_disable_irq_tud_task(void) {
+    if (!mutex_try_enter_block_until(&stdio_msc_usb_mutex, make_timeout_time_ms(PICO_STDIO_DEADLOCK_TIMEOUT_MS))) {
+        return;
+    }
+    irq_tud_task_enabled = false;
+    mutex_exit(&stdio_msc_usb_mutex);
+}
+
 static int64_t timer_task(__unused alarm_id_t id, __unused void *user_data) {
     int64_t repeat_time;
     if (critical_section_is_initialized(&one_shot_timer_crit_sec)) {
@@ -50,7 +64,9 @@ static int64_t timer_task(__unused alarm_id_t id, __unused void *user_data) {
 
 static void low_priority_worker_irq(void) {
     if (mutex_try_enter(&stdio_msc_usb_mutex, NULL)) {
-        tud_task();
+        if (irq_tud_task_enabled) {
+            tud_task();
+        }
         mutex_exit(&stdio_msc_usb_mutex);
     } else {
         // if the mutex is already owned, then we are in non IRQ code in this file.
@@ -170,12 +186,13 @@ bool stdio_msc_usb_init(void) {
         assert(false);
         return false;
     }
-#if !PICO_NO_BI_STDIO_USB
+#if !PICO_NO_BI_STDIO_USB && !STDIO_MSC_USB_DISABLE_STDIO
     bi_decl_if_func_used(bi_program_feature("USB stdin / stdout"));
 #endif
 
     mutex_init(&stdio_msc_usb_mutex);
     bool rc = true;
+    stdio_msc_usb_enable_irq_tud_task();
 #ifdef STDIO_MSC_USB_LOW_PRIORITY_IRQ
     user_irq_claim(STDIO_MSC_USB_LOW_PRIORITY_IRQ);
 #else
@@ -194,7 +211,7 @@ bool stdio_msc_usb_init(void) {
         memset(&one_shot_timer_crit_sec, 0, sizeof(one_shot_timer_crit_sec));
     }
     if (rc) {
-#if STDIO_MSC_USB_DISABLE_STDIO == 0
+#if !STDIO_MSC_USB_DISABLE_STDIO
         stdio_set_driver_enabled(&stdio_msc_usb, true);
 #endif
 #if STDIO_MSC_USB_CONNECT_WAIT_TIMEOUT_MS
@@ -223,22 +240,5 @@ bool stdio_msc_usb_connected(void) {
 #else
     // this actually checks DTR
     return tud_cdc_connected();
-#endif
-}
-
-bool stdio_msc_usb_disable_stdio(void) {
-#if STDIO_MSC_USB_DISABLE_STDIO == 0
-    if (!mutex_try_enter_block_until(&stdio_msc_usb_mutex, make_timeout_time_ms(PICO_STDIO_DEADLOCK_TIMEOUT_MS))) {
-        return false;
-    }
-    stdio_set_driver_enabled(&stdio_msc_usb, false);
-#endif
-    return true;
-}
-
-void stdio_msc_usb_enable_stdio(void) {
-#if STDIO_MSC_USB_DISABLE_STDIO == 0
-    mutex_exit(&stdio_msc_usb_mutex);
-    stdio_set_driver_enabled(&stdio_msc_usb, true);
 #endif
 }
