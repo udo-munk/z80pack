@@ -281,8 +281,6 @@ void reset_io(void)
 	isbc206_reset();	/* reset iSBC 206 disk controller */
 #endif
 
-	hwctl_lock = 0xff;
-
 	th_suspend = 0;		/* resume timing thread */
 }
 
@@ -447,6 +445,8 @@ static void hwctl_out(BYTE data)
 	}
 
 	/* process output to unlocked port */
+	/* but first lock port again */
+	hwctl_lock = 0xff;
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;

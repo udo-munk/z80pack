@@ -342,7 +342,6 @@ void reset_io(void)
 	cromemco_dazzler_off();
 #endif
 	imsai_fif_reset();
-	hwctl_lock = 0xff;
 #ifdef HAS_APU
 	am_reset(am9511);
 #endif
@@ -449,6 +448,8 @@ static void hwctl_out(BYTE data)
 	}
 
 	/* process output to unlocked port */
+	/* but first lock port again */
+	hwctl_lock = 0xff;
 
 	if (data & 128) {
 		cpu_error = IOHALT;

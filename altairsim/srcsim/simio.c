@@ -193,7 +193,6 @@ void reset_io(void)
 	cromemco_dazzler_off();
 	tarbell_reset();
 	altair_dsk_reset();
-	hwctl_lock = 0xff;
 }
 
 #if 0		/* currently not used */
@@ -291,6 +290,8 @@ static void hwctl_out(BYTE data)
 	}
 
 	/* process output to unlocked port */
+	/* but first lock port again */
+	hwctl_lock = 0xff;
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;

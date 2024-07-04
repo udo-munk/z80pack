@@ -660,9 +660,6 @@ void reset_system(void)
 	selbnk = 0;
 	segsize = SEGSIZ;
 
-	/* lock hardware control port */
-	hwctl_lock = 0xff;
-
 	/* reset CPU */
 	reset_cpu();
 
@@ -2022,6 +2019,8 @@ static void hwctl_out(BYTE data)
 	}
 
 	/* process output to unlocked port */
+	/* but first lock port again */
+	hwctl_lock = 0xff;
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
