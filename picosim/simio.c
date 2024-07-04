@@ -18,7 +18,7 @@
 
 /* Raspberry SDK includes */
 #include <stdio.h>
-#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 #include <tusb.h>
 #endif
 #include "pico/stdlib.h"
@@ -105,7 +105,7 @@ static BYTE p000_in(void)
 	if (uart_is_readable(my_uart))	/* check if there is input from UART */
 		stat &= 0b11111110;	/* if so flip status bit */
 #endif
-#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 	if (tud_cdc_write_available())	/* check if output to UART is possible */
 		stat &= 0b01111111;	/* if so flip status bit */
 	if (tud_cdc_available())	/* check if there is input from UART */
@@ -121,15 +121,15 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-#if LIB_PICO_STDIO_UART && !(LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB)
+#if LIB_PICO_STDIO_UART && !(LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO))
 	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
 	if (!uart_is_readable(my_uart))
 #endif
-#if (LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB) && !LIB_PICO_STDIO_UART
+#if (LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)) && !LIB_PICO_STDIO_UART
 	if (!tud_cdc_available())
 #endif
-#if (LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB) && LIB_PICO_STDIO_UART
+#if (LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)) && LIB_PICO_STDIO_UART
 	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
 	if (!uart_is_readable(my_uart) && !tud_cdc_available())

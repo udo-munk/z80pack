@@ -194,7 +194,9 @@ bool stdio_msc_usb_init(void) {
         memset(&one_shot_timer_crit_sec, 0, sizeof(one_shot_timer_crit_sec));
     }
     if (rc) {
+#if STDIO_MSC_USB_DISABLE_STDIO == 0
         stdio_set_driver_enabled(&stdio_msc_usb, true);
+#endif
 #if STDIO_MSC_USB_CONNECT_WAIT_TIMEOUT_MS
 #if STDIO_MSC_USB_CONNECT_WAIT_TIMEOUT_MS > 0
         absolute_time_t until = make_timeout_time_ms(STDIO_MSC_USB_CONNECT_WAIT_TIMEOUT_MS);
@@ -221,5 +223,22 @@ bool stdio_msc_usb_connected(void) {
 #else
     // this actually checks DTR
     return tud_cdc_connected();
+#endif
+}
+
+bool stdio_msc_usb_disable_stdio(void) {
+#if STDIO_MSC_USB_DISABLE_STDIO == 0
+    if (!mutex_try_enter_block_until(&stdio_msc_usb_mutex, make_timeout_time_ms(PICO_STDIO_DEADLOCK_TIMEOUT_MS))) {
+        return false;
+    }
+    stdio_set_driver_enabled(&stdio_msc_usb, false);
+#endif
+    return true;
+}
+
+void stdio_msc_usb_enable_stdio(void) {
+#if STDIO_MSC_USB_DISABLE_STDIO == 0
+    mutex_exit(&stdio_msc_usb_mutex);
+    stdio_set_driver_enabled(&stdio_msc_usb, true);
 #endif
 }
