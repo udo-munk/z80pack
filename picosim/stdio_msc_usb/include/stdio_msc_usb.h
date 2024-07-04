@@ -142,9 +142,9 @@ bool stdio_msc_usb_init(void);
  */
 bool stdio_msc_usb_connected(void);
 
-bool stdio_msc_usb_disable_stdio(void);
+void stdio_msc_usb_enable_irq_tud_task(void);
 
-void stdio_msc_usb_enable_stdio(void);
+void stdio_msc_usb_disable_irq_tud_task(void);
 
 void stdio_msc_usb_do_msc(void);
 
