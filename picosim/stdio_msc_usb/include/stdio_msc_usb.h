@@ -95,6 +95,14 @@
 #define STDIO_MSC_USB_RESET_RESET_TO_FLASH_DELAY_MS 100
 #endif
 
+// PICO_CONFIG: STDIO_MSC_USB_DISABLE_STDIO, Disable stdio support, type=bool, default=0, group=stdio_msc_usb
+#ifndef STDIO_MSC_USB_DISABLE_STDIO
+#define STDIO_MSC_USB_DISABLE_STDIO 0
+#endif
+#if STDIO_MSC_USB_DISABLE_STDIO
+#define STDIO_MSC_USB_CONNECTION_WITHOUT_DTR 1
+#endif
+
 // PICO_CONFIG: STDIO_MSC_USB_CONNECTION_WITHOUT_DTR, Disable use of DTR for connection checking meaning connection is assumed to be valid, type=bool, default=0, group=stdio_msc_usb
 #ifndef STDIO_MSC_USB_CONNECTION_WITHOUT_DTR
 #define STDIO_MSC_USB_CONNECTION_WITHOUT_DTR 0
@@ -133,6 +141,13 @@ bool stdio_msc_usb_init(void);
  *  \return true if stdio is connected over CDC
  */
 bool stdio_msc_usb_connected(void);
+
+bool stdio_msc_usb_disable_stdio(void);
+
+void stdio_msc_usb_enable_stdio(void);
+
+void stdio_msc_usb_do_msc(void);
+
 #ifdef __cplusplus
 }
 #endif

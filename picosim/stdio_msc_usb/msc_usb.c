@@ -27,7 +27,7 @@
 #include "tusb.h"
 #include "hw_config.h"
 #include "sd_card.h"
-#include "msc_usb.h"
+#include "stdio_msc_usb.h"
 
 typedef enum {
 	SCSI_CMD_VERIFY_10		= 0x2f,
@@ -35,7 +35,17 @@ typedef enum {
 } scsi_cmd_type_2_t;
 
 // whether mass storage interface is active
-bool msc_ejected = true;
+static bool msc_ejected = true;
+
+void stdio_msc_usb_do_msc(void)
+{
+	if (stdio_msc_usb_disable_stdio()) {
+		msc_ejected = false;
+		while (!msc_ejected)
+			tud_task();
+		stdio_msc_usb_enable_stdio();
+	}
+}
 
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up

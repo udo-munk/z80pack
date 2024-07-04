@@ -55,6 +55,17 @@
 /* CPU speed */
 int speed = CPU_SPEED;
 
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
+{
+	UNUSED(itf);
+	UNUSED(duration_ms);
+
+	cpu_error = USERINT;
+	cpu_state = STOPPED;
+}
+#endif
+
 /*
  * interrupt handler for break switch
  * stops CPU
