@@ -89,7 +89,7 @@ void config(void)
 	char s[10];
 	unsigned int br;
 	int go_flag = 0;
-	int i, n;
+	int i, n, menu;
 	datetime_t t;
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
@@ -109,34 +109,39 @@ void config(void)
 	}
 	rtc_set_datetime(&t);
 	sleep_us(64);
+	menu = 1;
 
 	while (!go_flag) {
-		if (rtc_get_datetime(&t)) {
-			printf("Current time: %s %04d-%02d-%02d "
-			       "%02d:%02d:%02d\n", dotw[t.dotw],
-			       t.year, t.month, t.day, t.hour, t.min, t.sec);
-		}
-		printf("a - set date\n");
-		printf("t - set time\n");
+		if (menu) {
+			if (rtc_get_datetime(&t)) {
+				printf("Current time: %s %04d-%02d-%02d "
+				       "%02d:%02d:%02d\n", dotw[t.dotw],
+				       t.year, t.month, t.day, t.hour,
+				       t.min, t.sec);
+			}
+			printf("a - set date\n");
+			printf("t - set time\n");
 #if LIB_STDIO_MSC_USB
-		printf("u - enable USB mass storage access\n");
+			printf("u - enable USB mass storage access\n");
 #endif
-		printf("c - switch CPU, currently %s\n",
-		       (cpu == Z80) ? "Z80" : "8080");
-		printf("s - CPU speed: ");
-		if (speed == 0)
-			puts("unlimited");
-		else
+			printf("c - switch CPU, currently %s\n",
+			       (cpu == Z80) ? "Z80" : "8080");
+			printf("s - CPU speed: ");
+			if (speed == 0)
+				puts("unlimited");
+			else
 			printf("%d MHz\n", speed);
-		printf("p - Port 255 value: %02XH\n", fp_value);
-		printf("f - list files\n");
-		printf("r - load file\n");
-		printf("d - list disks\n");
-		printf("0 - Disk 0: %s\n", disks[0]);
-		printf("1 - Disk 1: %s\n", disks[1]);
-		printf("2 - Disk 2: %s\n", disks[2]);
-		printf("3 - Disk 3: %s\n", disks[3]);
-		printf("g - run machine\n\n");
+			printf("p - Port 255 value: %02XH\n", fp_value);
+			printf("f - list files\n");
+			printf("r - load file\n");
+			printf("d - list disks\n");
+			printf("0 - Disk 0: %s\n", disks[0]);
+			printf("1 - Disk 1: %s\n", disks[1]);
+			printf("2 - Disk 2: %s\n", disks[2]);
+			printf("3 - Disk 3: %s\n", disks[3]);
+			printf("g - run machine\n\n");
+		} else
+			menu = 1;
 		printf("Command: ");
 		get_cmdline(s, 2);
 		putchar('\n');
@@ -236,6 +241,7 @@ again:
 		case 'f':
 			list_files(cpath, cext);
 			putchar('\n');
+			menu = 0;
 			break;
 
 		case 'r':
@@ -248,6 +254,7 @@ again:
 		case 'd':
 			list_files(dpath, dext);
 			putchar('\n');
+			menu = 0;
 			break;
 
 		case '0':
