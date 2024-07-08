@@ -14,7 +14,7 @@
 #define LED 14			/* or another one */
 
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
-//#define EXCLUDE_I8080	/* don't include 8080, for now we want both */
+//#define EXCLUDE_I8080	/* we want both CPU's */
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
