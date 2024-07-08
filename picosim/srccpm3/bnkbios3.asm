@@ -5,6 +5,7 @@
 ;
 ; History:
 ; 03-JUL-2024 first public release
+; 07-JUL-2024 added RTC
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -16,6 +17,14 @@ OPEN	EQU	15		; open file
 READS	EQU	20		; read sequential
 DMA	EQU	26		; setup DMA
 MULTI	EQU	44		; multi sector I/O
+;
+;	RTC commands
+;
+GETSEC	EQU	0		; get seconds from RTC
+GETMIN	EQU	1		; get minutes from RTC
+GETHOU	EQU	2		; get hours from RTC
+GETDAL	EQU	3		; get days low from RTC
+GETDAH	EQU	4		; get days high from RTC
 ;
 ;	character devices mode byte
 ;
@@ -38,6 +47,8 @@ TTY1	EQU	01H		; tty 1 data
 TTY1S	EQU	00H		; tty 1 status
 FDC	EQU	04H		; FDC
 MMUSEL	EQU	40H		; MMU bank select
+CLKCMD	EQU	41H		; RTC command
+CLKDAT	EQU	42H		; RTC data
 ;
 ;	external references in SCB
 ;
@@ -209,7 +220,7 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'Banked BIOS V1.0',13,10
+	DB	'Banked BIOS V1.1',13,10
 	DB	'Copyright (C) 2024 Udo Munk',13,10,13,10
 	DB	0
 ;
@@ -556,6 +567,29 @@ XMOVE: RET			; no memory to memory DMA available
 ;
 ;	get/set time
 ;
-TIME:	RET			; no RTC
+TIME:	MOV	A,C
+	CPI	0FFH
+	RZ			; can't set time
+	MVI	A,GETSEC	; get seconds
+	OUT	CLKCMD
+	IN	CLKDAT
+	STA	@sec
+	MVI	A,GETMIN	; get minutes
+	OUT	CLKCMD
+	IN	CLKDAT
+	STA	@min
+	MVI	A,GETHOU	; get hours
+	OUT	CLKCMD
+	IN	CLKDAT
+	STA	@hour
+	MVI	A,GETDAL	; get day
+	OUT	CLKCMD
+	IN	CLKDAT
+	STA	@date
+	MVI	A,GETDAH
+	OUT	CLKCMD
+	IN	CLKDAT
+	STA	@date+1
+	RET
 ;
 	END			; of BIOS

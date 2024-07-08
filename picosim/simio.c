@@ -36,6 +36,7 @@
 #include "simcore.h"
 #include "simio.h"
 
+#include "rtc80.h"
 #include "sd-fdc.h"
 
 /*
@@ -61,6 +62,8 @@ BYTE (*const port_in[256])(void) = {
 	[  1] = p001_in,	/* SIO data */
 	[  4] = fdc_in,		/* FDC status */
 	[ 64] = mmu_in,		/* MMU */
+	[ 65] = clkc_in,	/* RTC read clock command */
+	[ 66] = clkd_in,	/* RTC read clock data */
 	[160] = hwctl_in,	/* virtual hardware control */
 	[255] = p255_in		/* for frontpanel */
 };
@@ -74,6 +77,8 @@ void (*const port_out[256])(BYTE data) = {
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC command */
 	[ 64] = mmu_out,	/* MMU */
+	[ 65] = clkc_out,	/* RTC write clock command */
+	[ 66] = clkd_out,	/* RTC write clock data */
 	[160] = hwctl_out,	/* virtual hardware control */
 	[255] = p255_out	/* for frontpanel */
 };

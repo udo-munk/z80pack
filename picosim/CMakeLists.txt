@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME}
 	simcfg.c
 	simio.c
 	simmem.c
+	${Z80PACK}/iodevices/rtc80.c
 	${Z80PACK}/iodevices/sd-fdc.c
 	${Z80PACK}/z80core/sim8080.c
 	${Z80PACK}/z80core/simcore.c
