@@ -5,6 +5,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 set(CMAKE_BUILD_TYPE Release)
 endif()
 
+set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR})
+
 # Set platform, board, and compiler
 set(PICO_PLATFORM rp2040)
 set (PICO_BOARD pico)
@@ -21,32 +23,34 @@ project(picosim C CXX ASM)
 
 pico_sdk_init()
 
+set(Z80PACK ${CMAKE_SOURCE_DIR}/../)
+
 add_executable(${PROJECT_NAME}
 	picosim.c
 	disks.c
 	simcfg.c
 	simio.c
 	simmem.c
-	../iodevices/sd-fdc.c
-	../z80core/sim8080.c
-	../z80core/simcore.c
-	../z80core/simdis.c
-	../z80core/simglb.c
-	../z80core/simice.c
-	../z80core/simutil.c
-	../z80core/simz80-cb.c
-	../z80core/simz80-dd.c
-	../z80core/simz80-ddcb.c
-	../z80core/simz80-ed.c
-	../z80core/simz80-fd.c
-	../z80core/simz80-fdcb.c
-	../z80core/simz80.c
+	${Z80PACK}/iodevices/sd-fdc.c
+	${Z80PACK}/z80core/sim8080.c
+	${Z80PACK}/z80core/simcore.c
+	${Z80PACK}/z80core/simdis.c
+	${Z80PACK}/z80core/simglb.c
+	${Z80PACK}/z80core/simice.c
+	${Z80PACK}/z80core/simutil.c
+	${Z80PACK}/z80core/simz80-cb.c
+	${Z80PACK}/z80core/simz80-dd.c
+	${Z80PACK}/z80core/simz80-ddcb.c
+	${Z80PACK}/z80core/simz80-ed.c
+	${Z80PACK}/z80core/simz80-fd.c
+	${Z80PACK}/z80core/simz80-fdcb.c
+	${Z80PACK}/z80core/simz80.c
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_SOURCE_DIR}
-	../iodevices
-	../z80core
+	${Z80PACK}/iodevices
+	${Z80PACK}/z80core
 )
 
 add_subdirectory(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
