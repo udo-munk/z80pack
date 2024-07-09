@@ -122,6 +122,9 @@
 		if (F_flag)
 			addr_leds(BC);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = BC;
+#endif
 		BC++;
 		t++;
 		break;
@@ -184,6 +187,9 @@
 		if (F_flag)
 			addr_leds(BC);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = BC;
+#endif
 		BC--;
 		t++;
 		break;
@@ -226,6 +232,9 @@
 		if (F_flag)
 			addr_leds(DE);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = DE;
+#endif
 		DE++;
 		t++;
 		break;
@@ -266,6 +275,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(DE);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = DE;
 #endif
 		DE--;
 		t++;
@@ -311,6 +323,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(HL);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = HL;
 #endif
 		HL++;
 		t++;
@@ -365,6 +380,9 @@
 		if (F_flag)
 			addr_leds(HL);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = HL;
+#endif
 		HL--;
 		t++;
 		break;
@@ -405,6 +423,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(SP);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = SP;
 #endif
 		SP++;
 		t++;
@@ -450,6 +471,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(SP);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = SP;
 #endif
 		SP--;
 		t++;
@@ -1501,6 +1525,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(HL);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = HL;
 #endif
 		SP = HL;
 		t++;

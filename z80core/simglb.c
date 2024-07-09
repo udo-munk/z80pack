@@ -80,6 +80,11 @@ BYTE fp_led_data;		/* lights for data bus */
 WORD address_switch;		/* address and programmed input switches */
 BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
 #endif
+#ifdef SIMPLEPANEL
+WORD fp_led_address;		/* lights for address bus */
+BYTE fp_led_data;		/* lights for data bus */
+BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
+#endif
 
 /*
  *	Flags to control operation of simulation

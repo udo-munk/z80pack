@@ -519,6 +519,10 @@ void cpu_8080(void)
 						goto leave;
 				}
 #endif
+#ifdef SIMPLEPANEL
+				fp_led_data = (int_data != -1) ?
+					      (BYTE) int_data : 0xff;
+#endif
 #ifdef BUS_8080
 			}
 			cpu_bus = CPU_STACK;
@@ -634,6 +638,10 @@ leave:
 		fp_sampleData();
 		cpu_time -= get_clock_us() - clk;
 	}
+#endif
+#ifdef SIMPLEPANEL
+	fp_led_address = PC;
+	fp_led_data = getmem(PC);
 #endif
 }
 
@@ -1300,6 +1308,9 @@ static int op_sphl(void)		/* SPHL */
 	if (F_flag)
 		addr_leds(H << 8 | L);
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = H << 8 | L;
+#endif
 	SP = (H << 8) + L;
 	return 5;
 }
@@ -1332,6 +1343,9 @@ static int op_inxb(void)		/* INX B */
 	if (F_flag)
 		addr_leds(B << 8 | C);
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = B << 8 | C;
+#endif
 	C++;
 	if (!C)
 		B++;
@@ -1343,6 +1357,9 @@ static int op_inxd(void)		/* INX D */
 #ifdef FRONTPANEL
 	if (F_flag)
 		addr_leds(D << 8 | E);
+#endif
+#ifdef SIMPLEPANEL
+	fp_led_address = D << 8 | E;
 #endif
 	E++;
 	if (!E)
@@ -1356,6 +1373,9 @@ static int op_inxh(void)		/* INX H */
 	if (F_flag)
 		addr_leds(H << 8 | L);
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = H << 8 | L;
+#endif
 	L++;
 	if (!L)
 		H++;
@@ -1368,6 +1388,9 @@ static int op_inxsp(void)		/* INX SP */
 	if (F_flag)
 		addr_leds(SP);
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = SP;
+#endif
 	SP++;
 	return 5;
 }
@@ -1377,6 +1400,9 @@ static int op_dcxb(void)		/* DCX B */
 #ifdef FRONTPANEL
 	if (F_flag)
 		addr_leds(B << 8 | C);
+#endif
+#ifdef SIMPLEPANEL
+	fp_led_address = B << 8 | C;
 #endif
 	C--;
 	if (C == 0xff)
@@ -1390,6 +1416,9 @@ static int op_dcxd(void)		/* DCX D */
 	if (F_flag)
 		addr_leds(D << 8 | E);
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = D << 8 | E;
+#endif
 	E--;
 	if (E == 0xff)
 		D--;
@@ -1402,6 +1431,9 @@ static int op_dcxh(void)		/* DCX H */
 	if (F_flag)
 		addr_leds(H << 8 | L);
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = H << 8 | L;
+#endif
 	L--;
 	if (L == 0xff)
 		H--;
@@ -1413,6 +1445,9 @@ static int op_dcxsp(void)		/* DCX SP */
 #ifdef FRONTPANEL
 	if (F_flag)
 		addr_leds(SP);
+#endif
+#ifdef SIMPLEPANEL
+	fp_led_address = SP;
 #endif
 	SP--;
 	return 5;

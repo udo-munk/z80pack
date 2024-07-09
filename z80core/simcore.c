@@ -315,7 +315,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #ifdef FRONTPANEL
 	int val;
 #else
+#ifndef SIMPLEPANEL
 	UNUSED(addrh);
+#endif
 #endif
 
 	clk = get_clock_us();
@@ -348,6 +350,10 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 			io_data = (*port_in[addrl])();
 	}
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = (addrh << 8) + addrl;
+	fp_led_data = io_data;
+#endif
 
 #ifndef BAREMETAL
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
@@ -366,7 +372,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
 	uint64_t clk;
-#ifndef FRONTPANEL
+#if !defined(FRONTPANEL) && !defined(SIMPLEPANEL)
 	UNUSED(addrh);
 #endif
 
@@ -402,6 +408,10 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 		fp_sampleData();
 		wait_step();
 	}
+#endif
+#ifdef SIMPLEPANEL
+	fp_led_address = (addrh << 8) + addrl;
+	fp_led_data = IO_DATA_UNUSED;
 #endif
 
 	cpu_time -= get_clock_us() - clk;
