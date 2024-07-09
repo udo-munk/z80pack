@@ -60,7 +60,7 @@
 #define CPU_WO		2	/* write or output (active low) */
 #define CPU_INTA	1	/* interrupt acknowledge */
 
-#ifdef FRONTPANEL
+#if defined(FRONTPANEL) || defined(SIMPLEPANEL)
 #define BUS_8080		/* emulate 8080 bus status */
 #endif
 

@@ -512,6 +512,10 @@ void cpu_z80(void)
 						goto leave;
 				}
 #endif
+#ifdef SIMPLEPANEL
+				fp_led_data = (int_data != -1) ?
+					      (BYTE) int_data : 0xff;
+#endif
 #ifdef BUS_8080
 			}
 			cpu_bus = 0;
@@ -646,6 +650,10 @@ leave:
 		fp_sampleData();
 		cpu_time -= get_clock_us() - clk;
 	}
+#endif
+#ifdef SIMPLEPANEL
+	fp_led_address = PC;
+	fp_led_data = getmem(PC);
 #endif
 }
 
