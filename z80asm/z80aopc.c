@@ -11,38 +11,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
+#include "z80amain.h"
+#include "z80amfun.h"
+#include "z80apfun.h"
+#include "z80arfun.h"
+#include "z80aopc.h"
 
-int opccmp(const void *, const void *);
+static int opccmp(const void *p1, const void *p2);
 
-/* z80amain.c */
-extern void fatal(int, const char *) NORETURN;
-
-/* z80amfun.c */
-extern WORD op_endm(BYTE, BYTE), op_exitm(BYTE, BYTE), op_irp(BYTE, BYTE);
-extern WORD op_local(BYTE, BYTE), op_macro(BYTE, BYTE), op_mcond(BYTE, BYTE);
-extern WORD op_rept(BYTE, BYTE);
-
-/* z80apfun.c */
-extern WORD op_instrset(BYTE, BYTE), op_org(BYTE, BYTE), op_radix(BYTE, BYTE);
-extern WORD op_equ(BYTE, BYTE), op_dl(BYTE, BYTE), op_ds(BYTE, BYTE);
-extern WORD op_db(BYTE, BYTE), op_dw(BYTE, BYTE), op_misc(BYTE, BYTE);
-extern WORD op_cond(BYTE, BYTE), op_glob(BYTE, BYTE), op_end(BYTE, BYTE);
-
-/* z80arfun.c */
-extern WORD op_1b(BYTE, BYTE), op_2b(BYTE, BYTE), op_im(BYTE, BYTE);
-extern WORD op_pupo(BYTE, BYTE), op_ex(BYTE, BYTE), op_rst(BYTE, BYTE);
-extern WORD op_ret(BYTE, BYTE), op_jpcall(BYTE, BYTE), op_jr(BYTE, BYTE);
-extern WORD op_djnz(BYTE, BYTE), op_ld(BYTE, BYTE), op_add(BYTE, BYTE);
-extern WORD op_sbadc(BYTE, BYTE), op_decinc(BYTE, BYTE), op_alu(BYTE, BYTE);
-extern WORD op_out(BYTE, BYTE), op_in(BYTE, BYTE), op_cbgrp(BYTE, BYTE);
-extern WORD op8080_mov(BYTE, BYTE), op8080_alu(BYTE, BYTE);
-extern WORD op8080_dcrinr(BYTE, BYTE), op8080_reg16(BYTE, BYTE);
-extern WORD op8080_regbd(BYTE, BYTE), op8080_imm(BYTE, BYTE);
-extern WORD op8080_rst(BYTE, BYTE), op8080_pupo(BYTE, BYTE);
-extern WORD op8080_addr(BYTE, BYTE), op8080_mvi(BYTE, BYTE);
-extern WORD op8080_lxi(BYTE, BYTE);
+/*
+ *	structure operand table
+ */
+struct ope {
+	const char *ope_name;	/* operand name */
+	BYTE ope_sym;		/* operand symbol value */
+	BYTE ope_flags;		/* operand flags */
+};
 
 /*
  *	pseudo op table
@@ -405,7 +392,7 @@ void instrset(int is)
 /*
  *	compares two opcodes for qsort()
  */
-int opccmp(const void *p1, const void *p2)
+static int opccmp(const void *p1, const void *p2)
 {
 	return (strcmp((*(const struct opc **) p1)->op_name,
 		       (*(const struct opc **) p2)->op_name));

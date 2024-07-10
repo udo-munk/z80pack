@@ -11,16 +11,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
+#include "z80aout.h"
+#include "z80atab.h"
+#include "z80anum.h"
 
-int expr(WORD *);
+static int expr(WORD *resultp);
 
-/* z80aout.c */
-extern void asmerr(int);
-
-/* z80atab.c */
-extern struct sym *get_sym(char *);
+BYTE ctype[256];		/* table for character classification */
 
 /*
  *	definition of token types
@@ -121,7 +121,7 @@ void init_ctype(void)
  *	do binary search for operator s in sorted table oprtab
  *	returns symbol for operator or T_UNDSYM if not found
  */
-BYTE search_opr(char *s)
+static BYTE search_opr(char *s)
 {
 	register struct opr *low, *mid;
 	register struct opr *high;
@@ -146,7 +146,7 @@ BYTE search_opr(char *s)
  *	updates tok_type, tok_val and scan_pos
  *	returns E_OK on success, otherwise a hard error code
  */
-int get_token(void)
+static int get_token(void)
 {
 	register char *s, *p1;
 	register char *p2;
@@ -335,7 +335,7 @@ int get_token(void)
  *	inspired by the previous expression parser by Didier Derny.
  */
 
-int factor(WORD *resultp)
+static int factor(WORD *resultp)
 {
 	register int err, erru;
 	register char *s;
@@ -426,7 +426,7 @@ int factor(WORD *resultp)
 	}
 }
 
-int mul_term(WORD *resultp)
+static int mul_term(WORD *resultp)
 {
 	register int err, erru;
 	register BYTE opr_type;
@@ -472,7 +472,7 @@ int mul_term(WORD *resultp)
 	return erru;
 }
 
-int add_term(WORD *resultp)
+static int add_term(WORD *resultp)
 {
 	register int err, erru;
 	register BYTE opr_type;
@@ -504,7 +504,7 @@ int add_term(WORD *resultp)
 	return erru;
 }
 
-int cmp_term(WORD *resultp)
+static int cmp_term(WORD *resultp)
 {
 	register int err, erru;
 	register BYTE opr_type;
@@ -550,7 +550,7 @@ int cmp_term(WORD *resultp)
 	return erru;
 }
 
-int expr(WORD *resultp)
+static int expr(WORD *resultp)
 {
 	register int err, erru;
 	register BYTE opr_type;

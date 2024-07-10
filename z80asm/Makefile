@@ -23,46 +23,45 @@ INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL) -m 644
 
-OBJS =	z80amain.o \
-	z80atab.o \
-	z80anum.o \
-	z80aout.o \
-	z80amfun.o \
-	z80arfun.o \
-	z80apfun.o \
-	z80aopc.o \
-	z80aglb.o
+OBJS =	z80amain.o z80atab.o z80anum.o z80aout.o z80amfun.o z80arfun.o \
+	z80apfun.o z80aopc.o z80aglb.o
 
 all: z80asm
 
 z80asm: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o z80asm
 
-z80amain.o: z80amain.c z80a.h z80aglb.h
+z80amain.o: z80amain.c z80a.h z80aglb.h z80amfun.h z80anum.h z80aopc.h \
+		z80aout.h z80atab.h z80amain.h
 	$(CC) $(CFLAGS) -c z80amain.c
 
-z80atab.o: z80atab.c z80a.h z80aglb.h
+z80atab.o: z80atab.c z80a.h z80aglb.h z80amain.h z80aout.h z80atab.h
 	$(CC) $(CFLAGS) -c z80atab.c
 
-z80anum.o: z80anum.c z80a.h z80aglb.h
+z80anum.o: z80anum.c z80a.h z80aglb.h z80aout.h z80atab.h z80anum.h
 	$(CC) $(CFLAGS) -c z80anum.c
 
-z80aout.o: z80aout.c z80a.h z80aglb.h
+z80aout.o: z80aout.c z80a.h z80aglb.h z80amain.h z80amfun.h z80atab.h \
+		z80aout.h
 	$(CC) $(CFLAGS) -c z80aout.c
 
-z80amfun.o: z80amfun.c z80a.h z80aglb.h
+z80amfun.o: z80amfun.c z80a.h z80aglb.h z80amain.h z80anum.h z80aopc.h \
+		z80aout.h z80amfun.h
 	$(CC) $(CFLAGS) -c z80amfun.c
 
-z80arfun.o: z80arfun.c z80a.h z80aglb.h
+z80arfun.o: z80arfun.c z80a.h z80aglb.h z80amain.h z80anum.h z80aopc.h \
+		z80aout.h z80arfun.h
 	$(CC) $(CFLAGS) -c z80arfun.c
 
-z80apfun.o: z80apfun.c z80a.h z80aglb.h
+z80apfun.o: z80apfun.c z80a.h z80aglb.h z80amain.h z80anum.h z80aopc.h \
+		z80aout.h z80atab.h z80apfun.h
 	$(CC) $(CFLAGS) -c z80apfun.c
 
-z80aopc.o: z80aopc.c z80a.h z80aglb.h
+z80aopc.o: z80aopc.c z80a.h z80aglb.h z80amain.h z80amfun.h z80apfun.h \
+		z80arfun.h z80aopc.h
 	$(CC) $(CFLAGS) -c z80aopc.c
 
-z80aglb.o: z80aglb.c z80a.h
+z80aglb.o: z80aglb.c z80a.h z80aglb.h z80aout.h
 	$(CC) $(CFLAGS) -c z80aglb.c
 
 instcoh: z80asm

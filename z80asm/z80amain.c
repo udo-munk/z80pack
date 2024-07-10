@@ -14,48 +14,25 @@
 #include <unistd.h>
 #endif
 #include <string.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
+#include "z80amfun.h"
+#include "z80anum.h"
+#include "z80aopc.h"
+#include "z80aout.h"
+#include "z80atab.h"
+#include "z80amain.h"
 
-void init(void), options(int, char *[]);
-void usage(void), fatal(int, const char *) NORETURN;
-void do_pass(int), process_file(char *);
-int process_line(char *);
-void open_o_files(char *);
-char *get_fn(char *, const char *, int);
-char *get_symbol(char *, char *, int);
-void get_operand(char *, char *, int);
-
-/* z80aout.c */
-extern void asmerr(int);
-extern void lst_line(char *, WORD, WORD, int);
-extern void lst_mac(int);
-extern void lst_sym(int);
-extern void obj_header(void);
-extern void obj_end(void);
-extern void obj_writeb(WORD);
-
-/* z80anum.c */
-extern WORD eval(char *);
-
-/* z80mfun.c */
-extern void mac_start_pass(void);
-extern void mac_end_pass(void);
-extern char *mac_expand(void);
-extern void mac_add_line(struct opc *, char *);
-extern int mac_lookup(char *);
-extern void mac_call(void);
-
-/* z80anum.c */
-extern void init_ctype(void);
-
-/* z80aopc.c */
-extern void instrset(int);
-extern struct opc *search_op(char *);
-
-/* z80atab.c */
-extern void put_sym(char *, WORD);
-extern void put_label(void);
+static void init(void);
+static void options(int argc, char *argv[]);
+static void usage(void);
+static void do_pass(int p);
+static int process_line(char *l);
+static void open_o_files(char *source);
+static char *get_fn(char *src, const char *ext, int replace);
+static char *get_symbol(char *s, char *l, int lbl_flag);
+static void get_operand(char *s, char *l, int nopre_flag);
 
 static const char *errmsg[] = {		/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
@@ -105,7 +82,7 @@ int main(int argc, char *argv[])
 /*
  *	initialization
  */
-void init(void)
+static void init(void)
 {
 	init_ctype();
 	errfp = stdout;
@@ -114,7 +91,7 @@ void init(void)
 /*
  *	process options
  */
-void options(int argc, char *argv[])
+static void options(int argc, char *argv[])
 {
 	register char *s, *t;
 	register char **p;
@@ -271,7 +248,7 @@ void options(int argc, char *argv[])
 /*
  *	error in options, print usage
  */
-void usage(void)
+static void usage(void)
 {
 	fatal(F_USAGE, RELEASE);
 }
@@ -279,7 +256,7 @@ void usage(void)
 /*
  *	print error message and abort
  */
-void fatal(int i, const char *arg)
+void NORETURN fatal(int i, const char *arg)
 {
 	printf(errmsg[i], arg);
 	putchar('\n');
@@ -293,7 +270,7 @@ void fatal(int i, const char *arg)
 /*
  *	process all source files
  */
-void do_pass(int p)
+static void do_pass(int p)
 {
 	register int i;
 	register char **ip;
@@ -372,7 +349,7 @@ void process_file(char *fn)
  *	process one line of source from l
  *	returns FALSE when END encountered, otherwise TRUE
  */
-int process_line(char *l)
+static int process_line(char *l)
 {
 	register struct opc *op;
 	register int lbl_flag;
@@ -488,7 +465,7 @@ int process_line(char *l)
  *	list and object filenames are build from source filename if
  *	not given by options
  */
-void open_o_files(char *source)
+static void open_o_files(char *source)
 {
 	if (objfn == NULL)
 		objfn = get_fn(source, obj_str[obj_fmt].ext, TRUE);
@@ -509,7 +486,7 @@ void open_o_files(char *source)
  *	append "ext" if "src" has no extension
  *	replace existing extension with "ext" if "replace" is TRUE
  */
-char *get_fn(char *src, const char *ext, int replace)
+static char *get_fn(char *src, const char *ext, int replace)
 {
 	register char *sp, *dp;
 	register char *ep;
@@ -553,7 +530,7 @@ char *strsave(char *s)
  *	if lbl_flag is TRUE skip LABSEP at end of symbol
  *	convert names to upper case and truncate length of name
  */
-char *get_symbol(char *s, char *l, int lbl_flag)
+static char *get_symbol(char *s, char *l, int lbl_flag)
 {
 	register int i;
 
@@ -583,7 +560,7 @@ char *get_symbol(char *s, char *l, int lbl_flag)
  *	delimited strings are copied without changes
  *	if nopre_flag is TRUE removes only leading white space
  */
-void get_operand(char *s, char *l, int nopre_flag)
+static void get_operand(char *s, char *l, int nopre_flag)
 {
 	register char *s0;
 	register char c;

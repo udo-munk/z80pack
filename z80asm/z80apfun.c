@@ -12,33 +12,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
-
-/* z80amain.c */
-extern void fatal(int, const char *) NORETURN;
-extern void process_file(char *);
-extern char *strsave(char *);
-extern char *next_arg(char *, int *);
-
-/* z80anum.c */
-extern WORD eval(char *);
-extern BYTE chk_byte(WORD);
-
-/* z80aopc.c */
-extern void instrset(int);
-
-/* z80aout.c */
-extern void asmerr(int);
-extern void obj_org(WORD);
-extern void obj_fill(WORD);
-extern void obj_fill_value(WORD, WORD);
-
-/* z80atab.c */
-extern struct sym *look_sym(char *);
-extern struct sym *get_sym(char *);
-extern struct sym *new_sym(char *);
-extern void put_sym(char *, WORD);
+#include "z80amain.h"
+#include "z80anum.h"
+#include "z80aopc.h"
+#include "z80aout.h"
+#include "z80atab.h"
+#include "z80apfun.h"
 
 /*
  *	.Z80 and .8080
