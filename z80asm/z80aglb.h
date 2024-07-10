@@ -21,14 +21,10 @@ extern char	**infiles,
 		operand[],
 		title[];
 
-extern BYTE	ops[],
-		ctype[];
+extern BYTE	ops[];
 
 extern WORD	rpc,
 		pc,
-		a_addr,
-		load_addr,
-		start_addr,
 		hexlen,
 		carylen;
 
@@ -55,7 +51,6 @@ extern int	list_flag,
 		mac_symmax,
 		errors,
 		errnum,
-		a_mode,
 		load_flag,
 		obj_fmt,
 		symlen,
@@ -72,4 +67,4 @@ extern FILE	*srcfp,
 		*lstfp,
 		*errfp;
 
-#endif
+#endif /* !Z80AGLB_INC */

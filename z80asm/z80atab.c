@@ -11,21 +11,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
+#include "z80amain.h"
+#include "z80aout.h"
+#include "z80atab.h"
 
-struct sym *look_sym(char *);
-struct sym *get_sym(char *);
-struct sym *new_sym(char *);
-int hash(char *);
-int namecmp(const void *, const void *);
-int valcmp(const void *, const void *);
-
-/* z80amain.c */
-extern void fatal(int, const char *) NORETURN;
-
-/* z80aout.c */
-extern void asmerr(int);
+static int hash(char *name);
+static int namecmp(const void *p1, const void *p2);
+static int valcmp(const void *p1, const void *p2);
 
 static struct sym *symtab[HASHSIZE];	/* symbol table */
 static int symcnt;			/* number of symbols defined */
@@ -118,7 +113,7 @@ void put_label(void)
  *	calculate the hash value of the string name
  *	returns hash value
  */
-int hash(char *name)
+static int hash(char *name)
 {
 	register unsigned h;
 
@@ -188,7 +183,7 @@ struct sym *next_sym(void)
 /*
  *	compares two symbol names for qsort()
  */
-int namecmp(const void *p1, const void *p2)
+static int namecmp(const void *p1, const void *p2)
 {
 	return (strcmp((*(const struct sym **) p1)->sym_name,
 		       (*(const struct sym **) p2)->sym_name));
@@ -198,7 +193,7 @@ int namecmp(const void *p1, const void *p2)
  *	compares two symbol values for qsort(), result like strcmp()
  *	if equal compares symbol names
  */
-int valcmp(const void *p1, const void *p2)
+static int valcmp(const void *p1, const void *p2)
 {
 	register WORD n1, n2;
 

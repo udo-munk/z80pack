@@ -10,24 +10,24 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
+#include "z80amain.h"
+#include "z80anum.h"
+#include "z80aopc.h"
+#include "z80aout.h"
+#include "z80arfun.h"
 
-WORD ldreg(BYTE, char *), ldixhl(BYTE, char *), ldiyhl(BYTE, char *);
-WORD ldsp(char *), ldihl(BYTE, char *), ldiixy(BYTE, BYTE, char *);
-WORD ldinn(char *), aluop(BYTE, char *), cbgrp_iixy(BYTE, BYTE, BYTE, char *);
-
-/* z80amain.c */
-extern void asmerr(int);
-extern char *next_arg(char *, int *);
-
-/* z80anum.c */
-extern WORD eval(char *);
-extern BYTE chk_byte(WORD);
-extern BYTE chk_sbyte(WORD);
-
-/* z80aopc.c */
-extern BYTE get_reg(char *);
+static WORD ldreg(BYTE base_op, char *sec);
+static WORD ldixhl(BYTE base_op, char *sec);
+static WORD ldiyhl(BYTE base_op, char *sec);
+static WORD ldsp(char *sec);
+static WORD ldihl(BYTE base_op, char *sec);
+static WORD ldiixy(BYTE prefix, BYTE base_op, char *sec);
+static WORD ldinn(char *sec);
+static WORD aluop(BYTE base_op, char *sec);
+static WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec);
 
 /*
  *	process 1-byte opcodes without arguments
@@ -512,7 +512,7 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 /*
  *	LD [A,B,C,D,E,H,L],?
  */
-WORD ldreg(BYTE base_op, char *sec)
+static WORD ldreg(BYTE base_op, char *sec)
 {
 	register BYTE op;
 	register WORD n;
@@ -610,7 +610,7 @@ WORD ldreg(BYTE base_op, char *sec)
 /*
  *	LD IX[HL],? (undoc)
  */
-WORD ldixhl(BYTE base_op, char *sec)
+static WORD ldixhl(BYTE base_op, char *sec)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -648,7 +648,7 @@ WORD ldixhl(BYTE base_op, char *sec)
 /*
  *	LD IY[HL],? (undoc)
  */
-WORD ldiyhl(BYTE base_op, char *sec)
+static WORD ldiyhl(BYTE base_op, char *sec)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -686,7 +686,7 @@ WORD ldiyhl(BYTE base_op, char *sec)
 /*
  *	LD SP,?
  */
-WORD ldsp(char *sec)
+static WORD ldsp(char *sec)
 {
 	register BYTE op;
 	register WORD n;
@@ -736,7 +736,7 @@ WORD ldsp(char *sec)
 /*
  *	LD (HL),?
  */
-WORD ldihl(BYTE base_op, char *sec)
+static WORD ldihl(BYTE base_op, char *sec)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -772,7 +772,7 @@ WORD ldihl(BYTE base_op, char *sec)
 /*
  *	LD (I[XY]{[+-]d}),?
  */
-WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
+static WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -824,7 +824,7 @@ WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 /*
  *	LD (nn),?
  */
-WORD ldinn(char *sec)
+static WORD ldinn(char *sec)
 {
 	register BYTE op;
 	register WORD n;
@@ -1086,7 +1086,7 @@ WORD op_alu(BYTE base_op, BYTE dummy)
 /*
  *	ADD A, ADC A, SUB, SBC A, AND, XOR, OR, CP
  */
-WORD aluop(BYTE base_op, char *sec)
+static WORD aluop(BYTE base_op, char *sec)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -1330,7 +1330,7 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 /*
  *	CBOP {n,}(I[XY]{[+-]d}){,reg}
  */
-WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
+static WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 {
 	register BYTE op;
 	register char *tert;

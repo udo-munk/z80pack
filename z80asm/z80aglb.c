@@ -9,7 +9,10 @@
  */
 
 #include <stdio.h>
+
 #include "z80a.h"
+#include "z80aglb.h"
+#include "z80aout.h"
 
 char **infiles,			/* source filenames */
      *srcfn,			/* filename of current processed source file */
@@ -21,15 +24,11 @@ char **infiles,			/* source filenames */
      operand[MAXLINE + 1],	/* buffer for working with operand */
      title[MAXLINE + 1];	/* buffer for title of source */
 
-BYTE ops[OPCARRAY],		/* buffer for generated object code */
-     ctype[256];		/* table for character classification */
+BYTE ops[OPCARRAY];		/* buffer for generated object code */
 
 WORD rpc,			/* real program counter */
      pc,			/* logical program counter, normally equal */
 				/* to rpc, except when inside a .PHASE block */
-     a_addr,			/* output value for A_ADDR/A_VALUE mode */
-     load_addr,			/* load address of program */
-     start_addr,		/* execution start address of program */
      hexlen = MAXHEX,		/* HEX record length */
      carylen = CARYLEN;		/* C array bytes per line */
 
@@ -56,7 +55,6 @@ int  list_flag,			/* flag for option -l */
      mac_symmax,		/* max. macro symbol length encountered */
      errors,			/* error counter */
      errnum,			/* error number in pass 2 */
-     a_mode,			/* address output mode for pseudo ops */
      load_flag,			/* flag for load_addr already set */
      obj_fmt = OBJ_HEX,		/* format of object file (default Intel HEX) */
      symlen = SYMLEN,		/* significant characters in symbols */

@@ -11,19 +11,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
-
-/* z80amain.c */
-extern void fatal(int, const char *) NORETURN;
-extern char *strsave(char *);
-extern char *next_arg(char *, int *);
-
-/* z80anum.c */
-extern WORD eval(char *);
-
-/* z80aout.c */
-extern void asmerr(int);
+#include "z80amain.h"
+#include "z80anum.h"
+#include "z80aopc.h"
+#include "z80aout.h"
+#include "z80amfun.h"
 
 #define CONCAT		'&'			/* parameter concatenation */
 #define LITERAL		'^'			/* literal character escape */
@@ -101,7 +96,7 @@ static char tmp[MAXLINE + 1];			/* temporary buffer */
  *	verify that s is a legal symbol, also truncates to symlen
  *	returns TRUE if legal, otherwise FALSE
  */
-int is_symbol(char *s)
+static int is_symbol(char *s)
 {
 	register int i;
 
@@ -120,7 +115,7 @@ int is_symbol(char *s)
 /*
  *	compare function for qsort of mac_array
  */
-int mac_compare(const void *p1, const void *p2)
+static int mac_compare(const void *p1, const void *p2)
 {
 	return (strcmp((*(const struct mac **) p1)->mac_name,
 		       (*(const struct mac **) p2)->mac_name));
@@ -186,8 +181,8 @@ char *mac_next(int *rp)
  *	allocate a new macro with optional name and
  *	start/repeat expansion function
  */
-struct mac *mac_new(char *name, void (*start)(struct expn *),
-		    int (*rept)(struct expn *))
+static struct mac *mac_new(char *name, void (*start)(struct expn *),
+			   int (*rept)(struct expn *))
 {
 	register struct mac *m;
 	register int n;
@@ -217,7 +212,7 @@ struct mac *mac_new(char *name, void (*start)(struct expn *),
 /*
  *	delete a macro
  */
-void mac_delete(struct mac *m)
+static void mac_delete(struct mac *m)
 {
 	register struct dum *d;
 	register struct line *l;
@@ -268,7 +263,7 @@ void mac_end_pass(void)
 /*
  * 	add a dummy to a macro
  */
-void mac_add_dum(struct mac *m, char *name)
+static void mac_add_dum(struct mac *m, char *name)
 {
 	register struct dum *d;
 
@@ -286,7 +281,7 @@ void mac_add_dum(struct mac *m, char *name)
 /*
  * 	add a local to a macro expansion
  */
-void expn_add_loc(struct expn *e, char *name)
+static void expn_add_loc(struct expn *e, char *name)
 {
 	register struct loc *l;
 	register char *s;
@@ -328,7 +323,7 @@ void expn_add_loc(struct expn *e, char *name)
  *	start macro expansion
  *	assign values to parameters, save iflevel
  */
-void mac_start_expn(struct mac *m)
+static void mac_start_expn(struct mac *m)
 {
 	register struct expn *e;
 	register struct parm *p;
@@ -387,7 +382,7 @@ void mac_start_expn(struct mac *m)
  *	end macro expansion
  *	delete parameters and local labels, restore iflevel
  */
-void mac_end_expn(void)
+static void mac_end_expn(void)
 {
 	register struct parm *p;
 	register struct loc *l;
@@ -425,7 +420,7 @@ void mac_end_expn(void)
  *	repeat macro for IRP, IRPC, REPT when end reached
  *	end expansion for MACRO
  */
-int mac_rept_expn(void)
+static int mac_rept_expn(void)
 {
 	register struct expn *e;
 	register struct loc *l;
@@ -491,7 +486,7 @@ void mac_add_line(struct opc *op, char *line)
 /*
  *	get value of dummy s, NULL if not found
  */
-const char *mac_get_dummy(struct expn *e, char *s)
+static const char *mac_get_dummy(struct expn *e, char *s)
 {
 	register struct parm *p;
 
@@ -504,7 +499,7 @@ const char *mac_get_dummy(struct expn *e, char *s)
 /*
  *	get value of local label s, NULL if not found
  */
-const char *mac_get_local(struct expn *e, char *s)
+static const char *mac_get_local(struct expn *e, char *s)
 {
 	register struct loc *l;
 
@@ -518,8 +513,8 @@ const char *mac_get_local(struct expn *e, char *s)
  *	substitute dummies or locals with actual values in source line s
  *	returns the result in t
  */
-void mac_subst(char *t, char *s, struct expn *e,
-	       const char *(*getf)(struct expn *, char *))
+static void mac_subst(char *t, char *s, struct expn *e,
+		      const char *(*getf)(struct expn *e, char *s))
 {
 	register const char *v;
 	register int m;
@@ -714,7 +709,7 @@ void mac_call(void)
 /*
  *	get next macro parameter
  */
-char *mac_next_parm(char *s)
+static char *mac_next_parm(char *s)
 {
 	register char *t, c;
 	register int m;
@@ -831,7 +826,7 @@ char *mac_next_parm(char *s)
 /*
  *	start IRP macro expansion
  */
-void mac_start_irp(struct expn *e)
+static void mac_start_irp(struct expn *e)
 {
 	register char *s;
 
@@ -846,7 +841,7 @@ void mac_start_irp(struct expn *e)
 /*
  *	repeat IRP macro expansion
  */
-int mac_rept_irp(struct expn *e)
+static int mac_rept_irp(struct expn *e)
 {
 	register char *s;
 
@@ -870,7 +865,7 @@ int mac_rept_irp(struct expn *e)
 /*
  *	start IRPC macro expansion
  */
-void mac_start_irpc(struct expn *e)
+static void mac_start_irpc(struct expn *e)
 {
 	register char *s;
 
@@ -886,7 +881,7 @@ void mac_start_irpc(struct expn *e)
 /*
  *	repeat IRPC macro expansion
  */
-int mac_rept_irpc(struct expn *e)
+static int mac_rept_irpc(struct expn *e)
 {
 	if (*e->expn_irp != '\0') {
 		*e->expn_parms->parm_val = *e->expn_irp++;
@@ -898,7 +893,7 @@ int mac_rept_irpc(struct expn *e)
 /*
  *	start MACRO macro expansion
  */
-void mac_start_macro(struct expn *e)
+static void mac_start_macro(struct expn *e)
 {
 	register char *s;
 	register struct parm *p;
@@ -922,7 +917,7 @@ void mac_start_macro(struct expn *e)
 /*
  *	start REPT macro expansion
  */
-void mac_start_rept(struct expn *e)
+static void mac_start_rept(struct expn *e)
 {
 	if (e->expn_mac->mac_nrept == 0)
 		e->expn_line = NULL;
@@ -931,7 +926,7 @@ void mac_start_rept(struct expn *e)
 /*
  *	repeat REPT macro expansion
  */
-int mac_rept_rept(struct expn *e)
+static int mac_rept_rept(struct expn *e)
 {
 	return e->expn_iter < e->expn_mac->mac_nrept;
 }

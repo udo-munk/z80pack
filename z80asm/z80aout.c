@@ -11,29 +11,39 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
 #include "z80a.h"
 #include "z80aglb.h"
+#include "z80amain.h"
+#include "z80amfun.h"
+#include "z80atab.h"
+#include "z80aout.h"
 
-void lst_byte(BYTE);
-void pos_fill_bin(void);
-void pos_fill_cary(void);
-void cary_byte(BYTE);
-void eof_hex(WORD);
-void flush_hex(void);
-void hex_record(BYTE);
-BYTE chksum(BYTE);
-char *btoh(BYTE, char *);
+WORD a_addr;			/* output value for A_ADDR/A_VALUE mode */
+int  a_mode;			/* address output mode for pseudo ops */
 
-/* z80amain.c */
-extern void fatal(int, const char *) NORETURN;
+WORD load_addr;			/* load address of program */
+WORD start_addr;		/* execution start address of program */
 
-/* z80amfun.c */
-extern char *mac_first(int, int *);
-extern char *mac_next(int *);
+static void lst_byte(BYTE b);
 
-/* z80atab.c */
-extern struct sym *first_sym(int);
-extern struct sym *next_sym(void);
+static void pos_fill_bin(void);
+
+static void pos_fill_cary(void);
+static void cary_byte(BYTE b);
+
+static void eof_hex(WORD addr);
+static void flush_hex(void);
+static void hex_record(BYTE rec_type);
+static char *btoh(BYTE b, char *p);
+static BYTE chksum(BYTE rec_type);
+
+#ifndef SEEK_SET
+#define SEEK_SET	0
+#endif
+#ifndef SEEK_END
+#define SEEK_END	2
+#endif
 
 /*
  *	Intel HEX record types
@@ -105,7 +115,7 @@ void asmerr(int i)
 /*
  *	begin new page in listfile
  */
-void lst_header(void)
+static void lst_header(void)
 {
 	static int header_done;
 	time_t tloc;
@@ -137,7 +147,7 @@ void lst_header(void)
 /*
  *	print header for source lines
  */
-void lst_attl(void)
+static void lst_attl(void)
 {
 	static int attl_done;
 
@@ -346,7 +356,7 @@ void lst_sym(int sort_mode)
 /*
  *	print BYTE as ASCII hex into listfile
  */
-void lst_byte(BYTE b)
+static void lst_byte(BYTE b)
 {
 	register char c;
 
@@ -546,7 +556,7 @@ void obj_fill_value(WORD count, WORD value)
  *	fill binary object file up to the logical address with 0xff bytes
  *	or set file position to the logical address if curr_addr < eof_addr
  */
-void pos_fill_bin(void)
+static void pos_fill_bin(void)
 {
 	WORD addr;
 
@@ -573,7 +583,7 @@ void pos_fill_bin(void)
  *	fill C array object file up to the logical address with 0xff bytes
  *	or set file position to the logical address if curr_addr < eof_addr
  */
-void pos_fill_cary(void)
+static void pos_fill_cary(void)
 {
 	WORD addr;
 	long pos;
@@ -623,7 +633,7 @@ void pos_fill_cary(void)
 /*
  *	output a C array byte
  */
-void cary_byte(BYTE b)
+static void cary_byte(BYTE b)
 {
 	if (curr_addr == load_addr) {
 		if (fputs("\n\t", objfp) == EOF)
@@ -646,7 +656,7 @@ void cary_byte(BYTE b)
 /*
  *	create a HEX end-of-file record in ASCII and write into object file
  */
-void eof_hex(WORD addr)
+static void eof_hex(WORD addr)
 {
 	hex_cnt = 0;
 	hex_addr = addr;
@@ -656,7 +666,7 @@ void eof_hex(WORD addr)
 /*
  *	create a HEX data record in ASCII and write into object file
  */
-void flush_hex(void)
+static void flush_hex(void)
 {
 	if (hex_cnt != 0) {
 		hex_record(HEX_DATA);
@@ -668,7 +678,7 @@ void flush_hex(void)
 /*
  *	write a HEX record in ASCII and write into object file
  */
-void hex_record(BYTE rec_type)
+static void hex_record(BYTE rec_type)
 {
 	register int i;
 	register char *p;
@@ -692,7 +702,7 @@ void hex_record(BYTE rec_type)
  *	convert BYTE into ASCII hex and copy to string at p
  *	returns p increased by 2
  */
-char *btoh(BYTE b, char *p)
+static char *btoh(BYTE b, char *p)
 {
 	register char c;
 
@@ -706,7 +716,7 @@ char *btoh(BYTE b, char *p)
 /*
  *	compute checksum for Intel HEX record
  */
-BYTE chksum(BYTE rec_type)
+static BYTE chksum(BYTE rec_type)
 {
 	register int i;
 	register BYTE sum;
