@@ -428,9 +428,6 @@ HOME:	MVI	C,0		; select track 0
 ;
 ;	select disk given by register C
 ;
-;
-;	select disk given by register C
-;
 SELDSK: LXI	H,0		; HL = error return code
 	MOV	A,C		; get disk # to A
 	CPI	0		; disk 0 ?
