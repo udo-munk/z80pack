@@ -129,10 +129,11 @@ int main(void)
 
 	PC = 0xff00;		/* power on jump into the boot ROM */
 
+	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
 	ice_cmd_loop(0);
 #else
-	run_cpu();		/* run the CPU with whatever is in memory */
+	run_cpu();
 #endif
 
 	exit_disks();		/* stop disk drives */
