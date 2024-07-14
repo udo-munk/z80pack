@@ -8,33 +8,35 @@
  *	main module, handles the options and runs 2 passes over the sources
  */
 
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #ifdef _POSIX_C_SOURCE
 #include <unistd.h>
 #endif
-#include <string.h>
 
-#include "z80a.h"
-#include "z80aglb.h"
+#include "z80asm.h"
+#include "z80alst.h"
 #include "z80amfun.h"
 #include "z80anum.h"
+#include "z80aobj.h"
 #include "z80aopc.h"
-#include "z80aout.h"
+#include "z80apfun.h"
 #include "z80atab.h"
-#include "z80amain.h"
 
 static void init(void);
 static void options(int argc, char *argv[]);
 static void usage(void);
 static void do_pass(int p);
-static int process_line(char *l);
-static void open_o_files(char *source);
+static int process_line(char *line);
+static void process_file(char *fn);
+static void process_include(char *line, char *operand, int expn_flag);
 static char *get_fn(char *src, const char *ext, int replace);
-static char *get_symbol(char *s, char *l, int lbl_flag);
-static void get_operand(char *s, char *l, int nopre_flag);
+static char *get_symbol(char *s, char *line, int lbl_flag);
+static void get_operand(char *s, char *line, int nopre_flag);
 
-static const char *errmsg[] = {		/* error messages for fatal() */
+static const char *fatalmsg[] = {	/* error messages for fatal() */
 	"out of memory: %s",		/* 0 */
 	("\nz80asm version %s\n"
 	 "usage: z80asm -8 -u -v -U -e<num> -f{b|m|h|c} -x "
@@ -51,30 +53,76 @@ static const char *errmsg[] = {		/* error messages for fatal() */
 	"invalid HEX record length: %s"	/* 9 */
 };
 
-static const struct {
-	const char *ext;
-	const char *mode;
-} obj_str[] = {
-	{ OBJEXTBIN, WRITEB },	/* OBJ_BIN */
-	{ OBJEXTBIN, WRITEB },	/* OBJ_MOS */
-	{ OBJEXTHEX, WRITEA },	/* OBJ_HEX */
-	{ OBJEXTCARY, WRITEA }	/* OBJ_CARY */
+static const char *errmsg[] = {		/* error messages for asmerr() */
+	"no error",			/* 0 */
+	"undefined symbol",		/* 1 */
+	"invalid opcode",		/* 2 */
+	"invalid operand",		/* 3 */
+	"missing operand",		/* 4 */
+	"multiple defined symbol",	/* 5 */
+	"value out of range",		/* 6 */
+	"missing right parenthesis",	/* 7 */
+	"missing string delimiter",	/* 8 */
+	"missing IF at ELSE of ENDIF",	/* 9 */
+	"IF nested too deep",		/* 10 */
+	"missing ENDIF",		/* 11 */
+	"INCLUDE nested too deep",	/* 12 */
+	"invalid .PHASE nesting",	/* 13 */
+	"invalid ORG in .PHASE section", /* 14 */
+	"missing .PHASE at .DEPHASE",	/* 15 */
+	"division by zero",		/* 16 */
+	"invalid expression",		/* 17 */
+	"invalid label",		/* 18 */
+	"missing .DEPHASE",		/* 19 */
+	"not in macro definition",	/* 20 */
+	"missing ENDM",			/* 21 */
+	"not in macro expansion",	/* 22 */
+	"macro expansion nested too deep", /* 23 */
+	"too many local labels",	/* 24 */
+	"label address differs between passes", /* 25 */
+	"macro buffer overflow"		/* 26 */
 };
+
+static BYTE ops[OPCARRAY];		/* buffer for generated object code */
+static char **infiles;			/* source filenames */
+static char *srcfn;			/* filename of current source file */
+static char *objfn;			/* object filename */
+static char *lstfn;			/* listing filename */
+static char line[MAXLINE + 2];		/* buffer for one line of source */
+static char label[MAXLINE + 1];		/* buffer for label */
+static char opcode[MAXLINE + 1];	/* buffer for opcode */
+static char operand[MAXLINE + 1];	/* buffer for working with operand */
+static int  list_flag;			/* flag for option -l */
+static int  undoc_flag;			/* flag for option -u */
+static int  verb_flag;			/* flag for option -v */
+static int  upcase_flag;		/* flag for option -U */
+static int  mac_list_opt;		/* value of option -m */
+static int  list_active;		/* list output active flag */
+static int  nofalselist;		/* false conditional listing flag */
+static int  symlen;			/* significant characters in symbols */
+static int  nfiles;			/* number of input files */
+static int  pass;			/* processed pass */
+static int  errors;			/* error counter */
+static int  errnum;			/* error number in pass 2 */
+static WORD rpc;			/* real program counter */
+static WORD pc;				/* logical program counter, normally */
+					/* equal to rpc, except when inside */
+					/* a .PHASE section */
+static FILE *srcfp;			/* file pointer for current source */
+static FILE *errfp;			/* file pointer for error output */
+static unsigned long c_line;		/* current line # in current source */
 
 int main(int argc, char *argv[])
 {
 	init();
 	options(argc, argv);
-	instrset(i8080_flag ? INSTR_8080 : INSTR_Z80);
 	printf("Z80/8080-Macro-Assembler  Release %s\n%s\n", RELEASE, COPYR);
 	do_pass(1);
 	do_pass(2);
 	if (list_flag) {
-		if (sym_flag != SYM_NONE) {
-			lst_mac(sym_flag);
-			lst_sym(sym_flag);
-		}
-		fclose(lstfp);
+		lst_mac();
+		lst_sym();
+		lst_close_file();
 	}
 	return errors;
 }
@@ -96,6 +144,19 @@ static void options(int argc, char *argv[])
 	register char *s, *t;
 	register char **p;
 	WORD val;
+	int i8080_flag, obj_fmt, hexlen, carylen, nofill_flag;
+	int ppl, nodate_flag, sym_opt;
+
+	/* set default options */
+	symlen      = SYMLEN;
+	i8080_flag  = FALSE;
+	obj_fmt     = OBJ_HEX;
+	hexlen      = MAXHEX;
+	carylen     = CARYLEN;
+	nofill_flag = FALSE;
+	ppl         = PLENGTH;
+	nodate_flag = FALSE;
+	sym_opt     = SYM_NONE;
 
 	while (--argc > 0 && (*++argv)[0] == '-')
 		for (s = argv[0] + 1; *s != '\0'; s++)
@@ -105,7 +166,7 @@ static void options(int argc, char *argv[])
 					puts("name missing in option -o");
 					usage();
 				}
-				objfn = get_fn(s, obj_str[obj_fmt].ext, FALSE);
+				objfn = get_fn(s, obj_file_ext(), FALSE);
 				s += (strlen(s) - 1);
 				break;
 			case 'l':
@@ -120,11 +181,11 @@ static void options(int argc, char *argv[])
 				break;
 			case 's':
 				if (*(s + 1) == '\0')
-					sym_flag = SYM_UNSORT;
+					sym_opt = SYM_UNSORT;
 				else if (*(s + 1) == 'n')
-					sym_flag = SYM_SORTN;
+					sym_opt = SYM_SORTN;
 				else if (*(s + 1) == 'a')
-					sym_flag = SYM_SORTA;
+					sym_opt = SYM_SORTA;
 				else {
 					printf("unknown option -%s\n", s);
 					usage();
@@ -161,6 +222,7 @@ static void options(int argc, char *argv[])
 				}
 				if (*t == '=') {
 					get_operand(operand, ++t, FALSE);
+					set_radix(10);
 					val = eval(operand);
 					if (errors)
 						usage();
@@ -177,13 +239,13 @@ static void options(int argc, char *argv[])
 				undoc_flag = TRUE;
 				break;
 			case 'v':
-				ver_flag = TRUE;
+				verb_flag = TRUE;
 				break;
 			case 'm':
-				if (mac_list_flag == M_OPS)
-					mac_list_flag = M_ALL;
+				if (mac_list_opt == M_OPS)
+					mac_list_opt = M_ALL;
 				else
-					mac_list_flag = M_NONE;
+					mac_list_opt = M_NONE;
 				break;
 			case 'U':
 				upcase_flag = TRUE;
@@ -237,12 +299,26 @@ static void options(int argc, char *argv[])
 		puts("no input file");
 		usage();
 	}
+
 	nfiles = argc;
+	/* some gcc versions go bonkers here, since the (int) */
 	if ((infiles = (char **) malloc((int) (sizeof(char *) *
 					       nfiles))) == NULL)
 		fatal(F_OUTMEM, "input file names");
 	for (p = infiles; argc--; p++)
 		*p = get_fn(*argv++, SRCEXT, FALSE);
+
+	obj_set_options(obj_fmt, hexlen, carylen, nofill_flag);
+	if (objfn == NULL)
+		objfn = get_fn(*infiles, obj_file_ext(), TRUE);
+
+	if (list_flag) {
+		lst_set_options(ppl, nodate_flag, sym_opt);
+		if (lstfn == NULL)
+			lstfn = get_fn(*infiles, LSTEXT, TRUE);
+	}
+
+	instrset(i8080_flag ? INSTR_8080 : INSTR_Z80);
 }
 
 /*
@@ -256,15 +332,34 @@ static void usage(void)
 /*
  *	print error message and abort
  */
-void NORETURN fatal(int i, const char *arg)
+void NORETURN fatal(int err, const char *arg)
 {
-	printf(errmsg[i], arg);
+	printf(fatalmsg[err], arg);
 	putchar('\n');
-	if (objfp != NULL)
-		fclose(objfp);
+	obj_close_file();
 	if (objfn != NULL)
 		unlink(objfn);
 	exit(EXIT_FAILURE);
+}
+
+/*
+ *	print error message to error output and increase error counter
+ */
+void asmerr(int err)
+{
+	if (pass == 0) {
+		fputs("error in option -d: ", errfp);
+		fputs(errmsg[err], errfp);
+		fputc('\n', errfp);
+	} else if (pass == 1) {
+		fprintf(errfp, "Error in file: %s  Line: %ld\n",
+			srcfn, c_line);
+		fputs(line, errfp);
+		fputc('\n', errfp);
+		fprintf(errfp, "=> %s\n", errmsg[err]);
+	} else
+		errnum = err;
+	errors++;
 }
 
 /*
@@ -276,21 +371,24 @@ static void do_pass(int p)
 	register char **ip;
 
 	pass = p;
-	radix = 10;
+	set_radix(10);
 	rpc = pc = 0;
-	mac_start_pass();
-	if (ver_flag)
+	list_active = list_flag;
+	mac_start_pass(pass);
+	if (verb_flag)
 		printf("Pass %d\n", pass);
-	if (pass == 1)				/* PASS 1 */
-		open_o_files(*infiles);
-	else					/* PASS 2 */
-		obj_header();
+	if (pass == 1) {			/* PASS 1 */
+		obj_open_file(objfn);
+		if (list_flag)
+			errfp = lst_open_file(lstfn);
+	} else					/* PASS 2 */
+		obj_header(srcfn);
 	for (i = 0, ip = infiles; i < nfiles; i++, ip++) {
-		if (ver_flag)
+		if (verb_flag)
 			printf("   Read    %s\n", *ip);
 		process_file(*ip);
 	}
-	mac_end_pass();
+	mac_end_pass(pass);
 	if (pass == 1) {			/* PASS 1 */
 		if (errors > 0) {
 			printf("%d error(s)\n", errors);
@@ -298,7 +396,7 @@ static void do_pass(int p)
 		}
 	} else {				/* PASS 2 */
 		obj_end();
-		fclose(objfp);
+		obj_close_file();
 		printf("%d error(s)\n", errors);
 	}
 }
@@ -306,7 +404,7 @@ static void do_pass(int p)
 /*
  *	process source file fn
  */
-void process_file(char *fn)
+static void process_file(char *fn)
 {
 	register char *s;
 	register int i;
@@ -314,11 +412,13 @@ void process_file(char *fn)
 
 	c_line = 0;
 	srcfn = fn;
+	lst_set_srcfn(fn);
 	if ((srcfp = fopen(fn, READA)) == NULL)
 		fatal(F_FOPEN, fn);
 	do {
 		l = NULL;
-		while (mac_exp_nest > 0 && (l = mac_expand()) == NULL)
+		while (mac_get_exp_nest() > 0
+		       && (l = mac_expand(line)) == NULL)
 			;
 		if (l == NULL) {
 			if ((l = fgets(line, MAXLINE + 2, srcfp)) == NULL)
@@ -337,121 +437,165 @@ void process_file(char *fn)
 		}
 	} while (process_line(l));
 	fclose(srcfp);
-	if (mac_def_nest > 0)
-		asmerr(E_MISEMA);
-	if (phs_flag)
+	if (in_phase_section())
 		asmerr(E_MISDPH);
-	if (iflevel > 0)
+	if (in_cond_section())
 		asmerr(E_MISEIF);
+	if (mac_get_def_nest() > 0)
+		asmerr(E_MISEMA);
 }
 
 /*
- *	process one line of source from l
+ *	process one line of source from line
  *	returns FALSE when END encountered, otherwise TRUE
  */
-static int process_line(char *l)
+static int process_line(char *line)
 {
 	register struct opc *op;
-	register int lbl_flag;
 	register WORD op_count;
 	char *p;
-	int old_genc, expn_flag, lflag;
+	int gencode;		/* we are not in a false conditional section */
+	int genc_lbl_flag;	/* we are not in a false conditional section,
+				   and there is a label present */
+	int expn_flag;		/* we are in a macro expansion */
+	int new_gencode, lflag, a_mode;
+	WORD a_addr;
 
-	/*
-	 *	need expn_flag and lbl_flag, since the conditions
-	 *	can change during opcode execution or macro definition
-	 */
-	expn_flag = (mac_exp_nest > 0);
+	expn_flag = (mac_get_exp_nest() > 0);
 	if (!expn_flag)
 		c_line++;
 	a_mode = A_STD;
+	errnum = E_OK;
 	op = NULL;
 	op_count = 0;
-	old_genc = gencode;
-	if (*l == LINCOM || (*l == LINOPT && !IS_SYM(*(l + 1))))
+	gencode = in_true_section();
+
+	if (*line == LINCOM || (*line == LINOPT && !IS_SYM(*(line + 1)))) {
+		/* a line comment, nothing to do */
 		a_mode = A_NONE;
-	else {
-		p = get_symbol(label, l, TRUE);
+	} else {
+		p = get_symbol(label, line, TRUE);
 		p = get_symbol(opcode, p, FALSE);
-		lbl_flag = (gencode && label[0] != '\0');
-		if (mac_def_nest > 0) {
-			/* inside macro definition, add line to macro */
+		genc_lbl_flag = (gencode && label[0] != '\0');
+
+		if (mac_get_def_nest() > 0) {
+			/* inside a macro definition, add line to macro */
+			a_mode = A_NONE;
 			if (opcode[0] != '\0')
 				op = search_op(opcode);
-			mac_add_line(op, l);
+			mac_add_line(op, line);
 		} else if (opcode[0] == '\0') {
-			/* no op-code line */
-			a_mode = A_NONE;
-			if (gencode) {
-				if (lbl_flag) {
-					put_label();
-					a_mode = A_STD;
-				}
-			}
+			/* line without an op-code */
+			if (genc_lbl_flag)
+				put_label(label, pc, pass);
+			else
+				a_mode = A_NONE;
 		} else if (mac_lookup(opcode)) {
-			/* macro call, start macro expansion */
+			/* a macro call, start macro expansion */
 			if (gencode) {
-				if (lbl_flag)
-					put_label();
+				if (genc_lbl_flag)
+					put_label(label, pc, pass);
 				get_operand(operand, p, TRUE);
-				mac_call();
-				if (lbl_flag)
-					a_mode = A_STD;
+				mac_call(operand);
 			} else
 				a_mode = A_NONE;
 		} else if ((op = search_op(opcode)) != NULL) {
 			/* normal line with op-code */
-			if (lbl_flag) {
+			if (genc_lbl_flag) {
+				/* if op-code doesn't allow label, error out */
 				if (op->op_flags & OP_NOLBL)
 					asmerr(E_INVLBL);
+				/* else, if op-code is not of symbol defining
+				   class, this is a true label */
 				else if (!(op->op_flags & OP_SET))
-					if (gencode)
-						put_label();
+					put_label(label, pc, pass);
 			}
 			get_operand(operand, p, op->op_flags & OP_NOPRE);
+			/* if an operand is present and the op-code doesn't
+			   have one, error out */
 			if (operand[0] != '\0' && operand[0] != COMMENT
 					       && (op->op_flags & OP_NOOPR))
 				asmerr(E_INVOPE);
+			/* else, if we are not in a false conditional section,
+			   or the op-code is a conditional, that could change
+			   this, call its processing function */
 			else if (gencode || (op->op_flags & OP_COND)) {
-				if (pass == 2 && (op->op_flags & OP_INCL)) {
-					/* list INCLUDE before included file */
-					a_mode = A_NONE;
-					lst_line(l, 0, 0, expn_flag);
+				if (op->op_func == NULL) {
+					/* INCLUDE or MACLIB */
+					process_include(line, operand,
+							expn_flag);
+				} else {
+					op_count =
+						(*op->op_func)(pass, op->op_c1,
+							       op->op_c2,
+							       operand, ops);
+					a_mode = op->op_a_mode;
+					/* if there is a true label present,
+					   and the op-code's listing address
+					   mode is "no address", change it */
+					if (genc_lbl_flag
+					    && !(op->op_flags & OP_SET)
+					    && a_mode == A_NONE)
+						a_mode = A_STD;
 				}
-				op_count = (*op->op_fun)(op->op_c1, op->op_c2);
-				if (lbl_flag && !(op->op_flags & OP_SET)
-					     && a_mode == A_NONE)
-					a_mode = A_STD;
-			} else
+			} else {
+				/* we are in a false conditional section */
 				a_mode = A_NONE;
+			}
 		} else if (gencode) {
+			/* an invalid op-code */
 			asmerr(E_INVOPC);
 			a_mode = A_NONE;
 		}
 	}
+
+	new_gencode = in_true_section();
+
 	if (pass == 2) {
-		if (gencode && (op == NULL || !(op->op_flags & OP_DS)))
-			obj_writeb(op_count);
+		/* output object code when not in a false conditional section,
+		   except for DS, which did this already */
+		if (new_gencode && (op == NULL || !(op->op_flags & OP_DS)))
+			obj_writeb(ops, op_count);
+
+		/* determine if line should be listed, default TRUE */
 		lflag = TRUE;
-		/* already listed INCLUDE, force page eject */
-		if (op != NULL && (op->op_flags & OP_INCL)) {
+
+		/* INCLUDE/MACLIB does list output by itself */
+		if (op != NULL && op->op_func == NULL)
 			lflag = FALSE;
-			p_line = ppl + 1;
-		}
+
+		/* if this is a macro expansion, list according to the macro
+		   list options, but always list when an error occured */
 		if (errnum == E_OK && expn_flag) {
-			if (mac_list_flag == M_NONE)
+			if (mac_list_opt == M_NONE)
 				lflag = FALSE;
-			else if (mac_list_flag == M_OPS
+			else if (mac_list_opt == M_OPS
 				 && (op_count == 0 && a_mode != A_EQU
 						   && a_mode != A_DS))
 				lflag = FALSE;
 		}
-		if (nofalselist && !old_genc && !gencode)
+
+		/* don't list, if we are in a false conditional section and
+		   "don't list false sections" is on, but list the conditional
+		   that made this into a false section */
+		if (nofalselist && !gencode && !new_gencode)
 			lflag = FALSE;
-		if (lflag)
-			lst_line(l, pc, op_count, expn_flag);
+
+		if (lflag) {
+			/* list the line, EQU and SET use the set symbol
+			   as the address for the address column */
+			if (a_mode == A_EQU || a_mode == A_SET)
+				a_addr = sym_lastval();
+			else
+				a_addr = pc;
+			lst_line(line, list_active, expn_flag, a_mode, a_addr,
+				 ops, op_count, c_line,
+				 errnum == E_OK ? NULL : errmsg[errnum]);
+		}
 	}
-	if (gencode) {
+
+	/* if we generated object code, advance the PC */
+	if (new_gencode) {
 		pc += op_count;
 		rpc += op_count;
 		return op == NULL || !(op->op_flags & OP_END);
@@ -460,25 +604,44 @@ static int process_line(char *l)
 }
 
 /*
- *	open output files
- *	input is filename of source file
- *	list and object filenames are build from source filename if
- *	not given by options
+ *	process INCLUDE and MACLIB
  */
-static void open_o_files(char *source)
+static void process_include(char *line, char *operand, int expn_flag)
 {
-	if (objfn == NULL)
-		objfn = get_fn(source, obj_str[obj_fmt].ext, TRUE);
-	objfp = fopen(objfn, obj_str[obj_fmt].mode);
-	if (objfp == NULL)
-		fatal(F_FOPEN, objfn);
-	if (list_flag) {
-		if (lstfn == NULL)
-			lstfn = get_fn(source, LSTEXT, TRUE);
-		if ((lstfp = fopen(lstfn, WRITEA)) == NULL)
-			fatal(F_FOPEN, lstfn);
-		errfp = lstfp;
+	register char *p;
+	unsigned long inc_line;
+	char *inc_fn, *fn;
+	FILE *inc_fp;
+	static int incnest;
+
+	if (incnest >= INCNEST) {
+		asmerr(E_INCNST);
+		return;
 	}
+	inc_line = c_line;
+	inc_fn = srcfn;
+	inc_fp = srcfp;
+	incnest++;
+	p = operand;
+	while (!IS_SPC(*p) && *p != COMMENT && *p != '\0')
+		p++;
+	*p = '\0';
+	fn = strsave(operand);
+	if (pass == 2)
+		lst_line(line, list_active, expn_flag, A_NONE, 0, NULL, 0,
+			 c_line, NULL);
+	if (verb_flag)
+		printf("   Include %s\n", fn);
+	process_file(fn);
+	free(fn);
+	incnest--;
+	c_line = inc_line;
+	srcfn = inc_fn;
+	srcfp = inc_fp;
+	if (verb_flag)
+		printf("   Resume  %s\n", srcfn);
+	if (list_active && pass == 2)
+		lst_eject(TRUE);
 }
 
 /*
@@ -515,7 +678,7 @@ static char *get_fn(char *src, const char *ext, int replace)
 /*
  *	save string into allocated memory
  */
-char *strsave(char *s)
+char *strsave(const char *s)
 {
 	register char *p;
 
@@ -530,76 +693,78 @@ char *strsave(char *s)
  *	if lbl_flag is TRUE skip LABSEP at end of symbol
  *	convert names to upper case and truncate length of name
  */
-static char *get_symbol(char *s, char *l, int lbl_flag)
+static char *get_symbol(char *s, char *line, int lbl_flag)
 {
 	register int i;
 
 	if (!lbl_flag)
-		while (IS_SPC(*l))
-			l++;
-	if (IS_FSYM(*l)) {
-		*s++ = TO_UPP(*l);
-		l++;
+		while (IS_SPC(*line))
+			line++;
+	if (IS_FSYM(*line)) {
+		*s++ = TO_UPP(*line);
+		line++;
 		i = 1;
-		while (IS_SYM(*l)) {
+		while (IS_SYM(*line)) {
 			if (i++ < symlen)
-				*s++ = TO_UPP(*l);
-			l++;
+				*s++ = TO_UPP(*line);
+			line++;
 		}
-		if (lbl_flag && *l == LABSEP)
-			l++;
+		if (lbl_flag && *line == LABSEP)
+			line++;
 	}
 	*s = '\0';
-	return l;
+	return line;
 }
 
 /*
- *	get operand into s from source line l
+ *	get operand into s from source line
  *	if nopre_flag is FALSE converts to upper case, and
  *	removes all unnecessary white space and comment
  *	delimited strings are copied without changes
  *	if nopre_flag is TRUE removes only leading white space
  */
-static void get_operand(char *s, char *l, int nopre_flag)
+static void get_operand(char *s, char *line, int nopre_flag)
 {
 	register char *s0;
 	register char c;
 
-	while (IS_SPC(*l))
-		l++;
+	while (IS_SPC(*line))
+		line++;
 	if (nopre_flag) {
-		strcpy(s, l);
+		strcpy(s, line);
 		return;
 	}
 	s0 = s;
-	while (*l != '\0' && *l != COMMENT) {
-		if (IS_SPC(*l)) {
-			l++;
-			while (IS_SPC(*l))
-				l++;
+	while (*line != '\0' && *line != COMMENT) {
+		if (IS_SPC(*line)) {
+			line++;
+			while (IS_SPC(*line))
+				line++;
 			/* leave one space between symbols */
-			if (s > s0 && IS_SYM(*(s - 1)) && IS_SYM(*l))
+			if (s > s0 && IS_SYM(*(s - 1)) && IS_SYM(*line))
 				*s++ = ' ';
-		} else if (*l == STRDEL || *l == STRDEL2) {
-			*s++ = c = *l++;
+		} else if (*line == STRDEL || *line == STRDEL2) {
+			*s++ = c = *line++;
 			if (s - s0 == 6 && strncmp(s0, "AF,AF'", 6) == 0)
 				continue;
 			while (TRUE) {
-				if (*l == '\0') { /* undelimited string */
+				if (*line == '\0') {
+					/* undelimited string */
 					*s = '\0';
 					return;
-				} else if (*l == c) {
-					if (*(l + 1) != c) /* double delim? */
+				} else if (*line == c) {
+					/* double delim? */
+					if (*(line + 1) != c)
 						break;
 					else
-						*s++ = *l++;
+						*s++ = *line++;
 				}
-				*s++ = *l++;
+				*s++ = *line++;
 			}
-			*s++ = *l++;
+			*s++ = *line++;
 		} else {
-			*s++ = TO_UPP(*l);
-			l++;
+			*s++ = TO_UPP(*line);
+			line++;
 		}
 	}
 	*s = '\0';
@@ -655,4 +820,92 @@ char *next_arg(char *p, int *str_flag)
 		return p;
 	} else
 		return NULL;
+}
+
+/*
+ *	return undocumented instructions allowed flag
+ */
+int undoc_allowed(void)
+{
+	return undoc_flag;
+}
+
+/*
+ *	return significant characters in symbols
+ */
+int get_symlen(void)
+{
+	return symlen;
+}
+
+/*
+ *	get current source line label
+ */
+const char *get_label(void)
+{
+	return label;
+}
+
+/*
+ *	get program counter
+ */
+WORD get_pc(void)
+{
+	return pc;
+}
+
+/*
+ *	set program counter
+ */
+void set_pc(int opt, WORD addr)
+{
+	switch (opt) {
+	case PC_ORG:
+		pc = rpc = addr;
+		break;
+	case PC_PHASE:
+		pc = addr;
+		break;
+	case PC_DEPHASE:
+		pc = rpc;
+		break;
+	default:
+		fatal(F_INTERN, "invalid option for function set_pc");
+		break;
+	}
+}
+
+/*
+ *	set list output active flag
+ */
+void set_list_active(int flag)
+{
+	if (list_flag)
+		list_active = flag;
+}
+
+/*
+ *	set macro list options
+ */
+void set_mac_list_opt(int opt)
+{
+	switch (opt) {
+	case M_OPS:
+	case M_ALL:
+	case M_NONE:
+		mac_list_opt = opt;
+		break;
+	default:
+		fatal(F_INTERN,
+		      "invalid option for function set_mac_list_opt");
+		break;
+	}
+}
+
+/*
+ *	set no list false conditional section flag
+ */
+void set_nofalselist(int flag)
+{
+	nofalselist = flag;
 }
