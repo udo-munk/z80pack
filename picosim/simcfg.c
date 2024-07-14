@@ -22,7 +22,6 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 
-#include "f_util.h"
 #include "ff.h"
 
 #include "sim.h"
@@ -43,9 +42,9 @@
 /*
  * prompt for a filename
  */
-static void prompt_fn(char *s)
+static void prompt_fn(char *s, const char *ext)
 {
-	printf("Filename: ");
+	printf("Filename (without .%s): ", ext);
 	get_cmdline(s, 9);
 	while (*s) {
 		*s = toupper((unsigned char) *s);
@@ -90,7 +89,8 @@ void config(void)
 	unsigned int br;
 	int go_flag = 0;
 	int i, n, menu;
-	datetime_t t;
+	datetime_t t = { .year = 2024, .month = 4, .day = 23, .dotw = 2,
+			.hour = 18, .min = 24, .sec = 32 };
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
 
@@ -116,8 +116,8 @@ void config(void)
 			if (rtc_get_datetime(&t)) {
 				printf("Current time: %s %04d-%02d-%02d "
 				       "%02d:%02d:%02d\n", dotw[t.dotw],
-				       t.year, t.month, t.day, t.hour,
-				       t.min, t.sec);
+				       t.year, t.month, t.day,
+				       t.hour, t.min, t.sec);
 			}
 			printf("a - set date\n");
 			printf("t - set time\n");
@@ -130,7 +130,7 @@ void config(void)
 			if (speed == 0)
 				puts("unlimited");
 			else
-			printf("%d MHz\n", speed);
+				printf("%d MHz\n", speed);
 			printf("p - Port 255 value: %02XH\n", fp_value);
 			printf("f - list files\n");
 			printf("r - load file\n");
@@ -245,10 +245,11 @@ again:
 			break;
 
 		case 'r':
-			prompt_fn(s);
+			prompt_fn(s, "bin");
 			if (s[0])
 				load_file(s);
 			putchar('\n');
+			menu = 0;
 			break;
 
 		case 'd':
@@ -262,7 +263,7 @@ again:
 		case '2':
 		case '3':
 			i = s[0] - '0';
-			prompt_fn(s);
+			prompt_fn(s, "dsk");
 			if (s[0])
 				mount_disk(i, s);
 			else {
