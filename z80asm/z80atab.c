@@ -8,17 +8,15 @@
  *	symbol table module
  */
 
+#include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
-#include "z80a.h"
-#include "z80aglb.h"
-#include "z80amain.h"
-#include "z80aout.h"
+#include "z80asm.h"
+#include "z80alst.h"
 #include "z80atab.h"
 
-static int hash(char *name);
+static int hash(const char *name);
 static int namecmp(const void *p1, const void *p2);
 static int valcmp(const void *p1, const void *p2);
 
@@ -28,18 +26,22 @@ static struct sym **symarray;		/* sorted symbol table */
 static int symsort;			/* sort mode for iterator */
 static int symidx;			/* hash table index for iterator */
 static struct sym *symptr;		/* symbol pointer for iterator */
+static int symmax;			/* max. symbol name length observed */
+static WORD last_symval;		/* value of last used symbol */
 
 /*
  *	hash search for sym_name in symbol table symtab
  *	returns pointer to table element, or NULL if not found
  */
-struct sym *look_sym(char *sym_name)
+struct sym *look_sym(const char *sym_name)
 {
 	register struct sym *sp;
 
 	for (sp = symtab[hash(sym_name)]; sp != NULL; sp = sp->sym_next)
-		if (strcmp(sym_name, sp->sym_name) == 0)
+		if (strcmp(sym_name, sp->sym_name) == 0) {
+			last_symval = sp->sym_val;
 			return sp;
+		}
 	return NULL;
 }
 
@@ -48,7 +50,7 @@ struct sym *look_sym(char *sym_name)
  *	set refflg when found
  *	returns pointer to table element, or NULL if not found
  */
-struct sym *get_sym(char *sym_name)
+struct sym *get_sym(const char *sym_name)
 {
 	register struct sym *sp;
 
@@ -58,10 +60,17 @@ struct sym *get_sym(char *sym_name)
 }
 
 /*
- *	add symbol sym_name to symbol table symtab
- *	returns pointer to table element
+ *	get value of last used symbol
  */
-struct sym *new_sym(char *sym_name)
+WORD sym_lastval(void)
+{
+	return last_symval;
+}
+
+/*
+ *	add symbol sym_name with value sym_val to symbol table symtab
+ */
+void new_sym(const char *sym_name, WORD sym_val)
 {
 	register struct sym *sp;
 	register int n;
@@ -72,6 +81,7 @@ struct sym *new_sym(char *sym_name)
 	if (sp == NULL || (sp->sym_name = (char *) malloc(n + 1)) == NULL)
 		fatal(F_OUTMEM, "symbols");
 	strcpy(sp->sym_name, sym_name);
+	sp->sym_val = last_symval = sym_val;
 	hashval = hash(sym_name);
 	sp->sym_next = symtab[hashval];
 	symtab[hashval] = sp;
@@ -79,33 +89,33 @@ struct sym *new_sym(char *sym_name)
 	if (n > symmax)
 		symmax = n;
 	symcnt++;
-	return sp;
 }
 
 /*
  *	add symbol sym_name with value sym_val to symbol table symtab,
  *	or modify existing symbol with new value and set refflg
  */
-void put_sym(char *sym_name, WORD sym_val)
+void put_sym(const char *sym_name, WORD sym_val)
 {
 	register struct sym *sp;
 
 	if ((sp = get_sym(sym_name)) == NULL)
-		sp = new_sym(sym_name);
-	sp->sym_val = sym_val;
+		new_sym(sym_name, sym_val);
+	else
+		sp->sym_val = last_symval = sym_val;
 }
 
 /*
  *	add label to symbol table, error if symbol already exists
  *	and differs in value
  */
-void put_label(void)
+void put_label(const char *label, WORD addr, int pass)
 {
 	register struct sym *sp;
 
 	if ((sp = look_sym(label)) == NULL)
-		new_sym(label)->sym_val = pc;
-	else if (sp->sym_val != pc)
+		new_sym(label, addr);
+	else if (sp->sym_val != addr)
 		asmerr(pass == 1 ? E_MULSYM : E_LBLDIF);
 }
 
@@ -113,13 +123,21 @@ void put_label(void)
  *	calculate the hash value of the string name
  *	returns hash value
  */
-static int hash(char *name)
+static int hash(const char *name)
 {
 	register unsigned h;
 
 	for (h = 0; *name != '\0';)
 		h = ((h << 5) | (h >> (sizeof(h) * 8 - 5))) ^ (BYTE) *name++;
 	return h % HASHSIZE;
+}
+
+/*
+ *	return maximum symbol name length observed
+ */
+int get_symmax(void)
+{
+	return symmax;
 }
 
 /*
@@ -185,8 +203,8 @@ struct sym *next_sym(void)
  */
 static int namecmp(const void *p1, const void *p2)
 {
-	return (strcmp((*(const struct sym **) p1)->sym_name,
-		       (*(const struct sym **) p2)->sym_name));
+	return strcmp((*(const struct sym **) p1)->sym_name,
+		      (*(const struct sym **) p2)->sym_name);
 }
 
 /*

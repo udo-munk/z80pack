@@ -1,20 +1,17 @@
 /*
  *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 /*
  *	expression parser and evaluator module
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <stddef.h>
 #include <string.h>
 
-#include "z80a.h"
-#include "z80aglb.h"
-#include "z80aout.h"
+#include "z80asm.h"
 #include "z80atab.h"
 #include "z80anum.h"
 
@@ -89,6 +86,7 @@ static BYTE tok_type;			/* token type and flags */
 static WORD tok_val;			/* token value for T_VAL type */
 static char tok_sym[MAXLINE + 1];	/* buffer for symbol/number */
 static char *scan_pos;			/* current scanning position */
+static int radix;			/* current radix */
 
 void init_ctype(void)
 {
@@ -139,6 +137,22 @@ static BYTE search_opr(char *s)
 			return mid->opr_type;
 	}
 	return T_UNDSYM;
+}
+
+/*
+ *	set radix
+ */
+void set_radix(int r)
+{
+	radix = r;
+}
+
+/*
+ *	get current radix
+ */
+int get_radix(void)
+{
+	return radix;
 }
 
 /*
@@ -222,10 +236,11 @@ static int get_token(void)
 		*p2 = '\0';
 		if (*p1 == '$' && *(p1 + 1) == '\0') {	/* location counter */
 			tok_type = T_VAL;
-			tok_val = pc;
+			tok_val = get_pc();
 		} else {				/* symbol / word opr */
-			if ((p2 - p1) > symlen)		/* trim for lookup */
-				*(p1 + symlen) = '\0';
+			n = get_symlen();
+			if ((p2 - p1) > n)		/* trim for lookup */
+				*(p1 + n) = '\0';
 			if ((sp = get_sym(tok_sym)) != NULL) { /* a symbol */
 				tok_type = T_VAL;
 				tok_val = sp->sym_val;

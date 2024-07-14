@@ -8,33 +8,34 @@
  *	processing of all real Z80/8080 opcodes
  */
 
-#include <stdio.h>
+#include <stddef.h>
 #include <string.h>
 
-#include "z80a.h"
-#include "z80aglb.h"
-#include "z80amain.h"
+#include "z80asm.h"
 #include "z80anum.h"
 #include "z80aopc.h"
-#include "z80aout.h"
 #include "z80arfun.h"
 
-static WORD ldreg(BYTE base_op, char *sec);
-static WORD ldixhl(BYTE base_op, char *sec);
-static WORD ldiyhl(BYTE base_op, char *sec);
-static WORD ldsp(char *sec);
-static WORD ldihl(BYTE base_op, char *sec);
-static WORD ldiixy(BYTE prefix, BYTE base_op, char *sec);
-static WORD ldinn(char *sec);
-static WORD aluop(BYTE base_op, char *sec);
-static WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec);
+static WORD ldreg(int pass, BYTE base_op, char *sec, BYTE *ops);
+static WORD ldixhl(int pass, BYTE base_op, char *sec, BYTE *ops);
+static WORD ldiyhl(int pass, BYTE base_op, char *sec, BYTE *ops);
+static WORD ldsp(int pass, char *sec, BYTE *ops);
+static WORD ldihl(int pass, BYTE base_op, char *sec, BYTE *ops);
+static WORD ldiixy(int pass, BYTE prefix, BYTE base_op,
+		   char *operand, char *sec, BYTE *ops);
+static WORD ldinn(int pass, char *operand, char *sec, BYTE *ops);
+static WORD aluop(int pass, BYTE base_op, char *sec, BYTE *ops);
+static WORD cbgrp_iixy(int pass, BYTE prefix, BYTE base_op, BYTE bit,
+		       char *sec, BYTE *ops);
 
 /*
  *	process 1-byte opcodes without arguments
  */
-WORD op_1b(BYTE b1, BYTE dummy)
+WORD op_1b(int pass, BYTE b1, BYTE dummy, char *operand, BYTE *ops)
 {
+	UNUSED(pass);
 	UNUSED(dummy);
+	UNUSED(operand);
 
 	ops[0] = b1;
 	return 1;
@@ -43,8 +44,11 @@ WORD op_1b(BYTE b1, BYTE dummy)
 /*
  *	process 2-byte opcodes without arguments
  */
-WORD op_2b(BYTE b1, BYTE b2)
+WORD op_2b(int pass, BYTE b1, BYTE b2, char *operand, BYTE *ops)
 {
+	UNUSED(pass);
+	UNUSED(operand);
+
 	ops[0] = b1;
 	ops[1] = b2;
 	return 2;
@@ -53,7 +57,7 @@ WORD op_2b(BYTE b1, BYTE b2)
 /*
  *	IM
  */
-WORD op_im(BYTE base_op1, BYTE base_op2)
+WORD op_im(int pass, BYTE base_op1, BYTE base_op2, char *operand, BYTE *ops)
 {
 	register BYTE op;
 
@@ -73,11 +77,12 @@ WORD op_im(BYTE base_op1, BYTE base_op2)
 /*
  *	PUSH and POP
  */
-WORD op_pupo(BYTE base_op, BYTE dummy)
+WORD op_pupo(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
 
+	UNUSED(pass);
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
@@ -107,11 +112,13 @@ WORD op_pupo(BYTE base_op, BYTE dummy)
 /*
  *	EX
  */
-WORD op_ex(BYTE base_ops, BYTE base_opd)
+WORD op_ex(int pass, BYTE base_ops, BYTE base_opd, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register char *sec;
 	register WORD len = 0;
+
+	UNUSED(pass);
 
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
@@ -176,7 +183,7 @@ WORD op_ex(BYTE base_ops, BYTE base_opd)
 /*
  *	RST
  */
-WORD op_rst(BYTE base_op, BYTE dummy)
+WORD op_rst(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 
@@ -196,10 +203,12 @@ WORD op_rst(BYTE base_op, BYTE dummy)
 /*
  *	RET
  */
-WORD op_ret(BYTE base_op, BYTE base_opc)
+WORD op_ret(int pass, BYTE base_op, BYTE base_opc, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
+
+	UNUSED(pass);
 
 	switch (op = get_reg(operand)) {
 	case NOOPERA:			/* RET */
@@ -229,7 +238,7 @@ WORD op_ret(BYTE base_op, BYTE base_opc)
 /*
  *	JP and CALL
  */
-WORD op_jpcall(BYTE base_op, BYTE base_opc)
+WORD op_jpcall(int pass, BYTE base_op, BYTE base_opc, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD n;
@@ -300,7 +309,7 @@ WORD op_jpcall(BYTE base_op, BYTE base_opc)
 /*
  *	JR
  */
-WORD op_jr(BYTE base_op, BYTE base_opc)
+WORD op_jr(int pass, BYTE base_op, BYTE base_opc, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register char *sec;
@@ -317,7 +326,7 @@ WORD op_jr(BYTE base_op, BYTE base_opc)
 		len = 2;
 		if (pass == 2) {
 			ops[0] = base_opc + (op & OPMASK3);
-			ops[1] = chk_sbyte(eval(sec) - pc - 2);
+			ops[1] = chk_sbyte(eval(sec) - get_pc() - 2);
 		}
 		break;
 	case NOREG:			/* JR n */
@@ -325,7 +334,8 @@ WORD op_jr(BYTE base_op, BYTE base_opc)
 			len = 2;
 			if (pass == 2) {
 				ops[0] = base_op;
-				ops[1] = chk_sbyte(eval(operand) - pc - 2);
+				ops[1] = chk_sbyte(eval(operand)
+						   - get_pc() - 2);
 			}
 		} else			/* too many operands */
 			asmerr(E_INVOPE);
@@ -343,13 +353,13 @@ WORD op_jr(BYTE base_op, BYTE base_opc)
 /*
  *	DJNZ
  */
-WORD op_djnz(BYTE base_op, BYTE dummy)
+WORD op_djnz(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	UNUSED(dummy);
 
 	if (pass == 2) {
 		ops[0] = base_op;
-		ops[1] = chk_sbyte(eval(operand) - pc - 2);
+		ops[1] = chk_sbyte(eval(operand) - get_pc() - 2);
 	}
 	return 2;
 }
@@ -357,7 +367,7 @@ WORD op_djnz(BYTE base_op, BYTE dummy)
 /*
  *	LD
  */
-WORD op_ld(BYTE base_op, BYTE dummy)
+WORD op_ld(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD n;
@@ -375,15 +385,15 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 	case REGE:			/* LD E,? */
 	case REGH:			/* LD H,? */
 	case REGL:			/* LD L,? */
-		len = ldreg(base_op + (op & OPMASK3), sec);
+		len = ldreg(pass, base_op + (op & OPMASK3), sec, ops);
 		break;
 	case REGIXH:			/* LD IXH,? (undoc) */
 	case REGIXL:			/* LD IXL,? (undoc) */
-		len = ldixhl(base_op + (op & OPMASK3), sec);
+		len = ldixhl(pass, base_op + (op & OPMASK3), sec, ops);
 		break;
 	case REGIYH:			/* LD IYH,? (undoc) */
 	case REGIYL:			/* LD IYL,? (undoc) */
-		len = ldiyhl(base_op + (op & OPMASK3), sec);
+		len = ldiyhl(pass, base_op + (op & OPMASK3), sec, ops);
 		break;
 	case REGI:			/* LD I,A */
 	case REGR:			/* LD R,A */
@@ -465,10 +475,10 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		}
 		break;
 	case REGSP:			/* LD SP,? */
-		len = ldsp(sec);
+		len = ldsp(pass, sec, ops);
 		break;
 	case REGIHL:			/* LD (HL),? */
-		len = ldihl(base_op + (op & OPMASK3), sec);
+		len = ldihl(pass, base_op + (op & OPMASK3), sec, ops);
 		break;
 	case REGIBC:			/* LD (BC),A */
 	case REGIDE:			/* LD (DE),A */
@@ -487,8 +497,9 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		break;
 	case REGIIX:			/* LD (IX),r */
 	case REGIIY:			/* LD (IY),r */
-		len = ldiixy((op & XYMASK) ? 0xfd : 0xdd,
-			     base_op + (REGIHL & OPMASK3), sec);
+		len = ldiixy(pass, (op & XYMASK) ? 0xfd : 0xdd,
+			     base_op + (REGIHL & OPMASK3),
+			     operand, sec, ops);
 		break;
 	case NOOPERA:			/* missing operand */
 		asmerr(E_MISOPE);
@@ -498,10 +509,12 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 		    && (operand[2] == 'X' || operand[2] == 'Y')
 		    && (operand[3] == '+' || operand[3] == '-'))
 					/* LD (I[XY][+-]d),? */
-			len = ldiixy(operand[2] == 'Y' ? 0xfd : 0xdd,
-				     base_op + (REGIHL & OPMASK3), sec);
+			len = ldiixy(pass, operand[2] == 'Y' ? 0xfd : 0xdd,
+				     base_op + (REGIHL & OPMASK3),
+				     operand, sec, ops);
 		else if (operand[0] == '(')
-			len = ldinn(sec); /* LD (nn),? */
+					/* LD (nn),? */
+			len = ldinn(pass, operand, sec, ops);
 		else			/* invalid operand */
 			asmerr(E_INVOPE);
 		break;
@@ -512,7 +525,7 @@ WORD op_ld(BYTE base_op, BYTE dummy)
 /*
  *	LD [A,B,C,D,E,H,L],?
  */
-static WORD ldreg(BYTE base_op, char *sec)
+static WORD ldreg(int pass, BYTE base_op, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD n;
@@ -610,7 +623,7 @@ static WORD ldreg(BYTE base_op, char *sec)
 /*
  *	LD IX[HL],? (undoc)
  */
-static WORD ldixhl(BYTE base_op, char *sec)
+static WORD ldixhl(int pass, BYTE base_op, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -648,7 +661,7 @@ static WORD ldixhl(BYTE base_op, char *sec)
 /*
  *	LD IY[HL],? (undoc)
  */
-static WORD ldiyhl(BYTE base_op, char *sec)
+static WORD ldiyhl(int pass, BYTE base_op, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -686,7 +699,7 @@ static WORD ldiyhl(BYTE base_op, char *sec)
 /*
  *	LD SP,?
  */
-static WORD ldsp(char *sec)
+static WORD ldsp(int pass, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD n;
@@ -736,7 +749,7 @@ static WORD ldsp(char *sec)
 /*
  *	LD (HL),?
  */
-static WORD ldihl(BYTE base_op, char *sec)
+static WORD ldihl(int pass, BYTE base_op, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -772,7 +785,8 @@ static WORD ldihl(BYTE base_op, char *sec)
 /*
  *	LD (I[XY]{[+-]d}),?
  */
-static WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
+static WORD ldiixy(int pass, BYTE prefix, BYTE base_op,
+		   char *operand, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -824,7 +838,7 @@ static WORD ldiixy(BYTE prefix, BYTE base_op, char *sec)
 /*
  *	LD (nn),?
  */
-static WORD ldinn(char *sec)
+static WORD ldinn(int pass, char *operand, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD n;
@@ -885,7 +899,7 @@ static WORD ldinn(char *sec)
 /*
  *	ADD ?,?
  */
-WORD op_add(BYTE base_op, BYTE base_op16)
+WORD op_add(int pass, BYTE base_op, BYTE base_op16, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register char *sec;
@@ -894,7 +908,7 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
 	case REGA:			/* ADD A,? */
-		len = aluop(base_op, sec);
+		len = aluop(pass, base_op, sec, ops);
 		break;
 	case REGHL:			/* ADD HL,? */
 		switch (op = get_reg(sec)) {
@@ -962,7 +976,7 @@ WORD op_add(BYTE base_op, BYTE base_op16)
 /*
  *	SBC ?,? and ADC ?,?
  */
-WORD op_sbadc(BYTE base_op, BYTE base_op16)
+WORD op_sbadc(int pass, BYTE base_op, BYTE base_op16, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register char *sec;
@@ -971,7 +985,7 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 	sec = next_arg(operand, NULL);
 	switch (get_reg(operand)) {
 	case REGA:			/* SBC/ADC A,? */
-		len = aluop(base_op, sec);
+		len = aluop(pass, base_op, sec, ops);
 		break;
 	case REGHL:			/* SBC/ADC HL,? */
 		switch (op = get_reg(sec)) {
@@ -1004,7 +1018,8 @@ WORD op_sbadc(BYTE base_op, BYTE base_op16)
 /*
  *	DEC and INC
  */
-WORD op_decinc(BYTE base_op, BYTE base_op16)
+WORD op_decinc(int pass, BYTE base_op, BYTE base_op16, char *operand,
+	       BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -1076,17 +1091,17 @@ WORD op_decinc(BYTE base_op, BYTE base_op16)
 /*
  *	SUB, AND, XOR, OR, CP
  */
-WORD op_alu(BYTE base_op, BYTE dummy)
+WORD op_alu(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	UNUSED(dummy);
 
-	return aluop(base_op, operand);
+	return aluop(pass, base_op, operand, ops);
 }
 
 /*
  *	ADD A, ADC A, SUB, SBC A, AND, XOR, OR, CP
  */
-static WORD aluop(BYTE base_op, char *sec)
+static WORD aluop(int pass, BYTE base_op, char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
@@ -1150,7 +1165,7 @@ static WORD aluop(BYTE base_op, char *sec)
 /*
  *	OUT
  */
-WORD op_out(BYTE op_base, BYTE op_basec)
+WORD op_out(int pass, BYTE op_base, BYTE op_basec, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register char *sec;
@@ -1176,7 +1191,8 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 			asmerr(E_MISOPE);
 			break;
 		default:
-			if (undoc_flag && *sec == '0' && *(sec + 1) == '\0') {
+			if (undoc_allowed() && *sec == '0'
+					    && *(sec + 1) == '\0') {
 				len = 2; /* OUT (C),0 (undoc) */
 				ops[0] = 0xed;
 				ops[1] = op_basec + (REGIHL & OPMASK3);
@@ -1208,7 +1224,7 @@ WORD op_out(BYTE op_base, BYTE op_basec)
 /*
  *	IN
  */
-WORD op_in(BYTE op_base, BYTE op_basec)
+WORD op_in(int pass, BYTE op_base, BYTE op_basec, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register char *sec;
@@ -1234,8 +1250,8 @@ WORD op_in(BYTE op_base, BYTE op_basec)
 			asmerr(E_MISOPE);
 			break;
 		default:
-			if (undoc_flag
-			    && operand[0] == 'F' && operand[1] == '\0') {
+			if (undoc_allowed() && operand[0] == 'F'
+					    && operand[1] == '\0') {
 				len = 2; /* IN F,(C) (undoc) */
 				ops[0] = 0xed;
 				ops[1] = op_basec + (REGIHL & OPMASK3);
@@ -1267,7 +1283,7 @@ WORD op_in(BYTE op_base, BYTE op_basec)
 /*
  *	RLC, RRC, RL, RR, SLA, SRA, SLL, SRL, BIT, RES, SET
  */
-WORD op_cbgrp(BYTE base_op, BYTE dummy)
+WORD op_cbgrp(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register BYTE bit = 0;
@@ -1303,8 +1319,8 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 		break;
 	case REGIIX:			/* CBOP {n,}(IX) */
 	case REGIIY:			/* CBOP {n,}(IY) */
-		len = cbgrp_iixy((op & XYMASK) ? 0xfd : 0xdd,
-				 base_op, bit, sec);
+		len = cbgrp_iixy(pass, (op & XYMASK) ? 0xfd : 0xdd,
+				 base_op, bit, sec, ops);
 		break;
 	case NOREG:
 		if (*sec == '(' && *(sec + 1) == 'I'
@@ -1312,8 +1328,8 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 		    && (*(sec + 3) == '+' || *(sec + 3) == '-'
 					  || *(sec + 3) == ')'))
 					/* CBOP {n,}(I[XY]{[+-]d}){,reg} */
-			len = cbgrp_iixy(*(sec + 2) == 'Y' ? 0xfd : 0xdd,
-					 base_op, bit, sec);
+			len = cbgrp_iixy(pass, *(sec + 2) == 'Y' ? 0xfd : 0xdd,
+					 base_op, bit, sec, ops);
 		else			/* invalid operand */
 			asmerr(E_INVOPE);
 		break;
@@ -1330,7 +1346,8 @@ WORD op_cbgrp(BYTE base_op, BYTE dummy)
 /*
  *	CBOP {n,}(I[XY]{[+-]d}){,reg}
  */
-static WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
+static WORD cbgrp_iixy(int pass, BYTE prefix, BYTE base_op, BYTE bit,
+		       char *sec, BYTE *ops)
 {
 	register BYTE op;
 	register char *tert;
@@ -1350,7 +1367,7 @@ static WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 			}
 			ops[3] = base_op + bit + (REGIHL & OPMASK0);
 		}
-	} else if (undoc_flag && base_op != 0x40) { /* not for BIT */
+	} else if (undoc_allowed() && base_op != 0x40) { /* not for BIT */
 		switch (op = get_reg(tert)) {
 		case REGA:		/* CBOP {n,}(I[XY]{[+-]d}),A (undoc) */
 		case REGB:		/* CBOP {n,}(I[XY]{[+-]d}),B (undoc) */
@@ -1387,12 +1404,13 @@ static WORD cbgrp_iixy(BYTE prefix, BYTE base_op, BYTE bit, char *sec)
 /*
  *	8080 MOV
  */
-WORD op8080_mov(BYTE base_op, BYTE dummy)
+WORD op8080_mov(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op1, op2;
 	register char *sec;
 	WORD len = 0;
 
+	UNUSED(pass);
 	UNUSED(dummy);
 
 	sec = next_arg(operand, NULL);
@@ -1443,11 +1461,12 @@ WORD op8080_mov(BYTE base_op, BYTE dummy)
 /*
  *	8080 ADC, ADD, ANA, CMP, ORA, SBB, SUB, XRA
  */
-WORD op8080_alu(BYTE base_op, BYTE dummy)
+WORD op8080_alu(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
 
+	UNUSED(pass);
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
@@ -1475,11 +1494,13 @@ WORD op8080_alu(BYTE base_op, BYTE dummy)
 /*
  *	8080 DCR and INR
  */
-WORD op8080_dcrinr(BYTE base_op, BYTE dummy)
+WORD op8080_dcrinr(int pass, BYTE base_op, BYTE dummy, char *operand,
+		   BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
 
+	UNUSED(pass);
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
@@ -1507,11 +1528,12 @@ WORD op8080_dcrinr(BYTE base_op, BYTE dummy)
 /*
  *	8080 INX, DAD, DCX
  */
-WORD op8080_reg16(BYTE base_op, BYTE dummy)
+WORD op8080_reg16(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
 
+	UNUSED(pass);
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
@@ -1535,11 +1557,12 @@ WORD op8080_reg16(BYTE base_op, BYTE dummy)
 /*
  *	8080 STAX and LDAX
  */
-WORD op8080_regbd(BYTE base_op, BYTE dummy)
+WORD op8080_regbd(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
 
+	UNUSED(pass);
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
@@ -1561,7 +1584,7 @@ WORD op8080_regbd(BYTE base_op, BYTE dummy)
 /*
  *	8080 ACI, ADI, ANI, CPI, ORI, SBI, SUI, XRI, OUT, IN
  */
-WORD op8080_imm(BYTE base_op, BYTE dummy)
+WORD op8080_imm(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	UNUSED(dummy);
 
@@ -1575,7 +1598,7 @@ WORD op8080_imm(BYTE base_op, BYTE dummy)
 /*
  *	8080 RST
  */
-WORD op8080_rst(BYTE base_op, BYTE dummy)
+WORD op8080_rst(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 
@@ -1594,11 +1617,12 @@ WORD op8080_rst(BYTE base_op, BYTE dummy)
 /*
  *	8080 PUSH and POP
  */
-WORD op8080_pupo(BYTE base_op, BYTE dummy)
+WORD op8080_pupo(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD len = 0;
 
+	UNUSED(pass);
 	UNUSED(dummy);
 
 	switch (op = get_reg(operand)) {
@@ -1624,7 +1648,7 @@ WORD op8080_pupo(BYTE base_op, BYTE dummy)
  *	     JMP, JNZ, JZ, JNC, JC, JPO, JPE, JP, JM
  *	     CALL, CNZ, CZ, CNC, CC, CPO, CPE, CP, CM
  */
-WORD op8080_addr(BYTE base_op, BYTE dummy)
+WORD op8080_addr(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register WORD n;
 
@@ -1642,7 +1666,7 @@ WORD op8080_addr(BYTE base_op, BYTE dummy)
 /*
  *	8080 MVI
  */
-WORD op8080_mvi(BYTE base_op, BYTE dummy)
+WORD op8080_mvi(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register char *sec;
@@ -1679,7 +1703,7 @@ WORD op8080_mvi(BYTE base_op, BYTE dummy)
 /*
  *	8080 LXI
  */
-WORD op8080_lxi(BYTE base_op, BYTE dummy)
+WORD op8080_lxi(int pass, BYTE base_op, BYTE dummy, char *operand, BYTE *ops)
 {
 	register BYTE op;
 	register WORD n;

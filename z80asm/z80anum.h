@@ -1,13 +1,13 @@
 /*
  *	Z80/8080-Macro-Assembler
  *	Copyright (C) 1987-2022 by Udo Munk
- *	Copyright (C) 2022 by Thomas Eberhardt
+ *	Copyright (C) 2022-2024 by Thomas Eberhardt
  */
 
 #ifndef Z80ANUM_INC
 #define Z80ANUM_INC
 
-#include "z80a.h"
+#include "z80asm.h"
 
 extern BYTE ctype[256];
 
@@ -34,6 +34,8 @@ extern BYTE ctype[256];
 
 extern void init_ctype(void);
 
+extern void set_radix(int r);
+extern int get_radix(void);
 extern WORD eval(char *s);
 extern BYTE chk_byte(WORD w);
 extern BYTE chk_sbyte(WORD w);
