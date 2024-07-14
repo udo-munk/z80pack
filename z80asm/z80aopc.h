@@ -7,7 +7,7 @@
 #ifndef Z80AOPC_INC
 #define Z80AOPC_INC
 
-#include "z80a.h"
+#include "z80asm.h"
 
 /*
  *	definition of instruction sets
@@ -26,10 +26,9 @@
 #define OP_NOPRE	0x0010	/* no preprocessing of operand */
 #define OP_NOLBL	0x0020	/* label not allowed */
 #define OP_NOOPR	0x0040	/* doesn't have an operand */
-#define OP_INCL		0x0080	/* include (list before executing) */
-#define OP_DS		0x0100	/* define space (does own obj_* calls) */
-#define OP_MDEF		0x0200	/* macro definition start */
-#define OP_MEND		0x0400	/* macro definition end */
+#define OP_DS		0x0080	/* define space (does own obj_* calls) */
+#define OP_MDEF		0x0100	/* macro definition start */
+#define OP_MEND		0x0200	/* macro definition end */
 
 /*
  *	definition of operand symbols
@@ -93,9 +92,11 @@
  */
 struct opc {
 	const char *op_name;	/* opcode name */
-	WORD (*op_fun)(BYTE b1, BYTE b2); /* function pointer code gen. */
+	WORD (*op_func)(int pass, BYTE b1, BYTE b2,
+			char *operand, BYTE *ops); /* opcode function */
 	BYTE op_c1;		/* first base opcode */
 	BYTE op_c2;		/* second base opcode */
+	BYTE op_a_mode;		/* listing address mode */
 	WORD op_flags;		/* opcode flags */
 };
 

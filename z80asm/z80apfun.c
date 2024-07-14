@@ -5,31 +5,84 @@
  */
 
 /*
- *	processing of all PSEUDO ops except macro related
+ *	processing of all PSEUDO ops except include and macro related
  */
 
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdio.h>
-#include <string.h>
 #include <limits.h>
 
-#include "z80a.h"
-#include "z80aglb.h"
-#include "z80amain.h"
+#include "z80asm.h"
+#include "z80alst.h"
+#include "z80amfun.h"
 #include "z80anum.h"
+#include "z80aobj.h"
 #include "z80aopc.h"
-#include "z80aout.h"
 #include "z80atab.h"
 #include "z80apfun.h"
+
+static int phase_flag;		/* inside a .PHASE section flag */
+
+static int false_sect_flag;	/* in false conditional section flag */
+static int iflevel;		/* IF nesting level */
+static int act_iflevel;		/* active IF nesting level */
+static int act_elselevel;	/* active ELSE nesting level */
+
+/*
+ *	return TRUE if inside a .PHASE section
+ */
+int in_phase_section(void)
+{
+	return phase_flag;
+}
+
+/*
+ *	returns TRUE if in TRUE section (i.e. generate code)
+ */
+int in_true_section(void)
+{
+	return !false_sect_flag;
+}
+
+/*
+ *	returns TRUE if in IF/ELSE/ENDIF section
+ */
+int in_cond_section(void)
+{
+	return iflevel > 0;
+}
+
+/*
+ *	save IF/ELSE/ENDIF state
+ */
+void save_cond_state(int *p)
+{
+	p[0] = iflevel;
+	p[1] = act_iflevel;
+	p[2] = act_elselevel;
+}
+
+/*
+ *	restore IF/ELSE/ENDIF state
+ */
+void restore_cond_state(int *p)
+{
+	iflevel = p[0];
+	act_iflevel = p[1];
+	act_elselevel = p[2];
+	false_sect_flag = FALSE;
+}
 
 /*
  *	.Z80 and .8080
  */
-WORD op_instrset(BYTE op_code, BYTE dummy)
+WORD op_instrset(int pass, BYTE op_code, BYTE dummy, char *operand, BYTE *ops)
 {
+	UNUSED(pass);
 	UNUSED(dummy);
+	UNUSED(operand);
+	UNUSED(ops);
 
-	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* .Z80 */
 		instrset(INSTR_Z80);
@@ -45,47 +98,42 @@ WORD op_instrset(BYTE op_code, BYTE dummy)
 }
 
 /*
- *	ORG, .PHASE, .DEPHASE
+ *	ORG, .PHASE, and .DEPHASE
  */
-WORD op_org(BYTE op_code, BYTE dummy)
+WORD op_org(int pass, BYTE op_code, BYTE dummy, char *operand, BYTE *ops)
 {
 	register WORD n;
 
 	UNUSED(dummy);
+	UNUSED(ops);
 
-	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* ORG */
-		if (phs_flag) {
+		if (phase_flag) {
 			asmerr(E_ORGPHS);
 			return 0;
 		}
 		n = eval(operand);
-		if (pass == 1) {	/* PASS 1 */
-			if (!load_flag) {
-				/* first ORG sets load address,
-				   without any ORG it defaults to 0 */
-				load_addr = n;
-				load_flag = TRUE;
-			}
-		} else			/* PASS 2 */
+		if (pass == 1)		/* PASS 1 */
+			obj_load_addr(n);
+		else			/* PASS 2 */
 			obj_org(n);
-		rpc = pc = n;
+		set_pc(PC_ORG, n);
 		break;
 	case 2:				/* .PHASE */
-		if (phs_flag)
+		if (phase_flag)
 			asmerr(E_PHSNST);
 		else {
-			phs_flag = TRUE;
-			pc = eval(operand);
+			phase_flag = TRUE;
+			set_pc(PC_PHASE, eval(operand));
 		}
 		break;
 	case 3:				/* .DEPHASE */
-		if (!phs_flag)
+		if (!phase_flag)
 			asmerr(E_MISPHS);
 		else {
-			phs_flag = FALSE;
-			pc = rpc;
+			phase_flag = FALSE;
+			set_pc(PC_DEPHASE, 0);
 		}
 		break;
 	default:
@@ -98,38 +146,43 @@ WORD op_org(BYTE op_code, BYTE dummy)
 /*
  *	.RADIX
  */
-WORD op_radix(BYTE dummy1, BYTE dummy2)
+WORD op_radix(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 {
 	BYTE r;
 
+	UNUSED(pass);
 	UNUSED(dummy1);
 	UNUSED(dummy2);
+	UNUSED(ops);
 
-	a_mode = A_NONE;
-	radix = 10;
+	set_radix(10);
 	r = chk_byte(eval(operand));
 	if (r < 2 || r > 16)
 		asmerr(E_VALOUT);
 	else
-		radix = r;
+		set_radix(r);
 	return 0;
 }
 
 /*
  *	EQU
  */
-WORD op_equ(BYTE dummy1, BYTE dummy2)
+WORD op_equ(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 {
 	register struct sym *sp;
+	const char *label;
+	WORD addr;
 
+	UNUSED(pass);
 	UNUSED(dummy1);
 	UNUSED(dummy2);
+	UNUSED(ops);
 
-	a_mode = A_EQU;
-	a_addr = eval(operand);
+	label = get_label();
+	addr = eval(operand);
 	if ((sp = look_sym(label)) == NULL)
-		new_sym(label)->sym_val = a_addr;
-	else if (sp->sym_val != a_addr)
+		new_sym(label, addr);
+	else if (sp->sym_val != addr)
 		asmerr(E_MULSYM);
 	return 0;
 }
@@ -137,21 +190,21 @@ WORD op_equ(BYTE dummy1, BYTE dummy2)
 /*
  *	DEFL, ASET, and SET (in 8080 mode)
  */
-WORD op_dl(BYTE dummy1, BYTE dummy2)
+WORD op_dl(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 {
+	UNUSED(pass);
 	UNUSED(dummy1);
 	UNUSED(dummy2);
+	UNUSED(ops);
 
-	a_mode = A_SET;
-	a_addr = eval(operand);
-	put_sym(label, a_addr);
+	put_sym(get_label(), eval(operand));
 	return 0;
 }
 
 /*
  *	DEFS and DS
  */
-WORD op_ds(BYTE dummy1, BYTE dummy2)
+WORD op_ds(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 {
 	register char *p;
 	register WORD count;
@@ -159,9 +212,8 @@ WORD op_ds(BYTE dummy1, BYTE dummy2)
 
 	UNUSED(dummy1);
 	UNUSED(dummy2);
+	UNUSED(ops);
 
-	a_mode = A_DS;
-	a_addr = pc;
 	p = next_arg(operand, NULL);
 	count = eval(operand);
 	if (pass == 2) {
@@ -175,9 +227,9 @@ WORD op_ds(BYTE dummy1, BYTE dummy2)
 }
 
 /*
- *	DEFB, DB, DEFM, DEFC, DC, DEFT, DEFZ
+ *	DEFB, DB, DEFM, DEFC, DC, DEFT, and DEFZ
  */
-WORD op_db(BYTE op_code, BYTE dummy)
+WORD op_db(int pass, BYTE op_code, BYTE dummy, char *operand, BYTE *ops)
 {
 	register char *p;
 	register int i;
@@ -228,7 +280,7 @@ WORD op_db(BYTE op_code, BYTE dummy)
 /*
  *	DEFW and DW
  */
-WORD op_dw(BYTE dummy1, BYTE dummy2)
+WORD op_dw(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 {
 	register char *p;
 	register int i;
@@ -256,23 +308,18 @@ WORD op_dw(BYTE dummy1, BYTE dummy2)
 }
 
 /*
- *	EJECT, PAGE, LIST, .LIST, NOLIST, .XLIST, .PRINTX, PRINT, INCLUDE,
- *	MACLIB, TITLE, .XALL, .LALL, .SALL, .SFCOND, .LFCOND
+ *	EJECT, PAGE, .PRINTX, PRINT, and TITLE
  */
-WORD op_misc(BYTE op_code, BYTE dummy)
+WORD op_misc(int pass, BYTE op_code, BYTE dummy, char *operand, BYTE *ops)
 {
-	register char *p, *d;
+	register char *p, *q;
 	register char c;
 	BYTE n;
-	unsigned long inc_line;
-	char *inc_fn, *fn;
-	FILE *inc_fp;
-	static int incnest;
 	static int page_done;
 
 	UNUSED(dummy);
+	UNUSED(ops);
 
-	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* EJECT and PAGE */
 		if (operand[0] != '\0') {
@@ -281,19 +328,19 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 				if (n != 0 && (n < 6 || n > 144))
 					asmerr(E_VALOUT);
 				else
-					ppl = n;
+					lst_set_ppl(n);
 				page_done = TRUE;
 			}
 		} else if (pass == 2)
-			p_line = ppl - 1;
+			lst_eject(FALSE);
 		break;
 	case 2:				/* LIST and .LIST */
 		if (pass == 2)
-			list_flag = TRUE;
+			set_list_active(TRUE);
 		break;
 	case 3:				/* NOLIST and .XLIST */
 		if (pass == 2)
-			list_flag = FALSE;
+			set_list_active(FALSE);
 		break;
 	case 4:				/* .PRINTX */
 		p = operand;
@@ -325,73 +372,48 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 			fputs(operand, stdout);
 		putchar('\n');
 		break;
-	case 6:				/* INCLUDE and MACLIB */
-		if (incnest >= INCNEST) {
-			asmerr(E_INCNST);
-			break;
-		}
-		inc_line = c_line;
-		inc_fn = srcfn;
-		inc_fp = srcfp;
-		incnest++;
-		p = operand;
-		while (!IS_SPC(*p) && *p != COMMENT && *p != '\0')
-			p++;
-		*p = '\0';
-		fn = strsave(operand);
-		if (ver_flag)
-			printf("   Include %s\n", fn);
-		process_file(fn);
-		free(fn);
-		incnest--;
-		c_line = inc_line;
-		srcfn = inc_fn;
-		srcfp = inc_fp;
-		if (ver_flag)
-			printf("   Resume  %s\n", srcfn);
-		break;
-	case 7:				/* TITLE */
+	case 6:				/* TITLE */
 		if (pass == 2) {
 			p = operand;
-			d = title;
 			c = *p;
 			if (c == STRDEL || c == STRDEL2) {
-				p++;
+				q = p + 1;
 				while (TRUE) {
-					if (*p == '\0') {
+					if (*q == '\0') {
 						asmerr(E_MISDEL);
 						break;
 					}
 					/* check for double delim */
-					if (*p == c && *++p != c)
+					if (*q == c && *++q != c)
 						break;
-					*d++ = *p++;
+					*p++ = *q++;
 				}
 			} else
 				while (*p != '\0' && *p != COMMENT)
-					*d++ = *p++;
-			*d = '\0';
+					p++;
+			*p = '\0';
+			lst_set_title(operand);
 		}
 		break;
-	case 8:				/* .XALL */
+	case 7:				/* .XALL */
 		if (pass == 2)
-			mac_list_flag = M_OPS;
+			set_mac_list_opt(M_OPS);
 		break;
-	case 9:				/* .LALL */
+	case 8:				/* .LALL */
 		if (pass == 2)
-			mac_list_flag = M_ALL;
+			set_mac_list_opt(M_ALL);
 		break;
-	case 10:			/* .SALL */
+	case 9:				/* .SALL */
 		if (pass == 2)
-			mac_list_flag = M_NONE;
+			set_mac_list_opt(M_NONE);
 		break;
-	case 11:			/* .SFCOND */
+	case 10:			/* .SFCOND */
 		if (pass == 2)
-			nofalselist = TRUE;
+			set_nofalselist(TRUE);
 		break;
-	case 12:			/* .LFCOND */
+	case 11:			/* .LFCOND */
 		if (pass == 2)
-			nofalselist = FALSE;
+			set_nofalselist(FALSE);
 		break;
 	default:
 		fatal(F_INTERN, "invalid opcode for function op_misc");
@@ -401,35 +423,36 @@ WORD op_misc(BYTE op_code, BYTE dummy)
 }
 
 /*
- *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, IF1, IF2
+ *	IFDEF, IFNDEF, IFEQ, IFNEQ, COND, IF, IFT, IFE, IFF, IF1, IF2,
+ *	IFB, IFNB, IFIDN, and IFDIF
  */
-WORD op_cond(BYTE op_code, BYTE dummy)
+WORD op_cond(int pass, BYTE op_code, BYTE dummy, char *operand, BYTE *ops)
 {
 	register char *p;
 	register int err = FALSE;
 
 	UNUSED(dummy);
+	UNUSED(ops);
 
-	a_mode = A_NONE;
 	if (op_code < 90) {
 		if (iflevel == INT_MAX) {
 			asmerr(E_IFNEST);
 			return 0;
 		}
 		iflevel++;
-		if (!gencode)
+		if (false_sect_flag)
 			return 0;
 		switch (op_code) {
 		case 1:			/* IFDEF */
 		case 2:			/* IFNDEF */
 			if (get_sym(operand) == NULL)
-				gencode = FALSE;
+				false_sect_flag = TRUE;
 			break;
 		case 3:			/* IFEQ */
 		case 4:			/* IFNEQ */
 			if ((p = next_arg(operand, NULL)) != NULL) {
 				if (eval(operand) != eval(p))
-					gencode = FALSE;
+					false_sect_flag = TRUE;
 			} else {
 				asmerr(E_MISOPE);
 				err = TRUE;
@@ -438,12 +461,20 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 		case 5:			/* COND, IF, and IFT */
 		case 6:			/* IFE and IFF */
 			if (eval(operand) == 0)
-				gencode = FALSE;
+				false_sect_flag = TRUE;
 			break;
 		case 7:			/* IF1 */
 		case 8:			/* IF2 */
 			if (pass == 2)
-				gencode = FALSE;
+				false_sect_flag = TRUE;
+			break;
+		case 9:			/* IFB */
+		case 10:		/* IFNB */
+			err = mac_op_ifb(operand, &false_sect_flag);
+			break;
+		case 11:		/* IFIDN */
+		case 12:		/* IFDIF */
+			err = mac_op_ifidn(operand, &false_sect_flag);
 			break;
 		default:
 			fatal(F_INTERN, "invalid opcode for function op_cond");
@@ -451,7 +482,7 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 		}
 		if (!err) {
 			if ((op_code & 1) == 0) /* negate for inverse IF */
-				gencode = !gencode;
+				false_sect_flag = !false_sect_flag;
 		}
 		act_iflevel = iflevel;
 	} else {
@@ -466,12 +497,12 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 					asmerr(E_MISEIF);
 				else
 					act_elselevel = iflevel;
-				gencode = !gencode;
+				false_sect_flag = !false_sect_flag;
 			}
 			break;
 		case 99:		/* ENDIF and ENDC */
 			if (iflevel == act_iflevel) {
-				gencode = TRUE;
+				false_sect_flag = FALSE;
 				act_elselevel = 0;
 				act_iflevel--;
 			}
@@ -486,13 +517,15 @@ WORD op_cond(BYTE op_code, BYTE dummy)
 }
 
 /*
- *	EXTRN, EXTERNAL, EXT and PUBLIC, ENT, ENTRY, GLOBAL, and ABS, ASEG
+ *	EXTRN, EXTERNAL, EXT, PUBLIC, ENT, ENTRY, GLOBAL, ABS, and ASEG
  */
-WORD op_glob(BYTE op_code, BYTE dummy)
+WORD op_glob(int pass, BYTE op_code, BYTE dummy, char *operand, BYTE *ops)
 {
+	UNUSED(pass);
 	UNUSED(dummy);
+	UNUSED(operand);
+	UNUSED(ops);
 
-	a_mode = A_NONE;
 	switch (op_code) {
 	case 1:				/* EXTRN, EXTERNAL, EXT */
 		break;
@@ -510,12 +543,13 @@ WORD op_glob(BYTE op_code, BYTE dummy)
 /*
  *	END
  */
-WORD op_end(BYTE dummy1, BYTE dummy2)
+WORD op_end(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 {
 	UNUSED(dummy1);
 	UNUSED(dummy2);
+	UNUSED(ops);
 
 	if (pass == 2 && operand[0] != '\0')
-		start_addr = eval(operand);
+		obj_start_addr(eval(operand));
 	return 0;
 }

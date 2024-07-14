@@ -7,7 +7,7 @@
 #ifndef Z80ATAB_INC
 #define Z80ATAB_INC
 
-#include "z80a.h"
+#include "z80asm.h"
 
 /*
  *	structure symbol table entries
@@ -19,13 +19,15 @@ struct sym {
 	struct sym *sym_next;	/* next entry */
 };
 
-extern struct sym *look_sym(char *sym_name);
-extern struct sym *get_sym(char *sym_name);
-extern struct sym *new_sym(char *sym_name);
+extern struct sym *look_sym(const char *sym_name);
+extern struct sym *get_sym(const char *sym_name);
+extern WORD sym_lastval(void);
 
-extern void put_sym(char *sym_name, WORD sym_val);
-extern void put_label(void);
+extern void new_sym(const char *sym_name, WORD sym_val);
+extern void put_sym(const char *sym_name, WORD sym_val);
+extern void put_label(const char *label, WORD addr, int pass);
 
+extern int get_symmax(void);
 extern struct sym *first_sym(int sort_mode);
 extern struct sym *next_sym(void);
 

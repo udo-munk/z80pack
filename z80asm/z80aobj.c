@@ -5,27 +5,14 @@
  */
 
 /*
- *	module for output functions to list, object and error files
+ *	module for output functions to object files
  */
 
+#include <stddef.h>
 #include <stdio.h>
-#include <string.h>
-#include <time.h>
 
-#include "z80a.h"
-#include "z80aglb.h"
-#include "z80amain.h"
-#include "z80amfun.h"
-#include "z80atab.h"
-#include "z80aout.h"
-
-WORD a_addr;			/* output value for A_ADDR/A_VALUE mode */
-int  a_mode;			/* address output mode for pseudo ops */
-
-WORD load_addr;			/* load address of program */
-WORD start_addr;		/* execution start address of program */
-
-static void lst_byte(BYTE b);
+#include "z80asm.h"
+#include "z80aobj.h"
 
 static void pos_fill_bin(void);
 
@@ -51,36 +38,11 @@ static BYTE chksum(BYTE rec_type);
 #define	HEX_DATA	0
 #define HEX_EOF		1
 
-static const char *errmsg[] = {			/* error messages for asmerr */
-	"no error",				/* 0 */
-	"undefined symbol",			/* 1 */
-	"invalid opcode",			/* 2 */
-	"invalid operand",			/* 3 */
-	"missing operand",			/* 4 */
-	"multiple defined symbol",		/* 5 */
-	"value out of range",			/* 6 */
-	"missing right parenthesis",		/* 7 */
-	"missing string delimiter",		/* 8 */
-	"missing IF at ELSE of ENDIF",		/* 9 */
-	"IF nested too deep",			/* 10 */
-	"missing ENDIF",			/* 11 */
-	"INCLUDE nested too deep",		/* 12 */
-	"invalid .PHASE nesting",		/* 13 */
-	"invalid ORG in .PHASE block",		/* 14 */
-	"missing .PHASE at .DEPHASE",		/* 15 */
-	"division by zero",			/* 16 */
-	"invalid expression",			/* 17 */
-	"invalid label",			/* 18 */
-	"missing .DEPHASE",			/* 19 */
-	"not in macro definition",		/* 20 */
-	"missing ENDM",				/* 21 */
-	"not in macro expansion",		/* 22 */
-	"macro expansion nested too deep",	/* 23 */
-	"too many local labels",		/* 24 */
-	"label address differs between passes",	/* 25 */
-	"macro buffer overflow"			/* 26 */
-};
-
+static int  obj_fmt;			/* format of object file */
+static const char *objfn;		/* object filename */
+static FILE *objfp;			/* file pointer for object code */
+static WORD load_addr;			/* load address of program */
+static WORD start_addr;			/* execution start addr of program */
 static WORD curr_addr;			/* current logical file address */
 static WORD eof_addr;			/* address at binary/C end of file */
 static WORD hex_addr;			/* current address in HEX record */
@@ -88,288 +50,66 @@ static WORD hex_cnt;			/* number of bytes in HEX buffer */
 static long code_start;			/* file position where code begins */
 static int  neof_flag;			/* not at EOF flag */
 static int  nl_size;			/* size of newline in text files */
+static int  hexlen;			/* HEX record length */
+static int  carylen;			/* C array bytes per line */
+static int  nofill_flag;		/* don't fill up object code flag */
 
 static BYTE hex_buf[MAXHEX];		/* buffer for one HEX record */
 static char hex_out[MAXHEX * 2 + 13];	/* ASCII buffer for one HEX record */
 
+static const struct {
+	const char *ext;
+	const char *mode;
+} obj_str[] = {
+	{ OBJEXTBIN, WRITEB },	/* OBJ_BIN */
+	{ OBJEXTBIN, WRITEB },	/* OBJ_MOS */
+	{ OBJEXTHEX, WRITEA },	/* OBJ_HEX */
+	{ OBJEXTCARY, WRITEA }	/* OBJ_CARY */
+};
+
 /*
- *	print error message to listfile and increase error counter
+ *	set object file options
  */
-void asmerr(int i)
+void obj_set_options(int fmt, int hexl, int caryl, int nofill)
 {
-	if (pass == 0) {
-		fputs("error in option -d: ", errfp);
-		fputs(errmsg[i], errfp);
-		fputc('\n', errfp);
-	} else if (pass == 1) {
-		fprintf(errfp, "Error in file: %s  Line: %ld\n",
-			srcfn, c_line);
-		fputs(line, errfp);
-		fputc('\n', errfp);
-		fprintf(errfp, "=> %s\n", errmsg[i]);
-	} else
-		errnum = i;
-	errors++;
+	obj_fmt = fmt;
+	hexlen = hexl;
+	carylen = caryl;
+	nofill_flag = nofill;
 }
 
 /*
- *	begin new page in listfile
+ *	return object file extension
  */
-static void lst_header(void)
+const char *obj_file_ext(void)
 {
-	static int header_done;
-	time_t tloc;
-
-	if (header_done && ppl != 0)
-		fputc('\f', lstfp);
-	if (!header_done || ppl != 0) {
-		fprintf(lstfp, "Z80/8080-Macro-Assembler  Release %s",
-			RELEASE);
-		if (!nodate_flag) {
-			tloc = time(&tloc);
-			fprintf(lstfp, "\t%.24s", ctime(&tloc));
-		}
-	}
-	if (ppl != 0) {
-		if (nodate_flag)
-			fputs("\t\t\t\t", lstfp);
-		fprintf(lstfp, "\tPage %d\n", ++page);
-		fprintf(lstfp, "Source file: %s\n", srcfn);
-		if (title[0])
-			fprintf(lstfp, "Title:       %s", title);
-		p_line = 3;
-	} else
-		p_line = 0;
-	fputc('\n', lstfp);
-	header_done = TRUE;
+	return obj_str[obj_fmt].ext;
 }
 
 /*
- *	print header for source lines
+ *	set object file
  */
-static void lst_attl(void)
+void obj_open_file(const char *fn)
 {
-	static int attl_done;
-
-	if (!attl_done || ppl != 0)
-		fprintf(lstfp,
-			"\nLOC   OBJECT CODE   LINE   STMT SOURCE CODE\n");
-	if (ppl != 0)
-		p_line += 2;
-	attl_done = TRUE;
+	objfn = fn;
+	objfp = fopen(objfn, obj_str[obj_fmt].mode);
+	if (objfp == NULL)
+		fatal(F_FOPEN, objfn);
 }
 
 /*
- *	print one line into listfile, if -l option set
+ *	close object file, optionally delete it
  */
-void lst_line(char *l, WORD addr, WORD op_cnt, int expn_flag)
+void obj_close_file(void)
 {
-	register int i, j;
-	register const char *a_mark;
-	static unsigned long s_line;
-
-	s_line++;
-	if (!list_flag)
-		return;
-	if (ppl != 0)
-		p_line++;
-	if (p_line > ppl || c_line == 1) {
-		lst_header();
-		lst_attl();
-		if (ppl != 0)
-			p_line++;
-	}
-	a_mark = "  ";
-	switch (a_mode) {
-	case A_STD:
-		a_addr = addr;
-		break;
-	case A_EQU:
-		a_mark = "= ";
-		break;
-	case A_SET:
-		a_mark = "# ";
-		break;
-	case A_DS:
-		op_cnt = 0;
-		break;
-	case A_NONE:
-		break;
-	default:
-		fatal(F_INTERN, "invalid a_mode for function lst_line");
-		break;
-	}
-	if (a_mode == A_NONE)
-		fputs("    ", lstfp);
-	else {
-		lst_byte(a_addr >> 8);
-		lst_byte(a_addr & 0xff);
-	}
-	fputs("  ", lstfp);
-	i = 0;
-	for (j = 0; j < 4; j++) {
-		if (op_cnt > 0) {
-			lst_byte(ops[i++]);
-			op_cnt--;
-		} else if (j == 0)
-			fputs(a_mark, lstfp);
-		else
-			fputs("  ", lstfp);
-		fputc(' ', lstfp);
-	}
-	fprintf(lstfp, "%c%5lu %6lu", expn_flag ? '+' : ' ',
-		c_line, s_line);
-	if (*l) {
-		fputc(' ', lstfp);
-		fputs(l, lstfp);
-	}
-	fputc('\n', lstfp);
-	if (errnum != E_OK) {
-		fprintf(errfp, "=> %s\n", errmsg[errnum]);
-		errnum = E_OK;
-		if (ppl != 0)
-			p_line++;
-	}
-	while (op_cnt > 0) {
-		if (ppl != 0)
-			p_line++;
-		if (p_line > ppl) {
-			lst_header();
-			lst_attl();
-			if (ppl != 0)
-				p_line++;
-		}
-		s_line++;
-		addr += 4;
-		lst_byte(addr >> 8);
-		lst_byte(addr & 0xff);
-		fputs("  ", lstfp);
-		for (j = 0; j < 4; j++) {
-			if (op_cnt > 0) {
-				lst_byte(ops[i++]);
-				op_cnt--;
-			} else
-				fputs("  ", lstfp);
-			fputc(' ', lstfp);
-		}
-		fprintf(lstfp, "%c%5lu %6lu\n", expn_flag ? '+' : ' ',
-			c_line, s_line);
-	}
-	/* reset p_line after EJECT when ppl is 0 */
-	if (p_line < 0)
-		p_line = 1;
-}
-
-/*
- *	print macro table into listfile, sorted as specified in sort_mode
- */
-void lst_mac(int sort_mode)
-{
-	register int col, prev_len;
-	register char *p;
-	int prev_rf, rf;
-
-	p_line = col = prev_len = 0;
-	prev_rf = TRUE;
-	strcpy(title, "Macro table");
-	for (p = mac_first(sort_mode, &rf); p != NULL; p = mac_next(&rf)) {
-		if (col + mac_symmax + 1 >= 80) {
-			if (!prev_rf)
-				fputc('*', lstfp);
-			fputc('\n', lstfp);
-			if (ppl != 0 && ++p_line >= ppl)
-				p_line = 0;
-			col = 0;
-		} else if (col > 0) {
-			fputc(prev_rf? ' ' : '*', lstfp);
-			while (prev_len++ < mac_symmax)
-				fputc(' ', lstfp);
-			fputs("   ", lstfp);
-		}
-		if (p_line == 0) {
-			lst_header();
-			if (ppl == 0) {
-				fputs(title, lstfp);
-				fputc('\n', lstfp);
-			}
-			fputc('\n', lstfp);
-			p_line++;
-		}
-		prev_len = strlen(p);
-		fprintf(lstfp, "%s", p);
-		prev_rf = rf;
-		col += mac_symmax + 4;
-	}
-	if (col > 0) {
-		if (!prev_rf)
-			fputc('*', lstfp);
-		fputc('\n', lstfp);
-	}
-}
-
-/*
- *	print symbol table into listfile, sorted as specified in sort_mode
- */
-void lst_sym(int sort_mode)
-{
-	register int col;
-	register struct sym *sp;
-	int prev_rf;
-
-	p_line = col = 0;
-	prev_rf = TRUE;
-	strcpy(title, "Symbol table");
-	for (sp = first_sym(sort_mode); sp != NULL; sp = next_sym()) {
-		if (col + symmax + 6 >= 80) {
-			if (!prev_rf)
-				fputc('*', lstfp);
-			fputc('\n', lstfp);
-			if (ppl != 0 && ++p_line >= ppl)
-				p_line = 0;
-			col = 0;
-		} else if (col > 0) {
-			fputc(prev_rf ? ' ' : '*', lstfp);
-			fputs("   ", lstfp);
-		}
-		if (p_line == 0) {
-			lst_header();
-			if (ppl == 0 && title[0]) {
-				fputs(title, lstfp);
-				fputc('\n', lstfp);
-			}
-			fputc('\n', lstfp);
-			p_line++;
-		}
-		fprintf(lstfp, "%*s ", -symmax, sp->sym_name);
-		lst_byte(sp->sym_val >> 8);
-		lst_byte(sp->sym_val & 0xff);
-		prev_rf = sp->sym_refflg;
-		col += symmax + 9;
-	}
-	if (col > 0) {
-		if (!prev_rf)
-			fputc('*', lstfp);
-		fputc('\n', lstfp);
-	}
-}
-
-/*
- *	print BYTE as ASCII hex into listfile
- */
-static void lst_byte(BYTE b)
-{
-	register char c;
-
-	c = b >> 4;
-	fputc(c + (c < 10 ? '0' : 'W'), lstfp);
-	c = b & 0xf;
-	fputc(c + (c < 10 ? '0' : 'W'), lstfp);
+	if (objfp != NULL)
+		fclose(objfp);
 }
 
 /*
  *	write header record into object file
  */
-void obj_header(void)
+void obj_header(const char *fn)
 {
 	long before_nl, after_nl;
 
@@ -389,8 +129,7 @@ void obj_header(void)
 	case OBJ_HEX:
 		break;
 	case OBJ_CARY:
-		if (fprintf(objfp, "// build from source file %s",
-			    srcfn) < 0 ||
+		if (fprintf(objfp, "// build from source file %s", fn) < 0 ||
 		    (before_nl = ftell(objfp)) < 0L ||
 		    fputc('\n', objfp) == EOF ||
 		    (after_nl = ftell(objfp)) < 0L ||
@@ -407,7 +146,8 @@ void obj_header(void)
 }
 
 /*
- *	write end record into object file
+ *	write end record into object file, optionally
+ *	without filling up the file
  */
 void obj_end(void)
 {
@@ -448,6 +188,27 @@ void obj_end(void)
 }
 
 /*
+ *	set execution start address of program
+ */
+void obj_start_addr(WORD addr)
+{
+	start_addr = addr;
+}
+
+/*
+ *	set load address of program on first call
+ */
+void obj_load_addr(WORD addr)
+{
+	static int load_flag;
+
+	if (!load_flag) {
+		load_addr = addr;
+		load_flag = TRUE;
+	}
+}
+
+/*
  *	set logical address for object file
  */
 void obj_org(WORD addr)
@@ -458,7 +219,7 @@ void obj_org(WORD addr)
 /*
  *	write opcodes in ops[] into object file
  */
-void obj_writeb(WORD op_cnt)
+void obj_writeb(const BYTE *ops, WORD op_cnt)
 {
 	register int i;
 

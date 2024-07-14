@@ -44,9 +44,9 @@ static void save_core(void);
 static int load_core(void);
 
 #ifdef FRONTPANEL
-int sim_main(int argc, char **argv)
+int sim_main(int argc, char *argv[])
 #else
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 #endif
 {
 	register char *s, *p;
