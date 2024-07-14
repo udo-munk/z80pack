@@ -23,8 +23,8 @@
 #include "simglb.h"
 #include "simmem.h"
 
-#include "f_util.h"
 #include "ff.h"
+#include "f_util.h"
 #include "hw_config.h"
 
 #include "sd-fdc.h"

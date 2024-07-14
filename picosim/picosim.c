@@ -28,7 +28,6 @@
 #include "pico/cyw43_arch.h"
 #endif
 
-#include "ff.h"
 #include "hw_config.h"
 #include "rtc.h"
 

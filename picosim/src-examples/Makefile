@@ -2,16 +2,19 @@ Z80ASMDIR = ../../z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
 Z80ASMFLAGS = -fb -l -T -sn -p0
 
-all: serial.bin tb.bin blink.bin test8080.bin
+all: blink.bin micro80.bin serial.bin tb.bin test8080.bin
+
+blink.bin: blink.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) $<
+
+micro80.bin: micro80.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) -8 $<
 
 serial.bin: serial.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) $<
 
 tb.bin: tb.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 -x $<
-
-blink.bin: blink.asm $(Z80ASM)
-	$(Z80ASM) $(Z80ASMFLAGS) $<
 
 test8080.bin: test8080.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 -dONCPM=0 $<
@@ -26,7 +29,7 @@ install:
 uninstall:
 
 clean:
-	rm -f serial.bin tb.bin blink.bin test8080.bin
+	rm -f blink.bin micro80.bin serial.bin tb.bin test8080.bin
 
 distclean: clean
 

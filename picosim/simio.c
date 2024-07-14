@@ -65,7 +65,7 @@ BYTE (*const port_in[256])(void) = {
 	[ 65] = clkc_in,	/* RTC read clock command */
 	[ 66] = clkd_in,	/* RTC read clock data */
 	[160] = hwctl_in,	/* virtual hardware control */
-	[255] = p255_in		/* for frontpanel */
+	[255] = p255_in		/* read from front panel switches */
 };
 
 /*
@@ -80,7 +80,7 @@ void (*const port_out[256])(BYTE data) = {
 	[ 65] = clkc_out,	/* RTC write clock command */
 	[ 66] = clkd_out,	/* RTC write clock data */
 	[160] = hwctl_out,	/* virtual hardware control */
-	[255] = p255_out	/* for frontpanel */
+	[255] = p255_out	/* write to front panel switches */
 };
 
 /*
@@ -126,24 +126,22 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-#if LIB_PICO_STDIO_UART && !(LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO))
+	int input_avail = 0;
+
+#if LIB_PICO_STDIO_UART
 	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
 
-	if (!uart_is_readable(my_uart))
+	if (uart_is_readable(my_uart))
+		input_avail = 1;
 #endif
-#if (LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)) && !LIB_PICO_STDIO_UART
-	if (!tud_cdc_available())
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+	if (tud_cdc_available())
+		input_avail = 1;
 #endif
-#if (LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)) && LIB_PICO_STDIO_UART
-	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
-
-	if (!uart_is_readable(my_uart) && !tud_cdc_available())
-#endif
-		return sio_last;
-	else {
+	if (input_avail)
 		sio_last = getchar();
-		return sio_last;
-	}
+
+	return sio_last;
 }
 
 /*
@@ -165,7 +163,7 @@ static BYTE mmu_in(void)
 
 /*
  *	I/O function port 255 read:
- *	used by frontpanel machines
+ *	return virtual front panel switches state
  */
 static BYTE p255_in(void)
 {
@@ -265,7 +263,7 @@ static void mmu_out(BYTE data)
 }
 
 /*
- *	This allows to set the frontpanel port with ICE p command
+ *	This allows to set the virtual front panel switches with ICE p command
  */
 static void p255_out(BYTE data)
 {
