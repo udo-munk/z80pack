@@ -9,7 +9,7 @@
 
 #include "simmain.h"
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
 	return sim_main(argc, argv);
 }

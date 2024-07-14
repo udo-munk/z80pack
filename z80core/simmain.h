@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 #ifdef FRONTPANEL
-extern int sim_main(int argc, char **argv);
+extern int sim_main(int argc, char *argv[]);
 #endif
 
 #ifdef __cplusplus
