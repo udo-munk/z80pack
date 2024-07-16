@@ -1,6 +1,6 @@
 ;	CP/M 3 BIOS for Z80-Simulator
 ;
-;	Copyright (C) 1989-2015 by Udo Munk
+;	Copyright (C) 1989-2024 by Udo Munk
 ;
 	.Z80
 ;
@@ -273,6 +273,7 @@ CHRTBL:	DEFB	'CRT   '
 ;
 CCPFCB:	DEFB	1,'CCP     COM',0,0,0,0
 	DEFB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CCPCR:	DEFB	0
 CCPREC:	DEFB	0,0,0
 ;
 ;	bios error messages
@@ -292,8 +293,8 @@ STACK:
 ;	signon message
 ;
 SIGNON:	DEFB	13,10
-	DEFM	'BANKED BIOS3 V1.6-HD, '
-	DEFM	'Copyright 1989-2015 by Udo Munk'
+	DEFM	'BANKED BIOS V1.7, '
+	DEFM	'Copyright 1989-2024 by Udo Munk'
 	DEFB	13,10
 	DEFB	0
 ;
@@ -348,9 +349,12 @@ WBOOT1:	LD	SP,STACK
 ;	load ccp into tpa
 ;
 LDCCP:	XOR	A		;initialize fcb
+	LD	(CCPFCB+12),A
 	LD	(CCPFCB+15),A
-	LD	HL,0
-	LD	(CCPREC),HL
+	LD	(CCPCR),A
+	LD	(CCPREC),A
+	LD	(CCPREC+1),A
+	LD	(CCPREC+2),A
 	LD	DE,CCPFCB	;open file ccp.com
 	LD	C,OPEN
 	CALL	BDOS
@@ -593,16 +597,28 @@ FLUSH:	XOR	A
 ;
 ;	memory move
 ;
-MOVE:	EX	DE,HL
-	LDIR
-	EX	DE,HL
+;MOVE:	EX	DE,HL
+;	LDIR
+;	EX	DE,HL
+;	RET
+;
+MOVE:	LD	A,(DE)		;substitute so that BIOS works
+	LD	(HL),A		;on an Intel 8080 too
+	INC	DE
+	INC	HL
+	DEC	BC
+	LD	A,B
+	OR	C
+	JP	NZ,MOVE
 	RET
 ;
 ;	select memory bank
+;
 SELMEM: OUT	(MMUSEL),A
 	RET
 ;
 ;	specify memory bank for dma operation
+;
 SETBNK: LD	(BANK),A
 	RET
 ;
@@ -637,7 +653,5 @@ TIME:
 	IN	A,(CLKDAT)
 	LD	(@date+1),A
 	RET
-;
-ENDDAT	EQU	$		;end
 ;
 	END			;of BIOS
