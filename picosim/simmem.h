@@ -19,7 +19,7 @@
 extern BYTE bnk0[65536], bnk1[49152];
 extern BYTE selbnk;
 
-extern void init_memory(void);
+extern void init_memory(void), reset_memory(void);
 
 /* Last page in memory is ROM and write protected. Some software */
 /* expects a ROM in upper memory, if not it will wrap arround to */

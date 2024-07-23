@@ -42,6 +42,8 @@ void stdio_msc_usb_enable_irq_tud_task(void) {
 
 void stdio_msc_usb_disable_irq_tud_task(void) {
     if (!mutex_try_enter_block_until(&stdio_msc_usb_mutex, make_timeout_time_ms(PICO_STDIO_DEADLOCK_TIMEOUT_MS))) {
+        // deadlocked, hope for the best
+        irq_tud_task_enabled = false;
         return;
     }
     irq_tud_task_enabled = false;
