@@ -225,9 +225,9 @@ void config(void)
 				fp_size = atoi(t2);
 #endif
 			} else if (!strcmp(t1, "vdm_bg")) {
-				strncpy(bg_color, t2, 6);
+				strncpy(&bg_color[1], t2, 6);
 			} else if (!strcmp(t1, "vdm_fg")) {
-				strncpy(fg_color, t2, 6);
+				strncpy(&fg_color[1], t2, 6);
 			} else if (!strcmp(t1, "vdm_scanlines")) {
 				if (*t2 != '0')
 					slf = 2;
