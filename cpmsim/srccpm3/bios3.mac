@@ -293,7 +293,7 @@ STACK:
 ;	signon message
 ;
 SIGNON:	DEFB	13,10
-	DEFM	'BANKED BIOS V1.7, '
+	DEFM	'BANKED BIOS V1.8, '
 	DEFM	'Copyright 1989-2024 by Udo Munk'
 	DEFB	13,10
 	DEFB	0
@@ -567,22 +567,27 @@ SETDMA: LD	A,C		;low order address
 READ:	LD	A,(BANK)	;switch to saved bank
 	OUT	(MMUSEL),A
 	XOR	A		;read command -> A
-	JP	WAITIO		;to perform the actual i/o
+	OUT	(FDCOP),A	;start i/o operation
+	XOR	A		;reselect bank 0
+	OUT	(MMUSEL),A
+	IN	A,(FDCST)	;status of i/o operation -> A
+	OR	A		;is it zero?
+	RET	Z		;if yes return
+	LD	A,1		;nonrecoverable error
+	RET
 ;
 ;	perform write operation
 ;
 WRITE:	LD	A,(BANK)	;switch to saved bank
 	OUT	(MMUSEL),A
 	LD	A,1		;write command -> A
-;
-;	enter here from read and write to perform the actual i/o
-;	operation. return 00h in register a if the operation completes
-;	properly, and 01h if an error occurs during the read or write
-;
-WAITIO:	OUT	(FDCOP),A	;start i/o operation
+	OUT	(FDCOP),A	;start i/o operation
 	XOR	A		;reselect bank 0
 	OUT	(MMUSEL),A
 	IN	A,(FDCST)	;status of i/o operation -> A
+	OR	A		;is it zero?
+	RET	Z		;if yes return
+	LD	A,1		;nonrecoverable error
 	RET
 ;
 ;	nothing to do
