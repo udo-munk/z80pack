@@ -308,7 +308,8 @@ WORD op_dw(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 }
 
 /*
- *	EJECT, PAGE, .PRINTX, PRINT, and TITLE
+ *	EJECT, PAGE, LIST, .LIST, NOLIST, .XLIST, .PRINTX, PRINT, TITLE,
+ *	.XALL, .LALL, .SALL, .SFCOND, and .LFCOND
  */
 WORD op_misc(int pass, BYTE op_code, BYTE dummy, char *operand, BYTE *ops)
 {
