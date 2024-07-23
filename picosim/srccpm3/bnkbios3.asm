@@ -509,6 +509,7 @@ READ:	LDA	BANK		; switch to saved bank
 	XRA	A		; reselect bank 0
 	OUT	MMUSEL
 	IN	FDC		; get FDC status
+	ORA	A		; is it zero ?
 	RZ			; return if OK
 	CMA			; complement for LED's
 	OUT	LEDS		; display the error code
@@ -525,6 +526,7 @@ WRITE:	LDA	BANK		; switch to saved bank
 	XRA	A		; reselect bank 0
 	OUT	MMUSEL
 	IN	FDC		; get FDC status
+	ORA	A		; is it zero ?
 	RZ			; return if OK
 	CMA			; complement for LED's
 	OUT	LEDS		; display the error code

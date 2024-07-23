@@ -43,3 +43,8 @@ void init_memory(void)
 	for (i = 0; i < 0xc000; i++)
 		bnk1[i] = rand() % 256;
 }
+
+void reset_memory(void)
+{
+	selbnk = 0;
+}
