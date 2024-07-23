@@ -7,6 +7,7 @@
 ; 03-JUL-2024 first public release
 ; 07-JUL-2024 added RTC
 ; 14-JUL-2024 fixed bug, FCB one byte short
+; 23-JUL-2024 fixed status bug in READ/WRITE found by Thomas
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -223,7 +224,7 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'Banked BIOS V1.2',13,10
+	DB	'Banked BIOS V1.3',13,10
 	DB	'Copyright (C) 2024 Udo Munk',13,10,13,10
 	DB	0
 ;
