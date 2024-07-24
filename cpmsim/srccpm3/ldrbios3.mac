@@ -1,6 +1,6 @@
 ;	CP/M 3 LDRBIOS for Z80-Simulator
 ;
-;	Copyright (C) 1989-2007 by Udo Munk
+;	Copyright (C) 1989-2024 by Udo Munk
 ;
 	.Z80
 ;
@@ -46,7 +46,7 @@ DMAH	EQU	16		;dma-port: dma address high
 	JP	DRVTBL		;   return address of disk drive table
 	JP	MULTIO		;   set number of sectors to read/write
 	JP	FLUSH		;   flush deblocking buffers
-	JP	MOVE		; * memory to memory move
+	JP	MOVE		;   memory to memory move
 	JP	TIME		;   time set/get signal
 	JP	SELMEM		;   select bank of memory
 	JP	SETBNK		;   specify bank for dma operation
@@ -98,7 +98,7 @@ DPB0:	DEFW	26		;sectors per track
 ;
 SIGNON:	DEFB	13,10
 	DEFM	'LDRBIOS3 V1.2 for Z80SIM, '
-	DEFM	'Copyright 1989-2007 by Udo Munk'
+	DEFM	'Copyright 1989-2024 by Udo Munk'
 	DEFB	13,10,0
 ;
 ;	end of fixed tables
@@ -113,7 +113,7 @@ BOOTL:  LD	A,(HL)
 	INC	HL
 	JP	BOOTL
 ;
-;	those are not implemented in loader bios
+;	these are not implemented in loader bios
 ;
 WBOOT:
 CONST:
@@ -131,6 +131,7 @@ DEVINI:
 DRVTBL:
 MULTIO:
 FLUSH:
+MOVE:
 TIME:
 SELMEM:
 SETBNK:
@@ -199,14 +200,5 @@ READ:	XOR	A		;read command -> a
 	OUT	(FDCOP),A	;start i/o operation
 	IN	A,(FDCST)	;status of i/o operation -> a
 	RET
-;
-;	memory move
-;
-MOVE:	EX	DE,HL
-	LDIR
-	EX	DE,HL
-	RET
-;
-ENDDAT	EQU	$		;end
 ;
 	END			;of bios
