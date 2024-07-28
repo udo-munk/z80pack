@@ -8,6 +8,11 @@ cpm3-1.dsk	- CP/M 3 system disk 1 for 8080 (bootable)
 cpm3-2.dsk	- CP/M 3 system disk 2 for 8080 (NOT bootable)
 empty.dsk	- empty CP/M disk, we often need one (NOT bootable)
 
+fig80.dsk	- FIG Forth for the 8080, versions 1.1 and 1.3 (bootable)
+fig80scr.dsk	- Forth block device with source screens for editor, 8080
+		  assembler, tools. Use with FIG Forth only, other OS's
+		  likely will corrupt the disk.
+
 ucsd1.dsk	- UCSD p-System system disk 1 for 8080 (bootable)
 ucsd2.dsk	- UCSD p-System system disk 2 for 8080 (NOT bootable)
 ucsdint.dsk	- UCSD p-System interpreter, used to reconfigure system
