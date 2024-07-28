@@ -22,7 +22,7 @@ Now you can build picosim with these commands:
 	cd z80pack/picosim
 	mkdir build
 	cd build
-	cmake ..
+	cmake .. -G "Unix Makefiles"
 	make
 
 To clean everything:
