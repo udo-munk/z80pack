@@ -18,6 +18,28 @@ Then run
 
 to build all the MACHINES mentioned in the Makefile.  
 
+## Release vs Development
+
+Sometimes I get asked questions why something doesn't work, and this might
+be caused by using an older version and not the latest current. Sometimes
+people miss it, that the repository most of the time has two branches:
+
+```
+master - finished and final releases
+dev - latest sources still under development, but ususally stable
+```
+
+To use the latest dev version you need to do this:
+
+```
+git clone https://github.com/udo-munk/z80pack.git
+cd z80pack
+git checkout dev
+```
+
+You now will build everything from the latest dev branch and not some older
+finished release.
+
 ### Running CP/M 2.2
 
 CP/M 2.2 is the ancestor of MS-DOS. Use this command to invoke CP/M 2.2 with two disks containing some sample programs and sources.
