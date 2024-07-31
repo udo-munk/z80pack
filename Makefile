@@ -13,12 +13,8 @@ BIOSES = cpmsim/srccpm2 cpmsim/srccpm3 cpmsim/srcmpm cpmsim/srcucsd-iv \
 	intelmdssim/srccpm2 imsaisim/srcucsd-iv picosim/srccpm2 \
 	picosim/srccpm3 picosim/srcucsd-iv
 MISC = z80sim cpmtools
-<<<<<<< HEAD
 #MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
 MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim # FIXME: z80sim build is broken
-=======
-MACHINES = altairsim cpmsim cromemcosim intelmdssim imsaisim mosteksim z80sim
->>>>>>> dev
 
 Z80ASMDIR = z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
