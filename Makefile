@@ -12,7 +12,8 @@ LIBS = frontpanel webfrontend/civetweb
 BIOSES = cpmsim/srccpm2 cpmsim/srccpm3 cpmsim/srcmpm cpmsim/srcucsd-iv \
 	imsaisim/srcucsd-iv
 MISC = z80sim cpmtools
-MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
+#MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim z80sim
+MACHINES = altairsim cpmsim cromemcosim imsaisim mosteksim # FIXME: z80sim build is broken
 
 Z80ASMDIR = z80asm
 Z80ASM = $(Z80ASMDIR)/z80asm
