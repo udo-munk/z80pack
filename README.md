@@ -1,6 +1,6 @@
 # z80pack
 
-z80pack is a mature emulator of multiple platforms with the Z80 CPU.
+z80pack is a mature emulator of multiple platforms with 8080 and Z80 CPU.
 
 
 Full documentation is at https://www.icl1900.co.uk/unix4fun/z80pack
