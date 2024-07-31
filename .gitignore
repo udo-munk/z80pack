@@ -29,3 +29,5 @@ z80asm/z80asm
 z80sim/*.hex
 z80sim/*.lis
 z80sim/z80sim
+intelmdssim/intelmdssim
+.idea
