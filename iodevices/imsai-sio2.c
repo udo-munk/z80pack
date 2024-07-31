@@ -38,16 +38,21 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simport.h"
+
 #include "imsai-hal.h"
+#include "imsai-sio2.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
+static const char *TAG = "SIO";
 
 #define BAUDTIME 10000000
-
-static const char *TAG = "SIO";
 
 static BYTE sio1_ctl, sio2_ctl;
 
@@ -83,8 +88,6 @@ int sio2b_baud_rate = 2400;
 static uint64_t sio2b_t1, sio2b_t2;
 static BYTE sio2b_stat = 0;
 
-extern uint64_t get_clock_us(void);
-
 /*
  * the IMSAI SIO-2 occupies 16 I/O ports, from which only
  * 5 have a function. the following two functions are used
@@ -96,7 +99,7 @@ BYTE imsai_sio_nofun_in(void)
 	/* won't be seen unless LOG_LOCAL_LEVEL = DEBUG */
 	LOGD(TAG, "INVALID SIO PORT");
 
-	return ((BYTE) 0);
+	return (BYTE) 0;
 }
 
 void imsai_sio_nofun_out(BYTE data)
@@ -122,13 +125,13 @@ BYTE imsai_sio1a_status_in(void)
 	tdiff = sio1a_t2 - sio1a_t1;
 	if (sio1a_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1a_baud_rate))
-			return (sio1a_stat);
+			return sio1a_stat;
 
 	hal_status_in(SIO1A, &sio1a_stat);
 
 	sio1a_t1 = get_clock_us();
 
-	return (sio1a_stat);
+	return sio1a_stat;
 }
 
 /*
@@ -163,7 +166,7 @@ BYTE imsai_sio1a_data_in(void)
 	if (sio1a_upper_case)
 		data = toupper(data);
 	last = data;
-	return ((BYTE) data);
+	return (BYTE) data;
 }
 
 /*
@@ -200,13 +203,13 @@ BYTE imsai_sio1b_status_in(void)
 	tdiff = sio1b_t2 - sio1b_t1;
 	if (sio1b_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1b_baud_rate))
-			return (sio1b_stat);
+			return sio1b_stat;
 
 	hal_status_in(SIO1B, &sio1b_stat);
 
 	sio1b_t1 = get_clock_us();
 
-	return (sio1b_stat);
+	return sio1b_stat;
 }
 
 /*
@@ -238,7 +241,7 @@ BYTE imsai_sio1b_data_in(void)
 	if (sio1b_upper_case)
 		data = toupper(data);
 	last = data;
-	return ((BYTE) data);
+	return (BYTE) data;
 }
 
 /*
@@ -275,13 +278,13 @@ BYTE imsai_sio2a_status_in(void)
 	tdiff = sio2a_t2 - sio2a_t1;
 	if (sio2a_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2a_baud_rate))
-			return (sio2a_stat);
+			return sio2a_stat;
 
 	hal_status_in(SIO2A, &sio2a_stat);
 
 	sio2a_t1 = get_clock_us();
 
-	return (sio2a_stat);
+	return sio2a_stat;
 }
 
 /*
@@ -316,7 +319,7 @@ BYTE imsai_sio2a_data_in(void)
 	if (sio2a_upper_case)
 		data = toupper(data);
 	last = data;
-	return ((BYTE)data);
+	return (BYTE)data;
 }
 
 /*
@@ -356,13 +359,13 @@ BYTE imsai_sio2b_status_in(void)
 	tdiff = sio2b_t2 - sio2b_t1;
 	if (sio2b_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2b_baud_rate))
-			return (sio2b_stat);
+			return sio2b_stat;
 
 	hal_status_in(SIO2B, &sio2b_stat);
 
 	sio2b_t1 = get_clock_us();
 
-	return (sio2b_stat);
+	return sio2b_stat;
 }
 
 /*
@@ -397,7 +400,7 @@ BYTE imsai_sio2b_data_in(void)
 	if (sio2b_upper_case)
 		data = toupper(data);
 	last = data;
-	return ((BYTE)data);
+	return (BYTE)data;
 }
 
 /*
@@ -439,7 +442,7 @@ BYTE imsai_sio1_ctl_in(void)
 	int cd_a = hal_carrier_detect(SIO1A);
 	int cd_b = hal_carrier_detect(SIO1B);
 
-	return (0b10111011 | (cd_a << 2) | cd_b << 6);
+	return 0b10111011 | (cd_a << 2) | cd_b << 6;
 }
 
 BYTE imsai_sio2_ctl_in(void)
@@ -447,7 +450,7 @@ BYTE imsai_sio2_ctl_in(void)
 	int cd_a = hal_carrier_detect(SIO2A);
 	int cd_b = hal_carrier_detect(SIO2B);
 
-	return (0b10111011 | (cd_a << 2) | cd_b << 6);
+	return 0b10111011 | (cd_a << 2) | cd_b << 6;
 }
 
 /*

@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0	Sat May 18 14:29:37 2024
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;***********************************************************************
@@ -15,18 +15,18 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       12     12 ; 03-MAY-2024 Thomas Eberhardt  Add z80pack CPU switching
                       13     13 ; 18-MAY-2024 Thomas Eberhardt  Add bare emulator/machine support
                       14     14 ;
-                      15     15 
+                      15     15
                       16     16 	IFNDEF	ONCPM
                       17     17 ONCPM	EQU	1	;1 = RUNS ON CPM, 0 = BARE EMULATOR/MACHINE
                       18     18 	ENDIF
 0001  =               19     19 IOCHAR	EQU	01H	;I/O PORT FOR CHARACTER OUTPUT (BARE)
-                      20     20 
+                      20     20
                       21     21 	IF	ONCPM
                       22     22 		ORG	00100H
                       23     23 	ELSE
                       24     24 		ORG	0H
                       25     25 	ENDIF
-                      26     26 
+                      26     26
 0000  af              27     27 START:	XRA	A
 0001  32 a5 00        28     28 		STA	SWFLAG		; CLEAR CPU SWITCHED FLAG
 0004  3d              29     29 		DCR	A
@@ -36,7 +36,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 000d  cd e6 00        33     33 		CALL	PCHAR
 0010  3e 0a           34     34 		MVI	A,0AH
 0012  cd e6 00        35     35 		CALL	PCHAR
-                      36     36 
+                      36     36
 0015  21 1e 00        37     37 START1:	LXI		H, LOLZ
 0018  cd db 00        38     38 		CALL	MSG
 001b  c3 46 01        39     39 		JMP		CPU	;JUMP TO 8080 CPU DIAGNOSTIC
@@ -81,7 +81,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0082  f3              62     78 		DI
 0083  76              63     79 		HLT
                       64     80 	ENDIF
-                      65     81 
+                      65     81
                       66     82 ;
                       67     83 ;Z80PACK CPU SWITCHING ROUTINE
                       68     84 ;
@@ -100,7 +100,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 009d  d3 a0           81     97 		OUT	0A0H
 009f  32 a5 00        82     98 		STA	SWFLAG	; SET CPU SWITCHED FLAG
 00a2  c3 db 00        83     99 		JMP	MSG
-                      84    100 
+                      84    100
 00a5                  85    101 SWFLAG:	DS	1
 00a6  53 77 69 74     86    102 SZ80:	DB	'Switched to Z80 processor$'
 00aa  63 68 65 64     86    103
@@ -116,7 +116,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00d0  20 70 72 6f     87    113
 00d4  63 65 73 73     87    114
 00d8  6f 72 24        87    115
-                      88    116 
+                      88    116
                       89    117 ;
                       90    118 ;MESSAGE OUTPUT ROUTINE
                       91    119 ;
@@ -915,18 +915,18 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 
 Symbol table
 
-ACII   01e0    AIMM   01c5    ANII   0204    BDOS   0005*   BYTEO  00ef 
-BYTO1  00ff    BYTO2  0103    BYTO3  010c    C010   0222    C020   0238 
-C030   024e    CCI    0297    CMI    0273    CNCI   028b    CNZI   02a3 
-CPEI   0267    CPIE   01dd    CPOI   025b    CPU    0146    CPUER  0624 
-CPUOK  0636    CZI    02af    DOSW   0091    DOSW1  009c    IOCHAR 0001 
-J010   0151    J020   0157    J030   015d    J040   0163    J050   0172 
-J060   0175    J070   017d    J080   0186    J090   0189    J100   0191 
-J110   019a    J120   019d    J130   01a5    J140   01ae    J150   01b1 
-J160   01b9    J170   01c2    LOLZ   001e    MOVI   02b8    MSG    00db 
-NGCPU  0124    OKCPU  010f    ONCPM  0000    ORII   020e    PCHAR  00e6 
+ACII   01e0    AIMM   01c5    ANII   0204    BDOS   0005*   BYTEO  00ef
+BYTO1  00ff    BYTO2  0103    BYTO3  010c    C010   0222    C020   0238
+C030   024e    CCI    0297    CMI    0273    CNCI   028b    CNZI   02a3
+CPEI   0267    CPIE   01dd    CPOI   025b    CPU    0146    CPUER  0624
+CPUOK  0636    CZI    02af    DOSW   0091    DOSW1  009c    IOCHAR 0001
+J010   0151    J020   0157    J030   015d    J040   0163    J050   0172
+J060   0175    J070   017d    J080   0186    J090   0189    J100   0191
+J110   019a    J120   019d    J130   01a5    J140   01ae    J150   01b1
+J160   01b9    J170   01c2    LOLZ   001e    MOVI   02b8    MSG    00db
+NGCPU  0124    OKCPU  010f    ONCPM  0000    ORII   020e    PCHAR  00e6
 S8080  00c0    SAVSTK 0646    SBII   01f8    STACK  073f    START  0000*
-START1 0015    SUII   01ec    SW8080 0084    SWFLAG 00a5    SWZ80  008c 
-SZ80   00a6    TCPI   027f    TEMP0  0641    TEMP1  0642*   TEMP2  0643 
-TEMP3  0644    TEMP4  0645    TEMPP  063f    WBOOT  0064    WBOOT1 0078 
-XRII   0218    
+START1 0015    SUII   01ec    SW8080 0084    SWFLAG 00a5    SWZ80  008c
+SZ80   00a6    TCPI   027f    TEMP0  0641    TEMP1  0642*   TEMP2  0643
+TEMP3  0644    TEMP4  0645    TEMPP  063f    WBOOT  0064    WBOOT1 0078
+XRII   0218

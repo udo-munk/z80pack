@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -10,9 +10,9 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00fb  =                7      7 DDATA   EQU  0FBH
 00f8  =                8      8 STAT    EQU  0F8H
 00fa  =                9      9 SECT    EQU  0FAH
-                      10     10 
+                      10     10
                       11     11         ORG  0FE00H             ;FOR EXTERNAL BOOT ROM, 0 FOR ONBOARD ROM
-                      12     12 
+                      12     12
 fe00  db fc           13     13         IN   WAIT               ;WAIT FOR HOME
 fe02  af              14     14         XRA  A                  ;SETS A TO 0
 fe03  6f              15     15         MOV  L,A                ;START LOCATION IN RAM = 0
@@ -32,10 +32,10 @@ fe19  db f8           28     28 DONE:   IN   STAT               ;READ DISK STATU
 fe1b  b7              29     29         ORA  A                  ;SET FLAGS
 fe1c  ca 7d 00        30     30         JZ   7DH                ;GO TO SBOOT IF ZERO
 fe1f  76              31     31         HLT                     ;ERROR - HALT
-                      32     32 
+                      32     32
 fe20                  33     33         END
 
 Symbol table
 
-DCOM  00f8    DDATA 00fb    DONE  fe19    NEXT  fe0c    SECT  00fa 
-STAT  00f8    WAIT  00fc    
+DCOM  00f8    DDATA 00fb    DONE  fe19    NEXT  fe0c    SECT  00fa
+STAT  00f8    WAIT  00fc

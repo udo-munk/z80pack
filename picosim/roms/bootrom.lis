@@ -1,0 +1,49 @@
+Z80/8080-Macro-Assembler  Release 2.1
+
+LOC   OBJECT CODE   LINE   STMT SOURCE CODE
+                       1      1 ;
+                       2      2 ;	boot ROM for z80pack machines using SD-FDC
+                       3      3 ;	use 8080 instructions only, so that it runs
+                       4      4 ;	on all our CPU's
+                       5      5 ;
+                       6      6 ;	Copyright (C) 2024 by Udo Munk
+                       7      7 ;
+                       8      8 	ORG	0FF00H		;ROM in upper most memory page
+                       9      9 ;
+                      10     10 ;	I/O ports
+                      11     11 ;
+0004  =               12     12 FDC	EQU	4		;FDC port
+                      13     13 ;
+f000  =               14     14 FDCMD	EQU	0F000H		;command bytes for the FDC
+                      15     15 ;
+ff00  f3              16     16 	DI			;disable interrupts
+                      17     17 ;
+ff01  af              18     18 	XOR	A		;zero A
+ff02  32 00 f0        19     19 	LD	(FDCMD),A	;track 0 
+ff05  32 02 f0        20     20 	LD	(FDCMD+2),A	;DMA address low
+ff08  32 03 f0        21     21 	LD	(FDCMD+3),A	;DMA address high
+ff0b  3e 01           22     22 	LD	A,1		;sector 1
+ff0d  32 01 f0        23     23 	LD	(FDCMD+1),A
+                      24     24 ;
+ff10  3e 10           25     25 	LD	A,10H		;setup command for FDC
+ff12  d3 04           26     26 	OUT	(FDC),A
+ff14  3e 00           27     27 	LD	A,FDCMD AND 0FFH
+ff16  d3 04           28     28 	OUT	(FDC),A
+ff18  3e f0           29     29 	LD	A,FDCMD SHR 8
+ff1a  d3 04           30     30 	OUT	(FDC),A
+                      31     31 ;
+ff1c  3e 20           32     32 	LD	A,20H		;read sector 1 on track 0 from drive 0
+ff1e  d3 04           33     33 	OUT	(FDC),A
+ff20  db 04           34     34 	IN	A,(FDC)		;get FDC result
+ff22  b7              35     35 	OR	A		;zero ?
+ff23  ca 00 00        36     36 	JP	Z,0		;if yes jump to boot code loaded @ 0
+                      37     37 ;
+ff26  fe 02           38     38 	CP	2		;some problem, lets see, no disk in drive?
+ff28  ca 00 00        39     39 	JP	Z,0		;yes, so hopefully they loaded some code
+ff2b  76              40     40 	HALT			;if not there is some serious problem
+                      41     41 ;
+ff2c                  42     42 	END			;of ROM
+
+Symbol table
+
+FDC   0004    FDCMD f000

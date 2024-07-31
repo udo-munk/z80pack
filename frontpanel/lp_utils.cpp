@@ -135,7 +135,7 @@ int  *pos,    /* starting char position to parse  */
   } /* end while */
   
  token[toklen] = '\0';    /* mark end of token */
- return(toklen);
+ return toklen;
   
 } /* end of gtoken function */
   
@@ -182,9 +182,9 @@ prefix(char *str1,char *str2)
  
   i=0;
   while((c=str2[i]) != '\0')
-    if(c != str1[i++]) return(0);
+    if(c != str1[i++]) return 0;
 
-  return(1);
+  return 1;
 
 }
 
@@ -219,15 +219,15 @@ freadlin(FILE *funit,char *buffer,int bufsize)
   
   c = getc(funit);
   
-  if(feof(funit)) return(0);
+  if(feof(funit)) return 0;
   
   while( c != EOL && c != CARRET && c != LF)
    { if(i < bufsize) buffer[i++] = c;
      c = getc(funit);
-     if(feof(funit)) return(0);
+     if(feof(funit)) return 0;
    }
   buffer[i] = EOL;
-  return(1);
+  return 1;
   
 } /* end freadlin() */
 
@@ -259,7 +259,7 @@ GetPowerOf2i(int n)
 { int result = 0x2;
 
  while(result < n) result = result << 1;
- return(result);
+ return result;
 }
 
 
@@ -569,7 +569,7 @@ int xpand(const char *s, char **namelist[] )
   if(inc) delete[] inc;
   if(suffix) delete[] suffix;
 
-  return(num_names);
+  return num_names;
 
 } /* end xpand() */
 
@@ -653,7 +653,7 @@ double frate_gettime(void)
     usecf = (double) usec;
     usecf = usecf / 1000000.0; 
     dt = secf + usecf; 
-    return (dt);
+    return dt;
 }
 
 /* funcs */
@@ -795,7 +795,7 @@ Parser::addArg(const char *s, const char *cpos1, const char *cpos2)
 		if(endptr == results.strings[results.num_args])
 		 {
 		   error = PARSER_ERR_BAD_VAL;
-		   return(cpos1 - buff);
+		   return cpos1 - buff;
 		 }
 
 		results.ints[results.num_args] = (int) fval;
@@ -808,7 +808,7 @@ Parser::addArg(const char *s, const char *cpos1, const char *cpos2)
 		if(endptr == results.strings[results.num_args])
 		 {
 		   error = PARSER_ERR_BAD_VAL;
-		   return(cpos1 - buff);
+		   return cpos1 - buff;
 		 }
 		break;
     }
@@ -959,7 +959,7 @@ Parser::parse(parser_result_t **returned_result)
 			 if(curr_rule < 0) 
 			  {
   		  	    error = PARSER_ERR_VAR_NOT_FOUND;
-			    return (cp1-buff);
+			    return cp1-buff;
 			  }
 
 			results.var_pos = cp1 - buff;
@@ -969,7 +969,7 @@ Parser::parse(parser_result_t **returned_result)
 			   if(results.num_args < rules[curr_rule].minvals)
 			    {
 				error=PARSER_ERR_TOO_FEW_VALS;
-			        return (cp1-buff);
+			        return cp1-buff;
 			    }
 		           return PARSER_OK;
 			  }
@@ -979,7 +979,7 @@ Parser::parse(parser_result_t **returned_result)
  		   else
 		    {			// null var
   		  	error = PARSER_ERR_NO_VAR;
-			return(cp1 - buff);	// return error pointing to position of bad var/val
+			return cp1 - buff;	// return error pointing to position of bad var/val
 		    }
 		    cp1 = cp+1;
 		 }
@@ -996,14 +996,14 @@ Parser::parse(parser_result_t **returned_result)
 			 if(curr_rule < 0) 
 			  {
   		  	    error = PARSER_ERR_VAR_NOT_FOUND;
-			    return (cp1-buff);
+			    return cp1-buff;
 			  }
 
 			   // leadspace = 1;
 			   if(results.num_args < rules[curr_rule].minvals)
 			    {
 				error=PARSER_ERR_TOO_FEW_VALS;
-			        return (cp1-buff);
+			        return cp1-buff;
 			    }
 		           return PARSER_OK;
 
@@ -1012,7 +1012,7 @@ Parser::parse(parser_result_t **returned_result)
 		else if( c == ',')
 		{
   		  error = PARSER_ERR_NO_VAL;
-		  return( (cp-buff));	// error, var with no value, return pointing to char pos 
+		  return cp-buff;	// error, var with no value, return pointing to char pos 
 		}
  		break; 
 
@@ -1024,7 +1024,7 @@ Parser::parse(parser_result_t **returned_result)
 		   if(results.num_args +1 > rules[curr_rule].maxvals)
 		    {
 			error = PARSER_ERR_TOO_MANY_VALS;
-			return (cp1-buff);
+			return cp1-buff;
 		    }
 
 		   // copy value to string and convert to datatype dictated by the rule
@@ -1041,7 +1041,7 @@ Parser::parse(parser_result_t **returned_result)
 		   if(results.num_args +1 > rules[curr_rule].maxvals)
 		    {
 			error = PARSER_ERR_TOO_MANY_VALS;
-			return (cp1-buff);
+			return cp1-buff;
 		    }
 
 		   // copy value to string and convert to datatype dictated by the rule

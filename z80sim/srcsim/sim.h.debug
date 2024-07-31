@@ -21,17 +21,14 @@
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 
 #define WANT_ICE	/* attach ICE to headless machine */
+#ifdef WANT_ICE
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
+#endif
 
 /*#define HAS_DISKS*/	/* has no disk drives */
 /*#define HAS_CONFIG*/	/* has no configuration files */
-
-extern void sleep_us(long);
-#define SLEEP_US(t)	sleep_us(t)
-extern void sleep_ms(int);
-#define SLEEP_MS(t)	sleep_ms(t)
 
 /*
  *	The following defines may be modified and activated by
@@ -44,6 +41,4 @@ extern void sleep_ms(int);
 #define USR_CPR	"Copyright (C) 20xx by XYZ"
 */
 
-#include "simcore.h"
-
-#endif
+#endif /* !SIM_INC */

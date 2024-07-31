@@ -7,7 +7,7 @@ MACHINE = cromemco
 # emulate a machine's frontpanel
 FRONTPANEL = YES
 # machine specific system source files
-MACHINE_SRCS = config.c iosim.c memsim.c simctl.c
+MACHINE_SRCS = simcfg.c simio.c simmem.c simctl.c
 # machine specific I/O source files
 IO_SRCS = cromemco-wdi.c cromemco-d+7a.c cromemco-dazzler.c cromemco-fdc.c \
 	cromemco-tu-art.c cromemco-hal.c unix_terminal.c unix_network.c \
@@ -131,8 +131,8 @@ INSTALL_DATA = $(INSTALL) -m 644
 
 # core system source files for the CPU simulation
 CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c \
-	simmain.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c \
-	simz80-fd.c simz80-fdcb.c
+	simmain.c simutil.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c \
+	simz80-ed.c simz80-fd.c simz80-fdcb.c
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 XXSRCS = $(FP_SRCS)
 OBJS = $(SRCS:.c=.o) $(XXSRCS:.cpp=.o)

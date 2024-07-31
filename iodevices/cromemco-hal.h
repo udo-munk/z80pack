@@ -13,6 +13,9 @@
 #ifndef CROMEMCO_HAL_INC
 #define CROMEMCO_HAL_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 enum tuart_port {
 	TUART0A,
 	TUART1A,
@@ -42,7 +45,7 @@ struct hal_device {
 	int	(*alive)(int dev);
 	void (*status)(int dev, BYTE *stat);
 	int (*in)(int dev);
-	void (*out)(int dev, BYTE);
+	void (*out)(int dev, BYTE data);
 };
 
 typedef struct hal_device hal_device_t;
@@ -57,4 +60,4 @@ extern int hal_alive(tuart_port_t dev);
 extern const char *tuart_port_name[MAX_TUART_PORT];
 extern hal_device_t tuart[MAX_TUART_PORT][MAX_HAL_DEV];
 
-#endif
+#endif /* !CROMEMCO_HAL_INC */

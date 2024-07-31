@@ -15,7 +15,6 @@
  * 16-JUL-2020 fix bug/warning detected by gcc 9
  */
 
-#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,13 +28,15 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include "unix_network.h"
+
 #include "sim.h"
+#include "simdefs.h"
+#include "simio.h"
+
+#include "unix_network.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
-void telnet_negotiation(int);
-
 static const char *TAG = "net";
 
 /*
@@ -130,6 +131,7 @@ void init_tcp_server_socket(struct net_connectors *p)
 	LOG(TAG, "telnet console listening on port %d\r\n", p->port);
 }
 
+#if NUMNSOC > 0
 /*
  * SIGIO interrupt handler for TCP/IP server sockets
  * if SIGIO not working (Cygwin e.g.) call from appropriate I/O thread
@@ -183,6 +185,7 @@ void sigio_tcp_server_socket(int sig)
 		}
 	}
 }
+#endif
 
 /*
  *	telnet option negotiation on TCP/IP server sockets

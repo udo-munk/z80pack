@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;*************************************************************
@@ -1440,42 +1440,42 @@ fffd                1427   1436         END
 
 Symbol table
 
-ADDCURS fb3d    ADDRS   fe80    ALIGN   feda    ALL3    fee6    ALL4    fee0 
-ASBI    ff74    ASBI1   ff83    BCKL1   f989    BCKLNE  f985    BIAS    ffa7 
-BLAN1   f9ce    BLAN3   f9c2    BLANKL  f9bf    BLNK1   f9a6    BLNK2   f9b1 
-BLNKS   f99f    BMP1    f8df    BMP10   f8dc    BMPC    fb26    BMPC1   f8f9 
-BMPCUR  f8e7    BYTE1   fefa    BYTESET fef6    CAIN2   fe93    CAINCK  fed0 
-CAINIT  fe8e    CALL1   fc47    CALP1   fb19    CALP2   fb21    CALPOS  fb0c 
-CASIN   fec2    CASOUT  fea2    CASWD   ff07    CCHAR   f793    CCUR    f792 
-CHAR1   f8d6    CHARLN  f9ee    CHAROUT f87e    CHARSN  fa5d    CHIN    ff10 
-CHIN1   ff21    CHKSUM  fed3*   CHRL1   f9ff    CHRL2   fa0f    CLINE   f79f 
-CLRT1   faad    CLRTBS  faa7    CMDTBL  ffc0    CMP16   fdcf    CMPB1   fd96 
-CMPB2   fda5    CMPBLK  fd93    COLS    fa91    CONTROL f929    CRET    f98b 
-CRLF    ff50    CTRLC   f794    CTRPORT f7ff    CTRTBL  fb92    CURCOL  f781 
-CURLIN  f780    CURPTR  f78f    DATA    fcef    DELETE  f9dd    DISP    fc6d 
-DISP1   fc92    DISP2   fc7c    DLINE   fa29    DLN1    fa31    EN1     fa45 
-ENLINE  fa36    ENTR    fc4b    ERR1    fe0c    ERR2    fe07    ESC1    f960 
-ESCAPE  f94d    ESCCDE  f786    ESCCNT  f785    ESCCO   fca9    ESCRET  f879 
-ESCTBL  fbc0    EXEC    fde8    FILL    fd34    FNDCMD  fc28    FNDCTRL f945 
-FNDESC  f97d    FNDT1   facc    FNDT2   fadc    FNDTB   fac4    FNDTDN  fada 
-GEN     feae    GEN1    feb5    GRAPHIC fa77    HEADER  fe04    HIGH128 fa71 
-HOME    f9b8    IBYTE   fd04    IHEX    ff5b    IHEX1   ff6a    INIT    f815 
-INIT1   f81f    INPORT  fd66    INSC3   fb7a    INSC4   fb85*   INSCHR  fb63 
-INSCURS fa95    INSMDE  f998    INSRT   f784    INTEL   fcd5    INVIDIO f782 
-IORET   fd87    JUMP    fc46    LASTC   f7a6    LFEED   f8f6    LINES   fa8d 
-LOAD    fde9    LOOKUP  fa11    LOW128  fa7b    LP2     fe5a    LPAGE   f7a1 
-MEM1    fd46    MEM2    fd44    MEMERR  fd5d    MEMP    fcc3*   MEMTEST fd40 
-MONT    fbe2    MOVE    fd2d    MOVE1   fd30    MSG     ffb3*   MSGNC   ffb6 
-MVCDN   fb87    MVCUP   fddd    NCHARS  f7a2    NM1     fe74    NMCHM   fa4d 
-NOUSER  f939    NUCMD   fc1e    NUESC   f96f    OHEX    ff9a    OHEXB   fcad 
-OHEXHL  fcb6    OUTPORT fd67    PARM2   ff3a    PARM3   ff4a    PARM4   fdd7 
-PNTMEM  ff8d    PRMPT   fbfc    PROT    fcbf    PROT1   fccc    PROTC   f9d7 
-PRTECT  f992    PRTMD   f791    PRUPRF  f7a4    RAMFND  fd8c    RAMPTR  f78d 
-RDATA   fe30    RDHEAD  fe66    RDRC1   fe24*   RDRCO   fe21    RDRCRDS fe12 
-REFRESH f000    SCR1    f912    SCR2    f926*   SCR3    f90d    SCRL    fa81 
-SCROLL  f900*   SEAR1   fdbe    SEARCH  fdb1    SETCMD  f83a    SETD2   fabb 
-SETTAB  fab6    SIGNON  fc29    SIZE    fd20    SRCP1   ff89    SRCPNT  ff85 
-SYSRAM  f780    TAB     f795    TAB1    faf1    TAB2    fb01    TAB3    fae6 
-TABB    fae2    TBLUP1  fa23    UNPRT   fcc0    UPLINE  f984    UPLOW   fa85 
-USERCMD f78b    USERF   f7a5*   USRCTR  f787    USRESC  f789    VDIMDE  f783 
-VIDIO   fa89    VIOFM   f800    VIOTEST f809    XADD    fb59    XADD3   fb53 
+ADDCURS fb3d    ADDRS   fe80    ALIGN   feda    ALL3    fee6    ALL4    fee0
+ASBI    ff74    ASBI1   ff83    BCKL1   f989    BCKLNE  f985    BIAS    ffa7
+BLAN1   f9ce    BLAN3   f9c2    BLANKL  f9bf    BLNK1   f9a6    BLNK2   f9b1
+BLNKS   f99f    BMP1    f8df    BMP10   f8dc    BMPC    fb26    BMPC1   f8f9
+BMPCUR  f8e7    BYTE1   fefa    BYTESET fef6    CAIN2   fe93    CAINCK  fed0
+CAINIT  fe8e    CALL1   fc47    CALP1   fb19    CALP2   fb21    CALPOS  fb0c
+CASIN   fec2    CASOUT  fea2    CASWD   ff07    CCHAR   f793    CCUR    f792
+CHAR1   f8d6    CHARLN  f9ee    CHAROUT f87e    CHARSN  fa5d    CHIN    ff10
+CHIN1   ff21    CHKSUM  fed3*   CHRL1   f9ff    CHRL2   fa0f    CLINE   f79f
+CLRT1   faad    CLRTBS  faa7    CMDTBL  ffc0    CMP16   fdcf    CMPB1   fd96
+CMPB2   fda5    CMPBLK  fd93    COLS    fa91    CONTROL f929    CRET    f98b
+CRLF    ff50    CTRLC   f794    CTRPORT f7ff    CTRTBL  fb92    CURCOL  f781
+CURLIN  f780    CURPTR  f78f    DATA    fcef    DELETE  f9dd    DISP    fc6d
+DISP1   fc92    DISP2   fc7c    DLINE   fa29    DLN1    fa31    EN1     fa45
+ENLINE  fa36    ENTR    fc4b    ERR1    fe0c    ERR2    fe07    ESC1    f960
+ESCAPE  f94d    ESCCDE  f786    ESCCNT  f785    ESCCO   fca9    ESCRET  f879
+ESCTBL  fbc0    EXEC    fde8    FILL    fd34    FNDCMD  fc28    FNDCTRL f945
+FNDESC  f97d    FNDT1   facc    FNDT2   fadc    FNDTB   fac4    FNDTDN  fada
+GEN     feae    GEN1    feb5    GRAPHIC fa77    HEADER  fe04    HIGH128 fa71
+HOME    f9b8    IBYTE   fd04    IHEX    ff5b    IHEX1   ff6a    INIT    f815
+INIT1   f81f    INPORT  fd66    INSC3   fb7a    INSC4   fb85*   INSCHR  fb63
+INSCURS fa95    INSMDE  f998    INSRT   f784    INTEL   fcd5    INVIDIO f782
+IORET   fd87    JUMP    fc46    LASTC   f7a6    LFEED   f8f6    LINES   fa8d
+LOAD    fde9    LOOKUP  fa11    LOW128  fa7b    LP2     fe5a    LPAGE   f7a1
+MEM1    fd46    MEM2    fd44    MEMERR  fd5d    MEMP    fcc3*   MEMTEST fd40
+MONT    fbe2    MOVE    fd2d    MOVE1   fd30    MSG     ffb3*   MSGNC   ffb6
+MVCDN   fb87    MVCUP   fddd    NCHARS  f7a2    NM1     fe74    NMCHM   fa4d
+NOUSER  f939    NUCMD   fc1e    NUESC   f96f    OHEX    ff9a    OHEXB   fcad
+OHEXHL  fcb6    OUTPORT fd67    PARM2   ff3a    PARM3   ff4a    PARM4   fdd7
+PNTMEM  ff8d    PRMPT   fbfc    PROT    fcbf    PROT1   fccc    PROTC   f9d7
+PRTECT  f992    PRTMD   f791    PRUPRF  f7a4    RAMFND  fd8c    RAMPTR  f78d
+RDATA   fe30    RDHEAD  fe66    RDRC1   fe24*   RDRCO   fe21    RDRCRDS fe12
+REFRESH f000    SCR1    f912    SCR2    f926*   SCR3    f90d    SCRL    fa81
+SCROLL  f900*   SEAR1   fdbe    SEARCH  fdb1    SETCMD  f83a    SETD2   fabb
+SETTAB  fab6    SIGNON  fc29    SIZE    fd20    SRCP1   ff89    SRCPNT  ff85
+SYSRAM  f780    TAB     f795    TAB1    faf1    TAB2    fb01    TAB3    fae6
+TABB    fae2    TBLUP1  fa23    UNPRT   fcc0    UPLINE  f984    UPLOW   fa85
+USERCMD f78b    USERF   f7a5*   USRCTR  f787    USRESC  f789    VDIMDE  f783
+VIDIO   fa89    VIOFM   f800    VIOTEST f809    XADD    fb59    XADD3   fb53

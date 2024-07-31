@@ -1,13 +1,13 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
                        2      2 ; CROMEMCO DAZZLER KALEIDOSCOPE
                        3      3 ; WRITTEN BY LI-CHEN WANG
                        4      4 ;
-                       5      5 
+                       5      5
                        6      6         ORG  0
-                       7      7 
+                       7      7
 0000  31 00 01         8      8         LXI  SP,0100H
 0003  3e 81            9      9         MVI  A,081H
 0005  d3 0e           10     10         OUT  14
@@ -97,5 +97,5 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 007c  82              94     94         ADD  D
 007d  77              95     95         MOV  M,A
 007e  c9              96     96         RET
-                      97     97 
+                      97     97
 007f                  98     98         END

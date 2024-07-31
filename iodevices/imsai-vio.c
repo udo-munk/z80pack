@@ -28,19 +28,24 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simport.h"
+
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
-#include "log.h"
 #include "imsai-vio-charset.h"
+#include "imsai-vio.h"
+
+#include "log.h"
+static const char *TAG = "VIO";
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
-
-static const char *TAG = "VIO";
 
 /* X11 stuff */
        int slf = 1;			/* scanlines factor, default no lines */
@@ -122,7 +127,7 @@ static void open_display(void)
 void imsai_vio_off(void)
 {
 	state = 0;		/* tell refresh thread to stop */
-	SLEEP_MS(50);		/* and wait a bit */
+	sleep_for_ms(50);	/* and wait a bit */
 
 	/* works if X11 with posix threads implemented correct, but ... */
 	if (thread != 0) {
@@ -457,8 +462,6 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-
 	uint64_t t1, t2;
 	int tdiff;
 
@@ -492,7 +495,7 @@ static void *update_display(void *arg)
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
-			SLEEP_MS(33 - (tdiff / 1000));
+			sleep_for_ms(33 - (tdiff / 1000));
 
 		t1 = get_clock_us();
 	}

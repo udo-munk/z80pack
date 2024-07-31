@@ -12,7 +12,7 @@
  * 02-DEC-2019 use disk names different from Tarbell controller
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -20,10 +20,17 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simport.h"
+
+#include "altair-88-dcdd.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+static const char *TAG = "88DCDD";
 
 /*
  * Time in milliseconds for the disk mechanics. Can be tuned
@@ -49,8 +56,6 @@
 #define SEC_SZ		137
 #define SPT		32
 #define TRK		77
-
-static const char *TAG = "88DCDD";
 
 static int track[16];		/* current track of the disks */
 static int sec;			/* current sector position */
@@ -125,15 +130,15 @@ static int dsk_check(void)
 	strcat(fn, "/");
 	strcat(fn, disks[disk]);
 	if ((fd = open(fn, O_RDONLY)) == -1)
-		return (0);
+		return 0;
 
 	/* check for correct image size */
 	fstat(fd, &s);
 	close(fd);
 	if (s.st_size != 337568)
-		return (0);
+		return 0;
 	else
-		return (1);
+		return 1;
 }
 
 /*
@@ -194,7 +199,7 @@ static void *timing(void *arg)
 		}
 
 		/* sleep for 1 millisecond */
-		SLEEP_MS(1);
+		sleep_for_ms(1);
 	}
 
 	pthread_exit(NULL);
@@ -278,7 +283,7 @@ BYTE altair_dsk_status_in(void)
 		}
 	}
 
-	return (status);
+	return status;
 }
 
 /*
@@ -379,7 +384,7 @@ BYTE altair_dsk_sec_in(void)
 		status |= NRDA;
 		status |= ENWD;
 		pthread_mutex_unlock(&mustatus);
-		return (0xff);
+		return 0xff;
 	} else {
 		if (sec != rwsec) {
 			rwsec = sec;
@@ -394,7 +399,7 @@ BYTE altair_dsk_sec_in(void)
 		}
 	}
 
-	return (sectrue + (rwsec << 1));
+	return sectrue + (rwsec << 1);
 }
 
 /*
@@ -466,7 +471,7 @@ BYTE altair_dsk_data_in(void)
 
 	/* no more data? */
 	if (dcnt == SEC_SZ)
-		return (0xff);
+		return 0xff;
 
 	/* return byte from buffer and increment counter */
 	data = buf[dcnt++];
@@ -475,7 +480,7 @@ BYTE altair_dsk_data_in(void)
 		status |= NRDA;	/* no more data to read */
 		pthread_mutex_unlock(&mustatus);
 	}
-	return (data);
+	return data;
 }
 
 /*

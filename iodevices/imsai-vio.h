@@ -24,6 +24,12 @@
 #ifndef IMSAI_VIO_INC
 #define IMSAI_VIO_INC
 
+extern int slf;			/* VIO scanlines factor */
+extern char bg_color[];		/* VIO background color */
+extern char fg_color[];		/* VIO foreground color */
+
+extern int imsai_kbd_status, imsai_kbd_data;
+
 extern void imsai_vio_init(void), imsai_vio_off(void);
 
-#endif
+#endif /* !IMSAI_VIO_INC */

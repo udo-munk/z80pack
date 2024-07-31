@@ -1,0 +1,680 @@
+;***************************************;
+;					;
+;		S U R V E Y		;
+;					;
+;***************************************;
+;By Michael Friese  9/22/79
+;*  Lists Kbytes used and remaining plus number of files
+;   on all logged disks (up to 8)
+;*  Prints Memory map and synopsis of all machine memory
+;*  Lists all active I/O Ports
+;*  Uses disk allocation block for all disk calculations
+;
+;VERSION LIST - Most recent version first.
+;
+;06/Jul/82 - Added Godbout DISK 1 equate and added SKIP equate
+;		Bill Bolton - Software Tools, Australia
+;
+;01/Jun/82 - Tidied up and fixed port display, added display
+;		of contents of low memory. David Bennett - Alfred
+;		Hospital, Australia
+;
+;29/Jun/80 - Added version number test and calculations for CP/M
+;		version 2 compatibility.   This program should now work
+;		properly on all versions 1.4 and later.  BRR
+;
+;28/Jun/80 - Added IMS400 equate (prevents Industrial Micro Systems
+;		controller from hanging up during port scan).  BRR
+;
+;24/Jun/80 - Removed MACLIB statement, included required macros
+;		in source.     Bruce R. Ratoff
+;
+
+	.Z80
+	ASEG
+
+;*******************************;
+;	SYSTEM MACROS		;
+;*******************************;
+;Increments 16 bit memory location X
+INXI	MACRO	X
+	LOCAL	JUST8
+	PUSH	HL
+	LD	HL,X
+	INC	(HL)
+	JP	NZ,JUST8
+	INC	HL
+	INC	(HL)
+JUST8:	POP	HL
+	ENDM
+
+;..............................................................
+;
+;	SAVE MACRO	SAVE SPECIFIED REGISTERS
+;
+;	SAVE	R1,R2,R3,R4
+;
+;		R1-R4 MAY BE B,D,H OR PSW  SAVED IN ORDER SPECIFIED
+;		IF REGS ARE OMITTED SAVE B,D AND H
+;
+SAVE	MACRO	R1,R2,R3,R4
+	IF	NOT NUL R1&R2&R3&R4
+	IRP	R,<<R1>,<R2>,<R3>,<R4>>
+	IF	NUL R
+	EXITM
+	ENDIF
+	PUSH	R
+	ENDM
+	ELSE
+	PUSH	BC
+	PUSH	DE
+	PUSH	HL
+	ENDIF
+	ENDM
+
+;
+;	. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;
+;	RESTORE MACRO	RESTORE REGISTERS  (INVERSE OF SAVE)
+;
+;	RESTORE	R1,R2,R3,R4
+;
+;		R1-R4 MAY BE B,D,H OR PSW  RESTORED IN ORDER SPECIFIED
+;		IF REGS OMITTED RESTORE H,D AND B
+;
+RESTORE	MACRO	R1,R2,R3,R4
+	IF	NOT NUL R1&R2&R3&R4
+	IRP	R,<<R1>,<R2>,<R3>,<R4>>
+	IF	NUL R
+	EXITM
+	ENDIF
+	POP	R
+	ENDM
+	ELSE
+	POP	HL
+	POP	DE
+	POP	BC
+	ENDIF
+	ENDM
+
+;
+;..............................................................
+;
+;	CHAROUT MACRO	CONSOLE OUTPUT FROM A
+;
+;	CHAROUT	ADDR
+;
+CHAROUT	MACRO	ADDR
+	IF	NOT NUL ADDR
+	LD	A,(ADDR)
+	ENDIF
+	LD	C,consoleOutputCmd	;;CONOUT
+	LD	E,A			;;CHAR TO E
+	CALL	BDOS			;;CALL BDOS
+	ENDM
+
+;
+;
+;.............................................................
+;
+;	DECOUT MACRO	CONVERT A POSITIVE INTEGER TO DECIMAL AND OUTPUT
+;			TO THE CONSOLE.
+;
+;	DECOUT	ADDR
+;
+;		IF ADDR OMITTED, NUMBER ASSUMED TO BE IN HL, ELSE LOADED TO HL
+;		LEADING ZEROS SUPRESSED. MAXIMUM NUMBER 65,767
+;
+DECOUT	MACRO	ADDR
+	LOCAL	ENDDEC,DX
+	JP	ENDDEC
+@DECOUT:
+	SAVE			;;PUSH STACK
+	LD	BC,-10		;;RADIX FOR CONVERSION
+	LD	DE,-1		;;THIS BECOMES NO DIVIDED BY RADIX
+DX:	ADD	HL,BC		;;SUBTRACT 10
+	INC	DE
+	JP	C,DX
+	LD	BC,10
+	ADD	HL,BC		;;ADD RADIX BACK IN ONCE
+	EX	DE,HL
+	LD	A,H
+	OR	L		;;TEST FOR ZERO
+	CALL	NZ,@DECOUT	;;RECURSIVE CALL
+	LD	A,E
+	ADD	A,'0'		;;CONVERT FROM BCD TO HEX
+	LD	E,A		;;TO E FOR OUTPUT
+	CHAROUT			;;CONSOLE OUTPUT
+	RESTORE			;;POP STACK
+	RET	
+ENDDEC:	
+DECOUT	MACRO	?ADDR
+	IF	NOT NUL ?ADDR
+	LD	HL,(?ADDR)
+	ENDIF	
+	CALL	@DECOUT		;;CALL THE SUBROUTINE
+	ENDM	
+	DECOUT	ADDR
+	ENDM	
+;
+;
+;..............................................................
+;
+;	HEXOUT MACRO	CONVERT BINARY NO AND OUTPUT TO CONSOLE
+;
+;	HEXOUT	ADDR
+;
+;		NUMBER ASSUMED IN A IF NO ARGUMENT
+;
+HEXOUT	MACRO	ADDR
+	LOCAL	OUTCHR,HEXEND
+	JP	HEXEND
+HEXPRN:	SAVE	AF
+	RRCA	
+	RRCA	
+	RRCA	
+	RRCA				;;SHIFT RIGHT 4
+	CALL	OUTCHR
+	RESTORE	AF
+OUTCHR:	AND	0FH			;;MASK 4 BITS
+	ADD	A,90H			;;ADD OFFSET
+	DAA				;;DEC ADJUST
+	ADC	A,40H			;;ADD OFFSET
+	DAA				;;DEC ADJUST
+	LD	E,A			;;TO E FOR OUTPUT
+	LD	C,consoleOutputCmd	;;CONOUT
+	JP	BDOS			;;CALL BDOS
+HEXEND:	
+HEXOUT	MACRO	?ADDR
+	IF	NOT NUL ?ADDR
+	LD	A,(?ADDR)
+	ENDIF	
+	CALL	HEXPRN
+	ENDM	
+	HEXOUT	ADDR
+	ENDM	
+;
+;
+;*******************************;
+;	SYSTEM EQUATES		;
+;*******************************;
+TRUE	EQU	-1
+FALSE	EQU	NOT TRUE
+
+TARBEL	EQU	FALSE		; Tarbell FDC dmb 31-may-82
+IMS400	EQU	FALSE		; Industrial Micro Systems FDC
+GODBOUT	EQU	FALSE		; Godbout Disk 1 FDC
+
+SKIP	EQU	TARBEL OR IMS400 OR GODBOUT	; Will be true
+						; if any skip needed
+	IF	TARBEL
+TARBAS	EQU	0F8H		; Base of Tarbell
+SKIPORT	EQU	TARBAS+4	; Port # to skip if Tarbell FDC
+	ENDIF	
+	IF	IMS400
+SKIPORT	EQU	08FH		; Port # to skip if IMS FDC
+	ENDIF	
+	IF	GODBOUT
+GODBAS	EQU	0C0H		; Base of Godbout FDC
+SKIPORT	EQU	GODBAS+1	; Port # to skip if Disk 1 FDC
+	ENDIF	
+
+BDOS	EQU	5		; jump to BDOS
+BIOS	EQU	0		; jump to BIOS dmb 1-jun-82
+CRLF	EQU	0A0DH		; CR LF sequence
+CRLFE	EQU	8A0DH		; CR LF with EOL
+EOL	EQU	80H		; End of line
+TAB	EQU	'I'-40H		; Tab character
+ESC	EQU	1BH		; Escape character
+TABS	EQU	9		; Tab columns
+
+consoleOutputCmd	EQU	02h
+returnVersionNumberCmd	EQU	0Ch
+selectDiskCmd		EQU	0Eh
+searchForFirstCmd	EQU	11h
+searchForNextCmd	EQU	12h
+returnLoginVectorCmd	EQU	18h
+getADDRALLOCCmd		EQU	1Bh
+getADDRDiskParmsCmd	EQU	1Fh
+
+;***********************;
+;	MAIN PROGRAM	;
+;***********************;
+;
+	ORG	100H
+;
+START:	LD	HL,0		; Save stack pointer
+	ADD	HL,SP
+	LD	(OLDSP),HL
+	LD	SP,FINIS+64
+	CALL	TYPE		; Type initial CRLF
+	DB	TAB,TAB,'*** System Survey (June 82) ***'
+	DW	CRLF,CRLFE
+;DISK SURVEY
+	LD	HL,8		; Init drive counter
+	LD	C,returnLoginVectorCmd		; Get login vector
+	PUSH	HL
+	CALL	BDOS
+	POP	HL
+ROTBIT:	RRA			; RAR login bit to C
+	JP	NC,NOTLOG	; Drive not logged
+	PUSH	AF		; Save login
+	PUSH	HL		; and counter
+;Print drive letter
+	CALL	TYPE
+	DB	'Drive'
+	DB	' '+EOL
+	LD	A,'A'		; Get ASCII bias
+	ADD	A,H		; Add to drive #
+	LD	E,A		; Print drive letter
+	CALL	TCHR
+	CALL	TYPE		; and colon
+	DB	':',' '+EOL
+	POP	HL		; Restore drive #
+	PUSH	HL
+;Print K already allocated
+	LD	E,H
+	LD	C,selectDiskCmd	; Log drive
+	CALL	BDOS
+	LD	C,getADDRALLOCCmd	; Index allocation vect
+	CALL	BDOS
+	LD	L,A		; Put in decent regs
+	LD	H,B
+	PUSH	HL		; save for later
+	LD	C,returnVersionNumberCmd	; get version #
+	CALL	BDOS
+	LD	A,L		; zero if version 1
+	OR	A
+	JP	NZ,V2X		; otherwise, use 2.x style params
+	LD	HL,(BDOS+1)	; get vers 1 style params
+	LD	L,3CH
+	LD	A,(HL)		; get block shift factor
+	LD	(BLKSHF),A
+	INC	HL
+	INC	HL
+	LD	L,(HL)		; get max. block number
+	LD	H,0
+	LD	(MAXALL),HL
+	LD	B,32		; assume 32 bytes in block map
+	JP	GETALC		; continue
+V2X:	LD	A,'?'		; Use wild user #
+	LD	(FCB),A		; in filename search
+	LD	C,getADDRDiskParmsCmd	; Get 2.x parameter block
+	CALL	BDOS
+	INC	HL
+	INC	HL
+	LD	A,(HL)		; Get and save ablock shift factor
+	LD	(BLKSHF),A
+	INC	HL
+	INC	HL
+	INC	HL
+	LD	A,(HL)		; Get maximum block number
+	INC	HL		; (double precision)
+	LD	H,(HL)
+	LD	L,A
+	LD	(MAXALL),HL
+	INC	HL
+	LD	B,3		; map size is (MAXALL+1)/8
+V2SH:	LD	A,H
+	OR	A		; do 16 bit right shift
+	RRA	
+	LD	H,A
+	LD	A,L
+	RRA	
+	LD	L,A
+	DEC	B		; 3 times
+	JP	NZ,V2SH
+	LD	B,L
+	LD	A,(MAXALL)	; allow for leftover bits if any
+	AND	3
+	JP	Z,GETALC
+	INC	B
+GETALC:	POP	HL
+	LD	DE,0		; Init group counter
+NXBYTE:	LD	C,8		; Bit counter for byte
+	LD	A,(HL)		; Get map byte
+NXBIT:	RRA			; Rotate to C
+	JP	NC,NOBIT	; No group allocated
+	INC	DE		; Inc group counter
+NOBIT:	DEC	C		; Dec bit counter
+	JP	NZ,NXBIT
+	INC	HL		; Index next byte
+	DEC	B
+	JP	NZ,NXBYTE
+	CALL	SHF16
+	PUSH	HL
+	CALL	BINDEC
+	CALL	TYPE
+	DB	'K bytes in',' '+EOL
+;Print number of files
+	LD	DE,FCB		; Fake file cont block
+	LD	C,searchForFirstCmd	; Search for 1st file
+	CALL	BDOS
+	LD	HL,0		; File counter
+LOOK:	CP	255		; Failure
+	JP	Z,PFILE
+	ADD	A,A		; File offset times 2
+	ADD	A,A		; 4
+	ADD	A,A		; 8
+	ADD	A,A		; 16
+	ADD	A,A		; 32
+	ADD	A,80H		; Make sure it's not a deleted file
+	LD	E,A
+	LD	D,0
+	LD	A,(DE)
+	CP	0E5H
+	JP	Z,LOOK1
+	INC	HL		; Bump file counter
+LOOK1:	LD	DE,FCB		; Restore FCB
+	LD	C,searchForNextCmd	; Look for addtl files
+	PUSH	HL		; Save file counter
+	CALL	BDOS
+	POP	HL
+	JP	LOOK
+PFILE:	CALL	BINDEC		; Print # of files
+	CALL	TYPE
+	DB	' files with',' '+EOL
+;Print K remaining
+	LD	HL,(MAXALL)	; Get number of blocks
+	EX	DE,HL
+	INC	DE		; Inc for actual value
+	CALL	SHF16
+	EX	DE,HL
+	POP	HL
+	LD	A,H		; Ones comp & move
+	CPL	
+	LD	H,A
+	LD	A,L
+	CPL	
+	LD	L,A
+	INC	HL		; Twos complement
+	ADD	HL,DE		; and subtract
+	CALL	BINDEC		; K remaining
+	CALL	TYPE
+	DB	'K bytes remaining'
+	DW	CRLFE
+;Set up to print next drive
+	POP	HL		; Restore bit counter
+	POP	AF		; and bitmap byte
+NOTLOG:	INC	H		; Bump drive counter
+	DEC	L		; Dec bit counter
+	JP	NZ,ROTBIT
+;MEMORY SURVEY
+;Create header
+MSURV:	CALL	TYPE
+	DW	CRLF
+	DB	'Memory map:'
+	DW	CRLF
+	DB	'0',TAB,'8',TAB,'16',TAB,'24',TAB,'32'
+	DB	TAB,'40',TAB,'48',TAB,'56',TAB,'64'
+	DW	CRLF
+	REPT	8
+	DB	'|',TAB
+	ENDM	
+	DB	'|'
+	DW	CRLF
+	DB	' '		; dmb 31-May-82
+	DB	'T'+EOL
+	LD	HL,RAM
+	LD	(HL),LOW 1023	; Init RAM counter
+	INC	HL
+	LD	(HL),HIGH 1023
+	LD	B,4		; Clear ROM, EMP
+CLREG:	INC	HL
+	LD	(HL),0
+	DEC	B
+	JP	NZ,CLREG
+	LD	HL,1024		; Init memory pointer
+	LD	C,63		; K to be checked
+;Start of analysis loop
+BEGANA:	LD	DE,1024		; Byte counter
+	XOR	A		; Clear flag bytes
+	LD	(RAMF),A
+	LD	(EMPF),A
+ANALP:	LD	A,(HL)		; Get test byte and
+	LD	B,A		; store for later
+	CPL	
+	LD	(HL),A		; Put invertd tst byte
+	SUB	(HL)		; Check for good write
+	LD	(HL),B		; Restore orignl data
+	JP	NZ,NOTMEM	; Wasn't good write
+	INXI	RAM		; Bump memory counter
+	JP	NEXT		; To next byte
+NOTMEM:	LD	(RAMF),A	; Not considered RAM
+	LD	A,0FFH		; Is it empty space?
+	SUB	B
+	JP	NZ,NOTEMP	; Inc ROM, set flag
+	LD	A,(EMPF)	; Any non empty space
+	AND	A		; before here?
+	JP	Z,NEXT
+	JP	NOTEM		; To next byte
+NOTEMP:	LD	(EMPF),A	; Set no empty flag
+NOTEM:	INXI	ROM
+NEXT:	INC	HL		; Index next byte
+	DEC	DE		; Decrement K counter
+	XOR	A
+	OR	D
+	OR	E
+	JP	NZ,ANALP	; K counter not 0
+	PUSH	BC
+	PUSH	HL
+	LD	A,(RAMF)	; Is it RAM?
+	AND	A
+	JP	NZ,NOTRAM	; No
+	DEC	H		; drop H to make compares right
+	LD	A,(BDOS+2)	; Is it under BDOS ?
+	CP	H
+	JP	C,NOTTPA	; No
+	CALL	TYPE		; Yes, it's TPA
+	DB	'T'+EOL
+	JP	NEXTK
+NOTTPA:	LD	A,(bios+2)	; is it under bios ?
+	CP	H
+	JP	C,NBDOS
+	CALL	type		; yes, it's BDOS
+	DB	'C'+eol
+	JP	nextk
+nbdos:	CALL	TYPE		; Assume it's BIOS
+	DB	'B'+EOL
+	JP	NEXTK
+;
+NOTRAM:	LD	A,(EMPF)	; Is it empty?
+	AND	A
+	JP	Z,NOMEM		; Yes, no memory
+	CALL	TYPE		; No, must be ROM
+	DB	'R'+EOL
+	JP	NEXTK
+NOMEM:	CALL	TYPE
+	DB	' '+EOL
+NEXTK:	POP	HL
+	POP	BC
+	DEC	C		; Decrement K counter
+	JP	NZ,BEGANA
+	CALL	TYPE
+	DW	CRLF
+	DB	'T=TPA',TAB,'C=CPM',TAB,'B=BIOS or unassigned'
+	DB	TAB,'R=ROM or bad'
+	DW	CRLFE
+;
+; contents of first page
+	CALL	type
+	DB	'BIOS at',' '+EOL
+	HEXOUT	BIOS+2
+	HEXOUT	BIOS+1
+	CALL	TYPE
+	DB	TAB,'iobyte',' '+EOL
+	HEXOUT	BIOS+3
+	CALL	TYPE
+	DB	TAB,'drive',' '+EOL
+	HEXOUT	BIOS+4
+	CALL	TYPE
+	DB	TAB,'BDOS at',' '+EOL
+	HEXOUT	BDOS+2
+	HEXOUT	BDOS+1
+	CALL	TYPE
+	DW	CRLF,CRLFE
+;
+;MEMORY SYNOPSIS
+	LD	HL,(RAM)
+	PUSH	HL		; Save RAM
+	CALL	BINDEC		; Type RAM
+	CALL	TYPE
+	DB	' Bytes RAM',TAB,TAB+EOL
+	LD	HL,(ROM)
+	PUSH	HL
+	CALL	BINDEC		; Type ROM
+	CALL	TYPE
+	DB	' Bytes ROM',TAB,TAB+EOL
+	LD	HL,(BDOS+1)
+	CALL	BINDEC
+	CALL	TYPE
+	DB	' Bytes in TPA'
+	DW	CRLFE
+	POP	DE		; Get RAM
+	POP	HL		; Get RAM
+	ADD	HL,DE		; Add 'em
+	PUSH	HL		; and save result
+	LD	DE,0		; Subtract from this
+	LD	A,H		; Complement 16 bits
+	CPL	
+	LD	H,A
+	LD	A,L
+	CPL	
+	LD	L,A		; 2s comp bias in D
+	ADD	HL,DE		; Subtract
+	CALL	BINDEC
+	CALL	TYPE
+	DB	' Bytes Empty   ',TAB+EOL
+	POP	HL		; Restore RAM+ROM
+	CALL	BINDEC
+	CALL	TYPE
+	DB	' Total Active Bytes'
+	DW	CRLF,CRLF
+	DB	EOL
+	LD	HL,(OLDSP)	; UM: don't test I/O ports on Z80SIM
+	LD	SP,HL
+	RET
+;PORT SURVEY
+	DB	'Active I/O ports',':'+EOL
+	LD	HL,1000H	; DELAY SO MESSAGE OUTPUT
+PDLY:	DEC	HL		; DOESN'T GIVE A FALSE READING
+	LD	A,H		; ON CONSOLE STATUS PORT
+	OR	L
+	JP	NZ,PDLY
+	LD	HL,0		; Init active port counter
+	LD	D,0		; Init port counter
+	LD	E,0ffh		; init port group variable
+PORTLP:	LD	A,D
+	IF	SKIP		; Single port mask
+	CP	SKIPORT
+	JP	Z,ISPORT	; Print mask port
+	ENDIF	
+	LD	B,A		; save port #
+	LD	(INPORT+1),A
+INPORT:	IN	A,(0)		; Modifiable code
+; by trial and error, inactive port could return FF or echo port #
+	CP	0FFH
+	JP	Z,NEXTPT
+	CP	B
+	JP	Z,NEXTPT
+ISPORT:	LD	A,D		; got a live one, probably
+	AND	0f0h		; is port in same group as last ?
+	CP	E
+	JP	Z,NOCRLF
+	CALL	type		; no, start a new line
+	DW	crlfe
+	LD	A,D		; save for next time
+	AND	0f0h
+	LD	E,A
+NOCRLF:	LD	A,D		; Get port #
+	PUSH	DE
+	PUSH	HL
+	HEXOUT
+	POP	HL
+	POP	DE
+	INC	HL		; count another one found
+	CALL	type
+	DB	' '+eol
+NEXTPT:	INC	D		; Bump port counter
+	JP	NZ,PORTLP	; Not done
+	CALL	TYPE		; Done
+	DW	CRLFE
+	CALL	BINDEC
+	CALL	TYPE		; Type Active Ports
+	DB	' Ports active'
+	DW	CRLFE
+CCP:	LD	HL,(OLDSP)
+	LD	SP,HL
+	RET	
+
+;***********************;
+;	SUBROUTINES	;
+;***********************;
+;Binary to decimal conversion
+BINDEC:	DECOUT		; From LIB
+	RET	
+
+;Types a string of text terminated with bit 7 high
+TYPE:	EX	(SP),HL		; Get string address
+	PUSH	DE
+TYPELP:	LD	A,(HL)		; Get type data
+	LD	D,A		; Save for later
+	AND	7FH		; Mask ASCII
+	LD	E,A
+	PUSH	HL
+	PUSH	DE
+	CALL	TCHR
+	POP	DE
+	POP	HL
+	INC	HL
+	LD	A,EOL		; End of line bit
+	AND	D
+	JP	P,TYPELP	; Not done
+	POP	DE
+	EX	(SP),HL		; Get return address
+	RET	
+
+;Types a single character on console
+TCHR:	LD	C,consoleOutputCmd
+	JP	BDOS
+
+;Checks sectors per block and multiplies or divides block size
+;Enter with data in D. Result returned in H,L
+;
+SHF16:	LD	A,(BLKSHF)	; Get shift factor (gives block size)
+	CP	3		; Is it 1K (std)?
+	JP	NZ,NOT3
+	LD	L,E		; Yes, use present #
+ZH:	LD	H,0
+	RET	
+;
+NOT3:	CP	2		; Is it minifloppy?
+	JP	NZ,NOT2
+	LD	A,E		; Yes, divide by 2
+	RRCA	
+	AND	7FH
+	LD	L,A
+	JP	ZH
+NOT2:	SUB	3		; Must be something
+	LD	B,A		; larger like double
+	EX	DE,HL		; sided or double dens
+BITSHF:	ADD	HL,HL		; 16 bit 2^(B-1)
+	DEC	B
+	JP	NZ,BITSHF
+	RET	
+
+;***********************;
+;	DATA STORAGE	;
+;***********************;
+FCB:	DB	0,'???????????',0,0,0	; File control block
+	DS	17			; Extra FCB workspace
+OLDSP:	DS	2			; Old stack pointer
+RAM:	DS	2			; RAM counter
+ROM:	DS	2			; ROM counter
+RAMF:	DS	1			; RAM good flag
+EMPF:	DS	1			; Empty so far flag
+BLKSHF:	DS	1			; block shift factor
+MAXALL:	DS	2			; maximum block number
+FINIS	EQU	$			; End of program
+
+	END	

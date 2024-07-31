@@ -25,15 +25,21 @@
  * 24-SEP-2019 restore and seek also affect step direction
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+
+#include "tarbell_fdc.h"
+
 #include "log.h"
+static const char *TAG = "Tarbell";
 
 /* internal state of the fdc */
 #define FDC_IDLE	0	/* idle state */
@@ -46,8 +52,6 @@
 #define SEC_SZ		128
 #define SPT		26
 #define TRK		77
-
-static const char *TAG = "Tarbell";
 
 static BYTE fdc_stat;		/* status register */
 static BYTE fdc_track;		/* track register */
@@ -105,7 +109,7 @@ void dsk_path(void)
  */
 BYTE tarbell_stat_in(void)
 {
-	return (fdc_stat);
+	return fdc_stat;
 }
 
 /*
@@ -205,7 +209,7 @@ void tarbell_cmd_out(BYTE data)
  */
 BYTE tarbell_track_in(void)
 {
-	return (fdc_track);
+	return fdc_track;
 }
 
 /*
@@ -221,7 +225,7 @@ void tarbell_track_out(BYTE data)
  */
 BYTE tarbell_sec_in(void)
 {
-	return (fdc_sec);
+	return fdc_sec;
 }
 
 /*
@@ -250,14 +254,14 @@ BYTE tarbell_data_in(void)
 			if ((fdc_track >= TRK) || (fdc_sec > SPT)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x10;	/* record not found */
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 
 			/* check disk drive */
 			if ((disk < 0) || (disk > 3)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 
 			/* try to open disk image */
@@ -267,7 +271,7 @@ BYTE tarbell_data_in(void)
 			if ((fd = open(fn, O_RDONLY)) == -1) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 
 			/* check for correct image size */
@@ -276,7 +280,7 @@ BYTE tarbell_data_in(void)
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x80;	/* not ready */
 				close(fd);
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 
 			/* seek to sector */
@@ -285,7 +289,7 @@ BYTE tarbell_data_in(void)
 				state = FDC_IDLE;	/* abort command */
 				fdc_stat = 0x10;	/* record not found */
 				close(fd);
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 
 			/* read the sector */
@@ -293,7 +297,7 @@ BYTE tarbell_data_in(void)
 				state = FDC_IDLE;	/* abort read command */
 				fdc_stat = 0x10;	/* record not found */
 				close(fd);
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 			close(fd);
 		}
@@ -305,7 +309,7 @@ BYTE tarbell_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return (buf[dcnt++]);
+		return buf[dcnt++];
 
 	case FDC_READADR:	/* read disk address */
 
@@ -326,10 +330,10 @@ BYTE tarbell_data_in(void)
 		}
 
 		/* return byte from buffer and increment counter */
-		return (buf[dcnt++]);
+		return buf[dcnt++];
 
 	default:
-		return ((BYTE) 0);
+		return (BYTE) 0;
 	}
 }
 
@@ -480,9 +484,9 @@ void tarbell_data_out(BYTE data)
 BYTE tarbell_wait_in(void)
 {
 	if (state == FDC_IDLE)
-		return ((BYTE) 0);	/* don't wait for drive mechanics */
+		return (BYTE) 0;	/* don't wait for drive mechanics */
 	else
-		return ((BYTE) 0x80);	/* but wait on DRQ */
+		return (BYTE) 0x80;	/* but wait on DRQ */
 }
 
 /*

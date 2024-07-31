@@ -33,18 +33,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+
 #include "sim.h"
-#include "simglb.h"
-#include "config.h"
-#include "memsim.h"
-#ifdef HAS_NETSERVER
-#include "netsrv.h"
-#endif
-/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
-#include "log.h"
 
 #ifdef HAS_DAZZLER
 
+#include "simdefs.h"
+#include "simglb.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simport.h"
+
+#ifdef HAS_NETSERVER
+#include "netsrv.h"
+#endif
+#include "cromemco-dazzler.h"
+
+/* #define LOG_LOCAL_LEVEL LOG_DEBUG */
+#include "log.h"
 static const char *TAG = "DAZZLER";
 
 /* X11 stuff */
@@ -76,20 +82,20 @@ static char color13[] = "#FF00FF";
 static char color14[] = "#00FFFF";
 static char color15[] = "#FFFFFF";
 static char gray0[] =   "#000000";
-static char gray1[] =   "#101010";
-static char gray2[] =   "#202020";
-static char gray3[] =   "#303030";
-static char gray4[] =   "#404040";
-static char gray5[] =   "#505050";
-static char gray6[] =   "#606060";
-static char gray7[] =   "#707070";
-static char gray8[] =   "#808080";
-static char gray9[] =   "#909090";
-static char gray10[] =  "#A0A0A0";
-static char gray11[] =  "#B0B0B0";
-static char gray12[] =  "#C0C0C0";
-static char gray13[] =  "#D0D0D0";
-static char gray14[] =  "#E0E0E0";
+static char gray1[] =   "#111111";
+static char gray2[] =   "#222222";
+static char gray3[] =   "#333333";
+static char gray4[] =   "#444444";
+static char gray5[] =   "#555555";
+static char gray6[] =   "#666666";
+static char gray7[] =   "#777777";
+static char gray8[] =   "#888888";
+static char gray9[] =   "#999999";
+static char gray10[] =  "#AAAAAA";
+static char gray11[] =  "#BBBBBB";
+static char gray12[] =  "#CCCCCC";
+static char gray13[] =  "#DDDDDD";
+static char gray14[] =  "#EEEEEE";
 static char gray15[] =  "#FFFFFF";
 
 /* DAZZLER stuff */
@@ -212,7 +218,7 @@ static void open_display(void)
 void cromemco_dazzler_off(void)
 {
 	state = 0;
-	SLEEP_MS(50);
+	sleep_for_ms(50);
 
 	if (thread != 0) {
 		pthread_cancel(thread);
@@ -649,7 +655,7 @@ static struct {
 	uint8_t buf[2048];
 } msg;
 
-void ws_clear(void)
+static void ws_clear(void)
 {
 	memset(dblbuf, 0, 2048);
 
@@ -720,8 +726,6 @@ static void ws_refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-
 	uint64_t t1, t2;
 	int tdiff;
 
@@ -763,14 +767,14 @@ static void *update_display(void *arg)
 
 		/* frame done, set frame flag for 4ms */
 		flags = 0;
-		SLEEP_MS(4);
+		sleep_for_ms(4);
 		flags = 64;
 
 		/* sleep rest to 33ms so that we get 30 fps */
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
-			SLEEP_MS(33 - (tdiff / 1000));
+			sleep_for_ms(33 - (tdiff / 1000));
 
 		t1 = get_clock_us();
 	}
@@ -810,7 +814,7 @@ void cromemco_dazzler_ctl_out(BYTE data)
 	} else {
 		if (state == 1) {
 			state = 0;
-			SLEEP_MS(50);
+			sleep_for_ms(50);
 #ifdef HAS_NETSERVER
 			if (!n_flag) {
 #endif
@@ -829,9 +833,9 @@ void cromemco_dazzler_ctl_out(BYTE data)
 BYTE cromemco_dazzler_flags_in(void)
 {
 	if (thread != 0)
-		return (flags);
+		return flags;
 	else
-		return ((BYTE) 0xff);
+		return (BYTE) 0xff;
 }
 
 void cromemco_dazzler_format_out(BYTE data)

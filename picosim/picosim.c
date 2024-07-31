@@ -12,59 +12,83 @@
  * 27-MAY-2024 add access to files on MicroSD
  * 28-MAY-2024 implemented boot from disk images with some OS
  * 31-MAY-2024 use USB UART
+ * 09-JUN-2024 implemented boot ROM
  */
 
 /* Raspberry SDK and FatFS includes */
 #include <stdio.h>
 #include <string.h>
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 #include <tusb.h>
 #endif
 #include "pico/stdlib.h"
 #include "pico/time.h"
-#include "sd_card.h"
-#include "f_util.h"
-#include "ff.h"
-#include "hw_config.h"
-
-/* Project includes */
-#include "sim.h"
-#include "simglb.h"
-#include "config.h"
-#include "memsim.h"
-#include "sd-fdc.h"
-
 /* Pico W also needs this */
 #if PICO == 1
 #include "pico/cyw43_arch.h"
 #endif
+
+#include "hw_config.h"
+#include "rtc.h"
+
+/* Project includes */
+#include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simcore.h"
+#include "simport.h"
+#include "simio.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+
+#include "disks.h"
 
 #define SWITCH_BREAK 15 /* switch we use to interrupt the system */
 
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
 
-/* global variables for access to SPI MicroSD drive */
-sd_card_t *SD;	/* one MicroSD drive */
-FIL sd_file;	/* at any time we have only one file open */
-FRESULT sd_res;	/* result code from FatFS */
-char disks[2][22]; /* path name for 2 disk images /DISKS80/filename.BIN */
-
 /* CPU speed */
 int speed = CPU_SPEED;
 
-extern void init_cpu(void), init_io(void), run_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
-extern BYTE read_sec(int, int, int, WORD);
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
+{
+	UNUSED(itf);
+	UNUSED(duration_ms);
 
-uint64_t get_clock_us(void);
-void gpio_callback(uint, uint32_t);
+	cpu_error = USERINT;
+	cpu_state = STOPPED;
+}
+#endif
+
+/*
+ * interrupt handler for break switch
+ * stops CPU
+ */
+static void gpio_callback(uint gpio, uint32_t events)
+{
+	UNUSED(gpio);
+	UNUSED(events);
+
+	cpu_error = USERINT;
+	cpu_state = STOPPED;
+}
 
 int main(void)
 {
-	BYTE stat;
+	char s[2];
 
-	stdio_init_all();	/* initialize Pico stdio */
+	stdio_init_all();	/* initialize stdio */
+#if LIB_STDIO_MSC_USB
+	sd_init_driver();	/* initialize SD card driver */
+	tusb_init();		/* initialize TinyUSB */
+	stdio_msc_usb_init();	/* initialize MSC USB stdio */
+#endif
+	time_init();		/* initialize FatFS RTC */
 
 #if PICO == 1			/* initialize Pico W hardware */
 	if (cyw43_arch_init())
@@ -76,13 +100,14 @@ int main(void)
 	gpio_init(LED);		/* configure GPIO for LED output */
 	gpio_set_dir(LED, GPIO_OUT);
 #endif
+
 	gpio_init(SWITCH_BREAK); /* setupt interrupt for break switch */
 	gpio_set_dir(SWITCH_BREAK, GPIO_IN);
 	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
 					   true, &gpio_callback);
 
 	/* when using USB UART wait until it is connected */
-#if LIB_PICO_STDIO_USB
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	while (!tud_cdc_connected())
 		sleep_ms(100);
 #endif
@@ -92,48 +117,25 @@ int main(void)
 	printf("%s release %s\n", USR_COM, USR_REL);
 	printf("%s\n\n", USR_CPR);
 
-	/* try to mount SD card */
-	SD = sd_get_by_num(0);
-	sd_res = f_mount(&SD->fatfs, SD->pcName, 1);
-	if (sd_res != FR_OK)
-		panic("f_mount error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
-
 	init_cpu();		/* initialize CPU */
+	init_disks();		/* initialize disk drives */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
-NOPE:	config();		/* configure the machine */
+	config();		/* configure the machine */
 
-	/* setup speed of the CPU */
-	f_flag = speed;
-	tmax = speed * 10000; /* theoretically */
+	f_flag = speed;		/* setup speed of the CPU */
+	tmax = speed * 10000;	/* theoretically */
 
-	/* if there is a disk in drive 0 try to boot from it */
-	if (strlen(disks[0]) != 0) {
-		/* they will try this for sure, so ... */
-		if (!strcmp(disks[0], disks[1])) {
-			printf("Not with this config dude\n");
-			goto NOPE;
-		}
-		stat = read_sec(0, 0, 1, 0); /* read track 0 sector 1 */
-		if (stat != FDC_STAT_OK) {
-			printf("Disk 0 read error: %d\n", stat);
-			f_unmount(SD->pcName);
-			stdio_flush();
-			return 0;
-		}
-	}
+	PC = 0xff00;		/* power on jump into the boot ROM */
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
-	extern void ice_cmd_loop(int);
-
 	ice_cmd_loop(0);
 #else
 	run_cpu();
 #endif
 
-	/* unmount SD card */
-	f_unmount(SD->pcName);
+	exit_disks();		/* stop disk drives */
 
 	/* switch builtin LED on */
 #if PICO == 1
@@ -147,35 +149,24 @@ NOPE:	config();		/* configure the machine */
 	report_cpu_error();	/* check for CPU emulation errors and report */
 	report_cpu_stats();	/* print some execution statistics */
 #endif
-	putchar('\n');
+	puts("\nPress any key to restart CPU");
+	get_cmdline(s, 2);
+
 	stdio_flush();
 	return 0;
 }
 
-uint64_t get_clock_us(void)
-{
-	return to_us_since_boot(get_absolute_time());
-}
-
 /*
- * interrupt handler for break switch
- * stops CPU
- */
-void gpio_callback(uint gpio, uint32_t events)
-{
-	cpu_error = USERINT;
-	cpu_state = STOPPED;
-}
-
-/*
- * read an ICE or config command line from the terminal
+ * Read an ICE or config command line of maximum length len - 1
+ * from the terminal. For single character requests (len == 2),
+ * returns immediately after input is received.
  */
 int get_cmdline(char *buf, int len)
 {
 	int i = 0;
 	char c;
 
-	while (i < len - 1) {
+	for (;;) {
 		c = getchar();
 		if ((c == BS) || (c == DEL)) {
 			if (i >= 1) {
@@ -185,12 +176,17 @@ int get_cmdline(char *buf, int len)
 				i--;
 			}
 		} else if (c != '\r') {
-			buf[i++] = c;
-			putchar(c);
+			if (i < len - 1) {
+				buf[i++] = c;
+				putchar(c);
+				if (len == 2)
+					break;
+			}
 		} else {
 			break;
 		}
 	}
-	buf[i++] = '\0';
+	buf[i] = '\0';
+	putchar('\n');
 	return 0;
 }

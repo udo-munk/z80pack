@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;******************************************************************
@@ -278,11 +278,11 @@ ff6d                 256    274         END
 
 Symbol table
 
-BYTEO  fe29    BYTO1  fe39    BYTO2  fe3d    BYTO3  fe46    CBMSG  fedc 
-CCTRL  0010    CDATA  0011    CO     fe1e    CRRDY  0001*   CTRDY  0002 
-DCOM   00f8    DDATA  00fb    DRQER  febf    DSEC   00fa    DSEL   00fc 
-DSTAT  00f8    DTRK   00f9*   DWAIT  00fc    HERE   fedb*   HOME   fe7c 
-INIT   fe59    LEMSG  feed    LERR   feca    LOOP   fe5c    MOVE   fe0a 
-MSG    fe49    MSGA   fe4d    OFFSET ee17    RCODE  fe17    RDCMD  008c 
-RDONE  feb2    REMSG  ff1c    RLOOP  fea5    RQMSG  ff00    RUNLOC 1000 
-SBOOT  007d    STACK  ff6d    START  fe6a*   TK0ER  fec6    
+BYTEO  fe29    BYTO1  fe39    BYTO2  fe3d    BYTO3  fe46    CBMSG  fedc
+CCTRL  0010    CDATA  0011    CO     fe1e    CRRDY  0001*   CTRDY  0002
+DCOM   00f8    DDATA  00fb    DRQER  febf    DSEC   00fa    DSEL   00fc
+DSTAT  00f8    DTRK   00f9*   DWAIT  00fc    HERE   fedb*   HOME   fe7c
+INIT   fe59    LEMSG  feed    LERR   feca    LOOP   fe5c    MOVE   fe0a
+MSG    fe49    MSGA   fe4d    OFFSET ee17    RCODE  fe17    RDCMD  008c
+RDONE  feb2    REMSG  ff1c    RLOOP  fea5    RQMSG  ff00    RUNLOC 1000
+SBOOT  007d    STACK  ff6d    START  fe6a*   TK0ER  fec6

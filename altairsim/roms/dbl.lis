@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;***************************************************************
@@ -51,16 +51,16 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       48     48 ;* MODIFIED TO ASSEMBLE WITH INTEL 8080 CROSS ASSEMBLER        *
                       49     49 ;* JULY 2018, UDO MUNK                                         *
                       50     50 ;***************************************************************
-                      51     51 
+                      51     51
 0000  =               52     52 DMAADR  EQU     0000H           ;JUMPS HERE ONCE LOAD IS DONE
 2c00  =               53     53 RUNLOC  EQU     2C00H           ;RELOCATE LOADER HERE
-                      54     54 
+                      54     54
 0010  =               55     55 RETRIES EQU     10H             ;MAX NUMBER OF RETRIES
-                      56     56 
+                      56     56
 00ff  =               57     57 SENSE   EQU     0FFH            ;FRONT PANEL SENSE SWITCHES
-                      58     58 
+                      58     58
                       59     59 ; 2SIO REGISTERS
-                      60     60 
+                      60     60
 0010  =               61     61 S2C0    EQU     10H     ;ACIA 0 CONTROL OUTPUT PORT
 0010  =               62     62 S2S0    EQU     10H     ;ACIA 0 STATUS INPUT PORT
 0011  =               63     63 S2T0    EQU     11H     ;ACIA 0 TX DATA REGISTER
@@ -69,48 +69,48 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0012  =               66     66 S2S1    EQU     12H     ;ACIA 1 STATUS INPUT PORT
 0013  =               67     67 S2T1    EQU     13H     ;ACIA 1 TX DATA REGISTER
 0013  =               68     68 S2R1    EQU     13H     ;ACIA 1 RX DATA REGISTER
-                      69     69 
+                      69     69
                       70     70 ; 2SIO EQUATES
-                      71     71 
+                      71     71
 0003  =               72     72 SIO2RST EQU     00000011B       ;MASTER RESET
-                      73     73 
+                      73     73
                       74     74 ; SIO REGISTERS
-                      75     75 
+                      75     75
 0000  =               76     76 SIOCTRL EQU     0               ;CONTROL PORT
 0000  =               77     77 SIOSTAT EQU     0               ;STATUS
 0001  =               78     78 SIOTXD  EQU     1               ;TRANSMIT DATA
 0001  =               79     79 SIORXD  EQU     1               ;RECEUVE DATA
-                      80     80 
+                      80     80
                       81     81 ; PIO REGISTERS 
-                      82     82 
+                      82     82
 0004  =               83     83 PIOCTRL EQU     4               ;CONTROL PORT
 0004  =               84     84 PIOSTAT EQU     4               ;STATUS
 0005  =               85     85 PIOTXD  EQU     5               ;TRANSMIT DATA
 0005  =               86     86 PIORXD  EQU     5               ;RECEUVE DATA
-                      87     87 
+                      87     87
                       88     88 ; 4PIO REGISTERS        
-                      89     89 
+                      89     89
 0020  =               90     90 P4CA0   EQU     20H             ;PORT 0 SECTION A CTRL/STATUS
 0021  =               91     91 P4DA0   EQU     21H             ;PORT 0 SECTION A DATA
 0022  =               92     92 P4CB0   EQU     22H             ;PORT 0 SECTION B CTRL/STATUS
 0023  =               93     93 P4DB0   EQU     23H             ;PORT 0 SECTION B DATA
-                      94     94 
+                      94     94
                       95     95 ; DISK CONTROLLER INPUT EQUATES
-                      96     96 
+                      96     96
 0008  =               97     97 DSTAT   EQU     08H             ;DISK STATUS REGISTER
 0002  =               98     98 MOVEOK  EQU             02H     ;HEAD MOVEMENT ALLOWED
 0008  =               99     99 ENABLD  EQU             08H     ;0 MEANS CONTROLLER IS ENABLED
 0040  =              100    100 TRACK0  EQU             40H     ;TRACK 0 DETECT
-                     101    101 
+                     101    101
 0009  =              102    102 DSECTR  EQU     09H             ;DISK SECTOR NUMBER
 0001  =              103    103 SECTRU  EQU             01H     ;SECTOR VALUE IS TRUE
-                     104    104 
+                     104    104
 000a  =              105    105 DDATA   EQU     0AH             ;READ DATA HERE
-                     106    106 
+                     106    106
                      107    107 ;DISK CONTROLLER OUTPUT EQUATES
 0008  =              108    108 DSLCT   EQU     08H             ;SELECT DISK NO.
 0080  =              109    109 DISABL  EQU             80H     ;DSLCT VALUE TO DISABLE ALL
-                     110    110 
+                     110    110
 0009  =              111    111 DCTRL   EQU     09H             ;DISK CONTROL REG
 0001  =              112    112 STEPIN  EQU             01H     ;STEP IN
 0002  =              113    113 STEPOT  EQU             02H     ;STEP OUT
@@ -120,18 +120,18 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0020  =              117    117 INTDE   EQU             20H     ;INTERRUPT DISABLE
 0040  =              118    118 HCS     EQU             40H     ;HEAD CURRENT SWITCH
 0080  =              119    119 WRITEN  EQU             80H     ;WRITE ENABLE
-                     120    120 
-                     121    121 
+                     120    120
+                     121    121
                      122    122 ;***************************************************************
                      123    123 ; CODE MOVER: MOVES LOADER INTO LOW MEMORY
                      124    124 ;***************************************************************
-                     125    125 
+                     125    125
                      126    126         ORG     0FF00H
-                     127    127 
+                     127    127
 ff00  21 13 ff       128    128         LXI     H,RCODE         ;SOURCE
 ff03  11 00 2c       129    129         LXI     D,RUNLOC        ;DESTINATION
 ff06  0e eb          130    130         MVI     C,EOP-RCODE     ;BYTE COUNT
-                     131    131 
+                     131    131
 ff08  7e             132    132 MLUP:   MOV     A,M             ;GET SOURCE BYTE
 ff09  12             133    133         STAX    D               ;PUT IT IN PLACE
 ff0a  23             134    134         INX     H               ;BUMP POINTERS
@@ -139,39 +139,39 @@ ff0b  13             135    135         INX     D
 ff0c  0d             136    136         DCR     C               ;DONE YET?
 ff0d  c2 08 ff       137    137         JNZ     MLUP            ;NO: KEEP MOVING
 ff10  c3 00 2c       138    138         JMP     RUNLOC          ;YES: GO EXECUTE IT
-                     139    139 
+                     139    139
                      140    140 ;***************************************************************
                      141    141 ; THE FOLLOWING LOADER CODE GETS RELOCATED TO 'RUNLOC' BY THE
                      142    142 ; ABOVE MOVER. ALL ADDRESSES ARE ADJUSTED FOR WHERE THIS CODE
                      143    143 ; WILL ACTUALY RUN.
                      144    144 ;***************************************************************
-                     145    145 
+                     145    145
 ff13  f3             146    146 RCODE:  DI                      ;FRONT PANEL INTE LED OFF
                      147    147                                 ;BECAUSE NO ERROR YET.
-                     148    148 
+                     148    148
                      149    149 ;CALCULATE CODE ADDRESS OFFSET FOR RELOCATED CODE
-                     150    150 
+                     150    150
 d313  =              151    151 OFFSET  EQU     RCODE-RUNLOC    ;SUBTRACT FROM ALL ADDRESSES
-                     152    152 
+                     152    152
                      153    153 ;---------------------------------------------------------------
                      154    154 ; INITIALIZATION
                      155    155 ;---------------------------------------------------------------
                      156    156 ;INITIALIZE 4PIO
-                     157    157 
+                     157    157
 ff14  af             158    158         XRA     A               ;ACCESS DDR REGISTER, ETC.
 ff15  d3 22          159    159         OUT     P4CB0  
-                     160    160 
+                     160    160
 ff17  2f             161    161         CMA                     ;SET PORT B AS INPUT
 ff18  d3 23          162    162         OUT     P4DB0  
-                     163    163 
+                     163    163
 ff1a  3e 2c          164    164         MVI     A,2CH           ;READY BIT ON E PULSE, ETC.
 ff1c  d3 22          165    165         OUT     P4CB0  
-                     166    166 
+                     166    166
                      167    167 ;INITIALIZE THE 2SIO. READ TEH SENSE SWITCHES TO DETERMINE THE
                      168    168 ;NUMBER OF STOP BITS. IF SWITCH A12 IS UP, IT'S ONE STOP BIT.
                      169    169 ;OTHERWISE. IT'S 2 STOP BITS. ALWAYS SET UP FOR 8-BIT DATA AND
                      170    170 ;NO PARITY.
-                     171    171 
+                     171    171
 ff1e  3e 03          172    172         MVI     A,SIO2RST       ;RESET COMMAND
 ff20  d3 10          173    173         OUT     S2C0  
 ff22  db ff          174    174         IN      SENSE           ;READ SENSE SWITCHES
@@ -180,74 +180,74 @@ ff26  0f             176    176         RRC                     ;MAKE IT ACIA WO
 ff27  0f             177    177         RRC
 ff28  c6 10          178    178         ADI     10H             ;WORD SELECT 2 FOR 8 BIT DATA
 ff2a  d3 10          179    179         OUT     10H             ;8 BITS, 1-2 STOPS, NO PARITY
-                     180    180 
+                     180    180
                      181    181 ;SET UP THE STACK IN MEMORY AFTER THIS PROGRAM AND AFTER
                      182    182 ;THE DISK DATA BUFFER
-                     183    183 
+                     183    183
 ff2c  31 79 2d       184    184         LXI     SP,STACK        ;SET UP STACK
-                     185    185 
+                     185    185
                      186    186 ;WAIT FOR CONTROLLER TO BE ENABLED (INCLUDING DOOR SHUT)
-                     187    187 
+                     187    187
 ff2f  af             188    188 WAITEN: XRA     A               ;SELECT DRIVE 0
 ff30  d3 08          189    189         OUT     DSLCT
-                     190    190 
+                     190    190
 ff32  db 08          191    191         IN      DSTAT
 ff34  e6 08          192    192         ANI     ENABLD          ;THIS BIT 0 WHEN ENABLED
 ff36  c2 1c 2c       193    193         JNZ     WAITEN-OFFSET   ;KEEP WAITING
-                     194    194 
+                     194    194
                      195    195 ;LOAD THE HEAD
-                     196    196 
+                     196    196
 ff39  3e 04          197    197         MVI     A,HDLOAD
 ff3b  d3 09          198    198         OUT     DCTRL
 ff3d  c3 38 2c       199    199         JMP     CHK00-OFFSET    ;ALREADY AT TRACK 00?
-                     200    200 
+                     200    200
                      201    201 ; STEP OUT ONE TRACK AT A TIME TO SEEK TRACK 00
-                     202    202 
+                     202    202
 ff40  db 08          203    203 SEEK00: IN      DSTAT           ;WAIT FOR HEAD MOVEMENT ALLOWED
 ff42  e6 02          204    204         ANI     MOVEOK
 ff44  c2 2d 2c       205    205         JNZ     SEEK00-OFFSET   ;KEEP WAITING
-                     206    206 
+                     206    206
 ff47  3e 02          207    207         MVI     A,STEPOT        ;STEP OUT A TRACK
 ff49  d3 09          208    208         OUT     DCTRL
-                     209    209 
+                     209    209
 ff4b  db 08          210    210 CHK00:  IN      DSTAT           ;ARE WE AT TRACK 0 ALREADY?
 ff4d  e6 40          211    211         ANI     TRACK0
 ff4f  c2 2d 2c       212    212         JNZ     SEEK00-OFFSET   ;NO: KEEP STEPPING
-                     213    213 
-                     214    214 
+                     213    213
+                     214    214
 ff52  11 00 00       215    215         LXI     D,DMAADR        ;PUT DISK DATA STARTING HERE
-                     216    216 
+                     216    216
                      217    217 ;---------------------------------------------------------------
                      218    218 ; READ DISK DATA UNTIL WE'VE READ AS MEANY BYTES AS INDICATED
                      219    219 ; AS THE FILE SIZE IN THE SECTOR HEADERS, AND PUT IT AT (DE)
                      220    220 ;---------------------------------------------------------------
 ff55  06 00          221    221 NXTRAC: MVI     B,0             ;INITIAL SECTOR NUMBER
-                     222    222 
+                     222    222
 ff57  3e 10          223    223 NXTSEC: MVI     A,RETRIES       ;INITIALIZE RETRY COUNTER
-                     224    224 
+                     224    224
                      225    225 ;READ ONE SECTOR INTO THE BUFFER
                      226    226 ; ON ENTRY:
                      227    227 ;    A = RETRIES
                      228    228 ;    B = SECTOR NUMBER
                      229    229 ;   DE = MEMORY ADDRESS FOR SECTOR DATA
-                     230    230 
+                     230    230
 ff59  f5             231    231 RDSECT: PUSH    PSW             ;SAVE RETRY COUNTER
 ff5a  d5             232    232         PUSH    D               ;SAVE DEST ADDRESS FOR RETRY
 ff5b  c5             233    233         PUSH    B               ;SAVE B=SECTOR NUMBER
 ff5c  d5             234    234         PUSH    D               ;SAVE DEST ADDRESS FOR MOVE
 ff5d  11 86 80       235    235         LXI     D,8086H         ;E=BYTES PER SECTOR, D=JUNK
 ff60  21 eb 2c       236    236         LXI     H,BUFFER        ;HL POINTS TO DISK BUFFER
-                     237    237 
+                     237    237
                      238    238 ; WAIT UNTIL THE RIGHT SECTOR
-                     239    239 
+                     239    239
 ff63  db 09          240    240 WSECT:  IN      DSECTR          ;READ SECTOR STATUS
 ff65  1f             241    241         RAR                     ;TEST BIT 0 = SECTRU
 ff66  da 50 2c       242    242         JC      WSECT-OFFSET    ;SPIN UNTIL SECTOR IS READY
-                     243    243 
+                     243    243
 ff69  e6 1f          244    244         ANI     1FH             ;GET THE SECTOR NUMBER
 ff6b  b8             245    245         CMP     B               ;IS IT THE ONE WE WANT?
 ff6c  c2 50 2c       246    246         JNZ     WSECT-OFFSET    ;NO: WAIT FOR OUR SECTOR
-                     247    247 
+                     247    247
                      248    248 ;---------------------------------------------------------------
                      249    249 ; LOOP TO READ 128 + 6  BYTES FROM THE DISK AND PUT INTO THE RAM
                      250    250 ; BUFFER. THIS READING IS DONE 2 BYTES AT A TIME FOR SPEED
@@ -255,20 +255,20 @@ ff6c  c2 50 2c       246    246         JNZ     WSECT-OFFSET    ;NO: WAIT FOR OU
 ff6f  db 08          252    252 DWAIT:  IN      DSTAT           ;DATA READY?
 ff71  b7             253    253         ORA     A               ;MSB CLEARED WHEN READY
 ff72  fa 5c 2c       254    254         JM      DWAIT-OFFSET
-                     255    255 
+                     255    255
 ff75  db 0a          256    256         IN      DDATA           ;GET A BYTE OF DISK DATA
 ff77  77             257    257         MOV     M,A             ;PUT IT IN MEMORY
 ff78  23             258    258         INX     H               ;BUMP MEMORY POINTER
 ff79  1d             259    259         DCR     E               ;BUMP & TEST BYTE COUNT
 ff7a  ca 72 2c       260    260         JZ      SECDON-OFFSET   ;QUIT IF BYTE COUNT = 0
-                     261    261 
+                     261    261
 ff7d  1d             262    262         DCR     E               ;BUMP & TEST BYTE COUNT AGAIN
 ff7e  db 0a          263    263         IN      DDATA           ;GET ANOTHER BYTE OF DATA
 ff80  77             264    264         MOV     M,A             ;PUT IT IN MEMORY
 ff81  23             265    265         INX     H               ;BUMP MEMORY POINTER
 ff82  c2 5c 2c       266    266         JNZ     DWAIT-OFFSET    ;AGAIN, UNLESS BYTE COUNT = 0
 ff85                 267    267 SECDON:
-                     268    268 
+                     268    268
                      269    269 ;---------------------------------------------------------------
                      270    270 ; MOVE THE DATA TO ITS FINAL LOCATION, AND CHECK THE CHECKSUM AS
                      271    271 ; WE MOVE THE DATA. ALSO VERIFY THE MEMORY WRITE.
@@ -277,40 +277,40 @@ ff85  e1             273    273         POP     H                       ;RECOVER
 ff86  11 ee 2c       274    274         LXI     D,BUFFER+3              ;START OF DATA PAYLOAD
 ff89  01 80 00       275    275         LXI     B,0080H                 ;B=INITIAL CHECKSUM,
                      276    276                                         ;C=DATA BYTES/SECTOR
-                     277    277 
+                     277    277
 ff8c  1a             278    278 MOVLUP: LDAX    D               ;GET A BYTE FROM THE BUFFER
 ff8d  77             279    279         MOV     M,A             ;WRITE IT TO RAM
 ff8e  be             280    280         CMP     M               ;SUCCESSFUL WRITE TO RAM?
 ff8f  c2 cb 2c       281    281         JNZ     MEMERR-OFFSET   ;NO: GIVE UP
-                     282    282 
+                     282    282
 ff92  80             283    283         ADD     B               ;COMPUTE CHECKSUM
 ff93  47             284    284         MOV     B,A
-                     285    285 
+                     285    285
 ff94  13             286    286         INX     D               ;BUMP SOURCE POINTER
 ff95  23             287    287         INX     H               ;BUMP DESTINATION POINTER
 ff96  0d             288    288         DCR     C               ;NEXT BYTE
 ff97  c2 79 2c       289    289         JNZ     MOVLUP-OFFSET   ;KEEP GOING THROUGH 128 BYTES
-                     290    290 
-                     291    291 
+                     290    290
+                     291    291
 ff9a  1a             292    292         LDAX    D               ;THE NEXT BYTE MUST BE FF
 ff9b  fe ff          293    293         CPI     0FFH
 ff9d  c2 90 2c       294    294         JNZ     RDDONE-OFFSET   ;OTHERWISE IT'S A BAD READ
-                     295    295 
+                     295    295
 ffa0  13             296    296         INX     D               ;THE NEXT BYTE IS THE CHECKSUM
 ffa1  1a             297    297         LDAX    D
 ffa2  b8             298    298         CMP     B               ;MATCH THE COMPUTED CHECKSUM?
-                     299    299 
+                     299    299
 ffa3  c1             300    300 RDDONE: POP     B               ;RESTORE SECTOR NUMBER
 ffa4  eb             301    301         XCHG                    ;PUT MEMORY ADDRESS INTO DE
                      302    302                                 ;AND BUFFER POINTER INTO HL
 ffa5  c2 c2 2c       303    303         JNZ     BADSEC-OFFSET   ;CHECKSUM ERROR OR MISSING FF?
-                     304    304 
+                     304    304
 ffa8  f1             305    305         POP     PSW             ;CHUCK OLD SECTOR NUMBER
 ffa9  f1             306    306         POP     PSW             ;CHUCK OLD RAM ADDRESS
 ffaa  2a ec 2c       307    307         LHLD    BUFFER+1        ;GET FILE BYTE COUNT FROM HEADER
 ffad  cd e5 2c       308    308         CALL    CMP16-OFFSET    ;COMPARE TO NEXT RAM ADDRESS
 ffb0  d2 bb 2c       309    309         JNC     DONE-OFFSET     ;DONE IF ADDRESS > FILE SIZE
-                     310    310 
+                     310    310
                      311    311 ;---------------------------------------------------------------
                      312    312 ; SET UP FOR NEXT SECTOR
                      313    313 ; THE DISK HAS A 2:1 SECTOR INTERLEAVE - 
@@ -321,25 +321,25 @@ ffb4  04             317    317         INR     B
 ffb5  78             318    318         MOV     A,B             ;LAST EVEN OR ODD SECTOR ALREADY?
 ffb6  fe 20          319    319         CPI     20H
 ffb8  da 44 2c       320    320         JC      NXTSEC-OFFSET   ;NO: KEEP READING
-                     321    321 
+                     321    321
 ffbb  06 01          322    322         MVI     B,1             ;START READING THE ODD SECTORS
 ffbd  ca 44 2c       323    323         JZ      NXTSEC-OFFSET   ;UNLESS WE FINISHED THEM TOO
-                     324    324 
+                     324    324
                      325    325 ; SEEK THE NEXT TRACK
-                     326    326 
+                     326    326
 ffc0  db 08          327    327 WAITHD: IN      DSTAT           ;WAIT UNTIL WE CAN MOVE THE HEAD
 ffc2  e6 02          328    328         ANI     MOVEOK
 ffc4  c2 ad 2c       329    329         JNZ     WAITHD-OFFSET
-                     330    330 
+                     330    330
 ffc7  3e 01          331    331         MVI     A,STEPIN        ;SEND STEP-IN CMD TO CONTROLLER
 ffc9  d3 09          332    332         OUT     DCTRL
 ffcb  c3 42 2c       333    333         JMP     NXTRAC-OFFSET   ;BEGINNING OF THE NEXT TRACK
-                     334    334 
-                     335    335 
+                     334    334
+                     335    335
 ffce  3e 80          336    336 DONE:   MVI     A,DISABL        ;DISABLE DISKS
 ffd0  d3 08          337    337         OUT     DSLCT
 ffd2  c3 00 00       338    338         JMP     DMAADR          ;GO EXECUTE WHAT WE LOADED
-                     339    339 
+                     339    339
                      340    340 ;---------------------------------------------------------------
                      341    341 ; SECTOR ERROR:
                      342    342 ; RESTORE TO BEGINNING OF SECTOR AND SEE IF WE CAN RETRY
@@ -348,9 +348,9 @@ ffd5  d1             344    344 BADSEC: POP     D               ;RESTORE MEMORY 
 ffd6  f1             345    345         POP     PSW             ;GET RETRY COUNTER
 ffd7  3d             346    346         DCR     A               ;BUMP RETRY COUNTER
 ffd8  c2 46 2c       347    347         JNZ     RDSECT-OFFSET   ;NOT ZERO: TRY AGAIN
-                     348    348 
+                     348    348
                      349    349 ; FALL INTO SECERR
-                     350    350 
+                     350    350
                      351    351 ;---------------------------------------------------------------
                      352    352 ;ERROR ABORT ROUTINE: WRITE ERROR INFO TO MEMORY AT 0, HANG
                      353    353 ;FOREVER, WRITING A ONE-CHARACTER ERROR CODE TO ALL OUTPUT PORTS
@@ -361,29 +361,29 @@ ffd8  c2 46 2c       347    347         JNZ     RDSECT-OFFSET   ;NOT ZERO: TRY A
                      358    358 ; THE FRONT PANEL INTE LED GETS TURNED ON TO INDICATE AN ERROR.
                      359    359 ;---------------------------------------------------------------
 ffdb  3e 43          360    360 SECERR: MVI     A,'C'           ;ERROR CODE
-                     361    361 
+                     361    361
 ffdd  01             362    362         DB      01              ;USE "LXI B" TO SKIP 2 BYTES
-                     363    363 
+                     363    363
 ffde  3e 4d          364    364 MEMERR: MVI     A,'M'           ;MEMORY ERROR
-                     365    365 
+                     365    365
 ffe0  fb             366    366         EI                      ;TURN FORNT PANEL INTE LED ON
-                     367    367 
+                     367    367
 ffe1  32 00 00       368    368         STA     DMAADR          ;SAVE ERROR CODE AT 0000
 ffe4  22 01 00       369    369         SHLD    DMAADR+1        ;SAVE OFFENDING ADDRESS AT 0001
-                     370    370 
+                     370    370
 ffe7  47             371    371         MOV     B,A             ;SAVE EROR CODE FOR A MOMENT
 ffe8  3e 80          372    372         MVI     A,DISABL        ;DESELECT ALL DISKS
 ffea  d3 08          373    373         OUT     DSLCT
 ffec  78             374    374         MOV     A,B             ;RECOVER ERROR CODE
-                     375    375 
+                     375    375
                      376    376 ;HANG FOREVER, WRITING ERROR CODE (IN A) TO EVERY KNOWN PORT
-                     377    377 
+                     377    377
 ffed  d3 01          378    378 ERHANG: OUT     SIOTXD          ;WRITE ERROR CODE TO SIO
 ffef  d3 11          379    379         OUT     S2T0            ;WRITE ERROR CODE TO 2SIO
 fff1  d3 05          380    380         OUT     PIOTXD          ;WRITE ERROR CODE TO PIO
 fff3  d3 23          381    381         OUT     P4DB0           ;WRITE ERROR CODE TO 4PIO
 fff5  c3 da 2c       382    382         JMP     ERHANG-OFFSET   ;HANG FOREVER
-                     383    383 
+                     383    383
                      384    384 ;---------------------------------------------------------------
                      385    385 ; SUBROUTINE TO COMPARE DE to HL
                      386    386 ; C SET IF HL>DE
@@ -394,37 +394,37 @@ fffa  c0             390    390         RNZ                     ;NO: RET WITH C 
 fffb  7b             391    391         MOV     A,E             ;HIGH BYTES EQUAL?
 fffc  bd             392    392         CMP     L
 fffd  c9             393    393         RET                     ;RETURN WITH RESULT IN C
-                     394    394 
+                     394    394
 fffe                 395    395 EOP:                            ;END OF PROGRAM CODE
 fffe  00 00          396    396         DW      00H             ;FILLS THE EPROM OUT WITH 0
-                     397    397 
+                     397    397
                      398    398 ;---------------------------------------------------------------
                      399    399 ;DISK BUFFER IN RAM AFTER RELOCATED LOADER
                      400    400 ;---------------------------------------------------------------
                      401    401         ORG     2CEBH
 2ceb                 402    402 BUFFER: DS      132
-                     403    403 
+                     403    403
                      404    404 ;---------------------------------------------------------------
                      405    405 ; AND FINALLY THE STACK, WHICH GROWS DOWNWARD
                      406    406 ;---------------------------------------------------------------
 2d6f                 407    407         DS      10              ;SPACE FOR STACK
 2d79  =              408    408 STACK   EQU     $
-                     409    409 
+                     409    409
 2d79                 410    410         END
 
 Symbol table
 
-BADSEC  ffd5    BUFFER  2ceb    CHK00   ff4b    CMP16   fff8    DCTRL   0009 
-DDATA   000a    DISABL  0080    DMAADR  0000    DONE    ffce    DSECTR  0009 
-DSLCT   0008    DSTAT   0008    DWAIT   ff6f    ENABLD  0008    EOP     fffe 
+BADSEC  ffd5    BUFFER  2ceb    CHK00   ff4b    CMP16   fff8    DCTRL   0009
+DDATA   000a    DISABL  0080    DMAADR  0000    DONE    ffce    DSECTR  0009
+DSLCT   0008    DSTAT   0008    DWAIT   ff6f    ENABLD  0008    EOP     fffe
 ERHANG  ffed    HCS     0040*   HDLOAD  0004    HDUNLD  0008*   INTDE   0020*
-INTEN   0010*   MEMERR  ffde    MLUP    ff08    MOVEOK  0002    MOVLUP  ff8c 
-NXTRAC  ff55    NXTSEC  ff57    OFFSET  d313    P4CA0   0020*   P4CB0   0022 
+INTEN   0010*   MEMERR  ffde    MLUP    ff08    MOVEOK  0002    MOVLUP  ff8c
+NXTRAC  ff55    NXTSEC  ff57    OFFSET  d313    P4CA0   0020*   P4CB0   0022
 P4DA0   0021*   P4DB0   0023    PIOCTRL 0004*   PIORXD  0005*   PIOSTAT 0004*
-PIOTXD  0005    RCODE   ff13    RDDONE  ffa3    RDSECT  ff59    RETRIES 0010 
+PIOTXD  0005    RCODE   ff13    RDDONE  ffa3    RDSECT  ff59    RETRIES 0010
 RUNLOC  2c00    S2C0    0010    S2C1    0012*   S2R0    0011*   S2R1    0013*
-S2S0    0010*   S2S1    0012*   S2T0    0011    S2T1    0013*   SECDON  ff85 
-SECERR  ffdb*   SECTRU  0001*   SEEK00  ff40    SENSE   00ff    SIO2RST 0003 
-SIOCTRL 0000*   SIORXD  0001*   SIOSTAT 0000*   SIOTXD  0001    STACK   2d79 
-STEPIN  0001    STEPOT  0002    TRACK0  0040    WAITEN  ff2f    WAITHD  ffc0 
-WRITEN  0080*   WSECT   ff63    
+S2S0    0010*   S2S1    0012*   S2T0    0011    S2T1    0013*   SECDON  ff85
+SECERR  ffdb*   SECTRU  0001*   SEEK00  ff40    SENSE   00ff    SIO2RST 0003
+SIOCTRL 0000*   SIORXD  0001*   SIOSTAT 0000*   SIOTXD  0001    STACK   2d79
+STEPIN  0001    STEPOT  0002    TRACK0  0040    WAITEN  ff2f    WAITHD  ffc0
+WRITEN  0080*   WSECT   ff63

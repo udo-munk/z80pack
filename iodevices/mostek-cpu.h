@@ -14,11 +14,14 @@
 #ifndef MOSTEK_CPU_INC
 #define MOSTEK_CPU_INC
 
-extern BYTE sio_status_in(void);
-extern void sio_control_out(BYTE);
-extern BYTE sio_data_in(void);
-extern void sio_data_out(BYTE);
-extern BYTE sio_handshake_in(void);
-extern void sio_handshake_out(BYTE);
+#include "sim.h"
+#include "simdefs.h"
 
-#endif
+extern BYTE sio_status_in(void);
+extern void sio_control_out(BYTE data);
+extern BYTE sio_data_in(void);
+extern void sio_data_out(BYTE data);
+extern BYTE sio_handshake_in(void);
+extern void sio_handshake_out(BYTE data);
+
+#endif /* !MOSTEK_CPU_INC */

@@ -1,40 +1,45 @@
 /**
  * cromemco-d+7a.c
- * 
- * Emulation of the Cromemco D+7A I/O 
+ *
+ * Emulation of the Cromemco D+7A I/O
  *
  * Copyright (C) 2020 by David McNaughton
- * 
+ *
  * History:
  * 14-JAN-2020	1.0	Initial Release
  */
-#include <stdint.h>
+
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
+#include "cromemco-d+7a.h"
+
 // #define LOG_LOCAL_LEVEL LOG_DEBUG
 #include "log.h"
-
 static const char *TAG = "D+7AIO";
 
 #define PORT_COUNT  8
 
-BYTE inPort[PORT_COUNT];
-BYTE outPort[PORT_COUNT];
+static BYTE inPort[PORT_COUNT];
+static BYTE outPort[PORT_COUNT];
 
-void cromemco_d7a_callback(BYTE *data) {
-    
+#ifdef HAS_NETSERVER
+static void cromemco_d7a_callback(BYTE *data) {
+
     int i;
     inPort[0] = *data++;
     for (i=1; i < PORT_COUNT; i++) {
         inPort[i] = (*data++) - 128;
     }
 }
+#endif
 
 void cromemco_d7a_init(void) {
 
@@ -48,7 +53,7 @@ void cromemco_d7a_init(void) {
 
 }
 
-void cromemco_d7a_out(BYTE port, BYTE data)
+static void cromemco_d7a_out(BYTE port, BYTE data)
 {
     outPort[port] = data;
 
@@ -72,7 +77,7 @@ void cromemco_d7a_A5_out(BYTE data) { cromemco_d7a_out(5, data); }
 void cromemco_d7a_A6_out(BYTE data) { cromemco_d7a_out(6, data); }
 void cromemco_d7a_A7_out(BYTE data) { cromemco_d7a_out(7, data); }
 
-BYTE cromemco_d7a_in(BYTE port)
+static BYTE cromemco_d7a_in(BYTE port)
 {
 	return inPort[port];
 }

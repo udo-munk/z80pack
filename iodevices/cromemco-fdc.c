@@ -39,19 +39,25 @@
  * 15-MAY-2024 make disk manager standard
  */
 
-
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "log.h"
-#include "config.h"
+#include "simcfg.h"
+#include "simmem.h"
+
+#include "diskmanager.h"
 #include "cromemco-fdc.h"
+
+#include "log.h"
+static const char *TAG = "16FDC";
 
 /* internal state of the fdc */
 #define FDC_IDLE	0	/* idle state */
@@ -70,8 +76,6 @@
 #define SPT5DD		10	/* # of sectors per track 5.25" DD */
 
 #define AUTOBOOT	16	/* FDC autoboot jumper, 16|64 = off */
-
-static const char *TAG = "16FDC";
 
        BYTE fdc_flags = AUTOBOOT; /* FDC flag register, autoboot setting */
 static BYTE fdc_cmd;		/* FDC command last send */
@@ -135,7 +139,7 @@ char *dsk_path(void)
  * configure drive and disk geometry from image file size
  * and set R/W or R/O mode for the disk
  */
-void config_disk(int fd)
+static void config_disk(int fd)
 {
 	struct stat s;
 
@@ -246,7 +250,7 @@ void config_disk(int fd)
 /*
  * calculate disk image seek position for track/sector/side
  */
-off_t get_pos(void)
+static off_t get_pos(void)
 {
 	off_t pos = -1L;
 
@@ -281,7 +285,7 @@ off_t get_pos(void)
 	else	/* double sided, double density */
 		pos = ((fdc_track * 2 + side) * disks[disk].sectors
 		       + fdc_sec - 1) * SEC_SZDD;
-	return (pos);
+	return pos;
 }
 
 /*
@@ -322,7 +326,7 @@ BYTE cromemco_fdc_diskflags_in(void)
 	if (headloaded)
 		ret |= 32;
 
-	return (ret);
+	return ret;
 }
 
 /*
@@ -397,7 +401,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x80;	/* not ready */
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 			/* try to open disk image */
 			dsk_path();
@@ -408,7 +412,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x80;	/* not ready */
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 			/* get drive and disk geometry */
 			config_disk(fd);
@@ -418,7 +422,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 			/* check track/sector */
 			if ((fdc_track == 0) && (side == 0))
@@ -433,7 +437,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 			/* seek to sector */
 			pos = get_pos();
@@ -443,7 +447,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 			/* read the sector */
 			if (read(fd, &buf[0], secsz) != secsz) {
@@ -452,7 +456,7 @@ BYTE cromemco_fdc_data_in(void)
 				fdc_flags &= ~128;	/* reset DRQ */
 				fdc_stat = 0x10;	/* sector not found */
 				close(fd);
-				return ((BYTE) 0);
+				return (BYTE) 0;
 			}
 			close(fd);
 		}
@@ -476,12 +480,12 @@ BYTE cromemco_fdc_data_in(void)
 				} else {
 					dcnt = 0;	/* read next sector */
 					fdc_sec++;
-					return (buf[secsz - 1]);
+					return buf[secsz - 1];
 				}
 			}
 		}
 		/* return next byte from buffer and increment counter */
-		return (buf[dcnt++]);
+		return buf[dcnt++];
 
 	case FDC_READADR:	/* read disk address */
 		/* first byte? */
@@ -501,10 +505,10 @@ BYTE cromemco_fdc_data_in(void)
 			fdc_stat = 0;
 		}
 		/* return next byte from buffer and increment counter */
-		return (buf[dcnt++]);
+		return buf[dcnt++];
 
 	default:
-		return ((BYTE) 0);
+		return (BYTE) 0;
 	}
 }
 
@@ -717,7 +721,7 @@ void cromemco_fdc_data_out(BYTE data)
  */
 BYTE cromemco_fdc_sector_in(void)
 {
-	return (fdc_sec);
+	return fdc_sec;
 }
 
 /*
@@ -733,7 +737,7 @@ void cromemco_fdc_sector_out(BYTE data)
  */
 BYTE cromemco_fdc_track_in(void)
 {
-	return (fdc_track);
+	return fdc_track;
 }
 
 /*
@@ -819,7 +823,7 @@ BYTE cromemco_fdc_aux_in(void)
 	}
 #endif
 
-	return (fdc_aux);
+	return fdc_aux;
 }
 
 /*
@@ -899,7 +903,7 @@ BYTE cromemco_fdc_status_in(void)
 			fdc_stat &= ~4;
 	}
 
-	return (fdc_stat);
+	return fdc_stat;
 }
 
 /*
@@ -1019,12 +1023,8 @@ void cromemco_fdc_cmd_out(BYTE data)
  * Reset FDC
  */
 
-extern void reset_fdc_rom_map(void); /* implemented in memsim.c */
-
 void cromemco_fdc_reset(void)
 {
-	extern void readDiskmap(char *);
-
 	state = dcnt = mflag = index_pulse = disk = side = 0;
 	motoron = motortimer = headloaded = autowait = 0;
 	fdc_stat = fdc_aux = 0;

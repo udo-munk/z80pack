@@ -31,22 +31,28 @@
  * 15-MAY-2024 make disk manager standard
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcfg.h"
+#include "simmem.h"
+
+#include "diskmanager.h"
 #ifdef HAS_NETSERVER
-#include "civetweb.h"
 #include "netsrv.h"
 #endif
+#include "imsai-fif.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
+static const char *TAG = "FIF";
 
 /* offsets in disk descriptor */
 #define DD_UNIT		0	/* unit/command */
@@ -75,14 +81,14 @@
 #define SPTHD		128
 #define TRKHD		255
 
-static const char *TAG = "FIF";
-
 char *disks[4];
 static const char *hddisk = "drivei.dsk";
 
 static int fdaddr[16];		/* address of disk descriptors */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fdstate = 0;		/* state of the fd */
+
+static void disk_io(int addr);
 
 /*
  * find and set path for disk images
@@ -109,14 +115,12 @@ char *dsk_path(void)
 
 BYTE imsai_fif_in(void)
 {
-	return (0);
+	return 0;
 }
 
 void imsai_fif_out(BYTE data)
 {
 	static int descno;		/* descriptor # */
-
-	void disk_io(int);
 
 	/*
 	 * controller commands: MSB command, LSB disk descriptor or drive(s)
@@ -217,7 +221,7 @@ void imsai_fif_out(BYTE data)
  *	97 - deleted data address mark in data field
  *	98 - format operation unsuccessful
  */
-void disk_io(int addr)
+static void disk_io(int addr)
 {
 	register int i;
 	static int fd = -1;		/* fd for disk i/o */
@@ -455,8 +459,6 @@ done:
  */
 void imsai_fif_reset(void)
 {
-	extern void readDiskmap(char *);
-
 	fdstate = 0;
 
 	fdaddr[0] = 0x0080;
@@ -480,7 +482,7 @@ void imsai_fif_reset(void)
 }
 
 #ifdef HAS_NETSERVER
-void sendHardDisks(struct mg_connection *conn)
+void sendHardDisks(HttpdConnection_t *conn)
 {
 	int fd;
 

@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -56,7 +56,7 @@ ffe7  =               49     49 DUHL2	EQU	-25			;(FFE7)
                       53     53 ;
                       54     54 ;
                       55     55 ;
-                      56     56 
+                      56     56
                       57     57 	ORG	0E000H
                       58     58 ;
                       59     59 ; ENTER THE MONITOR FROM RESET.
@@ -65,7 +65,7 @@ ffe7  =               49     49 DUHL2	EQU	-25			;(FFE7)
                       62     62 ; ALTERS THE A-REGISTER. SAVES ALL OTHER
                       63     63 ; REGISTERS EXCEPT THE PROGRAM COUNTER,
                       64     64 ; BUT DOES NOT DISPLAY THEM.
-                      65     65 
+                      65     65
 e000  3e 01           66     66 CSTART: LD  	A,1
 e002  d3 40           67     67 	OUT 	(40H),A			;SELECT BANK B
 e004  f5              68     68 	PUSH	AF			;SIMULATE UPC
@@ -74,7 +74,7 @@ e006  18 42           70     70 	JR	COMMON
                       71     71 ; WARM START ENTRY.  INITIALIZES THE BREAKPOINT
                       72     72 ; STORAGE POINTER.  SAVES ALL REGISTERS EXCEPT
                       73     73 ; THE PROGRAM COUNTER, BUT DOES NOT DISPLAY THEM.
-                      74     74 
+                      74     74
 e008  f5              75     75 WSTART:	PUSH	AF			;SIMULATE UPC
 e009  f5              76     76 	PUSH	AF			;UAF
 e00a  3e 80           77     77 	LD	A,80H			;FLAG:
@@ -266,7 +266,7 @@ e0c5  cd 0f e2       261    261 	CALL	PMSG			;FOR RECURSION
                      263    263 ;
                      264    264 ;GET THE COMMAND.
                      265    265 ;DE GETS THE FIRST ALPHA CHAR LESS 'D'.
-                     266    266 
+                     266    266
 e0c8  cd dd e1       267    267 	CALL	SKSG0			;GET NON-SPACE
 e0cb  c8             268    268 	RET	Z			;IF CR, IGNORE.
 e0cc  d6 44          269    269 	SUB	'D'+CASE		; < 'D'?
@@ -291,7 +291,7 @@ e0e4  e9             286    286 	JP	(HL)
                      288    288 ;
                      289    289 ; ERROR & ESCAPE. RETURNS TO CMND WITH SP
                      290    290 ; POINTING TO SAVED-REG AREA (UHL').
-                     291    291 
+                     291    291
 e0e5  3e 3f          292    292 ERROR:	LD	A,'?'
 e0e7  cd 12 e1       293    293 	CALL	PCHR
 e0ea  18 b4          294    294 ESCPE:	JR	CLBP			;CLEAR ANY BRKPTS
@@ -392,7 +392,7 @@ e14f  18 c1          385    385 	JR	PCHR
                      389    389 ; WITH THE INCREMENT. ENDS WITH A CRLF.
                      390    390 ;
 e151  97             391    391 L2NCR0:	SUB	A
-                     392    392 
+                     392    392
 e152  cd 8b e1       393    393 L2NCR:	CALL	LD2N
                      394    394 ;
                      395    395 ; SKIP INITIAL SPACES.
@@ -458,7 +458,7 @@ e194  20 05          454    454 	JR  	NZ,L2N1
                      455    455 ;
 e196  cd ad e1       456    456 	CALL	GNHL0			;YES. INCREMENT TO HL.
 e199  18 07          457    457 	JR	L2N2
-                     458    458 
+                     458    458
 e19b  cd ae e1       459    459 L2N1:	CALL	GNHL	        	;INCREMENT
 e19e  b7             460    460 	OR  	A  	         	;CLEAR CY
 e19f  ed 52          461    461 	SBC 	HL,DE 	        	;N2-N1
@@ -554,10 +554,10 @@ e1e8  c9             546    546 	RET
                      551    551 ;
 e1e9  cd 10 e1       552    552 PSNM:	CALL	SPACE
                      553    553 ;	(CONTINUE BELOW)
-                     554    554 
+                     554    554
                      555    555 ; PRINTS THE NUMBER POINTED TO BY HL.
                      556    556 ; PRESERVES ALL REGISTERS BUT A.
-                     557    557 
+                     557    557
 e1ec  7e             558    558 PNM:	LD	A,(HL)
 e1ed  18 08          559    559 	JR	P2HEX
                      560    560 ;
@@ -631,7 +631,7 @@ e222  c9             619    619 	RET
                      628    628 ; GO (ADDR1>/(ADDR2> ... <ADDRN>
                      629    629 ; EXECUTION BEGINS AT ADDR1 WITH BREAKPOINTS SET
                      630    630 ; AT ADDR2,... ,ADDRN.
-                     631    631 
+                     631    631
 e223                 632    632 GO:
                      633    633 ; B GETS NBRKPT+1 (MAX. NUMBER OF BP + 1)
                      634    634 ; C, THE BREAKPOINT FLAG, GETS 0 (NO HP SET)
@@ -719,8 +719,8 @@ e289  d1             715    715 	POP	DE
 e28a  c1             716    716 	POP	BC
 e28b  f1             717    717 	POP	AF
 e28c  c9             718    718 	RET
-                     719    719 
-                     720    720 
+                     719    719
+                     720    720
                      721    721 ;	COMMAND.  DISPLAY REGISTERS.
                      722    722 ;
                      723    723 ;	DR
@@ -762,7 +762,7 @@ e2ae  18 ea          745    745 	JR	DM2
                      759    759 ; A',F',B',C',D',E',H' [HL'].
                      760    760 ;
 e2b0  20 16          761    761 SUBST:	JR	NZ,SUBR			;IN NOT 'M', SR
-                     762    762 
+                     762    762
 e2b2  97             763    763 SUBM:	SUB	A
 e2b3  47             764    764 	LD	B,A			;1-BYTE MASK
 e2b4  cd a8 e1       765    765 	CALL	L1NCR
@@ -839,8 +839,8 @@ e32b  18 a8          835    835 	JR	SR3
 e32d  cb 41          836    836 SR8:	BIT	0,C	    		;NO. H OR H'?
 e32f  28 a4          837    837 	JR	Z,SR3	   		;IF H, LOOP.
 e331  c9             838    838 	RET		    		;IT IS H'. DONE.
-                     839    839 
-                     840    840 
+                     839    839
+                     840    840
                      841    841 ; ENTER WITH HL POINTING TO MEMORY &
                      842    842 ; B CONTAINING THE 1-BYTE OR 2-BYTE FLAG.
                      843    843 ; PRINTS SPACE, CONTENTS OF (HL), & ALSO (HL-1) FOR
@@ -912,7 +912,7 @@ e37f  18 f5          907    907 	JR	RB1
                      909    909 ;
                      910    910 ; COMMAND
                      911    911 ; WRITE BINARY OUTPUT TO DATA PORT
-                     912    912 
+                     912    912
 e381  cd 52 e1       913    913 WRITB:	CALL	L2NCR			;GET MEM ADDRS
 e384  7e             914    914 WB1:	LD	A,(HL)
 e385  cd 1e e0       915    915 	CALL	PBYTE
@@ -945,7 +945,7 @@ e39f  4b             941    941 	LD	C,E			; TO C
 e3a0  ed 69          942    942 	OUT	(C),L
 e3a2  c9             943    943 	RET
                      944    944 ;
-                     945    945 
+                     945    945
                      946    946 ; BAUD RATES.
                      947    947 ; WITH THE CROMEMCO TUART:  19200, 9600, 4800,
                      948    948 ; 			2400, 1200, 300, 150, 110.
@@ -989,7 +989,7 @@ e3d5  81 e3          982    983 	DEFW	WRITB			;WRITE BINARY OR ASCII
 0000  =              985    986 B1M	EQU	0			;1-BYTE REG MASK
 0020  =              986    987 B2M	EQU	1 << B2F		;2-BYTE REG MASK
 0080  =              987    988 CRM	EQU	1 << CRF		;CARRIAGE-RETURN MASK
-                     988    989 
+                     988    989
 e3d7  43             989    990 RGTBL:	DEFB	-DUAF | PM		;A
 e3d8  45             990    991 	DEFB	-DUBC | PM		;B
 e3d9  46             991    992 	DEFB	-DUBC+1 | PM		;C
@@ -1025,40 +1025,40 @@ e400                1017   1021 	END	CSTART
 
 Symbol table
 
-ABAUDP   0000    ACMNDP   0002    ALT      007d    APARLP   0004 
-B1M      0000    B2F      0005    B2M      0020    BAUDRS   e3a3 
-BCMNDP   0052    BPARLP   0054    BPMRK    000b    BPSTOR   0016 
-CASE     0000    CHKIN    e00e    CL1      e0a4    CL2      e0b3 
-CLBP     e0a0    CMND     e0be    CMND1    e0c2    COM1     e051 
-COM3     e082    COM4     e08b    COMMON   e04a    CR       000d 
-CRF      0007    CRLF     e14d    CRM      0080    CSTART   e000 
-DATA     0001    DAV      0040    DISPL    e28d    DM2      e29a 
-DSPM     e292*   DSPM1    e295    DUAF     fffd    DUAF2    ffed 
+ABAUDP   0000    ACMNDP   0002    ALT      007d    APARLP   0004
+B1M      0000    B2F      0005    B2M      0020    BAUDRS   e3a3
+BCMNDP   0052    BPARLP   0054    BPMRK    000b    BPSTOR   0016
+CASE     0000    CHKIN    e00e    CL1      e0a4    CL2      e0b3
+CLBP     e0a0    CMND     e0be    CMND1    e0c2    COM1     e051
+COM3     e082    COM4     e08b    COMMON   e04a    CR       000d
+CRF      0007    CRLF     e14d    CRM      0080    CSTART   e000
+DATA     0001    DAV      0040    DISPL    e28d    DM2      e29a
+DSPM     e292*   DSPM1    e295    DUAF     fffd    DUAF2    ffed
 DUBC     fffb    DUBC2    ffeb*   DUDE     fff9    DUDE2    ffe9*
-DUHL     fff7    DUHL2    ffe7    DUIN     ffef    DUIX     fff3 
-DUIY     fff1    DUPC     ffff    DUSP     fff5    ERROR    e0e5 
-ERRV1    e0f5    ESC      001b    ESCPE    e0ea    GBYTE    e016 
-GCHR     e144    GN1      e1bb    GNHL     e1ae    GNHL0    e1ad 
-GO       e223    GO1      e226    GO3      e23c    GO5      e25f 
-GS1      e33d    GS2      e34b    GS3      e35c    GSUBV    e332 
+DUHL     fff7    DUHL2    ffe7    DUIN     ffef    DUIX     fff3
+DUIY     fff1    DUPC     ffff    DUSP     fff5    ERROR    e0e5
+ERRV1    e0f5    ESC      001b    ESCPE    e0ea    GBYTE    e016
+GCHR     e144    GN1      e1bb    GNHL     e1ae    GNHL0    e1ad
+GO       e223    GO1      e226    GO3      e23c    GO5      e25f
+GS1      e33d    GS2      e34b    GS3      e35c    GSUBV    e332
 HEAD     e3f0    HEXSH    e1c6    HX1      e1d4    HXSH4    e1d6*
-INIT     e029    INITBAUD e02d    IT1      e034    L1NCR    e1a8 
-L2N1     e19b    L2N2     e1a2    L2NCR    e152    L2NCR0   e151 
-L3NCR    e1a5    LD2N     e18b    LENRGS   001a    LF       000a 
-LFNN     e3ab    MOVE     e183    MVE      e21a    N2       e392 
-NBRKPT   0005    NULLS    e38d    OUTP     e398    P1HEX    e1fb 
-P2HEX    e1f7    P2NMS    e108*   PADDR    e15f*   PBY1     e01f 
-PBYTE    e01e    PC1      e113    PC2      e122*   PC3      e141 
-PCADDR   e15c    PCHR     e112    PF       0006    PH1      e208 
-PM       0040    PMSG     e20f    PNHL     e1f2    PNM      e1ec 
-PR1      e0fb    PRMPT    e3ae    PROG     e0ec    PS1      e210 
-PSNHL    e1ef    PSNM     e1e9    RB1      e376    READB    e373 
-RETN     e265    RGTBL    e3d7    RSTLC    0030    RT1      e273 
-RT2      e27e    RT3      e288    SK1      e1df    SKSG     e1de 
-SKSG0    e1dd    SKSGCR   e155    SM1      e2b8    SPACE    e110 
-SR2      e2d2    SR3      e2d5    SR4      e2f7    SR5      e30f 
+INIT     e029    INITBAUD e02d    IT1      e034    L1NCR    e1a8
+L2N1     e19b    L2N2     e1a2    L2NCR    e152    L2NCR0   e151
+L3NCR    e1a5    LD2N     e18b    LENRGS   001a    LF       000a
+LFNN     e3ab    MOVE     e183    MVE      e21a    N2       e392
+NBRKPT   0005    NULLS    e38d    OUTP     e398    P1HEX    e1fb
+P2HEX    e1f7    P2NMS    e108*   PADDR    e15f*   PBY1     e01f
+PBYTE    e01e    PC1      e113    PC2      e122*   PC3      e141
+PCADDR   e15c    PCHR     e112    PF       0006    PH1      e208
+PM       0040    PMSG     e20f    PNHL     e1f2    PNM      e1ec
+PR1      e0fb    PRMPT    e3ae    PROG     e0ec    PS1      e210
+PSNHL    e1ef    PSNM     e1e9    RB1      e376    READB    e373
+RETN     e265    RGTBL    e3d7    RSTLC    0030    RT1      e273
+RT2      e27e    RT3      e288    SK1      e1df    SKSG     e1de
+SKSG0    e1dd    SKSGCR   e155    SM1      e2b8    SPACE    e110
+SR2      e2d2    SR3      e2d5    SR4      e2f7    SR5      e30f
 SR6      e31e    SR8      e32d    STAT     0000    SUBM     e2b2*
-SUBR     e2c8    SUBR2    e2d1    SUBR3    e323    SUBST    e2b0 
-SVMS     e045    TBE      0080    TEMPS    0016    UART     e362 
-UARTA    e36f    VERIF    e166    VRFY     e169    WB1      e384 
-WRITB    e381    WSTART   e008*   
+SUBR     e2c8    SUBR2    e2d1    SUBR3    e323    SUBST    e2b0
+SVMS     e045    TBE      0080    TEMPS    0016    UART     e362
+UARTA    e36f    VERIF    e166    VRFY     e169    WB1      e384
+WRITB    e381    WSTART   e008*

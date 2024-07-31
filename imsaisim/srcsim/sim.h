@@ -43,9 +43,11 @@
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
+#ifdef WANT_ICE
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
+#endif
 
 #define UNIX_TERMINAL	/* uses a UNIX terminal emulation */
 #define HAS_DAZZLER	/* has simulated I/O for Cromemeco Dazzler */
@@ -68,11 +70,6 @@
 #define NUMNSOC 0	/* number of TCP/IP sockets for SIO connections */
 #define NUMUSOC 1	/* number of UNIX sockets for SIO connections */
 
-extern void sleep_us(long);
-#define SLEEP_US(t)	sleep_us(t)
-extern void sleep_ms(int);
-#define SLEEP_MS(t)	sleep_ms(t)
-
 /*
  *	The following defines may be modified and activated by
  *	user, to print her/his copyright for a simulated system,
@@ -83,7 +80,5 @@ extern void sleep_ms(int);
 #define USR_REL	"1.19"
 #define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
 		"2018-2021 by David McNaughton"
-
-#include "simcore.h"
 
 #endif

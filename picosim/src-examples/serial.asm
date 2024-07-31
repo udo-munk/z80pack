@@ -54,7 +54,7 @@ TEXT:	DEFM	"Hello from the Z80 CPU"
 	DEFM	"I will echo what you type, type X if done"
 	DEFB	CR,LF,0
 
-	DS	20			; spave for the stack
+	DS	20			; space for the stack
 STACK:
 
 	END				; of program

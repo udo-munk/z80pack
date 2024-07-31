@@ -17,28 +17,31 @@
  *	this should be substituted, see picosim for example.
  */
 
-#include <stdint.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <libgen.h>
-#include <ctype.h>
 #include <fcntl.h>
+#include <libgen.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "config.h"
-#include "memsim.h"
+#include "simcore.h"
+#include "simcfg.h"
+#include "simctl.h"
+#include "simmem.h"
+#include "simio.h"
+#include "simport.h"
+#include "simfun.h"
+#include "simint.h"
+#include "simutil.h"
+#include "simmain.h"
 
 static void save_core(void);
 static int load_core(void);
-extern void init_cpu(void);
-extern int load_file(char *, WORD, int);
-extern void int_on(void), int_off(void), mon(void);
-extern void init_io(void), exit_io(void);
-extern int exatoi(char *);
-extern uint64_t get_clock_us(void);
 
 #ifdef FRONTPANEL
 int sim_main(int argc, char *argv[])
@@ -389,16 +392,16 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 #ifdef CONFDIR
 	/* first try ./conf */
 	if ((stat("./conf", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
-		strcpy(&confdir[0], "./conf");
+		strcpy(confdir, "./conf");
 	} else {
 		/* then CONFDIR as set in Makefile */
-		strcpy(&confdir[0], CONFDIR);
+		strcpy(confdir, CONFDIR);
 	}
 #endif
 
 #ifdef HAS_CONFIG
 	/* if option -r is used ROMS are there */
-	if (rompath[0] == 0) {
+	if (rompath[0] == '\0') {
 		/* if not first try ./roms */
 		if ((stat("./roms", &sbuf) == 0) && S_ISDIR(sbuf.st_mode)) {
 			strcpy(rompath, "./roms");
@@ -418,10 +421,10 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	if (l_flag) {		/* load core */
 		if (load_core())
-			return (EXIT_FAILURE);
+			return EXIT_FAILURE;
 	} else if (x_flag) { 	/* OR load memory from file */
 		if (load_file(xfn, 0, 0)) /* don't care where it loads */
-			return (EXIT_FAILURE);
+			return EXIT_FAILURE;
 	}
 
 	int_on();		/* initialize UNIX interrupts */
@@ -435,7 +438,7 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	exit_io();		/* stop I/O devices */
 	int_off();		/* stop UNIX interrupts */
 
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
 /*
@@ -545,11 +548,11 @@ static int load_core(void)
 		break;
 #endif
 	default:
-		return (1);
+		return 1;
 	}
 	if ((fp = fopen(fname, "r")) == NULL) {
 		printf("can't open file %s\n", fname);
-		return (1);
+		return 1;
 	}
 
 	cnt = fread(&A, sizeof(A), 1, fp);
@@ -603,7 +606,7 @@ static int load_core(void)
 
 	if (cnt != 24 || i != 65536) {
 		printf("error reading %s\n", fname);
-		return (1);
+		return 1;
 	} else
-		return (0);
+		return 0;
 }

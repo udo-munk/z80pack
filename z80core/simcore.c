@@ -9,27 +9,36 @@
  *	This module contains functions for CPU/Bus-handling
  */
 
-#include <stdint.h>
 #include <inttypes.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simport.h"
+#include "simmem.h"
+#include "simio.h"
+#ifndef EXCLUDE_I8080
+#include "sim8080.h"
+#endif
+#ifndef EXCLUDE_Z80
+#include "simz80.h"
+#endif
+#include "simcore.h"
+
 #ifdef FRONTPANEL
 #include "frontpanel.h"
+#include "simctl.h"
 #endif
-#include "memsim.h"
 
 #ifndef BAREMETAL
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
-
 static const char *TAG = "core";
 #endif
-
-extern uint64_t get_clock_us(void);
-extern void cpu_z80(void), cpu_8080(void);
 
 /*
  *	Initialize the CPU
@@ -302,18 +311,27 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	extern BYTE (*port_in[256])(void);
 	uint64_t clk;
 #ifdef FRONTPANEL
 	int val;
 #else
+#ifndef SIMPLEPANEL
 	UNUSED(addrh);
+#endif
 #endif
 
 	clk = get_clock_us();
 
 	io_port = addrl;
-	io_data = (*port_in[addrl])();
+	if (port_in[addrl])
+		io_data = (*port_in[addrl])();
+	else {
+		if (i_flag) {
+			cpu_error = IOTRAPIN;
+			cpu_state = STOPPED;
+		}
+		io_data = IO_DATA_UNUSED;
+	}
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_INP;
@@ -328,9 +346,13 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		val = wait_step();
 
 		/* when single stepped INP get last set value of port */
-		if (val)
+		if (val && port_in[addrl])
 			io_data = (*port_in[addrl])();
 	}
+#endif
+#ifdef SIMPLEPANEL
+	fp_led_address = (addrh << 8) + addrl;
+	fp_led_data = io_data;
 #endif
 
 #ifndef BAREMETAL
@@ -339,7 +361,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	cpu_time -= get_clock_us() - clk;
 
-	return (io_data);
+	return io_data;
 }
 
 /*
@@ -349,9 +371,8 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	extern void (*port_out[256])(BYTE);
 	uint64_t clk;
-#ifndef FRONTPANEL
+#if !defined(FRONTPANEL) && !defined(SIMPLEPANEL)
 	UNUSED(addrh);
 #endif
 
@@ -366,7 +387,14 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	busy_loop_cnt = 0;
 
-	(*port_out[addrl])(data);
+	if (port_out[addrl])
+		(*port_out[addrl])(data);
+	else {
+		if (i_flag) {
+			cpu_error = IOTRAPOUT;
+			cpu_state = STOPPED;
+		}
+	}
 
 #ifdef BUS_8080
 	cpu_bus = CPU_OUT;
@@ -376,44 +404,17 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	if (F_flag) {
 		fp_clock += 6;
 		fp_led_address = (addrh << 8) + addrl;
-		fp_led_data = 0xff;
+		fp_led_data = IO_DATA_UNUSED;
 		fp_sampleData();
 		wait_step();
 	}
 #endif
+#ifdef SIMPLEPANEL
+	fp_led_address = (addrh << 8) + addrl;
+	fp_led_data = IO_DATA_UNUSED;
+#endif
 
 	cpu_time -= get_clock_us() - clk;
-}
-
-/*
- *	I/O input trap function
- *	This function should be added into all unused
- *	entries of the input port array. It can stop the
- *	emulation with an I/O error.
- */
-BYTE io_trap_in(void)
-{
-	if (i_flag) {
-		cpu_error = IOTRAPIN;
-		cpu_state = STOPPED;
-	}
-	return ((BYTE) 0xff);
-}
-
-/*
- *      I/O output trap function
- *      This function should be added into all unused
- *      entries of the output port array. It can stop the
- *      emulation with an I/O error.
- */
-void io_trap_out(BYTE data)
-{
-	UNUSED(data);
-
-	if (i_flag) {
-		cpu_error = IOTRAPOUT;
-		cpu_state = STOPPED;
-	}
 }
 
 /*
@@ -436,22 +437,4 @@ void end_bus_request(void)
 	bus_mode = BUS_DMA_NONE;
 	dma_bus_master = NULL;
 	bus_request = 0;
-}
-
-/*
- *	atoi for hexadecimal numbers
- */
-int exatoi(char *str)
-{
-	register int num = 0;
-
-	while (isxdigit((unsigned char) *str)) {
-		num *= 16;
-		if (*str <= '9')
-			num += *str - '0';
-		else
-			num += toupper((unsigned char) *str) - '7';
-		str++;
-	}
-	return (num);
 }

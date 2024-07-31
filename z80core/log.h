@@ -49,7 +49,7 @@ static void _log_write(log_level_t level, const char* tag, const char* format, .
 
     va_list args;
     va_start(args, format);
-    vprintf(format, args);
+    vfprintf(stderr, format, args);
     va_end(args);
 }
 

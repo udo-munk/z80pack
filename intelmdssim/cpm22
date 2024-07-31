@@ -1,0 +1,7 @@
+#!/bin/sh
+
+rm -f disks/drivea.dsk disks/driveb.dsk
+ln disks/library/cpm22.dsk disks/drivea.dsk
+ln disks/library/cpmtools.dsk disks/driveb.dsk
+
+./intelmdssim $*

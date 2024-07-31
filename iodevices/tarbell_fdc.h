@@ -28,12 +28,20 @@
 #ifndef TARBELL_FDC_INC
 #define TARBELL_FDC_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
+extern BYTE tarbell_rom[32];
+extern int tarbell_rom_enabled, tarbell_rom_active;
+
+extern void dsk_path(void);
+
 extern BYTE tarbell_stat_in(void), tarbell_track_in(void);
 extern BYTE tarbell_sec_in(void), tarbell_data_in(void);
 extern BYTE tarbell_wait_in(void);
-extern void tarbell_cmd_out(BYTE), tarbell_track_out(BYTE);
-extern void tarbell_sec_out(BYTE), tarbell_data_out(BYTE);
-extern void tarbell_ext_out(BYTE);
+extern void tarbell_cmd_out(BYTE data), tarbell_track_out(BYTE data);
+extern void tarbell_sec_out(BYTE data), tarbell_data_out(BYTE data);
+extern void tarbell_ext_out(BYTE data);
 extern void tarbell_reset(void);
 
-#endif
+#endif /* !TARBELL_FDC_INC */

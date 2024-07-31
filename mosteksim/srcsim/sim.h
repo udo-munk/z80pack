@@ -29,17 +29,14 @@
 #define EXCLUDE_I8080	/* this was a Z80 machine */
 
 #define WANT_ICE	/* attach ICE to headless machine */
+#ifdef WANT_ICE
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
+#endif
 
 #define HAS_DISKS	/* uses disk images */
 #define HAS_CONFIG	/* has configuration files somewhere */
-
-extern void sleep_us(long);
-#define SLEEP_US(t)	sleep_us(t)
-extern void sleep_ms(int);
-#define SLEEP_MS(t)	sleep_ms(t)
 
 /*
  *	The following defines may be modified and activated by
@@ -50,7 +47,5 @@ extern void sleep_ms(int);
 #define USR_COM	"Mostek AID-80F and SYS-80FT Emulator"
 #define USR_REL	"1.1"
 #define USR_CPR	"by Mike Douglas"
-
-#include "simcore.h"
 
 #endif

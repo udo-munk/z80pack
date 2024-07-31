@@ -27,10 +27,6 @@
  */
 
 {
-	extern BYTE io_in(BYTE, BYTE);
-	extern void io_out(BYTE, BYTE, BYTE);
-	extern uint64_t get_clock_us(void);
-
 #define S_SHIFT		7	/* S_FLAG shift */
 #define Z_SHIFT		6	/* Z_FLAG shift */
 #define H_SHIFT		4	/* H_FLAG shift */
@@ -823,7 +819,7 @@ next_opcode:
 				/* else wait for INT, NMI or user interrupt */
 				while ((int_int == 0) && (int_nmi == 0) &&
 				       (cpu_state == CONTIN_RUN)) {
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					R += 99;
 				}
 			}
@@ -847,7 +843,7 @@ next_opcode:
 				       !(cpu_state & RESET)) {
 					fp_clock++;
 					fp_sampleData();
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					R += 99;
 					if (cpu_error != NONE)
 						break;
@@ -859,7 +855,7 @@ next_opcode:
 				       !(cpu_state & RESET)) {
 					fp_clock++;
 					fp_sampleData();
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					R += 99;
 					if (cpu_error != NONE)
 						break;

@@ -14,15 +14,17 @@
  * 30-SEP-2019 (Mike Douglas) accept also upper case
  */
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simice.h"
+#include "simctl.h"
+
 #include "mostek-fdc.h"
 #include "unix_terminal.h"
-
-extern void ice_cmd_loop(int);
 
 /*
  *	The function "mon()" is the user interface, called

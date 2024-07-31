@@ -26,10 +26,10 @@ to be build without it, as described in "README-frontpanel.txt".
 The ICE also can be included when running on bare metal, if the device
 has enough memory. This is shown in picosim running on Raspberry Pi Pico.
 Because the bare metal is not running an operating system all
-commands that require one are disabled. Also this is done with a define
+commands that require one are disabled. Also this is done with the define
 in sim.h for the machine:
 
-ICE_BAREMETAL	don't include commands that require an OS
+#define BAREMETAL       /* set up the simulator core for bare metal use */
 
 Also watch out what code you are going to execute, because without an
 operating system that provides signal handling for applications, we have

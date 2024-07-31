@@ -25,6 +25,7 @@
  * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -34,17 +35,21 @@
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "log.h"
+#include "simport.h"
+#include "simio.h"
+
 #include "unix_terminal.h"
 #include "unix_network.h"
+#include "altair-88-2sio.h"
+
+#include "log.h"
+static const char *TAG = "2SIO";
 
 #define BAUDTIME 10000000
-
-extern uint64_t get_clock_us(void);
-
-static const char *TAG = "2SIO";
 
 int sio1_upper_case;
 int sio1_strip_parity;
@@ -77,7 +82,7 @@ BYTE altair_sio1_status_in(void)
 	tdiff = sio1_t2 - sio1_t1;
 	if (sio1_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1_baud_rate))
-			return (sio1_stat);
+			return sio1_stat;
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
@@ -94,7 +99,7 @@ BYTE altair_sio1_status_in(void)
 
 	sio1_t1 = get_clock_us();
 
-	return (sio1_stat);
+	return sio1_stat;
 }
 
 /*
@@ -124,7 +129,7 @@ again:
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return (last);
+		return last;
 
 	if (read(fileno(stdin), &data, 1) == 0) {
 		/* try to reopen tty, input redirection exhausted */
@@ -141,7 +146,7 @@ again:
 	if (sio1_upper_case)
 		data = toupper(data);
 	last = data;
-	return (data);
+	return data;
 }
 
 /*
@@ -205,7 +210,7 @@ BYTE altair_sio2_status_in(void)
 	tdiff = sio2_t2 - sio2_t1;
 	if (sio2_baud_rate > 0)
 		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2_baud_rate))
-			return (sio2_stat);
+			return sio2_stat;
 
 	/* if socket is connected check for I/O */
 	if (ucons[1].ssc != 0) {
@@ -221,7 +226,7 @@ BYTE altair_sio2_status_in(void)
 
 	sio2_t1 = get_clock_us();
 
-	return (sio2_stat);
+	return sio2_stat;
 }
 
 /*
@@ -246,7 +251,7 @@ BYTE altair_sio2_data_in(void)
 
 	/* if not connected return last */
 	if (ucons[1].ssc == 0)
-		return (last);
+		return last;
 
 	/* if no input waiting return last */
 	p[0].fd = ucons[1].ssc;
@@ -254,13 +259,13 @@ BYTE altair_sio2_data_in(void)
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return (last);
+		return last;
 
 	if (read(ucons[1].ssc, &data, 1) != 1) {
 		/* EOF, close socket and return last */
 		close(ucons[1].ssc);
 		ucons[1].ssc = 0;
-		return (last);
+		return last;
 	}
 
 	sio2_t1 = get_clock_us();
@@ -270,7 +275,7 @@ BYTE altair_sio2_data_in(void)
 	if (sio2_upper_case)
 		data = toupper(data);
 	last = data;
-	return (data);
+	return data;
 }
 
 /*

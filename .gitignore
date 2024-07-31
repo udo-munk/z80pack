@@ -22,12 +22,16 @@ cpmtools/*.com
 cpmtools/*.lis
 cromemcosim/cromemcosim
 imsaisim/imsaisim
+intelmdssim/intelmdssim
 mosteksim/mosteksim
 picosim/build
 z80asm/z80asm
 z80sim/*.hex
 z80sim/*.lis
 z80sim/z80sim
+<<<<<<< HEAD
 intelmdssim/intelmdssim
 
 .idea
+=======
+>>>>>>> dev

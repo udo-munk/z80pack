@@ -12,7 +12,9 @@
 
 #include <stdint.h>
 #include <stddef.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
 
 /*
@@ -68,34 +70,6 @@ int tmax;			/* max t-states to execute in 10ms */
 int cpu_needed;			/* don't adjust CPU freq if needed */
 
 /*
- *	Variables for history memory
- */
-#ifdef HISIZE
-struct history his[HISIZE];	/* memory to hold trace information */
-int h_next;			/* index into trace memory */
-int h_flag;			/* flag for trace memory overrun */
-#endif
-
-/*
- *	Variables for breakpoint memory
- */
-#ifdef SBSIZE
-struct softbreak soft[SBSIZE];	/* memory to hold breakpoint information */
-int sb_next;			/* index into breakpoint memory */
-#endif
-
-/*
- *	Variables for runtime measurement
- */
-#ifdef WANT_TIM
-Tstates_t t_states_s;		/* T states marker at start of measurement */
-Tstates_t t_states_e;		/* T states marker at end of measurement */
-int t_flag;			/* flag, 1 = on, 0 = off */
-WORD t_start = 65535;		/* start address for measurement */
-WORD t_end = 65535;		/* end address for measurement */
-#endif
-
-/*
  *	Variables for frontpanel emulation
  */
 #ifdef FRONTPANEL
@@ -104,6 +78,11 @@ float fp_fps = 30.0;		/* frame rate, default 30 usually works */
 WORD fp_led_address;		/* lights for address bus */
 BYTE fp_led_data;		/* lights for data bus */
 WORD address_switch;		/* address and programmed input switches */
+BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
+#endif
+#ifdef SIMPLEPANEL
+WORD fp_led_address;		/* lights for address bus */
+BYTE fp_led_data;		/* lights for data bus */
 BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
 #endif
 

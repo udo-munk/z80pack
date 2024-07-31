@@ -1,2 +1,17 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Don't show diffs for binary files and don't do end-of-line conversion
+*.bin -diff -text
+*.dsk -diff -text
+*.hdd -diff -text
+*.jpg -diff -text
+*.pdf -diff -text
+*.ptp -diff -text
+# These only exist in webfrontend/www
+*.eot -diff -text
+*.gz -diff -text
+*.ico -diff -text
+*.png -diff -text
+*.ttf -diff -text
+*.woff -diff -text
+*.woff2 -diff -text

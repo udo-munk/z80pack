@@ -1,5 +1,6 @@
 # CP/M tools
-TOOLS = r.com w.com bye.com reset.com sw8080.com swz80.com
+TOOLS = r.com w.com bye.com reset.com sw8080.com swz80.com memmap.com \
+	survey.com
 
 # CPU tests by various authors, modified for using the CPU switch feature
 CPUTESTS = ex8080.com exz80doc.com prelim.com 8080pre.com test8080.com
@@ -26,6 +27,12 @@ sw8080.com: sw8080.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 -fb -o$@ $<
 
 swz80.com: swz80.asm $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) -8 -fb -o$@ $<
+
+survey.com: survey.mac $(Z80ASM)
+	$(Z80ASM) $(Z80ASMFLAGS) -fb -e20 -o$@ $<
+
+memmap.com: memmap.asm $(Z80ASM)
 	$(Z80ASM) $(Z80ASMFLAGS) -8 -fb -o$@ $<
 
 ex8080.com: ex.mac $(Z80ASM)

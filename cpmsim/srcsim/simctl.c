@@ -4,26 +4,28 @@
  * Copyright (C) 1987-2024 by Udo Munk
  */
 
-#include <stdint.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <fcntl.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simcore.h"
+#include "simmem.h"
+#include "simio.h"
+#include "simctl.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+
 #include "unix_terminal.h"
+
 #include "log.h"
-
-extern void run_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
-
-int boot(int);
-
-extern struct dskdef disks[];
-
 static const char *TAG = "system";
 
 /*
@@ -40,8 +42,6 @@ void mon(void)
 	fflush(stdout);
 
 #ifdef WANT_ICE
-	extern void ice_cmd_loop(int);
-
 	ice_before_go = set_unix_terminal;
 	ice_after_go = reset_unix_terminal;
 	atexit(reset_unix_terminal);
@@ -81,9 +81,9 @@ int boot(int level)
 	/* on first boot we can run from core or file */
 	if (level == 0) {
 		if (l_flag)
-			return (0);
+			return 0;
 		if (x_flag)
-			return (0);
+			return 0;
 	}
 
 	/* else load boot code from disk */
@@ -107,17 +107,17 @@ int boot(int level)
 	if ((fd = open(fn, O_RDONLY)) == -1) {
 		LOGE(TAG, "can't open file %s", fn);
 		close(fd);
-		return (1);
+		return 1;
 	}
 	if (read(fd, buf, 128) != 128) {
 		LOGE(TAG, "can't read file %s", fn);
 		close(fd);
-		return (1);
+		return 1;
 	}
 	close(fd);
 
 	for (i = 0; i < 128; i++)
 		putmem(i, buf[i]);
 
-	return (0);
+	return 0;
 }

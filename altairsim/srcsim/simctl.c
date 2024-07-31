@@ -33,31 +33,29 @@
  * 29-APR-2024 print CPU execution statistics
  */
 
-#include <stdint.h>
-#include <X11/Xlib.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <termios.h>
-#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "config.h"
-#ifdef FRONTPANEL
-#include "frontpanel.h"
+#include "simcore.h"
+#include "simcfg.h"
+#include "simmem.h"
+#include "simio.h"
+#include "simport.h"
+#ifdef WANT_ICE
+#include "simice.h"
 #endif
-#include "memsim.h"
+#include "simctl.h"
+
 #include "unix_terminal.h"
+
 #ifdef FRONTPANEL
+#include <X11/Xlib.h>
+#include "frontpanel.h"
 #include "log.h"
-#endif
-
-extern void reset_cpu(void), reset_io(void);
-extern void run_cpu(void), step_cpu(void);
-extern void report_cpu_error(void), report_cpu_stats(void);
-
-#ifdef FRONTPANEL
 static const char *TAG = "system";
 
 static BYTE fp_led_wait;
@@ -66,16 +64,17 @@ static int reset;
 static BYTE power_switch = 1;
 static int power;
 
-static void run_clicked(int, int), step_clicked(int, int);
-static void reset_clicked(int, int);
-static void examine_clicked(int, int), deposit_clicked(int, int);
-static void protect_clicked(int, int);
-static void power_clicked(int, int);
-static void int_clicked(int, int);
+static void run_clicked(int state, int val), step_clicked(int state, int val);
+static void reset_clicked(int state, int val);
+static void examine_clicked(int state, int val);
+static void deposit_clicked(int state, int val);
+static void protect_clicked(int state, int val);
+static void int_clicked(int state, int val);
+static void power_clicked(int state, int val);
 static void quit_callback(void);
-#endif
+#endif /* FRONTPANEL */
 
-int  boot_switch;		/* boot address for switch */
+int boot_switch;		/* boot address for switch */
 
 /*
  *	This function initializes the front panel and terminal.
@@ -92,7 +91,7 @@ void mon(void)
 		/* initialize frontpanel */
 		XInitThreads();
 
-		if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
+		if (!fp_init2(confdir, "panel.conf", fp_size)) {
 			LOGE(TAG, "frontpanel error");
 			exit(EXIT_FAILURE);
 		}
@@ -127,10 +126,10 @@ void mon(void)
 		fp_addSwitchCallback("SW_PWR", power_clicked, 0);
 		fp_addSwitchCallback("SW_INT", int_clicked, 0);
 	}
-#endif
+#endif /* FRONTPANEL */
 
 	/* give threads a bit time and then empty buffer */
-	SLEEP_MS(999);
+	sleep_for_ms(999);
 	fflush(stdout);
 
 #ifndef WANT_ICE
@@ -187,13 +186,11 @@ void mon(void)
 			fp_sampleData();
 
 			/* wait a bit, system is idling */
-			SLEEP_MS(10);
+			sleep_for_ms(10);
 		}
 	} else {
-#endif
+#endif /* FRONTPANEL */
 #ifdef WANT_ICE
-		extern void ice_cmd_loop(int);
-
 		ice_before_go = set_unix_terminal;
 		ice_after_go = reset_unix_terminal;
 		atexit(reset_unix_terminal);
@@ -225,7 +222,7 @@ void mon(void)
 		fp_sampleData();
 
 		/* wait a bit before termination */
-		SLEEP_MS(999);
+		sleep_for_ms(999);
 
 		/* shutdown frontpanel */
 		fp_quit();
@@ -241,7 +238,7 @@ void mon(void)
 /*
  *	Callback for RUN/STOP switch
  */
-void run_clicked(int state, int val)
+static void run_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -271,7 +268,7 @@ void run_clicked(int state, int val)
 /*
  *	Callback for STEP switch
  */
-void step_clicked(int state, int val)
+static void step_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -297,35 +294,37 @@ void step_clicked(int state, int val)
  */
 int wait_step(void)
 {
-	extern BYTE (*port_in[256])(void);
 	int ret = 0;
 
 	if (cpu_state != SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
-		return (ret);
+		return ret;
 	}
 
 	if ((cpu_bus & CPU_M1) && !m1_step) {
 		cpu_bus &= ~CPU_M1;
-		return (ret);
+		return ret;
 	}
 
 	cpu_switch = 3;
 
 	while ((cpu_switch == 3) && !reset) {
 		/* when INP update data bus LEDs */
-		if (cpu_bus == (CPU_WO | CPU_INP))
-			fp_led_data = (*port_in[fp_led_address & 0xff])();
+		if (cpu_bus == (CPU_WO | CPU_INP)) {
+			if (port_in[fp_led_address & 0xff])
+				fp_led_data =
+					(*port_in[fp_led_address & 0xff])();
+		}
 		fp_clock++;
 		fp_sampleData();
-		SLEEP_MS(1);
+		sleep_for_ms(1);
 		ret = 1;
 	}
 
 	cpu_bus &= ~CPU_M1;
 	m1_step = 0;
-	return (ret);
+	return ret;
 }
 
 /*
@@ -341,14 +340,14 @@ void wait_int_step(void)
 	while ((cpu_switch == 3) && !reset) {
 		fp_clock++;
 		fp_sampleData();
-		SLEEP_MS(10);
+		sleep_for_ms(10);
 	}
 }
 
 /*
  *	Callback for RESET switch
  */
-void reset_clicked(int state, int val)
+static void reset_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -399,7 +398,7 @@ void reset_clicked(int state, int val)
 /*
  *	Callback for EXAMINE/EXAMINE NEXT switch
  */
-void examine_clicked(int state, int val)
+static void examine_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -436,7 +435,7 @@ void examine_clicked(int state, int val)
 /*
  *	Callback for DEPOSIT/DEPOSIT NEXT switch
  */
-void deposit_clicked(int state, int val)
+static void deposit_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -472,7 +471,7 @@ void deposit_clicked(int state, int val)
 /*
  *	Callback for PROTECT/UNPROTECT switch
  */
-void protect_clicked(int state, int val)
+static void protect_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -503,7 +502,7 @@ void protect_clicked(int state, int val)
 /*
  *	Callback for INT/BOOT switch
  */
-void int_clicked(int state, int val)
+static void int_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -527,7 +526,7 @@ void int_clicked(int state, int val)
 /*
  *	Callback for POWER switch
  */
-void power_clicked(int state, int val)
+static void power_clicked(int state, int val)
 {
 	UNUSED(val);
 
@@ -559,11 +558,11 @@ void power_clicked(int state, int val)
 /*
  * Callback for quit (graphics window closed)
  */
-void quit_callback(void)
+static void quit_callback(void)
 {
 	power--;
 	cpu_switch = 0;
 	cpu_state = STOPPED;
 	cpu_error = POWEROFF;
 }
-#endif
+#endif /* FRONTPANEL */

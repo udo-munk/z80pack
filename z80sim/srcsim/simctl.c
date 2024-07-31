@@ -7,15 +7,15 @@
  * here we just call the ICE.
  */
 
-#include <stdint.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <termios.h>
-#include "sim.h"
-#include "simglb.h"
-#include "unix_terminal.h"
 
-extern void ice_cmd_loop(int);
+#include "sim.h"
+#include "simdefs.h"
+#include "simglb.h"
+#include "simice.h"
+#include "simctl.h"
+
+#include "unix_terminal.h"
 
 /*
  *	The function "mon()" is the user interface, called

@@ -1,10 +1,10 @@
 /**
  * generic-at-modem.c
- * 
+ *
  * Emulation of generic 'AT' modem over TCP/IP sockets (telnet)
  *
  * Copyright (C) 2019-2021 by David McNaughton
- * 
+ *
  * History:
  * 12-SEP-2019	1.0	Initial Release
  * 29-SEP-2019	1.1	Added Answer modes and registers
@@ -15,6 +15,8 @@
  */
 
 #include <unistd.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -29,12 +31,17 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
+#include "sim.h"
+#include "simdefs.h"
+#include "simport.h"
+
 #include "libtelnet.h"
 
-#define UNUSED(x) (void) (x)
+#include "generic-at-modem.h"
 
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
+static const char* TAG = "at-modem";
 
 #define MODEM_ID "'AT' Modem"
 
@@ -44,8 +51,6 @@
 #define DEFAULT_LISTENER_PORT   8023
 #define _QUOTE(arg)      #arg
 #define STR_VALUE(arg)    _QUOTE(arg)
-
-static const char* TAG = "at-modem";
 
 #define SREG_AA     0
 #define SREG_RINGS  1
@@ -96,8 +101,6 @@ static const char* TAG = "at-modem";
 #define OPT_ECHO    0x1
 #define OPT_QUIET   0x2
 
-void modem_device_init(void);
-
 static bool daemon_f = false;
 
 static unsigned int s_reg[MAX_REG_NUM] = SREG_DEFAULTS;
@@ -117,7 +120,7 @@ static telnet_telopt_t telnet_opts[10];
 
 static int carrier_detect;
 
-void init_telnet_opts(void) {
+static void init_telnet_opts(void) {
 
     int i=0;
 
@@ -151,8 +154,6 @@ void init_telnet_opts(void) {
 static telnet_t *telnet =  NULL;
 static unsigned char tn_recv;
 static int tn_len = 0;
-
-extern uint64_t get_clock_us(void);
 
 static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
 
@@ -207,10 +208,10 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
             LOGI(TAG, "Telnet DO TTYPE");
         } else if (ev->neg.telopt == TELNET_TELOPT_NAWS) {
             telnet_begin_sb(telnet, TELNET_TELOPT_NAWS);
-            buf[0] = 0; 
-            buf[1] = s_reg[SREG_COLS]; 
-            buf[2] = 0; 
-            buf[3] = s_reg[SREG_ROWS]; 
+            buf[0] = 0;
+            buf[1] = s_reg[SREG_COLS];
+            buf[2] = 0;
+            buf[3] = s_reg[SREG_ROWS];
             telnet_send(telnet, buf, 4);
             telnet_finish_sb(telnet);
             LOGI(TAG, "Telnet DO NAWS [%d x %d]", (buf[0]<<8) + buf[1], (buf[2]<<8) + buf[3]);
@@ -244,7 +245,7 @@ static void telnet_hdlr(telnet_t *telnet, telnet_event_t *ev, void *user_data) {
 }
 
 /****************************************************************************************************************************/
-void close_socket(void) {
+static void close_socket(void) {
 
     if (telnet != NULL) {
         telnet_free(telnet);
@@ -262,7 +263,7 @@ void close_socket(void) {
     carrier_detect = 0;
 }
 
-int open_socket(void) {
+static int open_socket(void) {
 
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -275,7 +276,7 @@ int open_socket(void) {
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;    /* Allow only IPv4 not IPv6 */
-    hints.ai_socktype = SOCK_STREAM; 
+    hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
@@ -319,7 +320,7 @@ int open_socket(void) {
         carrier_detect = 1;
         LOGI(TAG, "Socket created");
 
-        if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) { 
+        if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) {
             LOGW(TAG, "Failed to connect to socket: %d", errno);
             close_socket();
             return 1;
@@ -350,14 +351,14 @@ int open_socket(void) {
     return 1;
 }
 
-int hangup_timeout(bool start) {
+static int hangup_timeout(bool start) {
     static uint64_t hup_t1, hup_t2;
     static int waiting = 0;
     int tdiff;
 
     if (*active_sfd) {
 
-         if (start) { 
+         if (start) {
             hup_t1 = get_clock_us();
             waiting = 1;
             LOGI(TAG, "Waiting to HUP");
@@ -380,7 +381,7 @@ int hangup_timeout(bool start) {
 
 /****************************************************************************************************************************/
 
-int answer_init(void) {
+static int answer_init(void) {
 
     struct sockaddr_in serv_addr;
     int enable = 1;
@@ -414,7 +415,7 @@ int answer_init(void) {
     return 0;
 }
 
-int answer(void) {
+static int answer(void) {
 
     struct sockaddr_in cli_addr;
     socklen_t clilen;
@@ -455,13 +456,13 @@ int answer(void) {
     return 0;
 }
 
-int answer_check_ring(void) {
+static int answer_check_ring(void) {
 
 	struct pollfd p[1];
     static int ringing = 0;
     static uint64_t ring_t1, ring_t2;
     int tdiff;
-    
+
     if (answer_sfd) {
 
         if (ringing) {
@@ -488,22 +489,22 @@ int answer_check_ring(void) {
             }
             return 1;
         }
-    } 
+    }
     return 0;
 }
 
 /****************************************************************************************************************************/
 
-char at_buf[AT_BUF_LEN * 2] = "";
-char at_cmd[AT_BUF_LEN] = "";
-char at_prev[AT_BUF_LEN] = "";
-char at_err[AT_BUF_LEN * 2] = "";
+static char at_buf[AT_BUF_LEN * 2] = "";
+static char at_cmd[AT_BUF_LEN] = "";
+static char at_prev[AT_BUF_LEN] = "";
+static char at_err[AT_BUF_LEN * 2] = "";
 
-char *at_out = at_buf;
+static char *at_out = at_buf;
 enum at_states { cmd, A_recv, AT_recv, AS_recv, dat, intr, help };
 typedef enum at_states at_state_t;
 
-at_state_t at_state = cmd;
+static at_state_t at_state = cmd;
 
 #define CR			"\r"
 #define LF			"\n"
@@ -569,7 +570,7 @@ static const char *at_help[] = {
 
 static const char **msg;
 
-void at_cat_c(char c) {
+static void at_cat_c(char c) {
     if (strlen(at_cmd) >= AT_BUF_LEN - 1) {
         LOGE(TAG, "Buffer overflow");
         return;
@@ -596,7 +597,7 @@ void at_cat_c(char c) {
 	LOGD(TAG, "AT CMD: [%s]", at_cmd);
 }
 
-void at_cat_s(const char *s) {
+static void at_cat_s(const char *s) {
     if (s_reg[SREG_OPT] & OPT_QUIET) return;
     if ((strlen(at_buf) + strlen(s)) >= (AT_BUF_LEN*2) - 1) {
         LOGE(TAG, "Buffer overflow");
@@ -606,7 +607,7 @@ void at_cat_s(const char *s) {
 	strcat(at_buf, s);
 }
 
-int process_at_cmd(void) {
+static int process_at_cmd(void) {
     int tmp_reg;
 	char *at_ptr = at_cmd;
     char *arg_ptr;
@@ -783,7 +784,7 @@ int process_at_cmd(void) {
                 strcpy(at_err, LF AT_ERROR CRLF);
                 return 1;
             }
-            if (tmp_reg) { 
+            if (tmp_reg) {
                 s_reg[SREG_OPT] |= OPT_ECHO;
             } else {
                 s_reg[SREG_OPT] &= ~OPT_ECHO;
@@ -796,13 +797,13 @@ int process_at_cmd(void) {
                 strcpy(at_err, LF AT_ERROR CRLF);
                 return 1;
             }
-            if (tmp_reg) { 
+            if (tmp_reg) {
                 s_reg[SREG_OPT] |= OPT_QUIET;
             } else {
                 s_reg[SREG_OPT] &= ~OPT_QUIET;
             }
             break;
-        case '&': 
+        case '&':
             if (*at_ptr == 'A') { /* AT&A - enable answer - listen */
                 tmp_reg = strtol(++at_ptr, &arg_ptr, BASE_DECIMAL);
                 AT_NEXT_CMD_ARGS;
@@ -861,7 +862,7 @@ int process_at_cmd(void) {
                 return 1;
             }
             break;
-        case '+': 
+        case '+':
             if (*at_ptr == 'T' && *(at_ptr+1) == '?') {
                 const char *ttype;
                 if ((ttype = getenv("TERM")) == NULL) {
@@ -888,7 +889,7 @@ int process_at_cmd(void) {
 #ifdef MODEM_WIFI
 /**
  *  WIFI CONFIG HANDLING
- */ 
+ */
             } else if (*at_ptr == 'W' && *(at_ptr+1) == '=') {
 
                 char ssid[MAX_SSID + 1] = "";
@@ -961,7 +962,7 @@ int process_at_cmd(void) {
                     return 1;
                 }
 
-                at_err[0] = *(at_ptr+2); 
+                at_err[0] = *(at_ptr+2);
 
                 if (ota_start(at_err)) {
                     return 1;
@@ -997,7 +998,7 @@ int process_at_cmd(void) {
 #ifdef MODEM_UART
 /**
  *  SERIAL CONFIG HANDLING
- */ 
+ */
             } else if (*at_ptr == 'B' && *(at_ptr+1) == '=') {
                 tmp_reg = strtol(at_ptr+2, &arg_ptr, BASE_DECIMAL);
 
@@ -1016,7 +1017,7 @@ int process_at_cmd(void) {
                 AT_NEXT_CMD2;
 #endif
 /**
- * 
+ *
  */
             } else {
                 strcpy(at_err, LF AT_ERROR CRLF);
@@ -1044,7 +1045,7 @@ int process_at_cmd(void) {
 }
 
 static uint64_t at_t1, at_t2;
-int tdiff;
+static int tdiff;
 
 int modem_device_poll(int i);
 
@@ -1063,7 +1064,7 @@ int modem_device_alive(int i) {
                 return 0;
             }
         }
-    } 
+    }
     return 0;
 }
 
@@ -1101,7 +1102,7 @@ int modem_device_poll(int i) {
                 at_state = cmd;
             }
         }
-        return (strlen(at_out) > 0);
+        return strlen(at_out) > 0;
     } else if (at_state == intr) {
         if (strlen(at_buf) == 3) {
         	at_t2 = get_clock_us();
@@ -1110,14 +1111,14 @@ int modem_device_poll(int i) {
                 at_state = cmd;
                 LOGI(TAG, "+++ Returning to CMD mode");
                 at_cat_s(CRLF AT_OK);
-                return (strlen(at_buf) > 0);
+                return strlen(at_buf) > 0;
             }
         }
         return 0;
     } else if (at_state == dat  && strlen(at_out) == 0) {
 
         /**
-         * In telnet mode this "clocks" the inbound connection into telnet_recv() 
+         * In telnet mode this "clocks" the inbound connection into telnet_recv()
          * and lets the event handler buffer the input (1 character)
          * then it can check the buffer and report on available data in the buffer
          */
@@ -1129,7 +1130,7 @@ int modem_device_poll(int i) {
         p[0].revents = 0;
         poll(p, 1, 0);
 
-        if (telnet == NULL) return (p[0].revents & POLLIN);
+        if (telnet == NULL) return p[0].revents & POLLIN;
 
         if (p[0].revents & POLLIN) {
             int res;
@@ -1140,7 +1141,7 @@ int modem_device_poll(int i) {
                 telnet_recv(telnet, (char *) &data, 1);
             }
             if (tn_len) return POLLIN;
-        } 
+        }
 
         return 0;
 
@@ -1151,13 +1152,13 @@ int modem_device_poll(int i) {
             if ((s_reg[SREG_AA] > 0) && (s_reg[SREG_RINGS] >= s_reg[SREG_AA])) {
                 if (!answer()) {
                     at_state = dat;
-                } 
+                }
             }
         } else if(hangup_timeout(false)) {
             at_cat_s(CRLF "HANGUP" CRLF);
         }
 
-        return (strlen(at_out) > 0);
+        return strlen(at_out) > 0;
     }
 }
 
@@ -1186,10 +1187,10 @@ int modem_device_get(int i) {
 
             if (!(p[0].revents & POLLIN)) return -1;
 
-            return (_read());
+            return _read();
         }
     } else {
-    
+
         if (strlen(at_out) > 0) {
             data = *at_out;
             at_out++;
@@ -1309,7 +1310,7 @@ void modem_device_send(int i, char data) {
 
 int modem_device_carrier(int i) {
     UNUSED(i);
-    
+
     return carrier_detect;
 }
 

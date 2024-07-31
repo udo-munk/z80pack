@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -68,7 +68,7 @@ ffee  =               64     64 DUAF2   EQU     -18
 ffec  =               65     65 DUBC2   EQU     -20
 ffea  =               66     66 DUDE2   EQU     -22
 ffe8  =               67     67 DUHL2   EQU     -24
-                      68     68 
+                      68     68
                       69     69         ORG     0E000H
 e000                  70     70 START:
                       71     71 ;
@@ -1040,38 +1040,38 @@ e3fc  00            1031   1036         DB      0
 e3fd  00            1032   1037         DB      0
 e3fe  4e            1033   1038         DB      -DUIX+R2F       ;X (IX)
 e3ff  50            1034   1039         DB      -DUIY+R2F       ;Y (IY)
-                    1035   1040 
+                    1035   1040
 e400                1036   1041         END
 
 Symbol table
 
-ABCYZ e0b5    BAUD  e036    BELL  0007    CASE  0020    CK16B e156 
-CKBND e158    CLBP1 e088    CLBP2 e096    CMND  e09c    CMND1 e09f 
-CPI0  00ed    CPI1  00a1    CPIR  00ed*   CPIR1 00b1*   CR    000d 
-CRLF  e10c    DATA  0001    DAV   0040    DISPL e34b    DJNZ  0010 
-DSPM  e352*   DSPM1 e356*   DSPM2 e359    DSPR  e0f5    DUAF  fffc 
+ABCYZ e0b5    BAUD  e036    BELL  0007    CASE  0020    CK16B e156
+CKBND e158    CLBP1 e088    CLBP2 e096    CMND  e09c    CMND1 e09f
+CPI0  00ed    CPI1  00a1    CPIR  00ed*   CPIR1 00b1*   CR    000d
+CRLF  e10c    DATA  0001    DAV   0040    DISPL e34b    DJNZ  0010
+DSPM  e352*   DSPM1 e356*   DSPM2 e359    DSPR  e0f5    DUAF  fffc
 DUAF2 ffee    DUBC  fffa    DUBC2 ffec*   DUDE  fff8    DUDE2 ffea*
-DUHL  fff6    DUHL2 ffe8    DUIT  fff4    DUIX  fff2    DUIY  fff0 
-DUPC  0000    DUSP  fffe    ERROR e0bc    ESC   001b    ESCPE e0bf 
-EXAF  0008    EXX   00d9    GBYTE e141    GCHR  e133    GCHR1 e13e 
-GCMN1 e225    GCMND e21a    GNHL  e197    GNHL1 e198*   GNHL3 e1a4 
-GNHL5 e1a7*   GO    e263    GO1   e26c    GO3   e285    GO5   e2a5 
-GSBV1 e2eb    GSBV2 e302    GSUBV e2e0    HEAD  e394    HEXSH e1af 
-HXSH0 e1bd    HXSH1 e1c8    HXSH4 e1bf*   INIT  e007    INIT1 e022 
-IX    00dd    IY    00fd    JR    0018    JRC   0038    JRNC  0030 
-JRNZ  0020    JRZ   0028    L2NCR e164    LD2N  e170    LD2N1 e181 
-LD2N2 e188    LD3N  e18b    LDD   00ed*   LDD1  00a8*   LDDR  00ed 
-LDDR1 00b8    LDI   00ed*   LDI1  00a0*   LDIR  00ed    LDIR1 00b0 
-LF    000a    LFNN  e3b0    LINCR e18e    MOVE  e24b    MVE   e250 
-MVE1  e251    OUTP  e389    P1HEX e1fc    P1HX1 e204    P2BMS e14a 
-P2HEX e1f3    P4HEX e1eb    PADDR e15a*   PADR1 e15d    PCHR  e10e 
-PCHR1 e119    PCHR2 e11d    PF    0080    PMSG  e20c    PMSG1 e20f 
-PNHL  e1da    PNM   e1e5    PPAGE 00ff    PREGS e107    PRMPT e3b3 
-PROG  e0c9    PROG1 e0cb*   PROG3 e0e0    PSNM  e1e2    PSQS  e209 
-R2F   0040    RDB1  e36b    READB e368    RETN  e2ad    RETN1 e2bf 
-RETN2 e2db    RGTBL e3e7    RLD   00ed*   RLD1  006f*   RSTLC 0030 
-SBSM  e30a*   SBSM1 e30d    SBSR  e319    SBSR1 e331    SBSR3 e346 
-SET5A 00cb*   SKSG  e1d1    SKSG0 e1d0    SKSG1 e1d2    SKSGC e167 
-SPACE e152    SQS   e3ad    ST5A1 00ef*   START e000*   STAT  0000 
-SUBST e304    SVMS  e043    SVMS1 e053    SVMS3 e070    TBE   0080 
-TEMPS 0016    VERIF e22f    VRFY  e232    WRITB e376    WRTB1 e379 
+DUHL  fff6    DUHL2 ffe8    DUIT  fff4    DUIX  fff2    DUIY  fff0
+DUPC  0000    DUSP  fffe    ERROR e0bc    ESC   001b    ESCPE e0bf
+EXAF  0008    EXX   00d9    GBYTE e141    GCHR  e133    GCHR1 e13e
+GCMN1 e225    GCMND e21a    GNHL  e197    GNHL1 e198*   GNHL3 e1a4
+GNHL5 e1a7*   GO    e263    GO1   e26c    GO3   e285    GO5   e2a5
+GSBV1 e2eb    GSBV2 e302    GSUBV e2e0    HEAD  e394    HEXSH e1af
+HXSH0 e1bd    HXSH1 e1c8    HXSH4 e1bf*   INIT  e007    INIT1 e022
+IX    00dd    IY    00fd    JR    0018    JRC   0038    JRNC  0030
+JRNZ  0020    JRZ   0028    L2NCR e164    LD2N  e170    LD2N1 e181
+LD2N2 e188    LD3N  e18b    LDD   00ed*   LDD1  00a8*   LDDR  00ed
+LDDR1 00b8    LDI   00ed*   LDI1  00a0*   LDIR  00ed    LDIR1 00b0
+LF    000a    LFNN  e3b0    LINCR e18e    MOVE  e24b    MVE   e250
+MVE1  e251    OUTP  e389    P1HEX e1fc    P1HX1 e204    P2BMS e14a
+P2HEX e1f3    P4HEX e1eb    PADDR e15a*   PADR1 e15d    PCHR  e10e
+PCHR1 e119    PCHR2 e11d    PF    0080    PMSG  e20c    PMSG1 e20f
+PNHL  e1da    PNM   e1e5    PPAGE 00ff    PREGS e107    PRMPT e3b3
+PROG  e0c9    PROG1 e0cb*   PROG3 e0e0    PSNM  e1e2    PSQS  e209
+R2F   0040    RDB1  e36b    READB e368    RETN  e2ad    RETN1 e2bf
+RETN2 e2db    RGTBL e3e7    RLD   00ed*   RLD1  006f*   RSTLC 0030
+SBSM  e30a*   SBSM1 e30d    SBSR  e319    SBSR1 e331    SBSR3 e346
+SET5A 00cb*   SKSG  e1d1    SKSG0 e1d0    SKSG1 e1d2    SKSGC e167
+SPACE e152    SQS   e3ad    ST5A1 00ef*   START e000*   STAT  0000
+SUBST e304    SVMS  e043    SVMS1 e053    SVMS3 e070    TBE   0080
+TEMPS 0016    VERIF e22f    VRFY  e232    WRITB e376    WRTB1 e379

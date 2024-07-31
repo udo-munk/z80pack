@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1         TITLE           'IMSAI SCS-1 REV. 2 06 OCT. 1976'
@@ -157,7 +157,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 00ff  e6 7f          154    154         ANI     127             ;STRIP OFF PARITY
 0101  47             155    155         MOV     B,A
 0102  c9             156    156         RET
-                     157    157 
+                     157    157
                      158    158 ;
                      159    159 ; THIS ROUTINE OUTPUTS A BYTE OF DATA TO THE USART
                      160    160 ;
@@ -423,7 +423,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      420    420 ; THIS ROUTINE CONVERTS A BINARY VALUE TO ASCII
                      421    421 ; DECIMAL DIGITS AND OPTPUTS THE CHARACTERS TO THE TTY
                      422    422 ;
-                     423    423 
+                     423    423
 0251  cd a3 02       424    424 DOUT:   CALL    BIND            ;CONVERT VALUE
 0254  cd 3d 02       425    425         CALL    HOUT+3          ;OUTPUT VALUE (2 DIGITS)
 0257  23             426    426         INX     H
@@ -638,7 +638,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0396  23             635    635         INX     H               ;BUMP POINTER
 0397  0d             636    636         DCR     C               ;TEST COUNT
 0398  c2 90 03       637    637         JNZ     SWAP
-                     638    638 
+                     638    638
                      639    639 ; CHECK FOR 2ND PARAMETER
 039b  3a 7e 10       640    640             LDA ABUF
 039e  b7             641    641         ORA     A
@@ -972,7 +972,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                      967    969 ; THIS ROUTINE IS USED TO LOAD FOUR CHARACTERS FROM
                      968    970 ; MEMORY INTO REGISTERS
                      969    971 ;
-                     970    972 
+                     970    972
 0592  46             971    973 LODM:   MOV     B,M             ;FETCH CHARACTER
 0593  23             972    974         INX     H
 0594  4e             973    975         MOV     C,M             ;FETCH CHARACTER 
@@ -2316,60 +2316,60 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 Symbol table
 
 ABUF    107e    ACH1    0275    ACHK    0263    ACO1    075a    ACO2    07db*
-ADDS    1074    ADE1    0204    ADEC    0201    ADR     057b    AERR    108e 
-AHE1    021e    AHEX    021b    AHS1    0232    ALAB    0c47    ALP1    0b77 
-ALPS    0b75    AOU1    06d2    AOU2    06cc*   AOUT    06c5    APNT    1072 
-AREA    10a0    ASBL    0b94    ASC1    0bc4    ASC2    0bd4    ASC3    0bec 
-ASC4    0bf6    ASC5    0c18    ASC7    0c38    ASCN    0b97    ASCR    000d 
-ASM1    068c    ASM2    06b9    ASM3    067a    ASM4    066e    ASPC    1092 
-ASSM    065e    ASTO    08ee    ASUB    0c3e    AVAL    0c28    B1      0cde 
-B2      0cee    B3      0cff    BBUF    108a    BID1    02b4    BIN1    0299 
-BINAD   07fd    BIND    02a3    BINH    0286    BL1     0d54    BL2     0d5f 
-BL3     0d68    BLK1    025d    BMES    0d88    BOFP    1029    BREAK   0cd2 
+ADDS    1074    ADE1    0204    ADEC    0201    ADR     057b    AERR    108e
+AHE1    021e    AHEX    021b    AHS1    0232    ALAB    0c47    ALP1    0b77
+ALPS    0b75    AOU1    06d2    AOU2    06cc*   AOUT    06c5    APNT    1072
+AREA    10a0    ASBL    0b94    ASC1    0bc4    ASC2    0bd4    ASC3    0bec
+ASC4    0bf6    ASC5    0c18    ASC7    0c38    ASCN    0b97    ASCR    000d
+ASM1    068c    ASM2    06b9    ASM3    067a    ASM4    066e    ASPC    1092
+ASSM    065e    ASTO    08ee    ASUB    0c3e    AVAL    0c28    B1      0cde
+B2      0cee    B3      0cff    BBUF    108a    BID1    02b4    BIN1    0299
+BINAD   07fd    BIND    02a3    BINH    0286    BL1     0d54    BL2     0d5f
+BL3     0d68    BLK1    025d    BMES    0d88    BOFP    1029    BREAK   0cd2
 BRKP    0d2e    BRT     100c    BSPA    00bf    CHAR    00c7    CHOT    0240*
-CL2     0d29    CLBL    0d19    CLER    00e1    CLRB    0d14    CO1     05a7 
-CO2     05ad    COM0    05a2    COM1    05b5*   COMM    012b    COMS    013c 
-COND    091b    COP1    0a62    COPC    0a50    CR      0097    CRLF    010e 
+CL2     0d29    CLBL    0d19    CLER    00e1    CLRB    0d14    CO1     05a7
+CO2     05ad    COM0    05a2    COM1    05b5*   COMM    012b    COMS    013c
+COND    091b    COP1    0a62    COPC    0a50    CR      0097    CRLF    010e
 CTAB    02be    DAT1    0790    DAT2    07f1    DAT2A   07f4    DCNT    108f*
-DEL     00b2    DEL1    05fb    DEL2    0618    DEL3    0636    DEL4    0640 
+DEL     00b2    DEL1    05fb    DEL2    0618    DEL3    0636    DEL4    0640
 DEL5    0641    DELL    05e7    DELP    1072    DONE    01bf    DOUT    0251*
-DUM1    030e    DUMP    0308    DUMS    030b    EASS    0901    EEND    002f 
-EMES    0466    EMES1   046b    EMES2   0470    ENT1    048f    ENTR    0476 
-ENTS    0483    EO1     0574    EOF     0573    EOFP    102b    EOR     0067 
-EQU1    0775    EQU2    07fa    EQUL    0503    EQUS    0780    ERAR    0ca8 
-ERO1    0cb9    ERRD    0cc7    ERRL    0cc2    ERRM    0c9f    ERRO    0cad 
-ERRR    0c81    ERRS    0c8a    ERRU    0c95    ERRV    0c9a    ETRA    017a 
-EXEC    0121    FAST    03e6    FBUF    1076    FEET    03f8    FEF     107d 
-FELEN   000d    FI1     055a    FI2     056c    FIL30   03b0*   FIL35   03b2 
-FILE    033e    FILE0   1024    FILTB   1031*   FIN1    0552    FIND    054c 
-FINE    03c9    FOCNT   107d    FOOD    03e3    FOOL    0404    FOOT    03c3 
-FOUL    03c5    FOUT    03b9    FREAD   107b    FSE10   0421    FSE15   0444 
-FSE20   044e    FSEA    0418    HCON    1074    HOLD    1000    HOTB    024a 
-HOUT    023a    IBUF    10c7    IN8     00f6    INCA    015f    INIT2   0056 
-INIT3   0061    INITA   0040    INK     00e9    INSP    1072    INSR    04fa 
-LCHK    0735    LESS    0518    LF      0113*   LICK    04c1    LINE    04b5 
-LIST    05d0    LIST0   05d6    LLAB    0005    LMOV    0580    LODM    0592 
-MAXFIL  0006    MAXL    102d    MESS    0460    MLAB    0705    MORE    052b 
-MOV23   0382    MPNT    08bf    NBR     0008    NCHR    1095    NCOM    000b 
-NEXT    0088    NMLEN   0005    NOLA    1098    NOR1    05c3    NORM    05bd 
-NOV1    064f*   NOVR    0649    NUM1    0c77    NUM2    0c7b    NUMS    0c63 
-NXT1    0ba1    NXT2    0bab    OBUF    10b2    OCN1    0af5    OCN2    0af8 
-OCNT    0ae1    OERR    0b06    OIND    109e    OK      010a*   OP1     0a81 
-OP2     0a84    OP4     0adc    OP5     0adf    OPAD    0adb    OPC     071e 
-OPC2    0a89*   OPC3    0aa5*   OPCD    0a65    OPRD    109a    OPRI    109c 
-ORG1    0760    ORG2    080c    OTAB    0927    OUT8    0103    P1      0d9c 
-PABL    07ad*   PAG1    0335    PAGEMOV 0322    PAS1    06dc    PAS2    0793 
-PASI    1094    PNTR    1096    PROC    0d8f    PSEU    0b0e    PSU1    0744 
-PSU2    07c8    READ    0080    RES1    0788    RES2    07e1    RES21   07ed 
-RMOV    0589    ROOM    0378    RTAB    0b60    SBL1    0910    SBL2    0914 
-SBLK    090d    SCNT    108e    SCRN    027a    SEAR    0153    SEN1    0c5d 
-SEND    0c53    SEOF    04f2*   SIGN    1099    SLA1    0b44    SLA2    0b5a 
-SLA3    0b5d    SLAB    0b20    SSTR    0c0f    STOM    059a    SWAP    0390 
-SWAPS   038b    SWCH    00ff*   SYMT    111a    TABA    1090    TEMP    109d 
-TEST    0363    TTI     0002    TTO     0002    TTS     0003    TTYDA   0002 
-TTYTR   0001    TY31    0855    TY32    0858    TY41    0881    TY55    08a0 
-TY56    08ad    TY6     08de    TYP1    082d    TYP2    0831    TYP3    0844 
-TYP4    0863    TYP5    0898    TYP6    08ce    TYS6    08e1    VAL1    0189 
-VAL2    01a4    VAL3    01b4    VAL4    01b6    VAL5    01c4    VALC    0173 
-VCHK    0300    WHA1    045d    WHAT    045a    ZBU1    016c    ZBUF    0166 
-ZERO    053b    
+DUM1    030e    DUMP    0308    DUMS    030b    EASS    0901    EEND    002f
+EMES    0466    EMES1   046b    EMES2   0470    ENT1    048f    ENTR    0476
+ENTS    0483    EO1     0574    EOF     0573    EOFP    102b    EOR     0067
+EQU1    0775    EQU2    07fa    EQUL    0503    EQUS    0780    ERAR    0ca8
+ERO1    0cb9    ERRD    0cc7    ERRL    0cc2    ERRM    0c9f    ERRO    0cad
+ERRR    0c81    ERRS    0c8a    ERRU    0c95    ERRV    0c9a    ETRA    017a
+EXEC    0121    FAST    03e6    FBUF    1076    FEET    03f8    FEF     107d
+FELEN   000d    FI1     055a    FI2     056c    FIL30   03b0*   FIL35   03b2
+FILE    033e    FILE0   1024    FILTB   1031*   FIN1    0552    FIND    054c
+FINE    03c9    FOCNT   107d    FOOD    03e3    FOOL    0404    FOOT    03c3
+FOUL    03c5    FOUT    03b9    FREAD   107b    FSE10   0421    FSE15   0444
+FSE20   044e    FSEA    0418    HCON    1074    HOLD    1000    HOTB    024a
+HOUT    023a    IBUF    10c7    IN8     00f6    INCA    015f    INIT2   0056
+INIT3   0061    INITA   0040    INK     00e9    INSP    1072    INSR    04fa
+LCHK    0735    LESS    0518    LF      0113*   LICK    04c1    LINE    04b5
+LIST    05d0    LIST0   05d6    LLAB    0005    LMOV    0580    LODM    0592
+MAXFIL  0006    MAXL    102d    MESS    0460    MLAB    0705    MORE    052b
+MOV23   0382    MPNT    08bf    NBR     0008    NCHR    1095    NCOM    000b
+NEXT    0088    NMLEN   0005    NOLA    1098    NOR1    05c3    NORM    05bd
+NOV1    064f*   NOVR    0649    NUM1    0c77    NUM2    0c7b    NUMS    0c63
+NXT1    0ba1    NXT2    0bab    OBUF    10b2    OCN1    0af5    OCN2    0af8
+OCNT    0ae1    OERR    0b06    OIND    109e    OK      010a*   OP1     0a81
+OP2     0a84    OP4     0adc    OP5     0adf    OPAD    0adb    OPC     071e
+OPC2    0a89*   OPC3    0aa5*   OPCD    0a65    OPRD    109a    OPRI    109c
+ORG1    0760    ORG2    080c    OTAB    0927    OUT8    0103    P1      0d9c
+PABL    07ad*   PAG1    0335    PAGEMOV 0322    PAS1    06dc    PAS2    0793
+PASI    1094    PNTR    1096    PROC    0d8f    PSEU    0b0e    PSU1    0744
+PSU2    07c8    READ    0080    RES1    0788    RES2    07e1    RES21   07ed
+RMOV    0589    ROOM    0378    RTAB    0b60    SBL1    0910    SBL2    0914
+SBLK    090d    SCNT    108e    SCRN    027a    SEAR    0153    SEN1    0c5d
+SEND    0c53    SEOF    04f2*   SIGN    1099    SLA1    0b44    SLA2    0b5a
+SLA3    0b5d    SLAB    0b20    SSTR    0c0f    STOM    059a    SWAP    0390
+SWAPS   038b    SWCH    00ff*   SYMT    111a    TABA    1090    TEMP    109d
+TEST    0363    TTI     0002    TTO     0002    TTS     0003    TTYDA   0002
+TTYTR   0001    TY31    0855    TY32    0858    TY41    0881    TY55    08a0
+TY56    08ad    TY6     08de    TYP1    082d    TYP2    0831    TYP3    0844
+TYP4    0863    TYP5    0898    TYP6    08ce    TYS6    08e1    VAL1    0189
+VAL2    01a4    VAL3    01b4    VAL4    01b6    VAL5    01c4    VALC    0173
+VCHK    0300    WHA1    045d    WHAT    045a    ZBU1    016c    ZBUF    0166
+ZERO    053b

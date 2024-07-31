@@ -30,14 +30,17 @@
  * 03-OCT-2019 (Mike Douglas) Original
  */
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+
+#include "simbdos.h"
 
 /* BDOS Equates */
 

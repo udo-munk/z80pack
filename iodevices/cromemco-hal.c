@@ -10,7 +10,7 @@
  *
  */
 
-#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,45 +19,50 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
+#include "simio.h"
+
 #include "unix_terminal.h"
 #include "unix_network.h"
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
 #endif
+#include "cromemco-hal.h"
+
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #define LOG_LOCAL_LEVEL LOG_WARN
 #include "log.h"
-
-#include "cromemco-hal.h"
-
 static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
 
-int null_alive(int dev) {
+static int null_alive(int dev) {
     UNUSED(dev);
 
     return 1; /* NULL is always alive */
 }
-int null_dead(int dev) {
+#if !defined(HAS_NETSERVER) || !defined(HAS_MODEM)
+static int null_dead(int dev) {
     UNUSED(dev);
 
     return 0; /* NULL is always dead */
 }
-void null_status(int dev, BYTE *stat) {
+#endif
+static void null_status(int dev, BYTE *stat) {
     UNUSED(dev);
     UNUSED(stat);
 
     return;
 }
-int null_in(int dev) {
+static int null_in(int dev) {
     UNUSED(dev);
 
     return -1;
 }
-void null_out(int dev, BYTE data) {
+static void null_out(int dev, BYTE data) {
     UNUSED(dev);
     UNUSED(data);
 
@@ -67,7 +72,7 @@ void null_out(int dev, BYTE data) {
 /* -------------------- WEBTTY HAL -------------------- */
 
 #ifdef HAS_NETSERVER
-int net_tty_alive(int dev) {
+static int net_tty_alive(int dev) {
     if (n_flag) {
         // LOG(TAG, "WEBTTY %d: %d\r\n", dev, net_device_alive(dev));
         /* WEBTTY is only alive if websocket is connected */
@@ -76,7 +81,7 @@ int net_tty_alive(int dev) {
         return 0;
     }
 }
-void net_tty_status(int dev, BYTE *stat) {
+static void net_tty_status(int dev, BYTE *stat) {
     *stat &= (BYTE)(~3);
     if (n_flag) {
         if (net_device_poll((net_device_t) dev)) {
@@ -85,14 +90,14 @@ void net_tty_status(int dev, BYTE *stat) {
         *stat |= 1;
     }
 }
-int net_tty_in(int dev) {
+static int net_tty_in(int dev) {
     if (n_flag) {
         return net_device_get((net_device_t) dev);
     } else {
         return -1;
     }
 }
-void net_tty_out(int dev, BYTE data) {
+static void net_tty_out(int dev, BYTE data) {
     if (n_flag) {
         net_device_send((net_device_t) dev, (char *)&data, 1);
     }
@@ -101,12 +106,12 @@ void net_tty_out(int dev, BYTE data) {
 
 /* -------------------- STDIO HAL -------------------- */
 
-int stdio_alive(int dev) {
+static int stdio_alive(int dev) {
     UNUSED(dev);
 
     return 1; /* STDIO is always alive */
 }
-void stdio_status(int dev, BYTE *stat) {
+static void stdio_status(int dev, BYTE *stat) {
     struct pollfd p[1];
 
     UNUSED(dev);
@@ -127,7 +132,7 @@ void stdio_status(int dev, BYTE *stat) {
     *stat |= 1;
 
 }
-int stdio_in(int dev) {
+static int stdio_in(int dev) {
     int data;
     struct pollfd p[1];
 
@@ -140,7 +145,7 @@ again:
     p[0].revents = 0;
     poll(p, 1, 0);
     if (!(p[0].revents & POLLIN))
-        return (-1);
+        return -1;
 
     if (read(fileno(stdin), &data, 1) == 0) {
         /* try to reopen tty, input redirection exhausted */
@@ -152,9 +157,9 @@ again:
 
     return data;
 }
-void stdio_out(int dev, BYTE data) {
+static void stdio_out(int dev, BYTE data) {
     UNUSED(dev);
-    
+
 again:
     if (write(fileno(stdout), (char *) &data, 1) != 1) {
         if (errno == EINTR) {
@@ -169,11 +174,11 @@ again:
 
 /* -------------------- SOCKET SERVER HAL -------------------- */
 
-int scktsrv_alive(int dev) {
+static int scktsrv_alive(int dev) {
 
-	return (ncons[dev].ssc); /* SCKTSRV is alive if there is an open socket */
+	return ncons[dev].ssc; /* SCKTSRV is alive if there is an open socket */
 }
-void scktsrv_status(int dev, BYTE *stat) {
+static void scktsrv_status(int dev, BYTE *stat) {
 
     struct pollfd p[1];
 
@@ -197,13 +202,13 @@ void scktsrv_status(int dev, BYTE *stat) {
 		*stat = 0;
 	}
 }
-int scktsrv_in(int dev) {
+static int scktsrv_in(int dev) {
     BYTE data, dummy;
 	struct pollfd p[1];
 
 	/* if not connected return last */
 	if (ncons[dev].ssc == 0)
-		return (-1);
+		return -1;
 
 	/* if no input waiting return last */
 	p[0].fd = ncons[dev].ssc;
@@ -211,19 +216,19 @@ int scktsrv_in(int dev) {
 	p[0].revents = 0;
 	poll(p, 1, 0);
 	if (!(p[0].revents & POLLIN))
-		return (-1);
+		return -1;
 
 	if (read(ncons[dev].ssc, &data, 1) != 1) {
         if ((errno == EAGAIN) || (errno == EINTR)) {
             /* EOF, close socket and return last */
             close(ncons[dev].ssc);
             ncons[dev].ssc = 0;
-            return (-1);
+            return -1;
         } else {
             LOGE(TAG, "can't read tcpsocket %d data", dev);
             cpu_error = IOERROR;
             cpu_state = STOPPED;
-            return (0);
+            return 0;
         }
 	}
 
@@ -236,7 +241,7 @@ int scktsrv_in(int dev) {
 
     return data;
 }
-void scktsrv_out(int dev, BYTE data) {
+static void scktsrv_out(int dev, BYTE data) {
 
 	/* return if socket not connected */
 	if (ncons[dev].ssc == 0)
@@ -259,12 +264,12 @@ again:
 #ifdef HAS_MODEM
 #include "generic-at-modem.h"
 
-int modem_alive(int dev) {
+static int modem_alive(int dev) {
     UNUSED(dev);
 
     return modem_device_alive(0);
 }
-void modem_status(int dev, BYTE *stat) {
+static void modem_status(int dev, BYTE *stat) {
     UNUSED(dev);
 
     *stat &= (BYTE)(~3);
@@ -273,12 +278,12 @@ void modem_status(int dev, BYTE *stat) {
     }
     *stat |= 1;
 }
-int modem_in(int dev) {
+static int modem_in(int dev) {
     UNUSED(dev);
 
     return modem_device_get(0);
 }
-void modem_out(int dev, BYTE data){
+static void modem_out(int dev, BYTE data){
     UNUSED(dev);
 
     modem_device_send(0, (char) data);
@@ -358,12 +363,12 @@ static void hal_init(void) {
 
     /**
      *  Initialize HAL with default configuration, as follows:
-     * 
+     *
      *      TUART0.deviceA.device=WEBTTY,STDIO
      *      TUART1.deviceA.device=SCKTSRV1,WEBTTY2
      *      TUART1.deviceB.device=SCKTSRV2,WEBTTY3
-     * 
-     * Notes: 
+     *
+     * Notes:
      *      - all ports end with NULL and that is always alive
      *      - the first HAL device in the list that is alive will service the request
      */
@@ -374,7 +379,7 @@ static void hal_init(void) {
     tuart[1][0] = devices[SCKTSRV1DEV];
     tuart[1][1] = devices[WEBTTY2DEV];
     tuart[1][2] = devices[NULLDEV];
-    
+
     tuart[2][0] = devices[SCKTSRV2DEV];
     tuart[2][1] = devices[WEBTTY3DEV];
     tuart[2][2] = devices[NULLDEV];
@@ -475,7 +480,7 @@ next:
     if (tuart[dev][p].fallthrough) {
         p++;
         goto next;
-    }        
+    }
 }
 
 int hal_alive(tuart_port_t dev) {
@@ -484,6 +489,6 @@ int hal_alive(tuart_port_t dev) {
     while(!tuart[dev][p].alive(tuart[dev][p].device_id)) { /* Find the first device that is alive */
         p++;
     }
-	
+
 	return tuart[dev][p].name?1:0; /* return "alive" (true) when not the NULL device */
 }

@@ -13,9 +13,12 @@
 #ifndef CROMEMCO_88CCC_INC
 #define CROMEMCO_88CCC_INC
 
-extern void cromemco_88ccc_ctrl_a_out(BYTE);
-extern void cromemco_88ccc_ctrl_b_out(BYTE);
-extern void cromemco_88ccc_ctrl_c_out(BYTE);
+#include "sim.h"
+#include "simdefs.h"
+
+extern void cromemco_88ccc_ctrl_a_out(BYTE data);
+extern void cromemco_88ccc_ctrl_b_out(BYTE data);
+extern void cromemco_88ccc_ctrl_c_out(BYTE data);
 extern BYTE cromemco_88ccc_ctrl_a_in(void);
 
-#endif
+#endif /* !CROMEMCO_88CCC_INC */

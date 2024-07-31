@@ -18,6 +18,8 @@
 #include <sys/msg.h>
 #include <string.h>
 
+#include "civetweb.h"
+
 enum net_device {
 	DEV_TTY,
 	DEV_TTY2,
@@ -48,12 +50,12 @@ struct ws_client {
 
 typedef struct ws_client ws_client_t;
 
-extern int net_device_alive(net_device_t);
-extern void net_device_send(net_device_t, char*, int);
-extern int net_device_get(net_device_t);
-extern int net_device_get_data(net_device_t, char *, int);
-extern int net_device_poll(net_device_t);
+extern int net_device_alive(net_device_t device);
 extern void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data));
+extern void net_device_send(net_device_t device, char *msg, int len);
+extern int net_device_get(net_device_t device);
+extern int net_device_get_data(net_device_t device, char *dst, int len);
+extern int net_device_poll(net_device_t device);
 
 /*
 * convenience macros for http output
@@ -86,6 +88,12 @@ struct request {
 
 typedef struct request request_t;
 
-extern request_t *get_request(const HttpdConnection_t *);
+extern request_t *get_request(const HttpdConnection_t *conn);
 
-#endif
+extern int DirectoryHandler(HttpdConnection_t *conn, void *path);
+extern int UploadHandler(HttpdConnection_t *conn, void *path);
+
+extern void stop_net_services (void);
+extern int start_net_services (int port);
+
+#endif /* !NETSRV_INC */

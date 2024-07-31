@@ -99,22 +99,27 @@ int main(void)
 	/* read BIOS from bios.bin and write it to disk in drive A */
 	i = 0;
 	while ((n = read(fd, (char *) sector, 128)) == 128) {
+		if (i == 7) {
+			fputs(DISK ": out of space (7 sectors written)\n",
+			      stderr);
+			exit(EXIT_FAILURE);
+		}
 		if ((n = write(drivea, (char *) sector, 128)) != 128) {
 			fprintf(stderr, DISK ": %s\n",
 				n == -1 ? strerror(errno) : "short write");
 			exit(EXIT_FAILURE);
 		}
 		i++;
-		if (i == 6) {
-			fputs(DISK ": out of space (6 sectors written)",
-			      stderr);
-			exit(EXIT_FAILURE);
-		}
 	}
 	if (n == -1) {
 		perror("bios.bin");
 		exit(EXIT_FAILURE);
 	} else if (n > 0) {
+		if (i == 7) {
+			fputs(DISK ": out of space (7 sectors written)\n",
+			      stderr);
+			exit(EXIT_FAILURE);
+		}
 		memset((char *) &sector[n], 0, 128 - n);
 		if ((n = write(drivea, (char *) sector, 128)) != 128) {
 			fprintf(stderr, DISK ": %s\n",
@@ -125,5 +130,5 @@ int main(void)
 	close(fd);
 
 	close(drivea);
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }

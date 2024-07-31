@@ -17,7 +17,17 @@
 #ifndef PROCTEC_VDM_INC
 #define PROCTEC_VDM_INC
 
-extern void proctec_vdm_out(BYTE);
-extern void proctec_vdm_off(void);
+#include "sim.h"
+#include "simdefs.h"
 
-#endif
+extern int slf;			/* VDM scanlines factor */
+extern char bg_color[];		/* VDM background color */
+extern char fg_color[];		/* VDM foreground color */
+
+extern int proctec_kbd_status;
+extern int proctec_kbd_data;
+
+extern void proctec_vdm_off(void);
+extern void proctec_vdm_out(BYTE data);
+
+#endif /* !PROTEC_VDM_INC */

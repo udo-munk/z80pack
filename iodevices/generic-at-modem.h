@@ -1,10 +1,10 @@
 /**
  * generic-at-modem.h
- * 
+ *
  * Emulation of generic 'AT' modem over TCP/IP sockets (telnet)
  *
  * Copyright (C) 2019-2021 by David McNaughton
- * 
+ *
  * History:
  * 12-SEP-2019	1.0	Initial Release
  * 29-SEP-2019	1.1	Added Answer modes and registers
@@ -17,13 +17,13 @@
 #ifndef GENERIC_AT_MODEM_INC
 #define GENERIC_AT_MODEM_INC
 
-extern int modem_device_alive(int);
-extern int modem_device_poll(int);
-extern int modem_device_get(int);
-extern void modem_device_send(int, char);
-extern int modem_device_carrier(int);
+extern int modem_device_alive(int i);
+extern int modem_device_poll(int i);
+extern int modem_device_get(int i);
+extern void modem_device_send(int i, char data);
+extern int modem_device_carrier(int i);
 extern void modem_device_init(void);
 
 #define DEV_SIO2B 0
 
-#endif
+#endif /* !GENERIC_AT_MODEM_INC */

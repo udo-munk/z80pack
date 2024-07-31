@@ -11,29 +11,31 @@
  *	This module is a Z80 and 8080 disassembler for the Z80-CPU simulator
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "memsim.h"
+#include "simmem.h"
+#include "simdis.h"
 
 #ifdef WANT_ICE
 
 /*
  *	Forward declarations
  */
-static int opout(const char *, WORD);
-static int nout(const char *, WORD);
-static int nnout(const char *, WORD);
+static int opout(const char *s, WORD a);
+static int nout(const char *s, WORD a);
+static int nnout(const char *s, WORD a);
 
 #ifndef EXCLUDE_Z80
-static int iout(const char *, WORD);
-static int rout(const char *, WORD);
-static int inout(const char *, WORD);
-static int cbop(const char *, WORD);
-static int edop(const char *, WORD);
-static int ddfd(const char *, WORD);
+static int iout(const char *s, WORD a);
+static int rout(const char *s, WORD a);
+static int inout(const char *s, WORD a);
+static int cbop(const char *s, WORD a);
+static int edop(const char *s, WORD a);
+static int ddfd(const char *s, WORD a);
 #endif
 
 /*
@@ -546,7 +548,7 @@ int disass(WORD addr)
 	fputs(Disass_Str, stdout);
 #endif
 
-	return (len);
+	return len;
 }
 
 /*
@@ -557,7 +559,7 @@ static int opout(const char *s, WORD a)
 	UNUSED(a);
 
 	strcpy(Disass_Str, s);
-	return (1);
+	return 1;
 }
 
 /*
@@ -566,7 +568,7 @@ static int opout(const char *s, WORD a)
 static int nout(const char *s, WORD a)
 {
 	sprintf(Disass_Str, "%s%02X", s, getmem(a + 1));
-	return (2);
+	return 2;
 }
 
 /*
@@ -578,7 +580,7 @@ static int nnout(const char *s, WORD a)
 
 	i = getmem(a + 1) + (getmem(a + 2) << 8);
 	sprintf(Disass_Str, "%s%04X", s, i);
-	return (3);
+	return 3;
 }
 
 #ifndef EXCLUDE_Z80
@@ -589,7 +591,7 @@ static int nnout(const char *s, WORD a)
 static int iout(const char *s, WORD a)
 {
 	sprintf(Disass_Str, s, getmem(a + 1));
-	return (2);
+	return 2;
 }
 
 /*
@@ -598,7 +600,7 @@ static int iout(const char *s, WORD a)
 static int rout(const char *s, WORD a)
 {
 	sprintf(Disass_Str, "%s%04X", s, a + (SBYTE) getmem(a + 1) + 2);
-	return (2);
+	return 2;
 }
 
 /*
@@ -610,7 +612,7 @@ static int inout(const char *s, WORD a)
 
 	i = getmem(a + 1) + (getmem(a + 2) << 8);
 	sprintf(Disass_Str, s, i);
-	return (3);
+	return 3;
 }
 
 /*
@@ -629,7 +631,7 @@ static int cbop(const char *s, WORD a)
 	else
 		sprintf(Disass_Str, "%s\t%c,%s",
 			bitins[b2 >> 6], ((b2 >> 3) & 7) + '0', reg[b2 & 7]);
-	return (2);
+	return 2;
 }
 
 /*
@@ -655,7 +657,7 @@ static int edop(const char *s, WORD a)
 		len = (*optabed_5[b2].fun)(optabed_5[b2].text, a + 1);
 	} else						/* undocumented */
 		strcpy(Disass_Str, "NOP*");
-	return (len + 1);
+	return len + 1;
 }
 
 /*
@@ -687,65 +689,65 @@ static int ddfd(const char *s, WORD a)
 		switch (b2) {
 		case 0x09:
 			sprintf(Disass_Str, "ADD\t%s,BC", ireg[6]);
-			return (2);
+			return 2;
 		case 0x19:
 			sprintf(Disass_Str, "ADD\t%s,DE", ireg[6]);
-			return (2);
+			return 2;
 		case 0x21:
 			sprintf(Disass_Str, "LD\t%s,%04X", ireg[6],
 				getmem(a + 2) + (getmem(a + 3) << 8));
-			return (4);
+			return 4;
 		case 0x22:
 			sprintf(Disass_Str, "LD\t(%04X),%s",
 				getmem(a + 2) + (getmem(a + 3) << 8), ireg[6]);
-			return (4);
+			return 4;
 		case 0x23:
 			sprintf(Disass_Str, "INC\t%s", ireg[6]);
-			return (2);
+			return 2;
 		case 0x24:				/* undocumented */
 			sprintf(Disass_Str, "INC*\t%sH", ireg[6]);
-			return (2);
+			return 2;
 		case 0x25:				/* undocumented */
 			sprintf(Disass_Str, "DEC*\t%sH", ireg[6]);
-			return (2);
+			return 2;
 		case 0x26:				/* undocumented */
 			sprintf(Disass_Str, "LD*\t%sH,%02X", ireg[6],
 				getmem(a + 2));
-			return (3);
+			return 3;
 		case 0x29:
 			sprintf(Disass_Str, "ADD\t%s,%s", ireg[6], ireg[6]);
-			return (2);
+			return 2;
 		case 0x2a:
 			sprintf(Disass_Str, "LD\t%s,(%04X)", ireg[6],
 				getmem(a + 2) + (getmem(a + 3) << 8));
-			return (4);
+			return 4;
 		case 0x2b:
 			sprintf(Disass_Str, "DEC\t%s", ireg[6]);
-			return (2);
+			return 2;
 		case 0x2c:				/* undocumented */
 			sprintf(Disass_Str, "INC*\t%sL", ireg[6]);
-			return (2);
+			return 2;
 		case 0x2d:				/* undocumented */
 			sprintf(Disass_Str, "DEC*\t%sL", ireg[6]);
-			return (2);
+			return 2;
 		case 0x2e:				/* undocumented */
 			sprintf(Disass_Str, "LD*\t%sL,%02X", ireg[6],
 				getmem(a + 2));
-			return (3);
+			return 3;
 		case 0x34:
 			if (off == 0)
 				sprintf(Disass_Str, "INC\t(%s)", ireg[6]);
 			else
 				sprintf(Disass_Str, "INC\t(%s%c%02X)",
 					ireg[6], sign, off);
-			return (3);
+			return 3;
 		case 0x35:
 			if (off == 0)
 				sprintf(Disass_Str, "DEC\t(%s)", ireg[6]);
 			else
 				sprintf(Disass_Str, "DEC\t(%s%c%02X)",
 					ireg[6], sign, off);
-			return (3);
+			return 3;
 		case 0x36:
 			if (off == 0)
 				sprintf(Disass_Str, "LD\t(%s),%02X",
@@ -753,19 +755,19 @@ static int ddfd(const char *s, WORD a)
 			else
 				sprintf(Disass_Str, "LD\t(%s%c%02X),%02X",
 					ireg[6], sign, off, getmem(a + 3));
-			return (4);
+			return 4;
 		case 0x39:
 			sprintf(Disass_Str, "ADD\t%s,SP", ireg[6]);
-			return (2);
+			return 2;
 		default:				/* undocumented */
 			strcpy(Disass_Str, "NOP*");
-			return (1);
+			return 1;
 		}
 	} else if (b2 < 0x80) {
 		if (((r1 < 4 || r1 > 6) && (r2 < 4 || r2 > 6))
 		    || (r1 == 6 && r2 == 6)) {		/* undocumented */
 			strcpy(Disass_Str, "NOP*");
-			return (1);
+			return 1;
 		} else if (r1 == 6) {
 			if (off == 0)
 				sprintf(Disass_Str, "LD\t(%s),%s",
@@ -773,7 +775,7 @@ static int ddfd(const char *s, WORD a)
 			else
 				sprintf(Disass_Str, "LD\t(%s%c%02X),%s",
 					ireg[r1], sign, off, reg[r2]);
-			return (3);
+			return 3;
 		} else if (r2 == 6) {
 			if (off == 0)
 				sprintf(Disass_Str, "LD\t%s,(%s)",
@@ -781,15 +783,15 @@ static int ddfd(const char *s, WORD a)
 			else
 				sprintf(Disass_Str, "LD\t%s,(%s%c%02X)",
 					reg[r1], ireg[r2], sign, off);
-			return (3);
+			return 3;
 		} else {				/* undocumented */
 			sprintf(Disass_Str, "LD*\t%s,%s", ireg[r1], ireg[r2]);
-			return (2);
+			return 2;
 		}
 	} else if (b2 < 0xc0) {
 		if (r2 < 4 || r2 > 6) {			/* undocumented */
 			strcpy(Disass_Str, "NOP*");
-			return (1);
+			return 1;
 		} else if (r2 == 6) {
 			if (off == 0)
 				sprintf(Disass_Str, "%s(%s)", aluins[r1],
@@ -797,10 +799,10 @@ static int ddfd(const char *s, WORD a)
 			else
 				sprintf(Disass_Str, "%s(%s%c%02X)", aluins[r1],
 					ireg[r2], sign, off);
-			return (3);
+			return 3;
 		} else {				/* undocumented */
 			sprintf(Disass_Str, "%s%s", aluinsu[r1], ireg[r2]);
-			return (2);
+			return 2;
 		}
 	} else {
 		switch (b2) {
@@ -870,25 +872,25 @@ static int ddfd(const char *s, WORD a)
 						ireg[6], sign, off,
 						reg[b4 & 7]);
 			}
-			return (4);
+			return 4;
 		case 0xe1:
 			sprintf(Disass_Str, "POP\t%s", ireg[6]);
-			return (2);
+			return 2;
 		case 0xe3:
 			sprintf(Disass_Str, "EX\t(SP),%s", ireg[6]);
-			return (2);
+			return 2;
 		case 0xe5:
 			sprintf(Disass_Str, "PUSH\t%s", ireg[6]);
-			return (2);
+			return 2;
 		case 0xe9:
 			sprintf(Disass_Str, "JP\t(%s)", ireg[6]);
-			return (2);
+			return 2;
 		case 0xf9:
 			sprintf(Disass_Str, "LD\tSP,%s", ireg[6]);
-			return (2);
+			return 2;
 		default:				/* undocumented */
 			strcpy(Disass_Str, "NOP*");
-			return (1);
+			return 1;
 		}
 	}
 }

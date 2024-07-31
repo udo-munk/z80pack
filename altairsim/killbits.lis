@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
@@ -11,7 +11,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        8      8 ;          ARE IN THE DOWN POSITION.
                        9      9 ;
                       10     10         ORG     0
-                      11     11 
+                      11     11
 0000  21 00 00        12     12         LXI     H,0             ;INITIALIZE COUNTER
 0003  16 80           13     13         MVI     D,080H          ;SET UP INITIAL DISPLAY BIT
 0005  01 0e 00        14     14         LXI     B,0EH           ;HIGHER VALUE = FASTER
@@ -26,9 +26,9 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
 0013  0f              23     23         RRC                     ;ROTATE DISPLAY RIGHT ONE BIT
 0014  57              24     24         MOV     D,A             ;MOVE DATA TO DISPLAY REG
 0015  c3 08 00        25     25         JMP     BEG             ;REPEAT SEQUENCE
-                      26     26 
+                      26     26
 0018                  27     27         END
 
 Symbol table
 
-BEG 0008    
+BEG 0008

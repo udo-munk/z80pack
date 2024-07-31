@@ -19,9 +19,11 @@
 #define FAST_BLOCK	/* much faster but not accurate Z80 block instr. */
 
 /*#define WANT_ICE*/	/* attach ICE to machine */
+#ifdef WANT_ICE
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
 /*#define SBSIZE  10*/	/* no breakpoints */
+#endif
 
 #define HAS_DISKS	/* uses disk images */
 /*#define HAS_CONFIG*/	/* has no configuration file */
@@ -32,21 +34,6 @@
 #define TCPASYNC	/* tcp/ip server can use async I/O */
 /*#define CNETDEBUG*/	/* client network protocol debugger */
 /*#define SNETDEBUG*/	/* server network protocol debugger */
-
-extern void sleep_us(long);
-#define SLEEP_US(t)	sleep_us(t)
-extern void sleep_ms(int);
-#define SLEEP_MS(t)	sleep_ms(t)
-
-/*
- *	Structure for the disk images
- */
-struct dskdef {
-	const char *fn;			/* filename */
-	int *fd;			/* file descriptor */
-	unsigned int tracks;		/* number of tracks */
-	unsigned int sectors;		/* number of sectors */
-};
 
 /*
  *	The following defines may be modified and activated by
@@ -59,6 +46,4 @@ struct dskdef {
 #define USR_CPR	"Copyright (C) 20xx by XYZ"
 */
 
-#include "simcore.h"
-
-#endif
+#endif /* !SIM_INC */

@@ -6,24 +6,15 @@
  * Copyright (C) 2022-2024 Thomas Eberhardt
  */
 
+#ifndef SIMGLB_INC
+#define SIMGLB_INC
+
 /*
  *	Declaration of variables in simglb.c
  */
 
-#ifndef SIMGLB_INC
-#define SIMGLB_INC
-
-typedef uint64_t Tstates_t;	/* uint64 for counting T-states */
-typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
-	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
-
-extern void start_bus_request(BusDMA_t, Tstates_t (*)(BYTE));
-extern void end_bus_request(void);
-
-extern void (*ice_before_go)(void);
-extern void (*ice_after_go)(void);
-extern void (*ice_cust_cmd)(char *, WORD *);
-extern void (*ice_cust_help)(void);
+#include "sim.h"
+#include "simdefs.h"
 
 extern int	cpu;
 
@@ -62,28 +53,17 @@ extern BusDMA_t bus_mode;
 extern Tstates_t (*dma_bus_master)(BYTE);
 extern int	tmax, cpu_needed;
 
-#ifdef HISIZE
-extern struct	history his[];
-extern int	h_next, h_flag;
-#endif
-
-#ifdef SBSIZE
-extern struct	softbreak soft[];
-extern int	sb_next;
-#endif
-
-#ifdef WANT_TIM
-extern Tstates_t t_states_s, t_states_e;
-extern int	t_flag;
-extern WORD	t_start, t_end;
-#endif
-
 #ifdef FRONTPANEL
 extern uint64_t fp_clock;
 extern float	fp_fps;
 extern WORD 	fp_led_address;
 extern BYTE 	fp_led_data;
 extern WORD 	address_switch;
+extern BYTE 	fp_led_output;
+#endif
+#ifdef SIMPLEPANEL
+extern WORD 	fp_led_address;
+extern BYTE 	fp_led_data;
 extern BYTE 	fp_led_output;
 #endif
 
@@ -102,20 +82,20 @@ extern int	F_flag;
 extern int	n_flag;
 #endif
 
-extern char	xfn[];
+extern char	xfn[MAX_LFN];
 #ifdef HAS_DISKS
-extern char	*diskdir, diskd[];
+extern char	*diskdir, diskd[MAX_LFN];
 #endif
 #ifdef CONFDIR
-extern char	confdir[];
+extern char	confdir[MAX_LFN];
 #endif
 #ifdef HAS_CONFIG
-extern char	conffn[];
-extern char	rompath[];
+extern char	conffn[MAX_LFN];
+extern char	rompath[MAX_LFN];
 #endif
 
 #if !defined(ALT_I8080) || !defined(ALT_Z80)
-extern const char parity[];
+extern const char parity[256];
 #endif
 
 #endif /* !SIMGLB_INC */

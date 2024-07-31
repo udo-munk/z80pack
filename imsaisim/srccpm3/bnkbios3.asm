@@ -1,6 +1,6 @@
 	TITLE	'CP/M 3 banked BIOS for IMSAI 8080'
 ;
-;	Copyright (C) 2019,2020 by Udo Munk
+;	Copyright (C) 2019-2024 by Udo Munk
 ;
 ; History:
 ; 23-OCT-2019 first public release
@@ -10,6 +10,7 @@
 ; 01-NOV-2019 add more complete character device mode byte
 ; 17-NOV-2019 handle result codes from FIF FDC
 ; 01-APR-2020 moved RTC ports
+; 15-JUL-2024 fixed bug, FCB one byte short
 ;
 WARM	EQU	0		; BIOS warm start
 BDOS	EQU	5		; BDOS entry
@@ -269,6 +270,7 @@ CHRTBL:	DB	'TTY1  '
 ;
 CCPFCB:	DB	1,'CCP     COM',0,0,0,0
 	DB	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CCPCR:	DB	0
 CCPREC:	DB	0,0,0
 ;
 ;	BIOS error messages
@@ -285,8 +287,8 @@ STACK:
 	DSEG
 ;
 SIGNON:	DB	13,10
-	DB	'IMSAI 8080 banked BIOS V1.7,',13,10
-	DB	'Copyright (C) 2019,2020 Udo Munk',13,10,13,10
+	DB	'IMSAI 8080 banked BIOS V1.8,',13,10
+	DB	'Copyright (C) 2019-2024 Udo Munk',13,10,13,10
 	DB	0
 ;
 ;	get control from cold start loader
@@ -354,7 +356,6 @@ WBOOT:	LXI	SP,STACK
 	CALL	SELMEM
 ;
 	MVI	A,0C3H		; JMP instruction
-
 	STA	WARM
 	LXI	H,WBOOTE	; warm boot entry point
 	SHLD	WARM+1
@@ -363,9 +364,12 @@ WBOOT:	LXI	SP,STACK
 	SHLD	BDOS+1
 ;
 	XRA	A		; initialize FCB for CCP
+	STA	CCPFCB+12
 	STA	CCPFCB+15
+	STA	CCPCR
 	STA	CCPREC
 	STA	CCPREC+1
+	STA	CCPREC+2
 	LXI	D,CCPFCB	; open file CCP.COM
 	MVI	C,OPEN
 	CALL	BDOS
@@ -594,7 +598,7 @@ AUXI4:	JMP	AUXIN		; no device ready, try again
 ;
 ;	auxiliary output status
 ;
-AUXOST:	LHLD	@aovec		; get auxiliary  out vector
+AUXOST:	LHLD	@aovec		; get auxiliary out vector
 	MVI	A,80H		; test for device 0
 	ANA	H
 	JNZ	AUXOS1		; if not set try next

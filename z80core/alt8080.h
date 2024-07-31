@@ -27,11 +27,6 @@
  */
 
 {
-
-	extern BYTE io_in(BYTE, BYTE);
-	extern void io_out(BYTE, BYTE, BYTE);
-	extern uint64_t get_clock_us(void);
-
 #define H_SHIFT		4	/* H_FLAG shift */
 #define C_SHIFT		0	/* C_FLAG shift */
 
@@ -127,6 +122,9 @@
 		if (F_flag)
 			addr_leds(BC);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = BC;
+#endif
 		BC++;
 		t++;
 		break;
@@ -189,6 +187,9 @@
 		if (F_flag)
 			addr_leds(BC);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = BC;
+#endif
 		BC--;
 		t++;
 		break;
@@ -231,6 +232,9 @@
 		if (F_flag)
 			addr_leds(DE);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = DE;
+#endif
 		DE++;
 		t++;
 		break;
@@ -271,6 +275,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(DE);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = DE;
 #endif
 		DE--;
 		t++;
@@ -316,6 +323,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(HL);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = HL;
 #endif
 		HL++;
 		t++;
@@ -370,6 +380,9 @@
 		if (F_flag)
 			addr_leds(HL);
 #endif
+#ifdef SIMPLEPANEL
+		fp_led_address = HL;
+#endif
 		HL--;
 		t++;
 		break;
@@ -410,6 +423,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(SP);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = SP;
 #endif
 		SP++;
 		t++;
@@ -455,6 +471,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(SP);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = SP;
 #endif
 		SP--;
 		t++;
@@ -738,7 +757,7 @@
 				/* else wait for INT or user interrupt */
 				while ((int_int == 0) &&
 				       (cpu_state == CONTIN_RUN)) {
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 				}
 			}
 #ifdef BUS_8080
@@ -760,7 +779,7 @@
 				while (!(cpu_state & RESET)) {
 					fp_clock++;
 					fp_sampleData();
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					if (cpu_error != NONE)
 						break;
 				}
@@ -771,7 +790,7 @@
 				       !(cpu_state & RESET)) {
 					fp_clock++;
 					fp_sampleData();
-					SLEEP_MS(1);
+					sleep_for_ms(1);
 					if (cpu_error != NONE)
 						break;
 				}
@@ -1506,6 +1525,9 @@
 #ifdef FRONTPANEL
 		if (F_flag)
 			addr_leds(HL);
+#endif
+#ifdef SIMPLEPANEL
+		fp_led_address = HL;
 #endif
 		SP = HL;
 		t++;

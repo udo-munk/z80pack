@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ; **************************************************************
@@ -17,13 +17,13 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                       14     14 ;               10/11/08
                       15     15 ;
                       16     16 ; **************************************************************
-                      17     17 
+                      17     17
 fc00  =               18     18 STACK   EQU     0FC00H          ;MUST BE VALID RAM, NOT ROM!
 0010  =               19     19 CONSTAT EQU     020Q            ;IO STATUS PORT
 0011  =               20     20 CONDATA EQU     021Q            ;IO DATA PORT
-                      21     21 
+                      21     21
                       22     22         ORG     0FD00H          ;ROM BASED CODE
-                      23     23 
+                      23     23
 fd00  3e 03           24     24 MON:    MVI     A,3             ;RESET 2SIO BOARD
 fd02  d3 10           25     25         OUT     CONSTAT
 fd04  3e 11           26     26         MVI     A,021Q          ;INITIALIZE 2SIO BOARD
@@ -40,13 +40,13 @@ fd1e  fe 44           36     36         CPI     'D'
 fd20  ca 54 fd        37     37         JZ      DMP             ;DO MEMORY DUMP
 fd23  fe 4a           38     38         CPI     'J'
 fd25  c2 08 fd        39     39         JNZ     ENTER
-                      40     40 
+                      40     40
                       41     41 ; **************************************************************
                       42     42 ; GET JUMP ADDRESS, LOAD TO PC, AND GO
                       43     43 ; **************************************************************
 fd28  cd a0 fd        44     44         CALL    OCTL6           ;GET 6 OCTAL DIGITS IN HL
 fd2b  e9              45     45         PCHL
-                      46     46 
+                      46     46
                       47     47 ; **************************************************************
                       48     48 ; MEMORY FUNCTION - DISPLAY AND/OR ALTER MEMORY
                       49     49 ; **************************************************************
@@ -69,7 +69,7 @@ fd49  ca 32 fd        65     65         JZ      CONT            ;IF BYTE OKAY, K
 fd4c  3e 3f           66     66 ERR:    MVI     A,'?'           ;WE HAVE A PROBLEM
 fd4e  cd f2 fd        67     67         CALL    OUTCHK          ;PRINT ERROR CHAR TO CONSOLE
 fd51  c3 08 fd        68     68         JMP     ENTER
-                      69     69 
+                      69     69
                       70     70 ; **************************************************************
                       71     71 ; DUMP FUNCTION - DISPLAY DATA BETWEEN TWO SPECIFIED MEM LOCS
                       72     72 ; **************************************************************
@@ -107,7 +107,7 @@ fd8e  13             103    103         INX     D               ;NEXT MEMORY LOC
 fd8f  0d             104    104         DCR     C               ;CURRENT PRINT LOCATION COUNTER
 fd90  c2 6d fd       105    105         JNZ     DO20            ;16 LOCATIONS PRINTED YET?              
 fd93  c3 5f fd       106    106         JMP     DCONT           ;NEXT LINE IF 16 LOCATIONS DONE
-                     107    107 
+                     107    107
                      108    108 ; **************************************************************
                      109    109 ; PRINT CARRIAGE RETURN AND LINE FEED
                      110    110 ; **************************************************************
@@ -115,7 +115,7 @@ fd96  3e 0d          111    111 CRLF:   MVI     A,015Q
 fd98  cd f2 fd       112    112         CALL    OUTCHK          ;PRINT CHAR TO CONSOLE
 fd9b  3e 0a          113    113         MVI     A,012Q
 fd9d  c3 f2 fd       114    114         JMP     OUTCHK          ;PRINT CHAR TO CONSOLE
-                     115    115 
+                     115    115
                      116    116 ; **************************************************************
                      117    117 ; BUILD 3/6 OCTAL DIGITS IN HL
                      118    118 ; **************************************************************
@@ -141,7 +141,7 @@ fdc0  6f             137    137         MOV     L,A             ;PUT OCTAL IN H
 fdc1  05             138    138         DCR     B               ;MORE DIGITS?
 fdc2  c2 aa fd       139    139         JNZ     AGN
 fdc5  c9             140    140         RET
-                     141    141 
+                     141    141
                      142    142 ; **************************************************************
                      143    143 ; PRINT 3 OR 6 OCTAL DIGITS FROM H OR HL
                      144    144 ; **************************************************************
@@ -164,7 +164,7 @@ fddf  05             160    160         DCR     B
 fde0  c2 d2 fd       161    161         JNZ     NEXT3
 fde3  3e 20          162    162 SPACE:  MVI     A,' '           ;ASCII SPACE CHARACTER
 fde5  c3 f2 fd       163    163         JMP     OUTCHK          ;PRINT CHAR TO CONSOLE
-                     164    164 
+                     164    164
                      165    165 ; **************************************************************
                      166    166 ; INPUT AND ECHO CHARACTER
                      167    167 ; **************************************************************
@@ -183,14 +183,14 @@ fdf9  d2 f5 fd       179    179         JNC     LOOP            ;GET READ STATUS
 fdfc  f1             180    180         POP     PSW
 fdfd  d3 11          181    181         OUT     CONDATA         ;PRINT USER TYPED CHARACTER
 fdff  c9             182    182         RET
-                     183    183 
+                     183    183
 fe00                 184    184         END
 
 Symbol table
 
-AGN     fdaa    CONDATA 0011    CONSTAT 0010    CONT    fd32    CONT1   fd33 
-CRLF    fd96    DAGN    fd8d    DCONT   fd5f    DMP     fd54    DO20    fd6d 
-ENTER   fd08    ERR     fd4c    INCH    fde8    LOOP    fdf5    MEM     fd2c 
-MON     fd00*   NEXT1   fdd6    NEXT3   fdd2    NXT3    fdd3    NXTMEM  fd7e 
-OCTL    fda7    OCTL3   fda5    OCTL6   fda0    OUTCHK  fdf2    PRT3    fdcc 
-PRT6    fdc6    SPACE   fde3    STACK   fc00    
+AGN     fdaa    CONDATA 0011    CONSTAT 0010    CONT    fd32    CONT1   fd33
+CRLF    fd96    DAGN    fd8d    DCONT   fd5f    DMP     fd54    DO20    fd6d
+ENTER   fd08    ERR     fd4c    INCH    fde8    LOOP    fdf5    MEM     fd2c
+MON     fd00*   NEXT1   fdd6    NEXT3   fdd2    NXT3    fdd3    NXTMEM  fd7e
+OCTL    fda7    OCTL3   fda5    OCTL6   fda0    OUTCHK  fdf2    PRT3    fdcc
+PRT6    fdc6    SPACE   fde3    STACK   fc00

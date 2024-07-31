@@ -1,4 +1,4 @@
-Z80/8080-Macro-Assembler  Release 2.0
+Z80/8080-Macro-Assembler  Release 2.1
 
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -440,7 +440,7 @@ c142  c3 38 c1       431    431         JMP     PCUR
                      437    437 ;         VDADD  CURRENT SCREEN ADDRESS
                      438    438 ;         VDAD2  ADDRESS OF CURRENT LINE, CHAR 'C'
                      439    439 ;         VDAD   LINE 'A', CHARACTER POSITION 'C'
-                     440    440 
+                     440    440
 c145  3a 08 c8       441    441 VDADD:  LDA     NCHAR   ;GET CHARACTER POSITION
 c148  4f             442    442         MOV     C,A     ;'C' KEEPS IT
 c149  3a 09 c8       443    443 VDAD2:  LDA     LINE    ;LINE POSITION
@@ -1221,7 +1221,7 @@ c51e  c3 15 c2      1217   1217         JMP     COMN1
                     1218   1218 ;
 c521  45 52 52 4f   1219   1219 ERRM:   DB      'ERROR '
 c525  52 20         1219   1220
-                    1220   1221 
+                    1220   1221
                     1221   1222 ;
                     1222   1223 ;
                     1223   1224 ;              CAT COMMAND
@@ -2138,61 +2138,61 @@ cab4                2132   2133         END
 Symbol table
 
 ADOUT  c3d9    AINP   c022*   ALOAD  c544    AOUT   c01c*   ARET   c1c3*
-ARET1  c1c5    ARET2  c1ca    BACKS  0008    BLANK  0020    BLKOF  0007 
-BLOCK  c823    BOPEN  c5dc    BOT    c80a    BOUT   c3f7    CHAR   c0b8 
-CHRLI  c56d    CLEAR  000b    CLERA  c1dc    CLIN1  c123    CLIN2  c118 
+ARET1  c1c5    ARET2  c1ca    BACKS  0008    BLANK  0020    BLKOF  0007
+BLOCK  c823    BOPEN  c5dc    BOT    c80a    BOUT   c3f7    CHAR   c0b8
+CHRLI  c56d    CLEAR  000b    CLERA  c1dc    CLIN1  c123    CLIN2  c118
 CLINE  c11d*   COMN1  c215    COMND  c218    COMTAB c2bd    CONT   c264*
-COPRC  c26a    CR     000d    CREM   c15f    CRLF   c342    CSET   c576 
-CUR    c0f5    CURET  c1ce    CURSC  c0f3    CUSE2  c5cf    CUSET  c5b9 
-CUTAB  c83c    CX     0018*   DCRC2  c71c    DCRCT  c711    DEFLT  c494 
-DELAY  c7ef    DFLTS  c804    DHCMP  c7d0    DHEAD  c82c    DHLOP  c7d2 
-DISP0  c282    DISP1  c28b    DISPD  c595    DISPT  c287    DLOOP  c3b6 
-DLOP1  c7f2    DLP1   c3c1    DLP1A  c3d0    DOCRC  c7a6    DOWN   001a 
-DSTAT  00c8    DUMP   c3ad    ENLO1  c427    ENLO3  c444    ENLOP  c418 
-ENTER  c414    EOFER  c5fb    EOFW   c627    ERAS1  c0ff    ERAS3  c112 
-ERR1   c46b    ERR2   c46c    ERRIT  c065    ERRM   c521    ERRO1  c070 
-ERROT  c06c    ESC    001b    ESCFL  c80c    ESCS   c187    ESCSP  c190 
-EXEC   c449    EXEC1  c44c    FBUF1  c863    FCBA2  c85c    FCBAS  c855 
+COPRC  c26a    CR     000d    CREM   c15f    CRLF   c342    CSET   c576
+CUR    c0f5    CURET  c1ce    CURSC  c0f3    CUSE2  c5cf    CUSET  c5b9
+CUTAB  c83c    CX     0018*   DCRC2  c71c    DCRCT  c711    DEFLT  c494
+DELAY  c7ef    DFLTS  c804    DHCMP  c7d0    DHEAD  c82c    DHLOP  c7d2
+DISP0  c282    DISP1  c28b    DISPD  c595    DISPT  c287    DLOOP  c3b6
+DLOP1  c7f2    DLP1   c3c1    DLP1A  c3d0    DOCRC  c7a6    DOWN   001a
+DSTAT  00c8    DUMP   c3ad    ENLO1  c427    ENLO3  c444    ENLOP  c418
+ENTER  c414    EOFER  c5fb    EOFW   c627    ERAS1  c0ff    ERAS3  c112
+ERR1   c46b    ERR2   c46c    ERRIT  c065    ERRM   c521    ERRO1  c070
+ERROT  c06c    ESC    001b    ESCFL  c80c    ESCS   c187    ESCSP  c190
+EXEC   c449    EXEC1  c44c    FBUF1  c863    FCBA2  c85c    FCBAS  c855
 FCLOS  c00a*   FDCOM  c291    FDCOU  c28e    FNUMF  c854    FOPEN  c007*
-GCLI0  c227    GCLI1  c232    GCLI2  c25f    GCLI3  c261    GCLIN  c239 
-GOBACK c08f    GOBK   c0a0    GTBYT  c671    GTUN2  c7e8    GTUNT  c7dc 
-HBOUT  c3de    HCONV  c38b*   HCOV1  c39b    HEOU1  c405    HEOUT  c3fc 
-HLEN   0010    HOME   000e    HSPR   c829*   HTYPE  c822    IGNCR  c811 
-INIT   c001*   INLIN  ca64    INPTR  c80e    IOPRC  c026    IPORT  c806 
-ITAB   c309    KDATA  0005    KDR    0001    KREA1  c035    LEFT   0001 
-LF     000a    LFCB   c62f    LFCB1  c63e    LINE   c809    LIST1  c535 
-LLIST  c52d    LOADR  c825    MODE   0000*   NAME   c454    NAME0  c451 
-NAME1  c459    NAOUT  c54c    NCHAR  c808    NCOM   c2a3    NEXT   c0a4 
-NFIL   c480    NLOOP  c566    NUCNT  c810    NULOP  c7b2    NULOT  c350 
-OCHAR  c0bc    OK     c0e5    OPORT  c807    OTAB   c301    OUTH   c410 
-OUTPR  c02e    PARIT  c052    PAROT  c05a    PBACK  c167    PCLOS  c5ff 
+GCLI0  c227    GCLI1  c232    GCLI2  c25f    GCLI3  c261    GCLIN  c239
+GOBACK c08f    GOBK   c0a0    GTBYT  c671    GTUN2  c7e8    GTUNT  c7dc
+HBOUT  c3de    HCONV  c38b*   HCOV1  c39b    HEOU1  c405    HEOUT  c3fc
+HLEN   0010    HOME   000e    HSPR   c829*   HTYPE  c822    IGNCR  c811
+INIT   c001*   INLIN  ca64    INPTR  c80e    IOPRC  c026    IPORT  c806
+ITAB   c309    KDATA  0005    KDR    0001    KREA1  c035    LEFT   0001
+LF     000a    LFCB   c62f    LFCB1  c63e    LINE   c809    LIST1  c535
+LLIST  c52d    LOADR  c825    MODE   0000*   NAME   c454    NAME0  c451
+NAME1  c459    NAOUT  c54c    NCHAR  c808    NCOM   c2a3    NEXT   c0a4
+NFIL   c480    NLOOP  c566    NUCNT  c810    NULOP  c7b2    NULOT  c350
+OCHAR  c0bc    OK     c0e5    OPORT  c807    OTAB   c301    OUTH   c410
+OUTPR  c02e    PARIT  c052    PAROT  c05a    PBACK  c167    PCLOS  c5ff
 PCR    c170    PCUR   c138    PDATA  0002*   PDOWN  c0ef    PDR    0002*
-PERSE  c0f9    PESC   c181    PHEAD  c6a2    PHOME  c109    PLEFT  c134 
-PLF    c175    PLOAD  c6bb    PRIT   c13e    PROMPT c33a    PSCAN  c3a5 
+PERSE  c0f9    PESC   c181    PHEAD  c6a2    PHOME  c109    PLEFT  c134
+PLF    c175    PLOAD  c6bb    PRIT   c13e    PROMPT c33a    PSCAN  c3a5
 PSTOR  c6b2    PTAP1  c6cf    PUP    c12d    PXDR   0004*   RDBLK  c013*
-RDBYT  c00d*   RDNBLK c658*   RETRN  c004*   RFBLK  c6c4    RHEA1  c721 
-RHEAD  c71f    RHED1  c740    RHED2  c742    RIGHT  0013    RT1    c67c 
-RTAP   c6f2    RTAP2  c6f3    RTAPE  c6c7    RTBYT  c642    RTOF1  c70d 
-RTOFF  c70c    SBLK   c359    SBLK1  c35b    SCD    0001*   SCHR   c36c 
-SCHR1  c36e    SCONV  c378    SCROLL c0d0*   SCTS   0020*   SDATA  0001 
-SDR    0001    SDR2   0001    SDSR   0002*   SECOND c1b8    SENSE  00ff 
-SEROT  c047    SETAB  c311    SETCI  c5a1    SETCO  c5a5    SETCR  c5b5 
-SETIN  c599    SETNU  c5b1    SETOT  c59d    SETSP  c590    SETTY  c5a9 
-SETX   c1b0    SETXQ  c5ad    SETY   c1b4    SFE    0008*   SHE1   c381 
+RDBYT  c00d*   RDNBLK c658*   RETRN  c004*   RFBLK  c6c4    RHEA1  c721
+RHEAD  c71f    RHED1  c740    RHED2  c742    RIGHT  0013    RT1    c67c
+RTAP   c6f2    RTAP2  c6f3    RTAPE  c6c7    RTBYT  c642    RTOF1  c70d
+RTOFF  c70c    SBLK   c359    SBLK1  c35b    SCD    0001*   SCHR   c36c
+SCHR1  c36e    SCONV  c378    SCROLL c0d0*   SCTS   0020*   SDATA  0001
+SDR    0001    SDR2   0001    SDSR   0002*   SECOND c1b8    SENSE  00ff
+SEROT  c047    SETAB  c311    SETCI  c5a1    SETCO  c5a5    SETCR  c5b5
+SETIN  c599    SETNU  c5b1    SETOT  c59d    SETSP  c590    SETTY  c5a9
+SETX   c1b0    SETXQ  c5ad    SETY   c1b4    SFE    0008*   SHE1   c381
 SHEX   c37e    SINP   c01f    SIO2D  0013    SIO2S  0012    SOE    0010*
 SOHL   c72f    SOK    0001*   SOUT   c019    SPACE  0020    SPE    0004*
-SPEED  c80b    SREA1  c03e    SROL   c0d4    STAPT  0000    START  c000 
-STAT   c759    STBE   0080    STBE2  0002    STKBD  0004    STRTA  c1d7 
-STRTB  c1f4    STRTC  c1ff    STRTD  c20f    STSPD  c594    STUNT  c49c 
-STUP   c2aa    SYSRAM c800    SYSTP  cbff    TAERR  c510    TAPE1  0080 
-TAPE2  0040    TAPIN  c76c    TAPPT  0006    TASPD  c58a    TBL    c2e2 
-TDATA  0007    TDR    0001    TERE0  c5f8    TERE1  c5f7*   TERE2  c5f6 
-TERR   c702    TFE    0010    THEAD  c81c    TIMER  c09b    TLIST  c527 
-TLOA2  c4af*   TLOA3  c4bb    TLOAD  c4a1    TOE    0008    TOFF   c707 
-TON    c7ed    TREDY  c770*   TSAVE  c4e0    TSPD   c80d    TSRCH  c0a6 
-TTBE   0080    TXEQ   c4a0    UBUF   c5f1*   UIPRT  c800    UOPRT  c802 
-UP     0017    USARE  cab4*   VDAD   c14c    VDAD2  c149    VDADD  c145 
-VDM01  c078    VDMEM  cc00    WFBLK  c779    WHEAD  c7ad    WLOOP  c7c3 
-WRBLK  c016*   WRBYT  c010*   WRTAP  c79a    WRWAT  c79b    WT1    c697 
-WTAP1  c78d    WTAP2  c78e    WTAPE  c77c    WTBL   c7c1    WTBYT  c67f 
-WTLP1  c3f1    WTON   c7eb    XEQAD  c827    
+SPEED  c80b    SREA1  c03e    SROL   c0d4    STAPT  0000    START  c000
+STAT   c759    STBE   0080    STBE2  0002    STKBD  0004    STRTA  c1d7
+STRTB  c1f4    STRTC  c1ff    STRTD  c20f    STSPD  c594    STUNT  c49c
+STUP   c2aa    SYSRAM c800    SYSTP  cbff    TAERR  c510    TAPE1  0080
+TAPE2  0040    TAPIN  c76c    TAPPT  0006    TASPD  c58a    TBL    c2e2
+TDATA  0007    TDR    0001    TERE0  c5f8    TERE1  c5f7*   TERE2  c5f6
+TERR   c702    TFE    0010    THEAD  c81c    TIMER  c09b    TLIST  c527
+TLOA2  c4af*   TLOA3  c4bb    TLOAD  c4a1    TOE    0008    TOFF   c707
+TON    c7ed    TREDY  c770*   TSAVE  c4e0    TSPD   c80d    TSRCH  c0a6
+TTBE   0080    TXEQ   c4a0    UBUF   c5f1*   UIPRT  c800    UOPRT  c802
+UP     0017    USARE  cab4*   VDAD   c14c    VDAD2  c149    VDADD  c145
+VDM01  c078    VDMEM  cc00    WFBLK  c779    WHEAD  c7ad    WLOOP  c7c3
+WRBLK  c016*   WRBYT  c010*   WRTAP  c79a    WRWAT  c79b    WT1    c697
+WTAP1  c78d    WTAP2  c78e    WTAPE  c77c    WTBL   c7c1    WTBYT  c67f
+WTLP1  c3f1    WTON   c7eb    XEQAD  c827

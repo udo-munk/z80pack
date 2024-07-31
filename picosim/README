@@ -1,28 +1,28 @@
-To build you need to have the SDK for RP2040-based devices installed and
-configured. The SDK manual has detailed instructions how to install on
-all major PC platforms, it is available here:
+This is a Raspberry RP2040 research machine I have build on a breadboard.
+For hardware description read:
+
+	z80pack/doc/README-pico.txt
+
+If you don't want to build a machine your self, there are ready fabricated
+systems on PCB available, which also can run the software. I have implemented
+picosim on these:
+
+	https://github.com/udo-munk/Pico-Eval-Board-80
+	https://github.com/udo-munk/RP2040-GEEK-80
+
+
+To build the software you need to have the SDK for RP2040-based devices
+installed and configured. The SDK manual has detailed instructions how
+to install on all major PC platforms, it is available here:
 
 https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html
-
-We are going to use a MicroSD drive for 8080/Z80 code files, disk images
-and configration files. This requires an additional library to talk to
-such devices with SPI. The library is setup as submodule in z80pack,
-if you wish to build this here you need to download the lib. You can
-either clone z80pack with this command:
-
-	git clone --recursive https://github.com/udo-munk/z80pack.git
-
-or if you cloned already without pulling submodules you can add it with:
-
-	cd z80pack
-	git submodule update --init
 
 Now you can build picosim with these commands:
 
 	cd z80pack/picosim
 	mkdir build
 	cd build
-	cmake ..
+	cmake .. -G "Unix Makefiles"
 	make
 
 To clean everything:
@@ -31,15 +31,16 @@ To clean everything:
 	rm -rf build
 
 This machine can be used with Pico and Pico W boards. However, it is setup
-for a Pico board, because with the additional CYW43 library + SPI + FatFS
-+ TinyUSB the system runs out of stack.
+for a Pico board, because with the additional
+CYW43 library + SPI + FatFS + TinyUSB the system runs out of stack.
 To setup for a Pico W comment/uncomment the lines in CMakeLists.txt
 and change the board type in sim.h. This will only work when using
 the GPIO UART.
 
-This is configured now for USB UART to that no additional parts are needed
-to hook up a terminal. If configured for GPIO UART uart0 at pins 1/2 will
-be used, so connect a terminal with TTL/USB adapter or a pico probe there.
+This is configured now for USB UART so that no additional parts are needed
+to hook up a terminal. If configured for GPIO UART connect a TTL/USB
+adatpter or a pico probe to the UART pins for the one configured in
+CMakeLists.txt.
 
 
 Preparing a MicroSD card:
@@ -49,5 +50,4 @@ CODE80
 DISKS80
 
 Into the CODE80 directory copy all the .bin files from src-examples.
-Into the DISKS80 directory copy the CP/M disk images from disks.
-In CONF80 create an empty text file CFG.TXT.
+Into the DISKS80 directory copy the disk images from disks.

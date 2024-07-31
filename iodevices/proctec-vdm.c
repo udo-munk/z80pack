@@ -15,6 +15,7 @@
  * 04-NOV-2019 eliminate usage of mem_base()
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -22,16 +23,21 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "sim.h"
+#include "simdefs.h"
 #include "simglb.h"
-#include "memsim.h"
-#include "log.h"
+#include "simmem.h"
+#include "simport.h"
+
 #include "proctec-vdm-charset.h"
+#include "proctec-vdm.h"
+
+#include "log.h"
+static const char *TAG = "VDM";
 
 #define XOFF 10				/* use some offset inside the window */
 #define YOFF 15				/* for the drawing area */
-
-static const char *TAG = "VDM";
 
 /* X11 stuff */
        int slf = 1;			/* scanlines factor, default no lines */
@@ -115,7 +121,7 @@ static void open_display(void)
 void proctec_vdm_off(void)
 {
 	state = 0;		/* tell refresh thread to stop */
-	SLEEP_MS(50);		/* and wait a bit */
+	sleep_for_ms(50);	/* and wait a bit */
 
 	/* works if X11 with posix threads implemented correct, but ... */
 	if (thread != 0) {
@@ -210,8 +216,6 @@ static void refresh(void)
 /* thread for updating the display */
 static void *update_display(void *arg)
 {
-	extern uint64_t get_clock_us(void);
-
 	uint64_t t1, t2;
 	int tdiff;
 
@@ -239,7 +243,7 @@ static void *update_display(void *arg)
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
 		if ((tdiff > 0) && (tdiff < 33000))
-			SLEEP_MS(33 - (tdiff / 1000));
+			sleep_for_ms(33 - (tdiff / 1000));
 
 		t1 = get_clock_us();
 	}
