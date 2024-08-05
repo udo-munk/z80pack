@@ -30,7 +30,7 @@
 #endif
 
 #define USR_COM "Raspberry Pi Pico Z80/8080 emulator"
-#define USR_REL "1.2"
+#define USR_REL "1.3"
 #define USR_CPR "Copyright (C) 2024 by Udo Munk & Thomas Eberhardt"
 
 #ifndef PRIu64
