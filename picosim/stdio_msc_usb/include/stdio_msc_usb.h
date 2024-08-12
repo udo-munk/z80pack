@@ -16,9 +16,9 @@
  *
  *  Linking this library in the CMake will add USB CDC to the drivers used for standard input/output
  *
- *  It takes control of a lower level IRQ and sets up a periodic background task.
+ *  This library takes control of a lower level IRQ and sets up a periodic background task.
  *
- *  This library also includes (by default) functionality to enable the RP2040 to be reset over the USB interface.
+ *  It also includes (by default) functionality to enable the RP-series microcontroller to be reset over the USB interface.
  */
 
 // PICO_CONFIG: STDIO_MSC_USB_DEFAULT_CRLF, Default state of CR/LF translation for USB output, type=bool, default=PICO_STDIO_DEFAULT_CRLF, group=stdio_msc_usb
@@ -62,6 +62,11 @@
 #define STDIO_MSC_USB_POST_CONNECT_WAIT_DELAY_MS 50
 #endif
 
+// PICO_CONFIG: STDIO_MSC_USB_DEINIT_DELAY_MS, Number of milliseconds to wait before deinitializing stdio_usb, default=110, group=stdio_msc_usb
+#ifndef STDIO_MSC_USB_DEINIT_DELAY_MS
+#define STDIO_MSC_USB_DEINIT_DELAY_MS 110
+#endif
+
 // PICO_CONFIG: STDIO_MSC_USB_RESET_BOOTSEL_ACTIVITY_LED, Optionally define a pin to use as bootloader activity LED when BOOTSEL mode is entered via USB (either VIA_BAUD_RATE or VIA_VENDOR_INTERFACE), type=int, min=0, max=29, group=stdio_msc_usb
 
 // PICO_CONFIG: STDIO_MSC_USB_RESET_BOOTSEL_FIXED_ACTIVITY_LED, Whether the pin specified by STDIO_MSC_USB_RESET_BOOTSEL_ACTIVITY_LED is fixed or can be modified by picotool over the VENDOR USB interface, type=bool, default=0, group=stdio_msc_usb
@@ -90,7 +95,12 @@
 #define STDIO_MSC_USB_RESET_INTERFACE_SUPPORT_RESET_TO_FLASH_BOOT 1
 #endif
 
-// PICO_CONFIG: STDIO_MSC_USB_RESET_RESET_TO_FLASH_DELAY_MS, delays in ms before rebooting via regular flash boot, default=100, group=stdio_msc_usb
+// PICO_CONFIG: STDIO_MSC_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR, If vendor reset interface is included add support for Microsoft OS 2.0 Descriptor, type=bool, default=1, group=stdio_msc_usb
+#ifndef STDIO_MSC_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR
+#define STDIO_MSC_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR 1
+#endif
+
+// PICO_CONFIG: STDIO_MSC_USB_RESET_RESET_TO_FLASH_DELAY_MS, Delay in ms before rebooting via regular flash boot, default=100, group=stdio_msc_usb
 #ifndef STDIO_MSC_USB_RESET_RESET_TO_FLASH_DELAY_MS
 #define STDIO_MSC_USB_RESET_RESET_TO_FLASH_DELAY_MS 100
 #endif
@@ -134,6 +144,13 @@ extern stdio_driver_t stdio_msc_usb;
  *  \return true if the USB CDC was initialized, false if an error occurred
  */
 bool stdio_msc_usb_init(void);
+
+/*! \brief Explicitly deinitialize USB stdio and remove it from the current set of stdin drivers
+ *  \ingroup stdio_msc_usb
+ *
+ *  \return true if the USB CDC was deinitialized, false if an error occurred
+ */
+bool stdio_msc_usb_deinit(void);
 
 /*! \brief Check if there is an active stdio CDC connection to a host
  *  \ingroup stdio_msc_usb

@@ -40,6 +40,13 @@
 #define CFG_TUD_MSC_EP_BUFSIZE  (4096)
 
 // We use a vendor specific interface but with our own driver
+// Vendor driver only used for Microsoft OS 2.0 descriptor
+#if !STDIO_MSC_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR
 #define CFG_TUD_VENDOR            (0)
+#else
+#define CFG_TUD_VENDOR            (1)
+#define CFG_TUD_VENDOR_RX_BUFSIZE  (256)
+#define CFG_TUD_VENDOR_TX_BUFSIZE  (256)
+#endif
 
 #endif
