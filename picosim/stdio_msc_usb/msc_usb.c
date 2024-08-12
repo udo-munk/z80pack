@@ -118,6 +118,14 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start,
 	return true;
 }
 
+// Invoked when we receive the Prevent / Allow Medium Removal command
+bool tud_msc_prevent_allow_medium_removal_cb(uint8_t lun,
+					     uint8_t prohibit_removal,
+					     uint8_t control)
+{
+	return true;
+}
+
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and return number of
 // copied bytes.
@@ -195,10 +203,6 @@ int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16],
 	bool in_xfer = true;
 
 	switch (scsi_cmd[0]) {
-	case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
-		resplen = 0;			// report success
-		break;
-
 	case SCSI_CMD_VERIFY_10:
 		if (msc_ejected)
 			resplen = -1;
