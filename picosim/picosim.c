@@ -45,14 +45,20 @@
 #endif
 
 #include "disks.h"
+#include "rgbled.h"
 
 #define SWITCH_BREAK 15 /* switch we use to interrupt the system */
+#define WS2812_PIN 14	/* pin with the RGB LED */
 
 #define BS  0x08 /* backspace */
 #define DEL 0x7f /* delete */
 
 /* CPU speed */
 int speed = CPU_SPEED;
+
+/* PIO and sm used for RGB LED */
+PIO pio = pio1;
+uint sm;
 
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
@@ -81,6 +87,7 @@ static void gpio_callback(uint gpio, uint32_t events)
 int main(void)
 {
 	char s[2];
+	uint32_t rgb = 0x005500;
 
 	stdio_init_all();	/* initialize stdio */
 #if LIB_STDIO_MSC_USB
@@ -96,21 +103,31 @@ int main(void)
 		printf("CYW43 init failed\n");
 		return -1;
 	}
-#else				/* initialize Pico hardware */
-	gpio_init(LED);		/* configure GPIO for LED output */
-	gpio_set_dir(LED, GPIO_OUT);
 #endif
 
-	gpio_init(SWITCH_BREAK); /* setupt interrupt for break switch */
+	/* setupt interrupt for break switch */
+	gpio_init(SWITCH_BREAK);
 	gpio_set_dir(SWITCH_BREAK, GPIO_IN);
 	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
 					   true, &gpio_callback);
 
+	/* initialize RGB LED */
+	sm = pio_claim_unused_sm(pio, true);
+	uint offset = pio_add_program(pio, &ws2812_program);
+	ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, true);
+	put_pixel(rgb); /* red */
+
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
-	while (!tud_cdc_connected())
-		sleep_ms(100);
+	while (!tud_cdc_connected()) {
+		rgb = rgb - 0x000100;	/* while waiting make */
+		if (rgb == 0)		/* RGB LED fading */
+			rgb = 0x005500;
+		put_pixel(rgb);
+		sleep_ms(50);
+	}
 #endif
+	put_pixel(0x000044); /* blue */
 
 	/* print banner */
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
@@ -136,13 +153,6 @@ int main(void)
 #endif
 
 	exit_disks();		/* stop disk drives */
-
-	/* switch builtin LED on */
-#if PICO == 1
-	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-#else
-	gpio_put(LED, 1);
-#endif
 
 #ifndef WANT_ICE
 	putchar('\n');

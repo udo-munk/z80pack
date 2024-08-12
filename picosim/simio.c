@@ -178,18 +178,8 @@ static void p000_out(BYTE data)
 {
 	if (!data) {
 		/* 0 switches LED off */
-#if PICO == 1
-		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-#else
-		gpio_put(LED, 0);
-#endif
 	} else {
 		/* everything else on */
-#if PICO == 1
-		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-#else
-		gpio_put(LED, 1);
-#endif
 	}
 }	
  

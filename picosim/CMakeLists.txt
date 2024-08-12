@@ -48,6 +48,9 @@ add_executable(${PROJECT_NAME}
 	${Z80PACK}/z80core/simz80.c
 )
 
+# generate the header file into the source tree
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/WS2812.pio)
+
 target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_SOURCE_DIR}
 	${Z80PACK}/iodevices
