@@ -1,0 +1,9 @@
+**/build
+*.html
+*.png
+*.zip
+*.xlsx
+*.bak
+**/.vscode
+*.tar.gz
+PlatformIO.notes.txt
