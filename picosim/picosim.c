@@ -115,19 +115,19 @@ int main(void)
 	sm = pio_claim_unused_sm(pio, true);
 	uint offset = pio_add_program(pio, &ws2812_program);
 	ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, true);
-	put_pixel(rgb); /* red */
+	put_pixel(rgb); /* LED red */
 
 	/* when using USB UART wait until it is connected */
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	while (!tud_cdc_connected()) {
 		rgb = rgb - 0x000100;	/* while waiting make */
-		if (rgb == 0)		/* RGB LED fading */
+		if (rgb == 0)		/* RGB LED fading red */
 			rgb = 0x005500;
 		put_pixel(rgb);
 		sleep_ms(50);
 	}
 #endif
-	put_pixel(0x000044); /* blue */
+	put_pixel(0x000044); /* LED blue */
 
 	/* print banner */
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
@@ -145,6 +145,8 @@ int main(void)
 
 	PC = 0xff00;		/* power on jump into the boot ROM */
 
+	put_pixel(0x440000);	/* LED green */
+
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
 	ice_cmd_loop(0);
@@ -152,6 +154,7 @@ int main(void)
 	run_cpu();
 #endif
 
+	put_pixel(0x000000);	/* LED off */
 	exit_disks();		/* stop disk drives */
 
 #ifndef WANT_ICE

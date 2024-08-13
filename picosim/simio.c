@@ -38,6 +38,7 @@
 
 #include "rtc80.h"
 #include "sd-fdc.h"
+#include "rgbled.h"
 
 /*
  *	Forward declarations of the I/O functions
@@ -178,8 +179,12 @@ static void p000_out(BYTE data)
 {
 	if (!data) {
 		/* 0 switches LED off */
+		put_pixel(0x000000); /* LED off */
+		sleep_us(300);
 	} else {
 		/* everything else on */
+		put_pixel(0x404000); /* LED on */
+		sleep_us(300);
 	}
 }	
  
