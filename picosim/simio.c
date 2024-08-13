@@ -74,7 +74,7 @@ BYTE (*const port_in[256])(void) = {
  *	I/O port (0 - 255), to do the required I/O.
  */
 void (*const port_out[256])(BYTE data) = {
-	[  0] = p000_out,	/* internal LED */
+	[  0] = p000_out,	/* RGB LED */
 	[  1] = p001_out,	/* SIO data */
 	[  4] = fdc_out,	/* FDC command */
 	[ 64] = mmu_out,	/* MMU */
