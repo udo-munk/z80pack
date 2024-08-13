@@ -173,7 +173,7 @@ static BYTE p255_in(void)
 
 /*
  * 	I/O function port 0 write:
- *	Switch builtin LED on/off.
+ *	Switch RGB LED on/off.
  */
 static void p000_out(BYTE data)
 {
