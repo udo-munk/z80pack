@@ -1,6 +1,6 @@
 ;
 ; Example program for the Pico Z80
-; Blink builtin LED for a bit
+; Blink a LED for a bit
 ;
 ; Udo Munk, April 2024
 ;
