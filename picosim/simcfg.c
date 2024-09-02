@@ -12,6 +12,7 @@
  * 27-MAY-2024 implemented load file
  * 28-MAY-2024 implemented mount/unmount of disk images
  * 03-JUN-2024 added directory list for code files and disk images
+ * 02-SEP-2024 read date/time from an optional I2C battery backed RTC
  */
 
 #include <stdlib.h>
@@ -19,10 +20,12 @@
 #include <string.h>
 #include <ctype.h>
 #include "hardware/rtc.h"
+#include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
 
 #include "ff.h"
+#include "ds3231.h"
 
 #include "sim.h"
 #include "simdefs.h"
@@ -38,6 +41,10 @@
 #if LIB_STDIO_MSC_USB
 #include "stdio_msc_usb.h"
 #endif
+
+#define DS3231_I2C_PORT i2c0
+#define DS3231_I2C_SDA_PIN 20
+#define DS3231_I2C_SCL_PIN 21
 
 /*
  * prompt for a filename
@@ -93,6 +100,8 @@ void config(void)
 			.hour = 18, .min = 24, .sec = 32 };
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
+	UNUSED(DS3231_MONTHS);
+        UNUSED(DS3231_WDAYS);
 
 	/* try to read config file */
 	sd_res = f_open(&sd_file, cfg, FA_READ);
@@ -107,6 +116,44 @@ void config(void)
 		f_read(&sd_file, &disks[3], DISKLEN, &br);
 		f_close(&sd_file);
 	}
+
+	/* Create a real-time clock structure and initiate this */
+	struct ds3231_rtc rtc;
+	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
+		    DS3231_I2C_SCL_PIN, &rtc);
+
+	/* A `ds3231_datetime_t` structure holds date and time values. It is */
+	/* used first to set the initial (user-defined) date/time. After */
+	/* these initial values are set, then this same structure will be */
+	/* updated by the ds3231 functions as needed with the most current */
+	/* time and date values. */
+	ds3231_datetime_t dt = {
+		.year = 2000,	/* Year (2000-2099) */
+		.month = 1,	/* Month (1-12, 1=January, 12=December) */
+		.day = 1,	/* Day (1-31) */
+		.hour = 0,	/* Hour, in 24-h format (0-23) */
+		.minutes = 0,	/* Minutes (0-59) */
+		.seconds = 0,	/* Seconds (0-59) */
+		.dotw = 1,	/* Day of the week (1-7, 1=Monday, 7=Sunday) */
+	};
+
+	/* Read the date and time from the DS3231 RTC */
+        ds3231_get_datetime(&dt, &rtc);
+
+	/* if we read something take it over */
+	if (dt.year != 2000) {
+		t.year = dt.year;
+		t.month = dt.month;
+		t.day = dt.day;
+		t.hour = dt.hour;
+		t.min = dt.minutes;
+		t.sec = dt.seconds;
+		if (dt.dotw < 7)
+			t.dotw = dt.dotw;
+		else
+			t.dotw = 0;
+	}
+
 	rtc_set_datetime(&t);
 	sleep_us(64);
 	menu = 1;
@@ -149,23 +196,32 @@ void config(void)
 		switch (tolower((unsigned char) s[0])) {
 		case 'a':
 			n = 0;
+			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
 				t.dotw = i;
+                                if (i == 0)
+                                        dt.dotw = 7;
+                                else
+                                        dt.dotw = i;
 				n++;
 			}
 			if ((i = get_int("year", "", 0, 4095)) >= 0) {
 				t.year = i;
+				dt.year = i;
 				n++;
 			}
 			if ((i = get_int("month", "", 1, 12)) >= 0) {
 				t.month = i;
+				dt.month = i;
 				n++;
 			}
 			if ((i = get_int("day", "", 1, 31)) >= 0) {
 				t.day = i;
+				dt.day = i;
 				n++;
 			}
 			if (n > 0) {
+				ds3231_set_datetime(&dt, &rtc);
 				rtc_set_datetime(&t);
 				sleep_us(64);
 			}
@@ -174,19 +230,24 @@ void config(void)
 
 		case 't':
 			n = 0;
+			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("hour", "", 0, 23)) >= 0) {
 				t.hour = i;
+				dt.hour = i;
 				n++;
 			}
 			if ((i = get_int("minute", "", 0, 59)) >= 0) {
 				t.min = i;
+				dt.minutes = i;
 				n++;
 			}
 			if ((i = get_int("second", "", 0, 59)) >= 0) {
 				t.sec = i;
+				dt.seconds = i;
 				n++;
 			}
 			if (n > 0) {
+				ds3231_set_datetime(&dt, &rtc);
 				rtc_set_datetime(&t);
 				sleep_us(64);
 			}
