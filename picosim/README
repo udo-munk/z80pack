@@ -30,12 +30,9 @@ To clean everything:
 	cd z80pack/picosim
 	rm -rf build
 
-This machine can be used with Pico and Pico W boards. However, it is setup
-for a Pico board, because with the additional
-CYW43 library + SPI + FatFS + TinyUSB the system runs out of stack.
-To setup for a Pico W comment/uncomment the lines in CMakeLists.txt
-and change the board type in sim.h. This will only work when using
-the GPIO UART.
+This machine can be used with Pico and Pico W boards, it is setup
+for a Pico board. To setup for a Pico W comment/uncomment the lines
+in CMakeLists.txt and change the board type in sim.h.
 
 This is configured now for USB UART so that no additional parts are needed
 to hook up a terminal. If configured for GPIO UART connect a TTL/USB
