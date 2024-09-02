@@ -32,11 +32,13 @@ To clean everything:
 
 This machine can be used with Pico and Pico W boards, it is setup
 for a Pico board. To setup for a Pico W comment/uncomment the lines
-in CMakeLists.txt and change the board type in sim.h.
+in CMakeLists.txt and change the board type in sim.h. It doesn't
+really matter, on a Pico W the CYW43 gets intitialized but is not
+used yet.
 
-This is configured now for USB UART so that no additional parts are needed
+This is configured for USB UART so that no additional parts are needed
 to hook up a terminal. If configured for GPIO UART connect a TTL/USB
-adatpter or a pico probe to the UART pins for the one configured in
+adapter or a pico probe to the UART pins for the one configured in
 CMakeLists.txt.
 
 
