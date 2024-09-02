@@ -36,4 +36,10 @@ at pin 40 comming from the USB connection. The data in pin is connected
 to GPIO 14 and the 3.3V logic level from the GPIO is fine to program the
 LED, a logic level shifter is not needed.
 
+pico-rtc-*
+I added a battery backed RTC, so that date and time stays current, without
+the need to set it all the time. For my breadboard research system I used
+the stackable module from Waveshare:
+https://www.waveshare.com/wiki/Pico-RTC-DS3231
+
 How to build the application for this board is explained in picosim/README.
