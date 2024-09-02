@@ -29,6 +29,7 @@
 
 #include "sd-fdc.h"
 #include "disks.h"
+#include "rgbled.h"
 
 FIL sd_file;	/* at any time we have only one file open */
 FRESULT sd_res;	/* result code from FatFS */
@@ -268,22 +269,28 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
 		return stat;
 
+	put_pixel(0x440000); /* LED green */
+
 	/* read sector into memory */
 	sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
-			return FDC_STAT_READ;
+			stat = FDC_STAT_READ;
 		} else {
 			f_close(&sd_file);
 			for (i = 0; i < SEC_SZ; i++)
 				dma_write(addr + i, dsk_buf[i]);
-			return FDC_STAT_OK;
+			stat = FDC_STAT_OK;
 		}
 	} else {
 		f_close(&sd_file);
-		return FDC_STAT_READ;
+		stat = FDC_STAT_READ;
 	}
+
+	sleep_us(300);
+	put_pixel(0x000000); /* LED off */
+	return stat;
 }
 
 /*
@@ -299,6 +306,8 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
 		return stat;
 
+	put_pixel(0x004400); /* LED red */
+
 	/* write sector to disk image */
 	for (i = 0; i < SEC_SZ; i++)
 		dsk_buf[i] = dma_read(addr + i);
@@ -306,15 +315,19 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 	if (sd_res == FR_OK) {
 		if (br < SEC_SZ) {	/* UH OH */
 			f_close(&sd_file);
-			return FDC_STAT_WRITE;
+			stat = FDC_STAT_WRITE;
 		} else {
 			f_close(&sd_file);
-			return FDC_STAT_OK;
+			stat = FDC_STAT_OK;
 		}
 	} else {
 		f_close(&sd_file);
-		return FDC_STAT_WRITE;
+		stat = FDC_STAT_WRITE;
 	}
+
+	sleep_us(300);
+	put_pixel(0x000000); /* LED off */
+	return stat;
 }
 
 /*

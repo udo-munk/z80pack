@@ -1,6 +1,6 @@
 ;
 ; Example program for the Pico Z80
-; Blink builtin LED for a bit
+; Blink a LED for a bit
 ;
 ; Udo Munk, April 2024
 ;
@@ -8,7 +8,7 @@
 
 	ORG	0000H		; starting at memory location 0
 
-LED	EQU	0		; builtin LED port
+LED	EQU	0		; LED port
 
 	DI			; disable interrupts
 	LD	SP,STACK	; setup stack in upper memory

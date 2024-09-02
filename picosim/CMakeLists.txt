@@ -48,6 +48,9 @@ add_executable(${PROJECT_NAME}
 	${Z80PACK}/z80core/simz80.c
 )
 
+# generate the header file into the source tree
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/WS2812.pio)
+
 target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_SOURCE_DIR}
 	${Z80PACK}/iodevices
@@ -56,6 +59,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 add_subdirectory(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
 add_subdirectory(stdio_msc_usb)
+add_subdirectory(ds3231)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
@@ -78,6 +82,8 @@ target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 
 # for Pico
 target_link_libraries(${PROJECT_NAME}
+	hardware_i2c
+	pico-ds3231
 	pico_stdlib
 	stdio_msc_usb
 	tinyusb_device
@@ -85,6 +91,8 @@ target_link_libraries(${PROJECT_NAME}
 )
 # for Pico W
 #target_link_libraries(${PROJECT_NAME}
+#	hardware_i2c
+#	pico-ds3231
 #	pico_stdlib
 #	pico_cyw43_arch_none
 #	stdio_msc_usb

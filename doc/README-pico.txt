@@ -27,4 +27,19 @@ on the breadbaord. The card drives can draw 100 mA, so better provide
 sufficient GND. Also please note the two blocking capacitors, these are
 to keep radio emissions low.
 
+picoboard4:
+I removed the monochrome LED and instead added a breakout board with a
+WS2811 RGB LED. With this we can show stati of the machine by using
+different colors, show access to the disk drives, or blink it from
+the emulated CPU's. These RGB LED's need 5V power, which is available
+at pin 40 comming from the USB connection. The data in pin is connected
+to GPIO 14 and the 3.3V logic level from the GPIO is fine to program the
+LED, a logic level shifter is not needed.
+
+pico-rtc-*
+I added a battery backed RTC, so that date and time stays current, without
+the need to set it all the time. For my breadboard research system I used
+the stackable module from Waveshare:
+https://www.waveshare.com/wiki/Pico-RTC-DS3231
+
 How to build the application for this board is explained in picosim/README.

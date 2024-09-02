@@ -3,7 +3,7 @@ Z80/8080-Macro-Assembler  Release 2.1
 LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        1      1 ;
                        2      2 ; Example program for the Pico Z80
-                       3      3 ; Blink builtin LED for a bit
+                       3      3 ; Blink a LED for a bit
                        4      4 ;
                        5      5 ; Udo Munk, April 2024
                        6      6 ;
@@ -11,7 +11,7 @@ LOC   OBJECT CODE   LINE   STMT SOURCE CODE
                        8      8
                        9      9 	ORG	0000H		; starting at memory location 0
                       10     10
-0000  =               11     11 LED	EQU	0		; builtin LED port
+0000  =               11     11 LED	EQU	0		; LED port
                       12     12
 0000  f3              13     13 	DI			; disable interrupts
 0001  31 35 00        14     14 	LD	SP,STACK	; setup stack in upper memory

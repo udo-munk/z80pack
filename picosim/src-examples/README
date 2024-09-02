@@ -12,7 +12,7 @@ Copy the "example".bin files into a directory CODE80 on MicroSD card.
 
 The examples are:
 serial.bin	- shows how to do serial I/O
-blink.bin	- blink builtin LED with Z80 port output
+blink.bin	- blink a LED with Z80 port output
 
 test8080.bin	- Kelly Smith 8080 CPU test program
 tb.bin		- 8080 TINY BASIC
