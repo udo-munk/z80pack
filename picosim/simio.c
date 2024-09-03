@@ -104,7 +104,7 @@ static BYTE p000_in(void)
 	register BYTE stat = 0b10000001; /* initially not ready */
 
 #if LIB_PICO_STDIO_UART
-	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
+	uart_inst_t *my_uart = uart_default;
 
 	if (uart_is_writable(my_uart))	/* check if output to UART is possible */
 		stat &= 0b01111111;	/* if so flip status bit */
@@ -130,7 +130,7 @@ static BYTE p001_in(void)
 	int input_avail = 0;
 
 #if LIB_PICO_STDIO_UART
-	uart_inst_t *my_uart = PICO_DEFAULT_UART_INSTANCE;
+	uart_inst_t *my_uart = uart_default;
 
 	if (uart_is_readable(my_uart))
 		input_avail = 1;
