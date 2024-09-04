@@ -1,0 +1,7 @@
+/home/udo/work/z80pack/picosim/rp2040/build/pioasm/CMakeFiles/pioasm.dir
+/home/udo/work/z80pack/picosim/rp2040/build/pioasm/CMakeFiles/edit_cache.dir
+/home/udo/work/z80pack/picosim/rp2040/build/pioasm/CMakeFiles/rebuild_cache.dir
+/home/udo/work/z80pack/picosim/rp2040/build/pioasm/CMakeFiles/list_install_components.dir
+/home/udo/work/z80pack/picosim/rp2040/build/pioasm/CMakeFiles/install.dir
+/home/udo/work/z80pack/picosim/rp2040/build/pioasm/CMakeFiles/install/local.dir
+/home/udo/work/z80pack/picosim/rp2040/build/pioasm/CMakeFiles/install/strip.dir
