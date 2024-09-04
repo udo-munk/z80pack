@@ -38,8 +38,7 @@ used yet.
 
 This is configured for USB UART so that no additional parts are needed
 to hook up a terminal. If configured for GPIO UART connect a TTL/USB
-adapter or a pico probe to the UART pins for the one configured in
-CMakeLists.txt.
+adapter or a pico probe to the default UART pins for the board (GP0 & GP1).
 
 
 Preparing a MicroSD card:
@@ -50,3 +49,5 @@ DISKS80
 
 Into the CODE80 directory copy all the .bin files from src-examples.
 Into the DISKS80 directory copy the disk images from disks.
+CONF80 is used to save the configuration, nothing more to do there,
+the directory must exist though.
