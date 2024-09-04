@@ -24,7 +24,7 @@ cromemcosim/cromemcosim
 imsaisim/imsaisim
 intelmdssim/intelmdssim
 mosteksim/mosteksim
-picosim/build
+picosim/rp2040/build
 z80asm/z80asm
 z80sim/*.hex
 z80sim/*.lis
