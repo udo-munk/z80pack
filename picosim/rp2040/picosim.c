@@ -60,6 +60,10 @@ int speed = CPU_SPEED;
 PIO pio = pio1;
 uint sm;
 
+/*
+ * callback for TinyUSB when terminal sends a break
+ * stops CPU
+ */
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 {
@@ -87,7 +91,7 @@ static void gpio_callback(uint gpio, uint32_t events)
 int main(void)
 {
 	char s[2];
-	uint32_t rgb = 0x005500;
+	uint32_t rgb = 0x005500;/* initial value for the RGB LED */
 
 	stdio_init_all();	/* initialize stdio */
 #if LIB_STDIO_MSC_USB
