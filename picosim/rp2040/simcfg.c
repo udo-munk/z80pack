@@ -24,6 +24,7 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 
+#include "gpio.h"
 #include "ff.h"
 #include "ds3231.h"
 
@@ -41,10 +42,6 @@
 #if LIB_STDIO_MSC_USB
 #include "stdio_msc_usb.h"
 #endif
-
-#define DS3231_I2C_PORT i2c0
-#define DS3231_I2C_SDA_PIN 20
-#define DS3231_I2C_SCL_PIN 21
 
 /*
  * prompt for a filename
@@ -87,7 +84,7 @@ static int get_int(const char *prompt, const char *hint,
  */
 void config(void)
 {
-	const char *cfg = "/CONF80/PICO80.DAT";
+	const char *cfg = "/CONF80/RP2040.DAT";
 	const char *cpath = "/CODE80";
 	const char *cext = "*.BIN";
 	const char *dpath = "/DISKS80";

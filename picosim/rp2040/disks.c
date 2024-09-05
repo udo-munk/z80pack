@@ -23,6 +23,7 @@
 #include "simglb.h"
 #include "simmem.h"
 
+#include "gpio.h"
 #include "ff.h"
 #include "f_util.h"
 #include "hw_config.h"
@@ -44,17 +45,17 @@ static unsigned char dsk_buf[SEC_SZ];
 
 /* Configuration of RP2040 hardware SPI object */
 static spi_t spi = {
-	.hw_inst = spi0,  /* RP2040 SPI component */
-	.sck_gpio = 18,   /* GPIO number (not Pico pin number) */
-	.mosi_gpio = 19,
-	.miso_gpio = 16,
+	.hw_inst = SD_SPI_PORT,
+	.sck_gpio = SD_SPI_CLK,
+	.mosi_gpio = SD_SPI_SI,
+	.miso_gpio = SD_SPI_SO,
 	.baud_rate = 12 * 1000 * 1000 /* Actual frequency: 10416666 */
 };
 
 /* SPI Interface */
 static sd_spi_if_t spi_if = {
-	.spi = &spi,  /* Pointer to the SPI driving this card */
-	.ss_gpio = 17 /* The SPI slave select GPIO for this SD card */
+	.spi = &spi,		/* Pointer to the SPI driving this card */
+	.ss_gpio = SD_SPI_CS	/* The SPI slave select GPIO for this SD card */
 };
 
 /* Configuration of the SD Card socket object */

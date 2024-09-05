@@ -28,6 +28,7 @@
 #include "pico/cyw43_arch.h"
 #endif
 
+#include "gpio.h"
 #include "hw_config.h"
 #include "rtc.h"
 
@@ -47,11 +48,8 @@
 #include "disks.h"
 #include "rgbled.h"
 
-#define SWITCH_BREAK 15 /* switch we use to interrupt the system */
-#define WS2812_PIN 14	/* pin with the RGB LED */
-
-#define BS  0x08 /* backspace */
-#define DEL 0x7f /* delete */
+#define BS  0x08 /* ASCII backspace */
+#define DEL 0x7f /* ASCII delete */
 
 /* CPU speed */
 int speed = CPU_SPEED;
