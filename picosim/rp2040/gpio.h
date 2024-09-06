@@ -4,7 +4,7 @@
 /*
  * Additional to the GPIO pins defined here the code uses the
  * default UART defined in the board definition files. For
- * Pico boards this is UART0 with pins 0 and 1
+ * Pico boards this is UART0 with pins 0 and 1.
  */
 
 #define SWITCH_BREAK 15	/* pin with switch we use to interrupt the system */
