@@ -1,6 +1,12 @@
 #ifndef GPIO_INC
 #define GPIO_INC
 
+/*
+ * Additional to the GPIO pins defined here the code uses the
+ * default UART defined in the board definition files. For
+ * Pico boards this is UART0 with pins 0 and 1
+ */
+
 #define SWITCH_BREAK 15	/* pin with switch we use to interrupt the system */
 #define WS2812_PIN 14	/* pin with RGB LED */
 
