@@ -224,12 +224,12 @@ static void reset_clicked(int state, int val)
 	case FP_SW_CENTER:
 		break;
 	case FP_SW_UP:
-		cpu_state |= RESET;
+		cpu_state |= ST_RESET;
 		m1_step = 0;
 		IFF = 0;
 		reset_io();
 		reset_cpu();
-		cpu_state &= ~RESET;
+		cpu_state &= ~ST_RESET;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		cpu_wait = 0;
 		break;
@@ -250,7 +250,7 @@ static void power_clicked(int state, int val)
 		if (!power)
 			break;
 		power--;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		cpu_error = POWEROFF;
 		break;
 	case FP_SW_UP:
@@ -272,7 +272,7 @@ static void power_clicked(int state, int val)
 static void quit_callback(void)
 {
 	power = 0;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 	cpu_error = POWEROFF;
 }
 

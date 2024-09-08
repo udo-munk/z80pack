@@ -251,7 +251,7 @@ BYTE mon_tty_data_in(void)
 		} else {
 			LOGE(TAG, "can't read tcpsocket data");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			data = last;
 			goto done;
 		}
@@ -313,7 +313,7 @@ again:
 		else {
 			LOGE(TAG, "can't write socket data");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 
@@ -373,7 +373,7 @@ void mon_crt_periodic(void)
 			LOGE(TAG, "can't use terminal, "
 			     "try 'screen simulation ...'");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 	if ((tty_cmd & TXEN) && !crt_trdy) {
@@ -451,7 +451,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write stdout data");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 
@@ -660,7 +660,7 @@ void mon_lpt_data_out(BYTE data)
 		if ((lpt_fd = creat("printer.txt", 0664)) == -1) {
 			LOGE(TAG, "can't create printer.txt");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			lpt_fd = 0;
 			goto done;
 		}
@@ -677,7 +677,7 @@ again:
 			} else {
 				LOGE(TAG, "can't write to printer.txt");
 				cpu_error = IOERROR;
-				cpu_state = STOPPED;
+				cpu_state = ST_STOPPED;
 			}
 		}
 	}
