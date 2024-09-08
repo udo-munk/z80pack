@@ -79,10 +79,8 @@ endif ()
 # -Wno-unused-parameter because no-OS-FatFS-SD-SDIO-SPI-RPi-Pico isn't clean
 target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 
-# for Pico
 target_link_libraries(${PROJECT_NAME}
 	hardware_i2c
-	pico_util
 	pico-ds3231
 	pico_stdlib
 	stdio_msc_usb
