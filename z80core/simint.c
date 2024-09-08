@@ -64,7 +64,7 @@ static void user_int(int sig)
 	UNUSED(sig);
 
 	cpu_error = USERINT;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 }
 
 static void quit_int(int sig)
@@ -72,7 +72,7 @@ static void quit_int(int sig)
 	UNUSED(sig);
 
 	cpu_error = USERINT;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 }
 
 static void term_int(int sig)

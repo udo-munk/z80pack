@@ -53,7 +53,7 @@ void init_memory(void)
 	if ((memory[0] = (BYTE *) malloc(65536)) == NULL) {
 		LOGE(TAG, "can't allocate memory for bank 0");
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return;
 	}
 	maxbnk = 1;

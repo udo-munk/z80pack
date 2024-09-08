@@ -102,7 +102,7 @@ BYTE altair_sio0_status_in(void)
 	if (p[0].revents & POLLNVAL) {
 		LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 	}
 	if (sio0_revision == 0)
 		sio0_stat |= 2;
@@ -186,7 +186,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write sio0 data");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 

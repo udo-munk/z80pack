@@ -1004,7 +1004,7 @@ static BYTE nets1_in(void)
 		if ((s = getaddrinfo(cs_host, service, &hints, &result)) != 0) {
 			LOGE(TAG, "getaddrinfo failed: %s", gai_strerror(s));
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			return (BYTE) 0;
 		}
 
@@ -1023,7 +1023,7 @@ static BYTE nets1_in(void)
 		if (rp == NULL) {
 			LOGE(TAG, "can't connect to host %s", cs_host);
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			return (BYTE) 0;
 		}
 
@@ -1137,7 +1137,7 @@ static BYTE cond1_in(void)
 		} else {
 			LOGE(TAG, "can't read console 1");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			return (BYTE) 0;
 		}
 	}
@@ -1174,7 +1174,7 @@ static BYTE cond2_in(void)
 		} else {
 			LOGE(TAG, "can't read console 2");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			return (BYTE) 0;
 		}
 	}
@@ -1211,7 +1211,7 @@ static BYTE cond3_in(void)
 		} else {
 			LOGE(TAG, "can't read console 3");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			return (BYTE) 0;
 		}
 	}
@@ -1248,7 +1248,7 @@ static BYTE cond4_in(void)
 		} else {
 			LOGE(TAG, "can't read console 4");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			return (BYTE) 0;
 		}
 	}
@@ -1279,7 +1279,7 @@ static BYTE netd1_in(void)
 	if (read(cs, &c, 1) != 1) {
 		LOGE(TAG, "can't read client socket");
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return (BYTE) 0;
 	}
 #ifdef CNETDEBUG
@@ -1308,7 +1308,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write console 0");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 }
@@ -1334,7 +1334,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write console 1");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 #else /* !NETWORKING */
@@ -1363,7 +1363,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write console 2");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 #else /* !NETWORKING */
@@ -1392,7 +1392,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write console 3");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 #else /* !NETWORKING */
@@ -1421,7 +1421,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write console 4");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 #else /* !NETWORKING */
@@ -1450,7 +1450,7 @@ again:
 		} else {
 			LOGE(TAG, "can't write client socket");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 #else /* !NETWORKING */
@@ -1495,7 +1495,7 @@ static void prtd_out(BYTE data)
 		if ((printer = creat("printer.txt", 0664)) == -1) {
 			LOGE(TAG, "can't create printer.txt");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			printer = 0;
 			return;
 		}
@@ -1509,7 +1509,7 @@ again:
 			} else {
 				LOGE(TAG, "can't write to printer.txt");
 				cpu_error = IOERROR;
-				cpu_state = STOPPED;
+				cpu_state = ST_STOPPED;
 			}
 		}
 	}
@@ -1851,7 +1851,7 @@ static void mmui_out(BYTE data)
 		LOGE(TAG, "Try to init %d banks, available %d banks",
 		     data, MAXSEG);
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return;
 	}
 
@@ -1859,7 +1859,7 @@ static void mmui_out(BYTE data)
 		if ((memory[i] = (BYTE *) malloc(segsize)) == NULL) {
 			LOGE(TAG, "can't allocate memory for bank %d", i);
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			return;
 		}
 	}
@@ -1885,7 +1885,7 @@ static void mmus_out(BYTE data)
 	if (data > maxbnk - 1) {
 		LOGE(TAG, "%04x: try to select unallocated bank %d", PC, data);
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return;
 	}
 	selbnk = data;
@@ -1910,7 +1910,7 @@ static void mmuc_out(BYTE data)
 	if (memory[1] != NULL) {
 		LOGE(TAG, "Not possible to resize already allocated segments");
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return;
 	}
 	segsize = data << 8;
@@ -2024,7 +2024,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return;
 	}
 

@@ -179,7 +179,7 @@ void imsai_fif_out(BYTE data)
 	default:
 		LOGE(TAG, "internal state error");
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		break;
 	}
 }

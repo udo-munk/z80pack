@@ -390,7 +390,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 	}
 
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
@@ -468,7 +468,7 @@ static void mmu_out(BYTE data)
 	default:
 		LOGE(TAG, "Not supported bank select = %02x", data);
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return;
 	}
 

@@ -69,7 +69,7 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 	UNUSED(duration_ms);
 
 	cpu_error = USERINT;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 }
 #endif
 
@@ -83,7 +83,7 @@ static void gpio_callback(uint gpio, uint32_t events)
 	UNUSED(events);
 
 	cpu_error = USERINT;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 }
 
 int main(void)
