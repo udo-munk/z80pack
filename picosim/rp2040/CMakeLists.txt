@@ -109,6 +109,6 @@ pico_set_program_description(${PROJECT_NAME} "z80pack on Raspberry Pi Pico")
 pico_set_program_version(${PROJECT_NAME} "1.3")
 pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/z80pack")
 
-# disable UART in/out, enable USB in/out
-pico_enable_stdio_uart(${PROJECT_NAME} 0)
+# enable UART in/out, enable USB in/out
+pico_enable_stdio_uart(${PROJECT_NAME} 1)
 #pico_enable_stdio_usb(${PROJECT_NAME} 1)
