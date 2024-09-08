@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "hardware/rtc.h"
+//#include "hardware/rtc.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
@@ -84,7 +84,7 @@ static int get_int(const char *prompt, const char *hint,
  */
 void config(void)
 {
-	const char *cfg = "/CONF80/RP2040.DAT";
+	const char *cfg = "/CONF80/RP2350.DAT";
 	const char *cpath = "/CODE80";
 	const char *cext = "*.BIN";
 	const char *dpath = "/DISKS80";
@@ -93,10 +93,10 @@ void config(void)
 	unsigned int br;
 	int go_flag = 0;
 	int i, n, menu;
-	datetime_t t = { .year = 2024, .month = 4, .day = 23, .dotw = 2,
-			.hour = 18, .min = 24, .sec = 32 };
-	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
-				       "Thu", "Fri", "Sat" };
+//	datetime_t t = { .year = 2024, .month = 4, .day = 23, .dotw = 2,
+//			.hour = 18, .min = 24, .sec = 32 };
+//	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
+//				       "Thu", "Fri", "Sat" };
 	UNUSED(DS3231_MONTHS);
         UNUSED(DS3231_WDAYS);
 
@@ -106,7 +106,7 @@ void config(void)
 		f_read(&sd_file, &cpu, sizeof(cpu), &br);
 		f_read(&sd_file, &speed, sizeof(speed), &br);
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_read(&sd_file, &t, sizeof(datetime_t), &br);
+//		f_read(&sd_file, &t, sizeof(datetime_t), &br);
 		f_read(&sd_file, &disks[0], DISKLEN, &br);
 		f_read(&sd_file, &disks[1], DISKLEN, &br);
 		f_read(&sd_file, &disks[2], DISKLEN, &br);
@@ -137,6 +137,7 @@ void config(void)
 	/* Read the date and time from the DS3231 RTC */
         ds3231_get_datetime(&dt, &rtc);
 
+#if 0
 	/* if we read something take it over */
 	if (dt.year != 2000) {
 		t.year = dt.year;
@@ -153,10 +154,12 @@ void config(void)
 
 	rtc_set_datetime(&t);
 	sleep_us(64);
+#endif
 	menu = 1;
 
 	while (!go_flag) {
 		if (menu) {
+#if 0
 			if (rtc_get_datetime(&t)) {
 				printf("Current time: %s %04d-%02d-%02d "
 				       "%02d:%02d:%02d\n", dotw[t.dotw],
@@ -165,6 +168,7 @@ void config(void)
 			}
 			printf("a - set date\n");
 			printf("t - set time\n");
+#endif
 #if LIB_STDIO_MSC_USB
 			printf("u - enable USB mass storage access\n");
 #endif
@@ -191,6 +195,7 @@ void config(void)
 		putchar('\n');
 
 		switch (tolower((unsigned char) s[0])) {
+#if 0
 		case 'a':
 			n = 0;
 			ds3231_get_datetime(&dt, &rtc);
@@ -224,7 +229,9 @@ void config(void)
 			}
 			putchar('\n');
 			break;
+#endif
 
+#if 0
 		case 't':
 			n = 0;
 			ds3231_get_datetime(&dt, &rtc);
@@ -250,6 +257,7 @@ void config(void)
 			}
 			putchar('\n');
 			break;
+#endif
 
 #if LIB_STDIO_MSC_USB
 		case 'u':
@@ -345,7 +353,7 @@ again:
 		f_write(&sd_file, &cpu, sizeof(cpu), &br);
 		f_write(&sd_file, &speed, sizeof(speed), &br);
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_write(&sd_file, &t, sizeof(datetime_t), &br);
+//		f_write(&sd_file, &t, sizeof(datetime_t), &br);
 		f_write(&sd_file, &disks[0], DISKLEN, &br);
 		f_write(&sd_file, &disks[1], DISKLEN, &br);
 		f_write(&sd_file, &disks[2], DISKLEN, &br);
