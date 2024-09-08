@@ -23,10 +23,6 @@
 #endif
 #include "pico/stdlib.h"
 #include "pico/time.h"
-/* Pico W also needs this */
-#if PICO == 1
-#include "pico/cyw43_arch.h"
-#endif
 
 #include "gpio.h"
 #include "hw_config.h"
@@ -98,14 +94,6 @@ int main(void)
 	stdio_msc_usb_init();	/* initialize MSC USB stdio */
 #endif
 	time_init();		/* initialize FatFS RTC */
-
-#if PICO == 1			/* initialize Pico W hardware */
-	if (cyw43_arch_init())
-	{
-		printf("CYW43 init failed\n");
-		return -1;
-	}
-#endif
 
 	/* setupt interrupt for break switch */
 	gpio_init(SWITCH_BREAK);

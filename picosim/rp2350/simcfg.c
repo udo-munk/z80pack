@@ -92,7 +92,8 @@ void config(void)
 	char s[10];
 	unsigned int br;
 	int go_flag = 0;
-	int i, n, menu;
+	int i, menu;
+//	int n;
 //	datetime_t t = { .year = 2024, .month = 4, .day = 23, .dotw = 2,
 //			.hour = 18, .min = 24, .sec = 32 };
 //	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
@@ -114,6 +115,7 @@ void config(void)
 		f_close(&sd_file);
 	}
 
+#if 0
 	/* Create a real-time clock structure and initiate this */
 	struct ds3231_rtc rtc;
 	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
@@ -137,7 +139,6 @@ void config(void)
 	/* Read the date and time from the DS3231 RTC */
         ds3231_get_datetime(&dt, &rtc);
 
-#if 0
 	/* if we read something take it over */
 	if (dt.year != 2000) {
 		t.year = dt.year;
@@ -155,6 +156,7 @@ void config(void)
 	rtc_set_datetime(&t);
 	sleep_us(64);
 #endif
+
 	menu = 1;
 
 	while (!go_flag) {

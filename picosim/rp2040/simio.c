@@ -24,9 +24,6 @@
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 /* Pico W also needs this */
-#if PICO == 1
-#include "pico/cyw43_arch.h"
-#endif
 
 /* Project includes */
 #include "sim.h"
