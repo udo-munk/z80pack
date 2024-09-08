@@ -10,7 +10,7 @@ set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR})
 # Set platform, board, and compiler
 set(PICO_PLATFORM rp2350)
 set (PICO_BOARD pico2)
-#set(PICO_COMPILER pico_arm_gcc)
+set(PICO_COMPILER pico_arm_cortex_m33_gcc)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
