@@ -24,6 +24,7 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "hardware/uart.h"
+#include "hardware/watchdog.h"
 /* Pico W also needs this */
 #if PICO == 1
 #include "pico/cyw43_arch.h"
@@ -174,8 +175,9 @@ int main(void)
 	puts("\nPress any key to restart CPU");
 	get_cmdline(s, 2);
 
-	stdio_flush();
-	return 0;
+	/* reset machine */
+	watchdog_enable(1, 1);
+	for (;;);
 }
 
 /*
