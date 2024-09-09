@@ -23,7 +23,6 @@
 #endif
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
-/* Pico W also needs this */
 
 /* Project includes */
 #include "sim.h"
