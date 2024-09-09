@@ -80,25 +80,15 @@ endif ()
 # -Wno-unused-parameter because no-OS-FatFS-SD-SDIO-SPI-RPi-Pico isn't clean
 target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 
-# for Pico
 target_link_libraries(${PROJECT_NAME}
 	hardware_i2c
 	pico-ds3231
 	pico_stdlib
+#	pico_cyw43_arch_none
 	stdio_msc_usb
 	tinyusb_device
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 )
-# for Pico W
-#target_link_libraries(${PROJECT_NAME}
-#	hardware_i2c
-#	pico-ds3231
-#	pico_stdlib
-#	pico_cyw43_arch_none
-#	stdio_msc_usb
-#	tinyusb_device
-#	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
-#)
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
@@ -109,6 +99,6 @@ pico_set_program_description(${PROJECT_NAME} "z80pack on Raspberry Pi Pico")
 pico_set_program_version(${PROJECT_NAME} "1.3")
 pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/z80pack")
 
-# disable UART in/out, enable USB in/out
-pico_enable_stdio_uart(${PROJECT_NAME} 0)
+# enable UART in/out, enable USB in/out
+pico_enable_stdio_uart(${PROJECT_NAME} 1)
 #pico_enable_stdio_usb(${PROJECT_NAME} 1)
