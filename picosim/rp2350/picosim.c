@@ -23,6 +23,7 @@
 #endif
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "hardware/uart.h"
 
 #include "gpio.h"
 #include "hw_config.h"
@@ -108,8 +109,14 @@ int main(void)
 	put_pixel(rgb); /* LED red */
 
 	/* when using USB UART wait until it is connected */
+	/* also get out if input on the default UART is available */
+	uart_inst_t *my_uart = uart_default;
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	while (!tud_cdc_connected()) {
+		if (uart_is_readable(my_uart)) {
+			getchar();
+			break;
+		}
 		rgb = rgb - 0x000100;	/* while waiting make */
 		if (rgb == 0)		/* RGB LED fading red */
 			rgb = 0x005500;
