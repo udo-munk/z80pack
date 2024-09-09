@@ -19,10 +19,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 //#include "hardware/rtc.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
+#include "pico/aon_timer.h"
 
 #include "gpio.h"
 #include "ff.h"
@@ -98,6 +100,18 @@ void config(void)
 //			.hour = 18, .min = 24, .sec = 32 };
 //	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 //				       "Thu", "Fri", "Sat" };
+
+
+	struct tm t = { .tm_year = 124, .tm_mon = 0, .tm_mday = 1,
+			.tm_wday = 1, .tm_hour = 0, .tm_min = 0, .tm_sec = 0,
+       			.tm_isdst = -1 };
+	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
+				       "Thu", "Fri", "Sat" };
+	struct timespec ts;
+
+	ts.tv_sec = mktime(&t);
+	aon_timer_start(&ts);
+
 	UNUSED(DS3231_MONTHS);
         UNUSED(DS3231_WDAYS);
 
@@ -161,13 +175,11 @@ void config(void)
 
 	while (!go_flag) {
 		if (menu) {
+			printf("Current time: %s %04d-%02d-%02d "
+			       "%02d:%02d:%02d\n", dotw[t.tm_wday],
+			       t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
+			       t.tm_hour, t.tm_min, t.tm_sec);
 #if 0
-			if (rtc_get_datetime(&t)) {
-				printf("Current time: %s %04d-%02d-%02d "
-				       "%02d:%02d:%02d\n", dotw[t.dotw],
-				       t.year, t.month, t.day,
-				       t.hour, t.min, t.sec);
-			}
 			printf("a - set date\n");
 			printf("t - set time\n");
 #endif
