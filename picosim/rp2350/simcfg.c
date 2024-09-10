@@ -94,7 +94,7 @@ void config(void)
 	unsigned int br;
 	int go_flag = 0;
 	int i, menu;
-//	int n;
+	int n;
 	struct tm t = { .tm_year = 124, .tm_mon = 0, .tm_mday = 1,
 			.tm_wday = 1, .tm_hour = 0, .tm_min = 0, .tm_sec = 0,
        			.tm_isdst = -1 };
@@ -162,14 +162,14 @@ void config(void)
 
 	while (!go_flag) {
 		if (menu) {
+			aon_timer_get_time(&ts);
+			localtime_r(&ts.tv_sec, &t);
 			printf("Current time: %s %04d-%02d-%02d "
 			       "%02d:%02d:%02d\n", dotw[t.tm_wday],
 			       t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
 			       t.tm_hour, t.tm_min, t.tm_sec);
-#if 0
 			printf("a - set date\n");
 			printf("t - set time\n");
-#endif
 #if LIB_STDIO_MSC_USB
 			printf("u - enable USB mass storage access\n");
 #endif
@@ -196,12 +196,11 @@ void config(void)
 		putchar('\n');
 
 		switch (tolower((unsigned char) s[0])) {
-#if 0
 		case 'a':
 			n = 0;
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
-				t.dotw = i;
+				t.tm_wday = i;
                                 if (i == 0)
                                         dt.dotw = 7;
                                 else
@@ -209,56 +208,53 @@ void config(void)
 				n++;
 			}
 			if ((i = get_int("year", "", 0, 4095)) >= 0) {
-				t.year = i;
+				t.tm_year = i - 1900;
 				dt.year = i;
 				n++;
 			}
 			if ((i = get_int("month", "", 1, 12)) >= 0) {
-				t.month = i;
+				t.tm_mon = i - 1;
 				dt.month = i;
 				n++;
 			}
 			if ((i = get_int("day", "", 1, 31)) >= 0) {
-				t.day = i;
+				t.tm_mday = i;
 				dt.day = i;
 				n++;
 			}
 			if (n > 0) {
 				ds3231_set_datetime(&dt, &rtc);
-				rtc_set_datetime(&t);
-				sleep_us(64);
+				ts.tv_sec = mktime(&t);
+				aon_timer_set_time(&ts);
 			}
 			putchar('\n');
 			break;
-#endif
 
-#if 0
 		case 't':
 			n = 0;
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("hour", "", 0, 23)) >= 0) {
-				t.hour = i;
+				t.tm_hour = i;
 				dt.hour = i;
 				n++;
 			}
 			if ((i = get_int("minute", "", 0, 59)) >= 0) {
-				t.min = i;
+				t.tm_min = i;
 				dt.minutes = i;
 				n++;
 			}
 			if ((i = get_int("second", "", 0, 59)) >= 0) {
-				t.sec = i;
+				t.tm_sec = i;
 				dt.seconds = i;
 				n++;
 			}
 			if (n > 0) {
 				ds3231_set_datetime(&dt, &rtc);
-				rtc_set_datetime(&t);
-				sleep_us(64);
+				ts.tv_sec = mktime(&t);
+				aon_timer_set_time(&ts);
 			}
 			putchar('\n');
 			break;
-#endif
 
 #if LIB_STDIO_MSC_USB
 		case 'u':
