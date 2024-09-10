@@ -20,7 +20,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-//#include "hardware/rtc.h"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
@@ -96,22 +95,12 @@ void config(void)
 	int go_flag = 0;
 	int i, menu;
 //	int n;
-//	datetime_t t = { .year = 2024, .month = 4, .day = 23, .dotw = 2,
-//			.hour = 18, .min = 24, .sec = 32 };
-//	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
-//				       "Thu", "Fri", "Sat" };
-
-
 	struct tm t = { .tm_year = 124, .tm_mon = 0, .tm_mday = 1,
 			.tm_wday = 1, .tm_hour = 0, .tm_min = 0, .tm_sec = 0,
        			.tm_isdst = -1 };
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
 	struct timespec ts;
-
-	ts.tv_sec = mktime(&t);
-	aon_timer_start(&ts);
-
 	UNUSED(DS3231_MONTHS);
         UNUSED(DS3231_WDAYS);
 
@@ -121,7 +110,7 @@ void config(void)
 		f_read(&sd_file, &cpu, sizeof(cpu), &br);
 		f_read(&sd_file, &speed, sizeof(speed), &br);
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
-//		f_read(&sd_file, &t, sizeof(datetime_t), &br);
+		f_read(&sd_file, &t, sizeof(struct tm), &br);
 		f_read(&sd_file, &disks[0], DISKLEN, &br);
 		f_read(&sd_file, &disks[1], DISKLEN, &br);
 		f_read(&sd_file, &disks[2], DISKLEN, &br);
@@ -129,7 +118,6 @@ void config(void)
 		f_close(&sd_file);
 	}
 
-#if 0
 	/* Create a real-time clock structure and initiate this */
 	struct ds3231_rtc rtc;
 	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
@@ -155,21 +143,20 @@ void config(void)
 
 	/* if we read something take it over */
 	if (dt.year != 2000) {
-		t.year = dt.year;
-		t.month = dt.month;
-		t.day = dt.day;
-		t.hour = dt.hour;
-		t.min = dt.minutes;
-		t.sec = dt.seconds;
+		t.tm_year = dt.year - 1900;
+		t.tm_mon = dt.month - 1;
+		t.tm_mday = dt.day;
+		t.tm_hour = dt.hour;
+		t.tm_min = dt.minutes;
+		t.tm_sec = dt.seconds;
 		if (dt.dotw < 7)
-			t.dotw = dt.dotw;
+			t.tm_wday = dt.dotw;
 		else
-			t.dotw = 0;
+			t.tm_wday = 0;
 	}
 
-	rtc_set_datetime(&t);
-	sleep_us(64);
-#endif
+	ts.tv_sec = mktime(&t);
+	aon_timer_start(&ts);
 
 	menu = 1;
 
@@ -367,7 +354,7 @@ again:
 		f_write(&sd_file, &cpu, sizeof(cpu), &br);
 		f_write(&sd_file, &speed, sizeof(speed), &br);
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
-//		f_write(&sd_file, &t, sizeof(datetime_t), &br);
+		f_write(&sd_file, &t, sizeof(struct tm), &br);
 		f_write(&sd_file, &disks[0], DISKLEN, &br);
 		f_write(&sd_file, &disks[1], DISKLEN, &br);
 		f_write(&sd_file, &disks[2], DISKLEN, &br);
