@@ -43,7 +43,7 @@ static unsigned char dsk_buf[SEC_SZ];
 
 /* global variables for access to MicroSD card */
 
-/* Configuration of RP2040 hardware SPI object */
+/* Configuration of hardware SPI object */
 static spi_t spi = {
 	.hw_inst = SD_SPI_PORT,
 	.sck_gpio = SD_SPI_CLK,
