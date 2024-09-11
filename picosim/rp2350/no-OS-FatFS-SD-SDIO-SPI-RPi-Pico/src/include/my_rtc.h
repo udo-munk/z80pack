@@ -1,4 +1,4 @@
-/* rtc.h
+/* my_rtc.h
 Copyright 2021 Carl John Kugler III
 
 Licensed under the Apache License, Version 2.0 (the License); you may not use 
@@ -20,7 +20,7 @@ extern "C" {
 #include <time.h>
 
 extern time_t epochtime;
-void time_init();
+bool time_init();
 
 #ifdef __cplusplus
 }

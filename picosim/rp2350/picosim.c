@@ -28,7 +28,7 @@
 
 #include "gpio.h"
 #include "hw_config.h"
-#include "rtc.h"
+#include "my_rtc.h"
 
 /* Project includes */
 #include "sim.h"

@@ -1,5 +1,5 @@
 # no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
-# v3.1.0
+# v3.3.1
 
 ## C/C++ Library for SD Cards on the Pico
 
@@ -11,17 +11,27 @@ and a 4-bit wide Secure Digital Input Output (SDIO) driver derived from
 It is wrapped up in a complete runnable project, with a little command line interface, some self tests, and an example data logging application.
 
 ## What's new
+### v3.3.1
+Add support for PICO_BOARD pico2
+### v3.3.0
+Add support for running without Chip Select (CS) (formerly Slave Select [SS]). See [Running without Chip Select (CS) (formerly Slave Select [SS])](#running-without-chip-select-cs-formerly-slave-select-ss).
+### v3.2.0
+* Add `spi_mode` to the hardware configuration.
+For SPI attached cards, SPI Mode 3 can significantly improve performance.
+See [SPI Controller Configuration](#spi-controller-configuration).
+* Make timeouts configurable. See [Timeouts](#timeouts).
+* Add retries in SPI driver `sd_read_blocks`.
 ### v3.1.0
 * Add support for the RP2350
 ### v3.0.0
 * Migrate to **Raspberry Pi Pico SDK 2.0.0**
-* Simplify SPI wait for DMA transfer completion, including elimination of DMA interrupt handler
+* Simplify SPI wait for DMA transfer completion, including elimination of DMA interrupt handler.
 For required migration actions, see [Appendix A: Migration actions](#appendix-a-migration-actions).
 ### v2.6.0
-* CRC performance improvements for SPI
+* CRC performance improvements for SPI.
 * Clean up `sd_write_blocks` in `sd_card_spi.c`
 ### v2.5.0
-* Refactor SPI sd_write_blocks
+* Refactor SPI sd_write_blocks.
 * Drop support for SD Standard Capacity Memory Card (up to and including 2 GB). 
 SDSC Card uses byte unit address and SDHC and SDXC Cards (CCS=1) use block unit address (512 Bytes unit).
 ### v2.4.0
@@ -85,7 +95,9 @@ and the
 * SPI attached cards:
   * One or two Serial Peripheral Interface (SPI) controllers may be used.
   * For each SPI controller used, one GPIO is needed for each of RX, TX, and SCK. Note: each SPI controller can only use a limited set of GPIOs for these functions.
-  * For each SD card attached to an SPI controller, a GPIO is needed for slave (or "chip") select (SS or "CS"), and, optionally, another for Card Detect (CD or "DET").
+  * For each SD card attached to an SPI controller:
+      * (Optional, if there's only one SD card) A GPIO for slave (or "chip") select (SS or "CS"). (See [Running without Chip Select (CS) (formerly Slave Select [SS])](#running-without-chip-select-cs-formerly-slave-select-ss).)
+      * (Optional) A GPIO for Card Detect (CD or "DET"). (See [Notes about Card Detect](#notes-about-card-detect).)
 * SDIO attached cards:
   * A PIO block
   * Two DMA channels claimed with `dma_claim_unused_channel`
@@ -134,12 +146,12 @@ once on SPI and one on SDIO.
     * Transfer rate 12.3 MiB/s (12.9 MB/s), or 12550 KiB/s (12851 kB/s) (102807 kb/s)
 
 * SPI:
-  * Writing
-    * Elapsed seconds 72.9
-    * Transfer rate 2.74 MiB/s (2.88 MB/s), or 2808 KiB/s (2875 kB/s) (23002 kb/s)
-  * Reading
-    * Elapsed seconds 75.9
-    * Transfer rate 2.63 MiB/s (2.76 MB/s), or 2697 KiB/s (2762 kB/s) (22096 kb/s) 
+  * Writing...
+    * Elapsed seconds 68.6
+    * Transfer rate 2.92 MiB/s (3.06 MB/s), or 2986 KiB/s (3057 kB/s) (24458 kb/s)
+  * Reading...
+    * Elapsed seconds 72.7
+    * Transfer rate 2.75 MiB/s (2.88 MB/s), or 2816 KiB/s (2883 kB/s) (23065 kb/s)
 
 Results from a
 [port](https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/blob/main/examples/command_line/tests/bench.c)
@@ -168,14 +180,14 @@ of
   write speed and latency
   speed,max,min,avg
   KB/Sec,usec,usec,usec
-  2887.0,23936,22497,22663
-  2904.6,23923,22496,22546
+  3160.3,31060,20359,20686
+  3204.7,21576,20338,20418
   ...
   read speed and latency
   speed,max,min,avg
   KB/Sec,usec,usec,usec
-  2778.4,24017,23569,23592
-  2778.4,24018,23569,23587
+  2970.5,22491,22004,22061
+  2970.5,22492,21997,22057
   ...
   ```
 
@@ -310,6 +322,30 @@ or polling.
   * Periodically poll sd_test_com() which can be called any time after sd_init_driver() is called. This function minimally accesses the bus to check for the presence of an SD card. The internals of this call automatically flags the SD interface for reinitialization when false is returned. If false is returned when the previous call returned true, it is important to invalidate any file handles that are still opened, unmount, and reset any mounted flags. Then don't try to remount until sd_test_com() returns true once again.
   * If you don't care much about performance or battery life, you could mount the card before each access and unmount it after. This might be a good strategy for a slow data logging application, for example.
   * Some other form of polling: if the card is periodically accessed at rate faster than the user can swap cards, then the temporary absence of a card will be noticed, so a swap will be detected. For example, if a data logging application writes a log record to the card once per second, it is unlikely that the user could swap cards between accesses.
+
+## Running without Chip Select (CS) (formerly Slave Select [SS])
+If you have only one SD card, and you are short on GPIOs, you may be able to run without CS (SS).
+The idea is that if you have only one SD card, why not leave it permanently selected?
+In this minimal configuration, only three GPIOs are required: CLK (SCK), DI (MOSI), and DO (MISO).
+
+I know of no guarantee that this will work for all SD cards.
+The [Physical Layer Simplified Specification](https://www.sdcard.org/downloads/pls/) says
+> Every command or data block is
+> built of 8-bit bytes and is byte aligned with the CS signal...
+> The card starts to count SPI bus clock cycle at the assertion of the CS signal...
+> The host
+> starts every bus transaction by asserting the CS signal low.
+
+It doesn't say what happens if the CS signal is always asserted.
+However, it worked for me with:
+* [Silicon Power 3D NAND U1 32GB microSD card](https://www.amazon.com/gp/product/B07RSXSYJC/)
+* [SanDisk 16GB Ultra microSDHC UHS-I Memory Card ](https://www.amazon.com/gp/product/B089DPCJS1/ref=ppx_yo_dt_b_search_asin_title?th=1)
+* [PNY 16GB Elite Class 10 U1 microSDHC Flash Memory Card](https://www.amazon.com/gp/product/B08QDN7CVN/ref=ppx_yo_dt_b_search_asin_title)
+
+You will need to pull down the CS line on the SD card with hardware. (I.e., connect CS to GND. CS is active low.)
+
+In the hardware configuration definition, set `ss_gpio` to -1.
+See [An instance of `sd_spi_if_t` describes the configuration of one SPI to SD card interface.](#an-instance-of-sd_spi_if_t-describes-the-configuration-of-one-spi-to-sd-card-interface).
 
 ## Firmware
 ### Procedure
@@ -503,7 +539,10 @@ typedef struct sd_spi_if_t {
 } sd_spi_if_t;
 ```
 * `spi` Points to the instance of `spi_t` that is to be used as the SPI to drive this interface
-* `ss_gpio` Slave Select (SS) (or "Chip Select [CS]") GPIO for the SD card socket associated with this interface
+* `ss_gpio` Slave Select (SS) (or "Chip Select [CS]") GPIO for the SD card socket associated with this interface.
+Set this to -1 to disable it.
+(See [Running without Chip Select (CS) (formerly Slave Select [SS])](#running-without-chip-select-cs-formerly-slave-select-ss).)
+*Note:* 0 is a valid GPIO number, so you must explicitly set it to -1 to disable it.
 * `set_drive_strength` Enable explicit specification of output drive strength of `ss_gpio_drive_strength`. 
 If false, the GPIO's drive strength will be implicitly set to 4 mA.
 * `ss_gpio_drive_strength` Drive strength for the SS (or CS).
@@ -523,14 +562,25 @@ typedef struct spi_t {
     uint mosi_gpio;
     uint sck_gpio;
     uint baud_rate;
+
+    /* The different modes of the Motorola SPI protocol are:
+    - Mode 0: When CPOL and CPHA are both 0, data sampled at the leading rising edge of the
+    clock pulse and shifted out on the falling edge. This is the most common mode for SPI bus
+    communication.
+    - Mode 1: When CPOL is 0 and CPHA is 1, data sampled at the trailing falling edge and
+    shifted out on the rising edge.
+    - Mode 2: When CPOL is 1 and CPHA is 0, data sampled at the leading falling edge
+    and shifted out on the rising edge.
+    - Mode 3: When CPOL is 1 and CPHA is 1, data sampled at the trailing rising edge and
+    shifted out on the falling edge. */
+    uint spi_mode;
     bool no_miso_gpio_pull_up;
 
-    /* Drive strength levels for GPIO outputs.
+    /* Drive strength levels for GPIO outputs:
         GPIO_DRIVE_STRENGTH_2MA, 
         GPIO_DRIVE_STRENGTH_4MA, 
         GPIO_DRIVE_STRENGTH_8MA,
-        GPIO_DRIVE_STRENGTH_12MA
-    */
+        GPIO_DRIVE_STRENGTH_12MA */
     bool set_drive_strength;
     enum gpio_drive_strength mosi_gpio_drive_strength;
     enum gpio_drive_strength sck_gpio_drive_strength;
@@ -547,7 +597,7 @@ typedef struct spi_t {
 * `miso_gpio` SPI Master In, Slave Out (MISO) (also called "CIPO" or "Peripheral's SDO") GPIO number. This is connected to the SD card's Data Out (DO).
 * `mosi_gpio` SPI Master Out, Slave In (MOSI) (also called "COPI", or "Peripheral's SDI") GPIO number. This is connected to the SD card's Data In (DI).
 * `sck_gpio` SPI Serial Clock GPIO number. This is connected to the SD card's Serial Clock (SCK).
-* `baud_rate` Frequency of the SPI Serial Clock, in Hertz. The default is 10 MHz.
+* `baud_rate` Frequency of the SPI Serial Clock, in Hertz. The default is `clk_sys` / 12.
   This is ultimately passed to the SDK's [spi_set_baudrate](https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#ga37f4c04ce4165ac8c129226336a0b66c). This applies a hardware prescale and a post-divide to the *Peripheral clock* (`clk_peri`) (see section **4.4.2.3.** *Clock prescaler* in [RP2040 Datasheet](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf)). 
   The *Peripheral clock* typically,
   but not necessarily, runs from `clk_sys`.
@@ -560,11 +610,16 @@ typedef struct spi_t {
   ```C
       .baud_rate = 125 * 1000 * 1000 / 4  // 31250000 Hz
   ```
-  If you ask for 14000000, you'll actually get 12500000 Hz.
+  If you ask for 14,000,000 Hz, you'll actually get 12,500,000 Hz.
   The actual baud rate will be printed out if `USE_DBG_PRINTF` (see [Messages from the SD card driver](#messages-from-the-sd-card-driver)) is defined at compile time.
   The higher the baud rate, the faster the data transfer.
-  However, the hardware might limit the usable baud rate.
+  At the maximum `clk_peri` frequency on RP2040 of 133MHz, the maximum peak bit rate in master mode is 62.5Mbps.
+  However, the hardware (including the SD card) might limit the usable baud rate.
   See [Pull Up Resistors and other electrical considerations](#pull-up-resistors-and-other-electrical-considerations).
+* `spi_mode` 0, 1, 2, or 3. 0 is the most common mode for SPI bus slave communication.
+This controls the Motorola SPI frame format CPOL, clock polarity; and CPHA, clock phase.
+SPI mode 0 (CPOL=0, CPHA=0) is the proper setting to control MMC/SDC, but mode 3 (CPOL=1, CPHA=1) also works as well in most cases[^6].
+Mode 3 can be around 15% faster than mode 0, probably due to quirks of the ARM PrimeCell Synchronous Serial Port in the RP2040.
 * `no_miso_gpio_pull_up` According to the standard, an SD card's DO MUST be pulled up (at least for the old MMC cards). 
 However, it might be done externally. If `no_miso_gpio_pull_up` is false, the library will set the RP2040 GPIO internal pull up.
 * `set_drive_strength` Specifies whether or not to set the RP2040 GPIO pin drive strength.
@@ -588,7 +643,7 @@ If `set_drive_strength` is true, each GPIO's drive strength can be set individua
 If false, two DMA channels will be claimed with `dma_claim_unused_channel`.
 * `tx_dma` The DMA channel to use for SPI TX. Ignored if `dma_claim_unused_channel` is false
 * `rx_dma` The DMA channel to use for SPI RX. Ignored if `dma_claim_unused_channel` is false
-### You must provide a definition for the functions declared in `sd_driver/hw_config.h`:  
+### You must provide a definition for the functions declared in `sd_driver/hw_config.h`
 * `size_t sd_get_num()` Returns the number of SD cards  
 * `sd_card_t *sd_get_by_num(size_t num)` Returns a pointer to the SD card "object" at the given
 [physical drive number](http://elm-chan.org/fsw/ff/doc/filename.html#vol).
@@ -602,7 +657,7 @@ In either case, the application simply provides an implementation of the functio
 * See `dynamic_config_example/hw_config.cpp` for an example of dynamic configuration.
 * One advantage of static configuration is that the fantastic GNU Linker (ld) strips out anything that you don't use.
 
-## Customizing the *FatFs - Generic FAT Filesystem Module*
+### Customizing the *FatFs - Generic FAT Filesystem Module*
 There are many options to configure the features of FatFs for various requirements of each project. 
 The configuration options are defined in `ffconf.h`. 
 See [Configuration Options](http://elm-chan.org/fsw/ff/doc/config.html).
@@ -618,6 +673,22 @@ target_include_directories(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico BEFORE INTERFACE
 )
 ```
 For an example, see `examples/unix_like`.
+
+### Timeouts
+Indefinite timeouts are normally bad practice, because they make it difficult to recover from an error.
+Therefore, we have timeouts all over the place.
+To make these configurable, they are collected in `sd_timeouts_t sd_timeouts` in `sd_timeouts.c`.
+The definition has the `weak` attribute, so it can be overridden by user code.
+For example, in `hw_config.c` you could have:
+```C
+sd_timeouts_t sd_timeouts = {
+    .sd_command = 2000, // Timeout in ms for response
+    .sd_command_retries = 3, // Times SPI cmd is retried when there is no response
+//...
+    .sd_sdio_begin = 1000, // Timeout in ms for response
+    .sd_sdio_stopTransmission = 200, // Timeout in ms for response
+};
+```
 
 ## Using the Application Programming Interface
 After `stdio_init_all()`, `time_init()`, and whatever other Pico SDK initialization is required, 
@@ -1030,10 +1101,13 @@ or
 
 ## Appendix D: Performance Tuning Tips
 Obviously, if possible, use 4-bit SDIO instead of 1-bit SPI.
-(See [Choosing the Interface Type(s)](#choosing-the-interface-types)).
+(See [Choosing the Interface Type(s)](#choosing-the-interface-types).)
 
 Obviously, set the baud rate as high as you can. (See
 [Customizing for the Hardware Configuration](#customizing-for-the-hardware-configuration)).
+
+If you are using SPI, try SPI mode 3 (CPOL=1, CPHA=1) instead of 0 (CPOL=0, CPHA=0). (See
+[SPI Controller Configuration](#spi-controller-configuration).) This could buy a 15% speed boost.
 
 TL;DR: In general, it is much faster to transfer a given number of bytes in one large write (or read) 
 than to transfer the same number of bytes in multiple smaller writes (or reads). 
@@ -1117,7 +1191,7 @@ distributed across many small files.
 
 ## Appendix E: Troubleshooting
 * **Check your grounds!** Maybe add some more if you were skimpy with them. The Pico has six of them.
-* Turn on `DBG_PRINTF`. (See #messages-from-the-sd-card-driver.) For example, in `CMakeLists.txt`, 
+* Turn on `DBG_PRINTF`. (See [Messages](#messages).) For example, in `CMakeLists.txt`, 
   ```CMake
   add_compile_definitions(USE_PRINTF USE_DBG_PRINTF)
   ```
@@ -1145,8 +1219,14 @@ You can swap the commenting to enable tracing of what's happening in that file.
 * Better yet, go to somwhere like [JLCPCB](https://jlcpcb.com/) and get a printed circuit board!
 
 [^1]: as of [Pull Request #12 Dynamic configuration](https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico/pull/12) (in response to [Issue #11 Configurable GPIO pins](https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico/issues/11)), Sep 11, 2021
+
 [^2]: as of [Pull Request #5 Bug in ff_getcwd when FF_VOLUMES < 2](https://github.com/carlk3/no-OS-FatFS-SD-SPI-RPi-Pico/pull/5), Aug 13, 2021
-[^3]: In my experience, the Card Detect switch on these doesn't work worth a damn. This might not be such a big deal, because according to [Physical Layer Simplified Specification](https://www.sdcard.org/downloads/pls/) the Chip Select (CS) line can be used for Card Detection: "At power up this line has a 50KOhm pull up enabled in the card... For Card detection, the host detects that the line is pulled high." 
+
+[^3]: In my experience, the Card Detect switch on these doesn't work worth a damn. This might not be such a big deal, because according to [Physical Layer Simplified Specification](https://www.sdcard.org/downloads/pls/) the Chip Select (CS) line can be used for Card Detection: "At power up this line has a 50KOhm pull up enabled in the card... For Card detection, the host detects that the line is pulled high."
 However, the Adafruit card has it's own 47 kΩ pull up on CS - Card Detect / Data Line [Bit 3], rendering it useless for Card Detection.
+
 [^4]: [Physical Layer Simplified Specification](https://www.sdcard.org/downloads/pls/)
+
 [^5]: Rationale: Instances of `sd_spi_if_t` or `sd_sdio_if_t` are separate objects instead of being embedded in `sd_card_t` objects because `sd_sdio_if_t` carries a lot of state information with it (including things like data buffers). The union of the two types has the size of the largest type, which would result in a lot of wasted space in instances of `sd_spi_if_t`. I had another solution using `malloc`, but some people are frightened of `malloc` in embedded systems.
+
+[^6]: *SPI Mode* in [How to Use MMC/SDC](http://elm-chan.org/docs/mmc/mmc_e.html#spimode)

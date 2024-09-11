@@ -1,14 +1,14 @@
-/* rtc.c
+/* my_rtc.c
 Copyright 2021 Carl John Kugler III
 
-Licensed under the Apache License, Version 2.0 (the License); you may not use 
-this file except in compliance with the License. You may obtain a copy of the 
+Licensed under the Apache License, Version 2.0 (the License); you may not use
+this file except in compliance with the License. You may obtain a copy of the
 License at
 
-   http://www.apache.org/licenses/LICENSE-2.0 
-Unless required by applicable law or agreed to in writing, software distributed 
-under the License is distributed on an AS IS BASIS, WITHOUT WARRANTIES OR 
-CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+   http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an AS IS BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 */
 #include <time.h>
@@ -17,11 +17,14 @@ specific language governing permissions and limitations under the License.
 #include "pico/stdio.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
+#if HAS_RP2040_RTC
+#  include "hardware/rtc.h"
+#endif
 //
+#include "crc.h"
 #include "ff.h"
-#include "util.h"  // calculate_checksum
 //
-#include "rtc.h"
+#include "my_rtc.h"
 
 time_t epochtime;
 
@@ -33,13 +36,20 @@ typedef struct rtc_save {
 } rtc_save_t;
 static rtc_save_t rtc_save __attribute__((section(".uninitialized_data")));
 
+static bool get_time(struct timespec *ts) {
+    if (!aon_timer_is_running()) return false;
+    aon_timer_get_time(ts);
+    return true;
+}
+
 static void update_epochtime() {
     struct tm timeinfo;
-    aon_timer_get_time(&rtc_save.ts);
+    bool ok = get_time(&rtc_save.ts);
+    if (!ok) return;
     rtc_save.signature = 0xBABEBABE;
     localtime_r(&rtc_save.ts.tv_sec, &timeinfo);
-    rtc_save.checksum = calculate_checksum((uint32_t *)&rtc_save,
-                                            offsetof(rtc_save_t, checksum));
+    rtc_save.checksum =
+        crc7((uint8_t *)&rtc_save, offsetof(rtc_save_t, checksum));
     epochtime = mktime(&timeinfo);
     // configASSERT(-1 != epochtime);
 }
@@ -52,29 +62,29 @@ time_t time(time_t *pxTime) {
     return epochtime;
 }
 
-void time_init() {
+bool time_init() {
+
+#if HAS_RP2040_RTC
+    rtc_init();
+#endif
+
     struct timespec ts;
-    aon_timer_get_time(&ts);
-
-    struct tm t, t2;
-    localtime_r(&ts.tv_sec, &t);
-    localtime_r(&rtc_save.ts.tv_sec, &t2);
-
-    if (t.tm_year != t2.tm_year) {
-        uint32_t xor_checksum = calculate_checksum(
-            (uint32_t *)&rtc_save, offsetof(rtc_save_t, checksum));
-        if (rtc_save.signature == 0xBABEBABE &&
-            rtc_save.checksum == xor_checksum) {
-            // Set rtc
-            aon_timer_set_time(&rtc_save.ts);
-        }
+    bool ok = get_time(&ts);
+    if (!ok) {
+        uint32_t xor_checksum =
+            crc7((uint8_t *)&rtc_save, offsetof(rtc_save_t, checksum));
+        if (rtc_save.signature != 0xBABEBABE || rtc_save.checksum != xor_checksum) return false;
     }
+    // Set rtc
+    aon_timer_set_time(&rtc_save.ts);
+    return true;
 }
 
 // Called by FatFs:
 DWORD get_fattime(void) {
     struct timespec ts;
-    aon_timer_get_time(&ts);
+    bool ok = get_time(&ts);
+    if (!ok) return 0;
 
     struct tm t;
     localtime_r(&ts.tv_sec, &t);
