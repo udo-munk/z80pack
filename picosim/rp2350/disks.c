@@ -50,6 +50,7 @@ static spi_t spi = {
 	.mosi_gpio = SD_SPI_SI,
 	.miso_gpio = SD_SPI_SO,
 	.baud_rate = 15 * 1000 * 1000,
+	.spi_mode = 3,
 	.set_drive_strength = true,
 	.mosi_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
 	.sck_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA
