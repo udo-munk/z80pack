@@ -90,11 +90,13 @@ DWORD get_fattime(void) {
     DWORD fattime = 0;
     // bit31:25
     // Year origin from the 1980 (0..127, e.g. 37 for 2017)
-    uint8_t yr = t.tm_year - 1980;
+    //uint8_t yr = t.tm_year - 1980;
+    uint8_t yr = t.tm_year + 1900 - 1980;
     fattime |= (0b01111111 & yr) << 25;
     // bit24:21
     // Month (1..12)
-    uint8_t mo = t.tm_mon;
+    //uint8_t mo = t.tm_mon;
+    uint8_t mo = t.tm_mon + 1;
     fattime |= (0b00001111 & mo) << 21;
     // bit20:16
     // Day of the month (1..31)
