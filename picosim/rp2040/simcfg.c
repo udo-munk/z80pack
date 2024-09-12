@@ -153,7 +153,11 @@ void config(void)
 
 	rtc_set_datetime(&t);
 	sleep_us(64);
+
 	menu = 1;
+
+	/* drop first random character after connecting terminal */
+	getchar_timeout_us(1);
 
 	while (!go_flag) {
 		if (menu) {
