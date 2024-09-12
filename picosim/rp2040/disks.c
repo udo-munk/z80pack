@@ -49,7 +49,11 @@ static spi_t spi = {
 	.sck_gpio = SD_SPI_CLK,
 	.mosi_gpio = SD_SPI_SI,
 	.miso_gpio = SD_SPI_SO,
-	.baud_rate = 12 * 1000 * 1000 /* Actual frequency: 10416666 */
+	.baud_rate = 12 * 1000 * 1000, /* Actual frequency: 10416666 */
+	.spi_mode = 3,
+	.set_drive_strength = true,
+	.mosi_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
+	.sck_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA
 };
 
 /* SPI Interface */
