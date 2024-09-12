@@ -122,8 +122,16 @@ int main(void)
 	put_pixel(rgb); /* LED red */
 
 	/* when using USB UART wait until it is connected */
+	/* but also get out if there is input at default UART */
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	while (!tud_cdc_connected()) {
+#if LIB_PICO_STDIO_UART
+		uart_inst_t *my_uart = uart_default;
+		if (uart_is_readable(my_uart)) {
+			getchar();
+			break;
+		}
+#endif
 		rgb = rgb - 0x000100;	/* while waiting make */
 		if (rgb == 0)		/* RGB LED fading red */
 			rgb = 0x005500;
