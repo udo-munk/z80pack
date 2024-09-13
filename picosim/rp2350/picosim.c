@@ -114,8 +114,8 @@ int main(void)
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	while (!tud_cdc_connected()) {
 #if LIB_PICO_STDIO_UART
-		// on RP2350 the UART is readable even if nothing
-		// is connected, so this won't work here
+		// the UART sometimes is readable even if nothing
+		// is connected, this doesn't work
 		//uart_inst_t *my_uart = uart_default;
 		//if (uart_is_readable(my_uart)) {
 		//	getchar();
