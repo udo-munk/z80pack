@@ -1,3 +1,9 @@
+/*
+ * Z80SIM  -  a Z80-CPU simulator
+ *
+ * Copyright (C) 2024 by Udo Munk
+ */
+
 #ifndef GPIO_INC
 #define GPIO_INC
 
