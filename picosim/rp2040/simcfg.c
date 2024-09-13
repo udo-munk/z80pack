@@ -161,12 +161,11 @@ void config(void)
 
 	while (!go_flag) {
 		if (menu) {
-			if (rtc_get_datetime(&t)) {
-				printf("Current time: %s %04d-%02d-%02d "
-				       "%02d:%02d:%02d\n", dotw[t.dotw],
-				       t.year, t.month, t.day,
-				       t.hour, t.min, t.sec);
-			}
+			rtc_get_datetime(&t);
+			printf("Current time: %s %04d-%02d-%02d "
+			       "%02d:%02d:%02d\n", dotw[t.dotw],
+			       t.year, t.month, t.day,
+			       t.hour, t.min, t.sec);
 			printf("a - set date\n");
 			printf("t - set time\n");
 #if LIB_STDIO_MSC_USB
@@ -197,6 +196,7 @@ void config(void)
 		switch (tolower((unsigned char) s[0])) {
 		case 'a':
 			n = 0;
+			rtc_get_datetime(&t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
 				t.dotw = i;
@@ -231,6 +231,7 @@ void config(void)
 
 		case 't':
 			n = 0;
+			rtc_get_datetime(&t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("hour", "", 0, 23)) >= 0) {
 				t.hour = i;
