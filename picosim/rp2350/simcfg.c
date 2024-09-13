@@ -202,6 +202,7 @@ void config(void)
 		case 'a':
 			n = 0;
 			aon_timer_get_time(&ts);
+			localtime_r(&ts.tv_sec, &t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("weekday", " (0=Sun)", 0, 6)) >= 0) {
 				t.tm_wday = i;
@@ -237,6 +238,7 @@ void config(void)
 		case 't':
 			n = 0;
 			aon_timer_get_time(&ts);
+			localtime_r(&ts.tv_sec, &t);
 			ds3231_get_datetime(&dt, &rtc);
 			if ((i = get_int("hour", "", 0, 23)) >= 0) {
 				t.tm_hour = i;
