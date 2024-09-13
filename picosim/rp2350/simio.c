@@ -108,10 +108,12 @@ static BYTE p000_in(void)
 		stat &= 0b11111110;	/* if so flip status bit */
 #endif
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
-	if (tud_cdc_write_available())	/* check if output to UART is possible */
-		stat &= 0b01111111;	/* if so flip status bit */
-	if (tud_cdc_available())	/* check if there is input from UART */
-		stat &= 0b11111110;	/* if so flip status bit */
+	if (tud_cdc_connected()) {
+		if (tud_cdc_write_available())	/* check if output to UART is possible */
+			stat &= 0b01111111;	/* if so flip status bit */
+		if (tud_cdc_available())	/* check if there is input from UART */
+			stat &= 0b11111110;	/* if so flip status bit */
+	}
 #endif
 
 	return stat;
@@ -132,7 +134,7 @@ static BYTE p001_in(void)
 		input_avail = 1;
 #endif
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
-	if (tud_cdc_available())
+	if (tud_cdc_connected() && tud_cdc_available())
 		input_avail = 1;
 #endif
 	if (input_avail)
