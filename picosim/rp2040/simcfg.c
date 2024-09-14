@@ -156,9 +156,6 @@ void config(void)
 
 	menu = 1;
 
-	/* drop first random character after connecting terminal */
-	getchar_timeout_us(1);
-
 	while (!go_flag) {
 		if (menu) {
 			rtc_get_datetime(&t);
