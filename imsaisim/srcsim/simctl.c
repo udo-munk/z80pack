@@ -254,15 +254,15 @@ static void run_clicked(int state, int val)
 
 	switch (state) {
 	case FP_SW_UP:
-		if (cpu_state != CONTIN_RUN) {
-			cpu_state = CONTIN_RUN;
+		if (cpu_state != ST_CONTIN_RUN) {
+			cpu_state = ST_CONTIN_RUN;
 			fp_led_wait = 0;
 			cpu_switch = 1;
 		}
 		break;
 	case FP_SW_DOWN:
-		if (cpu_state == CONTIN_RUN) {
-			cpu_state = STOPPED;
+		if (cpu_state == ST_CONTIN_RUN) {
+			cpu_state = ST_STOPPED;
 			fp_led_wait = 1;
 			cpu_switch = 0;
 		}
@@ -282,7 +282,7 @@ static void step_clicked(int state, int val)
 	if (!power)
 		return;
 
-	if (cpu_state == CONTIN_RUN)
+	if (cpu_state == ST_CONTIN_RUN)
 		return;
 
 	switch (state) {
@@ -302,7 +302,7 @@ int wait_step(void)
 {
 	int ret = 0;
 
-	if (cpu_state != SINGLE_STEP) {
+	if (cpu_state != ST_SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
 		m1_step = 0;
 		return ret;
@@ -338,7 +338,7 @@ int wait_step(void)
  */
 void wait_int_step(void)
 {
-	if (cpu_state != SINGLE_STEP)
+	if (cpu_state != ST_SINGLE_STEP)
 		return;
 
 	cpu_switch = 3;
@@ -365,7 +365,7 @@ static void reset_clicked(int state, int val)
 	case FP_SW_UP:
 		/* reset CPU only */
 		reset = 1;
-		cpu_state |= RESET;
+		cpu_state |= ST_RESET;
 		m1_step = 0;
 		IFF = 0;
 		fp_led_output = 0;
@@ -375,7 +375,7 @@ static void reset_clicked(int state, int val)
 			/* reset CPU */
 			reset = 0;
 			reset_cpu();
-			cpu_state &= ~RESET;
+			cpu_state &= ~ST_RESET;
 
 			/* update front panel */
 			fp_led_address = 0;
@@ -386,7 +386,7 @@ static void reset_clicked(int state, int val)
 	case FP_SW_DOWN:
 		/* reset CPU and I/O devices */
 		reset = 1;
-		cpu_state |= RESET;
+		cpu_state |= ST_RESET;
 		m1_step = 0;
 		IFF = 0;
 		fp_led_output = 0;
@@ -408,7 +408,7 @@ static void examine_clicked(int state, int val)
 	if (!power)
 		return;
 
-	if ((cpu_state == CONTIN_RUN) || (cpu_bus & CPU_HLTA))
+	if ((cpu_state == ST_CONTIN_RUN) || (cpu_bus & CPU_HLTA))
 		return;
 
 	switch (state) {
@@ -437,7 +437,7 @@ static void deposit_clicked(int state, int val)
 	if (!power)
 		return;
 
-	if ((cpu_state == CONTIN_RUN) || (cpu_bus & CPU_HLTA))
+	if ((cpu_state == ST_CONTIN_RUN) || (cpu_bus & CPU_HLTA))
 		return;
 
 	switch (state) {
@@ -483,7 +483,7 @@ static void power_clicked(int state, int val)
 			break;
 		power--;
 		cpu_switch = 0;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		cpu_error = POWEROFF;
 		break;
 	default:
@@ -498,7 +498,7 @@ static void quit_callback(void)
 {
 	power--;
 	cpu_switch = 0;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 	cpu_error = POWEROFF;
 }
 #endif /* FRONTPANEL */

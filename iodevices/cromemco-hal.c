@@ -167,7 +167,7 @@ again:
         } else {
             LOGE(TAG, "can't write data");
             cpu_error = IOERROR;
-            cpu_state = STOPPED;
+            cpu_state = ST_STOPPED;
         }
     }
 }
@@ -227,7 +227,7 @@ static int scktsrv_in(int dev) {
         } else {
             LOGE(TAG, "can't read tcpsocket %d data", dev);
             cpu_error = IOERROR;
-            cpu_state = STOPPED;
+            cpu_state = ST_STOPPED;
             return 0;
         }
 	}
@@ -254,7 +254,7 @@ again:
 		} else {
             LOGE(TAG, "can't write socket %d data", dev);
             cpu_error = IOERROR;
-            cpu_state = STOPPED;
+            cpu_state = ST_STOPPED;
 		}
 	}
 }

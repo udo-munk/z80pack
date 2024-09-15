@@ -381,7 +381,7 @@ static int trap_dd(void)
 	}
 #endif
 	cpu_error = OPTRAP2;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 	return 0;
 }
 

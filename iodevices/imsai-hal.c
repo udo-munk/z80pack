@@ -189,7 +189,7 @@ static void stdio_status(BYTE *stat) {
     if (p[0].revents & POLLNVAL) {
         LOGE(TAG, "can't use terminal, try 'screen simulation ...'");
         cpu_error = IOERROR;
-        cpu_state = STOPPED;
+        cpu_state = ST_STOPPED;
     }
     *stat |= 1;
 
@@ -226,7 +226,7 @@ again:
         } else {
             LOGE(TAG, "can't write data");
             cpu_error = IOERROR;
-            cpu_state = STOPPED;
+            cpu_state = ST_STOPPED;
         }
     }
 }

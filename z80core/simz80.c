@@ -508,7 +508,7 @@ void cpu_z80(void)
 					fp_sampleData();
 					wait_int_step();
 					cpu_time -= get_clock_us() - clk;
-					if (cpu_state & RESET)
+					if (cpu_state & ST_RESET)
 						goto leave;
 				}
 #endif
@@ -526,7 +526,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (F_flag && (cpu_state & RESET))
+				if (F_flag && (cpu_state & ST_RESET))
 					goto leave;
 #endif
 				switch (int_data) {
@@ -559,7 +559,7 @@ void cpu_z80(void)
 					break;
 				default: /* unsupported bus data */
 					cpu_error = INTERROR;
-					cpu_state = STOPPED;
+					cpu_state = ST_STOPPED;
 					continue;
 				}
 				T += 13;
@@ -568,7 +568,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (F_flag && (cpu_state & RESET))
+				if (F_flag && (cpu_state & ST_RESET))
 					goto leave;
 #endif
 				PC = 0x38;
@@ -578,7 +578,7 @@ void cpu_z80(void)
 				memwrt(--SP, PC >> 8);
 				memwrt(--SP, PC);
 #ifdef FRONTPANEL
-				if (F_flag && (cpu_state & RESET))
+				if (F_flag && (cpu_state & ST_RESET))
 					goto leave;
 #endif
 				p = (I << 8) + (int_data & 0xff);
@@ -635,7 +635,7 @@ leave:
 		check_gui_break();
 #endif
 
-	} while (cpu_state == CONTIN_RUN);
+	} while (cpu_state == ST_CONTIN_RUN);
 
 #ifdef BUS_8080
 	if (!(cpu_bus & CPU_INTA))
@@ -679,11 +679,11 @@ static int op_halt(void)		/* HALT */
 		if (IFF == 0) {
 			/* without a frontpanel DI + HALT stops the machine */
 			cpu_error = OPHALT;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		} else {
 			/* else wait for INT, NMI or user interrupt */
 			while ((int_int == 0) && (int_nmi == 0) &&
-			       (cpu_state == CONTIN_RUN)) {
+			       (cpu_state == ST_CONTIN_RUN)) {
 				sleep_for_ms(1);
 				R += 99;
 			}
@@ -703,7 +703,7 @@ static int op_halt(void)		/* HALT */
 		if (IFF == 0) {
 			/* INT disabled, wait for NMI,
 			   frontpanel reset or user interrupt */
-			while ((int_nmi == 0) && !(cpu_state & RESET)) {
+			while ((int_nmi == 0) && !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
 				sleep_for_ms(1);
@@ -715,7 +715,7 @@ static int op_halt(void)		/* HALT */
 			/* else wait for INT, NMI,
 			   frontpanel reset or user interrupt */
 			while ((int_int == 0) && (int_nmi == 0) &&
-			       !(cpu_state & RESET)) {
+			       !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
 				sleep_for_ms(1);

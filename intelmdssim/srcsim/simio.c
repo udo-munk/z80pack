@@ -450,7 +450,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 	}
 }
 

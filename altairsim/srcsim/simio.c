@@ -295,7 +295,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 	}
 
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
@@ -348,7 +348,7 @@ static void lpt_data_out(BYTE data)
 		if ((printer = creat("printer.txt", 0664)) == -1) {
 			LOGE(TAG, "can't create printer.txt");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 			printer = 0;
 			return;
 		}
@@ -362,7 +362,7 @@ again:
 			} else {
 				LOGE(TAG, "can't write to printer.txt");
 				cpu_error = IOERROR;
-				cpu_state = STOPPED;
+				cpu_state = ST_STOPPED;
 			}
 		}
 	}

@@ -453,7 +453,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 128) {
 		cpu_error = IOHALT;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 	}
 
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
@@ -520,7 +520,7 @@ again:
 			} else {
 				LOGE(TAG, "can't write to printer");
 				cpu_error = IOERROR;
-				cpu_state = STOPPED;
+				cpu_state = ST_STOPPED;
 			}
 		}
 
@@ -567,7 +567,7 @@ static void mmu_out(BYTE data)
 	if (data >= MAXSEG) {
 		LOGE(TAG, "selected bank %d not available", data);
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 	}
 
 	selbnk = data;

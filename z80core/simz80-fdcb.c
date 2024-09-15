@@ -324,7 +324,7 @@ static int trap_fdcb(int data)
 	UNUSED(data);
 
 	cpu_error = OPTRAP4;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 	return 0;
 }
 

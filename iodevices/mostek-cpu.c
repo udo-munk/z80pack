@@ -106,7 +106,7 @@ again:
 		} else {
 			perror("write data sio1");
 			cpu_error = IOERROR;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 }

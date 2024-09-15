@@ -406,7 +406,7 @@ int op_cb_handle(void)
 static int trap_cb(void)
 {
 	cpu_error = OPTRAP2;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 	return 0;
 }
 

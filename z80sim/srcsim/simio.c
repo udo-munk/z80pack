@@ -109,7 +109,7 @@ static BYTE p000_in(void)
 		tty_stat &= ~1;
 	if (p[0].revents & POLLNVAL) {
 		cpu_error = IOERROR;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 	}
 	return tty_stat;
 }
@@ -190,7 +190,7 @@ static void hwctl_out(BYTE data)
 
 	if (data & 128) {	/* halt system */
 		cpu_error = IOHALT;
-		cpu_state = STOPPED;
+		cpu_state = ST_STOPPED;
 		return;
 	}
 

@@ -114,7 +114,7 @@ void switch_cpu(int new_cpu)
 			break;
 		}
 		cpu = new_cpu;
-		cpu_state = MODEL_SWITCH;
+		cpu_state = ST_MODEL_SWITCH;
 	}
 }
 #endif
@@ -126,7 +126,7 @@ void run_cpu(void)
 {
 	uint64_t t;
 
-	cpu_state = CONTIN_RUN;
+	cpu_state = ST_CONTIN_RUN;
 	cpu_error = NONE;
 	t = get_clock_us();
 	for (;;) {
@@ -144,8 +144,8 @@ void run_cpu(void)
 		default:
 			break;
 		}
-		if (cpu_state == MODEL_SWITCH) {
-			cpu_state = CONTIN_RUN;
+		if (cpu_state == ST_MODEL_SWITCH) {
+			cpu_state = ST_CONTIN_RUN;
 			continue;
 		} else
 			break;
@@ -160,7 +160,7 @@ void step_cpu(void)
 {
 	uint64_t t;
 
-	cpu_state = SINGLE_STEP;
+	cpu_state = ST_SINGLE_STEP;
 	cpu_error = NONE;
 	t = get_clock_us();
 	switch (cpu) {
@@ -178,7 +178,7 @@ void step_cpu(void)
 		break;
 	}
 	cpu_time += get_clock_us() - t;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 }
 
 /*
@@ -328,7 +328,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	else {
 		if (i_flag) {
 			cpu_error = IOTRAPIN;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 		io_data = IO_DATA_UNUSED;
 	}
@@ -392,7 +392,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	else {
 		if (i_flag) {
 			cpu_error = IOTRAPOUT;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		}
 	}
 

@@ -1099,7 +1099,7 @@ static void timeout(int sig)
 {
 	UNUSED(sig);
 
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 }
 
 /*

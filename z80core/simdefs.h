@@ -65,11 +65,11 @@
 #endif
 
 				/* operation state of simulated CPU */
-#define STOPPED		0	/* stopped */
-#define CONTIN_RUN	1	/* continual run */
-#define SINGLE_STEP	2	/* single step */
-#define RESET		4	/* reset */
-#define MODEL_SWITCH	8	/* model switched */
+#define ST_STOPPED	0	/* stopped */
+#define ST_CONTIN_RUN	1	/* continual run */
+#define ST_SINGLE_STEP	2	/* single step */
+#define ST_RESET	4	/* reset */
+#define ST_MODEL_SWITCH	8	/* model switched */
 
 				/* error codes */
 #define NONE		0	/* no error */

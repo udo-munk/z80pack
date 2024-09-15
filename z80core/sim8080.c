@@ -515,7 +515,7 @@ void cpu_8080(void)
 					fp_sampleData();
 					wait_int_step();
 					cpu_time -= get_clock_us() - clk;
-					if (cpu_state & RESET)
+					if (cpu_state & ST_RESET)
 						goto leave;
 				}
 #endif
@@ -540,7 +540,7 @@ void cpu_8080(void)
 			memwrt(--SP, PC);
 
 #ifdef FRONTPANEL
-			if (F_flag && (cpu_state & RESET))
+			if (F_flag && (cpu_state & ST_RESET))
 				goto leave;
 #endif
 
@@ -574,7 +574,7 @@ void cpu_8080(void)
 				break;
 			default: /* unsupported bus data */
 				cpu_error = INTERROR;
-				cpu_state = STOPPED;
+				cpu_state = ST_STOPPED;
 				continue;
 			}
 			T += 11;
@@ -623,7 +623,7 @@ leave:
 		check_gui_break();
 #endif
 
-	} while (cpu_state == CONTIN_RUN);
+	} while (cpu_state == ST_CONTIN_RUN);
 
 #ifdef BUS_8080
 	if (!(cpu_bus & CPU_INTA))
@@ -653,7 +653,7 @@ leave:
 static int trap_undoc(void)
 {
 	cpu_error = OPTRAP1;
-	cpu_state = STOPPED;
+	cpu_state = ST_STOPPED;
 	return 0;
 }
 
@@ -677,10 +677,10 @@ static int op_hlt(void)			/* HLT */
 		if (IFF == 0) {
 			/* without a frontpanel DI + HALT stops the machine */
 			cpu_error = OPHALT;
-			cpu_state = STOPPED;
+			cpu_state = ST_STOPPED;
 		} else {
 			/* else wait for INT or user interrupt */
-			while ((int_int == 0) && (cpu_state == CONTIN_RUN)) {
+			while ((int_int == 0) && (cpu_state == ST_CONTIN_RUN)) {
 				sleep_for_ms(1);
 			}
 		}
@@ -699,7 +699,7 @@ static int op_hlt(void)			/* HLT */
 		if (IFF == 0) {
 			/* INT disabled, wait for
 			   frontpanel reset or user interrupt */
-			while (!(cpu_state & RESET)) {
+			while (!(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
 				sleep_for_ms(1);
@@ -709,7 +709,7 @@ static int op_hlt(void)			/* HLT */
 		} else {
 			/* else wait for INT,
 			   frontpanel reset or user interrupt */
-			while ((int_int == 0) && !(cpu_state & RESET)) {
+			while ((int_int == 0) && !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
 				sleep_for_ms(1);
