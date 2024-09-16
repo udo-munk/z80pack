@@ -39,9 +39,10 @@ To build picosim for the Pico 2 RP2350:
 	cmake .. -G "Unix Makefiles"
 	make
 
-This is configured for USB UART so that no additional parts are needed
-to hook up a terminal. GPIO UART0 also is enabled, to use connect a TTL/USB
-adapter or a pico probe to the default UART pins for the board (GP0 & GP1).
+The machine is configured for USB UART so that no additional parts are needed
+to hook up a terminal. The default UART also is enabled, to use connect a
+TTL/USB adapter or a pico probe to the default UART pins for the board
+(GP0 & GP1).
 
 
 Preparing a MicroSD card:
