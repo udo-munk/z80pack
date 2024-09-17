@@ -36,6 +36,11 @@ at pin 40 coming from the USB connection. The data in pin is connected
 to GPIO 14 and the 3.3V logic level from the GPIO is fine to program the
 LED, a logic level shifter is not needed.
 
+picoboard5:
+I replaced the stackable RTC module with a breakout one, so that I have
+persistent time/date informations for any MCU board. On this picture
+you'll see that I'm currently using the new Pico 2 RP2350 board.
+
 pico-rtc-*
 I added a battery backed RTC, so that date and time stays current, without
 the need to set it all the time. For my breadboard research system I used
@@ -46,4 +51,4 @@ After I got my first Pico 2 boards I found that separating the stacked
 modules is impossible without breaking the boards, this sits very tight.
 This is fine for some final system, but not for a breadboard machine,
 where I want to swap the MCU boards often. Will get replaced with a
-DS3231 on breakout board.
+DS3231 on breakout board, done as shown with picoboard5.
