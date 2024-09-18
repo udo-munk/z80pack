@@ -6,6 +6,7 @@ bye.asm       Shutdown z80pack systems via hardware control port
 reset.asm     Reset z80pack systems via hardware control port
 sw8080.asm    Switch to 8080 mode
 swz80.asm     Switch to Z80 mode
+cpu.asm       Reports the CPU
 
 survey.mac    shows system survey with memory map, ports used and so on
 memmap.asm    shows memory map
