@@ -26,7 +26,7 @@ people miss it, that the repository most of the time has two branches:
 
 ```
 master - finished and final releases
-dev - latest sources still under development, but ususally stable
+dev - latest sources still under development, but usually stable
 ```
 
 To use the latest dev version you need to do this:
