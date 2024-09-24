@@ -14,7 +14,7 @@ The autoboot feature of RDOS is set by a dip switch on the FDC cards.
 We don't have that, so I routed it to programmed input switch 0.
 Off = autoboot, On = get into RDOS. This also works with RDOS 1.
 
-If the machine is build without frontpanel the boot options
+If the machine is used without frontpanel the boot options
 can be set in conf/system.conf by assigning the value for the
 frontpanel port to fp_port.
 
