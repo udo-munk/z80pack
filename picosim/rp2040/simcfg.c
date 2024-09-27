@@ -106,7 +106,7 @@ void config(void)
 		f_read(&sd_file, &cpu, sizeof(cpu), &br);
 		f_read(&sd_file, &speed, sizeof(speed), &br);
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_read(&sd_file, &t, sizeof(datetime_t), &br);
+		f_read(&sd_file, &t, sizeof(t), &br);
 		f_read(&sd_file, &disks[0], DISKLEN, &br);
 		f_read(&sd_file, &disks[1], DISKLEN, &br);
 		f_read(&sd_file, &disks[2], DISKLEN, &br);
@@ -347,7 +347,7 @@ again:
 		f_write(&sd_file, &cpu, sizeof(cpu), &br);
 		f_write(&sd_file, &speed, sizeof(speed), &br);
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_write(&sd_file, &t, sizeof(datetime_t), &br);
+		f_write(&sd_file, &t, sizeof(t), &br);
 		f_write(&sd_file, &disks[0], DISKLEN, &br);
 		f_write(&sd_file, &disks[1], DISKLEN, &br);
 		f_write(&sd_file, &disks[2], DISKLEN, &br);
