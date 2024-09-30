@@ -49,10 +49,16 @@ static spi_t spi = {
 	.sck_gpio = SD_SPI_CLK,
 	.mosi_gpio = SD_SPI_SI,
 	.miso_gpio = SD_SPI_SO,
+#if PICO_RP2040
+	//.baud_rate = 125 * 1000 * 1000 / 8, /* 15.625 MHz */
+	//.baud_rate = 125 * 1000 * 1000 / 6, /* 20.833333 MHz */
+	.baud_rate = 125 * 1000 * 1000 / 4, /* 31.25 MHz */
+#endif
+#if PICO_RP2350
 	//.baud_rate = 150 * 1000 * 1000 / 8,	// 18.75 MHz
 	//.baud_rate = 150 * 1000 * 1000 / 6,	// 25.00 MHz
 	.baud_rate = 150 * 1000 * 1000 / 4,	// 37.50 MHz
-	//.baud_rate = 150 * 1000 * 1000 / 2,	// 75.00 MHz
+#endif
 	.spi_mode = 3,
 	.set_drive_strength = true,
 	.mosi_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
