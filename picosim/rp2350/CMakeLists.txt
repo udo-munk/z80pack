@@ -1,1 +1,1 @@
-CMakeLists.txt.corev
+CMakeLists.txt.arm
