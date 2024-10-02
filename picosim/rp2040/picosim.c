@@ -103,10 +103,7 @@ int main(void)
 
 #ifdef RASPBERRYPI_PICO_W	/* initialize Pico W hardware */
 	if (cyw43_arch_init())
-	{
-		puts("CYW43 init failed");
-		return -1;
-	}
+		panic("CYW43 init failed\n");
 #endif
 
 	/* setupt interrupt for break switch */
