@@ -27,9 +27,8 @@ Now you can build picosim for the Pico RP2040 with these commands:
 
 This machine can be used with Pico and Pico W boards, it is setup
 for a Pico board. To setup for a Pico W comment/uncomment the lines
-in CMakeLists.txt and change the board type in sim.h. It doesn't
-really matter, on a Pico W the CYW43 gets intitialized but is not
-used yet.
+in CMakeLists.txt. It doesn't really matter, on a Pico W the CYW43
+gets intitialized but is not used yet.
 
 To build picosim for the Pico 2 RP2350:
 
