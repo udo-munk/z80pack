@@ -10,8 +10,6 @@ set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR})
 # Set platform, board, and compiler
 set(PICO_PLATFORM rp2350-riscv)
 set(PICO_BOARD pico2)
-#set(PICO_TOOLCHAIN_PATH /Users/udo/work/corev-openhw-gcc-macos-20240530)
-#set(PICO_TOOLCHAIN_PATH /home/udo/work/corev-openhw-gcc-ubuntu2204-20240530)
 set(PICO_COMPILER pico_riscv_gcc)
 
 set(CMAKE_C_STANDARD 11)
