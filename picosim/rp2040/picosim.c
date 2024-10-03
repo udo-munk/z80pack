@@ -25,7 +25,6 @@
 #include "pico/time.h"
 #include "hardware/uart.h"
 #include "hardware/watchdog.h"
-/* Pico W also needs this */
 #ifdef RASPBERRYPI_PICO_W
 #include "pico/cyw43_arch.h"
 #endif
