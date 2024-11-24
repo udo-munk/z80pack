@@ -9,8 +9,6 @@
 #ifndef SIM_INC
 #define SIM_INC
 
-#define PICO 0		/* board we use, 0 for Pico 1 for Pico W */
-
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 //#define EXCLUDE_I8080	/* we want both CPU's */
 #define CPU_SPEED 4	/* CPU speed 0=unlimited */

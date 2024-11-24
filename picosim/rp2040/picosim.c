@@ -25,8 +25,7 @@
 #include "pico/time.h"
 #include "hardware/uart.h"
 #include "hardware/watchdog.h"
-/* Pico W also needs this */
-#if PICO == 1
+#ifdef RASPBERRYPI_PICO_W
 #include "pico/cyw43_arch.h"
 #endif
 
@@ -101,12 +100,9 @@ int main(void)
 #endif
 	time_init();		/* initialize FatFS RTC */
 
-#if PICO == 1			/* initialize Pico W hardware */
+#ifdef RASPBERRYPI_PICO_W	/* initialize Pico W hardware */
 	if (cyw43_arch_init())
-	{
-		printf("CYW43 init failed\n");
-		return -1;
-	}
+		panic("CYW43 init failed\n");
 #endif
 
 	/* setupt interrupt for break switch */
@@ -121,14 +117,15 @@ int main(void)
 	ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, true);
 	put_pixel(rgb); /* LED red */
 
-	/* when using USB UART wait until it is connected */
-	/* but also get out if there is input at default UART */
 #if LIB_PICO_STDIO_UART
 	uart_inst_t *my_uart = uart_default;
 	/* destroy random input from UART after activation */
 	if (uart_is_readable(my_uart))
 		getchar();
 #endif
+
+	/* when using USB UART wait until it is connected */
+	/* but also get out if there is input at default UART */
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 	while (!tud_cdc_connected()) {
 #if LIB_PICO_STDIO_UART
