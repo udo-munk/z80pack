@@ -16,6 +16,8 @@ specific language governing permissions and limitations under the License.
 #include <time.h>
 //
 #include "pico/stdlib.h"
+#include "hardware/sync.h"
+#include "hardware/watchdog.h"
 //
 #include "crc.h"
 #include "my_debug.h"
@@ -40,7 +42,10 @@ static inline void reset() {
 //    if (debugger_connected()) {
         __breakpoint();
 //    } else {
-        NVIC_SystemReset();
+        watchdog_reboot(0, 0, 0);
+        for (;;) {
+            __wfi();
+        }
 //    }
     __builtin_unreachable();
 }
@@ -79,7 +84,7 @@ void system_reset_func(char const *const func) {
              func);
     crash_info_ram.xor_checksum =
         crc7((uint8_t *)&crash_info_ram, offsetof(crash_info_t, xor_checksum));
-    __DSB();
+    __dsb();
 
     reset();
     __builtin_unreachable();
@@ -104,10 +109,12 @@ void capture_assert(const char *file, int line, const char *func, const char *pr
     crash_info_ram.assert.line = line;
     crash_info_ram.xor_checksum =
         crc7((uint8_t *)&crash_info_ram, offsetof(crash_info_t, xor_checksum));
-    __DSB();   
+    __dsb();
     reset();
     __builtin_unreachable();
 }
+
+#if !__riscv
 
 __attribute__((used)) extern void DebugMon_HandlerC(uint32_t const *faultStackAddr) {
     memset((void *)crash_info_ram_p, 0, sizeof crash_info_ram);
@@ -144,7 +151,7 @@ __attribute__((used)) extern void DebugMon_HandlerC(uint32_t const *faultStackAd
     //}
     crash_info_ram.xor_checksum =
         crc7((uint8_t *)&crash_info_ram, offsetof(crash_info_t, xor_checksum));
-    __DSB();  // make sure all data is really written into the memory before
+    __dsb();  // make sure all data is really written into the memory before
               // doing a reset
     reset();
 }
@@ -182,7 +189,7 @@ void Hardfault_HandlerC(uint32_t const *faultStackAddr) {
 
     crash_info_ram.xor_checksum =
         crc7((uint8_t *)&crash_info_ram, offsetof(crash_info_t, xor_checksum));
-    __DSB();  // make sure all data is really written into the memory before
+    __dsb();  // make sure all data is really written into the memory before
               // doing a reset
 
     reset();
@@ -201,6 +208,8 @@ __attribute__((naked)) void isr_hardfault(void) {
         " ldr r1,[r0,#20] \n"
         " b Hardfault_HandlerC \n");
 }
+
+#endif // !__riscv
 
 enum {
     crash_info_magic,
