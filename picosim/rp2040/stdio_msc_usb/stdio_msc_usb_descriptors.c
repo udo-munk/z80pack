@@ -44,11 +44,11 @@
 #endif
 
 #ifndef USBD_MANUFACTURER
-#define USBD_MANUFACTURER "Z80pack"
+#define USBD_MANUFACTURER "Raspberry Pi"
 #endif
 
 #ifndef USBD_PRODUCT
-#define USBD_PRODUCT "Pi Pico RP2040"
+#define USBD_PRODUCT "Pico"
 #endif
 
 #define TUD_RPI_RESET_DESC_LEN  9
@@ -124,7 +124,15 @@
 static const tusb_desc_device_t usbd_desc_device = {
     .bLength = sizeof(tusb_desc_device_t),
     .bDescriptorType = TUSB_DESC_DEVICE,
+// On Windows, if bcdUSB = 0x210 then a Microsoft OS 2.0 descriptor is required, else the device won't be detected
+// This is only needed for driverless access to the reset interface - the CDC interface doesn't require these descriptors
+// for driverless access, but will still not work if bcdUSB = 0x210 and no descriptor is provided. Therefore always
+// use bcdUSB = 0x200 if the Microsoft OS 2.0 descriptor isn't enabled
+#if STDIO_MSC_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE && STDIO_MSC_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR
     .bcdUSB = 0x0210,
+#else
+    .bcdUSB = 0x0200,
+#endif
     .bDeviceClass = TUSB_CLASS_MISC,
     .bDeviceSubClass = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol = MISC_PROTOCOL_IAD,

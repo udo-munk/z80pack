@@ -65,6 +65,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
+	USBD_MANUFACTURER="Z80pack"
+	USBD_PRODUCT="Pi Pico RP2040"
 )
 
 # compiler diagnostic options
