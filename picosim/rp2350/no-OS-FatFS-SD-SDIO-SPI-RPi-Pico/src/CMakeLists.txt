@@ -40,5 +40,4 @@ target_link_libraries(no-OS-FatFS-SD-SDIO-SPI-RPi-Pico INTERFACE
     hardware_spi
     pico_aon_timer
     pico_stdlib
-    cmsis_core
 )

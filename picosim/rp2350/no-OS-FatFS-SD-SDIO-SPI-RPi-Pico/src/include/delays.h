@@ -51,20 +51,15 @@ call to millis() returns 0xFFFFFFFF:
 #include <stdint.h>
 //
 #include "pico/stdlib.h"
-#if PICO_RP2040
-#include "RP2040.h"
-#else
-#include "RP2350.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 static inline uint32_t millis() {
-    __COMPILER_BARRIER();
+    __compiler_memory_barrier();
     return time_us_64() / 1000;
-    __COMPILER_BARRIER();
+    __compiler_memory_barrier();
 }
 
 static inline void delay_ms(uint32_t ulTime_ms) {
@@ -72,9 +67,9 @@ static inline void delay_ms(uint32_t ulTime_ms) {
 }
 
 static inline uint64_t micros() {
-    __COMPILER_BARRIER();
+    __compiler_memory_barrier();
     return to_us_since_boot(get_absolute_time());
-    __COMPILER_BARRIER();
+    __compiler_memory_barrier();
 }
 
 #ifdef __cplusplus
