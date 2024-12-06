@@ -11,13 +11,13 @@ set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR})
 set(PICO_PLATFORM rp2040)
 set (PICO_BOARD pico)
 #set(PICO_BOARD pico_w)
-set(PICO_COMPILER pico_arm_gcc)
+set(PICO_COMPILER pico_arm_cortex_m0plus_gcc)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 # Pull in SDK (must be before project)
-include(pico_sdk_import.cmake)
+include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 project(picosim C CXX ASM)
 
