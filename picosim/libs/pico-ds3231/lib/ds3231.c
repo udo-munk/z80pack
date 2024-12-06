@@ -22,7 +22,8 @@ void ds3231_init(i2c_inst_t *i2c_port, uint8_t i2c_sda_pin,
 };
 
 void ds3231_set_datetime(ds3231_datetime_t *dt, ds3231_rtc_t *rtc) {
-    uint8_t val, low, high;
+    //uint8_t val;
+    uint8_t low, high;
     uint8_t buffer[8];
     buffer[0] = DS3231_DATETIME_REG;
 
