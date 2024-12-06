@@ -17,7 +17,16 @@ specific language governing permissions and limitations under the License.
 //
 #include "pico/stdlib.h"
 #include "hardware/sync.h"
-#include "hardware/watchdog.h"
+#if !PICO_RISCV
+#  if PICO_RP2040
+#    include "RP2040.h"
+#  endif
+#  if PICO_RP2350
+#    include "RP2350.h"
+#  endif
+#else
+#  include "hardware/watchdog.h"
+#endif
 //
 #include "crc.h"
 #include "my_debug.h"
@@ -42,10 +51,14 @@ static inline void reset() {
 //    if (debugger_connected()) {
         __breakpoint();
 //    } else {
+#if !PICO_RISCV
+        NVIC_SystemReset();
+#else
         watchdog_reboot(0, 0, 0);
         for (;;) {
-            __wfi();
+            __nop();
         }
+#endif
 //    }
     __builtin_unreachable();
 }
@@ -110,11 +123,12 @@ void capture_assert(const char *file, int line, const char *func, const char *pr
     crash_info_ram.xor_checksum =
         crc7((uint8_t *)&crash_info_ram, offsetof(crash_info_t, xor_checksum));
     __dsb();
+
     reset();
     __builtin_unreachable();
 }
 
-#if !__riscv
+#if !PICO_RISCV
 
 __attribute__((used)) extern void DebugMon_HandlerC(uint32_t const *faultStackAddr) {
     memset((void *)crash_info_ram_p, 0, sizeof crash_info_ram);
@@ -209,7 +223,7 @@ __attribute__((naked)) void isr_hardfault(void) {
         " b Hardfault_HandlerC \n");
 }
 
-#endif // !__riscv
+#endif // !PICO_RISCV
 
 enum {
     crash_info_magic,

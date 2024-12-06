@@ -50,6 +50,7 @@ call to millis() returns 0xFFFFFFFF:
 
 #include <stdint.h>
 //
+#include "pico.h"
 #include "pico/stdlib.h"
 
 #ifdef __cplusplus
