@@ -14,3 +14,5 @@ $(Z80ASM): FORCE
 	$(MAKE) -C $(Z80ASMDIR)
 
 FORCE:
+
+.PHONY: all FORCE
