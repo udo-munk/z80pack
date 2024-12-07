@@ -127,7 +127,7 @@ static void run_setrtc(const size_t argc, const char *argv[]) {
         return;
     }
     struct timespec ts = {.tv_sec = epoch_secs, .tv_nsec = 0};
-    aon_timer_set_time(&ts);
+    aon_timer_start(&ts);
 }
 static char const *fs_type_string(int fs_type) {
     switch (fs_type) {
@@ -371,6 +371,8 @@ static void run_cat(const size_t argc, const char *argv[]) {
     while (f_gets(buf, sizeof buf, &fil)) {
         printf("%s", buf);
     }
+    if f_error(&fil)
+        printf("f_gets error\n");
     fr = f_close(&fil);
     if (FR_OK != fr) printf("f_close error: %s (%d)\n", FRESULT_str(fr), fr);
 }
@@ -767,7 +769,7 @@ static void chars_available_callback(void *ptr) {
         SYSTEM_RESET();
         break;
     case 27: // Esc
-        __BKPT();
+        __breakpoint();
         break;
     case '\r':
         die = true;
