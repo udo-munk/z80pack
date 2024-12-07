@@ -167,6 +167,7 @@ __attribute__((used)) extern void DebugMon_HandlerC(uint32_t const *faultStackAd
         crc7((uint8_t *)&crash_info_ram, offsetof(crash_info_t, xor_checksum));
     __dsb();  // make sure all data is really written into the memory before
               // doing a reset
+
     reset();
 }
 

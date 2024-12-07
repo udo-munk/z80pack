@@ -1,5 +1,5 @@
 # no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
-# v3.3.1
+# v3.7.0
 
 ## C/C++ Library for SD Cards on the Pico
 
@@ -11,6 +11,22 @@ and a 4-bit wide Secure Digital Input Output (SDIO) driver derived from
 It is wrapped up in a complete runnable project, with a little command line interface, some self tests, and an example data logging application.
 
 ## What's new
+### v3.7.0
+ RISC-V compatibility
+### v3.6.2
+Fix `setrtc` command in `examples/command_line` CLI to start the timer.
+### v3.6.1
+Fix failure to release locks when an error occurs while reading blocks and CMD12_STOP_TRANSMISSION also fails.
+This could happen, for example, if the SD card falls out after it has been mounted.
+### v3.6.0
+Add `examples/usb_mass_storage` example which connects a Pico's USB mass storage (MSC) interface to an SD card,
+effectively turning it into an SD card USB dongle.
+### v3.5.1
+Fix PlatformIO examples for earlephilhower / arduino-pico [Add new Pico SDK AON_Timer module #2489](https://github.com/earlephilhower/arduino-pico/issues/2489).
+### v3.5.0
+Porting to Pico 2.
+### v3.4.0
+Add example of direct use of the block device API. See [Block Device API](#block-device-api) and `examples/block_device`.
 ### v3.3.1
 * Add support for PICO_BOARD pico2.
 * Fix year and month calculation in `get_fattime`, which is used for file timestamps in FatFs.
@@ -225,6 +241,13 @@ Then, there are the facilities used for mutual exclusion and various ways of wai
 
 FreeRTOS-FAT-CLI-for-RPi-Pico is designed to maximize parallelism. So, if you have two cores and multiple SD card buses (SPI or SDIO), multiple FreeRTOS tasks can keep them all busy simultaneously.
 
+## Notes about Arduino / PlatformIO
+What you're probably looking for is [SdFat](https://github.com/greiman/SdFat).
+[Also, see [SdFat-beta](https://github.com/greiman/SdFat-beta)].
+
+However, this library can be used with Arduino / PlatformIO. 
+See [examples/PlatformIO](https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/tree/main/examples/PlatformIO).
+
 ## Hardware
 ### My boards
 * [Pico SD Card Development Board](https://forums.raspberrypi.com/viewtopic.php?p=2123146#p2123146)
@@ -370,7 +393,7 @@ See [An instance of `sd_spi_if_t` describes the configuration of one SPI to SD c
    make
 ```   
   * Program the device
-  * See [Appendix B: Operation of `command_line` example](#appendix-b-operation-of-command_line-example) for operation.
+  * See [examples/command_line/README.md](https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/tree/main/examples/command_line/README.md) for operation.
 <!--
 ![image](https://github.com/carlk3/FreeRTOS-FAT-CLI-for-RPi-Pico/blob/master/images/IMG_1481.JPG "Prototype")
 -->
@@ -479,25 +502,44 @@ If you try to use multiple SDIO-attached SD cards simultaneously on the same PIO
 contention might lead to timeouts.
 * `DMA_IRQ_num` Which IRQ to use for DMA. Defaults to DMA_IRQ_0. Set this to avoid conflicts with any exclusive DMA IRQ handlers that might be elsewhere in the system.
 * `use_exclusive_DMA_IRQ_handler` If true, the IRQ handler is added with the SDK's `irq_set_exclusive_handler`. The default is to add the handler with `irq_add_shared_handler`, so it's not exclusive. 
-* `baud_rate` The frequency of the SDIO clock in Hertz. This may be no higher than the system clock frequency divided by `CLKDIV` in `sd_driver\SDIO\rp2040_sdio.pio`, which is currently four. For example, if the system clock frequency is 125 MHz, `baud_rate` cannot exceed 31250000 (31.25 MHz). The default is 10 MHz.
-This is used to divide the system clock frequency (`clk_sys`) to get a ratio to pass to the SDK's [sm_config_set_clkdiv](https://www.raspberrypi.com/documentation//pico-sdk/hardware.html#gae8c09c7a4372da95ad777faae51c5a24). As it says there, "An integer clock divisor of n will cause the state machine to run 1 cycle in every n. Note that for small n, the jitter introduced by a fractional divider (e.g. 2.5) may be unacceptable although it will depend on the use case."
-In this case, n can be as little as four (which I would consider small).
-The fractional divider essentially causes the frequency to vary in a range,
-with the average being the requested frequency.
-If the hardware is capable of running at the high end of the range,
-you might as well run at that frequency all the time.
-Therefore, I recommend choosing a baud rate that is some factor of the system clock frequency.
-For example, if the system clock frequency is the default 125 MHz:
-  ```C
-      .baud_rate = 125 * 1000 * 1000 / 10,  // 12500000 Hz
-  ```
-  or
-  ```C
-      .baud_rate = 125 * 1000 * 1000 / 4  // 31250000 Hz
-  ```
+* `baud_rate` The frequency of the SDIO clock in Hertz.
+  This may be no higher than the system clock frequency divided by `CLKDIV` in `sd_driver\SDIO\rp2040_sdio.pio`, which is currently four.
+  For example, if the system clock frequency is 125 MHz,
+  `baud_rate` cannot exceed 31250000 (31.25 MHz). The default is `clk_sys` / 12. 
+  
+  The `baud_rate` is derived from the system core clock (`clk_sys`).
+  `sm_config_set_clkdiv` sets the state machine clock divider
+  in a PIO state machine configuration
+  from a floating point value we'll call "clk_div".
+  This is used to divide the system clock frequency (`clk_sys`) to get a ratio to pass to the SDK's
+  [sm_config_set_clkdiv](https://www.raspberrypi.com/documentation//pico-sdk/hardware.html#group_sm_config_1ga365abc6d25301810ca5ee11e5b36c763).
+  The state machine clock divider is a fractional divider,
+  and the jitter introduced by a fractional divisor may be unacceptable.
+  "An integer clock divisor of n will cause the state machine to run 1 cycle in every n. 
+  Note that for small n, the jitter introduced by a fractional divider (e.g. 2.5) may be unacceptable although it will depend on the use case."
+  See the datasheet for details.
+  The fractional divider essentially causes the frequency to vary in a range,
+  with the average being the requested frequency.
+  If the hardware is capable of running at the high end of the range,
+  you might as well run at that frequency all the time.
   The higher the baud rate, the faster the data transfer.
   However, the hardware might limit the usable baud rate.
   See [Pull Up Resistors and other electrical considerations](#pull-up-resistors-and-other-electrical-considerations).
+  
+  The PIO state machine itself divides by `CLKDIV`,
+  defined in `sd_driver\SDIO\rp2040_sdio.pio`, currently 4.
+  
+        baud_rate = clk_sys / (CLKDIV * clk_div)
+  
+  Preferrably, choose `baud_rate` for an integer clk_div.
+  
+  Baud rates for different `clk_sys`s and `clk_div`s:
+    |         | clk_sys      | clk_sys      | clk_sys      |
+    | ------- | ------------ | ------------ | ------------ |
+    | clk_div | 125000000    | 133000000    | 150000000  |
+    | 1.00    | 31,250,000   | 33,250,000   | 37,500,000 |
+    | 2.00    | 15,625,000   | 16,625,000   | 18,750,000 |
+    | 3.00    | 10,416,667   | 11,083,333   | 12,500,000 |
 * `set_drive_strength` If true, enable explicit specification of output drive strengths on `CLK_gpio`, `CMD_gpio`, and `D0_gpio` - `D3_gpio`. 
 The GPIOs on RP2040 have four different output drive strengths, which are nominally 2, 4, 8 and 12mA modes.
 If `set_drive_strength` is false, all will be implicitly set to 4 mA.
@@ -624,8 +666,9 @@ Mode 3 can be around 15% faster than mode 0, probably due to quirks of the ARM P
 * `no_miso_gpio_pull_up` According to the standard, an SD card's DO MUST be pulled up (at least for the old MMC cards). 
 However, it might be done externally. If `no_miso_gpio_pull_up` is false, the library will set the RP2040 GPIO internal pull up.
 * `set_drive_strength` Specifies whether or not to set the RP2040 GPIO pin drive strength.
-If `set_drive_strength` is false, all will be implicitly set to 4 mA. 
-If `set_drive_strength` is true, each GPIO's drive strength can be set individually. Note that if it is not explicitly set, it will default to 0, which equates to `GPIO_DRIVE_STRENGTH_2MA` (2 mA nominal drive strength).
+If `set_drive_strength` is false, all will left at the reset default of 4 mA.
+If `set_drive_strength` is true, each GPIO's drive strength can be set individually.
+Note that any not explicitly set will default to 0, which equates to `GPIO_DRIVE_STRENGTH_2MA` (2 mA nominal drive strength).
 * `mosi_gpio_drive_strength` SPI Master Out, Slave In (MOSI) drive strength, 
 * and `sck_gpio_drive_strength` SPI Serial Clock (SCK) drive strength:
   Ignored if `set_drive_strength` is false. Otherwise, these can be set to one of the following:
@@ -830,6 +873,20 @@ platform = https://github.com/maxgerhardt/platform-raspberrypi.git
 board_build.core = earlephilhower
 ```
 
+## Block Device API
+If you don't require a filesystem on an SD card,
+or if you want to use a different filesystem,
+you can operate at the block device level.
+At the block device interface, the SD card appears to contain a long sequence of
+numbered blocks of 512 bytes each. I.e., the smallest addressable unit is a block of 512 bytes.
+The address of a block is its "logical block address" (LBA).
+Blocks can be addressed by their LBA and read and written individually or as sequences with a starting address and length.
+
+This API implements the *Media Access Interface* described in [FatFs - Generic FAT Filesystem Module](http://elm-chan.org/fsw/ff/00index_e.html) (also see *Required Functions* in [FatFs Module Application Note](http://elm-chan.org/fsw/ff/doc/appnote.html)).
+The declarations are in `src/ff15/source/diskio.h`.
+
+For an example of the use of this API, see `examples/block_device`.
+
 ## Next Steps
 * There is a example data logging application in `data_log_demo.c`. 
 It can be launched from the `examples/command_line` CLI with the `start_logger` command.
@@ -953,118 +1010,6 @@ static sd_card_t sd_cards[] = {  // One for each SD card
         //...           
 ```
 For details, see [Customizing for the Hardware Configuration](#customizing-for-the-hardware-configuration). 
-
-## Appendix B: Operation of `command_line` example:
-* Connect a terminal. [PuTTY](https://www.putty.org/) or `tio` work OK. For example:
-  * `tio -m ODELBS /dev/ttyACM0`
-* Press Enter to start the CLI. You should see a prompt like:
-```
-    > 
-```    
-* The `help` command describes the available commands:
-```    
-setrtc <DD> <MM> <YY> <hh> <mm> <ss>:
- Set Real Time Clock
- Parameters: new date (DD MM YY) new time in 24-hour format (hh mm ss)
-        e.g.:setrtc 16 3 21 0 4 0
-
-date:
- Print current date and time
-
-format [<drive#:>]:
- Creates an FAT/exFAT volume on the logical drive.
-        e.g.: format 0:
-
-mount [<drive#:>]:
- Register the work area of the volume
-        e.g.: mount 0:
-
-unmount <drive#:>:
- Unregister the work area of the volume
-
-chdrive <drive#:>:
- Changes the current directory of the logical drive.
- <path> Specifies the directory to be set as current directory.
-        e.g.: chdrive 1:
-
-info [<drive#:>]:
- Print information about an SD card
-
-cd <path>:
- Changes the current directory of the logical drive.
- <path> Specifies the directory to be set as current directory.
-        e.g.: cd /dir1
-
-mkdir <path>:
- Make a new directory.
- <path> Specifies the name of the directory to be created.
-        e.g.: mkdir /dir1
-
-rm [options] <pathname>:
- Removes (deletes) a file or directory
- <pathname> Specifies the path to the file or directory to be removed
- Options:
-  -d Remove an empty directory
-  -r Recursively remove a directory and its contents
-
-cp <source file> <dest file>:
- Copies <source file> to <dest file>
-
-mv <source file> <dest file>:
- Moves (renames) <source file> to <dest file>
-
-pwd:
- Print Working Directory
-
-ls [pathname]:
- List directory
-
-cat <filename>:
- Type file contents
-
-simple:
- Run simple FS tests
-
-lliot <physical drive#>:
- !DESTRUCTIVE! Low Level I/O Driver Test
-The SD card will need to be reformatted after this test.
-        e.g.: lliot 1
-
-bench <drive#:>:
- A simple binary write/read benchmark
-
-big_file_test <pathname> <size in MiB> <seed>:
- Writes random data to file <pathname>.
- Specify <size in MiB> in units of mebibytes (2^20, or 1024*1024 bytes)
-        e.g.: big_file_test 0:/bf 1 1
-        or: big_file_test 1:big3G-3 3072 3
-
-cdef:
- Create Disk and Example Files
- Expects card to be already formatted and mounted
-
-swcwdt:
- Stdio With CWD Test
-Expects card to be already formatted and mounted.
-Note: run cdef first!
-
-loop_swcwdt:
- Run Create Disk and Example Files and Stdio With CWD Test in a loop.
-Expects card to be already formatted and mounted.
-Note: Type any key to quit.
-
-start_logger:
- Start Data Log Demo
-
-stop_logger:
- Stop Data Log Demo
-
-mem-stats:
- Print memory statistics
-
-help:
- Shows this command help.
-```
 
 ## Appendix C: Adding Additional Cards
 When you're dealing with information storage, it's always nice to have redundancy. There are many possible combinations of SPIs and SD cards. One of these is putting multiple SD cards on the same SPI bus, at a cost of one (or two) additional Pico I/O pins (depending on whether or you care about Card Detect). I will illustrate that example here. 

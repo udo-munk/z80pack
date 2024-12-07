@@ -13,9 +13,11 @@ specific language governing permissions and limitations under the License.
 */
 
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 //
 #include "pico/stdlib.h"
 #include "hardware/sync.h"
@@ -75,10 +77,8 @@ int __attribute__((weak))
 debug_message_printf(const char *func, int line, 
         const char *fmt, ...) 
 {
-#if defined(NDEBUG) || !USE_DBG_PRINTF
     (void) func;
     (void) line;
-#endif
     va_list args;
     va_start(args, fmt);
     int cw = vprintf(fmt, args);
