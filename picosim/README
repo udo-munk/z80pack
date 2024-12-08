@@ -8,7 +8,7 @@ systems on PCB available, which can run the software. I have implemented
 picosim also on these:
 
 	https://github.com/udo-munk/Pico-Eval-Board-80
-	https://github.com/udo-munk/RP2040-GEEK-80
+	https://github.com/udo-munk/RP2xxx-GEEK-80
 
 
 To build the software you need to have the SDK for RP2040/RP2350 devices
