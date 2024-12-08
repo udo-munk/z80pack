@@ -8,10 +8,19 @@ endif()
 set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR})
 
 # Set platform, board, and compiler
-set(PICO_PLATFORM rp2040)
-set (PICO_BOARD pico)
-#set(PICO_BOARD pico_w)
-set(PICO_COMPILER pico_arm_cortex_m0plus_gcc)
+if(NOT PICO_PLATFORM)
+	set(PICO_PLATFORM rp2040)
+endif()
+if(PICO_PLATFORM STREQUAL rp2040)
+	set(PICO_BOARD pico)
+	set(PICO_COMPILER pico_arm_cortex_m0plus_gcc)
+elseif(PICO_PLATFORM STREQUAL rp2350-arm-s)
+	set(PICO_BOARD pico2)
+	set(PICO_COMPILER pico_arm_cortex_m33_gcc)
+elseif(PICO_PLATFORM STREQUAL rp2350-riscv)
+	set(PICO_BOARD pico2)
+	set(PICO_COMPILER pico_riscv_gcc)
+endif()
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -66,30 +75,41 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192
 	USBD_MANUFACTURER="Z80pack"
-	USBD_PRODUCT="Pi Pico RP2040"
 )
+if(PICO_RP2040)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE
+		USBD_PRODUCT="Pi Pico RP2040"
+		CONF_FILE="RP2040.DAT"
+	)
+else()
+	target_compile_definitions(${PROJECT_NAME} PRIVATE
+		USBD_PRODUCT="Pi Pico RP2350"
+		CONF_FILE="RP2350.DAT"
+	)
+endif()
 
 # compiler diagnostic options
-if (PICO_C_COMPILER_IS_GNU)
+if(PICO_C_COMPILER_IS_GNU)
 	target_compile_options(${PROJECT_NAME} PUBLIC -fdiagnostics-color=always)
-elseif (PICO_C_COMPILER_IS_CLANG)
+elseif(PICO_C_COMPILER_IS_CLANG)
 	target_compile_options(${PROJECT_NAME} PUBLIC -fcolor-diagnostics)
-endif ()
+endif()
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra)
-if (PICO_C_COMPILER_IS_CLANG)
+if(PICO_C_COMPILER_IS_CLANG)
 	target_compile_options(${PROJECT_NAME} PUBLIC -Weverything)
-endif ()
+endif()
 # -Wno-unused-parameter because no-OS-FatFS-SD-SDIO-SPI-RPi-Pico isn't clean
 target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 
 target_link_libraries(${PROJECT_NAME}
 	hardware_i2c
-	pico-ds3231
 	pico_stdlib
 #	pico_cyw43_arch_none
-	stdio_msc_usb
 	tinyusb_device
+
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
+	pico-ds3231
+	stdio_msc_usb
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
@@ -97,7 +117,11 @@ pico_add_extra_outputs(${PROJECT_NAME})
 target_link_options(${PROJECT_NAME} PRIVATE -Xlinker --print-memory-usage)
 
 pico_set_program_name(${PROJECT_NAME} "z80pack picosim")
-pico_set_program_description(${PROJECT_NAME} "z80pack on Raspberry Pi Pico")
+if(PICO_RP2040)
+	pico_set_program_description(${PROJECT_NAME} "z80pack on Raspberry Pi Pico")
+else()
+	pico_set_program_description(${PROJECT_NAME} "z80pack on Raspberry Pi Pico 2")
+endif()
 pico_set_program_version(${PROJECT_NAME} "1.3")
 pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/z80pack")
 
