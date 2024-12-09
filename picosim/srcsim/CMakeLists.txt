@@ -105,13 +105,17 @@ target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 target_link_libraries(${PROJECT_NAME}
 	hardware_i2c
 	pico_stdlib
-#	pico_cyw43_arch_none
 	tinyusb_device
 
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 	pico-ds3231
 	stdio_msc_usb
 )
+if(PICO_BOARD STREQUAL pico_w)
+target_link_libraries(${PROJECT_NAME}
+	pico_cyw43_arch_none
+)
+endif()
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
