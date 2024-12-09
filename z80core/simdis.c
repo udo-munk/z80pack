@@ -599,7 +599,8 @@ static int iout(const char *s, WORD a)
  */
 static int rout(const char *s, WORD a)
 {
-	sprintf(Disass_Str, "%s%04X", s, a + (SBYTE) getmem(a + 1) + 2);
+	sprintf(Disass_Str, "%s%04X", s,
+		(WORD) (a + (SBYTE) getmem(a + 1) + 2));
 	return 2;
 }
 
