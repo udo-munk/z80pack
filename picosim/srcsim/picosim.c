@@ -25,7 +25,7 @@
 #include "pico/time.h"
 #include "hardware/uart.h"
 #include "hardware/watchdog.h"
-#if RASPBERRYPI_PICO_W || RASPBERRYPI_PICO2_W
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 #include "pico/cyw43_arch.h"
 #endif
 
@@ -100,7 +100,7 @@ int main(void)
 #endif
 	time_init();		/* initialize FatFS RTC */
 
-#if RASPBERRYPI_PICO_W || RASPBERRYPI_PICO2_W
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 	/* initialize Pico W hardware */
 	if (cyw43_arch_init())
 		panic("CYW43 init failed\n");
