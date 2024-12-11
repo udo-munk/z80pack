@@ -365,17 +365,22 @@ static int handle_break(void)
 static void do_dump(char *s)
 {
 	register int i, j;
+	int n = 16;
 	BYTE c;
 
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
-		wrk_addr = exatoi(s) - exatoi(s) % 16;
+		wrk_addr = exatoi(s) & ~0xf;
+	while (*s != ',' && *s != '\0')
+		s++;
+	if (*s && isdigit((unsigned char) *++s))
+		n = atoi(s);
 	printf("Addr   ");
 	for (i = 0; i < 16; i++)
 		printf("%02x ", i);
 	puts(" ASCII");
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < n; i++) {
 		printf("%04x - ", (unsigned int) wrk_addr);
 		for (j = 0; j < 16; j++)
 			printf("%02x ", getmem(wrk_addr++));
@@ -394,12 +399,17 @@ static void do_dump(char *s)
 static void do_list(char *s)
 {
 	register int i;
+	int n = 10;
 
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
 		wrk_addr = exatoi(s);
-	for (i = 0; i < 10; i++) {
+	while (*s != ',' && *s != '\0')
+		s++;
+	if (*s && isdigit((unsigned char) *++s))
+		n = atoi(s);
+	for (i = 0; i < n; i++) {
 		printf("%04x - ", (unsigned int) wrk_addr);
 		wrk_addr += disass(wrk_addr);
 	}
@@ -990,8 +1000,8 @@ static void do_show(void)
  */
 static void do_help(void)
 {
-	puts("d [address]               dump memory");
-	puts("l [address]               list memory");
+	puts("d [address][,count]       dump memory");
+	puts("l [address][,count]       list memory");
 	puts("m [address]               modify memory");
 	puts("f address,count,value     fill memory");
 	puts("v from,to,count           move memory");
