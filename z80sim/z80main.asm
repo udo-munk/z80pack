@@ -6,15 +6,15 @@
 
 	LD	SP,STACK	; initialize stack for simulator
 	LD	HL,Z80OPS	; start address for disassembler
-	LD	(DADR),HL
+	LD	(DADDR),HL
 LOOP:
 	CALL	DISSCR		; disassemble one screen full
 	HALT			; stop simulation
 	JP	LOOP		; next run
 
-PRTSTR:				; print 0 terminated string
+PRTSTR:				; print zero terminated string
 	LD	A,(HL)		; next char -> A
-	OR	A		; 0 ?
+	OR	A		; zero ?
 	RET	Z		; yes, done
 	OUT	(1),A		; no, print it
 	INC	HL		; increase pointer to string
