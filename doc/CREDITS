@@ -12,20 +12,8 @@ for the Windows port of the frontpanel library.
 
 Mark Garlanger <http://heathkit.garlanger.com/>:
 
-for the implementation of the Z80 DAA instruction, which passes
-regression tests, and for help with a flag correct implementation
-of the Z80 ADC/SBC instructions, that also passes regression tests.
-
-
-Didier Derny <didier.derny@gmail.com>:
-
-for a node based expression parser for z80asm, that implements
-operator precedence.
-
-
-Christophe Staïesse <chastai@skynet.be>
-
-for the Intel 8080 disassembler.
+for help with a flag correct implementation of the Z80 ADC/SBC
+instructions, that also passes regression tests.
 
 
 Alan Cox
@@ -67,4 +55,7 @@ and various other improvements and bug fixes.
 For refactoring the ICE so that it can be better attached to systems.
 For code size optimized implementations of 8080 and Z80 CPU's.
 For code analysis and improving overall code quality and readability.
-For implementation of the Intel Intellec MDS-800 system.
+For a simpler 8080/Z80 DAA instruction implementation that passes
+regression tests.
+For the implementation of the Intel Intellec MDS-800 system.
+For the rewrite of the disassembler.

@@ -1,10 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1989-2021 by Udo Munk
- * Parts Copyright (C) 2008 by Justin Clancy
- * 8080 disassembler Copyright (C) 2018 by Christophe Staiesse
- * Copyright (c) 2022-2024 by Thomas Eberhardt
+ * Copyright (C) 1987-2024 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  */
 
 /*
