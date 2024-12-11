@@ -1,10 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 1989-2021 by Udo Munk
- * Parts Copyright (C) 2008 by Justin Clancy
- * 8080 disassembler Copyright (C) 2018 by Christophe Staiesse
- * Copyright (c) 2022-2024 by Thomas Eberhardt
+ * Copyright (C) 1987-2024 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  */
 
 /*
@@ -12,7 +10,6 @@
  */
 
 #include <stdio.h>
-#include <string.h>
 
 #include "sim.h"
 #include "simdefs.h"
@@ -25,454 +22,161 @@
 /*
  *	Forward declarations
  */
-static int opout(const char *s, WORD a);
-static int nout(const char *s, WORD a);
-static int nnout(const char *s, WORD a);
+static char *btoh(BYTE b, char *p);
 
 #ifndef EXCLUDE_Z80
-static int iout(const char *s, WORD a);
-static int rout(const char *s, WORD a);
-static int inout(const char *s, WORD a);
-static int cbop(const char *s, WORD a);
-static int edop(const char *s, WORD a);
-static int ddfd(const char *s, WORD a);
-#endif
 
-/*
- *	Op-code tables
- */
-struct opt {
-	int (*fun)(const char *, WORD);
-	const char *text;
+static const char *const optab_01[64] = {
+	/*00*/	"NOP",		"LD\tBC,w",	"LD\t(BC),A",	"INC\tBC",
+	/*04*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"RLCA",
+	/*08*/	"EX\tAF,AF'",	"ADD\ti,BC",	"LD\tA,(BC)",	"DEC\tBC",
+	/*0C*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"RRCA",
+	/*10*/	"DJNZ\tj",	"LD\tDE,w",	"LD\t(DE),A",	"INC\tDE",
+	/*14*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"RLA",
+	/*18*/	"JR\tj",	"ADD\ti,DE",	"LD\tA,(DE)",	"DEC\tDE",
+	/*1C*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"RRA",
+	/*20*/	"JR\tNZ,j",	"LD\ti,w",	"LD\t(w),i",	"INC\ti",
+	/*24*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"DAA",
+	/*28*/	"JR\tZ,j",	"ADD\ti,i",	"LD\ti,(w)",	"DEC\ti",
+	/*2C*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"CPL",
+	/*30*/	"JR\tNC,j",	"LD\tSP,w",	"LD\t(w),A",	"INC\tSP",
+	/*34*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"SCF",
+	/*38*/	"JR\tC,j",	"ADD\ti,SP",	"LD\tA,(w)",	"DEC\tSP",
+	/*3C*/	"INC\tr",	"DEC\tr",	"LD\tr,b",	"CCF"
 };
 
-#ifndef EXCLUDE_Z80
-static struct opt optabz80_01[64] = {
-	{ opout,  "NOP"			},	/* 0x00 */
-	{ nnout,  "LD\tBC,"		},	/* 0x01 */
-	{ opout,  "LD\t(BC),A"		},	/* 0x02 */
-	{ opout,  "INC\tBC"		},	/* 0x03 */
-	{ opout,  "INC\tB"		},	/* 0x04 */
-	{ opout,  "DEC\tB"		},	/* 0x05 */
-	{ nout,   "LD\tB,"		},	/* 0x06 */
-	{ opout,  "RLCA"		},	/* 0x07 */
-	{ opout,  "EX\tAF,AF'"		},	/* 0x08 */
-	{ opout,  "ADD\tHL,BC"		},	/* 0x09 */
-	{ opout,  "LD\tA,(BC)"		},	/* 0x0a */
-	{ opout,  "DEC\tBC"		},	/* 0x0b */
-	{ opout,  "INC\tC"		},	/* 0x0c */
-	{ opout,  "DEC\tC"		},	/* 0x0d */
-	{ nout,   "LD\tC,"		},	/* 0x0e */
-	{ opout,  "RRCA"		},	/* 0x0f */
-	{ rout,   "DJNZ\t"		},	/* 0x10 */
-	{ nnout,  "LD\tDE,"		},	/* 0x11 */
-	{ opout,  "LD\t(DE),A"		},	/* 0x12 */
-	{ opout,  "INC\tDE"		},	/* 0x13 */
-	{ opout,  "INC\tD"		},	/* 0x14 */
-	{ opout,  "DEC\tD"		},	/* 0x15 */
-	{ nout,   "LD\tD,"		},	/* 0x16 */
-	{ opout,  "RLA"			},	/* 0x17 */
-	{ rout,   "JR\t"		},	/* 0x18 */
-	{ opout,  "ADD\tHL,DE"		},	/* 0x19 */
-	{ opout,  "LD\tA,(DE)"		},	/* 0x1a */
-	{ opout,  "DEC\tDE"		},	/* 0x1b */
-	{ opout,  "INC\tE"		},	/* 0x1c */
-	{ opout,  "DEC\tE"		},	/* 0x1d */
-	{ nout,   "LD\tE,"		},	/* 0x1e */
-	{ opout,  "RRA"			},	/* 0x1f */
-	{ rout,   "JR\tNZ,"		},	/* 0x20 */
-	{ nnout,  "LD\tHL,"		},	/* 0x21 */
-	{ inout,  "LD\t(%04X),HL"	},	/* 0x22 */
-	{ opout,  "INC\tHL"		},	/* 0x23 */
-	{ opout,  "INC\tH"		},	/* 0x24 */
-	{ opout,  "DEC\tH"		},	/* 0x25 */
-	{ nout,   "LD\tH,"		},	/* 0x26 */
-	{ opout,  "DAA"			},	/* 0x27 */
-	{ rout,   "JR\tZ,"		},	/* 0x28 */
-	{ opout,  "ADD\tHL,HL"		},	/* 0x29 */
-	{ inout,  "LD\tHL,(%04X)"	},	/* 0x2a */
-	{ opout,  "DEC\tHL"		},	/* 0x2b */
-	{ opout,  "INC\tL"		},	/* 0x2c */
-	{ opout,  "DEC\tL"		},	/* 0x2d */
-	{ nout,   "LD\tL,"		},	/* 0x2e */
-	{ opout,  "CPL"			},	/* 0x2f */
-	{ rout,   "JR\tNC,"		},	/* 0x30 */
-	{ nnout,  "LD\tSP,"		},	/* 0x31 */
-	{ inout,  "LD\t(%04X),A"	},	/* 0x32 */
-	{ opout,  "INC\tSP"		},	/* 0x33 */
-	{ opout,  "INC\t(HL)"		},	/* 0x34 */
-	{ opout,  "DEC\t(HL)"		},	/* 0x35 */
-	{ nout,   "LD\t(HL),"		},	/* 0x36 */
-	{ opout,  "SCF"			},	/* 0x37 */
-	{ rout,   "JR\tC,"		},	/* 0x38 */
-	{ opout,  "ADD\tHL,SP"		},	/* 0x39 */
-	{ inout,  "LD\tA,(%04X)"	},	/* 0x3a */
-	{ opout,  "DEC\tSP"		},	/* 0x3b */
-	{ opout,  "INC\tA"		},	/* 0x3c */
-	{ opout,  "DEC\tA"		},	/* 0x3d */
-	{ nout,   "LD\tA,"		},	/* 0x3e */
-	{ opout,  "CCF"			}	/* 0x3f */
+static const char *const optab_45[8] = {
+	/*80*/	"ADD\tA,r",	"ADC\tA,r",	"SUB\tr",	"SBC\tA,r",
+	/*A0*/	"AND\tr",	"XOR\tr",	"OR\tr",	"CP\tr"
 };
 
-static struct opt optabz80_67[64] = {
-	{ opout,  "RET\tNZ"		},	/* 0xc0 */
-	{ opout,  "POP\tBC"		},	/* 0xc1 */
-	{ nnout,  "JP\tNZ,"		},	/* 0xc2 */
-	{ nnout,  "JP\t"		},	/* 0xc3 */
-	{ nnout,  "CALL\tNZ,"		},	/* 0xc4 */
-	{ opout,  "PUSH\tBC"		},	/* 0xc5 */
-	{ nout,   "ADD\tA,"		},	/* 0xc6 */
-	{ opout,  "RST\t0"		},	/* 0xc7 */
-	{ opout,  "RET\tZ"		},	/* 0xc8 */
-	{ opout,  "RET"			},	/* 0xc9 */
-	{ nnout,  "JP\tZ,"		},	/* 0xca */
-	{ cbop,   ""			},	/* 0xcb */
-	{ nnout,  "CALL\tZ,"		},	/* 0xcc */
-	{ nnout,  "CALL\t"		},	/* 0xcd */
-	{ nout,   "ADC\tA,"		},	/* 0xce */
-	{ opout,  "RST\t8"		},	/* 0xcf */
-	{ opout,  "RET\tNC"		},	/* 0xd0 */
-	{ opout,  "POP\tDE"		},	/* 0xd1 */
-	{ nnout,  "JP\tNC,"		},	/* 0xd2 */
-	{ iout,   "OUT\t(%02X),A"	},	/* 0xd3 */
-	{ nnout,  "CALL\tNC,"		},	/* 0xd4 */
-	{ opout,  "PUSH\tDE"		},	/* 0xd5 */
-	{ nout,   "SUB\t"		},	/* 0xd6 */
-	{ opout,  "RST\t10"		},	/* 0xd7 */
-	{ opout,  "RET\tC"		},	/* 0xd8 */
-	{ opout,  "EXX"			},	/* 0xd9 */
-	{ nnout,  "JP\tC,"		},	/* 0xda */
-	{ iout,   "IN\tA,(%02X)"	},	/* 0xdb */
-	{ nnout,  "CALL\tC,"		},	/* 0xdc */
-	{ ddfd,   ""			},	/* 0xdd */
-	{ nout,   "SBC\tA,"		},	/* 0xde */
-	{ opout,  "RST\t18"		},	/* 0xdf */
-	{ opout,  "RET\tPO"		},	/* 0xe0 */
-	{ opout,  "POP\tHL"		},	/* 0xe1 */
-	{ nnout,  "JP\tPO,"		},	/* 0xe2 */
-	{ opout,  "EX\t(SP),HL"		},	/* 0xe3 */
-	{ nnout,  "CALL\tPO,"		},	/* 0xe4 */
-	{ opout,  "PUSH\tHL"		},	/* 0xe5 */
-	{ nout,   "AND\t"		},	/* 0xe6 */
-	{ opout,  "RST\t20"		},	/* 0xe7 */
-	{ opout,  "RET\tPE"		},	/* 0xe8 */
-	{ opout,  "JP\t(HL)"		},	/* 0xe9 */
-	{ nnout,  "JP\tPE,"		},	/* 0xea */
-	{ opout,  "EX\tDE,HL"		},	/* 0xeb */
-	{ nnout,  "CALL\tPE,"		},	/* 0xec */
-	{ edop,   ""			},	/* 0xed */
-	{ nout,   "XOR\t"		},	/* 0xee */
-	{ opout,  "RST\t28"		},	/* 0xef */
-	{ opout,  "RET\tP"		},	/* 0xf0 */
-	{ opout,  "POP\tAF"		},	/* 0xf1 */
-	{ nnout,  "JP\tP,"		},	/* 0xf2 */
-	{ opout,  "DI"			},	/* 0xf3 */
-	{ nnout,  "CALL\tP,"		},	/* 0xf4 */
-	{ opout,  "PUSH\tAF"		},	/* 0xf5 */
-	{ nout,   "OR\t"		},	/* 0xf6 */
-	{ opout,  "RST\t30"		},	/* 0xf7 */
-	{ opout,  "RET\tM"		},	/* 0xf8 */
-	{ opout,  "LD\tSP,HL"		},	/* 0xf9 */
-	{ nnout,  "JP\tM,"		},	/* 0xfa */
-	{ opout,  "EI"			},	/* 0xfb */
-	{ nnout,  "CALL\tM,"		},	/* 0xfc */
-	{ ddfd,   ""			},	/* 0xfd */
-	{ nout,   "CP\t"		},	/* 0xfe */
-	{ opout,  "RST\t38"		}	/* 0xff */
+static const char *const optab_67[64] = {
+	/*C0*/	"RET\tNZ",	"POP\tBC",	"JP\tNZ,w",	"JP\tw",
+	/*C4*/	"CALL\tNZ,w",	"PUSH\tBC",	"ADD\tA,b",	"RST\t00",
+	/*C8*/	"RET\tZ",	"RET",		"JP\tZ,w",	"",
+	/*CC*/	"CALL\tZ,w",	"CALL\tw",	"ADC\tA,b",	"RST\t08",
+	/*D0*/	"RET\tNC",	"POP\tDE",	"JP\tNC,w",	"OUT\t(b),A",
+	/*D4*/	"CALL\tNC,w",	"PUSH\tDE",	"SUB\tb",	"RST\t10",
+	/*D8*/	"RET\tC",	"EXX",		"JP\tC,w",	"IN\tA,(b)",
+	/*DC*/	"CALL\tC,w",	"",		"SBC\tA,b",	"RST\t18",
+	/*E0*/	"RET\tPO",	"POP\ti",	"JP\tPO,w",	"EX\t(SP),i",
+	/*E4*/	"CALL\tPO,w",	"PUSH\ti",	"AND\tb",	"RST\t20",
+	/*E8*/	"RET\tPE",	"JP\t(i)",	"JP\tPE,w",	"EX\tDE,HL",
+	/*EC*/	"CALL\tPE,w",	"",		"XOR\tb",	"RST\t28",
+	/*F0*/	"RET\tP",	"POP\tAF",	"JP\tP,w",	"DI",
+	/*F4*/	"CALL\tP,w",	"PUSH\tAF",	"OR\tb",	"RST\t30",
+	/*F8*/	"RET\tM",	"LD\tSP,i",	"JP\tM,w",	"EI",
+	/*FC*/	"CALL\tM,w",	"",		"CP\tb",	"RST\t38"
 };
 
-static struct opt optabed_23[64] = {
-	{ opout,  "IN\tB,(C)"		},	/* 0x40 */
-	{ opout,  "OUT\t(C),B"		},	/* 0x41 */
-	{ opout,  "SBC\tHL,BC"		},	/* 0x42 */
-	{ inout,  "LD\t(%04X),BC"	},	/* 0x43 */
-	{ opout,  "NEG"			},	/* 0x44 */
-	{ opout,  "RETN"		},	/* 0x45 */
-	{ opout,  "IM\t0"		},	/* 0x46 */
-	{ opout,  "LD\tI,A"		},	/* 0x47 */
-	{ opout,  "IN\tC,(C)"		},	/* 0x48 */
-	{ opout,  "OUT\t(C),C"		},	/* 0x49 */
-	{ opout,  "ADC\tHL,BC"		},	/* 0x4a */
-	{ inout,  "LD\tBC,(%04X)"	},	/* 0x4b */
-	{ opout,  "NEG*"		},	/* 0x4c */ /* undocumented */
-	{ opout,  "RETI"		},	/* 0x4d */
-	{ opout,  "IM*\t0"		},	/* 0x4e */ /* undocumented */
-	{ opout,  "LD\tR,A"		},	/* 0x4f */
-	{ opout,  "IN\tD,(C)"		},	/* 0x50 */
-	{ opout,  "OUT\t(C),D"		},	/* 0x51 */
-	{ opout,  "SBC\tHL,DE"		},	/* 0x52 */
-	{ inout,  "LD\t(%04X),DE"	},	/* 0x53 */
-	{ opout,  "NEG*"		},	/* 0x54 */ /* undocumented */
-	{ opout,  "RETN*"		},	/* 0x55 */ /* undocumented */
-	{ opout,  "IM\t1"		},	/* 0x56 */
-	{ opout,  "LD\tA,I"		},	/* 0x57 */
-	{ opout,  "IN\tE,(C)"		},	/* 0x58 */
-	{ opout,  "OUT\t(C),E"		},	/* 0x59 */
-	{ opout,  "ADC\tHL,DE"		},	/* 0x5a */
-	{ inout,  "LD\tDE,(%04X)"	},	/* 0x5b */
-	{ opout,  "NEG*"		},	/* 0x5c */ /* undocumented */
-	{ opout,  "RETI*"		},	/* 0x5d */ /* undocumented */
-	{ opout,  "IM\t2"		},	/* 0x5e */
-	{ opout,  "LD\tA,R"		},	/* 0x5f */
-	{ opout,  "IN\tH,(C)"		},	/* 0x60 */
-	{ opout,  "OUT\t(C),H"		},	/* 0x61 */
-	{ opout,  "SBC\tHL,HL"		},	/* 0x62 */
-	{ inout,  "LD*\t(%04X),HL"	},	/* 0x63 */ /* undocumented */
-	{ opout,  "NEG*"		},	/* 0x64 */ /* undocumented */
-	{ opout,  "RETN*"		},	/* 0x65 */ /* undocumented */
-	{ opout,  "IM*\t0"		},	/* 0x66 */ /* undocumented */
-	{ opout,  "RRD"			},	/* 0x67 */
-	{ opout,  "IN\tL,(C)"		},	/* 0x68 */
-	{ opout,  "OUT\t(C),L"		},	/* 0x69 */
-	{ opout,  "ADC\tHL,HL"		},	/* 0x6a */
-	{ inout,  "LD*\tHL,(%04X)"	},	/* 0x6b */ /* undocumented */
-	{ opout,  "NEG*"		},	/* 0x6c */ /* undocumented */
-	{ opout,  "RETI*"		},	/* 0x6d */ /* undocumented */
-	{ opout,  "IM*\t0"		},	/* 0x6e */ /* undocumented */
-	{ opout,  "RLD"			},	/* 0x6f */
-	{ opout,  "IN*\tF,(C)"		},	/* 0x70 */ /* undocumented */
-	{ opout,  "OUT*\t(C),0"		},	/* 0x71 */ /* undocumented */
-	{ opout,  "SBC\tHL,SP"		},	/* 0x72 */
-	{ inout,  "LD\t(%04X),SP"	},	/* 0x73 */
-	{ opout,  "NEG*"		},	/* 0x74 */ /* undocumented */
-	{ opout,  "RETN*"		},	/* 0x75 */ /* undocumented */
-	{ opout,  "IM*\t1"		},	/* 0x76 */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0x77 */ /* undocumented */
-	{ opout,  "IN\tA,(C)"		},	/* 0x78 */
-	{ opout,  "OUT\t(C),A"		},	/* 0x79 */
-	{ opout,  "ADC\tHL,SP"		},	/* 0x7a */
-	{ inout,  "LD\tSP,(%04X)"	},	/* 0x7b */
-	{ opout,  "NEG*"		},	/* 0x7c */ /* undocumented */
-	{ opout,  "RETI*"		},	/* 0x7d */ /* undocumented */
-	{ opout,  "IM*\t2"		},	/* 0x7e */ /* undocumented */
-	{ opout,  "NOP*"		}	/* 0x7f */ /* undocumented */
+static const char *const optab_ed_23[64] = {
+	/*40*/	"IN\tB,(C)",	"OUT\t(C),B",	"SBC\tHL,BC",	"LD\t(w),BC",
+	/*44*/	"NEG",		"RETN",		"IM\t0",	"LD\tI,A",
+	/*48*/	"IN\tC,(C)",	"OUT\t(C),C",	"ADC\tHL,BC",	"LD\tBC,(w)",
+	/*4C*/	"NEG*",		"RETI",		"IM*\t0",	"LD\tR,A",
+	/*50*/	"IN\tD,(C)",	"OUT\t(C),D",	"SBC\tHL,DE",	"LD\t(w),DE",
+	/*54*/	"NEG*",		"RETN*",	"IM\t1",	"LD\tA,I",
+	/*58*/	"IN\tE,(C)",	"OUT\t(C),E",	"ADC\tHL,DE",	"LD\tDE,(w)",
+	/*5C*/	"NEG*",		"RETI*",	"IM\t2",	"LD\tA,R",
+	/*60*/	"IN\tH,(C)",	"OUT\t(C),H",	"SBC\tHL,HL",	"LD*\t(w),HL",
+	/*64*/	"NEG*",		"RETN*",	"IM*\t0",	"RRD",
+	/*68*/	"IN\tL,(C)",	"OUT\t(C),L",	"ADC\tHL,HL",	"LD*\tHL,(w)",
+	/*6C*/	"NEG*",		"RETI*",	"IM*\t0",	"RLD",
+	/*70*/	"IN*\tF,(C)",	"OUT*\t(C),0",	"SBC\tHL,SP",	"LD\t(w),SP",
+	/*74*/	"NEG*",		"RETN*",	"IM*\t1",	"NOP*",
+	/*78*/	"IN\tA,(C)",	"OUT\t(C),A",	"ADC\tHL,SP",	"LD\tSP,(w)",
+	/*7C*/	"NEG*",		"RETI*",	"IM*\t2",	"NOP*"
 };
 
-static struct opt optabed_5[32] = {
-	{ opout,  "LDI"			},	/* 0xa0 */
-	{ opout,  "CPI"			},	/* 0xa1 */
-	{ opout,  "INI"			},	/* 0xa2 */
-	{ opout,  "OUTI"		},	/* 0xa3 */
-	{ opout,  "NOP*"		},	/* 0xa4 */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xa5 */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xa6 */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xa7 */ /* undocumented */
-	{ opout,  "LDD"			},	/* 0xa8 */
-	{ opout,  "CPD"			},	/* 0xa9 */
-	{ opout,  "IND"			},	/* 0xaa */
-	{ opout,  "OUTD"		},	/* 0xab */
-	{ opout,  "NOP*"		},	/* 0xac */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xad */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xae */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xaf */ /* undocumented */
-	{ opout,  "LDIR"		},	/* 0xb0 */
-	{ opout,  "CPIR"		},	/* 0xb1 */
-	{ opout,  "INIR"		},	/* 0xb2 */
-	{ opout,  "OTIR"		},	/* 0xb3 */
-	{ opout,  "NOP*"		},	/* 0xb4 */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xb5 */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xb6 */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xb7 */ /* undocumented */
-	{ opout,  "LDDR"		},	/* 0xb8 */
-	{ opout,  "CPDR"		},	/* 0xb9 */
-	{ opout,  "INDR"		},	/* 0xba */
-	{ opout,  "OTDR"		},	/* 0xbb */
-	{ opout,  "NOP*"		},	/* 0xbc */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xbd */ /* undocumented */
-	{ opout,  "NOP*"		},	/* 0xbe */ /* undocumented */
-	{ opout,  "NOP*"		}	/* 0xbf */ /* undocumented */
+static const char *const optab_ed_5[32] = {
+	/*A0*/	"LDI",		"CPI",		"INI",		"OUTI",
+	/*A4*/	"NOP*",		"NOP*",		"NOP*",		"NOP*",
+	/*A8*/	"LDD",		"CPD",		"IND",		"OUTD",
+	/*AC*/	"NOP*",		"NOP*",		"NOP*",		"NOP*",
+	/*B0*/	"LDIR",		"CPIR",		"INIR",		"OTIR",
+	/*B4*/	"NOP*",		"NOP*",		"NOP*",		"NOP*",
+	/*B8*/	"LDDR",		"CPDR",		"INDR",		"OTDR",
+	/*BC*/	"NOP*",		"NOP*",		"NOP*",		"NOP*"
 };
+
+static const char *const optab_cb_rs[8] = {
+	/*00*/	"RLC\tr",	"RRC\tr",	"RL\tr",	"RR\tr",
+	/*20*/	"SLA\tr",	"SRA\tr",	"SLL*\tr",	"SRL\tr"
+};
+
+static const char *const optab_cb_bit[4] = {
+	/*00*/	"",		"BIT\tn,r",	"RES\tn,r",	"SET\tn,r"
+};
+
+static const char *const optab_ddfdcb_rs_undoc[8] = {
+	/*00*/	"RLC*\tr,r",	"RRC*\tr,r",	"RL*\tr,r",	"RR*\tr,r",
+	/*20*/	"SLA*\tr,r",	"SRA*\tr,r",	"SLL*\tr,r",	"SRL*\tr,r"
+};
+
+static const char *const optab_ddfdcb_bit_undoc[4] = {
+	/*00*/	"",		"BIT*\tn,r",	"RES*\tn,r,r",	"SET*\tn,r,r"
+};
+
+static const BYTE undoc_ddfd[32] = {
+	/*00*/	0xff, 0xfd, 0xff, 0xfd, 0xf1, 0xf1, 0x8f, 0xfd,
+	/*40*/	0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0x40, 0xbf,
+	/*80*/	0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf,
+	/*C0*/	0xff, 0xf7, 0xff, 0xff, 0xd5, 0xfd, 0xff, 0xfd
+};
+
 #endif /* !EXCLUDE_Z80 */
 
 #ifndef EXCLUDE_I8080
-static struct opt optabi8080_01[64] = {
-	{ opout,  "NOP"			},	/* 0x00 */
-	{ nnout,  "LXI\tB,"		},	/* 0x01 */
-	{ opout,  "STAX\tB"		},	/* 0x02 */
-	{ opout,  "INX\tB"		},	/* 0x03 */
-	{ opout,  "INR\tB"		},	/* 0x04 */
-	{ opout,  "DCR\tB"		},	/* 0x05 */
-	{ nout,   "MVI\tB,"		},	/* 0x06 */
-	{ opout,  "RLC"			},	/* 0x07 */
-	{ opout,  "NOP*"		},	/* 0x08 */ /* undocumented */
-	{ opout,  "DAD\tB"		},	/* 0x09 */
-	{ opout,  "LDAX\tB"		},	/* 0x0a */
-	{ opout,  "DCX\tB"		},	/* 0x0b */
-	{ opout,  "INR\tC"		},	/* 0x0c */
-	{ opout,  "DCR\tC"		},	/* 0x0d */
-	{ nout,   "MVI\tC,"		},	/* 0x0e */
-	{ opout,  "RRC"			},	/* 0x0f */
-	{ opout,  "NOP*"		},	/* 0x10 */ /* undocumented */
-	{ nnout,  "LXI\tD,"		},	/* 0x11 */
-	{ opout,  "STAX\tD"		},	/* 0x12 */
-	{ opout,  "INX\tD"		},	/* 0x13 */
-	{ opout,  "INR\tD"		},	/* 0x14 */
-	{ opout,  "DCR\tD"		},	/* 0x15 */
-	{ nout,   "MVI\tD,"		},	/* 0x16 */
-	{ opout,  "RAL"			},	/* 0x17 */
-	{ opout,  "NOP*"		},	/* 0x18 */ /* undocumented */
-	{ opout,  "DAD\tD"		},	/* 0x19 */
-	{ opout,  "LDAX\tD"		},	/* 0x1a */
-	{ opout,  "DCX\tD"		},	/* 0x1b */
-	{ opout,  "INR\tE"		},	/* 0x1c */
-	{ opout,  "DCR\tE"		},	/* 0x1d */
-	{ nout,   "MVI\tE,"		},	/* 0x1e */
-	{ opout,  "RAR"			},	/* 0x1f */
-	{ opout,  "NOP*"		},	/* 0x20 */ /* undocumented */
-	{ nnout,  "LXI\tH,"		},	/* 0x21 */
-	{ nnout,  "SHLD\t"		},	/* 0x22 */
-	{ opout,  "INX\tH"		},	/* 0x23 */
-	{ opout,  "INR\tH"		},	/* 0x24 */
-	{ opout,  "DCR\tH"		},	/* 0x25 */
-	{ nout,   "MVI\tH,"		},	/* 0x26 */
-	{ opout,  "DAA"			},	/* 0x27 */
-	{ opout,  "NOP*"		},	/* 0x28 */ /* undocumented */
-	{ opout,  "DAD\tH"		},	/* 0x29 */
-	{ nnout,  "LHLD\t"		},	/* 0x2a */
-	{ opout,  "DCX\tH"		},	/* 0x2b */
-	{ opout,  "INR\tL"		},	/* 0x2c */
-	{ opout,  "DCR\tL"		},	/* 0x2d */
-	{ nout,   "MVI\tL,"		},	/* 0x2e */
-	{ opout,  "CMA"			},	/* 0x2f */
-	{ opout,  "NOP*"		},	/* 0x30 */ /* undocumented */
-	{ nnout,  "LXI\tSP,"		},	/* 0x31 */
-	{ nnout,  "STA\t"		},	/* 0x32 */
-	{ opout,  "INX\tSP"		},	/* 0x33 */
-	{ opout,  "INR\tM"		},	/* 0x34 */
-	{ opout,  "DCR\tM"		},	/* 0x35 */
-	{ nout,   "MVI\tM,"		},	/* 0x36 */
-	{ opout,  "STC"			},	/* 0x37 */
-	{ opout,  "NOP*"		},	/* 0x38 */ /* undocumented */
-	{ opout,  "DAD\tSP"		},	/* 0x39 */
-	{ nnout,  "LDA\t"		},	/* 0x3a */
-	{ opout,  "DCX\tSP"		},	/* 0x3b */
-	{ opout,  "INR\tA"		},	/* 0x3c */
-	{ opout,  "DCR\tA"		},	/* 0x3d */
-	{ nout,   "MVI\tA,"		},	/* 0x3e */
-	{ opout,  "CMC"			}	/* 0x3f */
+
+static const char *const optab_8080_01[64] = {
+	/*00*/	"NOP",		"LXI\tB,w",	"STAX\tB",	"INX\tB",
+	/*04*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"RLC",
+	/*08*/	"NOP*",		"DAD\tB",	"LDAX\tB",	"DCX\tB",
+	/*0C*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"RRC",
+	/*10*/	"NOP*",		"LXI\tD,w",	"STAX\tD",	"INX\tD",
+	/*14*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"RAL",
+	/*18*/	"NOP*",		"DAD\tD",	"LDAX\tD",	"DCX\tD",
+	/*1C*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"RAR",
+	/*20*/	"NOP*",		"LXI\tH,w",	"SHLD\tw",	"INX\tH",
+	/*24*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"DAA",
+	/*28*/	"NOP*",		"DAD\tH",	"LHLD\tw",	"DCX\tH",
+	/*2C*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"CMA",
+	/*30*/	"NOP*",		"LXI\tSP,w",	"STA\tw",	"INX\tSP",
+	/*34*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"STC",
+	/*38*/	"NOP*",		"DAD\tSP",	"LDA\tw",	"DCX\tSP",
+	/*3C*/	"INR\tr",	"DCR\tr",	"MVI\tr,b",	"CMC"
 };
 
-static struct opt optabi8080_67[64] = {
-	{ opout,  "RNZ"			},	/* 0xc0 */
-	{ opout,  "POP\tB"		},	/* 0xc1 */
-	{ nnout,  "JNZ\t"		},	/* 0xc2 */
-	{ nnout,  "JMP\t"		},	/* 0xc3 */
-	{ nnout,  "CNZ\t"		},	/* 0xc4 */
-	{ opout,  "PUSH\tB"		},	/* 0xc5 */
-	{ nout,   "ADI\t"		},	/* 0xc6 */
-	{ opout,  "RST\t0"		},	/* 0xc7 */
-	{ opout,  "RZ"			},	/* 0xc8 */
-	{ opout,  "RET"			},	/* 0xc9 */
-	{ nnout,  "JZ\t"		},	/* 0xca */
-	{ nnout,  "JMP*\t"		},	/* 0xcb */ /* undocumented */
-	{ nnout,  "CZ\t"		},	/* 0xcc */
-	{ nnout,  "CALL\t"		},	/* 0xcd */
-	{ nout,   "ACI\t"		},	/* 0xce */
-	{ opout,  "RST\t1"		},	/* 0xcf */
-	{ opout,  "RNC"			},	/* 0xd0 */
-	{ opout,  "POP\tD"		},	/* 0xd1 */
-	{ nnout,  "JNC\t"		},	/* 0xd2 */
-	{ nout,   "OUT\t"		},	/* 0xd3 */
-	{ nnout,  "CNC\t"		},	/* 0xd4 */
-	{ opout,  "PUSH\tD"		},	/* 0xd5 */
-	{ nout,   "SUI\t"		},	/* 0xd6 */
-	{ opout,  "RST\t2"		},	/* 0xd7 */
-	{ opout,  "RC"			},	/* 0xd8 */
-	{ opout,  "RET*"		},	/* 0xd9 */ /* undocumented */
-	{ nnout,  "JC\t"		},	/* 0xda */
-	{ nout,   "IN\t"		},	/* 0xdb */
-	{ nnout,  "CC\t"		},	/* 0xdc */
-	{ nnout,  "CALL*\t"		},	/* 0xdd */ /* undocumented */
-	{ nout,   "SBI\t"		},	/* 0xde */
-	{ opout,  "RST\t3"		},	/* 0xdf */
-	{ opout,  "RPO"			},	/* 0xe0 */
-	{ opout,  "POP\tH"		},	/* 0xe1 */
-	{ nnout,  "JPO\t"		},	/* 0xe2 */
-	{ opout,  "XTHL"		},	/* 0xe3 */
-	{ nnout,  "CPO\t"		},	/* 0xe4 */
-	{ opout,  "PUSH\tH"		},	/* 0xe5 */
-	{ nout,   "ANI\t"		},	/* 0xe6 */
-	{ opout,  "RST\t4"		},	/* 0xe7 */
-	{ opout,  "RPE"			},	/* 0xe8 */
-	{ opout,  "PCHL"		},	/* 0xe9 */
-	{ nnout,  "JPE\t"		},	/* 0xea */
-	{ opout,  "XCHG"		},	/* 0xeb */
-	{ nnout,  "CPE\t"		},	/* 0xec */
-	{ nnout,  "CALL*\t"		},	/* 0xed */ /* undocumented */
-	{ nout,   "XRI\t"		},	/* 0xee */
-	{ opout,  "RST\t5"		},	/* 0xef */
-	{ opout,  "RP"			},	/* 0xf0 */
-	{ opout,  "POP\tPSW"		},	/* 0xf1 */
-	{ nnout,  "JP\t"		},	/* 0xf2 */
-	{ opout,  "DI"			},	/* 0xf3 */
-	{ nnout,  "CP\t"		},	/* 0xf4 */
-	{ opout,  "PUSH\tPSW"		},	/* 0xf5 */
-	{ nout,   "ORI\t"		},	/* 0xf6 */
-	{ opout,  "RST\t6"		},	/* 0xf7 */
-	{ opout,  "RM"			},	/* 0xf8 */
-	{ opout,  "SPHL"		},	/* 0xf9 */
-	{ nnout,  "JM\t"		},	/* 0xfa */
-	{ opout,  "EI"			},	/* 0xfb */
-	{ nnout,  "CM\t"		},	/* 0xfc */
-	{ nnout,  "CALL*\t"		},	/* 0xfd */ /* undocumented */
-	{ nout,   "CPI\t"		},	/* 0xfe */
-	{ opout,  "RST\t7"		}	/* 0xff */
+static const char *const optab_8080_45[8] = {
+	/*80*/	"ADD\tr",	"ADC\tr",	"SUB\tr",	"SBB\tr",
+	/*A0*/	"ANA\tr",	"XRA\tr",	"ORA\tr",	"CMP\tr"
 };
+
+static const char *const optab_8080_67[64] = {
+	/*C0*/	"RNZ",		"POP\tB",	"JNZ\tw",	"JMP\tw",
+	/*C4*/	"CNZ\tw",	"PUSH\tB",	"ADI\tb",	"RST\t0",
+	/*C8*/	"RZ",		"RET",		"JZ\tw",	"JMP*\tw",
+	/*CC*/	"CZ\tw",	"CALL\tw",	"ACI\tb",	"RST\t1",
+	/*D0*/	"RNC",		"POP\tD",	"JNC\tw",	"OUT\tb",
+	/*D4*/	"CNC\tw",	"PUSH\tD",	"SUI\tb",	"RST\t2",
+	/*D8*/	"RC",		"RET*",		"JC\tw",	"IN\tb",
+	/*DC*/	"CC\tw",	"CALL*\tw",	"SBI\tb",	"RST\t3",
+	/*E0*/	"RPO",		"POP\tH",	"JPO\tw",	"XTHL",
+	/*E4*/	"CPO\tw",	"PUSH\tH",	"ANI\tb",	"RST\t4",
+	/*E8*/	"RPE",		"PCHL",		"JPE\tw",	"XCHG",
+	/*EC*/	"CPE\tw",	"CALL*\tw",	"XRI\tb",	"RST\t5",
+	/*F0*/	"RP",		"POP\tPSW",	"JP\tw",	"DI",
+	/*F4*/	"CP\tw",	"PUSH\tPSW",	"ORI\tb",	"RST\t6",
+	/*F8*/	"RM",		"SPHL",		"JM\tw",	"EI",
+	/*FC*/	"CM\tw",	"CALL*\tw",	"CPI\tb",	"RST\t7"
+};
+
 #endif /* !EXCLUDE_I8080 */
-
-#ifndef EXCLUDE_Z80
-static const char *reg[]     = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
-static const char *regix[]   = { "B", "C", "D", "E", "IXH", "IXL", "IX", "A" };
-static const char *regiy[]   = { "B", "C", "D", "E", "IYH", "IYL", "IY", "A" };
-static const char *aluins[]  = { "ADD\tA,", "ADC\tA,", "SUB\t", "SBC\tA,",
-				 "AND\t", "XOR\t", "OR\t", "CP\t" };
-static const char *aluinsu[] = { "ADD*\tA,", "ADC*\tA,", "SUB*\t", "SBC*\tA,",
-				 "AND*\t", "XOR*\t", "OR*\t", "CP*\t" };
-static const char *rsins[]   = { "RLC", "RRC", "RL", "RR",
-				 "SLA", "SRA", "SLL*", "SRL" };
-static const char *rsinsu[]  = { "RLC*", "RRC*", "RL*", "RR*",
-				 "SLA*", "SRA*", "SLL*", "SRL*" };
-static const char *bitins[]  = { "", "BIT", "RES", "SET" };
-#endif
-
-#ifndef EXCLUDE_I8080
-static const char *regi8080[]	 = { "B", "C", "D", "E", "H", "L", "M", "A" };
-static const char *aluinsi8080[] = { "ADD", "ADC", "SUB", "SBB",
-				     "ANA", "XRA", "ORA", "CMP" };
-#endif
 
 /* globals for passing disassembled code to anyone else who's interested */
 
 char Disass_Str[64];
 char Opcode_Str[64];
-
-/* Set up machine code hex in Opcode_Str for disassembly */
-
-static void get_opcodes(WORD addr, int len)
-{
-	switch (len) {
-	case 1:
-		sprintf(Opcode_Str, "%02X         ", getmem(addr));
-		break;
-	case 2:
-		sprintf(Opcode_Str, "%02X %02X      ",
-			getmem(addr), getmem(addr + 1));
-		break;
-	case 3:
-		sprintf(Opcode_Str, "%02X %02X %02X   ",
-			getmem(addr), getmem(addr + 1),
-			getmem(addr + 2));
-		break;
-	case 4:
-		sprintf(Opcode_Str, "%02X %02X %02X %02X",
-			getmem(addr), getmem(addr + 1),
-			getmem(addr + 2), getmem(addr + 3));
-		break;
-	default:
-		sprintf(Opcode_Str, "xx OW OW xx");
-		break;
-	}
-}
 
 /*
  *	The function disass() is the only global function of
@@ -489,59 +193,231 @@ static void get_opcodes(WORD addr, int len)
 int disass(WORD addr)
 {
 	register BYTE op;
-	register int len = 1;
-	struct opt *optp;
+	register const char *tmpl;
+	register char *p;
+	BYTE b1, b2;
+	WORD a = addr;
+	int reg1 = 0, reg2 = 0, i, len;
+#ifndef EXCLUDE_Z80
+	BYTE displ = 0;
+	WORD w;
+	char ireg = 0;
+	int undoc_ireg = 0, bit = 0;
+#endif
 
-	op = getmem(addr);
+	/*
+	 * select instruction template tmpl, decode operands, and
+	 * flag undocumented Z80 DD/FD main block instructions
+	 */
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
+		op = getmem(a++);
+		/* index register prefix? */
+		if ((op & 0xdf) == 0xdd) {
+			ireg = 'X' + ((op >> 5) & 1);
+			op = getmem(a++);
+			undoc_ireg = undoc_ddfd[op >> 3] & (1 << (op & 7));
+		}
+		reg1 = (op >> 3) & 7;
+		reg2 = op & 7;
 		if (op < 0x40) {
-			optp = &optabz80_01[op];
-			len = (*optp->fun)(optp->text, addr);
+			tmpl = optab_01[op];
+			if (ireg && reg1 == 6 && (reg2 >= 4 && reg2 <= 6))
+				displ = getmem(a++);
 		} else if (op < 0x80) {
 			if (op == 0x76)
-				strcpy(Disass_Str, "HALT");
-			else
-				sprintf(Disass_Str, "LD\t%s,%s",
-					reg[(op >> 3) & 7], reg[op & 7]);
-		} else if (op < 0xc0)
-			sprintf(Disass_Str, "%s%s",
-				aluins[(op >> 3) & 7], reg[op & 7]);
-		else {
-			optp = &optabz80_67[op & 0x3f];
-			len = (*optp->fun)(optp->text, addr);
-		}
+				tmpl = "HALT";
+			else {
+				tmpl = "LD\tr,r";
+				if (ireg && (reg1 == 6 || reg2 == 6))
+					displ = getmem(a++);
+			}
+		} else if (op < 0xc0) {
+			tmpl = optab_45[reg1];
+			reg1 = reg2;
+			if (ireg && reg1 == 6)
+				displ = getmem(a++);
+		} else if (op == 0xcb) {
+			if (ireg)
+				displ = getmem(a++);
+			op = getmem(a++);
+			bit = (op >> 3) & 7;
+			reg1 = op & 7;
+			if (ireg && reg1 != 6) {
+				/* DD/FD undocumented CB RS/BIT */
+				reg2 = reg1;
+				reg1 = 6;
+				if (op < 0x40)
+					tmpl = optab_ddfdcb_rs_undoc[op >> 3];
+				else
+					tmpl = optab_ddfdcb_bit_undoc[op >> 6];
+			} else {
+				if (op < 0x40)
+					tmpl = optab_cb_rs[op >> 3];
+				else
+					tmpl = optab_cb_bit[op >> 6];
+			}
+		} else if (op == 0xed) {
+			if (ireg) {
+				a--;
+				tmpl = "NOP*";
+			} else {
+				op = getmem(a++);
+				if (0x40 <= op && op < 0x80)
+					tmpl = optab_ed_23[op & 0x3f];
+				else if (0xa0 <= op && op < 0xc0)
+					tmpl = optab_ed_5[op & 0x1f];
+				else
+					tmpl = "NOP*";
+			}
+		} else
+			tmpl = optab_67[op & 0x3f];
 		break;
 #endif
 #ifndef EXCLUDE_I8080
 	case I8080:
+		op = getmem(a++);
+		reg1 = (op >> 3) & 7;
+		reg2 = op & 7;
 		if (op < 0x40) {
-			optp = &optabi8080_01[op];
-			len = (*optp->fun)(optp->text, addr);
+			tmpl = optab_8080_01[op];
 		} else if (op < 0x80) {
 			if (op == 0x76)
-				strcpy(Disass_Str, "HLT");
+				tmpl = "HLT";
 			else
-				sprintf(Disass_Str, "MOV\t%s,%s",
-					regi8080[(op >> 3) & 7],
-					regi8080[op & 7]);
-		} else if (op < 0xc0)
-			sprintf(Disass_Str, "%s\t%s",
-				aluinsi8080[(op >> 3) & 7],
-				regi8080[op & 7]);
-		else {
-			optp = &optabi8080_67[op & 0x3f];
-			len = (*optp->fun)(optp->text, addr);
-		}
+				tmpl = "MOV\tr,r";
+		} else if (op < 0xc0) {
+			tmpl = optab_8080_45[reg1];
+			reg1 = reg2;
+		} else
+			tmpl = optab_8080_67[op & 0x3f];
 		break;
 #endif
 	default:
+		tmpl = "";
 		break;
 	}
-	strcat(Disass_Str, "\n");
 
-	get_opcodes(addr, len);
+	/*
+	 * expand instruction template tmpl into disassembly string
+	 * uses ireg, reg1, reg2, bit, displ, and undoc_ireg, which
+	 * where setup in the previous step
+	 */
+	for (p = Disass_Str; *tmpl; tmpl++) {
+		switch (*tmpl) {
+		case 'b':	/* byte */
+			b1 = getmem(a++);
+			p = btoh(b1, p);
+			break;
+		case 'w':	/* word */
+			b1 = getmem(a++);
+			b2 = getmem(a++);
+			p = btoh(b2, p);
+			p = btoh(b1, p);
+			break;
+		case 'r':	/* register */
+			switch (cpu) {
+#ifndef EXCLUDE_Z80
+			case Z80:
+				switch (reg1) {
+				case 4:	/* H */
+				case 5:	/* L */
+					if (undoc_ireg) {
+						*p++ = 'I';
+						*p++ = ireg;
+					}
+					/* fall through */
+				case 0:	/* B */
+				case 1:	/* C */
+				case 2:	/* D */
+				case 3:	/* E */
+				case 7:	/* A */
+					*p++ = "BCDEHLMA"[reg1];
+					break;
+				case 6:	/* (HL) */
+					*p++ = '(';
+					if (ireg) {
+						*p++ = 'I';
+						*p++ = ireg;
+						if (displ) {
+							if (displ < 128)
+								*p++ = '+';
+							else {
+								*p++ = '-';
+								displ = -displ;
+							}
+							p = btoh(displ, p);
+						}
+					} else {
+						*p++ = 'H';
+						*p++ = 'L';
+					}
+					*p++ = ')';
+					break;
+				default:
+					break;
+				}
+				break;
+#endif
+#ifndef EXCLUDE_I8080
+			case I8080:
+				*p++ = "BCDEHLMA"[reg1];
+				break;
+#endif
+			default:
+				break;
+			}
+			reg1 = reg2;
+			break;
+#ifndef EXCLUDE_Z80
+		case 'i':	/* index register */
+			if (ireg) {
+				*p++ = 'I';
+				*p++ = ireg;
+			} else {
+				*p++ = 'H';
+				*p++ = 'L';
+			}
+			break;
+		case 'j':	/* relative jump address */
+			b1 = getmem(a++);
+			w = a + (SBYTE) b1;
+			p = btoh(w >> 8, p);
+			p = btoh(w & 0xff, p);
+			break;
+		case 'n':	/* bit number */
+			*p++ = '0' + bit;
+			break;
+		case '\t':
+			if (undoc_ireg)
+				*p++ = '*';
+#endif
+			/* fall through */ /* should really be inside #if */
+		default:
+			*p++ = *tmpl;
+			break;
+		}
+	}
+	*p++ = '\n';
+	*p = '\0';
+	len = a - addr;
+
+	/* fill opcodes string */
+	p = Opcode_Str;
+	for (i = 0; i < 4; i++) {
+		if (i)
+			*p++ = ' ';
+		if (i < len) {
+			b1 = getmem(addr + i);
+			p = btoh(b1, p);
+		} else {
+			*p++ = ' ';
+			*p++ = ' ';
+		}
+	}
+	*p = '\0';
+
 #ifndef WANT_GUI
 	fputs(Opcode_Str, stdout);
 	putchar('\t');
@@ -552,350 +428,18 @@ int disass(WORD addr)
 }
 
 /*
- *	disassemble 1 byte op-codes
+ *	convert BYTE into ASCII hex and copy to string at p
+ *	returns p increased by 2
  */
-static int opout(const char *s, WORD a)
+static char *btoh(BYTE b, char *p)
 {
-	UNUSED(a);
+	register char c;
 
-	strcpy(Disass_Str, s);
-	return 1;
+	c = b >> 4;
+	*p++ = c + (c < 10 ? '0' : '7');
+	c = b & 0xf;
+	*p++ = c + (c < 10 ? '0' : '7');
+	return p;
 }
-
-/*
- *	disassemble 2 byte op-codes of type "Op n"
- */
-static int nout(const char *s, WORD a)
-{
-	sprintf(Disass_Str, "%s%02X", s, getmem(a + 1));
-	return 2;
-}
-
-/*
- *	disassemble 3 byte op-codes of type "Op nn"
- */
-static int nnout(const char *s, WORD a)
-{
-	register int i;
-
-	i = getmem(a + 1) + (getmem(a + 2) << 8);
-	sprintf(Disass_Str, "%s%04X", s, i);
-	return 3;
-}
-
-#ifndef EXCLUDE_Z80
-
-/*
- *	disassemble 2 byte op-codes with indirect addressing
- */
-static int iout(const char *s, WORD a)
-{
-	sprintf(Disass_Str, s, getmem(a + 1));
-	return 2;
-}
-
-/*
- *	disassemble 2 byte op-codes with relative addressing
- */
-static int rout(const char *s, WORD a)
-{
-	sprintf(Disass_Str, "%s%04X", s,
-		(WORD) (a + (SBYTE) getmem(a + 1) + 2));
-	return 2;
-}
-
-/*
- *	disassemble 3 byte op-codes with indirect addressing
- */
-static int inout(const char *s, WORD a)
-{
-	register int i;
-
-	i = getmem(a + 1) + (getmem(a + 2) << 8);
-	sprintf(Disass_Str, s, i);
-	return 3;
-}
-
-/*
- *	disassemble multi byte op-codes with prefix 0xcb
- */
-static int cbop(const char *s, WORD a)
-{
-	register BYTE b2;
-
-	UNUSED(s);
-
-	b2 = getmem(a + 1);
-	if (b2 < 0x40)
-		sprintf(Disass_Str, "%s\t%s",
-			rsins[b2 >> 3], reg[b2 & 7]);
-	else
-		sprintf(Disass_Str, "%s\t%c,%s",
-			bitins[b2 >> 6], ((b2 >> 3) & 7) + '0', reg[b2 & 7]);
-	return 2;
-}
-
-/*
- *	disassemble multi byte op-codes with prefix 0xed
- */
-static int edop(const char *s, WORD a)
-{
-	register BYTE b2;
-	int len = 1;
-
-	UNUSED(s);
-
-	b2 = getmem(a + 1);
-	if (b2 < 0x40)					/* undocumented */
-		strcpy(Disass_Str, "NOP*");
-	else if (b2 < 0x80) {
-		b2 &= 0x3f;
-		len = (*optabed_23[b2].fun)(optabed_23[b2].text, a + 1);
-	} else if (b2 < 0xa0)				/* undocumented */
-		strcpy(Disass_Str, "NOP*");
-	else if (b2 < 0xc0) {
-		b2 &= 0x1f;
-		len = (*optabed_5[b2].fun)(optabed_5[b2].text, a + 1);
-	} else						/* undocumented */
-		strcpy(Disass_Str, "NOP*");
-	return len + 1;
-}
-
-/*
- *	disassemble multi byte op-codes with prefix 0xdd and 0xfd
- */
-static int ddfd(const char *s, WORD a)
-{
-	register BYTE b2, b4, off;
-	register int r1, r2;
-	register const char **ireg;
-	register char sign;
-
-	UNUSED(s);
-
-	if (getmem(a) == 0xdd)
-		ireg = regix;
-	else
-		ireg = regiy;
-	b2 = getmem(a + 1);
-	sign = '+';
-	off = getmem(a + 2);
-	if (off > 127) {
-		sign = '-';
-		off = -off;
-	}
-	r1 = (b2 >> 3) & 7;
-	r2 = b2 & 7;
-	if (b2 < 0x40) {
-		switch (b2) {
-		case 0x09:
-			sprintf(Disass_Str, "ADD\t%s,BC", ireg[6]);
-			return 2;
-		case 0x19:
-			sprintf(Disass_Str, "ADD\t%s,DE", ireg[6]);
-			return 2;
-		case 0x21:
-			sprintf(Disass_Str, "LD\t%s,%04X", ireg[6],
-				getmem(a + 2) + (getmem(a + 3) << 8));
-			return 4;
-		case 0x22:
-			sprintf(Disass_Str, "LD\t(%04X),%s",
-				getmem(a + 2) + (getmem(a + 3) << 8), ireg[6]);
-			return 4;
-		case 0x23:
-			sprintf(Disass_Str, "INC\t%s", ireg[6]);
-			return 2;
-		case 0x24:				/* undocumented */
-			sprintf(Disass_Str, "INC*\t%sH", ireg[6]);
-			return 2;
-		case 0x25:				/* undocumented */
-			sprintf(Disass_Str, "DEC*\t%sH", ireg[6]);
-			return 2;
-		case 0x26:				/* undocumented */
-			sprintf(Disass_Str, "LD*\t%sH,%02X", ireg[6],
-				getmem(a + 2));
-			return 3;
-		case 0x29:
-			sprintf(Disass_Str, "ADD\t%s,%s", ireg[6], ireg[6]);
-			return 2;
-		case 0x2a:
-			sprintf(Disass_Str, "LD\t%s,(%04X)", ireg[6],
-				getmem(a + 2) + (getmem(a + 3) << 8));
-			return 4;
-		case 0x2b:
-			sprintf(Disass_Str, "DEC\t%s", ireg[6]);
-			return 2;
-		case 0x2c:				/* undocumented */
-			sprintf(Disass_Str, "INC*\t%sL", ireg[6]);
-			return 2;
-		case 0x2d:				/* undocumented */
-			sprintf(Disass_Str, "DEC*\t%sL", ireg[6]);
-			return 2;
-		case 0x2e:				/* undocumented */
-			sprintf(Disass_Str, "LD*\t%sL,%02X", ireg[6],
-				getmem(a + 2));
-			return 3;
-		case 0x34:
-			if (off == 0)
-				sprintf(Disass_Str, "INC\t(%s)", ireg[6]);
-			else
-				sprintf(Disass_Str, "INC\t(%s%c%02X)",
-					ireg[6], sign, off);
-			return 3;
-		case 0x35:
-			if (off == 0)
-				sprintf(Disass_Str, "DEC\t(%s)", ireg[6]);
-			else
-				sprintf(Disass_Str, "DEC\t(%s%c%02X)",
-					ireg[6], sign, off);
-			return 3;
-		case 0x36:
-			if (off == 0)
-				sprintf(Disass_Str, "LD\t(%s),%02X",
-					ireg[6], getmem(a + 3));
-			else
-				sprintf(Disass_Str, "LD\t(%s%c%02X),%02X",
-					ireg[6], sign, off, getmem(a + 3));
-			return 4;
-		case 0x39:
-			sprintf(Disass_Str, "ADD\t%s,SP", ireg[6]);
-			return 2;
-		default:				/* undocumented */
-			strcpy(Disass_Str, "NOP*");
-			return 1;
-		}
-	} else if (b2 < 0x80) {
-		if (((r1 < 4 || r1 > 6) && (r2 < 4 || r2 > 6))
-		    || (r1 == 6 && r2 == 6)) {		/* undocumented */
-			strcpy(Disass_Str, "NOP*");
-			return 1;
-		} else if (r1 == 6) {
-			if (off == 0)
-				sprintf(Disass_Str, "LD\t(%s),%s",
-					ireg[r1], reg[r2]);
-			else
-				sprintf(Disass_Str, "LD\t(%s%c%02X),%s",
-					ireg[r1], sign, off, reg[r2]);
-			return 3;
-		} else if (r2 == 6) {
-			if (off == 0)
-				sprintf(Disass_Str, "LD\t%s,(%s)",
-					reg[r1], ireg[r2]);
-			else
-				sprintf(Disass_Str, "LD\t%s,(%s%c%02X)",
-					reg[r1], ireg[r2], sign, off);
-			return 3;
-		} else {				/* undocumented */
-			sprintf(Disass_Str, "LD*\t%s,%s", ireg[r1], ireg[r2]);
-			return 2;
-		}
-	} else if (b2 < 0xc0) {
-		if (r2 < 4 || r2 > 6) {			/* undocumented */
-			strcpy(Disass_Str, "NOP*");
-			return 1;
-		} else if (r2 == 6) {
-			if (off == 0)
-				sprintf(Disass_Str, "%s(%s)", aluins[r1],
-					ireg[r2]);
-			else
-				sprintf(Disass_Str, "%s(%s%c%02X)", aluins[r1],
-					ireg[r2], sign, off);
-			return 3;
-		} else {				/* undocumented */
-			sprintf(Disass_Str, "%s%s", aluinsu[r1], ireg[r2]);
-			return 2;
-		}
-	} else {
-		switch (b2) {
-		case 0xcb:
-			b4 = getmem(a + 3);
-			if ((b4 & 7) == 6) {
-				if (b4 < 0x40)
-					if (off == 0)
-						sprintf(Disass_Str,
-							"%s\t(%s)",
-							rsins[b4 >> 3],
-							ireg[6]);
-					else
-						sprintf(Disass_Str,
-							"%s\t(%s%c%02X)",
-							rsins[b4 >> 3],
-							ireg[6], sign, off);
-				else if (off == 0)
-					sprintf(Disass_Str,
-						"%s\t%c,(%s)",
-						bitins[b4 >> 6],
-						((b4 >> 3) & 7) + '0',
-						ireg[6]);
-				else
-					sprintf(Disass_Str,
-						"%s\t%c,(%s%c%02X)",
-						bitins[b4 >> 6],
-						((b4 >> 3) & 7) + '0',
-						ireg[6], sign, off);
-			} else {
-				if (b4 < 0x40)		/* undocumented */
-					if (off == 0)
-						sprintf(Disass_Str,
-							"%s\t(%s),%s",
-							rsinsu[b4 >> 3],
-							ireg[6], reg[b4 & 7]);
-					else		/* undocumented */
-						sprintf(Disass_Str,
-							"%s\t(%s%c%02X),%s",
-							rsinsu[b4 >> 3],
-							ireg[6], sign, off,
-							reg[b4 & 7]);
-				else if (b4 < 0x80)	/* undocumented */
-					if (off == 0)
-						sprintf(Disass_Str,
-							"%s*\t%c,(%s)",
-							bitins[b4 >> 6],
-							((b4 >> 3) & 7) + '0',
-							ireg[6]);
-					else		/* undocumented */
-						sprintf(Disass_Str,
-							"%s*\t%c,(%s%c%02X)",
-							bitins[b4 >> 6],
-							((b4 >> 3) & 7) + '0',
-							ireg[6], sign, off);
-				else if (off == 0)	/* undocumented */
-					sprintf(Disass_Str,
-						"%s*\t%c,(%s),%s",
-						bitins[b4 >> 6],
-						((b4 >> 3) & 7) + '0',
-						ireg[6], reg[b4 & 7]);
-				else			/* undocumented */
-					sprintf(Disass_Str,
-						"%s*\t%c,(%s%c%02X),%s",
-						bitins[b4 >> 6],
-						((b4 >> 3) & 7) + '0',
-						ireg[6], sign, off,
-						reg[b4 & 7]);
-			}
-			return 4;
-		case 0xe1:
-			sprintf(Disass_Str, "POP\t%s", ireg[6]);
-			return 2;
-		case 0xe3:
-			sprintf(Disass_Str, "EX\t(SP),%s", ireg[6]);
-			return 2;
-		case 0xe5:
-			sprintf(Disass_Str, "PUSH\t%s", ireg[6]);
-			return 2;
-		case 0xe9:
-			sprintf(Disass_Str, "JP\t(%s)", ireg[6]);
-			return 2;
-		case 0xf9:
-			sprintf(Disass_Str, "LD\tSP,%s", ireg[6]);
-			return 2;
-		default:				/* undocumented */
-			strcpy(Disass_Str, "NOP*");
-			return 1;
-		}
-	}
-}
-
-#endif /* !EXCLUDE_Z80 */
 
 #endif /* WANT_ICE */

@@ -1,0 +1,18 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[{Makefile,*.{asm,c,cpp,h,mac}}]
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+
+[*.md]
+indent_style = tab
+indent_size = 8
