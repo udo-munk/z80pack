@@ -1,464 +1,461 @@
 	TITLE	'Z80-Disassembler'
 
-;	Hardware-unabhaengiger, ROM-faehiger Z80-Disassembler
+;	Hardware independent ROMable Z80-Disassembler
 ;
-;	Die Adresse, ab der disassembliert serden soll, ist in der
-;	16-Bit Speicherzelle DADR abzulegen. Danach kann eines der
-;	Entrys DISSCR (Ausgabe eines Bildschirms) oder DISLIN
-;	(Ausgabe einer Zeile) aufgerufen werden. Da die Folgeadressen
-;	durch das Programm ebenfalls wieder in der Speicherzelle
-;	DADR abgelegt werden, ist mehrfacher Aufruf ohne Laden
-;	von neuen Adressen moeglich.
-;	Zur Ausgabe muss ein Unterprogramm mit dem Namen PRTSTR
-;	erstellt werden, dem in HL die Adresse eines Null-terminierten
-;	Strings uebergeben wird.
+;	The address from which to begin the disassembly should be stored
+;	into the 16-bit memory location DADDR. One of the entry points
+;	DISSCR (output of one screen page) or DISLIN (output of one
+;	line) can then be called. The program will also store the next
+;	address in the memory location DADDR, which makes multiple calls
+;	without loading new addresses possible.
+;	A subroutine with the name PRTSTR must be written, which will
+;	be called with the address of a zero-terminated string in HL.
 ;
 ;	27-JUN-89	Udo Munk
 
-LPP	EQU	15		; Anzahl Zeilen/Bildschirm Ausgabe
-MNEPOS	EQU	11H		; Offset des Mnemonics in Ausgabe-Workspace
+LPP	EQU	15		; number of lines per screen page
+MNEPOS	EQU	11H		; offset of mnemonics into output workspace
 
-	; Disassembliere einen Bildschirm voll
-DISSCR:	LD	B,LPP		; einen Bildschirm mit LPP Zeilen
-$DLP1:	PUSH	BC		; disassemblieren
+	; disassemble one screen page
+DISSCR:	LD	B,LPP		; disassemble one screen page with LPP lines
+$DLP1:	PUSH	BC
 	CALL	DISLIN
 	POP	BC
 	DJNZ	$DLP1
 	RET
 
-	; Disassembliere eine Zeile
-DISLIN:	CALL	CLWO		; Workspace fuer eine Zeile Ausgabe loeschen
-	LD	HL,WRKS		; Adresse der Ausgabe-Workspace -> HL
-	LD	DE,(DADR)	; Disassemblier-Adresse -> DE
-	CALL	PRBY		; Adresse in DE ausgeben
-	INC	HL		; Blank ausgeben
-	LD	(PRTMP),HL	; vordere Printposition retten
-	LD	C,0		; Steuerflag loeschen
-	DEC	DE		; laufende Adr.-1 -> DE
-$DL13:	CALL	PRNB		; laufendes Byte ausgeben
-	LD	A,(DE)		; laufendes Byte -> A
-	LD	B,A		; und in B retten
-	CP	0EDH		; Preafix ED ?
-	JR	NZ,$DL14	
-	SET	4,C		; ja, ED-Flag setzen
-	JR	$DL13		; und naechstes Byte bearbeiten
-$DL14:	CP	0FDH		; Preafix FD ?
+	; disassemble one line
+DISLIN:	CALL	CLWO		; clear workspace for one line output
+	LD	HL,WRKS		; address of output workspace -> HL
+	LD	DE,(DADDR)	; disassembly address -> DE
+	CALL	PRADDR		; output address in DE
+	INC	HL		; output blank space
+	LD	(PRTMP),HL	; save opcode space print position
+	LD	C,0		; clear control flags
+	DEC	DE		; current addr.-1 -> DE
+$DL13:	CALL	PRNBO		; output current byte
+	LD	A,(DE)		; current byte -> A
+	LD	B,A		; and save in B
+	CP	0EDH		; prefix ED ?
+	JR	NZ,$DL14
+	SET	4,C		; yes, set ED-flag
+	JR	$DL13		; and process next byte
+$DL14:	CP	0FDH		; prefix FD ?
 	JR	NZ,$DL15
-	SET	6,C		; ja, FD-Flag setzen
-	JR	$DL16		; und Index-Flag setzen
-$DL15:	CP	0DDH		; Preafix DD ?
+	SET	6,C		; yes, set FD-flag
+	JR	$DL16		; and index-flag
+$DL15:	CP	0DDH		; prefix DD ?
 	JR	NZ,$DL17
-$DL16:	SET	5,C		; Index-Flag fuer IX/IY-Adressierung setzen
-	LD	HL,(PRTMP)	; vordere Printposition -> HL
-	JR	$DL13		; naechstes Byte bearbeiten
-$DL17:	LD	HL,WRKS+MNEPOS	; HL auf Operator Position setzen
+$DL16:	SET	5,C		; set index-flag for IX/IY-addressing
+	LD	HL,(PRTMP)	; opcode space print position -> HL
+	JR	$DL13		; process next byte
+$DL17:	LD	HL,WRKS+MNEPOS	; set HL to operator position
 
-	; nach Praefix CB
-CB:	LD	A,B		; Befehlsbyte aus B holen
-	CP	0CBH		; Preafix CB ?
-	JP	NZ,OHNE
-	INC	DE		; ja, Pointer auf naechstes Byte setzen
-	BIT	5,C		; IX/IY-Flag ?
+	; after prefix CB
+CB:	LD	A,B		; get opcode byte from B
+	CP	0CBH		; prefix CB ?
+	JP	NZ,WITHOU
+	INC	DE		; yes, set pointer to next byte
+	BIT	5,C		; IX/IY-flag ?
 	JR	Z,$DL18
-	INC	DE		; ja, Pointer auf naechstes Byte setzen
-$DL18:	LD	A,(DE)		; naechstes Byte -> A
-	LD	B,A		; und in B retten
-	PUSH	DE		; Disassemblieradr. retten
-	LD	D,MNETAB >> 8	; High-Byte Operatorentabelle -> D
-	LD	E,0E8H		; DE = Pointer auf "SET"
+	INC	DE		; yes, set pointer to next byte
+$DL18:	LD	A,(DE)		; next byte -> A
+	LD	B,A		; and save in B
+	PUSH	DE		; save disassembly addr.
+	LD	D,MNETAB >> 8	; high byte of operator table -> D
+	LD	E,0E8H		; DE = pointer to "SET"
 	CP	0C0H		; SET ?
 	JR	NC,$DL19
-	LD	E,0E4H		; nein, DE = Pointer auf "RES"
+	LD	E,0E4H		; no, DE = pointer to "RES"
 	CP	80H		; RES ?
 	JR	NC,$DL19
-	LD	E,0E0H		; nein, DE = Pointer auf "BIT"
+	LD	E,0E0H		; no, DE = pointer to "BIT"
 	CP	40H		; BIT ?
 	JR	NC,$DL19
-	AND	38H		; loesche Bits 0..2 und 6..7
-	RRCA			; Division durch 2
-	ADD	A,CBMTAB & 0FFH ; zur Basis der CB-Mnemonics addieren
+	AND	38H		; clear bits 0..2 and 6..7
+	RRCA			; division by 2
+	ADD	A,CBMTAB & 0FFH ; add to base of CB-mnemonics
 	LD	E,A
-	LD	D,CBMTAB >> 8	; DE = Pointer auf CB-Mnemonic
-$DL19:	CALL	TRBY		; Mnemonic ausgeben
-	POP	DE		; akt. Disassemblieradr. wieder -> DE
-	LD	A,B		; Byte wieder -> A
-	BIT	5,C		; IX/IY-Flag ?
+	LD	D,CBMTAB >> 8	; DE = pointer to CB-mnemonic
+$DL19:	CALL	PRMNE		; output mnemonic
+	POP	DE		; restore current disassembly addr. -> DE
+	LD	A,B		; restore byte -> A
+	BIT	5,C		; IX/IY-flag ?
 	JR	Z,$DL20
-	DEC	DE		; eins zurueck bei IX/IY-Adressierung
-$DL20:	DEC	DE		; Pointer wieder auf CB-Preafix
-	CP	40H		; CB-Befehl < 40H ?
+	DEC	DE		; one back if IX/IY-addressing
+$DL20:	DEC	DE		; pointer again to CB-prefix
+	CP	40H		; CB-opcode < 40H ?
 	JR	C,$DL21
-	AND	38H		; nein, Bits 0..2 und 6..7 loeschen
-	RRCA			; Division durch 8 -> 1. Operanden
+	AND	38H		; no, clear bits 0..2 and 6..7
+	RRCA			; division by 8 -> 1. operand
 	RRCA
 	RRCA
-	CALL	PRO1		; 1. Operanden ausgeben
-	LD	A,B		; Byte wieder -> A
-	SET	7,C		; Komma-Flag setzen
-$DL21:	AND	7		; Bits 3..7 loeschen -> 2. Operanden
-	SET	4,A		; Buchstaben-Flag setzen
-	CALL	PRO1		; 2. Operanden ausgeben
-	CALL	PRNB		; Befehlsbyte vorne ausgeben
-	JP	INAD		; fertig, Adresse merken und Workspace ausgeben
+	CALL	PRO1		; output 1. operand
+	LD	A,B		; restore opcode byte to A
+	SET	7,C		; set comma-flag
+$DL21:	AND	7		; clear bits 3..7 -> 2. operand
+	SET	4,A		; set letters-flag
+	CALL	PRO1		; output 2. operand
+	CALL	PRNBO		; output opcode byte to opcode space
+	JP	INADDR		; done, save address and output workspace
 
-	; ohne Preafix CB/ED
-OHNE:	PUSH	DE		; Disassemblieradr. retten
-	BIT	4,C		; ED-Flag ?
+	; without prefix CB/ED
+WITHOU:	PUSH	DE		; save disassembly addr.
+	BIT	4,C		; ED-flag ?
 	JP	NZ,ED
-	CP	40H		; nein, < 40H ?
+	CP	40H		; no, < 40H ?
 	JR	C,$DL25
-	CP	80H		; nein, > 80H ?
+	CP	80H		; no, > 80H ?
 	JR	NC,$DL23
-	LD	E,50H		; nein, DE = Pointer auf "LD"
+	LD	E,50H		; no, DE = pointer to "LD"
 	CP	76H		; HALT ?
 	JR	NZ,$DL22
-	LD	E,5CH		; nein, DE = Pointer auf "HALT"
-$DL22:	JR	$DL26		; Mnemonic ausgeben
+	LD	E,5CH		; yes, DE = pointer to "HALT"
+$DL22:	JR	$DL26		; output mnemonic
 $DL23:	CP	0C0H		; > C0H ?
 	JR	NC,$DL24
-	AND	38H		; ja, Bits 0..2 und 6..7 loeschen
-	RRCA			; Division durch 2 -> Operator
-	LD	E,A		; Operator -> E
-	JR	$DL26		; Mnemonic ausgeben
-$DL24:	SUB	80H		; wenn > C0H, -80 -> Tabellenoperator
-$DL25:	LD	E,A		; Operator -> E
-	LD	D,CODTAB >> 8	; High-Byte Operatortabelle -> D
-	LD	A,(DE)		; LSB Mnemonic-Adresse -> A
-	LD	E,A		; und nach E
-$DL26:	LD	D,MNETAB >> 8	; MSB Mnemonic-Adresse -> D
-	CALL	TRBY		; Mnemonic ausgeben
-	POP	DE		; akt. Disassemblieradr. wieder -> DE
-	LD	A,B		; Befehlsbyte wieder -> A
-	PUSH	DE		; Disassemblieradr. retten
-	CP	40H		; Byte < 40 ?
+	AND	38H		; yes, clear bits 0..2 and 6..7
+	RRCA			; division by 2 -> operator
+	LD	E,A		; operator -> E
+	JR	$DL26		; output mnemonic
+$DL24:	SUB	80H		; if > C0H, -80 -> table operator
+$DL25:	LD	E,A		; operator -> E
+	LD	D,CODTAB >> 8	; high byte operator table -> D
+	LD	A,(DE)		; LSB mnemonic address -> A
+	LD	E,A		; and to E
+$DL26:	LD	D,MNETAB >> 8	; MSB mnemonic address -> D
+	CALL	PRMNE		; output mnemonic
+	POP	DE		; restore current disassembly addr. -> DE
+	LD	A,B		; restore opcode byte -> A
+	PUSH	DE		; save disassembly addr.
+	CP	40H		; byte < 40 ?
 	JR	C,$DL30
-	CP	80H		; nein, > 80 ?
+	CP	80H		; no, > 80 ?
 	JR	NC,$DL28
-	CP	76H		; nein, HALT ?
+	CP	76H		; no, HALT ?
 	JR	NZ,$DL27
-	LD	A,0FFH		; ja, leeren Operanden -> A
-	JR	$DL31		; Operanden ausgeben
-$DL27:	AND	38H		; loesche Bits 0..2 und 6..7
-	RRCA			; Division durch 8 -> 1. Operanden
+	LD	A,0FFH		; yes, empty operand -> A
+	JR	$DL31		; output operands
+$DL27:	AND	38H		; clear bits 0..2 and 6..7
+	RRCA			; division by 8 -> 1. operand
 	RRCA
 	RRCA
-	SET	4,A		; Buchstabenflag setzen
-	JR	$DL31		; Operanden ausgeben
+	SET	4,A		; set letters-flag
+	JR	$DL31		; output operands
 $DL28:	CP	0C0H		; > C0 ?
 	JR	NC,$DL29
 	CP	90H		; > 90 ?
 	JR	C,$DL51
-	AND	0F8H		; ja, Register-Bits loeschen
+	AND	0F8H		; yes, clear register bits
 	CP	98H		; "SBC" ?
 	JR	Z,$DL51
-	LD	A,B		; Byte wieder -> A
-	AND	7		; nur Register Bits uebrig lassen
-	SET	4,A		; Buchstaben-Flag setzen
+	LD	A,B		; restore opcode byte to A
+	AND	7		; leave only register bits
+	SET	4,A		; set letters-flag
 	JR	$DL52
-$DL51:	LD	A,17H		; ja, 17 = Register A ausgeben
-	JR	$DL31		; Operanden ausgeben
-$DL29:	SUB	80H		; wenn > C0, -80 -> Operandentabelle
-$DL30:	LD	E,A		; LSB Operandentabelle -> E
-	LD	D,OPETAB >> 8	; MSB Operandentabelle -> D
-	LD	A,(DE)		; 1. Operanden -> A
-$DL31:	POP	DE		; akt. Disassemblieradr. wieder -> DE
-	CALL	PRO1		; 1. Operanden ausgeben
-	LD	A,B		; Befehlsbyte wieder -> A
-	PUSH	DE		; akt. Disassemblieradr. retten
+$DL51:	LD	A,17H		; yes, 17 = output register A
+	JR	$DL31		; output operands
+$DL29:	SUB	80H		; if > C0, -80 -> operands table
+$DL30:	LD	E,A		; LSB operands table -> E
+	LD	D,OPETAB >> 8	; MSB operands table -> D
+	LD	A,(DE)		; 1. operand -> A
+$DL31:	POP	DE		; restore curr. disassembly addr. -> DE
+	CALL	PRO1		; output 1. operand
+	LD	A,B		; restore opcode byte -> A
+	PUSH	DE		; save curr. disassembly addr.
 	CP	40H		; < 40 ?
 	JR	C,$DL34
-	CP	0C0H		; nein, < C0 ?
+	CP	0C0H		; no, < C0 ?
 	JR	NC,$DL33
-	CP	76H		; ja, HALT ?
+	CP	76H		; yes, HALT ?
 	JR	NZ,$DL32
-	LD	A,0FFH		; ja, wieder leeren Operanden -> A
-	JR	$DL35		; Operanden ausgeben
-$DL32:	AND	7		; loesche Bits 3..7, -> 2. Operanden
-	SET	4,A		; Buchstabenflag setzen
-	JR	$DL35		; Operanden ausgeben
-$DL33:	SUB	80H		; wenn > C0 : 80 abziehen
-$DL34:	ADD	A,80H		; LSB Operandentabelle -> A
-	LD	E,A		; und -> E
-	LD	D,OPETAB >> 8	; MSB Operandentabelle -> D
-	LD	A,(DE)		; 2. Operanden -> A
-$DL35:	POP	DE		; akt. Disassemblieradr. wieder -> DE
-	SET	7,C		; Komma-Flag setzen
-	CALL	PRO1		; 2. Operanden ausgeben
-	JP	INAD		; fertig, Adresse merken und Workspace ausgeben
-	
-	; nach Preafix ED
-ED:	SUB	40H		; 40 vom 2. Byte subtrahieren
-	JP	C,ERRO		; Fehler wenn carry
-	CP	60H		; 2. Byte < A0 ?
-	JR	NC,$DL36
-	CP	40H		; ja, >= 60 ?
-	JP	NC,ERRO		; ja, Fehler
-	JR	$DL37		; nein, weiter
-$DL36:	SUB	20H		; aus 60..7F wird 00..20
-$DL37:	ADD	A,80H		; LSB Operatortabelle -> A
-	LD	E,A		; und -> E
-	LD	D,CODTAB >> 8	; MSB Operatortabelle -> D
-	LD	A,(DE)		; LSB Mnemonic-Adresse -> A
-	CP	0FFH		; leer ?
-	JP	Z,ERRO		; ja, Fehler
-	LD	E,A		; nein, -> E
-	LD	D,MNETAB >> 8	; MSB Mnemonic-Adresse -> D
-	CALL	TRBY		; Mnemonic ausgeben
-	POP	DE		; Disassemblieradr. wieder -> DE
-	LD	A,B		; Befehlsbyte wieder -> A
-	CP	80H		; < 80 ?
-	JP	NC,INAD		; nein, Workspace ausgeben und fertig
-	PUSH	DE		; Disassemblieradr. retten
-	SUB	40H		; LSB 1. Operanden in A
-	LD	E,A		; und -> E
-	LD	D,OP2TAB >> 8	; MSB 2. Operanden -> D
-	LD	A,(DE)		; 1. Operanden -> A
-	POP	DE		; akt. Disassemblieradr. wieder -> DE
-	CALL	PRO1		; 1. Operanden ausgeben
-	LD	A,B		; Befehlsbyte wieder -> A
-	CP	80H		; < 80 ?
-	JP	NC,INAD		; ja, Workspace ausgeben und fertig
-	PUSH	DE		; akt. Disassemblieradr. retten
-	LD	E,A		; LSB Operandentabelle -> E
-	LD	D,OP2TAB >> 8	; MSB Operandentabelle -> D
-	LD	A,(DE)		; 2. Operanden -> A
-	SET	7,C		; Buchstabenflag setzen
-$DL52:	POP	DE		; akt. Disassemblieradr. retten
-	CALL	PRO1		; 2. Operanden ausgeben
-	JP	INAD		; fertig, Adresse merken und Workspace ausgeben
+	LD	A,0FFH		; yes, again empty operand -> A
+	JR	$DL35		; output operands
+$DL32:	AND	7		; clear bits 3..7, -> 2. operand
+	SET	4,A		; set letters-flag
+	JR	$DL35		; output operands
+$DL33:	SUB	80H		; if > C0 : subtract 80
+$DL34:	ADD	A,80H		; LSB operands table -> A
+	LD	E,A		; and -> E
+	LD	D,OPETAB >> 8	; MSB operands table -> D
+	LD	A,(DE)		; 2. operand -> A
+$DL35:	POP	DE		; restore curr. disassembly addr. -> DE
+	SET	7,C		; set comma-flag
+	CALL	PRO1		; output 2. operand
+	JP	INADDR		; done, save address and output workspace
 
-	; Operand 1 ausgeben
-PRO1:	CP	0FFH		; leere Operand ?
-	RET	Z		; ja, fertig
-	CP	17H		; nein, Register "A" ausgeben ?
+	; after prefix ED
+ED:	SUB	40H		; subtract 40 from 2. byte
+	JP	C,ERRO		; error when carry
+	CP	60H		; 2. byte < A0 ?
+	JR	NC,$DL36
+	CP	40H		; yes, >= 60 ?
+	JP	NC,ERRO		; yes, error
+	JR	$DL37		; no, continue
+$DL36:	SUB	20H		; convert 60..7F to 00..20
+$DL37:	ADD	A,80H		; LSB operator table -> A
+	LD	E,A		; and -> E
+	LD	D,CODTAB >> 8	; MSB operator table -> D
+	LD	A,(DE)		; LSB mnemonic address -> A
+	CP	0FFH		; empty ?
+	JP	Z,ERRO		; yes, error
+	LD	E,A		; no, -> E
+	LD	D,MNETAB >> 8	; MSB mnemonic address -> D
+	CALL	PRMNE		; output mnemonic
+	POP	DE		; restore disassembly addr. -> DE
+	LD	A,B		; restore opcode byte -> A
+	CP	80H		; < 80 ?
+	JP	NC,INADDR	; no, output workspace and done
+	PUSH	DE		; save disassembly addr.
+	SUB	40H		; LSB 1. operand in A
+	LD	E,A		; and -> E
+	LD	D,OP2TAB >> 8	; MSB 2. operand -> D
+	LD	A,(DE)		; 1. operand -> A
+	POP	DE		; restore curr. disassembly addr. -> DE
+	CALL	PRO1		; output 1. operand
+	LD	A,B		; restore opcode byte -> A
+	CP	80H		; < 80 ?
+	JP	NC,INADDR	; yes, output workspace and done
+	PUSH	DE		; save curr. disassembly addr.
+	LD	E,A		; LSB operands table -> E
+	LD	D,OP2TAB >> 8	; MSB operands table -> D
+	LD	A,(DE)		; 2. operand -> A
+	SET	7,C		; set comma-flag
+$DL52:	POP	DE		; restore curr. disassembly addr. -> DE
+	CALL	PRO1		; output 2. operand
+	JP	INADDR		; done, save address and output workspace
+
+	; output operand 1
+PRO1:	CP	0FFH		; empty operand ?
+	RET	Z		; yes, done
+	CP	17H		; no, output register "A" ?
 	JR	NZ,$DL01
-	LD	A,18H		; ja, umkodieren
-$DL01:	CP	16H		; Register "(HL)" ausgeben ?
+	LD	A,18H		; yes, recode
+$DL01:	CP	16H		; output register "(HL)" ?
 	JR	NZ,$DL02
-	LD	A,0B4H		; ja, umkodieren
-$DL02:	BIT	7,C		; 2. Operand ?
+	LD	A,0B4H		; yes, recode
+$DL02:	BIT	7,C		; 2. operand ?
 	JR	Z,$DL03
-	LD	(HL),','	; ja, "," ausgeben
-	INC	HL		; naechste Printposition -> HL
+	LD	(HL),','	; yes, output ","
+	INC	HL		; next print position -> HL
 $DL03:	BIT	7,A		; "(...)" ?
 	JR	Z,$DL04
-	LD	(HL),'('	; ja, "(" ausgeben
-	INC	HL		; naechste Printposition -> HL
-$DL04:	BIT	4,A		; Buchstabe ?
-	JR	NZ,PRBU		; ja, Buchstaben ausgeben
-	BIT	6,A		; nein, Bitnummer/RST-Adresse ?
-	JR	NZ,DIST		; ja, Distanz ausgeben
-	BIT	5,A		; nein, Bitnummer ?
-	JR	NZ,PRO2		; ja, RST ausgeben
-	AND	7		; nein, Bits 3..7 loeschen
-	CALL	PRCH		; Hexbyte ausgeben
+	LD	(HL),'('	; yes, output "("
+	INC	HL		; next print position -> HL
+$DL04:	BIT	4,A		; letters ?
+	JR	NZ,PRLET	; yes, output letters
+	BIT	6,A		; no, bit number/RST address ?
+	JR	NZ,DIST		; yes, output distance
+	BIT	5,A		; no, bit number ?
+	JR	NZ,PRO2		; yes, output RST
+	AND	7		; no, clear bits 3..7
+	CALL	PRNIBB		; output hex byte
 	RET
 
-	; RST ausgeben
-PRO2:	PUSH	AF		; A retten
-	AND	6		; loesche Bits 0 und 4..7
-	RRCA			; Division durch 2
-	CALL	PRCH		; oberes Nibble ausgeben
-	POP	AF		; A wieder herstellen
+	; output RST
+PRO2:	PUSH	AF		; save A
+	AND	6		; clear bits 0 and 4..7
+	RRCA			; division by 2
+	CALL	PRNIBB		; output upper nibble
+	POP	AF		; restore A
 	BIT	0,A		; RST x8 ?
-	LD	A,'0'		; nein, "0" -> A
+	LD	A,'0'		; no, "0" -> A
 	JR	Z,$DL05
-	LD	A,'8'		; ja, "8" -> A
-$DL05:	LD	(HL),A		; "0" oder "8" ausgeben
-	INC	HL		; naechste Printposition -> HL
+	LD	A,'8'		; yes, "8" -> A
+$DL05:	LD	(HL),A		; output "0" or "8"
+	INC	HL		; next print position -> HL
 	RET
 
-	; Distanz ausgeben
-DIST:	BIT	0,A		; relative Distanz ?
-	JR	Z,PR_N		; nein, N ausgeben
-	CALL	PRNB		; Byte vorne ausgeben
-	PUSH	DE		; akt. Disassemblieradr. retten
-	LD	A,(DE)		; Distanzbyte -> A
-	INC	DE		; Disassemblieradr. erhoehen
-	RLCA			; Bit 7 Distanzbyte -> carry
+	; output distance
+DIST:	BIT	0,A		; relative distance ?
+	JR	Z,PR_N		; no, output N
+	CALL	PRNBO		; output byte to opcode space
+	PUSH	DE		; save curr. disassembly addr.
+	LD	A,(DE)		; distance byte -> A
+	INC	DE		; increment disassembly addr.
+	RLCA			; distance byte bit 7 -> carry
 	RRCA
-	JR	NC,$DL06	; Vorwaertsprung
-	SET	0,C		; Flag fuer Rueckwaertssprung setzen
-$DL06:	ADD	A,E		; Distanz zu PC addieren
+	JR	NC,$DL06	; forward jump
+	SET	0,C		; set flag for backward jump
+$DL06:	ADD	A,E		; add distance to PC
 	LD	E,A
-	BIT	0,C		; Flag testen
-	JR	NC,$DL07	; kein Ueberlauf
-	JR	NZ,$DL08	; Rueckwaertssprung
-	INC	D		; MSB PC erhoehen
-	JR	$DL08		; Zieladresse ausgeben
-$DL07:	JR	Z,$DL08		; bei Vorwaertssprung Zieladresse ausgeben
-	DEC	D		; sonst MSB PC erniedrigen
-$DL08:	CALL	PRBY		; Zieladresse in DE ausgeben
-	POP	DE		; akt. Disassemblieradresse wieder -> DE
+	BIT	0,C		; test flag
+	JR	NC,$DL07	; no overflow
+	JR	NZ,$DL08	; backward jump
+	INC	D		; increment MSB PC
+	JR	$DL08		; output destination address
+$DL07:	JR	Z,$DL08		; if forward jump output destination address
+	DEC	D		; else decrement MSB PC
+$DL08:	CALL	PRADDR		; output destination address in DE
+	POP	DE		; restore curr. disassembly addr. -> DE
 	RET
 
-	; N ausgeben
-PR_N:	PUSH	AF		; A retten
+	; output N
+PR_N:	PUSH	AF		; save A
 	BIT	1,A		; N ?
-	JR	Z,PRNN		; nein, NN ausgeben
-	CALL	PRVH		; ja, Byte vorne und hinten ausgeben
-	JR	$DL12		; ")" bearbeiten
+	JR	Z,PRNN		; no, output NN
+	CALL	PRNBOI		; yes, output byte into opcode and instr. space
+	JR	$DL12		; process ")"
 
-	; NN ausgeben
-PRNN:	CALL	PRNB		; Byte vorne ausgeben
-	CALL	PRVH		; Byte vorne und hinten ausgeben
-	DEC	DE		; DE -> LSB von NN
-	CALL	PRBH		; Byte hinten ausgeben
-	INC	DE		; akt. Disassemblieradr. wieder -> DE
-	JR	$DL12		; ")" bearbeiten
+	; output NN
+PRNN:	CALL	PRNBO		; output byte into opcode space
+	CALL	PRNBOI		; output byte into opcode and instr. space
+	DEC	DE		; DE -> LSB of NN
+	CALL	PRBI		; output byte into instr. space
+	INC	DE		; restore curr. disassembly addr. -> DE
+	JR	$DL12		; process ")"
 
-	; Buchstaben ausgeben
-PRBU:	PUSH	AF		; A retten
-	PUSH	BC		; Flags in C retten
-	PUSH	DE		; akt. Disassemblieradr. retten
-	LD	B,1		; Anzahl = 1
-	LD	DE,REGTAB	; DE zeigt auf die Register-Namen
-	BIT	5,A		; 2 Buchstaben ?
+	; output letters
+PRLET:	PUSH	AF		; save A
+	PUSH	BC		; save flags in C
+	PUSH	DE		; save curr. disassembly addr.
+	LD	B,1		; count = 1
+	LD	DE,REGTAB	; DE points to register names
+	BIT	5,A		; 2 letters ?
 	JR	Z,$DL09
-	INC	B		; ja, Anzahl erhoehen
-$DL09:	BIT	6,A		; Sprungbedingung ?
+	INC	B		; yes, increment count
+$DL09:	BIT	6,A		; jump condition ?
 	JR	Z,$DL10
-	LD	DE,SPRTAB	; ja, DE zeigt auf Condition-Namen
-$DL10:	RES	7,A		; Klammer-Bit loeschen
+	LD	DE,SPRTAB	; yes, DE points to condition names
+$DL10:	RES	7,A		; clear parentheses-bit
 	CP	34H		; "(HL)" ?
 	JR	NZ,$DL11
-	BIT	5,C		; ja, Indexregister ?
+	BIT	5,C		; yes, index register ?
 	JR	Z,$DL11
-	LD	A,0AH		; ja, A -> IX-Register
-	BIT	6,C		; IY-Register ?
+	LD	A,0AH		; yes, A -> IX register
+	BIT	6,C		; IY register ?
 	JR	Z,$DL11
-	LD	A,0CH		; ja, A -> IY-Register
-$DL11:	AND	0FH		; loesche oberes Nibble
-	ADD	A,E		; und addiere zur Basis in DE
+	LD	A,0CH		; yes, A -> IY register
+$DL11:	AND	0FH		; clear upper nibble
+	ADD	A,E		; and add to base in DE
 	LD	E,A
-$DL50:	LD	A,(DE)		; Zeichen -> A
-	LD	(HL),A		; Zeichen ausgeben
-	INC	DE		; Tabellen-Adresse erhoehen
-	INC	HL		; naechste Printposition
-	DJNZ	$DL50		; naechstes Zeichen
-	POP	DE		; Register wieder herstellen
+$DL50:	LD	A,(DE)		; character -> A
+	LD	(HL),A		; output character
+	INC	DE		; increment table address
+	INC	HL		; next print position
+	DJNZ	$DL50		; next character
+	POP	DE		; restore registers
 	POP	BC
 	POP	AF
-	PUSH	AF		; A retten
+	PUSH	AF		; save A
 	CP	0B4H		; "(HL)" ?
 	JR	NZ,$DL12
-	BIT	5,C		; nein, Indexregister ?
+	BIT	5,C		; no, index register ?
 	JR	Z,$DL12
-	LD	A,(DE)		; ja, Befehlsbyte nach DD/FD -> A
+	LD	A,(DE)		; yes, opcode byte after DD/FD -> A
 	CP	0E9H		; "JP (IX/IY)" ?
 	JR	Z,$DL12
-	LD	(HL),'+'	; nein, "+" ausgeben
-	INC	HL		; naechste Printposition
-	CALL	PRVH		; Offset ausgeben
-$DL12:	POP	AF		; A wieder herstellen
+	LD	(HL),'+'	; no, output "+"
+	INC	HL		; next print position
+	CALL	PRNBOI		; output offset
+$DL12:	POP	AF		; restore A
 	BIT	7,A		; "()" ?
-	RET	Z		; nein, fertig
-	LD	(HL),')'	; ja, ")" ausgeben
-	INC	HL		; naechste Printposition
+	RET	Z		; no, done
+	LD	(HL),')'	; yes, output ")"
+	INC	HL		; next print position
 	RET
 
-	; Error
-ERRO:	LD	DE,CBMTAB+24	; Pointer auf "????" -> DE
-	CALL	TRBY		; als Mnemonic ausgeben
-	POP	DE		; akt. Disassemblieradr. vom Stack holen
-	
-	; Disassemblier-Adresse erhoehen und merken
-INAD:	INC	DE
-	LD	(DADR),DE
+	; error
+ERRO:	LD	DE,CBMTAB+24	; "????" pointer -> DE
+	CALL	PRMNE		; output as mnemonic
+	POP	DE		; get curr. disassembly addr. from stack
 
-	; Workspace ausgeben
-PRWO:	PUSH	AF		; Register retten
+	; increment and store disassembly address
+INADDR:	INC	DE
+	LD	(DADDR),DE
+
+	; output workspace
+PRWO:	PUSH	AF		; save registers
 	PUSH	BC
 	PUSH	DE
 	PUSH	HL
-	LD	HL,WRKS		; Adresse Workspace -> HL
-	CALL	PRTSTR		; Workspace aufs Terminal ausgeben
-	LD	HL,NL		; Adresse Newline-String -> HL
-	CALL	PRTSTR		; Newline ausgeben
-	POP	HL		; Register wieder herstellen
+	LD	HL,WRKS		; workspace address -> HL
+	CALL	PRTSTR		; output workspace on terminal
+	LD	HL,NL		; newline string address -> HL
+	CALL	PRTSTR		; output newline
+	POP	HL		; restore registers
 	POP	DE
 	POP	BC
 	POP	AF
 	RET
-	
-	; Workspace loeschen
-CLWO:	LD	HL,WRKS		; Workspace mit Space fuellen
-	LD	DE,WRKS+1	; und mit Null terminieren
-	LD	(HL),32
+
+	; clear workspace
+CLWO:	LD	HL,WRKS		; fill workspace with blank spaces
+	LD	DE,WRKS+1	; and terminate with zero
+	LD	(HL),' '
 	LD	BC,32
 	LDIR
 	XOR	A
 	LD	(DE),A
 	RET
 
-	; 4 Bytes transferieren
-TRBY:	PUSH	BC		; BC retten
-	LD	BC,4		; 4 Bytes 
-	EX	DE,HL		; DE=Printposition, HL=Mnemonic
-	LDIR			; Bytes transferieren
-	EX	DE,HL		; HL ist wieder Printposition
-	POP	BC		; BC wieder herstellen
-	INC	HL		; Leerzeichen
+	; output mnemonic
+PRMNE:	PUSH	BC		; save BC
+	LD	BC,4		; 4 bytes
+	EX	DE,HL		; DE=print positiion, HL=mnemonic
+	LDIR			; transfer bytes
+	EX	DE,HL		; HL is print position again
+	POP	BC		; restore BC
+	INC	HL		; blank space
 	RET
 
-	; Byte vorne und hinten ausgeben
-PRVH:	CALL	PRNB		; Byte vorne ausgeben
+	; output next byte into opcode and instr. space
+PRNBOI:	CALL	PRNBO		; output next byte into opcode space
 
-	; Byte hinten ausgeben
-PRBH:	PUSH	AF		; A retten
-	LD	A,(DE)		; Byte -> A
-	CALL	PRAK		; A ausgeben
-	POP	AF		; A wieder herstellen
+	; output byte into instr. space
+PRBI:	PUSH	AF		; save A
+	LD	A,(DE)		; byte -> A
+	CALL	PRACC		; output A
+	POP	AF		; restore A
 	RET
 
-	; Byte vorne ausgeben
-PRNB:	PUSH	AF		; A retten
-	INC	DE		; DE auf naechstes Byte setzen
-	PUSH	HL		; akt. Printposition retten
-	LD	HL,(PRTMP)	; vordere Printposition -> HL
-	LD	A,(DE)		; Byte -> A
-	CALL	PRAK		; A ausgeben
-	INC HL			; Leerzeichen
-	LD	(PRTMP),HL	; vordere Printposition retten
-	POP	HL		; akt. Printposition wieder -> HL
-	POP	AF		; A wieder herstellen
+	; output next byte into opcode space
+PRNBO:	PUSH	AF		; save A
+	INC	DE		; set DE to next byte
+	PUSH	HL		; save current print position
+	LD	HL,(PRTMP)	; opcode space print position -> HL
+	LD	A,(DE)		; byte -> A
+	CALL	PRACC		; output A
+	INC HL			; blank space
+	LD	(PRTMP),HL	; save opcode print position
+	POP	HL		; restore current print position
+	POP	AF		; restore A
 	RET
 
-	; DE ausgeben
-PRBY:	LD	A,D		; MSB -> A
-	CALL	PRAK		; A ausgeben
+	; output DE
+PRADDR:	LD	A,D		; MSB -> A
+	CALL	PRACC		; output A
 	LD	A,E		; LSB -> A
 
-	; A ausgeben
-PRAK:	PUSH	AF		; A retten
-	RRCA			; oberes Nibble ins untere schieben
+	; output A
+PRACC:	PUSH	AF		; save A
+	RRCA			; shift upper nibble into lower one
 	RRCA
 	RRCA
 	RRCA
-	CALL	PRCH		; oberes Nibble ausgeben
-	POP	AF		; A wieder herstellen
-	CALL	PRCH		; unteres Nibble ausgeben
+	CALL	PRNIBB		; output upper nibble
+	POP	AF		; restore A
+	CALL	PRNIBB		; output lower nibble
 	RET
 
-	; unteres Nibble in ASCII-Hex umwandeln und in Workspace schreiben
-PRCH:	AND	0FH
+	; convert lower nibble to ASCII hex and write it into the workspace
+PRNIBB:	AND	0FH
 	ADD	A,90H
 	DAA
 	ADC	A,40H
 	DAA
-	LD	(HL),A		; ASCII-Ziffer in Workspace schreiben
-	INC	HL		; Printposition erhoehen
+	LD	(HL),A		; write ASCII digit into the workspace
+	INC	HL		; increment print position
 	RET
 
-	; Die hier folgenden Tabellen muessen am Anfang einer Page
-	; beginnen, und die Reihenfolge der Tabellen darf auf keinen
-	; Fall geaendert werden, weil das LSB der Tabellenadressen
-	; durch arithmetische Operationen mit den Op-Codes berechnet
-	; wird !!!
+	; The following tables must be at the beginning of a memory page
+	; and the order of the tables must not be changed, because
+	; the LSB of the table addresses is calculated with arithmetic
+	; operations on the opcodes !!!
 
 	DEFS	256 - ($ & 0FFH)
 
-MNETAB:		; Tabelle mit den Z80-Mnemonics
+MNETAB:		; Z80 mnemonics table
 	DEFM	'ADD ADC '
 	DEFM	'SUB SBC '
 	DEFM	'AND XOR '
@@ -492,8 +489,8 @@ MNETAB:		; Tabelle mit den Z80-Mnemonics
 	DEFM	'CPI CPIR'
 	DEFM	'IM  ----'
 
-CODTAB:		; LSB-Adressen der Mnemonics in MNETAB fuer
-		; Befehle 00..3F ohne Preafix ED/CB
+CODTAB:		; LSB addresses of mnemonics in MNETAB for the
+		; opcodes 00..3F without prefix ED/CB
 
 	DEFB	024H,050H,050H,054H,054H,058H,050H,030H	; NOP  LD   LD   INC  INC  DEC  LD   RLCA
 	DEFB	070H,000H,050H,058H,054H,058H,050H,040H	; EX   ADD  LD   DEC  INC  DEC  LD   RRCA
@@ -504,10 +501,10 @@ CODTAB:		; LSB-Adressen der Mnemonics in MNETAB fuer
 	DEFB	020H,050H,050H,054H,054H,058H,050H,03CH	; JR   LD   LD   INC  INC  DEC  LD   SCF
 	DEFB	020H,000H,050H,058H,054H,058H,050H,04CH	; JR   ADD  LD   DEC  INC  DEC  LD   CCF
 
-		; LSB-Adressen der Mnemonics in MNETAB fuer
-		; Befehle C0..FF ohne Preafix ED/CB
+		; LSB addresses of mnemonics in MNETAB for the
+		; opcodes C0..FF without prefix ED/CB
 
-	DEFB	060H,064H,068H,068H,078H,07CH,000H,080H	; RET  POP  JP   JP   CALL PUSH ADD  RET
+	DEFB	060H,064H,068H,068H,078H,07CH,000H,080H	; RET  POP  JP   JP   CALL PUSH ADD  RST
 	DEFB	060H,060H,068H,0F1H,078H,078H,004H,080H	; RET  RET  JP   (CB) CALL CALL ADC  RST
 	DEFB	060H,064H,068H,06CH,078H,07CH,008H,080H	; RET  POP  JP   OUT  CALL PUSH SUB  RST
 	DEFB	060H,084H,068H,088H,078H,0F0H,00CH,080H	; RET  EXX  JP   IN   CALL (DD) SBC  RST
@@ -516,8 +513,8 @@ CODTAB:		; LSB-Adressen der Mnemonics in MNETAB fuer
 	DEFB	060H,064H,068H,074H,078H,07CH,018H,080H	; RET  POP  JP   DI   CALL PUSH OR   RST
 	DEFB	060H,050H,068H,090H,078H,0F8H,01CH,080H	; RET  LD   JP   EI   CALL (FD) CP   RST
 
-		; LSB-Adressen der Mnemonics in MNETAB fuer
-		; Befehle 40..7F mit Preafix ED
+		; LSB addresses of mnemonics in MNETAB for the
+		; opcodes 40..7F with prefix ED
 
 	DEFB	088H,06CH,00CH,050H,0ACH,0B0H,0F8H,050H	; IN   OUT  SBC  LD   NEG  RETN IM   LD
 	DEFB	088H,06CH,004H,050H,0FFH,0D8H,0FFH,050H	; IN   OUT  ADC  LD        RETI      LD
@@ -528,32 +525,32 @@ CODTAB:		; LSB-Adressen der Mnemonics in MNETAB fuer
 	DEFB	0FFH,0FFH,00CH,050H,0FFH,0FFH,0FFH,0FFH	;           SBC  LD
 	DEFB	088H,06CH,004H,050H,0FFH,0FFH,0FFH,0FFH	; IN   OUT  ADC  LD
 
-		; LSB-Adressen der Mnemonics in MNETAB fuer
-		; Befehle A0..BF mit Praefix ED
+		; LSB addresses of mnemonics in MNETAB for the
+		; opcodes A0..BF with prefix ED
 
 	DEFB	094H,0F0H,09CH,0A4H,0FFH,0FFH,0FFH,0FFH	; LDI  CPI  INI  OUTI
 	DEFB	0B8H,0C0H,0C8H,0D4H,0FFH,0FFH,0FFH,0FFH	; LDD  CPD  IND  OUTD
 	DEFB	098H,0F4H,0A0H,0A8H,0FFH,0FFH,0FFH,0FFH	; LDIR CPIR INIR OTIR
 	DEFB	0BCH,0C4H,0CCH,0D0H,0FFH,0FFH,0FFH,0FFH	; LDDR CPDR INDR OTDR
 
-SPRTAB:		; Tabelle der Sprungbedingungen
+SPRTAB:		; jump conditions table
 
 	DEFM	'NZNCPOPEPM'
 	DEFB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH
 
-REGTAB:		; Tabelle der Register
+REGTAB:		; registers table
 
 	DEFM	'BCDEHLSPAFIXIYIR'
 
-OPETAB:		; Tabelle der Operanden:
-		;	Bit 7: Zahl/Buchstabe
-		;	Bit 6: einfach/doppelt
-		;	Bit 5: Register/Sprungbedingung
-		;	Bit 4: ohne/mit Klammer
-		;	Bit 0..3: Offset in der Tabelle der Registernamen
+OPETAB:		; operands table:
+		;	bit 7: number/letter
+		;	bit 6: single/double
+		;	bit 5: register/jump condition
+		;	bit 4: without/with parentheses
+		;	bit 0..3: offset into the register names table
 
-		; Befehle 00..3F ohne Preafix ED/CB
-		; 1. Operand
+		; opcodes 00..3F without prefix ED/CB
+		; 1. operand
 
 	DEFB	0FFH,030H,0B0H,030H,010H,010H,010H,0FFH	; -    BC   (BC) BC   B    B    B    -
 	DEFB	038H,034H,017H,030H,011H,011H,011H,0FFH	; AF   HL   A    BC   C    C    C    -
@@ -564,8 +561,8 @@ OPETAB:		; Tabelle der Operanden:
 	DEFB	072H,036H,0C4H,036H,016H,016H,016H,0FFH	; NC   SP   (NN) SP   (HL) (HL) (HL) -
 	DEFB	011H,034H,017H,036H,017H,017H,017H,0FFH	; C    HL   A    SP   A    A    A    -
 
-		; Befehle C0..FF ohne Preafix ED/CB
-		; 1. Operand
+		; opcodes C0..FF without prefix ED/CB
+		; 1. operand
 
 	DEFB	070H,030H,070H,044H,070H,030H,017H,020H	; NZ   BC   NZ   NN   NZ   BC   A    00
 	DEFB	051H,0FFH,051H,0F1H,051H,044H,017H,021H	; Z    -    Z    *CB  Z    NN   A    08
@@ -576,8 +573,8 @@ OPETAB:		; Tabelle der Operanden:
 	DEFB	058H,038H,058H,0FFH,058H,038H,042H,026H	; P    AF   P    -    P    AF   N    30
 	DEFB	059H,036H,059H,0FFH,059H,0F8H,042H,027H	; M    SP   M    -    M    *FD  N    38
 
-		; Befehle 00..3F ohne Preafix ED/CB
-		; 2. Operand
+		; opcodes 00..3F without prefix ED/CB
+		; 2. operand
 
 	DEFB	0FFH,044H,017H,0FFH,0FFH,0FFH,042H,0FFH	; -    NN   A    -    -    -    N    -
 	DEFB	038H,030H,0B0H,0FFH,0FFH,0FFH,042H,0FFH	; AF   BC   (BC) -    -    -    N    -
@@ -588,8 +585,8 @@ OPETAB:		; Tabelle der Operanden:
 	DEFB	041H,044H,017H,0FFH,0FFH,0FFH,042H,0FFH	; DIS  NN   A    -    -    -    N    -
 	DEFB	041H,036H,0C4H,0FFH,0FFH,0FFH,042H,0FFH	; DIS  SP   (NN) -    -    -    N    -
 
-		; Befehle C0..FF ohne Praefix ED/CB
-		; 2. Operand
+		; opcodes C0..FF without prefix ED/CB
+		; 2. operand
 
 	DEFB	0FFH,0FFH,044H,0FFH,044H,0FFH,042H,0FFH	; -    -    NN   -    NN   -    N    -
 	DEFB	0FFH,0FFH,044H,0FFH,044H,0FFH,042H,0FFH	; -    -    NN   *CB  NN   -    N    -
@@ -600,8 +597,8 @@ OPETAB:		; Tabelle der Operanden:
 	DEFB	0FFH,0FFH,044H,0FFH,044H,0FFH,0FFH,0FFH	; -    -    NN   -    NN   -    -    -
 	DEFB	0FFH,034H,044H,0FFH,044H,0FFH,0FFH,0FFH	; -    HL   NN   -    NN   *FD  -    -
 
-OP2TAB:		; Befehle 40..7F mit Praefix ED
-		; 1. Operand
+OP2TAB:		; opcodes 40..7F with prefix ED
+		; 1. operand
 
 	DEFB	010H,091H,034H,0C4H,0FFH,0FFH,000H,01EH	; B    (C)  HL   (NN) -    -    0    I
 	DEFB	011H,091H,034H,030H,0FFH,0FFH,0FFH,01FH	; C    (C)  HL   BC   -    -    -    R
@@ -612,8 +609,8 @@ OP2TAB:		; Befehle 40..7F mit Praefix ED
 	DEFB	0FFH,0FFH,034H,0C4H,0FFH,0FFH,0FFH,0FFH	; -    -    HL   (NN) -    -    -    -
 	DEFB	017H,091H,034H,036H,0FFH,0FFH,0FFH,0FFH	; A    (C)  HL   SP   -    -    -    -
 
-		; Befehle 40..7F mit Preafix ED
-		; 2. Operand
+		; opcodes 40..7F with prefix ED
+		; 2. operand
 
 	DEFB	091H,010H,030H,030H,0FFH,0FFH,0FFH,017H	; (C)  B    BC   BC   -    -    -    A
 	DEFB	091H,011H,030H,0C4H,0FFH,0FFH,0FFH,017H	; (C)  C    BC   (NN) -    -    -    A
@@ -624,15 +621,15 @@ OP2TAB:		; Befehle 40..7F mit Praefix ED
 	DEFB	0FFH,0FFH,036H,036H,0FFH,0FFH,0FFH,0FFH	; -    -    SP   SP   -    -    -    -
 	DEFB	091H,017H,036H,0C4H,0FFH,0FFH,0FFH,0FFH	; (C)  A    SP   (NN) -    -    -    -
 
-CBMTAB:		; Tabelle der Mnemonics mit Praefix CB
+CBMTAB:		; mnemonics table for prefix CB
 	DEFM	'RLC RRC '
 	DEFM	'RL  RR  '
 	DEFM	'SLA SRA '
 	DEFM	'????SRL '
 
-NL:		; Null-terminiertes Newline fuers Terminal
+NL:		; zero-terminated newline for the terminal
 	DEFB	10,13,0
 
-WRKS:	DEFS	34		; Workspace zur Aufbereitung einer Ausgabezeile
-PRTMP:	DEFS	2		; temoraerer Speicher fuer Printposition
-DADR:	DEFS	2		; Disassemblier-Adresse
+WRKS:	DEFS	34		; workspace for the preperation of an output line
+PRTMP:	DEFS	2		; temporary storage for the print position
+DADDR:	DEFS	2		; disassembly address

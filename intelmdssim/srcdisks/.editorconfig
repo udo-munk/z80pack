@@ -1,0 +1,6 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+[aedit.mac]
+end_of_line = crlf
+insert_final_newline = true
+charset = latin1
