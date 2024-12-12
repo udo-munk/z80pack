@@ -52,21 +52,21 @@ static const char *const optab_45[8] = {
 
 static const char *const optab_67[64] = {
 	/*C0*/	"RET\tNZ",	"POP\tBC",	"JP\tNZ,w",	"JP\tw",
-	/*C4*/	"CALL\tNZ,w",	"PUSH\tBC",	"ADD\tA,b",	"RST\t00",
+	/*C4*/	"CALL\tNZ,w",	"PUSH\tBC",	"ADD\tA,b",	"RST\t00H",
 	/*C8*/	"RET\tZ",	"RET",		"JP\tZ,w",	"",
-	/*CC*/	"CALL\tZ,w",	"CALL\tw",	"ADC\tA,b",	"RST\t08",
+	/*CC*/	"CALL\tZ,w",	"CALL\tw",	"ADC\tA,b",	"RST\t08H",
 	/*D0*/	"RET\tNC",	"POP\tDE",	"JP\tNC,w",	"OUT\t(b),A",
-	/*D4*/	"CALL\tNC,w",	"PUSH\tDE",	"SUB\tb",	"RST\t10",
+	/*D4*/	"CALL\tNC,w",	"PUSH\tDE",	"SUB\tb",	"RST\t10H",
 	/*D8*/	"RET\tC",	"EXX",		"JP\tC,w",	"IN\tA,(b)",
-	/*DC*/	"CALL\tC,w",	"",		"SBC\tA,b",	"RST\t18",
+	/*DC*/	"CALL\tC,w",	"",		"SBC\tA,b",	"RST\t18H",
 	/*E0*/	"RET\tPO",	"POP\ti",	"JP\tPO,w",	"EX\t(SP),i",
-	/*E4*/	"CALL\tPO,w",	"PUSH\ti",	"AND\tb",	"RST\t20",
+	/*E4*/	"CALL\tPO,w",	"PUSH\ti",	"AND\tb",	"RST\t20H",
 	/*E8*/	"RET\tPE",	"JP\t(i)",	"JP\tPE,w",	"EX\tDE,HL",
-	/*EC*/	"CALL\tPE,w",	"",		"XOR\tb",	"RST\t28",
+	/*EC*/	"CALL\tPE,w",	"",		"XOR\tb",	"RST\t28H",
 	/*F0*/	"RET\tP",	"POP\tAF",	"JP\tP,w",	"DI",
-	/*F4*/	"CALL\tP,w",	"PUSH\tAF",	"OR\tb",	"RST\t30",
+	/*F4*/	"CALL\tP,w",	"PUSH\tAF",	"OR\tb",	"RST\t30H",
 	/*F8*/	"RET\tM",	"LD\tSP,i",	"JP\tM,w",	"EI",
-	/*FC*/	"CALL\tM,w",	"",		"CP\tb",	"RST\t38"
+	/*FC*/	"CALL\tM,w",	"",		"CP\tb",	"RST\t38H"
 };
 
 static const char *const optab_ed_23[64] = {
@@ -313,13 +313,19 @@ int disass(WORD addr)
 		switch (*tmpl) {
 		case 'b':	/* byte */
 			b1 = getmem(a++);
+			if (b1 >= 0xa0)
+				*p++ = '0';
 			p = btoh(b1, p);
+			*p++ = 'H';
 			break;
 		case 'w':	/* word */
 			b1 = getmem(a++);
 			b2 = getmem(a++);
+			if (b2 >= 0xa0)
+				*p++ = '0';
 			p = btoh(b2, p);
 			p = btoh(b1, p);
+			*p++ = 'H';
 			break;
 		case 'r':	/* register */
 			switch (cpu) {
@@ -353,6 +359,7 @@ int disass(WORD addr)
 								displ = -displ;
 							}
 							p = btoh(displ, p);
+							*p++  = 'H';
 						}
 					} else {
 						*p++ = 'H';
@@ -388,8 +395,11 @@ int disass(WORD addr)
 		case 'j':	/* relative jump address */
 			b1 = getmem(a++);
 			w = a + (SBYTE) b1;
+			if (w >= 0xa000)
+				*p++ = '0';
 			p = btoh(w >> 8, p);
 			p = btoh(w & 0xff, p);
+			*p++ = 'H';
 			break;
 		case 'n':	/* bit number */
 			*p++ = '0' + bit;
