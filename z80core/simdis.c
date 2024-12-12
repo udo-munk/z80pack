@@ -359,7 +359,7 @@ int disass(WORD addr)
 								displ = -displ;
 							}
 							p = btoh(displ, p);
-							*p++  = 'H';
+							*p++ = 'H';
 						}
 					} else {
 						*p++ = 'H';
