@@ -217,13 +217,13 @@ int disass(WORD addr)
 		if ((op & 0xdf) == 0xdd) {
 			ireg = 'X' + ((op >> 5) & 1);
 			op = getmem(a++);
-			undoc_ireg = undoc_ddfd[op >> 3] & (1 << (op & 7));
+			undoc_ireg = !!(undoc_ddfd[op >> 3] & (1 << (op & 7)));
 		}
 		reg1 = (op >> 3) & 7;
 		reg2 = op & 7;
 		if (op < 0x40) {
 			tmpl = optab_01[op];
-			if (ireg && reg1 == 6 && (reg2 >= 4 && reg2 <= 6))
+			if (ireg && reg1 == 6 && (4 <= reg2 && reg2 <= 6))
 				displ = getmem(a++);
 		} else if (op < 0x80) {
 			if (op == 0x76)
@@ -260,8 +260,9 @@ int disass(WORD addr)
 			}
 		} else if (op == 0xed) {
 			if (ireg) {
+				/* DD/FD followed by ED is an undoc'd NOP */
+				tmpl = "NOP";
 				a--;
-				tmpl = "NOP*";
 			} else {
 				op = getmem(a++);
 				if (0x40 <= op && op < 0x80)
@@ -271,6 +272,10 @@ int disass(WORD addr)
 				else
 					tmpl = "NOP*";
 			}
+		} else if (ireg && (op & 0xdf) == 0xdd) {
+			/* DD/FD followed by DD/FD is an undocumented NOP */
+			tmpl = "NOP";
+			a--;
 		} else
 			tmpl = optab_67[op & 0x3f];
 		break;
@@ -390,8 +395,10 @@ int disass(WORD addr)
 			*p++ = '0' + bit;
 			break;
 		case '\t':
-			if (undoc_ireg)
+			if (undoc_ireg) {
+				undoc_ireg++;
 				*p++ = '*';
+			}
 #endif
 			/* fall through */ /* should really be inside #if */
 		default:
@@ -399,6 +406,10 @@ int disass(WORD addr)
 			break;
 		}
 	}
+#ifndef EXCLUDE_Z80
+	if (undoc_ireg == 1)
+		*p++ = '*';
+#endif
 	*p++ = '\n';
 	*p = '\0';
 	len = a - addr;
