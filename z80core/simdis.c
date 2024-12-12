@@ -23,6 +23,7 @@
  *	Forward declarations
  */
 static char *btoh(BYTE b, char *p);
+static char *wtoa(WORD w, char *p);
 
 #ifndef EXCLUDE_Z80
 
@@ -52,9 +53,9 @@ static const char *const optab_45[8] = {
 
 static const char *const optab_67[64] = {
 	/*C0*/	"RET\tNZ",	"POP\tBC",	"JP\tNZ,w",	"JP\tw",
-	/*C4*/	"CALL\tNZ,w",	"PUSH\tBC",	"ADD\tA,b",	"RST\t00H",
+	/*C4*/	"CALL\tNZ,w",	"PUSH\tBC",	"ADD\tA,b",	"RST\t0H",
 	/*C8*/	"RET\tZ",	"RET",		"JP\tZ,w",	"",
-	/*CC*/	"CALL\tZ,w",	"CALL\tw",	"ADC\tA,b",	"RST\t08H",
+	/*CC*/	"CALL\tZ,w",	"CALL\tw",	"ADC\tA,b",	"RST\t8H",
 	/*D0*/	"RET\tNC",	"POP\tDE",	"JP\tNC,w",	"OUT\t(b),A",
 	/*D4*/	"CALL\tNC,w",	"PUSH\tDE",	"SUB\tb",	"RST\t10H",
 	/*D8*/	"RET\tC",	"EXX",		"JP\tC,w",	"IN\tA,(b)",
@@ -313,19 +314,12 @@ int disass(WORD addr)
 		switch (*tmpl) {
 		case 'b':	/* byte */
 			b1 = getmem(a++);
-			if (b1 >= 0xa0)
-				*p++ = '0';
-			p = btoh(b1, p);
-			*p++ = 'H';
+			p = wtoa(b1, p);
 			break;
 		case 'w':	/* word */
 			b1 = getmem(a++);
 			b2 = getmem(a++);
-			if (b2 >= 0xa0)
-				*p++ = '0';
-			p = btoh(b2, p);
-			p = btoh(b1, p);
-			*p++ = 'H';
+			p = wtoa((b2 << 8) | b1, p);
 			break;
 		case 'r':	/* register */
 			switch (cpu) {
@@ -358,8 +352,7 @@ int disass(WORD addr)
 								*p++ = '-';
 								displ = -displ;
 							}
-							p = btoh(displ, p);
-							*p++ = 'H';
+							p = wtoa(displ, p);
 						}
 					} else {
 						*p++ = 'H';
@@ -395,11 +388,7 @@ int disass(WORD addr)
 		case 'j':	/* relative jump address */
 			b1 = getmem(a++);
 			w = a + (SBYTE) b1;
-			if (w >= 0xa000)
-				*p++ = '0';
-			p = btoh(w >> 8, p);
-			p = btoh(w & 0xff, p);
-			*p++ = 'H';
+			p = wtoa(w, p);
 			break;
 		case 'n':	/* bit number */
 			*p++ = '0' + bit;
@@ -460,6 +449,31 @@ static char *btoh(BYTE b, char *p)
 	*p++ = c + (c < 10 ? '0' : '7');
 	c = b & 0xf;
 	*p++ = c + (c < 10 ? '0' : '7');
+	return p;
+}
+
+/*
+ *	convert WORD into assembler hex and copy to string at p
+ *	returns p increased by number of characters produced
+ */
+static char *wtoa(WORD w, char *p)
+{
+	register char c;
+	register int onlyz, shift;
+
+	onlyz = 1;
+	for (shift = 12; shift >= 0; shift -= 4) {
+		c = (w >> shift) & 0xf;
+		if (onlyz && c > 9)
+			*p++ = '0';
+		if (!onlyz || c) {
+			*p++ = c + (c < 10 ? '0' : '7');
+			onlyz = 0;
+		}
+	}
+	if (onlyz)
+		*p++ = '0';
+	*p++ = 'H';
 	return p;
 }
 
