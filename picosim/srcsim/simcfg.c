@@ -33,7 +33,6 @@
 #include "simdefs.h"
 #include "simglb.h"
 #include "simcore.h"
-#include "simutil.h"
 #include "simport.h"
 #include "simio.h"
 #include "simcfg.h"

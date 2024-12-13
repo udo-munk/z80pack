@@ -24,6 +24,7 @@
 #define I8080		2
 #endif
 
+/* check validity of sim.h options */
 #if defined(EXCLUDE_I8080) && defined(EXCLUDE_Z80)
 #error "Only one of EXCLUDE_I8080 or EXCLUDE_Z80 can be used"
 #endif
@@ -38,6 +39,28 @@
 #endif
 #if (defined(ALT_I8080) || defined(ALT_Z80)) && !defined(UNDOC_INST)
 #error "UNDOC_INST required for alternate simulators"
+#endif
+#ifdef HISIZE
+#ifndef WANT_ICE
+#error "WANT_ICE required for HISIZE"
+#endif
+#if HISIZE < 1 || HISIZE > 1000
+#error "HISIZE must be between 1 and 1000"
+#endif
+#endif /* HISIZE */
+#ifdef SBSIZE
+#ifndef WANT_ICE
+#error "WANT_ICE required for SBSIZE"
+#endif
+#if SBSIZE < 1 || SBSIZE > 10
+#error "SBSIZE must be between 1 and 10"
+#endif
+#endif /* SBSIZE */
+#if defined(WANT_TIM) && !defined(WANT_ICE)
+#error "WANT_ICE required for WANT_TIM"
+#endif
+#if defined(WANT_HB) && !defined(WANT_ICE)
+#error "WANT_ICE required for WANT_HB"
 #endif
 
 				/* bit definitions of CPU flags */
@@ -60,7 +83,7 @@
 #define CPU_WO		2	/* write or output (active low) */
 #define CPU_INTA	1	/* interrupt acknowledge */
 
-#if defined(FRONTPANEL) || defined(SIMPLEPANEL)
+#if defined(FRONTPANEL) || defined(SIMPLEPANEL) || defined(WANT_HB)
 #define BUS_8080		/* emulate 8080 bus status */
 #endif
 
