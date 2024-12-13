@@ -41,13 +41,22 @@ struct softbreak {		/* structure of a breakpoint */
 };
 
 extern struct	softbreak soft[SBSIZE];
-extern int	sb_next;
 #endif
 
 #ifdef WANT_TIM
 extern Tstates_t t_states_s, t_states_e;
 extern int	t_flag;
 extern WORD	t_start, t_end;
+#endif
+
+#ifdef WANT_HB
+				/* hardware breakpoint access modes */
+#define HB_READ		1	/* read memory */
+#define HB_WRITE	2	/* write memory */
+#define HB_EXEC		4	/* execute (op-code fetch) */
+
+extern int	hb_flag, hb_mode, hb_trig;
+extern WORD	hb_addr;
 #endif
 
 extern void (*ice_before_go)(void);

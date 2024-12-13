@@ -17,6 +17,9 @@
 
 #include "sim.h"
 #include "simdefs.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
 
 extern BYTE memory[65536];
 
@@ -27,12 +30,41 @@ extern void init_memory(void);
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
+#ifdef BUS_8080
+	cpu_bus &= ~(CPU_M1 | CPU_WO | CPU_MEMR);
+#endif
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr && (hb_mode & HB_WRITE))
+		hb_trig = HB_WRITE;
+#endif
 	memory[addr] = data;
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	return memory[addr];
+	register BYTE data;
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr) {
+		if (cpu_bus & CPU_M1) {
+			if (hb_mode & HB_EXEC)
+				hb_trig = HB_EXEC;
+		} else {
+			if (hb_mode & HB_READ)
+				hb_trig = HB_READ;
+		}
+	}
+#endif
+
+	data = memory[addr];
+
+#ifdef BUS_8080
+	cpu_bus |= CPU_WO | CPU_MEMR;
+	cpu_bus &= ~CPU_M1;
+#endif
+
+	return data;
 }
 
 /*

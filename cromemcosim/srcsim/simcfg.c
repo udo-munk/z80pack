@@ -27,7 +27,6 @@
 #include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
-#include "simutil.h"
 #include "simcfg.h"
 
 #include "log.h"
@@ -71,7 +70,7 @@ void config(void)
 				continue;
 			}
 			if (!strcmp(t1, "fp_port")) {
-				fp_port = (BYTE) exatoi(t2);
+				fp_port = (BYTE) strtol(t2, NULL, 16);
 			} else if (!strcmp(t1, "fp_fps")) {
 #ifdef FRONTPANEL
 				fp_fps = (float) atoi(t2);
