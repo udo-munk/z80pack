@@ -25,6 +25,7 @@
  * 29-AUG-2021 new memory configuration sections
  * 09-MAY-2024 added more defines for conditional compiling components
  * 15-MAY-2024 make disk manager standard
+ * 14-DEC-2024 added hardware breakpoint support
  */
 
 #ifndef SIM_INC
@@ -48,7 +49,8 @@
 #ifdef WANT_ICE
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
-/*#define SBSIZE  10*/	/* no breakpoints */
+/*#define SBSIZE  10*/	/* no software breakpoints */
+/*#define WANT_HB*/	/* no hardware breakpoint */
 #endif
 
 #define UNIX_TERMINAL	/* uses a UNIX terminal emulation */

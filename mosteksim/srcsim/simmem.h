@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2019 by Mike Douglas
+ * Copyright (C) 2024 Thomas Eberhardt
  *
  * This module implements memory management for mosteksim
  *
@@ -10,6 +11,7 @@
  *	       directory. Emulate memory of the Mostek AID-80F and SYS-80FT
  *	       computers by treating 0xe000-0xefff as ROM.
  * 04-NOV-2019 (Udo Munk) add functions for direct memory access
+ * 14-DEC-2024 (Thomas Eberhardt) added hardware breakpoint support
  */
 
 #ifndef SIMMEM_INC
@@ -17,7 +19,13 @@
 
 #include "sim.h"
 #include "simdefs.h"
-#include "simmem.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+
+#ifdef BUS_8080
+#include "simglb.h"
+#endif
 
 #define MAXMEMSECT	0
 
@@ -30,13 +38,43 @@ extern void init_memory(void);
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
+#ifdef BUS_8080
+	cpu_bus &= ~(CPU_M1 | CPU_WO | CPU_MEMR);
+#endif
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr && (hb_mode & HB_WRITE))
+		hb_trig = HB_WRITE;
+#endif
+
 	if ((addr & 0xf000) != 0xe000)
 		memory[addr] = data;
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	return memory[addr];
+	register BYTE data;
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr) {
+		if (cpu_bus & CPU_M1) {
+			if (hb_mode & HB_EXEC)
+				hb_trig = HB_EXEC;
+		} else {
+			if (hb_mode & HB_READ)
+				hb_trig = HB_READ;
+		}
+	}
+#endif
+
+	data = memory[addr];
+
+#ifdef BUS_8080
+	cpu_bus &= ~CPU_M1;
+	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
+
+	return data;
 }
 
 /*

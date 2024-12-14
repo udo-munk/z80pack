@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module implements memory management for z80sim
  *
@@ -10,6 +11,7 @@
  * 03-FEB-2017 added ROM initialization
  * 15-AUG-2017 don't use macros, use inline functions that coerce appropriate
  * 04-NOV-2019 add functions for direct memory access
+ * 14-DEC-2024 added hardware breakpoint support
  */
 
 #ifndef SIMMEM_INC

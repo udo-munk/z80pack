@@ -2,12 +2,14 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module implements memory management for the Z80/8080 CPU.
  *
  * History:
  * 23-APR-2024 derived from z80sim
  * 29-JUN-2024 implemented banked memory
+ * 14-DEC-2024 added hardware breakpoint support
  */
 
 #ifndef SIMMEM_INC
