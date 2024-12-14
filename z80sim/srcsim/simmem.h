@@ -60,8 +60,8 @@ static inline BYTE memrdr(WORD addr)
 	data = memory[addr];
 
 #ifdef BUS_8080
-	cpu_bus |= CPU_WO | CPU_MEMR;
 	cpu_bus &= ~CPU_M1;
+	cpu_bus |= CPU_WO | CPU_MEMR;
 #endif
 
 	return data;
