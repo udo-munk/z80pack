@@ -71,6 +71,7 @@ static inline BYTE memrdr(WORD addr)
 		}
 	}
 #endif
+
 	if ((selbnk == 0) || (addr >= 0xc000))
 		data = bnk0[addr];
 	else
