@@ -239,9 +239,9 @@ static void do_step(void)
 {
 	install_softbp();
 	step_cpu();
-	uninstall_softbp();
 	if (cpu_error == OPHALT)
 		(void) handle_break();
+	uninstall_softbp();
 	report_cpu_error();
 	print_head();
 	print_reg();
