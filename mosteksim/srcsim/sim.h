@@ -22,11 +22,13 @@
  */
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
+#define EXCLUDE_I8080	/* this was a Z80 machine */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
-#define UNDOC_INST	/* compile undocumented instructions */
+#define UNDOC_INST	/* compile undocumented instrs. (required by ALT_*) */
+#ifndef EXCLUDE_Z80
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
-#define EXCLUDE_I8080	/* this was a Z80 machine */
+#endif
 
 #define WANT_ICE	/* attach ICE to headless machine */
 #ifdef WANT_ICE

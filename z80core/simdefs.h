@@ -34,33 +34,8 @@
 #if defined(EXCLUDE_Z80) && DEF_CPU != I8080
 #error "DEF_CPU=Z80 and no Z80 simulation included"
 #endif
-#if defined(EXCLUDE_Z80) && defined(FAST_BLOCK)
-#error "FAST_BLOCK makes only sense without EXCLUDE_Z80"
-#endif
 #if (defined(ALT_I8080) || defined(ALT_Z80)) && !defined(UNDOC_INST)
 #error "UNDOC_INST required for alternate simulators"
-#endif
-#ifdef HISIZE
-#ifndef WANT_ICE
-#error "WANT_ICE required for HISIZE"
-#endif
-#if HISIZE < 1 || HISIZE > 1000
-#error "HISIZE must be between 1 and 1000"
-#endif
-#endif /* HISIZE */
-#ifdef SBSIZE
-#ifndef WANT_ICE
-#error "WANT_ICE required for SBSIZE"
-#endif
-#if SBSIZE < 1 || SBSIZE > 10
-#error "SBSIZE must be between 1 and 10"
-#endif
-#endif /* SBSIZE */
-#if defined(WANT_TIM) && !defined(WANT_ICE)
-#error "WANT_ICE required for WANT_TIM"
-#endif
-#if defined(WANT_HB) && !defined(WANT_ICE)
-#error "WANT_ICE required for WANT_HB"
 #endif
 
 				/* bit definitions of CPU flags */

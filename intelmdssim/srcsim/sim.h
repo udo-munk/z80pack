@@ -23,8 +23,10 @@
 #define EXCLUDE_Z80	/* Intel Intellec MDS-800 was an 8080 machine */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
-#define UNDOC_INST	/* compile undocumented instructions */
+#define UNDOC_INST	/* compile undocumented instrs. (required by ALT_*) */
+#ifndef EXCLUDE_Z80
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
+#endif
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
 #ifdef WANT_ICE

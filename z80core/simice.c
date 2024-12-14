@@ -369,7 +369,7 @@ static int handle_break(void)
 			fputs("write", stdout);
 		else
 			fputs("execute", stdout);
-		printf(" access to %04x\n", hb_addr);
+		fprintf(stdout, " access to %04x\n", hb_addr);
 		hb_trig = 0;
 		cpu_error = NONE;
 		return 0;
@@ -864,23 +864,22 @@ static void print_reg(void)
  */
 static void do_break(char *s)
 {
-#if !defined(SBSIZE) && !defined(WANT_HB)
-	UNUSED(s);
-
-	puts("Sorry, no breakpoints available");
-	puts("Please recompile with SBSIZE and/or WANT_HB defined in sim.h");
-#else /* SBSIZE || WANT_HB */
+#if defined(SBSIZE) || defined(WANT_HB)
 	WORD a;
 	int n;
 #ifdef SBSIZE
 	register int i;
 	int hdr_flag;
 #endif
+#endif
 
-#ifdef WANT_HB
 	if (*s == 'h') {
+#ifndef WANT_HB
+		puts("Sorry, no hardware breakpoint available");
+		puts("Please recompile with WANT_HB defined in sim.h");
+#else /* WANT_HB */
 		s++;
-		if (*s == '\n') {
+		if (*s == '\n' || *s == '\0') {
 			if (hb_flag) {
 				fputs("Hardware breakpoint set with ", stdout);
 				n = 0;
@@ -890,16 +889,17 @@ static void do_break(char *s)
 				}
 				if (hb_mode & HB_WRITE) {
 					if (n)
-						putchar('/');
+						fputc('/', stdout);
 					fputs("write", stdout);
 					n = 1;
 				}
 				if (hb_mode & HB_EXEC) {
 					if (n)
-						putchar('/');
+						fputc('/', stdout);
 					fputs("execute", stdout);
 				}
-				printf(" access trigger to %04x\n", hb_addr);
+				fprintf(stdout, " access trigger to %04x\n",
+					hb_addr);
 			} else
 				puts("No hardware breakpoint set");
 			return;
@@ -947,11 +947,14 @@ static void do_break(char *s)
 		hb_addr = a;
 		hb_mode = n;
 		hb_flag = 1;
+#endif /* WANT_HB */
 		return;
 	}
-#endif /* WANT_HB */
-#ifdef SBSIZE
-	if (*s == '\n') {
+#ifndef SBSIZE
+	puts("Sorry, no software breakpoints available");
+	puts("Please recompile with SBSIZE defined in sim.h");
+#else /* SBSIZE */
+	if (*s == '\n' || *s == '\0') {
 		hdr_flag = 0;
 		for (i = 0; i < SBSIZE; i++)
 			if (soft[i].sb_pass) {
@@ -1042,7 +1045,6 @@ static void do_break(char *s)
 		soft[i].sb_passcount = 0;
 	}
 #endif /* SBSIZE */
-#endif /* SBSIZE || WANT_HB */
 }
 
 /*
@@ -1259,7 +1261,7 @@ static void do_show(void)
 #else
 	i = 0;
 #endif
-	printf("T-State counting %spossible\n", i ? "" : "im");
+	printf("T-State counting %spossible\n", i ? "" : "not ");
 }
 
 /*
