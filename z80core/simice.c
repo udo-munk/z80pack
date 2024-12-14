@@ -864,21 +864,20 @@ static void print_reg(void)
  */
 static void do_break(char *s)
 {
-#if !defined(SBSIZE) && !defined(WANT_HB)
-	UNUSED(s);
-
-	puts("Sorry, no breakpoints available");
-	puts("Please recompile with SBSIZE and/or WANT_HB defined in sim.h");
-#else /* SBSIZE || WANT_HB */
+#if defined(SBSIZE) || defined(WANT_HB)
 	WORD a;
 	int n;
 #ifdef SBSIZE
 	register int i;
 	int hdr_flag;
 #endif
+#endif
 
-#ifdef WANT_HB
 	if (*s == 'h') {
+#ifndef WANT_HB
+		puts("Sorry, no hardware breakpoint available");
+		puts("Please recompile with WANT_HB defined in sim.h");
+#else /* WANT_HB */
 		s++;
 		if (*s == '\n') {
 			if (hb_flag) {
@@ -947,10 +946,13 @@ static void do_break(char *s)
 		hb_addr = a;
 		hb_mode = n;
 		hb_flag = 1;
+#endif /* WANT_HB */
 		return;
 	}
-#endif /* WANT_HB */
-#ifdef SBSIZE
+#ifndef SBSIZE
+	puts("Sorry, no software breakpoints available");
+	puts("Please recompile with SBSIZE defined in sim.h");
+#else /* SBSIZE */
 	if (*s == '\n') {
 		hdr_flag = 0;
 		for (i = 0; i < SBSIZE; i++)
@@ -1042,7 +1044,6 @@ static void do_break(char *s)
 		soft[i].sb_passcount = 0;
 	}
 #endif /* SBSIZE */
-#endif /* SBSIZE || WANT_HB */
 }
 
 /*
@@ -1259,7 +1260,7 @@ static void do_show(void)
 #else
 	i = 0;
 #endif
-	printf("T-State counting %spossible\n", i ? "" : "im");
+	printf("T-State counting %spossible\n", i ? "" : "not ");
 }
 
 /*
