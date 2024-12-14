@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2016-2021 Udo Munk
  * Copyright (C) 2021 David McNaughton
+ * Copyright (C) 2024 Thomas Eberhardt
  *
  * This module implements memory management for an Altair 8800 system
  *
@@ -17,6 +18,7 @@
  * 04-NOV-2019 add functions for direct memory access
  * 31-JUL-2021 allow building machine without frontpanel
  * 29-AUG-2021 new memory configuration sections
+ * 14-DEC-2024 added hardware breakpoint support
  */
 
 #ifndef SIMMEM_INC
@@ -24,11 +26,16 @@
 
 #include "sim.h"
 #include "simdefs.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
 
 #include "tarbell_fdc.h"
 
-#ifdef FRONTPANEL
+#if defined(FRONTPANEL) || defined(BUS_8080)
 #include "simglb.h"
+#endif
+#ifdef FRONTPANEL
 #include "simctl.h"
 #include "frontpanel.h"
 #endif
@@ -67,6 +74,9 @@ extern void init_memory(void);
 static inline void memwrt(WORD addr, BYTE data)
 {
 #ifdef BUS_8080
+#ifndef FRONTPANEL
+	cpu_bus &= ~CPU_M1;
+#endif
 	cpu_bus &= ~(CPU_WO | CPU_MEMR);
 #endif
 
@@ -77,7 +87,13 @@ static inline void memwrt(WORD addr, BYTE data)
 		fp_led_data = 0xff;
 		fp_sampleData();
 		wait_step();
-	}
+	} else
+		cpu_bus &= ~CPU_M1;
+#endif
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr && (hb_mode & HB_WRITE))
+		hb_trig = HB_WRITE;
 #endif
 
 	if (p_tab[addr >> 8] == MEM_RW) {
@@ -89,6 +105,18 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	register BYTE data;
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr) {
+		if (cpu_bus & CPU_M1) {
+			if (hb_mode & HB_EXEC)
+				hb_trig = HB_EXEC;
+		} else {
+			if (hb_mode & HB_READ)
+				hb_trig = HB_READ;
+		}
+	}
+#endif
 
 	if (tarbell_rom_active && tarbell_rom_enabled) {
 		if (addr <= 0x001f) {
@@ -108,6 +136,9 @@ static inline BYTE memrdr(WORD addr)
 	}
 
 #ifdef BUS_8080
+#ifndef FRONTPANEL
+	cpu_bus &= ~CPU_M1;
+#endif
 	cpu_bus |= CPU_WO | CPU_MEMR;
 #endif
 
@@ -118,7 +149,8 @@ static inline BYTE memrdr(WORD addr)
 		fp_led_data = data;
 		fp_sampleData();
 		wait_step();
-	}
+	} else
+		cpu_bus &= ~CPU_M1;
 #endif
 
 	return data;

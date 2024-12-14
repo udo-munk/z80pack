@@ -11,6 +11,7 @@
  *	       computers.
  * 27-SEP-2019 (Udo Munk) modified for integration into 1.37
  * 25-APR-2024 (Udo Munk) this was a Z80 machine and we can exclude 8080 now
+ * 14-DEC-2024 (Thomas Eberhardt) added hardware breakpoint support
  */
 
 #ifndef SIM_INC
@@ -35,6 +36,7 @@
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
+#define WANT_HB		/* hardware breakpoint */
 #endif
 
 #define HAS_DISKS	/* uses disk images */
