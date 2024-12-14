@@ -25,6 +25,7 @@
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
+#define WANT_HB		/* hardware breakpoint */
 #endif
 
 #if PICO_RP2040

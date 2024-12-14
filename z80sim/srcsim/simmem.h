@@ -21,6 +21,10 @@
 #include "simice.h"
 #endif
 
+#ifdef BUS_8080
+#include "simglb.h"
+#endif
+
 extern BYTE memory[65536];
 
 extern void init_memory(void);
