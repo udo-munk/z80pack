@@ -11,6 +11,7 @@
  *	       computers.
  * 27-SEP-2019 (Udo Munk) modified for integration into 1.37
  * 25-APR-2024 (Udo Munk) this was a Z80 machine and we can exclude 8080 now
+ * 14-DEC-2024 (Thomas Eberhardt) added hardware breakpoint support
  */
 
 #ifndef SIM_INC
@@ -22,17 +23,20 @@
  */
 #define DEF_CPU Z80	/* default CPU (Z80 or I8080) */
 #define CPU_SPEED 0	/* default CPU speed 0=unlimited */
+#define EXCLUDE_I8080	/* this was a Z80 machine */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
-#define UNDOC_INST	/* compile undocumented instructions */
+#define UNDOC_INST	/* compile undocumented instrs. (required by ALT_*) */
+#ifndef EXCLUDE_Z80
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
-#define EXCLUDE_I8080	/* this was a Z80 machine */
+#endif
 
 #define WANT_ICE	/* attach ICE to headless machine */
 #ifdef WANT_ICE
 #define WANT_TIM	/* count t-states */
 #define HISIZE	100	/* number of entries in history */
 #define SBSIZE	4	/* number of software breakpoints */
+#define WANT_HB		/* hardware breakpoint */
 #endif
 
 #define HAS_DISKS	/* uses disk images */

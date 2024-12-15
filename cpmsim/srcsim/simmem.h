@@ -28,6 +28,7 @@
  * 03-FEB-2017 added ROM initialization
  * 09-APR-2018 modified MMU write protect port as used by Alan Cox for FUZIX
  * 04-NOV-2019 add functions for direct memory access
+ * 14-DEC-2024 added hardware breakpoint support
  */
 
 #ifndef SIMMEM_INC
@@ -35,6 +36,13 @@
 
 #include "sim.h"
 #include "simdefs.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+
+#ifdef BUS_8080
+#include "simglb.h"
+#endif
 
 #define MAXSEG 16		/* max. number of memory banks */
 #define SEGSIZ 49152		/* default size of one bank = 48 KBytes */
@@ -49,6 +57,15 @@ extern int selbnk, maxbnk, segsize, wp_common;
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
+#ifdef BUS_8080
+	cpu_bus &= ~(CPU_M1 | CPU_WO | CPU_MEMR);
+#endif
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr && (hb_mode & HB_WRITE))
+		hb_trig = HB_WRITE;
+#endif
+
 	if ((addr >= segsize) && (wp_common != 0)) {
 		wp_common |= 0x80;
 #ifndef EXCLUDE_Z80
@@ -70,13 +87,34 @@ static inline void memwrt(WORD addr, BYTE data)
 
 static inline BYTE memrdr(WORD addr)
 {
+	register BYTE data;
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr) {
+		if (cpu_bus & CPU_M1) {
+			if (hb_mode & HB_EXEC)
+				hb_trig = HB_EXEC;
+		} else {
+			if (hb_mode & HB_READ)
+				hb_trig = HB_READ;
+		}
+	}
+#endif
+
 	if (selbnk == 0)
-		return *(memory[0] + addr);
+		data = *(memory[0] + addr);
 
 	if (addr >= segsize)
-		return *(memory[0] + addr);
+		data = *(memory[0] + addr);
 	else
-		return *(memory[selbnk] + addr);
+		data = *(memory[selbnk] + addr);
+
+#ifdef BUS_8080
+	cpu_bus &= ~CPU_M1;
+	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
+
+	return data;
 }
 
 /*

@@ -9,13 +9,6 @@
  *	This module is an ICE type user interface to debug Z80/8080 programs
  *	on a host system. It emulates, as acurate as possible and practical,
  *	the Mostek ICE we were using in the 80th and 90th.
- *	Only feature missing is hardware breakpoint, because here in software
- *	we need to compare addresses at every memory access. This needs to be
- *	implemented with conditional compiling sometime.
- *	bh address,access mode, where access mode is r, w or x.
- *	If I remember right one could set access mode to combinations like
- *	rw, so that it would break on every read or write access to an
- *	address.
  */
 
 #include <ctype.h>
@@ -33,7 +26,6 @@
 #include "simmem.h"
 #include "simdis.h"
 #include "simport.h"
-#include "simutil.h"
 #include "simice.h"
 
 #ifndef BAREMETAL
@@ -59,7 +51,6 @@ int h_flag;			/* flag for trace memory overrun */
  */
 #ifdef SBSIZE
 struct softbreak soft[SBSIZE];	/* memory to hold breakpoint information */
-int sb_next;			/* index into breakpoint memory */
 #endif
 
 /*
@@ -73,9 +64,21 @@ WORD t_start = 65535;		/* start address for measurement */
 WORD t_end = 65535;		/* end address for measurement */
 #endif
 
+/*
+ *	Variables for hardware breakpoint
+ */
+#ifdef WANT_HB
+int hb_flag;			/* hardware breakpoint enabled flag */
+WORD hb_addr;			/* address of hardware breakpoint */
+int hb_mode;			/* access mode of hardware breakpoint */
+int hb_trig;			/* hardware breakpoint triggered flag */
+#endif
+
 static void do_step(void);
 static void do_trace(char *s);
 static void do_go(char *s);
+static void install_softbp(void);
+static void uninstall_softbp(void);
 static int handle_break(void);
 static void do_dump(char *s);
 static void do_list(char *s);
@@ -234,9 +237,11 @@ void ice_cmd_loop(int go_flag)
  */
 static void do_step(void)
 {
+	install_softbp();
 	step_cpu();
 	if (cpu_error == OPHALT)
-		handle_break();
+		(void) handle_break();
+	uninstall_softbp();
 	report_cpu_error();
 	print_head();
 	print_reg();
@@ -259,18 +264,14 @@ static void do_trace(char *s)
 		count = atoi(s);
 	print_head();
 	print_reg();
+	install_softbp();
 	for (i = 0; i < count; i++) {
 		step_cpu();
 		print_reg();
-		if (cpu_error) {
-			if (cpu_error == OPHALT) {
-				if (!handle_break()) {
-					break;
-				}
-			} else
-				break;
-		}
+		if (cpu_error && (cpu_error != OPHALT || !handle_break()))
+			break;
 	}
+	uninstall_softbp();
 	report_cpu_error();
 	wrk_addr = PC;
 }
@@ -291,22 +292,18 @@ static void do_go(char *s)
 		s++;
 	}
 	if (isxdigit((unsigned char) *s))
-		PC = exatoi(s);
+		PC = strtol(s, NULL, 16);
 	if (ice_before_go)
 		(*ice_before_go)();
+	install_softbp();
 	start_time = cpu_time;
 	for (;;) {
 		run_cpu();
-		if (cpu_error) {
-			if (cpu_error == OPHALT) {
-				if (!handle_break()) {
-					break;
-				}
-			} else
-				break;
-		}
+		if (cpu_error && (cpu_error != OPHALT || !handle_break()))
+			break;
 	}
 	stop_time = cpu_time;
+	uninstall_softbp();
 	if (ice_after_go)
 		(*ice_after_go)();
 	report_cpu_error();
@@ -322,28 +319,74 @@ static void do_go(char *s)
 }
 
 /*
- *	Handling of software breakpoints (HALT opcode):
+ *	Install software breakpoints (HALT opcode)
+ */
+static void install_softbp(void)
+{
+#ifdef SBSIZE
+	register int i;
+
+	for (i = 0; i < SBSIZE; i++)
+		if (soft[i].sb_pass) {
+			soft[i].sb_oldopc = getmem(soft[i].sb_addr);
+			putmem(soft[i].sb_addr, 0x76); /* HALT */
+		}
+#endif
+}
+
+/*
+ *	Uninstall software breakpoints (HALT opcode)
+ */
+static void uninstall_softbp(void)
+{
+#ifdef SBSIZE
+	register int i;
+
+	for (i = 0; i < SBSIZE; i++)
+		if (soft[i].sb_pass)
+			putmem(soft[i].sb_addr, soft[i].sb_oldopc);
+#endif
+}
+
+/*
+ *	Handling of software (HALT opcode) / hardware breakpoints:
  *
  *	Output:	0 breakpoint or other HALT opcode reached (stop)
- *		1 breakpoint reached, pass counter not reached (continue)
+ *		1 breakpoint hit, pass counter not reached (continue)
  */
 static int handle_break(void)
 {
 #ifdef SBSIZE
 	register int i;
-	int break_address;
+#endif
 
+#ifdef WANT_HB
+	if (hb_flag && hb_trig) {
+		fputs("Hardware breakpoint hit by ", stdout);
+		if (hb_trig == HB_READ)
+			fputs("read", stdout);
+		else if (hb_trig == HB_WRITE)
+			fputs("write", stdout);
+		else
+			fputs("execute", stdout);
+		fprintf(stdout, " access to %04x\n", hb_addr);
+		hb_trig = 0;
+		cpu_error = NONE;
+		return 0;
+	}
+#endif
+#ifdef SBSIZE
 	for (i = 0; i < SBSIZE; i++)	/* search for breakpoint */
-		if (soft[i].sb_addr == PC - 1)
+		if (soft[i].sb_pass && soft[i].sb_addr == PC - 1)
 			break;
 	if (i == SBSIZE)		/* no breakpoint found */
 		return 0;
 #ifdef HISIZE
-	h_next--;			/* correct history */
-	if (h_next < 0)
-		h_next = 0;
+	if (h_next)			/* correct history */
+		h_next--;
+	else
+		h_next = HISIZE - 1;
 #endif
-	break_address = PC - 1;		/* store addr of breakpoint */
 	PC--;				/* substitute HALT opcode by */
 	putmem(PC, soft[i].sb_oldopc);	/* original opcode */
 	step_cpu();			/* and execute it */
@@ -351,12 +394,12 @@ static int handle_break(void)
 	soft[i].sb_passcount++;		/* increment pass counter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
 		return 1;		/* pass not reached, continue */
-	printf("Software breakpoint %d reached at %04x\n", i, break_address);
+	printf("Software breakpoint hit at %04x\n", soft[i].sb_addr);
 	soft[i].sb_passcount = 0;	/* reset pass counter */
 	return 0;			/* pass reached, stop */
-#else
+#else /* !SBSIZE */
 	return 0;
-#endif
+#endif /* !SBSIZE */
 }
 
 /*
@@ -371,13 +414,18 @@ static void do_dump(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
-		wrk_addr = exatoi(s) & ~0xf;
-	while (*s != ',' && *s != '\0')
+		wrk_addr = strtol(s, &s, 16) & ~0xf;
+	while (isspace((unsigned char) *s))
 		s++;
-	if (*s && isxdigit((unsigned char) *++s)) {
-		n = ((exatoi(s) & ~0xf) - wrk_addr) / 16 + 1;
-		if (n <= 0)
-			n = 1;
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (isxdigit((unsigned char) *s)) {
+			n = ((strtol(s, NULL, 16) & ~0xf) - wrk_addr) / 16 + 1;
+			if (n <= 0)
+				n = 1;
+		}
 	}
 	printf("Addr   ");
 	for (i = 0; i < 16; i++)
@@ -407,22 +455,27 @@ static void do_list(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
-		wrk_addr = exatoi(s);
-	while (*s != ',' && *s != '\0')
+		wrk_addr = strtol(s, &s, 16);
+	while (isspace((unsigned char) *s))
 		s++;
-	if (*s && isxdigit((unsigned char) *++s)) {
-		a = exatoi(s);
-		if (a < wrk_addr)
-			a = wrk_addr;
-		while (wrk_addr <= a) {
-			printf("%04x - ", (unsigned int) wrk_addr);
-			wrk_addr += disass(wrk_addr);
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (isxdigit((unsigned char) *s)) {
+			a = strtol(s, NULL, 16);
+			if (a < wrk_addr)
+				a = wrk_addr;
+			while (wrk_addr <= a) {
+				printf("%04x - ", (unsigned int) wrk_addr);
+				wrk_addr += disass(wrk_addr);
+			}
+			return;
 		}
-	} else {
-		for (i = 0; i < 10; i++) {
-			printf("%04x - ", (unsigned int) wrk_addr);
-			wrk_addr += disass(wrk_addr);
-		}
+	}
+	for (i = 0; i < 10; i++) {
+		printf("%04x - ", (unsigned int) wrk_addr);
+		wrk_addr += disass(wrk_addr);
 	}
 }
 
@@ -434,19 +487,23 @@ static void do_modify(char *s)
 	while (isspace((unsigned char) *s))
 		s++;
 	if (isxdigit((unsigned char) *s))
-		wrk_addr = exatoi(s);
+		wrk_addr = strtol(s, NULL, 16);
 	for (;;) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
 		if (get_cmdline(arg, LENCMD) || arg[0] == '\0')
 			break;
-		if (arg[0] == '\n') {
+		s = arg;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (*s == '\0') {
 			wrk_addr++;
 			continue;
 		}
-		if (!isxdigit((unsigned char) arg[0]))
+		if (isxdigit((unsigned char) *s))
+			putmem(wrk_addr++, strtol(s, NULL, 16));
+		else
 			break;
-		putmem(wrk_addr++, exatoi(arg));
 	}
 }
 
@@ -461,23 +518,41 @@ static void do_fill(char *s)
 
 	while (isspace((unsigned char) *s))
 		s++;
-	a = exatoi(s);
-	while (*s != ',' && *s != '\0')
+	if (!isxdigit((unsigned char) *s)) {
+		puts("address missing");
+		return;
+	}
+	a = strtol(s, &s, 16);
+	while (isspace((unsigned char) *s))
 		s++;
-	if (*s) {
-		i = exatoi(++s);
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (!isxdigit((unsigned char) *s)) {
+			puts("count missing");
+			return;
+		}
 	} else {
 		puts("count missing");
 		return;
 	}
-	while (*s != ',' && *s != '\0')
+	i = strtol(s, &s, 16);
+	while (isspace((unsigned char) *s))
 		s++;
-	if (*s) {
-		val = exatoi(++s);
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (!isxdigit((unsigned char) *s)) {
+			puts("value missing");
+			return;
+		}
 	} else {
 		puts("value missing");
 		return;
 	}
+	val = strtol(s, NULL, 16);
 	while (i--)
 		putmem(a++, val);
 }
@@ -492,23 +567,41 @@ static void do_move(char *s)
 
 	while (isspace((unsigned char) *s))
 		s++;
-	a1 = exatoi(s);
-	while (*s != ',' && *s != '\0')
+	if (!isxdigit((unsigned char) *s)) {
+		puts("from missing");
+		return;
+	}
+	a1 = strtol(s, &s, 16);
+	while (isspace((unsigned char) *s))
 		s++;
-	if (*s) {
-		a2 = exatoi(++s);
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (!isxdigit((unsigned char) *s)) {
+			puts("to missing");
+			return;
+		}
 	} else {
 		puts("to missing");
 		return;
 	}
-	while (*s != ',' && *s != '\0')
+	a2 = strtol(s, &s, 16);
+	while (isspace((unsigned char) *s))
 		s++;
-	if (*s) {
-		count = exatoi(++s);
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (!isxdigit((unsigned char) *s)) {
+			puts("count missing");
+			return;
+		}
 	} else {
 		puts("count missing");
 		return;
 	}
+	count = strtol(s, NULL, 16);
 	while (count--)
 		putmem(a2++, getmem(a1++));
 }
@@ -522,11 +615,19 @@ static void do_port(char *s)
 
 	while (isspace((unsigned char) *s))
 		s++;
-	port = exatoi(s);
+	if (!isxdigit((unsigned char) *s)) {
+		puts("port missing");
+		return;
+	}
+	port = strtol(s, NULL, 16);
 	printf("%02x = %02x : ", port, io_in(port, 0));
-	if (!get_cmdline(arg, LENCMD) &&
-	    arg[0] != '\0' && (isxdigit((unsigned char) *arg)))
-		io_out(port, 0, (BYTE) exatoi(arg));
+	if (!get_cmdline(arg, LENCMD)) {
+		s = arg;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (isxdigit((unsigned char) *s))
+			io_out(port, 0, (BYTE) strtol(s, NULL, 16));
+	}
 }
 
 /*
@@ -623,7 +724,7 @@ static void do_reg(char *s)
 
 	while (isspace((unsigned char) *s))
 		s++;
-	if (*s) {
+	if (*s != '\0') {
 		for (i = 0, p = regs; i < nregs; i++, p++) {
 #ifndef EXCLUDE_Z80
 			if (p->z80 && cpu != Z80)
@@ -659,31 +760,37 @@ static void do_reg(char *s)
 			default:
 				break;
 			}
-			if (!get_cmdline(arg, LENCMD) &&
-			    arg[0] != '\0' && arg[0] != '\n') {
-				w = exatoi(arg);
-				switch (p->type) {
-				case R_8:
-					*(p->r8) = w & 0xff;
-					break;
-				case R_88:
-					*(p->r8h) = (w >> 8) & 0xff;
-					*(p->r8l) = w & 0xff;
-					break;
-				case R_16:
-					*(p->r16) = w;
-					break;
-				case R_R:
-					*(p->r8h) = *(p->r8l) = w & 0xff;
-					break;
-				case R_F:
-					*(p->rf) = w & 0xff;
-					break;
-				case R_M:
-					F = w ? (F | p->rm) : (F & ~p->rm);
-					break;
-				default:
-					break;
+			if (!get_cmdline(arg, LENCMD)) {
+				s = arg;
+				while (isspace((unsigned char) *s))
+					s++;
+				if (isxdigit((unsigned char) *s)) {
+					w = strtol(s, NULL, 16);
+					switch (p->type) {
+					case R_8:
+						*(p->r8) = w & 0xff;
+						break;
+					case R_88:
+						*(p->r8h) = (w >> 8) & 0xff;
+						*(p->r8l) = w & 0xff;
+						break;
+					case R_16:
+						*(p->r16) = w;
+						break;
+					case R_R:
+						*(p->r8h) = *(p->r8l) =
+							w & 0xff;
+						break;
+					case R_F:
+						*(p->rf) = w & 0xff;
+						break;
+					case R_M:
+						F = w ? (F | p->rm)
+						      : (F & ~p->rm);
+						break;
+					default:
+						break;
+					}
 				}
 			}
 		} else
@@ -757,53 +864,186 @@ static void print_reg(void)
  */
 static void do_break(char *s)
 {
-#ifndef SBSIZE
-	UNUSED(s);
-
-	puts("Sorry, no breakpoints available");
-	puts("Please recompile with SBSIZE defined in sim.h");
-#else /* SBSIZE */
+#if defined(SBSIZE) || defined(WANT_HB)
+	WORD a;
+	int n;
+#ifdef SBSIZE
 	register int i;
+	int hdr_flag;
+#endif
+#endif
 
-	if (*s == '\n') {
-		puts("No Addr Pass  Counter");
-		for (i = 0; i < SBSIZE; i++)
-			if (soft[i].sb_pass)
-				printf("%02d %04x %05d %05d\n", i,
-				       soft[i].sb_addr, soft[i].sb_pass,
-				       soft[i].sb_passcount);
-		return;
-	}
-	if (isxdigit((unsigned char) *s)) {
-		i = atoi(s++);
-		if (i >= SBSIZE) {
-			printf("breakpoint %d not available\n", i);
+	if (*s == 'h') {
+#ifndef WANT_HB
+		puts("Sorry, no hardware breakpoint available");
+		puts("Please recompile with WANT_HB defined in sim.h");
+#else /* WANT_HB */
+		s++;
+		if (*s == '\n' || *s == '\0') {
+			if (hb_flag) {
+				fputs("Hardware breakpoint set with ", stdout);
+				n = 0;
+				if (hb_mode & HB_READ) {
+					fputs("read", stdout);
+					n = 1;
+				}
+				if (hb_mode & HB_WRITE) {
+					if (n)
+						fputc('/', stdout);
+					fputs("write", stdout);
+					n = 1;
+				}
+				if (hb_mode & HB_EXEC) {
+					if (n)
+						fputc('/', stdout);
+					fputs("execute", stdout);
+				}
+				fprintf(stdout, " access trigger to %04x\n",
+					hb_addr);
+			} else
+				puts("No hardware breakpoint set");
 			return;
 		}
-	} else {
-		i = sb_next++;
-		if (sb_next == SBSIZE)
-			sb_next = 0;
+		if (tolower((unsigned char) *s) == 'c') {
+			hb_flag = 0;
+			return;
+		}
+		while (isspace((unsigned char) *s))
+			s++;
+		if (!isxdigit((unsigned char) *s)) {
+			puts("address missing");
+			return;
+		}
+		a = strtol(s, &s, 16);
+		while (isspace((unsigned char) *s))
+			s++;
+		if (*s == ',') {
+			s++;
+			while (isspace((unsigned char) *s))
+				s++;
+			n = 0;
+			if (tolower((unsigned char) *s) == 'r') {
+				n |= HB_READ;
+				s++;
+			}
+			if (tolower((unsigned char) *s) == 'w') {
+				n |= HB_WRITE;
+				s++;
+			}
+			if (tolower((unsigned char) *s) == 'x')
+				n |= HB_EXEC;
+		} else
+			n = HB_READ | HB_WRITE | HB_EXEC;
+#ifdef SBSIZE
+		if (n & HB_EXEC) {
+			for (i = 0; i < SBSIZE; i++)
+				if (soft[i].sb_pass && soft[i].sb_addr == a) {
+					puts("Software breakpoint set "
+					     "at same execute access address");
+					return;
+				}
+		}
+#endif
+		hb_addr = a;
+		hb_mode = n;
+		hb_flag = 1;
+#endif /* WANT_HB */
+		return;
+	}
+#ifndef SBSIZE
+	puts("Sorry, no software breakpoints available");
+	puts("Please recompile with SBSIZE defined in sim.h");
+#else /* SBSIZE */
+	if (*s == '\n' || *s == '\0') {
+		hdr_flag = 0;
+		for (i = 0; i < SBSIZE; i++)
+			if (soft[i].sb_pass) {
+				if (!hdr_flag) {
+					puts("Addr Pass  Counter");
+					hdr_flag = 1;
+				}
+				printf("%04x %05d %05d\n",
+				       soft[i].sb_addr, soft[i].sb_pass,
+				       soft[i].sb_passcount);
+			}
+		if (!hdr_flag)
+			puts("No software breakpoints set");
+		return;
+	}
+	if (tolower((unsigned char) *s) == 'c') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (*s == '\0') {
+			memset((char *) soft, 0,
+			       sizeof(struct softbreak) * SBSIZE);
+			return;
+		}
+		if (!isxdigit((unsigned char) *s)) {
+			puts("address missing");
+			return;
+		}
+		a = strtol(s, NULL, 16);
+		for (i = 0; i < SBSIZE; i++) {
+			if (soft[i].sb_pass && soft[i].sb_addr == a)
+				break;
+		}
+		if (i == SBSIZE)
+			printf("No software breakpoint at address %04x\n", a);
+		else
+			memset((char *) &soft[i], 0, sizeof(struct softbreak));
+		return;
 	}
 	while (isspace((unsigned char) *s))
 		s++;
-	if (*s == 'c') {
-		putmem(soft[i].sb_addr, soft[i].sb_oldopc);
-		memset((char *) &soft[i], 0, sizeof(struct softbreak));
+	if (!isxdigit((unsigned char) *s)) {
+		puts("address missing");
 		return;
 	}
-	if (soft[i].sb_pass)
-		putmem(soft[i].sb_addr, soft[i].sb_oldopc);
-	soft[i].sb_addr = exatoi(s);
-	soft[i].sb_oldopc = getmem(soft[i].sb_addr);
-	putmem(soft[i].sb_addr, 0x76);
-	while (!iscntrl((unsigned char) *s) && !ispunct((unsigned char) *s))
-		s++;
-	if (*s != ',')
-		soft[i].sb_pass = 1;
-	else
-		soft[i].sb_pass = exatoi(++s);
-	soft[i].sb_passcount = 0;
+	a = strtol(s, &s, 16);
+	/* look for existing breakpoint */
+	for (i = 0; i < SBSIZE; i++) {
+		if (soft[i].sb_pass && soft[i].sb_addr == a)
+			break;
+	}
+	/* if not found, look for free one */
+	if (i == SBSIZE) {
+		for (i = 0; i < SBSIZE; i++)
+			if (!soft[i].sb_pass)
+				break;
+	}
+	if (i == SBSIZE)
+		puts("All software breakpoints in use");
+	else {
+		if (!soft[i].sb_pass) {
+			/* new breakpoint */
+#ifdef WANT_HB
+			if (hb_flag && (hb_mode & HB_EXEC) && hb_addr == a) {
+				puts("Hardware execute access breakpoint set "
+				     "at same address");
+				return;
+			}
+#endif
+			soft[i].sb_addr = a;
+		}
+		while (isspace((unsigned char) *s))
+			s++;
+		if (*s == ',') {
+			s++;
+			while (isspace((unsigned char) *s))
+				s++;
+			if (!isdigit((unsigned char) *s))
+				n = 1;
+			else {
+				n = atoi(s);
+				if (n == 0)
+					n = 1;
+			}
+		} else
+			n = 1;
+		soft[i].sb_pass = n;
+		soft[i].sb_passcount = 0;
+	}
 #endif /* SBSIZE */
 }
 
@@ -820,69 +1060,63 @@ static void do_hist(char *s)
 #else /* HISIZE */
 	int i, l, b, e, sa;
 
-	while (isspace((unsigned char) *s))
-		s++;
-	switch (*s) {
-	case 'c':
+	if (tolower((unsigned char) *s) == 'c') {
 		memset((char *) his, 0, sizeof(struct history) * HISIZE);
 		h_next = 0;
 		h_flag = 0;
-		break;
-	default:
-		if ((h_next == 0) && (h_flag == 0)) {
-			puts("History memory is empty");
-			break;
+		return;
+	}
+	if (h_next == 0 && h_flag == 0) {
+		puts("History memory is empty");
+		return;
+	}
+	e = h_next;
+	b = (h_flag) ? h_next + 1 : 0;
+	l = 0;
+	while (isspace((unsigned char) *s))
+		s++;
+	if (isxdigit((unsigned char) *s))
+		sa = strtol(s, NULL, 16);
+	else
+		sa = -1;
+	for (i = b; i != e; i++) {
+		if (i == HISIZE)
+			i = 0;
+		if (sa != -1) {
+			if (his[i].h_addr < sa)
+				continue;
+			else
+				sa = -1;
 		}
-		e = h_next;
-		b = (h_flag) ? h_next + 1 : 0;
-		l = 0;
-		while (isspace((unsigned char) *s))
-			s++;
-		if (*s)
-			sa = exatoi(s);
-		else
-			sa = -1;
-		for (i = b; i != e; i++) {
-			if (i == HISIZE)
-				i = 0;
-			if (sa != -1) {
-				if (his[i].h_addr < sa)
-					continue;
-				else
-					sa = -1;
-			}
-			switch (his[i].h_cpu) {
+		switch (his[i].h_cpu) {
 #ifndef EXCLUDE_Z80
-			case Z80:
-				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
-				       "IX=%04x IY=%04x SP=%04x\n",
-				       his[i].h_addr, his[i].h_af, his[i].h_bc,
-				       his[i].h_de, his[i].h_hl, his[i].h_ix,
-				       his[i].h_iy, his[i].h_sp);
-				break;
+		case Z80:
+			printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
+			       "IX=%04x IY=%04x SP=%04x\n",
+			       his[i].h_addr, his[i].h_af, his[i].h_bc,
+			       his[i].h_de, his[i].h_hl, his[i].h_ix,
+			       his[i].h_iy, his[i].h_sp);
+			break;
 #endif
 #ifndef EXCLUDE_I8080
-			case I8080:
-				printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
-				       "SP=%04x\n",
-				       his[i].h_addr, his[i].h_af, his[i].h_bc,
-				       his[i].h_de, his[i].h_hl, his[i].h_sp);
-				break;
+		case I8080:
+			printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
+			       "SP=%04x\n",
+			       his[i].h_addr, his[i].h_af, his[i].h_bc,
+			       his[i].h_de, his[i].h_hl, his[i].h_sp);
+			break;
 #endif
-			default:
-				break;
-			}
-			if (++l < 20)
-				continue;
-			l = 0;
-			fputs("q = quit, else continue: ", stdout);
-			fflush(stdout);
-			if (!get_cmdline(arg, LENCMD) &&
-			    (arg[0] == '\0' ||
-			     tolower((unsigned char) arg[0]) == 'q'))
-				break;
+		default:
+			break;
 		}
-		break;
+		if (++l < 20)
+			continue;
+		l = 0;
+		fputs("q = quit, else continue: ", stdout);
+		fflush(stdout);
+		if (!get_cmdline(arg, LENCMD) &&
+		    (arg[0] == '\0' || tolower((unsigned char) arg[0]) == 'q'))
+			break;
 	}
 #endif /* HISIZE */
 }
@@ -898,6 +1132,8 @@ static void do_count(char *s)
 	puts("Sorry, no t-state count available");
 	puts("Please recompile with WANT_TIM defined in sim.h");
 #else
+	WORD start;
+
 	while (isspace((unsigned char) *s))
 		s++;
 	if (*s == '\0') {
@@ -905,15 +1141,31 @@ static void do_count(char *s)
 		printf("%04x   %04x    %s   %" PRIu64 "\n",
 		       t_start, t_end,
 		       t_flag ? "on " : "off", t_states_e - t_states_s);
-	} else {
-		t_start = exatoi(s);
-		while (*s != ',' && *s != '\0')
-			s++;
-		if (*s)
-			t_end = exatoi(++s);
-		t_states_s = t_states_e = T;
-		t_flag = 0;
+		return;
 	}
+	if (!isxdigit((unsigned char) *s)) {
+		puts("start missing");
+		return;
+	}
+	start = strtol(s, &s, 16);
+	while (isspace((unsigned char) *s))
+		s++;
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (!isxdigit((unsigned char) *s)) {
+			puts("stop missing");
+			return;
+		}
+	} else {
+		puts("stop missing");
+		return;
+	}
+	t_start = start;
+	t_end = strtol(s, NULL, 16);
+	t_states_s = t_states_e = T;
+	t_flag = 0;
 #endif
 }
 
@@ -992,6 +1244,12 @@ static void do_show(void)
 	i = 0;
 #endif
 	printf("No. of software breakpoints: %d\n", i);
+#ifdef WANT_HB
+	i = 1;
+#else
+	i = 0;
+#endif
+	printf("Hardware breakpoint %savailable\n", i ? "" : "not ");
 #ifdef UNDOC_INST
 	i = u_flag;
 #else
@@ -1003,7 +1261,7 @@ static void do_show(void)
 #else
 	i = 0;
 #endif
-	printf("T-State counting %spossible\n", i ? "" : "im");
+	printf("T-State counting %spossible\n", i ? "" : "not ");
 }
 
 /*
@@ -1022,11 +1280,14 @@ static void do_help(void)
 	puts("return                    single step program");
 	puts("x [register]              show/modify register");
 	puts("x f<flag>                 modify flag");
-	puts("b[no] address[,pass]      set soft breakpoint");
-	puts("b                         show soft breakpoints");
-	puts("b[no] c                   clear soft breakpoint");
+	puts("b address[,pass]          set software breakpoint");
+	puts("b                         show software breakpoints");
+	puts("bc [address]              clear software breakpoint(s)");
+	puts("bh address[,accmode]      set hardware breakpoint");
+	puts("bh                        show hardware breakpoint");
+	puts("bhc                       clear hardware breakpoint");
 	puts("h [address]               show history");
-	puts("h c                       clear history");
+	puts("hc                        clear history");
 	puts("z start,stop              set trigger addr for t-state count");
 	puts("z                         show t-state count");
 	puts("s                         show settings");
@@ -1065,7 +1326,12 @@ static void do_clock(void)
 	static struct sigaction newact;
 	static struct itimerval tim;
 	const char *s = NULL;
+#ifdef WANT_HB
+	int save_hb_flag;
 
+	save_hb_flag = hb_flag;
+	hb_flag = 0;
+#endif
 	save[0] = getmem(0x0000);	/* save memory locations */
 	save[1] = getmem(0x0001);	/* 0000H - 0002H */
 	save[2] = getmem(0x0002);
@@ -1089,6 +1355,9 @@ static void do_clock(void)
 	putmem(0x0000, save[0]);	/* restore memory locations */
 	putmem(0x0001, save[1]);	/* 0000H - 0002H */
 	putmem(0x0002, save[2]);
+#ifdef WANT_HB
+	hb_flag = save_hb_flag;
+#endif
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
@@ -1136,10 +1405,17 @@ static void do_load(char *s)
 	while (*s != ',' && *s != '\n' && *s != '\0')
 		*pfn++ = *s++;
 	*pfn = '\0';
-	if (*s == ',')
-		load_file(fn, exatoi(++s), -1);
-	else
-		load_file(fn, 0, 0);
+	if (*s == ',') {
+		s++;
+		while (isspace((unsigned char) *s))
+			s++;
+		if (isxdigit((unsigned char) *s)) {
+			load_file(fn, strtol(s, NULL, 16), -1);
+			wrk_addr = PC;
+			return;
+		}
+	}
+	load_file(fn, 0, 0);
 	wrk_addr = PC;
 }
 

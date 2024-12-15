@@ -37,7 +37,6 @@
 #include "simport.h"
 #include "simfun.h"
 #include "simint.h"
-#include "simutil.h"
 #include "simmain.h"
 
 static void save_core(void);
@@ -90,14 +89,14 @@ int main(int argc, char *argv[])
 
 			case 'm':	/* initialize memory */
 				if (*(s + 1) != '\0') {
-					m_flag = exatoi(s + 1);
+					m_flag = strtol(s + 1, NULL, 16);
 					s += strlen(s + 1);
 				} else {
 					if (argc <= 1)
 						goto usage;
 					argc--;
 					argv++;
-					m_flag = exatoi(argv[0]);
+					m_flag = strtol(argv[0], NULL, 16);
 				}
 				break;
 

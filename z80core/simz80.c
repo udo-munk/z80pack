@@ -622,6 +622,8 @@ leave:
 			}
 		}
 
+#ifdef WANT_ICE
+
 #ifdef WANT_TIM
 					/* do runtime measurement */
 		if (t_flag) {
@@ -630,6 +632,15 @@ leave:
 				t_flag = 0;	/* if reached, switch off */
 		}
 #endif
+
+#ifdef WANT_HB
+		if (hb_trig) {
+			cpu_error = OPHALT;
+			cpu_state = ST_STOPPED;
+		}
+#endif
+
+#endif /* WANT_ICE */
 
 #ifdef WANT_GUI
 		check_gui_break();

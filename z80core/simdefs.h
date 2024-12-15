@@ -24,6 +24,7 @@
 #define I8080		2
 #endif
 
+/* check validity of sim.h options */
 #if defined(EXCLUDE_I8080) && defined(EXCLUDE_Z80)
 #error "Only one of EXCLUDE_I8080 or EXCLUDE_Z80 can be used"
 #endif
@@ -32,9 +33,6 @@
 #endif
 #if defined(EXCLUDE_Z80) && DEF_CPU != I8080
 #error "DEF_CPU=Z80 and no Z80 simulation included"
-#endif
-#if defined(EXCLUDE_Z80) && defined(FAST_BLOCK)
-#error "FAST_BLOCK makes only sense without EXCLUDE_Z80"
 #endif
 #if (defined(ALT_I8080) || defined(ALT_Z80)) && !defined(UNDOC_INST)
 #error "UNDOC_INST required for alternate simulators"
@@ -60,7 +58,7 @@
 #define CPU_WO		2	/* write or output (active low) */
 #define CPU_INTA	1	/* interrupt acknowledge */
 
-#if defined(FRONTPANEL) || defined(SIMPLEPANEL)
+#if defined(FRONTPANEL) || defined(SIMPLEPANEL) || defined(WANT_HB)
 #define BUS_8080		/* emulate 8080 bus status */
 #endif
 

@@ -2,6 +2,7 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2016-2019 by Udo Munk
+ * Copyright (C) 2024 by Thomas Eberhardt
  *
  * This module implements memory management for z80sim
  *
@@ -10,6 +11,7 @@
  * 03-FEB-2017 added ROM initialization
  * 15-AUG-2017 don't use macros, use inline functions that coerce appropriate
  * 04-NOV-2019 add functions for direct memory access
+ * 14-DEC-2024 added hardware breakpoint support
  */
 
 #ifndef SIMMEM_INC
@@ -17,6 +19,13 @@
 
 #include "sim.h"
 #include "simdefs.h"
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
+
+#ifdef BUS_8080
+#include "simglb.h"
+#endif
 
 extern BYTE memory[65536];
 
@@ -27,12 +36,41 @@ extern void init_memory(void);
  */
 static inline void memwrt(WORD addr, BYTE data)
 {
+#ifdef BUS_8080
+	cpu_bus &= ~(CPU_M1 | CPU_WO | CPU_MEMR);
+#endif
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr && (hb_mode & HB_WRITE))
+		hb_trig = HB_WRITE;
+#endif
 	memory[addr] = data;
 }
 
 static inline BYTE memrdr(WORD addr)
 {
-	return memory[addr];
+	register BYTE data;
+
+#ifdef WANT_HB
+	if (hb_flag && hb_addr == addr) {
+		if (cpu_bus & CPU_M1) {
+			if (hb_mode & HB_EXEC)
+				hb_trig = HB_EXEC;
+		} else {
+			if (hb_mode & HB_READ)
+				hb_trig = HB_READ;
+		}
+	}
+#endif
+
+	data = memory[addr];
+
+#ifdef BUS_8080
+	cpu_bus &= ~CPU_M1;
+	cpu_bus |= CPU_WO | CPU_MEMR;
+#endif
+
+	return data;
 }
 
 /*

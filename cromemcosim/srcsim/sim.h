@@ -26,6 +26,7 @@
  * 14-JUL-2022 added generic AT modem and HAL
  * 09-MAY-2024 added more defines for conditional compiling components
  * 15-MAY-2024 make disk manager standard
+ * 14-DEC-2024 added hardware breakpoint support
  */
 
 #ifndef SIM_INC
@@ -39,14 +40,17 @@
 #define CPU_SPEED 4	/* default CPU speed */
 /*#define ALT_I8080*/	/* use alt. 8080 sim. primarily optimized for size */
 /*#define ALT_Z80*/	/* use alt. Z80 sim. primarily optimized for size */
-#define UNDOC_INST	/* compile undocumented instructions */
+#define UNDOC_INST	/* compile undocumented instrs. (required by ALT_*) */
+#ifndef EXCLUDE_Z80
 /*#define FAST_BLOCK*/	/* much faster but not accurate Z80 block instr. */
+#endif
 
 /*#define WANT_ICE*/	/* attach ICE to headless machine */
 #ifdef WANT_ICE
 /*#define WANT_TIM*/	/* don't count t-states */
 /*#define HISIZE  1000*//* no history */
-/*#define SBSIZE  10*/	/* no breakpoints */
+/*#define SBSIZE  10*/	/* no software breakpoints */
+/*#define WANT_HB*/	/* no hardware breakpoint */
 #endif
 
 #define HAS_DAZZLER	/* has simulated I/O for Cromemco Dazzler */
