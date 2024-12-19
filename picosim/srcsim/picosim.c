@@ -147,6 +147,13 @@ int main(void)
 	/* print banner */
 	printf("\fZ80pack release %s, %s\n", RELEASE, COPYR);
 	printf("%s release %s\n", USR_COM, USR_REL);
+#if PICO_RP2350
+#if PICO_RISCV
+	puts("running on Hazard RISC-V cores");
+#else
+	puts("running on ARM Cortex-M33 cores");
+#endif
+#endif
 	printf("%s\n\n", USR_CPR);
 
 	init_cpu();		/* initialize CPU */
