@@ -328,13 +328,13 @@ static void expn_add_loc(struct expn *e, char *name)
 		asmerr(E_OUTLCL);
 	} else {
 		c = mac_loc_cnt >> 12;
-		*s++ = c + (c < 10 ? '0' : 'W');
+		*s++ = c + (c < 10 ? '0' : 'a' - 10);
 		c = (mac_loc_cnt >> 8) & 0xf;
-		*s++ = c + (c < 10 ? '0' : 'W');
+		*s++ = c + (c < 10 ? '0' : 'a' - 10);
 		c = (mac_loc_cnt >> 4) & 0xf;
-		*s++ = c + (c < 10 ? '0' : 'W');
+		*s++ = c + (c < 10 ? '0' : 'a' - 10);
 		c = mac_loc_cnt++ & 0xf;
-		*s++ = c + (c < 10 ? '0' : 'W');
+		*s++ = c + (c < 10 ? '0' : 'a' - 10);
 	}
 	*s = '\0';
 	l->loc_next = NULL;
@@ -791,7 +791,7 @@ static char *mac_next_parm(char *s)
 			/* generate digits backwards in current radix */
 			for (t = t1; m > 0; m--) {
 				v = w % r;
-				*--t = v + (v < 10 ? '0' : 'W');
+				*--t = v + (v < 10 ? '0' : 'a' - 10);
 				w /= r;
 			}
 			break;

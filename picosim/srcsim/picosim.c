@@ -149,7 +149,7 @@ int main(void)
 	printf("%s release %s\n", USR_COM, USR_REL);
 #if PICO_RP2350
 #if PICO_RISCV
-	puts("running on Hazard RISC-V cores");
+	puts("running on Hazard3 RISC-V cores");
 #else
 	puts("running on ARM Cortex-M33 cores");
 #endif

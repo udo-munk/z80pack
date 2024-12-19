@@ -468,9 +468,9 @@ static char *btoh(BYTE b, char *p)
 	register char c;
 
 	c = b >> 4;
-	*p++ = c + (c < 10 ? '0' : '7');
+	*p++ = c + (c < 10 ? '0' : 'A' - 10);
 	c = b & 0xf;
-	*p++ = c + (c < 10 ? '0' : '7');
+	*p++ = c + (c < 10 ? '0' : 'A' - 10);
 	return p;
 }
 

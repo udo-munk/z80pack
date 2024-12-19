@@ -181,7 +181,7 @@ static int get_token(void)
 		n = 0;
 		while (IS_XDIG(*s)) {
 			n *= 16;
-			n += TO_UPP(*s) - ((*s <= '9') ? '0' : '7');
+			n += TO_UPP(*s) - ((*s <= '9') ? '0' : 'A' - 10);
 			s++;
 		}
 		if (*s == STRDEL) {
@@ -218,7 +218,8 @@ static int get_token(void)
 					continue;
 				}
 				if (IS_XDIG(*p1)) {
-					m = *p1 - ((*p1 <= '9') ? '0' : '7');
+					m = *p1 - ((*p1 <= '9') ? '0'
+								: 'A' - 10);
 					if (m < base) {
 						n *= base;
 						n += m;
