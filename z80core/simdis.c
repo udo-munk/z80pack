@@ -446,9 +446,9 @@ static char *btoh(BYTE b, char *p)
 	register char c;
 
 	c = b >> 4;
-	*p++ = c + (c < 10 ? '0' : '7');
+	*p++ = c + (c < 10 ? '0' : 'A' - 10);
 	c = b & 0xf;
-	*p++ = c + (c < 10 ? '0' : '7');
+	*p++ = c + (c < 10 ? '0' : 'A' - 10);
 	return p;
 }
 
@@ -467,7 +467,7 @@ static char *wtoa(WORD w, char *p)
 		if (onlyz && c > 9)
 			*p++ = '0';
 		if (!onlyz || c) {
-			*p++ = c + (c < 10 ? '0' : '7');
+			*p++ = c + (c < 10 ? '0' : 'A' - 10);
 			onlyz = 0;
 		}
 	}
