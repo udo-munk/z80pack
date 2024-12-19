@@ -630,6 +630,6 @@ CBMTAB:		; mnemonics table for prefix CB
 NL:		; zero-terminated newline for the terminal
 	DEFB	10,13,0
 
-WRKS:	DEFS	34		; workspace for the preperation of an output line
+WRKS:	DEFS	34		; workspace for the preparation of an output line
 PRTMP:	DEFS	2		; temporary storage for the print position
 DADDR:	DEFS	2		; disassembly address
