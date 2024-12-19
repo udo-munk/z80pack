@@ -348,7 +348,7 @@ static void lst_byte(BYTE b)
 	register char c;
 
 	c = b >> 4;
-	fputc(c + (c < 10 ? '0' : 'W'), lstfp);
+	fputc(c + (c < 10 ? '0' : 'a' - 10), lstfp);
 	c = b & 0xf;
-	fputc(c + (c < 10 ? '0' : 'W'), lstfp);
+	fputc(c + (c < 10 ? '0' : 'a' - 10), lstfp);
 }
