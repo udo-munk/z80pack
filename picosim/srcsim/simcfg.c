@@ -99,6 +99,9 @@ void config(void)
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
 	struct timespec ts;
+	struct ds3231_rtc rtc;
+	ds3231_datetime_t dt;
+	uint8_t buf;
 	UNUSED(DS3231_MONTHS);
 	UNUSED(DS3231_WDAYS);
 
@@ -117,30 +120,17 @@ void config(void)
 	}
 
 	/* Create a real-time clock structure and initiate this */
-	struct ds3231_rtc rtc;
 	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
 		    DS3231_I2C_SCL_PIN, &rtc);
 
-	/* A `ds3231_datetime_t` structure holds date and time values. It is */
-	/* used first to set the initial (user-defined) date/time. After */
-	/* these initial values are set, then this same structure will be */
-	/* updated by the ds3231 functions as needed with the most current */
-	/* time and date values. */
-	ds3231_datetime_t dt = {
-		.year = 2000,	/* Year (2000-2099) */
-		.month = 1,	/* Month (1-12, 1=January, 12=December) */
-		.day = 1,	/* Day (1-31) */
-		.hour = 0,	/* Hour, in 24-h format (0-23) */
-		.minutes = 0,	/* Minutes (0-59) */
-		.seconds = 0,	/* Seconds (0-59) */
-		.dotw = 1,	/* Day of the week (1-7, 1=Monday, 7=Sunday) */
-	};
 
-	/* Read the date and time from the DS3231 RTC */
-	ds3231_get_datetime(&dt, &rtc);
-
-	/* if we read something take it over */
-	if (dt.year != 2000) {
+	/* Try to read the DS3231 RTC status register */
+	buf = DS3231_STATUS_REG;
+	i2c_write_blocking(rtc.i2c_port, rtc.i2c_addr, &buf, 1, true);
+	if (i2c_read_blocking(rtc.i2c_port, rtc.i2c_addr,
+			      &buf, 1, false) == 1) {
+		/* Read the date and time from the DS3231 RTC */
+		ds3231_get_datetime(&dt, &rtc);
 		t.tm_year = dt.year - 1900;
 		t.tm_mon = dt.month - 1;
 		t.tm_mday = dt.day;
