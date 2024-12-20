@@ -814,11 +814,11 @@ next_opcode:
 				/* without a frontpanel DI + HALT
 				   stops the machine */
 				cpu_error = OPHALT;
-				cpu_state = STOPPED;
+				cpu_state = ST_STOPPED;
 			} else {
 				/* else wait for INT, NMI or user interrupt */
 				while ((int_int == 0) && (int_nmi == 0) &&
-				       (cpu_state == CONTIN_RUN)) {
+				       (cpu_state == ST_CONTIN_RUN)) {
 					sleep_for_ms(1);
 					R += 99;
 				}
@@ -840,7 +840,7 @@ next_opcode:
 				/* INT disabled, wait for NMI,
 				   frontpanel reset or user interrupt */
 				while ((int_nmi == 0) &&
-				       !(cpu_state & RESET)) {
+				       !(cpu_state & ST_RESET)) {
 					fp_clock++;
 					fp_sampleData();
 					sleep_for_ms(1);
@@ -852,7 +852,7 @@ next_opcode:
 				/* else wait for INT, NMI,
 				   frontpanel reset or user interrupt */
 				while ((int_int == 0) && (int_nmi == 0) &&
-				       !(cpu_state & RESET)) {
+				       !(cpu_state & ST_RESET)) {
 					fp_clock++;
 					fp_sampleData();
 					sleep_for_ms(1);
