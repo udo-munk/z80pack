@@ -5,7 +5,7 @@
  */
 
 /*
- *	This module contain interrupt handlers for POSIX OS'S:
+ *	This module contains interrupt handlers for POSIX OS'S:
  *
  *	int_on()	: initialize interrupt handlers
  *	int_off()	: reset interrupts to default
