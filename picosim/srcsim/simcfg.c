@@ -117,6 +117,9 @@ void config(void)
 		f_read(&sd_file, &disks[2], DISKLEN, &br);
 		f_read(&sd_file, &disks[3], DISKLEN, &br);
 		f_close(&sd_file);
+#if defined(EXCLUDE_I8080) || defined(EXCLUDE_Z80)
+		cpu = DEF_CPU;
+#endif
 	}
 
 	/* Create a real-time clock structure and initiate this */
@@ -162,8 +165,15 @@ void config(void)
 #if LIB_STDIO_MSC_USB
 			printf("u - enable USB mass storage access\n");
 #endif
-			printf("c - switch CPU, currently %s\n",
-			       (cpu == Z80) ? "Z80" : "8080");
+			printf("c - switch CPU, currently ");
+#ifndef EXCLUDE_Z80
+			if (cpu == Z80)
+				puts("Z80");
+#endif
+#ifndef EXCLUDE_I8080
+			if (cpu == I8080)
+				puts("8080");
+#endif
 			printf("s - CPU speed: ");
 			if (speed == 0)
 				puts("unlimited");
@@ -261,10 +271,14 @@ void config(void)
 #endif
 
 		case 'c':
+#if defined(EXCLUDE_I8080) || defined(EXCLUDE_Z80)
+			puts("Can't switch CPU");
+#else
 			if (cpu == Z80)
 				switch_cpu(I8080);
 			else
 				switch_cpu(Z80);
+#endif
 			break;
 
 		case 's':

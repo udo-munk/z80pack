@@ -337,9 +337,8 @@ usage:
 
 	putchar('\n');
 
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
+	if (cpu == Z80) {
 puts("#######  #####    ###            #####    ###   #     #");
 puts("     #  #     #  #   #          #     #    #    ##   ##");
 puts("    #   #     # #     #         #          #    # # # #");
@@ -347,10 +346,10 @@ puts("   #     #####  #     #  #####   #####     #    #  #  #");
 puts("  #     #     # #     #               #    #    #     #");
 puts(" #      #     #  #   #          #     #    #    #     #");
 puts("#######  #####    ###            #####    ###   #     #");
-		break;
+	}
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
+	if (cpu == I8080) {
 puts(" #####    ###     #####    ###            #####    ###   #     #");
 puts("#     #  #   #   #     #  #   #          #     #    #    ##   ##");
 puts("#     # #     #  #     # #     #         #          #    # # # #");
@@ -358,11 +357,8 @@ puts(" #####  #     #   #####  #     #  #####   #####     #    #  #  #");
 puts("#     # #     #  #     # #     #               #    #    #     #");
 puts("#     #  #   #   #     #  #   #          #     #    #    #     #");
 puts(" #####    ###     #####    ###            #####    ###   #     #");
-		break;
-#endif
-	default:
-		break;
 	}
+#endif
 
 	printf("\nRelease %s, %s\n", RELEASE, COPYR);
 
@@ -451,20 +447,14 @@ static void save_core(void)
 	int fd, cnt;
 	const char *fname;
 
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
+	if (cpu == Z80)
 		fname = "core.z80";
-		break;
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
+	if (cpu == I8080)
 		fname = "core.8080";
-		break;
 #endif
-	default:
-		return;
-	}
 	if ((fd = open(fname, O_WRONLY | O_CREAT, 0600)) == -1
 	    || (fp = fdopen(fd, "w")) == NULL) {
 		if (fd != -1)
@@ -535,20 +525,14 @@ static int load_core(void)
 	int cnt;
 	const char *fname;
 
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
+	if (cpu == Z80)
 		fname = "core.z80";
-		break;
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
+	if (cpu == I8080)
 		fname = "core.8080";
-		break;
 #endif
-	default:
-		return 1;
-	}
 	if ((fp = fopen(fname, "r")) == NULL) {
 		printf("can't open file %s\n", fname);
 		return 1;

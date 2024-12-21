@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -123,6 +123,10 @@ bool tud_msc_prevent_allow_medium_removal_cb(uint8_t lun,
 					     uint8_t prohibit_removal,
 					     uint8_t control)
 {
+	(void) lun;
+	(void) prohibit_removal;
+	(void) control;
+
 	return true;
 }
 
