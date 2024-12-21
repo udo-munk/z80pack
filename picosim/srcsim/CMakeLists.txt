@@ -68,10 +68,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${Z80PACK}/z80core
 )
 
-add_subdirectory(stdio_msc_usb)
-
 add_subdirectory(../libs/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
 add_subdirectory(../libs/pico-ds3231/lib ds3231)
+add_subdirectory(../libs/stdio_msc_usb stdio_msc_usb)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
@@ -107,12 +106,11 @@ target_link_libraries(${PROJECT_NAME}
 	pico_stdlib
 	tinyusb_device
 
-	stdio_msc_usb
-
 	no-OS-FatFS-SD-SDIO-SPI-RPi-Pico
 	pico-ds3231
+	stdio_msc_usb
 )
-if(PICO_BOARD STREQUAL pico_w OR PICO_BOARD STREQUAL pico2_w)
+if(PICO_CYW43_SUPPORTED)
 target_link_libraries(${PROJECT_NAME}
 	pico_cyw43_arch_none
 )
