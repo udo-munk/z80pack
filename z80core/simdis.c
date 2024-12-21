@@ -194,7 +194,7 @@ char Opcode_Str[64];
 int disass(WORD addr)
 {
 	register BYTE op;
-	register const char *tmpl;
+	register const char *tmpl = "";
 	register char *p;
 	BYTE b1, b2;
 	WORD a = addr;
@@ -210,9 +210,8 @@ int disass(WORD addr)
 	 * select instruction template tmpl, decode operands, and
 	 * flag undocumented Z80 DD/FD main block instructions
 	 */
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
+	if (cpu == Z80) {
 		op = getmem(a++);
 		/* index register prefix? */
 		if ((op & 0xdf) == 0xdd) {
@@ -279,10 +278,10 @@ int disass(WORD addr)
 			a--;
 		} else
 			tmpl = optab_67[op & 0x3f];
-		break;
+	}
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
+	if (cpu == I8080) {
 		op = getmem(a++);
 		reg1 = (op >> 3) & 7;
 		reg2 = op & 7;
@@ -298,12 +297,8 @@ int disass(WORD addr)
 			reg1 = reg2;
 		} else
 			tmpl = optab_8080_67[op & 0x3f];
-		break;
-#endif
-	default:
-		tmpl = "";
-		break;
 	}
+#endif
 
 	/*
 	 * expand instruction template tmpl into disassembly string
@@ -322,9 +317,8 @@ int disass(WORD addr)
 			p = wtoa((b2 << 8) | b1, p);
 			break;
 		case 'r':	/* register */
-			switch (cpu) {
 #ifndef EXCLUDE_Z80
-			case Z80:
+			if (cpu == Z80) {
 				switch (reg1) {
 				case 4:	/* H */
 				case 5:	/* L */
@@ -363,16 +357,12 @@ int disass(WORD addr)
 				default:
 					break;
 				}
-				break;
+			}
 #endif
 #ifndef EXCLUDE_I8080
-			case I8080:
+			if (cpu == I8080)
 				*p++ = "BCDEHLMA"[reg1];
-				break;
 #endif
-			default:
-				break;
-			}
 			reg1 = reg2;
 			break;
 #ifndef EXCLUDE_Z80

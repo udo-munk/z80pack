@@ -362,14 +362,14 @@ static int handle_break(void)
 
 #ifdef WANT_HB
 	if (hb_flag && hb_trig) {
-		fputs("Hardware breakpoint hit by ", stdout);
+		printf("Hardware breakpoint hit by ");
 		if (hb_trig == HB_READ)
-			fputs("read", stdout);
+			printf("read");
 		else if (hb_trig == HB_WRITE)
-			fputs("write", stdout);
+			printf("write");
 		else
-			fputs("execute", stdout);
-		fprintf(stdout, " access to %04x\n", hb_addr);
+			printf("execute");
+		printf(" access to %04x\n", hb_addr);
 		hb_trig = 0;
 		cpu_error = NONE;
 		return 0;
@@ -805,21 +805,15 @@ static void do_reg(char *s)
  */
 static void print_head(void)
 {
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
+	if (cpu == Z80)
 		printf("\nPC   A  SZHPNC I  R  IFF BC   DE   HL   "
 		       "A'F' B'C' D'E' H'L' IX   IY   SP\n");
-		break;
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
+	if (cpu == I8080)
 		puts("\nPC   A  SZHPC BC   DE   HL   SP");
-		break;
 #endif
-	default:
-		break;
-	}
 }
 
 /*
@@ -832,9 +826,8 @@ static void print_reg(void)
 	printf("%c", F & Z_FLAG ? '1' : '0');
 	printf("%c", F & H_FLAG ? '1' : '0');
 	printf("%c", F & P_FLAG ? '1' : '0');
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
+	if (cpu == Z80) {
 		printf("%c", F & N_FLAG ? '1' : '0');
 		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x ", I);
@@ -845,18 +838,15 @@ static void print_reg(void)
 		       "%02x%02x %02x%02x %02x%02x %04x %04x %04x\n",
 		       B, C, D, E, H, L, A_, F_,
 		       B_, C_, D_, E_, H_, L_, IX, IY, SP);
-		break;
+	}
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
+	if (cpu == I8080) {
 		printf("%c", F & C_FLAG ? '1' : '0');
 		printf(" %02x%02x %02x%02x %02x%02x %04x\n",
 		       B, C, D, E, H, L, SP);
-		break;
-#endif
-	default:
-		break;
 	}
+#endif
 }
 
 /*
@@ -881,25 +871,24 @@ static void do_break(char *s)
 		s++;
 		if (*s == '\n' || *s == '\0') {
 			if (hb_flag) {
-				fputs("Hardware breakpoint set with ", stdout);
+				printf("Hardware breakpoint set with ");
 				n = 0;
 				if (hb_mode & HB_READ) {
-					fputs("read", stdout);
+					printf("read");
 					n = 1;
 				}
 				if (hb_mode & HB_WRITE) {
 					if (n)
-						fputc('/', stdout);
-					fputs("write", stdout);
+						putchar('/');
+					printf("write");
 					n = 1;
 				}
 				if (hb_mode & HB_EXEC) {
 					if (n)
-						fputc('/', stdout);
-					fputs("execute", stdout);
+						putchar('/');
+					printf("execute");
 				}
-				fprintf(stdout, " access trigger to %04x\n",
-					hb_addr);
+				printf(" access trigger to %04x\n", hb_addr);
 			} else
 				puts("No hardware breakpoint set");
 			return;
@@ -1088,27 +1077,23 @@ static void do_hist(char *s)
 			else
 				sa = -1;
 		}
-		switch (his[i].h_cpu) {
 #ifndef EXCLUDE_Z80
-		case Z80:
+		if (his[i].h_cpu == Z80) {
 			printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 			       "IX=%04x IY=%04x SP=%04x\n",
 			       his[i].h_addr, his[i].h_af, his[i].h_bc,
 			       his[i].h_de, his[i].h_hl, his[i].h_ix,
 			       his[i].h_iy, his[i].h_sp);
-			break;
+		}
 #endif
 #ifndef EXCLUDE_I8080
-		case I8080:
+		if (his[i].h_cpu == I8080) {
 			printf("%04x AF=%04x BC=%04x DE=%04x HL=%04x "
 			       "SP=%04x\n",
 			       his[i].h_addr, his[i].h_af, his[i].h_bc,
 			       his[i].h_de, his[i].h_hl, his[i].h_sp);
-			break;
-#endif
-		default:
-			break;
 		}
+#endif
 		if (++l < 20)
 			continue;
 		l = 0;
@@ -1217,20 +1202,14 @@ static void do_show(void)
 {
 	register int i;
 
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
-		fputs("z80", stdout);
-		break;
+	if (cpu == Z80)
+		printf("z80");
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
-		fputs("8080", stdout);
-		break;
+	if (cpu == I8080)
+		printf("8080");
 #endif
-	default:
-		break;
-	}
 	printf("sim Release: %s\n", RELEASE);
 #ifdef HISIZE
 	i = HISIZE;
@@ -1358,20 +1337,14 @@ static void do_clock(void)
 #ifdef WANT_HB
 	hb_flag = save_hb_flag;
 #endif
-	switch (cpu) {
 #ifndef EXCLUDE_Z80
-	case Z80:
+	if (cpu == Z80)
 		s = "JP";
-		break;
 #endif
 #ifndef EXCLUDE_I8080
-	case I8080:
+	if (cpu == I8080)
 		s = "JMP";
-		break;
 #endif
-	default:
-		break;
-	}
 	if (cpu_error == NONE) {
 		printf("CPU executed %" PRIu64 " %s instructions "
 		       "in 3 seconds\n", (T - T0) / 10, s);

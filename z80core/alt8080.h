@@ -752,11 +752,11 @@
 				/* without a frontpanel DI + HALT
 				   stops the machine */
 				cpu_error = OPHALT;
-				cpu_state = STOPPED;
+				cpu_state = ST_STOPPED;
 			} else {
 				/* else wait for INT or user interrupt */
 				while ((int_int == 0) &&
-				       (cpu_state == CONTIN_RUN)) {
+				       (cpu_state == ST_CONTIN_RUN)) {
 					sleep_for_ms(1);
 				}
 			}
@@ -776,7 +776,7 @@
 			if (IFF == 0) {
 				/* INT disabled, wait for
 				   frontpanel reset or user interrupt */
-				while (!(cpu_state & RESET)) {
+				while (!(cpu_state & ST_RESET)) {
 					fp_clock++;
 					fp_sampleData();
 					sleep_for_ms(1);
@@ -787,7 +787,7 @@
 				/* else wait for INT,
 				   frontpanel reset or user interrupt */
 				while ((int_int == 0) &&
-				       !(cpu_state & RESET)) {
+				       !(cpu_state & ST_RESET)) {
 					fp_clock++;
 					fp_sampleData();
 					sleep_for_ms(1);

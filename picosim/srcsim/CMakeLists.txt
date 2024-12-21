@@ -17,9 +17,11 @@ if(PICO_PLATFORM STREQUAL rp2040)
 	set(PICO_COMPILER pico_arm_cortex_m0plus_gcc)
 elseif(PICO_PLATFORM STREQUAL rp2350-arm-s)
 	set(PICO_BOARD pico2)
+	#set(PICO_BOARD pico2_w)
 	set(PICO_COMPILER pico_arm_cortex_m33_gcc)
 elseif(PICO_PLATFORM STREQUAL rp2350-riscv)
 	set(PICO_BOARD pico2)
+	#set(PICO_BOARD pico2_w)
 	set(PICO_COMPILER pico_riscv_gcc)
 endif()
 
@@ -67,8 +69,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 add_subdirectory(../libs/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/src FatFs)
-add_subdirectory(../libs/stdio_msc_usb stdio_msc_usb)
 add_subdirectory(../libs/pico-ds3231/lib ds3231)
+add_subdirectory(../libs/stdio_msc_usb stdio_msc_usb)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	PICO_STACK_SIZE=4096
@@ -98,8 +100,6 @@ target_compile_options(${PROJECT_NAME} PUBLIC -Wall -Wextra)
 if(PICO_C_COMPILER_IS_CLANG)
 	target_compile_options(${PROJECT_NAME} PUBLIC -Weverything)
 endif()
-# -Wno-unused-parameter because no-OS-FatFS-SD-SDIO-SPI-RPi-Pico isn't clean
-target_compile_options(${PROJECT_NAME} PUBLIC -Wno-unused-parameter)
 
 target_link_libraries(${PROJECT_NAME}
 	hardware_i2c
@@ -110,7 +110,7 @@ target_link_libraries(${PROJECT_NAME}
 	pico-ds3231
 	stdio_msc_usb
 )
-if(PICO_BOARD STREQUAL pico_w)
+if(PICO_CYW43_SUPPORTED)
 target_link_libraries(${PROJECT_NAME}
 	pico_cyw43_arch_none
 )
