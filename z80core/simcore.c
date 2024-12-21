@@ -103,15 +103,9 @@ void reset_cpu(void)
 void switch_cpu(int new_cpu)
 {
 	if (cpu != new_cpu) {
-		switch (new_cpu) {
-		case Z80:
-			break;
-		case I8080:
+		if (new_cpu == I8080) {
 			F &= ~(Y_FLAG | X_FLAG);
 			F |= N_FLAG;
-			break;
-		default:
-			break;
 		}
 		cpu = new_cpu;
 		cpu_state = ST_MODEL_SWITCH;
