@@ -15,6 +15,7 @@
  * 02-SEP-2024 read date/time from an optional I2C battery backed RTC
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,6 +29,9 @@
 #include "gpio.h"
 #include "ff.h"
 #include "ds3231.h"
+#if LIB_STDIO_MSC_USB
+#include "stdio_msc_usb.h"
+#endif
 
 #include "sim.h"
 #include "simdefs.h"
@@ -39,9 +43,6 @@
 
 #include "disks.h"
 #include "picosim.h"
-#if LIB_STDIO_MSC_USB
-#include "stdio_msc_usb.h"
-#endif
 
 /*
  * prompt for a filename
@@ -316,8 +317,8 @@ again:
 
 		case 'r':
 			prompt_fn(s, "bin");
-			if (s[0])
-				load_file(s);
+			if (s[0] && load_file(s))
+				PC = 0;
 			putchar('\n');
 			menu = 0;
 			break;

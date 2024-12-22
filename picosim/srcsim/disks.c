@@ -141,9 +141,9 @@ void list_files(const char *dir, const char *ext)
 /*
  * load a file 'name' into memory
  */
-void load_file(const char *name)
+int load_file(const char *name)
 {
-	int i = 0;
+	int i = 0, res;
 	register unsigned int j;
 	unsigned int br;
 	char SFN[25];
@@ -156,7 +156,7 @@ void load_file(const char *name)
 	sd_res = f_open(&sd_file, SFN, FA_READ);
 	if (sd_res != FR_OK) {
 		puts("File not found");
-		return;
+		return 0;
 	}
 
 	/* read file into memory */
@@ -167,12 +167,16 @@ void load_file(const char *name)
 			break;
 		i += SEC_SZ;
 	}
-	if (sd_res != FR_OK)
+	if (sd_res != FR_OK) {
 		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
-	else
+		res = 0;
+	} else {
 		printf("loaded file \"%s\" (%d bytes)\n", SFN, i + br);
+		res = 1;
+	}
 
 	f_close(&sd_file);
+	return res;
 }
 
 /*
