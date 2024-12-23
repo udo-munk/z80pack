@@ -127,17 +127,17 @@ static BYTE p000_in(void)
  */
 static BYTE p001_in(void)
 {
-	int input_avail = 0;
+	bool input_avail = false;
 
 #if LIB_PICO_STDIO_UART
 	uart_inst_t *my_uart = uart_default;
 
 	if (uart_is_readable(my_uart))
-		input_avail = 1;
+		input_avail = true;
 #endif
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 	if (tud_cdc_connected() && tud_cdc_available())
-		input_avail = 1;
+		input_avail = true;
 #endif
 	if (input_avail)
 		sio_last = getchar();

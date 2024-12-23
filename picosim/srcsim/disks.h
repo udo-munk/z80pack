@@ -27,7 +27,7 @@ extern char disks[NUMDISK][DISKLEN];
 
 extern void init_disks(void), exit_disks(void);
 extern void list_files(const char *dir, const char *ext);
-extern int load_file(const char *name);
+extern bool load_file(const char *name);
 extern void check_disks(void);
 extern void mount_disk(int drive, const char *name);
 

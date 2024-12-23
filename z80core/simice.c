@@ -1301,6 +1301,7 @@ static void do_help(void)
 static void do_clock(void)
 {
 	BYTE save[3];
+	WORD save_PC;
 	Tstates_t T0;
 	static struct sigaction newact;
 	static struct itimerval tim;
@@ -1317,6 +1318,7 @@ static void do_clock(void)
 	putmem(0x0000, 0xc3);		/* store opcode JP 0000H at address */
 	putmem(0x0001, 0x00);		/* 0000H */
 	putmem(0x0002, 0x00);
+	save_PC = PC;			/* save PC */
 	PC = 0;				/* set PC to this code */
 	T0 = T;				/* remember start clock counter */
 	newact.sa_handler = timeout;	/* set timer interrupt handler */
@@ -1331,6 +1333,7 @@ static void do_clock(void)
 	run_cpu();			/* start CPU */
 	newact.sa_handler = SIG_DFL;	/* reset timer interrupt handler */
 	sigaction(SIGALRM, &newact, NULL);
+	PC = save_PC;			/* restore PC */
 	putmem(0x0000, save[0]);	/* restore memory locations */
 	putmem(0x0001, save[1]);	/* 0000H - 0002H */
 	putmem(0x0002, save[2]);
