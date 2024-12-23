@@ -21,10 +21,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "pico/aon_timer.h"
+#include "hardware/i2c.h"
 
 #include "gpio.h"
 #include "ff.h"
@@ -127,7 +127,6 @@ void config(void)
 	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
 		    DS3231_I2C_SCL_PIN, &rtc);
 
-
 	/* Try to read the DS3231 RTC status register */
 	buf = DS3231_STATUS_REG;
 	i2c_write_blocking(rtc.i2c_port, rtc.i2c_addr, &buf, 1, true);
@@ -158,9 +157,10 @@ void config(void)
 			aon_timer_get_time(&ts);
 			localtime_r(&ts.tv_sec, &t);
 			printf("Current time: %s %04d-%02d-%02d "
-			       "%02d:%02d:%02d\n", dotw[t.tm_wday],
-			       t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
-			       t.tm_hour, t.tm_min, t.tm_sec);
+			       "%02d:%02d:%02d, Chip temperature: %.2f C\n",
+			       dotw[t.tm_wday], t.tm_year + 1900, t.tm_mon + 1,
+			       t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec,
+			       read_onboard_temp());
 			printf("a - set date\n");
 			printf("t - set time\n");
 #if LIB_STDIO_MSC_USB

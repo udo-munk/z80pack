@@ -2,12 +2,15 @@ The SIO port implemented is compatible with MITS SIO Rev. 1, so that
 all software using it runs on this machine.
 
 Also port 255, which is used by frontpanel machines for system
-configuration, can be set with the p command to any desired value,
-the default is 0.
+configuration, can be set with the "p fe" command to any desired
+value, the default is 0. Yes, port 254, which is a mirror of port 255
+to allow setting the configuration, since writing to port 255 would
+set the port LEDs on a frontpanel machine.
 
 For MITS BASIC Versions < 4.0 the port 255 value needs to be 0, for
-Versions >= 4.0 the correct setting is 22H. Do not try to run Version 1.0,
-because it requires a MITS SIO Rev. 0, won't work.
+Versions >= 4.0 the correct setting is 22H. Do not try to run Version
+1.0, because it requires a MITS SIO Rev. 0, won't work.
+
 Also do not just hit return at the MEMORY SIZE question, enter some
 value. This is old software and at the time it was written no one
 imagined that one day we have machines with 64 KB RAM. If the software

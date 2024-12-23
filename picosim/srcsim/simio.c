@@ -40,10 +40,10 @@
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p000_out(BYTE data), p001_out(BYTE data), p255_out(BYTE data);
+static void p000_out(BYTE data), p001_out(BYTE data), p254_out(BYTE data);
 static void hwctl_out(BYTE data);
 static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
-static void mmu_out(BYTE data);
+static void mmu_out(BYTE data), fp_out(BYTE data);
 static BYTE mmu_in(void);
 
 static BYTE sio_last;	/* last character received */
@@ -62,6 +62,7 @@ BYTE (*const port_in[256])(void) = {
 	[ 65] = clkc_in,	/* RTC read clock command */
 	[ 66] = clkd_in,	/* RTC read clock data */
 	[160] = hwctl_in,	/* virtual hardware control */
+	[254] = p255_in,	/* mirror of port 255 */
 	[255] = p255_in		/* read from front panel switches */
 };
 
@@ -77,7 +78,8 @@ void (*const port_out[256])(BYTE data) = {
 	[ 65] = clkc_out,	/* RTC write clock command */
 	[ 66] = clkd_out,	/* RTC write clock data */
 	[160] = hwctl_out,	/* virtual hardware control */
-	[255] = p255_out	/* write to front panel switches */
+	[254] = p254_out,	/* write to front panel switches */
+	[255] = fp_out		/* write to front panel lights (dummy) */
 };
 
 /*
@@ -170,7 +172,7 @@ static BYTE p255_in(void)
 }
 
 /*
- * 	I/O function port 0 write:
+ *	I/O function port 0 write:
  *	Switch RGB LED on/off.
  */
 static void p000_out(BYTE data)
@@ -184,8 +186,8 @@ static void p000_out(BYTE data)
 		put_pixel(0x404000); /* LED on */
 		sleep_us(300);
 	}
-}	
- 
+}
+
 /*
  *	I/O function port 1 write:
  *	Write byte to Pico UART.
@@ -236,12 +238,12 @@ static void hwctl_out(BYTE data)
 	}
 
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
-	if (data & 32) {	/* switch cpu model to Z80 */
+	if (data & 32) {		/* switch cpu model to Z80 */
 		switch_cpu(Z80);
 		return;
 	}
 
-	if (data & 16) {	/* switch cpu model to 8080 */
+	if (data & 16) {		/* switch cpu model to 8080 */
 		switch_cpu(I8080);
 		return;
 	}
@@ -259,7 +261,15 @@ static void mmu_out(BYTE data)
 /*
  *	This allows to set the virtual front panel switches with ICE p command
  */
-static void p255_out(BYTE data)
+static void p254_out(BYTE data)
 {
 	fp_value = data;
+}
+
+/*
+ *	Write output to front panel lights (dummy)
+ */
+static void fp_out(BYTE data)
+{
+	UNUSED(data);
 }

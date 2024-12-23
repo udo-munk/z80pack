@@ -14,10 +14,12 @@
  *	Port 0 input:	reads status of stdin
  *	Port 1 input:	reads the next byte from stdin
  *	Port 160 input:	hardware control lock status
- *	Port 255 input:	returns a value for software querying frontpanel
+ *	Port 254 input:	mirror of port 255
+ *	Port 255 input:	read from front panel switches
  *	Port 1 output:	writes the byte to stdout
  *	Port 160 output: hardware control
- *	Port 255 output: set value for the port
+ *	Port 254 output: write to front panel switches
+ *	Port 255 output: write to front panel lights (dummy)
  *
  *	All the other ports are connected to an I/O-trap handler,
  *	I/O to this ports stops the simulation with an I/O error.
@@ -38,8 +40,8 @@
  */
 static BYTE p000_in(void), p001_in(void), p255_in(void);
 static BYTE hwctl_in(void);
-static void p001_out(BYTE data), p255_out(BYTE data);
-static void hwctl_out(BYTE data);
+static void p001_out(BYTE data), p254_out(BYTE data);
+static void hwctl_out(BYTE data), fp_out(BYTE data);
 
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 static BYTE sio_last;		/* last byte read from sio */
@@ -53,7 +55,8 @@ BYTE (*const port_in[256])(void) = {
 	[  0] = p000_in,
 	[  1] = p001_in,
 	[160] = hwctl_in,	/* virtual hardware control */
-	[255] = p255_in		/* for frontpanel */
+	[254] = p255_in,	/* mirror of port 255 */
+	[255] = p255_in		/* read from front panel switches */
 };
 
 /*
@@ -63,7 +66,8 @@ BYTE (*const port_in[256])(void) = {
 void (*const port_out[256])(BYTE data) = {
 	[  1] = p001_out,
 	[160] = hwctl_out,	/* virtual hardware control */
-	[255] = p255_out	/* for frontpanel */
+	[254] = p254_out,	/* write to front panel switches */
+	[255] = fp_out		/* write to front panel lights (dummy) */
 };
 
 /*
@@ -145,7 +149,7 @@ static BYTE hwctl_in(void)
 
 /*
  *	I/O function port 255 read:
- *	used by frontpanel machines
+ *	return virtual front panel switches state
  */
 static BYTE p255_in(void)
 {
@@ -214,9 +218,17 @@ static void hwctl_out(BYTE data)
 }
 
 /*
- *	This allows to set the frontpanel port with p command
+ *	This allows to set the virtual front panel switches with ICE p command
  */
-static void p255_out(BYTE data)
+static void p254_out(BYTE data)
 {
 	fp_value = data;
+}
+
+/*
+ *	Write output to front panel lights (dummy)
+ */
+static void fp_out(BYTE data)
+{
+	UNUSED(data);
 }
