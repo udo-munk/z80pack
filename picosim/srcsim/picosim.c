@@ -126,12 +126,6 @@ int main(void)
 #endif
 	time_init();		/* initialize FatFS RTC */
 
-#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
-	/* initialize Pico W hardware */
-	if (cyw43_arch_init())
-		panic("CYW43 init failed\n");
-#endif
-
 	/*
 	 * initialize hardware AD converter, enable onboard
 	 * temperature sensor and select its channel
@@ -189,6 +183,12 @@ int main(void)
 #endif
 #endif
 	printf("%s\n\n", USR_CPR);
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+	/* initialize Pico W hardware */
+	if (cyw43_arch_init())
+		panic("CYW43 init failed\n");
+#endif
 
 	init_cpu();		/* initialize CPU */
 	init_disks();		/* initialize disk drives */
