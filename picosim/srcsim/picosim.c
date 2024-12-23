@@ -18,6 +18,7 @@
 /* Raspberry SDK and FatFS includes */
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 #include <tusb.h>
 #endif
@@ -50,6 +51,11 @@
 
 #include "disks.h"
 #include "rgbled.h"
+
+#ifdef WANT_ICE
+static void picosim_ice_cmd(char *cmd, WORD *wrk_addr);
+static void picosim_ice_help(void);
+#endif
 
 #define BS  0x08 /* ASCII backspace */
 #define DEL 0x7f /* ASCII delete */
@@ -204,6 +210,8 @@ int main(void)
 
 	/* run the CPU with whatever is in memory */
 #ifdef WANT_ICE
+	ice_cust_cmd = picosim_ice_cmd;
+	ice_cust_help = picosim_ice_help;
 	ice_cmd_loop(0);
 #else
 	run_cpu();
@@ -261,3 +269,118 @@ int get_cmdline(char *buf, int len)
 	putchar('\n');
 	return 0;
 }
+
+#ifdef WANT_ICE
+
+/*
+ *	This function is the callback for the alarm.
+ *	The CPU emulation is stopped here.
+ */
+static int64_t timeout(alarm_id_t id, void *user_data)
+{
+	UNUSED(id);
+	UNUSED(user_data);
+
+	cpu_state = ST_STOPPED;
+	return 0;
+}
+
+static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
+{
+	char *s;
+	BYTE save[3];
+	WORD save_PC;
+	Tstates_t T0;
+#ifdef WANT_HB
+	int save_hb_flag;
+#endif
+
+	switch (tolower((unsigned char) *cmd)) {
+	case 'c':
+		/*
+		 *	Calculate the clock frequency of the emulated CPU:
+		 *	into memory locations 0000H to 0002H the following
+		 *	code will be stored:
+		 *		LOOP: JP LOOP
+		 *	It uses 10 T states for each execution. A 3 second
+		 *	alarm is set and then the CPU started. For every JP
+		 *	the T states counter is incremented by 10 and after
+		 *	the timer is down and stops the emulation, the clock
+		 *	speed of the CPU in MHz is calculated with:
+		 *		f = (T - T0) / 3000000
+		 */
+
+#ifdef WANT_HB
+		save_hb_flag = hb_flag;
+		hb_flag = 0;
+#endif
+		save[0] = getmem(0x0000); /* save memory locations */
+		save[1] = getmem(0x0001); /* 0000H - 0002H */
+		save[2] = getmem(0x0002);
+		putmem(0x0000, 0xc3);	/* store opcode JP 0000H at address */
+		putmem(0x0001, 0x00);	/* 0000H */
+		putmem(0x0002, 0x00);
+		save_PC = PC;		/* save PC */
+		PC = 0;			/* set PC to this code */
+		T0 = T;			/* remember start clock counter */
+		add_alarm_in_ms(3000, timeout, /* set 3 second alarm */
+				NULL, true);
+		run_cpu();		/* start CPU */
+		PC = save_PC;		/* restore PC */
+		putmem(0x0000, save[0]); /* restore memory locations */
+		putmem(0x0001, save[1]); /* 0000H - 0002H */
+		putmem(0x0002, save[2]);
+#ifdef WANT_HB
+		hb_flag = save_hb_flag;
+#endif
+#ifndef EXCLUDE_Z80
+		if (cpu == Z80)
+			s = "JP";
+#endif
+#ifndef EXCLUDE_I8080
+		if (cpu == I8080)
+			s = "JMP";
+#endif
+		if (cpu_error == NONE) {
+			printf("CPU executed %" PRIu64 " %s instructions "
+			       "in 3 seconds\n", (T - T0) / 10, s);
+			printf("clock frequency = %5.2f MHz\n",
+			       ((float) (T - T0)) / 3000000.0);
+		} else
+			puts("Interrupted by user");
+		break;
+
+	case 'r':
+		cmd++;
+		while (isspace((unsigned char) *cmd))
+			cmd++;
+		for (s = cmd; *s; s++)
+			*s = toupper((unsigned char) *s);
+		if (load_file(cmd))
+			*wrk_addr = PC = 0;
+		break;
+
+	case '!':
+		cmd++;
+		while (isspace((unsigned char) *cmd))
+			cmd++;
+		if (strcasecmp(cmd, "ls") == 0)
+			list_files("/CODE80", "*.BIN");
+		else
+			puts("what??");
+		break;
+
+	default:
+		puts("what??");
+		break;
+	}
+}
+
+static void picosim_ice_help(void)
+{
+	puts("c                         measure clock frequency");
+	puts("r filename                read file (without .BIN) into memory");
+	puts("! ls                      list files");
+}
+
+#endif
