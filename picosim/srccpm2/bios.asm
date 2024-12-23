@@ -25,6 +25,7 @@ DDHDMA	EQU	3		;offset for DMA address high
 CONSTA	EQU	0		;console status port
 CONDAT	EQU	1		;console data port
 FDC	EQU	4		;port for the FDC
+LEDS	EQU	0FFH		;frontpanel LED's
 ;
 	ORG	BIOS		;origin of BIOS
 ;
@@ -51,7 +52,7 @@ WBE	JMP	WBOOT		;warm start
 ;	data tables
 ;
 SIGNON	DB	MSIZE / 10 + '0',MSIZE MOD 10 + '0'
-	DB	'K CP/M 2.2 VERS B01',13,10,0
+	DB	'K CP/M 2.2 VERS B02',13,10,0
 BOOTERR	DB	13,10,'BOOT ERROR',13,10,0
 ;
 ;	disk parameter header for disk 0
@@ -251,13 +252,13 @@ SEL1	STA	DSKNO		;save disk #
 ;
 SETTRK	MOV	A,C		;get to accumulator
 	STA	FDCCMD+DDTRK	;set in FDC command
-        RET
+	RET
 ;
 ;	set sector given by register C
 ;
 SETSEC	MOV	A,C		;get to accumulator
-	STA     FDCCMD+DDSEC	;set in FDC command
-        RET
+	STA	FDCCMD+DDSEC	;set in FDC command
+	RET
 ;
 ;	set DMA address given by registers B and C
 ;
@@ -265,31 +266,37 @@ SETDMA	MOV	A,C		;low order address
 	STA	FDCCMD+DDLDMA	;set in FDC command
 	MOV	A,B		;high order address
 	STA	FDCCMD+DDHDMA	;set in FDC command
-        RET
+	RET
 ;
 ;	perform read operation
 ;
-READ	LDA     DSKNO		;get disk #
+READ	LDA	DSKNO		;get disk #
 	ORI	20H		;mask in read command
-        JMP     DOIO            ;do I/O operation
+	OUT	FDC		;ask FDC to execute the command
+	IN	FDC		;get status from FDC
+	ORA	A		;is it zero?
+	RZ			;return if OK
+	CMA			;complement for LED's
+	OUT	LEDS		;display the error code
+	RET			;return with error
 ;
 ;	perform write operation
 ;
 WRITE	LDA	DSKNO		;get disk #
 	ORI	40H		;mask in write command
-	JMP	DOIO		;do I/O operation
-;
-;	perform read/write I/O
-;
-DOIO	OUT	FDC		;ask FDC to execute the command
+	OUT	FDC		;ask FDC to execute the command
 	IN	FDC		;get status from FDC
-        RET
+	ORA	A		;is it zero?
+	RZ			;return if OK
+	CMA			;complement for LED's
+	OUT	LEDS		;display the error code
+	RET			;return with error
 ;
 ;	translate the sector given by BC using
 ;	the translation table given by DE
 ;
 SECTRAN	XCHG			;HL=.TRANS
-	DAD	B               ;HL=.TRANS(SECTOR)
+	DAD	B		;HL=.TRANS(SECTOR)
 	XCHG
 	LDAX	D
 	MOV	L,A		;L=TRANS(SECTOR)

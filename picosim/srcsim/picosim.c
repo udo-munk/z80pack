@@ -21,13 +21,15 @@
 #if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 #include <tusb.h>
 #endif
-#include "pico/stdlib.h"
-#include "pico/time.h"
-#include "hardware/uart.h"
-#include "hardware/watchdog.h"
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 #include "pico/cyw43_arch.h"
 #endif
+#include "pico/binary_info.h"
+#include "pico/stdlib.h"
+#include "pico/time.h"
+#include "hardware/adc.h"
+#include "hardware/uart.h"
+#include "hardware/watchdog.h"
 
 #include "gpio.h"
 #include "hw_config.h"
@@ -60,8 +62,8 @@ PIO pio = pio1;
 uint sm;
 
 /*
- * callback for TinyUSB when terminal sends a break
- * stops CPU
+ *	callback for TinyUSB when terminal sends a break
+ *	stops CPU
  */
 #if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
@@ -75,8 +77,8 @@ void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms)
 #endif
 
 /*
- * interrupt handler for break switch
- * stops CPU
+ *	interrupt handler for break switch
+ *	stops CPU
  */
 static void gpio_callback(uint gpio, uint32_t events)
 {
@@ -87,10 +89,34 @@ static void gpio_callback(uint gpio, uint32_t events)
 	cpu_state = ST_STOPPED;
 }
 
+/*
+ *	read the onboard temperature sensor
+ */
+float read_onboard_temp(void)
+{
+	/* 12-bit conversion, assume max value == ADC_VREF == 3.3 V */
+	const float conversionFactor = 3.3f / (1 << 12);
+
+	float adc = (float) adc_read() * conversionFactor;
+	float tempC = 27.0f - (adc - 0.706f) / 0.001721f;
+
+	return tempC;
+}
+
 int main(void)
 {
 	char s[2];
 	uint32_t rgb = 0x005500;/* initial value for the RGB LED */
+
+	/* strings for picotool, so that it shows used pins */
+	bi_decl(bi_1pin_with_name(SWITCH_BREAK, "Interrupt switch"));
+	bi_decl(bi_1pin_with_name(WS2812_PIN, "WS2812 RGB LED"));
+	bi_decl(bi_4pins_with_names(SD_SPI_CLK, "SD card CLK",
+				    SD_SPI_SI, "SD card SI",
+				    SD_SPI_SO, "SD card SO",
+				    SD_SPI_CS, "SD card CS"));
+	bi_decl(bi_2pins_with_names(DS3231_I2C_SDA_PIN, "DS3231 I2C SDA",
+				    DS3231_I2C_SCL_PIN, "DS3231 I2C SCL"));
 
 	stdio_init_all();	/* initialize stdio */
 #if LIB_STDIO_MSC_USB
@@ -106,7 +132,15 @@ int main(void)
 		panic("CYW43 init failed\n");
 #endif
 
-	/* setupt interrupt for break switch */
+	/*
+	 * initialize hardware AD converter, enable onboard
+	 * temperature sensor and select its channel
+	 */
+	adc_init();
+	adc_set_temp_sensor_enabled(true);
+	adc_select_input(4);
+
+	/* setup interrupt for break switch */
 	gpio_init(SWITCH_BREAK);
 	gpio_set_dir(SWITCH_BREAK, GPIO_IN);
 	gpio_set_irq_enabled_with_callback(SWITCH_BREAK, GPIO_IRQ_EDGE_RISE,
@@ -127,7 +161,7 @@ int main(void)
 
 	/* when using USB UART wait until it is connected */
 	/* but also get out if there is input at default UART */
-#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
+#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
 	while (!tud_cdc_connected()) {
 #if LIB_PICO_STDIO_UART
 		if (uart_is_readable(my_uart)) {
@@ -160,12 +194,11 @@ int main(void)
 	init_disks();		/* initialize disk drives */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
+	PC = 0xff00;		/* power on jump into the boot ROM */
 	config();		/* configure the machine */
 
 	f_flag = speed;		/* setup speed of the CPU */
 	tmax = speed * 10000;	/* theoretically */
-
-	PC = 0xff00;		/* power on jump into the boot ROM */
 
 	put_pixel(0x440000);	/* LED green */
 
@@ -188,8 +221,10 @@ int main(void)
 	get_cmdline(s, 2);
 
 	/* reset machine */
-	watchdog_enable(1, 1);
-	for (;;);
+	watchdog_reboot(0, 0, 0);
+	for (;;) {
+		__nop();
+	}
 }
 
 /*

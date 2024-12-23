@@ -9,4 +9,6 @@
 
 extern int speed;
 
+extern float read_onboard_temp(void);
+
 #endif /* !PICOSIM_INC */

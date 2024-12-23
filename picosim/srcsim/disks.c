@@ -39,7 +39,7 @@ char disks[NUMDISK][DISKLEN]; /* path name for 4 disk images /DISKS80/filename.D
 static FATFS fs; /* FatFs on MicroSD */
 
 /* buffer for disk/memory transfers */
-static unsigned char dsk_buf[SEC_SZ];
+static unsigned char __aligned(4) dsk_buf[SEC_SZ];
 
 /* global variables for access to MicroSD card */
 
@@ -140,10 +140,11 @@ void list_files(const char *dir, const char *ext)
 
 /*
  * load a file 'name' into memory
+ * returns 1 on success, 0 on error
  */
-void load_file(const char *name)
+int load_file(const char *name)
 {
-	int i = 0;
+	int i = 0, res;
 	register unsigned int j;
 	unsigned int br;
 	char SFN[25];
@@ -156,7 +157,7 @@ void load_file(const char *name)
 	sd_res = f_open(&sd_file, SFN, FA_READ);
 	if (sd_res != FR_OK) {
 		puts("File not found");
-		return;
+		return 0;
 	}
 
 	/* read file into memory */
@@ -167,12 +168,16 @@ void load_file(const char *name)
 			break;
 		i += SEC_SZ;
 	}
-	if (sd_res != FR_OK)
+	if (sd_res != FR_OK) {
 		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
-	else
+		res = 0;
+	} else {
 		printf("loaded file \"%s\" (%d bytes)\n", SFN, i + br);
+		res = 1;
+	}
 
 	f_close(&sd_file);
+	return res;
 }
 
 /*
@@ -279,31 +284,30 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	/* prepare for sector read */
-	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
-		return stat;
-
 	put_pixel(0x440000); /* LED green */
 
-	/* read sector into memory */
-	sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
-	if (sd_res == FR_OK) {
-		if (br < SEC_SZ) {	/* UH OH */
-			f_close(&sd_file);
+	/* prepare for sector read */
+	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
+
+		/* read sector into memory */
+		sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
+		if (sd_res == FR_OK) {
+			if (br < SEC_SZ)	/* UH OH */
+				stat = FDC_STAT_READ;
+			else {
+				for (i = 0; i < SEC_SZ; i++)
+					dma_write(addr + i, dsk_buf[i]);
+				stat = FDC_STAT_OK;
+			}
+		} else
 			stat = FDC_STAT_READ;
-		} else {
-			f_close(&sd_file);
-			for (i = 0; i < SEC_SZ; i++)
-				dma_write(addr + i, dsk_buf[i]);
-			stat = FDC_STAT_OK;
-		}
-	} else {
+
 		f_close(&sd_file);
-		stat = FDC_STAT_READ;
 	}
 
 	sleep_us(300);
 	put_pixel(0x000000); /* LED off */
+
 	return stat;
 }
 
@@ -316,31 +320,29 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	/* prepare for sector write */
-	if ((stat = prep_io(drive, track, sector, addr)) != FDC_STAT_OK)
-		return stat;
-
 	put_pixel(0x004400); /* LED red */
 
-	/* write sector to disk image */
-	for (i = 0; i < SEC_SZ; i++)
-		dsk_buf[i] = dma_read(addr + i);
-	sd_res = f_write(&sd_file, &dsk_buf[0], SEC_SZ, &br);
-	if (sd_res == FR_OK) {
-		if (br < SEC_SZ) {	/* UH OH */
-			f_close(&sd_file);
+	/* prepare for sector write */
+	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
+
+		/* write sector to disk image */
+		for (i = 0; i < SEC_SZ; i++)
+			dsk_buf[i] = dma_read(addr + i);
+		sd_res = f_write(&sd_file, &dsk_buf[0], SEC_SZ, &br);
+		if (sd_res == FR_OK) {
+			if (br < SEC_SZ)	/* UH OH */
+				stat = FDC_STAT_WRITE;
+			else
+				stat = FDC_STAT_OK;
+		} else
 			stat = FDC_STAT_WRITE;
-		} else {
-			f_close(&sd_file);
-			stat = FDC_STAT_OK;
-		}
-	} else {
+
 		f_close(&sd_file);
-		stat = FDC_STAT_WRITE;
 	}
 
 	sleep_us(300);
 	put_pixel(0x000000); /* LED off */
+
 	return stat;
 }
 

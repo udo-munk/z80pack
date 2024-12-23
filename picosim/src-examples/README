@@ -24,5 +24,7 @@ bas16k40.bin	- Extended MITS Altair BASIC 16K V4.0              fp sw = 22
 
 "fp sw" = front panel switches
 
-Set the front panel switches with the "p - Port 255 value" menu command,
-or with "p ff" in the ICE.
+Set the front panel switches with the "p - Port 255 value" menu
+command, or with "p fe" in the ICE (yes, port 254, which is a mirror
+of port 255 to allow setting the switches, since writing to port 255
+would set the port LEDs on a real front panel).

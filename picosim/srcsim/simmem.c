@@ -19,9 +19,9 @@
 #include "simmem.h"
 
 /* 64KB bank 0 + common segment */
-BYTE bnk0[65536];
+BYTE __aligned(4) bnk0[65536];
 /* 48KB bank 1 */
-BYTE bnk1[49152];
+BYTE __aligned(4) bnk1[49152];
 /* selected bank */
 BYTE selbnk;
 
