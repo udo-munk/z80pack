@@ -140,7 +140,7 @@ void list_files(const char *dir, const char *ext)
 
 /*
  * load a file 'name' into memory
- * returns 1 on success, 0 on error
+ * returns true on success, false on error
  */
 bool load_file(const char *name)
 {
