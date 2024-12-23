@@ -102,7 +102,10 @@ if(PICO_C_COMPILER_IS_CLANG)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
+	hardware_adc
+	hardware_gpio
 	hardware_i2c
+	hardware_spi
 	pico_stdlib
 	tinyusb_device
 
