@@ -140,11 +140,12 @@ void list_files(const char *dir, const char *ext)
 
 /*
  * load a file 'name' into memory
- * returns 1 on success, 0 on error
+ * returns true on success, false on error
  */
-int load_file(const char *name)
+bool load_file(const char *name)
 {
-	int i = 0, res;
+	int i = 0;
+	bool res;
 	register unsigned int j;
 	unsigned int br;
 	char SFN[25];
@@ -170,10 +171,10 @@ int load_file(const char *name)
 	}
 	if (sd_res != FR_OK) {
 		printf("f_read error: %s (%d)\n", FRESULT_str(sd_res), sd_res);
-		res = 0;
+		res = false;
 	} else {
 		printf("loaded file \"%s\" (%d bytes)\n", SFN, i + br);
-		res = 1;
+		res = true;
 	}
 
 	f_close(&sd_file);
