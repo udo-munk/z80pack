@@ -239,7 +239,7 @@ void mount_disk(int drive, const char *name)
 /*
  * prepare I/O for sector read and write routines
  */
-static BYTE prep_io(int drive, int track, int sector, WORD addr)
+static BYTE prep_io(int drive, int track, int sector, WORD addr, bool rdwr)
 {
 	FSIZE_t pos;
 
@@ -262,8 +262,10 @@ static BYTE prep_io(int drive, int track, int sector, WORD addr)
 		return FDC_STAT_NODISK;
 	}
 
+	put_pixel(rdwr ? 0x004400 : 0x440000); /* LED red/green */
+
 	/* open file with the disk image */
-	sd_res = f_open(&sd_file, disks[drive], FA_READ | FA_WRITE);
+	sd_res = f_open(&sd_file, disks[drive], rdwr ? FA_WRITE : FA_READ);
 	if (sd_res != FR_OK)
 		return FDC_STAT_NODISK;
 
@@ -285,10 +287,9 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	put_pixel(0x440000); /* LED green */
-
 	/* prepare for sector read */
-	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
+	stat = prep_io(drive, track, sector, addr, false);
+	if (stat == FDC_STAT_OK) {
 
 		/* read sector into memory */
 		sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
@@ -321,10 +322,9 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 	unsigned int br;
 	register int i;
 
-	put_pixel(0x004400); /* LED red */
-
 	/* prepare for sector write */
-	if ((stat = prep_io(drive, track, sector, addr)) == FDC_STAT_OK) {
+	stat = prep_io(drive, track, sector, addr, true);
+	if (stat == FDC_STAT_OK) {
 
 		/* write sector to disk image */
 		for (i = 0; i < SEC_SZ; i++)
