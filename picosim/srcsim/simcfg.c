@@ -127,11 +127,10 @@ void config(void)
 	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
 		    DS3231_I2C_SCL_PIN, &rtc);
 
-	/* Try to read the DS3231 RTC status register */
-	buf = DS3231_STATUS_REG;
-	i2c_write_blocking(rtc.i2c_port, rtc.i2c_addr, &buf, 1, true);
-	if (i2c_read_blocking(rtc.i2c_port, rtc.i2c_addr,
-			      &buf, 1, false) == 1) {
+	/* Use a dummy read to see if a DS3231 RTC is present */
+	if (i2c_read_blocking(rtc.i2c_port, rtc.i2c_addr, &buf, 1,
+			      false) >= 0) {
+		puts("DS3231 RTC present, using it for setting the clock\n");
 		/* Read the date and time from the DS3231 RTC */
 		ds3231_get_datetime(&dt, &rtc);
 		t.tm_year = dt.year - 1900;
@@ -149,6 +148,9 @@ void config(void)
 	ts.tv_sec = mktime(&t);
 	ts.tv_nsec = 0;
 	aon_timer_start(&ts);
+#if PICO_RP2040
+	sleep_us(64);
+#endif
 
 	menu = 1;
 
@@ -228,6 +230,9 @@ void config(void)
 				ds3231_set_datetime(&dt, &rtc);
 				ts.tv_sec = mktime(&t);
 				aon_timer_set_time(&ts);
+#if PICO_RP2040
+				sleep_us(64);
+#endif
 			}
 			putchar('\n');
 			break;
@@ -256,6 +261,9 @@ void config(void)
 				ds3231_set_datetime(&dt, &rtc);
 				ts.tv_sec = mktime(&t);
 				aon_timer_set_time(&ts);
+#if PICO_RP2040
+				sleep_us(64);
+#endif
 			}
 			putchar('\n');
 			break;
