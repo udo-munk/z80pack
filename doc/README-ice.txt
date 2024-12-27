@@ -30,7 +30,7 @@ Pico. Because on bare metal there is no operating system all commands
 that require one are disabled. To enable bare metal support add the
 following to the sim.h file for the machine:
 
-#define BAREMETAL       /* set up the simulator core for bare metal use */
+#define BAREMETAL       /* disable ICE commands that require a full OS */
 
 Also watch out what code you are going to execute, because without an
 operating system that provides signal handling for applications, we

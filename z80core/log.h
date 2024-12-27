@@ -19,8 +19,8 @@
 #ifndef LOG_INC
 #define LOG_INC
 
+#include <inttypes.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdarg.h>
 #include <time.h>
 #define CONFIG_LOG_COLORS
@@ -82,17 +82,17 @@ static inline uint32_t _log_timestamp(void) {
 #define LOG_RESET_COLOR
 #endif /* CONFIG_LOG_COLORS */
 
-#define _LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%d) %s: " format LOG_RESET_COLOR "\r\n"
+#define _LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%" PRIu32 ") %s: " format LOG_RESET_COLOR "\r\n"
 
 #ifndef LOG_LOCAL_LEVEL
 #define LOG_LOCAL_LEVEL  ((log_level_t) LOG_DEFAULT_LEVEL)
 #endif
 
-#define LOG( tag, format, ... )  _log_write(LOG_NONE, NULL, format, ##__VA_ARGS__);
-#define LOGE( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_ERROR)   { _log_write(LOG_ERROR,   tag, _LOG_FORMAT(E, format), _log_timestamp(), tag, ##__VA_ARGS__); }
-#define LOGW( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_WARN)    { _log_write(LOG_WARN,    tag, _LOG_FORMAT(W, format), _log_timestamp(), tag, ##__VA_ARGS__); }
-#define LOGI( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_INFO)    { _log_write(LOG_INFO,    tag, _LOG_FORMAT(I, format), _log_timestamp(), tag, ##__VA_ARGS__); }
-#define LOGD( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_DEBUG)   { _log_write(LOG_DEBUG,   tag, _LOG_FORMAT(D, format), _log_timestamp(), tag, ##__VA_ARGS__); }
-#define LOGV( tag, format, ... )  if (LOG_LOCAL_LEVEL >= LOG_VERBOSE) { _log_write(LOG_VERBOSE, tag, _LOG_FORMAT(V, format), _log_timestamp(), tag, ##__VA_ARGS__); }
+#define LOG( tag, format, ... )  _log_write(LOG_NONE, NULL, format, ##__VA_ARGS__)
+#define LOGE( tag, format, ... )  do { if (LOG_LOCAL_LEVEL >= LOG_ERROR)   { _log_write(LOG_ERROR,   tag, _LOG_FORMAT(E, format), _log_timestamp(), tag, ##__VA_ARGS__); } } while (0)
+#define LOGW( tag, format, ... )  do { if (LOG_LOCAL_LEVEL >= LOG_WARN)    { _log_write(LOG_WARN,    tag, _LOG_FORMAT(W, format), _log_timestamp(), tag, ##__VA_ARGS__); } } while (0)
+#define LOGI( tag, format, ... )  do { if (LOG_LOCAL_LEVEL >= LOG_INFO)    { _log_write(LOG_INFO,    tag, _LOG_FORMAT(I, format), _log_timestamp(), tag, ##__VA_ARGS__); } } while (0)
+#define LOGD( tag, format, ... )  do { if (LOG_LOCAL_LEVEL >= LOG_DEBUG)   { _log_write(LOG_DEBUG,   tag, _LOG_FORMAT(D, format), _log_timestamp(), tag, ##__VA_ARGS__); } } while (0)
+#define LOGV( tag, format, ... )  do { if (LOG_LOCAL_LEVEL >= LOG_VERBOSE) { _log_write(LOG_VERBOSE, tag, _LOG_FORMAT(V, format), _log_timestamp(), tag, ##__VA_ARGS__); } } while (0)
 
 #endif /* !LOG_INC */

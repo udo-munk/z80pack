@@ -34,11 +34,9 @@
 #include "simctl.h"
 #endif
 
-#ifndef BAREMETAL
 /* #define LOG_LOCAL_LEVEL LOG_DEBUG */
 #include "log.h"
 static const char *TAG = "core";
-#endif
 
 /*
  *	Initialize the CPU
@@ -184,59 +182,11 @@ void report_cpu_error(void)
 		return;
 
 	/* always start on a new line */
-#ifdef BAREMETAL
-	printf("\n");
-#else
 	LOG(TAG, "\r\n");
-#endif
 
 	switch (cpu_error) {
 	case NONE:
 		break;
-#ifdef BAREMETAL
-	case OPHALT:
-		printf("INT disabled and HALT Op-Code reached at 0x%04x\n",
-		       PC - 1);
-		break;
-	case IOTRAPIN:
-		printf("I/O input Trap at 0x%04x, port 0x%02x\n", PC, io_port);
-		break;
-	case IOTRAPOUT:
-		printf("I/O output Trap at 0x%04x, port 0x%02x\n",
-		       PC, io_port);
-		break;
-	case IOHALT:
-		printf("System halted\n");
-		break;
-	case IOERROR:
-		printf("Fatal I/O Error at 0x%04x\n", PC);
-		break;
-	case OPTRAP1:
-		printf("Op-code trap at 0x%04x 0x%02x\n",
-		       PC - 1, getmem(PC - 1));
-		break;
-	case OPTRAP2:
-		printf("Op-code trap at 0x%04x 0x%02x 0x%02x\n",
-		       PC - 2, getmem(PC - 2), getmem(PC - 1));
-		break;
-	case OPTRAP4:
-		printf("Op-code trap at 0x%04x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-		       PC - 4, getmem(PC - 4), getmem(PC - 3),
-		       getmem(PC - 2), getmem(PC - 1));
-		break;
-	case USERINT:
-		printf("User Interrupt at 0x%04x\n", PC);
-		break;
-	case INTERROR:
-		printf("Unsupported bus data during INT: 0x%02x\n", int_data);
-		break;
-	case POWEROFF:
-		printf("System powered off\n");
-		break;
-	default:
-		printf("Unknown error %d\n", cpu_error);
-		break;
-#else /* !BAREMETAL */
 	case OPHALT:
 		LOG(TAG, "INT disabled and HALT Op-Code reached at 0x%04x\r\n",
 		    PC - 1);
@@ -280,7 +230,6 @@ void report_cpu_error(void)
 	default:
 		LOGW(TAG, "Unknown error %d", cpu_error);
 		break;
-#endif /* !BAREMETAL */
 	}
 }
 
@@ -349,9 +298,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_data = io_data;
 #endif
 
-#ifndef BAREMETAL
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
-#endif
 
 	cpu_time -= get_clock_us() - clk;
 
@@ -375,9 +322,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	io_port = addrl;
 	io_data = data;
 
-#ifndef BAREMETAL
 	LOGD(TAG, "output %02x to port %02x", io_data, io_port);
-#endif
 
 	busy_loop_cnt = 0;
 
