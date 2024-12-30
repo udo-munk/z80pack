@@ -95,6 +95,8 @@ static void do_count(char *s);
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
 static void do_switch(char *s);
 #endif
+static void do_uflag(void);
+static void do_iflag(void);
 static void do_show(void);
 static void do_help(void);
 
@@ -202,6 +204,12 @@ void ice_cmd_loop(int go_flag)
 			do_switch(cmd + 1);
 			break;
 #endif
+		case 'u':
+			do_uflag();
+			break;
+		case 'i':
+			do_iflag();
+			break;
 		case 's':
 			do_show();
 			break;
@@ -611,7 +619,7 @@ static void do_move(char *s)
  */
 static void do_port(char *s)
 {
-	register BYTE port;
+	register BYTE port, data;
 
 	while (isspace((unsigned char) *s))
 		s++;
@@ -620,13 +628,20 @@ static void do_port(char *s)
 		return;
 	}
 	port = strtol(s, NULL, 16);
-	printf("%02x = %02x : ", port, io_in(port, 0));
+	cpu_error = NONE;
+	data = io_in(port, 0);
+	report_cpu_error();
+	printf("%02x = %02x : ", port, data);
 	if (!get_cmdline(arg, LENCMD)) {
 		s = arg;
 		while (isspace((unsigned char) *s))
 			s++;
-		if (isxdigit((unsigned char) *s))
-			io_out(port, 0, (BYTE) strtol(s, NULL, 16));
+		if (isxdigit((unsigned char) *s)) {
+			data = (BYTE) strtol(s, NULL, 16);
+			cpu_error = NONE;
+			io_out(port, 0, data);
+			report_cpu_error();
+		}
 	}
 }
 
@@ -1196,6 +1211,30 @@ static void do_switch(char *s)
 #endif /* !EXCLUDE_I8080 && !EXCLUDE_Z80 */
 
 /*
+ *	Toggle trap on undocumented op-codes
+ */
+static void do_uflag(void)
+{
+#ifdef UNDOC_INST
+	u_flag = !u_flag;
+	printf("Undocumented op-codes are now %s\n",
+	       u_flag ? "trapped" : "executed");
+#else
+	puts("Undocumented op-codes are always trapped");
+#endif
+}
+
+/*
+ *	Toggle trap on undefined ports I/O
+ */
+static void do_iflag(void)
+{
+	i_flag = !i_flag;
+	printf("Undefined ports I/O is now %s\n",
+	       i_flag ? "trapped" : "allowed");
+}
+
+/*
  *	Output information about compiling options
  */
 static void do_show(void)
@@ -1212,17 +1251,15 @@ static void do_show(void)
 #endif
 	printf("sim Release: %s\n", RELEASE);
 #ifdef HISIZE
-	i = HISIZE;
+	printf("No. of entries in history memory: %d\n", HISIZE);
 #else
-	i = 0;
+	puts("History not available");
 #endif
-	printf("No. of entries in history memory: %d\n", i);
 #ifdef SBSIZE
-	i = SBSIZE;
+	printf("No. of software breakpoints: %d\n", SBSIZE);
 #else
-	i = 0;
+	puts("Software breakpoints not available");
 #endif
-	printf("No. of software breakpoints: %d\n", i);
 #ifdef WANT_HB
 	i = 1;
 #else
@@ -1230,11 +1267,12 @@ static void do_show(void)
 #endif
 	printf("Hardware breakpoint %savailable\n", i ? "" : "not ");
 #ifdef UNDOC_INST
-	i = u_flag;
+	printf("Undocumented op-codes are %s\n",
+	       u_flag ? "trapped" : "executed");
 #else
-	i = 1;
+	puts("Undocumented op-codes are always trapped");
 #endif
-	printf("Undocumented op-codes are %sexecuted\n", i ? "not " : "");
+	printf("Undefined ports I/O is %s\n", i_flag ? "trapped" : "allowed");
 #ifdef WANT_TIM
 	i = 1;
 #else
@@ -1269,6 +1307,8 @@ static void do_help(void)
 	puts("hc                        clear history");
 	puts("z start,stop              set trigger addr for t-state count");
 	puts("z                         show t-state count");
+	puts("u                         toggle trap on undocumented op-codes");
+	puts("i                         toggle trap on undefined ports I/O");
 	puts("s                         show settings");
 #if !defined (EXCLUDE_I8080) && !defined(EXCLUDE_Z80)
 	puts("8                         toggle between Z80 & 8080 mode");
