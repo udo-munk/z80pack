@@ -70,7 +70,7 @@ static void *lp_mainloop_thread(void *n)
 	t1 = frate_gettime();
 	framerate_start_frame();
 
-	while(!quit) {
+	while (!quit) {
 		// lock
 		pthread_mutex_lock(&data_lock);
 
@@ -123,7 +123,7 @@ static int start_threads(void)
 	n = pthread_create(&thread_info.thread_id, NULL, lp_mainloop_thread,
 			   &thread_info.thread_no);
 	if (n) {
-		fprintf(stderr, "error %d starting mainloop thread\n",n);
+		fprintf(stderr, "error %d starting mainloop thread\n", n);
 		return 0;
 	}
 
@@ -393,7 +393,7 @@ void fp_quit(void)
 
 	for (i = 0; i < 10; i++) {
 		pthread_mutex_lock(&data_lock);
-		if(thread_info.running == 0) {
+		if (thread_info.running == 0) {
 			okay = true;
 			break;
 		}

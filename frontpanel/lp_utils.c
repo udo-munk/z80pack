@@ -127,7 +127,6 @@ int gtoken(char *string,	/* input character string */
 
 } /* end of gtoken function */
 
-
 /* freadlin    read line from file */
 
 /* Read an ascii line from specified file (carret,lf or null signals end
@@ -169,7 +168,6 @@ int freadlin(FILE *funit, char *buffer, int bufsize)
 	buffer[i] = EOL;
 	return 1;
 } /* end freadlin() */
-
 
 /* xpand */
 
@@ -366,7 +364,7 @@ int xpand(const char *s, char **namelist[])
 			snprintf(format, sizeof(format), "%%0%dd", ndigits);
 
 			max_names = ((max(ival, to_ival)) - (min(ival, to_ival))) /
-				abs(inc_ival) + 1;
+				    abs(inc_ival) + 1;
 
 			new_namelist = (char **) malloc(sizeof(char *) * max_names);
 			*namelist = &new_namelist[0];
@@ -417,7 +415,7 @@ int xpand(const char *s, char **namelist[])
 	}
 
 	if (prefix)
-	        free(prefix);
+		free(prefix);
 	if (from)
 		free(from);
 	if (to)
@@ -430,7 +428,6 @@ int xpand(const char *s, char **namelist[])
 	return num_names;
 
 } /* end xpand() */
-
 
 /* framerate control */
 
@@ -510,7 +507,6 @@ void framerate_wait(void)
 				break;
 	}
 }
-
 
 // parser class
 

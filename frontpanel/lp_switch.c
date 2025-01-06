@@ -159,7 +159,6 @@ static void lp_drawSwitchToggle(lpSwitch_t *p)
 }
 #endif
 
-
 // lpSwitch class
 // --------------
 

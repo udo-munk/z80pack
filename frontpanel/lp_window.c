@@ -287,7 +287,8 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 
 #if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
 
-static LRESULT CALLBACK StaticWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK StaticWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
 	LONG_PTR user_data = GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 	if (user_data)
@@ -300,7 +301,7 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 {
 	unsigned int kcode;
 
-	switch(msg) {
+	switch (msg) {
 	case WM_KEYUP:
 		if (LOWORD(wParam) == VK_SHIFT) {
 			p->shift_key_pressed = false;
@@ -310,7 +311,7 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 
 	case WM_KEYDOWN:
 		kcode = LOWORD(wParam);
-		switch(kcode) {
+		switch (kcode) {
 		case VK_SHIFT:
 			p->shift_key_pressed = true;
 			return 0;
@@ -436,78 +437,78 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 		}
 		break;
 
-	  case WM_MOUSEWHEEL:
-		  p->view.pan[2] += (float) GET_WHEEL_DELTA_WPARAM(wParam) / 250.0;
-		  p->view.redo_projections = true;
-		  return 0;
+	case WM_MOUSEWHEEL:
+		p->view.pan[2] += (float) GET_WHEEL_DELTA_WPARAM(wParam) / 250.0;
+		p->view.redo_projections = true;
+		return 0;
 
-	  case WM_LBUTTONDOWN:
-		  if (!Lpanel_pick(p, 0, 1, LOWORD(lParam), HIWORD(lParam))) {
-			  mousex = LOWORD(lParam);
-			  mousey = HIWORD(lParam);
-			  lmouse = true;
-		  }
-		  return 0;
+	case WM_LBUTTONDOWN:
+		if (!Lpanel_pick(p, 0, 1, LOWORD(lParam), HIWORD(lParam))) {
+			mousex = LOWORD(lParam);
+			mousey = HIWORD(lParam);
+			lmouse = true;
+		}
+		return 0;
 
-	  case WM_LBUTTONUP:
-		  if(!Lpanel_pick(p, 0, 0, LOWORD(lParam), HIWORD(lParam)))
-			  lmouse = false;
-		  return 0;
+	case WM_LBUTTONUP:
+		if (!Lpanel_pick(p, 0, 0, LOWORD(lParam), HIWORD(lParam)))
+			lmouse = false;
+		return 0;
 
-	  case WM_MOUSEMOVE:
-		  if (lmouse) {
-			  omx = mousex;
-			  omy = mousey;
+	case WM_MOUSEMOVE:
+		if (lmouse) {
+			omx = mousex;
+			omy = mousey;
 
-			  if (p->shift_key_pressed) {
-				  p->view.pan[0] +=  ((float) LOWORD(lParam) - (float) omx) * .02;
-				  p->view.pan[1] -=  ((float) HIWORD(lParam) - (float) omy) * .02;
-			  } else {
-				  view.rot[1] +=  ((float) LOWORD(lParam) - (float) omx) * .2;
-				  view.rot[0] +=  ((float) HIWORD(lParam) - (float) omy) * .2;
-			  }
+			if (p->shift_key_pressed) {
+				p->view.pan[0] += ((float) LOWORD(lParam) - (float) omx) * .02;
+				p->view.pan[1] -= ((float) HIWORD(lParam) - (float) omy) * .02;
+			} else {
+				view.rot[1] += ((float) LOWORD(lParam) - (float) omx) * .2;
+				view.rot[0] += ((float) HIWORD(lParam) - (float) omy) * .2;
+			}
 
-			  mousex = LOWORD(lParam);
-			  mousey = HIWORD(lParam);
-			  p->view.redo_projections = true;
-		  }
-		  return 0;
+			mousex = LOWORD(lParam);
+			mousey = HIWORD(lParam);
+			p->view.redo_projections = true;
+		}
+		return 0;
 
-	  case WM_SIZE:
-		  p->window_xsize = (GLsizei) LOWORD(lParam);
-		  p->window_ysize = (GLsizei) HIWORD(lParam);
-		  p->view.aspect = (GLdouble) p->window_xsize / (GLdouble) p->window_ysize;
+	case WM_SIZE:
+		p->window_xsize = (GLsizei) LOWORD(lParam);
+		p->window_ysize = (GLsizei) HIWORD(lParam);
+		p->view.aspect = (GLdouble) p->window_xsize / (GLdouble) p->window_ysize;
 
-		  glViewport(0, 0, p->window_xsize, p->window_ysize);
-		  glGetIntegerv(GL_VIEWPORT, p->viewport);
-		  setProjection(false);
-		  setModelview(false);
+		glViewport(0, 0, p->window_xsize, p->window_ysize);
+		glGetIntegerv(GL_VIEWPORT, p->viewport);
+		setProjection(false);
+		setModelview(false);
 
-		  return 0;
+		return 0;
 
-	  case WM_QUIT:
-	  case WM_CLOSE:
-		  if (p->hRC) {
-			  wglMakeCurrent(NULL, NULL);
-			  wglDeleteContext(p->hRC);
-		  }
-		  if (p->hDC) {
-			  ReleaseDC(p->hWnd, p->hDC);
-		  }
-		  DestroyWindow(p->hWnd);
-		  return 0;
+	case WM_QUIT:
+	case WM_CLOSE:
+		if (p->hRC) {
+			wglMakeCurrent(NULL, NULL);
+			wglDeleteContext(p->hRC);
+		}
+		if (p->hDC) {
+			ReleaseDC(p->hWnd, p->hDC);
+		}
+		DestroyWindow(p->hWnd);
+		return 0;
 
-	  case WM_DESTROY:
-		  UnregisterClass(FPClassName, p->hInstance);
-		  PostQuitMessage(0);
-		  if(quit_callbackfunc)
-			  (*quit_callbackfunc)();
-		  else
-			  exit(EXIT_SUCCESS);
-		  return 0;
+	case WM_DESTROY:
+		UnregisterClass(FPClassName, p->hInstance);
+		PostQuitMessage(0);
+		if (quit_callbackfunc)
+			(*quit_callbackfunc)();
+		else
+			exit(EXIT_SUCCESS);
+		return 0;
 
-	  default:
-		  return DefWindowProc(p->hWnd, msg, wParam, lParam);
+	default:
+		return DefWindowProc(p->hWnd, msg, wParam, lParam);
 	}
 }
 
@@ -912,7 +913,7 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 	swa.colormap = XCreateColormap(p->dpy, RootWindow(p->dpy, p->vi->screen),
 				       p->vi->visual, AllocNone);
 	swa.event_mask = ExposureMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask |
-		ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+			 ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
 
 	p->window = XCreateWindow(p->dpy, RootWindow(p->dpy, p->vi->screen), 500, 500,
 				  p->window_xsize, p->window_ysize,

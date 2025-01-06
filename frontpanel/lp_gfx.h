@@ -41,7 +41,6 @@ typedef struct {
 struct lpElement;
 struct lpTextures;
 
-
 typedef struct lpBBox {
 	float		xyz_min[3],
 			xyz_max[3],
@@ -52,7 +51,6 @@ extern lpBBox_t		*lpBBox_new(void);
 extern void		lpBBox_delete(lpBBox_t *p);
 extern void		lpBBox_init(lpBBox_t *p);
 extern void		lpBBox_fini(lpBBox_t *p);
-
 
 typedef struct lpObject {
 	int		num_elements,
@@ -101,7 +99,6 @@ extern void		lpObject_draw_refoverride(lpObject_t *p, int refoverride);
 extern void		lpObject_setTextureManager(lpObject_t *p, struct lpTextures *textures);
 extern void		lpObject_genGraphicsData(lpObject_t *p);
 
-
 typedef struct lpElement {
 	int		type,		// LP_POLYGON, LP_LINE
 			num_verts,
@@ -134,7 +131,6 @@ extern void		lpElement_genGraphicsData(lpElement_t *p);
 extern void		lpElement_genTextureCoords(lpElement_t *p, lpObject_t *obj,
 						   lpBBox_t *bbox);
 extern void		lpElement_setTextureManager(lpElement_t *p, struct lpTextures *textures);
-
 
 // texture class for managing graphics textures
 
@@ -172,7 +168,6 @@ typedef struct texture {
 			texCropTmin,
 			texCropTmax;
 } texture_t;
-
 
 typedef struct lpTextures {
 	int		num_textures,

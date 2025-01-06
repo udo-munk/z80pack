@@ -39,7 +39,6 @@ extern void	framerate_set(double r);
 extern void	framerate_start_frame(void);
 extern void	framerate_wait(void);
 
-
 enum parser_rules_enums { PARSER_STRING, PARSER_INT, PARSER_FLOAT };
 enum parser_state_enums { PARSER_GETVAR, PARSER_GETVAL };
 

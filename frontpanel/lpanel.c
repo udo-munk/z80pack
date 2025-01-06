@@ -189,7 +189,7 @@ static void sampleDatafv(lpLight_t *p)
 
 		p->intense_incr = (p->intense_samples[p->intense_curr_idx] -
 				   p->intense_samples[!p->intense_curr_idx]) /
-			(float) p->smoothing;
+				  (float) p->smoothing;
 	} else
 		p->intensity = ptr[p->bitnum];
 }
@@ -268,7 +268,6 @@ static void sampleData64invert(lpLight_t *p)
 	p->dirty = true;
 	p->state = bit;
 }
-
 
 Lpanel_t *Lpanel_new(void)
 {
@@ -523,7 +522,7 @@ int Lpanel_addLightToGroup(Lpanel_t *p, int lightnum, int groupnum)
 {
 	if (groupnum >= LP_MAX_LIGHT_GROUPS) {
 		fprintf(stderr, "error: light %s invalid group number (%d)\n",
-			     p->lights[lightnum]->name, groupnum);
+			p->lights[lightnum]->name, groupnum);
 		return 0;
 	}
 
@@ -1477,7 +1476,7 @@ bool Lpanel_readConfig(Lpanel_t *p, const char *_fname)
 					printf("Error on line %d of config file %s\n",
 					       lineno, fname);
 					printf("texture coordinate must have 2 coordinates "
-						"(e.g. t <s> <t>).\n");
+					       "(e.g. t <s> <t>).\n");
 					bailout = true;
 					break;
 				}
@@ -1751,7 +1750,6 @@ void Lpanel_ignoreBindErrors(Lpanel_t *p, bool f)
 	p->ignore_bind_errors = f;
 };
 
-
 // -------------
 // lpLight class
 // -------------
@@ -1837,7 +1835,7 @@ void lpLight_draw(lpLight_t *p)
 		} else {
 			for (i = 0; i < 3; i++) {
 				p->color[i] = p->parms->color[i] * (float) p->state +
-					(p->parms->color[i] * .2);
+					      (p->parms->color[i] * .2);
 				p->color[i] = min(p->color[i], 1.0);
 			}
 		}
@@ -1860,7 +1858,7 @@ void lpLight_draw(lpLight_t *p)
 
 		for (i = 0; i < 3; i++) {
 			p->color[i] = p->parms->color[i] * p->intensity +
-				(p->parms->color[i] * .2);
+				      (p->parms->color[i] * .2);
 			p->color[i] = min(p->color[i], 1.0);
 		}
 		// printf("xyzzy: intense=%f bitnum=%d\n", p->intensity, p->bitnum);

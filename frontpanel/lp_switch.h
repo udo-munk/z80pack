@@ -65,8 +65,7 @@ enum lp_switch_datatypes {
 typedef void (*lp_switch_cbf_t)(int state, int val);	// switch callback function pointer
 typedef void (*lp_switch_df_t)(struct lpSwitch *swtch);	// switch draw function pointer
 
-typedef struct lpSwitch
-{
+typedef struct lpSwitch {
 	char		*name;
 
 	int		type;			// toggle/paddle/object_ref

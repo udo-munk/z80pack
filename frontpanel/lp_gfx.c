@@ -147,7 +147,6 @@ void Lpanel_growAlphaObjects(Lpanel_t *p)
 	p->alpha_objects = new_alpha_objects;
 }
 
-
 // ---------------------
 // object class
 
@@ -424,7 +423,6 @@ void lpObject_setTextureManager(lpObject_t *p, lpTextures_t *textures)
 	p->textures = textures;
 };
 
-
 lpElement_t *lpElement_new(void)
 {
 	lpElement_t *p = (lpElement_t *) calloc(1, sizeof(lpElement_t));
@@ -586,13 +584,13 @@ void lpElement_genTextureCoords(lpElement_t *p, lpObject_t *obj, lpBBox_t *bbox)
 
 		for (j = 0; j < 2; j++) {
 			vp->st[j] = (1.0 / (bbox->xyz_max[j] - bbox->xyz_min[j])) *
-				(vp->xyz[j] - bbox->xyz_min[j]);
+				    (vp->xyz[j] - bbox->xyz_min[j]);
 			vp->st[j] *= 1.0 / obj->texture_scale[j];
 			vp->st[j] -= obj->texture_translate[j];
 		}
 	}
 	// vp->st[j] = (1.0 / (bbox->xyz_max[j] - bbox->xyz_min[j])) *
-	// 	(vp->xyz[j] - bbox->xyz_min[j]);
+	// 	    (vp->xyz[j] - bbox->xyz_min[j]);
 
 	p->have_tcoords = true;
 }
@@ -611,7 +609,6 @@ void lpElement_setTextureManager(lpElement_t *p, lpTextures_t *textures)
 {
 	p->textures = textures;
 };
-
 
 // texture class
 
@@ -782,7 +779,7 @@ int lpTextures_downloadTextures(lpTextures_t *p)
 
 			// position after last row of pixels
 			rsrc = (unsigned char *) tp->surface->pixels +
-				tp->surface->pitch * tp->imgYsize;
+			       tp->surface->pitch * tp->imgYsize;
 
 			tp->texels = (unsigned char *) malloc(tp->texSsize * tp->texTsize *
 							      tp->imgZsize);
@@ -810,7 +807,7 @@ int lpTextures_downloadTextures(lpTextures_t *p)
 			// copy image pixel data to texel data
 
 			unsigned char *src, *dst;
-			int x,y,z;
+			int x, y, z;
 
 			src = tp->pixels;
 
@@ -889,7 +886,6 @@ void lpTextures_TexCoord2fv(lpTextures_t *p, float *st)
 	glTexCoord2f(st[0] * p->tex[p->last_accessed]->texSmax,
 		     st[1] * p->tex[p->last_accessed]->texTmax);
 }
-
 
 // Bbox class
 

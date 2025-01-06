@@ -37,7 +37,6 @@
 #endif
 #endif /* !WANT_SDL */
 
-
 #define LP_MAX_LIGHT_GROUPS 10
 
 // forward references
@@ -45,7 +44,6 @@
 struct lpLight;
 struct lpSwitch;
 struct Lpanel;
-
 
 enum obj_types { LP_NULL, LP_LED };
 enum obj_subtypes { LP_SUBTYPE_NULL, LP_LED_3D, LP_LED_2D };
@@ -297,7 +295,6 @@ extern void		Lpanel_inc_cursor(Lpanel_t *p, float x, float y);
 extern void		Lpanel_make_cursor_text(Lpanel_t *p);
 
 extern void		Lpanel_draw_stats(Lpanel_t *p);
-
 
 // class lpLight
 // -------------

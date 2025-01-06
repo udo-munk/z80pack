@@ -62,7 +62,7 @@ extern int	fp_bindLight32(const char *name, uint32_t *bits, int bitnum);
 extern int	fp_bindLight16(const char *name, uint16_t *bits, int bitnum);
 extern int	fp_bindLightfv(const char *name, float *bits);
 extern int	fp_bindLight8(const char *name, uint8_t *bits, int bitnum);
-extern int	fp_bindLight8invert(const char *name, uint8_t *bits, int bitnum,uint8_t mask);
+extern int	fp_bindLight8invert(const char *name, uint8_t *bits, int bitnum, uint8_t mask);
 extern int	fp_bindLight16invert(const char *name, uint16_t *bits, int bitnum, uint16_t mask);
 extern int	fp_bindLight32invert(const char *name, uint32_t *bits, int bitnum, uint32_t mask);
 extern int	fp_bindLight64invert(const char *name, uint64_t *bits, int bitnum, uint64_t mask);
