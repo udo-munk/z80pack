@@ -4,6 +4,7 @@
  * This module allows operation of the system from an IMSAI 8080 front panel
  *
  * Copyright (C) 2008-2024 by Udo Munk
+ * Copyright (C) 2025 by Thomas Eberhardt
  *
  * History:
  * 20-OCT-2008 first version finished
@@ -30,6 +31,7 @@
  * 06-NOV-2019 use correct memory access functions
  * 14-AUG-2020 allow building machine without frontpanel
  * 29-APR-2024 added CPU execution statistics
+ * 04-JAN-2025 add SDL2 support
  */
 
 #include <stdio.h>
@@ -57,7 +59,11 @@
 #endif
 
 #ifdef FRONTPANEL
+#ifdef WANT_SDL
+#include "simsdl.h"
+#else
 #include <X11/Xlib.h>
+#endif
 #include "frontpanel.h"
 #include "log.h"
 static const char *TAG = "system";
@@ -73,6 +79,16 @@ static void examine_clicked(int state, int val);
 static void deposit_clicked(int state, int val);
 static void power_clicked(int state, int val);
 static void quit_callback(void);
+
+#ifdef WANT_SDL
+static int fp_win_id;	/* frontpanel window id */
+static win_funcs_t fp_win_funcs = {
+	fp_openWindow,
+	fp_quit,
+	fp_procEvent,
+	fp_draw
+};
+#endif
 #endif /* FRONTPANEL */
 
 /*
@@ -92,14 +108,18 @@ void mon(void)
 
 #ifdef FRONTPANEL
 	if (F_flag) {
-		/* initialize front panel */
+#ifndef WANT_SDL
 		XInitThreads();
-
+#endif
+		/* initialize front panel */
 		putchar('\n');
 		if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
 			LOGE(TAG, "frontpanel error");
 			exit(EXIT_FAILURE);
 		}
+#ifdef WANT_SDL
+		fp_win_id = simsdl_create(&fp_win_funcs);
+#endif
 
 		fp_addQuitCallback(quit_callback);
 		fp_framerate(fp_fps);
@@ -232,7 +252,11 @@ void mon(void)
 		sleep_for_ms(999);
 
 		/* stop frontpanel */
+#ifdef WANT_SDL
+		simsdl_destroy(fp_win_id);
+#else
 		fp_quit();
+#endif
 	}
 #endif
 

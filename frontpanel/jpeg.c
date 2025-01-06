@@ -1,5 +1,6 @@
-// jpeg 
+// jpeg
 
+#ifndef WANT_SDL
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,8 +10,8 @@
 
 #define UNUSED(x) (void) (x)
 
-unsigned char *pixels;
-int xsize, ysize, ncomps;
+static unsigned char *pixels;
+static int xsize, ysize, ncomps;
 
 /*
  * Since BMP stores scanlines bottom-to-top, we have to invert the image
@@ -53,12 +54,11 @@ put_pixel_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
   UNUSED(rows_supplied);
 
   /* Access next row in virtual array */
-  image_ptr = (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, dest->whole_image,
-     dest->cur_output_row, (JDIMENSION) 1, TRUE);
+  image_ptr = (*cinfo->mem->access_virt_sarray) ((j_common_ptr) cinfo,
+    dest->whole_image, dest->cur_output_row, (JDIMENSION) 1, TRUE);
   dest->cur_output_row++;
 
-  /* Transfer data. 
+  /* Transfer data.
    */
   inptr = dest->pub.buffer[0];
   outptr = image_ptr[0];
@@ -75,7 +75,6 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 	       JDIMENSION rows_supplied)
 /* This version is for grayscale OR quantized color output */
 {
-//printf("put gray rows\n");
   bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
   JSAMPARRAY image_ptr;
   JSAMPROW inptr, outptr;
@@ -84,10 +83,11 @@ put_gray_rows (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
 
   UNUSED(rows_supplied);
 
+  // printf("put gray rows\n");
+
   /* Access next row in virtual array */
-  image_ptr = (*cinfo->mem->access_virt_sarray)
-    ((j_common_ptr) cinfo, dest->whole_image,
-     dest->cur_output_row, (JDIMENSION) 1, TRUE);
+  image_ptr = (*cinfo->mem->access_virt_sarray) ((j_common_ptr) cinfo,
+     dest->whole_image, dest->cur_output_row, (JDIMENSION) 1, TRUE);
   dest->cur_output_row++;
 
   /* Transfer data. */
@@ -111,27 +111,27 @@ start_output_pixels (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   UNUSED(cinfo);
   UNUSED(dinfo);
 
-//printf("start output\n");
+  // printf("start output\n");
+
   /* no work here */
 }
-
 
 
 METHODDEF(void)
 finish_output_pixels (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
 {
   unsigned char *p;
-
   bmp_dest_ptr dest = (bmp_dest_ptr) dinfo;
-
   JSAMPARRAY image_ptr;
   JSAMPROW data_ptr;
   JDIMENSION row;
   JDIMENSION col;
   cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;
 
-    p = pixels;	// final output
-//printf("finish output_pixels row_width=%d\n",dest->row_width);
+  p = pixels;	// final output
+
+  // printf("finish output_pixels row_width=%d\n",dest->row_width);
+
   /* Write the file body from our virtual array */
   for (row = cinfo->output_height; row > 0; row--) {
     if (progress != NULL) {
@@ -139,19 +139,18 @@ finish_output_pixels (j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
       progress->pub.pass_limit = (long) cinfo->output_height;
       (*progress->pub.progress_monitor) ((j_common_ptr) cinfo);
     }
-    image_ptr = (*cinfo->mem->access_virt_sarray)
-      ((j_common_ptr) cinfo, dest->whole_image, row-1, (JDIMENSION) 1, FALSE);
+    image_ptr = (*cinfo->mem->access_virt_sarray) ((j_common_ptr) cinfo,
+      dest->whole_image, row-1, (JDIMENSION) 1, FALSE);
     data_ptr = image_ptr[0];
-    for (col = dest->row_width; col > 0; col--) 
+    for (col = dest->row_width; col > 0; col--)
     {
-//      putc(GETJSAMPLE(*data_ptr), outfile);
+      // putc(GETJSAMPLE(*data_ptr), outfile);
       *p++ = *data_ptr;
       data_ptr++;
     }
   }
   if (progress != NULL)
     progress->completed_extra_passes++;
-
 }
 
 
@@ -166,9 +165,8 @@ jinit_write_pixels (j_decompress_ptr cinfo)
   JDIMENSION row_width;
 
   /* Create module interface object, fill in method pointers */
-  dest = (bmp_dest_ptr)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(bmp_dest_struct));
+  dest = (bmp_dest_ptr) (*cinfo->mem->alloc_small)
+    ((j_common_ptr) cinfo, JPOOL_IMAGE, SIZEOF(bmp_dest_struct));
   dest->pub.start_output = start_output_pixels;
   dest->pub.finish_output = finish_output_pixels;
 
@@ -180,7 +178,7 @@ jinit_write_pixels (j_decompress_ptr cinfo)
     else
       dest->pub.put_pixel_rows = put_pixel_rows;
   } else {
-      ERREXIT(cinfo, JERR_BMP_COLORSPACE);
+    ERREXIT(cinfo, JERR_BMP_COLORSPACE);
   }
 
   /* Calculate output image dimensions so we can allocate space */
@@ -195,8 +193,8 @@ jinit_write_pixels (j_decompress_ptr cinfo)
   ysize = cinfo->output_height;
   ncomps = cinfo->output_components;
 
-  //allocate space for final pixels
-  pixels = new unsigned char[xsize*ysize*ncomps];
+  // allocate space for final pixels
+  pixels = (unsigned char *) malloc(xsize * ysize * ncomps);
 
   /* Allocate space for inversion array, prepare for write pass */
   dest->whole_image = (*cinfo->mem->request_virt_sarray)
@@ -216,29 +214,29 @@ jinit_write_pixels (j_decompress_ptr cinfo)
   return (djpeg_dest_ptr) dest;
 }
 
+
 #define DBG 0
 
-unsigned char 
-*read_jpeg(char *fname, int *width, int *height, int *num_components)
+GLOBAL(unsigned char *)
+read_jpeg (char *fname, int *width, int *height, int *num_components)
 {
- FILE *fd;
+  FILE *fd;
 
- struct jpeg_decompress_struct cinfo;
- struct jpeg_error_mgr jerr;
- djpeg_dest_ptr dest_mgr = NULL;
+  struct jpeg_decompress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+  djpeg_dest_ptr dest_mgr = NULL;
 
- pixels = NULL;
+  pixels = NULL;
 
- int num_scanlines;
+  int num_scanlines;
 
- if( (fd = fopen(fname,"rb")) == NULL)
- {
-   fprintf(stderr,"read_jpeg: could not open file %s\n",fname);
-   return NULL;
- }
+  if( (fd = fopen(fname,"rb")) == NULL) {
+    fprintf(stderr,"read_jpeg: could not open file %s\n",fname);
+    return NULL;
+  }
 
 #if DBG
-fprintf(stderr,"read_jpeg: reading file %s\n",fname);
+  fprintf(stderr,"read_jpeg: reading file %s\n",fname);
 #endif
 
   cinfo.err = jpeg_std_error(&jerr);
@@ -246,44 +244,39 @@ fprintf(stderr,"read_jpeg: reading file %s\n",fname);
 
   /* Specify data source for decompression */
   jpeg_stdio_src(&cinfo, fd);
-   
+
   /* Read file header, set default decompression parameters */
   (void) jpeg_read_header(&cinfo, TRUE);
 
   dest_mgr = jinit_write_pixels(&cinfo);
 
- // print header information
+  // print header information
 
- 
-    /* Start decompressor */
+  /* Start decompressor */
   (void) jpeg_start_decompress(&cinfo);
 #if DBG
-fprintf(stderr,"read_jpeg: started decompressor for  file %s\n",fname);
+  fprintf(stderr,"read_jpeg: started decompressor for  file %s\n",fname);
 #endif
 
   /* Write output file header */
   (*dest_mgr->start_output) (&cinfo, dest_mgr);
 
-   
-#if 1
-//  (*dest_mgr->start_output) (&cinfo, dest_mgr);
-
   /* Process data */
   while (cinfo.output_scanline < cinfo.output_height) {
-    num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer, dest_mgr->buffer_height);
+    num_scanlines = jpeg_read_scanlines(&cinfo, dest_mgr->buffer,
+					dest_mgr->buffer_height);
     (*dest_mgr->put_pixel_rows) (&cinfo, dest_mgr, num_scanlines);
   }
-#endif
 
   (*dest_mgr->finish_output) (&cinfo, dest_mgr);
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
 
+  *width = xsize;
+  *height = ysize;
+  *num_components = ncomps;
 
- *width = xsize;
- *height = ysize;
- *num_components=ncomps;
- return pixels;
+  return pixels;
 }
 
-
+#endif /* !WANT_SDL */

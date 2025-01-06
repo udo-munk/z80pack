@@ -1,9 +1,8 @@
 // lp_materials.h
 
-
 /* Copyright (c) 2007-2008, John Kichury
 
-   This software is freely distributable free of charge and without license fees with the 
+   This software is freely distributable free of charge and without license fees with the
    following conditions:
 
    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -17,27 +16,28 @@
 
 */
 
-#ifndef _MTL_DEFS_
-#define _MTL_DEFS_
+#ifndef _LP_MATERIALS_DEFS_
+#define _LP_MATERIALS_DEFS_
 
-void lp_set_material_params(int n,              /* material num  */
-        float Ar,float Ag,float Ab,float Aa,    /* Ambient rgba  */
-        float  Dr, float Dg,float Db,float Da,  /* Diffuse rgba  */
-        float  Sr,float Sg,float Sb,float Sa,   /* Specular rgba */
-        float  shine,                           /* shinyness     */
-        float Er,float Eg,float Eb,float Ea);   /* emission rgba */
+#include <stdbool.h>
 
-void lp_set_user_material_params(int n,         /* material num  */
-        float Ar,float Ag,float Ab,float Aa,    /* Ambient rgba  */
-        float  Dr, float Dg,float Db,float Da,  /* Diffuse rgba  */
-        float  Sr,float Sg,float Sb,float Sa,   /* Specular rgba */
-        float  shine,                           /* shinyness     */
-        float Er,float Eg,float Eb,float Ea);   /* emission rgba */
+extern void	lp_set_material_params(int n,			/* material num */
+			float Ar, float Ag, float Ab, float Aa,	/* Ambient rgba */
+			float Dr, float Dg, float Db, float Da,	/* Diffuse rgba */
+			float Sr, float Sg, float Sb, float Sa,	/* Specular rgba */
+			float shine,				/* shinyness */
+			float Er, float Eg, float Eb, float Ea); /* emission rgba */
 
-void lp_bind_material(int n);
-void lp_init_materials(void);
-void lp_init_materials_dlist(void);
-int  lp_is_material_alpha(int n);
-#endif
+extern void	lp_set_user_material_params(int n,		/* material num */
+			float Ar, float Ag, float Ab, float Aa,	/* Ambient rgba */
+			float Dr, float Dg, float Db, float Da,	/* Diffuse rgba */
+			float Sr, float Sg, float Sb, float Sa,	/* Specular rgba */
+			float shine,				/* shinyness */
+			float Er, float Eg, float Eb, float Ea); /* emission rgba */
 
+extern void	lp_bind_material(int n);
+extern void	lp_init_materials(void);
+extern void	lp_init_materials_dlist(void);
+extern bool	lp_is_material_alpha(int n);
 
+#endif /* !_LP_MATERIALS_DEFS */

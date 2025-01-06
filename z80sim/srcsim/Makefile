@@ -30,23 +30,10 @@ IO_DIR = ../../iodevices
 
 VPATH = $(CORE_DIR) $(IO_DIR)
 
-###
-### START O/S PLATFORM DEPENDENT VARIABLES
-###
 include $(CORE_DIR)/Makefile.in-os
 
-ifeq ($(TARGET_OS),BSD)
-endif
-ifeq ($(TARGET_OS),LINUX)
-endif
-ifeq ($(TARGET_OS),OSX)
-endif
-###
-### END O/S DEPENDENT VARIABLES
-###
-
 DEFS =
-INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) $(PLAT_INCS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR)
 CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
@@ -65,11 +52,10 @@ ifneq ($(DEBUG),)
 COPTS = -O -g
 endif
 
-CFLAGS = $(CSTDS) $(COPTS) $(CWARNS) $(PLAT_CFLAGS)
-CXXFLAGS = $(CXXSTDS) $(CXXOPTS) $(CXXWARNS) $(PLAT_CXXFLAGS)
+CFLAGS = $(CSTDS) $(COPTS) $(CWARNS)
 
-LDFLAGS = $(PLAT_LDFLAGS)
-LDLIBS = $(PLAT_LDLIBS)
+LDFLAGS =
+LDLIBS =
 
 INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
@@ -77,8 +63,8 @@ INSTALL_DATA = $(INSTALL) -m 644
 
 # core system source files for the CPU simulation
 CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c \
-	simmain.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c \
-	simz80-fd.c simz80-fdcb.c
+	simmain.c simsdl.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c \
+	simz80-ed.c simz80-fd.c simz80-fdcb.c
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)

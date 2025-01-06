@@ -13,8 +13,11 @@ In the Ubuntu shell enter "mkdir bin", then "exit".
 
 Open a new Windows Terminal and start a "Ubuntu" session.
 
-Enter:
-sudo apt install gcc g++ make libjpeg-turbo8-dev libgl1-mesa-dev libglu1-mesa-dev
+For using X11, enter:
+sudo apt install gcc make libjpeg-turbo8-dev libgl1-mesa-dev libglu1-mesa-dev
+
+Or for SDL2, enter:
+sudo apt install gcc make libsdl2-dev libsdl2-image-dev
 
 Now unpack the z80pack source distribution and follow, for
 example, "README-frontpanel.txt".

@@ -5,7 +5,9 @@
 # and the executable saved as '../machinesim'
 MACHINE = intelmds
 # emulate a machine's frontpanel
-FRONTPANEL = YES
+FRONTPANEL ?= YES
+# use SDL2 instead of X11
+WANT_SDL ?= NO
 # machine specific system source files
 MACHINE_SRCS = simcfg.c simio.c simmem.c simctl.c
 # machine specific I/O source files
@@ -33,28 +35,6 @@ ROMS_DIR = $(DATADIR)/roms
 ### END MACHINE DEPENDENT VARIABLES
 ###
 
-###
-### FRONTPANEL VARIABLES
-###
-ifeq ($(FRONTPANEL),YES)
-FP_SRCS = fpmain.cpp
-FP_DEFS = -DFRONTPANEL
-FP_LIB = $(FP_DIR)/libfrontpanel.a
-FP_LDLIBS = -lfrontpanel -ljpeg -lGL -lGLU
-LINK = $(CXX)
-LINKFLAGS = $(CXXFLAGS)
-else
-FP_SRCS =
-FP_DEFS =
-FP_LIB =
-FP_LDLIBS =
-LINK = $(CC)
-LINKFLAGS = $(CFLAGS)
-endif
-###
-### END FRONTPANEL VARIABLES
-###
-
 SIM = ../$(MACHINE)sim
 
 CORE_DIR = ../../z80core
@@ -63,58 +43,86 @@ FP_DIR = ../../frontpanel
 
 VPATH = $(CORE_DIR) $(IO_DIR) $(FP_DIR)
 
-###
-### START O/S PLATFORM DEPENDENT VARIABLES
-###
 include $(CORE_DIR)/Makefile.in-os
 
+###
+### SDL2/X11 PLATFORM VARIABLES
+###
+ifeq ($(WANT_SDL),YES)
+PLAT_DEFS = -DWANT_SDL
+ifeq ($(TARGET_OS),BSD)
+PLAT_INCS = -I/usr/local/include/SDL2
+PLAT_LDFLAGS = -L/usr/local/lib
+PLAT_LDLIBS = -lSDL2 -lSDL2main
+else ifeq ($(TARGET_OS),LINUX)
+PLAT_INCS = -I/usr/include/SDL2
+PLAT_LDLIBS = -lSDL2 -lSDL2main
+else ifeq ($(TARGET_OS),OSX)
+PLAT_INCS = -F/Library/Frameworks -I/Library/Frameworks/SDL2.framework/Headers
+PLAT_LDLIBS = -framework SDL2
+endif
+else
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include
 PLAT_LDFLAGS = -L/usr/local/lib
-PLAT_LDLIBS = -lthr -lm
+PLAT_LDLIBS = -lX11
+else ifeq ($(TARGET_OS),LINUX)
+PLAT_LDLIBS = -lX11
+else ifeq ($(TARGET_OS),OSX)
+PLAT_INCS = -I/opt/X11/include -I/opt/local/include -I/usr/local/include
+PLAT_LDFLAGS = -L/opt/X11/lib -L/usr/local/lib
+PLAT_LDLIBS = -LX11
 endif
-ifeq ($(TARGET_OS),LINUX)
-PLAT_LDLIBS = -lm -lpthread
-endif
-ifeq ($(TARGET_OS),OSX)
-PLAT_INCS = -I/opt/X11/include
-PLAT_LDFLAGS = -L/usr/local/lib -L/opt/X11/lib
 endif
 ###
-### END O/S DEPENDENT VARIABLES
+### END SDL2/X11 PLATFORM VARIABLES
+###
+
+###
+### FRONTPANEL VARIABLES
+###
+ifeq ($(FRONTPANEL),YES)
+FP_DEFS = -DFRONTPANEL
+FP_LIB = $(FP_DIR)/libfrontpanel.a
+ifeq ($(WANT_SDL),YES)
+ifeq ($(TARGET_OS),OSX)
+FP_LDLIBS = -lfrontpanel -framework SDL2_image -framework OpenGL
+else
+FP_LDLIBS = -lfrontpanel -lSDL2_image -lGL
+endif
+else
+FP_LDLIBS = -lfrontpanel -ljpeg -lGL
+endif
+endif
+###
+### END FRONTPANEL VARIABLES
 ###
 
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
-	-DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS)
+	-DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS) $(PLAT_DEFS)
 INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
 CWARNS = -Wall -Wextra -Wwrite-strings
-CXXSTDS = -std=c++03 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
-CXXWARNS = -Wall -Wextra
 
 # Production - the default
 COPTS = -O3 -U_FORTIFY_SOURCE
-CXXOPTS = -O3 -U_FORTIFY_SOURCE
 
 # Development - use `MODE=DEV make build`
 ifeq ($(MODE),DEV)
 COPTS = -O3 -fstack-protector-all -D_FORTIFY_SOURCE=2
-CXXOPTS = -O3 -fstack-protector-all -D_FORTIFY_SOURCE=2
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
 COPTS = -O -g
-CXXOPTS = -O -g
 endif
 
-CFLAGS = $(CSTDS) $(COPTS) $(CWARNS) $(PLAT_CFLAGS)
-CXXFLAGS = $(CXXSTDS) $(CXXOPTS) $(CXXWARNS) $(PLAT_CXXFLAGS)
+CFLAGS = $(CSTDS) $(COPTS) $(CWARNS)
 
 LDFLAGS = -L$(FP_DIR) $(PLAT_LDFLAGS)
-LDLIBS = $(FP_LDLIBS) -lX11 $(PLAT_LDLIBS)
+LDLIBS = $(FP_LDLIBS) $(PLAT_LDLIBS) -lm -lpthread
 
 INSTALL = install
 INSTALL_PROGRAM = $(INSTALL)
@@ -122,25 +130,21 @@ INSTALL_DATA = $(INSTALL) -m 644
 
 # core system source files for the CPU simulation
 CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c \
-	simmain.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c \
-	simz80-fd.c simz80-fdcb.c
+	simmain.c simsdl.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c \
+	simz80-ed.c simz80-fd.c simz80-fdcb.c
 SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
-XXSRCS = $(FP_SRCS)
-OBJS = $(SRCS:.c=.o) $(XXSRCS:.cpp=.o)
-DEPS = $(SRCS:.c=.d) $(XXSRCS:.cpp=.d)
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.d)
 
 all: $(SIM)
 
 $(SIM): $(OBJS) $(FP_LIB)
-	$(LINK) $(LINKFLAGS) $(CPPFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $@
 
 $(DEPS): sim.h
 
 %.d: %.c
 	@$(CC) -MM $(CFLAGS) $(CPPFLAGS) $< > $@
-
-%.d: %.cpp
-	@$(CXX) -MM $(CXXFLAGS) $(CPPFLAGS) $< > $@
 
 -include $(DEPS)
 
