@@ -85,7 +85,21 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		if (event->window.windowID != SDL_GetWindowID(p->window))
 			break;
 
-		Lpanel_resizeWindow(p);
+		switch (event->window.event) {
+		case SDL_WINDOWEVENT_RESIZED:
+		case SDL_WINDOWEVENT_SIZE_CHANGED:
+		case SDL_WINDOWEVENT_MAXIMIZED:
+		case SDL_WINDOWEVENT_RESTORED:
+			Lpanel_resizeWindow(p);
+			break;
+		case SDL_WINDOWEVENT_CLOSE:
+			// call user quit callback if exists
+			if (p->quit_callbackfunc)
+				(*p->quit_callbackfunc)();
+			break;
+		default:
+			break;
+		}
 		break;
 
 	case SDL_QUIT:
