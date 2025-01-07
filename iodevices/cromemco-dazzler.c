@@ -820,14 +820,13 @@ void cromemco_dazzler_ctl_out(BYTE data)
 			if (display == NULL)
 				open_display();
 #endif
-			state = 1;
 #ifdef HAS_NETSERVER
 		} else {
 			if (state == 0)
 				ws_clear();
-			state = 1;
 		}
 #endif
+		state = 1;
 #if defined(WANT_SDL) && defined(HAS_NETSERVER)
 		if (n_flag) {
 #endif
@@ -849,12 +848,12 @@ void cromemco_dazzler_ctl_out(BYTE data)
 			sleep_for_ms(50);
 #ifdef HAS_NETSERVER
 			if (!n_flag) {
+#endif
 #ifndef WANT_SDL
 				XLockDisplay(display);
 				XClearWindow(display, window);
 				XSync(display, True);
 				XUnlockDisplay(display);
-#endif
 #endif
 #ifdef HAS_NETSERVER
 			} else
