@@ -40,7 +40,9 @@
 #include "simglb.h"
 #include "simmem.h"
 #include "simport.h"
+#ifdef WANT_SDL
 #include "simsdl.h"
+#endif
 
 #ifdef HAS_NETSERVER
 #include "netsrv.h"
@@ -55,11 +57,16 @@ static const char *TAG = "VIO";
 #include "imsai-vio-charset.h"
 #include "imsai-vio.h"
 
-#define XOFF 10				/* use some offset inside the window */
-#define YOFF 15				/* for the drawing area */
+#define XOFF		10		/* use some offset inside the window */
+#define YOFF		15		/* for the drawing area */
+#ifdef WANT_SDL
+#define KEYBUF_LEN	20
+#endif
 
 /* SDL2/X11 stuff */
-       int slf = 1;			/* scanlines factor, default no lines */
+int slf = 1;				/* scanlines factor, default no lines */
+uint8_t bg_color[3] = {48, 48, 48};	/* default background color */
+uint8_t fg_color[3] = {255, 255, 255};	/* default foreground color */
 static int xsize, ysize;		/* window size */
 static int xscale, yscale;
 static int sx, sy;
@@ -67,6 +74,9 @@ static int sx, sy;
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static int vio_win_id = -1;
+static char keybuf[KEYBUF_LEN];		/* typeahead buffer */
+static int keyn, keyin, keyout;
+static SDL_mutex *keybuf_mutex;
 #else /* !WANT_SDL */
 static Display *display;
 static Window window;
@@ -81,17 +91,15 @@ static XEvent event;
 static KeySym key;
 static char text[10];
 #endif /* !WANT_SDL */
-       uint8_t bg_color[3] = {48, 48, 48};	/* default background color */
-       uint8_t fg_color[3] = {255, 255, 255};	/* default foreground color */
 
 /* VIO stuff */
 static int state;			/* state on/off for refresh thread */
 static int mode;		/* video mode written to command port memory */
 static int modebuf;			/* and double buffer for it */
 static int vmode, res, inv;		/* video mode, resolution & inverse */
-int imsai_kbd_status, imsai_kbd_data;	/* keyboard status & data */
-
 #if !defined(WANT_SDL) || defined(HAS_NETSERVER)
+static int kbd_status, kbd_data;	/* keyboard status & data */
+
 /* UNIX stuff */
 static pthread_t thread;
 #endif
@@ -110,6 +118,7 @@ static void open_display(void)
 	renderer = SDL_CreateRenderer(window, -1, (SDL_RENDERER_ACCELERATED |
 						   SDL_RENDERER_PRESENTVSYNC));
 
+	keybuf_mutex = SDL_CreateMutex();
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 	SDL_RenderPresent(renderer);
@@ -163,9 +172,8 @@ static void close_display(void)
 {
 #ifdef WANT_SDL
 	SDL_DestroyRenderer(renderer);
-	renderer = NULL;
 	SDL_DestroyWindow(window);
-	window = NULL;
+	SDL_DestroyMutex(keybuf_mutex);
 #else
 	XLockDisplay(display);
 	XFreePixmap(display, pixmap);
@@ -352,12 +360,29 @@ static void dc3(BYTE c)
 #ifdef WANT_SDL
 
 /*
- * Process a SDL2 event, we are only interested in keyboard input.
- * Note that I'm using the event queue as typeahead buffer, saves to
- * implement one self.
+ * Enqueue a keyboard character
  */
-static void event_handler(SDL_Event *event)
+static void enqueue_key(char c)
 {
+	if (keyn == KEYBUF_LEN)
+		fprintf(stderr, "VIO typeahead buffer full\r\n");
+	else {
+		SDL_LockMutex(keybuf_mutex);
+		keyn++;
+		keybuf[keyin++] = c;
+		if (keyin == KEYBUF_LEN)
+			keyin = 0;
+		SDL_UnlockMutex(keybuf_mutex);
+	}
+}
+
+/*
+ * Process a SDL2 event
+ */
+static void process_event(SDL_Event *event)
+{
+	char *p;
+
 	/* if there is a keyboard event get it and convert to ASCII */
 	switch (event->type) {
 	case SDL_WINDOWEVENT:
@@ -375,44 +400,34 @@ static void event_handler(SDL_Event *event)
 		}
 		break;
 	case SDL_TEXTINPUT:
-		if (event->text.windowID == SDL_GetWindowID(window)) {
-			/* if the last character wasn't processed already do nothing */
-			/* keep event in queue until the CPU emulation got current one */
-			if (imsai_kbd_status != 0)
-				return;
-
-			imsai_kbd_data = event->text.text[0];
-			imsai_kbd_status = 0;
-		}
+		if (event->text.windowID == SDL_GetWindowID(window))
+			for (p = event->text.text; *p; p++)
+				enqueue_key(*p);
 		break;
 	case SDL_KEYDOWN:
-		if (event->key.windowID == SDL_GetWindowID(window)) {
-			/* if the last character wasn't processed already do nothing */
-			/* keep event in queue until the CPU emulation got current one */
-			if (imsai_kbd_status != 0)
-				return;
-
+		if (event->key.windowID == SDL_GetWindowID(window))
 			if (!(event->key.keysym.sym & SDLK_SCANCODE_MASK) &&
 			    ((event->key.keysym.mod & KMOD_CTRL) ||
-			     (event->key.keysym.sym < 32))) {
-				imsai_kbd_data = event->key.keysym.sym & 0x1f;
-				imsai_kbd_status = 0;
-			}
-		}
+			     (event->key.keysym.sym < 32)))
+				enqueue_key(event->key.keysym.sym & 0x1f);
 		break;
 	default:
 		break;
 	}
+}
+
 #ifdef HAS_NETSERVER
+static inline void event_handler(void)
+{
 	if (n_flag) {
 		int res = net_device_get(DEV_VIO);
 		if (res >= 0) {
-			imsai_kbd_data =  res;
-			imsai_kbd_status = 2;
+			kbd_data = res;
+			kbd_status = 2;
 		}
 	}
-#endif
 }
+#endif
 
 #else /* !WANT_SDL */
 
@@ -425,7 +440,7 @@ static inline void event_handler(void)
 {
 	/* if the last character wasn't processed already do nothing */
 	/* keep event in queue until the CPU emulation got current one */
-	if (imsai_kbd_status != 0)
+	if (kbd_status != 0)
 		return;
 
 	/* if there is a keyboard event get it and convert with keymap */
@@ -433,16 +448,16 @@ static inline void event_handler(void)
 		XNextEvent(display, &event);
 		if ((event.type == KeyPress) &&
 		    XLookupString(&event.xkey, text, 1, &key, 0) == 1) {
-			imsai_kbd_data = text[0];
-			imsai_kbd_status = 2;
+			kbd_data = text[0];
+			kbd_status = 2;
 		}
 	}
 #ifdef HAS_NETSERVER
 	if (n_flag) {
 		int res = net_device_get(DEV_VIO);
 		if (res >= 0) {
-			imsai_kbd_data =  res;
-			imsai_kbd_status = 2;
+			kbd_data = res;
+			kbd_status = 2;
 		}
 	}
 #endif
@@ -487,11 +502,13 @@ static void refresh(void)
 
 	switch (vmode) {
 	case 0:	/* Video mode 0: video off, screen blanked */
+#if !defined(WANT_SDL) || defined(HAS_NETSERVER)
+		event_handler();
+#endif
 #ifdef WANT_SDL
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(renderer);
 #else
-		event_handler();
 		XSetForeground(display, gc, black.pixel);
 		XFillRectangle(display, pixmap, gc, 0, 0, xsize, ysize);
 #endif
@@ -500,7 +517,7 @@ static void refresh(void)
 	case 1: /* Video mode 1: display character codes 80-FF */
 		for (y = 0; y < rows; y++) {
 			sx = XOFF;
-#ifndef WANT_SDL
+#if !defined(WANT_SDL) || defined(HAS_NETSERVER)
 			event_handler();
 #endif
 			for (x = 0; x < cols; x++) {
@@ -515,7 +532,7 @@ static void refresh(void)
 	case 2:	/* Video mode 2: display character codes 00-7F */
 		for (y = 0; y < rows; y++) {
 			sx = XOFF;
-#ifndef WANT_SDL
+#if !defined(WANT_SDL) || defined(HAS_NETSERVER)
 			event_handler();
 #endif
 			for (x = 0; x < cols; x++) {
@@ -530,7 +547,7 @@ static void refresh(void)
 	case 3:	/* Video mode 3: display character codes 00-FF */
 		for (y = 0; y < rows; y++) {
 			sx = XOFF;
-#ifndef WANT_SDL
+#if !defined(WANT_SDL) || defined(HAS_NETSERVER)
 			event_handler();
 #endif
 			for (x = 0; x < cols; x++) {
@@ -585,9 +602,7 @@ static void ws_refresh(void)
 		LOGD(__func__, "MODE change");
 	}
 
-#ifndef WANT_SDL
 	event_handler();
-#endif
 
 	int len = rows * cols;
 	int addr;
@@ -650,7 +665,7 @@ static void update_display(bool tick)
 static win_funcs_t vio_funcs = {
 	open_display,
 	close_display,
-	event_handler,
+	process_event,
 	update_display
 };
 #endif /* !WANT_SDL */
@@ -736,4 +751,43 @@ void imsai_vio_init(void)
 #if defined(WANT_SDL) && defined(HAS_NETSERVER)
 	}
 #endif
+}
+
+BYTE imsai_vio_kbd_status_in(void)
+{
+	BYTE data;
+
+#ifdef WANT_SDL
+	data = keyn ? 2 : 0;
+#else
+	data = (BYTE) kbd_status;
+#endif
+
+	return data;
+}
+
+int imsai_vio_kbd_in(void)
+{
+	int data;
+
+#ifdef WANT_SDL
+	if (keyn) {
+		SDL_LockMutex(keybuf_mutex);
+		keyn--;
+		data = (BYTE) keybuf[keyout++];
+		if (keyout == KEYBUF_LEN)
+			keyout = 0;
+		SDL_UnlockMutex(keybuf_mutex);
+	} else
+		data = -1;
+#else
+	if (kbd_status != 0) {
+		/* take over data and reset status */
+		data = (BYTE) kbd_data;
+		kbd_status = 0;
+	} else
+		data = -1;
+#endif
+
+	return data;
 }

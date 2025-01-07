@@ -28,10 +28,9 @@ extern int slf;			/* VDM scanlines factor */
 extern uint8_t bg_color[3];	/* VDM background color */
 extern uint8_t fg_color[3];	/* VDM foreground color */
 
-extern int proctec_kbd_status;
-extern int proctec_kbd_data;
-
 extern void proctec_vdm_off(void);
-extern void proctec_vdm_out(BYTE data);
+extern void proctec_vdm_ctl_out(BYTE data);
+extern BYTE proctec_vdm_kbd_status_in(void);
+extern BYTE proctec_vdm_kbd_in(void);
 
 #endif /* !PROTEC_VDM_INC */

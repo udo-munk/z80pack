@@ -342,7 +342,7 @@ void cromemco_dazzler_off(void)
 #ifdef WANT_SDL
 
 /* process SDL event */
-static void proc_event(SDL_Event *event)
+static void process_event(SDL_Event *event)
 {
 	UNUSED(event);
 }
@@ -734,7 +734,7 @@ static void update_display(bool tick)
 static win_funcs_t dazzler_funcs = {
 	open_display,
 	close_display,
-	proc_event,
+	process_event,
 	update_display
 };
 #endif

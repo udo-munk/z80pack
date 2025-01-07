@@ -32,8 +32,8 @@ extern int slf;			/* VIO scanlines factor */
 extern uint8_t bg_color[3];	/* VIO background color */
 extern uint8_t fg_color[3];	/* VIO foreground color */
 
-extern int imsai_kbd_status, imsai_kbd_data;
-
 extern void imsai_vio_init(void), imsai_vio_off(void);
+extern BYTE imsai_vio_kbd_status_in(void);
+extern int imsai_vio_kbd_in(void);
 
 #endif /* !IMSAI_VIO_INC */

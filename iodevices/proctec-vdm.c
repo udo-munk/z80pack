@@ -36,7 +36,9 @@
 #include "simglb.h"
 #include "simmem.h"
 #include "simport.h"
+#ifdef WANT_SDL
 #include "simsdl.h"
+#endif
 
 #include "proctec-vdm-charset.h"
 #include "proctec-vdm.h"
@@ -46,17 +48,25 @@
 static const char *TAG = "VDM";
 #endif
 
-#define XOFF 10				/* use some offset inside the window */
-#define YOFF 15				/* for the drawing area */
+#define XOFF		10		/* use some offset inside the window */
+#define YOFF		15		/* for the drawing area */
+#ifdef WANT_SDL
+#define KEYBUF_LEN	20		/* typeahead buffer size */
+#endif
 
 /* SDL2/X11 stuff */
-       int slf = 1;			/* scanlines factor, default no lines */
+int slf = 1;				/* scanlines factor, default no lines */
+uint8_t bg_color[3] = {48, 48, 48};	/* default background color */
+uint8_t fg_color[3] = {255, 255, 255};	/* default foreground color */
 static int xsize, ysize;		/* window size */
 static int sx, sy;
 #ifdef WANT_SDL
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static int proctec_win_id = -1;
+static char keybuf[KEYBUF_LEN];		/* typeahead buffer */
+static int keyn, keyin, keyout;
+static SDL_mutex *keybuf_mutex;
 #else
 static Display *display;
 static Window window;
@@ -71,14 +81,14 @@ static XEvent event;
 static KeySym key;
 static char text[10];
 #endif
-       uint8_t bg_color[3] = {48, 48, 48};	/* default background color */
-       uint8_t fg_color[3] = {255, 255, 255};	/* default foreground color */
 
 /* VDM stuff */
 static int state;			/* state on/off for refresh thread */
 static int mode;			/* video mode from I/O port */
-int proctec_kbd_status = 1;		/* keyboard status */
-int proctec_kbd_data = -1;		/* keyboard data */
+#ifndef WANT_SDL
+static int kbd_status = 1;		/* keyboard status */
+static int kbd_data;			/* keyboard data */
+#endif
 static int first;			/* first displayed screen position */
 static int beg;				/* beginning display line address */
 
@@ -101,6 +111,7 @@ static void open_display(void)
 	renderer = SDL_CreateRenderer(window, -1, (SDL_RENDERER_ACCELERATED |
 						   SDL_RENDERER_PRESENTVSYNC));
 
+	keybuf_mutex = SDL_CreateMutex();
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 	SDL_RenderPresent(renderer);
@@ -156,9 +167,8 @@ static void close_display(void)
 {
 #ifdef WANT_SDL
 	SDL_DestroyRenderer(renderer);
-	renderer = NULL;
 	SDL_DestroyWindow(window);
-	window = NULL;
+	SDL_DestroyMutex(keybuf_mutex);
 #else
 	XLockDisplay(display);
 	XFreePixmap(display, pixmap);
@@ -194,12 +204,29 @@ void proctec_vdm_off(void)
 #ifdef WANT_SDL
 
 /*
- * Process a SDL event, we are only interested in keyboard input.
- * Note that I'm using the event queue as typeahead buffer, saves to
- * implement one self.
+ * Enqueue a keyboard character
  */
-static void event_handler(SDL_Event *event)
+static void enqueue_key(char c)
 {
+	if (keyn == KEYBUF_LEN)
+		fprintf(stderr, "VDM typeahead buffer full\r\n");
+	else {
+		SDL_LockMutex(keybuf_mutex);
+		keyn++;
+		keybuf[keyin++] = c;
+		if (keyin == KEYBUF_LEN)
+			keyin = 0;
+		SDL_UnlockMutex(keybuf_mutex);
+	}
+}
+
+/*
+ * Process a SDL event
+ */
+static void process_event(SDL_Event *event)
+{
+	char *p;
+
 	/* if there is a keyboard event get it and convert to ASCII */
 	switch (event->type) {
 	case SDL_WINDOWEVENT:
@@ -217,30 +244,16 @@ static void event_handler(SDL_Event *event)
 		}
 		break;
 	case SDL_TEXTINPUT:
-		if (event->text.windowID == SDL_GetWindowID(window)) {
-			/* if the last character wasn't processed already do nothing */
-			/* keep event in queue until the CPU emulation got current one */
-			if (proctec_kbd_status == 0)
-				return;
-
-			proctec_kbd_data = event->text.text[0];
-			proctec_kbd_status = 0;
-		}
+		if (event->text.windowID == SDL_GetWindowID(window))
+			for (p = event->text.text; *p; p++)
+				enqueue_key(*p);
 		break;
 	case SDL_KEYDOWN:
-		if (event->key.windowID == SDL_GetWindowID(window)) {
-			/* if the last character wasn't processed already do nothing */
-			/* keep event in queue until the CPU emulation got current one */
-			if (proctec_kbd_status == 0)
-				return;
-
+		if (event->key.windowID == SDL_GetWindowID(window))
 			if (!(event->key.keysym.sym & SDLK_SCANCODE_MASK) &&
 			    ((event->key.keysym.mod & KMOD_CTRL) ||
-			     (event->key.keysym.sym < 32))) {
-				proctec_kbd_data = event->key.keysym.sym & 0x1f;
-				proctec_kbd_status = 0;
-			}
-		}
+			     (event->key.keysym.sym < 32)))
+				enqueue_key(event->key.keysym.sym & 0x1f);
 		break;
 	default:
 		break;
@@ -277,7 +290,7 @@ static inline void event_handler(void)
 {
 	/* if the last character wasn't processed already do nothing */
 	/* keep event in queue until the CPU emulation got current one */
-	if (proctec_kbd_status == 0)
+	if (kbd_status == 0)
 		return;
 
 	/* if there is a keyboard event get it and convert with keymap */
@@ -285,8 +298,8 @@ static inline void event_handler(void)
 		XNextEvent(display, &event);
 		if ((event.type == KeyPress) &&
 		    XLookupString(&event.xkey, text, 1, &key, 0) == 1) {
-			proctec_kbd_data = text[0];
-			proctec_kbd_status = 0;
+			kbd_data = text[0];
+			kbd_status = 0;
 		}
 	}
 }
@@ -379,7 +392,7 @@ static void update_display(bool tick)
 static win_funcs_t proctec_funcs = {
 	open_display,
 	close_display,
-	event_handler,
+	process_event,
 	update_display
 };
 
@@ -426,7 +439,7 @@ static void *update_display(void *arg)
 #endif /* !WANT_SDL */
 
 /* I/O port for the VDM */
-void proctec_vdm_out(BYTE data)
+void proctec_vdm_ctl_out(BYTE data)
 {
 	mode = data;
 	first = (data & 0xf0) >> 4;
@@ -447,4 +460,49 @@ void proctec_vdm_out(BYTE data)
 		}
 	}
 #endif
+}
+
+/*
+ *	Return status of the VDM keyboard
+ */
+BYTE proctec_vdm_kbd_status_in(void)
+{
+	BYTE data;
+
+#ifdef WANT_SDL
+	data = keyn ? 0 : 1;
+#else
+	data = (BYTE) kbd_status;
+#endif
+
+	return data;
+}
+
+/*
+ *	Return next data byte from the VDM keyboard
+ */
+BYTE proctec_vdm_kbd_in(void)
+{
+	BYTE data;
+
+#ifdef WANT_SDL
+	if (keyn) {
+		SDL_LockMutex(keybuf_mutex);
+		keyn--;
+		data = (BYTE) keybuf[keyout++];
+		if (keyout == KEYBUF_LEN)
+			keyout = 0;
+		SDL_UnlockMutex(keybuf_mutex);
+	} else
+		data = 0;
+#else
+	if (kbd_status == 0) {
+		/* take over data and reset status */
+		data = (BYTE) kbd_data;
+		kbd_status = 1;
+	} else
+		data = 0;
+#endif
+
+	return data;
 }

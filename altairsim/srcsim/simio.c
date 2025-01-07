@@ -72,7 +72,6 @@ static BYTE hwctl_in(void), fp_in(void);
 static void hwctl_out(BYTE), fp_out(BYTE data);
 static BYTE lpt_status_in(void), lpt_data_in(void);
 static void lpt_status_out(BYTE), lpt_data_out(BYTE data);
-static BYTE kbd_status_in(void), kbd_data_in(void);
 
 static void io_no_card_out(BYTE data);
 #if 0	/* currently not used */
@@ -93,8 +92,8 @@ BYTE (*const port_in[256])(void) = {
 	[  1] = altair_sio0_data_in,	/*  "  */
 	[  2] = lpt_status_in,		/* printer status */
 	[  3] = lpt_data_in,		/* printer data */
-	[  4] = kbd_status_in,		/* status VDM keyboard */
-	[  5] = kbd_data_in,		/* data VDM keyboard */
+	[  4] = proctec_vdm_kbd_status_in, /* status VDM keyboard */
+	[  5] = proctec_vdm_kbd_in,	/* data VDM keyboard */
 	[  6] = altair_sio3_status_in,	/* SIO 3 connected to socket */
 	[  7] = altair_sio3_data_in,	/*  "  */
 	[  8] = altair_dsk_status_in,	/* MITS 88-DCDD status */
@@ -138,7 +137,7 @@ void (*const port_out[256])(BYTE data) = {
 	[ 19] = altair_sio2_data_out,	/*  "  */
 	[160] = hwctl_out,		/* virtual hardware control */
 	[161] = host_bdos_out,		/* host file I/O hook */
-	[200] = proctec_vdm_out,	/* Processor Technology VDM */
+	[200] = proctec_vdm_ctl_out,	/* Processor Technology VDM */
 	[248] = tarbell_cmd_out,	/* Tarbell 1011D command */
 	[249] = tarbell_track_out,	/* Tarbell 1011D track */
 	[250] = tarbell_sec_out,	/* Tarbell 1011D sector */
@@ -383,30 +382,4 @@ static BYTE lpt_status_in(void)
 static void lpt_status_out(BYTE data)
 {
 	UNUSED(data);
-}
-
-/*
- *	Return status of the VDM keyboard
- */
-static BYTE kbd_status_in(void)
-{
-	return (BYTE) proctec_kbd_status;
-}
-
-/*
- * Return next data byte from the VDM keyboard
- */
-static BYTE kbd_data_in(void)
-{
-	int data;
-
-	if (proctec_kbd_data == -1)
-		return (BYTE) 0;
-
-	/* take over data and reset status */
-	data = proctec_kbd_data;
-	proctec_kbd_data = -1;
-	proctec_kbd_status = 1;
-
-	return (BYTE) data;
 }
