@@ -23,6 +23,13 @@ else ifeq ($(TARGET_OS),OSX)
 PLAT_INCS = -F/Library/Frameworks -I/Library/Frameworks/SDL2.framework/Headers \
 	-I/Library/Frameworks/SDL2_image.framework/Headers
 endif
+else
+ifeq ($(TARGET_OS),BSD)
+PLAT_INCS = -I/usr/local/include
+else ifeq ($(TARGET_OS),LINUX)
+else ifeq ($(TARGET_OS),OSX)
+PLAT_INCS = -I/opt/X11/include -I/opt/local/include -I/usr/local/include
+endif
 endif
 ###
 ### END SDL2 VARIABLES

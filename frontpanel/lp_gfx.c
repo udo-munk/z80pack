@@ -661,7 +661,6 @@ int lpTextures_addTexture(lpTextures_t *p, char *fname)
 	texture_t *tp;
 #ifdef WANT_SDL
 	SDL_Surface *surface, *temp_surface;
-	SDL_PixelFormat *format;
 #else
 	unsigned char *pixels;
 #endif
@@ -676,11 +675,9 @@ int lpTextures_addTexture(lpTextures_t *p, char *fname)
 	temp_surface = IMG_Load(fname);
 	if (!temp_surface)
 		return 0;
-	/* convert loaded image to RGB pixels */
-	format = SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
-	surface = SDL_ConvertSurface(temp_surface, format, 0);
+	/* convert loaded image to RGBA32 pixels */
+	surface = SDL_ConvertSurfaceFormat(temp_surface, SDL_PIXELFORMAT_RGBA32, 0);
 	SDL_FreeSurface(temp_surface);
-	SDL_FreeFormat(format);
 	if (!surface)
 		return 0;
 	tp->imgXsize = surface->w;
@@ -835,10 +832,10 @@ int lpTextures_downloadTextures(lpTextures_t *p)
 
 			glGenTextures(1, (GLuint *) &tp->bind_id);
 			glBindTexture(GL_TEXTURE_2D, tp->bind_id);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 			glTexImage2D(GL_TEXTURE_2D, 0, tp->imgZsize, tp->texSsize, tp->texTsize,
 				     0, tp->format, GL_UNSIGNED_BYTE, tp->texels);

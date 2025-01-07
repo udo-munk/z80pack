@@ -80,7 +80,7 @@ PLAT_LDLIBS = -lX11
 else ifeq ($(TARGET_OS),OSX)
 PLAT_INCS = -I/opt/X11/include -I/opt/local/include -I/usr/local/include
 PLAT_LDFLAGS = -L/opt/X11/lib -L/usr/local/lib
-PLAT_LDLIBS = -LX11
+PLAT_LDLIBS = -lX11
 endif
 endif
 ###

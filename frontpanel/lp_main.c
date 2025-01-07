@@ -21,6 +21,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #ifdef WANT_SDL
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -65,7 +66,10 @@ static void *lp_mainloop_thread(void *n)
 
 	// printf("mainloop thread starting\n");
 	thread_info.running = 1;
-	Lpanel_openWindow(panel, "FrontPanel");
+	if (!Lpanel_openWindow(panel, "FrontPanel")) {
+		fprintf(stderr, "Can't open FrontPanel window\n");
+		exit(EXIT_FAILURE);
+	}
 
 	t1 = frate_gettime();
 	framerate_start_frame();
@@ -288,7 +292,10 @@ void fp_openWindow(void)
 {
 	data_sample_lock = SDL_CreateMutex();
 
-	Lpanel_openWindow(panel, "FrontPanel");
+	if (!Lpanel_openWindow(panel, "FrontPanel")) {
+		fprintf(stderr, "Can't open FrontPanel window\n");
+		exit(EXIT_FAILURE);
+	}
 	Lpanel_initGraphics(panel);
 }
 
