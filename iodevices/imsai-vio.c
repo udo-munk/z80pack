@@ -71,9 +71,13 @@ static int xsize, ysize;		/* window size */
 static int xscale, yscale;
 static int sx, sy;
 #ifdef WANT_SDL
+static int vio_win_id = -1;
 static SDL_Window *window;
 static SDL_Renderer *renderer;
-static int vio_win_id = -1;
+static SDL_Texture *texture;
+static void *pixels;
+static int pitch;
+static uint8_t color[3];
 static char keybuf[KEYBUF_LEN];		/* typeahead buffer */
 static int keyn, keyin, keyout;
 static SDL_mutex *keybuf_mutex;
@@ -117,6 +121,8 @@ static void open_display(void)
 				  xsize, ysize, 0);
 	renderer = SDL_CreateRenderer(window, -1, (SDL_RENDERER_ACCELERATED |
 						   SDL_RENDERER_PRESENTVSYNC));
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+				    SDL_TEXTUREACCESS_STREAMING, xsize, ysize);
 
 	keybuf_mutex = SDL_CreateMutex();
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -171,9 +177,10 @@ static void open_display(void)
 static void close_display(void)
 {
 #ifdef WANT_SDL
+	SDL_DestroyMutex(keybuf_mutex);
+	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
-	SDL_DestroyMutex(keybuf_mutex);
 #else
 	XLockDisplay(display);
 	XFreePixmap(display, pixmap);
@@ -223,21 +230,26 @@ void imsai_vio_off(void)
 
 static inline void set_fg_color(void)
 {
-	SDL_SetRenderDrawColor(renderer,
-			       fg_color[0], fg_color[1], fg_color[2],
-			       SDL_ALPHA_OPAQUE);
+	color[0] = fg_color[0];
+	color[1] = fg_color[1];
+	color[2] = fg_color[2];
 }
 
 static inline void set_bg_color(void)
 {
-	SDL_SetRenderDrawColor(renderer,
-			       bg_color[0], bg_color[1], bg_color[2],
-			       SDL_ALPHA_OPAQUE);
+	color[0] = bg_color[0];
+	color[1] = bg_color[1];
+	color[2] = bg_color[2];
 }
 
 static inline void draw_point(int x, int y)
 {
-	SDL_RenderDrawPoint(renderer, x, y);
+	uint8_t *p = (uint8_t *) pixels + y * pitch + x * 4;
+
+	p[3] = color[0];
+	p[2] = color[1];
+	p[1] = color[2];
+	p[0] = SDL_ALPHA_OPAQUE;
 }
 
 #else /* !WANT_SDL */
@@ -658,7 +670,10 @@ static void update_display(bool tick)
 	UNUSED(tick);
 
 	/* update display window */
+	SDL_LockTexture(texture, NULL, &pixels, &pitch);
 	refresh();
+	SDL_UnlockTexture(texture);
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);
 }
 

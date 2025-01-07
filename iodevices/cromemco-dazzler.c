@@ -69,9 +69,9 @@ static const char *TAG = "DAZZLER";
 #define WSIZE 512
 static int size = WSIZE;
 #ifdef WANT_SDL
+static int dazzler_win_id = -1;
 static SDL_Window *window;
 static SDL_Renderer *renderer;
-static int dazzler_win_id = -1;
 static uint8_t colors[16][3] = {
 	{ 0x00, 0x00, 0x00 },
 	{ 0x80, 0x00, 0x00 },
