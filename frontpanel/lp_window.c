@@ -1185,17 +1185,19 @@ void Lpanel_initGraphics(Lpanel_t *p)
 
 void Lpanel_draw_stats(Lpanel_t *p)
 {
+	glColor3f(1., 1., 0.);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 	glOrtho(0., p->window_xsize, 0., p->window_ysize, .1, 1000.);
-
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
+	glLoadIdentity();
 	glTranslatef(0., 0., -10.);
-	glDisable(GL_DEPTH_TEST);
 
-	glColor3f(1., 1., 0.);
 	snprintf(p->perf_txt, sizeof(p->perf_txt), "fps:%d sps:%d",
 		 p->frames_per_second, p->samples_per_second);
 	printStringAt(p->perf_txt, p->bbox.xyz_min[0] + .2, p->bbox.xyz_min[1] + .2);
@@ -1204,6 +1206,7 @@ void Lpanel_draw_stats(Lpanel_t *p)
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -1230,7 +1233,7 @@ void Lpanel_draw_cursor(Lpanel_t *p)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(0., 0., -10.);
+	glTranslatef(200., 0., -10.);
 
 	printStringAt(p->cursor_txt, p->cursor_textpos[0], p->cursor_textpos[1]);
 
