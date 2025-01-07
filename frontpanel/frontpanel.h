@@ -1,7 +1,7 @@
 // frontpanel.h	frontpanel api include file
 
 /* Copyright (c) 2007-2008, John Kichury
-   C and SDL2 conversion is Copyright (c) 2024-2025, Thomas Eberhardt
+   C conversion and SDL2 support is Copyright (c) 2024-2025, Thomas Eberhardt
 
    This software is freely distributable free of charge and without license fees with the
    following conditions:
