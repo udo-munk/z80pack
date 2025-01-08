@@ -803,6 +803,7 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 		fprintf(stderr, "Can't create context: %s\n", SDL_GetError());
 		return 0;
 	}
+	SDL_GL_ResetAttributes();
 	if (SDL_GL_MakeCurrent(p->window, p->cx) < 0) {
 		fprintf(stderr, "Can't make window current to context: %s\n", SDL_GetError());
 		return 0;

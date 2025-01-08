@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 	int i, status;
 	args_t args = {argc, argv};
 
+	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		fprintf(stderr, "Can't initialize SDL: %s\n", SDL_GetError());
 		return EXIT_FAILURE;
