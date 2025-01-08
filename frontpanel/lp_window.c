@@ -18,6 +18,7 @@
 */
 
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,7 +48,7 @@
 
 #ifndef WANT_SDL
 #if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
-const char FPClassName[] = "FrontPanel 2.1";
+const char FPClassName[] = "FrontPanel 2.1C";
 #else
 static int RGBA_DB_attributes[] = {
 	GLX_RGBA,
@@ -74,7 +75,8 @@ static GLfloat mtl_spec[] = { 0.0, 0.0, 0.0, 1.0 };
 static GLfloat mtl_shine[] = { 0.0 };
 static GLfloat mtl_emission[] = { 0.0, 0.0, 0.0, 1.0 };
 
-static int mousex, mousey, omx, omy, lmouse;
+static int mousex, mousey, omx, omy;
+static bool lmouse;
 
 #ifdef WANT_SDL
 
@@ -112,10 +114,10 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		if (event->button.windowID != SDL_GetWindowID(p->window))
 			break;
 
-		if (!Lpanel_pick(p, event->button.button - 1, 1,
+		if (!Lpanel_pick(p, event->button.button - 1, true,
 				 event->button.x, event->button.y)) {
 			if (event->button.button == SDL_BUTTON_LEFT) {	// left mousebutton ?
-				lmouse = 1;
+				lmouse = true;
 				mousex = event->button.x;
 				mousey = event->button.y;
 			}
@@ -126,10 +128,10 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		if (event->button.windowID != SDL_GetWindowID(p->window))
 			break;
 
-		if (!Lpanel_pick(p, event->button.button - 1, 0,
+		if (!Lpanel_pick(p, event->button.button - 1, false,
 				 event->button.x, event->button.y)) {
 			if (event->button.button == SDL_BUTTON_LEFT)
-				lmouse = 0;
+				lmouse = false;
 		}
 		break;
 
@@ -463,7 +465,7 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 		return 0;
 
 	case WM_LBUTTONDOWN:
-		if (!Lpanel_pick(p, 0, 1, LOWORD(lParam), HIWORD(lParam))) {
+		if (!Lpanel_pick(p, 0, true, LOWORD(lParam), HIWORD(lParam))) {
 			mousex = LOWORD(lParam);
 			mousey = HIWORD(lParam);
 			lmouse = true;
@@ -471,7 +473,7 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 		return 0;
 
 	case WM_LBUTTONUP:
-		if (!Lpanel_pick(p, 0, 0, LOWORD(lParam), HIWORD(lParam)))
+		if (!Lpanel_pick(p, 0, false, LOWORD(lParam), HIWORD(lParam)))
 			lmouse = false;
 		return 0;
 
@@ -579,21 +581,31 @@ void Lpanel_procEvents(Lpanel_t *p)
 			break;
 
 		case ButtonPress:
-			if (!Lpanel_pick(p, event.xbutton.button - 1, 1,
-					 event.xbutton.x, event.xbutton.y)) {
-				if (event.xbutton.button == 1) {	// left mousebutton ?
-					lmouse = 1;
-					mousex = event.xbutton.x;
-					mousey = event.xbutton.y;
+			if (event.xbutton.button == 4) {
+				p->view.pan[2] += 0.2;
+				p->view.redo_projections = true;
+			} else if (event.xbutton.button == 5) {
+				p->view.pan[2] -= 0.2;
+				p->view.redo_projections = true;
+			} else {
+				if (!Lpanel_pick(p, event.xbutton.button - 1, true,
+						 event.xbutton.x, event.xbutton.y)) {
+					if (event.xbutton.button == 1) { // left mousebutton?
+						lmouse = true;
+						mousex = event.xbutton.x;
+						mousey = event.xbutton.y;
+					}
 				}
 			}
 			break;
 
 		case ButtonRelease:
-			if (!Lpanel_pick(p, event.xbutton.button - 1, 0,
-					 event.xbutton.x, event.xbutton.y)) {
-				if (event.xbutton.button == 1)
-					lmouse = 0;
+			if (event.xbutton.button < 4) {
+				if (!Lpanel_pick(p, event.xbutton.button - 1, false,
+						 event.xbutton.x, event.xbutton.y)) {
+					if (event.xbutton.button == 1)
+						lmouse = false;
+				}
 			}
 			break;
 
@@ -805,7 +817,7 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	if ((p->cx = SDL_GL_CreateContext(p->window)) == NULL) {
 		fprintf(stderr, "Can't create context: %s\n", SDL_GetError());
@@ -1090,7 +1102,8 @@ void Lpanel_setProjection(Lpanel_t *p, bool dopick)
 		glMatrixMode(GL_MODELVIEW);
 }
 
-#if !defined(__MINGW32__) && !defined(_WIN32) && !defined(_WIN32_) && !defined(__WIN32__)
+#if !(defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)) || \
+	defined(WANT_SDL)
 void Lpanel_resizeWindow(Lpanel_t *p)
 {
 #ifdef WANT_SDL

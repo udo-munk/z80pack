@@ -295,7 +295,7 @@ void Lpanel_init(Lpanel_t *p)		// initializer
 	p->window = NULL;
 	p->cx = NULL;
 #else
-#if !defined(__MINGW32__) && !defined(_WIN32) && !defined(_WIN32_) && !defined(__WIN32__)
+#if !(defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__))
 	p->window = 0;
 	p->vi = NULL;
 	p->cx = 0;
@@ -1053,7 +1053,7 @@ void Lpanel_growSwitches(Lpanel_t *p)
 	p->switches = new_switches;
 }
 
-int Lpanel_pick(Lpanel_t *p, int button, int state, int x, int y)
+int Lpanel_pick(Lpanel_t *p, int button, bool state, int x, int y)
 {
 	GLuint namebuf[500], *ptr;
 	int i,
@@ -1063,7 +1063,7 @@ int Lpanel_pick(Lpanel_t *p, int button, int state, int x, int y)
 
 	UNUSED(button);
 
-	if (state == 0) {
+	if (!state) {
 		if (p->mom_switch_pressed)
 			lpSwitch_action(p->mom_switch_pressed, 2);
 		return num_picked;

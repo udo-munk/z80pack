@@ -203,7 +203,7 @@ extern void		Lpanel_growAlphaObjects(Lpanel_t *p);
 extern void		Lpanel_growSwitches(Lpanel_t *p);
 extern lpObject_t	*Lpanel_addObject(Lpanel_t *p);
 extern void		Lpanel_addAlphaObject(Lpanel_t *p, lpObject_t *obj);
-extern int		Lpanel_pick(Lpanel_t *p, int button, int state,	// mouse pick function
+extern int		Lpanel_pick(Lpanel_t *p, int button, bool state, // mouse pick function
 				    int x, int y);
 extern void		Lpanel_setProjection(Lpanel_t *p, bool dopick);
 extern void		Lpanel_setModelview(Lpanel_t *p, bool dopick);
@@ -274,7 +274,8 @@ extern void		Lpanel_destroyWindow(Lpanel_t *p);
 extern void		Lpanel_doPickProjection(Lpanel_t *p);
 extern void		Lpanel_doPickModelview(Lpanel_t *p);
 
-#if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
+#if (defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)) && \
+	!defined(WANT_SDL)
 extern LRESULT CALLBACK	Lpanel_WndProc(Lpanel_t *p, UINT Msg, WPARAM wParam, LPARAM lParam);
 #else
 extern void		Lpanel_resizeWindow(Lpanel_t *p);

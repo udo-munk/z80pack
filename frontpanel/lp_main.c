@@ -253,12 +253,13 @@ int fp_init(const char *cfg_fname)
 
 int fp_init2(const char *cfg_root_path, const char *cfg_fname, int size)
 {
-	printf("FrontPanel Simulator v2.1 Copyright (C) 2007-2015 by John Kichury\n");
+	printf("FrontPanel Simulator v2.1C Copyright (C) 2007-2015 by John Kichury\n");
+#ifdef WANT_SDL
+	printf("SDL2 version Copyright (C) 2024-2025 by Thomas Eberhardt\n");
+#else
 #if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
 	printf("Windows version Copyright (C) 2014 by Stefano Bodrato\n");
 #endif
-#ifdef WANT_SDL
-	printf("SDL2 version Copyright (C) 2024-2025 by Thomas Eberhardt\n");
 #endif
 
 	// allocate & initialize panel and parser instance
