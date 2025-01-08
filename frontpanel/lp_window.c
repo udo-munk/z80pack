@@ -290,6 +290,14 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		}
 		break;
 
+	case SDL_MOUSEWHEEL:
+		if (event->wheel.direction == SDL_MOUSEWHEEL_NORMAL)
+			p->view.pan[2] += event->wheel.preciseY / 5.0;
+		else
+			p->view.pan[2] -= event->wheel.preciseY / 5.0;
+		p->view.redo_projections = true;
+		break;
+
 	default:
 		break;
 	}
