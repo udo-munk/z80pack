@@ -8,13 +8,21 @@ Full documentation is at https://www.icl1900.co.uk/unix4fun/z80pack
 ## Ubuntu 
 
 ### Building
-First install the needed dependencies:
+First install the needed dependencies for X11:
 
     sudo apt install build-essential libglu1-mesa-dev libjpeg9-dev
 
-Then run 
+or for SDL2:
+
+    sudo apt install build-essential libsdl2-dev libsdl2-image-dev
+
+Then for X11 run  
 
     make
+
+or for SDL2 run  
+
+    WANT_SDL=YES make
 
 to build all the MACHINES mentioned in the Makefile.  
 
@@ -42,7 +50,8 @@ finished release.
 
 ### Running CP/M 2.2
 
-CP/M 2.2 is the ancestor of MS-DOS. Use this command to invoke CP/M 2.2 with two disks containing some sample programs and sources.
+CP/M 2.2 is the ancestor of MS-DOS. Use this command to invoke CP/M 2.2 with
+two disks containing some sample programs and sources.
 
 
     (cd cpmsim; ./cpm22)
@@ -92,7 +101,8 @@ Clock frequency 630.22 MHz
 
 ### Running CP/M 3
 
-CP/M 3 was the next generation of CP/M with features from MP/M to notably be able to use more RAM along with a lot of other nice features.  
+CP/M 3 was the next generation of CP/M with features from MP/M to notably
+be able to use more RAM along with a lot of other nice features.  
 
 Run with:
 
@@ -173,10 +183,11 @@ A>dir a:
 A: CPM3     SYS : VT100DYN COM : TRACE    UTL : HIST     UTL : PROFILE  SUB
 SYSTEM FILE(S) EXIST
 A>dir b:
-B: BNKBDOS3 SPR : CPM3     SYS : LDRBIOS3 MAC : SCB      MAC : RESBDOS3 SPR : BIOS3    MAC : PATCH    COM
-B: GENCPM   COM : BDOS3    SPR : GENCPM   DAT : BOOT     Z80 : M80      COM : LINK     COM : L80      COM
-B: WM       COM : MAC      COM : WM       HLP : BNKBIOS3 SPR : LDR      SUB : INITDIR  COM : CPMLDR   COM
-B: COPYSYS  COM : CPMLDR   REL : RMAC     COM : SYSGEN   SUB
+B: BNKBDOS3 SPR : CPM3     SYS : LDRBIOS3 MAC : SCB      MAC : RESBDOS3 SPR
+B: BIOS3    MAC : PATCH    COM : GENCPM   COM : BDOS3    SPR : GENCPM   DAT
+B: BOOT     Z80 : M80      COM : LINK     COM : L80      COM : WM       COM
+B: MAC      COM : WM       HLP : BNKBIOS3 SPR : LDR      SUB : INITDIR  COM
+B: CPMLDR   COM : COPYSYS  COM : CPMLDR   REL : RMAC     COM : SYSGEN   SUB
 A>bye
 
 System halted

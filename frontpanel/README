@@ -6,6 +6,7 @@
 
    Copyright (c) 2007-2008, John Kichury
    Windows port is Copyright (c) 2014, Stefano Bodrato
+   C conversion and SDL2 support is Copyright (c) 2024-2025, Thomas Eberhardt
 
    This software is freely distributable free of charge and without license fees with the 
    following conditions:
@@ -21,21 +22,30 @@
 
 
 
-Dependencies:
+X11 Dependencies:
 
  libjpeg
  X11
  OpenGL
- c++ compiler (g++)
+ c compiler (gcc)
  libpthread
 
 
 Windows port dependencies :
 
  libjpeg
- OpenGL32 (-lopengl32 -lgdi32 -lglu32)
- c++ compiler (g++)
+ OpenGL32 (-lopengl32 -lgdi32)
+ c compiler (gcc)
  libpthread
+
+
+SDL2 Dependencies:
+
+ SDL2
+ SDL2_image
+ OpenGL
+ c compiler (gcc)
+ -DWANT_SDL compiler flag
 
 
    For more information consult the user manual in the doc directory.
@@ -43,4 +53,5 @@ Windows port dependencies :
 
  - John Kichury  <jjk439 at gmail dot com>
  - Stefano Bodrato  <stefano dot bodrato at hotmail dot com>
+ - Thomas Eberhardt  <sneakywumpus at gmail dot com>
 

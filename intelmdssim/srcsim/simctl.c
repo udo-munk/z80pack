@@ -2,13 +2,14 @@
  * Z80SIM  -  a Z80-CPU simulator
  *
  * Copyright (C) 2008-2024 by Udo Munk
- * Copyright (C) 2024 by Thomas Eberhardt
+ * Copyright (C) 2024-2025 by Thomas Eberhardt
  *
  * This module contains the user interface an Intel Intellec MDS-800 system
  *
  * History:
  * 03-JUN-2024 first version
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
+ * 04-JAN-2025 add SDL2 support
  */
 
 #include <stdio.h>
@@ -31,7 +32,11 @@
 #include "unix_terminal.h"
 
 #ifdef FRONTPANEL
+#ifdef WANT_SDL
+#include "simsdl.h"
+#else
 #include <X11/Xlib.h>
+#endif
 #include "frontpanel.h"
 #include "log.h"
 static const char *TAG = "system";
@@ -44,6 +49,16 @@ static void power_clicked(int state, int val);
 static void quit_callback(void);
 
 static int cpu_wait;	/* CPU wait flag */
+
+#ifdef WANT_SDL
+static int fp_win_id;	/* frontpanel window id */
+static win_funcs_t fp_win_funcs = {
+	fp_openWindow,
+	fp_quit,
+	fp_procEvent,
+	fp_draw
+};
+#endif
 #endif /* FRONTPANEL */
 
 BYTE boot_switch;	/* status of boot switch */
@@ -60,13 +75,18 @@ void mon(void)
 {
 #ifdef FRONTPANEL
 	if (F_flag) {
-		/* initialize frontpanel */
+#ifndef WANT_SDL
 		XInitThreads();
+#endif
 
+		/* initialize frontpanel */
 		if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
 			LOGE(TAG, "frontpanel error");
 			exit(EXIT_FAILURE);
 		}
+#ifdef WANT_SDL
+		fp_win_id = simsdl_create(&fp_win_funcs);
+#endif
 
 		fp_addQuitCallback(quit_callback);
 		fp_framerate(fp_fps);
@@ -163,7 +183,11 @@ void mon(void)
 		sleep_for_ms(999);
 
 		/* shutdown frontpanel */
+#ifdef WANT_SDL
+		simsdl_destroy(fp_win_id);
+#else
 		fp_quit();
+#endif
 	}
 #endif
 

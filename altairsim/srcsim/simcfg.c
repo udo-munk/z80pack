@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2008-2021 Udo Munk
  * Copyright (C) 2021 David McNaughton
+ * Copyright (C) 2025 by Thomas Eberhardt
  *
  * This module reads the system configuration file and sets
  * global variables, so that the system can be configured.
@@ -29,6 +30,7 @@
  * 22-JAN-2021 added option for config file
  * 31-JUL-2021 allow building machine without frontpanel
  * 29-AUG-2021 new memory configuration sections
+ * 03-JAN-2025 changed colors configuration to RGB-triple
  */
 
 #include <stddef.h>
@@ -59,7 +61,7 @@ void config(void)
 	FILE *fp;
 	char buf[BUFSIZE];
 	char *s, *t1, *t2, *t3, *t4;
-	int v1, v2;
+	int v1, v2, v3;
 	char fn[MAX_LFN - 1];
 
 	int num_segs = 0;
@@ -224,9 +226,53 @@ void config(void)
 				fp_size = atoi(t2);
 #endif
 			} else if (!strcmp(t1, "vdm_bg")) {
-				strncpy(&bg_color[1], t2, 6);
+				if ((t3 = strtok(NULL, " \t,")) == NULL ||
+				    (t4 = strtok(NULL, " \t,")) == NULL) {
+					LOGW(TAG, "missing parameter for %s", t1);
+					continue;
+				}
+				v1 = strtol(t2, NULL, 0);
+				if (v1 < 0 || v1 > 255) {
+					LOGW(TAG, "invalid red component %d", v1);
+					continue;
+				}
+				v2 = strtol(t3, NULL, 0);
+				if (v2 < 0 || v2 > 255) {
+					LOGW(TAG, "invalid green component %d", v2);
+					continue;
+				}
+				v3 = strtol(t4, NULL, 0);
+				if (v3 < 0 || v3 > 255) {
+					LOGW(TAG, "invalid blue component %d", v3);
+					continue;
+				}
+				bg_color[0] = v1;
+				bg_color[1] = v2;
+				bg_color[2] = v3;
 			} else if (!strcmp(t1, "vdm_fg")) {
-				strncpy(&fg_color[1], t2, 6);
+				if ((t3 = strtok(NULL, " \t,")) == NULL ||
+				    (t4 = strtok(NULL, " \t,")) == NULL) {
+					LOGW(TAG, "missing parameter for %s", t1);
+					continue;
+				}
+				v1 = strtol(t2, NULL, 0);
+				if (v1 < 0 || v1 > 255) {
+					LOGW(TAG, "invalid red component %d", v1);
+					continue;
+				}
+				v2 = strtol(t3, NULL, 0);
+				if (v2 < 0 || v2 > 255) {
+					LOGW(TAG, "invalid green component %d", v2);
+					continue;
+				}
+				v3 = strtol(t4, NULL, 0);
+				if (v3 < 0 || v3 > 255) {
+					LOGW(TAG, "invalid blue component %d", v3);
+					continue;
+				}
+				fg_color[0] = v1;
+				fg_color[1] = v2;
+				fg_color[2] = v3;
 			} else if (!strcmp(t1, "vdm_scanlines")) {
 				if (*t2 != '0')
 					slf = 2;

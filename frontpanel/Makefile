@@ -1,45 +1,62 @@
+# use SDL2 instead of X11
+WANT_SDL ?= NO
+
 LIB = libfrontpanel.a
 
-SRCS = jpeg.cpp lpanel.cpp lp_gfx.cpp lp_main.cpp lp_utils.cpp lp_window.cpp \
-	lp_switch.cpp lp_font.cpp lp_materials.cpp
+SRCS = jpeg.c lpanel.c lp_gfx.c lp_main.c lp_utils.c lp_window.c \
+	lp_switch.c lp_font.c lp_materials.c
 
 CORE_DIR = ../z80core
 
-###
-### START O/S PLATFORM DEPENDENT VARIABLES
-###
 include $(CORE_DIR)/Makefile.in-os
 
+###
+### SDL2/X11 PLATFORM VARIABLES
+###
+ifeq ($(WANT_SDL),YES)
+PLAT_DEFS = -DWANT_SDL
+ifeq ($(TARGET_OS),BSD)
+PLAT_INCS = -I/usr/local/include/SDL2
+else ifeq ($(TARGET_OS),LINUX)
+PLAT_INCS = -I/usr/include/SDL2
+else ifeq ($(TARGET_OS),OSX)
+PLAT_INCS = -F/Library/Frameworks -I/Library/Frameworks/SDL2.framework/Headers \
+	-I/Library/Frameworks/SDL2_image.framework/Headers
+endif
+else
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include
+else ifeq ($(TARGET_OS),LINUX)
+else ifeq ($(TARGET_OS),OSX)
+PLAT_INCS = -I/opt/X11/include -I/opt/local/include -I/usr/local/include
 endif
-ifeq ($(TARGET_OS),LINUX)
-endif
-ifeq ($(TARGET_OS),OSX)
-PLAT_INCS = -I/opt/X11/include
 endif
 ###
-### END O/S DEPENDENT VARIABLES
+### END SDL2 VARIABLES
 ###
 
-CXXSTDS = -std=c++03 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
-CXXWARNS = -Wall -Wextra
+CPPFLAGS = $(PLAT_DEFS) $(PLAT_INCS)
+
+CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
+CWARNS = -Wall -Wextra -Wwrite-strings
 
 # Production - the default
-CXXFLAGS = -O3 $(CXXSTDS) $(CXXWARNS) $(PLAT_CXXFLAGS) -U_FORTIFY_SOURCE $(PLAT_INCS)
+COPTS = -O3 -U_FORTIFY_SOURCE
 
 # Development - use `MODE=DEV make build`
 ifeq ($(MODE),DEV)
-CXXFLAGS = -O3 $(CXXSTDS) $(CXXWARNS) $(PLAT_CXXFLAGS) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(PLAT_INCS)
+COPTS = -O3 -fstack-protector-all -D_FORTIFY_SOURCE=2
 endif
 
 # Debug - use `DEBUG=1 make build`
 ifneq ($(DEBUG),)
-CXXFLAGS = -O -g $(CXXSTDS) $(CXXWARNS) $(PLAT_CXXFLAGS) $(PLAT_INCS)
+COPTS = -O -g
 endif
 
-OBJS = $(SRCS:.cpp=.o)
-DEPS = $(SRCS:.cpp=.d)
+CFLAGS = $(CSTDS) $(COPTS) $(CWARNS)
+
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.d)
 
 all: $(LIB)
 
@@ -47,8 +64,8 @@ $(LIB): $(OBJS)
 	@rm -f $@
 	ar cq $@ $(OBJS)
 
-%.d: %.cpp
-	@$(CXX) -MM $(CXXFLAGS) $< > $@
+%.d: %.c
+	@$(CC) -MM $(CFLAGS) $(CPPFLAGS) $< > $@
 
 -include $(DEPS)
 
