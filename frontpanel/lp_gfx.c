@@ -239,24 +239,22 @@ void lpObject_draw(lpObject_t *p)
 
 	// glDisable(GL_DEPTH_TEST);
 
-	if (p->have_normals) {
-		glEnable(GL_LIGHTING);
-		if (p->material)
-			lp_bind_material(p->material);
-	} else {
-		glDisable(GL_LIGHTING);
-		glColor3fv(p->color);
-	}
-
 	if (p->texture_num) {
 		glEnable(GL_TEXTURE_2D);
+		lpTextures_bindTexture(p->textures, p->texture_num);
+
 		if (p->envmapped) {
 			glEnable(GL_TEXTURE_GEN_S);
 			glEnable(GL_TEXTURE_GEN_T);
 		}
-	} else {
-		glDisable(GL_TEXTURE_2D);
 	}
+
+	if (p->have_normals) {
+		glEnable(GL_LIGHTING);
+		if (p->material)
+			lp_bind_material(p->material);
+	} else
+		glColor3fv(p->color);
 
 	glPushMatrix();
 
@@ -267,30 +265,37 @@ void lpObject_draw(lpObject_t *p)
 	for (i = 0; i < p->num_elements; i++)
 		lpElement_draw(p->elements[i]);
 
+	if (p->have_normals)
+		glDisable(GL_LIGHTING);
+
 	obj = p->instance_object;
 
 	while (obj) {
 		if (!obj->referenced) {
+			glEnable(GL_LIGHTING);
+
 			if (obj->have_normals) {
-				glEnable(GL_LIGHTING);
 				if (obj->material)
 					lp_bind_material(obj->material);
-			} else {
-				glEnable(GL_LIGHTING);
+			} else
 				glColor3fv(obj->color);
-			}
 
 			for (i = 0; i < obj->num_elements; i++)
 				lpElement_draw(obj->elements[i]);
+
+			glDisable(GL_LIGHTING);
 		}
 		obj = obj->instance_object;
 	}
 
 	glPopMatrix();
 
-	if (p->envmapped) {
-		glDisable(GL_TEXTURE_GEN_S);
-		glDisable(GL_TEXTURE_GEN_T);
+	if (p->texture_num) {
+		if (p->envmapped) {
+			glDisable(GL_TEXTURE_GEN_S);
+			glDisable(GL_TEXTURE_GEN_T);
+		}
+		glDisable(GL_TEXTURE_2D);
 	}
 }
 
@@ -307,8 +312,6 @@ void lpObject_draw_refoverride(lpObject_t *p, int refoverride)
 			glEnable(GL_TEXTURE_GEN_S);
 			glEnable(GL_TEXTURE_GEN_T);
 		}
-	} else {
-		glDisable(GL_TEXTURE_2D);
 	}
 
 	if (p->have_normals) {
@@ -316,18 +319,15 @@ void lpObject_draw_refoverride(lpObject_t *p, int refoverride)
 		if (p->material)
 			lp_bind_material(p->material);
 	} else {
-		glDisable(GL_LIGHTING);
 		if (refoverride != 2)
 			glColor3fv(p->color);
 	}
 
 	glPushMatrix();
 
-#if 1
 	glRotatef(p->rotate[2], 1., 0., 0.);
 	glRotatef(p->rotate[0], 1., 0., 0.);
 	glRotatef(p->rotate[1], 1., 0., 0.);
-#endif
 
 	for (i = 0; i < p->num_elements; i++)
 		lpElement_draw(p->elements[i]);
@@ -335,22 +335,31 @@ void lpObject_draw_refoverride(lpObject_t *p, int refoverride)
 	obj = p->instance_object;
 
 	while (obj) {
+		glEnable(GL_LIGHTING);
+
 		if (obj->have_normals) {
-			glEnable(GL_LIGHTING);
 			if (p->material)
 				lp_bind_material(p->material);
-		} else {
-			glEnable(GL_LIGHTING);
+		} else
 			glColor3fv(obj->color);
-		}
 
 		for (i = 0; i < obj->num_elements; i++)
 			lpElement_draw(obj->elements[i]);
+
+		glDisable(GL_LIGHTING);
 
 		obj = obj->instance_object;
 
 	}
 	glPopMatrix();
+
+	if (p->texture_num) {
+		if (p->envmapped) {
+			glDisable(GL_TEXTURE_GEN_S);
+			glDisable(GL_TEXTURE_GEN_T);
+		}
+		glDisable(GL_TEXTURE_2D);
+	}
 }
 
 void lpObject_genGraphicsData(lpObject_t *p)
@@ -499,8 +508,6 @@ void lpElement_draw(lpElement_t *p)
 #if 0
 	if (p->have_tcoords)
 		glEnable(GL_TEXTURE_2D);
-	else
-		glDisable(GL_TEXTURE_2D);
 #endif
 
 	switch (p->type) {
@@ -543,6 +550,11 @@ void lpElement_draw(lpElement_t *p)
 		}
 	}
 	glEnd();
+
+#if 0
+	if (p->have_tcoords)
+		glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 void lpElement_genGraphicsData(lpElement_t *p)
@@ -898,8 +910,10 @@ lpBBox_t *lpBBox_new(void)
 
 void lpBBox_delete(lpBBox_t *p)
 {
-	lpBBox_fini(p);
-	free(p);
+	if (p) {
+		lpBBox_fini(p);
+		free(p);
+	}
 }
 
 void lpBBox_init(lpBBox_t *p)

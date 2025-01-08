@@ -112,7 +112,6 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		if (event->button.windowID != SDL_GetWindowID(p->window))
 			break;
 
-		SDL_GL_MakeCurrent(p->window, p->cx);
 		if (!Lpanel_pick(p, event->button.button - 1, 1,
 				 event->button.x, event->button.y)) {
 			if (event->button.button == SDL_BUTTON_LEFT) {	// left mousebutton ?
@@ -127,7 +126,6 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		if (event->button.windowID != SDL_GetWindowID(p->window))
 			break;
 
-		SDL_GL_MakeCurrent(p->window, p->cx);
 		if (!Lpanel_pick(p, event->button.button - 1, 0,
 				 event->button.x, event->button.y)) {
 			if (event->button.button == SDL_BUTTON_LEFT)
@@ -495,8 +493,8 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 
 		glViewport(0, 0, p->window_xsize, p->window_ysize);
 		glGetIntegerv(GL_VIEWPORT, p->viewport);
-		setProjection(false);
-		setModelview(false);
+		Lpanel_setProjection(p, false);
+		Lpanel_setModelview(p, false);
 
 		return 0;
 
@@ -799,7 +797,8 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	if ((p->cx = SDL_GL_CreateContext(p->window)) == NULL) {
 		fprintf(stderr, "Can't create context: %s\n", SDL_GetError());
 		return 0;
@@ -972,6 +971,18 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 	makeRasterFont();
 	Lpanel_make_cursor_text(p);
 
+#ifdef WANT_SDL
+	SDL_GL_SwapWindow(p->window);
+#else
+#if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
+	SwapBuffers(p->hDC);
+	// UpdateWindow(p->hWnd);
+	// Sleep(100);
+#else
+	glXSwapBuffers(p->dpy, p->window);
+#endif
+#endif
+
 	return 1;
 }
 
@@ -1015,8 +1026,7 @@ void Lpanel_setModelview(Lpanel_t *p, bool dopick)
 	float x, y;
 
 	if (!dopick)
-		glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+		glLoadIdentity();
 
 	switch (p->view.projection) {
 	case LP_ORTHO:
@@ -1040,27 +1050,19 @@ void Lpanel_setModelview(Lpanel_t *p, bool dopick)
 
 void Lpanel_setProjection(Lpanel_t *p, bool dopick)
 {
+	if (!dopick) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+	}
+
 	switch (p->view.projection) {
 	case LP_ORTHO:
-		if (!dopick) {
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-		}
-
 		glOrtho(p->bbox.xyz_min[0], p->bbox.xyz_max[0],
 			p->bbox.xyz_min[1], p->bbox.xyz_max[1],
 			.1, 1000.);
-
-		if (!dopick)
-			glMatrixMode(GL_MODELVIEW);
 		break;
 
-	case LP_PERSPECTIVE:
-		if (!dopick) {
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-		}
-
+	case LP_PERSPECTIVE: {
 		// gluPerspective(p->view.fovy, p->view.aspect, p->view.znear, p->view.zfar);
 		double deltaz = p->view.zfar - p->view.znear;
 		double cotangent = 1 / tan(p->view.fovy / 2 * M_PI / 180);
@@ -1071,11 +1073,12 @@ void Lpanel_setProjection(Lpanel_t *p, bool dopick)
 			0, 0, -2 * p->view.znear *p->view.zfar / deltaz, 0
 		};
 		glMultMatrixd(m);
-
-		if (!dopick)
-			glMatrixMode(GL_MODELVIEW);
+		}
 		break;
 	}
+
+	if (!dopick)
+		glMatrixMode(GL_MODELVIEW);
 }
 
 #if !defined(__MINGW32__) && !defined(_WIN32) && !defined(_WIN32_) && !defined(__WIN32__)
@@ -1111,12 +1114,12 @@ void Lpanel_doPickProjection(Lpanel_t *p)
 	// glOrtho(p->bbox.xyz_min[0], p->bbox.xyz_max[0],
 	// 	p->bbox.xyz_min[1], p->bbox.xyz_max[1],
 	// 	.1, 1000.);
-	Lpanel_setProjection(p, 1);
+	Lpanel_setProjection(p, true);
 }
 
 void Lpanel_doPickModelview(Lpanel_t *p)
 {
-	Lpanel_setModelview(p, 1);
+	Lpanel_setModelview(p, true);
 	// glTranslatef(0., 0., -10.);	// so objects at z=0 don't get clipped
 }
 
@@ -1128,6 +1131,7 @@ void Lpanel_initGraphics(Lpanel_t *p)
 
 	// define lights in case we use them
 
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos0);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
@@ -1140,11 +1144,9 @@ void Lpanel_initGraphics(Lpanel_t *p)
 	glEnable(GL_LIGHT0);
 	if (p->view.do_depthtest)
 		glEnable(GL_DEPTH_TEST);
-	glPolygonOffset(0., -10.);
 	// glEnable(GL_LIGHT1);
 
 	glDisable(GL_LIGHTING);
-	// glEnable(GL_LIGHTING);
 	glClearColor(0., 0., 0., 1.);
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mtl_amb);
@@ -1156,18 +1158,6 @@ void Lpanel_initGraphics(Lpanel_t *p)
 	glEnable(GL_NORMALIZE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#ifdef WANT_SDL
-	SDL_GL_SwapWindow(p->window);
-#else
-#if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
-	SwapBuffers(p->hDC);
-	// UpdateWindow(p->hWnd);
-	// Sleep(100);
-#else
-	glXSwapBuffers(p->dpy, p->window);
-#endif
-#endif
-
 	// download any textures that may have been read in
 
 	lpTextures_downloadTextures(&p->textures);
@@ -1176,18 +1166,12 @@ void Lpanel_initGraphics(Lpanel_t *p)
 		glTexGenf(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 		glTexGenf(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	}
-
-	p->cursor[0] = (p->bbox.xyz_max[0] + p->bbox.xyz_min[0]) * .5;
-	p->cursor[1] = (p->bbox.xyz_max[1] + p->bbox.xyz_min[1]) * .5;
-	makeRasterFont();
-	Lpanel_make_cursor_text(p);
 }
 
 void Lpanel_draw_stats(Lpanel_t *p)
 {
-	glColor3f(1., 1., 0.);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
+	if (p->view.do_depthtest)
+		glDisable(GL_DEPTH_TEST);
 
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -1198,6 +1182,7 @@ void Lpanel_draw_stats(Lpanel_t *p)
 	glLoadIdentity();
 	glTranslatef(0., 0., -10.);
 
+	glColor3f(1., 1., 0.);
 	snprintf(p->perf_txt, sizeof(p->perf_txt), "fps:%d sps:%d",
 		 p->frames_per_second, p->samples_per_second);
 	printStringAt(p->perf_txt, p->bbox.xyz_min[0] + .2, p->bbox.xyz_min[1] + .2);
@@ -1207,23 +1192,24 @@ void Lpanel_draw_stats(Lpanel_t *p)
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
-	glEnable(GL_DEPTH_TEST);
+	if (p->view.do_depthtest)
+		glEnable(GL_DEPTH_TEST);
 }
 
 void Lpanel_draw_cursor(Lpanel_t *p)
 {
 	float size = 0.1;
 
+	if (p->view.do_depthtest)
+		glDisable(GL_DEPTH_TEST);
+
 	glColor3f(1., 1., 0.);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
 	glBegin(GL_LINES);
 	glVertex3f(p->cursor[0] - size, p->cursor[1] - size, p->cursor[2]);
 	glVertex3f(p->cursor[0] + size, p->cursor[1] + size, p->cursor[2]);
 
 	glVertex3f(p->cursor[0] - size, p->cursor[1] + size, p->cursor[2]);
 	glVertex3f(p->cursor[0] + size, p->cursor[1] - size, p->cursor[2]);
-
 	glEnd();
 
 	glMatrixMode(GL_PROJECTION);
@@ -1242,7 +1228,8 @@ void Lpanel_draw_cursor(Lpanel_t *p)
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
-	glEnable(GL_DEPTH_TEST);
+	if (p->view.do_depthtest)
+		glEnable(GL_DEPTH_TEST);
 }
 
 void Lpanel_inc_cursor(Lpanel_t *p, float x, float y)

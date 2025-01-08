@@ -977,32 +977,20 @@ void Lpanel_draw(Lpanel_t *p)
 #endif
 
 	if (p->view.redo_projections) {
-		Lpanel_setProjection(p, 0);
-		Lpanel_setModelview(p, 0);
+		Lpanel_setProjection(p, false);
+		Lpanel_setModelview(p, false);
 		p->view.redo_projections = false;
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// draw graphics objects
 
-	// glEnable(GL_LIGHTING);
-
-	for (i = 0; i < p->num_objects; i++) {
-		if (p->objects[i]->is_alpha)
-			continue;
-
-		if (p->objects[i]->texture_num) {
-			lpTextures_bindTexture(&p->textures, p->objects[i]->texture_num);
-		}
-		if (p->objects[i]->have_normals)
-			glEnable(GL_LIGHTING);
-		lpObject_draw(p->objects[i]);
-	}
+	for (i = 0; i < p->num_objects; i++)
+		if (!p->objects[i]->is_alpha)
+			lpObject_draw(p->objects[i]);
 
 	// draw lights
 
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(0., -10.);
 
@@ -1015,32 +1003,24 @@ void Lpanel_draw(Lpanel_t *p)
 		p->switches[i]->drawFunc(p->switches[i]);
 
 	if (p->alpha_objects) {
-		// glDisable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
 
-		for (i = 0; i < p->num_alpha_objects; i++) {
-			if (p->alpha_objects[i]->texture_num) {
-				lpTextures_bindTexture(&p->textures,
-						       p->alpha_objects[i]->texture_num);
-			}
-			if (p->alpha_objects[i]->have_normals)
-				glEnable(GL_LIGHTING);
+		for (i = 0; i < p->num_alpha_objects; i++)
 			lpObject_draw(p->alpha_objects[i]);
-		}
-		// glEnable(GL_DEPTH_TEST);
+
+		glDisable(GL_BLEND);
 	}
 
-	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_POLYGON_OFFSET_FILL);
+
 	glEnable(GL_POLYGON_OFFSET_LINE);
-	if (p->do_cursor) {
-		glEnable(GL_POLYGON_OFFSET_LINE);
+	if (p->do_cursor)
 		Lpanel_draw_cursor(p);
-		glDisable(GL_POLYGON_OFFSET_LINE);
-	}
 	if (p->do_stats)
 		Lpanel_draw_stats(p);
+	glDisable(GL_POLYGON_OFFSET_LINE);
+
 #ifdef WANT_SDL
 	SDL_GL_SwapWindow(p->window);
 #else
@@ -1089,24 +1069,29 @@ int Lpanel_pick(Lpanel_t *p, int button, int state, int x, int y)
 		return num_picked;
 	}
 
+#ifdef WANT_SDL
+	SDL_GL_MakeCurrent(p->window, p->cx);
+#endif
+
 	namebuf[0] = 0;
 	glSelectBuffer(500, &namebuf[0]);
 	glRenderMode(GL_SELECT);
 	glInitNames();
 	glPushName(0);
+
 	glGetIntegerv(GL_VIEWPORT, p->viewport);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-
 	// gluPickMatrix ((GLdouble) x, (GLdouble) (window_ysize - y), 1.0, 1.0, viewport);
 	glTranslatef(p->viewport[2] - 2 * (x - p->viewport[0]),
 		     p->viewport[3] - 2 * (p->window_ysize - y - p->viewport[1]), 0);
 	glScalef(p->viewport[2], p->viewport[3], 1.0);
-
 	Lpanel_doPickProjection(p);
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
+	glLoadIdentity();
 	Lpanel_doPickModelview(p);
 
 	// draw switches
@@ -1114,6 +1099,7 @@ int Lpanel_pick(Lpanel_t *p, int button, int state, int x, int y)
 	for (i = 0; i < p->num_switches; i++)
 		lpSwitch_drawForPick(p->switches[i]);
 
+	glPopName();
 	num_picked = glRenderMode(GL_RENDER);
 
 	if (num_picked) {
@@ -1133,7 +1119,7 @@ int Lpanel_pick(Lpanel_t *p, int button, int state, int x, int y)
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+
 	glRenderMode(GL_RENDER);
 
 	return num_picked;
@@ -1367,12 +1353,16 @@ bool Lpanel_readConfig(Lpanel_t *p, const char *_fname)
 					p->curr_object->have_normals = true;
 			}
 		} else if (!strcmp(token, "object")) {
-			p->curr_object = Lpanel_addObject(p);
-			lpObject_setTextureManager(p->curr_object, &p->textures);
-			if (gtoken(buffer, token, TOKENSIZE, &pos))
-				lpObject_setName(p->curr_object, token);
-			p->curr_element = NULL;
-			p->curr_vertex = NULL;
+			if (!(p->curr_object = Lpanel_addObject(p))) {
+				printf("could not allocate memory for object.\n");
+				bailout = true;
+			} else {
+				lpObject_setTextureManager(p->curr_object, &p->textures);
+				if (gtoken(buffer, token, TOKENSIZE, &pos))
+					lpObject_setName(p->curr_object, token);
+				p->curr_element = NULL;
+				p->curr_vertex = NULL;
+			}
 		} else if (!strcmp(token, "perspective")) {
 			p->view.projection = LP_PERSPECTIVE;
 		} else if (!strcmp(token, "polygon")) {

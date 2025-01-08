@@ -296,7 +296,6 @@ void fp_openWindow(void)
 		fprintf(stderr, "Can't open FrontPanel window\n");
 		exit(EXIT_FAILURE);
 	}
-	Lpanel_initGraphics(panel);
 }
 
 void fp_procEvent(SDL_Event *event)
