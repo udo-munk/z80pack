@@ -353,7 +353,7 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 
 		case VK_DOWN:
 			if (p->do_cursor)
-				Lpanel_inc_cursor(p, 0., -cursor_inc);
+				Lpanel_inc_cursor(p, 0., -p->cursor_inc);
 			else {
 				if (p->shift_key_pressed)
 					p->view.pan[1] += 0.1;
@@ -437,27 +437,27 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 		case 'v':
 		case 'V':
 			if (p->view.projection == LP_ORTHO)
-				view.projection = LP_PERSPECTIVE;
+				p->view.projection = LP_PERSPECTIVE;
 			else
-				view.projection = LP_ORTHO;
+				p->view.projection = LP_ORTHO;
 
-			view.redo_projections = true;
+			p->view.redo_projections = true;
 			break;
 
 		case 'z':
-			view.pan[2] -= .1;
-			view.redo_projections = true;
+			p->view.pan[2] -= .1;
+			p->view.redo_projections = true;
 			break;
 
 		case 'Z':
-			view.pan[2] += .1;
-			view.redo_projections = true;
+			p->view.pan[2] += .1;
+			p->view.redo_projections = true;
 			break;
 
 		case '1':
 			break;
 		}
-		break;
+		return 0;
 
 	case WM_MOUSEWHEEL:
 		p->view.pan[2] += (float) GET_WHEEL_DELTA_WPARAM(wParam) / 250.0;
@@ -486,8 +486,8 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 				p->view.pan[0] += ((float) LOWORD(lParam) - (float) omx) * .02;
 				p->view.pan[1] -= ((float) HIWORD(lParam) - (float) omy) * .02;
 			} else {
-				view.rot[1] += ((float) LOWORD(lParam) - (float) omx) * .2;
-				view.rot[0] += ((float) HIWORD(lParam) - (float) omy) * .2;
+				p->view.rot[1] += ((float) LOWORD(lParam) - (float) omx) * .2;
+				p->view.rot[0] += ((float) HIWORD(lParam) - (float) omy) * .2;
 			}
 
 			mousex = LOWORD(lParam);
@@ -523,8 +523,8 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 	case WM_DESTROY:
 		UnregisterClass(FPClassName, p->hInstance);
 		PostQuitMessage(0);
-		if (quit_callbackfunc)
-			(*quit_callbackfunc)();
+		if (p->quit_callbackfunc)
+			(*p->quit_callbackfunc)();
 		else
 			exit(EXIT_SUCCESS);
 		return 0;
@@ -1082,6 +1082,10 @@ void Lpanel_setProjection(Lpanel_t *p, bool dopick)
 			p->bbox.xyz_min[1], p->bbox.xyz_max[1],
 			.1, 1000.);
 		break;
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 	case LP_PERSPECTIVE: {
 		// gluPerspective(p->view.fovy, p->view.aspect, p->view.znear, p->view.zfar);

@@ -3,7 +3,11 @@ WANT_SDL ?= NO
 
 LIB = libfrontpanel.a
 
-SRCS = jpeg.c lpanel.c lp_gfx.c lp_main.c lp_utils.c lp_window.c \
+ifneq ($(WANT_SDL),YES)
+JPEGC = jpeg.c
+endif
+
+SRCS = $(JPEGC) lpanel.c lp_gfx.c lp_main.c lp_utils.c lp_window.c \
 	lp_switch.c lp_font.c lp_materials.c
 
 CORE_DIR = ../z80core

@@ -50,13 +50,13 @@ add_executable(${PROJECT_NAME}
 	${Z80PACK}/z80core/simdis.c
 	${Z80PACK}/z80core/simglb.c
 	${Z80PACK}/z80core/simice.c
+	${Z80PACK}/z80core/simz80.c
 	${Z80PACK}/z80core/simz80-cb.c
 	${Z80PACK}/z80core/simz80-dd.c
 	${Z80PACK}/z80core/simz80-ddcb.c
 	${Z80PACK}/z80core/simz80-ed.c
 	${Z80PACK}/z80core/simz80-fd.c
 	${Z80PACK}/z80core/simz80-fdcb.c
-	${Z80PACK}/z80core/simz80.c
 )
 
 # generate the header file into the source tree
