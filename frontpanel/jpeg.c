@@ -1,7 +1,5 @@
 // jpeg
 
-#ifndef WANT_SDL
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -278,5 +276,3 @@ read_jpeg (char *fname, int *width, int *height, int *num_components)
 
   return pixels;
 }
-
-#endif /* !WANT_SDL */

@@ -8,8 +8,6 @@
  *	This module contains the SDL2 integration for the simulator.
  */
 
-#ifdef WANT_SDL
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <SDL.h>
@@ -151,5 +149,3 @@ static int sim_thread_func(void *data)
 
 	return status;
 }
-
-#endif /* WANT_SDL */
