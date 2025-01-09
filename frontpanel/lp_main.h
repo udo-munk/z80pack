@@ -2,7 +2,7 @@
 
 /* Copyright (c) 2007-2008, John Kichury
 
-   This software is freely distributable free of charge and without license fees with the 
+   This software is freely distributable free of charge and without license fees with the
    following conditions:
 
    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -16,22 +16,21 @@
 
 */
 
-#include "frontpanel.h"
-
 #ifndef _LP_MAIN_DEFS
 #define _LP_MAIN_DEFS
 
-typedef struct
-{
-  int thread_no;
-  int quit;
-  int run;
-  int running;
-  pthread_t thread_id;
+#ifndef WANT_SDL
+
+#include <pthread.h>
+
+typedef struct thread_info {
+	int thread_no;
+	int quit;
+	int run;
+	int running;
+	pthread_t thread_id;
 } thread_info_t;
 
-void    fp_procEvents(void);
-void    fp_draw(void);
-
-
 #endif
+
+#endif /* !_LP_MAIN_DEFS */

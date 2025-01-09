@@ -37,12 +37,11 @@
 #include "simport.h"
 #include "simfun.h"
 #include "simint.h"
-#include "simmain.h"
 
 static void save_core(void);
 static int load_core(void);
 
-#ifdef FRONTPANEL
+#ifdef WANT_SDL
 int sim_main(int argc, char *argv[])
 #else
 int main(int argc, char *argv[])
@@ -332,7 +331,7 @@ usage:
 #ifdef HAS_NETSERVER
 				puts("\t-n = enable web-based frontend");
 #endif
-				exit(EXIT_FAILURE);
+				return EXIT_FAILURE;
 			}
 
 	putchar('\n');

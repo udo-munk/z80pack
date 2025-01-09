@@ -83,21 +83,11 @@ static int vio_kbd_alive(void) {
 }
 static void vio_kbd_status(BYTE *stat)
 {
-	*stat = imsai_kbd_status;
+    *stat = imsai_vio_kbd_status_in();
 }
 static int vio_kbd_in(void)
 {
-	int data;
-
-	if (imsai_kbd_data == -1)
-		return -1;
-
-	/* take over data and reset */
-	data = imsai_kbd_data;
-	imsai_kbd_data = -1;
-	imsai_kbd_status = 0;
-
-	return data;
+    return imsai_vio_kbd_in();
 }
 static void vio_kbd_out(BYTE data) {
     UNUSED(data);

@@ -1,9 +1,8 @@
 // lpanel_data.h
 
-
 /* Copyright (c) 2007-2008, John Kichury
 
-   This software is freely distributable free of charge and without license fees with the 
+   This software is freely distributable free of charge and without license fees with the
    following conditions:
 
    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -17,36 +16,38 @@
 
 */
 
-// graphics data for light panel
+#ifndef _LPANEL_DATA_DEFS
+#define _LPANEL_DATA_DEFS
 
+// graphics data for lightpanel
 
 // 2d circle for lights
 
- static float cir2d_data[20][2] =
- {
-  { 0., 1. },
-  { -0.309017, 0.951057 },
-  { -0.587785, 0.809017 },
-  { -0.809017, 0.587785 },
-  { -0.951057, 0.309017 },
-  { -1., 0. },
-  { -0.951057, -0.309017 },
-  { -0.809017, -0.587785 },
-  { -0.587785, -0.809017 },
-  { -0.309017, -0.951057 },
-  { 0., -1. } ,
-  { 0.309017, -0.951057 },
-  { 0.587785, -0.809017 },
-  { 0.809017, -0.587785 },
-  { 0.951057, -0.309017 },
-  { 1., 0. },
-  { 0.951057, 0.309017 },
-  { 0.809017, 0.587785 },
-  { 0.587785, 0.809017 },
-  { 0.309017, 0.951057 } 
+static float cir2d_data[20][2] = {
+	{ 0., 1. },
+	{ -0.309017, 0.951057 },
+	{ -0.587785, 0.809017 },
+	{ -0.809017, 0.587785 },
+	{ -0.951057, 0.309017 },
+	{ -1., 0. },
+	{ -0.951057, -0.309017 },
+	{ -0.809017, -0.587785 },
+	{ -0.587785, -0.809017 },
+	{ -0.309017, -0.951057 },
+	{ 0., -1. },
+	{ 0.309017, -0.951057 },
+	{ 0.587785, -0.809017 },
+	{ 0.809017, -0.587785 },
+	{ 0.951057, -0.309017 },
+	{ 1., 0. },
+	{ 0.951057, 0.309017 },
+	{ 0.809017, 0.587785 },
+	{ 0.587785, 0.809017 },
+	{ 0.309017, 0.951057 }
 };
 
- static int cir2d_nverts = 20;
+static int cir2d_nverts = 20;
 
- static float cir2d_data2[20][2];
+static float cir2d_data2[20][2];
 
+#endif /* !_LPANEL_DATA_DEFS */

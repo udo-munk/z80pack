@@ -142,5 +142,7 @@ distclean:
 		$(MAKE) -C $$subdir/srcsim distclean; \
 	done
 
+.NOTPARALLEL: all
+
 .PHONY: all tools libs bioses misc machines reassemble FORCE \
 		install uninstall clean distclean

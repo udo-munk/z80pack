@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2015-2019 by Udo Munk
  * Copyright (C) 2018 David McNaughton
+ * Copyright (C) 2025 by Thomas Eberhardt
  *
  * Emulation of a Cromemco DAZZLER S100 board
  *
@@ -23,6 +24,7 @@
  * 15-JUL-2018 use logging
  * 19-JUL-2018 integrate webfrontend
  * 04-NOV-2019 remove fake DMA bus request
+ * 04-JAN-2025 add SDL2 support
  */
 
 #ifndef CROMEMCO_DAZZLER_INC

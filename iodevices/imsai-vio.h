@@ -5,6 +5,7 @@
  *
  * Copyright (C) 2017-2019 by Udo Munk
  * Copyright (C) 2018 David McNaughton
+ * Copyright (C) 2025 by Thomas Eberhardt
  *
  * Emulation of an IMSAI VIO S100 board
  *
@@ -19,17 +20,20 @@
  * 12-JUL-2018 use logging
  * 14-JUL-2018 integrate webfrontend
  * 05-NOV-2019 use correct memory access function
+ * 04-JAN-2025 add SDL2 support
  */
 
 #ifndef IMSAI_VIO_INC
 #define IMSAI_VIO_INC
 
-extern int slf;			/* VIO scanlines factor */
-extern char bg_color[];		/* VIO background color */
-extern char fg_color[];		/* VIO foreground color */
+#include <stdint.h>
 
-extern int imsai_kbd_status, imsai_kbd_data;
+extern int slf;			/* VIO scanlines factor */
+extern uint8_t bg_color[3];	/* VIO background color */
+extern uint8_t fg_color[3];	/* VIO foreground color */
 
 extern void imsai_vio_init(void), imsai_vio_off(void);
+extern BYTE imsai_vio_kbd_status_in(void);
+extern int imsai_vio_kbd_in(void);
 
 #endif /* !IMSAI_VIO_INC */
