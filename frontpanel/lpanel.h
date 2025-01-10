@@ -191,7 +191,6 @@ typedef struct Lpanel {
 	char		perf_txt[30];
 
 	char		cursor_txt[60];
-	float		cursor_textpos[2];
 	bool		do_cursor, do_stats;
 	float		cursor[3], cursor_inc;
 	bool		shift_key_pressed;
