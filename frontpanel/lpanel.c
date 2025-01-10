@@ -1044,17 +1044,6 @@ void Lpanel_draw(Lpanel_t *p)
 	if (p->do_stats)
 		Lpanel_draw_stats(p);
 	glDisable(GL_POLYGON_OFFSET_LINE);
-
-#ifdef WANT_SDL
-	SDL_GL_SwapWindow(p->window);
-#else
-#if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
-	SwapBuffers(p->hDC);
-	// UpdateWindow(p->hWnd);
-#else
-	glXSwapBuffers(p->dpy, p->window);
-#endif
-#endif
 }
 
 void Lpanel_growLights(Lpanel_t *p)
