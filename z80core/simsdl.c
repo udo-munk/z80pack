@@ -11,6 +11,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <SDL.h>
+#ifdef FRONTPANEL
+#include <SDL_image.h>
+#include <SDL_mixer.h>
+#endif
 #include <SDL_main.h>
 
 #include "simsdl.h"
@@ -45,15 +49,31 @@ int main(int argc, char *argv[])
 	args_t args = {argc, argv};
 
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "Can't initialize SDL: %s\n", SDL_GetError());
 		return EXIT_FAILURE;
 	}
+#ifdef FRONTPANEL
+	i = IMG_INIT_JPG | IMG_INIT_PNG;
+	if ((IMG_Init(i) & i) == 0) {
+		fprintf(stderr, "Can't initialize SDL_image: %s\n", IMG_GetError());
+		SDL_Quit();
+		return EXIT_FAILURE;
+	}
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+		fprintf(stderr, "Can't initialize SDL_mixer: %s\n", Mix_GetError());
+	}
+#endif
 
 	sim_finished = false;
 	sim_thread = SDL_CreateThread(sim_thread_func, "Simulator", &args);
 	if (sim_thread == NULL) {
 		fprintf(stderr, "Can't create simulator thread: %s\n", SDL_GetError());
+#ifdef FRONTPANEL
+		Mix_CloseAudio();
+		Mix_Quit();
+		IMG_Quit();
+#endif
 		SDL_Quit();
 		return EXIT_FAILURE;
 	}
@@ -104,6 +124,11 @@ int main(int argc, char *argv[])
 		if (win[i].in_use)
 			(*win[i].funcs->close)();
 
+#ifdef FRONTPANEL
+	Mix_CloseAudio();
+	Mix_Quit();
+	IMG_Quit();
+#endif
 	SDL_Quit();
 
 	return status;

@@ -54,6 +54,7 @@ extern void	fp_quit(void);
 
 /* data binding functions */
 
+extern void	fp_bindPowerFlag(uint8_t *addr);
 extern void 	fp_bindSimclock(uint64_t *addr);
 extern void	fp_bindRunFlag(uint8_t *addr);
 

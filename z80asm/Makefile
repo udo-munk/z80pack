@@ -73,7 +73,7 @@ uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/z80asm
 
 clean:
-	rm -f core $(OBJS) z80asm
+	rm -f *.o z80asm core
 
 distclean: clean
 

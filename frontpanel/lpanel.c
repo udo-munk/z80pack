@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #ifdef WANT_SDL
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <SDL_opengl.h>
 #else /* !WANT_SDL */
 #if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
@@ -318,6 +319,9 @@ void Lpanel_init(Lpanel_t *p)		// initializer
 
 	p->default_runflag = 0;
 	p->runflag = &p->default_runflag;
+	p->default_powerflag = 0;
+	p->old_powerflag = 0;
+	p->powerflag = &p->default_powerflag;
 
 	// init light groups
 
@@ -404,6 +408,11 @@ void Lpanel_init(Lpanel_t *p)		// initializer
 void Lpanel_fini(Lpanel_t *p)		// finalizer
 {
 	int i;
+
+#ifdef WANT_SDL
+	if (p->fan_sound)
+		Mix_FreeChunk(p->fan_sound);
+#endif
 
 	for (i = 0; i < p->num_lights; i++)
 		if (p->lights[i])
@@ -947,6 +956,11 @@ bool Lpanel_bindLight64invert(Lpanel_t *p, const char *name, void *loc, int star
 	return status;
 }
 
+void Lpanel_bindPowerFlag(Lpanel_t *p, uint8_t *addr)
+{
+	p->powerflag = (uint8_t *) addr;
+}
+
 void Lpanel_bindRunFlag(Lpanel_t *p, uint8_t *addr)
 {
 	int i;
@@ -973,6 +987,16 @@ void Lpanel_draw(Lpanel_t *p)
 	int i;
 
 #ifdef WANT_SDL
+	if (*p->powerflag != p->old_powerflag) {
+		p->old_powerflag = *p->powerflag;
+		if (p->fan_sound) {
+			if (p->old_powerflag)
+				p->fan_channel = Mix_PlayChannel(-1, p->fan_sound, -1);
+			else
+				Mix_HaltChannel(p->fan_channel);
+		}
+	}
+
 	SDL_GL_MakeCurrent(p->window, p->cx);
 #endif
 
@@ -1193,6 +1217,35 @@ bool Lpanel_readConfig(Lpanel_t *p, const char *_fname)
 				p->envmap_detected = true;
 				p->curr_object->envmapped = true;
 			}
+		} else if (!strcmp(token, "fansound")) {
+			if (!gtoken(buffer, token, TOKENSIZE, &pos)) {
+				printf("Error on line %d of config file %s\n", lineno, fname);
+				printf("fansound with no path to sound file defined.\n");
+				bailout = true;
+				break;
+			}
+#ifdef WANT_SDL
+			char *sound_path;
+			int len;
+
+			len = strlen(p->config_root_path) + strlen(token) + 1;
+
+			sound_path = (char *) malloc(len + 1);
+			strcpy(sound_path, p->config_root_path);
+			strcat(sound_path, "/");
+			strcat(sound_path, token);
+			sound_path[len] = 0;
+
+			if ((p->fan_sound = Mix_LoadWAV(sound_path)) == NULL) {
+				printf("Error on line %d of config file %s\n",
+				       lineno, fname);
+				printf("could not load sound '%s'.\n", sound_path);
+				bailout = true;
+				break;
+			}
+
+			free(sound_path);
+#endif
 		} else if (!strcmp(token, "instance")) {
 			char s[100];
 
@@ -1500,8 +1553,7 @@ bool Lpanel_readConfig(Lpanel_t *p, const char *_fname)
 
 			if (!(p->curr_object->texture_num = lpTextures_addTexture(&p->textures,
 										  texture_path))) {
-				printf("Error on line %d of config file %s\n",
-				       lineno, texture_path);
+				printf("Error on line %d of config file %s\n", lineno, fname);
 				printf("could not load texture '%s'.\n", texture_path);
 				bailout = true;
 				break;

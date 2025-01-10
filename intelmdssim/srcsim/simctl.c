@@ -92,6 +92,7 @@ void mon(void)
 		fp_framerate(fp_fps);
 		fp_bindSimclock(&fp_clock);
 		fp_bindRunFlag(&cpu_state);
+		fp_bindPowerFlag(&power);
 
 		/* bind frontpanel LED's to variables */
 		fp_bindLight8("LED_INT_{0-7}", &int_requests, 1);
@@ -172,10 +173,10 @@ void mon(void)
 #ifdef FRONTPANEL
 	if (F_flag) {
 		/* all LED's off and update front panel */
+		power = 0;
 		cpu_bus = 0;
 		bus_request = 0;
 		IFF = 0;
-		power = 0;
 		int_requests = 0;
 		fp_sampleData();
 
@@ -273,14 +274,14 @@ static void power_clicked(int state, int val)
 	case FP_SW_DOWN:
 		if (!power)
 			break;
-		power--;
+		power = 0;
 		cpu_state = ST_STOPPED;
 		cpu_error = POWEROFF;
 		break;
 	case FP_SW_UP:
 		if (power)
 			break;
-		power++;
+		power = 1;
 		cpu_wait = 1;
 		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
 			puts("\r\n\r\n\r\n");

@@ -71,7 +71,7 @@ static const char *TAG = "system";
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;
-static int power;
+static BYTE power;
 
 static void run_clicked(int state, int val), step_clicked(int state, int val);
 static void reset_clicked(int state, int val);
@@ -125,6 +125,7 @@ void mon(void)
 		fp_framerate(fp_fps);
 		fp_bindSimclock(&fp_clock);
 		fp_bindRunFlag(&cpu_state);
+		fp_bindPowerFlag(&power);
 
 		/* bind frontpanel LED's to variables */
 		fp_bindLight16("LED_ADDR_{00-15}", &fp_led_address, 1);
@@ -239,6 +240,7 @@ void mon(void)
 #ifdef FRONTPANEL
 	if (F_flag) {
 		/* all LED's off and update front panel */
+		power = 0;
 		cpu_bus = 0;
 		bus_request = 0;
 		IFF = 0;
@@ -491,7 +493,7 @@ static void power_clicked(int state, int val)
 	case FP_SW_UP:
 		if (power)
 			break;
-		power++;
+		power = 1;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
@@ -505,7 +507,7 @@ static void power_clicked(int state, int val)
 	case FP_SW_DOWN:
 		if (!power)
 			break;
-		power--;
+		power = 0;
 		cpu_switch = 0;
 		cpu_state = ST_STOPPED;
 		cpu_error = POWEROFF;
@@ -520,7 +522,7 @@ static void power_clicked(int state, int val)
  */
 static void quit_callback(void)
 {
-	power--;
+	power = 0;
 	cpu_switch = 0;
 	cpu_state = ST_STOPPED;
 	cpu_error = POWEROFF;

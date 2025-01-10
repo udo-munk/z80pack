@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef WANT_SDL
+#include <SDL_mixer.h>
 #include <SDL_opengl.h>
 #else
 #include <GL/gl.h>
@@ -41,6 +42,8 @@ static parser_rules_t switch_parse_rules[] = {
 	{ "pos",     2, 3, PARSER_FLOAT },
 	{ "size",    2, 3, PARSER_FLOAT },
 	{ "objects", 1, 3, PARSER_STRING },
+	{ "onsound",  1, 1, PARSER_STRING },
+	{ "offsound", 1, 1, PARSER_STRING },
 	{ NULL, 0, 0, 0 }
 };
 
@@ -194,12 +197,22 @@ void lpSwitch_init(lpSwitch_t *p)
 	p->select_up_name = p->select_dn_name = 0;
 	p->callback = NULL;
 	p->userdata = 0;
+#ifdef WANT_SDL
+	p->on_sound = NULL;
+	p->off_sound = NULL;
+#endif
 }
 
 void lpSwitch_fini(lpSwitch_t *p)
 {
 	int i;
 
+#ifdef WANT_SDL
+	if (p->on_sound)
+		Mix_FreeChunk(p->on_sound);
+	if (p->off_sound)
+		Mix_FreeChunk(p->off_sound);
+#endif
 	if (p->name)
 		free(p->name);
 	if (p->parms)
@@ -225,11 +238,22 @@ void lpSwitch_action(lpSwitch_t *p, int val)
 		if (p->operation == LP_SWITCH_OP_OFF_MOM)
 			break;
 
+#ifdef WANT_SDL
+		if (p->state != LP_SWITCH_DOWN) {
+			if (p->operation == LP_SWITCH_OP_ON_OFF) {
+				if (p->off_sound)
+					Mix_PlayChannel(-1, p->off_sound, 0);
+			} else {
+				if (p->on_sound)
+					Mix_PlayChannel(-1, p->on_sound, 0);
+			}
+		}
+#endif
+
 		p->state = LP_SWITCH_DOWN;
 
 		switch (p->operation) {
 		case LP_SWITCH_OP_MOM_OFF_MOM:
-
 			p->panel->mom_switch_pressed = p;
 
 			if (p->dataptr[p->state])
@@ -297,6 +321,13 @@ void lpSwitch_action(lpSwitch_t *p, int val)
 
 	case 1:		// up
 
+#ifdef WANT_SDL
+		if (p->state != LP_SWITCH_UP) {
+			if (p->on_sound)
+				Mix_PlayChannel(-1, p->on_sound, 0);
+		}
+#endif
+
 		p->state = LP_SWITCH_UP;
 
 		switch (p->operation) {
@@ -339,6 +370,11 @@ void lpSwitch_action(lpSwitch_t *p, int val)
 		break;
 
 	case 2:		// release mom switch
+
+#ifdef WANT_SDL
+		if (p->off_sound)
+			Mix_PlayChannel(-1, p->off_sound, 0);
+#endif
 
 		switch (p->operation) {
 		case LP_SWITCH_OP_MOM_OFF_MOM:
@@ -596,7 +632,6 @@ int Lpanel_addSwitch(Lpanel_t *p, const char *name, lp_obj_parm_t *obj, const ch
 		if (n != PARSER_DONE) {
 			// printf("\nresult %s\n", switch_parse_rules[result->cmd_idx]);
 
-#if 1
 			if (!strcmp(switch_parse_rules[result->cmd_idx].cmd, "objects")) {
 				sw->object_ref_names = (char **) malloc(sizeof(char *) *
 									result->num_args);
@@ -642,8 +677,51 @@ int Lpanel_addSwitch(Lpanel_t *p, const char *name, lp_obj_parm_t *obj, const ch
 					       "of 'toggle, paddle, object'\n");
 					return 0;
 				}
-			}
+			} else if (!strcmp(switch_parse_rules[result->cmd_idx].cmd, "onsound")) {
+#ifdef WANT_SDL
+				char *sound_path;
+				int len;
+
+				len = strlen(p->config_root_path) + strlen(result->strings[0]) + 1;
+
+				sound_path = (char *) malloc(len + 1);
+				strcpy(sound_path, p->config_root_path);
+				strcat(sound_path, "/");
+				strcat(sound_path, result->strings[0]);
+				sound_path[len] = 0;
+
+				if ((sw->on_sound = Mix_LoadWAV(sound_path)) == NULL) {
+					printf("Could not load switch 'onsound' '%s'.\n",
+					       sound_path);
+					free(sound_path);
+					return 0;
+				}
+
+				free(sound_path);
 #endif
+			} else if (!strcmp(switch_parse_rules[result->cmd_idx].cmd, "offsound")) {
+#ifdef WANT_SDL
+				char *sound_path;
+				int len;
+
+				len = strlen(p->config_root_path) + strlen(result->strings[0]) + 1;
+
+				sound_path = (char *) malloc(len + 1);
+				strcpy(sound_path, p->config_root_path);
+				strcat(sound_path, "/");
+				strcat(sound_path, result->strings[0]);
+				sound_path[len] = 0;
+
+				if ((sw->off_sound = Mix_LoadWAV(sound_path)) == NULL) {
+					printf("Could not load switch 'offsound' '%s'.\n",
+					       sound_path);
+					free(sound_path);
+					return 0;
+				}
+
+				free(sound_path);
+#endif
+			}
 		}
 
 		if (n == PARSER_DONE)

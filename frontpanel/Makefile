@@ -25,7 +25,8 @@ else ifeq ($(TARGET_OS),LINUX)
 PLAT_INCS = -I/usr/include/SDL2
 else ifeq ($(TARGET_OS),OSX)
 PLAT_INCS = -F/Library/Frameworks -I/Library/Frameworks/SDL2.framework/Headers \
-	-I/Library/Frameworks/SDL2_image.framework/Headers
+	-I/Library/Frameworks/SDL2_image.framework/Headers \
+	-I/Library/Frameworks/SDL2_mixer.framework/Headers
 endif
 else
 ifeq ($(TARGET_OS),BSD)
@@ -83,10 +84,10 @@ clean: _rm_obj _rm_deps
 	rm -f $(LIB)
 
 _rm_obj:
-	rm -f $(OBJS)
+	rm -f *.o
 
 _rm_deps:
-	rm -f $(DEPS)
+	rm -f *.d
 
 distclean: clean
 

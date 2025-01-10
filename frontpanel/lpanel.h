@@ -24,6 +24,7 @@
 #include <stdint.h>
 #ifdef WANT_SDL
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <SDL_opengl.h>
 #else /* !WANT_SDL */
 #if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
@@ -149,6 +150,13 @@ typedef struct Lpanel {
 			old_clock;
 	int		clock_warp;
 	bool		ignore_bind_errors;
+	uint8_t		default_powerflag,
+			*powerflag,
+			old_powerflag;
+#ifdef WANT_SDL
+	Mix_Chunk	*fan_sound;
+	int		fan_channel;
+#endif
 	uint8_t		default_runflag,
 			*runflag;
 	lpSwitch_t	*mom_switch_pressed;
@@ -222,6 +230,7 @@ extern bool		Lpanel_addSwitchCallback(Lpanel_t *p, const char *name,
 						 lp_switch_cbf_t cbfunc, int userval);
 extern void		Lpanel_addQuitCallback(Lpanel_t *p, lp_quit_cbf_t cbfunc);
 
+extern void		Lpanel_bindPowerFlag(Lpanel_t *p, uint8_t *addr);
 extern void		Lpanel_bindSimclock(Lpanel_t *p, uint64_t *addr);
 extern void		Lpanel_bindRunFlag(Lpanel_t *p, uint8_t *addr);
 
