@@ -98,10 +98,10 @@ uninstall:
 clean: _rm_obj _rm_deps
 
 _rm_obj:
-	rm -f $(OBJS)
+	rm -f *.o
 
 _rm_deps:
-	rm -f $(DEPS)
+	rm -f *.d
 
 distclean: clean
 	rm -f $(SIM)

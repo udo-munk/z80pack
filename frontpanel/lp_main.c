@@ -201,6 +201,11 @@ int fp_smoothLight(const char *name, int nframes)
 	return 1;
 }
 
+void fp_bindPowerFlag(uint8_t *addr)
+{
+	Lpanel_bindPowerFlag(panel, addr);
+}
+
 void fp_bindRunFlag(uint8_t *addr)
 {
 	Lpanel_bindRunFlag(panel, addr);

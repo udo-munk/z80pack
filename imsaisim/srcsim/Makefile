@@ -98,9 +98,12 @@ FP_DEFS = -DFRONTPANEL
 FP_LIB = $(FP_DIR)/libfrontpanel.a
 ifeq ($(WANT_SDL),YES)
 ifeq ($(TARGET_OS),OSX)
-FP_LDLIBS = -lfrontpanel -framework SDL2_image -framework OpenGL
+FP_INCS = -I/Library/Frameworks/SDL2_image.framework/Headers \
+	-I/Library/Frameworks/SDL2_mixer.framework/Headers
+FP_LDLIBS = -lfrontpanel -framework SDL2_image -framework SDL2_mixer \
+	-framework OpenGL
 else
-FP_LDLIBS = -lfrontpanel -lSDL2_image -lGL
+FP_LDLIBS = -lfrontpanel -lSDL2_image -lSDL2_mixer -lGL
 endif
 else
 FP_LDLIBS = -lfrontpanel -ljpeg -lGL
@@ -114,7 +117,7 @@ DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
 	-DBOOTROM=\"$(ROMS_DIR)\" -DSYSDOCROOT=\"$(DOCROOT_DIR)\" $(FP_DEFS) \
 	$(PLAT_DEFS)
 INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) -I$(NET_DIR) \
-	-I$(CIV_DIR)/include $(PLAT_INCS)
+	-I$(CIV_DIR)/include $(PLAT_INCS) $(FP_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
@@ -187,10 +190,10 @@ uninstall:
 clean: _rm_obj _rm_deps
 
 _rm_obj:
-	rm -f $(OBJS)
+	rm -f *.o
 
 _rm_deps:
-	rm -f $(DEPS)
+	rm -f *.d
 
 distclean: clean
 	rm -f $(SIM)

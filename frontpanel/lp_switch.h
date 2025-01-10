@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #ifdef WANT_SDL
+#include <SDL_mixer.h>
 #include <SDL_opengl.h>
 #else
 #include <GL/gl.h>
@@ -97,6 +98,11 @@ typedef struct lpSwitch {
 			down_target[4][3];
 
 	lp_switch_df_t	drawFunc;
+
+#ifdef WANT_SDL
+	Mix_Chunk	*on_sound;
+	Mix_Chunk	*off_sound;
+#endif
 } lpSwitch_t;
 
 extern lpSwitch_t	*lpSwitch_new(void);

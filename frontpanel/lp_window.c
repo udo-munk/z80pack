@@ -25,6 +25,7 @@
 #ifdef WANT_SDL
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_opengl.h>
 #else /* !WANT_SDL */
 #if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
@@ -801,10 +802,11 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 
 #ifdef WANT_SDL
 
-	if (IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG) == 0) {
-		fprintf(stderr, "Can't initialize SDL_image: %s\n", IMG_GetError());
-		return 0;
-	}
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	p->window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 				     p->window_xsize, p->window_ysize,
@@ -814,16 +816,13 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 		return 0;
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	if ((p->cx = SDL_GL_CreateContext(p->window)) == NULL) {
 		fprintf(stderr, "Can't create context: %s\n", SDL_GetError());
 		return 0;
 	}
+
 	SDL_GL_ResetAttributes();
+
 	if (SDL_GL_MakeCurrent(p->window, p->cx) < 0) {
 		fprintf(stderr, "Can't make window current to context: %s\n", SDL_GetError());
 		return 0;
@@ -1013,12 +1012,14 @@ void Lpanel_destroyWindow(Lpanel_t *p)
 	glFinish();
 
 #ifdef WANT_SDL
+	if (p->fan_sound && *p->powerflag)
+		Mix_HaltChannel(p->fan_channel);
+
 	if (SDL_GL_MakeCurrent(NULL, NULL) < 0) {
 		printf("lightpanel: destroyWindow: Can't release context\n");
 	}
 	SDL_GL_DeleteContext(p->cx);
 	SDL_DestroyWindow(p->window);
-	IMG_Quit();
 	p->cx = NULL;
 	p->window = NULL;
 #else /* !WANT_SDL */

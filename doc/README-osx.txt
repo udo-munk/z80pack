@@ -24,9 +24,11 @@ Install the SDL2 and SDL2_image frameworks from
 https://github.com/libsdl-org/SDL/releases/
 and
 https://github.com/libsdl-org/SDL_image/releases/
+and
+https://github.com/libsdl-org/SDL_mixer/releases/
 
-Grab the latest SDL2-2.x.x.dmg and SDL2_image-2.x.x.dmg, and copy
-the framework bundles into /Library/Frameworks (create this directory
+Grab the latest SDL2-2.x.x.dmg, SDL2_image-2.x.x.dmg, and SDL2_mixer-2.x.x.dmg
+and copy the framework bundles into /Library/Frameworks (create this directory
 if it doesn't exist).
 
 Now you are all set and should be able to build the z80pack machines
