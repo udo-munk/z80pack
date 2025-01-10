@@ -1212,7 +1212,7 @@ void Lpanel_draw_stats(Lpanel_t *p)
 	glColor3f(1., 1., 0.);
 	snprintf(p->perf_txt, sizeof(p->perf_txt), "fps:%d sps:%d",
 		 p->frames_per_second, p->samples_per_second);
-	printStringAt(p->perf_txt, p->bbox.xyz_min[0] + .2, p->bbox.xyz_min[1] + .2);
+	printStringAt(p->perf_txt, 0, 0);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -1246,9 +1246,9 @@ void Lpanel_draw_cursor(Lpanel_t *p)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(200., 0., -10.);
+	glTranslatef(0., 0., -10.);
 
-	printStringAt(p->cursor_txt, p->cursor_textpos[0], p->cursor_textpos[1]);
+	printStringAt(p->cursor_txt, 200, 0);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -1272,8 +1272,6 @@ void Lpanel_inc_cursor(Lpanel_t *p, float x, float y)
 
 void Lpanel_make_cursor_text(Lpanel_t *p)
 {
-	p->cursor_textpos[0] = (p->bbox.xyz_max[0] + p->bbox.xyz_min[0]) * .5;
-	p->cursor_textpos[1] = p->bbox.xyz_min[1] + .1;
 	snprintf(p->cursor_txt, sizeof(p->cursor_txt), "cursor position=%7.3f,%7.3f",
 		 p->cursor[0], p->cursor[1]);
 }
