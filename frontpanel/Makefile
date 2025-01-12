@@ -3,7 +3,11 @@ WANT_SDL ?= NO
 
 LIB = libfrontpanel.a
 
-SRCS = jpeg.c lpanel.c lp_gfx.c lp_main.c lp_utils.c lp_window.c \
+ifneq ($(WANT_SDL),YES)
+JPEGC = jpeg.c
+endif
+
+SRCS = $(JPEGC) lpanel.c lp_gfx.c lp_main.c lp_utils.c lp_window.c \
 	lp_switch.c lp_font.c lp_materials.c
 
 CORE_DIR = ../z80core
@@ -21,7 +25,8 @@ else ifeq ($(TARGET_OS),LINUX)
 PLAT_INCS = -I/usr/include/SDL2
 else ifeq ($(TARGET_OS),OSX)
 PLAT_INCS = -F/Library/Frameworks -I/Library/Frameworks/SDL2.framework/Headers \
-	-I/Library/Frameworks/SDL2_image.framework/Headers
+	-I/Library/Frameworks/SDL2_image.framework/Headers \
+	-I/Library/Frameworks/SDL2_mixer.framework/Headers
 endif
 else
 ifeq ($(TARGET_OS),BSD)
@@ -79,10 +84,10 @@ clean: _rm_obj _rm_deps
 	rm -f $(LIB)
 
 _rm_obj:
-	rm -f $(OBJS)
+	rm -f *.o
 
 _rm_deps:
-	rm -f $(DEPS)
+	rm -f *.d
 
 distclean: clean
 

@@ -7,8 +7,6 @@
 #ifndef SIMSDL_INC
 #define SIMSDL_INC
 
-#ifdef WANT_SDL
-
 #include <stdbool.h>
 #include <SDL.h>
 
@@ -21,7 +19,5 @@ typedef struct win_funcs {
 
 extern int simsdl_create(win_funcs_t *funcs);
 extern void simsdl_destroy(int i);
-
-#endif /* WANT_SDL */
 
 #endif /* !SIMSDL_INC */

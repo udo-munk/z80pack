@@ -14,7 +14,7 @@ First install the needed dependencies for X11:
 
 or for SDL2:
 
-    sudo apt install build-essential libsdl2-dev libsdl2-image-dev
+    sudo apt install build-essential libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
 Then for X11 run  
 

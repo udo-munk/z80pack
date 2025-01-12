@@ -50,6 +50,7 @@ include $(CORE_DIR)/Makefile.in-os
 ###
 ifeq ($(WANT_SDL),YES)
 PLAT_DEFS = -DWANT_SDL
+PLAT_SRCS = simsdl.c
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include/SDL2
 PLAT_LDFLAGS = -L/usr/local/lib
@@ -88,9 +89,12 @@ FP_DEFS = -DFRONTPANEL
 FP_LIB = $(FP_DIR)/libfrontpanel.a
 ifeq ($(WANT_SDL),YES)
 ifeq ($(TARGET_OS),OSX)
-FP_LDLIBS = -lfrontpanel -framework SDL2_image -framework OpenGL
+FP_INCS = -I/Library/Frameworks/SDL2_image.framework/Headers \
+	-I/Library/Frameworks/SDL2_mixer.framework/Headers
+FP_LDLIBS = -lfrontpanel -framework SDL2_image -framework SDL2_mixer \
+	-framework OpenGL
 else
-FP_LDLIBS = -lfrontpanel -lSDL2_image -lGL
+FP_LDLIBS = -lfrontpanel -lSDL2_image -lSDL2_mixer -lGL
 endif
 else
 FP_LDLIBS = -lfrontpanel -ljpeg -lGL
@@ -102,7 +106,7 @@ endif
 
 DEFS = -DCONFDIR=\"$(CONF_DIR)\" -DDISKSDIR=\"$(DISKS_DIR)\" \
 	-DBOOTROM=\"$(ROMS_DIR)\" $(FP_DEFS) $(PLAT_DEFS)
-INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS)
+INCS = -I. -I$(CORE_DIR) -I$(IO_DIR) -I$(FP_DIR) $(PLAT_INCS) $(FP_INCS)
 CPPFLAGS = $(DEFS) $(INCS)
 
 CSTDS = -std=c99 -D_DEFAULT_SOURCE # -D_XOPEN_SOURCE=700L
@@ -132,9 +136,9 @@ INSTALL_DATA = $(INSTALL) -m 644
 
 # core system source files for the CPU simulation
 CORE_SRCS = sim8080.c simcore.c simdis.c simfun.c simglb.c simice.c simint.c \
-	simmain.c simsdl.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c \
-	simz80-ed.c simz80-fd.c simz80-fdcb.c
-SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS)
+	simmain.c simz80.c simz80-cb.c simz80-dd.c simz80-ddcb.c simz80-ed.c \
+	simz80-fd.c simz80-fdcb.c
+SRCS = $(CORE_SRCS) $(MACHINE_SRCS) $(IO_SRCS) $(PLAT_SRCS)
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 
@@ -167,10 +171,10 @@ uninstall:
 clean: _rm_obj _rm_deps
 
 _rm_obj:
-	rm -f $(OBJS)
+	rm -f *.o
 
 _rm_deps:
-	rm -f $(DEPS)
+	rm -f *.d
 
 distclean: clean
 	rm -f $(SIM)

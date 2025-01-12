@@ -91,6 +91,12 @@ static void *lp_mainloop_thread(void *n)
 		pthread_mutex_unlock(&data_lock);
 
 		// sleep remainder of fps time
+#if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
+		SwapBuffers(panel->hDC);
+		// UpdateWindow(panel->hWnd);
+#else
+		glXSwapBuffers(panel->dpy, panel->window);
+#endif
 		glFinish();
 		framerate_wait();
 		t2 = frate_gettime();
@@ -201,6 +207,11 @@ int fp_smoothLight(const char *name, int nframes)
 	return 1;
 }
 
+void fp_bindPowerFlag(uint8_t *addr)
+{
+	Lpanel_bindPowerFlag(panel, addr);
+}
+
 void fp_bindRunFlag(uint8_t *addr)
 {
 	Lpanel_bindRunFlag(panel, addr);
@@ -309,6 +320,7 @@ void fp_draw(bool tick)
 	SDL_LockMutex(data_sample_lock);
 	Lpanel_draw(panel);
 	SDL_UnlockMutex(data_sample_lock);
+	SDL_GL_SwapWindow(panel->window);
 	glFinish();
 	framecount++;
 	if (tick) {
@@ -334,6 +346,12 @@ void fp_procEvents(void)
 void fp_draw(void)
 {
 	Lpanel_draw(panel);
+#if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
+	SwapBuffers(panel->hDC);
+	// UpdateWindow(panel->hWnd);
+#else
+	glXSwapBuffers(panel->dpy, panel->window);
+#endif
 }
 
 #endif /* !WANT_SDL */

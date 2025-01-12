@@ -17,7 +17,7 @@ For using X11, enter:
 sudo apt install gcc make libjpeg-turbo8-dev libgl1-mesa-dev libglu1-mesa-dev
 
 Or for SDL2, enter:
-sudo apt install gcc make libsdl2-dev libsdl2-image-dev
+sudo apt install gcc make libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 
 Now unpack the z80pack source distribution and follow, for
 example, "README-frontpanel.txt".

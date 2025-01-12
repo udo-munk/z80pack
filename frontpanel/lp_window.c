@@ -25,6 +25,7 @@
 #ifdef WANT_SDL
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_opengl.h>
 #else /* !WANT_SDL */
 #if defined(__MINGW32__) || defined(_WIN32) || defined(_WIN32_) || defined(__WIN32__)
@@ -353,7 +354,7 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 
 		case VK_DOWN:
 			if (p->do_cursor)
-				Lpanel_inc_cursor(p, 0., -cursor_inc);
+				Lpanel_inc_cursor(p, 0., -p->cursor_inc);
 			else {
 				if (p->shift_key_pressed)
 					p->view.pan[1] += 0.1;
@@ -437,27 +438,27 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 		case 'v':
 		case 'V':
 			if (p->view.projection == LP_ORTHO)
-				view.projection = LP_PERSPECTIVE;
+				p->view.projection = LP_PERSPECTIVE;
 			else
-				view.projection = LP_ORTHO;
+				p->view.projection = LP_ORTHO;
 
-			view.redo_projections = true;
+			p->view.redo_projections = true;
 			break;
 
 		case 'z':
-			view.pan[2] -= .1;
-			view.redo_projections = true;
+			p->view.pan[2] -= .1;
+			p->view.redo_projections = true;
 			break;
 
 		case 'Z':
-			view.pan[2] += .1;
-			view.redo_projections = true;
+			p->view.pan[2] += .1;
+			p->view.redo_projections = true;
 			break;
 
 		case '1':
 			break;
 		}
-		break;
+		return 0;
 
 	case WM_MOUSEWHEEL:
 		p->view.pan[2] += (float) GET_WHEEL_DELTA_WPARAM(wParam) / 250.0;
@@ -486,8 +487,8 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 				p->view.pan[0] += ((float) LOWORD(lParam) - (float) omx) * .02;
 				p->view.pan[1] -= ((float) HIWORD(lParam) - (float) omy) * .02;
 			} else {
-				view.rot[1] += ((float) LOWORD(lParam) - (float) omx) * .2;
-				view.rot[0] += ((float) HIWORD(lParam) - (float) omy) * .2;
+				p->view.rot[1] += ((float) LOWORD(lParam) - (float) omx) * .2;
+				p->view.rot[0] += ((float) HIWORD(lParam) - (float) omy) * .2;
 			}
 
 			mousex = LOWORD(lParam);
@@ -523,8 +524,8 @@ LRESULT CALLBACK Lpanel_WndProc(Lpanel_t *p, UINT msg, WPARAM wParam, LPARAM lPa
 	case WM_DESTROY:
 		UnregisterClass(FPClassName, p->hInstance);
 		PostQuitMessage(0);
-		if (quit_callbackfunc)
-			(*quit_callbackfunc)();
+		if (p->quit_callbackfunc)
+			(*p->quit_callbackfunc)();
 		else
 			exit(EXIT_SUCCESS);
 		return 0;
@@ -801,10 +802,11 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 
 #ifdef WANT_SDL
 
-	if (IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG) == 0) {
-		fprintf(stderr, "Can't initialize SDL_image: %s\n", IMG_GetError());
-		return 0;
-	}
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	p->window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 				     p->window_xsize, p->window_ysize,
@@ -814,16 +816,13 @@ int Lpanel_openWindow(Lpanel_t *p, const char *title)
 		return 0;
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	if ((p->cx = SDL_GL_CreateContext(p->window)) == NULL) {
 		fprintf(stderr, "Can't create context: %s\n", SDL_GetError());
 		return 0;
 	}
+
 	SDL_GL_ResetAttributes();
+
 	if (SDL_GL_MakeCurrent(p->window, p->cx) < 0) {
 		fprintf(stderr, "Can't make window current to context: %s\n", SDL_GetError());
 		return 0;
@@ -1013,12 +1012,14 @@ void Lpanel_destroyWindow(Lpanel_t *p)
 	glFinish();
 
 #ifdef WANT_SDL
+	if (p->fan_sound && *p->powerflag)
+		Mix_HaltChannel(p->fan_channel);
+
 	if (SDL_GL_MakeCurrent(NULL, NULL) < 0) {
 		printf("lightpanel: destroyWindow: Can't release context\n");
 	}
 	SDL_GL_DeleteContext(p->cx);
 	SDL_DestroyWindow(p->window);
-	IMG_Quit();
 	p->cx = NULL;
 	p->window = NULL;
 #else /* !WANT_SDL */
@@ -1082,6 +1083,10 @@ void Lpanel_setProjection(Lpanel_t *p, bool dopick)
 			p->bbox.xyz_min[1], p->bbox.xyz_max[1],
 			.1, 1000.);
 		break;
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 	case LP_PERSPECTIVE: {
 		// gluPerspective(p->view.fovy, p->view.aspect, p->view.znear, p->view.zfar);
@@ -1207,7 +1212,7 @@ void Lpanel_draw_stats(Lpanel_t *p)
 	glColor3f(1., 1., 0.);
 	snprintf(p->perf_txt, sizeof(p->perf_txt), "fps:%d sps:%d",
 		 p->frames_per_second, p->samples_per_second);
-	printStringAt(p->perf_txt, p->bbox.xyz_min[0] + .2, p->bbox.xyz_min[1] + .2);
+	printStringAt(p->perf_txt, 0, 0);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -1241,9 +1246,9 @@ void Lpanel_draw_cursor(Lpanel_t *p)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(200., 0., -10.);
+	glTranslatef(0., 0., -10.);
 
-	printStringAt(p->cursor_txt, p->cursor_textpos[0], p->cursor_textpos[1]);
+	printStringAt(p->cursor_txt, 200, 0);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -1267,8 +1272,6 @@ void Lpanel_inc_cursor(Lpanel_t *p, float x, float y)
 
 void Lpanel_make_cursor_text(Lpanel_t *p)
 {
-	p->cursor_textpos[0] = (p->bbox.xyz_max[0] + p->bbox.xyz_min[0]) * .5;
-	p->cursor_textpos[1] = p->bbox.xyz_min[1] + .1;
 	snprintf(p->cursor_txt, sizeof(p->cursor_txt), "cursor position=%7.3f,%7.3f",
 		 p->cursor[0], p->cursor[1]);
 }
