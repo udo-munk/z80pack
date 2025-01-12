@@ -101,7 +101,7 @@ static int beg;				/* beginning display line address */
 static pthread_t thread;
 #endif
 
-/* create the SDL window for VDM display */
+/* create the SDL2 or X11 window for VDM display */
 static void open_display(void)
 {
 	xsize = 576 + (XOFF * 2);
@@ -168,7 +168,7 @@ static void open_display(void)
 #endif /* !WANT_SDL */
 }
 
-/* close the SDL window for VDM display */
+/* close the SDL2 or X11 window for VDM display */
 static void close_display(void)
 {
 #ifdef WANT_SDL
