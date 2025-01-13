@@ -31,21 +31,21 @@
 #include "lpanel.h"
 
 enum lp_switch_states {
-	LP_SWITCH_DOWN = 0, 		// switch is down
-	LP_SWITCH_UP = 1, 		// switch is up
-	LP_SWITCH_CENTER = 2 	// switch is centered (for momentary MOM_OFF_MOM
+	LP_SWITCH_DOWN = 0,		// switch is down
+	LP_SWITCH_UP = 1,		// switch is up
+	LP_SWITCH_CENTER = 2		// switch is centered (for momentary MOM_OFF_MOM)
 };
 
 enum lp_switch_operation {
 	LP_SWITCH_OP_ON_OFF = 0,	// on/off operation
-	LP_SWITCH_OP_MOM_OFF_MOM = 1, // momentary down, centered, momentary up
+	LP_SWITCH_OP_MOM_OFF_MOM = 1,	// momentary down, centered, momentary up
 	LP_SWITCH_OP_OFF_MOM = 2	// centered (down), momentary up
 };
 
 enum lp_switch_gfx_modes {
 	LP_SWITCH_GFX_TOGGLE = 0,	// uses internal toggle switch graphics
 	LP_SWITCH_GFX_PADDLE = 1,	// uses internal paddle switch graphics
-	LP_SWITCH_GFX_OBJECT_REF = 2 // uses a graphics 'object' from the config file
+	LP_SWITCH_GFX_OBJECT_REF = 2	// uses a graphics 'object' from the config file
 };
 
 enum lp_switch_datatypes {
