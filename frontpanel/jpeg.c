@@ -228,13 +228,13 @@ read_jpeg (char *fname, int *width, int *height, int *num_components)
 
   int num_scanlines;
 
-  if( (fd = fopen(fname,"rb")) == NULL) {
-    fprintf(stderr,"read_jpeg: could not open file %s\n",fname);
+  if ((fd = fopen(fname, "rb")) == NULL) {
+    fprintf(stderr, "read_jpeg: could not open file %s\n", fname);
     return NULL;
   }
 
 #if DBG
-  fprintf(stderr,"read_jpeg: reading file %s\n",fname);
+  fprintf(stderr, "read_jpeg: reading file %s\n", fname);
 #endif
 
   cinfo.err = jpeg_std_error(&jerr);
@@ -253,7 +253,7 @@ read_jpeg (char *fname, int *width, int *height, int *num_components)
   /* Start decompressor */
   (void) jpeg_start_decompress(&cinfo);
 #if DBG
-  fprintf(stderr,"read_jpeg: started decompressor for  file %s\n",fname);
+  fprintf(stderr, "read_jpeg: started decompressor for file %s\n", fname);
 #endif
 
   /* Write output file header */
@@ -269,6 +269,8 @@ read_jpeg (char *fname, int *width, int *height, int *num_components)
   (*dest_mgr->finish_output) (&cinfo, dest_mgr);
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
+
+  fclose(fd);
 
   *width = xsize;
   *height = ysize;

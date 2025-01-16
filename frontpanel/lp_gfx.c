@@ -840,7 +840,7 @@ int lpTextures_downloadTextures(lpTextures_t *p)
 
 			// get a bind id from OpenGL
 
-			n = glGetError();	/* clear any gl errors */
+			(void) glGetError();	/* clear any gl errors */
 
 			glGenTextures(1, (GLuint *) &tp->bind_id);
 			glBindTexture(GL_TEXTURE_2D, tp->bind_id);

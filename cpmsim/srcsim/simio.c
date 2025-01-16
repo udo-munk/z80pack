@@ -536,13 +536,13 @@ static void net_server_config(void)
 	char *s;
 	char fn[MAX_LFN];
 
-	strcpy(&fn[0], &confdir[0]);
-	strcat(&fn[0], "/net_server.conf");
+	strcpy(fn, confdir);
+	strcat(fn, "/net_server.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
 		LOG(TAG, "Server network configuration:\r\n");
-		s = &buf[0];
-		while (fgets(s, BUFSIZE, fp) != NULL) {
+		while (fgets(buf, BUFSIZE, fp) != NULL) {
+			s = buf;
 			if ((*s == '\n') || (*s == '#'))
 				continue;
 			i = atoi(s);
@@ -578,20 +578,20 @@ static void net_client_config(void)
 	char *s, *d;
 	char fn[MAX_LFN];
 
-	strcpy(&fn[0], &confdir[0]);
-	strcat(&fn[0], "/net_client.conf");
+	strcpy(fn, confdir);
+	strcat(fn, "/net_client.conf");
 
 	if ((fp = fopen(fn, "r")) != NULL) {
 		LOG(TAG, "Client network configuration:\r\n");
-		s = &buf[0];
-		while (fgets(s, BUFSIZE, fp) != NULL) {
+		while (fgets(buf, BUFSIZE, fp) != NULL) {
+			s = buf;
 			if ((*s == '\n') || (*s == '#'))
 				continue;
 			while ((*s != ' ') && (*s != '\t'))
 				s++;
 			while ((*s == ' ') || (*s == '\t'))
 				s++;
-			d = &cs_host[0];
+			d = cs_host;
 			while ((*s != ' ') && (*s != '\t'))
 				*d++ = *s++;
 			*d = '\0';

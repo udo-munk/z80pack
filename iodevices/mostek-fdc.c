@@ -364,7 +364,7 @@ BYTE fdc1771_data_in(void)
 			}
 
 			/* read the sector */
-			if (read(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+			if (read(fd, buf, SEC_SZ) != SEC_SZ) {
 				state = FDC_IDLE;	/* abort read command */
 				fdc_stat = sRECORD_NOT_FOUND;
 				close(fd);
@@ -469,7 +469,7 @@ void fdc1771_data_out(BYTE data)
 		/* last byte? */
 		if (dcnt == SEC_SZ) {
 			state = FDC_IDLE;
-			if (write(fd, &buf[0], SEC_SZ) == SEC_SZ)
+			if (write(fd, buf, SEC_SZ) == SEC_SZ)
 				fdc_stat = 0;
 			else
 				fdc_stat = sWRITE_FAULT;
