@@ -19,6 +19,7 @@
 
 #include <fcntl.h>
 #include <libgen.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -185,7 +186,7 @@ int main(int argc, char *argv[])
 					argv++;
 					s = argv[0];
 				}
-				p = &conffn[0];
+				p = conffn;
 				while (*s)
 					*p++ = *s++;
 				*p = '\0';
@@ -443,7 +444,8 @@ static void save_core(void)
 {
 	register FILE *fp;
 	register int i;
-	int fd, cnt;
+	int fd;
+	bool err;
 	const char *fname;
 
 #ifndef EXCLUDE_Z80
@@ -462,54 +464,59 @@ static void save_core(void)
 		return;
 	}
 
-	cnt = fwrite(&A, sizeof(A), 1, fp);
-	cnt += fwrite(&F, sizeof(F), 1, fp);
-	cnt += fwrite(&B, sizeof(B), 1, fp);
-	cnt += fwrite(&C, sizeof(C), 1, fp);
-	cnt += fwrite(&D, sizeof(D), 1, fp);
-	cnt += fwrite(&E, sizeof(E), 1, fp);
-	cnt += fwrite(&H, sizeof(H), 1, fp);
-	cnt += fwrite(&L, sizeof(L), 1, fp);
+	err = false;
+	if (fwrite(&A, sizeof(A), 1, fp) != 1 ||
+	    fwrite(&F, sizeof(F), 1, fp) != 1 ||
+	    fwrite(&B, sizeof(B), 1, fp) != 1 ||
+	    fwrite(&C, sizeof(C), 1, fp) != 1 ||
+	    fwrite(&D, sizeof(D), 1, fp) != 1 ||
+	    fwrite(&E, sizeof(E), 1, fp) != 1 ||
+	    fwrite(&H, sizeof(H), 1, fp) != 1 ||
+	    fwrite(&L, sizeof(L), 1, fp) != 1)
+		err = true;
 #ifndef EXCLUDE_Z80
-	if (cpu == Z80) {
-		cnt += fwrite(&A_, sizeof(A_), 1, fp);
-		cnt += fwrite(&F_, sizeof(F_), 1, fp);
-		cnt += fwrite(&B_, sizeof(B_), 1, fp);
-		cnt += fwrite(&C_, sizeof(C_), 1, fp);
-		cnt += fwrite(&D_, sizeof(D_), 1, fp);
-		cnt += fwrite(&E_, sizeof(E_), 1, fp);
-		cnt += fwrite(&H_, sizeof(H_), 1, fp);
-		cnt += fwrite(&L_, sizeof(L_), 1, fp);
-		cnt += fwrite(&I, sizeof(I), 1, fp);
-	}
+	if (!err && cpu == Z80 &&
+	    (fwrite(&A_, sizeof(A_), 1, fp) != 1 ||
+	     fwrite(&F_, sizeof(F_), 1, fp) != 1 ||
+	     fwrite(&B_, sizeof(B_), 1, fp) != 1 ||
+	     fwrite(&C_, sizeof(C_), 1, fp) != 1 ||
+	     fwrite(&D_, sizeof(D_), 1, fp) != 1 ||
+	     fwrite(&E_, sizeof(E_), 1, fp) != 1 ||
+	     fwrite(&H_, sizeof(H_), 1, fp) != 1 ||
+	     fwrite(&L_, sizeof(L_), 1, fp) != 1 ||
+	     fwrite(&I, sizeof(I), 1, fp) != 1))
+		err = true;
 #endif
-	cnt += fwrite(&IFF, sizeof(IFF), 1, fp);
+	if (!err && fwrite(&IFF, sizeof(IFF), 1, fp) != 1)
+		err = true;
 #ifndef EXCLUDE_Z80
-	if (cpu == Z80) {
-		cnt += fwrite(&R, sizeof(R), 1, fp);
-		cnt += fwrite(&R_, sizeof(R_), 1, fp);
-	}
+	if (!err && cpu == Z80 &&
+	    (fwrite(&R, sizeof(R), 1, fp) != 1 ||
+	     fwrite(&R_, sizeof(R_), 1, fp) != 1))
+		err = true;
 #endif
-	cnt += fwrite(&PC, sizeof(PC), 1, fp);
-	cnt += fwrite(&SP, sizeof(SP), 1, fp);
+	if (!err &&
+	    (fwrite(&PC, sizeof(PC), 1, fp) != 1 ||
+	     fwrite(&SP, sizeof(SP), 1, fp) != 1))
+		err = true;
 #ifndef EXCLUDE_Z80
-	if (cpu == Z80) {
-		cnt += fwrite(&IX, sizeof(IX), 1, fp);
-		cnt += fwrite(&IY, sizeof(IY), 1, fp);
-	}
-#endif
-#ifndef EXCLUDE_I8080
-	if (cpu == I8080)
-		cnt += 13;	/* pretend we wrote the Z80 registers */
+	if (!err && cpu == Z80 &&
+	    (fwrite(&IX, sizeof(IX), 1, fp) != 1 ||
+	     fwrite(&IY, sizeof(IY), 1, fp) != 1))
+		err = true;
 #endif
 
-	for (i = 0; i < 65536; i++)
-		if (putc(getmem(i), fp) == -1)
-			break;
+	if (!err) {
+		for (i = 0; i < 65536; i++)
+			if (putc(getmem(i), fp) == EOF) {
+				err = true;
+				break;
+			}
+	}
 
 	fclose(fp);
 
-	if (cnt != 24 || i != 65536)
+	if (err)
 		printf("error writing %s\n", fname);
 }
 
@@ -521,7 +528,7 @@ static int load_core(void)
 {
 	register FILE *fp;
 	register int i, c;
-	int cnt;
+	bool err;
 	const char *fname;
 
 #ifndef EXCLUDE_Z80
@@ -537,56 +544,60 @@ static int load_core(void)
 		return 1;
 	}
 
-	cnt = fread(&A, sizeof(A), 1, fp);
-	cnt += fread(&F, sizeof(F), 1, fp);
-	cnt += fread(&B, sizeof(B), 1, fp);
-	cnt += fread(&C, sizeof(C), 1, fp);
-	cnt += fread(&D, sizeof(D), 1, fp);
-	cnt += fread(&E, sizeof(E), 1, fp);
-	cnt += fread(&H, sizeof(H), 1, fp);
-	cnt += fread(&L, sizeof(L), 1, fp);
+	err = false;
+	if (fread(&A, sizeof(A), 1, fp) != 1 ||
+	    fread(&F, sizeof(F), 1, fp) != 1 ||
+	    fread(&B, sizeof(B), 1, fp) != 1 ||
+	    fread(&C, sizeof(C), 1, fp) != 1 ||
+	    fread(&D, sizeof(D), 1, fp) != 1 ||
+	    fread(&E, sizeof(E), 1, fp) != 1 ||
+	    fread(&H, sizeof(H), 1, fp) != 1 ||
+	    fread(&L, sizeof(L), 1, fp) != 1)
+		err = true;
 #ifndef EXCLUDE_Z80
-	if (cpu == Z80) {
-		cnt += fread(&A_, sizeof(A_), 1, fp);
-		cnt += fread(&F_, sizeof(F_), 1, fp);
-		cnt += fread(&B_, sizeof(B_), 1, fp);
-		cnt += fread(&C_, sizeof(C_), 1, fp);
-		cnt += fread(&D_, sizeof(D_), 1, fp);
-		cnt += fread(&E_, sizeof(E_), 1, fp);
-		cnt += fread(&H_, sizeof(H_), 1, fp);
-		cnt += fread(&L_, sizeof(L_), 1, fp);
-		cnt += fread(&I, sizeof(I), 1, fp);
-	}
+	if (!err && cpu == Z80 &&
+	    (fread(&A_, sizeof(A_), 1, fp) != 1 ||
+	     fread(&F_, sizeof(F_), 1, fp) != 1 ||
+	     fread(&B_, sizeof(B_), 1, fp) != 1 ||
+	     fread(&C_, sizeof(C_), 1, fp) != 1 ||
+	     fread(&D_, sizeof(D_), 1, fp) != 1 ||
+	     fread(&E_, sizeof(E_), 1, fp) != 1 ||
+	     fread(&H_, sizeof(H_), 1, fp) != 1 ||
+	     fread(&L_, sizeof(L_), 1, fp) != 1 ||
+	     fread(&I, sizeof(I), 1, fp) != 1))
+		err = true;
 #endif
-	cnt += fread(&IFF, sizeof(IFF), 1, fp);
+	if (!err && fread(&IFF, sizeof(IFF), 1, fp) != 1)
+		err = true;
 #ifndef EXCLUDE_Z80
-	if (cpu == Z80) {
-		cnt += fread(&R, sizeof(R), 1, fp);
-		cnt += fread(&R_, sizeof(R_), 1, fp);
-	}
+	if (!err && cpu == Z80 &&
+	    (fread(&R, sizeof(R), 1, fp) != 1 ||
+	     fread(&R_, sizeof(R_), 1, fp) != 1))
+		err = true;
 #endif
-	cnt += fread(&PC, sizeof(PC), 1, fp);
-	cnt += fread(&SP, sizeof(SP), 1, fp);
+	if (!err &&
+	    (fread(&PC, sizeof(PC), 1, fp) != 1 ||
+	     fread(&SP, sizeof(SP), 1, fp) != 1))
+		err = true;
 #ifndef EXCLUDE_Z80
-	if (cpu == Z80) {
-		cnt += fread(&IX, sizeof(IX), 1, fp);
-		cnt += fread(&IY, sizeof(IY), 1, fp);
-	}
-#endif
-#ifndef EXCLUDE_I8080
-	if (cpu == I8080)
-		cnt += 13;	/* pretend we read the Z80 registers */
+	if (!err && cpu == Z80 &&
+	    (fread(&IX, sizeof(IX), 1, fp) != 1 ||
+	     fread(&IY, sizeof(IY), 1, fp) != 1))
+		err = true;
 #endif
 
-	for (i = 0; i < 65536; i++)
-		if ((c = getc(fp)) == -1)
-			break;
-		else
-			putmem(i, c);
+	if (!err) {
+		for (i = 0; i < 65536; i++)
+			if ((c = getc(fp)) == EOF) {
+				err = true;
+				break;
+			} else
+				putmem(i, c);
+	}
 
 	fclose(fp);
 
-	if (cnt != 24 || i != 65536) {
+	if (err) {
 		printf("error reading %s\n", fname);
 		return 1;
 	} else

@@ -293,7 +293,7 @@ BYTE tarbell_data_in(void)
 			}
 
 			/* read the sector */
-			if (read(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+			if (read(fd, buf, SEC_SZ) != SEC_SZ) {
 				state = FDC_IDLE;	/* abort read command */
 				fdc_stat = 0x10;	/* record not found */
 				close(fd);
@@ -406,7 +406,7 @@ void tarbell_data_out(BYTE data)
 		/* last byte? */
 		if (dcnt == SEC_SZ) {
 			state = FDC_IDLE;		/* reset DRQ */
-			if (write(fd, &buf[0], SEC_SZ) == SEC_SZ)
+			if (write(fd, buf, SEC_SZ) == SEC_SZ)
 				fdc_stat = 0;
 			else
 				fdc_stat = 0x20;	/* write fault */

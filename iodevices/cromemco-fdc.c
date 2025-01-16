@@ -450,7 +450,7 @@ BYTE cromemco_fdc_data_in(void)
 				return (BYTE) 0;
 			}
 			/* read the sector */
-			if (read(fd, &buf[0], secsz) != secsz) {
+			if (read(fd, buf, secsz) != secsz) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
@@ -594,7 +594,7 @@ void cromemco_fdc_data_out(BYTE data)
 			state = FDC_IDLE;		/* done */
 			fdc_flags |= 1;			/* set EOJ */
 			fdc_flags &= ~128;		/* reset DRQ */
-			if (write(fd, &buf[0], secsz) == secsz)
+			if (write(fd, buf, secsz) == secsz)
 				fdc_stat = 0;
 			else
 				fdc_stat = 0x20;	/* write fault */

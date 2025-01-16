@@ -461,7 +461,7 @@ int DirectoryHandler(HttpdConnection_t *conn, void *path) {
 
             while ((pDirent = readdir(pDir)) != NULL) {
                 LOGD(TAG, "GET directory: %s type: %d", pDirent->d_name, pDirent->d_type);
-		snprintf(&fullpath[0], MAX_LFN, "%s/%s", (char *) path, pDirent->d_name);
+		snprintf(fullpath, MAX_LFN, "%s/%s", (char *) path, pDirent->d_name);
 		/*
 		 * not working with some filesystems like Linux xfs, need to use stat()
                  * if (pDirent->d_type==DT_REG) {

@@ -42,8 +42,8 @@ void config(void)
 	}
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		s = buf;
-		while (fgets(s, BUFSIZE, fp) != NULL) {
+		while (fgets(buf, BUFSIZE, fp) != NULL) {
+			s = buf;
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
 			if ((t1 = strtok(s, "= \t\r\n")) == NULL) {
