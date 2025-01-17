@@ -1087,7 +1087,7 @@ int Lpanel_pick(Lpanel_t *p, int button, bool state, int x, int y)
 #endif
 
 	namebuf[0] = 0;
-	glSelectBuffer(500, &namebuf[0]);
+	glSelectBuffer(500, namebuf);
 	glRenderMode(GL_SELECT);
 	glInitNames();
 	glPushName(0);
@@ -1230,7 +1230,6 @@ bool Lpanel_readConfig(Lpanel_t *p, const char *_fname)
 				       lineno, fname);
 				printf("could not load sound '%s'.\n", sound_path);
 				bailout = true;
-				break;
 			}
 
 			free(sound_path);

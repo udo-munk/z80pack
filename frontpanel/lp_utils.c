@@ -367,7 +367,7 @@ int xpand(const char *s, char **namelist[])
 				    abs(inc_ival) + 1;
 
 			new_namelist = (char **) malloc(sizeof(char *) * max_names);
-			*namelist = &new_namelist[0];
+			*namelist = new_namelist;
 			num_names = 0;
 
 			do {
@@ -406,7 +406,7 @@ int xpand(const char *s, char **namelist[])
 			strcat(obuf, suffix);
 
 		new_namelist = (char **) malloc(sizeof(char *));
-		*namelist = &new_namelist[0];
+		*namelist = new_namelist;
 		num_names = 0;
 
 		new_namelist[num_names] = (char *) malloc(strlen(obuf) + 1);

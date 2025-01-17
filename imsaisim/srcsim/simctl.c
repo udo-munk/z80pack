@@ -113,7 +113,7 @@ void mon(void)
 #endif
 		/* initialize front panel */
 		putchar('\n');
-		if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
+		if (!fp_init2(confdir, "panel.conf", fp_size)) {
 			LOGE(TAG, "frontpanel error");
 			exit(EXIT_FAILURE);
 		}

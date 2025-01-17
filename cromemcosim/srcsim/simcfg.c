@@ -50,15 +50,15 @@ void config(void)
 	int section = 0;
 
 	if (c_flag) {
-		strcpy(fn, &conffn[0]);
+		strcpy(fn, conffn);
 	} else {
-		strcpy(fn, &confdir[0]);
+		strcpy(fn, confdir);
 		strcat(fn, "/system.conf");
 	}
 
 	if ((fp = fopen(fn, "r")) != NULL) {
-		s = &buf[0];
-		while (fgets(s, BUFSIZE, fp) != NULL) {
+		while (fgets(buf, BUFSIZE, fp) != NULL) {
+			s = buf;
 			if ((*s == '\n') || (*s == '\r') || (*s == '#'))
 				continue;
 			if ((t1 = strtok(s, " \t")) == NULL) {

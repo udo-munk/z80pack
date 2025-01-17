@@ -107,7 +107,7 @@ void mon(void)
 		XInitThreads();
 #endif
 		/* initialize front panel */
-		if (!fp_init2(&confdir[0], "panel.conf", fp_size)) {
+		if (!fp_init2(confdir, "panel.conf", fp_size)) {
 			LOGE(TAG, "frontpanel error");
 			exit(EXIT_FAILURE);
 		}

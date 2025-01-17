@@ -119,9 +119,9 @@ static void dsk_path(void)
 }
 
 /*
- * check disk image
+ * open and check disk image
  */
-static int dsk_check(void)
+static int dsk_open(int flags)
 {
 	struct stat s;
 
@@ -129,15 +129,15 @@ static int dsk_check(void)
 	dsk_path();
 	strcat(fn, "/");
 	strcat(fn, disks[disk]);
-	if ((fd = open(fn, O_RDONLY)) == -1)
+	if ((fd = open(fn, flags)) == -1)
 		return 0;
 
 	/* check for correct image size */
 	fstat(fd, &s);
-	close(fd);
-	if (s.st_size != 337568)
+	if (s.st_size != 337568) {
+		close(fd);
 		return 0;
-	else
+	} else
 		return 1;
 }
 
@@ -219,11 +219,12 @@ void altair_dsk_select_out(BYTE data)
 		/* get disk no. */
 		disk = data & 0x0f;
 		/* check disk in drive */
-		if (dsk_check() == 0) {
+		if (dsk_open(O_RDONLY) == 0) {
 			/* no (valid) disk in drive, disable */
 			dsk_disable();
 			return;
 		}
+		close(fd);
 		/* enable */
 		state = FDC_ENABLED;
 		pthread_mutex_lock(&mustatus);
@@ -419,18 +420,17 @@ void altair_dsk_data_out(BYTE data)
 	/* last byte written? */
 	if (dcnt == SEC_SZ) {
 		writing = 0;
-		/* check disk */
-		if (dsk_check() == 0) {
+		/* open and check disk */
+		if (dsk_open(O_RDWR) == 0) {
 			dsk_disable();
 			return;
 		}
 		/* write sector */
-		fd = open(fn, O_RDWR);
 		pos = (track[disk] * SPT + rwsec) * SEC_SZ;
 		if (lseek(fd, pos, SEEK_SET) != pos) {
 			LOGE(TAG, "can't seek to sector %d track %d",
 			     rwsec, track[disk]);
-		} else if (write(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+		} else if (write(fd, buf, SEC_SZ) != SEC_SZ) {
 			LOGE(TAG, "can't write sector %d track %d",
 			     rwsec, track[disk]);
 		}
@@ -449,18 +449,17 @@ BYTE altair_dsk_data_in(void)
 
 	/* first byte? */
 	if (dcnt == 0) {
-		/* check disk */
-		if (dsk_check() == 0) {
+		/* open and check disk */
+		if (dsk_open(O_RDONLY) == 0) {
 			dsk_disable();
-			memset(&buf[0], 0xff, SEC_SZ);
+			memset(buf, 0xff, SEC_SZ);
 		} else {
 			/* read sector */
-			fd = open(fn, O_RDONLY);
 			pos = (track[disk] * SPT + rwsec) * SEC_SZ;
 			if (lseek(fd, pos, SEEK_SET) != pos) {
 				LOGE(TAG, "can't seek to sector %d track %d",
 				     rwsec, track[disk]);
-			} else if (read(fd, &buf[0], SEC_SZ) != SEC_SZ) {
+			} else if (read(fd, buf, SEC_SZ) != SEC_SZ) {
 				LOGE(TAG, "can't read sector %d track %d",
 				     rwsec, track[disk]);
 			}

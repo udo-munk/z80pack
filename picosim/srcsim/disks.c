@@ -162,7 +162,7 @@ bool load_file(const char *name)
 	}
 
 	/* read file into memory */
-	while ((sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br)) == FR_OK) {
+	while ((sd_res = f_read(&sd_file, dsk_buf, SEC_SZ, &br)) == FR_OK) {
 		for (j = 0; j < br; j++)
 			dma_write(i + j, dsk_buf[j]);
 		if (br < SEC_SZ)	/* last record reached */
@@ -292,7 +292,7 @@ BYTE read_sec(int drive, int track, int sector, WORD addr)
 	if (stat == FDC_STAT_OK) {
 
 		/* read sector into memory */
-		sd_res = f_read(&sd_file, &dsk_buf[0], SEC_SZ, &br);
+		sd_res = f_read(&sd_file, dsk_buf, SEC_SZ, &br);
 		if (sd_res == FR_OK) {
 			if (br < SEC_SZ)	/* UH OH */
 				stat = FDC_STAT_READ;
@@ -329,7 +329,7 @@ BYTE write_sec(int drive, int track, int sector, WORD addr)
 		/* write sector to disk image */
 		for (i = 0; i < SEC_SZ; i++)
 			dsk_buf[i] = dma_read(addr + i);
-		sd_res = f_write(&sd_file, &dsk_buf[0], SEC_SZ, &br);
+		sd_res = f_write(&sd_file, dsk_buf, SEC_SZ, &br);
 		if (sd_res == FR_OK) {
 			if (br < SEC_SZ)	/* UH OH */
 				stat = FDC_STAT_WRITE;

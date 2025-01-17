@@ -101,13 +101,14 @@ static inline BYTE memrdr(WORD addr)
 	}
 #endif
 
-	if (selbnk == 0)
+	if (selbnk == 0) {
 		data = *(memory[0] + addr);
-
-	if (addr >= segsize)
-		data = *(memory[0] + addr);
-	else
-		data = *(memory[selbnk] + addr);
+	} else {
+		if (addr >= segsize)
+			data = *(memory[0] + addr);
+		else
+			data = *(memory[selbnk] + addr);
+	}
 
 #ifdef BUS_8080
 	cpu_bus &= ~CPU_M1;
