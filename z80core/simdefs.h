@@ -8,6 +8,7 @@
 #ifndef SIMDEFS_INC
 #define SIMDEFS_INC
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
@@ -91,6 +92,13 @@ typedef int8_t   SBYTE;		/* 8 bit signed */
 typedef uint64_t Tstates_t;	/* uint64 for counting T-states */
 typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
 	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
+
+#ifdef IOPANEL
+typedef struct port_flags {
+	bool in: 1;		/* input port accessed */
+	bool out: 1;		/* output port accessed */
+} port_flags_t;
+#endif
 
 /*
  *	macro for declaring unused function parameters

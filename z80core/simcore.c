@@ -11,7 +11,6 @@
 
 #include <inttypes.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -298,6 +297,10 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_data = io_data;
 #endif
 
+#ifdef IOPANEL
+	port_flags[addrl].in = true;
+#endif
+
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
 
 	cpu_time -= get_clock_us() - clk;
@@ -353,6 +356,10 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	fp_led_data = IO_DATA_UNUSED;
 #endif
 
+#ifdef IOPANEL
+	port_flags[addrl].out = true;
+#endif
+
 	cpu_time -= get_clock_us() - clk;
 }
 
@@ -361,7 +368,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
  */
 void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack))
 {
-
 	bus_mode = mode;
 	dma_bus_master = bus_master;
 	bus_request = 1;
@@ -372,7 +378,6 @@ void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack))
  */
 void end_bus_request(void)
 {
-
 	bus_mode = BUS_DMA_NONE;
 	dma_bus_master = NULL;
 	bus_request = 0;
