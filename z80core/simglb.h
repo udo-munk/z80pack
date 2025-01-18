@@ -56,15 +56,16 @@ extern int	tmax, cpu_needed;
 #ifdef FRONTPANEL
 extern uint64_t fp_clock;
 extern float	fp_fps;
+extern WORD 	address_switch;
+#endif
+#if defined(FRONTPANEL) || defined(SIMPLEPANEL)
 extern WORD 	fp_led_address;
 extern BYTE 	fp_led_data;
-extern WORD 	address_switch;
 extern BYTE 	fp_led_output;
 #endif
-#ifdef SIMPLEPANEL
-extern WORD 	fp_led_address;
-extern BYTE 	fp_led_data;
-extern BYTE 	fp_led_output;
+
+#ifdef IOPANEL
+extern port_flags_t port_flags[256];
 #endif
 
 extern int	s_flag, l_flag, m_flag, x_flag, i_flag, f_flag,
