@@ -75,15 +75,19 @@ int cpu_needed;			/* don't adjust CPU freq if needed */
 #ifdef FRONTPANEL
 uint64_t fp_clock;		/* simulation clock */
 float fp_fps = 30.0;		/* frame rate, default 30 usually works */
+WORD address_switch;		/* address and programmed input switches */
+#endif
+#if defined(FRONTPANEL) || defined(SIMPLEPANEL)
 WORD fp_led_address;		/* lights for address bus */
 BYTE fp_led_data;		/* lights for data bus */
-WORD address_switch;		/* address and programmed input switches */
 BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
 #endif
-#ifdef SIMPLEPANEL
-WORD fp_led_address;		/* lights for address bus */
-BYTE fp_led_data;		/* lights for data bus */
-BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
+
+/*
+ *	Variables for iopanel
+ */
+#ifdef IOPANEL
+port_flags_t port_flags[256];	/* port access flags */
 #endif
 
 /*
