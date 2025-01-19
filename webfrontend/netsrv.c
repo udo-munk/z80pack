@@ -430,7 +430,7 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused)
 						BULLET BULLET BULLET BULLET;
 				/* Filter out only TERM and non-shell environment
 				   variables of the form '*.*' ie. contain '.' */
-				if (!strcmp(t1, "TERM") || index(t1, '.'))
+				if (!strcmp(t1, "TERM") || strchr(t1, '.'))
 					httpdPrintf(conn, "%s \"%s\": \"%s\" ",
 						    (o++) == 0 ? "" : ",",
 						    t1, (t2 == NULL) ? "" : t2);
