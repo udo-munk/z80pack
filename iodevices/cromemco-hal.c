@@ -38,19 +38,19 @@ static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
 
-static int null_alive(int dev)
+static bool null_alive(int dev)
 {
 	UNUSED(dev);
 
-	return 1; /* NULL is always alive */
+	return true; /* NULL is always alive */
 }
 
 #if !defined(HAS_NETSERVER) || !defined(HAS_MODEM)
-static int null_dead(int dev)
+static bool null_dead(int dev)
 {
 	UNUSED(dev);
 
-	return 0; /* NULL is always dead */
+	return false; /* NULL is always dead */
 }
 #endif
 
@@ -81,14 +81,14 @@ static void null_out(int dev, BYTE data)
 
 #ifdef HAS_NETSERVER
 
-static int net_tty_alive(int dev)
+static bool net_tty_alive(int dev)
 {
 	if (n_flag) {
 		// LOG(TAG, "WEBTTY %d: %d\r\n", dev, net_device_alive(dev));
 		/* WEBTTY is only alive if websocket is connected */
 		return net_device_alive((net_device_t) dev);
 	} else
-		return 0;
+		return false;
 }
 
 static void net_tty_status(int dev, BYTE *stat)
@@ -119,11 +119,11 @@ static void net_tty_out(int dev, BYTE data)
 
 /* -------------------- STDIO HAL -------------------- */
 
-static int stdio_alive(int dev)
+static bool stdio_alive(int dev)
 {
 	UNUSED(dev);
 
-	return 1; /* STDIO is always alive */
+	return true; /* STDIO is always alive */
 }
 
 static void stdio_status(int dev, BYTE *stat)
@@ -193,9 +193,9 @@ again:
 
 /* -------------------- SOCKET SERVER HAL -------------------- */
 
-static int scktsrv_alive(int dev)
+static bool scktsrv_alive(int dev)
 {
-	return ncons[dev].ssc; /* SCKTSRV is alive if there is an open socket */
+	return ncons[dev].ssc != 0; /* SCKTSRV is alive if there is an open socket */
 }
 
 static void scktsrv_status(int dev, BYTE *stat)
@@ -285,7 +285,7 @@ again:
 
 #include "generic-at-modem.h"
 
-static int modem_alive(int dev)
+static bool modem_alive(int dev)
 {
 	UNUSED(dev);
 
@@ -325,25 +325,25 @@ const char *tuart_port_name[MAX_TUART_PORT] =
 
 static const hal_device_t devices[] = {
 #ifdef HAS_NETSERVER
-	{ "WEBTTY", 0, DEV_TTY, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
-	{ "WEBTTY2", 0, DEV_TTY2, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
-	{ "WEBTTY3", 0, DEV_TTY3, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
-	{ "WEBPTR", 0, DEV_PTR, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
+	{ "WEBTTY", false, DEV_TTY, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
+	{ "WEBTTY2", false, DEV_TTY2, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
+	{ "WEBTTY3", false, DEV_TTY3, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
+	{ "WEBPTR", false, DEV_PTR, net_tty_alive, net_tty_status, net_tty_in, net_tty_out },
 #else
-	{ "WEBTTY", 0, 0, null_dead, null_status, null_in, null_out },
-	{ "WEBTTY2", 0, 0, null_dead, null_status, null_in, null_out },
-	{ "WEBTTY3", 0, 0, null_dead, null_status, null_in, null_out },
-	{ "WEBPTR", 0, 0, null_dead, null_status, null_in, null_out },
+	{ "WEBTTY", false, 0, null_dead, null_status, null_in, null_out },
+	{ "WEBTTY2", false, 0, null_dead, null_status, null_in, null_out },
+	{ "WEBTTY3", false, 0, null_dead, null_status, null_in, null_out },
+	{ "WEBPTR", false, 0, null_dead, null_status, null_in, null_out },
 #endif
-	{ "STDIO", 0, 0, stdio_alive, stdio_status, stdio_in, stdio_out },
-	{ "SCKTSRV1", 0, 0, scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out },
-	{ "SCKTSRV2", 0, 1, scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out },
+	{ "STDIO", false, 0, stdio_alive, stdio_status, stdio_in, stdio_out },
+	{ "SCKTSRV1", false, 0, scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out },
+	{ "SCKTSRV2", false, 1, scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out },
 #ifdef HAS_MODEM
-	{ "MODEM", 0, 0, modem_alive, modem_status, modem_in, modem_out },
+	{ "MODEM", false, 0, modem_alive, modem_status, modem_in, modem_out },
 #else
-	{ "MODEM", 0, 0, null_dead, null_status, null_in, null_out },
+	{ "MODEM", false, 0, null_dead, null_status, null_in, null_out },
 #endif
-	{ "", 0, 0, null_alive, null_status, null_in, null_out }
+	{ "", false, 0, null_alive, null_status, null_in, null_out }
 };
 
 hal_device_t tuart[MAX_TUART_PORT][MAX_HAL_DEV];
@@ -420,11 +420,11 @@ static void hal_init(void)
 			dev = strtok(match, ",\r");
 			while (dev) {
 				char k = dev[strlen(dev) - 1];
-				int fallthrough = 0;
+				bool fallthrough = false;
 
 				if (k == '+') {
 					dev[strlen(dev) - 1] = 0;
-					fallthrough = 1;
+					fallthrough = true;
 				}
 
 				d = hal_find_device(dev);
@@ -505,7 +505,7 @@ next:
 	}
 }
 
-int hal_alive(tuart_port_t dev)
+bool hal_alive(tuart_port_t dev)
 {
 	int p = 0;
 
@@ -514,5 +514,5 @@ int hal_alive(tuart_port_t dev)
 		p++;
 
 	/* return "alive" (true) when not the NULL device */
-	return tuart[dev][p].name ? 1 : 0;
+	return tuart[dev][p].name ? true : false;
 }

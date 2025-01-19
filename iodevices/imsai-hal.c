@@ -39,15 +39,15 @@ static const char *TAG = "HAL";
 
 /* -------------------- NULL device HAL -------------------- */
 
-static int null_alive(void)
+static bool null_alive(void)
 {
-	return 1; /* NULL is always alive */
+	return true; /* NULL is always alive */
 }
 
 #if !defined(HAS_NETSERVER) || !defined(HAS_MODEM)
-static int null_dead(void)
+static bool null_dead(void)
 {
-	return 0; /* NULL is always dead */
+	return false; /* NULL is always dead */
 }
 #endif
 
@@ -70,14 +70,14 @@ static void null_out(BYTE data)
 	return;
 }
 
-static int null_cd(void)
+static bool null_cd(void)
 {
-	return 0;
+	return false;
 }
 
 /* -------------------- VIOKBD HAL -------------------- */
 
-static int vio_kbd_alive(void)
+static bool vio_kbd_alive(void)
 {
 #ifdef HAS_NETSERVER
 	if (n_flag) {
@@ -86,7 +86,7 @@ static int vio_kbd_alive(void)
 	} else {
 #endif
 		/* VIO (xterm) keyboard is always alive */
-		return 1;
+		return true;
 #ifdef HAS_NETSERVER
 	}
 #endif
@@ -112,13 +112,13 @@ static void vio_kbd_out(BYTE data)
 
 #ifdef HAS_NETSERVER
 
-static int net_tty_alive(void)
+static bool net_tty_alive(void)
 {
 	if (n_flag) {
 		/* WEBTTY is only alive if websocket is connected */
 		return net_device_alive(DEV_TTY);
 	} else
-		return 0;
+		return false;
 }
 
 static void net_tty_status(BYTE *stat)
@@ -151,13 +151,13 @@ static void net_tty_out(BYTE data)
 
 #ifdef HAS_NETSERVER
 
-static int net_ptr_alive(void)
+static bool net_ptr_alive(void)
 {
 	if (n_flag) {
 		/* WEBPTR is only alive if websocket is connected */
 		return net_device_alive(DEV_PTR);
 	} else
-		return 0;
+		return false;
 }
 
 static void net_ptr_status(BYTE *stat)
@@ -188,9 +188,9 @@ static void net_ptr_out(BYTE data)
 
 /* -------------------- STDIO HAL -------------------- */
 
-static int stdio_alive(void)
+static bool stdio_alive(void)
 {
-	return 1; /* STDIO is always alive */
+	return true; /* STDIO is always alive */
 }
 
 static void stdio_status(BYTE *stat)
@@ -253,7 +253,7 @@ again:
 
 /* -------------------- SOCKET SERVER HAL -------------------- */
 
-static int scktsrv_alive(void)
+static bool scktsrv_alive(void)
 {
 	struct pollfd p[1];
 
@@ -272,7 +272,7 @@ static int scktsrv_alive(void)
 		}
 	}
 
-	return ucons[0].ssc; /* SCKTSRV is alive if there is an open socket */
+	return ucons[0].ssc != 0; /* SCKTSRV is alive if there is an open socket */
 }
 
 static void scktsrv_status(BYTE *stat)
@@ -357,7 +357,7 @@ again:
 
 #include "generic-at-modem.h"
 
-static int modem_alive(void)
+static bool modem_alive(void)
 {
 	return modem_device_alive(0);
 }
@@ -380,7 +380,7 @@ static void modem_out(BYTE data)
 	modem_device_send(0, (char) data);
 }
 
-static int modem_cd(void)
+static bool modem_cd(void)
 {
 	return modem_device_carrier(0);
 }
@@ -394,21 +394,21 @@ const char *sio_port_name[MAX_SIO_PORT] =
 
 static const hal_device_t devices[] = {
 #ifdef HAS_NETSERVER
-	{ "WEBTTY", 0, net_tty_alive, net_tty_status, net_tty_in, net_tty_out, null_cd },
-	{ "WEBPTR", 0, net_ptr_alive, net_ptr_status, net_ptr_in, net_ptr_out, null_cd },
+	{ "WEBTTY", false, net_tty_alive, net_tty_status, net_tty_in, net_tty_out, null_cd },
+	{ "WEBPTR", false, net_ptr_alive, net_ptr_status, net_ptr_in, net_ptr_out, null_cd },
 #else
-	{ "WEBTTY", 0, null_dead, null_status, null_in, null_out, null_cd },
-	{ "WEBPTR", 0, null_dead, null_status, null_in, null_out, null_cd },
+	{ "WEBTTY", false, null_dead, null_status, null_in, null_out, null_cd },
+	{ "WEBPTR", false, null_dead, null_status, null_in, null_out, null_cd },
 #endif
-	{ "STDIO", 0, stdio_alive, stdio_status, stdio_in, stdio_out, null_cd },
-	{ "SCKTSRV", 0, scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out, null_cd },
+	{ "STDIO", false, stdio_alive, stdio_status, stdio_in, stdio_out, null_cd },
+	{ "SCKTSRV", false, scktsrv_alive, scktsrv_status, scktsrv_in, scktsrv_out, null_cd },
 #ifdef HAS_MODEM
-	{ "MODEM", 0, modem_alive, modem_status, modem_in, modem_out, modem_cd },
+	{ "MODEM", false, modem_alive, modem_status, modem_in, modem_out, modem_cd },
 #else
-	{ "MODEM", 0, null_dead, null_status, null_in, null_out, null_cd },
+	{ "MODEM", false, null_dead, null_status, null_in, null_out, null_cd },
 #endif
-	{ "VIOKBD", 0, vio_kbd_alive, vio_kbd_status, vio_kbd_in, vio_kbd_out, null_cd },
-	{ "", 0, null_alive, null_status, null_in, null_out, null_cd }
+	{ "VIOKBD", false, vio_kbd_alive, vio_kbd_status, vio_kbd_in, vio_kbd_out, null_cd },
+	{ "", false, null_alive, null_status, null_in, null_out, null_cd }
 };
 
 hal_device_t sio[MAX_SIO_PORT][MAX_HAL_DEV];
@@ -489,11 +489,11 @@ static void hal_init(void)
 			dev = strtok(match, ",\r");
 			while (dev) {
 				char k = dev[strlen(dev) - 1];
-				int fallthrough = 0;
+				bool fallthrough = false;
 
 				if (k == '+') {
 					dev[strlen(dev) - 1] = 0;
-					fallthrough = 1;
+					fallthrough = true;
 				}
 
 				d = hal_find_device(dev);
@@ -575,7 +575,7 @@ next:
 	}
 }
 
-int hal_carrier_detect(sio_port_t dev)
+bool hal_carrier_detect(sio_port_t dev)
 {
 	int p = 0;
 

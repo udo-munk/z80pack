@@ -116,7 +116,7 @@ static char port_num[11];
 
 static telnet_telopt_t telnet_opts[10];
 
-static int carrier_detect;
+static bool carrier_detect;
 
 static void init_telnet_opts(void)
 {
@@ -258,7 +258,7 @@ static void close_socket(void)
 		LOGI(TAG, "Socket closed");
 		*active_sfd = 0;
 	}
-	carrier_detect = 0;
+	carrier_detect = false;
 }
 
 static int open_socket(void)
@@ -314,7 +314,7 @@ static int open_socket(void)
 		};
 
 		active_sfd = &sfd;
-		carrier_detect = 1;
+		carrier_detect = true;
 		LOGI(TAG, "Socket created");
 
 		if (connect(sfd, rp->ai_addr, sizeof(struct sockaddr_in)) < 0) {
@@ -429,7 +429,7 @@ static int answer(void)
 	inet_ntop(AF_INET, &cli_addr.sin_addr, addr, 100);
 	LOGI(TAG, "New Remote Connection: %s:%d", addr, ntohs(cli_addr.sin_port));
 	active_sfd = &newsockfd;
-	carrier_detect = 1;
+	carrier_detect = true;
 
 	if (setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *) &on, sizeof(on)) == -1) {
 		LOGE(TAG, "can't set sockopt TCP_NODELAY");
@@ -1041,24 +1041,24 @@ static int process_at_cmd(void)
 static uint64_t at_t1, at_t2;
 static int tdiff;
 
-int modem_device_alive(int i)
+bool modem_device_alive(int i)
 {
 	UNUSED(i);
 
 	if (!daemon_f)
-		return 1;
+		return true;
 
 	if (answer_sfd) {
 		if (*active_sfd)
-			return 1;
+			return true;
 		else {
 			if (at_state == cmd) {
 				modem_device_poll(0);
-				return 0;
+				return false;
 			}
 		}
 	}
-	return 0;
+	return false;
 }
 
 static int _read(void)
@@ -1073,7 +1073,7 @@ static int _read(void)
 		hangup_timeout(true);
 		at_cmd[0] = 0;
 		at_state = cmd;
-		carrier_detect = 0;
+		carrier_detect = false;
 
 		return -1;
 	}
@@ -1295,7 +1295,7 @@ void modem_device_send(int i, char data)
 		at_t1 = get_clock_us();
 }
 
-int modem_device_carrier(int i)
+bool modem_device_carrier(int i)
 {
 	UNUSED(i);
 

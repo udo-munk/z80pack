@@ -438,18 +438,18 @@ void imsai_sio2b_data_out(BYTE data)
  */
 BYTE imsai_sio1_ctl_in(void)
 {
-	int cd_a = hal_carrier_detect(SIO1A);
-	int cd_b = hal_carrier_detect(SIO1B);
+	bool cd_a = hal_carrier_detect(SIO1A);
+	bool cd_b = hal_carrier_detect(SIO1B);
 
-	return 0b10111011 | (cd_a << 2) | cd_b << 6;
+	return 0b10111011 | (cd_a ? 4 : 0) | (cd_b ? 64 : 0);
 }
 
 BYTE imsai_sio2_ctl_in(void)
 {
-	int cd_a = hal_carrier_detect(SIO2A);
-	int cd_b = hal_carrier_detect(SIO2B);
+	bool cd_a = hal_carrier_detect(SIO2A);
+	bool cd_b = hal_carrier_detect(SIO2B);
 
-	return 0b10111011 | (cd_a << 2) | cd_b << 6;
+	return 0b10111011 | (cd_a ? 4 : 0) | (cd_b ? 64 : 0);
 }
 
 /*

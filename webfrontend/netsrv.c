@@ -51,21 +51,31 @@ static const char *TAG = "netsrv";
 
 #define MAX_WS_CLIENTS (_DEV_MAX)
 
+typedef struct msgbuf_s {
+	long mtype;
+	unsigned char mtext[128];
+} msgbuf_t;
+
 static msgbuf_t msg;
 
-struct {
+typedef struct ws_client {
+	struct mg_connection *conn;
+	int state;
+} ws_client_t;
+
+static struct {
 	int queue;
 	ws_client_t ws_client;
 	void (*cbfunc)(BYTE *);
 } dev[MAX_WS_CLIENTS];
 
-net_device_t net_device_a[_DEV_MAX] = {
+static net_device_t net_device_a[_DEV_MAX] = {
 	DEV_TTY, DEV_TTY2, DEV_TTY3,
 	DEV_LPT, DEV_VIO, DEV_CPA,
 	DEV_DZLR, DEV_88ACC, DEV_D7AIO, DEV_PTR
 };
 
-const char *dev_name[] = {
+static const char *dev_name[] = {
 	"TTY",
 	"TTY2",
 	"TTY3",
@@ -78,7 +88,7 @@ const char *dev_name[] = {
 	"PTR"
 };
 
-int last_error = 0; //TODO: replace
+static int last_error = 0; //TODO: replace
 
 /*
 extern int reset;
@@ -89,9 +99,9 @@ extern void quit_callback(void);
 /**
  * Check if a queue is provisioned
  */
-int net_device_alive(net_device_t device)
+bool net_device_alive(net_device_t device)
 {
-	return dev[device].queue;
+	return dev[device].queue != 0;
 }
 
 void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data))
@@ -240,7 +250,7 @@ static void InformWebsockets(struct mg_context *ctx)
 	mg_unlock_context(ctx);
 }
 
-struct utsname uts;
+static struct utsname uts;
 
 static int SystemHandler(HttpdConnection_t *conn, void *unused)
 {

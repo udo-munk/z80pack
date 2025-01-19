@@ -38,9 +38,9 @@ typedef enum hal_dev {
 
 typedef struct hal_device {
 	const char *name;
-	int	fallthrough;
+	bool	fallthrough;
 	int	device_id;
-	int	(*alive)(int dev);
+	bool	(*alive)(int dev);
 	void	(*status)(int dev, BYTE *stat);
 	int	(*in)(int dev);
 	void	(*out)(int dev, BYTE data);
@@ -51,7 +51,7 @@ extern void hal_reset(void);
 extern void hal_status_in(tuart_port_t dev, BYTE *stat);
 extern int hal_data_in(tuart_port_t dev);
 extern void hal_data_out(tuart_port_t dev, BYTE data);
-extern int hal_alive(tuart_port_t dev);
+extern bool hal_alive(tuart_port_t dev);
 
 extern const char *tuart_port_name[MAX_TUART_PORT];
 extern hal_device_t tuart[MAX_TUART_PORT][MAX_HAL_DEV];

@@ -33,7 +33,7 @@
 static const char *TAG = "88CCC";
 
 /* 88CCC stuff */
-static int state;
+static bool state;
 static WORD dma_addr;
 static BYTE flags;
 static BYTE format;
@@ -106,11 +106,11 @@ static void *store_image(void *arg)
 
 		LOGD(TAG, "Time: %d", tdiff);
 
-		state = 0;
+		state = false;
 	}
 
 	/* DMA complete, end the thread */
-	state = 0;
+	state = false;
 	thread = 0;
 	pthread_exit(NULL);
 }
@@ -121,7 +121,7 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 
 	if (data & 0x80) {
 		if (net_device_alive(DEV_88ACC)) {
-			state = 1;
+			state = true;
 
 			if (thread == 0) {
 				if (pthread_create(&thread, NULL, store_image, (void *) NULL)) {
@@ -134,11 +134,11 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 		} else {
 			/* No 88ACC camera attached */
 			LOGW(TAG, "No Cromemeco Cyclops 88ACC attached.");
-			state = 0;
+			state = false;
 		}
 	} else {
-		if (state == 1) {
-			state = 0;
+		if (state) {
+			state = false;
 			sleep_for_ms(50); /* Arbitrary 50ms timeout to let
 					     thread exit after state change,
 					     TODO: maybe should end thread? */
@@ -160,7 +160,7 @@ void cromemco_88ccc_ctrl_c_out(BYTE data)
 BYTE cromemco_88ccc_ctrl_a_in(void)
 {
 	/* return flags along with state in the msb */
-	return flags | (state << 7);
+	return flags | (state ? 128 : 0);
 }
 
 #endif /* HAS_NETSERVER && HAS_CYCLOPS */

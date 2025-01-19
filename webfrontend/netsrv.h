@@ -22,7 +22,7 @@
 
 #include "civetweb.h"
 
-enum net_device {
+typedef enum net_device {
 	DEV_TTY,
 	DEV_TTY2,
 	DEV_TTY3,
@@ -34,20 +34,9 @@ enum net_device {
 	DEV_D7AIO,
 	DEV_PTR,
 	_DEV_MAX
-};
-typedef enum net_device net_device_t;
+} net_device_t;
 
-typedef struct msgbuf_s {
-	long mtype;
-	unsigned char mtext[128];
-} msgbuf_t;
-
-typedef struct ws_client {
-	struct mg_connection *conn;
-	int state;
-} ws_client_t;
-
-extern int net_device_alive(net_device_t device);
+extern bool net_device_alive(net_device_t device);
 extern void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data));
 extern void net_device_send(net_device_t device, char *msg, int len);
 extern int net_device_get(net_device_t device);
@@ -66,14 +55,13 @@ typedef struct mg_connection HttpdConnection_t;
 
 #define _HTTP_MAX_ARGS	8
 
-enum http_method {
+typedef enum http_method {
 	HTTP_GET,
 	HTTP_POST,
 	HTTP_PUT,
 	HTTP_DELETE,
 	HTTP_UNKNOWN
-};
-typedef enum http_method http_method_t;
+} http_method_t;
 
 typedef struct request {
 	const struct mg_request_info *mg;

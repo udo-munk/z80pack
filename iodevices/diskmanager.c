@@ -216,17 +216,17 @@ again:
 
 #ifdef HAS_NETSERVER
 
-static int findDiskImage(const char *image)
+static bool findDiskImage(const char *image)
 {
 	int i;
 
 	for (i = 0; i < _MAX_DISK; i++) {
 		if (DISKNAME(i) != NULL) {
 			if (strcmp(image, DISKNAME(i)) == 0)
-				return 1;
+				return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 static int getDiskNumByID(const char *id)
