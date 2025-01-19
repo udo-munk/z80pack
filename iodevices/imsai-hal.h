@@ -16,38 +16,34 @@
 #include "sim.h"
 #include "simdefs.h"
 
-enum sio_port {
+typedef enum sio_port {
 	SIO1A,
 	SIO1B,
 	SIO2A,
 	SIO2B,
-    MAX_SIO_PORT
-};
+	MAX_SIO_PORT
+} sio_port_t;
 
-typedef enum sio_port sio_port_t;
+typedef enum hal_dev {
+	WEBTTYDEV,
+	WEBPTRDEV,
+	STDIODEV,
+	SCKTSRVDEV,
+	MODEMDEV,
+	VIOKBD,
+	NULLDEV,
+	MAX_HAL_DEV
+} hal_dev_t;
 
-enum hal_dev {
-    WEBTTYDEV,
-    WEBPTRDEV,
-    STDIODEV,
-    SCKTSRVDEV,
-    MODEMDEV,
-    VIOKBD,
-    NULLDEV,
-    MAX_HAL_DEV
-};
-
-struct hal_device {
-    const char *name;
-    int fallthrough;
+typedef struct hal_device {
+	const char *name;
+	int	fallthrough;
 	int	(*alive)(void);
-	void (*status)(BYTE *stat);
-	int (*in)(void);
-	void (*out)(BYTE data);
-    int (*cd)(void);
-};
-
-typedef struct hal_device hal_device_t;
+	void	(*status)(BYTE *stat);
+	int	(*in)(void);
+	void	(*out)(BYTE data);
+	int	(*cd)(void);
+} hal_device_t;
 
 extern void hal_reset(void);
 

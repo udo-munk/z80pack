@@ -35,12 +35,11 @@ enum net_device {
 	DEV_PTR,
 	_DEV_MAX
 };
-
 typedef enum net_device net_device_t;
 
 typedef struct msgbuf_s {
-	long			mtype;
-	unsigned char	mtext[128];
+	long mtype;
+	unsigned char mtext[128];
 } msgbuf_t;
 
 typedef struct ws_client {
@@ -56,14 +55,14 @@ extern int net_device_get_data(net_device_t device, char *dst, int len);
 extern int net_device_poll(net_device_t device);
 
 /*
-* convenience macros for http output
-*/
+ * convenience macros for http output
+ */
 typedef struct mg_connection HttpdConnection_t;
 
-#define httpdPrintf(conn, args...)			mg_printf(conn, args)
-#define httpdStartResponse(conn, code)		mg_printf(conn, "HTTP/1.1 %d OK\r\n", code)
-#define httpdHeader(conn, key, val)			mg_printf(conn, "%s: %s\r\n", key, val)
-#define httpdEndHeaders(conn)				mg_printf(conn, "\r\n")
+#define httpdPrintf(conn, args...)	mg_printf(conn, args)
+#define httpdStartResponse(conn, code)	mg_printf(conn, "HTTP/1.1 %d OK\r\n", code)
+#define httpdHeader(conn, key, val)	mg_printf(conn, "%s: %s\r\n", key, val)
+#define httpdEndHeaders(conn)		mg_printf(conn, "\r\n")
 
 #define _HTTP_MAX_ARGS	8
 
@@ -74,7 +73,6 @@ enum http_method {
 	HTTP_DELETE,
 	HTTP_UNKNOWN
 };
-
 typedef enum http_method http_method_t;
 
 typedef struct request {
@@ -89,7 +87,7 @@ extern request_t *get_request(const HttpdConnection_t *conn);
 extern int DirectoryHandler(HttpdConnection_t *conn, void *path);
 extern int UploadHandler(HttpdConnection_t *conn, void *path);
 
-extern void stop_net_services (void);
-extern int start_net_services (int port);
+extern void stop_net_services(void);
+extern int start_net_services(int port);
 
 #endif /* !NETSRV_INC */

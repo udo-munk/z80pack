@@ -16,39 +16,35 @@
 #include "sim.h"
 #include "simdefs.h"
 
-enum tuart_port {
+typedef enum tuart_port {
 	TUART0A,
 	TUART1A,
 	TUART1B,
-    MAX_TUART_PORT
-};
+	MAX_TUART_PORT
+} tuart_port_t;
 
-typedef enum tuart_port tuart_port_t;
+typedef enum hal_dev {
+	WEBTTYDEV,
+	WEBTTY2DEV,
+	WEBTTY3DEV,
+	WEBPTRDEV,
+	STDIODEV,
+	SCKTSRV1DEV,
+	SCKTSRV2DEV,
+	MODEMDEV,
+	NULLDEV,
+	MAX_HAL_DEV
+} hal_dev_t;
 
-enum hal_dev {
-    WEBTTYDEV,
-    WEBTTY2DEV,
-    WEBTTY3DEV,
-    WEBPTRDEV,
-    STDIODEV,
-    SCKTSRV1DEV,
-    SCKTSRV2DEV,
-    MODEMDEV,
-    NULLDEV,
-    MAX_HAL_DEV
-};
-
-struct hal_device {
-    const char *name;
-    int fallthrough;
-    int device_id;
+typedef struct hal_device {
+	const char *name;
+	int	fallthrough;
+	int	device_id;
 	int	(*alive)(int dev);
-	void (*status)(int dev, BYTE *stat);
-	int (*in)(int dev);
-	void (*out)(int dev, BYTE data);
-};
-
-typedef struct hal_device hal_device_t;
+	void	(*status)(int dev, BYTE *stat);
+	int	(*in)(int dev);
+	void	(*out)(int dev, BYTE data);
+} hal_device_t;
 
 extern void hal_reset(void);
 
