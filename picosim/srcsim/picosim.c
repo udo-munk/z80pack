@@ -241,7 +241,7 @@ int main(void)
  * from the terminal. For single character requests (len == 2),
  * returns immediately after input is received.
  */
-int get_cmdline(char *buf, int len)
+bool get_cmdline(char *buf, int len)
 {
 	int i = 0;
 	char c;
@@ -268,7 +268,7 @@ int get_cmdline(char *buf, int len)
 	}
 	buf[i] = '\0';
 	putchar('\n');
-	return 0;
+	return true;
 }
 
 #ifdef WANT_ICE

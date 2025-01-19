@@ -38,7 +38,7 @@
 #include "simint.h"
 
 static void save_core(void);
-static int load_core(void);
+static bool load_core(void);
 
 #ifdef WANT_SDL
 int sim_main(int argc, char *argv[])
@@ -413,10 +413,10 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	init_memory();		/* initialize memory configuration */
 
 	if (l_flag) {		/* load core */
-		if (load_core())
+		if (!load_core())
 			return EXIT_FAILURE;
 	} else if (x_flag) { 	/* OR load memory from file */
-		if (load_file(xfn, 0, 0)) /* don't care where it loads */
+		if (!load_file(xfn, 0, 0)) /* don't care where it loads */
 			return EXIT_FAILURE;
 	}
 
@@ -522,7 +522,7 @@ static void save_core(void)
  *	This function loads the CPU and memory from the
  *	file core.z80 or core.8080
  */
-static int load_core(void)
+static bool load_core(void)
 {
 	register FILE *fp;
 	register int i, c;
@@ -539,7 +539,7 @@ static int load_core(void)
 #endif
 	if ((fp = fopen(fname, "r")) == NULL) {
 		printf("can't open file %s\n", fname);
-		return 1;
+		return false;
 	}
 
 	err = false;
@@ -597,7 +597,7 @@ static int load_core(void)
 
 	if (err) {
 		printf("error reading %s\n", fname);
-		return 1;
+		return false;
 	} else
-		return 0;
+		return true;
 }

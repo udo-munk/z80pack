@@ -52,7 +52,7 @@ void init_memory(void)
 	}
 
 	strcpy(pfn, boot_rom_file);
-	if (load_file(fn, 0, BOOT_SIZE)) {
+	if (!load_file(fn, 0, BOOT_SIZE)) {
 		LOGE(TAG, "couldn't load bootstrap ROM");
 		exit(EXIT_FAILURE);
 	}
@@ -61,7 +61,7 @@ void init_memory(void)
 	if (mon_enabled) {
 		mon_enabled = 0;
 		strcpy(pfn, mon_rom_file);
-		if (load_file(fn, 65536 - MON_SIZE, MON_SIZE)) {
+		if (!load_file(fn, 65536 - MON_SIZE, MON_SIZE)) {
 			LOGE(TAG, "couldn't load monitor ROM");
 			exit(EXIT_FAILURE);
 		}

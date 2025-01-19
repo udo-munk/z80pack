@@ -150,7 +150,7 @@ void ice_cmd_loop(int go_mode)
 		} else {
 			printf(">>> ");
 			fflush(stdout);
-			if (get_cmdline(cmd, LENCMD)) {
+			if (!get_cmdline(cmd, LENCMD)) {
 				eoj = false;
 				continue;
 			}
@@ -273,7 +273,7 @@ static void do_trace(char *s)
 	for (i = 0; i < count; i++) {
 		step_cpu();
 		print_reg();
-		if (cpu_error && (cpu_error != OPHALT || !handle_break()))
+		if (cpu_error && (cpu_error != OPHALT || handle_break()))
 			break;
 	}
 	uninstall_softbp();
@@ -304,7 +304,7 @@ static void do_go(char *s)
 	start_time = cpu_time;
 	for (;;) {
 		run_cpu();
-		if (cpu_error && (cpu_error != OPHALT || !handle_break()))
+		if (cpu_error && (cpu_error != OPHALT || handle_break()))
 			break;
 	}
 	stop_time = cpu_time;
@@ -356,8 +356,8 @@ static void uninstall_softbp(void)
 /*
  *	Handling of software (HALT opcode) / hardware breakpoints:
  *
- *	Output:	false breakpoint or other HALT opcode reached (stop)
- *		true breakpoint hit, pass counter not reached (continue)
+ *	Output:	false breakpoint hit, pass counter not reached (continue)
+ *		true breakpoint or other HALT opcode reached (stop)
  */
 static bool handle_break(void)
 {
@@ -377,7 +377,7 @@ static bool handle_break(void)
 		printf(" access to %04x\n", hb_addr);
 		hb_trig = 0;
 		cpu_error = NONE;
-		return false;
+		return true;
 	}
 #endif
 #ifdef SBSIZE
@@ -385,7 +385,7 @@ static bool handle_break(void)
 		if (soft[i].sb_pass && soft[i].sb_addr == PC - 1)
 			break;
 	if (i == SBSIZE)		/* no breakpoint found */
-		return false;
+		return true;
 #ifdef HISIZE
 	if (h_next)			/* correct history */
 		h_next--;
@@ -398,12 +398,12 @@ static bool handle_break(void)
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment pass counter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
-		return true;		/* pass not reached, continue */
+		return false;		/* pass not reached, continue */
 	printf("Software breakpoint hit at %04x\n", soft[i].sb_addr);
 	soft[i].sb_passcount = 0;	/* reset pass counter */
-	return false;			/* pass reached, stop */
+	return true;			/* pass reached, stop */
 #else /* !SBSIZE */
-	return false;
+	return true;
 #endif /* !SBSIZE */
 }
 
@@ -496,7 +496,7 @@ static void do_modify(char *s)
 	for (;;) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
-		if (get_cmdline(arg, LENCMD) || arg[0] == '\0')
+		if (!get_cmdline(arg, LENCMD) || arg[0] == '\0')
 			break;
 		s = arg;
 		while (isspace((unsigned char) *s))
@@ -629,7 +629,7 @@ static void do_port(char *s)
 	data = io_in(port, 0);
 	report_cpu_error();
 	printf("%02x = %02x : ", port, data);
-	if (!get_cmdline(arg, LENCMD)) {
+	if (get_cmdline(arg, LENCMD)) {
 		s = arg;
 		while (isspace((unsigned char) *s))
 			s++;
@@ -774,7 +774,7 @@ static void do_reg(char *s)
 			default:
 				break;
 			}
-			if (!get_cmdline(arg, LENCMD)) {
+			if (get_cmdline(arg, LENCMD)) {
 				s = arg;
 				while (isspace((unsigned char) *s))
 					s++;
@@ -1112,7 +1112,7 @@ static void do_hist(char *s)
 		l = 0;
 		fputs("q = quit, else continue: ", stdout);
 		fflush(stdout);
-		if (!get_cmdline(arg, LENCMD) &&
+		if (get_cmdline(arg, LENCMD) &&
 		    (arg[0] == '\0' || tolower((unsigned char) arg[0]) == 'q'))
 			break;
 	}
@@ -1424,13 +1424,13 @@ static void do_load(char *s)
 		while (isspace((unsigned char) *s))
 			s++;
 		if (isxdigit((unsigned char) *s)) {
-			load_file(fn, strtol(s, NULL, 16), -1);
-			wrk_addr = PC;
+			if (load_file(fn, strtol(s, NULL, 16), -1))
+				wrk_addr = PC;
 			return;
 		}
 	}
-	load_file(fn, 0, 0);
-	wrk_addr = PC;
+	if (load_file(fn, 0, 0))
+		wrk_addr = PC;
 }
 
 /*

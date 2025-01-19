@@ -14,7 +14,7 @@ extern void sleep_for_us(unsigned long time);
 extern void sleep_for_ms(unsigned time);
 extern uint64_t get_clock_us(void);
 #ifdef WANT_ICE
-extern int get_cmdline(char *buf, int len);
+extern bool get_cmdline(char *buf, int len);
 #endif
 
 #endif /* !SIMPORT_INC */
