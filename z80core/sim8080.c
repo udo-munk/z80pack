@@ -576,7 +576,7 @@ void cpu_8080(void)
 				continue;
 			}
 			T += 11;
-			int_int = 0;
+			int_int = false;
 			int_data = -1;
 #ifdef FRONTPANEL
 			if (F_flag)
@@ -590,7 +590,7 @@ leave:
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 #endif
 
-		int_protection = 0;
+		int_protection = false;
 #ifndef ALT_I8080
 		T += (*op_sim[memrdr(PC++)])();	/* execute next opcode */
 #else
@@ -689,7 +689,7 @@ static int op_hlt(void)			/* HLT */
 			cpu_state = ST_STOPPED;
 		} else {
 			/* else wait for INT or user interrupt */
-			while ((int_int == 0) && (cpu_state == ST_CONTIN_RUN)) {
+			while (!int_int && (cpu_state == ST_CONTIN_RUN)) {
 				sleep_for_ms(1);
 			}
 		}
@@ -718,7 +718,7 @@ static int op_hlt(void)			/* HLT */
 		} else {
 			/* else wait for INT,
 			   frontpanel reset or user interrupt */
-			while ((int_int == 0) && !(cpu_state & ST_RESET)) {
+			while (!int_int && !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
 				sleep_for_ms(1);
@@ -792,7 +792,7 @@ static int op_daa(void)			/* DAA */
 static int op_ei(void)			/* EI */
 {
 	IFF = 3;
-	int_protection = 1;		/* protect next instruction */
+	int_protection = true;		/* protect next instruction */
 	return 4;
 }
 

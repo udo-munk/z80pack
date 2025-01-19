@@ -79,7 +79,8 @@ void init_cpu(void)
  */
 void reset_cpu(void)
 {
-	IFF = int_int = int_protection = 0;
+	IFF = 0;
+	int_int = int_protection = false;
 	int_data = -1;
 
 	PC = 0;
@@ -87,7 +88,8 @@ void reset_cpu(void)
 #ifndef EXCLUDE_Z80
 	I = 0;
 	R_ = R = 0;
-	int_nmi = int_mode = 0;
+	int_mode = 0;
+	int_nmi = false;
 #endif
 }
 

@@ -307,13 +307,13 @@ static void int_pending(void)
 {
 	int irq, mask;
 
-	if (int_int == 0 && (mask = (int_requests & ~int_mask)) != 0) {
+	if (!int_int && (mask = (int_requests & ~int_mask)) != 0) {
 		irq = int_highest(mask);
 		if (irq < int_highest(int_in_service)) {
 			pthread_mutex_lock(&int_mutex);
 			int_in_service |= 1 << irq;
 			int_requests &= ~(1 << irq);
-			int_int = 1;
+			int_int = true;
 			int_data = 0xc7 /* RST0 */ + (irq << 3);
 			pthread_mutex_unlock(&int_mutex);
 		}

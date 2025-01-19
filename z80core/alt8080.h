@@ -755,7 +755,7 @@
 				cpu_state = ST_STOPPED;
 			} else {
 				/* else wait for INT or user interrupt */
-				while ((int_int == 0) &&
+				while (!int_int &&
 				       (cpu_state == ST_CONTIN_RUN)) {
 					sleep_for_ms(1);
 				}
@@ -786,8 +786,7 @@
 			} else {
 				/* else wait for INT,
 				   frontpanel reset or user interrupt */
-				while ((int_int == 0) &&
-				       !(cpu_state & ST_RESET)) {
+				while (!int_int && !(cpu_state & ST_RESET)) {
 					fp_clock++;
 					fp_sampleData();
 					sleep_for_ms(1);
@@ -1539,7 +1538,7 @@
 
 	case 0xfb:			/* EI */
 		IFF = 3;
-		int_protection = 1;	/* protect next instruction */
+		int_protection = true;	/* protect next instruction */
 		break;
 
 	case 0xfc:			/* CM nn */

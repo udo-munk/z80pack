@@ -539,7 +539,7 @@ static void *timing(void *arg)
 			uart0a_int = 0xc7;
 			uart0a_int_pending = 1;
 			int_data = 0xc7;
-			int_int = 1;
+			int_int = true;
 			uart0a_timer1 = 0;
 			goto next;
 		}
@@ -549,7 +549,7 @@ static void *timing(void *arg)
 			uart0a_int = 0xcf;
 			uart0a_int_pending = 1;
 			int_data = 0xcf;
-			int_int = 1;
+			int_int = true;
 			uart0a_timer2 = 0;
 			goto next;
 		}
@@ -559,7 +559,7 @@ static void *timing(void *arg)
 			uart0a_int = 0xd7;
 			uart0a_int_pending = 1;
 			int_data = 0xd7;
-			int_int = 1;
+			int_int = true;
 			goto next;
 		}
 
@@ -568,7 +568,7 @@ static void *timing(void *arg)
 			uart0a_int = 0xdf;
 			uart0a_int_pending = 1;
 			int_data = 0xdf;
-			int_int = 1;
+			int_int = true;
 			uart0a_timer3 = 0;
 			goto next;
 		}
@@ -578,7 +578,7 @@ static void *timing(void *arg)
 			uart0a_int = 0xe7;
 			uart0a_int_pending = 1;
 			int_data = 0xe7;
-			int_int = 1;
+			int_int = true;
 			goto next;
 		}
 
@@ -591,7 +591,7 @@ static void *timing(void *arg)
 				uart0a_int = 0xef;
 				uart0a_int_pending = 1;
 				int_data = 0xef;
-				int_int = 1;
+				int_int = true;
 				goto next;
 			}
 		}
@@ -601,7 +601,7 @@ static void *timing(void *arg)
 			uart0a_int = 0xf7;
 			uart0a_int_pending = 1;
 			int_data = 0xf7;
-			int_int = 1;
+			int_int = true;
 			uart0a_timer4 = 0;
 			goto next;
 		}
@@ -611,7 +611,7 @@ static void *timing(void *arg)
 			uart0a_int = 0xff;
 			uart0a_int_pending = 1;
 			int_data = 0xff;
-			int_int = 1;
+			int_int = true;
 			uart0a_timer5 = 0;
 			goto next;
 		}
@@ -623,7 +623,7 @@ static void *timing(void *arg)
 				uart0a_int = 0xff;
 				uart0a_int_pending = 1;
 				int_data = 0xff;
-				int_int = 1;
+				int_int = true;
 				goto next;
 			}
 		}
@@ -640,7 +640,7 @@ static void *timing(void *arg)
 			if (uart1a_int_mask & 4) {
 				uart1a_sense = 0;
 				int_data = 0x24;
-				int_int = 1;
+				int_int = true;
 				goto next;
 			}
 		}
@@ -650,7 +650,7 @@ static void *timing(void *arg)
 			uart1a_int = 0xe7;
 			uart1a_int_pending = 1;
 			int_data = 0x28;
-			int_int = 1;
+			int_int = true;
 			goto next;
 		}
 
@@ -661,7 +661,7 @@ static void *timing(void *arg)
 				uart1a_int = 0xef;
 				uart1a_int_pending = 1;
 				int_data = 0x2a;
-				int_int = 1;
+				int_int = true;
 				goto next;
 			}
 		}
@@ -678,7 +678,7 @@ static void *timing(void *arg)
 			if (uart1b_int_mask & 4) {
 				uart1b_sense = 0;
 				int_data = 0x34;
-				int_int = 1;
+				int_int = true;
 				goto next;
 			}
 		}
@@ -688,7 +688,7 @@ static void *timing(void *arg)
 			uart1b_int = 0xe7;
 			uart1b_int_pending = 1;
 			int_data = 0x38;
-			int_int = 1;
+			int_int = true;
 			goto next;
 		}
 
@@ -699,7 +699,7 @@ static void *timing(void *arg)
 				uart1b_int = 0xef;
 				uart1b_int_pending = 1;
 				int_data = 0x3a;
-				int_int = 1;
+				int_int = true;
 				goto next;
 			}
 		}

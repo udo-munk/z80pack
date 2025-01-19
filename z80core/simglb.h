@@ -45,13 +45,17 @@ extern int	busy_loop_cnt;
 extern BYTE	cpu_state;
 extern int	cpu_error;
 #ifndef EXCLUDE_Z80
-extern int	int_nmi, int_mode;
+extern int	int_mode;
+extern bool	int_nmi;
 #endif
-extern int	int_int, int_data, int_protection;
+extern bool	int_int;
+extern int	int_data;
+extern bool	int_protection;
 extern BYTE	bus_request;
 extern BusDMA_t bus_mode;
 extern BusDMAFunc_t *dma_bus_master;
-extern int	tmax, cpu_needed;
+extern int	tmax;
+extern bool	cpu_needed;
 
 #ifdef FRONTPANEL
 extern uint64_t fp_clock;

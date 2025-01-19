@@ -817,7 +817,7 @@ next_opcode:
 				cpu_state = ST_STOPPED;
 			} else {
 				/* else wait for INT, NMI or user interrupt */
-				while ((int_int == 0) && (int_nmi == 0) &&
+				while (!int_int && !int_nmi &&
 				       (cpu_state == ST_CONTIN_RUN)) {
 					sleep_for_ms(1);
 					R += 99;
@@ -839,8 +839,7 @@ next_opcode:
 			if (IFF == 0) {
 				/* INT disabled, wait for NMI,
 				   frontpanel reset or user interrupt */
-				while ((int_nmi == 0) &&
-				       !(cpu_state & ST_RESET)) {
+				while (!int_nmi && !(cpu_state & ST_RESET)) {
 					fp_clock++;
 					fp_sampleData();
 					sleep_for_ms(1);
@@ -851,7 +850,7 @@ next_opcode:
 			} else {
 				/* else wait for INT, NMI,
 				   frontpanel reset or user interrupt */
-				while ((int_int == 0) && (int_nmi == 0) &&
+				while (!int_int && !int_nmi &&
 				       !(cpu_state & ST_RESET)) {
 					fp_clock++;
 					fp_sampleData();
@@ -2391,7 +2390,7 @@ next_opcode:
 
 	case 0xfb:			/* EI */
 		IFF = 3;
-		int_protection = 1;	/* protect next instruction */
+		int_protection = true;	/* protect next instruction */
 		break;
 
 	case 0xfc:			/* CALL M,nn */

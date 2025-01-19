@@ -2095,7 +2095,7 @@ static void int_timer(int sig)
 {
 	UNUSED(sig);
 
-	int_int = 1;
+	int_int = true;
 	int_data = 0xff;	/* RST 38H for IM 0, 0FFH for IM 2 */
 }
 

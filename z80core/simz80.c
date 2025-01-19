@@ -480,7 +480,7 @@ void cpu_z80(void)
 			memwrt(--SP, PC >> 8);
 			memwrt(--SP, PC);
 			PC = 0x66;
-			int_nmi = 0;
+			int_nmi = false;
 			T += 11;
 			R++;		/* increment refresh register */
 		}
@@ -585,7 +585,7 @@ void cpu_z80(void)
 				T += 19;
 				break;
 			}
-			int_int = 0;
+			int_int = false;
 			int_data = -1;
 #ifdef FRONTPANEL
 			if (F_flag)
@@ -602,7 +602,7 @@ leave:
 
 		R++;			/* increment refresh register */
 
-		int_protection = 0;
+		int_protection = false;
 #ifndef ALT_Z80
 		T += (*op_sim[memrdr(PC++)])();	/* execute next opcode */
 #else
@@ -691,7 +691,7 @@ static int op_halt(void)		/* HALT */
 			cpu_state = ST_STOPPED;
 		} else {
 			/* else wait for INT, NMI or user interrupt */
-			while ((int_int == 0) && (int_nmi == 0) &&
+			while (!int_int && !int_nmi &&
 			       (cpu_state == ST_CONTIN_RUN)) {
 				sleep_for_ms(1);
 				R += 99;
@@ -712,7 +712,7 @@ static int op_halt(void)		/* HALT */
 		if (IFF == 0) {
 			/* INT disabled, wait for NMI,
 			   frontpanel reset or user interrupt */
-			while ((int_nmi == 0) && !(cpu_state & ST_RESET)) {
+			while (!int_nmi && !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
 				sleep_for_ms(1);
@@ -723,7 +723,7 @@ static int op_halt(void)		/* HALT */
 		} else {
 			/* else wait for INT, NMI,
 			   frontpanel reset or user interrupt */
-			while ((int_int == 0) && (int_nmi == 0) &&
+			while (!int_int && !int_nmi &&
 			       !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
@@ -852,7 +852,7 @@ static int op_daa(void)			/* DAA */
 static int op_ei(void)			/* EI */
 {
 	IFF = 3;
-	int_protection = 1;		/* protect next instruction */
+	int_protection = true;		/* protect next instruction */
 	return 4;
 }
 

@@ -537,7 +537,7 @@ static void int_clicked(int state, int val)
 
 	switch (state) {
 	case FP_SW_UP:
-		int_int = 1;
+		int_int = true;
 		break;
 	case FP_SW_DOWN:
 		fp_led_address = boot_switch;

@@ -55,16 +55,16 @@ BYTE cpu_state;			/* state of CPU emulation */
 int cpu_error;			/* error status of CPU emulation */
 #ifndef EXCLUDE_Z80
 int int_mode;			/* CPU interrupt mode (IM 0, IM 1, IM 2) */
-int int_nmi;			/* non-maskable interrupt request */
+bool int_nmi;			/* non-maskable interrupt request */
 #endif
-int int_int;			/* interrupt request */
+bool int_int;			/* interrupt request */
 int int_data = -1;		/* data from interrupting device on data bus */
-int int_protection;		/* to delay interrupts after EI */
+bool int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
 BusDMA_t bus_mode;		/* current bus mode for DMA */
 BusDMAFunc_t *dma_bus_master;	/* DMA bus master call back func */
 int tmax;			/* max t-states to execute in 10ms */
-int cpu_needed;			/* don't adjust CPU freq if needed */
+bool cpu_needed;		/* don't adjust CPU freq if needed */
 
 /*
  *	Variables for frontpanel emulation
