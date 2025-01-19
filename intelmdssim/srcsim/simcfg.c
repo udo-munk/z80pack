@@ -61,10 +61,10 @@ void config(void)
 			if (!strcmp(t1, "tty_upper_case")) {
 				switch (*t2) {
 				case '0':
-					tty_upper_case = 0;
+					tty_upper_case = false;
 					break;
 				case '1':
-					tty_upper_case = 1;
+					tty_upper_case = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -73,10 +73,10 @@ void config(void)
 			} else if (!strcmp(t1, "crt_upper_case")) {
 				switch (*t2) {
 				case '0':
-					crt_upper_case = 0;
+					crt_upper_case = false;
 					break;
 				case '1':
-					crt_upper_case = 1;
+					crt_upper_case = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -85,10 +85,10 @@ void config(void)
 			} else if (!strcmp(t1, "tty_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					tty_strip_parity = 0;
+					tty_strip_parity = false;
 					break;
 				case '1':
-					tty_strip_parity = 1;
+					tty_strip_parity = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -97,10 +97,10 @@ void config(void)
 			} else if (!strcmp(t1, "crt_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					crt_strip_parity = 0;
+					crt_strip_parity = false;
 					break;
 				case '1':
-					crt_strip_parity = 1;
+					crt_strip_parity = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -109,10 +109,10 @@ void config(void)
 			} else if (!strcmp(t1, "tty_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					tty_drop_nulls = 0;
+					tty_drop_nulls = false;
 					break;
 				case '1':
-					tty_drop_nulls = 1;
+					tty_drop_nulls = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -121,10 +121,10 @@ void config(void)
 			} else if (!strcmp(t1, "crt_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					crt_drop_nulls = 0;
+					crt_drop_nulls = false;
 					break;
 				case '1':
-					crt_drop_nulls = 1;
+					crt_drop_nulls = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
