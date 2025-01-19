@@ -30,7 +30,7 @@ BYTE boot_rom[BOOT_SIZE];	/* bootstrap ROM */
 
 char *boot_rom_file;		/* bootstrap ROM file path */
 char *mon_rom_file;		/* monitor ROM file path */
-int mon_enabled;		/* monitor ROM enabled flag */
+bool mon_enabled;		/* monitor ROM enabled flag */
 
 void init_memory(void)
 {
@@ -59,13 +59,13 @@ void init_memory(void)
 	memcpy(boot_rom, memory, BOOT_SIZE);
 
 	if (mon_enabled) {
-		mon_enabled = 0;
+		mon_enabled = false;
 		strcpy(pfn, mon_rom_file);
 		if (!load_file(fn, 65536 - MON_SIZE, MON_SIZE)) {
 			LOGE(TAG, "couldn't load monitor ROM");
 			exit(EXIT_FAILURE);
 		}
-		mon_enabled = 1;
+		mon_enabled = true;
 	}
 
 	/* fill memory content with some initial value */

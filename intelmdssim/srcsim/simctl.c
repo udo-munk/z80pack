@@ -48,7 +48,7 @@ static void reset_clicked(int state, int val);
 static void power_clicked(int state, int val);
 static void quit_callback(void);
 
-static int cpu_wait;	/* CPU wait flag */
+static bool cpu_wait;	/* CPU wait flag */
 
 #ifdef WANT_SDL
 static int fp_win_id;	/* frontpanel window id */
@@ -256,7 +256,7 @@ static void reset_clicked(int state, int val)
 		reset_cpu();
 		cpu_state &= ~ST_RESET;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
-		cpu_wait = 0;
+		cpu_wait = false;
 		break;
 	default:
 		break;
@@ -282,7 +282,7 @@ static void power_clicked(int state, int val)
 		if (power)
 			break;
 		power = 1;
-		cpu_wait = 1;
+		cpu_wait = true;
 		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
 			puts("\r\n\r\n\r\n");
 		break;
