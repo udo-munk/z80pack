@@ -25,7 +25,6 @@
  * 24-SEP-2019 restore and seek also affect step direction
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>

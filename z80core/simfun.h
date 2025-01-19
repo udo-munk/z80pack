@@ -16,9 +16,8 @@
  *	running on an OS using the POSIX API. The implementations are
  *	included in simfun.c:
  *
- *	#include <stdint.h>
- *
  *	#include "sim.h"
+ *	#include "simdefs.h"
  *
  *	extern void sleep_for_us(long time);
  *	extern void sleep_for_ms(int time);

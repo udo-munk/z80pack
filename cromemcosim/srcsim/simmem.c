@@ -16,7 +16,6 @@
  * 02-SEP-2021 implement banked ROM
  */
 
-#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

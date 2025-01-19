@@ -27,21 +27,17 @@
  * 04-JAN-2025 add SDL2 support
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef WANT_SDL
-#include <stdbool.h>
 #include <SDL.h>
 #else
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
+
 #include "sim.h"
-
-#ifdef HAS_DAZZLER
-
 #include "simdefs.h"
 #include "simglb.h"
 #include "simcfg.h"
@@ -50,6 +46,8 @@
 #ifdef WANT_SDL
 #include "simsdl.h"
 #endif
+
+#ifdef HAS_DAZZLER
 
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

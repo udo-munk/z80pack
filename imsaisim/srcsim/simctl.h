@@ -7,7 +7,8 @@
 #ifndef SIMCTL_INC
 #define SIMCTL_INC
 
-#include <stdbool.h>
+#include "sim.h"
+#include "simdefs.h"
 
 extern void mon(void);
 

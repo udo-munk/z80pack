@@ -15,7 +15,6 @@
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>

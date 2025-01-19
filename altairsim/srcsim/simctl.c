@@ -35,7 +35,6 @@
  * 04-JAN-2025 add SDL2 support
  */
 
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

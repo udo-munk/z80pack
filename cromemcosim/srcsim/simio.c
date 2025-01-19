@@ -34,7 +34,6 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
-#include <stddef.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>

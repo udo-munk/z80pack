@@ -28,7 +28,6 @@
  * 09-APR-2018 modified MMU write protect port as used by Alan Cox for FUZIX
  */
 
-#include <stddef.h>
 #include <stdlib.h>
 
 #include "sim.h"

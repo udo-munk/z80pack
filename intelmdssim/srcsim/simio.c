@@ -14,8 +14,6 @@
  * 09-JUN-2024 add hwctl and simbdos ports
  */
 
-#include <stdint.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>

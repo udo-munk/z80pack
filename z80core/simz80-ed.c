@@ -17,12 +17,7 @@
 #include "simmem.h"
 #include "simz80-ed.h"
 
-#ifdef BUS_8080
-#include <stdbool.h>
-#endif
-
 #ifdef FRONTPANEL
-#include <stdint.h>
 #include "frontpanel.h"
 #include "simport.h"
 #endif

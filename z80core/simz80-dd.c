@@ -17,12 +17,7 @@
 #include "simz80-dd.h"
 #include "simz80-ddcb.h"
 
-#ifdef BUS_8080
-#include <stdbool.h>
-#endif
-
 #ifdef FRONTPANEL
-#include <stdint.h>
 #include "frontpanel.h"
 #include "simport.h"
 #endif

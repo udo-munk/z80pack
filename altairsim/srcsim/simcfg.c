@@ -33,7 +33,6 @@
  * 03-JAN-2025 changed colors configuration to RGB-triple
  */
 
-#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

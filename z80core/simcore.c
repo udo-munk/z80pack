@@ -9,8 +9,6 @@
  *	This module contains functions for CPU/Bus-handling
  */
 
-#include <inttypes.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -29,7 +27,6 @@
 #include "simcore.h"
 
 #ifdef FRONTPANEL
-#include <stdbool.h>
 #include "frontpanel.h"
 #include "simctl.h"
 #endif

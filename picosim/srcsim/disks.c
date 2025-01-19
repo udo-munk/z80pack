@@ -13,7 +13,6 @@
  * 29-JUN-2024 split of from memsim.c and picosim.c
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

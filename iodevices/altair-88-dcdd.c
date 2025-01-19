@@ -12,7 +12,6 @@
  * 02-DEC-2019 use disk names different from Tarbell controller
  */
 
-#include <stddef.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>

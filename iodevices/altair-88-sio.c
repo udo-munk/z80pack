@@ -22,8 +22,6 @@
  * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
-#include <stddef.h>
-#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>

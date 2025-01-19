@@ -17,12 +17,9 @@
  * 03-JAN-2025 use SDL2 instead of X11
  */
 
-#include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef WANT_SDL
-#include <stdbool.h>
 #include <SDL.h>
 #else
 #include <X11/X.h>

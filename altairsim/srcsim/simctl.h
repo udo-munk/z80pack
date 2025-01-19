@@ -7,7 +7,8 @@
 #ifndef SIMCTL_INC
 #define SIMCTL_INC
 
-#include <stdbool.h>
+#include "sim.h"
+#include "simdefs.h"
 
 extern int boot_switch;			/* boot address for switch */
 

@@ -12,7 +12,6 @@
  * 04-JUN-2024 first version
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

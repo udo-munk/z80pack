@@ -8,8 +8,9 @@
 #ifndef SIMDEFS_INC
 #define SIMDEFS_INC
 
+#include <inttypes.h>
 #include <stdbool.h>
-#include <stdint.h>
+#include <stddef.h>
 
 #define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
 #define RELEASE	"1.39"

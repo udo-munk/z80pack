@@ -11,7 +11,6 @@
  * This web server module provides...
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,9 +22,6 @@
 #include <sys/utsname.h>
 
 #include "sim.h"
-
-#ifdef HAS_NETSERVER
-
 #include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
@@ -47,6 +43,8 @@
 #include "cromemco-tu-art.h"
 #endif
 #include "diskmanager.h"
+
+#ifdef HAS_NETSERVER
 
 #include "log.h"
 static const char *TAG = "netsrv";

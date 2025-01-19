@@ -13,9 +13,6 @@
  *	Declaration of variables in simglb.c
  */
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #include "sim.h"
 #include "simdefs.h"
 

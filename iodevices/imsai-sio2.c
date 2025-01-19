@@ -34,7 +34,6 @@
  * 01-AUG-2021 integrated HAL
  */
 
-#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>

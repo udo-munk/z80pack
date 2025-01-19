@@ -5,8 +5,6 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
-#include <stdint.h>
-
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
@@ -23,7 +21,6 @@
 #include "simz80-fd.h"
 
 #ifdef FRONTPANEL
-#include <stdbool.h>
 #include "frontpanel.h"
 #include "simctl.h"
 #endif

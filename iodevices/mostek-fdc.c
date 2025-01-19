@@ -14,7 +14,6 @@
  * 11-MAY-2024 (Thomas Eberhardt) add diskdir option support
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>

@@ -7,9 +7,8 @@
 #ifndef SIMPORT_INC
 #define SIMPORT_INC
 
-#include <stdint.h>
-
 #include "sim.h"
+#include "simdefs.h"
 
 extern void sleep_for_us(long time);
 extern void sleep_for_ms(int time);

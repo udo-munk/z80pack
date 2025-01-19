@@ -7,8 +7,10 @@
 #ifndef SIMPORT_INC
 #define SIMPORT_INC
 
-#include <stdint.h>
 #include "pico/time.h"
+
+#include "sim.h"
+#include "simdefs.h"
 
 static inline void sleep_for_us(long time) { sleep_us(time); }
 static inline void sleep_for_ms(int time) { sleep_ms(time); }

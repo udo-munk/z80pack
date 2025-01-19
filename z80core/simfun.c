@@ -15,8 +15,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
