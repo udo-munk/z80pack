@@ -37,7 +37,7 @@ WORD boot_switch[MAXMEMSECT];			/* boot address */
 
 BYTE *memory[MAXSEG];		/* MMU with pointers to the banks */
 int selbnk;			/* current selected bank */
-int common;			/* flag for common writes to all banks */
+bool common;			/* flag for common writes to all banks */
 int bankio;			/* data written to banking I/O port */
 
 int num_banks = MAXSEG;

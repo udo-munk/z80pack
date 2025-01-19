@@ -433,36 +433,36 @@ static void mmu_out(BYTE data)
 	case 0x00:
 	case 0x01:
 		sel = 0;
-		common = 0;
+		common = false;
 		break;
 	case 0x02:
 		sel = 1;
-		common = 0;
+		common = false;
 		break;
 	case 0x04:
 		sel = 2;
-		common = 0;
+		common = false;
 		break;
 	case 0x08:
 		sel = 3;
-		common = 0;
+		common = false;
 		break;
 	case 0x10:
 		sel = 4;
-		common = 0;
+		common = false;
 		break;
 	case 0x20:
 		sel = 5;
-		common = 0;
+		common = false;
 		break;
 	case 0x40:
 		sel = 6;
-		common = 0;
+		common = false;
 		break;
 	case 0x80:
 	case 0x81:
 		sel = 0;
-		common = 1;
+		common = true;
 		break;
 	default:
 		LOGE(TAG, "Not supported bank select = %02x", data);
@@ -481,7 +481,7 @@ static void *timing(void *arg)
 {
 	UNUSED(arg);
 
-	while (1) {	/* 1 msec per loop iteration */
+	while (true) {	/* 1 msec per loop iteration */
 
 		/* do nothing if thread is suspended */
 		if (th_suspend)

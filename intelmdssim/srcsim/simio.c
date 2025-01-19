@@ -464,7 +464,7 @@ static void *timing(void *arg)
 
 	tick = 0;
 
-	while (1) {	/* 260 usec per loop iteration */
+	while (true) {	/* 260 usec per loop iteration */
 
 		t = get_clock_us();
 

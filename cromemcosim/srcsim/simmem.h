@@ -67,7 +67,8 @@ extern memmap_t memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
 extern BYTE *memory[MAXSEG];
-extern int selbnk, common, bankio, num_banks;
+extern int selbnk, bankio, num_banks;
+extern bool common;
 
 extern int p_tab[MAXPAGES];		/* 256 pages of 256 bytes */
 

@@ -206,7 +206,7 @@ void telnet_negotiation(int fd)
 	/* and reject all others offered */
 	p[0].fd = fd;
 	p[0].events = POLLIN;
-	while (1) {
+	while (true) {
 		/* wait for input */
 		p[0].revents = 0;
 		poll(p, 1, TELNET_TIMEOUT);

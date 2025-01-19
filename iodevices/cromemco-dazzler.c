@@ -748,7 +748,7 @@ static void *update_thread(void *arg)
 
 	t1 = get_clock_us();
 
-	while (1) {	/* do forever or until canceled */
+	while (true) {	/* do forever or until canceled */
 
 		/* draw one frame dependent on graphics format */
 		if (state) {		/* draw frame if on */
