@@ -34,7 +34,7 @@
 #include "log.h"
 static const char *TAG = "memory";
 
-struct memmap memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
+memmap_t memconf[MAXMEMSECT][MAXMEMMAP] 	/* memory map */
 	= { { { MEM_RW, 0, 0x100, NULL } } };	/* default config to 64K RAM only */
 WORD boot_switch[MAXMEMSECT];			/* boot address */
 

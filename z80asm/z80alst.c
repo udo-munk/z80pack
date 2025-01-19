@@ -298,7 +298,7 @@ void lst_mac(void)
 void lst_sym(void)
 {
 	register int col;
-	register struct sym *sp;
+	register sym_t *sp;
 	int prev_rf;
 
 	if (sort_mode == SYM_NONE)

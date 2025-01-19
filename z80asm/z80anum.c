@@ -50,18 +50,18 @@ BYTE ctype[256];		/* table for character classification */
 #define T_RPAREN	25	/* ) */
 
 /*
- *	structure operator table
+ *	structure type operator table
  */
-struct opr {
+typedef struct opr {
 	const char *opr_name;	/* operator name */
 	BYTE opr_type;		/* operator token type */
-};
+} opr_t;
 
 /*
  *	table with operators
  *	must be sorted in ascending order!
  */
-static struct opr oprtab[] = {
+static opr_t oprtab[] = {
 	{ "AND",	T_AND		},
 	{ "EQ",		T_EQ		},
 	{ "GE",		T_GE		},
@@ -80,7 +80,7 @@ static struct opr oprtab[] = {
 	{ "TYPE",	T_TYPE		},
 	{ "XOR",	T_XOR		}
 };
-static int no_operators = sizeof(oprtab) / sizeof(struct opr);
+static int no_operators = sizeof(oprtab) / sizeof(opr_t);
 
 static BYTE tok_type;			/* token type and flags */
 static WORD tok_val;			/* token value for T_VAL type */
@@ -121,8 +121,8 @@ void init_ctype(void)
  */
 static BYTE search_opr(char *s)
 {
-	register struct opr *low, *mid;
-	register struct opr *high;
+	register opr_t *low, *mid;
+	register opr_t *high;
 	int cond;
 
 	low = &oprtab[0];
@@ -165,7 +165,7 @@ static int get_token(void)
 	register char *s, *p1;
 	register char *p2;
 	WORD n, m, base;
-	struct sym *sp;
+	sym_t *sp;
 
 	s = scan_pos;
 	tok_val = 0;

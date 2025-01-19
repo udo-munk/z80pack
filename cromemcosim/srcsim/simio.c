@@ -98,7 +98,7 @@ int lpt1, lpt2;			/* fds for lpt printer files */
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 
 /* network connections for serial ports on the TU-ART's */
-struct net_connectors ncons[NUMNSOC];
+net_connector_t ncons[NUMNSOC];
 
 static int th_suspend;		/* timing thread suspend flag */
 
@@ -106,7 +106,7 @@ static int th_suspend;		/* timing thread suspend flag */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 	[  0] = cromemco_tuart_0a_status_in,
 	[  1] = cromemco_tuart_0a_data_in,
 	[  3] = cromemco_tuart_0a_interrupt_in,
@@ -158,7 +158,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 	[  0] = cromemco_tuart_0a_baud_out,
 	[  1] = cromemco_tuart_0a_data_out,
 	[  2] = cromemco_tuart_0a_command_out,

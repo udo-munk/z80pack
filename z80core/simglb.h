@@ -50,7 +50,7 @@ extern int	int_nmi, int_mode;
 extern int	int_int, int_data, int_protection;
 extern BYTE	bus_request;
 extern BusDMA_t bus_mode;
-extern Tstates_t (*dma_bus_master)(BYTE);
+extern BusDMAFunc_t *dma_bus_master;
 extern int	tmax, cpu_needed;
 
 #ifdef FRONTPANEL

@@ -14,7 +14,7 @@
 #ifdef WANT_ICE
 
 #ifdef HISIZE
-struct history {		/* structure of a history entry */
+typedef struct history {	/* structure of a history entry */
 	int	h_cpu;		/* CPU type */
 	WORD	h_addr;		/* address of execution */
 	WORD	h_af;		/* register AF */
@@ -26,21 +26,21 @@ struct history {		/* structure of a history entry */
 	WORD	h_iy;		/* register IY */
 #endif
 	WORD	h_sp;		/* register SP */
-};
+} history_t;
 
-extern struct	history his[HISIZE];
+extern history_t his[HISIZE];
 extern int	h_next, h_flag;
 #endif
 
 #ifdef SBSIZE
-struct softbreak {		/* structure of a breakpoint */
+typedef struct softbreak {	/* structure of a breakpoint */
 	WORD	sb_addr;	/* address of breakpoint */
 	BYTE	sb_oldopc;	/* op-code at address of breakpoint */
 	int	sb_passcount;	/* pass counter of breakpoint */
 	int	sb_pass;	/* no. of pass to break */
-};
+} softbreak_t;
 
-extern struct	softbreak soft[SBSIZE];
+extern softbreak_t soft[SBSIZE];
 #endif
 
 #ifdef WANT_TIM

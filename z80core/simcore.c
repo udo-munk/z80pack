@@ -366,7 +366,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 /*
  *	Start a bus request cycle
  */
-void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack))
+void start_bus_request(BusDMA_t mode, BusDMAFunc_t *bus_master)
 {
 	bus_mode = mode;
 	dma_bus_master = bus_master;

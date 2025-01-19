@@ -77,15 +77,15 @@ static int rtc_status1, rtc_status0;	/* RTC status flip-flops */
 static int th_suspend;			/* RTC/interrupt thread suspend flag */
 
 int lpt_fd;				/* fd for file "printer.txt" */
-struct net_connectors ncons[NUMNSOC];	/* network connection for TTY */
-struct unix_connectors ucons[NUMUSOC];	/* socket connection for PTR/PTP */
+net_connector_t ncons[NUMNSOC];		/* network connection for TTY */
+unix_connector_t ucons[NUMUSOC];	/* socket connection for PTR/PTP */
 static BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 #ifdef HAS_ISBC206
 	[104] = isbc206_status_in,	/* iSBC 206 subsystem status input */
 	[105] = isbc206_res_type_in,	/* iSBC 206 result type input */
@@ -120,7 +120,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 #ifdef HAS_ISBC206
 	[105] = isbc206_iopbl_out,	/* iSBC 206 IOPB address LSB output */
 	[106] = isbc206_iopbh_out,	/* iSBC 206 IOPB address MSB output */

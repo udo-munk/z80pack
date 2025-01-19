@@ -53,14 +53,14 @@
 #define MAXMEMMAP	6
 #define MAXMEMSECT	15
 
-struct memmap {
+typedef struct memmap {
 	int type;	/* type of memory pages */
 	BYTE spage;	/* start page of segment */
 	WORD size;	/* size of segment in pages */
 	char *rom_file;
-};
+} memmap_t;
 
-extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
+extern memmap_t memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD _boot_switch[MAXMEMSECT];	/* boot address */
 
 extern BYTE memory[65536], mem_wp;

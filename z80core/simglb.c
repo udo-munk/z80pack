@@ -40,7 +40,7 @@ WORD PC;			/* program counter */
 WORD SP;			/* stack pointer */
 BYTE IFF;			/* interrupt flags */
 #else
-struct cpu_regs cpu_regs;	/* CPU registers */
+cpu_regs_t cpu_regs;		/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
 uint64_t cpu_time;		/* time spent running CPU in us */
@@ -65,7 +65,7 @@ int int_data = -1;		/* data from interrupting device on data bus */
 int int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
 BusDMA_t bus_mode;		/* current bus mode for DMA */
-Tstates_t (*dma_bus_master)(BYTE bus_ack); /* DMA bus master call back func */
+BusDMAFunc_t *dma_bus_master;	/* DMA bus master call back func */
 int tmax;			/* max t-states to execute in 10ms */
 int cpu_needed;			/* don't adjust CPU freq if needed */
 

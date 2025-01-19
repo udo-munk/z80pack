@@ -42,7 +42,7 @@ static const char *TAG = "net";
 /*
  * initialize a server UNIX domain socket
  */
-void init_unix_server_socket(struct unix_connectors *p, const char *fn)
+void init_unix_server_socket(unix_connector_t *p, const char *fn)
 {
 	struct sockaddr_un sun;
 	struct stat sbuf;
@@ -79,7 +79,7 @@ void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 /*
  * initialize a server TCP/IP socket
  */
-void init_tcp_server_socket(struct net_connectors *p)
+void init_tcp_server_socket(net_connector_t *p)
 {
 	struct sockaddr_in sin;
 	int on = 1;

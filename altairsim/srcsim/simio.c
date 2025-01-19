@@ -81,13 +81,13 @@ static BYTE io_no_card_in(void);
 static int printer;		/* fd for file "printer.txt" */
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 
-struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
+unix_connector_t ucons[NUMUSOC]; /* socket connections for SIO's */
 
 /*
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 	[  0] = altair_sio0_status_in,	/* SIO 0 connected to console */
 	[  1] = altair_sio0_data_in,	/*  "  */
 	[  2] = lpt_status_in,		/* printer status */
@@ -117,7 +117,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 	[  0] = altair_sio0_status_out,	/* SIO 0 connected to console */
 	[  1] = altair_sio0_data_out,	/*  "  */
 	[  2] = lpt_status_out,		/* printer status */

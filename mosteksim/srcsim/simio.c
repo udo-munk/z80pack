@@ -37,7 +37,7 @@ static void io_no_card_out(BYTE data);
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 	[208] = io_no_card_in,		/* (d0) PIO1 Data A */
 	[209] = io_no_card_in,		/* (d1) PIO1 Control A */
 	[210] = io_no_card_in,		/* (d2) PIO1 Data B */
@@ -66,7 +66,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 	[161] = host_bdos_out,		/* host file I/O hook */
 	[208] = io_no_card_out,		/* (d0) PIO1 Data A */
 	[209] = io_no_card_out,		/* (d1) PIO1 Control A */

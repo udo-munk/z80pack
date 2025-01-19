@@ -89,9 +89,14 @@ typedef int16_t  SWORD;		/* 16 bit signed */
 typedef uint8_t  BYTE;		/* 8 bit unsigned */
 typedef int8_t   SBYTE;		/* 8 bit signed */
 
+typedef BYTE (in_func_t)(void);			/* port input function */
+typedef void (out_func_t)(const BYTE data);	/* port output function */
+
 typedef uint64_t Tstates_t;	/* uint64 for counting T-states */
+
 typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
 	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
+typedef Tstates_t (BusDMAFunc_t)(const BYTE bus_ack);
 
 #ifdef IOPANEL
 typedef struct port_flags {

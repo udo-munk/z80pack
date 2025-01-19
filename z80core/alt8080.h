@@ -75,7 +75,7 @@
 #undef P
 
 	BYTE t, res, cout, P;
-	struct cpu_reg w;	/* working register */
+	cpu_reg_t w;		/* working register */
 	uint64_t clk;
 
 #define W	w.w

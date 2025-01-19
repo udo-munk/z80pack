@@ -214,7 +214,7 @@ static int sdirection = -1; /* protocol direction, 0 = send 1 = receive */
 
 #endif /* NETWORKING */
 
-struct dskdef disks[16] = {
+dskdef_t disks[16] = {
 	{ "drivea.dsk", &drivea, 77, 26 },
 	{ "driveb.dsk", &driveb, 77, 26 },
 	{ "drivec.dsk", &drivec, 77, 26 },
@@ -298,7 +298,7 @@ static void int_io(int sig);
  *	This array contains function pointers for every
  *	input port.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 	[  0] = cons_in,
 	[  1] = cond_in,
 	[  2] = prts_in,
@@ -340,7 +340,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output port.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 	[  0] = cons_out,
 	[  1] = cond_out,
 	[  2] = prts_out,

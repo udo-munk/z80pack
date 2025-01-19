@@ -41,7 +41,7 @@
  *	Variables for history memory
  */
 #ifdef HISIZE
-struct history his[HISIZE];	/* memory to hold trace information */
+history_t his[HISIZE];		/* memory to hold trace information */
 int h_next;			/* index into trace memory */
 int h_flag;			/* flag for trace memory overrun */
 #endif
@@ -50,7 +50,7 @@ int h_flag;			/* flag for trace memory overrun */
  *	Variables for breakpoint memory
  */
 #ifdef SBSIZE
-struct softbreak soft[SBSIZE];	/* memory to hold breakpoint information */
+softbreak_t soft[SBSIZE];	/* memory to hold breakpoint information */
 #endif
 
 /*
@@ -658,7 +658,7 @@ static void do_port(char *s)
 /*
  *	register definitions table (must be sorted by name length)
  */
-static const struct reg_def {
+typedef struct reg_def {
 	const char *name;	/* register name */
 	char len;		/* register name length */
 	const char *prt;	/* printable register name */
@@ -674,7 +674,9 @@ static const struct reg_def {
 		int *rf;	/* F or F' register pointer */
 		BYTE rm;	/* status register flag mask */
 	};
-} regs[] = {
+} reg_def_t;
+
+static reg_def_t const regs[] = {
 #ifndef EXCLUDE_Z80
 	{ "bc'", 3, "BC'", 1, R_88, .r8h = &B_, .r8l = &C_ },
 	{ "de'", 3, "DE'", 1, R_88, .r8h = &D_, .r8l = &E_ },
@@ -726,7 +728,7 @@ static const struct reg_def {
 	{ "h",   1, "H",   0, R_8,  .r8 = &H },
 	{ "l",   1, "L",   0, R_8,  .r8 = &L }
 };
-static int nregs = sizeof(regs) / sizeof(struct reg_def);
+static int nregs = sizeof(regs) / sizeof(reg_def_t);
 
 /*
  *	Register modify
@@ -734,7 +736,7 @@ static int nregs = sizeof(regs) / sizeof(struct reg_def);
 static void do_reg(char *s)
 {
 	register int i;
-	register const struct reg_def *p;
+	register const reg_def_t *p;
 	WORD w;
 
 	while (isspace((unsigned char) *s))
@@ -979,8 +981,7 @@ static void do_break(char *s)
 		while (isspace((unsigned char) *s))
 			s++;
 		if (*s == '\0') {
-			memset((char *) soft, 0,
-			       sizeof(struct softbreak) * SBSIZE);
+			memset((char *) soft, 0, sizeof(softbreak_t) * SBSIZE);
 			return;
 		}
 		if (!isxdigit((unsigned char) *s)) {
@@ -995,7 +996,7 @@ static void do_break(char *s)
 		if (i == SBSIZE)
 			printf("No software breakpoint at address %04x\n", a);
 		else
-			memset((char *) &soft[i], 0, sizeof(struct softbreak));
+			memset((char *) &soft[i], 0, sizeof(softbreak_t));
 		return;
 	}
 	while (isspace((unsigned char) *s))
@@ -1065,7 +1066,7 @@ static void do_hist(char *s)
 	int i, l, b, e, sa;
 
 	if (tolower((unsigned char) *s) == 'c') {
-		memset((char *) his, 0, sizeof(struct history) * HISIZE);
+		memset((char *) his, 0, sizeof(history_t) * HISIZE);
 		h_next = 0;
 		h_flag = 0;
 		return;

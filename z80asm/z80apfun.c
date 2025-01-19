@@ -169,7 +169,7 @@ WORD op_radix(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
  */
 WORD op_equ(int pass, BYTE dummy1, BYTE dummy2, char *operand, BYTE *ops)
 {
-	register struct sym *sp;
+	register sym_t *sp;
 	const char *label;
 	WORD addr;
 

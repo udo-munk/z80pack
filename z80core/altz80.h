@@ -83,8 +83,8 @@
 	WORD s, d;
 	int32_t tl;		/* loops can run for 65535 * 21 + 16 cycles */
 #endif
-	struct cpu_reg w;	/* working register */
-	struct cpu_reg ir;	/* current index register (HL, IX, IY) */
+	cpu_reg_t w;		/* working register */
+	cpu_reg_t ir;		/* current index register (HL, IX, IY) */
 	uint64_t clk;
 
 #define W	w.w
