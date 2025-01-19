@@ -20,12 +20,12 @@ static int hash(const char *name);
 static int namecmp(const void *p1, const void *p2);
 static int valcmp(const void *p1, const void *p2);
 
-static struct sym *symtab[HASHSIZE];	/* symbol table */
+static sym_t *symtab[HASHSIZE];		/* symbol table */
 static int symcnt;			/* number of symbols defined */
-static struct sym **symarray;		/* sorted symbol table */
+static sym_t **symarray;		/* sorted symbol table */
 static int symsort;			/* sort mode for iterator */
 static int symidx;			/* hash table index for iterator */
-static struct sym *symptr;		/* symbol pointer for iterator */
+static sym_t *symptr;			/* symbol pointer for iterator */
 static int symmax;			/* max. symbol name length observed */
 static WORD last_symval;		/* value of last used symbol */
 
@@ -33,9 +33,9 @@ static WORD last_symval;		/* value of last used symbol */
  *	hash search for sym_name in symbol table symtab
  *	returns pointer to table element, or NULL if not found
  */
-struct sym *look_sym(const char *sym_name)
+sym_t *look_sym(const char *sym_name)
 {
-	register struct sym *sp;
+	register sym_t *sp;
 
 	for (sp = symtab[hash(sym_name)]; sp != NULL; sp = sp->sym_next)
 		if (strcmp(sym_name, sp->sym_name) == 0) {
@@ -50,9 +50,9 @@ struct sym *look_sym(const char *sym_name)
  *	set refflg when found
  *	returns pointer to table element, or NULL if not found
  */
-struct sym *get_sym(const char *sym_name)
+sym_t *get_sym(const char *sym_name)
 {
-	register struct sym *sp;
+	register sym_t *sp;
 
 	if ((sp = look_sym(sym_name)) != NULL)
 		sp->sym_refflg = TRUE;
@@ -72,12 +72,12 @@ WORD sym_lastval(void)
  */
 void new_sym(const char *sym_name, WORD sym_val)
 {
-	register struct sym *sp;
+	register sym_t *sp;
 	register int n;
 	register int hashval;
 
 	n = strlen(sym_name);
-	sp = (struct sym *) malloc(sizeof(struct sym));
+	sp = (sym_t *) malloc(sizeof(sym_t));
 	if (sp == NULL || (sp->sym_name = (char *) malloc(n + 1)) == NULL)
 		fatal(F_OUTMEM, "symbols");
 	strcpy(sp->sym_name, sym_name);
@@ -97,7 +97,7 @@ void new_sym(const char *sym_name, WORD sym_val)
  */
 void put_sym(const char *sym_name, WORD sym_val)
 {
-	register struct sym *sp;
+	register sym_t *sp;
 
 	if ((sp = get_sym(sym_name)) == NULL)
 		new_sym(sym_name, sym_val);
@@ -111,7 +111,7 @@ void put_sym(const char *sym_name, WORD sym_val)
  */
 void put_label(const char *label, WORD addr, int pass)
 {
-	register struct sym *sp;
+	register sym_t *sp;
 
 	if ((sp = look_sym(label)) == NULL)
 		new_sym(label, addr);
@@ -143,9 +143,9 @@ int get_symmax(void)
 /*
  *	get first symbol for listing, sorted as specified in sort_mode
  */
-struct sym *first_sym(int sort_mode)
+sym_t *first_sym(int sort_mode)
 {
-	register struct sym *sp;
+	register sym_t *sp;
 	register int j;
 	register int i;
 
@@ -161,14 +161,13 @@ struct sym *first_sym(int sort_mode)
 		return symptr;
 	case SYM_SORTN:
 	case SYM_SORTA:
-		symarray = (struct sym **) malloc(sizeof(struct sym *)
-						  * symcnt);
+		symarray = (sym_t **) malloc(sizeof(sym_t *) * symcnt);
 		if (symarray == NULL)
 			fatal(F_OUTMEM, "sorting symbol table");
 		for (i = 0, j = 0; i < HASHSIZE; i++)
 			for (sp = symtab[i]; sp != NULL; sp = sp->sym_next)
 				symarray[j++] = sp;
-		qsort(symarray, symcnt, sizeof(struct sym *),
+		qsort(symarray, symcnt, sizeof(sym_t *),
 		      sort_mode == SYM_SORTN ? namecmp : valcmp);
 		symidx = 0;
 		return symarray[symidx];
@@ -181,7 +180,7 @@ struct sym *first_sym(int sort_mode)
 /*
  *	get next symbol for listing
  */
-struct sym *next_sym(void)
+sym_t *next_sym(void)
 {
 	if (symsort == SYM_UNSORT) {
 		if ((symptr = symptr->sym_next) == NULL) {
@@ -203,8 +202,8 @@ struct sym *next_sym(void)
  */
 static int namecmp(const void *p1, const void *p2)
 {
-	return strcmp((*(const struct sym **) p1)->sym_name,
-		      (*(const struct sym **) p2)->sym_name);
+	return strcmp((*(const sym_t **) p1)->sym_name,
+		      (*(const sym_t **) p2)->sym_name);
 }
 
 /*
@@ -215,8 +214,8 @@ static int valcmp(const void *p1, const void *p2)
 {
 	register WORD n1, n2;
 
-	n1 = (*(const struct sym **) p1)->sym_val;
-	n2 = (*(const struct sym **) p2)->sym_val;
+	n1 = (*(const sym_t **) p1)->sym_val;
+	n2 = (*(const sym_t **) p2)->sym_val;
 	if (n1 < n2)
 		return -1;
 	else if (n1 > n2)

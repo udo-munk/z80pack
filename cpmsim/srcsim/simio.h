@@ -15,17 +15,17 @@
 /*
  *	Structure for the disk images
  */
-struct dskdef {
+typedef struct dskdef {
 	const char *fn;			/* filename */
 	int *fd;			/* file descriptor */
 	unsigned int tracks;		/* number of tracks */
 	unsigned int sectors;		/* number of sectors */
-};
+} dskdef_t;
 
-extern struct dskdef disks[16];
+extern dskdef_t disks[16];
 
-extern BYTE (*const port_in[256])(void);
-extern void (*const port_out[256])(BYTE data);
+extern in_func_t *const port_in[256];
+extern out_func_t *const port_out[256];
 
 extern void init_io(void);
 extern void exit_io(void);

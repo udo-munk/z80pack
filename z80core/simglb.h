@@ -36,7 +36,7 @@ extern uint64_t cpu_time;
 
 #ifdef BUS_8080
 extern BYTE	cpu_bus;
-extern int	m1_step;
+extern bool	m1_step;
 #endif
 
 extern BYTE	io_port, io_data;
@@ -45,13 +45,17 @@ extern int	busy_loop_cnt;
 extern BYTE	cpu_state;
 extern int	cpu_error;
 #ifndef EXCLUDE_Z80
-extern int	int_nmi, int_mode;
+extern int	int_mode;
+extern bool	int_nmi;
 #endif
-extern int	int_int, int_data, int_protection;
+extern bool	int_int;
+extern int	int_data;
+extern bool	int_protection;
 extern BYTE	bus_request;
 extern BusDMA_t bus_mode;
-extern Tstates_t (*dma_bus_master)(BYTE);
-extern int	tmax, cpu_needed;
+extern BusDMAFunc_t *dma_bus_master;
+extern int	tmax;
+extern bool	cpu_needed;
 
 #ifdef FRONTPANEL
 extern uint64_t fp_clock;
@@ -68,19 +72,19 @@ extern BYTE 	fp_led_output;
 extern port_flags_t port_flags[256];
 #endif
 
-extern int	s_flag, l_flag, m_flag, x_flag, i_flag, f_flag,
-		u_flag, r_flag, c_flag;
+extern bool	s_flag, l_flag, x_flag, i_flag, u_flag, r_flag, c_flag;
+extern int	m_value, f_value;
 #ifdef HAS_CONFIG
-extern int	M_flag;
+extern int	M_value;
 #endif
 #ifdef HAS_BANKED_ROM
-extern int	R_flag;
+extern bool	R_flag;
 #endif
 #ifdef FRONTPANEL
-extern int	F_flag;
+extern bool	F_flag;
 #endif
 #ifdef HAS_NETSERVER
-extern int	n_flag;
+extern bool	n_flag;
 #endif
 
 extern char	xfn[MAX_LFN];

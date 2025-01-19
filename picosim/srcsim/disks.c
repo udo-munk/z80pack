@@ -13,7 +13,6 @@
  * 29-JUN-2024 split of from memsim.c and picosim.c
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -119,7 +118,7 @@ void list_files(const char *dir, const char *ext)
 
 	res = f_findfirst(&dp, &fno, dir, ext);
 	if (res == FR_OK) {
-		while (1) {
+		while (true) {
 			printf("%s\t", fno.fname);
 			if (strlen(fno.fname) < 8)
 				putchar('\t');

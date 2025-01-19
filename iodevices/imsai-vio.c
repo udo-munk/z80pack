@@ -23,11 +23,9 @@
  * 04-JAN-2025 add SDL2 support
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef WANT_SDL
-#include <stdbool.h>
 #include <SDL.h>
 #else
 #include <X11/X.h>
@@ -97,12 +95,14 @@ static char text[10];
 #endif /* !WANT_SDL */
 
 /* VIO stuff */
-static int state;			/* state on/off for refresh thread */
+static bool state;			/* state on/off for refresh thread */
 static int mode;		/* video mode written to command port memory */
 static int modebuf;			/* and double buffer for it */
-static int vmode, res, inv;		/* video mode, resolution & inverse */
+static int vmode, res;			/* video mode, resolution */
+static bool inv;			/* inverse */
 #if !defined(WANT_SDL) || defined(HAS_NETSERVER)
-static int kbd_status, kbd_data;	/* keyboard status & data */
+static bool kbd_status;			/* keyboard status */
+static int kbd_data;			/* keyboard data */
 
 /* UNIX stuff */
 static pthread_t thread;
@@ -205,7 +205,7 @@ static void kill_thread(void)
 /* shutdown VIO thread and window */
 void imsai_vio_off(void)
 {
-	state = 0;		/* tell web refresh thread to stop */
+	state = false;		/* tell web refresh thread to stop */
 
 #ifdef WANT_SDL
 #ifdef HAS_NETSERVER
@@ -275,17 +275,17 @@ static inline void draw_point(int x, int y)
 static void dc1(BYTE c)
 {
 	register int x, y;
-	int cinv = (c & 128) ? 1 : 0;
+	bool cinv = (c & 128) ? true : false;
 
 	for (x = 0; x < 7; x++) {
 		for (y = 0; y < 10; y++) {
 			if (charset[(c << 1) & 0xff][y][x] == 1) {
-				if ((cinv ^ inv) == 0)
+				if (cinv == inv)
 					set_fg_color();
 				else
 					set_bg_color();
 			} else {
-				if ((cinv ^ inv) == 0)
+				if (cinv == inv)
 					set_bg_color();
 				else
 					set_fg_color();
@@ -308,17 +308,17 @@ static void dc1(BYTE c)
 static void dc2(BYTE c)
 {
 	register int x, y;
-	int cinv = (c & 128) ? 1 : 0;
+	bool cinv = (c & 128) ? true : false;
 
 	for (x = 0; x < 7; x++) {
 		for (y = 0; y < 10; y++) {
 			if (charset[c & 0x7f][y][x] == 1) {
-				if ((cinv ^ inv) == 0)
+				if (cinv == inv)
 					set_fg_color();
 				else
 					set_bg_color();
 			} else {
-				if ((cinv ^ inv) == 0)
+				if (cinv == inv)
 					set_bg_color();
 				else
 					set_fg_color();
@@ -345,12 +345,12 @@ static void dc3(BYTE c)
 	for (x = 0; x < 7; x++) {
 		for (y = 0; y < 10; y++) {
 			if (charset[c][y][x] == 1) {
-				if (inv == 0)
+				if (!inv)
 					set_fg_color();
 				else
 					set_bg_color();
 			} else {
-				if (inv == 0)
+				if (!inv)
 					set_bg_color();
 				else
 					set_fg_color();
@@ -435,7 +435,7 @@ static inline void event_handler(void)
 		int res = net_device_get(DEV_VIO);
 		if (res >= 0) {
 			kbd_data = res;
-			kbd_status = 2;
+			kbd_status = true;
 		}
 	}
 }
@@ -452,7 +452,7 @@ static inline void event_handler(void)
 {
 	/* if the last character wasn't processed already do nothing */
 	/* keep event in queue until the CPU emulation got current one */
-	if (kbd_status != 0)
+	if (kbd_status)
 		return;
 
 	/* if there is a keyboard event get it and convert with keymap */
@@ -461,7 +461,7 @@ static inline void event_handler(void)
 		if ((event.type == KeyPress) &&
 		    XLookupString(&event.xkey, text, 1, &key, 0) == 1) {
 			kbd_data = text[0];
-			kbd_status = 2;
+			kbd_status = true;
 		}
 	}
 #ifdef HAS_NETSERVER
@@ -469,7 +469,7 @@ static inline void event_handler(void)
 		int res = net_device_get(DEV_VIO);
 		if (res >= 0) {
 			kbd_data = res;
-			kbd_status = 2;
+			kbd_status = true;
 		}
 	}
 #endif
@@ -493,7 +493,7 @@ static void refresh(void)
 
 		vmode = (mode >> 2) & 3;
 		res = mode & 3;
-		inv = (mode & 16) ? 1 : 0;
+		inv = (mode & 16) ? true : false;
 
 		if (res & 1) {
 			cols = 40;
@@ -750,7 +750,7 @@ void imsai_vio_init(void)
 	}
 #endif
 
-	state = 1;
+	state = true;
 	modebuf = -1;
 	putmem(0xf7ff, 0x00);
 
@@ -775,7 +775,7 @@ BYTE imsai_vio_kbd_status_in(void)
 #ifdef WANT_SDL
 	data = keyn ? 2 : 0;
 #else
-	data = (BYTE) kbd_status;
+	data = kbd_status ? 2 : 0;
 #endif
 
 	return data;
@@ -796,10 +796,10 @@ int imsai_vio_kbd_in(void)
 	} else
 		data = -1;
 #else
-	if (kbd_status != 0) {
+	if (kbd_status) {
 		/* take over data and reset status */
 		data = (BYTE) kbd_data;
-		kbd_status = 0;
+		kbd_status = false;
 	} else
 		data = -1;
 #endif

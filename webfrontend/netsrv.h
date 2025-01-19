@@ -2,7 +2,7 @@
  * netsrv.h
  *
  * Copyright (C) 2018 by David McNaughton
- * 
+ *
  * History:
  * 12-JUL-2018	1.0	Initial Release
  */
@@ -13,10 +13,12 @@
 /**
  * This web server module provides...
  */
-#include <stdbool.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <string.h>
+
+#include "sim.h"
+#include "simdefs.h"
 
 #include "civetweb.h"
 
@@ -36,19 +38,15 @@ enum net_device {
 
 typedef enum net_device net_device_t;
 
-struct msgbuf_s {
+typedef struct msgbuf_s {
 	long			mtype;
 	unsigned char	mtext[128];
-};
+} msgbuf_t;
 
-typedef struct msgbuf_s msgbuf_t;
-
-struct ws_client {
+typedef struct ws_client {
 	struct mg_connection *conn;
 	int state;
-};
-
-typedef struct ws_client ws_client_t;
+} ws_client_t;
 
 extern int net_device_alive(net_device_t device);
 extern void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data));
@@ -79,14 +77,12 @@ enum http_method {
 
 typedef enum http_method http_method_t;
 
-struct request {
+typedef struct request {
 	const struct mg_request_info *mg;
 	http_method_t method;
 	const char *args[_HTTP_MAX_ARGS];
 	long long len;
-};
-
-typedef struct request request_t;
+} request_t;
 
 extern request_t *get_request(const HttpdConnection_t *conn);
 

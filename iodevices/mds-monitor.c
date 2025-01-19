@@ -15,7 +15,6 @@
  * 07-JUN-2024 rewrite of the monitor ports and the timing thread
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -82,34 +81,34 @@ static const char *TAG = "MONITOR";
 static BYTE mon_int;	/* Interrupts enabled & signals */
 static pthread_mutex_t mon_int_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int tty_upper_case;
-int tty_strip_parity;
-int tty_drop_nulls;
+bool tty_upper_case;
+bool tty_strip_parity;
+bool tty_drop_nulls;
 int tty_clock_div = 32;	/* 1200 baud */
 
-static int tty_init;	/* TTY initialized flag */
+static bool tty_init;	/* TTY initialized flag */
 static BYTE tty_cmd;	/* TTY command byte */
-static int tty_trdy;	/* TTY transmit ready */
-static int tty_rbr;	/* TTY receiver buffer ready */
+static bool tty_trdy;	/* TTY transmit ready */
+static bool tty_rbr;	/* TTY receiver buffer ready */
 
-int crt_upper_case;
-int crt_strip_parity;
-int crt_drop_nulls;
+bool crt_upper_case;
+bool crt_strip_parity;
+bool crt_drop_nulls;
 int crt_clock_div = 1;	/* 38400 baud */
 
-static int crt_init;	/* CRT initialized flag */
+static bool crt_init;	/* CRT initialized flag */
 static BYTE crt_cmd;	/* CRT command byte */
-static int crt_trdy;	/* CRT transmit ready */
-static int crt_rbr;	/* CRT receiver buffer ready */
+static bool crt_trdy;	/* CRT transmit ready */
+static bool crt_rbr;	/* CRT receiver buffer ready */
 
 int pt_clock_div = 16;	/* 2400 baud */
 
-static int ptp_rdy;	/* PTP ready */
-static int ptr_rdy;	/* PTR ready */
+static bool ptp_rdy;	/* PTP ready */
+static bool ptr_rdy;	/* PTR ready */
 
 int lpt_clock_div = 1;	/* 38400 baud */
 
-static int lpt_rdy;	/* LPT ready */
+static bool lpt_rdy;	/* LPT ready */
 
 /*
  *	PROM programmer interface data input
@@ -212,13 +211,13 @@ void mon_tty_periodic(void)
 			close(ncons[0].ssc);
 			ncons[0].ssc = 0;
 		} else if (p[0].revents & POLLIN) {
-			tty_rbr = 1;
+			tty_rbr = true;
 			iset |= ITTYI;
 		}
 	}
 	/* if socket is connected and transceiver is enabled output is ready */
 	if (ncons[0].ssc != 0 && (tty_cmd & TXEN) && !tty_trdy) {
-		tty_trdy = 1;
+		tty_trdy = true;
 		iset |= ITTYO;
 	}
 	if (iset)
@@ -267,7 +266,7 @@ BYTE mon_tty_data_in(void)
 	last = data;
 
 done:
-	tty_rbr = 0;
+	tty_rbr = false;
 	mon_int_update(ITTYI, 0);
 
 	return data;
@@ -318,7 +317,7 @@ again:
 	}
 
 done:
-	tty_trdy = 0;
+	tty_trdy = false;
 	mon_int_update(ITTYO, 0);
 }
 
@@ -331,20 +330,21 @@ void mon_tty_ctl_out(BYTE data)
 
 	if (!tty_init) {
 		/* ignore baud rate, character length, parity and stop bits */
-		tty_init = 1;
+		tty_init = true;
 		return;
 	}
-	if (data & USRST)
-		tty_init = tty_cmd = 0;
-	else
+	if (data & USRST) {
+		tty_init = false;
+		tty_cmd = 0;
+	} else
 		tty_cmd = data & (RTS | CLERR | RXEN | DTR | TXEN);
 	iclr = 0;
 	if (!(tty_cmd & RXEN) && tty_rbr) {
-		tty_rbr = 0;
+		tty_rbr = false;
 		iclr |= ITTYI;
 	}
 	if (!(tty_cmd & TXEN) && tty_trdy) {
-		tty_trdy = 0;
+		tty_trdy = false;
 		iclr |= ITTYO;
 	}
 	if (iclr)
@@ -366,7 +366,7 @@ void mon_crt_periodic(void)
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if (p[0].revents & POLLIN) {
-			crt_rbr = 1;
+			crt_rbr = true;
 			iset |= ICRTI;
 		}
 		if (p[0].revents & POLLNVAL) {
@@ -377,7 +377,7 @@ void mon_crt_periodic(void)
 		}
 	}
 	if ((tty_cmd & TXEN) && !crt_trdy) {
-		crt_trdy = 1;
+		crt_trdy = true;
 		iset |= ICRTO;
 	}
 	if (iset)
@@ -409,7 +409,7 @@ again:
 		data = toupper(data);
 	last = data;
 
-	crt_rbr = 0;
+	crt_rbr = false;
 	mon_int_update(ICRTI, 0);
 
 	return data;
@@ -456,7 +456,7 @@ again:
 	}
 
 done:
-	crt_trdy = 0;
+	crt_trdy = false;
 	mon_int_update(ICRTO, 0);
 }
 
@@ -469,20 +469,21 @@ void mon_crt_ctl_out(BYTE data)
 
 	if (!crt_init) {
 		/* ignore baud rate, character length, parity and stop bits */
-		crt_init = 1;
+		crt_init = true;
 		return;
 	}
-	if (data & USRST)
-		crt_init = crt_cmd = 0;
-	else
+	if (data & USRST) {
+		crt_init = false;
+		crt_cmd = 0;
+	} else
 		crt_cmd = data & (RTS | CLERR | RXEN | DTR | TXEN);
 	iclr = 0;
 	if (!(crt_cmd & RXEN) && crt_rbr) {
-		crt_rbr = 0;
+		crt_rbr = false;
 		iclr |= ICRTI;
 	}
 	if (!(crt_cmd & TXEN) && crt_trdy) {
-		crt_trdy = 0;
+		crt_trdy = false;
 		iclr |= ICRTO;
 	}
 	if (iclr)
@@ -505,20 +506,20 @@ void mon_pt_periodic(void)
 		p[0].revents = 0;
 		poll(p, 1, 0);
 		if ((p[0].revents & POLLIN) && !ptr_rdy) {
-			ptr_rdy = 1;
+			ptr_rdy = true;
 			iset |= IPTR;
 		}
 		if ((p[0].revents & POLLOUT) && !ptp_rdy) {
-			ptp_rdy = 1;
+			ptp_rdy = true;
 			iset |= IPTP;
 		}
 	} else {
 		if (ptr_rdy) {
-			ptr_rdy = 0;
+			ptr_rdy = false;
 			iclr |= IPTR;
 		}
 		if (ptp_rdy) {
-			ptp_rdy = 0;
+			ptp_rdy = false;
 			iclr |= IPTP;
 		}
 	}
@@ -555,7 +556,7 @@ BYTE mon_ptr_data_in(void)
 	last = data;
 
 done:
-	ptr_rdy = 0;
+	ptr_rdy = false;
 	mon_int_update(IPTR, 0);
 
 	return data;
@@ -617,7 +618,7 @@ again:
 	}
 
 done:
-	ptp_rdy = 0;
+	ptp_rdy = false;
 	mon_int_update(IPTP, 0);
 }
 
@@ -635,7 +636,7 @@ void mon_pt_ctl_out(BYTE data)
 void mon_lpt_periodic(void)
 {
 	if (!lpt_rdy) {
-		lpt_rdy = 1;
+		lpt_rdy = true;
 		mon_int_update(0, ILPT);
 	}
 }
@@ -683,7 +684,7 @@ again:
 	}
 
 done:
-	lpt_rdy = 0;
+	lpt_rdy = false;
 	mon_int_update(ILPT, 0);
 }
 
@@ -700,12 +701,14 @@ void mon_lpt_ctl_out(BYTE data)
  */
 void mon_reset(void)
 {
-	tty_init = tty_cmd = 0;
-	tty_trdy = tty_rbr = 0;
-	crt_init = crt_cmd = 0;
-	crt_trdy = crt_rbr = 0;
-	ptp_rdy = ptr_rdy = 0;
-	lpt_rdy = 0;
+	tty_init = false;
+	tty_cmd = 0;
+	tty_trdy = tty_rbr = false;
+	crt_init = false;
+	crt_cmd = 0;
+	crt_trdy = crt_rbr = false;
+	ptp_rdy = ptr_rdy = false;
+	lpt_rdy = false;
 	pthread_mutex_lock(&mon_int_mutex);
 	mon_int = 0;
 	pthread_mutex_unlock(&mon_int_mutex);

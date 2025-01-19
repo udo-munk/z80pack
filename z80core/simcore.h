@@ -25,8 +25,7 @@ extern void report_cpu_stats(void);
 extern BYTE io_in(BYTE addrl, BYTE addrh);
 extern void io_out(BYTE addrl, BYTE addrh, BYTE data);
 
-extern void start_bus_request(BusDMA_t mode,
-			      Tstates_t (*bus_master)(BYTE bus_ack));
+extern void start_bus_request(BusDMA_t mode, BusDMAFunc_t *bus_master);
 extern void end_bus_request(void);
 
 #endif /* !SIMCORE_INC */

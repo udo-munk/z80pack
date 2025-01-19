@@ -10,8 +10,6 @@
  * 04-NOV-2019		remove fake DMA bus request
  */
 
-#include <stddef.h>
-#include <stdint.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,14 +17,13 @@
 #include <signal.h>
 
 #include "sim.h"
-
-#if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
-
 #include "simdefs.h"
 #include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
 #include "simport.h"
+
+#if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
 
 #include "netsrv.h"
 #include "cromemco-88ccc.h"

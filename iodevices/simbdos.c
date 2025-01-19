@@ -30,7 +30,6 @@
  * 03-OCT-2019 (Mike Douglas) Original
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -66,7 +65,7 @@ static const char *textExts[] = {
 
 static FILE *fp = NULL;		/* file pointer */
 static WORD dmaAddr = 0x80;	/* buffer address in emulated space */
-static int textFile = 0;	/* text file flag */
+static bool textFile = false;	/* text file flag */
 
 /*
  * host_bdos_out - an output to this I/O device is somewhat equivalent
@@ -124,10 +123,10 @@ void host_bdos_out(BYTE outByte)
 				openFlags[0] = 0; /* yes, don't over-write */
 			}
 #endif
-			textFile = 0;		/* binary file is assumed */
+			textFile = false;	/* binary file is assumed */
 			for (i = 0; textExts[i] != NULL; i++)
 				if (strcmp(extension, textExts[i]) == 0) {
-					textFile = 1;	/* it's a text file */
+					textFile = true; /* it's a text file */
 					break;
 				}
 		} else

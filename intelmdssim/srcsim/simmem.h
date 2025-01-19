@@ -31,7 +31,7 @@
 
 extern BYTE memory[65536], boot_rom[BOOT_SIZE];
 extern char *boot_rom_file, *mon_rom_file;
-extern int mon_enabled;
+extern bool mon_enabled;
 
 extern void init_memory(void);
 

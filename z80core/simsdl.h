@@ -7,8 +7,10 @@
 #ifndef SIMSDL_INC
 #define SIMSDL_INC
 
-#include <stdbool.h>
 #include <SDL.h>
+
+#include "sim.h"
+#include "simdefs.h"
 
 typedef struct win_funcs {
 	void (*open)(void);

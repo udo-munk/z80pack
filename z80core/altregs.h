@@ -14,43 +14,45 @@
 #define ALTREGS_INC
 
 #if _BYTE_ORDER == _LITTLE_ENDIAN
-struct cpu_reg {
+typedef struct cpu_reg {
 	union {
 		struct { BYTE l; BYTE h; };
 		WORD w;
 	};
-};
+} cpu_reg_t;
 #elif _BYTE_ORDER == _BIG_ENDIAN
-struct cpu_reg {
+typedef struct cpu_reg {
 	union {
 		struct { BYTE h; BYTE l; };
 		WORD w;
 	};
-};
+} cpu_reg_t;
 #else
 #error "Unsupported byte order"
 #endif
 
-extern struct cpu_regs {
-	struct cpu_reg af;	/* primary registers */
-	struct cpu_reg bc;
-	struct cpu_reg de;
-	struct cpu_reg hl;
-	struct cpu_reg sp;	/* stack pointer */
-	struct cpu_reg pc;	/* program counter */
+typedef struct cpu_regs {
+	cpu_reg_t af;	/* primary registers */
+	cpu_reg_t bc;
+	cpu_reg_t de;
+	cpu_reg_t hl;
+	cpu_reg_t sp;	/* stack pointer */
+	cpu_reg_t pc;	/* program counter */
 #ifndef EXCLUDE_Z80
-	struct cpu_reg af_;	/* Z80 alternate registers */
-	struct cpu_reg bc_;
-	struct cpu_reg de_;
-	struct cpu_reg hl_;
-	struct cpu_reg ix;	/* Z80 index registers */
-	struct cpu_reg iy;
+	cpu_reg_t af_;	/* Z80 alternate registers */
+	cpu_reg_t bc_;
+	cpu_reg_t de_;
+	cpu_reg_t hl_;
+	cpu_reg_t ix;	/* Z80 index registers */
+	cpu_reg_t iy;
 	BYTE i;			/* Z80 interrupt register */
 	BYTE r;			/* Z80 refresh register (7-bit counter) */
 	BYTE r_;		/* 8th bit of R (can be loaded with LD R,A) */
 #endif
 	BYTE iff;		/* interrupt flags */
-} cpu_regs;
+} cpu_regs_t;
+
+extern cpu_regs_t cpu_regs;
 
 #define AF	cpu_regs.af.w
 #define A	cpu_regs.af.h

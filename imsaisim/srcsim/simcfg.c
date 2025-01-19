@@ -37,7 +37,6 @@
  * 03-JAN-2025 changed colors configuration to RGB-triple
  */
 
-#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -95,10 +94,10 @@ void config(void)
 			if (!strcmp(t1, "sio1a_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio1a_upper_case = 0;
+					sio1a_upper_case = false;
 					break;
 				case '1':
-					sio1a_upper_case = 1;
+					sio1a_upper_case = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -107,10 +106,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio1b_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio1b_upper_case = 0;
+					sio1b_upper_case = false;
 					break;
 				case '1':
-					sio1b_upper_case = 1;
+					sio1b_upper_case = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -119,10 +118,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio2a_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio2a_upper_case = 0;
+					sio2a_upper_case = false;
 					break;
 				case '1':
-					sio2a_upper_case = 1;
+					sio2a_upper_case = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -131,10 +130,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio2b_upper_case")) {
 				switch (*t2) {
 				case '0':
-					sio2b_upper_case = 0;
+					sio2b_upper_case = false;
 					break;
 				case '1':
-					sio2b_upper_case = 1;
+					sio2b_upper_case = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -143,10 +142,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio1a_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio1a_strip_parity = 0;
+					sio1a_strip_parity = false;
 					break;
 				case '1':
-					sio1a_strip_parity = 1;
+					sio1a_strip_parity = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -155,10 +154,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio1b_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio1b_strip_parity = 0;
+					sio1b_strip_parity = false;
 					break;
 				case '1':
-					sio1b_strip_parity = 1;
+					sio1b_strip_parity = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -167,10 +166,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio2a_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio2a_strip_parity = 0;
+					sio2a_strip_parity = false;
 					break;
 				case '1':
-					sio2a_strip_parity = 1;
+					sio2a_strip_parity = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -179,10 +178,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio2b_strip_parity")) {
 				switch (*t2) {
 				case '0':
-					sio2b_strip_parity = 0;
+					sio2b_strip_parity = false;
 					break;
 				case '1':
-					sio2b_strip_parity = 1;
+					sio2b_strip_parity = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -191,10 +190,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio1a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio1a_drop_nulls = 0;
+					sio1a_drop_nulls = false;
 					break;
 				case '1':
-					sio1a_drop_nulls = 1;
+					sio1a_drop_nulls = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -203,10 +202,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio1b_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio1b_drop_nulls = 0;
+					sio1b_drop_nulls = false;
 					break;
 				case '1':
-					sio1b_drop_nulls = 1;
+					sio1b_drop_nulls = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -215,10 +214,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio2a_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio2a_drop_nulls = 0;
+					sio2a_drop_nulls = false;
 					break;
 				case '1':
-					sio2a_drop_nulls = 1;
+					sio2a_drop_nulls = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);
@@ -227,10 +226,10 @@ void config(void)
 			} else if (!strcmp(t1, "sio2b_drop_nulls")) {
 				switch (*t2) {
 				case '0':
-					sio2b_drop_nulls = 0;
+					sio2b_drop_nulls = false;
 					break;
 				case '1':
-					sio2b_drop_nulls = 1;
+					sio2b_drop_nulls = true;
 					break;
 				default:
 					LOGW(TAG, "invalid value for %s: %s", t1, t2);

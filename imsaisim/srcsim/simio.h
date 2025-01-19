@@ -17,10 +17,10 @@
 
 extern void lpt_reset(void);
 
-extern struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
+extern unix_connector_t ucons[NUMUSOC]; /* socket connections for SIO's */
 
-extern BYTE (*const port_in[256])(void);
-extern void (*const port_out[256])(BYTE data);
+extern in_func_t *const port_in[256];
+extern out_func_t *const port_out[256];
 
 extern void init_io(void);
 extern void exit_io(void);

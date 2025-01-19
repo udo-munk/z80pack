@@ -25,7 +25,6 @@
  * 24-SEP-2019 restore and seek also affect step direction
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -80,8 +79,8 @@ BYTE tarbell_rom[32] = {
 	0x00, 0xdb, 0xf8, 0xb7, 0xca, 0x7d, 0x00, 0x76
 };
 
-int tarbell_rom_enabled = 0;	/* ROM not enabled by default */
-int tarbell_rom_active = 1;	/* ROM is active at power on */
+bool tarbell_rom_enabled = false; /* ROM not enabled by default */
+bool tarbell_rom_active = true;	/* ROM is active at power on */
 
 /*
  * find and set path for disk images
@@ -503,5 +502,5 @@ void tarbell_ext_out(BYTE data)
 void tarbell_reset(void)
 {
 	fdc_stat = fdc_track = fdc_sec = disk = state = dcnt = 0;
-	tarbell_rom_active = 1;
+	tarbell_rom_active = true;
 }

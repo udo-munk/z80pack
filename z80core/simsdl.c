@@ -8,17 +8,19 @@
  *	This module contains the SDL2 integration for the simulator.
  */
 
-#include <stdbool.h>
 #include <stdlib.h>
 #include <SDL.h>
+#include <SDL_main.h>
+
+#include "sim.h"
+#include "simdefs.h"
+#include "simsdl.h"
+#include "simmain.h"
+
 #ifdef FRONTPANEL
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 #endif
-#include <SDL_main.h>
-
-#include "simsdl.h"
-#include "simmain.h"
 
 #define MAX_WINDOWS 5
 

@@ -204,7 +204,7 @@ int main(void)
 	PC = 0xff00;		/* power on jump into the boot ROM */
 	config();		/* configure the machine */
 
-	f_flag = speed;		/* setup speed of the CPU */
+	f_value = speed;	/* setup speed of the CPU */
 	tmax = speed * 10000;	/* theoretically */
 
 	put_pixel(0x440000);	/* LED green */
@@ -241,7 +241,7 @@ int main(void)
  * from the terminal. For single character requests (len == 2),
  * returns immediately after input is received.
  */
-int get_cmdline(char *buf, int len)
+bool get_cmdline(char *buf, int len)
 {
 	int i = 0;
 	char c;
@@ -268,7 +268,7 @@ int get_cmdline(char *buf, int len)
 	}
 	buf[i] = '\0';
 	putchar('\n');
-	return 0;
+	return true;
 }
 
 #ifdef WANT_ICE
@@ -293,7 +293,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 	WORD save_PC;
 	Tstates_t T0;
 #ifdef WANT_HB
-	int save_hb_flag;
+	bool save_hb_flag;
 #endif
 
 	switch (tolower((unsigned char) *cmd)) {
@@ -313,7 +313,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 
 #ifdef WANT_HB
 		save_hb_flag = hb_flag;
-		hb_flag = 0;
+		hb_flag = false;
 #endif
 		save[0] = getmem(0x0000); /* save memory locations */
 		save[1] = getmem(0x0001); /* 0000H - 0002H */

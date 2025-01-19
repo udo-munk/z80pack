@@ -19,8 +19,6 @@
 #ifndef PROCTEC_VDM_INC
 #define PROCTEC_VDM_INC
 
-#include <stdint.h>
-
 #include "sim.h"
 #include "simdefs.h"
 

@@ -26,4 +26,4 @@
 #define SD_SPI_SO 16		/* SPI so pin used for SD card */
 #define SD_SPI_CS 17		/* SPI cs pin used for SD card */
 
-#endif
+#endif /* !GPIO_INC */

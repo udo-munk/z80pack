@@ -318,13 +318,13 @@ static void step_clicked(int state, int val)
 /*
  * Single step through the machine cycles after first M1
  */
-int wait_step(void)
+bool wait_step(void)
 {
-	int ret = 0;
+	bool ret = false;
 
 	if (cpu_state != ST_SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
-		m1_step = 0;
+		m1_step = false;
 		return ret;
 	}
 
@@ -345,11 +345,11 @@ int wait_step(void)
 		fp_clock++;
 		fp_sampleData();
 		sleep_for_ms(1);
-		ret = 1;
+		ret = true;
 	}
 
 	cpu_bus &= ~CPU_M1;
-	m1_step = 0;
+	m1_step = false;
 	return ret;
 }
 
@@ -386,7 +386,7 @@ static void reset_clicked(int state, int val)
 		reset = 1;
 		cpu_state |= ST_RESET;
 		IFF = 0;
-		m1_step = 0;
+		m1_step = false;
 		break;
 	case FP_SW_CENTER:
 		if (reset) {
@@ -394,7 +394,7 @@ static void reset_clicked(int state, int val)
 			reset_cpu();
 			if (reset == 2)
 				if (!R_flag)
-					PC = _boot_switch[M_flag];
+					PC = _boot_switch[M_value];
 			reset = 0;
 			cpu_state &= ~ST_RESET;
 
@@ -412,7 +412,7 @@ static void reset_clicked(int state, int val)
 		/* reset CPU and I/O devices */
 		reset = 2;
 		cpu_state |= ST_RESET;
-		m1_step = 0;
+		m1_step = false;
 		IFF = 0;
 		reset_io();
 		break;
@@ -537,7 +537,7 @@ static void int_clicked(int state, int val)
 
 	switch (state) {
 	case FP_SW_UP:
-		int_int = 1;
+		int_int = true;
 		break;
 	case FP_SW_DOWN:
 		fp_led_address = boot_switch;

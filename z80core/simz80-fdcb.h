@@ -9,6 +9,7 @@
 #define SIMZ80_FDCB_INC
 
 #include "sim.h"
+#include "simdefs.h"
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
 extern int op_fdcb_handle(void);

@@ -11,7 +11,6 @@
  * This web server module provides...
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,9 +22,6 @@
 #include <sys/utsname.h>
 
 #include "sim.h"
-
-#ifdef HAS_NETSERVER
-
 #include "simdefs.h"
 #include "simglb.h"
 #include "simmem.h"
@@ -47,6 +43,8 @@
 #include "cromemco-tu-art.h"
 #endif
 #include "diskmanager.h"
+
+#ifdef HAS_NETSERVER
 
 #include "log.h"
 static const char *TAG = "netsrv";
@@ -312,7 +310,7 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
                         httpdPrintf(conn, "\"%s\": %d, ", "cpa", 1);
                     }
 #endif
-                httpdPrintf(conn, "\"%s\": %d ", "clock", f_flag);
+                httpdPrintf(conn, "\"%s\": %d ", "clock", f_value);
             httpdPrintf(conn, "} ");
 
 #ifdef HAS_HAL
@@ -364,15 +362,15 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
             httpdPrintf(conn, ", \"memmap\": [ ");
 
 				for (int i=0; i < MAXMEMMAP; i++) {
-					if (memconf[M_flag][i].size) {
+					if (memconf[M_value][i].size) {
 
 
 						if (i > 0) httpdPrintf(conn, ", ");
-						httpdPrintf(conn, "{ \"type\": \"%s\"", (memconf[M_flag][i].type==MEM_RW)?"RAM":"ROM");
-						httpdPrintf(conn, ", \"from\": %d", memconf[M_flag][i].spage << 8);
-						httpdPrintf(conn, ", \"to\": %d", (memconf[M_flag][i].spage << 8) + (memconf[M_flag][i].size << 8) - 1);
-						if (memconf[M_flag][i].type==MEM_RO && memconf[M_flag][i].rom_file)
-							httpdPrintf(conn, ", \"file\": \"%s\"", memconf[M_flag][i].rom_file);
+						httpdPrintf(conn, "{ \"type\": \"%s\"", (memconf[M_value][i].type==MEM_RW)?"RAM":"ROM");
+						httpdPrintf(conn, ", \"from\": %d", memconf[M_value][i].spage << 8);
+						httpdPrintf(conn, ", \"to\": %d", (memconf[M_value][i].spage << 8) + (memconf[M_value][i].size << 8) - 1);
+						if (memconf[M_value][i].type==MEM_RO && memconf[M_value][i].rom_file)
+							httpdPrintf(conn, ", \"file\": \"%s\"", memconf[M_value][i].rom_file);
 						httpdPrintf(conn, "}");
 					}
 				}
@@ -381,8 +379,8 @@ static int SystemHandler(HttpdConnection_t *conn, void *unused) {
 
             httpdPrintf(conn, ", \"memextra\": [ ");
 
-			if (boot_switch[M_flag]) {
-            	httpdPrintf(conn, "\"Power-on jump address %04XH\", ", boot_switch[M_flag]);
+			if (boot_switch[M_value]) {
+            	httpdPrintf(conn, "\"Power-on jump address %04XH\", ", boot_switch[M_value]);
 			}
 			if (R_flag) {
             	httpdPrintf(conn, "\"%s\", ", BANKED_ROM_MSG);

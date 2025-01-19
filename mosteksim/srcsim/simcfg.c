@@ -14,7 +14,6 @@
  * 11-MAY-2024 (Thomas Eberhardt) add confdir/rompath option support
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -60,7 +59,7 @@ void config(void)
 				strcpy(xfn, rompath);
 				strcat(xfn, "/");
 				strcat(xfn, t2);
-				x_flag = 1;
+				x_flag = true;
 			} else if (0 == strcmp(t1, "drive0")) {
 				LOG(TAG, "\r\nDrive 0: %s\r\n", t2);
 			} else if (0 == strcmp(t1, "drive1")) {

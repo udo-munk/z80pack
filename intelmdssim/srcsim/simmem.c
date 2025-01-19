@@ -11,7 +11,6 @@
  * 03-JUN-2024 first version
  */
 
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,7 +30,7 @@ BYTE boot_rom[BOOT_SIZE];	/* bootstrap ROM */
 
 char *boot_rom_file;		/* bootstrap ROM file path */
 char *mon_rom_file;		/* monitor ROM file path */
-int mon_enabled;		/* monitor ROM enabled flag */
+bool mon_enabled;		/* monitor ROM enabled flag */
 
 void init_memory(void)
 {
@@ -53,26 +52,26 @@ void init_memory(void)
 	}
 
 	strcpy(pfn, boot_rom_file);
-	if (load_file(fn, 0, BOOT_SIZE)) {
+	if (!load_file(fn, 0, BOOT_SIZE)) {
 		LOGE(TAG, "couldn't load bootstrap ROM");
 		exit(EXIT_FAILURE);
 	}
 	memcpy(boot_rom, memory, BOOT_SIZE);
 
 	if (mon_enabled) {
-		mon_enabled = 0;
+		mon_enabled = false;
 		strcpy(pfn, mon_rom_file);
-		if (load_file(fn, 65536 - MON_SIZE, MON_SIZE)) {
+		if (!load_file(fn, 65536 - MON_SIZE, MON_SIZE)) {
 			LOGE(TAG, "couldn't load monitor ROM");
 			exit(EXIT_FAILURE);
 		}
-		mon_enabled = 1;
+		mon_enabled = true;
 	}
 
 	/* fill memory content with some initial value */
-	if (m_flag >= 0) {
+	if (m_value >= 0) {
 		for (i = 0; i < 65536; i++)
-			putmem(i, m_flag);
+			putmem(i, m_value);
 	} else {
 		for (i = 0; i < 65536; i++)
 			putmem(i, (BYTE) (rand() % 256));

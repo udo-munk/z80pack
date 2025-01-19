@@ -51,7 +51,7 @@ static BYTE fp_value;		/* port 255 value, can be set with p command */
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 	[  0] = p000_in,
 	[  1] = p001_in,
 	[160] = hwctl_in,	/* virtual hardware control */
@@ -63,7 +63,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 	[  1] = p001_out,
 	[160] = hwctl_out,	/* virtual hardware control */
 	[254] = p254_out,	/* write to front panel switches */

@@ -14,7 +14,7 @@
 #ifdef WANT_ICE
 
 #ifdef HISIZE
-struct history {		/* structure of a history entry */
+typedef struct history {	/* structure of a history entry */
 	int	h_cpu;		/* CPU type */
 	WORD	h_addr;		/* address of execution */
 	WORD	h_af;		/* register AF */
@@ -26,26 +26,27 @@ struct history {		/* structure of a history entry */
 	WORD	h_iy;		/* register IY */
 #endif
 	WORD	h_sp;		/* register SP */
-};
+} history_t;
 
-extern struct	history his[HISIZE];
-extern int	h_next, h_flag;
+extern history_t his[HISIZE];
+extern int	h_next;
+extern bool	h_flag;
 #endif
 
 #ifdef SBSIZE
-struct softbreak {		/* structure of a breakpoint */
+typedef struct softbreak {	/* structure of a breakpoint */
 	WORD	sb_addr;	/* address of breakpoint */
 	BYTE	sb_oldopc;	/* op-code at address of breakpoint */
 	int	sb_passcount;	/* pass counter of breakpoint */
 	int	sb_pass;	/* no. of pass to break */
-};
+} softbreak_t;
 
-extern struct	softbreak soft[SBSIZE];
+extern softbreak_t soft[SBSIZE];
 #endif
 
 #ifdef WANT_TIM
 extern Tstates_t t_states_s, t_states_e;
-extern int	t_flag;
+extern bool	t_flag;
 extern WORD	t_start, t_end;
 #endif
 
@@ -55,7 +56,8 @@ extern WORD	t_start, t_end;
 #define HB_WRITE	2	/* write memory */
 #define HB_EXEC		4	/* execute (op-code fetch) */
 
-extern int	hb_flag, hb_mode, hb_trig;
+extern bool	hb_flag;
+extern int	hb_mode, hb_trig;
 extern WORD	hb_addr;
 #endif
 
@@ -64,7 +66,7 @@ extern void (*ice_after_go)(void);
 extern void (*ice_cust_cmd)(char *cmd, WORD *wrk_addr);
 extern void (*ice_cust_help)(void);
 
-extern void ice_cmd_loop(int go_flag);
+extern void ice_cmd_loop(int go_mode);
 
 #endif /* WANT_ICE */
 

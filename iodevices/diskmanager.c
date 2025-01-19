@@ -40,7 +40,6 @@
  *          * cromemco-fdc.c
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,6 +48,7 @@
 #include <sys/stat.h>
 
 #include "sim.h"
+#include "simdefs.h"
 
 #include "disks.h"
 #ifdef HAS_NETSERVER

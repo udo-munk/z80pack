@@ -26,7 +26,8 @@
 #ifndef IMSAI_VIO_INC
 #define IMSAI_VIO_INC
 
-#include <stdint.h>
+#include "sim.h"
+#include "simdefs.h"
 
 extern int slf;			/* VIO scanlines factor */
 extern uint8_t bg_color[3];	/* VIO background color */

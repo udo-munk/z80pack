@@ -7,10 +7,13 @@
 #ifndef SIMIO_INC
 #define SIMIO_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 #define IO_DATA_UNUSED	0xff	/* data returned on unused ports */
 
-extern BYTE (*const port_in[256])(void);
-extern void (*const port_out[256])(BYTE data);
+extern in_func_t *const port_in[256];
+extern out_func_t *const port_out[256];
 
 extern void init_io(void);
 extern void exit_io(void);
