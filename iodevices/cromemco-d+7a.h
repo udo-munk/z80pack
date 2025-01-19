@@ -1,10 +1,10 @@
 /**
  * cromemco-d+7a.h
- * 
- * Emulation of the Cromemco D+7A I/O 
+ *
+ * Emulation of the Cromemco D+7A I/O
  *
  * Copyright (C) 2020 by David McNaughton
- * 
+ *
  * History:
  * 14-JAN-2020	1.0	Initial Release
  */
