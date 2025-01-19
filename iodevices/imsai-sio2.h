@@ -40,24 +40,24 @@
 #include "sim.h"
 #include "simdefs.h"
 
-extern int sio1a_upper_case;	/* SIO 1 A translate input to upper case */
-extern int sio1a_strip_parity;	/* SIO 1 A strip parity from output */
-extern int sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */
+extern bool sio1a_upper_case;	/* SIO 1 A translate input to upper case */
+extern bool sio1a_strip_parity;	/* SIO 1 A strip parity from output */
+extern bool sio1a_drop_nulls;	/* SIO 1 A drop nulls after CR/LF */
 extern int sio1a_baud_rate;	/* SIO 1 A simulated baud rate */
 
-extern int sio1b_upper_case;	/* SIO 1 B translate input to upper case */
-extern int sio1b_strip_parity;	/* SIO 1 B strip parity from output */
-extern int sio1b_drop_nulls;	/* SIO 1 B drop nulls after CR/LF */
+extern bool sio1b_upper_case;	/* SIO 1 B translate input to upper case */
+extern bool sio1b_strip_parity;	/* SIO 1 B strip parity from output */
+extern bool sio1b_drop_nulls;	/* SIO 1 B drop nulls after CR/LF */
 extern int sio1b_baud_rate;	/* SIO 1 B simulated baud rate */
 
-extern int sio2a_upper_case;	/* SIO 2 A translate input to upper case */
-extern int sio2a_strip_parity;	/* SIO 2 A strip parity from output */
-extern int sio2a_drop_nulls;	/* SIO 2 A drop nulls after CR/LF */
+extern bool sio2a_upper_case;	/* SIO 2 A translate input to upper case */
+extern bool sio2a_strip_parity;	/* SIO 2 A strip parity from output */
+extern bool sio2a_drop_nulls;	/* SIO 2 A drop nulls after CR/LF */
 extern int sio2a_baud_rate;	/* SIO 2 A simulated baud rate */
 
-extern int sio2b_upper_case;	/* SIO 2 B translate input to upper case */
-extern int sio2b_strip_parity;	/* SIO 2 B strip parity from output */
-extern int sio2b_drop_nulls;	/* SIO 2 B drop nulls after CR/LF */
+extern bool sio2b_upper_case;	/* SIO 2 B translate input to upper case */
+extern bool sio2b_strip_parity;	/* SIO 2 B strip parity from output */
+extern bool sio2b_drop_nulls;	/* SIO 2 B drop nulls after CR/LF */
 extern int sio2b_baud_rate;	/* SIO 2 B simulated baud rate */
 
 extern BYTE imsai_sio_nofun_in(void);
