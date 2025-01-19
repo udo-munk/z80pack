@@ -84,10 +84,10 @@ static char text[10];
 #endif
 
 /* VDM stuff */
-static int state;			/* state on/off for refresh thread */
+static bool state;			/* state on/off for refresh thread */
 static int mode;			/* video mode from I/O port */
 #ifndef WANT_SDL
-static int kbd_status = 1;		/* keyboard status */
+static bool kbd_status;			/* keyboard status */
 static int kbd_data;			/* keyboard data */
 #endif
 static int first;			/* first displayed screen position */
@@ -185,7 +185,7 @@ static void close_display(void)
 /* shutdown VDM window */
 void proctec_vdm_off(void)
 {
-	state = 0;		/* tell refresh thread to stop */
+	state = false;		/* tell refresh thread to stop */
 
 #ifdef WANT_SDL
 	if (proctec_win_id >= 0) {
@@ -299,7 +299,7 @@ static inline void event_handler(void)
 {
 	/* if the last character wasn't processed already do nothing */
 	/* keep event in queue until the CPU emulation got current one */
-	if (kbd_status == 0)
+	if (kbd_status)
 		return;
 
 	/* if there is a keyboard event get it and convert with keymap */
@@ -308,7 +308,7 @@ static inline void event_handler(void)
 		if ((event.type == KeyPress) &&
 		    XLookupString(&event.xkey, text, 1, &key, 0) == 1) {
 			kbd_data = text[0];
-			kbd_status = 0;
+			kbd_status = true;
 		}
 	}
 }
@@ -334,7 +334,7 @@ static inline void draw_point(int x, int y)
 static void dc(BYTE c)
 {
 	register int x, y;
-	int inv = (c & 128) ? 1 : 0;
+	bool inv = (c & 128) ? true : false;
 
 	for (x = 0; x < 9; x++) {
 		for (y = 0; y < 13; y++) {
@@ -457,7 +457,7 @@ void proctec_vdm_ctl_out(BYTE data)
 	first = (data & 0xf0) >> 4;
 	beg = data & 0x0f;
 
-	state = 1;
+	state = true;
 
 #ifdef WANT_SDL
 	if (proctec_win_id < 0)
@@ -484,7 +484,7 @@ BYTE proctec_vdm_kbd_status_in(void)
 #ifdef WANT_SDL
 	data = keyn ? 0 : 1;
 #else
-	data = (BYTE) kbd_status;
+	data = kbd_status ? 0 : 1;
 #endif
 
 	return data;
@@ -508,10 +508,10 @@ BYTE proctec_vdm_kbd_in(void)
 	} else
 		data = 0;
 #else
-	if (kbd_status == 0) {
+	if (kbd_status) {
 		/* take over data and reset status */
 		data = (BYTE) kbd_data;
-		kbd_status = 1;
+		kbd_status = false;
 	} else
 		data = 0;
 #endif
