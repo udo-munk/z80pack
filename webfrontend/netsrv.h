@@ -13,10 +13,6 @@
 /**
  * This web server module provides...
  */
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <string.h>
-
 #include "sim.h"
 #include "simdefs.h"
 

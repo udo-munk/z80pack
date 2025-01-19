@@ -43,6 +43,7 @@
 #endif
 
 #ifdef HAS_NETSERVER
+#include <string.h>
 #include "netsrv.h"
 #endif
 

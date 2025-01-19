@@ -18,6 +18,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <dirent.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
 
@@ -101,7 +103,7 @@ extern void quit_callback(void);
  */
 bool net_device_alive(net_device_t device)
 {
-	return dev[device].queue != 0;
+	return dev[device].queue >= 0;
 }
 
 void net_device_service(net_device_t device, void (*cbfunc)(BYTE *data))
@@ -132,7 +134,7 @@ void net_device_send(net_device_t device, char *msg, int len)
 		break;
 	}
 
-	if (dev[device].queue)
+	if (dev[device].queue >= 0)
 		mg_websocket_write(dev[device].ws_client.conn,
 				   op_code,
 				   msg, len);
@@ -149,7 +151,7 @@ int net_device_get(net_device_t device)
 	ssize_t res;
 	msgbuf_t msg;
 
-	if (dev[device].queue) {
+	if (dev[device].queue >= 0) {
 		res = msgrcv(dev[device].queue, &msg, 2, 1L, IPC_NOWAIT);
 		LOGD(TAG, "GET: device[%d] res[%ld] msg[%ld, %s]",
 		     device, res, msg.mtype, msg.mtext);
@@ -165,7 +167,7 @@ int net_device_get_data(net_device_t device, char *dst, int len)
 	ssize_t res;
 	msgbuf_t msg;
 
-	if (dev[device].queue) {
+	if (dev[device].queue >= 0) {
 		res = msgrcv(dev[device].queue, &msg, len, 1L, MSG_NOERROR);
 		memcpy((void *)dst, (void *)msg.mtext, res);
 		return res;
@@ -185,7 +187,7 @@ int net_device_poll(net_device_t device)
 	ssize_t res;
 	msgbuf_t msg;
 
-	if (dev[device].queue) {
+	if (dev[device].queue >= 0) {
 		res = msgrcv(dev[device].queue, &msg, 1, 1L, IPC_NOWAIT);
 		LOGV(TAG, "POLL: device[%d] res[%ld] errno[%d]", device, res, errno);
 		if (res == -1 && errno == E2BIG) {
@@ -595,10 +597,10 @@ static int WebSocketConnectHandler(const HttpdConnection_t *conn, void *device)
 		case DEV_88ACC:
 		case DEV_D7AIO:
 			res = msgget(IPC_PRIVATE, 0644 | IPC_CREAT); //TODO: check flags
-			if (res > 0)
-				dev[d].queue = res;
-			else
+			if (res < 0)
 				perror("msgget()");
+			else
+				dev[d].queue = res;
 			break;
 		default:
 			break;
@@ -758,11 +760,12 @@ static void WebSocketCloseHandler(const HttpdConnection_t *conn, void *device)
 
 	LOGI(TAG, "WS CLIENT CLOSED %s", dev_name[d]);
 
-	if (dev[d].queue && msgctl(dev[d].queue, IPC_RMID, NULL) == -1)
+	if (dev[d].queue >= 0 && msgctl(dev[d].queue, IPC_RMID, NULL) == -1)
 		perror("msgctl()");
-	dev[d].queue = 0;
 
 	LOGD(TAG, "Message queue closed (%d) [%08X]", d, dev[d].queue);
+
+	dev[d].queue = -1;
 }
 
 static struct mg_context *ctx = NULL;
@@ -785,6 +788,7 @@ int start_net_services(int port)
 {
 	//TODO: add config for DOCUMENT_ROOT
 
+	int i;
 	char sport[6];
 #ifdef SYSDOCROOT
 	struct stat sbuf;
@@ -817,6 +821,9 @@ int start_net_services(int port)
 	int err = 0;
 	const struct mg_option *opts;
 #endif
+
+	for (i = 0; i < MAX_WS_CLIENTS; i++)
+		dev[i].queue = -1;
 
 	atexit(stop_net_services);
 
