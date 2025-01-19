@@ -204,7 +204,7 @@ int main(void)
 	PC = 0xff00;		/* power on jump into the boot ROM */
 	config();		/* configure the machine */
 
-	f_flag = speed;		/* setup speed of the CPU */
+	f_value = speed;	/* setup speed of the CPU */
 	tmax = speed * 10000;	/* theoretically */
 
 	put_pixel(0x440000);	/* LED green */

@@ -59,9 +59,9 @@ void init_memory(void)
 	selbnk = 0;
 
 	/* fill memory content of bank 0 with some initial value */
-	if (m_flag >= 0) {
+	if (m_value >= 0) {
 		for (i = 0; i < 65536; i++)
-			putmem(i, m_flag);
+			putmem(i, m_value);
 	} else {
 		for (i = 0; i < 65536; i++)
 			putmem(i, (BYTE) (rand() % 256));

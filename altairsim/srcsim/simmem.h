@@ -126,7 +126,7 @@ static inline BYTE memrdr(WORD addr)
 				data = memory[addr];
 			else
 				data = 0xff;
-			tarbell_rom_active = 0;
+			tarbell_rom_active = false;
 		}
 	} else {
 		if (p_tab[addr >> 8] != MEM_NONE)
@@ -165,7 +165,7 @@ static inline BYTE dma_read(WORD addr)
 		if (addr <= 0x001f)
 			return tarbell_rom[addr];
 		else
-			tarbell_rom_active = 0;
+			tarbell_rom_active = false;
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)
@@ -210,7 +210,7 @@ static inline BYTE fp_read(WORD addr)
 		if (addr <= 0x001f)
 			return tarbell_rom[addr];
 		else
-			tarbell_rom_active = 0;
+			tarbell_rom_active = false;
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)

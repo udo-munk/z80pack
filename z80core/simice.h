@@ -64,7 +64,7 @@ extern void (*ice_after_go)(void);
 extern void (*ice_cust_cmd)(char *cmd, WORD *wrk_addr);
 extern void (*ice_cust_help)(void);
 
-extern void ice_cmd_loop(int go_flag);
+extern void ice_cmd_loop(int go_mode);
 
 #endif /* WANT_ICE */
 

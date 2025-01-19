@@ -90,26 +90,26 @@ port_flags_t port_flags[256];	/* port access flags */
 /*
  *	Flags to control operation of simulation
  */
-int s_flag;			/* flag for -s option */
-int l_flag;			/* flag for -l option */
-int m_flag = -1;		/* flag for -m option */
-int x_flag;			/* flag for -x option */
-int i_flag;			/* flag for -i option */
-int f_flag;			/* flag for -f option */
-int u_flag;			/* flag for -u option */
-int r_flag;			/* flag for -r option */
-int c_flag;			/* flag for -c option */
+bool s_flag;			/* flag for -s option */
+bool l_flag;			/* flag for -l option */
+int m_value = -1;		/* value of -m option */
+bool x_flag;			/* flag for -x option */
+bool i_flag;			/* flag for -i option */
+int f_value;			/* value of -f option */
+bool u_flag;			/* flag for -u option */
+bool r_flag;			/* flag for -r option */
+bool c_flag;			/* flag for -c option */
 #ifdef HAS_CONFIG
-int M_flag = 0;			/* flag for -M option */
+int M_value = 0;		/* value of -M option */
 #endif
 #ifdef HAS_BANKED_ROM
-int R_flag = 0;			/* flag for -R option */
+bool R_flag = false;		/* flag for -R option */
 #endif
 #ifdef FRONTPANEL
-int F_flag = 1;			/* flag for -F option */
+bool F_flag = true;		/* flag for -F option */
 #endif
 #ifdef HAS_NETSERVER
-int n_flag;			/* flag for -n option */
+bool n_flag;			/* flag for -n option */
 #endif
 
 /*

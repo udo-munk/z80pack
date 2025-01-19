@@ -2067,7 +2067,7 @@ static void speedl_out(BYTE data)
  */
 static BYTE speedl_in(void)
 {
-	return f_flag & 0xff;
+	return f_value & 0xff;
 }
 
 /*
@@ -2077,7 +2077,7 @@ static void speedh_out(BYTE data)
 {
 	speed += data << 8;
 	tmax = speed * 10000;
-	f_flag = speed;
+	f_value = speed;
 }
 
 /*
@@ -2085,7 +2085,7 @@ static void speedh_out(BYTE data)
  */
 static BYTE speedh_in(void)
 {
-	return f_flag >> 8;
+	return f_value >> 8;
 }
 
 /*

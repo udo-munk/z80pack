@@ -32,7 +32,7 @@
 #include "simdefs.h"
 
 extern BYTE tarbell_rom[32];
-extern int tarbell_rom_enabled, tarbell_rom_active;
+extern bool tarbell_rom_enabled, tarbell_rom_active;
 
 extern void dsk_path(void);
 

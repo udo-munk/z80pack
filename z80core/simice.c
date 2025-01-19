@@ -114,9 +114,9 @@ void (*ice_cust_help)(void);
 
 /*
  *	The function "ice_cmd_loop()" is the dialog user interface, called
- *	from the simulation when desired with go_flag set to 0, or, when
+ *	from the simulation when desired with go_mode set to 0, or, when
  *	no other user interface is needed, directly after any necessary
- *	initialization work at program start with go_flag set to 1 (or 2
+ *	initialization work at program start with go_mode set to 1 (or 2
  *	with timing output).
  *
  *	There are also two function pointers "ice_before_go" and
@@ -130,12 +130,12 @@ void (*ice_cust_help)(void);
  *	parameters. "ice_cust_help" can be set to a void function(void)
  *	to display help for custom commands.
  */
-void ice_cmd_loop(int go_flag)
+void ice_cmd_loop(int go_mode)
 {
 	register int eoj = 1;
 	static char cmd[LENCMD];
 
-	if (!go_flag) {
+	if (!go_mode) {
 		report_cpu_error();
 		print_head();
 		print_reg();
@@ -144,9 +144,9 @@ void ice_cmd_loop(int go_flag)
 	wrk_addr = PC;
 
 	while (eoj) {
-		if (go_flag) {
-			strcpy(cmd, (go_flag > 1) ? "g *" : "g");
-			go_flag = 0;
+		if (go_mode) {
+			strcpy(cmd, (go_mode > 1) ? "g *" : "g");
+			go_mode = 0;
 		} else {
 			printf(">>> ");
 			fflush(stdout);

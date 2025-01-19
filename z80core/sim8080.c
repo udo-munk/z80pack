@@ -453,8 +453,8 @@ void cpu_8080(void)
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(0));
-					if (f_flag)
-						cpu_time += T_dma / f_flag;
+					if (f_value)
+						cpu_time += T_dma / f_value;
 				}
 			}
 
@@ -471,8 +471,8 @@ void cpu_8080(void)
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(1));
-					if (f_flag)
-						cpu_time += T_dma / f_flag;
+					if (f_value)
+						cpu_time += T_dma / f_value;
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -597,7 +597,7 @@ leave:
 #include "alt8080.h"
 #endif
 
-		if (f_flag) {		/* adjust CPU speed */
+		if (f_value) {		/* adjust CPU speed */
 			if (T >= T_max && !cpu_needed) {
 				t2 = get_clock_us();
 				tdiff = t2 - t1;

@@ -58,10 +58,10 @@ void init_memory(void)
 
 	LOG(TAG, "\r\n");
 
-	if (!memconf[M_flag][0].size) {
+	if (!memconf[M_value][0].size) {
 		LOGW(TAG, "The [MEMORY %d] section appears missing or empty, "
-		     "setting memory map to default", M_flag + 1);
-		M_flag = 0;
+		     "setting memory map to default", M_value + 1);
+		M_value = 0;
 	}
 
 	/* initialize memory page table, no memory available */
@@ -77,35 +77,35 @@ void init_memory(void)
 
 	/* set memory configuration from system.conf only for bank 0 */
 	for (i = 0; i < MAXMEMMAP; i++) {
-		if (memconf[M_flag][i].size) {
-			switch (memconf[M_flag][i].type) {
+		if (memconf[M_value][i].size) {
+			switch (memconf[M_value][i].type) {
 			case MEM_RW:
 				/* set the pages to RAM */
-				for (j = 0; j < memconf[M_flag][i].size; j++)
-					MEM_RESERVE_RAM(memconf[M_flag][i].spage + j);
+				for (j = 0; j < memconf[M_value][i].size; j++)
+					MEM_RESERVE_RAM(memconf[M_value][i].spage + j);
 
 				/* fill memory content with some initial value */
-				for (j = memconf[M_flag][i].spage << 8;
-				     j < (memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8;
+				for (j = memconf[M_value][i].spage << 8;
+				     j < (memconf[M_value][i].spage + memconf[M_value][i].size) << 8;
 				     j++) {
-					if (m_flag >= 0) {
-						memory[0][j] = m_flag;
+					if (m_value >= 0) {
+						memory[0][j] = m_value;
 					} else {
 						memory[0][j] = (BYTE) (rand() % 256);
 					}
 				}
 
 				LOG(TAG, "RAM %04XH - %04XH\r\n",
-				    memconf[M_flag][i].spage << 8,
-				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1);
+				    memconf[M_value][i].spage << 8,
+				    ((memconf[M_value][i].spage + memconf[M_value][i].size) << 8) - 1);
 				break;
 
 			case MEM_RO:
 				/* set the pages to ROM */
 				LOG(TAG, "ROM %04XH - %04XH %s\r\n",
-				    memconf[M_flag][i].spage << 8,
-				    ((memconf[M_flag][i].spage + memconf[M_flag][i].size) << 8) - 1,
-				    memconf[M_flag][i].rom_file ? memconf[M_flag][i].rom_file : "");
+				    memconf[M_value][i].spage << 8,
+				    ((memconf[M_value][i].spage + memconf[M_value][i].size) << 8) - 1,
+				    memconf[M_value][i].rom_file ? memconf[M_value][i].rom_file : "");
 				/* for the CROMEMCO Z-1, ROM must be
 				   initialized after FDC banked ROM
 				   is initialized */
@@ -116,9 +116,9 @@ void init_memory(void)
 	}
 
 	/* set preferred start of boot ROM if specified */
-	if (boot_switch[M_flag]) {
-		LOG(TAG, "Power-on jump address at %04XH\r\n", boot_switch[M_flag]);
-		PC = boot_switch[M_flag];
+	if (boot_switch[M_value]) {
+		LOG(TAG, "Power-on jump address at %04XH\r\n", boot_switch[M_value]);
+		PC = boot_switch[M_value];
 	} else {
 		PC = 0x0000;
 	}
@@ -134,9 +134,9 @@ void init_memory(void)
 	cromemco_fdc_reset(); /* activates FDC banked ROM */
 
 	for (i = 0; i < MAXMEMMAP; i++) {
-		if (memconf[M_flag][i].size) {
+		if (memconf[M_value][i].size) {
 
-			switch (memconf[M_flag][i].type) {
+			switch (memconf[M_value][i].type) {
 			case MEM_RW:
 				/* set the pages to RAM */
 				/* for the CROMEMCO Z-1, RAM must be
@@ -146,21 +146,21 @@ void init_memory(void)
 				break;
 			case MEM_RO:
 				/* set the pages to ROM */
-				for (j = 0; j < memconf[M_flag][i].size; j++)
-					MEM_RESERVE_ROM(memconf[M_flag][i].spage + j);
+				for (j = 0; j < memconf[M_value][i].size; j++)
+					MEM_RESERVE_ROM(memconf[M_value][i].spage + j);
 
 				/* fill the ROM's with 0xff in case no firmware loaded */
-				for (j = memconf[M_flag][i].spage;
-				     j < (memconf[M_flag][i].spage + memconf[M_flag][i].size);
+				for (j = memconf[M_value][i].spage;
+				     j < (memconf[M_value][i].spage + memconf[M_value][i].size);
 				     j++) {
 					memset(&memory[0][j << 8], 0xff, 256);
 				}
 
 				/* load firmware into ROM if specified */
-				if (memconf[M_flag][i].rom_file) {
-					strcpy(pfn, memconf[M_flag][i].rom_file);
-					load_file(fn, memconf[M_flag][i].spage << 8,
-						  memconf[M_flag][i].size << 8);
+				if (memconf[M_value][i].rom_file) {
+					strcpy(pfn, memconf[M_value][i].rom_file);
+					load_file(fn, memconf[M_value][i].spage << 8,
+						  memconf[M_value][i].size << 8);
 				}
 				break;
 			}

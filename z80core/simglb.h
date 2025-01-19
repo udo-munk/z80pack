@@ -72,19 +72,19 @@ extern BYTE 	fp_led_output;
 extern port_flags_t port_flags[256];
 #endif
 
-extern int	s_flag, l_flag, m_flag, x_flag, i_flag, f_flag,
-		u_flag, r_flag, c_flag;
+extern bool	s_flag, l_flag, x_flag, i_flag, u_flag, r_flag, c_flag;
+extern int	m_value, f_value;
 #ifdef HAS_CONFIG
-extern int	M_flag;
+extern int	M_value;
 #endif
 #ifdef HAS_BANKED_ROM
-extern int	R_flag;
+extern bool	R_flag;
 #endif
 #ifdef FRONTPANEL
-extern int	F_flag;
+extern bool	F_flag;
 #endif
 #ifdef HAS_NETSERVER
-extern int	n_flag;
+extern bool	n_flag;
 #endif
 
 extern char	xfn[MAX_LFN];

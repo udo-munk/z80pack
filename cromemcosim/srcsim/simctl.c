@@ -399,7 +399,7 @@ static void reset_clicked(int state, int val)
 			/* reset CPU */
 			reset_cpu();
 #ifdef HAS_BANKED_ROM
-			PC = boot_switch[M_flag];
+			PC = boot_switch[M_value];
 #endif
 			reset = 0;
 			cpu_state &= ~ST_RESET;
@@ -497,7 +497,7 @@ static void power_clicked(int state, int val)
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
-		fp_led_speed = (f_flag == 0 || f_flag >= 4) ? 1 : 0;
+		fp_led_speed = (f_value == 0 || f_value >= 4) ? 1 : 0;
 		fp_led_wait = 1;
 		fp_led_output = 0;
 		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
