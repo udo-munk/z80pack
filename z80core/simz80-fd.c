@@ -17,6 +17,10 @@
 #include "simz80-fd.h"
 #include "simz80-fdcb.h"
 
+#ifdef BUS_8080
+#include <stdbool.h>
+#endif
+
 #ifdef FRONTPANEL
 #include <stdint.h>
 #include "frontpanel.h"
@@ -347,7 +351,7 @@ int op_fd_handle(void)
 #ifdef BUS_8080
 	/* M1 opcode fetch */
 	cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
-	m1_step = 1;
+	m1_step = true;
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {

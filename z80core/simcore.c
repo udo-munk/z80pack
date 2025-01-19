@@ -29,6 +29,7 @@
 #include "simcore.h"
 
 #ifdef FRONTPANEL
+#include <stdbool.h>
 #include "frontpanel.h"
 #include "simctl.h"
 #endif
@@ -255,7 +256,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 {
 	uint64_t clk;
 #ifdef FRONTPANEL
-	int val;
+	bool val;
 #else
 #ifndef SIMPLEPANEL
 	UNUSED(addrh);

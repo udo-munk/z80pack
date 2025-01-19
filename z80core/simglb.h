@@ -13,6 +13,9 @@
  *	Declaration of variables in simglb.c
  */
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "sim.h"
 #include "simdefs.h"
 
@@ -36,7 +39,7 @@ extern uint64_t cpu_time;
 
 #ifdef BUS_8080
 extern BYTE	cpu_bus;
-extern int	m1_step;
+extern bool	m1_step;
 #endif
 
 extern BYTE	io_port, io_data;

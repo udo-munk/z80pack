@@ -10,6 +10,7 @@
  *	This module contains the global variables other than memory management
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -47,7 +48,7 @@ uint64_t cpu_time;		/* time spent running CPU in us */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
-int m1_step;			/* flag for waiting at M1 in single step */
+bool m1_step;			/* flag for waiting at M1 in single step */
 #endif
 
 BYTE io_port;			/* I/O port used */

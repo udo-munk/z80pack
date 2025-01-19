@@ -221,11 +221,11 @@ static void int_clicked(int state, int val)
 /*
  *	Single step through the machine cycles after M1
  */
-int wait_step(void)
+bool wait_step(void)
 {
 	cpu_bus &= ~CPU_M1;
-	m1_step = 0;
-	return 0;
+	m1_step = false;
+	return false;
 }
 
 /*
@@ -250,7 +250,7 @@ static void reset_clicked(int state, int val)
 		break;
 	case FP_SW_UP:
 		cpu_state |= ST_RESET;
-		m1_step = 0;
+		m1_step = false;
 		IFF = 0;
 		reset_io();
 		reset_cpu();

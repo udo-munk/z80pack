@@ -1380,7 +1380,7 @@ next_opcode:
 #ifdef BUS_8080
 			/* M1 opcode fetch */
 			cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
-			m1_step = 1;
+			m1_step = true;
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
@@ -1624,7 +1624,7 @@ next_opcode:
 #ifdef BUS_8080
 		/* M1 opcode fetch */
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
-		m1_step = 1;
+		m1_step = true;
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
@@ -1722,7 +1722,7 @@ next_opcode:
 #ifdef BUS_8080
 		/* M1 opcode fetch */
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
-		m1_step = 1;
+		m1_step = true;
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
@@ -2402,7 +2402,7 @@ next_opcode:
 #ifdef BUS_8080
 		/* M1 opcode fetch */
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
-		m1_step = 1;
+		m1_step = true;
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {

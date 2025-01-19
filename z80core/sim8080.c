@@ -19,6 +19,7 @@
 #include "sim8080.h"
 
 #ifdef FRONTPANEL
+#include <stdbool.h>
 #include "frontpanel.h"
 #include "simctl.h"
 #endif
@@ -582,7 +583,7 @@ void cpu_8080(void)
 			int_data = -1;
 #ifdef FRONTPANEL
 			if (F_flag)
-				m1_step = 1;
+				m1_step = true;
 #endif
 		}
 leave:

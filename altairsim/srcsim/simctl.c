@@ -35,6 +35,7 @@
  * 04-JAN-2025 add SDL2 support
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -318,13 +319,13 @@ static void step_clicked(int state, int val)
 /*
  * Single step through the machine cycles after first M1
  */
-int wait_step(void)
+bool wait_step(void)
 {
-	int ret = 0;
+	bool ret = false;
 
 	if (cpu_state != ST_SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
-		m1_step = 0;
+		m1_step = false;
 		return ret;
 	}
 
@@ -345,11 +346,11 @@ int wait_step(void)
 		fp_clock++;
 		fp_sampleData();
 		sleep_for_ms(1);
-		ret = 1;
+		ret = true;
 	}
 
 	cpu_bus &= ~CPU_M1;
-	m1_step = 0;
+	m1_step = false;
 	return ret;
 }
 
@@ -386,7 +387,7 @@ static void reset_clicked(int state, int val)
 		reset = 1;
 		cpu_state |= ST_RESET;
 		IFF = 0;
-		m1_step = 0;
+		m1_step = false;
 		break;
 	case FP_SW_CENTER:
 		if (reset) {
@@ -412,7 +413,7 @@ static void reset_clicked(int state, int val)
 		/* reset CPU and I/O devices */
 		reset = 2;
 		cpu_state |= ST_RESET;
-		m1_step = 0;
+		m1_step = false;
 		IFF = 0;
 		reset_io();
 		break;
