@@ -28,9 +28,9 @@
 #include "sim.h"
 #include "simdefs.h"
 
-extern int sio0_upper_case;	/* SIO 0 translate input to upper case */
-extern int sio0_strip_parity;	/* SIO 0 strip parity from output */
-extern int sio0_drop_nulls;	/* SIO 0 drop nulls after CR/LF */
+extern bool sio0_upper_case;	/* SIO 0 translate input to upper case */
+extern bool sio0_strip_parity;	/* SIO 0 strip parity from output */
+extern bool sio0_drop_nulls;	/* SIO 0 drop nulls after CR/LF */
 extern int sio0_revision;	/* SIO 0 Rev 0 or Rev 1 */
 extern int sio0_baud_rate;	/* SIO 0 baud rate */
 
