@@ -413,7 +413,7 @@ void cpu_z80(void)
 		his[h_next].h_sp = SP;
 		h_next++;
 		if (h_next == HISIZE) {
-			h_flag = 1;
+			h_flag = true;
 			h_next = 0;
 		}
 #endif
@@ -421,7 +421,7 @@ void cpu_z80(void)
 #ifdef WANT_TIM
 		/* check for start address of runtime measurement */
 		if (PC == t_start && !t_flag) {
-			t_flag = 1;		     /* turn measurement on */
+			t_flag = true;		     /* turn measurement on */
 			t_states_s = t_states_e = T; /* initialize markers */
 		}
 #endif
@@ -627,7 +627,7 @@ leave:
 		if (t_flag) {
 			t_states_e = T; /* set end marker for this opcode */
 			if (PC == t_end)	/* check for end address */
-				t_flag = 0;	/* if reached, switch off */
+				t_flag = false;	/* if reached, switch off */
 		}
 #endif
 

@@ -293,7 +293,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 	WORD save_PC;
 	Tstates_t T0;
 #ifdef WANT_HB
-	int save_hb_flag;
+	bool save_hb_flag;
 #endif
 
 	switch (tolower((unsigned char) *cmd)) {
@@ -313,7 +313,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 
 #ifdef WANT_HB
 		save_hb_flag = hb_flag;
-		hb_flag = 0;
+		hb_flag = false;
 #endif
 		save[0] = getmem(0x0000); /* save memory locations */
 		save[1] = getmem(0x0001); /* 0000H - 0002H */

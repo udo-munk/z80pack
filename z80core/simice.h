@@ -29,7 +29,8 @@ typedef struct history {	/* structure of a history entry */
 } history_t;
 
 extern history_t his[HISIZE];
-extern int	h_next, h_flag;
+extern int	h_next;
+extern bool	h_flag;
 #endif
 
 #ifdef SBSIZE
@@ -45,7 +46,7 @@ extern softbreak_t soft[SBSIZE];
 
 #ifdef WANT_TIM
 extern Tstates_t t_states_s, t_states_e;
-extern int	t_flag;
+extern bool	t_flag;
 extern WORD	t_start, t_end;
 #endif
 
@@ -55,7 +56,8 @@ extern WORD	t_start, t_end;
 #define HB_WRITE	2	/* write memory */
 #define HB_EXEC		4	/* execute (op-code fetch) */
 
-extern int	hb_flag, hb_mode, hb_trig;
+extern bool	hb_flag;
+extern int	hb_mode, hb_trig;
 extern WORD	hb_addr;
 #endif
 

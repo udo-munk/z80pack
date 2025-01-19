@@ -40,7 +40,7 @@
 #ifdef HISIZE
 history_t his[HISIZE];		/* memory to hold trace information */
 int h_next;			/* index into trace memory */
-int h_flag;			/* flag for trace memory overrun */
+bool h_flag;			/* flag for trace memory overrun */
 #endif
 
 /*
@@ -56,7 +56,7 @@ softbreak_t soft[SBSIZE];	/* memory to hold breakpoint information */
 #ifdef WANT_TIM
 Tstates_t t_states_s;		/* T states marker at start of measurement */
 Tstates_t t_states_e;		/* T states marker at end of measurement */
-int t_flag;			/* flag, 1 = on, 0 = off */
+bool t_flag;			/* flag, true = on, false = off */
 WORD t_start = 65535;		/* start address for measurement */
 WORD t_end = 65535;		/* end address for measurement */
 #endif
@@ -65,7 +65,7 @@ WORD t_end = 65535;		/* end address for measurement */
  *	Variables for hardware breakpoint
  */
 #ifdef WANT_HB
-int hb_flag;			/* hardware breakpoint enabled flag */
+bool hb_flag;			/* hardware breakpoint enabled flag */
 WORD hb_addr;			/* address of hardware breakpoint */
 int hb_mode;			/* access mode of hardware breakpoint */
 int hb_trig;			/* hardware breakpoint triggered flag */
@@ -76,7 +76,7 @@ static void do_trace(char *s);
 static void do_go(char *s);
 static void install_softbp(void);
 static void uninstall_softbp(void);
-static int handle_break(void);
+static bool handle_break(void);
 static void do_dump(char *s);
 static void do_list(char *s);
 static void do_modify(char *s);
@@ -132,7 +132,7 @@ void (*ice_cust_help)(void);
  */
 void ice_cmd_loop(int go_mode)
 {
-	register int eoj = 1;
+	register bool eoj = true;
 	static char cmd[LENCMD];
 
 	if (!go_mode) {
@@ -151,7 +151,7 @@ void ice_cmd_loop(int go_mode)
 			printf(">>> ");
 			fflush(stdout);
 			if (get_cmdline(cmd, LENCMD)) {
-				eoj = 0;
+				eoj = false;
 				continue;
 			}
 		}
@@ -225,7 +225,7 @@ void ice_cmd_loop(int go_mode)
 			break;
 #endif
 		case 'q':
-			eoj = 0;
+			eoj = false;
 			break;
 		default:
 			if (ice_cust_cmd)
@@ -356,10 +356,10 @@ static void uninstall_softbp(void)
 /*
  *	Handling of software (HALT opcode) / hardware breakpoints:
  *
- *	Output:	0 breakpoint or other HALT opcode reached (stop)
- *		1 breakpoint hit, pass counter not reached (continue)
+ *	Output:	false breakpoint or other HALT opcode reached (stop)
+ *		true breakpoint hit, pass counter not reached (continue)
  */
-static int handle_break(void)
+static bool handle_break(void)
 {
 #ifdef SBSIZE
 	register int i;
@@ -377,7 +377,7 @@ static int handle_break(void)
 		printf(" access to %04x\n", hb_addr);
 		hb_trig = 0;
 		cpu_error = NONE;
-		return 0;
+		return false;
 	}
 #endif
 #ifdef SBSIZE
@@ -385,7 +385,7 @@ static int handle_break(void)
 		if (soft[i].sb_pass && soft[i].sb_addr == PC - 1)
 			break;
 	if (i == SBSIZE)		/* no breakpoint found */
-		return 0;
+		return false;
 #ifdef HISIZE
 	if (h_next)			/* correct history */
 		h_next--;
@@ -398,12 +398,12 @@ static int handle_break(void)
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment pass counter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
-		return 1;		/* pass not reached, continue */
+		return true;		/* pass not reached, continue */
 	printf("Software breakpoint hit at %04x\n", soft[i].sb_addr);
 	soft[i].sb_passcount = 0;	/* reset pass counter */
-	return 0;			/* pass reached, stop */
+	return false;			/* pass reached, stop */
 #else /* !SBSIZE */
-	return 0;
+	return false;
 #endif /* !SBSIZE */
 }
 
@@ -908,7 +908,7 @@ static void do_break(char *s)
 			return;
 		}
 		if (tolower((unsigned char) *s) == 'c') {
-			hb_flag = 0;
+			hb_flag = false;
 			return;
 		}
 		while (isspace((unsigned char) *s))
@@ -949,7 +949,7 @@ static void do_break(char *s)
 #endif
 		hb_addr = a;
 		hb_mode = n;
-		hb_flag = 1;
+		hb_flag = true;
 #endif /* WANT_HB */
 		return;
 	}
@@ -1065,15 +1065,15 @@ static void do_hist(char *s)
 	if (tolower((unsigned char) *s) == 'c') {
 		memset((char *) his, 0, sizeof(history_t) * HISIZE);
 		h_next = 0;
-		h_flag = 0;
+		h_flag = false;
 		return;
 	}
-	if (h_next == 0 && h_flag == 0) {
+	if (h_next == 0 && !h_flag) {
 		puts("History memory is empty");
 		return;
 	}
 	e = h_next;
-	b = (h_flag) ? h_next + 1 : 0;
+	b = h_flag ? h_next + 1 : 0;
 	l = 0;
 	while (isspace((unsigned char) *s))
 		s++;
@@ -1163,7 +1163,7 @@ static void do_count(char *s)
 	t_start = start;
 	t_end = strtol(s, NULL, 16);
 	t_states_s = t_states_e = T;
-	t_flag = 0;
+	t_flag = false;
 #endif
 }
 
@@ -1345,10 +1345,10 @@ static void do_clock(void)
 	static struct itimerval tim;
 	const char *s = NULL;
 #ifdef WANT_HB
-	int save_hb_flag;
+	bool save_hb_flag;
 
 	save_hb_flag = hb_flag;
-	hb_flag = 0;
+	hb_flag = false;
 #endif
 	save[0] = getmem(0x0000);	/* save memory locations */
 	save[1] = getmem(0x0001);	/* 0000H - 0002H */
