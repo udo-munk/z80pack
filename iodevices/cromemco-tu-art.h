@@ -52,10 +52,12 @@ extern void cromemco_tuart_0a_timer5_out(BYTE data);
 
 extern void cromemco_tuart_reset(void);
 
-extern int uart0a_int_mask, uart0a_int, uart0a_int_pending, uart0a_rst7;
+extern int uart0a_int_mask, uart0a_int;
+extern bool uart0a_int_pending, uart0a_rst7;
 extern int uart0a_timer1, uart0a_timer2, uart0a_timer3;
 extern int uart0a_timer4, uart0a_timer5;
-extern int uart0a_tbe, uart0a_rda;
+extern int uart0a_tbe;
+extern bool uart0a_rda;
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> */
 
@@ -73,9 +75,10 @@ extern void cromemco_tuart_1a_interrupt_out(BYTE data);
 extern BYTE cromemco_tuart_1a_parallel_in(void);
 extern void cromemco_tuart_1a_parallel_out(BYTE data);
 
-extern int uart1a_int_mask, uart1a_int, uart1a_int_pending;
-extern int uart1a_sense, uart1a_lpt_busy;
-extern int uart1a_tbe, uart1a_rda;
+extern int uart1a_int_mask, uart1a_int;
+extern bool uart1a_int_pending;
+extern bool uart1a_sense, uart1a_lpt_busy;
+extern bool uart1a_tbe, uart1a_rda;
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><> */
 
@@ -93,8 +96,9 @@ extern void cromemco_tuart_1b_interrupt_out(BYTE data);
 extern BYTE cromemco_tuart_1b_parallel_in(void);
 extern void cromemco_tuart_1b_parallel_out(BYTE data);
 
-extern int uart1b_int_mask, uart1b_int, uart1b_int_pending;
-extern int uart1b_sense, uart1b_lpt_busy;
-extern int uart1b_tbe, uart1b_rda;
+extern int uart1b_int_mask, uart1b_int;
+extern bool uart1b_int_pending;
+extern bool uart1b_sense, uart1b_lpt_busy;
+extern bool uart1b_tbe, uart1b_rda;
 
 #endif /* !CROMEMCO_TU_ART_INC */

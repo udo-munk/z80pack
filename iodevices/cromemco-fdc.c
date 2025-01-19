@@ -90,15 +90,15 @@ static int side = 0;		/* disk side */
 static int secsz = SEC_SZSD;	/* current used sector size */
 static int state;		/* internal fdc state */
 static int dcnt;		/* data counter read/write */
-static int mflag;		/* multiple sectors flag */
+static bool mflag;		/* multiple sectors flag */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk i/o */
 static BYTE buf[SEC_SZDD];	/* buffer for one sector */
        int index_pulse = 0;	/* disk index pulse */
-static int autowait;		/* autowait flag */
-       int motoron;		/* motor on flag */
+static bool autowait;		/* autowait flag */
+       bool motoron;		/* motor on flag */
        int motortimer;		/* motor on timer */
-static int headloaded;		/* head loaded flag */
+static bool headloaded;		/* head loaded flag */
 
 /* these are our disk drives, 8" SS SD initially */
 Diskdef disks[4] = {
@@ -109,7 +109,7 @@ Diskdef disks[4] = {
 };
 
 BYTE fdc_banked_rom[8 << 10]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
-int fdc_rom_active = 0;
+bool fdc_rom_active = false;
 
 /*
  * find and set path for disk images
@@ -307,7 +307,7 @@ BYTE cromemco_fdc_diskflags_in(void)
 	fdc_flags &= ~1;
 
 	/* process autowait timeout */
-	if (!(ret & 1) && !(ret & 128) && (autowait == 1)) {
+	if (!(ret & 1) && !(ret & 128) && autowait) {
 		ret |= 2;
 	}
 
@@ -316,7 +316,7 @@ BYTE cromemco_fdc_diskflags_in(void)
 		if (motortimer > 0)
 			ret |= 8;
 		else {
-			motoron = 0;
+			motoron = false;
 			ret |= 4;
 		}
 	}
@@ -342,7 +342,7 @@ BYTE cromemco_fdc_diskflags_in(void)
 void cromemco_fdc_diskctl_out(BYTE data)
 {
 	/* get autowait */
-	autowait = (data & 128) ? 1 : 0;
+	autowait = (data & 128) ? true : false;
 
 	/* get selected disk */
 	if (data & 8)
@@ -374,10 +374,10 @@ void cromemco_fdc_diskctl_out(BYTE data)
 
 	/* motor on/off */
 	if (data & 32) {
-		motoron = 1;
+		motoron = true;
 		motortimer = 800;
 	} else {
-		motoron = 0;
+		motoron = false;
 		motortimer = 0;
 	}
 }
@@ -919,7 +919,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 	fdc_flags &= ~1;
 
 	if ((data & 0xf0) == 0) {		/* restore (seek track 0) */
-		headloaded = (data & 8) ? 1 : 0;
+		headloaded = (data & 8) ? true : false;
 		if (fdc_track != 0)
 			step_dir = -1;
 		fdc_track = 0;
@@ -929,7 +929,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xf0) == 0x10) {	/* seek */
-		headloaded = (data & 8) ? 1 : 0;
+		headloaded = (data & 8) ? true : false;
 		fdc_flags |= 1;			/* set EOJ */
 		if (fdc_track <= disks[disk].tracks)
 			fdc_stat = (fdc_track == 0) ? 4 : 0;
@@ -939,7 +939,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x20) {	/* step */
-		headloaded = (data & 8) ? 1 : 0;
+		headloaded = (data & 8) ? true : false;
 		fdc_track += step_dir;
 		fdc_flags |= 1;			/* set EOJ */
 		if (fdc_track <= disks[disk].tracks)
@@ -950,7 +950,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x40) {	/* step in */
-		headloaded = (data & 8) ? 1 : 0;
+		headloaded = (data & 8) ? true : false;
 		fdc_track++;
 		fdc_flags |= 1;			/* set EOJ */
 		step_dir = 1;
@@ -962,7 +962,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_stat |= 32;
 
 	} else if ((data & 0xe0) == 0x60) {	/* step out */
-		headloaded = (data & 8) ? 1 : 0;
+		headloaded = (data & 8) ? true : false;
 		fdc_track--;
 		fdc_flags |= 1;			/* set EOJ */
 		step_dir = -1;
@@ -981,7 +981,7 @@ void cromemco_fdc_cmd_out(BYTE data)
 			fdc_flags |= 1;		/* set EOJ */
 
 	} else if ((data & 0xe0) == 0x80) {	/* read sector(s) */
-		mflag = (data & 16) ? 1 : 0;
+		mflag = (data & 16) ? true : false;
 		state = FDC_READ;
 		dcnt = 0;
 		fdc_stat = 3;			/* set DRQ & busy */
@@ -1024,18 +1024,18 @@ void cromemco_fdc_cmd_out(BYTE data)
 
 void cromemco_fdc_reset(void)
 {
-	state = dcnt = mflag = index_pulse = disk = side = 0;
-	motoron = motortimer = headloaded = autowait = 0;
+	state = dcnt = index_pulse = disk = side = motortimer = 0;
+	mflag = motoron = autowait = headloaded = false;
 	fdc_stat = fdc_aux = 0;
 	fdc_flags = AUTOBOOT;
 	secsz = SEC_SZSD;
 
 #ifdef HAS_BANKED_ROM
 	if (R_flag) {
-		fdc_rom_active = 1;
+		fdc_rom_active = true;
 		reset_fdc_rom_map();
 	} else {
-		fdc_rom_active = 0;
+		fdc_rom_active = false;
 	}
 #endif
 

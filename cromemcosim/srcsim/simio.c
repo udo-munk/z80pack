@@ -91,7 +91,7 @@ static void hwctl_out(BYTE data);
 static void *timing(void *arg);
 static void interrupt(int sig);
 
-static int rtc;			/* flag for 512ms RTC interrupt */
+static bool rtc;		/* flag for 512ms RTC interrupt */
 int lpt1, lpt2;			/* fds for lpt printer files */
 
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
@@ -99,7 +99,7 @@ static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 /* network connections for serial ports on the TU-ART's */
 net_connector_t ncons[NUMNSOC];
 
-static int th_suspend;		/* timing thread suspend flag */
+static bool th_suspend;		/* timing thread suspend flag */
 
 /*
  *	This array contains function pointers for every
@@ -309,11 +309,11 @@ void exit_io(void)
  */
 void reset_io(void)
 {
-	th_suspend = 1;		/* suspend timing thread */
-	sleep_for_ms(20);		/* give it enough time to suspend */
+	th_suspend = true;	/* suspend timing thread */
+	sleep_for_ms(20);	/* give it enough time to suspend */
 	cromemco_tuart_reset();
 	cromemco_fdc_reset();
-	th_suspend = 0;		/* resume timing thread */
+	th_suspend = false;	/* resume timing thread */
 	selbnk = 0;
 	cromemco_dazzler_off();
 	wdi_exit();
@@ -424,7 +424,7 @@ static void mmu_out(BYTE data)
 	bankio = data;
 
 	if (fdc_rom_active) {
-		fdc_rom_active = 0;
+		fdc_rom_active = false;
 		reset_fdc_rom_map();
 	}
 
@@ -537,7 +537,7 @@ static void *timing(void *arg)
 		/* UART 0A timer 1 */
 		if ((uart0a_timer1 == -1) && (uart0a_int_mask & 1)) {
 			uart0a_int = 0xc7;
-			uart0a_int_pending = 1;
+			uart0a_int_pending = true;
 			int_data = 0xc7;
 			int_int = true;
 			uart0a_timer1 = 0;
@@ -547,7 +547,7 @@ static void *timing(void *arg)
 		/* UART 0A timer 2 */
 		if ((uart0a_timer2 == -1) && (uart0a_int_mask & 2)) {
 			uart0a_int = 0xcf;
-			uart0a_int_pending = 1;
+			uart0a_int_pending = true;
 			int_data = 0xcf;
 			int_int = true;
 			uart0a_timer2 = 0;
@@ -557,7 +557,7 @@ static void *timing(void *arg)
 		/* EOJ from disk */
 		if ((fdc_flags & 1) && (uart0a_int_mask & 4)) {
 			uart0a_int = 0xd7;
-			uart0a_int_pending = 1;
+			uart0a_int_pending = true;
 			int_data = 0xd7;
 			int_int = true;
 			goto next;
@@ -566,7 +566,7 @@ static void *timing(void *arg)
 		/* UART 0A timer 3 */
 		if ((uart0a_timer3 == -1) && (uart0a_int_mask & 8)) {
 			uart0a_int = 0xdf;
-			uart0a_int_pending = 1;
+			uart0a_int_pending = true;
 			int_data = 0xdf;
 			int_int = true;
 			uart0a_timer3 = 0;
@@ -576,7 +576,7 @@ static void *timing(void *arg)
 		/* UART 0A receive data available */
 		if ((uart0a_rda) && (uart0a_int_mask & 16)) {
 			uart0a_int = 0xe7;
-			uart0a_int_pending = 1;
+			uart0a_int_pending = true;
 			int_data = 0xe7;
 			int_int = true;
 			goto next;
@@ -589,7 +589,7 @@ static void *timing(void *arg)
 			uart0a_tbe = 1;
 			if (uart0a_int_mask & 32) {
 				uart0a_int = 0xef;
-				uart0a_int_pending = 1;
+				uart0a_int_pending = true;
 				int_data = 0xef;
 				int_int = true;
 				goto next;
@@ -599,7 +599,7 @@ static void *timing(void *arg)
 		/* UART 0A timer 4 */
 		if ((uart0a_timer4 == -1) && (uart0a_int_mask & 64)) {
 			uart0a_int = 0xf7;
-			uart0a_int_pending = 1;
+			uart0a_int_pending = true;
 			int_data = 0xf7;
 			int_int = true;
 			uart0a_timer4 = 0;
@@ -609,7 +609,7 @@ static void *timing(void *arg)
 		/* UART 0A timer 5 */
 		if ((uart0a_timer5 == -1) && (uart0a_int_mask & 128) && !uart0a_rst7) {
 			uart0a_int = 0xff;
-			uart0a_int_pending = 1;
+			uart0a_int_pending = true;
 			int_data = 0xff;
 			int_int = true;
 			uart0a_timer5 = 0;
@@ -618,10 +618,10 @@ static void *timing(void *arg)
 
 		/* 512ms RTC */
 		if (rtc && uart0a_rst7) {
-			rtc = 0;
+			rtc = false;
 			if (uart0a_int_mask & 128) {
 				uart0a_int = 0xff;
-				uart0a_int_pending = 1;
+				uart0a_int_pending = true;
 				int_data = 0xff;
 				int_int = true;
 				goto next;
@@ -630,15 +630,15 @@ static void *timing(void *arg)
 
 		/* UART 0A no pending interrupt */
 		uart0a_int = 0xff;
-		uart0a_int_pending = 0;
+		uart0a_int_pending = false;
 
 		/* UART 1A parallel port sense */
-		uart1a_lpt_busy = 0;
-		if (uart1a_sense != 0) {
-			uart1a_int_pending = 1;
+		uart1a_lpt_busy = false;
+		if (uart1a_sense) {
+			uart1a_int_pending = true;
 			uart1a_int = 0xd7;
 			if (uart1a_int_mask & 4) {
-				uart1a_sense = 0;
+				uart1a_sense = false;
 				int_data = 0x24;
 				int_int = true;
 				goto next;
@@ -648,18 +648,18 @@ static void *timing(void *arg)
 		/* UART 1A receive data available */
 		if ((uart1a_rda) && (uart1a_int_mask & 16)) {
 			uart1a_int = 0xe7;
-			uart1a_int_pending = 1;
+			uart1a_int_pending = true;
 			int_data = 0x28;
 			int_int = true;
 			goto next;
 		}
 
 		/* UART 1A transmit buffer empty */
-		if (uart1a_tbe == 0) {
-			uart1a_tbe = 1;
+		if (!uart1a_tbe) {
+			uart1a_tbe = true;
 			if (uart1a_int_mask & 32) {
 				uart1a_int = 0xef;
-				uart1a_int_pending = 1;
+				uart1a_int_pending = true;
 				int_data = 0x2a;
 				int_int = true;
 				goto next;
@@ -667,16 +667,16 @@ static void *timing(void *arg)
 		}
 
 		/* UART 1A no pending interrupt */
-		uart1a_int_pending = 0;
+		uart1a_int_pending = false;
 		uart1a_int = 0xff;
 
 		/* UART 1B parallel port sense */
-		uart1b_lpt_busy = 0;
-		if (uart1b_sense != 0) {
-			uart1b_int_pending = 1;
+		uart1b_lpt_busy = false;
+		if (uart1b_sense) {
+			uart1b_int_pending = true;
 			uart1b_int = 0xd7;
 			if (uart1b_int_mask & 4) {
-				uart1b_sense = 0;
+				uart1b_sense = false;
 				int_data = 0x34;
 				int_int = true;
 				goto next;
@@ -686,18 +686,18 @@ static void *timing(void *arg)
 		/* UART 1B receive data available */
 		if ((uart1b_rda) && (uart1b_int_mask & 16)) {
 			uart1b_int = 0xe7;
-			uart1b_int_pending = 1;
+			uart1b_int_pending = true;
 			int_data = 0x38;
 			int_int = true;
 			goto next;
 		}
 
 		/* UART 1B transmit buffer empty */
-		if (uart1b_tbe == 0) {
-			uart1b_tbe = 1;
+		if (!uart1b_tbe) {
+			uart1b_tbe = true;
 			if (uart1b_int_mask & 32) {
 				uart1b_int = 0xef;
-				uart1b_int_pending = 1;
+				uart1b_int_pending = true;
 				int_data = 0x3a;
 				int_int = true;
 				goto next;
@@ -705,7 +705,7 @@ static void *timing(void *arg)
 		}
 
 		/* UART 1B no pending interrupt */
-		uart1b_int_pending = 0;
+		uart1b_int_pending = false;
 		uart1b_int = 0xff;
 
 next:
@@ -751,7 +751,7 @@ static void interrupt(int sig)
 
 	/* set RTC interrupt flag every 510ms */
 	if ((counter % 51) == 0)
-		rtc = 1;
+		rtc = true;
 
 #ifndef TCPASYNC
 	/* poll TCP sockets if SIGIO not working */
@@ -762,27 +762,27 @@ static void interrupt(int sig)
 	hal_status_in(TUART0A, &status);
 
 	if (status & 2) {
-		uart0a_rda = 1;
+		uart0a_rda = true;
 	} else {
-		uart0a_rda = 0;
+		uart0a_rda = false;
 	}
 
 	status = 0;
 	hal_status_in(TUART1A, &status);
 
 	if (status & 2) {
-		uart1a_rda = 1;
+		uart1a_rda = true;
 	} else {
-		uart1a_rda = 0;
+		uart1a_rda = false;
 	}
 
 	status = 0;
 	hal_status_in(TUART1B, &status);
 
 	if (status & 2) {
-		uart1b_rda = 1;
+		uart1b_rda = true;
 	} else {
-		uart1b_rda = 0;
+		uart1b_rda = false;
 	}
 }
 

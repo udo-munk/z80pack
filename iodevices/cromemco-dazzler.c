@@ -151,7 +151,7 @@ static char gray15[] =  "#FFFFFF";
 #endif /* !WANT_SDL */
 
 /* DAZZLER stuff */
-static int state;
+static bool state;
 static WORD dma_addr;
 static BYTE flags = 64;
 static BYTE format;
@@ -310,7 +310,7 @@ static void kill_thread(void)
 /* switch DAZZLER off from front panel */
 void cromemco_dazzler_off(void)
 {
-	state = 0;
+	state = false;
 
 #ifdef WANT_SDL
 #ifdef HAS_NETSERVER
@@ -714,7 +714,7 @@ static void update_display(bool tick)
 	/* draw one frame dependent on graphics format */
 	set_fg_color(0);
 	SDL_RenderClear(renderer);
-	if (state == 1) {	/* draw frame if on */
+	if (state) {		/* draw frame if on */
 		if (format & 64)
 			draw_hires();
 		else
@@ -751,7 +751,7 @@ static void *update_thread(void *arg)
 	while (1) {	/* do forever or until canceled */
 
 		/* draw one frame dependent on graphics format */
-		if (state == 1) {	/* draw frame if on */
+		if (state) {		/* draw frame if on */
 #ifdef HAS_NETSERVER
 			if (!n_flag) {
 #endif
@@ -820,11 +820,11 @@ void cromemco_dazzler_ctl_out(BYTE data)
 #endif
 #ifdef HAS_NETSERVER
 		} else {
-			if (state == 0)
+			if (!state)
 				ws_clear();
 		}
 #endif
-		state = 1;
+		state = true;
 #if defined(WANT_SDL) && defined(HAS_NETSERVER)
 		if (n_flag) {
 #endif
@@ -841,8 +841,8 @@ void cromemco_dazzler_ctl_out(BYTE data)
 		}
 #endif
 	} else {
-		if (state == 1) {
-			state = 0;
+		if (state) {
+			state = false;
 			sleep_for_ms(50);
 #ifdef HAS_NETSERVER
 			if (!n_flag) {
