@@ -40,7 +40,7 @@ static int load_hex(char *fn, WORD start, int size);
 /*
  *	Sleep for time microseconds, 999999 max
  */
-void sleep_for_us(long time)
+void sleep_for_us(unsigned long time)
 {
 	struct timespec timer, rem;
 	int err;
@@ -68,7 +68,7 @@ again:
 /*
  *	Sleep for time milliseconds, 999 max
  */
-void sleep_for_ms(int time)
+void sleep_for_ms(unsigned time)
 {
 	struct timespec timer, rem;
 	int err;
