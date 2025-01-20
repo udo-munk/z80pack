@@ -19,7 +19,7 @@ extern char *mac_next(int *rp);
 extern void mac_start_pass(int pass);
 extern void mac_end_pass(int pass);
 
-extern void mac_add_line(struct opc *op, char *line);
+extern void mac_add_line(opc_t *op, char *line);
 extern char *mac_expand(char *line);
 extern int mac_lookup(char *sym_name);
 extern void mac_call(char *operand);

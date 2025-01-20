@@ -31,44 +31,42 @@ static BYTE inPort[PORT_COUNT];
 static BYTE outPort[PORT_COUNT];
 
 #ifdef HAS_NETSERVER
-static void cromemco_d7a_callback(BYTE *data) {
+static void cromemco_d7a_callback(BYTE *data)
+{
+	int i;
 
-    int i;
-    inPort[0] = *data++;
-    for (i=1; i < PORT_COUNT; i++) {
-        inPort[i] = (*data++) - 128;
-    }
+	inPort[0] = *data++;
+	for (i = 1; i < PORT_COUNT; i++)
+		inPort[i] = (*data++) - 128;
 }
 #endif
 
-void cromemco_d7a_init(void) {
-
-    inPort[0] = 0xFF;
+void cromemco_d7a_init(void)
+{
+	inPort[0] = 0xFF;
 
 #ifdef HAS_NETSERVER
-    if (n_flag) {
-        net_device_service(DEV_D7AIO, cromemco_d7a_callback);
-    }
+	if (n_flag)
+		net_device_service(DEV_D7AIO, cromemco_d7a_callback);
 #endif
-
 }
 
 static void cromemco_d7a_out(BYTE port, BYTE data)
 {
-    outPort[port] = data;
+	outPort[port] = data;
 
-    LOGD(TAG, "Output %d on port %d", data, port);
+	LOGD(TAG, "Output %d on port %d", data, port);
 
 #ifdef HAS_NETSERVER
-    if (n_flag) {
-        // if (net_device_alive(DEV_D7AIO)) {
-            net_device_send(DEV_D7AIO, (char *)&data, 1);
-        // }
-    }
+	if (n_flag) {
+		// if (net_device_alive(DEV_D7AIO)) {
+		net_device_send(DEV_D7AIO, (char *) &data, 1);
+		// }
+	}
 #endif
 }
 
-void cromemco_d7a_D_out(BYTE data) { cromemco_d7a_out(0, data); }
+void cromemco_d7a_D_out (BYTE data) { cromemco_d7a_out(0, data); }
 void cromemco_d7a_A1_out(BYTE data) { cromemco_d7a_out(1, data); }
 void cromemco_d7a_A2_out(BYTE data) { cromemco_d7a_out(2, data); }
 void cromemco_d7a_A3_out(BYTE data) { cromemco_d7a_out(3, data); }
@@ -82,7 +80,7 @@ static BYTE cromemco_d7a_in(BYTE port)
 	return inPort[port];
 }
 
-BYTE cromemco_d7a_D_in(void) { return cromemco_d7a_in(0); };
+BYTE cromemco_d7a_D_in (void) { return cromemco_d7a_in(0); };
 BYTE cromemco_d7a_A1_in(void) { return cromemco_d7a_in(1); };
 BYTE cromemco_d7a_A2_in(void) { return cromemco_d7a_in(2); };
 BYTE cromemco_d7a_A3_in(void) { return cromemco_d7a_in(3); };

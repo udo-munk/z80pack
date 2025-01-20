@@ -113,7 +113,6 @@
  *	160 - hardware control
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -214,7 +213,7 @@ static int sdirection = -1; /* protocol direction, 0 = send 1 = receive */
 
 #endif /* NETWORKING */
 
-struct dskdef disks[16] = {
+dskdef_t disks[16] = {
 	{ "drivea.dsk", &drivea, 77, 26 },
 	{ "driveb.dsk", &driveb, 77, 26 },
 	{ "drivec.dsk", &drivec, 77, 26 },
@@ -298,7 +297,7 @@ static void int_io(int sig);
  *	This array contains function pointers for every
  *	input port.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 	[  0] = cons_in,
 	[  1] = cond_in,
 	[  2] = prts_in,
@@ -340,7 +339,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output port.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 	[  0] = cons_out,
 	[  1] = cond_out,
 	[  2] = prts_out,
@@ -2068,7 +2067,7 @@ static void speedl_out(BYTE data)
  */
 static BYTE speedl_in(void)
 {
-	return f_flag & 0xff;
+	return f_value & 0xff;
 }
 
 /*
@@ -2078,7 +2077,7 @@ static void speedh_out(BYTE data)
 {
 	speed += data << 8;
 	tmax = speed * 10000;
-	f_flag = speed;
+	f_value = speed;
 }
 
 /*
@@ -2086,7 +2085,7 @@ static void speedh_out(BYTE data)
  */
 static BYTE speedh_in(void)
 {
-	return f_flag >> 8;
+	return f_value >> 8;
 }
 
 /*
@@ -2096,7 +2095,7 @@ static void int_timer(int sig)
 {
 	UNUSED(sig);
 
-	int_int = 1;
+	int_int = true;
 	int_data = 0xff;	/* RST 38H for IM 0, 0FFH for IM 2 */
 }
 
@@ -2173,7 +2172,7 @@ void telnet_negotiation(int fd)
 	/* and reject all others offered */
 	p[0].fd = fd;
 	p[0].events = POLLIN;
-	while (1) {
+	while (true) {
 		/* wait for input */
 		p[0].revents = 0;
 		poll(p, 1, TELNET_TIMEOUT);

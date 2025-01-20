@@ -12,7 +12,6 @@
  * 02-DEC-2019 use disk names different from Tarbell controller
  */
 
-#include <stddef.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -170,7 +169,7 @@ static void *timing(void *arg)
 	UNUSED(arg);
 
 	/* 1 msec per loop iteration */
-	while (1) {
+	while (true) {
 		/* advance sector position, 5ms at 360 RPM */
 		if (++cnt_sec > TIMESEC) {
 			cnt_sec = 0;

@@ -16,10 +16,10 @@
 
 extern int lpt1, lpt2;
 
-extern struct net_connectors ncons[NUMNSOC];
+extern net_connector_t ncons[NUMNSOC];
 
-extern BYTE (*const port_in[256])(void);
-extern void (*const port_out[256])(BYTE data);
+extern in_func_t *const port_in[256];
+extern out_func_t *const port_out[256];
 
 extern void init_io(void);
 extern void exit_io(void);

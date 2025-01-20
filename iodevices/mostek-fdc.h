@@ -16,6 +16,7 @@
 #ifndef MOSTEK_FDC_INC
 #define MOSTEK_FDC_INC
 
+#include "sim.h"
 #include "simdefs.h"
 
 extern BYTE fdcBoard_stat_in(void), fdcBoard_ctl_in(void);

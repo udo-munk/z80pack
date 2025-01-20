@@ -34,7 +34,6 @@
  * 01-AUG-2021 integrated HAL
  */
 
-#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -56,33 +55,33 @@ static const char *TAG = "SIO";
 
 static BYTE sio1_ctl, sio2_ctl;
 
-int sio1a_upper_case;
-int sio1a_strip_parity;
-int sio1a_drop_nulls;
+bool sio1a_upper_case;
+bool sio1a_strip_parity;
+bool sio1a_drop_nulls;
 int sio1a_baud_rate = 115200;
 
 static uint64_t sio1a_t1, sio1a_t2;
 static BYTE sio1a_stat = 0;
 
-int sio1b_upper_case;
-int sio1b_strip_parity;
-int sio1b_drop_nulls;
+bool sio1b_upper_case;
+bool sio1b_strip_parity;
+bool sio1b_drop_nulls;
 int sio1b_baud_rate = 110;
 
 static uint64_t sio1b_t1, sio1b_t2;
 static BYTE sio1b_stat = 0;
 
-int sio2a_upper_case;
-int sio2a_strip_parity;
-int sio2a_drop_nulls;
+bool sio2a_upper_case;
+bool sio2a_strip_parity;
+bool sio2a_drop_nulls;
 int sio2a_baud_rate = 115200;
 
 static uint64_t sio2a_t1, sio2a_t2;
 static BYTE sio2a_stat = 0;
 
-int sio2b_upper_case;
-int sio2b_strip_parity;
-int sio2b_drop_nulls;
+bool sio2b_upper_case;
+bool sio2b_strip_parity;
+bool sio2b_drop_nulls;
 int sio2b_baud_rate = 2400;
 
 static uint64_t sio2b_t1, sio2b_t2;
@@ -439,18 +438,18 @@ void imsai_sio2b_data_out(BYTE data)
  */
 BYTE imsai_sio1_ctl_in(void)
 {
-	int cd_a = hal_carrier_detect(SIO1A);
-	int cd_b = hal_carrier_detect(SIO1B);
+	bool cd_a = hal_carrier_detect(SIO1A);
+	bool cd_b = hal_carrier_detect(SIO1B);
 
-	return 0b10111011 | (cd_a << 2) | cd_b << 6;
+	return 0b10111011 | (cd_a ? 4 : 0) | (cd_b ? 64 : 0);
 }
 
 BYTE imsai_sio2_ctl_in(void)
 {
-	int cd_a = hal_carrier_detect(SIO2A);
-	int cd_b = hal_carrier_detect(SIO2B);
+	bool cd_a = hal_carrier_detect(SIO2A);
+	bool cd_b = hal_carrier_detect(SIO2B);
 
-	return 0b10111011 | (cd_a << 2) | cd_b << 6;
+	return 0b10111011 | (cd_a ? 4 : 0) | (cd_b ? 64 : 0);
 }
 
 /*

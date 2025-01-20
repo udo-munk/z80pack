@@ -69,12 +69,13 @@ typedef struct {
 extern BYTE fdc_flags;
 extern enum Disk_type dtype;
 extern int index_pulse;
-extern int motoron, motortimer;
+extern bool motoron;
+extern int motortimer;
 
 extern Diskdef disks[4];
 
 extern BYTE fdc_banked_rom[8 << 10]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
-extern int fdc_rom_active;
+extern bool fdc_rom_active;
 
 extern char *dsk_path(void);
 

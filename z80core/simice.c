@@ -12,9 +12,6 @@
  */
 
 #include <ctype.h>
-#include <inttypes.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,16 +38,16 @@
  *	Variables for history memory
  */
 #ifdef HISIZE
-struct history his[HISIZE];	/* memory to hold trace information */
+history_t his[HISIZE];		/* memory to hold trace information */
 int h_next;			/* index into trace memory */
-int h_flag;			/* flag for trace memory overrun */
+bool h_flag;			/* flag for trace memory overrun */
 #endif
 
 /*
  *	Variables for breakpoint memory
  */
 #ifdef SBSIZE
-struct softbreak soft[SBSIZE];	/* memory to hold breakpoint information */
+softbreak_t soft[SBSIZE];	/* memory to hold breakpoint information */
 #endif
 
 /*
@@ -59,7 +56,7 @@ struct softbreak soft[SBSIZE];	/* memory to hold breakpoint information */
 #ifdef WANT_TIM
 Tstates_t t_states_s;		/* T states marker at start of measurement */
 Tstates_t t_states_e;		/* T states marker at end of measurement */
-int t_flag;			/* flag, 1 = on, 0 = off */
+bool t_flag;			/* flag, true = on, false = off */
 WORD t_start = 65535;		/* start address for measurement */
 WORD t_end = 65535;		/* end address for measurement */
 #endif
@@ -68,7 +65,7 @@ WORD t_end = 65535;		/* end address for measurement */
  *	Variables for hardware breakpoint
  */
 #ifdef WANT_HB
-int hb_flag;			/* hardware breakpoint enabled flag */
+bool hb_flag;			/* hardware breakpoint enabled flag */
 WORD hb_addr;			/* address of hardware breakpoint */
 int hb_mode;			/* access mode of hardware breakpoint */
 int hb_trig;			/* hardware breakpoint triggered flag */
@@ -79,7 +76,7 @@ static void do_trace(char *s);
 static void do_go(char *s);
 static void install_softbp(void);
 static void uninstall_softbp(void);
-static int handle_break(void);
+static bool handle_break(void);
 static void do_dump(char *s);
 static void do_list(char *s);
 static void do_modify(char *s);
@@ -117,9 +114,9 @@ void (*ice_cust_help)(void);
 
 /*
  *	The function "ice_cmd_loop()" is the dialog user interface, called
- *	from the simulation when desired with go_flag set to 0, or, when
+ *	from the simulation when desired with go_mode set to 0, or, when
  *	no other user interface is needed, directly after any necessary
- *	initialization work at program start with go_flag set to 1 (or 2
+ *	initialization work at program start with go_mode set to 1 (or 2
  *	with timing output).
  *
  *	There are also two function pointers "ice_before_go" and
@@ -133,12 +130,12 @@ void (*ice_cust_help)(void);
  *	parameters. "ice_cust_help" can be set to a void function(void)
  *	to display help for custom commands.
  */
-void ice_cmd_loop(int go_flag)
+void ice_cmd_loop(int go_mode)
 {
-	register int eoj = 1;
+	register bool eoj = true;
 	static char cmd[LENCMD];
 
-	if (!go_flag) {
+	if (!go_mode) {
 		report_cpu_error();
 		print_head();
 		print_reg();
@@ -147,14 +144,14 @@ void ice_cmd_loop(int go_flag)
 	wrk_addr = PC;
 
 	while (eoj) {
-		if (go_flag) {
-			strcpy(cmd, (go_flag > 1) ? "g *" : "g");
-			go_flag = 0;
+		if (go_mode) {
+			strcpy(cmd, (go_mode > 1) ? "g *" : "g");
+			go_mode = 0;
 		} else {
 			printf(">>> ");
 			fflush(stdout);
-			if (get_cmdline(cmd, LENCMD)) {
-				eoj = 0;
+			if (!get_cmdline(cmd, LENCMD)) {
+				eoj = false;
 				continue;
 			}
 		}
@@ -228,7 +225,7 @@ void ice_cmd_loop(int go_flag)
 			break;
 #endif
 		case 'q':
-			eoj = 0;
+			eoj = false;
 			break;
 		default:
 			if (ice_cust_cmd)
@@ -276,7 +273,7 @@ static void do_trace(char *s)
 	for (i = 0; i < count; i++) {
 		step_cpu();
 		print_reg();
-		if (cpu_error && (cpu_error != OPHALT || !handle_break()))
+		if (cpu_error && (cpu_error != OPHALT || handle_break()))
 			break;
 	}
 	uninstall_softbp();
@@ -307,7 +304,7 @@ static void do_go(char *s)
 	start_time = cpu_time;
 	for (;;) {
 		run_cpu();
-		if (cpu_error && (cpu_error != OPHALT || !handle_break()))
+		if (cpu_error && (cpu_error != OPHALT || handle_break()))
 			break;
 	}
 	stop_time = cpu_time;
@@ -359,10 +356,10 @@ static void uninstall_softbp(void)
 /*
  *	Handling of software (HALT opcode) / hardware breakpoints:
  *
- *	Output:	0 breakpoint or other HALT opcode reached (stop)
- *		1 breakpoint hit, pass counter not reached (continue)
+ *	Output:	false breakpoint hit, pass counter not reached (continue)
+ *		true breakpoint or other HALT opcode reached (stop)
  */
-static int handle_break(void)
+static bool handle_break(void)
 {
 #ifdef SBSIZE
 	register int i;
@@ -380,7 +377,7 @@ static int handle_break(void)
 		printf(" access to %04x\n", hb_addr);
 		hb_trig = 0;
 		cpu_error = NONE;
-		return 0;
+		return true;
 	}
 #endif
 #ifdef SBSIZE
@@ -388,7 +385,7 @@ static int handle_break(void)
 		if (soft[i].sb_pass && soft[i].sb_addr == PC - 1)
 			break;
 	if (i == SBSIZE)		/* no breakpoint found */
-		return 0;
+		return true;
 #ifdef HISIZE
 	if (h_next)			/* correct history */
 		h_next--;
@@ -401,12 +398,12 @@ static int handle_break(void)
 	putmem(soft[i].sb_addr, 0x76);	/* restore HALT opcode again */
 	soft[i].sb_passcount++;		/* increment pass counter */
 	if (soft[i].sb_passcount != soft[i].sb_pass)
-		return 1;		/* pass not reached, continue */
+		return false;		/* pass not reached, continue */
 	printf("Software breakpoint hit at %04x\n", soft[i].sb_addr);
 	soft[i].sb_passcount = 0;	/* reset pass counter */
-	return 0;			/* pass reached, stop */
+	return true;			/* pass reached, stop */
 #else /* !SBSIZE */
-	return 0;
+	return true;
 #endif /* !SBSIZE */
 }
 
@@ -499,7 +496,7 @@ static void do_modify(char *s)
 	for (;;) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
-		if (get_cmdline(arg, LENCMD) || arg[0] == '\0')
+		if (!get_cmdline(arg, LENCMD) || arg[0] == '\0')
 			break;
 		s = arg;
 		while (isspace((unsigned char) *s))
@@ -632,7 +629,7 @@ static void do_port(char *s)
 	data = io_in(port, 0);
 	report_cpu_error();
 	printf("%02x = %02x : ", port, data);
-	if (!get_cmdline(arg, LENCMD)) {
+	if (get_cmdline(arg, LENCMD)) {
 		s = arg;
 		while (isspace((unsigned char) *s))
 			s++;
@@ -658,7 +655,7 @@ static void do_port(char *s)
 /*
  *	register definitions table (must be sorted by name length)
  */
-static const struct reg_def {
+typedef struct reg_def {
 	const char *name;	/* register name */
 	char len;		/* register name length */
 	const char *prt;	/* printable register name */
@@ -674,7 +671,9 @@ static const struct reg_def {
 		int *rf;	/* F or F' register pointer */
 		BYTE rm;	/* status register flag mask */
 	};
-} regs[] = {
+} reg_def_t;
+
+static reg_def_t const regs[] = {
 #ifndef EXCLUDE_Z80
 	{ "bc'", 3, "BC'", 1, R_88, .r8h = &B_, .r8l = &C_ },
 	{ "de'", 3, "DE'", 1, R_88, .r8h = &D_, .r8l = &E_ },
@@ -726,7 +725,7 @@ static const struct reg_def {
 	{ "h",   1, "H",   0, R_8,  .r8 = &H },
 	{ "l",   1, "L",   0, R_8,  .r8 = &L }
 };
-static int nregs = sizeof(regs) / sizeof(struct reg_def);
+static int nregs = sizeof(regs) / sizeof(reg_def_t);
 
 /*
  *	Register modify
@@ -734,7 +733,7 @@ static int nregs = sizeof(regs) / sizeof(struct reg_def);
 static void do_reg(char *s)
 {
 	register int i;
-	register const struct reg_def *p;
+	register const reg_def_t *p;
 	WORD w;
 
 	while (isspace((unsigned char) *s))
@@ -775,7 +774,7 @@ static void do_reg(char *s)
 			default:
 				break;
 			}
-			if (!get_cmdline(arg, LENCMD)) {
+			if (get_cmdline(arg, LENCMD)) {
 				s = arg;
 				while (isspace((unsigned char) *s))
 					s++;
@@ -909,7 +908,7 @@ static void do_break(char *s)
 			return;
 		}
 		if (tolower((unsigned char) *s) == 'c') {
-			hb_flag = 0;
+			hb_flag = false;
 			return;
 		}
 		while (isspace((unsigned char) *s))
@@ -950,7 +949,7 @@ static void do_break(char *s)
 #endif
 		hb_addr = a;
 		hb_mode = n;
-		hb_flag = 1;
+		hb_flag = true;
 #endif /* WANT_HB */
 		return;
 	}
@@ -979,8 +978,7 @@ static void do_break(char *s)
 		while (isspace((unsigned char) *s))
 			s++;
 		if (*s == '\0') {
-			memset((char *) soft, 0,
-			       sizeof(struct softbreak) * SBSIZE);
+			memset((char *) soft, 0, sizeof(softbreak_t) * SBSIZE);
 			return;
 		}
 		if (!isxdigit((unsigned char) *s)) {
@@ -995,7 +993,7 @@ static void do_break(char *s)
 		if (i == SBSIZE)
 			printf("No software breakpoint at address %04x\n", a);
 		else
-			memset((char *) &soft[i], 0, sizeof(struct softbreak));
+			memset((char *) &soft[i], 0, sizeof(softbreak_t));
 		return;
 	}
 	while (isspace((unsigned char) *s))
@@ -1065,17 +1063,17 @@ static void do_hist(char *s)
 	int i, l, b, e, sa;
 
 	if (tolower((unsigned char) *s) == 'c') {
-		memset((char *) his, 0, sizeof(struct history) * HISIZE);
+		memset((char *) his, 0, sizeof(history_t) * HISIZE);
 		h_next = 0;
-		h_flag = 0;
+		h_flag = false;
 		return;
 	}
-	if (h_next == 0 && h_flag == 0) {
+	if (h_next == 0 && !h_flag) {
 		puts("History memory is empty");
 		return;
 	}
 	e = h_next;
-	b = (h_flag) ? h_next + 1 : 0;
+	b = h_flag ? h_next + 1 : 0;
 	l = 0;
 	while (isspace((unsigned char) *s))
 		s++;
@@ -1114,7 +1112,7 @@ static void do_hist(char *s)
 		l = 0;
 		fputs("q = quit, else continue: ", stdout);
 		fflush(stdout);
-		if (!get_cmdline(arg, LENCMD) &&
+		if (get_cmdline(arg, LENCMD) &&
 		    (arg[0] == '\0' || tolower((unsigned char) arg[0]) == 'q'))
 			break;
 	}
@@ -1165,7 +1163,7 @@ static void do_count(char *s)
 	t_start = start;
 	t_end = strtol(s, NULL, 16);
 	t_states_s = t_states_e = T;
-	t_flag = 0;
+	t_flag = false;
 #endif
 }
 
@@ -1347,10 +1345,10 @@ static void do_clock(void)
 	static struct itimerval tim;
 	const char *s = NULL;
 #ifdef WANT_HB
-	int save_hb_flag;
+	bool save_hb_flag;
 
 	save_hb_flag = hb_flag;
-	hb_flag = 0;
+	hb_flag = false;
 #endif
 	save[0] = getmem(0x0000);	/* save memory locations */
 	save[1] = getmem(0x0001);	/* 0000H - 0002H */
@@ -1426,13 +1424,13 @@ static void do_load(char *s)
 		while (isspace((unsigned char) *s))
 			s++;
 		if (isxdigit((unsigned char) *s)) {
-			load_file(fn, strtol(s, NULL, 16), -1);
-			wrk_addr = PC;
+			if (load_file(fn, strtol(s, NULL, 16), -1))
+				wrk_addr = PC;
 			return;
 		}
 	}
-	load_file(fn, 0, 0);
-	wrk_addr = PC;
+	if (load_file(fn, 0, 0))
+		wrk_addr = PC;
 }
 
 /*

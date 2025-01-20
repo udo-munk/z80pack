@@ -11,4 +11,4 @@ static inline void put_pixel(uint32_t pixel_grb) {
 	pio_sm_put_blocking(pio, sm, pixel_grb << 8u);
 }
 
-#endif
+#endif /* !RGBLED_INC */

@@ -70,7 +70,7 @@ static inline void memwrt(WORD addr, BYTE data)
 		wp_common |= 0x80;
 #ifndef EXCLUDE_Z80
 		if (wp_common & 0x40)
-			int_nmi = 1;
+			int_nmi = true;
 #endif
 		return;
 	}

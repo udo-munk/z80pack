@@ -40,7 +40,6 @@
  * 27-MAY-2024 moved io_in & io_out to simcore
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -117,7 +116,7 @@ static void apu_status_out(BYTE data);
 #endif
 
 static int printer;		/* fd for file "printer.txt" */
-struct unix_connectors ucons[NUMUSOC]; /* socket connections for SIO's */
+unix_connector_t ucons[NUMUSOC]; /* socket connections for SIO's */
 static BYTE hwctl_lock = 0xff;	/* lock status hardware control port */
 #ifdef HAS_APU
 static void *am9511 = NULL;	/* am9511 instantiation */
@@ -127,7 +126,7 @@ static void *am9511 = NULL;	/* am9511 instantiation */
  *	This array contains function pointers for every
  *	input I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 	[  0] = imsai_sio_nofun_in,	/* IMSAI SIO-2 */
 	[  1] = imsai_sio_nofun_in,
 	[  2] = imsai_sio1a_data_in,	/* Channel A, console */
@@ -200,7 +199,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every
  *	output I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 	[  0] = imsai_sio_nofun_out,	/* IMSAI SIO-2 */
 	[  1] = imsai_sio_nofun_out,
 	[  2] = imsai_sio1a_data_out,	/* Channel A, console */
@@ -406,7 +405,7 @@ static void int_timer(int sig)
 {
 	UNUSED(sig);
 
-	int_int = 1;
+	int_int = true;
 	int_data = 0xff;	/* RST 38H */
 }
 

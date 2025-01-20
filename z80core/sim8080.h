@@ -9,6 +9,7 @@
 #define SIM8080_INC
 
 #include "sim.h"
+#include "simdefs.h"
 
 #ifndef EXCLUDE_I8080
 extern void cpu_8080(void);

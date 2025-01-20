@@ -62,9 +62,11 @@ void lpt_reset(void)
 /*	Device 0A	*/
 /************************/
 
-int uart0a_int_mask, uart0a_int, uart0a_int_pending, uart0a_rst7;
+int uart0a_int_mask, uart0a_int;
+bool uart0a_int_pending, uart0a_rst7;
 int uart0a_timer1, uart0a_timer2, uart0a_timer3, uart0a_timer4, uart0a_timer5;
-int uart0a_tbe, uart0a_rda;
+int uart0a_tbe;
+bool uart0a_rda;
 
 /*
  * D7	Transmit Buffer Empty
@@ -112,7 +114,7 @@ BYTE cromemco_tuart_0a_data_in(void)
 	int data;
 	static BYTE last;
 
-	uart0a_rda = 0;
+	uart0a_rda = false;
 
 	data = hal_data_in(TUART0A);
 	/* if no new data available return last */
@@ -147,17 +149,17 @@ void cromemco_tuart_0a_data_out(BYTE data)
  */
 void cromemco_tuart_0a_command_out(BYTE data)
 {
-	uart0a_rst7 = (data & 4) ? 1 : 0;
+	uart0a_rst7 = (data & 4) ? true : false;
 
 	if (data & 1) {
-		uart0a_rda = 0;
+		uart0a_rda = false;
 		uart0a_tbe = 1;
 		uart0a_timer1 = 0;
 		uart0a_timer2 = 0;
 		uart0a_timer3 = 0;
 		uart0a_timer4 = 0;
 		uart0a_timer5 = 0;
-		uart0a_int_pending = 0;
+		uart0a_int_pending = false;
 	}
 }
 
@@ -236,9 +238,10 @@ void cromemco_tuart_0a_timer5_out(BYTE data)
 /*	Device 1A	*/
 /************************/
 
-int uart1a_int_mask, uart1a_int, uart1a_int_pending;
-int uart1a_sense, uart1a_lpt_busy;
-int uart1a_tbe, uart1a_rda;
+int uart1a_int_mask, uart1a_int;
+bool uart1a_int_pending;
+bool uart1a_sense, uart1a_lpt_busy;
+bool uart1a_tbe, uart1a_rda;
 
 BYTE cromemco_tuart_1a_status_in(void)
 {
@@ -268,7 +271,7 @@ BYTE cromemco_tuart_1a_data_in(void)
 	int data;
 	static BYTE last;
 
-	uart1a_rda = 0;
+	uart1a_rda = false;
 
 	data = hal_data_in(TUART1A);
 	/* if no new data available return last */
@@ -282,7 +285,7 @@ BYTE cromemco_tuart_1a_data_in(void)
 
 void cromemco_tuart_1a_data_out(BYTE data)
 {
-	uart1a_tbe = 0;
+	uart1a_tbe = false;
 	data &= 0x7f;
 	if (data == 0x00)
 		return;
@@ -293,9 +296,9 @@ void cromemco_tuart_1a_data_out(BYTE data)
 void cromemco_tuart_1a_command_out(BYTE data)
 {
 	if (data & 1) {
-		uart1a_rda = 0;
-		uart1a_tbe = 1;
-		uart1a_int_pending = 0;
+		uart1a_rda = false;
+		uart1a_tbe = true;
+		uart1a_int_pending = false;
 	}
 }
 
@@ -311,7 +314,7 @@ void cromemco_tuart_1a_interrupt_out(BYTE data)
 
 BYTE cromemco_tuart_1a_parallel_in(void)
 {
-	if (uart1a_lpt_busy == 0)
+	if (!uart1a_lpt_busy)
 		return (BYTE) ~0x20;
 	else
 		return (BYTE) 0xff;
@@ -329,8 +332,8 @@ void cromemco_tuart_1a_parallel_out(BYTE data)
 		}
 	}
 
-	uart1a_sense = 1;
-	uart1a_lpt_busy = 1;
+	uart1a_sense = true;
+	uart1a_lpt_busy = true;
 
 	/* bit 7 is strobe, every byte is send 3 times. First with
 	   strobe on, then with strobe off, then with on again.
@@ -354,9 +357,10 @@ again:
 /*	Device 1B	*/
 /************************/
 
-int uart1b_int_mask, uart1b_int, uart1b_int_pending;
-int uart1b_sense, uart1b_lpt_busy;
-int uart1b_tbe, uart1b_rda;
+int uart1b_int_mask, uart1b_int;
+bool uart1b_int_pending;
+bool uart1b_sense, uart1b_lpt_busy;
+bool uart1b_tbe, uart1b_rda;
 
 BYTE cromemco_tuart_1b_status_in(void)
 {
@@ -386,7 +390,7 @@ BYTE cromemco_tuart_1b_data_in(void)
 	int data;
 	static BYTE last;
 
-	uart1b_rda = 0;
+	uart1b_rda = false;
 
 	data = hal_data_in(TUART1B);
 	/* if no new data available return last */
@@ -400,7 +404,7 @@ BYTE cromemco_tuart_1b_data_in(void)
 
 void cromemco_tuart_1b_data_out(BYTE data)
 {
-	uart1b_tbe = 0;
+	uart1b_tbe = false;
 	data &= 0x7f;
 	if (data == 0x00)
 		return;
@@ -411,9 +415,9 @@ void cromemco_tuart_1b_data_out(BYTE data)
 void cromemco_tuart_1b_command_out(BYTE data)
 {
 	if (data & 1) {
-		uart1b_rda = 0;
-		uart1b_tbe = 1;
-		uart1b_int_pending = 0;
+		uart1b_rda = false;
+		uart1b_tbe = true;
+		uart1b_int_pending = false;
 	}
 }
 
@@ -429,7 +433,7 @@ void cromemco_tuart_1b_interrupt_out(BYTE data)
 
 BYTE cromemco_tuart_1b_parallel_in(void)
 {
-	if (uart1b_lpt_busy == 0)
+	if (!uart1b_lpt_busy)
 		return (BYTE) ~0x20;
 	else
 		return (BYTE) 0xff;
@@ -447,8 +451,8 @@ void cromemco_tuart_1b_parallel_out(BYTE data)
 		}
 	}
 
-	uart1b_sense = 1;
-	uart1b_lpt_busy = 1;
+	uart1b_sense = true;
+	uart1b_lpt_busy = true;
 
 	/* bit 7 is strobe, every byte is send 3 times. First with
 	   strobe on, then with strobe off, then with on again.
@@ -480,22 +484,22 @@ void cromemco_tuart_reset(void)
 {
 	uart0a_int = 0xff;
 	uart0a_int_mask = 0;
-	uart0a_int_pending = 0;
-	uart0a_rda = 0;
+	uart0a_int_pending = false;
+	uart0a_rda = false;
 	uart0a_tbe = 1;
 	uart0a_timer1 = uart0a_timer2 = uart0a_timer3 = 0;
 	uart0a_timer4 = uart0a_timer5 = 0;
-	uart0a_rst7 = 0;
+	uart0a_rst7 = false;
 
 	uart1a_int = 0xff;
 	uart1a_int_mask = 0;
-	uart1a_int_pending = 0;
-	uart1a_rda = 0;
-	uart1a_tbe = 1;
+	uart1a_int_pending = false;
+	uart1a_rda = false;
+	uart1a_tbe = true;
 
 	uart1b_int = 0xff;
 	uart1b_int_mask = 0;
-	uart1b_int_pending = 0;
-	uart1b_rda = 0;
-	uart1b_tbe = 1;
+	uart1b_int_pending = false;
+	uart1b_rda = false;
+	uart1b_tbe = true;
 }

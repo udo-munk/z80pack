@@ -53,14 +53,14 @@
 #define MAXMEMMAP	6
 #define MAXMEMSECT	15
 
-struct memmap {
+typedef struct memmap {
 	int type;	/* type of memory pages */
 	BYTE spage;	/* start page of segment */
 	WORD size;	/* size of segment in pages */
 	char *rom_file;
-};
+} memmap_t;
 
-extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
+extern memmap_t memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD _boot_switch[MAXMEMSECT];	/* boot address */
 
 extern BYTE memory[65536], mem_wp;
@@ -126,7 +126,7 @@ static inline BYTE memrdr(WORD addr)
 				data = memory[addr];
 			else
 				data = 0xff;
-			tarbell_rom_active = 0;
+			tarbell_rom_active = false;
 		}
 	} else {
 		if (p_tab[addr >> 8] != MEM_NONE)
@@ -165,7 +165,7 @@ static inline BYTE dma_read(WORD addr)
 		if (addr <= 0x001f)
 			return tarbell_rom[addr];
 		else
-			tarbell_rom_active = 0;
+			tarbell_rom_active = false;
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)
@@ -210,7 +210,7 @@ static inline BYTE fp_read(WORD addr)
 		if (addr <= 0x001f)
 			return tarbell_rom[addr];
 		else
-			tarbell_rom_active = 0;
+			tarbell_rom_active = false;
 	}
 
 	if (p_tab[addr >> 8] != MEM_NONE)

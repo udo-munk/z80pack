@@ -25,8 +25,6 @@
  * 19-JUL-2020 avoid problems with some third party terminal emulations
  */
 
-#include <stddef.h>
-#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -51,17 +49,17 @@ static const char *TAG = "2SIO";
 
 #define BAUDTIME 10000000
 
-int sio1_upper_case;
-int sio1_strip_parity;
-int sio1_drop_nulls;
+bool sio1_upper_case;
+bool sio1_strip_parity;
+bool sio1_drop_nulls;
 int sio1_baud_rate = 115200;
 
 static uint64_t sio1_t1, sio1_t2;
 static BYTE sio1_stat;
 
-int sio2_upper_case;
-int sio2_strip_parity;
-int sio2_drop_nulls;
+bool sio2_upper_case;
+bool sio2_strip_parity;
+bool sio2_drop_nulls;
 int sio2_baud_rate = 115200;
 
 static uint64_t sio2_t1, sio2_t2;

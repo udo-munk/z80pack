@@ -10,8 +10,6 @@
  * 04-NOV-2019		remove fake DMA bus request
  */
 
-#include <stddef.h>
-#include <stdint.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,14 +17,13 @@
 #include <signal.h>
 
 #include "sim.h"
-
-#if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
-
 #include "simdefs.h"
 #include "simglb.h"
 #include "simcfg.h"
 #include "simmem.h"
 #include "simport.h"
+
+#if defined(HAS_NETSERVER) && defined(HAS_CYCLOPS)
 
 #include "netsrv.h"
 #include "cromemco-88ccc.h"
@@ -36,7 +33,7 @@
 static const char *TAG = "88CCC";
 
 /* 88CCC stuff */
-static int state;
+static bool state;
 static WORD dma_addr;
 static BYTE flags;
 static BYTE format;
@@ -67,7 +64,6 @@ static void *store_image(void *arg)
 
 	while (state) {	/* do until total frame is received */
 		if (net_device_alive(DEV_88ACC)) {
-
 			msg.auxiliary = flags & 0x0f;
 			msg.bias = (flags & 0x20) >> 5;
 			msg.fields = format & 0x0f;
@@ -75,19 +71,21 @@ static void *store_image(void *arg)
 
 			msgB = format | (msg.bias << 6);
 
-			LOGD(TAG, "CCC/ACC Capture: to addr %04x, fields: %d, interval %d", dma_addr, msg.fields, msg.interval);
+			LOGD(TAG, "CCC/ACC Capture: to addr %04x, fields: %d, interval %d",
+			     dma_addr, msg.fields, msg.interval);
 
-			net_device_send(DEV_88ACC, (char *)&msgB, sizeof(msgB));
+			net_device_send(DEV_88ACC, (char *) &msgB, sizeof(msgB));
 
 			for (i = 0; i < msg.fields; i++) {
 				len = net_device_get_data(DEV_88ACC, (char *) buffer, FIELDSIZE);
 				if (len != FIELDSIZE) {
-					LOGW(TAG,"Error in frame length, received %d of %d bytes.", len, FIELDSIZE);
+					LOGW(TAG, "Error in frame length, received %d of %d bytes.",
+					     len, FIELDSIZE);
 				} else {
-					LOGD(TAG, "received frame %d, length %d, %d stored at %04x", i, len, (BYTE)*buffer, dma_addr + (i * FIELDSIZE));
-					for (j = 0; j < FIELDSIZE; j++) {
-						dma_write(dma_addr + (i * FIELDSIZE) + j, buffer[j]);
-					}
+					LOGD(TAG, "received frame %d, length %d, %d stored at %04x",
+					     i, len, (BYTE) *buffer, dma_addr + (i * FIELDSIZE));
+					for (j = 0; j < FIELDSIZE; j++)
+						dma_write(dma_addr + i * FIELDSIZE + j, buffer[j]);
 				}
 			}
 		} else {
@@ -96,35 +94,34 @@ static void *store_image(void *arg)
 		}
 
 		/* frame done, calculate total frame time */
-		j = msg.fields * (msg.interval +1) * 2;
+		j = msg.fields * (msg.interval + 1) * 2;
 
 		/* sleep_for_ms(j); */
 
 		/* sleep rest of total frame time */
 		t2 = get_clock_us();
 		tdiff = t2 - t1;
-		if (tdiff < (j*1000))
-			sleep_for_ms(j - tdiff/1000);
+		if (tdiff < (j * 1000))
+			sleep_for_ms(j - tdiff / 1000);
 
 		LOGD(TAG, "Time: %d", tdiff);
 
-		state = 0;
+		state = false;
 	}
 
 	/* DMA complete, end the thread */
-	state = 0;
+	state = false;
 	thread = 0;
 	pthread_exit(NULL);
 }
 
 void cromemco_88ccc_ctrl_a_out(BYTE data)
 {
-
 	flags = data & 0x7f;
 
 	if (data & 0x80) {
 		if (net_device_alive(DEV_88ACC)) {
-			state = 1;
+			state = true;
 
 			if (thread == 0) {
 				if (pthread_create(&thread, NULL, store_image, (void *) NULL)) {
@@ -137,11 +134,11 @@ void cromemco_88ccc_ctrl_a_out(BYTE data)
 		} else {
 			/* No 88ACC camera attached */
 			LOGW(TAG, "No Cromemeco Cyclops 88ACC attached.");
-			state = 0;
+			state = false;
 		}
 	} else {
-		if (state == 1) {
-			state = 0;
+		if (state) {
+			state = false;
 			sleep_for_ms(50); /* Arbitrary 50ms timeout to let
 					     thread exit after state change,
 					     TODO: maybe should end thread? */
@@ -157,13 +154,13 @@ void cromemco_88ccc_ctrl_b_out(BYTE data)
 void cromemco_88ccc_ctrl_c_out(BYTE data)
 {
 	/* get DMA address for storage memory */
-	dma_addr = (WORD)data << 7;
+	dma_addr = (WORD) data << 7;
 }
 
 BYTE cromemco_88ccc_ctrl_a_in(void)
 {
 	/* return flags along with state in the msb */
-	return flags | (state << 7);
+	return flags | (state ? 128 : 0);
 }
 
 #endif /* HAS_NETSERVER && HAS_CYCLOPS */

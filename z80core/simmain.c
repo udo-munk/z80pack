@@ -19,8 +19,6 @@
 
 #include <fcntl.h>
 #include <libgen.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,7 +38,7 @@
 #include "simint.h"
 
 static void save_core(void);
-static int load_core(void);
+static bool load_core(void);
 
 #ifdef WANT_SDL
 int sim_main(int argc, char *argv[])
@@ -63,7 +61,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
 #ifdef CPU_SPEED
-	f_flag = CPU_SPEED;
+	f_value = CPU_SPEED;
 	tmax = CPU_SPEED * 10000; /* theoretically */
 #endif
 
@@ -72,50 +70,50 @@ int main(int argc, char *argv[])
 
 			switch (*s) {
 			case 's':	/* save core and CPU on exit */
-				s_flag = 1;
+				s_flag = true;
 				break;
 
 			case 'l':	/* load core and CPU from file */
-				l_flag = 1;
+				l_flag = true;
 				break;
 
 			case 'u':	/* trap undocumented ops */
-				u_flag = 1;
+				u_flag = true;
 				break;
 
 			case 'i':	/* trap I/O on unused ports */
-				i_flag = 1;
+				i_flag = true;
 				break;
 
 			case 'm':	/* initialize memory */
 				if (*(s + 1) != '\0') {
-					m_flag = strtol(s + 1, NULL, 16);
+					m_value = strtol(s + 1, NULL, 16);
 					s += strlen(s + 1);
 				} else {
 					if (argc <= 1)
 						goto usage;
 					argc--;
 					argv++;
-					m_flag = strtol(argv[0], NULL, 16);
+					m_value = strtol(argv[0], NULL, 16);
 				}
 				break;
 
 			case 'f':	/* set emulation speed */
 				if (*(s + 1) != '\0') {
-					f_flag = atoi(s + 1);
+					f_value = atoi(s + 1);
 					s += strlen(s + 1);
 				} else {
 					if (argc <= 1)
 						goto usage;
 					argc--;
 					argv++;
-					f_flag = atoi(argv[0]);
+					f_value = atoi(argv[0]);
 				}
-				tmax = f_flag * 10000; /* theoretically */
+				tmax = f_value * 10000; /* theoretically */
 				break;
 
 			case 'x':	/* get filename with executable */
-				x_flag = 1;
+				x_flag = true;
 				s++;
 				if (*s == '\0') {
 					if (argc <= 1)
@@ -150,8 +148,8 @@ int main(int argc, char *argv[])
 #else /* !HAS_CONFIG */
 #ifdef BOOTROM
 			case 'r':	/* load default boot ROM */
-				r_flag = 1;
-				x_flag = 1;
+				r_flag = true;
+				x_flag = true;
 				strcpy(xfn, BOOTROM);
 				break;
 #endif
@@ -177,7 +175,7 @@ int main(int argc, char *argv[])
 
 #ifdef HAS_CONFIG
 			case 'c':	/* get config file */
-				c_flag = 1;
+				c_flag = true;
 				s++;
 				if (*s == '\0') {
 					if (argc <= 1)
@@ -196,16 +194,16 @@ int main(int argc, char *argv[])
 #if MAXMEMSECT > 0
 			case 'M': /* use memory map section nn */
 				if (*(s + 1) != '\0') {
-					M_flag = atoi(s + 1) - 1;
+					M_value = atoi(s + 1) - 1;
 					s += strlen(s + 1);
 				} else {
 					if (argc <= 1)
 						goto usage;
 					argc--;
 					argv++;
-					M_flag = atoi(argv[0]) - 1;
+					M_value = atoi(argv[0]) - 1;
 				}
-				if (M_flag < 0 || M_flag > (MAXMEMSECT - 1))
+				if (M_value < 0 || M_value > (MAXMEMSECT - 1))
 					goto usage;
 				break;
 #endif
@@ -215,7 +213,7 @@ int main(int argc, char *argv[])
 #ifdef HAS_BANKED_ROM
 			case 'R':	/* enable banked ROM for machines
 					   that implement it */
-				R_flag = 1;
+				R_flag = true;
 				break;
 #endif
 
@@ -232,12 +230,12 @@ int main(int argc, char *argv[])
 #endif
 #ifdef FRONTPANEL
 			case 'F':	/* disable front panel emulation */
-				F_flag = 0;
+				F_flag = false;
 				break;
 #endif
 #ifdef HAS_NETSERVER
 			case 'n':	/* enable web-based frontend */
-				n_flag = 1;
+				n_flag = true;
 				break;
 #endif
 
@@ -368,8 +366,8 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	putchar('\n');
 #endif
 
-	if (f_flag > 0)
-		printf("CPU speed is %d MHz", f_flag);
+	if (f_value > 0)
+		printf("CPU speed is %d MHz", f_value);
 	else
 		fputs("CPU speed is unlimited", stdout);
 
@@ -415,10 +413,10 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 	init_memory();		/* initialize memory configuration */
 
 	if (l_flag) {		/* load core */
-		if (load_core())
+		if (!load_core())
 			return EXIT_FAILURE;
 	} else if (x_flag) { 	/* OR load memory from file */
-		if (load_file(xfn, 0, 0)) /* don't care where it loads */
+		if (!load_file(xfn, 0, 0)) /* don't care where it loads */
 			return EXIT_FAILURE;
 	}
 
@@ -524,7 +522,7 @@ static void save_core(void)
  *	This function loads the CPU and memory from the
  *	file core.z80 or core.8080
  */
-static int load_core(void)
+static bool load_core(void)
 {
 	register FILE *fp;
 	register int i, c;
@@ -541,7 +539,7 @@ static int load_core(void)
 #endif
 	if ((fp = fopen(fname, "r")) == NULL) {
 		printf("can't open file %s\n", fname);
-		return 1;
+		return false;
 	}
 
 	err = false;
@@ -599,7 +597,7 @@ static int load_core(void)
 
 	if (err) {
 		printf("error reading %s\n", fname);
-		return 1;
+		return false;
 	} else
-		return 0;
+		return true;
 }

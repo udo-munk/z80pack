@@ -16,18 +16,17 @@
  *	running on an OS using the POSIX API. The implementations are
  *	included in simfun.c:
  *
- *	#include <stdint.h>
- *
  *	#include "sim.h"
+ *	#include "simdefs.h"
  *
- *	extern void sleep_for_us(long time);
- *	extern void sleep_for_ms(int time);
+ *	extern void sleep_for_us(unsigned long time);
+ *	extern void sleep_for_ms(unsigned time);
  *	extern uint64_t get_clock_us(void);
  *	#ifdef WANT_ICE
- *	extern int get_cmdline(char *buf, int len);
+ *	extern bool get_cmdline(char *buf, int len);
  *	#endif
  */
 
-extern int load_file(char *fn, WORD start, int size);
+extern bool load_file(char *fn, WORD start, int size);
 
 #endif /* !SIMFUN_INC */

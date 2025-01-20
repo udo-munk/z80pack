@@ -14,8 +14,6 @@
  * 09-JUN-2024 add hwctl and simbdos ports
  */
 
-#include <stdint.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -71,21 +69,21 @@ static BYTE int_in_service;		/* interrupts in service */
 static pthread_mutex_t int_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t rtc_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static int rtc_int_enabled;
-static int rtc_status1, rtc_status0;	/* RTC status flip-flops */
+static bool rtc_int_enabled;
+static bool rtc_status1, rtc_status0;	/* RTC status flip-flops */
 
-static int th_suspend;			/* RTC/interrupt thread suspend flag */
+static bool th_suspend;			/* RTC/interrupt thread suspend flag */
 
 int lpt_fd;				/* fd for file "printer.txt" */
-struct net_connectors ncons[NUMNSOC];	/* network connection for TTY */
-struct unix_connectors ucons[NUMUSOC];	/* socket connection for PTR/PTP */
+net_connector_t ncons[NUMNSOC];		/* network connection for TTY */
+unix_connector_t ucons[NUMUSOC];	/* socket connection for PTR/PTP */
 static BYTE hwctl_lock = 0xff;		/* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
+in_func_t *const port_in[256] = {
 #ifdef HAS_ISBC206
 	[104] = isbc206_status_in,	/* iSBC 206 subsystem status input */
 	[105] = isbc206_res_type_in,	/* iSBC 206 result type input */
@@ -120,7 +118,7 @@ BYTE (*const port_in[256])(void) = {
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
+out_func_t *const port_out[256] = {
 #ifdef HAS_ISBC206
 	[105] = isbc206_iopbl_out,	/* iSBC 206 IOPB address LSB output */
 	[106] = isbc206_iopbh_out,	/* iSBC 206 IOPB address MSB output */
@@ -172,9 +170,9 @@ void init_io(void)
 	int_requests = 0;
 	int_in_service = 0;
 
-	rtc_int_enabled = 0;	/* reset real time clock */
-	rtc_status0 = 0;
-	rtc_status1 = 0;
+	rtc_int_enabled = false; /* reset real time clock */
+	rtc_status0 = false;
+	rtc_status1 = false;
 
 	mon_reset();		/* reset monitor module */
 #ifdef HAS_ISBC201
@@ -255,13 +253,13 @@ void exit_io(void)
  */
 void reset_io(void)
 {
-	th_suspend = 1;		/* suspend timing thread */
+	th_suspend = true;	/* suspend timing thread */
 	sleep_for_ms(20);	/* give it enough time to suspend */
 
 	pthread_mutex_lock(&rtc_mutex);
-	rtc_int_enabled = 0;	/* reset real time clock */
-	rtc_status0 = 0;
-	rtc_status1 = 0;
+	rtc_int_enabled = false; /* reset real time clock */
+	rtc_status0 = false;
+	rtc_status1 = false;
 	pthread_mutex_unlock(&rtc_mutex);
 
 	pthread_mutex_lock(&int_mutex);
@@ -281,7 +279,7 @@ void reset_io(void)
 	isbc206_reset();	/* reset iSBC 206 disk controller */
 #endif
 
-	th_suspend = 0;		/* resume timing thread */
+	th_suspend = false;	/* resume timing thread */
 }
 
 /*
@@ -309,13 +307,13 @@ static void int_pending(void)
 {
 	int irq, mask;
 
-	if (int_int == 0 && (mask = (int_requests & ~int_mask)) != 0) {
+	if (!int_int && (mask = (int_requests & ~int_mask)) != 0) {
 		irq = int_highest(mask);
 		if (irq < int_highest(int_in_service)) {
 			pthread_mutex_lock(&int_mutex);
 			int_in_service |= 1 << irq;
 			int_requests &= ~(1 << irq);
-			int_int = 1;
+			int_int = true;
 			int_data = 0xc7 /* RST0 */ + (irq << 3);
 			pthread_mutex_unlock(&int_mutex);
 		}
@@ -400,7 +398,7 @@ static BYTE rtc_in(void)
 		data |= 0x01;
 	pthread_mutex_lock(&rtc_mutex);
 	rtc_status1 = rtc_status0;
-	rtc_status0 = 0;
+	rtc_status0 = false;
 	pthread_mutex_unlock(&rtc_mutex);
 	return data;
 }
@@ -466,7 +464,7 @@ static void *timing(void *arg)
 
 	tick = 0;
 
-	while (1) {	/* 260 usec per loop iteration */
+	while (true) {	/* 260 usec per loop iteration */
 
 		t = get_clock_us();
 
@@ -487,7 +485,7 @@ static void *timing(void *arg)
 		/* 0.9765ms RTC (here 1.04 ms) */
 		if (tick % 4 == 0) {
 			pthread_mutex_lock(&rtc_mutex);
-			rtc_status0 = 1;
+			rtc_status0 = true;
 			pthread_mutex_unlock(&rtc_mutex);
 			if (rtc_int_enabled)
 				int_request(RTC_IRQ);

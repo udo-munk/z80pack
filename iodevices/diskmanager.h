@@ -11,6 +11,7 @@
 #define DISKMANAGER_INC
 
 #include "sim.h"
+#include "simdefs.h"
 
 #ifdef HAS_NETSERVER
 #include "netsrv.h"

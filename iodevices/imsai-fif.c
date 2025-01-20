@@ -31,7 +31,6 @@
  * 15-MAY-2024 make disk manager standard
  */
 
-#include <stddef.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>

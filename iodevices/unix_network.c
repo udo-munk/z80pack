@@ -42,7 +42,7 @@ static const char *TAG = "net";
 /*
  * initialize a server UNIX domain socket
  */
-void init_unix_server_socket(struct unix_connectors *p, const char *fn)
+void init_unix_server_socket(unix_connector_t *p, const char *fn)
 {
 	struct sockaddr_un sun;
 	struct stat sbuf;
@@ -79,7 +79,7 @@ void init_unix_server_socket(struct unix_connectors *p, const char *fn)
 /*
  * initialize a server TCP/IP socket
  */
-void init_tcp_server_socket(struct net_connectors *p)
+void init_tcp_server_socket(net_connector_t *p)
 {
 	struct sockaddr_in sin;
 	int on = 1;
@@ -206,7 +206,7 @@ void telnet_negotiation(int fd)
 	/* and reject all others offered */
 	p[0].fd = fd;
 	p[0].events = POLLIN;
-	while (1) {
+	while (true) {
 		/* wait for input */
 		p[0].revents = 0;
 		poll(p, 1, TELNET_TIMEOUT);

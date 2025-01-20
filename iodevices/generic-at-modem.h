@@ -17,11 +17,11 @@
 #ifndef GENERIC_AT_MODEM_INC
 #define GENERIC_AT_MODEM_INC
 
-extern int modem_device_alive(int i);
+extern bool modem_device_alive(int i);
 extern int modem_device_poll(int i);
 extern int modem_device_get(int i);
 extern void modem_device_send(int i, char data);
-extern int modem_device_carrier(int i);
+extern bool modem_device_carrier(int i);
 extern void modem_device_init(void);
 
 #define DEV_SIO2B 0

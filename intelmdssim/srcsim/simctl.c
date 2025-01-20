@@ -48,7 +48,7 @@ static void reset_clicked(int state, int val);
 static void power_clicked(int state, int val);
 static void quit_callback(void);
 
-static int cpu_wait;	/* CPU wait flag */
+static bool cpu_wait;	/* CPU wait flag */
 
 #ifdef WANT_SDL
 static int fp_win_id;	/* frontpanel window id */
@@ -221,11 +221,11 @@ static void int_clicked(int state, int val)
 /*
  *	Single step through the machine cycles after M1
  */
-int wait_step(void)
+bool wait_step(void)
 {
 	cpu_bus &= ~CPU_M1;
-	m1_step = 0;
-	return 0;
+	m1_step = false;
+	return false;
 }
 
 /*
@@ -250,13 +250,13 @@ static void reset_clicked(int state, int val)
 		break;
 	case FP_SW_UP:
 		cpu_state |= ST_RESET;
-		m1_step = 0;
+		m1_step = false;
 		IFF = 0;
 		reset_io();
 		reset_cpu();
 		cpu_state &= ~ST_RESET;
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
-		cpu_wait = 0;
+		cpu_wait = false;
 		break;
 	default:
 		break;
@@ -282,7 +282,7 @@ static void power_clicked(int state, int val)
 		if (power)
 			break;
 		power = 1;
-		cpu_wait = 1;
+		cpu_wait = true;
 		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))
 			puts("\r\n\r\n\r\n");
 		break;

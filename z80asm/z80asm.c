@@ -451,7 +451,7 @@ static void process_file(char *fn)
  */
 static int process_line(char *line)
 {
-	register struct opc *op;
+	register opc_t *op;
 	register WORD op_count;
 	char *p;
 	int gencode;		/* we are not in a false conditional section */

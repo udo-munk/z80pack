@@ -26,5 +26,5 @@ void mon(void)
 	ice_before_go = set_unix_terminal;
 	ice_after_go = reset_unix_terminal;
 	atexit(reset_unix_terminal);
-	ice_cmd_loop(x_flag);
+	ice_cmd_loop(x_flag ? 1 : 0);
 }

@@ -9,8 +9,6 @@
  *	This module contains functions for CPU/Bus-handling
  */
 
-#include <inttypes.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -81,7 +79,8 @@ void init_cpu(void)
  */
 void reset_cpu(void)
 {
-	IFF = int_int = int_protection = 0;
+	IFF = 0;
+	int_int = int_protection = false;
 	int_data = -1;
 
 	PC = 0;
@@ -89,7 +88,8 @@ void reset_cpu(void)
 #ifndef EXCLUDE_Z80
 	I = 0;
 	R_ = R = 0;
-	int_nmi = int_mode = 0;
+	int_mode = 0;
+	int_nmi = false;
 #endif
 }
 
@@ -255,7 +255,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 {
 	uint64_t clk;
 #ifdef FRONTPANEL
-	int val;
+	bool val;
 #else
 #ifndef SIMPLEPANEL
 	UNUSED(addrh);
@@ -366,7 +366,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 /*
  *	Start a bus request cycle
  */
-void start_bus_request(BusDMA_t mode, Tstates_t (*bus_master)(BYTE bus_ack))
+void start_bus_request(BusDMA_t mode, BusDMAFunc_t *bus_master)
 {
 	bus_mode = mode;
 	dma_bus_master = bus_master;

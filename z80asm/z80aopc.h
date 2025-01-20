@@ -88,9 +88,9 @@
 #define OPE_UNDOC	0x01	/* undocumented operand */
 
 /*
- *	structure opcode table
+ *	structure type opcode table
  */
-struct opc {
+typedef struct opc {
 	const char *op_name;	/* opcode name */
 	WORD (*op_func)(int pass, BYTE b1, BYTE b2,
 			char *operand, BYTE *ops); /* opcode function */
@@ -98,10 +98,10 @@ struct opc {
 	BYTE op_c2;		/* second base opcode */
 	BYTE op_a_mode;		/* listing address mode */
 	WORD op_flags;		/* opcode flags */
-};
+} opc_t;
 
 extern void instrset(int is);
-extern struct opc *search_op(char *op_name);
+extern opc_t *search_op(char *op_name);
 extern BYTE get_reg(char *s);
 
 #endif /* !Z80AOPC_INC */

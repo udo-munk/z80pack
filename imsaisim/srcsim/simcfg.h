@@ -38,6 +38,9 @@
 #ifndef SIMCFG_INC
 #define SIMCFG_INC
 
+#include "sim.h"
+#include "simdefs.h"
+
 extern int  fp_size;
 extern BYTE fp_port;
 extern int  ns_port;

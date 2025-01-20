@@ -323,13 +323,13 @@ static void step_clicked(int state, int val)
 /*
  * Single step through the machine cycles after M1
  */
-int wait_step(void)
+bool wait_step(void)
 {
-	int ret = 0;
+	bool ret = false;
 
 	if (cpu_state != ST_SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
-		m1_step = 0;
+		m1_step = false;
 		return ret;
 	}
 
@@ -350,11 +350,11 @@ int wait_step(void)
 		fp_clock++;
 		fp_sampleData();
 		sleep_for_ms(10);
-		ret = 1;
+		ret = true;
 	}
 
 	cpu_bus &= ~CPU_M1;
-	m1_step = 0;
+	m1_step = false;
 	return ret;
 }
 
@@ -390,7 +390,7 @@ static void reset_clicked(int state, int val)
 		/* reset CPU only */
 		reset = 1;
 		cpu_state |= ST_RESET;
-		m1_step = 0;
+		m1_step = false;
 		IFF = 0;
 		fp_led_output = 0;
 		break;
@@ -399,7 +399,7 @@ static void reset_clicked(int state, int val)
 			/* reset CPU */
 			reset_cpu();
 #ifdef HAS_BANKED_ROM
-			PC = boot_switch[M_flag];
+			PC = boot_switch[M_value];
 #endif
 			reset = 0;
 			cpu_state &= ~ST_RESET;
@@ -414,7 +414,7 @@ static void reset_clicked(int state, int val)
 		/* reset CPU and I/O devices */
 		reset = 2;
 		cpu_state |= ST_RESET;
-		m1_step = 0;
+		m1_step = false;
 		IFF = 0;
 		fp_led_output = 0;
 		reset_io();
@@ -497,7 +497,7 @@ static void power_clicked(int state, int val)
 		cpu_bus = CPU_WO | CPU_M1 | CPU_MEMR;
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
-		fp_led_speed = (f_flag == 0 || f_flag >= 4) ? 1 : 0;
+		fp_led_speed = (f_value == 0 || f_value >= 4) ? 1 : 0;
 		fp_led_wait = 1;
 		fp_led_output = 0;
 		if (!isatty(fileno(stdout)) || (system("tput clear") == -1))

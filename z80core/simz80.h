@@ -9,6 +9,7 @@
 #define SIMZ80_INC
 
 #include "sim.h"
+#include "simdefs.h"
 
 #ifndef EXCLUDE_Z80
 extern void cpu_z80(void);

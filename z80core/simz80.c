@@ -5,8 +5,6 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
-#include <stdint.h>
-
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
@@ -415,7 +413,7 @@ void cpu_z80(void)
 		his[h_next].h_sp = SP;
 		h_next++;
 		if (h_next == HISIZE) {
-			h_flag = 1;
+			h_flag = true;
 			h_next = 0;
 		}
 #endif
@@ -423,7 +421,7 @@ void cpu_z80(void)
 #ifdef WANT_TIM
 		/* check for start address of runtime measurement */
 		if (PC == t_start && !t_flag) {
-			t_flag = 1;		     /* turn measurement on */
+			t_flag = true;		     /* turn measurement on */
 			t_states_s = t_states_e = T; /* initialize markers */
 		}
 #endif
@@ -438,8 +436,8 @@ void cpu_z80(void)
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(0));
-					if (f_flag)
-						cpu_time += T_dma / f_flag;
+					if (f_value)
+						cpu_time += T_dma / f_value;
 				}
 			}
 
@@ -456,8 +454,8 @@ void cpu_z80(void)
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(1));
-					if (f_flag)
-						cpu_time += T_dma / f_flag;
+					if (f_value)
+						cpu_time += T_dma / f_value;
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -482,7 +480,7 @@ void cpu_z80(void)
 			memwrt(--SP, PC >> 8);
 			memwrt(--SP, PC);
 			PC = 0x66;
-			int_nmi = 0;
+			int_nmi = false;
 			T += 11;
 			R++;		/* increment refresh register */
 		}
@@ -587,11 +585,11 @@ void cpu_z80(void)
 				T += 19;
 				break;
 			}
-			int_int = 0;
+			int_int = false;
 			int_data = -1;
 #ifdef FRONTPANEL
 			if (F_flag)
-				m1_step = 1;
+				m1_step = true;
 #endif
 			R++;		/* increment refresh register */
 		}
@@ -604,14 +602,14 @@ leave:
 
 		R++;			/* increment refresh register */
 
-		int_protection = 0;
+		int_protection = false;
 #ifndef ALT_Z80
 		T += (*op_sim[memrdr(PC++)])();	/* execute next opcode */
 #else
 #include "altz80.h"
 #endif
 
-		if (f_flag) {		/* adjust CPU speed */
+		if (f_value) {		/* adjust CPU speed */
 			if (T >= T_max && !cpu_needed) {
 				t2 = get_clock_us();
 				tdiff = t2 - t1;
@@ -629,7 +627,7 @@ leave:
 		if (t_flag) {
 			t_states_e = T; /* set end marker for this opcode */
 			if (PC == t_end)	/* check for end address */
-				t_flag = 0;	/* if reached, switch off */
+				t_flag = false;	/* if reached, switch off */
 		}
 #endif
 
@@ -693,7 +691,7 @@ static int op_halt(void)		/* HALT */
 			cpu_state = ST_STOPPED;
 		} else {
 			/* else wait for INT, NMI or user interrupt */
-			while ((int_int == 0) && (int_nmi == 0) &&
+			while (!int_int && !int_nmi &&
 			       (cpu_state == ST_CONTIN_RUN)) {
 				sleep_for_ms(1);
 				R += 99;
@@ -714,7 +712,7 @@ static int op_halt(void)		/* HALT */
 		if (IFF == 0) {
 			/* INT disabled, wait for NMI,
 			   frontpanel reset or user interrupt */
-			while ((int_nmi == 0) && !(cpu_state & ST_RESET)) {
+			while (!int_nmi && !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
 				sleep_for_ms(1);
@@ -725,7 +723,7 @@ static int op_halt(void)		/* HALT */
 		} else {
 			/* else wait for INT, NMI,
 			   frontpanel reset or user interrupt */
-			while ((int_int == 0) && (int_nmi == 0) &&
+			while (!int_int && !int_nmi &&
 			       !(cpu_state & ST_RESET)) {
 				fp_clock++;
 				fp_sampleData();
@@ -854,7 +852,7 @@ static int op_daa(void)			/* DAA */
 static int op_ei(void)			/* EI */
 {
 	IFF = 3;
-	int_protection = 1;		/* protect next instruction */
+	int_protection = true;		/* protect next instruction */
 	return 4;
 }
 

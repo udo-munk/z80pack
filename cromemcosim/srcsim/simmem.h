@@ -56,18 +56,19 @@
 
 #define BANKED_ROM_MSG "FDC Banked ROM enabled"
 
-struct memmap {
+typedef struct memmap {
 	int type;	/* type of memory pages */
 	BYTE spage;	/* start page of segment */
 	WORD size;	/* size of segment in pages */
 	char *rom_file;
-};
+} memmap_t;
 
-extern struct memmap memconf[MAXMEMSECT][MAXMEMMAP];
+extern memmap_t memconf[MAXMEMSECT][MAXMEMMAP];
 extern WORD boot_switch[MAXMEMSECT];	/* boot address */
 
 extern BYTE *memory[MAXSEG];
-extern int selbnk, common, bankio, num_banks;
+extern int selbnk, bankio, num_banks;
+extern bool common;
 
 extern int p_tab[MAXPAGES];		/* 256 pages of 256 bytes */
 

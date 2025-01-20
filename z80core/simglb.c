@@ -10,9 +10,6 @@
  *	This module contains the global variables other than memory management
  */
 
-#include <stdint.h>
-#include <stddef.h>
-
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
@@ -40,14 +37,14 @@ WORD PC;			/* program counter */
 WORD SP;			/* stack pointer */
 BYTE IFF;			/* interrupt flags */
 #else
-struct cpu_regs cpu_regs;	/* CPU registers */
+cpu_regs_t cpu_regs;		/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
 uint64_t cpu_time;		/* time spent running CPU in us */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
-int m1_step;			/* flag for waiting at M1 in single step */
+bool m1_step;			/* flag for waiting at M1 in single step */
 #endif
 
 BYTE io_port;			/* I/O port used */
@@ -58,16 +55,16 @@ BYTE cpu_state;			/* state of CPU emulation */
 int cpu_error;			/* error status of CPU emulation */
 #ifndef EXCLUDE_Z80
 int int_mode;			/* CPU interrupt mode (IM 0, IM 1, IM 2) */
-int int_nmi;			/* non-maskable interrupt request */
+bool int_nmi;			/* non-maskable interrupt request */
 #endif
-int int_int;			/* interrupt request */
+bool int_int;			/* interrupt request */
 int int_data = -1;		/* data from interrupting device on data bus */
-int int_protection;		/* to delay interrupts after EI */
+bool int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
 BusDMA_t bus_mode;		/* current bus mode for DMA */
-Tstates_t (*dma_bus_master)(BYTE bus_ack); /* DMA bus master call back func */
+BusDMAFunc_t *dma_bus_master;	/* DMA bus master call back func */
 int tmax;			/* max t-states to execute in 10ms */
-int cpu_needed;			/* don't adjust CPU freq if needed */
+bool cpu_needed;		/* don't adjust CPU freq if needed */
 
 /*
  *	Variables for frontpanel emulation
@@ -93,26 +90,26 @@ port_flags_t port_flags[256];	/* port access flags */
 /*
  *	Flags to control operation of simulation
  */
-int s_flag;			/* flag for -s option */
-int l_flag;			/* flag for -l option */
-int m_flag = -1;		/* flag for -m option */
-int x_flag;			/* flag for -x option */
-int i_flag;			/* flag for -i option */
-int f_flag;			/* flag for -f option */
-int u_flag;			/* flag for -u option */
-int r_flag;			/* flag for -r option */
-int c_flag;			/* flag for -c option */
+bool s_flag;			/* flag for -s option */
+bool l_flag;			/* flag for -l option */
+int m_value = -1;		/* value of -m option */
+bool x_flag;			/* flag for -x option */
+bool i_flag;			/* flag for -i option */
+int f_value;			/* value of -f option */
+bool u_flag;			/* flag for -u option */
+bool r_flag;			/* flag for -r option */
+bool c_flag;			/* flag for -c option */
 #ifdef HAS_CONFIG
-int M_flag = 0;			/* flag for -M option */
+int M_value = 0;		/* value of -M option */
 #endif
 #ifdef HAS_BANKED_ROM
-int R_flag = 0;			/* flag for -R option */
+bool R_flag = false;		/* flag for -R option */
 #endif
 #ifdef FRONTPANEL
-int F_flag = 1;			/* flag for -F option */
+bool F_flag = true;		/* flag for -F option */
 #endif
 #ifdef HAS_NETSERVER
-int n_flag;			/* flag for -n option */
+bool n_flag;			/* flag for -n option */
 #endif
 
 /*

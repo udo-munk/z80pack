@@ -15,7 +15,6 @@
  * 02-SEP-2024 read date/time from an optional I2C battery backed RTC
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
