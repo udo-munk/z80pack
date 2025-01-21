@@ -32,7 +32,7 @@ extern BYTE	IFF;
 #include "altregs.h"
 #endif
 extern Tstates_t T;
-extern uint64_t cpu_start;
+extern int64_t	cpu_start;
 extern int64_t	cpu_time;
 
 #ifdef BUS_8080

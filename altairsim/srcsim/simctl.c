@@ -355,7 +355,7 @@ bool wait_step(void)
 		sleep_for_ms(10);
 		ret = true;
 		t2 = get_clock_us();
-		cpu_time -= t2 - t1;
+		cpu_start += t2 - t1;
 		t1 = t2;
 	}
 
@@ -382,7 +382,7 @@ void wait_int_step(void)
 		fp_sampleData();
 		sleep_for_ms(10);
 		t2 = get_clock_us();
-		cpu_time -= t2 - t1;
+		cpu_start += t2 - t1;
 		t1 = t2;
 	}
 }
