@@ -64,6 +64,12 @@
 #include "log.h"
 static const char *TAG = "system";
 
+				/* cpu_switch states */
+#define CPUSW_STOP	0	/* stopped */
+#define CPUSW_RUN	1	/* running */
+#define CPUSW_STEP	2	/* single step */
+#define CPUSW_STEPCYCLE	3	/* machine cycle step */
+
 static BYTE fp_led_wait;
 static int cpu_switch;
 static int reset;
@@ -190,14 +196,14 @@ void mon(void)
 
 			/* run CPU if not idling */
 			switch (cpu_switch) {
-			case 1:
+			case CPUSW_RUN:
 				if (!reset)
 					run_cpu();
 				break;
-			case 2:
+			case CPUSW_STEP:
 				step_cpu();
-				if (cpu_switch == 2)
-				  cpu_switch = 0;
+				if (cpu_switch == CPUSW_STEP)
+				  cpu_switch = CPUSW_STOP;
 				break;
 			default:
 				break;
@@ -274,16 +280,16 @@ static void run_clicked(int state, int val)
 	switch (state) {
 	case FP_SW_DOWN:
 		if (cpu_state != ST_CONTIN_RUN) {
-			cpu_state = ST_CONTIN_RUN;
+			cpu_state = ST_STOPPED;
 			fp_led_wait = 0;
-			cpu_switch = 1;
+			cpu_switch = CPUSW_RUN;
 		}
 		break;
 	case FP_SW_UP:
 		if (cpu_state == ST_CONTIN_RUN) {
 			cpu_state = ST_STOPPED;
 			fp_led_wait = 1;
-			cpu_switch = 0;
+			cpu_switch = CPUSW_STOP;
 		}
 		break;
 	default:
@@ -306,7 +312,7 @@ static void step_clicked(int state, int val)
 
 	switch (state) {
 	case FP_SW_UP:
-		cpu_switch = 2;
+		cpu_switch = CPUSW_STEP;
 		break;
 	case FP_SW_DOWN:
 		break;
@@ -321,6 +327,7 @@ static void step_clicked(int state, int val)
 bool wait_step(void)
 {
 	bool ret = false;
+	uint64_t t1, t2;
 
 	if (cpu_state != ST_SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
@@ -333,9 +340,10 @@ bool wait_step(void)
 		return ret;
 	}
 
-	cpu_switch = 3;
+	cpu_switch = CPUSW_STEPCYCLE;
 
-	while ((cpu_switch == 3) && !reset) {
+	t1 = get_clock_us();
+	while ((cpu_switch == CPUSW_STEPCYCLE) && !reset) {
 		/* when INP update data bus LEDs */
 		if (cpu_bus == (CPU_WO | CPU_INP)) {
 			if (port_in[fp_led_address & 0xff])
@@ -344,8 +352,11 @@ bool wait_step(void)
 		}
 		fp_clock++;
 		fp_sampleData();
-		sleep_for_ms(1);
+		sleep_for_ms(10);
 		ret = true;
+		t2 = get_clock_us();
+		cpu_time -= t2 - t1;
+		t1 = t2;
 	}
 
 	cpu_bus &= ~CPU_M1;
@@ -358,15 +369,21 @@ bool wait_step(void)
  */
 void wait_int_step(void)
 {
+	uint64_t t1, t2;
+
 	if (cpu_state != ST_SINGLE_STEP)
 		return;
 
-	cpu_switch = 3;
+	cpu_switch = CPUSW_STEPCYCLE;
 
-	while ((cpu_switch == 3) && !reset) {
+	t1 = get_clock_us();
+	while ((cpu_switch == CPUSW_STEPCYCLE) && !reset) {
 		fp_clock++;
 		fp_sampleData();
 		sleep_for_ms(10);
+		t2 = get_clock_us();
+		cpu_time -= t2 - t1;
+		t1 = t2;
 	}
 }
 
@@ -572,7 +589,7 @@ static void power_clicked(int state, int val)
 		if (!power)
 			break;
 		power = 0;
-		cpu_switch = 0;
+		cpu_switch = CPUSW_STOP;
 		cpu_state = ST_STOPPED;
 		cpu_error = POWEROFF;
 		break;
@@ -587,7 +604,7 @@ static void power_clicked(int state, int val)
 static void quit_callback(void)
 {
 	power = 0;
-	cpu_switch = 0;
+	cpu_switch = CPUSW_STOP;
 	cpu_state = ST_STOPPED;
 	cpu_error = POWEROFF;
 }

@@ -74,7 +74,7 @@ static int vio_win_id = -1;
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
-static void *pixels;
+static uint8_t *pixels;
 static int pitch;
 static uint8_t color[3];
 static char keybuf[KEYBUF_LEN];		/* typeahead buffer */
@@ -245,7 +245,7 @@ static inline void set_bg_color(void)
 
 static inline void draw_point(int x, int y)
 {
-	uint8_t *p = (uint8_t *) pixels + y * pitch + x * 4;
+	uint8_t *p = pixels + y * pitch + x * 4;
 
 	p[3] = color[0];
 	p[2] = color[1];
@@ -671,7 +671,7 @@ static void update_display(bool tick)
 	UNUSED(tick);
 
 	/* update display window */
-	SDL_LockTexture(texture, NULL, &pixels, &pitch);
+	SDL_LockTexture(texture, NULL, (void **) &pixels, &pitch);
 	refresh();
 	SDL_UnlockTexture(texture);
 	SDL_RenderCopy(renderer, texture, NULL, NULL);

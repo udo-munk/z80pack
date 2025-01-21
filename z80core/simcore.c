@@ -115,12 +115,10 @@ void switch_cpu(int new_cpu)
  */
 void run_cpu(void)
 {
-	uint64_t t;
-
+	cpu_start = get_clock_us();
 	cpu_state = ST_CONTIN_RUN;
 	cpu_error = NONE;
-	t = get_clock_us();
-	for (;;) {
+	while (true) {
 		switch (cpu) {
 #ifndef EXCLUDE_Z80
 		case Z80:
@@ -141,7 +139,7 @@ void run_cpu(void)
 		} else
 			break;
 	}
-	cpu_time += get_clock_us() - t;
+	cpu_time += get_clock_us() - cpu_start;
 }
 
 /*
@@ -149,11 +147,9 @@ void run_cpu(void)
  */
 void step_cpu(void)
 {
-	uint64_t t;
-
+	cpu_start = get_clock_us();
 	cpu_state = ST_SINGLE_STEP;
 	cpu_error = NONE;
-	t = get_clock_us();
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
@@ -168,8 +164,8 @@ void step_cpu(void)
 	default:
 		break;
 	}
-	cpu_time += get_clock_us() - t;
 	cpu_state = ST_STOPPED;
+	cpu_time += get_clock_us() - cpu_start;
 }
 
 /*
@@ -253,7 +249,6 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	uint64_t clk;
 #ifdef FRONTPANEL
 	bool val;
 #else
@@ -261,8 +256,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	UNUSED(addrh);
 #endif
 #endif
-
-	clk = get_clock_us();
 
 	io_port = addrl;
 	if (port_in[addrl])
@@ -303,8 +296,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
 
-	cpu_time -= get_clock_us() - clk;
-
 	return io_data;
 }
 
@@ -315,12 +306,9 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	uint64_t clk;
 #if !defined(FRONTPANEL) && !defined(SIMPLEPANEL)
 	UNUSED(addrh);
 #endif
-
-	clk = get_clock_us();
 
 	io_port = addrl;
 	io_data = data;
@@ -359,8 +347,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #ifdef IOPANEL
 	port_flags[addrl].out = true;
 #endif
-
-	cpu_time -= get_clock_us() - clk;
 }
 
 /*

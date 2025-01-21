@@ -11,14 +11,15 @@
 #include "simmem.h"
 #include "simcore.h"
 #include "simport.h"
-#ifdef WANT_ICE
-#include "simice.h"
-#endif
 #include "simz80.h"
 #include "simz80-cb.h"
 #include "simz80-dd.h"
 #include "simz80-ed.h"
 #include "simz80-fd.h"
+
+#ifdef WANT_ICE
+#include "simice.h"
+#endif
 
 #ifdef FRONTPANEL
 #include "frontpanel.h"
@@ -389,12 +390,15 @@ void cpu_z80(void)
 	uint64_t t1, t2;
 	int tdiff;
 	WORD p;
-#ifdef FRONTPANEL
-	uint64_t clk;
-#endif
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
+#ifdef FRONTPANEL
+	if (F_flag) {
+		fp_clock++;
+		fp_sampleData();
+	}
+#endif
 
 	do {
 
@@ -444,10 +448,8 @@ void cpu_z80(void)
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_time -= get_clock_us() - clk;
 				}
 #endif
 				if (dma_bus_master) {
@@ -465,10 +467,8 @@ void cpu_z80(void)
 				}
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_time -= get_clock_us() - clk;
 				}
 #endif
 			}
@@ -499,13 +499,11 @@ void cpu_z80(void)
 #endif
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
 					fp_sampleData();
 					wait_int_step();
-					cpu_time -= get_clock_us() - clk;
 					if (cpu_state & ST_RESET)
 						goto leave;
 				}
@@ -652,12 +650,10 @@ leave:
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		clk = get_clock_us();
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
 		fp_sampleData();
-		cpu_time -= get_clock_us() - clk;
 	}
 #endif
 #ifdef SIMPLEPANEL
@@ -675,13 +671,9 @@ static int op_nop(void)			/* NOP */
 
 static int op_halt(void)		/* HALT */
 {
-	uint64_t clk;
-
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
-
-	clk = get_clock_us();
 #ifdef FRONTPANEL
 	if (!F_flag) {
 #endif
@@ -701,9 +693,7 @@ static int op_halt(void)		/* HALT */
 		if (int_int)
 			cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
 #endif
-
 		busy_loop_cnt = 0;
-
 #ifdef FRONTPANEL
 	} else {
 		fp_led_address = 0xffff;
@@ -740,9 +730,7 @@ static int op_halt(void)		/* HALT */
 			}
 		}
 	}
-#endif
-	cpu_time -= get_clock_us() - clk;
-
+#endif /* FRONTPANEL */
 	return 4;
 }
 

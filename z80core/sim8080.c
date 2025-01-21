@@ -11,10 +11,11 @@
 #include "simmem.h"
 #include "simcore.h"
 #include "simport.h"
+#include "sim8080.h"
+
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
-#include "sim8080.h"
 
 #ifdef FRONTPANEL
 #include "frontpanel.h"
@@ -114,13 +115,9 @@ static int op_undoc_call(void);
 #ifdef FRONTPANEL
 static inline void addr_leds(WORD data)
 {
-	uint64_t clk;
-
-	clk = get_clock_us();
 	fp_led_address = data;
 	fp_clock++;
 	fp_sampleData();
-	cpu_time -= get_clock_us() - clk;
 }
 #endif
 
@@ -408,12 +405,15 @@ void cpu_8080(void)
 	Tstates_t T_max, T_dma;
 	uint64_t t1, t2;
 	int tdiff;
-#ifdef FRONTPANEL
-	uint64_t clk;
-#endif
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
+#ifdef FRONTPANEL
+	if (F_flag) {
+		fp_clock++;
+		fp_sampleData();
+	}
+#endif
 
 	do {
 
@@ -461,10 +461,8 @@ void cpu_8080(void)
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_time -= get_clock_us() - clk;
 				}
 #endif
 				if (dma_bus_master) {
@@ -482,10 +480,8 @@ void cpu_8080(void)
 				}
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_time -= get_clock_us() - clk;
 				}
 #endif
 			}
@@ -506,13 +502,11 @@ void cpu_8080(void)
 #endif
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
 					fp_sampleData();
 					wait_int_step();
-					cpu_time -= get_clock_us() - clk;
 					if (cpu_state & ST_RESET)
 						goto leave;
 				}
@@ -527,10 +521,8 @@ void cpu_8080(void)
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
-				clk = get_clock_us();
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
-				cpu_time -= get_clock_us() - clk;
 			}
 #endif
 
@@ -640,12 +632,10 @@ leave:
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		clk = get_clock_us();
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
 		fp_sampleData();
-		cpu_time -= get_clock_us() - clk;
 	}
 #endif
 #ifdef SIMPLEPANEL
@@ -673,13 +663,9 @@ static int op_nop(void)			/* NOP */
 
 static int op_hlt(void)			/* HLT */
 {
-	uint64_t clk;
-
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
-
-	clk = get_clock_us();
 #ifdef FRONTPANEL
 	if (!F_flag) {
 #endif
@@ -697,9 +683,7 @@ static int op_hlt(void)			/* HLT */
 		if (int_int)
 			cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
 #endif
-
 		busy_loop_cnt = 0;
-
 #ifdef FRONTPANEL
 	} else {
 		fp_led_address = 0xffff;
@@ -733,9 +717,7 @@ static int op_hlt(void)			/* HLT */
 			}
 		}
 	}
-#endif
-	cpu_time -= get_clock_us() - clk;
-
+#endif /* FRONTPANEL */
 	return 7;
 }
 

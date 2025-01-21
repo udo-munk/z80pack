@@ -32,7 +32,8 @@ extern BYTE	IFF;
 #include "altregs.h"
 #endif
 extern Tstates_t T;
-extern uint64_t cpu_time;
+extern uint64_t cpu_start;
+extern int64_t	cpu_time;
 
 #ifdef BUS_8080
 extern BYTE	cpu_bus;
@@ -85,6 +86,9 @@ extern bool	F_flag;
 #endif
 #ifdef HAS_NETSERVER
 extern bool	n_flag;
+#endif
+#ifdef INFOPANEL
+extern bool	p_flag;
 #endif
 
 extern char	xfn[MAX_LFN];

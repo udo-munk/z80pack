@@ -37,6 +37,10 @@
 #include "simfun.h"
 #include "simint.h"
 
+#ifdef INFOPANEL
+#include "simpanel.h"
+#endif
+
 static void save_core(void);
 static bool load_core(void);
 
@@ -238,6 +242,11 @@ int main(int argc, char *argv[])
 				n_flag = true;
 				break;
 #endif
+#ifdef INFOPANEL
+			case 'p':	/* toggle introspection panel */
+				p_flag = !p_flag;
+				break;
+#endif
 
 			case '?':
 			case 'h':
@@ -329,6 +338,9 @@ usage:
 #endif
 #ifdef HAS_NETSERVER
 				puts("\t-n = enable web-based frontend");
+#endif
+#ifdef INFOPANEL
+				puts("\t-p = toggle introspection panel");
 #endif
 				return EXIT_FAILURE;
 			}
@@ -422,12 +434,20 @@ puts(" #####    ###     #####    ###            #####    ###   #     #");
 
 	int_on();		/* initialize UNIX interrupts */
 	init_io();		/* initialize I/O devices */
+#ifdef INFOPANEL
+	if (p_flag)
+		init_panel();	/* initialize introspection panel */
+#endif
 
 	mon();			/* run system */
 
 	if (s_flag)		/* save core */
 		save_core();
 
+#ifdef INFOPANEL
+	if (p_flag)
+		exit_panel();	/* stop introspection panel */
+#endif
 	exit_io();		/* stop I/O devices */
 	int_off();		/* stop UNIX interrupts */
 

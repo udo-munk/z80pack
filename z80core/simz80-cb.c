@@ -18,7 +18,6 @@
 
 #ifdef FRONTPANEL
 #include "frontpanel.h"
-#include "simport.h"
 #endif
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
@@ -372,9 +371,6 @@ int op_cb_handle(void)
 #undef UNDOC
 
 	register int t;
-#ifdef FRONTPANEL
-	uint64_t clk;
-#endif
 
 #ifdef BUS_8080
 	/* M1 opcode fetch */
@@ -383,11 +379,9 @@ int op_cb_handle(void)
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		clk = get_clock_us();
 		/* update frontpanel */
 		fp_clock++;
 		fp_sampleLightGroup(0, 0);
-		cpu_time -= get_clock_us() - clk;
 	}
 #endif
 

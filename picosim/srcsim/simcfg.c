@@ -65,7 +65,7 @@ static int get_int(const char *prompt, const char *hint,
 	int i;
 	char s[6];
 
-	for (;;) {
+	while (true) {
 		printf("Enter %s%s: ", prompt, hint);
 		get_cmdline(s, 5);
 		if (s[0] == '\0')
