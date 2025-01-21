@@ -302,7 +302,7 @@ static void do_go(char *s)
 		(*ice_before_go)();
 	install_softbp();
 	start_time = cpu_time;
-	for (;;) {
+	while (true) {
 		run_cpu();
 		if (cpu_error && (cpu_error != OPHALT || handle_break()))
 			break;
@@ -493,7 +493,7 @@ static void do_modify(char *s)
 		s++;
 	if (isxdigit((unsigned char) *s))
 		wrk_addr = strtol(s, NULL, 16);
-	for (;;) {
+	while (true) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
 		if (!get_cmdline(arg, LENCMD) || arg[0] == '\0')

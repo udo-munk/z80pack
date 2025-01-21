@@ -231,7 +231,7 @@ int main(void)
 
 	/* reset machine */
 	watchdog_reboot(0, 0, 0);
-	for (;;) {
+	while (true) {
 		__nop();
 	}
 }
@@ -246,7 +246,7 @@ bool get_cmdline(char *buf, int len)
 	int i = 0;
 	char c;
 
-	for (;;) {
+	while (true) {
 		c = getchar();
 		if ((c == BS) || (c == DEL)) {
 			if (i >= 1) {

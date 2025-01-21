@@ -64,6 +64,9 @@ int main(int argc, char *argv[])
 	}
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
 		fprintf(stderr, "Can't initialize SDL_mixer: %s\n", Mix_GetError());
+		IMG_Quit();
+		SDL_Quit();
+		return EXIT_FAILURE;
 	}
 #endif
 
@@ -80,7 +83,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	tick = false;
+	tick = true;
 	t1 = SDL_GetTicks64() + 1000;
 	while (!quit) {
 		/* process event queue */
@@ -109,12 +112,9 @@ int main(int argc, char *argv[])
 			}
 
 		/* update seconds tick */
-		tick = false;
 		t2 = SDL_GetTicks64();
-		if (t2 >= t1) {
-			tick = true;
+		if ((tick = (t2 >= t1)))
 			t1 = t2 + 1000;
-		}
 
 		if (sim_finished)
 			quit = true;

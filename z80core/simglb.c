@@ -40,7 +40,8 @@ BYTE IFF;			/* interrupt flags */
 cpu_regs_t cpu_regs;		/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
-uint64_t cpu_time;		/* time spent running CPU in us */
+uint64_t cpu_start;		/* timestamp at start of CPU run/step */
+int64_t cpu_time;		/* time spent running CPU in us */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
@@ -110,6 +111,13 @@ bool F_flag = true;		/* flag for -F option */
 #endif
 #ifdef HAS_NETSERVER
 bool n_flag;			/* flag for -n option */
+#endif
+#ifdef INFOPANEL
+#ifdef FRONTPANEL
+bool p_flag = true;		/* flag for -p option */
+#else
+bool p_flag = false;		/* flag for -p option */
+#endif
 #endif
 
 /*
