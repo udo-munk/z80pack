@@ -286,7 +286,7 @@ static void run_clicked(int state, int val)
 	switch (state) {
 	case FP_SW_UP:
 		if (cpu_state != ST_CONTIN_RUN) {
-			cpu_state = ST_STOPPED;
+			cpu_state = ST_STOPPED; /* get out of ST_SINGLE_STEP */
 			fp_led_wait = 0;
 			cpu_switch = CPUSW_RUN;
 		}
