@@ -40,7 +40,7 @@ BYTE IFF;			/* interrupt flags */
 cpu_regs_t cpu_regs;		/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
-uint64_t cpu_start;		/* timestamp at start of CPU run/step */
+int64_t cpu_start;		/* timestamp at start of CPU run/step */
 int64_t cpu_time;		/* time spent running CPU in us */
 
 #ifdef BUS_8080

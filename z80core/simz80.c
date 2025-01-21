@@ -441,7 +441,7 @@ void cpu_z80(void)
 					   without BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(0));
 					if (f_value)
-						cpu_time += T_dma / f_value;
+						cpu_start -= T_dma / f_value;
 				}
 			}
 
@@ -457,7 +457,7 @@ void cpu_z80(void)
 					   with BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(1));
 					if (f_value)
-						cpu_time += T_dma / f_value;
+						cpu_start -= T_dma / f_value;
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -671,6 +671,9 @@ static int op_nop(void)			/* NOP */
 
 static int op_halt(void)		/* HALT */
 {
+	uint64_t clk;
+
+	clk = get_clock_us();
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
@@ -731,6 +734,7 @@ static int op_halt(void)		/* HALT */
 		}
 	}
 #endif /* FRONTPANEL */
+	cpu_start += get_clock_us() - clk;
 	return 4;
 }
 
