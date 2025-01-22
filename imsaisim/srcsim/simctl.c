@@ -330,10 +330,10 @@ static void step_clicked(int state, int val)
 /*
  * Single step through the machine cycles after M1
  */
-bool wait_step(void)
+bool wait_step(bool tadj)
 {
 	bool ret = false;
-	uint64_t t1, t2;
+	uint64_t t = 0;
 
 	if (cpu_state != ST_SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
@@ -348,7 +348,8 @@ bool wait_step(void)
 
 	cpu_switch = CPUSW_STEPCYCLE;
 
-	t1 = get_clock_us();
+	if (tadj)
+		t = get_clock_us();
 	while ((cpu_switch == CPUSW_STEPCYCLE) && !reset) {
 		/* when INP update data bus LEDs */
 		if (cpu_bus == (CPU_WO | CPU_INP)) {
@@ -360,10 +361,9 @@ bool wait_step(void)
 		fp_sampleData();
 		sleep_for_ms(10);
 		ret = true;
-		t2 = get_clock_us();
-		cpu_start += t2 - t1;
-		t1 = t2;
 	}
+	if (tadj)
+		cpu_tadj += get_clock_us() - t;
 
 	cpu_bus &= ~CPU_M1;
 	m1_step = false;
@@ -375,22 +375,20 @@ bool wait_step(void)
  */
 void wait_int_step(void)
 {
-	uint64_t t1, t2;
+	uint64_t t;
 
 	if (cpu_state != ST_SINGLE_STEP)
 		return;
 
 	cpu_switch = CPUSW_STEPCYCLE;
 
-	t1 = get_clock_us();
+	t = get_clock_us();
 	while ((cpu_switch == CPUSW_STEPCYCLE) && !reset) {
 		fp_clock++;
 		fp_sampleData();
 		sleep_for_ms(10);
-		t2 = get_clock_us();
-		cpu_start += t2 - t1;
-		t1 = t2;
 	}
+	cpu_tadj += get_clock_us() - t;
 }
 
 /*

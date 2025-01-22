@@ -721,7 +721,6 @@ static void refresh(bool tick)
 	const reg_t *rp = NULL;
 	draw_grid_t grid = { };
 	int cpu_type = cpu;
-	uint64_t t;
 	static int freq;
 
 	/* use cpu_type in the rest of this function, since cpu can change */
@@ -843,13 +842,8 @@ static void refresh(bool tick)
 		  C_ORANGE, C_DKBLUE);
 
 	/* update frequency every second */
-	if (tick) {
-		t = cpu_time;
-		if (cpu_state == ST_CONTIN_RUN || cpu_state == ST_SINGLE_STEP)
-			t += get_clock_us() - cpu_start;
-		if (t)
-			freq = (int) ((float) T / (float) t * 100.0);
-	}
+	if (tick && cpu_time)
+		freq = (int) ((float) T_freq / (float) cpu_time * 100.0);
 	f = freq;
 	digit = 100000;
 	onlyz = true;
@@ -908,16 +902,15 @@ static void kill_thread(void)
 static void *update_display(void *arg)
 {
 	uint64_t t1, t2, ttick;
-	int tdiff;
+	long tleft;
 	bool tick = true;
 
 	UNUSED(arg);
 
 	t1 = get_clock_us();
-	ttick = t1 + 1000000;
+	ttick = t + 1000000;
 
 	while (true) {
-
 		/* lock display, don't cancel thread while locked */
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		XLockDisplay(display);
@@ -942,9 +935,9 @@ static void *update_display(void *arg)
 			ttick = t2 + 1000000;
 
 		/* sleep rest to 16667us so that we get 60 fps */
-		tdiff = t2 - t1;
-		if ((tdiff > 0) && (tdiff < 16667))
-			sleep_for_us(16667 - tdiff);
+		tleft = 16667L - (long) (t2 - t1);
+		if (tleft > 0)
+			sleep_for_us(tleft);
 
 		t1 = get_clock_us();
 	}

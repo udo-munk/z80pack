@@ -365,14 +365,6 @@ int op_fd_handle(void)
  */
 static int trap_fd(void)
 {
-#ifdef UNDOC_INST
-	if (!u_flag) {
-		/* Treat 0xfd prefix as NOP on non IY-instructions */
-		PC--;
-		R--;
-		return 4;
-	}
-#endif
 	cpu_error = OPTRAP2;
 	cpu_state = ST_STOPPED;
 	return 0;

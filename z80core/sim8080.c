@@ -404,7 +404,7 @@ void cpu_8080(void)
 
 	Tstates_t T_max, T_dma;
 	uint64_t t1, t2;
-	int tdiff;
+	long tdiff;
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
@@ -453,8 +453,10 @@ void cpu_8080(void)
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(0));
-					if (f_value)
-						cpu_start -= T_dma / f_value;
+					if (f_value) {
+						T_freq = T;
+						cpu_time += T_dma / f_value;
+					}
 				}
 			}
 
@@ -469,8 +471,10 @@ void cpu_8080(void)
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
 					T += (T_dma = (*dma_bus_master)(1));
-					if (f_value)
-						cpu_start -= T_dma / f_value;
+					if (f_value) {
+						T_freq = T;
+						cpu_time += T_dma / f_value;
+					}
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -589,15 +593,19 @@ leave:
 #include "alt8080.h"
 #endif
 
-		if (f_value) {		/* adjust CPU speed */
-			if (T >= T_max && !cpu_needed) {
+		if (T >= T_max) {	/* adjust CPU speed and update time */
+			T_max = T + tmax;
+			t2 = get_clock_us();
+			tdiff = t2 - t1;
+			if (f_value && !cpu_needed && tdiff < 10000L) {
+				sleep_for_us(10000L - tdiff);
 				t2 = get_clock_us();
 				tdiff = t2 - t1;
-				if ((tdiff > 0) && (tdiff < 10000))
-					sleep_for_us(10000 - tdiff);
-				T_max = T + tmax;
-				t1 = get_clock_us();
 			}
+			T_freq = T;
+			cpu_time += tdiff - cpu_tadj;
+			cpu_tadj = 0;
+			t1 = t2;
 		}
 
 #ifdef WANT_ICE
@@ -642,6 +650,12 @@ leave:
 	fp_led_address = PC;
 	fp_led_data = getmem(PC);
 #endif
+
+	/* update CPU time */
+	tdiff = get_clock_us() - t1;
+	T_freq = T;
+	cpu_time += tdiff - cpu_tadj;
+	cpu_tadj = 0;
 }
 
 #ifndef ALT_I8080
@@ -663,9 +677,9 @@ static int op_nop(void)			/* NOP */
 
 static int op_hlt(void)			/* HLT */
 {
-	uint64_t clk;
+	uint64_t t;
 
-	clk = get_clock_us();
+	t = get_clock_us();
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
@@ -721,7 +735,7 @@ static int op_hlt(void)			/* HLT */
 		}
 	}
 #endif /* FRONTPANEL */
-	cpu_start += get_clock_us() - clk;
+	cpu_tadj += get_clock_us() - t;
 	return 7;
 }
 

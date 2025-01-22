@@ -66,7 +66,10 @@ int main(int argc, char *argv[])
 #endif
 #ifdef CPU_SPEED
 	f_value = CPU_SPEED;
-	tmax = CPU_SPEED * 10000; /* theoretically */
+	if (f_value)
+		tmax = CPU_SPEED * 10000; /* theoretically */
+	else
+		tmax = 100000;
 #endif
 
 	while (--argc > 0 && (*++argv)[0] == '-')
@@ -113,7 +116,10 @@ int main(int argc, char *argv[])
 					argv++;
 					f_value = atoi(argv[0]);
 				}
-				tmax = f_value * 10000; /* theoretically */
+				if (f_value)
+					tmax = f_value * 10000; /* theoretically */
+				else
+					tmax = 100000;
 				break;
 
 			case 'x':	/* get filename with executable */

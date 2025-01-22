@@ -60,6 +60,8 @@ extern bool sio2b_strip_parity;	/* SIO 2 B strip parity from output */
 extern bool sio2b_drop_nulls;	/* SIO 2 B drop nulls after CR/LF */
 extern int sio2b_baud_rate;	/* SIO 2 B simulated baud rate */
 
+extern void imsai_sio_reset(void);
+
 extern BYTE imsai_sio_nofun_in(void);
 extern void imsai_sio_nofun_out(BYTE data);
 

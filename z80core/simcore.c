@@ -115,7 +115,6 @@ void switch_cpu(int new_cpu)
  */
 void run_cpu(void)
 {
-	cpu_start = get_clock_us();
 	cpu_state = ST_CONTIN_RUN;
 	cpu_error = NONE;
 	while (true) {
@@ -139,7 +138,6 @@ void run_cpu(void)
 		} else
 			break;
 	}
-	cpu_time += get_clock_us() - cpu_start;
 }
 
 /*
@@ -147,7 +145,6 @@ void run_cpu(void)
  */
 void step_cpu(void)
 {
-	cpu_start = get_clock_us();
 	cpu_state = ST_SINGLE_STEP;
 	cpu_error = NONE;
 	switch (cpu) {
@@ -165,7 +162,6 @@ void step_cpu(void)
 		break;
 	}
 	cpu_state = ST_STOPPED;
-	cpu_time += get_clock_us() - cpu_start;
 }
 
 /*
@@ -236,9 +232,9 @@ void report_cpu_stats(void)
 	if (cpu_time)
 	{
 		printf("CPU ran %" PRIu64 " ms ", cpu_time / 1000);
-		printf("and executed %" PRIu64 " t-states\n", T);
+		printf("and executed %" PRIu64 " t-states\n", T_freq);
 		printf("Clock frequency %4.2f MHz\n",
-		       (float) (T) / (float) cpu_time);
+		       (float) (T_freq) / (float) cpu_time);
 	}
 }
 
@@ -249,16 +245,17 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	uint64_t clk;
+	uint64_t t;
 #ifdef FRONTPANEL
 	bool val;
 #else
 #ifndef SIMPLEPANEL
+
 	UNUSED(addrh);
 #endif
 #endif
 
-	clk = get_clock_us();
+	t = get_clock_us();
 
 	io_port = addrl;
 	if (port_in[addrl])
@@ -281,7 +278,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		fp_led_address = (addrh << 8) + addrl;
 		fp_led_data = io_data;
 		fp_sampleData();
-		val = wait_step();
+		val = wait_step(false);
 
 		/* when single stepped INP get last set value of port */
 		if (val && port_in[addrl])
@@ -299,7 +296,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
 
-	cpu_start += get_clock_us() - clk;
+	cpu_tadj += get_clock_us() - t;
 
 	return io_data;
 }
@@ -311,12 +308,13 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	uint64_t clk;
+	uint64_t t;
+
 #if !defined(FRONTPANEL) && !defined(SIMPLEPANEL)
 	UNUSED(addrh);
 #endif
 
-	clk = get_clock_us();
+	t = get_clock_us();
 
 	io_port = addrl;
 	io_data = data;
@@ -344,7 +342,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 		fp_led_address = (addrh << 8) + addrl;
 		fp_led_data = IO_DATA_UNUSED;
 		fp_sampleData();
-		wait_step();
+		wait_step(false);
 	}
 #endif
 #ifdef SIMPLEPANEL
@@ -356,7 +354,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	port_flags[addrl].out = true;
 #endif
 
-	cpu_start += get_clock_us() - clk;
+	cpu_tadj += get_clock_us() - t;
 }
 
 /*

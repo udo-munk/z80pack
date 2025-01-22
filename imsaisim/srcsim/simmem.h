@@ -125,7 +125,7 @@ static inline void memwrt(WORD addr, BYTE data)
 		fp_led_address = addr;
 		fp_led_data = data;
 		fp_sampleData();
-		wait_step();
+		wait_step(true);
 	} else
 		cpu_bus &= ~CPU_M1;
 #endif
@@ -183,7 +183,7 @@ static inline BYTE memrdr(WORD addr)
 		fp_led_address = addr;
 		fp_led_data = data;
 		fp_sampleData();
-		wait_step();
+		wait_step(true);
 	} else
 		cpu_bus &= ~CPU_M1;
 #endif

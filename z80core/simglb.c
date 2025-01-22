@@ -40,8 +40,9 @@ BYTE IFF;			/* interrupt flags */
 cpu_regs_t cpu_regs;		/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
-int64_t cpu_start;		/* timestamp at start of CPU run/step */
-int64_t cpu_time;		/* time spent running CPU in us */
+Tstates_t T_freq;		/* CPU clock used for frequency calculation */
+uint64_t cpu_time;		/* time spent running CPU in us */
+uint64_t cpu_tadj;		/* time spent in non CPU execution areas */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
@@ -64,7 +65,8 @@ bool int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
 BusDMA_t bus_mode;		/* current bus mode for DMA */
 BusDMAFunc_t *dma_bus_master;	/* DMA bus master call back func */
-int tmax;			/* max t-states to execute in 10ms */
+int tmax;			/* max t-states to execute in 10ms or
+				   when to update the CPU times */
 bool cpu_needed;		/* don't adjust CPU freq if needed */
 
 /*

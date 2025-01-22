@@ -458,15 +458,14 @@ static void hwctl_out(BYTE data)
 static void *timing(void *arg)
 {
 	uint64_t t, tick;
-	int64_t tdiff;
+	long tleft;
 
 	UNUSED(arg);
 
 	tick = 0;
+	t = get_clock_us();
 
 	while (true) {	/* 260 usec per loop iteration */
-
-		t = get_clock_us();
 
 		/* do nothing if thread is suspended */
 		if (th_suspend)
@@ -495,11 +494,14 @@ static void *timing(void *arg)
 		int_pending();
 
 next:
-		tdiff = 260L - (get_clock_us() - t);
-		if (tdiff > 0)
-			sleep_for_us(tdiff);
+		/* sleep rest to 260us */
+		tleft = 260L - (long) (get_clock_us() - t);
+		if (tleft > 0)
+			sleep_for_us(tleft);
 
 		tick++;
+
+		t = get_clock_us();
 	}
 
 	/* never reached, this thread is running endless */
