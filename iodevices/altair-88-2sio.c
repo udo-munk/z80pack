@@ -66,6 +66,14 @@ static uint64_t sio2_t1, sio2_t2;
 static BYTE sio2_stat;
 
 /*
+ * reset Altair 88-2SIO
+ */
+void altair_2sio_reset(void)
+{
+	sio1_t1 = sio2_t1 = get_clock_us();
+}
+
+/*
  * read status register
  *
  * bit 0 = 1, character available for input from tty
@@ -74,13 +82,11 @@ static BYTE sio2_stat;
 BYTE altair_sio1_status_in(void)
 {
 	struct pollfd p[1];
-	int tdiff;
 
 	sio1_t2 = get_clock_us();
-	tdiff = sio1_t2 - sio1_t1;
-	if (sio1_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1_baud_rate))
-			return sio1_stat;
+	if (sio1_baud_rate > 0 &&
+	    (int) (sio1_t2 - sio1_t1) < BAUDTIME / sio1_baud_rate)
+		return sio1_stat;
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
@@ -186,7 +192,6 @@ again:
 BYTE altair_sio2_status_in(void)
 {
 	struct pollfd p[1];
-	int tdiff;
 
 	/* if socket not connected check for a new connection */
 	if (ucons[1].ssc == 0) {
@@ -205,10 +210,9 @@ BYTE altair_sio2_status_in(void)
 	}
 
 	sio2_t2 = get_clock_us();
-	tdiff = sio2_t2 - sio2_t1;
-	if (sio2_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2_baud_rate))
-			return sio2_stat;
+	if (sio2_baud_rate > 0 &&
+	    (int) (sio2_t2 - sio2_t1) < BAUDTIME / sio2_baud_rate)
+		return sio2_stat;
 
 	/* if socket is connected check for I/O */
 	if (ucons[1].ssc != 0) {

@@ -285,6 +285,7 @@ void init_io(void)
 		imsai_vio_init();
 	}
 
+	imsai_sio_reset();
 	imsai_fif_reset();
 
 #ifdef HAS_DAZZLER
@@ -340,6 +341,7 @@ void reset_io(void)
 #ifdef HAS_DAZZLER
 	cromemco_dazzler_off();
 #endif
+	imsai_sio_reset();
 	imsai_fif_reset();
 #ifdef HAS_APU
 	am_reset(am9511);

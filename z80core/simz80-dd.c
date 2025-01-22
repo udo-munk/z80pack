@@ -365,14 +365,6 @@ int op_dd_handle(void)
  */
 static int trap_dd(void)
 {
-#ifdef UNDOC_INST
-	if (!u_flag) {
-		/* Treat 0xdd prefix as NOP on non IX-instructions */
-		PC--;
-		R--;
-		return 4;
-	}
-#endif
 	cpu_error = OPTRAP2;
 	cpu_state = ST_STOPPED;
 	return 0;

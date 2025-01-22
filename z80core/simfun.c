@@ -94,14 +94,23 @@ again:
 }
 
 /*
- *	returns time in microseconds
+ *	returns monotonic time in microseconds
  */
 uint64_t get_clock_us(void)
 {
 	struct timeval tv;
+	uint64_t t;
+	static uint64_t old_t;
 
 	gettimeofday(&tv, NULL);
-	return (uint64_t) (tv.tv_sec) * 1000000ULL + (uint64_t) (tv.tv_usec);
+	t = (uint64_t) (tv.tv_sec) * 1000000ULL + (uint64_t) (tv.tv_usec);
+	if (t < old_t) {
+		LOGD(TAG, "get_clock_us() time jumped backwards %"
+		     PRIu64 " > %" PRIu64, old_t, t);
+		t = old_t;
+	} else
+		old_t = t;
+	return t;
 }
 
 #ifdef WANT_ICE

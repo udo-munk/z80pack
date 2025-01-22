@@ -85,7 +85,6 @@
 #endif
 	cpu_reg_t w;		/* working register */
 	cpu_reg_t ir;		/* current index register (HL, IX, IY) */
-	uint64_t clk;
 
 #define W	w.w
 #define WH	w.h
@@ -802,7 +801,7 @@ next_opcode:
 		break;
 
 	case 0x76:			/* HALT */
-		clk = get_clock_us();
+		t2 = get_clock_us();
 #ifdef BUS_8080
 		cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
@@ -865,7 +864,7 @@ next_opcode:
 			}
 		}
 #endif /* FRONTPANEL */
-		cpu_start += get_clock_us() - clk;
+		cpu_tadj += get_clock_us() - t2;
 		break;
 
 	case 0x77:			/* LD (ir),A */

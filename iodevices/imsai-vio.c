@@ -690,12 +690,12 @@ static win_funcs_t vio_funcs = {
 /* thread for updating the X11 display or web server */
 static void *update_thread(void *arg)
 {
-	uint64_t t1, t2;
-	int tdiff;
+	uint64_t t;
+	long tleft;
 
 	UNUSED(arg);
 
-	t1 = get_clock_us();
+	t = get_clock_us();
 
 	while (state) {
 #ifdef HAS_NETSERVER
@@ -721,13 +721,12 @@ static void *update_thread(void *arg)
 			ws_refresh();
 #endif
 
-		/* sleep rest to 33ms so that we get 30 fps */
-		t2 = get_clock_us();
-		tdiff = t2 - t1;
-		if ((tdiff > 0) && (tdiff < 33000))
-			sleep_for_ms(33 - (tdiff / 1000));
+		/* sleep rest to 33333us so that we get 30 fps */
+		tleft = 33333L - (long) (get_clock_us() - t);
+		if (tleft > 0)
+			sleep_for_us(tleft);
 
-		t1 = get_clock_us();
+		t = get_clock_us();
 	}
 
 	pthread_exit(NULL);

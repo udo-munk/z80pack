@@ -61,6 +61,14 @@ static uint64_t sio3_t1, sio3_t2;
 static BYTE sio3_stat = 0x81;
 
 /*
+ * reset Altair 88-SIO
+ */
+void altair_sio_reset(void)
+{
+	sio0_t1 = sio3_t1 = get_clock_us();
+}
+
+/*
  * read status register
  *
  * SIO Rev 0:
@@ -74,7 +82,6 @@ static BYTE sio3_stat = 0x81;
 BYTE altair_sio0_status_in(void)
 {
 	struct pollfd p[1];
-	int tdiff;
 
 	if (sio0_revision == 0)
 		sio0_stat = 0;
@@ -82,10 +89,9 @@ BYTE altair_sio0_status_in(void)
 		sio0_stat = 0x81;
 
 	sio0_t2 = get_clock_us();
-	tdiff = sio0_t2 - sio0_t1;
-	if (sio0_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio0_baud_rate))
-			return sio0_stat;
+	if (sio0_baud_rate > 0 &&
+	    (int) (sio0_t2 - sio0_t1) < BAUDTIME / sio0_baud_rate)
+		return sio0_stat;
 
 	p[0].fd = fileno(stdin);
 	p[0].events = POLLIN;
@@ -206,7 +212,6 @@ again:
 BYTE altair_sio3_status_in(void)
 {
 	struct pollfd p[1];
-	int tdiff;
 
 	/* if socket not connected check for a new connection */
 	if (ucons[0].ssc == 0) {
@@ -225,10 +230,9 @@ BYTE altair_sio3_status_in(void)
 	}
 
 	sio3_t2 = get_clock_us();
-	tdiff = sio3_t2 - sio3_t1;
-	if (sio3_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio3_baud_rate))
-			return sio3_stat;
+	if (sio3_baud_rate > 0 &&
+	    (int) (sio3_t2 - sio3_t1) < BAUDTIME / sio3_baud_rate)
+		return sio3_stat;
 
 	/* if socket is connected check for I/O */
 	if (ucons[0].ssc != 0) {
