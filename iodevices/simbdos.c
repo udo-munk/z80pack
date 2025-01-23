@@ -28,6 +28,7 @@
  *
  * History:
  * 03-OCT-2019 (Mike Douglas) Original
+ * 23-JAN-2025 (Thomas Eberhardt) Use DMA memory access
  */
 
 #include <stdio.h>
