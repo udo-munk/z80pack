@@ -90,6 +90,8 @@ typedef struct draw_grid {
 #include "fonts/font28.h"
 #include "fonts/font32.h"
 
+WORD mbase;
+
 /* SDL2/X11 stuff */
 static unsigned xsize, ysize;
 static uint32_t *pixels;
@@ -120,8 +122,8 @@ static pthread_t thread;
  */
 static void open_display(void)
 {
-	xsize = 240;
-	ysize = 135;
+	xsize = 576; /* 72 * 8 */
+	ysize = 376;
 
 #ifdef WANT_SDL
 	window = SDL_CreateWindow("Z80pack",
@@ -376,6 +378,44 @@ static inline void draw_char(const unsigned x, const unsigned y, const char c,
 }
 
 /*
+ *	Draw a string using the specified font and colors.
+ */
+static inline void draw_string(unsigned x, const unsigned y, const char *s,
+			       const font_t *font, const uint32_t fgc,
+			       const uint32_t bgc)
+{
+#ifdef DRAW_DEBUG
+	int n;
+
+	if (pixels == NULL) {
+		fprintf(stderr, "%s: pixels texture is NULL\n", __func__);
+		return;
+	}
+	if (s == NULL) {
+		fprintf(stderr, "%s: string is NULL\n", __func__);
+		return;
+	}
+	if (font == NULL) {
+		fprintf(stderr, "%s: font is NULL\n", __func__);
+		return;
+	}
+	n = strlen(s);
+	if (x >= xsize || y >= ysize || x + n * font->width > xsize ||
+	    y + font->height > ysize) {
+		fprintf(stderr, "%s: string \"%s\" at (%d,%d)-(%d,%d) is "
+			"outside (0,0)-(%d,%d)\n", __func__, s, x, y,
+			x + n * font->width - 1, y + font->height - 1,
+			xsize - 1, ysize - 1);
+		return;
+	}
+#endif
+	while (*s) {
+		draw_char(x, y, *s++, font, fgc, bgc);
+		x += font->width;
+	}
+}
+
+/*
  *	Draw a horizontal line in the specified color.
  */
 static inline void draw_hline(const unsigned x, const unsigned y, unsigned w,
@@ -598,32 +638,24 @@ static inline void draw_led(const unsigned x, const unsigned y,
 }
 
 /*
- *	CPU status displays:
+ *	Draw CPU registers:
  *
- *	Z80 CPU using font20 (10 x 20 pixels):
+ *	Z80 CPU:
  *
- *	  01234567890123456789012
- *	0 A  xx   BC xxxx DE xxxx
- *	1 HL xxxx SP xxxx PC xxxx
- *	2 IX xxxx IY xxxx AF'xxxx
- *	3 BC'xxxx DE'xxxx HL'xxxx
- *	4 F  SZHPNC  IF12 IR xxxx
- *	Model x.x   o xx.xx°C
+ *	AF 0123 BC 0123 DE 0123 HL 0123 SP 0123 PC 0123
+ *	AF'0123 BC'0123 DE'0123 HL'0123 IX 0123 IY 0123
+ *	F  SXHPNC       IF 12   I  00   R  00
  *
- *	8080 CPU using font28 (14 x 28 pixels):
+ *	8080 CPU:
  *
- *	  0123456789012345
- *	0 A  xx    BC xxxx
- *	1 DE xxxx  HL xxxx
- *	2 SP xxxx  PC xxxx
- *	3 F  SZHPC    IF 1
- *	Model x.x   o xx.xx°C
+ *	AF 0123 BC 0123 DE 0123 HL 0123 SP 0123 PC 0123
+ *	F  SZHPC        IF 1
  */
 
 typedef struct reg {
 	uint8_t x;
 	uint8_t y;
-	enum { RB, RW, RF, RI, RA, RR } type;
+	enum { RB, RW, RJ, RF, RI, RR } type;
 	const char *l;
 	union {
 		struct {
@@ -633,48 +665,52 @@ typedef struct reg {
 			const WORD *p;
 		} w;
 		struct {
+			const int *p;
+		} i;
+		struct {
 			char c;
 			uint8_t m;
 		} f;
 	};
 } reg_t;
 
+#define RXOFF	5	/* x pixel offset of registers text grid */
+#define RYOFF	0	/* y pixel offset of registers text grid */
+#define RSPC	3	/* vertical text spacing */
+
 #ifndef EXCLUDE_Z80
 
-#define XOFF20	5	/* x pixel offset of text grid for font20 */
-#define YOFF20	0	/* y pixel offset of text grid for font20 */
-#define SPC20	3	/* vertical text spacing for font20 */
-
 static const reg_t regs_z80[] = {
-	{  4, 0, RB, "A",    .b.p = &A },
+	{  4, 0, RB, "AF",   .b.p = &A },
+	{  6, 0, RJ, NULL,   .i.p = &F },
 	{ 12, 0, RB, "BC",   .b.p = &B },
 	{ 14, 0, RB, NULL,   .b.p = &C },
 	{ 20, 0, RB, "DE",   .b.p = &D },
 	{ 22, 0, RB, NULL,   .b.p = &E },
-	{  4, 1, RB, "HL",   .b.p = &H },
-	{  6, 1, RB, NULL,   .b.p = &L },
-	{ 14, 1, RW, "SP",   .w.p = &SP },
-	{ 22, 1, RW, "PC",   .w.p = &PC },
-	{  6, 2, RW, "IX",   .w.p = &IX },
-	{ 14, 2, RW, "IY",   .w.p = &IY },
-	{ 20, 2, RB, "AF\'", .b.p = &A_ },
-	{ 22, 2, RA, NULL,   .b.p = NULL },
-	{  4, 3, RB, "BC\'", .b.p = &B_ },
-	{  6, 3, RB, NULL,   .b.p = &C_ },
-	{ 12, 3, RB, "DE\'", .b.p = &D_ },
-	{ 14, 3, RB, NULL,   .b.p = &E_ },
-	{ 20, 3, RB, "HL\'", .b.p = &H_ },
-	{ 22, 3, RB, NULL,   .b.p = &L_ },
-	{  3, 4, RF, NULL,   .f.c = 'S', .f.m = S_FLAG },
-	{  4, 4, RF, "F",    .f.c = 'Z', .f.m = Z_FLAG },
-	{  5, 4, RF, NULL,   .f.c = 'H', .f.m = H_FLAG },
-	{  6, 4, RF, NULL,   .f.c = 'P', .f.m = P_FLAG },
-	{  7, 4, RF, NULL,   .f.c = 'N', .f.m = N_FLAG },
-	{  8, 4, RF, NULL,   .f.c = 'C', .f.m = C_FLAG },
-	{ 13, 4, RI, NULL,   .f.c = '1', .f.m = 1 },
-	{ 14, 4, RI, "IF",   .f.c = '2', .f.m = 2 },
-	{ 20, 4, RB, "IR",   .b.p = &I },
-	{ 22, 4, RR, NULL,   .b.p = NULL }
+	{ 28, 0, RB, "HL",   .b.p = &H },
+	{ 30, 0, RB, NULL,   .b.p = &L },
+	{ 38, 0, RW, "SP",   .w.p = &SP },
+	{ 46, 0, RW, "PC",   .w.p = &PC },
+	{  4, 1, RB, "AF\'", .b.p = &A_ },
+	{  6, 1, RJ, NULL,   .i.p = &F_ },
+	{ 12, 1, RB, "BC\'", .b.p = &B_ },
+	{ 14, 1, RB, NULL,   .b.p = &C_ },
+	{ 20, 1, RB, "DE\'", .b.p = &D_ },
+	{ 22, 1, RB, NULL,   .b.p = &E_ },
+	{ 28, 1, RB, "HL\'", .b.p = &H_ },
+	{ 30, 1, RB, NULL,   .b.p = &L_ },
+	{ 38, 1, RW, "IX",   .w.p = &IX },
+	{ 46, 1, RW, "IY",   .w.p = &IY },
+	{  3, 2, RF, NULL,   .f.c = 'S', .f.m = S_FLAG },
+	{  4, 2, RF, "F",    .f.c = 'Z', .f.m = Z_FLAG },
+	{  5, 2, RF, NULL,   .f.c = 'H', .f.m = H_FLAG },
+	{  6, 2, RF, NULL,   .f.c = 'P', .f.m = P_FLAG },
+	{  7, 2, RF, NULL,   .f.c = 'N', .f.m = N_FLAG },
+	{  8, 2, RF, NULL,   .f.c = 'C', .f.m = C_FLAG },
+	{ 19, 2, RI, "IF",   .f.c = '1', .f.m = 1 },
+	{ 20, 2, RI, NULL,   .f.c = '2', .f.m = 2 },
+	{ 28, 2, RB, "I",    .b.p = &I },
+	{ 36, 2, RR, "R",    .b.p = NULL }
 };
 static const int num_regs_z80 = sizeof(regs_z80) / sizeof(reg_t);
 
@@ -682,46 +718,38 @@ static const int num_regs_z80 = sizeof(regs_z80) / sizeof(reg_t);
 
 #ifndef EXCLUDE_I8080
 
-#define XOFF28	8	/* x pixel offset of text grid for font28 */
-#define YOFF28	0	/* y pixel offset of text grid for font28 */
-#define SPC28	1	/* vertical text spacing for font28 */
-
 static const reg_t regs_8080[] = {
-	{  4, 0, RB, "A",  .b.p = &A },
-	{ 13, 0, RB, "BC", .b.p = &B },
-	{ 15, 0, RB, NULL, .b.p = &C },
-	{  4, 1, RB, "DE", .b.p = &D },
-	{  6, 1, RB, NULL, .b.p = &E },
-	{ 13, 1, RB, "HL", .b.p = &H },
-	{ 15, 1, RB, NULL, .b.p = &L },
-	{  6, 2, RW, "SP", .w.p = &SP },
-	{ 15, 2, RW, "PC", .w.p = &PC },
-	{  3, 3, RF, NULL, .f.c = 'S', .f.m = S_FLAG },
-	{  4, 3, RF, "F",  .f.c = 'Z', .f.m = Z_FLAG },
-	{  5, 3, RF, NULL, .f.c = 'H', .f.m = H_FLAG },
-	{  6, 3, RF, NULL, .f.c = 'P', .f.m = P_FLAG },
-	{  7, 3, RF, NULL, .f.c = 'C', .f.m = C_FLAG },
-	{ 15, 3, RI, "IF", .f.c = '1', .f.m = 3 }
+	{  4, 0, RB, "AF", .b.p = &A },
+	{  6, 0, RJ, NULL, .i.p = &F },
+	{ 12, 0, RB, "BC", .b.p = &B },
+	{ 14, 0, RB, NULL, .b.p = &C },
+	{ 20, 0, RB, "DE", .b.p = &D },
+	{ 22, 0, RB, NULL, .b.p = &E },
+	{ 28, 0, RB, "HL", .b.p = &H },
+	{ 30, 0, RB, NULL, .b.p = &L },
+	{ 38, 0, RW, "SP", .w.p = &SP },
+	{ 46, 0, RW, "PC", .w.p = &PC },
+	{  3, 1, RF, NULL, .f.c = 'S', .f.m = S_FLAG },
+	{  4, 1, RF, "F",  .f.c = 'Z', .f.m = Z_FLAG },
+	{  5, 1, RF, NULL, .f.c = 'H', .f.m = H_FLAG },
+	{  6, 1, RF, NULL, .f.c = 'P', .f.m = P_FLAG },
+	{  7, 1, RF, NULL, .f.c = 'C', .f.m = C_FLAG },
+	{ 19, 1, RI, "IF", .f.c = '1', .f.m = 3 }
 };
 static const int num_regs_8080 = sizeof(regs_8080) / sizeof(reg_t);
 
 #endif /* !EXCLUDE_I8080 */
 
-/*
- * Refresh the display buffer
- */
-static void refresh(bool tick)
+static void draw_cpu_regs(void)
 {
 	char c;
-	int i, j, f, digit, n = 0;
-	bool onlyz;
-	unsigned x, y;
+	int i, j, n = 0;
+	unsigned x;
 	WORD w;
 	const char *s;
 	const reg_t *rp = NULL;
 	draw_grid_t grid = { };
 	int cpu_type = cpu;
-	static int freq;
 
 	/* use cpu_type in the rest of this function, since cpu can change */
 
@@ -738,35 +766,34 @@ static void refresh(bool tick)
 	}
 #endif
 
-	draw_clear(C_DKBLUE);
-
 	/* setup text grid and draw grid lines */
 #ifndef EXCLUDE_Z80
 	if (cpu_type == Z80) {
-		draw_setup_grid(&grid, XOFF20, YOFF20, -1, 5, &font20,
-				SPC20);
+		draw_setup_grid(&grid, RXOFF, RYOFF, 47, 3, &font18, RSPC);
 
 		/* draw vertical grid lines */
-		draw_grid_vline(7, 0, 4, &grid, C_DKYELLOW);
-		draw_grid_vline(10, 4, 1, &grid, C_DKYELLOW);
-		draw_grid_vline(15, 0, 5, &grid, C_DKYELLOW);
+		draw_grid_vline(7, 0, 2, &grid, C_DKYELLOW);
+		draw_grid_vline(15, 0, 3, &grid, C_DKYELLOW);
+		draw_grid_vline(23, 0, 3, &grid, C_DKYELLOW);
+		draw_grid_vline(31, 0, 3, &grid, C_DKYELLOW);
+		draw_grid_vline(39, 0, 2, &grid, C_DKYELLOW);
 		/* draw horizontal grid lines */
-		for (i = 1; i < 5; i++)
-			draw_grid_hline(0, i, grid.cols, &grid,
-					C_DKYELLOW);
+		draw_grid_hline(0, 1, grid.cols, &grid, C_DKYELLOW);
+		draw_grid_hline(0, 2, grid.cols, &grid, C_DKYELLOW);
 	}
 #endif
 #ifndef EXCLUDE_I8080
 	if (cpu_type == I8080) {
-		draw_setup_grid(&grid, XOFF28, YOFF28, -1, 4, &font28,
-				SPC28);
+		draw_setup_grid(&grid, RXOFF, RYOFF, 47, 2, &font18, RSPC);
 
-		/* draw vertical grid line */
-		draw_grid_vline(8, 0, 4, &grid, C_DKYELLOW);
-		/* draw horizontal grid lines */
-		for (i = 1; i < 4; i++)
-			draw_grid_hline(0, i, grid.cols, &grid,
-					C_DKYELLOW);
+		/* draw vertical grid lines */
+		draw_grid_vline(7, 0, 1, &grid, C_DKYELLOW);
+		draw_grid_vline(15, 0, 2, &grid, C_DKYELLOW);
+		draw_grid_vline(23, 0, 1, &grid, C_DKYELLOW);
+		draw_grid_vline(31, 0, 1, &grid, C_DKYELLOW);
+		draw_grid_vline(39, 0, 1, &grid, C_DKYELLOW);
+		/* draw horizontal grid line */
+		draw_grid_hline(0, 1, grid.cols, &grid, C_DKYELLOW);
 	}
 #endif
 	/* draw register labels & contents */
@@ -788,6 +815,10 @@ static void refresh(bool tick)
 			w = *(rp->w.p);
 			j = 4;
 			break;
+		case RJ: /* F or F_ integer register */
+			w = *(rp->i.p);
+			j = 2;
+			break;
 		case RF: /* flags */
 			draw_grid_char(rp->x, rp->y, rp->f.c, &grid,
 				       (F & rp->f.m) ? C_GREEN : C_RED,
@@ -799,10 +830,6 @@ static void refresh(bool tick)
 				       C_GREEN : C_RED, C_DKBLUE);
 			continue;
 #ifndef EXCLUDE_Z80
-		case RA: /* alternate flags (int) */
-			w = F_;
-			j = 2;
-			break;
 		case RR: /* refresh register */
 			w = (R_ & 0x80) | (R & 0x7f);
 			j = 2;
@@ -820,26 +847,132 @@ static void refresh(bool tick)
 			w >>= 4;
 		}
 	}
+}
 
-	y = ysize - font20.height;
-	n = xsize / font20.width;
-	x = (xsize - n * font20.width) / 2;
+/*
+ *	Draw the memory page:
+ *
+ *	      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+ *	0000  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0010  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0020  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0030  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0040  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0050  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0060  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0070  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0080  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	0090  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	00A0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	00B0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	00C0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	00D0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	00E0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *	00F0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ */
+
+#define MXOFF	4
+#define MYOFF	64
+#define MSPC	1
+
+static void draw_mem_page(WORD mbase)
+{
+	char c, dc;
+	int i, j;
+	draw_grid_t grid;
+
+	draw_setup_grid(&grid, MXOFF, MYOFF, 71, 17, &font16, MSPC);
+
+	/* draw vertical grid lines */
+	for (i = 0; i < 17; i++)
+		draw_grid_vline(5 + i * 3, 0, grid.rows, &grid, C_DKYELLOW);
+
+	for (i = 0; i < 16; i++) {
+		draw_grid_char(6 + i * 3, 0, '0', &grid, C_GREEN, C_DKBLUE);
+		c = i + (i < 10 ? '0' : 'A' - 10);
+		draw_grid_char(7 + i * 3, 0, c, &grid, C_GREEN, C_DKBLUE);
+	}
+	for (j = 1; j < 17; j++) {
+		draw_grid_hline(0, j, grid.cols, &grid, C_DKYELLOW);
+		c = (mbase >> 12) & 0xf;
+		c += (c < 10 ? '0' : 'A' - 10);
+		draw_grid_char(0, j, c, &grid, C_GREEN, C_DKBLUE);
+		c = (mbase >> 8) & 0xf;
+		c += (c < 10 ? '0' : 'A' - 10);
+		draw_grid_char(1, j, c, &grid, C_GREEN, C_DKBLUE);
+		c = (mbase >> 4) & 0xf;
+		c += (c < 10 ? '0' : 'A' - 10);
+		draw_grid_char(2, j, c, &grid, C_GREEN, C_DKBLUE);
+		c = mbase & 0xf;
+		c += (c < 10 ? '0' : 'A' - 10);
+		draw_grid_char(3, j, c, &grid, C_GREEN, C_DKBLUE);
+		for (i = 0; i < 16; i++) {
+			c = (getmem(mbase) >> 4) & 0xf;
+			c += (c < 10 ? '0' : 'A' - 10);
+			draw_grid_char(6 + i * 3, j, c, &grid, C_CYAN,
+				       C_DKBLUE);
+			c = getmem(mbase++) & 0xf;
+			c += (c < 10 ? '0' : 'A' - 10);
+			draw_grid_char(7 + i * 3, j, c, &grid, C_CYAN,
+				       C_DKBLUE);
+		}
+		mbase -= 16;
+		for (i = 0; i < 16; i++) {
+			c = getmem(mbase++);
+			dc = c & 0x7f;
+			if (dc < 32 || dc == 127)
+				dc = '.';
+			draw_grid_char(55 + i, j, dc, &grid,
+				       (c & 0x80) ? C_ORANGE : C_YELLOW,
+				       C_DKBLUE);
+		}
+	}
+}
+
+/*
+ *	Draw the info line:
+ *
+ *	Z80pack x.xx		xxxx.xx MHz
+ */
+static void draw_info(bool tick)
+{
+	char c;
+	int i, f, digit;
+	bool onlyz;
+	const char *s;
+	const font_t *font = &font18;
+	const unsigned w = font->width;
+	const unsigned n = xsize / w;
+	const unsigned x = (xsize - n * w) / 2;
+	const unsigned y = ysize - font->height;
+	static int count, fps, freq;
 
 	/* draw product info */
 	s = "Z80pack " RELEASE;
 	for (i = 0; *s; i++)
-		draw_char(i * font20.width + x, y, *s++, &font20,
-			  C_ORANGE, C_DKBLUE);
+		draw_char(i * w + x, y, *s++, font, C_ORANGE, C_DKBLUE);
 
 	/* draw frequency label */
-	draw_char((n - 6) * font20.width + x, y, '.', &font20,
-		  C_ORANGE, C_DKBLUE);
-	draw_char((n - 3) * font20.width + x, y, 'M', &font20,
-		  C_ORANGE, C_DKBLUE);
-	draw_char((n - 2) * font20.width + x, y, 'H', &font20,
-		  C_ORANGE, C_DKBLUE);
-	draw_char((n - 1) * font20.width + x, y, 'z', &font20,
-		  C_ORANGE, C_DKBLUE);
+	draw_char((n - 7) * w + x, y, '.', font, C_ORANGE, C_DKBLUE);
+	draw_char((n - 3) * w + x, y, 'M', font, C_ORANGE, C_DKBLUE);
+	draw_char((n - 2) * w + x, y, 'H', font, C_ORANGE, C_DKBLUE);
+	draw_char((n - 1) * w + x, y, 'z', font, C_ORANGE, C_DKBLUE);
+
+	/* update fps every second */
+	count++;
+	if (tick) {
+		fps = count;
+		count = 0;
+	}
+	draw_char(30 * w + x, y, fps > 99 ? fps / 100 + '0' : ' ',
+		  font, C_ORANGE, C_DKBLUE);
+	draw_char(31 * w + x, y, fps > 9 ? (fps / 10) % 10 + '0' : ' ',
+		  font, C_ORANGE, C_DKBLUE);
+	draw_char(32 * w + x, y, fps % 10 + '0',
+		  font, C_ORANGE, C_DKBLUE);
+	draw_char(34 * w + x, y, 'f', font, C_ORANGE, C_DKBLUE);
+	draw_char(35 * w + x, y, 'p', font, C_ORANGE, C_DKBLUE);
+	draw_char(36 * w + x, y, 's', font, C_ORANGE, C_DKBLUE);
 
 	/* update frequency every second */
 	if (tick && cpu_time)
@@ -857,13 +990,25 @@ static void refresh(bool tick)
 			c = ' ';
 		else
 			onlyz = false;
-		draw_char((n - 10 + i) * font20.width + x, y,
-			  c, &font20, C_ORANGE, C_DKBLUE);
+		draw_char((n - 11 + i) * w + x, y, c,
+			  font, C_ORANGE, C_DKBLUE);
 		if (i < 6)
 			digit /= 10;
 		if (i == 3)
 			i++; /* skip decimal point */
 	}
+}
+
+/*
+ * Refresh the display buffer
+ */
+static void refresh(bool tick)
+{
+	draw_clear(C_DKBLUE);
+
+	draw_cpu_regs();
+	draw_mem_page(mbase);
+	draw_info(tick);
 }
 
 #ifdef WANT_SDL
@@ -908,7 +1053,7 @@ static void *update_display(void *arg)
 	UNUSED(arg);
 
 	t1 = get_clock_us();
-	ttick = t + 1000000;
+	ttick = t1 + 1000000;
 
 	while (true) {
 		/* lock display, don't cancel thread while locked */
