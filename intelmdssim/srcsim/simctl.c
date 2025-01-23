@@ -221,10 +221,8 @@ static void int_clicked(int state, int val)
 /*
  *	Single step through the machine cycles after M1
  */
-bool wait_step(bool tadj)
+bool wait_step(void)
 {
-	UNUSED(tadj);
-
 	cpu_bus &= ~CPU_M1;
 	m1_step = false;
 	return false;

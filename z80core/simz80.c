@@ -386,17 +386,24 @@ void cpu_z80(void)
 	};
 #endif /* !ALT_Z80 */
 
-	Tstates_t T_max, T_dma;
+	Tstates_t T_max, T_dma, T_start;
 	uint64_t t1, t2;
 	long tdiff;
 	WORD p;
+	bool single_step;
+
+	/* remember CPU clock and single step mode for frequency calculation */
+	T_start = T;
+	single_step = (cpu_state & ST_SINGLE_STEP) != 0;
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
 #ifdef FRONTPANEL
 	if (F_flag) {
+		t2 = get_clock_us();
 		fp_clock++;
 		fp_sampleData();
+		cpu_tadj += get_clock_us() - t2;
 	}
 #endif
 
@@ -450,8 +457,10 @@ void cpu_z80(void)
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				if (F_flag) {
+					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
+					cpu_tadj += get_clock_us() - t2;
 				}
 #endif
 				if (dma_bus_master) {
@@ -471,8 +480,10 @@ void cpu_z80(void)
 				}
 #ifdef FRONTPANEL
 				if (F_flag) {
+					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
+					cpu_tadj += get_clock_us() - t2;
 				}
 #endif
 			}
@@ -503,11 +514,13 @@ void cpu_z80(void)
 #endif
 #ifdef FRONTPANEL
 				if (F_flag) {
+					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
 					fp_sampleData();
 					wait_int_step();
+					cpu_tadj += get_clock_us() - t2;
 					if (cpu_state & ST_RESET)
 						goto leave;
 				}
@@ -611,17 +624,21 @@ leave:
 #include "altz80.h"
 #endif
 
-		if (T >= T_max) {	/* adjust CPU speed and update time */
+					/* adjust CPU speed and update time */
+		if (T >= T_max && !single_step) {
 			T_max = T + tmax;
 			t2 = get_clock_us();
 			tdiff = t2 - t1;
-			if (f_value && !cpu_needed && tdiff < 10000L) {
-				sleep_for_us(10000L - tdiff);
-				t2 = get_clock_us();
-				tdiff = t2 - t1;
-			}
+			if (f_value) {
+				if (!cpu_needed && tdiff < 10000L) {
+					sleep_for_us(10000L - tdiff);
+					t2 = get_clock_us();
+					tdiff = t2 - t1;
+				}
+			} else
+				tdiff -= cpu_tadj;
 			T_freq = T;
-			cpu_time += tdiff - cpu_tadj;
+			cpu_time += tdiff;
 			cpu_tadj = 0;
 			t1 = t2;
 		}
@@ -659,10 +676,12 @@ leave:
 
 #ifdef FRONTPANEL
 	if (F_flag) {
+		t2 = get_clock_us();
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
 		fp_sampleData();
+		cpu_tadj += get_clock_us() - t2;
 	}
 #endif
 #ifdef SIMPLEPANEL
@@ -670,9 +689,19 @@ leave:
 	fp_led_data = getmem(PC);
 #endif
 
-	/* update CPU time */
+					/* update CPU time */
+	if (single_step) {
+		if (f_value)            /* use f_value MHz in single step */
+			tdiff = (T - T_start) / f_value;
+		else                    /* else use 100 MHz in single step */
+			tdiff = (T - T_start) / 100;
+	} else {
+		tdiff = get_clock_us() - t1;
+		if (!f_value)
+			tdiff -= cpu_tadj;
+	}
 	T_freq = T;
-	cpu_time += get_clock_us() - t1 - cpu_tadj;
+	cpu_time += tdiff;
 	cpu_tadj = 0;
 }
 

@@ -96,14 +96,14 @@ void host_bdos_out(BYTE outByte)
 
 	if ((C == OPENF) || (C == MAKEF)) {
 		for (i = 0; i < 8; i++) {	/* copy file name */
-			fname[i] = tolower(memrdr(fcbAddr + 1 + i));
+			fname[i] = tolower(dma_read(fcbAddr + 1 + i));
 			if (fname[i] == ' ')
 				break;
 		}
 		fname[i] = 0;
 
 		for (i = 0; i < 3; i++) {	/* copy extension */
-			extension[i] = tolower(memrdr(fcbAddr + 9 + i));
+			extension[i] = tolower(dma_read(fcbAddr + 9 + i));
 			if (extension[i] == ' ')
 				break;
 		}
@@ -152,9 +152,9 @@ void host_bdos_out(BYTE outByte)
 			xferLen = fread(buf, 1, SECLEN, fp);
 			if (xferLen != 0) {
 				for (i = 0; i < xferLen; i++)
-					memwrt(dmaAddr + i, buf[i]);
+					dma_write(dmaAddr + i, buf[i]);
 				for (; i < SECLEN; i++)
-					memwrt(dmaAddr + i, CTRL_Z);
+					dma_write(dmaAddr + i, CTRL_Z);
 				A = 0;
 			}
 		}
@@ -165,7 +165,7 @@ void host_bdos_out(BYTE outByte)
 	else if (C == WRITEF) {
 		if (fp != NULL) {
 			for (xferLen = 0; xferLen < SECLEN; xferLen++) {
-				buf[xferLen] = memrdr(dmaAddr + xferLen);
+				buf[xferLen] = dma_read(dmaAddr + xferLen);
 				if ((buf[xferLen] == CTRL_Z) && textFile)
 					break;	/* ctrl-z (EOF) found */
 			}

@@ -1379,9 +1379,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
+				t2 = get_clock_us();
 				/* update frontpanel */
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
+				cpu_adj += get_clock_us() - t2;
 			}
 #endif
 
@@ -1621,9 +1623,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
+			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
+			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 
@@ -1717,9 +1721,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
+			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
+			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 
@@ -2395,9 +2401,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
+			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
+			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 
