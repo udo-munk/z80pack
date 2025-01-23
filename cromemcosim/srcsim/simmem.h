@@ -36,6 +36,7 @@
 #endif
 #ifdef FRONTPANEL
 #include "simctl.h"
+#include "simport.h"
 #include "frontpanel.h"
 #endif
 
@@ -90,6 +91,9 @@ extern void reset_fdc_rom_map(void);
 static inline void memwrt(WORD addr, BYTE data)
 {
 	register int i;
+#ifdef FRONTPANEL
+	uint64_t t;
+#endif
 
 #ifdef BUS_8080
 #ifndef FRONTPANEL
@@ -100,11 +104,13 @@ static inline void memwrt(WORD addr, BYTE data)
 
 #ifdef FRONTPANEL
 	if (F_flag) {
+		t = get_clock_us();
 		fp_clock++;
 		fp_led_address = addr;
 		fp_led_data = data;
 		fp_sampleData();
-		wait_step(true);
+		wait_step();
+		cpu_tadj += get_clock_us() - t;
 	} else
 		cpu_bus &= ~CPU_M1;
 #endif
@@ -134,6 +140,9 @@ static inline void memwrt(WORD addr, BYTE data)
 static inline BYTE memrdr(WORD addr)
 {
 	register BYTE data;
+#ifdef FRONTPANEL
+	uint64_t t;
+#endif
 
 #ifdef WANT_HB
 	if (hb_flag && hb_addr == addr) {
@@ -164,11 +173,13 @@ static inline BYTE memrdr(WORD addr)
 
 #ifdef FRONTPANEL
 	if (F_flag) {
+		t = get_clock_us();
 		fp_clock++;
 		fp_led_address = addr;
 		fp_led_data = data;
 		fp_sampleData();
-		wait_step(true);
+		wait_step();
+		cpu_tadj += get_clock_us() - t;
 	} else
 		cpu_bus &= ~CPU_M1;
 #endif

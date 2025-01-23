@@ -278,7 +278,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		fp_led_address = (addrh << 8) + addrl;
 		fp_led_data = io_data;
 		fp_sampleData();
-		val = wait_step(false);
+		val = wait_step();
 
 		/* when single stepped INP get last set value of port */
 		if (val && port_in[addrl])
@@ -342,7 +342,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 		fp_led_address = (addrh << 8) + addrl;
 		fp_led_data = IO_DATA_UNUSED;
 		fp_sampleData();
-		wait_step(false);
+		wait_step();
 	}
 #endif
 #ifdef SIMPLEPANEL

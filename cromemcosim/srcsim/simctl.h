@@ -12,7 +12,7 @@
 
 extern void mon(void);
 
-extern bool wait_step(bool tadj);
+extern bool wait_step(void);
 extern void wait_int_step(void);
 
 #endif /* !SIMCTL_INC */
