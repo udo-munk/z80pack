@@ -677,11 +677,13 @@ leave:
 #endif
 
 					/* update CPU time */
-	if (single_step) {
-		if (f_value)            /* use f_value MHz in single step */
+	if (single_step) {		/* if single stepping */
+		if (f_value)		/* use f_value MHz in locked mode */
 			tdiff = (T - T_start) / f_value;
-		else                    /* else use 100 MHz in single step */
-			tdiff = (T - T_start) / 100;
+		else if (T_freq)	/* else use current frequency */
+			tdiff = ((T - T_start) * cpu_time) / T_freq;
+		else			/* avoid division by 0 */
+			tdiff = T - T_start;
 	} else {
 		tdiff = get_clock_us() - t1;
 		if (!f_value)
