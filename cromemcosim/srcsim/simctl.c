@@ -369,7 +369,7 @@ bool wait_step(void)
  */
 void wait_int_step(void)
 {
-
+	if (cpu_state != ST_SINGLE_STEP)
 		return;
 
 	cpu_switch = CPUSW_STEPCYCLE;
