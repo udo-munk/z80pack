@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	if (f_value)
 		tmax = CPU_SPEED * 10000; /* theoretically */
 	else
-		tmax = 100000;
+		tmax = 100000;	/* for periodic CPU accounting updates */
 #endif
 
 	while (--argc > 0 && (*++argv)[0] == '-')
@@ -119,7 +119,8 @@ int main(int argc, char *argv[])
 				if (f_value)
 					tmax = f_value * 10000; /* theoretically */
 				else
-					tmax = 100000;
+					tmax = 100000; /* for periodic CPU
+							  accounting updates */
 				break;
 
 			case 'x':	/* get filename with executable */

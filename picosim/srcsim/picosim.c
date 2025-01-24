@@ -208,7 +208,7 @@ int main(void)
 	if (f_value)
 		tmax = speed * 10000;	/* theoretically */
 	else
-		tmax = 100000;
+		tmax = 100000;	/* for periodic CPU accounting updates */
 
 	put_pixel(0x440000);	/* LED green */
 
@@ -295,6 +295,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 	BYTE save[3];
 	WORD save_PC;
 	Tstates_t T0;
+	unsigned freq;
 #ifdef WANT_HB
 	bool save_hb_flag;
 #endif
@@ -346,10 +347,11 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 			s = "JMP";
 #endif
 		if (cpu_error == NONE) {
+			freq = (unsigned) ((T - T0) / 30000ULL);
 			printf("CPU executed %" PRIu64 " %s instructions "
 			       "in 3 seconds\n", (T - T0) / 10, s);
-			printf("clock frequency = %5.2f MHz\n",
-			       ((float) (T - T0)) / 3000000.0);
+			printf("clock frequency = %5u.%02u MHz\n",
+			       freq / 100, freq % 100);
 		} else
 			puts("Interrupted by user");
 		break;
