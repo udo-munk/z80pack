@@ -236,7 +236,7 @@ void report_cpu_stats(void)
 		freq = (unsigned) (cpu_freq / 10000ULL);
 		printf("CPU ran %" PRIu64 " ms ", cpu_time / 1000);
 		printf("and executed %" PRIu64 " t-states\n", T);
-		printf("Clock frequency %4u.%02u MHz\n",
+		printf("Clock frequency %u.%02u MHz\n",
 		       freq / 100, freq % 100);
 	}
 }

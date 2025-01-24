@@ -350,7 +350,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 			freq = (unsigned) ((T - T0) / 30000ULL);
 			printf("CPU executed %" PRIu64 " %s instructions "
 			       "in 3 seconds\n", (T - T0) / 10, s);
-			printf("clock frequency = %5u.%02u MHz\n",
+			printf("clock frequency = %u.%02u MHz\n",
 			       freq / 100, freq % 100);
 		} else
 			puts("Interrupted by user");
