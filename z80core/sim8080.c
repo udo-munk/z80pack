@@ -622,7 +622,8 @@ void cpu_8080(void)
 			} else
 				cpu_time += tdiff - cpu_tadj;
 			cpu_tadj = 0;
-			cpu_freq = T * 1000000ULL / cpu_time;
+			if (cpu_time)
+				cpu_freq = T * 1000000ULL / cpu_time;
 			t1 = t2;
 		}
 
@@ -674,7 +675,8 @@ void cpu_8080(void)
 					/* update CPU accounting */
 	cpu_time += (get_clock_us() - t1) - cpu_tadj;
 	cpu_tadj = 0;
-	cpu_freq = T * 1000000ULL / cpu_time;
+	if (cpu_time)
+		cpu_freq = T * 1000000ULL / cpu_time;
 }
 
 #ifndef ALT_I8080
