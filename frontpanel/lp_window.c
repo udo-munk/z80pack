@@ -84,6 +84,12 @@ static bool lmouse;
 void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 {
 	switch (event->type) {
+	case SDL_QUIT:
+		// call user quit callback if exists
+		if (p->quit_callbackfunc)
+			(*p->quit_callbackfunc)();
+		break;
+
 	case SDL_WINDOWEVENT:
 		if (event->window.windowID != SDL_GetWindowID(p->window))
 			break;
@@ -103,12 +109,6 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		default:
 			break;
 		}
-		break;
-
-	case SDL_QUIT:
-		// call user quit callback if exists
-		if (p->quit_callbackfunc)
-			(*p->quit_callbackfunc)();
 		break;
 
 	case SDL_MOUSEBUTTONDOWN:
@@ -294,6 +294,9 @@ void Lpanel_procEvent(Lpanel_t *p, SDL_Event *event)
 		break;
 
 	case SDL_MOUSEWHEEL:
+		if (event->motion.windowID != SDL_GetWindowID(p->window))
+			break;
+
 		if (event->wheel.direction == SDL_MOUSEWHEEL_NORMAL)
 			p->view.pan[2] += event->wheel.preciseY / 5.0;
 		else
