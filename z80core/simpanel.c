@@ -945,7 +945,8 @@ static void draw_info(bool tick)
 	const unsigned n = xsize / w;
 	const unsigned x = (xsize - n * w) / 2;
 	const unsigned y = ysize - font->height;
-	static int count, fps, freq;
+	static unsigned count, fps;
+	static uint64_t freq;
 
 	/* draw product info */
 	s = "Z80pack " RELEASE;
@@ -976,8 +977,8 @@ static void draw_info(bool tick)
 
 	/* update frequency every second */
 	if (tick && cpu_time)
-		freq = (int) ((float) T_freq / (float) cpu_time * 100.0);
-	f = freq;
+		freq = cpu_freq;
+	f = (unsigned) (freq / 10000ULL);
 	digit = 100000;
 	onlyz = true;
 	for (i = 0; i < 7; i++) {

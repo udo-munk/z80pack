@@ -5,6 +5,8 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
+#include <stdio.h>
+
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
@@ -386,15 +388,10 @@ void cpu_z80(void)
 	};
 #endif /* !ALT_Z80 */
 
-	Tstates_t T_max, T_dma, T_start;
+	Tstates_t T_max, T_dma;
 	uint64_t t1, t2;
 	long tdiff;
 	WORD p;
-	bool single_step;
-
-	/* remember CPU clock and single step mode for frequency calculation */
-	T_start = T;
-	single_step = (cpu_state & ST_SINGLE_STEP) != 0;
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
@@ -446,11 +443,11 @@ void cpu_z80(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
-					T += (T_dma = (*dma_bus_master)(0));
-					if (f_value) {
-						T_freq = T;
-						cpu_time += T_dma / f_value;
-					}
+					T_dma = (*dma_bus_master)(0);
+					T += T_dma;
+					if (cpu_freq)
+						cpu_time += (1000000ULL *
+							     T_dma) / cpu_freq;
 				}
 			}
 
@@ -466,11 +463,11 @@ void cpu_z80(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
-					T += (T_dma = (*dma_bus_master)(1));
-					if (f_value) {
-						T_freq = T;
-						cpu_time += T_dma / f_value;
-					}
+					T_dma = (*dma_bus_master)(1);
+					T += T_dma;
+					if (cpu_freq)
+						cpu_time += (1000000ULL *
+							     T_dma) / cpu_freq;
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -503,8 +500,8 @@ void cpu_z80(void)
 		if (int_int) {		/* maskable interrupt */
 			if (IFF != 3)
 				goto leave;
-			if (int_protection)	/* protect first instr */
-				goto leave;
+			if (int_protection)	/* protect first instruction */
+				goto leave;	/* after EI */
 
 			IFF = 0;
 
@@ -607,8 +604,8 @@ void cpu_z80(void)
 				m1_step = true;
 #endif
 			R++;		/* increment refresh register */
+		leave:
 		}
-leave:
 
 #ifdef BUS_8080
 		/* M1 opcode fetch */
@@ -624,22 +621,23 @@ leave:
 #include "altz80.h"
 #endif
 
-					/* adjust CPU speed and update time */
-		if (T >= T_max && !single_step) {
+					/* adjust CPU speed and
+					   update CPU accounting */
+		if (T >= T_max) {
 			T_max = T + tmax;
 			t2 = get_clock_us();
 			tdiff = t2 - t1;
-			if (f_value) {
-				if (!cpu_needed && tdiff < 10000L) {
-					sleep_for_us(10000L - tdiff);
-					t2 = get_clock_us();
-					tdiff = t2 - t1;
-				}
+			if (f_value && !cpu_needed && tdiff < 10000L) {
+				sleep_for_us(10000L - tdiff);
+				t2 = get_clock_us();
+				tdiff = t2 - t1; /* should be really close
+						    to 10000, but isn't */
+				cpu_time += tdiff;
 			} else
-				tdiff -= cpu_tadj;
-			T_freq = T;
-			cpu_time += tdiff;
+				cpu_time += tdiff - cpu_tadj;
 			cpu_tadj = 0;
+			if (cpu_time)
+				cpu_freq = T * 1000000ULL / cpu_time;
 			t1 = t2;
 		}
 
@@ -689,22 +687,11 @@ leave:
 	fp_led_data = getmem(PC);
 #endif
 
-					/* update CPU time */
-	if (single_step) {		/* if single stepping */
-		if (f_value)		/* use f_value MHz in locked mode */
-			tdiff = (T - T_start) / f_value;
-		else if (T_freq)	/* else use current frequency */
-			tdiff = ((T - T_start) * cpu_time) / T_freq;
-		else			/* avoid division by 0 */
-			tdiff = T - T_start;
-	} else {
-		tdiff = get_clock_us() - t1;
-		if (!f_value)
-			tdiff -= cpu_tadj;
-	}
-	T_freq = T;
-	cpu_time += tdiff;
+					/* update CPU accounting */
+	cpu_time += (get_clock_us() - t1) - cpu_tadj;
 	cpu_tadj = 0;
+	if (cpu_time)
+		cpu_freq = T * 1000000ULL / cpu_time;
 }
 
 #ifndef ALT_Z80
@@ -719,6 +706,7 @@ static int op_halt(void)		/* HALT */
 	uint64_t t;
 
 	t = get_clock_us();
+
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
