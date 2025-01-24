@@ -96,6 +96,7 @@ WORD mbase;
 static unsigned xsize, ysize;
 static uint32_t *pixels;
 static int pitch;
+static bool shift;
 #ifdef WANT_SDL
 static int panel_win_id = -1;
 static SDL_Window *window;
@@ -178,7 +179,8 @@ static void open_display(void)
 	colormap = XCreateColormap(display, rootwindow, visual, AllocNone);
 	swa.border_pixel = 0;
 	swa.colormap = colormap;
-	swa.event_mask = ButtonPressMask | ButtonReleaseMask;
+	swa.event_mask = KeyPressMask | KeyReleaseMask |
+			 ButtonPressMask | ButtonReleaseMask;
 	window = XCreateWindow(display, rootwindow, 0, 0, xsize, ysize,
 			       1, vinfo.depth, InputOutput, visual,
 			       CWBorderPixel | CWColormap | CWEventMask, &swa);
@@ -251,8 +253,72 @@ static void process_event(SDL_Event *event)
 	switch (event->type) {
 	case SDL_MOUSEBUTTONDOWN:
 		break;
+
 	case SDL_MOUSEBUTTONUP:
 		break;
+
+	case SDL_KEYUP:
+		if (event->window.windowID != SDL_GetWindowID(window))
+			break;
+
+		switch (event->key.keysym.sym) {
+		case SDLK_LSHIFT:
+		case SDLK_RSHIFT:
+			shift = false;
+			break;
+		default:
+			break;
+		}
+		break;
+
+	case SDL_KEYDOWN:
+		if (event->window.windowID != SDL_GetWindowID(window))
+			break;
+
+		switch (event->key.keysym.sym) {
+		case SDLK_LSHIFT:
+		case SDLK_RSHIFT:
+			shift = true;
+			break;
+		case SDLK_LEFT:
+			mbase -= shift ? 0x0010 : 0x0001;
+			break;
+		case SDLK_RIGHT:
+			mbase += shift ? 0x0010 : 0x0001;
+			break;
+		case SDLK_UP:
+			mbase -= shift ? 0x0100 : 0x0010;
+			break;
+		case SDLK_DOWN:
+			mbase += shift ? 0x0100 : 0x0010;
+			break;
+		case SDLK_PAGEUP:
+			mbase -= shift ? 0x1000 : 0x0100;
+			break;
+		case SDLK_PAGEDOWN:
+			mbase += shift ? 0x1000 : 0x0100;
+			break;
+		case SDLK_HOME:
+			mbase &= shift ? 0xff00 : 0xfff0;
+			break;
+		case SDLK_END:
+			if (shift)
+				mbase = (mbase + 0x00ff) & 0xff00;
+			else
+				mbase = (mbase + 0x000f) & 0xfff0;
+			break;
+		default:
+			break;
+		}
+		break;
+
+	case SDL_MOUSEWHEEL:
+		if (event->wheel.direction == SDL_MOUSEWHEEL_NORMAL)
+			mbase += event->wheel.y * (shift ? 0x0100 : 0x0010);
+		else
+			mbase -= event->wheel.y * (shift ? 0x0100 : 0x0010);
+		break;
+
 	default:
 		break;
 	}
@@ -265,13 +331,77 @@ static void process_event(SDL_Event *event)
  */
 static inline void process_events(void)
 {
+	char buffer[5];
+	KeySym key;
+	XComposeStatus compose;
+
 	while (XPending(display)) {
 		XNextEvent(display, &event);
 		switch (event.type) {
 		case ButtonPress:
+			if (event.xbutton.button == 4)
+				mbase += shift ? 0x0100 : 0x0010;
+			else if (event.xbutton.button == 5)
+				mbase -= shift ? 0x0100 : 0x0010;
 			break;
+
 		case ButtonRelease:
 			break;
+
+		case KeyRelease:
+			XLookupString(&event.xkey, buffer, bufsize, &key, &compose);
+
+			switch (key) {
+			case XK_Shift_L:
+			case XK_Shift_R:
+				shift = false;
+				break;
+			default:
+				break;
+			}
+			break;
+
+		case KeyPress:
+			XLookupString(&event.xkey, buffer, sizeof(buffer),
+				      &key, &compose);
+
+			switch (key) {
+			case XK_Shift_L:
+			case XK_Shift_R:
+				shift = true;
+				break;
+			case XK_Left:
+				mbase -= shift ? 0x0010 : 0x0001;
+				break;
+			case XK_Right:
+				mbase += shift ? 0x0010 : 0x0001;
+				break;
+			case XK_Up:
+				mbase -= shift ? 0x0100 : 0x0010;
+				break;
+			case XK_Down:
+				mbase += shift ? 0x0100 : 0x0010;
+				break;
+			case XK_Page_Up:
+				mbase -= shift ? 0x1000 : 0x0100;
+				break;
+			case XK_Page_Down:
+				mbase += shift ? 0x1000 : 0x0100;
+				break;
+			case XK_Home:
+				mbase &= shift ? 0xff00 : 0xfff0;
+				break;
+			case XK_End:
+				if (shift)
+					mbase = (mbase + 0x00ff) & 0xff00;
+				else
+					mbase = (mbase + 0x000f) & 0xfff0;
+				break;
+			default:
+				break;
+			}
+			break;
+
 		default:
 			break;
 		}
@@ -852,7 +982,7 @@ static void draw_cpu_regs(void)
 /*
  *	Draw the memory page:
  *
- *	      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+ *	       0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
  *	0000  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
  *	0010  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
  *	0020  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
@@ -888,8 +1018,8 @@ static void draw_mem_page(WORD mbase)
 		draw_grid_vline(5 + i * 3, 0, grid.rows, &grid, C_DKYELLOW);
 
 	for (i = 0; i < 16; i++) {
-		draw_grid_char(6 + i * 3, 0, '0', &grid, C_GREEN, C_DKBLUE);
-		c = i + (i < 10 ? '0' : 'A' - 10);
+		c = ((mbase & 0xf) + i) & 0xf;
+		c += (c < 10 ? '0' : 'A' - 10);
 		draw_grid_char(7 + i * 3, 0, c, &grid, C_GREEN, C_DKBLUE);
 	}
 	for (j = 1; j < 17; j++) {

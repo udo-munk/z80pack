@@ -592,8 +592,8 @@ void cpu_8080(void)
 			if (F_flag)
 				m1_step = true;
 #endif
-		leave:
 		}
+	leave:
 
 #ifdef BUS_8080
 		/* M1 opcode fetch */

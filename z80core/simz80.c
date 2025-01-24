@@ -604,8 +604,8 @@ void cpu_z80(void)
 				m1_step = true;
 #endif
 			R++;		/* increment refresh register */
-		leave:
 		}
+	leave:
 
 #ifdef BUS_8080
 		/* M1 opcode fetch */
