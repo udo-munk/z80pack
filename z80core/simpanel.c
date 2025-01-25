@@ -358,7 +358,8 @@ static inline void process_events(void)
 			break;
 
 		case KeyRelease:
-			XLookupString(&event.xkey, buffer, bufsize, &key, &compose);
+			XLookupString(&event.xkey, buffer, sizeof(buffer),
+				      &key, &compose);
 
 			switch (key) {
 			case XK_Shift_L:
