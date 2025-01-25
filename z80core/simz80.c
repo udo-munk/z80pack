@@ -5,8 +5,6 @@
  * Copyright (C) 2024 by Thomas Eberhardt
  */
 
-#include <stdio.h>
-
 #include "sim.h"
 #include "simdefs.h"
 #include "simglb.h"
