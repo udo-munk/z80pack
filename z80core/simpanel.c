@@ -250,6 +250,8 @@ static void close_display(void)
  */
 static void process_event(SDL_Event *event)
 {
+	int n;
+
 	switch (event->type) {
 	case SDL_MOUSEBUTTONDOWN:
 		break;
@@ -313,10 +315,17 @@ static void process_event(SDL_Event *event)
 		break;
 
 	case SDL_MOUSEWHEEL:
-		if (event->wheel.direction == SDL_MOUSEWHEEL_NORMAL)
-			mbase += event->wheel.y * (shift ? 0x0100 : 0x0010);
+		if (event->window.windowID != SDL_GetWindowID(window))
+			break;
+
+		if (event->wheel.preciseY < 0)
+			n = (int) (event->wheel.preciseY - 0.5);
 		else
-			mbase -= event->wheel.y * (shift ? 0x0100 : 0x0010);
+			n = (int) (event->wheel.preciseY + 0.5);
+		if (event->wheel.direction == SDL_MOUSEWHEEL_NORMAL)
+			mbase += n * (shift ? 0x0100 : 0x0010);
+		else
+			mbase -= n * (shift ? 0x0100 : 0x0010);
 		break;
 
 	default:
@@ -349,7 +358,8 @@ static inline void process_events(void)
 			break;
 
 		case KeyRelease:
-			XLookupString(&event.xkey, buffer, bufsize, &key, &compose);
+			XLookupString(&event.xkey, buffer, sizeof(buffer),
+				      &key, &compose);
 
 			switch (key) {
 			case XK_Shift_L:
