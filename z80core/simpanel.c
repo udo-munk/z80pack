@@ -1121,7 +1121,6 @@ static void draw_ports_panel(void)
 	int i, j;
 	unsigned x, y;
 	grid_t grid;
-	static Tstates_t T_old;
 
 	draw_setup_grid(&grid, IOXOFF, IOYOFF, 67, 17, &font16, IOSPC);
 
@@ -1147,11 +1146,9 @@ static void draw_ports_panel(void)
 		}
 	}
 
-	/* clear access flags when CPU clock is advancing */
-	if (!sticky && T_old != T) {
+	/* clear access flags if sticky flag is not set */
+	if (!sticky)
 		memset(port_flags, 0, sizeof(port_flags));
-		T_old = T;
-	}
 }
 
 /*
