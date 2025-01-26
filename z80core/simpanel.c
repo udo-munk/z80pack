@@ -35,6 +35,10 @@
 #include "log.h"
 static const char *TAG = "panel";
 
+/* panel types */
+#define MEMORY_PANEL	0
+#define PORTS_PANEL	1
+
 /* 888 RGB colors */
 #define C_BLACK		0x00000000
 #define C_RED		0x00ff0000
@@ -54,21 +58,23 @@ static const char *TAG = "panel";
 #define C_ORANGE	0x00ffa500
 #define C_WHEAT		0x00f5deb3
 
+#define C_TRANS		0xffffffff
+
 /*
  *	Font type. Depth is ignored and assumed to be 1.
  */
 typedef const struct font {
 	const uint8_t *bits;
-	const unsigned depth;
-	const unsigned width;
-	const unsigned height;
-	const unsigned stride;
+	unsigned depth;
+	unsigned width;
+	unsigned height;
+	unsigned stride;
 } font_t;
 
 /*
  *	Grid type for drawing text with character based coordinates.
  */
-typedef struct draw_grid {
+typedef struct grid {
 	const font_t *font;
 	unsigned xoff;
 	unsigned yoff;
@@ -77,7 +83,23 @@ typedef struct draw_grid {
 	unsigned cheight;
 	unsigned cols;
 	unsigned rows;
-} draw_grid_t;
+} grid_t;
+
+/*
+ *	Button type
+ */
+typedef struct button {
+	bool enabled;
+	bool active;
+	bool pressed;
+	bool clicked;
+	const unsigned x;
+	const unsigned y;
+	const unsigned width;
+	const unsigned height;
+	const font_t *font;
+	const char *text;
+} button_t;
 
 /* include Terminus bitmap fonts */
 #include "fonts/font12.h"
@@ -90,7 +112,27 @@ typedef struct draw_grid {
 #include "fonts/font28.h"
 #include "fonts/font32.h"
 
-WORD mbase;
+static void check_buttons(unsigned x, unsigned y, bool press);
+
+/*
+ *	Buttons
+ */
+#define MEMORY_BUTTON	0
+#define PORTS_BUTTON	1
+#define STICKY_BUTTON	2
+
+button_t buttons[] = {
+	[ MEMORY_BUTTON ] = {
+		false, false, false, false, 500,  1, 60, 19, &font12, "Memory"
+	},
+	[ PORTS_BUTTON ] = {
+		false, false, false, false, 500, 22, 60, 19, &font12, "Ports"
+	},
+	[ STICKY_BUTTON ] = {
+		false, false, false, false, 500, 43, 60, 19, &font12, "Sticky"
+	}
+};
+const int nbuttons = sizeof(buttons) / sizeof(button_t);
 
 /* SDL2/X11 stuff */
 static unsigned xsize, ysize;
@@ -117,6 +159,11 @@ static XEvent event;
 /* UNIX stuff */
 static pthread_t thread;
 #endif
+
+/* panel stuff */
+static int panel;		/* current panel type */
+static WORD mbase;		/* memory panel base address */
+static bool sticky;		/* I/O ports panel sticky flag */
 
 /*
  * Create the SDL2 or X11 window for panel display
@@ -254,9 +301,17 @@ static void process_event(SDL_Event *event)
 
 	switch (event->type) {
 	case SDL_MOUSEBUTTONDOWN:
+		if (event->window.windowID != SDL_GetWindowID(window))
+			break;
+
+		check_buttons(event->button.x, event->button.y, true);
 		break;
 
 	case SDL_MOUSEBUTTONUP:
+		if (event->window.windowID != SDL_GetWindowID(window))
+			break;
+
+		check_buttons(event->button.x, event->button.y, false);
 		break;
 
 	case SDL_KEYUP:
@@ -283,31 +338,40 @@ static void process_event(SDL_Event *event)
 			shift = true;
 			break;
 		case SDLK_LEFT:
-			mbase -= shift ? 0x0010 : 0x0001;
+			if (panel == MEMORY_PANEL)
+				mbase -= shift ? 0x0010 : 0x0001;
 			break;
 		case SDLK_RIGHT:
-			mbase += shift ? 0x0010 : 0x0001;
+			if (panel == MEMORY_PANEL)
+				mbase += shift ? 0x0010 : 0x0001;
 			break;
 		case SDLK_UP:
-			mbase -= shift ? 0x0100 : 0x0010;
+			if (panel == MEMORY_PANEL)
+				mbase -= shift ? 0x0100 : 0x0010;
 			break;
 		case SDLK_DOWN:
-			mbase += shift ? 0x0100 : 0x0010;
+			if (panel == MEMORY_PANEL)
+				mbase += shift ? 0x0100 : 0x0010;
 			break;
 		case SDLK_PAGEUP:
-			mbase -= shift ? 0x1000 : 0x0100;
+			if (panel == MEMORY_PANEL)
+				mbase -= shift ? 0x1000 : 0x0100;
 			break;
 		case SDLK_PAGEDOWN:
-			mbase += shift ? 0x1000 : 0x0100;
+			if (panel == MEMORY_PANEL)
+				mbase += shift ? 0x1000 : 0x0100;
 			break;
 		case SDLK_HOME:
-			mbase &= shift ? 0xff00 : 0xfff0;
+			if (panel == MEMORY_PANEL)
+				mbase &= shift ? 0xff00 : 0xfff0;
 			break;
 		case SDLK_END:
-			if (shift)
-				mbase = (mbase + 0x00ff) & 0xff00;
-			else
-				mbase = (mbase + 0x000f) & 0xfff0;
+			if (panel == MEMORY_PANEL) {
+				if (shift)
+					mbase = (mbase + 0x00ff) & 0xff00;
+				else
+					mbase = (mbase + 0x000f) & 0xfff0;
+			}
 			break;
 		default:
 			break;
@@ -318,14 +382,16 @@ static void process_event(SDL_Event *event)
 		if (event->window.windowID != SDL_GetWindowID(window))
 			break;
 
-		if (event->wheel.preciseY < 0)
-			n = (int) (event->wheel.preciseY - 0.5);
-		else
-			n = (int) (event->wheel.preciseY + 0.5);
-		if (event->wheel.direction == SDL_MOUSEWHEEL_NORMAL)
-			mbase += n * (shift ? 0x0100 : 0x0010);
-		else
-			mbase -= n * (shift ? 0x0100 : 0x0010);
+		if (panel == MEMORY_PANEL) {
+			if (event->wheel.preciseY < 0)
+				n = (int) (event->wheel.preciseY - 0.5);
+			else
+				n = (int) (event->wheel.preciseY + 0.5);
+			if (event->wheel.direction == SDL_MOUSEWHEEL_NORMAL)
+				mbase += n * (shift ? 0x0100 : 0x0010);
+			else
+				mbase -= n * (shift ? 0x0100 : 0x0010);
+		}
 		break;
 
 	default:
@@ -348,13 +414,21 @@ static inline void process_events(void)
 		XNextEvent(display, &event);
 		switch (event.type) {
 		case ButtonPress:
-			if (event.xbutton.button == 4)
-				mbase += shift ? 0x0100 : 0x0010;
-			else if (event.xbutton.button == 5)
-				mbase -= shift ? 0x0100 : 0x0010;
+			if (event.xbutton.button < 4)
+				check_buttons(event.xbutton.x, event.xbutton.y,
+					      true);
+			else if (panel == MEMORY_PANEL) {
+				if (event.xbutton.button == 4)
+					mbase += shift ? 0x0100 : 0x0010;
+				else if (event.xbutton.button == 5)
+					mbase -= shift ? 0x0100 : 0x0010;
+			}
 			break;
 
 		case ButtonRelease:
+			if (event.xbutton.button < 4)
+				check_buttons(event.xbutton.x, event.xbutton.y,
+					      false);
 			break;
 
 		case KeyRelease:
@@ -381,31 +455,42 @@ static inline void process_events(void)
 				shift = true;
 				break;
 			case XK_Left:
-				mbase -= shift ? 0x0010 : 0x0001;
+				if (panel == MEMORY_PANEL)
+					mbase -= shift ? 0x0010 : 0x0001;
 				break;
 			case XK_Right:
-				mbase += shift ? 0x0010 : 0x0001;
+				if (panel == MEMORY_PANEL)
+					mbase += shift ? 0x0010 : 0x0001;
 				break;
 			case XK_Up:
-				mbase -= shift ? 0x0100 : 0x0010;
+				if (panel == MEMORY_PANEL)
+					mbase -= shift ? 0x0100 : 0x0010;
 				break;
 			case XK_Down:
-				mbase += shift ? 0x0100 : 0x0010;
+				if (panel == MEMORY_PANEL)
+					mbase += shift ? 0x0100 : 0x0010;
 				break;
 			case XK_Page_Up:
-				mbase -= shift ? 0x1000 : 0x0100;
+				if (panel == MEMORY_PANEL)
+					mbase -= shift ? 0x1000 : 0x0100;
 				break;
 			case XK_Page_Down:
-				mbase += shift ? 0x1000 : 0x0100;
+				if (panel == MEMORY_PANEL)
+					mbase += shift ? 0x1000 : 0x0100;
 				break;
 			case XK_Home:
-				mbase &= shift ? 0xff00 : 0xfff0;
+				if (panel == MEMORY_PANEL)
+					mbase &= shift ? 0xff00 : 0xfff0;
 				break;
 			case XK_End:
-				if (shift)
-					mbase = (mbase + 0x00ff) & 0xff00;
-				else
-					mbase = (mbase + 0x000f) & 0xfff0;
+				if (panel == MEMORY_PANEL) {
+					if (shift)
+						mbase = (mbase + 0x00ff) &
+							0xff00;
+					else
+						mbase = (mbase + 0x000f) &
+							0xfff0;
+				}
 				break;
 			default:
 				break;
@@ -502,10 +587,13 @@ static inline void draw_char(const unsigned x, const unsigned y, const char c,
 		p = p0;
 		q = q0;
 		for (i = font->width; i > 0; i--) {
-			if (*p & m)
-				*q = fgc;
-			else
-				*q = bgc;
+			if (*p & m) {
+				if (fgc != C_TRANS)
+					*q = fgc;
+			} else {
+				if (bgc != C_TRANS)
+					*q = bgc;
+			}
 			if ((m >>= 1) == 0) {
 				m = 0x80;
 				p++;
@@ -514,44 +602,6 @@ static inline void draw_char(const unsigned x, const unsigned y, const char c,
 		}
 		p0 += font->stride;
 		q0 += pitch;
-	}
-}
-
-/*
- *	Draw a string using the specified font and colors.
- */
-static inline void draw_string(unsigned x, const unsigned y, const char *s,
-			       const font_t *font, const uint32_t fgc,
-			       const uint32_t bgc)
-{
-#ifdef DRAW_DEBUG
-	int n;
-
-	if (pixels == NULL) {
-		fprintf(stderr, "%s: pixels texture is NULL\n", __func__);
-		return;
-	}
-	if (s == NULL) {
-		fprintf(stderr, "%s: string is NULL\n", __func__);
-		return;
-	}
-	if (font == NULL) {
-		fprintf(stderr, "%s: font is NULL\n", __func__);
-		return;
-	}
-	n = strlen(s);
-	if (x >= xsize || y >= ysize || x + n * font->width > xsize ||
-	    y + font->height > ysize) {
-		fprintf(stderr, "%s: string \"%s\" at (%d,%d)-(%d,%d) is "
-			"outside (0,0)-(%d,%d)\n", __func__, s, x, y,
-			x + n * font->width - 1, y + font->height - 1,
-			xsize - 1, ysize - 1);
-		return;
-	}
-#endif
-	while (*s) {
-		draw_char(x, y, *s++, font, fgc, bgc);
-		x += font->width;
 	}
 }
 
@@ -612,7 +662,7 @@ static inline void draw_vline(const unsigned x, const unsigned y, unsigned h,
  *	If col < 0 then use the entire pixels texture width.
  *	If row < 0 then use the entire pixels texture height.
  */
-static inline void draw_setup_grid(draw_grid_t *grid, const unsigned xoff,
+static inline void draw_setup_grid(grid_t *grid, const unsigned xoff,
 				   const unsigned yoff, const int cols,
 				   const int rows, const font_t *font,
 				   const unsigned spc)
@@ -670,7 +720,7 @@ static inline void draw_setup_grid(draw_grid_t *grid, const unsigned xoff,
  *	Draw a character using grid coordinates in the specified color.
  */
 static inline void draw_grid_char(const unsigned x, const unsigned y,
-				  const char c, const draw_grid_t *grid,
+				  const char c, const grid_t *grid,
 				  const uint32_t fgc, const uint32_t bgc)
 {
 #ifdef DRAW_DEBUG
@@ -693,7 +743,7 @@ static inline void draw_grid_char(const unsigned x, const unsigned y,
  *	above the y grid coordinate specified.
  */
 static inline void draw_grid_hline(unsigned x, unsigned y, unsigned w,
-				   const draw_grid_t *grid, const uint32_t col)
+				   const grid_t *grid, const uint32_t col)
 {
 #ifdef DRAW_DEBUG
 	if (pixels == NULL) {
@@ -719,7 +769,7 @@ static inline void draw_grid_hline(unsigned x, unsigned y, unsigned w,
  *	specified.
  */
 static inline void draw_grid_vline(unsigned x, unsigned y, unsigned h,
-				   const draw_grid_t *grid, const uint32_t col)
+				   const grid_t *grid, const uint32_t col)
 {
 #ifdef DRAW_DEBUG
 	if (pixels == NULL) {
@@ -747,10 +797,13 @@ static inline void draw_grid_vline(unsigned x, unsigned y, unsigned h,
 }
 
 /*
- *	Draw a 10x10 LED circular bracket.
+ *	Draw a LED inside a 10x10 circular bracket.
  */
-static inline void draw_led_bracket(const unsigned x, const unsigned y)
+static inline void draw_led(const unsigned x, const unsigned y,
+			    const uint32_t col)
 {
+	int i;
+
 	draw_hline(x + 2, y, 6, C_GRAY);
 	draw_pixel(x + 1, y + 1, C_GRAY);
 	draw_pixel(x + 8, y + 1, C_GRAY);
@@ -759,16 +812,6 @@ static inline void draw_led_bracket(const unsigned x, const unsigned y)
 	draw_pixel(x + 1, y + 8, C_GRAY);
 	draw_pixel(x + 8, y + 8, C_GRAY);
 	draw_hline(x + 2, y + 9, 6, C_GRAY);
-}
-
-/*
- *	Draw a LED inside a 10x10 circular bracket.
- */
-static inline void draw_led(const unsigned x, const unsigned y,
-			    const uint32_t col)
-{
-	int i;
-
 	for (i = 1; i < 9; i++) {
 		if (i == 1 || i == 8)
 			draw_hline(x + 2, y + i, 6, col);
@@ -888,7 +931,7 @@ static void draw_cpu_regs(void)
 	WORD w;
 	const char *s;
 	const reg_t *rp = NULL;
-	draw_grid_t grid = { };
+	grid_t grid = { };
 	int cpu_type = cpu;
 
 	/* use cpu_type in the rest of this function, since cpu can change */
@@ -990,36 +1033,24 @@ static void draw_cpu_regs(void)
 }
 
 /*
- *	Draw the memory page:
+ *	Draw the memory panel:
  *
  *	       0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
  *	0000  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0010  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0020  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0030  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0040  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0050  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0060  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0070  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0080  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	0090  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	00A0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	00B0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	00C0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	00D0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
- *	00E0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
+ *					...
  *	00F0  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF
  */
 
 #define MXOFF	4
-#define MYOFF	64
+#define MYOFF	68
 #define MSPC	1
 
-static void draw_mem_page(WORD mbase)
+static void draw_memory_panel(void)
 {
 	char c, dc;
 	int i, j;
-	draw_grid_t grid;
+	WORD a;
+	grid_t grid;
 
 	draw_setup_grid(&grid, MXOFF, MYOFF, 71, 17, &font16, MSPC);
 
@@ -1027,46 +1058,97 @@ static void draw_mem_page(WORD mbase)
 	for (i = 0; i < 17; i++)
 		draw_grid_vline(5 + i * 3, 0, grid.rows, &grid, C_DKYELLOW);
 
+	a = mbase;
 	for (i = 0; i < 16; i++) {
-		c = ((mbase & 0xf) + i) & 0xf;
+		c = ((a & 0xf) + i) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
 		draw_grid_char(7 + i * 3, 0, c, &grid, C_GREEN, C_DKBLUE);
 	}
-	for (j = 1; j < 17; j++) {
-		draw_grid_hline(0, j, grid.cols, &grid, C_DKYELLOW);
-		c = (mbase >> 12) & 0xf;
+	for (j = 0; j < 16; j++) {
+		draw_grid_hline(0, j + 1, grid.cols, &grid, C_DKYELLOW);
+		c = (a >> 12) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(0, j, c, &grid, C_GREEN, C_DKBLUE);
-		c = (mbase >> 8) & 0xf;
+		draw_grid_char(0, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		c = (a >> 8) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(1, j, c, &grid, C_GREEN, C_DKBLUE);
-		c = (mbase >> 4) & 0xf;
+		draw_grid_char(1, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		c = (a >> 4) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(2, j, c, &grid, C_GREEN, C_DKBLUE);
-		c = mbase & 0xf;
+		draw_grid_char(2, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		c = a & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(3, j, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(3, j + 1, c, &grid, C_GREEN, C_DKBLUE);
 		for (i = 0; i < 16; i++) {
-			c = (getmem(mbase) >> 4) & 0xf;
+			c = (getmem(a) >> 4) & 0xf;
 			c += (c < 10 ? '0' : 'A' - 10);
-			draw_grid_char(6 + i * 3, j, c, &grid, C_CYAN,
+			draw_grid_char(6 + i * 3, j + 1, c, &grid, C_CYAN,
 				       C_DKBLUE);
-			c = getmem(mbase++) & 0xf;
+			c = getmem(a++) & 0xf;
 			c += (c < 10 ? '0' : 'A' - 10);
-			draw_grid_char(7 + i * 3, j, c, &grid, C_CYAN,
+			draw_grid_char(7 + i * 3, j + 1, c, &grid, C_CYAN,
 				       C_DKBLUE);
 		}
-		mbase -= 16;
+		a -= 16;
 		for (i = 0; i < 16; i++) {
-			c = getmem(mbase++);
+			c = getmem(a++);
 			dc = c & 0x7f;
 			if (dc < 32 || dc == 127)
 				dc = '.';
-			draw_grid_char(55 + i, j, dc, &grid,
+			draw_grid_char(55 + i, j + 1, dc, &grid,
 				       (c & 0x80) ? C_ORANGE : C_YELLOW,
 				       C_DKBLUE);
 		}
 	}
+}
+
+/*
+ *	Draw the I/O ports panel:
+ *
+ *	       0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+ *	0000  o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o
+ *					...
+ *	00F0  o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o
+ */
+
+#define IOXOFF	20
+#define IOYOFF	68
+#define IOSPC	1
+
+static void draw_ports_panel(void)
+{
+	port_flags_t *p = port_flags;
+	char c;
+	int i, j;
+	unsigned x, y;
+	grid_t grid;
+
+	draw_setup_grid(&grid, IOXOFF, IOYOFF, 67, 17, &font16, IOSPC);
+
+	/* draw vertical grid lines */
+	for (i = 0; i < 16; i++)
+		draw_grid_vline(3 + i * 4, 0, grid.rows, &grid, C_DKYELLOW);
+
+	for (i = 0; i < 16; i++) {
+		c = i + (i < 10 ? '0' : 'A' - 10);
+		draw_grid_char(5 + i * 4, 0, c, &grid, C_GREEN, C_DKBLUE);
+	}
+	for (j = 0; j < 16; j++) {
+		draw_grid_hline(0, j + 1, grid.cols, &grid, C_DKYELLOW);
+		c = j + (j < 10 ? '0' : 'A' - 10);
+		draw_grid_char(0, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(1, j + 1, '0', &grid, C_GREEN, C_DKBLUE);
+		for (i = 0; i < 16; i++) {
+			x = (4 + i * 4) * grid.cwidth + grid.xoff + 1;
+			y = (j + 1) * grid.cheight + grid.yoff + 3;
+			draw_led(x, y, p->in ? C_GREEN : C_DKBLUE);
+			draw_led(x + 13, y, p->out ? C_RED : C_DKBLUE);
+			p++;
+		}
+	}
+
+	/* clear access flags if sticky flag is not set */
+	if (!sticky)
+		memset(port_flags, 0, sizeof(port_flags));
 }
 
 /*
@@ -1141,14 +1223,132 @@ static void draw_info(bool tick)
 }
 
 /*
- * Refresh the display buffer
+ *	Draw buttons
+ */
+static void draw_buttons(void)
+{
+	int i;
+	unsigned x, y;
+	button_t *p = buttons;
+	uint32_t color;
+	const char *s;
+
+	for (i = 0; i < nbuttons; i++) {
+		if (p->enabled) {
+			draw_hline(p->x + 2, p->y, p->width - 4, C_WHITE);
+			draw_pixel(p->x + 1, p->y + 1, C_WHITE);
+			draw_pixel(p->x + p->width - 2, p->y + 1, C_WHITE);
+			draw_vline(p->x, p->y + 2, p->height - 4, C_WHITE);
+			draw_vline(p->x + p->width - 1, p->y + 2,
+				   p->height - 4, C_WHITE);
+			draw_pixel(p->x + 1, p->y + p->height - 2, C_WHITE);
+			draw_pixel(p->x + p->width - 2, p->y + p->height - 2,
+				   C_WHITE);
+			draw_hline(p->x + 2, p->y + p->height - 1,
+				   p->width - 4, C_WHITE);
+
+			color = C_DKBLUE;
+			if (p->active)
+				color = C_DKGREEN;
+			if (p->pressed)
+				color = C_DKYELLOW;
+			draw_hline(p->x + 2, p->y + 1, p->width - 4, color);
+			for (y = p->y + 2; y < p->y + p->height - 2; y++)
+				draw_hline(p->x + 1, y, p->width - 2, color);
+			draw_hline(p->x + 2, p->y + p->height - 2,
+				   p->width - 4, color);
+
+			x = p->x + 1 + (p->width - 2 - strlen(p->text) *
+					p->font->width) / 2;
+			y = p->y + 1 + (p->height - 2 - p->font->height) / 2;
+			for (s = p->text; *s; s++) {
+				draw_char(x, y, *s, p->font, C_CYAN, C_TRANS);
+				x += p->font->width;
+			}
+		}
+		p++;
+	}
+}
+
+/*
+ *	Update button states
+ */
+static void update_buttons(void)
+{
+	int i;
+	button_t *p = buttons;
+
+	for (i = 0; i < nbuttons; i++) {
+		if (p->clicked) {
+			switch (i) {
+			case MEMORY_BUTTON:
+				if (panel != MEMORY_PANEL) {
+					buttons[MEMORY_BUTTON].active = true;
+					buttons[PORTS_BUTTON].active = false;
+					buttons[STICKY_BUTTON].enabled = false;
+					panel = MEMORY_PANEL;
+				}
+				break;
+			case PORTS_BUTTON:
+				if (panel != PORTS_PANEL) {
+					buttons[MEMORY_BUTTON].active = false;
+					buttons[PORTS_BUTTON].active = true;
+					buttons[STICKY_BUTTON].enabled = true;
+					panel = PORTS_PANEL;
+				}
+				break;
+			case STICKY_BUTTON:
+				sticky = !sticky;
+				buttons[STICKY_BUTTON].active = sticky;
+				break;
+			default:
+				break;
+			}
+			p->clicked = false;
+			break;
+		}
+		p++;
+	}
+}
+
+/*
+ *	Check for button presses
+ */
+static void check_buttons(unsigned x, unsigned y, bool press)
+{
+	int i;
+	button_t *p = buttons;
+
+	for (i = 0; i < nbuttons; i++) {
+		if (p->enabled) {
+			if (press && x >= p->x && x < p->x + p->width &&
+			    y >= p->y && y < p->y + p->height) {
+				p->pressed = true;
+				break;
+			} else if (p->pressed) {
+				p->pressed = false;
+				p->clicked = true;
+				break;
+			}
+		}
+		p++;
+	}
+}
+
+/*
+ *	Refresh the display buffer
  */
 static void refresh(bool tick)
 {
 	draw_clear(C_DKBLUE);
 
+	update_buttons();
+	draw_buttons();
 	draw_cpu_regs();
-	draw_mem_page(mbase);
+	if (panel == MEMORY_PANEL)
+		draw_memory_panel();
+	else if (panel == PORTS_PANEL)
+		draw_ports_panel();
 	draw_info(tick);
 }
 
@@ -1249,6 +1449,11 @@ void init_panel(void)
 		}
 	}
 #endif
+
+	panel = MEMORY_PANEL;
+	buttons[MEMORY_BUTTON].enabled = true;
+	buttons[MEMORY_BUTTON].active = true;
+	buttons[PORTS_BUTTON].enabled = true;
 }
 
 void exit_panel(void)

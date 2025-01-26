@@ -84,9 +84,9 @@ BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
 #endif
 
 /*
- *	Variables for iopanel
+ *	Variables for I/O ports panel
  */
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 port_flags_t port_flags[256];	/* port access flags */
 #endif
 

@@ -68,7 +68,7 @@ extern BYTE 	fp_led_data;
 extern BYTE 	fp_led_output;
 #endif
 
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 extern port_flags_t port_flags[256];
 #endif
 

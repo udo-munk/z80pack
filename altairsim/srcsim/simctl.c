@@ -407,7 +407,8 @@ static void reset_clicked(int state, int val)
 			/* update front panel */
 			fp_led_address = PC;
 			fp_led_data = fp_read(PC);
-			if ((p_tab[PC] == MEM_RO) || (p_tab[PC] == MEM_WPROT))
+			if ((p_tab[PC >> 8] == MEM_RO) ||
+			    (p_tab[PC >> 8] == MEM_WPROT))
 				mem_wp = 1;
 			else
 				mem_wp = 0;

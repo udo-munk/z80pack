@@ -293,7 +293,7 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_data = io_data;
 #endif
 
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 	port_flags[addrl].in = true;
 #endif
 
@@ -353,7 +353,7 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	fp_led_data = IO_DATA_UNUSED;
 #endif
 
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 	port_flags[addrl].out = true;
 #endif
 
