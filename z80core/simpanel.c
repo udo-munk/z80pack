@@ -121,7 +121,7 @@ static void check_buttons(unsigned x, unsigned y, bool press);
 #define PORTS_BUTTON	1
 #define STICKY_BUTTON	2
 
-button_t buttons[] = {
+static button_t buttons[] = {
 	[ MEMORY_BUTTON ] = {
 		false, false, false, false, 500,  1, 60, 19, &font12, "Memory"
 	},
@@ -132,7 +132,7 @@ button_t buttons[] = {
 		false, false, false, false, 500, 43, 60, 19, &font12, "Sticky"
 	}
 };
-const int nbuttons = sizeof(buttons) / sizeof(button_t);
+static const int nbuttons = sizeof(buttons) / sizeof(button_t);
 
 /* SDL2/X11 stuff */
 static unsigned xsize, ysize;
@@ -504,8 +504,6 @@ static inline void process_events(void)
 }
 
 #endif /* !WANT_SDL */
-
-#define DRAW_DEBUG
 
 /*
  *	Fill the pixmap with the specified color.
