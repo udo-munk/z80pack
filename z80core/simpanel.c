@@ -71,6 +71,17 @@ typedef const struct font {
 	unsigned stride;
 } font_t;
 
+/* include Terminus bitmap fonts */
+#include "fonts/font12.h"
+#include "fonts/font14.h"
+#include "fonts/font16.h"
+#include "fonts/font18.h"
+#include "fonts/font20.h"
+#include "fonts/font22.h"
+#include "fonts/font24.h"
+#include "fonts/font28.h"
+#include "fonts/font32.h"
+
 /*
  *	Grid type for drawing text with character based coordinates.
  */
@@ -93,6 +104,7 @@ typedef struct button {
 	bool active;
 	bool pressed;
 	bool clicked;
+	bool hilighted;
 	const unsigned x;
 	const unsigned y;
 	const unsigned width;
@@ -100,19 +112,6 @@ typedef struct button {
 	const font_t *font;
 	const char *text;
 } button_t;
-
-/* include Terminus bitmap fonts */
-#include "fonts/font12.h"
-#include "fonts/font14.h"
-#include "fonts/font16.h"
-#include "fonts/font18.h"
-#include "fonts/font20.h"
-#include "fonts/font22.h"
-#include "fonts/font24.h"
-#include "fonts/font28.h"
-#include "fonts/font32.h"
-
-static void check_buttons(unsigned x, unsigned y, bool press);
 
 /*
  *	Buttons
@@ -123,16 +122,29 @@ static void check_buttons(unsigned x, unsigned y, bool press);
 
 static button_t buttons[] = {
 	[ MEMORY_BUTTON ] = {
-		false, false, false, false, 500,  1, 60, 19, &font12, "Memory"
+		false, false, false, false, false,
+		500,  1, 60, 19, &font12, "Memory"
 	},
 	[ PORTS_BUTTON ] = {
-		false, false, false, false, 500, 22, 60, 19, &font12, "Ports"
+		false, false, false, false, false,
+		500, 22, 60, 19, &font12, "Ports"
 	},
 	[ STICKY_BUTTON ] = {
-		false, false, false, false, 500, 43, 60, 19, &font12, "Sticky"
+		false, false, false, false, false,
+		500, 43, 60, 19, &font12, "Sticky"
 	}
 };
 static const int nbuttons = sizeof(buttons) / sizeof(button_t);
+
+/*
+ *	Button events
+ */
+
+#define EVENT_PRESS	0
+#define EVENT_RELEASE	1
+#define EVENT_MOTION	2
+
+static void check_buttons(unsigned x, unsigned y, int event);
 
 /* SDL2/X11 stuff */
 static unsigned xsize, ysize;
@@ -227,7 +239,8 @@ static void open_display(void)
 	swa.border_pixel = 0;
 	swa.colormap = colormap;
 	swa.event_mask = KeyPressMask | KeyReleaseMask |
-			 ButtonPressMask | ButtonReleaseMask;
+			 ButtonPressMask | ButtonReleaseMask |
+			 PointerMotionMask;
 	window = XCreateWindow(display, rootwindow, 0, 0, xsize, ysize,
 			       1, vinfo.depth, InputOutput, visual,
 			       CWBorderPixel | CWColormap | CWEventMask, &swa);
@@ -304,14 +317,21 @@ static void process_event(SDL_Event *event)
 		if (event->window.windowID != SDL_GetWindowID(window))
 			break;
 
-		check_buttons(event->button.x, event->button.y, true);
+		check_buttons(event->button.x, event->button.y, EVENT_PRESS);
 		break;
 
 	case SDL_MOUSEBUTTONUP:
 		if (event->window.windowID != SDL_GetWindowID(window))
 			break;
 
-		check_buttons(event->button.x, event->button.y, false);
+		check_buttons(event->button.x, event->button.y, EVENT_RELEASE);
+		break;
+
+	case SDL_MOUSEMOTION:
+		if (event->window.windowID != SDL_GetWindowID(window))
+			break;
+
+		check_buttons(event->motion.x, event->motion.y, EVENT_MOTION);
 		break;
 
 	case SDL_KEYUP:
@@ -416,7 +436,7 @@ static inline void process_events(void)
 		case ButtonPress:
 			if (event.xbutton.button < 4)
 				check_buttons(event.xbutton.x, event.xbutton.y,
-					      true);
+					      EVENT_PRESS);
 			else if (panel == MEMORY_PANEL) {
 				if (event.xbutton.button == 4)
 					mbase += shift ? 0x0100 : 0x0010;
@@ -428,7 +448,12 @@ static inline void process_events(void)
 		case ButtonRelease:
 			if (event.xbutton.button < 4)
 				check_buttons(event.xbutton.x, event.xbutton.y,
-					      false);
+					      EVENT_RELEASE);
+			break;
+
+		case MotionNotify:
+			check_buttons(event.xmotion.x, event.xmotion.y,
+				      EVENT_MOTION);
 			break;
 
 		case KeyRelease:
@@ -1233,17 +1258,18 @@ static void draw_buttons(void)
 
 	for (i = 0; i < nbuttons; i++) {
 		if (p->enabled) {
-			draw_hline(p->x + 2, p->y, p->width - 4, C_WHITE);
-			draw_pixel(p->x + 1, p->y + 1, C_WHITE);
-			draw_pixel(p->x + p->width - 2, p->y + 1, C_WHITE);
-			draw_vline(p->x, p->y + 2, p->height - 4, C_WHITE);
+			color = p->hilighted ? C_ORANGE : C_WHITE;
+			draw_hline(p->x + 2, p->y, p->width - 4, color);
+			draw_pixel(p->x + 1, p->y + 1, color);
+			draw_pixel(p->x + p->width - 2, p->y + 1, color);
+			draw_vline(p->x, p->y + 2, p->height - 4, color);
 			draw_vline(p->x + p->width - 1, p->y + 2,
-				   p->height - 4, C_WHITE);
-			draw_pixel(p->x + 1, p->y + p->height - 2, C_WHITE);
+				   p->height - 4, color);
+			draw_pixel(p->x + 1, p->y + p->height - 2, color);
 			draw_pixel(p->x + p->width - 2, p->y + p->height - 2,
-				   C_WHITE);
+				   color);
 			draw_hline(p->x + 2, p->y + p->height - 1,
-				   p->width - 4, C_WHITE);
+				   p->width - 4, color);
 
 			color = C_DKBLUE;
 			if (p->active)
@@ -1312,20 +1338,35 @@ static void update_buttons(void)
 /*
  *	Check for button presses
  */
-static void check_buttons(unsigned x, unsigned y, bool press)
+static void check_buttons(unsigned x, unsigned y, int event)
 {
 	int i;
+	bool inside;
 	button_t *p = buttons;
 
 	for (i = 0; i < nbuttons; i++) {
 		if (p->enabled) {
-			if (press && x >= p->x && x < p->x + p->width &&
-			    y >= p->y && y < p->y + p->height) {
-				p->pressed = true;
+			inside = (x >= p->x && x < p->x + p->width &&
+				  y >= p->y && y < p->y + p->height);
+			switch (event) {
+			case EVENT_PRESS:
+				if (inside)
+					p->pressed = true;
 				break;
-			} else if (p->pressed) {
+			case EVENT_RELEASE:
+				if (inside && p->pressed)
+					p->clicked = true;
 				p->pressed = false;
-				p->clicked = true;
+				break;
+			case EVENT_MOTION:
+				if (inside)
+					p->hilighted = true;
+				else {
+					p->pressed = false;
+					p->hilighted = false;
+				}
+				break;
+			default:
 				break;
 			}
 		}
