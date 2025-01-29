@@ -2076,8 +2076,11 @@ static BYTE speedl_in(void)
 static void speedh_out(BYTE data)
 {
 	speed += data << 8;
-	tmax = speed * 10000;
 	f_value = speed;
+	if (f_value)
+		tmax = speed * 10000;
+	else
+		tmax = 100000;
 }
 
 /*

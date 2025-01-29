@@ -88,6 +88,14 @@ static uint64_t sio2b_t1, sio2b_t2;
 static BYTE sio2b_stat = 0;
 
 /*
+ * reset IMSAI SIO-2
+ */
+void imsai_sio_reset(void)
+{
+	sio1a_t1 = sio1b_t1 = sio2a_t1 = sio2b_t1 = get_clock_us();
+}
+
+/*
  * the IMSAI SIO-2 occupies 16 I/O ports, from which only
  * 5 have a function. the following two functions are used
  * for the ports without function.
@@ -118,13 +126,10 @@ void imsai_sio_nofun_out(BYTE data)
  */
 BYTE imsai_sio1a_status_in(void)
 {
-	int tdiff;
-
 	sio1a_t2 = get_clock_us();
-	tdiff = sio1a_t2 - sio1a_t1;
-	if (sio1a_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1a_baud_rate))
-			return sio1a_stat;
+	if (sio1a_baud_rate > 0 &&
+	    (int) (sio1a_t2 - sio1a_t1) < BAUDTIME / sio1a_baud_rate)
+		return sio1a_stat;
 
 	hal_status_in(SIO1A, &sio1a_stat);
 
@@ -196,13 +201,10 @@ void imsai_sio1a_data_out(BYTE data)
  */
 BYTE imsai_sio1b_status_in(void)
 {
-	int tdiff;
-
 	sio1b_t2 = get_clock_us();
-	tdiff = sio1b_t2 - sio1b_t1;
-	if (sio1b_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio1b_baud_rate))
-			return sio1b_stat;
+	if (sio1b_baud_rate > 0 &&
+	    (int) (sio1b_t2 - sio1b_t1) < BAUDTIME / sio1b_baud_rate)
+		return sio1b_stat;
 
 	hal_status_in(SIO1B, &sio1b_stat);
 
@@ -271,13 +273,10 @@ void imsai_sio1b_data_out(BYTE data)
  */
 BYTE imsai_sio2a_status_in(void)
 {
-	int tdiff;
-
 	sio2a_t2 = get_clock_us();
-	tdiff = sio2a_t2 - sio2a_t1;
-	if (sio2a_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2a_baud_rate))
-			return sio2a_stat;
+	if (sio2a_baud_rate > 0 &&
+	    (int) (sio2a_t2 - sio2a_t1) < BAUDTIME / sio2a_baud_rate)
+		return sio2a_stat;
 
 	hal_status_in(SIO2A, &sio2a_stat);
 
@@ -352,13 +351,10 @@ void imsai_sio2a_data_out(BYTE data)
  */
 BYTE imsai_sio2b_status_in(void)
 {
-	int tdiff;
-
 	sio2b_t2 = get_clock_us();
-	tdiff = sio2b_t2 - sio2b_t1;
-	if (sio2b_baud_rate > 0)
-		if ((tdiff >= 0) && (tdiff < BAUDTIME / sio2b_baud_rate))
-			return sio2b_stat;
+	if (sio2b_baud_rate > 0 &&
+	    (int) (sio2b_t2 - sio2b_t1) < BAUDTIME / sio2b_baud_rate)
+		return sio2b_stat;
 
 	hal_status_in(SIO2B, &sio2b_stat);
 

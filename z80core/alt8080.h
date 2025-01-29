@@ -76,7 +76,6 @@
 
 	BYTE t, res, cout, P;
 	cpu_reg_t w;		/* working register */
-	uint64_t clk;
 
 #define W	w.w
 #define WH	w.h
@@ -740,11 +739,10 @@
 		break;
 
 	case 0x76:			/* HLT */
+		t2 = get_clock_us();
 #ifdef BUS_8080
 		cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
-
-		clk = get_clock_us();
 #ifdef FRONTPANEL
 		if (!F_flag) {
 #endif
@@ -765,9 +763,7 @@
 				cpu_bus = CPU_INTA | CPU_WO |
 					  CPU_HLTA | CPU_M1;
 #endif
-
 			busy_loop_cnt = 0;
-
 #ifdef FRONTPANEL
 		} else {
 			fp_led_address = 0xffff;
@@ -801,8 +797,8 @@
 				}
 			}
 		}
-#endif
-		cpu_time -= get_clock_us() - clk;
+#endif /* FRONTPANEL */
+		cpu_tadj += get_clock_us() - t2;
 		t += 3;
 		break;
 

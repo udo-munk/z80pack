@@ -449,16 +449,17 @@ static char *btoh(BYTE b, char *p)
 static char *wtoa(WORD w, char *p)
 {
 	register char c;
-	register int onlyz, shift;
+	register int shift;
+	register bool onlyz;
 
-	onlyz = 1;
+	onlyz = true;
 	for (shift = 12; shift >= 0; shift -= 4) {
 		c = (w >> shift) & 0xf;
 		if (onlyz && c > 9)
 			*p++ = '0';
 		if (!onlyz || c) {
 			*p++ = c + (c < 10 ? '0' : 'A' - 10);
-			onlyz = 0;
+			onlyz = false;
 		}
 	}
 	if (onlyz)

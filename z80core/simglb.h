@@ -32,7 +32,7 @@ extern BYTE	IFF;
 #include "altregs.h"
 #endif
 extern Tstates_t T;
-extern uint64_t cpu_time;
+extern uint64_t	cpu_time, cpu_tadj, cpu_freq;
 
 #ifdef BUS_8080
 extern BYTE	cpu_bus;
@@ -68,7 +68,7 @@ extern BYTE 	fp_led_data;
 extern BYTE 	fp_led_output;
 #endif
 
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 extern port_flags_t port_flags[256];
 #endif
 
@@ -85,6 +85,9 @@ extern bool	F_flag;
 #endif
 #ifdef HAS_NETSERVER
 extern bool	n_flag;
+#endif
+#ifdef INFOPANEL
+extern bool	p_flag;
 #endif
 
 extern char	xfn[MAX_LFN];

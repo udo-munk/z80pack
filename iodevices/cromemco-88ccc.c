@@ -45,8 +45,8 @@ static pthread_t thread = 0;
 /* thread for requesting, receiving & storing the camera image using DMA */
 static void *store_image(void *arg)
 {
-	uint64_t t1, t2;
-	int tdiff;
+	uint64_t t;
+	long tleft;
 	int i, j, len;
 	BYTE buffer[FIELDSIZE];
 	struct {
@@ -60,7 +60,7 @@ static void *store_image(void *arg)
 	UNUSED(arg);
 
 	memset(&msg, 0, sizeof(msg));
-	t1 = get_clock_us();
+	t = get_clock_us();
 
 	while (state) {	/* do until total frame is received */
 		if (net_device_alive(DEV_88ACC)) {
@@ -99,12 +99,11 @@ static void *store_image(void *arg)
 		/* sleep_for_ms(j); */
 
 		/* sleep rest of total frame time */
-		t2 = get_clock_us();
-		tdiff = t2 - t1;
-		if (tdiff < (j * 1000))
-			sleep_for_ms(j - tdiff / 1000);
+		tleft = j * 1000 - (long) (get_clock_us() - t1);
+		if (tleft > 0)
+			sleep_for_us(tleft);
 
-		LOGD(TAG, "Time: %d", tdiff);
+		LOGD(TAG, "Time: %ld", tleft);
 
 		state = false;
 	}

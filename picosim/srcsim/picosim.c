@@ -198,14 +198,17 @@ int main(void)
 #endif
 
 	init_cpu();		/* initialize CPU */
+	PC = 0xff00;		/* power on jump into the boot ROM */
 	init_disks();		/* initialize disk drives */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
-	PC = 0xff00;		/* power on jump into the boot ROM */
 	config();		/* configure the machine */
 
 	f_value = speed;	/* setup speed of the CPU */
-	tmax = speed * 10000;	/* theoretically */
+	if (f_value)
+		tmax = speed * 10000;	/* theoretically */
+	else
+		tmax = 100000;	/* for periodic CPU accounting updates */
 
 	put_pixel(0x440000);	/* LED green */
 
@@ -231,7 +234,7 @@ int main(void)
 
 	/* reset machine */
 	watchdog_reboot(0, 0, 0);
-	for (;;) {
+	while (true) {
 		__nop();
 	}
 }
@@ -246,7 +249,7 @@ bool get_cmdline(char *buf, int len)
 	int i = 0;
 	char c;
 
-	for (;;) {
+	while (true) {
 		c = getchar();
 		if ((c == BS) || (c == DEL)) {
 			if (i >= 1) {
@@ -292,6 +295,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 	BYTE save[3];
 	WORD save_PC;
 	Tstates_t T0;
+	unsigned freq;
 #ifdef WANT_HB
 	bool save_hb_flag;
 #endif
@@ -343,10 +347,11 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 			s = "JMP";
 #endif
 		if (cpu_error == NONE) {
+			freq = (unsigned) ((T - T0) / 30000ULL);
 			printf("CPU executed %" PRIu64 " %s instructions "
 			       "in 3 seconds\n", (T - T0) / 10, s);
-			printf("clock frequency = %5.2f MHz\n",
-			       ((float) (T - T0)) / 3000000.0);
+			printf("clock frequency = %u.%02u MHz\n",
+			       freq / 100, freq % 100);
 		} else
 			puts("Interrupted by user");
 		break;

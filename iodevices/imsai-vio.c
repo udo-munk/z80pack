@@ -74,7 +74,7 @@ static int vio_win_id = -1;
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
-static void *pixels;
+static uint8_t *pixels;
 static int pitch;
 static uint8_t color[3];
 static char keybuf[KEYBUF_LEN];		/* typeahead buffer */
@@ -245,7 +245,7 @@ static inline void set_bg_color(void)
 
 static inline void draw_point(int x, int y)
 {
-	uint8_t *p = (uint8_t *) pixels + y * pitch + x * 4;
+	uint8_t *p = pixels + y * pitch + x * 4;
 
 	p[3] = color[0];
 	p[2] = color[1];
@@ -671,7 +671,7 @@ static void update_display(bool tick)
 	UNUSED(tick);
 
 	/* update display window */
-	SDL_LockTexture(texture, NULL, &pixels, &pitch);
+	SDL_LockTexture(texture, NULL, (void **) &pixels, &pitch);
 	refresh();
 	SDL_UnlockTexture(texture);
 	SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -690,12 +690,12 @@ static win_funcs_t vio_funcs = {
 /* thread for updating the X11 display or web server */
 static void *update_thread(void *arg)
 {
-	uint64_t t1, t2;
-	int tdiff;
+	uint64_t t;
+	long tleft;
 
 	UNUSED(arg);
 
-	t1 = get_clock_us();
+	t = get_clock_us();
 
 	while (state) {
 #ifdef HAS_NETSERVER
@@ -721,13 +721,12 @@ static void *update_thread(void *arg)
 			ws_refresh();
 #endif
 
-		/* sleep rest to 33ms so that we get 30 fps */
-		t2 = get_clock_us();
-		tdiff = t2 - t1;
-		if ((tdiff > 0) && (tdiff < 33000))
-			sleep_for_ms(33 - (tdiff / 1000));
+		/* sleep rest to 33333us so that we get 30 fps */
+		tleft = 33333L - (long) (get_clock_us() - t);
+		if (tleft > 0)
+			sleep_for_us(tleft);
 
-		t1 = get_clock_us();
+		t = get_clock_us();
 	}
 
 	pthread_exit(NULL);

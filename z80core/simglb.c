@@ -41,6 +41,8 @@ cpu_regs_t cpu_regs;		/* CPU registers */
 #endif
 Tstates_t T;			/* CPU clock */
 uint64_t cpu_time;		/* time spent running CPU in us */
+uint64_t cpu_tadj;		/* time spent in non CPU execution areas */
+uint64_t cpu_freq;		/* estimated CPU frequency in Hz */
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */
@@ -63,7 +65,8 @@ bool int_protection;		/* to delay interrupts after EI */
 BYTE bus_request;		/* request address/data bus from CPU */
 BusDMA_t bus_mode;		/* current bus mode for DMA */
 BusDMAFunc_t *dma_bus_master;	/* DMA bus master call back func */
-int tmax;			/* max t-states to execute in 10ms */
+int tmax;			/* max t-states to execute in 10ms or
+				   when to update the CPU accounting */
 bool cpu_needed;		/* don't adjust CPU freq if needed */
 
 /*
@@ -81,9 +84,9 @@ BYTE fp_led_output = 0xff;	/* inverted IMSAI/Cromemco programmed output */
 #endif
 
 /*
- *	Variables for iopanel
+ *	Variables for I/O ports panel
  */
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 port_flags_t port_flags[256];	/* port access flags */
 #endif
 
@@ -110,6 +113,13 @@ bool F_flag = true;		/* flag for -F option */
 #endif
 #ifdef HAS_NETSERVER
 bool n_flag;			/* flag for -n option */
+#endif
+#ifdef INFOPANEL
+#ifdef FRONTPANEL
+bool p_flag = true;		/* flag for -p option */
+#else
+bool p_flag = false;		/* flag for -p option */
+#endif
 #endif
 
 /*

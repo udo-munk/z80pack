@@ -36,6 +36,8 @@ extern int sio0_baud_rate;	/* SIO 0 baud rate */
 
 extern int sio3_baud_rate;	/* SIO 3 baud rate */
 
+extern void altair_sio_reset(void);
+
 extern BYTE altair_sio0_status_in(void);
 extern void altair_sio0_status_out(BYTE data);
 extern BYTE altair_sio0_data_in(void);

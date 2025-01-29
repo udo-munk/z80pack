@@ -85,7 +85,6 @@
 #endif
 	cpu_reg_t w;		/* working register */
 	cpu_reg_t ir;		/* current index register (HL, IX, IY) */
-	uint64_t clk;
 
 #define W	w.w
 #define WH	w.h
@@ -802,11 +801,10 @@ next_opcode:
 		break;
 
 	case 0x76:			/* HALT */
+		t2 = get_clock_us();
 #ifdef BUS_8080
 		cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
-
-		clk = get_clock_us();
 #ifdef FRONTPANEL
 		if (!F_flag) {
 #endif
@@ -828,9 +826,7 @@ next_opcode:
 				cpu_bus = CPU_INTA | CPU_WO |
 					  CPU_HLTA | CPU_M1;
 #endif
-
 			busy_loop_cnt = 0;
-
 #ifdef FRONTPANEL
 		} else {
 			fp_led_address = 0xffff;
@@ -867,8 +863,8 @@ next_opcode:
 				}
 			}
 		}
-#endif
-		cpu_time -= get_clock_us() - clk;
+#endif /* FRONTPANEL */
+		cpu_tadj += get_clock_us() - t2;
 		break;
 
 	case 0x77:			/* LD (ir),A */
@@ -1383,11 +1379,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
-				clk = get_clock_us();
+				t2 = get_clock_us();
 				/* update frontpanel */
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
-				cpu_time -= get_clock_us() - clk;
+				cpu_tadj += get_clock_us() - t2;
 			}
 #endif
 
@@ -1627,11 +1623,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
-			clk = get_clock_us();
+			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
-			cpu_time -= get_clock_us() - clk;
+			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 
@@ -1725,11 +1721,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
-			clk = get_clock_us();
+			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
-			cpu_time -= get_clock_us() - clk;
+			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 
@@ -2405,11 +2401,11 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
-			clk = get_clock_us();
+			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
-			cpu_time -= get_clock_us() - clk;
+			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 

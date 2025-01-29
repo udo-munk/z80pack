@@ -97,7 +97,7 @@ void mon(void)
 		/* bind frontpanel LED's to variables */
 		fp_bindLight8("LED_INT_{0-7}", &int_requests, 1);
 		fp_bindLight8("LED_PWR", &power, 1);
-		fp_bindLight8("LED_RUN", &cpu_state, 1 /* CONTIN_RUN */);
+		fp_bindLight8("LED_RUN", &cpu_state, 1 /* ST_CONTIN_RUN */);
 		fp_bindLight8("LED_HALT", &cpu_bus, 4 /* CPU_HLTA */) ;
 
 		/* bind frontpanel switches to variables */

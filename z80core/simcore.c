@@ -115,12 +115,9 @@ void switch_cpu(int new_cpu)
  */
 void run_cpu(void)
 {
-	uint64_t t;
-
 	cpu_state = ST_CONTIN_RUN;
 	cpu_error = NONE;
-	t = get_clock_us();
-	for (;;) {
+	while (true) {
 		switch (cpu) {
 #ifndef EXCLUDE_Z80
 		case Z80:
@@ -141,7 +138,6 @@ void run_cpu(void)
 		} else
 			break;
 	}
-	cpu_time += get_clock_us() - t;
 }
 
 /*
@@ -149,11 +145,8 @@ void run_cpu(void)
  */
 void step_cpu(void)
 {
-	uint64_t t;
-
 	cpu_state = ST_SINGLE_STEP;
 	cpu_error = NONE;
-	t = get_clock_us();
 	switch (cpu) {
 #ifndef EXCLUDE_Z80
 	case Z80:
@@ -168,7 +161,6 @@ void step_cpu(void)
 	default:
 		break;
 	}
-	cpu_time += get_clock_us() - t;
 	cpu_state = ST_STOPPED;
 }
 
@@ -237,12 +229,15 @@ void report_cpu_error(void)
  */
 void report_cpu_stats(void)
 {
+	unsigned freq;
+
 	if (cpu_time)
 	{
+		freq = (unsigned) (cpu_freq / 10000ULL);
 		printf("CPU ran %" PRIu64 " ms ", cpu_time / 1000);
 		printf("and executed %" PRIu64 " t-states\n", T);
-		printf("Clock frequency %4.2f MHz\n",
-		       (float) (T) / (float) cpu_time);
+		printf("Clock frequency %u.%02u MHz\n",
+		       freq / 100, freq % 100);
 	}
 }
 
@@ -253,16 +248,17 @@ void report_cpu_stats(void)
  */
 BYTE io_in(BYTE addrl, BYTE addrh)
 {
-	uint64_t clk;
+	uint64_t t;
 #ifdef FRONTPANEL
 	bool val;
 #else
 #ifndef SIMPLEPANEL
+
 	UNUSED(addrh);
 #endif
 #endif
 
-	clk = get_clock_us();
+	t = get_clock_us();
 
 	io_port = addrl;
 	if (port_in[addrl])
@@ -297,13 +293,13 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 	fp_led_data = io_data;
 #endif
 
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 	port_flags[addrl].in = true;
 #endif
 
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
 
-	cpu_time -= get_clock_us() - clk;
+	cpu_tadj += get_clock_us() - t;
 
 	return io_data;
 }
@@ -315,12 +311,13 @@ BYTE io_in(BYTE addrl, BYTE addrh)
  */
 void io_out(BYTE addrl, BYTE addrh, BYTE data)
 {
-	uint64_t clk;
+	uint64_t t;
+
 #if !defined(FRONTPANEL) && !defined(SIMPLEPANEL)
 	UNUSED(addrh);
 #endif
 
-	clk = get_clock_us();
+	t = get_clock_us();
 
 	io_port = addrl;
 	io_data = data;
@@ -356,11 +353,11 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	fp_led_data = IO_DATA_UNUSED;
 #endif
 
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 	port_flags[addrl].out = true;
 #endif
 
-	cpu_time -= get_clock_us() - clk;
+	cpu_tadj += get_clock_us() - t;
 }
 
 /*

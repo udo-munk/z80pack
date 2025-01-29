@@ -99,7 +99,7 @@ typedef enum { BUS_DMA_NONE, BUS_DMA_BYTE,
 	       BUS_DMA_BURST, BUS_DMA_CONTINUOUS } BusDMA_t;
 typedef Tstates_t (BusDMAFunc_t)(const BYTE bus_ack);
 
-#ifdef IOPANEL
+#if defined(INFOPANEL) || defined(IOPANEL)
 typedef struct port_flags {
 	bool in: 1;		/* input port accessed */
 	bool out: 1;		/* output port accessed */

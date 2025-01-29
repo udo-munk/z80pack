@@ -6,6 +6,8 @@
 MACHINE = imsai
 # emulate a machine's frontpanel
 FRONTPANEL ?= YES
+# show an introspection panel
+INFOPANEL ?= YES
 # use SDL2 instead of X11
 WANT_SDL ?= NO
 # machine specific system source files
@@ -55,11 +57,16 @@ VPATH = $(CORE_DIR) $(IO_DIR) $(IO_DIR)/apu $(FP_DIR) $(NET_DIR) $(CIV_DIR)
 include $(CORE_DIR)/Makefile.in-os
 
 ###
-### SDL2/X11 PLATFORM VARIABLES
+### SDL2/X11 AND INFOPANEL PLATFORM VARIABLES
 ###
 ifeq ($(WANT_SDL),YES)
+ifeq ($(INFOPANEL),YES)
+PLAT_DEFS = -DINFOPANEL -DWANT_SDL
+PLAT_SRCS = simpanel.c simsdl.c
+else
 PLAT_DEFS = -DWANT_SDL
 PLAT_SRCS = simsdl.c
+endif
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include/SDL2
 PLAT_LDFLAGS = -L/usr/local/lib
@@ -74,6 +81,10 @@ PLAT_LDFLAGS = -Wl,-search_paths_first -Wl,-headerpad_max_install_names \
 PLAT_LDLIBS = -framework SDL2
 endif
 else
+ifeq ($(INFOPANEL),YES)
+PLAT_DEFS = -DINFOPANEL
+PLAT_SRCS = simpanel.c
+endif
 ifeq ($(TARGET_OS),BSD)
 PLAT_INCS = -I/usr/local/include
 PLAT_LDFLAGS = -L/usr/local/lib
@@ -87,7 +98,7 @@ PLAT_LDLIBS = -lX11
 endif
 endif
 ###
-### END SDL2/X11 PLATFORM VARIABLES
+### END SDL2/X11 AND INFOPANEL PLATFORM VARIABLES
 ###
 
 ###

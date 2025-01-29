@@ -17,8 +17,8 @@
 #include "simz80-cb.h"
 
 #ifdef FRONTPANEL
-#include "frontpanel.h"
 #include "simport.h"
+#include "frontpanel.h"
 #endif
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
@@ -373,7 +373,7 @@ int op_cb_handle(void)
 
 	register int t;
 #ifdef FRONTPANEL
-	uint64_t clk;
+	uint64_t t0;
 #endif
 
 #ifdef BUS_8080
@@ -383,11 +383,11 @@ int op_cb_handle(void)
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		clk = get_clock_us();
+		t0 = get_clock_us();
 		/* update frontpanel */
 		fp_clock++;
 		fp_sampleLightGroup(0, 0);
-		cpu_time -= get_clock_us() - clk;
+		cpu_tadj += get_clock_us() - t0;
 	}
 #endif
 

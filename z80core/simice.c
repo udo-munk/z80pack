@@ -302,7 +302,7 @@ static void do_go(char *s)
 		(*ice_before_go)();
 	install_softbp();
 	start_time = cpu_time;
-	for (;;) {
+	while (true) {
 		run_cpu();
 		if (cpu_error && (cpu_error != OPHALT || handle_break()))
 			break;
@@ -493,7 +493,7 @@ static void do_modify(char *s)
 		s++;
 	if (isxdigit((unsigned char) *s))
 		wrk_addr = strtol(s, NULL, 16);
-	for (;;) {
+	while (true) {
 		printf("%04x = %02x : ", (unsigned int) wrk_addr,
 		       getmem(wrk_addr));
 		if (!get_cmdline(arg, LENCMD) || arg[0] == '\0')
@@ -1341,9 +1341,10 @@ static void do_clock(void)
 	BYTE save[3];
 	WORD save_PC;
 	Tstates_t T0;
-	static struct sigaction newact;
-	static struct itimerval tim;
 	const char *s = NULL;
+	struct sigaction newact;
+	struct itimerval tim;
+	unsigned freq;
 #ifdef WANT_HB
 	bool save_hb_flag;
 
@@ -1387,10 +1388,11 @@ static void do_clock(void)
 		s = "JMP";
 #endif
 	if (cpu_error == NONE) {
+		freq = (unsigned) ((T - T0) / 30000ULL);
 		printf("CPU executed %" PRIu64 " %s instructions "
 		       "in 3 seconds\n", (T - T0) / 10, s);
-		printf("clock frequency = %5.2f MHz\n",
-		       ((float) (T - T0)) / 3000000.0);
+		printf("clock frequency = %5u.%02u MHz\n",
+		       freq / 100, freq % 100);
 	} else
 		puts("Interrupted by user");
 }

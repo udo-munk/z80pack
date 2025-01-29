@@ -18,8 +18,8 @@
 #include "simz80-fdcb.h"
 
 #ifdef FRONTPANEL
-#include "frontpanel.h"
 #include "simport.h"
+#include "frontpanel.h"
 #endif
 
 #if !defined(EXCLUDE_Z80) && !defined(ALT_Z80)
@@ -340,7 +340,7 @@ int op_fd_handle(void)
 
 	register int t;
 #ifdef FRONTPANEL
-	uint64_t clk;
+	uint64_t t0;
 #endif
 
 #ifdef BUS_8080
@@ -350,11 +350,11 @@ int op_fd_handle(void)
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		clk = get_clock_us();
+		t0 = get_clock_us();
 		/* update frontpanel */
 		fp_clock++;
 		fp_sampleLightGroup(0, 0);
-		cpu_time -= get_clock_us() - clk;
+		cpu_tadj += get_clock_us() - t0;
 	}
 #endif
 
@@ -371,14 +371,6 @@ int op_fd_handle(void)
  */
 static int trap_fd(void)
 {
-#ifdef UNDOC_INST
-	if (!u_flag) {
-		/* Treat 0xfd prefix as NOP on non IY-instructions */
-		PC--;
-		R--;
-		return 4;
-	}
-#endif
 	cpu_error = OPTRAP2;
 	cpu_state = ST_STOPPED;
 	return 0;

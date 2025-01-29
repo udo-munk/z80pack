@@ -155,6 +155,9 @@ void init_io(void)
 	/* create local sockets */
 	init_unix_server_socket(&ucons[0], "altairsim.tape");
 	init_unix_server_socket(&ucons[1], "altairsim.sio2");
+
+	altair_sio_reset();
+	altair_2sio_reset();
 }
 
 /*
@@ -191,6 +194,8 @@ void reset_io(void)
 	cromemco_dazzler_off();
 	tarbell_reset();
 	altair_dsk_reset();
+	altair_sio_reset();
+	altair_2sio_reset();
 }
 
 #if 0		/* currently not used */

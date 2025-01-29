@@ -11,10 +11,11 @@
 #include "simmem.h"
 #include "simcore.h"
 #include "simport.h"
+#include "sim8080.h"
+
 #ifdef WANT_ICE
 #include "simice.h"
 #endif
-#include "sim8080.h"
 
 #ifdef FRONTPANEL
 #include "frontpanel.h"
@@ -114,13 +115,13 @@ static int op_undoc_call(void);
 #ifdef FRONTPANEL
 static inline void addr_leds(WORD data)
 {
-	uint64_t clk;
+	uint64_t t;
 
-	clk = get_clock_us();
+	t = get_clock_us();
 	fp_led_address = data;
 	fp_clock++;
 	fp_sampleData();
-	cpu_time -= get_clock_us() - clk;
+	cpu_tadj += get_clock_us() - t;
 }
 #endif
 
@@ -407,13 +408,18 @@ void cpu_8080(void)
 
 	Tstates_t T_max, T_dma;
 	uint64_t t1, t2;
-	int tdiff;
-#ifdef FRONTPANEL
-	uint64_t clk;
-#endif
+	long tdiff;
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
+#ifdef FRONTPANEL
+	if (F_flag) {
+		t2 = get_clock_us();
+		fp_clock++;
+		fp_sampleData();
+		cpu_tadj += get_clock_us() - t2;
+	}
+#endif
 
 	do {
 
@@ -452,27 +458,31 @@ void cpu_8080(void)
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   without BUS_ACK */
-					T += (T_dma = (*dma_bus_master)(0));
-					if (f_value)
-						cpu_time += T_dma / f_value;
+					T_dma = (*dma_bus_master)(0);
+					T += T_dma;
+					if (cpu_freq)
+						cpu_time += (1000000ULL *
+							     T_dma) / cpu_freq;
 				}
 			}
 
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
+					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_time -= get_clock_us() - clk;
+					cpu_tadj += get_clock_us() - t2;
 				}
 #endif
 				if (dma_bus_master) {
 					/* hand control to the DMA bus master
 					   with BUS_ACK */
-					T += (T_dma = (*dma_bus_master)(1));
-					if (f_value)
-						cpu_time += T_dma / f_value;
+					T_dma = (*dma_bus_master)(1);
+					T += T_dma;
+					if (cpu_freq)
+						cpu_time += (1000000ULL *
+							     T_dma) / cpu_freq;
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -482,10 +492,10 @@ void cpu_8080(void)
 				}
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
+					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_time -= get_clock_us() - clk;
+					cpu_tadj += get_clock_us() - t2;
 				}
 #endif
 			}
@@ -495,7 +505,7 @@ void cpu_8080(void)
 		if (int_int) {
 			if (IFF != 3)
 				goto leave;
-			if (int_protection)	/* protect first instr */
+			if (int_protection)	/* protect first instruction */
 				goto leave;	/* after EI */
 
 			IFF = 0;
@@ -506,13 +516,13 @@ void cpu_8080(void)
 #endif
 #ifdef FRONTPANEL
 				if (F_flag) {
-					clk = get_clock_us();
+					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
 					fp_sampleData();
 					wait_int_step();
-					cpu_time -= get_clock_us() - clk;
+					cpu_tadj += get_clock_us() - t2;
 					if (cpu_state & ST_RESET)
 						goto leave;
 				}
@@ -527,10 +537,10 @@ void cpu_8080(void)
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
-				clk = get_clock_us();
+				t2 = get_clock_us();
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
-				cpu_time -= get_clock_us() - clk;
+				cpu_tadj += get_clock_us() - t2;
 			}
 #endif
 
@@ -583,7 +593,7 @@ void cpu_8080(void)
 				m1_step = true;
 #endif
 		}
-leave:
+	leave:
 
 #ifdef BUS_8080
 		/* M1 opcode fetch */
@@ -597,15 +607,24 @@ leave:
 #include "alt8080.h"
 #endif
 
-		if (f_value) {		/* adjust CPU speed */
-			if (T >= T_max && !cpu_needed) {
+					/* adjust CPU speed and
+					   update CPU accounting */
+		if (T >= T_max) {
+			T_max = T + tmax;
+			t2 = get_clock_us();
+			tdiff = t2 - t1;
+			if (f_value && !cpu_needed && tdiff < 10000L) {
+				sleep_for_us(10000L - tdiff);
 				t2 = get_clock_us();
-				tdiff = t2 - t1;
-				if ((tdiff > 0) && (tdiff < 10000))
-					sleep_for_us(10000 - tdiff);
-				T_max = T + tmax;
-				t1 = get_clock_us();
-			}
+				tdiff = t2 - t1; /* should be really close
+						    to 10000, but isn't */
+				cpu_time += tdiff;
+			} else
+				cpu_time += tdiff - cpu_tadj;
+			cpu_tadj = 0;
+			if (cpu_time)
+				cpu_freq = T * 1000000ULL / cpu_time;
+			t1 = t2;
 		}
 
 #ifdef WANT_ICE
@@ -640,18 +659,24 @@ leave:
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		clk = get_clock_us();
+		t2 = get_clock_us();
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
 		fp_sampleData();
-		cpu_time -= get_clock_us() - clk;
+		cpu_tadj += get_clock_us() - t2;
 	}
 #endif
 #ifdef SIMPLEPANEL
 	fp_led_address = PC;
 	fp_led_data = getmem(PC);
 #endif
+
+					/* update CPU accounting */
+	cpu_time += (get_clock_us() - t1) - cpu_tadj;
+	cpu_tadj = 0;
+	if (cpu_time)
+		cpu_freq = T * 1000000ULL / cpu_time;
 }
 
 #ifndef ALT_I8080
@@ -673,13 +698,13 @@ static int op_nop(void)			/* NOP */
 
 static int op_hlt(void)			/* HLT */
 {
-	uint64_t clk;
+	uint64_t t;
+
+	t = get_clock_us();
 
 #ifdef BUS_8080
 	cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
-
-	clk = get_clock_us();
 #ifdef FRONTPANEL
 	if (!F_flag) {
 #endif
@@ -697,9 +722,7 @@ static int op_hlt(void)			/* HLT */
 		if (int_int)
 			cpu_bus = CPU_INTA | CPU_WO | CPU_HLTA | CPU_M1;
 #endif
-
 		busy_loop_cnt = 0;
-
 #ifdef FRONTPANEL
 	} else {
 		fp_led_address = 0xffff;
@@ -733,9 +756,8 @@ static int op_hlt(void)			/* HLT */
 			}
 		}
 	}
-#endif
-	cpu_time -= get_clock_us() - clk;
-
+#endif /* FRONTPANEL */
+	cpu_tadj += get_clock_us() - t;
 	return 7;
 }
 
