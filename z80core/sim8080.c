@@ -115,13 +115,9 @@ static int op_undoc_call(void);
 #ifdef FRONTPANEL
 static inline void addr_leds(WORD data)
 {
-	uint64_t t;
-
-	t = get_clock_us();
 	fp_led_address = data;
 	fp_clock++;
 	fp_sampleData();
-	cpu_tadj += get_clock_us() - t;
 }
 #endif
 
@@ -408,18 +404,17 @@ void cpu_8080(void)
 
 	Tstates_t T_max, T_dma;
 	uint64_t t1, t2;
-	long tdiff;
+	unsigned long tdiff;
+
+#ifdef FRONTPANEL
+	if (F_flag) {
+		fp_clock++;
+		fp_sampleData();
+	}
+#endif
 
 	T_max = T + tmax;
 	t1 = get_clock_us();
-#ifdef FRONTPANEL
-	if (F_flag) {
-		t2 = get_clock_us();
-		fp_clock++;
-		fp_sampleData();
-		cpu_tadj += get_clock_us() - t2;
-	}
-#endif
 
 	do {
 
@@ -461,18 +456,16 @@ void cpu_8080(void)
 					T_dma = (*dma_bus_master)(0);
 					T += T_dma;
 					if (cpu_freq)
-						cpu_time += (1000000ULL *
-							     T_dma) / cpu_freq;
+						cpu_time += (1000000 * T_dma) /
+							    cpu_freq;
 				}
 			}
 
 			if (bus_request) {		/* DMA bus request */
 #ifdef FRONTPANEL
 				if (F_flag) {
-					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_tadj += get_clock_us() - t2;
 				}
 #endif
 				if (dma_bus_master) {
@@ -481,8 +474,8 @@ void cpu_8080(void)
 					T_dma = (*dma_bus_master)(1);
 					T += T_dma;
 					if (cpu_freq)
-						cpu_time += (1000000ULL *
-							     T_dma) / cpu_freq;
+						cpu_time += (1000000 * T_dma) /
+							    cpu_freq;
 				}
 				/* FOR NOW -
 				   MAY BE NEED A PRIORITY SYSTEM LATER */
@@ -492,10 +485,8 @@ void cpu_8080(void)
 				}
 #ifdef FRONTPANEL
 				if (F_flag) {
-					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_sampleData();
-					cpu_tadj += get_clock_us() - t2;
 				}
 #endif
 			}
@@ -516,13 +507,11 @@ void cpu_8080(void)
 #endif
 #ifdef FRONTPANEL
 				if (F_flag) {
-					t2 = get_clock_us();
 					fp_clock += 1000;
 					fp_led_data = (int_data != -1) ?
 						      (BYTE) int_data : 0xff;
 					fp_sampleData();
 					wait_int_step();
-					cpu_tadj += get_clock_us() - t2;
 					if (cpu_state & ST_RESET)
 						goto leave;
 				}
@@ -537,10 +526,8 @@ void cpu_8080(void)
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
-				t2 = get_clock_us();
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
-				cpu_tadj += get_clock_us() - t2;
 			}
 #endif
 
@@ -607,26 +594,6 @@ void cpu_8080(void)
 #include "alt8080.h"
 #endif
 
-					/* adjust CPU speed and
-					   update CPU accounting */
-		if (T >= T_max) {
-			T_max = T + tmax;
-			t2 = get_clock_us();
-			tdiff = t2 - t1;
-			if (f_value && !cpu_needed && tdiff < 10000L) {
-				sleep_for_us(10000L - tdiff);
-				t2 = get_clock_us();
-				tdiff = t2 - t1; /* should be really close
-						    to 10000, but isn't */
-				cpu_time += tdiff;
-			} else
-				cpu_time += tdiff - cpu_tadj;
-			cpu_tadj = 0;
-			if (cpu_time)
-				cpu_freq = T * 1000000ULL / cpu_time;
-			t1 = t2;
-		}
-
 #ifdef WANT_ICE
 
 #ifdef WANT_TIM
@@ -651,7 +618,38 @@ void cpu_8080(void)
 		check_gui_break();
 #endif
 
+					/* adjust CPU speed and
+					   update CPU accounting */
+		if (T >= T_max) {
+			T_max = T + tmax;
+			t2 = get_clock_us();
+			tdiff = t2 - t1;
+			if (f_value && !cpu_needed && tdiff < 10000L) {
+				sleep_for_us(10000L - tdiff);
+				t2 = get_clock_us();
+				tdiff = t2 - t1;
+			}
+			cpu_time += tdiff - (io_time + wait_time);
+			total_io_time += io_time;
+			total_wait_time += wait_time;
+			io_time = wait_time = 0;
+			if (cpu_time)
+				cpu_freq = (T * 1000000) / cpu_time;
+			t1 = t2;
+		}
+
 	} while (cpu_state == ST_CONTIN_RUN);
+
+					/* update CPU accounting
+					   if necessary */
+	if (T > T_max - tmax) {
+		cpu_time += (get_clock_us() - t1) - (io_time + wait_time);
+		total_io_time += io_time;
+		total_wait_time += wait_time;
+		io_time = wait_time = 0;
+		if (cpu_time)
+			cpu_freq = (T * 1000000) / cpu_time;
+	}
 
 #ifdef BUS_8080
 	if (!(cpu_bus & CPU_INTA))
@@ -659,24 +657,16 @@ void cpu_8080(void)
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		t2 = get_clock_us();
 		fp_led_address = PC;
 		fp_led_data = getmem(PC);
 		fp_clock++;
 		fp_sampleData();
-		cpu_tadj += get_clock_us() - t2;
 	}
 #endif
 #ifdef SIMPLEPANEL
 	fp_led_address = PC;
 	fp_led_data = getmem(PC);
 #endif
-
-					/* update CPU accounting */
-	cpu_time += (get_clock_us() - t1) - cpu_tadj;
-	cpu_tadj = 0;
-	if (cpu_time)
-		cpu_freq = T * 1000000ULL / cpu_time;
 }
 
 #ifndef ALT_I8080
@@ -757,7 +747,9 @@ static int op_hlt(void)			/* HLT */
 		}
 	}
 #endif /* FRONTPANEL */
-	cpu_tadj += get_clock_us() - t;
+
+	wait_time += get_clock_us() - t;
+
 	return 7;
 }
 

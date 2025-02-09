@@ -18,7 +18,6 @@
 #include "simz80-ddcb.h"
 
 #ifdef FRONTPANEL
-#include "simport.h"
 #include "frontpanel.h"
 #endif
 
@@ -339,9 +338,6 @@ int op_dd_handle(void)
 #undef UNDOC
 
 	register int t;
-#ifdef FRONTPANEL
-	uint64_t t0;
-#endif
 
 #ifdef BUS_8080
 	/* M1 opcode fetch */
@@ -350,11 +346,9 @@ int op_dd_handle(void)
 #endif
 #ifdef FRONTPANEL
 	if (F_flag) {
-		t0 = get_clock_us();
 		/* update frontpanel */
 		fp_clock++;
 		fp_sampleLightGroup(0, 0);
-		cpu_tadj += get_clock_us() - t0;
 	}
 #endif
 

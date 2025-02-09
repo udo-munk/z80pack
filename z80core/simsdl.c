@@ -8,6 +8,7 @@
  *	This module contains the SDL2 integration for the simulator.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
 #include <SDL_main.h>

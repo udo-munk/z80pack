@@ -740,6 +740,7 @@
 
 	case 0x76:			/* HLT */
 		t2 = get_clock_us();
+
 #ifdef BUS_8080
 		cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
@@ -798,7 +799,9 @@
 			}
 		}
 #endif /* FRONTPANEL */
-		cpu_tadj += get_clock_us() - t2;
+
+		wait_time += get_clock_us() - t2;
+
 		t += 3;
 		break;
 

@@ -347,7 +347,7 @@ static void picosim_ice_cmd(char *cmd, WORD *wrk_addr)
 			s = "JMP";
 #endif
 		if (cpu_error == NONE) {
-			freq = (unsigned) ((T - T0) / 30000ULL);
+			freq = (unsigned) ((T - T0) / 30000);
 			printf("CPU executed %" PRIu64 " %s instructions "
 			       "in 3 seconds\n", (T - T0) / 10, s);
 			printf("clock frequency = %u.%02u MHz\n",
