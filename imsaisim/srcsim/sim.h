@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2024 Udo Munk
+ * Copyright (C) 2008-2025 Udo Munk
  * Copyright (C) 2018-2021 David McNaughton
  *
  * Configuration for an IMSAI 8080 system
@@ -82,7 +82,7 @@
 
 #define USR_COM	"IMSAI 8080 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
+#define USR_CPR	"Copyright (C) 2008-2025 by Udo Munk & " \
 		"2018-2021 by David McNaughton"
 
 #endif

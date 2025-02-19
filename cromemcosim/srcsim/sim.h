@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2014-2024 Udo Munk
+ * Copyright (C) 2014-2025 Udo Munk
  * Copyright (C) 2021-2022 David McNaughton
  *
  * Configuration for a Cromemco Z-1 system
@@ -80,7 +80,7 @@
 
 #define USR_COM	"Cromemco Z-1 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"Copyright (C) 2014-2024 by Udo Munk & " \
+#define USR_CPR	"Copyright (C) 2014-2025 by Udo Munk & " \
 		"2021-2022 by David McNaughton"
 
 #endif /* !SIM_INC */

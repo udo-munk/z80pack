@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define COPYR	"Copyright (C) 1987-2024 by Udo Munk and others"
+#define COPYR	"Copyright (C) 1987-2025 by Udo Munk and others"
 #define RELEASE	"1.39"
 
 #define MAX_LFN		4096	/* maximum long file name length */

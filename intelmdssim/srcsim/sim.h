@@ -1,8 +1,8 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2024 by Udo Munk
- * Copyright (C) 2024 by Thomas Eberhardt
+ * Copyright (C) 2008-2025 by Udo Munk
+ * Copyright (C) 2024-2025 by Thomas Eberhardt
  *
  * Configuration for an Intel Intellec MDS-800 system
  *
@@ -57,7 +57,7 @@
 
 #define USR_COM	"Intel Intellec MDS-800 Simulation"
 #define USR_REL	"1.0"
-#define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk & " \
-		"2024 by Thomas Eberhardt"
+#define USR_CPR	"Copyright (C) 2008-2025 by Udo Munk & " \
+		"2024-2025 by Thomas Eberhardt"
 
 #endif /* !SIM_INC */
