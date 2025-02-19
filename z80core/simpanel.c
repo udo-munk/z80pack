@@ -48,15 +48,20 @@ static const char *TAG = "panel";
 #define C_MAGENTA	0x00ff00ff
 #define C_YELLOW	0x00ffff00
 #define C_WHITE		0x00ffffff
-#define C_DKRED		0x00800000
-#define C_DKGREEN	0x00008000
-#define C_DKBLUE	0x00000080
-#define C_DKCYAN	0x00008080
-#define C_DKMAGENTA	0x00800080
-#define C_DKYELLOW	0x00808000
-#define C_GRAY		0x00808080
-#define C_ORANGE	0x00ffa500
-#define C_WHEAT		0x00f5deb3
+
+#define C_BUTTER_1	0x00fce94f
+#define C_BUTTER_3	0x00c4a000
+#define C_ORANGE_1	0x00fcaf3e
+#define C_CHOC_1	0x00e9b96e
+#define C_CHAM_2	0x0073d216
+#define C_CHAM_3	0x004e9a06
+#define C_BLUE_1	0x00729fcf
+#define C_PLUM_1	0x00e090d7
+#define C_RED_2		0x00cc0000
+#define C_ALUM_2	0x00d3d7cf
+#define C_ALUM_4	0x00888a85
+#define C_ALUM_5	0x00555753
+#define C_ALUM_6	0x002e3436
 
 #define C_TRANS		0xffffffff
 
@@ -176,6 +181,7 @@ static pthread_t thread;
 static int panel;		/* current panel type */
 static WORD mbase;		/* memory panel base address */
 static bool sticky;		/* I/O ports panel sticky flag */
+static bool showfps;		/* show FPS flag */
 
 /*
  * Create the SDL2 or X11 window for panel display
@@ -393,6 +399,9 @@ static void process_event(SDL_Event *event)
 					mbase = (mbase + 0x000f) & 0xfff0;
 			}
 			break;
+		case SDLK_s:
+			showfps = !showfps;
+			break;
 		default:
 			break;
 		}
@@ -516,6 +525,10 @@ static inline void process_events(void)
 						mbase = (mbase + 0x000f) &
 							0xfff0;
 				}
+				break;
+			case XK_s:
+			case XK_S:
+				showfps = !showfps;
 				break;
 			default:
 				break;
@@ -827,14 +840,14 @@ static inline void draw_led(const unsigned x, const unsigned y,
 {
 	int i;
 
-	draw_hline(x + 2, y, 6, C_GRAY);
-	draw_pixel(x + 1, y + 1, C_GRAY);
-	draw_pixel(x + 8, y + 1, C_GRAY);
-	draw_vline(x, y + 2, 6, C_GRAY);
-	draw_vline(x + 9, y + 2, 6, C_GRAY);
-	draw_pixel(x + 1, y + 8, C_GRAY);
-	draw_pixel(x + 8, y + 8, C_GRAY);
-	draw_hline(x + 2, y + 9, 6, C_GRAY);
+	draw_hline(x + 2, y, 6, C_ALUM_5);
+	draw_pixel(x + 1, y + 1, C_ALUM_5);
+	draw_pixel(x + 8, y + 1, C_ALUM_5);
+	draw_vline(x, y + 2, 6, C_ALUM_5);
+	draw_vline(x + 9, y + 2, 6, C_ALUM_5);
+	draw_pixel(x + 1, y + 8, C_ALUM_5);
+	draw_pixel(x + 8, y + 8, C_ALUM_5);
+	draw_hline(x + 2, y + 9, 6, C_ALUM_5);
 	for (i = 1; i < 9; i++) {
 		if (i == 1 || i == 8)
 			draw_hline(x + 2, y + i, 6, col);
@@ -978,14 +991,14 @@ static void draw_cpu_regs(void)
 		draw_setup_grid(&grid, RXOFF, RYOFF, 47, 3, &font18, RSPC);
 
 		/* draw vertical grid lines */
-		draw_grid_vline(7, 0, 2, &grid, C_DKYELLOW);
-		draw_grid_vline(15, 0, 3, &grid, C_DKYELLOW);
-		draw_grid_vline(23, 0, 3, &grid, C_DKYELLOW);
-		draw_grid_vline(31, 0, 3, &grid, C_DKYELLOW);
-		draw_grid_vline(39, 0, 2, &grid, C_DKYELLOW);
+		draw_grid_vline(7, 0, 2, &grid, C_ALUM_4);
+		draw_grid_vline(15, 0, 3, &grid, C_ALUM_4);
+		draw_grid_vline(23, 0, 3, &grid, C_ALUM_4);
+		draw_grid_vline(31, 0, 3, &grid, C_ALUM_4);
+		draw_grid_vline(39, 0, 2, &grid, C_ALUM_4);
 		/* draw horizontal grid lines */
-		draw_grid_hline(0, 1, grid.cols, &grid, C_DKYELLOW);
-		draw_grid_hline(0, 2, grid.cols, &grid, C_DKYELLOW);
+		draw_grid_hline(0, 1, grid.cols, &grid, C_ALUM_4);
+		draw_grid_hline(0, 2, grid.cols, &grid, C_ALUM_4);
 	}
 #endif
 #ifndef EXCLUDE_I8080
@@ -993,13 +1006,13 @@ static void draw_cpu_regs(void)
 		draw_setup_grid(&grid, RXOFF, RYOFF, 47, 2, &font18, RSPC);
 
 		/* draw vertical grid lines */
-		draw_grid_vline(7, 0, 1, &grid, C_DKYELLOW);
-		draw_grid_vline(15, 0, 2, &grid, C_DKYELLOW);
-		draw_grid_vline(23, 0, 1, &grid, C_DKYELLOW);
-		draw_grid_vline(31, 0, 1, &grid, C_DKYELLOW);
-		draw_grid_vline(39, 0, 1, &grid, C_DKYELLOW);
+		draw_grid_vline(7, 0, 1, &grid, C_ALUM_4);
+		draw_grid_vline(15, 0, 2, &grid, C_ALUM_4);
+		draw_grid_vline(23, 0, 1, &grid, C_ALUM_4);
+		draw_grid_vline(31, 0, 1, &grid, C_ALUM_4);
+		draw_grid_vline(39, 0, 1, &grid, C_ALUM_4);
 		/* draw horizontal grid line */
-		draw_grid_hline(0, 1, grid.cols, &grid, C_DKYELLOW);
+		draw_grid_hline(0, 1, grid.cols, &grid, C_ALUM_4);
 	}
 #endif
 	/* draw register labels & contents */
@@ -1010,7 +1023,7 @@ static void draw_cpu_regs(void)
 				x++;
 			while (*s)
 				draw_grid_char(x++, rp->y, *s++, &grid,
-					       C_WHITE, C_DKBLUE);
+					       C_ALUM_2, C_ALUM_6);
 		}
 		switch (rp->type) {
 		case RB: /* byte sized register */
@@ -1027,13 +1040,13 @@ static void draw_cpu_regs(void)
 			break;
 		case RF: /* flags */
 			draw_grid_char(rp->x, rp->y, rp->f.c, &grid,
-				       (F & rp->f.m) ? C_GREEN : C_RED,
-				       C_DKBLUE);
+				       (F & rp->f.m) ? C_CHAM_2 : C_RED_2,
+				       C_ALUM_6);
 			continue;
 		case RI: /* interrupt register */
 			draw_grid_char(rp->x, rp->y, rp->f.c, &grid,
 				       (IFF & rp->f.m) == rp->f.m ?
-				       C_GREEN : C_RED, C_DKBLUE);
+				       C_CHAM_2 : C_RED_2, C_ALUM_6);
 			continue;
 #ifndef EXCLUDE_Z80
 		case RR: /* refresh register */
@@ -1048,8 +1061,8 @@ static void draw_cpu_regs(void)
 		while (j--) {
 			c = w & 0xf;
 			c += (c < 10 ? '0' : 'A' - 10);
-			draw_grid_char(x--, rp->y, c, &grid, C_GREEN,
-				       C_DKBLUE);
+			draw_grid_char(x--, rp->y, c, &grid, C_CHAM_2,
+				       C_ALUM_6);
 			w >>= 4;
 		}
 	}
@@ -1079,37 +1092,37 @@ static void draw_memory_panel(void)
 
 	/* draw vertical grid lines */
 	for (i = 0; i < 17; i++)
-		draw_grid_vline(5 + i * 3, 0, grid.rows, &grid, C_DKYELLOW);
+		draw_grid_vline(5 + i * 3, 0, grid.rows, &grid, C_ALUM_4);
 
 	a = mbase;
 	for (i = 0; i < 16; i++) {
 		c = ((a & 0xf) + i) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(7 + i * 3, 0, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(7 + i * 3, 0, c, &grid, C_ALUM_2, C_ALUM_6);
 	}
 	for (j = 0; j < 16; j++) {
-		draw_grid_hline(0, j + 1, grid.cols, &grid, C_DKYELLOW);
+		draw_grid_hline(0, j + 1, grid.cols, &grid, C_ALUM_4);
 		c = (a >> 12) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(0, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(0, j + 1, c, &grid, C_ALUM_2, C_ALUM_6);
 		c = (a >> 8) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(1, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(1, j + 1, c, &grid, C_ALUM_2, C_ALUM_6);
 		c = (a >> 4) & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(2, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(2, j + 1, c, &grid, C_ALUM_2, C_ALUM_6);
 		c = a & 0xf;
 		c += (c < 10 ? '0' : 'A' - 10);
-		draw_grid_char(3, j + 1, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(3, j + 1, c, &grid, C_ALUM_2, C_ALUM_6);
 		for (i = 0; i < 16; i++) {
 			c = (getmem(a) >> 4) & 0xf;
 			c += (c < 10 ? '0' : 'A' - 10);
-			draw_grid_char(6 + i * 3, j + 1, c, &grid, C_CYAN,
-				       C_DKBLUE);
+			draw_grid_char(6 + i * 3, j + 1, c, &grid, C_CHAM_2,
+				       C_ALUM_6);
 			c = getmem(a++) & 0xf;
 			c += (c < 10 ? '0' : 'A' - 10);
-			draw_grid_char(7 + i * 3, j + 1, c, &grid, C_CYAN,
-				       C_DKBLUE);
+			draw_grid_char(7 + i * 3, j + 1, c, &grid, C_CHAM_2,
+				       C_ALUM_6);
 		}
 		a -= 16;
 		for (i = 0; i < 16; i++) {
@@ -1118,8 +1131,8 @@ static void draw_memory_panel(void)
 			if (dc < 32 || dc == 127)
 				dc = '.';
 			draw_grid_char(55 + i, j + 1, dc, &grid,
-				       (c & 0x80) ? C_ORANGE : C_YELLOW,
-				       C_DKBLUE);
+				       (c & 0x80) ? C_PLUM_1 : C_BUTTER_1,
+				       C_ALUM_6);
 		}
 	}
 }
@@ -1149,22 +1162,22 @@ static void draw_ports_panel(void)
 
 	/* draw vertical grid lines */
 	for (i = 0; i < 16; i++)
-		draw_grid_vline(3 + i * 4, 0, grid.rows, &grid, C_DKYELLOW);
+		draw_grid_vline(3 + i * 4, 0, grid.rows, &grid, C_ALUM_4);
 
 	for (i = 0; i < 16; i++) {
 		c = i + (i < 10 ? '0' : 'A' - 10);
-		draw_grid_char(5 + i * 4, 0, c, &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(5 + i * 4, 0, c, &grid, C_ALUM_2, C_ALUM_6);
 	}
 	for (j = 0; j < 16; j++) {
-		draw_grid_hline(0, j + 1, grid.cols, &grid, C_DKYELLOW);
+		draw_grid_hline(0, j + 1, grid.cols, &grid, C_ALUM_4);
 		c = j + (j < 10 ? '0' : 'A' - 10);
-		draw_grid_char(0, j + 1, c, &grid, C_GREEN, C_DKBLUE);
-		draw_grid_char(1, j + 1, '0', &grid, C_GREEN, C_DKBLUE);
+		draw_grid_char(0, j + 1, c, &grid, C_ALUM_2, C_ALUM_6);
+		draw_grid_char(1, j + 1, '0', &grid, C_ALUM_2, C_ALUM_6);
 		for (i = 0; i < 16; i++) {
 			x = (4 + i * 4) * grid.cwidth + grid.xoff + 1;
 			y = (j + 1) * grid.cheight + grid.yoff + 3;
-			draw_led(x, y, p->in ? C_GREEN : C_DKBLUE);
-			draw_led(x + 13, y, p->out ? C_RED : C_DKBLUE);
+			draw_led(x, y, p->in ? C_CHAM_2 : C_ALUM_6);
+			draw_led(x + 13, y, p->out ? C_RED_2 : C_ALUM_6);
 			p++;
 		}
 	}
@@ -1196,13 +1209,13 @@ static void draw_info(bool tick)
 	/* draw product info */
 	s = "Z80pack " RELEASE;
 	for (i = 0; *s; i++)
-		draw_char(i * w + x, y, *s++, font, C_ORANGE, C_DKBLUE);
+		draw_char(i * w + x, y, *s++, font, C_ORANGE_1, C_ALUM_6);
 
 	/* draw frequency label */
-	draw_char((n - 7) * w + x, y, '.', font, C_ORANGE, C_DKBLUE);
-	draw_char((n - 3) * w + x, y, 'M', font, C_ORANGE, C_DKBLUE);
-	draw_char((n - 2) * w + x, y, 'H', font, C_ORANGE, C_DKBLUE);
-	draw_char((n - 1) * w + x, y, 'z', font, C_ORANGE, C_DKBLUE);
+	draw_char((n - 7) * w + x, y, '.', font, C_ORANGE_1, C_ALUM_6);
+	draw_char((n - 3) * w + x, y, 'M', font, C_ORANGE_1, C_ALUM_6);
+	draw_char((n - 2) * w + x, y, 'H', font, C_ORANGE_1, C_ALUM_6);
+	draw_char((n - 1) * w + x, y, 'z', font, C_ORANGE_1, C_ALUM_6);
 
 	/* update fps every second */
 	count++;
@@ -1210,20 +1223,22 @@ static void draw_info(bool tick)
 		fps = count;
 		count = 0;
 	}
-	draw_char(30 * w + x, y, fps > 99 ? fps / 100 + '0' : ' ',
-		  font, C_ORANGE, C_DKBLUE);
-	draw_char(31 * w + x, y, fps > 9 ? (fps / 10) % 10 + '0' : ' ',
-		  font, C_ORANGE, C_DKBLUE);
-	draw_char(32 * w + x, y, fps % 10 + '0',
-		  font, C_ORANGE, C_DKBLUE);
-	draw_char(34 * w + x, y, 'f', font, C_ORANGE, C_DKBLUE);
-	draw_char(35 * w + x, y, 'p', font, C_ORANGE, C_DKBLUE);
-	draw_char(36 * w + x, y, 's', font, C_ORANGE, C_DKBLUE);
+	if (showfps) {
+		draw_char(30 * w + x, y, fps > 99 ? fps / 100 + '0' : ' ',
+			  font, C_ORANGE_1, C_ALUM_6);
+		draw_char(31 * w + x, y, fps > 9 ? (fps / 10) % 10 + '0' : ' ',
+			  font, C_ORANGE_1, C_ALUM_6);
+		draw_char(32 * w + x, y, fps % 10 + '0',
+			  font, C_ORANGE_1, C_ALUM_6);
+		draw_char(34 * w + x, y, 'f', font, C_ORANGE_1, C_ALUM_6);
+		draw_char(35 * w + x, y, 'p', font, C_ORANGE_1, C_ALUM_6);
+		draw_char(36 * w + x, y, 's', font, C_ORANGE_1, C_ALUM_6);
+	}
 
 	/* update frequency every second */
-	if (tick && cpu_time)
+	if (tick)
 		freq = cpu_freq;
-	f = (unsigned) (freq / 10000ULL);
+	f = (unsigned) (freq / 10000);
 	digit = 100000;
 	onlyz = true;
 	for (i = 0; i < 7; i++) {
@@ -1237,7 +1252,7 @@ static void draw_info(bool tick)
 		else
 			onlyz = false;
 		draw_char((n - 11 + i) * w + x, y, c,
-			  font, C_ORANGE, C_DKBLUE);
+			  font, C_ORANGE_1, C_ALUM_6);
 		if (i < 6)
 			digit /= 10;
 		if (i == 3)
@@ -1258,7 +1273,7 @@ static void draw_buttons(void)
 
 	for (i = 0; i < nbuttons; i++) {
 		if (p->enabled) {
-			color = p->hilighted ? C_ORANGE : C_WHITE;
+			color = p->hilighted ? C_ORANGE_1 : C_ALUM_2;
 			draw_hline(p->x + 2, p->y, p->width - 4, color);
 			draw_pixel(p->x + 1, p->y + 1, color);
 			draw_pixel(p->x + p->width - 2, p->y + 1, color);
@@ -1271,11 +1286,11 @@ static void draw_buttons(void)
 			draw_hline(p->x + 2, p->y + p->height - 1,
 				   p->width - 4, color);
 
-			color = C_DKBLUE;
+			color = C_ALUM_6;
 			if (p->active)
-				color = C_DKGREEN;
+				color = C_CHAM_3;
 			if (p->pressed)
-				color = C_DKYELLOW;
+				color = C_BLUE_1;
 			draw_hline(p->x + 2, p->y + 1, p->width - 4, color);
 			for (y = p->y + 2; y < p->y + p->height - 2; y++)
 				draw_hline(p->x + 1, y, p->width - 2, color);
@@ -1286,7 +1301,7 @@ static void draw_buttons(void)
 					p->font->width) / 2;
 			y = p->y + 1 + (p->height - 2 - p->font->height) / 2;
 			for (s = p->text; *s; s++) {
-				draw_char(x, y, *s, p->font, C_CYAN, C_TRANS);
+				draw_char(x, y, *s, p->font, C_CHOC_1, C_TRANS);
 				x += p->font->width;
 			}
 		}
@@ -1379,7 +1394,7 @@ static void check_buttons(unsigned x, unsigned y, int event)
  */
 static void refresh(bool tick)
 {
-	draw_clear(C_DKBLUE);
+	draw_clear(C_ALUM_6);
 
 	update_buttons();
 	draw_buttons();

@@ -332,6 +332,7 @@ static void step_clicked(int state, int val)
 bool wait_step(void)
 {
 	bool ret = false;
+	uint64_t t1, t2, tio = 0;
 
 	if (cpu_state != ST_SINGLE_STEP) {
 		cpu_bus &= ~CPU_M1;
@@ -344,20 +345,28 @@ bool wait_step(void)
 		return ret;
 	}
 
+	t1 = get_clock_us();
+
 	cpu_switch = CPUSW_STEPCYCLE;
 
 	while ((cpu_switch == CPUSW_STEPCYCLE) && !reset) {
 		/* when INP update data bus LEDs */
 		if (cpu_bus == (CPU_WO | CPU_INP)) {
-			if (port_in[fp_led_address & 0xff])
+			if (port_in[fp_led_address & 0xff]) {
+				t2 = get_clock_us();
 				fp_led_data =
 					(*port_in[fp_led_address & 0xff])();
+				tio += get_clock_us() - t2;
+			}
 		}
 		fp_clock++;
 		fp_sampleData();
 		sleep_for_ms(10);
 		ret = true;
 	}
+
+	wait_time += get_clock_us() - t1 - tio;
+	io_time += tio;
 
 	cpu_bus &= ~CPU_M1;
 	m1_step = false;
@@ -369,8 +378,12 @@ bool wait_step(void)
  */
 void wait_int_step(void)
 {
+	uint64_t t;
+
 	if (cpu_state != ST_SINGLE_STEP)
 		return;
+
+	t = get_clock_us();
 
 	cpu_switch = CPUSW_STEPCYCLE;
 
@@ -379,6 +392,8 @@ void wait_int_step(void)
 		fp_sampleData();
 		sleep_for_ms(10);
 	}
+
+	wait_time += get_clock_us() - t;
 }
 
 /*

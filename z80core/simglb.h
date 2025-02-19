@@ -31,8 +31,11 @@ extern BYTE	IFF;
 #else
 #include "altregs.h"
 #endif
+
 extern Tstates_t T;
-extern uint64_t	cpu_time, cpu_tadj, cpu_freq;
+extern uint64_t	cpu_time, cpu_freq;
+extern uint64_t io_time, wait_time;
+extern uint64_t total_io_time, total_wait_time;
 
 #ifdef BUS_8080
 extern BYTE	cpu_bus;
