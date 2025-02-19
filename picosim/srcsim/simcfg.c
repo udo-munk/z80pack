@@ -147,9 +147,6 @@ void config(void)
 	ts.tv_sec = mktime(&t);
 	ts.tv_nsec = 0;
 	aon_timer_start(&ts);
-#if PICO_RP2040
-	sleep_us(64);
-#endif
 
 	menu = 1;
 
@@ -229,9 +226,6 @@ void config(void)
 				ds3231_set_datetime(&dt, &rtc);
 				ts.tv_sec = mktime(&t);
 				aon_timer_set_time(&ts);
-#if PICO_RP2040
-				sleep_us(64);
-#endif
 			}
 			putchar('\n');
 			break;
@@ -260,9 +254,6 @@ void config(void)
 				ds3231_set_datetime(&dt, &rtc);
 				ts.tv_sec = mktime(&t);
 				aon_timer_set_time(&ts);
-#if PICO_RP2040
-				sleep_us(64);
-#endif
 			}
 			putchar('\n');
 			break;

@@ -376,7 +376,7 @@ See [An instance of `sd_spi_if_t` describes the configuration of one SPI to SD c
 * Follow instructions in [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.org/pico/getting-started-with-pico.pdf) to set up the development environment.
 * Install source code:
   ```bash
-  git clone --recurse-submodules git@github.com:carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico.git no-OS-FatFs
+  git clone --recurse-submodules https://github.com/carlk3/no-OS-FatFS-SD-SDIO-SPI-RPi-Pico.git
   ```
 * Customize:
   * Configure the code to match the hardware: see section 
@@ -386,7 +386,7 @@ See [An instance of `sd_spi_if_t` describes the configuration of one SPI to SD c
 (See *4.1. Serial input and output on Raspberry Pi Pico* in [Getting started with Raspberry Pi Pico](https://datasheets.raspberrypi.org/pico/getting-started-with-pico.pdf) and *2.7.1. Standard Input/Output (stdio) Support* in [Raspberry Pi Pico C/C++ SDK](https://datasheets.raspberrypi.org/pico/raspberry-pi-pico-c-sdk.pdf).) 
 * Build:
 ```bash
-   cd no-OS-FatFs/examples/command_line
+   cd no-OS-FatFS-SD-SDIO-SPI-RPi-Pico/examples/command_line
    mkdir build
    cd build
    cmake ..
@@ -1051,6 +1051,8 @@ Obviously, if possible, use 4-bit SDIO instead of 1-bit SPI.
 
 Obviously, set the baud rate as high as you can. (See
 [Customizing for the Hardware Configuration](#customizing-for-the-hardware-configuration)).
+
+Consider increasing the system clock frequency (clk_sys).
 
 If you are using SPI, try SPI mode 3 (CPOL=1, CPHA=1) instead of 0 (CPOL=0, CPHA=0). (See
 [SPI Controller Configuration](#spi-controller-configuration).) This could buy a 15% speed boost.
