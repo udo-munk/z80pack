@@ -802,6 +802,7 @@ next_opcode:
 
 	case 0x76:			/* HALT */
 		t2 = get_clock_us();
+
 #ifdef BUS_8080
 		cpu_bus = CPU_WO | CPU_HLTA | CPU_MEMR;
 #endif
@@ -864,7 +865,9 @@ next_opcode:
 			}
 		}
 #endif /* FRONTPANEL */
-		cpu_tadj += get_clock_us() - t2;
+
+		wait_time += get_clock_us() - t2;
+
 		break;
 
 	case 0x77:			/* LD (ir),A */
@@ -1379,11 +1382,9 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 			if (F_flag) {
-				t2 = get_clock_us();
 				/* update frontpanel */
 				fp_clock++;
 				fp_sampleLightGroup(0, 0);
-				cpu_tadj += get_clock_us() - t2;
 			}
 #endif
 
@@ -1623,11 +1624,9 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
-			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
-			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 
@@ -1721,11 +1720,9 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
-			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
-			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 
@@ -2401,11 +2398,9 @@ next_opcode:
 #endif
 #ifdef FRONTPANEL
 		if (F_flag) {
-			t2 = get_clock_us();
 			/* update frontpanel */
 			fp_clock++;
 			fp_sampleLightGroup(0, 0);
-			cpu_tadj += get_clock_us() - t2;
 		}
 #endif
 

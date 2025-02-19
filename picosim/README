@@ -11,7 +11,7 @@ picosim also on these:
 	https://github.com/udo-munk/RP2xxx-GEEK-80
 
 
-To build the software you need to have the SDK for RP2040/RP2350 devices
+To build the software you need to have the SDK 2.1.1 for RP2040/RP2350 devices
 installed and configured. The SDK manual has detailed instructions how
 to install on all major PC platforms, it is available here:
 

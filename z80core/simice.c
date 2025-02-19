@@ -287,8 +287,11 @@ static void do_trace(char *s)
 static void do_go(char *s)
 {
 	int timeit = 0;
-	uint64_t start_time, stop_time;
-	Tstates_t T0 = T;
+	uint64_t start_cpu_time, stop_cpu_time;
+	uint64_t start_io_time, stop_io_time;
+	uint64_t start_wait_time, stop_wait_time;
+	Tstates_t T0;
+	unsigned freq;
 
 	while (isspace((unsigned char) *s))
 		s++;
@@ -301,22 +304,33 @@ static void do_go(char *s)
 	if (ice_before_go)
 		(*ice_before_go)();
 	install_softbp();
-	start_time = cpu_time;
+	T0 = T;
+	start_cpu_time = cpu_time;
+	start_io_time = total_io_time;
+	start_wait_time = total_wait_time;
 	while (true) {
 		run_cpu();
 		if (cpu_error && (cpu_error != OPHALT || handle_break()))
 			break;
 	}
-	stop_time = cpu_time;
+	stop_cpu_time = cpu_time;
+	stop_io_time = total_io_time;
+	stop_wait_time = total_wait_time;
 	uninstall_softbp();
 	if (ice_after_go)
 		(*ice_after_go)();
 	report_cpu_error();
 	if (timeit) {
+		freq = (unsigned) (((T - T0) * 100) /
+				   (stop_cpu_time - start_cpu_time));
+		printf("I/O ran for %" PRIu64 " ms, ",
+		       (stop_io_time - start_io_time) / 1000);
+		printf("waited for %" PRIu64 " ms\n",
+		       (stop_wait_time - start_wait_time) / 1000);
 		printf("CPU executed %" PRIu64 " t-states in %" PRIu64 " ms\n",
-		       T - T0, (stop_time - start_time) / 1000);
-		printf("clock frequency = %5.2f MHz\n",
-		       (float) (T - T0) / (float) (stop_time - start_time));
+		       T - T0, (stop_cpu_time - start_cpu_time) / 1000);
+		printf("clock frequency = %u.%02u MHz\n",
+		       freq / 100, freq % 100);
 	}
 	print_head();
 	print_reg();
@@ -1388,7 +1402,7 @@ static void do_clock(void)
 		s = "JMP";
 #endif
 	if (cpu_error == NONE) {
-		freq = (unsigned) ((T - T0) / 30000ULL);
+		freq = (unsigned) ((T - T0) / 30000);
 		printf("CPU executed %" PRIu64 " %s instructions "
 		       "in 3 seconds\n", (T - T0) / 10, s);
 		printf("clock frequency = %5u.%02u MHz\n",

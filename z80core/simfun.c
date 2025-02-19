@@ -103,7 +103,7 @@ uint64_t get_clock_us(void)
 	static uint64_t old_t;
 
 	gettimeofday(&tv, NULL);
-	t = (uint64_t) (tv.tv_sec) * 1000000ULL + (uint64_t) (tv.tv_usec);
+	t = (uint64_t) tv.tv_sec * 1000000 + (uint64_t) tv.tv_usec;
 	if (t < old_t) {
 		LOGD(TAG, "get_clock_us() time jumped backwards %"
 		     PRIu64 " > %" PRIu64, old_t, t);
