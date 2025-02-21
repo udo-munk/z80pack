@@ -157,7 +157,7 @@ bool load_file(const char *name)
 	sd_res = f_open(&sd_file, SFN, FA_READ);
 	if (sd_res != FR_OK) {
 		puts("File not found");
-		return 0;
+		return false;
 	}
 
 	/* read file into memory */
