@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2008-2024 by Udo Munk
+ * Copyright (C) 2008-2025 by Udo Munk
  *
  * Configuration for an Altair 8800 system
  *
@@ -68,6 +68,6 @@
 
 #define USR_COM	"Altair 8800 Simulation"
 #define USR_REL	"1.19"
-#define USR_CPR	"Copyright (C) 2008-2024 by Udo Munk"
+#define USR_CPR	"Copyright (C) 2008-2025 by Udo Munk"
 
 #endif /* !SIM_INC */

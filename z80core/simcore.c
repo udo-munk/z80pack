@@ -233,9 +233,11 @@ void report_cpu_stats(void)
 
 	if (cpu_time)
 	{
-		freq = (unsigned) (cpu_freq / 10000ULL);
-		printf("CPU ran %" PRIu64 " ms ", cpu_time / 1000);
-		printf("and executed %" PRIu64 " t-states\n", T);
+		freq = (unsigned) (cpu_freq / 10000);
+		printf("I/O ran for %" PRIu64 " ms, ", total_io_time / 1000);
+		printf("waited for %" PRIu64 " ms\n", total_wait_time / 1000);
+		printf("CPU executed %" PRIu64 " t-states ", T);
+		printf("in %" PRIu64 " ms\n", cpu_time / 1000);
 		printf("Clock frequency %u.%02u MHz\n",
 		       freq / 100, freq % 100);
 	}
@@ -258,12 +260,12 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #endif
 #endif
 
-	t = get_clock_us();
-
 	io_port = addrl;
-	if (port_in[addrl])
+	if (port_in[addrl]) {
+		t = get_clock_us();
 		io_data = (*port_in[addrl])();
-	else {
+		io_time += get_clock_us() - t;
+	} else {
 		if (i_flag) {
 			cpu_error = IOTRAPIN;
 			cpu_state = ST_STOPPED;
@@ -284,8 +286,11 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 		val = wait_step();
 
 		/* when single stepped INP get last set value of port */
-		if (val && port_in[addrl])
+		if (val && port_in[addrl]) {
+			t = get_clock_us();
 			io_data = (*port_in[addrl])();
+			io_time += get_clock_us() - t;
+		}
 	}
 #endif
 #ifdef SIMPLEPANEL
@@ -298,8 +303,6 @@ BYTE io_in(BYTE addrl, BYTE addrh)
 #endif
 
 	LOGD(TAG, "input %02x from port %02x", io_data, io_port);
-
-	cpu_tadj += get_clock_us() - t;
 
 	return io_data;
 }
@@ -317,8 +320,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 	UNUSED(addrh);
 #endif
 
-	t = get_clock_us();
-
 	io_port = addrl;
 	io_data = data;
 
@@ -326,9 +327,11 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 
 	busy_loop_cnt = 0;
 
-	if (port_out[addrl])
+	if (port_out[addrl]) {
+		t = get_clock_us();
 		(*port_out[addrl])(data);
-	else {
+		io_time += get_clock_us() - t;
+	} else {
 		if (i_flag) {
 			cpu_error = IOTRAPOUT;
 			cpu_state = ST_STOPPED;
@@ -356,8 +359,6 @@ void io_out(BYTE addrl, BYTE addrh, BYTE data)
 #if defined(INFOPANEL) || defined(IOPANEL)
 	port_flags[addrl].out = true;
 #endif
-
-	cpu_tadj += get_clock_us() - t;
 }
 
 /*

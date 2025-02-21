@@ -39,10 +39,15 @@ BYTE IFF;			/* interrupt flags */
 #else
 cpu_regs_t cpu_regs;		/* CPU registers */
 #endif
+
 Tstates_t T;			/* CPU clock */
-uint64_t cpu_time;		/* time spent running CPU in us */
-uint64_t cpu_tadj;		/* time spent in non CPU execution areas */
+uint64_t cpu_time;		/* time spent running CPU in usec */
 uint64_t cpu_freq;		/* estimated CPU frequency in Hz */
+uint64_t io_time;		/* time spent doing I/O in time block */
+uint64_t wait_time;		/* time spent waiting in time block */
+uint64_t total_io_time;		/* total time spent doing I/O */
+uint64_t total_wait_time;	/* total time spent waiting */
+
 
 #ifdef BUS_8080
 BYTE cpu_bus;			/* CPU bus status, for frontpanels */

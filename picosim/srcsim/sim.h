@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024-2025 by Udo Munk
  *
  * This is the configuration for a Raspberry Pico [2] [W] board
  */
@@ -33,8 +33,8 @@
 #else
 #define USR_COM "Raspberry Pi Pico 2 Z80/8080 emulator"
 #endif
-#define USR_REL "1.5"
-#define USR_CPR "Copyright (C) 2024 by Udo Munk & Thomas Eberhardt"
+#define USR_REL "1.6"
+#define USR_CPR "Copyright (C) 2024-2025 by Udo Munk & Thomas Eberhardt"
 
 #ifndef PRIu64
 #define PRIu64 "llu"
