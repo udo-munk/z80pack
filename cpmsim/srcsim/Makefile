@@ -56,10 +56,9 @@ else ifeq ($(TARGET_OS),LINUX)
 PLAT_INCS = -I/usr/include/SDL2
 PLAT_LDLIBS = -lSDL2 -lSDL2main
 else ifeq ($(TARGET_OS),OSX)
-PLAT_INCS = -F/Library/Frameworks -I/Library/Frameworks/SDL2.framework/Headers
-PLAT_LDFLAGS = -Wl,-search_paths_first -Wl,-headerpad_max_install_names \
-	-Wl,-rpath,/Library/Frameworks
-PLAT_LDLIBS = -framework SDL2
+PLAT_INCS = -I/opt/homebrew/include/SDL2 
+PLAT_LDLIBS = -L/opt/homebrew/lib -lSDL2
+PLAT_LDFLAGS = -Wl,-search_paths_first -Wl,-headerpad_max_install_names -Wl,-rpath,/Library/Frameworks
 endif
 else
 PLAT_DEFS = -DINFOPANEL

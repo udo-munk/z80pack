@@ -24,9 +24,7 @@ PLAT_INCS = -I/usr/local/include/SDL2
 else ifeq ($(TARGET_OS),LINUX)
 PLAT_INCS = -I/usr/include/SDL2
 else ifeq ($(TARGET_OS),OSX)
-PLAT_INCS = -F/Library/Frameworks -I/Library/Frameworks/SDL2.framework/Headers \
-	-I/Library/Frameworks/SDL2_image.framework/Headers \
-	-I/Library/Frameworks/SDL2_mixer.framework/Headers
+PLAT_INCS = -I/opt/homebrew/include/SDL2 
 endif
 else
 ifeq ($(TARGET_OS),BSD)
