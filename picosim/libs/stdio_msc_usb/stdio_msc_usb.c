@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
- * Copyright (c) 2024 Thomas Eberhardt
+ * Copyright (c) 2024-2025 Thomas Eberhardt
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -73,11 +73,11 @@ static void low_priority_worker_irq(void) {
         if (irq_tud_task_enabled) {
             tud_task();
         }
-#if STDIO_MSC_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK
-        uint32_t chars_avail = tud_cdc_available();
+#if !STDIO_MSC_USB_DISABLE_STDIO && STDIO_MSC_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK
+        uint32_t chars_avail = tud_cdc_n_available(STDIO_MSC_USB_CONSOLE_ITF);
 #endif
         mutex_exit(&stdio_msc_usb_mutex);
-#if STDIO_MSC_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK
+#if !STDIO_MSC_USB_DISABLE_STDIO && STDIO_MSC_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK
         if (chars_avail && chars_available_callback) chars_available_callback(chars_available_param);
 #endif
     } else {
@@ -108,6 +108,7 @@ static void usb_irq(void) {
     irq_set_pending(low_priority_irq_num);
 }
 
+#if !STDIO_MSC_USB_DISABLE_STDIO
 static void stdio_msc_usb_out_chars(const char *buf, int length) {
     static uint64_t last_avail_time;
     if (!mutex_try_enter_block_until(&stdio_msc_usb_mutex, make_timeout_time_ms(PICO_STDIO_DEADLOCK_TIMEOUT_MS))) {
@@ -116,19 +117,19 @@ static void stdio_msc_usb_out_chars(const char *buf, int length) {
     if (stdio_msc_usb_connected()) {
         for (int i = 0; i < length;) {
             int n = length - i;
-            int avail = (int) tud_cdc_write_available();
+            int avail = (int) tud_cdc_n_write_available(STDIO_MSC_USB_CONSOLE_ITF);
             if (n > avail) n = avail;
             if (n) {
-                int n2 = (int) tud_cdc_write(buf + i, (uint32_t)n);
+                int n2 = (int) tud_cdc_n_write(STDIO_MSC_USB_CONSOLE_ITF, buf + i, (uint32_t)n);
                 tud_task();
-                tud_cdc_write_flush();
+                tud_cdc_n_write_flush(STDIO_MSC_USB_CONSOLE_ITF);
                 i += n2;
                 last_avail_time = time_us_64();
             } else {
                 tud_task();
-                tud_cdc_write_flush();
+                tud_cdc_n_write_flush(STDIO_MSC_USB_CONSOLE_ITF);
                 if (!stdio_msc_usb_connected() ||
-                    (!tud_cdc_write_available() && time_us_64() > last_avail_time + STDIO_MSC_USB_STDOUT_TIMEOUT_US)) {
+                    (!tud_cdc_n_write_available(STDIO_MSC_USB_CONSOLE_ITF) && time_us_64() > last_avail_time + STDIO_MSC_USB_STDOUT_TIMEOUT_US)) {
                     break;
                 }
             }
@@ -146,7 +147,7 @@ static void stdio_msc_usb_out_flush(void) {
     }
     do {
         tud_task();
-    } while (tud_cdc_write_flush());
+    } while (tud_cdc_n_write_flush(STDIO_MSC_USB_CONSOLE_ITF));
     mutex_exit(&stdio_msc_usb_mutex);
 }
 
@@ -160,12 +161,12 @@ int stdio_msc_usb_in_chars(char *buf, int length) {
     // tud_task will complete running and we will check the right values the next time.
     //
     int rc = PICO_ERROR_NO_DATA;
-    if (stdio_msc_usb_connected() && tud_cdc_available()) {
+    if (stdio_msc_usb_connected() && tud_cdc_n_available(STDIO_MSC_USB_CONSOLE_ITF)) {
         if (!mutex_try_enter_block_until(&stdio_msc_usb_mutex, make_timeout_time_ms(PICO_STDIO_DEADLOCK_TIMEOUT_MS))) {
             return PICO_ERROR_NO_DATA; // would deadlock otherwise
         }
-        if (stdio_msc_usb_connected() && tud_cdc_available()) {
-            int count = (int) tud_cdc_read(buf, (uint32_t) length);
+        if (stdio_msc_usb_connected() && tud_cdc_n_available(STDIO_MSC_USB_CONSOLE_ITF)) {
+            int count = (int) tud_cdc_n_read(STDIO_MSC_USB_CONSOLE_ITF, buf, (uint32_t) length);
             rc = count ? count : PICO_ERROR_NO_DATA;
         } else {
             // because our mutex use may starve out the background task, run tud_task here (we own the mutex)
@@ -195,6 +196,8 @@ stdio_driver_t stdio_msc_usb = {
 #endif
 
 };
+#endif // !STDIO_MSC_USB_DISABLE_STDIO
+
 
 bool stdio_msc_usb_init(void) {
     if (get_core_num() != alarm_pool_core_num(alarm_pool_get_default())) {
@@ -203,7 +206,7 @@ bool stdio_msc_usb_init(void) {
         assert(false);
         return false;
     }
-#if !PICO_NO_BI_STDIO_USB && !STDIO_MSC_USB_DISABLE_STDIO
+#if !STDIO_MSC_USB_DISABLE_STDIO && !PICO_NO_BI_STDIO_USB
     bi_decl_if_func_used(bi_program_feature("USB stdin / stdout"));
 #endif
 
@@ -284,10 +287,10 @@ bool stdio_msc_usb_deinit(void) {
 }
 
 bool stdio_msc_usb_connected(void) {
-#if STDIO_MSC_USB_CONNECTION_WITHOUT_DTR
+#if STDIO_MSC_USB_CONNECTION_WITHOUT_DTR || STDIO_MSC_USB_DISABLE_STDIO
     return tud_ready();
 #else
     // this actually checks DTR
-    return tud_cdc_connected();
+    return tud_cdc_n_connected(STDIO_MSC_USB_CONSOLE_ITF);
 #endif
 }

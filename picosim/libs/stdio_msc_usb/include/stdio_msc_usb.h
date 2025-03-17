@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
- * Copyright (c) 2024 Thomas Eberhardt
+ * Copyright (c) 2024-2025 Thomas Eberhardt
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -70,8 +70,8 @@
 // PICO_CONFIG: STDIO_MSC_USB_RESET_BOOTSEL_ACTIVITY_LED, Optionally define a pin to use as bootloader activity LED when BOOTSEL mode is entered via USB (either VIA_BAUD_RATE or VIA_VENDOR_INTERFACE), type=int, min=0, max=47 on RP2350B, 29 otherwise, group=stdio_msc_usb
 
 // PICO_CONFIG: STDIO_MSC_USB_RESET_BOOTSEL_ACTIVITY_LED_ACTIVE_LOW, Whether pin to use as bootloader activity LED when BOOTSEL mode is entered via USB (either VIA_BAUD_RATE or VIA_VENDOR_INTERFACE) is active low, type=bool, default=0, group=stdio_msc_usb
-#ifndef STDIO_MSC_USB_RESET_BOOTSEL_FIXED_ACTIVITY_LED_ACTIVE_LOW
-#define STDIO_MSC_USB_RESET_BOOTSEL_FIXED_ACTIVITY_LED_ACTIVE_LOW 0
+#ifndef STDIO_MSC_USB_RESET_BOOTSEL_ACTIVITY_LED_ACTIVE_LOW
+#define STDIO_MSC_USB_RESET_BOOTSEL_ACTIVITY_LED_ACTIVE_LOW 0
 #endif
 
 // PICO_CONFIG: STDIO_MSC_USB_RESET_BOOTSEL_FIXED_ACTIVITY_LED, Whether the pin specified by STDIO_MSC_USB_RESET_BOOTSEL_ACTIVITY_LED is fixed or can be modified by picotool over the VENDOR USB interface, type=bool, default=0, group=stdio_msc_usb
@@ -137,7 +137,9 @@
 extern "C" {
 #endif
 
+#if !STDIO_MSC_USB_DISABLE_STDIO
 extern stdio_driver_t stdio_msc_usb;
+#endif
 
 /*! \brief Explicitly initialize USB stdio and add it to the current set of stdin drivers
  *  \ingroup stdio_msc_usb

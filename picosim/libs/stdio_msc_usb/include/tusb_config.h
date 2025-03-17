@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
  * Copyright (c) 2020 Damien P. George
- * Copyright (c) 2024 Thomas Eberhardt
+ * Copyright (c) 2024-2025 Thomas Eberhardt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,29 @@
 
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
 
-#define CFG_TUD_CDC             (1)
-#define CFG_TUD_CDC_RX_BUFSIZE  (256)
-#define CFG_TUD_CDC_TX_BUFSIZE  (256)
+#if STDIO_MSC_USB_DISABLE_STDIO
+#define CFG_TUD_CDC             (2)
+#define STDIO_MSC_USB_CONSOLE2_ITF 0
+#define STDIO_MSC_USB_PRINTER_ITF 1
+#else
+#define CFG_TUD_CDC             (3)
+#define STDIO_MSC_USB_CONSOLE_ITF 0
+#define STDIO_MSC_USB_CONSOLE2_ITF 1
+#define STDIO_MSC_USB_PRINTER_ITF 2
+#endif
+
+// CDC FIFO size of TX and RX
+#ifndef CFG_TUD_CDC_RX_BUFSIZE
+#define CFG_TUD_CDC_RX_BUFSIZE   (TUD_OPT_HIGH_SPEED ? 512 : 64)
+#endif
+#ifndef CFG_TUD_CDC_TX_BUFSIZE
+#define CFG_TUD_CDC_TX_BUFSIZE   (TUD_OPT_HIGH_SPEED ? 512 : 64)
+#endif
+
+// CDC Endpoint transfer buffer size, more is faster
+#ifndef CFG_TUD_CDC_EP_BUFSIZE
+#define CFG_TUD_CDC_EP_BUFSIZE   (TUD_OPT_HIGH_SPEED ? 512 : 64)
+#endif
 
 #define CFG_TUD_MSC             (1)
 #define CFG_TUD_MSC_EP_BUFSIZE  (4096)

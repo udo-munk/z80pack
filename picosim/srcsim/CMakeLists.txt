@@ -129,7 +129,7 @@ if(PICO_RP2040)
 else()
 	pico_set_program_description(${PROJECT_NAME} "z80pack on Raspberry Pi Pico 2")
 endif()
-pico_set_program_version(${PROJECT_NAME} "1.5")
+pico_set_program_version(${PROJECT_NAME} "1.7")
 pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/z80pack")
 
 # enable UART in/out, enable USB in/out
