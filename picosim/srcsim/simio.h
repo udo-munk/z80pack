@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024-2025 by Udo Munk & Thomas Eberhardt
  */
 
 #ifndef SIMIO_INC
@@ -18,5 +18,6 @@ extern in_func_t *const port_in[256];
 extern out_func_t *const port_out[256];
 
 extern void init_io(void);
+extern void exit_io(void);
 
 #endif /* !SIMIO_INC */

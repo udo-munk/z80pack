@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk
+ * Copyright (C) 2024-2025 by Udo Munk & Thomas Eberhardt
  *
  * I/O simulation for picosim
  *
@@ -14,11 +14,12 @@
  * 08-JUN-2024 implemented system reset
  * 09-JUN-2024 implemented boot ROM
  * 29-JUN-2024 implemented banked memory
+ * 12-MAR-2025 added more memory banks for RP2350, 60 Hz timer, SIO2 & printer
  */
 
 /* Raspberry SDK includes */
 #include <stdio.h>
-#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+#if LIB_PICO_STDIO_USB || LIB_STDIO_MSC_USB
 #include <tusb.h>
 #endif
 #include "pico/stdlib.h"
@@ -36,50 +37,67 @@
 #include "sd-fdc.h"
 #include "rgbled.h"
 
+#include "log.h"
+static const char *TAG = "IO";
+
 /*
  *	Forward declarations of the I/O functions
  *	for all port addresses.
  */
-static void p000_out(BYTE data), p001_out(BYTE data), p254_out(BYTE data);
-static void hwctl_out(BYTE data);
-static BYTE p000_in(void), p001_in(void), p255_in(void), hwctl_in(void);
-static void mmu_out(BYTE data), fp_out(BYTE data);
-static BYTE mmu_in(void);
+static BYTE sio1s_in(void), sio1d_in(void), sio2s_in(void), sio2d_in(void);
+static BYTE prts_in(void), prtd_in(void), mmu_in(void), timer_in(void);
+static BYTE hwctl_in(void), fpsw_in(void);
+static void led_out(BYTE data), sio1d_out(BYTE data), sio2s_out(BYTE data);
+static void sio2d_out(BYTE data), prts_out(BYTE data), prtd_out(BYTE data);
+static void mmu_out(BYTE data), timer_out(BYTE data), hwctl_out(BYTE data);
+static void fpsw_out(BYTE data), fpled_out(BYTE data);
 
-static BYTE sio_last;	/* last character received */
+static BYTE sio1_last;	/* last character received on SIO1 */
+static BYTE sio2_last;	/* last character received on SIO2 */
        BYTE fp_value;	/* port 255 value, can be set from ICE or config() */
+static bool timer;	/* 60 Hz timer enabled flag */
 static BYTE hwctl_lock = 0xff; /* lock status hardware control port */
 
 /*
  *	This array contains function pointers for every input
  *	I/O port (0 - 255), to do the required I/O.
  */
-BYTE (*const port_in[256])(void) = {
-	[  0] = p000_in,	/* SIO status */
-	[  1] = p001_in,	/* SIO data */
+in_func_t *const port_in[256] = {
+	[  0] = sio1s_in,	/* SIO1 status */
+	[  1] = sio1d_in,	/* SIO1 read data */
+	[  2] = sio2s_in,	/* SIO2 status */
+	[  3] = sio2d_in,	/* SIO2 read data */
 	[  4] = fdc_in,		/* FDC status */
+	[  5] = prts_in,	/* printer status */
+	[  6] = prtd_in,	/* printer read data */
 	[ 64] = mmu_in,		/* MMU */
 	[ 65] = clkc_in,	/* RTC read clock command */
 	[ 66] = clkd_in,	/* RTC read clock data */
+	[ 67] = timer_in,	/* 60 Hz timer status */
 	[160] = hwctl_in,	/* virtual hardware control */
-	[254] = p255_in,	/* mirror of port 255 */
-	[255] = p255_in		/* read from front panel switches */
+	[254] = fpsw_in,	/* mirror of port 255 */
+	[255] = fpsw_in		/* read from front panel switches */
 };
 
 /*
  *	This array contains function pointers for every output
  *	I/O port (0 - 255), to do the required I/O.
  */
-void (*const port_out[256])(BYTE data) = {
-	[  0] = p000_out,	/* RGB LED */
-	[  1] = p001_out,	/* SIO data */
+out_func_t *const port_out[256] = {
+	[  0] = led_out,	/* RGB LED */
+	[  1] = sio1d_out,	/* SIO1 write data */
+	[  2] = sio2s_out,	/* SIO2 write status */
+	[  3] = sio2d_out,	/* SIO2 write data */
 	[  4] = fdc_out,	/* FDC command */
+	[  5] = prts_out,	/* printer write status */
+	[  6] = prtd_out,	/* printer write data */
 	[ 64] = mmu_out,	/* MMU */
 	[ 65] = clkc_out,	/* RTC write clock command */
 	[ 66] = clkd_out,	/* RTC write clock data */
+	[ 67] = timer_out,	/* 60 Hz timer control */
 	[160] = hwctl_out,	/* virtual hardware control */
-	[254] = p254_out,	/* write to front panel switches */
-	[255] = fp_out		/* write to front panel lights (dummy) */
+	[254] = fpsw_out,	/* write to front panel switches */
+	[255] = fpled_out	/* write to front panel lights (dummy) */
 };
 
 /*
@@ -92,12 +110,20 @@ void init_io(void)
 }
 
 /*
- *	I/O function port 0 read:
- *	read status of the Pico UART and return:
+ *	This function is to stop the I/O devices. It is
+ *	called from the CPU simulation on exit.
+ */
+void exit_io(void)
+{
+	timer = false;		/* stop 60 Hz timer */
+}
+
+/*
+ *	I/O handler for read SIO1 (Pico UART or USB Console CDC) status:
  *	bit 0 = 0, character available for input from tty
  *	bit 7 = 0, transmitter ready to write character to tty
  */
-static BYTE p000_in(void)
+static BYTE sio1s_in(void)
 {
 	register BYTE stat = 0b10000001; /* initially not ready */
 
@@ -109,11 +135,23 @@ static BYTE p000_in(void)
 	if (uart_is_readable(my_uart))	/* check if there is input from UART */
 		stat &= 0b11111110;	/* if so flip status bit */
 #endif
-#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+#if LIB_PICO_STDIO_USB
 	if (tud_cdc_connected()) {
-		if (tud_cdc_write_available())	/* check if output to UART is possible */
+		/* check if output to CDC is possible */
+		if (tud_cdc_write_available())
 			stat &= 0b01111111;	/* if so flip status bit */
-		if (tud_cdc_available())	/* check if there is input from UART */
+		/* check if there is input from CDC */
+		if (tud_cdc_available())
+			stat &= 0b11111110;	/* if so flip status bit */
+	}
+#endif
+#if LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO
+	if (tud_cdc_n_connected(STDIO_MSC_USB_CONSOLE_ITF)) {
+		/* check if output to CDC is possible */
+		if (tud_cdc_n_write_available(STDIO_MSC_USB_CONSOLE_ITF))
+			stat &= 0b01111111;	/* if so flip status bit */
+		/* check if there is input from CDC */
+		if (tud_cdc_n_available(STDIO_MSC_USB_CONSOLE_ITF))
 			stat &= 0b11111110;	/* if so flip status bit */
 	}
 #endif
@@ -122,10 +160,9 @@ static BYTE p000_in(void)
 }
 
 /*
- *	I/O function port 1 read:
- *	Read byte from Pico UART.
+ *	I/O handler for read SIO1 (Pico UART or USB Console CDC) data.
  */
-static BYTE p001_in(void)
+static BYTE sio1d_in(void)
 {
 	bool input_avail = false;
 
@@ -135,14 +172,100 @@ static BYTE p001_in(void)
 	if (uart_is_readable(my_uart))
 		input_avail = true;
 #endif
-#if LIB_PICO_STDIO_USB || (LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO)
+#if LIB_PICO_STDIO_USB
 	if (tud_cdc_connected() && tud_cdc_available())
 		input_avail = true;
 #endif
-	if (input_avail)
-		sio_last = getchar();
+#if LIB_STDIO_MSC_USB && !STDIO_MSC_USB_DISABLE_STDIO
+	if (tud_cdc_n_connected(STDIO_MSC_USB_CONSOLE_ITF) &&
+	    tud_cdc_n_available(STDIO_MSC_USB_CONSOLE_ITF))
+		input_avail = true;
+#endif
 
-	return sio_last;
+	if (input_avail)
+		sio1_last = getchar();
+
+	return sio1_last;
+}
+
+/*
+ *	I/O handler for read SIO2 (USB Console 2 CDC) status:
+ *	bit 0 = 0, character available for input from tty
+ *	bit 7 = 0, transmitter ready to write character to tty
+ */
+static BYTE sio2s_in(void)
+{
+	register BYTE stat = 0b10000001; /* initially not ready */
+
+#if LIB_STDIO_MSC_USB
+	if (tud_cdc_n_connected(STDIO_MSC_USB_CONSOLE2_ITF)) {
+		/* check if output to CDC is possible */
+		if (tud_cdc_n_write_available(STDIO_MSC_USB_CONSOLE2_ITF))
+			stat &= 0b01111111;	/* if so flip status bit */
+		/* check if there is input from CDC */
+		if (tud_cdc_n_available(STDIO_MSC_USB_CONSOLE2_ITF))
+			stat &= 0b11111110;	/* if so flip status bit */
+	}
+#endif
+
+	return stat;
+}
+
+/*
+ *	I/O handler for read SIO2 (USB Console 2 CDC) data.
+ */
+static BYTE sio2d_in(void)
+{
+#if LIB_STDIO_MSC_USB
+	if (tud_cdc_n_connected(STDIO_MSC_USB_CONSOLE2_ITF) &&
+	    tud_cdc_n_available(STDIO_MSC_USB_CONSOLE2_ITF))
+		sio2_last = tud_cdc_n_read_char(STDIO_MSC_USB_CONSOLE2_ITF);
+#endif
+
+	return sio2_last;
+}
+
+/*
+ *	I/O handler for read printer (USB Printer CDC) status:
+ */
+static BYTE prts_in(void)
+{
+	register BYTE stat = 0; /* initially not ready */
+
+#if LIB_STDIO_MSC_USB
+	if (tud_cdc_n_connected(STDIO_MSC_USB_PRINTER_ITF) &&
+	    tud_cdc_n_write_available(STDIO_MSC_USB_PRINTER_ITF))
+		stat = 0xff;
+#endif
+
+	return stat;
+}
+
+/*
+ *	I/O handler for read printer (USB Printer CDC) data:
+ *	always read an EOF from the printer
+ */
+static BYTE prtd_in(void)
+{
+	return 0x1a;	/* CP/M EOF */
+}
+
+/*
+ *	read MMU register
+ *	returns maximum bank in upper nibble
+ *	and currently selected bank in lower nibble
+ */
+static BYTE mmu_in(void)
+{
+	return (NUMSEG << 4) | selbnk;
+}
+
+/*
+ *	read 60 Hz timer enabled status
+ */
+static BYTE timer_in(void)
+{
+	return timer ? 1 : 0;
 }
 
 /*
@@ -155,27 +278,17 @@ static BYTE hwctl_in(void)
 }
 
 /*
- *	read MMU register
+ *	Read virtual front panel switches state
  */
-static BYTE mmu_in(void)
-{
-	return selbnk;
-}
-
-/*
- *	I/O function port 255 read:
- *	return virtual front panel switches state
- */
-static BYTE p255_in(void)
+static BYTE fpsw_in(void)
 {
 	return fp_value;
 }
 
 /*
- *	I/O function port 0 write:
- *	Switch RGB LED on/off.
+ *	Switch RGB LED blue on/off.
  */
-static void p000_out(BYTE data)
+static void led_out(BYTE data)
 {
 	if (!data) {
 		/* 0 switches LED off */
@@ -189,12 +302,109 @@ static void p000_out(BYTE data)
 }
 
 /*
- *	I/O function port 1 write:
- *	Write byte to Pico UART.
+ *	Write byte to Pico UART or USB Console CDC.
  */
-static void p001_out(BYTE data)
+static void sio1d_out(BYTE data)
 {
 	putchar_raw((int) data & 0x7f); /* strip parity, some software won't */
+}
+
+/*
+ *	Write SIO2 status (no function).
+ */
+static void sio2s_out(BYTE data)
+{
+	UNUSED(data);
+}
+
+/*
+ *	Write SIO2 (USB Console 2 CDC) data.
+ */
+static void sio2d_out(BYTE data)
+{
+#if LIB_STDIO_MSC_USB
+	if (tud_cdc_n_connected(STDIO_MSC_USB_CONSOLE2_ITF)) {
+		if (!tud_cdc_n_write_available(STDIO_MSC_USB_CONSOLE2_ITF))
+			tud_cdc_n_write_flush(STDIO_MSC_USB_CONSOLE2_ITF);
+		tud_cdc_n_write_char(STDIO_MSC_USB_CONSOLE2_ITF, data);
+		tud_cdc_n_write_flush(STDIO_MSC_USB_CONSOLE2_ITF);
+	}
+#else
+	UNUSED(data);
+#endif
+}
+
+/*
+ *	Write printer status (no function).
+ */
+static void prts_out(BYTE data)
+{
+	UNUSED(data);
+}
+
+/*
+ *	Write printer (USB Printer CDC) data.
+ */
+static void prtd_out(BYTE data)
+{
+#if LIB_STDIO_MSC_USB
+	if ((data != '\r') && (data != 0x00) &&
+	    tud_cdc_n_connected(STDIO_MSC_USB_PRINTER_ITF)) {
+		if (!tud_cdc_n_write_available(STDIO_MSC_USB_PRINTER_ITF))
+			tud_cdc_n_write_flush(STDIO_MSC_USB_PRINTER_ITF);
+		tud_cdc_n_write_char(STDIO_MSC_USB_PRINTER_ITF, data);
+		tud_cdc_n_write_flush(STDIO_MSC_USB_PRINTER_ITF);
+	}
+#else
+	UNUSED(data);
+#endif
+}
+
+/*
+ *	write MMU register
+ */
+static void mmu_out(BYTE data)
+{
+	if (selbnk > NUMSEG) {
+		LOGE(TAG, "%04x: trying to select non-existing bank %d",
+		     PC, data);
+		cpu_error = IOERROR;
+		cpu_state = ST_STOPPED;
+		return;
+	}
+	selbnk = data;
+	if (selbnk != 0)
+		curbnk = bnks[selbnk - 1];
+}
+
+/*
+ *	timer interrupt causes maskable CPU interrupt
+ */
+static int64_t timer_alarm(alarm_id_t id, void *user_data)
+{
+	UNUSED(id);
+	UNUSED(user_data);
+
+	if (timer) {
+		int_data = 0xff;	/* RST 38H for IM 0, 0FFH for IM 2 */
+		int_int = true;
+		return -16667L;		/* reschedule alarm */
+	} else
+		return 0L;		/* do not reschedule alarm */
+}
+
+/*
+ *	write 60 Hz timer (start or stop)
+ */
+static void timer_out(BYTE data)
+{
+	if (data == 1) {
+		if (!timer) {
+			timer = true;
+			add_alarm_in_us(16667L, timer_alarm, NULL, true);
+		}
+	} else
+		timer = false;
 }
 
 /*
@@ -231,6 +441,7 @@ static void hwctl_out(BYTE data)
 	}
 
 	if (data & 64) {
+		timer = false;		/* stop 60 Hz timer */
 		reset_cpu();		/* reset CPU */
 		reset_memory();		/* reset memory */
 		PC = 0xff00;		/* power on jump to boot ROM */
@@ -251,17 +462,9 @@ static void hwctl_out(BYTE data)
 }
 
 /*
- *	write MMU register
- */
-static void mmu_out(BYTE data)
-{
-	selbnk = data;
-}
-
-/*
  *	This allows to set the virtual front panel switches with ICE p command
  */
-static void p254_out(BYTE data)
+static void fpsw_out(BYTE data)
 {
 	fp_value = data;
 }
@@ -269,7 +472,7 @@ static void p254_out(BYTE data)
 /*
  *	Write output to front panel lights (dummy)
  */
-static void fp_out(BYTE data)
+static void fpled_out(BYTE data)
 {
 	UNUSED(data);
 }

@@ -6,6 +6,8 @@ cpm22.dsk	- Yeah well, good old CP/M 2.2 for 8080 (bootable)
 cpm3gen.dsk	- used to bring up CP/M 3 on CP/M 2.2 (NOT bootable)
 cpm3-1.dsk	- CP/M 3 system disk 1 for 8080 (bootable)
 cpm3-2.dsk	- CP/M 3 system disk 2 for 8080 (NOT bootable)
+mpm-1.dsk	- MP/M II system disk 1 for Z80 and Pico 2 only (bootable)
+mpm-2.dsk	- MP/M II system disk 2 for Z80 and Pico 2 only (NOT bootable)
 empty.dsk	- empty CP/M disk, we often need one (NOT bootable)
 
 fig80.dsk	- FIG Forth for the 8080, versions 1.1 and 1.3 (bootable)
