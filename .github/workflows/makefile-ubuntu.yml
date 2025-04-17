@@ -20,9 +20,9 @@ jobs:
     - name: Build binaries
       run: make
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4.3.4
-      with:
-         name: z80pack-ubuntu
-         path: .
+#    - name: Upload a Build Artifact
+#      uses: actions/upload-artifact@v4.3.4
+#      with:
+#         name: z80pack-ubuntu
+#         path: .
 
