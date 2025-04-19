@@ -23,7 +23,7 @@ jobs:
     - name: Make artifact
       run: touch z80pack-ubuntu-artifact.tar.gz; tar --exclude='.git/config' --exclude=z80pack-ubuntu-artifact.tar.gz -czf z80pack-ubuntu-artifact.tar.gz .
 
-    - name: Upload Artifact
+    - name: Upload artifact
       uses: actions/upload-artifact@v4.3.4
       with:
          name: z80pack-ubuntu
