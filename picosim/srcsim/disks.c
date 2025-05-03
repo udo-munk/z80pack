@@ -51,7 +51,8 @@ static spi_t spi = {
 #if PICO_RP2040
 	//.baud_rate = 125 * 1000 * 1000 / 8,	/* 15.625 MHz */
 	//.baud_rate = 125 * 1000 * 1000 / 6,	/* 20.833333 MHz */
-	.baud_rate = 125 * 1000 * 1000 / 4,	/* 31.25 MHz */
+	//.baud_rate = 125 * 1000 * 1000 / 4,	/* 31.25 MHz */
+	.baud_rate = 200 * 1000 * 1000 / 5,	/* 40.00 MHz */
 #endif
 #if PICO_RP2350
 	//.baud_rate = 150 * 1000 * 1000 / 8,	/* 18.75 MHz */
