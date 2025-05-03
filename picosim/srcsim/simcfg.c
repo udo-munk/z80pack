@@ -49,7 +49,7 @@
 static void prompt_fn(char *s, const char *ext)
 {
 	printf("Filename (without .%s): ", ext);
-	get_cmdline(s, 9);
+	get_cmdline(s, FNLEN+1);
 	while (*s) {
 		*s = toupper((unsigned char) *s);
 		s++;
@@ -89,7 +89,7 @@ void config(void)
 	const char *cext = "*.BIN";
 	const char *dpath = "/DISKS80";
 	const char *dext = "*.DSK";
-	char s[10];
+	char s[FNLEN+1];
 	unsigned int br;
 	bool go_flag = false;
 	int i, n, menu;
@@ -112,10 +112,10 @@ void config(void)
 		f_read(&sd_file, &speed, sizeof(speed), &br);
 		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_read(&sd_file, &t, sizeof(t), &br);
-		f_read(&sd_file, &disks[0], DISKLEN, &br);
-		f_read(&sd_file, &disks[1], DISKLEN, &br);
-		f_read(&sd_file, &disks[2], DISKLEN, &br);
-		f_read(&sd_file, &disks[3], DISKLEN, &br);
+		f_read(&sd_file, &disks[0], DISKLEN+1, &br);
+		f_read(&sd_file, &disks[1], DISKLEN+1, &br);
+		f_read(&sd_file, &disks[2], DISKLEN+1, &br);
+		f_read(&sd_file, &disks[3], DISKLEN+1, &br);
 		f_close(&sd_file);
 #if defined(EXCLUDE_I8080) || defined(EXCLUDE_Z80)
 		cpu = DEF_CPU;
@@ -357,10 +357,10 @@ again:
 		f_write(&sd_file, &speed, sizeof(speed), &br);
 		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
 		f_write(&sd_file, &t, sizeof(t), &br);
-		f_write(&sd_file, &disks[0], DISKLEN, &br);
-		f_write(&sd_file, &disks[1], DISKLEN, &br);
-		f_write(&sd_file, &disks[2], DISKLEN, &br);
-		f_write(&sd_file, &disks[3], DISKLEN, &br);
+		f_write(&sd_file, &disks[0], DISKLEN+1, &br);
+		f_write(&sd_file, &disks[1], DISKLEN+1, &br);
+		f_write(&sd_file, &disks[2], DISKLEN+1, &br);
+		f_write(&sd_file, &disks[3], DISKLEN+1, &br);
 		f_close(&sd_file);
 	}
 }

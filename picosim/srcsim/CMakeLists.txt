@@ -73,6 +73,7 @@ add_subdirectory(../libs/pico-ds3231/lib ds3231)
 add_subdirectory(../libs/stdio_msc_usb stdio_msc_usb)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
+	PICO_USE_FASTEST_SUPPORTED_CLOCK=1
 	PICO_STACK_SIZE=4096
 	PICO_CORE1_STACK_SIZE=4096
 	PICO_HEAP_SIZE=8192

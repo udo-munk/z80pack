@@ -18,12 +18,14 @@
 
 #include "ff.h"
 
-#define NUMDISK	4	/* number of disk drives */
-#define DISKLEN	22	/* path length for disk drives /DISKS80/filename.DSK */
+#define NUMDISK	4		/* number of disk drives */
+#define FNLEN	8		/* length of filename without extension */
+#define DISKLEN	9 + FNLEN + 4	/* path length for disk drives /DISKS80/filename.DSK */
+				/* also used for code files /CODE80/filename.BIN */
 
 extern FIL sd_file;
 extern FRESULT sd_res;
-extern char disks[NUMDISK][DISKLEN];
+extern char disks[NUMDISK][DISKLEN+1];
 
 extern void init_disks(void), exit_disks(void);
 extern void list_files(const char *dir, const char *ext);

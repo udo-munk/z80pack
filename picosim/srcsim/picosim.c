@@ -184,10 +184,12 @@ int main(void)
 	printf("%s release %s\n", USR_COM, USR_REL);
 #if PICO_RP2350
 #if PICO_RISCV
-	puts("running on Hazard3 RISC-V cores");
+	printf("running on Hazard3 RISC-V cores at %i MHz\n", SYS_CLK_MHZ);
 #else
-	puts("running on ARM Cortex-M33 cores");
+	printf("running on ARM Cortex-M33 cores at %i MHz\n", SYS_CLK_MHZ);
 #endif
+#else
+	printf("running on ARM Cortex-M0+ cores at %i MHz\n", SYS_CLK_MHZ);
 #endif
 	printf("%s\n\n", USR_CPR);
 
