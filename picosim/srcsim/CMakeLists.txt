@@ -123,7 +123,7 @@ target_link_libraries(${PROJECT_NAME}
 if(PICO_CYW43_SUPPORTED)
 target_link_libraries(${PROJECT_NAME}
 	pico_cyw43_arch_none
-	pico_lwip
+	pico_cyw43_arch_lwip_threadsafe_background
 )
 endif()
 
