@@ -24,7 +24,6 @@
 #endif
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 #include "pico/cyw43_arch.h"
-/*#include "lwip/tcp.h"*/
 #endif
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
