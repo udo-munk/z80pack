@@ -24,6 +24,7 @@
 #endif
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 #include "pico/cyw43_arch.h"
+/*#include "lwip/tcp.h"*/
 #endif
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
@@ -198,6 +199,17 @@ int main(void)
 	if (cyw43_arch_init())
 		panic("CYW43 init failed\n");
 	cyw43_arch_enable_sta_mode();
+	/* try to connect WiFi */
+	printf("Connecting to Wi-Fi... ");
+	if (!strlen(WIFI_SSID))
+		puts("no WiFi SSID defined.");
+	else {
+		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
+		    CYW43_AUTH_WPA2_AES_PSK, 30000))
+			puts("failed to connect.");
+		else
+			puts("connected.");
+	}
 #endif
 
 	init_cpu();		/* initialize CPU */

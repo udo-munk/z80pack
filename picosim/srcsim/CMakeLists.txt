@@ -90,6 +90,12 @@ else()
 		CONF_FILE="RP2350.DAT"
 	)
 endif()
+if(PICO_CYW43_SUPPORTED)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE
+		WIFI_SSID=\"${WIFI_SSID}\"
+		WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
+	)
+endif()
 
 # compiler diagnostic options
 if(PICO_C_COMPILER_IS_GNU)
@@ -117,6 +123,7 @@ target_link_libraries(${PROJECT_NAME}
 if(PICO_CYW43_SUPPORTED)
 target_link_libraries(${PROJECT_NAME}
 	pico_cyw43_arch_none
+	pico_lwip
 )
 endif()
 
