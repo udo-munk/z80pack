@@ -241,6 +241,7 @@ int main(void)
 
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 	/* de-initialize Pico W WiFi hardware */
+	cyw43_arch_disable_sta_mode();
 	cyw43_arch_deinit();
 #endif
 
