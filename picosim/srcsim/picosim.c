@@ -197,6 +197,7 @@ int main(void)
 	/* initialize Pico W WiFi hardware */
 	if (cyw43_arch_init())
 		panic("CYW43 init failed\n");
+	cyw43_arch_enable_sta_mode();
 #endif
 
 	init_cpu();		/* initialize CPU */
