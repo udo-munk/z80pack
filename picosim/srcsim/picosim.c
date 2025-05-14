@@ -194,7 +194,7 @@ int main(void)
 	printf("%s\n\n", USR_CPR);
 
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
-	/* initialize Pico W hardware */
+	/* initialize Pico W WiFi hardware */
 	if (cyw43_arch_init())
 		panic("CYW43 init failed\n");
 #endif
@@ -226,6 +226,11 @@ int main(void)
 	put_pixel(0x000000);	/* LED off */
 	exit_io();		/* stop I/O devices */
 	exit_disks();		/* stop disk drives */
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+	/* de-initialize Pico W WiFi hardware */
+	cyw43_arch_deinit();
+#endif
 
 #ifndef WANT_ICE
 	putchar('\n');
