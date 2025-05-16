@@ -23,6 +23,7 @@
 #include <tusb.h>
 #endif
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+#include "net_ntp.h"
 #include "pico/cyw43_arch.h"
 #endif
 #include "pico/binary_info.h"
