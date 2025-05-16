@@ -41,14 +41,14 @@ TTL/USB adapter or a pico probe to the default UART pins for the board
 
 This machine can be used with Pico and Pico W boards, it is setup
 for a Pico board. To setup for a Pico W comment/uncomment the lines
-in CMakeLists.txt. For conneting to WiFi the SSID and password are required,
+in CMakeLists.txt. For connecting to WiFi the SSID and password are required,
 for now they just get compiled in, and not read from MicroSD. To build
 for a Pico W use these commands:
 
 	cd z80pack/picosim/srcsim
 	mkdir build
 	cd build
-	cmake -G "UNIX Makefiles" -DWIFI_SSID='your WiFi SSID' -DWIFI_PASSWORD='your WiFi password'
+	cmake -G "UNIX Makefiles" -D WIFI_SSID='your WiFi SSID' -D WIFI_PASSWORD='your WiFi password'
 	make -j
 
 So far the Pico W only connects to WiFi and doesn't use the connection, but the idea is
