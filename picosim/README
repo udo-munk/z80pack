@@ -51,9 +51,10 @@ for a Pico W use these commands:
 	cmake -G "UNIX Makefiles" -D WIFI_SSID='your WiFi SSID' -D WIFI_PASSWORD='your WiFi password'
 	make -j
 
-So far the Pico W only connects to WiFi and doesn't use the connection, but the idea is
-to get the network time. Also one could implement a telnet server that runs on the second
-core, and use that as console or for data transfers.
+A Pico W tries to connect to WiFi and if that worked tries to get date/time via NTP
+over the WiFi connection. So far this is protocolled on the console only, NTP time is
+in UTC, needs conversion to local time and then this all must be glued into the application.
+We might have two sources for date/time now, via NTP and from a RTC.
 
 This also should work with a Pico 2 W, but has not been tested yet, need to get a board
 sometime.

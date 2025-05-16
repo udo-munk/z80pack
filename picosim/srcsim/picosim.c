@@ -206,8 +206,10 @@ int main(void)
 		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
 		    CYW43_AUTH_WPA2_AES_PSK, 30000))
 			puts("failed to connect.");
-		else
+		else {
 			puts("connected.");
+			do_ntp();
+		}
 	}
 #endif
 
