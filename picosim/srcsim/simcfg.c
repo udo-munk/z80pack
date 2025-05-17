@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
+ * Copyright (C) 2024-2025 by Udo Munk & Thomas Eberhardt
  *
  * This module configures the machine appropriate for the
  * Z80/8080 software we want to run on it.
@@ -13,6 +13,7 @@
  * 28-MAY-2024 implemented mount/unmount of disk images
  * 03-JUN-2024 added directory list for code files and disk images
  * 02-SEP-2024 read date/time from an optional I2C battery backed RTC
+ * 17-MAY-2025 on Pico W get date/time with NTP
  */
 
 #include <stdlib.h>
@@ -42,6 +43,10 @@
 
 #include "disks.h"
 #include "picosim.h"
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+#include "net_ntp.h"
+#endif
 
 /*
  * prompt for a filename
@@ -126,6 +131,22 @@ void config(void)
 	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
 		    DS3231_I2C_SCL_PIN, &rtc);
 
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+	if (ntp_time) {
+		puts("ntp time present, using it for setting the clock\n");
+		time_t local_time = ntp_time + 2 * 60 * 60; /* Germany, UTC+2 */
+		struct tm *ntp_t = gmtime(&local_time);
+		t.tm_year = ntp_t->tm_year;
+		t.tm_mon = ntp_t->tm_mon;
+		t.tm_mday = ntp_t->tm_mday;
+		t.tm_hour = ntp_t->tm_hour;
+		t.tm_min = ntp_t->tm_min;
+		t.tm_sec = ntp_t->tm_sec;
+		t.tm_wday = ntp_t->tm_wday + 1;
+		goto got_ntp_time;
+	}
+#endif
+
 	/* Use a dummy read to see if a DS3231 RTC is present */
 	if (i2c_read_blocking(rtc.i2c_port, rtc.i2c_addr, &buf, 1,
 			      false) >= 0) {
@@ -143,6 +164,10 @@ void config(void)
 		else
 			t.tm_wday = 0;
 	}
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+got_ntp_time:
+#endif
 
 	ts.tv_sec = mktime(&t);
 	ts.tv_nsec = 0;
