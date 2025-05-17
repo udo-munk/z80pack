@@ -201,7 +201,7 @@ int main(void)
 		panic("CYW43 init failed\n");
 
 	/* try to connect WiFi */
-	int wifi_retry = 5;	/* max Wifi connect retries */
+	int wifi_retry = 5;	/* max WiFi connect retries */
 	int result;
 
 	cyw43_arch_enable_sta_mode();
