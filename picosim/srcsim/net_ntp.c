@@ -1,4 +1,4 @@
-/**
+/*
  * This module is based on the NTP client example provided by Raspberry Pi.
  * The example code is reformatted and modified for the needs in this project.
  *
@@ -42,7 +42,7 @@ static void ntp_result(NTP_T *state, int status, time_t *result)
 {
 	if (status == 0 && result) {
 		struct tm *utc = gmtime(result);
-		printf("got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n",
+		printf("got ntp response: %02d/%02d/%04d %02d:%02d:%02d UTC\n",
 		       utc->tm_mday, utc->tm_mon + 1, utc->tm_year + 1900,
 		       utc->tm_hour, utc->tm_min, utc->tm_sec);
 	}
@@ -82,14 +82,13 @@ static int64_t ntp_failed_handler(__attribute__((unused)) alarm_id_t id, void *u
 /*
  * Call back with a DNS result
  */
-static void ntp_dns_found(__attribute__((unused)) const char *hostname, const ip_addr_t *ipaddr,
-			  void *arg)
+static void ntp_dns_found(const char *hostname, const ip_addr_t *ipaddr, void *arg)
 {
 	NTP_T *state = (NTP_T *) arg;
 
 	if (ipaddr) {
 		state->ntp_server_address = *ipaddr;
-		printf("ntp address %s\n", ipaddr_ntoa(ipaddr));
+		printf("got ip address %s for ntp server %s\n", ipaddr_ntoa(ipaddr), hostname);
 		ntp_request(state);
 	} else {
 		puts("ntp dns request failed");
