@@ -35,6 +35,7 @@ typedef struct NTP_T_ {
 #define NTP_TEST_TIME	(30 * 1000)
 #define NTP_RESEND_TIME	(10 * 1000)
 
+static bool ntp_done = false;
 time_t ntp_time;
 
 /*
@@ -56,6 +57,7 @@ static void ntp_result(NTP_T *state, int status, time_t *result)
 	}
 	state->ntp_test_time = make_timeout_time_ms(NTP_TEST_TIME);
 	state->dns_request_sent = false;
+	ntp_done = true;
 }
 
 /*
@@ -174,4 +176,7 @@ void do_ntp(void)
 		}
 	}
 	free(state);
+
+	while (ntp_done == false)
+		sleep_ms(100);
 }
