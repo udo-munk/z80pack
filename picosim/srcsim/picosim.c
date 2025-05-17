@@ -13,6 +13,7 @@
  * 28-MAY-2024 implemented boot from disk images with some OS
  * 31-MAY-2024 use USB UART
  * 09-JUN-2024 implemented boot ROM
+ * 16-MAY-2025 connect WiFi and use NTP on Pico W
  */
 
 /* Raspberry SDK and FatFS includes */
@@ -198,20 +199,33 @@ int main(void)
 	/* initialize Pico W WiFi hardware */
 	if (cyw43_arch_init())
 		panic("CYW43 init failed\n");
-	cyw43_arch_enable_sta_mode();
+
 	/* try to connect WiFi */
+	int wifi_retry = 5;	/* max Wifi connect retries */
+	int result;
+
+	cyw43_arch_enable_sta_mode();
 	printf("Connecting to Wi-Fi... ");
-	if (!strlen(WIFI_SSID))
+	if (!strlen(WIFI_SSID)) {
 		puts("no WiFi SSID defined.");
-	else {
-		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
-		    CYW43_AUTH_WPA2_AES_PSK, 30000))
-			puts("failed to connect.");
-		else {
-			puts("connected.");
-			do_ntp();
-		}
+		goto wifi_done;
 	}
+	while (wifi_retry) {
+		if ((result = cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
+		    CYW43_AUTH_WPA2_AES_PSK, 30000))) {
+			printf("retry... ");
+			wifi_retry--;
+		} else
+			break;
+	}
+
+	if (result) {
+		puts("failed.");
+	} else {
+		puts("connected.");
+		do_ntp();
+	}
+wifi_done:
 #endif
 
 	init_cpu();		/* initialize CPU */
