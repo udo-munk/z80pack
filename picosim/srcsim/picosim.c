@@ -205,7 +205,7 @@ int main(void)
 	int result;
 
 	cyw43_arch_enable_sta_mode();
-	printf("Connecting to Wi-Fi... ");
+	printf("connecting to WiFi... ");
 	if (!strlen(WIFI_SSID)) {
 		puts("no WiFi SSID defined.");
 		goto wifi_done;
