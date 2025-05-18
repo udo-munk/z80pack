@@ -47,6 +47,7 @@ add_executable(${PROJECT_NAME}
 	simcfg.c
 	simio.c
 	simmem.c
+	net_vars.c
 	${Z80PACK}/iodevices/rtc80.c
 	${Z80PACK}/iodevices/sd-fdc.c
 	${Z80PACK}/z80core/sim8080.c
@@ -93,12 +94,6 @@ else()
 	target_compile_definitions(${PROJECT_NAME} PRIVATE
 		USBD_PRODUCT="Pi Pico RP2350"
 		CONF_FILE="RP2350.DAT"
-	)
-endif()
-if(PICO_CYW43_SUPPORTED)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE
-		WIFI_SSID=\"${WIFI_SSID}\"
-		WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
 	)
 endif()
 

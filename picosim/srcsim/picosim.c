@@ -28,6 +28,7 @@
 #include "net_ntp.h"
 #include "pico/cyw43_arch.h"
 #endif
+#include "net_vars.h"
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
@@ -196,6 +197,15 @@ int main(void)
 #endif
 	printf("%s\n\n", USR_CPR);
 
+
+	init_cpu();		/* initialize CPU */
+	PC = 0xff00;		/* power on jump into the boot ROM */
+	init_disks();		/* initialize disk drives */
+	init_memory();		/* initialize memory configuration */
+	init_io();		/* initialize I/O devices */
+
+	read_config();		/* read configuration from MicroSD */
+
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 	/* initialize Pico W WiFi hardware */
 	if (cyw43_arch_init())
@@ -207,12 +217,12 @@ int main(void)
 
 	cyw43_arch_enable_sta_mode();
 	printf("connecting to WiFi... ");
-	if (!strlen(WIFI_SSID)) {
-		puts("no WiFi SSID defined.");
+	if (!strlen(wifi_ssid)) {
+		puts("no WiFi SSID configured.");
 		goto wifi_done;
 	}
 	while (wifi_retry) {
-		if ((result = cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD,
+		if ((result = cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password,
 		    CYW43_AUTH_WPA2_AES_PSK, 30000))) {
 			printf("retry... ");
 			wifi_retry--;
@@ -229,12 +239,8 @@ int main(void)
 wifi_done:
 #endif
 
-	init_cpu();		/* initialize CPU */
-	PC = 0xff00;		/* power on jump into the boot ROM */
-	init_disks();		/* initialize disk drives */
-	init_memory();		/* initialize memory configuration */
-	init_io();		/* initialize I/O devices */
 	config();		/* configure the machine */
+	save_config();		/* save configuration on MicroSD */
 
 	f_value = speed;	/* setup speed of the CPU */
 	if (f_value)

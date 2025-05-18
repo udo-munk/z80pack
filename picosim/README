@@ -41,21 +41,9 @@ TTL/USB adapter or a pico probe to the default UART pins for the board
 
 This machine can be used with Pico and Pico W boards, it is setup
 for a Pico board. To setup for a Pico W comment/uncomment the lines
-in CMakeLists.txt. For connecting to WiFi the SSID and password are required,
-for now they just get compiled in, and not read from MicroSD. To build
-for a Pico W use these commands:
-
-	cd z80pack/picosim/srcsim
-	mkdir build
-	cd build
-	cmake -G "UNIX Makefiles" -D WIFI_SSID='your WiFi SSID' -D WIFI_PASSWORD='your WiFi password'
-	make -j
-
+in CMakeLists.txt.
 A Pico W tries to connect to WiFi and if that worked tries to get date/time via NTP
-over the WiFi connection. So far this is protocolled on the console only, NTP time is
-in UTC, needs conversion to local time and then this all must be glued into the application.
-We might have two sources for date/time now, via NTP and from a RTC.
-
+over the WiFi connection. The date/time is used to set the system clock then.
 This also should work with a Pico 2 W, but has not been tested yet, need to get a board
 sometime.
 
