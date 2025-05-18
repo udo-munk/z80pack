@@ -35,7 +35,7 @@ typedef struct NTP_T_ {
 #define NTP_TEST_TIME	(30 * 1000)
 #define NTP_RESEND_TIME	(10 * 1000)
 
-static bool ntp_done = false;
+static volatile bool ntp_done = false;
 time_t ntp_time;
 
 /*
