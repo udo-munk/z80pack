@@ -20,6 +20,8 @@
 #include "lwip/pbuf.h"
 #include "lwip/udp.h"
 
+#include "net_vars.h"
+
 typedef struct NTP_T_ {
 	ip_addr_t ntp_server_address;
 	bool dns_request_sent;
@@ -28,7 +30,6 @@ typedef struct NTP_T_ {
 	alarm_id_t ntp_resend_alarm;
 } NTP_T;
 
-#define NTP_SERVER	"pool.ntp.org"
 #define NTP_MSG_LEN	48
 #define NTP_PORT	123
 #define NTP_DELTA	2208988800 /* seconds between 1 Jan 1900 and 1 Jan 1970 */
@@ -164,8 +165,8 @@ void do_ntp(void)
 		state->ntp_resend_alarm = add_alarm_in_ms(NTP_RESEND_TIME, ntp_failed_handler,
 							  state, true);
 		cyw43_arch_lwip_begin();
-		int err = dns_gethostbyname(NTP_SERVER, &state->ntp_server_address,
-					    ntp_dns_found, state);
+		int err = dns_gethostbyname((const char *) &ntp_server,
+					    &state->ntp_server_address, ntp_dns_found, state);
 		cyw43_arch_lwip_end();
 		state->dns_request_sent = true;
 		if (err == ERR_OK) {

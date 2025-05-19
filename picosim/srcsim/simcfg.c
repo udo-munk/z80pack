@@ -106,6 +106,7 @@ void read_config(void)
 		f_read(&sd_file, &t, sizeof(t), &br);
 		f_read(&sd_file, &wifi_ssid, sizeof(wifi_ssid), &br);
 		f_read(&sd_file, &wifi_password, sizeof(wifi_password), &br);
+		f_read(&sd_file, &ntp_server, sizeof(ntp_server), &br);
 		f_read(&sd_file, &disks[0], DISKLEN+1, &br);
 		f_read(&sd_file, &disks[1], DISKLEN+1, &br);
 		f_read(&sd_file, &disks[2], DISKLEN+1, &br);
@@ -132,6 +133,7 @@ void save_config(void)
 		f_write(&sd_file, &t, sizeof(t), &br);
 		f_write(&sd_file, &wifi_ssid, sizeof(wifi_ssid), &br);
 		f_write(&sd_file, &wifi_password, sizeof(wifi_password), &br);
+		f_write(&sd_file, &ntp_server, sizeof(ntp_server), &br);
 		f_write(&sd_file, &disks[0], DISKLEN+1, &br);
 		f_write(&sd_file, &disks[1], DISKLEN+1, &br);
 		f_write(&sd_file, &disks[2], DISKLEN+1, &br);
@@ -152,6 +154,7 @@ void net_config(void)
 	while (!quit) {
 		printf("s - WiFi SSID: %s\n", wifi_ssid);
 		printf("p - WiFi password: %s\n", wifi_password);
+		printf("n - NTP server: %s\n", ntp_server);
 		printf("q - quit\n");
 
 		printf("\nCommand: ");
@@ -171,6 +174,15 @@ void net_config(void)
 			get_cmdline(s, WIFI_PWD_LEN+1);
 			strcpy(wifi_password, s);
 			putchar('\n');
+			break;
+
+		case 'n':
+			printf("Enter NTP server: ");
+			get_cmdline(s, HOST_NAME_MAX+1);
+			if (strlen(s))
+				strcpy(ntp_server, s);
+			else
+				strcpy(ntp_server, DEFAULT_NTP);
 			break;
 
 		case 'q':

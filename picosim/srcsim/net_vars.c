@@ -16,3 +16,4 @@
 
 char wifi_ssid[WIFI_SSID_LEN+1];
 char wifi_password[WIFI_PWD_LEN+1];
+char ntp_server[HOST_NAME_MAX+1] = { DEFAULT_NTP };
