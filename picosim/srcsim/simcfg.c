@@ -116,6 +116,7 @@ void read_config(void)
 	cpu = DEF_CPU;
 #endif
 }
+
 /*
  * try to save config file
  */
@@ -161,20 +162,14 @@ void net_config(void)
 		case 's':
 			printf("Enter SSID: ");
 			get_cmdline(s, WIFI_SSID_LEN+1);
-			if (strlen(s))
-				strcpy(wifi_ssid, s);
-			else
-				wifi_ssid[0] = '\0';
+			strcpy(wifi_ssid, s);
 			putchar('\n');
 			break;
 
 		case 'p':
 			printf("Enter password: ");
 			get_cmdline(s, WIFI_PWD_LEN+1);
-			if (strlen(s))
-				strcpy(wifi_password, s);
-			else
-				wifi_password[0] = '\0';
+			strcpy(wifi_password, s);
 			putchar('\n');
 			break;
 
