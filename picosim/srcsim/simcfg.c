@@ -186,10 +186,12 @@ void net_config(void)
 				strcpy(ntp_server, s);
 			else
 				strcpy(ntp_server, DEFAULT_NTP);
+			putchar('\n');
 			break;
 
 		case 'u':
-			utc_offset = get_int("UTC offset", "in hours", -12, +14);
+			utc_offset = get_int("UTC offset", " (hours)", -12, +14);
+			putchar('\n');
 			break;
 
 		case 'q':
