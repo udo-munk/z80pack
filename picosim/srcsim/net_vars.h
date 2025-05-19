@@ -23,5 +23,6 @@
 extern char wifi_ssid[WIFI_SSID_LEN+1];
 extern char wifi_password[WIFI_PWD_LEN+1];
 extern char ntp_server[HOST_NAME_MAX+1];
+extern int utc_offset;
 
 #endif /* !NET_VARS_INC */

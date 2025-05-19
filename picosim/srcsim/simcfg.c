@@ -107,6 +107,7 @@ void read_config(void)
 		f_read(&sd_file, &wifi_ssid, sizeof(wifi_ssid), &br);
 		f_read(&sd_file, &wifi_password, sizeof(wifi_password), &br);
 		f_read(&sd_file, &ntp_server, sizeof(ntp_server), &br);
+		f_read(&sd_file, &utc_offset, sizeof(utc_offset), &br);
 		f_read(&sd_file, &disks[0], DISKLEN+1, &br);
 		f_read(&sd_file, &disks[1], DISKLEN+1, &br);
 		f_read(&sd_file, &disks[2], DISKLEN+1, &br);
@@ -134,6 +135,7 @@ void save_config(void)
 		f_write(&sd_file, &wifi_ssid, sizeof(wifi_ssid), &br);
 		f_write(&sd_file, &wifi_password, sizeof(wifi_password), &br);
 		f_write(&sd_file, &ntp_server, sizeof(ntp_server), &br);
+		f_write(&sd_file, &utc_offset, sizeof(utc_offset), &br);
 		f_write(&sd_file, &disks[0], DISKLEN+1, &br);
 		f_write(&sd_file, &disks[1], DISKLEN+1, &br);
 		f_write(&sd_file, &disks[2], DISKLEN+1, &br);
@@ -155,6 +157,7 @@ void net_config(void)
 		printf("s - WiFi SSID: %s\n", wifi_ssid);
 		printf("p - WiFi password: %s\n", wifi_password);
 		printf("n - NTP server: %s\n", ntp_server);
+		printf("u - UTC offset in hours: %d\n", utc_offset);
 		printf("q - quit\n");
 
 		printf("\nCommand: ");
@@ -183,6 +186,10 @@ void net_config(void)
 				strcpy(ntp_server, s);
 			else
 				strcpy(ntp_server, DEFAULT_NTP);
+			break;
+
+		case 'u':
+			utc_offset = get_int("UTC offset", "in hours", -12, +14);
 			break;
 
 		case 'q':
@@ -221,7 +228,7 @@ void config(void)
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
 	if (ntp_time) {
 		puts("ntp time present, using it for setting the clock\n");
-		time_t local_time = ntp_time + 2 * 60 * 60; /* Germany, UTC+2 */
+		time_t local_time = ntp_time + utc_offset * 60 * 60;
 		struct tm *ntp_t = gmtime(&local_time);
 		t.tm_year = ntp_t->tm_year;
 		t.tm_mon = ntp_t->tm_mon;
