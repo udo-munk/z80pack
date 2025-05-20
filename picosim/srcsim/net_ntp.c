@@ -1,10 +1,12 @@
 /*
- * This module is based on the NTP client example provided by Raspberry Pi.
- * The example code is reformatted and modified for the needs in this project.
+ * This module is based on the NTP client example provided by Raspberry Pi:
  *
  * Copyright (c) 2022 Raspberry Pi (Trading) Ltd.
  *
  * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * The example code is reformatted and modified for the needs in this project,
+ * Udo Munk
  *
  * History:
  * 16-MAY-2025 first implementation
