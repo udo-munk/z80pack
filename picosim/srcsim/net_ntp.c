@@ -161,25 +161,24 @@ void do_ntp(void)
 	if (!state)
 		return;
 
-	if (absolute_time_diff_us(get_absolute_time(), state->ntp_test_time) < 0 &&
-	    !state->dns_request_sent) {
-		/* Set alarm in case udp requests are lost */
-		state->ntp_resend_alarm = add_alarm_in_ms(NTP_RESEND_TIME, ntp_failed_handler,
-							  state, true);
-		cyw43_arch_lwip_begin();
-		int err = dns_gethostbyname((const char *) &ntp_server,
-					    &state->ntp_server_address, ntp_dns_found, state);
-		cyw43_arch_lwip_end();
-		state->dns_request_sent = true;
-		if (err == ERR_OK) {
-			ntp_request(state); /* Cached result */
-		} else if (err != ERR_INPROGRESS) { /* ERR_INPROGRESS means expect a callback */
-			puts("dns request failed");
-			ntp_result(state, -1, NULL);
-		}
+	/* Set alarm in case udp requests are lost */
+	state->ntp_resend_alarm = add_alarm_in_ms(NTP_RESEND_TIME, ntp_failed_handler,
+						  state, true);
+	cyw43_arch_lwip_begin();
+	int err = dns_gethostbyname((const char *) &ntp_server,
+				    &state->ntp_server_address, ntp_dns_found, state);
+	cyw43_arch_lwip_end();
+	state->dns_request_sent = true;
+	if (err == ERR_OK) {
+		ntp_request(state); /* Cached result */
+	} else if (err != ERR_INPROGRESS) { /* ERR_INPROGRESS means expect a callback */
+		puts("dns request failed");
+		ntp_result(state, -1, NULL);
 	}
+
 	free(state);
 
+	/* wait until NTP request done */
 	while (ntp_done == false)
-		sleep_ms(100);
+		sleep_ms(10);
 }
