@@ -37,12 +37,17 @@ pico_sdk_init()
 
 set(Z80PACK ${CMAKE_SOURCE_DIR}/../../)
 
+if(PICO_CYW43_SUPPORTED)
+	set(EXTRA_SOURCES net_ntp.c)
+endif()
+
 add_executable(${PROJECT_NAME}
 	picosim.c
 	disks.c
 	simcfg.c
 	simio.c
 	simmem.c
+	net_vars.c
 	${Z80PACK}/iodevices/rtc80.c
 	${Z80PACK}/iodevices/sd-fdc.c
 	${Z80PACK}/z80core/sim8080.c
@@ -57,6 +62,7 @@ add_executable(${PROJECT_NAME}
 	${Z80PACK}/z80core/simz80-ed.c
 	${Z80PACK}/z80core/simz80-fd.c
 	${Z80PACK}/z80core/simz80-fdcb.c
+	${EXTRA_SOURCES}
 )
 
 # generate the header file into the source tree
@@ -116,7 +122,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 if(PICO_CYW43_SUPPORTED)
 target_link_libraries(${PROJECT_NAME}
-	pico_cyw43_arch_none
+	pico_cyw43_arch_lwip_threadsafe_background
 )
 endif()
 
@@ -130,7 +136,7 @@ if(PICO_RP2040)
 else()
 	pico_set_program_description(${PROJECT_NAME} "z80pack on Raspberry Pi Pico 2")
 endif()
-pico_set_program_version(${PROJECT_NAME} "1.7")
+pico_set_program_version(${PROJECT_NAME} "1.8")
 pico_set_program_url(${PROJECT_NAME} "https://github.com/udo-munk/z80pack")
 
 # enable UART in/out, enable USB in/out

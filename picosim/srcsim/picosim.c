@@ -13,6 +13,7 @@
  * 28-MAY-2024 implemented boot from disk images with some OS
  * 31-MAY-2024 use USB UART
  * 09-JUN-2024 implemented boot ROM
+ * 16-MAY-2025 connect WiFi and use NTP on Pico W
  */
 
 /* Raspberry SDK and FatFS includes */
@@ -23,8 +24,11 @@
 #include <tusb.h>
 #endif
 #if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+#include <time.h>
+#include "net_ntp.h"
 #include "pico/cyw43_arch.h"
 #endif
+#include "net_vars.h"
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
@@ -193,18 +197,50 @@ int main(void)
 #endif
 	printf("%s\n\n", USR_CPR);
 
-#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
-	/* initialize Pico W hardware */
-	if (cyw43_arch_init())
-		panic("CYW43 init failed\n");
-#endif
 
 	init_cpu();		/* initialize CPU */
 	PC = 0xff00;		/* power on jump into the boot ROM */
 	init_disks();		/* initialize disk drives */
 	init_memory();		/* initialize memory configuration */
 	init_io();		/* initialize I/O devices */
+
+	read_config();		/* read configuration from MicroSD */
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+	/* initialize Pico W WiFi hardware */
+	if (cyw43_arch_init())
+		panic("CYW43 init failed\n");
+
+	/* try to connect WiFi */
+	int wifi_retry = 5;	/* max WiFi connect retries */
+	int result;
+
+	cyw43_arch_enable_sta_mode();
+	printf("connecting to WiFi... ");
+	if (!strlen(wifi_ssid)) {
+		puts("no WiFi SSID configured.");
+		goto wifi_done;
+	}
+	while (wifi_retry) {
+		if ((result = cyw43_arch_wifi_connect_timeout_ms(wifi_ssid, wifi_password,
+		    CYW43_AUTH_WPA2_AES_PSK, 30000))) {
+			printf("retry... ");
+			wifi_retry--;
+		} else
+			break;
+	}
+
+	if (result) {
+		puts("failed.");
+	} else {
+		puts("connected.");
+		do_ntp();
+	}
+wifi_done:
+#endif
+
 	config();		/* configure the machine */
+	save_config();		/* save configuration on MicroSD */
 
 	f_value = speed;	/* setup speed of the CPU */
 	if (f_value)
@@ -226,6 +262,12 @@ int main(void)
 	put_pixel(0x000000);	/* LED off */
 	exit_io();		/* stop I/O devices */
 	exit_disks();		/* stop disk drives */
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+	/* de-initialize Pico W WiFi hardware */
+	cyw43_arch_disable_sta_mode();
+	cyw43_arch_deinit();
+#endif
 
 #ifndef WANT_ICE
 	putchar('\n');

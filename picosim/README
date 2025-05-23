@@ -7,9 +7,8 @@ If you don't want to build a machine your self, there are ready fabricated
 systems on PCB available, which can run the software. I have implemented
 picosim also on these:
 
-	https://github.com/udo-munk/Pico-Eval-Board-80
 	https://github.com/udo-munk/RP2xxx-GEEK-80
-
+	https://github.com/udo-munk/Pico-Eval-Board-80
 
 To build the software you need to have the SDK 2.1.1 for RP2040/RP2350 devices
 installed and configured. The SDK manual has detailed instructions how
@@ -24,11 +23,6 @@ Now you can build picosim for the Pico RP2040 with these commands:
 	cd build
 	cmake -G "Unix Makefiles" ..
 	make -j
-
-This machine can be used with Pico and Pico W boards, it is setup
-for a Pico board. To setup for a Pico W comment/uncomment the lines
-in CMakeLists.txt. It doesn't really matter, on a Pico W the CYW43
-gets intitialized but is not used yet.
 
 To build picosim for the Pico 2 RP2350 (you can also use
 PICO_PLATFORM=rp2350-riscv if you have the appropriate RISC-V toolchain
@@ -45,6 +39,13 @@ to hook up a terminal. The default UART also is enabled, to use connect a
 TTL/USB adapter or a pico probe to the default UART pins for the board
 (GP0 & GP1).
 
+This machine can be used with Pico and Pico W boards, it is setup
+for a Pico board. To setup for a Pico W comment/uncomment the lines
+in CMakeLists.txt.
+A Pico W tries to connect to WiFi and if that worked tries to get date/time via NTP
+over the WiFi connection. The date/time is used to set the system clock then.
+This also should work with a Pico 2 W, but has not been tested yet, need to get a board
+sometime.
 
 Preparing a MicroSD card:
 In the root directory of the card create these directories:

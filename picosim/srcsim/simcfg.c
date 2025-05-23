@@ -1,7 +1,7 @@
 /*
  * Z80SIM  -  a Z80-CPU simulator
  *
- * Copyright (C) 2024 by Udo Munk & Thomas Eberhardt
+ * Copyright (C) 2024-2025 by Udo Munk & Thomas Eberhardt
  *
  * This module configures the machine appropriate for the
  * Z80/8080 software we want to run on it.
@@ -13,6 +13,8 @@
  * 28-MAY-2024 implemented mount/unmount of disk images
  * 03-JUN-2024 added directory list for code files and disk images
  * 02-SEP-2024 read date/time from an optional I2C battery backed RTC
+ * 17-MAY-2025 on Pico W get date/time with NTP
+ * 18-MAY-2025 add network configuration dialog
  */
 
 #include <stdlib.h>
@@ -42,6 +44,16 @@
 
 #include "disks.h"
 #include "picosim.h"
+
+#include "net_vars.h"
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+#include "net_ntp.h"
+#endif
+
+static struct tm t = { .tm_year = 124, .tm_mon = 0, .tm_mday = 1,
+		       .tm_wday = 1, .tm_hour = 0, .tm_min = 0, .tm_sec = 0,
+		       .tm_isdst = -1 };
+static const char *cfg = "/CONF80/" CONF_FILE;
 
 /*
  * prompt for a filename
@@ -80,22 +92,128 @@ static int get_int(const char *prompt, const char *hint,
 }
 
 /*
+ * try to read config file
+ */
+void read_config(void)
+{
+	unsigned int br;
+
+	sd_res = f_open(&sd_file, cfg, FA_READ);
+	if (sd_res == FR_OK) {
+		f_read(&sd_file, &cpu, sizeof(cpu), &br);
+		f_read(&sd_file, &speed, sizeof(speed), &br);
+		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
+		f_read(&sd_file, &t, sizeof(t), &br);
+		f_read(&sd_file, &wifi_ssid, sizeof(wifi_ssid), &br);
+		f_read(&sd_file, &wifi_password, sizeof(wifi_password), &br);
+		f_read(&sd_file, &ntp_server, sizeof(ntp_server), &br);
+		f_read(&sd_file, &utc_offset, sizeof(utc_offset), &br);
+		f_read(&sd_file, &disks[0], DISKLEN+1, &br);
+		f_read(&sd_file, &disks[1], DISKLEN+1, &br);
+		f_read(&sd_file, &disks[2], DISKLEN+1, &br);
+		f_read(&sd_file, &disks[3], DISKLEN+1, &br);
+		f_close(&sd_file);
+	}
+#if defined(EXCLUDE_I8080) || defined(EXCLUDE_Z80)
+	cpu = DEF_CPU;
+#endif
+}
+
+/*
+ * try to save config file
+ */
+void save_config(void)
+{
+	unsigned int br;
+
+	sd_res = f_open(&sd_file, cfg, FA_WRITE | FA_CREATE_ALWAYS);
+	if (sd_res == FR_OK) {
+		f_write(&sd_file, &cpu, sizeof(cpu), &br);
+		f_write(&sd_file, &speed, sizeof(speed), &br);
+		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
+		f_write(&sd_file, &t, sizeof(t), &br);
+		f_write(&sd_file, &wifi_ssid, sizeof(wifi_ssid), &br);
+		f_write(&sd_file, &wifi_password, sizeof(wifi_password), &br);
+		f_write(&sd_file, &ntp_server, sizeof(ntp_server), &br);
+		f_write(&sd_file, &utc_offset, sizeof(utc_offset), &br);
+		f_write(&sd_file, &disks[0], DISKLEN+1, &br);
+		f_write(&sd_file, &disks[1], DISKLEN+1, &br);
+		f_write(&sd_file, &disks[2], DISKLEN+1, &br);
+		f_write(&sd_file, &disks[3], DISKLEN+1, &br);
+		f_close(&sd_file);
+	}
+}
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+/*
+ * network configuration for Pico W
+ */
+void net_config(void)
+{
+	bool quit = false;
+	char s[WIFI_SSID_LEN+1];
+
+	while (!quit) {
+		printf("s - WiFi SSID: %s\n", wifi_ssid);
+		printf("p - WiFi password: %s\n", wifi_password);
+		printf("n - NTP server: %s\n", ntp_server);
+		printf("u - UTC offset in hours: %d\n", utc_offset);
+		printf("q - quit\n");
+
+		printf("\nCommand: ");
+		get_cmdline(s, 2);
+		putchar('\n');
+
+		switch (tolower((unsigned char) s[0])) {
+		case 's':
+			printf("Enter SSID: ");
+			get_cmdline(s, WIFI_SSID_LEN+1);
+			strcpy(wifi_ssid, s);
+			putchar('\n');
+			break;
+
+		case 'p':
+			printf("Enter password: ");
+			get_cmdline(s, WIFI_PWD_LEN+1);
+			strcpy(wifi_password, s);
+			putchar('\n');
+			break;
+
+		case 'n':
+			printf("Enter NTP server: ");
+			get_cmdline(s, HOST_NAME_MAX+1);
+			if (strlen(s))
+				strcpy(ntp_server, s);
+			else
+				strcpy(ntp_server, DEFAULT_NTP);
+			putchar('\n');
+			break;
+
+		case 'u':
+			utc_offset = get_int("UTC offset", " (hours)", -12, +14);
+			putchar('\n');
+			break;
+
+		case 'q':
+			quit = true;
+			break;
+		}
+	}
+}
+#endif
+
+/*
  * Configuration dialog for the machine
  */
 void config(void)
 {
-	const char *cfg = "/CONF80/" CONF_FILE;
 	const char *cpath = "/CODE80";
 	const char *cext = "*.BIN";
 	const char *dpath = "/DISKS80";
 	const char *dext = "*.DSK";
 	char s[FNLEN+1];
-	unsigned int br;
 	bool go_flag = false;
 	int i, n, menu;
-	struct tm t = { .tm_year = 124, .tm_mon = 0, .tm_mday = 1,
-			.tm_wday = 1, .tm_hour = 0, .tm_min = 0, .tm_sec = 0,
-			.tm_isdst = -1 };
 	static const char *dotw[7] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat" };
 	struct timespec ts;
@@ -105,26 +223,25 @@ void config(void)
 	UNUSED(DS3231_MONTHS);
 	UNUSED(DS3231_WDAYS);
 
-	/* try to read config file */
-	sd_res = f_open(&sd_file, cfg, FA_READ);
-	if (sd_res == FR_OK) {
-		f_read(&sd_file, &cpu, sizeof(cpu), &br);
-		f_read(&sd_file, &speed, sizeof(speed), &br);
-		f_read(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_read(&sd_file, &t, sizeof(t), &br);
-		f_read(&sd_file, &disks[0], DISKLEN+1, &br);
-		f_read(&sd_file, &disks[1], DISKLEN+1, &br);
-		f_read(&sd_file, &disks[2], DISKLEN+1, &br);
-		f_read(&sd_file, &disks[3], DISKLEN+1, &br);
-		f_close(&sd_file);
-#if defined(EXCLUDE_I8080) || defined(EXCLUDE_Z80)
-		cpu = DEF_CPU;
-#endif
-	}
-
 	/* Create a real-time clock structure and initiate this */
 	ds3231_init(DS3231_I2C_PORT, DS3231_I2C_SDA_PIN,
 		    DS3231_I2C_SCL_PIN, &rtc);
+
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+	if (ntp_time) {
+		puts("ntp time present, using it for setting the clock\n");
+		time_t local_time = ntp_time + utc_offset * 60 * 60;
+		struct tm *ntp_t = gmtime(&local_time);
+		t.tm_year = ntp_t->tm_year;
+		t.tm_mon = ntp_t->tm_mon;
+		t.tm_mday = ntp_t->tm_mday;
+		t.tm_hour = ntp_t->tm_hour;
+		t.tm_min = ntp_t->tm_min;
+		t.tm_sec = ntp_t->tm_sec;
+		t.tm_wday = ntp_t->tm_wday + 1;
+		goto got_ntp_time;
+	}
+#endif
 
 	/* Use a dummy read to see if a DS3231 RTC is present */
 	if (i2c_read_blocking(rtc.i2c_port, rtc.i2c_addr, &buf, 1,
@@ -144,6 +261,10 @@ void config(void)
 			t.tm_wday = 0;
 	}
 
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+got_ntp_time:
+#endif
+
 	ts.tv_sec = mktime(&t);
 	ts.tv_nsec = 0;
 	aon_timer_start(&ts);
@@ -159,6 +280,9 @@ void config(void)
 			       dotw[t.tm_wday], t.tm_year + 1900, t.tm_mon + 1,
 			       t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec,
 			       read_onboard_temp());
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+			printf("n - network configuration\n");
+#endif
 			printf("a - set date\n");
 			printf("t - set time\n");
 #if LIB_STDIO_MSC_USB
@@ -194,6 +318,11 @@ void config(void)
 		putchar('\n');
 
 		switch (tolower((unsigned char) s[0])) {
+#if defined(RASPBERRYPI_PICO_W) || defined(RASPBERRYPI_PICO2_W)
+		case 'n':
+			net_config();
+			break;
+#endif
 		case 'a':
 			n = 0;
 			aon_timer_get_time(&ts);
@@ -348,19 +477,5 @@ again:
 		default:
 			break;
 		}
-	}
-
-	/* try to save config file */
-	sd_res = f_open(&sd_file, cfg, FA_WRITE | FA_CREATE_ALWAYS);
-	if (sd_res == FR_OK) {
-		f_write(&sd_file, &cpu, sizeof(cpu), &br);
-		f_write(&sd_file, &speed, sizeof(speed), &br);
-		f_write(&sd_file, &fp_value, sizeof(fp_value), &br);
-		f_write(&sd_file, &t, sizeof(t), &br);
-		f_write(&sd_file, &disks[0], DISKLEN+1, &br);
-		f_write(&sd_file, &disks[1], DISKLEN+1, &br);
-		f_write(&sd_file, &disks[2], DISKLEN+1, &br);
-		f_write(&sd_file, &disks[3], DISKLEN+1, &br);
-		f_close(&sd_file);
 	}
 }
