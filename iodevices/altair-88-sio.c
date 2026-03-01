@@ -201,6 +201,35 @@ again:
 		sio0_stat |= 0b10000000;
 }
 
+
+/*
+ * Helper function to check and accept incoming socket connection.
+ * Called from both sio3_status_in() and sio3_data_in() to ensure
+ * the connection is established regardless of which port is accessed
+ * first. Fixes a bug where reading data port 7 directly (without
+ * polling status port 6 first) would always return stale data because
+ * accept() was only called from the status path.
+ */
+static void sio3_check_connection(void)
+{
+    struct pollfd p[1];
+    if (ucons[0].ssc == 0) {
+        p[0].fd = ucons[0].ss;
+        p[0].events = POLLIN;
+        p[0].revents = 0;
+        poll(p, 1, 0);
+        if (p[0].revents) {
+            if ((ucons[0].ssc = accept(ucons[0].ss, NULL, NULL)) == -1) {
+                LOGW(TAG, "can't accept server socket");
+                ucons[0].ssc = 0;
+            }
+        }
+    }
+}
+
+
+
+
 /*
  * read status register
  *
@@ -214,20 +243,7 @@ BYTE altair_sio3_status_in(void)
 	struct pollfd p[1];
 
 	/* if socket not connected check for a new connection */
-	if (ucons[0].ssc == 0) {
-		p[0].fd = ucons[0].ss;
-		p[0].events = POLLIN;
-		p[0].revents = 0;
-		poll(p, 1, 0);
-		/* accept a new connection */
-		if (p[0].revents) {
-			if ((ucons[0].ssc = accept(ucons[0].ss, NULL,
-						   NULL)) == -1) {
-				LOGW(TAG, "can't accept server socket");
-				ucons[0].ssc = 0;
-			}
-		}
-	}
+        sio3_check_connection();
 
 	sio3_t2 = get_clock_us();
 	if (sio3_baud_rate > 0 &&
@@ -268,6 +284,7 @@ BYTE altair_sio3_data_in(void)
 	static BYTE last;
 	struct pollfd p[1];
 
+        sio3_check_connection();
 	/* if not connected return last */
 	if (ucons[0].ssc == 0)
 		return last;
