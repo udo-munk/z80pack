@@ -1,0 +1,3 @@
+roms/*.BIN binary
+disks/*.img binary
+disks/source/*.hfe binary

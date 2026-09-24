@@ -1,0 +1,30 @@
+{
+  "roms/BOOTROM.BIN": {
+    "bytes": 4096,
+    "sha256": "e7c29a43d2c526abcee01ae0121bb4c6557ac944590a6160200f8a644e2a5772"
+  },
+  "roms/CHAROM.BIN": {
+    "bytes": 4096,
+    "sha256": "d1aa202af7d68535fe21b4d88c156e5d0d29a35c5646e5c013b7e2e4f20b3e67"
+  },
+  "disks/SYSTEM1.img": {
+    "bytes": 368640,
+    "sha256": "7dd156c7ae853bf3472746c9dfe6f671aa7577577ea7070ed3bec2fc106fae55"
+  },
+  "disks/DISK1_HFE.img": {
+    "bytes": 368640,
+    "sha256": "7dd156c7ae853bf3472746c9dfe6f671aa7577577ea7070ed3bec2fc106fae55"
+  },
+  "disks/DISK2_HFE.img": {
+    "bytes": 368640,
+    "sha256": "57d9387ffe490e7a8b78bd56aab32e9ff71092a8fef7e7acbd2d861b2bb62217"
+  },
+  "disks/source/DISK1_TD0.hfe": {
+    "bytes": 1004544,
+    "sha256": "476a94a823e3fc5c25f1d6b09b030e7527544376960f92bd01760fa0df8d423b"
+  },
+  "disks/source/DISK2_TD0.hfe": {
+    "bytes": 1004544,
+    "sha256": "e67b4499c38f3561841845ef6e820e30fc9dcb0d446d56409bbeae8f5a16ccdd"
+  }
+}

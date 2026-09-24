@@ -1,3 +1,86 @@
+# z80pack with Bondwell 12/14 emulation
+
+This fork adds **Bondwell 12/14 emulation** to z80pack using its existing,
+unmodified Z80 CPU core.
+
+The Bondwell 14 boots the original CP/M 3 system disk through the real
+Bondwell boot ROM. The display renders the original character ROM, and
+keyboard input passes through the emulated Bondwell keyboard interface.
+
+## Current status
+
+- Model 12: 64 KB configuration passes the original ROM diagnostics.
+- Model 14: 128 KB configuration passes diagnostics and boots CP/M 3.
+- Both floppy drives work; `DIR` and `DIR B:` have been verified.
+- CP/M file creation and persistence across emulator restarts are verified.
+- Native Windows display and optional SDL2 frontend are included.
+- CopyQM and HFE converters validate disk checksums before conversion.
+
+Model 12 operating-system boot still requires validation with suitable
+single-sided media. Live serial connections, sound playback, and some
+peripheral behaviours remain under development.
+
+## Included ROMs and disks
+
+The repository includes:
+
+- `BOOTROM.BIN` — original boot ROM.
+- `CHAROM.BIN` — original character ROM.
+- `DISK1_HFE.img` — bootable CP/M 3 system disk.
+- `DISK2_HFE.img` — companion utilities and system-source disk.
+- Original HFE images and the earlier `SYSTEM1.img`.
+
+See [media checksums](bondwellsim/media-sha256.json) and
+[disk documentation](bondwellsim/disks/README.md).
+
+## Get the Bondwell version
+
+```sh
+git clone --branch bondwell https://github.com/royedmund/z80pack.git
+cd z80pack
+```
+
+## Build on Windows
+
+Install CMake and MinGW GCC, with `gcc` and `mingw32-make` on PATH:
+
+```powershell
+cmake -S bondwellsim -B bondwellsim/build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake --build bondwellsim/build
+ctest --test-dir bondwellsim/build --output-on-failure
+```
+
+After building, double-click **Launch Bondwell.cmd** in `bondwellsim`,
+or launch both disks directly:
+
+```powershell
+cd bondwellsim
+.\build\bondwellsim.exe --disk-a disks/DISK1_HFE.img --disk-b disks/DISK2_HFE.img
+```
+
+Allow the ROM diagnostics to finish, press **Space** at the boot prompt,
+then choose **E** in Bondwell SETUP to reach the CP/M `A>` prompt.
+
+Try:
+
+```text
+DIR
+DIR B:
+```
+
+Disk images are read-only by default. With `--writable`, changes are saved
+to separate `.updated` files, preserving the mounted originals.
+
+For Linux/macOS builds, headless operation, tracing, disk conversion,
+and peripheral limitations, see the
+[Bondwell emulator guide](bondwellsim/README.md).
+
+---
+
+## Upstream z80pack
+
+The original z80pack documentation follows.
+
 # z80pack
 
 z80pack is a mature emulator of multiple platforms with 8080 and Z80 CPU.

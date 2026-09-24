@@ -37,10 +37,13 @@
  * 29-JUL-2021 add boot config for machine without frontpanel
  * 02-SEP-2021 implement banked ROM
  * 15-MAY-2024 make disk manager standard
+ * 14-SEP-2025 add more disk formats + minor improvements by Malcolm McLean
  */
 
 #ifndef CROMEMCO_FDC_INC
 #define CROMEMCO_FDC_INC
+
+#include <sys/types.h>
 
 #include "sim.h"
 #include "simdefs.h"
@@ -64,7 +67,23 @@ typedef struct {
 	int sec0;			/* # sectors on track 0, side 0 */
 	enum Disk_mode disk_m;		/* R/W or R/O mode */
 	enum Disk_density disk_d0;	/* Density of track 0 */
+	int sec_sz;			/* size of sectors on trks > 0 side 0 */
+	int sec_sz0;			/* size of sectors on trk 0, side 0 */
 } Diskdef;
+
+// Structure to hold disk parameters for all known disk formats
+typedef struct {
+	off_t st_size;			// Index on size of disk image file
+	enum Disk_type disk_t;		// See Diskdef above
+	enum Disk_density disk_d;	// See Diskdef above
+	enum Disk_sides disk_s;		// See Diskdef above
+	int tracks;			// See Diskdef above
+	int sectors;			// See Diskdef above
+	int sec0;			// See Diskdef above
+	enum Disk_density disk_d0;	// See Diskdef above
+	int sec_sz;			// See Diskdef above
+	int sec_sz0;			// See Diskdef above
+} Diskparams;
 
 extern BYTE fdc_flags;
 extern enum Disk_type dtype;

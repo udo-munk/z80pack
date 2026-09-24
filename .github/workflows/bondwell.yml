@@ -1,0 +1,36 @@
+name: Bondwell
+on:
+  push:
+    paths: ['bondwellsim/**', 'z80core/**', '.github/workflows/bondwell.yml']
+  pull_request:
+    paths: ['bondwellsim/**', 'z80core/**', '.github/workflows/bondwell.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Configure Linux
+        if: runner.os == 'Linux'
+        run: cmake -S bondwellsim -B bondwellsim/build -DCMAKE_BUILD_TYPE=Release
+      - name: Configure Windows
+        if: runner.os == 'Windows'
+        run: cmake -S bondwellsim -B bondwellsim/build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build bondwellsim/build --parallel 2
+      - run: ctest --test-dir bondwellsim/build --output-on-failure
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: bondwellsim-windows
+          path: |
+            bondwellsim/build/bondwellsim.exe
+            bondwellsim/README.md
+            bondwellsim/LICENSE
+            z80core/COPYING

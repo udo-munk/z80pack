@@ -1,0 +1,23 @@
+build/
+bondwellsim
+bondwellsim.exe
+roms/*.BIN
+roms/*.bin
+disks/*.img
+disks/*.IMG
+disks/*.dsk
+disks/*.cqm
+*.log
+*.pbm
+*.ppm
+__pycache__/
+
+*.updated
+release/
+
+# Explicitly included reference media. Other local media remain ignored.
+!roms/BOOTROM.BIN
+!roms/CHAROM.BIN
+!disks/SYSTEM1.img
+!disks/DISK1_HFE.img
+!disks/DISK2_HFE.img

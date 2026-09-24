@@ -14,8 +14,8 @@ CFLAGS = -O3 $(CSTDS) $(CWARNS)
 #
 # installation directory
 #
-PREFIX ?= $(HOME)
-#PREFIX ?= /usr/local
+#PREFIX ?= $(HOME)
+PREFIX ?= /usr/local
 EXEC_PREFIX = $(PREFIX)
 BINDIR = $(EXEC_PREFIX)/bin
 

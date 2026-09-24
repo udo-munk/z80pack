@@ -5,10 +5,14 @@
 
 # Override this using TARGET_OS=LINUX on the command line
 ifeq ($(TARGET_OS),)
+  UNAME_S := $(shell uname -s)
   ifeq ($(OS),Windows_NT)
-    TARGET_OS = WIN32
+    ifeq ($(filter CYGWIN%,$(UNAME_S)),)
+        TARGET_OS = WIN32
+    else
+        TARGET_OS = CYGWIN
+    endif
   else
-    UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
         TARGET_OS = LINUX
     else
@@ -20,4 +24,3 @@ ifeq ($(TARGET_OS),)
     endif
   endif
 endif
-

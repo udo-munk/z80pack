@@ -505,7 +505,13 @@ static void init_server_socket(int n)
 #ifdef TCPASYNC
 	fcntl(ss[n], F_SETOWN, getpid());
 	i = fcntl(ss[n], F_GETFL, 0);
+#ifdef O_ASYNC
 	if (fcntl(ss[n], F_SETFL, i | O_ASYNC) == -1) {
+#else
+	/* O_ASYNC is undefined on Cygwin as Windows doesn't support POSIX sigio model */
+	/* Not sure how or if this will affect the simulation */
+	if (fcntl(ss[n], F_SETFL, i) == -1) {
+#endif
 		LOGE(TAG, "can't fcntl O_ASYNC on server socket");
 		exit(EXIT_FAILURE);
 	}

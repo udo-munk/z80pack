@@ -108,7 +108,13 @@ void init_tcp_server_socket(net_connector_t *p)
 	/* configure socket for async I/O */
 	fcntl(p->ss, F_SETOWN, getpid());
 	n = fcntl(p->ss, F_GETFL, 0);
+#ifdef O_ASYNC
 	if (fcntl(p->ss, F_SETFL, n | O_ASYNC) == -1) {
+#else
+	/* O_ASYNC is undefined on Cygwin as Windows doesn't support POSIX sigio model */
+	/* Not sure how or if this will affect the simulation */
+	if (fcntl(p->ss, F_SETFL, n) == -1) {
+#endif
 		LOGE(TAG, "can't fcntl O_ASYNC on server socket");
 		exit(EXIT_FAILURE);
 	}

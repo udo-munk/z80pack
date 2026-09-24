@@ -1,6 +1,6 @@
 PACKAGE = z80pack
-PREFIX = $(HOME)
-#PREFIX = /usr/local
+#PREFIX = $(HOME)
+PREFIX = /usr/local
 EXEC_PREFIX = $(PREFIX)
 BINDIR = $(EXEC_PREFIX)/bin
 DATAROOTDIR = $(PREFIX)/share
@@ -70,6 +70,10 @@ IMSAI_Z80 = \
 	imsaisim/roms/basic4k.asm
 
 all: tools libs bioses misc machines
+
+# Build the optional Bondwell machine without requiring front-panel libraries.
+bondwell:
+	$(MAKE) -C bondwellsim/srcsim
 
 tools:
 	@set -e; for subdir in $(TOOLS); do \
@@ -144,5 +148,5 @@ distclean:
 
 .NOTPARALLEL: all
 
-.PHONY: all tools libs bioses misc machines reassemble FORCE \
+.PHONY: bondwell all tools libs bioses misc machines reassemble FORCE \
 		install uninstall clean distclean

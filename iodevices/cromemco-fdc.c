@@ -37,6 +37,7 @@
  * 29-JUL-2021 add boot config for machine without frontpanel
  * 02-SEP-2021 implement banked ROM
  * 15-MAY-2024 make disk manager standard
+ * 14-SEP-2025 Support for more disk formats + minor improvements by Malcolm McLean
  */
 
 #include <unistd.h>
@@ -65,16 +66,28 @@ static const char *TAG = "16FDC";
 #define FDC_READADR	3	/* read address */
 #define FDC_WRTTRK	4	/* write (format) track */
 
-#define SEC_SZSD	128	/* sector size SD */
-#define SEC_SZDD	512	/* sector size DD */
+#define SEC_SZ_SM	128	/* small sector size */
+#define SEC_SZ_LG	512	/* large sector size */
 #define TRK8		77	/* # of tracks 8" */
 #define SPT8SD		26	/* # of sectors per track 8" SD */
 #define SPT8DD		16	/* # of sectors per track 8" DD */
+#define SPT8CS		8	/* # of sectors per track 8" SD Cromix */
+#define	SPT8UX		15	/* # of sectors per track 8" Cro Unix */
 #define TRK5		40	/* # of tracks 5.25" */
 #define SPT5SD		18	/* # of sectors per track 5.25" SD */
 #define SPT5DD		10	/* # of sectors per track 5.25" DD */
+#define SPT5CS		5	/* # of sectors per track 5.25" SD Cromix */
+#define SPT5UN		9	/* # of sectors per track 5.25" DD Uniform */
+#define SPT5HD		15	/* # of sectors per track 5.25" HD */
+#define TRK3		80	/* # of tracks 5.25" DT & 3.5" */
+#define SPT3DD		9	/* # of sectors per track 3.5" DD */
+#define SPT3HD		18	/* # of sectors per track 3.5" HD */
+
+#define	NUMDISKS	4	/* Number of disks the controller can work */
 
 #define AUTOBOOT	16	/* FDC autoboot jumper, 16|64 = off */
+
+#undef	DEBUG_GEOM
 
        BYTE fdc_flags = AUTOBOOT; /* FDC flag register, autoboot setting */
 static BYTE fdc_cmd;		/* FDC command last send */
@@ -87,26 +100,60 @@ static int step_dir = -1;	/* last stepping direction */
 static enum Disk_density ddens;	/* disk density set */
 static int disk = 0;		/* current selected disk # */
 static int side = 0;		/* disk side */
-static int secsz = SEC_SZSD;	/* current used sector size */
+static int secsz = SEC_SZ_SM;	/* current used sector size */
 static int state;		/* internal fdc state */
 static int dcnt;		/* data counter read/write */
 static bool mflag;		/* multiple sectors flag */
 static char fn[MAX_LFN];	/* path/filename for disk image */
 static int fd;			/* fd for disk i/o */
-static BYTE buf[SEC_SZDD];	/* buffer for one sector */
+static BYTE buf[SEC_SZ_LG];	/* buffer for one sector */
        int index_pulse = 0;	/* disk index pulse */
 static bool autowait;		/* autowait flag */
        bool motoron;		/* motor on flag */
        int motortimer;		/* motor on timer */
 static bool headloaded;		/* head loaded flag */
 
+#ifdef DEBUG_GEOM
+const char *disk_t_names[] = { "SMALL", "LARGE", "UNKNOWN" };
+const char *disk_d_names[] = { "SINGLE", "DOUBLE" };
+const char *disk_s_names[] = { "ONE", "TWO" };
+#endif
+
 /* these are our disk drives, 8" SS SD initially */
-Diskdef disks[4] = {
-	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
-	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
-	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE },
-	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE }
+Diskdef disks[NUMDISKS] = {
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE, SEC_SZ_LG, SEC_SZ_LG},
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE, SEC_SZ_LG, SEC_SZ_LG},
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE, SEC_SZ_LG, SEC_SZ_LG},
+	{ NULL, LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, READWRITE, SINGLE, SEC_SZ_LG, SEC_SZ_LG},
 };
+
+// These are the disk parameters that get used for file sizes matching the 1st element.
+Diskparams disk_data[] = {
+	{ 102144,  SMALL, SINGLE, ONE, TRK5, SPT5CS, SPT5SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 5.25" SS SD Cromix
+	{ 204544,  SMALL, SINGLE, TWO, TRK5, SPT5CS, SPT5SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 5.25" DS SD Cromix
+	{ 92160,   SMALL, SINGLE, ONE, TRK5, SPT5SD, SPT5SD, SINGLE, SEC_SZ_SM, SEC_SZ_SM },	// 5.25" SS SD CDOS
+	{ 184320,  SMALL, SINGLE, TWO, TRK5, SPT5SD, SPT5SD, SINGLE, SEC_SZ_SM, SEC_SZ_SM },	// 5.25" DS SD CDOS
+	{ 201984,  SMALL, DOUBLE, ONE, TRK5, SPT5DD, SPT5SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 5.25" SS DD
+	{ 406784,  SMALL, DOUBLE, TWO, TRK5, SPT5DD, SPT5SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 5.25" DS DD
+	{ 314624,  LARGE, SINGLE, ONE, TRK8, SPT8CS, SPT8SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 8" SS SD Cromix
+	{ 630016,  LARGE, SINGLE, TWO, TRK8, SPT8CS, SPT8SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 8" DS SD Cromix
+	{ 256256,  LARGE, SINGLE, ONE, TRK8, SPT8SD, SPT8SD, SINGLE, SEC_SZ_SM, SEC_SZ_SM },	// 8" SS SD CDOS
+	{ 512512,  LARGE, SINGLE, TWO, TRK8, SPT8SD, SPT8SD, SINGLE, SEC_SZ_SM, SEC_SZ_SM },	// 8" DS SD CDOS
+	{ 625920,  LARGE, DOUBLE, ONE, TRK8, SPT8DD, SPT8SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 8" SS DD
+	{ 1256704, LARGE, DOUBLE, TWO, TRK8, SPT8DD, SPT8SD, SINGLE, SEC_SZ_LG, SEC_SZ_SM },	// 8" DS DD
+	{ 1261568, LARGE, DOUBLE, TWO, TRK8, SPT8DD, SPT8DD, DOUBLE, SEC_SZ_LG, SEC_SZ_LG },	// 8" DS DD uniform
+	/*
+	// IBM Disks for compatibility with Icopy uniform drivers - still experimental and under test
+	{ 184320,  SMALL, SINGLE, TWO, TRK5, SPT5SD, SPT5SD, SINGLE, SEC_SZ_SM, SEC_SZ_SM },	// 5" DS SD uniform (IBM 180K)
+	{ 368640,  SMALL, DOUBLE, TWO, TRK5, SPT5UN, SPT5UN, DOUBLE, SEC_SZ_LG, SEC_SZ_LG },	// 5" DS DD uniform (Unix & IBM 360K)
+	{ 737280,  SMALL, DOUBLE, TWO, TRK3, SPT3DD, SPT3DD, DOUBLE, SEC_SZ_LG, SEC_SZ_LG },	// 3" DS DD uniform (IBM 720K)
+	{ 1228800, SMALL, DOUBLE, TWO, TRK5*2, SPT5HD, SPT5HD, DOUBLE, SEC_SZ_LG, SEC_SZ_LG },	// 5" DS HD uniform (IBM 1.2M)
+	{ 1474560, SMALL, DOUBLE, TWO, TRK3, SPT3HD, SPT3HD, DOUBLE, SEC_SZ_LG, SEC_SZ_LG },	// 3" DS HD uniform (IBM 1.44M)
+	{ 1182720, LARGE, DOUBLE, TWO, TRK8, SPT8UX, SPT8UX, DOUBLE, SEC_SZ_LG, SEC_SZ_LG },	// 8" DS DD Cromemco Unix
+	*/
+};
+
+int num_params = sizeof(disk_data) / sizeof(disk_data[0]);
 
 BYTE fdc_banked_rom[8 << 10]; /* 8K of ROM (from 64FDC) to support RDOS 3 */
 bool fdc_rom_active = false;
@@ -141,109 +188,55 @@ char *dsk_path(void)
 static void config_disk(int fd)
 {
 	struct stat s;
+	static off_t prev_size[NUMDISKS] = {0, 0, 0, 0};
 
+#ifdef DEBUG_GEOM
+//	LOGW(TAG, "config_disk %s", disks[disk].fn);
+#endif
 	fstat(fd, &s);
 	if (s.st_mode & S_IWUSR)
 		disks[disk].disk_m = READWRITE;
 	else
 		disks[disk].disk_m = READONLY;
 
-	switch (s.st_size) {
-	case 92160:		/* 5.25" SS SD */
-		disks[disk].disk_t = SMALL;
-		disks[disk].disk_d = SINGLE;
-		disks[disk].disk_s = ONE;
-		disks[disk].tracks = TRK5;
-		disks[disk].sectors = SPT5SD;
-		disks[disk].sec0 = SPT5SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 184320:		/* 5.25" DS SD */
-		disks[disk].disk_t = SMALL;
-		disks[disk].disk_d = SINGLE;
-		disks[disk].disk_s = TWO;
-		disks[disk].tracks = TRK5;
-		disks[disk].sectors = SPT5SD;
-		disks[disk].sec0 = SPT5SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 201984:		/* 5.25" SS DD */
-		disks[disk].disk_t = SMALL;
-		disks[disk].disk_d = DOUBLE;
-		disks[disk].disk_s = ONE;
-		disks[disk].tracks = TRK5;
-		disks[disk].sectors = SPT5DD;
-		disks[disk].sec0 = SPT5SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 406784:		/* 5.25" DS DD */
-		disks[disk].disk_t = SMALL;
-		disks[disk].disk_d = DOUBLE;
-		disks[disk].disk_s = TWO;
-		disks[disk].tracks = TRK5;
-		disks[disk].sectors = SPT5DD;
-		disks[disk].sec0 = SPT5SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 256256:		/* 8" SS SD */
-		disks[disk].disk_t = LARGE;
-		disks[disk].disk_d = SINGLE;
-		disks[disk].disk_s = ONE;
-		disks[disk].tracks = TRK8;
-		disks[disk].sectors = SPT8SD;
-		disks[disk].sec0 = SPT8SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 512512:		/* 8" DS SD */
-		disks[disk].disk_t = LARGE;
-		disks[disk].disk_d = SINGLE;
-		disks[disk].disk_s = TWO;
-		disks[disk].tracks = TRK8;
-		disks[disk].sectors = SPT8SD;
-		disks[disk].sec0 = SPT8SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 625920:		/* 8" SS DD */
-		disks[disk].disk_t = LARGE;
-		disks[disk].disk_d = DOUBLE;
-		disks[disk].disk_s = ONE;
-		disks[disk].tracks = TRK8;
-		disks[disk].sectors = SPT8DD;
-		disks[disk].sec0 = SPT8SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 1256704:		/* 8" DS DD */
-		disks[disk].disk_t = LARGE;
-		disks[disk].disk_d = DOUBLE;
-		disks[disk].disk_s = TWO;
-		disks[disk].tracks = TRK8;
-		disks[disk].sectors = SPT8DD;
-		disks[disk].sec0 = SPT8SD;
-		disks[disk].disk_d0 = SINGLE;
-		break;
-
-	case 1261568:		/* 8" DS DD no SD track */
-		disks[disk].disk_t = LARGE;
-		disks[disk].disk_d = DOUBLE;
-		disks[disk].disk_s = TWO;
-		disks[disk].tracks = TRK8;
-		disks[disk].sectors = SPT8DD;
-		disks[disk].sec0 = SPT8DD;
-		disks[disk].disk_d0 = DOUBLE;
-		break;
-
-	default:
-		LOGW(TAG, "disk image %s has unknown format", disks[disk].fn);
+	// Only set the disk parameters if the size of the file has changed
+	if (s.st_size != prev_size[disk]) {
+		prev_size[disk] = s.st_size;
 		disks[disk].disk_t = UNKNOWN;
-		break;
+		for (int i = 0; i < num_params; i++) {
+			if (s.st_size == disk_data[i].st_size) {
+				disks[disk].disk_t = disk_data[i].disk_t;
+				disks[disk].disk_d = disk_data[i].disk_d;
+				disks[disk].disk_s = disk_data[i].disk_s;
+				disks[disk].tracks = disk_data[i].tracks;
+				disks[disk].sectors = disk_data[i].sectors;
+				disks[disk].sec0 = disk_data[i].sec0;
+				disks[disk].disk_d0 = disk_data[i].disk_d0;
+				disks[disk].sec_sz = disk_data[i].sec_sz;
+				disks[disk].sec_sz0 = disk_data[i].sec_sz0;
+#ifdef DEBUG_GEOM
+				LOGW(TAG, "disk geometry for: %s", disks[disk].fn);
+				LOGW(TAG, "             Size: %ld", s.st_size);
+				LOGW(TAG, "             Type: %s", disk_t_names[disks[disk].disk_t]);
+				LOGW(TAG, "            Sides: %s", disk_s_names[disks[disk].disk_s]);
+				LOGW(TAG, "           Tracks: %d", disks[disk].tracks);
+				LOGW(TAG, "          Density: %s, Sectors: %d, Sec Size: %d",
+						disk_d_names[disks[disk].disk_d],
+						disks[disk].sectors,
+						disks[disk].sec_sz);
+				LOGW(TAG, "     Tk0  Density: %s, Sectors: %d, Sec Size: %d",
+						disk_d_names[disks[disk].disk_d0],
+						disks[disk].sec0,
+						disks[disk].sec_sz0);
+
+#endif
+			}
+		}
+
+		if (disks[disk].disk_t == UNKNOWN)
+			LOGW(TAG, "disk image %s has unknown format", disks[disk].fn);
 	}
+
 }
 
 /*
@@ -253,38 +246,33 @@ static off_t get_pos(void)
 {
 	off_t pos = -1L;
 
-	if (disks[disk].disk_s == ONE)
-		if (disks[disk].disk_d == SINGLE)
-			/* single sided, single density */
-			pos = (fdc_track * disks[disk].sectors + fdc_sec - 1)
-			      * SEC_SZSD;
-		else if (disks[disk].disk_d0 == SINGLE)
-			/* single sided, double density, track 0 sd */
-			if (fdc_track == 0)
-				pos = (fdc_sec - 1) * SEC_SZSD;
-			else
-				pos = ((fdc_track - 1) * disks[disk].sectors
-				       + fdc_sec - 1) * SEC_SZDD
-				      + disks[disk].sec0 * SEC_SZSD;
-		else	/* single sided, double density */
-			pos = (fdc_track * disks[disk].sectors + fdc_sec - 1)
-			      * SEC_SZDD;
-	else if (disks[disk].disk_d == SINGLE)
-		/* double sided, single density */
-		pos = ((fdc_track * 2 + side) * disks[disk].sectors
-		       + fdc_sec - 1) * SEC_SZSD;
-	else if (disks[disk].disk_d0 == SINGLE)
-		/* double sided, double density, side 0 track 0 sd */
-		if (fdc_track == 0 && side == 0)
-			pos = (fdc_sec - 1) * SEC_SZSD;
-		else
-			pos = ((fdc_track * 2 + side - 1) * disks[disk].sectors
-			       + fdc_sec - 1) * SEC_SZDD
-			      + disks[disk].sec0 * SEC_SZSD;
-	else	/* double sided, double density */
-		pos = ((fdc_track * 2 + side) * disks[disk].sectors
-		       + fdc_sec - 1) * SEC_SZDD;
-	return pos;
+	int sec_sz  = disks[disk].sec_sz;
+	int sec_sz0 = disks[disk].sec_sz0;
+
+	if (fdc_track == 0 && side == 0) {
+		// Reading track zero
+		pos = (fdc_sec - 1) * sec_sz0;
+	} else {
+		// Start with size of track zero and build up
+		pos = (disks[disk].sec0 * sec_sz0);
+		if (disks[disk].disk_s == ONE) {
+			// Single sided - just add the number of full tracks plus the sector on our track
+			pos += (((fdc_track - 1) * disks[disk].sectors) + fdc_sec - 1) * sec_sz;
+		} else {
+			// Double sided - do the same but doubling up on the tracks in between
+			if (fdc_track == 0 && side == 1) {
+				pos += (fdc_sec - 1) * sec_sz;
+			} else {
+				pos += disks[disk].sectors * sec_sz;
+				pos += (fdc_track - 1) * 2 * disks[disk].sectors * sec_sz;
+				if (side == 1) {
+					pos += disks[disk].sectors * sec_sz;
+				}
+				pos += (fdc_sec - 1) * sec_sz;
+			}
+		}
+	}
+	return(pos);
 }
 
 /*
@@ -324,7 +312,6 @@ BYTE cromemco_fdc_diskflags_in(void)
 	/* head loaded */
 	if (headloaded)
 		ret |= 32;
-
 	return ret;
 }
 
@@ -359,10 +346,12 @@ void cromemco_fdc_diskctl_out(BYTE data)
 	/* get disk density */
 	if (data & 64) {
 		ddens = DOUBLE;
-		secsz = SEC_SZDD;
+		//secsz = SEC_SZDD;
 	} else {
 		ddens = SINGLE;
-		secsz = SEC_SZSD;
+		// Cromix SD disks have large sectors on all tracks except cyl 0 head 0.
+		// The sector size is set from the disk parameter table.
+		//secsz = SEC_SZSD;
 	}
 
 	/* get disk format */
@@ -424,13 +413,16 @@ BYTE cromemco_fdc_data_in(void)
 				return (BYTE) 0;
 			}
 			/* check track/sector */
-			if ((fdc_track == 0) && (side == 0))
+			if ((fdc_track == 0) && (side == 0)) {
 				lastsec = disks[disk].sec0;
-			else
+				secsz   = disks[disk].sec_sz0;
+			} else {
 				lastsec = disks[disk].sectors;
+				secsz   = disks[disk].sec_sz;
+			}
 			if ((fdc_track >= disks[disk].tracks) ||
-			    (fdc_sec == 0) ||
-			    (fdc_sec > lastsec)) {
+				(fdc_sec == 0) ||
+				(fdc_sec > lastsec)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
@@ -561,13 +553,16 @@ void cromemco_fdc_data_out(BYTE data)
 				return;
 			}
 			/* check track/sector */
-			if ((fdc_track == 0) && (side == 0))
+			if ((fdc_track == 0) && (side == 0)) {
 				lastsec = disks[disk].sec0;
-			else
+				secsz   = disks[disk].sec_sz0;
+			} else {
 				lastsec = disks[disk].sectors;
+				secsz   = disks[disk].sec_sz;
+			}
 			if ((fdc_track >= disks[disk].tracks) ||
-			    (fdc_sec == 0) ||
-			    (fdc_sec > lastsec)) {
+				(fdc_sec == 0) ||
+				(fdc_sec > lastsec)) {
 				state = FDC_IDLE;	/* abort command */
 				fdc_flags |= 1;		/* set EOJ */
 				fdc_flags &= ~128;	/* reset DRQ */
@@ -881,10 +876,10 @@ BYTE cromemco_fdc_status_in(void)
 	/* set/reset the index pulse, write protect and track 0 bits
 	   depending on last command */
 	if (((fdc_cmd & 0xf0) == 0) ||		/* restore (seek track 0) */
-	    ((fdc_cmd & 0xf0) == 0x10) ||	/* seek */
-	    ((fdc_cmd & 0xe0) == 0x20) ||	/* step */
-	    ((fdc_cmd & 0xe0) == 0x40) ||	/* step in */
-	    ((fdc_cmd & 0xe0) == 0x60)) {	/* step out */
+		((fdc_cmd & 0xf0) == 0x10) ||	/* seek */
+		((fdc_cmd & 0xe0) == 0x20) ||	/* step */
+		((fdc_cmd & 0xe0) == 0x40) ||	/* step in */
+		((fdc_cmd & 0xe0) == 0x60)) {	/* step out */
 
 		if (index_pulse)
 			fdc_stat |= 2;
@@ -911,8 +906,9 @@ BYTE cromemco_fdc_status_in(void)
 void cromemco_fdc_cmd_out(BYTE data)
 {
 	/* if controller busy ignore all commands but interrupt */
-	if ((fdc_stat & 1) && ((data & 0xf0) != 0xd0))
+	if ((fdc_stat & 1) && ((data & 0xf0) != 0xd0)) {
 		return;
+	}
 
 	/* new command, save it and reset EOJ */
 	fdc_cmd = data;
@@ -1028,7 +1024,7 @@ void cromemco_fdc_reset(void)
 	mflag = motoron = autowait = headloaded = false;
 	fdc_stat = fdc_aux = 0;
 	fdc_flags = AUTOBOOT;
-	secsz = SEC_SZSD;
+	secsz = SEC_SZ_SM;
 
 #ifdef HAS_BANKED_ROM
 	if (R_flag) {
